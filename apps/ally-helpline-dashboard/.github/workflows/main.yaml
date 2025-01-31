@@ -1,0 +1,136 @@
+# Set the following GitHub action Repository Variables
+#
+# PRD_AWS_ROLE
+# PRD_AWS_REGION
+#
+# STG_AWS_ROLE
+# STG_AWS_REGION
+#
+# DEV_AWS_ROLE
+# DEV_AWS_REGION
+#
+# CLOUDFRONT_DISTRIBUTION_ID
+
+name: Deploy lifeline-fe
+
+permissions:
+  id-token: write
+  contents: read
+
+on:
+  push:
+
+jobs:
+  prepare-env:
+    name: Prepare Env
+    runs-on: ubuntu-22.04
+    timeout-minutes: 2
+    outputs:
+      AWS_ROLE: ${{ steps.vars.outputs.AWS_ROLE }}
+      AWS_REGION: ${{ steps.vars.outputs.AWS_REGION }}
+      ENV: ${{ steps.vars.outputs.ENV }}
+      PROJECT_PREFIX: ${{ steps.vars.outputs.PROJECT_PREFIX }}
+      CLOUDFRONT_DISTRIBUTION_ID: ${{ steps.vars.outputs.CLOUDFRONT_DISTRIBUTION_ID }}
+      S3_BUCKET_NAME: ${{ steps.set_env.outputs.S3_BUCKET_NAME }}
+
+    steps:
+      - id: vars
+        shell: bash
+        run: |
+          BRANCH="${GITHUB_REF#refs/heads/}"
+          ENV=${{ github.event.inputs.environment }}
+          echo $BRANCH
+
+          if [ -z "$ENV" ]
+          then
+            case $BRANCH in
+              "dev")
+                ENV="dev"
+                ;;
+              "stg")
+                ENV="stg"
+                ;;
+              "master")
+                ENV="prd"
+                ;;
+              *)
+                echo "ENV not configured" && exit 1
+                ;;
+            esac
+          fi
+          if [[ $ENV == 'prd' && $BRANCH == 'master' ]]
+          then
+            echo "AWS_ROLE=PRD_AWS_ROLE" >> $GITHUB_OUTPUT
+            echo "AWS_REGION=PRD_AWS_REGION" >> $GITHUB_OUTPUT
+            echo "PROJECT_PREFIX=lifeline-fe-prd-mb" >> $GITHUB_OUTPUT
+          elif [ $ENV == 'stg' ]
+          then
+            echo "AWS_ROLE=STG_AWS_ROLE" >> $GITHUB_OUTPUT
+            echo "AWS_REGION=STG_AWS_REGION" >> $GITHUB_OUTPUT
+            echo "PROJECT_PREFIX=lifeline-fe-stg-mb" >> $GITHUB_OUTPUT
+          elif [ $ENV == 'dev' ]
+          then
+            echo "AWS_ROLE=DEV_AWS_ROLE" >> $GITHUB_OUTPUT
+            echo "AWS_REGION=DEV_AWS_REGION" >> $GITHUB_OUTPUT
+            echo "PROJECT_PREFIX=lifeline-fe-dev-mb" >> $GITHUB_OUTPUT
+          else
+            echo "Branch not configured!"
+            exit 1
+          fi
+          echo "ENV=$ENV"  >> $GITHUB_OUTPUT
+          echo ":rocket: Environment - $ENV " >> $GITHUB_STEP_SUMMARY
+
+      - name: set variables
+        id: set_env
+        run: |
+          PROJECT_PREFIX=${{ steps.vars.outputs.PROJECT_PREFIX }}
+          echo "S3_BUCKET_NAME=$PROJECT_PREFIX-s3-bucket" >> $GITHUB_OUTPUT
+          echo ":seedling: Branch:${GITHUB_REF#refs/heads/}" >> $GITHUB_STEP_SUMMARY
+
+  build_and_deploy:
+    needs: prepare-env
+    runs-on: ubuntu-22.04
+    env:
+      AWS_ROLE: ${{ needs.prepare-env.outputs.AWS_ROLE }}
+      AWS_REGION: ${{ needs.prepare-env.outputs.AWS_REGION }}
+      S3_BUCKET_NAME: ${{ needs.prepare-env.outputs.S3_BUCKET_NAME }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build project
+        run: |
+          npm i
+          npm run build
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars[env.AWS_ROLE] }}
+          aws-region: ${{ vars[env.AWS_REGION] }}
+
+      - name: Upload to S3
+        run: |
+          aws s3 sync dist/ s3://${S3_BUCKET_NAME} --delete
+
+  invalidate:
+    needs:
+      - build_and_deploy
+      - prepare-env
+    runs-on: ubuntu-22.04
+    env:
+      AWS_ROLE: ${{ needs.prepare-env.outputs.AWS_ROLE }}
+      AWS_REGION: ${{ needs.prepare-env.outputs.AWS_REGION }}
+      CLOUDFRONT_DISTRIBUTION_ID: ${{ needs.prepare-env.outputs.CLOUDFRONT_DISTRIBUTION_ID }}
+
+    steps:
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars[env.AWS_ROLE] }}
+          aws-region: ${{ vars[env.AWS_REGION] }}
+
+      - name: Invalidate Cloudfront
+        run: |
+          aws cloudfront create-invalidation --distribution-id ${CLOUDFRONT_DISTRIBUTION_ID}
