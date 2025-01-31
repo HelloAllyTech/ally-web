@@ -85,7 +85,7 @@ jobs:
         id: set_env
         run: |
           PROJECT_PREFIX=${{ steps.vars.outputs.PROJECT_PREFIX }}
-          echo "S3_BUCKET_NAME=$PROJECT_PREFIX-s3-environment" >> $GITHUB_OUTPUT
+          echo "S3_BUCKET_NAME=$PROJECT_PREFIX-web-website" >> $GITHUB_OUTPUT
           echo ":seedling: Branch:${GITHUB_REF#refs/heads/}" >> $GITHUB_STEP_SUMMARY
 
   build_and_deploy:
