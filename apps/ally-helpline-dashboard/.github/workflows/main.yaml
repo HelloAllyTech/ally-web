@@ -73,7 +73,7 @@ jobs:
             echo "AWS_ROLE=DEV_AWS_ROLE" >> $GITHUB_OUTPUT
             echo "AWS_REGION=DEV_AWS_REGION" >> $GITHUB_OUTPUT
             echo $DEV_AWS_REGION
-            echo "PROJECT_PREFIX=lifeline-fe-dev-mb" >> $GITHUB_OUTPUT
+            echo "PROJECT_PREFIX=life-dev" >> $GITHUB_OUTPUT
           else
             echo "Branch not configured!"
             exit 1
@@ -85,7 +85,7 @@ jobs:
         id: set_env
         run: |
           PROJECT_PREFIX=${{ steps.vars.outputs.PROJECT_PREFIX }}
-          echo "S3_BUCKET_NAME=$PROJECT_PREFIX-s3-bucket" >> $GITHUB_OUTPUT
+          echo "S3_BUCKET_NAME=$PROJECT_PREFIX-s3-environment" >> $GITHUB_OUTPUT
           echo ":seedling: Branch:${GITHUB_REF#refs/heads/}" >> $GITHUB_STEP_SUMMARY
 
   build_and_deploy:
@@ -113,8 +113,6 @@ jobs:
 
       - name: Upload to S3
         run: |
-          aws s3 ls
-          aws sts get-caller-identity
           aws s3 sync dist/ s3://${S3_BUCKET_NAME} 
 
   invalidate:
