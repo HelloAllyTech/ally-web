@@ -1,6 +1,9 @@
 import { axiosInstance } from "@/services/axios";
 
-const appVersionPath = `api/${import.meta.env.VITE_APP_VERSION}`;
+// const apiVersion = import.meta.env.VITE_API_VERSION;
+const apiVersion = "v1";
+
+const appVersionPath = `api/${apiVersion}`;
 
 export const api = {
   get: async <T>(url: string, config = {}) => {
