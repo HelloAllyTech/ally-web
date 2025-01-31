@@ -72,7 +72,7 @@ jobs:
           then
             echo "AWS_ROLE=DEV_AWS_ROLE" >> $GITHUB_OUTPUT
             echo "AWS_REGION=DEV_AWS_REGION" >> $GITHUB_OUTPUT
-            echo $DEV_AWS_REGION
+            echo "CLOUDFRONT_DISTRIBUTION_ID=DEV_CLOUDFRONT_DISTRIBUTION_ID" >> $GITHUB_OUTPUT
             echo "PROJECT_PREFIX=life-dev" >> $GITHUB_OUTPUT
           else
             echo "Branch not configured!"
