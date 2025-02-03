@@ -136,7 +136,7 @@ jobs:
 
       - name: Build and Push Docker image
         run: |
-          ECR_IMAGE_TAG="${ECR_IMAGE}:${GITHUB_SHA::7}"
+          ECR_IMAGE_TAG="${ECR_IMAGE}:${GITHUB_SHA::7}-$GITHUB_RUN_NUMBER"
           docker build -t $ECR_IMAGE_TAG .
           docker tag $ECR_IMAGE_TAG ${{ vars.ECR_REPOSITORY }}/$ECR_IMAGE_TAG
           docker push ${{ vars.ECR_REPOSITORY }}/$ECR_IMAGE_TAG
