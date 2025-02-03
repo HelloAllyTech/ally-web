@@ -10,8 +10,7 @@ export const useSocket = ({ userId }: UseSocketOptions) => {
   const socketRef = useRef<Socket | null>(null);
   const connectionAttemptsRef = useRef(0);
   const maxAttempts = 5;
-  // const baseUrl = import.meta.env.VITE_API_BASE_URL;
-  const baseUrl = "https://api.lifeline.kvsandbox.link";
+  const baseUrl = import.meta.env.VITE_API_BASE_URL;
   // const appVersionPath = import.meta.env.VITE_APP_VERSION_PATH;
 
   const connect = useCallback(() => {

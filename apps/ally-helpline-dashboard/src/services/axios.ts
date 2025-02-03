@@ -5,10 +5,8 @@ import type {
   InternalAxiosRequestConfig,
 } from "axios";
 
-// const API_URL = import.meta.env.VITE_API_BASE_URL;
-const API_URL = "https://api.lifeline.kvsandbox.link";
-// const API_VERSION = import.meta.env.VITE_API_VERSION;
-const API_VERSION = "v1";
+const API_URL = import.meta.env.VITE_API_BASE_URL;
+const API_VERSION = import.meta.env.VITE_API_VERSION;
 
 export const axiosInstance: AxiosInstance = axios.create({
   baseURL: API_URL,

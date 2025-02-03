@@ -1,7 +1,6 @@
 import { axiosInstance } from "@/services/axios";
 
-// const apiVersion = import.meta.env.VITE_API_VERSION;
-const apiVersion = "v1";
+const apiVersion = import.meta.env.VITE_API_VERSION;
 
 const appVersionPath = `api/${apiVersion}`;
 

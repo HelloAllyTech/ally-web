@@ -2,14 +2,14 @@ import { TabId } from "./tabs";
 
 export const ROUTES = {
   // Public Routes
-  LOGIN: '/login',
-  SIGNUP: '/signup',
+  LOGIN: "/login",
+  SIGNUP: "/signup",
   
   // Private Routes
-  HOME: '/',
-  DASHBOARD: '/dashboard',
-  LIVE_CALL: '/live-call',
-  CALL_LOGS: '/call-logs',
+  HOME: "/",
+  DASHBOARD: "/dashboard",
+  LIVE_CALL: "/live-call",
+  CALL_LOGS: "/call-logs",
 } as const;
 
 // Type for route paths
