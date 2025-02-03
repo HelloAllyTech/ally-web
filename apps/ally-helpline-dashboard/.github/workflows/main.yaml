@@ -1,5 +1,7 @@
 # Set the following GitHub action Repository Variables
 #
+# ECR_REPOSITORY
+#
 # PRD_AWS_ROLE
 # PRD_AWS_REGION
 #
@@ -8,17 +10,28 @@
 #
 # DEV_AWS_ROLE
 # DEV_AWS_REGION
-#
-# CLOUDFRONT_DISTRIBUTION_ID
 
-name: Deploy lifeline-fe
+name: Deploy lifeline-ui
 
 permissions:
   id-token: write
   contents: read
 
 on:
+  workflow_dispatch:
+    inputs:
+      Environment:
+        required: true
+        type: choice
+        description: Choose env
+        options:
+          - dev
+          - stg
+          - prd
   push:
+    branches:
+      - dev
+      - stg
 
 jobs:
   prepare-env:
@@ -30,8 +43,13 @@ jobs:
       AWS_REGION: ${{ steps.vars.outputs.AWS_REGION }}
       ENV: ${{ steps.vars.outputs.ENV }}
       PROJECT_PREFIX: ${{ steps.vars.outputs.PROJECT_PREFIX }}
-      CLOUDFRONT_DISTRIBUTION_ID: ${{ steps.vars.outputs.CLOUDFRONT_DISTRIBUTION_ID }}
-      S3_BUCKET_NAME: ${{ steps.set_env.outputs.S3_BUCKET_NAME }}
+      SUBNETS: ${{ steps.vars.outputs.SUBNETS }}
+      SECURITY_GROUPS: ${{ steps.vars.outputs.SECURITY_GROUPS }}
+      ECS_CLUSTER: ${{ steps.set_env.outputs.ECS_CLUSTER }}
+      ECS_SERVICE: ${{ steps.set_env.outputs.ECS_SERVICE }}
+      ECR_IMAGE: ${{ steps.set_env.outputs.ECR_IMAGE }}
+      TASK_DEFINITION: ${{ steps.set_env.outputs.TASK_DEFINITION }}
+      ENVIRONMENT_BUCKET: ${{ steps.set_env.outputs.ENVIRONMENT_BUCKET }}
 
     steps:
       - id: vars
@@ -40,7 +58,6 @@ jobs:
           BRANCH="${GITHUB_REF#refs/heads/}"
           ENV=${{ github.event.inputs.environment }}
           echo $BRANCH
-
           if [ -z "$ENV" ]
           then
             case $BRANCH in
@@ -62,68 +79,79 @@ jobs:
           then
             echo "AWS_ROLE=PRD_AWS_ROLE" >> $GITHUB_OUTPUT
             echo "AWS_REGION=PRD_AWS_REGION" >> $GITHUB_OUTPUT
-            echo "PROJECT_PREFIX=lifeline-fe-prd-mb" >> $GITHUB_OUTPUT
+            echo "PROJECT_PREFIX=lifeline-prd" >> $GITHUB_OUTPUT
+            echo "SUBNETS=[\"subnet-0cce75b196f0b0f91\", \"subnet-0ecfab7ad6e9c808f\"]" >> $GITHUB_OUTPUT
+            echo "SECURITY_GROUPS=[\"sg-0a59d6cefa4776cd4\"]" >> $GITHUB_OUTPUT
           elif [ $ENV == 'stg' ]
           then
             echo "AWS_ROLE=STG_AWS_ROLE" >> $GITHUB_OUTPUT
             echo "AWS_REGION=STG_AWS_REGION" >> $GITHUB_OUTPUT
-            echo "PROJECT_PREFIX=lifeline-fe-stg-mb" >> $GITHUB_OUTPUT
+            echo "PROJECT_PREFIX=lifeline-stg" >> $GITHUB_OUTPUT
+            echo "SUBNETS=[\"subnet-072921dfa30408828\", \"subnet-0f1841479bce3a1e0\"]" >> $GITHUB_OUTPUT
+            echo "SECURITY_GROUPS=[\"sg-0ddb892b2ac184ee3\"]" >> $GITHUB_OUTPUT
           elif [ $ENV == 'dev' ]
           then
             echo "AWS_ROLE=DEV_AWS_ROLE" >> $GITHUB_OUTPUT
             echo "AWS_REGION=DEV_AWS_REGION" >> $GITHUB_OUTPUT
-            echo "CLOUDFRONT_DISTRIBUTION_ID=DEV_CLOUDFRONT_DISTRIBUTION_ID" >> $GITHUB_OUTPUT
-            echo "PROJECT_PREFIX=life-dev" >> $GITHUB_OUTPUT
+            echo "PROJECT_PREFIX=lifeline-dev" >> $GITHUB_OUTPUT
+            echo "SUBNETS=[\"subnet-072921dfa30408828\", \"subnet-0f1841479bce3a1e0\"]" >> $GITHUB_OUTPUT
+            echo "SECURITY_GROUPS=[\"sg-058afe1ec009268c0\"]" >> $GITHUB_OUTPUT
           else
             echo "Branch not configured!"
             exit 1
           fi
           echo "ENV=$ENV"  >> $GITHUB_OUTPUT
           echo ":rocket: Environment - $ENV " >> $GITHUB_STEP_SUMMARY
-
       - name: set variables
         id: set_env
         run: |
           PROJECT_PREFIX=${{ steps.vars.outputs.PROJECT_PREFIX }}
-          echo "S3_BUCKET_NAME=$PROJECT_PREFIX-web-website" >> $GITHUB_OUTPUT
+          echo "ECS_CLUSTER=$PROJECT_PREFIX-sg-ecs-cluster"  >> $GITHUB_OUTPUT
+          echo "ECS_SERVICE=$PROJECT_PREFIX-svc-ui" >> $GITHUB_OUTPUT
+          echo "ECR_IMAGE=$PROJECT_PREFIX-ecr-ui" >> $GITHUB_OUTPUT
+          echo "TASK_DEFINITION=$PROJECT_PREFIX-td-ui" >> $GITHUB_OUTPUT
+          echo "ENVIRONMENT_BUCKET=$PROJECT_PREFIX-s3-environment"  >> $GITHUB_OUTPUT
           echo ":seedling: Branch:${GITHUB_REF#refs/heads/}" >> $GITHUB_STEP_SUMMARY
-
-  build_and_deploy:
+  build:
     needs: prepare-env
     runs-on: ubuntu-22.04
     env:
       AWS_ROLE: ${{ needs.prepare-env.outputs.AWS_ROLE }}
       AWS_REGION: ${{ needs.prepare-env.outputs.AWS_REGION }}
-      S3_BUCKET_NAME: ${{ needs.prepare-env.outputs.S3_BUCKET_NAME }}
+      ECR_IMAGE: ${{ needs.prepare-env.outputs.ECR_IMAGE }}
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Build project
-        run: |
-          npm i
-          npm run build
-
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: ${{ vars[env.AWS_ROLE] }}
           aws-region: ${{ vars[env.AWS_REGION] }}
 
-      - name: Upload to S3
-        run: |
-          aws s3 sync dist/ s3://${S3_BUCKET_NAME} 
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
 
-  invalidate:
+      - name: Build and Push Docker image
+        run: |
+          ECR_IMAGE_TAG="${ECR_IMAGE}:${GITHUB_SHA::7}-$GITHUB_RUN_NUMBER"
+          docker build -t $ECR_IMAGE_TAG .
+          docker tag $ECR_IMAGE_TAG ${{ vars.ECR_REPOSITORY }}/$ECR_IMAGE_TAG
+          docker push ${{ vars.ECR_REPOSITORY }}/$ECR_IMAGE_TAG
+  deploy:
     needs:
-      - build_and_deploy
+      - build
       - prepare-env
     runs-on: ubuntu-22.04
     env:
       AWS_ROLE: ${{ needs.prepare-env.outputs.AWS_ROLE }}
       AWS_REGION: ${{ needs.prepare-env.outputs.AWS_REGION }}
-      CLOUDFRONT_DISTRIBUTION_ID: ${{ needs.prepare-env.outputs.CLOUDFRONT_DISTRIBUTION_ID }}
+      ECR_IMAGE: ${{ needs.prepare-env.outputs.ECR_IMAGE }}
+      ECS_SERVICE: ${{ needs.prepare-env.outputs.ECS_SERVICE }}
+      ECS_CLUSTER: ${{ needs.prepare-env.outputs.ECS_CLUSTER }}
+      TASK_DEFINITION: ${{ needs.prepare-env.outputs.TASK_DEFINITION }}
 
     steps:
       - name: Configure AWS Credentials
@@ -132,6 +160,16 @@ jobs:
           role-to-assume: ${{ vars[env.AWS_ROLE] }}
           aws-region: ${{ vars[env.AWS_REGION] }}
 
-      - name: Invalidate Cloudfront
+      - name: Update ECS Task Definition
         run: |
-          aws cloudfront create-invalidation --distribution-id E3V4XFYRGSRH6J --paths "/*"
+          ECR_IMAGE_TAG="${ECR_IMAGE}:${GITHUB_SHA::7}-$GITHUB_RUN_NUMBER"
+          TASK_DEFINITION=$(aws ecs describe-task-definition --task-definition "${TASK_DEFINITION}")
+          echo "$TASK_DEFINITION" | jq --arg IMAGE "${{ vars.ECR_REPOSITORY }}/$ECR_IMAGE_TAG" \
+            '.taskDefinition | .containerDefinitions[0].image = $IMAGE | del(.taskDefinitionArn, .revision, .status, .requiresAttributes, .compatibilities, .registeredAt, .registeredBy)' > taskDefinition.json
+      - name: Deploy to Amazon ECS
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v2
+        with:
+          task-definition: taskDefinition.json
+          service: ${{ env.ECS_SERVICE }}
+          cluster: ${{ env.ECS_CLUSTER }}
+          wait-for-service-stability: true
