@@ -141,10 +141,11 @@ jobs:
 
       - name: Build and Push Docker image
         run: |
+          echo ${{ vars[env.ECR_REPOSITORY] }}
           ECR_IMAGE_TAG="${ECR_IMAGE}:${GITHUB_SHA::7}-$GITHUB_RUN_NUMBER"
           docker build -t $ECR_IMAGE_TAG .
-          docker tag $ECR_IMAGE_TAG ${ECR_REPOSITORY}/$ECR_IMAGE_TAG
-          docker push $ECR_REPOSITORY/$ECR_IMAGE_TAG
+          docker tag $ECR_IMAGE_TAG ${{ vars[env.ECR_REPOSITORY] }}/$ECR_IMAGE_TAG
+          docker push ${{ vars[env.ECR_REPOSITORY] }}/$ECR_IMAGE_TAG
   deploy:
     needs:
       - build
@@ -170,7 +171,7 @@ jobs:
         run: |
           ECR_IMAGE_TAG="${ECR_IMAGE}:${GITHUB_SHA::7}-$GITHUB_RUN_NUMBER"
           TASK_DEFINITION=$(aws ecs describe-task-definition --task-definition "${TASK_DEFINITION}")
-          echo "$TASK_DEFINITION" | jq --arg IMAGE "${ECR_REPOSITORY}/$ECR_IMAGE_TAG" \
+          echo "$TASK_DEFINITION" | jq --arg IMAGE "${{ vars[env.ECR_REPOSITORY] }}/$ECR_IMAGE_TAG" \
             '.taskDefinition | .containerDefinitions[0].image = $IMAGE | del(.taskDefinitionArn, .revision, .status, .requiresAttributes, .compatibilities, .registeredAt, .registeredBy)' > taskDefinition.json
       - name: Deploy to Amazon ECS
         uses: aws-actions/amazon-ecs-deploy-task-definition@v2
