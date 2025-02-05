@@ -114,6 +114,7 @@ jobs:
         id: set_env
         run: |
           PROJECT_PREFIX=${{ steps.vars.outputs.PROJECT_PREFIX }}
+          PROJECT_REGION=${{  steps.vars.outputs.PROJECT_REGION  }}
           echo "ECS_CLUSTER=$PROJECT_PREFIX-$PROJECT_REGION-ecs-cluster"  >> $GITHUB_OUTPUT
           echo "ECS_SERVICE=$PROJECT_PREFIX-svc-fe" >> $GITHUB_OUTPUT
           echo "ECR_IMAGE=$PROJECT_PREFIX-ecr-fe" >> $GITHUB_OUTPUT
