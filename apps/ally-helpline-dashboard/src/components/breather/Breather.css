@@ -1,0 +1,37 @@
+.circle {
+  width: 226px;
+  height: 226px;
+  border-radius: 50%;
+  box-shadow: 0 0 0 100px rgba(144, 203, 255, 0.5);;
+  background-color: #90CBFF;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 2s ease-in-out;  
+}
+
+@keyframes breatheIn {
+  0% {
+    transform: scale(0.8);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes breatheOut {
+  0% {
+    transform: scale(1);
+  }
+  100% {
+    transform: scale(0.8);
+  }
+}
+
+.breathing-in {
+  animation: breatheIn 10s ease-in-out forwards;
+}
+
+.breathing-out {
+  animation: breatheOut 10s ease-in-out forwards;
+}
