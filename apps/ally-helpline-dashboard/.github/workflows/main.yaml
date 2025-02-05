@@ -44,6 +44,7 @@ jobs:
       ECR_REPOSITORY: ${{steps.vars.outputs.ECR_REPOSITORY}}
       ENV: ${{ steps.vars.outputs.ENV }}
       PROJECT_PREFIX: ${{ steps.vars.outputs.PROJECT_PREFIX }}
+      PROJECT_REGION: ${{ steps.vars.outputs.PROJECT_REGION }}
       SUBNETS: ${{ steps.vars.outputs.SUBNETS }}
       SECURITY_GROUPS: ${{ steps.vars.outputs.SECURITY_GROUPS }}
       ECS_CLUSTER: ${{ steps.set_env.outputs.ECS_CLUSTER }}
