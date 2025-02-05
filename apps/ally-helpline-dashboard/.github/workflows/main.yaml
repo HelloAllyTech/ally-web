@@ -44,6 +44,7 @@ jobs:
       ECR_REPOSITORY: ${{steps.vars.outputs.ECR_REPOSITORY}}
       ENV: ${{ steps.vars.outputs.ENV }}
       PROJECT_PREFIX: ${{ steps.vars.outputs.PROJECT_PREFIX }}
+      PROJECT_REGION: ${{ steps.vars.outputs.PROJECT_REGION }}
       SUBNETS: ${{ steps.vars.outputs.SUBNETS }}
       SECURITY_GROUPS: ${{ steps.vars.outputs.SECURITY_GROUPS }}
       ECS_CLUSTER: ${{ steps.set_env.outputs.ECS_CLUSTER }}
@@ -82,6 +83,7 @@ jobs:
             echo "AWS_REGION=PRD_AWS_REGION" >> $GITHUB_OUTPUT
             echo "ECR_REPOSITORY=PRD_ECR_REPOSITORY" >> $GITHUB_OUTPUT
             echo "PROJECT_PREFIX=life-prd" >> $GITHUB_OUTPUT
+            echo "PROJECT_REGION=mb" >> $GITHUB_OUTPUT
             echo "SUBNETS=[\"subnet-0cce75b196f0b0f91\", \"subnet-0ecfab7ad6e9c808f\"]" >> $GITHUB_OUTPUT
             echo "SECURITY_GROUPS=[\"sg-0a59d6cefa4776cd4\"]" >> $GITHUB_OUTPUT
           elif [ $ENV == 'stg' ]
@@ -90,6 +92,7 @@ jobs:
             echo "AWS_REGION=STG_AWS_REGION" >> $GITHUB_OUTPUT
             echo "ECR_REPOSITORY=STG_ECR_REPOSITORY" >> $GITHUB_OUTPUT
             echo "PROJECT_PREFIX=life-stg" >> $GITHUB_OUTPUT
+            echo "PROJECT_REGION=mb" >> $GITHUB_OUTPUT
             echo "SUBNETS=[\"subnet-072921dfa30408828\", \"subnet-0f1841479bce3a1e0\"]" >> $GITHUB_OUTPUT
             echo "SECURITY_GROUPS=[\"sg-0ddb892b2ac184ee3\"]" >> $GITHUB_OUTPUT
           elif [ $ENV == 'dev' ]
@@ -98,6 +101,7 @@ jobs:
             echo "AWS_REGION=DEV_AWS_REGION" >> $GITHUB_OUTPUT
             echo "ECR_REPOSITORY=DEV_ECR_REPOSITORY" >> $GITHUB_OUTPUT
             echo "PROJECT_PREFIX=life-dev" >> $GITHUB_OUTPUT
+            echo "PROJECT_REGION=sg" >> $GITHUB_OUTPUT
             echo "SUBNETS=[\"subnet-072921dfa30408828\", \"subnet-0f1841479bce3a1e0\"]" >> $GITHUB_OUTPUT
             echo "SECURITY_GROUPS=[\"sg-058afe1ec009268c0\"]" >> $GITHUB_OUTPUT
           else
@@ -110,7 +114,7 @@ jobs:
         id: set_env
         run: |
           PROJECT_PREFIX=${{ steps.vars.outputs.PROJECT_PREFIX }}
-          echo "ECS_CLUSTER=$PROJECT_PREFIX-sg-ecs-cluster"  >> $GITHUB_OUTPUT
+          echo "ECS_CLUSTER=$PROJECT_PREFIX-$PROJECT_REGION-ecs-cluster"  >> $GITHUB_OUTPUT
           echo "ECS_SERVICE=$PROJECT_PREFIX-svc-fe" >> $GITHUB_OUTPUT
           echo "ECR_IMAGE=$PROJECT_PREFIX-ecr-fe" >> $GITHUB_OUTPUT
           echo "TASK_DEFINITION=$PROJECT_PREFIX-td-fe" >> $GITHUB_OUTPUT
