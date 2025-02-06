@@ -100,7 +100,8 @@ const CopilotChat = ({
                       <CopilotIcon />
                     </div>
                   )}
-                  {!message.isUser ? (
+                  <CustomMarkdown content={message.content} />
+                  {/* {!message.isUser ? (
                     (() => {
                       const parts = message.content
                         .split(":")
@@ -112,13 +113,13 @@ const CopilotChat = ({
                           <h3 className="font-semibold mb-2">{title}</h3>
                           {description && (
                             <p className="text-sm">{description}</p>
-                          )}
+                          )}kjh
                         </div>
                       );
                     })()
                   ) : (
                     <CustomMarkdown content={message.content} />
-                  )}
+                  )} */}
                   <span className="mt-1 block text-right text-xs text-gray-500 px-2 pb-1">
                     {message.timestamp}
                   </span>

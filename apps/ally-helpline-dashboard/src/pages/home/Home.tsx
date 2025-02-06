@@ -19,7 +19,6 @@ import { QueueStatus } from "@/constants/common";
 import { ROUTES } from "@/constants/routes";
 import { ChatStatus } from "@/types/message";
 
-
 interface QueueStatResponse {
   priority: number;
   entry_id: number;
@@ -164,8 +163,8 @@ const Home = () => {
                 Welcome to Lifeline
               </h1>
               <p className="text-gray-600">
-                {isWaiting
-                  ? <>
+                {isWaiting ? (
+                  <>
                     <h2 className="text-xl font-semibold text-gray-700 mb-2">
                       Finding a counselor for you..
                     </h2>
@@ -173,7 +172,9 @@ const Home = () => {
                       Please wait while we find the best counselor for you..
                     </p>
                   </>
-                  : "Connect with a counselor instantly and start your journey towards better mental health."}
+                ) : (
+                  "Connect with a counselor instantly and start your journey towards better mental health."
+                )}
               </p>
               {chatLoading || isWaiting ? (
                 <div className="flex justify-center">
@@ -251,12 +252,12 @@ const Home = () => {
             )}
             {queueStats.length > 0 && (
               <>
-                <h2 className="text-xl font-medium mt-5 mb-4">Queue Stats</h2>
+                <h2 className="text-xl font-medium mt-5 mb-4">Queue Status</h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   {queueStats.map((item) => (
                     <Card
                       key={item.entry_id}
-                    // onClick={() => handleClientSelect(item)}
+                      // onClick={() => handleClientSelect(item)}
                     >
                       <CardHeader>
                         <div className="flex justify-between items-start mb-2">
@@ -267,7 +268,7 @@ const Home = () => {
                             className={cn(
                               "px-2 py-1 rounded-full text-xs font-medium",
                               priorityColors[
-                              item.status as keyof typeof priorityColors
+                                item.status as keyof typeof priorityColors
                               ] || "bg-gray-100 text-gray-800"
                             )}
                           >
