@@ -72,16 +72,29 @@ const LiveCall = ({ handleLogout }: LiveCallProps) => {
 
     const handleMessages = (data) => {
       if (data?.messages) {
-        const formattedMessages = data.messages.map((msg) => ({
-          content: msg.content,
-          isOutgoing: msg.sender_id !== user.user_id,
-          timestamp: timeStamp(msg.created_at),
-          message_id: msg.message_id,
-          sender_id: msg.sender_id,
-          created_at: msg.created_at,
-        }));
+        const formattedMessages = data.messages
+          .filter((msg) => msg.message_type === MessageType.TEXT)
+          .map((msg) => ({
+            content: msg.content,
+            isOutgoing: msg.sender_id !== user.user_id,
+            timestamp: timeStamp(msg.created_at),
+            message_id: msg.message_id,
+            sender_id: msg.sender_id,
+            created_at: msg.created_at,
+          }));
         setMessages(formattedMessages);
         setActiveChat(data);
+
+        if (isCounsellor) {
+          const formattedNudgeMessages = data.messages
+            .filter((msg) => msg.message_type === MessageType.NUDGE)
+            .map((msg) => ({
+              content: msg.content,
+              message_id: msg.message_id,
+              isUser: false,
+            }));
+          setCopilotMessages(formattedNudgeMessages);
+        }
 
         if (data.chat_id) {
           socket.connect();
@@ -123,7 +136,6 @@ const LiveCall = ({ handleLogout }: LiveCallProps) => {
       socket.disconnect();
     };
   }, [user, isCounsellor, isClient]);
-
 
   useEffect(() => {
     if (transcriptionRef.current) {
@@ -225,12 +237,12 @@ const LiveCall = ({ handleLogout }: LiveCallProps) => {
   //         <div className="flex justify-center">
   //           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
   //         </div>
-          // <h2 className="text-2xl font-semibold text-gray-700 mb-2">
-          //   Finding a counselor for you..
-          // </h2>
-          // <p className="text-gray-500">
-          //   Please wait while we find the best counselor for you..
-          // </p>
+  // <h2 className="text-2xl font-semibold text-gray-700 mb-2">
+  //   Finding a counselor for you..
+  // </h2>
+  // <p className="text-gray-500">
+  //   Please wait while we find the best counselor for you..
+  // </p>
   //       </div>
   //     </div>
   //   );
@@ -257,8 +269,9 @@ const LiveCall = ({ handleLogout }: LiveCallProps) => {
   return (
     <div className="flex-1 min-h-screen overflow-auto">
       <PageHeader
-        title={`Live call with ${isClient ? activeChat?.counselor?.name : activeChat?.client?.name
-          }`}
+        title={`Live call with ${
+          isClient ? activeChat?.counselor?.name : activeChat?.client?.name
+        }`}
         showSearch={false}
         onLogout={handleLogout}
       />
@@ -340,7 +353,7 @@ const LiveCall = ({ handleLogout }: LiveCallProps) => {
                     );
                   })}
                 </div>
-                {(sessionEnded) && (
+                {sessionEnded && (
                   <div className="flex items-center flex-col mt-4">
                     <span
                       className={cn(
