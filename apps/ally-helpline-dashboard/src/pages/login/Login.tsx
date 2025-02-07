@@ -27,7 +27,10 @@ export const Login = () => {
       await checkAuth();
       navigate("/");
     } catch (error) {
-      toast.error("Invalid credentials. Please try again.");
+      toast.error(
+        error?.response?.data?.detail ??
+          "Invalid credentials. Please try again."
+      );
       console.error("Error loggin in - ", error);
     }
   };
@@ -43,9 +46,7 @@ export const Login = () => {
         <div className="bg-gray-800 rounded-2xl shadow-xl p-8 space-y-8">
           <div className="text-center">
             <h1 className="text-2xl font-bold text-white">Sign Up</h1>
-            <p className="text-gray-400 mt-2">
-              Create your account
-            </p>
+            <p className="text-gray-400 mt-2">Create your account</p>
           </div>
           <form onSubmit={(e) => e.preventDefault()} className="space-y-6">
             <div className="space-y-4">
