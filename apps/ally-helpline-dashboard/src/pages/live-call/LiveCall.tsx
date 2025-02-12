@@ -1,6 +1,6 @@
 import { useRecoilValue } from "recoil";
-import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
+import { useState, useEffect, useRef, useMemo } from "react";
 
 import {
   Button,
@@ -12,11 +12,12 @@ import {
 } from "@/components";
 import { cn } from "@/utils/tailwind";
 import { UserRole } from "@/types/user";
+import { ROUTES } from "@/constants/routes";
 import { CopilotIcon } from "@/assets/icons";
 import { userState } from "@/store/atoms/userAtom";
+import { MessageType, SocketEvent } from "@/types/message";
 import { useSocket, useClientChat, useCounsellorChat } from "@/hooks";
 import { dateStamp, formatMessageDate, timeStamp } from "@/utils/date";
-import { ROUTES } from "@/constants/routes";
 
 import {
   SummaryInfo,
@@ -24,7 +25,6 @@ import {
   CopilotMessage,
   FormattedMessage,
 } from "./types";
-import { MessageType } from "@/types/message";
 
 const LiveCall = ({ handleLogout }: LiveCallProps) => {
   const [messages, setMessages] = useState<FormattedMessage[]>([]);
@@ -45,8 +45,45 @@ const LiveCall = ({ handleLogout }: LiveCallProps) => {
   const [copilotMessages, setCopilotMessages] = useState<CopilotMessage[]>([]);
   const isClient = user?.role === UserRole.CLIENT;
   const isCounsellor = user?.role === UserRole.COUNSELOR;
+  const socketEventCallbacks = useMemo(
+    () => ({
+      [SocketEvent.STAGE]: (data: any) => {
+        setStage(data?.payload?.content);
+      },
+      [SocketEvent.NUDGE]: (data: any) => {
+        const message = data.payload;
+        console.log("Nudge received:", message);
+        if (message.message_type === MessageType.NUDGE) {
+          handleCopilotMessage(message.content);
+        }
+      },
+      [SocketEvent.MESSAGE_RECEIVED]: (data: any) => {
+        const message = data.payload;
+        if (message.message_type === MessageType.TEXT) {
+          if (message?.content === "Session ended") {
+            setSessionEnded(true);
+            socket.disconnect();
+            return;
+          }
+          setMessages((current) => [
+            ...current,
+            {
+              content: message.content,
+              isOutgoing: message.sender_id !== user.user_id,
+              timestamp: timeStamp(message.created_at),
+              message_id: message.message_id,
+              sender_id: message.sender_id,
+              created_at: message.created_at,
+            },
+          ]);
+        }
+      },
+    }),
+    []
+  );
   const socket = useSocket({
     userId: user?.user_id,
+    eventCallbacks: socketEventCallbacks,
   });
   const [showEndDialog, setShowEndDialog] = useState(false);
   const [activeChat, setActiveChat] = useState<any | null>(null);
@@ -102,38 +139,6 @@ const LiveCall = ({ handleLogout }: LiveCallProps) => {
 
         if (data.chat_id) {
           socket.connect();
-          socket.onMessageReceived((data: any) => {
-            console.log("Message received:", data);
-            const message = data.payload;
-            if (message.message_type === MessageType.TEXT) {
-              if (message?.content === "Session ended") {
-                setSessionEnded(true);
-                socket.disconnect();
-                return;
-              }
-              setMessages((current) => [
-                ...current,
-                {
-                  content: message.content,
-                  isOutgoing: message.sender_id !== user.user_id,
-                  timestamp: timeStamp(message.created_at),
-                  message_id: message.message_id,
-                  sender_id: message.sender_id,
-                  created_at: message.created_at,
-                },
-              ]);
-            }
-          });
-          socket.onStageUpdate((data: any) => {
-            setStage(data?.payload?.content);
-          });
-          socket.onNudgeReceived((data: any) => {
-            const message = data.payload;
-            console.log("Nudge received:", message);
-            if (message.message_type === MessageType.NUDGE) {
-              handleCopilotMessage(message.content);
-            }
-          });
         }
       }
     };

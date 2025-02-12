@@ -1,7 +1,7 @@
+import { toast } from "sonner";
 import { motion } from "framer-motion";
 import { useRecoilValue } from "recoil";
-import { useState, useEffect } from "react";
-import { toast } from "sonner";
+import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 
 import {
@@ -17,7 +17,7 @@ import { userState } from "@/store/atoms/userAtom";
 import { Card, CardHeader, CardTitle } from "@/components";
 import { QueueStatus } from "@/constants/common";
 import { ROUTES } from "@/constants/routes";
-import { ChatStatus } from "@/types/message";
+import { ChatStatus, SocketEvent } from "@/types/message";
 
 interface QueueStatResponse {
   priority: number;
@@ -74,7 +74,18 @@ const Home = () => {
   const [isWaiting, setIsWaiting] = useState(false);
 
   const user = useRecoilValue(userState);
-  const socket = useSocket({ userId: user?.user_id });
+
+  const socketEventCallbacks = useMemo(
+    () => ({
+      [SocketEvent.CHAT_ACCEPTED]: () => {
+        setIsWaiting(false);
+        navigate(ROUTES.LIVE_CALL);
+      },
+    }),
+    []
+  );
+  const socket = useSocket({ userId: user?.user_id, eventCallbacks: socketEventCallbacks });
+
 
   useEffect(() => {
     if (user?.role === UserRole.COUNSELOR) {
@@ -100,11 +111,6 @@ const Home = () => {
   useEffect(() => {
     if (isWaiting) {
       socket.connect();
-      socket.onChatAccepted((acceptedChat) => {
-        console.log("Chat accepted:", acceptedChat);
-        setIsWaiting(false);
-        navigate(ROUTES.LIVE_CALL);
-      });
     }
   }, [isWaiting, socket]);
 
@@ -128,7 +134,10 @@ const Home = () => {
       await acceptChat(data.chat_id);
       navigate(ROUTES.LIVE_CALL);
     } catch (error) {
-      toast.error(error?.response?.data?.detail ?? "Something went wrong. Please try again later!");
+      toast.error(
+        error?.response?.data?.detail ??
+          "Something went wrong. Please try again later!"
+      );
       console.error("Error accepting chat:", error);
     }
   };

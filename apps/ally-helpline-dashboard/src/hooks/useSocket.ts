@@ -1,12 +1,14 @@
-import { useEffect, useRef, useCallback, useState } from "react";
+import { useEffect, useRef, useCallback } from "react";
 import { Socket, io } from "socket.io-client";
-import { SocketEvent, SocketMessage } from "@/types/message";
+
+import { SocketEvent } from "@/types/message";
 
 interface UseSocketOptions {
   userId: string;
+  eventCallbacks?: Partial<Record<SocketEvent, (params?: any) => void>>;
 }
 
-export const useSocket = ({ userId }: UseSocketOptions) => {
+export const useSocket = ({ userId, eventCallbacks }: UseSocketOptions) => {
   const socketRef = useRef<Socket | null>(null);
   const connectionAttemptsRef = useRef(0);
   const maxAttempts = 5;
@@ -69,7 +71,11 @@ export const useSocket = ({ userId }: UseSocketOptions) => {
     socketRef.current.on("error", (error) => {
       console.error("Socket error:", error);
     });
-  }, []);
+
+    Object.entries(eventCallbacks).forEach(([key, callback]) => {
+      socketRef.current.on(key, callback);
+    });
+  }, [eventCallbacks]);
 
   const disconnect = useCallback(() => {
     if (socketRef.current) {
@@ -87,38 +93,6 @@ export const useSocket = ({ userId }: UseSocketOptions) => {
     socketRef.current.emit(SocketEvent.SEND_MESSAGE, message);
   }, []);
 
-  const onMessageReceived = useCallback(
-    (callback: (message: SocketMessage) => void) => {
-      if (!socketRef.current) return;
-      socketRef.current.on(SocketEvent.MESSAGE_RECEIVED, callback);
-    },
-    []
-  );
-
-  const onStageUpdate = useCallback(
-    (callback: (message: SocketMessage) => void) => {
-      if (!socketRef.current) return;
-      socketRef.current.on(SocketEvent.STAGE, callback);
-    },
-    []
-  );
-
-  const onNudgeReceived = useCallback(
-    (callback: (message: SocketMessage) => void) => {
-      if (!socketRef.current) return;
-      socketRef.current.on(SocketEvent.NUDGE, callback);
-    },
-    []
-  );
-
-  const onChatAccepted = useCallback(
-    (callback: (message: SocketMessage) => void) => {
-      if (!socketRef.current) return;
-      socketRef.current.on(SocketEvent.CHAT_ACCEPTED, callback);
-    },
-    []
-  );
-
   const isConnected = useCallback(() => {
     return socketRef.current?.connected || false;
   }, []);
@@ -134,9 +108,5 @@ export const useSocket = ({ userId }: UseSocketOptions) => {
     disconnect,
     sendMessage,
     isConnected,
-    onStageUpdate,
-    onChatAccepted,
-    onNudgeReceived,
-    onMessageReceived,
   };
 };
