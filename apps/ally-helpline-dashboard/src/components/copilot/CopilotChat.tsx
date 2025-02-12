@@ -2,12 +2,13 @@ import { useState, useEffect, useRef } from "react";
 import { useRecoilValue } from "recoil";
 import { useNavigate } from "react-router-dom";
 
-import { userState } from "@/store/atoms/userAtom";
 import { cn } from "@/utils/tailwind";
-import { CopilotIcon } from "@/assets/icons";
-import { ConfirmationBox, Breather, Spinner } from "@/components";
-import CustomMarkdown from "./CustomMarkdown";
 import { ROUTES } from "@/constants/routes";
+import { CopilotIcon } from "@/assets/icons";
+import { userState } from "@/store/atoms/userAtom";
+import { ConfirmationBox, Breather, TypingIndicator } from "@/components";
+
+import CustomMarkdown from "./CustomMarkdown";
 interface ChatMessage {
   content: string;
   isUser: boolean;
@@ -17,7 +18,6 @@ interface ChatMessage {
 interface CopilotChatProps {
   className?: string;
   stage?: string;
-  tips?: string[];
   messages: ChatMessage[];
   onSendMessage?: (message: string) => void;
   summary?: string;
@@ -43,6 +43,7 @@ const CopilotChat = ({
   const user = useRecoilValue(userState);
   const [showBreather, setShowBreather] = useState<boolean>(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
   const navigate = useNavigate();
 
   const scrollToBottom = () => {
@@ -127,8 +128,8 @@ const CopilotChat = ({
               </div>
             ))}
             {isEndSessionLoading ? (
-              <div className="flex justify-center items-center h-[200px]">
-                <Spinner />
+              <div className="p-4 rounded-lg bg-[#E4E4E4] w-fit">
+                <TypingIndicator />
               </div>
             ) : (
               summary && (
@@ -137,8 +138,8 @@ const CopilotChat = ({
                     <CustomMarkdown content={summary} />
                   </div>
                   <div
+                    className="sticky bottom-0 bg-white px-4 py-2 border rounded-md flex justify-between items-center cursor-pointer hover:border-[#8d8b8b]"
                     onClick={() => setCloseLiveCallView(true)}
-                    className="border cursor-pointer px-3 flex text-sm justify-between items-center rounded-lg py-2 hover:border-[#8d8b8b]"
                   >
                     <div>Summary saved.</div>
                     <div className="font-semibold">Next</div>

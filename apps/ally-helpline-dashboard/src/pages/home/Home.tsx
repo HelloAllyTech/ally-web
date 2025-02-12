@@ -201,7 +201,9 @@ const Home = () => {
         <div className="space-y-6">
           <div>
             <h2 className="text-xl font-medium mb-4">Waiting Clients</h2>
-            {clientsLoading ? (
+            {clientsLoading &&
+            (!waitingClients?.clients ||
+              waitingClients?.clients.length === 0) ? (
               <div className="flex items-center justify-center h-40">
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
               </div>

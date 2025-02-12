@@ -95,9 +95,17 @@ export const useSocket = ({ userId }: UseSocketOptions) => {
     []
   );
 
+  const onStageUpdate = useCallback(
+    (callback: (message: SocketMessage) => void) => {
+      if (!socketRef.current) return;
+      socketRef.current.on(SocketEvent.STAGE, callback);
+    },
+    []
+  );
+
   const onNudgeReceived = useCallback(
     (callback: (message: SocketMessage) => void) => {
-      if (!socketRef.current) return;      
+      if (!socketRef.current) return;
       socketRef.current.on(SocketEvent.NUDGE, callback);
     },
     []
@@ -125,9 +133,10 @@ export const useSocket = ({ userId }: UseSocketOptions) => {
     connect,
     disconnect,
     sendMessage,
-    onMessageReceived,
-    onNudgeReceived,
-    onChatAccepted,
     isConnected,
+    onStageUpdate,
+    onChatAccepted,
+    onNudgeReceived,
+    onMessageReceived,
   };
 };

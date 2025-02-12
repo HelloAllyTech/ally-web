@@ -37,6 +37,7 @@ const LiveCall = ({ handleLogout }: LiveCallProps) => {
   const [showDatePopup, setShowDatePopup] = useState(false);
   const [currentDate, setCurrentDate] = useState("");
   const [summary, setSummary] = useState("");
+  const [stage, setStage] = useState<string>();
   const user = useRecoilValue(userState);
   const transcriptionRef = useRef<HTMLDivElement>(null);
   const copilotRef = useRef<HTMLDivElement>(null);
@@ -71,6 +72,9 @@ const LiveCall = ({ handleLogout }: LiveCallProps) => {
     };
 
     const handleMessages = (data) => {
+      if (data?.current_stage) {
+        setStage(data?.current_stage);
+      }
       if (data?.messages) {
         const formattedMessages = data.messages
           .filter((msg) => msg.message_type === MessageType.TEXT)
@@ -119,6 +123,9 @@ const LiveCall = ({ handleLogout }: LiveCallProps) => {
                 },
               ]);
             }
+          });
+          socket.onStageUpdate((data: any) => {
+            setStage(data?.payload?.content);
           });
           socket.onNudgeReceived((data: any) => {
             const message = data.payload;
@@ -400,11 +407,7 @@ const LiveCall = ({ handleLogout }: LiveCallProps) => {
             <div ref={copilotRef} className="flex-1 overflow-y-auto min-h-0">
               <CopilotChat
                 className="flex-1 bg-white h-full"
-                stage="Initial Contact & Rapport Building"
-                tips={[
-                  "Reflect their feelings: 'It seems like Sameep is feeling stuck and burdened'",
-                  "Show empathy and understanding to build trust",
-                ]}
+                stage={stage}
                 messages={copilotMessages}
                 isEndSessionLoading={isEndSessionLoading}
                 onSendMessage={handleCopilotMessage}

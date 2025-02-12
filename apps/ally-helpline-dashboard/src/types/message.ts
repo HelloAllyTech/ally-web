@@ -37,10 +37,11 @@ export enum MessageType {
 }
 
 export enum SocketEvent {
-  MESSAGE_RECEIVED = "MESSAGE_RECEIVED",
-  SEND_MESSAGE = "SEND_MESSAGE",
   NUDGE = "NUDGE",
+  STAGE = "STAGE",
+  SEND_MESSAGE = "SEND_MESSAGE",
   CHAT_ACCEPTED = "CHAT_ACCEPTED",
+  MESSAGE_RECEIVED = "MESSAGE_RECEIVED",
 }
 
 export enum ChatStatus {
