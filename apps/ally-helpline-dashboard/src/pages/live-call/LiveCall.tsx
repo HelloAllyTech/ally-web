@@ -282,7 +282,12 @@ const LiveCall = ({ handleLogout }: LiveCallProps) => {
         showSearch={false}
         onLogout={handleLogout}
       />
-      <div className="flex flex-1 gap-4 mt-4 px-4 pb-4 h-[calc(100vh-88px)] overflow-hidden">
+      <div
+        className={cn(
+          "flex flex-1 gap-4 mt-4 px-4 pb-4 h-[calc(100vh-88px)] overflow-hidden",
+          isClient && " max-w-7xl mx-auto"
+        )}
+      >
         {(!closeLiveCallView || isClient) && (
           <div
             className={cn(
