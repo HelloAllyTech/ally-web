@@ -128,6 +128,7 @@ const Home = () => {
       await acceptChat(data.chat_id);
       navigate(ROUTES.LIVE_CALL);
     } catch (error) {
+      toast.error(error?.response?.data?.detail ?? "Something went wrong. Please try again later!");
       console.error("Error accepting chat:", error);
     }
   };
