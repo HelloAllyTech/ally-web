@@ -7,6 +7,7 @@ import { useUser } from "@/hooks";
 import { TabId, TabLabel } from "@/constants/tabs";
 import { ROUTES, TAB_ROUTES } from "@/constants/routes";
 import { UserRole } from "@/types/user";
+import AudioCall from "@/pages/audio-call/AudioCall";
 
 const PrivateRouteLayout = () => {
     const { user, logout, checkAuth } = useUser();
@@ -79,6 +80,7 @@ const PrivateRouteLayout = () => {
                     <Routes>
                         <Route index element={isClient ? <Home /> : <Navigate to={ROUTES.DASHBOARD} />} />
                         <Route path={ROUTES.LIVE_CALL} element={<LiveCall handleLogout={handleLogout} />} />
+                        <Route path={ROUTES.AUDIO_CALL} element={<AudioCall  />} />
                         {!isClient && <Route path={ROUTES.DASHBOARD} element={<Dashboard />} />}
                         <Route path={ROUTES.CALL_LOGS} element={<CallLogs />} />
                         <Route

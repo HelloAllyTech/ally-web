@@ -10,6 +10,7 @@ export const ROUTES = {
   DASHBOARD: "/dashboard",
   LIVE_CALL: "/live-call",
   CALL_LOGS: "/call-logs",
+  AUDIO_CALL: "/audio-call",
 } as const;
 
 // Type for route paths

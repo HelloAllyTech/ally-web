@@ -79,13 +79,15 @@ const Home = () => {
     () => ({
       [SocketEvent.CHAT_ACCEPTED]: () => {
         setIsWaiting(false);
-        navigate(ROUTES.LIVE_CALL);
+        navigate(ROUTES.AUDIO_CALL);
       },
     }),
     []
   );
-  const socket = useSocket({ userId: user?.user_id, eventCallbacks: socketEventCallbacks });
-
+  const socket = useSocket({
+    userId: user?.user_id,
+    eventCallbacks: socketEventCallbacks,
+  });
 
   useEffect(() => {
     if (user?.role === UserRole.COUNSELOR) {
@@ -119,7 +121,7 @@ const Home = () => {
       if (user?.role === UserRole.CLIENT) {
         const data = await fetchCurrentChat();
         if (data?.counselor_id) {
-          navigate(ROUTES.LIVE_CALL);
+          navigate(ROUTES.AUDIO_CALL);
         }
         if (data?.status === ChatStatus.PAUSED) {
           setIsWaiting(true);
@@ -132,7 +134,7 @@ const Home = () => {
   const handleClientSelect = async (data) => {
     try {
       await acceptChat(data.chat_id);
-      navigate(ROUTES.LIVE_CALL);
+      navigate(ROUTES.AUDIO_CALL);
     } catch (error) {
       toast.error(
         error?.response?.data?.detail ??
@@ -142,13 +144,29 @@ const Home = () => {
     }
   };
 
-  const handleStartChat = async () => {
+  // const handleStartChat = async () => {
+  //   try {
+  //     const chat = await requestChat();
+  //     if (chat?.status === QueueStatus.WAITING) {
+  //       setIsWaiting(true);
+  //     } else {
+  //       navigate(ROUTES.LIVE_CALL);
+  //     }
+  //   } catch (error) {
+  //     if (error?.response?.data?.detail)
+  //       toast.error(`${error.response.data.detail}`);
+  //     else toast.error("Something went wrong. Please try again later!");
+  //     setIsWaiting(false);
+  //   }
+  // };
+
+  const handleStartAudioChat = async () => {
     try {
       const chat = await requestChat();
       if (chat?.status === QueueStatus.WAITING) {
         setIsWaiting(true);
       } else {
-        navigate(ROUTES.LIVE_CALL);
+        navigate(ROUTES.AUDIO_CALL);
       }
     } catch (error) {
       if (error?.response?.data?.detail)
@@ -191,12 +209,14 @@ const Home = () => {
                   <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
                 </div>
               ) : (
-                <button
-                  onClick={handleStartChat}
-                  className="bg-blue-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-blue-700 transition-colors"
-                >
-                  Chat with a Counselor
-                </button>
+                <>
+                  <button
+                    onClick={handleStartAudioChat}
+                    className="bg-blue-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-blue-700 transition-colors"
+                  >
+                    Call with a Counselor
+                  </button>
+                </>
               )}
             </div>
           </div>
