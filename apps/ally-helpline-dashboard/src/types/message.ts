@@ -36,12 +36,18 @@ export enum MessageType {
   NUDGE = "NUDGE",
 }
 
+// TODO: Update the socket event names to UPPER CASE
 export enum SocketEvent {
   NUDGE = "NUDGE",
   STAGE = "STAGE",
   SEND_MESSAGE = "SEND_MESSAGE",
   CHAT_ACCEPTED = "CHAT_ACCEPTED",
   MESSAGE_RECEIVED = "MESSAGE_RECEIVED",
+  ICE_CANDIDATE = "webrtc-ice-candidate",
+  WEBRTC_OFFER = "webrtc-offer",
+  WEBRTC_ANSWER = "webrtc-answer",
+  AUDIO_MESSAGE = "AUDIO_MESSAGE",
+  START_AUDIO_CHAT = "START_AUDIO_CHAT",
 }
 
 export enum ChatStatus {

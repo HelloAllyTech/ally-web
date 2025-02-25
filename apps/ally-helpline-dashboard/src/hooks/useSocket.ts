@@ -93,8 +93,33 @@ export const useSocket = ({ userId, eventCallbacks }: UseSocketOptions) => {
     socketRef.current.emit(SocketEvent.SEND_MESSAGE, message);
   }, []);
 
+  const emitSocketEvent = useCallback((socketEvent: SocketEvent, message: any) => {
+    if (!socketRef.current) {
+      console.error("Socket not connected");
+      return;
+    }
+    console.log("Emitted SocketEvent:", socketEvent, message);
+    socketRef.current.emit(socketEvent, message);
+  }, []);
+
   const isConnected = useCallback(() => {
     return socketRef.current?.connected || false;
+  }, []);
+
+  const setListenerForEvent = useCallback((socketEvent: SocketEvent, callback: (data: any) => void) => {
+    if (!socketRef.current) {
+      console.error("Socket not connected");
+      return;
+    }
+    socketRef.current.on(socketEvent, callback);
+  }, []);
+
+  const removeIfListenerPresent = useCallback((socketEvent: SocketEvent) => {
+    if (!socketRef.current) {
+      console.error("Socket not connected");
+      return;
+    }
+    socketRef.current.off(socketEvent);
   }, []);
 
   useEffect(() => {
@@ -108,6 +133,9 @@ export const useSocket = ({ userId, eventCallbacks }: UseSocketOptions) => {
     disconnect,
     sendMessage,
     isConnected,
+    emitSocketEvent,
+    setListenerForEvent,
+    removeIfListenerPresent
   };
 };
 
