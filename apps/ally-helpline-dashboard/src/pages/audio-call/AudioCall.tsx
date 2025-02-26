@@ -24,9 +24,14 @@ const AudioCall = () => {
   );
   const [recordingInterval, setRecordingInterval] =
     useState<NodeJS.Timeout | null>(null);
+    const offerTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const handleWebRTCOffer = useCallback(
     async (data) => {
+      // Clear any existing timeout
+      if (offerTimeoutRef.current) {
+        clearTimeout(offerTimeoutRef.current);
+      }
       if (data.chatId !== activeChat?.chatId) return;
       await peerConnection?.setRemoteDescription(
         new RTCSessionDescription(data.offer)
@@ -41,7 +46,7 @@ const AudioCall = () => {
         chatId: activeChat?.chatId,
       });
     },
-    [activeChat, peerConnection]
+    [activeChat, peerConnection, offerTimeoutRef]
   );
 
   const handleWebRTCAnswer = useCallback(
@@ -208,6 +213,10 @@ const AudioCall = () => {
           });
           localStreamRef.current = stream;
           sendAudioToBackend(stream.getAudioTracks()[0], data?.chatId);
+          // Clear any existing timeout
+          if (offerTimeoutRef.current) {
+            clearTimeout(offerTimeoutRef.current);
+          }
 
           // Create and configure peer connection
           const pc = new RTCPeerConnection({
@@ -250,13 +259,22 @@ const AudioCall = () => {
 
           setPeerConnection(pc);
 
-          if (isClient) {
+          const createAndSendOffer = async () => {
             const offer = await pc.createOffer({ offerToReceiveAudio: true });
             await pc.setLocalDescription(offer);
             emitSocketEvent(SocketEvent.WEBRTC_OFFER, {
               offer,
               chatId: data?.chatId,
             });
+          };
+
+          // Set up delayed offer for both client and counselor
+          offerTimeoutRef.current = setTimeout(() => {
+            createAndSendOffer();
+          }, 5000);
+
+          if (isClient) {
+            createAndSendOffer();
           }
         }
       } catch (error) {
@@ -269,6 +287,9 @@ const AudioCall = () => {
 
     return () => {
       // Cleanup
+      if (offerTimeoutRef.current) {
+        clearTimeout(offerTimeoutRef.current);
+      }
       if (localStreamRef.current) {
         localStreamRef.current.getTracks().forEach((track) => track.stop());
       }
