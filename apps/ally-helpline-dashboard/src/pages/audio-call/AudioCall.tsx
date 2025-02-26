@@ -27,18 +27,18 @@ const AudioCall = () => {
 
   const handleWebRTCOffer = useCallback(
     async (data) => {
-      if (data.chatId !== activeChat?.chat_id) return;
+      if (data.chatId !== activeChat?.chatId) return;
       await peerConnection?.setRemoteDescription(
         new RTCSessionDescription(data.offer)
       );
       emitSocketEvent(SocketEvent.START_AUDIO_CHAT, {
-        chatId: activeChat?.chat_id,
+        chatId: activeChat?.chatId,
       });
       const answer = await peerConnection.createAnswer();
       await peerConnection.setLocalDescription(answer);
       emitSocketEvent(SocketEvent.WEBRTC_ANSWER, {
         answer,
-        chatId: activeChat?.chat_id,
+        chatId: activeChat?.chatId,
       });
     },
     [activeChat, peerConnection]
@@ -46,9 +46,9 @@ const AudioCall = () => {
 
   const handleWebRTCAnswer = useCallback(
     async (data) => {
-      if (data.chatId !== activeChat?.chat_id) return;
+      if (data.chatId !== activeChat?.chatId) return;
       emitSocketEvent(SocketEvent.START_AUDIO_CHAT, {
-        chatId: activeChat?.chat_id,
+        chatId: activeChat?.chatId,
       });
       await peerConnection?.setRemoteDescription(
         new RTCSessionDescription(data.answer)
@@ -59,7 +59,7 @@ const AudioCall = () => {
 
   const handleOnIceCandidate = useCallback(
     (data) => {
-      if (data.chatId !== activeChat?.chat_id) return;
+      if (data.chatId !== activeChat?.chatId) return;
       peerConnection.addIceCandidate(new RTCIceCandidate(data.candidate));
     },
     [activeChat, peerConnection]
@@ -74,7 +74,7 @@ const AudioCall = () => {
       [SocketEvent.MESSAGE_RECEIVED]: (data: any) => {
         const message = data.payload;
         console.log("Message received:", message);
-        if (message.message_type === MessageType.TEXT) {
+        if (message.messageType === MessageType.TEXT) {
           if (message?.content === "Session ended") {
             disconnect();
             navigate("/");
@@ -94,7 +94,7 @@ const AudioCall = () => {
     setListenerForEvent,
     removeIfListenerPresent,
   } = useSocket({
-    userId: user.user_id,
+    userId: user.userId,
     eventCallbacks: socketEventCallbacks,
   });
 
@@ -166,9 +166,9 @@ const AudioCall = () => {
       }
     } else {
       // Start recording when unmuted
-      sendAudioToBackend(audioTrack, activeChat?.chat_id);
+      sendAudioToBackend(audioTrack, activeChat?.chatId);
     }
-  }, [muted, sendAudioToBackend, activeChat?.chat_id]);
+  }, [muted, sendAudioToBackend, activeChat?.chatId]);
 
   const {
     getCounsellorChat,
@@ -179,7 +179,7 @@ const AudioCall = () => {
   const { fetchCurrentChat } = useClientChat();
 
   useEffect(() => {
-    if (activeChat && activeChat?.chat_id) {
+    if (activeChat && activeChat?.chatId) {
       removeIfListenerPresent(SocketEvent.WEBRTC_OFFER);
       removeIfListenerPresent(SocketEvent.WEBRTC_ANSWER);
       removeIfListenerPresent(SocketEvent.ICE_CANDIDATE);
@@ -199,7 +199,7 @@ const AudioCall = () => {
           data = await fetchCurrentChat();
         }
         setActiveChat(data);
-        if (data?.chat_id) {
+        if (data?.chatId) {
           connect();
 
           // Get user media stream
@@ -207,7 +207,7 @@ const AudioCall = () => {
             audio: true,
           });
           localStreamRef.current = stream;
-          sendAudioToBackend(stream.getAudioTracks()[0], data?.chat_id);
+          sendAudioToBackend(stream.getAudioTracks()[0], data?.chatId);
 
           // Create and configure peer connection
           const pc = new RTCPeerConnection({
@@ -226,7 +226,7 @@ const AudioCall = () => {
             if (event.candidate) {
               emitSocketEvent(SocketEvent.ICE_CANDIDATE, {
                 candidate: event.candidate,
-                chatId: data?.chat_id,
+                chatId: data?.chatId,
               });
             }
           };
@@ -255,7 +255,7 @@ const AudioCall = () => {
             await pc.setLocalDescription(offer);
             emitSocketEvent(SocketEvent.WEBRTC_OFFER, {
               offer,
-              chatId: data?.chat_id,
+              chatId: data?.chatId,
             });
           }
         }
@@ -282,11 +282,11 @@ const AudioCall = () => {
   const confirmEndSession = async () => {
     try {
       sendMessage({
-        chat_id: activeChat.chat_id,
+        chatId: activeChat.chatId,
         content: "Session ended",
         context: {},
       });
-      await endSession(activeChat.chat_id);
+      await endSession(activeChat.chatId);
       disconnect();
       navigate("/");
     } catch (error) {

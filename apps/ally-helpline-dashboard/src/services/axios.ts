@@ -81,16 +81,16 @@ axiosInstance.interceptors.response.use(
         const response = await axios.post(
           `${API_URL}/api/${API_VERSION}/auth/refresh`,
           {
-            refresh_token: refreshToken,
+            refreshToken: refreshToken,
           }
         );
 
-        const { access_token, refresh_token: newRefreshToken } = response.data;
-        localStorage.setItem("accessToken", access_token);
+        const { accessToken, refreshToken: newRefreshToken } = response.data;
+        localStorage.setItem("accessToken", accessToken);
         localStorage.setItem("refreshToken", newRefreshToken);
 
-        onRefreshSuccess(access_token);
-        originalRequest.headers.Authorization = `Bearer ${access_token}`;
+        onRefreshSuccess(accessToken);
+        originalRequest.headers.Authorization = `Bearer ${accessToken}`;
         return axiosInstance(originalRequest);
       } catch (refreshError) {
         onRefreshFailure();

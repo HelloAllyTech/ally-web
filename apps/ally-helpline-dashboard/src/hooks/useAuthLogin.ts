@@ -3,8 +3,8 @@ import { api } from "@/services/api";
 import { UserRole } from "@/types/user";
 
 interface LoginResponse {
-  access_token: string;
-  refresh_token: string;
+  accessToken: string;
+  refreshToken: string;
 }
 
 export interface SignupRequest {
@@ -15,14 +15,14 @@ export interface SignupRequest {
 }
 
 export interface SignupResponse {
-  user_id: number;
+  userId: number;
   email: string;
   name: string;
   role: UserRole;
   status: string;
-  user_metadata: Record<string, any> | null;
-  created_at: string;
-  updated_at: string | null;
+  userMetadata: Record<string, any> | null;
+  createdAt: string;
+  updatedAt: string | null;
 }
 
 export const useAuthLogin = () => {
@@ -73,8 +73,8 @@ export const useAuthLogin = () => {
       );
 
       // Store tokens
-      localStorage.setItem("accessToken", loginResponse.data.access_token);
-      localStorage.setItem("refreshToken", loginResponse.data.refresh_token);
+      localStorage.setItem("accessToken", loginResponse.data.accessToken);
+      localStorage.setItem("refreshToken", loginResponse.data.refreshToken);
 
       return response.data;
     } catch (err) {

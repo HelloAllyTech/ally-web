@@ -4,7 +4,7 @@ import { Socket, io } from "socket.io-client";
 import { SocketEvent } from "@/types/message";
 
 interface UseSocketOptions {
-  userId: string;
+  userId: number;
   eventCallbacks?: Partial<Record<SocketEvent, (params?: any) => void>>;
 }
 
@@ -27,7 +27,7 @@ export const useSocket = ({ userId, eventCallbacks }: UseSocketOptions) => {
         transports: ["websocket", "polling"] as const,
         auth: {
           user: {
-            user_id: userId,
+            userId,
           },
         },
         reconnection: true,

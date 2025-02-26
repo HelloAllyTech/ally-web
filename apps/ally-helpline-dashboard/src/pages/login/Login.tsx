@@ -21,9 +21,9 @@ export const Login = () => {
 
   const handleLogin = async () => {
     try {
-      const { access_token, refresh_token } = await login(email, password);
-      localStorage.setItem("accessToken", access_token);
-      localStorage.setItem("refreshToken", refresh_token);
+      const { accessToken, refreshToken } = await login(email, password);
+      localStorage.setItem("accessToken", accessToken);
+      localStorage.setItem("refreshToken", refreshToken);
       await checkAuth();
       navigate("/");
     } catch (error) {

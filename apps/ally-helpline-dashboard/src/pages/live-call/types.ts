@@ -2,9 +2,9 @@ interface FormattedMessage {
   content: string;
   isOutgoing: boolean;
   timestamp: string;
-  message_id: number;
-  sender_id: number;
-  created_at: string;
+  id: number;
+  senderId: number;
+  createdAt: string;
 }
 
 interface SummaryInfo {

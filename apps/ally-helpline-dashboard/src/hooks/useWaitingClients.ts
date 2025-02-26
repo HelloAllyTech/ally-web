@@ -2,37 +2,37 @@ import { useState } from "react";
 import { api } from "@/services/api";
 
 export interface ChatInfo {
-  chat_id: number;
-  room_id: number;
-  client_id: number;
-  counselor_id: number | null;
+  chatId: number;
+  roomId: number;
+  clientId: number;
+  counselorId: number | null;
   status: string;
-  started_at: string;
-  ended_at: string | null;
+  startedAt: string;
+  endedAt: string | null;
 }
 
 interface WaitingClient {
-  user_id: number;
+  userId: number;
   email: string;
   name: string;
   role: string;
   status: string;
   chat: ChatInfo;
-  created_at: string;
-  updated_at: string | null;
+  createdAt: string;
+  updatedAt: string | null;
 }
 
 interface WaitingListResponse {
-  total_waiting: number;
+  totalWaiting: number;
   clients: WaitingClient[];
 }
 
 interface QueueStatResponse {
   priority: number;
-  entry_id: number;
-  client_id: number;
-  chat_id: number;
-  wait_start_time: string;
+  entryId: number;
+  clientId: number;
+  chatId: number;
+  waitStartTime: string;
   status: string;
 }
 

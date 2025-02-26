@@ -21,32 +21,32 @@ import { ChatStatus, SocketEvent } from "@/types/message";
 
 interface QueueStatResponse {
   priority: number;
-  entry_id: number;
-  client_id: number;
-  chat_id: number;
-  wait_start_time: string;
+  entryId: number;
+  clientId: number;
+  chatId: number;
+  waitStartTime: string;
   status: string;
 }
 
 interface WaitingListResponse {
-  total_waiting: number;
+  totalWaiting: number;
   clients: {
-    user_id: number;
+    userId: number;
     email: string;
     name: string;
     role: string;
     status: string;
     chat: {
-      chat_id: number;
-      room_id: number;
-      client_id: number;
-      counselor_id: number;
+      chatId: number;
+      roomId: number;
+      clientId: number;
+      counselorId: number;
       status: string;
-      started_at: string;
-      ended_at: string;
+      startedAt: string;
+      endedAt: string;
     };
-    created_at: string;
-    updated_at: string;
+    createdAt: string;
+    updatedAt: string;
   }[];
 }
 
@@ -85,7 +85,7 @@ const Home = () => {
     []
   );
   const socket = useSocket({
-    userId: user?.user_id,
+    userId: user?.userId,
     eventCallbacks: socketEventCallbacks,
   });
 
@@ -120,7 +120,7 @@ const Home = () => {
     const checkCurrentChat = async () => {
       if (user?.role === UserRole.CLIENT) {
         const data = await fetchCurrentChat();
-        if (data?.counselor_id) {
+        if (data?.counselorId) {
           navigate(ROUTES.AUDIO_CALL);
         }
         if (data?.status === ChatStatus.PAUSED) {
@@ -133,7 +133,7 @@ const Home = () => {
 
   const handleClientSelect = async (data) => {
     try {
-      await acceptChat(data.chat_id);
+      await acceptChat(data.chatId);
       navigate(ROUTES.AUDIO_CALL);
     } catch (error) {
       toast.error(
@@ -247,7 +247,7 @@ const Home = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {waitingClients?.clients.map((item) => (
                   <Card
-                    key={item.chat.chat_id}
+                    key={item.chat.chatId}
                     className="cursor-pointer hover:shadow-md transition-shadow"
                     onClick={() => handleClientSelect(item.chat)}
                   >
@@ -268,10 +268,10 @@ const Home = () => {
                       <div className="space-y-2">
                         <div className="text-sm text-gray-500">
                           Waiting start time:{" "}
-                          {dateTimeStamp(item.chat.started_at)}
+                          {dateTimeStamp(item.chat.startedAt)}
                         </div>
                         <div className="text-sm text-gray-500">
-                          Chat ID: {item.chat.chat_id}
+                          Chat ID: {item.chat.chatId}
                         </div>
                         <div className="text-sm text-gray-500">
                           Status: {item.status}
@@ -288,13 +288,13 @@ const Home = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   {queueStats.map((item) => (
                     <Card
-                      key={item.entry_id}
+                      key={item.entryId}
                       // onClick={() => handleClientSelect(item)}
                     >
                       <CardHeader>
                         <div className="flex justify-between items-start mb-2">
                           <CardTitle className="text-lg">
-                            {item.entry_id}
+                            {item.entryId}
                           </CardTitle>
                           <span
                             className={cn(
@@ -310,10 +310,10 @@ const Home = () => {
                         <div className="space-y-2">
                           <div className="text-sm text-gray-500">
                             Waiting start time:{" "}
-                            {dateTimeStamp(item.wait_start_time)}
+                            {dateTimeStamp(item.waitStartTime)}
                           </div>
                           <div className="text-sm text-gray-500">
-                            Chat ID: {item.chat_id}
+                            Chat ID: {item.chatId}
                           </div>
                         </div>
                       </CardHeader>

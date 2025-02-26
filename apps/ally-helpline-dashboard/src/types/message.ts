@@ -1,34 +1,34 @@
 export type ApiMessage = {
-  message_id: number;
-  chat_id: number;
-  sender_id: number;
-  message_type: string;
+  id: number;
+  chatId: number;
+  senderId: number;
+  messageType: string;
   content: string;
   context?: {
     source: string;
   };
-  created_at: string;
+  createdAt: string;
 };
 
 export type SocketMessage = {
   type: SocketEvent | string;
   payload?: {
-    message_id: number;
-    chat_id: number;
-    sender_id: number;
-    message_type: MessageType | string;
+    id: number;
+    chatId: number;
+    senderId: number;
+    messageType: MessageType | string;
     content: string;
     context?: {
       source: string;
     };
-    created_at: string;
+    createdAt: string;
   };
   content?: string;
-  message_type?: MessageType | string;
+  messageType?: MessageType | string;
   context?: {
     source: string;
   };
-  created_at?: string;
+  createdAt?: string;
 };
 
 export enum MessageType {

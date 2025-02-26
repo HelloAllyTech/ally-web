@@ -53,13 +53,13 @@ const LiveCall = ({ handleLogout }: LiveCallProps) => {
       [SocketEvent.NUDGE]: (data: any) => {
         const message = data.payload;
         console.log("Nudge received:", message);
-        if (message.message_type === MessageType.NUDGE) {
+        if (message.messageType === MessageType.NUDGE) {
           handleCopilotMessage(message.content);
         }
       },
       [SocketEvent.MESSAGE_RECEIVED]: (data: any) => {
         const message = data.payload;
-        if (message.message_type === MessageType.TEXT) {
+        if (message.messageType === MessageType.TEXT) {
           if (message?.content === "Session ended") {
             setSessionEnded(true);
             socket.disconnect();
@@ -69,11 +69,11 @@ const LiveCall = ({ handleLogout }: LiveCallProps) => {
             ...current,
             {
               content: message.content,
-              isOutgoing: message.sender_id !== user.user_id,
-              timestamp: timeStamp(message.created_at),
-              message_id: message.message_id,
-              sender_id: message.sender_id,
-              created_at: message.created_at,
+              isOutgoing: message.senderId !== user.userId,
+              timestamp: timeStamp(message.createdAt),
+              id: message.id,
+              senderId: message.senderId,
+              createdAt: message.createdAt,
             },
           ]);
         }
@@ -82,7 +82,7 @@ const LiveCall = ({ handleLogout }: LiveCallProps) => {
     []
   );
   const socket = useSocket({
-    userId: user?.user_id,
+    userId: user?.userId,
     eventCallbacks: socketEventCallbacks,
   });
   const [showEndDialog, setShowEndDialog] = useState(false);
@@ -109,35 +109,35 @@ const LiveCall = ({ handleLogout }: LiveCallProps) => {
     };
 
     const handleMessages = (data) => {
-      if (data?.current_stage) {
-        setStage(data?.current_stage);
+      if (data?.currentStage) {
+        setStage(data?.currentStage);
       }
       if (data?.messages) {
         const formattedMessages = data.messages
-          .filter((msg) => msg.message_type === MessageType.TEXT)
+          .filter((msg) => msg.messageType === MessageType.TEXT)
           .map((msg) => ({
             content: msg.content,
-            isOutgoing: msg.sender_id !== user.user_id,
-            timestamp: timeStamp(msg.created_at),
-            message_id: msg.message_id,
-            sender_id: msg.sender_id,
-            created_at: msg.created_at,
+            isOutgoing: msg.senderId !== user.userId,
+            timestamp: timeStamp(msg.createdAt),
+            id: msg.id,
+            senderId: msg.senderId,
+            createdAt: msg.createdAt,
           }));
         setMessages(formattedMessages);
         setActiveChat(data);
 
         if (isCounsellor) {
           const formattedNudgeMessages = data.messages
-            .filter((msg) => msg.message_type === MessageType.NUDGE)
+            .filter((msg) => msg.messageType === MessageType.NUDGE)
             .map((msg) => ({
               content: msg.content,
-              message_id: msg.message_id,
+              id: msg.id,
               isUser: false,
             }));
           setCopilotMessages(formattedNudgeMessages);
         }
 
-        if (data.chat_id) {
+        if (data.chatId) {
           socket.connect();
         }
       }
@@ -207,9 +207,9 @@ const LiveCall = ({ handleLogout }: LiveCallProps) => {
   }, []);
 
   const handleSendMessage = (content: string) => {
-    if (!activeChat?.chat_id) return;
+    if (!activeChat?.chatId) return;
     socket.sendMessage({
-      chat_id: activeChat.chat_id,
+      chatId: activeChat.chatId,
       content,
       context: {},
     });
@@ -227,11 +227,11 @@ const LiveCall = ({ handleLogout }: LiveCallProps) => {
   const confirmEndSession = async () => {
     try {
       socket.sendMessage({
-        chat_id: activeChat.chat_id,
+        chatId: activeChat.chatId,
         content: "Session ended",
         context: {},
       });
-      const summaryInfo = (await endSession(activeChat.chat_id)) as SummaryInfo;
+      const summaryInfo = (await endSession(activeChat.chatId)) as SummaryInfo;
       setSummary(summaryInfo?.summary);
       socket.disconnect();
       setSessionEnded(true);
@@ -262,7 +262,7 @@ const LiveCall = ({ handleLogout }: LiveCallProps) => {
 
   if (
     !sessionEnded &&
-    (!activeChat?.chat_id || (isClient && activeChat?.status === "paused"))
+    (!activeChat?.chatId || (isClient && activeChat?.status === "paused"))
   ) {
     return (
       <div className="flex flex-1 items-center justify-center h-screen">
@@ -335,17 +335,17 @@ const LiveCall = ({ handleLogout }: LiveCallProps) => {
               >
                 <div className="space-y-4">
                   {messages.map((message, index) => {
-                    const messageDate = formatMessageDate(message.created_at);
+                    const messageDate = formatMessageDate(message.createdAt);
                     const prevMessageDate =
                       index > 0
-                        ? formatMessageDate(messages[index - 1].created_at)
+                        ? formatMessageDate(messages[index - 1].createdAt)
                         : null;
                     const showDateDivider =
                       index === 0 || messageDate !== prevMessageDate;
 
                     return messageDate ? (
                       <div
-                        key={`container-${message.message_id}`}
+                        key={`container-${message.id}`}
                         data-date={messageDate}
                       >
                         {showDateDivider && (
@@ -356,14 +356,14 @@ const LiveCall = ({ handleLogout }: LiveCallProps) => {
                           </div>
                         )}
                         <LiveTranscriptionMessage
-                          key={`message-${message.message_id}`}
+                          key={`message-${message.id}`}
                           {...message}
                         />
                       </div>
                     ) : (
-                      <div key={`container-${message.message_id}`}>
+                      <div key={`container-${message.id}`}>
                         <LiveTranscriptionMessage
-                          key={`message-${message.message_id}`}
+                          key={`message-${message.id}`}
                           {...message}
                         />
                       </div>

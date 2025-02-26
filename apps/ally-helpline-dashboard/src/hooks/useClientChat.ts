@@ -2,10 +2,10 @@ import { useState } from "react";
 import { api } from "@/services/api";
 
 interface Message {
-  message_id: number;
+  id: number;
   content: string;
-  sender_id: number;
-  created_at: string;
+  senderId: number;
+  createdAt: string;
   // Add other message properties as needed
 }
 
@@ -21,13 +21,13 @@ interface FormattedSession {
 
 // Add interface for API response
 interface ChatResponse {
-  chat_id: number;
-  client_id: number;
-  counselor_id?: number;
+  chatId: number;
+  clientId: number;
+  counselorId?: number;
   status: "paused" | "active" | "completed";
   messages: Message[];
-  started_at: string;
-  ended_at?: string;
+  startedAt: string;
+  endedAt?: string;
 }
 
 interface UseClientChatReturn {
@@ -55,13 +55,13 @@ export const useClientChat = (): UseClientChatReturn => {
       const chat = response.data;
 
       const formattedSession: FormattedSession = {
-        id: chat.chat_id.toString(),
-        clientId: chat.client_id.toString(),
-        counselorId: chat.counselor_id?.toString() ?? "",
+        id: chat.chatId.toString(),
+        clientId: chat.clientId.toString(),
+        counselorId: chat.counselorId?.toString() ?? "",
         status: chat.status,
         messages: chat.messages,
-        startedAt: new Date(chat.started_at),
-        endedAt: chat.ended_at ? new Date(chat.ended_at) : undefined,
+        startedAt: new Date(chat.startedAt),
+        endedAt: chat.endedAt ? new Date(chat.endedAt) : undefined,
       };
 
       setCurrentSession(formattedSession);

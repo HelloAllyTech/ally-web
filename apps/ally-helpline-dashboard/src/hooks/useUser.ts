@@ -44,20 +44,6 @@ export const useUser = () => {
     localStorage.removeItem("accessToken");
     localStorage.removeItem("refreshToken");
   };
-    
-      const getUserById = async (userId: string) => {
-        setIsLoading(true);
-        setError(null);
-        try {
-          const response = await api.get<User>(`/users/${userId}`);
-          return response.data;
-        } catch (err) {
-          setError(err as Error);
-          throw err;
-        } finally {
-          setIsLoading(false);
-        }
-      };
 
   return {
     user,
@@ -66,7 +52,6 @@ export const useUser = () => {
     isLoading,
     checkAuth,
     logout,
-    getUserById,
     error,
   };
 };
