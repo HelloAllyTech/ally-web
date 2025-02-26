@@ -22,7 +22,7 @@ import {
 const AudioCall: FunctionComponent = () => {
   const [peerConnection, setPeerConnection] =
     useState<RTCPeerConnection | null>(null);
-  const [activeChat, setActiveChat] = useState<{ chatId: string } | null>();
+  const [activeChat, setActiveChat] = useState<{ chatId: number } | null>();
   const [muted, setMuted] = useState<boolean>(true);
   const localStreamRef = useRef<MediaStream | null>(null);
   const remoteStreamRef = useRef<MediaStream>(new MediaStream());
@@ -39,52 +39,12 @@ const AudioCall: FunctionComponent = () => {
   const isClient = user?.role === UserRole.CLIENT;
   const isCounsellor = user?.role === UserRole.COUNSELOR;
 
-  const handleWebRTCOffer = useCallback(
-    async (data) => {
-      if (data.chatId !== activeChat?.chatId) return;
-      
-      // Clear any existing timeout
-      if (offerTimeoutRef.current) {
-        clearTimeout(offerTimeoutRef.current);
-      }
-      await peerConnection?.setRemoteDescription(
-        new RTCSessionDescription(data.offer)
-      );
-      
-      emitSocketEvent(SocketEvent.START_AUDIO_CHAT, {
-        chatId: activeChat?.chatId,
-      });
-      
-      const answer = await peerConnection.createAnswer();
-      await peerConnection.setLocalDescription(answer);
-      emitSocketEvent(SocketEvent.WEBRTC_ANSWER, {
-        answer,
-        chatId: activeChat?.chatId,
-      });
-    },
-    [activeChat, peerConnection, offerTimeoutRef]
-  );
-
-  const handleWebRTCAnswer = useCallback(
-    async (data) => {
-      if (data.chatId !== activeChat?.chatId) return;
-      emitSocketEvent(SocketEvent.START_AUDIO_CHAT, {
-        chatId: activeChat?.chatId,
-      });
-      await peerConnection?.setRemoteDescription(
-        new RTCSessionDescription(data.answer)
-      );
-    },
-    [activeChat, peerConnection]
-  );
-
-  const handleOnIceCandidate = useCallback(
-    (data) => {
-      if (data.chatId !== activeChat?.chatId) return;
-      peerConnection.addIceCandidate(new RTCIceCandidate(data.candidate));
-    },
-    [activeChat, peerConnection]
-  );
+  const {
+    getCounsellorChat,
+    endSession,
+    isLoading: isEndSessionLoading,
+  } = useCounsellorChat();
+  const { fetchCurrentChat } = useClientChat();
 
   const socketEventCallbacks = useMemo(
     () => ({
@@ -118,6 +78,55 @@ const AudioCall: FunctionComponent = () => {
     userId: user.userId,
     eventCallbacks: socketEventCallbacks,
   });
+
+
+  const handleWebRTCOffer = useCallback(
+    async (data) => {
+      if (data.chatId !== activeChat?.chatId) return;
+
+      // Clear any existing timeout
+      if (offerTimeoutRef.current) {
+        clearTimeout(offerTimeoutRef.current);
+      }
+      await peerConnection?.setRemoteDescription(
+        new RTCSessionDescription(data.offer)
+      );
+
+      emitSocketEvent(SocketEvent.START_AUDIO_CHAT, {
+        chatId: activeChat?.chatId,
+      });
+
+      const answer = await peerConnection.createAnswer();
+      await peerConnection.setLocalDescription(answer);
+      emitSocketEvent(SocketEvent.WEBRTC_ANSWER, {
+        answer,
+        chatId: activeChat?.chatId,
+      });
+    },
+    [activeChat, peerConnection, offerTimeoutRef]
+  );
+
+  const handleWebRTCAnswer = useCallback(
+    async (data) => {
+      if (data.chatId !== activeChat?.chatId) return;
+
+      emitSocketEvent(SocketEvent.START_AUDIO_CHAT, {
+        chatId: activeChat?.chatId,
+      });
+      await peerConnection?.setRemoteDescription(
+        new RTCSessionDescription(data.answer)
+      );
+    },
+    [activeChat, peerConnection]
+  );
+
+  const handleOnIceCandidate = useCallback(
+    (data) => {
+      if (data.chatId !== activeChat?.chatId) return;
+      peerConnection.addIceCandidate(new RTCIceCandidate(data.candidate));
+    },
+    [activeChat, peerConnection]
+  );
 
   const sendAudioToBackend = useCallback(
     (audioTrack, chatId) => {
@@ -193,13 +202,6 @@ const AudioCall: FunctionComponent = () => {
     }
   }, [muted, sendAudioToBackend, activeChat?.chatId]);
 
-  const {
-    getCounsellorChat,
-    endSession,
-    isLoading: isEndSessionLoading,
-  } = useCounsellorChat();
-
-  const { fetchCurrentChat } = useClientChat();
 
   useEffect(() => {
     if (activeChat && activeChat?.chatId) {
