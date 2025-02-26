@@ -72,7 +72,6 @@ export const useSocket = ({ userId, eventCallbacks }: UseSocketOptions) => {
       console.error("Socket error:", error);
     });
 
-    //TODO: Why and how - callback is called only after ()=>callback
     Object.entries(eventCallbacks).forEach(([key, callback]) => {
       socketRef.current.on(key, callback);
     });

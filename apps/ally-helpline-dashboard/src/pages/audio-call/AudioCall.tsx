@@ -1,4 +1,11 @@
-import { useRef, useMemo, useState, useEffect, useCallback } from "react";
+import {
+  useRef,
+  useMemo,
+  useState,
+  useEffect,
+  useCallback,
+  FunctionComponent,
+} from "react";
 import { useRecoilValue } from "recoil";
 import { useNavigate } from "react-router-dom";
 
@@ -6,39 +13,48 @@ import { UserRole } from "@/types/user";
 import { MessageType, SocketEvent } from "@/types/message";
 import { userState } from "@/store/atoms/userAtom";
 import { useClientChat, useCounsellorChat, useSocket } from "@/hooks";
+import {
+  ICE_SERVERS,
+  OFFER_TIMEOUT_MS,
+  RECORDING_INTERVAL_MS,
+} from "./constants";
 
-const AudioCall = () => {
-  const [peerConnection, setPeerConnection] = useState(null);
-  const [activeChat, setActiveChat] = useState<any | null>();
-  const [muted, setMuted] = useState(true);
-  const localStreamRef = useRef(null);
-  const remoteStreamRef = useRef(new MediaStream());
+const AudioCall: FunctionComponent = () => {
+  const [peerConnection, setPeerConnection] =
+    useState<RTCPeerConnection | null>(null);
+  const [activeChat, setActiveChat] = useState<{ chatId: string } | null>();
+  const [muted, setMuted] = useState<boolean>(true);
+  const localStreamRef = useRef<MediaStream | null>(null);
+  const remoteStreamRef = useRef<MediaStream>(new MediaStream());
+  const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(
+    null
+  );
+  const [recordingInterval, setRecordingInterval] =
+    useState<NodeJS.Timeout | null>(null);
+  const offerTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
   const user = useRecoilValue(userState);
   const navigate = useNavigate();
 
   const isClient = user?.role === UserRole.CLIENT;
   const isCounsellor = user?.role === UserRole.COUNSELOR;
 
-  const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(
-    null
-  );
-  const [recordingInterval, setRecordingInterval] =
-    useState<NodeJS.Timeout | null>(null);
-    const offerTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-
   const handleWebRTCOffer = useCallback(
     async (data) => {
+      if (data.chatId !== activeChat?.chatId) return;
+      
       // Clear any existing timeout
       if (offerTimeoutRef.current) {
         clearTimeout(offerTimeoutRef.current);
       }
-      if (data.chatId !== activeChat?.chatId) return;
       await peerConnection?.setRemoteDescription(
         new RTCSessionDescription(data.offer)
       );
+      
       emitSocketEvent(SocketEvent.START_AUDIO_CHAT, {
         chatId: activeChat?.chatId,
       });
+      
       const answer = await peerConnection.createAnswer();
       await peerConnection.setLocalDescription(answer);
       emitSocketEvent(SocketEvent.WEBRTC_ANSWER, {
@@ -128,9 +144,11 @@ const AudioCall = () => {
       recorder.onstop = () => {
         if (chunks.length > 0) {
           const audioBlob = new Blob(chunks, { type: "audio/webm" });
-          emitSocketEvent(SocketEvent.AUDIO_MESSAGE, {
-            audio: audioBlob,
-            chatId,
+          audioBlob.arrayBuffer().then((buffer) => {
+            emitSocketEvent(SocketEvent.AUDIO_MESSAGE, {
+              audioData: buffer,
+              chatId,
+            });
           });
           chunks.length = 0;
         }
@@ -146,7 +164,7 @@ const AudioCall = () => {
             recorder.stop();
             recorder.start();
           }
-        }, 5000);
+        }, RECORDING_INTERVAL_MS);
         setRecordingInterval(interval);
       }
     },
@@ -220,10 +238,7 @@ const AudioCall = () => {
 
           // Create and configure peer connection
           const pc = new RTCPeerConnection({
-            iceServers: [
-              { urls: "stun:stun.l.google.com:19302" },
-              { urls: "stun:stun1.l.google.com:19302" },
-            ],
+            iceServers: ICE_SERVERS,
           });
 
           // Add local tracks to peer connection
@@ -271,7 +286,7 @@ const AudioCall = () => {
           // Set up delayed offer for both client and counselor
           offerTimeoutRef.current = setTimeout(() => {
             createAndSendOffer();
-          }, 5000);
+          }, OFFER_TIMEOUT_MS);
 
           if (isClient) {
             createAndSendOffer();
