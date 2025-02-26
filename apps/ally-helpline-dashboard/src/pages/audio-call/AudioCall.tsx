@@ -74,7 +74,7 @@ const AudioCall = () => {
       [SocketEvent.MESSAGE_RECEIVED]: (data: any) => {
         const message = data.payload;
         console.log("Message received:", message);
-        if (message.messageType === MessageType.TEXT) {
+        if (message.type === MessageType.TEXT) {
           if (message?.content === "Session ended") {
             disconnect();
             navigate("/");

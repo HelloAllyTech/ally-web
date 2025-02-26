@@ -4,6 +4,7 @@ export interface User {
   email: string;
   name: string;
   role: UserRole;
+  status: UserStatus;
 }
 
 export enum UserStatus {

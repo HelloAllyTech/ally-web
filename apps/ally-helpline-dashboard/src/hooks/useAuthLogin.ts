@@ -1,10 +1,11 @@
 import { useState } from "react";
 import { api } from "@/services/api";
-import { UserRole } from "@/types/user";
+import { User, UserRole } from "@/types/user";
 
 interface LoginResponse {
   accessToken: string;
   refreshToken: string;
+  user: User;
 }
 
 export interface SignupRequest {
@@ -15,14 +16,8 @@ export interface SignupRequest {
 }
 
 export interface SignupResponse {
-  userId: number;
-  email: string;
-  name: string;
-  role: UserRole;
-  status: string;
-  userMetadata: Record<string, any> | null;
-  createdAt: string;
-  updatedAt: string | null;
+  message: string;
+  user: User;
 }
 
 export const useAuthLogin = () => {

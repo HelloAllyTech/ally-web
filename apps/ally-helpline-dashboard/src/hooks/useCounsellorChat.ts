@@ -1,9 +1,12 @@
 import { useState } from "react";
 import { api } from "@/services/api";
 import { ApiMessage } from "@/types/message";
+import { User } from "@/types/user";
 
 interface ChatResponse {
   messages: ApiMessage[];
+  counselor?: User;
+  client?: User;
 }
 
 export const useCounsellorChat = () => {

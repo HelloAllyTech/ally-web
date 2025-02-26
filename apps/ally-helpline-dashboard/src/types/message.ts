@@ -2,7 +2,7 @@ export type ApiMessage = {
   id: number;
   chatId: number;
   senderId: number;
-  messageType: string;
+  type: string;
   content: string;
   context?: {
     source: string;
@@ -16,7 +16,7 @@ export type SocketMessage = {
     id: number;
     chatId: number;
     senderId: number;
-    messageType: MessageType | string;
+    type: MessageType | string;
     content: string;
     context?: {
       source: string;
@@ -24,7 +24,6 @@ export type SocketMessage = {
     createdAt: string;
   };
   content?: string;
-  messageType?: MessageType | string;
   context?: {
     source: string;
   };

@@ -53,13 +53,14 @@ const LiveCall = ({ handleLogout }: LiveCallProps) => {
       [SocketEvent.NUDGE]: (data: any) => {
         const message = data.payload;
         console.log("Nudge received:", message);
-        if (message.messageType === MessageType.NUDGE) {
+        if (message.type === MessageType.NUDGE) {
           handleCopilotMessage(message.content);
         }
       },
       [SocketEvent.MESSAGE_RECEIVED]: (data: any) => {
+        console.log("Message received:", data);
         const message = data.payload;
-        if (message.messageType === MessageType.TEXT) {
+        if (message.type === MessageType.TEXT) {
           if (message?.content === "Session ended") {
             setSessionEnded(true);
             socket.disconnect();
@@ -114,7 +115,8 @@ const LiveCall = ({ handleLogout }: LiveCallProps) => {
       }
       if (data?.messages) {
         const formattedMessages = data.messages
-          .filter((msg) => msg.messageType === MessageType.TEXT)
+          .reverse()
+          .filter((msg) => msg.type === MessageType.TEXT)
           .map((msg) => ({
             content: msg.content,
             isOutgoing: msg.senderId !== user.userId,
@@ -128,7 +130,8 @@ const LiveCall = ({ handleLogout }: LiveCallProps) => {
 
         if (isCounsellor) {
           const formattedNudgeMessages = data.messages
-            .filter((msg) => msg.messageType === MessageType.NUDGE)
+            .reverse()
+            .filter((msg) => msg.type === MessageType.NUDGE)
             .map((msg) => ({
               content: msg.content,
               id: msg.id,
