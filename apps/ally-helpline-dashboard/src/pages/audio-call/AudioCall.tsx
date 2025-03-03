@@ -16,7 +16,6 @@ import { useClientChat, useCounsellorChat, useSocket } from "@/hooks";
 import {
   ICE_SERVERS,
   OFFER_TIMEOUT_MS,
-  RECORDING_INTERVAL_MS,
 } from "./constants";
 
 const AudioCall: FunctionComponent = () => {
@@ -24,14 +23,14 @@ const AudioCall: FunctionComponent = () => {
     useState<RTCPeerConnection | null>(null);
   const [activeChat, setActiveChat] = useState<{ chatId: number } | null>();
   const [muted, setMuted] = useState<boolean>(true);
-  const localStreamRef = useRef<MediaStream | null>(null);
   const remoteStreamRef = useRef<MediaStream>(new MediaStream());
   const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(
     null
   );
-  const [recordingInterval, setRecordingInterval] =
-    useState<NodeJS.Timeout | null>(null);
   const offerTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const [transcripts, setTranscripts] = useState<string[]>([]);
+  const [currentTranscript, setCurrentTranscript] = useState<string>("");
+  const [isStreaming, setIsStreaming] = useState<boolean>(false);
 
   const user = useRecoilValue(userState);
   const navigate = useNavigate();
@@ -42,9 +41,28 @@ const AudioCall: FunctionComponent = () => {
   const {
     getCounsellorChat,
     endSession,
-    isLoading: isEndSessionLoading,
   } = useCounsellorChat();
   const { fetchCurrentChat } = useClientChat();
+
+  const streamText = useCallback((text: string) => {
+    setIsStreaming(true);
+    let index = 0;
+    setCurrentTranscript("");
+
+    const streamInterval = setInterval(() => {
+      if (index < text.length) {
+        setCurrentTranscript(prev => prev + text.charAt(index));
+        index++;
+      } else {
+        clearInterval(streamInterval);
+        setIsStreaming(false);
+        setTranscripts(prev => [...prev, text]);
+        setCurrentTranscript("");
+      }
+    }, 30); // Adjust speed as needed
+
+    return () => clearInterval(streamInterval);
+  }, []);
 
   const socketEventCallbacks = useMemo(
     () => ({
@@ -59,11 +77,13 @@ const AudioCall: FunctionComponent = () => {
           if (message?.content === "Session ended") {
             disconnect();
             navigate("/");
+          } else {
+            streamText(message.content);
           }
         }
       },
     }),
-    []
+    [streamText]
   );
 
   const {
@@ -78,7 +98,6 @@ const AudioCall: FunctionComponent = () => {
     userId: user.userId,
     eventCallbacks: socketEventCallbacks,
   });
-
 
   const handleWebRTCOffer = useCallback(
     async (data) => {
@@ -128,80 +147,67 @@ const AudioCall: FunctionComponent = () => {
     [activeChat, peerConnection]
   );
 
-  const sendAudioToBackend = useCallback(
-    (audioTrack, chatId) => {
-      if (!audioTrack || !chatId) return;
+  const initializeMediaRecorderAndSendAudio = (audioTrack, chatId) => {
+    if (!audioTrack || !chatId) return;
 
-      // Stop existing recorder if any
-      if (mediaRecorder) {
-        mediaRecorder.stop();
-      }
-      if (recordingInterval) {
-        clearInterval(recordingInterval);
-      }
+    const chunks: BlobPart[] = [];
+    let totalSize = 0;
+    // Create a MediaRecorder to capture audio data
+    const recorder = new MediaRecorder(audioTrack, {
+      mimeType: "audio/webm",
+    });
 
-      // Create a MediaRecorder to capture audio data
-      const recorder = new MediaRecorder(new MediaStream([audioTrack]));
-      const chunks: BlobPart[] = [];
+    const sendBufferedAudio = () => {
+      if (chunks.length === 0) return;
+      const audioBlob = new Blob(chunks, { type: "audio/webm" });
+      chunks.length = 0;
+      totalSize = 0;
 
-      recorder.ondataavailable = (event) => {
-        if (event.data.size > 0) {
-          chunks.push(event.data);
-        }
+      const fileReader = new FileReader();
+      fileReader.readAsArrayBuffer(audioBlob);
+      fileReader.onloadend = () => {
+        const resultantAudioData = fileReader.result;
+        emitSocketEvent(SocketEvent.AUDIO_MESSAGE, {
+          audioData: resultantAudioData,
+          chatId,
+        });
       };
 
-      recorder.onstop = () => {
-        if (chunks.length > 0) {
-          const audioBlob = new Blob(chunks, { type: "audio/webm" });
-          audioBlob.arrayBuffer().then((buffer) => {
-            emitSocketEvent(SocketEvent.AUDIO_MESSAGE, {
-              audioData: buffer,
-              chatId,
-            });
-          });
-          chunks.length = 0;
+      emitSocketEvent(SocketEvent.AUDIO_MESSAGE, {
+        audioData: audioBlob,
+        chatId,
+      });
+    };
+
+    recorder.ondataavailable = (event) => {
+      if (event.data.size > 0) {
+        chunks.push(event.data);
+        totalSize += event.data.size;
+
+        // 🚀 Auto-send when buffer reaches 32 KB
+        console.log("totalsize evdaayiii - ", totalSize);
+        if (totalSize >= 32000) {
+          sendBufferedAudio();
         }
-      };
-
-      setMediaRecorder(recorder);
-
-      // Only start recording if not muted
-      if (!muted) {
-        recorder.start();
-        const interval = setInterval(() => {
-          if (recorder.state === "recording") {
-            recorder.stop();
-            recorder.start();
-          }
-        }, RECORDING_INTERVAL_MS);
-        setRecordingInterval(interval);
       }
-    },
-    [muted, emitSocketEvent]
-  );
+    };
 
-  // Add effect to handle mute state changes
+    recorder.onstop = () => {
+      sendBufferedAudio();
+    };
+
+    setMediaRecorder(recorder);
+  };
+
+
   useEffect(() => {
-    if (!localStreamRef.current) return;
-
-    const audioTrack = localStreamRef.current.getAudioTracks()[0];
-    if (!audioTrack) return;
-
-    if (muted) {
-      // Stop recording when muted
-      if (mediaRecorder && mediaRecorder.state === "recording") {
-        mediaRecorder.stop();
-      }
-      if (recordingInterval) {
-        clearInterval(recordingInterval);
-        setRecordingInterval(null);
-      }
+    if (!mediaRecorder) return;
+    if (!muted) {
+      mediaRecorder?.start();
     } else {
-      // Start recording when unmuted
-      sendAudioToBackend(audioTrack, activeChat?.chatId);
+      mediaRecorder?.stop();
     }
-  }, [muted, sendAudioToBackend, activeChat?.chatId]);
-
+  }, [muted, mediaRecorder]);
 
   useEffect(() => {
     if (activeChat && activeChat?.chatId) {
@@ -231,8 +237,8 @@ const AudioCall: FunctionComponent = () => {
           const stream = await navigator.mediaDevices.getUserMedia({
             audio: true,
           });
-          localStreamRef.current = stream;
-          sendAudioToBackend(stream.getAudioTracks()[0], data?.chatId);
+
+          initializeMediaRecorderAndSendAudio(stream, data?.chatId);
           // Clear any existing timeout
           if (offerTimeoutRef.current) {
             clearTimeout(offerTimeoutRef.current);
@@ -307,9 +313,6 @@ const AudioCall: FunctionComponent = () => {
       if (offerTimeoutRef.current) {
         clearTimeout(offerTimeoutRef.current);
       }
-      if (localStreamRef.current) {
-        localStreamRef.current.getTracks().forEach((track) => track.stop());
-      }
       if (peerConnection) {
         peerConnection.close();
       }
@@ -347,6 +350,32 @@ const AudioCall: FunctionComponent = () => {
             <span className="text-sm text-gray-600">
               {isConnected ? "Connected" : "Connecting"}
             </span>
+          </div>
+        </div>
+
+        {/* Updated Transcript Area */}
+        <div className="mb-6 mt-4">
+          <h3 className="text-lg font-medium text-gray-800 mb-2">Transcript</h3>
+          <div className="bg-gray-50 rounded-lg p-4 h-48 overflow-y-auto">
+            {transcripts.length > 0 || currentTranscript ? (
+              <>
+                {transcripts.map((text, index) => (
+                  <p key={index} className="text-gray-600 mb-2">
+                    {text}
+                  </p>
+                ))}
+                {currentTranscript && (
+                  <p className="text-gray-600 mb-2">
+                    {currentTranscript}
+                    {isStreaming && (
+                      <span className="inline-block animate-pulse">▋</span>
+                    )}
+                  </p>
+                )}
+              </>
+            ) : (
+              <p className="text-gray-400 text-center">No transcript available yet</p>
+            )}
           </div>
         </div>
 
