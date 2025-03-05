@@ -1,10 +1,13 @@
 /* eslint-disable max-len */
 import * as Tooltip from "@radix-ui/react-tooltip";
+
 import PhoneOutlinedIcon from "@mui/icons-material/PhoneOutlined";
 import DateRangeOutlinedIcon from "@mui/icons-material/DateRangeOutlined";
 import LeaderboardOutlinedIcon from "@mui/icons-material/LeaderboardOutlined";
 import SettingsOutlinedIcon from "@mui/icons-material/SettingsOutlined";
+
 import { TabId } from "@/constants/tabs";
+
 import { Book, Relax } from "@/assets/icons";
 
 interface NavSideBarProps {

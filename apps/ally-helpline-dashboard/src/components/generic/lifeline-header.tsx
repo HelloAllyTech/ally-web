@@ -1,7 +1,9 @@
 import { useState } from "react";
-import { Lifeline, DefaultAvatar } from "@/assets/icons";
+
 import MenuItem from "@mui/material/MenuItem";
 import Select, { SelectChangeEvent } from "@mui/material/Select";
+
+import { Lifeline, DefaultAvatar } from "@/assets/icons";
 
 const LifelineHeader = () => {
   const [status, setStatus] = useState("not_available");
