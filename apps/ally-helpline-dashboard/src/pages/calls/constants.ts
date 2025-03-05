@@ -1,0 +1,39 @@
+export const TABLE_HEADERS = [
+  {
+    id: 'id',
+    label: 'Call ID'
+  },
+  {
+    id: 'dateAndTime',
+    label: 'Date & Time'
+  },
+  {
+    id: 'duration',
+    label: 'Duration'
+  },
+  {
+    id: 'quality_score',
+    label: 'Quality Score'
+  },
+  {
+    id: 'tags',
+    label: 'Tags'
+  }
+]
+
+export const DEFAULT_TAGS = [
+  'Anxiety',
+  'Depression',
+  'Stress',
+  'Relationships',
+  'Work',
+]
+
+export const COLOR_PALETTE = [
+  '#FF6B6B',
+  '#FEB2B2',
+  '#FBD38D',
+  '#9AE6B4',
+  '#68D391',
+  '#48BB78',
+]
