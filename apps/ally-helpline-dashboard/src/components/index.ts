@@ -18,13 +18,14 @@ import { Spinner } from "./generic/Spinner";
 import PageHeader from "./generic/page-header";
 import MessageInput from "./chat/MessageInput";
 import CopilotChat from "./copilot/CopilotChat";
-import NavSideBar from "./navSideBar/NavSideBar";
+import NavSideBar from "./navSideBar/NavSideBarClient";
 import TypingIndicator from "./typing-indicator";
 import { TooltipProvider } from "./generic/tooltip";
 import { Toaster as Sonner } from "./generic/sonner";
 import Confirm from "./confirmation-box/Confirm";
 import ConfirmationBox from "./confirmation-box/ConfirmationBox";
 import { Card, CardHeader, CardTitle, CardContent } from "./generic/card";
+import LifelineHeader from "./generic/lifeline-header";
 
 export {
   Card,
@@ -51,6 +52,7 @@ export {
   TooltipProvider,
   TypingIndicator,
   ConfirmationBox,
+  LifelineHeader,
   LiveTranscriptionHeader,
   LiveTranscriptionMessage,
 };
