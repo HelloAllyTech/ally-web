@@ -83,15 +83,23 @@ const PrivateRouteLayout = () => {
   if (user)
     return (
       <div className="flex h-screen w-full ">
-        <NavSideBar activeTab={activeTab} onTabChange={handleTabChange} />
+        {!isClient && (
+          <NavSideBar activeTab={activeTab} onTabChange={handleTabChange} />
+        )}
         <div className="flex-1 min-h-screen overflow-auto bg-[#F9FAFB] custom-scrollbar">
-          {!excludeDefaultPageHeader.includes(pathname) && (
+          {!excludeDefaultPageHeader.includes(pathname) && !isClient && (
             <LifelineHeader />
           )}
           <Routes>
             <Route
               index
-              element={isClient ? <Navigate to={ROUTES.CALLS} /> : <Navigate to={ROUTES.DASHBOARD} />}
+              element={
+                isClient ? (
+                  <Navigate to={ROUTES.CALLS} />
+                ) : (
+                  <Navigate to={ROUTES.DASHBOARD} />
+                )
+              }
             />
             <Route
               path={ROUTES.LIVE_CALL}

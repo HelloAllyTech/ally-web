@@ -10,10 +10,12 @@ import { useRecoilValue } from "recoil";
 import { useNavigate } from "react-router-dom";
 
 import { UserRole } from "@/types/user";
-import { MessageType, SocketEvent } from "@/types/message";
 import { userState } from "@/store/atoms/userAtom";
+import { MessageType, SocketEvent } from "@/types/message";
 import { useClientChat, useCounsellorChat, useSocket } from "@/hooks";
+
 import {
+  AUDIO_FILE_SIZE,
   ICE_SERVERS,
   OFFER_TIMEOUT_MS,
 } from "./constants";
@@ -172,11 +174,6 @@ const AudioCall: FunctionComponent = () => {
           chatId,
         });
       };
-
-      emitSocketEvent(SocketEvent.AUDIO_MESSAGE, {
-        audioData: audioBlob,
-        chatId,
-      });
     };
 
     recorder.ondataavailable = (event) => {
@@ -184,16 +181,16 @@ const AudioCall: FunctionComponent = () => {
         chunks.push(event.data);
         totalSize += event.data.size;
 
-        // 🚀 Auto-send when buffer reaches 32 KB
-        console.log("totalsize evdaayiii - ", totalSize);
-        if (totalSize >= 32000) {
+        if (totalSize >= AUDIO_FILE_SIZE) {
           sendBufferedAudio();
         }
       }
     };
 
     recorder.onstop = () => {
-      sendBufferedAudio();
+      if (totalSize < AUDIO_FILE_SIZE && totalSize > 0) {
+        sendBufferedAudio();
+      }
     };
 
     setMediaRecorder(recorder);
@@ -203,7 +200,7 @@ const AudioCall: FunctionComponent = () => {
   useEffect(() => {
     if (!mediaRecorder) return;
     if (!muted) {
-      mediaRecorder?.start();
+      mediaRecorder?.start(500);
     } else {
       mediaRecorder?.stop();
     }
