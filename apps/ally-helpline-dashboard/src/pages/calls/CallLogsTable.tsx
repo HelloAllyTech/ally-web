@@ -1,3 +1,5 @@
+import { useEffect, useState } from "react";
+
 import Table from "@mui/material/Table";
 import TableBody from "@mui/material/TableBody";
 import TableCell from "@mui/material/TableCell";
@@ -11,7 +13,16 @@ import { convertMinutesToDuration, formatDate, getRandomValue } from "./utils";
 
 const CallLogsTable = () => {
   const { data, isLoading } = useGetCallLogsQuery("");
-  console.log(data);
+  const [transition, setTransition] = useState(true);
+
+  useEffect(() => {
+    if (!isLoading) {
+      setTimeout(() => {
+        setTransition(false);
+      }, 100);
+    }
+  }, [isLoading]);
+  
   if (isLoading) {
     return (
       <div className="flex justify-center items-center h-[calc(100%_-_80px)]">
@@ -106,15 +117,15 @@ const CallLogsTable = () => {
                         <div className="flex gap-1 w-32 h-1">
                           <div
                             style={{
-                              width: `${getWidth(displayData.quality_score)}px`,
+                              width: !transition &&`${getWidth(displayData.quality_score)}px`,
                             }}
-                            className="border-[2px] border-[#6272FF] rounded-md"
+                            className="w-0 transition-all duration-300 border-[2px] border-[#6272FF] rounded-md"
                           />
                           <div
                             style={{
-                              width: `${getWidth(100 - displayData.quality_score)}px`,
+                              width: !transition && `${getWidth(100 - displayData.quality_score)}px`,
                             }}
-                            className="border-[2px] border-t-[#E6F2FF] rounded-md"
+                            className="w-full transition-all duration-300 border-[2px] border-t-[#E6F2FF] rounded-md"
                           />
                         </div>
                       </div>
