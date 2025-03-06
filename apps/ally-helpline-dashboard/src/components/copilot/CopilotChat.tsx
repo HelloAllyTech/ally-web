@@ -1,11 +1,11 @@
 import { useState, useEffect, useRef } from "react";
-import { useRecoilValue } from "recoil";
 import { useNavigate } from "react-router-dom";
+import { useSelector } from "react-redux";
 
+import { RootState } from "@/store/store";
 import { cn } from "@/utils/tailwind";
 import { ROUTES } from "@/constants/routes";
 import { CopilotIcon } from "@/assets/icons";
-import { userState } from "@/store/atoms/userAtom";
 import { ConfirmationBox, Breather, TypingIndicator } from "@/components";
 
 import CustomMarkdown from "./CustomMarkdown";
@@ -40,7 +40,7 @@ const CopilotChat = ({
   // TODO Chat input commented out for now, to be added back in once BE is ready
   // const [inputValue, setInputValue] = useState("");
   // const [inputHeight, setInputHeight] = useState("82px");
-  const user = useRecoilValue(userState);
+  const user = useSelector((state: RootState) => state.user.user);
   const [showBreather, setShowBreather] = useState<boolean>(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 

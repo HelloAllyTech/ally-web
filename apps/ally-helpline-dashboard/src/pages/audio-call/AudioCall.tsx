@@ -6,11 +6,11 @@ import {
   useCallback,
   FunctionComponent,
 } from "react";
-import { useRecoilValue } from "recoil";
 import { useNavigate } from "react-router-dom";
+import { useSelector } from "react-redux";
 
+import { RootState } from "@/store/store";
 import { UserRole } from "@/types/user";
-import { userState } from "@/store/atoms/userAtom";
 import { MessageType, SocketEvent } from "@/types/message";
 import { useClientChat, useCounsellorChat, useSocket } from "@/hooks";
 
@@ -34,7 +34,7 @@ const AudioCall: FunctionComponent = () => {
   const [currentTranscript, setCurrentTranscript] = useState<string>("");
   const [isStreaming, setIsStreaming] = useState<boolean>(false);
 
-  const user = useRecoilValue(userState);
+  const user = useSelector((state: RootState) => state.user.user);
   const navigate = useNavigate();
 
   const isClient = user?.role === UserRole.CLIENT;

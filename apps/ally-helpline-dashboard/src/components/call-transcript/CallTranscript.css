@@ -1,0 +1,8 @@
+.waveForm {
+  background-image: linear-gradient(to right,#00000060 , transparent 100% );
+  background-size: 100% 100%;
+  border-radius: 45%;
+  opacity: 0.4;
+  filter: blur(1px);
+  z-index: 10;
+}

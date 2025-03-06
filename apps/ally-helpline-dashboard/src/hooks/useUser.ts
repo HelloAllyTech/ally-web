@@ -1,16 +1,13 @@
-import { useRecoilState } from "recoil";
-import {
-  userState,
-  isAuthenticatedState,
-} from "@/store/atoms/userAtom";
+import { useSelector } from "react-redux";
 import { User } from "@/types/user";
 import { api } from "@/services/api";
 import { useState } from "react";
+import { authenticate, unauthenticate, setUser } from "@/reducer/userReducer";
+import { RootState, store } from "@/store/store";
 
 export const useUser = () => {
-  const [user, setUser] = useRecoilState(userState);
-  const [isAuthenticated, setIsAuthenticated] =
-    useRecoilState(isAuthenticatedState);
+  const isAuthenticated = useSelector((state: RootState) => state.user.isAuthenticated);
+  const user = useSelector((state: RootState) => state.user.user);
   const [isLoading, setIsLoading] = useState<boolean>();
   const [error, setError] = useState<Error | null>(null);
 
@@ -20,17 +17,17 @@ export const useUser = () => {
       const token = localStorage.getItem("accessToken");
       if (token) {
         const userData = await api.get<User>("/users/me");
-        setUser(userData?.data);
-        setIsAuthenticated(true);
+        store.dispatch(setUser(userData?.data));
+        store.dispatch(authenticate());
         return userData?.data;
       } else {
-        setUser(null);
-        setIsAuthenticated(false);
+        store.dispatch(setUser(null));
+        store.dispatch(unauthenticate());
       }
     } catch (error) {
       console.error("Error authenticating - ", error);
-      setUser(null);
-      setIsAuthenticated(false);
+      store.dispatch(setUser(null));
+      store.dispatch(unauthenticate());
       localStorage.removeItem("accessToken");
       localStorage.removeItem("refreshToken");
     } finally {
@@ -39,8 +36,8 @@ export const useUser = () => {
   };
 
   const logout = () => {
-    setUser(null);
-    setIsAuthenticated(false);
+    store.dispatch(setUser(null));
+    store.dispatch(unauthenticate());
     localStorage.removeItem("accessToken");
     localStorage.removeItem("refreshToken");
   };
