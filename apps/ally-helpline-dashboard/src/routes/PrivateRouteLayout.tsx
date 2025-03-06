@@ -106,7 +106,7 @@ const PrivateRouteLayout = () => {
             <Route path={ROUTES.CALENDER} element={<Calls />} />
             <Route path={ROUTES.LEARN} element={<Calls />} />
             <Route path={ROUTES.STRESS_BUSTERS} element={<Calls />} />
-            <Route path={ROUTES.ANALYTICS} element={<Calls />} />
+            <Route path={ROUTES.ANALYTICS} element={<AudioCall />} />
             <Route path={ROUTES.SETTINGS} element={<Calls />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>

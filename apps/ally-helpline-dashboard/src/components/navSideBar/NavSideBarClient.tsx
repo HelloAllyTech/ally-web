@@ -1,6 +1,3 @@
-/* eslint-disable max-len */
-import * as Tooltip from "@radix-ui/react-tooltip";
-
 import PhoneOutlinedIcon from "@mui/icons-material/PhoneOutlined";
 import DateRangeOutlinedIcon from "@mui/icons-material/DateRangeOutlined";
 import LeaderboardOutlinedIcon from "@mui/icons-material/LeaderboardOutlined";
@@ -49,7 +46,6 @@ const NavSideBar = ({ activeTab, onTabChange }: NavSideBarProps) => {
     },
   ];
   return (
-    <Tooltip.Provider delayDuration={200}>
       <div className="w-72 bg-white border-r border-r-[#E5E7EB] mt-20 fixed h-screen">
         <div className="flex flex-col gap-0 m-3">
           {NAVIGATION.map(({ id, Icon, title }) => (
@@ -68,7 +64,6 @@ const NavSideBar = ({ activeTab, onTabChange }: NavSideBarProps) => {
           ))}
         </div>
       </div>
-    </Tooltip.Provider>
   );
 };
 

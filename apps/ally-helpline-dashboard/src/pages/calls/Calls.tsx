@@ -1,6 +1,8 @@
 import { FunctionComponent } from "react";
-import CallLogsTable from "./CallLogsTable";
+
 import { Button } from "@mui/material";
+
+import CallLogsTable from "./CallLogsTable";
 
 const Calls: FunctionComponent = () => {
   return (
