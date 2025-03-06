@@ -17,6 +17,7 @@ import { Toaster } from "./generic/toaster";
 import { Spinner } from "./generic/Spinner";
 import PageHeader from "./generic/page-header";
 import MessageInput from "./chat/MessageInput";
+import CallPicker from './call/CallPicker';
 import CopilotChat from "./copilot/CopilotChat";
 import NavSideBar from "./navSideBar/NavSideBarClient";
 import TypingIndicator from "./typing-indicator";
@@ -29,6 +30,7 @@ import LifelineHeader from "./generic/lifeline-header";
 
 export {
   Card,
+  CallPicker,
   Table,
   Input,
   Sonner,
