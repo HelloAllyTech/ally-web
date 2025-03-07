@@ -12,7 +12,12 @@ export default defineConfig(({ mode }) => ({
   },
   plugins: [
     react(),
-    svgr(),
+    svgr({ 
+      svgrOptions: {
+        icon: true,
+        exportType: "default"
+      }
+    }),
     mode === "development" &&
     componentTagger(),
   ].filter(Boolean),
