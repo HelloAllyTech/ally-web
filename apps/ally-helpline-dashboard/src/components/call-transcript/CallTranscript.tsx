@@ -3,15 +3,16 @@ import { LiveAudioVisualizer, AudioVisualizer } from "react-audio-visualize";
 import { AudioRecorder, useAudioRecorder } from "react-audio-voice-recorder";
 
 import { Modal } from "@mui/material";
-
-import BackgroundTop from "@/assets/icons/Transcript-background-top.svg?react";
-import Record from "@/assets/icons/Record.svg?react";
-import NoRecord from "@/assets/icons/No-Record.svg?react";
-import CutCall from "@/assets/icons/CutCall.svg?react";
-import FocusOn from "@/assets/icons/FocusOn.svg?react";
-import FocusOff from "@/assets/icons/FocusOff.svg?react";
-import Close from "@/assets/icons/Close.svg?react";
-import BackgroundBottom from "@/assets/icons/Transcript-background-bottom.svg?react";
+import {
+  Close,
+  Record,
+  CutCall,
+  FocusOn,
+  NoRecord,
+  FocusOff,
+  BackgroundBottom,
+  BackgroundTop,
+} from "@/assets/icons";
 
 import "./CallTranscript.css";
 interface CallTranscriptProps {

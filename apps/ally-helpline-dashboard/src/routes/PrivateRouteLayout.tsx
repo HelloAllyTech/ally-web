@@ -95,7 +95,7 @@ const PrivateRouteLayout = () => {
               index
               element={
                 isClient ? (
-                  <Navigate to={ROUTES.CALLS} />
+                  <Navigate to={ROUTES.CALL_LOGS} />
                 ) : (
                   <Navigate to={ROUTES.DASHBOARD} />
                 )
