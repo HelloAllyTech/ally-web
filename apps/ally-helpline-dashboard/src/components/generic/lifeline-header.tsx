@@ -1,13 +1,29 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 import MenuItem from "@mui/material/MenuItem";
 import Select, { SelectChangeEvent } from "@mui/material/Select";
+import { Button, Popover } from "@mui/material";
 
+import { useUser } from "@/hooks";
 import { Lifeline, DefaultAvatar } from "@/assets/icons";
 
 const LifelineHeader = () => {
   const [status, setStatus] = useState("not_available");
+  const { logout } = useUser(); 
+    const navigate = useNavigate();
 
+  const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null);
+
+  const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleClose = () => {
+    setAnchorEl(null);
+  };
+
+  const open = Boolean(anchorEl);
   const handleChange = (event: SelectChangeEvent) => {
     setStatus(event.target.value as string);
   };
@@ -44,7 +60,24 @@ const LifelineHeader = () => {
             </div>
           </MenuItem>
         </Select>
-        <DefaultAvatar />
+        <Button onClick={handleClick} aria-describedby="profile">
+          <DefaultAvatar />
+        </Button>
+        <Popover
+          id="profile"
+          open={open}
+          anchorEl={anchorEl}
+          onClose={handleClose}
+          anchorOrigin={{
+            vertical: "bottom",
+            horizontal: "left",
+          }}
+        >
+          <Button sx={{ p: 2 }} onClick={() => {
+            logout();
+            navigate("/login");
+          }}>Logout</Button>
+        </Popover>
       </div>
     </div>
   );

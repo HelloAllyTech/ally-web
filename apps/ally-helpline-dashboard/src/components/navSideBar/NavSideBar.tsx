@@ -1,8 +1,8 @@
-import { useRecoilValue } from "recoil";
 import * as Tooltip from "@radix-ui/react-tooltip";
+import { useSelector } from "react-redux";
 
+import { RootState } from "@/store/store";
 import { UserRole } from "@/types/user";
-import { userState } from "@/store/atoms/userAtom";
 import { CallLogIcon, HomeIcon, LiveCallIcon } from "@/assets/icons";
 import { TabId, TabLabel } from "@/constants/tabs";
 import { ROUTES } from "@/constants/routes";
@@ -13,7 +13,7 @@ interface NavSideBarProps {
 }
 
 const NavSideBar = ({ activeTab, onTabChange }: NavSideBarProps) => {
-  const user = useRecoilValue(userState);
+  const user = useSelector((state: RootState) => state.user.user);
   const isClient = user?.role === UserRole.CLIENT;
 
   return (

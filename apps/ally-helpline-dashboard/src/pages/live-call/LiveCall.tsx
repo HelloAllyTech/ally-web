@@ -1,7 +1,8 @@
-import { useRecoilValue } from "recoil";
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect, useRef, useMemo } from "react";
+import { useSelector } from "react-redux";
 
+import { RootState } from "@/store/store";
 import {
   Button,
   Confirm,
@@ -14,7 +15,6 @@ import { cn } from "@/utils/tailwind";
 import { UserRole } from "@/types/user";
 import { ROUTES } from "@/constants/routes";
 import { CopilotIcon } from "@/assets/icons";
-import { userState } from "@/store/atoms/userAtom";
 import { MessageType, SocketEvent } from "@/types/message";
 import { useSocket, useClientChat, useCounsellorChat } from "@/hooks";
 import { dateStamp, formatMessageDate, timeStamp } from "@/utils/date";
@@ -38,7 +38,7 @@ const LiveCall = ({ handleLogout }: LiveCallProps) => {
   const [currentDate, setCurrentDate] = useState("");
   const [summary, setSummary] = useState("");
   const [stage, setStage] = useState<string>();
-  const user = useRecoilValue(userState);
+  const user = useSelector((state: RootState) => state.user.user);
   const transcriptionRef = useRef<HTMLDivElement>(null);
   const copilotRef = useRef<HTMLDivElement>(null);
   const datePopupTimeoutRef = useRef<NodeJS.Timeout>();

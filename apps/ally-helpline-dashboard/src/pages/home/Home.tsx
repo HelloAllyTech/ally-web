@@ -1,9 +1,10 @@
 import { toast } from "sonner";
 import { motion } from "framer-motion";
-import { useRecoilValue } from "recoil";
 import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
+import { useSelector } from "react-redux";
 
+import { RootState } from "@/store/store";
 import {
   useSocket,
   useClientChat,
@@ -13,7 +14,6 @@ import {
 import { cn } from "@/utils/tailwind";
 import { UserRole } from "@/types/user";
 import { dateTimeStamp } from "@/utils/date";
-import { userState } from "@/store/atoms/userAtom";
 import { Card, CardHeader, CardTitle } from "@/components";
 import { QueueStatus } from "@/constants/common";
 import { ROUTES } from "@/constants/routes";
@@ -73,7 +73,7 @@ const Home = () => {
 
   const [isWaiting, setIsWaiting] = useState(false);
 
-  const user = useRecoilValue(userState);
+  const user = useSelector((state: RootState) => state.user.user);
 
   const socketEventCallbacks = useMemo(
     () => ({

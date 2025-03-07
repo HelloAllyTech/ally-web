@@ -1,9 +1,12 @@
-import { baseAPI } from "@/api/baseAPI";
 import { configureStore } from "@reduxjs/toolkit";
+
+import { baseAPI } from "@/api/baseAPI";
+import userSlice from "@/reducer/userReducer";
 
 export const store = configureStore({
   reducer: {
     [baseAPI.reducerPath]: baseAPI.reducer,
+    user: userSlice.reducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware().concat(baseAPI.middleware),

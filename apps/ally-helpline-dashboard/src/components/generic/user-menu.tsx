@@ -1,8 +1,8 @@
 import { useState } from "react";
-import { useRecoilValue } from "recoil";
+import { useSelector } from "react-redux";
 import { LogOut, Settings, User } from "lucide-react";
 
-import { userState } from "@/store/atoms/userAtom";
+import { RootState } from "@/store/store";
 
 import {
   DropdownMenu,
@@ -17,7 +17,7 @@ interface UserMenuProps {
 }
 
 const UserMenu = ({ onLogout }: UserMenuProps) => {
-  const user = useRecoilValue(userState);
+  const user = useSelector((state: RootState) => state.user.user);
   const [isOpen, setIsOpen] = useState(false);
 
   return (

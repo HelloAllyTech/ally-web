@@ -7,7 +7,7 @@ import {
   useLocation,
 } from "react-router-dom";
 
-import { CallLogs, LiveCall, Home, Dashboard, Calls } from "@/pages";
+import { CallLogs, LiveCall, Dashboard, Calls } from "@/pages";
 import { NavSideBar, LifelineHeader } from "@/components";
 import { useUser } from "@/hooks";
 import { TabId, TabLabel } from "@/constants/tabs";
