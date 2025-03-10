@@ -344,6 +344,25 @@ const AudioCall: FunctionComponent = () => {
     }
   };
 
+  useEffect(() => {
+    const checkPermissions = async () => {
+      try {
+        const permissions = await navigator.mediaDevices.getUserMedia({ audio: true });
+        console.log("Permissions granted:", permissions.getTracks().map(t => t.kind));
+        
+        // Check if audio output devices are available
+        const devices = await navigator.mediaDevices.enumerateDevices();
+        const audioOutputDevices = devices.filter(device => device.kind === "audiooutput");
+        console.log("Audio output devices:", audioOutputDevices);
+
+      } catch (error) {
+        console.error("Permission check failed:", error);
+      }
+    };
+
+    checkPermissions();
+  }, []);
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50">
       <div className="bg-white p-8 rounded-2xl shadow-lg w-full max-w-md">
@@ -393,15 +412,14 @@ const AudioCall: FunctionComponent = () => {
           ref={(audio) => {
             if (audio) {
               audio.srcObject = remoteStreamRef.current;
+              audio.muted = muted;
               audio.onloadedmetadata = () => {
-                audio
-                  .play()
+                audio.play()
                   .catch((e) => console.error("Audio playback failed:", e));
               };
             }
           }}
           autoPlay
-          muted={muted}
         />
 
         {/* Controls */}
