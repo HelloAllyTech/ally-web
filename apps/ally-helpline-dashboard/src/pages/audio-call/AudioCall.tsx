@@ -46,22 +46,34 @@ const AudioCall: FunctionComponent = () => {
   } = useCounsellorChat();
   const { fetchCurrentChat } = useClientChat();
 
+  const MAX_TRANSCRIPTS = 50; // Adjust based on your needs
+
   const streamText = useCallback((text: string) => {
     setIsStreaming(true);
     let index = 0;
     setCurrentTranscript("");
 
+    // Batch characters instead of processing one at a time
+    const BATCH_SIZE = 5;
+    const INTERVAL_MS = 50; // Increased from 30ms to 50ms
+
     const streamInterval = setInterval(() => {
       if (index < text.length) {
-        setCurrentTranscript(prev => prev + text.charAt(index));
-        index++;
+        const nextIndex = Math.min(index + BATCH_SIZE, text.length);
+        const chunk = text.slice(index, nextIndex);
+        setCurrentTranscript(prev => prev + chunk);
+        index = nextIndex;
       } else {
         clearInterval(streamInterval);
         setIsStreaming(false);
-        setTranscripts(prev => [...prev, text]);
+        setTranscripts(prev => {
+          const newTranscripts = [...prev, text];
+          // Keep only the latest N transcripts
+          return newTranscripts.slice(-MAX_TRANSCRIPTS);
+        });
         setCurrentTranscript("");
       }
-    }, 30); // Adjust speed as needed
+    }, INTERVAL_MS);
 
     return () => clearInterval(streamInterval);
   }, []);
