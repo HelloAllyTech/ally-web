@@ -12,6 +12,16 @@ import ClientHandledIcon from "./Icon_client_handled.png";
 import CounsellorSuccessIcon from "./Icon_counsellor_success_rate.png";
 import TotalSessionsIcon from "./Icon_total_sessions.png";
 import WorkloadIcon from "./Icon_workload.png";
+import BackgroundTop from "./Transcript-background-top.svg?react";
+import Record from "./Record.svg?react";
+import NoRecord from "./No-Record.svg?react";
+import CutCall from "./CutCall.svg?react";
+import FocusOn from "./FocusOn.svg?react";
+import FocusOff from "./FocusOff.svg?react";
+import Close from "./Close.svg?react";
+import BackgroundBottom from "./Transcript-background-bottom.svg?react";
+import CallCut from "./Call_cut.svg?react";
+import CallAttend from "./Call_attend.svg?react";
 
 export {
   Relax,
@@ -28,4 +38,14 @@ export {
   CounsellorSuccessIcon,
   TotalSessionsIcon,
   WorkloadIcon,
+  BackgroundTop,
+  Record,
+  NoRecord,
+  CutCall,
+  FocusOff,
+  FocusOn,
+  Close,
+  BackgroundBottom,
+  CallCut,
+  CallAttend
 };

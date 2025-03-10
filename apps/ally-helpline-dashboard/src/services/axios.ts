@@ -9,7 +9,7 @@ const API_URL = import.meta.env.VITE_API_BASE_URL + "/api/";
 const API_VERSION = import.meta.env.VITE_API_VERSION;
 
 export const axiosInstance: AxiosInstance = axios.create({
-  baseURL: API_URL,
+  baseURL: API_URL+"/api/",
   timeout: 10000,
   headers: {
     "Content-Type": "application/json",

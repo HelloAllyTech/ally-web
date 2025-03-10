@@ -1,8 +1,5 @@
-import BackgroundTop from "@/assets/icons/Background_top.svg?react";
-import BackgroundBottom from "@/assets/icons/Background_bottom.svg?react";
-import CallCut from "@/assets/icons/Call_cut.svg?react";
-import CallAttend from "@/assets/icons/Call_attend.svg?react";
-import DefaultProfile from "@/assets/images/default_call_profile.png";
+import { BackgroundTop, BackgroundBottom, CallCut, CallAttend } from "@/assets/icons";
+import { DefaultProfile } from "@/assets/images";
 
 import "./CallPicker.css";
 
