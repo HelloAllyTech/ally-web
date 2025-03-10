@@ -155,8 +155,9 @@ const AudioCall: FunctionComponent = () => {
 
   const handleOnIceCandidate = useCallback(
     (data) => {
-      if (data.chatId !== activeChat?.chatId) return;
-      peerConnection.addIceCandidate(new RTCIceCandidate(data.candidate));
+      if (!peerConnection || data.chatId !== activeChat?.chatId) return;
+      peerConnection.addIceCandidate(new RTCIceCandidate(data.candidate))
+        .catch(err => console.error("Error adding ICE candidate:", err));
     },
     [activeChat, peerConnection]
   );
