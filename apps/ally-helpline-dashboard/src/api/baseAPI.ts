@@ -6,7 +6,7 @@ const VITE_API_VERSION = import.meta.env.VITE_API_VERSION;
 export const baseAPI = createApi({
   reducerPath: "baseAPI",
   baseQuery: fetchBaseQuery({
-    baseUrl: API_URL + VITE_API_VERSION,
+    baseUrl: API_URL + "/api/" + VITE_API_VERSION,
     prepareHeaders: (headers) => {
       const token = localStorage.getItem("accessToken");
       if (token) {
