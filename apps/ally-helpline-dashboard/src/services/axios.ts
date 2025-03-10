@@ -5,7 +5,7 @@ import type {
   InternalAxiosRequestConfig,
 } from "axios";
 
-const API_URL = import.meta.env.VITE_API_BASE_URL;
+const API_URL = import.meta.env.VITE_API_BASE_URL + "/api/";
 const API_VERSION = import.meta.env.VITE_API_VERSION;
 
 export const axiosInstance: AxiosInstance = axios.create({
