@@ -1,0 +1,448 @@
+import { Modal } from "@mui/material";
+import { useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
+import { LiveAudioVisualizer } from "react-audio-visualize";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+
+import {
+  Close,
+  Record,
+  CutCall,
+  FocusOn,
+  NoRecord,
+  FocusOff,
+  BackgroundTop,
+  BackgroundBottom,
+} from "@/assets/icons";
+import { UserRole } from "@/types/user";
+import { RootState } from "@/store/store";
+import { ICE_SERVERS } from "@/constants/common";
+import { useIceServers, useSocket } from "@/hooks";
+import { MessageType, SocketEvent } from "@/types/message";
+
+import "./CallTranscript.css";
+import { AUDIO_FILE_SIZE, OFFER_TIMEOUT_MS } from "./constants";
+
+interface CallTranscriptProps {
+  chatId: number;
+  endSession: () => void;
+}
+
+// TODO: Uninstall react-audio-voice-recorder
+// TODO: Split transcription to client-counselor
+// TODO: Try to make it more similar to Figma
+// TODO: Responsiveness
+// TODO: Blurry effect at the top and bottom of the conversation
+const CallTranscript = (props: CallTranscriptProps) => {
+  const { endSession, chatId } = props;
+  const [minutes, setMinutes] = useState(0);
+  const [seconds, setSeconds] = useState(0);
+  const [focus, setFocus] = useState(false);
+  const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(
+    null
+  );
+  const [muted, setMuted] = useState<boolean>(true);
+  const remoteStreamRef = useRef<MediaStream>(new MediaStream());
+  const offerTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const [peerConnection, setPeerConnection] =
+    useState<RTCPeerConnection | null>(null);
+
+  const user = useSelector((state: RootState) => state.user.user);
+  const navigate = useNavigate();
+  const iceServers = useIceServers();
+
+  const [transcriptions, setTranscriptions] = useState<string[]>([]);
+
+  const isClient = user?.role === UserRole.CLIENT;
+  const isCounsellor = user?.role === UserRole.COUNSELOR;
+
+  // Add new state for animation
+  const [isShrinked, setIsShrinked] = useState(false);
+
+  const socketEventCallbacks = useMemo(
+    () => ({
+      [SocketEvent.NUDGE]: (data: any) => {
+        const message = data.payload;
+        console.log("Nudge received:", message);
+      },
+      [SocketEvent.MESSAGE_RECEIVED]: (data: any) => {
+        const message = data.payload;
+        console.log("Message received:", message);
+        if (message.type === MessageType.TEXT) {
+          if (message?.content === "Session ended") {
+            disconnect();
+            navigate("/");
+          } else {
+            setTranscriptions((prev) => [...prev, message.content]);
+            // streamText(message.content);
+          }
+        }
+      },
+    }),
+    []
+  );
+
+  const {
+    connect,
+    isConnected,
+    sendMessage,
+    disconnect,
+    emitSocketEvent,
+    setListenerForEvent,
+    removeIfListenerPresent,
+  } = useSocket({
+    userId: user.userId,
+    eventCallbacks: socketEventCallbacks,
+  });
+
+  // TODO: REthink the logic
+  useEffect(() => {
+    const secondsInterval = setInterval(() => {
+      setSeconds((prev) => {
+        if (prev > 59) {
+          setMinutes((prevMin) => prevMin + 1);
+          return 0;
+        }
+        return prev + 1;
+      });
+    }, 1000);
+    return () => {
+      clearInterval(secondsInterval);
+    };
+  }, []);
+
+  const setupWebrtcAndMediarecorder = async () => {
+    // Get user media stream
+    const stream = await navigator.mediaDevices.getUserMedia({
+      audio: true,
+    });
+    // Setup media recorder
+    const chunks: BlobPart[] = [];
+    let totalSize = 0;
+    // Create a MediaRecorder to capture audio data
+    const recorder = new MediaRecorder(stream, {
+      mimeType: "audio/webm",
+    });
+
+    const sendBufferedAudio = () => {
+      if (chunks.length === 0) return;
+      const audioBlob = new Blob(chunks, { type: "audio/webm" });
+      chunks.length = 0;
+      totalSize = 0;
+
+      const fileReader = new FileReader();
+      fileReader.readAsArrayBuffer(audioBlob);
+      fileReader.onloadend = () => {
+        const resultantAudioData = fileReader.result;
+        emitSocketEvent(SocketEvent.AUDIO_MESSAGE, {
+          audioData: resultantAudioData,
+          chatId,
+        });
+      };
+    };
+
+    recorder.ondataavailable = (event) => {
+      if (event.data.size > 0) {
+        chunks.push(event.data);
+        totalSize += event.data.size;
+
+        if (totalSize >= AUDIO_FILE_SIZE) {
+          sendBufferedAudio();
+        }
+      }
+    };
+
+    recorder.onstop = () => {
+      if (totalSize < AUDIO_FILE_SIZE && totalSize > 0) {
+        sendBufferedAudio();
+      }
+    };
+
+    recorder.start(500);
+    setMediaRecorder(recorder);
+
+    // Setup webrtc connection
+    // Clear any existing timeout
+    if (offerTimeoutRef.current) {
+      clearTimeout(offerTimeoutRef.current);
+    }
+
+    // Create and configure peer connection
+    const pc = new RTCPeerConnection({
+      iceServers: iceServers?.urls?.length > 0 ? [iceServers] : ICE_SERVERS, // Fallback STUN server
+    });
+
+    // Add local tracks to peer connection
+    stream.getTracks().forEach((track) => {
+      pc.addTrack(track, stream);
+    });
+
+    pc.onicecandidate = (event) => {
+      if (event.candidate) {
+        emitSocketEvent(SocketEvent.ICE_CANDIDATE, {
+          candidate: event.candidate,
+          chatId,
+        });
+      }
+    };
+    pc.ontrack = (event) => {
+      // event.streams[0].getTracks().forEach((track) => {
+      //   track.onended = () => console.log("Track ended:", track.kind);
+      //   track.onmute = () => console.log("Track muted:", track.kind);
+      //   track.onunmute = () => console.log("Track unmuted:", track.kind);
+      // });
+      remoteStreamRef.current = event.streams[0];
+    };
+
+    setPeerConnection(pc);
+
+    const createAndSendOffer = async () => {
+      const offer = await pc.createOffer({ offerToReceiveAudio: true });
+      await pc.setLocalDescription(offer);
+      emitSocketEvent(SocketEvent.WEBRTC_OFFER, {
+        offer,
+        chatId,
+      });
+    };
+
+    // Set up delayed offer for both client and counselor
+    offerTimeoutRef.current = setTimeout(() => {
+      createAndSendOffer();
+    }, OFFER_TIMEOUT_MS);
+
+    if (isClient) {
+      createAndSendOffer();
+    }
+  };
+
+  useEffect(() => {
+    //connect socket
+    connect();
+    // Get user media stream
+    setupWebrtcAndMediarecorder();
+
+    return () => {
+      // Cleanup
+      if (offerTimeoutRef.current) {
+        clearTimeout(offerTimeoutRef.current);
+      }
+      if (peerConnection) {
+        peerConnection.close();
+      }
+      if (mediaRecorder && mediaRecorder.state !== "inactive") {
+        mediaRecorder.stop();
+      }
+      disconnect();
+    };
+  }, [chatId]);
+
+  useEffect(() => {
+    if (!mediaRecorder) return;
+    if (muted) {
+      mediaRecorder?.pause();
+    } else {
+      mediaRecorder?.resume();
+    }
+  }, [muted, mediaRecorder]);
+
+  const handleWebRTCOffer = useCallback(
+    async (data) => {
+      if (data.chatId !== chatId) return;
+
+      // Clear any existing timeout
+      if (offerTimeoutRef.current) {
+        clearTimeout(offerTimeoutRef.current);
+      }
+      await peerConnection?.setRemoteDescription(
+        new RTCSessionDescription(data.offer)
+      );
+
+      emitSocketEvent(SocketEvent.START_AUDIO_CHAT, {
+        chatId,
+      });
+
+      const answer = await peerConnection.createAnswer();
+      await peerConnection.setLocalDescription(answer);
+      emitSocketEvent(SocketEvent.WEBRTC_ANSWER, {
+        answer,
+        chatId,
+      });
+    },
+    [chatId, peerConnection, offerTimeoutRef]
+  );
+
+  const handleWebRTCAnswer = useCallback(
+    async (data) => {
+      if (data.chatId !== chatId) return;
+
+      emitSocketEvent(SocketEvent.START_AUDIO_CHAT, {
+        chatId,
+      });
+      await peerConnection?.setRemoteDescription(
+        new RTCSessionDescription(data.answer)
+      );
+    },
+    [chatId, peerConnection]
+  );
+
+  const handleOnIceCandidate = useCallback(
+    (data) => {
+      if (!peerConnection || data.chatId !== chatId) return;
+      peerConnection
+        .addIceCandidate(new RTCIceCandidate(data.candidate))
+        .catch((err) => console.error("Error adding ICE candidate:", err));
+    },
+    [chatId, peerConnection]
+  );
+
+  useEffect(() => {
+    if (chatId) {
+      removeIfListenerPresent(SocketEvent.WEBRTC_OFFER);
+      removeIfListenerPresent(SocketEvent.WEBRTC_ANSWER);
+      removeIfListenerPresent(SocketEvent.ICE_CANDIDATE);
+      setListenerForEvent(SocketEvent.WEBRTC_OFFER, handleWebRTCOffer);
+      setListenerForEvent(SocketEvent.WEBRTC_ANSWER, handleWebRTCAnswer);
+      setListenerForEvent(SocketEvent.ICE_CANDIDATE, handleOnIceCandidate);
+    }
+  }, [handleWebRTCOffer, chatId, handleWebRTCAnswer, handleOnIceCandidate]);
+
+  const confirmEndSession = async () => {
+    try {
+      if (mediaRecorder && mediaRecorder.state !== "inactive") {
+        mediaRecorder.stop();
+      }
+      sendMessage({
+        chatId,
+        content: "Session ended",
+        context: {},
+      });
+      endSession();
+      disconnect();
+      navigate("/");
+    } catch (error) {
+      console.error("Error ending session:", error);
+    }
+  };
+
+  // Update the useEffect that handles transcriptions
+  useEffect(() => {
+    if (isCounsellor && transcriptions.length > 0 && !isShrinked) {
+      setIsShrinked(true);
+    }
+  }, [transcriptions, isCounsellor]);
+
+  // TODO: Update modal usae -not required actually spoeaking - confirm
+
+  return (
+    <Modal open>
+      <div className="w-full h-full flex justify-center items-center">
+        <div className="w-full h-full bg-[#161921] relative flex flex-col gap-10 justify-center items-center">
+          <BackgroundTop className="absolute top-0 right-0 opacity-35 z-0" />
+          <BackgroundBottom className="absolute bottom-0 left-0 opacity-35 z-0" />
+
+          {/* Update this div with min-height constraint */}
+          <div
+            className={`flex flex-col justify-center
+              items-center gap-4 z-10 transition-all duration-500 ease-in-out min-h-[30vh] ${
+              isCounsellor && isShrinked
+                ? "transform -translate-y-[30%] scale-75"
+                : ""
+            }`}
+          >
+            <div className="text-white flex justify-center items-center flex-col gap-2">
+              <div className="text-base font-medium">Ongoing Voice Call</div>
+              <div className="text-sm text-[#BABABA]">
+                {minutes > 9 ? minutes : `0${minutes}`}:
+                {seconds > 9 ? seconds : `0${seconds}`}
+              </div>
+            </div>
+            {/* Hidden Audio Element */}
+            <audio
+              ref={(audio) => {
+                if (audio) {
+                  audio.srcObject = remoteStreamRef.current;
+                  audio.muted = muted;
+                  audio.onloadedmetadata = () => {
+                    audio
+                      .play()
+                      .catch((e) => console.error("Audio playback failed:", e));
+                  };
+                }
+              }}
+              autoPlay
+            />
+            {mediaRecorder && (
+              <div className="relative gap-1 flex rounded-lg">
+                <div className="rotate-180 z-0 translate-x-[7px]">
+                  <LiveAudioVisualizer
+                    mediaRecorder={mediaRecorder}
+                    width={200}
+                    height={200}
+                    barWidth={4}
+                    barColor="#FFFFFF"
+                  />
+                </div>
+                <div className="z-0">
+                  <LiveAudioVisualizer
+                    mediaRecorder={mediaRecorder}
+                    width={200}
+                    height={200}
+                    barWidth={4}
+                    barColor="#FFFFFF"
+                  />
+                </div>
+                <div className="waveForm rounded-full absolute top-[38%] left-0 w-1/6 h-1/4 " />
+                <div className="waveForm rounded-full absolute top-[38%] right-0 w-1/6 h-1/4 rotate-180" />
+              </div>
+            )}
+          </div>
+
+          {/* Update transcription container with max-height */}
+          {isCounsellor && isShrinked && (
+            <div className="z-10 w-[85%] max-h-[45vh] overflow-y-auto
+            text-white rounded-lg p-4 transition-all duration-500 ease-in-out custom-scrollbar mb-20">
+              {transcriptions.map((text, index) => (
+                <div
+                  key={index}
+                  className="mb-2 typing-animation"
+                  style={{
+                    animationDelay: `${index * 100}ms`,
+                  }}
+                >
+                  {text}
+                </div>
+              ))}
+            </div>
+          )}
+
+          <div className="z-10 absolute bottom-10 w-full flex justify-center items-center gap-4">
+            <button onClick={() => setMuted((prev) => !prev)}>
+              {muted ? <NoRecord /> : <Record />}
+            </button>
+            <button>
+              {focus ? (
+                <FocusOn onClick={() => setFocus(false)} />
+              ) : (
+                <FocusOff onClick={() => setFocus(true)} />
+              )}
+            </button>
+            <button onClick={confirmEndSession}>
+              <CutCall />
+            </button>
+          </div>
+        </div>
+        <div
+          style={{ width: focus ? "500px" : "0" }}
+          className={"h-full transition-all bg-[#12151F] duration-300}"}
+        >
+          <div className="border-b border-b-[#292929] h-14 px-4 flex justify-between items-center">
+            <div className="font-bold text-white">Copilot</div>
+            <Close className="cursor-pointer" onClick={() => setFocus(false)} />
+          </div>
+        </div>
+      </div>
+    </Modal>
+  );
+};
+
+export default CallTranscript;
