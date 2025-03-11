@@ -12,13 +12,15 @@ import { useSelector } from "react-redux";
 import { RootState } from "@/store/store";
 import { UserRole } from "@/types/user";
 import { MessageType, SocketEvent } from "@/types/message";
-import { useClientChat, useCounsellorChat, useSocket } from "@/hooks";
-
 import {
-  AUDIO_FILE_SIZE,
-  ICE_SERVERS,
-  OFFER_TIMEOUT_MS,
-} from "./constants";
+  useClientChat,
+  useCounsellorChat,
+  useSocket,
+  useIceServers,
+} from "@/hooks";
+import { ICE_SERVERS } from "@/constants/common";
+
+import { AUDIO_FILE_SIZE, OFFER_TIMEOUT_MS } from "./constants";
 
 const AudioCall: FunctionComponent = () => {
   const [peerConnection, setPeerConnection] =
@@ -40,13 +42,12 @@ const AudioCall: FunctionComponent = () => {
   const isClient = user?.role === UserRole.CLIENT;
   const isCounsellor = user?.role === UserRole.COUNSELOR;
 
-  const {
-    getCounsellorChat,
-    endSession,
-  } = useCounsellorChat();
+  const { getCounsellorChat, endSession } = useCounsellorChat();
   const { fetchCurrentChat } = useClientChat();
 
   const MAX_TRANSCRIPTS = 50; // Adjust based on your needs
+
+  const iceServers = useIceServers();
 
   const streamText = useCallback((text: string) => {
     setIsStreaming(true);
@@ -61,12 +62,12 @@ const AudioCall: FunctionComponent = () => {
       if (index < text.length) {
         const nextIndex = Math.min(index + BATCH_SIZE, text.length);
         const chunk = text.slice(index, nextIndex);
-        setCurrentTranscript(prev => prev + chunk);
+        setCurrentTranscript((prev) => prev + chunk);
         index = nextIndex;
       } else {
         clearInterval(streamInterval);
         setIsStreaming(false);
-        setTranscripts(prev => {
+        setTranscripts((prev) => {
           const newTranscripts = [...prev, text];
           // Keep only the latest N transcripts
           return newTranscripts.slice(-MAX_TRANSCRIPTS);
@@ -156,8 +157,9 @@ const AudioCall: FunctionComponent = () => {
   const handleOnIceCandidate = useCallback(
     (data) => {
       if (!peerConnection || data.chatId !== activeChat?.chatId) return;
-      peerConnection.addIceCandidate(new RTCIceCandidate(data.candidate))
-        .catch(err => console.error("Error adding ICE candidate:", err));
+      peerConnection
+        .addIceCandidate(new RTCIceCandidate(data.candidate))
+        .catch((err) => console.error("Error adding ICE candidate:", err));
     },
     [activeChat, peerConnection]
   );
@@ -209,7 +211,6 @@ const AudioCall: FunctionComponent = () => {
     setMediaRecorder(recorder);
   };
 
-
   useEffect(() => {
     if (!mediaRecorder) return;
     if (!muted) {
@@ -256,7 +257,7 @@ const AudioCall: FunctionComponent = () => {
 
           // Create and configure peer connection
           const pc = new RTCPeerConnection({
-            iceServers: ICE_SERVERS,
+            iceServers: iceServers?.urls?.length > 0 ? [iceServers] : ICE_SERVERS, // Fallback STUN server
           });
 
           // Add local tracks to peer connection
@@ -328,7 +329,7 @@ const AudioCall: FunctionComponent = () => {
       }
       disconnect();
     };
-  }, [user, isCounsellor, isClient]);
+  }, [user, isCounsellor, isClient, iceServers]);
 
   const confirmEndSession = async () => {
     try {
@@ -348,14 +349,20 @@ const AudioCall: FunctionComponent = () => {
   useEffect(() => {
     const checkPermissions = async () => {
       try {
-        const permissions = await navigator.mediaDevices.getUserMedia({ audio: true });
-        console.log("Permissions granted:", permissions.getTracks().map(t => t.kind));
-        
+        const permissions = await navigator.mediaDevices.getUserMedia({
+          audio: true,
+        });
+        console.log(
+          "Permissions granted:",
+          permissions.getTracks().map((t) => t.kind)
+        );
+
         // Check if audio output devices are available
         const devices = await navigator.mediaDevices.enumerateDevices();
-        const audioOutputDevices = devices.filter(device => device.kind === "audiooutput");
+        const audioOutputDevices = devices.filter(
+          (device) => device.kind === "audiooutput"
+        );
         console.log("Audio output devices:", audioOutputDevices);
-
       } catch (error) {
         console.error("Permission check failed:", error);
       }
@@ -403,7 +410,9 @@ const AudioCall: FunctionComponent = () => {
                 )}
               </>
             ) : (
-              <p className="text-gray-400 text-center">No transcript available yet</p>
+              <p className="text-gray-400 text-center">
+                No transcript available yet
+              </p>
             )}
           </div>
         </div>
@@ -415,7 +424,8 @@ const AudioCall: FunctionComponent = () => {
               audio.srcObject = remoteStreamRef.current;
               audio.muted = muted;
               audio.onloadedmetadata = () => {
-                audio.play()
+                audio
+                  .play()
                   .catch((e) => console.error("Audio playback failed:", e));
               };
             }

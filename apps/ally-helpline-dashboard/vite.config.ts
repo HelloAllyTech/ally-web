@@ -9,7 +9,7 @@ export default defineConfig(({ mode }) => ({
   server: {
     host: "::",
     port: 8080,
-    cors: true,
+    cors: false,
     allowedHosts: [
       "web.dev.lifeline.kvsandbox.link",
       // Add any other domains
