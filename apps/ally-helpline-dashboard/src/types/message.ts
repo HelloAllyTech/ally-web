@@ -47,7 +47,6 @@ export enum SocketEvent {
   WEBRTC_ANSWER = "webrtc-answer",
   AUDIO_MESSAGE = "AUDIO_MESSAGE",
   START_AUDIO_CHAT = "START_AUDIO_CHAT",
-  PARTICIPANT_MUTED = "PARTICIPANT_MUTED",
 }
 
 export enum ChatStatus {

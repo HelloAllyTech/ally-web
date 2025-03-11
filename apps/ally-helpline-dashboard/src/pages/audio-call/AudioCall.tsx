@@ -208,26 +208,18 @@ const AudioCall: FunctionComponent = () => {
       }
     };
 
+    recorder.start(500);
     setMediaRecorder(recorder);
   };
 
   useEffect(() => {
     if (!mediaRecorder) return;
-    if (!muted) {
-      mediaRecorder?.start(500);
+    if (muted) {
+      mediaRecorder?.pause();
     } else {
-      mediaRecorder?.stop();
+      mediaRecorder?.resume();
     }
   }, [muted, mediaRecorder]);
-
-  useEffect(() => {
-    if(!emitSocketEvent || !activeChat) return;
-    if(muted){
-      emitSocketEvent(SocketEvent.PARTICIPANT_MUTED, {
-        chatId: activeChat?.chatId,
-      });
-    }
-  }, [muted, emitSocketEvent, activeChat]);
 
   useEffect(() => {
     if (activeChat && activeChat?.chatId) {
@@ -336,12 +328,18 @@ const AudioCall: FunctionComponent = () => {
       if (peerConnection) {
         peerConnection.close();
       }
+      if (mediaRecorder && mediaRecorder.state !== "inactive") {
+        mediaRecorder.stop();
+      }
       disconnect();
     };
   }, [user, isCounsellor, isClient, iceServers]);
 
   const confirmEndSession = async () => {
     try {
+      if (mediaRecorder && mediaRecorder.state !== "inactive") {
+        mediaRecorder.stop();
+      }
       sendMessage({
         chatId: activeChat.chatId,
         content: "Session ended",
