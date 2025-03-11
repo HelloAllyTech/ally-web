@@ -221,6 +221,15 @@ const AudioCall: FunctionComponent = () => {
   }, [muted, mediaRecorder]);
 
   useEffect(() => {
+    if(!emitSocketEvent || !activeChat) return;
+    if(muted){
+      emitSocketEvent(SocketEvent.PARTICIPANT_MUTED, {
+        chatId: activeChat?.chatId,
+      });
+    }
+  }, [muted, emitSocketEvent, activeChat]);
+
+  useEffect(() => {
     if (activeChat && activeChat?.chatId) {
       removeIfListenerPresent(SocketEvent.WEBRTC_OFFER);
       removeIfListenerPresent(SocketEvent.WEBRTC_ANSWER);
