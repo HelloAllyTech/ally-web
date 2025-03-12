@@ -6,10 +6,11 @@ import { UserRole } from "@/types/user";
 import { RootState } from "@/store/store";
 import { useClientChat, useCounsellorChat } from "@/hooks";
 
+import { Chat } from "./types";
 import CallTranscript from "./CallTranscript";
 
 const AudioCall: FunctionComponent = () => {
-  const [activeChat, setActiveChat] = useState<{ chatId: number } | null>();
+  const [activeChat, setActiveChat] = useState<Chat | null>();
 
   const user = useSelector((state: RootState) => state.user.user);
   const navigate = useNavigate();
@@ -50,7 +51,7 @@ const AudioCall: FunctionComponent = () => {
       {activeChat?.chatId && (
         <CallTranscript
           endSession={confirmEndSession}
-          chatId={activeChat.chatId}
+          activeChat={activeChat}
         />
       )}
     </div>

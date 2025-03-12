@@ -5,6 +5,7 @@ import CallLogIcon from "./CallLogIcon.svg?react";
 import LiveCallIcon from "./LiveCallIcon.svg?react";
 import HomeIcon from "./HomeIcon.svg?react";
 import Lifeline from "./Lifeline.svg?react";
+import LifelineLogo from "./LifelineLogo.svg?react";
 import DefaultAvatar from "./DefaultAvatar.svg?react";
 import SendIcon from "./SendIcon.svg?react";
 import Dashboard from "./Dashboard.svg?react";
@@ -47,5 +48,6 @@ export {
   Close,
   BackgroundBottom,
   CallCut,
-  CallAttend
+  CallAttend,
+  LifelineLogo
 };
