@@ -106,6 +106,28 @@ const CallTranscript = (props: CallTranscriptProps) => {
         return prev + 1;
       });
     }, 1000);
+    const checkPermissions = async () => {
+      try {
+        const permissions = await navigator.mediaDevices.getUserMedia({
+          audio: true,
+        });
+        console.log(
+          "Permissions granted:",
+          permissions.getTracks().map((t) => t.kind)
+        );
+
+        // Check if audio output devices are available
+        const devices = await navigator.mediaDevices.enumerateDevices();
+        const audioOutputDevices = devices.filter(
+          (device) => device.kind === "audiooutput"
+        );
+        console.log("Audio output devices:", audioOutputDevices);
+      } catch (error) {
+        console.error("Permission check failed:", error);
+      }
+    };
+
+    checkPermissions();
     return () => {
       clearInterval(secondsInterval);
     };
@@ -234,7 +256,7 @@ const CallTranscript = (props: CallTranscriptProps) => {
       }
       disconnect();
     };
-  }, [chatId]);
+  }, [chatId, user, isCounsellor, isClient, iceServers]);
 
   useEffect(() => {
     if (!mediaRecorder) return;
@@ -326,7 +348,7 @@ const CallTranscript = (props: CallTranscriptProps) => {
 
   // Update the useEffect that handles transcriptions
   useEffect(() => {
-    if (isCounsellor && transcriptions.length > 0 && !isShrinked) {
+    if (transcriptions.length > 0 && !isShrinked) {
       setIsShrinked(true);
     }
   }, [transcriptions, isCounsellor]);
@@ -344,10 +366,8 @@ const CallTranscript = (props: CallTranscriptProps) => {
           <div
             className={`flex flex-col justify-center
               items-center gap-4 z-10 transition-all duration-500 ease-in-out min-h-[30vh] ${
-              isCounsellor && isShrinked
-                ? "transform -translate-y-[30%] scale-75"
-                : ""
-            }`}
+                isCounsellor && isShrinked ? "transform -translate-y-[30%]" : ""
+              }`}
           >
             <div className="text-white flex justify-center items-center flex-col gap-2">
               <div className="text-base font-medium">Ongoing Voice Call</div>
@@ -398,20 +418,27 @@ const CallTranscript = (props: CallTranscriptProps) => {
           </div>
 
           {/* Update transcription container with max-height */}
-          {isCounsellor && isShrinked && (
-            <div className="z-10 w-[85%] max-h-[45vh] overflow-y-auto
-            text-white rounded-lg p-4 transition-all duration-500 ease-in-out custom-scrollbar mb-20">
-              {transcriptions.map((text, index) => (
-                <div
-                  key={index}
-                  className="mb-2 typing-animation"
-                  style={{
-                    animationDelay: `${index * 100}ms`,
-                  }}
-                >
-                  {text}
-                </div>
-              ))}
+          {isShrinked && (
+            <div className=" w-[85%]">
+              <h3 className="text-white mb-4 self-start">
+                Real-time Transcription
+              </h3>
+              <div
+                className="z-10 h-[35vh] overflow-y-auto
+            text-white rounded-lg p-4 transition-all duration-500 ease-in-out custom-scrollbar mb-20"
+              >
+                {transcriptions.map((text, index) => (
+                  <div
+                    key={index}
+                    className="mb-2 typing-animation"
+                    style={{
+                      animationDelay: `${index * 100}ms`,
+                    }}
+                  >
+                    {text}
+                  </div>
+                ))}
+              </div>
             </div>
           )}
 
