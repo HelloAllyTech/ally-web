@@ -144,6 +144,11 @@ jobs:
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
 
+      - name: Get env
+        id: get_env
+        run: |
+          aws s3 cp s3://life-${{ github.event.inputs.environment }}-s3-environment/front-end/.env .env
+
       - name: Build and Push Docker image
         run: |
           echo ${{ vars[env.ECR_REPOSITORY] }}
