@@ -1,5 +1,8 @@
-// Custom markdown parser
-const CustomMarkdown: React.FC<{ content: string }> = ({ content }) => {
+import { FunctionComponent } from "react";
+
+const CustomMarkdown: FunctionComponent<{ content: string }> = ({
+  content,
+}) => {
   const parseMarkdown = (text: string) => {
     const lines = text.split("\n");
     const parsedContent: React.ReactNode[] = [];

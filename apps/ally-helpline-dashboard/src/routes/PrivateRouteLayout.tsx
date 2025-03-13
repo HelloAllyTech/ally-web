@@ -10,8 +10,8 @@ import {
 import { CallLogs, LiveCall, Calls } from "@/pages";
 import { NavSideBar, LifelineHeader } from "@/components";
 import { useUser } from "@/hooks";
-import { TabId, TabLabel } from "@/constants/tabs";
-import { ROUTES } from "@/constants/routes";
+import { TabId} from "@/constants/tabs";
+import { navBarOptions, ROUTES } from "@/constants/routes";
 import { UserRole } from "@/types/user";
 import AudioCall from "@/pages/audio-call/AudioCall";
 
@@ -36,33 +36,10 @@ const PrivateRouteLayout = () => {
     setActiveTab(getActiveTab());
   }, [pathname]);
 
-  const getActiveTab = () => {
-    switch (pathname) {
-      case ROUTES.LIVE_CALL:
-        return TabId.LIVE_CALL;
-      case ROUTES.CALL_LOGS:
-        return TabId.CALL_LOGS;
-      case ROUTES.HOME:
-        return TabId.HOME;
-      case ROUTES.CALLS:
-        return TabId.CALLS;
-      case ROUTES.CALENDER:
-        return TabId.CALENDER;
-      case ROUTES.LEARN:
-        return TabId.LEARN;
-      case ROUTES.ANALYTICS:
-        return TabId.ANALYTICS;
-      case ROUTES.STRESS_BUSTERS:
-        return TabId.STRESS_BUSTERS;
-      case ROUTES.SETTINGS:
-        return TabId.SETTINGS;
-      default:
-        return TabId.CALLS;
-    }
-  };
+  const getActiveTab = () => navBarOptions.find((option) => option.path === pathname)?.id ?? TabId.CALLS;
 
-  const handleTabChange = (tab: string) => {
-    navigate(tab);
+  const handleTabChange = (path: string) => {
+    navigate(path);
   };
 
   const handleLogout = () => {
@@ -75,6 +52,7 @@ const PrivateRouteLayout = () => {
     ROUTES.AUDIO_CALL,
   ] as string[];
   const excludeNavBar = [ROUTES.AUDIO_CALL] as string[];
+
   if (user)
     return (
       <div className="flex h-screen w-full ">

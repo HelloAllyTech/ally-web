@@ -1,10 +1,4 @@
 export enum TabId {
-  HOME = "HOME",
-  CALL_LOGS = "CALL_LOGS",
-  LIVE_CALL = "LIVE_CALL",
-}
-
-export enum TabId {
   CALLS = "CALLS",
   CALENDER = "CALENDER",
   LEARN = "LEARN",
@@ -12,15 +6,3 @@ export enum TabId {
   ANALYTICS = "ANALYTICS",
   SETTINGS = "SETTINGS",
 }
-
-export const TabLabel = {
-  [TabId.HOME]: "Home",
-  [TabId.CALL_LOGS]: "Call Logs",
-  [TabId.LIVE_CALL]: "Live Call",
-  [TabId.CALLS]: "Calls",
-  [TabId.CALENDER]: "Calender",
-  [TabId.LEARN]: "Learn",
-  [TabId.STRESS_BUSTERS]: "Stress Busters",
-  [TabId.ANALYTICS]: "Analytics",
-  [TabId.SETTINGS]: "Settings",
-};

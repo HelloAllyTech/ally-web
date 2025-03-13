@@ -1,3 +1,5 @@
+import { Book, Relax } from "@/assets/icons";
+
 import { TabId } from "./tabs";
 
 export const ROUTES = {
@@ -18,18 +20,47 @@ export const ROUTES = {
   SETTINGS: "/settings",
 } as const;
 
-// Type for route paths
-export type RoutePath = (typeof ROUTES)[keyof typeof ROUTES];
+import PhoneOutlinedIcon from "@mui/icons-material/PhoneOutlined";
+import DateRangeOutlinedIcon from "@mui/icons-material/DateRangeOutlined";
+import LeaderboardOutlinedIcon from "@mui/icons-material/LeaderboardOutlined";
+import SettingsOutlinedIcon from "@mui/icons-material/SettingsOutlined";
 
-// Helper to map TabId to Routes
-export const TAB_ROUTES: Record<TabId, RoutePath> = {
-  [TabId.HOME]: ROUTES.HOME,
-  [TabId.LIVE_CALL]: ROUTES.LIVE_CALL,
-  [TabId.CALL_LOGS]: ROUTES.CALL_LOGS,
-  [TabId.CALLS]: ROUTES.CALLS,
-  [TabId.CALENDER]: ROUTES.CALENDER,
-  [TabId.LEARN]: ROUTES.LEARN,
-  [TabId.STRESS_BUSTERS]: ROUTES.STRESS_BUSTERS,
-  [TabId.ANALYTICS]: ROUTES.ANALYTICS,
-  [TabId.SETTINGS]: ROUTES.SETTINGS,
-} as const;
+export const navBarOptions = [
+    {
+      id: TabId.CALLS,
+      title: "Calls",
+      Icon: PhoneOutlinedIcon,
+      path: ROUTES.CALLS,
+      
+    },
+    {
+      id: TabId.CALENDER,
+      title: "Calender",
+      Icon: DateRangeOutlinedIcon,
+      path: ROUTES.CALENDER
+    },
+    {
+      id: TabId.LEARN,
+      title: "Learn",
+      Icon: Book,
+      path: ROUTES.LEARN
+    },
+    {
+      id: TabId.STRESS_BUSTERS,
+      title: "Stress Busters",
+      Icon: Relax,
+      path: ROUTES.STRESS_BUSTERS
+    },
+    {
+      id:  TabId.ANALYTICS,
+      title: "Analytics",
+      Icon: LeaderboardOutlinedIcon,
+      path: ROUTES.ANALYTICS
+    },
+    {
+      id: TabId.SETTINGS,
+      title: "Settings",
+      Icon: SettingsOutlinedIcon,
+      path: ROUTES.SETTINGS
+    },
+  ];

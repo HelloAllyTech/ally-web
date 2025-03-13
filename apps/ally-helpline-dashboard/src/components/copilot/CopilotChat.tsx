@@ -6,9 +6,13 @@ import { RootState } from "@/store/store";
 import { cn } from "@/utils/tailwind";
 import { ROUTES } from "@/constants/routes";
 import { CopilotIcon } from "@/assets/icons";
-import { ConfirmationBox, Breather, TypingIndicator } from "@/components";
+import {
+  ConfirmationBox,
+  Breather,
+  TypingIndicator,
+  CustomMarkdown,
+} from "@/components";
 
-import CustomMarkdown from "./CustomMarkdown";
 interface ChatMessage {
   content: string;
   isUser: boolean;
