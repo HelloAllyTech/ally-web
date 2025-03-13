@@ -35,6 +35,8 @@ import CustomMarkdown from "@/components/copilot/CustomMarkdown";
 // TODO: Responsiveness
 // TODO: Blurry effect at the top and bottom of the conversation
 // TODO: Add streaming effect in transcription
+// TODO: Find firefox issue
+// TODO: Bug with no trascript intermittently
 const CallTranscript = (props: CallTranscriptProps) => {
   const { endSession, activeChat } = props;
   const chatId = useMemo(() => activeChat.chatId, [activeChat]);

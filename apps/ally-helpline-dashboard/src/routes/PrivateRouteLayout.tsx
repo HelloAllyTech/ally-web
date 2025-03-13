@@ -7,7 +7,7 @@ import {
   useLocation,
 } from "react-router-dom";
 
-import { CallLogs, LiveCall, Dashboard, Calls } from "@/pages";
+import { CallLogs, LiveCall, Calls } from "@/pages";
 import { NavSideBar, LifelineHeader } from "@/components";
 import { useUser } from "@/hooks";
 import { TabId, TabLabel } from "@/constants/tabs";
@@ -42,8 +42,6 @@ const PrivateRouteLayout = () => {
         return TabId.LIVE_CALL;
       case ROUTES.CALL_LOGS:
         return TabId.CALL_LOGS;
-      case ROUTES.DASHBOARD:
-        return TabId.HOME;
       case ROUTES.HOME:
         return TabId.HOME;
       case ROUTES.CALLS:
@@ -72,13 +70,6 @@ const PrivateRouteLayout = () => {
     navigate(ROUTES.LOGIN);
   };
 
-  const getTabTitle = (tabId: TabId) => {
-    if (tabId === TabId.HOME) {
-      return isClient ? TabLabel[TabId.HOME] : TabLabel[TabId.DASHBOARD];
-    }
-    return TabLabel[tabId];
-  };
-
   const excludeDefaultPageHeader = [
     ROUTES.LIVE_CALL,
     ROUTES.AUDIO_CALL,
@@ -99,7 +90,7 @@ const PrivateRouteLayout = () => {
                 isClient ? (
                   <Navigate to={ROUTES.CALL_LOGS} />
                 ) : (
-                  <Navigate to={ROUTES.DASHBOARD} />
+                  <Navigate to={ROUTES.CALLS} />
                 )
               }
             />
@@ -108,9 +99,6 @@ const PrivateRouteLayout = () => {
               element={<LiveCall handleLogout={handleLogout} />}
             />
             <Route path={ROUTES.AUDIO_CALL} element={<AudioCall />} />
-            {!isClient && (
-              <Route path={ROUTES.DASHBOARD} element={<Dashboard />} />
-            )}
             <Route path={ROUTES.CALL_LOGS} element={<CallLogs />} />
             <Route path={ROUTES.CALLS} element={<Calls />} />
             <Route path={ROUTES.CALENDER} element={<Calls />} />

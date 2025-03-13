@@ -1,11 +1,11 @@
 import * as Tooltip from "@radix-ui/react-tooltip";
 import { useSelector } from "react-redux";
 
-import { RootState } from "@/store/store";
 import { UserRole } from "@/types/user";
-import { CallLogIcon, HomeIcon, LiveCallIcon } from "@/assets/icons";
-import { TabId, TabLabel } from "@/constants/tabs";
+import { RootState } from "@/store/store";
 import { ROUTES } from "@/constants/routes";
+import { TabId, TabLabel } from "@/constants/tabs";
+import { CallLogIcon, HomeIcon, LiveCallIcon } from "@/assets/icons";
 
 interface NavSideBarProps {
   activeTab: TabId;
@@ -24,8 +24,11 @@ const NavSideBar = ({ activeTab, onTabChange }: NavSideBarProps) => {
             <Tooltip.Trigger asChild>
               <button
                 onClick={() => onTabChange(ROUTES.HOME)}
-                className={`p-3 place-items-center rounded-lg ${activeTab === TabId.HOME ? "text-white" : "text-gray-400 hover:text-white"
-                  }`}
+                className={`p-3 place-items-center rounded-lg ${
+                  activeTab === TabId.HOME
+                    ? "text-white"
+                    : "text-gray-400 hover:text-white"
+                }`}
               >
                 <HomeIcon className="path path-stroke-current" />
               </button>
@@ -35,7 +38,7 @@ const NavSideBar = ({ activeTab, onTabChange }: NavSideBarProps) => {
                 className="bg-gray-800 text-white px-3 py-1.5 rounded text-sm"
                 side="right"
               >
-                {isClient ? TabLabel[TabId.HOME] : TabLabel[TabId.DASHBOARD]}
+                {TabLabel[TabId.HOME]}
                 <Tooltip.Arrow className="fill-gray-800" />
               </Tooltip.Content>
             </Tooltip.Portal>
@@ -47,11 +50,16 @@ const NavSideBar = ({ activeTab, onTabChange }: NavSideBarProps) => {
                 <Tooltip.Trigger asChild>
                   <button
                     onClick={() => onTabChange(ROUTES.LIVE_CALL)}
-                    className={`p-3 place-items-center rounded-lg ${activeTab === TabId.LIVE_CALL ? "text-white" : "text-gray-400 hover:text-white"
-                      }`}
+                    className={`p-3 place-items-center rounded-lg ${
+                      activeTab === TabId.LIVE_CALL
+                        ? "text-white"
+                        : "text-gray-400 hover:text-white"
+                    }`}
                   >
                     <LiveCallIcon className="path path-fill-current" />
-                    <p className="text-[10px] mt-1">{TabLabel[TabId.LIVE_CALL]}</p>
+                    <p className="text-[10px] mt-1">
+                      {TabLabel[TabId.LIVE_CALL]}
+                    </p>
                   </button>
                 </Tooltip.Trigger>
                 <Tooltip.Portal>
@@ -69,11 +77,16 @@ const NavSideBar = ({ activeTab, onTabChange }: NavSideBarProps) => {
                 <Tooltip.Trigger asChild>
                   <button
                     onClick={() => onTabChange(ROUTES.CALL_LOGS)}
-                    className={`p-3 place-items-center rounded-lg ${activeTab === TabId.CALL_LOGS ? "text-white" : "text-gray-400 hover:text-white"
-                      }`}
+                    className={`p-3 place-items-center rounded-lg ${
+                      activeTab === TabId.CALL_LOGS
+                        ? "text-white"
+                        : "text-gray-400 hover:text-white"
+                    }`}
                   >
                     <CallLogIcon className="path path-fill-current" />
-                    <p className="text-[10px] mt-1">{TabLabel[TabId.CALL_LOGS]}</p>
+                    <p className="text-[10px] mt-1">
+                      {TabLabel[TabId.CALL_LOGS]}
+                    </p>
                   </button>
                 </Tooltip.Trigger>
                 <Tooltip.Portal>

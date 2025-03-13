@@ -7,7 +7,6 @@ export const ROUTES = {
 
   // Private Routes
   HOME: "/",
-  DASHBOARD: "/dashboard",
   LIVE_CALL: "/live-call",
   CALL_LOGS: "/call-logs",
   AUDIO_CALL: "/audio-call",
@@ -25,7 +24,6 @@ export type RoutePath = (typeof ROUTES)[keyof typeof ROUTES];
 // Helper to map TabId to Routes
 export const TAB_ROUTES: Record<TabId, RoutePath> = {
   [TabId.HOME]: ROUTES.HOME,
-  [TabId.DASHBOARD]: ROUTES.DASHBOARD,
   [TabId.LIVE_CALL]: ROUTES.LIVE_CALL,
   [TabId.CALL_LOGS]: ROUTES.CALL_LOGS,
   [TabId.CALLS]: ROUTES.CALLS,

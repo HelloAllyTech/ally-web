@@ -8,7 +8,6 @@ import Lifeline from "./Lifeline.svg?react";
 import LifelineLogo from "./LifelineLogo.svg?react";
 import DefaultAvatar from "./DefaultAvatar.svg?react";
 import SendIcon from "./SendIcon.svg?react";
-import Dashboard from "./Dashboard.svg?react";
 import ClientHandledIcon from "./Icon_client_handled.png";
 import CounsellorSuccessIcon from "./Icon_counsellor_success_rate.png";
 import TotalSessionsIcon from "./Icon_total_sessions.png";
@@ -33,7 +32,6 @@ export {
   HomeIcon,
   DefaultAvatar,
   SendIcon,
-  Dashboard,
   Lifeline,
   ClientHandledIcon,
   CounsellorSuccessIcon,
