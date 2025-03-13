@@ -34,7 +34,6 @@ import CustomMarkdown from "@/components/copilot/CustomMarkdown";
 // TODO: Try to make it more similar to Figma
 // TODO: Responsiveness
 // TODO: Blurry effect at the top and bottom of the conversation
-// TODO: Make the audio play when the user is not speaking and also when the user havent given microphone permissions
 // TODO: Add streaming effect in transcription
 const CallTranscript = (props: CallTranscriptProps) => {
   const { endSession, activeChat } = props;
@@ -195,11 +194,17 @@ const CallTranscript = (props: CallTranscriptProps) => {
     };
   }, []);
 
+  // Add a reference to store the local stream
+  const localStreamRef = useRef<MediaStream | null>(null);
+
   const setupWebrtcAndMediarecorder = async () => {
     // Get user media stream
     const stream = await navigator.mediaDevices.getUserMedia({
       audio: true,
     });
+    // Store the stream reference
+    localStreamRef.current = stream;
+
     // Setup media recorder
     const chunks: BlobPart[] = [];
     let totalSize = 0;
@@ -334,8 +339,16 @@ const CallTranscript = (props: CallTranscriptProps) => {
     if (!mediaRecorder) return;
     if (muted) {
       mediaRecorder?.pause();
+      // Mute all audio tracks in the local stream
+      localStreamRef.current?.getAudioTracks().forEach((track) => {
+        track.enabled = false;
+      });
     } else {
       mediaRecorder?.resume();
+      // Unmute all audio tracks in the local stream
+      localStreamRef.current?.getAudioTracks().forEach((track) => {
+        track.enabled = true;
+      });
     }
   }, [muted, mediaRecorder]);
 
