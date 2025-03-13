@@ -21,4 +21,6 @@ export interface Transcription {
   message: string;
   senderId: number;
   timestamp: number;
+  isFinal?: boolean;
+  isSentenceComplete?: boolean;
 }

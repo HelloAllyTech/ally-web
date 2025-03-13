@@ -82,22 +82,50 @@ const CallTranscript = (props: CallTranscriptProps) => {
           } else {
             setTranscriptions((prev) => {
               const lastTranscription = prev[prev.length - 1];
-
-              // If last message was from the same sender, combine messages
+              if (!lastTranscription) {
+                return [
+                  ...prev,
+                  {
+                    id: payload.id,
+                    message: payload.content,
+                    senderId: payload.senderId,
+                    timestamp: payload.createdAt,
+                    isFinal: payload.isFinal,
+                    isSentenceComplete: payload.isSentenceComplete,
+                  },
+                ];
+              }
               if (
-                lastTranscription &&
+                !lastTranscription.isFinal &&
                 lastTranscription.senderId === payload.senderId
               ) {
+                // replace the last transcription with the new one
                 const updatedTranscriptions = [...prev];
                 updatedTranscriptions[prev.length - 1] = {
                   ...lastTranscription,
-                  message: `${lastTranscription.message} ${payload.content}`,
-                  timestamp: Date.now(),
+                  message: payload.content,
+                  isSentenceComplete: payload.isSentenceComplete,
+                  isFinal: payload.isFinal,
                 };
                 return updatedTranscriptions;
               }
 
-              // Otherwise add new transcription entry
+              if (
+                lastTranscription.senderId === payload.senderId &&
+                !lastTranscription.isSentenceComplete &&
+                lastTranscription.isFinal &&
+                payload.isFinal
+              ) {
+                // concat the last transcription with the new one
+                const updatedTranscriptions = [...prev];
+                updatedTranscriptions[prev.length - 1] = {
+                  ...lastTranscription,
+                  message: `${lastTranscription.message} ${payload.content}`,
+                  isSentenceComplete: payload.isSentenceComplete,
+                  isFinal: payload.isFinal,
+                };
+                return updatedTranscriptions;
+              }
               return [
                 ...prev,
                 {
@@ -105,6 +133,8 @@ const CallTranscript = (props: CallTranscriptProps) => {
                   message: payload.content,
                   senderId: payload.senderId,
                   timestamp: payload.createdAt,
+                  isFinal: payload.isFinal,
+                  isSentenceComplete: payload.isSentenceComplete,
                 },
               ];
             });
@@ -120,25 +150,12 @@ const CallTranscript = (props: CallTranscriptProps) => {
       const existingTranscriptions = activeChat.messages
         .reverse()
         .filter((transcription) => transcription.type === MessageType.TEXT)
-        .reduce((acc, current) => {
-          // If array is empty or last message was from different sender, add new entry
-          if (
-            acc.length === 0 ||
-            acc[acc.length - 1].senderId !== current.senderId
-          ) {
-            acc.push({
-              id: current.id,
-              message: current.content,
-              senderId: current.senderId,
-              timestamp: current.createdAt,
-            });
-          } else {
-            // Merge with previous message from same sender
-            acc[acc.length - 1].message += ` ${current.content}`;
-            acc[acc.length - 1].timestamp = current.createdAt; // Update timestamp to latest
-          }
-          return acc;
-        }, [] as Array<Transcription>);
+        .map((transcription) => ({
+          id: transcription.id,
+          message: transcription.content,
+          senderId: transcription.senderId,
+          timestamp: transcription.createdAt,
+        }));
       setTranscriptions(existingTranscriptions);
 
       const existingNudges = activeChat.messages
@@ -401,6 +418,24 @@ const CallTranscript = (props: CallTranscriptProps) => {
     }
   };
 
+  const transcriptContainerRef = useRef<HTMLDivElement>(null);
+  const nudgesContainerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (transcriptContainerRef.current) {
+      transcriptContainerRef.current.scrollTop =
+        transcriptContainerRef.current.scrollHeight;
+    }
+  }, [transcriptions]);
+
+  // Add this effect to scroll to bottom when nudges change
+  useEffect(() => {
+    if (nudgesContainerRef.current) {
+      nudgesContainerRef.current.scrollTop =
+        nudgesContainerRef.current.scrollHeight;
+    }
+  }, [nudges]);
+
   // TODO: Update modal usae -not required actually spoeaking - confirm
 
   return (
@@ -474,6 +509,7 @@ const CallTranscript = (props: CallTranscriptProps) => {
                 }}
               />
               <div
+                ref={transcriptContainerRef}
                 className="z-10 flex-1 overflow-y-auto text-white rounded-lg p-4 
                   transition-all duration-500 ease-in-out custom-scrollbar mb-20 flex flex-col gap-2"
               >
@@ -486,11 +522,15 @@ const CallTranscript = (props: CallTranscriptProps) => {
                         : "self-start"
                     } w-[60%]`}
                   >
-                    <div className="font-bold mt-2">
-                      {transcriptionObj.senderId === user?.userId
-                        ? "You"
-                        : "Speaker"}
-                    </div>
+                    {(index === 0 ||
+                      transcriptions[index - 1].senderId !==
+                        transcriptionObj.senderId) && (
+                      <div className="font-bold mt-2">
+                        {transcriptionObj.senderId === user?.userId
+                          ? "You"
+                          : "Speaker"}
+                      </div>
+                    )}
                     <div
                       key={index}
                       className="typing-animation"
@@ -524,47 +564,48 @@ const CallTranscript = (props: CallTranscriptProps) => {
             </button>
           </div>
         </div>
-        <div
-          style={{ width: focus ? "500px" : "0" }}
-          className={"h-full transition-all bg-[#12151F] duration-300}"}
-        >
-          <div className="border-b border-b-[#292929] h-14 px-4 flex justify-between items-center">
-            <div className="font-bold text-white">Copilot</div>
-            <Close className="cursor-pointer" onClick={() => setFocus(false)} />
-          </div>
-          <div className="p-4">
-            {nudges?.map((nudge, index) => (
-              <div
-                className="bg-[#1C1F2A] rounded-lg p-4 mb-2"
-                key={`nudge-${index}`}
-              >
-                <LifelineLogo />
-                {/* TODO: Confirm if markdown or not and remove or reuse */}
-                {/* <div className="flex items-center gap-2 my-2">
-                  <div className="text-base text-white">
-                    Reflect their feelings
+        {isCounsellor && (
+          <div
+            style={{ width: focus ? "500px" : "0" }}
+            className={"h-full transition-all bg-[#12151F] duration-300}"}
+          >
+            <div className="border-b border-b-[#292929] h-14 px-4 flex justify-between items-center">
+              <div className="font-bold text-white">Copilot</div>
+              <Close
+                className="cursor-pointer"
+                onClick={() => setFocus(false)}
+              />
+            </div>
+            <div
+              ref={nudgesContainerRef}
+              className="p-4 h-[calc(100vh-3.4rem)] overflow-y-auto custom-scrollbar"
+            >
+              {nudges?.map((nudge, index) => (
+                <div
+                  className="bg-[#1C1F2A] rounded-lg p-4 mb-2"
+                  key={`nudge-${index}`}
+                >
+                  <LifelineLogo />
+                  <CustomMarkdown content={nudge} />
+                  <Divider
+                    sx={{
+                      backgroundColor: "rgba(255, 255, 255, 0.12)",
+                    }}
+                  />
+                  <div className="flex text-sm items-center gap-2 text-[#BABABA]">
+                    <span>Does this help?</span>
+                    <button className="hover:bg-[#292929] p-2 rounded-lg transition-colors">
+                      <ThumbsDown className="w-5 h-5" />
+                    </button>
+                    <button className="hover:bg-[#292929] p-2 rounded-lg transition-colors">
+                      <ThumbsUp className="w-5 h-5" />
+                    </button>
                   </div>
                 </div>
-                <p className="text-[#BABABA] text-sm mb-6">{nudge}</p> */}
-                <CustomMarkdown content={nudge} />
-                <Divider
-                  sx={{
-                    backgroundColor: "rgba(255, 255, 255, 0.12)",
-                  }}
-                />
-                <div className="flex text-sm items-center gap-2 text-[#BABABA]">
-                  <span>Does this help?</span>
-                  <button className="hover:bg-[#292929] p-2 rounded-lg transition-colors">
-                    <ThumbsDown className="w-5 h-5" />
-                  </button>
-                  <button className="hover:bg-[#292929] p-2 rounded-lg transition-colors">
-                    <ThumbsUp className="w-5 h-5" />
-                  </button>
-                </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
-        </div>
+        )}
       </div>
     </Modal>
   );

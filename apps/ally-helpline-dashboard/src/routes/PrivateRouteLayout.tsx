@@ -79,17 +79,19 @@ const PrivateRouteLayout = () => {
     return TabLabel[tabId];
   };
 
-  const excludeDefaultPageHeader = [ROUTES.LIVE_CALL] as string[];
+  const excludeDefaultPageHeader = [
+    ROUTES.LIVE_CALL,
+    ROUTES.AUDIO_CALL,
+  ] as string[];
+  const excludeNavBar = [ROUTES.AUDIO_CALL] as string[];
   if (user)
     return (
       <div className="flex h-screen w-full ">
-        {!isClient && (
+        {!isClient && !excludeNavBar.includes(pathname) && (
           <NavSideBar activeTab={activeTab} onTabChange={handleTabChange} />
         )}
         <div className="flex-1 min-h-screen overflow-auto bg-[#F9FAFB] custom-scrollbar">
-          {!excludeDefaultPageHeader.includes(pathname) && (
-            <LifelineHeader />
-          )}
+          {!excludeDefaultPageHeader.includes(pathname) && <LifelineHeader />}
           <Routes>
             <Route
               index
