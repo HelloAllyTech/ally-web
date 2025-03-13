@@ -19,6 +19,7 @@ import {
 } from "@/assets/icons";
 import { UserRole } from "@/types/user";
 import { RootState } from "@/store/store";
+import { CustomMarkdown } from "@/components";
 import { ICE_SERVERS } from "@/constants/common";
 import { useIceServers, useSocket } from "@/hooks";
 import { MessageType, SocketEvent } from "@/types/message";
@@ -26,8 +27,6 @@ import { MessageType, SocketEvent } from "@/types/message";
 import "./CallTranscript.css";
 import { CallTranscriptProps, Transcription } from "./types";
 import { AUDIO_FILE_SIZE, OFFER_TIMEOUT_MS } from "./constants";
-// TODO: Move nudge bar to component or keep custom amrkdown standalone component
-import CustomMarkdown from "@/components/copilot/CustomMarkdown";
 
 // TODO: Uninstall react-audio-voice-recorder
 // TODO: Split transcription to client-counselor
