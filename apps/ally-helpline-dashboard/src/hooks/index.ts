@@ -6,6 +6,7 @@ import { useWaitingClients } from "./useWaitingClients";
 import { useCounsellorChat } from "./useCounsellorChat";
 import { useAuthLogin } from "./useAuthLogin";
 import { useUser } from "./useUser";
+import { useIceServers } from "./useIceServers";
 
 export {
   useIsMobile,
@@ -17,4 +18,5 @@ export {
   useCounsellorChat,
   useUser,
   useAuthLogin,
+  useIceServers,
 };

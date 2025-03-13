@@ -3,15 +3,14 @@ import { FunctionComponent, useState } from "react";
 import { Button } from "@mui/material";
 
 import CallLogsTable from "./CallLogsTable";
-import { CallPicker, CallTranscript } from "@/components";
+import { CallPicker } from "@/components";
 
 const Calls: FunctionComponent = () => {
-  const [showCall, setShowCall] = useState(false);
   const [alertCall, setAlertCall] = useState(true);
 
   const onAccept = () => {
     setAlertCall(false);
-    setShowCall(true);
+    // TODO: navigate to audio call page
   };
   return (
     <div className="ml-72 p-6 h-full flex flex-col gap-4">
@@ -36,13 +35,6 @@ const Calls: FunctionComponent = () => {
       {alertCall && (
         <CallPicker onAccept={onAccept} onDecline={() => setAlertCall(false)} />
       )}
-      <CallTranscript
-        open={showCall}
-        onClose={() => {
-          setShowCall(false);
-          setAlertCall(true);
-        }}
-      />
     </div>
   );
 };

@@ -87,7 +87,7 @@ const PrivateRouteLayout = () => {
           <NavSideBar activeTab={activeTab} onTabChange={handleTabChange} />
         )}
         <div className="flex-1 min-h-screen overflow-auto bg-[#F9FAFB] custom-scrollbar">
-          {!excludeDefaultPageHeader.includes(pathname) && !isClient && (
+          {!excludeDefaultPageHeader.includes(pathname) && (
             <LifelineHeader />
           )}
           <Routes>
