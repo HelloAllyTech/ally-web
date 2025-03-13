@@ -147,7 +147,7 @@ jobs:
       - name: Get env
         id: get_env
         run: |
-          aws s3 cp s3://life-stg-s3-environment/front-end/.env .env
+          aws s3 cp s3://life-${{ github.event.inputs.environment }}-s3-environment/front-end/.env .env
 
       - name: Build and Push Docker image
         run: |
