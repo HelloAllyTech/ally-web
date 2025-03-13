@@ -129,6 +129,7 @@ jobs:
       AWS_REGION: ${{ needs.prepare-env.outputs.AWS_REGION }}
       ECR_IMAGE: ${{ needs.prepare-env.outputs.ECR_IMAGE }}
       ECR_REPOSITORY: ${{needs.prepare-env.outputs.ECR_REPOSITORY}}
+      PROJECT_PREFIX: ${{needs.prepare-env.outputs.PROJECT_PREFIX}}
 
     steps:
       - name: Checkout
@@ -147,7 +148,7 @@ jobs:
       - name: Get env
         id: get_env
         run: |
-          aws s3 cp s3://life-${{ github.event.inputs.environment }}-s3-environment/front-end/.env .env
+          aws s3 cp s3://${{ vars[env.PROJECT_PREFIX] }}-s3-environment/front-end/.env .env
 
       - name: Build and Push Docker image
         run: |
