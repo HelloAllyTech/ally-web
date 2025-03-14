@@ -177,6 +177,6 @@ const CustomMarkdown: FunctionComponent<{ content: string }> = ({
     return parsedContent;
   };
 
-  return <div className="text-sm">{parseMarkdown(content)}</div>;
+  return <div className="text-sm text-white">{parseMarkdown(content)}</div>;
 };
 export default CustomMarkdown;
