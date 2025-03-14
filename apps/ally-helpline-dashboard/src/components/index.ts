@@ -27,6 +27,7 @@ import Confirm from "./confirmation-box/Confirm";
 import ConfirmationBox from "./confirmation-box/ConfirmationBox";
 import { Card, CardHeader, CardTitle, CardContent } from "./generic/card";
 import LifelineHeader from "./generic/lifeline-header";
+import { ToggleButtonGroup } from "./generic/toggle-button-group";
 import CustomMarkdown from "./custom-markdown";
 
 export {
@@ -59,4 +60,5 @@ export {
   LifelineHeader,
   LiveTranscriptionHeader,
   LiveTranscriptionMessage,
+  ToggleButtonGroup,
 };
