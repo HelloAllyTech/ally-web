@@ -6,21 +6,28 @@ import {
   useNavigate,
   useLocation,
 } from "react-router-dom";
+import { toast } from "sonner";
 
 import { CallLogs, LiveCall, Calls } from "@/pages";
-import { NavSideBar, LifelineHeader } from "@/components";
-import { useUser } from "@/hooks";
-import { TabId} from "@/constants/tabs";
+import { CallPicker, NavSideBar, LifelineHeader } from "@/components";
+import { useCounsellorChat, useUser, useWaitingClients } from "@/hooks";
+import { TabId } from "@/constants/tabs";
 import { navBarOptions, ROUTES } from "@/constants/routes";
 import { UserRole } from "@/types/user";
 import AudioCall from "@/pages/audio-call/AudioCall";
+import { WaitingClient } from "@/hooks/useWaitingClients";
 
 const PrivateRouteLayout = () => {
   const { user, logout, checkAuth } = useUser();
+  const { getWaitingClients } = useWaitingClients();
+  const { acceptChat } = useCounsellorChat();
   const navigate = useNavigate();
   const { pathname } = useLocation();
+
   const isClient = user?.role === UserRole.CLIENT;
   const [activeTab, setActiveTab] = useState<TabId>(TabId.CALLS);
+  const [alertCall, setAlertCall] = useState(true);
+  const [waitingClients, setWaitingClients] = useState<WaitingClient[]>([]);
 
   useEffect(() => {
     const verifyAuth = async () => {
@@ -35,6 +42,25 @@ const PrivateRouteLayout = () => {
   useEffect(() => {
     setActiveTab(getActiveTab());
   }, [pathname]);
+
+  useEffect(() => {
+    if (user?.role === UserRole.COUNSELOR) {
+      const fetchWaitingClients = async () => {
+        try {
+          const response = await getWaitingClients();
+          setWaitingClients(response.clients);
+        } catch (error) {
+          console.error("Error fetching waiting clients:", error);
+        }
+      };
+      fetchWaitingClients();
+      // Poll for new clients every 30 seconds
+      const interval = setInterval(fetchWaitingClients, 30000);
+
+      return () => clearInterval(interval);
+
+    }
+  }, []);
 
   const getActiveTab = () => navBarOptions.find((option) => option.path === pathname)?.id ?? TabId.CALLS;
 
@@ -52,6 +78,19 @@ const PrivateRouteLayout = () => {
     ROUTES.AUDIO_CALL,
   ] as string[];
   const excludeNavBar = [ROUTES.AUDIO_CALL] as string[];
+
+  const onAcceptCall = async () => {
+    try {
+      await acceptChat(waitingClients[0]?.chat?.chatId);
+      navigate(ROUTES.AUDIO_CALL);
+    } catch (error) {
+      toast.error(
+        error?.response?.data?.detail ??
+        "Something went wrong. Please try again later!"
+      );
+      console.error("Error accepting chat:", error);
+    }
+  };
 
   if (user)
     return (
@@ -87,6 +126,9 @@ const PrivateRouteLayout = () => {
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </div>
+        {alertCall && waitingClients.length > 0 && (
+          <CallPicker onAccept={onAcceptCall} onDecline={() => setAlertCall(false)} />
+        )}
       </div>
     );
   else return <></>;

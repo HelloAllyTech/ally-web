@@ -11,7 +11,7 @@ export interface ChatInfo {
   endedAt: string | null;
 }
 
-interface WaitingClient {
+export interface WaitingClient {
   userId: number;
   email: string;
   name: string;
