@@ -86,3 +86,5 @@ export default {
   },
   plugins: [tailwindcssAnimate],
 } satisfies Config;
+
+// TODO: Add font - https://fonts.google.com/specimen/IBM+Plex+Serif
