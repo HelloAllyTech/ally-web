@@ -1,7 +1,7 @@
 import { FC, useState } from "react";
-import { ToggleButtonGroup, ToggleButton, styled } from '@mui/material';
+import { ToggleButtonGroup, ToggleButton, styled } from "@mui/material";
 
-import { BlueTick } from '@/assets/icons';
+import { BlueTick } from "@/assets/icons";
 import { SectionType } from "./PostCallSummary";
 
 interface CallSummaryStepperProps {
@@ -12,50 +12,50 @@ interface CallSummaryStepperProps {
 const StyledToggleButtonGroup = styled(ToggleButtonGroup)(() => ({
     padding: 0,
     gap: 0,
-    width: '100%',
-    border: '1px solid rgba(255, 255, 255, 0.12)',
-    '& .MuiToggleButtonGroup-grouped': {
-        color: '#1D1B20',
-        '&:hover': {
+    width: "100%",
+    border: "1px solid rgba(255, 255, 255, 0.12)",
+    "& .MuiToggleButtonGroup-grouped": {
+        color: "#1D1B20",
+        "&:hover": {
             // backgroundColor: 'rgba(255, 255, 255, 0.08)',
         },
-        '&.Mui-selected': {
-            backgroundColor: '#DDEDFF',
-            color: '#0278FE',
-            border: '1px solid #0278FE',
-            '&:hover': {
+        "&.Mui-selected": {
+            backgroundColor: "#DDEDFF",
+            color: "#0278FE",
+            border: "1px solid #0278FE",
+            "&:hover": {
                 // backgroundColor: '#DDEDFF',
             },
         },
-        '&.completed': {
-            backgroundColor: '#DDEDFF',
-            color: '#0278FE',
-            border: '1px solid #0278FE',
-            '&:hover': {
-                backgroundColor: 'rgba(2, 120, 254, 0.04)',
+        "&.completed": {
+            backgroundColor: "#DDEDFF",
+            color: "#0278FE",
+            border: "1px solid #0278FE",
+            "&:hover": {
+                backgroundColor: "rgba(2, 120, 254, 0.04)",
             },
         },
-        '&:first-of-type': {
-            borderTopLeftRadius: '100px !important',
-            borderBottomLeftRadius: '100px !important',
+        "&:first-of-type": {
+            borderTopLeftRadius: "100px !important",
+            borderBottomLeftRadius: "100px !important",
         },
-        '&:last-of-type': {
-            borderTopRightRadius: '100px !important',
-            borderBottomRightRadius: '100px !important',
+        "&:last-of-type": {
+            borderTopRightRadius: "100px !important",
+            borderBottomRightRadius: "100px !important",
         },
     },
 }));
 
 const StyledToggleButton = styled(ToggleButton)({
-    '&.MuiToggleButton-root': {
-        textTransform: 'none',
-        height: '40px',
+    "&.MuiToggleButton-root": {
+        textTransform: "none",
+        height: "40px",
         fontWeight: 500,
-        fontSize: '14px',
-        transition: 'all 200ms cubic-bezier(0.4, 0, 0.2, 1)',
-        display: 'flex',
-        gap: '8px',
-        alignItems: 'center',
+        fontSize: "14px",
+        transition: "all 200ms cubic-bezier(0.4, 0, 0.2, 1)",
+        display: "flex",
+        gap: "8px",
+        alignItems: "center",
     },
 });
 
@@ -95,7 +95,7 @@ const CallSummaryStepper: FC<CallSummaryStepperProps> = ({ activeSection, setAct
                         key={section}
                         value={section}
                         aria-label={section}
-                        className={completedSections.includes(section) ? 'completed' : ''}
+                        className={completedSections.includes(section) ? "completed" : ""}
                     >
                         {completedSections.includes(section) && <BlueTick />}
                         {section}

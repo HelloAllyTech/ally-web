@@ -36,6 +36,8 @@ import { AUDIO_FILE_SIZE, OFFER_TIMEOUT_MS } from "./constants";
 // TODO: Add streaming effect in transcription
 // TODO: Find firefox issue
 // TODO: Bug with no trascript intermittently
+// TODO: start Audio chat not send sometimes
+
 const CallTranscript = (props: CallTranscriptProps) => {
   const { endSession, activeChat } = props;
   const chatId = useMemo(() => activeChat.chatId, [activeChat]);
@@ -426,7 +428,7 @@ const CallTranscript = (props: CallTranscriptProps) => {
       });
       endSession();
       disconnect();
-      navigate(`/summary/${chatId}`);
+      navigate(isClient ? "/" : `/summary/${chatId}`);
     } catch (error) {
       console.error("Error ending session:", error);
     }

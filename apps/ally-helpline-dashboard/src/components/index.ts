@@ -29,6 +29,7 @@ import { Card, CardHeader, CardTitle, CardContent } from "./generic/card";
 import LifelineHeader from "./generic/lifeline-header";
 import { ToggleButtonGroup } from "./generic/toggle-button-group";
 import CustomMarkdown from "./custom-markdown";
+import StressBuster from "./stress-buster";
 
 export {
   Card,
@@ -53,12 +54,13 @@ export {
   TableHeader,
   CardContent,
   MessageInput,
+  StressBuster,
+  LifelineHeader,
   CustomMarkdown,
   TooltipProvider,
   TypingIndicator,
   ConfirmationBox,
-  LifelineHeader,
+  ToggleButtonGroup,
   LiveTranscriptionHeader,
   LiveTranscriptionMessage,
-  ToggleButtonGroup,
 };
