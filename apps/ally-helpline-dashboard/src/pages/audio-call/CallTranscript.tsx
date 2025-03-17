@@ -84,6 +84,11 @@ const CallTranscript = (props: CallTranscriptProps) => {
           } else {
             setTranscriptions((prev) => {
               const lastTranscription = prev[prev.length - 1];
+              const lastTranscriptionFromSameSender =
+                prev &&
+                [...prev]
+                  .reverse()
+                  .findIndex((t) => t.senderId === payload.senderId);
               if (!lastTranscription) {
                 return [
                   ...prev,
@@ -96,6 +101,23 @@ const CallTranscript = (props: CallTranscriptProps) => {
                     isSentenceComplete: payload.isSentenceComplete,
                   },
                 ];
+              }
+              if (
+                payload.isSentenceComplete &&
+                !!lastTranscriptionFromSameSender &&
+                !prev[lastTranscriptionFromSameSender]?.isSentenceComplete
+              ) {
+                // replace the last transcription from the same sender with the new one
+                const updatedTranscriptions = [...prev];
+                updatedTranscriptions[
+                  prev.length - 1 - lastTranscriptionFromSameSender
+                ] = {
+                  ...lastTranscription,
+                  message: payload.content,
+                  isSentenceComplete: payload.isSentenceComplete,
+                  isFinal: payload.isFinal,
+                };
+                return updatedTranscriptions;
               }
               if (
                 !lastTranscription.isFinal &&
