@@ -8,7 +8,7 @@ import {
 } from "react-router-dom";
 import { toast } from "sonner";
 
-import { CallLogs, LiveCall, Calls } from "@/pages";
+import { CallLogs, LiveCall, Calls, PostCallSummary } from "@/pages";
 import { CallPicker, NavSideBar, LifelineHeader } from "@/components";
 import { useCounsellorChat, useUser, useWaitingClients } from "@/hooks";
 import { TabId } from "@/constants/tabs";
@@ -77,7 +77,7 @@ const PrivateRouteLayout = () => {
     ROUTES.LIVE_CALL,
     ROUTES.AUDIO_CALL,
   ] as string[];
-  const excludeNavBar = [ROUTES.AUDIO_CALL] as string[];
+  const excludeNavBar = [ROUTES.AUDIO_CALL, ROUTES.SUMMARY] as string[];
 
   const onAcceptCall = async () => {
     try {
@@ -123,6 +123,7 @@ const PrivateRouteLayout = () => {
             <Route path={ROUTES.STRESS_BUSTERS} element={<Calls />} />
             <Route path={ROUTES.ANALYTICS} element={<AudioCall />} />
             <Route path={ROUTES.SETTINGS} element={<Calls />} />
+            <Route path={ROUTES.SUMMARY} element={<PostCallSummary />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </div>
