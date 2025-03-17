@@ -5,10 +5,13 @@ import {
   Routes,
   useNavigate,
   useLocation,
+  matchPath,
 } from "react-router-dom";
+import { useSelector } from "react-redux";
 import { toast } from "sonner";
 
-import { CallLogs, LiveCall, Calls } from "@/pages";
+import { CallLogs, LiveCall, Calls, PostCallSummary } from "@/pages";
+import { RootState, store } from "@/store/store";
 import { CallPicker, NavSideBar, LifelineHeader } from "@/components";
 import { useCounsellorChat, useUser, useWaitingClients } from "@/hooks";
 import { TabId } from "@/constants/tabs";
@@ -16,6 +19,7 @@ import { navBarOptions, ROUTES } from "@/constants/routes";
 import { UserRole } from "@/types/user";
 import AudioCall from "@/pages/audio-call/AudioCall";
 import { WaitingClient } from "@/hooks/useWaitingClients";
+import { setIsOnline } from "@/reducer/userReducer";
 
 const PrivateRouteLayout = () => {
   const { user, logout, checkAuth } = useUser();
@@ -28,6 +32,8 @@ const PrivateRouteLayout = () => {
   const [activeTab, setActiveTab] = useState<TabId>(TabId.CALLS);
   const [alertCall, setAlertCall] = useState(true);
   const [waitingClients, setWaitingClients] = useState<WaitingClient[]>([]);
+
+  const { isOnline } = useSelector((state: RootState) => state.user);
 
   useEffect(() => {
     const verifyAuth = async () => {
@@ -44,7 +50,7 @@ const PrivateRouteLayout = () => {
   }, [pathname]);
 
   useEffect(() => {
-    if (user?.role === UserRole.COUNSELOR) {
+    if (user?.role === UserRole.COUNSELOR && isOnline) {
       const fetchWaitingClients = async () => {
         try {
           const response = await getWaitingClients();
@@ -54,13 +60,13 @@ const PrivateRouteLayout = () => {
         }
       };
       fetchWaitingClients();
-      // Poll for new clients every 30 seconds
-      const interval = setInterval(fetchWaitingClients, 30000);
+      // Poll for new clients every 10 seconds
+      const interval = setInterval(fetchWaitingClients, 10000);
 
       return () => clearInterval(interval);
 
     }
-  }, []);
+  }, [isOnline]);
 
   const getActiveTab = () => navBarOptions.find((option) => option.path === pathname)?.id ?? TabId.CALLS;
 
@@ -77,11 +83,16 @@ const PrivateRouteLayout = () => {
     ROUTES.LIVE_CALL,
     ROUTES.AUDIO_CALL,
   ] as string[];
-  const excludeNavBar = [ROUTES.AUDIO_CALL] as string[];
+  const excludeNavBar = [ROUTES.AUDIO_CALL, ROUTES.SUMMARY] as string[];
+
+  const isPathExcluded = (currentPath: string) => {
+    return excludeNavBar.some(path => matchPath(path, currentPath));
+  };
 
   const onAcceptCall = async () => {
     try {
       await acceptChat(waitingClients[0]?.chat?.chatId);
+      store.dispatch(setIsOnline(false));
       navigate(ROUTES.AUDIO_CALL);
     } catch (error) {
       toast.error(
@@ -95,7 +106,7 @@ const PrivateRouteLayout = () => {
   if (user)
     return (
       <div className="flex h-screen w-full ">
-        {!isClient && !excludeNavBar.includes(pathname) && (
+        {!isClient && !isPathExcluded(pathname) && (
           <NavSideBar activeTab={activeTab} onTabChange={handleTabChange} />
         )}
         <div className="flex-1 min-h-screen overflow-auto bg-[#F9FAFB] custom-scrollbar">
@@ -123,10 +134,11 @@ const PrivateRouteLayout = () => {
             <Route path={ROUTES.STRESS_BUSTERS} element={<Calls />} />
             <Route path={ROUTES.ANALYTICS} element={<AudioCall />} />
             <Route path={ROUTES.SETTINGS} element={<Calls />} />
+            <Route path={ROUTES.SUMMARY} element={<PostCallSummary />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </div>
-        {alertCall && waitingClients.length > 0 && (
+        {alertCall && waitingClients.length > 0 && isOnline && (
           <CallPicker onAccept={onAcceptCall} onDecline={() => setAlertCall(false)} />
         )}
       </div>

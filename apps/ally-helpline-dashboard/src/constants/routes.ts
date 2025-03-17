@@ -18,6 +18,7 @@ export const ROUTES = {
   STRESS_BUSTERS: "/stress_busters",
   ANALYTICS: "/analytics",
   SETTINGS: "/settings",
+  SUMMARY: "/summary/:chatId",
 } as const;
 
 import PhoneOutlinedIcon from "@mui/icons-material/PhoneOutlined";

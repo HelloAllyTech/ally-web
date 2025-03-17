@@ -78,7 +78,7 @@ const CallTranscript = (props: CallTranscriptProps) => {
         if (payload.type === MessageType.TEXT) {
           if (payload?.content === "Session ended") {
             disconnect();
-            navigate("/");
+            navigate(`/summary/${chatId}`);
           } else {
             setTranscriptions((prev) => {
               const lastTranscription = prev[prev.length - 1];
@@ -426,7 +426,7 @@ const CallTranscript = (props: CallTranscriptProps) => {
       });
       endSession();
       disconnect();
-      navigate("/");
+      navigate(`/summary/${chatId}`);
     } catch (error) {
       console.error("Error ending session:", error);
     }

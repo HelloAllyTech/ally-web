@@ -3,9 +3,14 @@ export enum QueueStatus {
   MATCHED = "MATCHED",
 }
 
+export enum UserStatus {
+  OFFLINE = "offline",
+  AVAILABLE = "available",
+}
+
 export const USER_STATUS_OPTIONS = [
-  { value: "offline", label: "Offline" },
-  { value: "available", label: "Available" }
+  { value: UserStatus.OFFLINE, label: "Offline" },
+  { value: UserStatus.AVAILABLE, label: "Available" }
 ]
 
 export const ICE_SERVERS = [
