@@ -1,12 +1,14 @@
-import { FC, useState } from "react";
+import { Dispatch, FC, SetStateAction } from "react";
 import { ToggleButtonGroup, ToggleButton, styled } from "@mui/material";
 
 import { BlueTick } from "@/assets/icons";
-import { SectionType } from "./PostCallSummary";
+import { SectionType } from "./types";
 
 interface CallSummaryStepperProps {
     activeSection: SectionType;
     setActiveSection: (section: SectionType) => void;
+    completedSections: SectionType[];
+    setCompletedSections: Dispatch<SetStateAction<SectionType[]>>;
 }
 
 const StyledToggleButtonGroup = styled(ToggleButtonGroup)(() => ({
@@ -59,9 +61,12 @@ const StyledToggleButton = styled(ToggleButton)({
     },
 });
 
-const CallSummaryStepper: FC<CallSummaryStepperProps> = ({ activeSection, setActiveSection }) => {
-    const [completedSections, setCompletedSections] = useState<SectionType[]>([]);
-
+const CallSummaryStepper: FC<CallSummaryStepperProps> = ({
+    activeSection,
+    setActiveSection,
+    completedSections,
+    setCompletedSections
+}) => {
     const handleSectionChange = (event: React.MouseEvent<HTMLElement>, newSection: SectionType) => {
         if (newSection !== null) {
             const sections = Object.values(SectionType);

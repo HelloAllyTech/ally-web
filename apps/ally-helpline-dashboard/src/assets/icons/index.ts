@@ -23,6 +23,11 @@ import BackgroundBottom from "./Transcript-background-bottom.svg?react";
 import CallCut from "./Call_cut.svg?react";
 import CallAttend from "./Call_attend.svg?react";
 import BlueTick from "./BlueTick.svg?react";
+import CallDuration from "./CallDuration.svg?react";
+import QuestionsAsked from "./QuestionsAsked.svg?react";
+import Nudges from "./Nudges.svg?react";
+import ListeningRatio from "./ListeningRatio.svg?react";
+import CallerMood from "./CallerMood.svg?react";
 
 export {
   Relax,
@@ -49,5 +54,10 @@ export {
   CallCut,
   CallAttend,
   LifelineLogo,
-  BlueTick
+  BlueTick,
+  CallDuration,
+  QuestionsAsked,
+  Nudges,
+  ListeningRatio,
+  CallerMood
 };

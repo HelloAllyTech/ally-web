@@ -1,29 +1,27 @@
-import { FC, useState } from "react";
+import { useState } from "react";
 import { Container } from "@mui/material";
 
-import StressBusterStep from "./StressBusterStep";
 import CallSummaryStepper from "./CallSummaryStepper";
+import StressBusterStep from "./StressBusterStep";
+import CallHighlights from "./components/CallHighlights";
+import { SectionType } from "./types";
+import { useParams } from "react-router-dom";
 
-interface PostCallSummaryProps {
-  callId?: string;
-}
+const PostCallSummary = () => {
+  const { chatId } = useParams();
 
-export enum SectionType {
-  CallHighlights = "Call highlights",
-  StressBuster = "Stress buster",
-  CallSummary = "Call summary",
-  Resources = "You might also like",
-}
+  const [activeSection, setActiveSection] = useState<SectionType>(SectionType.CallHighlights);
+  const [completedSections, setCompletedSections] = useState<SectionType[]>([]);
 
-const PostCallSummary: FC<PostCallSummaryProps> = ({ callId }) => {
-  const [activeSection, setActiveSection] = useState<SectionType>(
-    SectionType.CallHighlights
-  );
+  const handleProceed = (currentSection: SectionType, nextSection: SectionType) => {
+    setCompletedSections((prev: SectionType[]) => [...prev, currentSection]);
+    setActiveSection(nextSection);
+  };
 
   const renderSection = () => {
     switch (activeSection) {
       case SectionType.CallHighlights:
-        return <div>Call Highlights</div>;
+        return <CallHighlights onProceed={() => handleProceed(SectionType.CallHighlights, SectionType.CallSummary)} />;
       case SectionType.CallSummary:
         return <div>Call Summary</div>;
       case SectionType.StressBuster:
@@ -43,7 +41,9 @@ const PostCallSummary: FC<PostCallSummaryProps> = ({ callId }) => {
     <Container maxWidth="md" className="mt-[24px]">
       <CallSummaryStepper
         activeSection={activeSection}
+        completedSections={completedSections}
         setActiveSection={setActiveSection}
+        setCompletedSections={setCompletedSections}
       />
       {renderSection()}
     </Container>
