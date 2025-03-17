@@ -40,7 +40,6 @@ const AudioCall: FunctionComponent = () => {
   const confirmEndSession = async () => {
     try {
       await endSession(activeChat.chatId);
-      navigate("/");
     } catch (error) {
       console.error("Error ending session:", error);
     }

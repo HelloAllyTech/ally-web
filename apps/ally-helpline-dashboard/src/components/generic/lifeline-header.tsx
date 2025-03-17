@@ -1,19 +1,23 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useSelector } from "react-redux";
 
 import { Button, Popover } from "@mui/material";
 
+import { RootState, store } from "@/store/store";
+import { setIsOnline } from "@/reducer/userReducer";
 import { useUser } from "@/hooks";
 import { Lifeline, DefaultAvatar } from "@/assets/icons";
 import { ToggleButtonGroup } from "@/components";
-import { USER_STATUS_OPTIONS } from "@/constants/common";
+import { USER_STATUS_OPTIONS, UserStatus } from "@/constants/common";
 
 const LifelineHeader = () => {
-  const [status, setStatus] = useState("offline");
+  const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null);
+
+  const { isOnline } = useSelector((state: RootState) => state.user);
+
   const { logout } = useUser();
   const navigate = useNavigate();
-
-  const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null);
 
   const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
     setAnchorEl(event.currentTarget);
@@ -24,8 +28,8 @@ const LifelineHeader = () => {
   };
 
   const open = Boolean(anchorEl);
-  const handleChange = (newStatus: string) => {
-    setStatus(newStatus);
+  const handleChange = (newStatus: UserStatus) => {
+    store.dispatch(setIsOnline(newStatus === UserStatus.AVAILABLE));
   };
 
   return (
@@ -33,9 +37,10 @@ const LifelineHeader = () => {
       <Lifeline />
       <div className="flex gap-4 items-center">
         <ToggleButtonGroup
-          value={status}
+          value={isOnline ? UserStatus.AVAILABLE : UserStatus.OFFLINE}
           onValueChange={handleChange}
           items={USER_STATUS_OPTIONS}
+          successValue={UserStatus.AVAILABLE}
         />
         <Button onClick={handleClick} aria-describedby="profile">
           <DefaultAvatar />

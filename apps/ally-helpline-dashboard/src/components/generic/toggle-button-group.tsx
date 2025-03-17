@@ -10,6 +10,7 @@ type ToggleButtonGroupProps = {
     label: string;
   }[];
   className?: string;
+  successValue?: string;
 };
 
 export const ToggleButtonGroup: FC<ToggleButtonGroupProps> = ({
@@ -17,6 +18,7 @@ export const ToggleButtonGroup: FC<ToggleButtonGroupProps> = ({
   onValueChange,
   items,
   className,
+  successValue,
 }) => {
   const handleChange = (_: React.MouseEvent<HTMLElement>, newValue: string) => {
     onValueChange(newValue);
@@ -37,11 +39,11 @@ export const ToggleButtonGroup: FC<ToggleButtonGroupProps> = ({
           fontSize: '14px',
           fontWeight: 500,
           '&.Mui-selected': {
-            backgroundColor: '#49454F',
+            backgroundColor: value === successValue ? '#33BA60' : '#49454F',
             color: '#FFFFFF',
             boxShadow: '0 1px 2px rgba(0, 0, 0, 0.1)',
             '&:hover': {
-              backgroundColor: '#49454F',
+              backgroundColor: value === successValue ? '#33BA60' : '#49454F',
             },
           },
           '&:hover': {

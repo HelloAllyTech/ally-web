@@ -4,12 +4,14 @@ import { User } from "@/types/user";
 
 interface UserState {
   isAuthenticated: boolean;
-  user: User
+  user: User,
+  isOnline: boolean;
 }
 
 const initialState = {
   isAuthenticated: false,
-  user: null
+  user: null,
+  isOnline: true,
 } satisfies UserState as UserState;
 
 const userSlice = createSlice({
@@ -24,9 +26,12 @@ const userSlice = createSlice({
     },
     setUser(state, action) {
       state.user = action.payload;
+    },
+    setIsOnline(state, action) {
+      state.isOnline = action.payload;
     }
   },
 });
 
-export const { authenticate, unauthenticate, setUser } = userSlice.actions;
+export const { authenticate, unauthenticate, setUser, setIsOnline } = userSlice.actions;
 export default userSlice;
