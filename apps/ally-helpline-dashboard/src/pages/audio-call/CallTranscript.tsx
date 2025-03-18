@@ -511,8 +511,8 @@ const CallTranscript = (props: CallTranscriptProps) => {
               muted={false}
               autoPlay
             />
-            {mediaRecorder && remoteMediaRecorder && (
-              <div className="relative gap-1 flex rounded-lg">
+            <div className="relative gap-1 flex rounded-lg">
+              {remoteMediaRecorder && (
                 <div className="rotate-180 z-0 translate-x-[7px]">
                   <LiveAudioVisualizer
                     mediaRecorder={remoteMediaRecorder}
@@ -522,6 +522,8 @@ const CallTranscript = (props: CallTranscriptProps) => {
                     barColor="#FFFFFF"
                   />
                 </div>
+              )}
+              {mediaRecorder && (
                 <div className="z-0">
                   <LiveAudioVisualizer
                     mediaRecorder={mediaRecorder}
@@ -531,10 +533,10 @@ const CallTranscript = (props: CallTranscriptProps) => {
                     barColor="#FFFFFF"
                   />
                 </div>
-                <div className="waveForm rounded-full absolute top-[38%] left-0 w-1/6 h-1/4 " />
-                <div className="waveForm rounded-full absolute top-[38%] right-0 w-1/6 h-1/4 rotate-180" />
-              </div>
-            )}
+              )}
+              <div className="waveForm rounded-full absolute top-[38%] left-0 w-1/6 h-1/4 " />
+              <div className="waveForm rounded-full absolute top-[38%] right-0 w-1/6 h-1/4 rotate-180" />
+            </div>
           </div>
 
           {/* Update transcription container with max-height */}

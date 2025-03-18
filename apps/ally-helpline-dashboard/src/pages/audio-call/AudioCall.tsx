@@ -39,13 +39,13 @@ const AudioCall: FunctionComponent = () => {
     }
     setIsEnding(true);
     // First message
-    setEndingMessage("You did great!");
+    setEndingMessage("You gave your best on that call!");
 
     // Wait 3 seconds
     await new Promise((resolve) => setTimeout(resolve, 3000));
 
     // Second message
-    setEndingMessage("Take a moment for yourself");
+    setEndingMessage("Now, take a moment for yourself");
 
     // Wait 3 more seconds
     await new Promise((resolve) => setTimeout(resolve, 3000));
