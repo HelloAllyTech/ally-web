@@ -2,19 +2,20 @@ import { MessageType } from "@/types/message";
 
 export interface CallTranscriptProps {
   activeChat: Chat;
-  endSession: () => void;
+  endSession: (triggerApi: boolean) => void;
 }
 
 export interface Chat {
-    chatId: number;
-    messages: {
-      content: string;
-      id: number;
-      createdAt: number;
-      senderId: number;
-      type: MessageType;
-    }[]; 
-};
+  chatId: number;
+  currentStage?: string;
+  messages: {
+    content: string;
+    id: number;
+    createdAt: number;
+    senderId: number;
+    type: MessageType;
+  }[];
+}
 
 export interface Transcription {
   id: number;

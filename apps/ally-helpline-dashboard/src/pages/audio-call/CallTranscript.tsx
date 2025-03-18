@@ -1,8 +1,8 @@
-import { Modal } from "@mui/material";
 import { useSelector } from "react-redux";
 import Divider from "@mui/material/Divider";
 import { useNavigate } from "react-router-dom";
 import { ThumbsDown, ThumbsUp } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import { LiveAudioVisualizer } from "react-audio-visualize";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
@@ -14,8 +14,6 @@ import {
   NoRecord,
   FocusOff,
   LifelineLogo,
-  BackgroundTop,
-  BackgroundBottom,
 } from "@/assets/icons";
 import { UserRole } from "@/types/user";
 import { RootState } from "@/store/store";
@@ -27,6 +25,7 @@ import { MessageType, SocketEvent } from "@/types/message";
 import "./CallTranscript.css";
 import { CallTranscriptProps, Transcription } from "./types";
 import { AUDIO_FILE_SIZE, OFFER_TIMEOUT_MS } from "./constants";
+import AudioCallBackgroundWrapper from "./components/AudioCallBackgroundWrapper";
 
 // TODO: Uninstall react-audio-voice-recorder
 // TODO: Split transcription to client-counselor
@@ -61,12 +60,24 @@ const CallTranscript = (props: CallTranscriptProps) => {
 
   const [transcriptions, setTranscriptions] = useState<Transcription[]>([]);
   const [nudges, setNudges] = useState<string[]>([]);
+  const [stage, setStage] = useState<string>();
 
   const isClient = user?.role === UserRole.CLIENT;
   const isCounsellor = user?.role === UserRole.COUNSELOR;
 
   const socketEventCallbacks = useMemo(
     () => ({
+      [SocketEvent.STAGE]: (data: any) => {
+        setStage(data?.payload?.content);
+      },
+      [SocketEvent.CHAT_ENDED]: () => {
+        disconnect();
+        if (isClient) {
+          navigate("/");
+          return;
+        }
+        confirmEndSession(false);
+      },
       [SocketEvent.NUDGE]: (data: any) => {
         const message = data.payload;
         console.log("Nudge received:", message);
@@ -79,8 +90,7 @@ const CallTranscript = (props: CallTranscriptProps) => {
         console.log("Message received:", payload);
         if (payload.type === MessageType.TEXT) {
           if (payload?.content === "Session ended") {
-            disconnect();
-            navigate(`/summary/${chatId}`);
+            confirmEndSession();
           } else {
             setTranscriptions((prev) => {
               const lastTranscription = prev[prev.length - 1];
@@ -171,6 +181,9 @@ const CallTranscript = (props: CallTranscriptProps) => {
 
   useEffect(() => {
     if (activeChat.messages && activeChat.messages.length > 0) {
+      if (activeChat?.currentStage) {
+        setStage(activeChat?.currentStage);
+      }
       const existingTranscriptions = activeChat.messages
         .reverse()
         .filter((transcription) => transcription.type === MessageType.TEXT)
@@ -438,19 +451,13 @@ const CallTranscript = (props: CallTranscriptProps) => {
     }
   }, [handleWebRTCOffer, chatId, handleWebRTCAnswer, handleOnIceCandidate]);
 
-  const confirmEndSession = async () => {
+  const confirmEndSession = async (triggerApi: boolean = true) => {
     try {
       if (mediaRecorder && mediaRecorder.state !== "inactive") {
         mediaRecorder.stop();
       }
-      sendMessage({
-        chatId,
-        content: "Session ended",
-        context: {},
-      });
-      endSession();
+      endSession(triggerApi);
       disconnect();
-      navigate(isClient ? "/" : `/summary/${chatId}`);
     } catch (error) {
       console.error("Error ending session:", error);
     }
@@ -474,14 +481,10 @@ const CallTranscript = (props: CallTranscriptProps) => {
     }
   }, [nudges]);
 
-  // TODO: Update modal usae -not required actually spoeaking - confirm
-
   return (
-    <Modal open>
-      <div className="w-full h-full flex justify-center items-center">
-        <div className="w-full h-full bg-[#161921] relative flex flex-col gap-10 justify-center items-center">
-          <BackgroundTop className="absolute top-0 right-0 opacity-35 z-0" />
-          <BackgroundBottom className="absolute bottom-0 left-0 opacity-35 z-0" />
+    <div className="w-screen h-screen flex justify-center items-center">
+      <AudioCallBackgroundWrapper>
+        <>
           <div
             className="flex flex-col justify-center items-center
           gap-4 z-10 transition-all duration-500 ease-in-out min-h-[30vh]"
@@ -508,8 +511,8 @@ const CallTranscript = (props: CallTranscriptProps) => {
               muted={false}
               autoPlay
             />
-            {mediaRecorder && remoteMediaRecorder && (
-              <div className="relative gap-1 flex rounded-lg">
+            <div className="relative gap-1 flex rounded-lg">
+              {remoteMediaRecorder && (
                 <div className="rotate-180 z-0 translate-x-[7px]">
                   <LiveAudioVisualizer
                     mediaRecorder={remoteMediaRecorder}
@@ -519,6 +522,8 @@ const CallTranscript = (props: CallTranscriptProps) => {
                     barColor="#FFFFFF"
                   />
                 </div>
+              )}
+              {mediaRecorder && (
                 <div className="z-0">
                   <LiveAudioVisualizer
                     mediaRecorder={mediaRecorder}
@@ -528,15 +533,20 @@ const CallTranscript = (props: CallTranscriptProps) => {
                     barColor="#FFFFFF"
                   />
                 </div>
-                <div className="waveForm rounded-full absolute top-[38%] left-0 w-1/6 h-1/4 " />
-                <div className="waveForm rounded-full absolute top-[38%] right-0 w-1/6 h-1/4 rotate-180" />
-              </div>
-            )}
+              )}
+              <div className="waveForm rounded-full absolute top-[38%] left-0 w-1/6 h-1/4 " />
+              <div className="waveForm rounded-full absolute top-[38%] right-0 w-1/6 h-1/4 rotate-180" />
+            </div>
           </div>
 
           {/* Update transcription container with max-height */}
-          {isCounsellor && (
-            <div className="w-[85%] h-[35vh] flex flex-col">
+          {isCounsellor && focus && (
+            <motion.div
+              className="w-[85%] h-[35vh] flex flex-col"
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.3, ease: "easeInOut" }}
+            >
               <h3 className="text-white mb-4 self-start ">
                 Real-time Transcription
               </h3>
@@ -581,7 +591,7 @@ const CallTranscript = (props: CallTranscriptProps) => {
                   </div>
                 ))}
               </div>
-            </div>
+            </motion.div>
           )}
 
           <div className="z-10 absolute bottom-10 w-full flex justify-center items-center gap-4">
@@ -597,15 +607,20 @@ const CallTranscript = (props: CallTranscriptProps) => {
                 )}
               </button>
             )}
-            <button onClick={confirmEndSession}>
+            <button onClick={() => confirmEndSession(true)}>
               <CutCall />
             </button>
           </div>
-        </div>
+        </>
+      </AudioCallBackgroundWrapper>
+      <AnimatePresence>
         {isCounsellor && (
-          <div
-            style={{ width: focus ? "500px" : "0" }}
-            className={"h-full transition-all bg-[#12151F] duration-300}"}
+          <motion.div
+            initial={{ width: 0 }}
+            animate={{ width: focus ? 500 : 0 }}
+            exit={{ width: 0 }}
+            transition={{ duration: 0.3, ease: "easeInOut" }}
+            className="h-full bg-[#12151F] overflow-hidden"
           >
             <div className="border-b border-b-[#292929] h-14 px-4 flex justify-between items-center">
               <div className="font-bold text-white">Copilot</div>
@@ -614,6 +629,14 @@ const CallTranscript = (props: CallTranscriptProps) => {
                 onClick={() => setFocus(false)}
               />
             </div>
+            {stage && (
+              <div className="m-4 px-6 py-4 border border-[#01D966] rounded-lg bg-[#01D96626]">
+                <div className="text-base font-medium text-[#01D966] ">
+                  Current Stage
+                </div>
+                <div className="text-white text-base">{stage}</div>
+              </div>
+            )}
             <div
               ref={nudgesContainerRef}
               className="p-4 h-[calc(100vh-3.4rem)] overflow-y-auto custom-scrollbar"
@@ -642,10 +665,10 @@ const CallTranscript = (props: CallTranscriptProps) => {
                 </div>
               ))}
             </div>
-          </div>
+          </motion.div>
         )}
-      </div>
-    </Modal>
+      </AnimatePresence>
+    </div>
   );
 };
 
