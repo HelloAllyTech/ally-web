@@ -40,25 +40,23 @@ const highlights: Highlight[] = [
 
 const CallHighlights: FC<CallHighlightsProps> = ({ onProceed }) => {
   return (
-    <div className="flex flex-col items-center">
-      <div className="mt-6 py-4 px-6 bg-[#FFFFFF] border border-[#E5E7EB] rounded-[8px]">
-        <span className="text-[16px] font-medium">Call highlights</span>
-        <div className="grid grid-cols-2 gap-4 mt-4">
-          {highlights.map((highlight, index) => (
-            <div key={index} className="flex items-center gap-[10px] p-[10px] border border-[#EFEFEF] rounded-[12px]">
-              <highlight.image className="h-12 w-12" />
-              <div className="flex flex-col">
-                <span className="text-[14px]">{highlight.title}</span>
-                <span className="text-[16px] text-[#49454F] font-medium">{highlight.value}</span>
-              </div>
+    <>
+      <span className="text-base font-medium text-gray-800">Call highlights</span>
+      <div className="grid grid-cols-2 gap-4">
+        {highlights.map((highlight, index) => (
+          <div key={index} className="flex items-center gap-[10px] p-[10px] border border-[#EFEFEF] rounded-[12px]">
+            <highlight.image className="h-12 w-12" />
+            <div className="flex flex-col">
+              <span className="text-[14px]">{highlight.title}</span>
+              <span className="text-[16px] text-[#49454F] font-medium">{highlight.value}</span>
             </div>
-          ))}
-        </div>
-        <div className="flex justify-end mt-4">
-          <Button onClick={onProceed}>Proceed to call summary</Button>
-        </div>
+          </div>
+        ))}
       </div>
-    </div>
+      <Button onClick={onProceed} className="rounded-full w-fit self-end">
+        Proceed to call summary
+      </Button>
+    </>
   );
 };
 
