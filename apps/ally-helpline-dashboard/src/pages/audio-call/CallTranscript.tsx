@@ -559,7 +559,7 @@ const CallTranscript = (props: CallTranscriptProps) => {
             />
             <div className="relative gap-1 flex rounded-lg">
               {remoteMediaRecorder && (
-                <div className="rotate-180 z-0 translate-x-[7px]">
+                <div className="rotate-180 z-0 translate-x-[4px] translate-y-[1px]">
                   <LiveAudioVisualizer
                     mediaRecorder={remoteMediaRecorder}
                     width={200}

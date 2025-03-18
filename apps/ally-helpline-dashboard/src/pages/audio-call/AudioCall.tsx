@@ -42,13 +42,13 @@ const AudioCall: FunctionComponent = () => {
     setEndingMessage("You gave your best on that call!");
 
     // Wait 3 seconds
-    await new Promise((resolve) => setTimeout(resolve, 3000));
+    await new Promise((resolve) => setTimeout(resolve, 2000));
 
     // Second message
     setEndingMessage("Now, take a moment for yourself");
 
     // Wait 3 more seconds
-    await new Promise((resolve) => setTimeout(resolve, 3000));
+    await new Promise((resolve) => setTimeout(resolve, 2000));
     setShowStressBuster(true);
 
     // Navigate

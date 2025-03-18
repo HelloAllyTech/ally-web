@@ -15,7 +15,9 @@ const PostCallSummary = () => {
   const [searchParams] = useSearchParams();
   // console.log(searchParams.get("section"));
 
-  const [activeSection, setActiveSection] = useState<SectionType>(SectionType.StressBuster);
+  const [activeSection, setActiveSection] = useState<SectionType>(
+    SectionType.StressBuster
+  );
   const [completedSections, setCompletedSections] = useState<SectionType[]>([]);
 
   const { data: callSummary, refetch } = useGetCallSummaryQuery(chatId);
@@ -37,7 +39,10 @@ const PostCallSummary = () => {
     }
   }, [callSummary]);
 
-  const handleProceed = (currentSection: SectionType, nextSection: SectionType) => {
+  const handleProceed = (
+    currentSection: SectionType,
+    nextSection: SectionType
+  ) => {
     setCompletedSections((prev: SectionType[]) => [...prev, currentSection]);
     setActiveSection(nextSection);
   };
@@ -46,14 +51,29 @@ const PostCallSummary = () => {
     switch (activeSection) {
       case SectionType.StressBuster:
         return (
-          <StressBusterStep onProceed={() => handleProceed(SectionType.StressBuster, SectionType.CallHighlights)} />
+          <StressBusterStep
+            onProceed={() =>
+              handleProceed(
+                SectionType.StressBuster,
+                SectionType.CallHighlights
+              )
+            }
+          />
         );
       case SectionType.CallHighlights:
-        return <CallHighlights onProceed={() => handleProceed(SectionType.CallHighlights, SectionType.CallSummary)} />;
+        return (
+          <CallHighlights
+            onProceed={() =>
+              handleProceed(SectionType.CallHighlights, SectionType.CallSummary)
+            }
+          />
+        );
       case SectionType.CallSummary:
         return (
           <CallSummaryStep
-            onProceed={() => handleProceed(SectionType.CallSummary, SectionType.Resources)}
+            onProceed={() =>
+              handleProceed(SectionType.CallSummary, SectionType.Resources)
+            }
             summaryData={callSummary}
           />
         );
@@ -73,10 +93,14 @@ const PostCallSummary = () => {
         setCompletedSections={setCompletedSections}
       />
       <motion.div
-        className="h-fit flex flex-col gap-4 py-4 px-6 mt-4 bg-white rounded-lg overflow-hidden border border-[#E5E7EB]"
         layout="position"
+        layoutId="content-container"
+        transition={{ duration: 0.3 }}
+        className="h-fit flex flex-col gap-4 py-4 px-6 mt-4 bg-white rounded-lg overflow-hidden border border-[#E5E7EB]"
       >
-        {renderSection()}
+        <motion.div layout={false}>
+          {renderSection()}
+        </motion.div>
       </motion.div>
     </Container>
   );
