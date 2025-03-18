@@ -42,6 +42,7 @@ export enum SocketEvent {
   SEND_MESSAGE = "SEND_MESSAGE",
   CHAT_ACCEPTED = "CHAT_ACCEPTED",
   MESSAGE_RECEIVED = "MESSAGE_RECEIVED",
+  AUDIO_CHAT_MUTED = "AUDIO_CHAT_MUTED",
   ICE_CANDIDATE = "webrtc-ice-candidate",
   WEBRTC_OFFER = "webrtc-offer",
   WEBRTC_ANSWER = "webrtc-answer",

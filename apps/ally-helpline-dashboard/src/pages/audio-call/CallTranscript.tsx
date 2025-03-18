@@ -58,12 +58,77 @@ const CallTranscript = (props: CallTranscriptProps) => {
   const navigate = useNavigate();
   const iceServers = useIceServers();
 
-  const [transcriptions, setTranscriptions] = useState<Transcription[]>([]);
+  const [speakerTranscriptions, setSpeakerTranscriptions] = useState<
+    Transcription[]
+  >([]);
+  const [myTranscriptions, setMyTranscriptions] = useState<Transcription[]>([]);
   const [nudges, setNudges] = useState<string[]>([]);
   const [stage, setStage] = useState<string>();
 
   const isClient = user?.role === UserRole.CLIENT;
   const isCounsellor = user?.role === UserRole.COUNSELOR;
+
+  const processTranscription = (
+    setCorrespondingTranscription: React.Dispatch<
+      React.SetStateAction<Transcription[]>
+    >,
+    payload: any
+  ) => {
+    setCorrespondingTranscription((prev) => {
+      const lastTranscription = prev[prev.length - 1];
+      if (!lastTranscription) {
+        return [
+          ...prev,
+          {
+            id: payload.id,
+            message: payload.content,
+            senderId: payload.senderId,
+            timestamp: payload.createdAt,
+            isFinal: payload.isFinal,
+            isSentenceComplete: payload.isSentenceComplete,
+          },
+        ];
+      }
+      if (!lastTranscription.isFinal) {
+        // replace the last transcription with the new one
+        const updatedTranscriptions = [...prev];
+        updatedTranscriptions[prev.length - 1] = {
+          ...lastTranscription,
+          message: payload.content,
+          isSentenceComplete: payload.isSentenceComplete,
+          isFinal: payload.isFinal,
+        };
+        return updatedTranscriptions;
+      }
+
+      if (
+        !lastTranscription.isSentenceComplete &&
+        lastTranscription.isFinal &&
+        payload.isFinal
+      ) {
+        // concat the last transcription with the new one
+        const updatedTranscriptions = [...prev];
+        updatedTranscriptions[prev.length - 1] = {
+          ...lastTranscription,
+          message: `${lastTranscription.message} ${payload.content}`,
+          isSentenceComplete: payload.isSentenceComplete,
+          isFinal: payload.isFinal,
+        };
+        return updatedTranscriptions;
+      }
+      return [
+        ...prev,
+        {
+          id: payload.id,
+          message: payload.content,
+          senderId: payload.senderId,
+          timestamp: payload.createdAt,
+          isFinal: payload.isFinal,
+          isSentenceComplete: payload.isSentenceComplete,
+        },
+      ];
+    });
+  };
 
   const socketEventCallbacks = useMemo(
     () => ({
@@ -89,89 +154,10 @@ const CallTranscript = (props: CallTranscriptProps) => {
         const payload = data.payload;
         console.log("Message received:", payload);
         if (payload.type === MessageType.TEXT) {
-          if (payload?.content === "Session ended") {
-            confirmEndSession();
+          if (payload.senderId === user?.userId) {
+            processTranscription(setMyTranscriptions, payload);
           } else {
-            setTranscriptions((prev) => {
-              const lastTranscription = prev[prev.length - 1];
-              const lastTranscriptionFromSameSender =
-                prev &&
-                [...prev]
-                  .reverse()
-                  .findIndex((t) => t.senderId === payload.senderId);
-              if (!lastTranscription) {
-                return [
-                  ...prev,
-                  {
-                    id: payload.id,
-                    message: payload.content,
-                    senderId: payload.senderId,
-                    timestamp: payload.createdAt,
-                    isFinal: payload.isFinal,
-                    isSentenceComplete: payload.isSentenceComplete,
-                  },
-                ];
-              }
-              if (
-                payload.isSentenceComplete &&
-                !!lastTranscriptionFromSameSender &&
-                !prev[lastTranscriptionFromSameSender]?.isSentenceComplete
-              ) {
-                // replace the last transcription from the same sender with the new one
-                const updatedTranscriptions = [...prev];
-                updatedTranscriptions[
-                  prev.length - 1 - lastTranscriptionFromSameSender
-                ] = {
-                  ...lastTranscription,
-                  message: payload.content,
-                  isSentenceComplete: payload.isSentenceComplete,
-                  isFinal: payload.isFinal,
-                };
-                return updatedTranscriptions;
-              }
-              if (
-                !lastTranscription.isFinal &&
-                lastTranscription.senderId === payload.senderId
-              ) {
-                // replace the last transcription with the new one
-                const updatedTranscriptions = [...prev];
-                updatedTranscriptions[prev.length - 1] = {
-                  ...lastTranscription,
-                  message: payload.content,
-                  isSentenceComplete: payload.isSentenceComplete,
-                  isFinal: payload.isFinal,
-                };
-                return updatedTranscriptions;
-              }
-
-              if (
-                lastTranscription.senderId === payload.senderId &&
-                !lastTranscription.isSentenceComplete &&
-                lastTranscription.isFinal &&
-                payload.isFinal
-              ) {
-                // concat the last transcription with the new one
-                const updatedTranscriptions = [...prev];
-                updatedTranscriptions[prev.length - 1] = {
-                  ...lastTranscription,
-                  message: `${lastTranscription.message} ${payload.content}`,
-                  isSentenceComplete: payload.isSentenceComplete,
-                  isFinal: payload.isFinal,
-                };
-                return updatedTranscriptions;
-              }
-              return [
-                ...prev,
-                {
-                  id: payload.id,
-                  message: payload.content,
-                  senderId: payload.senderId,
-                  timestamp: payload.createdAt,
-                  isFinal: payload.isFinal,
-                  isSentenceComplete: payload.isSentenceComplete,
-                },
-              ];
-            });
+            processTranscription(setSpeakerTranscriptions, payload);
           }
         }
       },
@@ -192,8 +178,19 @@ const CallTranscript = (props: CallTranscriptProps) => {
           message: transcription.content,
           senderId: transcription.senderId,
           timestamp: transcription.createdAt,
+          isFinal: true,
+          isSentenceComplete: true,
         }));
-      setTranscriptions(existingTranscriptions);
+      setMyTranscriptions(
+        existingTranscriptions?.filter(
+          (payload) => payload.senderId === user.userId
+        )
+      );
+      setSpeakerTranscriptions(
+        existingTranscriptions?.filter(
+          (payload) => payload.senderId !== user.userId
+        )
+      );
 
       const existingNudges = activeChat.messages
         .reverse()
@@ -216,6 +213,13 @@ const CallTranscript = (props: CallTranscriptProps) => {
     eventCallbacks: socketEventCallbacks,
   });
 
+  useEffect(() => {
+    if (muted) {
+      emitSocketEvent(SocketEvent.AUDIO_CHAT_MUTED, { chatId });
+    }
+  }, [muted]);
+
+  // TODO: REthink the logic
   useEffect(() => {
     if (!activeChat?.startedAt) return;
 
@@ -351,10 +355,11 @@ const CallTranscript = (props: CallTranscriptProps) => {
   };
 
   useEffect(() => {
-    //connect socket
-    connect(chatId);
-    // Get user media stream
-    setupWebrtcAndMediarecorder();
+    if (chatId && user && iceServers) {
+      //connect socket
+      connect(chatId);
+      setupWebrtcAndMediarecorder();
+    }
 
     return () => {
       // Cleanup
@@ -466,6 +471,47 @@ const CallTranscript = (props: CallTranscriptProps) => {
 
   const transcriptContainerRef = useRef<HTMLDivElement>(null);
   const nudgesContainerRef = useRef<HTMLDivElement>(null);
+
+  const reduceTranscriptions = (
+    transcriptions: Transcription[]
+  ): Transcription[] => {
+    return transcriptions.reduce(
+      (acc: Transcription[], current: Transcription) => {
+        if (acc.length === 0) {
+          return [current];
+        }
+
+        const last = acc[acc.length - 1];
+
+        // If the last transcription is not sentence complete, combine with current
+        if (!last.isSentenceComplete) {
+          acc[acc.length - 1] = {
+            ...last,
+            message: `${last.message} ${current.message}`,
+            isSentenceComplete: current.isSentenceComplete,
+            timestamp: current.timestamp, // Update timestamp to latest
+          };
+          return acc;
+        }
+
+        // Otherwise add as new entry
+        return [...acc, current];
+      },
+      []
+    );
+  };
+
+  const transcriptions = useMemo(() => {
+    const reducedMyTranscriptions = reduceTranscriptions(myTranscriptions);
+    const reducedSpeakerTranscriptions = reduceTranscriptions(
+      speakerTranscriptions
+    );
+
+    return [...reducedMyTranscriptions, ...reducedSpeakerTranscriptions].sort(
+      (a, b) =>
+        new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
+    );
+  }, [myTranscriptions, speakerTranscriptions]);
 
   useEffect(() => {
     if (transcriptContainerRef.current) {

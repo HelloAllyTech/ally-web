@@ -44,15 +44,6 @@ const StressBuster: FunctionComponent<StressBusterProps> = ({
     }
   };
 
-  useEffect(() => {
-    if (playOnMount) {
-      setIsPlaying(true);
-      timerRef.current = setInterval(() => {
-        setSeconds((prev) => (prev === 4 ? 1 : prev + 1));
-      }, 1000);
-    }
-  }, [playOnMount]);
-
   const toggleMute = () => {
     if (videoRef.current) {
       videoRef.current.muted = !isMuted;
@@ -88,6 +79,15 @@ const StressBuster: FunctionComponent<StressBusterProps> = ({
     };
   }, []);
 
+  const onVideoLoaded = () => {
+    if (playOnMount) {
+      setIsPlaying(true);
+      timerRef.current = setInterval(() => {
+        setSeconds((prev) => (prev === 4 ? 1 : prev + 1));
+      }, 1000);
+    }
+  };
+
   const StressBusterComponent = (
     <div className="w-full h-full flex justify-center items-center relative">
       <div
@@ -108,12 +108,13 @@ const StressBuster: FunctionComponent<StressBusterProps> = ({
 
         <div className={`w-[full] ${isMaximized ? "my-8 h-[55%]" : "h-[45%]"}`}>
           <video
-            ref={videoRef}
-            className="w-full h-full object-cover bg-transparent mix-blend-screen"
             loop
-            src={MindfullnessVideo}
+            ref={videoRef}
             preload="auto"
+            src={MindfullnessVideo}
             autoPlay={playOnMount}
+            onLoadedData={onVideoLoaded}
+            className="w-full h-full object-cover bg-transparent mix-blend-screen"
           />
         </div>
 
