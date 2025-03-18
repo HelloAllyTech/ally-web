@@ -17,11 +17,13 @@ import { StressBusterProps } from "./types";
 const StressBuster: FunctionComponent<StressBusterProps> = ({
   isFullScreenMode,
   onClose,
+  closeIcon,
+  playOnMount = false,
 }) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
   const [isMaximized, setIsMaximized] = useState(isFullScreenMode);
-  const [seconds, setSeconds] = useState(0);
+  const [seconds, setSeconds] = useState(1);
   const videoRef = useRef<HTMLVideoElement>(null);
   const timerRef = useRef<NodeJS.Timeout>();
 
@@ -35,12 +37,21 @@ const StressBuster: FunctionComponent<StressBusterProps> = ({
       } else {
         videoRef.current.play();
         timerRef.current = setInterval(() => {
-          setSeconds((prev) => prev + 1);
+          setSeconds((prev) => (prev === 4 ? 1 : prev + 1));
         }, 1000);
       }
       setIsPlaying((prev) => !prev);
     }
   };
+
+  useEffect(() => {
+    if (playOnMount) {
+      setIsPlaying(true);
+      timerRef.current = setInterval(() => {
+        setSeconds((prev) => (prev === 4 ? 1 : prev + 1));
+      }, 1000);
+    }
+  }, [playOnMount]);
 
   const toggleMute = () => {
     if (videoRef.current) {
@@ -50,6 +61,7 @@ const StressBuster: FunctionComponent<StressBusterProps> = ({
   };
 
   const getSizingIcon = () => {
+    if (closeIcon) return closeIcon;
     if (isFullScreenMode) {
       return <X />;
     }
@@ -62,7 +74,7 @@ const StressBuster: FunctionComponent<StressBusterProps> = ({
     if (timerRef.current) {
       clearInterval(timerRef.current);
     }
-    setSeconds(0);
+    setSeconds(1);
     setIsPlaying(false);
     setIsMuted(false);
     setIsMaximized((prev) => !prev);
@@ -100,6 +112,8 @@ const StressBuster: FunctionComponent<StressBusterProps> = ({
             className="w-full h-full object-cover bg-transparent mix-blend-screen"
             loop
             src={MindfullnessVideo}
+            preload="auto"
+            autoPlay={playOnMount}
           />
         </div>
 

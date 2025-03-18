@@ -1,22 +1,60 @@
+import { Minimize } from "lucide-react";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect, FunctionComponent } from "react";
 
 import { UserRole } from "@/types/user";
 import { RootState } from "@/store/store";
+import { StressBuster } from "@/components";
 import { useClientChat, useCounsellorChat } from "@/hooks";
 
 import { Chat } from "./types";
 import CallTranscript from "./CallTranscript";
+import EndTransitionScreen from "./components/EndTransition";
 
 const AudioCall: FunctionComponent = () => {
   const [activeChat, setActiveChat] = useState<Chat | null>();
+  const [endingMessage, setEndingMessage] = useState<string>("");
+  const [isEnding, setIsEnding] = useState<boolean>(false);
+  const [showStressBuster, setShowStressBuster] = useState<boolean>(false);
 
   const user = useSelector((state: RootState) => state.user.user);
   const navigate = useNavigate();
 
   const { getCounsellorChat, endSession } = useCounsellorChat();
   const { fetchCurrentChat } = useClientChat();
+
+  useEffect(() => {
+    return () => {
+      setIsEnding(false);
+      setShowStressBuster(false);
+    };
+  }, []);
+
+  const handleEndSequence = async () => {
+    if (user?.role === UserRole.CLIENT) {
+      // For clients, navigate immediately
+      navigate("/");
+      return;
+    }
+    setIsEnding(true);
+    // First message
+    setEndingMessage("You did great!");
+
+    // Wait 3 seconds
+    await new Promise((resolve) => setTimeout(resolve, 3000));
+
+    // Second message
+    setEndingMessage("Take a moment for yourself");
+
+    // Wait 3 more seconds
+    await new Promise((resolve) => setTimeout(resolve, 3000));
+    setShowStressBuster(true);
+
+    // Navigate
+    // navigate(`/summary/${chatId}`);
+    // Show stress buster
+  };
 
   useEffect(() => {
     const fetchActiveChat = async () => {
@@ -37,20 +75,38 @@ const AudioCall: FunctionComponent = () => {
     fetchActiveChat();
   }, [user]);
 
-  const confirmEndSession = async () => {
+  const endSessionAndNavigate = async (triggerApi: boolean = true) => {
     try {
-      await endSession(activeChat.chatId);
+      if (triggerApi) {
+        await endSession(activeChat.chatId);
+      }
+      handleEndSequence();
     } catch (error) {
       console.error("Error ending session:", error);
     }
   };
 
+  const navigateOnStressBusterClose = () => {
+    if (activeChat?.chatId) {
+      navigate(`/summary/${activeChat?.chatId}`);
+    }
+  };
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50">
-      {activeChat?.chatId && (
+      {!isEnding && activeChat?.chatId && (
         <CallTranscript
-          endSession={confirmEndSession}
+          endSession={endSessionAndNavigate}
           activeChat={activeChat}
+        />
+      )}
+      {isEnding && <EndTransitionScreen endingMessage={endingMessage} />}
+      {showStressBuster && (
+        <StressBuster
+          playOnMount
+          isFullScreenMode
+          closeIcon={<Minimize />}
+          onClose={navigateOnStressBusterClose}
         />
       )}
     </div>
