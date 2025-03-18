@@ -15,42 +15,46 @@ export const useSocket = ({ userId, eventCallbacks }: UseSocketOptions) => {
   const baseUrl = import.meta.env.VITE_API_BASE_URL;
   // const appVersionPath = import.meta.env.VITE_APP_VERSION_PATH;
 
-  const connect = useCallback(() => {
-    if (connectionAttemptsRef.current >= maxAttempts) {
-      console.error("Max connection attempts reached");
-      return;
-    }
+  const connect = useCallback(
+    (chatId?: number) => {
+      if (connectionAttemptsRef.current >= maxAttempts) {
+        console.error("Max connection attempts reached");
+        return;
+      }
 
-    try {
-      socketRef.current = io(baseUrl, {
-        path: "",
-        transports: ["websocket", "polling"] as const,
-        auth: {
-          user: {
-            userId,
+      try {
+        socketRef.current = io(baseUrl, {
+          path: "",
+          transports: ["websocket", "polling"] as const,
+          auth: {
+            user: {
+              userId,
+              chatId,
+            },
           },
-        },
-        reconnection: true,
-        reconnectionAttempts: 5,
-        reconnectionDelay: 1000,
-        reconnectionDelayMax: 5000,
-        timeout: 10000,
-        forceNew: true,
-        autoConnect: false,
-      });
+          reconnection: true,
+          reconnectionAttempts: 5,
+          reconnectionDelay: 1000,
+          reconnectionDelayMax: 5000,
+          timeout: 10000,
+          forceNew: true,
+          autoConnect: false,
+        });
 
-      console.log("Attempting socket connection...");
+        console.log("Attempting socket connection...");
 
-      socketRef.current.connect();
+        socketRef.current.connect();
 
-      setupDefaultListeners();
-      connectionAttemptsRef.current++;
-    } catch (error) {
-      console.error("Socket connection error:", error);
-      connectionAttemptsRef.current++;
-      setTimeout(() => connect(), 2000);
-    }
-  }, [userId]);
+        setupDefaultListeners();
+        connectionAttemptsRef.current++;
+      } catch (error) {
+        console.error("Socket connection error:", error);
+        connectionAttemptsRef.current++;
+        setTimeout(() => connect(chatId), 2000);
+      }
+    },
+    [userId]
+  );
 
   const setupDefaultListeners = useCallback(() => {
     if (!socketRef.current) return;

@@ -141,7 +141,7 @@ const LiveCall = ({ handleLogout }: LiveCallProps) => {
         }
 
         if (data.chatId) {
-          socket.connect();
+          socket.connect(data.chatId);
         }
       }
     };
