@@ -7,6 +7,7 @@ export interface CallTranscriptProps {
 
 export interface Chat {
   chatId: number;
+  startedAt: string;
   currentStage?: string;
   messages: {
     content: string;

@@ -216,21 +216,22 @@ const CallTranscript = (props: CallTranscriptProps) => {
     eventCallbacks: socketEventCallbacks,
   });
 
-  // TODO: REthink the logic
   useEffect(() => {
-    const secondsInterval = setInterval(() => {
-      setSeconds((prev) => {
-        if (prev > 59) {
-          setMinutes((prevMin) => prevMin + 1);
-          return 0;
-        }
-        return prev + 1;
-      });
-    }, 1000);
-    return () => {
-      clearInterval(secondsInterval);
+    if (!activeChat?.startedAt) return;
+
+    const updateElapsedTime = () => {
+      const now = Date.now();
+      const diffInSeconds = Math.floor(
+        (now - Date.parse(activeChat.startedAt)) / 1000
+      );
+      setSeconds(diffInSeconds);
     };
-  }, []);
+
+    updateElapsedTime(); // Initial update
+    const interval = setInterval(updateElapsedTime, 1000);
+
+    return () => clearInterval(interval); // Cleanup on unmount
+  }, [activeChat]);
 
   // Add a reference to store the local stream
   const localStreamRef = useRef<MediaStream | null>(null);
@@ -351,7 +352,7 @@ const CallTranscript = (props: CallTranscriptProps) => {
 
   useEffect(() => {
     //connect socket
-    connect();
+    connect(chatId);
     // Get user media stream
     setupWebrtcAndMediarecorder();
 
@@ -492,8 +493,7 @@ const CallTranscript = (props: CallTranscriptProps) => {
             <div className="text-white flex justify-center items-center flex-col gap-2">
               <div className="text-base font-medium">Ongoing Voice Call</div>
               <div className="text-sm text-[#BABABA]">
-                {minutes > 9 ? minutes : `0${minutes}`}:
-                {seconds > 9 ? seconds : `0${seconds}`}
+                {Math.floor(seconds / 60)}:{seconds % 60}
               </div>
             </div>
             {/* Hidden Audio Element */}
