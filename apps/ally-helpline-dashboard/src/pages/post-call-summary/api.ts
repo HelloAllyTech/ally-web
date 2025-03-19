@@ -12,7 +12,18 @@ const callSummaryAPI = baseAPI.injectEndpoints({
         body: data,
       }),
     }),
+    enhanceContent: builder.mutation({
+      query: ({ content }) => ({
+        url: "/chats/enhance",
+        method: "POST",
+        body: { content },
+      }),
+    }),
   }),
 });
 
-export const { useGetCallSummaryQuery, useUpdateCallSummaryMutation } = callSummaryAPI;
+export const {
+  useGetCallSummaryQuery,
+  useUpdateCallSummaryMutation,
+  useEnhanceContentMutation,
+} = callSummaryAPI;
