@@ -6,12 +6,11 @@ import { ArticleGridProps } from "./types";
 const ArticleGrid: FC<ArticleGridProps> = ({ articles, onArticleClick }) => {
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-      {articles.map((article, index) => (
+      {articles.map((article) => (
         <ArticleCard
           key={article.id}
           title={article.title}
-          // TODO: need to fix image url
-          imageUrl={`@/assets/icons/Article${(index + 1) % 6}.svg`}
+          imageUrl={article.imageUrl}
           onClick={() => onArticleClick?.(article.id)}
         />
       ))}
@@ -19,4 +18,4 @@ const ArticleGrid: FC<ArticleGridProps> = ({ articles, onArticleClick }) => {
   );
 };
 
-export default ArticleGrid; 
+export default ArticleGrid;
