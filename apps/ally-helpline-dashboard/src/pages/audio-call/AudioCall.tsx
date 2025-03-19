@@ -5,7 +5,7 @@ import { useState, useEffect, FunctionComponent } from "react";
 
 import { UserRole } from "@/types/user";
 import { RootState } from "@/store/store";
-import { StressBuster } from "@/components";
+import { Button, StressBuster } from "@/components";
 import { useClientChat, useCounsellorChat } from "@/hooks";
 
 import { Chat } from "./types";
@@ -92,6 +92,13 @@ const AudioCall: FunctionComponent = () => {
     }
   };
 
+  const handleViewCallHighlights = () => {
+    if (activeChat?.chatId) {
+      // TODO: Update section param
+      navigate(`/summary/${activeChat?.chatId}?section=2`);
+    }
+  };
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50">
       {!isEnding && activeChat?.chatId && (
@@ -107,7 +114,14 @@ const AudioCall: FunctionComponent = () => {
           isFullScreenMode
           closeIcon={<Minimize />}
           onClose={navigateOnStressBusterClose}
-        />
+        >
+          <Button
+            className="mt-8 rounded-full"
+            onClick={handleViewCallHighlights}
+          >
+            View Call Highlights
+          </Button>
+        </StressBuster>
       )}
     </div>
   );

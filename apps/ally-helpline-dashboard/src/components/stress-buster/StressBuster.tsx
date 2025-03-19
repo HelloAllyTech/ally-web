@@ -17,6 +17,7 @@ import { StressBusterProps } from "./types";
 const StressBuster: FunctionComponent<StressBusterProps> = ({
   isFullScreenMode,
   onClose,
+  children,
   closeIcon,
   playOnMount = false,
 }) => {
@@ -153,6 +154,7 @@ const StressBuster: FunctionComponent<StressBusterProps> = ({
             </div>
           ))}
         </div>
+        <div className="z-20">{children}</div>
       </div>
     </div>
   );
