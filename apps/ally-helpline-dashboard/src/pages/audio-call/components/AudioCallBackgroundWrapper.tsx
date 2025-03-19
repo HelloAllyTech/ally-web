@@ -9,6 +9,7 @@ const AudioCallBackgroundWrapper: FunctionComponent<{
       <BackgroundTop className="absolute top-0 right-0 opacity-35 z-0" />
       <BackgroundBottom className="absolute bottom-0 left-0 opacity-35 z-0" />
       {children}
+      
     </div>
   );
 };

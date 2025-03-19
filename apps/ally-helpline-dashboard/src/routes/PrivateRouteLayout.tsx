@@ -10,7 +10,13 @@ import {
 import { useSelector } from "react-redux";
 import { toast } from "sonner";
 
-import { CallLogs, LiveCall, Calls, PostCallSummary } from "@/pages";
+import {
+  CallLogs,
+  LiveCall,
+  Calls,
+  PostCallSummary,
+  StressBusters,
+} from "@/pages";
 import { RootState, store } from "@/store/store";
 import { CallPicker, NavSideBar, LifelineHeader } from "@/components";
 import { useCounsellorChat, useUser, useWaitingClients } from "@/hooks";
@@ -20,6 +26,9 @@ import { UserRole } from "@/types/user";
 import AudioCall from "@/pages/audio-call/AudioCall";
 import { WaitingClient } from "@/hooks/useWaitingClients";
 import { setIsOnline } from "@/reducer/userReducer";
+
+// TODO: Remove all un used pages
+// TODO: Restrict client access to pages
 
 const PrivateRouteLayout = () => {
   const { user, logout, checkAuth } = useUser();
@@ -64,11 +73,11 @@ const PrivateRouteLayout = () => {
       const interval = setInterval(fetchWaitingClients, 10000);
 
       return () => clearInterval(interval);
-
     }
   }, [isOnline]);
 
-  const getActiveTab = () => navBarOptions.find((option) => option.path === pathname)?.id ?? TabId.CALLS;
+  const getActiveTab = () =>
+    navBarOptions.find((option) => option.path === pathname)?.id ?? TabId.CALLS;
 
   const handleTabChange = (path: string) => {
     navigate(path);
@@ -86,7 +95,7 @@ const PrivateRouteLayout = () => {
   const excludeNavBar = [ROUTES.AUDIO_CALL, ROUTES.SUMMARY] as string[];
 
   const isPathExcluded = (currentPath: string) => {
-    return excludeNavBar.some(path => matchPath(path, currentPath));
+    return excludeNavBar.some((path) => matchPath(path, currentPath));
   };
 
   const onAcceptCall = async () => {
@@ -97,49 +106,61 @@ const PrivateRouteLayout = () => {
     } catch (error) {
       toast.error(
         error?.response?.data?.detail ??
-        "Something went wrong. Please try again later!"
+          "Something went wrong. Please try again later!"
       );
       console.error("Error accepting chat:", error);
     }
   };
 
+  const showNavbar = !isClient && !isPathExcluded(pathname);
+  const showLifelineHeader = !excludeDefaultPageHeader.includes(pathname);
+
   if (user)
     return (
       <div className="flex h-screen w-full ">
-        {!isClient && !isPathExcluded(pathname) && (
+        {showNavbar && (
           <NavSideBar activeTab={activeTab} onTabChange={handleTabChange} />
         )}
-        <div className="flex-1 min-h-screen overflow-auto bg-[#F9FAFB] custom-scrollbar">
-          {!excludeDefaultPageHeader.includes(pathname) && <LifelineHeader />}
-          <Routes>
-            <Route
-              index
-              element={
-                isClient ? (
-                  <Navigate to={ROUTES.CALL_LOGS} />
-                ) : (
-                  <Navigate to={ROUTES.CALLS} />
-                )
-              }
-            />
-            <Route
-              path={ROUTES.LIVE_CALL}
-              element={<LiveCall handleLogout={handleLogout} />}
-            />
-            <Route path={ROUTES.AUDIO_CALL} element={<AudioCall />} />
-            <Route path={ROUTES.CALL_LOGS} element={<CallLogs />} />
-            <Route path={ROUTES.CALLS} element={<Calls />} />
-            <Route path={ROUTES.CALENDER} element={<Calls />} />
-            <Route path={ROUTES.LEARN} element={<Calls />} />
-            <Route path={ROUTES.STRESS_BUSTERS} element={<Calls />} />
-            <Route path={ROUTES.ANALYTICS} element={<AudioCall />} />
-            <Route path={ROUTES.SETTINGS} element={<Calls />} />
-            <Route path={ROUTES.SUMMARY} element={<PostCallSummary />} />
-            <Route path="*" element={<Navigate to="/" replace />} />
-          </Routes>
+        <div
+          className={
+            "flex-1 min-h-screen overflow-auto bg-[#F9FAFB] custom-scrollbar"
+          }
+        >
+          {showLifelineHeader && <LifelineHeader />}
+          <div className={`${showNavbar && "ml-72"}`}>
+            <Routes>
+              <Route
+                index
+                element={
+                  isClient ? (
+                    <Navigate to={ROUTES.CALL_LOGS} />
+                  ) : (
+                    <Navigate to={ROUTES.CALLS} />
+                  )
+                }
+              />
+              <Route
+                path={ROUTES.LIVE_CALL}
+                element={<LiveCall handleLogout={handleLogout} />}
+              />
+              <Route path={ROUTES.AUDIO_CALL} element={<AudioCall />} />
+              <Route path={ROUTES.CALL_LOGS} element={<CallLogs />} />
+              <Route path={ROUTES.CALLS} element={<Calls />} />
+              <Route path={ROUTES.CALENDER} element={<Calls />} />
+              <Route path={ROUTES.LEARN} element={<Calls />} />
+              <Route path={ROUTES.ANALYTICS} element={<AudioCall />} />
+              <Route path={ROUTES.SETTINGS} element={<Calls />} />
+              <Route path={ROUTES.SUMMARY} element={<PostCallSummary />} />
+              <Route path={ROUTES.STRESS_BUSTERS} element={<StressBusters />} />
+              <Route path="*" element={<Navigate to="/" replace />} />
+            </Routes>
+          </div>
         </div>
         {alertCall && waitingClients.length > 0 && isOnline && (
-          <CallPicker onAccept={onAcceptCall} onDecline={() => setAlertCall(false)} />
+          <CallPicker
+            onAccept={onAcceptCall}
+            onDecline={() => setAlertCall(false)}
+          />
         )}
       </div>
     );
