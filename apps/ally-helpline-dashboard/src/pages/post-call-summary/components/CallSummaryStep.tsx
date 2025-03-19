@@ -33,7 +33,7 @@ const CallSummaryStep: FC<CallSummaryProps> = ({ onProceed, summaryData }) => {
 
   return (
     <>
-      <span className="text-base font-medium text-gray-800">Call summary</span>
+      <span className="text-base font-medium text-[#47464F]">Call summary</span>
       <div className="flex flex-col gap-4 text-[14px] text-[#79747E]">
         {/* Call Details */}
         <div>
@@ -95,7 +95,7 @@ const CallSummaryStep: FC<CallSummaryProps> = ({ onProceed, summaryData }) => {
           <span className="font-semibold">Key Concerns</span>
           <div className="mt-2 p-[12px] border border-[#E5E7EB] bg-[#FAFAFA] rounded-sm">
             <ul className="list-disc list-inside">
-              {sessionDocs?.key_concerns.map((concern) => (
+              {sessionDocs?.key_concerns?.map((concern) => (
                 <li key={concern}>{concern}</li>
               ))}
             </ul>
@@ -107,7 +107,7 @@ const CallSummaryStep: FC<CallSummaryProps> = ({ onProceed, summaryData }) => {
           <span className="font-semibold">Flow</span>
           <div className="mt-2 p-[12px] border border-[#E5E7EB] bg-[#FAFAFA] rounded-sm">
             <ul className="list-disc list-inside">
-              {sessionDocs?.work_done?.counseling_process_flow.map((flow) => (
+              {sessionDocs?.work_done?.counseling_process_flow?.map((flow) => (
                 <li key={flow}>{flow}</li>
               ))}
             </ul>

@@ -6,7 +6,7 @@ import { StressBusterProps } from "./types";
 const StressBusterStep: FC<StressBusterProps> = ({ onProceed }) => {
   return (
     <>
-      <h2 className="text-base font-medium text-gray-800">
+      <h2 className="text-base font-medium text-[#47464F]">
         Let&apos;s try a stress buster
       </h2>
 

@@ -30,8 +30,10 @@ import LifelineHeader from "./generic/lifeline-header";
 import { ToggleButtonGroup } from "./generic/toggle-button-group";
 import CustomMarkdown from "./custom-markdown";
 import StressBuster from "./stress-buster";
+import ArticleGrid from "./article-grid/ArticleGrid";
 
 export {
+  ArticleGrid,
   Card,
   CallPicker,
   Table,

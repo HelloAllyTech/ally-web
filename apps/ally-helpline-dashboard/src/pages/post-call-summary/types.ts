@@ -17,3 +17,7 @@ export interface CallSummaryProps {
   onProceed: () => void;
   summaryData: any;
 }
+
+export interface ModalData {
+  type: "article" | "redirect";
+}
