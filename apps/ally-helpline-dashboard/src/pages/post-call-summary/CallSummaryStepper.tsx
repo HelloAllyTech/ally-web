@@ -1,14 +1,7 @@
-import { Dispatch, FC, SetStateAction } from "react";
+import { FC } from "react";
 import { ToggleButtonGroup, ToggleButton, styled } from "@mui/material";
 
-import { SectionType } from "./types";
-
-interface CallSummaryStepperProps {
-  activeSection: SectionType;
-  setActiveSection: (section: SectionType) => void;
-  completedSections: SectionType[];
-  setCompletedSections: Dispatch<SetStateAction<SectionType[]>>;
-}
+import { CallSummaryStepperProps, SectionType } from "./types";
 
 const StyledToggleButtonGroup = styled(ToggleButtonGroup)(() => ({
   padding: 0,
@@ -29,7 +22,6 @@ const StyledToggleButtonGroup = styled(ToggleButtonGroup)(() => ({
       },
     },
     "&.completed": {
-      backgroundColor: "#DDEDFF",
       color: "#0278FE",
       border: "1px solid #0278FE",
       "&:hover": {
@@ -64,25 +56,10 @@ const CallSummaryStepper: FC<CallSummaryStepperProps> = ({
   activeSection,
   setActiveSection,
   completedSections,
-  setCompletedSections
 }) => {
   const handleSectionChange = (event: React.MouseEvent<HTMLElement>, newSection: SectionType) => {
-    if (newSection !== null) {
-      const sections = Object.values(SectionType);
-      const newIndex = sections.indexOf(newSection);
-      const currentIndex = sections.indexOf(activeSection);
-
-      // Allow clicking if:
-      // 1. It's a completed section (can go back)
-      // 2. It's the immediatley next section and all previous sections are completed
-      if (completedSections.includes(newSection) || newIndex === currentIndex + 1) {
-        // Mark current section as completed only when moving forward
-        if (newIndex > currentIndex) {
-          setCompletedSections(prev => [...prev, activeSection]);
-        }
-
-        setActiveSection(newSection);
-      }
+    if (newSection !== null && completedSections.includes(newSection)) {
+      setActiveSection(newSection);
     }
   };
 

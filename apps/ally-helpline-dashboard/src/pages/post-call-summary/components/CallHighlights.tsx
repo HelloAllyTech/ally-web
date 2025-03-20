@@ -1,52 +1,20 @@
 import { FC } from "react";
 import { motion } from "framer-motion";
 
-import {
-  CallDuration,
-  QuestionsAsked,
-  Nudges,
-  ListeningRatio,
-  CallerMood,
-} from "@/assets/icons";
 import { Button } from "@/components";
 
 import { CallHighlightsProps } from "../types";
+import { highlights } from "../constants";
 
-interface Highlight {
-  title: string;
-  value: string;
-  image: React.ComponentType<React.SVGProps<SVGSVGElement>>;
-}
+const CallHighlights: FC<CallHighlightsProps> = ({ onProceed, summaryData }) => {
+  const highlightsData = {
+    callDuration: `${summaryData?.details?.callDuration} minutes`,
+    questionsAsked:  "6 questions",
+    nudges: `${summaryData?.details?.noOfNudges} Nudges`,
+    listeningRatio: summaryData?.details?.callInfo?.clientTalkingPercentage,
+    callerMood: "28 Points",
+  };
 
-const highlights: Highlight[] = [
-  {
-    title: "The call duration was more than",
-    value: "45 minutes",
-    image: CallDuration,
-  },
-  {
-    title: "You asked",
-    value: "6 questions",
-    image: QuestionsAsked,
-  },
-  {
-    title: "You used Copilot",
-    value: "04 Nudges",
-    image: Nudges,
-  },
-  {
-    title: "Listening to taking ratio was ",
-    value: "0.67",
-    image: ListeningRatio,
-  },
-  {
-    title: "Caller’s mood had increased by",
-    value: "28 Points",
-    image: CallerMood,
-  },
-];
-
-const CallHighlights: FC<CallHighlightsProps> = ({ onProceed }) => {
   return (
     <motion.div
       layout="position"
@@ -68,7 +36,7 @@ const CallHighlights: FC<CallHighlightsProps> = ({ onProceed }) => {
             <div className="flex flex-col">
               <span className="text-[14px]">{highlight.title}</span>
               <span className="text-[16px] text-[#49454F] font-medium">
-                {highlight.value}
+                {highlightsData[highlight.key]}
               </span>
             </div>
           </div>

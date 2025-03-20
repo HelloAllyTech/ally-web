@@ -46,12 +46,12 @@ const CallSummaryStep: FC<CallSummaryProps> = ({ onProceed, summaryData }) => {
         working_status: demogs.working_status,
         gender: demogs.gender,
         location: demogs.location,
-        key_concerns: sessionDocs?.key_concerns
-          ?.map((concern) => `- ${concern}`)
-          .join("\n"),
-        flow: sessionDocs?.work_done?.counseling_process_flow
-          ?.map((flow) => `- ${flow}`)
-          .join("\n"),
+        key_concerns: sessionDocs?.key_concerns,
+          // ?.map((concern) => `- ${concern}`)
+          // .join("\n"),
+        flow: sessionDocs?.work_done?.counseling_process_flow,
+          // ?.map((flow) => `- ${flow}`)
+          // .join("\n"),
       });
     }
   }, [summaryData]);
@@ -111,10 +111,12 @@ const CallSummaryStep: FC<CallSummaryProps> = ({ onProceed, summaryData }) => {
             },
             session_documentation: {
               ...summaryData.details.summary.summaryNote.session_documentation,
-              key_concerns: data?.key_concerns?.split("\n").map((concern) => concern.replace("- ", "")),
+              // key_concerns: data?.key_concerns?.split("\n").map((concern) => concern.replace("- ", "")),
+              key_concerns: data?.key_concerns,
               work_done: {
                 ...summaryData.details.summary.summaryNote.session_documentation.work_done,
-                counseling_process_flow: data?.flow?.split("\n").map((flow) => flow.replace("- ", "")),
+                // counseling_process_flow: data?.flow?.split("\n").map((flow) => flow.replace("- ", "")),
+                counseling_process_flow: data?.flow,
               },
               notes_for_next_session: data?.notes,
             },
@@ -125,7 +127,7 @@ const CallSummaryStep: FC<CallSummaryProps> = ({ onProceed, summaryData }) => {
       await updateCallSummary({ chatId, data: formattedData });
       onProceed();
     } catch (error) {
-      console.error("Error formatting data:", error);
+      console.error("Error submitting data:", error);
     }
   };
 
@@ -163,7 +165,7 @@ const CallSummaryStep: FC<CallSummaryProps> = ({ onProceed, summaryData }) => {
   return (
     <>
       <span className="text-base font-medium text-[#47464F]">Call summary</span>
-      <div className="flex flex-col gap-4 text-[14px] text-[#79747E]">
+      <div className="h-[calc(100vh-320px)] overflow-y-auto flex flex-col gap-4 text-[14px] text-[#79747E]">
         {/* Call Details */}
         <div>
           <span className="font-semibold">Call Details</span>
@@ -248,6 +250,7 @@ const CallSummaryStep: FC<CallSummaryProps> = ({ onProceed, summaryData }) => {
             rows={4}
             multiline
             id="outlined-multiline-static"
+            onChange={(e) => handleChange("key_concerns", e.target.value)}
             value={isEnhancing.key_concerns ? "" : data?.key_concerns}
             disabled={isEnhancing.key_concerns || isStreaming.key_concerns}
             className="mt-2 border border-[#E5E7EB] rounded-sm w-full"

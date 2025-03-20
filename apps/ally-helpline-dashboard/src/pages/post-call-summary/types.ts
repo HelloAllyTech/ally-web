@@ -12,12 +12,25 @@ export enum Gender {
   PREFER_NOT_TO_SAY = "Client Prefers Not to Say"
 }
 
+export interface CallSummaryStepperProps {
+  activeSection: SectionType;
+  setActiveSection: (section: SectionType) => void;
+  completedSections: SectionType[];
+}
+
 export interface StressBusterProps {
   onProceed: () => void;
 }
 
 export interface CallHighlightsProps {
   onProceed: () => void;
+  summaryData: any;
+}
+
+export interface Highlight {
+  key: string;
+  title: string;
+  image: React.ComponentType<React.SVGProps<SVGSVGElement>>;
 }
 
 export interface CallSummaryProps {
