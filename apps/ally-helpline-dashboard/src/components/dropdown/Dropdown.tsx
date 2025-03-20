@@ -3,7 +3,7 @@ import { FormControl, MenuItem, Select, SelectChangeEvent } from "@mui/material"
 
 import { DropdownProps } from "./types";
 
-const Dropdown: FC<DropdownProps> = ({ value, options, onChange, minWidth = 200 }) => {
+const Dropdown: FC<DropdownProps> = ({ value, options, onChange, minWidth = 200, sx }) => {
   const handleChange = (event: SelectChangeEvent<string>) => {
     onChange(event.target.value);
   };
@@ -29,7 +29,8 @@ const Dropdown: FC<DropdownProps> = ({ value, options, onChange, minWidth = 200 
             color: "#47464F",
             fontSize: "14px",
             fontWeight: "500",
-          }
+          },
+          ...sx
         }}
       >
         {options.map((option) => (

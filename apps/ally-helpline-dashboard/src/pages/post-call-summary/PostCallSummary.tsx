@@ -20,10 +20,9 @@ const PostCallSummary = () => {
   const { chatId } = useParams();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  // console.log(searchParams.get("section"));
 
   const [activeSection, setActiveSection] = useState<SectionType>(
-    SectionType.StressBuster
+    searchParams.get("section") === "2" ? SectionType.CallHighlights : SectionType.StressBuster
   );
   const [completedSections, setCompletedSections] = useState<SectionType[]>([]);
   const [modalData, setModalData] = useState<ModalData | null>(null);

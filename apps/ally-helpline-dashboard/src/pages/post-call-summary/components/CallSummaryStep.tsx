@@ -5,12 +5,9 @@ import { useParams } from "react-router-dom";
 import { FC, useEffect, useState } from "react";
 import { TextField, Skeleton } from "@mui/material";
 
-import { Button } from "@/components";
-import { CallSummaryProps } from "../types";
-import {
-  useEnhanceContentMutation,
-  useUpdateCallSummaryMutation,
-} from "../api";
+import { Button, Dropdown } from "@/components";
+import { CallSummaryProps, Gender } from "../types";
+import { useEnhanceContentMutation, useUpdateCallSummaryMutation } from "../api";
 
 const CallSummaryStep: FC<CallSummaryProps> = ({ onProceed, summaryData }) => {
   const { chatId } = useParams();
@@ -44,10 +41,6 @@ const CallSummaryStep: FC<CallSummaryProps> = ({ onProceed, summaryData }) => {
       const sessionDocs =
         summaryData.details.summary?.summaryNote?.session_documentation;
 
-      console.log(
-        sessionDocs?.key_concerns,
-        sessionDocs?.key_concerns?.map((concern) => `- ${concern}`).join("\n")
-      );
       setData({
         age: demogs.age,
         working_status: demogs.working_status,
@@ -69,14 +62,7 @@ const CallSummaryStep: FC<CallSummaryProps> = ({ onProceed, summaryData }) => {
   };
 
   const [updateCallSummary, { isLoading }] = useUpdateCallSummaryMutation();
-  const [enhanceContent, { isLoading: isEnhancingLoading }] =
-    useEnhanceContentMutation();
-  const handleSubmit = () => {
-    // TODO: Add content formatting if necessary - currently sending whatever present in state
-    updateCallSummary({ chatId, data });
-    // TODO: Add error handling and move to the next step only on success
-    onProceed();
-  };
+  const [enhanceContent, { isLoading: isEnhanceLoading }] = useEnhanceContentMutation();
 
   const handleChange = (key: string, value: string) => {
     setData((prev) => ({ ...prev, [key]: value }));
@@ -108,12 +94,45 @@ const CallSummaryStep: FC<CallSummaryProps> = ({ onProceed, summaryData }) => {
     }, 50);
   };
 
+  const handleSubmit = async () => {
+    try {
+      // Format data to match the expected API structure
+      const formattedData = {
+        callDetails: {
+          ...summaryData.details.summary,
+          summaryNote: {
+            ...summaryData.details.summary.summaryNote,
+            demographic_details: {
+              ...summaryData.details.summary.summaryNote.demographic_details,
+              age: data?.age,
+              working_status: data?.working_status,
+              gender: data?.gender,
+              location: data?.location,
+            },
+            session_documentation: {
+              ...summaryData.details.summary.summaryNote.session_documentation,
+              key_concerns: data?.key_concerns?.split("\n").map((concern) => concern.replace("- ", "")),
+              work_done: {
+                ...summaryData.details.summary.summaryNote.session_documentation.work_done,
+                counseling_process_flow: data?.flow?.split("\n").map((flow) => flow.replace("- ", "")),
+              },
+              notes_for_next_session: data?.notes,
+            },
+          },
+        },
+      };
+
+      await updateCallSummary({ chatId, data: formattedData });
+      onProceed();
+    } catch (error) {
+      console.error("Error formatting data:", error);
+    }
+  };
+
   const EnhanceButton: FC<{ fieldName: string }> = ({ fieldName }) => (
     <div
       className={`absolute bottom-2 right-2 ${
-        isEnhancing[fieldName] || isStreaming[fieldName]
-          ? "opacity-50 pointer-events-none"
-          : ""
+        isEnhancing[fieldName] || isStreaming[fieldName] ? "opacity-50 pointer-events-none" : ""
       }`}
       onClick={() => triggerEnhanceApi(fieldName)}
     >
@@ -123,7 +142,7 @@ const CallSummaryStep: FC<CallSummaryProps> = ({ onProceed, summaryData }) => {
     </div>
   );
 
-  const EnhancemnetLoadingSkeleton = (
+  const EnhancementLoadingSkeleton = (
     <div className="w-full">
       <Skeleton />
       <Skeleton />
@@ -133,7 +152,7 @@ const CallSummaryStep: FC<CallSummaryProps> = ({ onProceed, summaryData }) => {
 
   const isButtonDisabled =
     isLoading ||
-    isEnhancingLoading ||
+    isEnhanceLoading ||
     isEnhancing.key_concerns ||
     isEnhancing.flow ||
     isEnhancing.notes ||
@@ -150,21 +169,20 @@ const CallSummaryStep: FC<CallSummaryProps> = ({ onProceed, summaryData }) => {
           <span className="font-semibold">Call Details</span>
           <div className="mt-2 p-[12px] grid grid-cols-2 gap-2 border border-[#E5E7EB] bg-[#FAFAFA] rounded-sm">
             <div>
-              <span>{"Call date: "}</span>
-              <span>
-                {getFormattedDateTime(summaryData?.startedAt, "do MMMM yyyy")}
-              </span>
+              <span className="font-semibold">{"Call date: "}</span>
+              <span>{getFormattedDateTime(summaryData?.startedAt, "do MMMM yyyy")}</span>
             </div>
             <div>
-              <span>{"Caller type: "}</span>
+              <span className="font-semibold">{"Caller type: "}</span>
               <span>{sessionDetails?.new_call_follow_up}</span>
             </div>
             <div>
-              <span>{"Call time: "}</span>
+              <span className="font-semibold">{"Call time: "}</span>
               <span>{`${getFormattedDateTime(summaryData?.startedAt, "HH:mm")} - ${getFormattedDateTime(summaryData?.endedAt, "HH:mm")}`}</span>
             </div>
             <div>
-              <span>{`Counsellor Name: ${sessionDetails?.counselor_name}`}</span>
+              <span className="font-semibold">{"Counsellor Name: "}</span>
+              <span>{sessionDetails?.counselor_name}</span>
             </div>
           </div>
         </div>
@@ -174,46 +192,52 @@ const CallSummaryStep: FC<CallSummaryProps> = ({ onProceed, summaryData }) => {
           <span className="font-semibold">Demogs</span>
           <div className="mt-2 p-[12px] grid grid-cols-3 gap-2 border border-[#E5E7EB] bg-[#FAFAFA] rounded-sm">
             <span>
-              <span>{"Caller ID: "}</span>
+              <span className="font-semibold">{"Caller ID: "}</span>
               <span>{summaryData?.clientId}</span>
             </span>
             <span>
-              <span>{"Age: "}</span>
+              <span className="font-semibold">{"Age: "}</span>
               <input
-                value={demogs?.age}
+                value={data?.age}
                 className="border border-[#E5E7EB] rounded-[3px] p-1 text-black"
                 onChange={(e) => handleChange("age", e.target.value)}
               />
             </span>
             <span>
-              <span>{"Profession: "}</span>
+              <span className="font-semibold">{"Profession: "}</span>
               <input
-                value={demogs?.working_status}
+                value={data?.working_status}
                 className="border border-[#E5E7EB] rounded-[3px] p-1 text-black"
                 onChange={(e) => handleChange("working_status", e.target.value)}
               />
             </span>
             <span>
-              <span>{"Gender: "}</span>
-              <input
-                type="text"
-                value={demogs?.gender}
-                className="border border-[#E5E7EB] rounded-[3px] p-1 text-black"
-                onChange={(e) => handleChange("gender", e.target.value)}
+              <span className="font-semibold">{"Gender: "}</span>
+              <Dropdown
+                value={data?.gender || ""}
+                options={Object.values(Gender)}
+                onChange={(value) => handleChange("gender", value)}
+                minWidth={180}
+                sx={{ height: 32 }}
               />
-              {/* TODO: dropdown to display and select gender */}
             </span>
             <span>
-              <span>{"Location: "}</span>
+              <span className="font-semibold">{"Location: "}</span>
               <input
                 type="text"
-                value={demogs?.location}
+                value={data?.location}
                 className="border border-[#E5E7EB] rounded-[3px] p-1 text-black"
                 onChange={(e) => handleChange("location", e.target.value)}
               />
             </span>
-            <span>{`Formal diagnosis: ${demogs?.any_formal_diagnosis}`}</span>
-            <span>{`Concern code: ${demogs?.code_of_concern}`}</span>
+            <span>
+              <span className="font-semibold">{"Formal diagnosis: "}</span>
+              <span>{demogs?.any_formal_diagnosis}</span>
+            </span>
+            <span>
+              <span className="font-semibold">{"Concern code: "}</span>
+              <span>{demogs?.code_of_concern}</span>
+            </span>
           </div>
         </div>
 
@@ -230,8 +254,7 @@ const CallSummaryStep: FC<CallSummaryProps> = ({ onProceed, summaryData }) => {
             slotProps={{
               input: {
                 endAdornment: <EnhanceButton fieldName="key_concerns" />,
-                startAdornment:
-                  isEnhancing.key_concerns && EnhancemnetLoadingSkeleton,
+                startAdornment: isEnhancing.key_concerns && EnhancementLoadingSkeleton,
               },
             }}
           />
@@ -251,7 +274,7 @@ const CallSummaryStep: FC<CallSummaryProps> = ({ onProceed, summaryData }) => {
             slotProps={{
               input: {
                 endAdornment: <EnhanceButton fieldName="flow" />,
-                startAdornment: isEnhancing.flow && EnhancemnetLoadingSkeleton,
+                startAdornment: isEnhancing.flow && EnhancementLoadingSkeleton,
               },
             }}
           />
@@ -271,17 +294,13 @@ const CallSummaryStep: FC<CallSummaryProps> = ({ onProceed, summaryData }) => {
             slotProps={{
               input: {
                 endAdornment: <EnhanceButton fieldName="notes" />,
-                startAdornment: isEnhancing.notes && EnhancemnetLoadingSkeleton,
+                startAdornment: isEnhancing.notes && EnhancementLoadingSkeleton,
               },
             }}
           />
         </div>
       </div>
-      <Button
-        onClick={handleSubmit}
-        disabled={isButtonDisabled}
-        className="rounded-full w-fit self-end"
-      >
+      <Button onClick={handleSubmit} disabled={isButtonDisabled} className="rounded-full w-fit self-end">
         Submit
       </Button>
     </>

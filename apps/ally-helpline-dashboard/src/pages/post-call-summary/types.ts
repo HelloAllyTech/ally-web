@@ -5,6 +5,13 @@ export enum SectionType {
   Resources = "You might also like",
 }
 
+export enum Gender {
+  MALE = "Male",
+  FEMALE = "Female",
+  NON_BINARY = "Non-binary",
+  PREFER_NOT_TO_SAY = "Client Prefers Not to Say"
+}
+
 export interface StressBusterProps {
   onProceed: () => void;
 }
