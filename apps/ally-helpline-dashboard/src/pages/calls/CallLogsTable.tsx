@@ -1,3 +1,4 @@
+import { Eye } from "lucide-react";
 import { useEffect, useState } from "react";
 
 import Table from "@mui/material/Table";
@@ -22,7 +23,7 @@ const CallLogsTable = () => {
       }, 100);
     }
   }, [isLoading]);
-  
+
   if (isLoading) {
     return (
       <div className="flex justify-center items-center h-[calc(100%_-_80px)]">
@@ -117,18 +118,25 @@ const CallLogsTable = () => {
                         <div className="flex gap-1 w-32 h-1">
                           <div
                             style={{
-                              width: !transition &&`${getWidth(displayData.quality_score)}px`,
+                              width:
+                                !transition &&
+                                `${getWidth(displayData.quality_score)}px`,
                             }}
                             className="w-0 transition-all duration-300 border-[2px] border-[#6272FF] rounded-md"
                           />
                           <div
                             style={{
-                              width: !transition && `${getWidth(100 - displayData.quality_score)}px`,
+                              width:
+                                !transition &&
+                                `${getWidth(100 - displayData.quality_score)}px`,
                             }}
                             className="w-full transition-all duration-300 border-[2px] border-t-[#E6F2FF] rounded-md"
                           />
                         </div>
                       </div>
+                    )}
+                    {header.id === "notes" && (
+                      <Eye className="text-[#868686] w-4 h-4 ml-2 cursor-pointer" />
                     )}
                     {header.id !== "tags" &&
                       header.id !== "quality_score" &&

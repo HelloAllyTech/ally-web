@@ -23,6 +23,7 @@ import { useIceServers, useSocket } from "@/hooks";
 import { MessageType, SocketEvent } from "@/types/message";
 
 import "./CallTranscript.css";
+import { formatTime } from "./utils";
 import { CallTranscriptProps, Transcription } from "./types";
 import { AUDIO_FILE_SIZE, OFFER_TIMEOUT_MS } from "./constants";
 import AudioCallBackgroundWrapper from "./components/AudioCallBackgroundWrapper";
@@ -40,7 +41,6 @@ import AudioCallBackgroundWrapper from "./components/AudioCallBackgroundWrapper"
 const CallTranscript = (props: CallTranscriptProps) => {
   const { endSession, activeChat } = props;
   const chatId = useMemo(() => activeChat.chatId, [activeChat]);
-  const [minutes, setMinutes] = useState(0);
   const [seconds, setSeconds] = useState(0);
   const [focus, setFocus] = useState(true);
   const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(
@@ -514,19 +514,26 @@ const CallTranscript = (props: CallTranscriptProps) => {
   }, [myTranscriptions, speakerTranscriptions]);
 
   useEffect(() => {
-    if (transcriptContainerRef.current) {
-      transcriptContainerRef.current.scrollTop =
-        transcriptContainerRef.current.scrollHeight;
+    if (transcriptContainerRef.current && focus) {
+      // Add a small delay to ensure content is rendered before scrolling
+      setTimeout(() => {
+        if (transcriptContainerRef.current) {
+          transcriptContainerRef.current.scrollTo({
+            top: transcriptContainerRef.current.scrollHeight,
+            behavior: "smooth",
+          });
+        }
+      }, 100);
     }
-  }, [transcriptions]);
+  }, [transcriptions, focus]);
 
   // Add this effect to scroll to bottom when nudges change
   useEffect(() => {
-    if (nudgesContainerRef.current) {
+    if (nudgesContainerRef.current && focus) {
       nudgesContainerRef.current.scrollTop =
         nudgesContainerRef.current.scrollHeight;
     }
-  }, [nudges]);
+  }, [nudges, focus]);
 
   return (
     <div className="w-screen h-screen flex justify-center items-center">
@@ -539,7 +546,7 @@ const CallTranscript = (props: CallTranscriptProps) => {
             <div className="text-white flex justify-center items-center flex-col gap-2">
               <div className="text-base font-medium">Ongoing Voice Call</div>
               <div className="text-sm text-[#BABABA]">
-                {Math.floor(seconds / 60)}:{seconds % 60}
+                {formatTime(seconds)}
               </div>
             </div>
             {/* Hidden Audio Element */}
@@ -586,11 +593,12 @@ const CallTranscript = (props: CallTranscriptProps) => {
           </div>
 
           {/* Update transcription container with max-height */}
-          {isCounsellor && focus && (
+          {isCounsellor && (
             <motion.div
-              className="w-[85%] h-[35vh] flex flex-col"
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
+              className="w-[85%] h-[35vh] flex flex-col overflow-hidden"
+              initial={{ height: 0 }}
+              animate={{ height: focus ? "35vh" : 0 }}
+              exit={{ height: 0 }}
               transition={{ duration: 0.3, ease: "easeInOut" }}
             >
               <h3 className="text-white mb-4 self-start ">
@@ -685,7 +693,7 @@ const CallTranscript = (props: CallTranscriptProps) => {
             )}
             <div
               ref={nudgesContainerRef}
-              className="p-4 h-[calc(100vh-3.4rem)] overflow-y-auto custom-scrollbar"
+              className="p-4 h-[calc(100vh-10.4rem)] overflow-y-auto custom-scrollbar"
             >
               {nudges?.map((nudge, index) => (
                 <div

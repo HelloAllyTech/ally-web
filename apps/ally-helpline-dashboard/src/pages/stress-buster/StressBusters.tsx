@@ -53,7 +53,7 @@ const StressBusters: FunctionComponent = () => {
         {STRESS_BUSTERS.map((buster, index) => (
           <div
             key={index}
-            className="bg-white rounded-sm p-3 shadow-sm border border-[#E5E7EB] cursor-pointer"
+            className="bg-white rounded-sm p-3 hover:shadow-md border border-[#E5E7EB] cursor-pointer"
           >
             <img
               src={buster.image}

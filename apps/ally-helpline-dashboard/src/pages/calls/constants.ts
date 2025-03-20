@@ -19,6 +19,10 @@ export const TABLE_HEADERS = [
     id: "tags",
     label: "Tags",
   },
+  {
+    id: "notes",
+    label: "Notes",
+  },
 ];
 
 export const DEFAULT_TAGS = [

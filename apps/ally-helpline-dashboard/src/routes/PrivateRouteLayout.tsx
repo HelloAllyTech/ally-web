@@ -74,7 +74,7 @@ const PrivateRouteLayout = () => {
       const interval = setInterval(fetchWaitingClients, 5000);
       return () => clearInterval(interval);
     }
-  }, [isOnline]);
+  }, [isOnline, user]);
 
   const getActiveTab = () =>
     navBarOptions.find((option) => option.path === pathname)?.id ?? TabId.CALLS;

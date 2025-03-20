@@ -7,7 +7,10 @@ import { TextField, Skeleton } from "@mui/material";
 
 import { Button, Dropdown } from "@/components";
 import { CallSummaryProps, Gender } from "../types";
-import { useEnhanceContentMutation, useUpdateCallSummaryMutation } from "../api";
+import {
+  useEnhanceContentMutation,
+  useUpdateCallSummaryMutation,
+} from "../api";
 
 const CallSummaryStep: FC<CallSummaryProps> = ({ onProceed, summaryData }) => {
   const { chatId } = useParams();
@@ -25,10 +28,8 @@ const CallSummaryStep: FC<CallSummaryProps> = ({ onProceed, summaryData }) => {
   });
 
   const { details } = summaryData;
-  const {
-    session_details: sessionDetails,
-    demographic_details: demogs,
-  } = details?.summary?.summaryNote || {};
+  const { session_details: sessionDetails, demographic_details: demogs } =
+    details?.summary?.summaryNote || {};
 
   useEffect(() => {
     if (
@@ -47,11 +48,7 @@ const CallSummaryStep: FC<CallSummaryProps> = ({ onProceed, summaryData }) => {
         gender: demogs.gender,
         location: demogs.location,
         key_concerns: sessionDocs?.key_concerns,
-          // ?.map((concern) => `- ${concern}`)
-          // .join("\n"),
         flow: sessionDocs?.work_done?.counseling_process_flow,
-          // ?.map((flow) => `- ${flow}`)
-          // .join("\n"),
       });
     }
   }, [summaryData]);
@@ -62,7 +59,8 @@ const CallSummaryStep: FC<CallSummaryProps> = ({ onProceed, summaryData }) => {
   };
 
   const [updateCallSummary, { isLoading }] = useUpdateCallSummaryMutation();
-  const [enhanceContent, { isLoading: isEnhanceLoading }] = useEnhanceContentMutation();
+  const [enhanceContent, { isLoading: isEnhanceLoading }] =
+    useEnhanceContentMutation();
 
   const handleChange = (key: string, value: string) => {
     setData((prev) => ({ ...prev, [key]: value }));
@@ -103,18 +101,20 @@ const CallSummaryStep: FC<CallSummaryProps> = ({ onProceed, summaryData }) => {
           summaryNote: {
             ...summaryData.details.summary.summaryNote,
             demographic_details: {
-              ...summaryData.details.summary.summaryNote.demographic_details,
+              ...summaryData.details.summary?.summaryNote?.demographic_details,
               age: data?.age,
               working_status: data?.working_status,
               gender: data?.gender,
               location: data?.location,
             },
             session_documentation: {
-              ...summaryData.details.summary.summaryNote.session_documentation,
+              ...summaryData.details.summary?.summaryNote
+                ?.session_documentation,
               // key_concerns: data?.key_concerns?.split("\n").map((concern) => concern.replace("- ", "")),
               key_concerns: data?.key_concerns,
               work_done: {
-                ...summaryData.details.summary.summaryNote.session_documentation.work_done,
+                ...summaryData.details.summary?.summaryNote
+                  ?.session_documentation?.work_done,
                 // counseling_process_flow: data?.flow?.split("\n").map((flow) => flow.replace("- ", "")),
                 counseling_process_flow: data?.flow,
               },
@@ -134,7 +134,9 @@ const CallSummaryStep: FC<CallSummaryProps> = ({ onProceed, summaryData }) => {
   const EnhanceButton: FC<{ fieldName: string }> = ({ fieldName }) => (
     <div
       className={`absolute bottom-2 right-2 ${
-        isEnhancing[fieldName] || isStreaming[fieldName] ? "opacity-50 pointer-events-none" : ""
+        isEnhancing[fieldName] || isStreaming[fieldName]
+          ? "opacity-50 pointer-events-none"
+          : ""
       }`}
       onClick={() => triggerEnhanceApi(fieldName)}
     >
@@ -172,7 +174,9 @@ const CallSummaryStep: FC<CallSummaryProps> = ({ onProceed, summaryData }) => {
           <div className="mt-2 p-[12px] grid grid-cols-2 gap-2 border border-[#E5E7EB] bg-[#FAFAFA] rounded-sm">
             <div>
               <span className="font-semibold">{"Call date: "}</span>
-              <span>{getFormattedDateTime(summaryData?.startedAt, "do MMMM yyyy")}</span>
+              <span>
+                {getFormattedDateTime(summaryData?.startedAt, "do MMMM yyyy")}
+              </span>
             </div>
             <div>
               <span className="font-semibold">{"Caller type: "}</span>
@@ -254,10 +258,16 @@ const CallSummaryStep: FC<CallSummaryProps> = ({ onProceed, summaryData }) => {
             value={isEnhancing.key_concerns ? "" : data?.key_concerns}
             disabled={isEnhancing.key_concerns || isStreaming.key_concerns}
             className="mt-2 border border-[#E5E7EB] rounded-sm w-full"
+            sx={{
+              "& .MuiInputBase-input.Mui-disabled": {
+                WebkitTextFillColor: "#000000",
+              },
+            }}
             slotProps={{
               input: {
                 endAdornment: <EnhanceButton fieldName="key_concerns" />,
-                startAdornment: isEnhancing.key_concerns && EnhancementLoadingSkeleton,
+                startAdornment:
+                  isEnhancing.key_concerns && EnhancementLoadingSkeleton,
               },
             }}
           />
@@ -274,6 +284,11 @@ const CallSummaryStep: FC<CallSummaryProps> = ({ onProceed, summaryData }) => {
             onChange={(e) => handleChange("flow", e.target.value)}
             className="mt-2 border border-[#E5E7EB] rounded-sm w-full"
             disabled={isEnhancing.flow || isStreaming.flow}
+            sx={{
+              "& .MuiInputBase-input.Mui-disabled": {
+                WebkitTextFillColor: "#000000",
+              },
+            }}
             slotProps={{
               input: {
                 endAdornment: <EnhanceButton fieldName="flow" />,
@@ -294,6 +309,11 @@ const CallSummaryStep: FC<CallSummaryProps> = ({ onProceed, summaryData }) => {
             disabled={isEnhancing.notes || isStreaming.notes}
             onChange={(e) => handleChange("notes", e.target.value)}
             className="mt-2 border border-[#E5E7EB] rounded-sm w-full"
+            sx={{
+              "& .MuiInputBase-input.Mui-disabled": {
+                WebkitTextFillColor: "#000000",
+              },
+            }}
             slotProps={{
               input: {
                 endAdornment: <EnhanceButton fieldName="notes" />,
@@ -303,7 +323,11 @@ const CallSummaryStep: FC<CallSummaryProps> = ({ onProceed, summaryData }) => {
           />
         </div>
       </div>
-      <Button onClick={handleSubmit} disabled={isButtonDisabled} className="rounded-full w-fit self-end">
+      <Button
+        onClick={handleSubmit}
+        disabled={isButtonDisabled}
+        className="rounded-full w-fit self-end"
+      >
         Submit
       </Button>
     </>

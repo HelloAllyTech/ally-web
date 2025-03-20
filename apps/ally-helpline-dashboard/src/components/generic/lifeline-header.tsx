@@ -10,13 +10,14 @@ import { useUser } from "@/hooks";
 import { Lifeline, DefaultAvatar } from "@/assets/icons";
 import { ToggleButtonGroup } from "@/components";
 import { USER_STATUS_OPTIONS, UserStatus } from "@/constants/common";
+import { UserRole } from "@/types/user";
 
 const LifelineHeader = () => {
   const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null);
 
   const { isOnline } = useSelector((state: RootState) => state.user);
 
-  const { logout } = useUser();
+  const { logout, user } = useUser();
   const navigate = useNavigate();
 
   const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
@@ -34,14 +35,16 @@ const LifelineHeader = () => {
 
   return (
     <div className="bg-white border-b border-b-[#E5E7EB] p-4 h-20 py-3 top-0 sticky flex justify-between items-center">
-      <Lifeline />
+      <Lifeline className="cursor-pointer" onClick={() => navigate("/")} />
       <div className="flex gap-4 items-center">
-        <ToggleButtonGroup
-          value={isOnline ? UserStatus.AVAILABLE : UserStatus.OFFLINE}
-          onValueChange={handleChange}
-          items={USER_STATUS_OPTIONS}
-          successValue={UserStatus.AVAILABLE}
-        />
+        {user?.role === UserRole.COUNSELOR && (
+          <ToggleButtonGroup
+            value={isOnline ? UserStatus.AVAILABLE : UserStatus.OFFLINE}
+            onValueChange={handleChange}
+            items={USER_STATUS_OPTIONS}
+            successValue={UserStatus.AVAILABLE}
+          />
+        )}
         <Button onClick={handleClick} aria-describedby="profile">
           <DefaultAvatar />
         </Button>
@@ -55,10 +58,15 @@ const LifelineHeader = () => {
             horizontal: "left",
           }}
         >
-          <Button sx={{ p: 2 }} onClick={() => {
-            logout();
-            navigate("/login");
-          }}>Logout</Button>
+          <Button
+            sx={{ p: 2 }}
+            onClick={() => {
+              logout();
+              navigate("/login");
+            }}
+          >
+            Logout
+          </Button>
         </Popover>
       </div>
     </div>

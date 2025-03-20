@@ -1,10 +1,11 @@
 import { X } from "lucide-react";
 import { motion } from "framer-motion";
+import { useSelector } from "react-redux";
 import { useEffect, useState } from "react";
 import { Container, Dialog } from "@mui/material";
 import { useParams, useSearchParams, useNavigate } from "react-router-dom";
 
-import { store } from "@/store/store";
+import { RootState, store } from "@/store/store";
 import { Button } from "@/components";
 import { setIsOnline } from "@/reducer/userReducer";
 
@@ -22,10 +23,16 @@ const PostCallSummary = () => {
   const navigate = useNavigate();
 
   const [activeSection, setActiveSection] = useState<SectionType>(
-    searchParams.get("section") === "2" ? SectionType.CallHighlights : SectionType.StressBuster
+    searchParams.get("section") === "2"
+      ? SectionType.CallHighlights
+      : SectionType.StressBuster
   );
-  const [completedSections, setCompletedSections] = useState<SectionType[]>([SectionType.StressBuster]);
+  const [completedSections, setCompletedSections] = useState<SectionType[]>([
+    SectionType.StressBuster,
+  ]);
   const [modalData, setModalData] = useState<ModalData | null>(null);
+
+  const { isOnline } = useSelector((state: RootState) => state.user);
 
   const { data: callSummary, refetch } = useGetCallSummaryQuery(chatId);
 
@@ -60,13 +67,34 @@ const PostCallSummary = () => {
   const renderSection = () => {
     switch (activeSection) {
       case SectionType.StressBuster:
-        return <StressBusterStep onProceed={() => handleProceed(SectionType.CallHighlights)} />;
+        return (
+          <StressBusterStep
+            onProceed={() => handleProceed(SectionType.CallHighlights)}
+          />
+        );
       case SectionType.CallHighlights:
-        return <CallHighlights onProceed={() => handleProceed(SectionType.CallSummary)} summaryData={callSummary} />;
+        return (
+          <CallHighlights
+            onProceed={() => handleProceed(SectionType.CallSummary)}
+            summaryData={callSummary}
+          />
+        );
       case SectionType.CallSummary:
-        return <CallSummaryStep onProceed={() => handleProceed(SectionType.Resources)} summaryData={callSummary} />;
+        return (
+          <CallSummaryStep
+            onProceed={() => handleProceed(SectionType.Resources)}
+            summaryData={callSummary}
+          />
+        );
       case SectionType.Resources:
-        return <ArticleGridStep onProceed={() => setModalData({ type: "redirect" })} />;
+        return (
+          <ArticleGridStep
+            onProceed={() => {
+              if (!isOnline) setModalData({ type: "redirect" });
+              else navigate("/");
+            }}
+          />
+        );
       default:
         return null;
     }
@@ -101,20 +129,31 @@ const PostCallSummary = () => {
           {renderSection()}
         </motion.div>
       </motion.div>
-      <Dialog open={modalData?.type === "redirect"} onClose={() => setModalData(null)}>
+      <Dialog
+        open={modalData?.type === "redirect"}
+        onClose={() => setModalData(null)}
+      >
         <div className="py-4 px-6 bg-white h-fit w-[400px] flex flex-col gap-6 rounded-[8px]">
           <div className="flex justify-between items-center">
             <span className="font-medium text-[#47464F]">Ready for More?</span>
             <X className="cursor-pointer" onClick={() => setModalData(null)} />
           </div>
           <span className="text-[14px] text-[#47464F]">
-            You&apos;ve done a great job! Would you like to mark yourself as available for new calls?
+            You&apos;ve done a great job! Would you like to mark yourself as
+            available for new calls?
           </span>
           <div className="flex gap-4 items-center">
-            <Button variant="outline" className="text-[14px] rounded-full" onClick={handleKeepOffline}>
+            <Button
+              variant="outline"
+              className="text-[14px] rounded-full"
+              onClick={handleKeepOffline}
+            >
               No, keep me offline
             </Button>
-            <Button className="text-[14px] rounded-full" onClick={handleMakeAvailable}>
+            <Button
+              className="text-[14px] rounded-full"
+              onClick={handleMakeAvailable}
+            >
               Yes, mark me available
             </Button>
           </div>

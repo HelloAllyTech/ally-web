@@ -1,5 +1,10 @@
-import { xirsysIdent, xirsysSecret } from "@/constants/envVariables";
 import { useState, useEffect } from "react";
+import {
+  xirsysIdent,
+  xirsysDomain,
+  xirsysSecret,
+  xirsysChannel,
+} from "@/constants/envVariables";
 
 interface IceServer {
   urls: string[];
@@ -9,21 +14,20 @@ interface IceServer {
 
 const useIceServers = () => {
   const [iceServers, setIceServers] = useState<IceServer>();
-  
 
   useEffect(() => {
     const fetchIceServers = async () => {
       try {
-        const response = await fetch("https://global.xirsys.net/_turn/Lifeline", {
+        const response = await fetch(`${xirsysDomain}/${xirsysChannel}`, {
           method: "PUT",
           headers: {
             "Content-Type": "application/json",
-            "Authorization": `Basic ${btoa(`${xirsysIdent}:${xirsysSecret}`)}`
+            Authorization: `Basic ${btoa(`${xirsysIdent}:${xirsysSecret}`)}`,
           },
           body: JSON.stringify({
             format: "urls",
             domain: window.location.hostname,
-            room: "default"
+            room: "default",
           }),
         });
 

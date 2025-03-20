@@ -5,6 +5,7 @@ import { useState, useEffect, FunctionComponent } from "react";
 
 import { UserRole } from "@/types/user";
 import { RootState } from "@/store/store";
+import { setIsOnline } from "@/reducer/userReducer";
 import { Button, StressBuster } from "@/components";
 import { useClientChat, useCounsellorChat } from "@/hooks";
 
@@ -65,7 +66,10 @@ const AudioCall: FunctionComponent = () => {
         } else if (user?.role === UserRole.CLIENT) {
           data = await fetchCurrentChat();
         }
-        setActiveChat(data);
+        if (data) {
+          setIsOnline(false);
+          setActiveChat(data);
+        }
       } catch (error) {
         console.error("Error fetching active chat:", error);
         setActiveChat(null);
