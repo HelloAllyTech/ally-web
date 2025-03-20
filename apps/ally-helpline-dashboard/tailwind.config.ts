@@ -90,4 +90,4 @@ export default {
   plugins: [tailwindcssAnimate],
 } satisfies Config;
 
-// TODO: Add font - https://fonts.google.com/specimen/IBM+Plex+Serif
+// TODO: Add .env.example for env field confirmation
