@@ -5,7 +5,8 @@ import { ArticleCardProps } from "./types";
 const ArticleCard: FC<ArticleCardProps> = ({ title, imageUrl, onClick }) => {
   return (
     <div
-      className="flex flex-col rounded-[8px] border border-[#E5E7EB] cursor-pointer hover:shadow-md transition-shadow"
+      className="flex flex-col rounded-[8px] border border-[#E5E7EB] 
+        cursor-pointer hover:shadow-md transition-shadow overflow-hidden"
       onClick={onClick}
     >
       <img src={imageUrl} alt={title} className="w-full h-full object-cover flex-1" />

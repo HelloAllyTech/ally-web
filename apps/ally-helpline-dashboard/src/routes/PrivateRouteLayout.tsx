@@ -16,6 +16,7 @@ import {
   Calls,
   PostCallSummary,
   StressBusters,
+  Learn,
 } from "@/pages";
 import { RootState, store } from "@/store/store";
 import { CallPicker, NavSideBar, LifelineHeader } from "@/components";
@@ -69,9 +70,8 @@ const PrivateRouteLayout = () => {
         }
       };
       fetchWaitingClients();
-      // Poll for new clients every 10 seconds
-      const interval = setInterval(fetchWaitingClients, 10000);
-
+      // Poll for new clients every 5 seconds
+      const interval = setInterval(fetchWaitingClients, 5000);
       return () => clearInterval(interval);
     }
   }, [isOnline]);
@@ -147,7 +147,7 @@ const PrivateRouteLayout = () => {
               <Route path={ROUTES.CALL_LOGS} element={<CallLogs />} />
               <Route path={ROUTES.CALLS} element={<Calls />} />
               <Route path={ROUTES.CALENDER} element={<Calls />} />
-              <Route path={ROUTES.LEARN} element={<Calls />} />
+              <Route path={ROUTES.LEARN} element={<Learn />} />
               <Route path={ROUTES.ANALYTICS} element={<AudioCall />} />
               <Route path={ROUTES.SETTINGS} element={<Calls />} />
               <Route path={ROUTES.SUMMARY} element={<PostCallSummary />} />

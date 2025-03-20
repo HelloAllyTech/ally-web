@@ -31,6 +31,7 @@ import { ToggleButtonGroup } from "./generic/toggle-button-group";
 import CustomMarkdown from "./custom-markdown";
 import StressBuster from "./stress-buster";
 import ArticleGrid from "./article-grid/ArticleGrid";
+import Dropdown from "./dropdown/Dropdown";
 
 export {
   ArticleGrid,
@@ -65,4 +66,5 @@ export {
   ToggleButtonGroup,
   LiveTranscriptionHeader,
   LiveTranscriptionMessage,
+  Dropdown,
 };

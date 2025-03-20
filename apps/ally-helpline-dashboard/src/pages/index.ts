@@ -6,6 +6,7 @@ import LiveCall from "./live-call";
 import CallLogs from "./call-logs";
 import StressBusters from "./stress-buster";
 import PostCallSummary from "./post-call-summary";
+import Learn from "./learn";
 
 export {
   Home,
@@ -16,4 +17,5 @@ export {
   CallLogs,
   StressBusters,
   PostCallSummary,
+  Learn,
 };
