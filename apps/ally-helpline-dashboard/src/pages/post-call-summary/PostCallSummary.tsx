@@ -27,9 +27,9 @@ const PostCallSummary = () => {
       ? SectionType.CallHighlights
       : SectionType.StressBuster
   );
-  const [completedSections, setCompletedSections] = useState<SectionType[]>([
-    SectionType.StressBuster,
-  ]);
+  const [completedSections, setCompletedSections] = useState<SectionType[]>(
+    searchParams.get("section") === "2" ? [SectionType.StressBuster, SectionType.CallHighlights] : [SectionType.StressBuster]
+  );
   const [modalData, setModalData] = useState<ModalData | null>(null);
 
   const { isOnline } = useSelector((state: RootState) => state.user);

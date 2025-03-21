@@ -1,4 +1,4 @@
-import { BackgroundTop, BackgroundBottom, CallCut, CallAttend } from "@/assets/icons";
+import { BackgroundTop, BackgroundBottom, CallAttend, CutCall } from "@/assets/icons";
 import { DefaultProfile } from "@/assets/images";
 
 import "./CallPicker.css";
@@ -36,7 +36,7 @@ const CallPicker = ({
           <div className="text-[#BABABA]">{callType}</div>
           <div className="flex mt-4">
             <button onClick={onDecline} aria-label="Decline call">
-              <CallCut />
+              <CutCall />
             </button>
             <button onClick={onAccept} aria-label="Accept call">
               <CallAttend />

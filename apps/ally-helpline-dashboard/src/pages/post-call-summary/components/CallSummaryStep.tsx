@@ -4,6 +4,7 @@ import { WandSparkles } from "lucide-react";
 import { useParams } from "react-router-dom";
 import { FC, useEffect, useState } from "react";
 import { TextField, Skeleton } from "@mui/material";
+import { isEqual } from "lodash";
 
 import { Button, Dropdown } from "@/components";
 import { CallSummaryProps, Gender } from "../types";
@@ -67,8 +68,9 @@ const CallSummaryStep: FC<CallSummaryProps> = ({ onProceed, summaryData }) => {
   };
 
   const triggerEnhanceApi = async (key: string) => {
-    setIsEnhancing((prev) => ({ ...prev, [key]: true }));
-    const response = await enhanceContent({ content: data?.[key] });
+    try {
+      setIsEnhancing((prev) => ({ ...prev, [key]: true }));
+      const response = await enhanceContent({ content: data?.[key] });
 
     // Simulating API response - replace with actual API call
     const updatedValue = response?.data?.enhanced_content;
@@ -87,14 +89,16 @@ const CallSummaryStep: FC<CallSummaryProps> = ({ onProceed, summaryData }) => {
       } else {
         setData((prev) => ({ ...prev, [key]: updatedValue }));
         setIsStreaming((prev) => ({ ...prev, [key]: false }));
-        clearInterval(streamInterval);
-      }
-    }, 50);
+          clearInterval(streamInterval);
+        }
+      }, 50);
+    } catch (error) {
+      console.error("Error enhancing content:", error);
+    }
   };
 
   const handleSubmit = async () => {
     try {
-      // Format data to match the expected API structure
       const formattedData = {
         callDetails: {
           ...summaryData.details.summary,
@@ -124,7 +128,15 @@ const CallSummaryStep: FC<CallSummaryProps> = ({ onProceed, summaryData }) => {
         },
       };
 
-      await updateCallSummary({ chatId, data: formattedData });
+      // TODO: need to correct comparison logic for [specific objects/values] to handle [specific edge cases/issues]
+      const hasChanges = !isEqual(
+        formattedData.callDetails.summaryNote,
+        summaryData?.details?.summary?.summaryNote
+      );
+
+      if (hasChanges) {
+        await updateCallSummary({ chatId, data: formattedData });
+      }
       onProceed();
     } catch (error) {
       console.error("Error submitting data:", error);

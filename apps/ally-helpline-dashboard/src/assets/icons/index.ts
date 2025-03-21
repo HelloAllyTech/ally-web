@@ -20,7 +20,6 @@ import FocusOn from "./FocusOn.svg?react";
 import FocusOff from "./FocusOff.svg?react";
 import Close from "./Close.svg?react";
 import BackgroundBottom from "./Transcript-background-bottom.svg?react";
-import CallCut from "./Call_cut.svg?react";
 import CallAttend from "./Call_attend.svg?react";
 import CallDuration from "./CallDuration.svg?react";
 import QuestionsAsked from "./QuestionsAsked.svg?react";
@@ -50,7 +49,6 @@ export {
   FocusOn,
   Close,
   BackgroundBottom,
-  CallCut,
   CallAttend,
   LifelineLogo,
   CallDuration,
