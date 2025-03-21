@@ -1,7 +1,8 @@
 import { FunctionComponent } from "react";
 
-const CustomMarkdown: FunctionComponent<{ content: string }> = ({
+const CustomMarkdown: FunctionComponent<{ content: string; className?: string }> = ({
   content,
+  className,
 }) => {
   const parseMarkdown = (text: string) => {
     const lines = text.split("\n");
@@ -177,6 +178,6 @@ const CustomMarkdown: FunctionComponent<{ content: string }> = ({
     return parsedContent;
   };
 
-  return <div className="text-sm text-white">{parseMarkdown(content)}</div>;
+  return <div className={`text-sm text-white ${className}`}>{parseMarkdown(content)}</div>;
 };
 export default CustomMarkdown;

@@ -26,6 +26,7 @@ import QuestionsAsked from "./QuestionsAsked.svg?react";
 import Nudges from "./Nudges.svg?react";
 import ListeningRatio from "./ListeningRatio.svg?react";
 import CallerMood from "./CallerMood.svg?react";
+import BackCircle from "./BackCircle.svg?react";
 
 export {
   Relax,
@@ -55,5 +56,6 @@ export {
   QuestionsAsked,
   Nudges,
   ListeningRatio,
-  CallerMood
+  CallerMood,
+  BackCircle
 };

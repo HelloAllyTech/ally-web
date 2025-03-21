@@ -2,6 +2,12 @@ export interface Article {
   id: string;
   title: string;
   imageUrl: string;
+  content: string;
+}
+
+export interface ArticleReaderProps {
+  article: Article;
+  isPage?: boolean;
 }
 
 export interface ArticleCardProps {
@@ -12,5 +18,5 @@ export interface ArticleCardProps {
 
 export interface ArticleGridProps {
   articles: Article[];
-  onArticleClick?: (articleId: string) => void;
+  onArticleClick?: (id: string) => void;
 } 

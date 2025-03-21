@@ -2,51 +2,11 @@ import { FC } from "react";
 import { motion } from "framer-motion";
 
 import { ArticleGrid, Button } from "@/components";
-import { Article } from "@/components/article-grid/types";
-import {
-  Article1,
-  Article2,
-  Article3,
-  Article4,
-  Article5,
-} from "@/assets/images";
+import { articles } from "@/data";
 
 interface ArticleGridStepProps {
   onProceed: () => void;
 }
-
-const articles: Article[] = [
-  {
-    id: "1",
-    title: "Managing Workplace Stress: Practical Tips for Better Mental Health",
-    imageUrl: Article1,
-  },
-  {
-    id: "2",
-    title: "Understanding Anxiety: Signs, Symptoms, and Coping Strategies",
-    imageUrl: Article2,
-  },
-  {
-    id: "3",
-    title: "The Power of Mindfulness in Daily Life",
-    imageUrl: Article3,
-  },
-  {
-    id: "4",
-    title: "Building Healthy Work-Life Boundaries",
-    imageUrl: Article4,
-  },
-  {
-    id: "5",
-    title: "Sleep Better: A Guide to Improving Your Sleep Quality",
-    imageUrl: Article5,
-  },
-  {
-    id: "6",
-    title: "Effective Communication Skills for Better Relationships",
-    imageUrl: Article1,
-  },
-];
 
 const ArticleGridStep: FC<ArticleGridStepProps> = ({ onProceed }) => {
   const handleArticleClick = (articleId: string) => {

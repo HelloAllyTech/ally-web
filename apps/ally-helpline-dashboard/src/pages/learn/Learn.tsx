@@ -1,8 +1,9 @@
-import { FC, useState } from "react";
+import { FC, useState, useMemo } from "react";
+import { useSearchParams } from "react-router-dom";
 
-import { ArticleGrid, Dropdown } from "@/components";
-import { Article1, Article2, Article3, Article4, Article5 } from "@/assets/images";
-import { Article } from "@/components/article-grid/types";
+import { ArticleGrid, Dropdown, ArticleReader } from "@/components";
+import { BackCircle } from "@/assets/icons";
+import { articles } from "../../data";
 
 const categories = [
   "All Articles",
@@ -14,46 +15,35 @@ const categories = [
   "Relationships"
 ];
 
-const articles: Article[] = [
-  {
-    id: "1",
-    title: "Managing Workplace Stress: Practical Tips for Better Mental Health",
-    imageUrl: Article1
-  },
-  {
-    id: "2",
-    title: "Understanding Anxiety: Signs, Symptoms, and Coping Strategies",
-    imageUrl: Article2
-  },
-  {
-    id: "3",
-    title: "The Power of Mindfulness in Daily Life",
-    imageUrl: Article3
-  },
-  {
-    id: "4",
-    title: "Building Healthy Work-Life Boundaries",
-    imageUrl: Article4
-  },
-  {
-    id: "5",
-    title: "Sleep Better: A Guide to Improving Your Sleep Quality",
-    imageUrl: Article5
-  },
-  {
-    id: "6",
-    title: "Effective Communication Skills for Better Relationships",
-    imageUrl: Article1
-  }
-];
-
 const Learn: FC = () => {
+  const [searchParams, setSearchParams] = useSearchParams();
   const [selectedCategory, setSelectedCategory] = useState("All Articles");
 
+  const selectedArticleId = searchParams.get("articleId");
+  
+  const selectedArticle = useMemo(() => 
+    articles.find(article => article.id === selectedArticleId),
+    [selectedArticleId]
+  );
+
   const handleArticleClick = (articleId: string) => {
-    // Handle article click - navigate to article page
-    console.log(`Article clicked: ${articleId}`);
+    setSearchParams({ articleId });
   };
+
+  const handleBackToList = () => {
+    setSearchParams({});
+  };
+
+  if (selectedArticle) {
+    return (
+      <div className="h-full p-6 flex flex-col">
+        <BackCircle className="self-start cursor-pointer" onClick={handleBackToList} />
+        <div className="flex-1 overflow-auto">
+          <ArticleReader article={selectedArticle} />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="p-6 h-full flex flex-col gap-4">
@@ -65,7 +55,6 @@ const Learn: FC = () => {
           onChange={setSelectedCategory}
         />
       </div>
-      {/* Articles Grid */}
       {articles.length > 0 ? (
         <ArticleGrid
           articles={articles}
