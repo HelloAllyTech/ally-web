@@ -33,19 +33,18 @@ const CallLogsTable = () => {
   }
 
   const getDisplayData = (row: { [key: string]: any }) => {
-    const { details, id, startedAt } = row;
+    const { details, id, startedAt, clientId } = row;
     let previousVal = [];
     if (details) {
       //TODO - change default values
       const {
         callDuration = 30,
         callQuality = 60,
-        chatId,
         startTime,
         tags = DEFAULT_TAGS,
       } = details;
       return {
-        id: chatId,
+        id: clientId,
         dateAndTime: formatDate(startTime),
         duration: convertMinutesToDuration(callDuration ?? 60),
         quality_score: callQuality ?? 70,
