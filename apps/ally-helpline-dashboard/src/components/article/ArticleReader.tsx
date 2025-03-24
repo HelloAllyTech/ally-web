@@ -13,7 +13,10 @@ const ArticleReader: FC<ArticleReaderProps> = ({ article, isPage = true }) => {
       {isPage && <Title className="text-[36px] text-[#4A4459]" />}
       <img src={article.imageUrl} alt={article.title} className="w-full h-full object-cover" />
       {!isPage && <Title className="text-[14px] font-medium text-[#4A4459]" />}
-      <CustomMarkdown content={article.content} className="text-sm !text-[#4A4459]" />
+      <CustomMarkdown
+        content={article.content}
+        className={`${isPage ? "text-[20px]" : "text-[16px]"} leading-[32px] !text-[#4A4459]`}
+      />
     </div>
   );
 };
