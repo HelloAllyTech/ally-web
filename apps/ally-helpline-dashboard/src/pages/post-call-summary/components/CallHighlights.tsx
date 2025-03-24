@@ -7,8 +7,17 @@ import { CallHighlightsProps } from "../types";
 import { highlights } from "../constants";
 
 const CallHighlights: FC<CallHighlightsProps> = ({ onProceed, summaryData }) => {
+  const getDuration = (duration: number) => {
+    const durationInMinutes = duration / 60;
+    if (durationInMinutes > 1) {
+      return `${Math.floor(durationInMinutes)} minute${Math.floor(durationInMinutes) > 1 ? "s" : ""}`;
+    } else {
+      return `${Math.floor(duration / 10) * 10} seconds`;
+    }
+  };
+
   const highlightsData = {
-    callDuration: `${summaryData?.details?.callDuration} minutes`,
+    callDuration: getDuration(summaryData?.details?.callDuration),
     questionsAsked:  "6 questions",
     nudges: `${summaryData?.details?.noOfNudges} Nudges`,
     listeningRatio: summaryData?.details?.callInfo?.clientTalkingPercentage,
