@@ -83,6 +83,7 @@ const StressBuster: FunctionComponent<StressBusterProps> = ({
   const onVideoLoaded = () => {
     if (playOnMount) {
       setIsPlaying(true);
+      videoRef.current?.play();
       timerRef.current = setInterval(() => {
         setSeconds((prev) => (prev === 4 ? 1 : prev + 1));
       }, 1000);
