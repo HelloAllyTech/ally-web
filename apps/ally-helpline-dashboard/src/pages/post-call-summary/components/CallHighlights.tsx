@@ -12,7 +12,7 @@ const CallHighlights: FC<CallHighlightsProps> = ({ onProceed, summaryData }) => 
     if (durationInMinutes > 1) {
       return `${Math.floor(durationInMinutes)} minute${Math.floor(durationInMinutes) > 1 ? "s" : ""}`;
     } else {
-      return `${Math.floor(duration / 10) * 10} seconds`;
+      return "1 minute";
     }
   };
 
@@ -22,6 +22,18 @@ const CallHighlights: FC<CallHighlightsProps> = ({ onProceed, summaryData }) => 
     nudges: `${summaryData?.details?.noOfNudges} Nudges`,
     listeningRatio: summaryData?.details?.callInfo?.clientTalkingPercentage,
     callerMood: "28 Points",
+  };
+
+  const getHighlightTitle = (key: string, title: string) => {
+    if (key === "callDuration") {
+      const durationInMinutes = summaryData?.details?.callDuration / 60;
+      if (durationInMinutes > 1) {
+        return "The call duration was more than";
+      } else {
+        return "The call duration was less than";
+      }
+    }
+    return title;
   };
 
   return (
@@ -43,7 +55,7 @@ const CallHighlights: FC<CallHighlightsProps> = ({ onProceed, summaryData }) => 
           >
             <highlight.image className="h-12 w-12" />
             <div className="flex flex-col">
-              <span className="text-[14px]">{highlight.title}</span>
+              <span className="text-[14px]">{getHighlightTitle(highlight.key, highlight.title)}</span>
               <span className="text-[16px] text-[#49454F] font-medium">
                 {highlightsData[highlight.key]}
               </span>
