@@ -6,7 +6,7 @@ import { Container, Dialog } from "@mui/material";
 import { useParams, useSearchParams, useNavigate } from "react-router-dom";
 
 import { RootState, store } from "@/store/store";
-import { Button } from "@/components";
+import { ArticleReader, Button, Drawer } from "@/components";
 import { setIsOnline } from "@/reducer/userReducer";
 
 import CallSummaryStepper from "./CallSummaryStepper";
@@ -16,6 +16,7 @@ import CallSummaryStep from "./components/CallSummaryStep";
 import { ModalData, SectionType } from "./types";
 import { useGetCallSummaryQuery } from "./api";
 import ArticleGridStep from "./components/ArticleGridStep";
+import { Article } from "@/components/article/types";
 
 const PostCallSummary = () => {
   const { chatId } = useParams();
@@ -30,7 +31,7 @@ const PostCallSummary = () => {
   const [completedSections, setCompletedSections] = useState<SectionType[]>(
     searchParams.get("section") === "2" ? [SectionType.StressBuster, SectionType.CallHighlights] : [SectionType.StressBuster]
   );
-  const [modalData, setModalData] = useState<ModalData | null>(null);
+  const [modalData, setModalData] = useState<ModalData | null>({ type: null, article: null });
 
   const { isOnline } = useSelector((state: RootState) => state.user);
 
@@ -58,6 +59,10 @@ const PostCallSummary = () => {
       }
     };
   }, [callSummary]);
+
+  const handleArticleClick = (article: Article) => {
+    setModalData({ type: "article", article });
+  };
 
   const handleProceed = (nextSection: SectionType) => {
     setCompletedSections((prev: SectionType[]) => [...prev, nextSection]);
@@ -89,8 +94,9 @@ const PostCallSummary = () => {
       case SectionType.Resources:
         return (
           <ArticleGridStep
+            onArticleClick={handleArticleClick}
             onProceed={() => {
-              if (!isOnline) setModalData({ type: "redirect" });
+              if (!isOnline) setModalData({ type: "redirect", article: null });
               else navigate("/");
             }}
           />
@@ -159,6 +165,13 @@ const PostCallSummary = () => {
           </div>
         </div>
       </Dialog>
+      <Drawer
+        open={modalData?.type === "article"}
+        onClose={() => setModalData((prev) => ({ ...prev, type: null }))}
+        title="Article"
+      >
+        <ArticleReader article={modalData?.article} isPage={false} />
+      </Drawer>
     </Container>
   );
 };

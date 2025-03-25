@@ -3,15 +3,11 @@ import { motion } from "framer-motion";
 
 import { ArticleGrid, Button } from "@/components";
 import { articles } from "@/data";
+import { ArticleGridStepProps } from "../types";
 
-interface ArticleGridStepProps {
-  onProceed: () => void;
-}
-
-const ArticleGridStep: FC<ArticleGridStepProps> = ({ onProceed }) => {
+const ArticleGridStep: FC<ArticleGridStepProps> = ({ onArticleClick, onProceed }) => {
   const handleArticleClick = (articleId: string) => {
-    //TODO:  Handle article click - show modal
-    console.log(`Article clicked: ${articleId}`);
+    onArticleClick(articles.find((article) => article.id === articleId));
   };
 
   return (
