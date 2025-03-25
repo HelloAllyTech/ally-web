@@ -18,27 +18,10 @@ export const formatDate = (date: Date | string): string => {
   return `${formattedDate} ${formattedTime}`; // Concatenating manually to avoid 'at' in between
 };
 
-export const getRandomValue = (
-  arr: { bg: string; text: string }[],
-  prevValue: { bg: string; text: string }[]
-): { bg: string; text: string } => {
-  if (arr.length < 2) return arr[0]; // Edge case: If only one value exists, return it
+export const convertSecondsToDuration = (totalSeconds: number): string => {
+  const hours = Math.floor(totalSeconds / (60 * 60)); // Calculate  
+  const minutes = Math.floor((totalSeconds % (60 * 60)) / 60); // Remaining hours
+  const seconds = totalSeconds % 60; // Remaining minutes
 
-  let newValue: { bg: string; text: string };
-  do {
-    newValue = arr[Math.floor(Math.random() * arr.length)];
-  } while (
-    prevValue.length > 0 &&
-    prevValue.filter((e) => e.bg === newValue.bg).length !== 0
-  ); // Ensure the new value is not the same as the previous value
-
-  return newValue;
-};
-
-export const convertMinutesToDuration = (totalMinutes: number): string => {
-  const days = Math.floor(totalMinutes / (24 * 60)); // Calculate days
-  const hours = Math.floor((totalMinutes % (24 * 60)) / 60); // Remaining hours
-  const minutes = totalMinutes % 60; // Remaining minutes
-
-  return `${days ? ` ${days} day` : ""}${days > 1 ? "s" : ""} ${hours ? `${hours} hour` : ""}${hours > 1 ? "s" : ""} ${minutes ? `${minutes} min` : ""}${minutes > 1 ? "s" : ""}`;
+  return `${hours ? `${hours} hour` : ""}${hours > 1 ? "s" : ""} ${minutes ? `${minutes} min` : ""}${minutes > 1 ? "s" : ""} ${seconds ? `${seconds} second` : ""}${seconds > 1 ? "s" : ""}`;
 };

@@ -17,24 +17,24 @@ const StressBusters: FunctionComponent = () => {
       <StressBuster isFullScreenMode onClose={toggleStressBuster} playOnMount />
     );
   return (
-    <div className="p-6 h-full flex flex-col gap-4">
-      <div className="h-[290px] w-full bg-[#110924] rounded-sm text-white overflow-hidden z-0">
+    <div className="p-6 h-full flex flex-col gap-4 max-h-screen overflow-y-auto">
+      <div className="min-h-[290px] w-full bg-[#110924] rounded-sm text-white overflow-hidden z-0 relative">
         <BackgroundTop
           height={300}
           width={360}
-          className="absolute right-6 rounded-sm -z-10"
+          className="absolute right-0 rounded-sm -z-10"
         />
         <BackgroundBottom
           height={300}
           width={420}
-          className="absolute top-24 rounded-sm -z-10"
+          className="absolute top-0 rounded-sm -z-10"
         />
         <img
           src={Flower}
           alt="Flower"
           className="absolute right-24 top-26 rounded-sm -z-10 h-[290px]"
         />
-        <div className="my-auto max-w-[40%] ml-10 mt-20 z-10">
+        <div className="my-auto max-w-[40%] ml-10 mt-20 z-10 relative">
           <div className="text-base font-medium mb-5">
             Box Breathing: Reset Your Mind in Minutes
           </div>

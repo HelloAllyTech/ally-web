@@ -8,9 +8,9 @@ import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import CircularProgress from "@mui/material/CircularProgress";
 
-import { COLOR_PALETTE, DEFAULT_TAGS, TABLE_HEADERS } from "./constants";
+import { DEFAULT_TAGS, TABLE_HEADERS, TAG_COLORS } from "./constants";
 import { useGetCallLogsQuery } from "./api";
-import { convertMinutesToDuration, formatDate, getRandomValue } from "./utils";
+import { convertSecondsToDuration, formatDate } from "./utils";
 
 const CallLogsTable = () => {
   const { data, isLoading } = useGetCallLogsQuery("");
@@ -33,47 +33,48 @@ const CallLogsTable = () => {
   }
 
   const getDisplayData = (row: { [key: string]: any }) => {
-    const { details, id, startedAt } = row;
-    let previousVal = [];
+    const { details, id, startedAt, clientId } = row;
     if (details) {
       //TODO - change default values
       const {
         callDuration = 30,
         callQuality = 60,
-        chatId,
         startTime,
         tags = DEFAULT_TAGS,
       } = details;
       return {
-        id: chatId,
+        id,
+        clientId,
         dateAndTime: formatDate(startTime),
-        duration: convertMinutesToDuration(callDuration ?? 60),
+        duration: convertSecondsToDuration(callDuration ?? 60),
         quality_score: callQuality ?? 70,
-        tags: (tags ?? DEFAULT_TAGS).map((tag: string) => {
-          if (previousVal.length >= COLOR_PALETTE.length) {
-            previousVal = [];
-          }
-          const newVal = getRandomValue(COLOR_PALETTE, previousVal);
-          previousVal.push(newVal);
-          const capsuleColor = newVal;
-          return { label: tag, capsuleColor };
+        tags: (tags ?? DEFAULT_TAGS).map((tag: { tag: string; positivity_rating: number }) => {
+          return {
+            label: tag.tag,
+            capsuleColor: TAG_COLORS[tag.positivity_rating],
+          };
         }),
       };
     }
     return {
       id,
+      clientId,
       dateAndTime: formatDate(startedAt),
-      duration: convertMinutesToDuration(30),
+      duration: convertSecondsToDuration(30),
       quality_score: "50",
-      tags: DEFAULT_TAGS.map((tag: string) => {
-        const capsuleColor = getRandomValue(COLOR_PALETTE, previousVal);
-        return { label: tag, capsuleColor };
+      tags: DEFAULT_TAGS.map((tag) => {
+        return {
+          label: tag.tag,
+          capsuleColor: TAG_COLORS[tag.positivity_rating],
+        };
       }),
     };
   };
+
   const getWidth = (percentage: number) => {
     return (percentage / 100) * 128;
   };
+
   return (
     <div className="bg-white rounded-xl shadow-md w-full">
       <Table sx={{ minWidth: "100%" }} aria-label="simple table">

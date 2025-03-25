@@ -64,6 +64,8 @@ const CallTranscript = (props: CallTranscriptProps) => {
   const [myTranscriptions, setMyTranscriptions] = useState<Transcription[]>([]);
   const [nudges, setNudges] = useState<string[]>([]);
   const [stage, setStage] = useState<string>();
+  const [newIceCandidates, setNewIceCandidates] = useState([]);
+  const [isUserScrolling, setIsUserScrolling] = useState(false);
 
   const isClient = user?.role === UserRole.CLIENT;
   const isCounsellor = user?.role === UserRole.COUNSELOR;
@@ -396,6 +398,31 @@ const CallTranscript = (props: CallTranscriptProps) => {
     }
   }, [muted, mediaRecorder]);
 
+  const handleUnAttemptedIceCandidates = useCallback(() => {
+    if (!peerConnection) return;
+    if (newIceCandidates.length > 0) {
+      newIceCandidates.forEach((candidate) => {
+        peerConnection?.addIceCandidate(new RTCIceCandidate(candidate));
+      });
+    }
+  }, [peerConnection, newIceCandidates]);
+
+  const handleOnIceCandidate = useCallback(
+    (data) => {
+      if (!peerConnection || data.chatId !== chatId) return;
+      peerConnection
+        .addIceCandidate(new RTCIceCandidate(data.candidate))
+        .catch((err) => {
+          setNewIceCandidates((prev) => [...prev, data.candidate]);
+          console.error(
+            "Error adding ICE candidate (Adding in state for future handling):",
+            err
+          );
+        });
+    },
+    [chatId, peerConnection]
+  );
+
   const handleWebRTCOffer = useCallback(
     async (data) => {
       if (data.chatId !== chatId) return;
@@ -408,6 +435,8 @@ const CallTranscript = (props: CallTranscriptProps) => {
         new RTCSessionDescription(data.offer)
       );
 
+      handleUnAttemptedIceCandidates();
+
       emitSocketEvent(SocketEvent.START_AUDIO_CHAT, {
         chatId,
       });
@@ -419,7 +448,7 @@ const CallTranscript = (props: CallTranscriptProps) => {
         chatId,
       });
     },
-    [chatId, peerConnection, offerTimeoutRef]
+    [chatId, peerConnection, offerTimeoutRef, handleUnAttemptedIceCandidates]
   );
 
   const handleWebRTCAnswer = useCallback(
@@ -432,18 +461,9 @@ const CallTranscript = (props: CallTranscriptProps) => {
       await peerConnection?.setRemoteDescription(
         new RTCSessionDescription(data.answer)
       );
+      handleUnAttemptedIceCandidates();
     },
-    [chatId, peerConnection]
-  );
-
-  const handleOnIceCandidate = useCallback(
-    (data) => {
-      if (!peerConnection || data.chatId !== chatId) return;
-      peerConnection
-        .addIceCandidate(new RTCIceCandidate(data.candidate))
-        .catch((err) => console.error("Error adding ICE candidate:", err));
-    },
-    [chatId, peerConnection]
+    [chatId, peerConnection, handleUnAttemptedIceCandidates]
   );
 
   useEffect(() => {
@@ -514,7 +534,7 @@ const CallTranscript = (props: CallTranscriptProps) => {
   }, [myTranscriptions, speakerTranscriptions]);
 
   useEffect(() => {
-    if (transcriptContainerRef.current && focus) {
+    if (transcriptContainerRef.current && focus && !isUserScrolling) {
       // Add a small delay to ensure content is rendered before scrolling
       setTimeout(() => {
         if (transcriptContainerRef.current) {
@@ -525,7 +545,7 @@ const CallTranscript = (props: CallTranscriptProps) => {
         }
       }, 100);
     }
-  }, [transcriptions, focus]);
+  }, [transcriptions, focus, isUserScrolling]);
 
   // Add this effect to scroll to bottom when nudges change
   useEffect(() => {
@@ -534,6 +554,22 @@ const CallTranscript = (props: CallTranscriptProps) => {
         nudgesContainerRef.current.scrollHeight;
     }
   }, [nudges, focus]);
+
+  // Add this new function to handle scroll events
+  const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
+    const container = e.currentTarget;
+    const isAtBottom =
+      Math.abs(
+        container.scrollHeight - container.scrollTop - container.clientHeight
+      ) < 1;
+
+    setIsUserScrolling(!isAtBottom);
+  };
+
+  const getSpeakerName = (senderId: number, previousSenderId: number) => {
+    if (previousSenderId && previousSenderId == senderId) return "";
+    return senderId === user?.userId ? "You:" : "Client:";
+  };
 
   return (
     <div className="w-screen h-screen flex justify-center items-center">
@@ -608,34 +644,26 @@ const CallTranscript = (props: CallTranscriptProps) => {
                 sx={{
                   backgroundColor: "rgba(255, 255, 255, 0.12)",
                   width: "50%",
+                  marginBottom: "10px",
                 }}
               />
               <div
                 ref={transcriptContainerRef}
                 className="z-10 flex-1 overflow-y-auto text-white rounded-lg p-4 
                   transition-all duration-500 ease-in-out custom-scrollbar mb-20 flex flex-col gap-2"
+                onScroll={handleScroll}
               >
                 {transcriptions.map((transcriptionObj, index) => (
-                  <div
-                    key={transcriptionObj.id}
-                    className={`${
-                      transcriptionObj.senderId === user?.userId
-                        ? "self-end"
-                        : "self-start"
-                    } w-[60%]`}
-                  >
-                    {(index === 0 ||
-                      transcriptions[index - 1].senderId !==
-                        transcriptionObj.senderId) && (
-                      <div className="font-bold mt-2">
-                        {transcriptionObj.senderId === user?.userId
-                          ? "You"
-                          : "Speaker"}
-                      </div>
-                    )}
+                  <div key={transcriptionObj.id} className="flex">
+                    <div className="font-bold w-[20%]">
+                      {getSpeakerName(
+                        transcriptionObj.senderId,
+                        index > 0 && transcriptions[index - 1].senderId
+                      )}
+                    </div>
                     <div
                       key={index}
-                      className="typing-animation"
+                      className="typing-animation w-full"
                       style={{
                         animationDelay: `${index * 100}ms`,
                       }}
