@@ -1,3 +1,5 @@
+import { Article } from "@/components/article/types";
+
 export enum SectionType {
   StressBuster = "Stress buster",
   CallHighlights = "Call highlights",
@@ -40,4 +42,10 @@ export interface CallSummaryProps {
 
 export interface ModalData {
   type: "article" | "redirect";
+  article: Article;
+}
+
+export interface ArticleGridStepProps {
+  onArticleClick: (article: Article) => void;
+  onProceed: () => void;
 }

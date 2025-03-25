@@ -27,6 +27,7 @@ import Nudges from "./Nudges.svg?react";
 import ListeningRatio from "./ListeningRatio.svg?react";
 import CallerMood from "./CallerMood.svg?react";
 import BackCircle from "./BackCircle.svg?react";
+import ArrowDoubleRight from "./ArrowDoubleRight.svg?react";
 
 export {
   Relax,
@@ -57,5 +58,6 @@ export {
   Nudges,
   ListeningRatio,
   CallerMood,
-  BackCircle
+  BackCircle,
+  ArrowDoubleRight,
 };
