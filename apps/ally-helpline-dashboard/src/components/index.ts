@@ -33,7 +33,8 @@ import StressBuster from "./stress-buster";
 import ArticleGrid from "./article/ArticleGrid";
 import ArticleReader from "./article/ArticleReader";
 import Dropdown from "./dropdown/Dropdown";
-import Drawer from "./drawer/drawer";
+import Drawer from "./drawer/Drawer";
+import FallbackUI from "./fallback-ui/FallbackUI";
 
 export {
   ArticleGrid,
@@ -71,4 +72,5 @@ export {
   LiveTranscriptionMessage,
   Dropdown,
   Drawer,
+  FallbackUI,
 };

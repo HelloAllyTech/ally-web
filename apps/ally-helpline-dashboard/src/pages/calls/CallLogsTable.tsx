@@ -1,13 +1,17 @@
 import { Eye } from "lucide-react";
 import { useEffect, useState } from "react";
 
-import Table from "@mui/material/Table";
-import TableBody from "@mui/material/TableBody";
-import TableCell from "@mui/material/TableCell";
-import TableHead from "@mui/material/TableHead";
-import TableRow from "@mui/material/TableRow";
-import CircularProgress from "@mui/material/CircularProgress";
+import {
+  CircularProgress,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableRow,
+} from "@mui/material";
 
+import { FallbackUI } from "@/components";
+import { NoResults } from "@/assets/icons";
 import { DEFAULT_TAGS, TABLE_HEADERS, TAG_COLORS } from "./constants";
 import { useGetCallLogsQuery } from "./api";
 import { convertSecondsToDuration, formatDate } from "./utils";
@@ -76,7 +80,7 @@ const CallLogsTable = () => {
   };
 
   return (
-    <div className="bg-white rounded-xl shadow-md w-full">
+    <div className={`${data?.length > 0 ? "bg-white shadow-md" : ""} rounded-xl w-full`}>
       <Table sx={{ minWidth: "100%" }} aria-label="simple table">
         <TableHead sx={{ backgroundColor: "#F5F5F5" }}>
           <TableRow>
@@ -149,6 +153,14 @@ const CallLogsTable = () => {
           })}
         </TableBody>
       </Table>
+      {data?.length === 0 && (
+        <FallbackUI
+          image={<NoResults />}
+          mainMessage="No call records found"
+          description="Your recent calls and insights will be listed here."
+          className="py-[100px]"
+        />
+      )}
     </div>
   );
 };

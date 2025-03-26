@@ -7,6 +7,8 @@ import CallLogs from "./call-logs";
 import StressBusters from "./stress-buster";
 import PostCallSummary from "./post-call-summary";
 import Learn from "./learn";
+import Calendar from "./calendar";
+import Analytics from "./analytics";
 
 export {
   Home,
@@ -18,4 +20,6 @@ export {
   StressBusters,
   PostCallSummary,
   Learn,
+  Calendar,
+  Analytics,
 };
