@@ -57,7 +57,7 @@ const StressBuster: FunctionComponent<StressBusterProps> = ({
     if (isFullScreenMode) {
       return <X />;
     }
-    return isMaximized ? <Maximize /> : <Minimize />;
+    return isMaximized ? <Minimize /> : <Maximize />;
   };
 
   const toggleMaximize = () => {
