@@ -104,6 +104,10 @@ const PrivateRouteLayout = () => {
     try {
       await acceptChat(waitingClients[0]?.chat?.chatId);
       store.dispatch(setIsOnline(false));
+
+      // Clearing waitingClients to prevent call pop-up after the call due to outdated waitingClients
+      setWaitingClients([]);
+
       navigate(ROUTES.AUDIO_CALL);
     } catch (error) {
       toast.error(
