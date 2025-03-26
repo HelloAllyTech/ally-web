@@ -11,9 +11,9 @@ export default {
   ],
   prefix: "",
   theme: {
-    fontFamily: {
-      sans: ["\"IBM Plex Serif\"", "serif"],
-    },
+    // fontFamily: {
+    //   sans: ["\"IBM Plex Serif\"", "serif"],
+    // },
     container: {
       center: true,
       padding: "2rem",
