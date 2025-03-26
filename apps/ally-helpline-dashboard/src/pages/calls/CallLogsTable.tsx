@@ -12,13 +12,15 @@ import {
 
 import { FallbackUI } from "@/components";
 import { NoResults } from "@/assets/icons";
-import { DEFAULT_TAGS, TABLE_HEADERS, TAG_COLORS } from "./constants";
 import { useGetCallLogsQuery } from "./api";
+import SummarySideBar from "./components/SummarySideBar";
 import { convertSecondsToDuration, formatDate } from "./utils";
+import { DEFAULT_TAGS, dummySummarydata, TABLE_HEADERS, TAG_COLORS } from "./constants";
 
 const CallLogsTable = () => {
   const { data, isLoading } = useGetCallLogsQuery("");
   const [transition, setTransition] = useState(true);
+  const [summary, setSummary] = useState<any>(null);
 
   useEffect(() => {
     if (!isLoading) {
@@ -45,6 +47,8 @@ const CallLogsTable = () => {
         callQuality = 60,
         startTime,
         tags = DEFAULT_TAGS,
+        summary,
+        transcript,
       } = details;
       return {
         id,
@@ -52,12 +56,19 @@ const CallLogsTable = () => {
         dateAndTime: formatDate(startTime),
         duration: convertSecondsToDuration(callDuration ?? 60),
         quality_score: callQuality ?? 70,
-        tags: (tags ?? DEFAULT_TAGS).map((tag: { tag: string; positivity_rating: number }) => {
-          return {
-            label: tag.tag,
-            capsuleColor: TAG_COLORS[tag.positivity_rating],
-          };
-        }),
+        tags: (tags ?? DEFAULT_TAGS).map(
+          (tag: { tag: string; positivity_rating: number }) => {
+            return {
+              label: tag.tag,
+              capsuleColor: TAG_COLORS[tag.positivity_rating],
+            };
+          }
+        ),
+        keyConcerns: summary?.summaryNote?.session_documentation?.key_concerns,
+        flow: summary?.summaryNote?.session_documentation?.work_done
+          ?.counseling_process_flow,
+        notes: summary?.summaryNote?.session_documentation?.notes, // TODO: Confirm the position of this
+        transcript: transcript,
       };
     }
     return {
@@ -90,7 +101,7 @@ const CallLogsTable = () => {
           </TableRow>
         </TableHead>
         <TableBody>
-          {data?.map((row: { [key: string]: any }) => {
+          {data?.map((row: { [key: string]: any }, index: number) => {
             const displayData = getDisplayData(row);
             return (
               <TableRow key={displayData.id}>
@@ -141,7 +152,14 @@ const CallLogsTable = () => {
                       </div>
                     )}
                     {header.id === "notes" && (
-                      <Eye className="text-[#868686] w-4 h-4 ml-2 cursor-pointer" />
+                      <Eye
+                        className="text-[#868686] w-4 h-4 ml-2 cursor-pointer"
+                        onClick={() =>
+                          setSummary(
+                            index === 0 ? dummySummarydata : displayData
+                          )
+                        }
+                      />
                     )}
                     {header.id !== "tags" &&
                       header.id !== "quality_score" &&
@@ -160,6 +178,9 @@ const CallLogsTable = () => {
           description="Your recent calls and insights will be listed here."
           className="py-[100px]"
         />
+      )}
+      {summary && summary?.id && (
+        <SummarySideBar summary={summary} setSummary={setSummary} />
       )}
     </div>
   );
