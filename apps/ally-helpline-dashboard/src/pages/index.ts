@@ -1,5 +1,5 @@
 import Home from "./home";
-import Login from "./login";
+import { Login } from "./auth";
 import SignUp from "./signup";
 import Calls from "./calls";
 import LiveCall from "./live-call";
