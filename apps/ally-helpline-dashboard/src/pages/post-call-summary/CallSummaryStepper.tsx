@@ -74,6 +74,7 @@ const CallSummaryStepper: FC<CallSummaryStepperProps> = ({
       {Object.values(SectionType).map((section) => (
         <StyledToggleButton
           key={section}
+          disabled={!completedSections.includes(section)}
           value={section}
           aria-label={section}
           className={completedSections.includes(section) ? "completed" : ""}
