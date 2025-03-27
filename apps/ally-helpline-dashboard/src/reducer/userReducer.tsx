@@ -1,17 +1,18 @@
-import { createSlice } from "@reduxjs/toolkit";
+import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 import { User } from "@/types/user";
+import { UserStatus } from "@/constants/common";
 
 interface UserState {
   isAuthenticated: boolean;
   user: User,
-  isOnline: boolean;
+  userStatus: UserStatus;
 }
 
 const initialState = {
   isAuthenticated: false,
   user: null,
-  isOnline: true,
+  userStatus: UserStatus.OFFLINE,
 } satisfies UserState as UserState;
 
 const userSlice = createSlice({
@@ -27,11 +28,11 @@ const userSlice = createSlice({
     setUser(state, action) {
       state.user = action.payload;
     },
-    setIsOnline(state, action) {
-      state.isOnline = action.payload;
+    setUserStatus(state, action: PayloadAction<UserStatus>) {
+      state.userStatus = action.payload;
     }
   },
 });
 
-export const { authenticate, unauthenticate, setUser, setIsOnline } = userSlice.actions;
+export const { authenticate, unauthenticate, setUser, setUserStatus } = userSlice.actions;
 export default userSlice;

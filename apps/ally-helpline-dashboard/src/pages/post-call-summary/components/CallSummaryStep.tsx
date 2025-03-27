@@ -28,6 +28,10 @@ const CallSummaryStep: FC<CallSummaryProps> = ({ onProceed, summaryData }) => {
     notes: false,
   });
 
+  const [updateCallSummary, { isLoading }] = useUpdateCallSummaryMutation();
+  const [enhanceContent, { isLoading: isEnhanceLoading }] =
+    useEnhanceContentMutation();
+
   const { details } = summaryData;
   const { session_details: sessionDetails, demographic_details: demogs } =
     details?.summary?.summaryNote || {};
@@ -58,10 +62,6 @@ const CallSummaryStep: FC<CallSummaryProps> = ({ onProceed, summaryData }) => {
     const date = new Date(dateTime);
     return format(date, formatString);
   };
-
-  const [updateCallSummary, { isLoading }] = useUpdateCallSummaryMutation();
-  const [enhanceContent, { isLoading: isEnhanceLoading }] =
-    useEnhanceContentMutation();
 
   const handleChange = (key: string, value: string) => {
     setData((prev) => ({ ...prev, [key]: value }));

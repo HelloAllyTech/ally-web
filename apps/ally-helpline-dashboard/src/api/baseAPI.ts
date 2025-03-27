@@ -15,5 +15,6 @@ export const baseAPI = createApi({
       return headers;
     },
   }),
+  tagTypes: ["CallSummary"],
   endpoints: () => ({}),
 });

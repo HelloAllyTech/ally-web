@@ -28,7 +28,8 @@ import { navBarOptions, ROUTES } from "@/constants/routes";
 import { UserRole } from "@/types/user";
 import AudioCall from "@/pages/audio-call/AudioCall";
 import { WaitingClient } from "@/hooks/useWaitingClients";
-import { setIsOnline } from "@/reducer/userReducer";
+import { setUserStatus } from "@/reducer/userReducer";
+import { UserStatus } from "@/constants/common";
 
 // TODO: Remove all un used pages
 // TODO: Restrict client access to pages
@@ -45,9 +46,18 @@ const PrivateRouteLayout = () => {
   const [alertCall, setAlertCall] = useState(true);
   const [waitingClients, setWaitingClients] = useState<WaitingClient[]>([]);
 
-  const { isOnline } = useSelector((state: RootState) => state.user);
+  const { userStatus } = useSelector((state: RootState) => state.user);
+
+  const excludeDefaultPageHeader = [
+    ROUTES.LIVE_CALL,
+    ROUTES.AUDIO_CALL,
+  ] as string[];
+  const excludeNavBar = [ROUTES.AUDIO_CALL, ROUTES.SUMMARY] as string[];
+  const excludeCallPicker = [ROUTES.LIVE_CALL, ROUTES.AUDIO_CALL, ROUTES.SUMMARY] as string[];
+  const isAvailable = userStatus === UserStatus.AVAILABLE;
 
   useEffect(() => {
+    store.dispatch(setUserStatus(localStorage.getItem("isOnline") as UserStatus));
     const verifyAuth = async () => {
       const userData = await checkAuth();
       if (!userData) {
@@ -62,7 +72,7 @@ const PrivateRouteLayout = () => {
   }, [pathname]);
 
   useEffect(() => {
-    if (user?.role === UserRole.COUNSELOR && isOnline) {
+    if (user?.role === UserRole.COUNSELOR && isAvailable) {
       const fetchWaitingClients = async () => {
         try {
           const response = await getWaitingClients();
@@ -76,7 +86,7 @@ const PrivateRouteLayout = () => {
       const interval = setInterval(fetchWaitingClients, 5000);
       return () => clearInterval(interval);
     }
-  }, [isOnline, user]);
+  }, [userStatus, user]);
 
   const getActiveTab = () =>
     navBarOptions.find((option) => option.path === pathname)?.id ?? TabId.CALLS;
@@ -90,20 +100,15 @@ const PrivateRouteLayout = () => {
     navigate(ROUTES.LOGIN);
   };
 
-  const excludeDefaultPageHeader = [
-    ROUTES.LIVE_CALL,
-    ROUTES.AUDIO_CALL,
-  ] as string[];
-  const excludeNavBar = [ROUTES.AUDIO_CALL, ROUTES.SUMMARY] as string[];
-
-  const isPathExcluded = (currentPath: string) => {
-    return excludeNavBar.some((path) => matchPath(path, currentPath));
+  const isPathExcluded = (currentPath: string, excludedPaths: string[]) => {
+    return excludedPaths.some((path) => matchPath(path, currentPath));
   };
 
   const onAcceptCall = async () => {
     try {
       await acceptChat(waitingClients[0]?.chat?.chatId);
-      store.dispatch(setIsOnline(false));
+      store.dispatch(setUserStatus(UserStatus.OFFLINE));
+      localStorage.setItem("isOnline", UserStatus.OFFLINE);
 
       // Clearing waitingClients to prevent call pop-up after the call due to outdated waitingClients
       setWaitingClients([]);
@@ -118,8 +123,8 @@ const PrivateRouteLayout = () => {
     }
   };
 
-  const showNavbar = !isClient && !isPathExcluded(pathname);
-  const showLifelineHeader = !excludeDefaultPageHeader.includes(pathname);
+  const showNavbar = !isClient && !isPathExcluded(pathname, excludeNavBar);
+  const showLifelineHeader = !isPathExcluded(pathname, excludeDefaultPageHeader);
 
   if (user)
     return (
@@ -162,7 +167,7 @@ const PrivateRouteLayout = () => {
             </Routes>
           </div>
         </div>
-        {alertCall && waitingClients.length > 0 && isOnline && (
+        {alertCall && waitingClients.length > 0 && isAvailable && !isPathExcluded(pathname, excludeCallPicker) && (
           <CallPicker
             onAccept={onAcceptCall}
             onDecline={() => setAlertCall(false)}

@@ -4,16 +4,17 @@ import { FunctionComponent } from "react";
 import { useSelector } from "react-redux";
 
 import { RootState, store } from "@/store/store";
-import { setIsOnline } from "@/reducer/userReducer";
+import { setUserStatus } from "@/reducer/userReducer";
 import { BackgroundBottom, BackgroundTop } from "@/assets/icons";
+import { UserStatus } from "@/constants/common";
 
 import CallLogsTable from "./CallLogsTable";
 
 const Calls: FunctionComponent = () => {
-  const { isOnline } = useSelector((state: RootState) => state.user);
+  const { userStatus: isOnline } = useSelector((state: RootState) => state.user);
 
   const markAvailable = () => {
-    store.dispatch(setIsOnline(true));
+    store.dispatch(setUserStatus(UserStatus.AVAILABLE));
   };
 
   return (
