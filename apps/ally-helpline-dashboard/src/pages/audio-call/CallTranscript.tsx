@@ -254,9 +254,7 @@ const CallTranscript = (props: CallTranscriptProps) => {
     const chunks: BlobPart[] = [];
     let totalSize = 0;
     // Create a MediaRecorder to capture audio data
-    const recorder = new MediaRecorder(stream, {
-      mimeType: "audio/webm",
-    });
+    const recorder = new MediaRecorder(stream);
 
     const sendBufferedAudio = () => {
       if (chunks.length === 0) return;
