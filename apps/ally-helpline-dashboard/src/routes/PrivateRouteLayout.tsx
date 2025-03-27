@@ -76,7 +76,8 @@ const PrivateRouteLayout = () => {
       const fetchWaitingClients = async () => {
         try {
           const response = await getWaitingClients();
-          setWaitingClients(response.clients);
+          if (response?.clients?.length > 0)
+            setWaitingClients(response.clients);
         } catch (error) {
           console.error("Error fetching waiting clients:", error);
         }

@@ -2,6 +2,9 @@ import { useState } from "react";
 import { api } from "@/services/api";
 import { User, UserRole } from "@/types/user";
 
+//TODO: Update logic for refresh token
+// TODO: cHANGE ALL APIS TO RTK QUERY
+
 interface LoginResponse {
   accessToken: string;
   refreshToken: string;
