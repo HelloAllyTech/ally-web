@@ -66,9 +66,28 @@ const CallTranscript = (props: CallTranscriptProps) => {
   const [stage, setStage] = useState<string>();
   const [newIceCandidates, setNewIceCandidates] = useState([]);
   const [isUserScrolling, setIsUserScrolling] = useState(false);
+  const [isUserJoined, setIsUserJoined] = useState(null);
 
   const isClient = user?.role === UserRole.CLIENT;
   const isCounsellor = user?.role === UserRole.COUNSELOR;
+
+  const updateLastTranscription = (
+    setCorrespondingTranscription: React.Dispatch<
+      React.SetStateAction<Transcription[]>
+    >
+  ) => {
+    setCorrespondingTranscription((prev) => {
+      const updatedList = [...prev];
+      if (prev.length > 0) {
+        updatedList[prev.length - 1] = {
+          ...prev[prev.length - 1],
+          isFinal: true,
+          isSentenceComplete: true,
+        };
+      }
+      return updatedList;
+    });
+  };
 
   const processTranscription = (
     setCorrespondingTranscription: React.Dispatch<
@@ -162,6 +181,19 @@ const CallTranscript = (props: CallTranscriptProps) => {
             processTranscription(setSpeakerTranscriptions, payload);
           }
         }
+      },
+      [SocketEvent.UTTERANCE_ENDED]: (data: any) => {
+        if (data?.payload.senderId === user?.userId) {
+          updateLastTranscription(setMyTranscriptions);
+        } else {
+          updateLastTranscription(setSpeakerTranscriptions);
+        }
+      },
+      [SocketEvent.USER_JOINED]: () => {
+        setIsUserJoined(true);
+      },
+      [SocketEvent.USER_DISCONNECTED]: () => {
+        setIsUserJoined(false);
       },
     }),
     []
@@ -569,65 +601,98 @@ const CallTranscript = (props: CallTranscriptProps) => {
     return senderId === user?.userId ? "You:" : "Client:";
   };
 
+  const getEmptyScreen = () => {
+    console.log({ isUserJoined });
+    let message;
+    if (isUserJoined === false) {
+      message = isCounsellor
+        ? "Participant left the call"
+        : "Counsellor left the call";
+    } else if (!isUserJoined) {
+      message = "Loading...";
+    }
+    return (
+      <motion.div
+        key={message}
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0 }}
+        transition={{ duration: 0.5 }}
+      >
+        <div className="text-white text-4xl font-normal">{message}</div>
+        {!(isUserJoined == null) && (
+          <div className="text-[#BABABA] text-sm text-center mt-1">
+            You can wait for them to rejoin or end the call.
+          </div>
+        )}
+      </motion.div>
+    );
+  };
   return (
     <div className="w-screen h-screen flex justify-center items-center">
       <AudioCallBackgroundWrapper>
         <>
-          <div
-            className="flex flex-col justify-center items-center
+          {isUserJoined ? (
+            <div
+              className="flex flex-col justify-center items-center
           gap-4 z-10 transition-all duration-500 ease-in-out min-h-[30vh]"
-          >
-            <div className="text-white flex justify-center items-center flex-col gap-2">
-              <div className="text-base font-medium">Ongoing Voice Call</div>
-              <div className="text-sm text-[#BABABA]">
-                {formatTime(seconds)}
+            >
+              <div className="text-white flex justify-center items-center flex-col gap-2">
+                <div className="text-base font-medium">Ongoing Voice Call</div>
+                <div className="text-sm text-[#BABABA]">
+                  {formatTime(seconds)}
+                </div>
+              </div>
+              {/* Hidden Audio Element */}
+              <audio
+                ref={(audio) => {
+                  if (audio) {
+                    audio.srcObject = remoteStreamRef.current;
+                    audio.onloadedmetadata = () => {
+                      audio
+                        .play()
+                        .catch((e) =>
+                          console.error("Audio playback failed:", e)
+                        );
+                    };
+                  }
+                }}
+                muted={false}
+                autoPlay
+              />
+              <div className="relative gap-1 flex rounded-lg">
+                {remoteMediaRecorder && (
+                  <div className="rotate-180 z-0 translate-x-[4px] translate-y-[1px]">
+                    <LiveAudioVisualizer
+                      mediaRecorder={remoteMediaRecorder}
+                      width={200}
+                      height={200}
+                      barWidth={4}
+                      barColor="#FFFFFF"
+                    />
+                  </div>
+                )}
+                {mediaRecorder && (
+                  <div className="z-0">
+                    <LiveAudioVisualizer
+                      mediaRecorder={mediaRecorder}
+                      width={200}
+                      height={200}
+                      barWidth={4}
+                      barColor="#FFFFFF"
+                    />
+                  </div>
+                )}
+                <div className="waveForm rounded-full absolute top-[38%] left-0 w-1/6 h-1/4 " />
+                <div className="waveForm rounded-full absolute top-[38%] right-0 w-1/6 h-1/4 rotate-180" />
               </div>
             </div>
-            {/* Hidden Audio Element */}
-            <audio
-              ref={(audio) => {
-                if (audio) {
-                  audio.srcObject = remoteStreamRef.current;
-                  audio.onloadedmetadata = () => {
-                    audio
-                      .play()
-                      .catch((e) => console.error("Audio playback failed:", e));
-                  };
-                }
-              }}
-              muted={false}
-              autoPlay
-            />
-            <div className="relative gap-1 flex rounded-lg">
-              {remoteMediaRecorder && (
-                <div className="rotate-180 z-0 translate-x-[4px] translate-y-[1px]">
-                  <LiveAudioVisualizer
-                    mediaRecorder={remoteMediaRecorder}
-                    width={200}
-                    height={200}
-                    barWidth={4}
-                    barColor="#FFFFFF"
-                  />
-                </div>
-              )}
-              {mediaRecorder && (
-                <div className="z-0">
-                  <LiveAudioVisualizer
-                    mediaRecorder={mediaRecorder}
-                    width={200}
-                    height={200}
-                    barWidth={4}
-                    barColor="#FFFFFF"
-                  />
-                </div>
-              )}
-              <div className="waveForm rounded-full absolute top-[38%] left-0 w-1/6 h-1/4 " />
-              <div className="waveForm rounded-full absolute top-[38%] right-0 w-1/6 h-1/4 rotate-180" />
-            </div>
-          </div>
+          ) : (
+            getEmptyScreen()
+          )}
 
           {/* Update transcription container with max-height */}
-          {isCounsellor && (
+          {isCounsellor && isUserJoined && (
             <motion.div
               className="w-[85%] h-[35vh] flex flex-col overflow-hidden"
               initial={{ height: 0 }}
@@ -675,11 +740,14 @@ const CallTranscript = (props: CallTranscriptProps) => {
           )}
 
           <div className="z-10 absolute bottom-10 w-full flex justify-center items-center gap-4">
-            <button onClick={() => setMuted((prev) => !prev)}>
+            <button
+              disabled={!isUserJoined}
+              onClick={() => setMuted((prev) => !prev)}
+            >
               {muted ? <NoRecord /> : <Record />}
             </button>
             {isCounsellor && (
-              <button>
+              <button disabled={!isUserJoined}>
                 {focus ? (
                   <FocusOn onClick={() => setFocus(false)} />
                 ) : (
@@ -694,7 +762,7 @@ const CallTranscript = (props: CallTranscriptProps) => {
         </>
       </AudioCallBackgroundWrapper>
       <AnimatePresence>
-        {isCounsellor && (
+        {isCounsellor && isUserJoined && (
           <motion.div
             initial={{ width: 0 }}
             animate={{ width: focus ? 500 : 0 }}
