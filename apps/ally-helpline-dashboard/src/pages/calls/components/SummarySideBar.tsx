@@ -10,6 +10,7 @@ declare global {
   }
 }
 
+// TODO: Update type after review
 interface SummarySideBarProps {
   summary: any;
   setSummary: any;
@@ -18,7 +19,7 @@ interface SummarySideBarProps {
 const SummarySideBar: FunctionComponent<SummarySideBarProps> = ({
   summary,
   setSummary,
-}: SummarySideBarProps) => {
+}) => {
   const [selectedTab, setSelectedTab] = useState(1);
   const [selectedComment, setSelectedComment] = useState<string>("");
 
@@ -115,7 +116,7 @@ const SummarySideBar: FunctionComponent<SummarySideBarProps> = ({
                                   </button>`
                                   : `<button
                                   onclick="window.handleCommentClick('${comment}')"
-                                  style="border-bottom: 2px solid #fef08a; pointer: cursor;">$1</button>`
+                                  style="border-bottom: 2px solid #fef08a; cursor: pointer;">$1</button>`
                               );
                             }, message)
                           : message;
