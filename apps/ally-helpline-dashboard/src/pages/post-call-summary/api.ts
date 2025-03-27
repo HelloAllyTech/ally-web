@@ -4,6 +4,7 @@ const callSummaryAPI = baseAPI.injectEndpoints({
   endpoints: (builder) => ({
     getCallSummary: builder.query({
       query: (chatId) => `/chats/${chatId}`,
+      providesTags: ["CallSummary"],
     }),
     updateCallSummary: builder.mutation({
       query: ({ chatId, data }) => ({
@@ -11,6 +12,7 @@ const callSummaryAPI = baseAPI.injectEndpoints({
         method: "POST",
         body: data,
       }),
+      invalidatesTags: ["CallSummary"],
     }),
     enhanceContent: builder.mutation({
       query: ({ content }) => ({
