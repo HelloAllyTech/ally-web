@@ -7,7 +7,7 @@ import { useParams, useSearchParams, useNavigate } from "react-router-dom";
 
 import { RootState, store } from "@/store/store";
 import { ArticleReader, Button, Drawer } from "@/components";
-import { setIsOnline } from "@/reducer/userReducer";
+import { setUserStatus } from "@/reducer/userReducer";
 
 import CallSummaryStepper from "./CallSummaryStepper";
 import StressBusterStep from "./StressBusterStep";
@@ -17,6 +17,7 @@ import { ModalData, SectionType } from "./types";
 import { useGetCallSummaryQuery } from "./api";
 import ArticleGridStep from "./components/ArticleGridStep";
 import { Article } from "@/components/article/types";
+import { UserStatus } from "@/constants/common";
 
 const PostCallSummary = () => {
   const { chatId } = useParams();
@@ -33,7 +34,7 @@ const PostCallSummary = () => {
   );
   const [modalData, setModalData] = useState<ModalData | null>({ type: null, article: null });
 
-  const { isOnline } = useSelector((state: RootState) => state.user);
+  const { userStatus } = useSelector((state: RootState) => state.user);
 
   const { data: callSummary, refetch } = useGetCallSummaryQuery(chatId);
 
@@ -96,7 +97,7 @@ const PostCallSummary = () => {
           <ArticleGridStep
             onArticleClick={handleArticleClick}
             onProceed={() => {
-              if (!isOnline) setModalData({ type: "redirect", article: null });
+              if (userStatus === UserStatus.OFFLINE) setModalData({ type: "redirect", article: null });
               else navigate("/");
             }}
           />
@@ -107,12 +108,12 @@ const PostCallSummary = () => {
   };
 
   const handleMakeAvailable = () => {
-    store.dispatch(setIsOnline(true));
+    store.dispatch(setUserStatus(UserStatus.AVAILABLE));
     navigate("/");
   };
 
   const handleKeepOffline = () => {
-    store.dispatch(setIsOnline(false));
+    store.dispatch(setUserStatus(UserStatus.OFFLINE));
     navigate("/");
   };
 

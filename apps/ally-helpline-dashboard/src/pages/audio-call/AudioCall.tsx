@@ -5,9 +5,10 @@ import { useState, useEffect, FunctionComponent } from "react";
 
 import { UserRole } from "@/types/user";
 import { RootState } from "@/store/store";
-import { setIsOnline } from "@/reducer/userReducer";
+import { setUserStatus } from "@/reducer/userReducer";
 import { Button, StressBuster } from "@/components";
 import { useClientChat, useCounsellorChat } from "@/hooks";
+import { UserStatus } from "@/constants/common";
 
 import { Chat } from "./types";
 import CallTranscript from "./CallTranscript";
@@ -67,7 +68,7 @@ const AudioCall: FunctionComponent = () => {
           data = await fetchCurrentChat();
         }
         if (data) {
-          setIsOnline(false);
+          setUserStatus(UserStatus.OFFLINE);
           setActiveChat(data);
         }
       } catch (error) {
