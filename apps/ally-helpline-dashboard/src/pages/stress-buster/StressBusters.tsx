@@ -8,14 +8,23 @@ import { STRESS_BUSTERS } from "./constants";
 
 const StressBusters: FunctionComponent = () => {
   const [showStressBuster, setShowStressBuster] = useState<boolean>(false);
+
+  const handleFunctionMap = {
+    boxBreathing: () => {
+      setShowStressBuster((prev) => !prev);
+    },
+  };
+
   const toggleStressBuster = () => {
     setShowStressBuster((prev) => !prev);
   };
 
-  if (showStressBuster)
+  if (showStressBuster) {
     return (
       <StressBuster isFullScreenMode onClose={toggleStressBuster} playOnMount />
     );
+  }
+
   return (
     <div className="p-6 h-full flex flex-col gap-4 max-h-screen overflow-y-auto">
       <div className="min-h-[290px] w-full bg-[#110924] rounded-sm text-white overflow-hidden z-0 relative">
@@ -50,10 +59,11 @@ const StressBusters: FunctionComponent = () => {
       </div>
       <div className="text-lg font-medium text-[#47464F]">Other Techniques</div>
       <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-        {STRESS_BUSTERS.map((buster, index) => (
+        {STRESS_BUSTERS.map((buster) => (
           <div
-            key={index}
+            key={buster.key}
             className="bg-white rounded-sm p-3 hover:shadow-md border border-[#E5E7EB] cursor-pointer"
+            onClick={() => handleFunctionMap[buster.key]()}
           >
             <img
               src={buster.image}

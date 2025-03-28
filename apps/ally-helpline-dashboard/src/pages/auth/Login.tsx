@@ -81,6 +81,7 @@ const Login = () => {
                 label="Email address"
                 register={register}
                 errors={errors}
+                fieldSize="medium"
               />
               <TextField
                 name="password"
@@ -88,6 +89,7 @@ const Login = () => {
                 type="password"
                 register={register}
                 errors={errors}
+                fieldSize="medium"
               />
               <span
                 className="text-[12px] font-medium text-[#3877D9]"
