@@ -129,6 +129,7 @@ const SummarySideBar: FunctionComponent<SummarySideBarProps> = ({
                             <div className="flex-1 text-sm">
                               <span className="font-semibold">{speaker}: </span>
                               <span
+                                className="font-['IBM_Plex_Serif']"
                                 dangerouslySetInnerHTML={{
                                   __html: highlightedMessage,
                                 }}
@@ -144,7 +145,7 @@ const SummarySideBar: FunctionComponent<SummarySideBarProps> = ({
                     <h3 className="font-semibold text-sm mb-2 pt-2">
                       Comments
                     </h3>
-                    <div className="space-y-4">
+                    <div className="space-y-4 font-['IBM_Plex_Serif']">
                       {summary.comments.map(
                         ({ comment, description }, index) => (
                           <div

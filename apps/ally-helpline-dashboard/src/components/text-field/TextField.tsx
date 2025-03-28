@@ -49,6 +49,8 @@ const TextField: FC<TextFieldProps> = ({
             },
           },
           "& .MuiInputBase-input": {
+            ...(!multiline && {height: heights[fieldSize]}),
+            boxSizing: "border-box",
             color: "#4A4459",
             fontSize: "14px",
             padding: "12px 16px",

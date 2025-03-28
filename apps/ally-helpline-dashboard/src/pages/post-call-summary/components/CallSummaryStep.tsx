@@ -6,7 +6,7 @@ import { FC, useEffect, useState } from "react";
 import { Skeleton } from "@mui/material";
 import { isEqual } from "lodash";
 
-import { Button, Dropdown, TextField } from "@/components";
+import { Button, Dropdown, TextField, ExpandingSection } from "@/components";
 import { CallSummaryProps, Gender } from "../types";
 import { useEnhanceContentMutation, useUpdateCallSummaryMutation } from "../api";
 
@@ -174,165 +174,179 @@ const CallSummaryStep: FC<CallSummaryProps> = ({ onProceed, summaryData }) => {
         {/* Call Details */}
         <div>
           <span className="font-semibold">Call Details</span>
-          <div className="mt-2 p-[12px] grid grid-cols-2 gap-2 border border-[#E5E7EB] bg-[#FAFAFA] rounded-sm">
-            <div>
-              <span className="font-semibold">{"Call date: "}</span>
-              <span>{getFormattedDateTime(summaryData?.startedAt, "do MMMM yyyy")}</span>
-            </div>
-            <div>
-              <span className="font-semibold">{"Caller type: "}</span>
-              <span>{sessionDetails?.new_call_follow_up}</span>
-            </div>
-            <div>
-              <span className="font-semibold">{"Call time: "}</span>
-              <span>{`${getFormattedDateTime(summaryData?.startedAt, "HH:mm")} - ${getFormattedDateTime(summaryData?.endedAt, "HH:mm")}`}</span>
-            </div>
-            <div>
-              <span className="font-semibold">{"Counsellor Name: "}</span>
-              <span>{sessionDetails?.counselor_name}</span>
-            </div>
+          <div className=" border border-[#E5E7EB] bg-[#FAFAFA] rounded-sm">
+            <ExpandingSection>
+              <div className="mt-2 p-[12px] grid grid-cols-2 gap-2">
+                <div>
+                  <span className="font-semibold">{"Call date: "}</span>
+                  <span>{getFormattedDateTime(summaryData?.startedAt, "do MMMM yyyy")}</span>
+                </div>
+                <div>
+                  <span className="font-semibold">{"Caller type: "}</span>
+                  <span>{sessionDetails?.new_call_follow_up}</span>
+                </div>
+                <div>
+                  <span className="font-semibold">{"Call time: "}</span>
+                  <span>{`${getFormattedDateTime(summaryData?.startedAt, "HH:mm")} - ${getFormattedDateTime(summaryData?.endedAt, "HH:mm")}`}</span>
+                </div>
+                <div>
+                  <span className="font-semibold">{"Counsellor Name: "}</span>
+                  <span>{sessionDetails?.counselor_name}</span>
+                </div>
+              </div>
+            </ExpandingSection>
           </div>
         </div>
 
         {/* Demogs */}
         <div>
           <span className="font-semibold">Demogs</span>
-          <div className="flex gap-4 mt-2 p-[12px] border border-[#E5E7EB] bg-[#FAFAFA] rounded-sm">
-            <div className="flex flex-col gap-2 flex-1">
-              <div className="flex items-center">
-                <span className="font-semibold flex-1">Caller ID:</span>
-                <TextField
-                  value={summaryData?.clientId}
-                  disabled
-                  className="flex-2"
-                />
+          <div className=" border border-[#E5E7EB] bg-[#FAFAFA] rounded-sm">
+            <ExpandingSection>
+              <div className="flex gap-4 mt-2 p-[12px]">
+                <div className="flex flex-col gap-2 flex-1">
+                  <div className="flex items-center">
+                    <span className="font-semibold flex-1">Caller ID:</span>
+                    <TextField
+                      value={summaryData?.clientId}
+                      disabled
+                      className="flex-2"
+                    />
+                  </div>
+                  <div className="flex items-center">
+                    <span className="font-semibold flex-1">Age:</span>
+                    <TextField
+                      value={data?.age}
+                      onChange={(e) => handleChange("age", e.target.value)}
+                    />
+                  </div>
+                  <div className="flex items-center">
+                    <span className="font-semibold flex-1">Gender:</span>
+                    <Dropdown
+                      value={data?.gender || ""}
+                      options={Object.values(Gender)}
+                      onChange={(value) => handleChange("gender", value)}
+                      minWidth={180}
+                      sx={{ height: 32 }}
+                    />
+                  </div>
+                  <div className="flex items-center">
+                    <span className="font-semibold flex-1">Profession:</span>
+                    <TextField
+                      value={data?.working_status}
+                      onChange={(e) => handleChange("working_status", e.target.value)}
+                    />
+                  </div>
+                  <div className="flex items-center">
+                    <span className="font-semibold flex-1">Location:</span>
+                    <TextField
+                      value={data?.location}
+                      onChange={(e) => handleChange("location", e.target.value)}
+                    />
+                  </div>
+                </div>
+                <div className="flex flex-col gap-2 flex-1">
+                  <div className="flex flex-col gap-2">
+                    <span className="font-semibold">Concern code</span>
+                    <TextField
+                      value={data?.code_of_concern}
+                      onChange={(e) => handleChange("code_of_concern", e.target.value)}
+                    />
+                  </div>
+                  <div className="flex flex-col gap-2">
+                    <span className="font-semibold">Formal diagnosis</span>
+                    <TextField
+                      value={data?.any_formal_diagnosis}
+                      onChange={(e) => handleChange("any_formal_diagnosis", e.target.value)}
+                      multiline
+                      rows={3}
+                    />
+                  </div>
+                </div>
               </div>
-              <div className="flex items-center">
-                <span className="font-semibold flex-1">Age:</span>
-                <TextField
-                  value={data?.age}
-                  onChange={(e) => handleChange("age", e.target.value)}
-                />
-              </div>
-              <div className="flex items-center">
-                <span className="font-semibold flex-1">Gender:</span>
-                <Dropdown
-                  value={data?.gender || ""}
-                  options={Object.values(Gender)}
-                  onChange={(value) => handleChange("gender", value)}
-                  minWidth={180}
-                  sx={{ height: 32 }}
-                />
-              </div>
-              <div className="flex items-center">
-                <span className="font-semibold flex-1">Profession:</span>
-                <TextField
-                  value={data?.working_status}
-                  onChange={(e) => handleChange("working_status", e.target.value)}
-                />
-              </div>
-              <div className="flex items-center">
-                <span className="font-semibold flex-1">Location:</span>
-                <TextField
-                  value={data?.location}
-                  onChange={(e) => handleChange("location", e.target.value)}
-                />
-              </div>
-            </div>
-            <div className="flex flex-col gap-2 flex-1">
-              <div className="flex flex-col gap-2">
-                <span className="font-semibold">Concern code</span>
-                <TextField
-                  value={data?.code_of_concern}
-                  onChange={(e) => handleChange("code_of_concern", e.target.value)}
-                />
-              </div>
-              <div className="flex flex-col gap-2">
-                <span className="font-semibold">Formal diagnosis</span>
-                <TextField
-                  value={data?.any_formal_diagnosis}
-                  onChange={(e) => handleChange("any_formal_diagnosis", e.target.value)}
-                  multiline
-                  rows={3}
-                />
-              </div>
-            </div>
+            </ExpandingSection>
           </div>
         </div>
 
         {/* Key Concerns */}
         <div>
           <span className="font-semibold">Key Concerns</span>
-          <TextField
-            rows={4}
-            multiline
-            id="outlined-multiline-static"
-            onChange={(e) => handleChange("key_concerns", e.target.value)}
-            value={isEnhancing.key_concerns ? "" : data?.key_concerns}
-            disabled={isEnhancing.key_concerns || isStreaming.key_concerns}
-            className="mt-2 border border-[#E5E7EB] rounded-sm w-full"
-            sx={{
-              "& .MuiInputBase-input.Mui-disabled": {
-                WebkitTextFillColor: "#000000",
-              },
-            }}
-            slotProps={{
-              input: {
-                endAdornment: <EnhanceButton fieldName="key_concerns" />,
-                startAdornment: isEnhancing.key_concerns && EnhancementLoadingSkeleton,
-              },
-            }}
-          />
+          <ExpandingSection>
+            <TextField
+              rows={4}
+              multiline
+              id="outlined-multiline-static"
+              onChange={(e) => handleChange("key_concerns", e.target.value)}
+              value={isEnhancing.key_concerns ? "" : data?.key_concerns}
+              disabled={isEnhancing.key_concerns || isStreaming.key_concerns}
+              className="mt-2 border border-[#E5E7EB] rounded-sm w-full"
+              sx={{
+                "& .MuiInputBase-input.Mui-disabled": {
+                  WebkitTextFillColor: "#000000",
+                },
+              }}
+              slotProps={{
+                input: {
+                  endAdornment: <EnhanceButton fieldName="key_concerns" />,
+                  startAdornment: isEnhancing.key_concerns && EnhancementLoadingSkeleton,
+                },
+              }}
+            />
+          </ExpandingSection>
         </div>
 
         {/* Flow */}
         <div>
           <span className="font-semibold">Flow</span>
-          <TextField
-            rows={4}
-            multiline
-            value={isEnhancing.flow ? "" : data?.flow}
-            id="outlined-multiline-static"
-            onChange={(e) => handleChange("flow", e.target.value)}
-            className="mt-2 border border-[#E5E7EB] rounded-sm w-full"
-            disabled={isEnhancing.flow || isStreaming.flow}
-            sx={{
-              "& .MuiInputBase-input.Mui-disabled": {
-                WebkitTextFillColor: "#000000",
-              },
-            }}
-            slotProps={{
-              input: {
-                endAdornment: <EnhanceButton fieldName="flow" />,
-                startAdornment: isEnhancing.flow && EnhancementLoadingSkeleton,
-              },
-            }}
-          />
+          <ExpandingSection>
+            <TextField
+              rows={4}
+              multiline
+              value={isEnhancing.flow ? "" : data?.flow}
+              id="outlined-multiline-static"
+              onChange={(e) => handleChange("flow", e.target.value)}
+              className="mt-2 border border-[#E5E7EB] rounded-sm w-full"
+              disabled={isEnhancing.flow || isStreaming.flow}
+              sx={{
+                "& .MuiInputBase-input.Mui-disabled": {
+                  WebkitTextFillColor: "#000000",
+                },
+              }}
+              slotProps={{
+                input: {
+                  endAdornment: <EnhanceButton fieldName="flow" />,
+                  startAdornment: isEnhancing.flow && EnhancementLoadingSkeleton,
+                },
+              }}
+            />
+          </ExpandingSection>
         </div>
 
         {/* Notes for next call */}
         <div>
           <span className="font-semibold">Notes for next call</span>
-          <TextField
-            rows={4}
-            multiline
-            id="outlined-multiline-static"
-            value={isEnhancing.notes ? "" : data?.notes}
-            disabled={isEnhancing.notes || isStreaming.notes}
-            onChange={(e) => handleChange("notes", e.target.value)}
-            className="mt-2 border border-[#E5E7EB] rounded-sm w-full"
-            sx={{
-              "& .MuiInputBase-input.Mui-disabled": {
-                WebkitTextFillColor: "#000000",
-              },
-            }}
-            slotProps={{
-              input: {
-                endAdornment: <EnhanceButton fieldName="notes" />,
-                startAdornment: isEnhancing.notes && EnhancementLoadingSkeleton,
-              },
-            }}
-          />
+          <ExpandingSection>
+            <TextField
+              rows={4}
+              multiline
+              id="outlined-multiline-static"
+              value={isEnhancing.notes ? "" : data?.notes}
+              disabled={isEnhancing.notes || isStreaming.notes}
+              onChange={(e) => handleChange("notes", e.target.value)}
+              className="mt-2 border border-[#E5E7EB] rounded-sm w-full"
+              sx={{
+                "& .MuiInputBase-input.Mui-disabled": {
+                  WebkitTextFillColor: "#000000",
+                },
+              }}
+              slotProps={{
+                input: {
+                  endAdornment: <EnhanceButton fieldName="notes" />,
+                  startAdornment: isEnhancing.notes && EnhancementLoadingSkeleton,
+                },
+              }}
+            />
+          </ExpandingSection>
         </div>
       </div>
       <Button
