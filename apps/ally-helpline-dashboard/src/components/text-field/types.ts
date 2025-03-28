@@ -1,11 +1,18 @@
 import { FieldErrors, UseFormRegister } from "react-hook-form";
 import { TextFieldProps as MuiTextFieldProps } from "@mui/material";
+import { ChangeEvent } from "react";
 
 export interface TextFieldProps extends Omit<MuiTextFieldProps, "variant"> {
-  name: string;
-  label?: string;
+  className?: string;
+  disabled?: boolean;
   errors?: FieldErrors<any>;
-  helperText?: string;
+  fieldSize?: "small" | "medium" | "large";
   fullWidth?: boolean;
-  register: UseFormRegister<any>;
+  label?: string;
+  multiline?: boolean;
+  name?: string;
+  onChange?: (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
+  register?: UseFormRegister<any>;
+  rows?: number;
+  value?: string;
 }

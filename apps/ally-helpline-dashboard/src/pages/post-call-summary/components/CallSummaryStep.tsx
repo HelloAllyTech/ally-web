@@ -3,15 +3,12 @@ import { format } from "date-fns";
 import { WandSparkles } from "lucide-react";
 import { useParams } from "react-router-dom";
 import { FC, useEffect, useState } from "react";
-import { TextField, Skeleton } from "@mui/material";
+import { Skeleton } from "@mui/material";
 import { isEqual } from "lodash";
 
-import { Button, Dropdown } from "@/components";
+import { Button, Dropdown, TextField } from "@/components";
 import { CallSummaryProps, Gender } from "../types";
-import {
-  useEnhanceContentMutation,
-  useUpdateCallSummaryMutation,
-} from "../api";
+import { useEnhanceContentMutation, useUpdateCallSummaryMutation } from "../api";
 
 const CallSummaryStep: FC<CallSummaryProps> = ({ onProceed, summaryData }) => {
   const { chatId } = useParams();
@@ -29,36 +26,32 @@ const CallSummaryStep: FC<CallSummaryProps> = ({ onProceed, summaryData }) => {
   });
 
   const [updateCallSummary, { isLoading }] = useUpdateCallSummaryMutation();
-  const [enhanceContent, { isLoading: isEnhanceLoading }] =
-    useEnhanceContentMutation();
+  const [enhanceContent, { isLoading: isEnhanceLoading }] = useEnhanceContentMutation();
 
-  const { details } = summaryData;
-  const { session_details: sessionDetails, demographic_details: demogs } =
-    details?.summary?.summaryNote || {};
+  const { details } = summaryData || {};
+  const { session_details: sessionDetails, demographic_details: demogs } = details?.summary?.summaryNote || {};
 
   useEffect(() => {
-    if (
-      summaryData &&
-      summaryData.details &&
-      summaryData.details.summary?.summaryNote?.demographic_details
-    ) {
-      const demogs =
-        summaryData.details.summary?.summaryNote?.demographic_details;
-      const sessionDocs =
-        summaryData.details.summary?.summaryNote?.session_documentation;
+    if (summaryData && summaryData.details && summaryData.details.summary?.summaryNote?.demographic_details) {
+      const demogs = summaryData.details.summary?.summaryNote?.demographic_details;
+      const sessionDocs = summaryData.details.summary?.summaryNote?.session_documentation;
 
       setData({
         age: demogs.age,
         working_status: demogs.working_status,
         gender: demogs.gender,
         location: demogs.location,
+        code_of_concern: demogs?.code_of_concern,
+        any_formal_diagnosis: demogs?.any_formal_diagnosis,
         key_concerns: sessionDocs?.key_concerns,
         flow: sessionDocs?.work_done?.counseling_process_flow,
+        notes: details?.summary?.notesForNextSession,
       });
     }
   }, [summaryData]);
 
   const getFormattedDateTime = (dateTime: string, formatString: string) => {
+    if (!dateTime) return "--";
     const date = new Date(dateTime);
     return format(date, formatString);
   };
@@ -110,29 +103,26 @@ const CallSummaryStep: FC<CallSummaryProps> = ({ onProceed, summaryData }) => {
               working_status: data?.working_status,
               gender: data?.gender,
               location: data?.location,
+              code_of_concern: data?.code_of_concern,
+              any_formal_diagnosis: data?.any_formal_diagnosis,
             },
             session_documentation: {
-              ...summaryData.details.summary?.summaryNote
-                ?.session_documentation,
+              ...summaryData.details.summary?.summaryNote?.session_documentation,
               // key_concerns: data?.key_concerns?.split("\n").map((concern) => concern.replace("- ", "")),
               key_concerns: data?.key_concerns,
               work_done: {
-                ...summaryData.details.summary?.summaryNote
-                  ?.session_documentation?.work_done,
+                ...summaryData.details.summary?.summaryNote?.session_documentation?.work_done,
                 // counseling_process_flow: data?.flow?.split("\n").map((flow) => flow.replace("- ", "")),
                 counseling_process_flow: data?.flow,
               },
-              notes_for_next_session: data?.notes,
             },
           },
+          notesForNextSession: data?.notes,
         },
       };
 
       // TODO: need to correct comparison logic for [specific objects/values] to handle [specific edge cases/issues]
-      const hasChanges = !isEqual(
-        formattedData.callDetails.summaryNote,
-        summaryData?.details?.summary?.summaryNote
-      );
+      const hasChanges = !isEqual(formattedData.callDetails.summaryNote, summaryData?.details?.summary?.summaryNote);
 
       if (hasChanges) {
         await updateCallSummary({ chatId, data: formattedData });
@@ -146,14 +136,15 @@ const CallSummaryStep: FC<CallSummaryProps> = ({ onProceed, summaryData }) => {
   const EnhanceButton: FC<{ fieldName: string }> = ({ fieldName }) => (
     <div
       className={`absolute bottom-2 right-2 ${
-        isEnhancing[fieldName] || isStreaming[fieldName]
-          ? "opacity-50 pointer-events-none"
-          : ""
+        isEnhancing[fieldName] || isStreaming[fieldName] ? "opacity-50 pointer-events-none" : ""
       }`}
       onClick={() => triggerEnhanceApi(fieldName)}
     >
       <div className="bg-[#E5EFFE] rounded-sm p-2 cursor-pointer">
-        <WandSparkles className="text-[#046BE0]" size={20} />
+        <WandSparkles
+          className="text-[#046BE0]"
+          size={20}
+        />
       </div>
     </div>
   );
@@ -186,9 +177,7 @@ const CallSummaryStep: FC<CallSummaryProps> = ({ onProceed, summaryData }) => {
           <div className="mt-2 p-[12px] grid grid-cols-2 gap-2 border border-[#E5E7EB] bg-[#FAFAFA] rounded-sm">
             <div>
               <span className="font-semibold">{"Call date: "}</span>
-              <span>
-                {getFormattedDateTime(summaryData?.startedAt, "do MMMM yyyy")}
-              </span>
+              <span>{getFormattedDateTime(summaryData?.startedAt, "do MMMM yyyy")}</span>
             </div>
             <div>
               <span className="font-semibold">{"Caller type: "}</span>
@@ -208,54 +197,66 @@ const CallSummaryStep: FC<CallSummaryProps> = ({ onProceed, summaryData }) => {
         {/* Demogs */}
         <div>
           <span className="font-semibold">Demogs</span>
-          <div className="mt-2 p-[12px] grid grid-cols-3 gap-2 border border-[#E5E7EB] bg-[#FAFAFA] rounded-sm">
-            <span>
-              <span className="font-semibold">{"Caller ID: "}</span>
-              <span>{summaryData?.clientId}</span>
-            </span>
-            <span>
-              <span className="font-semibold">{"Age: "}</span>
-              <input
-                value={data?.age}
-                className="border border-[#E5E7EB] rounded-[3px] p-1 text-black"
-                onChange={(e) => handleChange("age", e.target.value)}
-              />
-            </span>
-            <span>
-              <span className="font-semibold">{"Profession: "}</span>
-              <input
-                value={data?.working_status}
-                className="border border-[#E5E7EB] rounded-[3px] p-1 text-black"
-                onChange={(e) => handleChange("working_status", e.target.value)}
-              />
-            </span>
-            <span>
-              <span className="font-semibold">{"Gender: "}</span>
-              <Dropdown
-                value={data?.gender || ""}
-                options={Object.values(Gender)}
-                onChange={(value) => handleChange("gender", value)}
-                minWidth={180}
-                sx={{ height: 32 }}
-              />
-            </span>
-            <span>
-              <span className="font-semibold">{"Location: "}</span>
-              <input
-                type="text"
-                value={data?.location}
-                className="border border-[#E5E7EB] rounded-[3px] p-1 text-black"
-                onChange={(e) => handleChange("location", e.target.value)}
-              />
-            </span>
-            <span>
-              <span className="font-semibold">{"Formal diagnosis: "}</span>
-              <span>{demogs?.any_formal_diagnosis}</span>
-            </span>
-            <span>
-              <span className="font-semibold">{"Concern code: "}</span>
-              <span>{demogs?.code_of_concern}</span>
-            </span>
+          <div className="flex gap-4 mt-2 p-[12px] border border-[#E5E7EB] bg-[#FAFAFA] rounded-sm">
+            <div className="flex flex-col gap-2 flex-1">
+              <div className="flex items-center">
+                <span className="font-semibold flex-1">Caller ID:</span>
+                <TextField
+                  value={summaryData?.clientId}
+                  disabled
+                  className="flex-2"
+                />
+              </div>
+              <div className="flex items-center">
+                <span className="font-semibold flex-1">Age:</span>
+                <TextField
+                  value={data?.age}
+                  onChange={(e) => handleChange("age", e.target.value)}
+                />
+              </div>
+              <div className="flex items-center">
+                <span className="font-semibold flex-1">Gender:</span>
+                <Dropdown
+                  value={data?.gender || ""}
+                  options={Object.values(Gender)}
+                  onChange={(value) => handleChange("gender", value)}
+                  minWidth={180}
+                  sx={{ height: 32 }}
+                />
+              </div>
+              <div className="flex items-center">
+                <span className="font-semibold flex-1">Profession:</span>
+                <TextField
+                  value={data?.working_status}
+                  onChange={(e) => handleChange("working_status", e.target.value)}
+                />
+              </div>
+              <div className="flex items-center">
+                <span className="font-semibold flex-1">Location:</span>
+                <TextField
+                  value={data?.location}
+                  onChange={(e) => handleChange("location", e.target.value)}
+                />
+              </div>
+            </div>
+            <div className="flex flex-col gap-2 flex-1">
+              <div className="flex flex-col gap-2">
+                <span className="font-semibold">Concern code</span>
+                <TextField
+                  value={data?.code_of_concern}
+                  onChange={(e) => handleChange("code_of_concern", e.target.value)}
+                />
+              </div>
+              <div className="flex flex-col gap-2">
+                <span className="font-semibold">Formal diagnosis</span>
+                <TextField
+                  value={data?.any_formal_diagnosis}
+                  onChange={(e) => handleChange("any_formal_diagnosis", e.target.value)}
+                  multiline
+                  rows={3}
+                />
+              </div>
+            </div>
           </div>
         </div>
 
@@ -278,8 +279,7 @@ const CallSummaryStep: FC<CallSummaryProps> = ({ onProceed, summaryData }) => {
             slotProps={{
               input: {
                 endAdornment: <EnhanceButton fieldName="key_concerns" />,
-                startAdornment:
-                  isEnhancing.key_concerns && EnhancementLoadingSkeleton,
+                startAdornment: isEnhancing.key_concerns && EnhancementLoadingSkeleton,
               },
             }}
           />

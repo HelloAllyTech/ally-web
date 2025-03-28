@@ -3,58 +3,55 @@ import { TextField as MuiTextField } from "@mui/material";
 
 import { TextFieldProps } from "./types";
 
+const heights = {
+    small: "30px",
+    medium: "40px",
+    large: "48px"
+  };
+
 const TextField: FC<TextFieldProps> = ({
-    name,
-    label,
-    errors,
-    helperText,
-    fullWidth = true,
-    register,
-    ...props
+  className,
+  disabled,
+  errors,
+  fieldSize = "small",
+  fullWidth = true,
+  label,
+  multiline = false,
+  name,
+  onChange,
+  register,
+  rows = 1,
+  value,
+  ...props
 }) => {
   return (
-    <div className="flex flex-col gap-[4px]">
-      <span className="text-[12px] text-[#49454F]">{label}</span>
+    <div className={`flex flex-col gap-[4px] ${className}`}>
+      {label && <span className="text-[12px] text-[#49454F]">{label}</span>}
       <MuiTextField
-        variant="outlined"
+        disabled={disabled}
         error={!!errors?.[name]}
-        helperText={helperText}
         fullWidth={fullWidth}
+        multiline={multiline}
         {...(register && register(name))}
+        rows={rows}
+        onChange={onChange}
+        value={value}
+        variant="outlined"
         sx={{
           "& .MuiOutlinedInput-root": {
+            ...(!multiline && {height: heights[fieldSize]}),
+            padding: 0,
             "& fieldset": {
-              borderColor: "#E5E7EB",
+              border: "1px solid #E5E7EB",
             },
-            "&:hover fieldset": {
-              borderColor: "#D1D5DB",
-            },
-            "&.Mui-focused fieldset": {
-              borderColor: "#6941C6",
-            },
-            "&.Mui-error fieldset": {
-              borderColor: "#EF4444",
-            },
-          },
-          "& .MuiInputLabel-root": {
-            color: "#79747E",
-            "&.Mui-focused": {
-              color: "#6941C6",
-            },
-            "&.Mui-error": {
-              color: "#EF4444",
+            "& fieldset.Mui-disabled": {
+              border: "yellow",
             },
           },
           "& .MuiInputBase-input": {
             color: "#4A4459",
             fontSize: "14px",
             padding: "12px 16px",
-          },
-          "& .MuiFormHelperText-root": {
-            marginLeft: "2px",
-            "&.Mui-error": {
-              color: "#EF4444",
-            },
           },
         }}
         {...props}
