@@ -29,7 +29,7 @@ const CallSummaryStep: FC<CallSummaryProps> = ({ onProceed, summaryData }) => {
   const [enhanceContent, { isLoading: isEnhanceLoading }] = useEnhanceContentMutation();
 
   const { details } = summaryData || {};
-  const { session_details: sessionDetails, demographic_details: demogs } = details?.summary?.summaryNote || {};
+  const { session_details: sessionDetails } = details?.summary?.summaryNote || {};
 
   useEffect(() => {
     if (summaryData && summaryData.details && summaryData.details.summary?.summaryNote?.demographic_details) {
