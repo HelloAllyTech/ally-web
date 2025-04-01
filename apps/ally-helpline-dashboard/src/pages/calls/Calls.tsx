@@ -11,7 +11,7 @@ import { UserStatus } from "@/constants/common";
 import CallLogsTable from "./CallLogsTable";
 
 const Calls: FunctionComponent = () => {
-  const { userStatus: isOnline } = useSelector((state: RootState) => state.user);
+  const { userStatus } = useSelector((state: RootState) => state.user);
 
   const markAvailable = () => {
     store.dispatch(setUserStatus(UserStatus.AVAILABLE));
@@ -19,7 +19,7 @@ const Calls: FunctionComponent = () => {
 
   return (
     <div className="px-6 pb-6 h-full flex flex-col gap-4">
-      {!isOnline && (
+      {userStatus === UserStatus.OFFLINE && (
         <motion.div
           layout="position"
           initial={{ opacity: 0 }}
@@ -51,7 +51,7 @@ const Calls: FunctionComponent = () => {
           </div>
         </motion.div>
       )}
-      <div className={isOnline ? "mt-6" : "mt-28"}>
+      <div className={userStatus === UserStatus.AVAILABLE ? "mt-6" : "mt-28"}>
         <CallLogsTable />
       </div>
     </div>

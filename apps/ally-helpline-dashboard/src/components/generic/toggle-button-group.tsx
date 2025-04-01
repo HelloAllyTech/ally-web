@@ -23,7 +23,9 @@ export const ToggleButtonGroup: FC<ToggleButtonGroupProps> = ({
   successValue,
 }) => {
   const handleChange = (_: React.MouseEvent<HTMLElement>, newValue: string) => {
-    onValueChange(newValue);
+    if (newValue !== null) {
+      onValueChange(newValue);
+    };
   };
 
   return (

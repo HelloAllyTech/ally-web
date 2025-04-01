@@ -19,6 +19,7 @@ import {
   Learn,
   Calendar,
   Analytics,
+  Settings,
 } from "@/pages";
 import { RootState, store } from "@/store/store";
 import { CallPicker, NavSideBar, LifelineHeader } from "@/components";
@@ -164,7 +165,7 @@ const PrivateRouteLayout = () => {
               <Route path={ROUTES.CALENDER} element={<Calendar />} />
               <Route path={ROUTES.LEARN} element={<Learn />} />
               <Route path={ROUTES.ANALYTICS} element={<Analytics />} />
-              <Route path={ROUTES.SETTINGS} element={<Calls />} />
+              <Route path={ROUTES.SETTINGS} element={<Settings />} />
               <Route path={ROUTES.SUMMARY} element={<PostCallSummary />} />
               <Route path={ROUTES.STRESS_BUSTERS} element={<StressBusters />} />
               <Route path="*" element={<Navigate to="/" replace />} />
