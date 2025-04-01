@@ -14,7 +14,7 @@ import { useLoginMutation } from "./api";
 const Login = () => {
   const navigate = useNavigate();
 
-  const [login, { isLoading, isSuccess, data }] = useLoginMutation();
+  const [login, { isLoading, isSuccess, data, error }] = useLoginMutation();
 
   const { isAuthenticated, checkAuth } = useUser();
 
@@ -40,22 +40,20 @@ const Login = () => {
 
   useEffect(() => {
     (async () => {
-      if (isSuccess && data) {
-        try {
-          localStorage.setItem("accessToken", data.accessToken);
-          localStorage.setItem("refreshToken", data.refreshToken);
-          await checkAuth();
-          navigate("/");
-        } catch (error) {
-          toast.error(
-            error?.response?.data?.detail ??
-              "Invalid credentials. Please try again."
-          );
-          console.error("Error logging in - ", error);
-        }
+      if (error) {
+        toast.error(
+          error?.data?.message ??
+            "Invalid credentials. Please try again."
+        );
+      }
+      else if (isSuccess && data) {
+        localStorage.setItem("accessToken", data.accessToken);
+        localStorage.setItem("refreshToken", data.refreshToken);
+        await checkAuth();
+        navigate("/");
       }
     })();
-  }, [isSuccess, navigate]);
+  }, [isSuccess, navigate, error]);
 
   const onSubmit = ({ email, password }: LoginSchema) => {
     login({ username: email, password });

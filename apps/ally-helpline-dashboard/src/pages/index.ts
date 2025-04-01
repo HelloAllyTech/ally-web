@@ -9,6 +9,7 @@ import PostCallSummary from "./post-call-summary";
 import Learn from "./learn";
 import Calendar from "./calendar";
 import Analytics from "./analytics";
+import Settings from "./settings";
 
 export {
   Home,
@@ -22,4 +23,5 @@ export {
   Learn,
   Calendar,
   Analytics,
+  Settings,
 };
