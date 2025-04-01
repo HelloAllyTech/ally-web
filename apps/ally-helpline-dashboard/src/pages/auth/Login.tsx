@@ -47,7 +47,10 @@ const Login = () => {
           await checkAuth();
           navigate("/");
         } catch (error) {
-          toast.error(error?.response?.data?.detail ?? "Invalid credentials. Please try again.");
+          toast.error(
+            error?.response?.data?.detail ??
+              "Invalid credentials. Please try again."
+          );
           console.error("Error logging in - ", error);
         }
       }
@@ -63,7 +66,8 @@ const Login = () => {
       <img
         src={LoginImage}
         alt="Login"
-        className="flex-2"
+        className="flex-2 h-auto object-cover"
+        width="60%"
       />
       <div className="flex-1 flex flex-col items-center justify-center">
         <div className="w-1/2 flex flex-col gap-6">
@@ -98,11 +102,7 @@ const Login = () => {
                 Forgot password?
               </span>
             </div>
-            <Button
-              type="submit"
-              className="w-full"
-              disabled={loading}
-            >
+            <Button type="submit" className="w-full" disabled={loading}>
               {isLoading ? (
                 <div className="flex items-center justify-center">
                   <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>

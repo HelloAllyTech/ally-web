@@ -602,14 +602,15 @@ const CallTranscript = (props: CallTranscriptProps) => {
   };
 
   const getEmptyScreen = () => {
-    console.log({ isUserJoined });
     let message;
     if (isUserJoined === false) {
       message = isCounsellor
         ? "Participant left the call"
         : "Counsellor left the call";
     } else if (!isUserJoined) {
-      message = "Loading...";
+      message = isCounsellor
+        ? "Session is starting now.."
+        : "Connecting to your counselor...";
     }
     return (
       <motion.div

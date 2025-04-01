@@ -22,7 +22,7 @@ const StressBuster: FunctionComponent<StressBusterProps> = ({
   playOnMount = false,
 }) => {
   const [isPlaying, setIsPlaying] = useState(false);
-  const [isMuted, setIsMuted] = useState(false);
+  const [isMuted, setIsMuted] = useState(true);
   const [isMaximized, setIsMaximized] = useState(isFullScreenMode);
   const [seconds, setSeconds] = useState(1);
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -37,6 +37,7 @@ const StressBuster: FunctionComponent<StressBusterProps> = ({
         }
       } else {
         videoRef.current.play();
+        videoRef.current.muted = isMuted;
         timerRef.current = setInterval(() => {
           setSeconds((prev) => (prev === 4 ? 1 : prev + 1));
         }, 1000);
@@ -84,6 +85,7 @@ const StressBuster: FunctionComponent<StressBusterProps> = ({
     if (playOnMount) {
       setIsPlaying(true);
       videoRef.current?.play();
+      videoRef.current.muted = isMuted;
       timerRef.current = setInterval(() => {
         setSeconds((prev) => (prev === 4 ? 1 : prev + 1));
       }, 1000);

@@ -5,10 +5,11 @@ import { useState, useEffect, FunctionComponent } from "react";
 
 import { UserRole } from "@/types/user";
 import { RootState } from "@/store/store";
-import { setUserStatus } from "@/reducer/userReducer";
-import { Button, StressBuster } from "@/components";
-import { useClientChat, useCounsellorChat } from "@/hooks";
+import { NoResults } from "@/assets/icons";
 import { UserStatus } from "@/constants/common";
+import { setUserStatus } from "@/reducer/userReducer";
+import { Button, FallbackUI, StressBuster } from "@/components";
+import { useClientChat, useCounsellorChat } from "@/hooks";
 
 import { Chat } from "./types";
 import CallTranscript from "./CallTranscript";
@@ -24,7 +25,7 @@ const AudioCall: FunctionComponent = () => {
   const navigate = useNavigate();
 
   const { getCounsellorChat, endSession } = useCounsellorChat();
-  const { fetchCurrentChat } = useClientChat();
+  const { fetchCurrentChat, isLoading } = useClientChat();
 
   useEffect(() => {
     return () => {
@@ -106,6 +107,13 @@ const AudioCall: FunctionComponent = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      {!isLoading && !activeChat?.chatId && (
+        <FallbackUI
+          image={<NoResults />}
+          mainMessage="No Active Call"
+          description="Your active call will be shown here."
+        />
+      )}
       {!isEnding && activeChat?.chatId && (
         <CallTranscript
           endSession={endSessionAndNavigate}
