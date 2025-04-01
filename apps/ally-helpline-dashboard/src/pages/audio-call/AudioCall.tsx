@@ -127,14 +127,9 @@ const AudioCall: FunctionComponent = () => {
           isFullScreenMode
           closeIcon={<Minimize />}
           onClose={navigateOnStressBusterClose}
-        >
-          <Button
-            className="mt-8 rounded-full"
-            onClick={handleViewCallHighlights}
-          >
-            View Call Highlights
-          </Button>
-        </StressBuster>
+          showHighlightsButton
+          onViewHighlights={handleViewCallHighlights}
+        />
       )}
     </div>
   );

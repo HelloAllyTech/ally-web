@@ -10,7 +10,7 @@ import { Button, Dropdown, TextField, ExpandingSection } from "@/components";
 import { CallSummaryProps, Gender } from "../types";
 import { useEnhanceContentMutation, useUpdateCallSummaryMutation } from "../api";
 
-const CallSummaryStep: FC<CallSummaryProps> = ({ onProceed, summaryData }) => {
+const CallSummaryStep: FC<CallSummaryProps> = ({ isLoading, onProceed, summaryData }) => {
   const { chatId } = useParams();
 
   const [data, setData] = useState<typeof summaryData>();
@@ -25,7 +25,7 @@ const CallSummaryStep: FC<CallSummaryProps> = ({ onProceed, summaryData }) => {
     notes: false,
   });
 
-  const [updateCallSummary, { isLoading }] = useUpdateCallSummaryMutation();
+  const [updateCallSummary, { isLoading: isUpdateLoading }] = useUpdateCallSummaryMutation();
   const [enhanceContent, { isLoading: isEnhanceLoading }] = useEnhanceContentMutation();
 
   const { details } = summaryData || {};
@@ -158,7 +158,7 @@ const CallSummaryStep: FC<CallSummaryProps> = ({ onProceed, summaryData }) => {
   );
 
   const isButtonDisabled =
-    isLoading ||
+    isUpdateLoading ||
     isEnhanceLoading ||
     isEnhancing.key_concerns ||
     isEnhancing.flow ||
@@ -175,7 +175,7 @@ const CallSummaryStep: FC<CallSummaryProps> = ({ onProceed, summaryData }) => {
         <div>
           <span className="font-semibold">Call Details</span>
           <div className=" border border-[#E5E7EB] bg-[#FAFAFA] rounded-sm">
-            <ExpandingSection>
+            <ExpandingSection loading={isLoading}>
               <div className="mt-2 p-[12px] flex gap-4">
                 <div className="flex flex-col gap-2 flex-1 border-r border-[#E5E7EB] pr-4">
                   <div>
@@ -206,7 +206,7 @@ const CallSummaryStep: FC<CallSummaryProps> = ({ onProceed, summaryData }) => {
         <div>
           <span className="font-semibold">Demogs</span>
           <div className=" border border-[#E5E7EB] bg-[#FAFAFA] rounded-sm">
-            <ExpandingSection>
+            <ExpandingSection loading={isLoading}>
               <div className="flex gap-4 mt-2 p-[12px]">
                 <div className="flex flex-col gap-2 flex-1 border-r border-[#E5E7EB] pr-4">
                   <div className="flex items-center">
@@ -275,7 +275,7 @@ const CallSummaryStep: FC<CallSummaryProps> = ({ onProceed, summaryData }) => {
         {/* Key Concerns */}
         <div>
           <span className="font-semibold">Key Concerns</span>
-          <ExpandingSection>
+          <ExpandingSection loading={isLoading}>
             <TextField
               rows={4}
               multiline
@@ -302,7 +302,7 @@ const CallSummaryStep: FC<CallSummaryProps> = ({ onProceed, summaryData }) => {
         {/* Flow */}
         <div>
           <span className="font-semibold">Flow</span>
-          <ExpandingSection>
+          <ExpandingSection loading={isLoading}>
             <TextField
               rows={4}
               multiline
@@ -329,7 +329,7 @@ const CallSummaryStep: FC<CallSummaryProps> = ({ onProceed, summaryData }) => {
         {/* Notes for next call */}
         <div>
           <span className="font-semibold">Notes for next call</span>
-          <ExpandingSection>
+          <ExpandingSection loading={isLoading}>
             <TextField
               rows={4}
               multiline

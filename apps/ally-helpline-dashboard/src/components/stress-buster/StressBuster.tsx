@@ -13,13 +13,15 @@ import { MindfullnessVideo } from "@/assets/videos";
 import { BackgroundBottom, BackgroundTop } from "@/assets/icons";
 
 import { StressBusterProps } from "./types";
+import { Button } from "..";
 
 const StressBuster: FunctionComponent<StressBusterProps> = ({
   isFullScreenMode,
   onClose,
-  children,
   closeIcon,
   playOnMount = false,
+  showHighlightsButton = false,
+  onViewHighlights,
 }) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [isMuted, setIsMuted] = useState(true);
@@ -157,7 +159,16 @@ const StressBuster: FunctionComponent<StressBusterProps> = ({
             </div>
           ))}
         </div>
-        <div className="z-20">{children}</div>
+        <div className="z-20">
+          {showHighlightsButton && isMaximized && (
+            <Button
+              className="mt-8 rounded-full"
+              onClick={onViewHighlights}
+            >
+              View Call Highlights
+            </Button>
+          )}
+        </div>
       </div>
     </div>
   );
