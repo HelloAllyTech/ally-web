@@ -34,7 +34,7 @@ const TextField: FC<TextFieldProps> = ({
         multiline={multiline}
         {...(register && register(name))}
         rows={rows}
-        onChange={onChange}
+        {...(onChange && { onChange })}
         value={value}
         variant="outlined"
         sx={{

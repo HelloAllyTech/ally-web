@@ -26,14 +26,6 @@ export const TABLE_HEADERS = [
   },
 ];
 
-export const DEFAULT_TAGS = [
-  { tag: "Anxiety", positivity_rating: 1 },
-  { tag: "Depression", positivity_rating: 2 },
-  { tag: "Stress", positivity_rating: 3 },
-  { tag: "Relationships", positivity_rating: 4 },
-  { tag: "Work", positivity_rating: 5 },
-];
-
 export const TAG_COLORS = {
   1: { bg: "#FEE1E180", text: "#C62828" },
   2: { bg: "#FFE8D580", text: "#F55A00" },
@@ -51,12 +43,12 @@ export const dummySummarydata = {
   flow: `- Made space for the client to share thoughts and experiences.
     - Validated their experiences and acknowledged the difficulty of caregiving.
     -Reframed self-care and taking time off as not selfish.
-    -Encouraged a small behavioural experiment for letting go of control. 
+    -Encouraged a small behavioural experiment for letting go of control.
     -Explored the client’s dreams and aspirations and acknowledged inner conflict.`,
   notes: `- Made space for the client to share thoughts and experiences.
     - Validated their experiences and acknowledged the difficulty of caregiving.
     -Reframed self-care and taking time off as not selfish.
-    -Encouraged a small behavioural experiment for letting go of control. 
+    -Encouraged a small behavioural experiment for letting go of control.
     -Explored the client’s dreams and aspirations and acknowledged inner conflict.`,
   transcript: `Client: HI, I’m feeling a bit overwhelmed. There’s just a lot going on, and I don’t know where to start\n
   You: I hear you. It can be tough when everything feels like too much at once. Want to share what’s been weighing on you the most?\n

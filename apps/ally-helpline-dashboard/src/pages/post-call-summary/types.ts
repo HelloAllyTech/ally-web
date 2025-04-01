@@ -36,6 +36,7 @@ export interface Highlight {
 }
 
 export interface CallSummaryProps {
+  isLoading: boolean;
   onProceed: () => void;
   summaryData: any;
 }

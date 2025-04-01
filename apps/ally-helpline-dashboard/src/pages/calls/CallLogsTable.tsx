@@ -15,7 +15,7 @@ import { NoResults } from "@/assets/icons";
 import { useGetCallLogsQuery } from "./api";
 import SummarySideBar from "./components/SummarySideBar";
 import { convertSecondsToDuration, formatDate } from "./utils";
-import { DEFAULT_TAGS, dummySummarydata, TABLE_HEADERS, TAG_COLORS } from "./constants";
+import { dummySummarydata, TABLE_HEADERS, TAG_COLORS } from "./constants";
 
 const CallLogsTable = () => {
   const { data, isLoading } = useGetCallLogsQuery("");
@@ -46,27 +46,26 @@ const CallLogsTable = () => {
         callDuration = 30,
         callQuality = 60,
         startTime,
-        tags = DEFAULT_TAGS,
         summary,
         transcript,
       } = details;
+
       return {
         id,
         clientId,
         dateAndTime: formatDate(startTime),
         duration: convertSecondsToDuration(callDuration ?? 60),
         quality_score: callQuality ?? 70,
-        tags: (tags ?? DEFAULT_TAGS).map(
+        tags: summary?.tags?.map(
           (tag: { tag: string; positivity_rating: number }) => {
             return {
-              label: tag.tag,
-              capsuleColor: TAG_COLORS[tag.positivity_rating],
+              label: tag?.tag,
+              capsuleColor: TAG_COLORS[tag?.positivity_rating],
             };
           }
         ),
         keyConcerns: summary?.summaryNote?.session_documentation?.key_concerns,
-        flow: summary?.summaryNote?.session_documentation?.work_done
-          ?.counseling_process_flow,
+        flow: summary?.summaryNote?.session_documentation?.work_done?.counseling_process_flow,
         notes: summary?.summaryNote?.session_documentation?.notes, // TODO: Confirm the position of this
         transcript: transcript,
       };
@@ -77,7 +76,7 @@ const CallLogsTable = () => {
       dateAndTime: formatDate(startedAt),
       duration: convertSecondsToDuration(30),
       quality_score: "50",
-      tags: DEFAULT_TAGS.map((tag) => {
+      tags: [].map((tag) => {
         return {
           label: tag.tag,
           capsuleColor: TAG_COLORS[tag.positivity_rating],
@@ -109,7 +108,7 @@ const CallLogsTable = () => {
                   <TableCell key={header.id}>
                     {header.id === "tags" && (
                       <div className="flex gap-2">
-                        {displayData.tags.map(
+                        {displayData.tags?.map(
                           (tag: {
                             label: string;
                             capsuleColor: { bg: string; text: string };
@@ -117,8 +116,8 @@ const CallLogsTable = () => {
                             <div
                               key={tag.label}
                               style={{
-                                backgroundColor: tag.capsuleColor.bg,
-                                color: tag.capsuleColor.text,
+                                backgroundColor: tag?.capsuleColor?.bg,
+                                color: tag?.capsuleColor?.text,
                               }}
                               className="rounded-md px-2 py-1 text-white text-xs font-medium"
                             >

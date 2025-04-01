@@ -17,7 +17,7 @@ const StressBusterStep: FC<StressBusterProps> = ({ onProceed }) => {
       Let&apos;s try a stress buster
       <h2 className="text-base font-medium text-[#47464F]"></h2>
       <div className="w-full max-w-3xl aspect-video mb-4 rounded-3xl overflow-hidden">
-        <StressBuster />
+        <StressBuster showHighlightsButton onViewHighlights={onProceed} />
       </div>
       <Button className="rounded-full w-fit self-end" onClick={onProceed}>
         View Call highlights

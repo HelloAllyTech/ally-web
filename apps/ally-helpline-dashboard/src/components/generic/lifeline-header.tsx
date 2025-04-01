@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { matchPath, useLocation, useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 
 import { Button, Popover } from "@mui/material";
@@ -11,9 +11,11 @@ import { Lifeline, DefaultAvatar } from "@/assets/icons";
 import { ToggleButtonGroup } from "@/components";
 import { USER_STATUS_OPTIONS, UserStatus } from "@/constants/common";
 import { UserRole } from "@/types/user";
+import { ROUTES } from "@/constants/routes";
 
 const LifelineHeader = () => {
   const navigate = useNavigate();
+  const { pathname } = useLocation();
 
   const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null);
 
@@ -22,6 +24,7 @@ const LifelineHeader = () => {
   const { logout, user } = useUser();
 
   const open = Boolean(anchorEl);
+  const isStatusSwitchDisabled = matchPath(ROUTES.SUMMARY, pathname);
 
   const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
     setAnchorEl(event.currentTarget);
@@ -46,6 +49,8 @@ const LifelineHeader = () => {
             onValueChange={handleChange}
             items={USER_STATUS_OPTIONS}
             successValue={UserStatus.AVAILABLE}
+            disabled={!!isStatusSwitchDisabled}
+            className={isStatusSwitchDisabled ? "opacity-40" : ""}
           />
         )}
         <Button onClick={handleClick} aria-describedby="profile">

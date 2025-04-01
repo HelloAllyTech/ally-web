@@ -57,7 +57,10 @@ const PrivateRouteLayout = () => {
   const isAvailable = userStatus === UserStatus.AVAILABLE;
 
   useEffect(() => {
-    store.dispatch(setUserStatus(localStorage.getItem("isOnline") as UserStatus));
+    const isOnlineLocalStorage = localStorage.getItem("isOnline");
+    if (isOnlineLocalStorage) {
+      store.dispatch(setUserStatus(isOnlineLocalStorage as UserStatus));
+    }
     const verifyAuth = async () => {
       const userData = await checkAuth();
       if (!userData) {

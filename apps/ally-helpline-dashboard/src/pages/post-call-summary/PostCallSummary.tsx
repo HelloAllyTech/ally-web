@@ -36,7 +36,7 @@ const PostCallSummary = () => {
 
   const { userStatus } = useSelector((state: RootState) => state.user);
 
-  const { data: callSummary, refetch } = useGetCallSummaryQuery(chatId);
+  const { data: callSummary, refetch, isLoading: isGetSummaryLoading } = useGetCallSummaryQuery(chatId);
 
   useEffect(() => {
     const refetchCallSummary = async () => {
@@ -88,6 +88,7 @@ const PostCallSummary = () => {
       case SectionType.CallSummary:
         return (
           <CallSummaryStep
+            isLoading={isGetSummaryLoading}
             onProceed={() => handleProceed(SectionType.Resources)}
             summaryData={callSummary}
           />
