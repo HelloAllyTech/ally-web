@@ -19,7 +19,7 @@ export const highlights: Highlight[] = [
     },
     {
       key: "listeningRatio",
-      title: "Listening to taking ratio was ",
+      title: "Listening to talking ratio was ",
       image: ListeningRatio,
     },
     {

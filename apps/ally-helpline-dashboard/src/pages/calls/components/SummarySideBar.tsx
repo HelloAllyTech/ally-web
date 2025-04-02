@@ -31,7 +31,7 @@ const SummarySideBar: FunctionComponent<SummarySideBarProps> = ({
     return (
       <div className="mb-6">
         <h3 className="font-semibold text-sm mb-2">{title}</h3>
-        <ul className="list-disc pl-6 space-y-2 text-sm">
+        <ul className="list-disc pl-6 space-y-2 text-sm font-['IBM_Plex_Serif']">
           {content
             ?.split("-")
             ?.filter((value: string) => value.trim() !== "")

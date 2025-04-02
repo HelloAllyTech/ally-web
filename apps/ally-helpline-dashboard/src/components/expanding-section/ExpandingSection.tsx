@@ -12,13 +12,14 @@ const ExpandingSection: FC<ExpandingSectionProps> = ({
   const [isLoaded, setIsLoaded] = useState(false);
 
   useEffect(() => {
+    let timer: NodeJS.Timeout;
     if (!loading) {
       // Add a small delay to make the animation more noticeable
-      const timer = setTimeout(() => {
+      timer = setTimeout(() => {
         setIsLoaded(true);
       }, 1000);
-      return () => clearTimeout(timer);
     }
+    return () => clearTimeout(timer);
   }, [loading]);
 
   return (

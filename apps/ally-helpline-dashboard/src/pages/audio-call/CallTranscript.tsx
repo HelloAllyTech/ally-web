@@ -727,7 +727,7 @@ const CallTranscript = (props: CallTranscriptProps) => {
                     </div>
                     <div
                       key={index}
-                      className="typing-animation w-full"
+                      className="typing-animation w-full font-['IBM_Plex_Serif']"
                       style={{
                         animationDelay: `${index * 100}ms`,
                       }}
@@ -796,7 +796,7 @@ const CallTranscript = (props: CallTranscriptProps) => {
                   key={`nudge-${index}`}
                 >
                   <LifelineLogo />
-                  <CustomMarkdown content={nudge} />
+                  <CustomMarkdown content={nudge} className="text-['IBM_Plex_Serif']" />
                   <Divider
                     sx={{
                       backgroundColor: "rgba(255, 255, 255, 0.12)",
