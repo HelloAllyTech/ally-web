@@ -44,7 +44,6 @@ const CallLogsTable = () => {
       //TODO - change default values
       const {
         callDuration = 30,
-        callQuality = 60,
         startTime,
         summary,
         transcript,
@@ -55,7 +54,7 @@ const CallLogsTable = () => {
         clientId,
         dateAndTime: formatDate(startTime),
         duration: convertSecondsToDuration(callDuration ?? 60),
-        quality_score: callQuality ?? 70,
+        quality_score: summary?.callQuality ?? 70,
         tags: summary?.tags?.map(
           (tag: { tag: string; positivity_rating: number }) => {
             return {
@@ -75,7 +74,7 @@ const CallLogsTable = () => {
       clientId,
       dateAndTime: formatDate(startedAt),
       duration: convertSecondsToDuration(30),
-      quality_score: "50",
+      quality_score: 0,
       tags: [].map((tag) => {
         return {
           label: tag.tag,
