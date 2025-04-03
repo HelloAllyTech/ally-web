@@ -796,7 +796,7 @@ const CallTranscript = (props: CallTranscriptProps) => {
                   key={`nudge-${index}`}
                 >
                   <LifelineLogo />
-                  <CustomMarkdown content={nudge} className="text-['IBM_Plex_Serif']" />
+                  <CustomMarkdown content={nudge} className="font-['IBM_Plex_Serif']" />
                   <Divider
                     sx={{
                       backgroundColor: "rgba(255, 255, 255, 0.12)",
