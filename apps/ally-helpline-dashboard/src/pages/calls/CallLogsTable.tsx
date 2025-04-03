@@ -65,7 +65,7 @@ const CallLogsTable = () => {
         ),
         keyConcerns: summary?.summaryNote?.session_documentation?.key_concerns,
         flow: summary?.summaryNote?.session_documentation?.work_done?.counseling_process_flow,
-        notes: summary?.summaryNote?.session_documentation?.notes, // TODO: Confirm the position of this
+        notes: summary?.notesForNextSession,
         transcript: transcript,
       };
     }
@@ -105,6 +105,7 @@ const CallLogsTable = () => {
               <TableRow key={displayData.id}>
                 {TABLE_HEADERS.map((header) => (
                   <TableCell key={header.id}>
+                    {/* TODO: Replace with a switch */}
                     {header.id === "tags" && (
                       <div className="flex gap-2">
                         {displayData.tags?.map(
@@ -159,9 +160,7 @@ const CallLogsTable = () => {
                         }
                       />
                     )}
-                    {header.id !== "tags" &&
-                      header.id !== "quality_score" &&
-                      displayData[header.id]}
+                    {!["tags", "quality_score", "notes"].includes(header.id) && displayData[header.id]}
                   </TableCell>
                 ))}
               </TableRow>

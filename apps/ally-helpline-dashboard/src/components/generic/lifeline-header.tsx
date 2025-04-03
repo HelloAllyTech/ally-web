@@ -2,13 +2,13 @@ import { useState } from "react";
 import { matchPath, useLocation, useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 
-import { Button, Popover } from "@mui/material";
+import { Avatar, Popover } from "@mui/material";
 
 import { RootState, store } from "@/store/store";
 import { setUserStatus } from "@/reducer/userReducer";
 import { useUser } from "@/hooks";
-import { Lifeline, DefaultAvatar } from "@/assets/icons";
-import { ToggleButtonGroup } from "@/components";
+import { Lifeline } from "@/assets/icons";
+import { Button, ToggleButtonGroup } from "@/components";
 import { USER_STATUS_OPTIONS, UserStatus } from "@/constants/common";
 import { UserRole } from "@/types/user";
 import { ROUTES } from "@/constants/routes";
@@ -53,9 +53,21 @@ const LifelineHeader = () => {
             className={isStatusSwitchDisabled ? "opacity-40" : ""}
           />
         )}
-        <Button onClick={handleClick} aria-describedby="profile">
-          <DefaultAvatar />
-        </Button>
+        <Avatar
+          component="button"
+          onClick={handleClick}
+          aria-describedby="profile"
+          sx={{
+            backgroundColor: "#E8F3FF",
+            color: "#000",
+            border: "1px solid rgba(2, 120, 254, 0.09)",
+            fontSize: "16px",
+            fontWeight: "500",
+            cursor: "pointer",
+          }}
+        >
+          {user?.name[0]}
+        </Avatar>
         <Popover
           id="profile"
           open={open}
@@ -66,8 +78,9 @@ const LifelineHeader = () => {
             horizontal: "left",
           }}
         >
+          {/* TODO: Could use MenuItem here */}
           <Button
-            sx={{ p: 2 }}
+            variant="secondary"
             onClick={() => {
               logout();
               navigate("/login");
