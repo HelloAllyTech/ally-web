@@ -86,8 +86,8 @@ const SummarySideBar: FunctionComponent<SummarySideBarProps> = ({
             )}
             {selectedTab === 2 && (
               <div className="flex flex-1 border-t border-[#DBDBDB] overflow-y-hidden h-[calc(100vh-75px)]">
-                <div className="flex-1 overflow-y-scroll p-2">
-                  <h3 className="font-semibold text-sm mb-2 pt-2">
+                <div className="flex-1 overflow-y-scroll p-4">
+                  <h3 className="font-semibold text-sm mb-4">
                     Transcript
                   </h3>
                   <div className="space-y-4 flex-1 mb-20">
@@ -141,8 +141,8 @@ const SummarySideBar: FunctionComponent<SummarySideBarProps> = ({
                   </div>
                 </div>
                 {summary?.comments?.length > 0 && (
-                  <div className="flex-1 px-4 bg-[#F0F4F8]">
-                    <h3 className="font-semibold text-sm mb-2 pt-2">
+                  <div className="flex-1 p-4 bg-[#F0F4F8]">
+                    <h3 className="font-semibold text-sm mb-2">
                       Comments
                     </h3>
                     <div className="space-y-4 font-['IBM_Plex_Serif']">

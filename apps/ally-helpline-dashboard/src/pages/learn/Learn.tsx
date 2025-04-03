@@ -38,7 +38,7 @@ const Learn: FC = () => {
     return (
       <div className="h-full p-6 flex flex-col">
         <BackCircle className="self-start cursor-pointer" onClick={handleBackToList} />
-        <div className="flex-1 overflow-auto">
+        <div className="flex-1 overflow-auto max-h-[80vh]">
           <ArticleReader article={selectedArticle} />
         </div>
       </div>

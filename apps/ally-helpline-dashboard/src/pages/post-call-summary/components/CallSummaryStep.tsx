@@ -178,23 +178,39 @@ const CallSummaryStep: FC<CallSummaryProps> = ({ isLoading, onProceed, summaryDa
             <ExpandingSection loading={isLoading}>
               <div className="mt-2 p-[12px] flex gap-4">
                 <div className="flex flex-col gap-2 flex-1 border-r border-[#E5E7EB] pr-4">
-                  <div>
-                    <span className="font-semibold">{"Call date: "}</span>
-                    <span>{getFormattedDateTime(summaryData?.startedAt, "do MMMM yyyy")}</span>
+                  <div className="flex items-center">
+                    <span className="font-semibold flex-1">{"Call date: "}</span>
+                    <TextField
+                      value={getFormattedDateTime(summaryData?.startedAt, "do MMMM yyyy")}
+                      disabled
+                      className="flex-2"
+                    />
                   </div>
-                  <div>
-                    <span className="font-semibold">{"Caller type: "}</span>
-                    <span>{sessionDetails?.new_call_follow_up}</span>
+                  <div className="flex items-center">
+                    <span className="font-semibold flex-1">{"Caller type: "}</span>
+                    <TextField
+                      value={sessionDetails?.new_call_follow_up}
+                      disabled
+                      className="flex-2"
+                    />
                   </div>
                 </div>
                 <div className="flex flex-col gap-2 flex-1">
-                  <div>
-                    <span className="font-semibold">{"Call time: "}</span>
-                    <span>{`${getFormattedDateTime(summaryData?.startedAt, "HH:mm")} - ${getFormattedDateTime(summaryData?.endedAt, "HH:mm")}`}</span>
+                  <div className="flex items-center">
+                    <span className="font-semibold flex-1">{"Call time: "}</span>
+                    <TextField
+                      value={`${getFormattedDateTime(summaryData?.startedAt, "HH:mm")} - ${getFormattedDateTime(summaryData?.endedAt, "HH:mm")}`}
+                      disabled
+                      className="flex-2"
+                    />
                   </div>
-                  <div>
-                    <span className="font-semibold">{"Counsellor Name: "}</span>
-                    <span>{sessionDetails?.counselor_name}</span>
+                  <div className="flex items-center">
+                    <span className="font-semibold flex-1">{"Counsellor Name: "}</span>
+                    <TextField
+                      value={sessionDetails?.counselor_name}
+                      disabled
+                      className="flex-2"
+                    />
                   </div>
                 </div>
               </div>

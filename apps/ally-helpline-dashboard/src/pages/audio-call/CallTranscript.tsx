@@ -707,7 +707,7 @@ const CallTranscript = (props: CallTranscriptProps) => {
               <Divider
                 sx={{
                   backgroundColor: "rgba(255, 255, 255, 0.12)",
-                  width: "50%",
+                  width: "65%",
                   marginBottom: "10px",
                 }}
               />
