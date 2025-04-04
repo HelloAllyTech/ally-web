@@ -36,7 +36,7 @@ const LifelineHeader = () => {
 
   const handleChange = (newStatus: UserStatus) => {
     store.dispatch(setUserStatus(newStatus));
-    localStorage.setItem("isOnline", newStatus);
+    localStorage.setItem("userStatus", newStatus);
   };
 
   return (
