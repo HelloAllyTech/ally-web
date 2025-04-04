@@ -12,19 +12,19 @@ export default [
   pluginReact.configs.flat.recommended,
   {
     rules: {
-      "react/display-name": ["off"],
-      "react/nounescaoed-entities": ["off"],
-      "no-restricted-syntax": 1,
-      "no-use-before-define": 0,
-      "no-param-reassign": 1,
+      "react/display-name": "off",
+      "react/no-unescaped-entities": "off",
+      "no-restricted-syntax": "warn",
+      "no-use-before-define": "off",
+      "no-param-reassign": "warn",
       quotes: ["error", "double"],
       semi: ["error", "always"],
-      "max-len": [1, 125],
-      "no-useless-escape": 1,
-      "func-names": 0,
-      "prefer-spread": 1,
-      "space-before-function-paren": 0,
-      "no-multiple-empty-lines": 2,
+      "max-len": ["warn", 125],
+      "no-useless-escape": "warn",
+      "func-names": "off",
+      "prefer-spread": "warn",
+      "space-before-function-paren": "off",
+      "no-multiple-empty-lines": "error",
       "prefer-arrow-callback": "error",
       strict: "error",
       "no-underscore-dangle": "off",
@@ -33,15 +33,19 @@ export default [
       "react/react-in-jsx-scope": "off", // Since we are using react 16+ (react 18 to be specific)
       "react/prop-types": "off", // Disable prop-types in TypeScript (already covered by TS)
       "@typescript-eslint/no-explicit-any": "warn", // Warning for using 'any' type
-      "@typescript-eslint/explicit-module-boundary-types": "off", // Disable requirement for return types in function signatures
+      // Disable requirement for return types in function signatures
+      "@typescript-eslint/explicit-module-boundary-types": "off",
       "@typescript-eslint/no-unused-vars": [
         "warn",
-        { argsIgnorePattern: "^_" },
-      ], // Warn about unused vars except params starting with '_'
+        { argsIgnorePattern: "^_" }, // Warn about unused vars except params starting with '_'
+      ],
       "no-console": "warn", // Warn on console.logs
       "react/jsx-uses-react": "off", // No need to import React in JSX files (React 17+)
       "react/jsx-uses-vars": "error", // Ensure variables used in JSX are used properly
       "jsx-a11y/anchor-is-valid": "off", // Disable anchor tag validation rules (can be more specific if needed)
+      "react/jsx-key": "error", // Enforce key prop for list items
+      "react/no-array-index-key": "warn", // Warn on using array index as key
+      "react/jsx-no-duplicate-props": "error" // Disallow duplicate props in JSX
     },
   },
 ];

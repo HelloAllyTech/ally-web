@@ -58,9 +58,9 @@ const PrivateRouteLayout = () => {
   const isAvailable = userStatus === UserStatus.AVAILABLE;
 
   useEffect(() => {
-    const isOnlineLocalStorage = localStorage.getItem("isOnline");
-    if (isOnlineLocalStorage) {
-      store.dispatch(setUserStatus(isOnlineLocalStorage as UserStatus));
+    const userStatusLocalStorage = localStorage.getItem("userStatus");
+    if (userStatusLocalStorage) {
+      store.dispatch(setUserStatus(userStatusLocalStorage as UserStatus));
     }
     const verifyAuth = async () => {
       const userData = await checkAuth();
@@ -113,7 +113,7 @@ const PrivateRouteLayout = () => {
     try {
       await acceptChat(waitingClients[0]?.chat?.chatId);
       store.dispatch(setUserStatus(UserStatus.OFFLINE));
-      localStorage.setItem("isOnline", UserStatus.OFFLINE);
+      localStorage.setItem("userStatus", UserStatus.OFFLINE);
 
       // Clearing waitingClients to prevent call pop-up after the call due to outdated waitingClients
       setWaitingClients([]);
