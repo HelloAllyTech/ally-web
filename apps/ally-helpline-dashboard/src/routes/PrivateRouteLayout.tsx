@@ -20,6 +20,7 @@ import {
   Calendar,
   Analytics,
   Settings,
+  ClientInterface,
 } from "@/pages";
 import { RootState, store } from "@/store/store";
 import { CallPicker, NavSideBar, LifelineHeader } from "@/components";
@@ -149,7 +150,7 @@ const PrivateRouteLayout = () => {
                 index
                 element={
                   isClient ? (
-                    <Navigate to={ROUTES.CALL_LOGS} />
+                    <Navigate to={ROUTES.CLIENT} />
                   ) : (
                     <Navigate to={ROUTES.CALLS} />
                   )
@@ -159,6 +160,7 @@ const PrivateRouteLayout = () => {
                 path={ROUTES.LIVE_CALL}
                 element={<LiveCall handleLogout={handleLogout} />}
               />
+              <Route path={ROUTES.CLIENT} element={<ClientInterface />} />
               <Route path={ROUTES.AUDIO_CALL} element={<AudioCall />} />
               <Route path={ROUTES.CALL_LOGS} element={<CallLogs />} />
               <Route path={ROUTES.CALLS} element={<Calls />} />

@@ -19,6 +19,7 @@ export const ROUTES = {
   ANALYTICS: "/analytics",
   SETTINGS: "/settings",
   SUMMARY: "/summary/:chatId",
+  CLIENT: "/client",
 } as const;
 
 import PhoneOutlinedIcon from "@mui/icons-material/PhoneOutlined";

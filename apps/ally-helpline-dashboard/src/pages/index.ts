@@ -10,6 +10,7 @@ import Learn from "./learn";
 import Calendar from "./calendar";
 import Analytics from "./analytics";
 import Settings from "./settings";
+import ClientInterface from "./client-interface";
 
 export {
   Home,
@@ -24,4 +25,5 @@ export {
   Calendar,
   Analytics,
   Settings,
+  ClientInterface,
 };
