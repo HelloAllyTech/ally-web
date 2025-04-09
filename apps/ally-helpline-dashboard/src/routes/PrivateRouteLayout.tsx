@@ -11,7 +11,6 @@ import { useSelector } from "react-redux";
 import { toast } from "sonner";
 
 import {
-  CallLogs,
   LiveCall,
   Calls,
   PostCallSummary,
@@ -162,7 +161,6 @@ const PrivateRouteLayout = () => {
               />
               <Route path={ROUTES.CLIENT} element={<ClientInterface />} />
               <Route path={ROUTES.AUDIO_CALL} element={<AudioCall />} />
-              <Route path={ROUTES.CALL_LOGS} element={<CallLogs />} />
               <Route path={ROUTES.CALLS} element={<Calls />} />
               <Route path={ROUTES.CALENDER} element={<Calendar />} />
               <Route path={ROUTES.LEARN} element={<Learn />} />
