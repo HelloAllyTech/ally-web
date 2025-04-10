@@ -1,15 +1,16 @@
 import { useEffect, useMemo, useState } from "react";
-import { motion } from "framer-motion";
-import { ChatStatus, SocketEvent } from "@/types/message";
 import { useNavigate } from "react-router-dom";
-import { ROUTES } from "@/constants/routes";
-import { useClientChat, useSocket } from "@/hooks";
 import { useSelector } from "react-redux";
-import { RootState } from "@/store/store";
-import { UserRole } from "@/types/user";
-import { QueueStatus } from "@/constants/common";
 import { toast } from "sonner";
+import { motion } from "framer-motion";
+
+import { ROUTES } from "@/constants/routes";
+import { QueueStatus } from "@/constants/common";
+import { ChatStatus, SocketEvent } from "@/types/message";
+import { UserRole } from "@/types/user";
 import { Button } from "@/components";
+import { useClientChat, useSocket } from "@/hooks";
+import { RootState } from "@/store/store";
 
 const ClientInterface = () => {
   const navigate = useNavigate();
