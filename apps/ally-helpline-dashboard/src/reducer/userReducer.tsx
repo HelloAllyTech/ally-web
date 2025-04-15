@@ -1,7 +1,6 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
-import { User } from "@/types/user";
-import { UserStatus } from "@/constants/common";
+import { User, UserStatus } from "@/types/user";
 
 interface UserState {
   isAuthenticated: boolean;

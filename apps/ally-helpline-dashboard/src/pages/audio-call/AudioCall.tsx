@@ -3,15 +3,14 @@ import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect, FunctionComponent } from "react";
 
-import { UserRole } from "@/types/user";
+import { UserRole, UserStatus } from "@/types/user";
+import { Chat } from "@/types/message";
 import { RootState } from "@/store/store";
 import { NoResults } from "@/assets/icons";
-import { UserStatus } from "@/constants/common";
 import { setUserStatus } from "@/reducer/userReducer";
-import { Button, FallbackUI, StressBuster } from "@/components";
+import {  FallbackUI, StressBuster } from "@/components";
 import { useClientChat, useCounsellorChat } from "@/hooks";
 
-import { Chat } from "./types";
 import CallTranscript from "./CallTranscript";
 import EndTransitionScreen from "./components/EndTransition";
 

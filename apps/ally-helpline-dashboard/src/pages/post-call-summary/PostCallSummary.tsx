@@ -17,7 +17,7 @@ import { ModalData, SectionType } from "./types";
 import { useGetCallSummaryQuery } from "./api";
 import ArticleGridStep from "./components/ArticleGridStep";
 import { Article } from "@/components/article/types";
-import { UserStatus } from "@/constants/common";
+import { UserStatus } from "@/types/user";
 
 const PostCallSummary = () => {
   const { chatId } = useParams();

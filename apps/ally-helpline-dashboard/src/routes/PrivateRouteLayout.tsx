@@ -26,11 +26,10 @@ import { CallPicker, NavSideBar, LifelineHeader } from "@/components";
 import { useCounsellorChat, useUser, useWaitingClients } from "@/hooks";
 import { TabId } from "@/constants/tabs";
 import { navBarOptions, ROUTES } from "@/constants/routes";
-import { UserRole } from "@/types/user";
+import { UserRole, UserStatus } from "@/types/user";
 import AudioCall from "@/pages/audio-call/AudioCall";
 import { WaitingClient } from "@/hooks/useWaitingClients";
 import { setUserStatus } from "@/reducer/userReducer";
-import { UserStatus } from "@/constants/common";
 
 // TODO: Remove all un used pages
 // TODO: Restrict client access to pages

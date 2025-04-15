@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { api } from "@/services/api";
+import { Chat, ChatStatus } from "@/types/message";
 
 interface Message {
   id: number;
@@ -13,21 +14,10 @@ interface FormattedSession {
   id: string;
   clientId: string;
   counselorId: string;
-  status: "paused" | "active" | "completed";
+  status: ChatStatus;
   messages: Message[];
   startedAt: Date;
   endedAt?: Date;
-}
-
-// Add interface for API response
-interface ChatResponse {
-  chatId: number;
-  clientId: number;
-  counselorId?: number;
-  status: "paused" | "active" | "completed";
-  messages: Message[];
-  startedAt: string;
-  endedAt?: string;
 }
 
 interface UseClientChatReturn {
@@ -51,7 +41,7 @@ export const useClientChat = (): UseClientChatReturn => {
     setIsLoading(true);
     setError(null);
     try {
-      const response = await api.get<ChatResponse>("/chats/my-chat");
+      const response = await api.get<Chat>("/chats/my-chat");
       const chat = response.data;
 
       const formattedSession: FormattedSession = {
