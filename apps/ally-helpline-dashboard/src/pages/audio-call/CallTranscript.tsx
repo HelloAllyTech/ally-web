@@ -1,6 +1,5 @@
 import { FC, useEffect, useMemo, useRef, useState, Dispatch, SetStateAction, useCallback } from "react";
 import { useSelector } from "react-redux";
-import Divider from "@mui/material/Divider";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { LiveAudioVisualizer } from "react-audio-visualize";
@@ -19,11 +18,12 @@ import { useIceServers, useSocket } from "@/hooks";
 import { MessageType, SocketEvent } from "@/types/message";
 
 import "./CallTranscript.css";
-import { formatTime, getSpeakerName } from "./utils";
+import { formatTime } from "./utils";
 import { CallTranscriptProps, Transcription } from "./types";
 import { AUDIO_FILE_SIZE, OFFER_TIMEOUT_MS } from "./constants";
 import AudioCallBackgroundWrapper from "./components/AudioCallBackgroundWrapper";
 import CallSidebar from "./components/CallSidebar";
+import RealTimeTranscript from "./components/RealTimeTranscript";
 
 // TODO: Uninstall react-audio-voice-recorder
 // TODO: Split transcription to client-counselor
@@ -56,7 +56,6 @@ const CallTranscript: FC<CallTranscriptProps> = ({ endSession, activeChat }) => 
   const [nudges, setNudges] = useState<string[]>([]);
   const [stage, setStage] = useState<string>();
   const [newIceCandidates, setNewIceCandidates] = useState([]);
-  const [isUserScrolling, setIsUserScrolling] = useState(false);
   const [isUserJoined, setIsUserJoined] = useState(null);
 
   const isClient = user?.role === UserRole.CLIENT;
@@ -505,8 +504,6 @@ const CallTranscript: FC<CallTranscriptProps> = ({ endSession, activeChat }) => 
     }
   };
 
-  const transcriptContainerRef = useRef<HTMLDivElement>(null);
-
   const reduceTranscriptions = (
     transcriptions: Transcription[]
   ): Transcription[] => {
@@ -547,28 +544,6 @@ const CallTranscript: FC<CallTranscriptProps> = ({ endSession, activeChat }) => 
         new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
     );
   }, [myTranscriptions, speakerTranscriptions]);
-
-  useEffect(() => {
-    if (transcriptContainerRef.current && isFocusMode && !isUserScrolling) {
-      // Add a small delay to ensure content is rendered before scrolling
-      setTimeout(() => {
-        if (transcriptContainerRef.current) {
-          transcriptContainerRef.current.scrollTo({
-            top: transcriptContainerRef.current.scrollHeight,
-            behavior: "smooth",
-          });
-        }
-      }, 100);
-    }
-  }, [transcriptions, isFocusMode, isUserScrolling]);
-
-  // Add this new function to handle scroll events
-  const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
-    const container = e.currentTarget;
-    const isAtBottom = Math.abs(container.scrollHeight - container.scrollTop - container.clientHeight) < 1;
-
-    setIsUserScrolling(!isAtBottom);
-  };
 
   const getEmptyScreen = () => {
     let message;
@@ -664,51 +639,7 @@ const CallTranscript: FC<CallTranscriptProps> = ({ endSession, activeChat }) => 
 
           {/* Update transcription container with max-height */}
           {isCounsellor && isUserJoined && (
-            <motion.div
-              className="w-[85%] h-[35vh] flex flex-col overflow-hidden"
-              initial={{ height: 0 }}
-              animate={{ height: isFocusMode ? "35vh" : 0 }}
-              exit={{ height: 0 }}
-              transition={{ duration: 0.3, ease: "easeInOut" }}
-            >
-              <h3 className="text-white mb-4 self-start ">
-                Real-time Transcription
-              </h3>
-              <Divider
-                sx={{
-                  backgroundColor: "rgba(255, 255, 255, 0.12)",
-                  width: "65%",
-                  marginBottom: "10px",
-                }}
-              />
-              <div
-                ref={transcriptContainerRef}
-                className="z-10 flex-1 overflow-y-auto text-white rounded-lg p-4 
-                  transition-all duration-500 ease-in-out custom-scrollbar mb-20 flex flex-col gap-2"
-                onScroll={handleScroll}
-              >
-                {transcriptions.map((transcriptionObj, index) => (
-                  <div key={transcriptionObj.id} className="flex">
-                    <div className="font-bold w-[20%]">
-                      {getSpeakerName(
-                        transcriptionObj.senderId,
-                        index > 0 && transcriptions[index - 1].senderId,
-                        user?.userId
-                      )}
-                    </div>
-                    <div
-                      key={index}
-                      className="typing-animation w-full font-['IBM_Plex_Serif']"
-                      style={{
-                        animationDelay: `${index * 100}ms`,
-                      }}
-                    >
-                      {transcriptionObj.message}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </motion.div>
+            <RealTimeTranscript isFocusMode={isFocusMode} transcriptions={transcriptions} />
           )}
 
           <div className="z-10 absolute bottom-10 w-full flex justify-center items-center gap-4">

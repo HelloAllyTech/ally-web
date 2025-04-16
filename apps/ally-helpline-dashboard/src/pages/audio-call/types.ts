@@ -5,6 +5,11 @@ export interface CallTranscriptProps {
   endSession: (triggerApi: boolean) => void;
 }
 
+export interface RealTimeTranscriptProps {
+  isFocusMode: boolean;
+  transcriptions: Transcription[];
+}
+
 export interface CallSidebarProps {
   isCounsellor: boolean;
   isFocusMode: boolean;
