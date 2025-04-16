@@ -4,12 +4,12 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
+import { useLoginMutation } from "@/api/auth";
 import { Lifeline } from "@/assets/icons";
 import { Login as LoginImage } from "@/assets/images";
 import { Button, TextField } from "@/components";
 import { useUser } from "@/hooks";
 import { LoginSchema, loginSchema } from "./schema";
-import { useLoginMutation } from "./api";
 
 const Login = () => {
   const navigate = useNavigate();
