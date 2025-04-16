@@ -1,32 +1,29 @@
+import { FC, useEffect, useMemo, useRef, useState, Dispatch, SetStateAction, useCallback } from "react";
 import { useSelector } from "react-redux";
 import Divider from "@mui/material/Divider";
 import { useNavigate } from "react-router-dom";
-import { ThumbsDown, ThumbsUp } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { LiveAudioVisualizer } from "react-audio-visualize";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import {
-  Close,
   Record,
   CutCall,
   FocusOn,
   NoRecord,
   FocusOff,
-  LifelineLogo,
 } from "@/assets/icons";
 import { UserRole } from "@/types/user";
 import { RootState } from "@/store/store";
-import { CustomMarkdown } from "@/components";
 import { ICE_SERVERS } from "@/constants/common";
 import { useIceServers, useSocket } from "@/hooks";
 import { MessageType, SocketEvent } from "@/types/message";
 
 import "./CallTranscript.css";
-import { formatTime } from "./utils";
+import { formatTime, getSpeakerName } from "./utils";
 import { CallTranscriptProps, Transcription } from "./types";
 import { AUDIO_FILE_SIZE, OFFER_TIMEOUT_MS } from "./constants";
 import AudioCallBackgroundWrapper from "./components/AudioCallBackgroundWrapper";
+import CallSidebar from "./components/CallSidebar";
 
 // TODO: Uninstall react-audio-voice-recorder
 // TODO: Split transcription to client-counselor
@@ -38,29 +35,23 @@ import AudioCallBackgroundWrapper from "./components/AudioCallBackgroundWrapper"
 // TODO: Bug with no trascript intermittently
 // TODO: start Audio chat not send sometimes
 
-const CallTranscript = (props: CallTranscriptProps) => {
-  const { endSession, activeChat } = props;
-  const chatId = useMemo(() => activeChat.chatId, [activeChat]);
-  const [seconds, setSeconds] = useState(0);
-  const [focus, setFocus] = useState(true);
-  const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(
-    null
-  );
-  const [muted, setMuted] = useState<boolean>(true);
-  const remoteStreamRef = useRef<MediaStream>(new MediaStream());
-  const offerTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const [peerConnection, setPeerConnection] =
-    useState<RTCPeerConnection | null>(null);
-  const [remoteMediaRecorder, setRemoteMediaRecorder] =
-    useState<MediaRecorder | null>(null);
-
-  const user = useSelector((state: RootState) => state.user.user);
+const CallTranscript: FC<CallTranscriptProps> = ({ endSession, activeChat }) => {
   const navigate = useNavigate();
   const iceServers = useIceServers();
 
-  const [speakerTranscriptions, setSpeakerTranscriptions] = useState<
-    Transcription[]
-  >([]);
+  const user = useSelector((state: RootState) => state.user.user);
+  const chatId = useMemo(() => activeChat.chatId, [activeChat]);
+
+  const remoteStreamRef = useRef<MediaStream>(new MediaStream());
+  const offerTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  const [seconds, setSeconds] = useState(0);
+  const [isFocusMode, setIsFocusMode] = useState(true);
+  const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(null);
+  const [muted, setMuted] = useState<boolean>(true);
+  const [peerConnection, setPeerConnection] = useState<RTCPeerConnection | null>(null);
+  const [remoteMediaRecorder, setRemoteMediaRecorder] = useState<MediaRecorder | null>(null);
+  const [speakerTranscriptions, setSpeakerTranscriptions] = useState<Transcription[]>([]);
   const [myTranscriptions, setMyTranscriptions] = useState<Transcription[]>([]);
   const [nudges, setNudges] = useState<string[]>([]);
   const [stage, setStage] = useState<string>();
@@ -72,9 +63,7 @@ const CallTranscript = (props: CallTranscriptProps) => {
   const isCounsellor = user?.role === UserRole.COUNSELOR;
 
   const updateLastTranscription = (
-    setCorrespondingTranscription: React.Dispatch<
-      React.SetStateAction<Transcription[]>
-    >
+    setCorrespondingTranscription: Dispatch<SetStateAction<Transcription[]>>
   ) => {
     setCorrespondingTranscription((prev) => {
       const updatedList = [...prev];
@@ -90,9 +79,7 @@ const CallTranscript = (props: CallTranscriptProps) => {
   };
 
   const processTranscription = (
-    setCorrespondingTranscription: React.Dispatch<
-      React.SetStateAction<Transcription[]>
-    >,
+    setCorrespondingTranscription: Dispatch<SetStateAction<Transcription[]>>,
     payload: any
   ) => {
     setCorrespondingTranscription((prev) => {
@@ -165,20 +152,20 @@ const CallTranscript = (props: CallTranscriptProps) => {
         confirmEndSession(false);
       },
       [SocketEvent.NUDGE]: (data: any) => {
-        const message = data.payload;
-        console.log("Nudge received:", message);
-        if (message.type === MessageType.NUDGE) {
-          setNudges((prev) => [...prev, message.content]);
+        const nudge = data.payload;
+        console.log("Nudge received:", nudge);
+        if (nudge.type === MessageType.NUDGE) {
+          setNudges((prev) => [...prev, nudge.content]);
         }
       },
       [SocketEvent.MESSAGE_RECEIVED]: (data: any) => {
-        const payload = data.payload;
-        console.log("Message received:", payload);
-        if (payload.type === MessageType.TEXT) {
-          if (payload.senderId === user?.userId) {
-            processTranscription(setMyTranscriptions, payload);
+        const message = data.payload;
+        console.log("Message received:", message);
+        if (message.type === MessageType.TEXT) {
+          if (message.senderId === user?.userId) {
+            processTranscription(setMyTranscriptions, message);
           } else {
-            processTranscription(setSpeakerTranscriptions, payload);
+            processTranscription(setSpeakerTranscriptions, message);
           }
         }
       },
@@ -201,6 +188,7 @@ const CallTranscript = (props: CallTranscriptProps) => {
 
   useEffect(() => {
     if (activeChat.messages && activeChat.messages.length > 0) {
+      // TODO: currentStage is not present in the chat object
       if (activeChat?.currentStage) {
         setStage(activeChat?.currentStage);
       }
@@ -236,8 +224,6 @@ const CallTranscript = (props: CallTranscriptProps) => {
 
   const {
     connect,
-    isConnected,
-    sendMessage,
     disconnect,
     emitSocketEvent,
     setListenerForEvent,
@@ -520,7 +506,6 @@ const CallTranscript = (props: CallTranscriptProps) => {
   };
 
   const transcriptContainerRef = useRef<HTMLDivElement>(null);
-  const nudgesContainerRef = useRef<HTMLDivElement>(null);
 
   const reduceTranscriptions = (
     transcriptions: Transcription[]
@@ -564,7 +549,7 @@ const CallTranscript = (props: CallTranscriptProps) => {
   }, [myTranscriptions, speakerTranscriptions]);
 
   useEffect(() => {
-    if (transcriptContainerRef.current && focus && !isUserScrolling) {
+    if (transcriptContainerRef.current && isFocusMode && !isUserScrolling) {
       // Add a small delay to ensure content is rendered before scrolling
       setTimeout(() => {
         if (transcriptContainerRef.current) {
@@ -575,30 +560,14 @@ const CallTranscript = (props: CallTranscriptProps) => {
         }
       }, 100);
     }
-  }, [transcriptions, focus, isUserScrolling]);
-
-  // Add this effect to scroll to bottom when nudges change
-  useEffect(() => {
-    if (nudgesContainerRef.current && focus) {
-      nudgesContainerRef.current.scrollTop =
-        nudgesContainerRef.current.scrollHeight;
-    }
-  }, [nudges, focus]);
+  }, [transcriptions, isFocusMode, isUserScrolling]);
 
   // Add this new function to handle scroll events
   const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
     const container = e.currentTarget;
-    const isAtBottom =
-      Math.abs(
-        container.scrollHeight - container.scrollTop - container.clientHeight
-      ) < 1;
+    const isAtBottom = Math.abs(container.scrollHeight - container.scrollTop - container.clientHeight) < 1;
 
     setIsUserScrolling(!isAtBottom);
-  };
-
-  const getSpeakerName = (senderId: number, previousSenderId: number) => {
-    if (previousSenderId && previousSenderId == senderId) return "";
-    return senderId === user?.userId ? "You:" : "Client:";
   };
 
   const getEmptyScreen = () => {
@@ -629,6 +598,7 @@ const CallTranscript = (props: CallTranscriptProps) => {
       </motion.div>
     );
   };
+
   return (
     <div className="w-screen h-screen flex justify-center items-center">
       <AudioCallBackgroundWrapper>
@@ -636,7 +606,7 @@ const CallTranscript = (props: CallTranscriptProps) => {
           {isUserJoined ? (
             <div
               className="flex flex-col justify-center items-center
-          gap-4 z-10 transition-all duration-500 ease-in-out min-h-[30vh]"
+                gap-4 z-10 transition-all duration-500 ease-in-out min-h-[30vh]"
             >
               <div className="text-white flex justify-center items-center flex-col gap-2">
                 <div className="text-base font-medium">Ongoing Voice Call</div>
@@ -697,7 +667,7 @@ const CallTranscript = (props: CallTranscriptProps) => {
             <motion.div
               className="w-[85%] h-[35vh] flex flex-col overflow-hidden"
               initial={{ height: 0 }}
-              animate={{ height: focus ? "35vh" : 0 }}
+              animate={{ height: isFocusMode ? "35vh" : 0 }}
               exit={{ height: 0 }}
               transition={{ duration: 0.3, ease: "easeInOut" }}
             >
@@ -722,7 +692,8 @@ const CallTranscript = (props: CallTranscriptProps) => {
                     <div className="font-bold w-[20%]">
                       {getSpeakerName(
                         transcriptionObj.senderId,
-                        index > 0 && transcriptions[index - 1].senderId
+                        index > 0 && transcriptions[index - 1].senderId,
+                        user?.userId
                       )}
                     </div>
                     <div
@@ -749,10 +720,10 @@ const CallTranscript = (props: CallTranscriptProps) => {
             </button>
             {isCounsellor && (
               <button disabled={!isUserJoined}>
-                {focus ? (
-                  <FocusOn onClick={() => setFocus(false)} />
+                {isFocusMode ? (
+                  <FocusOn onClick={() => setIsFocusMode(false)} />
                 ) : (
-                  <FocusOff onClick={() => setFocus(true)} />
+                  <FocusOff onClick={() => setIsFocusMode(true)} />
                 )}
               </button>
             )}
@@ -762,61 +733,14 @@ const CallTranscript = (props: CallTranscriptProps) => {
           </div>
         </>
       </AudioCallBackgroundWrapper>
-      <AnimatePresence>
-        {isCounsellor && isUserJoined && (
-          <motion.div
-            initial={{ width: 0 }}
-            animate={{ width: focus ? 500 : 0 }}
-            exit={{ width: 0 }}
-            transition={{ duration: 0.3, ease: "easeInOut" }}
-            className="h-full bg-[#12151F] overflow-hidden"
-          >
-            <div className="border-b border-b-[#292929] h-14 px-4 flex justify-between items-center">
-              <div className="font-bold text-white">Copilot</div>
-              <Close
-                className="cursor-pointer"
-                onClick={() => setFocus(false)}
-              />
-            </div>
-            {stage && (
-              <div className="m-4 px-6 py-4 border border-[#01D966] rounded-lg bg-[#01D96626]">
-                <div className="text-base font-medium text-[#01D966] ">
-                  Current Stage
-                </div>
-                <div className="text-white text-base">{stage}</div>
-              </div>
-            )}
-            <div
-              ref={nudgesContainerRef}
-              className="p-4 h-[calc(100vh-10.4rem)] overflow-y-auto custom-scrollbar"
-            >
-              {nudges?.map((nudge, index) => (
-                <div
-                  className="bg-[#1C1F2A] rounded-lg p-4 mb-2"
-                  key={`nudge-${index}`}
-                >
-                  <LifelineLogo />
-                  <CustomMarkdown content={nudge} className="font-['IBM_Plex_Serif']" />
-                  <Divider
-                    sx={{
-                      backgroundColor: "rgba(255, 255, 255, 0.12)",
-                    }}
-                  />
-                  <div className="flex text-sm items-center gap-2 text-[#BABABA]">
-                    <span>Does this help?</span>
-                    <button className="hover:bg-[#292929] p-2 rounded-lg transition-colors">
-                      <ThumbsDown className="w-5 h-5" />
-                    </button>
-                    <button className="hover:bg-[#292929] p-2 rounded-lg transition-colors">
-                      <ThumbsUp className="w-5 h-5" />
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      <CallSidebar
+        isCounsellor={isCounsellor}
+        isFocusMode={isFocusMode}
+        isUserJoined={isUserJoined}
+        nudges={nudges}
+        onClose={() => setIsFocusMode(false)}
+        stage={stage}
+      />
     </div>
   );
 };

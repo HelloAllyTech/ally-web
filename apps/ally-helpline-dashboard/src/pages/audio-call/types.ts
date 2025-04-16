@@ -5,11 +5,20 @@ export interface CallTranscriptProps {
   endSession: (triggerApi: boolean) => void;
 }
 
+export interface CallSidebarProps {
+  isCounsellor: boolean;
+  isFocusMode: boolean;
+  isUserJoined: boolean;
+  onClose: () => void;
+  stage: string;
+  nudges: string[];
+}
+
 export interface Transcription {
   id: number;
   message: string;
   senderId: number;
-  timestamp: number;
+  timestamp: string;
   isFinal?: boolean;
   isSentenceComplete?: boolean;
 }
