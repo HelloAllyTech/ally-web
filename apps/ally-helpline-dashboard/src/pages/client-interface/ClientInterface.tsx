@@ -5,8 +5,7 @@ import { toast } from "sonner";
 import { motion } from "framer-motion";
 
 import { ROUTES } from "@/constants/routes";
-import { QueueStatus } from "@/constants/common";
-import { ChatStatus, SocketEvent } from "@/types/message";
+import { ChatStatus, QueueStatus, SocketEvent } from "@/types/message";
 import { UserRole } from "@/types/user";
 import { Button } from "@/components";
 import { useClientChat, useSocket } from "@/hooks";

@@ -1,12 +1,4 @@
-export enum QueueStatus {
-  WAITING = "WAITING",
-  MATCHED = "MATCHED",
-}
-
-export enum UserStatus {
-  OFFLINE = "offline",
-  AVAILABLE = "available",
-}
+import { UserStatus } from "@/types/user";
 
 export const USER_STATUS_OPTIONS = [
   { value: UserStatus.OFFLINE, label: "Offline" },

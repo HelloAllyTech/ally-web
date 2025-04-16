@@ -9,8 +9,8 @@ import { setUserStatus } from "@/reducer/userReducer";
 import { useUser } from "@/hooks";
 import { Lifeline } from "@/assets/icons";
 import { Button, ToggleButtonGroup } from "@/components";
-import { USER_STATUS_OPTIONS, UserStatus } from "@/constants/common";
-import { UserRole } from "@/types/user";
+import { USER_STATUS_OPTIONS } from "@/constants/common";
+import { UserRole, UserStatus } from "@/types/user";
 import { ROUTES } from "@/constants/routes";
 
 const LifelineHeader = () => {

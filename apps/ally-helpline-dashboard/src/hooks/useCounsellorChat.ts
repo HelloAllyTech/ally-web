@@ -1,10 +1,10 @@
 import { useState } from "react";
 import { api } from "@/services/api";
-import { ApiMessage } from "@/types/message";
+import { ChatMessage } from "@/types/message";
 import { User } from "@/types/user";
 
 interface ChatResponse {
-  messages: ApiMessage[];
+  messages: ChatMessage[];
   counselor?: User;
   client?: User;
 }

@@ -1,14 +1,39 @@
-export type ApiMessage = {
-  id: number;
+import { User } from "./user";
+
+export type ChatMessage = {
   chatId: number;
-  senderId: number;
-  type: string;
   content: string;
   context?: {
     source: string;
   };
   createdAt: string;
+  id: number;
+  senderId: number;
+  type: MessageType;
 };
+
+export enum ChatStatus {
+  ENDED = "ENDED",
+  PAUSED = "PAUSED",
+  ACTIVE = "ACTIVE",
+}
+
+export interface Chat {
+  chatId: number;
+  client: User;
+  clientId: number;
+  counselor: User;
+  counselorId: number;
+  endedAt: string | null;
+  messages: ChatMessage[];
+  startedAt: string;
+  status: ChatStatus;
+}
+
+export enum QueueStatus {
+  WAITING = "WAITING",
+  MATCHED = "MATCHED",
+}
 
 export type SocketMessage = {
   type: SocketEvent | string;
@@ -52,10 +77,4 @@ export enum SocketEvent {
   UTTERANCE_ENDED = "UTTERANCE_ENDED",
   USER_JOINED = "USER_JOINED",
   USER_DISCONNECTED = "USER_DISCONNECTED",
-}
-
-export enum ChatStatus {
-  ENDED = "ENDED",
-  PAUSED = "PAUSED",
-  ACTIVE = "ACTIVE",
 }

@@ -1,19 +1,17 @@
 export interface User {
-  id: number;
-  userId: number;
   email: string;
+  id: number;
   name: string;
   role: UserRole;
-  status: UserStatus;
-}
-
-export enum UserStatus {
-  ACTIVE = "ACTIVE",
-  INACTIVE = "INACTIVE",
-  BLOCKED = "BLOCKED",
+  userId: number;
 }
 
 export enum UserRole {
   CLIENT = "CLIENT",
   COUNSELOR = "COUNSELOR",
+}
+
+export enum UserStatus {
+  OFFLINE = "offline",
+  AVAILABLE = "available",
 }

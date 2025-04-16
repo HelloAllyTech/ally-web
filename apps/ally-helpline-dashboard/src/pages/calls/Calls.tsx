@@ -6,7 +6,7 @@ import { useSelector } from "react-redux";
 import { RootState, store } from "@/store/store";
 import { setUserStatus } from "@/reducer/userReducer";
 import { BackgroundBottom, BackgroundTop } from "@/assets/icons";
-import { UserStatus } from "@/constants/common";
+import { UserStatus } from "@/types/user";
 
 import CallLogsTable from "./CallLogsTable";
 
