@@ -1,13 +1,7 @@
 import { useState } from "react";
-import { api } from "@/services/api";
-import { ChatMessage } from "@/types/message";
-import { User } from "@/types/user";
 
-interface ChatResponse {
-  messages: ChatMessage[];
-  counselor?: User;
-  client?: User;
-}
+import { api } from "@/services/api";
+import { Chat } from "@/types/message";
 
 export const useCounsellorChat = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -17,23 +11,9 @@ export const useCounsellorChat = () => {
     setIsLoading(true);
     setError(null);
     try {
-      const response = await api.get<ChatResponse>(
+      const response = await api.get<Chat>(
         "/chats/counsellor-chat"
       );
-      return response.data;
-    } catch (err) {
-      setError(err as Error);
-      throw err;
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const acceptChat = async (chatId: number) => {
-    setIsLoading(true);
-    setError(null);
-    try {
-      const response = await api.post(`/chats/${chatId}/accept`);
       return response.data;
     } catch (err) {
       setError(err as Error);
@@ -59,7 +39,6 @@ export const useCounsellorChat = () => {
 
   return {
     getCounsellorChat,
-    acceptChat,
     endSession,
     isLoading,
     error,

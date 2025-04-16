@@ -23,21 +23,20 @@ import {
 } from "@/pages";
 import { RootState, store } from "@/store/store";
 import { CallPicker, NavSideBar, LifelineHeader } from "@/components";
-import { useCounsellorChat, useUser, useWaitingClients } from "@/hooks";
+import { useUser } from "@/hooks";
 import { TabId } from "@/constants/tabs";
 import { navBarOptions, ROUTES } from "@/constants/routes";
 import { UserRole, UserStatus } from "@/types/user";
+import { WaitingClient } from "@/types/message";
 import AudioCall from "@/pages/audio-call/AudioCall";
-import { WaitingClient } from "@/hooks/useWaitingClients";
 import { setUserStatus } from "@/reducer/userReducer";
+import { useAcceptCallMutation, useGetWaitingClientsQuery } from "@/api/audioCall";
 
 // TODO: Remove all un used pages
 // TODO: Restrict client access to pages
 
 const PrivateRouteLayout = () => {
   const { user, logout, checkAuth } = useUser();
-  const { getWaitingClients } = useWaitingClients();
-  const { acceptChat } = useCounsellorChat();
   const navigate = useNavigate();
   const { pathname } = useLocation();
 
@@ -56,6 +55,12 @@ const PrivateRouteLayout = () => {
   const excludeCallPicker = [ROUTES.LIVE_CALL, ROUTES.AUDIO_CALL, ROUTES.SUMMARY] as string[];
   const isAvailable = userStatus === UserStatus.AVAILABLE;
 
+  const { data: getWaitingClientsData, isSuccess: isWaitingClientsSuccess } = useGetWaitingClientsQuery(undefined, {
+    skip: user?.role !== UserRole.COUNSELOR || !isAvailable,
+    pollingInterval: 5000,
+  });
+  const [acceptCall] = useAcceptCallMutation();
+
   useEffect(() => {
     const userStatusLocalStorage = localStorage.getItem("userStatus");
     if (userStatusLocalStorage) {
@@ -71,26 +76,14 @@ const PrivateRouteLayout = () => {
   }, []);
 
   useEffect(() => {
-    setActiveTab(getActiveTab());
-  }, [pathname]);
+    if (isWaitingClientsSuccess) {
+      setWaitingClients(getWaitingClientsData?.clients || []);
+    }
+  }, [isWaitingClientsSuccess, getWaitingClientsData]);
 
   useEffect(() => {
-    if (user?.role === UserRole.COUNSELOR && isAvailable) {
-      const fetchWaitingClients = async () => {
-        try {
-          const response = await getWaitingClients();
-          if (response?.clients?.length > 0)
-            setWaitingClients(response.clients);
-        } catch (error) {
-          console.error("Error fetching waiting clients:", error);
-        }
-      };
-      fetchWaitingClients();
-      // Poll for new clients every 5 seconds
-      const interval = setInterval(fetchWaitingClients, 5000);
-      return () => clearInterval(interval);
-    }
-  }, [userStatus, user]);
+    setActiveTab(getActiveTab());
+  }, [pathname]);
 
   const getActiveTab = () =>
     navBarOptions.find((option) => option.path === pathname)?.id ?? TabId.CALLS;
@@ -110,13 +103,12 @@ const PrivateRouteLayout = () => {
 
   const onAcceptCall = async () => {
     try {
-      await acceptChat(waitingClients[0]?.chat?.chatId);
+      await acceptCall({ chatId: waitingClients[0]?.chat?.chatId });
       store.dispatch(setUserStatus(UserStatus.OFFLINE));
       localStorage.setItem("userStatus", UserStatus.OFFLINE);
 
       // Clearing waitingClients to prevent call pop-up after the call due to outdated waitingClients
       setWaitingClients([]);
-
       navigate(ROUTES.AUDIO_CALL);
     } catch (error) {
       toast.error(

@@ -27,28 +27,7 @@ export const useAuthLogin = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
 
-  const login = async (email: string, password: string) => {
-    setIsLoading(true);
-    setError(null);
-    try {
-      const formData = new URLSearchParams();
-      formData.append("username", email);
-      formData.append("password", password);
-
-      const response = await api.post<LoginResponse>("/auth/login", formData, {
-        headers: {
-          "Content-Type": "application/x-www-form-urlencoded",
-        },
-      });
-      return response.data;
-    } catch (err) {
-      setError(err as Error);
-      throw err;
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
+  // TODO: Remove after review; Signup page not required
   const signup = async (data: SignupRequest): Promise<SignupResponse> => {
     setIsLoading(true);
     setError(null);
@@ -84,7 +63,6 @@ export const useAuthLogin = () => {
   };
 
   return {
-    login,
     signup,
     isLoading,
     error,
