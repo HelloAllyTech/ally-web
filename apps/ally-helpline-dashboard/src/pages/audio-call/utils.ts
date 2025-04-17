@@ -8,3 +8,8 @@ export const formatTime = (time: number) => {
   ${seconds.toString().padStart(2, "0")}
   `;
 };
+
+export const getSpeakerName = (senderId: number, previousSenderId: number, userId: number) => {
+  if (previousSenderId && previousSenderId == senderId) return "";
+  return senderId === userId ? "You:" : "Client:";
+};
