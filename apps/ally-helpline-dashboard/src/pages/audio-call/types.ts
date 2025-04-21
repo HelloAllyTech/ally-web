@@ -1,3 +1,5 @@
+import { MutableRefObject } from "react";
+
 import { Chat } from "@/types/message";
 
 export interface CallTranscriptProps {
@@ -5,9 +7,28 @@ export interface CallTranscriptProps {
   endSession: (triggerApi: boolean) => void;
 }
 
+export interface CallInterfaceProps {
+  activeChat: Chat;
+  isCounsellor: boolean;
+  isUserJoined: boolean;
+  mediaRecorder: MediaRecorder | null;
+  remoteMediaRecorder: MediaRecorder | null;
+  remoteStreamRef: MutableRefObject<MediaStream>;
+}
+
 export interface RealTimeTranscriptProps {
   isFocusMode: boolean;
   transcriptions: Transcription[];
+}
+
+export interface CallControlsProps {
+  isCounsellor: boolean;
+  isFocusMode: boolean;
+  isMuted: boolean;
+  isUserJoined: boolean;
+  onCutCallButtonClick: () => void;
+  onFocusButtonClick: (isFocused: boolean) => void;
+  onMuteButtonClick: () => void;
 }
 
 export interface CallSidebarProps {

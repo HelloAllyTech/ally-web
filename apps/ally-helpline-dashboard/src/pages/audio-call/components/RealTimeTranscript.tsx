@@ -65,8 +65,6 @@ const RealTimeTranscript: FC<RealTimeTranscriptProps> = ({ isFocusMode, transcri
               {getSpeakerName(transcriptionObj.senderId, index > 0 && transcriptions[index - 1].senderId, user?.userId)}
             </div>
             <div
-            // TODO: transcriptionObject.id could be used instead as key
-              key={index}
               className="typing-animation w-full font-['IBM_Plex_Serif']"
               style={{ animationDelay: `${index * 100}ms` }}
             >
