@@ -15,7 +15,7 @@ const CallInterface: FC<CallInterfaceProps> = ({
 }) => {
   const [seconds, setSeconds] = useState(0);
 
-    // TODO: REthink the logic
+  // TODO: REthink the logic; A ref could be used for the interval
   useEffect(() => {
     if (!activeChat?.startedAt) return;
 
@@ -31,7 +31,7 @@ const CallInterface: FC<CallInterfaceProps> = ({
     const interval = setInterval(updateElapsedTime, 1000);
 
     return () => clearInterval(interval); // Cleanup on unmount
-  }, [activeChat]);
+  }, [activeChat, activeChat?.startedAt]);
 
   const getEmptyScreen = () => {
     let message;
