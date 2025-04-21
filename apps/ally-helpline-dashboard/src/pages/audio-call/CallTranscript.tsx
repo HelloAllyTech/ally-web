@@ -1,16 +1,7 @@
 import { FC, useEffect, useMemo, useRef, useState, Dispatch, SetStateAction, useCallback } from "react";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
-import { motion } from "framer-motion";
-import { LiveAudioVisualizer } from "react-audio-visualize";
 
-import {
-  Record,
-  CutCall,
-  FocusOn,
-  NoRecord,
-  FocusOff,
-} from "@/assets/icons";
 import { UserRole } from "@/types/user";
 import { RootState } from "@/store/store";
 import { ICE_SERVERS } from "@/constants/common";
@@ -18,12 +9,14 @@ import { useIceServers, useSocket } from "@/hooks";
 import { MessageType, SocketEvent } from "@/types/message";
 
 import "./CallTranscript.css";
-import { formatTime } from "./utils";
+import { reduceTranscriptions } from "./utils";
 import { CallTranscriptProps, Transcription } from "./types";
 import { AUDIO_FILE_SIZE, OFFER_TIMEOUT_MS } from "./constants";
 import AudioCallBackgroundWrapper from "./components/AudioCallBackgroundWrapper";
 import CallSidebar from "./components/CallSidebar";
 import RealTimeTranscript from "./components/RealTimeTranscript";
+import CallControls from "./components/CallControls";
+import CallInterface from "./components/CallInterface";
 
 // TODO: Uninstall react-audio-voice-recorder
 // TODO: Split transcription to client-counselor
@@ -42,15 +35,16 @@ const CallTranscript: FC<CallTranscriptProps> = ({ endSession, activeChat }) => 
   const user = useSelector((state: RootState) => state.user.user);
   const chatId = useMemo(() => activeChat.chatId, [activeChat]);
 
+  // Add a reference to store the local stream
+  const localStreamRef = useRef<MediaStream | null>(null);
   const remoteStreamRef = useRef<MediaStream>(new MediaStream());
   const offerTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  const [seconds, setSeconds] = useState(0);
-  const [isFocusMode, setIsFocusMode] = useState(true);
-  const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(null);
-  const [muted, setMuted] = useState<boolean>(true);
   const [peerConnection, setPeerConnection] = useState<RTCPeerConnection | null>(null);
+  const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(null);
   const [remoteMediaRecorder, setRemoteMediaRecorder] = useState<MediaRecorder | null>(null);
+  const [isMuted, setIsMuted] = useState<boolean>(true);
+  const [isFocusMode, setIsFocusMode] = useState(true);
   const [speakerTranscriptions, setSpeakerTranscriptions] = useState<Transcription[]>([]);
   const [myTranscriptions, setMyTranscriptions] = useState<Transcription[]>([]);
   const [nudges, setNudges] = useState<string[]>([]);
@@ -108,11 +102,7 @@ const CallTranscript: FC<CallTranscriptProps> = ({ endSession, activeChat }) => 
         return updatedTranscriptions;
       }
 
-      if (
-        !lastTranscription.isSentenceComplete &&
-        lastTranscription.isFinal &&
-        payload.isFinal
-      ) {
+      if (!lastTranscription.isSentenceComplete && lastTranscription.isFinal && payload.isFinal) {
         // concat the last transcription with the new one
         const updatedTranscriptions = [...prev];
         updatedTranscriptions[prev.length - 1] = {
@@ -187,7 +177,7 @@ const CallTranscript: FC<CallTranscriptProps> = ({ endSession, activeChat }) => 
 
   useEffect(() => {
     if (activeChat.messages && activeChat.messages.length > 0) {
-      // TODO: currentStage is not present in the chat object
+      // TODO: currentStage is not present in the chat object; Remove this condition block
       if (activeChat?.currentStage) {
         setStage(activeChat?.currentStage);
       }
@@ -202,15 +192,11 @@ const CallTranscript: FC<CallTranscriptProps> = ({ endSession, activeChat }) => 
           isFinal: true,
           isSentenceComplete: true,
         }));
-      setMyTranscriptions(
-        existingTranscriptions?.filter(
-          (payload) => payload.senderId === user.userId
-        )
+      setMyTranscriptions(existingTranscriptions
+        ?.filter((payload) => payload.senderId === user.userId)
       );
-      setSpeakerTranscriptions(
-        existingTranscriptions?.filter(
-          (payload) => payload.senderId !== user.userId
-        )
+      setSpeakerTranscriptions(existingTranscriptions
+        ?.filter((payload) => payload.senderId !== user.userId)
       );
 
       const existingNudges = activeChat.messages
@@ -233,37 +219,16 @@ const CallTranscript: FC<CallTranscriptProps> = ({ endSession, activeChat }) => 
   });
 
   useEffect(() => {
-    if (muted) {
-      emitSocketEvent(SocketEvent.AUDIO_CHAT_MUTED, { chatId });
+    if (isMuted) {
+      emitSocketEvent(SocketEvent.AUDIO_CHAT_MUTED, {
+        chatId,
+      });
     }
-  }, [muted]);
+  }, [isMuted]);
 
-  // TODO: REthink the logic
-  useEffect(() => {
-    if (!activeChat?.startedAt) return;
-
-    const updateElapsedTime = () => {
-      const now = Date.now();
-      const diffInSeconds = Math.floor(
-        (now - Date.parse(activeChat.startedAt)) / 1000
-      );
-      setSeconds(diffInSeconds);
-    };
-
-    updateElapsedTime(); // Initial update
-    const interval = setInterval(updateElapsedTime, 1000);
-
-    return () => clearInterval(interval); // Cleanup on unmount
-  }, [activeChat]);
-
-  // Add a reference to store the local stream
-  const localStreamRef = useRef<MediaStream | null>(null);
-
-  const setupWebrtcAndMediarecorder = async () => {
-    // Get user media stream
-    const stream = await navigator.mediaDevices.getUserMedia({
-      audio: true,
-    });
+  const setupWebRTCAndMediaRecorder = async () => {
+    // Get user media stream (here, audio stream)
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
     // Store the stream reference
     localStreamRef.current = stream;
 
@@ -321,11 +286,12 @@ const CallTranscript: FC<CallTranscriptProps> = ({ endSession, activeChat }) => 
       iceServers: iceServers?.urls?.length > 0 ? [iceServers] : ICE_SERVERS, // Fallback STUN server
     });
 
-    // Add local tracks to peer connection
+    // Add local media tracks (here, audio track) to peer connection
     stream.getTracks().forEach((track) => {
       pc.addTrack(track, stream);
     });
 
+    // Handle new ICE candidates
     pc.onicecandidate = (event) => {
       if (event.candidate) {
         emitSocketEvent(SocketEvent.ICE_CANDIDATE, {
@@ -334,6 +300,8 @@ const CallTranscript: FC<CallTranscriptProps> = ({ endSession, activeChat }) => 
         });
       }
     };
+
+    // Add remote media tracks to remote stream
     pc.ontrack = (event) => {
       // event.streams[0].getTracks().forEach((track) => {
       //   track.onended = () => console.log("Track ended:", track.kind);
@@ -353,8 +321,10 @@ const CallTranscript: FC<CallTranscriptProps> = ({ endSession, activeChat }) => 
     setPeerConnection(pc);
 
     const createAndSendOffer = async () => {
+      // initiates creation of a Session Description Protocol (SDP) offer for starting the WebRTC connection to a remote peer
       const offer = await pc.createOffer({ offerToReceiveAudio: true });
       await pc.setLocalDescription(offer);
+      // sends the offer to the remote peer
       emitSocketEvent(SocketEvent.WEBRTC_OFFER, {
         offer,
         chatId,
@@ -375,7 +345,7 @@ const CallTranscript: FC<CallTranscriptProps> = ({ endSession, activeChat }) => 
     if (chatId && user && iceServers) {
       //connect socket
       connect(chatId);
-      setupWebrtcAndMediarecorder();
+      setupWebRTCAndMediaRecorder();
     }
 
     return () => {
@@ -398,7 +368,7 @@ const CallTranscript: FC<CallTranscriptProps> = ({ endSession, activeChat }) => 
 
   useEffect(() => {
     if (!mediaRecorder) return;
-    if (muted) {
+    if (isMuted) {
       mediaRecorder?.pause();
       // Mute all audio tracks in the local stream
       localStreamRef.current?.getAudioTracks().forEach((track) => {
@@ -411,8 +381,9 @@ const CallTranscript: FC<CallTranscriptProps> = ({ endSession, activeChat }) => 
         track.enabled = true;
       });
     }
-  }, [muted, mediaRecorder]);
+  }, [isMuted, mediaRecorder]);
 
+  // Try to add unattempted ICE candidates to the peer connection
   const handleUnAttemptedIceCandidates = useCallback(() => {
     if (!peerConnection) return;
     if (newIceCandidates.length > 0) {
@@ -422,6 +393,7 @@ const CallTranscript: FC<CallTranscriptProps> = ({ endSession, activeChat }) => 
     }
   }, [peerConnection, newIceCandidates]);
 
+  // Handle incoming ICE candidates
   const handleOnIceCandidate = useCallback(
     (data) => {
       if (!peerConnection || data.chatId !== chatId) return;
@@ -429,15 +401,13 @@ const CallTranscript: FC<CallTranscriptProps> = ({ endSession, activeChat }) => 
         .addIceCandidate(new RTCIceCandidate(data.candidate))
         .catch((err) => {
           setNewIceCandidates((prev) => [...prev, data.candidate]);
-          console.error(
-            "Error adding ICE candidate (Adding in state for future handling):",
-            err
-          );
+          console.error("Error adding ICE candidate (Adding in state for future handling):", err);
         });
     },
     [chatId, peerConnection]
   );
 
+  // Handle incoming WebRTC offer 
   const handleWebRTCOffer = useCallback(
     async (data) => {
       if (data.chatId !== chatId) return;
@@ -446,9 +416,8 @@ const CallTranscript: FC<CallTranscriptProps> = ({ endSession, activeChat }) => 
       if (offerTimeoutRef.current) {
         clearTimeout(offerTimeoutRef.current);
       }
-      await peerConnection?.setRemoteDescription(
-        new RTCSessionDescription(data.offer)
-      );
+      // Set the incoming offer as the remote description
+      await peerConnection?.setRemoteDescription(new RTCSessionDescription(data.offer));
 
       handleUnAttemptedIceCandidates();
 
@@ -456,8 +425,11 @@ const CallTranscript: FC<CallTranscriptProps> = ({ endSession, activeChat }) => 
         chatId,
       });
 
+      // Create an answer for the offer and set it as the local description
       const answer = await peerConnection.createAnswer();
       await peerConnection.setLocalDescription(answer);
+
+      // Send the answer to the remote peer
       emitSocketEvent(SocketEvent.WEBRTC_ANSWER, {
         answer,
         chatId,
@@ -466,6 +438,7 @@ const CallTranscript: FC<CallTranscriptProps> = ({ endSession, activeChat }) => 
     [chatId, peerConnection, offerTimeoutRef, handleUnAttemptedIceCandidates]
   );
 
+  // Handle incoming WebRTC answer
   const handleWebRTCAnswer = useCallback(
     async (data) => {
       if (data.chatId !== chatId) return;
@@ -473,9 +446,10 @@ const CallTranscript: FC<CallTranscriptProps> = ({ endSession, activeChat }) => 
       emitSocketEvent(SocketEvent.START_AUDIO_CHAT, {
         chatId,
       });
-      await peerConnection?.setRemoteDescription(
-        new RTCSessionDescription(data.answer)
-      );
+
+      // Set the incoming answer as the remote description
+      await peerConnection?.setRemoteDescription(new RTCSessionDescription(data.answer));
+
       handleUnAttemptedIceCandidates();
     },
     [chatId, peerConnection, handleUnAttemptedIceCandidates]
@@ -504,165 +478,44 @@ const CallTranscript: FC<CallTranscriptProps> = ({ endSession, activeChat }) => 
     }
   };
 
-  const reduceTranscriptions = (
-    transcriptions: Transcription[]
-  ): Transcription[] => {
-    return transcriptions.reduce(
-      (acc: Transcription[], current: Transcription) => {
-        if (acc.length === 0) {
-          return [current];
-        }
-
-        const last = acc[acc.length - 1];
-
-        // If the last transcription is not sentence complete, combine with current
-        if (!last.isSentenceComplete) {
-          acc[acc.length - 1] = {
-            ...last,
-            message: `${last.message} ${current.message}`,
-            isSentenceComplete: current.isSentenceComplete,
-            timestamp: current.timestamp, // Update timestamp to latest
-          };
-          return acc;
-        }
-
-        // Otherwise add as new entry
-        return [...acc, current];
-      },
-      []
-    );
-  };
-
   const transcriptions = useMemo(() => {
     const reducedMyTranscriptions = reduceTranscriptions(myTranscriptions);
-    const reducedSpeakerTranscriptions = reduceTranscriptions(
-      speakerTranscriptions
-    );
+    const reducedSpeakerTranscriptions = reduceTranscriptions(speakerTranscriptions);
 
     return [...reducedMyTranscriptions, ...reducedSpeakerTranscriptions].sort(
-      (a, b) =>
-        new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
+      (a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
     );
   }, [myTranscriptions, speakerTranscriptions]);
-
-  const getEmptyScreen = () => {
-    let message;
-    if (isUserJoined === false) {
-      message = isCounsellor
-        ? "Participant left the call"
-        : "Counsellor left the call";
-    } else if (!isUserJoined) {
-      message = isCounsellor
-        ? "Session is starting now.."
-        : "Connecting to your counselor...";
-    }
-    return (
-      <motion.div
-        key={message}
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        exit={{ opacity: 0 }}
-        transition={{ duration: 0.5 }}
-      >
-        <div className="text-white text-4xl font-normal">{message}</div>
-        {!(isUserJoined == null) && (
-          <div className="text-[#BABABA] text-sm text-center mt-1">
-            You can wait for them to rejoin or end the call.
-          </div>
-        )}
-      </motion.div>
-    );
-  };
 
   return (
     <div className="w-screen h-screen flex justify-center items-center">
       <AudioCallBackgroundWrapper>
-        <>
-          {isUserJoined ? (
-            <div
-              className="flex flex-col justify-center items-center
-                gap-4 z-10 transition-all duration-500 ease-in-out min-h-[30vh]"
-            >
-              <div className="text-white flex justify-center items-center flex-col gap-2">
-                <div className="text-base font-medium">Ongoing Voice Call</div>
-                <div className="text-sm text-[#BABABA]">
-                  {formatTime(seconds)}
-                </div>
-              </div>
-              {/* Hidden Audio Element */}
-              <audio
-                ref={(audio) => {
-                  if (audio) {
-                    audio.srcObject = remoteStreamRef.current;
-                    audio.onloadedmetadata = () => {
-                      audio
-                        .play()
-                        .catch((e) =>
-                          console.error("Audio playback failed:", e)
-                        );
-                    };
-                  }
-                }}
-                muted={false}
-                autoPlay
-              />
-              <div className="relative gap-1 flex rounded-lg">
-                {remoteMediaRecorder && (
-                  <div className="rotate-180 z-0 translate-x-[4px] translate-y-[1px]">
-                    <LiveAudioVisualizer
-                      mediaRecorder={remoteMediaRecorder}
-                      width={200}
-                      height={200}
-                      barWidth={4}
-                      barColor="#FFFFFF"
-                    />
-                  </div>
-                )}
-                {mediaRecorder && (
-                  <div className="z-0">
-                    <LiveAudioVisualizer
-                      mediaRecorder={mediaRecorder}
-                      width={200}
-                      height={200}
-                      barWidth={4}
-                      barColor="#FFFFFF"
-                    />
-                  </div>
-                )}
-                <div className="waveForm rounded-full absolute top-[38%] left-0 w-1/6 h-1/4 " />
-                <div className="waveForm rounded-full absolute top-[38%] right-0 w-1/6 h-1/4 rotate-180" />
-              </div>
-            </div>
-          ) : (
-            getEmptyScreen()
-          )}
+        <CallInterface
+          activeChat={activeChat}
+          isCounsellor={isCounsellor}
+          isUserJoined={isUserJoined}
+          mediaRecorder={mediaRecorder}
+          remoteMediaRecorder={remoteMediaRecorder}
+          remoteStreamRef={remoteStreamRef}
+        />
 
-          {/* Update transcription container with max-height */}
-          {isCounsellor && isUserJoined && (
-            <RealTimeTranscript isFocusMode={isFocusMode} transcriptions={transcriptions} />
-          )}
+        {/* Update transcription container with max-height */}
+        {isCounsellor && isUserJoined && (
+          <RealTimeTranscript
+            isFocusMode={isFocusMode}
+            transcriptions={transcriptions}
+          />
+        )}
 
-          <div className="z-10 absolute bottom-10 w-full flex justify-center items-center gap-4">
-            <button
-              disabled={!isUserJoined}
-              onClick={() => setMuted((prev) => !prev)}
-            >
-              {muted ? <NoRecord /> : <Record />}
-            </button>
-            {isCounsellor && (
-              <button disabled={!isUserJoined}>
-                {isFocusMode ? (
-                  <FocusOn onClick={() => setIsFocusMode(false)} />
-                ) : (
-                  <FocusOff onClick={() => setIsFocusMode(true)} />
-                )}
-              </button>
-            )}
-            <button onClick={() => confirmEndSession(true)}>
-              <CutCall />
-            </button>
-          </div>
-        </>
+        <CallControls
+          isCounsellor={isCounsellor}
+          isFocusMode={isFocusMode}
+          isMuted={isMuted}
+          isUserJoined={isUserJoined}
+          onCutCallButtonClick={() => confirmEndSession(true)}
+          onFocusButtonClick={(isFocused: boolean) => setIsFocusMode(isFocused)}
+          onMuteButtonClick={() => setIsMuted((prev) => !prev)}
+        />
       </AudioCallBackgroundWrapper>
       <CallSidebar
         isCounsellor={isCounsellor}
