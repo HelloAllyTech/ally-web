@@ -73,7 +73,7 @@ const CallTranscript: FC<CallTranscriptProps> = ({ endSession, activeChat }) => 
 
   const processTranscription = (
     setCorrespondingTranscription: Dispatch<SetStateAction<Transcription[]>>,
-    payload: any
+    payload
   ) => {
     setCorrespondingTranscription((prev) => {
       const lastTranscription = prev[prev.length - 1];
@@ -129,7 +129,7 @@ const CallTranscript: FC<CallTranscriptProps> = ({ endSession, activeChat }) => 
 
   const socketEventCallbacks = useMemo(
     () => ({
-      [SocketEvent.STAGE]: (data: any) => {
+      [SocketEvent.STAGE]: (data) => {
         setStage(data?.payload?.content);
       },
       [SocketEvent.CHAT_ENDED]: () => {
@@ -140,14 +140,14 @@ const CallTranscript: FC<CallTranscriptProps> = ({ endSession, activeChat }) => 
         }
         confirmEndSession(false);
       },
-      [SocketEvent.NUDGE]: (data: any) => {
+      [SocketEvent.NUDGE]: (data) => {
         const nudge = data.payload;
         console.log("Nudge received:", nudge);
         if (nudge.type === MessageType.NUDGE) {
           setNudges((prev) => [...prev, nudge.content]);
         }
       },
-      [SocketEvent.MESSAGE_RECEIVED]: (data: any) => {
+      [SocketEvent.MESSAGE_RECEIVED]: (data) => {
         const message = data.payload;
         console.log("Message received:", message);
         if (message.type === MessageType.TEXT) {
@@ -158,7 +158,7 @@ const CallTranscript: FC<CallTranscriptProps> = ({ endSession, activeChat }) => 
           }
         }
       },
-      [SocketEvent.UTTERANCE_ENDED]: (data: any) => {
+      [SocketEvent.UTTERANCE_ENDED]: (data) => {
         if (data?.payload.senderId === user?.userId) {
           updateLastTranscription(setMyTranscriptions);
         } else {
@@ -177,10 +177,6 @@ const CallTranscript: FC<CallTranscriptProps> = ({ endSession, activeChat }) => 
 
   useEffect(() => {
     if (activeChat.messages && activeChat.messages.length > 0) {
-      // TODO: currentStage is not present in the chat object; Remove this condition block
-      if (activeChat?.currentStage) {
-        setStage(activeChat?.currentStage);
-      }
       const existingTranscriptions = activeChat.messages
         .reverse()
         .filter((transcription) => transcription.type === MessageType.TEXT)
@@ -409,7 +405,7 @@ const CallTranscript: FC<CallTranscriptProps> = ({ endSession, activeChat }) => 
 
   // Handle incoming WebRTC offer 
   const handleWebRTCOffer = useCallback(
-    async (data) => {
+    async (data: { chatId: number; offer: RTCSessionDescriptionInit }) => {
       if (data.chatId !== chatId) return;
 
       // Clear any existing timeout
@@ -440,7 +436,7 @@ const CallTranscript: FC<CallTranscriptProps> = ({ endSession, activeChat }) => 
 
   // Handle incoming WebRTC answer
   const handleWebRTCAnswer = useCallback(
-    async (data) => {
+    async (data: { chatId: number; answer: RTCSessionDescriptionInit }) => {
       if (data.chatId !== chatId) return;
 
       emitSocketEvent(SocketEvent.START_AUDIO_CHAT, {

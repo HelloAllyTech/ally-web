@@ -11,7 +11,6 @@ import { useSelector } from "react-redux";
 import { toast } from "sonner";
 
 import {
-  LiveCall,
   Calls,
   PostCallSummary,
   StressBusters,
@@ -47,12 +46,9 @@ const PrivateRouteLayout = () => {
 
   const { userStatus } = useSelector((state: RootState) => state.user);
 
-  const excludeDefaultPageHeader = [
-    ROUTES.LIVE_CALL,
-    ROUTES.AUDIO_CALL,
-  ] as string[];
+  const excludeDefaultPageHeader = [ROUTES.AUDIO_CALL] as string[];
   const excludeNavBar = [ROUTES.AUDIO_CALL, ROUTES.SUMMARY] as string[];
-  const excludeCallPicker = [ROUTES.LIVE_CALL, ROUTES.AUDIO_CALL, ROUTES.SUMMARY] as string[];
+  const excludeCallPicker = [ROUTES.AUDIO_CALL, ROUTES.SUMMARY] as string[];
   const isAvailable = userStatus === UserStatus.AVAILABLE;
 
   const { data: getWaitingClientsData, isSuccess: isWaitingClientsSuccess } = useGetWaitingClientsQuery(undefined, {
@@ -145,10 +141,6 @@ const PrivateRouteLayout = () => {
                     <Navigate to={ROUTES.CALLS} />
                   )
                 }
-              />
-              <Route
-                path={ROUTES.LIVE_CALL}
-                element={<LiveCall handleLogout={handleLogout} />}
               />
               <Route path={ROUTES.CLIENT} element={<ClientInterface />} />
               <Route path={ROUTES.AUDIO_CALL} element={<AudioCall />} />
