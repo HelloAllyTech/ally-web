@@ -6,6 +6,12 @@ const audioCallAPI = baseAPI.injectEndpoints({
     getWaitingClients: builder.query<GetWaitingClientsResponse, void>({
       query: () => "/users/waiting-list",
     }),
+    requestCall: builder.mutation<any, void>({
+      query: () => ({
+        url: "/chats/request",
+        method: "POST",
+      }),
+    }),
     acceptCall: builder.mutation<any, { chatId: number }>({
       query: ({ chatId }) => ({
         url: `/chats/${chatId}/accept`,
@@ -29,6 +35,7 @@ const audioCallAPI = baseAPI.injectEndpoints({
 
 export const {
   useGetWaitingClientsQuery,
+  useRequestCallMutation,
   useAcceptCallMutation,
   useLazyGetCounsellorChatQuery,
   useLazyGetClientChatQuery,
