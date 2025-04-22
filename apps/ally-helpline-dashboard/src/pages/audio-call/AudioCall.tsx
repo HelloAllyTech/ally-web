@@ -9,10 +9,10 @@ import { RootState } from "@/store/store";
 import { NoResults } from "@/assets/icons";
 import { setUserStatus } from "@/reducer/userReducer";
 import {  FallbackUI, StressBuster } from "@/components";
-import { useClientChat, useCounsellorChat } from "@/hooks";
 
 import CallTranscript from "./CallTranscript";
 import EndTransitionScreen from "./components/EndTransition";
+import { useEndCallMutation, useLazyGetClientChatQuery, useLazyGetCounsellorChatQuery } from "@/api/audioCall";
 
 const AudioCall: FunctionComponent = () => {
   const [activeChat, setActiveChat] = useState<Chat | null>();
@@ -23,8 +23,11 @@ const AudioCall: FunctionComponent = () => {
   const user = useSelector((state: RootState) => state.user.user);
   const navigate = useNavigate();
 
-  const { getCounsellorChat, endSession } = useCounsellorChat();
-  const { fetchCurrentChat, isLoading } = useClientChat();
+  const [getCounsellorChat, { isLoading: isCounsellorChatLoading }] = useLazyGetCounsellorChatQuery();
+  const [getClientChat, { isLoading: isClientChatLoading }] = useLazyGetClientChatQuery();
+  const [endCall, { isLoading: isEndCallLoading }] = useEndCallMutation();
+
+  const isLoading = isCounsellorChatLoading || isClientChatLoading || isEndCallLoading;
 
   useEffect(() => {
     return () => {
@@ -61,15 +64,15 @@ const AudioCall: FunctionComponent = () => {
   useEffect(() => {
     const fetchActiveChat = async () => {
       try {
-        let data;
+        let response;
         if (user?.role === UserRole.COUNSELOR) {
-          data = await getCounsellorChat();
+          response = await getCounsellorChat();
         } else if (user?.role === UserRole.CLIENT) {
-          data = await fetchCurrentChat();
+          response = await getClientChat();
         }
-        if (data) {
+        if (response) {
           setUserStatus(UserStatus.OFFLINE);
-          setActiveChat(data);
+          setActiveChat(response.data);
         }
       } catch (error) {
         console.error("Error fetching active chat:", error);
@@ -83,7 +86,7 @@ const AudioCall: FunctionComponent = () => {
   const endSessionAndNavigate = async (triggerApi: boolean = true) => {
     try {
       if (triggerApi) {
-        await endSession(activeChat.chatId);
+        await endCall({ chatId: activeChat?.chatId });
       }
       handleEndSequence();
     } catch (error) {

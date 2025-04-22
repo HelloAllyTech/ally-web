@@ -8,8 +8,9 @@ import { ROUTES } from "@/constants/routes";
 import { ChatStatus, QueueStatus, SocketEvent } from "@/types/message";
 import { UserRole } from "@/types/user";
 import { Button } from "@/components";
-import { useClientChat, useSocket } from "@/hooks";
+import { useSocket } from "@/hooks";
 import { RootState } from "@/store/store";
+import { useLazyGetClientChatQuery, useRequestCallMutation } from "@/api/audioCall";
 
 const ClientInterface = () => {
   const navigate = useNavigate();
@@ -18,7 +19,8 @@ const ClientInterface = () => {
 
   const user = useSelector((state: RootState) => state.user.user);
 
-  const { fetchCurrentChat, requestChat, isLoading: isChatLoading } = useClientChat();
+  const [getClientChat, { isLoading: isClientChatLoading }] = useLazyGetClientChatQuery();
+  const [requestCall, { isLoading: isRequestCallLoading }] = useRequestCallMutation();
 
   const socketEventCallbacks = useMemo(
     () => ({
@@ -44,11 +46,11 @@ const ClientInterface = () => {
   useEffect(() => {
     (async () => {
       if (user?.role === UserRole.CLIENT) {
-        const data = await fetchCurrentChat();
-        if (data?.counselorId) {
+        const response = await getClientChat();
+        if (response?.data?.counselorId) {
           navigate(ROUTES.AUDIO_CALL);
         }
-        if (data?.status === ChatStatus.PAUSED) {
+        if (response?.data?.status === ChatStatus.PAUSED) {
           setIsWaiting(true);
         }
       }
@@ -57,8 +59,8 @@ const ClientInterface = () => {
 
   const handleStartAudioChat = async () => {
     try {
-      const chat = await requestChat();
-      if (chat?.status === QueueStatus.WAITING) {
+      const response = await requestCall();
+      if (response?.data?.status === QueueStatus.WAITING) {
         setIsWaiting(true);
       } else {
         navigate(ROUTES.AUDIO_CALL);
@@ -92,7 +94,7 @@ const ClientInterface = () => {
                 "Connect with a counselor instantly and start your journey towards better mental health."
               )}
             </p>
-            {isChatLoading || isWaiting ? (
+            {isRequestCallLoading || isClientChatLoading || isWaiting ? (
               <div className="flex justify-center">
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
               </div>

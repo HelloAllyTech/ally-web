@@ -9,7 +9,6 @@ export const ROUTES = {
 
   // Private Routes
   HOME: "/",
-  LIVE_CALL: "/live-call",
   CALL_LOGS: "/call-logs",
   AUDIO_CALL: "/audio-call",
   CALLS: "/calls",
