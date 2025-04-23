@@ -1,23 +1,25 @@
+import { useState, useEffect, ChangeEvent } from "react";
+import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
-import { useNavigate } from "react-router-dom";
-import { useState, useEffect, ChangeEvent } from "react";
 
 import { UserRole } from "@/types/user";
 import { Button, Input } from "@/components";
-import { useAuthLogin, useUser } from "@/hooks";
+import { useUser } from "@/hooks";
+import { useSignupMutation } from "@/api/auth";
 
 export const Signup = () => {
+  const navigate = useNavigate();
+
   const [formData, setFormData] = useState({
     email: "",
     password: "",
     name: "",
     role: UserRole.CLIENT,
   });
-  const navigate = useNavigate();
-  const { signup, isLoading } = useAuthLogin();
-  const { isAuthenticated, checkAuth } = useUser();
-  const { signup: loginSignup } = useAuthLogin();
+  const { isAuthenticated } = useUser();
+
+  const [signup, { isLoading: isSignupLoading }] = useSignupMutation();
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -34,27 +36,10 @@ export const Signup = () => {
         role: formData.role,
         password: formData.password,
       });
-      await checkAuth(); // Ensure user is authenticated
-      navigate("/"); // Redirect to home
+      navigate("/login"); // Redirect to login page
     } catch (err) {
       toast.error("Signup failed. Please try again.");
       console.error("Signup failed", err);
-    }
-  };
-
-  const handleLogin = async () => {
-    try {
-      await loginSignup({
-        email: formData.email,
-        password: formData.password,
-        name: formData.name,
-        role: formData.role,
-      });
-      await checkAuth();
-      navigate("/");
-    } catch (err) {
-      toast.error("Login failed. Please try again.");
-      console.error("Login failed", err);
     }
   };
 
@@ -113,10 +98,7 @@ export const Signup = () => {
                   setFormData({ ...formData, password: e.target.value })
                 }
                 onKeyDown={(e) => {
-                  if (e.key === "Enter") {
-                    e.preventDefault();
-                    handleLogin();
-                  }
+                  if (e.key === "Enter") e.preventDefault();
                 }}
                 required
                 className="
@@ -148,9 +130,9 @@ export const Signup = () => {
                 w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3
                 rounded-lg transition-all duration-200 transform hover:scale-[1.02]
                 "
-                disabled={isLoading}
+                disabled={isSignupLoading}
               >
-                {isLoading ? (
+                {isSignupLoading ? (
                   <div className="flex items-center justify-center">
                     <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
                     Signing in...
