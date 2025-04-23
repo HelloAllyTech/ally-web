@@ -1,22 +1,20 @@
 import { useSelector } from "react-redux";
-import { User } from "@/types/user";
-import { api } from "@/services/api";
-import { useState } from "react";
+
 import { authenticate, unauthenticate, setUser } from "@/reducer/userReducer";
 import { RootState, store } from "@/store/store";
+import { useLazyGetUserQuery } from "@/api/auth";
 
 export const useUser = () => {
   const isAuthenticated = useSelector((state: RootState) => state.user.isAuthenticated);
   const user = useSelector((state: RootState) => state.user.user);
-  const [isLoading, setIsLoading] = useState<boolean>();
-  const [error, setError] = useState<Error | null>(null);
+
+  const [getUser, { isLoading: isUserLoading }] = useLazyGetUserQuery();
 
   const checkAuth = async () => {
-    setIsLoading(true);
     try {
       const token = localStorage.getItem("accessToken");
       if (token) {
-        const userData = await api.get<User>("/users/me");
+        const userData = await getUser();
         store.dispatch(setUser(userData?.data));
         store.dispatch(authenticate());
         return userData?.data;
@@ -30,8 +28,6 @@ export const useUser = () => {
       store.dispatch(unauthenticate());
       localStorage.removeItem("accessToken");
       localStorage.removeItem("refreshToken");
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -46,9 +42,8 @@ export const useUser = () => {
     user,
     setUser,
     isAuthenticated,
-    isLoading,
     checkAuth,
+    isAuthLoading: isUserLoading,
     logout,
-    error,
   };
 };
