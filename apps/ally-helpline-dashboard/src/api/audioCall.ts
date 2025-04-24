@@ -38,6 +38,9 @@ export const {
   useRequestCallMutation,
   useAcceptCallMutation,
   useLazyGetCounsellorChatQuery,
+  useGetClientChatQuery,
   useLazyGetClientChatQuery,
   useEndCallMutation,
 } = audioCallAPI;
+
+export default audioCallAPI;

@@ -10,7 +10,7 @@ import { UserRole } from "@/types/user";
 import { Button } from "@/components";
 import { useSocket } from "@/hooks";
 import { RootState } from "@/store/store";
-import { useLazyGetClientChatQuery, useRequestCallMutation } from "@/api/audioCall";
+import { useGetClientChatQuery, useRequestCallMutation } from "@/api/audioCall";
 
 const ClientInterface = () => {
   const navigate = useNavigate();
@@ -19,7 +19,7 @@ const ClientInterface = () => {
 
   const user = useSelector((state: RootState) => state.user.user);
 
-  const [getClientChat, { isLoading: isClientChatLoading }] = useLazyGetClientChatQuery();
+  const { data: clientChat } = useGetClientChatQuery(undefined, { refetchOnMountOrArgChange: true });
   const [requestCall, { isLoading: isRequestCallLoading }] = useRequestCallMutation();
 
   const socketEventCallbacks = useMemo(
@@ -46,11 +46,13 @@ const ClientInterface = () => {
   useEffect(() => {
     (async () => {
       if (user?.role === UserRole.CLIENT) {
-        const response = await getClientChat();
-        if (response?.data?.counselorId) {
-          navigate(ROUTES.AUDIO_CALL);
-        }
-        if (response?.data?.status === ChatStatus.PAUSED) {
+        // TODO: Need to redirect to AudioCall page if a call is ongoing
+        // currently clientChat value persists even after call is ended, triggering repeated navigations
+        // if (clientChat?.counselorId) {
+        //   console.log("useeffect", clientChat?.counselorId);
+        //   navigate(ROUTES.AUDIO_CALL);
+        // }
+        if (clientChat?.status === ChatStatus.PAUSED) {
           setIsWaiting(true);
         }
       }
@@ -66,8 +68,7 @@ const ClientInterface = () => {
         navigate(ROUTES.AUDIO_CALL);
       }
     } catch (error) {
-      if (error?.response?.data?.detail)
-        toast.error(`${error.response.data.detail}`);
+      if (error?.response?.data?.detail) toast.error(`${error.response.data.detail}`);
       else toast.error("Something went wrong. Please try again later!");
       setIsWaiting(false);
     }
@@ -85,7 +86,7 @@ const ClientInterface = () => {
           <div className="max-w-md w-full text-center space-y-8">
             <h1 className="text-3xl font-bold text-gray-900">Welcome to Lifeline</h1>
             <p className="text-gray-600">
-              {isWaiting ? (
+              {isRequestCallLoading || isWaiting ? (
                 <>
                   <h2 className="text-xl font-semibold text-gray-700 mb-2">Finding a counselor for you..</h2>
                   <p className="text-gray-500">Please wait while we find the best counselor for you..</p>
@@ -94,14 +95,12 @@ const ClientInterface = () => {
                 "Connect with a counselor instantly and start your journey towards better mental health."
               )}
             </p>
-            {isRequestCallLoading || isClientChatLoading || isWaiting ? (
+            {isRequestCallLoading || isWaiting ? (
               <div className="flex justify-center">
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
               </div>
             ) : (
-              <Button onClick={handleStartAudioChat}>
-                Call with a Counselor
-              </Button>
+              <Button onClick={handleStartAudioChat}>Call with a Counselor</Button>
             )}
           </div>
         </div>
