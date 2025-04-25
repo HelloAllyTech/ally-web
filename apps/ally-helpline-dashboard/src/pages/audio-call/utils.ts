@@ -5,15 +5,15 @@ export const formatTime = (time: number) => {
   const seconds = time % 60;
   const hours = Math.floor(time / 3600);
   return `
-  ${hours > 0 ? `${hours.toString().padStart(2, "0")}:` : ""}
-  ${minutes.toString().padStart(2, "0")}:
+  ${hours > 0 ? `${hours.toString().padStart(2, "0")} :` : ""}
+  ${minutes.toString().padStart(2, "0")} :
   ${seconds.toString().padStart(2, "0")}
   `;
 };
 
 export const getSpeakerName = (senderId: number, previousSenderId: number, userId: number) => {
   if (previousSenderId && previousSenderId == senderId) return "";
-  return senderId === userId ? "You:" : "Client:";
+  return senderId === userId ? "You :" : "Client :";
 };
 
 export const reduceTranscriptions = (transcriptions: Transcription[]): Transcription[] => {
