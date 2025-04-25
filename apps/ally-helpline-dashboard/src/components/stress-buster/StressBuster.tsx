@@ -120,7 +120,7 @@ const StressBuster: FunctionComponent<StressBusterProps> = ({
             src={MindfullnessVideo}
             autoPlay={playOnMount}
             onLoadedData={onVideoLoaded}
-            className="w-full h-full object-cover bg-transparent mix-blend-screen"
+            className="h-full object-cover bg-transparent mix-blend-screen"
           />
         </div>
 
