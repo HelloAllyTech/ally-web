@@ -4,6 +4,7 @@ const xirsysIdent = import.meta.env.VITE_XIRSYS_IDENT;
 const xirsysSecret = import.meta.env.VITE_XIRSYS_SECRET;
 const xirsysDomain = import.meta.env.VITE_XIRSYS_DOMAIN;
 const xirsysChannel = import.meta.env.VITE_XIRSYS_CHANNEL;
+const metabaseDashboardId = import.meta.env.VITE_METABASE_DASHBOARD_ID;
 
 export {
   apiBaseUrl,
@@ -12,4 +13,5 @@ export {
   xirsysSecret,
   xirsysDomain,
   xirsysChannel,
+  metabaseDashboardId,
 };
