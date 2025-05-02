@@ -6,9 +6,9 @@ import { FC, useEffect, useState } from "react";
 import { Skeleton } from "@mui/material";
 import { isEqual } from "lodash";
 
+import { useEnhanceContentMutation, useUpdateCallSummaryMutation } from "@/api/callSummary";
 import { Button, Dropdown, TextField, ExpandingSection } from "@/components";
 import { CallSummaryProps, Gender } from "../types";
-import { useEnhanceContentMutation, useUpdateCallSummaryMutation } from "../api";
 
 const CallSummaryStep: FC<CallSummaryProps> = ({ isLoading, onProceed, summaryData }) => {
   const { chatId } = useParams();

@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { Container, Dialog } from "@mui/material";
 import { useParams, useSearchParams, useNavigate } from "react-router-dom";
 
+import { useGetCallSummaryQuery } from "@/api/callSummary";
 import { RootState, store } from "@/store/store";
 import { ArticleReader, Button, Drawer } from "@/components";
 import { setUserStatus } from "@/reducer/userReducer";
@@ -14,7 +15,6 @@ import StressBusterStep from "./StressBusterStep";
 import CallHighlights from "./components/CallHighlights";
 import CallSummaryStep from "./components/CallSummaryStep";
 import { ModalData, SectionType } from "./types";
-import { useGetCallSummaryQuery } from "./api";
 import ArticleGridStep from "./components/ArticleGridStep";
 import { Article } from "@/components/article/types";
 import { UserStatus } from "@/types/user";

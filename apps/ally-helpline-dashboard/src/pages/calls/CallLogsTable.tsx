@@ -10,15 +10,16 @@ import {
   TableRow,
 } from "@mui/material";
 
+import { useGetCallLogsQuery } from "@/api/calls";
 import { FallbackUI } from "@/components";
 import { NoResults } from "@/assets/icons";
-import { useGetCallLogsQuery } from "./api";
 import SummarySideBar from "./components/SummarySideBar";
 import { convertSecondsToDuration, formatDate } from "./utils";
 import { dummySummarydata, TABLE_HEADERS, TAG_COLORS } from "./constants";
 
 const CallLogsTable = () => {
   const { data, isLoading } = useGetCallLogsQuery("");
+
   const [transition, setTransition] = useState(true);
   const [summary, setSummary] = useState<any>(null);
 
