@@ -54,11 +54,7 @@ const AudioCall: FunctionComponent = () => {
 
     // Wait 3 more seconds
     await new Promise((resolve) => setTimeout(resolve, 2000));
-    if (localStorage.getItem("showStressBuster") === "true") {
-      setShowStressBuster(true);
-    } else {
-      handleViewCallHighlights();
-    }
+    setShowStressBuster(true);
     // Navigate
     // navigate(`/summary/${chatId}`);
     // Show stress buster
