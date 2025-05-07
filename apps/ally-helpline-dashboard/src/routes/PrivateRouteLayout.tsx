@@ -1,35 +1,40 @@
 import { useState, useEffect } from "react";
 import {
-  Navigate,
   Route,
   Routes,
+  Navigate,
+  matchPath,
   useNavigate,
   useLocation,
-  matchPath,
 } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { toast } from "sonner";
 
 import {
   Calls,
-  PostCallSummary,
-  StressBusters,
   Learn,
   Calendar,
-  Analytics,
   Settings,
+  Analytics,
+  AudioCall,
+  StressBusters,
+  PostCallSummary,
   ClientInterface,
 } from "@/pages";
-import { RootState, store } from "@/store/store";
-import { CallPicker, NavSideBar, LifelineHeader } from "@/components";
 import { useUser } from "@/hooks";
 import { TabId } from "@/constants/tabs";
-import { navBarOptions, ROUTES } from "@/constants/routes";
-import { UserRole, UserStatus } from "@/types/user";
 import { WaitingClient } from "@/types/message";
-import AudioCall from "@/pages/audio-call/AudioCall";
+import { RootState, store } from "@/store/store";
+import { UserRole, UserStatus } from "@/types/user";
 import { setUserStatus } from "@/reducer/userReducer";
-import { useAcceptCallMutation, useGetWaitingClientsQuery } from "@/api/audioCall";
+import { navBarOptions, ROUTES } from "@/constants/routes";
+import { CallPicker, NavSideBar, LifelineHeader } from "@/components";
+import {
+  useAcceptCallMutation,
+  useGetWaitingClientsQuery,
+} from "@/api/audioCall";
+
+import PermissionGuardedRoute from "./PermissionGuardedRoute";
 
 // TODO: Remove all un used pages
 // TODO: Restrict client access to pages
@@ -51,10 +56,11 @@ const PrivateRouteLayout = () => {
   const excludeCallPicker = [ROUTES.AUDIO_CALL, ROUTES.SUMMARY] as string[];
   const isAvailable = userStatus === UserStatus.AVAILABLE;
 
-  const { data: getWaitingClientsData, isSuccess: isWaitingClientsSuccess } = useGetWaitingClientsQuery(undefined, {
-    skip: user?.role !== UserRole.COUNSELOR || !isAvailable,
-    pollingInterval: 5000,
-  });
+  const { data: getWaitingClientsData, isSuccess: isWaitingClientsSuccess } =
+    useGetWaitingClientsQuery(undefined, {
+      skip: user?.role !== UserRole.COUNSELOR || !isAvailable,
+      pollingInterval: 5000,
+    });
   const [acceptCall] = useAcceptCallMutation();
 
   useEffect(() => {
@@ -116,7 +122,10 @@ const PrivateRouteLayout = () => {
   };
 
   const showNavbar = !isClient && !isPathExcluded(pathname, excludeNavBar);
-  const showLifelineHeader = !isPathExcluded(pathname, excludeDefaultPageHeader);
+  const showLifelineHeader = !isPathExcluded(
+    pathname,
+    excludeDefaultPageHeader
+  );
 
   if (user)
     return (
@@ -143,24 +152,45 @@ const PrivateRouteLayout = () => {
                 }
               />
               <Route path={ROUTES.CLIENT} element={<ClientInterface />} />
-              <Route path={ROUTES.AUDIO_CALL} element={<AudioCall />} />
-              <Route path={ROUTES.CALLS} element={<Calls />} />
-              <Route path={ROUTES.CALENDER} element={<Calendar />} />
-              <Route path={ROUTES.LEARN} element={<Learn />} />
-              <Route path={ROUTES.ANALYTICS} element={<Analytics />} />
-              <Route path={ROUTES.SETTINGS} element={<Settings />} />
-              <Route path={ROUTES.SUMMARY} element={<PostCallSummary />} />
-              <Route path={ROUTES.STRESS_BUSTERS} element={<StressBusters />} />
+              <PermissionGuardedRoute
+                path={ROUTES.AUDIO_CALL}
+                element={<AudioCall />}
+              />
+              <PermissionGuardedRoute path={ROUTES.CALLS} element={<Calls />} />
+              <PermissionGuardedRoute
+                path={ROUTES.CALENDER}
+                element={<Calendar />}
+              />
+              <PermissionGuardedRoute path={ROUTES.LEARN} element={<Learn />} />
+              <PermissionGuardedRoute
+                path={ROUTES.ANALYTICS}
+                element={<Analytics />}
+              />
+              <PermissionGuardedRoute
+                path={ROUTES.SETTINGS}
+                element={<Settings />}
+              />
+              <PermissionGuardedRoute
+                path={ROUTES.STRESS_BUSTERS}
+                element={<StressBusters />}
+              />
+              <PermissionGuardedRoute
+                path={ROUTES.SUMMARY}
+                element={<PostCallSummary />}
+              />
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
           </div>
         </div>
-        {alertCall && waitingClients.length > 0 && isAvailable && !isPathExcluded(pathname, excludeCallPicker) && (
-          <CallPicker
-            onAccept={onAcceptCall}
-            onDecline={() => setAlertCall(false)}
-          />
-        )}
+        {alertCall &&
+          waitingClients.length > 0 &&
+          isAvailable &&
+          !isPathExcluded(pathname, excludeCallPicker) && (
+            <CallPicker
+              onAccept={onAcceptCall}
+              onDecline={() => setAlertCall(false)}
+            />
+          )}
       </div>
     );
   else return <></>;

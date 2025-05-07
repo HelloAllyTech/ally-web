@@ -8,16 +8,18 @@ import Calendar from "./calendar";
 import Analytics from "./analytics";
 import Settings from "./settings";
 import ClientInterface from "./client-interface";
+import AudioCall from "./audio-call";
 
 export {
   Login,
   Calls,
+  Learn,
   SignUp,
+  Calendar,
+  Settings,
+  Analytics,
+  AudioCall,
   StressBusters,
   PostCallSummary,
-  Learn,
-  Calendar,
-  Analytics,
-  Settings,
   ClientInterface,
 };

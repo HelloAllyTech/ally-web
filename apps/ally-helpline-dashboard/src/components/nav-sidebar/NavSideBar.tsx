@@ -1,14 +1,24 @@
 import { FunctionComponent } from "react";
 
+import { useUser } from "@/hooks";
 import { navBarOptions } from "@/constants/routes";
+import { hasPermissionForTab } from "@/utils/permission";
 
 import { NavSideBarProps } from "./types";
 
-const NavSideBar:FunctionComponent<NavSideBarProps> = ({ activeTab, onTabChange }: NavSideBarProps) => {
+const NavSideBar: FunctionComponent<NavSideBarProps> = ({
+  activeTab,
+  onTabChange,
+}: NavSideBarProps) => {
+  const { permissions } = useUser();
+  const permittedTabs = navBarOptions.filter((tab) =>
+    hasPermissionForTab(permissions, tab.id)
+  );
+
   return (
     <div className="w-72 bg-white border-r border-r-[#E5E7EB] mt-20 fixed h-screen">
       <div className="flex flex-col gap-0 m-3">
-        {navBarOptions.map(({ id, Icon, title, path }) => (
+        {permittedTabs.map(({ id, Icon, title, path }) => (
           <div
             key={id}
             className={`

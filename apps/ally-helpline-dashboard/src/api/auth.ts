@@ -1,5 +1,5 @@
-import { baseAPI } from "@/api/baseAPI";
 import { User } from "@/types/user";
+import { baseAPI } from "@/api/baseAPI";
 
 const authAPI = baseAPI.injectEndpoints({
   endpoints: (builder) => ({
@@ -19,8 +19,16 @@ const authAPI = baseAPI.injectEndpoints({
     }),
     getUser: builder.query<User, void>({
       query: () => "/users/me",
-    })
+    }),
+    getPermissions: builder.query<string[], void>({
+      query: () => "/auth/permissions",
+    }),
   }),
 });
 
-export const { useLoginMutation, useLazyGetUserQuery, useSignupMutation } = authAPI;
+export const {
+  useLoginMutation,
+  useSignupMutation,
+  useLazyGetUserQuery,
+  useLazyGetPermissionsQuery,
+} = authAPI;

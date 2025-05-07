@@ -4,14 +4,16 @@ import { User, UserStatus } from "@/types/user";
 
 interface UserState {
   isAuthenticated: boolean;
-  user: User,
+  user: User;
   userStatus: UserStatus;
+  permissions: string[];
 }
 
 const initialState = {
   isAuthenticated: false,
   user: null,
   userStatus: UserStatus.OFFLINE,
+  permissions: [],
 } satisfies UserState as UserState;
 
 const userSlice = createSlice({
@@ -29,9 +31,18 @@ const userSlice = createSlice({
     },
     setUserStatus(state, action: PayloadAction<UserStatus>) {
       state.userStatus = action.payload;
-    }
+    },
+    setPermissions(state, action: PayloadAction<string[]>) {
+      state.permissions = action.payload;
+    },
   },
 });
 
-export const { authenticate, unauthenticate, setUser, setUserStatus } = userSlice.actions;
+export const {
+  setUser,
+  authenticate,
+  setUserStatus,
+  unauthenticate,
+  setPermissions,
+} = userSlice.actions;
 export default userSlice;
