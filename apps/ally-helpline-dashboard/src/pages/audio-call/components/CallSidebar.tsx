@@ -1,12 +1,15 @@
 /* eslint-disable react/no-array-index-key */
-import { FC, useEffect, useRef } from "react";
+import { FC, useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Divider } from "@mui/material";
-import { ThumbsDown, ThumbsUp } from "lucide-react";
+import { InfoIcon, ThumbsDown, ThumbsUp } from "lucide-react";
 
 import { Close, LifelineLogo } from "@/assets/icons";
-import { CallSidebarProps } from "../types";
 import { CustomMarkdown } from "@/components";
+import { useAddFeedbackMutation, useUpdateFeedbackMutation } from "@/api/audioCall";
+import { FeedbackResponse } from "@/types/message";
+
+import { CallSidebarProps, Nudge } from "../types";
 
 const CallSidebar: FC<CallSidebarProps> = ({
     isCounsellor,
@@ -18,12 +21,50 @@ const CallSidebar: FC<CallSidebarProps> = ({
 }) => {
   const nudgesContainerRef = useRef<HTMLDivElement>(null);
 
+  const [feedbacks, setFeedbacks] = useState<{ [key: number]: FeedbackResponse }>({});
+
+  const [addFeedback, { isLoading: isAddingFeedback }] = useAddFeedbackMutation();
+  const [updateFeedback, { isLoading: isUpdatingFeedback }] = useUpdateFeedbackMutation();
+
+  const isLoading = isAddingFeedback || isUpdatingFeedback;
+
   // Add this effect to scroll to bottom when nudges change
   useEffect(() => {
     if (nudgesContainerRef.current && isFocusMode) {
       nudgesContainerRef.current.scrollTop = nudgesContainerRef.current.scrollHeight;
     }
   }, [nudges, isFocusMode]);
+
+  useEffect(() => {
+    if (nudges) {
+      setFeedbacks((prev) => {
+        const newFeedbacks = {};
+        nudges.forEach((nudge) => {
+          newFeedbacks[nudge.id] = nudge.feedback;
+        });
+        return { ...prev, ...newFeedbacks };
+      });
+    }
+  }, [nudges]);
+
+  const handleFeedback = async (nudge: Nudge, rating: number) => {
+    const currentFeedback = feedbacks[nudge.id];
+
+    if (currentFeedback?.rating === rating) return;
+
+    let response;
+    if (currentFeedback?.feedbackId) {
+      response = await updateFeedback({
+        feedbackId: currentFeedback.feedbackId,
+        feedback: { ...currentFeedback, rating },
+      });
+    } else {
+      response = await addFeedback({ id: nudge.id, feedback: { rating } });
+    }
+
+    setFeedbacks((prev) => ({ ...prev, [nudge.id]: response.data }));
+  };
+
   return (
     <AnimatePresence>
       {isCounsellor && isUserJoined && (
@@ -56,9 +97,15 @@ const CallSidebar: FC<CallSidebarProps> = ({
                 className="bg-[#1C1F2A] rounded-lg p-4 mb-2"
                 key={`nudge-${index}`}
               >
-                <LifelineLogo />
+                <div className="mb-2 flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <LifelineLogo />
+                    <span className="border-l pl-2 text-[#407BFF] text-[18px]">{index + 1}</span>
+                  </div>
+                  <InfoIcon className="w-5 h-5" />
+                </div>
                 <CustomMarkdown
-                  content={nudge}
+                  content={nudge.content}
                   className="font-['IBM_Plex_Serif']"
                 />
                 <Divider
@@ -66,10 +113,18 @@ const CallSidebar: FC<CallSidebarProps> = ({
                 />
                 <div className="flex text-sm items-center gap-2 text-[#BABABA]">
                   <span>Does this help?</span>
-                  <button className="hover:bg-[#292929] p-2 rounded-lg transition-colors">
+                  <button
+                    className="hover:bg-[#292929] p-2 rounded-lg transition-colors"
+                    onClick={() => handleFeedback(nudge, 0)}
+                    disabled={isLoading}
+                  >
                     <ThumbsDown className="w-5 h-5" />
                   </button>
-                  <button className="hover:bg-[#292929] p-2 rounded-lg transition-colors">
+                  <button
+                    className="hover:bg-[#292929] p-2 rounded-lg transition-colors"
+                    onClick={() => handleFeedback(nudge, 1)}
+                    disabled={isLoading}
+                  >
                     <ThumbsUp className="w-5 h-5" />
                   </button>
                 </div>

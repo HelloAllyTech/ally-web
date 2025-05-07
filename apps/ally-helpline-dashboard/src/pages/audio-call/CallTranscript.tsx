@@ -6,11 +6,11 @@ import { UserRole } from "@/types/user";
 import { RootState } from "@/store/store";
 import { ICE_SERVERS } from "@/constants/common";
 import { useIceServers, useSocket } from "@/hooks";
-import { MessageType, SocketEvent } from "@/types/message";
+import { FeedbackResponse, MessageType, SocketEvent } from "@/types/message";
 
 import "./CallTranscript.css";
 import { reduceTranscriptions } from "./utils";
-import { CallTranscriptProps, Transcription } from "./types";
+import { CallTranscriptProps, Transcription, Nudge } from "./types";
 import { AUDIO_FILE_SIZE, OFFER_TIMEOUT_MS } from "./constants";
 import AudioCallBackgroundWrapper from "./components/AudioCallBackgroundWrapper";
 import CallSidebar from "./components/CallSidebar";
@@ -47,7 +47,7 @@ const CallTranscript: FC<CallTranscriptProps> = ({ endSession, activeChat }) => 
   const [isFocusMode, setIsFocusMode] = useState(true);
   const [speakerTranscriptions, setSpeakerTranscriptions] = useState<Transcription[]>([]);
   const [myTranscriptions, setMyTranscriptions] = useState<Transcription[]>([]);
-  const [nudges, setNudges] = useState<string[]>([]);
+  const [nudges, setNudges] = useState<Nudge[]>([]);
   const [stage, setStage] = useState<string>();
   const [newIceCandidates, setNewIceCandidates] = useState([]);
   const [isUserJoined, setIsUserJoined] = useState(null);
@@ -144,7 +144,10 @@ const CallTranscript: FC<CallTranscriptProps> = ({ endSession, activeChat }) => 
         const nudge = data.payload;
         console.log("Nudge received:", nudge);
         if (nudge.type === MessageType.NUDGE) {
-          setNudges((prev) => [...prev, nudge.content]);
+          setNudges((prev) => [
+            ...prev,
+            { content: nudge.content as string, id: nudge.id as number, feedback: nudge.feedback as FeedbackResponse }
+          ]);
         }
       },
       [SocketEvent.MESSAGE_RECEIVED]: (data) => {
@@ -177,7 +180,7 @@ const CallTranscript: FC<CallTranscriptProps> = ({ endSession, activeChat }) => 
 
   useEffect(() => {
     if (activeChat.messages && activeChat.messages.length > 0) {
-      const existingTranscriptions = activeChat.messages
+      const existingTranscriptions = [...activeChat.messages]
         .reverse()
         .filter((transcription) => transcription.type === MessageType.TEXT)
         .map((transcription) => ({
@@ -195,10 +198,10 @@ const CallTranscript: FC<CallTranscriptProps> = ({ endSession, activeChat }) => 
         ?.filter((payload) => payload.senderId !== user.userId)
       );
 
-      const existingNudges = activeChat.messages
+      const existingNudges = [...activeChat.messages]
         .reverse()
         .filter((message) => message.type === MessageType.NUDGE)
-        .map((nudge) => nudge.content);
+        .map((nudge) => ({ content: nudge.content, id: nudge.id, feedback: nudge.feedback }));
       setNudges(existingNudges);
     }
   }, [activeChat]);

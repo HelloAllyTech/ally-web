@@ -1,6 +1,6 @@
 import { MutableRefObject } from "react";
 
-import { Chat } from "@/types/message";
+import { Chat, FeedbackResponse } from "@/types/message";
 
 export interface CallTranscriptProps {
   activeChat: Chat;
@@ -37,7 +37,7 @@ export interface CallSidebarProps {
   isUserJoined: boolean;
   onClose: () => void;
   stage: string;
-  nudges: string[];
+  nudges: Nudge[];
 }
 
 export interface Transcription {
@@ -47,4 +47,10 @@ export interface Transcription {
   timestamp: string;
   isFinal?: boolean;
   isSentenceComplete?: boolean;
+}
+
+export interface Nudge {
+  content: string;
+  id: number;
+  feedback: FeedbackResponse;
 }

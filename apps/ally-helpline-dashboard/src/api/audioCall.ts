@@ -1,5 +1,5 @@
 import { baseAPI } from "@/api/baseAPI";
-import { Chat, GetWaitingClientsResponse } from "@/types/message";
+import { Chat, FeedbackInput, FeedbackResponse, GetWaitingClientsResponse } from "@/types/message";
 
 const audioCallAPI = baseAPI.injectEndpoints({
   endpoints: (builder) => ({
@@ -30,6 +30,20 @@ const audioCallAPI = baseAPI.injectEndpoints({
         method: "POST",
       }),
     }),
+    addFeedback: builder.mutation<FeedbackResponse, { id: number; feedback: FeedbackInput }>({
+      query: ({ id, feedback }) => ({
+        url: `chats/messages/${id}/feedback`,
+        method: "POST",
+        body: feedback,
+      }),
+    }),
+    updateFeedback: builder.mutation<FeedbackResponse, { feedbackId: number; feedback: FeedbackInput }>({
+      query: ({ feedbackId, feedback }) => ({
+        url: `chats/messages/feedback/${feedbackId}`,
+        method: "PATCH",
+        body: feedback,
+      }),
+    }),
   }),
 });
 
@@ -41,6 +55,8 @@ export const {
   useGetClientChatQuery,
   useLazyGetClientChatQuery,
   useEndCallMutation,
+  useAddFeedbackMutation,
+  useUpdateFeedbackMutation,
 } = audioCallAPI;
 
 export default audioCallAPI;

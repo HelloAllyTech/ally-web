@@ -7,9 +7,11 @@ export type ChatMessage = {
     source: string;
   };
   createdAt: string;
+  feedback?: FeedbackResponse;
   id: number;
   senderId: number;
   type: MessageType;
+  updatedAt: string;
 };
 
 export enum ChatStatus {
@@ -56,8 +58,9 @@ export type SocketMessage = {
 };
 
 export enum MessageType {
-  TEXT = "TEXT",
   NUDGE = "NUDGE",
+  STAGE = "STAGE",
+  TEXT = "TEXT",
 }
 
 // TODO: Update the socket event names to UPPER CASE
@@ -103,4 +106,18 @@ export interface WaitingClient {
 export interface GetWaitingClientsResponse {
   totalWaiting: number;
   clients: WaitingClient[];
+}
+
+export interface FeedbackInput {
+  rating?: number;
+}
+
+export interface FeedbackResponse {
+  rating: number;
+  messageId: number;
+  userId: number;
+  modifiedContent: string | null;
+  createdAt: string;
+  updatedAt: string;
+  feedbackId: number;
 }
