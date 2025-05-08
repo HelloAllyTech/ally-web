@@ -1,6 +1,12 @@
 import { Book, Relax } from "@/assets/icons";
 
+import PhoneOutlinedIcon from "@mui/icons-material/PhoneOutlined";
+import DateRangeOutlinedIcon from "@mui/icons-material/DateRangeOutlined";
+import LeaderboardOutlinedIcon from "@mui/icons-material/LeaderboardOutlined";
+import SettingsOutlinedIcon from "@mui/icons-material/SettingsOutlined";
+
 import { TabId } from "./tabs";
+import { Permissions } from "./permissions";
 
 export const ROUTES = {
   // Public Routes
@@ -21,47 +27,47 @@ export const ROUTES = {
   CLIENT: "/client",
 } as const;
 
-import PhoneOutlinedIcon from "@mui/icons-material/PhoneOutlined";
-import DateRangeOutlinedIcon from "@mui/icons-material/DateRangeOutlined";
-import LeaderboardOutlinedIcon from "@mui/icons-material/LeaderboardOutlined";
-import SettingsOutlinedIcon from "@mui/icons-material/SettingsOutlined";
-
 export const navBarOptions = [
     {
       id: TabId.CALLS,
       title: "Calls",
       Icon: PhoneOutlinedIcon,
       path: ROUTES.CALLS,
-      
+      permission: Permissions.VIEW_NAVBAR_CALLS
     },
     {
       id: TabId.CALENDER,
       title: "Calender",
       Icon: DateRangeOutlinedIcon,
-      path: ROUTES.CALENDER
+      path: ROUTES.CALENDER,
+      permission: Permissions.VIEW_NAVBAR_CALENDAR
     },
     {
       id: TabId.LEARN,
       title: "Learn",
       Icon: Book,
-      path: ROUTES.LEARN
+      path: ROUTES.LEARN,
+      permission: Permissions.VIEW_NAVBAR_LEARN
     },
     {
       id: TabId.STRESS_BUSTERS,
       title: "Stress Busters",
       Icon: Relax,
-      path: ROUTES.STRESS_BUSTERS
+      path: ROUTES.STRESS_BUSTERS,
+      permission: Permissions.VIEW_NAVBAR_STRESS_BUSTER
     },
     {
       id:  TabId.ANALYTICS,
       title: "Analytics",
       Icon: LeaderboardOutlinedIcon,
-      path: ROUTES.ANALYTICS
+      path: ROUTES.ANALYTICS,
+      permission: Permissions.VIEW_NAVBAR_ANALYTICS
     },
     {
       id: TabId.SETTINGS,
       title: "Settings",
       Icon: SettingsOutlinedIcon,
-      path: ROUTES.SETTINGS
+      path: ROUTES.SETTINGS,
+      permission: Permissions.VIEW_NAVBAR_SETTINGS
     },
   ];

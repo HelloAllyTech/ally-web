@@ -100,7 +100,7 @@ const CallLogsTable = () => {
           </TableRow>
         </TableHead>
         <TableBody>
-          {data?.map((row: { [key: string]: any }, index: number) => {
+          {data?.data?.map((row: { [key: string]: any }, index: number) => {
             const displayData = getDisplayData(row);
             return (
               <TableRow key={displayData.id}>

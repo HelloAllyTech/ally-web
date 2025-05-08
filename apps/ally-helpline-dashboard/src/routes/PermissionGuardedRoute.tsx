@@ -1,23 +1,21 @@
 import { FunctionComponent } from "react";
-import { Route } from "react-router-dom";
 
 import { useUser } from "@/hooks";
-import { hasPermissionForRoute } from "@/utils/permission";
+import { AccessDenied } from "@/pages";
+import { Permissions } from "@/constants/permissions";
 
 interface PermissionGuardedRouteType {
-  path: string;
+  permission: Permissions;
   element: JSX.Element;
 }
 
 const PermissionGuardedRoute: FunctionComponent<PermissionGuardedRouteType> = ({
-  path,
+  permission,
   element,
 }) => {
   const { permissions } = useUser();
-  const hasPermission = hasPermissionForRoute(permissions, path);
 
-  // TODO: add a fallback component saying no access
-  return hasPermission && <Route path={path} element={element} />;
+  return (!permission || permissions.includes(permission) ? element : (<AccessDenied />));
 };
 
 export default PermissionGuardedRoute;

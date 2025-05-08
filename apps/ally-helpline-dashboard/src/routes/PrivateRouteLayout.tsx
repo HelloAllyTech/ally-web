@@ -27,6 +27,7 @@ import { WaitingClient } from "@/types/message";
 import { RootState, store } from "@/store/store";
 import { UserRole, UserStatus } from "@/types/user";
 import { setUserStatus } from "@/reducer/userReducer";
+import { Permissions } from "@/constants/permissions";
 import { navBarOptions, ROUTES } from "@/constants/routes";
 import { CallPicker, NavSideBar, LifelineHeader } from "@/components";
 import {
@@ -151,32 +152,79 @@ const PrivateRouteLayout = () => {
                   )
                 }
               />
+
               <Route path={ROUTES.CLIENT} element={<ClientInterface />} />
-              <PermissionGuardedRoute
+              <Route
                 path={ROUTES.AUDIO_CALL}
-                element={<AudioCall />}
+                element={
+                  <PermissionGuardedRoute
+                    permission={Permissions.VIEW_NAVBAR_CALLS}
+                    element={<AudioCall />}
+                  />
+                }
               />
-              <PermissionGuardedRoute path={ROUTES.CALLS} element={<Calls />} />
-              <PermissionGuardedRoute
+              <Route
+                path={ROUTES.CALLS}
+                element={
+                  <PermissionGuardedRoute
+                    permission={Permissions.VIEW_NAVBAR_CALLS}
+                    element={<Calls />}
+                  />
+                }
+              />
+              <Route
                 path={ROUTES.CALENDER}
-                element={<Calendar />}
+                element={
+                  <PermissionGuardedRoute
+                    permission={Permissions.VIEW_NAVBAR_CALENDAR}
+                    element={<Calendar />}
+                  />
+                }
               />
-              <PermissionGuardedRoute path={ROUTES.LEARN} element={<Learn />} />
-              <PermissionGuardedRoute
+              <Route
+                path={ROUTES.LEARN}
+                element={
+                  <PermissionGuardedRoute
+                    permission={Permissions.VIEW_NAVBAR_LEARN}
+                    element={<Learn />}
+                  />
+                }
+              />
+              <Route
                 path={ROUTES.ANALYTICS}
-                element={<Analytics />}
+                element={
+                  <PermissionGuardedRoute
+                    permission={Permissions.VIEW_NAVBAR_ANALYTICS}
+                    element={<Analytics />}
+                  />
+                }
               />
-              <PermissionGuardedRoute
+              <Route
                 path={ROUTES.SETTINGS}
-                element={<Settings />}
+                element={
+                  <PermissionGuardedRoute
+                    permission={Permissions.VIEW_NAVBAR_SETTINGS}
+                    element={<Settings />}
+                  />
+                }
               />
-              <PermissionGuardedRoute
+              <Route
                 path={ROUTES.STRESS_BUSTERS}
-                element={<StressBusters />}
+                element={
+                  <PermissionGuardedRoute
+                    permission={Permissions.VIEW_NAVBAR_STRESS_BUSTER}
+                    element={<StressBusters />}
+                  />
+                }
               />
-              <PermissionGuardedRoute
+              <Route
                 path={ROUTES.SUMMARY}
-                element={<PostCallSummary />}
+                element={
+                  <PermissionGuardedRoute
+                    permission={Permissions.EDIT_SUMMARY}
+                    element={<PostCallSummary />}
+                  />
+                }
               />
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>

@@ -9,6 +9,7 @@ import Analytics from "./analytics";
 import Settings from "./settings";
 import ClientInterface from "./client-interface";
 import AudioCall from "./audio-call";
+import AccessDenied from "./access-denied";
 
 export {
   Login,
@@ -19,6 +20,7 @@ export {
   Settings,
   Analytics,
   AudioCall,
+  AccessDenied,
   StressBusters,
   PostCallSummary,
   ClientInterface,

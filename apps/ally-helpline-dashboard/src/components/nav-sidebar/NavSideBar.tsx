@@ -2,7 +2,6 @@ import { FunctionComponent } from "react";
 
 import { useUser } from "@/hooks";
 import { navBarOptions } from "@/constants/routes";
-import { hasPermissionForTab } from "@/utils/permission";
 
 import { NavSideBarProps } from "./types";
 
@@ -11,8 +10,8 @@ const NavSideBar: FunctionComponent<NavSideBarProps> = ({
   onTabChange,
 }: NavSideBarProps) => {
   const { permissions } = useUser();
-  const permittedTabs = navBarOptions.filter((tab) =>
-    hasPermissionForTab(permissions, tab.id)
+  const permittedTabs = navBarOptions.filter(
+    (tab) => !tab.permission || permissions.includes(tab.permission)
   );
 
   return (
