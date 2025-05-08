@@ -3,6 +3,13 @@ import { baseAPI } from "@/api/baseAPI";
 interface GetDashboardUrlResponse {
   url: string;
 }
+
+type GetDashboardsResponse = {
+  id: string;
+  externalId: string;
+  name: string;
+}[];
+
 const analyticsAPI = baseAPI.injectEndpoints({
   endpoints: (builder) => ({
     getDashboardUrl: builder.query<
@@ -11,7 +18,11 @@ const analyticsAPI = baseAPI.injectEndpoints({
     >({
       query: ({ dashboardId }) => `/analytics/dashboard/${dashboardId}`,
     }),
+    getDashboards: builder.query<GetDashboardsResponse, void>({
+      query: () => "/analytics/dashboard",
+    }),
   }),
 });
 
-export const { useLazyGetDashboardUrlQuery } = analyticsAPI;
+export const { useLazyGetDashboardUrlQuery, useGetDashboardsQuery } =
+  analyticsAPI;
