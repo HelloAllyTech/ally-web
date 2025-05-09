@@ -154,15 +154,7 @@ const PrivateRouteLayout = () => {
               />
 
               <Route path={ROUTES.CLIENT} element={<ClientInterface />} />
-              <Route
-                path={ROUTES.AUDIO_CALL}
-                element={
-                  <PermissionGuardedRoute
-                    permission={Permissions.VIEW_NAVBAR_CALLS}
-                    element={<AudioCall />}
-                  />
-                }
-              />
+              <Route path={ROUTES.AUDIO_CALL} element={<AudioCall />} />
               <Route
                 path={ROUTES.CALLS}
                 element={
