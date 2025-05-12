@@ -3,26 +3,32 @@ export const TABLE_HEADERS = [
   {
     id: "clientId",
     label: "Call ID",
+    width: "10%",
   },
   {
     id: "dateAndTime",
     label: "Date & Time",
+    width: "15%",
   },
   {
     id: "duration",
     label: "Duration",
+    width: "20%",
   },
   {
     id: "quality_score",
     label: "Quality Score",
+    width: "15%",
   },
   {
     id: "tags",
     label: "Tags",
+    width: "30%",
   },
   {
     id: "notes",
     label: "Notes",
+    width: "10%",
   },
 ];
 
@@ -72,3 +78,6 @@ export const dummySummarydata = {
     },
   ],
 };
+
+export const CALL_LOGS_PAGINATION_LIMIT = 10;
+export const TABLE_ROW_HEIGHT = 58; // 58px

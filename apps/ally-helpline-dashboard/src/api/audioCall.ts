@@ -1,5 +1,6 @@
 import { baseAPI } from "@/api/baseAPI";
-import { Chat, FeedbackInput, FeedbackResponse, GetWaitingClientsResponse } from "@/types/message";
+import { GetWaitingClientsResponse } from "@/types/calls";
+import { Chat, FeedbackInput, FeedbackResponse } from "@/types/message";
 
 const audioCallAPI = baseAPI.injectEndpoints({
   endpoints: (builder) => ({

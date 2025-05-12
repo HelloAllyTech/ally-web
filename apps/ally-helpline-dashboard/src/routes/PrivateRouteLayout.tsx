@@ -23,9 +23,9 @@ import {
 } from "@/pages";
 import { useUser } from "@/hooks";
 import { TabId } from "@/constants/tabs";
-import { WaitingClient } from "@/types/message";
 import { RootState, store } from "@/store/store";
 import { UserRole, UserStatus } from "@/types/user";
+import { WaitingClient } from "@/types/calls";
 import { setUserStatus } from "@/reducer/userReducer";
 import { Permissions } from "@/constants/permissions";
 import { navBarOptions, ROUTES } from "@/constants/routes";
@@ -93,11 +93,6 @@ const PrivateRouteLayout = () => {
 
   const handleTabChange = (path: string) => {
     navigate(path);
-  };
-
-  const handleLogout = () => {
-    logout();
-    navigate(ROUTES.LOGIN);
   };
 
   const isPathExcluded = (currentPath: string, excludedPaths: string[]) => {

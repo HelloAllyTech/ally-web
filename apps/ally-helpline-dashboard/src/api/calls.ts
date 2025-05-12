@@ -1,9 +1,13 @@
 import { baseAPI } from "@/api/baseAPI";
+import { GetCallLogsInput, GetCallLogsResponse } from "@/types/calls";
 
 const callsAPI = baseAPI.injectEndpoints({
   endpoints: (builder) => ({
-    getCallLogs: builder.query({
-      query: () => "/chats/call-logs",
+    getCallLogs: builder.query<GetCallLogsResponse, GetCallLogsInput>({
+      query: ({ limit, offset }) => ({
+        url: "/chats/call-logs",
+        params: { limit, offset },
+      }),
     }),
   }),
 });

@@ -14,6 +14,7 @@ const Calls: FunctionComponent = () => {
   const { userStatus } = useSelector((state: RootState) => state.user);
 
   const markAvailable = () => {
+    localStorage.setItem("userStatus", UserStatus.AVAILABLE);
     store.dispatch(setUserStatus(UserStatus.AVAILABLE));
   };
 
