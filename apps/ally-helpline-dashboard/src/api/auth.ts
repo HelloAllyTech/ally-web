@@ -1,5 +1,6 @@
-import { User } from "@/types/user";
 import { baseAPI } from "@/api/baseAPI";
+import { User } from "@/types/user";
+import { GenerateOTPResponse, GenerateOTPRequest, VerifyOTPResponse, VerifyOTPRequest } from "@/types/auth";
 
 const authAPI = baseAPI.injectEndpoints({
   endpoints: (builder) => ({
@@ -23,6 +24,20 @@ const authAPI = baseAPI.injectEndpoints({
     getPermissions: builder.query<string[], void>({
       query: () => "/auth/permissions",
     }),
+    generateOTP: builder.mutation<GenerateOTPResponse, GenerateOTPRequest>({
+      query: ({ phone }) => ({
+        url: "/auth/generate-otp",
+        method: "POST",
+        body: { phone },
+      }),
+    }),
+    verifyOTP: builder.mutation<VerifyOTPResponse, VerifyOTPRequest>({
+      query: ({ phone, otp }) => ({
+        url: "/auth/verify-otp",
+        method: "POST",
+        body: { phone, otp },
+      }),
+    }),
   }),
 });
 
@@ -31,4 +46,6 @@ export const {
   useSignupMutation,
   useLazyGetUserQuery,
   useLazyGetPermissionsQuery,
+  useGenerateOTPMutation,
+  useVerifyOTPMutation,
 } = authAPI;

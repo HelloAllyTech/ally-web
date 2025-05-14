@@ -1,36 +1,35 @@
-import { useEffect } from "react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
+import { useEffect, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+import OtpInput from "react-otp-input";
+import { FetchBaseQueryError } from "@reduxjs/toolkit/query";
 
-import { useLoginMutation } from "@/api/auth";
+import { useGenerateOTPMutation, useVerifyOTPMutation } from "@/api/auth";
 import { Lifeline } from "@/assets/icons";
 import { Login as LoginImage } from "@/assets/images";
 import { Button, TextField } from "@/components";
 import { useUser } from "@/hooks";
-import { LoginSchema, loginSchema } from "./schema";
 
 const Login = () => {
   const navigate = useNavigate();
 
-  const [login, { isLoading, isSuccess, data, error }] = useLoginMutation();
+  const [loginSection, setLoginSection] = useState<"Phone" | "OTP">("Phone");
+  const [phone, setPhone] = useState<string>("");
+  const [otp, setOtp] = useState<string>("");
+  const [countdown, setCountdown] = useState<number>(0);
+
+  const [
+    generateOTP,
+    { isLoading: isGeneratingOTP, isSuccess: isGenerateOTPSuccess, data: generateOTPData, error: generateOTPError },
+  ] = useGenerateOTPMutation();
+  const [
+    verifyOTP,
+    { isLoading: isVerifyingOTP, isSuccess: isVerifyOTPSuccess, data: verifyOTPData, error: verifyOTPError },
+  ] = useVerifyOTPMutation();
 
   const { isAuthenticated, checkAuth } = useUser();
 
-  const {
-    register,
-    handleSubmit,
-    formState: { errors, isSubmitting },
-  } = useForm<LoginSchema>({
-    defaultValues: {
-      email: "",
-      password: "",
-    },
-    resolver: zodResolver(loginSchema),
-  });
-
-  const loading = isLoading || isSubmitting;
+  const isLoading = isGeneratingOTP || isVerifyingOTP;
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -39,24 +38,103 @@ const Login = () => {
   }, [isAuthenticated, navigate]);
 
   useEffect(() => {
+    if (generateOTPError) {
+      const error = generateOTPError as FetchBaseQueryError;
+      const errorData = error.data as { message: string } | undefined;
+      const errorMessage = errorData?.message ?? "Failed to generate OTP. Please try again.";
+      toast.error(errorMessage);
+    } else if (isGenerateOTPSuccess && generateOTPData) {
+      setLoginSection("OTP");
+      setCountdown(10); // Start 10 second countdown when OTP is generated
+    }
+  }, [isGenerateOTPSuccess, generateOTPError, generateOTPData]);
+
+  useEffect(() => {
+    let timer: NodeJS.Timeout;
+    if (countdown > 0) {
+      timer = setInterval(() => {
+        setCountdown((prev) => prev - 1);
+      }, 1000);
+    }
+    return () => {
+      if (timer) clearInterval(timer);
+    };
+  }, [countdown]);
+
+  const handleResendCode = useCallback(() => {
+    if (countdown === 0) {
+      generateOTP({ phone });
+    }
+  }, [countdown, generateOTP, phone]);
+
+  useEffect(() => {
     (async () => {
-      if (error) {
-        toast.error(
-          error?.data?.message ??
-            "Invalid credentials. Please try again."
-        );
-      }
-      else if (isSuccess && data) {
-        localStorage.setItem("accessToken", data.accessToken);
-        localStorage.setItem("refreshToken", data.refreshToken);
+      if (verifyOTPError) {
+        const error = verifyOTPError as FetchBaseQueryError;
+        const errorData = error.data as { message: string } | undefined;
+        const errorMessage = errorData?.message ?? "Failed to verify OTP. Please try again.";
+        toast.error(errorMessage);
+      } else if (isVerifyOTPSuccess && verifyOTPData) {
+        localStorage.setItem("accessToken", verifyOTPData.accessToken);
+        localStorage.setItem("refreshToken", verifyOTPData.refreshToken);
         await checkAuth();
         navigate("/");
       }
     })();
-  }, [isSuccess, navigate, error]);
+  }, [isVerifyOTPSuccess, verifyOTPError, verifyOTPData]);
 
-  const onSubmit = ({ email, password }: LoginSchema) => {
-    login({ username: email, password });
+  const getLoginSection = () => {
+    if (loginSection === "Phone") {
+      return (
+        <TextField
+          label="Phone number"
+          fieldSize="medium"
+          type="text"
+          inputMode="numeric"
+          value={phone}
+          onChange={(e) => setPhone(e.target.value)}
+          inputProps={{
+            pattern: "+[0-9]*"
+          }}
+          placeholder="Enter your phone number"
+        />
+      );
+    } else
+      return (
+        <div className="flex flex-col gap-2 justify-start">
+          <span className="text-[#49454F]">{`Enter the code sent to ${phone}`}</span>
+          <OtpInput
+            value={otp}
+            onChange={(otp) => setOtp(otp)}
+            numInputs={4}
+            inputStyle="!w-[64px] h-[64px] border-2 border-gray-300 rounded-md p-2"
+            containerStyle="flex gap-4 items-center justify-between"
+            renderInput={(props) => <input {...props} />}
+          />
+          <div className="flex items-center gap-2">
+            <span className="text-[#49454F]">{"Didn't receive the code?"}</span>
+            <button
+              onClick={handleResendCode}
+              disabled={countdown > 0}
+              className={`text-sm 
+                ${countdown > 0 ? "text-gray-400 cursor-not-allowed" : "text-blue-600 hover:text-blue-700 cursor-pointer"}`}
+              type="button"
+            >
+              {countdown > 0 ? `Resend (${countdown}s)` : "Resend"}
+            </button>
+          </div>
+        </div>
+      );
+  };
+
+  const isSubmitDisabled = loginSection === "Phone" ? !phone : (!otp || otp.length < 4);
+
+  const onSubmit = ({ phone, otp }: { phone: string, otp: string }) => {
+    if (loginSection === "Phone") {
+      generateOTP({ phone });
+    } else {
+      verifyOTP({ phone, otp });
+    }
   };
 
   return (
@@ -73,44 +151,25 @@ const Login = () => {
             <h1 className="text-[22px]">Welcome to</h1>
             <Lifeline className="cursor-pointer" />
           </div>
-          <form
-            onSubmit={handleSubmit(onSubmit)}
+          <div
             className="flex flex-col gap-6"
           >
-            <div className="flex flex-col gap-[12px]">
-              <TextField
-                name="email"
-                label="Email address"
-                register={register}
-                errors={errors}
-                fieldSize="medium"
-              />
-              <TextField
-                name="password"
-                label="Password"
-                type="password"
-                register={register}
-                errors={errors}
-                fieldSize="medium"
-              />
-              <span
-                className="text-[12px] font-medium text-[#3877D9]"
-                // onClick={() => navigate("/auth/forgot-password")}
-              >
-                Forgot password?
-              </span>
-            </div>
-            <Button type="submit" className="w-full" disabled={loading}>
+            {getLoginSection()}
+            <Button
+              type="button"
+              className="w-full"
+              disabled={isLoading || isSubmitDisabled}
+              onClick={() => onSubmit({ phone, otp })}
+            >
               {isLoading ? (
                 <div className="flex items-center justify-center">
                   <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
-                  Signing in...
+                  {loginSection === "Phone" ? "Generating OTP..." : "Signing in..."}
                 </div>
-              ) : (
-                "Sign in"
-              )}
+              ) : loginSection === "Phone" ? ( "Generate OTP" ) : ( "Sign in" )
+              }
             </Button>
-          </form>
+          </div>
         </div>
       </div>
     </div>

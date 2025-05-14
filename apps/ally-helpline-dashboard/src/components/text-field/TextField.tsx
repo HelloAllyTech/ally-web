@@ -3,6 +3,8 @@ import { TextField as MuiTextField } from "@mui/material";
 
 import { TextFieldProps } from "./types";
 
+import "./TextField.css";
+
 const heights = {
     small: "30px",
     medium: "40px",

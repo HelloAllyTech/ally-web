@@ -236,6 +236,7 @@ const CallSummaryStep: FC<CallSummaryProps> = ({ isLoading, onProceed, summaryDa
                   <div className="flex items-center">
                     <span className="font-semibold flex-1">Age:</span>
                     <TextField
+                      type="number"
                       value={data?.age}
                       onChange={(e) => handleChange("age", e.target.value)}
                     />
