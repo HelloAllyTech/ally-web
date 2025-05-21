@@ -10,8 +10,7 @@ const Accordion: FC<AccordionProps> = ({ children, title, titleIcon }) => {
   return (
     <MuiAccordion>
       <AccordionSummary expandIcon={<ExpandMore />}>
-        <ExpandMore />
-        {titleIcon}
+        {titleIcon && <titleIcon.icon className="h-6 w-6" />}
         <span className="text-[16px] font-bold">{title}</span>
       </AccordionSummary>
       <AccordionDetails>{children}</AccordionDetails>

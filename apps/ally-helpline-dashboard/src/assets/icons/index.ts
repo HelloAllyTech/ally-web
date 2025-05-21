@@ -28,6 +28,11 @@ import CallerMood from "./CallerMood.svg?react";
 import BackCircle from "./BackCircle.svg?react";
 import ComingSoon from "./ComingSoon.svg?react";
 import NoResults from "./NoResults.svg?react";
+import CallDetails from "./CallDetails.svg?react";
+import Demogs from "./Demogs.svg?react";
+import CallHighlights from "./CallHighlights.svg?react";
+import Flow from "./Flow.svg?react";
+import KeyConcerns from "./KeyConcerns.svg?react";
 
 export {
   Relax,
@@ -60,4 +65,9 @@ export {
   BackCircle,
   ComingSoon,
   NoResults,
+  CallDetails,
+  Demogs,
+  CallHighlights,
+  Flow,
+  KeyConcerns,
 };

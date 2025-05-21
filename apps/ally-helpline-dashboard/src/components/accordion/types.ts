@@ -1,7 +1,10 @@
-import { ReactNode } from "react";
+import { ComponentType, ReactNode, SVGProps } from "react";
 
 export type AccordionProps = {
     children: ReactNode;
     title: string;
-    titleIcon?: ReactNode;
+    titleIcon?: {
+        icon: ComponentType<SVGProps<SVGSVGElement>>;
+        alt: string;
+    };
 }
