@@ -32,6 +32,17 @@ import CallDetails from "./CallDetails.svg?react";
 import SessionSummary from "./SessionSummary.svg?react";
 import Flow from "./Flow.svg?react";
 import KeyConcerns from "./KeyConcerns.svg?react";
+import Assessment from "./Assessment.svg?react";
+import DominantFeelings from "./DominantFeelings.svg?react";
+import HomeworkRecommended from "./HomeworkRecommended.svg?react";
+import IssuesWorkedOn from "./IssuesWorkedOn.svg?react";
+import Metrics from "./Metrics.svg?react";
+import ObjectiveObservations from "./ObjectiveObservations.svg?react";
+import PlansForNextCall from "./PlansForNextCall.svg?react";
+import ReferralsProvided from "./ReferralsProvided.svg?react";
+import SubjectiveObservations from "./SubjectiveObservations.svg?react";
+import Tags from "./Tags.svg?react";
+import TherapeuticTechniques from "./TherapeuticTechniques.svg?react";
 
 export {
   Relax,
@@ -68,4 +79,15 @@ export {
   SessionSummary,
   Flow,
   KeyConcerns,
+  Assessment,
+  DominantFeelings,
+  HomeworkRecommended,
+  IssuesWorkedOn,
+  Metrics,
+  ObjectiveObservations,
+  PlansForNextCall,
+  ReferralsProvided,
+  SubjectiveObservations,
+  Tags,
+  TherapeuticTechniques,
 };

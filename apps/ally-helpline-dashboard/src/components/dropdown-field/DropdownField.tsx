@@ -6,7 +6,7 @@ import { DropdownFieldProps } from "./types";
 const DropdownField: FC<DropdownFieldProps> = ({ label, value, onChange, options }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  
+
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   const handleChange = (value: string) => {
@@ -41,7 +41,7 @@ const DropdownField: FC<DropdownFieldProps> = ({ label, value, onChange, options
       <div className="w-full flex gap-2">
         {label && <span>{label}</span>}
         <span>{value}</span>
-        <ExpandMore className="w-4 h-4 cursor-pointer" onClick={() => setIsOpen(true)} />
+        <ExpandMore className="w-4 h-4 cursor-pointer" onClick={() => setIsOpen((prev) => !prev)} />
       </div>
       {isOpen && (
         <div

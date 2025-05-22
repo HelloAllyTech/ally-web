@@ -8,6 +8,17 @@ import {
   Nudges,
   ListeningRatio,
   CallerMood,
+  ObjectiveObservations,
+  SubjectiveObservations,
+  Assessment,
+  DominantFeelings,
+  IssuesWorkedOn,
+  TherapeuticTechniques,
+  ReferralsProvided,
+  HomeworkRecommended,
+  PlansForNextCall,
+  Tags,
+  Metrics,
 } from "@/assets/icons";
 import { Highlight, SummaryField } from "./types";
 
@@ -34,7 +45,7 @@ export const highlights: Highlight[] = [
   },
   {
     key: "callerMood",
-    title: "Caller’s mood had increased by",
+    title: "Caller's mood had increased by",
     image: CallerMood,
   },
 ];
@@ -74,86 +85,86 @@ export const summarySections = [
   },
   {
     icon: {
-      icon: KeyConcerns,
-      alt: "key-concerns",
+      icon: ObjectiveObservations,
+      alt: "objective-observations",
     },
     key: "objectiveObservations",
     title: "Objective Observations",
   },
   {
     icon: {
-      icon: KeyConcerns,
-      alt: "key-concerns",
+      icon: SubjectiveObservations,
+      alt: "subjective-observations",
     },
     key: "subjectiveObservations",
     title: "Subjective Observations",
   },
   {
     icon: {
-      icon: KeyConcerns,
-      alt: "key-concerns",
+      icon: Assessment,
+      alt: "assessment",
     },
     key: "assessment",
     title: "Assessment",
   },
   {
     icon: {
-      icon: KeyConcerns,
-      alt: "key-concerns",
+      icon: DominantFeelings,
+      alt: "dominant-feelings",
     },
     key: "dominantFeelings",
     title: "Dominant Feelings",
   },  {
     icon: {
-      icon: KeyConcerns,
-      alt: "key-concerns",
+      icon: IssuesWorkedOn,
+      alt: "issues-worked-on",
     },
     key: "issuesWorkedOn",
     title: "Issues Worked On",
   },  {
     icon: {
-      icon: KeyConcerns,
-      alt: "key-concerns",
+      icon: TherapeuticTechniques,
+      alt: "key-therapeutic-techniques",
     },
     key: "therapeuticTechniques",
     title: "Key Therapeutic Techniques",
   },
   {
     icon: {
-      icon: KeyConcerns,
-      alt: "key-concerns",
+      icon: ReferralsProvided,
+      alt: "referrals-provided",
     },
     key: "referralsProvided",
     title: "Referrals Provided",
   },
   {
     icon: {
-      icon: KeyConcerns,
-      alt: "key-concerns",
+      icon: HomeworkRecommended,
+      alt: "homework-recommended",
     },
     key: "homeworkRecommended",
     title: "Homework Recommended",
   },
     {
     icon: {
-      icon: KeyConcerns,
-      alt: "key-concerns",
+      icon: PlansForNextCall,
+      alt: "plans-for-next-call",
     },
     key: "plansForNextCall",
     title: "Plans for Next Call",
   },
     {
     icon: {
-      icon: KeyConcerns,
-      alt: "key-concerns",
+      icon: Tags,
+      alt: "tags",
     },
     key: "tags",
     title: "Tags",
   },
   {
     icon: {
-      icon: KeyConcerns,
-      alt: "key-concerns",
+      icon: Metrics,
+      alt: "metrics",
     },
     key: "metrics",
     title: "Metrics",
@@ -239,7 +250,7 @@ export const summaryFields: SummaryField[] = [
     key: "language",
     label: "Language",
     sectionKey: "featuresAndDemographics",
-    type: "Dropdown",
+    type: "Text",
   },
   {
     isEditable: true,
@@ -397,6 +408,7 @@ export const summaryFields: SummaryField[] = [
     type: "Multiline",
   },
 ];
+
 export const visibleFields = {
   age: true,
   callDate: true,
@@ -419,35 +431,67 @@ export const visibleFields = {
 };
 
 export const summaryValues = {
-  // Call Details section
+  // Features and Demographics section
+  callId: "CALL-123456",
+  callDuration: "45 minutes",
   callDate: "15 August 2023",
   callTime: "10:30 - 11:15",
-  callerType: "First-time caller",
-  counsellorName: "Sarah Johnson",
-
-  // Demogs section
   callerId: "CL-2023-0042",
-  age: 28,
+  callerType: "First-time caller",
+  age: "25-34",
   gender: "Female",
-  location: "Mumbai, India",
   profession: "Software Engineer",
+  location: "Mumbai, India",
+  language: "English",
   concernCode: "ANX-001",
-  formalDiagnosis:
-    "Client reported previous diagnosis of Generalized Anxiety Disorder (GAD) from psychiatrist in 2020. Currently not on medication but practices meditation regularly.",
+  counsellorName: "Sarah Johnson",
+  formalDiagnosis: "Client reported previous diagnosis of Generalized Anxiety Disorder (GAD) from psychiatrist in 2020. Currently not on medication but practices meditation regularly.",
 
-  // Call Highlights section
+  // Session Summary
+  sessionSummary: "Client reached out due to increasing anxiety related to work stress and burnout. They described feeling overwhelmed with deadlines and experiencing difficulty sleeping. The session focused on identifying specific triggers and exploring coping mechanisms. Client was receptive to suggested breathing techniques and committed to trying journaling as a way to track thought patterns.",
+
+  // Flow
+  flow: "1. Built rapport and created safe space\n2. Explored current anxiety triggers\n3. Discussed coping strategies used in the past\n4. Identified specific workplace stressors\n5. Practiced breathing technique together\n6. Recommended journaling for thought patterns\n7. Discussed potential followup session",
+
+  // Key concerns
+  keyConcerns: "1. Work-related anxiety and burnout\n2. Difficulty maintaining work-life balance\n3. Sleep disturbances due to rumination\n4. Social withdrawal from friends and family\n5. Increased physical symptoms (headaches, tension)",
+
+  // Observations and Assessment
+  objectiveObservations: "1. Client spoke rapidly during portions of the call\n2. Audible sighing when discussing work environment\n3. Voice tone brightened when talking about potential solutions\n4. Client mentioned checking the time frequently at work (potential time anxiety)",
+  
+  subjectiveObservations: "Client appeared highly self-aware and insightful about their condition. They were engaged throughout the call and receptive to suggestions. Client demonstrated good cognitive abilities in analyzing their situation, though showed some resistance when discussing potential boundary-setting with their manager.",
+  
+  assessment: "Client is experiencing moderate to severe work-related anxiety with symptoms affecting sleep quality and social connections. Their self-awareness and previous experience with therapy are strengths that can be leveraged. Primary concerns center around workplace boundaries and perfectionist tendencies.",
+
+  // Emotional and Therapeutic aspects
+  dominantFeelings: "1. Anxiety\n2. Frustration\n3. Overwhelm\n4. Hopefulness (toward end of call)",
+  
+  issuesWorkedOn: "1. Workplace boundary setting\n2. Sleep hygiene techniques\n3. Recognition of physical anxiety symptoms\n4. Cognitive restructuring of perfectionist thoughts",
+  
+  therapeuticTechniques: "1. Active listening\n2. Validation\n3. Cognitive reframing\n4. Diaphragmatic breathing instruction\n5. Psychoeducation about anxiety response",
+  
+  referralsProvided: "Suggested Calm app for guided meditations. Mentioned employee assistance program if workplace issues escalate. Provided information about local anxiety support group.",
+  
+  homeworkRecommended: "1. Daily 5-minute breathing practice\n2. Journaling anxious thoughts using provided template\n3. Setting one boundary at work before next call",
+  
+  plansForNextCall: "1. Review homework outcomes\n2. Explore childhood origins of perfectionism if client is comfortable\n3. Develop more comprehensive sleep strategy\n4. Practice additional relaxation techniques",
+  
+  tags: "#work-stress #anxiety #sleep-issues #boundary-setting #perfectionism",
+
+  // Metrics section
+  listeningShare: "70:30",
+  reflectiveQuestionsAsked: "12",
+  emotionsLift: "+3 points",
+
+  // Call Highlights
   callLastedOver: "45 minutes",
   youAsked: "12 open-ended questions",
   usedCopilot: true,
   listeningRatio: "70:30",
   moodImprovedBy: "3 points",
 
-  // Other fields
-  flow: "1. Built rapport and created safe space\n2. Explored current anxiety triggers\n3. Discussed coping strategies used in the past\n4. Identified specific workplace stressors\n5. Practiced breathing technique together\n6. Recommended journaling for thought patterns\n7. Discussed potential followup session",
-
-  keyConcerns:
-    "1. Work-related anxiety and burnout\n2. Difficulty maintaining work-life balance\n3. Sleep disturbances due to rumination\n4. Social withdrawal from friends and family\n5. Increased physical symptoms (headaches, tension)",
-  notes: "",
+  // Notes
+  notes: "For next call: Remember to follow up specifically on the journaling exercise and how the client's conversation with their manager went. Client mentioned potentially needing more support during upcoming project deadline in two weeks.",
 };
 
 export const labelShownSections = ["featuresAndDemographics", "metrics"];

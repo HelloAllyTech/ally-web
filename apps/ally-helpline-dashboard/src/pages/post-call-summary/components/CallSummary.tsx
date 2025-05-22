@@ -7,7 +7,7 @@ import { labelShownSections, summaryFields, summarySections, summaryValues } fro
 import { SummaryField } from "../types";
 
 const CallSummary = () => {
-  const [editingField, setEditingField] = useState<string | null>("");
+  const [editingField, setEditingField] = useState<string | null>(null);
   const [summaryData, setSummaryData] = useState(summaryValues);
 
   const handleEditableFieldClick = (field: SummaryField) => {
@@ -25,7 +25,7 @@ const CallSummary = () => {
             <DropdownField
               value={summaryData[field.key]}
               onChange={(value) => setSummaryData({ ...summaryData, [field.key]: value })}
-              options={field.options}
+              options={field.options ?? []}
             />
           </div>
         );
@@ -40,7 +40,7 @@ const CallSummary = () => {
               onChange={(e) => setSummaryData({ ...summaryData, [field.key]: e.target.value })}
               multiline
               rows={4}
-              className="w-full"
+              className="w-full text-[16px]"
               placeholder={field.placeholder}
             />
           </div>
@@ -50,21 +50,23 @@ const CallSummary = () => {
       default:
         return editingField === field.key ? (
           <div key={field.key}>
-            <span className="font-medium text-[16px] text=[#1D1B20]">{`${field.label}: `}</span>
+            <span className="font-medium text-[16px] text-[#1D1B20]">{`${field.label}: `}</span>
             <input
               type="text"
               value={summaryData[field.key]}
+              onBlur={() => setEditingField(null)}
               onChange={(e) => setSummaryData({ ...summaryData, [field.key]: e.target.value })}
+              className="text-[16px]"
             />
           </div>
         ) : (
           <div key={field.key}>
-            <span className="font-medium text-[16px] text=[#1D1B20]">{`${field.label}: `}</span>
+            <span className="font-medium text-[16px] text-[#1D1B20]">{`${field.label}: `}</span>
             <span
               className={`${field.isEditable ? "text-[#000] cursor-pointer" : "text-gray-500"} text-[16px]`}
               onClick={() => handleEditableFieldClick(field)}
             >
-              {summaryValues[field.key]}
+              {summaryData[field.key]}
             </span>
           </div>
         );
@@ -77,7 +79,7 @@ const CallSummary = () => {
 
   return (
     <>
-      <div className="max-h-[calc(100vh-300px)] overflow-y-auto">
+      <div className="max-h-[calc(100vh-280px)] overflow-y-auto">
         {summarySections.map(({ title, icon, key }) => (
           <Accordion
             key={key}
@@ -87,15 +89,8 @@ const CallSummary = () => {
             {getSectionFields(key).map((field) => getFieldDisplay(field))}
           </Accordion>
         ))}
-        <div className="flex flex-col gap-2 px-4 mt-8">
-          <div className="flex gap-2">
-            <CallDetails />
-            <span>Notes</span>
-          </div>
-          {getFieldDisplay(summaryFields.find((field) => field.key === "notes")!)}
-        </div>
       </div>
-      <div className="flex justify-center mt-4">
+      <div className="flex justify-center">
         <Button
           className="rounded-[100px]"
           onClick={() => console.log(summaryData)}
