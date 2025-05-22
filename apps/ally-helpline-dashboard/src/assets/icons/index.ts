@@ -29,8 +29,7 @@ import BackCircle from "./BackCircle.svg?react";
 import ComingSoon from "./ComingSoon.svg?react";
 import NoResults from "./NoResults.svg?react";
 import CallDetails from "./CallDetails.svg?react";
-import Demogs from "./Demogs.svg?react";
-import CallHighlights from "./CallHighlights.svg?react";
+import SessionSummary from "./SessionSummary.svg?react";
 import Flow from "./Flow.svg?react";
 import KeyConcerns from "./KeyConcerns.svg?react";
 
@@ -66,8 +65,7 @@ export {
   ComingSoon,
   NoResults,
   CallDetails,
-  Demogs,
-  CallHighlights,
+  SessionSummary,
   Flow,
   KeyConcerns,
 };

@@ -22,6 +22,7 @@ export interface SummaryField {
   key: string;
   label: string;
   options?: string[];
+  placeholder?: string;
   sectionKey: string;
   type: FieldType;
 }

@@ -8,8 +8,8 @@ const callSummaryAPI = baseAPI.injectEndpoints({
     }),
     updateCallSummary: builder.mutation({
       query: ({ chatId, data }) => ({
-        url: `/chats/${chatId}/update-call-details`,
-        method: "POST",
+        url: `/chats/${chatId}/call-details`,
+        method: "PUT",
         body: data,
       }),
       invalidatesTags: ["CallSummary"],

@@ -1,8 +1,9 @@
 import { useState } from "react";
 
-import { Accordion, DropdownField } from "@/components";
+import { Accordion, DropdownField, TextField, Button } from "@/components";
+import { CallDetails } from "@/assets/icons";
 
-import { summaryFields, summarySections, summaryValues } from "../data";
+import { labelShownSections, summaryFields, summarySections, summaryValues } from "../constants";
 import { SummaryField } from "../types";
 
 const CallSummary = () => {
@@ -17,12 +18,10 @@ const CallSummary = () => {
 
   const getFieldDisplay = (field: SummaryField) => {
     switch (field.type) {
-      case "Boolean":
-        return <div>{field.label}</div>;
       case "Dropdown":
         return (
-          <div className="flex gap-1">
-            <span className="font-medium text-[#000]">{`${field.label}: `}</span>
+          <div key={field.key} className="flex gap-1">
+            <span className="font-medium text-[16px] text-[#000]">{`${field.label}: `}</span>
             <DropdownField
               value={summaryData[field.key]}
               onChange={(value) => setSummaryData({ ...summaryData, [field.key]: value })}
@@ -31,13 +30,27 @@ const CallSummary = () => {
           </div>
         );
       case "Multiline":
-        return <div>{field.label}</div>;
+        return (
+          <div key={field.key} className="flex flex-col gap-1">
+            {labelShownSections.includes(field.sectionKey) && (
+              <span className="font-medium text-[16px] text-[#000]">{`${field.label}: `}</span>
+            )}
+            <TextField
+              value={summaryData[field.key]}
+              onChange={(e) => setSummaryData({ ...summaryData, [field.key]: e.target.value })}
+              multiline
+              rows={4}
+              className="w-full"
+              placeholder={field.placeholder}
+            />
+          </div>
+        );
       case "Number":
       case "Text":
       default:
         return editingField === field.key ? (
-          <div>
-            <span className="font-medium text=[#1D1B20]">{`${field.label}: `}</span>
+          <div key={field.key}>
+            <span className="font-medium text-[16px] text=[#1D1B20]">{`${field.label}: `}</span>
             <input
               type="text"
               value={summaryData[field.key]}
@@ -45,13 +58,13 @@ const CallSummary = () => {
             />
           </div>
         ) : (
-          <div>
-            <span className="font-medium text=[#1D1B20]">{`${field.label}: `}</span>
+          <div key={field.key}>
+            <span className="font-medium text-[16px] text=[#1D1B20]">{`${field.label}: `}</span>
             <span
-                className={`${field.isEditable ? "text-[#000] cursor-pointer" : "text-[#49454F]"}`}
-                onClick={() => handleEditableFieldClick(field)}
+              className={`${field.isEditable ? "text-[#000] cursor-pointer" : "text-gray-500"} text-[16px]`}
+              onClick={() => handleEditableFieldClick(field)}
             >
-                {summaryValues[field.key]}
+              {summaryValues[field.key]}
             </span>
           </div>
         );
@@ -63,19 +76,34 @@ const CallSummary = () => {
   };
 
   return (
-    <div>
-      {summarySections.map(({ title, icon, key }) => (
-        <Accordion
-          key={key}
-          title={title}
-          titleIcon={icon}
+    <>
+      <div className="max-h-[calc(100vh-300px)] overflow-y-auto">
+        {summarySections.map(({ title, icon, key }) => (
+          <Accordion
+            key={key}
+            title={title}
+            titleIcon={icon}
+          >
+            {getSectionFields(key).map((field) => getFieldDisplay(field))}
+          </Accordion>
+        ))}
+        <div className="flex flex-col gap-2 px-4 mt-8">
+          <div className="flex gap-2">
+            <CallDetails />
+            <span>Notes</span>
+          </div>
+          {getFieldDisplay(summaryFields.find((field) => field.key === "notes")!)}
+        </div>
+      </div>
+      <div className="flex justify-center mt-4">
+        <Button
+          className="rounded-[100px]"
+          onClick={() => console.log(summaryData)}
         >
-          {getSectionFields(key).map((field) => (
-            <div key={field.key}>{getFieldDisplay(field)}</div>
-          ))}
-        </Accordion>
-      ))}
-    </div>
+          Submit
+        </Button>
+      </div>
+    </>
   );
 };
 
