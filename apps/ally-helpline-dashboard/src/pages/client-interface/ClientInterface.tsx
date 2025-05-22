@@ -84,7 +84,7 @@ const ClientInterface = () => {
       >
         <div className="flex-1 h-full flex flex-col items-center justify-center bg-gray-50 p-4">
           <div className="max-w-md w-full text-center space-y-8">
-            <h1 className="text-3xl font-bold text-gray-900">Welcome to Lifeline</h1>
+            <h1 className="text-3xl font-bold text-gray-900">Welcome to Ally</h1>
             <p className="text-gray-600">
               {isRequestCallLoading || isWaiting ? (
                 <>

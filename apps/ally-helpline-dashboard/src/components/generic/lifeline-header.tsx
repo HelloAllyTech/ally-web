@@ -7,7 +7,7 @@ import { Avatar, Popover } from "@mui/material";
 import { RootState, store } from "@/store/store";
 import { setUserStatus } from "@/reducer/userReducer";
 import { useUser } from "@/hooks";
-import { Lifeline } from "@/assets/icons";
+import { LifelineLogo } from "@/assets/icons";
 import { Button, ToggleButtonGroup } from "@/components";
 import { USER_STATUS_OPTIONS } from "@/constants/common";
 import { UserRole, UserStatus } from "@/types/user";
@@ -41,7 +41,12 @@ const LifelineHeader = () => {
 
   return (
     <div className="bg-white border-b border-b-[#E5E7EB] p-4 h-20 py-3 top-0 sticky flex justify-between items-center">
-      <Lifeline className="cursor-pointer" onClick={() => navigate("/")} />
+      <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigate("/")}>
+        <LifelineLogo className="cursor-pointer" />
+        <h1 className="text-[28px] font-[ReplayPro] font-semibold text-[#081033]">
+          Ally
+        </h1>
+      </div>
       <div className="flex gap-4 items-center">
         {user?.role === UserRole.COUNSELOR && (
           <ToggleButtonGroup

@@ -4,7 +4,6 @@ import Relax from "./Relax.svg?react";
 import CallLogIcon from "./CallLogIcon.svg?react";
 import LiveCallIcon from "./LiveCallIcon.svg?react";
 import HomeIcon from "./HomeIcon.svg?react";
-import Lifeline from "./Lifeline.svg?react";
 import LifelineLogo from "./LifelineLogo.svg?react";
 import SendIcon from "./SendIcon.svg?react";
 import ClientHandledIcon from "./Icon_client_handled.png";
@@ -37,7 +36,6 @@ export {
   LiveCallIcon,
   HomeIcon,
   SendIcon,
-  Lifeline,
   ClientHandledIcon,
   CounsellorSuccessIcon,
   TotalSessionsIcon,

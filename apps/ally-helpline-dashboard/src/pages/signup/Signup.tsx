@@ -55,7 +55,7 @@ export const Signup = () => {
           <div className="text-center">
             <h1 className="text-2xl font-bold text-white">Welcome back</h1>
             <p className="text-gray-400 mt-2">
-              Sign up to continue to Lifeline
+              Sign up to continue to Ally
             </p>
           </div>
           <form onSubmit={(e) => e.preventDefault()} className="space-y-6">
