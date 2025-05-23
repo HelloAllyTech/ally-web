@@ -41,16 +41,18 @@ const TextField: FC<TextFieldProps> = ({
         variant="outlined"
         sx={{
           "& .MuiInputBase-root": {
-            border: "1px solid #E5E7EB",
-            borderColor: "#E5E7EB !important",
+            // border: "1px solid #E5E7EB",
+            // borderColor: "#E5E7EB !important",
+            border: "none"
           },
           "& .MuiOutlinedInput-root": {
             ...(!multiline && {height: heights[fieldSize]}),
             backgroundColor: "#FFF",
             padding: 0,
             "& fieldset": {
-              border: "1px solid #E5E7EB",
-              borderColor: "#E5E7EB !important",
+              // border: "1px solid #E5E7EB",
+              // borderColor: "#E5E7EB !important",
+              border: "none"
             },
             "&.Mui-disabled": {
               backgroundColor: "#F6F6F6",
@@ -61,7 +63,7 @@ const TextField: FC<TextFieldProps> = ({
             boxSizing: "border-box",
             color: "#4A4459",
             fontSize: "14px",
-            padding: "12px 16px",
+            // padding: "12px 16px",
           },
         }}
         {...props}

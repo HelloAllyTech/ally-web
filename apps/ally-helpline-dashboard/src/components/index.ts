@@ -37,6 +37,8 @@ import Drawer from "./drawer/Drawer";
 import FallbackUI from "./fallback-ui/FallbackUI";
 import TextField from "./text-field/TextField";
 import ExpandingSection from "./expanding-section/ExpandingSection";
+import Accordion from "./accordion/Accordion";
+import DropdownField from "./dropdown-field/DropdownField";
 
 export {
   ArticleGrid,
@@ -77,4 +79,6 @@ export {
   FallbackUI,
   TextField,
   ExpandingSection,
+  Accordion,
+  DropdownField,
 };

@@ -14,6 +14,19 @@ export enum Gender {
   PREFER_NOT_TO_SAY = "Client Prefers Not to Say"
 }
 
+export type FieldType = "Text" | "Number" | "Dropdown" | "Multiline" | "Boolean";
+
+export interface SummaryField {
+  isEditable: boolean;
+  isEnhanceable?: boolean;
+  key: string;
+  label: string;
+  options?: string[];
+  placeholder?: string;
+  sectionKey: string;
+  type: FieldType;
+}
+
 export interface CallSummaryStepperProps {
   activeSection: SectionType;
   setActiveSection: (section: SectionType) => void;
