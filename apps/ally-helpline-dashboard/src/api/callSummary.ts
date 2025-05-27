@@ -2,6 +2,9 @@ import { baseAPI } from "@/api/baseAPI";
 
 const callSummaryAPI = baseAPI.injectEndpoints({
   endpoints: (builder) => ({
+    getSummaryFields: builder.query<string[], void>({
+      query: () => "/settings/summary-fields",
+    }),
     getCallSummary: builder.query({
       query: (chatId) => `/chats/${chatId}`,
       providesTags: ["CallSummary"],
@@ -25,6 +28,7 @@ const callSummaryAPI = baseAPI.injectEndpoints({
 });
 
 export const {
+  useGetSummaryFieldsQuery,
   useGetCallSummaryQuery,
   useUpdateCallSummaryMutation,
   useEnhanceContentMutation,

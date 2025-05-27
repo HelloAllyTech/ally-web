@@ -2,7 +2,6 @@ import { Article } from "@/components/article/types";
 
 export enum SectionType {
   StressBuster = "Stress buster",
-  CallHighlights = "Call highlights",
   CallSummary = "Call summary",
   Resources = "You might also like",
 }
@@ -37,21 +36,14 @@ export interface StressBusterProps {
   onProceed: () => void;
 }
 
-export interface CallHighlightsProps {
-  onProceed: () => void;
-  summaryData: any;
-}
-
-export interface Highlight {
-  key: string;
-  title: string;
-  image: React.ComponentType<React.SVGProps<SVGSVGElement>>;
-}
-
-export interface CallSummaryProps {
+export interface CallSummaryStepProps {
   isLoading: boolean;
   onProceed: () => void;
   summaryData: any;
+}
+
+export interface CallSummaryProps {
+  onProceed: () => void;
 }
 
 export interface ModalData {

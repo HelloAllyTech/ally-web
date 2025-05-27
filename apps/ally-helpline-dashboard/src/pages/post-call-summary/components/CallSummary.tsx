@@ -1,14 +1,53 @@
-import { useState } from "react";
+import { FC, useEffect, useState } from "react";
+import { useParams } from "react-router-dom";
 
 import { Accordion, DropdownField, TextField, Button } from "@/components";
-import { CallDetails } from "@/assets/icons";
+import { useGetCallSummaryQuery, useGetSummaryFieldsQuery, useUpdateCallSummaryMutation } from "@/api/callSummary";
 
-import { labelShownSections, summaryFields, summarySections, summaryValues } from "../constants";
-import { SummaryField } from "../types";
+import { labelShownSections, summaryFields, summarySections } from "../constants";
+import { CallSummaryProps, SummaryField } from "../types";
+import { getFormattedDateTime } from "../helper";
 
-const CallSummary = () => {
+const CallSummary: FC<CallSummaryProps> = ({ onProceed }) => {
+  const { chatId } = useParams();
+
   const [editingField, setEditingField] = useState<string | null>(null);
-  const [summaryData, setSummaryData] = useState(summaryValues);
+  const [summaryData, setSummaryData] = useState(null);
+
+  const { data: visibleFields } = useGetSummaryFieldsQuery();
+  const { data: callSummary, refetch } = useGetCallSummaryQuery(chatId);
+  const [updateCallSummary, { isLoading: isUpdateLoading }] = useUpdateCallSummaryMutation();
+
+  useEffect(() => {
+    const refetchCallSummary = async () => {
+      try {
+        if (!callSummary?.details) {
+          await refetch();
+        }
+      } catch (error) {
+        console.error("Error fetching call summary:", error);
+      }
+    };
+
+    let interval: NodeJS.Timeout;
+
+    if (!callSummary?.details?.summary) {
+      refetchCallSummary();
+      interval = setInterval(refetchCallSummary, 5000);
+    }
+
+    return () => {
+      if (interval) {
+        clearInterval(interval);
+      }
+    };
+  }, [callSummary]);
+
+  useEffect(() => {
+    if (callSummary?.details?.summary) {
+      setSummaryData(callSummary.details.summary);
+    }
+  }, [callSummary]);
 
   const handleEditableFieldClick = (field: SummaryField) => {
     if (field.isEditable) {
@@ -16,15 +55,44 @@ const CallSummary = () => {
     }
   };
 
+  const getFieldValue = (key: string, type: string) => {
+    if (!summaryData) {
+      return type === "Text" ? "--" : "";
+    }
+    switch (key) {
+      case "callId":
+        return summaryData.callId || callSummary?.details?.chatId;
+      case "callDuration": {
+        const duration = summaryData.callDuration || callSummary?.details?.callDuration;
+        return `${Math.floor(Number(duration) / 60)} minutes`;
+      }
+      case "callDate":
+        return getFormattedDateTime(callSummary?.details?.callDate, "do MMMM yyyy");
+      case "callTime": {
+        return `${getFormattedDateTime(callSummary?.startedAt, "HH:mm")} 
+          - ${getFormattedDateTime(callSummary?.endedAt, "HH:mm")}`;
+      }
+      case "clientId":
+        return summaryData.clientId || callSummary?.clientId;
+      case "dominantFeelings":
+        return summaryData.dominantFeelings.join(",\n") || "";
+      case "tags":
+        return summaryData.tags.map((tag) => tag.tag).join(", ") || "";
+      default:
+        return summaryData[key];
+    }
+  };
+
   const getFieldDisplay = (field: SummaryField) => {
+    const value = getFieldValue(field.key, field.type);
     switch (field.type) {
       case "Dropdown":
         return (
           <div key={field.key} className="flex gap-1">
             <span className="font-medium text-[16px] text-[#000]">{`${field.label}: `}</span>
             <DropdownField
-              value={summaryData[field.key]}
-              onChange={(value) => setSummaryData({ ...summaryData, [field.key]: value })}
+              value={value}
+              onChange={(value) => setSummaryData((prev) => ({ ...prev, [field.key]: value }))}
               options={field.options ?? []}
             />
           </div>
@@ -36,8 +104,8 @@ const CallSummary = () => {
               <span className="font-medium text-[16px] text-[#000]">{`${field.label}: `}</span>
             )}
             <TextField
-              value={summaryData[field.key]}
-              onChange={(e) => setSummaryData({ ...summaryData, [field.key]: e.target.value })}
+              value={value}
+              onChange={(e) => setSummaryData((prev) => ({ ...prev, [field.key]: e.target.value }))}
               multiline
               rows={4}
               className="w-full text-[16px]"
@@ -53,9 +121,9 @@ const CallSummary = () => {
             <span className="font-medium text-[16px] text-[#1D1B20]">{`${field.label}: `}</span>
             <input
               type="text"
-              value={summaryData[field.key]}
+              value={value}
               onBlur={() => setEditingField(null)}
-              onChange={(e) => setSummaryData({ ...summaryData, [field.key]: e.target.value })}
+              onChange={(e) => setSummaryData((prev) => ({ ...prev, [field.key]: e.target.value }))}
               className="text-[16px]"
             />
           </div>
@@ -66,7 +134,7 @@ const CallSummary = () => {
               className={`${field.isEditable ? "text-[#000] cursor-pointer" : "text-gray-500"} text-[16px]`}
               onClick={() => handleEditableFieldClick(field)}
             >
-              {summaryData[field.key]}
+              {value}
             </span>
           </div>
         );
@@ -74,7 +142,16 @@ const CallSummary = () => {
   };
 
   const getSectionFields = (section: string) => {
-    return summaryFields.filter((field) => field.sectionKey === section);
+    return summaryFields.filter((field) => field.sectionKey === section && visibleFields?.includes(field.key));
+  };
+
+  const handleSubmit = async () => {
+    try {
+      await updateCallSummary({ chatId, data: summaryData });
+      onProceed();
+    } catch (error) {
+      console.error("Error updating call summary:", error);
+    }
   };
 
   return (
@@ -93,9 +170,10 @@ const CallSummary = () => {
       <div className="flex justify-center">
         <Button
           className="rounded-[100px]"
-          onClick={() => console.log(summaryData)}
+          onClick={handleSubmit}
+          disabled={isUpdateLoading}
         >
-          Submit
+          {isUpdateLoading ? "Submitting..." : "Submit"}
         </Button>
       </div>
     </>

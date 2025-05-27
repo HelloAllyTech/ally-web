@@ -19,11 +19,6 @@ import FocusOff from "./FocusOff.svg?react";
 import Close from "./Close.svg?react";
 import BackgroundBottom from "./Transcript-background-bottom.svg?react";
 import CallAttend from "./Call_attend.svg?react";
-import CallDuration from "./CallDuration.svg?react";
-import QuestionsAsked from "./QuestionsAsked.svg?react";
-import Nudges from "./Nudges.svg?react";
-import ListeningRatio from "./ListeningRatio.svg?react";
-import CallerMood from "./CallerMood.svg?react";
 import BackCircle from "./BackCircle.svg?react";
 import ComingSoon from "./ComingSoon.svg?react";
 import NoResults from "./NoResults.svg?react";
@@ -65,11 +60,6 @@ export {
   BackgroundBottom,
   CallAttend,
   LifelineLogo,
-  CallDuration,
-  QuestionsAsked,
-  Nudges,
-  ListeningRatio,
-  CallerMood,
   BackCircle,
   ComingSoon,
   NoResults,

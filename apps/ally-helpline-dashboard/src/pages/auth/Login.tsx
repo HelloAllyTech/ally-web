@@ -14,6 +14,7 @@ const Login = () => {
   const navigate = useNavigate();
 
   const [loginSection, setLoginSection] = useState<"Phone" | "OTP">("Phone");
+  const [countryCode] = useState<string>("+91");
   const [phone, setPhone] = useState<string>("");
   const [otp, setOtp] = useState<string>("");
   const [countdown, setCountdown] = useState<number>(0);
@@ -109,7 +110,7 @@ const Login = () => {
         <div className="flex flex-col gap-4">
           <div className="flex items-center gap-2">
             <div className="text-[#49454F] rounded-[5px] border-2 border-[#E5E7EB] p-2 text-sm">
-              +91
+              {countryCode}
             </div>
             <TextField
               fieldSize="medium"
@@ -172,9 +173,9 @@ const Login = () => {
       if (rememberMe) {
         localStorage.setItem("rememberedPhone", phone);
       }
-      generateOTP({ phone });
+      generateOTP({ phone: `${countryCode}${phone}` });
     } else {
-      verifyOTP({ phone, otp });
+      verifyOTP({ phone: `${countryCode}${phone}`, otp });
     }
   };
 

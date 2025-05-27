@@ -1,65 +1,37 @@
 import { X } from "lucide-react";
 import { motion } from "framer-motion";
 import { useSelector } from "react-redux";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Container, Dialog } from "@mui/material";
-import { useParams, useSearchParams, useNavigate } from "react-router-dom";
+import { useSearchParams, useNavigate } from "react-router-dom";
 
-import { useGetCallSummaryQuery } from "@/api/callSummary";
 import { RootState, store } from "@/store/store";
 import { ArticleReader, Button, Drawer } from "@/components";
+import { Article } from "@/components/article/types";
 import { setUserStatus } from "@/reducer/userReducer";
+import { UserStatus } from "@/types/user";
 
 import CallSummaryStepper from "./CallSummaryStepper";
 import StressBusterStep from "./StressBusterStep";
-import CallHighlights from "./components/CallHighlights";
-import CallSummaryStep from "./components/CallSummaryStep";
 import { ModalData, SectionType } from "./types";
 import ArticleGridStep from "./components/ArticleGridStep";
-import { Article } from "@/components/article/types";
-import { UserStatus } from "@/types/user";
+import CallSummary from "./components/CallSummary";
 
 const PostCallSummary = () => {
-  const { chatId } = useParams();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
 
   const [activeSection, setActiveSection] = useState<SectionType>(
     searchParams.get("section") === "2"
-      ? SectionType.CallHighlights
+      ? SectionType.CallSummary
       : SectionType.StressBuster
   );
   const [completedSections, setCompletedSections] = useState<SectionType[]>(
-    searchParams.get("section") === "2" ? [SectionType.StressBuster, SectionType.CallHighlights] : [SectionType.StressBuster]
+    searchParams.get("section") === "2" ? [SectionType.StressBuster, SectionType.CallSummary] : [SectionType.StressBuster]
   );
   const [modalData, setModalData] = useState<ModalData | null>({ type: null, article: null });
 
   const { userStatus } = useSelector((state: RootState) => state.user);
-
-  const { data: callSummary, refetch, isLoading: isGetSummaryLoading } = useGetCallSummaryQuery(chatId);
-
-  useEffect(() => {
-    const refetchCallSummary = async () => {
-      try {
-        await refetch();
-      } catch (error) {
-        console.error("Error fetching call summary:", error);
-      }
-    };
-
-    let interval: NodeJS.Timeout;
-
-    if (!callSummary?.details?.summary) {
-      refetchCallSummary();
-      interval = setInterval(refetchCallSummary, 5000);
-    }
-
-    return () => {
-      if (interval) {
-        clearInterval(interval);
-      }
-    };
-  }, [callSummary]);
 
   const handleArticleClick = (article: Article) => {
     setModalData({ type: "article", article });
@@ -75,22 +47,13 @@ const PostCallSummary = () => {
       case SectionType.StressBuster:
         return (
           <StressBusterStep
-            onProceed={() => handleProceed(SectionType.CallHighlights)}
-          />
-        );
-      case SectionType.CallHighlights:
-        return (
-          <CallHighlights
             onProceed={() => handleProceed(SectionType.CallSummary)}
-            summaryData={callSummary}
           />
         );
       case SectionType.CallSummary:
         return (
-          <CallSummaryStep
-            isLoading={isGetSummaryLoading}
+          <CallSummary
             onProceed={() => handleProceed(SectionType.Resources)}
-            summaryData={callSummary}
           />
         );
       case SectionType.Resources:
