@@ -173,9 +173,9 @@ const Login = () => {
       if (rememberMe) {
         localStorage.setItem("rememberedPhone", phone);
       }
-      generateOTP({ phone: `${countryCode}${phone}` });
+      generateOTP({ phone: `${countryCode}${phone.trim()}` });
     } else {
-      verifyOTP({ phone: `${countryCode}${phone}`, otp });
+      verifyOTP({ phone: `${countryCode}${phone.trim()}`, otp });
     }
   };
 

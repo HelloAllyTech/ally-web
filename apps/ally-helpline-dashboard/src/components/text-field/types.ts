@@ -1,6 +1,6 @@
+import { ChangeEvent, CSSProperties } from "react";
 import { FieldErrors, UseFormRegister } from "react-hook-form";
 import { TextFieldProps as MuiTextFieldProps } from "@mui/material";
-import { ChangeEvent } from "react";
 
 export interface TextFieldProps extends Omit<MuiTextFieldProps, "variant"> {
   className?: string;
@@ -8,6 +8,7 @@ export interface TextFieldProps extends Omit<MuiTextFieldProps, "variant"> {
   errors?: FieldErrors<any>;
   fieldSize?: "small" | "medium" | "large";
   fullWidth?: boolean;
+  inputStyles?: CSSProperties;
   label?: string;
   multiline?: boolean;
   name?: string;

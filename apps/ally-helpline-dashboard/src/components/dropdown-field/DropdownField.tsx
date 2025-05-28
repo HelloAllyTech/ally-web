@@ -3,7 +3,7 @@ import ExpandMore from "@mui/icons-material/ExpandMore";
 
 import { DropdownFieldProps } from "./types";
 
-const DropdownField: FC<DropdownFieldProps> = ({ label, value, onChange, options }) => {
+const DropdownField: FC<DropdownFieldProps> = ({ disabled, label, value, onChange, options, valueClassName }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -40,8 +40,8 @@ const DropdownField: FC<DropdownFieldProps> = ({ label, value, onChange, options
     <div className="w-full relative" ref={dropdownRef}>
       <div className="w-full flex gap-2">
         {label && <span>{label}</span>}
-        <span>{value}</span>
-        <ExpandMore className="w-4 h-4 cursor-pointer" onClick={() => setIsOpen((prev) => !prev)} />
+        <span className={valueClassName}>{value}</span>
+        {!disabled && (<ExpandMore className="w-4 h-4 cursor-pointer" onClick={() => setIsOpen((prev) => !prev)} />)}
       </div>
       {isOpen && (
         <div

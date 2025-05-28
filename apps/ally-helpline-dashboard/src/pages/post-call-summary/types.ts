@@ -1,4 +1,5 @@
 import { Article } from "@/components/article/types";
+import { SummaryFieldKey } from "@/types/summary";
 
 export enum SectionType {
   StressBuster = "Stress buster",
@@ -6,11 +7,22 @@ export enum SectionType {
   Resources = "You might also like",
 }
 
-export enum Gender {
-  MALE = "Male",
-  FEMALE = "Female",
-  NON_BINARY = "Non-binary",
-  PREFER_NOT_TO_SAY = "Client Prefers Not to Say"
+export enum SummarySectionKey {
+  FeaturesAndDemographics = "featuresAndDemographics",
+  SessionSummary = "sessionSummary",
+  Flow = "flow",
+  KeyConcerns = "keyConcerns",
+  ObjectiveObservations = "objectiveObservations",
+  SubjectiveObservations = "subjectiveObservations",
+  Assessment = "assessment",
+  DominantFeelings = "dominantFeelings",
+  IssuesWorkedOn = "issuesWorkedOn",
+  KeyTherapeuticTechniques = "keyTherapeuticTechniques",
+  ReferralsProvided = "referralsProvided",
+  HomeworkRecommended = "homeworkRecommended",
+  PlansForNextCall = "plansForNextCall",
+  Tags = "tags",
+  Metrics = "metrics",
 }
 
 export type FieldType = "Text" | "Number" | "Dropdown" | "Multiline" | "Boolean";
@@ -18,11 +30,11 @@ export type FieldType = "Text" | "Number" | "Dropdown" | "Multiline" | "Boolean"
 export interface SummaryField {
   isEditable: boolean;
   isEnhanceable?: boolean;
-  key: string;
+  key: SummaryFieldKey;
   label: string;
   options?: string[];
   placeholder?: string;
-  sectionKey: string;
+  sectionKey: SummarySectionKey;
   type: FieldType;
 }
 
@@ -34,12 +46,6 @@ export interface CallSummaryStepperProps {
 
 export interface StressBusterProps {
   onProceed: () => void;
-}
-
-export interface CallSummaryStepProps {
-  isLoading: boolean;
-  onProceed: () => void;
-  summaryData: any;
 }
 
 export interface CallSummaryProps {

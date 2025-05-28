@@ -1,8 +1,9 @@
 import { baseAPI } from "@/api/baseAPI";
+import { EnhanceContentRequest, EnhanceContentResponse, SummaryFieldKey } from "@/types/summary";
 
 const callSummaryAPI = baseAPI.injectEndpoints({
   endpoints: (builder) => ({
-    getSummaryFields: builder.query<string[], void>({
+    getSummaryFields: builder.query<SummaryFieldKey[], void>({
       query: () => "/settings/summary-fields",
     }),
     getCallSummary: builder.query({
@@ -17,7 +18,7 @@ const callSummaryAPI = baseAPI.injectEndpoints({
       }),
       invalidatesTags: ["CallSummary"],
     }),
-    enhanceContent: builder.mutation({
+    enhanceContent: builder.mutation<EnhanceContentResponse, EnhanceContentRequest>({
       query: ({ content }) => ({
         url: "/chats/enhance",
         method: "POST",

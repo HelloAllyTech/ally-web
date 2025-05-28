@@ -17,6 +17,7 @@ const TextField: FC<TextFieldProps> = ({
   errors,
   fieldSize = "small",
   fullWidth = true,
+  inputStyles,
   label,
   multiline = false,
   name,
@@ -63,7 +64,7 @@ const TextField: FC<TextFieldProps> = ({
             boxSizing: "border-box",
             color: "#4A4459",
             fontSize: "14px",
-            // padding: "12px 16px",
+            ...inputStyles,
           },
         }}
         {...props}
