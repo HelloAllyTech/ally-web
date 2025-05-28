@@ -1,17 +1,21 @@
 import { useEffect, useState } from "react";
 
 import {
-  useGetDashboardsQuery,
   useLazyGetDashboardUrlQuery,
+  useLazyGetDashboardsQuery,
 } from "@/api/analytics";
 
 const Analytics = () => {
   const [getDashboardUrl] = useLazyGetDashboardUrlQuery();
-  const { data: dashboards } = useGetDashboardsQuery();
+  const [getDashboards, { data: dashboards }] = useLazyGetDashboardsQuery();
 
   const [dashboardUrls, setDashboardUrls] = useState<{ [id: string]: string }>(
     {}
   );
+
+  useEffect(() => {
+    getDashboards();
+  }, []);
 
   useEffect(() => {
     if (dashboards) {

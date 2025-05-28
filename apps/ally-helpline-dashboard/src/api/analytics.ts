@@ -24,5 +24,5 @@ const analyticsAPI = baseAPI.injectEndpoints({
   }),
 });
 
-export const { useLazyGetDashboardUrlQuery, useGetDashboardsQuery } =
+export const { useLazyGetDashboardUrlQuery, useLazyGetDashboardsQuery } =
   analyticsAPI;

@@ -70,7 +70,7 @@ export default {
           "0%": { opacity: "0", transform: "translateY(10px)" },
           "100%": { opacity: "1", transform: "translateY(0)" },
         },
-        "expand": {
+        expand: {
           "0%": { width: "35%" },
           "100%": { width: "788px" },
         },
@@ -78,7 +78,7 @@ export default {
       animation: {
         "message-in": "message-in 0.3s ease-out forwards",
         "fade-in": "fadeIn 0.5s ease-in-out",
-        "expand": "expand 0.5s ease-out forwards",
+        expand: "expand 0.5s ease-out forwards",
       },
       borderRadius: {
         lg: "var(--radius)",

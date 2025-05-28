@@ -1,4 +1,13 @@
-import { FC, useEffect, useMemo, useRef, useState, Dispatch, SetStateAction, useCallback } from "react";
+import {
+  FC,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  Dispatch,
+  SetStateAction,
+  useCallback,
+} from "react";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 
@@ -17,6 +26,7 @@ import CallSidebar from "./components/CallSidebar";
 import RealTimeTranscript from "./components/RealTimeTranscript";
 import CallControls from "./components/CallControls";
 import CallInterface from "./components/CallInterface";
+import { useGetNudgeStatusQuery } from "@/api/audioCall";
 
 // TODO: Uninstall react-audio-voice-recorder
 // TODO: Split transcription to client-counselor
@@ -28,7 +38,10 @@ import CallInterface from "./components/CallInterface";
 // TODO: Bug with no trascript intermittently
 // TODO: start Audio chat not send sometimes
 
-const CallTranscript: FC<CallTranscriptProps> = ({ endSession, activeChat }) => {
+const CallTranscript: FC<CallTranscriptProps> = ({
+  endSession,
+  activeChat,
+}) => {
   const navigate = useNavigate();
   const iceServers = useIceServers();
 
@@ -40,17 +53,24 @@ const CallTranscript: FC<CallTranscriptProps> = ({ endSession, activeChat }) => 
   const remoteStreamRef = useRef<MediaStream>(new MediaStream());
   const offerTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  const [peerConnection, setPeerConnection] = useState<RTCPeerConnection | null>(null);
-  const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(null);
-  const [remoteMediaRecorder, setRemoteMediaRecorder] = useState<MediaRecorder | null>(null);
+  const [peerConnection, setPeerConnection] =
+    useState<RTCPeerConnection | null>(null);
+  const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(
+    null
+  );
+  const [remoteMediaRecorder, setRemoteMediaRecorder] =
+    useState<MediaRecorder | null>(null);
   const [isMuted, setIsMuted] = useState<boolean>(true);
   const [isFocusMode, setIsFocusMode] = useState(true);
-  const [speakerTranscriptions, setSpeakerTranscriptions] = useState<Transcription[]>([]);
+  const [speakerTranscriptions, setSpeakerTranscriptions] = useState<
+    Transcription[]
+  >([]);
   const [myTranscriptions, setMyTranscriptions] = useState<Transcription[]>([]);
   const [nudges, setNudges] = useState<Nudge[]>([]);
   const [stage, setStage] = useState<string>();
   const [newIceCandidates, setNewIceCandidates] = useState([]);
   const [isUserJoined, setIsUserJoined] = useState(null);
+  const { data: nudgeStatus } = useGetNudgeStatusQuery();
 
   const isClient = user?.role === UserRole.CLIENT;
   const isCounsellor = user?.role === UserRole.COUNSELOR;
@@ -102,7 +122,11 @@ const CallTranscript: FC<CallTranscriptProps> = ({ endSession, activeChat }) => 
         return updatedTranscriptions;
       }
 
-      if (!lastTranscription.isSentenceComplete && lastTranscription.isFinal && payload.isFinal) {
+      if (
+        !lastTranscription.isSentenceComplete &&
+        lastTranscription.isFinal &&
+        payload.isFinal
+      ) {
         // concat the last transcription with the new one
         const updatedTranscriptions = [...prev];
         updatedTranscriptions[prev.length - 1] = {
@@ -146,7 +170,11 @@ const CallTranscript: FC<CallTranscriptProps> = ({ endSession, activeChat }) => 
         if (nudge.type === MessageType.NUDGE) {
           setNudges((prev) => [
             ...prev,
-            { content: nudge.content as string, id: nudge.id as number, feedback: nudge.feedback as FeedbackResponse }
+            {
+              content: nudge.content as string,
+              id: nudge.id as number,
+              feedback: nudge.feedback as FeedbackResponse,
+            },
           ]);
         }
       },
@@ -191,17 +219,25 @@ const CallTranscript: FC<CallTranscriptProps> = ({ endSession, activeChat }) => 
           isFinal: true,
           isSentenceComplete: true,
         }));
-      setMyTranscriptions(existingTranscriptions
-        ?.filter((payload) => payload.senderId === user.userId)
+      setMyTranscriptions(
+        existingTranscriptions?.filter(
+          (payload) => payload.senderId === user.userId
+        )
       );
-      setSpeakerTranscriptions(existingTranscriptions
-        ?.filter((payload) => payload.senderId !== user.userId)
+      setSpeakerTranscriptions(
+        existingTranscriptions?.filter(
+          (payload) => payload.senderId !== user.userId
+        )
       );
 
       const existingNudges = [...activeChat.messages]
         .reverse()
         .filter((message) => message.type === MessageType.NUDGE)
-        .map((nudge) => ({ content: nudge.content, id: nudge.id, feedback: nudge.feedback }));
+        .map((nudge) => ({
+          content: nudge.content,
+          id: nudge.id,
+          feedback: nudge.feedback,
+        }));
       setNudges(existingNudges);
     }
   }, [activeChat]);
@@ -400,13 +436,16 @@ const CallTranscript: FC<CallTranscriptProps> = ({ endSession, activeChat }) => 
         .addIceCandidate(new RTCIceCandidate(data.candidate))
         .catch((err) => {
           setNewIceCandidates((prev) => [...prev, data.candidate]);
-          console.error("Error adding ICE candidate (Adding in state for future handling):", err);
+          console.error(
+            "Error adding ICE candidate (Adding in state for future handling):",
+            err
+          );
         });
     },
     [chatId, peerConnection]
   );
 
-  // Handle incoming WebRTC offer 
+  // Handle incoming WebRTC offer
   const handleWebRTCOffer = useCallback(
     async (data: { chatId: number; offer: RTCSessionDescriptionInit }) => {
       if (data.chatId !== chatId) return;
@@ -416,7 +455,9 @@ const CallTranscript: FC<CallTranscriptProps> = ({ endSession, activeChat }) => 
         clearTimeout(offerTimeoutRef.current);
       }
       // Set the incoming offer as the remote description
-      await peerConnection?.setRemoteDescription(new RTCSessionDescription(data.offer));
+      await peerConnection?.setRemoteDescription(
+        new RTCSessionDescription(data.offer)
+      );
 
       handleUnAttemptedIceCandidates();
 
@@ -447,7 +488,9 @@ const CallTranscript: FC<CallTranscriptProps> = ({ endSession, activeChat }) => 
       });
 
       // Set the incoming answer as the remote description
-      await peerConnection?.setRemoteDescription(new RTCSessionDescription(data.answer));
+      await peerConnection?.setRemoteDescription(
+        new RTCSessionDescription(data.answer)
+      );
 
       handleUnAttemptedIceCandidates();
     },
@@ -479,10 +522,13 @@ const CallTranscript: FC<CallTranscriptProps> = ({ endSession, activeChat }) => 
 
   const transcriptions = useMemo(() => {
     const reducedMyTranscriptions = reduceTranscriptions(myTranscriptions);
-    const reducedSpeakerTranscriptions = reduceTranscriptions(speakerTranscriptions);
+    const reducedSpeakerTranscriptions = reduceTranscriptions(
+      speakerTranscriptions
+    );
 
     return [...reducedMyTranscriptions, ...reducedSpeakerTranscriptions].sort(
-      (a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
+      (a, b) =>
+        new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
     );
   }, [myTranscriptions, speakerTranscriptions]);
 
@@ -516,14 +562,16 @@ const CallTranscript: FC<CallTranscriptProps> = ({ endSession, activeChat }) => 
           onMuteButtonClick={() => setIsMuted((prev) => !prev)}
         />
       </AudioCallBackgroundWrapper>
-      <CallSidebar
-        isCounsellor={isCounsellor}
-        isFocusMode={isFocusMode}
-        isUserJoined={isUserJoined}
-        nudges={nudges}
-        onClose={() => setIsFocusMode(false)}
-        stage={stage}
-      />
+      {nudgeStatus && (
+        <CallSidebar
+          isCounsellor={isCounsellor}
+          isFocusMode={isFocusMode}
+          isUserJoined={isUserJoined}
+          nudges={nudges}
+          onClose={() => setIsFocusMode(false)}
+          stage={stage}
+        />
+      )}
     </div>
   );
 };
