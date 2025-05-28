@@ -26,7 +26,7 @@ import CallSidebar from "./components/CallSidebar";
 import RealTimeTranscript from "./components/RealTimeTranscript";
 import CallControls from "./components/CallControls";
 import CallInterface from "./components/CallInterface";
-import { useGetNudgeStatusQuery } from "@/api/nudgeStatus";
+import { useGetNudgeStatusQuery } from "@/api/audioCall";
 
 // TODO: Uninstall react-audio-voice-recorder
 // TODO: Split transcription to client-counselor

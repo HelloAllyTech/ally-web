@@ -45,6 +45,9 @@ const audioCallAPI = baseAPI.injectEndpoints({
         body: feedback,
       }),
     }),
+    getNudgeStatus: builder.query<boolean, void>({
+      query: () => "/settings/nudge-status",
+    }),
   }),
 });
 
@@ -58,6 +61,7 @@ export const {
   useEndCallMutation,
   useAddFeedbackMutation,
   useUpdateFeedbackMutation,
+  useGetNudgeStatusQuery
 } = audioCallAPI;
 
 export default audioCallAPI;
