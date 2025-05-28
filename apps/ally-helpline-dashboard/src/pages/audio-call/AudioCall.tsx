@@ -128,8 +128,8 @@ const AudioCall: FunctionComponent = () => {
           isFullScreenMode
           closeIcon={<Minimize />}
           onClose={navigateOnStressBusterClose}
-          showHighlightsButton
-          onViewHighlights={handleViewCallHighlights}
+          showViewSummaryButton
+          onViewSummary={handleViewCallHighlights}
         />
       )}
     </div>

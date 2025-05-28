@@ -8,10 +8,12 @@ import { updatePage, updateTotalCallsCount } from "@/reducer/callsReducer";
 import { useGetCallLogsQuery } from "@/api/calls";
 import { FallbackUI } from "@/components";
 import { NoResults } from "@/assets/icons";
+import { CallLog } from "@/types/calls";
 
 import SummarySideBar from "./components/SummarySideBar";
 import { convertSecondsToDuration, formatDate } from "./utils";
-import { CALL_LOGS_PAGINATION_LIMIT, dummySummarydata, TABLE_HEADERS, TABLE_ROW_HEIGHT, TAG_COLORS } from "./constants";
+import { CALL_LOGS_PAGINATION_LIMIT, tableHeaders, TABLE_ROW_HEIGHT, tagColors } from "./constants";
+import { TagDisplay } from "./types";
 
 const CallLogsTable = () => {
   const dispatch = useDispatch();
@@ -19,14 +21,14 @@ const CallLogsTable = () => {
   const { filters: { page }, totalCallsCount } = useSelector((state: RootState) => state.calls);
 
   const [transition, setTransition] = useState(true);
-  const [summary, setSummary] = useState<any>(null);
+  const [callSummary, setCallSummary] = useState<CallLog | null>(null);
 
   const { data: callLogsData, isLoading } = useGetCallLogsQuery({
     limit: CALL_LOGS_PAGINATION_LIMIT,
     offset: (page * CALL_LOGS_PAGINATION_LIMIT) - CALL_LOGS_PAGINATION_LIMIT,
   });
 
-  const { count, data: callLogs } = callLogsData || {};
+  const { count, data: callLogs = [] } = callLogsData || {};
 
   useEffect(() => {
     if (!isLoading) {
@@ -48,47 +50,92 @@ const CallLogsTable = () => {
     );
   }
 
-  const getDisplayData = (row: { [key: string]: any }) => {
+  const getDisplayData = (row: CallLog) => {
     const { details, id, startedAt, clientId } = row;
     if (details) {
-      //TODO - change default values
-      const { callDuration = 30, startTime, summary, transcript } = details;
+      const { callDuration, startTime, summary } = details;
 
       return {
         id,
         clientId,
         dateAndTime: formatDate(startTime),
         duration: convertSecondsToDuration(callDuration ?? 60),
-        quality_score: summary?.callQuality ?? 70,
+        qualityScore: summary?.callQuality ?? 0,
         tags: summary?.tags?.map((tag: { tag: string; positivity_rating: number }) => {
           return {
             label: tag?.tag,
-            capsuleColor: TAG_COLORS[tag?.positivity_rating],
+            colors: tagColors[tag?.positivity_rating],
           };
         }),
-        keyConcerns: summary?.summaryNote?.session_documentation?.key_concerns,
-        flow: summary?.summaryNote?.session_documentation?.work_done?.counseling_process_flow,
-        notes: summary?.notesForNextSession,
-        transcript: transcript,
       };
     }
+    // TODO: update function to get tags from the call summary only and avoid this return
     return {
       id,
       clientId,
       dateAndTime: formatDate(startedAt),
       duration: convertSecondsToDuration(30),
-      quality_score: 0,
+      qualityScore: 0,
       tags: [].map((tag) => {
         return {
           label: tag.tag,
-          capsuleColor: TAG_COLORS[tag.positivity_rating],
+          colors: tagColors[tag.positivity_rating],
         };
       }),
     };
   };
 
-  const getWidth = (percentage: number) => {
+  const getQualityScoreWidth = (percentage: number) => {
     return (percentage / 100) * 128;
+  };
+
+  const getDisplayCell = (header: string, callLog: CallLog) => {
+    const displayData = getDisplayData(callLog);
+
+    switch (header) {
+      case "tags":
+        return (
+          <div className="flex gap-2">
+            {displayData.tags?.map((tag: TagDisplay) => (
+              <div
+                key={tag.label}
+                style={{
+                  backgroundColor: tag?.colors?.bg,
+                  color: tag?.colors?.text,
+                }}
+                className="rounded-md px-2 py-1 text-white text-xs font-medium"
+              >
+                {tag.label}
+              </div>
+            ))}
+          </div>
+        );
+      case "qualityScore":
+        return (
+          <div className="flex items-center gap-3">
+            <label>{displayData.qualityScore}</label>
+            <div className="flex gap-1 w-32 h-1">
+              <div
+                style={{ width: !transition && `${getQualityScoreWidth(displayData.qualityScore)}px` }}
+                className="w-0 transition-all duration-300 border-[2px] border-[#6272FF] rounded-md"
+              />
+              <div
+                style={{ width: !transition && `${getQualityScoreWidth(100 - displayData.qualityScore)}px` }}
+                className="w-full transition-all duration-300 border-[2px] border-t-[#E6F2FF] rounded-md"
+              />
+            </div>
+          </div>
+        );
+      case "notes":
+        return (
+          <Eye
+            className="text-[#868686] w-4 h-4 ml-2 cursor-pointer"
+            onClick={() => setCallSummary(callLog)}
+          />
+        );
+      default:
+        return displayData[header];
+    }
   };
 
   return (
@@ -100,63 +147,23 @@ const CallLogsTable = () => {
         <Table sx={{ minWidth: "100%" }} aria-label="simple table">
           <TableHead sx={{ backgroundColor: "#F5F5F5" }}>
             <TableRow>
-              {TABLE_HEADERS.map((header) => (
+              {tableHeaders.map((header) => (
                 <TableCell key={header.id} sx={{ width: header.width }}>{header.label}</TableCell>
               ))}
             </TableRow>
           </TableHead>
           <TableBody>
-            {callLogs?.map((row: { [key: string]: any }, index: number) => {
-              const displayData = getDisplayData(row);
+            {callLogs?.map((callLog) => {
+              const displayData = getDisplayData(callLog);
+
               return (
                 <TableRow key={displayData.id}>
-                  {TABLE_HEADERS.map((header) => (
-                    <TableCell key={header.id} sx={{ width: header.width, height: `${TABLE_ROW_HEIGHT}px` }}>
-                      {/* TODO: Replace with a switch */}
-                      {header.id === "tags" && (
-                        <div className="flex gap-2">
-                          {displayData.tags?.map(
-                            (tag: { label: string; capsuleColor: { bg: string; text: string } }) => (
-                              <div
-                                key={tag.label}
-                                style={{
-                                  backgroundColor: tag?.capsuleColor?.bg,
-                                  color: tag?.capsuleColor?.text,
-                                }}
-                                className="rounded-md px-2 py-1 text-white text-xs font-medium"
-                              >
-                                {tag.label}
-                              </div>
-                            )
-                          )}
-                        </div>
-                      )}
-                      {header.id === "quality_score" && (
-                        <div className="flex items-center gap-3">
-                          <label>{displayData.quality_score}</label>
-                          <div className="flex gap-1 w-32 h-1">
-                            <div
-                              style={{
-                                width: !transition && `${getWidth(displayData.quality_score)}px`,
-                              }}
-                              className="w-0 transition-all duration-300 border-[2px] border-[#6272FF] rounded-md"
-                            />
-                            <div
-                              style={{
-                                width: !transition && `${getWidth(100 - displayData.quality_score)}px`,
-                              }}
-                              className="w-full transition-all duration-300 border-[2px] border-t-[#E6F2FF] rounded-md"
-                            />
-                          </div>
-                        </div>
-                      )}
-                      {header.id === "notes" && (
-                        <Eye
-                          className="text-[#868686] w-4 h-4 ml-2 cursor-pointer"
-                          onClick={() => setSummary(index === 0 ? dummySummarydata : displayData)}
-                        />
-                      )}
-                      {!["tags", "quality_score", "notes"].includes(header.id) && displayData[header.id]}
+                  {tableHeaders.map((header) => (
+                    <TableCell
+                      key={header.id}
+                      sx={{ width: header.width, height: `${TABLE_ROW_HEIGHT}px` }}
+                    >
+                      {getDisplayCell(header.id, callLog)}
                     </TableCell>
                   ))}
                 </TableRow>
@@ -182,10 +189,10 @@ const CallLogsTable = () => {
           className="py-[100px]"
         />
       )}
-      {summary && summary?.id && (
+      {callSummary && callSummary?.id && (
         <SummarySideBar
-          summary={summary}
-          setSummary={setSummary}
+          callSummary={callSummary}
+          setCallSummary={setCallSummary}
         />
       )}
     </>

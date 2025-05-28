@@ -37,6 +37,7 @@ import ReferralsProvided from "./ReferralsProvided.svg?react";
 import SubjectiveObservations from "./SubjectiveObservations.svg?react";
 import Tags from "./Tags.svg?react";
 import TherapeuticTechniques from "./TherapeuticTechniques.svg?react";
+import Edit from "./Edit.svg?react";
 
 export {
   Relax,
@@ -78,4 +79,5 @@ export {
   SubjectiveObservations,
   Tags,
   TherapeuticTechniques,
+  Edit,
 };

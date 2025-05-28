@@ -1,5 +1,5 @@
 import { baseAPI } from "@/api/baseAPI";
-import { EnhanceContentRequest, EnhanceContentResponse, SummaryFieldKey } from "@/types/summary";
+import { EnhanceContentRequest, EnhanceContentResponse, SummaryFieldKey, Tag, UpdateCallInfoRequest } from "@/types/summary";
 
 const callSummaryAPI = baseAPI.injectEndpoints({
   endpoints: (builder) => ({
@@ -25,6 +25,20 @@ const callSummaryAPI = baseAPI.injectEndpoints({
         body: { content },
       }),
     }),
+    getTags: builder.mutation<Tag[], { tags: string[] }>({
+      query: (body) => ({
+        url: "/chats/summary/tag-positivity-ratings",
+        method: "POST",
+        body,
+      }),
+    }),
+    updateCallInfo: builder.mutation<void, UpdateCallInfoRequest>({
+      query: ({ chatId, callInfo }) => ({
+        url: `/chats/${chatId}/call-info`,
+        method: "PATCH",
+        body: callInfo,
+      }),
+    }),
   }),
 });
 
@@ -33,4 +47,6 @@ export const {
   useGetCallSummaryQuery,
   useUpdateCallSummaryMutation,
   useEnhanceContentMutation,
+  useGetTagsMutation,
+  useUpdateCallInfoMutation,
 } = callSummaryAPI;

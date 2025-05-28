@@ -3,8 +3,8 @@ interface StressBusterProps {
   playOnMount?: boolean;
   isFullScreenMode?: boolean;
   closeIcon?: React.ReactNode;
-  showHighlightsButton?: boolean;
-  onViewHighlights?: () => void;
+  showViewSummaryButton?: boolean;
+  onViewSummary?: () => void;
 }
 
 export type { StressBusterProps };

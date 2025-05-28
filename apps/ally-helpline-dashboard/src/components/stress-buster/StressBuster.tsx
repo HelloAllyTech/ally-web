@@ -20,8 +20,8 @@ const StressBuster: FunctionComponent<StressBusterProps> = ({
   onClose,
   closeIcon,
   playOnMount = false,
-  showHighlightsButton = false,
-  onViewHighlights,
+  showViewSummaryButton = false,
+  onViewSummary,
 }) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [isMuted, setIsMuted] = useState(true);
@@ -160,12 +160,12 @@ const StressBuster: FunctionComponent<StressBusterProps> = ({
           ))}
         </div>
         <div className="z-20">
-          {showHighlightsButton && isMaximized && (
+          {showViewSummaryButton && isMaximized && (
             <Button
               className="mt-8 rounded-full"
-              onClick={onViewHighlights}
+              onClick={onViewSummary}
             >
-              View Call Highlights
+              View Call Summary
             </Button>
           )}
         </div>

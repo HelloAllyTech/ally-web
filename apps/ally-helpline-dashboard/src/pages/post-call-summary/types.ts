@@ -49,7 +49,11 @@ export interface StressBusterProps {
 }
 
 export interface CallSummaryProps {
+  // TODO: create a type for the call summary
+  callSummary: any;
+  chatId: number;
   onProceed: () => void;
+  isSummaryLoading: boolean;
 }
 
 export interface ModalData {

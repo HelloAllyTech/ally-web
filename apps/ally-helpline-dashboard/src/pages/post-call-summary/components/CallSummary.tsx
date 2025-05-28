@@ -1,63 +1,35 @@
 import { FC, useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
 import { Divider } from "@mui/material";
 
 import { Accordion, DropdownField, TextField, Button } from "@/components";
-import { useGetCallSummaryQuery, useGetSummaryFieldsQuery, useUpdateCallSummaryMutation } from "@/api/callSummary";
+import { useGetSummaryFieldsQuery, useUpdateCallSummaryMutation, useGetTagsMutation } from "@/api/callSummary";
 import { useEnhance } from "@/hooks";
-import { SummaryFieldKey } from "@/types/summary";
 
 import { labelShownSections, summarySections } from "../constants";
 import { CallSummaryProps, SummaryField } from "../types";
 import { getFormattedDateTime, getSectionFields } from "../helper";
 
-const CallSummary: FC<CallSummaryProps> = ({ onProceed }) => {
-  const { chatId } = useParams();
-
+const CallSummary: FC<CallSummaryProps> = ({ callSummary, chatId, isSummaryLoading, onProceed }) => {
   const [summaryData, setSummaryData] = useState(null);
 
   const { data: visibleFields, isLoading: isGetSummaryFieldsLoading } = useGetSummaryFieldsQuery();
-  const { data: callSummary, refetch, isLoading: isGetCallSummaryLoading } = useGetCallSummaryQuery(chatId);
   const [updateCallSummary, { isLoading: isUpdateLoading }] = useUpdateCallSummaryMutation();
+  const [getTags, { isLoading: isGetTagsLoading }] = useGetTagsMutation();
 
   const { enhancing, EnhanceButton, EnhancementLoadingSkeleton, isEnhanceLoading } = useEnhance();
 
-  const isLoading = isGetSummaryFieldsLoading || isGetCallSummaryLoading || isUpdateLoading || isEnhanceLoading;
-
-  useEffect(() => {
-    const refetchCallSummary = async () => {
-      try {
-        if (!callSummary?.details) {
-          await refetch();
-        }
-      } catch (error) {
-        console.error("Error fetching call summary:", error);
-      }
-    };
-
-    let interval: NodeJS.Timeout;
-
-    if (!callSummary?.details?.summary) {
-      refetchCallSummary();
-      interval = setInterval(refetchCallSummary, 5000);
-    }
-
-    return () => {
-      if (interval) {
-        clearInterval(interval);
-      }
-    };
-  }, [callSummary]);
+  const isLoading = isGetSummaryFieldsLoading || isSummaryLoading || isUpdateLoading || isEnhanceLoading || isGetTagsLoading;
 
   useEffect(() => {
     if (callSummary?.details?.summary) {
-      setSummaryData(callSummary.details.summary);
+      const tags = callSummary.details.summary.tags;
+      setSummaryData({ ...callSummary.details.summary, tags: tags.map(({ tag }) => tag).join(", ") });
     }
   }, [callSummary]);
 
   const getFieldValue = (key: string, type: string) => {
     if (!summaryData) {
-      return type === "Text" ? "--" : "";
+      return type !== "Dropdown" ? "--" : "";
     }
     switch (key) {
       case "callId":
@@ -76,20 +48,9 @@ const CallSummary: FC<CallSummaryProps> = ({ onProceed }) => {
         return callSummary?.clientId || summaryData.clientId;
       case "languages":
         return summaryData.languages?.map(({ language, percentage }) => `${language} (${percentage}%)`).join(", ") || "";
-      case "tags":
-        return summaryData.tags?.map((tag) => tag.tag).join(", ") || "";
       default:
         return summaryData[key];
     }
-  };
-
-  const onMultilineChange = (key: string, value: string) => {
-    // TODO: update onChange to handle Tags
-    // if (key === SummaryFieldKey.Tags) {
-    //   console.log(value);
-    //   setSummaryData((prev) => ({ ...prev, [key]:  }));
-    // }
-    setSummaryData((prev) => ({ ...prev, [key]: value }));
   };
 
   const getFieldDisplay = (field: SummaryField) => {
@@ -101,7 +62,7 @@ const CallSummary: FC<CallSummaryProps> = ({ onProceed }) => {
             <span className="font-medium text-[16px] text-[#6B7280]">{`${field.label}: `}</span>
             <DropdownField
               disabled={!field.isEditable}
-              value={value}
+              value={value ?? "--"}
               valueClassName={`${field.isEditable ? "text-[#1A1A1A]" : "text-[#9CA3AF]"} text-[16px]`}
               onChange={(value) => setSummaryData((prev) => ({ ...prev, [field.key]: value }))}
               options={field.options ?? []}
@@ -116,7 +77,7 @@ const CallSummary: FC<CallSummaryProps> = ({ onProceed }) => {
             )}
             <TextField
               value={enhancing === field.key ? "" : value}
-              onChange={(e) => onMultilineChange(field.key, e.target.value)}
+              onChange={(e) => setSummaryData((prev) => ({ ...prev, [field.key]: e.target.value }))}
               multiline
               rows={4}
               className={`w-full ${field.isEditable ? "" : "pointer-events-none"}`}
@@ -147,7 +108,7 @@ const CallSummary: FC<CallSummaryProps> = ({ onProceed }) => {
               <span className="font-medium text-[16px] text-[#6B7280]">{`${field.label}: `}</span>
               <TextField
                 className={field.isEditable ? "" : "pointer-events-none"}
-                value={value}
+                value={value ?? "--"}
                 onChange={(e) => setSummaryData((prev) => ({ ...prev, [field.key]: e.target.value }))}
                 placeholder={field.placeholder}
                 inputStyles={{ color: field.isEditable ? "#1A1A1A" : "#9CA3AF", fontSize: "16px" }}
@@ -163,7 +124,9 @@ const CallSummary: FC<CallSummaryProps> = ({ onProceed }) => {
 
   const handleSubmit = async () => {
     try {
-      await updateCallSummary({ chatId, data: { summary: summaryData } });
+      const tagsInput = summaryData.tags.split(", ");
+      const tags = await getTags({ tags: tagsInput});
+      await updateCallSummary({ chatId, data: { summary: { ...summaryData, tags: tags.data } } });
       onProceed();
     } catch (error) {
       console.error("Error updating call summary:", error);
@@ -194,7 +157,7 @@ const CallSummary: FC<CallSummaryProps> = ({ onProceed }) => {
           onClick={handleSubmit}
           disabled={isLoading}
         >
-          {isUpdateLoading ? "Submitting..." : "Submit"}
+          {isUpdateLoading || isGetTagsLoading ? "Submitting..." : "Submit"}
         </Button>
       </div>
     </>

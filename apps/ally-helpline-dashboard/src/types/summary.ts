@@ -43,3 +43,15 @@ export interface EnhanceContentRequest {
 export interface EnhanceContentResponse {
   enhanced_content: string;
 }
+
+export interface Tag {
+  tag: string;
+  priority_rating: number;
+}
+
+export interface UpdateCallInfoRequest {
+  chatId: number;
+  callInfo: {
+    summaryName: string;
+  };
+}
