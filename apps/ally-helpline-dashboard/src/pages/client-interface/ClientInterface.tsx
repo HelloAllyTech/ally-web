@@ -11,6 +11,7 @@ import { Button } from "@/components";
 import { useSocket } from "@/hooks";
 import { RootState } from "@/store/store";
 import { useGetClientChatQuery, useRequestCallMutation } from "@/api/audioCall";
+import { LifelineLogo } from "@/assets/icons";
 
 const ClientInterface = () => {
   const navigate = useNavigate();
@@ -19,8 +20,11 @@ const ClientInterface = () => {
 
   const user = useSelector((state: RootState) => state.user.user);
 
-  const { data: clientChat } = useGetClientChatQuery(undefined, { refetchOnMountOrArgChange: true });
-  const [requestCall, { isLoading: isRequestCallLoading }] = useRequestCallMutation();
+  const { data: clientChat } = useGetClientChatQuery(undefined, {
+    refetchOnMountOrArgChange: true,
+  });
+  const [requestCall, { isLoading: isRequestCallLoading }] =
+    useRequestCallMutation();
 
   const socketEventCallbacks = useMemo(
     () => ({
@@ -57,7 +61,7 @@ const ClientInterface = () => {
         }
       }
     })();
-  }, [user]);
+  }, [user, clientChat]);
 
   const handleStartAudioChat = async () => {
     try {
@@ -68,7 +72,8 @@ const ClientInterface = () => {
         navigate(ROUTES.AUDIO_CALL);
       }
     } catch (error) {
-      if (error?.response?.data?.detail) toast.error(`${error.response.data.detail}`);
+      if (error?.response?.data?.detail)
+        toast.error(`${error.response.data.detail}`);
       else toast.error("Something went wrong. Please try again later!");
       setIsWaiting(false);
     }
@@ -84,12 +89,27 @@ const ClientInterface = () => {
       >
         <div className="flex-1 h-full flex flex-col items-center justify-center bg-gray-50 p-4">
           <div className="max-w-md w-full text-center space-y-8">
-            <h1 className="text-3xl font-bold text-gray-900">Welcome to Ally</h1>
+            <div className="flex items-center justify-center gap-2">
+              <h1 className="text-3xl font-bold text-gray-900">Welcome to</h1>
+              <span
+                className="flex items-center gap-2 cursor-pointer"
+                onClick={() => navigate("/")}
+              >
+                <LifelineLogo className="cursor-pointer" />
+                <h1 className="text-[28px] font-[ReplayPro] font-semibold text-[#081033]">
+                  Ally
+                </h1>
+              </span>
+            </div>
             <p className="text-gray-600">
               {isRequestCallLoading || isWaiting ? (
                 <>
-                  <h2 className="text-xl font-semibold text-gray-700 mb-2">Finding a counselor for you..</h2>
-                  <p className="text-gray-500">Please wait while we find the best counselor for you..</p>
+                  <h2 className="text-xl font-semibold text-gray-700 mb-2">
+                    Finding a counselor for you..
+                  </h2>
+                  <p className="text-gray-500">
+                    Please wait while we find the best counselor for you..
+                  </p>
                 </>
               ) : (
                 "Connect with a counselor instantly and start your journey towards better mental health."
@@ -100,7 +120,9 @@ const ClientInterface = () => {
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
               </div>
             ) : (
-              <Button onClick={handleStartAudioChat}>Call with a Counselor</Button>
+              <Button onClick={handleStartAudioChat}>
+                Call with a Counselor
+              </Button>
             )}
           </div>
         </div>
