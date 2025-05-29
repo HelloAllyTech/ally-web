@@ -4,6 +4,7 @@ import PhoneOutlinedIcon from "@mui/icons-material/PhoneOutlined";
 import DateRangeOutlinedIcon from "@mui/icons-material/DateRangeOutlined";
 import LeaderboardOutlinedIcon from "@mui/icons-material/LeaderboardOutlined";
 import SettingsOutlinedIcon from "@mui/icons-material/SettingsOutlined";
+import PublicOutlinedIcon from "@mui/icons-material/PublicOutlined";
 
 import { TabId } from "./tabs";
 import { Permissions } from "./permissions";
@@ -62,6 +63,13 @@ export const navBarOptions = [
       Icon: LeaderboardOutlinedIcon,
       path: ROUTES.ANALYTICS,
       permission: Permissions.VIEW_NAVBAR_ANALYTICS
+    },
+    {
+      id:  TabId.COMMUNITY,
+      title: "Community",
+      Icon: PublicOutlinedIcon,
+      path: "https://community.helloally.ai/",
+      permission: ""
     },
     {
       id: TabId.SETTINGS,

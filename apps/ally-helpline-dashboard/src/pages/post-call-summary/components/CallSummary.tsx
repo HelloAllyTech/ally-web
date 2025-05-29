@@ -8,8 +8,16 @@ import { useEnhance } from "@/hooks";
 import { labelShownSections, summarySections } from "../constants";
 import { CallSummaryProps, SummaryField } from "../types";
 import { getFormattedDateTime, getSectionFields } from "../helper";
+import SummaryLoading from "./SummaryLoading";
 
-const CallSummary: FC<CallSummaryProps> = ({ callSummary, chatId, isSummaryLoading, onProceed }) => {
+const CallSummary: FC<CallSummaryProps> = ({
+  callSummary,
+  chatId,
+  isSummaryLoading,
+  onProceed,
+  showInitialLoading,
+  setShowInitialLoading,
+}) => {
   const [summaryData, setSummaryData] = useState(null);
 
   const { data: visibleFields, isLoading: isGetSummaryFieldsLoading } = useGetSummaryFieldsQuery();
@@ -19,6 +27,18 @@ const CallSummary: FC<CallSummaryProps> = ({ callSummary, chatId, isSummaryLoadi
   const { enhancing, EnhanceButton, EnhancementLoadingSkeleton, isEnhanceLoading } = useEnhance();
 
   const isLoading = isGetSummaryFieldsLoading || isSummaryLoading || isUpdateLoading || isEnhanceLoading || isGetTagsLoading;
+
+  useEffect(() => {
+    let timer: NodeJS.Timeout;
+    if (showInitialLoading) {
+      // Show loading screen
+      timer = setTimeout(() => {
+        setShowInitialLoading(false);
+      }, 10000); // 10 seconds to allow all loading messages to appear
+    }
+
+    return () => clearTimeout(timer);
+  }, []);
 
   useEffect(() => {
     if (callSummary?.details?.summary) {
@@ -83,6 +103,7 @@ const CallSummary: FC<CallSummaryProps> = ({ callSummary, chatId, isSummaryLoadi
               className={`w-full ${field.isEditable ? "" : "pointer-events-none"}`}
               inputStyles={{ color: field.isEditable ? "#1A1A1A" : "#9CA3AF", fontSize: "16px" }}
               placeholder={field.placeholder}
+              showBorder={false}
               slotProps={{
                 input: {
                   startAdornment: enhancing === field.key && EnhancementLoadingSkeleton,
@@ -112,6 +133,7 @@ const CallSummary: FC<CallSummaryProps> = ({ callSummary, chatId, isSummaryLoadi
                 onChange={(e) => setSummaryData((prev) => ({ ...prev, [field.key]: e.target.value }))}
                 placeholder={field.placeholder}
                 inputStyles={{ color: field.isEditable ? "#1A1A1A" : "#9CA3AF", fontSize: "16px" }}
+                showBorder={false}
               />
             </div>
             {field.key === "clientId" && (
@@ -132,6 +154,11 @@ const CallSummary: FC<CallSummaryProps> = ({ callSummary, chatId, isSummaryLoadi
       console.error("Error updating call summary:", error);
     }
   };
+
+  // Show loading screen only on first visit
+  if (showInitialLoading) {
+    return <SummaryLoading />;
+  }
 
   return (
     <>

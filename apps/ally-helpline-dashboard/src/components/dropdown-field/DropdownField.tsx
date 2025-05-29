@@ -1,6 +1,5 @@
 import { FC, useState, useRef, useEffect } from "react";
-import ExpandMore from "@mui/icons-material/ExpandMore";
-
+import PlayArrow from "@mui/icons-material/PlayArrow";
 import { DropdownFieldProps } from "./types";
 
 const DropdownField: FC<DropdownFieldProps> = ({ disabled, label, value, onChange, options, valueClassName }) => {
@@ -38,10 +37,12 @@ const DropdownField: FC<DropdownFieldProps> = ({ disabled, label, value, onChang
 
   return (
     <div className="w-full relative" ref={dropdownRef}>
-      <div className="w-full flex gap-2">
+      <div className="w-full flex gap-2 items-center">
         {label && <span>{label}</span>}
         <span className={valueClassName}>{value}</span>
-        {!disabled && (<ExpandMore className="w-4 h-4 cursor-pointer" onClick={() => setIsOpen((prev) => !prev)} />)}
+        {!disabled && (
+            <PlayArrow className="w-4 h-4 cursor-pointer rotate-90" onClick={() => setIsOpen((prev) => !prev)} />
+        )}
       </div>
       {isOpen && (
         <div

@@ -15,5 +15,6 @@ export interface TextFieldProps extends Omit<MuiTextFieldProps, "variant"> {
   onChange?: (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
   register?: UseFormRegister<any>;
   rows?: number;
+  showBorder?: boolean;
   value?: string;
 }

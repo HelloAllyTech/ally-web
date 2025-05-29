@@ -38,6 +38,8 @@ import SubjectiveObservations from "./SubjectiveObservations.svg?react";
 import Tags from "./Tags.svg?react";
 import TherapeuticTechniques from "./TherapeuticTechniques.svg?react";
 import Edit from "./Edit.svg?react";
+import Delete from "./Delete.svg?react";
+import Download from "./Download.svg?react";
 
 export {
   Relax,
@@ -80,4 +82,6 @@ export {
   Tags,
   TherapeuticTechniques,
   Edit,
+  Delete,
+  Download,
 };

@@ -55,3 +55,7 @@ export interface UpdateCallInfoRequest {
     summaryName: string;
   };
 }
+
+export interface ExportCallSummaryRequest {
+  chatId: number;
+}

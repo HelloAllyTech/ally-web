@@ -2,8 +2,8 @@ import { FunctionComponent, useEffect, useState } from "react";
 import { Tabs, Tab } from "@mui/material";
 
 import { Drawer, TextField } from "@/components";
-import { Edit } from "@/assets/icons";
-import { useUpdateCallInfoMutation } from "@/api/callSummary";
+import { Delete, Download, Edit } from "@/assets/icons";
+import { useLazyExportCallSummaryQuery, useUpdateCallInfoMutation, useUpdateCallSummaryMutation } from "@/api/callSummary";
 import CallSummary from "@/pages/post-call-summary/components/CallSummary";
 
 import { SummarySideBarProps } from "../types";
@@ -23,6 +23,8 @@ const SummarySideBar: FunctionComponent<SummarySideBarProps> = ({ callSummary, s
   const [isRenaming, setIsRenaming] = useState<boolean>(false);
 
   const [updateCallInfo, { isLoading: isUpdating }] = useUpdateCallInfoMutation();
+  const [exportCallSummary, { isLoading: isExporting }] = useLazyExportCallSummaryQuery();
+  const [updateCallSummary, { isLoading: isUpdatingCallSummary }] = useUpdateCallSummaryMutation();
 
   useEffect(() => {
     setSummaryName(callSummary?.details?.callInfo?.summaryName);
@@ -51,6 +53,18 @@ const SummarySideBar: FunctionComponent<SummarySideBarProps> = ({ callSummary, s
       open={true}
       onClose={() => setCallSummary(null)}
       title={summaryName}
+      headerButtons={[
+        {
+          alt: "Export",
+          icon: <Download />,
+          onClick: () => exportCallSummary({ chatId: callSummary?.id }),
+        },
+        {
+          alt: "Delete",
+          icon: <Delete />,
+          onClick: () => updateCallSummary({ chatId: callSummary?.id, data: { summary: [] } }),
+        },
+      ]}
     >
       <div className="w-[55vw] h-full flex flex-col">
         <Tabs
@@ -88,6 +102,8 @@ const SummarySideBar: FunctionComponent<SummarySideBarProps> = ({ callSummary, s
               chatId={callSummary.id}
               isSummaryLoading={false}
               onProceed={() => {}}
+              showInitialLoading={false}
+              setShowInitialLoading={() => {}}
             />
           </div>
         )}

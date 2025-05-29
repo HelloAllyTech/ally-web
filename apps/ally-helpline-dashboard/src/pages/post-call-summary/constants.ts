@@ -203,7 +203,7 @@ export const summaryFields: SummaryField[] = [
     isEditable: true,
     key: SummaryFieldKey.Gender,
     label: "Gender",
-    options: ["Male", "Female", "Other", "Prefer not to say"],
+    options: ["Male", "Female", "Non-binary", "Client Prefers Not to Say"],
     sectionKey: SummarySectionKey.FeaturesAndDemographics,
     type: "Dropdown",
   },
@@ -352,24 +352,21 @@ export const summaryFields: SummaryField[] = [
 
   // Metrics section
   {
-    isEditable: true,
-    isEnhanceable: true,
+    isEditable: false,
     key: SummaryFieldKey.ListeningShare,
     label: "Listening Share",
     sectionKey: SummarySectionKey.Metrics,
     type: "Text",
   },
   {
-    isEditable: true,
-    isEnhanceable: true,
+    isEditable: false,
     key: SummaryFieldKey.ReflectiveQuestionsAsked,
     label: "No of Reflective Questions asked",
     sectionKey: SummarySectionKey.Metrics,
     type: "Text",
   },
   {
-    isEditable: true,
-    isEnhanceable: true,
+    isEditable: false,
     key: SummaryFieldKey.EmotionalLift,
     label: "Emotions Lift",
     sectionKey: SummarySectionKey.Metrics,

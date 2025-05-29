@@ -1,3 +1,5 @@
+import { Dispatch, SetStateAction } from "react";
+
 import { Article } from "@/components/article/types";
 import { SummaryFieldKey } from "@/types/summary";
 
@@ -54,6 +56,8 @@ export interface CallSummaryProps {
   chatId: number;
   onProceed: () => void;
   isSummaryLoading: boolean;
+  showInitialLoading: boolean;
+  setShowInitialLoading: Dispatch<SetStateAction<boolean>>;
 }
 
 export interface ModalData {

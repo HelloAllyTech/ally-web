@@ -24,6 +24,7 @@ const TextField: FC<TextFieldProps> = ({
   onChange,
   register,
   rows = 1,
+  showBorder = true,
   value,
   ...props
 }) => {
@@ -42,18 +43,16 @@ const TextField: FC<TextFieldProps> = ({
         variant="outlined"
         sx={{
           "& .MuiInputBase-root": {
-            // border: "1px solid #E5E7EB",
-            // borderColor: "#E5E7EB !important",
-            border: "none"
+            border: showBorder ? "1px solid #E5E7EB" : "none",
+            borderColor: "#E5E7EB !important",
           },
           "& .MuiOutlinedInput-root": {
             ...(!multiline && {height: heights[fieldSize]}),
             backgroundColor: "#FFF",
             padding: 0,
             "& fieldset": {
-              // border: "1px solid #E5E7EB",
-              // borderColor: "#E5E7EB !important",
-              border: "none"
+              border: showBorder ? "1px solid #E5E7EB" : "none",
+              borderColor: "#E5E7EB !important",
             },
             "&.Mui-disabled": {
               backgroundColor: "#F6F6F6",

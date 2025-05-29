@@ -1,5 +1,12 @@
 import { baseAPI } from "@/api/baseAPI";
-import { EnhanceContentRequest, EnhanceContentResponse, SummaryFieldKey, Tag, UpdateCallInfoRequest } from "@/types/summary";
+import {
+  EnhanceContentRequest,
+  EnhanceContentResponse,
+  ExportCallSummaryRequest,
+  SummaryFieldKey,
+  Tag,
+  UpdateCallInfoRequest,
+} from "@/types/summary";
 
 const callSummaryAPI = baseAPI.injectEndpoints({
   endpoints: (builder) => ({
@@ -39,6 +46,9 @@ const callSummaryAPI = baseAPI.injectEndpoints({
         body: callInfo,
       }),
     }),
+    exportCallSummary: builder.query<void, ExportCallSummaryRequest>({
+      query: ({ chatId }) => `/chats/${chatId}/export-summary`,
+    }),
   }),
 });
 
@@ -49,4 +59,5 @@ export const {
   useEnhanceContentMutation,
   useGetTagsMutation,
   useUpdateCallInfoMutation,
+  useLazyExportCallSummaryQuery,
 } = callSummaryAPI;

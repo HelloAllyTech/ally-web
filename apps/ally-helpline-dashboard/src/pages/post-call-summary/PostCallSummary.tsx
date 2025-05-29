@@ -33,6 +33,7 @@ const PostCallSummary = () => {
     searchParams.get("section") === "2" ? [SectionType.StressBuster, SectionType.CallSummary] : [SectionType.StressBuster]
   );
   const [modalData, setModalData] = useState<ModalData | null>({ type: null, article: null });
+  const [showInitialLoading, setShowInitialLoading] = useState(true);
 
   const { userStatus } = useSelector((state: RootState) => state.user);
 
@@ -88,6 +89,8 @@ const PostCallSummary = () => {
             chatId={Number(chatId)}
             isSummaryLoading={isGetCallSummaryLoading}
             onProceed={() => handleProceed(SectionType.Resources)}
+            showInitialLoading={showInitialLoading}
+            setShowInitialLoading={setShowInitialLoading}
           />
         );
       case SectionType.Resources:

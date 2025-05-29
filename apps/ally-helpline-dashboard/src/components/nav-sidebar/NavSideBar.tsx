@@ -1,10 +1,11 @@
 import { FunctionComponent } from "react";
+import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 
 import { useUser } from "@/hooks";
 import { navBarOptions } from "@/constants/routes";
 
 import { NavSideBarProps } from "./types";
-
+import { TabId } from "@/constants/tabs";
 const NavSideBar: FunctionComponent<NavSideBarProps> = ({
   activeTab,
   onTabChange,
@@ -13,6 +14,14 @@ const NavSideBar: FunctionComponent<NavSideBarProps> = ({
   const permittedTabs = navBarOptions.filter(
     (tab) => !tab.permission || permissions.includes(tab.permission)
   );
+
+  const onTabClick = (id: TabId, path: string) => {
+    if (id === TabId.COMMUNITY) {
+      window.open(path, "_blank");
+    } else {
+      onTabChange(path);
+    }
+  };
 
   return (
     <div className="w-72 bg-white border-r border-r-[#E5E7EB] mt-20 fixed h-screen">
@@ -24,7 +33,7 @@ const NavSideBar: FunctionComponent<NavSideBarProps> = ({
               w-full h-14 rounded-md p-4 flex items-center gap-3 cursor-pointer
               ${activeTab === id && "bg-[#D7EAFF]"} transition-all duration-300
               `}
-            onClick={() => onTabChange(path)}
+            onClick={() => onTabClick(id, path)}
           >
             <Icon
               sx={{ fill: activeTab === id ? "#6272FF" : "" }}
@@ -32,6 +41,7 @@ const NavSideBar: FunctionComponent<NavSideBarProps> = ({
               className="transition-all duration-300"
             />
             <div className="font-semibold text-sm">{title}</div>
+            {id === TabId.COMMUNITY && <OpenInNewIcon className="ml-auto" />}
           </div>
         ))}
       </div>
