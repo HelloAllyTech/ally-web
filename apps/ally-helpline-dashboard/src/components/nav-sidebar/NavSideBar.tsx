@@ -31,8 +31,9 @@ const NavSideBar: FunctionComponent<NavSideBarProps> = ({
             key={id}
             className={`
               w-full h-14 rounded-md p-4 flex items-center gap-3 cursor-pointer
-              ${activeTab === id && "bg-[#D7EAFF]"} transition-all duration-300
-              `}
+              ${activeTab === id ? "bg-[#D7EAFF]" : "hover:bg-[#F5F5F5]"}
+              transition-all duration-300 group
+            `}
             onClick={() => onTabClick(id, path)}
           >
             <Icon
@@ -41,7 +42,9 @@ const NavSideBar: FunctionComponent<NavSideBarProps> = ({
               className="transition-all duration-300"
             />
             <div className="font-semibold text-sm">{title}</div>
-            {id === TabId.COMMUNITY && <OpenInNewIcon className="ml-auto" />}
+            {id === TabId.COMMUNITY && (
+              <OpenInNewIcon className="ml-auto opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+            )}
           </div>
         ))}
       </div>
