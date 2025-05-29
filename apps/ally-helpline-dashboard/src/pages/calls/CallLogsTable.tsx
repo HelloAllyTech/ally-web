@@ -94,8 +94,9 @@ const CallLogsTable = () => {
 
     switch (header) {
       case "tags":
+        // TODO: show only 2 -3 tags and show the rest in tooltip
         return (
-          <div className="flex gap-2">
+          <div className="flex gap-1 flex-wrap max-w-full overflow-hidden">
             {displayData.tags?.map((tag: TagDisplay) => (
               <div
                 key={tag.label}
@@ -103,7 +104,7 @@ const CallLogsTable = () => {
                   backgroundColor: tag?.colors?.bg,
                   color: tag?.colors?.text,
                 }}
-                className="rounded-md px-2 py-1 text-white text-xs font-medium"
+                className="rounded-md px-1.5 py-0.5 text-white text-xs font-medium whitespace-nowrap mb-1"
               >
                 {tag.label}
               </div>

@@ -354,7 +354,7 @@ export const summaryFields: SummaryField[] = [
   {
     isEditable: false,
     key: SummaryFieldKey.ListeningShare,
-    label: "Listening Share",
+    label: "Listening Ratio",
     sectionKey: SummarySectionKey.Metrics,
     type: "Text",
   },
