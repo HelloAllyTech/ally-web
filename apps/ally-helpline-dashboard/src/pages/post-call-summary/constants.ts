@@ -222,7 +222,7 @@ export const summaryFields: SummaryField[] = [
     type: "Text",
   },
   {
-    isEditable: true,
+    isEditable: false,
     key: SummaryFieldKey.Languages,
     label: "Languages",
     sectionKey: SummarySectionKey.FeaturesAndDemographics,

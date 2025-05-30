@@ -3,6 +3,7 @@ import { useSocket } from "./useSocket";
 import { useUser } from "./useUser";
 import { useIceServers } from "./useIceServers";
 import useEnhance from "./useEnhance";
+import useFileExport from "./usePDF";
 
 export {
   toast,
@@ -11,4 +12,5 @@ export {
   useUser,
   useIceServers,
   useEnhance,
+  useFileExport,
 };

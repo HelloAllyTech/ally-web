@@ -1,10 +1,11 @@
-import { FunctionComponent, useEffect, useState } from "react";
+import { FC, useEffect, useState, useRef } from "react";
 import { Tabs, Tab } from "@mui/material";
 
 import { Drawer, TextField } from "@/components";
 import { Delete, Download, Edit } from "@/assets/icons";
 import { useLazyExportCallSummaryQuery, useUpdateCallInfoMutation, useUpdateCallSummaryMutation } from "@/api/callSummary";
 import CallSummary from "@/pages/post-call-summary/components/CallSummary";
+import { useFileExport } from "@/hooks";
 
 import { SummarySideBarProps } from "../types";
 import { tabStyles } from "../constants";
@@ -16,22 +17,63 @@ declare global {
   }
 }
 
-const SummarySideBar: FunctionComponent<SummarySideBarProps> = ({ callSummary, setCallSummary }) => {
+const SummarySideBar: FC<SummarySideBarProps> = ({ callSummary, setCallSummary }) => {
   const [selectedTab, setSelectedTab] = useState(1);
   const [selectedComment, setSelectedComment] = useState<string>("");
   const [summaryName, setSummaryName] = useState<string>("");
   const [isRenaming, setIsRenaming] = useState<boolean>(false);
 
+  const summaryNameRef = useRef<HTMLInputElement>(null);
+
   const [updateCallInfo, { isLoading: isUpdating }] = useUpdateCallInfoMutation();
   const [exportCallSummary, { isLoading: isExporting }] = useLazyExportCallSummaryQuery();
   const [updateCallSummary, { isLoading: isUpdatingCallSummary }] = useUpdateCallSummaryMutation();
+
+  const { exportTxtFromText } = useFileExport();
+
+  const isLoading = isUpdating || isExporting || isUpdatingCallSummary;
 
   useEffect(() => {
     setSummaryName(callSummary?.details?.callInfo?.summaryName);
   }, [callSummary]);
 
+  useEffect(() => {
+    if (isRenaming) {
+      summaryNameRef.current?.focus();
+    }
+  }, [isRenaming]);
+
+  const onExportClick = async () => {
+    try {
+      const response = await exportCallSummary({ chatId: callSummary?.id });
+      
+      // Handle the text response (not JSON)
+      let summaryText = "";
+      
+      // The API returns text data but RTK Query expects JSON, so it ends up in error.data
+      if (response.error) {
+        // Check if it's a FetchBaseQueryError with data
+        if ("data" in response.error && typeof response.error.data === "string") {
+          summaryText = response.error.data;
+        } else {
+          throw new Error("Failed to export call summary");
+        }
+      } else {
+        throw new Error("No data received from export API");
+      }
+
+      exportTxtFromText(summaryText, summaryName);
+    } catch (error) {
+      console.error("Error exporting call summary:", error);
+    }
+  };
+
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
     setSelectedTab(newValue);
+  };
+
+  const onRenameButtonClick = () => {
+    setIsRenaming(true);
   };
 
   const onRenameSummary = async (value: string) => {
@@ -57,7 +99,7 @@ const SummarySideBar: FunctionComponent<SummarySideBarProps> = ({ callSummary, s
         {
           alt: "Export",
           icon: <Download />,
-          onClick: () => exportCallSummary({ chatId: callSummary?.id }),
+          onClick: onExportClick,
         },
         {
           alt: "Delete",
@@ -89,18 +131,20 @@ const SummarySideBar: FunctionComponent<SummarySideBarProps> = ({ callSummary, s
           <div className="w-full h-full overflow-y-auto p-2">
             <div className="flex items-center mb-4">
               <TextField
+                inputRef={summaryNameRef}
                 value={summaryName}
                 onChange={(e) => setSummaryName(e.target.value)}
                 onBlur={() => onRenameSummary(summaryName)}
                 className={`${isRenaming ? "" : "pointer-events-none"} w-fit`}
                 inputStyles={{ fontSize: "24px", fontWeight: "700" }}
+                showBorder={false}
               />
-              {!isRenaming && <Edit onClick={() => setIsRenaming(true)} className="cursor-pointer" />}
+              {!isRenaming && <Edit onClick={onRenameButtonClick} className="cursor-pointer" />}
             </div>
             <CallSummary
               callSummary={callSummary}
               chatId={callSummary.id}
-              isSummaryLoading={false}
+              isSummaryLoading={isLoading}
               onProceed={() => {}}
               showInitialLoading={false}
               setShowInitialLoading={() => {}}

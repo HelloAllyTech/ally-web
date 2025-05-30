@@ -2,8 +2,14 @@ import { FC, useEffect, useState } from "react";
 import { Divider } from "@mui/material";
 
 import { Accordion, DropdownField, TextField, Button } from "@/components";
-import { useGetSummaryFieldsQuery, useUpdateCallSummaryMutation, useGetTagsMutation } from "@/api/callSummary";
+import {
+  useGetSummaryFieldsQuery,
+  useUpdateCallSummaryMutation,
+  useGetTagsMutation,
+  useGetLocationsQuery,
+} from "@/api/callSummary";
 import { useEnhance } from "@/hooks";
+import { SummaryFieldKey } from "@/types/summary";
 
 import { labelShownSections, summarySections } from "../constants";
 import { CallSummaryProps, SummaryField } from "../types";
@@ -23,10 +29,12 @@ const CallSummary: FC<CallSummaryProps> = ({
   const { data: visibleFields, isLoading: isGetSummaryFieldsLoading } = useGetSummaryFieldsQuery();
   const [updateCallSummary, { isLoading: isUpdateLoading }] = useUpdateCallSummaryMutation();
   const [getTags, { isLoading: isGetTagsLoading }] = useGetTagsMutation();
+  const { data: locations, isLoading: isGetLocationsLoading } = useGetLocationsQuery();
 
   const { enhancing, EnhanceButton, EnhancementLoadingSkeleton, isEnhanceLoading } = useEnhance();
 
-  const isLoading = isGetSummaryFieldsLoading || isSummaryLoading || isUpdateLoading || isEnhanceLoading || isGetTagsLoading;
+  const isLoading = isGetSummaryFieldsLoading || isSummaryLoading || isUpdateLoading || isEnhanceLoading 
+    || isGetTagsLoading || isGetLocationsLoading;
 
   useEffect(() => {
     let timer: NodeJS.Timeout;
@@ -46,6 +54,13 @@ const CallSummary: FC<CallSummaryProps> = ({
       setSummaryData({ ...callSummary.details.summary, tags: tags.map(({ tag }) => tag).join(", ") });
     }
   }, [callSummary]);
+
+  const getDropdownOptions = (key: string, options: string[]) => {
+    if (key === SummaryFieldKey.Location) {
+      return locations?.data.map(({ city }) => city) || [];
+    }
+    return options ?? [];
+  };
 
   const getFieldValue = (key: string, type: string) => {
     if (!summaryData) {
@@ -85,7 +100,7 @@ const CallSummary: FC<CallSummaryProps> = ({
               value={value ?? "--"}
               valueClassName={`${field.isEditable ? "text-[#1A1A1A]" : "text-[#9CA3AF]"} text-[16px]`}
               onChange={(value) => setSummaryData((prev) => ({ ...prev, [field.key]: value }))}
-              options={field.options ?? []}
+              options={getDropdownOptions(field.key, field.options)}
             />
           </div>
         );

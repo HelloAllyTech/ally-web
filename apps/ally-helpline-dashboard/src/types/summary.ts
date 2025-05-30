@@ -59,3 +59,16 @@ export interface UpdateCallInfoRequest {
 export interface ExportCallSummaryRequest {
   chatId: number;
 }
+
+interface Place {
+  id: number;
+  city: string;
+  state: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface GetLocationsResponse {
+  data: Place[];
+  total: number;
+}

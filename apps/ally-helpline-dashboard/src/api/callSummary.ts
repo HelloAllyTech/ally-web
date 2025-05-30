@@ -3,6 +3,7 @@ import {
   EnhanceContentRequest,
   EnhanceContentResponse,
   ExportCallSummaryRequest,
+  GetLocationsResponse,
   SummaryFieldKey,
   Tag,
   UpdateCallInfoRequest,
@@ -49,6 +50,9 @@ const callSummaryAPI = baseAPI.injectEndpoints({
     exportCallSummary: builder.query<void, ExportCallSummaryRequest>({
       query: ({ chatId }) => `/chats/${chatId}/export-summary`,
     }),
+    getLocations: builder.query<GetLocationsResponse, void>({
+      query: () => "/places",
+    }),
   }),
 });
 
@@ -60,4 +64,5 @@ export const {
   useGetTagsMutation,
   useUpdateCallInfoMutation,
   useLazyExportCallSummaryQuery,
+  useGetLocationsQuery,
 } = callSummaryAPI;

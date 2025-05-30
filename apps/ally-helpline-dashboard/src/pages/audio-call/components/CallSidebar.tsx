@@ -2,7 +2,8 @@
 import { FC, useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Divider } from "@mui/material";
-import { InfoIcon, ThumbsDown, ThumbsUp } from "lucide-react";
+import { ThumbUpAlt, ThumbDownAlt, ThumbUpOffAlt, ThumbDownOffAlt } from "@mui/icons-material";
+import { InfoIcon } from "lucide-react";
 
 import { Close, LifelineLogo } from "@/assets/icons";
 import { CustomMarkdown } from "@/components";
@@ -118,14 +119,20 @@ const CallSidebar: FC<CallSidebarProps> = ({
                     onClick={() => handleFeedback(nudge, 0)}
                     disabled={isLoading}
                   >
-                    <ThumbsDown className="w-5 h-5" />
+                    {feedbacks[nudge.id]?.rating === 0 
+                      ? <ThumbDownAlt className="w-5 h-5" />
+                      : <ThumbDownOffAlt className="w-5 h-5" />
+                    }
                   </button>
                   <button
                     className="hover:bg-[#292929] p-2 rounded-lg transition-colors"
                     onClick={() => handleFeedback(nudge, 1)}
                     disabled={isLoading}
                   >
-                    <ThumbsUp className="w-5 h-5" />
+                    {feedbacks[nudge.id]?.rating === 1 
+                      ? <ThumbUpAlt className="w-5 h-5" />
+                      : <ThumbUpOffAlt className="w-5 h-5" />
+                    }
                   </button>
                 </div>
               </div>
