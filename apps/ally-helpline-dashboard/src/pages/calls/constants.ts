@@ -47,3 +47,8 @@ export const tabStyles = {
   fontWeight: 500,
   color: "#49454F",
 };
+
+export const defaultDeleteDialogData = {
+  open: false,
+  chatId: null,
+};

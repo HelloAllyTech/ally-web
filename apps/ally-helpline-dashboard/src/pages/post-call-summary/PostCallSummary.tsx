@@ -1,12 +1,11 @@
-import { X } from "lucide-react";
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { useSelector } from "react-redux";
-import { useEffect, useState } from "react";
-import { Container, Dialog } from "@mui/material";
+import { Container } from "@mui/material";
 import { useSearchParams, useNavigate, useParams } from "react-router-dom";
 
 import { RootState, store } from "@/store/store";
-import { ArticleReader, Button, Drawer } from "@/components";
+import { ActionDialog, ArticleReader, Drawer } from "@/components";
 import { Article } from "@/components/article/types";
 import { setUserStatus } from "@/reducer/userReducer";
 import { UserStatus } from "@/types/user";
@@ -63,7 +62,6 @@ const PostCallSummary = () => {
       }
     };
   }, [callSummary]);
-
 
   const handleArticleClick = (article: Article) => {
     setModalData({ type: "article", article });
@@ -139,36 +137,25 @@ const PostCallSummary = () => {
           {renderSection()}
         </motion.div>
       </motion.div>
-      <Dialog
+
+      <ActionDialog
         open={modalData?.type === "redirect"}
         onClose={() => setModalData(null)}
+        primaryButton={{
+          label: "Yes, mark me available",
+          onClick: handleMakeAvailable,
+          variant: "default",
+        }}
+        secondaryButton={{
+          label: "No, keep me offline",
+          onClick: handleKeepOffline,
+        }}
       >
-        <div className="py-4 px-6 bg-white h-fit w-[400px] flex flex-col gap-6 rounded-[8px]">
-          <div className="flex justify-between items-center">
-            <span className="font-medium text-[#47464F]">Ready for More?</span>
-            <X className="cursor-pointer" onClick={() => setModalData(null)} />
-          </div>
-          <span className="text-[14px] text-[#47464F]">
-            You&apos;ve done a great job! Would you like to mark yourself as
-            available for new calls?
-          </span>
-          <div className="flex gap-4 items-center">
-            <Button
-              variant="outline"
-              className="text-[14px] rounded-full"
-              onClick={handleKeepOffline}
-            >
-              No, keep me offline
-            </Button>
-            <Button
-              className="text-[14px] rounded-full"
-              onClick={handleMakeAvailable}
-            >
-              Yes, mark me available
-            </Button>
-          </div>
-        </div>
-      </Dialog>
+        <span className="text-[14px] text-[#47464F]">
+          You&apos;ve done a great job! Would you like to mark yourself as available for new calls?
+        </span>
+      </ActionDialog>
+
       <Drawer
         open={modalData?.type === "article"}
         onClose={() => setModalData((prev) => ({ ...prev, type: null }))}

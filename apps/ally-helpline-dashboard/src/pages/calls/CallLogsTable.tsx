@@ -23,7 +23,7 @@ const CallLogsTable = () => {
   const [transition, setTransition] = useState(true);
   const [callSummary, setCallSummary] = useState<CallLog | null>(null);
 
-  const { data: callLogsData, isLoading } = useGetCallLogsQuery({
+  const { data: callLogsData, isLoading, refetch: refetchCallLogs } = useGetCallLogsQuery({
     limit: CALL_LOGS_PAGINATION_LIMIT,
     offset: (page * CALL_LOGS_PAGINATION_LIMIT) - CALL_LOGS_PAGINATION_LIMIT,
   });
@@ -193,6 +193,7 @@ const CallLogsTable = () => {
       {callSummary && callSummary?.id && (
         <SummarySideBar
           callSummary={callSummary}
+          refetchCallLogs={refetchCallLogs}
           setCallSummary={setCallSummary}
         />
       )}

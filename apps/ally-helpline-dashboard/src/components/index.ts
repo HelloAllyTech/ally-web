@@ -39,6 +39,7 @@ import TextField from "./text-field/TextField";
 import ExpandingSection from "./expanding-section/ExpandingSection";
 import Accordion from "./accordion/Accordion";
 import DropdownField from "./dropdown-field/DropdownField";
+import ActionDialog from "./action-dialog/ActionDialog";
 
 export {
   ArticleGrid,
@@ -81,4 +82,5 @@ export {
   ExpandingSection,
   Accordion,
   DropdownField,
+  ActionDialog,
 };

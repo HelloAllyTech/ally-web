@@ -1,14 +1,14 @@
 import { FC, useEffect, useState, useRef } from "react";
 import { Tabs, Tab } from "@mui/material";
 
-import { Drawer, TextField } from "@/components";
+import { ActionDialog, Drawer, TextField } from "@/components";
 import { Delete, Download, Edit } from "@/assets/icons";
 import { useLazyExportCallSummaryQuery, useUpdateCallInfoMutation, useUpdateCallSummaryMutation } from "@/api/callSummary";
 import CallSummary from "@/pages/post-call-summary/components/CallSummary";
 import { useFileExport } from "@/hooks";
 
-import { SummarySideBarProps } from "../types";
-import { tabStyles } from "../constants";
+import { DeleteDialogData, SummarySideBarProps } from "../types";
+import { defaultDeleteDialogData, tabStyles } from "../constants";
 
 // TODO: Added only for removing lint error - remove and find actual solution
 declare global {
@@ -17,11 +17,12 @@ declare global {
   }
 }
 
-const SummarySideBar: FC<SummarySideBarProps> = ({ callSummary, setCallSummary }) => {
+const SummarySideBar: FC<SummarySideBarProps> = ({ callSummary, refetchCallLogs, setCallSummary }) => {
   const [selectedTab, setSelectedTab] = useState(1);
   const [selectedComment, setSelectedComment] = useState<string>("");
   const [summaryName, setSummaryName] = useState<string>("");
   const [isRenaming, setIsRenaming] = useState<boolean>(false);
+  const [deleteDialogData, setDeleteDialogData] = useState<DeleteDialogData>(defaultDeleteDialogData);
 
   const summaryNameRef = useRef<HTMLInputElement>(null);
 
@@ -68,6 +69,16 @@ const SummarySideBar: FC<SummarySideBarProps> = ({ callSummary, setCallSummary }
     }
   };
 
+  const onDeleteClick = () => {
+    setDeleteDialogData({ open: true, chatId: callSummary?.id });
+  };
+
+  const onDeleteConfirm = () => {
+    updateCallSummary({ chatId: callSummary?.id, data: { summary: [] } });
+    refetchCallLogs();
+    setDeleteDialogData(defaultDeleteDialogData);
+  };
+
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
     setSelectedTab(newValue);
   };
@@ -104,7 +115,7 @@ const SummarySideBar: FC<SummarySideBarProps> = ({ callSummary, setCallSummary }
         {
           alt: "Delete",
           icon: <Delete />,
-          onClick: () => updateCallSummary({ chatId: callSummary?.id, data: { summary: [] } }),
+          onClick: onDeleteClick,
         },
       ]}
     >
@@ -112,7 +123,6 @@ const SummarySideBar: FC<SummarySideBarProps> = ({ callSummary, setCallSummary }
         <Tabs
           value={selectedTab}
           onChange={handleTabChange}
-          variant="fullWidth"
           className="w-full normal-case border-b border-[#DBDBDB] mb-4"
         >
           <Tab
@@ -145,7 +155,7 @@ const SummarySideBar: FC<SummarySideBarProps> = ({ callSummary, setCallSummary }
               callSummary={callSummary}
               chatId={callSummary.id}
               isSummaryLoading={isLoading}
-              onProceed={() => {}}
+              onProceed={() => refetchCallLogs()}
               showInitialLoading={false}
               setShowInitialLoading={() => {}}
             />
@@ -232,6 +242,23 @@ const SummarySideBar: FC<SummarySideBarProps> = ({ callSummary, setCallSummary }
           </div>
         )}
       </div>
+      <ActionDialog
+        open={deleteDialogData.open}
+        onClose={() => setDeleteDialogData(defaultDeleteDialogData)}
+        primaryButton={{
+          label: "Delete",
+          onClick: onDeleteConfirm,
+          variant: "destructive",
+        }}
+        secondaryButton={{
+          label: "Cancel",
+          onClick: () => setDeleteDialogData(defaultDeleteDialogData),
+        }}
+      >
+        <span className="text-[14px] text-[#47464F]">
+          Are you sure you want to delete this summary? This action can&apos;t be undone.
+        </span>
+      </ActionDialog>
     </Drawer>
   );
 };

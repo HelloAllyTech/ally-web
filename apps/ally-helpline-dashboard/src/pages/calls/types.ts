@@ -12,5 +12,11 @@ export interface TagDisplay {
 
 export interface SummarySideBarProps {
   callSummary: CallLog;
+  refetchCallLogs: () => void;
   setCallSummary: Dispatch<SetStateAction<CallLog>>;
+}
+
+export interface DeleteDialogData {
+  open: boolean;
+  chatId: number | null;
 }

@@ -9,7 +9,7 @@ import {
   useGetLocationsQuery,
 } from "@/api/callSummary";
 import { useEnhance } from "@/hooks";
-import { SummaryFieldKey } from "@/types/summary";
+import { SummaryFieldKey, Tag } from "@/types/summary";
 
 import { labelShownSections, summarySections } from "../constants";
 import { CallSummaryProps, SummaryField } from "../types";
@@ -51,13 +51,13 @@ const CallSummary: FC<CallSummaryProps> = ({
   useEffect(() => {
     if (callSummary?.details?.summary) {
       const tags = callSummary.details.summary.tags;
-      setSummaryData({ ...callSummary.details.summary, tags: tags.map(({ tag }) => tag).join(", ") });
+      setSummaryData({ ...callSummary.details.summary, tags: tags?.map(({ tag }) => tag).join(", ") });
     }
   }, [callSummary]);
 
   const getDropdownOptions = (key: string, options: string[]) => {
     if (key === SummaryFieldKey.Location) {
-      return locations?.data.map(({ city }) => city) || [];
+      return locations?.data.map(({ city, state }) => `${city} - ${state}`) || [];
     }
     return options ?? [];
   };
@@ -122,11 +122,10 @@ const CallSummary: FC<CallSummaryProps> = ({
               slotProps={{
                 input: {
                   startAdornment: enhancing === field.key && EnhancementLoadingSkeleton,
-                  endAdornment: (
+                  endAdornment: field.isEnhanceable && (
                     <EnhanceButton
                       fieldName={field.key}
                       inputText={value}
-                      // TODO: update updateValue to handle Tags
                       updateValue={(text) => setSummaryData((prev) => ({ ...prev, [field.key]: text }))}
                     />
                   )
@@ -161,9 +160,15 @@ const CallSummary: FC<CallSummaryProps> = ({
 
   const handleSubmit = async () => {
     try {
-      const tagsInput = summaryData.tags.split(", ");
-      const tags = await getTags({ tags: tagsInput});
-      await updateCallSummary({ chatId, data: { summary: { ...summaryData, tags: tags.data } } });
+      const tags = summaryData.tags.split(", ");
+      let tagsInput: Tag[] = [];
+      if (tags.length > 0) {
+        const response = await getTags({ tags });
+        if (response.data) {
+          tagsInput = response.data;
+        }
+      }
+      await updateCallSummary({ chatId, data: { summary: { ...summaryData, tags: tagsInput } } });
       onProceed();
     } catch (error) {
       console.error("Error updating call summary:", error);
