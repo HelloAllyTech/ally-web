@@ -50,7 +50,7 @@ const CallSummary: FC<CallSummaryProps> = ({
 
   useEffect(() => {
     if (callSummary?.details?.summary) {
-      const tags = callSummary.details.summary.tags;
+      const tags = callSummary.details.summary?.tags;
       setSummaryData({ ...callSummary.details.summary, tags: tags?.map(({ tag }) => tag).join(", ") });
     }
   }, [callSummary]);
@@ -160,7 +160,7 @@ const CallSummary: FC<CallSummaryProps> = ({
 
   const handleSubmit = async () => {
     try {
-      const tags = summaryData.tags.split(", ");
+      const tags = summaryData?.tags?.split(", ");
       let tagsInput: Tag[] = [];
       if (tags.length > 0) {
         const response = await getTags({ tags });
