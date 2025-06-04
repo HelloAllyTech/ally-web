@@ -12,7 +12,7 @@ import { useEnhance } from "@/hooks";
 import { SummaryFieldKey, Tag } from "@/types/summary";
 
 import { labelShownSections, summarySections } from "../constants";
-import { CallSummaryProps, SummaryField } from "../types";
+import { CallSummaryProps, SummaryField, SummarySectionKey } from "../types";
 import { getFormattedDateTime, getSectionFields } from "../helper";
 import SummaryLoading from "./SummaryLoading";
 
@@ -98,7 +98,8 @@ const CallSummary: FC<CallSummaryProps> = ({
             <DropdownField
               disabled={!field.isEditable}
               value={value ?? "--"}
-              valueClassName={`${field.isEditable ? "text-[#1A1A1A]" : "text-[#9CA3AF]"} text-[16px]`}
+              valueClassName={`${field.isEditable ? "text-[#1A1A1A]" : "text-[#9CA3AF]"} 
+                text-[16px] font-['IBM_Plex_Serif']`}
               onChange={(value) => setSummaryData((prev) => ({ ...prev, [field.key]: value }))}
               options={getDropdownOptions(field.key, field.options)}
             />
@@ -116,7 +117,11 @@ const CallSummary: FC<CallSummaryProps> = ({
               multiline
               rows={4}
               className={`w-full ${field.isEditable ? "" : "pointer-events-none"}`}
-              inputStyles={{ color: field.isEditable ? "#1A1A1A" : "#9CA3AF", fontSize: "16px" }}
+              inputStyles={{
+                color: field.isEditable ? "#1A1A1A" : "#9CA3AF",
+                fontSize: "16px",
+                fontFamily: "IBM_Plex_Serif"
+              }}
               placeholder={field.placeholder}
               showBorder={false}
               slotProps={{
@@ -146,7 +151,11 @@ const CallSummary: FC<CallSummaryProps> = ({
                 value={value ?? "--"}
                 onChange={(e) => setSummaryData((prev) => ({ ...prev, [field.key]: e.target.value }))}
                 placeholder={field.placeholder}
-                inputStyles={{ color: field.isEditable ? "#1A1A1A" : "#9CA3AF", fontSize: "16px" }}
+                inputStyles={{
+                  color: field.isEditable ? "#1A1A1A" : "#9CA3AF",
+                  fontSize: "16px",
+                  fontFamily: "IBM_Plex_Serif"
+                }}
                 showBorder={false}
               />
             </div>
@@ -182,7 +191,7 @@ const CallSummary: FC<CallSummaryProps> = ({
 
   return (
     <>
-      <div className="max-h-[calc(100vh-280px)] overflow-y-auto">
+      <div className="max-h-[calc(100vh-280px)] overflow-y-auto font-['IBM_Plex_Serif']">
         {summarySections.map(({ title, icon, key }) => {
           const sectionFields = getSectionFields(key, visibleFields);
           if (sectionFields.length === 0) return null;
@@ -192,6 +201,7 @@ const CallSummary: FC<CallSummaryProps> = ({
               key={key}
               title={title}
               titleIcon={icon}
+              defaultExpanded={[SummarySectionKey.FeaturesAndDemographics, SummarySectionKey.SessionSummary].includes(key)}
             >
               {sectionFields.map((field) => getFieldDisplay(field))}
             </Accordion>

@@ -10,6 +10,13 @@ const ActionDialog: FC<ActionDialogProps> = ({ children, open, onClose, primaryB
     <Dialog
         open={open}
         onClose={onClose}
+        slotProps={{
+          paper: {
+            style: {
+              borderRadius: "8px"
+            }
+          }
+        }}
       >
         <div className="py-4 px-6 bg-white h-fit w-[400px] flex flex-col gap-6 rounded-[8px]">
           <div className="flex justify-between items-center">

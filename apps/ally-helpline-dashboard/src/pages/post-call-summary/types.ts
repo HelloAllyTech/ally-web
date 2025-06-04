@@ -44,6 +44,7 @@ export interface CallSummaryStepperProps {
   activeSection: SectionType;
   setActiveSection: (section: SectionType) => void;
   completedSections: SectionType[];
+  className?: string;
 }
 
 export interface StressBusterProps {

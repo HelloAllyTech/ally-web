@@ -105,6 +105,7 @@ const SummarySideBar: FC<SummarySideBarProps> = ({ callSummary, refetchCallLogs,
     <Drawer
       open={true}
       onClose={() => setCallSummary(null)}
+      className="font-['IBM_Plex_Serif']"
       title={summaryName}
       headerButtons={[
         {
@@ -124,6 +125,11 @@ const SummarySideBar: FC<SummarySideBarProps> = ({ callSummary, refetchCallLogs,
           value={selectedTab}
           onChange={handleTabChange}
           className="w-full normal-case border-b border-[#DBDBDB] mb-4"
+          sx={{
+            "& .MuiButtonBase-root": {
+              fontFamily: "IBM_Plex_Serif",
+            }
+          }}
         >
           <Tab
             label="Summary"
@@ -146,7 +152,7 @@ const SummarySideBar: FC<SummarySideBarProps> = ({ callSummary, refetchCallLogs,
                 onChange={(e) => setSummaryName(e.target.value)}
                 onBlur={() => onRenameSummary(summaryName)}
                 className={`${isRenaming ? "" : "pointer-events-none"} w-fit`}
-                inputStyles={{ fontSize: "24px", fontWeight: "700" }}
+                inputStyles={{ fontSize: "24px", fontWeight: "700", fontFamily: "IBM_Plex_Serif" }}
                 showBorder={false}
               />
               {!isRenaming && <Edit onClick={onRenameButtonClick} className="cursor-pointer" />}

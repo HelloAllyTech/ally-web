@@ -51,13 +51,13 @@ const CallLogsTable = () => {
   }
 
   const getDisplayData = (row: CallLog) => {
-    const { details, id, startedAt, clientId } = row;
+    const { details, id } = row;
     if (details) {
-      const { callDuration, startTime, summary } = details;
+      const { callDuration, callInfo, startTime, summary } = details;
 
       return {
         id,
-        clientId,
+        callName: callInfo?.summaryName,
         dateAndTime: formatDate(startTime),
         duration: convertSecondsToDuration(callDuration ?? 60),
         qualityScore: summary?.callQuality ?? 0,
@@ -69,20 +69,6 @@ const CallLogsTable = () => {
         }),
       };
     }
-    // TODO: update function to get tags from the call summary only and avoid this return
-    return {
-      id,
-      clientId,
-      dateAndTime: formatDate(startedAt),
-      duration: convertSecondsToDuration(30),
-      qualityScore: 0,
-      tags: [].map((tag) => {
-        return {
-          label: tag.tag,
-          colors: tagColors[tag.positivity_rating],
-        };
-      }),
-    };
   };
 
   const getQualityScoreWidth = (percentage: number) => {

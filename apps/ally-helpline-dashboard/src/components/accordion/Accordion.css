@@ -1,4 +1,4 @@
-.MuiPaper-root {
+.MuiAccordion-root.MuiPaper-root {
     box-shadow: none;
     border-radius: 0px !important;
 }
@@ -6,6 +6,7 @@
 .MuiAccordionSummary-root {
     flex-direction: row-reverse;
     gap: 16px;
+    height: 56px;
 }
 
 .MuiAccordionSummary-content {
@@ -18,4 +19,13 @@
     gap: 8px;
     padding: 0px 16px 0px 60px;
     font-size: 14px;
+}
+
+.MuiAccordion-root::before {
+    opacity: 0 !important;
+    content: none !important;
+}
+
+.MuiAccordion-root {
+    border-bottom: 0.5px solid #DBDBDB;
 }

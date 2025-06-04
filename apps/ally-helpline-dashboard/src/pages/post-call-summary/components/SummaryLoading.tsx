@@ -10,48 +10,44 @@ const SummaryLoading: FC = () => {
   ];
 
   const [visibleMessages, setVisibleMessages] = useState<string[]>(loadingMessages.slice(0, 2));
-  const [currentMessageIndex, setCurrentMessageIndex] = useState(1); // Start with the first sub-message
+  const [currentMessageIndex, setCurrentMessageIndex] = useState(1);
 
   useEffect(() => {
     const timers: NodeJS.Timeout[] = [];
 
-    // Show subsequent messages with delays
-    for (let i = 2; i < loadingMessages.length; i++) {
-      const timer = setTimeout(
-        () => {
-          setVisibleMessages((prev) => [...prev, loadingMessages[i]]);
-          setCurrentMessageIndex(i);
-        },
-        (i - 1) * 2000
-      ); // 2000ms delay between each message
+    const showNextMessage = (index: number) => {
+      const timer = setTimeout(() => {
+        setVisibleMessages(prev => [...prev, loadingMessages[index]]);
+        setCurrentMessageIndex(index);
+      }, (index - 1) * 2000);
       timers.push(timer);
+    };
+
+    for (let i = 2; i < loadingMessages.length; i++) {
+      showNextMessage(i);
     }
 
     return () => {
-      timers.forEach((timer) => clearTimeout(timer));
+      timers.forEach(timer => clearTimeout(timer));
     };
   }, []);
 
   return (
     <div className="flex flex-col items-center justify-center h-[calc(100vh-280px)] space-y-4">
       <div className="flex flex-col items-center gap-3">
-        {/* Main title - always visible and prominent */}
         <h2 className="text-2xl font-bold text-[#1A1A1A]">{loadingMessages[0]}</h2>
 
-        {/* Sequential messages */}
         <div className="flex flex-col items-start gap-2">
           {visibleMessages.slice(1).map((message, index) => {
-            const messageIndex = index + 1; // Adjust for slice(1)
+            const messageIndex = index + 1;
             const isCurrentMessage = messageIndex === currentMessageIndex;
 
             return (
               <div
-                key={index}
-                className={`text-[16px] ${isCurrentMessage ? "shimmer-text" : "text-[#6B7280]"}`}
+                key={message}
+                className={`text-[16px] shimmer-text ${isCurrentMessage ? "active" : "static-text"}`}
                 style={{
-                  animation: "fadeIn 0.5s ease-in-out",
-                  animationFillMode: "forwards",
-                  opacity: 1, // Ensure all messages remain visible
+                  opacity: 1
                 }}
               >
                 {message}
@@ -77,10 +73,10 @@ const SummaryLoading: FC = () => {
             
             @keyframes shimmer {
               0% {
-                background-position: -200% 0;
+                background-position: 100% 0;
               }
               100% {
-                background-position: 200% 0;
+                background-position: -100% 0;
               }
             }
             
@@ -88,9 +84,9 @@ const SummaryLoading: FC = () => {
               background: linear-gradient(
                 90deg,
                 #6B7280 0%,
-                #046BE0 25%,
-                #60A5FA 50%,
-                #046BE0 75%,
+                #9CA3AF 25%,
+                #E5E7EB 50%,
+                #9CA3AF 75%,
                 #6B7280 100%
               );
               background-size: 200% 100%;
@@ -98,6 +94,18 @@ const SummaryLoading: FC = () => {
               -webkit-background-clip: text;
               -webkit-text-fill-color: transparent;
               animation: shimmer 2s ease-in-out infinite;
+              animation-play-state: paused;
+            }
+
+            .shimmer-text.active {
+              animation-play-state: running;
+            }
+
+            .static-text {
+              color: #6B7280;
+              background: none;
+              -webkit-text-fill-color: initial;
+              animation: none;
             }
           `,
         }}

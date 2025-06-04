@@ -1,8 +1,8 @@
 export const tableHeaders = [
   {
-    id: "clientId",
+    id: "callName",
     label: "Call ID",
-    width: "10%",
+    width: "15%",
   },
   {
     id: "dateAndTime",
@@ -12,7 +12,7 @@ export const tableHeaders = [
   {
     id: "duration",
     label: "Duration",
-    width: "20%",
+    width: "15%",
   },
   {
     id: "qualityScore",

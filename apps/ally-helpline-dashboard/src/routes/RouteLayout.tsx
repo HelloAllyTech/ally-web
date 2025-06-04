@@ -9,7 +9,7 @@ const RouteLayout = () => {
       <Routes>
         {/* Public Routes */}
         <Route path={ROUTES.LOGIN} element={<Login />} />
-        <Route path={ROUTES.SIGNUP} element={<SignUp />} />
+        {/* <Route path={ROUTES.SIGNUP} element={<SignUp />} /> */}
 
         {/* Private Routes */}
         <Route path="/*" element={<PrivateRouteLayout />} />

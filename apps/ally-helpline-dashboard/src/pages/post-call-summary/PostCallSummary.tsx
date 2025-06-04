@@ -119,19 +119,18 @@ const PostCallSummary = () => {
   };
 
   return (
-    <Container maxWidth="md" className="mt-20">
-      <div className="absolute left-1/2 -translate-x-1/2 top-24 z-10 pb-4 sm:w-[570px] md:w-[620px] lg:w-[660px]">
-        <CallSummaryStepper
-          activeSection={activeSection}
-          completedSections={completedSections}
-          setActiveSection={setActiveSection}
-        />
-      </div>
+    <div className="h-[calc(100vh-80px)] pt-6 mx-auto flex flex-col gap-4 items-center bg-white">
+      <CallSummaryStepper
+        activeSection={activeSection}
+        completedSections={completedSections}
+        setActiveSection={setActiveSection}
+        className="max-w-[30%] mx-auto"
+      />
       <motion.div
         layout="position"
         layoutId="content-container"
         transition={{ duration: 0.3 }}
-        className="h-fit py-4 px-6 mt-4 bg-white rounded-lg overflow-hidden border border-[#E5E7EB]"
+        className="h-fit overflow-hidden w-[50%]"
       >
         <motion.div className="flex flex-col gap-4" layout={false}>
           {renderSection()}
@@ -163,7 +162,7 @@ const PostCallSummary = () => {
       >
         <ArticleReader article={modalData?.article} isPage={false} />
       </Drawer>
-    </Container>
+    </div>
   );
 };
 

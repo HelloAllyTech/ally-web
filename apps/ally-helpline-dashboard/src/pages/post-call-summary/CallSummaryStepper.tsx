@@ -56,6 +56,7 @@ const CallSummaryStepper: FC<CallSummaryStepperProps> = ({
   activeSection,
   setActiveSection,
   completedSections,
+  className,
 }) => {
   const handleSectionChange = (event: React.MouseEvent<HTMLElement>, newSection: SectionType) => {
     if (newSection !== null && completedSections.includes(newSection)) {
@@ -67,6 +68,7 @@ const CallSummaryStepper: FC<CallSummaryStepperProps> = ({
     <StyledToggleButtonGroup
       value={activeSection}
       exclusive
+      className={className}
       onChange={handleSectionChange}
       aria-label="call summary sections"
       fullWidth
