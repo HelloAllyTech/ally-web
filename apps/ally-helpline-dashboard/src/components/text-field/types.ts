@@ -5,6 +5,8 @@ import { TextFieldProps as MuiTextFieldProps } from "@mui/material";
 export interface TextFieldProps extends Omit<MuiTextFieldProps, "variant"> {
   className?: string;
   disabled?: boolean;
+  hideError?: boolean;
+  errorMessage?: string;
   errors?: FieldErrors<any>;
   fieldSize?: "small" | "medium" | "large";
   fullWidth?: boolean;

@@ -14,6 +14,7 @@ const heights = {
 const TextField: FC<TextFieldProps> = ({
   className,
   disabled,
+  errorMessage,
   errors,
   fieldSize = "small",
   fullWidth = true,
@@ -26,14 +27,15 @@ const TextField: FC<TextFieldProps> = ({
   rows = 1,
   showBorder = true,
   value,
+  hideError = true,
   ...props
 }) => {
   return (
-    <div className={`flex flex-col gap-[4px] ${className}`}>
+    <div className={`flex flex-col ${className}`}>
       {label && <span className="text-[12px] text-[#49454F]">{label}</span>}
       <MuiTextField
         disabled={disabled}
-        error={!!errors?.[name]}
+        error={!!errors?.[name] || !!errorMessage}
         fullWidth={fullWidth}
         multiline={multiline}
         {...(register && register(name))}
@@ -68,7 +70,11 @@ const TextField: FC<TextFieldProps> = ({
         }}
         {...props}
       />
-      {errors?.[name] && <span className="text-[12px] text-[#EF4444]">{errors?.[name]?.message as string}</span>}
+      {!hideError && (
+        <span className="text-[12px] text-[#EF4444] h-[16px]">
+          {(errors?.[name]?.message as string) || errorMessage}
+        </span>
+      )}
     </div>
   );
 };
