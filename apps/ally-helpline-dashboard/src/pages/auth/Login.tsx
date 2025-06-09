@@ -229,7 +229,7 @@ const Login: FunctionComponent = () => {
               {isLoading ? (
                 <div className="flex items-center justify-center">
                   <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-[5px] animate-spin mr-2"></div>
-                  {loginSection === LoginSection.OTP
+                  {loginSection === LoginSection.EMAIL
                     ? "Generating OTP..."
                     : "Signing in..."}
                 </div>
