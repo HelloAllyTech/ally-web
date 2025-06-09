@@ -1,21 +1,26 @@
-import { useEffect, useState, useCallback } from "react";
-import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+import { useNavigate } from "react-router-dom";
 import { SquareArrowOutUpRight } from "lucide-react";
 import { FetchBaseQueryError } from "@reduxjs/toolkit/query";
+import { useEffect, useState, useCallback, FunctionComponent } from "react";
 
-import { useGenerateOTPMutation, useVerifyOTPMutation } from "@/api/auth";
-import { LifelineLogo } from "@/assets/icons";
-import { Login as LoginImage } from "@/assets/images";
-import { Button, TextField } from "@/components";
 import { useUser } from "@/hooks";
+import { LifelineLogo } from "@/assets/icons";
+import { validateEmail } from "@/utils/common";
+import { Button, TextField } from "@/components";
+import { Login as LoginImage } from "@/assets/images";
+import { useGenerateOTPMutation, useVerifyOTPMutation } from "@/api/auth";
 
-const Login = () => {
+import { LoginSection } from "./constants";
+
+const Login: FunctionComponent = () => {
   const navigate = useNavigate();
 
-  const [loginSection, setLoginSection] = useState<"Phone" | "OTP">("Phone");
-  const [countryCode] = useState<string>("+91");
-  const [phone, setPhone] = useState<string>("");
+  const [loginSection, setLoginSection] = useState<LoginSection>(
+    LoginSection.EMAIL
+  );
+  const [email, setEmail] = useState<string>("");
+  const [emailError, setEmailError] = useState<string>("");
   const [otp, setOtp] = useState<string>("");
   const [countdown, setCountdown] = useState<number>(0);
   const [rememberMe, setRememberMe] = useState<boolean>(false);
@@ -44,9 +49,9 @@ const Login = () => {
   const isLoading = isGeneratingOTP || isVerifyingOTP;
 
   useEffect(() => {
-    const rememberedPhone = localStorage.getItem("rememberedPhone");
-    if (rememberedPhone) {
-      setPhone(rememberedPhone);
+    const rememberedEmail = localStorage.getItem("rememberedEmail");
+    if (rememberedEmail) {
+      setEmail(rememberedEmail);
     }
   }, []);
 
@@ -64,7 +69,7 @@ const Login = () => {
         errorData?.message ?? "Failed to generate OTP. Please try again.";
       toast.error(errorMessage);
     } else if (isGenerateOTPSuccess && generateOTPData) {
-      setLoginSection("OTP");
+      setLoginSection(LoginSection.OTP);
       setCountdown(10); // Start 10 second countdown when OTP is generated
     }
   }, [isGenerateOTPSuccess, generateOTPError, generateOTPData]);
@@ -83,9 +88,9 @@ const Login = () => {
 
   const handleResendCode = useCallback(() => {
     if (countdown === 0) {
-      generateOTP({ phone });
+      generateOTP({ email });
     }
-  }, [countdown, generateOTP, phone]);
+  }, [countdown, generateOTP, email]);
 
   useEffect(() => {
     (async () => {
@@ -104,21 +109,28 @@ const Login = () => {
     })();
   }, [isVerifyOTPSuccess, verifyOTPError, verifyOTPData]);
 
+  const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newEmail = e.target.value;
+    setEmail(newEmail);
+    if (emailError) {
+      setEmailError("");
+    }
+  };
+
   const getLoginSection = () => {
-    if (loginSection === "Phone") {
+    if (loginSection === LoginSection.EMAIL) {
       return (
         <div className="flex flex-col gap-4">
-          <div className="flex items-center gap-2">
-            <div className="text-[#49454F] rounded-[5px] border-2 border-[#E5E7EB] p-2 text-sm">
-              {countryCode}
-            </div>
+          <div className="flex flex-col gap-0">
             <TextField
               fieldSize="medium"
-              type="text"
-              inputMode="numeric"
-              value={phone}
-              onChange={(e) => setPhone(e.target.value)}
-              placeholder="Enter your phone number"
+              type="email"
+              inputMode="email"
+              value={email}
+              onChange={handleEmailChange}
+              errorMessage={emailError}
+              hideError={false}
+              placeholder="Enter your email address"
               className="w-full rounded-xs"
             />
           </div>
@@ -144,11 +156,11 @@ const Login = () => {
       return (
         <div className="flex flex-col justify-start">
           <span className="text-base text-gray-500 mb-2">
-            <span>Enter verification code sent to your phone number </span>
-            <span className="font-semibold">+91 {phone}</span>
+            <span>Enter verification code sent to your email </span>
+            <span className="font-semibold">{email}</span>
             <SquareArrowOutUpRight
               className="w-4 h-4 inline-block ml-1 text-blue-600 cursor-pointer"
-              onClick={() => setLoginSection("Phone")}
+              onClick={() => setLoginSection(LoginSection.EMAIL)}
             />
           </span>
           <span className="text-xs text-[#49454F]">Code</span>
@@ -166,16 +178,22 @@ const Login = () => {
   };
 
   const isSubmitDisabled =
-    loginSection === "Phone" ? !phone : !otp || otp.length < 4;
+    loginSection === LoginSection.EMAIL
+      ? !email || !!emailError
+      : !otp || otp.length < 4;
 
-  const onSubmit = ({ phone, otp }: { phone: string; otp: string }) => {
-    if (loginSection === "Phone") {
-      if (rememberMe) {
-        localStorage.setItem("rememberedPhone", phone);
+  const handleContinue = () => {
+    if (loginSection === LoginSection.EMAIL) {
+      if (!validateEmail(email)) {
+        setEmailError("Please enter a valid email address");
+        return;
       }
-      generateOTP({ phone: `${countryCode}${phone.trim()}` });
+      if (rememberMe) {
+        localStorage.setItem("rememberedEmail", email);
+      }
+      generateOTP({ email: email.trim() });
     } else {
-      verifyOTP({ phone: `${countryCode}${phone.trim()}`, otp });
+      verifyOTP({ email: email.trim(), otp });
     }
   };
 
@@ -190,7 +208,7 @@ const Login = () => {
       <div className="flex-1 flex flex-col items-center justify-center">
         <div className="w-1/2 flex flex-col gap-6">
           <div className="flex flex-col gap-2">
-            {loginSection === "Phone" && (
+            {loginSection === LoginSection.EMAIL && (
               <h1 className="text-[22px]">Welcome to</h1>
             )}
             <div className="flex items-center gap-2">
@@ -206,12 +224,12 @@ const Login = () => {
               type="button"
               className="w-full rounded-[5px] mt-6"
               disabled={isLoading || isSubmitDisabled}
-              onClick={() => onSubmit({ phone, otp })}
+              onClick={handleContinue}
             >
               {isLoading ? (
                 <div className="flex items-center justify-center">
                   <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-[5px] animate-spin mr-2"></div>
-                  {loginSection === "Phone"
+                  {loginSection === LoginSection.OTP
                     ? "Generating OTP..."
                     : "Signing in..."}
                 </div>
@@ -219,7 +237,7 @@ const Login = () => {
                 "Continue"
               )}
             </Button>
-            {loginSection === "OTP" && (
+            {loginSection === LoginSection.OTP && (
               <Button
                 type="button"
                 variant="secondary"

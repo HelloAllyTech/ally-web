@@ -1,6 +1,11 @@
 import { baseAPI } from "@/api/baseAPI";
 import { User } from "@/types/user";
-import { GenerateOTPResponse, GenerateOTPRequest, VerifyOTPResponse, VerifyOTPRequest } from "@/types/auth";
+import {
+  VerifyOTPRequest,
+  VerifyOTPResponse,
+  GenerateOTPRequest,
+  GenerateOTPResponse,
+} from "@/types/auth";
 
 const authAPI = baseAPI.injectEndpoints({
   endpoints: (builder) => ({
@@ -25,17 +30,17 @@ const authAPI = baseAPI.injectEndpoints({
       query: () => "/auth/permissions",
     }),
     generateOTP: builder.mutation<GenerateOTPResponse, GenerateOTPRequest>({
-      query: ({ phone }) => ({
+      query: ({ phone, email }) => ({
         url: "/auth/generate-otp",
         method: "POST",
-        body: { phone },
+        body: { phone, email },
       }),
     }),
     verifyOTP: builder.mutation<VerifyOTPResponse, VerifyOTPRequest>({
-      query: ({ phone, otp }) => ({
+      query: ({ phone, otp, email }) => ({
         url: "/auth/verify-otp",
         method: "POST",
-        body: { phone, otp },
+        body: { phone, otp, email },
       }),
     }),
   }),

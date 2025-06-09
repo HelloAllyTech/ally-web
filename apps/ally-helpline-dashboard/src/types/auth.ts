@@ -1,9 +1,11 @@
 export interface GenerateOTPRequest {
-  phone: string;
+  phone?: string;
+  email?: string;
 }
 
 export interface VerifyOTPRequest {
-  phone: string;
+  phone?: string;
+  email?: string;
   otp: string;
 }
 
