@@ -1,51 +1,18 @@
-import { useEffect, useState } from "react";
+import { useSelector } from "react-redux";
+import { FunctionComponent } from "react";
 
-import {
-  useLazyGetDashboardUrlQuery,
-  useLazyGetDashboardsQuery,
-} from "@/api/analytics";
+import { UserRole } from "@/types/user";
+import { RootState } from "@/store/store";
 
-const Analytics = () => {
-  const [getDashboardUrl] = useLazyGetDashboardUrlQuery();
-  const [getDashboards, { data: dashboards }] = useLazyGetDashboardsQuery();
+import OrgAnalytics from "./OrgAnalytics";
+import UserAnalytics from "./UserAnalytics";
 
-  const [dashboardUrls, setDashboardUrls] = useState<{ [id: string]: string }>(
-    {}
-  );
-
-  useEffect(() => {
-    getDashboards();
-  }, []);
-
-  useEffect(() => {
-    if (dashboards) {
-      dashboards.forEach(async ({ externalId }) => {
-        triggerDashboardUrl(externalId);
-      });
-    }
-  }, [dashboards]);
-
-  const triggerDashboardUrl = async (dashboardId: string) => {
-    const data = await getDashboardUrl({ dashboardId });
-    setDashboardUrls((prev) => ({
-      ...prev,
-      [dashboardId]: data?.data?.url,
-    }));
-  };
+const Analytics: FunctionComponent = () => {
+  const user = useSelector((state: RootState) => state.user.user);
 
   return (
     <div className="h-[90vh] flex items-center justify-center">
-      {Object.keys(dashboardUrls)?.map((id: string) => (
-        <iframe
-          key={id}
-          title="Metabase dashboard"
-          src={dashboardUrls[id]}
-          width="100%"
-          height="100%"
-          // TODO: Handle error in a way that url is triggered only when token expiry is triggered
-          onError={() => triggerDashboardUrl(id)}
-        ></iframe>
-      ))}
+      {user?.role === UserRole.COUNSELOR ? <OrgAnalytics /> : <UserAnalytics />}
     </div>
   );
 };
