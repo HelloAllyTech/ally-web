@@ -1,0 +1,74 @@
+.react-calendar {
+  padding: 12px;
+  border: none !important;
+  border-radius: 12px !important;
+}
+
+.react-calendar__tile {
+  border-radius: 16px !important;
+  padding: 8px 0px !important;
+  color: #1B1B1B !important;
+}
+
+/* Style for disabled dates */
+.react-calendar__tile:disabled {
+  background: none !important;
+  cursor: default !important;
+  color: #C6C6C6 !important;
+}
+
+.react-calendar__tile--now {
+  background: none !important;
+  color: #1480FB !important;
+}
+
+/* Styles for single date selection */
+.singleSelected {
+  background: #DAE9FC !important;
+
+  & abbr {
+    color: #1480FB !important;
+  }
+}
+
+/* Style for dates within the range */
+.rangeStart,
+.rangeEnd,
+.rangeBetween {
+  background: #82B7F4 !important;
+  color: #fff !important;
+}
+
+/* Style specifically for range start date */
+.rangeStart {
+  border-top-right-radius: 0 !important;
+  border-bottom-right-radius: 0 !important;
+}
+
+/* Style specifically for range end date */
+.rangeEnd {
+  border-top-left-radius: 0 !important;
+  border-bottom-left-radius: 0 !important;
+}
+
+.rangeStart, .rangeEnd {
+  & abbr {
+    color: #fff !important;
+    background-color: #1480FB !important;
+    padding: 4px 8px !important;
+    border-radius: 16px !important;
+  }
+}
+
+/* Style for dates between start and end */
+.rangeBetween {
+  border-radius: 0 !important;
+}
+
+.react-calendar__month-view__weekdays__weekday abbr {
+  text-decoration: none;
+}
+
+.react-calendar__month-view__days__day--neighboringMonth {
+  color: #C6C6C6 !important;
+}

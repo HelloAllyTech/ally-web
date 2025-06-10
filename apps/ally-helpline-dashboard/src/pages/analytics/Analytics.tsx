@@ -11,8 +11,11 @@ const Analytics: FunctionComponent = () => {
   const user = useSelector((state: RootState) => state.user.user);
 
   return (
-    <div className="h-[90vh] flex items-center justify-center">
-      {user?.role === UserRole.COUNSELOR ? <OrgAnalytics /> : <UserAnalytics />}
+    <div
+      className={`flex items-center justify-center bg-white m-6 rounded-lg border-[2px] border-[#F4F4F4]
+        overflow-hidden h-full`}
+    >
+      {user?.role === UserRole.COUNSELOR ? <UserAnalytics /> : <OrgAnalytics />}
     </div>
   );
 };

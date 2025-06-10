@@ -135,7 +135,7 @@ const PrivateRouteLayout = () => {
           }
         >
           {showLifelineHeader && <LifelineHeader />}
-          <div className={`${showNavbar && "ml-72"}`}>
+          <div className={`${showNavbar && "ml-72 h-[calc(100vh-110px)]"}`}>
             <Routes>
               <Route
                 index

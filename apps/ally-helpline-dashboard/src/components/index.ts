@@ -40,6 +40,7 @@ import ExpandingSection from "./expanding-section/ExpandingSection";
 import Accordion from "./accordion/Accordion";
 import DropdownField from "./dropdown-field/DropdownField";
 import ActionDialog from "./action-dialog/ActionDialog";
+import Calendar from "./calendar/Calendar";
 
 export {
   ArticleGrid,
@@ -83,4 +84,5 @@ export {
   Accordion,
   DropdownField,
   ActionDialog,
+  Calendar,
 };
