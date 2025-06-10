@@ -1,0 +1,14 @@
+@keyframes ripple {
+  0%, 100% {
+    transform: scale(1.1);
+    opacity: 0.8;
+  }
+  50% {
+    transform:  scale(1);
+    opacity: 1;
+  }
+}
+
+.ripple {
+    animation: ripple 2s linear 0s infinite forwards;
+}

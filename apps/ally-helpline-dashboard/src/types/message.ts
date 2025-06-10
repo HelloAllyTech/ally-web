@@ -1,0 +1,97 @@
+import { User } from "./user";
+
+export type ChatMessage = {
+  chatId: number;
+  content: string;
+  context?: {
+    source: string;
+  };
+  createdAt: string;
+  feedback?: FeedbackResponse;
+  id: number;
+  senderId: number;
+  type: MessageType;
+  updatedAt: string;
+};
+
+export enum ChatStatus {
+  ENDED = "ENDED",
+  PAUSED = "PAUSED",
+  ACTIVE = "ACTIVE",
+}
+
+export interface Chat {
+  chatId: number;
+  client: User;
+  clientId: number;
+  counselor: User;
+  counselorId: number;
+  endedAt: string | null;
+  messages: ChatMessage[];
+  startedAt: string;
+  status: ChatStatus;
+}
+
+export enum QueueStatus {
+  WAITING = "WAITING",
+  MATCHED = "MATCHED",
+}
+
+export type SocketMessage = {
+  type: SocketEvent | string;
+  payload?: {
+    id: number;
+    chatId: number;
+    senderId: number;
+    type: MessageType | string;
+    content: string;
+    context?: {
+      source: string;
+    };
+    createdAt: string;
+  };
+  content?: string;
+  context?: {
+    source: string;
+  };
+  createdAt?: string;
+};
+
+export enum MessageType {
+  NUDGE = "NUDGE",
+  STAGE = "STAGE",
+  TEXT = "TEXT",
+}
+
+// TODO: Update the socket event names to UPPER CASE
+export enum SocketEvent {
+  NUDGE = "NUDGE",
+  STAGE = "STAGE",
+  SEND_MESSAGE = "SEND_MESSAGE",
+  CHAT_ACCEPTED = "CHAT_ACCEPTED",
+  MESSAGE_RECEIVED = "MESSAGE_RECEIVED",
+  AUDIO_CHAT_MUTED = "AUDIO_CHAT_MUTED",
+  ICE_CANDIDATE = "webrtc-ice-candidate",
+  WEBRTC_OFFER = "webrtc-offer",
+  WEBRTC_ANSWER = "webrtc-answer",
+  AUDIO_MESSAGE = "AUDIO_MESSAGE",
+  START_AUDIO_CHAT = "START_AUDIO_CHAT",
+  CHAT_ENDED = "CHAT_ENDED",
+  UTTERANCE_ENDED = "UTTERANCE_ENDED",
+  USER_JOINED = "USER_JOINED",
+  USER_DISCONNECTED = "USER_DISCONNECTED",
+}
+
+export interface FeedbackInput {
+  rating?: number;
+}
+
+export interface FeedbackResponse {
+  rating: number;
+  messageId: number;
+  userId: number;
+  modifiedContent: string | null;
+  createdAt: string;
+  updatedAt: string;
+  feedbackId: number;
+}
