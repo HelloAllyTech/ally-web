@@ -2,29 +2,33 @@ import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react-swc";
 import svgr from "vite-plugin-svgr";
 import path from "path";
-import { componentTagger } from "lovable-tagger";
+import { join } from 'path';
+
+// Get absolute paths
+const projectRoot = __dirname;
 
 // https://vitejs.dev/config/
-export default defineConfig(({ mode }) => ({
-  server: {
-    host: "::",
-    port: 8080,
-    cors: false,
-    allowedHosts: [
-      // TODO: Check if this is needed as our current host is not this one
-      "web.dev.lifeline.kvsandbox.link",
-      // Add any other domains
-    ],
+export default defineConfig({
+  root: projectRoot,
+  publicDir: "public",
+  base: "/",
+  build: {
+    outDir: "../../dist/apps/ally-helpline-dashboard",
+    emptyOutDir: true,
+    cssCodeSplit: true,
   },
-  plugins: [
-    svgr(),
-    react(),
-    mode === "development" &&
-    componentTagger(),
-  ].filter(Boolean),
+  server: {
+    port: 8080,
+    strictPort: true,
+    host: true,
+  },
+  plugins: [react(), svgr()],
   resolve: {
     alias: {
-      "@": path.resolve(__dirname, "./src"),
+      "@": path.resolve(projectRoot, "./src"),
     },
   },
-}));
+  optimizeDeps: {
+    include: ['tailwindcss', 'postcss', 'autoprefixer'],
+  },
+});

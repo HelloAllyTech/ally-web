@@ -1,15 +1,20 @@
 import type { Config } from "tailwindcss";
 import tailwindcssAnimate from "tailwindcss-animate";
+import { join } from 'path';
+
+const projectRoot = __dirname;
 
 export default {
   darkMode: ["class"],
   content: [
-    "./pages/**/*.{ts,tsx}",
-    "./components/**/*.{ts,tsx}",
-    "./app/**/*.{ts,tsx}",
-    "./src/**/*.{ts,tsx}",
+    join(projectRoot, "./src/**/*.{js,jsx,ts,tsx}"),
+    join(projectRoot, "./index.html"),
+    join(projectRoot, "./src/components/**/*.{js,jsx,ts,tsx}"),
+    join(projectRoot, "./src/pages/**/*.{js,jsx,ts,tsx}"),
+    join(projectRoot, "./src/layouts/**/*.{js,jsx,ts,tsx}"),
   ],
   prefix: "",
+  important: true,
   theme: {
     fontFamily: {
       replay: ["ReplayPro", "sans-serif"],
@@ -88,6 +93,12 @@ export default {
     },
   },
   plugins: [tailwindcssAnimate],
+  future: {
+    hoverOnlyWhenSupported: true,
+  },
+  experimental: {
+    optimizeUniversalDefaults: true
+  }
 } satisfies Config;
 
 // TODO: Add .env.example for env field confirmation

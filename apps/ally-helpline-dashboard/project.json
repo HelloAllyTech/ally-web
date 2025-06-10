@@ -1,0 +1,68 @@
+{
+  "name": "ally-helpline-dashboard",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "apps/ally-helpline-dashboard/src",
+  "projectType": "application",
+  "targets": {
+    "build": {
+      "executor": "@nx/vite:build",
+      "outputs": ["{options.outputPath}"],
+      "defaultConfiguration": "production",
+      "options": {
+        "outputPath": "dist/apps/ally-helpline-dashboard",
+        "configFile": "apps/ally-helpline-dashboard/vite.config.ts",
+        "postcssConfig": "apps/ally-helpline-dashboard/postcss.config.cjs"
+      },
+      "configurations": {
+        "development": {
+          "mode": "development"
+        },
+        "production": {
+          "mode": "production"
+        }
+      }
+    },
+    "serve": {
+      "executor": "@nx/vite:dev-server",
+      "defaultConfiguration": "development",
+      "options": {
+        "buildTarget": "ally-helpline-dashboard:build",
+        "port": 8080,
+        "host": true,
+        "postcssConfig": "apps/ally-helpline-dashboard/postcss.config.cjs"
+      },
+      "configurations": {
+        "development": {
+          "buildTarget": "ally-helpline-dashboard:build:development",
+          "hmr": true
+        },
+        "production": {
+          "buildTarget": "ally-helpline-dashboard:build:production",
+          "hmr": false
+        }
+      }
+    },
+    "preview": {
+      "executor": "@nx/vite:preview-server",
+      "defaultConfiguration": "development",
+      "options": {
+        "buildTarget": "ally-helpline-dashboard:build"
+      }
+    },
+    "test": {
+      "executor": "@nx/vite:test",
+      "outputs": ["{options.reportsDirectory}"],
+      "options": {
+        "reportsDirectory": "../../coverage/apps/ally-helpline-dashboard"
+      }
+    },
+    "lint": {
+      "executor": "@nx/eslint:lint",
+      "outputs": ["{options.outputFile}"],
+      "options": {
+        "lintFilePatterns": ["apps/ally-helpline-dashboard/**/*.{ts,tsx,js,jsx}"]
+      }
+    }
+  },
+  "tags": []
+} 
