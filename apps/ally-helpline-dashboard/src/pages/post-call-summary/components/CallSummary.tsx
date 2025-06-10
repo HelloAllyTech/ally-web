@@ -26,15 +26,28 @@ const CallSummary: FC<CallSummaryProps> = ({
 }) => {
   const [summaryData, setSummaryData] = useState(null);
 
-  const { data: visibleFields, isLoading: isGetSummaryFieldsLoading } = useGetSummaryFieldsQuery();
-  const [updateCallSummary, { isLoading: isUpdateLoading }] = useUpdateCallSummaryMutation();
+  const { data: visibleFields, isLoading: isGetSummaryFieldsLoading } =
+    useGetSummaryFieldsQuery();
+  const [updateCallSummary, { isLoading: isUpdateLoading }] =
+    useUpdateCallSummaryMutation();
   const [getTags, { isLoading: isGetTagsLoading }] = useGetTagsMutation();
-  const { data: locations, isLoading: isGetLocationsLoading } = useGetLocationsQuery();
+  const { data: locations, isLoading: isGetLocationsLoading } =
+    useGetLocationsQuery();
 
-  const { enhancing, EnhanceButton, EnhancementLoadingSkeleton, isEnhanceLoading } = useEnhance();
+  const {
+    enhancing,
+    EnhanceButton,
+    EnhancementLoadingSkeleton,
+    isEnhanceLoading,
+  } = useEnhance();
 
-  const isLoading = isGetSummaryFieldsLoading || isSummaryLoading || isUpdateLoading || isEnhanceLoading 
-    || isGetTagsLoading || isGetLocationsLoading;
+  const isLoading =
+    isGetSummaryFieldsLoading ||
+    isSummaryLoading ||
+    isUpdateLoading ||
+    isEnhanceLoading ||
+    isGetTagsLoading ||
+    isGetLocationsLoading;
 
   useEffect(() => {
     let timer: NodeJS.Timeout;
@@ -51,13 +64,18 @@ const CallSummary: FC<CallSummaryProps> = ({
   useEffect(() => {
     if (callSummary?.details?.summary) {
       const tags = callSummary.details.summary?.tags;
-      setSummaryData({ ...callSummary.details.summary, tags: tags?.map(({ tag }) => tag).join(", ") });
+      setSummaryData({
+        ...callSummary.details.summary,
+        tags: tags?.map(({ tag }) => tag).join(", "),
+      });
     }
   }, [callSummary]);
 
   const getDropdownOptions = (key: string, options: string[]) => {
     if (key === SummaryFieldKey.Location) {
-      return locations?.data.map(({ city, state }) => `${city} - ${state}`) || [];
+      return (
+        locations?.data.map(({ city, state }) => `${city} - ${state}`) || []
+      );
     }
     return options ?? [];
   };
@@ -68,21 +86,31 @@ const CallSummary: FC<CallSummaryProps> = ({
     }
     switch (key) {
       case "callId":
-        return  callSummary?.details?.chatId || summaryData.callId;
+        return callSummary?.details?.chatId || summaryData.callId;
       case "callDuration": {
-        const duration = callSummary?.details?.callDuration || summaryData.callDuration;
+        const duration =
+          callSummary?.details?.callDuration || summaryData.callDuration;
         return `${Math.floor(Number(duration) / 60)} minutes`;
       }
       case "callDate":
-        return getFormattedDateTime(callSummary?.details?.callDate, "do MMMM yyyy");
+        return getFormattedDateTime(
+          callSummary?.details?.callDate,
+          "do MMMM yyyy"
+        );
       case "callTime": {
-        return `${getFormattedDateTime(callSummary?.startedAt, "HH:mm")} - ${
-          getFormattedDateTime(callSummary?.endedAt, "HH:mm")}`;
+        return `${getFormattedDateTime(callSummary?.startedAt, "HH:mm")} - ${getFormattedDateTime(
+          callSummary?.endedAt,
+          "HH:mm"
+        )}`;
       }
       case "clientId":
         return callSummary?.clientId || summaryData.clientId;
       case "languages":
-        return summaryData.languages?.map(({ language, percentage }) => `${language} (${percentage}%)`).join(", ") || "";
+        return (
+          summaryData.languages
+            ?.map(({ language, percentage }) => `${language} (${percentage}%)`)
+            .join(", ") || ""
+        );
       default:
         return summaryData[key];
     }
@@ -100,7 +128,9 @@ const CallSummary: FC<CallSummaryProps> = ({
               value={value ?? "--"}
               valueClassName={`${field.isEditable ? "text-[#1A1A1A]" : "text-[#9CA3AF]"} 
                 text-[16px] font-['IBM_Plex_Serif']`}
-              onChange={(value) => setSummaryData((prev) => ({ ...prev, [field.key]: value }))}
+              onChange={(value) =>
+                setSummaryData((prev) => ({ ...prev, [field.key]: value }))
+              }
               options={getDropdownOptions(field.key, field.options)}
             />
           </div>
@@ -113,28 +143,39 @@ const CallSummary: FC<CallSummaryProps> = ({
             )}
             <TextField
               value={enhancing === field.key ? "" : value}
-              onChange={(e) => setSummaryData((prev) => ({ ...prev, [field.key]: e.target.value }))}
+              onChange={(e) =>
+                setSummaryData((prev) => ({
+                  ...prev,
+                  [field.key]: e.target.value,
+                }))
+              }
               multiline
               rows={4}
               className={`w-full ${field.isEditable ? "" : "pointer-events-none"}`}
               inputStyles={{
                 color: field.isEditable ? "#1A1A1A" : "#9CA3AF",
                 fontSize: "16px",
-                fontFamily: "IBM_Plex_Serif"
+                fontFamily: "IBM_Plex_Serif",
               }}
               placeholder={field.placeholder}
               showBorder={false}
               slotProps={{
                 input: {
-                  startAdornment: enhancing === field.key && EnhancementLoadingSkeleton,
+                  startAdornment:
+                    enhancing === field.key && EnhancementLoadingSkeleton,
                   endAdornment: field.isEnhanceable && (
                     <EnhanceButton
                       fieldName={field.key}
                       inputText={value}
-                      updateValue={(text) => setSummaryData((prev) => ({ ...prev, [field.key]: text }))}
+                      updateValue={(text) =>
+                        setSummaryData((prev) => ({
+                          ...prev,
+                          [field.key]: text,
+                        }))
+                      }
                     />
-                  )
-                }
+                  ),
+                },
               }}
             />
           </div>
@@ -146,18 +187,25 @@ const CallSummary: FC<CallSummaryProps> = ({
           <>
             <div key={field.key} className="flex items-center">
               <span className="font-medium text-[16px] text-[#6B7280]">{`${field.label}: `}</span>
-              <TextField
-                className={field.isEditable ? "" : "pointer-events-none"}
-                value={value ?? "--"}
-                onChange={(e) => setSummaryData((prev) => ({ ...prev, [field.key]: e.target.value }))}
-                placeholder={field.placeholder}
-                inputStyles={{
-                  color: field.isEditable ? "#1A1A1A" : "#9CA3AF",
-                  fontSize: "16px",
-                  fontFamily: "IBM_Plex_Serif"
-                }}
-                showBorder={false}
-              />
+              <div className="flex-1">
+                <TextField
+                  className={`${field.isEditable ? "" : "pointer-events-none"}`}
+                  value={value ?? "--"}
+                  onChange={(e) =>
+                    setSummaryData((prev) => ({
+                      ...prev,
+                      [field.key]: e.target.value,
+                    }))
+                  }
+                  placeholder={field.placeholder}
+                  inputStyles={{
+                    color: field.isEditable ? "#1A1A1A" : "#9CA3AF",
+                    fontSize: "16px",
+                    fontFamily: "IBM_Plex_Serif",
+                  }}
+                  showBorder={false}
+                />
+              </div>
             </div>
             {field.key === "clientId" && (
               <Divider sx={{ width: "90%", marginTop: "6px" }} />
@@ -177,7 +225,10 @@ const CallSummary: FC<CallSummaryProps> = ({
           tagsInput = response.data;
         }
       }
-      await updateCallSummary({ chatId, data: { summary: { ...summaryData, tags: tagsInput } } });
+      await updateCallSummary({
+        chatId,
+        data: { summary: { ...summaryData, tags: tagsInput } },
+      });
       onProceed();
     } catch (error) {
       console.error("Error updating call summary:", error);
@@ -201,7 +252,10 @@ const CallSummary: FC<CallSummaryProps> = ({
               key={key}
               title={title}
               titleIcon={icon}
-              defaultExpanded={[SummarySectionKey.FeaturesAndDemographics, SummarySectionKey.SessionSummary].includes(key)}
+              defaultExpanded={[
+                SummarySectionKey.FeaturesAndDemographics,
+                SummarySectionKey.SessionSummary,
+              ].includes(key)}
             >
               {sectionFields.map((field) => getFieldDisplay(field))}
             </Accordion>

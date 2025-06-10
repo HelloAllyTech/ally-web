@@ -113,11 +113,12 @@ const SummarySideBar: FC<SummarySideBarProps> = ({ callSummary, refetchCallLogs,
           icon: <Download />,
           onClick: onExportClick,
         },
-        {
-          alt: "Delete",
-          icon: <Delete />,
-          onClick: onDeleteClick,
-        },
+        // Hidden till a clarity is achieved on the delete functionality
+        // {
+        //   alt: "Delete",
+        //   icon: <Delete />,
+        //   onClick: onDeleteClick,
+        // },
       ]}
     >
       <div className="w-[55vw] h-full flex flex-col">
