@@ -2,7 +2,7 @@ export enum SummaryFieldKey {
   // Features and Demographics section
   CallId = "callId",
   CallDuration = "callDuration",
-  CallDate = "callDate",
+  CallDate = "startTime",
   CallTime = "callTime",
   ClientId = "clientId",
   CounselorName = "counselorName",
