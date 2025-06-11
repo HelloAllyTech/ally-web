@@ -1,9 +1,7 @@
-/* Import Tailwind CSS */
-@import 'tailwindcss/base';
-@import 'tailwindcss/components';
-@import 'tailwindcss/utilities';
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
-/* Base styles */
 @layer base {
   :root {
     --background: 0 0% 100%;
@@ -27,62 +25,69 @@
     --ring: 221.2 83.2% 53.3%;
     --radius: 0.75rem;
   }
-
-  * {
-    @apply border-[#e5e7eb];
-  }
-
-  body {
-    @apply bg-[hsl(var(--background))] text-[hsl(var(--foreground))] antialiased;
-    color: #484848;
-  }
 }
 
-/* Component styles */
-@layer components {
-  /* SVG color utilities */
-  .path-fill-current path {
-    @apply fill-current;
+@layer base {
+  * {
+    @apply border-border;
   }
+  body {
+    @apply bg-background text-foreground antialiased;
+  }
+}
+body {
+  color: #484848;
+}
 
-  .rect-fill-white rect {
-    @apply fill-white;
-  }
+/* ===== Changing colors in an SVG ===== */
 
-  .rect-fill-current rect {
-    @apply fill-current;
-  }
+.path-fill-current path {
+  @apply fill-current;
+}
 
-  .rect-stroke-current rect {
-    @apply stroke-current;
-  }
+.rect-fill-white rect {
+  @apply fill-white;
+}
 
-  .path-stroke-current path {
-    @apply stroke-current;
-  }
+.rect-fill-current rect {
+  @apply fill-current;
+}
 
-  .circle-stroke-current circle {
-    @apply stroke-current;
-  }
+.rect-stroke-current rect {
+  @apply stroke-current;
+}
 
-  .circle-fill-current circle {
-    @apply fill-current;
-  }
+.path-stroke-current path {
+  @apply stroke-current;
+}
 
-  .line-stroke-current line {
-    @apply stroke-current;
-  }
+.circle-stroke-current circle {
+  @apply stroke-current;
+}
 
-  /* Custom Scrollbar */
-  .custom-scrollbar::-webkit-scrollbar {
-    @apply w-[6px];
-  }
+.circle-fill-current circle {
+  @apply fill-current;
+}
 
-  .custom-scrollbar::-webkit-scrollbar-track {
-    @apply bg-[#f1f1f1] rounded-[3px];
-  }
+.line-stroke-current line {
+  @apply stroke-current;
+}
 
-  .custom-scrollbar::-webkit-scrollbar-thumb {
-    @apply bg-[#888] rounded-[3px] hover:bg-[#555];
-  }
+/* Custom Scrollbar Styles */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 3px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 3px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #555;
 }
