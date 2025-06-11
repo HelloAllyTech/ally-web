@@ -1,6 +1,8 @@
 # Ally UI Monorepo
 
-This monorepo contains the Ally Helpline Dashboard and related applications, built with React, TypeScript, and NX.
+This monorepo contains multiple applications for the Ally platform:
+- Ally Web: A modern landing page for our mental health AI assistance platform
+- Ally Helpline Dashboard: Dashboard application for mental health professionals
 
 ## Prerequisites
 
@@ -18,17 +20,17 @@ cd ally-UI-mono
 
 2. Install dependencies:
 ```bash
-npm install --legacy-peer-deps
+npm install
 ```
 
-3. Create environment files:
-Create a `.env` file in `apps/ally-helpline-dashboard` with:
-```env
-VITE_API_BASE_URL=your_api_url
-VITE_API_VERSION=v1
+3. Start the development servers:
+
+For Ally Web:
+```bash
+npx nx dev ally-web
 ```
 
-4. Start the development server:
+For Ally Helpline Dashboard:
 ```bash
 npx nx serve ally-helpline-dashboard
 ```
@@ -38,48 +40,49 @@ npx nx serve ally-helpline-dashboard
 ```
 ally-UI-mono/
 ├── apps/
-│   └── ally-helpline-dashboard/    # Main dashboard application
-├── libs/                           # Shared libraries
-├── nx.json                         # NX configuration
-├── package.json                    # Root dependencies
-└── tsconfig.base.json             # Base TypeScript configuration
+│   ├── ally-web/                  # Landing page application
+│   └── ally-helpline-dashboard/   # Main dashboard application
+├── libs/                          # Shared libraries
+├── nx.json                        # NX configuration
+├── package.json                   # Root dependencies
+└── tsconfig.base.json            # Base TypeScript configuration
 ```
 
-## Known Issues and Solutions
+## Applications
 
-1. React Version Compatibility
-   - The project requires React 18.2.0 for compatibility with dependencies
-   - If you encounter React-related errors, ensure both root and app package.json files use the same version
+### Ally Web (apps/ally-web)
+A Next.js application showcasing our platform's features and mission:
+- Modern, responsive design
+- Gradient-based UI components
+- Interactive elements and smooth animations
+- Optimized for performance and accessibility
 
-2. Tailwind CSS Configuration
-   - Custom theme values should be defined in `tailwind.config.ts`
-   - Global styles are managed in `index.css` and `globals.css`
-
-3. Environment Variables
-   - Required variables: `VITE_API_BASE_URL` and `VITE_API_VERSION`
-   - Environment files must be created manually (not version controlled)
+### Ally Helpline Dashboard (apps/ally-helpline-dashboard)
+The main dashboard application for mental health professionals.
 
 ## Available Commands
 
 ```bash
-# Serve the dashboard application
+# Ally Web Commands
+npx nx dev ally-web           # Start development server
+npx nx build ally-web        # Build for production
+npx nx lint ally-web        # Lint code
+
+# Ally Helpline Dashboard Commands
 npx nx serve ally-helpline-dashboard
-
-# Build for production
 npx nx build ally-helpline-dashboard
-
-# Run tests
 npx nx test ally-helpline-dashboard
-
-# Lint code
 npx nx lint ally-helpline-dashboard
 ```
 
 ## Development Guidelines
 
-1. **Dependencies**: Use `--legacy-peer-deps` when installing new packages to handle React version conflicts
-2. **Styling**: Use Tailwind CSS for styling, following the project's theme configuration
+1. **Code Style**: Follow the project's ESLint and Prettier configurations
+2. **Styling**: 
+   - Ally Web: Uses CSS Modules with custom properties
+   - Dashboard: Uses Tailwind CSS
 3. **TypeScript**: Maintain strict type checking and follow the base TSConfig
+4. **Components**: Create reusable components in the appropriate application's components directory
 
 ## Contributing
 
@@ -91,8 +94,8 @@ npx nx lint ally-helpline-dashboard
 ## Support
 
 For issues and support:
-- Check the known issues section above
-- Review the project documentation
+- Check the project documentation
+- Review existing issues
 - Contact the development team
 
 ## License
