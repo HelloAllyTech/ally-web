@@ -28,6 +28,9 @@ outputs:
   s3_bucket:
     description: 'S3 bucket name'
     value: ${{ steps.set-vars.outputs.s3_bucket }}
+  container_name:
+    description: 'Container name'
+    value: ${{ steps.set-vars.outputs.container_name }}
 
 runs:
   using: 'composite'
@@ -42,17 +45,21 @@ runs:
         ECR_REPOSITORY_NAME="${{ inputs.project_prefix }}-ecr-${{ inputs.service_name }}"
         TASK_DEFINITION="${{ inputs.project_prefix }}-td-${{ inputs.service_name }}"
         S3_BUCKET="${{ inputs.project_prefix }}-s3-environment"
-        
+        CONTAINER_NAME="${{ inputs.project_prefix }}-cntr-${{ inputs.service_name }}"
+
         # Output variables
         echo "ecs_cluster=$ECS_CLUSTER" >> $GITHUB_OUTPUT
         echo "ecs_service=$ECS_SERVICE" >> $GITHUB_OUTPUT
         echo "ecr_repository_name=$ECR_REPOSITORY_NAME" >> $GITHUB_OUTPUT
         echo "task_definition=$TASK_DEFINITION" >> $GITHUB_OUTPUT
         echo "s3_bucket=$S3_BUCKET" >> $GITHUB_OUTPUT
-        
+        echo "container_name=$CONTAINER_NAME" >> $GITHUB_OUTPUT
+
         # Add to step summary
         echo ":gear: Service Configuration" >> $GITHUB_STEP_SUMMARY
         echo "- ECS Cluster: $ECS_CLUSTER" >> $GITHUB_STEP_SUMMARY
         echo "- ECS Service: $ECS_SERVICE" >> $GITHUB_STEP_SUMMARY
         echo "- ECR Repository: $ECR_REPOSITORY_NAME" >> $GITHUB_STEP_SUMMARY
         echo "- Task Definition: $TASK_DEFINITION" >> $GITHUB_STEP_SUMMARY 
+        echo "- S3 Bucket: $S3_BUCKET" >> $GITHUB_STEP_SUMMARY
+        echo "- Container Name: $CONTAINER_NAME" >> $GITHUB_STEP_SUMMARY

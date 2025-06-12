@@ -21,6 +21,9 @@ inputs:
     description: 'Container port'
     required: true
     default: '8080'
+  container_name:
+    description: 'Container name'
+    required: true
 
 runs:
   using: 'composite'
@@ -38,6 +41,7 @@ runs:
       uses: aws-actions/amazon-ecs-render-task-definition@v1
       with:
         task-definition: task-definition.json
+        container-name: ${{ inputs.container_name }}
         image: ${{ inputs.image_uri }}
 
     - name: Deploy to Amazon ECS

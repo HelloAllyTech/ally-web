@@ -56,6 +56,7 @@ jobs:
       ecr_repository_name: ${{ steps.service-vars.outputs.ecr_repository_name }}
       task_definition: ${{ steps.service-vars.outputs.task_definition }}
       s3_bucket: ${{ steps.service-vars.outputs.s3_bucket }}
+      container_name: ${{ steps.service-vars.outputs.container_name }}
 
     steps:
       - name: Checkout
@@ -116,7 +117,6 @@ jobs:
           image_tag: ${{ steps.vars.outputs.short_sha }}
           service_name: ${{ inputs.service_name }}
           s3_bucket: ${{ needs.prepare-env.outputs.s3_bucket }}
-
   deploy:
     needs:
       - build
@@ -142,3 +142,4 @@ jobs:
           task_definition: ${{ needs.prepare-env.outputs.task_definition }}
           aws_region: ${{ needs.prepare-env.outputs.aws_region }}
           port: ${{ inputs.port }} 
+          container_name: ${{ needs.prepare-env.outputs.container_name }}
