@@ -12,6 +12,7 @@ export default {
     join(projectRoot, "./src/components/**/*.{js,jsx,ts,tsx}"),
     join(projectRoot, "./src/pages/**/*.{js,jsx,ts,tsx}"),
     join(projectRoot, "./src/layouts/**/*.{js,jsx,ts,tsx}"),
+    join(projectRoot, "../../libs/ui-shared/src/**/*.{js,jsx,ts,tsx}"),
   ],
   prefix: "",
   theme: {
