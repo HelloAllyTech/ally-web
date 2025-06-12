@@ -47,7 +47,16 @@ runs:
       shell: bash
       working-directory: ${{ inputs.app_path }}
       run: |
-        aws s3 cp s3://${{ inputs.s3_bucket }}/${{ inputs.service_name }}/.env .env
+        echo ":gear: Checking for environment variables..." >> $GITHUB_STEP_SUMMARY
+        if aws s3 cp s3://${{ inputs.s3_bucket }}/${{ inputs.service_name }}/.env .env 2>/dev/null; then
+          echo ":white_check_mark: Environment variables downloaded successfully" >> $GITHUB_STEP_SUMMARY
+          echo "- S3 Path: s3://${{ inputs.s3_bucket }}/${{ inputs.service_name }}/.env" >> $GITHUB_STEP_SUMMARY
+          echo "- File will be available during Docker build" >> $GITHUB_STEP_SUMMARY
+        else
+          echo ":information_source: No build-time environment variables found" >> $GITHUB_STEP_SUMMARY
+          echo "- S3 Path: s3://${{ inputs.s3_bucket }}/${{ inputs.service_name }}/.env (not found)" >> $GITHUB_STEP_SUMMARY
+          echo "- Proceeding with build without environment variables" >> $GITHUB_STEP_SUMMARY
+        fi
 
     - name: Build and push Docker image
       id: build
@@ -55,7 +64,7 @@ runs:
       working-directory: ${{ inputs.app_path }}
       run: |
         # Set image URI
-        IMAGE_URI="${{ inputs.ecr_repository }}:${{ inputs.image_tag }}"
+        IMAGE_URI="${{ inputs.ecr_repository }}/${{ inputs.ecr_repository_name }}:${{ inputs.image_tag }}"
         
         echo ":building_construction: Building Docker image..." >> $GITHUB_STEP_SUMMARY
         echo "- Repository: ${{ inputs.ecr_repository_name }}" >> $GITHUB_STEP_SUMMARY

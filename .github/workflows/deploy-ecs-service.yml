@@ -100,6 +100,10 @@ jobs:
           role-to-assume: ${{ needs.prepare-env.outputs.aws_role }}
           aws-region: ${{ needs.prepare-env.outputs.aws_region }}
 
+      - name: Generate short SHA
+        id: vars
+        run: echo "short_sha=${GITHUB_SHA::10}" >> $GITHUB_OUTPUT
+
       - name: Build and Push Docker Image
         id: build-push
         uses: ./.github/actions/docker/build-push
@@ -109,7 +113,7 @@ jobs:
           ecr_repository: ${{ needs.prepare-env.outputs.ecr_repository }}
           ecr_repository_name: ${{ needs.prepare-env.outputs.ecr_repository_name }}
           aws_region: ${{ needs.prepare-env.outputs.aws_region }}
-          image_tag: '${{ github.sha }}-${{ github.run_number }}'
+          image_tag: ${{ steps.vars.outputs.short_sha }}
           service_name: ${{ inputs.service_name }}
           s3_bucket: ${{ needs.prepare-env.outputs.s3_bucket }}
 
