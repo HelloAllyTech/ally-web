@@ -1,60 +1,50 @@
 name: 'Deploy to ECS'
-description: 'Deploys application to ECS service'
+description: 'Deploys application to ECS with task definition updates'
 
 inputs:
-  ecr_image:
-    description: 'ECR image name'
-    required: true
-  ecr_repository:
-    description: 'ECR repository URL'
-    required: true
-  ecs_service:
-    description: 'ECS service name'
+  image_uri:
+    description: 'Docker image URI'
     required: true
   ecs_cluster:
     description: 'ECS cluster name'
     required: true
+  ecs_service:
+    description: 'ECS service name'
+    required: true
   task_definition:
     description: 'Task definition name'
-    required: true
-  aws_role:
-    description: 'AWS role ARN'
     required: true
   aws_region:
     description: 'AWS region'
     required: true
+  port:
+    description: 'Container port'
+    required: true
+    default: '8080'
 
 runs:
   using: 'composite'
   steps:
-    - name: Configure AWS Credentials
-      uses: aws-actions/configure-aws-credentials@v4
-      with:
-        role-to-assume: ${{ inputs.aws_role }}
-        aws-region: ${{ inputs.aws_region }}
-
-    - name: Update ECS Task Definition
+    - name: Download current task definition
       shell: bash
       run: |
-        ECR_IMAGE_TAG="${{ inputs.ecr_image }}:${GITHUB_SHA::7}-$GITHUB_RUN_NUMBER"
-        FULL_IMAGE_URI="${{ inputs.ecr_repository }}/$ECR_IMAGE_TAG"
-        
-        echo "Updating task definition with image: $FULL_IMAGE_URI"
-        
-        # Get current task definition
-        TASK_DEFINITION=$(aws ecs describe-task-definition --task-definition "${{ inputs.task_definition }}")
-        
-        # Update the task definition with new image
-        echo "$TASK_DEFINITION" | jq --arg IMAGE "$FULL_IMAGE_URI" \
-          '.taskDefinition | .containerDefinitions[0].image = $IMAGE | del(.taskDefinitionArn, .revision, .status, .requiresAttributes, .compatibilities, .registeredAt, .registeredBy)' > taskDefinition.json
-        
-        echo "Task definition updated successfully"
-        echo ":rocket: Updated task definition with image: $ECR_IMAGE_TAG" >> $GITHUB_STEP_SUMMARY
+        echo ":gear: Downloading current task definition..." >> $GITHUB_STEP_SUMMARY
+        aws ecs describe-task-definition \
+          --task-definition ${{ inputs.task_definition }} \
+          --query taskDefinition > task-definition.json
+
+    - name: Update task definition with new image
+      id: task-def
+      uses: aws-actions/amazon-ecs-render-task-definition@v1
+      with:
+        task-definition: task-definition.json
+        container-name: ${{ inputs.task_definition }}
+        image: ${{ inputs.image_uri }}
 
     - name: Deploy to Amazon ECS
-      uses: aws-actions/amazon-ecs-deploy-task-definition@v2
+      uses: aws-actions/amazon-ecs-deploy-task-definition@v1
       with:
-        task-definition: taskDefinition.json
+        task-definition: ${{ steps.task-def.outputs.task-definition }}
         service: ${{ inputs.ecs_service }}
         cluster: ${{ inputs.ecs_cluster }}
         wait-for-service-stability: true
@@ -62,7 +52,9 @@ runs:
     - name: Deployment Summary
       shell: bash
       run: |
-        echo ":white_check_mark: Deployment completed successfully!" >> $GITHUB_STEP_SUMMARY
-        echo "- Service: ${{ inputs.ecs_service }}" >> $GITHUB_STEP_SUMMARY
+        echo ":rocket: ECS Deployment Completed!" >> $GITHUB_STEP_SUMMARY
         echo "- Cluster: ${{ inputs.ecs_cluster }}" >> $GITHUB_STEP_SUMMARY
-        echo "- Image: ${{ inputs.ecr_image }}:${GITHUB_SHA::7}-$GITHUB_RUN_NUMBER" >> $GITHUB_STEP_SUMMARY 
+        echo "- Service: ${{ inputs.ecs_service }}" >> $GITHUB_STEP_SUMMARY
+        echo "- Task Definition: ${{ inputs.task_definition }}" >> $GITHUB_STEP_SUMMARY
+        echo "- Image: ${{ inputs.image_uri }}" >> $GITHUB_STEP_SUMMARY
+        echo "- Port: ${{ inputs.port }}" >> $GITHUB_STEP_SUMMARY 

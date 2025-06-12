@@ -32,18 +32,31 @@ permissions:
   id-token: write
   contents: read
 
-env:
-  # App Configuration
-  SERVICE_NAME: 'web'
-  APP_PATH: 'apps/ally-web'
-  DOCKERFILE_PATH: 'Dockerfile'
-  BUILD_COMMAND: 'npm run build'
-  NODE_VERSION: '20'
-  PORT: '3000'
-
 jobs:
-  # Check if there are changes in the ally-web directory
+  # Set app configuration
+  config:
+    runs-on: ubuntu-latest
+    outputs:
+      service_name: ${{ steps.set-config.outputs.service_name }}
+      app_path: ${{ steps.set-config.outputs.app_path }}
+      dockerfile_path: ${{ steps.set-config.outputs.dockerfile_path }}
+      build_command: ${{ steps.set-config.outputs.build_command }}
+      node_version: ${{ steps.set-config.outputs.node_version }}
+      port: ${{ steps.set-config.outputs.port }}
+    steps:
+      - name: Set Configuration
+        id: set-config
+        run: |
+          echo "service_name=web" >> $GITHUB_OUTPUT
+          echo "app_path=apps/ally-web" >> $GITHUB_OUTPUT
+          echo "dockerfile_path=Dockerfile" >> $GITHUB_OUTPUT
+          echo "build_command=npm run build" >> $GITHUB_OUTPUT
+          echo "node_version=20" >> $GITHUB_OUTPUT
+          echo "port=3000" >> $GITHUB_OUTPUT
+
+  # Check if there are changes in the app directory
   changes:
+    needs: config
     runs-on: ubuntu-latest
     outputs:
       app: ${{ steps.changes.outputs.app }}
@@ -59,11 +72,11 @@ jobs:
         with:
           filters: |
             app:
-              - '${{ env.APP_PATH }}/**'
+              - '${{ needs.config.outputs.app_path }}/**'
 
   # Determine target environment
   determine-environment:
-    needs: changes
+    needs: [config, changes]
     if: |
       needs.changes.outputs.app == 'true' && 
       github.event_name != 'pull_request'
@@ -111,22 +124,23 @@ jobs:
   # Deploy to determined environment
   deploy:
     needs: 
+      - config
       - changes
       - determine-environment
     if: needs.determine-environment.outputs.should_deploy == 'true'
     uses: ./.github/workflows/deploy-ecs-service.yml
     with:
-      service_name: ${{ env.SERVICE_NAME }}
-      app_path: ${{ env.APP_PATH }}
+      service_name: ${{ needs.config.outputs.service_name }}
+      app_path: ${{ needs.config.outputs.app_path }}
       environment: ${{ needs.determine-environment.outputs.target_env }}
-      dockerfile_path: ${{ env.DOCKERFILE_PATH }}
-      build_command: ${{ env.BUILD_COMMAND }}
-      node_version: ${{ env.NODE_VERSION }}
-      port: ${{ env.PORT }}
+      dockerfile_path: ${{ needs.config.outputs.dockerfile_path }}
+      build_command: ${{ needs.config.outputs.build_command }}
+      node_version: ${{ needs.config.outputs.node_version }}
+      port: ${{ needs.config.outputs.port }}
 
   # Build and test on pull requests (no deployment)
   test:
-    needs: changes
+    needs: [config, changes]
     if: |
       needs.changes.outputs.app == 'true' && 
       github.event_name == 'pull_request'
@@ -138,12 +152,12 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: ${{ env.NODE_VERSION }}
+          node-version: ${{ needs.config.outputs.node_version }}
           cache: 'npm'
-          cache-dependency-path: '${{ env.APP_PATH }}/package-lock.json'
+          cache-dependency-path: '${{ needs.config.outputs.app_path }}/package-lock.json'
 
       - name: Install Dependencies
-        working-directory: ${{ env.APP_PATH }}
+        working-directory: ${{ needs.config.outputs.app_path }}
         run: |
           if [ -f package-lock.json ]; then
             npm ci --legacy-peer-deps
@@ -152,7 +166,7 @@ jobs:
           fi
 
       - name: Run Tests
-        working-directory: ${{ env.APP_PATH }}
+        working-directory: ${{ needs.config.outputs.app_path }}
         run: |
           # Run tests if test script exists
           if npm run | grep -q "test"; then
@@ -162,12 +176,12 @@ jobs:
           fi
 
       - name: Build Application
-        working-directory: ${{ env.APP_PATH }}
-        run: ${{ env.BUILD_COMMAND }}
+        working-directory: ${{ needs.config.outputs.app_path }}
+        run: ${{ needs.config.outputs.build_command }}
 
       - name: PR Summary
         run: |
           echo ":white_check_mark: Build and tests completed successfully!" >> $GITHUB_STEP_SUMMARY
-          echo "- Service: ${{ env.SERVICE_NAME }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Service: ${{ needs.config.outputs.service_name }}" >> $GITHUB_STEP_SUMMARY
           echo "- Branch: ${{ github.head_ref }}" >> $GITHUB_STEP_SUMMARY
           echo "- No deployment performed (PR only)" >> $GITHUB_STEP_SUMMARY 

@@ -9,20 +9,19 @@ The workflow system is designed with modularity and reusability in mind:
 ```
 .github/
 ├── workflows/
-│   ├── deploy-ecs-service.yml          # Reusable workflow for ECS deployment
-│   ├── apps/
-│   │   └── deploy-ally-helpline-dashboard.yml  # App-specific workflows
-│   ├── templates/
-│   │   └── deploy-app-template.yml     # Template for new apps
-│   ├── manual-deploy.yml               # Centralized manual deployment
-│   └── ci.yml                          # Main CI workflow
+│   ├── deploy-ecs-service.yml              # Reusable workflow for ECS deployment
+│   ├── deploy-ally-helpline-dashboard.yml  # App-specific workflow
+│   ├── deploy-ally-web.yml                 # App-specific workflow
+│   ├── deploy-app-template.yml             # Template for new apps
+│   ├── manual-deploy.yml                   # Centralized manual deployment
+│   └── ci.yml                              # Main CI workflow
 └── actions/
     ├── aws/
-    │   ├── set-environment-vars/       # AWS environment configuration
-    │   ├── set-service-vars/          # ECS service configuration
-    │   └── deploy-ecs/                # ECS deployment action
+    │   ├── set-environment-vars/           # AWS environment configuration
+    │   ├── set-service-vars/              # ECS service configuration
+    │   └── deploy-ecs/                    # ECS deployment action
     └── docker/
-        └── build-push/                # Docker build and push action
+        └── build-push/                    # Docker build and push action
 ```
 
 ## 🚀 Features
@@ -111,7 +110,7 @@ To add deployment for a new app in your monorepo:
 ### 1. Copy the Template
 
 ```bash
-cp .github/workflows/templates/deploy-app-template.yml .github/workflows/apps/deploy-your-app.yml
+cp .github/workflows/deploy-app-template.yml .github/workflows/deploy-your-app.yml
 ```
 
 ### 2. Customize the Environment Variables
