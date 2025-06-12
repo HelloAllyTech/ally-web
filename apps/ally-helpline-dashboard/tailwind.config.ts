@@ -14,7 +14,6 @@ export default {
     join(projectRoot, "./src/layouts/**/*.{js,jsx,ts,tsx}"),
   ],
   prefix: "",
-  important: true,
   theme: {
     fontFamily: {
       replay: ["ReplayPro", "sans-serif"],

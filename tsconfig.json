@@ -5,6 +5,9 @@
   "references": [
     {
       "path": "./apps/ally-UI-mono"
+    },
+    {
+      "path": "./apps/ally-web"
     }
   ]
 }
