@@ -24,6 +24,9 @@ inputs:
   service_name:
     description: 'Service name'
     required: true
+  s3_bucket:
+    description: 'S3 bucket name'
+    required: true
 
 outputs:
   image_uri:
@@ -44,7 +47,7 @@ runs:
       shell: bash
       working-directory: ${{ inputs.app_path }}
       run: |
-        aws s3 cp s3://${{ needs.prepare-env.outputs.s3_bucket }}/${{ inputs.service_name }}/.env .env
+        aws s3 cp s3://${{ inputs.s3_bucket }}/${{ inputs.service_name }}/.env .env
 
     - name: Build and push Docker image
       id: build

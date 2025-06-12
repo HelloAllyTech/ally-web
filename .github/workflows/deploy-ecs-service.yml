@@ -111,6 +111,7 @@ jobs:
           aws_region: ${{ needs.prepare-env.outputs.aws_region }}
           image_tag: '${{ github.sha }}-${{ github.run_number }}'
           service_name: ${{ inputs.service_name }}
+          s3_bucket: ${{ needs.prepare-env.outputs.s3_bucket }}
 
   deploy:
     needs:
