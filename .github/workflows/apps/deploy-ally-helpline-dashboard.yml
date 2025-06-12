@@ -34,7 +34,7 @@ permissions:
 
 env:
   # App Configuration
-  SERVICE_NAME: 'helpline-dashboard'
+  SERVICE_NAME: 'fe'
   APP_PATH: 'apps/ally-helpline-dashboard'
   DOCKERFILE_PATH: 'dockerfile'
   BUILD_COMMAND: 'npm run build'
@@ -114,7 +114,7 @@ jobs:
       - changes
       - determine-environment
     if: needs.determine-environment.outputs.should_deploy == 'true'
-    uses: ./.github/workflows/reusable/deploy-ecs-service.yml
+    uses: ./.github/workflows/deploy-ecs-service.yml
     with:
       service_name: ${{ env.SERVICE_NAME }}
       app_path: ${{ env.APP_PATH }}

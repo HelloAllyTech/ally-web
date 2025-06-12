@@ -1,7 +1,4 @@
-# Template for deploying apps in the monorepo
-# Copy this file and customize the environment variables below
-
-name: Deploy [APP_NAME]
+name: Deploy Ally Web
 
 on:
   workflow_dispatch:
@@ -21,7 +18,7 @@ on:
       - main
       - master
     paths:
-      - '[APP_PATH]/**'
+      - 'apps/ally-web/**'
   pull_request:
     branches:
       - dev
@@ -29,23 +26,23 @@ on:
       - main
       - master
     paths:
-      - '[APP_PATH]/**'
+      - 'apps/ally-web/**'
 
 permissions:
   id-token: write
   contents: read
 
 env:
-  # App Configuration - CUSTOMIZE THESE VALUES
-  SERVICE_NAME: '[SERVICE_NAME]'            # e.g., 'user-api', 'admin-dashboard'
-  APP_PATH: '[APP_PATH]'                    # e.g., 'apps/user-api'
-  DOCKERFILE_PATH: 'dockerfile'             # Path to Dockerfile (usually 'dockerfile')
-  BUILD_COMMAND: '[BUILD_COMMAND]'          # e.g., 'npm run build', 'npm run build:prod'
-  NODE_VERSION: '[NODE_VERSION]'            # e.g., '18', '20'
-  PORT: '[PORT]'                           # e.g., '3000', '8080'
+  # App Configuration
+  SERVICE_NAME: 'web'
+  APP_PATH: 'apps/ally-web'
+  DOCKERFILE_PATH: 'Dockerfile'
+  BUILD_COMMAND: 'npm run build'
+  NODE_VERSION: '20'
+  PORT: '3000'
 
 jobs:
-  # Check if there are changes in the app directory
+  # Check if there are changes in the ally-web directory
   changes:
     runs-on: ubuntu-latest
     outputs:

@@ -9,8 +9,7 @@ The workflow system is designed with modularity and reusability in mind:
 ```
 .github/
 ├── workflows/
-│   ├── reusable/
-│   │   └── deploy-ecs-service.yml      # Reusable workflow for ECS deployment
+│   ├── deploy-ecs-service.yml          # Reusable workflow for ECS deployment
 │   ├── apps/
 │   │   └── deploy-ally-helpline-dashboard.yml  # App-specific workflows
 │   ├── templates/
