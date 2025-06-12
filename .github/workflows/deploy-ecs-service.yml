@@ -46,85 +46,78 @@ jobs:
     runs-on: ubuntu-22.04
     timeout-minutes: 2
     outputs:
-      AWS_ROLE: ${{ steps.vars.outputs.AWS_ROLE }}
-      AWS_REGION: ${{ steps.vars.outputs.AWS_REGION }}
-      ECR_REPOSITORY: ${{ steps.vars.outputs.ECR_REPOSITORY }}
-      ENV: ${{ steps.vars.outputs.ENV }}
-      PROJECT_PREFIX: ${{ steps.vars.outputs.PROJECT_PREFIX }}
-      PROJECT_REGION: ${{ steps.vars.outputs.PROJECT_REGION }}
-      SUBNETS: ${{ steps.vars.outputs.SUBNETS }}
-      SECURITY_GROUPS: ${{ steps.vars.outputs.SECURITY_GROUPS }}
-      ECS_CLUSTER: ${{ steps.set_env.outputs.ECS_CLUSTER }}
-      ECS_SERVICE: ${{ steps.set_env.outputs.ECS_SERVICE }}
-      ECR_IMAGE: ${{ steps.set_env.outputs.ECR_IMAGE }}
-      TASK_DEFINITION: ${{ steps.set_env.outputs.TASK_DEFINITION }}
-      ENVIRONMENT_BUCKET: ${{ steps.set_env.outputs.ENVIRONMENT_BUCKET }}
+      aws_role: ${{ steps.env-vars.outputs.aws_role }}
+      aws_region: ${{ steps.env-vars.outputs.aws_region }}
+      ecr_repository: ${{ steps.env-vars.outputs.ecr_repository }}
+      project_prefix: ${{ steps.env-vars.outputs.project_prefix }}
+      project_region: ${{ steps.env-vars.outputs.project_region }}
+      ecs_cluster: ${{ steps.service-vars.outputs.ecs_cluster }}
+      ecs_service: ${{ steps.service-vars.outputs.ecs_service }}
+      ecr_repository_name: ${{ steps.service-vars.outputs.ecr_repository_name }}
+      task_definition: ${{ steps.service-vars.outputs.task_definition }}
+      s3_bucket: ${{ steps.service-vars.outputs.s3_bucket }}
 
     steps:
       - name: Set Environment Variables
-        id: vars
+        id: env-vars
         uses: ./.github/actions/aws/set-environment-vars
         with:
           environment: ${{ inputs.environment }}
 
       - name: Set Service Variables
-        id: set_env
+        id: service-vars
         uses: ./.github/actions/aws/set-service-vars
         with:
-          project_prefix: ${{ steps.vars.outputs.PROJECT_PREFIX }}
-          project_region: ${{ steps.vars.outputs.PROJECT_REGION }}
           service_name: ${{ inputs.service_name }}
+          project_prefix: ${{ steps.env-vars.outputs.project_prefix }}
+          project_region: ${{ steps.env-vars.outputs.project_region }}
 
   build:
     needs: prepare-env
     runs-on: ubuntu-22.04
-    env:
-      AWS_ROLE: ${{ needs.prepare-env.outputs.AWS_ROLE }}
-      AWS_REGION: ${{ needs.prepare-env.outputs.AWS_REGION }}
-      ECR_IMAGE: ${{ needs.prepare-env.outputs.ECR_IMAGE }}
-      ECR_REPOSITORY: ${{ needs.prepare-env.outputs.ECR_REPOSITORY }}
-      PROJECT_PREFIX: ${{ needs.prepare-env.outputs.PROJECT_PREFIX }}
+    outputs:
+      image_uri: ${{ steps.build-push.outputs.image_uri }}
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ needs.prepare-env.outputs.aws_role }}
+          aws-region: ${{ needs.prepare-env.outputs.aws_region }}
+
       - name: Build and Push Docker Image
+        id: build-push
         uses: ./.github/actions/docker/build-push
         with:
           app_path: ${{ inputs.app_path }}
           dockerfile_path: ${{ inputs.dockerfile_path }}
-          ecr_image: ${{ env.ECR_IMAGE }}
-          ecr_repository: ${{ vars[env.ECR_REPOSITORY] }}
-          aws_role: ${{ vars[env.AWS_ROLE] }}
-          aws_region: ${{ vars[env.AWS_REGION] }}
-          project_prefix: ${{ env.PROJECT_PREFIX }}
-          build_command: ${{ inputs.build_command }}
-          node_version: ${{ inputs.node_version }}
-          port: ${{ inputs.port }}
+          ecr_repository: ${{ needs.prepare-env.outputs.ecr_repository }}
+          ecr_repository_name: ${{ needs.prepare-env.outputs.ecr_repository_name }}
+          aws_region: ${{ needs.prepare-env.outputs.aws_region }}
+          image_tag: '${{ github.sha }}-${{ github.run_number }}'
 
   deploy:
     needs:
       - build
       - prepare-env
     runs-on: ubuntu-22.04
-    env:
-      AWS_ROLE: ${{ needs.prepare-env.outputs.AWS_ROLE }}
-      AWS_REGION: ${{ needs.prepare-env.outputs.AWS_REGION }}
-      ECR_IMAGE: ${{ needs.prepare-env.outputs.ECR_IMAGE }}
-      ECS_SERVICE: ${{ needs.prepare-env.outputs.ECS_SERVICE }}
-      ECS_CLUSTER: ${{ needs.prepare-env.outputs.ECS_CLUSTER }}
-      TASK_DEFINITION: ${{ needs.prepare-env.outputs.TASK_DEFINITION }}
-      ECR_REPOSITORY: ${{ needs.prepare-env.outputs.ECR_REPOSITORY }}
 
     steps:
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ needs.prepare-env.outputs.aws_role }}
+          aws-region: ${{ needs.prepare-env.outputs.aws_region }}
+
       - name: Deploy to ECS
         uses: ./.github/actions/aws/deploy-ecs
         with:
-          ecr_image: ${{ env.ECR_IMAGE }}
-          ecr_repository: ${{ vars[env.ECR_REPOSITORY] }}
-          ecs_service: ${{ env.ECS_SERVICE }}
-          ecs_cluster: ${{ env.ECS_CLUSTER }}
-          task_definition: ${{ env.TASK_DEFINITION }}
-          aws_role: ${{ vars[env.AWS_ROLE] }}
-          aws_region: ${{ vars[env.AWS_REGION] }} 
+          image_uri: ${{ needs.build.outputs.image_uri }}
+          ecs_cluster: ${{ needs.prepare-env.outputs.ecs_cluster }}
+          ecs_service: ${{ needs.prepare-env.outputs.ecs_service }}
+          task_definition: ${{ needs.prepare-env.outputs.task_definition }}
+          aws_region: ${{ needs.prepare-env.outputs.aws_region }}
+          port: ${{ inputs.port }} 

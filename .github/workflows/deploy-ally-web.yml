@@ -66,13 +66,23 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Create Dynamic Filter
+        id: create-filter
+        run: |
+          APP_PATH="${{ needs.config.outputs.app_path }}"
+          echo "Creating filter for path: $APP_PATH"
+          cat > filter.yml << EOF
+          web:
+            - "${APP_PATH}/**"
+          EOF
+          echo "Generated filter:"
+          cat filter.yml
+
       - name: Check for changes
         uses: dorny/paths-filter@v3
         id: changes
         with:
-          filters: |
-            app:
-              - '${{ needs.config.outputs.app_path }}/**'
+          filters: filter.yml
 
   # Determine target environment
   determine-environment:
