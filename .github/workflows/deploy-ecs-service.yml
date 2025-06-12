@@ -110,6 +110,7 @@ jobs:
           ecr_repository_name: ${{ needs.prepare-env.outputs.ecr_repository_name }}
           aws_region: ${{ needs.prepare-env.outputs.aws_region }}
           image_tag: '${{ github.sha }}-${{ github.run_number }}'
+          service_name: ${{ inputs.service_name }}
 
   deploy:
     needs:
