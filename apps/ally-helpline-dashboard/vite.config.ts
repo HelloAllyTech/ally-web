@@ -26,6 +26,8 @@ export default defineConfig({
   resolve: {
     alias: {
       "@": path.resolve(projectRoot, "./src"),
+      // Add this new line to resolve your shared library
+      "@ally-ui-mono/ui-shared": path.resolve(projectRoot, "../../libs/ui-shared/src"),
     },
   },
   optimizeDeps: {
