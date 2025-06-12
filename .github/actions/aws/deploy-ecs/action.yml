@@ -1,0 +1,68 @@
+name: 'Deploy to ECS'
+description: 'Deploys application to ECS service'
+
+inputs:
+  ecr_image:
+    description: 'ECR image name'
+    required: true
+  ecr_repository:
+    description: 'ECR repository URL'
+    required: true
+  ecs_service:
+    description: 'ECS service name'
+    required: true
+  ecs_cluster:
+    description: 'ECS cluster name'
+    required: true
+  task_definition:
+    description: 'Task definition name'
+    required: true
+  aws_role:
+    description: 'AWS role ARN'
+    required: true
+  aws_region:
+    description: 'AWS region'
+    required: true
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Configure AWS Credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        role-to-assume: ${{ inputs.aws_role }}
+        aws-region: ${{ inputs.aws_region }}
+
+    - name: Update ECS Task Definition
+      shell: bash
+      run: |
+        ECR_IMAGE_TAG="${{ inputs.ecr_image }}:${GITHUB_SHA::7}-$GITHUB_RUN_NUMBER"
+        FULL_IMAGE_URI="${{ inputs.ecr_repository }}/$ECR_IMAGE_TAG"
+        
+        echo "Updating task definition with image: $FULL_IMAGE_URI"
+        
+        # Get current task definition
+        TASK_DEFINITION=$(aws ecs describe-task-definition --task-definition "${{ inputs.task_definition }}")
+        
+        # Update the task definition with new image
+        echo "$TASK_DEFINITION" | jq --arg IMAGE "$FULL_IMAGE_URI" \
+          '.taskDefinition | .containerDefinitions[0].image = $IMAGE | del(.taskDefinitionArn, .revision, .status, .requiresAttributes, .compatibilities, .registeredAt, .registeredBy)' > taskDefinition.json
+        
+        echo "Task definition updated successfully"
+        echo ":rocket: Updated task definition with image: $ECR_IMAGE_TAG" >> $GITHUB_STEP_SUMMARY
+
+    - name: Deploy to Amazon ECS
+      uses: aws-actions/amazon-ecs-deploy-task-definition@v2
+      with:
+        task-definition: taskDefinition.json
+        service: ${{ inputs.ecs_service }}
+        cluster: ${{ inputs.ecs_cluster }}
+        wait-for-service-stability: true
+
+    - name: Deployment Summary
+      shell: bash
+      run: |
+        echo ":white_check_mark: Deployment completed successfully!" >> $GITHUB_STEP_SUMMARY
+        echo "- Service: ${{ inputs.ecs_service }}" >> $GITHUB_STEP_SUMMARY
+        echo "- Cluster: ${{ inputs.ecs_cluster }}" >> $GITHUB_STEP_SUMMARY
+        echo "- Image: ${{ inputs.ecr_image }}:${GITHUB_SHA::7}-$GITHUB_RUN_NUMBER" >> $GITHUB_STEP_SUMMARY 

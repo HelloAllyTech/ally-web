@@ -1,0 +1,173 @@
+name: Deploy Ally Helpline Dashboard
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        required: true
+        type: choice
+        description: Choose environment
+        options:
+          - dev
+          - stg
+          - prd
+  push:
+    branches:
+      - dev
+      - stg
+      - main
+      - master
+    paths:
+      - 'apps/ally-helpline-dashboard/**'
+  pull_request:
+    branches:
+      - dev
+      - stg
+      - main
+      - master
+    paths:
+      - 'apps/ally-helpline-dashboard/**'
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  # App Configuration
+  SERVICE_NAME: 'helpline-dashboard'
+  APP_PATH: 'apps/ally-helpline-dashboard'
+  DOCKERFILE_PATH: 'dockerfile'
+  BUILD_COMMAND: 'npm run build'
+  NODE_VERSION: '20'
+  PORT: '8080'
+
+jobs:
+  # Check if there are changes in the ally-helpline-dashboard directory
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      dashboard: ${{ steps.changes.outputs.dashboard }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check for changes
+        uses: dorny/paths-filter@v3
+        id: changes
+        with:
+          filters: |
+            dashboard:
+              - '${{ env.APP_PATH }}/**'
+
+  # Determine target environment
+  determine-environment:
+    needs: changes
+    if: |
+      needs.changes.outputs.dashboard == 'true' && 
+      github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    outputs:
+      target_env: ${{ steps.env.outputs.target_env }}
+      should_deploy: ${{ steps.env.outputs.should_deploy }}
+    steps:
+      - name: Determine Environment
+        id: env
+        run: |
+          BRANCH="${GITHUB_REF#refs/heads/}"
+          MANUAL_ENV="${{ github.event.inputs.environment }}"
+          
+          # Determine target environment
+          if [ -n "$MANUAL_ENV" ]; then
+            TARGET_ENV="$MANUAL_ENV"
+          else
+            case $BRANCH in
+              "dev")
+                TARGET_ENV="dev"
+                ;;
+              "stg")
+                TARGET_ENV="stg"
+                ;;
+              "main"|"master")
+                TARGET_ENV="prd"
+                ;;
+              *)
+                echo "No deployment configured for branch: $BRANCH"
+                TARGET_ENV=""
+                ;;
+            esac
+          fi
+          
+          if [ -n "$TARGET_ENV" ]; then
+            echo "target_env=$TARGET_ENV" >> $GITHUB_OUTPUT
+            echo "should_deploy=true" >> $GITHUB_OUTPUT
+            echo ":rocket: Deploying to: $TARGET_ENV" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "should_deploy=false" >> $GITHUB_OUTPUT
+            echo ":warning: No deployment target determined" >> $GITHUB_STEP_SUMMARY
+          fi
+
+  # Deploy to determined environment
+  deploy:
+    needs: 
+      - changes
+      - determine-environment
+    if: needs.determine-environment.outputs.should_deploy == 'true'
+    uses: ./.github/workflows/reusable/deploy-ecs-service.yml
+    with:
+      service_name: ${{ env.SERVICE_NAME }}
+      app_path: ${{ env.APP_PATH }}
+      environment: ${{ needs.determine-environment.outputs.target_env }}
+      dockerfile_path: ${{ env.DOCKERFILE_PATH }}
+      build_command: ${{ env.BUILD_COMMAND }}
+      node_version: ${{ env.NODE_VERSION }}
+      port: ${{ env.PORT }}
+
+  # Build and test on pull requests (no deployment)
+  test:
+    needs: changes
+    if: |
+      needs.changes.outputs.dashboard == 'true' && 
+      github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: '${{ env.APP_PATH }}/package-lock.json'
+
+      - name: Install Dependencies
+        working-directory: ${{ env.APP_PATH }}
+        run: |
+          if [ -f package-lock.json ]; then
+            npm ci --legacy-peer-deps
+          else
+            npm install
+          fi
+
+      - name: Run Tests
+        working-directory: ${{ env.APP_PATH }}
+        run: |
+          # Run tests if test script exists
+          if npm run | grep -q "test"; then
+            npm run test
+          else
+            echo "No test script found, skipping tests"
+          fi
+
+      - name: Build Application
+        working-directory: ${{ env.APP_PATH }}
+        run: ${{ env.BUILD_COMMAND }}
+
+      - name: PR Summary
+        run: |
+          echo ":white_check_mark: Build and tests completed successfully!" >> $GITHUB_STEP_SUMMARY
+          echo "- Service: ${{ env.SERVICE_NAME }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Branch: ${{ github.head_ref }}" >> $GITHUB_STEP_SUMMARY
+          echo "- No deployment performed (PR only)" >> $GITHUB_STEP_SUMMARY 

@@ -1,0 +1,106 @@
+name: 'Set Environment Variables'
+description: 'Sets AWS and project variables based on environment'
+
+inputs:
+  environment:
+    description: 'Environment to deploy to (dev, stg, prd)'
+    required: true
+
+outputs:
+  AWS_ROLE:
+    description: 'AWS role variable name'
+    value: ${{ steps.set-vars.outputs.AWS_ROLE }}
+  AWS_REGION:
+    description: 'AWS region variable name'
+    value: ${{ steps.set-vars.outputs.AWS_REGION }}
+  ECR_REPOSITORY:
+    description: 'ECR repository variable name'
+    value: ${{ steps.set-vars.outputs.ECR_REPOSITORY }}
+  ENV:
+    description: 'Environment name'
+    value: ${{ steps.set-vars.outputs.ENV }}
+  PROJECT_PREFIX:
+    description: 'Project prefix'
+    value: ${{ steps.set-vars.outputs.PROJECT_PREFIX }}
+  PROJECT_REGION:
+    description: 'Project region'
+    value: ${{ steps.set-vars.outputs.PROJECT_REGION }}
+  SUBNETS:
+    description: 'Subnets configuration'
+    value: ${{ steps.set-vars.outputs.SUBNETS }}
+  SECURITY_GROUPS:
+    description: 'Security groups configuration'
+    value: ${{ steps.set-vars.outputs.SECURITY_GROUPS }}
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Set Variables
+      id: set-vars
+      shell: bash
+      run: |
+        BRANCH="${GITHUB_REF#refs/heads/}"
+        ENV=${{ inputs.environment }}
+        
+        echo "Branch: $BRANCH"
+        echo "Environment: $ENV"
+        
+        # If environment is not provided, determine from branch
+        if [ -z "$ENV" ]; then
+          case $BRANCH in
+            "dev")
+              ENV="dev"
+              ;;
+            "stg")
+              ENV="stg"
+              ;;
+            "master"|"main")
+              ENV="prd"
+              ;;
+            *)
+              echo "ENV not configured for branch $BRANCH" && exit 1
+              ;;
+          esac
+        fi
+        
+        # Set environment-specific variables
+        case $ENV in
+          "prd")
+            if [[ $BRANCH == "master" || $BRANCH == "main" ]]; then
+              echo "AWS_ROLE=PRD_AWS_ROLE" >> $GITHUB_OUTPUT
+              echo "AWS_REGION=PRD_AWS_REGION" >> $GITHUB_OUTPUT
+              echo "ECR_REPOSITORY=PRD_ECR_REPOSITORY" >> $GITHUB_OUTPUT
+              echo "PROJECT_PREFIX=life-prd" >> $GITHUB_OUTPUT
+              echo "PROJECT_REGION=mb" >> $GITHUB_OUTPUT
+              echo "SUBNETS=[\"subnet-0cce75b196f0b0f91\", \"subnet-0ecfab7ad6e9c808f\"]" >> $GITHUB_OUTPUT
+              echo "SECURITY_GROUPS=[\"sg-0a59d6cefa4776cd4\"]" >> $GITHUB_OUTPUT
+            else
+              echo "Production deployment only allowed from master/main branch" && exit 1
+            fi
+            ;;
+          "stg")
+            echo "AWS_ROLE=STG_AWS_ROLE" >> $GITHUB_OUTPUT
+            echo "AWS_REGION=STG_AWS_REGION" >> $GITHUB_OUTPUT
+            echo "ECR_REPOSITORY=STG_ECR_REPOSITORY" >> $GITHUB_OUTPUT
+            echo "PROJECT_PREFIX=life-stg" >> $GITHUB_OUTPUT
+            echo "PROJECT_REGION=mb" >> $GITHUB_OUTPUT
+            echo "SUBNETS=[\"subnet-072921dfa30408828\", \"subnet-0f1841479bce3a1e0\"]" >> $GITHUB_OUTPUT
+            echo "SECURITY_GROUPS=[\"sg-0ddb892b2ac184ee3\"]" >> $GITHUB_OUTPUT
+            ;;
+          "dev")
+            echo "AWS_ROLE=DEV_AWS_ROLE" >> $GITHUB_OUTPUT
+            echo "AWS_REGION=DEV_AWS_REGION" >> $GITHUB_OUTPUT
+            echo "ECR_REPOSITORY=DEV_ECR_REPOSITORY" >> $GITHUB_OUTPUT
+            echo "PROJECT_PREFIX=life-dev" >> $GITHUB_OUTPUT
+            echo "PROJECT_REGION=sg" >> $GITHUB_OUTPUT
+            echo "SUBNETS=[\"subnet-072921dfa30408828\", \"subnet-0f1841479bce3a1e0\"]" >> $GITHUB_OUTPUT
+            echo "SECURITY_GROUPS=[\"sg-058afe1ec009268c0\"]" >> $GITHUB_OUTPUT
+            ;;
+          *)
+            echo "Environment $ENV not configured!" && exit 1
+            ;;
+        esac
+        
+        echo "ENV=$ENV" >> $GITHUB_OUTPUT
+        echo ":rocket: Environment - $ENV" >> $GITHUB_STEP_SUMMARY
+        echo ":seedling: Branch: $BRANCH" >> $GITHUB_STEP_SUMMARY 

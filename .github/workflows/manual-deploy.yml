@@ -1,0 +1,177 @@
+name: Manual Deploy
+
+on:
+  workflow_dispatch:
+    inputs:
+      app_name:
+        required: true
+        type: choice
+        description: 'Select application to deploy'
+        options:
+          - ally-helpline-dashboard
+          # Add more apps here as they are added to the monorepo
+          # - user-api
+          # - admin-dashboard
+          # - notification-service
+      environment:
+        required: true
+        type: choice
+        description: 'Select environment'
+        options:
+          - dev
+          - stg
+          - prd
+      force_deploy:
+        required: false
+        type: boolean
+        default: false
+        description: 'Force deployment even without changes'
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  # Validate inputs and set app configuration
+  validate-and-configure:
+    name: Validate and Configure
+    runs-on: ubuntu-latest
+    outputs:
+      app_path: ${{ steps.config.outputs.app_path }}
+      build_command: ${{ steps.config.outputs.build_command }}
+      node_version: ${{ steps.config.outputs.node_version }}
+      port: ${{ steps.config.outputs.port }}
+      dockerfile_path: ${{ steps.config.outputs.dockerfile_path }}
+      service_name: ${{ steps.config.outputs.service_name }}
+    steps:
+      - name: Configure App Settings
+        id: config
+        run: |
+          APP_NAME="${{ github.event.inputs.app_name }}"
+          
+          case $APP_NAME in
+            "ally-helpline-dashboard")
+              echo "app_path=apps/ally-helpline-dashboard" >> $GITHUB_OUTPUT
+              echo "build_command=npm run build" >> $GITHUB_OUTPUT
+              echo "node_version=20" >> $GITHUB_OUTPUT
+              echo "port=8080" >> $GITHUB_OUTPUT
+              echo "dockerfile_path=dockerfile" >> $GITHUB_OUTPUT
+              echo "service_name=helpline-dashboard" >> $GITHUB_OUTPUT
+              ;;
+            # Add more app configurations here
+            # "user-api")
+            #   echo "app_path=apps/user-api" >> $GITHUB_OUTPUT
+            #   echo "build_command=npm run build:prod" >> $GITHUB_OUTPUT
+            #   echo "node_version=18" >> $GITHUB_OUTPUT
+            #   echo "port=3000" >> $GITHUB_OUTPUT
+            #   echo "dockerfile_path=dockerfile" >> $GITHUB_OUTPUT
+            #   echo "service_name=user-api" >> $GITHUB_OUTPUT
+            #   ;;
+            *)
+              echo "Unknown app: $APP_NAME" && exit 1
+              ;;
+          esac
+          
+          echo ":rocket: Manual Deployment Requested" >> $GITHUB_STEP_SUMMARY
+          echo "- App: $APP_NAME" >> $GITHUB_STEP_SUMMARY
+          echo "- Environment: ${{ github.event.inputs.environment }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Force Deploy: ${{ github.event.inputs.force_deploy }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Triggered by: ${{ github.actor }}" >> $GITHUB_STEP_SUMMARY
+
+  # Check for changes (can be skipped with force_deploy)
+  check-changes:
+    name: Check Changes
+    needs: validate-and-configure
+    runs-on: ubuntu-latest
+    outputs:
+      has_changes: ${{ steps.changes.outputs.has_changes }}
+      should_deploy: ${{ steps.decision.outputs.should_deploy }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check for Recent Changes
+        id: changes
+        run: |
+          APP_PATH="${{ needs.validate-and-configure.outputs.app_path }}"
+          
+          # Check if there are changes in the last 50 commits or if force deploy is enabled
+          if [ "${{ github.event.inputs.force_deploy }}" == "true" ]; then
+            echo "has_changes=true" >> $GITHUB_OUTPUT
+            echo "Force deploy enabled - skipping change detection" >> $GITHUB_STEP_SUMMARY
+          else
+            # Check for changes in the app directory in recent commits
+            CHANGES=$(git log --oneline -50 --name-only | grep "^$APP_PATH/" | wc -l)
+            if [ $CHANGES -gt 0 ]; then
+              echo "has_changes=true" >> $GITHUB_OUTPUT
+              echo ":white_check_mark: Found $CHANGES file changes in $APP_PATH" >> $GITHUB_STEP_SUMMARY
+            else
+              echo "has_changes=false" >> $GITHUB_OUTPUT
+              echo ":warning: No recent changes found in $APP_PATH" >> $GITHUB_STEP_SUMMARY
+            fi
+          fi
+
+      - name: Deployment Decision
+        id: decision
+        run: |
+          if [ "${{ steps.changes.outputs.has_changes }}" == "true" ] || [ "${{ github.event.inputs.force_deploy }}" == "true" ]; then
+            echo "should_deploy=true" >> $GITHUB_OUTPUT
+            echo ":green_circle: Proceeding with deployment" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "should_deploy=false" >> $GITHUB_OUTPUT
+            echo ":red_circle: Skipping deployment - no changes detected" >> $GITHUB_STEP_SUMMARY
+            echo "Use 'Force Deploy' option to deploy anyway" >> $GITHUB_STEP_SUMMARY
+          fi
+
+  # Deploy using the reusable workflow
+  deploy:
+    name: Deploy Application
+    needs: 
+      - validate-and-configure
+      - check-changes
+    if: needs.check-changes.outputs.should_deploy == 'true'
+    uses: ./.github/workflows/reusable/deploy-ecs-service.yml
+    with:
+      service_name: ${{ needs.validate-and-configure.outputs.service_name }}
+      app_path: ${{ needs.validate-and-configure.outputs.app_path }}
+      environment: ${{ github.event.inputs.environment }}
+      dockerfile_path: ${{ needs.validate-and-configure.outputs.dockerfile_path }}
+      build_command: ${{ needs.validate-and-configure.outputs.build_command }}
+      node_version: ${{ needs.validate-and-configure.outputs.node_version }}
+      port: ${{ needs.validate-and-configure.outputs.port }}
+
+  # Summary job
+  summary:
+    name: Deployment Summary
+    needs: 
+      - validate-and-configure
+      - check-changes
+      - deploy
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deployment Summary
+        run: |
+          echo "# Manual Deployment Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Application:** ${{ github.event.inputs.app_name }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Environment:** ${{ github.event.inputs.environment }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Triggered by:** ${{ github.actor }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Force Deploy:** ${{ github.event.inputs.force_deploy }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          if [ "${{ needs.deploy.result }}" == "success" ]; then
+            echo ":white_check_mark: **Status:** Deployment completed successfully!" >> $GITHUB_STEP_SUMMARY
+          elif [ "${{ needs.deploy.result }}" == "skipped" ]; then
+            echo ":warning: **Status:** Deployment skipped - no changes detected" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "💡 **Tip:** Use the 'Force Deploy' option to deploy without changes" >> $GITHUB_STEP_SUMMARY
+          elif [ "${{ needs.deploy.result }}" == "failure" ]; then
+            echo ":x: **Status:** Deployment failed!" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "Please check the deployment logs for details." >> $GITHUB_STEP_SUMMARY
+          else
+            echo ":question: **Status:** Unknown deployment status" >> $GITHUB_STEP_SUMMARY
+          fi 

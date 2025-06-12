@@ -1,0 +1,130 @@
+name: Deploy ECS Service
+
+on:
+  workflow_call:
+    inputs:
+      service_name:
+        required: true
+        type: string
+        description: 'Service name (used directly after project prefix)'
+      app_path:
+        required: true
+        type: string
+        description: 'Path to the application directory'
+      environment:
+        required: true
+        type: string
+        description: 'Environment to deploy to (dev, stg, prd)'
+      dockerfile_path:
+        required: false
+        type: string
+        default: 'dockerfile'
+        description: 'Path to Dockerfile relative to app_path'
+      build_command:
+        required: false
+        type: string
+        default: 'npm run build'
+        description: 'Build command to run'
+      node_version:
+        required: false
+        type: string
+        default: '20'
+        description: 'Node.js version to use'
+      port:
+        required: false
+        type: string
+        default: '8080'
+        description: 'Port the application runs on'
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  prepare-env:
+    name: Prepare Environment
+    runs-on: ubuntu-22.04
+    timeout-minutes: 2
+    outputs:
+      AWS_ROLE: ${{ steps.vars.outputs.AWS_ROLE }}
+      AWS_REGION: ${{ steps.vars.outputs.AWS_REGION }}
+      ECR_REPOSITORY: ${{ steps.vars.outputs.ECR_REPOSITORY }}
+      ENV: ${{ steps.vars.outputs.ENV }}
+      PROJECT_PREFIX: ${{ steps.vars.outputs.PROJECT_PREFIX }}
+      PROJECT_REGION: ${{ steps.vars.outputs.PROJECT_REGION }}
+      SUBNETS: ${{ steps.vars.outputs.SUBNETS }}
+      SECURITY_GROUPS: ${{ steps.vars.outputs.SECURITY_GROUPS }}
+      ECS_CLUSTER: ${{ steps.set_env.outputs.ECS_CLUSTER }}
+      ECS_SERVICE: ${{ steps.set_env.outputs.ECS_SERVICE }}
+      ECR_IMAGE: ${{ steps.set_env.outputs.ECR_IMAGE }}
+      TASK_DEFINITION: ${{ steps.set_env.outputs.TASK_DEFINITION }}
+      ENVIRONMENT_BUCKET: ${{ steps.set_env.outputs.ENVIRONMENT_BUCKET }}
+
+    steps:
+      - name: Set Environment Variables
+        id: vars
+        uses: ./.github/actions/aws/set-environment-vars
+        with:
+          environment: ${{ inputs.environment }}
+
+      - name: Set Service Variables
+        id: set_env
+        uses: ./.github/actions/aws/set-service-vars
+        with:
+          project_prefix: ${{ steps.vars.outputs.PROJECT_PREFIX }}
+          project_region: ${{ steps.vars.outputs.PROJECT_REGION }}
+          service_name: ${{ inputs.service_name }}
+
+  build:
+    needs: prepare-env
+    runs-on: ubuntu-22.04
+    env:
+      AWS_ROLE: ${{ needs.prepare-env.outputs.AWS_ROLE }}
+      AWS_REGION: ${{ needs.prepare-env.outputs.AWS_REGION }}
+      ECR_IMAGE: ${{ needs.prepare-env.outputs.ECR_IMAGE }}
+      ECR_REPOSITORY: ${{ needs.prepare-env.outputs.ECR_REPOSITORY }}
+      PROJECT_PREFIX: ${{ needs.prepare-env.outputs.PROJECT_PREFIX }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build and Push Docker Image
+        uses: ./.github/actions/docker/build-push
+        with:
+          app_path: ${{ inputs.app_path }}
+          dockerfile_path: ${{ inputs.dockerfile_path }}
+          ecr_image: ${{ env.ECR_IMAGE }}
+          ecr_repository: ${{ vars[env.ECR_REPOSITORY] }}
+          aws_role: ${{ vars[env.AWS_ROLE] }}
+          aws_region: ${{ vars[env.AWS_REGION] }}
+          project_prefix: ${{ env.PROJECT_PREFIX }}
+          build_command: ${{ inputs.build_command }}
+          node_version: ${{ inputs.node_version }}
+          port: ${{ inputs.port }}
+
+  deploy:
+    needs:
+      - build
+      - prepare-env
+    runs-on: ubuntu-22.04
+    env:
+      AWS_ROLE: ${{ needs.prepare-env.outputs.AWS_ROLE }}
+      AWS_REGION: ${{ needs.prepare-env.outputs.AWS_REGION }}
+      ECR_IMAGE: ${{ needs.prepare-env.outputs.ECR_IMAGE }}
+      ECS_SERVICE: ${{ needs.prepare-env.outputs.ECS_SERVICE }}
+      ECS_CLUSTER: ${{ needs.prepare-env.outputs.ECS_CLUSTER }}
+      TASK_DEFINITION: ${{ needs.prepare-env.outputs.TASK_DEFINITION }}
+      ECR_REPOSITORY: ${{ needs.prepare-env.outputs.ECR_REPOSITORY }}
+
+    steps:
+      - name: Deploy to ECS
+        uses: ./.github/actions/aws/deploy-ecs
+        with:
+          ecr_image: ${{ env.ECR_IMAGE }}
+          ecr_repository: ${{ vars[env.ECR_REPOSITORY] }}
+          ecs_service: ${{ env.ECS_SERVICE }}
+          ecs_cluster: ${{ env.ECS_CLUSTER }}
+          task_definition: ${{ env.TASK_DEFINITION }}
+          aws_role: ${{ vars[env.AWS_ROLE] }}
+          aws_region: ${{ vars[env.AWS_REGION] }} 

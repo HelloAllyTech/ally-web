@@ -1,0 +1,62 @@
+name: 'Set Service Variables'
+description: 'Sets service-specific variables for ECS deployment'
+
+inputs:
+  project_prefix:
+    description: 'Project prefix'
+    required: true
+  project_region:
+    description: 'Project region'
+    required: true
+  service_name:
+    description: 'Service name (will be used directly after project prefix)'
+    required: true
+
+outputs:
+  ECS_CLUSTER:
+    description: 'ECS cluster name'
+    value: ${{ steps.set-vars.outputs.ECS_CLUSTER }}
+  ECS_SERVICE:
+    description: 'ECS service name'
+    value: ${{ steps.set-vars.outputs.ECS_SERVICE }}
+  ECR_IMAGE:
+    description: 'ECR image name'
+    value: ${{ steps.set-vars.outputs.ECR_IMAGE }}
+  TASK_DEFINITION:
+    description: 'Task definition name'
+    value: ${{ steps.set-vars.outputs.TASK_DEFINITION }}
+  ENVIRONMENT_BUCKET:
+    description: 'Environment S3 bucket name'
+    value: ${{ steps.set-vars.outputs.ENVIRONMENT_BUCKET }}
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Set Service Variables
+      id: set-vars
+      shell: bash
+      run: |
+        PROJECT_PREFIX="${{ inputs.project_prefix }}"
+        PROJECT_REGION="${{ inputs.project_region }}"
+        SERVICE_NAME="${{ inputs.service_name }}"
+        
+        # Generate service names
+        ECS_CLUSTER="${PROJECT_PREFIX}-${PROJECT_REGION}-ecs-cluster"
+        ECS_SERVICE="${PROJECT_PREFIX}-${SERVICE_NAME}"
+        ECR_IMAGE="${PROJECT_PREFIX}-${SERVICE_NAME}"
+        TASK_DEFINITION="${PROJECT_PREFIX}-${SERVICE_NAME}"
+        ENVIRONMENT_BUCKET="${PROJECT_PREFIX}-s3-environment"
+        
+        # Output variables
+        echo "ECS_CLUSTER=$ECS_CLUSTER" >> $GITHUB_OUTPUT
+        echo "ECS_SERVICE=$ECS_SERVICE" >> $GITHUB_OUTPUT
+        echo "ECR_IMAGE=$ECR_IMAGE" >> $GITHUB_OUTPUT
+        echo "TASK_DEFINITION=$TASK_DEFINITION" >> $GITHUB_OUTPUT
+        echo "ENVIRONMENT_BUCKET=$ENVIRONMENT_BUCKET" >> $GITHUB_OUTPUT
+        
+        # Add to step summary
+        echo ":gear: Service Configuration:" >> $GITHUB_STEP_SUMMARY
+        echo "- ECS Cluster: $ECS_CLUSTER" >> $GITHUB_STEP_SUMMARY
+        echo "- ECS Service: $ECS_SERVICE" >> $GITHUB_STEP_SUMMARY
+        echo "- ECR Image: $ECR_IMAGE" >> $GITHUB_STEP_SUMMARY
+        echo "- Task Definition: $TASK_DEFINITION" >> $GITHUB_STEP_SUMMARY 

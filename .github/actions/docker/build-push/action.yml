@@ -1,0 +1,153 @@
+name: 'Build and Push Docker Image'
+description: 'Builds and pushes Docker image to ECR'
+
+inputs:
+  app_path:
+    description: 'Path to the application directory'
+    required: true
+  dockerfile_path:
+    description: 'Path to Dockerfile relative to app_path'
+    required: true
+    default: 'dockerfile'
+  ecr_image:
+    description: 'ECR image name'
+    required: true
+  ecr_repository:
+    description: 'ECR repository URL'
+    required: true
+  aws_role:
+    description: 'AWS role ARN'
+    required: true
+  aws_region:
+    description: 'AWS region'
+    required: true
+  project_prefix:
+    description: 'Project prefix for S3 bucket'
+    required: true
+  build_command:
+    description: 'Build command to run'
+    required: false
+    default: 'npm run build'
+  node_version:
+    description: 'Node.js version to use'
+    required: false
+    default: '20'
+  port:
+    description: 'Port the application runs on'
+    required: false
+    default: '8080'
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Configure AWS Credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        role-to-assume: ${{ inputs.aws_role }}
+        aws-region: ${{ inputs.aws_region }}
+
+    - name: Login to Amazon ECR
+      id: login-ecr
+      uses: aws-actions/amazon-ecr-login@v2
+
+    - name: Get Environment File
+      id: get_env
+      shell: bash
+      run: |
+        # Try to get environment file from S3, continue if it doesn't exist
+        if aws s3 ls s3://${{ inputs.project_prefix }}-s3-environment/${{ inputs.app_path }}/.env; then
+          echo "Downloading environment file from S3..."
+          aws s3 cp s3://${{ inputs.project_prefix }}-s3-environment/${{ inputs.app_path }}/.env ${{ inputs.app_path }}/.env
+          echo ":file_folder: Environment file downloaded" >> $GITHUB_STEP_SUMMARY
+        else
+          echo "No environment file found in S3, continuing without it..."
+          echo ":warning: No environment file found" >> $GITHUB_STEP_SUMMARY
+        fi
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ inputs.node_version }}
+        cache: 'npm'
+        cache-dependency-path: ${{ inputs.app_path }}/package-lock.json
+
+    - name: Install Dependencies
+      shell: bash
+      working-directory: ${{ inputs.app_path }}
+      run: |
+        if [ -f package-lock.json ]; then
+          npm ci --legacy-peer-deps
+        elif [ -f yarn.lock ]; then
+          yarn install --frozen-lockfile
+        else
+          npm install
+        fi
+
+    - name: Build Application
+      shell: bash
+      working-directory: ${{ inputs.app_path }}
+      run: ${{ inputs.build_command }}
+
+    - name: Create Optimized Dockerfile
+      shell: bash
+      working-directory: ${{ inputs.app_path }}
+      run: |
+        cat > Dockerfile.optimized << 'EOF'
+        # Multi-stage build for optimized production image
+        FROM node:${{ inputs.node_version }}-alpine AS base
+        
+        # Install dependencies only when needed
+        FROM base AS deps
+        RUN apk add --no-cache libc6-compat
+        WORKDIR /app
+        
+        # Copy package files
+        COPY package*.json ./
+        RUN npm ci --only=production --legacy-peer-deps && npm cache clean --force
+        
+        # Production image
+        FROM base AS runner
+        WORKDIR /app
+        
+        ENV NODE_ENV=production
+        
+        RUN addgroup --system --gid 1001 nodejs
+        RUN adduser --system --uid 1001 nextjs
+        
+        # Install serve globally
+        RUN npm install -g serve
+        
+        # Copy built application
+        COPY --from=deps /app/node_modules ./node_modules
+        COPY dist ./dist
+        COPY package*.json ./
+        
+        USER nextjs
+        
+        EXPOSE ${{ inputs.port }}
+        
+        ENV PORT ${{ inputs.port }}
+        
+        CMD ["serve", "-s", "dist", "-l", "${{ inputs.port }}"]
+        EOF
+
+    - name: Build and Push Docker Image
+      shell: bash
+      working-directory: ${{ inputs.app_path }}
+      run: |
+        ECR_IMAGE_TAG="${{ inputs.ecr_image }}:${GITHUB_SHA::7}-$GITHUB_RUN_NUMBER"
+        
+        echo "Building Docker image: $ECR_IMAGE_TAG"
+        
+        # Use optimized Dockerfile if it exists, otherwise use the provided one
+        if [ -f "Dockerfile.optimized" ]; then
+          DOCKERFILE="Dockerfile.optimized"
+        else
+          DOCKERFILE="${{ inputs.dockerfile_path }}"
+        fi
+        
+        docker build -f $DOCKERFILE -t $ECR_IMAGE_TAG .
+        docker tag $ECR_IMAGE_TAG ${{ inputs.ecr_repository }}/$ECR_IMAGE_TAG
+        docker push ${{ inputs.ecr_repository }}/$ECR_IMAGE_TAG
+        
+        echo ":whale: Docker image built and pushed: $ECR_IMAGE_TAG" >> $GITHUB_STEP_SUMMARY 
