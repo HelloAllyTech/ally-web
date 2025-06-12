@@ -13,7 +13,7 @@ export default defineConfig({
   publicDir: "public",
   base: "/",
   build: {
-    outDir: "../../dist/apps/ally-helpline-dashboard",
+    outDir: process.env.DOCKER_BUILD ? "dist" : "../../dist/apps/ally-helpline-dashboard",
     emptyOutDir: true,
     cssCodeSplit: true,
   },
