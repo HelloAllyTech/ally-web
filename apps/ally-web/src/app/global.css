@@ -1,14 +1,17 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 :root {
-  --primary: #7C3AED;
-  --primary-light: #DDD6FE;
-  --secondary: #22D3EE;
-  --dark: #1E293B;
-  --light: #F8FAFC;
-  --accent: #FB7185;
+  --primary: #7c3aed;
+  --primary-light: #ddd6fe;
+  --secondary: #22d3ee;
+  --dark: #1e293b;
+  --light: #f8fafc;
+  --accent: #fb7185;
   --gradient: linear-gradient(135deg, var(--primary), var(--secondary));
-  --background-color: #FFF5F2;
-  --text-color: #1A1A1A;
-  --secondary-text: #4A5568;
+  --background-color: #fff5f2;
+  --text-color: #1a1a1a;
+  --secondary-text: #4a5568;
   --font-serif: 'Fraunces', Georgia, serif;
   --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
   --light-text: #6b7280;
@@ -33,7 +36,12 @@ body {
   scroll-behavior: smooth;
 }
 
-h1, h2, h3, h4, h5, h6 {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
   font-family: var(--font-serif);
   font-weight: 600;
   line-height: 1.2;
@@ -54,7 +62,9 @@ h3 {
   margin-bottom: 0.5rem;
 }
 
-h4, h5, h6 {
+h4,
+h5,
+h6 {
   margin-bottom: 1rem;
 }
 
@@ -219,20 +229,20 @@ p {
   .heading-xl {
     font-size: 3rem;
   }
-  
+
   .heading-lg {
     font-size: 2.5rem;
   }
-  
+
   .lead {
     font-size: 1.25rem;
   }
-  
+
   .quote {
     font-size: 2rem;
     padding: 0 2rem;
   }
-  
+
   .feature-section {
     padding: 4rem 0;
   }
