@@ -100,14 +100,6 @@ jobs:
           role-to-assume: ${{ needs.prepare-env.outputs.aws_role }}
           aws-region: ${{ needs.prepare-env.outputs.aws_region }}
 
-      - name: Download Environment Variables
-        working-directory: ${{ inputs.app_path }}
-        run: |
-          echo ":arrow_down: Downloading environment variables from S3..." >> $GITHUB_STEP_SUMMARY
-          aws s3 cp s3://${{ needs.prepare-env.outputs.s3_bucket }}/${{ inputs.service_name }}/.env .env || echo "No .env file found in S3, continuing without it"
-          echo "- S3 Bucket: ${{ needs.prepare-env.outputs.s3_bucket }}" >> $GITHUB_STEP_SUMMARY
-          echo "- Service: ${{ inputs.service_name }}" >> $GITHUB_STEP_SUMMARY
-
       - name: Build and Push Docker Image
         id: build-push
         uses: ./.github/actions/docker/build-push
