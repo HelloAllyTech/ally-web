@@ -6,4 +6,5 @@ export enum TabId {
   ANALYTICS = "ANALYTICS",
   COMMUNITY = "COMMUNITY",
   SETTINGS = "SETTINGS",
+  SEARCH = "SEARCH",
 }

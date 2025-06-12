@@ -10,6 +10,7 @@ import Settings from "./settings";
 import ClientInterface from "./client-interface";
 import AudioCall from "./audio-call";
 import AccessDenied from "./access-denied";
+import Search from "./search";
 
 export {
   Login,
@@ -24,4 +25,5 @@ export {
   StressBusters,
   PostCallSummary,
   ClientInterface,
+  Search,
 };

@@ -20,6 +20,7 @@ import {
   StressBusters,
   PostCallSummary,
   ClientInterface,
+  Search,
 } from "@/pages";
 import { useUser } from "@/hooks";
 import { TabId } from "@/constants/tabs";
@@ -217,6 +218,16 @@ const PrivateRouteLayout = () => {
                   <PermissionGuardedRoute
                     permission={Permissions.EDIT_SUMMARY}
                     element={<PostCallSummary />}
+                  />
+                }
+              />
+              <Route
+                path={ROUTES.SEARCH}
+                element={
+                  <PermissionGuardedRoute
+                    // TODO: Add correct permission for search
+                    permission={Permissions.VIEW_NAVBAR_LEARN}
+                    element={<Search />}
                   />
                 }
               />

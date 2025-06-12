@@ -5,6 +5,7 @@ import DateRangeOutlinedIcon from "@mui/icons-material/DateRangeOutlined";
 import LeaderboardOutlinedIcon from "@mui/icons-material/LeaderboardOutlined";
 import SettingsOutlinedIcon from "@mui/icons-material/SettingsOutlined";
 import PublicOutlinedIcon from "@mui/icons-material/PublicOutlined";
+import SearchOutlinedIcon from "@mui/icons-material/SearchOutlined";
 
 import { TabId } from "./tabs";
 import { Permissions } from "./permissions";
@@ -26,6 +27,7 @@ export const ROUTES = {
   SETTINGS: "/settings",
   SUMMARY: "/summary/:chatId",
   CLIENT: "/client",
+  SEARCH: "/search",
 } as const;
 
 export const navBarOptions = [
@@ -78,4 +80,11 @@ export const navBarOptions = [
       path: ROUTES.SETTINGS,
       permission: Permissions.VIEW_NAVBAR_SETTINGS
     },
+    {
+      id: TabId.SEARCH,
+      title: "Search",
+      Icon: SearchOutlinedIcon,
+      path: ROUTES.SEARCH,
+      permission: ""
+    }
   ];
