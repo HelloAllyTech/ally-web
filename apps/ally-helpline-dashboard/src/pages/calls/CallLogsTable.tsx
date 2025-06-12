@@ -1,31 +1,51 @@
-import { useEffect, useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import { CircularProgress, Pagination, Table, TableBody, TableCell, TableHead, TableRow } from "@mui/material";
-import { Eye } from "lucide-react";
+import { useEffect, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import {
+  CircularProgress,
+  Pagination,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableRow,
+} from '@mui/material';
+import { Eye } from 'lucide-react';
 
-import { RootState } from "@/store/store";
-import { updatePage, updateTotalCallsCount } from "@/reducer/callsReducer";
-import { useGetCallLogsQuery } from "@/api/calls";
-import { FallbackUI } from "@/components";
-import { NoResults } from "@/assets/icons";
-import { CallLog } from "@/types/calls";
+import { RootState } from '@/store/store';
+import { updatePage, updateTotalCallsCount } from '@/reducer/callsReducer';
+import { useGetCallLogsQuery } from '@/api/calls';
+import { FallbackUI } from '@/components';
+import { NoResults } from '@/assets/icons';
+import { CallLog } from '@/types/calls';
 
-import SummarySideBar from "./components/SummarySideBar";
-import { convertSecondsToDuration, formatDate } from "./utils";
-import { CALL_LOGS_PAGINATION_LIMIT, tableHeaders, TABLE_ROW_HEIGHT, tagColors } from "./constants";
-import { TagDisplay } from "./types";
+import SummarySideBar from './components/SummarySideBar';
+import { convertSecondsToDuration, formatDate } from './utils';
+import {
+  CALL_LOGS_PAGINATION_LIMIT,
+  tableHeaders,
+  TABLE_ROW_HEIGHT,
+  tagColors,
+} from './constants';
+import { TagDisplay } from './types';
 
 const CallLogsTable = () => {
   const dispatch = useDispatch();
 
-  const { filters: { page }, totalCallsCount } = useSelector((state: RootState) => state.calls);
+  const {
+    filters: { page },
+    totalCallsCount,
+  } = useSelector((state: RootState) => state.calls);
 
   const [transition, setTransition] = useState(true);
   const [callSummary, setCallSummary] = useState<CallLog | null>(null);
 
-  const { data: callLogsData, isLoading, refetch: refetchCallLogs } = useGetCallLogsQuery({
+  const {
+    data: callLogsData,
+    isLoading,
+    refetch: refetchCallLogs,
+  } = useGetCallLogsQuery({
     limit: CALL_LOGS_PAGINATION_LIMIT,
-    offset: (page * CALL_LOGS_PAGINATION_LIMIT) - CALL_LOGS_PAGINATION_LIMIT,
+    offset: page * CALL_LOGS_PAGINATION_LIMIT - CALL_LOGS_PAGINATION_LIMIT,
   });
 
   const { count, data: callLogs = [] } = callLogsData || {};
@@ -61,12 +81,14 @@ const CallLogsTable = () => {
         dateAndTime: formatDate(startTime),
         duration: convertSecondsToDuration(callDuration ?? 60),
         qualityScore: summary?.callQuality ?? 0,
-        tags: summary?.tags?.map((tag: { tag: string; positivity_rating: number }) => {
-          return {
-            label: tag?.tag,
-            colors: tagColors[tag?.positivity_rating],
-          };
-        }),
+        tags: summary?.tags?.map(
+          (tag: { tag: string; positivity_rating: number }) => {
+            return {
+              label: tag?.tag,
+              colors: tagColors[tag?.positivity_rating],
+            };
+          },
+        ),
       };
     }
   };
@@ -79,7 +101,7 @@ const CallLogsTable = () => {
     const displayData = getDisplayData(callLog);
 
     switch (header) {
-      case "tags":
+      case 'tags':
         // TODO: show only 2 -3 tags and show the rest in tooltip
         return (
           <div className="flex gap-1 flex-wrap max-w-full overflow-hidden">
@@ -97,23 +119,31 @@ const CallLogsTable = () => {
             ))}
           </div>
         );
-      case "qualityScore":
+      case 'qualityScore':
         return (
           <div className="flex items-center gap-3">
             <label>{displayData.qualityScore}</label>
             <div className="flex gap-1 w-32 h-1">
               <div
-                style={{ width: !transition && `${getQualityScoreWidth(displayData.qualityScore)}px` }}
+                style={{
+                  width:
+                    !transition &&
+                    `${getQualityScoreWidth(displayData.qualityScore)}px`,
+                }}
                 className="w-0 transition-all duration-300 border-[2px] border-[#6272FF] rounded-md"
               />
               <div
-                style={{ width: !transition && `${getQualityScoreWidth(100 - displayData.qualityScore)}px` }}
+                style={{
+                  width:
+                    !transition &&
+                    `${getQualityScoreWidth(100 - displayData.qualityScore)}px`,
+                }}
                 className="w-full transition-all duration-300 border-[2px] border-t-[#E6F2FF] rounded-md"
               />
             </div>
           </div>
         );
-      case "notes":
+      case 'notes':
         return (
           <Eye
             className="text-[#868686] w-4 h-4 ml-2 cursor-pointer"
@@ -128,14 +158,18 @@ const CallLogsTable = () => {
   return (
     <>
       <div
-        className={`${callLogs.length > 0 ? "bg-white shadow-md" : ""} rounded-xl w-full`}
-        style={{ minHeight: `${TABLE_ROW_HEIGHT * (CALL_LOGS_PAGINATION_LIMIT + 1)}px` }}
+        className={`${callLogs.length > 0 ? 'bg-white shadow-md' : ''} rounded-xl w-full`}
+        style={{
+          minHeight: `${TABLE_ROW_HEIGHT * (CALL_LOGS_PAGINATION_LIMIT + 1)}px`,
+        }}
       >
-        <Table sx={{ minWidth: "100%" }} aria-label="simple table">
-          <TableHead sx={{ backgroundColor: "#F5F5F5" }}>
+        <Table sx={{ minWidth: '100%' }} aria-label="simple table">
+          <TableHead sx={{ backgroundColor: '#F5F5F5' }}>
             <TableRow>
               {tableHeaders.map((header) => (
-                <TableCell key={header.id} sx={{ width: header.width }}>{header.label}</TableCell>
+                <TableCell key={header.id} sx={{ width: header.width }}>
+                  {header.label}
+                </TableCell>
               ))}
             </TableRow>
           </TableHead>
@@ -148,7 +182,10 @@ const CallLogsTable = () => {
                   {tableHeaders.map((header) => (
                     <TableCell
                       key={header.id}
-                      sx={{ width: header.width, height: `${TABLE_ROW_HEIGHT}px` }}
+                      sx={{
+                        width: header.width,
+                        height: `${TABLE_ROW_HEIGHT}px`,
+                      }}
                     >
                       {getDisplayCell(header.id, callLog)}
                     </TableCell>
