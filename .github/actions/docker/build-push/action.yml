@@ -21,6 +21,9 @@ inputs:
     description: 'Docker image tag'
     required: true
     default: 'latest'
+  service_name:
+    description: 'Service name'
+    required: true
 
 outputs:
   image_uri:
@@ -36,6 +39,12 @@ runs:
     - name: Log in to Amazon ECR
       id: login-ecr
       uses: aws-actions/amazon-ecr-login@v2
+
+    - name: Download Environment Variables
+      shell: bash
+      working-directory: ${{ inputs.app_path }}
+      run: |
+        aws s3 cp s3://${{ needs.prepare-env.outputs.s3_bucket }}/${{ inputs.service_name }}/.env .env
 
     - name: Build and push Docker image
       id: build
@@ -56,8 +65,6 @@ runs:
           --file ${{ inputs.dockerfile_path }} \
           --tag $IMAGE_URI \
           --push \
-          --cache-from type=gha \
-          --cache-to type=gha,mode=max \
           .
         
         echo "image_uri=$IMAGE_URI" >> $GITHUB_OUTPUT

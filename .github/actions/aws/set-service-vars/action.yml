@@ -38,9 +38,9 @@ runs:
       run: |
         # Generate service-specific names
         ECS_CLUSTER="${{ inputs.project_prefix }}-${{ inputs.project_region }}-ecs-cluster"
-        ECS_SERVICE="${{ inputs.project_prefix }}-${{ inputs.service_name }}"
-        ECR_REPOSITORY_NAME="${{ inputs.project_prefix }}-${{ inputs.service_name }}"
-        TASK_DEFINITION="${{ inputs.project_prefix }}-${{ inputs.service_name }}"
+        ECS_SERVICE="${{ inputs.project_prefix }}-svc-${{ inputs.service_name }}"
+        ECR_REPOSITORY_NAME="${{ inputs.project_prefix }}-ecr-${{ inputs.service_name }}"
+        TASK_DEFINITION="${{ inputs.project_prefix }}-td-${{ inputs.service_name }}"
         S3_BUCKET="${{ inputs.project_prefix }}-s3-environment"
         
         # Output variables
