@@ -34,6 +34,7 @@ on:
 permissions:
   id-token: write
   contents: read
+  pull-requests: read
 
 env:
   # App Configuration - CUSTOMIZE THESE VALUES
@@ -63,6 +64,7 @@ jobs:
           filters: |
             app:
               - '${{ env.APP_PATH }}/**'
+          token: ${{ secrets.GITHUB_TOKEN }}
 
   # Determine target environment
   determine-environment:
