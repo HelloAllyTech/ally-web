@@ -66,6 +66,15 @@ jobs:
         uses: ./.github/actions/aws/set-environment-vars
         with:
           environment: ${{ inputs.environment }}
+          dev_aws_role: ${{ vars.DEV_AWS_ROLE }}
+          dev_aws_region: ${{ vars.DEV_AWS_REGION }}
+          dev_ecr_repository: ${{ vars.DEV_ECR_REPOSITORY }}
+          stg_aws_role: ${{ vars.STG_AWS_ROLE }}
+          stg_aws_region: ${{ vars.STG_AWS_REGION }}
+          stg_ecr_repository: ${{ vars.STG_ECR_REPOSITORY }}
+          prd_aws_role: ${{ vars.PRD_AWS_ROLE }}
+          prd_aws_region: ${{ vars.PRD_AWS_REGION }}
+          prd_ecr_repository: ${{ vars.PRD_ECR_REPOSITORY }}
 
       - name: Set Service Variables
         id: service-vars
