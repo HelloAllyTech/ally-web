@@ -38,7 +38,6 @@ runs:
       uses: aws-actions/amazon-ecs-render-task-definition@v1
       with:
         task-definition: task-definition.json
-        container-name: ${{ inputs.task_definition }}
         image: ${{ inputs.image_uri }}
 
     - name: Deploy to Amazon ECS
