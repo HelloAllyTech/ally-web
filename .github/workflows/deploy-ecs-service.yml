@@ -58,6 +58,9 @@ jobs:
       s3_bucket: ${{ steps.service-vars.outputs.s3_bucket }}
 
     steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
       - name: Set Environment Variables
         id: env-vars
         uses: ./.github/actions/aws/set-environment-vars
