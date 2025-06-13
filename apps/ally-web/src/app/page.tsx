@@ -1,17 +1,10 @@
 'use client';
 
-import { MyButton } from '@ally-ui-mono/ui-shared';
-
 export default function Index() {
   return (
     <main>
       <section className="hero">
         <div className="container">
-        <MyButton 
-  label="Click Me"  // Optional, defaults to "My Button"
-  onClick={() => console.log('Button clicked!')} 
-  className="w-full"  // Optional, add any additional Tailwind classes
-/>
           <h1 className="heading-xl">
             Empowering Mental Health Care
             <br />
