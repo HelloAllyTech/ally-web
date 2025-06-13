@@ -9,11 +9,15 @@ COPY nx.json ./
 COPY tsconfig.base.json ./
 COPY eslint.config.mjs ./
 
-# Copy source and build
-COPY . .
-COPY ../../libs ./libs
-ENV DOCKER_BUILD=true
-RUN npm run build
+# Install dependencies
+RUN npm ci --legacy-peer-deps
+
+# Copy source files
+COPY apps/ally-helpline-dashboard ./apps/ally-helpline-dashboard
+COPY libs ./libs
+
+# Build the application using Nx
+RUN npx nx build ally-helpline-dashboard
 
 # Stage 2: Serve
 FROM node:20-alpine
