@@ -9,7 +9,7 @@ export default function Index() {
             with Intelligent Assistance
           </h1>
           <p className="lead">
-            We're revolutionizing mental health support by combining human expertise 
+            We&apos;re revolutionizing mental health support by combining human expertise 
             with AI capabilities, creating a more effective and accessible care system.
           </p>
           <a href="#features" className="btn">Discover How</a>
@@ -64,8 +64,8 @@ export default function Index() {
       <section className="quote-section">
         <div className="container">
           <p className="quote">
-            "The future of mental health care lies in the harmonious collaboration between 
-            human empathy and artificial intelligence."
+            The future of mental health care lies in the harmonious collaboration between 
+            human empathy and artificial intelligence.
           </p>
           <p className="quote-author">— Our Vision for Mental Health Support</p>
         </div>
