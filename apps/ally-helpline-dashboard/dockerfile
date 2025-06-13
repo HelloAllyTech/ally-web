@@ -11,6 +11,7 @@ COPY eslint.config.mjs ./
 
 # Install dependencies
 RUN npm ci --legacy-peer-deps
+RUN npm install -D @vitejs/plugin-react-swc vite-plugin-svgr
 
 # Copy source files
 COPY apps/ally-helpline-dashboard ./apps/ally-helpline-dashboard
