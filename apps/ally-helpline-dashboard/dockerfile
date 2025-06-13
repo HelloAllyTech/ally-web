@@ -1,36 +1,52 @@
-# Stage 1: Build
+# ===================================================================================
+# Stage 1: Build the Application
+# This stage installs all monorepo dependencies, builds the specific app using
+# the Nx CLI, and prepares the final artifacts.
+# ===================================================================================
 FROM node:20 AS builder
 
-# Set working directory to the monorepo root
+# Set the working directory to the root of the monorepo inside the container
 WORKDIR /monorepo
 
-# Copy the entire monorepo
-COPY ../../package*.json ./
+# Copy configuration files needed for installation first to leverage Docker caching.
+# If these files don't change, `npm install` will use the cache.
+COPY package*.json ./
+COPY nx.json ./
+COPY tsconfig.base.json ./
 
-# Install dependencies at root level
-RUN npm install
+# Install all monorepo dependencies.
+# Using 'npm ci' is recommended for CI/CD environments as it uses package-lock.json
+# for deterministic builds. Use 'npm install' if you don't have a lock file.
+RUN npm ci
 
-# Copy the rest of the monorepo
-COPY ../.. .
+# Copy the entire monorepo source code.
+# This comes after npm install to optimize Docker layer caching.
+COPY . .
 
-# Build the specific app
-WORKDIR /monorepo/apps/ally-helpline-dashboard
-ENV DOCKER_BUILD=true
-RUN npm run build
+# Build the specific application ('ally-helpline-dashboard') in production mode.
+# Using 'npx nx build' leverages Nx's caching and dependency graph.
+RUN npx nx build ally-helpline-dashboard --prod
 
-# Stage 2: Serve
+
+# ===================================================================================
+# Stage 2: Serve the Built Application
+# This is a lean, final stage that only contains the built static files and a
+# lightweight web server to serve them.
+# ===================================================================================
 FROM node:20-alpine
 
 WORKDIR /app
 
-# Install serve
+# Install 'serve' globally to host the static files
 RUN npm install -g serve
 
-# Copy built files from builder
-COPY --from=builder /monorepo/apps/ally-helpline-dashboard/dist ./dist
+# Copy the built application artifacts from the 'builder' stage.
+# Nx places build output in /dist/apps/<app-name> by default.
+COPY --from=builder /monorepo/dist/apps/ally-helpline-dashboard ./dist
 
-# Expose the app's port
+# Expose the port the app will run on
 EXPOSE 8080
 
-# Start serve
+# The command to start the server.
+# It serves the contents of the 'dist' folder on port 8080.
 CMD ["serve", "-s", "dist", "-l", "8080"]
