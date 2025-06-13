@@ -29,7 +29,7 @@ export default defineConfig({
   resolve: {
     alias: {
       "@": path.resolve(projectRoot, "./src"),
-      "@ally-ui-mono/ui-shared": path.resolve(projectRoot, "../../libs/ui-shared/src/index"),
+      "@ally-ui-mono/ui-shared": path.resolve(projectRoot, "../../libs/ui-shared/src"),
       // Add any other aliases from tsconfig.base.json here
     },
   },
