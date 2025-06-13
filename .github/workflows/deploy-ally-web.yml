@@ -60,7 +60,7 @@ jobs:
     needs: config
     runs-on: ubuntu-latest
     outputs:
-      app: ${{ steps.changes.outputs.app }}
+      web: ${{ steps.changes.outputs.web }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -90,7 +90,7 @@ jobs:
   determine-environment:
     needs: [config, changes]
     if: |
-      needs.changes.outputs.app == 'true' && 
+      needs.changes.outputs.web == 'true' && 
       github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     outputs:
@@ -102,7 +102,7 @@ jobs:
         run: |
           BRANCH="${GITHUB_REF#refs/heads/}"
           MANUAL_ENV="${{ github.event.inputs.environment }}"
-          
+
           # Determine target environment
           if [ -n "$MANUAL_ENV" ]; then
             TARGET_ENV="$MANUAL_ENV"
@@ -123,7 +123,7 @@ jobs:
                 ;;
             esac
           fi
-          
+
           if [ -n "$TARGET_ENV" ]; then
             echo "target_env=$TARGET_ENV" >> $GITHUB_OUTPUT
             echo "should_deploy=true" >> $GITHUB_OUTPUT
@@ -135,7 +135,7 @@ jobs:
 
   # Deploy to determined environment
   deploy:
-    needs: 
+    needs:
       - config
       - changes
       - determine-environment
@@ -154,7 +154,7 @@ jobs:
   test:
     needs: [config, changes]
     if: |
-      needs.changes.outputs.app == 'true' && 
+      needs.changes.outputs.web == 'true' && 
       github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     steps:
@@ -183,4 +183,4 @@ jobs:
           echo ":white_check_mark: Build and tests completed successfully!" >> $GITHUB_STEP_SUMMARY
           echo "- Service: ${{ needs.config.outputs.service_name }}" >> $GITHUB_STEP_SUMMARY
           echo "- Branch: ${{ github.head_ref }}" >> $GITHUB_STEP_SUMMARY
-          echo "- No deployment performed (PR only)" >> $GITHUB_STEP_SUMMARY 
+          echo "- No deployment performed (PR only)" >> $GITHUB_STEP_SUMMARY
