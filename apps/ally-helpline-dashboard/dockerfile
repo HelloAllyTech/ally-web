@@ -3,25 +3,25 @@ FROM node:20 AS builder
 
 WORKDIR /app
 
-# Copy workspace package files
+# Copy all workspace configuration files first
 COPY package*.json ./
 COPY nx.json ./
 COPY tsconfig.base.json ./
 COPY eslint.config.mjs ./
 
-# Install workspace dependencies
-RUN npm ci --legacy-peer-deps
-
-# Copy app package.json and install app-specific dependencies
+# Copy ALL project package.json files to ensure proper workspace setup
 COPY apps/ally-helpline-dashboard/package*.json ./apps/ally-helpline-dashboard/
-RUN cd apps/ally-helpline-dashboard && npm ci --legacy-peer-deps
+COPY libs/ui-shared/package*.json ./libs/ui-shared/
+
+# Install ALL dependencies from workspace root (this handles both root and workspace dependencies)
+RUN npm ci --legacy-peer-deps
 
 # Copy source files
 COPY apps/ally-helpline-dashboard ./apps/ally-helpline-dashboard
 COPY libs ./libs
 
-# Build the application using Nx
-RUN npx nx build ally-helpline-dashboard
+# Build the application using the locally installed Nx
+RUN ./node_modules/.bin/nx build ally-helpline-dashboard
 
 # Stage 2: Serve
 FROM node:20-alpine
