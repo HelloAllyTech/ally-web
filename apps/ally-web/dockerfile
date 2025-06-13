@@ -20,8 +20,8 @@ RUN npm ci --legacy-peer-deps
 COPY apps/ally-web ./apps/ally-web
 COPY libs ./libs
 
-# Build the application using the locally installed Nx
-RUN ./node_modules/.bin/nx build ally-web
+# Build the application using Nx with skip-nx-cache to avoid building dependencies
+RUN ./node_modules/.bin/nx build ally-web --skip-nx-cache
 
 # Stage 2: Serve
 FROM node:20-alpine AS runner
