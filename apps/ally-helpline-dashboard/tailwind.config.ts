@@ -1,6 +1,6 @@
 import type { Config } from "tailwindcss";
 import tailwindcssAnimate from "tailwindcss-animate";
-import { join } from 'path';
+import { join } from "path";
 
 const projectRoot = __dirname;
 

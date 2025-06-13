@@ -166,30 +166,17 @@ jobs:
         with:
           node-version: ${{ needs.config.outputs.node_version }}
           cache: 'npm'
-          cache-dependency-path: '${{ needs.config.outputs.app_path }}/package-lock.json'
 
       - name: Install Dependencies
-        working-directory: ${{ needs.config.outputs.app_path }}
-        run: |
-          if [ -f package-lock.json ]; then
-            npm ci --legacy-peer-deps
-          else
-            npm install
-          fi
+        run: npm ci --legacy-peer-deps
 
       - name: Run Tests
-        working-directory: ${{ needs.config.outputs.app_path }}
         run: |
-          # Run tests if test script exists
-          if npm run | grep -q "test"; then
-            npm run test
-          else
-            echo "No test script found, skipping tests"
-          fi
+          # Run tests for the specific app using Nx
+          npx nx test ally-web || echo "No tests found for ally-web"
 
       - name: Build Application
-        working-directory: ${{ needs.config.outputs.app_path }}
-        run: ${{ needs.config.outputs.build_command }}
+        run: npx nx build ally-web
 
       - name: PR Summary
         run: |
