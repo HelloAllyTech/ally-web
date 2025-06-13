@@ -1,20 +1,20 @@
-import { FC, useEffect, useState } from "react";
-import { Divider } from "@mui/material";
+import { FC, useEffect, useState } from 'react';
+import { Divider } from '@mui/material';
 
-import { Accordion, DropdownField, TextField, Button } from "@/components";
+import { Accordion, DropdownField, TextField, Button } from '@/components';
 import {
   useGetSummaryFieldsQuery,
   useUpdateCallSummaryMutation,
   useGetTagsMutation,
   useGetLocationsQuery,
-} from "@/api/callSummary";
-import { useEnhance } from "@/hooks";
-import { SummaryFieldKey, Tag } from "@/types/summary";
+} from '@/api/callSummary';
+import { useEnhance } from '@/hooks';
+import { SummaryFieldKey, Tag } from '@/types/summary';
 
-import { labelShownSections, summarySections } from "../constants";
-import { CallSummaryProps, SummaryField, SummarySectionKey } from "../types";
-import { getFormattedDateTime, getSectionFields } from "../helper";
-import SummaryLoading from "./SummaryLoading";
+import { labelShownSections, summarySections } from '../constants';
+import { CallSummaryProps, SummaryField, SummarySectionKey } from '../types';
+import { getFormattedDateTime, getSectionFields } from '../helper';
+import SummaryLoading from './SummaryLoading';
 
 const CallSummary: FC<CallSummaryProps> = ({
   callSummary,
@@ -66,7 +66,7 @@ const CallSummary: FC<CallSummaryProps> = ({
       const tags = callSummary.details.summary?.tags;
       setSummaryData({
         ...callSummary.details.summary,
-        tags: tags?.map(({ tag }) => tag).join(", "),
+        tags: tags?.map(({ tag }) => tag).join(', '),
       });
     }
   }, [callSummary]);
@@ -82,34 +82,34 @@ const CallSummary: FC<CallSummaryProps> = ({
 
   const getFieldValue = (key: string, type: string) => {
     if (!summaryData) {
-      return type !== "Dropdown" ? "--" : "";
+      return type !== 'Dropdown' ? '--' : '';
     }
     switch (key) {
-      case "callId":
+      case 'callId':
         return callSummary?.details?.chatId || summaryData.callId;
-      case "callDuration": {
+      case 'callDuration': {
         const duration =
           callSummary?.details?.callDuration || summaryData.callDuration;
         return `${Math.floor(Number(duration) / 60)} minutes`;
       }
-      case "callDate":
+      case 'callDate':
         return getFormattedDateTime(
           callSummary?.details?.callDate,
-          "do MMMM yyyy"
+          'do MMMM yyyy',
         );
-      case "callTime": {
-        return `${getFormattedDateTime(callSummary?.startedAt, "HH:mm")} - ${getFormattedDateTime(
+      case 'callTime': {
+        return `${getFormattedDateTime(callSummary?.startedAt, 'HH:mm')} - ${getFormattedDateTime(
           callSummary?.endedAt,
-          "HH:mm"
+          'HH:mm',
         )}`;
       }
-      case "clientId":
+      case 'clientId':
         return callSummary?.clientId || summaryData.clientId;
-      case "languages":
+      case 'languages':
         return (
           summaryData.languages
             ?.map(({ language, percentage }) => `${language} (${percentage}%)`)
-            .join(", ") || ""
+            .join(', ') || ''
         );
       default:
         return summaryData[key];
@@ -119,14 +119,14 @@ const CallSummary: FC<CallSummaryProps> = ({
   const getFieldDisplay = (field: SummaryField) => {
     const value = getFieldValue(field.key, field.type);
     switch (field.type) {
-      case "Dropdown":
+      case 'Dropdown':
         return (
           <div key={field.key} className="flex gap-1">
             <span className="font-medium text-[16px] text-[#6B7280]">{`${field.label}: `}</span>
             <DropdownField
               disabled={!field.isEditable}
-              value={value ?? "--"}
-              valueClassName={`${field.isEditable ? "text-[#1A1A1A]" : "text-[#9CA3AF]"} 
+              value={value ?? '--'}
+              valueClassName={`${field.isEditable ? 'text-[#1A1A1A]' : 'text-[#9CA3AF]'} 
                 text-[16px] font-['IBM_Plex_Serif']`}
               onChange={(value) =>
                 setSummaryData((prev) => ({ ...prev, [field.key]: value }))
@@ -135,14 +135,14 @@ const CallSummary: FC<CallSummaryProps> = ({
             />
           </div>
         );
-      case "Multiline":
+      case 'Multiline':
         return (
           <div key={field.key} className="flex flex-col gap-1">
             {labelShownSections.includes(field.sectionKey) && (
               <span className="font-medium text-[16px] text-[#6B7280]">{`${field.label}: `}</span>
             )}
             <TextField
-              value={enhancing === field.key ? "" : value}
+              value={enhancing === field.key ? '' : value}
               onChange={(e) =>
                 setSummaryData((prev) => ({
                   ...prev,
@@ -151,37 +151,35 @@ const CallSummary: FC<CallSummaryProps> = ({
               }
               multiline
               rows={4}
-              className={`w-full ${field.isEditable ? "" : "pointer-events-none"}`}
+              className={`w-full ${field.isEditable ? '' : 'pointer-events-none'}`}
               inputStyles={{
-                color: field.isEditable ? "#1A1A1A" : "#9CA3AF",
-                fontSize: "16px",
-                fontFamily: "IBM_Plex_Serif",
+                color: field.isEditable ? '#1A1A1A' : '#9CA3AF',
+                fontSize: '16px',
+                fontFamily: 'IBM_Plex_Serif',
               }}
               placeholder={field.placeholder}
               showBorder={false}
-              slotProps={{
-                input: {
-                  startAdornment:
-                    enhancing === field.key && EnhancementLoadingSkeleton,
-                  endAdornment: field.isEnhanceable && (
-                    <EnhanceButton
-                      fieldName={field.key}
-                      inputText={value}
-                      updateValue={(text) =>
-                        setSummaryData((prev) => ({
-                          ...prev,
-                          [field.key]: text,
-                        }))
-                      }
-                    />
-                  ),
-                },
+              InputProps={{
+                startAdornment:
+                  enhancing === field.key && EnhancementLoadingSkeleton,
+                endAdornment: field.isEnhanceable && (
+                  <EnhanceButton
+                    fieldName={field.key}
+                    inputText={value}
+                    updateValue={(text) =>
+                      setSummaryData((prev) => ({
+                        ...prev,
+                        [field.key]: text,
+                      }))
+                    }
+                  />
+                ),
               }}
             />
           </div>
         );
-      case "Number":
-      case "Text":
+      case 'Number':
+      case 'Text':
       default:
         return (
           <>
@@ -189,8 +187,8 @@ const CallSummary: FC<CallSummaryProps> = ({
               <span className="font-medium text-[16px] text-[#6B7280]">{`${field.label}: `}</span>
               <div className="flex-1">
                 <TextField
-                  className={`${field.isEditable ? "" : "pointer-events-none"}`}
-                  value={value ?? "--"}
+                  className={`${field.isEditable ? '' : 'pointer-events-none'}`}
+                  value={value ?? '--'}
                   onChange={(e) =>
                     setSummaryData((prev) => ({
                       ...prev,
@@ -199,16 +197,16 @@ const CallSummary: FC<CallSummaryProps> = ({
                   }
                   placeholder={field.placeholder}
                   inputStyles={{
-                    color: field.isEditable ? "#1A1A1A" : "#9CA3AF",
-                    fontSize: "16px",
-                    fontFamily: "IBM_Plex_Serif",
+                    color: field.isEditable ? '#1A1A1A' : '#9CA3AF',
+                    fontSize: '16px',
+                    fontFamily: 'IBM_Plex_Serif',
                   }}
                   showBorder={false}
                 />
               </div>
             </div>
-            {field.key === "clientId" && (
-              <Divider sx={{ width: "90%", marginTop: "6px" }} />
+            {field.key === 'clientId' && (
+              <Divider sx={{ width: '90%', marginTop: '6px' }} />
             )}
           </>
         );
@@ -217,7 +215,7 @@ const CallSummary: FC<CallSummaryProps> = ({
 
   const handleSubmit = async () => {
     try {
-      const tags = summaryData?.tags?.split(", ");
+      const tags = summaryData?.tags?.split(', ');
       let tagsInput: Tag[] = [];
       if (tags.length > 0) {
         const response = await getTags({ tags });
@@ -231,7 +229,7 @@ const CallSummary: FC<CallSummaryProps> = ({
       });
       onProceed();
     } catch (error) {
-      console.error("Error updating call summary:", error);
+      console.error('Error updating call summary:', error);
     }
   };
 
@@ -268,7 +266,7 @@ const CallSummary: FC<CallSummaryProps> = ({
           onClick={handleSubmit}
           disabled={isLoading}
         >
-          {isUpdateLoading || isGetTagsLoading ? "Submitting..." : "Submit"}
+          {isUpdateLoading || isGetTagsLoading ? 'Submitting...' : 'Submit'}
         </Button>
       </div>
     </>
