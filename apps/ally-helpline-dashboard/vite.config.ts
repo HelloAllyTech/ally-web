@@ -2,7 +2,6 @@ import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react-swc";
 import svgr from "vite-plugin-svgr";
 import path from "path";
-import { join } from 'path';
 
 // Get absolute paths
 const projectRoot = __dirname;
@@ -26,11 +25,10 @@ export default defineConfig({
   resolve: {
     alias: {
       "@": path.resolve(projectRoot, "./src"),
-      // Add this new line to resolve your shared library
-      "@ally-ui-mono/ui-shared": path.resolve(projectRoot, "../../libs/ui-shared/src"),
+      "@ally-ui-mono/ui-shared": path.resolve(projectRoot, "../../libs/ui-shared/src/index"),
     },
   },
   optimizeDeps: {
-    include: ['tailwindcss', 'postcss', 'autoprefixer'],
+    include: ["tailwindcss", "postcss", "autoprefixer"],
   },
 });
