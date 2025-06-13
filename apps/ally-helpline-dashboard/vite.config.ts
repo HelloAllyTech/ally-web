@@ -2,6 +2,7 @@ import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react-swc";
 import svgr from "vite-plugin-svgr";
 import path from "path";
+import type { PluginOption } from "vite";
 
 // Get absolute paths
 const projectRoot = __dirname;
@@ -21,10 +22,15 @@ export default defineConfig({
     strictPort: true,
     host: true,
   },
-  plugins: [react(), svgr()],
+  plugins: [
+    react() as unknown as PluginOption,
+    svgr() as unknown as PluginOption
+  ],
   resolve: {
     alias: {
       "@": path.resolve(projectRoot, "./src"),
+      "@ally-ui-mono/ui-shared": path.resolve(projectRoot, "../../libs/ui-shared/src"),
+      // Add any other aliases from tsconfig.base.json here
     },
   },
   optimizeDeps: {
