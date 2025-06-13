@@ -1,3 +1,4 @@
+'use client'
 import { FC, useState, useRef, useEffect } from 'react';
 import Badge from '../badge';
 
