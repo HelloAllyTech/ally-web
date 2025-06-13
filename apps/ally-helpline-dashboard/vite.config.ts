@@ -6,6 +6,7 @@ import type { PluginOption } from "vite";
 
 // Get absolute paths
 const projectRoot = __dirname;
+const isDocker = process.env.DOCKER_BUILD === "true";
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -29,7 +30,9 @@ export default defineConfig({
   resolve: {
     alias: {
       "@": path.resolve(projectRoot, "./src"),
-      "@ally-ui-mono/ui-shared": path.resolve(projectRoot, "../../libs/ui-shared/src"),
+      "@ally-ui-mono/ui-shared": isDocker 
+        ? path.resolve(projectRoot, "./libs/ui-shared/src")
+        : path.resolve(projectRoot, "../../libs/ui-shared/src"),
       // Add any other aliases from tsconfig.base.json here
     },
   },
