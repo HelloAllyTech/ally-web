@@ -4,8 +4,6 @@
     "default": ["{projectRoot}/**/*", "sharedGlobals"],
     "production": [
       "default",
-      "!{projectRoot}/.eslintrc.json",
-      "!{projectRoot}/eslint.config.mjs",
       "!{projectRoot}/**/?(*.)+(spec|test).[jt]s?(x)?(.snap)",
       "!{projectRoot}/tsconfig.spec.json",
       "!{projectRoot}/src/test-setup.[jt]s"
@@ -31,12 +29,6 @@
         "watchDepsTargetName": "watch-deps",
         "buildDepsTargetName": "build-deps",
         "typecheckTargetName": "typecheck"
-      }
-    },
-    {
-      "plugin": "@nx/eslint/plugin",
-      "options": {
-        "targetName": "lint"
       }
     },
     {
@@ -68,7 +60,6 @@
       "application": {
         "babel": true,
         "style": "tailwind",
-        "linter": "eslint",
         "bundler": "vite"
       },
       "component": {
@@ -76,14 +67,12 @@
       },
       "library": {
         "style": "tailwind",
-        "linter": "eslint",
         "unitTestRunner": "none"
       }
     },
     "@nx/next": {
       "application": {
-        "style": "css",
-        "linter": "none"
+        "style": "css"
       }
     }
   }
