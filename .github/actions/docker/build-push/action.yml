@@ -45,12 +45,12 @@ runs:
 
     - name: Download Environment Variables
       shell: bash
-      working-directory: ${{ inputs.app_path }}
       run: |
         echo ":gear: Checking for environment variables..." >> $GITHUB_STEP_SUMMARY
-        if aws s3 cp s3://${{ inputs.s3_bucket }}/${{ inputs.service_name }}/.env .env 2>/dev/null; then
+        if aws s3 cp s3://${{ inputs.s3_bucket }}/${{ inputs.service_name }}/.env ${{ inputs.app_path }}/.env 2>/dev/null; then
           echo ":white_check_mark: Environment variables downloaded successfully" >> $GITHUB_STEP_SUMMARY
           echo "- S3 Path: s3://${{ inputs.s3_bucket }}/${{ inputs.service_name }}/.env" >> $GITHUB_STEP_SUMMARY
+          echo "- Local Path: ${{ inputs.app_path }}/.env" >> $GITHUB_STEP_SUMMARY
           echo "- File will be available during Docker build" >> $GITHUB_STEP_SUMMARY
         else
           echo ":information_source: No build-time environment variables found" >> $GITHUB_STEP_SUMMARY
@@ -61,24 +61,24 @@ runs:
     - name: Build and push Docker image
       id: build
       shell: bash
-      working-directory: ${{ inputs.app_path }}
       run: |
         # Set image URI
         IMAGE_URI="${{ inputs.ecr_repository }}/${{ inputs.ecr_repository_name }}:${{ inputs.image_tag }}"
-        
+
         echo ":building_construction: Building Docker image..." >> $GITHUB_STEP_SUMMARY
         echo "- Repository: ${{ inputs.ecr_repository_name }}" >> $GITHUB_STEP_SUMMARY
         echo "- Tag: ${{ inputs.image_tag }}" >> $GITHUB_STEP_SUMMARY
-        echo "- Dockerfile: ${{ inputs.dockerfile_path }}" >> $GITHUB_STEP_SUMMARY
-        
-        # Build and push image
+        echo "- Dockerfile: ${{ inputs.app_path }}/${{ inputs.dockerfile_path }}" >> $GITHUB_STEP_SUMMARY
+        echo "- Build Context: workspace root" >> $GITHUB_STEP_SUMMARY
+
+        # Build and push image using workspace root as context
         docker buildx build \
           --platform linux/amd64 \
-          --file ${{ inputs.dockerfile_path }} \
+          --file ${{ inputs.app_path }}/${{ inputs.dockerfile_path }} \
           --tag $IMAGE_URI \
           --push \
           .
-        
+
         echo "image_uri=$IMAGE_URI" >> $GITHUB_OUTPUT
         echo ":white_check_mark: Image built and pushed successfully!" >> $GITHUB_STEP_SUMMARY
-        echo "- Image URI: $IMAGE_URI" >> $GITHUB_STEP_SUMMARY 
+        echo "- Image URI: $IMAGE_URI" >> $GITHUB_STEP_SUMMARY
