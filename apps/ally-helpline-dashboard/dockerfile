@@ -9,8 +9,12 @@ COPY nx.json ./
 COPY tsconfig.base.json ./
 COPY eslint.config.mjs ./
 
-# Install dependencies
+# Install workspace dependencies
 RUN npm ci --legacy-peer-deps
+
+# Copy app package.json and install app-specific dependencies
+COPY apps/ally-helpline-dashboard/package*.json ./apps/ally-helpline-dashboard/
+RUN cd apps/ally-helpline-dashboard && npm ci --legacy-peer-deps
 
 # Copy source files
 COPY apps/ally-helpline-dashboard ./apps/ally-helpline-dashboard
