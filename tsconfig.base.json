@@ -16,6 +16,11 @@
     "skipLibCheck": true,
     "strict": true,
     "target": "es2022",
-    "customConditions": ["development"]
+    "customConditions": ["development"],
+    "baseUrl": ".",
+    "paths": {
+      "@ally-ui-mono/ui-shared": ["libs/ui-shared/src/index"],
+      "@ally-ui-mono/ui-shared/*": ["libs/ui-shared/src/*"]
+    }
   }
 }

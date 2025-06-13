@@ -3,21 +3,13 @@ FROM node:20 AS builder
 
 WORKDIR /app
 
-# Copy package files from root
-COPY ./package*.json ./
-COPY ./nx.json ./
-COPY ./tsconfig.base.json ./
-
 # Install dependencies
+COPY package*.json ./
 RUN npm install
 
-# Copy the entire monorepo from root
+# Copy source and build
 COPY . .
-
-# Set environment variable for Docker build
 ENV DOCKER_BUILD=true
-
-# Build the application
 RUN npm run build
 
 # Stage 2: Serve
