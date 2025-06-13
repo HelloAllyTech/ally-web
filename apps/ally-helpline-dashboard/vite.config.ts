@@ -14,7 +14,7 @@ export default defineConfig({
   publicDir: "public",
   base: "/",
   build: {
-    outDir: isDocker ? "dist" : "../../dist/apps/ally-helpline-dashboard",
+    outDir: "../../dist/apps/ally-helpline-dashboard",
     emptyOutDir: true,
     cssCodeSplit: true,
   },
