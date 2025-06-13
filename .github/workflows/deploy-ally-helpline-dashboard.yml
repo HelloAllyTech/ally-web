@@ -11,6 +11,11 @@ on:
           - dev
           - stg
           - prd
+      force_deploy:
+        required: false
+        type: boolean
+        description: Force deployment regardless of file changes
+        default: false
   push:
     branches:
       - dev
@@ -19,6 +24,7 @@ on:
       - master
     paths:
       - 'apps/ally-helpline-dashboard/**'
+      - 'libs/**'
   pull_request:
     branches:
       - dev
@@ -27,6 +33,7 @@ on:
       - master
     paths:
       - 'apps/ally-helpline-dashboard/**'
+      - 'libs/**'
 
 permissions:
   id-token: write
@@ -36,7 +43,7 @@ permissions:
 jobs:
   # Set app configuration
   config:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     outputs:
       service_name: ${{ steps.set-config.outputs.service_name }}
       app_path: ${{ steps.set-config.outputs.app_path }}
@@ -58,41 +65,38 @@ jobs:
   # Check if there are changes in the app directory
   changes:
     needs: config
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     outputs:
-      dashboard: ${{ steps.changes.outputs.dashboard }}
+      dashboard: ${{ steps.determine.outputs.should_proceed }}
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Create Dynamic Filter
-        id: create-filter
+      - name: Determine if should proceed
+        id: determine
         run: |
-          APP_PATH="${{ needs.config.outputs.app_path }}"
-          echo "Creating filter for path: $APP_PATH"
-          cat > filter.yml << EOF
-          dashboard:
-            - "${APP_PATH}/**"
-          EOF
-          echo "Generated filter:"
-          cat filter.yml
-
-      - name: Check for changes
-        uses: dorny/paths-filter@v3
-        id: changes
-        with:
-          filters: filter.yml
-          token: ${{ secrets.GITHUB_TOKEN }}
+          # Simplified logic - no redundant path checking
+          if [ "${{ github.event.inputs.force_deploy }}" == "true" ]; then
+            echo "should_proceed=true" >> $GITHUB_OUTPUT
+            echo "Force deploy requested - proceeding without change check"
+          elif [ "${{ github.event_name }}" == "push" ]; then
+            echo "should_proceed=true" >> $GITHUB_OUTPUT
+            echo "Push event detected - changes exist (filtered by trigger)"
+          elif [ "${{ github.event_name }}" == "pull_request" ]; then
+            echo "should_proceed=true" >> $GITHUB_OUTPUT
+            echo "Pull request event detected - changes exist (filtered by trigger)"
+          elif [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+            echo "should_proceed=true" >> $GITHUB_OUTPUT
+            echo "Manual workflow dispatch - proceeding"
+          else
+            echo "should_proceed=false" >> $GITHUB_OUTPUT
+            echo "No valid trigger detected"
+          fi
 
   # Determine target environment
   determine-environment:
     needs: [config, changes]
     if: |
-      needs.changes.outputs.dashboard == 'true' && 
+      (needs.changes.outputs.dashboard == 'true' || github.event.inputs.force_deploy == 'true') && 
       github.event_name != 'pull_request'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     outputs:
       target_env: ${{ steps.env.outputs.target_env }}
       should_deploy: ${{ steps.env.outputs.should_deploy }}
@@ -102,7 +106,7 @@ jobs:
         run: |
           BRANCH="${GITHUB_REF#refs/heads/}"
           MANUAL_ENV="${{ github.event.inputs.environment }}"
-          
+
           # Determine target environment
           if [ -n "$MANUAL_ENV" ]; then
             TARGET_ENV="$MANUAL_ENV"
@@ -123,7 +127,7 @@ jobs:
                 ;;
             esac
           fi
-          
+
           if [ -n "$TARGET_ENV" ]; then
             echo "target_env=$TARGET_ENV" >> $GITHUB_OUTPUT
             echo "should_deploy=true" >> $GITHUB_OUTPUT
@@ -135,7 +139,7 @@ jobs:
 
   # Deploy to determined environment
   deploy:
-    needs: 
+    needs:
       - config
       - changes
       - determine-environment
@@ -154,9 +158,9 @@ jobs:
   test:
     needs: [config, changes]
     if: |
-      needs.changes.outputs.dashboard == 'true' && 
+      (needs.changes.outputs.dashboard == 'true' || github.event.inputs.force_deploy == 'true') && 
       github.event_name == 'pull_request'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -183,4 +187,4 @@ jobs:
           echo ":white_check_mark: Build and tests completed successfully!" >> $GITHUB_STEP_SUMMARY
           echo "- Service: ${{ needs.config.outputs.service_name }}" >> $GITHUB_STEP_SUMMARY
           echo "- Branch: ${{ github.head_ref }}" >> $GITHUB_STEP_SUMMARY
-          echo "- No deployment performed (PR only)" >> $GITHUB_STEP_SUMMARY 
+          echo "- No deployment performed (PR only)" >> $GITHUB_STEP_SUMMARY
