@@ -9,6 +9,7 @@ RUN npm install
 
 # Copy source and build
 COPY . .
+COPY ../../libs ./libs
 ENV DOCKER_BUILD=true
 RUN npm run build
 
