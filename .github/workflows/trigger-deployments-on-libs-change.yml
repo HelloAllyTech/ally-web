@@ -1,0 +1,153 @@
+name: Trigger App Deployments on Libs Change
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        required: true
+        type: choice
+        description: Choose environment to deploy all services
+        options:
+          - dev
+          - stg
+          - prd
+      reason:
+        required: false
+        type: string
+        description: Reason for manual deployment (optional)
+        default: 'Manual deployment of all services'
+  push:
+    branches:
+      - dev
+      - stg
+      - main
+    paths:
+      - 'libs/**'
+
+permissions:
+  actions: write
+  contents: read
+
+jobs:
+  detect-libs-changes:
+    runs-on: ubuntu-latest
+    outputs:
+      libs-changed: ${{ steps.changes.outputs.libs }}
+      target-branch: ${{ steps.branch.outputs.branch }}
+      should-deploy: ${{ steps.should-deploy.outputs.should-deploy }}
+      deployment-reason: ${{ steps.should-deploy.outputs.reason }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: dorny/paths-filter@v2
+        id: changes
+        if: github.event_name == 'push'
+        with:
+          filters: |
+            libs:
+              - 'libs/**'
+
+      - name: Get target branch
+        id: branch
+        run: |
+          if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+            # For manual dispatch, map environment input to branch
+            case "${{ github.event.inputs.environment }}" in
+              "dev")
+                BRANCH="dev"
+                ;;
+              "stg")
+                BRANCH="stg"
+                ;;
+              "prd")
+                BRANCH="main"
+                ;;
+            esac
+          else
+            # For push events, use the actual branch
+            BRANCH="${GITHUB_REF#refs/heads/}"
+          fi
+          echo "branch=$BRANCH" >> $GITHUB_OUTPUT
+          echo "Target branch: $BRANCH"
+
+      - name: Determine if should deploy
+        id: should-deploy
+        run: |
+          if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+            echo "should-deploy=true" >> $GITHUB_OUTPUT
+            echo "reason=Manual deployment: ${{ github.event.inputs.reason }}" >> $GITHUB_OUTPUT
+            echo "Manual deployment triggered for environment: ${{ github.event.inputs.environment }}"
+          elif [ "${{ steps.changes.outputs.libs }}" == "true" ]; then
+            echo "should-deploy=true" >> $GITHUB_OUTPUT
+            echo "reason=Automatic deployment due to changes in libs/" >> $GITHUB_OUTPUT
+            echo "Automatic deployment triggered due to libs changes"
+          else
+            echo "should-deploy=false" >> $GITHUB_OUTPUT
+            echo "reason=No deployment needed" >> $GITHUB_OUTPUT
+            echo "No deployment needed - no libs changes detected"
+          fi
+
+  trigger-deployments:
+    needs: detect-libs-changes
+    if: needs.detect-libs-changes.outputs.should-deploy == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set target branch for deployment
+        run: |
+          echo "Deploying to branch: ${{ needs.detect-libs-changes.outputs.target-branch }}"
+          echo "Reason: ${{ needs.detect-libs-changes.outputs.deployment-reason }}"
+
+      - name: Trigger ally-web deployment
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const targetBranch = '${{ needs.detect-libs-changes.outputs.target-branch }}';
+            await github.rest.actions.createWorkflowDispatch({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              workflow_id: 'deploy-ally-web.yml',
+              ref: `refs/heads/${targetBranch}`,
+              inputs: ${{ github.event_name == 'workflow_dispatch' && format('{{ "environment": "{0}" }}', github.event.inputs.environment) || '{}' }}
+            });
+
+      - name: Trigger ally-helpline-dashboard deployment
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const targetBranch = '${{ needs.detect-libs-changes.outputs.target-branch }}';
+            await github.rest.actions.createWorkflowDispatch({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              workflow_id: 'deploy-ally-helpline-dashboard.yml',
+              ref: `refs/heads/${targetBranch}`,
+              inputs: ${{ github.event_name == 'workflow_dispatch' && format('{{ "environment": "{0}" }}', github.event.inputs.environment) || '{}' }}
+            });
+
+      - name: Log deployment triggers
+        run: |
+          echo "## Deployment Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Trigger:** ${{ github.event_name }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Reason:** ${{ needs.detect-libs-changes.outputs.deployment-reason }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Target Branch:** ${{ needs.detect-libs-changes.outputs.target-branch }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Workflows Triggered:**" >> $GITHUB_STEP_SUMMARY
+          echo "- deploy-ally-web.yml" >> $GITHUB_STEP_SUMMARY
+          echo "- deploy-ally-helpline-dashboard.yml" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          case "${{ needs.detect-libs-changes.outputs.target-branch }}" in
+            "dev")
+              echo "**Target Environment:** Development (dev)" >> $GITHUB_STEP_SUMMARY
+              ;;
+            "stg")
+              echo "**Target Environment:** Staging (stg)" >> $GITHUB_STEP_SUMMARY
+              ;;
+            "main")
+              echo "**Target Environment:** Production (prd)" >> $GITHUB_STEP_SUMMARY
+              ;;
+          esac
