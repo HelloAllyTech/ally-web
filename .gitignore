@@ -1,21 +1,80 @@
 # See https://docs.github.com/en/get-started/getting-started-with-git/ignoring-files for more about ignoring files.
 
-# compiled output
-dist
-tmp
-out-tsc
-
-# dependencies
+# Dependencies
 node_modules
+.pnp
+.pnp.js
 
-# IDEs and editors
-/.idea
-.project
-.classpath
-.c9/
-*.launch
-.settings/
-*.sublime-workspace
+# Testing
+coverage
+
+# Next.js
+.next/
+out/
+build
+dist
+
+# Nx
+.nx/
+tmp/
+
+# Production
+build
+dist
+
+# Debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Local env files
+.env*.local
+.env
+.env.development
+.env.test
+.env.production
+
+# Vercel
+.vercel
+
+# TypeScript
+*.tsbuildinfo
+next-env.d.ts
+
+# IDE
+.idea
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+
+# OS
+.DS_Store
+*.pem
+
+# Logs
+logs
+*.log
+
+# Cache
+.cache
+.eslintcache
+.stylelintcache
+
+# Misc
+.DS_Store
+*.pem
+.vercel
+.turbo
+
+# PWA files
+**/public/sw.js
+**/public/workbox-*.js
+**/public/worker-*.js
+**/public/sw.js.map
+**/public/workbox-*.js.map
+**/public/worker-*.js.map
 
 # IDE - VSCode
 .vscode/*
@@ -35,7 +94,6 @@ testem.log
 /typings
 
 # System Files
-.DS_Store
 Thumbs.db
 
 .nx/cache
@@ -47,8 +105,5 @@ vite.config.*.timestamp*
 vitest.config.*.timestamp*
 
 .cursor
-# Next.js
-.next
-out
 
 test-output
