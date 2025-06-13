@@ -9,11 +9,16 @@ COPY nx.json ./
 COPY tsconfig.base.json ./
 COPY eslint.config.mjs ./
 
-# Install dependencies
-RUN npm ci --legacy-peer-deps
-RUN npm install -D @vitejs/plugin-react-swc vite-plugin-svgr
+# Install root dependencies
+RUN npm ci
+
+# Copy app package.json and install app dependencies
+COPY apps/ally-helpline-dashboard/package*.json ./apps/ally-helpline-dashboard/
+WORKDIR /app/apps/ally-helpline-dashboard
+RUN npm ci
 
 # Copy source files
+WORKDIR /app
 COPY apps/ally-helpline-dashboard ./apps/ally-helpline-dashboard
 COPY libs ./libs
 
