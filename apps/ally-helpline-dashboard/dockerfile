@@ -5,14 +5,16 @@
 # ===================================================================================
 FROM node:20 AS builder
 
+ENV DOCKER_BUILD=true
+
 # Set the working directory to the root of the monorepo inside the container
 WORKDIR /monorepo
 
 # Copy configuration files needed for installation first to leverage Docker caching.
 # If these files don't change, `npm install` will use the cache.
-COPY ../../package*.json ./
-COPY ../../nx.json ./
-COPY ../../tsconfig.base.json ./
+COPY package*.json ./
+COPY nx.json ./
+COPY tsconfig.base.json ./
 
 # Install all monorepo dependencies.
 # Using 'npm ci' is recommended for CI/CD environments as it uses package-lock.json
@@ -21,7 +23,7 @@ RUN npm ci
 
 # Copy the entire monorepo source code.
 # This comes after npm install to optimize Docker layer caching.
-COPY ../../ .
+COPY . .
 
 # Build the specific application ('ally-helpline-dashboard') in production mode.
 # Using 'npx nx build' leverages Nx's caching and dependency graph.
