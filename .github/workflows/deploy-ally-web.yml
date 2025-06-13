@@ -11,6 +11,11 @@ on:
           - dev
           - stg
           - prd
+      force_deploy:
+        required: false
+        type: boolean
+        description: Force deployment regardless of file changes
+        default: false
   push:
     branches:
       - dev
@@ -19,6 +24,7 @@ on:
       - master
     paths:
       - 'apps/ally-web/**'
+      - 'libs/**'
   pull_request:
     branches:
       - dev
@@ -27,6 +33,7 @@ on:
       - master
     paths:
       - 'apps/ally-web/**'
+      - 'libs/**'
 
 permissions:
   id-token: write
@@ -36,7 +43,7 @@ permissions:
 jobs:
   # Set app configuration
   config:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     outputs:
       service_name: ${{ steps.set-config.outputs.service_name }}
       app_path: ${{ steps.set-config.outputs.app_path }}
@@ -50,7 +57,7 @@ jobs:
         run: |
           echo "service_name=web" >> $GITHUB_OUTPUT
           echo "app_path=apps/ally-web" >> $GITHUB_OUTPUT
-          echo "dockerfile_path=Dockerfile" >> $GITHUB_OUTPUT
+          echo "dockerfile_path=dockerfile" >> $GITHUB_OUTPUT
           echo "build_command=npm run build" >> $GITHUB_OUTPUT
           echo "node_version=20" >> $GITHUB_OUTPUT
           echo "port=3000" >> $GITHUB_OUTPUT
@@ -58,41 +65,38 @@ jobs:
   # Check if there are changes in the app directory
   changes:
     needs: config
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     outputs:
-      web: ${{ steps.changes.outputs.web }}
+      web: ${{ steps.determine.outputs.should_proceed }}
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Create Dynamic Filter
-        id: create-filter
+      - name: Determine if should proceed
+        id: determine
         run: |
-          APP_PATH="${{ needs.config.outputs.app_path }}"
-          echo "Creating filter for path: $APP_PATH"
-          cat > filter.yml << EOF
-          web:
-            - "${APP_PATH}/**"
-          EOF
-          echo "Generated filter:"
-          cat filter.yml
-
-      - name: Check for changes
-        uses: dorny/paths-filter@v3
-        id: changes
-        with:
-          filters: filter.yml
-          token: ${{ secrets.GITHUB_TOKEN }}
+          # Simplified logic - no redundant path checking
+          if [ "${{ github.event.inputs.force_deploy }}" == "true" ]; then
+            echo "should_proceed=true" >> $GITHUB_OUTPUT
+            echo "Force deploy requested - proceeding without change check"
+          elif [ "${{ github.event_name }}" == "push" ]; then
+            echo "should_proceed=true" >> $GITHUB_OUTPUT
+            echo "Push event detected - changes exist (filtered by trigger)"
+          elif [ "${{ github.event_name }}" == "pull_request" ]; then
+            echo "should_proceed=true" >> $GITHUB_OUTPUT
+            echo "Pull request event detected - changes exist (filtered by trigger)"
+          elif [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+            echo "should_proceed=true" >> $GITHUB_OUTPUT
+            echo "Manual workflow dispatch - proceeding"
+          else
+            echo "should_proceed=false" >> $GITHUB_OUTPUT
+            echo "No valid trigger detected"
+          fi
 
   # Determine target environment
   determine-environment:
     needs: [config, changes]
     if: |
-      needs.changes.outputs.web == 'true' && 
+      (needs.changes.outputs.web == 'true' || github.event.inputs.force_deploy == 'true') && 
       github.event_name != 'pull_request'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     outputs:
       target_env: ${{ steps.env.outputs.target_env }}
       should_deploy: ${{ steps.env.outputs.should_deploy }}
@@ -154,9 +158,9 @@ jobs:
   test:
     needs: [config, changes]
     if: |
-      needs.changes.outputs.web == 'true' && 
+      (needs.changes.outputs.web == 'true' || github.event.inputs.force_deploy == 'true') && 
       github.event_name == 'pull_request'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
       - name: Checkout
         uses: actions/checkout@v4
