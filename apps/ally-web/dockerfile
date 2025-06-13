@@ -1,39 +1,31 @@
-# Multi-stage build for Next.js application
-FROM node:20-alpine AS base
+# Stage 1: Build
+FROM node:20 AS builder
 
-# Install dependencies only when needed
-FROM base AS deps
-# Check https://github.com/nodejs/docker-node/tree/b4117f9333da4138b03a546ec926ef50a31506c3#nodealpine to understand why libc6-compat might be needed.
-RUN apk add --no-cache libc6-compat
 WORKDIR /app
 
-# Copy workspace package files
+# Copy all workspace configuration files first
 COPY package*.json ./
 COPY nx.json ./
 COPY tsconfig.base.json ./
+COPY eslint.config.mjs ./
 
-# Install dependencies
+# Copy ALL project package.json files to ensure proper workspace setup
+COPY apps/ally-web/package*.json ./apps/ally-web/
+COPY libs/ui-shared/package*.json ./libs/ui-shared/
+
+# Install ALL dependencies from workspace root (this handles both root and workspace dependencies)
 RUN npm ci --legacy-peer-deps
-
-# Rebuild the source code only when needed
-FROM base AS builder
-WORKDIR /app
-
-# Copy dependencies from deps stage
-COPY --from=deps /app/node_modules ./node_modules
-COPY --from=deps /app/package*.json ./
-COPY --from=deps /app/nx.json ./
-COPY --from=deps /app/tsconfig.base.json ./
 
 # Copy source files
 COPY apps/ally-web ./apps/ally-web
 COPY libs ./libs
 
-# Build the application using Nx
-RUN npx nx build ally-web
+# Build the application using the locally installed Nx
+RUN ./node_modules/.bin/nx build ally-web
 
-# Production image, copy all the files and run next
-FROM base AS runner
+# Stage 2: Serve
+FROM node:20-alpine AS runner
+
 WORKDIR /app
 
 # Create a non-root user
