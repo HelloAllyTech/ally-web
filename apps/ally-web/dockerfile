@@ -22,6 +22,9 @@ COPY libs ./libs
 # Build the application using Nx with skip-nx-cache to avoid building dependencies
 RUN ./node_modules/.bin/nx build ally-web --skip-nx-cache
 
+# Debug: List the build output
+RUN ls -la /app/apps/ally-web/.next/standalone
+
 # Stage 2: Serve
 FROM node:20-alpine AS runner
 
@@ -39,7 +42,7 @@ RUN mkdir .next
 RUN chown nextjs:nodejs .next
 
 # Copy the built application
-COPY --from=builder --chown=nextjs:nodejs /app/apps/ally-web/.next/standalone/* ./
+COPY --from=builder --chown=nextjs:nodejs /app/apps/ally-web/.next/standalone/apps/ally-web ./
 COPY --from=builder --chown=nextjs:nodejs /app/apps/ally-web/.next/static ./.next/static
 
 USER nextjs
