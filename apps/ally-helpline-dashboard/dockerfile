@@ -7,7 +7,6 @@ WORKDIR /app
 COPY package*.json ./
 COPY nx.json ./
 COPY tsconfig.base.json ./
-COPY eslint.config.mjs ./
 
 # Copy ALL project package.json files to ensure proper workspace setup
 COPY apps/ally-helpline-dashboard/package*.json ./apps/ally-helpline-dashboard/
