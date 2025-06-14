@@ -122,9 +122,9 @@ jobs:
       - build
       - prepare-env
     runs-on: ubuntu-22.04
+    timeout-minutes: 5
 
     steps:
-
       - name: Checkout
         uses: actions/checkout@v4
       - name: Configure AWS Credentials
@@ -141,5 +141,5 @@ jobs:
           ecs_service: ${{ needs.prepare-env.outputs.ecs_service }}
           task_definition: ${{ needs.prepare-env.outputs.task_definition }}
           aws_region: ${{ needs.prepare-env.outputs.aws_region }}
-          port: ${{ inputs.port }} 
+          port: ${{ inputs.port }}
           container_name: ${{ needs.prepare-env.outputs.container_name }}
