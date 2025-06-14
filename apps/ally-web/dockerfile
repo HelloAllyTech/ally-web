@@ -7,7 +7,6 @@ WORKDIR /app
 COPY package*.json ./
 COPY nx.json ./
 COPY tsconfig.base.json ./
-COPY eslint.config.mjs ./
 
 # Copy ALL project package.json files to ensure proper workspace setup
 COPY apps/ally-web/package*.json ./apps/ally-web/
@@ -20,8 +19,8 @@ RUN npm ci --legacy-peer-deps
 COPY apps/ally-web ./apps/ally-web
 COPY libs ./libs
 
-# Build the application using the locally installed Nx
-RUN ./node_modules/.bin/nx build ally-web
+# Build the application using Nx with skip-nx-cache to avoid building dependencies
+RUN ./node_modules/.bin/nx build ally-web --skip-nx-cache
 
 # Stage 2: Serve
 FROM node:20-alpine AS runner
@@ -33,22 +32,22 @@ RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
 
 # Copy the public folder
-COPY --from=builder /app/dist/apps/ally-web/public ./public
+COPY --from=builder /app/apps/ally-web/public ./public
 
 # Set the correct permission for prerender cache
 RUN mkdir .next
 RUN chown nextjs:nodejs .next
 
 # Copy the built application
-COPY --from=builder --chown=nextjs:nodejs /app/dist/apps/ally-web/.next/standalone ./
-COPY --from=builder --chown=nextjs:nodejs /app/dist/apps/ally-web/.next/static ./.next/static
+COPY --from=builder --chown=nextjs:nodejs /app/apps/ally-web/.next/standalone ./
+COPY --from=builder --chown=nextjs:nodejs /app/apps/ally-web/.next/static ./.next/static
 
 USER nextjs
 
 EXPOSE 3000
 
-ENV PORT 3000
-ENV HOSTNAME "0.0.0.0"
+ENV PORT =000
+ENV HOSTNAME="0.0.0.0"
 
 # Start the application
 CMD ["node", "server.js"] 
