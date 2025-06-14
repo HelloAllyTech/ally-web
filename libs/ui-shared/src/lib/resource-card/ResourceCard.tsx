@@ -28,7 +28,7 @@ const ResourceCard: FC<ResourceCardProps> = ({
   return (
     <div className="w-full flex flex-col gap-2 border border-[#DADCE1] rounded-[8px] p-4 bg-white">
       <div className="flex justify-between">
-        <Badge text={category} variant="ghost" />
+        <Badge text={category} variant="ghost" className="capitalize" />
         <div className="flex gap-1">
           {tags.map((tag) => (
             <Badge key={tag} text={tag} variant="outlined" />
@@ -41,7 +41,7 @@ const ResourceCard: FC<ResourceCardProps> = ({
           <div
             ref={contentRef}
             style={{ height: isExpanded ? `${contentHeight}px` : '48px' }}
-            className={`text-[#525252] overflow-hidden transition-[height] duration-1000 ease-in-out`}
+            className={`text-[#525252] overflow-hidden duration-1000 ease-in-out`}
           >
             {description}
           </div>
@@ -49,7 +49,7 @@ const ResourceCard: FC<ResourceCardProps> = ({
             <div className="absolute bottom-0 right-0 bg-gradient-to-l from-white via-white to-transparent pl-8 pr-1">
               <button
                 onClick={() => setIsExpanded(true)}
-                className="text-blue-600 hover:text-blue-800 text-sm font-medium cursor-pointer"
+                className="hover:underline text-sm font-medium cursor-pointer"
               >
                 ...more
               </button>
@@ -59,7 +59,7 @@ const ResourceCard: FC<ResourceCardProps> = ({
             <div className="flex justify-end mt-2">
               <button
                 onClick={() => setIsExpanded(false)}
-                className="text-blue-600 hover:text-blue-800 text-sm font-medium cursor-pointer"
+                className="hover:underline text-sm font-medium cursor-pointer"
               >
                 Show less
               </button>

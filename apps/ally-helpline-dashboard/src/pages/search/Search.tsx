@@ -1,7 +1,7 @@
-import { ResourceSearch } from '@ally-ui-mono/ui-shared';
+import { ResourceSearchResults } from '@ally-ui-mono/ui-shared';
 
 const Search = () => {
-  return <ResourceSearch />;
+  return <ResourceSearchResults />;
 };
 
 export default Search;

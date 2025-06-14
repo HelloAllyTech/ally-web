@@ -5,9 +5,10 @@ export type BadgeVariant = 'outlined' | 'ghost';
 export interface BadgeProps {
     text: string;
     variant: BadgeVariant;
+    className?: string;
 }
 
-const Badge: FC<BadgeProps> = ({ variant, text }) => {
+const Badge: FC<BadgeProps> = ({ variant, text, className }) => {
     const getStyles = (variant: BadgeVariant) => {
         switch (variant) {
             case 'outlined':
@@ -17,7 +18,7 @@ const Badge: FC<BadgeProps> = ({ variant, text }) => {
         }
     }
   return (
-    <div className={`rounded-[16px] px-[8px] py-[2px] text-[12px] font-medium ${getStyles(variant)}`}>
+    <div className={`rounded-[16px] px-[8px] py-[2px] text-[12px] font-medium ${getStyles(variant)} ${className}`}>
         {text}
     </div>
   );
