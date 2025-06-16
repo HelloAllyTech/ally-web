@@ -1,15 +1,17 @@
 import { CircularProgress } from "@mui/material";
 import { FunctionComponent, useEffect, useMemo, useState } from "react";
-import { format, startOfMonth, startOfYear, subDays } from "date-fns";
+import { format } from "date-fns";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
 import { Button, Calendar } from "@/components";
 import { useLazyGetCounselorStatsQuery } from "@/api/analytics";
+import { getDateRange } from "@/utils/date";
 
 import { ListeningChart } from "./components";
 import { CalendarMode } from "./types";
 
 const UserAnalytics: FunctionComponent = () => {
-  const [getCounselorStats, { data: counselorStats, isLoading: statsLoading }] =
+  const [getCounselorStats, { data: counselorStats, isLoading: statsLoading, isError: isStatsError }] =
     useLazyGetCounselorStatsQuery();
 
   const isLoading = useMemo(() => statsLoading, [statsLoading]);
@@ -31,34 +33,35 @@ const UserAnalytics: FunctionComponent = () => {
       startDate: format(calendarValue[0], "yyyy-MM-dd"),
       endDate: format(calendarValue[1], "yyyy-MM-dd"),
     });
-  }, [mode]);
+  }, [mode, displayDate]);
 
   const handleModeChange = (mode: CalendarMode) => {
     setMode(mode);
     const date = new Date();
     switch (mode) {
       case CalendarMode.DAY: {
-        setCalendarValue([date, date]);
-        setDisplayDate([date, date]);
+        const [startDate, endDate] = getDateRange(date, 'day');
+        setCalendarValue([startDate, endDate]);
+        setDisplayDate([startDate, endDate]);
         break;
       }
       case CalendarMode.WEEK: {
-        setCalendarValue([subDays(date, 6), date]);
-        setDisplayDate([subDays(date, 6), date]);
+        const [startDate, endDate] = getDateRange(date, 'week');
+        setCalendarValue([startDate, endDate]);
+        setDisplayDate([startDate, endDate]);
         break;
       }
       case CalendarMode.MONTH: {
-        setCalendarValue([startOfMonth(date), date]);
-        setDisplayDate([startOfMonth(date), date]);
+        const [startDate, endDate] = getDateRange(date, 'month');
+        setCalendarValue([startDate, endDate]);
+        setDisplayDate([startDate, endDate]);
         break;
       }
-      case CalendarMode.YEAR: {
-        setCalendarValue([startOfYear(date), date]);
-        setDisplayDate([startOfYear(date), date]);
-        break;
-      }
+      case CalendarMode.YEAR: 
       case CalendarMode.ALL: {
-        getCounselorStats({ startDate: null, endDate: null });
+        const [startDate, endDate] = getDateRange(date, 'year');
+        setCalendarValue([startDate, endDate]);
+        setDisplayDate([startDate, endDate]);
         break;
       }
     }
@@ -79,16 +82,46 @@ const UserAnalytics: FunctionComponent = () => {
     }
   };
 
-  const handleDateChange = (calendarValue: Date) => {
+  const handleDisplayDateChange = (direction: 'prev' | 'next') => {
+    const [startDate, endDate] = displayDate;
+
     switch (mode) {
       case CalendarMode.DAY: {
-        setCalendarValue([calendarValue, calendarValue]);
+        startDate.setDate(startDate.getDate() + (direction === 'next' ? 1 : -1));
+        endDate.setDate(endDate.getDate() + (direction === 'next' ? 1 : -1));
         break;
       }
       case CalendarMode.WEEK: {
-        // Calculate the range from a single selected date
-        const startDate = subDays(calendarValue, 6);
-        setCalendarValue([startDate, calendarValue]);
+        startDate.setDate(startDate.getDate() + (direction === 'next' ? 7 : -7));
+        endDate.setDate(endDate.getDate() + (direction === 'next' ? 7 : -7));
+        break;
+      }
+      case CalendarMode.MONTH: {
+        startDate.setMonth(startDate.getMonth() + (direction === 'next' ? 1 : -1));
+        endDate.setMonth(endDate.getMonth() + (direction === 'next' ? 1 : -1));
+        break;
+      }
+      case CalendarMode.YEAR: {
+        startDate.setFullYear(startDate.getFullYear() + (direction === 'next' ? 1 : -1));
+        endDate.setFullYear(endDate.getFullYear() + (direction === 'next' ? 1 : -1));
+        break;
+      }
+    }
+
+    setCalendarValue([startDate, endDate]);
+    setDisplayDate([startDate, endDate]);
+  };
+
+  const handleDateChange = (calendarValue: Date) => {
+    switch (mode) {
+      case CalendarMode.DAY: {
+        const [startDate, endDate] = getDateRange(calendarValue, 'day');
+        setCalendarValue([startDate, endDate]);
+        break;
+      }
+      case CalendarMode.WEEK: {
+        const [startDate, endDate] = getDateRange(calendarValue, 'week');
+        setCalendarValue([startDate, endDate]);
         break;
       }
     }
@@ -96,12 +129,14 @@ const UserAnalytics: FunctionComponent = () => {
 
   const handleMonthChange = (date: Date | string) => {
     const dateObj = typeof date === "string" ? new Date(date) : date;
-    setCalendarValue([dateObj, new Date()]);
+    const [startDate, endDate] = getDateRange(dateObj, 'month');
+    setCalendarValue([startDate, endDate]);
   };
 
   const handleYearChange = (date: Date | string) => {
     const dateObj = typeof date === "string" ? new Date(date) : date;
-    setCalendarValue([dateObj, new Date()]);
+    const [startDate, endDate] = getDateRange(dateObj, 'year');
+    setCalendarValue([startDate, endDate]);
   };
 
   const handleCancel = () => {
@@ -127,7 +162,7 @@ const UserAnalytics: FunctionComponent = () => {
       ) : (
         <div className="flex flex-col w-[70%] ml-8 flex-2">
           <ListeningChart
-            listeningPercentage={counselorStats?.counselorSharingPercentage ?? 0}
+            listeningPercentage={isStatsError ? 0 : counselorStats?.counselorSharingPercentage ?? 0}
           />
         </div>
       )}
@@ -146,11 +181,21 @@ const UserAnalytics: FunctionComponent = () => {
             </button>
           ))}
         </div>
-        <div
-          className="w-[140px] text-[14px] text-center border border-[#E5E5E5] rounded-[4px] py-2 px-3 cursor-pointer"
-          onClick={() => setIsCalendarOpen((prev) => !prev)}
-        >
-          {getDisplayDate()}
+        <div className="flex items-center gap-2">
+          <ChevronLeft 
+            className="cursor-pointer w-4 h-4" 
+            onClick={() => handleDisplayDateChange('prev')} 
+          />
+          <div
+            className="w-[140px] text-[14px] text-center border border-[#E5E5E5] rounded-[4px] py-2 px-3 cursor-pointer"
+            onClick={() => setIsCalendarOpen((prev) => !prev)}
+          >
+            {getDisplayDate()}
+          </div>
+          <ChevronRight 
+            className="cursor-pointer w-4 h-4" 
+            onClick={() => handleDisplayDateChange('next')} 
+          />
         </div>
         {mode !== CalendarMode.ALL && isCalendarOpen && (
           <div

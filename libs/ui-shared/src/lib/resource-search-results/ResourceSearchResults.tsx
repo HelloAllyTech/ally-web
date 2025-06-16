@@ -18,14 +18,14 @@ const ResourceSearchResults: FC<ResourceSearchResultsProps> = () => {
     return resources.filter((resource) => resource.category === selectedCategory);
   };
 
-  const getCategoryCount = (category: string) => {
-    return resources.filter((resource) => resource.category === category).length;
+  const getCategoryCount = (key: string) => {
+    return resources.filter((resource) => resource.category === key).length;
   };
 
-  const getCategoryLabel = (category: string) => {
-    if (category === 'all') {
+  const getCategoryLabel = (key: string, label: string) => {
+    if (key === 'all') {
       return `All (${resources.length})`;
-    } else if (category === 'more') {
+    } else if (key === 'more') {
       return (
         <div className="flex items-center justify-center gap-2">
           <span>More</span>
@@ -33,7 +33,7 @@ const ResourceSearchResults: FC<ResourceSearchResultsProps> = () => {
         </div>
       );
     }
-    return `${category} (${getCategoryCount(category)})`;
+    return `${label} (${getCategoryCount(key)})`;
   };
 
   const onTabClick = (category: string) => {
@@ -49,27 +49,37 @@ const ResourceSearchResults: FC<ResourceSearchResultsProps> = () => {
       <div className="w-[60%] flex flex-col gap-4 items-center">
         <div className="w-full flex flex-col gap-2 items-center justify-center">
           <SearchHeader />
-          <ResourceSearchBar />
+          <ResourceSearchBar onSearch={() => {}} />
         </div>
-        <Tabs className="w-full border-b border-[#D4D4D4]">
-          {categories.map((category) => (
+        <Tabs 
+          className="w-full border-b border-[#D4D4D4]"
+          value={selectedCategory}
+          onChange={(_, value) => onTabClick(value)}
+          sx={{
+            '& .MuiTabs-indicator': {
+              backgroundColor: '#0D0D0D',
+              height: '2px'
+            }
+          }}
+        >
+          {categories.map(({ key, label }) => (
             <Tab
-              key={category}
-              label={getCategoryLabel(category)}
-              onClick={() => onTabClick(category)}
-              className={`capitalize ${selectedCategory === category ? '!text-[#0D0D0D] !font-medium' : '!text-[#525252]'}`}
+              key={key}
+              value={key}
+              label={getCategoryLabel(key, label)}
               sx={{
-                '&.MuiButtonBase-root .MuiTouchRipple-root': {
-                  borderBottom:
-                    selectedCategory === category && category !== 'more'
-                      ? '2px solid #0D0D0D'
-                      : 'none',
-                },
+                color: '#525252',
+                textTransform: 'capitalize',
+                fontFamily: 'IBM Plex Serif',
+                '&.Mui-selected': {
+                  color: '#0D0D0D',
+                  fontWeight: 500
+                }
               }}
             />
           ))}
         </Tabs>
-        <div className="h-[calc(100vh-400px)] overflow-y-auto flex flex-col gap-4 items-center mt-4">
+        <div className="h-[calc(100vh-290px)] overflow-y-auto flex flex-col gap-4 items-center mt-4">
           {getResources().map((resource) => (
             <ResourceCard
               key={resource.id}

@@ -1,8 +1,4 @@
 import './global.css';
-import { Inter, Fraunces } from 'next/font/google';
-
-const inter = Inter({ subsets: ['latin'] });
-const fraunces = Fraunces({ subsets: ['latin'] });
 
 export const metadata = {
   title: 'Ally.ai - AI Copilot for Mental Health Professionals',
@@ -16,7 +12,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={`${inter.className} ${fraunces.className} min-h-screen bg-white`}>{children}</body>
+      <body className="min-h-screen bg-white">{children}</body>
     </html>
   );
 }

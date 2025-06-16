@@ -85,32 +85,34 @@ const CallSummary: FC<CallSummaryProps> = ({
       return type !== 'Dropdown' ? '--' : '';
     }
     switch (key) {
-      case 'callId':
+      case SummaryFieldKey.CallId:
         return callSummary?.details?.chatId || summaryData.callId;
-      case 'callDuration': {
+      case SummaryFieldKey.CallDuration: {
         const duration =
           callSummary?.details?.callDuration || summaryData.callDuration;
         return `${Math.floor(Number(duration) / 60)} minutes`;
       }
-      case 'callDate':
+      case SummaryFieldKey.CallDate:
         return getFormattedDateTime(
           callSummary?.details?.callDate,
           'do MMMM yyyy',
         );
-      case 'callTime': {
+      case SummaryFieldKey.CallTime: {
         return `${getFormattedDateTime(callSummary?.startedAt, 'HH:mm')} - ${getFormattedDateTime(
           callSummary?.endedAt,
           'HH:mm',
         )}`;
       }
-      case 'clientId':
+      case SummaryFieldKey.ClientId:
         return callSummary?.clientId || summaryData.clientId;
-      case 'languages':
+      case SummaryFieldKey.Languages:
         return (
           summaryData.languages
             ?.map(({ language, percentage }) => `${language} (${percentage}%)`)
             .join(', ') || ''
         );
+      case SummaryFieldKey.ListeningShare:
+        return `${(callSummary?.details?.callInfo?.clientTalkingPercentage ?? 0) * 100}%`;
       default:
         return summaryData[key];
     }

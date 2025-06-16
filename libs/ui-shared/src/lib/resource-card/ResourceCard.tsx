@@ -26,7 +26,10 @@ const ResourceCard: FC<ResourceCardProps> = ({
   }, [description]);
 
   return (
-    <div className="w-full flex flex-col gap-2 border border-[#DADCE1] rounded-[8px] p-4 bg-white">
+    <div
+      className="w-full flex flex-col gap-2 border border-[#DADCE1] rounded-[8px] p-4 bg-white cursor-pointer"
+      onClick={(e) => { e.stopPropagation(); setIsExpanded((prev) => !prev)}}
+    >
       <div className="flex justify-between">
         <Badge text={category} variant="ghost" className="capitalize" />
         <div className="flex gap-1">
@@ -37,7 +40,7 @@ const ResourceCard: FC<ResourceCardProps> = ({
       </div>
       <div className="flex flex-col gap-1">
         <span className="font-medium text-[#000]">{title}</span>
-        <div className="relative">
+        <div className="relative font-['IBM_Plex_Serif']">
           <div
             ref={contentRef}
             style={{ height: isExpanded ? `${contentHeight}px` : '48px' }}
@@ -47,22 +50,16 @@ const ResourceCard: FC<ResourceCardProps> = ({
           </div>
           {!isExpanded && (
             <div className="absolute bottom-0 right-0 bg-gradient-to-l from-white via-white to-transparent pl-8 pr-1">
-              <button
-                onClick={() => setIsExpanded(true)}
-                className="hover:underline text-sm font-medium cursor-pointer"
-              >
+              <span className="underline text-sm cursor-pointer text-[#525252]">
                 ...more
-              </button>
+              </span>
             </div>
           )}
           {isExpanded && (
-            <div className="flex justify-end mt-2">
-              <button
-                onClick={() => setIsExpanded(false)}
-                className="hover:underline text-sm font-medium cursor-pointer"
-              >
+            <div className="flex justify-end">
+              <span className="underline text-sm cursor-pointer text-[#525252]">
                 Show less
-              </button>
+              </span>
             </div>
           )}
         </div>

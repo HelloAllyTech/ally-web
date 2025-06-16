@@ -1,10 +1,10 @@
 export const categories = [
-  'all',
-  'resources',
-  'questions',
-  'techniques',
-  'metaphors',
-  'more',
+  { key: 'all', label: 'All' },
+  { key: 'resources', label: 'Resources' },
+  { key: 'questions', label: 'Questions' },
+  { key: 'techniques', label: 'Techniques' },
+  { key: 'metaphors', label: 'Metaphors' },
+  { key: 'more', label: 'More' },
 ];
 
 export const resources = [
