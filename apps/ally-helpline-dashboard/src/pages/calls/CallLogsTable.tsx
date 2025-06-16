@@ -195,8 +195,16 @@ const CallLogsTable = () => {
             })}
           </TableBody>
         </Table>
+        {callLogs?.length === 0 && (
+          <FallbackUI
+            image={<NoResults />}
+            mainMessage="No call records found"
+            description="Your recent calls and insights will be listed here."
+            className="py-[100px]"
+          />
+        )}
       </div>
-      <div className="flex justify-center mt-6">
+      {callLogs?.length > 0 && <div className="flex justify-center mt-6">
         <Pagination
           count={Math.ceil(totalCallsCount / CALL_LOGS_PAGINATION_LIMIT)}
           page={page}
@@ -204,15 +212,7 @@ const CallLogsTable = () => {
           showFirstButton
           showLastButton
         />
-      </div>
-      {callLogs?.length === 0 && (
-        <FallbackUI
-          image={<NoResults />}
-          mainMessage="No call records found"
-          description="Your recent calls and insights will be listed here."
-          className="py-[100px]"
-        />
-      )}
+      </div>}
       {callSummary && callSummary?.id && (
         <SummarySideBar
           callSummary={callSummary}
