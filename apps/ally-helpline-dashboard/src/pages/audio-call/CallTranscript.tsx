@@ -513,6 +513,11 @@ const CallTranscript: FC<CallTranscriptProps> = ({
       if (mediaRecorder && mediaRecorder.state !== "inactive") {
         mediaRecorder.stop();
       }
+      // Stop all tracks in the local stream to release the microphone
+      if (localStreamRef.current) {
+        localStreamRef.current.getTracks().forEach((track) => track.stop());
+        localStreamRef.current = null;
+      }
       endSession(triggerApi);
       disconnect();
     } catch (error) {
