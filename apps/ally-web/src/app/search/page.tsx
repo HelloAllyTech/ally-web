@@ -8,7 +8,7 @@ export default function SearchPage() {
   const [selectedCategory, setSelectedCategory] = useState('all');
   return (
     <main className="w-full min-h-screen flex justify-center items-center">
-      <ResourceSearchResults selectedCategory={selectedCategory} setSelectedCategory={setSelectedCategory} />
+      <ResourceSearchResults selectedCategory={selectedCategory} setSelectedCategory={setSelectedCategory} onSearch={() => {}} />
     </main>
   );
 } 

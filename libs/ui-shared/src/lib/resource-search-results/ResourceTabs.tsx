@@ -1,6 +1,6 @@
 'use client';
 
-import { Dispatch, FC, SetStateAction, useState } from 'react';
+import { Dispatch, FC, SetStateAction, useState, useRef } from 'react';
 import { Tab, Tabs } from '@mui/material';
 
 import { Dropdown } from '../..';
@@ -18,6 +18,7 @@ const ResourceTabs: FC<ResourceTabsProps> = ({
   selectedCategory,
   setSelectedCategory,
 }) => {
+  const moreTabRef = useRef<HTMLDivElement>(null);
   const [isMoreOpen, setIsMoreOpen] = useState<boolean>(false);
   const [newCategory, setNewCategory] = useState<string>('');
 
@@ -41,7 +42,7 @@ const ResourceTabs: FC<ResourceTabsProps> = ({
       return `All (${resources.length})`;
     } else if (key === 'more') {
       return (
-        <div className="flex items-center justify-center gap-2">
+        <div ref={moreTabRef} className="flex items-center justify-center gap-2">
           <span>More</span>
           <PlayArrowRounded className="rotate-90 text-[#000] !w-4 !h-4" />
         </div>
@@ -61,6 +62,19 @@ const ResourceTabs: FC<ResourceTabsProps> = ({
   const handleMoreChange = (value: string) => {
     setNewCategory(value);
     setIsMoreOpen(false);
+  };
+
+  const getDropdownStyle = () => {
+    if (!moreTabRef.current) return {};
+    const tabElement = moreTabRef.current.closest('[role="tab"]');
+    if (!tabElement) return {};
+    const containerElement = moreTabRef.current.closest('.relative');
+    if (!containerElement) return {};
+    
+    const tabRect = tabElement.getBoundingClientRect();
+    const containerRect = containerElement.getBoundingClientRect();
+    
+    return { left: `${tabRect.left - containerRect.left}px` };
   };
   
   return (
@@ -97,7 +111,8 @@ const ResourceTabs: FC<ResourceTabsProps> = ({
         <Dropdown
           options={moreOptions}
           handleChange={handleMoreChange}
-          className="top-12 right-0"
+          className="top-10"
+          style={getDropdownStyle()}
         />
       )}
     </div>

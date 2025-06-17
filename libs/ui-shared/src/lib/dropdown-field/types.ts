@@ -11,4 +11,5 @@ export interface DropdownProps {
     options: string[];
     handleChange: (value: string) => void;
     className?: string;
+    style?: React.CSSProperties;
 }

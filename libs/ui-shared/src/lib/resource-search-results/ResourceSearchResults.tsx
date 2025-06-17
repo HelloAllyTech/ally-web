@@ -7,9 +7,10 @@ import ResourceTabs from './ResourceTabs';
 export interface ResourceSearchResultsProps {
   selectedCategory: string;
   setSelectedCategory: Dispatch<SetStateAction<string>>;
+  onSearch: (query: string) => void;
 }
 
-const ResourceSearchResults: FC<ResourceSearchResultsProps> = ({ selectedCategory, setSelectedCategory }) => {
+const ResourceSearchResults: FC<ResourceSearchResultsProps> = ({ selectedCategory, setSelectedCategory, onSearch }) => {
   const getResources = () => {
     if (selectedCategory === 'all') {
       return resources;
@@ -19,14 +20,12 @@ const ResourceSearchResults: FC<ResourceSearchResultsProps> = ({ selectedCategor
     );
   };
 
-
-
   return (
     <div className="w-full h-full flex flex-col items-center justify-center">
       <div className="w-[60%] flex flex-col gap-4 items-center">
         <div className="w-full flex flex-col gap-2 items-center justify-center">
           <SearchHeader />
-          <ResourceSearchBar />
+          <ResourceSearchBar onSearch={onSearch} />
         </div>
         <ResourceTabs
           resources={resources}
