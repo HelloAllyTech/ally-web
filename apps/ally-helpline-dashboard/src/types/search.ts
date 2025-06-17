@@ -1,3 +1,5 @@
+import { Resource } from "../../../../libs/ui-shared/src/types";
+
 export interface GetSearchResultsRequest {
   query: string;
   limit?: number;
@@ -11,7 +13,7 @@ export interface GetSearchResultsRequest {
 }
 
 export interface GetSearchResultsResponse {
-  documents: any[];
+  documents: Resource[];
   total: number;
   limit: number;
 }
