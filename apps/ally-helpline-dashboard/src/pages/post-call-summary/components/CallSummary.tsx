@@ -1,7 +1,8 @@
 import { FC, useEffect, useState } from 'react';
 import { Divider } from '@mui/material';
 
-import { Accordion, DropdownField, TextField, Button } from '@/components';
+import { DropdownField } from '@ally-ui-mono/ui-shared';
+import { Accordion, TextField, Button } from '@/components';
 import {
   useGetSummaryFieldsQuery,
   useUpdateCallSummaryMutation,

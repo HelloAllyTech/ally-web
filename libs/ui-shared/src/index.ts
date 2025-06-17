@@ -4,6 +4,7 @@ import ResourceSearch from './lib/resource-search';
 import ResourceSearchResults from './lib/resource-search-results';
 import ResourceSearchBar from './lib/search-bar';
 import SearchHeader from './lib/search-header';
+import { DropdownField, Dropdown } from './lib/dropdown-field';
 
 export {
   Badge,
@@ -12,4 +13,6 @@ export {
   ResourceSearchResults,
   ResourceSearchBar,
   SearchHeader,
+  DropdownField,
+  Dropdown,
 };

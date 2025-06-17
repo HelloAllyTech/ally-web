@@ -26,4 +26,4 @@ export type GetCounselorStatsResponse = {
 export type GetCounselorStatsRequest = {
   startDate?: string;
   endDate?: string;
-};
+} | void;

@@ -6,3 +6,9 @@ export interface DropdownFieldProps {
     onChange: (value: string) => void;
     options: string[];
 }
+
+export interface DropdownProps {
+    options: string[];
+    handleChange: (value: string) => void;
+    className?: string;
+}

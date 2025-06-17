@@ -4,7 +4,6 @@ export const categories = [
   { key: 'questions', label: 'Questions' },
   { key: 'techniques', label: 'Techniques' },
   { key: 'metaphors', label: 'Metaphors' },
-  { key: 'more', label: 'More' },
 ];
 
 export const resources = [

@@ -18,7 +18,7 @@ const analyticsAPI = baseAPI.injectEndpoints({
       query: (params) => ({
         url: "analytics/counselor-stats",
         method: "GET",
-        params,
+        params: params ? params : undefined,
       }),
     }),
   }),

@@ -38,7 +38,6 @@ import FallbackUI from "./fallback-ui/FallbackUI";
 import TextField from "./text-field/TextField";
 import ExpandingSection from "./expanding-section/ExpandingSection";
 import Accordion from "./accordion/Accordion";
-import DropdownField from "./dropdown-field/DropdownField";
 import ActionDialog from "./action-dialog/ActionDialog";
 import Calendar from "./calendar/Calendar";
 
@@ -82,7 +81,6 @@ export {
   TextField,
   ExpandingSection,
   Accordion,
-  DropdownField,
   ActionDialog,
   Calendar,
 };

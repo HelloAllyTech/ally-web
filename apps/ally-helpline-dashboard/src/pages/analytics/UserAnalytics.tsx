@@ -29,10 +29,14 @@ const UserAnalytics: FunctionComponent = () => {
   ];
 
   useEffect(() => {
-    getCounselorStats({
-      startDate: format(calendarValue[0], "yyyy-MM-dd"),
-      endDate: format(calendarValue[1], "yyyy-MM-dd"),
-    });
+    if (mode === CalendarMode.ALL) {
+      getCounselorStats();
+    } else {
+      getCounselorStats({
+        startDate: format(calendarValue[0], "yyyy-MM-dd"),
+        endDate: format(calendarValue[1], "yyyy-MM-dd"),
+      });
+    }
   }, [mode, displayDate]);
 
   const handleModeChange = (mode: CalendarMode) => {
@@ -57,11 +61,13 @@ const UserAnalytics: FunctionComponent = () => {
         setDisplayDate([startDate, endDate]);
         break;
       }
-      case CalendarMode.YEAR: 
-      case CalendarMode.ALL: {
+      case CalendarMode.YEAR: {
         const [startDate, endDate] = getDateRange(date, 'year');
         setCalendarValue([startDate, endDate]);
         setDisplayDate([startDate, endDate]);
+        break;
+      }
+      case CalendarMode.ALL: {
         break;
       }
     }
@@ -162,7 +168,7 @@ const UserAnalytics: FunctionComponent = () => {
       ) : (
         <div className="flex flex-col w-[70%] ml-8 flex-2">
           <ListeningChart
-            listeningPercentage={isStatsError ? 0 : counselorStats?.counselorSharingPercentage ?? 0}
+            listeningPercentage={isStatsError ? 0 : 100 - (counselorStats?.counselorSharingPercentage ?? 0)}
           />
         </div>
       )}
