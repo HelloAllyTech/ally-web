@@ -1,18 +1,25 @@
+'use client';
+
 import { FC, useState } from 'react';
 import { Autocomplete, TextField, InputAdornment } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
+import { useRouter } from 'next/navigation';
 
 export interface SearchBarProps {
-  onSearch: (searchTerm: string) => void;
+  onSearch?: (searchTerm: string) => void;
+  initialValue?: string;
 }
 
-const SearchBar: FC<SearchBarProps> = ({ onSearch }) => {
-  const [searchTerm, setSearchTerm] = useState('');
+const SearchBar: FC<SearchBarProps> = ({ onSearch, initialValue = '' }) => {
+  const [searchTerm, setSearchTerm] = useState(initialValue);
+  const router = useRouter();
 
   const handleKeyPress = (event: React.KeyboardEvent) => {
-    console.log(event.key);
     if (event.key === 'Enter') {
-      onSearch(searchTerm);
+      if (onSearch) {
+        onSearch(searchTerm);
+      }
+      router.push(`/search?q=${encodeURIComponent(searchTerm)}`);
     }
   };
 

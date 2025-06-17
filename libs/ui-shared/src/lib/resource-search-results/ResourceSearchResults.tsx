@@ -1,3 +1,4 @@
+'use client';
 import { FC, useState } from 'react';
 import { Tab, Tabs } from '@mui/material';
 import PlayArrowRounded from '@mui/icons-material/PlayArrowRounded';
@@ -68,7 +69,7 @@ const ResourceSearchResults: FC<ResourceSearchResultsProps> = () => {
       <div className="w-[60%] flex flex-col gap-4 items-center">
         <div className="w-full flex flex-col gap-2 items-center justify-center">
           <SearchHeader />
-          <ResourceSearchBar onSearch={() => {}} />
+          <ResourceSearchBar />
         </div>
         <div className="relative w-full">
           <Tabs

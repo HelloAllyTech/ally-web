@@ -1,18 +1,18 @@
 import Badge from './lib/badge';
 import ResourceCard from './lib/resource-card';
-import ResourceSearch from './lib/resource-search';
-import ResourceSearchResults from './lib/resource-search-results';
-import ResourceSearchBar from './lib/search-bar';
 import SearchHeader from './lib/search-header';
+import ResourceSearch from './lib/resource-search';
+import ResourceSearchBar from './lib/resource-search-bar';
 import { DropdownField, Dropdown } from './lib/dropdown-field';
+import ResourceSearchResults from './lib/resource-search-results';
 
 export {
   Badge,
+  Dropdown,
   ResourceCard,
-  ResourceSearch,
-  ResourceSearchResults,
-  ResourceSearchBar,
   SearchHeader,
   DropdownField,
-  Dropdown,
+  ResourceSearch,
+  ResourceSearchBar,
+  ResourceSearchResults,
 };
