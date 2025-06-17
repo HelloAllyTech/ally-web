@@ -52,9 +52,9 @@ const CallInterface: FC<CallInterfaceProps> = ({
         exit={{ opacity: 0 }}
         transition={{ duration: 0.5 }}
       >
-        <div className="text-white text-4xl font-normal">{message}</div>
+        <div className="text-[#0D0D0D] text-4xl font-normal">{message}</div>
         {!(isUserJoined == null) && (
-          <div className="text-[#BABABA] text-sm text-center mt-1">
+          <div className="text-[#0D0D0D] text-sm text-center mt-1">
             You can wait for them to rejoin or end the call.
           </div>
         )}
@@ -67,11 +67,11 @@ const CallInterface: FC<CallInterfaceProps> = ({
       {isUserJoined ? (
         <div
           className="flex flex-col justify-center items-center
-            gap-4 z-10 transition-all duration-500 ease-in-out min-h-[30vh]"
+            gap-4 z-10 transition-all duration-500 ease-in-out min-h-[20vh]"
         >
-          <div className="text-white flex justify-center items-center flex-col gap-2">
-            <div className="text-base font-medium">Ongoing Voice Call</div>
-            <div className="text-sm text-[#BABABA]">{formatTime(seconds)}</div>
+          <div className="text-[#000] flex justify-center items-center flex-col gap-2">
+            <div className="text-[20px] font-['IBM_Plex_Serif'] font-bold">Taking notes</div>
+            <div className="text-[16px] font-medium text-[#525252]">{formatTime(seconds)}</div>
           </div>
           {/* Hidden Audio Element */}
           <audio
@@ -88,13 +88,13 @@ const CallInterface: FC<CallInterfaceProps> = ({
           />
           <div className="relative gap-1 flex rounded-lg">
             {remoteMediaRecorder && (
-              <div className="rotate-180 z-0 translate-x-[4px] translate-y-[1px]">
+              <div className="rotate-180 z-0 translate-x-[4px] translate-y-[1px]  ">
                 <LiveAudioVisualizer
                   mediaRecorder={remoteMediaRecorder}
                   width={200}
-                  height={200}
+                  height={140}
                   barWidth={4}
-                  barColor="#FFFFFF"
+                  barColor="#000"
                 />
               </div>
             )}
@@ -103,14 +103,14 @@ const CallInterface: FC<CallInterfaceProps> = ({
                 <LiveAudioVisualizer
                   mediaRecorder={mediaRecorder}
                   width={200}
-                  height={200}
+                  height={140}
                   barWidth={4}
-                  barColor="#FFFFFF"
+                  barColor="#000"
                 />
               </div>
             )}
-            <div className="waveForm rounded-full absolute top-[38%] left-0 w-1/6 h-1/4 " />
-            <div className="waveForm rounded-full absolute top-[38%] right-0 w-1/6 h-1/4 rotate-180" />
+            <div className="bg-gradient-to-l from-transparent to-[#FFF] absolute bg top-0 left-0 w-1/2 h-full" />
+            <div className="bg-gradient-to-r from-transparent to-[#FFF] absolute top-0 right-0 w-1/2 h-full" />
           </div>
         </div>
       ) : (

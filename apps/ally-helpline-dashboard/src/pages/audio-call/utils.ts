@@ -13,7 +13,7 @@ export const formatTime = (time: number) => {
 
 export const getSpeakerName = (senderId: number, previousSenderId: number, userId: number) => {
   if (previousSenderId && previousSenderId == senderId) return "";
-  return senderId === userId ? "You :" : "Client :";
+  return senderId === userId ? "You" : "Speaker";
 };
 
 export const reduceTranscriptions = (transcriptions: Transcription[]): Transcription[] => {

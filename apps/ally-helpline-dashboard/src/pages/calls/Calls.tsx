@@ -36,15 +36,7 @@ const Calls: FunctionComponent = () => {
               difference one call at a time.
             </div>
             <Button
-              sx={{
-                color: "#027236",
-                bgcolor: "#D7FFD7",
-                borderRadius: "20px",
-                fontSize: "14px",
-                textTransform: "capitalize",
-                paddingLeft: "16px",
-                paddingRight: "16px",
-              }}
+              className="text-[#027236] bg-[#D7FFD7] rounded-[20px] text-[14px] capitalize px-4 hover:bg-[#D7FFD7]"
               onClick={markAvailable}
             >
               Mark Available

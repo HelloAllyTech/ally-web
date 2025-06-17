@@ -37,35 +37,35 @@ const RealTimeTranscript: FC<RealTimeTranscriptProps> = ({ isFocusMode, transcri
     setIsUserScrolling(!isAtBottom);
   };
 
+  if (transcriptions?.length <= 0) {
+    return null;
+  }
+
   return (
     <motion.div
-      className="w-[85%] h-[35vh] flex flex-col overflow-hidden"
+      className="w-[85%] h-[55vh] flex flex-col overflow-hidden"
       initial={{ height: 0 }}
-      animate={{ height: isFocusMode ? "35vh" : 0 }}
+      animate={{ height: isFocusMode ? "55vh" : 0 }}
       exit={{ height: 0 }}
       transition={{ duration: 0.3, ease: "easeInOut" }}
     >
-      <h3 className="text-white mb-4 self-start ">Real-time Transcription</h3>
+      <h3 className="text-[#000] text-[18px] font-['IBM_Plex_Serif'] mb-2 font-semibold self-start ">Real-time Transcription</h3>
       <Divider
-        sx={{
-          backgroundColor: "rgba(255, 255, 255, 0.12)",
-          width: "65%",
-          marginBottom: "10px",
-        }}
+        className="bg-gray-200 w-[65%] mb-2.5"
       />
       <div
         ref={transcriptContainerRef}
-        className="z-10 flex-1 overflow-y-auto text-white rounded-lg p-4 
+        className="z-10 flex-1 overflow-y-auto text-[#000] rounded-lg p-0 
             transition-all duration-500 ease-in-out custom-scrollbar mb-20 flex flex-col gap-2"
         onScroll={handleScroll}
       >
         {transcriptions.map((transcriptionObj, index) => (
-          <div key={transcriptionObj.id} className="flex">
-            <div className="font-bold w-[20%]">
+          <div key={transcriptionObj.id} className="flex flex-col font-['IBM_Plex_Serif']">
+            <div className="font-bold w-[20%] mb-2 mt-[8px]">
               {getSpeakerName(transcriptionObj.senderId, index > 0 && transcriptions[index - 1].senderId, user?.userId)}
             </div>
             <div
-              className="typing-animation w-full font-['IBM_Plex_Serif']"
+              className="typing-animation w-full text-[#525252] text-[16px] leading-[8px]"
               style={{ animationDelay: `${index * 100}ms` }}
             >
               {transcriptionObj.message}
