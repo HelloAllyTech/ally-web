@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 export default function Index() {
   const router = useRouter();
   const onSearch = (searchTerm: string) => {
+    
     router.push(`/search?q=${encodeURIComponent(searchTerm)}`);
   };
 

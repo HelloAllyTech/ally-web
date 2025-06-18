@@ -21,10 +21,7 @@ export default async function SearchPage({
       filters: { category }
     })
   });
+
   const searchData = await data.json();
-
-  console.log(searchData, searchQuery
-
-  );
   return <SearchClient searchQuery={searchQuery} category={category} searchData={searchData} />;
 } 

@@ -35,7 +35,7 @@ const SearchBar: FC<SearchBarProps> = ({ onSearch, initialValue = '' }) => {
           placeholder="Search"
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          onKeyPress={handleKeyPress}
+          onKeyDown={handleKeyPress}
           sx={{
             '& .MuiOutlinedInput-root': {
               height: '40px',
