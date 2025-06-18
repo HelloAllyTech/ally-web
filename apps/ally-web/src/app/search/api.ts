@@ -9,7 +9,7 @@ const fetchReferenceDocuments = async (query: string, category?: string) => {
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ query, filters: { category } }),
+      body: JSON.stringify({ query, limit: 10 }),
     }
   );
   return response.json();

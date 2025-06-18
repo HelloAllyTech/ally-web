@@ -220,7 +220,7 @@ const CallSummary: FC<CallSummaryProps> = ({
     try {
       const tags = summaryData?.tags?.split(', ');
       let tagsInput: Tag[] = [];
-      if (tags.length > 0) {
+      if (tags?.length > 0) {
         const response = await getTags({ tags });
         if (response.data) {
           tagsInput = response.data;
@@ -246,7 +246,7 @@ const CallSummary: FC<CallSummaryProps> = ({
       <div className="max-h-[calc(100vh-280px)] overflow-y-auto font-['IBM_Plex_Serif']">
         {summarySections.map(({ title, icon, key }) => {
           const sectionFields = getSectionFields(key, visibleFields);
-          if (sectionFields.length === 0) return null;
+          if (sectionFields?.length === 0) return null;
 
           return (
             <Accordion

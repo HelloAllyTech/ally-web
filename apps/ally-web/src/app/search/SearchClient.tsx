@@ -1,15 +1,17 @@
 'use client';
 
-import { ResourceSearchResults } from '@ally-ui-mono/ui-shared';
 import { useRouter } from 'next/navigation';
+
+import { ResourceSearchResults } from '@ally-ui-mono/ui-shared';
+import { Resource } from 'libs/ui-shared/src/types';
 
 interface SearchClientProps {
   searchQuery: string;
   category: string;
-  searchData: any;
+  documents: Resource[];
 }
 
-export default function SearchClient({ searchQuery, category, searchData }: SearchClientProps) {
+export default function SearchClient({ searchQuery, category, documents }: SearchClientProps) {
   const router = useRouter();
   const onSearch = (searchTerm: string) => {
     console.log(searchTerm);
@@ -29,7 +31,7 @@ export default function SearchClient({ searchQuery, category, searchData }: Sear
         selectedCategory={category} 
         setSelectedCategory={onCategoryChange}
         onInfiniteScroll={() => {}}
-        resources={[]}
+        resources={documents}
         isLoading={false}
       />
     </main>

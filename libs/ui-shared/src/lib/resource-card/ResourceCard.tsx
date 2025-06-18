@@ -27,12 +27,14 @@ const ResourceCard: FC<ResourceCardProps> = ({
 
   const renderTags = () => {
     return (
-      <div className="flex justify-between">
-        <Badge text={category} variant="ghost" className="capitalize" />
-        <div className="flex gap-1">
-          {tags.map((tag) => (
-            <Badge key={tag} text={tag} variant="outlined" />
-          ))}
+      <div className="flex justify-between gap-2">
+        <Badge text={category} variant="ghost" className="capitalize flex-shrink-0" />
+        <div className="max-w-[80%] relative">
+          <div className="flex gap-1 overflow-x-auto whitespace-nowrap" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+            {tags.map((tag) => (
+              <Badge key={tag} text={tag} variant="outlined" />
+            ))}
+          </div>
         </div>
       </div>
     );

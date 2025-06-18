@@ -45,7 +45,7 @@ const ResourceSearchResults: FC<ResourceSearchResultsProps> = ({
           selectedCategory={selectedCategory}
           setSelectedCategory={setSelectedCategory}
         />
-        <div className="h-[calc(100vh-290px)] overflow-y-auto flex flex-col gap-4 items-center mt-4">
+        <div className="w-full h-[calc(100vh-290px)] overflow-y-auto flex flex-col gap-4 items-center mt-4">
           <InfiniteScroll onInfiniteScroll={onInfiniteScroll} isLoading={isLoading}>
             {getResources()?.map((resource) => (
               <ResourceCard
