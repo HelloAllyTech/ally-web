@@ -1,6 +1,6 @@
 'use client';
 
-import { FC, useState } from 'react';
+import { FC, useState, useEffect } from 'react';
 import { Autocomplete, TextField, InputAdornment } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 
@@ -11,6 +11,12 @@ export interface SearchBarProps {
 
 const SearchBar: FC<SearchBarProps> = ({ onSearch, initialValue = '' }) => {
   const [searchTerm, setSearchTerm] = useState(initialValue);
+
+  useEffect(() => {
+    if (initialValue?.length > 0) {
+      setSearchTerm(initialValue);
+    }
+  }, [initialValue]);
 
   const handleKeyPress = (event: React.KeyboardEvent) => {
     if (event.key === 'Enter') {

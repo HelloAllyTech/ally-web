@@ -6,6 +6,7 @@ import ResourceSearchBar from './lib/resource-search-bar';
 import { DropdownField, Dropdown } from './lib/dropdown-field';
 import ResourceSearchResults from './lib/resource-search-results';
 import InfiniteScroll from './lib/infinite-scroll';
+import SuggestionsContainer from './lib/suggestions-container';
 
 export {
   Badge,
@@ -17,4 +18,5 @@ export {
   ResourceSearchBar,
   ResourceSearchResults,
   InfiniteScroll,
+  SuggestionsContainer,
 };

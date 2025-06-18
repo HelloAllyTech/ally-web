@@ -1,8 +1,12 @@
 import { useState } from 'react';
+import { toast } from 'sonner';
 
-import { ResourceSearchResults } from '@ally-ui-mono/ui-shared';
+import { ResourceSearchResults, SuggestionsContainer } from '@ally-ui-mono/ui-shared';
 import { useGetSearchResultsMutation } from '@/api/search';
 import { Resource } from '@ally-ui-mono/ui-shared/types';
+
+// TODO: Remove this once we have a real suggestions API
+export const sampleSuggestions = ['Grounding techniques', 'Boundaries', 'Questions to encourage disclosure', 'Things to say to help process grief'];
 
 const Search = () => {
   const [selectedCategory, setSelectedCategory] = useState('all');
@@ -13,13 +17,19 @@ const Search = () => {
 
   const handleSearch = async (query: string) => {
     setSearchQuery(query);
-    if (query) {
+    if (query?.length > 0) {
+      try {
       const response = await getSearchResults({
         query,
         limit: 10,
       });
       if (response.data) {
         setResources(response.data.documents);
+      } else {
+        toast.error("Error fetching search results");
+      }
+      } catch {
+        toast.error("Error fetching search results");
       }
     }
   };
@@ -34,15 +44,25 @@ const Search = () => {
     }
   };
 
+  const handleSuggestionSelect = (suggestion: string) => {
+    setSearchQuery(suggestion);
+    handleSearch(suggestion);
+  }
+
+
   return (
-    <ResourceSearchResults
-      selectedCategory={selectedCategory}
-      setSelectedCategory={setSelectedCategory}
-      onSearch={handleSearch}
-      resources={resources}
-      onInfiniteScroll={fetchRemainingResources}
-      isLoading={isResourcesLoading}
-    />
+    <div>
+      <ResourceSearchResults
+        selectedCategory={selectedCategory}
+        setSelectedCategory={setSelectedCategory}
+        onSearch={handleSearch}
+        resources={resources}
+        onInfiniteScroll={fetchRemainingResources}
+        isLoading={isResourcesLoading}
+        searchQuery={searchQuery}
+      />
+      {!searchQuery && <SuggestionsContainer suggestions={sampleSuggestions} onSelect={handleSuggestionSelect} />}
+    </div>
   );
 };
 

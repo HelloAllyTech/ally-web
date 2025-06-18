@@ -8,11 +8,12 @@ import { Chat } from "@/types/message";
 import { RootState } from "@/store/store";
 import { NoResults } from "@/assets/icons";
 import { setUserStatus } from "@/reducer/userReducer";
-import {  FallbackUI, StressBuster } from "@/components";
+import { FallbackUI, StressBuster } from "@/components";
 
 import CallTranscript from "./CallTranscript";
 import EndTransitionScreen from "./components/EndTransition";
 import { useEndCallMutation, useLazyGetClientChatQuery, useLazyGetCounsellorChatQuery } from "@/api/audioCall";
+import { MindfullnessVideo } from "@/assets/videos";
 
 const AudioCall: FunctionComponent = () => {
   const [activeChat, setActiveChat] = useState<Chat | null>();
@@ -108,6 +109,7 @@ const AudioCall: FunctionComponent = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <video src={MindfullnessVideo} preload="auto" className="hidden" />
       {!isLoading && !activeChat?.chatId && (
         <FallbackUI
           image={<NoResults />}

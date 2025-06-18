@@ -1,10 +1,12 @@
 import { FC, useState } from "react";
+import { toast } from "sonner";
 
-import { ResourceSearch, ResourceSearchResults } from "@ally-ui-mono/ui-shared";
+import { ResourceSearch, ResourceSearchResults, SuggestionsContainer } from "@ally-ui-mono/ui-shared";
 import { Resource } from "@ally-ui-mono/ui-shared/types";
 import { useGetSearchResultsMutation } from "@/api/search";
 
 import { SearchResourcesProps } from "./types";
+import { sampleSuggestions } from "@/pages/search/Search";
 
 const SearchResources: FC<SearchResourcesProps> = ({ isInSidebar = false }) => {
   const [selectedCategory, setSelectedCategory] = useState("all");
@@ -21,12 +23,18 @@ const SearchResources: FC<SearchResourcesProps> = ({ isInSidebar = false }) => {
   const handleSearch = async (query: string) => {
     setSearchQuery(query);
     if (query) {
+      try {
       const response = await getSearchResults({
         query,
         limit: 10,
       });
       if (response.data) {
         setResources(response.data.documents);
+      } else{
+        toast.error("Error fetching search results");
+      }
+      } catch {
+        toast.error("Error fetching search results");
       }
     }
   };
@@ -55,7 +63,10 @@ const SearchResources: FC<SearchResourcesProps> = ({ isInSidebar = false }) => {
       isInSidebar={isInSidebar}
     />
   ) : (
+    <>
     <ResourceSearch onSearch={onInitialSearch} initialValue="" showHeader={false} fullWidth />
+    {searchQuery?.length === 0 && <SuggestionsContainer suggestions={sampleSuggestions} onSelect={handleSearch} />}
+    </>
   );
 };
 
