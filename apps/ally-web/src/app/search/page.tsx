@@ -1,7 +1,7 @@
+import { fetchReferenceDocuments } from './api';
 import SearchClient from './SearchClient';
 
-const API_BASE_URL = process.env.API_BASE_URL;
-const API_VERSION = process.env.API_VERSION;
+
 
 export default async function SearchPage({
   searchParams,
@@ -11,17 +11,8 @@ export default async function SearchPage({
   const searchQuery = searchParams.q ?? '';
   const category = searchParams.category ?? 'all';
   
-  const data = await fetch(`${API_BASE_URL}/api/${API_VERSION}/reference-document/search/public`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      query: searchQuery,
-      filters: { category }
-    })
-  });
+ const refDocs = await fetchReferenceDocuments(searchQuery, category);
+ console.log(refDocs);
 
-  const searchData = await data.json();
-  return <SearchClient searchQuery={searchQuery} category={category} searchData={searchData} />;
+  return <SearchClient searchQuery={searchQuery} category={category} />;
 } 
