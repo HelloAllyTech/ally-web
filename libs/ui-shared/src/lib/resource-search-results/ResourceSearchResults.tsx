@@ -1,4 +1,5 @@
-import { FC, SetStateAction, Dispatch } from 'react';
+'use client';
+import { FC } from 'react';
 
 import { ResourceSearchBar, ResourceCard, SearchHeader, InfiniteScroll } from '../..';
 import { Resource } from '../../types';
@@ -6,11 +7,12 @@ import ResourceTabs from './ResourceTabs';
 
 export interface ResourceSearchResultsProps {
   selectedCategory: string;
-  setSelectedCategory: Dispatch<SetStateAction<string>>;
+  setSelectedCategory: (category: string) => void;
   onInfiniteScroll: () => void;
-  onSearch: (query: string) => void;
+  onSearch: (searchTerm: string) => void;
   resources: Resource[];
   isLoading: boolean;
+  searchQuery?: string;
 }
 
 const ResourceSearchResults: FC<ResourceSearchResultsProps> = ({ 
@@ -19,7 +21,8 @@ const ResourceSearchResults: FC<ResourceSearchResultsProps> = ({
   onInfiniteScroll, 
   onSearch, 
   resources,
-  isLoading
+  isLoading,
+  searchQuery,
 }) => {
   const getResources = () => {
     if (selectedCategory === 'all') {
@@ -35,7 +38,7 @@ const ResourceSearchResults: FC<ResourceSearchResultsProps> = ({
       <div className="w-[60%] flex flex-col gap-4 items-center">
         <div className="w-full flex flex-col gap-2 items-center justify-center">
           <SearchHeader />
-          <ResourceSearchBar onSearch={onSearch} />
+          <ResourceSearchBar onSearch={onSearch} initialValue={searchQuery ?? ''} />
         </div>
         <ResourceTabs
           resources={resources}

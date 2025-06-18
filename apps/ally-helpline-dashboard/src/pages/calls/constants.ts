@@ -25,8 +25,8 @@ export const tableHeaders = [
     width: "30%",
   },
   {
-    id: "notes",
-    label: "Notes",
+    id: "review",
+    label: "Review",
     width: "10%",
   },
 ];

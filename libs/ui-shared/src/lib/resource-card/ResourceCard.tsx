@@ -25,11 +25,8 @@ const ResourceCard: FC<ResourceCardProps> = ({
     }
   }, [description]);
 
-  return (
-    <div
-      className="w-full flex flex-col gap-2 border border-[#DADCE1] rounded-[8px] p-4 bg-white cursor-pointer"
-      onClick={(e) => { e.stopPropagation(); setIsExpanded((prev) => !prev)}}
-    >
+  const renderTags = () => {
+    return (
       <div className="flex justify-between">
         <Badge text={category} variant="ghost" className="capitalize" />
         <div className="flex gap-1">
@@ -38,6 +35,36 @@ const ResourceCard: FC<ResourceCardProps> = ({
           ))}
         </div>
       </div>
+    );
+  };
+
+  const renderShowMoreLess = () => {
+    if(isExpanded) {
+      return (
+        <div className="flex justify-end">
+          <span className="underline text-sm cursor-pointer text-[#525252]">
+            Show less
+          </span>
+        </div>
+      );
+    } else {
+      return (
+        <div className="absolute bottom-0 right-0 bg-gradient-to-l from-white via-white to-transparent pl-8 pr-1">
+          <span className="underline text-sm cursor-pointer text-[#525252]">
+            ...more
+          </span>
+        </div>
+      );
+    }
+  }
+      
+
+  return (
+    <div
+      className="w-full flex flex-col gap-2 border border-[#DADCE1] rounded-[8px] p-4 bg-white cursor-pointer"
+      onClick={(e) => { e.stopPropagation(); setIsExpanded((prev) => !prev)}}
+    >
+      {renderTags()}
       <div className="flex flex-col gap-1">
         <span className="font-medium text-[#000]">{title}</span>
         <div className="relative font-['IBM_Plex_Serif']">
@@ -48,20 +75,7 @@ const ResourceCard: FC<ResourceCardProps> = ({
           >
             {description}
           </div>
-          {!isExpanded && (
-            <div className="absolute bottom-0 right-0 bg-gradient-to-l from-white via-white to-transparent pl-8 pr-1">
-              <span className="underline text-sm cursor-pointer text-[#525252]">
-                ...more
-              </span>
-            </div>
-          )}
-          {isExpanded && (
-            <div className="flex justify-end">
-              <span className="underline text-sm cursor-pointer text-[#525252]">
-                Show less
-              </span>
-            </div>
-          )}
+          {renderShowMoreLess()}
         </div>
       </div>
     </div>
