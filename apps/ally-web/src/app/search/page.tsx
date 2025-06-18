@@ -1,14 +1,18 @@
-'use client';
+import { fetchReferenceDocuments } from './api';
+import SearchClient from './SearchClient';
 
-import { useState } from 'react';
 
-import { ResourceSearchResults } from '@ally-ui-mono/ui-shared';
 
-export default function SearchPage() {
-  const [selectedCategory, setSelectedCategory] = useState('all');
-  return (
-    <main className="w-full min-h-screen flex justify-center items-center">
-      <ResourceSearchResults selectedCategory={selectedCategory} setSelectedCategory={setSelectedCategory} />
-    </main>
-  );
+export default async function SearchPage({
+  searchParams,
+}: {
+  searchParams: { q?: string; category?: string };
+}) {
+  const searchQuery = searchParams.q ?? '';
+  const category = searchParams.category ?? 'all';
+  
+ const refDocs = await fetchReferenceDocuments(searchQuery, category);
+ console.log(refDocs);
+
+  return <SearchClient searchQuery={searchQuery} category={category} />;
 } 

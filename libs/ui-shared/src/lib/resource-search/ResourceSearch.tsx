@@ -6,7 +6,7 @@ import { ResourceSearchBar, SearchHeader } from '../..';
 
 export interface ResourceSearchProps {
   initialValue?: string;
-  onSearch?: (searchTerm: string) => void;
+  onSearch: (searchTerm: string) => void;
 }
 
 const ResourceSearch: FC<ResourceSearchProps> = ({ onSearch, initialValue = '' }) => {

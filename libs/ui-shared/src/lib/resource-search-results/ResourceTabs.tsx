@@ -1,6 +1,6 @@
 'use client';
 
-import { Dispatch, FC, SetStateAction, useState } from 'react';
+import { FC, useState } from 'react';
 import { Tab, Tabs } from '@mui/material';
 
 import { Dropdown } from '../..';
@@ -10,7 +10,7 @@ import { PlayArrowRounded } from '@mui/icons-material';
 export interface ResourceTabsProps {
   resources: any[];
   selectedCategory: string;
-  setSelectedCategory: Dispatch<SetStateAction<string>>
+  setSelectedCategory: (category: string) => void;
 }
 
 const ResourceTabs: FC<ResourceTabsProps> = ({

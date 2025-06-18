@@ -3,23 +3,18 @@
 import { FC, useState } from 'react';
 import { Autocomplete, TextField, InputAdornment } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
-import { useRouter } from 'next/navigation';
 
 export interface SearchBarProps {
-  onSearch?: (searchTerm: string) => void;
+  onSearch: (searchTerm: string) => void;
   initialValue?: string;
 }
 
 const SearchBar: FC<SearchBarProps> = ({ onSearch, initialValue = '' }) => {
   const [searchTerm, setSearchTerm] = useState(initialValue);
-  const router = useRouter();
 
   const handleKeyPress = (event: React.KeyboardEvent) => {
     if (event.key === 'Enter') {
-      if (onSearch) {
-        onSearch(searchTerm);
-      }
-      router.push(`/search?q=${encodeURIComponent(searchTerm)}`);
+      onSearch(searchTerm);
     }
   };
 
@@ -40,7 +35,7 @@ const SearchBar: FC<SearchBarProps> = ({ onSearch, initialValue = '' }) => {
           placeholder="Search"
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          onKeyPress={handleKeyPress}
+          onKeyDown={handleKeyPress}
           sx={{
             '& .MuiOutlinedInput-root': {
               height: '40px',
