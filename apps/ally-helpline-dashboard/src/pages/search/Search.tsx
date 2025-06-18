@@ -2,7 +2,7 @@ import { useState } from 'react';
 
 import { ResourceSearchResults } from '@ally-ui-mono/ui-shared';
 import { useGetSearchResultsMutation } from '@/api/search';
-import { Resource } from '../../../../../libs/ui-shared/src/types';
+import { Resource } from '@ally-ui-mono/ui-shared/types';
 
 const Search = () => {
   const [selectedCategory, setSelectedCategory] = useState('all');

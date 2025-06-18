@@ -31,7 +31,7 @@ const ResourceSearchResults: FC<ResourceSearchResultsProps> = ({
   };
 
   return (
-    <div className="w-full h-full flex flex-col items-center justify-center">
+    <div className="w-full h-full flex flex-col items-center">
       <div className="w-[60%] flex flex-col gap-4 items-center">
         <div className="w-full flex flex-col gap-2 items-center justify-center">
           <SearchHeader />
@@ -44,7 +44,7 @@ const ResourceSearchResults: FC<ResourceSearchResultsProps> = ({
         />
         <div className="h-[calc(100vh-290px)] overflow-y-auto flex flex-col gap-4 items-center mt-4">
           <InfiniteScroll onInfiniteScroll={onInfiniteScroll} isLoading={isLoading}>
-            {getResources().map((resource) => (
+            {getResources()?.map((resource) => (
               <ResourceCard
                 key={resource.id}
                 title={resource.heading}

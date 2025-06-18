@@ -1,3 +1,4 @@
+// TODO: Refactor export of types; refer tsconfig.app.json of helpline dashboard
 export interface Resource {
   id: string;
   heading: string;

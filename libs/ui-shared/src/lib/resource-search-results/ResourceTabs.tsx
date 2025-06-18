@@ -34,12 +34,12 @@ const ResourceTabs: FC<ResourceTabsProps> = ({
   };
 
   const getCategoryCount = (key: string) => {
-    return resources.filter((resource) => resource.category === key).length;
+    return resources?.filter((resource) => resource.category === key).length;
   };
 
   const getCategoryLabel = (key: string, label: string) => {
     if (key === 'all') {
-      return `All (${resources.length})`;
+      return `All (${resources?.length || 0})`;
     } else if (key === 'more') {
       return (
         <div ref={moreTabRef} className="flex items-center justify-center gap-2">
@@ -48,7 +48,7 @@ const ResourceTabs: FC<ResourceTabsProps> = ({
         </div>
       );
     }
-    return `${label} (${getCategoryCount(key)})`;
+    return `${label} (${getCategoryCount(key) || 0})`;
   };
 
   const onTabClick = (category: string) => {
@@ -99,6 +99,7 @@ const ResourceTabs: FC<ResourceTabsProps> = ({
               color: '#525252',
               textTransform: 'capitalize',
               fontFamily: 'IBM Plex Serif',
+              flex: 1,
               '&.Mui-selected': {
                 color: '#0D0D0D',
                 fontWeight: 500,

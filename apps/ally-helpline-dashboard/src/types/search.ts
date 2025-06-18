@@ -1,4 +1,4 @@
-import { Resource } from "../../../../libs/ui-shared/src/types";
+import { Resource } from '@ally-ui-mono/ui-shared/types';
 
 export interface GetSearchResultsRequest {
   query: string;
