@@ -73,10 +73,11 @@ const CallLogsTable = () => {
   const getDisplayData = (row: CallLog) => {
     const { details, id } = row;
     if (details) {
-      const { callDuration, callInfo, startTime, summary } = details;
+      const { callDuration, callInfo, startTime, summary, transcript } = details;
 
       return {
         id,
+        transcript,
         callName: callInfo?.summaryName,
         dateAndTime: formatDate(startTime),
         duration: convertSecondsToDuration(callDuration ?? 60),
@@ -143,7 +144,7 @@ const CallLogsTable = () => {
             </div>
           </div>
         );
-      case 'notes':
+      case 'review':
         return (
           <Eye
             className="text-[#868686] w-4 h-4 ml-2 cursor-pointer"

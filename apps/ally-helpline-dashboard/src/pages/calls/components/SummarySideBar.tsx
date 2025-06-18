@@ -47,10 +47,10 @@ const SummarySideBar: FC<SummarySideBarProps> = ({ callSummary, refetchCallLogs,
   const onExportClick = async () => {
     try {
       const response = await exportCallSummary({ chatId: callSummary?.id });
-      
+
       // Handle the text response (not JSON)
       let summaryText = "";
-      
+
       // The API returns text data but RTK Query expects JSON, so it ends up in error.data
       if (response.error) {
         // Check if it's a FetchBaseQueryError with data
@@ -164,29 +164,30 @@ const SummarySideBar: FC<SummarySideBarProps> = ({ callSummary, refetchCallLogs,
               isSummaryLoading={isLoading}
               onProceed={() => refetchCallLogs()}
               showInitialLoading={false}
-              setShowInitialLoading={() => {}}
+              setShowInitialLoading={() => { }}
             />
           </div>
         )}
         {selectedTab === 2 && (
           <div className="flex flex-1 overflow-y-hidden h-[calc(100vh-75px)]">
-            <div className="flex-1 overflow-y-scroll p-4">
-              <h3 className="font-semibold text-sm mb-4">Transcript</h3>
-              <div className="space-y-4 flex-1 mb-20">
-                {callSummary?.details?.transcript
-                  ?.split("\n")
-                  ?.filter((line: string) => line.trim() !== "")
-                  .map((line: string, index: number) => {
-                    const [speaker, ...rest] = line.split(":");
-                    const message = rest.join(":");
+            {callSummary?.details?.transcript?.length > 0 && (
+              <div className="flex-1 overflow-y-scroll p-4">
+                <h3 className="font-semibold text-sm mb-4">Transcript</h3>
+                <div className="space-y-4 flex-1 mb-20">
+                  {callSummary?.details?.transcript
+                    ?.split("\n")
+                    ?.filter((line: string) => line.trim() !== "")
+                    .map((line: string, index: number) => {
+                      const [speaker, ...rest] = line.split(":");
+                      const message = rest.join(":");
 
-                    window.handleCommentClick = (comment: string) => {
-                      setSelectedComment(comment === selectedComment ? "" : comment);
-                    };
-                    // Create highlighted message by checking for comment keywords
-                    // TODO: check if comments are correctly destructured
-                    const highlightedMessage = callSummary?.details?.comments?.length
-                      ? callSummary?.details?.comments.reduce((text, { comment }) => {
+                      window.handleCommentClick = (comment: string) => {
+                        setSelectedComment(comment === selectedComment ? "" : comment);
+                      };
+                      // Create highlighted message by checking for comment keywords
+                      // TODO: check if comments are correctly destructured
+                      const highlightedMessage = callSummary?.details?.comments?.length
+                        ? callSummary?.details?.comments.reduce((text, { comment }) => {
                           const regex = new RegExp(`(${comment})`, "gi");
                           return text.replace(
                             regex,
@@ -200,27 +201,27 @@ const SummarySideBar: FC<SummarySideBarProps> = ({ callSummary, refetchCallLogs,
                                   style="border-bottom: 2px solid #fef08a; cursor: pointer;">$1</button>`
                           );
                         }, message)
-                      : message;
+                        : message;
 
-                    return (
-                          <div key={`${speaker}-${index}`} className="flex">
-                            <div className="text-sm text-gray-500 w-[40px]">
-                              {(0.01 + index / 100).toFixed(2)}
-                            </div>
-                        <div className="flex-1 text-sm">
-                          <span className="font-semibold">{speaker}: </span>
-                          <span
-                            className="font-['IBM_Plex_Serif']"
-                            dangerouslySetInnerHTML={{
-                              __html: highlightedMessage,
-                            }}
-                          />
+                      return (
+                        <div key={`${speaker}-${index}`} className="flex">
+                          <div className="text-sm text-gray-500 w-[40px]">
+                            {(0.01 + index / 100).toFixed(2)}
+                          </div>
+                          <div className="flex-1 text-sm">
+                            <span className="font-semibold">{speaker}: </span>
+                            <span
+                              className="font-['IBM_Plex_Serif']"
+                              dangerouslySetInnerHTML={{
+                                __html: highlightedMessage,
+                              }}
+                            />
+                          </div>
                         </div>
-                      </div>
-                    );
-                  })}
-              </div>
-            </div>
+                      );
+                    })}
+                </div>
+              </div>)}
             {/* TODO: check if comments are correctly destructured */}
             {callSummary?.details?.comments?.length > 0 && (
               <div className="flex-1 p-4 bg-[#F0F4F8]">

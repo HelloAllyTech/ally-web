@@ -95,7 +95,7 @@ const CallSummary: FC<CallSummaryProps> = ({
       }
       case SummaryFieldKey.CallDate:
         return getFormattedDateTime(
-          callSummary?.details?.callDate,
+          callSummary?.details?.startTime,
           'do MMMM yyyy',
         );
       case SummaryFieldKey.CallTime: {
