@@ -5,6 +5,7 @@ import ResourceSearch from './lib/resource-search';
 import ResourceSearchBar from './lib/resource-search-bar';
 import { DropdownField, Dropdown } from './lib/dropdown-field';
 import ResourceSearchResults from './lib/resource-search-results';
+import InfiniteScroll from './lib/infinite-scroll';
 
 export {
   Badge,
@@ -15,4 +16,5 @@ export {
   ResourceSearch,
   ResourceSearchBar,
   ResourceSearchResults,
+  InfiniteScroll,
 };

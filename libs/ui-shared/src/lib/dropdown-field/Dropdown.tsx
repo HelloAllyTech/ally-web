@@ -4,7 +4,7 @@ import { FC, useState } from 'react';
 
 import { DropdownProps } from './types';
 
-const Dropdown: FC<DropdownProps> = ({ options, handleChange, className }) => {
+const Dropdown: FC<DropdownProps> = ({ options, handleChange, className, style }) => {
   const [searchQuery, setSearchQuery] = useState('');
 
   const getOptions = () => {
@@ -20,6 +20,7 @@ const Dropdown: FC<DropdownProps> = ({ options, handleChange, className }) => {
   return (
     <div
       className={`p-2 absolute bg-white border border-[#DBDBDB] rounded-[8px] z-50 ${className}`}
+      style={style}
       onClick={(e) => e.stopPropagation()}
     >
       <input

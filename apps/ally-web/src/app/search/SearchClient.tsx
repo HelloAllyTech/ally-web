@@ -27,7 +27,10 @@ export default function SearchClient({ searchQuery, category, searchData }: Sear
         searchQuery={searchQuery} 
         onSearch={onSearch} 
         selectedCategory={category} 
-        setSelectedCategory={onCategoryChange} 
+        setSelectedCategory={onCategoryChange}
+        onInfiniteScroll={() => {}}
+        resources={[]}
+        isLoading={false}
       />
     </main>
   );

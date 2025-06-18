@@ -1,6 +1,6 @@
 'use client';
 
-import { FC, useState } from 'react';
+import { FC, useState, useRef } from 'react';
 import { Tab, Tabs } from '@mui/material';
 
 import { Dropdown } from '../..';
@@ -18,6 +18,7 @@ const ResourceTabs: FC<ResourceTabsProps> = ({
   selectedCategory,
   setSelectedCategory,
 }) => {
+  const moreTabRef = useRef<HTMLDivElement>(null);
   const [isMoreOpen, setIsMoreOpen] = useState<boolean>(false);
   const [newCategory, setNewCategory] = useState<string>('');
 
@@ -33,21 +34,21 @@ const ResourceTabs: FC<ResourceTabsProps> = ({
   };
 
   const getCategoryCount = (key: string) => {
-    return resources.filter((resource) => resource.category === key).length;
+    return resources?.filter((resource) => resource.category === key).length;
   };
 
   const getCategoryLabel = (key: string, label: string) => {
     if (key === 'all') {
-      return `All (${resources.length})`;
+      return `All (${resources?.length || 0})`;
     } else if (key === 'more') {
       return (
-        <div className="flex items-center justify-center gap-2">
+        <div ref={moreTabRef} className="flex items-center justify-center gap-2">
           <span>More</span>
           <PlayArrowRounded className="rotate-90 text-[#000] !w-4 !h-4" />
         </div>
       );
     }
-    return `${label} (${getCategoryCount(key)})`;
+    return `${label} (${getCategoryCount(key) || 0})`;
   };
 
   const onTabClick = (category: string) => {
@@ -61,6 +62,19 @@ const ResourceTabs: FC<ResourceTabsProps> = ({
   const handleMoreChange = (value: string) => {
     setNewCategory(value);
     setIsMoreOpen(false);
+  };
+
+  const getDropdownStyle = () => {
+    if (!moreTabRef.current) return {};
+    const tabElement = moreTabRef.current.closest('[role="tab"]');
+    if (!tabElement) return {};
+    const containerElement = moreTabRef.current.closest('.relative');
+    if (!containerElement) return {};
+    
+    const tabRect = tabElement.getBoundingClientRect();
+    const containerRect = containerElement.getBoundingClientRect();
+    
+    return { left: `${tabRect.left - containerRect.left}px` };
   };
   
   return (
@@ -85,6 +99,7 @@ const ResourceTabs: FC<ResourceTabsProps> = ({
               color: '#525252',
               textTransform: 'capitalize',
               fontFamily: 'IBM Plex Serif',
+              flex: 1,
               '&.Mui-selected': {
                 color: '#0D0D0D',
                 fontWeight: 500,
@@ -97,7 +112,8 @@ const ResourceTabs: FC<ResourceTabsProps> = ({
         <Dropdown
           options={moreOptions}
           handleChange={handleMoreChange}
-          className="top-12 right-0"
+          className="top-10"
+          style={getDropdownStyle()}
         />
       )}
     </div>

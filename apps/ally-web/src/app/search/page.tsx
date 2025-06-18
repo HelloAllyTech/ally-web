@@ -14,5 +14,5 @@ export default async function SearchPage({
  const refDocs = await fetchReferenceDocuments(searchQuery, category);
  console.log(refDocs);
 
-  return <SearchClient searchQuery={searchQuery} category={category} />;
+  return <SearchClient searchQuery={searchQuery} category={category} searchData={refDocs} />;
 } 

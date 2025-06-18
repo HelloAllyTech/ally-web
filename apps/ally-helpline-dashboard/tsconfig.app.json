@@ -24,7 +24,8 @@
 
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./src/*"],
+      "@ally-ui-mono/ui-shared/*": ["../../libs/ui-shared/src/*"],
     }
   },
   "include": ["src"]
