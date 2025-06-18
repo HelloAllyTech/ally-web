@@ -27,7 +27,7 @@ const StressBusters: FunctionComponent = () => {
 
   return (
     <div className="p-6 h-full flex flex-col gap-4 max-h-screen overflow-y-auto">
-      <div className="min-h-[290px] w-full bg-[#110924] rounded-sm text-white overflow-hidden z-0 relative">
+      <div className="min-h-[290px] w-full bg-[#000] rounded-sm text-white overflow-hidden z-0 relative">
         <BackgroundTop
           height={300}
           width={360}

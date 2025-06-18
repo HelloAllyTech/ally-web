@@ -32,19 +32,26 @@ export const ROUTES = {
 
 export const navBarOptions = [
     {
+      id: TabId.SEARCH,
+      title: "Search",
+      Icon: SearchOutlinedIcon,
+      path: ROUTES.SEARCH,
+      permission: ""
+    },
+    {
       id: TabId.CALLS,
       title: "Calls",
       Icon: PhoneOutlinedIcon,
       path: ROUTES.CALLS,
       permission: Permissions.VIEW_NAVBAR_CALLS
     },
-    {
-      id: TabId.CALENDER,
-      title: "Calender",
-      Icon: DateRangeOutlinedIcon,
-      path: ROUTES.CALENDER,
-      permission: Permissions.VIEW_NAVBAR_CALENDAR
-    },
+    // {
+    //   id: TabId.CALENDER,
+    //   title: "Calender",
+    //   Icon: DateRangeOutlinedIcon,
+    //   path: ROUTES.CALENDER,
+    //   permission: Permissions.VIEW_NAVBAR_CALENDAR
+    // },
     {
       id: TabId.LEARN,
       title: "Learn",
@@ -73,18 +80,11 @@ export const navBarOptions = [
       path: "https://community.helloally.ai/",
       permission: ""
     },
-    {
-      id: TabId.SETTINGS,
-      title: "Settings",
-      Icon: SettingsOutlinedIcon,
-      path: ROUTES.SETTINGS,
-      permission: Permissions.VIEW_NAVBAR_SETTINGS
-    },
-    {
-      id: TabId.SEARCH,
-      title: "Search",
-      Icon: SearchOutlinedIcon,
-      path: ROUTES.SEARCH,
-      permission: ""
-    }
+    // {
+    //   id: TabId.SETTINGS,
+    //   title: "Settings",
+    //   Icon: SettingsOutlinedIcon,
+    //   path: ROUTES.SETTINGS,
+    //   permission: Permissions.VIEW_NAVBAR_SETTINGS
+    // },
   ];
