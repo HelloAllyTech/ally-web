@@ -61,11 +61,11 @@ const RealTimeTranscript: FC<RealTimeTranscriptProps> = ({ isFocusMode, transcri
       >
         {transcriptions.map((transcriptionObj, index) => (
           <div key={transcriptionObj.id} className="flex flex-col font-['IBM_Plex_Serif']">
-            <div className="font-bold w-[20%] mb-2 mt-[8px]">
+            <div className="font-bold w-[20%] mb-[0px]">
               {getSpeakerName(transcriptionObj.senderId, index > 0 && transcriptions[index - 1].senderId, user?.userId)}
             </div>
             <div
-              className="typing-animation w-full text-[#525252] text-[16px] leading-[8px]"
+              className="typing-animation w-full text-[#525252] text-[16px] leading-[22px]"
               style={{ animationDelay: `${index * 100}ms` }}
             >
               {transcriptionObj.message}
