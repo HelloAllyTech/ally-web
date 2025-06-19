@@ -41,8 +41,6 @@ export const useSocket = ({ userId, eventCallbacks }: UseSocketOptions) => {
           autoConnect: false,
         });
 
-        console.log("Attempting socket connection...");
-
         socketRef.current.connect();
 
         setupDefaultListeners();
@@ -60,7 +58,6 @@ export const useSocket = ({ userId, eventCallbacks }: UseSocketOptions) => {
     if (!socketRef.current) return;
 
     socketRef.current.on("connect", () => {
-      console.log("Socket connected successfully");
       connectionAttemptsRef.current = 0;
     });
 
@@ -93,7 +90,6 @@ export const useSocket = ({ userId, eventCallbacks }: UseSocketOptions) => {
       console.error("Socket not connected");
       return;
     }
-    console.log("Sending message:", message);
     socketRef.current.emit(SocketEvent.SEND_MESSAGE, message);
   }, []);
 
@@ -103,7 +99,6 @@ export const useSocket = ({ userId, eventCallbacks }: UseSocketOptions) => {
         console.error("Socket not connected");
         return;
       }
-      console.log("Emitted SocketEvent:", socketEvent, message);
       socketRef.current.emit(socketEvent, message);
     },
     []
