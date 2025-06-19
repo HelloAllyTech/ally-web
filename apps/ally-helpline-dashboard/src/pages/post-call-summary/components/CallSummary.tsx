@@ -1,21 +1,21 @@
-import { FC, useEffect, useState } from 'react';
-import { Divider } from '@mui/material';
+import { FC, useEffect, useState } from "react";
+import { Divider } from "@mui/material";
 
-import { DropdownField } from '@ally-ui-mono/ui-shared';
-import { Accordion, TextField, Button } from '@/components';
+import { DropdownField } from "@ally-ui-mono/ui-shared";
+import { Accordion, TextField, Button } from "@/components";
 import {
   useGetSummaryFieldsQuery,
   useUpdateCallSummaryMutation,
   useGetTagsMutation,
   useGetLocationsQuery,
-} from '@/api/callSummary';
-import { useEnhance } from '@/hooks';
-import { SummaryFieldKey, Tag } from '@/types/summary';
+} from "@/api/callSummary";
+import { useEnhance } from "@/hooks";
+import { SummaryFieldKey, Tag } from "@/types/summary";
 
-import { labelShownSections, summarySections } from '../constants';
-import { CallSummaryProps, SummaryField, SummarySectionKey } from '../types';
-import { getFormattedDateTime, getSectionFields } from '../helper';
-import SummaryLoading from './SummaryLoading';
+import { labelShownSections, summarySections } from "../constants";
+import { CallSummaryProps, SummaryField, SummarySectionKey } from "../types";
+import { getFormattedDateTime, getSectionFields } from "../helper";
+import SummaryLoading from "./SummaryLoading";
 
 const CallSummary: FC<CallSummaryProps> = ({
   callSummary,
@@ -67,7 +67,7 @@ const CallSummary: FC<CallSummaryProps> = ({
       const tags = callSummary.details.summary?.tags;
       setSummaryData({
         ...callSummary.details.summary,
-        tags: tags?.map(({ tag }) => tag).join(', '),
+        tags: tags?.map(({ tag }) => tag).join(", "),
       });
     }
   }, [callSummary]);
@@ -83,7 +83,7 @@ const CallSummary: FC<CallSummaryProps> = ({
 
   const getFieldValue = (key: string, type: string) => {
     if (!summaryData) {
-      return type !== 'Dropdown' ? '--' : '';
+      return type !== "Dropdown" ? "--" : "";
     }
     switch (key) {
       case SummaryFieldKey.CallId:
@@ -96,12 +96,12 @@ const CallSummary: FC<CallSummaryProps> = ({
       case SummaryFieldKey.CallDate:
         return getFormattedDateTime(
           callSummary?.details?.startTime,
-          'do MMMM yyyy',
+          "do MMMM yyyy",
         );
       case SummaryFieldKey.CallTime: {
-        return `${getFormattedDateTime(callSummary?.startedAt, 'HH:mm')} - ${getFormattedDateTime(
+        return `${getFormattedDateTime(callSummary?.startedAt, "HH:mm")} - ${getFormattedDateTime(
           callSummary?.endedAt,
-          'HH:mm',
+          "HH:mm",
         )}`;
       }
       case SummaryFieldKey.ClientId:
@@ -110,7 +110,7 @@ const CallSummary: FC<CallSummaryProps> = ({
         return (
           summaryData.languages
             ?.map(({ language, percentage }) => `${language} (${percentage}%)`)
-            .join(', ') || ''
+            .join(", ") || ""
         );
       case SummaryFieldKey.ListeningShare:
         return `${(callSummary?.details?.callInfo?.clientTalkingPercentage ?? 0) * 100}%`;
@@ -122,14 +122,14 @@ const CallSummary: FC<CallSummaryProps> = ({
   const getFieldDisplay = (field: SummaryField) => {
     const value = getFieldValue(field.key, field.type);
     switch (field.type) {
-      case 'Dropdown':
+      case "Dropdown":
         return (
           <div key={field.key} className="flex gap-1">
             <span className="font-medium text-[16px] text-[#6B7280]">{`${field.label}: `}</span>
             <DropdownField
               disabled={!field.isEditable}
-              value={value ?? '--'}
-              valueClassName={`${field.isEditable ? 'text-[#1A1A1A]' : 'text-[#9CA3AF]'} 
+              value={value ?? "--"}
+              valueClassName={`${field.isEditable ? "text-[#1A1A1A]" : "text-[#9CA3AF]"} 
                 text-[16px] font-['IBM_Plex_Serif']`}
               onChange={(value) =>
                 setSummaryData((prev) => ({ ...prev, [field.key]: value }))
@@ -138,14 +138,14 @@ const CallSummary: FC<CallSummaryProps> = ({
             />
           </div>
         );
-      case 'Multiline':
+      case "Multiline":
         return (
           <div key={field.key} className="flex flex-col gap-1">
             {labelShownSections.includes(field.sectionKey) && (
               <span className="font-medium text-[16px] text-[#6B7280]">{`${field.label}: `}</span>
             )}
             <TextField
-              value={enhancing === field.key ? '' : value}
+              value={enhancing === field.key ? "" : value}
               onChange={(e) =>
                 setSummaryData((prev) => ({
                   ...prev,
@@ -154,13 +154,14 @@ const CallSummary: FC<CallSummaryProps> = ({
               }
               multiline
               rows={4}
-              className={`w-full ${field.isEditable ? '' : 'pointer-events-none'}`}
+              className={`w-full ${field.isEditable ? "" : "pointer-events-none"}`}
               inputStyles={{
-                color: field.isEditable ? '#1A1A1A' : '#9CA3AF',
-                fontSize: '16px',
-                fontFamily: 'IBM_Plex_Serif',
+                color: field.isEditable ? "#1A1A1A" : "#9CA3AF",
+                fontSize: "16px",
+                fontFamily: "IBM_Plex_Serif",
+                cursor: enhancing === field.key ? "not-allowed" : "auto",
               }}
-              placeholder={field.placeholder}
+              placeholder={enhancing === field.key ? "" : field.placeholder}
               showBorder={false}
               InputProps={{
                 startAdornment:
@@ -181,8 +182,8 @@ const CallSummary: FC<CallSummaryProps> = ({
             />
           </div>
         );
-      case 'Number':
-      case 'Text':
+      case "Number":
+      case "Text":
       default:
         return (
           <>
@@ -190,8 +191,8 @@ const CallSummary: FC<CallSummaryProps> = ({
               <span className="font-medium text-[16px] text-[#6B7280]">{`${field.label}: `}</span>
               <div className="flex-1">
                 <TextField
-                  className={`${field.isEditable ? '' : 'pointer-events-none'}`}
-                  value={value ?? '--'}
+                  className={`${field.isEditable ? "" : "pointer-events-none"}`}
+                  value={value ?? "--"}
                   onChange={(e) =>
                     setSummaryData((prev) => ({
                       ...prev,
@@ -200,16 +201,16 @@ const CallSummary: FC<CallSummaryProps> = ({
                   }
                   placeholder={field.placeholder}
                   inputStyles={{
-                    color: field.isEditable ? '#1A1A1A' : '#9CA3AF',
-                    fontSize: '16px',
-                    fontFamily: 'IBM_Plex_Serif',
+                    color: field.isEditable ? "#1A1A1A" : "#9CA3AF",
+                    fontSize: "16px",
+                    fontFamily: "IBM_Plex_Serif",
                   }}
                   showBorder={false}
                 />
               </div>
             </div>
-            {field.key === 'clientId' && (
-              <Divider sx={{ width: '90%', marginTop: '6px' }} />
+            {field.key === "clientId" && (
+              <Divider sx={{ width: "90%", marginTop: "6px" }} />
             )}
           </>
         );
@@ -218,7 +219,7 @@ const CallSummary: FC<CallSummaryProps> = ({
 
   const handleSubmit = async () => {
     try {
-      const tags = summaryData?.tags?.split(', ');
+      const tags = summaryData?.tags?.split(", ");
       let tagsInput: Tag[] = [];
       if (tags?.length > 0) {
         const response = await getTags({ tags });
@@ -232,7 +233,7 @@ const CallSummary: FC<CallSummaryProps> = ({
       });
       onProceed();
     } catch (error) {
-      console.error('Error updating call summary:', error);
+      console.error("Error updating call summary:", error);
     }
   };
 
@@ -269,7 +270,7 @@ const CallSummary: FC<CallSummaryProps> = ({
           onClick={handleSubmit}
           disabled={isLoading}
         >
-          {isUpdateLoading || isGetTagsLoading ? 'Submitting...' : 'Submit'}
+          {isUpdateLoading || isGetTagsLoading ? "Submitting..." : "Submit"}
         </Button>
       </div>
     </>
