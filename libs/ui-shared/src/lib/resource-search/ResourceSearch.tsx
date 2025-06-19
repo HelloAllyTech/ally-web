@@ -23,7 +23,7 @@ const ResourceSearch: FC<ResourceSearchProps> = ({ onSearch, initialValue = '', 
         <div className="w-full flex flex-col gap-2 items-center justify-center">
           {showHeader && <SearchHeader />}
           <ResourceSearchBar initialValue={initialValue} onSearch={onSearch} suggestions={suggestions} />
-          {!initialValue && <SuggestionsContainer suggestions={suggestions} onSelect={onSearch} />}
+          {!initialValue && <SuggestionsContainer suggestions={sampleSuggestions} onSelect={onSearch} />}
         </div>
       </div>
     </div>
