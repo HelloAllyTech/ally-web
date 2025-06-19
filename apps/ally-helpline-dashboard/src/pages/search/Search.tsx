@@ -5,7 +5,7 @@ export const sampleSuggestions = ["Grounding techniques", "Boundaries", "Questio
 
 const Search = () => {
   return (
-    <div className="h-full flex justify-center items-center">
+    <div className="h-full overflow-y-hidden flex h-[calc(100vh-50px)] sm:h-[calc(100vh-80px)] flex justify-center items-center">
       <SearchResources />
     </div>
   );

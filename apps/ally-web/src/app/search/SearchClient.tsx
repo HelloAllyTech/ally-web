@@ -23,7 +23,7 @@ export default function SearchClient({ searchQuery, category, documents }: Searc
   };
 
   return (
-    <main className="w-full min-h-screen flex justify-center items-center mb-[50px] pt-[40px] pb-[50px]">
+    <main className="w-full h-[calc(100vh-50px)] sm:h-[calc(100vh-100px)] flex justify-center items-center mb-[50px] pt-[40px] pb-[50px] overflow-y-hidden">
       <ResourceSearchResults 
         searchQuery={searchQuery} 
         onSearch={onSearch} 

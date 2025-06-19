@@ -47,12 +47,14 @@ const ResourceSearchResults: FC<ResourceSearchResultsProps> = ({
     } else if (resources?.length > 0) {
       return (
         <>
-          <ResourceTabs
-            resources={resources}
-            selectedCategory={selectedCategory}
-            setSelectedCategory={setSelectedCategory}
-          />
-          <div className={`w-full ${isInSidebar ? 'h-[calc(100vh-500px)]' : 'h-[calc(100vh-290px)]'} overflow-y-auto flex flex-col gap-4 items-center mt-4`}>
+          <div className="w-[calc(100%-32px)] sm:w-full ml-[16px] mr-[16px]">
+            <ResourceTabs
+              resources={resources}
+              selectedCategory={selectedCategory}
+              setSelectedCategory={setSelectedCategory}
+            />
+          </div>
+          <div style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }} className={`w-full pt-[14px] h-[90vh] overflow-y-auto flex flex-col gap-2 md:gap-4 items-center px-4 md:px-0 pb-[300px]`}>
             {getResources()?.length > 0 ? (
               <InfiniteScroll onInfiniteScroll={onInfiniteScroll} isLoading={isLoading}>
                 {getResources()?.map((resource) => (
@@ -66,7 +68,7 @@ const ResourceSearchResults: FC<ResourceSearchResultsProps> = ({
                 ))}
               </InfiniteScroll>
             ) : (
-              <div>
+              <div className="text-center px-4">
                 <span className='text-[#ADADAD]'>{`No results found for "${searchQuery}"`}</span>
                 <SuggestionsContainer suggestions={sampleSuggestions} onSelect={onSearch} />
               </div>
@@ -81,8 +83,8 @@ const ResourceSearchResults: FC<ResourceSearchResultsProps> = ({
 
   return (
     <div className="w-full h-full flex flex-col items-center">
-      <div className={`${fullWidth ? 'w-full' : 'w-[60%]'} flex flex-col gap-4 items-center`}>
-        <div className="w-full flex flex-col gap-2 items-center justify-center">
+      <div className={`${fullWidth ? 'w-full' : 'w-full md:w-[60%]'} min-w-[300px] flex flex-col items-center`}>
+        <div className="w-full flex flex-col gap-2 items-center justify-center px-4 mb-2 md:px-0">
           {showHeader && <SearchHeader />}
           <ResourceSearchBar onSearch={onSearch} initialValue={searchQuery ?? ''} />
         </div>

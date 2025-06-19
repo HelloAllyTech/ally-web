@@ -19,7 +19,7 @@ export interface ResourceSearchProps {
 const ResourceSearch: FC<ResourceSearchProps> = ({ onSearch, initialValue = '', showHeader = true, fullWidth = false, suggestions = [] }) => {
   return (
     <div className="w-full h-full flex flex-col items-center justify-center">
-      <div className={`${fullWidth ? 'w-full' : 'w-[60%]'} flex flex-col gap-4 items-center`}>
+      <div className={`${fullWidth ? 'w-full' : 'w-[90%]'} w-[90%] flex flex-col gap-4 items-center`}>
         <div className="w-full flex flex-col gap-2 items-center justify-center">
           {showHeader && <SearchHeader />}
           <ResourceSearchBar initialValue={initialValue} onSearch={onSearch} suggestions={suggestions} />

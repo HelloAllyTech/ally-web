@@ -3,7 +3,7 @@ export default function Index() {
     <main>
       <section className="hero">
         <div className="container">
-          <h1 className="heading-xl">
+          <h1 className="heading-xl ">
             Empowering Mental Health Care
             <br />
             with Intelligent Assistance

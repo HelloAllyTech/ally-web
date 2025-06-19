@@ -96,6 +96,7 @@ const ResourceTabs: FC<ResourceTabsProps> = ({
             key={key}
             value={key}
             label={getCategoryLabel(key, label)}
+            className="text-[14px] sm:text-[16px]"
             sx={{
               color: '#525252',
               textTransform: 'capitalize',

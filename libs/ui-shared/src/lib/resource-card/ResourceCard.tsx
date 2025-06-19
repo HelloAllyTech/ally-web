@@ -1,5 +1,6 @@
 'use client'
 import { FC, useState, useRef, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import Badge from '../badge';
 
 export interface ResourceCardProps {
@@ -17,20 +18,25 @@ const ResourceCard: FC<ResourceCardProps> = ({
 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const contentRef = useRef<HTMLDivElement>(null);
-  const [contentHeight, setContentHeight] = useState<number>(0);
+  const [shouldShowButton, setShouldShowButton] = useState(false);
+  const [contentHeight, setContentHeight] = useState(0);
 
   useEffect(() => {
+    // Check if content height is greater than 2 lines (assuming line height of 1.5rem)
     if (contentRef.current) {
-      setContentHeight(contentRef.current.scrollHeight);
+      const lineHeight = 24; // 1.5rem = 24px
+      const height = contentRef.current.scrollHeight;
+      setContentHeight(height);
+      setShouldShowButton(height > lineHeight * 2);
     }
   }, [description]);
 
   const renderTags = () => {
     return (
-      <div className="flex justify-between gap-2">
+      <div style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }} className="flex flex-row justify-between gap-2 overflow-x-hidden">
         <Badge text={category} variant="ghost" className="capitalize flex-shrink-0" />
-        <div className="max-w-[80%] relative">
-          <div className="flex gap-1 overflow-x-auto whitespace-nowrap" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+        <div className="w-full sm:max-w-[80%] relative">
+          <div style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }} className="flex justify-normal sm:justify-end gap-1 overflow-x-auto whitespace-nowrap ml-[20px]">
             {tags.map((tag) => (
               <Badge key={tag} text={tag} variant="outlined" />
             ))}
@@ -41,44 +47,87 @@ const ResourceCard: FC<ResourceCardProps> = ({
   };
 
   const renderShowMoreLess = () => {
-    if(isExpanded) {
+    if (!shouldShowButton) return null;
+
+    if (isExpanded) {
       return (
-        <div className="flex justify-end">
-          <span className="underline text-sm cursor-pointer text-[#525252]">
+        <motion.div
+          className="flex justify-end mt-2"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.2 }}
+        >
+          <button
+            className="text-sm text-[#525252] hover:text-[#000] transition-colors"
+            onClick={(e) => {
+              e.stopPropagation();
+              setIsExpanded(false);
+            }}
+          >
             Show less
-          </span>
-        </div>
+          </button>
+        </motion.div>
       );
     } else {
       return (
-        <div className="absolute bottom-0 right-0 bg-gradient-to-l from-white via-white to-transparent pl-8 pr-1">
-          <span className="underline text-sm cursor-pointer text-[#525252]">
+        <motion.div
+          className="absolute bottom-0 right-0 bg-gradient-to-l from-white via-white to-transparent pl-8 pr-1"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.2 }}
+        >
+          <button
+            className="text-sm text-[#525252] hover:text-[#000] transition-colors"
+            onClick={(e) => {
+              e.stopPropagation();
+              setIsExpanded(true);
+            }}
+          >
             ...more
-          </span>
-        </div>
+          </button>
+        </motion.div>
       );
     }
-  }
-      
+  };
 
-  return (
-    <div
-      className="w-full flex flex-col gap-2 border border-[#DADCE1] rounded-[8px] p-4 bg-white cursor-pointer"
-      onClick={(e) => { e.stopPropagation(); setIsExpanded((prev) => !prev)}}
-    >
-      {renderTags()}
-      <div className="flex flex-col gap-1">
-        <span className="font-medium text-[#000]">{title}</span>
-        <div className="relative font-['IBM_Plex_Serif']">
-          <div
+  const renderDescription = () => {
+    return (
+      <div className="relative font-['IBM_Plex_Serif']">
+        <AnimatePresence mode="wait">
+          <motion.div
             ref={contentRef}
-            style={{ height: isExpanded ? `${contentHeight}px` : '48px' }}
-            className={`text-[#525252] overflow-hidden duration-1000 ease-in-out`}
+            className={`text-[15px] sm:text-[16px] text-[#525252] leading-6 ${!isExpanded ? 'line-clamp-2' : ''}`}
+            initial={false}
+            animate={{
+              height: isExpanded ? contentHeight : Math.min(48, contentHeight), // 48px = 2 lines * 24px line height
+              opacity: 1
+            }}
+            transition={{
+              height: { duration: 0.3, ease: "easeOut" },
+              opacity: { duration: 0.2 }
+            }}
+            style={{
+              overflow: 'hidden'
+            }}
           >
             {description}
-          </div>
+          </motion.div>
+        </AnimatePresence>
+        <AnimatePresence>
           {renderShowMoreLess()}
-        </div>
+        </AnimatePresence>
+      </div>
+    )
+  }
+
+  return (
+    <div className="w-full flex flex-col gap-2 border border-[#DADCE1] rounded-[8px] p-3 sm:p-4 bg-white">
+      {renderTags()}
+      <div className="flex flex-col gap-1">
+        <span className="font-medium text-[15px] sm:text-[16px] text-[#000]">{title}</span>
+        {renderDescription()}
       </div>
     </div>
   );
