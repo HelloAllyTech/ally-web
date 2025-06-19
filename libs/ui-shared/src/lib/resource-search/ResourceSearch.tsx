@@ -2,7 +2,11 @@
 
 import { FC } from 'react';
 
-import { ResourceSearchBar, SearchHeader } from '../..';
+import { ResourceSearchBar, SearchHeader, SuggestionsContainer } from '../..';
+
+// TODO: Remove this once we have a real suggestions API
+export const sampleSuggestions = ['Grounding techniques', 'Boundaries', 'Questions to encourage disclosure', 'Things to say to help process grief'];
+
 
 export interface ResourceSearchProps {
   initialValue?: string;
@@ -18,6 +22,7 @@ const ResourceSearch: FC<ResourceSearchProps> = ({ onSearch, initialValue = '', 
         <div className="w-full flex flex-col gap-2 items-center justify-center">
           {showHeader && <SearchHeader />}
           <ResourceSearchBar initialValue={initialValue} onSearch={onSearch} />
+          {!initialValue && <SuggestionsContainer suggestions={sampleSuggestions} onSelect={onSearch} />}
         </div>
       </div>
     </div>
