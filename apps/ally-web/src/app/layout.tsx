@@ -1,5 +1,5 @@
 import './global.css';
-import BottomTabs from './bottom-tabs/page';
+import { BottomTab } from './components';
 
 export const metadata = {
   title: 'Ally.ai - AI Copilot for Mental Health Professionals',
@@ -15,8 +15,8 @@ export default function RootLayout({
     <html lang="en">
       <body className="min-h-screen bg-white">
         {children}
-        <BottomTabs />
-      </body>
+        <BottomTab />
+      </body> 
     </html>
   );
 }
