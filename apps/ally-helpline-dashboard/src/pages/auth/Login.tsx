@@ -111,7 +111,7 @@ const Login: FunctionComponent = () => {
 
   const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newEmail = e.target.value;
-    setEmail(newEmail);
+    setEmail(newEmail?.toLowerCase());
     if (emailError) {
       setEmailError("");
     }

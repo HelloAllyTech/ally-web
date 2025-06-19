@@ -1,0 +1,60 @@
+export default function Loading() {
+  return (
+    <main className="w-full min-h-screen flex justify-center items-center">
+    <div className="w-full max-w-4xl mx-auto p-6">
+      {/* Search Header Skeleton */}
+      <div className="flex flex-col items-center gap-4 mb-8">
+        <div className="w-64 h-8 bg-gray-200 rounded animate-pulse"></div>
+        <div className="w-96 h-10 bg-gray-200 rounded-lg animate-pulse"></div>
+      </div>
+
+      {/* Tabs Skeleton */}
+      <div className="w-full border-b border-gray-200 mb-6">
+        <div className="flex gap-8">
+          {[1, 2, 3, 4, 5].map((i) => (
+            <div key={i} className="flex flex-col items-center gap-1">
+              <div className="w-16 h-4 bg-gray-200 rounded animate-pulse"></div>
+              <div className="w-8 h-0.5 bg-gray-200 rounded animate-pulse"></div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Resource Cards Skeleton */}
+      <div className="flex flex-col gap-4">
+        {[1, 2, 3].map((i) => (
+          <div key={i} className="w-full border border-gray-200 rounded-lg p-4 bg-white">
+            {/* Tags Row */}
+            <div className="flex justify-between gap-2 mb-3">
+              <div className="w-20 h-6 bg-gray-200 rounded-full animate-pulse"></div>
+              <div className="flex gap-2">
+                <div className="w-16 h-6 bg-gray-200 rounded-full animate-pulse"></div>
+                <div className="w-20 h-6 bg-gray-200 rounded-full animate-pulse"></div>
+                <div className="w-14 h-6 bg-gray-200 rounded-full animate-pulse"></div>
+              </div>
+            </div>
+            
+            {/* Title */}
+            <div className="w-3/4 h-5 bg-gray-200 rounded mb-2 animate-pulse"></div>
+            
+            {/* Description */}
+            <div className="space-y-2">
+              <div className="w-full h-4 bg-gray-200 rounded animate-pulse"></div>
+              <div className="w-5/6 h-4 bg-gray-200 rounded animate-pulse"></div>
+              <div className="w-4/5 h-4 bg-gray-200 rounded animate-pulse"></div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Loading indicator at bottom */}
+      <div className="flex justify-center mt-8">
+        <div className="flex items-center gap-2">
+          <div className="w-4 h-4 border-2 border-gray-300 border-t-blue-500 rounded-full animate-spin"></div>
+          <span className="text-gray-500">Loading resources...</span>
+        </div>
+      </div>
+    </div>
+  </main>
+  );
+}
