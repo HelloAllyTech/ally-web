@@ -6,7 +6,6 @@ import { Resource } from "@ally-ui-mono/ui-shared/types";
 import { useGetSearchResultsMutation } from "@/api/search";
 
 import { SearchResourcesProps } from "./types";
-import { sampleSuggestions } from "@/pages/search/Search";
 
 const SearchResources: FC<SearchResourcesProps> = ({ isInSidebar = false }) => {
   const [selectedCategory, setSelectedCategory] = useState("all");
@@ -65,7 +64,6 @@ const SearchResources: FC<SearchResourcesProps> = ({ isInSidebar = false }) => {
   ) : (
     <>
     <ResourceSearch onSearch={onInitialSearch} initialValue="" showHeader={false} fullWidth />
-    {searchQuery?.length === 0 && <SuggestionsContainer suggestions={sampleSuggestions} onSelect={handleSearch} />}
     </>
   );
 };

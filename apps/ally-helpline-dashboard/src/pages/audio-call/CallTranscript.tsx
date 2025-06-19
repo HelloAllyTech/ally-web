@@ -166,7 +166,6 @@ const CallTranscript: FC<CallTranscriptProps> = ({
       },
       [SocketEvent.NUDGE]: (data) => {
         const nudge = data.payload;
-        console.log("Nudge received:", nudge);
         if (nudge.type === MessageType.NUDGE) {
           setNudges((prev) => [
             ...prev,
@@ -180,7 +179,6 @@ const CallTranscript: FC<CallTranscriptProps> = ({
       },
       [SocketEvent.MESSAGE_RECEIVED]: (data) => {
         const message = data.payload;
-        console.log("Message received:", message);
         if (message.type === MessageType.TEXT) {
           if (message.senderId === user?.userId) {
             processTranscription(setMyTranscriptions, message);

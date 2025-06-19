@@ -1,5 +1,6 @@
 import { fetchReferenceDocuments } from './api';
 import SearchClient from './SearchClient';
+import BottomTabs from '../bottom-tabs/page';
 
 
 
@@ -13,5 +14,10 @@ searchParams,
 
  const { documents } = await fetchReferenceDocuments(searchQuery, category);
 
-  return <SearchClient searchQuery={searchQuery} category={category} documents={documents} />;
+  return (
+    <>
+      <SearchClient searchQuery={searchQuery} category={category} documents={documents} />
+      <BottomTabs />
+    </>
+  );
 } 
