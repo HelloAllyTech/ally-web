@@ -1,13 +1,13 @@
 import { FC, useState } from "react";
 import { toast } from "sonner";
 
-import { ResourceSearch, ResourceSearchResults, SuggestionsContainer } from "@ally-ui-mono/ui-shared";
+import { ResourceSearch, ResourceSearchResults } from "@ally-ui-mono/ui-shared";
 import { Resource } from "@ally-ui-mono/ui-shared/types";
 import { useGetSearchResultsMutation } from "@/api/search";
 
 import { SearchResourcesProps } from "./types";
 
-const SearchResources: FC<SearchResourcesProps> = ({ isInSidebar = false }) => {
+const SearchResources: FC<SearchResourcesProps> = ({ isInSidebar = false, showHeader = true, fullWidth = false }) => {
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [resources, setResources] = useState<Resource[]>([]);
@@ -56,15 +56,13 @@ const SearchResources: FC<SearchResourcesProps> = ({ isInSidebar = false }) => {
       onInfiniteScroll={fetchRemainingResources}
       selectedCategory={selectedCategory}
       setSelectedCategory={setSelectedCategory}
-      showHeader={false}
-      fullWidth
+      showHeader={showHeader}
+      fullWidth={fullWidth}
       searchQuery={searchQuery}
       isInSidebar={isInSidebar}
     />
   ) : (
-    <>
-    <ResourceSearch onSearch={onInitialSearch} initialValue="" showHeader={false} fullWidth />
-    </>
+    <ResourceSearch onSearch={onInitialSearch} initialValue="" showHeader={showHeader} fullWidth={fullWidth} />
   );
 };
 

@@ -1,3 +1,5 @@
 export interface SearchResourcesProps {
-  isInSidebar: boolean;
+  fullWidth?: boolean;
+  isInSidebar?: boolean;
+  showHeader?: boolean;
 }

@@ -1,4 +1,3 @@
-/* eslint-disable react/no-array-index-key */
 import { FC, useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Divider } from "@mui/material";
@@ -112,7 +111,7 @@ const CallSidebar: FC<CallSidebarProps> = ({
           animate={{ width: isFocusMode ? "70%" : 0 }}
           exit={{ width: 0 }}
           transition={{ duration: 0.3, ease: "easeInOut" }}
-          className="h-full p-4 bg-[#FFF] overflow-hidden border-l border-l-[#D2D2D2]"
+          className="h-full bg-[#FFF] overflow-hidden border-l border-l-[#D2D2D2]"
         >
           <div className="h-14 px-4 flex justify-between items-center">
             <div />
@@ -122,19 +121,19 @@ const CallSidebar: FC<CallSidebarProps> = ({
             />
           </div>
           {stage && (
-            <div className="px-6 py-4 border border-[#0473F2]  font-['IBM_Plex_Serif'] rounded-lg bg-[#8CD3FF26]">
+            <div className="px-6 py-4 mx-4 mb-4 border border-[#0473F2]  font-['IBM_Plex_Serif'] rounded-lg bg-[#8CD3FF26]">
               <div className="text-base font-medium text-[#0473F2] ">Current Stage:
                 <span className="text-[#000] text-base">{` ${stage}`}</span></div>
             </div>
           )}
           <div
             ref={nudgesContainerRef}
-            className="mt-4"
+            className="mx-4 mb-4"
           >
             {nudges?.length > 0 && renderNudgeCard(nudges[nudges?.length - 1])}
           </div>
-          <div className="mt-4">
-            <SearchResources isInSidebar />
+          <div className="mx-4">
+            <SearchResources isInSidebar fullWidth showHeader={false} />
           </div>
         </motion.div>
       )}

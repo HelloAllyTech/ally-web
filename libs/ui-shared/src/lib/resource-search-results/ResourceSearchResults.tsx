@@ -1,10 +1,11 @@
 'use client';
 import { FC } from 'react';
 
-import { ResourceSearchBar, ResourceCard, SearchHeader, InfiniteScroll } from '../..';
+import { ResourceSearchBar, ResourceCard, SearchHeader, InfiniteScroll, SuggestionsContainer } from '../..';
 import { Resource } from '../../types';
 import ResourceTabs from './ResourceTabs';
 import { CircularProgress } from '@mui/material';
+import { sampleSuggestions } from './constants';
 
 export interface ResourceSearchResultsProps {
   selectedCategory: string;
@@ -41,7 +42,6 @@ const ResourceSearchResults: FC<ResourceSearchResultsProps> = ({
   };
 
   const renderResultsBody = (): React.ReactNode | null => {
-
     if (resources?.length === 0 && isLoading) {
       return <div className="w-full h-full flex flex-col items-center"><CircularProgress /></div>
     } else if (resources?.length > 0) {
@@ -53,17 +53,25 @@ const ResourceSearchResults: FC<ResourceSearchResultsProps> = ({
             setSelectedCategory={setSelectedCategory}
           />
           <div className={`w-full ${isInSidebar ? 'h-[calc(100vh-500px)]' : 'h-[calc(100vh-290px)]'} overflow-y-auto flex flex-col gap-4 items-center mt-4`}>
-            <InfiniteScroll onInfiniteScroll={onInfiniteScroll} isLoading={isLoading}>
-              {getResources()?.map((resource) => (
-                <ResourceCard
-                  key={resource.id}
-                  title={resource.heading}
-                  description={resource.content}
-                  category={resource.category}
-                  tags={resource.tags}
-                />
-              ))}
-            </InfiniteScroll>
+            {getResources()?.length > 0 ? (
+              <InfiniteScroll onInfiniteScroll={onInfiniteScroll} isLoading={isLoading}>
+                {getResources()?.map((resource) => (
+                  <ResourceCard
+                    key={resource.id}
+                    title={resource.heading}
+                    description={resource.content}
+                    category={resource.category}
+                    tags={resource.tags}
+                  />
+                ))}
+              </InfiniteScroll>
+            ) : (
+              <div>
+                <span className='text-[#ADADAD]'>{`No results found for "${searchQuery}"`}</span>
+                <SuggestionsContainer suggestions={sampleSuggestions} onSelect={onSearch} />
+              </div>
+            )}
+            
           </div>
         </>
       )

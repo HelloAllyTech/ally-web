@@ -61,6 +61,7 @@ const ResourceTabs: FC<ResourceTabsProps> = ({
 
   const handleMoreChange = (value: string) => {
     setNewCategory(value);
+    setSelectedCategory(value);
     setIsMoreOpen(false);
   };
 

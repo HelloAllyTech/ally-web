@@ -13,6 +13,7 @@ interface SearchClientProps {
 
 export default function SearchClient({ searchQuery, category, documents }: SearchClientProps) {
   const router = useRouter();
+
   const onSearch = (searchTerm: string) => {
     router.push(`/search?q=${encodeURIComponent(searchTerm)}&category=${encodeURIComponent(category)}`);
   };
