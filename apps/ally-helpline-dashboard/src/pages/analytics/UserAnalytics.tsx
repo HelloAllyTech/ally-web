@@ -44,25 +44,25 @@ const UserAnalytics: FunctionComponent = () => {
     const date = new Date();
     switch (mode) {
       case CalendarMode.DAY: {
-        const [startDate, endDate] = getDateRange(date, 'day');
+        const [startDate, endDate] = getDateRange(date, "day");
         setCalendarValue([startDate, endDate]);
         setDisplayDate([startDate, endDate]);
         break;
       }
       case CalendarMode.WEEK: {
-        const [startDate, endDate] = getDateRange(date, 'week');
+        const [startDate, endDate] = getDateRange(date, "week");
         setCalendarValue([startDate, endDate]);
         setDisplayDate([startDate, endDate]);
         break;
       }
       case CalendarMode.MONTH: {
-        const [startDate, endDate] = getDateRange(date, 'month');
+        const [startDate, endDate] = getDateRange(date, "month");
         setCalendarValue([startDate, endDate]);
         setDisplayDate([startDate, endDate]);
         break;
       }
       case CalendarMode.YEAR: {
-        const [startDate, endDate] = getDateRange(date, 'year');
+        const [startDate, endDate] = getDateRange(date, "year");
         setCalendarValue([startDate, endDate]);
         setDisplayDate([startDate, endDate]);
         break;
@@ -88,28 +88,28 @@ const UserAnalytics: FunctionComponent = () => {
     }
   };
 
-  const handleDisplayDateChange = (direction: 'prev' | 'next') => {
+  const handleDisplayDateChange = (direction: "prev" | "next") => {
     const [startDate, endDate] = displayDate;
 
     switch (mode) {
       case CalendarMode.DAY: {
-        startDate.setDate(startDate.getDate() + (direction === 'next' ? 1 : -1));
-        endDate.setDate(endDate.getDate() + (direction === 'next' ? 1 : -1));
+        startDate.setDate(startDate.getDate() + (direction === "next" ? 1 : -1));
+        endDate.setDate(endDate.getDate() + (direction === "next" ? 1 : -1));
         break;
       }
       case CalendarMode.WEEK: {
-        startDate.setDate(startDate.getDate() + (direction === 'next' ? 7 : -7));
-        endDate.setDate(endDate.getDate() + (direction === 'next' ? 7 : -7));
+        startDate.setDate(startDate.getDate() + (direction === "next" ? 7 : -7));
+        endDate.setDate(endDate.getDate() + (direction === "next" ? 7 : -7));
         break;
       }
       case CalendarMode.MONTH: {
-        startDate.setMonth(startDate.getMonth() + (direction === 'next' ? 1 : -1));
-        endDate.setMonth(endDate.getMonth() + (direction === 'next' ? 1 : -1));
+        startDate.setMonth(startDate.getMonth() + (direction === "next" ? 1 : -1));
+        endDate.setMonth(endDate.getMonth() + (direction === "next" ? 1 : -1));
         break;
       }
       case CalendarMode.YEAR: {
-        startDate.setFullYear(startDate.getFullYear() + (direction === 'next' ? 1 : -1));
-        endDate.setFullYear(endDate.getFullYear() + (direction === 'next' ? 1 : -1));
+        startDate.setFullYear(startDate.getFullYear() + (direction === "next" ? 1 : -1));
+        endDate.setFullYear(endDate.getFullYear() + (direction === "next" ? 1 : -1));
         break;
       }
     }
@@ -121,12 +121,12 @@ const UserAnalytics: FunctionComponent = () => {
   const handleDateChange = (calendarValue: Date) => {
     switch (mode) {
       case CalendarMode.DAY: {
-        const [startDate, endDate] = getDateRange(calendarValue, 'day');
+        const [startDate, endDate] = getDateRange(calendarValue, "day");
         setCalendarValue([startDate, endDate]);
         break;
       }
       case CalendarMode.WEEK: {
-        const [startDate, endDate] = getDateRange(calendarValue, 'week');
+        const [startDate, endDate] = getDateRange(calendarValue, "week");
         setCalendarValue([startDate, endDate]);
         break;
       }
@@ -135,13 +135,13 @@ const UserAnalytics: FunctionComponent = () => {
 
   const handleMonthChange = (date: Date | string) => {
     const dateObj = typeof date === "string" ? new Date(date) : date;
-    const [startDate, endDate] = getDateRange(dateObj, 'month');
+    const [startDate, endDate] = getDateRange(dateObj, "month");
     setCalendarValue([startDate, endDate]);
   };
 
   const handleYearChange = (date: Date | string) => {
     const dateObj = typeof date === "string" ? new Date(date) : date;
-    const [startDate, endDate] = getDateRange(dateObj, 'year');
+    const [startDate, endDate] = getDateRange(dateObj, "year");
     setCalendarValue([startDate, endDate]);
   };
 
@@ -168,6 +168,7 @@ const UserAnalytics: FunctionComponent = () => {
       ) : (
         <div className="flex flex-col w-[70%] ml-8 flex-2">
           <ListeningChart
+            isEmpty={counselorStats?.counselorListeningDuration === 0 && counselorStats?.counselorSharingDuration === 0}
             listeningPercentage={isStatsError ? 0 : 100 - (counselorStats?.counselorSharingPercentage ?? 0)}
           />
         </div>
@@ -190,7 +191,7 @@ const UserAnalytics: FunctionComponent = () => {
         <div className="flex items-center gap-2">
           <ChevronLeft 
             className="cursor-pointer w-4 h-4" 
-            onClick={() => handleDisplayDateChange('prev')} 
+            onClick={() => handleDisplayDateChange("prev")} 
           />
           <div
             className="w-[140px] text-[14px] text-center border border-[#E5E5E5] rounded-[4px] py-2 px-3 cursor-pointer"
@@ -200,7 +201,7 @@ const UserAnalytics: FunctionComponent = () => {
           </div>
           <ChevronRight 
             className="cursor-pointer w-4 h-4" 
-            onClick={() => handleDisplayDateChange('next')} 
+            onClick={() => handleDisplayDateChange("next")} 
           />
         </div>
         {mode !== CalendarMode.ALL && isCalendarOpen && (

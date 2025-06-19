@@ -2,11 +2,13 @@ import { FC, useEffect, useState } from "react";
 
 interface ListeningChartProps {
   listeningPercentage: number;
+  isEmpty?: boolean;
   className?: string;
 }
 
 const ListeningChart: FC<ListeningChartProps> = ({
   listeningPercentage,
+  isEmpty = false,
   className = "",
 }) => {
   const [animatedPercentage, setAnimatedPercentage] = useState(0);
@@ -40,8 +42,8 @@ const ListeningChart: FC<ListeningChartProps> = ({
       </h2>
 
       <div className="flex flex-col gap-2 mt-16">
-        <div className="w-full h-12 flex rounded-lg overflow-hidden">
-          <div
+        <div className={`w-full h-12 flex rounded-lg overflow-hidden ${isEmpty ? "bg-[#F5F5F5]" : "bg-[#BBD6FF]"}`}>
+          {isEmpty?  (<div className="text-sm text-[#4A4459] self-center w-full text-center">No data found</div>):(<><div
             className="bg-[#BBD6FF] flex items-center justify-start pl-4 transition-all duration-300 ease-out"
             style={{ width: `${animatedPercentage}%` }}
           >
@@ -56,7 +58,7 @@ const ListeningChart: FC<ListeningChartProps> = ({
             <span className="text-white font-medium">
               {Math.round(talkingPercentage)}%
             </span>
-          </div>
+          </div></>)}
         </div>
 
         <div className="flex gap-6 mt-4">
