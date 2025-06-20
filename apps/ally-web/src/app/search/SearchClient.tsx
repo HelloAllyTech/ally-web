@@ -23,7 +23,7 @@ export default function SearchClient({ searchQuery, category, documents }: Searc
   };
 
   return (
-    <main className="w-full h-[calc(100vh-50px)] sm:h-[calc(100vh-100px)] flex justify-center items-center mb-[50px] pt-[40px] pb-[50px] overflow-y-hidden">
+    <main className="w-full h-[calc(100vh-50px)] sm:h-[calc(100vh-100px)] flex justify-center items-center mb-[50px] pt-[40px] pb-[50px] sm:px-[15%] px-[0px] overflow-y-hidden">
       <ResourceSearchResults 
         searchQuery={searchQuery} 
         onSearch={onSearch} 
@@ -31,6 +31,7 @@ export default function SearchClient({ searchQuery, category, documents }: Searc
         setSelectedCategory={onCategoryChange}
         onInfiniteScroll={() => {}}
         resources={documents}
+        showHeaderDescriptionInMobile={false}
         isLoading={false}
       />
     </main>

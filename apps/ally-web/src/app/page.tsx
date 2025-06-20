@@ -13,7 +13,7 @@ export default function Index() {
   };
 
   return (
-    <main className="w-full min-h-screen flex flex-col justify-center items-center gap-4">
+    <main className="w-full min-h-screen flex flex-col justify-center items-center  sm:px-[15%] px-[5%] pb-[100px] overflow-y-hidden">
       <ResourceSearch initialValue="" suggestions={sampleSuggestions} onSearch={onSearch}/>
     </main>
   );

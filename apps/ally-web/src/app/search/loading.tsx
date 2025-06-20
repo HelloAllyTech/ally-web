@@ -1,11 +1,11 @@
 export default function Loading() {
   return (
-    <main className="w-full min-h-screen flex justify-center items-center">
-    <div className="w-full max-w-4xl mx-auto p-6">
+    <main className="w-full min-h-screen flex justify-center items-center sm:px-[14%] px-[0px] overflow-y-hidden">
+    <div className="w-full mx-auto p-6">
       {/* Search Header Skeleton */}
       <div className="flex flex-col items-center gap-4 mb-8">
-        <div className="w-64 h-8 bg-gray-200 rounded animate-pulse"></div>
-        <div className="w-96 h-10 bg-gray-200 rounded-lg animate-pulse"></div>
+        <div className="w-full h-8 bg-gray-200 rounded animate-pulse"></div>
+        <div className="w-full h-10 bg-gray-200 rounded-lg animate-pulse"></div>
       </div>
 
       {/* Tabs Skeleton */}

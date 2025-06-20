@@ -18,6 +18,7 @@ export interface ResourceSearchResultsProps {
   showHeader?: boolean;
   fullWidth?: boolean;
   isInSidebar?: boolean;
+  showHeaderDescriptionInMobile?: boolean;
 }
 
 const ResourceSearchResults: FC<ResourceSearchResultsProps> = ({
@@ -30,6 +31,7 @@ const ResourceSearchResults: FC<ResourceSearchResultsProps> = ({
   searchQuery,
   showHeader = true,
   fullWidth = false,
+  showHeaderDescriptionInMobile = true,
   isInSidebar = false,
 }) => {
   const getResources = () => {
@@ -43,7 +45,7 @@ const ResourceSearchResults: FC<ResourceSearchResultsProps> = ({
 
   const renderResultsBody = (): React.ReactNode | null => {
     if (resources?.length === 0 && isLoading) {
-      return <div className="w-full h-full flex flex-col items-center"><CircularProgress /></div>
+      return <div className="w-full h-full flex flex-col items-center pt-[20px]"><CircularProgress /></div>
     } else if (resources?.length > 0) {
       return (
         <>
@@ -68,9 +70,9 @@ const ResourceSearchResults: FC<ResourceSearchResultsProps> = ({
                 ))}
               </InfiniteScroll>
             ) : (
-              <div className="text-center px-4">
+              <div className="text-left px-4 pt-[10px]">
                 <span className='text-[#ADADAD]'>{`No results found for "${searchQuery}"`}</span>
-                <SuggestionsContainer suggestions={sampleSuggestions} onSelect={onSearch} />
+                <SuggestionsContainer suggestions={sampleSuggestions} isRow={false} onSelect={onSearch} />
               </div>
             )}
             
@@ -83,9 +85,9 @@ const ResourceSearchResults: FC<ResourceSearchResultsProps> = ({
 
   return (
     <div className="w-full h-full flex flex-col items-center">
-      <div className={`${fullWidth ? 'w-full' : 'w-full md:w-[60%]'} min-w-[300px] flex flex-col items-center`}>
+      <div className={`${fullWidth ? 'w-full' : 'w-full'} min-w-[300px] flex flex-col items-center`}>
         <div className="w-full flex flex-col gap-2 items-center justify-center px-4 mb-2 md:px-0">
-          {showHeader && <SearchHeader />}
+          {showHeader && <SearchHeader showDescriptionInMobile={showHeaderDescriptionInMobile} />}
           <ResourceSearchBar onSearch={onSearch} initialValue={searchQuery ?? ''} />
         </div>
         {renderResultsBody()}

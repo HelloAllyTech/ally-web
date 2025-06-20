@@ -7,7 +7,11 @@ import { useGetSearchResultsMutation } from "@/api/search";
 
 import { SearchResourcesProps } from "./types";
 
-const SearchResources: FC<SearchResourcesProps> = ({ isInSidebar = false, showHeader = true, fullWidth = false }) => {
+// TODO: Remove this once we have a real suggestions API
+export const sampleSuggestions = ["Grounding techniques", "Boundaries", "Questions to encourage disclosure", "Things to say to help process grief"];
+
+
+const SearchResources: FC<SearchResourcesProps> = ({ isInSidebar = false, showHeader = true, fullWidth = false, isSuggestionsRow = true }) => {
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [resources, setResources] = useState<Resource[]>([]);
@@ -62,7 +66,9 @@ const SearchResources: FC<SearchResourcesProps> = ({ isInSidebar = false, showHe
       isInSidebar={isInSidebar}
     />
   ) : (
-    <ResourceSearch onSearch={onInitialSearch} initialValue="" showHeader={showHeader} fullWidth={fullWidth} />
+    <div className="w-full h-full flex flex-col items-center justify-center">
+      <ResourceSearch onSearch={onInitialSearch} suggestions={sampleSuggestions} isSuggestionsRow={isSuggestionsRow} initialValue="" showHeader={showHeader} fullWidth={fullWidth} />
+    </div>
   );
 };
 

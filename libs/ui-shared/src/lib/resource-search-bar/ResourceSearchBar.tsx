@@ -45,10 +45,12 @@ const SearchBar: FC<SearchBarProps> = ({ onSearch, initialValue = '', suggestion
       value={searchTerm}
       onChange={(e) => setSearchTerm(e.target.value)}
       onKeyDown={handleKeyPress}
-      className="font-['IBM_Plex_Serif'] text-[16px]"
+      className="font-['IBM_Plex_Serif'] text-[16px] h-[40px] sm:h-[56px]"
       sx={{
         '& .MuiOutlinedInput-root': {
-          height: '40px',
+          height: { xs: '40px', sm: '56px' },
+          fontFamily: 'IBM_Plex_Serif',
+          fontSize: { xs: '16px', sm: '18px' },
           '& fieldset': {
             border: '0.5px solid #D6D7DB',
             borderRadius: '8px',
@@ -81,7 +83,7 @@ const SearchBar: FC<SearchBarProps> = ({ onSearch, initialValue = '', suggestion
       freeSolo
       id="free-solo-2-demo"
       options={suggestions}
-      className="w-full h-[40px]"
+      className="w-full h-[36px] sm:h-[60px]"
       value={searchTerm}
       onChange={(_, newValue) => {
         setSearchTerm(newValue || '');

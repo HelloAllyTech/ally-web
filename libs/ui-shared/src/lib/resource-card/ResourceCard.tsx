@@ -94,7 +94,7 @@ const ResourceCard: FC<ResourceCardProps> = ({
 
   const renderDescription = () => {
     return (
-      <div className="relative font-['IBM_Plex_Serif']">
+      <div className="relative">
         <AnimatePresence mode="wait">
           <motion.div
             ref={contentRef}
@@ -123,10 +123,10 @@ const ResourceCard: FC<ResourceCardProps> = ({
   }
 
   return (
-    <div className="w-full flex flex-col gap-2 border border-[#DADCE1] rounded-[8px] p-3 sm:p-4 bg-white">
+    <div onClick={()=> setIsExpanded((prev)=> !prev)} className="w-full flex flex-col gap-2 border border-[#DADCE1] rounded-[8px] p-3 sm:p-4 bg-white">
       {renderTags()}
-      <div className="flex flex-col gap-1">
-        <span className="font-medium text-[15px] sm:text-[16px] text-[#000]">{title}</span>
+      <div className="flex flex-col font-['IBM_Plex_Serif'] gap-1">
+        <span className="font-[500] text-[15px] sm:text-[16px] text-[#000]">{title}</span>
         {renderDescription()}
       </div>
     </div>
