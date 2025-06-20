@@ -1,9 +1,11 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
+import { useState } from 'react';
 
-import { ResourceSearchResults } from '@ally-ui-mono/ui-shared';
+import { ResourceSearch } from '@ally-ui-mono/ui-shared';
 import { Resource } from 'libs/ui-shared/src/types';
+import { fetchReferenceDocuments, initialFetchLimit } from './api';
 
 interface SearchClientProps {
   searchQuery: string;
@@ -12,8 +14,17 @@ interface SearchClientProps {
   documents: Resource[];
 }
 
-export default function SearchClient({ searchQuery, category, documents, categories }: SearchClientProps) {
+export default function SearchClient({
+  searchQuery,
+  category,
+  documents: initialDocuments,
+  categories,
+}: SearchClientProps) {
   const router = useRouter();
+  const [documents, setDocuments] = useState<Resource[]>(initialDocuments);
+  const [isLoading, setIsLoading] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
+
 
   const onSearch = (searchTerm: string) => {
     router.push(`/search?q=${encodeURIComponent(searchTerm)}&category=${encodeURIComponent(category)}`);
@@ -23,17 +34,35 @@ export default function SearchClient({ searchQuery, category, documents, categor
     router.push(`/search?q=${encodeURIComponent(searchQuery)}&category=${encodeURIComponent(newCategory)}`);
   };
 
+  const onInfiniteScroll = async () => {
+    if (isLoading || !hasMore) return;
+
+    setIsLoading(true);
+    const { documents: newDocuments } = await fetchReferenceDocuments(
+      searchQuery,
+      category,
+      documents.length + initialFetchLimit,
+    );
+
+    if (newDocuments.length > documents.length) {
+      setDocuments(newDocuments);
+    } else {
+      setHasMore(false);
+    }
+    setIsLoading(false);
+  };
+
   return (
     <main className="w-full h-[calc(100vh-50px)] sm:h-[calc(100vh-100px)] flex justify-center items-center mb-[50px] pt-[40px] pb-[50px] sm:px-[15%] px-[0px] overflow-y-hidden">
-      <ResourceSearchResults 
-        searchQuery={searchQuery} 
-        onSearch={onSearch} 
-        selectedCategory={category} 
+      <ResourceSearch
+        searchQuery={searchQuery}
+        onSearch={onSearch}
+        selectedCategory={category}
         setSelectedCategory={onCategoryChange}
-        onInfiniteScroll={() => {}}
+        onInfiniteScroll={onInfiniteScroll}
         resources={documents}
         showHeaderDescriptionInMobile={false}
-        isLoading={false}
+        isLoading={isLoading}
         categories={categories}
       />
     </main>

@@ -1,7 +1,9 @@
-const API_BASE_URL = process.env.API_BASE_URL;
-const API_VERSION = process.env.API_VERSION;
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
+const API_VERSION = process.env.NEXT_PUBLIC_API_VERSION;
 
-const fetchReferenceDocuments = async (query: string, category?: string) => {
+export const initialFetchLimit = 10;
+
+const fetchReferenceDocuments = async (query: string, category?: string, limit: number = initialFetchLimit) => {
   const response = await fetch(
     `${API_BASE_URL}/api/${API_VERSION}/reference-document/search/public`,
     {
@@ -9,7 +11,7 @@ const fetchReferenceDocuments = async (query: string, category?: string) => {
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ query, limit: 10 }),
+      body: JSON.stringify({ query, limit }),
     }
   );
   return response.json();

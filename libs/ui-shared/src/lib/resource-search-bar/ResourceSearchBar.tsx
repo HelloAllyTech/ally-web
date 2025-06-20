@@ -29,7 +29,7 @@ const SearchBar: FC<SearchBarProps> = ({ onSearch, initialValue = '', suggestion
     return (
       <li
         {...props}
-        className={`flex items-center h-12 text-[14px] font-serif text-[#555] cursor-pointer pl-4 transition-colors ${selected ? 'bg-[#fafafa]' : 'bg-white'}`}
+        className={`flex items-center h-12 sm:text-[16px] text-[14px] font-['IBM_Plex_Serif'] font-serif text-[#555] cursor-pointer pl-4 transition-colors ${selected ? 'bg-[#fafafa]' : 'bg-white'}`}
       >
         <SearchIcon className="mr-2 text-[#888]" />
         {option}

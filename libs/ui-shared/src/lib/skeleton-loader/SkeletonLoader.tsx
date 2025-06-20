@@ -1,11 +1,11 @@
-export default function Loading() {
+export default function SkeletonLoader() {
   return (
-    <main className="w-full min-h-screen flex justify-center sm:px-[14%] px-[0px] overflow-y-hidden sm:pt-[30px] pt-[20px]">
-    <div className="w-full mx-auto p-6">
-      {/* Search Header Skeleton */}
+    <main className="w-full min-h-screen flex justify-center overflow-y-hidden ">
+    <div className="w-full mx-auto">
+      {/* Search Header Skeleton */} 
       <div className="flex flex-col items-center gap-4 mb-8">
-        <div className="sm:w-[30%] w-[50%] sm:h-[100px] h-[50px] bg-gray-200 rounded animate-pulse"></div>
-        <div className="w-full sm:h-[46px] h-[40px] bg-gray-200 rounded-lg animate-pulse"></div>
+        <div className="w-full h-8 bg-gray-200 rounded animate-pulse"></div>
+        <div className="w-full h-10 bg-gray-200 rounded-lg animate-pulse"></div>
       </div>
 
       {/* Tabs Skeleton */}

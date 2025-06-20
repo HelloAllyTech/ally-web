@@ -1,10 +1,9 @@
 import Badge from './lib/badge';
 import ResourceCard from './lib/resource-card';
 import SearchHeader from './lib/search-header';
-import ResourceSearch from './lib/resource-search';
 import ResourceSearchBar from './lib/resource-search-bar';
 import { DropdownField, Dropdown } from './lib/dropdown-field';
-import ResourceSearchResults from './lib/resource-search-results';
+import ResourceSearch from './lib/resource-search';
 import InfiniteScroll from './lib/infinite-scroll';
 import SuggestionsContainer from './lib/suggestions-container';
 
@@ -14,9 +13,8 @@ export {
   ResourceCard,
   SearchHeader,
   DropdownField,
-  ResourceSearch,
   ResourceSearchBar,
-  ResourceSearchResults,
+  ResourceSearch,
   InfiniteScroll,
   SuggestionsContainer,
 };
