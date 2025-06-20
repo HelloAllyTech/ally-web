@@ -4,6 +4,7 @@ export interface DropdownFieldProps {
     value: string;
     valueClassName?: string;
     onChange: (value: string) => void;
+    onHandleSearch?: (query: string) => void | undefined;
     options: string[];
 }
 
@@ -12,4 +13,5 @@ export interface DropdownProps {
     handleChange: (value: string) => void;
     className?: string;
     style?: React.CSSProperties;
+    onHandleSearch?: (query: string) => void;
 }

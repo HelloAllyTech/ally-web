@@ -163,7 +163,7 @@ const Login: FunctionComponent = () => {
               onClick={() => setLoginSection(LoginSection.EMAIL)}
             />
           </span>
-          <span className="text-xs text-[#49454F]">Code</span>
+          <span className="text-xs text-[#49454F] mb-[4px]">Code</span>
           <TextField
             fieldSize="medium"
             type="text"

@@ -4,16 +4,23 @@ import { FC, useState } from 'react';
 
 import { DropdownProps } from './types';
 
-const Dropdown: FC<DropdownProps> = ({ options, handleChange, className, style }) => {
+const Dropdown: FC<DropdownProps> = ({ options, handleChange, className, style, onHandleSearch }) => {
   const [searchQuery, setSearchQuery] = useState('');
 
   const getOptions = () => {
+    if (onHandleSearch) {
+      return options;
+    }
+
     return options.filter((option) =>
       option.toLowerCase().trim().includes(searchQuery.toLowerCase().trim())
     );
   };
 
   const handleSearch = (query: string) => {
+    if (onHandleSearch) {
+      onHandleSearch(query);
+    }
     setSearchQuery(query);
   };
 

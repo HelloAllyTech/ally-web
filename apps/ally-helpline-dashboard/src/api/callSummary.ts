@@ -53,6 +53,12 @@ const callSummaryAPI = baseAPI.injectEndpoints({
     getLocations: builder.query<GetLocationsResponse, void>({
       query: () => "/places",
     }),
+    searchLocations: builder.query<GetLocationsResponse, { query: string }>({
+      query: ({ query }) => ({
+        url: "/places/search",
+        params: { query },
+      }),
+    }),
   }),
 });
 
@@ -65,4 +71,5 @@ export const {
   useUpdateCallInfoMutation,
   useLazyExportCallSummaryQuery,
   useGetLocationsQuery,
+  useLazySearchLocationsQuery,
 } = callSummaryAPI;

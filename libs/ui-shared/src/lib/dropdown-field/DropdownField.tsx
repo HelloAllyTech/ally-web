@@ -5,7 +5,7 @@ import PlayArrow from "@mui/icons-material/PlayArrow";
 import { DropdownFieldProps } from "./types";
 import { Dropdown } from ".";
 
-const DropdownField: FC<DropdownFieldProps> = ({ disabled, label, value, onChange, options, valueClassName }) => {
+const DropdownField: FC<DropdownFieldProps> = ({ disabled, label, value, onChange, options, valueClassName, onHandleSearch }) => {
   const [isOpen, setIsOpen] = useState(false);
 
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -44,6 +44,7 @@ const DropdownField: FC<DropdownFieldProps> = ({ disabled, label, value, onChang
         <Dropdown
           options={options}
           handleChange={handleChange}
+          onHandleSearch={onHandleSearch}
           className="top-5 left-0"
         />
       )}

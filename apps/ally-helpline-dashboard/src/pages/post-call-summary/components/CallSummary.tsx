@@ -8,6 +8,7 @@ import {
   useUpdateCallSummaryMutation,
   useGetTagsMutation,
   useGetLocationsQuery,
+  useLazySearchLocationsQuery,
 } from "@/api/callSummary";
 import { useEnhance } from "@/hooks";
 import { SummaryFieldKey, Tag } from "@/types/summary";
@@ -26,6 +27,7 @@ const CallSummary: FC<CallSummaryProps> = ({
   setShowInitialLoading,
 }) => {
   const [summaryData, setSummaryData] = useState(null);
+  const [searchedLocations, setSearchedLocations] = useState(null);
 
   const { data: visibleFields, isLoading: isGetSummaryFieldsLoading } =
     useGetSummaryFieldsQuery();
@@ -34,6 +36,8 @@ const CallSummary: FC<CallSummaryProps> = ({
   const [getTags, { isLoading: isGetTagsLoading }] = useGetTagsMutation();
   const { data: locations, isLoading: isGetLocationsLoading } =
     useGetLocationsQuery();
+  const [searchLocations, { isLoading: isSearchLocationsLoading }] =
+    useLazySearchLocationsQuery();
 
   const {
     enhancing,
@@ -48,7 +52,8 @@ const CallSummary: FC<CallSummaryProps> = ({
     isUpdateLoading ||
     isEnhanceLoading ||
     isGetTagsLoading ||
-    isGetLocationsLoading;
+    isGetLocationsLoading ||
+    isSearchLocationsLoading;
 
   useEffect(() => {
     let timer: NodeJS.Timeout;
@@ -72,10 +77,22 @@ const CallSummary: FC<CallSummaryProps> = ({
     }
   }, [callSummary]);
 
+  const onHandleSearch = async (query: string) => {
+    if (query) {
+      const response = await searchLocations({ query });
+      if (response.data) {
+        setSearchedLocations(response.data);
+      }
+    } else {
+      setSearchedLocations(null);
+    }
+  };
+
   const getDropdownOptions = (key: string, options: string[]) => {
     if (key === SummaryFieldKey.Location) {
+      const locationData = searchedLocations || locations?.data || [];
       return (
-        locations?.data.map(({ city, state }) => `${city} - ${state}`) || []
+        locationData.map(({ city, state }) => `${city} - ${state}`) || []
       );
     }
     return options ?? [];
@@ -134,6 +151,7 @@ const CallSummary: FC<CallSummaryProps> = ({
               onChange={(value) =>
                 setSummaryData((prev) => ({ ...prev, [field.key]: value }))
               }
+              onHandleSearch={field.key === SummaryFieldKey.Location ? onHandleSearch : undefined}
               options={getDropdownOptions(field.key, field.options)}
             />
           </div>
