@@ -51,6 +51,7 @@ jobs:
       build_command: ${{ steps.set-config.outputs.build_command }}
       node_version: ${{ steps.set-config.outputs.node_version }}
       port: ${{ steps.set-config.outputs.port }}
+      use_build_time_env: ${{ steps.set-config.outputs.use_build_time_env }}
     steps:
       - name: Set Configuration
         id: set-config
@@ -61,6 +62,7 @@ jobs:
           echo "build_command=npm run build" >> $GITHUB_OUTPUT
           echo "node_version=20" >> $GITHUB_OUTPUT
           echo "port=3000" >> $GITHUB_OUTPUT
+          echo "use_build_time_env=false" >> $GITHUB_OUTPUT
 
   # Check if there are changes in the app directory
   changes:
@@ -153,8 +155,7 @@ jobs:
       build_command: ${{ needs.config.outputs.build_command }}
       node_version: ${{ needs.config.outputs.node_version }}
       port: ${{ needs.config.outputs.port }}
-      use_build_time_env: 'false'
-
+      use_build_time_env: ${{ needs.config.outputs.use_build_time_env }}
   # Build and test on pull requests (no deployment)
   test:
     needs: [config, changes]
