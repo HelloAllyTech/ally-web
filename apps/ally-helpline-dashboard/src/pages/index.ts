@@ -11,6 +11,7 @@ import ClientInterface from "./client-interface";
 import AudioCall from "./audio-call";
 import AccessDenied from "./access-denied";
 import Search from "./search";
+import Health from "./health-check";
 
 export {
   Login,
@@ -26,4 +27,5 @@ export {
   PostCallSummary,
   ClientInterface,
   Search,
+  Health,
 };

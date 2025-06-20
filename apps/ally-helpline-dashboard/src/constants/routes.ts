@@ -1,9 +1,7 @@
 import { Book, Relax } from "@/assets/icons";
 
 import PhoneOutlinedIcon from "@mui/icons-material/PhoneOutlined";
-import DateRangeOutlinedIcon from "@mui/icons-material/DateRangeOutlined";
 import LeaderboardOutlinedIcon from "@mui/icons-material/LeaderboardOutlined";
-import SettingsOutlinedIcon from "@mui/icons-material/SettingsOutlined";
 import PublicOutlinedIcon from "@mui/icons-material/PublicOutlined";
 import SearchOutlinedIcon from "@mui/icons-material/SearchOutlined";
 
@@ -14,6 +12,7 @@ export const ROUTES = {
   // Public Routes
   LOGIN: "/login",
   SIGNUP: "/signup",
+  HEALTH: "/health",
 
   // Private Routes
   HOME: "/",
