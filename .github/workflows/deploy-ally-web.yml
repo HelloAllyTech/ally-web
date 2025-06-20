@@ -153,6 +153,7 @@ jobs:
       build_command: ${{ needs.config.outputs.build_command }}
       node_version: ${{ needs.config.outputs.node_version }}
       port: ${{ needs.config.outputs.port }}
+      use_build_time_env: 'false'
 
   # Build and test on pull requests (no deployment)
   test:

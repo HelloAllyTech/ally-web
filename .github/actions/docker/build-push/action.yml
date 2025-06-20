@@ -27,6 +27,10 @@ inputs:
   s3_bucket:
     description: 'S3 bucket name'
     required: true
+  use_build_time_env:
+    description: 'Enable build-time environment variables from S3'
+    required: false
+    default: 'true'
 
 outputs:
   image_uri:
@@ -46,16 +50,22 @@ runs:
     - name: Download Environment Variables
       shell: bash
       run: |
-        echo ":gear: Checking for environment variables..." >> $GITHUB_STEP_SUMMARY
-        if aws s3 cp s3://${{ inputs.s3_bucket }}/${{ inputs.service_name }}/.env ${{ inputs.app_path }}/.env 2>/dev/null; then
-          echo ":white_check_mark: Environment variables downloaded successfully" >> $GITHUB_STEP_SUMMARY
-          echo "- S3 Path: s3://${{ inputs.s3_bucket }}/${{ inputs.service_name }}/.env" >> $GITHUB_STEP_SUMMARY
-          echo "- Local Path: ${{ inputs.app_path }}/.env" >> $GITHUB_STEP_SUMMARY
-          echo "- File will be available during Docker build" >> $GITHUB_STEP_SUMMARY
+        if [ "${{ inputs.use_build_time_env }}" = "true" ]; then
+          echo ":gear: Build-time environment variables enabled - checking for .env file..." >> $GITHUB_STEP_SUMMARY
+          if aws s3 cp s3://${{ inputs.s3_bucket }}/${{ inputs.service_name }}/.env ${{ inputs.app_path }}/.env 2>/dev/null; then
+            echo ":white_check_mark: Environment variables downloaded successfully" >> $GITHUB_STEP_SUMMARY
+            echo "- S3 Path: s3://${{ inputs.s3_bucket }}/${{ inputs.service_name }}/.env" >> $GITHUB_STEP_SUMMARY
+            echo "- Local Path: ${{ inputs.app_path }}/.env" >> $GITHUB_STEP_SUMMARY
+            echo "- File will be available during Docker build" >> $GITHUB_STEP_SUMMARY
+          else
+            echo ":information_source: No build-time environment variables found" >> $GITHUB_STEP_SUMMARY
+            echo "- S3 Path: s3://${{ inputs.s3_bucket }}/${{ inputs.service_name }}/.env (not found)" >> $GITHUB_STEP_SUMMARY
+            echo "- Proceeding with build without environment variables" >> $GITHUB_STEP_SUMMARY
+          fi
         else
-          echo ":information_source: No build-time environment variables found" >> $GITHUB_STEP_SUMMARY
-          echo "- S3 Path: s3://${{ inputs.s3_bucket }}/${{ inputs.service_name }}/.env (not found)" >> $GITHUB_STEP_SUMMARY
-          echo "- Proceeding with build without environment variables" >> $GITHUB_STEP_SUMMARY
+          echo ":no_entry_sign: Build-time environment variables disabled" >> $GITHUB_STEP_SUMMARY
+          echo "- Skipping S3 environment variable download" >> $GITHUB_STEP_SUMMARY
+          echo "- Build will proceed without build-time environment variables" >> $GITHUB_STEP_SUMMARY
         fi
 
     - name: Build and push Docker image

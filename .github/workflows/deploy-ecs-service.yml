@@ -35,6 +35,11 @@ on:
         type: string
         default: '8080'
         description: 'Port the application runs on'
+      use_build_time_env:
+        required: false
+        type: string
+        default: 'true'
+        description: 'Enable build-time environment variables from S3'
 
 permissions:
   id-token: write
@@ -117,6 +122,7 @@ jobs:
           image_tag: ${{ steps.vars.outputs.short_sha }}
           service_name: ${{ inputs.service_name }}
           s3_bucket: ${{ needs.prepare-env.outputs.s3_bucket }}
+          use_build_time_env: ${{ inputs.use_build_time_env }}
   deploy:
     needs:
       - build
