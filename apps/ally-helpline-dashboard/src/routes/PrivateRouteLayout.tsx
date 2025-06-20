@@ -144,7 +144,7 @@ const PrivateRouteLayout = () => {
                   isClient ? (
                     <Navigate to={ROUTES.CLIENT} />
                   ) : (
-                    <Navigate to={ROUTES.CALLS} />
+                    <Navigate to={ROUTES.SEARCH} />
                   )
                 }
               />

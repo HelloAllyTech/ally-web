@@ -1,9 +1,10 @@
 import { FC, useState } from "react";
 import { toast } from "sonner";
+import { useSearchParams } from "react-router-dom";
 
 import { ResourceSearch, ResourceSearchResults } from "@ally-ui-mono/ui-shared";
 import { Resource } from "@ally-ui-mono/ui-shared/types";
-import { useGetSearchResultsMutation } from "@/api/search";
+import { useGetCategoriesQuery, useGetSearchResultsMutation } from "@/api/search";
 
 import { SearchResourcesProps } from "./types";
 
@@ -11,12 +12,19 @@ import { SearchResourcesProps } from "./types";
 export const sampleSuggestions = ["Grounding techniques", "Boundaries", "Questions to encourage disclosure", "Things to say to help process grief"];
 
 
-const SearchResources: FC<SearchResourcesProps> = ({ isInSidebar = false, showHeader = true, fullWidth = false, isSuggestionsRow = true }) => {
-  const [selectedCategory, setSelectedCategory] = useState("all");
+const SearchResources: FC<SearchResourcesProps> = ({
+  isInSidebar = false,
+  showHeader = true,
+  fullWidth = false,
+  isSuggestionsRow = true,
+}) => {
+  const [_, setSearchParams] = useSearchParams();
+  const [selectedCategory, setSelectedCategory] = useState("All");
   const [searchQuery, setSearchQuery] = useState("");
   const [resources, setResources] = useState<Resource[]>([]);
 
   const [getSearchResults, { isLoading: isResourcesLoading }] = useGetSearchResultsMutation();
+  const { data: categories } = useGetCategoriesQuery();
 
   const onInitialSearch = (searchTerm: string) => {
     setSearchQuery(searchTerm);
@@ -24,6 +32,9 @@ const SearchResources: FC<SearchResourcesProps> = ({ isInSidebar = false, showHe
   };
 
   const handleSearch = async (query: string) => {
+    if (!isInSidebar) {
+      setSearchParams({ q: query });
+    }
     setSearchQuery(query);
     if (query) {
       try {
@@ -51,10 +62,11 @@ const SearchResources: FC<SearchResourcesProps> = ({ isInSidebar = false, showHe
       setResources(response.data.documents);
     }
   };
-   
+
   return searchQuery ? (
     <ResourceSearchResults
       resources={resources}
+      categories={categories || []}
       isLoading={isResourcesLoading}
       onSearch={handleSearch}
       onInfiniteScroll={fetchRemainingResources}
@@ -67,7 +79,14 @@ const SearchResources: FC<SearchResourcesProps> = ({ isInSidebar = false, showHe
     />
   ) : (
     <div className="w-full h-full flex flex-col items-center justify-center">
-      <ResourceSearch onSearch={onInitialSearch} suggestions={sampleSuggestions} isSuggestionsRow={isSuggestionsRow} initialValue="" showHeader={showHeader} fullWidth={fullWidth} />
+      <ResourceSearch
+        onSearch={onInitialSearch}
+        suggestions={sampleSuggestions}
+        isSuggestionsRow={isSuggestionsRow}
+        initialValue=""
+        showHeader={showHeader}
+        fullWidth={fullWidth}
+      />
     </div>
   );
 };

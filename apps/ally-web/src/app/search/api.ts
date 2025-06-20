@@ -15,4 +15,14 @@ const fetchReferenceDocuments = async (query: string, category?: string) => {
   return response.json();
 };
 
-export { fetchReferenceDocuments };
+const fetchCategories = async () => {
+  const response = await fetch(
+    `${API_BASE_URL}/api/${API_VERSION}/reference-document/categories`,
+    {
+      method: 'GET',
+    }
+  );
+  return response.json();
+};
+
+export { fetchReferenceDocuments, fetchCategories };

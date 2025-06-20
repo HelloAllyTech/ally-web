@@ -8,6 +8,7 @@ import { CircularProgress } from '@mui/material';
 import { sampleSuggestions } from './constants';
 
 export interface ResourceSearchResultsProps {
+  categories: string[];
   selectedCategory: string;
   setSelectedCategory: (category: string) => void;
   onInfiniteScroll: () => void;
@@ -22,6 +23,7 @@ export interface ResourceSearchResultsProps {
 }
 
 const ResourceSearchResults: FC<ResourceSearchResultsProps> = ({
+  categories,
   selectedCategory,
   setSelectedCategory,
   onInfiniteScroll,
@@ -35,13 +37,18 @@ const ResourceSearchResults: FC<ResourceSearchResultsProps> = ({
   isInSidebar = false,
 }) => {
   const getResources = () => {
-    if (selectedCategory === 'all') {
+    if (selectedCategory === 'All') {
       return resources;
     }
     return resources.filter(
       (resource) => resource.category === selectedCategory
     );
   };
+
+  const handleSearch = (searchTerm: string) => {
+    setSelectedCategory('All');
+    onSearch(searchTerm);
+  }
 
   const renderResultsBody = (): React.ReactNode | null => {
     if (resources?.length === 0 && isLoading) {
@@ -51,6 +58,7 @@ const ResourceSearchResults: FC<ResourceSearchResultsProps> = ({
         <>
           <div className="w-[calc(100%-32px)] sm:w-full ml-[16px] mr-[16px]">
             <ResourceTabs
+              categories={categories}
               resources={resources}
               selectedCategory={selectedCategory}
               setSelectedCategory={setSelectedCategory}
@@ -72,7 +80,7 @@ const ResourceSearchResults: FC<ResourceSearchResultsProps> = ({
             ) : (
               <div className="text-left px-4 pt-[10px]">
                 <span className='text-[#ADADAD]'>{`No results found for "${searchQuery}"`}</span>
-                <SuggestionsContainer suggestions={sampleSuggestions} isRow={false} onSelect={onSearch} />
+                <SuggestionsContainer suggestions={sampleSuggestions} isRow={false} onSelect={handleSearch} />
               </div>
             )}
             
@@ -88,7 +96,7 @@ const ResourceSearchResults: FC<ResourceSearchResultsProps> = ({
       <div className={`${fullWidth ? 'w-full' : 'w-full'} min-w-[300px] flex flex-col items-center`}>
         <div className="w-full flex flex-col gap-2 items-center justify-center px-4 mb-2 md:px-0">
           {showHeader && <SearchHeader showDescriptionInMobile={showHeaderDescriptionInMobile} />}
-          <ResourceSearchBar onSearch={onSearch} initialValue={searchQuery ?? ''} />
+          <ResourceSearchBar onSearch={handleSearch} initialValue={searchQuery ?? ''} />
         </div>
         {renderResultsBody()}
       </div>

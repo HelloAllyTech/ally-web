@@ -8,10 +8,11 @@ import { Resource } from 'libs/ui-shared/src/types';
 interface SearchClientProps {
   searchQuery: string;
   category: string;
+  categories: string[];
   documents: Resource[];
 }
 
-export default function SearchClient({ searchQuery, category, documents }: SearchClientProps) {
+export default function SearchClient({ searchQuery, category, documents, categories }: SearchClientProps) {
   const router = useRouter();
 
   const onSearch = (searchTerm: string) => {
@@ -33,6 +34,7 @@ export default function SearchClient({ searchQuery, category, documents }: Searc
         resources={documents}
         showHeaderDescriptionInMobile={false}
         isLoading={false}
+        categories={categories}
       />
     </main>
   );
