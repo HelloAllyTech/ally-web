@@ -7,6 +7,7 @@ WORKDIR /app
 COPY package*.json ./
 COPY nx.json ./
 COPY tsconfig.base.json ./
+COPY eslint.config.mjs ./
 
 # Copy ALL project package.json files to ensure proper workspace setup
 COPY apps/ally-helpline-dashboard/package*.json ./apps/ally-helpline-dashboard/
@@ -27,7 +28,7 @@ FROM node:20-alpine
 
 WORKDIR /app
 
-# Install serve
+# Install serve with silent option
 RUN npm install -g serve
 
 # Copy built files from builder
@@ -36,5 +37,5 @@ COPY --from=builder /app/dist/apps/ally-helpline-dashboard ./dist
 # Expose the app's port
 EXPOSE 8080
 
-# Start serve
-CMD ["serve", "-s", "dist", "-l", "8080"]
+# Start serve with silent flag to reduce logging
+CMD ["serve", "-s", "dist", "-l", "8080", "--silent"]
