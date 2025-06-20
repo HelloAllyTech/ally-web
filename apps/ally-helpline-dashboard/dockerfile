@@ -37,4 +37,4 @@ COPY --from=builder /app/dist/apps/ally-helpline-dashboard ./dist
 EXPOSE 8080
 
 # Start serve with silent flag to reduce logging
-CMD ["serve", "-s", "dist", "-l", "8080", "--silent"]
+CMD ["serve", "-s", "dist", "-l", "8080", "--no-request-logging"]
