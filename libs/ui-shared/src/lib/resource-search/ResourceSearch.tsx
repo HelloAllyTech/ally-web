@@ -9,13 +9,13 @@ import { sampleSuggestions } from './constants';
 import SkeletonLoader from '../skeleton-loader/SkeletonLoader';
 
 export interface ResourceSearchProps {
-  categories: string[];
-  selectedCategory: string;
-  setSelectedCategory: (category: string) => void;
-  onInfiniteScroll: () => void;
-  onSearch: (searchTerm: string) => void;
-  resources: Resource[];
-  isLoading: boolean;
+  categories?: string[];
+  selectedCategory?: string;
+  setSelectedCategory?: (category: string) => void;
+  onInfiniteScroll?: () => void;
+  onSearch?: (searchTerm: string) => void;
+  resources?: Resource[];
+  isLoading?: boolean;
   searchQuery?: string;
   showHeader?: boolean;
   fullWidth?: boolean;

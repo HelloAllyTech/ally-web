@@ -39,10 +39,17 @@ export const navBarOptions = [
     },
     {
       id: TabId.CALLS,
-      title: "Calls",
+      title: "Logs",
       Icon: PhoneOutlinedIcon,
       path: ROUTES.CALLS,
       permission: Permissions.VIEW_NAVBAR_CALLS
+    },
+    {
+      id:  TabId.ANALYTICS,
+      title: "Stats",
+      Icon: LeaderboardOutlinedIcon,
+      path: ROUTES.ANALYTICS,
+      permission: Permissions.VIEW_NAVBAR_ANALYTICS
     },
     // {
     //   id: TabId.CALENDER,
@@ -64,13 +71,6 @@ export const navBarOptions = [
       Icon: Relax,
       path: ROUTES.STRESS_BUSTERS,
       permission: Permissions.VIEW_NAVBAR_STRESS_BUSTER
-    },
-    {
-      id:  TabId.ANALYTICS,
-      title: "Analytics",
-      Icon: LeaderboardOutlinedIcon,
-      path: ROUTES.ANALYTICS,
-      permission: Permissions.VIEW_NAVBAR_ANALYTICS
     },
     {
       id:  TabId.COMMUNITY,

@@ -40,6 +40,8 @@ import TherapeuticTechniques from "./TherapeuticTechniques.svg?react";
 import Edit from "./Edit.svg?react";
 import Delete from "./Delete.svg?react";
 import Download from "./Download.svg?react";
+import Logout from "./Logout.svg?react";
+import AccountCircle from "./account_circle.svg?react";
 
 export {
   Relax,
@@ -84,4 +86,6 @@ export {
   Edit,
   Delete,
   Download,
+  Logout,
+  AccountCircle,
 };
