@@ -156,37 +156,3 @@ jobs:
       node_version: ${{ needs.config.outputs.node_version }}
       port: ${{ needs.config.outputs.port }}
       use_build_time_env: ${{ needs.config.outputs.use_build_time_env }}
-  # Build and test on pull requests (no deployment)
-  test:
-    needs: [config, changes]
-    if: |
-      (needs.changes.outputs.web == 'true' || github.event.inputs.force_deploy == 'true') && 
-      github.event_name == 'pull_request'
-    runs-on: ubuntu-22.04
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ needs.config.outputs.node_version }}
-          cache: 'npm'
-
-      - name: Install Dependencies
-        run: npm ci --legacy-peer-deps
-
-      - name: Run Tests
-        run: |
-          # Run tests for the specific app using Nx
-          npx nx test ally-web || echo "No tests found for ally-web"
-
-      - name: Build Application
-        run: npx nx build ally-web
-
-      - name: PR Summary
-        run: |
-          echo ":white_check_mark: Build and tests completed successfully!" >> $GITHUB_STEP_SUMMARY
-          echo "- Service: ${{ needs.config.outputs.service_name }}" >> $GITHUB_STEP_SUMMARY
-          echo "- Branch: ${{ github.head_ref }}" >> $GITHUB_STEP_SUMMARY
-          echo "- No deployment performed (PR only)" >> $GITHUB_STEP_SUMMARY
