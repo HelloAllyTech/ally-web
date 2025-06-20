@@ -30,7 +30,7 @@ import { WaitingClient } from "@/types/calls";
 import { setUserStatus } from "@/reducer/userReducer";
 import { Permissions } from "@/constants/permissions";
 import { navBarOptions, ROUTES } from "@/constants/routes";
-import { CallPicker, NavSideBar, LifelineHeader } from "@/components";
+import { CallPicker, NavSideBar } from "@/components";
 import {
   useAcceptCallMutation,
   useGetWaitingClientsQuery,
@@ -119,10 +119,6 @@ const PrivateRouteLayout = () => {
   };
 
   const showNavbar = !isClient && !isPathExcluded(pathname, excludeNavBar);
-  const showLifelineHeader = !isPathExcluded(
-    pathname,
-    excludeDefaultPageHeader
-  );
 
   if (user)
     return (
@@ -135,7 +131,6 @@ const PrivateRouteLayout = () => {
             "flex-1 min-h-screen overflow-auto bg-[#F9FAFB] custom-scrollbar"
           }
         >
-          {showLifelineHeader && <LifelineHeader />}
           <div className={`${showNavbar && "ml-72 h-[calc(100vh-110px)]"}`}>
             <Routes>
               <Route
