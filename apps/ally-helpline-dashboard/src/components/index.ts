@@ -26,7 +26,6 @@ import { Toaster as Sonner } from "./generic/sonner";
 import Confirm from "./confirmation-box/Confirm";
 import ConfirmationBox from "./confirmation-box/ConfirmationBox";
 import { Card, CardHeader, CardTitle, CardContent } from "./generic/card";
-import LifelineHeader from "./generic/lifeline-header";
 import { ToggleButtonGroup } from "./generic/toggle-button-group";
 import CustomMarkdown from "./custom-markdown";
 import StressBuster from "./stress-buster";
@@ -68,7 +67,6 @@ export {
   CardContent,
   MessageInput,
   StressBuster,
-  LifelineHeader,
   CustomMarkdown,
   TooltipProvider,
   TypingIndicator,
