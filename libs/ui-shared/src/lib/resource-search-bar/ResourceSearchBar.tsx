@@ -19,9 +19,10 @@ const SearchBar: FC<SearchBarProps> = ({ onSearch, initialValue = '', suggestion
     }
   }, [initialValue]);
 
-  const handleSubmit = (event: React.FormEvent) => {
-    event.preventDefault();
-    onSearch(searchTerm);
+  const handleKeyPress = (event: React.KeyboardEvent) => {
+    if (event.key === 'Enter') {
+      onSearch(searchTerm);
+    }
   };
 
   const renderSuggestionCard = (props: any, option: string, { selected }: { selected: boolean }) => {
@@ -41,7 +42,10 @@ const SearchBar: FC<SearchBarProps> = ({ onSearch, initialValue = '', suggestion
       {...params}
       variant="outlined"
       placeholder="Search"
-      className="font-['IBM_Plex_Serif'] text-[16px] h-[40px] sm:h-[56px] min-w-[280px]"
+      value={searchTerm}
+      onChange={(e) => setSearchTerm(e.target.value)}
+      onKeyDown={handleKeyPress}
+      className="font-['IBM_Plex_Serif'] text-[16px] h-[40px] sm:h-[56px]"
       sx={{
         '& .MuiOutlinedInput-root': {
           height: { xs: '40px', sm: '56px' },
@@ -75,24 +79,19 @@ const SearchBar: FC<SearchBarProps> = ({ onSearch, initialValue = '', suggestion
   };
 
   return (
-    <form className="w-full" onSubmit={handleSubmit}>
-      <Autocomplete
-        freeSolo
-        id="free-solo-2-demo"
-        options={suggestions}
-        className="w-full h-[36px] sm:h-[60px]"
-        value={searchTerm}
-        onInputChange={(_, newInputValue) => {
-          setSearchTerm(newInputValue);
-        }}
-        onChange={(_, newValue) => {
-          setSearchTerm(newValue || '');
-          if (newValue) onSearch(newValue);
-        }}
-        renderOption={renderSuggestionCard}
-        renderInput={renderInput}
-      />
-    </form>
+    <Autocomplete
+      freeSolo
+      id="free-solo-2-demo"
+      options={suggestions}
+      className="w-full h-[36px] sm:h-[60px]"
+      value={searchTerm}
+      onChange={(_, newValue) => {
+        setSearchTerm(newValue || '');
+        if (newValue) onSearch(newValue);
+      }}
+      renderOption={renderSuggestionCard}
+      renderInput={renderInput}
+    />
   );
 };
 
