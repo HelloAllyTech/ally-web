@@ -1,4 +1,6 @@
 import { FC, useEffect, useState } from "react";
+import { Spinner, RoundCheckmark } from "@/assets/icons";
+
 
 const SummaryLoading: FC = () => {
   const loadingMessages = [
@@ -32,25 +34,28 @@ const SummaryLoading: FC = () => {
     };
   }, []);
 
+
   return (
     <div className="flex flex-col items-center justify-center h-[calc(100vh-280px)] space-y-4">
       <div className="flex flex-col items-center gap-3">
         <h2 className="text-2xl font-bold text-[#1A1A1A]">{loadingMessages[0]}</h2>
 
-        <div className="flex flex-col items-start gap-2">
+        <div className="flex flex-col items-start gap-4">
           {visibleMessages.slice(1).map((message, index) => {
             const messageIndex = index + 1;
             const isCurrentMessage = messageIndex === currentMessageIndex;
+            const isCompleted = messageIndex < currentMessageIndex;
 
             return (
-              <div
-                key={message}
-                className={`text-[16px] shimmer-text ${isCurrentMessage ? "active" : "static-text"}`}
-                style={{
-                  opacity: 1
-                }}
-              >
-                {message}
+              <div key={message} className="flex items-center gap-2 text-[16px]">
+                <div className="w-4 h-4">
+                  {isCompleted ? <RoundCheckmark /> : isCurrentMessage ? <div className="mb-[5px] flex justify-center items-center"><Spinner /></div> : null}
+                </div>
+                <div
+                  className={`shimmer-text ${isCurrentMessage ? "active" : "static-text"}`}
+                >
+                  {message}
+                </div>
               </div>
             );
           })}
@@ -79,6 +84,11 @@ const SummaryLoading: FC = () => {
                 background-position: -100% 0;
               }
             }
+
+            @keyframes spin {
+              0% { transform: rotate(0deg); }
+              100% { transform: rotate(360deg); }
+            }
             
             .shimmer-text {
               background: linear-gradient(
@@ -106,6 +116,11 @@ const SummaryLoading: FC = () => {
               background: none;
               -webkit-text-fill-color: initial;
               animation: none;
+            }
+
+            .spinner {
+              animation: spin 1s linear infinite;
+              display: inline-block;
             }
           `,
         }}

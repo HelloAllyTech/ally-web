@@ -202,11 +202,11 @@ const Login: FunctionComponent = () => {
       <img
         src={LoginImage}
         alt="Login"
-        className="flex-2 h-auto object-cover"
+        className="flex-2 h-auto object-cover hidden sm:block"
         width="60%"
       />
       <div className="flex-1 flex flex-col items-center justify-center">
-        <div className="w-1/2 flex flex-col gap-6">
+        <div className="sm:w-1/2 w-[90%] flex flex-col gap-6">
           <div className="flex flex-col gap-2">
             {loginSection === LoginSection.EMAIL && (
               <h1 className="text-[22px]">Welcome to</h1>

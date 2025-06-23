@@ -8,17 +8,18 @@ import { ROUTES } from "@/constants/routes";
 import { ChatStatus, QueueStatus, SocketEvent } from "@/types/message";
 import { UserRole } from "@/types/user";
 import { Button } from "@/components";
-import { useSocket } from "@/hooks";
+import { useSocket, useUser } from "@/hooks";
 import { RootState } from "@/store/store";
 import { useGetClientChatQuery, useRequestCallMutation } from "@/api/audioCall";
-import { LifelineLogo } from "@/assets/icons";
+import { LifelineLogo, Logout } from "@/assets/icons";
 
 const ClientInterface = () => {
   const navigate = useNavigate();
 
   const [isWaiting, setIsWaiting] = useState(false);
 
-  const user = useSelector((state: RootState) => state.user.user);
+  const {user, logout} = useUser();
+  const isClient = user?.role === UserRole.CLIENT;
 
   const { data: clientChat } = useGetClientChatQuery(undefined, {
     refetchOnMountOrArgChange: true,
@@ -49,7 +50,7 @@ const ClientInterface = () => {
 
   useEffect(() => {
     (async () => {
-      if (user?.role === UserRole.CLIENT) {
+      if (isClient) {
         // TODO: Need to redirect to AudioCall page if a call is ongoing
         // currently clientChat value persists even after call is ended, triggering repeated navigations
         // if (clientChat?.counselorId) {
@@ -79,6 +80,22 @@ const ClientInterface = () => {
     }
   };
 
+  const handleLogout = () => {
+    logout();
+    navigate(ROUTES.LOGIN);
+  }
+
+  const renderLogoutButton = () => {
+    return (
+      <button className="absolute top-0 right-0 flex flex-row h-[60px] items-center px-[26px] onClick={handleLogout}  mx-[15px] cursor-pointer mb-[6px]" onClick={handleLogout}>
+        <Logout />
+        <div className="pl-[10px]">
+          <div className="text-[16px] font-[600px] font-['IBM_Plex_Serif'] text-[#444]">Log Out</div>
+        </div>
+      </button>
+    );
+  }
+
   return (
     <div className="flex-1 min-h-screen overflow-auto">
       <motion.div
@@ -88,6 +105,7 @@ const ClientInterface = () => {
         className="max-w-screen-xl mx-auto p-6 h-[calc(100vh-100px)]"
       >
         <div className="flex-1 h-full flex flex-col items-center justify-center bg-gray-50 p-4">
+          {isClient && renderLogoutButton()}
           <div className="max-w-md w-full text-center space-y-8">
             <div className="flex items-center justify-center gap-2">
               <h1 className="text-3xl font-bold text-gray-900">Welcome to</h1>

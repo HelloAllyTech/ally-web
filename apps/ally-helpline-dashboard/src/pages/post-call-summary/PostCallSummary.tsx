@@ -109,13 +109,13 @@ const PostCallSummary = () => {
   const handleMakeAvailable = () => {
     localStorage.setItem("userStatus", UserStatus.AVAILABLE);
     store.dispatch(setUserStatus(UserStatus.AVAILABLE));
-    navigate("/");
+    navigate("/calls");
   };
 
   const handleKeepOffline = () => {
     localStorage.setItem("userStatus", UserStatus.OFFLINE);
     store.dispatch(setUserStatus(UserStatus.OFFLINE));
-    navigate("/");
+    navigate("/calls");
   };
 
   return (

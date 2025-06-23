@@ -48,6 +48,8 @@ import Edit from "./Edit.svg?react";
 import Delete from "./Delete.svg?react";
 import Download from "./Download.svg?react";
 import CallDetails from "./CallDetails.svg?react";
+import Spinner from "./spinner.svg?react";
+import RoundCheckmark from "./roundCheckmark.svg?react";
 
 export type IconProps = SVGProps<SVGSVGElement> & {
   title?: string;
@@ -84,6 +86,8 @@ export const iconMap: Record<string, FunctionComponent<IconProps>> = {
   Edit,
   Delete,
   Download,
+  Spinner,
+  RoundCheckmark,
 };
 
 export {
@@ -136,4 +140,6 @@ export {
   Edit,
   Delete,
   Download,
+  Spinner,
+  RoundCheckmark,
 };

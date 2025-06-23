@@ -69,9 +69,9 @@ const SummarySideBar: FC<SummarySideBarProps> = ({ callSummary, refetchCallLogs,
     }
   };
 
-  const onDeleteClick = () => {
-    setDeleteDialogData({ open: true, chatId: callSummary?.id });
-  };
+  // const onDeleteClick = () => {
+  //   setDeleteDialogData({ open: true, chatId: callSummary?.id });
+  // };
 
   const onDeleteConfirm = () => {
     updateCallSummary({ chatId: callSummary?.id, data: { summary: [] } });
@@ -100,6 +100,100 @@ const SummarySideBar: FC<SummarySideBarProps> = ({ callSummary, refetchCallLogs,
       setIsRenaming(false);
     }
   };
+
+  const renderTranscript = (line: string, index: number) => {
+    const [speaker, ...rest] = line.split(":");
+    const message = rest.join(":");
+
+    window.handleCommentClick = (comment: string) => {
+      setSelectedComment(comment === selectedComment ? "" : comment);
+    };
+    // Create highlighted message by checking for comment keywords
+    // TODO: check if comments are correctly destructured
+    const highlightedMessage = callSummary?.details?.comments?.length
+      ? callSummary?.details?.comments.reduce((text, { comment }) => {
+        const regex = new RegExp(`(${comment})`, "gi");
+        return text.replace(
+          regex,
+          selectedComment === comment
+            ? `<button
+                onclick="window.handleCommentClick('${comment}')"
+                style="background-color: #FFF9E6; border-bottom: 2px solid #fef08a; pointer: cursor;">$1
+                </button>`
+            : `<button
+                onclick="window.handleCommentClick('${comment}')"
+                style="border-bottom: 2px solid #fef08a; cursor: pointer;">$1</button>`
+        );
+      }, message)
+      : message;
+
+    return (
+      <div key={`${speaker}-${index}`} className="flex">
+        <div className="text-sm text-gray-500 w-[40px]">
+          {(0.01 + index / 100).toFixed(2)}
+        </div>
+        <div className="flex-1 text-sm">
+          <span className="font-semibold">{speaker}: </span>
+          <span
+            className="font-['IBM_Plex_Serif']"
+            dangerouslySetInnerHTML={{
+              __html: highlightedMessage,
+            }}
+          />
+        </div>
+      </div>
+    );
+
+  };
+
+  const renderTranscripts = () => {
+    const transcriptArray = callSummary?.details?.transcript?.split("\n")?.filter((line: string) => line.trim() !== "");
+    return (
+      <div className="flex-1 overflow-y-scroll p-4">
+        <h3 className="font-semibold text-sm mb-4">Transcript</h3>
+        {callSummary?.details?.transcript?.length > 0 ?
+          (<div className="space-y-4 flex-1 mb-20">
+            {transcriptArray.map((line: string, index: number) => renderTranscript(line, index))}
+          </div>) :
+          <div className="space-y-4 flex-1 mb-20">
+            <div className="text-sm text-gray-500">No transcript available</div>
+          </div>
+        }
+      </div>
+    );
+  };
+
+  const renderComments = () => {
+    return (
+      <>
+        {callSummary?.details?.comments?.length > 0 && (
+          <div className="flex-1 p-4 bg-[#F0F4F8]">
+            <h3 className="font-semibold text-sm mb-2">Comments</h3>
+            <div className="space-y-4 font-['IBM_Plex_Serif']">
+              {callSummary?.details?.comments.map(({ comment, description }, index) => (
+                <div
+                  key={`comment-${index}`}
+                  className={`p-3 rounded-lg border
+                          ${comment === selectedComment ? "border-[#FECA04] bg-[#FFF9E6]" : "bg-white"} `}
+                >
+                  <>
+                    <div
+                      className={`text-sm font-medium
+                              ${comment === selectedComment ? "text-[#FF9E28]" : "text-[#605E5E]"}`}
+                    >
+                      ~ {comment}
+                    </div>
+                    <div className="text-sm mt-1">{description}</div>
+                  </>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </>
+    )
+  };
+
 
   return (
     <Drawer
@@ -170,83 +264,8 @@ const SummarySideBar: FC<SummarySideBarProps> = ({ callSummary, refetchCallLogs,
         )}
         {selectedTab === 2 && (
           <div className="flex flex-1 overflow-y-hidden h-[calc(100vh-75px)]">
-            {callSummary?.details?.transcript?.length > 0 && (
-              <div className="flex-1 overflow-y-scroll p-4">
-                <h3 className="font-semibold text-sm mb-4">Transcript</h3>
-                <div className="space-y-4 flex-1 mb-20">
-                  {callSummary?.details?.transcript
-                    ?.split("\n")
-                    ?.filter((line: string) => line.trim() !== "")
-                    .map((line: string, index: number) => {
-                      const [speaker, ...rest] = line.split(":");
-                      const message = rest.join(":");
-
-                      window.handleCommentClick = (comment: string) => {
-                        setSelectedComment(comment === selectedComment ? "" : comment);
-                      };
-                      // Create highlighted message by checking for comment keywords
-                      // TODO: check if comments are correctly destructured
-                      const highlightedMessage = callSummary?.details?.comments?.length
-                        ? callSummary?.details?.comments.reduce((text, { comment }) => {
-                          const regex = new RegExp(`(${comment})`, "gi");
-                          return text.replace(
-                            regex,
-                            selectedComment === comment
-                              ? `<button
-                                  onclick="window.handleCommentClick('${comment}')"
-                                  style="background-color: #FFF9E6; border-bottom: 2px solid #fef08a; pointer: cursor;">$1
-                                  </button>`
-                              : `<button
-                                  onclick="window.handleCommentClick('${comment}')"
-                                  style="border-bottom: 2px solid #fef08a; cursor: pointer;">$1</button>`
-                          );
-                        }, message)
-                        : message;
-
-                      return (
-                        <div key={`${speaker}-${index}`} className="flex">
-                          <div className="text-sm text-gray-500 w-[40px]">
-                            {(0.01 + index / 100).toFixed(2)}
-                          </div>
-                          <div className="flex-1 text-sm">
-                            <span className="font-semibold">{speaker}: </span>
-                            <span
-                              className="font-['IBM_Plex_Serif']"
-                              dangerouslySetInnerHTML={{
-                                __html: highlightedMessage,
-                              }}
-                            />
-                          </div>
-                        </div>
-                      );
-                    })}
-                </div>
-              </div>)}
-            {/* TODO: check if comments are correctly destructured */}
-            {callSummary?.details?.comments?.length > 0 && (
-              <div className="flex-1 p-4 bg-[#F0F4F8]">
-                <h3 className="font-semibold text-sm mb-2">Comments</h3>
-                <div className="space-y-4 font-['IBM_Plex_Serif']">
-                  {callSummary?.details?.comments.map(({ comment, description }, index) => (
-                    <div
-                      key={`comment-${index}`}
-                      className={`p-3 rounded-lg border
-                                ${comment === selectedComment ? "border-[#FECA04] bg-[#FFF9E6]" : "bg-white"} `}
-                    >
-                      <>
-                        <div
-                          className={`text-sm font-medium
-                                    ${comment === selectedComment ? "text-[#FF9E28]" : "text-[#605E5E]"}`}
-                        >
-                          ~ {comment}
-                        </div>
-                        <div className="text-sm mt-1">{description}</div>
-                      </>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
+            {renderTranscripts()}
+            {renderComments()}
           </div>
         )}
       </div>
