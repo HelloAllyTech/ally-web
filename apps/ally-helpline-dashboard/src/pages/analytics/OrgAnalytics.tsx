@@ -35,7 +35,7 @@ const OrgAnalytics: FunctionComponent = () => {
   };
 
   return (
-    <div className="h-[90vh] flex items-center justify-center">
+    <div className="h-[90vh] w-full flex items-center justify-center">
       {Object.keys(dashboardUrls)?.map((id: string) => (
         <iframe
           key={id}
