@@ -2,17 +2,20 @@ import { useEffect, useRef, useCallback } from "react";
 import { Socket, io } from "socket.io-client";
 
 import { SocketEvent } from "@/types/message";
+import { SocketConnectionTypes } from "@/constants/socket";
+import { getPathForConnectionType } from "@/utils/socket";
 
 interface UseSocketOptions {
   userId: number;
+  connectionType: SocketConnectionTypes;
   eventCallbacks?: Partial<Record<SocketEvent, (params?: any) => void>>;
 }
 
-export const useSocket = ({ userId, eventCallbacks }: UseSocketOptions) => {
+export const useSocket = ({ userId, eventCallbacks, connectionType }: UseSocketOptions) => {
   const socketRef = useRef<Socket | null>(null);
   const connectionAttemptsRef = useRef(0);
   const maxAttempts = 5;
-  const baseUrl = import.meta.env.VITE_API_BASE_URL;
+  const baseUrl = `${import.meta.env.VITE_API_BASE_URL}/${getPathForConnectionType(connectionType)}`;
   // const appVersionPath = import.meta.env.VITE_APP_VERSION_PATH;
 
   const connect = useCallback(
@@ -21,7 +24,6 @@ export const useSocket = ({ userId, eventCallbacks }: UseSocketOptions) => {
         console.error("Max connection attempts reached");
         return;
       }
-
       try {
         socketRef.current = io(baseUrl, {
           path: "",
@@ -101,7 +103,7 @@ export const useSocket = ({ userId, eventCallbacks }: UseSocketOptions) => {
       }
       socketRef.current.emit(socketEvent, message);
     },
-    []
+    [],
   );
 
   const isConnected = useCallback(() => {
@@ -116,7 +118,7 @@ export const useSocket = ({ userId, eventCallbacks }: UseSocketOptions) => {
       }
       socketRef.current.on(socketEvent, callback);
     },
-    []
+    [],
   );
 
   const removeIfListenerPresent = useCallback((socketEvent: SocketEvent) => {
