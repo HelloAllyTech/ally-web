@@ -16,6 +16,7 @@ import { RootState } from "@/store/store";
 import { ICE_SERVERS } from "@/constants/common";
 import { useIceServers, useSocket } from "@/hooks";
 import { FeedbackResponse, MessageType, SocketEvent } from "@/types/message";
+import { SocketConnectionTypes } from "@/constants/socket";
 
 import "./CallTranscript.css";
 import { reduceTranscriptions } from "./utils";
@@ -249,6 +250,7 @@ const CallTranscript: FC<CallTranscriptProps> = ({
   } = useSocket({
     userId: user.userId,
     eventCallbacks: socketEventCallbacks,
+    connectionType: SocketConnectionTypes.WEBRTC_AUDIO_CALL,
   });
 
   useEffect(() => {

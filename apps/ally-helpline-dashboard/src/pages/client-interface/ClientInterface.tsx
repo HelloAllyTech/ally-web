@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useSelector } from "react-redux";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
 
@@ -9,9 +8,9 @@ import { ChatStatus, QueueStatus, SocketEvent } from "@/types/message";
 import { UserRole } from "@/types/user";
 import { Button } from "@/components";
 import { useSocket, useUser } from "@/hooks";
-import { RootState } from "@/store/store";
 import { useGetClientChatQuery, useRequestCallMutation } from "@/api/audioCall";
 import { LifelineLogo, Logout } from "@/assets/icons";
+import { SocketConnectionTypes } from "@/constants/socket";
 
 const ClientInterface = () => {
   const navigate = useNavigate();
@@ -40,6 +39,7 @@ const ClientInterface = () => {
   const socket = useSocket({
     userId: user?.userId,
     eventCallbacks: socketEventCallbacks,
+    connectionType: SocketConnectionTypes.WEBRTC_AUDIO_CALL,
   });
 
   useEffect(() => {
@@ -83,7 +83,7 @@ const ClientInterface = () => {
   const handleLogout = () => {
     logout();
     navigate(ROUTES.LOGIN);
-  }
+  };
 
   const renderLogoutButton = () => {
     return (
@@ -94,7 +94,7 @@ const ClientInterface = () => {
         </div>
       </button>
     );
-  }
+  };
 
   return (
     <div className="flex-1 min-h-screen overflow-auto">
