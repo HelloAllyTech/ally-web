@@ -1,6 +1,14 @@
-import CopilotIcon from "./CopilotIcon.svg?react";
+import { FunctionComponent, SVGProps } from "react";
+import AccountCircle from "./account_circle.svg?react";
+import Logout from "./LogoutIcon.svg?react";
+import SearchIcon from "./search.svg?react";
+import LogsIcon from "./logs.svg?react";
+import StatsIcon from "./stats.svg?react";
+import CommunityIcon from "./community.svg?react";
 import Book from "./Book.svg?react";
 import Relax from "./Relax.svg?react";
+import MenuIcon from "./MenuIcon.svg?react";
+import CopilotIcon from "./CopilotIcon.svg?react";
 import CallLogIcon from "./CallLogIcon.svg?react";
 import LiveCallIcon from "./LiveCallIcon.svg?react";
 import HomeIcon from "./HomeIcon.svg?react";
@@ -22,7 +30,6 @@ import CallAttend from "./Call_attend.svg?react";
 import BackCircle from "./BackCircle.svg?react";
 import ComingSoon from "./ComingSoon.svg?react";
 import NoResults from "./NoResults.svg?react";
-import CallDetails from "./CallDetails.svg?react";
 import SessionSummary from "./SessionSummary.svg?react";
 import Flow from "./Flow.svg?react";
 import KeyConcerns from "./KeyConcerns.svg?react";
@@ -40,12 +47,55 @@ import TherapeuticTechniques from "./TherapeuticTechniques.svg?react";
 import Edit from "./Edit.svg?react";
 import Delete from "./Delete.svg?react";
 import Download from "./Download.svg?react";
-import Logout from "./LogoutIcon.svg?react";
-import AccountCircle from "./account_circle.svg?react";
+import CallDetails from "./CallDetails.svg?react";
+
+export type IconProps = SVGProps<SVGSVGElement> & {
+  title?: string;
+};
+export const iconMap: Record<string, FunctionComponent<IconProps>> = {
+  AccountCircle,
+  Logout,
+  SearchIcon,
+  LogsIcon,
+  StatsIcon,
+  CommunityIcon,
+  Book,
+  Relax,
+  MenuIcon,
+  CopilotIcon,
+  CallLogIcon,
+  LiveCallIcon,
+  HomeIcon,
+  SessionSummary,
+  Tags,
+  IssuesWorkedOn,
+  KeyConcerns,
+  DominantFeelings,
+  SubjectiveObservations,
+  ObjectiveObservations,
+  TherapeuticTechniques,
+  ReferralsProvided,
+  HomeworkRecommended,
+  PlansForNextCall,
+  Assessment,
+  Metrics,
+  Flow,
+  CallDetails,
+  Edit,
+  Delete,
+  Download,
+};
 
 export {
-  Relax,
+  AccountCircle,
+  Logout,
+  SearchIcon,
+  LogsIcon,
+  StatsIcon,
+  CommunityIcon,
   Book,
+  Relax,
+  MenuIcon,
   CopilotIcon,
   CallLogIcon,
   LiveCallIcon,
@@ -68,24 +118,22 @@ export {
   BackCircle,
   ComingSoon,
   NoResults,
-  CallDetails,
   SessionSummary,
-  Flow,
-  KeyConcerns,
-  Assessment,
-  DominantFeelings,
-  HomeworkRecommended,
-  IssuesWorkedOn,
-  Metrics,
-  ObjectiveObservations,
-  PlansForNextCall,
-  ReferralsProvided,
-  SubjectiveObservations,
   Tags,
+  IssuesWorkedOn,
+  KeyConcerns,
+  DominantFeelings,
+  SubjectiveObservations,
+  ObjectiveObservations,
   TherapeuticTechniques,
+  ReferralsProvided,
+  HomeworkRecommended,
+  PlansForNextCall,
+  Assessment,
+  Metrics,
+  Flow,
+  CallDetails,
   Edit,
   Delete,
   Download,
-  Logout,
-  AccountCircle,
 };

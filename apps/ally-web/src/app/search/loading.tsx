@@ -26,22 +26,22 @@ export default function Loading() {
           <div key={i} className="w-full border border-gray-200 rounded-lg p-4 bg-white">
             {/* Tags Row */}
             <div className="flex justify-between gap-2 mb-3">
-              <div className="w-20 h-6 bg-gray-200 rounded-full animate-pulse"></div>
+              <div className="w-20 sm:h-6 h-5 bg-gray-200 rounded-full animate-pulse"></div>
               <div className="flex gap-2">
-                <div className="w-16 h-6 bg-gray-200 rounded-full animate-pulse"></div>
-                <div className="w-20 h-6 bg-gray-200 rounded-full animate-pulse"></div>
-                <div className="w-14 h-6 bg-gray-200 rounded-full animate-pulse"></div>
+                <div className="w-16 sm:h-6 h-5 bg-gray-200 rounded-full animate-pulse"></div>
+                <div className="w-20 sm:h-6 h-5 bg-gray-200 rounded-full animate-pulse"></div>
+                <div className="w-14 sm:h-6 h-5 bg-gray-200 rounded-full animate-pulse"></div>
               </div>
             </div>
             
             {/* Title */}
-            <div className="w-3/4 h-5 bg-gray-200 rounded mb-2 animate-pulse"></div>
+            <div className="w-3/4 sm:h-5 h-4 bg-gray-200 rounded mb-2 animate-pulse"></div>
             
             {/* Description */}
             <div className="space-y-2">
-              <div className="w-full h-4 bg-gray-200 rounded animate-pulse"></div>
-              <div className="w-5/6 h-4 bg-gray-200 rounded animate-pulse"></div>
-              <div className="w-4/5 h-4 bg-gray-200 rounded animate-pulse"></div>
+              <div className="w-full sm:h-4 h-3 bg-gray-200 rounded animate-pulse"></div>
+              <div className="w-5/6 sm:h-4 h-3 bg-gray-200 rounded animate-pulse"></div>
+              <div className="w-4/5 sm:h-4 h-3 bg-gray-200 rounded animate-pulse"></div>
             </div>
           </div>
         ))}

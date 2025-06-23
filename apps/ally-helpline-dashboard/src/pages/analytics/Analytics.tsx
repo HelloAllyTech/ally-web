@@ -13,7 +13,7 @@ const Analytics: FunctionComponent = () => {
   return (
     <div
       className={`flex items-center justify-center bg-white m-6 rounded-lg border-[2px] border-[#F4F4F4]
-        overflow-hidden h-full`}
+        overflow-hidden h-[calc(100vh-100px)]`}
     >
       {user?.role === UserRole.COUNSELOR ? <UserAnalytics /> : <OrgAnalytics />}
     </div>

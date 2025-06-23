@@ -53,7 +53,7 @@ export default function SearchClient({
   };
 
   return (
-    <main className="w-full h-[calc(100vh-50px)] sm:h-[calc(100vh-100px)] flex justify-center items-center mb-[50px] pt-[40px] pb-[50px] sm:px-[15%] px-[0px] overflow-y-hidden">
+    <main className="w-full h-[calc(100vh-10px)] sm:h-[calc(100vh-5px)] flex justify-center items-center pt-[40px] pb-[50px] sm:px-[15%] px-[0px] overflow-y-hidden">
       <ResourceSearch
         searchQuery={searchQuery}
         onSearch={onSearch}

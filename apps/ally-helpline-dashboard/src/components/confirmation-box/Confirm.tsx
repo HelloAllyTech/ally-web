@@ -3,58 +3,65 @@ import React from "react";
 interface ConfirmProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  title?: string;
   text: string | React.ReactNode;
   onConfirm: () => void;
   onCancel: () => void;
   confirmText?: string;
   cancelText?: string;
   isLoading?: boolean;
+  destructive?: boolean;
 }
 
 const Confirm = ({
   open,
   onOpenChange,
+  title,
   text,
   onConfirm,
   onCancel,
   confirmText = "Yes",
   cancelText = "No",
   isLoading = false,
+  destructive = false,
 }: ConfirmProps) => {
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center">
-      <div className="bg-white rounded-lg p-4 max-w-md w-full mx-4">
-        <div
-          className="max-w-full rounded-lg px-4 py-2 text-sm mb-4"
-          style={{
-            background:
-              "linear-gradient(134.31deg, #D8C3F9 -105.84%, #EDF7EA -3.5%, #DAE3F8 62.45%)",
-          }}
-        >
-          <div className="break-words p-2">{text}</div>
+    <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
+      <div className="bg-white rounded-lg py-4 px-6 w-full max-w-[420px] border border-gray-200 flex flex-col gap-4">
+        <div>
+          {title && (
+            <h3 className="text-[15px] font-[600] text-[#47464F] mb-2">{title}</h3>
+          )}
+          <div className={`text-[15px] text-[#47464F]`}>
+            {text}
+          </div>
         </div>
-        <div className="flex gap-8 text-sm justify-center">
-          <button
-            onClick={() => {
-              onConfirm();
-              onOpenChange(false);
-            }}
-            disabled={isLoading}
-            className="w-20 text-center bg-[#EAF4ED] hover:bg-[#d5e6da] rounded-[38px] px-4 py-1 border border-[#D9D9D9] disabled:opacity-50"
-          >
-            {isLoading ? "..." : confirmText}
-          </button>
+        <div className="flex gap-2 justify-end">
           <button
             onClick={() => {
               onCancel();
               onOpenChange(false);
             }}
             disabled={isLoading}
-            className="w-20 text-center bg-[#EAF4ED] hover:bg-[#d5e6da] rounded-[38px] px-4 py-1 border border-[#D9D9D9]"
+            className="py-2.5 px-6 flex-1 text-center text-[15px] font-medium text-[#47464F] bg-white border border-[#C8C5D0] rounded-full hover:bg-gray-50 disabled:opacity-50"
           >
             {cancelText}
+          </button>
+          <button
+            onClick={() => {
+              onConfirm();
+              onOpenChange(false);
+            }}
+            disabled={isLoading}
+            className={`py-2.5 flex-1 px-6 text-center text-[15px] font-medium text-white rounded-full disabled:opacity-50 ${
+              destructive
+                ? "bg-[#F93535] hover:bg-[#F93535]"
+                : "bg-indigo-600 hover:bg-indigo-700"
+            }`}
+          >
+            {isLoading ? "..." : confirmText}
           </button>
         </div>
       </div>
