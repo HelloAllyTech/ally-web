@@ -32,7 +32,7 @@ export const navBarOptions = [
       title: "Search",
       Icon: SearchIcon,
       path: ROUTES.SEARCH,
-      permission: ""
+      permission: Permissions.VIEW_NAVBAR_SEARCH
     },
     {
       id: TabId.CALLS,
