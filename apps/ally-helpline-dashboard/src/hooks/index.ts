@@ -3,7 +3,7 @@ import { useSocket } from "./useSocket";
 import { useUser } from "./useUser";
 import useEnhance from "./useEnhance";
 import useFileExport from "./usePDF";
-import useWebRTC from "./useWebRTC";
+import useWebRTCCallSetup from "./useWebRTCCallSetup";
 
 export {
   toast,
@@ -12,5 +12,5 @@ export {
   useUser,
   useEnhance,
   useFileExport,
-  useWebRTC,
+  useWebRTCCallSetup,
 };

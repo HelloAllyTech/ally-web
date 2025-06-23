@@ -11,7 +11,7 @@ import { useNavigate } from "react-router-dom";
 
 import { useGetNudgeStatusQuery } from "@/api/audioCall";
 import { RootState } from "@/store/store";
-import { useSocket, useWebRTC } from "@/hooks";
+import { useSocket, useWebRTCCallSetup } from "@/hooks";
 import { UserRole } from "@/types/user";
 import { FeedbackResponse, MessageType, SocketEvent } from "@/types/message";
 import { SocketConnectionTypes } from "@/constants/socket";
@@ -212,7 +212,7 @@ const CallTranscript: FC<CallTranscriptProps> = ({
     handleOnIceCandidate,
     handleWebRTCOffer,
     handleWebRTCAnswer,
-  } = useWebRTC({
+  } = useWebRTCCallSetup({
     emitSocketEvent,
     chatId,
     isClient,
@@ -233,11 +233,13 @@ const CallTranscript: FC<CallTranscriptProps> = ({
       totalSize = 0;
 
       const fileReader = new FileReader();
-      fileReader.readAsArrayBuffer(audioBlob);
+      fileReader.readAsDataURL(audioBlob);
       fileReader.onloadend = () => {
-        const resultantAudioData = fileReader.result;
+        const base64AudioData = fileReader.result as string;
+        // Remove the data URL prefix (e.g., "data:audio/webm;base64,") to get just the base64 string
+        const base64String = base64AudioData.split(",")[1];
         emitSocketEvent(SocketEvent.AUDIO_MESSAGE, {
-          audioData: resultantAudioData,
+          audioData: base64String,
           chatId,
         });
       };

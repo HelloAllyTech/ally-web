@@ -11,7 +11,7 @@ interface UseWebRTCParams {
   offerTimeoutMs: number;
 }
 
-const useWebRTC = ({ emitSocketEvent, chatId, isClient, offerTimeoutMs }: UseWebRTCParams) => {
+const useWebRTCCallSetup = ({ emitSocketEvent, chatId, isClient, offerTimeoutMs }: UseWebRTCParams) => {
   // Add a reference to store the local stream
   const localStreamRef = useRef<MediaStream | null>(null);
   const remoteStreamRef = useRef<MediaStream>(new MediaStream());
@@ -212,4 +212,4 @@ const useWebRTC = ({ emitSocketEvent, chatId, isClient, offerTimeoutMs }: UseWeb
   };
 };
 
-export default useWebRTC;
+export default useWebRTCCallSetup;
