@@ -1,5 +1,11 @@
 import { User } from "./user";
 
+export interface IceServer {
+  urls: string[];
+  username?: string;
+  credential?: string;
+}
+
 export type ChatMessage = {
   chatId: number;
   content: string;
