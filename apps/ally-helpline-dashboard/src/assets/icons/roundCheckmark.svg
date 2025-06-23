@@ -1,0 +1,18 @@
+    <svg
+      className="h-4 w-4 text-blue-500"
+      fill="none"
+      viewBox="0 0 24 24"
+      stroke="currentColor"
+      strokeWidth={3}
+    >
+      <circle
+        cx="12"
+        cy="12"
+        r="10"
+        stroke="currentColor"
+        strokeWidth="4"
+        style="opacity: 0.5"
+      >
+      </circle>
+      <path strokeLinecap="round" strokeWidth="2" strokeLinejoin="round" d="M8 13l3 3L16 9" />
+    </svg>

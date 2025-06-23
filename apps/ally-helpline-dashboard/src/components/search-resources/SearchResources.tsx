@@ -46,7 +46,6 @@ const SearchResources: FC<SearchResourcesProps> = ({
   };
 
   const fetchRemainingResources = async () => {
-    console.log("hasMore", hasMore);
     if (isResourcesLoading || !hasMore) return;
     const response = await getSearchResults({
       query: searchQuery,
@@ -54,7 +53,6 @@ const SearchResources: FC<SearchResourcesProps> = ({
     });
     if (response.data) {
       const newDocuments = response.data.documents;
-      console.log("newDocuments", newDocuments?.length, resources?.length);
       if (newDocuments.length > resources.length) {
         setResources(newDocuments);
       } else {

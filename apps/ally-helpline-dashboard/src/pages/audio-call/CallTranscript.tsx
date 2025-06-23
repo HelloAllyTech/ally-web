@@ -14,6 +14,7 @@ import { RootState } from "@/store/store";
 import { useSocket, useWebRTC } from "@/hooks";
 import { UserRole } from "@/types/user";
 import { FeedbackResponse, MessageType, SocketEvent } from "@/types/message";
+import { SocketConnectionTypes } from "@/constants/socket";
 
 import { reduceTranscriptions } from "./utils";
 import { CallTranscriptProps, Transcription, Nudge } from "./types";
@@ -197,6 +198,7 @@ const CallTranscript: FC<CallTranscriptProps> = ({
   } = useSocket({
     userId: user.userId,
     eventCallbacks: socketEventCallbacks,
+    connectionType: SocketConnectionTypes.WEBRTC_AUDIO_CALL,
   });
 
   const {

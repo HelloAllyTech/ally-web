@@ -6,6 +6,7 @@ import { useState } from 'react';
 import { ResourceSearch } from '@ally-ui-mono/ui-shared';
 import { Resource } from 'libs/ui-shared/src/types';
 import { fetchReferenceDocuments, initialFetchLimit } from './api';
+import { useEffect } from 'react';
 
 interface SearchClientProps {
   searchQuery: string;
@@ -24,6 +25,10 @@ export default function SearchClient({
   const [documents, setDocuments] = useState<Resource[]>(initialDocuments);
   const [isLoading, setIsLoading] = useState(false);
   const [hasMore, setHasMore] = useState(true);
+
+  useEffect(() => {
+    setDocuments(initialDocuments);
+  }, [initialDocuments]);
 
 
   const onSearch = (searchTerm: string) => {
@@ -53,7 +58,7 @@ export default function SearchClient({
   };
 
   return (
-    <main className="w-full h-[calc(100vh-50px)] sm:h-[calc(100vh-100px)] flex justify-center items-center mb-[50px] pt-[40px] pb-[50px] sm:px-[15%] px-[0px] overflow-y-hidden">
+    <main className="w-full h-[calc(100vh-10px)] sm:h-[calc(100vh-5px)] flex justify-center items-center pt-[40px] pb-[50px] sm:px-[15%] px-[0px] overflow-y-hidden">
       <ResourceSearch
         searchQuery={searchQuery}
         onSearch={onSearch}

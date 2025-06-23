@@ -19,9 +19,11 @@ const SearchBar: FC<SearchBarProps> = ({ onSearch, initialValue = '', suggestion
     }
   }, [initialValue]);
 
-  const handleKeyPress = (event: React.KeyboardEvent) => {
-    if (event.key === 'Enter') {
-      onSearch(searchTerm);
+  const handleSubmit = (event: React.FormEvent) => {
+    event.preventDefault();
+    onSearch(searchTerm);
+    if (document.activeElement instanceof HTMLElement) {
+      document.activeElement.blur();
     }
   };
 
@@ -44,7 +46,6 @@ const SearchBar: FC<SearchBarProps> = ({ onSearch, initialValue = '', suggestion
       placeholder="Search"
       value={searchTerm}
       onChange={(e) => setSearchTerm(e.target.value)}
-      onKeyDown={handleKeyPress}
       className="font-['IBM_Plex_Serif'] text-[16px] h-[40px] sm:h-[56px]"
       sx={{
         '& .MuiOutlinedInput-root': {
@@ -79,19 +80,21 @@ const SearchBar: FC<SearchBarProps> = ({ onSearch, initialValue = '', suggestion
   };
 
   return (
-    <Autocomplete
-      freeSolo
-      id="free-solo-2-demo"
-      options={suggestions}
-      className="w-full h-[36px] sm:h-[60px]"
-      value={searchTerm}
-      onChange={(_, newValue) => {
-        setSearchTerm(newValue || '');
-        if (newValue) onSearch(newValue);
-      }}
-      renderOption={renderSuggestionCard}
-      renderInput={renderInput}
-    />
+    <form onSubmit={handleSubmit} className="w-full">
+      <Autocomplete
+        freeSolo
+        id="free-solo-2-demo"
+        options={suggestions}
+        className="w-full h-[36px] sm:h-[60px]"
+        value={searchTerm}
+        onChange={(_, newValue) => {
+          setSearchTerm(newValue || '');
+          if (newValue) onSearch(newValue);
+        }}
+        renderOption={renderSuggestionCard}
+        renderInput={renderInput}
+      />
+    </form>
   );
 };
 

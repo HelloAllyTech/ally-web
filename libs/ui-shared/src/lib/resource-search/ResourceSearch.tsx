@@ -106,8 +106,8 @@ const ResourceSearch: FC<ResourceSearchProps> = ({
   }
 
   return (
-    <div className={`w-full h-full flex flex-col items-center ${!searchQuery && "justify-center"}`}>
-      <div className={`${fullWidth ? 'w-full' : 'w-full'} min-w-[300px] flex flex-col items-center`}>
+    <div className={`w-full h-full flex flex-col items-center ${!searchQuery && "justify-center"} overflow-y-hidden`}>
+      <div className={`${fullWidth ? 'w-full' : 'w-full'} min-w-[300px] flex flex-col items-center overflow-hidden`}>
         <div className="w-full flex flex-col gap-2 items-center justify-center px-4 mb-2 md:px-0">
           {showHeader && <SearchHeader showDescriptionInMobile={showHeaderDescriptionInMobile} />}
           <ResourceSearchBar onSearch={handleSearch} suggestions={sampleSuggestions} initialValue={searchQuery ?? ''} />

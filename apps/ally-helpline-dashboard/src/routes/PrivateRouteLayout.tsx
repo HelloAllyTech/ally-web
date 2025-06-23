@@ -31,6 +31,7 @@ import { setUserStatus } from "@/reducer/userReducer";
 import { Permissions } from "@/constants/permissions";
 import { navBarOptions, ROUTES } from "@/constants/routes";
 import { CallPicker, NavSideBar } from "@/components";
+import { MenuIcon } from "@/assets/icons";
 import {
   useAcceptCallMutation,
   useGetWaitingClientsQuery,
@@ -47,9 +48,11 @@ const PrivateRouteLayout = () => {
   const { pathname } = useLocation();
 
   const isClient = user?.role === UserRole.CLIENT;
+  const isAdmin = user?.role === UserRole.ADMIN;
   const [activeTab, setActiveTab] = useState<TabId>(TabId.CALLS);
   const [alertCall, setAlertCall] = useState(true);
   const [waitingClients, setWaitingClients] = useState<WaitingClient[]>([]);
+  const [isSidebarOpen, setSidebarOpen] = useState(false);
 
   const { userStatus } = useSelector((state: RootState) => state.user);
 
@@ -120,24 +123,42 @@ const PrivateRouteLayout = () => {
 
   const showNavbar = !isClient && !isPathExcluded(pathname, excludeNavBar);
 
+  const toggleSidebar = () => {
+    setSidebarOpen(!isSidebarOpen);
+  };
+
   if (user)
     return (
       <div className="flex h-screen w-full ">
         {showNavbar && (
-          <NavSideBar activeTab={activeTab} onTabChange={handleTabChange} />
+          <NavSideBar
+            activeTab={activeTab}
+            onTabChange={handleTabChange}
+            isOpen={isSidebarOpen}
+            onClose={toggleSidebar}
+          />
         )}
         <div
           className={
             "flex-1 min-h-screen overflow-auto bg-[#F9FAFB] custom-scrollbar"
           }
         >
-          <div className={`${showNavbar && "ml-72 h-[calc(100vh-110px)]"}`}>
+          <div className={`${showNavbar && "md:ml-72 h-[100vh]"}`}>
+            <button
+              onClick={toggleSidebar}
+              className="md:hidden p-4 fixed top-0 right-0 z-30"
+            >
+              <MenuIcon />
+            </button>
             <Routes>
               <Route
                 index
                 element={
                   isClient ? (
                     <Navigate to={ROUTES.CLIENT} />
+                  ) : 
+                  isAdmin ? (
+                    <Navigate to={ROUTES.ANALYTICS} />
                   ) : (
                     <Navigate to={ROUTES.SEARCH} />
                   )

@@ -9,6 +9,7 @@ export interface User {
 export enum UserRole {
   CLIENT = "CLIENT",
   COUNSELOR = "COUNSELOR",
+  ADMIN = "ADMIN",
 }
 
 export enum UserStatus {

@@ -70,6 +70,7 @@ export enum MessageType {
 }
 
 // TODO: Update the socket event names to UPPER CASE
+// TODO: Move this to socket.ts
 export enum SocketEvent {
   NUDGE = "NUDGE",
   STAGE = "STAGE",

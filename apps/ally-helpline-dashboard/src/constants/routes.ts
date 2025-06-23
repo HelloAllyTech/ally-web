@@ -1,9 +1,6 @@
 import { Book, Relax } from "@/assets/icons";
 
-import PhoneOutlinedIcon from "@mui/icons-material/PhoneOutlined";
-import LeaderboardOutlinedIcon from "@mui/icons-material/LeaderboardOutlined";
-import PublicOutlinedIcon from "@mui/icons-material/PublicOutlined";
-import SearchOutlinedIcon from "@mui/icons-material/SearchOutlined";
+import { SearchIcon, LogsIcon, StatsIcon, CommunityIcon } from "@/assets/icons";
 
 import { TabId } from "./tabs";
 import { Permissions } from "./permissions";
@@ -33,21 +30,21 @@ export const navBarOptions = [
     {
       id: TabId.SEARCH,
       title: "Search",
-      Icon: SearchOutlinedIcon,
+      Icon: SearchIcon,
       path: ROUTES.SEARCH,
-      permission: ""
+      permission: Permissions.VIEW_NAVBAR_SEARCH
     },
     {
       id: TabId.CALLS,
       title: "Logs",
-      Icon: PhoneOutlinedIcon,
+      Icon: LogsIcon,
       path: ROUTES.CALLS,
       permission: Permissions.VIEW_NAVBAR_CALLS
     },
     {
       id:  TabId.ANALYTICS,
       title: "Stats",
-      Icon: LeaderboardOutlinedIcon,
+      Icon: StatsIcon,
       path: ROUTES.ANALYTICS,
       permission: Permissions.VIEW_NAVBAR_ANALYTICS
     },
@@ -58,24 +55,24 @@ export const navBarOptions = [
     //   path: ROUTES.CALENDER,
     //   permission: Permissions.VIEW_NAVBAR_CALENDAR
     // },
-    {
-      id: TabId.LEARN,
-      title: "Learn",
-      Icon: Book,
-      path: ROUTES.LEARN,
-      permission: Permissions.VIEW_NAVBAR_LEARN
-    },
-    {
-      id: TabId.STRESS_BUSTERS,
-      title: "Stress Busters",
-      Icon: Relax,
-      path: ROUTES.STRESS_BUSTERS,
-      permission: Permissions.VIEW_NAVBAR_STRESS_BUSTER
-    },
+    // {
+    //   id: TabId.LEARN,
+    //   title: "Learn",
+    //   Icon: SearchIcon,
+    //   path: ROUTES.LEARN,
+    //   permission: Permissions.VIEW_NAVBAR_LEARN
+    // },
+    // {
+    //   id: TabId.STRESS_BUSTERS,
+    //   title: "Stress Busters",
+    //   Icon: SearchIcon,
+    //   path: ROUTES.STRESS_BUSTERS,
+    //   permission: Permissions.VIEW_NAVBAR_STRESS_BUSTER
+    // },
     {
       id:  TabId.COMMUNITY,
       title: "Community",
-      Icon: PublicOutlinedIcon,
+      Icon: CommunityIcon,
       path: "https://community.helloally.ai/",
       permission: ""
     },
