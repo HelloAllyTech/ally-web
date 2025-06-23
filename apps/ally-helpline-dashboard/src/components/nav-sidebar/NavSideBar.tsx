@@ -9,6 +9,8 @@ import Confirm from "../confirmation-box/Confirm";
 
 import { NavSideBarProps } from "./types";
 import { TabId } from "@/constants/tabs";
+import { UserRole } from "@/types/user";
+import { Permissions } from "@/constants/permissions";
 
 const NavSideBar: FunctionComponent<NavSideBarProps> = ({
   activeTab,
@@ -16,14 +18,17 @@ const NavSideBar: FunctionComponent<NavSideBarProps> = ({
   isOpen,
   onClose,
 }: NavSideBarProps) => {
-  const { permissions } = useUser();
+  const { permissions, user, logout } = useUser();
+
+  //TODO: Remove this once we have a proper permission system
+  const filteredPermissions = user?.role === UserRole.ADMIN ? permissions : [Permissions.VIEW_NAVBAR_SEARCH, ...permissions,];
+
   const [isLogoutConfirmOpen, setIsLogoutConfirmOpen] = useState(false);
   const permittedTabs = navBarOptions.filter(
-    (tab) => !tab.permission || permissions.includes(tab.permission)
+    (tab) => !tab.permission || filteredPermissions.includes(tab.permission)
   );
 
   const navigate = useNavigate();
-  const { logout, user } = useUser();
 
   const onTabClick = (id: TabId, path: string) => {
     if (id === TabId.COMMUNITY) {

@@ -48,6 +48,7 @@ const PrivateRouteLayout = () => {
   const { pathname } = useLocation();
 
   const isClient = user?.role === UserRole.CLIENT;
+  const isAdmin = user?.role === UserRole.ADMIN;
   const [activeTab, setActiveTab] = useState<TabId>(TabId.CALLS);
   const [alertCall, setAlertCall] = useState(true);
   const [waitingClients, setWaitingClients] = useState<WaitingClient[]>([]);
@@ -155,6 +156,9 @@ const PrivateRouteLayout = () => {
                 element={
                   isClient ? (
                     <Navigate to={ROUTES.CLIENT} />
+                  ) : 
+                  isAdmin ? (
+                    <Navigate to={ROUTES.ANALYTICS} />
                   ) : (
                     <Navigate to={ROUTES.SEARCH} />
                   )
