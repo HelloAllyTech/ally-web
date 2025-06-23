@@ -46,11 +46,10 @@ const CallTranscript: FC<CallTranscriptProps> = ({
   const user = useSelector((state: RootState) => state.user.user);
   const chatId = useMemo(() => activeChat.chatId, [activeChat]);
 
+  const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(null);
   const [isMuted, setIsMuted] = useState<boolean>(true);
   const [isFocusMode, setIsFocusMode] = useState(true);
-  const [speakerTranscriptions, setSpeakerTranscriptions] = useState<
-    Transcription[]
-  >([]);
+  const [speakerTranscriptions, setSpeakerTranscriptions] = useState<Transcription[]>([]);
   const [myTranscriptions, setMyTranscriptions] = useState<Transcription[]>([]);
   const [nudges, setNudges] = useState<Nudge[]>([]);
   const [stage, setStage] = useState<string>();
@@ -207,10 +206,9 @@ const CallTranscript: FC<CallTranscriptProps> = ({
     offerTimeoutRef,
     iceServers,
     peerConnection,
-    mediaRecorder,
     remoteMediaRecorder,
     fetchIceServers,
-    setupWebRTCAndMediaRecorder,
+    setupWebRTC,
     handleOnIceCandidate,
     handleWebRTCOffer,
     handleWebRTCAnswer,
@@ -218,9 +216,53 @@ const CallTranscript: FC<CallTranscriptProps> = ({
     emitSocketEvent,
     chatId,
     isClient,
-    audioFileSize: AUDIO_FILE_SIZE,
     offerTimeoutMs: OFFER_TIMEOUT_MS,
   });
+
+  const setupMediaRecorder = (stream: MediaStream) => {
+    // Setup media recorder
+    const chunks: BlobPart[] = [];
+    let totalSize = 0;
+    // Create a MediaRecorder to capture audio data
+    const recorder = new MediaRecorder(stream);
+
+    const sendBufferedAudio = () => {
+      if (chunks.length === 0) return;
+      const audioBlob = new Blob(chunks, { type: "audio/webm" });
+      chunks.length = 0;
+      totalSize = 0;
+
+      const fileReader = new FileReader();
+      fileReader.readAsArrayBuffer(audioBlob);
+      fileReader.onloadend = () => {
+        const resultantAudioData = fileReader.result;
+        emitSocketEvent(SocketEvent.AUDIO_MESSAGE, {
+          audioData: resultantAudioData,
+          chatId,
+        });
+      };
+    };
+
+    recorder.ondataavailable = (event) => {
+      if (event.data.size > 0) {
+        chunks.push(event.data);
+        totalSize += event.data.size;
+
+        if (totalSize >= AUDIO_FILE_SIZE) {
+          sendBufferedAudio();
+        }
+      }
+    };
+
+    recorder.onstop = () => {
+      if (totalSize < AUDIO_FILE_SIZE && totalSize > 0) {
+        sendBufferedAudio();
+      }
+    };
+
+    recorder.start(500);
+    setMediaRecorder(recorder);
+  };
 
   useEffect(() => {
     if (activeChat.messages && activeChat.messages.length > 0) {
@@ -276,7 +318,7 @@ const CallTranscript: FC<CallTranscriptProps> = ({
     if (chatId && user && iceServers) {
       //connect socket
       connect(chatId);
-      setupWebRTCAndMediaRecorder();
+      setupWebRTC();
     }
 
     return () => {
@@ -296,6 +338,12 @@ const CallTranscript: FC<CallTranscriptProps> = ({
       disconnect();
     };
   }, [chatId, user, isCounsellor, isClient, iceServers]);
+
+  useEffect(() => {
+    if (localStreamRef.current) {
+      setupMediaRecorder(localStreamRef.current);
+    }
+  }, [localStreamRef.current]);
 
   useEffect(() => {
     if (!mediaRecorder) return;

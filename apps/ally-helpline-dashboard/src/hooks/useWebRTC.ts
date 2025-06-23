@@ -2,28 +2,16 @@ import { useCallback, useRef, useState } from "react";
 
 import { ICE_SERVERS } from "@/constants/common";
 import { IceServer, SocketEvent } from "@/types/message";
-import {
-  xirsysChannel,
-  xirsysDomain,
-  xirsysIdent,
-  xirsysSecret,
-} from "@/constants/envVariables";
+import { xirsysChannel, xirsysDomain, xirsysIdent, xirsysSecret } from "@/constants/envVariables";
 
 interface UseWebRTCParams {
   emitSocketEvent: (socketEvent: SocketEvent, message: any) => void;
   chatId: number;
   isClient: boolean;
-  audioFileSize: number;
   offerTimeoutMs: number;
 }
 
-const useWebRTC = ({
-  emitSocketEvent,
-  chatId,
-  isClient,
-  audioFileSize,
-  offerTimeoutMs,
-}: UseWebRTCParams) => {
+const useWebRTC = ({ emitSocketEvent, chatId, isClient, offerTimeoutMs }: UseWebRTCParams) => {
   // Add a reference to store the local stream
   const localStreamRef = useRef<MediaStream | null>(null);
   const remoteStreamRef = useRef<MediaStream>(new MediaStream());
@@ -32,7 +20,6 @@ const useWebRTC = ({
   const [iceServers, setIceServers] = useState<IceServer>();
   const [newIceCandidates, setNewIceCandidates] = useState([]);
   const [peerConnection, setPeerConnection] = useState<RTCPeerConnection | null>(null);
-  const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(null);
   const [remoteMediaRecorder, setRemoteMediaRecorder] = useState<MediaRecorder | null>(null);
 
   const fetchIceServers = async () => {
@@ -59,54 +46,11 @@ const useWebRTC = ({
     }
   };
 
-  const setupWebRTCAndMediaRecorder = async () => {
+  const setupWebRTC = async () => {
     // Get user media stream (here, audio stream)
     const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
     // Store the stream reference
     localStreamRef.current = stream;
-
-    // Setup media recorder
-    const chunks: BlobPart[] = [];
-    let totalSize = 0;
-    // Create a MediaRecorder to capture audio data
-    const recorder = new MediaRecorder(stream);
-
-    const sendBufferedAudio = () => {
-      if (chunks.length === 0) return;
-      const audioBlob = new Blob(chunks, { type: "audio/webm" });
-      chunks.length = 0;
-      totalSize = 0;
-
-      const fileReader = new FileReader();
-      fileReader.readAsArrayBuffer(audioBlob);
-      fileReader.onloadend = () => {
-        const resultantAudioData = fileReader.result;
-        emitSocketEvent(SocketEvent.AUDIO_MESSAGE, {
-          audioData: resultantAudioData,
-          chatId,
-        });
-      };
-    };
-
-    recorder.ondataavailable = (event) => {
-      if (event.data.size > 0) {
-        chunks.push(event.data);
-        totalSize += event.data.size;
-
-        if (totalSize >= audioFileSize) {
-          sendBufferedAudio();
-        }
-      }
-    };
-
-    recorder.onstop = () => {
-      if (totalSize < audioFileSize && totalSize > 0) {
-        sendBufferedAudio();
-      }
-    };
-
-    recorder.start(500);
-    setMediaRecorder(recorder);
 
     // Setup webrtc connection
     // Clear any existing timeout
@@ -259,10 +203,9 @@ const useWebRTC = ({
     offerTimeoutRef,
     iceServers,
     peerConnection,
-    mediaRecorder,
     remoteMediaRecorder,
     fetchIceServers,
-    setupWebRTCAndMediaRecorder,
+    setupWebRTC,
     handleOnIceCandidate,
     handleWebRTCOffer,
     handleWebRTCAnswer,
