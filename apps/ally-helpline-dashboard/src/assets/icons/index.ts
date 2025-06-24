@@ -48,8 +48,8 @@ import Edit from "./Edit.svg?react";
 import Delete from "./Delete.svg?react";
 import Download from "./Download.svg?react";
 import CallDetails from "./CallDetails.svg?react";
-import Spinner from "./spinner.svg?react";
-import RoundCheckmark from "./roundCheckmark.svg?react";
+import Spinner from "./Spinner.svg?react";
+import RoundCheckmark from "./RoundCheckmark.svg?react";
 
 export type IconProps = SVGProps<SVGSVGElement> & {
   title?: string;

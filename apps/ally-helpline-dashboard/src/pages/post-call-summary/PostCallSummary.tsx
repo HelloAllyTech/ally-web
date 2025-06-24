@@ -119,7 +119,7 @@ const PostCallSummary = () => {
   };
 
   return (
-    <div className="h-[calc(100vh-80px)] pt-6 mx-auto flex flex-col gap-4 items-center bg-white">
+    <div className="h-[100vh] pt-6 mx-auto flex flex-col gap-4 items-center bg-white">
       <CallSummaryStepper
         activeSection={activeSection}
         completedSections={completedSections}
