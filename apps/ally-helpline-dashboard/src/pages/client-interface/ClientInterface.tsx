@@ -11,6 +11,7 @@ import { useSocket, useUser } from "@/hooks";
 import { useGetClientChatQuery, useRequestCallMutation } from "@/api/audioCall";
 import { LifelineLogo, Logout } from "@/assets/icons";
 import { SocketConnectionTypes } from "@/constants/socket";
+import { logger } from "@ally-ui-mono/ui-shared";
 
 const ClientInterface = () => {
   const navigate = useNavigate();
@@ -73,9 +74,12 @@ const ClientInterface = () => {
         navigate(ROUTES.AUDIO_CALL);
       }
     } catch (error) {
-      if (error?.response?.data?.detail)
+      logger.info(`Error in handleStartAudioChat:, ${error}`);
+      if (error?.response?.data?.detail) {
         toast.error(`${error.response.data.detail}`);
-      else toast.error("Something went wrong. Please try again later!");
+      } else {
+        toast.error('Something went wrong. Please try again later!');
+      }
       setIsWaiting(false);
     }
   };

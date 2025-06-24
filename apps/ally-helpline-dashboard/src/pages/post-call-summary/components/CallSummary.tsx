@@ -12,6 +12,7 @@ import {
 } from "@/api/callSummary";
 import { useEnhance } from "@/hooks";
 import { SummaryFieldKey, Tag } from "@/types/summary";
+import { logger } from "@ally-ui-mono/ui-shared";
 
 import { labelShownSections, summarySections } from "../constants";
 import { CallSummaryProps, SummaryField, SummarySectionKey } from "../types";
@@ -79,9 +80,13 @@ const CallSummary: FC<CallSummaryProps> = ({
 
   const onHandleSearch = async (query: string) => {
     if (query) {
-      const response = await searchLocations({ query });
-      if (response.data) {
-        setSearchedLocations(response.data);
+      try {
+        const response = await searchLocations({ query });
+        if (response.data) {
+          setSearchedLocations(response.data);
+        }
+      } catch (error) {
+        logger.info(`Error searching locations:, ${error}`);
       }
     } else {
       setSearchedLocations(null);
@@ -237,12 +242,16 @@ const CallSummary: FC<CallSummaryProps> = ({
 
   const handleSubmit = async () => {
     try {
-      const tags = summaryData?.tags?.split(", ");
+      const tags = summaryData?.tags?.split(', ');
       let tagsInput: Tag[] = [];
       if (tags?.length > 0) {
-        const response = await getTags({ tags });
-        if (response.data) {
-          tagsInput = response.data;
+        try {
+          const response = await getTags({ tags });
+          if (response.data) {
+            tagsInput = response.data;
+          }
+        } catch (error) {
+          logger.info(`Error getting tags:, ${error}`);
         }
       }
       await updateCallSummary({
@@ -251,7 +260,7 @@ const CallSummary: FC<CallSummaryProps> = ({
       });
       onProceed();
     } catch (error) {
-      console.error("Error updating call summary:", error);
+      logger.info(`Error updating call summary:, ${error}`);
     }
   };
 

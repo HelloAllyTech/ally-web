@@ -2,6 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
+import { logger } from '@ally-ui-mono/ui-shared';
 
 import { ResourceSearch } from '@ally-ui-mono/ui-shared';
 import { Resource } from 'libs/ui-shared/src/types';
@@ -41,18 +42,20 @@ export default function SearchClient({
 
   const onInfiniteScroll = async () => {
     if (isLoading || !hasMore) return;
-
     setIsLoading(true);
-    const { documents: newDocuments } = await fetchReferenceDocuments(
-      searchQuery,
-      category,
-      documents.length + initialFetchLimit,
-    );
-
-    if (newDocuments.length > documents.length) {
-      setDocuments(newDocuments);
-    } else {
-      setHasMore(false);
+    try {
+      const { documents: newDocuments } = await fetchReferenceDocuments(
+        searchQuery,
+        category,
+        documents.length + initialFetchLimit,
+      );
+      if (newDocuments.length > documents.length) {
+        setDocuments(newDocuments);
+      } else {
+        setHasMore(false);
+      }
+    } catch (error) {
+      logger.info(`Error in onInfiniteScroll: ${error}`);
     }
     setIsLoading(false);
   };

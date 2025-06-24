@@ -6,6 +6,7 @@ import { Delete, Download, Edit } from "@/assets/icons";
 import { useLazyExportCallSummaryQuery, useUpdateCallInfoMutation, useUpdateCallSummaryMutation } from "@/api/callSummary";
 import CallSummary from "@/pages/post-call-summary/components/CallSummary";
 import { useFileExport } from "@/hooks";
+import { logger } from "@ally-ui-mono/ui-shared";
 
 import { DeleteDialogData, SummarySideBarProps } from "../types";
 import { defaultDeleteDialogData, tabStyles } from "../constants";
@@ -65,7 +66,7 @@ const SummarySideBar: FC<SummarySideBarProps> = ({ callSummary, refetchCallLogs,
 
       exportTxtFromText(summaryText, summaryName);
     } catch (error) {
-      console.error("Error exporting call summary:", error);
+      logger.info(`Error exporting call summary:, ${error}`);
     }
   };
 
@@ -95,7 +96,7 @@ const SummarySideBar: FC<SummarySideBarProps> = ({ callSummary, refetchCallLogs,
     try {
       await updateCallInfo({ chatId: callSummary?.id, callInfo: { summaryName: value } });
     } catch (error) {
-      console.error("Error updating call summary:", error);
+      logger.info(`Error updating call summary:, ${error}`);
     } finally {
       setIsRenaming(false);
     }

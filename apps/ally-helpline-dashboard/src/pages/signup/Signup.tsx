@@ -7,6 +7,7 @@ import { UserRole } from "@/types/user";
 import { Button, Input } from "@/components";
 import { useUser } from "@/hooks";
 import { useSignupMutation } from "@/api/auth";
+import { logger } from "@ally-ui-mono/ui-shared";
 
 export const Signup = () => {
   const navigate = useNavigate();
@@ -39,7 +40,7 @@ export const Signup = () => {
       navigate("/login"); // Redirect to login page
     } catch (err) {
       toast.error("Signup failed. Please try again.");
-      console.error("Signup failed", err);
+      logger.info(`Signup failed:, ${err}`);
     }
   };
 

@@ -1,4 +1,5 @@
 import { BaseQueryFn, createApi, FetchArgs, fetchBaseQuery, FetchBaseQueryError } from "@reduxjs/toolkit/query/react";
+import { logger } from "@ally-ui-mono/ui-shared";
 
 const API_URL = import.meta.env.VITE_API_BASE_URL;
 const VITE_API_VERSION = import.meta.env.VITE_API_VERSION;
@@ -31,13 +32,19 @@ const baseQueryWithReauth: BaseQueryFn<string | FetchArgs, unknown, FetchBaseQue
   extraOptions,
 ) => {
   try {
-    let result = await baseQuery(args, store, extraOptions);
-
+    let result;
+    try {
+      result = await baseQuery(args, store, extraOptions);
+    } catch (error) {
+      logger.info(`Error in baseQuery:, ${error}`);
+      throw error;
+    }
     if (result.error && result.error.status === 401) {
       const accessToken = localStorage.getItem("accessToken");
       const refreshToken = localStorage.getItem("refreshToken");
 
       // If there is no access token or refresh token, return the error
+
       if (!accessToken || !refreshToken) {
         handleLogout();
         return result;
@@ -63,17 +70,23 @@ const baseQueryWithReauth: BaseQueryFn<string | FetchArgs, unknown, FetchBaseQue
 
         // Retry the original query
         result = await baseQuery(args, store, extraOptions);
+        try {
+          result = await baseQuery(args, store, extraOptions);
+        } catch (error) {
+          logger.info(`Error retrying original query after refresh:, ${error}`);
+          throw error;
+        }
       } catch (error) {
         // Handle refresh token failure (e.g., both tokens expired)
-        console.error("Token refresh failed:", error);
         // handleLogout();
+        logger.info(`Token refresh failed:, ${error}`);
         return result;
       }
     }
 
     return result;
   } catch (error) {
-    console.error("API request failed:", error);
+    logger.info(`API request failed:, ${error}`);
     return { error: { status: "FETCH_ERROR", error: String(error) } };
   }
 };

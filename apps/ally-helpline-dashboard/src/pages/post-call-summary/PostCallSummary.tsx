@@ -16,6 +16,7 @@ import { ModalData, SectionType } from "./types";
 import ArticleGridStep from "./components/ArticleGridStep";
 import CallSummary from "./components/CallSummary";
 import { useGetCallSummaryQuery } from "@/api/callSummary";
+import { logger } from "@ally-ui-mono/ui-shared";
 
 const PostCallSummary = () => {
   const { chatId } = useParams();
@@ -45,7 +46,7 @@ const PostCallSummary = () => {
           await refetch();
         }
       } catch (error) {
-        console.error("Error fetching call summary:", error);
+        logger.info(`Error fetching call summary:, ${error}`);
       }
     };
 

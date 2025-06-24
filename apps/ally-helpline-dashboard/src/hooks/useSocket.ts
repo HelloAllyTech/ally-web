@@ -4,6 +4,7 @@ import { Socket, io } from "socket.io-client";
 import { SocketEvent } from "@/types/message";
 import { SocketConnectionTypes } from "@/constants/socket";
 import { getPathForConnectionType } from "@/utils/socket";
+import { logger } from "@ally-ui-mono/ui-shared";
 
 interface UseSocketOptions {
   userId: number;
@@ -21,7 +22,7 @@ export const useSocket = ({ userId, eventCallbacks, connectionType }: UseSocketO
   const connect = useCallback(
     (chatId?: number) => {
       if (connectionAttemptsRef.current >= maxAttempts) {
-        console.error("Max connection attempts reached");
+        logger.info("Max connection attempts reached");
         return;
       }
       try {
@@ -48,7 +49,7 @@ export const useSocket = ({ userId, eventCallbacks, connectionType }: UseSocketO
         setupDefaultListeners();
         connectionAttemptsRef.current++;
       } catch (error) {
-        console.error("Socket connection error:", error);
+        logger.info(`Socket connection error:, ${error}`);
         connectionAttemptsRef.current++;
         setTimeout(() => connect(chatId), 2000);
       }
@@ -64,15 +65,15 @@ export const useSocket = ({ userId, eventCallbacks, connectionType }: UseSocketO
     });
 
     socketRef.current.on("connect_error", (error) => {
-      console.error("Socket connection error:", error);
+      logger.info(`Socket connection error:, ${error}`);
     });
 
     socketRef.current.on("disconnect", (reason) => {
-      console.log("Socket disconnected:", reason);
+      logger.info(`Socket disconnected:, ${reason}`);
     });
 
     socketRef.current.on("error", (error) => {
-      console.error("Socket error:", error);
+      logger.info(`Socket error:, ${error}`);
     });
 
     Object.entries(eventCallbacks).forEach(([key, callback]) => {
@@ -89,7 +90,7 @@ export const useSocket = ({ userId, eventCallbacks, connectionType }: UseSocketO
 
   const sendMessage = useCallback((message: any) => {
     if (!socketRef.current) {
-      console.error("Socket not connected");
+      logger.info("Socket not connected");
       return;
     }
     socketRef.current.emit(SocketEvent.SEND_MESSAGE, message);
@@ -98,7 +99,7 @@ export const useSocket = ({ userId, eventCallbacks, connectionType }: UseSocketO
   const emitSocketEvent = useCallback(
     (socketEvent: SocketEvent, message: any) => {
       if (!socketRef.current) {
-        console.error("Socket not connected");
+        logger.info("Socket not connected");
         return;
       }
       socketRef.current.emit(socketEvent, message);
@@ -113,7 +114,7 @@ export const useSocket = ({ userId, eventCallbacks, connectionType }: UseSocketO
   const setListenerForEvent = useCallback(
     (socketEvent: SocketEvent, callback: (data: any) => void) => {
       if (!socketRef.current) {
-        console.error("Socket not connected");
+        logger.info("Socket not connected");
         return;
       }
       socketRef.current.on(socketEvent, callback);
@@ -123,7 +124,7 @@ export const useSocket = ({ userId, eventCallbacks, connectionType }: UseSocketO
 
   const removeIfListenerPresent = useCallback((socketEvent: SocketEvent) => {
     if (!socketRef.current) {
-      console.error("Socket not connected");
+      logger.info("Socket not connected");
       return;
     }
     socketRef.current.off(socketEvent);

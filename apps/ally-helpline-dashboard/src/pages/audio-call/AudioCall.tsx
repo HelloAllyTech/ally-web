@@ -14,6 +14,7 @@ import CallTranscript from "./CallTranscript";
 import EndTransitionScreen from "./components/EndTransition";
 import { useEndCallMutation, useLazyGetClientChatQuery, useLazyGetCounsellorChatQuery } from "@/api/audioCall";
 import { MindfullnessVideo } from "@/assets/videos";
+import { logger } from "@ally-ui-mono/ui-shared";
 
 const AudioCall: FunctionComponent = () => {
   const [activeChat, setActiveChat] = useState<Chat | null>();
@@ -39,26 +40,19 @@ const AudioCall: FunctionComponent = () => {
 
   const handleEndSequence = async () => {
     if (user?.role === UserRole.CLIENT) {
-      // For clients, navigate immediately
-      navigate("/");
+      navigate('/');
       return;
     }
     setIsEnding(true);
-    // First message
-    setEndingMessage("You gave your best on that call!");
-
-    // Wait 3 seconds
-    await new Promise((resolve) => setTimeout(resolve, 2000));
-
-    // Second message
-    setEndingMessage("Now, take a moment for yourself");
-
-    // Wait 3 more seconds
-    await new Promise((resolve) => setTimeout(resolve, 2000));
-    setShowStressBuster(true);
-    // Navigate
-    // navigate(`/summary/${chatId}`);
-    // Show stress buster
+    setEndingMessage('You gave your best on that call!');
+    try {
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+      setEndingMessage('Now, take a moment for yourself');
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+      setShowStressBuster(true);
+    } catch (error) {
+      logger.info(`Error in handleEndSequence:, ${error}`);
+    }
   };
 
   useEffect(() => {
@@ -75,11 +69,10 @@ const AudioCall: FunctionComponent = () => {
           setActiveChat(response.data);
         }
       } catch (error) {
-        console.error("Error fetching active chat:", error);
+        logger.info(`Error fetching active chat:, ${error}`);
         setActiveChat(null);
       }
     };
-
     fetchActiveChat();
   }, [user]);
 
@@ -90,7 +83,7 @@ const AudioCall: FunctionComponent = () => {
       }
       handleEndSequence();
     } catch (error) {
-      console.error("Error ending session:", error);
+      logger.info(`Error ending session:, ${error}`);
     }
   };
 

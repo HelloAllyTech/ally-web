@@ -7,6 +7,7 @@ import { Resource } from "@ally-ui-mono/ui-shared/types";
 import { useGetCategoriesQuery, useGetSearchResultsMutation } from "@/api/search";
 
 import { SearchResourcesProps } from "./types";
+import { logger } from "@ally-ui-mono/ui-shared";
 
 const SearchResources: FC<SearchResourcesProps> = ({
   isInSidebar = false,
@@ -39,7 +40,8 @@ const SearchResources: FC<SearchResourcesProps> = ({
       } else{
         toast.error("Error fetching search results");
       }
-      } catch {
+      } catch(error) {
+        logger.info(`Error fetching search results: ${error}`)
         toast.error("Error fetching search results");
       }
     }
@@ -47,17 +49,21 @@ const SearchResources: FC<SearchResourcesProps> = ({
 
   const fetchRemainingResources = async () => {
     if (isResourcesLoading || !hasMore) return;
-    const response = await getSearchResults({
-      query: searchQuery,
-      limit: resources.length + 10,
-    });
-    if (response.data) {
-      const newDocuments = response.data.documents;
-      if (newDocuments.length > resources.length) {
-        setResources(newDocuments);
-      } else {
-        setHasMore(false);
+    try {
+      const response = await getSearchResults({
+        query: searchQuery,
+        limit: resources.length + 10,
+      });
+      if (response.data) {
+        const newDocuments = response.data.documents;
+        if (newDocuments.length > resources.length) {
+          setResources(newDocuments);
+        } else {
+          setHasMore(false);
+        }
       }
+    } catch (error) {
+      logger.info(`Error fetching remaining resources:, ${error}`);
     }
   };
 
