@@ -87,12 +87,12 @@ const ClientInterface = () => {
 
   const renderLogoutButton = () => {
     return (
-      <button className="absolute top-0 right-0 flex flex-row h-[60px] items-center px-[26px] onClick={handleLogout}  mx-[15px] cursor-pointer mb-[6px]" onClick={handleLogout}>
+      <Button className="absolute top-0 right-0 flex flex-row h-[60px] items-center px-[26px] onClick={handleLogout}  mx-[15px] cursor-pointer mb-[6px] bg-transparent hover:bg-transparent" onClick={handleLogout}>
         <Logout />
         <div className="pl-[10px]">
           <div className="text-[16px] font-[600px] font-['IBM_Plex_Serif'] text-[#444]">Log Out</div>
         </div>
-      </button>
+      </Button>
     );
   };
 

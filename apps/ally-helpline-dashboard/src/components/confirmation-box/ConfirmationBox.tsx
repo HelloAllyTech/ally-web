@@ -1,4 +1,5 @@
 import { CopilotIcon } from "@/assets/icons";
+import { Button } from "../generic/button";
 
 type ConfirmationBoxProps = {
   text: string | React.ReactNode;
@@ -35,18 +36,18 @@ const ConfirmationBox = ({ ...props }: ConfirmationBoxProps) => {
         <div className="break-words">{text}</div>
       </div>
       <div className="flex text-sm gap-8 px-2">
-        <button
+        <Button
           onClick={onYes}
           className="w-20 text-center bg-[#EAF4ED] rounded-[38px] px-4 py-1 border border-[#D9D9D9] hover:bg-[#d5e6da]"
         >
           Yes
-        </button>
-        <button
+        </Button>
+        <Button
           onClick={onNo}
           className="w-20 text-center bg-[#EAF4ED] rounded-[38px] px-4 py-1 border border-[#D9D9D9] hover:bg-[#d5e6da]"
         >
           No
-        </button>
+        </Button>
       </div>
     </>
   );

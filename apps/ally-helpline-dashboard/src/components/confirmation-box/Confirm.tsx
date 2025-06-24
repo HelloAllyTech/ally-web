@@ -1,4 +1,5 @@
 import React from "react";
+import { Button } from "../generic/button";
 
 interface ConfirmProps {
   open: boolean;
@@ -39,7 +40,7 @@ const Confirm = ({
           </div>
         </div>
         <div className="flex gap-2 justify-end">
-          <button
+          <Button
             onClick={() => {
               onCancel();
               onOpenChange(false);
@@ -48,8 +49,8 @@ const Confirm = ({
             className="py-2.5 px-6 flex-1 text-center text-[15px] font-medium text-[#47464F] bg-white border border-[#C8C5D0] rounded-full hover:bg-gray-50 disabled:opacity-50"
           >
             {cancelText}
-          </button>
-          <button
+          </Button>
+          <Button
             onClick={() => {
               onConfirm();
               onOpenChange(false);
@@ -62,7 +63,7 @@ const Confirm = ({
             }`}
           >
             {isLoading ? "..." : confirmText}
-          </button>
+          </Button>
         </div>
       </div>
     </div>

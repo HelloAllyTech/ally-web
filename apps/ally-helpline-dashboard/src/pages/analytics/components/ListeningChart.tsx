@@ -47,15 +47,15 @@ const ListeningChart: FC<ListeningChartProps> = ({
             className="bg-[#BBD6FF] flex items-center justify-start pl-4 transition-all duration-300 ease-out"
             style={{ width: `${animatedPercentage}%` }}
           >
-            <span className="text-[#081033] font-medium">
+            <span className="text-[#081033] z-10 font-medium">
               {Math.round(animatedPercentage)}%
             </span>
           </div>
           <div
-            className="bg-[#5B7BAF] flex items-center justify-end pr-4 transition-all duration-300 ease-out"
+            className="bg-[#5B7BAF] flex items-center justify-end transition-all duration-300 ease-out"
             style={{ width: `${talkingPercentage}%` }}
           >
-            <span className="text-white font-medium">
+            <span className="text-white pr-4 font-medium">
               {Math.round(talkingPercentage)}%
             </span>
           </div></>)}

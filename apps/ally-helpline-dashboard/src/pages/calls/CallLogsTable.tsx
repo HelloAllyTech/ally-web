@@ -159,7 +159,7 @@ const CallLogsTable = () => {
   return (
     <>
       <div
-        className={`${callLogs.length > 0 ? 'bg-white shadow-md' : ''} rounded-xl w-full`}
+        className={`${callLogs.length > 0 ? 'bg-white shadow-md' : ''} rounded-xl w-full max-h-[calc(100vh-240px)] overflow-y-auto`}
         style={{
           minHeight: `${TABLE_ROW_HEIGHT * (CALL_LOGS_PAGINATION_LIMIT + 1)}px`,
         }}
@@ -205,7 +205,7 @@ const CallLogsTable = () => {
           />
         )}
       </div>
-      {callLogs?.length > 0 && <div className="flex justify-center mt-6">
+      {callLogs?.length > 0 && <div className="flex justify-center mt-6 mb-4">
         <Pagination
           count={Math.ceil(totalCallsCount / CALL_LOGS_PAGINATION_LIMIT)}
           page={page}

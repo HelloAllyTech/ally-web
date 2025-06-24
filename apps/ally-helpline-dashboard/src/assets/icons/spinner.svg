@@ -1,5 +1,5 @@
     <svg
-      class="spinner h-4 w-4 text-gray-500"
+      class="spinner h-4 w-4 text-blue-500"
       fill="none"
       viewBox="0 0 24 24"
     >
@@ -9,7 +9,7 @@
         r="10"
         stroke="currentColor"
         stroke-width="4"
-        style="opacity: 0.2"
+        style="opacity: 0.4"
       ></circle>
       <path
         fill="currentColor"
