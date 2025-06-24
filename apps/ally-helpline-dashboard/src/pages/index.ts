@@ -12,6 +12,7 @@ import AudioCall from "./audio-call";
 import AccessDenied from "./access-denied";
 import Search from "./search";
 import Health from "./health-check";
+import StartSession from "./start-session";
 
 export {
   Login,
@@ -28,4 +29,5 @@ export {
   ClientInterface,
   Search,
   Health,
+  StartSession,
 };
