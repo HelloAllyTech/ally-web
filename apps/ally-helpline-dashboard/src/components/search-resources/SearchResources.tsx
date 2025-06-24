@@ -7,6 +7,7 @@ import { Resource } from "@ally-ui-mono/ui-shared/types";
 import { useGetCategoriesQuery, useGetSearchResultsMutation } from "@/api/search";
 
 import { SearchResourcesProps } from "./types";
+import { logger } from "@ally-ui-mono/ui-shared";
 
 const SearchResources: FC<SearchResourcesProps> = ({
   isInSidebar = false,
@@ -29,17 +30,13 @@ const SearchResources: FC<SearchResourcesProps> = ({
     }
     setSearchQuery(query);
     if (query) {
-      try {
       const response = await getSearchResults({
         query,
         limit: 10,
       });
       if (response.data) {
         setResources(response.data.documents);
-      } else{
-        toast.error("Error fetching search results");
-      }
-      } catch {
+      } else {
         toast.error("Error fetching search results");
       }
     }

@@ -36,6 +36,7 @@ import {
   useAcceptCallMutation,
   useGetWaitingClientsQuery,
 } from "@/api/audioCall";
+import { logger } from '@ally-ui-mono/ui-shared';
 
 import PermissionGuardedRoute from "./PermissionGuardedRoute";
 
@@ -117,7 +118,7 @@ const PrivateRouteLayout = () => {
         error?.response?.data?.detail ??
           "Something went wrong. Please try again later!"
       );
-      console.error("Error accepting chat:", error);
+      logger.info(`Error accepting chat: ${error}`);
     }
   };
 

@@ -12,6 +12,7 @@ import {
 } from "@/api/callSummary";
 import { useEnhance } from "@/hooks";
 import { SummaryFieldKey, Tag } from "@/types/summary";
+import { logger } from "@ally-ui-mono/ui-shared";
 
 import { labelShownSections, summarySections } from "../constants";
 import { CallSummaryProps, SummaryField, SummarySectionKey } from "../types";
@@ -80,7 +81,9 @@ const CallSummary: FC<CallSummaryProps> = ({
   const onHandleSearch = async (query: string) => {
     if (query) {
       const response = await searchLocations({ query });
-      if (response.data) {
+      if (response.error) {
+        logger.info(`Error searching locations: ${response.error}`);
+      } else if (response.data) {
         setSearchedLocations(response.data);
       }
     } else {
@@ -163,7 +166,7 @@ const CallSummary: FC<CallSummaryProps> = ({
               <span className="font-medium text-[16px] text-[#6B7280]">{`${field.label}: `}</span>
             )}
             <TextField
-              value={enhancing === field.key ? "" : value}
+              value={enhancing === field.key ? "" : value || ""}
               onChange={(e) =>
                 setSummaryData((prev) => ({
                   ...prev,
@@ -204,8 +207,8 @@ const CallSummary: FC<CallSummaryProps> = ({
       case "Text":
       default:
         return (
-          <>
-            <div key={field.key} className="flex items-center">
+          <div key={field.key}>
+            <div className="flex items-center">
               <span className="font-medium text-[16px] text-[#6B7280]">{`${field.label}: `}</span>
               <div className="flex-1">
                 <TextField
@@ -230,28 +233,30 @@ const CallSummary: FC<CallSummaryProps> = ({
             {field.key === "clientId" && (
               <Divider sx={{ width: "90%", marginTop: "6px" }} />
             )}
-          </>
+          </div>
         );
     }
   };
 
   const handleSubmit = async () => {
-    try {
-      const tags = summaryData?.tags?.split(", ");
-      let tagsInput: Tag[] = [];
-      if (tags?.length > 0) {
-        const response = await getTags({ tags });
-        if (response.data) {
-          tagsInput = response.data;
-        }
+    const tags = summaryData?.tags?.split(', ');
+    let tagsInput: Tag[] = [];
+    if (tags?.length > 0) {
+      const response = await getTags({ tags });
+      if (response.error) {
+        logger.info(`Error getting tags: ${response.error}`);
+      } else if (response.data) {
+        tagsInput = response.data;
       }
+    }
+    try {
       await updateCallSummary({
         chatId,
         data: { summary: { ...summaryData, tags: tagsInput } },
       });
       onProceed();
     } catch (error) {
-      console.error("Error updating call summary:", error);
+      logger.info(`Error updating call summary:, ${error}`);
     }
   };
 

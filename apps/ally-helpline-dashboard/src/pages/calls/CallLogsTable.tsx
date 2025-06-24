@@ -207,7 +207,7 @@ const CallLogsTable = () => {
       </div>
       {callLogs?.length > 0 && <div className="flex justify-center mt-6 mb-4">
         <Pagination
-          count={Math.ceil(totalCallsCount / CALL_LOGS_PAGINATION_LIMIT)}
+          count={Math.ceil(totalCallsCount / CALL_LOGS_PAGINATION_LIMIT) || 1}
           page={page}
           onChange={(_, value) => dispatch(updatePage(value))}
           showFirstButton

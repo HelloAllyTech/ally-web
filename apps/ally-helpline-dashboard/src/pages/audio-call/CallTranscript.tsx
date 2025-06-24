@@ -15,6 +15,7 @@ import { useSocket, useWebRTCCallSetup } from "@/hooks";
 import { UserRole } from "@/types/user";
 import { FeedbackResponse, MessageType, SocketEvent } from "@/types/message";
 import { SocketConnectionTypes } from "@/constants/socket";
+import { logger } from "@ally-ui-mono/ui-shared";
 
 import { reduceTranscriptions } from "./utils";
 import { CallTranscriptProps, Transcription, Nudge } from "./types";
@@ -388,7 +389,7 @@ const CallTranscript: FC<CallTranscriptProps> = ({
       endSession(triggerApi);
       disconnect();
     } catch (error) {
-      console.error("Error ending session:", error);
+      logger.info(`Error ending session:, ${error}`);
     }
   };
 

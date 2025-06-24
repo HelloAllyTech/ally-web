@@ -4,6 +4,7 @@ import {
   useLazyGetDashboardUrlQuery,
   useLazyGetDashboardsQuery,
 } from "@/api/analytics";
+import { logger } from '@ally-ui-mono/ui-shared';
 
 const OrgAnalytics: FunctionComponent = () => {
 
@@ -27,11 +28,15 @@ const OrgAnalytics: FunctionComponent = () => {
   }, [dashboards]);
 
   const triggerDashboardUrl = async (dashboardId: string) => {
-    const data = await getDashboardUrl({ dashboardId });
-    setDashboardUrls((prev) => ({
-      ...prev,
-      [dashboardId]: data?.data?.url,
-    }));
+    try {
+      const data = await getDashboardUrl({ dashboardId });
+      setDashboardUrls((prev) => ({
+        ...prev,
+        [dashboardId]: data?.data?.url,
+      }));
+    } catch (error) {
+      logger.info(`Error in triggerDashboardUrl: ${error}`);
+    }
   };
 
   return (

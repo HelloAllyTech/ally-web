@@ -2,7 +2,10 @@
   "name": "@ally-ui-mono/source",
   "version": "0.0.0",
   "license": "MIT",
-  "scripts": {},
+  "scripts": {
+    "start:web": "npx nx dev ally-web",
+    "start:helpline": "npx nx serve ally-helpline-dashboard"
+  },
   "private": true,
   "dependencies": {
     "@emotion/react": "^11.14.0",

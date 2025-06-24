@@ -8,6 +8,7 @@ import {
   unauthenticate,
   setPermissions,
 } from "@/reducer/userReducer";
+import { logger } from "@ally-ui-mono/ui-shared";
 
 export const useUser = () => {
   const isAuthenticated = useSelector(
@@ -24,19 +25,28 @@ export const useUser = () => {
     try {
       const token = localStorage.getItem("accessToken");
       if (token) {
-        const userData = await getUser();
-        const permissionsData = await getPermissions();
-        store.dispatch(setUser(userData?.data));
-        store.dispatch(setPermissions(permissionsData?.data));
-        store.dispatch(authenticate());
-        return userData?.data;
+        try {
+          const userData = await getUser();
+          const permissionsData = await getPermissions();
+          store.dispatch(setUser(userData?.data));
+          store.dispatch(setPermissions(permissionsData?.data));
+          store.dispatch(authenticate());
+          return userData?.data;
+        } catch (error) {
+          logger.info(`Error fetching user or permissions:, ${error}`);
+          store.dispatch(setUser(null));
+          store.dispatch(setPermissions([]));
+          store.dispatch(unauthenticate());
+          localStorage.removeItem("accessToken");
+          localStorage.removeItem("refreshToken");
+        }
       } else {
         store.dispatch(setUser(null));
         store.dispatch(setPermissions([]));
         store.dispatch(unauthenticate());
       }
     } catch (error) {
-      console.error("Error authenticating - ", error);
+      logger.info(`Error authenticating - ${error}`);
       store.dispatch(setUser(null));
       store.dispatch(setPermissions([]));
       store.dispatch(unauthenticate());

@@ -3,6 +3,7 @@ import { Skeleton } from "@mui/material";
 import { WandSparkles } from "lucide-react";
 
 import { useEnhanceContentMutation } from "@/api/callSummary";
+import { logger } from "@ally-ui-mono/ui-shared";
 
 interface EnhanceButtonProps {
   fieldName: string;
@@ -64,7 +65,7 @@ const useEnhance = () => {
         }
       }, 50);
     } catch (error) {
-      console.error("Error enhancing content:", error);
+      logger.info(`Error enhancing content:, ${error}`);
       setEnhancing("");
       setStreaming("");
       if (streamIntervalRef.current) {

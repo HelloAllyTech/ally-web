@@ -6,6 +6,7 @@ import { DropdownField, Dropdown } from './lib/dropdown-field';
 import ResourceSearch from './lib/resource-search';
 import InfiniteScroll from './lib/infinite-scroll';
 import SuggestionsContainer from './lib/suggestions-container';
+import {logger} from './logger';
 
 export {
   Badge,
@@ -17,4 +18,5 @@ export {
   ResourceSearch,
   InfiniteScroll,
   SuggestionsContainer,
+  logger,
 };

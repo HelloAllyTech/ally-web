@@ -3,6 +3,7 @@ import { useCallback, useRef, useState } from "react";
 import { ICE_SERVERS } from "@/constants/common";
 import { IceServer, SocketEvent } from "@/types/message";
 import { xirsysChannel, xirsysDomain, xirsysIdent, xirsysSecret } from "@/constants/envVariables";
+import { logger } from "@ally-ui-mono/ui-shared";
 
 interface UseWebRTCParams {
   emitSocketEvent: (socketEvent: SocketEvent, message: any) => void;
@@ -36,85 +37,69 @@ const useWebRTCCallSetup = ({ emitSocketEvent, chatId, isClient, offerTimeoutMs 
           room: "default",
         }),
       });
-
-      const data = await response.json();
-      if (data?.v?.iceServers) {
-        setIceServers(data.v.iceServers);
+      try {
+        const data = await response.json();
+        if (data?.v?.iceServers) {
+          setIceServers(data.v.iceServers);
+        }
+      } catch (error) {
+        logger.info(`Error parsing ICE servers response:, ${error}`);
       }
     } catch (error) {
-      console.error("Failed to fetch ICE servers:", error);
+      logger.info(`Failed to fetch ICE servers:, ${error}`);
     }
   };
 
   const setupWebRTC = async () => {
-    // Get user media stream (here, audio stream)
-    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-    // Store the stream reference
-    localStreamRef.current = stream;
-
-    // Setup webrtc connection
-    // Clear any existing timeout
-    if (offerTimeoutRef.current) {
-      clearTimeout(offerTimeoutRef.current);
-    }
-
-    // Create and configure peer connection
-    const pc = new RTCPeerConnection({
-      iceServers: iceServers?.urls?.length > 0 ? [iceServers] : ICE_SERVERS, // Fallback STUN server
-    });
-
-    // Add local media tracks (here, audio track) to peer connection
-    stream.getTracks().forEach((track) => {
-      pc.addTrack(track, stream);
-    });
-
-    // Handle new ICE candidates
-    pc.onicecandidate = (event) => {
-      if (event.candidate) {
-        emitSocketEvent(SocketEvent.ICE_CANDIDATE, {
-          candidate: event.candidate,
-          chatId,
-        });
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      localStreamRef.current = stream;
+      if (offerTimeoutRef.current) {
+        clearTimeout(offerTimeoutRef.current);
       }
-    };
-
-    // Add remote media tracks to remote stream
-    pc.ontrack = (event) => {
-      // event.streams[0].getTracks().forEach((track) => {
-      //   track.onended = () => console.log("Track ended:", track.kind);
-      //   track.onmute = () => console.log("Track muted:", track.kind);
-      //   track.onunmute = () => console.log("Track unmuted:", track.kind);
-      // });
-      remoteStreamRef.current = event.streams[0];
-
-      // Create MediaRecorder for remote stream
-      const remoteRecorder = new MediaRecorder(event.streams[0], {
-        mimeType: "audio/webm",
+      const pc = new RTCPeerConnection({
+        iceServers: iceServers?.urls?.length > 0 ? [iceServers] : ICE_SERVERS,
       });
-      remoteRecorder.start(500);
-      setRemoteMediaRecorder(remoteRecorder);
-    };
-
-    setPeerConnection(pc);
-
-    const createAndSendOffer = async () => {
-      // initiates creation of a Session Description Protocol (SDP) offer for starting the WebRTC connection to a remote peer
-      const offer = await pc.createOffer({ offerToReceiveAudio: true });
-      await pc.setLocalDescription(offer);
-      // sends the offer to the remote peer
-      emitSocketEvent(SocketEvent.WEBRTC_OFFER, {
-        offer,
-        chatId,
+      stream.getTracks().forEach((track) => {
+        pc.addTrack(track, stream);
       });
-    };
-
-    // Set up delayed offer for both client and counselor
-    offerTimeoutRef.current = setTimeout(() => {
-      createAndSendOffer();
-    }, offerTimeoutMs);
-
-    if (isClient) {
-      createAndSendOffer();
+      pc.onicecandidate = (event) => {
+        if (event.candidate) {
+          emitSocketEvent(SocketEvent.ICE_CANDIDATE, {
+            candidate: event.candidate,
+            chatId,
+          });
+        }
+      };
+      pc.ontrack = (event) => {
+        remoteStreamRef.current = event.streams[0];
+        const remoteRecorder = new MediaRecorder(event.streams[0], {
+          mimeType: "audio/webm",
+        });
+        remoteRecorder.start(500);
+        setRemoteMediaRecorder(remoteRecorder);
+      };
+      setPeerConnection(pc);
+      const createAndSendOffer = async () => {
+        try {
+          const offer = await pc.createOffer({ offerToReceiveAudio: true });
+          await pc.setLocalDescription(offer);
+          emitSocketEvent(SocketEvent.WEBRTC_OFFER, {
+            offer,
+            chatId,
+          });
+        } catch (error) {
+          logger.info(`Error creating or sending offer:, ${error}`);
+        }
+      };
+      offerTimeoutRef.current = setTimeout(() => {
+        createAndSendOffer();
+      }, offerTimeoutMs);
+      if (isClient) {
+        createAndSendOffer();
+      }
+    } catch (error) {
+      logger.info(`Error setting up WebRTC:, ${error}`);
     }
   };
 
@@ -126,10 +111,7 @@ const useWebRTCCallSetup = ({ emitSocketEvent, chatId, isClient, offerTimeoutMs 
         .addIceCandidate(new RTCIceCandidate(data.candidate))
         .catch((err) => {
           setNewIceCandidates((prev) => [...prev, data.candidate]);
-          console.error(
-            "Error adding ICE candidate (Adding in state for future handling):",
-            err,
-          );
+          logger.info(`Error adding ICE candidate (Adding in state for future handling):, ${err}`);
         });
     },
     [chatId, peerConnection],
@@ -149,31 +131,30 @@ const useWebRTCCallSetup = ({ emitSocketEvent, chatId, isClient, offerTimeoutMs 
   const handleWebRTCOffer = useCallback(
     async (data: { chatId: number; offer: RTCSessionDescriptionInit }) => {
       if (data.chatId !== chatId) return;
-
-      // Clear any existing timeout
       if (offerTimeoutRef.current) {
         clearTimeout(offerTimeoutRef.current);
       }
-      // Set the incoming offer as the remote description
-      await peerConnection?.setRemoteDescription(
-        new RTCSessionDescription(data.offer),
-      );
-
-      handleUnAttemptedIceCandidates();
-
-      emitSocketEvent(SocketEvent.START_AUDIO_CHAT, {
-        chatId,
-      });
-
-      // Create an answer for the offer and set it as the local description
-      const answer = await peerConnection.createAnswer();
-      await peerConnection.setLocalDescription(answer);
-
-      // Send the answer to the remote peer
-      emitSocketEvent(SocketEvent.WEBRTC_ANSWER, {
-        answer,
-        chatId,
-      });
+      try {
+        await peerConnection?.setRemoteDescription(
+          new RTCSessionDescription(data.offer),
+        );
+        handleUnAttemptedIceCandidates();
+        emitSocketEvent(SocketEvent.START_AUDIO_CHAT, {
+          chatId,
+        });
+        try {
+          const answer = await peerConnection.createAnswer();
+          await peerConnection.setLocalDescription(answer);
+          emitSocketEvent(SocketEvent.WEBRTC_ANSWER, {
+            answer,
+            chatId,
+          });
+        } catch (error) {
+          logger.info(`Error creating or setting local answer:, ${error}`);
+        }
+      } catch (error) {
+        logger.info(`Error handling WebRTC offer:, ${error}`);
+      }
     },
     [chatId, peerConnection, offerTimeoutRef, handleUnAttemptedIceCandidates],
   );
@@ -182,17 +163,17 @@ const useWebRTCCallSetup = ({ emitSocketEvent, chatId, isClient, offerTimeoutMs 
   const handleWebRTCAnswer = useCallback(
     async (data: { chatId: number; answer: RTCSessionDescriptionInit }) => {
       if (data.chatId !== chatId) return;
-
       emitSocketEvent(SocketEvent.START_AUDIO_CHAT, {
         chatId,
       });
-
-      // Set the incoming answer as the remote description
-      await peerConnection?.setRemoteDescription(
-        new RTCSessionDescription(data.answer),
-      );
-
-      handleUnAttemptedIceCandidates();
+      try {
+        await peerConnection?.setRemoteDescription(
+          new RTCSessionDescription(data.answer),
+        );
+        handleUnAttemptedIceCandidates();
+      } catch (error) {
+          logger.info(`Error handling WebRTC answer:, ${error}`);
+      }
     },
     [chatId, peerConnection, handleUnAttemptedIceCandidates],
   );
