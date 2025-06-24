@@ -24,7 +24,7 @@ const callSummaryAPI = baseAPI.injectEndpoints({
         method: "PUT",
         body: data,
       }),
-      invalidatesTags: ["CallSummary"],
+      invalidatesTags: ["CallSummary", "CallLogs"],
     }),
     enhanceContent: builder.mutation<EnhanceContentResponse, EnhanceContentRequest>({
       query: ({ content }) => ({

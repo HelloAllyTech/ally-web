@@ -8,6 +8,7 @@ const callsAPI = baseAPI.injectEndpoints({
         url: "/chats/call-logs",
         params: { limit, offset },
       }),
+      providesTags: ["CallLogs"],
     }),
   }),
 });
