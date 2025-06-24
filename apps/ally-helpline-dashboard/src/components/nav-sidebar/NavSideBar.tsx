@@ -1,4 +1,4 @@
-import { FunctionComponent, SVGProps, useState } from "react";
+import { FunctionComponent, useState } from "react";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import { useNavigate } from "react-router-dom";
 
@@ -50,7 +50,10 @@ const NavSideBar: FunctionComponent<NavSideBarProps> = ({
 
   const renderUserInfo = () => {
     return (
-      <div className="flex items-center justify-between gap-2 border-gray-200 w-[calc(100%-30px)] border-b border-b-[#E5E7EB py-[20px] px-[5px] mx-[15px]">
+      <div
+        className="flex items-center justify-between gap-2 border-gray-200 w-[calc(100%-30px)] 
+          border-b border-b-[#E5E7EB py-[20px] px-[5px] mx-[15px]"
+      >
         <div className="flex gap-3 flex-row items-center">
           <AccountCircle className="w-[30px] h-[30px]" />
           <div className="flex flex-col">
@@ -64,7 +67,11 @@ const NavSideBar: FunctionComponent<NavSideBarProps> = ({
 
   const renderLogoutButton = () => {
     return (
-      <button className="flex flex-row h-[60px] items-center px-[26px] border-t border-t-[#E5E7EB] onClick={handleLogout}  mx-[15px] cursor-pointer mb-[6px]" onClick={handleLogout}>
+      <button
+        className="flex flex-row h-[60px] items-center px-[26px] border-t 
+          border-t-[#E5E7EB] mx-[15px] cursor-pointer mb-[6px]"
+        onClick={handleLogout}
+      >
         <Logout />
         <div className="pl-[10px]">
           <div className="text-[16px] font-[600px] font-['IBM_Plex_Serif'] text-[#444]">Log Out</div>
@@ -104,8 +111,8 @@ const NavSideBar: FunctionComponent<NavSideBarProps> = ({
           </div>
         ))}
       </div>
-    )
-  }
+    );
+  };
 
   const renderCloseButton = () => {
     return (
@@ -113,8 +120,8 @@ const NavSideBar: FunctionComponent<NavSideBarProps> = ({
         className="fixed inset-0 bg-black opacity-50 z-10 md:hidden"
         onClick={onClose}
       ></div>
-    )
-  }
+    );
+  };
 
   const renderConfirmationBox = () => {
     return (
@@ -129,15 +136,15 @@ const NavSideBar: FunctionComponent<NavSideBarProps> = ({
         destructive
         title="Logout"
       />
-    )
-  }
+    );
+  };
 
   return (
     <>
       {renderConfirmationBox()}
       <div
-        className={`w-72 bg-white h-screen flex flex-col justify-between border-r border-r-[#E5E7EB] z-20 transition-all duration-300
-        ${isOpen ? "fixed" : "max-md:hidden md:fixed"}`}
+        className={`w-72 bg-[#F9FAFB] h-screen flex flex-col justify-between border-r border-r-[#E5E7EB]
+          z-20 transition-all duration-300 ${isOpen ? "fixed" : "max-md:hidden md:fixed"}`}
       >
         <button onClick={onClose} className="md:hidden absolute top-4 right-4">
           <Close />

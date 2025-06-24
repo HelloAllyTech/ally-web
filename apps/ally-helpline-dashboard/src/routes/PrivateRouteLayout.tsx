@@ -21,6 +21,7 @@ import {
   PostCallSummary,
   ClientInterface,
   Search,
+  StartSession,
 } from "@/pages";
 import { useUser } from "@/hooks";
 import { TabId } from "@/constants/tabs";
@@ -141,7 +142,7 @@ const PrivateRouteLayout = () => {
         )}
         <div
           className={
-            "flex-1 min-h-screen overflow-auto bg-[#F9FAFB] custom-scrollbar"
+            "flex-1 min-h-screen overflow-auto bg-white custom-scrollbar"
           }
         >
           <div className={`${showNavbar && "md:ml-72 h-[100vh]"}`}>
@@ -245,6 +246,16 @@ const PrivateRouteLayout = () => {
                     // TODO: Add correct permission for search
                     permission={Permissions.VIEW_NAVBAR_LEARN}
                     element={<Search />}
+                  />
+                }
+              />
+              <Route
+                path={ROUTES.START_SESSION}
+                element={
+                  <PermissionGuardedRoute
+                    // TODO: Add correct permission for search
+                    permission={Permissions.VIEW_NAVBAR_LEARN}
+                    element={<StartSession />}
                   />
                 }
               />

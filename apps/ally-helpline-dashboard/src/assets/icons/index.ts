@@ -5,6 +5,7 @@ import SearchIcon from "./search.svg?react";
 import LogsIcon from "./logs.svg?react";
 import StatsIcon from "./stats.svg?react";
 import CommunityIcon from "./community.svg?react";
+import StartSessionIcon from "./StartSession.svg?react";
 import Book from "./Book.svg?react";
 import Relax from "./Relax.svg?react";
 import MenuIcon from "./MenuIcon.svg?react";
@@ -51,45 +52,6 @@ import CallDetails from "./CallDetails.svg?react";
 import Spinner from "./Spinner.svg?react";
 import RoundCheckmark from "./RoundCheckmark.svg?react";
 
-export type IconProps = SVGProps<SVGSVGElement> & {
-  title?: string;
-};
-export const iconMap: Record<string, FunctionComponent<IconProps>> = {
-  AccountCircle,
-  Logout,
-  SearchIcon,
-  LogsIcon,
-  StatsIcon,
-  CommunityIcon,
-  Book,
-  Relax,
-  MenuIcon,
-  CopilotIcon,
-  CallLogIcon,
-  LiveCallIcon,
-  HomeIcon,
-  SessionSummary,
-  Tags,
-  IssuesWorkedOn,
-  KeyConcerns,
-  DominantFeelings,
-  SubjectiveObservations,
-  ObjectiveObservations,
-  TherapeuticTechniques,
-  ReferralsProvided,
-  HomeworkRecommended,
-  PlansForNextCall,
-  Assessment,
-  Metrics,
-  Flow,
-  CallDetails,
-  Edit,
-  Delete,
-  Download,
-  Spinner,
-  RoundCheckmark,
-};
-
 export {
   AccountCircle,
   Logout,
@@ -97,6 +59,7 @@ export {
   LogsIcon,
   StatsIcon,
   CommunityIcon,
+  StartSessionIcon,
   Book,
   Relax,
   MenuIcon,

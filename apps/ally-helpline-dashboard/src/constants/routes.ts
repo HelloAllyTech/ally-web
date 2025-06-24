@@ -1,6 +1,4 @@
-import { Book, Relax } from "@/assets/icons";
-
-import { SearchIcon, LogsIcon, StatsIcon, CommunityIcon } from "@/assets/icons";
+import { SearchIcon, LogsIcon, StatsIcon, CommunityIcon, StartSessionIcon } from "@/assets/icons";
 
 import { TabId } from "./tabs";
 import { Permissions } from "./permissions";
@@ -24,6 +22,7 @@ export const ROUTES = {
   SUMMARY: "/summary/:chatId",
   CLIENT: "/client",
   SEARCH: "/search",
+  START_SESSION: "/start-session",
 } as const;
 
 export const navBarOptions = [
@@ -32,6 +31,13 @@ export const navBarOptions = [
       title: "Search",
       Icon: SearchIcon,
       path: ROUTES.SEARCH,
+      permission: Permissions.VIEW_NAVBAR_SEARCH
+    },
+    {
+      id: TabId.START_SESSION,
+      title: "Start Session",
+      Icon: StartSessionIcon,
+      path: ROUTES.START_SESSION,
       permission: Permissions.VIEW_NAVBAR_SEARCH
     },
     {
