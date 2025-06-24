@@ -168,7 +168,7 @@ const CallSummary: FC<CallSummaryProps> = ({
               <span className="font-medium text-[16px] text-[#6B7280]">{`${field.label}: `}</span>
             )}
             <TextField
-              value={enhancing === field.key ? "" : value}
+              value={enhancing === field.key ? "" : value || ""}
               onChange={(e) =>
                 setSummaryData((prev) => ({
                   ...prev,
@@ -209,8 +209,8 @@ const CallSummary: FC<CallSummaryProps> = ({
       case "Text":
       default:
         return (
-          <>
-            <div key={field.key} className="flex items-center">
+          <div key={field.key}>
+            <div className="flex items-center">
               <span className="font-medium text-[16px] text-[#6B7280]">{`${field.label}: `}</span>
               <div className="flex-1">
                 <TextField
@@ -235,7 +235,7 @@ const CallSummary: FC<CallSummaryProps> = ({
             {field.key === "clientId" && (
               <Divider sx={{ width: "90%", marginTop: "6px" }} />
             )}
-          </>
+          </div>
         );
     }
   };
