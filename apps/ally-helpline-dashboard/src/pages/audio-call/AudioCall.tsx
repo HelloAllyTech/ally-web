@@ -77,14 +77,10 @@ const AudioCall: FunctionComponent = () => {
   }, [user]);
 
   const endSessionAndNavigate = async (triggerApi: boolean = true) => {
-    try {
-      if (triggerApi) {
-        await endCall({ chatId: activeChat?.chatId });
-      }
-      handleEndSequence();
-    } catch (error) {
-      logger.info(`Error ending session:, ${error}`);
+    if (triggerApi) {
+      await endCall({ chatId: activeChat?.chatId });
     }
+    handleEndSequence();
   };
 
   const navigateOnStressBusterClose = () => {

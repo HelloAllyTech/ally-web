@@ -30,18 +30,13 @@ const SearchResources: FC<SearchResourcesProps> = ({
     }
     setSearchQuery(query);
     if (query) {
-      try {
       const response = await getSearchResults({
         query,
         limit: 10,
       });
       if (response.data) {
         setResources(response.data.documents);
-      } else{
-        toast.error("Error fetching search results");
-      }
-      } catch(error) {
-        logger.info(`Error fetching search results: ${error}`)
+      } else {
         toast.error("Error fetching search results");
       }
     }
@@ -49,21 +44,17 @@ const SearchResources: FC<SearchResourcesProps> = ({
 
   const fetchRemainingResources = async () => {
     if (isResourcesLoading || !hasMore) return;
-    try {
-      const response = await getSearchResults({
-        query: searchQuery,
-        limit: resources.length + 10,
-      });
-      if (response.data) {
-        const newDocuments = response.data.documents;
-        if (newDocuments.length > resources.length) {
-          setResources(newDocuments);
-        } else {
-          setHasMore(false);
-        }
+    const response = await getSearchResults({
+      query: searchQuery,
+      limit: resources.length + 10,
+    });
+    if (response.data) {
+      const newDocuments = response.data.documents;
+      if (newDocuments.length > resources.length) {
+        setResources(newDocuments);
+      } else {
+        setHasMore(false);
       }
-    } catch (error) {
-      logger.info(`Error fetching remaining resources:, ${error}`);
     }
   };
 

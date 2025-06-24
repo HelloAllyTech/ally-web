@@ -60,6 +60,7 @@ const SummarySideBar: FC<SummarySideBarProps> = ({ callSummary, refetchCallLogs,
         } else {
           throw new Error("Failed to export call summary");
         }
+        logger.info(`Error exporting call summary: ${response.error}`);
       } else {
         throw new Error("No data received from export API");
       }

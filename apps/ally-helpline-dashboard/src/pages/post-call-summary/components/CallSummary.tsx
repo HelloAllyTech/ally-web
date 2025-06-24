@@ -80,13 +80,11 @@ const CallSummary: FC<CallSummaryProps> = ({
 
   const onHandleSearch = async (query: string) => {
     if (query) {
-      try {
-        const response = await searchLocations({ query });
-        if (response.data) {
-          setSearchedLocations(response.data);
-        }
-      } catch (error) {
-        logger.info(`Error searching locations:, ${error}`);
+      const response = await searchLocations({ query });
+      if (response.error) {
+        logger.info(`Error searching locations: ${response.error}`);
+      } else if (response.data) {
+        setSearchedLocations(response.data);
       }
     } else {
       setSearchedLocations(null);
@@ -241,19 +239,17 @@ const CallSummary: FC<CallSummaryProps> = ({
   };
 
   const handleSubmit = async () => {
-    try {
-      const tags = summaryData?.tags?.split(', ');
-      let tagsInput: Tag[] = [];
-      if (tags?.length > 0) {
-        try {
-          const response = await getTags({ tags });
-          if (response.data) {
-            tagsInput = response.data;
-          }
-        } catch (error) {
-          logger.info(`Error getting tags:, ${error}`);
-        }
+    const tags = summaryData?.tags?.split(', ');
+    let tagsInput: Tag[] = [];
+    if (tags?.length > 0) {
+      const response = await getTags({ tags });
+      if (response.error) {
+        logger.info(`Error getting tags: ${response.error}`);
+      } else if (response.data) {
+        tagsInput = response.data;
       }
+    }
+    try {
       await updateCallSummary({
         chatId,
         data: { summary: { ...summaryData, tags: tagsInput } },
