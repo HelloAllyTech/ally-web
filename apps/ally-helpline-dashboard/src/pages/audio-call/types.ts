@@ -5,6 +5,7 @@ import { Chat, FeedbackResponse } from "@/types/message";
 export interface CallTranscriptProps {
   activeChat: Chat;
   endSession: (triggerApi: boolean) => void;
+  isMicrophoneMode: boolean;
 }
 
 export interface CallInterfaceProps {
