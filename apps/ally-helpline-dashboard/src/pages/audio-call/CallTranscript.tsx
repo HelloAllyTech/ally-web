@@ -145,7 +145,7 @@ const CallTranscript: FC<CallTranscriptProps> = ({
       [SocketEvent.STAGE]: (data) => {
         setStage(data?.payload?.content);
       },
-      [SocketEvent.CHAT_ENDED]: () => {
+[SocketEvent.CHAT_ENDED]: () => {
         disconnect();
         if (isClient) {
           navigate("/");

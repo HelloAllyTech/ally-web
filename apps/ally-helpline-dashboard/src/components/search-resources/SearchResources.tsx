@@ -72,7 +72,7 @@ const SearchResources: FC<SearchResourcesProps> = ({
       searchQuery={searchQuery}
       isSuggestionsRow={!isInSidebar}
     />
-  )
+  );
 };
 
 export default SearchResources;

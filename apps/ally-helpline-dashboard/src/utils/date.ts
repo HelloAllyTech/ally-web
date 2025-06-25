@@ -42,23 +42,23 @@ export const dateTimeStamp = (date?: string) => {
   return `${dateTime.date} at ${dateTime.time}`;
 };
 
-export type DateRangeType = 'day' | 'week' | 'month' | 'year';
+export type DateRangeType = "day" | "week" | "month" | "year";
 
 export const getDateRange = (date: Date, type: DateRangeType): Date[] => {
   const startDate = new Date(date);
   const endDate = new Date(date);
 
-  if (type === 'day') {
+  if (type === "day") {
     startDate.setHours(0, 0, 0, 0);
     endDate.setHours(23, 59, 59, 999);
-  } else if (type === 'week') {
+  } else if (type === "week") {
     // Set end date to the provided date
     endDate.setHours(23, 59, 59, 999);
     
     // Set start date to 6 days before the provided date
     startDate.setDate(startDate.getDate() - 6);
     startDate.setHours(0, 0, 0, 0);
-  } else if (type === 'month') {
+  } else if (type === "month") {
     startDate.setDate(1);
     startDate.setHours(0, 0, 0, 0);
     
@@ -66,7 +66,7 @@ export const getDateRange = (date: Date, type: DateRangeType): Date[] => {
     endDate.setMonth(endDate.getMonth() + 1);
     endDate.setDate(0);
     endDate.setHours(23, 59, 59, 999);
-  } else if (type === 'year') {
+  } else if (type === "year") {
     startDate.setMonth(0, 1); // Set to January 1st
     startDate.setHours(0, 0, 0, 0);
     

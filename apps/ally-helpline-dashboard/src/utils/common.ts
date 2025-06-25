@@ -2,3 +2,5 @@ export const validateEmail = (email: string): boolean => {
   const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   return email && EMAIL_REGEX.test(email);
 };
+
+export const getKeyFromIndex = (index: number, prefix: string = "key") => `${prefix}-${index}`;

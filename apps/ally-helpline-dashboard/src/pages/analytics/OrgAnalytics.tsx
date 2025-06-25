@@ -4,7 +4,7 @@ import {
   useLazyGetDashboardUrlQuery,
   useLazyGetDashboardsQuery,
 } from "@/api/analytics";
-import { logger } from '@ally-ui-mono/ui-shared';
+import { logger } from "@ally-ui-mono/ui-shared";
 
 const OrgAnalytics: FunctionComponent = () => {
 

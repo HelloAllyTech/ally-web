@@ -1,3 +1,4 @@
+import { getKeyFromIndex } from "@/utils/common";
 import { FunctionComponent } from "react";
 
 const CustomMarkdown: FunctionComponent<{ content: string; className?: string }> = ({
@@ -72,7 +73,7 @@ const CustomMarkdown: FunctionComponent<{ content: string; className?: string }>
                 className="list-disc pl-5 mb-2"
               >
                 {currentSection.content.map((item, idx) => (
-                  <li key={idx}>{parseBoldAndText(item)}</li>
+                  <li key={getKeyFromIndex(idx, "markdown-list")}>{parseBoldAndText(item)}</li>
                 ))}
               </ul>
             );
@@ -131,7 +132,7 @@ const CustomMarkdown: FunctionComponent<{ content: string; className?: string }>
                   className="list-disc pl-5 mb-2"
                 >
                   {currentSection.content.map((item, idx) => (
-                    <li key={idx}>{parseBoldAndText(item)}</li>
+                    <li key={getKeyFromIndex(idx, "markdown-list")}>{parseBoldAndText(item)}</li>
                   ))}
                 </ul>
               ) : null
@@ -161,7 +162,7 @@ const CustomMarkdown: FunctionComponent<{ content: string; className?: string }>
               className="list-disc pl-5 mb-2"
             >
               {currentSection.content.map((item, idx) => (
-                <li key={idx}>{parseBoldAndText(item)}</li>
+                <li key={getKeyFromIndex(idx, "markdown-list")}>{parseBoldAndText(item)}</li>
               ))}
             </ul>
           );

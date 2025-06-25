@@ -1,4 +1,3 @@
-import { FunctionComponent, SVGProps } from "react";
 import AccountCircle from "./account_circle.svg?react";
 import Logout from "./LogoutIcon.svg?react";
 import SearchIcon from "./search.svg?react";

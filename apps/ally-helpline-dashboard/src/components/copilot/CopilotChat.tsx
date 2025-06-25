@@ -12,6 +12,7 @@ import {
   TypingIndicator,
   CustomMarkdown,
 } from "@/components";
+import { getKeyFromIndex } from "@/utils/common";
 
 interface ChatMessage {
   content: string;
@@ -86,7 +87,7 @@ const CopilotChat = ({
           <div className="flex-1 overflow-y-auto custom-scrollbar p-4 space-y-4">
             {messages.map((message, index) => (
               <div
-                key={index}
+                key={getKeyFromIndex(index, "chat-message")}
                 className={cn(
                   "flex w-full animate-message-in opacity-0",
                   message.isUser ? "justify-end" : "justify-start"

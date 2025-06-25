@@ -1,9 +1,9 @@
-import { FC } from 'react';
-import { Dialog } from '@mui/material';
-import { X } from 'lucide-react';
+import { FC } from "react";
+import { Dialog } from "@mui/material";
+import { X } from "lucide-react";
 
-import { Button } from '..';
-import { ActionDialogProps } from './types';
+import { Button } from "..";
+import { ActionDialogProps } from "./types";
 
 const ActionDialog: FC<ActionDialogProps> = ({
   children,
@@ -18,7 +18,7 @@ const ActionDialog: FC<ActionDialogProps> = ({
       onClose={onClose}
       PaperProps={{
         style: {
-          borderRadius: '8px',
+          borderRadius: "8px",
         },
       }}
     >
