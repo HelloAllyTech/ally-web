@@ -124,8 +124,13 @@ const CallSummary: FC<CallSummaryProps> = ({
           "HH:mm",
         )}`;
       }
-      case SummaryFieldKey.ClientId:
-        return callSummary?.clientId || summaryData.clientId;
+      case SummaryFieldKey.ClientId: {
+        const clientId = callSummary?.clientId || summaryData.clientId;
+        if (clientId === -1) {
+          return "N/A";
+        }
+        return clientId;
+      }
       case SummaryFieldKey.Languages:
         return (
           summaryData.languages
@@ -239,7 +244,7 @@ const CallSummary: FC<CallSummaryProps> = ({
   };
 
   const handleSubmit = async () => {
-    const tags = summaryData?.tags?.split(', ');
+    const tags = summaryData?.tags?.split(", ");
     let tagsInput: Tag[] = [];
     if (tags?.length > 0) {
       const response = await getTags({ tags });

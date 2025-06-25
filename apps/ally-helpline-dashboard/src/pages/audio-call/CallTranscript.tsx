@@ -5,6 +5,7 @@ import {
   useState,
   Dispatch,
   SetStateAction,
+  useRef,
 } from "react";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
@@ -33,7 +34,6 @@ import "./CallTranscript.css";
 // TODO: Try to make it more similar to Figma
 // TODO: Responsiveness
 // TODO: Blurry effect at the top and bottom of the conversation
-// TODO: Add streaming effect in transcription
 // TODO: Find firefox issue
 // TODO: Bug with no trascript intermittently
 // TODO: start Audio chat not send sometimes
@@ -41,12 +41,15 @@ import "./CallTranscript.css";
 const CallTranscript: FC<CallTranscriptProps> = ({
   endSession,
   activeChat,
+  isMicrophoneMode,
 }) => {
   const navigate = useNavigate();
 
   const user = useSelector((state: RootState) => state.user.user);
-  const chatId = useMemo(() => activeChat.chatId, [activeChat]);
+  const webRTCChatId = useMemo(() => activeChat?.chatId, [activeChat]);
+  const microphoneStreamRef = useRef<MediaStream | null>(null);
 
+  const [microphoneChatId, setMicrophoneChatId] = useState<number | null>(null);
   const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(null);
   const [isMuted, setIsMuted] = useState<boolean>(true);
   const [isFocusMode, setIsFocusMode] = useState(true);
@@ -59,6 +62,7 @@ const CallTranscript: FC<CallTranscriptProps> = ({
 
   const isClient = user?.role === UserRole.CLIENT;
   const isCounsellor = user?.role === UserRole.COUNSELOR;
+  // const isWebRTC = activeChat.provider === "WEBRTC"; // to distinguish between exotel and webrtc
 
   const updateLastTranscription = (
     setCorrespondingTranscription: Dispatch<SetStateAction<Transcription[]>>
@@ -179,7 +183,10 @@ const CallTranscript: FC<CallTranscriptProps> = ({
           updateLastTranscription(setSpeakerTranscriptions);
         }
       },
-      [SocketEvent.USER_JOINED]: () => {
+      [SocketEvent.USER_JOINED]: (data) => {
+        if (isMicrophoneMode) {
+          setMicrophoneChatId(data.payload.chatId);
+        }
         setIsUserJoined(true);
       },
       [SocketEvent.USER_DISCONNECTED]: () => {
@@ -198,7 +205,9 @@ const CallTranscript: FC<CallTranscriptProps> = ({
   } = useSocket({
     userId: user.userId,
     eventCallbacks: socketEventCallbacks,
-    connectionType: SocketConnectionTypes.WEBRTC_AUDIO_CALL,
+    connectionType: isMicrophoneMode
+      ? SocketConnectionTypes.MICROPHONE_MODE
+      : SocketConnectionTypes.WEBRTC_AUDIO_CALL,
   });
 
   const {
@@ -215,7 +224,7 @@ const CallTranscript: FC<CallTranscriptProps> = ({
     handleWebRTCAnswer,
   } = useWebRTCCallSetup({
     emitSocketEvent,
-    chatId,
+    chatId: webRTCChatId,
     isClient,
     offerTimeoutMs: OFFER_TIMEOUT_MS,
   });
@@ -241,7 +250,7 @@ const CallTranscript: FC<CallTranscriptProps> = ({
         const base64String = base64AudioData.split(",")[1];
         emitSocketEvent(SocketEvent.AUDIO_MESSAGE, {
           audioData: base64String,
-          chatId,
+          chatId: isMicrophoneMode ? microphoneChatId : webRTCChatId,
         });
       };
     };
@@ -268,7 +277,7 @@ const CallTranscript: FC<CallTranscriptProps> = ({
   };
 
   useEffect(() => {
-    if (activeChat.messages && activeChat.messages.length > 0) {
+    if (activeChat?.messages && activeChat.messages.length > 0) {
       const existingTranscriptions = [...activeChat.messages]
         .reverse()
         .filter((transcription) => transcription.type === MessageType.TEXT)
@@ -306,21 +315,20 @@ const CallTranscript: FC<CallTranscriptProps> = ({
   useEffect(() => {
     if (isMuted) {
       emitSocketEvent(SocketEvent.AUDIO_CHAT_MUTED, {
-        chatId,
+        chatId: isMicrophoneMode ? microphoneChatId : webRTCChatId,
       });
     }
   }, [isMuted]);
 
   useEffect(() => {
-    // fetch only for audio call page
-    fetchIceServers();
+    if (!isMicrophoneMode) {
+      fetchIceServers();
+    }
   }, []);
 
   useEffect(() => {
-    // only for audio call page
-    if (chatId && user && iceServers) {
-      //connect socket
-      connect(chatId);
+    if (user && !isMicrophoneMode && iceServers && webRTCChatId) {
+      connect(webRTCChatId);
       setupWebRTC();
     }
 
@@ -340,13 +348,33 @@ const CallTranscript: FC<CallTranscriptProps> = ({
       }
       disconnect();
     };
-  }, [chatId, user, isCounsellor, isClient, iceServers]);
+  }, [webRTCChatId, user, isCounsellor, isClient, iceServers]);
 
   useEffect(() => {
-    if (localStreamRef.current) {
-      setupMediaRecorder(localStreamRef.current);
+    if (user && isMicrophoneMode) {
+      connect();
+      emitSocketEvent(SocketEvent.START_AUDIO_CHAT, { platform: "WEB" });
     }
-  }, [localStreamRef.current]);
+
+    return () => {
+      if (mediaRecorder && mediaRecorder.state !== "inactive") {
+        mediaRecorder.stop();
+      }
+      disconnect();
+    };
+  }, []);
+
+  useEffect(() => {
+    if (isMicrophoneMode) {
+      if (microphoneStreamRef.current) {
+        setupMediaRecorder(microphoneStreamRef.current);
+      }
+    } else {
+      if (localStreamRef.current) {
+        setupMediaRecorder(localStreamRef.current);
+      }
+    }
+  }, [localStreamRef.current, microphoneStreamRef.current]);
 
   useEffect(() => {
     if (!mediaRecorder) return;
@@ -356,17 +384,23 @@ const CallTranscript: FC<CallTranscriptProps> = ({
       localStreamRef.current?.getAudioTracks().forEach((track) => {
         track.enabled = false;
       });
+      microphoneStreamRef.current?.getAudioTracks().forEach((track) => {
+        track.enabled = false;
+      });
     } else {
       mediaRecorder?.resume();
       // Unmute all audio tracks in the local stream
       localStreamRef.current?.getAudioTracks().forEach((track) => {
         track.enabled = true;
       });
+      microphoneStreamRef.current?.getAudioTracks().forEach((track) => {
+        track.enabled = true;
+      });
     }
   }, [isMuted, mediaRecorder]);
 
   useEffect(() => {
-    if (chatId) {
+    if (webRTCChatId) {
       removeIfListenerPresent(SocketEvent.WEBRTC_OFFER);
       removeIfListenerPresent(SocketEvent.WEBRTC_ANSWER);
       removeIfListenerPresent(SocketEvent.ICE_CANDIDATE);
@@ -374,7 +408,7 @@ const CallTranscript: FC<CallTranscriptProps> = ({
       setListenerForEvent(SocketEvent.WEBRTC_ANSWER, handleWebRTCAnswer);
       setListenerForEvent(SocketEvent.ICE_CANDIDATE, handleOnIceCandidate);
     }
-  }, [handleWebRTCOffer, chatId, handleWebRTCAnswer, handleOnIceCandidate]);
+  }, [handleWebRTCOffer, webRTCChatId, handleWebRTCAnswer, handleOnIceCandidate]);
 
   const confirmEndSession = async (triggerApi: boolean = true) => {
     try {
