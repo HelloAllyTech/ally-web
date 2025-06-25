@@ -62,7 +62,7 @@ const CallSummary: FC<CallSummaryProps> = ({
       // Show loading screen
       timer = setTimeout(() => {
         setShowInitialLoading(false);
-      }, 10000); // 10 seconds to allow all loading messages to appear
+      }, 4000); // 4 seconds to allow all loading messages to appear
     }
 
     return () => clearTimeout(timer);

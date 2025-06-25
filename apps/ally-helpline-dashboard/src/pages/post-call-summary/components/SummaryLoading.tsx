@@ -21,7 +21,7 @@ const SummaryLoading: FC = () => {
       const timer = setTimeout(() => {
         setVisibleMessages(prev => [...prev, loadingMessages[index]]);
         setCurrentMessageIndex(index);
-      }, (index - 1) * 2000);
+      }, (index - 1) * 1000);
       timers.push(timer);
     };
 

@@ -146,12 +146,12 @@ const PrivateRouteLayout = () => {
           }
         >
           <div className={`${showNavbar && "md:ml-72 h-[100vh]"}`}>
-            <button
+            {!isClient && <button
               onClick={toggleSidebar}
               className="md:hidden p-4 fixed top-0 right-0 z-30"
             >
               <MenuIcon />
-            </button>
+            </button>}
             <Routes>
               <Route
                 index
