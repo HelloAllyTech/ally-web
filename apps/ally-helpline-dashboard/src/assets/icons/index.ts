@@ -51,6 +51,7 @@ import Download from "./Download.svg?react";
 import CallDetails from "./CallDetails.svg?react";
 import Spinner from "./Spinner.svg?react";
 import RoundCheckmark from "./RoundCheckmark.svg?react";
+import Call from "./call.svg?react";
 
 export {
   AccountCircle,
@@ -105,4 +106,5 @@ export {
   Download,
   Spinner,
   RoundCheckmark,
+  Call,
 };
