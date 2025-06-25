@@ -19,7 +19,7 @@ const CallPicker = ({
   onDecline,
 }: CallPickerProps) => {
   return (
-    <div className="bg-[#21252E] absolute bottom-6 right-6 h-96 w-80 rounded-lg">
+    <div className="bg-[#21252E] absolute bottom-6 right-6 h-96 w-80 rounded-lg z-[10000]">
       <div className="relative w-full h-full overflow-hidden rounded-lg py-8 flex items-center flex-col gap-2">
         <BackgroundTop className="absolute top-0 right-0" />
         <BackgroundBottom className="absolute bottom-0 left-0" />
