@@ -24,19 +24,21 @@ const Calls: FunctionComponent = () => {
   };
 
   return (
-    <div className="px-6 pb-6 h-full flex flex-col gap-4 pt-[20px]">
+    <div className="px-6 pb-6 h-full flex flex-col">
       
         <motion.div
           layout="position"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.3, ease: "easeOut" }}
-          className="absolute left-72 right-0 p-6 bg-[#F9FAFB]"
+          className="relative mt-[20px]"
         >
-          <BackgroundTop className="absolute w-[50%] top-6 right-6 rounded-lg h-16 z-0" />
-          <BackgroundBottom className="h-16 absolute bottom-6 left-6 z-0 w-[50%]" />
-          <div className="bg-[#1A1A1A] text-white p-4 rounded-lg flex justify-between items-center">
-            <div className="z-10">
+          <div className="absolute w-full h-full sm:block hidden">
+          <BackgroundTop className="h-full w-[50%]" />
+          <BackgroundBottom className="h-full w-[50%]" />
+          </div>
+          <div className="bg-[#1A1A1A] text-white sm:p-4 p-0 rounded-lg flex justify-between sm:bg-[#000] bg-transparent items-center">
+            <div className="z-10 sm:block hidden">
               Another day, another chance to listen, support, and make a
               difference one call at a time.
             </div>
@@ -49,7 +51,7 @@ const Calls: FunctionComponent = () => {
           </div>
         </motion.div>
       
-      <div className="mt-28">
+      <div>
         <CallLogsTable />
       </div>
     </div>

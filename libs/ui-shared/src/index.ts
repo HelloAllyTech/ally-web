@@ -6,6 +6,8 @@ import { DropdownField, Dropdown } from './lib/dropdown-field';
 import ResourceSearch from './lib/resource-search';
 import InfiniteScroll from './lib/infinite-scroll';
 import SuggestionsContainer from './lib/suggestions-container';
+import GenericTable from './lib/generic-table';
+import Pagination from './lib/pagination';
 import {logger} from './logger';
 
 export {
@@ -19,4 +21,6 @@ export {
   InfiniteScroll,
   SuggestionsContainer,
   logger,
+  GenericTable,
+  Pagination,
 };
