@@ -142,7 +142,7 @@ const ClientInterface = () => {
       if (error?.response?.data?.detail) {
         toast.error(`${error.response.data.detail}`);
       } else {
-        toast.error('Something went wrong. Please try again later!');
+        toast.error("Something went wrong. Please try again later!");
       }
       setIsWaiting(false);
     }

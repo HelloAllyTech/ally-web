@@ -193,7 +193,7 @@ const SummarySideBar: FC<SummarySideBarProps> = ({ callSummary, refetchCallLogs,
           </div>
         )}
       </>
-    )
+    );
   };
 
 

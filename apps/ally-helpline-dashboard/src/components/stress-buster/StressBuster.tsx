@@ -123,8 +123,8 @@ const StressBuster: FunctionComponent<StressBusterProps> = ({
           className="h-full object-cover bg-transparent mix-blend-screen"
         />
       </div>
-    )
-  }
+    );
+  };
 
   const renderSteps = () => {
     return (
@@ -139,8 +139,8 @@ const StressBuster: FunctionComponent<StressBusterProps> = ({
           </div>
         ))}
       </div>
-    )
-  }
+    );
+  };
 
   const renderControls = () => {
     return (
@@ -158,8 +158,8 @@ const StressBuster: FunctionComponent<StressBusterProps> = ({
           {isMuted ? <VolumeOff size={16} /> : <Volume2 size={16} />}
         </button>
       </div>
-    )
-  }
+    );
+  };
 
   const renderNavigationButton = () => {
     return (
@@ -174,8 +174,8 @@ const StressBuster: FunctionComponent<StressBusterProps> = ({
           </Button>
         )}
       </div>
-    )
-  }
+    );
+  };
 
   const StressBusterComponent = (
     <div className="w-full h-full flex justify-center items-center relative">

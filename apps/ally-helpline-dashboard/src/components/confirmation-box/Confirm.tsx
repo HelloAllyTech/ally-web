@@ -35,7 +35,7 @@ const Confirm = ({
           {title && (
             <h3 className="text-[15px] font-[600] text-[#47464F] mb-2">{title}</h3>
           )}
-          <div className={`text-[15px] text-[#47464F]`}>
+          <div className="text-[15px] text-[#47464F]">
             {text}
           </div>
         </div>

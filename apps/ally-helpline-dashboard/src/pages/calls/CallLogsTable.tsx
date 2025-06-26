@@ -1,26 +1,25 @@
-import { useEffect, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { CircularProgress } from '@mui/material';
-import { Eye } from 'lucide-react';
+import { useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { CircularProgress } from "@mui/material";
+import { Eye } from "lucide-react";
 
-import { RootState } from '@/store/store';
-import { updatePage, updateTotalCallsCount } from '@/reducer/callsReducer';
-import { useGetCallLogsQuery } from '@/api/calls';
-import { Button, FallbackUI } from '@/components';
-import { NoResults } from '@/assets/icons';
-import { CallLog } from '@/types/calls';
+import { RootState } from "@/store/store";
+import { updatePage, updateTotalCallsCount } from "@/reducer/callsReducer";
+import { useGetCallLogsQuery } from "@/api/calls";
+import { Button, FallbackUI } from "@/components";
+import { NoResults } from "@/assets/icons";
+import { CallLog } from "@/types/calls";
 
-import SummarySideBar from './components/SummarySideBar';
-import { convertSecondsToDuration, formatDate } from './utils';
+import SummarySideBar from "./components/SummarySideBar";
+import { convertSecondsToDuration, formatDate } from "./utils";
 import {
   CALL_LOGS_PAGINATION_LIMIT,
-  tableHeaders,
   TABLE_ROW_HEIGHT,
   tagColors,
-} from './constants';
-import { TagDisplay } from './types';
-import { GenericTable, Pagination } from '@ally-ui-mono/ui-shared';
-import { Column } from '@ally-ui-mono/ui-shared/lib/generic-table/types';
+} from "./constants";
+import { TagDisplay } from "./types";
+import { GenericTable, Pagination } from "@ally-ui-mono/ui-shared";
+import { Column } from "@ally-ui-mono/ui-shared/lib/generic-table/types";
 
 const CallLogsTable = () => {
   const dispatch = useDispatch();
@@ -87,29 +86,29 @@ const CallLogsTable = () => {
         raw: row, // keep original row for review action
       };
     }
-    return { id, callName: '', dateAndTime: '', duration: '', qualityScore: 0, tags: [], transcript: '', raw: row };
+    return { id, callName: "", dateAndTime: "", duration: "", qualityScore: 0, tags: [], transcript: "", raw: row };
   };
 
   const columns: Column<any>[] = [
     {
-      key: 'callName',
-      header: 'Call ID',
-      style: { width: '15%' },
+      key: "callName",
+      header: "Call ID",
+      style: { width: "15%" },
     },
     {
-      key: 'dateAndTime',
-      header: 'Date & Time',
-      style: { width: '15%' },
+      key: "dateAndTime",
+      header: "Date & Time",
+      style: { width: "15%" },
     },
     {
-      key: 'duration',
-      header: 'Duration',
-      style: { width: '15%' },
+      key: "duration",
+      header: "Duration",
+      style: { width: "15%" },
     },
     {
-      key: 'qualityScore',
-      header: 'Quality Score',
-      style: { width: '15%' },
+      key: "qualityScore",
+      header: "Quality Score",
+      style: { width: "15%" },
       render: (value, row) => {
         // row is displayData
         return (
@@ -134,9 +133,9 @@ const CallLogsTable = () => {
       },
     },
     {
-      key: 'tags',
-      header: 'Tags',
-      style: { width: '30%' },
+      key: "tags",
+      header: "Tags",
+      style: { width: "30%" },
       render: (value: TagDisplay[]) => (
         <div className="flex gap-1 flex-wrap max-w-full overflow-hidden">
           {value?.map((tag: TagDisplay) => (
@@ -155,9 +154,9 @@ const CallLogsTable = () => {
       ),
     },
     {
-      key: 'review',
-      header: 'Review',
-      style: { width: '10%' },
+      key: "review",
+      header: "Review",
+      style: { width: "10%" },
       render: (_value, row) => (
         <Button onClick={() => setCallSummary(row.raw)} className="flex items-center justify-center w-full py-[8px] bg-transparent border-none hover:bg-transparent cursor-pointer">
           <Eye
@@ -173,7 +172,7 @@ const CallLogsTable = () => {
   return (
     <>
       <div
-        className={`rounded-xl w-full max-h-[calc(100vh-240px)] pt-[20px]`}
+        className={"rounded-xl w-full max-h-[calc(100vh-240px)] pt-[20px]"}
         style={{
           minHeight: `${TABLE_ROW_HEIGHT * (CALL_LOGS_PAGINATION_LIMIT + 1)}px`,
         }}
@@ -190,7 +189,7 @@ const CallLogsTable = () => {
             />
           )}
           className="min-w-full max-h-[calc(100vh-240px)] overflow-y-scroll"
-          style={{ minWidth: '100%' }}
+          style={{ minWidth: "100%" }}
         />
         {callLogs?.length > 0 && (
           <Pagination

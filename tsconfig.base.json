@@ -19,7 +19,7 @@
     "customConditions": ["development"],
     "baseUrl": ".",
     "paths": {
-      "@ally-ui-mono/ui-shared": ["./libs/ui-shared/src/index"],
+      "@ally-ui-mono/ui-shared": ["./libs/ui-shared/src"],
       "@ally-ui-mono/ui-shared/*": ["./libs/ui-shared/src/*"]
     }
   }

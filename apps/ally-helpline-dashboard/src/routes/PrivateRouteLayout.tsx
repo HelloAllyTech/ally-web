@@ -37,7 +37,7 @@ import {
   useAcceptCallMutation,
   useGetWaitingClientsQuery,
 } from "@/api/audioCall";
-import { logger } from '@ally-ui-mono/ui-shared';
+import { logger } from "@ally-ui-mono/ui-shared";
 
 import PermissionGuardedRoute from "./PermissionGuardedRoute";
 
@@ -45,7 +45,7 @@ import PermissionGuardedRoute from "./PermissionGuardedRoute";
 // TODO: Restrict client access to pages
 
 const PrivateRouteLayout = () => {
-  const { user, logout, checkAuth } = useUser();
+  const { user, checkAuth } = useUser();
   const navigate = useNavigate();
   const { pathname } = useLocation();
 
@@ -58,7 +58,6 @@ const PrivateRouteLayout = () => {
 
   const { userStatus } = useSelector((state: RootState) => state.user);
 
-  const excludeDefaultPageHeader = [ROUTES.AUDIO_CALL] as string[];
   const excludeNavBar = [ROUTES.AUDIO_CALL, ROUTES.SUMMARY] as string[];
   const excludeCallPicker = [ROUTES.AUDIO_CALL, ROUTES.SUMMARY] as string[];
   const isAvailable = userStatus === UserStatus.AVAILABLE;
