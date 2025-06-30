@@ -12,24 +12,43 @@ const CallInterface: FC<CallInterfaceProps> = ({
   mediaRecorder,
   remoteMediaRecorder,
   remoteStreamRef,
+  isMicrophoneMode,
 }) => {
   const [seconds, setSeconds] = useState(0);
 
   // TODO: REthink the logic; A ref could be used for the interval
   useEffect(() => {
-    if (!activeChat?.startedAt) return;
+    let interval: NodeJS.Timeout;
+    if (!isMicrophoneMode) {
+      if (!activeChat?.startedAt) return;
 
-    const updateElapsedTime = () => {
-      const now = Date.now();
-      const diffInSeconds = Math.floor((now - Date.parse(activeChat.startedAt)) / 1000);
-      setSeconds(diffInSeconds);
-    };
-
-    updateElapsedTime(); // Initial update
-    const interval = setInterval(updateElapsedTime, 1000);
-
+      const updateElapsedTime = () => {
+        const now = Date.now();
+        const diffInSeconds = Math.floor((now - Date.parse(activeChat.startedAt)) / 1000);
+        setSeconds(diffInSeconds);
+      };
+  
+      updateElapsedTime(); // Initial update
+      interval = setInterval(updateElapsedTime, 1000);  
+    }
     return () => clearInterval(interval); // Cleanup on unmount
+
   }, [activeChat, activeChat?.startedAt]);
+
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    if (isMicrophoneMode) {
+      const startedAt = Date.now();
+      const updateElapsedTime = () => {
+        const now = Date.now();
+        const diffInSeconds = Math.floor((now - startedAt) / 1000);
+        setSeconds(diffInSeconds);
+      };
+      updateElapsedTime(); // Initial update
+      interval = setInterval(updateElapsedTime, 1000);
+    }
+    return () => clearInterval(interval); // Cleanup on unmount
+  }, [isMicrophoneMode]);
 
   const getEmptyScreen = () => {
     let message;

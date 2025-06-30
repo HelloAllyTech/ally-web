@@ -85,9 +85,9 @@ const AudioCall: FunctionComponent = () => {
     }
   };
 
-  const endSessionAndNavigate = async (triggerApi: boolean = true) => {
+  const endSessionAndNavigate = async (triggerApi: boolean = true, chatId: number) => {
     if (triggerApi) {
-      await endCall({ chatId: activeChat?.chatId });
+      await endCall({ chatId });
     }
     handleEndSequence();
   };
@@ -128,6 +128,7 @@ const AudioCall: FunctionComponent = () => {
         />
       );
     }
+    return null;
   };
 
   return (

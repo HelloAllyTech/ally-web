@@ -1,4 +1,4 @@
-import { Transcription } from "./types";
+import { Transcription } from "@/types/message";
 
 export const formatTime = (time: number) => {
   const minutes = Math.floor(time / 60) % 60;

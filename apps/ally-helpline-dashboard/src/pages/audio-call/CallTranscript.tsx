@@ -6,12 +6,12 @@ import { useGetNudgeStatusQuery } from "@/api/audioCall";
 import { RootState } from "@/store/store";
 import { useSocket, useWebRTCCallSetup } from "@/hooks";
 import { UserRole } from "@/types/user";
-import { FeedbackResponse, MessageType, SocketEvent } from "@/types/message";
+import { FeedbackResponse, MessageType, SocketEvent, Transcription } from "@/types/message";
 import { SocketConnectionTypes } from "@/constants/socket";
 import { logger } from "@ally-ui-mono/ui-shared";
 
 import { reduceTranscriptions } from "./utils";
-import { CallTranscriptProps, Transcription, Nudge } from "./types";
+import { CallTranscriptProps, Nudge } from "./types";
 import { AUDIO_FILE_SIZE, OFFER_TIMEOUT_MS } from "./constants";
 import AudioCallBackgroundWrapper from "./components/AudioCallBackgroundWrapper";
 import CallSidebar from "./components/CallSidebar";
@@ -34,7 +34,7 @@ const CallTranscript: FC<CallTranscriptProps> = ({ endSession, activeChat, isMic
   const navigate = useNavigate();
 
   const user = useSelector((state: RootState) => state.user.user);
-  const webRTCChatId = useMemo(() => activeChat?.chatId, [activeChat]);
+  const activeChatId = useMemo(() => activeChat?.chatId, [activeChat]);
   const microphoneStreamRef = useRef<MediaStream | null>(null);
 
   const [microphoneChatId, setMicrophoneChatId] = useState<number | null>(null);
@@ -203,7 +203,7 @@ const CallTranscript: FC<CallTranscriptProps> = ({ endSession, activeChat, isMic
     handleWebRTCAnswer,
   } = useWebRTCCallSetup({
     emitSocketEvent,
-    chatId: webRTCChatId,
+    chatId: activeChatId,
     isClient,
     offerTimeoutMs: OFFER_TIMEOUT_MS,
   });
@@ -229,7 +229,7 @@ const CallTranscript: FC<CallTranscriptProps> = ({ endSession, activeChat, isMic
         const base64String = base64AudioData.split(",")[1];
         emitSocketEvent(SocketEvent.AUDIO_MESSAGE, {
           audioData: base64String,
-          chatId: isMicrophoneMode ? microphoneChatId : webRTCChatId,
+          chatId: activeChatId ?? microphoneChatId,
         });
       };
     };
@@ -257,6 +257,7 @@ const CallTranscript: FC<CallTranscriptProps> = ({ endSession, activeChat, isMic
 
   useEffect(() => {
     if (activeChat?.messages && activeChat.messages.length > 0) {
+      setMicrophoneChatId(activeChat.chatId);
       const existingTranscriptions = [...activeChat.messages]
         .reverse()
         .filter(transcription => transcription.type === MessageType.TEXT)
@@ -290,7 +291,7 @@ const CallTranscript: FC<CallTranscriptProps> = ({ endSession, activeChat, isMic
   useEffect(() => {
     if (isMuted) {
       emitSocketEvent(SocketEvent.AUDIO_CHAT_MUTED, {
-        chatId: isMicrophoneMode ? microphoneChatId : webRTCChatId,
+        chatId: activeChatId ?? microphoneChatId,
       });
     }
   }, [isMuted]);
@@ -302,8 +303,8 @@ const CallTranscript: FC<CallTranscriptProps> = ({ endSession, activeChat, isMic
   }, []);
 
   useEffect(() => {
-    if (user && !isMicrophoneMode && iceServers && webRTCChatId) {
-      connect(webRTCChatId);
+    if (user && !isMicrophoneMode && iceServers && activeChatId) {
+      connect(activeChatId);
       setupWebRTC();
     }
 
@@ -321,13 +322,16 @@ const CallTranscript: FC<CallTranscriptProps> = ({ endSession, activeChat, isMic
       if (remoteMediaRecorder && remoteMediaRecorder.state !== "inactive") {
         remoteMediaRecorder.stop();
       }
-      disconnect();
+      if (!isMicrophoneMode) {
+        disconnect();
+      }
     };
-  }, [webRTCChatId, user, isCounsellor, isClient, iceServers]);
+  }, [activeChatId, user, isCounsellor, isClient, iceServers]);
 
   useEffect(() => {
+    const chatId = activeChatId ?? microphoneChatId;
     if (user && isMicrophoneMode) {
-      connect();
+      connect(chatId);
       emitSocketEvent(SocketEvent.START_AUDIO_CHAT, { platform: "WEB" });
     }
 
@@ -335,15 +339,21 @@ const CallTranscript: FC<CallTranscriptProps> = ({ endSession, activeChat, isMic
       if (mediaRecorder && mediaRecorder.state !== "inactive") {
         mediaRecorder.stop();
       }
-      disconnect();
+      if (isMicrophoneMode) {
+        disconnect();
+      }
     };
-  }, []);
+  }, [activeChatId, microphoneChatId]);
 
   useEffect(() => {
     if (isMicrophoneMode) {
-      if (microphoneStreamRef.current) {
-        setupMediaRecorder(microphoneStreamRef.current);
-      }
+      (async () => {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        microphoneStreamRef.current = stream;
+        if (microphoneStreamRef.current) {
+          setupMediaRecorder(microphoneStreamRef.current);
+        }
+      })();
     } else {
       if (localStreamRef.current) {
         setupMediaRecorder(localStreamRef.current);
@@ -375,7 +385,7 @@ const CallTranscript: FC<CallTranscriptProps> = ({ endSession, activeChat, isMic
   }, [isMuted, mediaRecorder]);
 
   useEffect(() => {
-    if (webRTCChatId) {
+    if (activeChatId) {
       removeIfListenerPresent(SocketEvent.WEBRTC_OFFER);
       removeIfListenerPresent(SocketEvent.WEBRTC_ANSWER);
       removeIfListenerPresent(SocketEvent.ICE_CANDIDATE);
@@ -383,7 +393,7 @@ const CallTranscript: FC<CallTranscriptProps> = ({ endSession, activeChat, isMic
       setListenerForEvent(SocketEvent.WEBRTC_ANSWER, handleWebRTCAnswer);
       setListenerForEvent(SocketEvent.ICE_CANDIDATE, handleOnIceCandidate);
     }
-  }, [handleWebRTCOffer, webRTCChatId, handleWebRTCAnswer, handleOnIceCandidate]);
+  }, [handleWebRTCOffer, activeChatId, handleWebRTCAnswer, handleOnIceCandidate]);
 
   const confirmEndSession = async (triggerApi: boolean = true) => {
     try {
@@ -395,7 +405,11 @@ const CallTranscript: FC<CallTranscriptProps> = ({ endSession, activeChat, isMic
         localStreamRef.current.getTracks().forEach(track => track.stop());
         localStreamRef.current = null;
       }
-      endSession(triggerApi);
+      if (microphoneStreamRef.current) {
+        microphoneStreamRef.current.getTracks().forEach((track) => track.stop());
+        microphoneStreamRef.current = null;
+      }
+      endSession(triggerApi, activeChatId ?? microphoneChatId);
       disconnect();
     } catch (error) {
       logger.info(`Error ending session:, ${error}`);
@@ -421,6 +435,7 @@ const CallTranscript: FC<CallTranscriptProps> = ({ endSession, activeChat, isMic
           mediaRecorder={mediaRecorder}
           remoteMediaRecorder={remoteMediaRecorder}
           remoteStreamRef={remoteStreamRef}
+          isMicrophoneMode={isMicrophoneMode}
         />
 
         {/* Update transcription container with max-height */}
@@ -429,10 +444,10 @@ const CallTranscript: FC<CallTranscriptProps> = ({ endSession, activeChat, isMic
         )}
 
         <CallControls
-          isCounsellor={isCounsellor}
           isFocusMode={isFocusMode}
           isMuted={isMuted}
-          isUserJoined={isUserJoined}
+          isSecondaryButtonDisabled={!isUserJoined}
+          showFocusButton={isCounsellor}
           onCutCallButtonClick={() => confirmEndSession(true)}
           onFocusButtonClick={(isFocused: boolean) => setIsFocusMode(isFocused)}
           onMuteButtonClick={() => setIsMuted(prev => !prev)}
@@ -440,9 +455,8 @@ const CallTranscript: FC<CallTranscriptProps> = ({ endSession, activeChat, isMic
       </AudioCallBackgroundWrapper>
       {nudgeStatus && (
         <CallSidebar
-          isCounsellor={isCounsellor}
+          showSidebar={isCounsellor && isUserJoined}
           isFocusMode={isFocusMode}
-          isUserJoined={isUserJoined}
           nudges={nudges}
           onClose={() => setIsFocusMode(false)}
           stage={stage}

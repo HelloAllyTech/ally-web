@@ -64,6 +64,15 @@ export type SocketMessage = {
   createdAt?: string;
 };
 
+export interface Transcription {
+  id: number;
+  message: string;
+  senderId: number;
+  timestamp: string;
+  isFinal?: boolean;
+  isSentenceComplete?: boolean;
+}
+
 export enum MessageType {
   NUDGE = "NUDGE",
   STAGE = "STAGE",

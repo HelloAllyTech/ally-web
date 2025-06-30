@@ -1,10 +1,10 @@
 import { MutableRefObject } from "react";
 
-import { Chat, FeedbackResponse } from "@/types/message";
+import { Chat, FeedbackResponse, Transcription } from "@/types/message";
 
 export interface CallTranscriptProps {
   activeChat: Chat;
-  endSession: (triggerApi: boolean) => void;
+  endSession: (triggerApi: boolean, chatId: number) => void;
   isMicrophoneMode: boolean;
 }
 
@@ -15,6 +15,7 @@ export interface CallInterfaceProps {
   mediaRecorder: MediaRecorder | null;
   remoteMediaRecorder: MediaRecorder | null;
   remoteStreamRef: MutableRefObject<MediaStream>;
+  isMicrophoneMode: boolean;
 }
 
 export interface RealTimeTranscriptProps {
@@ -23,31 +24,21 @@ export interface RealTimeTranscriptProps {
 }
 
 export interface CallControlsProps {
-  isCounsellor: boolean;
   isFocusMode: boolean;
   isMuted: boolean;
-  isUserJoined: boolean;
+  isSecondaryButtonDisabled: boolean;
+  showFocusButton: boolean;
   onCutCallButtonClick: () => void;
   onFocusButtonClick: (isFocused: boolean) => void;
   onMuteButtonClick: () => void;
 }
 
 export interface CallSidebarProps {
-  isCounsellor: boolean;
   isFocusMode: boolean;
-  isUserJoined: boolean;
+  showSidebar: boolean;
   onClose: () => void;
   stage: string;
   nudges: Nudge[];
-}
-
-export interface Transcription {
-  id: number;
-  message: string;
-  senderId: number;
-  timestamp: string;
-  isFinal?: boolean;
-  isSentenceComplete?: boolean;
 }
 
 export interface Nudge {

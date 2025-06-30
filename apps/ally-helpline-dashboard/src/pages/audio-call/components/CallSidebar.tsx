@@ -11,9 +11,8 @@ import { FeedbackResponse } from "@/types/message";
 import { CallSidebarProps, Nudge } from "../types";
 
 const CallSidebar: FC<CallSidebarProps> = ({
-  isCounsellor,
   isFocusMode,
-  isUserJoined,
+  showSidebar,
   stage,
   onClose,
   nudges,
@@ -100,7 +99,7 @@ const CallSidebar: FC<CallSidebarProps> = ({
 
   return (
     <AnimatePresence>
-      {isCounsellor && isUserJoined && (
+      {showSidebar && (
         <motion.div
           initial={{ width: 0 }}
           animate={{ width: isFocusMode ? "70%" : 0 }}
