@@ -22,10 +22,14 @@ const StartSession = () => {
             <span className="text-[#000000]">Start </span>
             <span className="text-[#000000] italic font-bold">Session</span>
           </div>
-          <p className="w-[80%] text-center">Join sessions in real-time with Ally. 
-            Get live transcriptions, emotional cues, and AI-powered nudges to help you respond with empathy and clarity.
+          <p className="w-[80%] text-center">
+            Join sessions in real-time with Ally. Get live transcriptions, emotional cues, and
+            AI-powered nudges to help you respond with empathy and clarity.
           </p>
-          <Button className="bg-[#4C4C4C] hover:bg-[#4C4C4C] flex items-center gap-2" onClick={onStartSession}>
+          <Button
+            className="bg-[#4C4C4C] hover:bg-[#4C4C4C] flex items-center gap-2"
+            onClick={onStartSession}
+          >
             <Headphones className="w-[24px] h-[24px]" />
             <span className="text-white  text-[24px] font-['IBM_Plex_Serif']">Start</span>
           </Button>

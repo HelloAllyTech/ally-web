@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import { FC, useEffect, useRef } from 'react';
+import { FC, useEffect, useRef } from "react";
 
 interface InfiniteScrollProps {
   onInfiniteScroll: () => void;
@@ -14,16 +14,16 @@ const InfiniteScroll: FC<InfiniteScrollProps> = ({ onInfiniteScroll, children, i
 
   useEffect(() => {
     const observer = new IntersectionObserver(
-      (entries) => {
+      entries => {
         const target = entries[0];
         if (target.isIntersecting && !isLoading && children.length > 0) {
           onInfiniteScroll();
         }
       },
-      { 
+      {
         threshold: 0.1,
-        rootMargin: '100px' // Start loading when we're 100px from the bottom
-      }
+        rootMargin: "100px", // Start loading when we're 100px from the bottom
+      },
     );
 
     if (observerTarget.current) {
@@ -45,4 +45,4 @@ const InfiniteScroll: FC<InfiniteScrollProps> = ({ onInfiniteScroll, children, i
   );
 };
 
-export default InfiniteScroll; 
+export default InfiniteScroll;

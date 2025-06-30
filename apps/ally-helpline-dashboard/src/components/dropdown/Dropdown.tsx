@@ -30,12 +30,12 @@ const Dropdown: FC<DropdownProps> = ({ value, options, onChange, minWidth = 200,
             fontSize: "14px",
             fontWeight: "500",
           },
-          ...sx
+          ...sx,
         }}
       >
-        {options.map((option) => (
-          <MenuItem 
-            key={option} 
+        {options.map(option => (
+          <MenuItem
+            key={option}
             value={option}
             sx={{
               fontSize: "14px",
@@ -45,11 +45,11 @@ const Dropdown: FC<DropdownProps> = ({ value, options, onChange, minWidth = 200,
                 color: "#6941C6",
                 "&:hover": {
                   backgroundColor: "#F3E8FF",
-                }
+                },
               },
               "&:hover": {
                 backgroundColor: "#F9FAFB",
-              }
+              },
             }}
           >
             {option}
@@ -60,4 +60,4 @@ const Dropdown: FC<DropdownProps> = ({ value, options, onChange, minWidth = 200,
   );
 };
 
-export default Dropdown; 
+export default Dropdown;

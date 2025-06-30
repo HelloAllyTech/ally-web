@@ -25,19 +25,23 @@ const PostCallSummary = () => {
   const navigate = useNavigate();
 
   const [activeSection, setActiveSection] = useState<SectionType>(
-    searchParams.get("section") === "2"
-      ? SectionType.CallSummary
-      : SectionType.StressBuster
+    searchParams.get("section") === "2" ? SectionType.CallSummary : SectionType.StressBuster,
   );
   const [completedSections, setCompletedSections] = useState<SectionType[]>(
-    searchParams.get("section") === "2" ? [SectionType.StressBuster, SectionType.CallSummary] : [SectionType.StressBuster]
+    searchParams.get("section") === "2"
+      ? [SectionType.StressBuster, SectionType.CallSummary]
+      : [SectionType.StressBuster],
   );
   const [modalData, setModalData] = useState<ModalData | null>({ type: null, article: null });
   const [showInitialLoading, setShowInitialLoading] = useState(true);
 
   const { userStatus } = useSelector((state: RootState) => state.user);
 
-  const { data: callSummary, refetch, isLoading: isGetCallSummaryLoading } = useGetCallSummaryQuery(chatId);
+  const {
+    data: callSummary,
+    refetch,
+    isLoading: isGetCallSummaryLoading,
+  } = useGetCallSummaryQuery(chatId);
 
   useEffect(() => {
     const refetchCallSummary = async () => {
@@ -76,11 +80,7 @@ const PostCallSummary = () => {
   const renderSection = () => {
     switch (activeSection) {
       case SectionType.StressBuster:
-        return (
-          <StressBusterStep
-            onProceed={() => handleProceed(SectionType.CallSummary)}
-          />
-        );
+        return <StressBusterStep onProceed={() => handleProceed(SectionType.CallSummary)} />;
       case SectionType.CallSummary:
         return (
           <CallSummary
@@ -97,7 +97,8 @@ const PostCallSummary = () => {
           <ArticleGridStep
             onArticleClick={handleArticleClick}
             onProceed={() => {
-              if (userStatus === UserStatus.OFFLINE) setModalData({ type: "redirect", article: null });
+              if (userStatus === UserStatus.OFFLINE)
+                setModalData({ type: "redirect", article: null });
               else navigate("/");
             }}
           />
@@ -158,7 +159,7 @@ const PostCallSummary = () => {
 
       <Drawer
         open={modalData?.type === "article"}
-        onClose={() => setModalData((prev) => ({ ...prev, type: null }))}
+        onClose={() => setModalData(prev => ({ ...prev, type: null }))}
         title="Article"
       >
         <ArticleReader article={modalData?.article} isPage={false} />

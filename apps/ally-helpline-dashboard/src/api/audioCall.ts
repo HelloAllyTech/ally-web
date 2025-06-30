@@ -3,7 +3,7 @@ import { GetWaitingClientsResponse } from "@/types/calls";
 import { Chat, FeedbackInput, FeedbackResponse } from "@/types/message";
 
 const audioCallAPI = baseAPI.injectEndpoints({
-  endpoints: (builder) => ({
+  endpoints: builder => ({
     getWaitingClients: builder.query<GetWaitingClientsResponse, void>({
       query: () => "/users/waiting-list",
     }),
@@ -38,7 +38,10 @@ const audioCallAPI = baseAPI.injectEndpoints({
         body: feedback,
       }),
     }),
-    updateFeedback: builder.mutation<FeedbackResponse, { feedbackId: number; feedback: FeedbackInput }>({
+    updateFeedback: builder.mutation<
+      FeedbackResponse,
+      { feedbackId: number; feedback: FeedbackInput }
+    >({
       query: ({ feedbackId, feedback }) => ({
         url: `chats/messages/feedback/${feedbackId}`,
         method: "PATCH",
@@ -61,7 +64,7 @@ export const {
   useEndCallMutation,
   useAddFeedbackMutation,
   useUpdateFeedbackMutation,
-  useGetNudgeStatusQuery
+  useGetNudgeStatusQuery,
 } = audioCallAPI;
 
 export default audioCallAPI;

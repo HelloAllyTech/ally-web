@@ -28,7 +28,11 @@ const useEnhance = () => {
     };
   }, []);
 
-  const triggerEnhance = async (key: string, inputText: string, updateValue: (text: string) => void) => {
+  const triggerEnhance = async (
+    key: string,
+    inputText: string,
+    updateValue: (text: string) => void,
+  ) => {
     try {
       setEnhancing(key);
       const response = await enhanceContent({ content: inputText });
@@ -61,7 +65,7 @@ const useEnhance = () => {
           if (streamIntervalRef.current) {
             clearInterval(streamIntervalRef.current);
             streamIntervalRef.current = null;
-          } 
+          }
         }
       }, 50);
     } catch (error) {
@@ -78,14 +82,13 @@ const useEnhance = () => {
   const EnhanceButton: FC<EnhanceButtonProps> = ({ fieldName, inputText, updateValue }) => (
     <div
       className={`absolute bottom-2 right-2 
-        ${enhancing === fieldName || streaming === fieldName ? "opacity-50 pointer-events-none" : ""}`}
+        ${
+          enhancing === fieldName || streaming === fieldName ? "opacity-50 pointer-events-none" : ""
+        }`}
       onClick={() => triggerEnhance(fieldName, inputText, updateValue)}
     >
       <div className="bg-[#E5EFFE] rounded-sm p-2 cursor-pointer">
-        <WandSparkles
-          className="text-[#046BE0]"
-          size={20}
-        />
+        <WandSparkles className="text-[#046BE0]" size={20} />
       </div>
     </div>
   );

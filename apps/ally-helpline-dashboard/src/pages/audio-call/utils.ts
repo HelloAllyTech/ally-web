@@ -17,28 +17,25 @@ export const getSpeakerName = (senderId: number, previousSenderId: number, userI
 };
 
 export const reduceTranscriptions = (transcriptions: Transcription[]): Transcription[] => {
-  return transcriptions.reduce(
-    (acc: Transcription[], current: Transcription) => {
-      if (acc.length === 0) {
-        return [current];
-      }
+  return transcriptions.reduce((acc: Transcription[], current: Transcription) => {
+    if (acc.length === 0) {
+      return [current];
+    }
 
-      const last = acc[acc.length - 1];
+    const last = acc[acc.length - 1];
 
-      // If the last transcription is not sentence complete, combine last with current
-      if (!last.isSentenceComplete) {
-        acc[acc.length - 1] = {
-          ...last,
-          message: `${last.message} ${current.message}`,
-          isSentenceComplete: current.isSentenceComplete,
-          timestamp: current.timestamp, // Update timestamp to latest
-        };
-        return acc;
-      }
+    // If the last transcription is not sentence complete, combine last with current
+    if (!last.isSentenceComplete) {
+      acc[acc.length - 1] = {
+        ...last,
+        message: `${last.message} ${current.message}`,
+        isSentenceComplete: current.isSentenceComplete,
+        timestamp: current.timestamp, // Update timestamp to latest
+      };
+      return acc;
+    }
 
-      // Otherwise add as new entry
-      return [...acc, current];
-    },
-    []
-  );
+    // Otherwise add as new entry
+    return [...acc, current];
+  }, []);
 };

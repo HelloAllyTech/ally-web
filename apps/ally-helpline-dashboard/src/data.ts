@@ -26,36 +26,36 @@ export const articles: Article[] = [
     id: "1",
     title: "Managing Workplace Stress: Practical Tips for Better Mental Health",
     imageUrl: Article1,
-    content: articleContent
+    content: articleContent,
   },
   {
     id: "2",
     title: "Understanding Anxiety: Signs, Symptoms, and Coping Strategies",
     imageUrl: Article2,
-    content: articleContent
+    content: articleContent,
   },
   {
     id: "3",
     title: "The Power of Mindfulness in Daily Life",
     imageUrl: Article3,
-    content: articleContent
+    content: articleContent,
   },
   {
     id: "4",
     title: "Building Healthy Work-Life Boundaries",
     imageUrl: Article4,
-    content: articleContent
+    content: articleContent,
   },
   {
     id: "5",
     title: "Sleep Better: A Guide to Improving Your Sleep Quality",
     imageUrl: Article5,
-    content: articleContent
+    content: articleContent,
   },
   {
     id: "6",
     title: "Effective Communication Skills for Better Relationships",
     imageUrl: Article1,
-    content: articleContent
-  }
-]; 
+    content: articleContent,
+  },
+];

@@ -15,7 +15,9 @@ const ArticleReader: FC<ArticleReaderProps> = ({ article, isPage = true }) => {
       {!isPage && <Title className="text-[20px] font-semibold text-[#4A4459]" />}
       <CustomMarkdown
         content={article.content}
-        className={`${isPage ? "!text-[20px]" : "!text-[16px]"} leading-[32px] !text-[#4A4459] font-['IBM_Plex_Serif']`}
+        className={`${
+          isPage ? "!text-[20px]" : "!text-[16px]"
+        } leading-[32px] !text-[#4A4459] font-['IBM_Plex_Serif']`}
       />
     </div>
   );

@@ -19,4 +19,4 @@ export interface ArticleCardProps {
 export interface ArticleGridProps {
   articles: Article[];
   onArticleClick?: (id: string) => void;
-} 
+}

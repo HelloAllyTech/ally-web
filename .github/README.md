@@ -42,16 +42,19 @@ The workflow system is designed with modularity and reusability in mind:
 Set the following repository variables in GitHub:
 
 #### Development Environment
+
 - `DEV_AWS_ROLE`: AWS IAM role ARN for development
 - `DEV_AWS_REGION`: AWS region for development
 - `DEV_ECR_REPOSITORY`: ECR repository URL for development
 
 #### Staging Environment
+
 - `STG_AWS_ROLE`: AWS IAM role ARN for staging
 - `STG_AWS_REGION`: AWS region for staging
 - `STG_ECR_REPOSITORY`: ECR repository URL for staging
 
 #### Production Environment
+
 - `PRD_AWS_ROLE`: AWS IAM role ARN for production
 - `PRD_AWS_REGION`: AWS region for production
 - `PRD_ECR_REPOSITORY`: ECR repository URL for production
@@ -71,6 +74,7 @@ Ensure the following AWS resources exist:
 The `manual-deploy.yml` workflow provides a centralized way to deploy any application to any environment with the following features:
 
 ### Features
+
 - **App Selection**: Choose from a dropdown of available applications
 - **Environment Selection**: Deploy to dev, staging, or production
 - **Smart Change Detection**: Automatically checks for recent changes in the app directory
@@ -78,12 +82,14 @@ The `manual-deploy.yml` workflow provides a centralized way to deploy any applic
 - **Comprehensive Logging**: Detailed deployment summaries and status reports
 
 ### How It Works
+
 1. **Validation**: Validates inputs and configures app-specific settings
 2. **Change Detection**: Checks for changes in the last 50 commits (can be bypassed)
 3. **Deployment**: Uses the reusable ECS workflow with app-specific configuration
 4. **Summary**: Provides detailed deployment status and recommendations
 
 ### Adding New Apps
+
 To add a new app to the manual deployment workflow, update the `validate-and-configure` job:
 
 ```yaml
@@ -120,12 +126,12 @@ Update the `env` section at the top of your new workflow file:
 ```yaml
 env:
   # App Configuration - CUSTOMIZE THESE VALUES
-  SERVICE_NAME: 'user-api'                  # Service name (used directly after project prefix)
-  APP_PATH: 'apps/user-api'                 # Path to your app directory
-  DOCKERFILE_PATH: 'dockerfile'             # Path to Dockerfile
-  BUILD_COMMAND: 'npm run build:prod'       # Build command
-  NODE_VERSION: '18'                        # Node.js version
-  PORT: '3000'                             # Port your app runs on
+  SERVICE_NAME: "user-api" # Service name (used directly after project prefix)
+  APP_PATH: "apps/user-api" # Path to your app directory
+  DOCKERFILE_PATH: "dockerfile" # Path to Dockerfile
+  BUILD_COMMAND: "npm run build:prod" # Build command
+  NODE_VERSION: "18" # Node.js version
+  PORT: "3000" # Port your app runs on
 ```
 
 ### 3. Benefits of the New Structure
@@ -185,16 +191,19 @@ When a PR is created:
 The system supports three environments with different configurations:
 
 ### Development (`dev`)
+
 - **Project Prefix**: `life-dev`
 - **Project Region**: `sg`
 - **Branch**: `dev`
 
 ### Staging (`stg`)
+
 - **Project Prefix**: `life-stg`
 - **Project Region**: `mb`
 - **Branch**: `stg`
 
 ### Production (`prd`)
+
 - **Project Prefix**: `life-prd`
 - **Project Region**: `mb`
 - **Branch**: `main`/`master`
@@ -243,7 +252,7 @@ CMD ["serve", "-s", "dist", "-l", "8080"]
 If your app has a custom Dockerfile, specify it in the workflow:
 
 ```yaml
-dockerfile_path: 'custom.dockerfile'
+dockerfile_path: "custom.dockerfile"
 ```
 
 ## 📊 Monitoring and Debugging
@@ -323,4 +332,4 @@ To migrate from the existing `apps/ally-helpline-dashboard/.github/workflows/mai
 
 - [GitHub Actions Documentation](https://docs.github.com/en/actions)
 - [AWS ECS Documentation](https://docs.aws.amazon.com/ecs/)
-- [Docker Multi-stage Builds](https://docs.docker.com/develop/dev-best-practices/dockerfile_best-practices/#use-multi-stage-builds) 
+- [Docker Multi-stage Builds](https://docs.docker.com/develop/dev-best-practices/dockerfile_best-practices/#use-multi-stage-builds)

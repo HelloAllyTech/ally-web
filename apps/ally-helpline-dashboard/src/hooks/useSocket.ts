@@ -16,7 +16,9 @@ export const useSocket = ({ userId, eventCallbacks, connectionType }: UseSocketO
   const socketRef = useRef<Socket | null>(null);
   const connectionAttemptsRef = useRef(0);
   const maxAttempts = 5;
-  const baseUrl = `${import.meta.env.VITE_API_BASE_URL}/${getPathForConnectionType(connectionType)}`;
+  const baseUrl = `${import.meta.env.VITE_API_BASE_URL}/${getPathForConnectionType(
+    connectionType,
+  )}`;
   // const appVersionPath = import.meta.env.VITE_APP_VERSION_PATH;
 
   const connect = useCallback(
@@ -54,7 +56,7 @@ export const useSocket = ({ userId, eventCallbacks, connectionType }: UseSocketO
         setTimeout(() => connect(chatId), 2000);
       }
     },
-    [userId]
+    [userId],
   );
 
   const setupDefaultListeners = useCallback(() => {
@@ -64,15 +66,15 @@ export const useSocket = ({ userId, eventCallbacks, connectionType }: UseSocketO
       connectionAttemptsRef.current = 0;
     });
 
-    socketRef.current.on("connect_error", (error) => {
+    socketRef.current.on("connect_error", error => {
       logger.info(`Socket connection error:, ${error}`);
     });
 
-    socketRef.current.on("disconnect", (reason) => {
+    socketRef.current.on("disconnect", reason => {
       logger.info(`Socket disconnected:, ${reason}`);
     });
 
-    socketRef.current.on("error", (error) => {
+    socketRef.current.on("error", error => {
       logger.info(`Socket error:, ${error}`);
     });
 
@@ -96,16 +98,13 @@ export const useSocket = ({ userId, eventCallbacks, connectionType }: UseSocketO
     socketRef.current.emit(SocketEvent.SEND_MESSAGE, message);
   }, []);
 
-  const emitSocketEvent = useCallback(
-    (socketEvent: SocketEvent, message: any) => {
-      if (!socketRef.current) {
-        logger.info("Socket not connected");
-        return;
-      }
-      socketRef.current.emit(socketEvent, message);
-    },
-    [],
-  );
+  const emitSocketEvent = useCallback((socketEvent: SocketEvent, message: any) => {
+    if (!socketRef.current) {
+      logger.info("Socket not connected");
+      return;
+    }
+    socketRef.current.emit(socketEvent, message);
+  }, []);
 
   const isConnected = useCallback(() => {
     return socketRef.current?.connected || false;

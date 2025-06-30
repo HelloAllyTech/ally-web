@@ -13,7 +13,6 @@ import { Call, Logout } from "@/assets/icons";
 import { SocketConnectionTypes } from "@/constants/socket";
 import { logger } from "@ally-ui-mono/ui-shared";
 
-
 interface LogoutButtonProps {
   onLogout: () => void;
 }
@@ -40,23 +39,20 @@ const MainContent = ({ isWaiting, onStartAudioChat, onEndCall }: MainContentProp
   <div className="max-w-md w-full text-center space-y-2">
     <div className="flex items-center justify-center gap-2 font-['Replay_Pro'] text-[#434343] text-[32px] sm:text-[56px]">
       <div className="font-[400]">Welcome to</div>
-      <div className="italic font-[900]">
-        Ally
-      </div>
+      <div className="italic font-[900]">Ally</div>
     </div>
     <div className="text-[#000] font-['IBM_Plex_Serif'] text-[20px]">
       {isWaiting ? (
         <>
-          <h2 className="text-xl font-[600] mb-2">
-            Finding a counselor for you..
-          </h2>
-          <p className="text-[16px]">
-            Please wait while we find the best counselor for you
-          </p>
+          <h2 className="text-xl font-[600] mb-2">Finding a counselor for you..</h2>
+          <p className="text-[16px]">Please wait while we find the best counselor for you</p>
           <div className="flex justify-center my-[30px]">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
           </div>
-          <Button className="sm:text-[22px] text-[16px] font-[600] py-[24px] px-[20px] bg-[#F93535] hover:bg-[#F93535]" onClick={onEndCall}>
+          <Button
+            className="sm:text-[22px] text-[16px] font-[600] py-[24px] px-[20px] bg-[#F93535] hover:bg-[#F93535]"
+            onClick={onEndCall}
+          >
             <Call width={32} height={32} />
             <div>End Call</div>
           </Button>
@@ -66,14 +62,17 @@ const MainContent = ({ isWaiting, onStartAudioChat, onEndCall }: MainContentProp
           <div className="mb-[24px]">
             Connect with a counselor instantly and start your journey towards better mental health.
           </div>
-          <Button className="sm:text-[22px] text-[16px] font-[600] py-[24px] px-[20px]" onClick={onStartAudioChat}>Call with a Counselor</Button>
+          <Button
+            className="sm:text-[22px] text-[16px] font-[600] py-[24px] px-[20px]"
+            onClick={onStartAudioChat}
+          >
+            Call with a Counselor
+          </Button>
         </>
-      )
-      }
+      )}
     </div>
   </div>
 );
-
 
 const ClientInterface = () => {
   const navigate = useNavigate();
@@ -98,7 +97,7 @@ const ClientInterface = () => {
         navigate(ROUTES.AUDIO_CALL);
       },
     }),
-    [navigate]
+    [navigate],
   );
 
   const socket = useSocket({
@@ -182,7 +181,6 @@ const ClientInterface = () => {
     );
   };
 
-
   return (
     <div className="flex-1 min-h-screen overflow-auto">
       {renderConfirmationBox()}
@@ -203,7 +201,8 @@ const ClientInterface = () => {
               isWaiting={isWaiting}
               onStartAudioChat={handleStartAudioChat}
               onEndCall={handleEndCall}
-            />)}
+            />
+          )}
         </div>
       </motion.div>
     </div>

@@ -1,6 +1,7 @@
 # Ally UI Monorepo
 
 This monorepo contains multiple applications for the Ally platform:
+
 - Ally Web: A modern landing page for our mental health AI assistance platform
 - Ally Helpline Dashboard: Dashboard application for mental health professionals
 
@@ -13,12 +14,14 @@ This monorepo contains multiple applications for the Ally platform:
 ## Setup Instructions
 
 1. Clone the repository:
+
 ```bash
 git clone <repository-url>
 cd ally-UI-mono
 ```
 
 2. Install dependencies:
+
 ```bash
 npm install
 ```
@@ -26,11 +29,13 @@ npm install
 3. Start the development servers:
 
 For Ally Web:
+
 ```bash
 npx nx dev ally-web
 ```
 
 For Ally Helpline Dashboard:
+
 ```bash
 npx nx serve ally-helpline-dashboard
 ```
@@ -51,13 +56,16 @@ ally-UI-mono/
 ## Applications
 
 ### Ally Web (apps/ally-web)
+
 A Next.js application showcasing our platform's features and mission:
+
 - Modern, responsive design
 - Gradient-based UI components
 - Interactive elements and smooth animations
 - Optimized for performance and accessibility
 
 ### Ally Helpline Dashboard (apps/ally-helpline-dashboard)
+
 The main dashboard application for mental health professionals.
 
 ## Available Commands
@@ -78,7 +86,7 @@ npx nx lint ally-helpline-dashboard
 ## Development Guidelines
 
 1. **Code Style**: Follow the project's ESLint and Prettier configurations
-2. **Styling**: 
+2. **Styling**:
    - Ally Web: Uses CSS Modules with custom properties
    - Dashboard: Uses Tailwind CSS
 3. **TypeScript**: Maintain strict type checking and follow the base TSConfig
@@ -94,6 +102,7 @@ npx nx lint ally-helpline-dashboard
 ## Support
 
 For issues and support:
+
 - Check the project documentation
 - Review existing issues
 - Contact the development team

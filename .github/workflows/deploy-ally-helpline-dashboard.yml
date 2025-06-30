@@ -23,8 +23,8 @@ on:
       - main
       - master
     paths:
-      - 'apps/ally-helpline-dashboard/**'
-      - 'libs/**'
+      - "apps/ally-helpline-dashboard/**"
+      - "libs/**"
   pull_request:
     branches:
       - dev
@@ -32,8 +32,8 @@ on:
       - main
       - master
     paths:
-      - 'apps/ally-helpline-dashboard/**'
-      - 'libs/**'
+      - "apps/ally-helpline-dashboard/**"
+      - "libs/**"
 
 permissions:
   id-token: write
@@ -153,4 +153,3 @@ jobs:
       build_command: ${{ needs.config.outputs.build_command }}
       node_version: ${{ needs.config.outputs.node_version }}
       port: ${{ needs.config.outputs.port }}
-

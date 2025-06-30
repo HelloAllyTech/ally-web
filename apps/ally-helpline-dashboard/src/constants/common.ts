@@ -2,7 +2,7 @@ import { UserStatus } from "@/types/user";
 
 export const USER_STATUS_OPTIONS = [
   { value: UserStatus.OFFLINE, label: "Offline" },
-  { value: UserStatus.AVAILABLE, label: "Available" }
+  { value: UserStatus.AVAILABLE, label: "Available" },
 ];
 
 export const ICE_SERVERS = [

@@ -8,16 +8,16 @@ import {
 } from "@/types/auth";
 
 const authAPI = baseAPI.injectEndpoints({
-  endpoints: (builder) => ({
+  endpoints: builder => ({
     signup: builder.mutation({
-      query: (data) => ({
+      query: data => ({
         url: "/auth/signup",
         method: "POST",
         body: data,
       }),
     }),
     login: builder.mutation({
-      query: (data) => ({
+      query: data => ({
         url: "/auth/login",
         method: "POST",
         body: data,

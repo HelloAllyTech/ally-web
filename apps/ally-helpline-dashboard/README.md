@@ -24,17 +24,20 @@ A modern web interface for mental health professionals built with React, TypeScr
 ## Local Development
 
 1. Ensure you're in the correct directory:
+
 ```bash
 cd apps/ally-helpline-dashboard
 ```
 
 2. Create a `.env` file with required variables:
+
 ```env
 VITE_API_BASE_URL=your_api_url
 VITE_API_VERSION=v1
 ```
 
 3. Start the development server:
+
 ```bash
 npx nx serve ally-helpline-dashboard
 ```

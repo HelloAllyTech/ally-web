@@ -36,9 +36,9 @@ const CallSidebar: FC<CallSidebarProps> = ({
 
   useEffect(() => {
     if (nudges) {
-      setFeedbacks((prev) => {
+      setFeedbacks(prev => {
         const newFeedbacks = {};
-        nudges.forEach((nudge) => {
+        nudges.forEach(nudge => {
           newFeedbacks[nudge.id] = nudge.feedback;
         });
         return { ...prev, ...newFeedbacks };
@@ -61,21 +61,14 @@ const CallSidebar: FC<CallSidebarProps> = ({
       response = await addFeedback({ id: nudge.id, feedback: { rating } });
     }
 
-    setFeedbacks((prev) => ({ ...prev, [nudge.id]: response.data }));
+    setFeedbacks(prev => ({ ...prev, [nudge.id]: response.data }));
   };
 
   const renderNudgeCard = (nudge: Nudge) => {
     return (
-      <div
-        className="border border-gray-200 text-[#000] rounded-lg p-4 mb-2"
-      >
-        <CustomMarkdown
-          content={nudge.content}
-          className="font-['IBM_Plex_Serif']"
-        />
-        <Divider
-          sx={{ backgroundColor: "rgba(255, 255, 255, 0.12)" }}
-        />
+      <div className="border border-gray-200 text-[#000] rounded-lg p-4 mb-2">
+        <CustomMarkdown content={nudge.content} className="font-['IBM_Plex_Serif']" />
+        <Divider sx={{ backgroundColor: "rgba(255, 255, 255, 0.12)" }} />
         <div className="flex text-sm items-center gap-2">
           <span>Does this help?</span>
           <button
@@ -83,20 +76,22 @@ const CallSidebar: FC<CallSidebarProps> = ({
             onClick={() => handleFeedback(nudge, 0)}
             disabled={isLoading}
           >
-            {feedbacks[nudge.id]?.rating === 0
-              ? <ThumbDownAlt className="w-5 h-5" />
-              : <ThumbDownOffAlt className="w-5 h-5" />
-            }
+            {feedbacks[nudge.id]?.rating === 0 ? (
+              <ThumbDownAlt className="w-5 h-5" />
+            ) : (
+              <ThumbDownOffAlt className="w-5 h-5" />
+            )}
           </button>
           <button
             className="p-2 rounded-lg transition-colors"
             onClick={() => handleFeedback(nudge, 1)}
             disabled={isLoading}
           >
-            {feedbacks[nudge.id]?.rating === 1
-              ? <ThumbUpAlt className="w-5 h-5" />
-              : <ThumbUpOffAlt className="w-5 h-5" />
-            }
+            {feedbacks[nudge.id]?.rating === 1 ? (
+              <ThumbUpAlt className="w-5 h-5" />
+            ) : (
+              <ThumbUpOffAlt className="w-5 h-5" />
+            )}
           </button>
         </div>
       </div>
@@ -115,21 +110,17 @@ const CallSidebar: FC<CallSidebarProps> = ({
         >
           <div className="h-14 px-4 flex justify-between items-center">
             <div />
-            <Close
-              className="cursor-pointer"
-              onClick={onClose}
-            />
+            <Close className="cursor-pointer" onClick={onClose} />
           </div>
           {stage && (
             <div className="px-6 py-4 mx-4 mb-4 border border-[#0473F2]  font-['IBM_Plex_Serif'] rounded-lg bg-[#8CD3FF26]">
-              <div className="text-base font-medium text-[#0473F2] ">Current Stage:
-                <span className="text-[#000] text-base">{` ${stage}`}</span></div>
+              <div className="text-base font-medium text-[#0473F2] ">
+                Current Stage:
+                <span className="text-[#000] text-base">{` ${stage}`}</span>
+              </div>
             </div>
           )}
-          <div
-            ref={nudgesContainerRef}
-            className="mx-4 mb-4"
-          >
+          <div ref={nudgesContainerRef} className="mx-4 mb-4">
             {nudges?.length > 0 && renderNudgeCard(nudges[nudges?.length - 1])}
           </div>
           <div className="mx-[20px] mb-[100px]">

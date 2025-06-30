@@ -1,12 +1,4 @@
-import {
-  FC,
-  useEffect,
-  useMemo,
-  useState,
-  Dispatch,
-  SetStateAction,
-  useRef,
-} from "react";
+import { FC, useEffect, useMemo, useState, Dispatch, SetStateAction, useRef } from "react";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 
@@ -38,11 +30,7 @@ import "./CallTranscript.css";
 // TODO: Bug with no trascript intermittently
 // TODO: start Audio chat not send sometimes
 
-const CallTranscript: FC<CallTranscriptProps> = ({
-  endSession,
-  activeChat,
-  isMicrophoneMode,
-}) => {
+const CallTranscript: FC<CallTranscriptProps> = ({ endSession, activeChat, isMicrophoneMode }) => {
   const navigate = useNavigate();
 
   const user = useSelector((state: RootState) => state.user.user);
@@ -65,9 +53,9 @@ const CallTranscript: FC<CallTranscriptProps> = ({
   // const isWebRTC = activeChat.provider === "WEBRTC"; // to distinguish between exotel and webrtc
 
   const updateLastTranscription = (
-    setCorrespondingTranscription: Dispatch<SetStateAction<Transcription[]>>
+    setCorrespondingTranscription: Dispatch<SetStateAction<Transcription[]>>,
   ) => {
-    setCorrespondingTranscription((prev) => {
+    setCorrespondingTranscription(prev => {
       const updatedList = [...prev];
       if (prev.length > 0) {
         updatedList[prev.length - 1] = {
@@ -82,9 +70,9 @@ const CallTranscript: FC<CallTranscriptProps> = ({
 
   const processTranscription = (
     setCorrespondingTranscription: Dispatch<SetStateAction<Transcription[]>>,
-    payload
+    payload,
   ) => {
-    setCorrespondingTranscription((prev) => {
+    setCorrespondingTranscription(prev => {
       const lastTranscription = prev[prev.length - 1];
       if (!lastTranscription) {
         return [
@@ -111,11 +99,7 @@ const CallTranscript: FC<CallTranscriptProps> = ({
         return updatedTranscriptions;
       }
 
-      if (
-        !lastTranscription.isSentenceComplete &&
-        lastTranscription.isFinal &&
-        payload.isFinal
-      ) {
+      if (!lastTranscription.isSentenceComplete && lastTranscription.isFinal && payload.isFinal) {
         // concat the last transcription with the new one
         const updatedTranscriptions = [...prev];
         updatedTranscriptions[prev.length - 1] = {
@@ -142,10 +126,10 @@ const CallTranscript: FC<CallTranscriptProps> = ({
 
   const socketEventCallbacks = useMemo(
     () => ({
-      [SocketEvent.STAGE]: (data) => {
+      [SocketEvent.STAGE]: data => {
         setStage(data?.payload?.content);
       },
-[SocketEvent.CHAT_ENDED]: () => {
+      [SocketEvent.CHAT_ENDED]: () => {
         disconnect();
         if (isClient) {
           navigate("/");
@@ -153,10 +137,10 @@ const CallTranscript: FC<CallTranscriptProps> = ({
         }
         confirmEndSession(false);
       },
-      [SocketEvent.NUDGE]: (data) => {
+      [SocketEvent.NUDGE]: data => {
         const nudge = data.payload;
         if (nudge.type === MessageType.NUDGE) {
-          setNudges((prev) => [
+          setNudges(prev => [
             ...prev,
             {
               content: nudge.content as string,
@@ -166,7 +150,7 @@ const CallTranscript: FC<CallTranscriptProps> = ({
           ]);
         }
       },
-      [SocketEvent.MESSAGE_RECEIVED]: (data) => {
+      [SocketEvent.MESSAGE_RECEIVED]: data => {
         const message = data.payload;
         if (message.type === MessageType.TEXT) {
           if (message.senderId === user?.userId) {
@@ -176,14 +160,14 @@ const CallTranscript: FC<CallTranscriptProps> = ({
           }
         }
       },
-      [SocketEvent.UTTERANCE_ENDED]: (data) => {
+      [SocketEvent.UTTERANCE_ENDED]: data => {
         if (data?.payload.senderId === user?.userId) {
           updateLastTranscription(setMyTranscriptions);
         } else {
           updateLastTranscription(setSpeakerTranscriptions);
         }
       },
-      [SocketEvent.USER_JOINED]: (data) => {
+      [SocketEvent.USER_JOINED]: data => {
         if (isMicrophoneMode) {
           setMicrophoneChatId(data.payload.chatId);
         }
@@ -193,22 +177,17 @@ const CallTranscript: FC<CallTranscriptProps> = ({
         setIsUserJoined(false);
       },
     }),
-    []
+    [],
   );
 
-  const {
-    connect,
-    disconnect,
-    emitSocketEvent,
-    setListenerForEvent,
-    removeIfListenerPresent,
-  } = useSocket({
-    userId: user.userId,
-    eventCallbacks: socketEventCallbacks,
-    connectionType: isMicrophoneMode
-      ? SocketConnectionTypes.MICROPHONE_MODE
-      : SocketConnectionTypes.WEBRTC_AUDIO_CALL,
-  });
+  const { connect, disconnect, emitSocketEvent, setListenerForEvent, removeIfListenerPresent } =
+    useSocket({
+      userId: user.userId,
+      eventCallbacks: socketEventCallbacks,
+      connectionType: isMicrophoneMode
+        ? SocketConnectionTypes.MICROPHONE_MODE
+        : SocketConnectionTypes.WEBRTC_AUDIO_CALL,
+    });
 
   const {
     localStreamRef,
@@ -255,7 +234,7 @@ const CallTranscript: FC<CallTranscriptProps> = ({
       };
     };
 
-    recorder.ondataavailable = (event) => {
+    recorder.ondataavailable = event => {
       if (event.data.size > 0) {
         chunks.push(event.data);
         totalSize += event.data.size;
@@ -280,8 +259,8 @@ const CallTranscript: FC<CallTranscriptProps> = ({
     if (activeChat?.messages && activeChat.messages.length > 0) {
       const existingTranscriptions = [...activeChat.messages]
         .reverse()
-        .filter((transcription) => transcription.type === MessageType.TEXT)
-        .map((transcription) => ({
+        .filter(transcription => transcription.type === MessageType.TEXT)
+        .map(transcription => ({
           id: transcription.id,
           message: transcription.content,
           senderId: transcription.senderId,
@@ -290,20 +269,16 @@ const CallTranscript: FC<CallTranscriptProps> = ({
           isSentenceComplete: true,
         }));
       setMyTranscriptions(
-        existingTranscriptions?.filter(
-          (payload) => payload.senderId === user.userId
-        )
+        existingTranscriptions?.filter(payload => payload.senderId === user.userId),
       );
       setSpeakerTranscriptions(
-        existingTranscriptions?.filter(
-          (payload) => payload.senderId !== user.userId
-        )
+        existingTranscriptions?.filter(payload => payload.senderId !== user.userId),
       );
 
       const existingNudges = [...activeChat.messages]
         .reverse()
-        .filter((message) => message.type === MessageType.NUDGE)
-        .map((nudge) => ({
+        .filter(message => message.type === MessageType.NUDGE)
+        .map(nudge => ({
           content: nudge.content,
           id: nudge.id,
           feedback: nudge.feedback,
@@ -381,19 +356,19 @@ const CallTranscript: FC<CallTranscriptProps> = ({
     if (isMuted) {
       mediaRecorder?.pause();
       // Mute all audio tracks in the local stream
-      localStreamRef.current?.getAudioTracks().forEach((track) => {
+      localStreamRef.current?.getAudioTracks().forEach(track => {
         track.enabled = false;
       });
-      microphoneStreamRef.current?.getAudioTracks().forEach((track) => {
+      microphoneStreamRef.current?.getAudioTracks().forEach(track => {
         track.enabled = false;
       });
     } else {
       mediaRecorder?.resume();
       // Unmute all audio tracks in the local stream
-      localStreamRef.current?.getAudioTracks().forEach((track) => {
+      localStreamRef.current?.getAudioTracks().forEach(track => {
         track.enabled = true;
       });
-      microphoneStreamRef.current?.getAudioTracks().forEach((track) => {
+      microphoneStreamRef.current?.getAudioTracks().forEach(track => {
         track.enabled = true;
       });
     }
@@ -417,7 +392,7 @@ const CallTranscript: FC<CallTranscriptProps> = ({
       }
       // Stop all tracks in the local stream to release the microphone
       if (localStreamRef.current) {
-        localStreamRef.current.getTracks().forEach((track) => track.stop());
+        localStreamRef.current.getTracks().forEach(track => track.stop());
         localStreamRef.current = null;
       }
       endSession(triggerApi);
@@ -429,13 +404,10 @@ const CallTranscript: FC<CallTranscriptProps> = ({
 
   const transcriptions = useMemo(() => {
     const reducedMyTranscriptions = reduceTranscriptions(myTranscriptions);
-    const reducedSpeakerTranscriptions = reduceTranscriptions(
-      speakerTranscriptions
-    );
+    const reducedSpeakerTranscriptions = reduceTranscriptions(speakerTranscriptions);
 
     return [...reducedMyTranscriptions, ...reducedSpeakerTranscriptions].sort(
-      (a, b) =>
-        new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
+      (a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime(),
     );
   }, [myTranscriptions, speakerTranscriptions]);
 
@@ -453,10 +425,7 @@ const CallTranscript: FC<CallTranscriptProps> = ({
 
         {/* Update transcription container with max-height */}
         {isCounsellor && isUserJoined && (
-          <RealTimeTranscript
-            isFocusMode={isFocusMode}
-            transcriptions={transcriptions}
-          />
+          <RealTimeTranscript isFocusMode={isFocusMode} transcriptions={transcriptions} />
         )}
 
         <CallControls
@@ -466,7 +435,7 @@ const CallTranscript: FC<CallTranscriptProps> = ({
           isUserJoined={isUserJoined}
           onCutCallButtonClick={() => confirmEndSession(true)}
           onFocusButtonClick={(isFocused: boolean) => setIsFocusMode(isFocused)}
-          onMuteButtonClick={() => setIsMuted((prev) => !prev)}
+          onMuteButtonClick={() => setIsMuted(prev => !prev)}
         />
       </AudioCallBackgroundWrapper>
       {nudgeStatus && (

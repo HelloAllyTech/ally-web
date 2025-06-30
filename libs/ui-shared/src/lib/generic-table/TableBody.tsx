@@ -1,10 +1,10 @@
-import { Column } from './types';
+import { Column } from "./types";
 
 /**
  * Utility function to get a value from a row by key.
  */
 function getValue<T extends Record<string, any>>(row: T, key: keyof T | string) {
-  if (typeof key === 'string' && key in row) return (row as any)[key];
+  if (typeof key === "string" && key in row) return (row as any)[key];
   return row[key as keyof T];
 }
 
@@ -14,10 +14,12 @@ function getValue<T extends Record<string, any>>(row: T, key: keyof T | string) 
 function TableBody<T extends Record<string, any>>({
   columns,
   data,
+  fallbackUI,
   onRowClick,
 }: {
   columns: Column<T>[];
   data: T[];
+  fallbackUI?: React.ReactNode;
   onRowClick?: (row: T) => void;
 }) {
   if (data?.length === 0) {
@@ -25,7 +27,7 @@ function TableBody<T extends Record<string, any>>({
       <tbody>
         <tr>
           <td colSpan={columns.length} className="px-4 py-6 text-center text-gray-400">
-            No data found.
+            {fallbackUI || "No data found."}
           </td>
         </tr>
       </tbody>
@@ -39,13 +41,17 @@ function TableBody<T extends Record<string, any>>({
           className="hover:bg-gray-100 cursor-pointer text-xs sm:text-sm"
           onClick={onRowClick ? () => onRowClick(row) : undefined}
         >
-          {columns?.map(col => (
+          {columns?.map((col, columnIndex) => (
             <td
               key={col.key as string}
-              className={`px-4 py-[16px] border-t border-gray-100 text-xs sm:text-sm ${col.className || ''}`}
+              className={`px-4 py-[10px] border-b border-gray-300 ${
+                columnIndex === columns.length - 1 ? "border-r-0" : "border-r"
+              } text-xs sm:text-sm ${col.className || ""}`}
               style={col.style}
             >
-              {col.render ? col.render(getValue(row, col.key), row) : String(getValue(row, col.key) ?? '')}
+              {col.render
+                ? col.render(getValue(row, col.key), row)
+                : String(getValue(row, col.key) ?? "")}
             </td>
           ))}
         </tr>
@@ -54,4 +60,4 @@ function TableBody<T extends Record<string, any>>({
   );
 }
 
-export default TableBody; 
+export default TableBody;

@@ -1,23 +1,27 @@
-import { fetchCategories, fetchReferenceDocuments } from './api';
-import SearchClient from './SearchClient';
-import { logger } from '@ally-ui-mono/ui-shared';
-
+import { fetchCategories, fetchReferenceDocuments } from "./api";
+import SearchClient from "./SearchClient";
+import { logger } from "@ally-ui-mono/ui-shared";
 
 export default async function SearchPage({
   searchParams,
 }: {
   searchParams: { q?: string; category?: string };
 }) {
-  const searchQuery = searchParams.q ?? '';
-  const category = searchParams.category ?? 'All';
+  const searchQuery = searchParams.q ?? "";
+  const category = searchParams.category ?? "All";
   try {
     const { documents } = await fetchReferenceDocuments(searchQuery, category);
     const categories = await fetchCategories();
     return (
-      <SearchClient searchQuery={searchQuery} category={category} documents={documents} categories={categories} />
+      <SearchClient
+        searchQuery={searchQuery}
+        category={category}
+        documents={documents}
+        categories={categories}
+      />
     );
   } catch (error) {
     logger.info(`Error in SearchPage: ${error}`);
     return <div>Error loading search results.</div>;
   }
-} 
+}

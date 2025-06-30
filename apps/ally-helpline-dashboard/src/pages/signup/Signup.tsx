@@ -55,11 +55,9 @@ export const Signup = () => {
         <div className="bg-gray-800 rounded-2xl shadow-xl p-8 space-y-8">
           <div className="text-center">
             <h1 className="text-2xl font-bold text-white">Welcome back</h1>
-            <p className="text-gray-400 mt-2">
-              Sign up to continue to Ally
-            </p>
+            <p className="text-gray-400 mt-2">Sign up to continue to Ally</p>
           </div>
-          <form onSubmit={(e) => e.preventDefault()} className="space-y-6">
+          <form onSubmit={e => e.preventDefault()} className="space-y-6">
             <div className="space-y-4">
               <Input
                 type="name"
@@ -68,7 +66,7 @@ export const Signup = () => {
                 onChange={(e: ChangeEvent<HTMLInputElement>) =>
                   setFormData({ ...formData, name: e.target.value })
                 }
-                onKeyDown={(e) => {
+                onKeyDown={e => {
                   if (e.key === "Enter") e.preventDefault();
                 }}
                 required
@@ -83,7 +81,7 @@ export const Signup = () => {
                 onChange={(e: ChangeEvent<HTMLInputElement>) =>
                   setFormData({ ...formData, email: e.target.value })
                 }
-                onKeyDown={(e) => {
+                onKeyDown={e => {
                   if (e.key === "Enter") e.preventDefault();
                 }}
                 required
@@ -98,7 +96,7 @@ export const Signup = () => {
                 onChange={(e: ChangeEvent<HTMLInputElement>) =>
                   setFormData({ ...formData, password: e.target.value })
                 }
-                onKeyDown={(e) => {
+                onKeyDown={e => {
                   if (e.key === "Enter") e.preventDefault();
                 }}
                 required

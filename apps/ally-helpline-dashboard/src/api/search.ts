@@ -3,7 +3,7 @@ import { GetSearchResultsRequest, GetSearchResultsResponse } from "@/types/searc
 import { baseAPI } from "./baseAPI";
 
 const searchAPI = baseAPI.injectEndpoints({
-  endpoints: (builder) => ({
+  endpoints: builder => ({
     getCategories: builder.query<string[], void>({
       query: () => ({
         url: "/reference-document/categories",
@@ -11,7 +11,7 @@ const searchAPI = baseAPI.injectEndpoints({
       }),
     }),
     getSearchResults: builder.mutation<GetSearchResultsResponse, GetSearchResultsRequest>({
-      query: (body) => ({
+      query: body => ({
         url: "/reference-document/search",
         method: "POST",
         body,

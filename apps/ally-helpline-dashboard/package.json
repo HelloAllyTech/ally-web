@@ -10,12 +10,6 @@
     "lint": "eslint .",
     "preview": "vite preview"
   },
-  "lint-staged": {
-    "*.{js,jsx,ts,tsx}": [
-      "npm run lint",
-      "git add"
-    ]
-  },
   "dependencies": {
     "@emotion/react": "^11.11.3",
     "@emotion/styled": "^11.11.0",

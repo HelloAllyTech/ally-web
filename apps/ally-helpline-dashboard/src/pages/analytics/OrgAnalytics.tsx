@@ -1,19 +1,13 @@
 import { useEffect, useState, FunctionComponent } from "react";
 
-import {
-  useLazyGetDashboardUrlQuery,
-  useLazyGetDashboardsQuery,
-} from "@/api/analytics";
+import { useLazyGetDashboardUrlQuery, useLazyGetDashboardsQuery } from "@/api/analytics";
 import { logger } from "@ally-ui-mono/ui-shared";
 
 const OrgAnalytics: FunctionComponent = () => {
-
   const [getDashboardUrl] = useLazyGetDashboardUrlQuery();
   const [getDashboards, { data: dashboards }] = useLazyGetDashboardsQuery();
 
-  const [dashboardUrls, setDashboardUrls] = useState<{ [id: string]: string }>(
-    {}
-  );
+  const [dashboardUrls, setDashboardUrls] = useState<{ [id: string]: string }>({});
 
   useEffect(() => {
     getDashboards();
@@ -30,7 +24,7 @@ const OrgAnalytics: FunctionComponent = () => {
   const triggerDashboardUrl = async (dashboardId: string) => {
     try {
       const data = await getDashboardUrl({ dashboardId });
-      setDashboardUrls((prev) => ({
+      setDashboardUrls(prev => ({
         ...prev,
         [dashboardId]: data?.data?.url,
       }));

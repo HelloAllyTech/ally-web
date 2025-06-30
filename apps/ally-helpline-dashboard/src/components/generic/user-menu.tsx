@@ -25,19 +25,14 @@ const UserMenu = ({ onLogout }: UserMenuProps) => {
       <DropdownMenuTrigger asChild>
         <button
           className={`p-3 outline-none rounded-lg text-gray-400 transition-colors ${
-            isOpen
-              ? "bg-gray-700 text-white"
-              : "hover:text-white hover:bg-gray-700"
+            isOpen ? "bg-gray-700 text-white" : "hover:text-white hover:bg-gray-700"
           }`}
         >
           <Settings className="text-white w-6 h-6" />
         </button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-48">
-        <DropdownMenuItem
-          className="cursor-default flex text-sm items-center p-3 gap-2"
-          disabled
-        >
+        <DropdownMenuItem className="cursor-default flex text-sm items-center p-3 gap-2" disabled>
           <div className="h-6 w-6 rounded-full bg-gray-700 flex items-center justify-center">
             <User className="h-4 w-4 text-gray-400" />
           </div>

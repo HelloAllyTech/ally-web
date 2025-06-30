@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { CircularProgress } from "@mui/material";
 import { Eye } from "lucide-react";
@@ -6,30 +6,25 @@ import { Eye } from "lucide-react";
 import { RootState } from "@/store/store";
 import { updatePage, updateTotalCallsCount } from "@/reducer/callsReducer";
 import { useGetCallLogsQuery } from "@/api/calls";
-import { Button, FallbackUI } from "@/components";
+import { Button, CustomCircularProgress, TagGroup, FallbackUI } from "@/components";
 import { NoResults } from "@/assets/icons";
 import { CallLog } from "@/types/calls";
 
 import SummarySideBar from "./components/SummarySideBar";
 import { convertSecondsToDuration, formatDate } from "./utils";
-import {
-  CALL_LOGS_PAGINATION_LIMIT,
-  TABLE_ROW_HEIGHT,
-  tagColors,
-} from "./constants";
+import { CALL_LOGS_PAGINATION_LIMIT, TABLE_ROW_HEIGHT, tagColors } from "./constants";
 import { TagDisplay } from "./types";
-import { GenericTable, Pagination } from "@ally-ui-mono/ui-shared";
+import { GenericTable } from "@ally-ui-mono/ui-shared";
 import { Column } from "@ally-ui-mono/ui-shared/lib/generic-table/types";
+import { useUser } from "@/hooks/useUser";
 
 const CallLogsTable = () => {
   const dispatch = useDispatch();
 
   const {
     filters: { page },
-    totalCallsCount,
   } = useSelector((state: RootState) => state.calls);
 
-  const [transition, setTransition] = useState(true);
   const [callSummary, setCallSummary] = useState<CallLog | null>(null);
 
   const {
@@ -40,30 +35,60 @@ const CallLogsTable = () => {
     limit: CALL_LOGS_PAGINATION_LIMIT,
     offset: page * CALL_LOGS_PAGINATION_LIMIT - CALL_LOGS_PAGINATION_LIMIT,
   });
+  const { user } = useUser();
 
   const { count, data: callLogs = [] } = callLogsData || {};
 
-  useEffect(() => {
-    if (!isLoading) {
-      setTimeout(() => {
-        setTransition(false);
-      }, 100);
+  const [callLogList, setCallLogList] = useState<CallLog[]>([]);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
+  const tableRef = useRef<HTMLDivElement>(null);
+
+  const handleScroll = () => {
+    if (tableRef.current) {
+      tableRef.current.scrollTo({ top: tableRef.current.scrollHeight, behavior: "smooth" });
     }
-  }, [isLoading]);
+  };
+
+  // Append new callLogs to the list and handle hasMore
+  useEffect(() => {
+    if (callLogs?.length > 0) {
+      setCallLogList(prev => {
+        // Avoid duplicate entries if page is reset
+        if (page === 1) return [...callLogs];
+        return [...prev, ...callLogs];
+      });
+      setIsLoadingMore(false);
+      // If less than limit, no more data
+      if (!callLogs.length || callLogs.length < CALL_LOGS_PAGINATION_LIMIT) {
+        setHasMore(false);
+      } else {
+        setHasMore(true);
+      }
+      handleScroll();
+    }
+  }, [callLogs, page]);
 
   useEffect(() => {
     dispatch(updateTotalCallsCount(count));
   }, [count]);
 
-  if (isLoading) {
+  const handleLoadMore = () => {
+    if (!isLoading && !isLoadingMore && hasMore) {
+      setIsLoadingMore(true);
+      dispatch(updatePage(page + 1));
+    }
+  };
+
+  if (isLoading && page === 1) {
     return (
-      <div className="flex justify-center items-center h-[calc(100%_-_80px)]">
+      <div className="flex justify-center items-center h-[calc(100vh-80px)]">
         <CircularProgress />
       </div>
     );
   }
 
-  const getDisplayData = (row: CallLog) => {
+  const getCounselorDisplayData = (row: CallLog) => {
     const { details, id } = row;
     if (details) {
       const { callDuration, callInfo, startTime, summary, transcript } = details;
@@ -75,18 +100,25 @@ const CallLogsTable = () => {
         dateAndTime: formatDate(startTime),
         duration: convertSecondsToDuration(callDuration ?? 60),
         qualityScore: summary?.callQuality ?? 0,
-        tags: summary?.tags?.map(
-          (tag: { tag: string; positivity_rating: number }) => {
-            return {
-              label: tag?.tag,
-              colors: tagColors[tag?.positivity_rating],
-            };
-          },
-        ),
+        tags: summary?.tags?.map((tag: { tag: string; positivity_rating: number }) => {
+          return {
+            label: tag?.tag,
+            colors: tagColors[tag?.positivity_rating],
+          };
+        }),
         raw: row, // keep original row for review action
       };
     }
-    return { id, callName: "", dateAndTime: "", duration: "", qualityScore: 0, tags: [], transcript: "", raw: row };
+    return {
+      id,
+      callName: "",
+      dateAndTime: "",
+      duration: "",
+      qualityScore: 0,
+      tags: [],
+      transcript: "",
+      raw: row,
+    };
   };
 
   const columns: Column<any>[] = [
@@ -112,22 +144,9 @@ const CallLogsTable = () => {
       render: (value, row) => {
         // row is displayData
         return (
-          <div className="flex items-center gap-3">
-            <label>{value}</label>
-            <div className="flex gap-1 w-32 h-1">
-              <div
-                style={{
-                  width: `${(value / 100) * 128}px`,
-                }}
-                className="w-0 transition-all duration-300 border-[2px] border-[#6272FF] rounded-md"
-              />
-              <div
-                style={{
-                  width: `${((100 - value) / 100) * 128}px`,
-                }}
-                className="w-full transition-all duration-300 border-[2px] border-t-[#E6F2FF] rounded-md"
-              />
-            </div>
+          <div className="flex items-center gap-3 text-[16px]">
+            <span>{value}</span>
+            <CustomCircularProgress value={value} />
           </div>
         );
       },
@@ -136,38 +155,24 @@ const CallLogsTable = () => {
       key: "tags",
       header: "Tags",
       style: { width: "30%" },
-      render: (value: TagDisplay[]) => (
-        <div className="flex gap-1 flex-wrap max-w-full overflow-hidden">
-          {value?.map((tag: TagDisplay) => (
-            <div
-              key={tag.label}
-              style={{
-                backgroundColor: tag?.colors?.bg,
-                color: tag?.colors?.text,
-              }}
-              className="rounded-md px-1.5 py-0.5 text-white text-xs font-medium whitespace-nowrap mb-1"
-            >
-              {tag.label}
-            </div>
-          ))}
-        </div>
-      ),
+      render: (value: TagDisplay[]) => <TagGroup tags={value} />,
     },
     {
       key: "review",
       header: "Review",
       style: { width: "10%" },
       render: (_value, row) => (
-        <Button onClick={() => setCallSummary(row.raw)} className="flex items-center justify-center w-full py-[8px] bg-transparent border-none hover:bg-transparent cursor-pointer">
-          <Eye
-            className="text-[#868686] w-4 h-4"
-          />
+        <Button
+          onClick={() => setCallSummary(row.raw)}
+          className="flex items-center justify-center w-full py-[8px] bg-transparent border-none hover:bg-transparent cursor-pointer"
+        >
+          <Eye className="text-[#868686] w-4 h-4" />
         </Button>
       ),
     },
   ];
 
-  const displayData = callLogs.map(getDisplayData);
+  const displayData = callLogList.map(getCounselorDisplayData);
 
   return (
     <>
@@ -178,26 +183,25 @@ const CallLogsTable = () => {
         }}
       >
         <GenericTable
+          ref={tableRef}
           columns={columns}
           data={displayData}
-          fallbackUI={callLogs?.length === 0 && (
-            <FallbackUI
-              image={<NoResults />}
-              mainMessage="No call records found"
-              description="Your recent calls and insights will be listed here."
-              className="py-[100px]"
-            />
-          )}
-          className="min-w-full max-h-[calc(100vh-240px)] overflow-y-scroll"
+          isLoading={isLoading}
+          handleLoadMore={callLogList?.length > 0 && hasMore && handleLoadMore}
+          fallbackUI={
+            callLogList.length === 0 &&
+            !isLoading && (
+              <FallbackUI
+                image={<NoResults />}
+                mainMessage="No call records found"
+                description="Your recent calls and insights will be listed here."
+                className="py-[100px]"
+              />
+            )
+          }
+          className="min-w-full max-h-[calc(100vh-140px)] font-['IBM_Plex_Sans'] overflow-y-scroll"
           style={{ minWidth: "100%" }}
         />
-        {callLogs?.length > 0 && (
-          <Pagination
-            page={page}
-            totalPages={Math.ceil(totalCallsCount / CALL_LOGS_PAGINATION_LIMIT) || 1}
-            onPageChange={(value) => dispatch(updatePage(value))}
-          />
-        )}
       </div>
       {callSummary && callSummary?.id && (
         <SummarySideBar

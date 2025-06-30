@@ -1,7 +1,7 @@
-'use client'
-import { FC, useState, useRef, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import Badge from '../badge';
+"use client";
+import { FC, useState, useRef, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import Badge from "../badge";
 
 export interface ResourceCardProps {
   title: string;
@@ -10,12 +10,7 @@ export interface ResourceCardProps {
   tags: string[];
 }
 
-const ResourceCard: FC<ResourceCardProps> = ({
-  title,
-  description,
-  category,
-  tags,
-}) => {
+const ResourceCard: FC<ResourceCardProps> = ({ title, description, category, tags }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const contentRef = useRef<HTMLDivElement>(null);
   const [shouldShowButton, setShouldShowButton] = useState(false);
@@ -33,11 +28,17 @@ const ResourceCard: FC<ResourceCardProps> = ({
 
   const renderTags = () => {
     return (
-      <div style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }} className="flex flex-row justify-between gap-2 overflow-x-hidden">
+      <div
+        style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
+        className="flex flex-row justify-between gap-2 overflow-x-hidden"
+      >
         <Badge text={category} variant="ghost" className="capitalize flex-shrink-0" />
         <div className="w-full sm:max-w-[80%] relative">
-          <div style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }} className="flex justify-normal sm:justify-end gap-1 overflow-x-auto whitespace-nowrap ml-[20px]">
-            {tags.map((tag) => (
+          <div
+            style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
+            className="flex justify-normal sm:justify-end gap-1 overflow-x-auto whitespace-nowrap ml-[20px]"
+          >
+            {tags.map(tag => (
               <Badge key={tag} text={tag} variant="outlined" />
             ))}
           </div>
@@ -60,7 +61,7 @@ const ResourceCard: FC<ResourceCardProps> = ({
         >
           <button
             className="text-sm text-[#525252] hover:text-[#000] transition-colors"
-            onClick={(e) => {
+            onClick={e => {
               e.stopPropagation();
               setIsExpanded(false);
             }}
@@ -80,7 +81,7 @@ const ResourceCard: FC<ResourceCardProps> = ({
         >
           <button
             className="text-sm text-[#525252] hover:text-[#000] transition-colors"
-            onClick={(e) => {
+            onClick={e => {
               e.stopPropagation();
               setIsExpanded(true);
             }}
@@ -98,32 +99,35 @@ const ResourceCard: FC<ResourceCardProps> = ({
         <AnimatePresence mode="wait">
           <motion.div
             ref={contentRef}
-            className={`text-[15px] sm:text-[16px] text-[#525252] leading-6 ${!isExpanded ? 'line-clamp-2' : ''}`}
+            className={`text-[15px] sm:text-[16px] text-[#525252] leading-6 ${
+              !isExpanded ? "line-clamp-2" : ""
+            }`}
             initial={false}
             animate={{
               height: isExpanded ? contentHeight : Math.min(48, contentHeight), // 48px = 2 lines * 24px line height
-              opacity: 1
+              opacity: 1,
             }}
             transition={{
               height: { duration: 0.3, ease: "easeOut" },
-              opacity: { duration: 0.2 }
+              opacity: { duration: 0.2 },
             }}
             style={{
-              overflow: 'hidden'
+              overflow: "hidden",
             }}
           >
             {description}
           </motion.div>
         </AnimatePresence>
-        <AnimatePresence>
-          {renderShowMoreLess()}
-        </AnimatePresence>
+        <AnimatePresence>{renderShowMoreLess()}</AnimatePresence>
       </div>
-    )
-  }
+    );
+  };
 
   return (
-    <div onClick={()=> setIsExpanded((prev)=> !prev)} className="w-full flex flex-col gap-2 border border-[#DADCE1] rounded-[8px] p-3 sm:p-4 bg-white">
+    <div
+      onClick={() => setIsExpanded(prev => !prev)}
+      className="w-full flex flex-col gap-2 border border-[#DADCE1] rounded-[8px] p-3 sm:p-4 bg-white"
+    >
       {renderTags()}
       <div className="flex flex-col font-['IBM_Plex_Serif'] gap-1">
         <span className="font-[500] text-[15px] sm:text-[16px] text-[#000]">{title}</span>

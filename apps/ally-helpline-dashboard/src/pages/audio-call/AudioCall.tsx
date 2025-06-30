@@ -10,7 +10,11 @@ import { RootState } from "@/store/store";
 import { NoResults } from "@/assets/icons";
 import { setUserStatus } from "@/reducer/userReducer";
 import { FallbackUI, StressBuster } from "@/components";
-import { useEndCallMutation, useLazyGetClientChatQuery, useLazyGetCounsellorChatQuery } from "@/api/audioCall";
+import {
+  useEndCallMutation,
+  useLazyGetClientChatQuery,
+  useLazyGetCounsellorChatQuery,
+} from "@/api/audioCall";
 import { MindfullnessVideo } from "@/assets/videos";
 
 import CallTranscript from "./CallTranscript";
@@ -28,7 +32,8 @@ const AudioCall: FunctionComponent = () => {
 
   const user = useSelector((state: RootState) => state.user.user);
 
-  const [getCounsellorChat, { isLoading: isCounsellorChatLoading }] = useLazyGetCounsellorChatQuery();
+  const [getCounsellorChat, { isLoading: isCounsellorChatLoading }] =
+    useLazyGetCounsellorChatQuery();
   const [getClientChat, { isLoading: isClientChatLoading }] = useLazyGetClientChatQuery();
   const [endCall, { isLoading: isEndCallLoading }] = useEndCallMutation();
 
@@ -71,9 +76,9 @@ const AudioCall: FunctionComponent = () => {
     setIsEnding(true);
     setEndingMessage("You gave your best on that call!");
     try {
-      await new Promise((resolve) => setTimeout(resolve, 2000));
+      await new Promise(resolve => setTimeout(resolve, 2000));
       setEndingMessage("Now, take a moment for yourself");
-      await new Promise((resolve) => setTimeout(resolve, 2000));
+      await new Promise(resolve => setTimeout(resolve, 2000));
       setShowStressBuster(true);
     } catch (error) {
       logger.info(`Error in handleEndSequence:, ${error}`);
@@ -100,7 +105,7 @@ const AudioCall: FunctionComponent = () => {
     }
   };
 
-  const getFallbackUI = () => { 
+  const getFallbackUI = () => {
     // Fallback shown when user starts microphone mode but there is an ongoing webrtc call
     if (isMicrophoneMode && activeChat?.chatId && activeChat.provider !== "MICROPHONE") {
       return (
@@ -112,7 +117,7 @@ const AudioCall: FunctionComponent = () => {
         />
       );
     }
-    
+
     // Fallback shown when user starts webrtc mode but there is no ongoing call
     if (!isMicrophoneMode && !isLoading && !activeChat?.chatId) {
       return (

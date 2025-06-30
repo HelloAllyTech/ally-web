@@ -23,8 +23,8 @@ on:
       - main
       - master
     paths:
-      - 'apps/ally-web/**'
-      - 'libs/**'
+      - "apps/ally-web/**"
+      - "libs/**"
   pull_request:
     branches:
       - dev
@@ -32,8 +32,8 @@ on:
       - main
       - master
     paths:
-      - 'apps/ally-web/**'
-      - 'libs/**'
+      - "apps/ally-web/**"
+      - "libs/**"
 
 permissions:
   id-token: write

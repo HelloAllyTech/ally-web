@@ -11,8 +11,10 @@ import { ListeningChart } from "./components";
 import { CalendarMode } from "./types";
 
 const UserAnalytics: FunctionComponent = () => {
-  const [getCounselorStats, { data: counselorStats, isLoading: statsLoading, isError: isStatsError }] =
-    useLazyGetCounselorStatsQuery();
+  const [
+    getCounselorStats,
+    { data: counselorStats, isLoading: statsLoading, isError: isStatsError },
+  ] = useLazyGetCounselorStatsQuery();
 
   const isLoading = useMemo(() => statsLoading, [statsLoading]);
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
@@ -168,15 +170,20 @@ const UserAnalytics: FunctionComponent = () => {
       ) : (
         <div className="flex flex-col w-[70%] ml-8 flex-2">
           <ListeningChart
-            isEmpty={counselorStats?.counselorListeningDuration === 0 && counselorStats?.counselorSharingDuration === 0}
-            listeningPercentage={isStatsError ? 0 : 100 - (counselorStats?.counselorSharingPercentage ?? 0)}
+            isEmpty={
+              counselorStats?.counselorListeningDuration === 0 &&
+              counselorStats?.counselorSharingDuration === 0
+            }
+            listeningPercentage={
+              isStatsError ? 0 : 100 - (counselorStats?.counselorSharingPercentage ?? 0)
+            }
           />
         </div>
       )}
 
       <div className="flex flex-col gap-2 items-center flex-1 relative">
         <div className="flex gap-2 bg-[#F5F5F5] p-2 rounded-[4px]">
-          {viewButtons.map((button) => (
+          {viewButtons.map(button => (
             <button
               key={button.label}
               onClick={() => handleModeChange(button.view)}
@@ -189,19 +196,19 @@ const UserAnalytics: FunctionComponent = () => {
           ))}
         </div>
         <div className="flex items-center gap-2">
-          <ChevronLeft 
-            className="cursor-pointer w-4 h-4" 
-            onClick={() => handleDisplayDateChange("prev")} 
+          <ChevronLeft
+            className="cursor-pointer w-4 h-4"
+            onClick={() => handleDisplayDateChange("prev")}
           />
           <div
             className="w-[140px] text-[14px] text-center border border-[#E5E5E5] rounded-[4px] py-2 px-3 cursor-pointer"
-            onClick={() => setIsCalendarOpen((prev) => !prev)}
+            onClick={() => setIsCalendarOpen(prev => !prev)}
           >
             {getDisplayDate()}
           </div>
-          <ChevronRight 
-            className="cursor-pointer w-4 h-4" 
-            onClick={() => handleDisplayDateChange("next")} 
+          <ChevronRight
+            className="cursor-pointer w-4 h-4"
+            onClick={() => handleDisplayDateChange("next")}
           />
         </div>
         {mode !== CalendarMode.ALL && isCalendarOpen && (
@@ -218,11 +225,21 @@ const UserAnalytics: FunctionComponent = () => {
               disableFuture={true}
             />
             <div className="flex justify-end gap-4 py-2 px-3 border-t border-[#E5E5E5]">
-              <Button className="bg-transparent text-[#000] hover:bg-transparent" onClick={handleCancel}>Cancel</Button>
-              <Button className="bg-transparent text-[#1480FB] hover:bg-transparent" onClick={handleOk}>OK</Button>
+              <Button
+                className="bg-transparent text-[#000] hover:bg-transparent"
+                onClick={handleCancel}
+              >
+                Cancel
+              </Button>
+              <Button
+                className="bg-transparent text-[#1480FB] hover:bg-transparent"
+                onClick={handleOk}
+              >
+                OK
+              </Button>
             </div>
-        </div>
-      )}
+          </div>
+        )}
       </div>
     </div>
   );

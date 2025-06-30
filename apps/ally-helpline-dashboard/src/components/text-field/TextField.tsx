@@ -6,10 +6,10 @@ import { TextFieldProps } from "./types";
 import "./TextField.css";
 
 const heights = {
-    small: "30px",
-    medium: "40px",
-    large: "48px"
-  };
+  small: "30px",
+  medium: "40px",
+  large: "48px",
+};
 
 const TextField: FC<TextFieldProps> = ({
   className,
@@ -49,7 +49,7 @@ const TextField: FC<TextFieldProps> = ({
             borderColor: "#E5E7EB !important",
           },
           "& .MuiOutlinedInput-root": {
-            ...(!multiline && {height: heights[fieldSize]}),
+            ...(!multiline && { height: heights[fieldSize] }),
             backgroundColor: "#FFF",
             padding: 0,
             "& fieldset": {
@@ -61,7 +61,7 @@ const TextField: FC<TextFieldProps> = ({
             },
           },
           "& .MuiInputBase-input": {
-            ...(!multiline && {height: heights[fieldSize]}),
+            ...(!multiline && { height: heights[fieldSize] }),
             boxSizing: "border-box",
             color: "#4A4459",
             fontSize: "14px",

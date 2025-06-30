@@ -16,9 +16,7 @@ import { LoginSection } from "./constants";
 const Login: FunctionComponent = () => {
   const navigate = useNavigate();
 
-  const [loginSection, setLoginSection] = useState<LoginSection>(
-    LoginSection.EMAIL
-  );
+  const [loginSection, setLoginSection] = useState<LoginSection>(LoginSection.EMAIL);
   const [email, setEmail] = useState<string>("");
   const [emailError, setEmailError] = useState<string>("");
   const [otp, setOtp] = useState<string>("");
@@ -65,8 +63,7 @@ const Login: FunctionComponent = () => {
     if (generateOTPError) {
       const error = generateOTPError as FetchBaseQueryError;
       const errorData = error.data as { message: string } | undefined;
-      const errorMessage =
-        errorData?.message ?? "Failed to generate OTP. Please try again.";
+      const errorMessage = errorData?.message ?? "Failed to generate OTP. Please try again.";
       toast.error(errorMessage);
     } else if (isGenerateOTPSuccess && generateOTPData) {
       setLoginSection(LoginSection.OTP);
@@ -78,7 +75,7 @@ const Login: FunctionComponent = () => {
     let timer: NodeJS.Timeout;
     if (countdown > 0) {
       timer = setInterval(() => {
-        setCountdown((prev) => prev - 1);
+        setCountdown(prev => prev - 1);
       }, 1000);
     }
     return () => {
@@ -97,8 +94,7 @@ const Login: FunctionComponent = () => {
       if (verifyOTPError) {
         const error = verifyOTPError as FetchBaseQueryError;
         const errorData = error.data as { message: string } | undefined;
-        const errorMessage =
-          errorData?.message ?? "Failed to verify OTP. Please try again.";
+        const errorMessage = errorData?.message ?? "Failed to verify OTP. Please try again.";
         toast.error(errorMessage);
       } else if (isVerifyOTPSuccess && verifyOTPData) {
         localStorage.setItem("accessToken", verifyOTPData.accessToken);
@@ -141,12 +137,9 @@ const Login: FunctionComponent = () => {
               id="remember"
               className="h-4 w-4 rounded border-2 border-[#E5E7EB] text-blue-600 focus:ring-blue-500 cursor-pointer"
               checked={rememberMe}
-              onChange={(e) => setRememberMe(e.target.checked)}
+              onChange={e => setRememberMe(e.target.checked)}
             />
-            <label
-              htmlFor="remember"
-              className="text-sm text-[#49454F] cursor-pointer"
-            >
+            <label htmlFor="remember" className="text-sm text-[#49454F] cursor-pointer">
               Remember me
             </label>
           </div>
@@ -169,7 +162,7 @@ const Login: FunctionComponent = () => {
             type="text"
             inputMode="numeric"
             value={otp}
-            onChange={(e) => setOtp(e.target.value)}
+            onChange={e => setOtp(e.target.value)}
             placeholder="Enter verification code"
             className="w-full rounded-xs pt-0"
           />
@@ -178,9 +171,7 @@ const Login: FunctionComponent = () => {
   };
 
   const isSubmitDisabled =
-    loginSection === LoginSection.EMAIL
-      ? !email || !!emailError
-      : !otp || otp.length < 4;
+    loginSection === LoginSection.EMAIL ? !email || !!emailError : !otp || otp.length < 4;
 
   const handleContinue = () => {
     if (loginSection === LoginSection.EMAIL) {
@@ -208,14 +199,10 @@ const Login: FunctionComponent = () => {
       <div className="flex-1 flex flex-col items-center justify-center">
         <div className="sm:w-1/2 w-[90%] flex flex-col gap-6">
           <div className="flex flex-col gap-2">
-            {loginSection === LoginSection.EMAIL && (
-              <h1 className="text-[22px]">Welcome to</h1>
-            )}
+            {loginSection === LoginSection.EMAIL && <h1 className="text-[22px]">Welcome to</h1>}
             <div className="flex items-center gap-2">
               <LifelineLogo className="cursor-pointer" />
-              <h1 className="text-[28px] font-[ReplayPro] font-semibold text-[#081033]">
-                Ally
-              </h1>
+              <h1 className="text-[28px] font-[ReplayPro] font-semibold text-[#081033]">Ally</h1>
             </div>
           </div>
           <div className="flex flex-col">
@@ -229,9 +216,7 @@ const Login: FunctionComponent = () => {
               {isLoading ? (
                 <div className="flex items-center justify-center">
                   <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-[5px] animate-spin mr-2"></div>
-                  {loginSection === LoginSection.EMAIL
-                    ? "Generating OTP..."
-                    : "Signing in..."}
+                  {loginSection === LoginSection.EMAIL ? "Generating OTP..." : "Signing in..."}
                 </div>
               ) : (
                 "Continue"

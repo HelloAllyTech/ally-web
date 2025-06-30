@@ -15,7 +15,7 @@ on:
         required: false
         type: string
         description: Reason for manual deployment (optional)
-        default: 'Manual deployment of all services'
+        default: "Manual deployment of all services"
 
 permissions:
   actions: write

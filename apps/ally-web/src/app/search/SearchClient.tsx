@@ -1,13 +1,13 @@
-'use client';
+"use client";
 
-import { useRouter } from 'next/navigation';
-import { useState } from 'react';
-import { logger } from '@ally-ui-mono/ui-shared';
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { logger } from "@ally-ui-mono/ui-shared";
 
-import { ResourceSearch } from '@ally-ui-mono/ui-shared';
-import { Resource } from 'libs/ui-shared/src/types';
-import { fetchReferenceDocuments, initialFetchLimit } from './api';
-import { useEffect } from 'react';
+import { ResourceSearch } from "@ally-ui-mono/ui-shared";
+import { Resource } from "libs/ui-shared/src/types";
+import { fetchReferenceDocuments, initialFetchLimit } from "./api";
+import { useEffect } from "react";
 
 interface SearchClientProps {
   searchQuery: string;
@@ -31,13 +31,16 @@ export default function SearchClient({
     setDocuments(initialDocuments);
   }, [initialDocuments]);
 
-
   const onSearch = (searchTerm: string) => {
-    router.push(`/search?q=${encodeURIComponent(searchTerm)}&category=${encodeURIComponent(category)}`);
+    router.push(
+      `/search?q=${encodeURIComponent(searchTerm)}&category=${encodeURIComponent(category)}`,
+    );
   };
 
   const onCategoryChange = (newCategory: string) => {
-    router.push(`/search?q=${encodeURIComponent(searchQuery)}&category=${encodeURIComponent(newCategory)}`);
+    router.push(
+      `/search?q=${encodeURIComponent(searchQuery)}&category=${encodeURIComponent(newCategory)}`,
+    );
   };
 
   const onInfiniteScroll = async () => {
@@ -75,4 +78,4 @@ export default function SearchClient({
       />
     </main>
   );
-} 
+}

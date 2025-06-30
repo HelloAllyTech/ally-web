@@ -7,27 +7,27 @@
 .react-calendar__tile {
   border-radius: 16px !important;
   padding: 8px 0px !important;
-  color: #1B1B1B !important;
+  color: #1b1b1b !important;
 }
 
 /* Style for disabled dates */
 .react-calendar__tile:disabled {
   background: none !important;
   cursor: default !important;
-  color: #C6C6C6 !important;
+  color: #c6c6c6 !important;
 }
 
 .react-calendar__tile--now {
   background: none !important;
-  color: #1480FB !important;
+  color: #1480fb !important;
 }
 
 /* Styles for single date selection */
 .singleSelected {
-  background: #DAE9FC !important;
+  background: #dae9fc !important;
 
   & abbr {
-    color: #1480FB !important;
+    color: #1480fb !important;
   }
 }
 
@@ -35,7 +35,7 @@
 .rangeStart,
 .rangeEnd,
 .rangeBetween {
-  background: #82B7F4 !important;
+  background: #82b7f4 !important;
   color: #fff !important;
 }
 
@@ -51,10 +51,11 @@
   border-bottom-left-radius: 0 !important;
 }
 
-.rangeStart, .rangeEnd {
+.rangeStart,
+.rangeEnd {
   & abbr {
     color: #fff !important;
-    background-color: #1480FB !important;
+    background-color: #1480fb !important;
     padding: 4px 8px !important;
     border-radius: 16px !important;
   }
@@ -70,5 +71,5 @@
 }
 
 .react-calendar__month-view__days__day--neighboringMonth {
-  color: #C6C6C6 !important;
+  color: #c6c6c6 !important;
 }

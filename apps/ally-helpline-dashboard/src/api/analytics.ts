@@ -7,7 +7,7 @@ import {
 } from "@/pages/analytics/types";
 
 const analyticsAPI = baseAPI.injectEndpoints({
-  endpoints: (builder) => ({
+  endpoints: builder => ({
     getDashboardUrl: builder.query<GetDashboardUrlResponse, { dashboardId: string }>({
       query: ({ dashboardId }) => `/analytics/dashboard/${dashboardId}`,
     }),
@@ -15,7 +15,7 @@ const analyticsAPI = baseAPI.injectEndpoints({
       query: () => "/analytics/dashboard",
     }),
     getCounselorStats: builder.query<GetCounselorStatsResponse, GetCounselorStatsRequest>({
-      query: (params) => ({
+      query: params => ({
         url: "analytics/counselor-stats",
         method: "GET",
         params: params ? params : undefined,

@@ -6,7 +6,7 @@ import { ArticleGridProps } from "./types";
 const ArticleGrid: FC<ArticleGridProps> = ({ articles, onArticleClick }) => {
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-      {articles.map((article) => (
+      {articles.map(article => (
         <ArticleCard
           key={article.id}
           title={article.title}

@@ -32,12 +32,8 @@ const Confirm = ({
     <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
       <div className="bg-white rounded-lg py-4 px-6 w-full max-w-[420px] border border-gray-200 flex flex-col gap-4">
         <div>
-          {title && (
-            <h3 className="text-[15px] font-[600] text-[#47464F] mb-2">{title}</h3>
-          )}
-          <div className="text-[15px] text-[#47464F]">
-            {text}
-          </div>
+          {title && <h3 className="text-[15px] font-[600] text-[#47464F] mb-2">{title}</h3>}
+          <div className="text-[15px] text-[#47464F]">{text}</div>
         </div>
         <div className="flex gap-2 justify-end">
           <Button
@@ -57,9 +53,7 @@ const Confirm = ({
             }}
             disabled={isLoading}
             className={`py-2.5 flex-1 px-6 text-center text-[15px] font-medium text-white rounded-full disabled:opacity-50 ${
-              destructive
-                ? "bg-[#F93535] hover:bg-[#F93535]"
-                : "bg-indigo-600 hover:bg-indigo-700"
+              destructive ? "bg-[#F93535] hover:bg-[#F93535]" : "bg-indigo-600 hover:bg-indigo-700"
             }`}
           >
             {isLoading ? "..." : confirmText}

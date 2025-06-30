@@ -30,22 +30,13 @@ const CallSummary: FC<CallSummaryProps> = ({
   const [summaryData, setSummaryData] = useState(null);
   const [searchedLocations, setSearchedLocations] = useState(null);
 
-  const { data: visibleFields, isLoading: isGetSummaryFieldsLoading } =
-    useGetSummaryFieldsQuery();
-  const [updateCallSummary, { isLoading: isUpdateLoading }] =
-    useUpdateCallSummaryMutation();
+  const { data: visibleFields, isLoading: isGetSummaryFieldsLoading } = useGetSummaryFieldsQuery();
+  const [updateCallSummary, { isLoading: isUpdateLoading }] = useUpdateCallSummaryMutation();
   const [getTags, { isLoading: isGetTagsLoading }] = useGetTagsMutation();
-  const { data: locations, isLoading: isGetLocationsLoading } =
-    useGetLocationsQuery();
-  const [searchLocations, { isLoading: isSearchLocationsLoading }] =
-    useLazySearchLocationsQuery();
+  const { data: locations, isLoading: isGetLocationsLoading } = useGetLocationsQuery();
+  const [searchLocations, { isLoading: isSearchLocationsLoading }] = useLazySearchLocationsQuery();
 
-  const {
-    enhancing,
-    EnhanceButton,
-    EnhancementLoadingSkeleton,
-    isEnhanceLoading,
-  } = useEnhance();
+  const { enhancing, EnhanceButton, EnhancementLoadingSkeleton, isEnhanceLoading } = useEnhance();
 
   const isLoading =
     isGetSummaryFieldsLoading ||
@@ -94,9 +85,7 @@ const CallSummary: FC<CallSummaryProps> = ({
   const getDropdownOptions = (key: string, options: string[]) => {
     if (key === SummaryFieldKey.Location) {
       const locationData = searchedLocations || locations?.data || [];
-      return (
-        locationData.map(({ city, state }) => `${city} - ${state}`) || []
-      );
+      return locationData.map(({ city, state }) => `${city} - ${state}`) || [];
     }
     return options ?? [];
   };
@@ -109,15 +98,11 @@ const CallSummary: FC<CallSummaryProps> = ({
       case SummaryFieldKey.CallId:
         return callSummary?.details?.chatId || summaryData.callId;
       case SummaryFieldKey.CallDuration: {
-        const duration =
-          callSummary?.details?.callDuration || summaryData.callDuration;
+        const duration = callSummary?.details?.callDuration || summaryData.callDuration;
         return `${Math.floor(Number(duration) / 60)} minutes`;
       }
       case SummaryFieldKey.CallDate:
-        return getFormattedDateTime(
-          callSummary?.details?.startTime,
-          "do MMMM yyyy",
-        );
+        return getFormattedDateTime(callSummary?.details?.startTime, "do MMMM yyyy");
       case SummaryFieldKey.CallTime: {
         return `${getFormattedDateTime(callSummary?.startedAt, "HH:mm")} - ${getFormattedDateTime(
           callSummary?.endedAt,
@@ -156,9 +141,7 @@ const CallSummary: FC<CallSummaryProps> = ({
               value={value ?? "--"}
               valueClassName={`${field.isEditable ? "text-[#1A1A1A]" : "text-[#9CA3AF]"} 
                 text-[16px] font-['IBM_Plex_Serif']`}
-              onChange={(value) =>
-                setSummaryData((prev) => ({ ...prev, [field.key]: value }))
-              }
+              onChange={value => setSummaryData(prev => ({ ...prev, [field.key]: value }))}
               onHandleSearch={field.key === SummaryFieldKey.Location ? onHandleSearch : undefined}
               options={getDropdownOptions(field.key, field.options)}
             />
@@ -172,8 +155,8 @@ const CallSummary: FC<CallSummaryProps> = ({
             )}
             <TextField
               value={enhancing === field.key ? "" : value || ""}
-              onChange={(e) =>
-                setSummaryData((prev) => ({
+              onChange={e =>
+                setSummaryData(prev => ({
                   ...prev,
                   [field.key]: e.target.value,
                 }))
@@ -190,14 +173,13 @@ const CallSummary: FC<CallSummaryProps> = ({
               placeholder={enhancing === field.key ? "" : field.placeholder}
               showBorder={false}
               InputProps={{
-                startAdornment:
-                  enhancing === field.key && EnhancementLoadingSkeleton,
+                startAdornment: enhancing === field.key && EnhancementLoadingSkeleton,
                 endAdornment: field.isEnhanceable && (
                   <EnhanceButton
                     fieldName={field.key}
                     inputText={value}
-                    updateValue={(text) =>
-                      setSummaryData((prev) => ({
+                    updateValue={text =>
+                      setSummaryData(prev => ({
                         ...prev,
                         [field.key]: text,
                       }))
@@ -219,8 +201,8 @@ const CallSummary: FC<CallSummaryProps> = ({
                 <TextField
                   className={`${field.isEditable ? "" : "pointer-events-none"}`}
                   value={value ?? "--"}
-                  onChange={(e) =>
-                    setSummaryData((prev) => ({
+                  onChange={e =>
+                    setSummaryData(prev => ({
                       ...prev,
                       [field.key]: e.target.value,
                     }))
@@ -235,9 +217,7 @@ const CallSummary: FC<CallSummaryProps> = ({
                 />
               </div>
             </div>
-            {field.key === "clientId" && (
-              <Divider sx={{ width: "90%", marginTop: "6px" }} />
-            )}
+            {field.key === "clientId" && <Divider sx={{ width: "90%", marginTop: "6px" }} />}
           </div>
         );
     }
@@ -287,17 +267,13 @@ const CallSummary: FC<CallSummaryProps> = ({
                 SummarySectionKey.SessionSummary,
               ].includes(key)}
             >
-              {sectionFields.map((field) => getFieldDisplay(field))}
+              {sectionFields.map(field => getFieldDisplay(field))}
             </Accordion>
           );
         })}
       </div>
       <div className="flex justify-center pt-4">
-        <Button
-          className="rounded-[100px]"
-          onClick={handleSubmit}
-          disabled={isLoading}
-        >
+        <Button className="rounded-[100px]" onClick={handleSubmit} disabled={isLoading}>
           {isUpdateLoading || isGetTagsLoading ? "Submitting..." : "Submit"}
         </Button>
       </div>

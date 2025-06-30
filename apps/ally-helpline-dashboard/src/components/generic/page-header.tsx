@@ -9,12 +9,7 @@ interface PageHeaderProps {
   onLogout?: () => void;
 }
 
-const PageHeader = ({
-  title,
-  showSearch = true,
-  rightContent,
-  onLogout,
-}: PageHeaderProps) => {
+const PageHeader = ({ title, showSearch = true, rightContent, onLogout }: PageHeaderProps) => {
   return (
     <div className="bg-gray-800 px-[32px] py-3 top-0 sticky">
       <div className="flex items-center justify-between">

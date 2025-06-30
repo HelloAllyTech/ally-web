@@ -1,4 +1,10 @@
-import { BaseQueryFn, createApi, FetchArgs, fetchBaseQuery, FetchBaseQueryError } from "@reduxjs/toolkit/query/react";
+import {
+  BaseQueryFn,
+  createApi,
+  FetchArgs,
+  fetchBaseQuery,
+  FetchBaseQueryError,
+} from "@reduxjs/toolkit/query/react";
 import { logger } from "@ally-ui-mono/ui-shared";
 
 const API_URL = import.meta.env.VITE_API_BASE_URL;
@@ -17,7 +23,7 @@ const handleLogout = () => {
 
 const baseQuery = fetchBaseQuery({
   baseUrl: API_URL + "/api/" + VITE_API_VERSION,
-  prepareHeaders: (headers) => {
+  prepareHeaders: headers => {
     const token = localStorage.getItem("accessToken");
     if (token) {
       headers.set("authorization", `Bearer ${token}`);
@@ -55,7 +61,7 @@ const baseQueryWithReauth: BaseQueryFn<string | FetchArgs, unknown, FetchBaseQue
         const refreshResult = await baseQuery(
           { url: "/auth/refresh", method: "POST", body: { refreshToken } },
           store,
-          extraOptions
+          extraOptions,
         );
 
         if (!refreshResult.data) {
@@ -63,7 +69,7 @@ const baseQueryWithReauth: BaseQueryFn<string | FetchArgs, unknown, FetchBaseQue
         }
 
         const tokens = refreshResult.data as RefreshResponse;
-        
+
         // Store the new tokens
         localStorage.setItem("accessToken", tokens.accessToken);
         localStorage.setItem("refreshToken", tokens.refreshToken);

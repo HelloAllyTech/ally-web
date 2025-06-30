@@ -2,24 +2,16 @@ import { useSelector } from "react-redux";
 
 import { RootState, store } from "@/store/store";
 import { useLazyGetUserQuery, useLazyGetPermissionsQuery } from "@/api/auth";
-import {
-  setUser,
-  authenticate,
-  unauthenticate,
-  setPermissions,
-} from "@/reducer/userReducer";
+import { setUser, authenticate, unauthenticate, setPermissions } from "@/reducer/userReducer";
 import { logger } from "@ally-ui-mono/ui-shared";
 
 export const useUser = () => {
-  const isAuthenticated = useSelector(
-    (state: RootState) => state.user.isAuthenticated
-  );
+  const isAuthenticated = useSelector((state: RootState) => state.user.isAuthenticated);
   const user = useSelector((state: RootState) => state.user.user);
   const permissions = useSelector((state: RootState) => state.user.permissions);
 
   const [getUser, { isLoading: isUserLoading }] = useLazyGetUserQuery();
-  const [getPermissions, { isLoading: isPermissionsLoading }] =
-    useLazyGetPermissionsQuery();
+  const [getPermissions, { isLoading: isPermissionsLoading }] = useLazyGetPermissionsQuery();
 
   const checkAuth = async () => {
     try {

@@ -21,9 +21,7 @@ const CallInterface: FC<CallInterfaceProps> = ({
 
     const updateElapsedTime = () => {
       const now = Date.now();
-      const diffInSeconds = Math.floor(
-        (now - Date.parse(activeChat.startedAt)) / 1000
-      );
+      const diffInSeconds = Math.floor((now - Date.parse(activeChat.startedAt)) / 1000);
       setSeconds(diffInSeconds);
     };
 
@@ -36,13 +34,9 @@ const CallInterface: FC<CallInterfaceProps> = ({
   const getEmptyScreen = () => {
     let message;
     if (isUserJoined === false) {
-      message = isCounsellor
-        ? "Participant left the call"
-        : "Counsellor left the call";
+      message = isCounsellor ? "Participant left the call" : "Counsellor left the call";
     } else if (!isUserJoined) {
-      message = isCounsellor
-        ? "Session is starting now.."
-        : "Connecting to your counselor...";
+      message = isCounsellor ? "Session is starting now.." : "Connecting to your counselor...";
     }
     return (
       <motion.div
@@ -75,11 +69,11 @@ const CallInterface: FC<CallInterfaceProps> = ({
           </div>
           {/* Hidden Audio Element */}
           <audio
-            ref={(audio) => {
+            ref={audio => {
               if (audio) {
                 audio.srcObject = remoteStreamRef.current;
                 audio.onloadedmetadata = () => {
-                  audio.play().catch((e) => console.error("Audio playback failed:", e));
+                  audio.play().catch(e => console.error("Audio playback failed:", e));
                 };
               }
             }}

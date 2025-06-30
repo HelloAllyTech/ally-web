@@ -52,4 +52,4 @@ const ExpandingSection: FC<ExpandingSectionProps> = ({
   );
 };
 
-export default ExpandingSection; 
+export default ExpandingSection;

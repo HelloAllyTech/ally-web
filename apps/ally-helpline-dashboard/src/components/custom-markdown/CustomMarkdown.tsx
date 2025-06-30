@@ -30,7 +30,7 @@ const CustomMarkdown: FunctionComponent<{ content: string; className?: string }>
           parts.push(
             <strong key={`bold-${parts.length}`} className="font-semibold">
               {boldMatch[2]}
-            </strong>
+            </strong>,
           );
 
           // Update remaining text
@@ -59,29 +59,23 @@ const CustomMarkdown: FunctionComponent<{ content: string; className?: string }>
         if (currentSection) {
           if (currentSection.type === "title") {
             parsedContent.push(
-              <h3
-                key={`title-${parsedContent.length}`}
-                className="font-semibold mb-2"
-              >
+              <h3 key={`title-${parsedContent.length}`} className="font-semibold mb-2">
                 {parseBoldAndText(currentSection.content[0])}
-              </h3>
+              </h3>,
             );
           } else if (currentSection.type === "list") {
             parsedContent.push(
-              <ul
-                key={`list-${parsedContent.length}`}
-                className="list-disc pl-5 mb-2"
-              >
+              <ul key={`list-${parsedContent.length}`} className="list-disc pl-5 mb-2">
                 {currentSection.content.map((item, idx) => (
                   <li key={getKeyFromIndex(idx, "markdown-list")}>{parseBoldAndText(item)}</li>
                 ))}
-              </ul>
+              </ul>,
             );
           } else if (currentSection.type === "text") {
             parsedContent.push(
               <p key={`text-${parsedContent.length}`} className="mb-2">
-                {currentSection.content.map((line) => parseBoldAndText(line))}
-              </p>
+                {currentSection.content.map(line => parseBoldAndText(line))}
+              </p>,
             );
           }
         }
@@ -95,17 +89,14 @@ const CustomMarkdown: FunctionComponent<{ content: string; className?: string }>
             // Close previous section
             parsedContent.push(
               currentSection.type === "title" ? (
-                <h3
-                  key={`title-${parsedContent.length}`}
-                  className="text-sm font-semibold mb-2"
-                >
+                <h3 key={`title-${parsedContent.length}`} className="text-sm font-semibold mb-2">
                   {parseBoldAndText(currentSection.content[0])}
                 </h3>
               ) : currentSection.type === "text" ? (
                 <p key={`text-${parsedContent.length}`} className="mb-2">
-                  {currentSection.content.map((line) => parseBoldAndText(line))}
+                  {currentSection.content.map(line => parseBoldAndText(line))}
                 </p>
-              ) : null
+              ) : null,
             );
           }
           currentSection = { type: "list", content: [listItemMatch[1]] };
@@ -120,22 +111,16 @@ const CustomMarkdown: FunctionComponent<{ content: string; className?: string }>
             // Close previous section
             parsedContent.push(
               currentSection.type === "title" ? (
-                <h3
-                  key={`title-${parsedContent.length}`}
-                  className="text-sm font-semibold mb-2"
-                >
+                <h3 key={`title-${parsedContent.length}`} className="text-sm font-semibold mb-2">
                   {parseBoldAndText(currentSection.content[0])}
                 </h3>
               ) : currentSection.type === "list" ? (
-                <ul
-                  key={`list-${parsedContent.length}`}
-                  className="list-disc pl-5 mb-2"
-                >
+                <ul key={`list-${parsedContent.length}`} className="list-disc pl-5 mb-2">
                   {currentSection.content.map((item, idx) => (
                     <li key={getKeyFromIndex(idx, "markdown-list")}>{parseBoldAndText(item)}</li>
                   ))}
                 </ul>
-              ) : null
+              ) : null,
             );
           }
           currentSection = { type: "text", content: [line] };
@@ -148,29 +133,23 @@ const CustomMarkdown: FunctionComponent<{ content: string; className?: string }>
       if (index === lines.length - 1 && currentSection) {
         if (currentSection.type === "title") {
           parsedContent.push(
-            <h3
-              key={`title-${parsedContent.length}`}
-              className="text-sm font-semibold mb-2"
-            >
+            <h3 key={`title-${parsedContent.length}`} className="text-sm font-semibold mb-2">
               {parseBoldAndText(currentSection.content[0])}
-            </h3>
+            </h3>,
           );
         } else if (currentSection.type === "list") {
           parsedContent.push(
-            <ul
-              key={`list-${parsedContent.length}`}
-              className="list-disc pl-5 mb-2"
-            >
+            <ul key={`list-${parsedContent.length}`} className="list-disc pl-5 mb-2">
               {currentSection.content.map((item, idx) => (
                 <li key={getKeyFromIndex(idx, "markdown-list")}>{parseBoldAndText(item)}</li>
               ))}
-            </ul>
+            </ul>,
           );
         } else if (currentSection.type === "text") {
           parsedContent.push(
             <p key={`text-${parsedContent.length}`} className="mb-2">
-              {currentSection.content.map((line) => parseBoldAndText(line))}
-            </p>
+              {currentSection.content.map(line => parseBoldAndText(line))}
+            </p>,
           );
         }
       }

@@ -10,8 +10,7 @@ export const store = configureStore({
     user: userSlice.reducer,
     calls: callsSlice.reducer,
   },
-  middleware: (getDefaultMiddleware) =>
-    getDefaultMiddleware().concat(baseAPI.middleware),
+  middleware: getDefaultMiddleware => getDefaultMiddleware().concat(baseAPI.middleware),
 });
 
 // Infer the `RootState` and `AppDispatch` types from the store itself

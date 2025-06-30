@@ -15,24 +15,14 @@ const CallControls: FC<CallControlsProps> = ({
 }) => {
   return (
     <div className="z-10 absolute bottom-10 w-full flex justify-center items-center gap-4 bg-gradient-to-b from-transparent to-white  pt-[100px]">
-      <button
-        disabled={!isUserJoined}
-        onClick={onMuteButtonClick}
-        className="w-[56px] h-[56px]"
-      >
+      <button disabled={!isUserJoined} onClick={onMuteButtonClick} className="w-[56px] h-[56px]">
         {isMuted ? <NoRecord /> : <Record />}
       </button>
-      <button
-        onClick={onCutCallButtonClick}
-        className="w-[56px] h-[56px]"
-      >
+      <button onClick={onCutCallButtonClick} className="w-[56px] h-[56px]">
         <CutCall />
       </button>
       {isCounsellor && (
-        <button
-          disabled={!isUserJoined}
-          className="w-[56px] h-[56px]"
-        >
+        <button disabled={!isUserJoined} className="w-[56px] h-[56px]">
           {isFocusMode ? (
             <FocusOn onClick={() => onFocusButtonClick(false)} />
           ) : (

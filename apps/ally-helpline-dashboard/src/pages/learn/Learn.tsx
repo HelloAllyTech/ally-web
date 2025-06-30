@@ -12,7 +12,7 @@ const categories = [
   "Mindfulness",
   "Work-Life Balance",
   "Sleep",
-  "Relationships"
+  "Relationships",
 ];
 
 const Learn: FC = () => {
@@ -20,10 +20,10 @@ const Learn: FC = () => {
   const [selectedCategory, setSelectedCategory] = useState("All Articles");
 
   const selectedArticleId = searchParams.get("articleId");
-  
-  const selectedArticle = useMemo(() => 
-    articles.find(article => article.id === selectedArticleId),
-    [selectedArticleId]
+
+  const selectedArticle = useMemo(
+    () => articles.find(article => article.id === selectedArticleId),
+    [selectedArticleId],
   );
 
   const handleArticleClick = (articleId: string) => {
@@ -49,17 +49,10 @@ const Learn: FC = () => {
     <div className="p-6 h-full flex flex-col gap-4">
       <div className="flex justify-between items-center">
         <h1 className="font-medium text-[#47464F]">Learn & Grow</h1>
-        <Dropdown
-          value={selectedCategory}
-          options={categories}
-          onChange={setSelectedCategory}
-        />
+        <Dropdown value={selectedCategory} options={categories} onChange={setSelectedCategory} />
       </div>
       {articles.length > 0 ? (
-        <ArticleGrid
-          articles={articles}
-          onArticleClick={handleArticleClick}
-        />
+        <ArticleGrid articles={articles} onArticleClick={handleArticleClick} />
       ) : (
         <div className="text-center text-gray-500 py-8">
           No articles found matching your search criteria

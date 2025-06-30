@@ -3,7 +3,11 @@ import { Tabs, Tab } from "@mui/material";
 
 import { ActionDialog, Drawer, TextField } from "@/components";
 import { Delete, Download, Edit } from "@/assets/icons";
-import { useLazyExportCallSummaryQuery, useUpdateCallInfoMutation, useUpdateCallSummaryMutation } from "@/api/callSummary";
+import {
+  useLazyExportCallSummaryQuery,
+  useUpdateCallInfoMutation,
+  useUpdateCallSummaryMutation,
+} from "@/api/callSummary";
 import CallSummary from "@/pages/post-call-summary/components/CallSummary";
 import { useFileExport } from "@/hooks";
 import { logger } from "@ally-ui-mono/ui-shared";
@@ -18,12 +22,17 @@ declare global {
   }
 }
 
-const SummarySideBar: FC<SummarySideBarProps> = ({ callSummary, refetchCallLogs, setCallSummary }) => {
+const SummarySideBar: FC<SummarySideBarProps> = ({
+  callSummary,
+  refetchCallLogs,
+  setCallSummary,
+}) => {
   const [selectedTab, setSelectedTab] = useState(1);
   const [selectedComment, setSelectedComment] = useState<string>("");
   const [summaryName, setSummaryName] = useState<string>("");
   const [isRenaming, setIsRenaming] = useState<boolean>(false);
-  const [deleteDialogData, setDeleteDialogData] = useState<DeleteDialogData>(defaultDeleteDialogData);
+  const [deleteDialogData, setDeleteDialogData] =
+    useState<DeleteDialogData>(defaultDeleteDialogData);
 
   const summaryNameRef = useRef<HTMLInputElement>(null);
 
@@ -93,7 +102,7 @@ const SummarySideBar: FC<SummarySideBarProps> = ({ callSummary, refetchCallLogs,
     if (!value.trim() || value === callSummary?.details?.callInfo?.summaryName) {
       setIsRenaming(false);
       return;
-    };
+    }
     try {
       await updateCallInfo({ chatId: callSummary?.id, callInfo: { summaryName: value } });
     } catch (error) {
@@ -114,26 +123,24 @@ const SummarySideBar: FC<SummarySideBarProps> = ({ callSummary, refetchCallLogs,
     // TODO: check if comments are correctly destructured
     const highlightedMessage = callSummary?.details?.comments?.length
       ? callSummary?.details?.comments.reduce((text, { comment }) => {
-        const regex = new RegExp(`(${comment})`, "gi");
-        return text.replace(
-          regex,
-          selectedComment === comment
-            ? `<button
+          const regex = new RegExp(`(${comment})`, "gi");
+          return text.replace(
+            regex,
+            selectedComment === comment
+              ? `<button
                 onclick="window.handleCommentClick('${comment}')"
                 style="background-color: #FFF9E6; border-bottom: 2px solid #fef08a; pointer: cursor;">$1
                 </button>`
-            : `<button
+              : `<button
                 onclick="window.handleCommentClick('${comment}')"
-                style="border-bottom: 2px solid #fef08a; cursor: pointer;">$1</button>`
-        );
-      }, message)
+                style="border-bottom: 2px solid #fef08a; cursor: pointer;">$1</button>`,
+          );
+        }, message)
       : message;
 
     return (
       <div key={`${speaker}-${index}`} className="flex">
-        <div className="text-sm text-gray-500 w-[40px]">
-          {(0.01 + index / 100).toFixed(2)}
-        </div>
+        <div className="text-sm text-gray-500 w-[40px]">{(0.01 + index / 100).toFixed(2)}</div>
         <div className="flex-1 text-sm">
           <span className="font-semibold">{speaker}: </span>
           <span
@@ -145,22 +152,24 @@ const SummarySideBar: FC<SummarySideBarProps> = ({ callSummary, refetchCallLogs,
         </div>
       </div>
     );
-
   };
 
   const renderTranscripts = () => {
-    const transcriptArray = callSummary?.details?.transcript?.split("\n")?.filter((line: string) => line.trim() !== "");
+    const transcriptArray = callSummary?.details?.transcript
+      ?.split("\n")
+      ?.filter((line: string) => line.trim() !== "");
     return (
       <div className="flex-1 overflow-y-scroll p-4">
         <h3 className="font-semibold text-sm mb-4">Transcript</h3>
-        {callSummary?.details?.transcript?.length > 0 ?
-          (<div className="space-y-4 flex-1 mb-20">
+        {callSummary?.details?.transcript?.length > 0 ? (
+          <div className="space-y-4 flex-1 mb-20">
             {transcriptArray.map((line: string, index: number) => renderTranscript(line, index))}
-          </div>) :
+          </div>
+        ) : (
           <div className="space-y-4 flex-1 mb-20">
             <div className="text-sm text-gray-500">No transcript available</div>
           </div>
-        }
+        )}
       </div>
     );
   };
@@ -176,7 +185,11 @@ const SummarySideBar: FC<SummarySideBarProps> = ({ callSummary, refetchCallLogs,
                 <div
                   key={`comment-${index}`}
                   className={`p-3 rounded-lg border
-                          ${comment === selectedComment ? "border-[#FECA04] bg-[#FFF9E6]" : "bg-white"} `}
+                          ${
+                            comment === selectedComment
+                              ? "border-[#FECA04] bg-[#FFF9E6]"
+                              : "bg-white"
+                          } `}
                 >
                   <>
                     <div
@@ -195,7 +208,6 @@ const SummarySideBar: FC<SummarySideBarProps> = ({ callSummary, refetchCallLogs,
       </>
     );
   };
-
 
   return (
     <Drawer
@@ -225,19 +237,11 @@ const SummarySideBar: FC<SummarySideBarProps> = ({ callSummary, refetchCallLogs,
           sx={{
             "& .MuiButtonBase-root": {
               fontFamily: "IBM_Plex_Serif",
-            }
+            },
           }}
         >
-          <Tab
-            label="Summary"
-            value={1}
-            sx={tabStyles}
-          />
-          <Tab
-            label="Feedback"
-            value={2}
-            sx={tabStyles}
-          />
+          <Tab label="Summary" value={1} sx={tabStyles} />
+          <Tab label="Feedback" value={2} sx={tabStyles} />
         </Tabs>
 
         {selectedTab === 1 && (
@@ -246,7 +250,7 @@ const SummarySideBar: FC<SummarySideBarProps> = ({ callSummary, refetchCallLogs,
               <TextField
                 inputRef={summaryNameRef}
                 value={summaryName}
-                onChange={(e) => setSummaryName(e.target.value)}
+                onChange={e => setSummaryName(e.target.value)}
                 onBlur={() => onRenameSummary(summaryName)}
                 className={`${isRenaming ? "" : "pointer-events-none"} w-fit`}
                 inputStyles={{ fontSize: "24px", fontWeight: "700", fontFamily: "IBM_Plex_Serif" }}
@@ -260,7 +264,7 @@ const SummarySideBar: FC<SummarySideBarProps> = ({ callSummary, refetchCallLogs,
               isSummaryLoading={isLoading}
               onProceed={() => refetchCallLogs()}
               showInitialLoading={false}
-              setShowInitialLoading={() => { }}
+              setShowInitialLoading={() => {}}
             />
           </div>
         )}

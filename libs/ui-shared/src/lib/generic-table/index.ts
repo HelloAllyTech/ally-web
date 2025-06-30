@@ -1,1 +1,1 @@
-export { default } from './GenericTable';
+export { default } from "./GenericTable";

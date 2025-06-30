@@ -26,67 +26,67 @@ export const ROUTES = {
 } as const;
 
 export const navBarOptions = [
-    {
-      id: TabId.SEARCH,
-      title: "Search",
-      Icon: SearchIcon,
-      path: ROUTES.SEARCH,
-      permission: Permissions.VIEW_NAVBAR_SEARCH
-    },
-    {
-      id: TabId.START_SESSION,
-      title: "Start Session",
-      Icon: StartSessionIcon,
-      path: ROUTES.START_SESSION,
-      permission: Permissions.VIEW_NAVBAR_SEARCH
-    },
-    {
-      id: TabId.CALLS,
-      title: "Logs",
-      Icon: LogsIcon,
-      path: ROUTES.CALLS,
-      permission: Permissions.VIEW_NAVBAR_CALLS
-    },
-    {
-      id:  TabId.ANALYTICS,
-      title: "Stats",
-      Icon: StatsIcon,
-      path: ROUTES.ANALYTICS,
-      permission: Permissions.VIEW_NAVBAR_ANALYTICS
-    },
-    // {
-    //   id: TabId.CALENDER,
-    //   title: "Calender",
-    //   Icon: DateRangeOutlinedIcon,
-    //   path: ROUTES.CALENDER,
-    //   permission: Permissions.VIEW_NAVBAR_CALENDAR
-    // },
-    // {
-    //   id: TabId.LEARN,
-    //   title: "Learn",
-    //   Icon: SearchIcon,
-    //   path: ROUTES.LEARN,
-    //   permission: Permissions.VIEW_NAVBAR_LEARN
-    // },
-    // {
-    //   id: TabId.STRESS_BUSTERS,
-    //   title: "Stress Busters",
-    //   Icon: SearchIcon,
-    //   path: ROUTES.STRESS_BUSTERS,
-    //   permission: Permissions.VIEW_NAVBAR_STRESS_BUSTER
-    // },
-    {
-      id:  TabId.COMMUNITY,
-      title: "Community",
-      Icon: CommunityIcon,
-      path: "https://community.helloally.ai/",
-      permission: ""
-    },
-    // {
-    //   id: TabId.SETTINGS,
-    //   title: "Settings",
-    //   Icon: SettingsOutlinedIcon,
-    //   path: ROUTES.SETTINGS,
-    //   permission: Permissions.VIEW_NAVBAR_SETTINGS
-    // },
-  ];
+  {
+    id: TabId.SEARCH,
+    title: "Search",
+    Icon: SearchIcon,
+    path: ROUTES.SEARCH,
+    permission: Permissions.VIEW_NAVBAR_SEARCH,
+  },
+  {
+    id: TabId.START_SESSION,
+    title: "Start Session",
+    Icon: StartSessionIcon,
+    path: ROUTES.START_SESSION,
+    permission: Permissions.VIEW_NAVBAR_SEARCH,
+  },
+  {
+    id: TabId.CALLS,
+    title: "Logs",
+    Icon: LogsIcon,
+    path: ROUTES.CALLS,
+    permission: Permissions.VIEW_NAVBAR_CALLS,
+  },
+  {
+    id: TabId.ANALYTICS,
+    title: "Stats",
+    Icon: StatsIcon,
+    path: ROUTES.ANALYTICS,
+    permission: Permissions.VIEW_NAVBAR_ANALYTICS,
+  },
+  // {
+  //   id: TabId.CALENDER,
+  //   title: "Calender",
+  //   Icon: DateRangeOutlinedIcon,
+  //   path: ROUTES.CALENDER,
+  //   permission: Permissions.VIEW_NAVBAR_CALENDAR
+  // },
+  // {
+  //   id: TabId.LEARN,
+  //   title: "Learn",
+  //   Icon: SearchIcon,
+  //   path: ROUTES.LEARN,
+  //   permission: Permissions.VIEW_NAVBAR_LEARN
+  // },
+  // {
+  //   id: TabId.STRESS_BUSTERS,
+  //   title: "Stress Busters",
+  //   Icon: SearchIcon,
+  //   path: ROUTES.STRESS_BUSTERS,
+  //   permission: Permissions.VIEW_NAVBAR_STRESS_BUSTER
+  // },
+  {
+    id: TabId.COMMUNITY,
+    title: "Community",
+    Icon: CommunityIcon,
+    path: "https://community.helloally.ai/",
+    permission: "",
+  },
+  // {
+  //   id: TabId.SETTINGS,
+  //   title: "Settings",
+  //   Icon: SettingsOutlinedIcon,
+  //   path: ROUTES.SETTINGS,
+  //   permission: Permissions.VIEW_NAVBAR_SETTINGS
+  // },
+];

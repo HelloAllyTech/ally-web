@@ -6,40 +6,40 @@ on:
       service_name:
         required: true
         type: string
-        description: 'Service name (used directly after project prefix)'
+        description: "Service name (used directly after project prefix)"
       app_path:
         required: true
         type: string
-        description: 'Path to the application directory'
+        description: "Path to the application directory"
       environment:
         required: true
         type: string
-        description: 'Environment to deploy to (dev, stg, prd)'
+        description: "Environment to deploy to (dev, stg, prd)"
       dockerfile_path:
         required: false
         type: string
-        default: 'dockerfile'
-        description: 'Path to Dockerfile relative to app_path'
+        default: "dockerfile"
+        description: "Path to Dockerfile relative to app_path"
       build_command:
         required: false
         type: string
-        default: 'npm run build'
-        description: 'Build command to run'
+        default: "npm run build"
+        description: "Build command to run"
       node_version:
         required: false
         type: string
-        default: '20'
-        description: 'Node.js version to use'
+        default: "20"
+        description: "Node.js version to use"
       port:
         required: false
         type: string
-        default: '8080'
-        description: 'Port the application runs on'
+        default: "8080"
+        description: "Port the application runs on"
       use_build_time_env:
         required: false
         type: string
-        default: 'true'
-        description: 'Enable build-time environment variables from S3'
+        default: "true"
+        description: "Enable build-time environment variables from S3"
 
 permissions:
   id-token: write

@@ -21,11 +21,12 @@ const NavSideBar: FunctionComponent<NavSideBarProps> = ({
   const { permissions, user, logout } = useUser();
 
   //TODO: Remove this once we have a proper permission system
-  const filteredPermissions = user?.role === UserRole.ADMIN ? permissions : [Permissions.VIEW_NAVBAR_SEARCH, ...permissions,];
+  const filteredPermissions =
+    user?.role === UserRole.ADMIN ? permissions : [Permissions.VIEW_NAVBAR_SEARCH, ...permissions];
 
   const [isLogoutConfirmOpen, setIsLogoutConfirmOpen] = useState(false);
   const permittedTabs = navBarOptions.filter(
-    (tab) => !tab.permission || filteredPermissions.includes(tab.permission)
+    tab => !tab.permission || filteredPermissions.includes(tab.permission),
   );
 
   const navigate = useNavigate();
@@ -74,7 +75,9 @@ const NavSideBar: FunctionComponent<NavSideBarProps> = ({
       >
         <Logout />
         <div className="pl-[10px]">
-          <div className="text-[16px] font-[600px] font-['IBM_Plex_Serif'] text-[#444]">Log Out</div>
+          <div className="text-[16px] font-[600px] font-['IBM_Plex_Serif'] text-[#444]">
+            Log Out
+          </div>
         </div>
       </button>
     );
@@ -93,15 +96,11 @@ const NavSideBar: FunctionComponent<NavSideBarProps> = ({
         `}
             onClick={() => onTabClick(id, path)}
           >
-            <Icon
-              className={`${activeTab === id ? "stroke-[#000] stroke-[1px]" : ""
-                }`}
-            />
+            <Icon className={`${activeTab === id ? "stroke-[#000] stroke-[1px]" : ""}`} />
             <div
-              className={`${activeTab === id
-                ? "text-[#000] font-semibold"
-                : "text-[#444] font-medium"
-                } font-['IBM_Plex_Serif'] text-[16px]`}
+              className={`${
+                activeTab === id ? "text-[#000] font-semibold" : "text-[#444] font-medium"
+              } font-['IBM_Plex_Serif'] text-[16px]`}
             >
               {title}
             </div>
@@ -116,10 +115,7 @@ const NavSideBar: FunctionComponent<NavSideBarProps> = ({
 
   const renderCloseButton = () => {
     return (
-      <div
-        className="fixed inset-0 bg-black opacity-50 z-10 md:hidden"
-        onClick={onClose}
-      ></div>
+      <div className="fixed inset-0 bg-black opacity-50 z-10 md:hidden" onClick={onClose}></div>
     );
   };
 

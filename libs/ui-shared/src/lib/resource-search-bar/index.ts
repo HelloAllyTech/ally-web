@@ -1,1 +1,1 @@
-export { default } from './ResourceSearchBar'; 
+export { default } from "./ResourceSearchBar";

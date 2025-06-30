@@ -1,1 +1,1 @@
-export { default } from './SearchHeader';
+export { default } from "./SearchHeader";

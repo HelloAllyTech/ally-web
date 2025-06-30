@@ -1,11 +1,19 @@
-'use client';
+"use client";
 import { FC, useState, useRef, useEffect } from "react";
 import PlayArrow from "@mui/icons-material/PlayArrow";
 
 import { DropdownFieldProps } from "./types";
 import { Dropdown } from ".";
 
-const DropdownField: FC<DropdownFieldProps> = ({ disabled, label, value, onChange, options, valueClassName, onHandleSearch }) => {
+const DropdownField: FC<DropdownFieldProps> = ({
+  disabled,
+  label,
+  value,
+  onChange,
+  options,
+  valueClassName,
+  onHandleSearch,
+}) => {
   const [isOpen, setIsOpen] = useState(false);
 
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -15,8 +23,6 @@ const DropdownField: FC<DropdownFieldProps> = ({ disabled, label, value, onChang
     setIsOpen(false);
   };
 
-
-
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
@@ -25,7 +31,7 @@ const DropdownField: FC<DropdownFieldProps> = ({ disabled, label, value, onChang
     };
 
     document.addEventListener("mousedown", handleClickOutside);
-    
+
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
@@ -37,7 +43,10 @@ const DropdownField: FC<DropdownFieldProps> = ({ disabled, label, value, onChang
         {label && <span>{label}</span>}
         <span className={valueClassName}>{value}</span>
         {!disabled && (
-            <PlayArrow className="w-4 h-4 cursor-pointer rotate-90" onClick={() => setIsOpen((prev) => !prev)} />
+          <PlayArrow
+            className="w-4 h-4 cursor-pointer rotate-90"
+            onClick={() => setIsOpen(prev => !prev)}
+          />
         )}
       </div>
       {isOpen && (

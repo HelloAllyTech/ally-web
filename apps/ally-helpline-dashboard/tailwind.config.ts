@@ -97,8 +97,8 @@ export default {
     hoverOnlyWhenSupported: true,
   },
   experimental: {
-    optimizeUniversalDefaults: true
-  }
+    optimizeUniversalDefaults: true,
+  },
 } satisfies Config;
 
 // TODO: Add .env.example for env field confirmation

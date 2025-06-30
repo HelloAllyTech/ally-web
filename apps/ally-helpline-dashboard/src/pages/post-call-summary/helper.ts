@@ -12,7 +12,7 @@ export const getFormattedDateTime = (dateTime: string, formatString: string) => 
 };
 
 export const getSectionFields = (section: SummarySectionKey, visibleFields: SummaryFieldKey[]) => {
-  return summaryFields.filter((field) => 
-    field.sectionKey === section && visibleFields?.includes(field.key)
+  return summaryFields.filter(
+    field => field.sectionKey === section && visibleFields?.includes(field.key),
   );
 };

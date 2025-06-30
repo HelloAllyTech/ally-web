@@ -1,32 +1,32 @@
-name: 'Deploy to ECS'
-description: 'Deploys application to ECS with task definition updates'
+name: "Deploy to ECS"
+description: "Deploys application to ECS with task definition updates"
 
 inputs:
   image_uri:
-    description: 'Docker image URI'
+    description: "Docker image URI"
     required: true
   ecs_cluster:
-    description: 'ECS cluster name'
+    description: "ECS cluster name"
     required: true
   ecs_service:
-    description: 'ECS service name'
+    description: "ECS service name"
     required: true
   task_definition:
-    description: 'Task definition name'
+    description: "Task definition name"
     required: true
   aws_region:
-    description: 'AWS region'
+    description: "AWS region"
     required: true
   port:
-    description: 'Container port'
+    description: "Container port"
     required: true
-    default: '8080'
+    default: "8080"
   container_name:
-    description: 'Container name'
+    description: "Container name"
     required: true
 
 runs:
-  using: 'composite'
+  using: "composite"
   steps:
     - name: Download current task definition
       shell: bash
@@ -60,4 +60,4 @@ runs:
         echo "- Service: ${{ inputs.ecs_service }}" >> $GITHUB_STEP_SUMMARY
         echo "- Task Definition: ${{ inputs.task_definition }}" >> $GITHUB_STEP_SUMMARY
         echo "- Image: ${{ inputs.image_uri }}" >> $GITHUB_STEP_SUMMARY
-        echo "- Port: ${{ inputs.port }}" >> $GITHUB_STEP_SUMMARY 
+        echo "- Port: ${{ inputs.port }}" >> $GITHUB_STEP_SUMMARY

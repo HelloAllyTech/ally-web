@@ -38,11 +38,6 @@ const userSlice = createSlice({
   },
 });
 
-export const {
-  setUser,
-  authenticate,
-  setUserStatus,
-  unauthenticate,
-  setPermissions,
-} = userSlice.actions;
+export const { setUser, authenticate, setUserStatus, unauthenticate, setPermissions } =
+  userSlice.actions;
 export default userSlice;

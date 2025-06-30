@@ -23,6 +23,11 @@ export interface CallLog {
   endedAt: string;
   details: any;
   client: CallClient;
+  counselor: {
+    id: number;
+    name: string;
+    phone: string;
+  };
 }
 
 export interface GetCallLogsResponse {
@@ -31,8 +36,20 @@ export interface GetCallLogsResponse {
 }
 
 export interface GetCallLogsInput {
-  limit: number;
-  offset: number;
+  limit?: number;
+  offset?: number;
+  sortBy?: string;
+  order?: "ASC" | "DESC";
+  counselorName?: string;
+  clientId?: string;
+  counselorId?: string;
+  startDate?: string;
+  endDate?: string;
+  minDuration?: number;
+  maxDuration?: number;
+  minQualityScore?: number;
+  maxQualityScore?: number;
+  tags?: string;
 }
 
 export interface WaitingClientChat {

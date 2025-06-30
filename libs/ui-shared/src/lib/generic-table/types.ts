@@ -1,24 +1,22 @@
 // Column definition type
-type SortDirection = 'asc' | 'desc' | null;
+type SortDirection = "ASC" | "DESC" | null;
 
 export interface Column<T> {
   key: keyof T | string;
+  icon?: React.ReactNode;
   header: string;
   sortable?: boolean;
   filterable?: boolean;
-  filterOptions?: string[];
+  filterType?: "multiselect" | "singleSelect" | "date" | "number" | "text";
+  filterOptions?: { label: string; value: string }[];
   render?: (value: any, row: T) => React.ReactNode;
   className?: string;
   style?: React.CSSProperties;
 }
 
-export interface TableFilter {
-  [key: string]: string;
-}
-
 export interface TableSort {
   key: string;
-  direction: SortDirection;
+  value: SortDirection;
 }
 
 export interface Pagination {
@@ -31,15 +29,16 @@ export interface GenericTableProps<T> {
   data: T[];
   initialSort?: TableSort;
   initialFilter?: TableFilter;
+  isLoading?: boolean;
+  showSelectedFilters?: boolean;
+  externalFilter?: boolean;
   onRowClick?: (row: T) => void;
   className?: string;
   style?: React.CSSProperties;
   fallbackUI?: React.ReactNode;
-  onSortChange?: (key: string, setSort: React.Dispatch<React.SetStateAction<TableSort>>) => void;
-  onFilterChange?: (
-    key: string,
-    value: string,
-    setFilter: React.Dispatch<React.SetStateAction<TableFilter>>,
-    setPagination: React.Dispatch<React.SetStateAction<Pagination>>
-  ) => void;
-} 
+  handleLoadMore?: () => void;
+  onFilterChange?: (data: any) => void;
+}
+
+// Replace the old TableFilter type
+export type TableFilter = Array<{ key: string; value: string | string[] }>;

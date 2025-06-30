@@ -9,10 +9,10 @@ export default {
     "postcss-import": {},
     "tailwindcss/nesting": {},
     tailwindcss: {
-      config: path.resolve(__dirname, "tailwind.config.ts")
+      config: path.resolve(__dirname, "tailwind.config.ts"),
     },
     autoprefixer: {
-      flexbox: "no-2009"
+      flexbox: "no-2009",
     },
-  }
-}; 
+  },
+};

@@ -83,14 +83,16 @@ export const summarySections = [
     },
     key: SummarySectionKey.DominantFeelings,
     title: "Dominant Feelings",
-  },  {
+  },
+  {
     icon: {
       icon: IssuesWorkedOn,
       alt: "issues-worked-on",
     },
     key: SummarySectionKey.IssuesWorkedOn,
     title: "Issues Worked On",
-  },  {
+  },
+  {
     icon: {
       icon: TherapeuticTechniques,
       alt: "key-therapeutic-techniques",
@@ -114,7 +116,7 @@ export const summarySections = [
     key: SummarySectionKey.HomeworkRecommended,
     title: "Homework Recommended",
   },
-    {
+  {
     icon: {
       icon: PlansForNextCall,
       alt: "plans-for-next-call",
@@ -122,7 +124,7 @@ export const summarySections = [
     key: SummarySectionKey.PlansForNextCall,
     title: "Plans for Next Call",
   },
-    {
+  {
     icon: {
       icon: Tags,
       alt: "tags",
@@ -259,7 +261,8 @@ export const summaryFields: SummaryField[] = [
     isEnhanceable: true,
     key: SummaryFieldKey.CounselingProcessFlow,
     label: "Flow",
-    placeholder: "Capture the flow of conversation, reflections, or shifts in the client’s mood here.",
+    placeholder:
+      "Capture the flow of conversation, reflections, or shifts in the client’s mood here.",
     sectionKey: SummarySectionKey.Flow,
     type: "Multiline",
   },

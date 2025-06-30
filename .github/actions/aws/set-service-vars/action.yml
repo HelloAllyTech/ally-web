@@ -1,39 +1,39 @@
-name: 'Set Service Variables'
-description: 'Generates service-specific names and configurations'
+name: "Set Service Variables"
+description: "Generates service-specific names and configurations"
 
 inputs:
   service_name:
-    description: 'Service name'
+    description: "Service name"
     required: true
   project_prefix:
-    description: 'Project prefix'
+    description: "Project prefix"
     required: true
   project_region:
-    description: 'Project region'
+    description: "Project region"
     required: true
 
 outputs:
   ecs_cluster:
-    description: 'ECS cluster name'
+    description: "ECS cluster name"
     value: ${{ steps.set-vars.outputs.ecs_cluster }}
   ecs_service:
-    description: 'ECS service name'
+    description: "ECS service name"
     value: ${{ steps.set-vars.outputs.ecs_service }}
   ecr_repository_name:
-    description: 'ECR repository name'
+    description: "ECR repository name"
     value: ${{ steps.set-vars.outputs.ecr_repository_name }}
   task_definition:
-    description: 'Task definition name'
+    description: "Task definition name"
     value: ${{ steps.set-vars.outputs.task_definition }}
   s3_bucket:
-    description: 'S3 bucket name'
+    description: "S3 bucket name"
     value: ${{ steps.set-vars.outputs.s3_bucket }}
   container_name:
-    description: 'Container name'
+    description: "Container name"
     value: ${{ steps.set-vars.outputs.container_name }}
 
 runs:
-  using: 'composite'
+  using: "composite"
   steps:
     - name: Set Service Variables
       id: set-vars

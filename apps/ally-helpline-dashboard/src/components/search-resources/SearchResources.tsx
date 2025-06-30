@@ -20,7 +20,6 @@ const SearchResources: FC<SearchResourcesProps> = ({
   const [resources, setResources] = useState<Resource[]>([]);
   const [hasMore, setHasMore] = useState(true);
 
-
   const [getSearchResults, { isLoading: isResourcesLoading }] = useGetSearchResultsMutation();
   const { data: categories } = useGetCategoriesQuery();
 

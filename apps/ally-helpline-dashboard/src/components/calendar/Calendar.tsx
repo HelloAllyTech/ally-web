@@ -37,19 +37,20 @@ const Calendar: FC<CalendarProps> = ({
 
   const getTileClassName = ({ date, view }: { date: Date; view: string }) => {
     if (view === "month") {
-        const [start, end] = value;
-        const isRange = start.toDateString() !== end.toDateString();
-        const isStart = date.toDateString() === start.toDateString();
-        const isEnd = date.toDateString() === end.toDateString();
-        const isBetween = date > start && date < end;
-        const isSingleSelected  = date.toDateString() === start.toDateString() && date.toDateString() === end.toDateString();
-    
-        if (isRange) {
-            if (isStart) return "rangeStart";
-            if (isEnd) return "rangeEnd";
-            if (isBetween) return "rangeBetween";    
-        }
-        if (isSingleSelected) return "singleSelected";   
+      const [start, end] = value;
+      const isRange = start.toDateString() !== end.toDateString();
+      const isStart = date.toDateString() === start.toDateString();
+      const isEnd = date.toDateString() === end.toDateString();
+      const isBetween = date > start && date < end;
+      const isSingleSelected =
+        date.toDateString() === start.toDateString() && date.toDateString() === end.toDateString();
+
+      if (isRange) {
+        if (isStart) return "rangeStart";
+        if (isEnd) return "rangeEnd";
+        if (isBetween) return "rangeBetween";
+      }
+      if (isSingleSelected) return "singleSelected";
     }
     return "";
   };

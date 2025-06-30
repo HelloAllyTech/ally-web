@@ -6,12 +6,7 @@ import { RootState } from "@/store/store";
 import { cn } from "@/utils/tailwind";
 import { ROUTES } from "@/constants/routes";
 import { CopilotIcon } from "@/assets/icons";
-import {
-  ConfirmationBox,
-  Breather,
-  TypingIndicator,
-  CustomMarkdown,
-} from "@/components";
+import { ConfirmationBox, Breather, TypingIndicator, CustomMarkdown } from "@/components";
 import { getKeyFromIndex } from "@/utils/common";
 
 interface ChatMessage {
@@ -90,7 +85,7 @@ const CopilotChat = ({
                 key={getKeyFromIndex(index, "chat-message")}
                 className={cn(
                   "flex w-full animate-message-in opacity-0",
-                  message.isUser ? "justify-end" : "justify-start"
+                  message.isUser ? "justify-end" : "justify-start",
                 )}
               >
                 <div
@@ -164,13 +159,10 @@ const CopilotChat = ({
             text={
               <>
                 <div>
-                  Good Job, {user?.name}. You made use of counselling skills and
-                  counselling techniques. I noticed that you have been in
-                  sessions for a while now.
+                  Good Job, {user?.name}. You made use of counselling skills and counselling
+                  techniques. I noticed that you have been in sessions for a while now.
                 </div>
-                <div className="mt-4">
-                  Would you like to take a two-minute breather?
-                </div>
+                <div className="mt-4">Would you like to take a two-minute breather?</div>
               </>
             }
           />

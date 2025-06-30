@@ -11,11 +11,8 @@ const ConfirmationBox = ({ ...props }: ConfirmationBoxProps) => {
   const {
     text = (
       <div>
-        Good Job. You made use of counselling skills and
-        counselling techniques. I noticed that you have been in sessions for
-        a while now.
-
-        Would you like to take a two-minute breather?
+        Good Job. You made use of counselling skills and counselling techniques. I noticed that you
+        have been in sessions for a while now. Would you like to take a two-minute breather?
       </div>
     ),
     onYes,
@@ -26,8 +23,7 @@ const ConfirmationBox = ({ ...props }: ConfirmationBoxProps) => {
       <div
         className={"rounded-lg px-5 py-4 text-sm mb-4"}
         style={{
-          background:
-            "linear-gradient(134.31deg, #D8C3F9 -105.84%, #EDF7EA -3.5%, #DAE3F8 62.45%)",
+          background: "linear-gradient(134.31deg, #D8C3F9 -105.84%, #EDF7EA -3.5%, #DAE3F8 62.45%)",
         }}
       >
         <div className="flex items-center mb-1">

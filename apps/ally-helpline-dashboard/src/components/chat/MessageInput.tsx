@@ -23,11 +23,11 @@ const MessageInput = ({ onSend, disabled = false }: MessageInputProps) => {
         <textarea
           value={message}
           disabled={disabled}
-          onChange={(e) => setMessage(e.target.value)}
+          onChange={e => setMessage(e.target.value)}
           placeholder="Type your message..."
           className="flex-1 h-auto min-h-[82px] focus:border-[#84A5F0] focus:border-2 max-h-[100px] custom-scrollbar w-full outline-none border rounded-lg pr-9 p-4"
           rows={2}
-          onKeyDown={(e) => {
+          onKeyDown={e => {
             if (e.key === "Enter" && !e.shiftKey) {
               e.preventDefault();
               handleSubmit(e);

@@ -7,7 +7,6 @@ const AudioCallBackgroundWrapper: FunctionComponent<{
   return (
     <div className="w-screen h-screen bg-[#FFF] relative flex flex-col gap-10 justify-center items-center overflow-hidden">
       {children}
-      
     </div>
   );
 };

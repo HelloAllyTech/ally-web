@@ -73,7 +73,7 @@ const CallSummaryStepper: FC<CallSummaryStepperProps> = ({
       aria-label="call summary sections"
       fullWidth
     >
-      {Object.values(SectionType).map((section) => (
+      {Object.values(SectionType).map(section => (
         <StyledToggleButton
           key={section}
           disabled={!completedSections.includes(section)}

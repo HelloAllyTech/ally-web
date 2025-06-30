@@ -22,17 +22,11 @@ export default defineConfig({
     strictPort: true,
     host: true,
   },
-  plugins: [
-    react() as unknown as PluginOption,
-    svgr() as unknown as PluginOption,
-  ],
+  plugins: [react() as unknown as PluginOption, svgr() as unknown as PluginOption],
   resolve: {
     alias: {
       "@": path.resolve(projectRoot, "./src"),
-      "@ally-ui-mono/ui-shared": path.resolve(
-        projectRoot,
-        "../../libs/ui-shared/src",
-      ),
+      "@ally-ui-mono/ui-shared": path.resolve(projectRoot, "../../libs/ui-shared/src"),
       // Add any other aliases from tsconfig.base.json here
     },
   },

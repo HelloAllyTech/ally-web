@@ -1,6 +1,6 @@
-'use client';
-import { ResourceSearch } from '@ally-ui-mono/ui-shared';
-import { useRouter } from 'next/navigation';
+"use client";
+import { ResourceSearch } from "@ally-ui-mono/ui-shared";
+import { useRouter } from "next/navigation";
 
 export default function Index() {
   const router = useRouter();

@@ -21,16 +21,19 @@ A modern, responsive landing page for the Ally platform, built with Next.js. Thi
 ## Getting Started
 
 1. Navigate to the project root:
+
 ```bash
 cd ally-UI-mono
 ```
 
 2. Install dependencies (if not already done):
+
 ```bash
 npm install
 ```
 
 3. Start the development server:
+
 ```bash
 npx nx dev ally-web
 ```
@@ -88,7 +91,7 @@ The application uses a custom design system with CSS variables:
 
 ## Development Guidelines
 
-1. **Components**: 
+1. **Components**:
    - Keep components focused and single-responsibility
    - Use TypeScript for type safety
    - Follow the existing naming conventions
@@ -112,4 +115,4 @@ The application uses a custom design system with CSS variables:
 
 ## License
 
-[Add your license information here] 
+[Add your license information here]

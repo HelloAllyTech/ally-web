@@ -23,17 +23,16 @@ const Health = () => {
             Application Health Status
           </h1>
         </div>
-        
+
         <div className="flex items-center justify-center space-x-3 my-6">
           <CheckCircle className="h-12 w-12 text-green-500" />
-          <p className="text-4xl font-extrabold text-green-500">
-            Healthy
-          </p>
+          <p className="text-4xl font-extrabold text-green-500">Healthy</p>
         </div>
 
         <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
           <p className="text-sm text-gray-500 dark:text-gray-400">
-            All systems are operating normally. This page confirms that the frontend application is running and responsive.
+            All systems are operating normally. This page confirms that the frontend application is
+            running and responsive.
           </p>
           <p className="text-xs text-gray-400 dark:text-gray-500 mt-2">
             Last checked: {lastChecked.toLocaleTimeString()}

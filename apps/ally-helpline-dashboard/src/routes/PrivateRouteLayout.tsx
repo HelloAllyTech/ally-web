@@ -1,12 +1,5 @@
 import { useState, useEffect } from "react";
-import {
-  Route,
-  Routes,
-  Navigate,
-  matchPath,
-  useNavigate,
-  useLocation,
-} from "react-router-dom";
+import { Route, Routes, Navigate, matchPath, useNavigate, useLocation } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { toast } from "sonner";
 
@@ -33,10 +26,7 @@ import { Permissions } from "@/constants/permissions";
 import { navBarOptions, ROUTES } from "@/constants/routes";
 import { CallPicker, NavSideBar } from "@/components";
 import { MenuIcon } from "@/assets/icons";
-import {
-  useAcceptCallMutation,
-  useGetWaitingClientsQuery,
-} from "@/api/audioCall";
+import { useAcceptCallMutation, useGetWaitingClientsQuery } from "@/api/audioCall";
 import { logger } from "@ally-ui-mono/ui-shared";
 
 import PermissionGuardedRoute from "./PermissionGuardedRoute";
@@ -94,14 +84,14 @@ const PrivateRouteLayout = () => {
   }, [pathname]);
 
   const getActiveTab = () =>
-    navBarOptions.find((option) => option.path === pathname)?.id ?? TabId.CALLS;
+    navBarOptions.find(option => option.path === pathname)?.id ?? TabId.CALLS;
 
   const handleTabChange = (path: string) => {
     navigate(path);
   };
 
   const isPathExcluded = (currentPath: string, excludedPaths: string[]) => {
-    return excludedPaths.some((path) => matchPath(path, currentPath));
+    return excludedPaths.some(path => matchPath(path, currentPath));
   };
 
   const onAcceptCall = async () => {
@@ -114,10 +104,7 @@ const PrivateRouteLayout = () => {
       setWaitingClients([]);
       navigate(ROUTES.AUDIO_CALL);
     } catch (error) {
-      toast.error(
-        error?.response?.data?.detail ??
-          "Something went wrong. Please try again later!"
-      );
+      toast.error(error?.response?.data?.detail ?? "Something went wrong. Please try again later!");
       logger.info(`Error accepting chat: ${error}`);
     }
   };
@@ -139,26 +126,20 @@ const PrivateRouteLayout = () => {
             onClose={toggleSidebar}
           />
         )}
-        <div
-          className={
-            "flex-1 min-h-screen overflow-auto bg-white custom-scrollbar"
-          }
-        >
+        <div className={"flex-1 min-h-screen overflow-auto bg-white custom-scrollbar"}>
           <div className={`${showNavbar && "md:ml-72 h-[100vh]"}`}>
-            {!isClient && <button
-              onClick={toggleSidebar}
-              className="md:hidden p-4 fixed top-0 right-0 z-30"
-            >
-              <MenuIcon />
-            </button>}
+            {!isClient && (
+              <button onClick={toggleSidebar} className="md:hidden p-4 fixed top-0 right-0 z-30">
+                <MenuIcon />
+              </button>
+            )}
             <Routes>
               <Route
                 index
                 element={
                   isClient ? (
                     <Navigate to={ROUTES.CLIENT} />
-                  ) : 
-                  isAdmin ? (
+                  ) : isAdmin ? (
                     <Navigate to={ROUTES.ANALYTICS} />
                   ) : (
                     <Navigate to={ROUTES.SEARCH} />
@@ -266,10 +247,7 @@ const PrivateRouteLayout = () => {
           waitingClients.length > 0 &&
           isAvailable &&
           !isPathExcluded(pathname, excludeCallPicker) && (
-            <CallPicker
-              onAccept={onAcceptCall}
-              onDecline={() => setAlertCall(false)}
-            />
+            <CallPicker onAccept={onAcceptCall} onDecline={() => setAlertCall(false)} />
           )}
       </div>
     );

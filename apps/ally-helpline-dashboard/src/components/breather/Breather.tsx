@@ -12,11 +12,11 @@ const Breather = ({ onComplete }: BreatherProps) => {
 
   useEffect(() => {
     const interval = setInterval(() => {
-      setSeconds((prev) => (prev > 0 ? prev - 1 : 0));
+      setSeconds(prev => (prev > 0 ? prev - 1 : 0));
 
       // Change breathing state only after the first 10 seconds
       if (seconds > 0 && seconds % 10 === 0 && seconds !== 120) {
-        setIsBreathingIn((prev) => !prev);
+        setIsBreathingIn(prev => !prev);
       }
       if (seconds === 1) {
         onComplete();
@@ -46,12 +46,8 @@ const Breather = ({ onComplete }: BreatherProps) => {
         <source src={BackgroundVideo} type="video/mp4" />
       </video>
       <div className="m-5 text-3xl">{formatTime(seconds)}</div>
-      <div
-        className={`circle mt-[165px] ${isBreathingIn ? "breathing-in" : "breathing-out"}`}
-      >
-        <span className="text-black text-2xl">
-          {isBreathingIn ? "Breathe in" : "Breathe out"}
-        </span>
+      <div className={`circle mt-[165px] ${isBreathingIn ? "breathing-in" : "breathing-out"}`}>
+        <span className="text-black text-2xl">{isBreathingIn ? "Breathe in" : "Breathe out"}</span>
       </div>
     </div>
   );

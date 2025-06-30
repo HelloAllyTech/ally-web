@@ -7,7 +7,7 @@ import { ArticleGridStepProps } from "../types";
 
 const ArticleGridStep: FC<ArticleGridStepProps> = ({ onArticleClick, onProceed }) => {
   const handleArticleClick = (articleId: string) => {
-    onArticleClick(articles.find((article) => article.id === articleId));
+    onArticleClick(articles.find(article => article.id === articleId));
   };
 
   return (
@@ -18,9 +18,7 @@ const ArticleGridStep: FC<ArticleGridStepProps> = ({ onArticleClick, onProceed }
       transition={{ duration: 0.3, ease: "easeOut" }}
       className="flex flex-col gap-4"
     >
-      <span className="text-base font-medium text-[#47464F]">
-        You might also like
-      </span>
+      <span className="text-base font-medium text-[#47464F]">You might also like</span>
       <ArticleGrid articles={articles} onArticleClick={handleArticleClick} />
       <Button onClick={onProceed} className="rounded-full w-fit self-end">
         Go to dashboard

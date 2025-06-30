@@ -15,7 +15,7 @@ const PermissionGuardedRoute: FunctionComponent<PermissionGuardedRouteType> = ({
 }) => {
   const { permissions } = useUser();
 
-  return (!permission || permissions.includes(permission) ? element : (<AccessDenied />));
+  return !permission || permissions.includes(permission) ? element : <AccessDenied />;
 };
 
 export default PermissionGuardedRoute;

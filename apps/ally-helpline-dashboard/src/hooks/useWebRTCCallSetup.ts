@@ -12,7 +12,12 @@ interface UseWebRTCParams {
   offerTimeoutMs: number;
 }
 
-const useWebRTCCallSetup = ({ emitSocketEvent, chatId, isClient, offerTimeoutMs }: UseWebRTCParams) => {
+const useWebRTCCallSetup = ({
+  emitSocketEvent,
+  chatId,
+  isClient,
+  offerTimeoutMs,
+}: UseWebRTCParams) => {
   // Add a reference to store the local stream
   const localStreamRef = useRef<MediaStream | null>(null);
   const remoteStreamRef = useRef<MediaStream>(new MediaStream());
@@ -60,10 +65,10 @@ const useWebRTCCallSetup = ({ emitSocketEvent, chatId, isClient, offerTimeoutMs 
       const pc = new RTCPeerConnection({
         iceServers: iceServers?.urls?.length > 0 ? [iceServers] : ICE_SERVERS,
       });
-      stream.getTracks().forEach((track) => {
+      stream.getTracks().forEach(track => {
         pc.addTrack(track, stream);
       });
-      pc.onicecandidate = (event) => {
+      pc.onicecandidate = event => {
         if (event.candidate) {
           emitSocketEvent(SocketEvent.ICE_CANDIDATE, {
             candidate: event.candidate,
@@ -71,7 +76,7 @@ const useWebRTCCallSetup = ({ emitSocketEvent, chatId, isClient, offerTimeoutMs 
           });
         }
       };
-      pc.ontrack = (event) => {
+      pc.ontrack = event => {
         remoteStreamRef.current = event.streams[0];
         const remoteRecorder = new MediaRecorder(event.streams[0], {
           mimeType: "audio/webm",
@@ -105,14 +110,12 @@ const useWebRTCCallSetup = ({ emitSocketEvent, chatId, isClient, offerTimeoutMs 
 
   // Handle incoming ICE candidates
   const handleOnIceCandidate = useCallback(
-    (data) => {
+    data => {
       if (!peerConnection || data.chatId !== chatId) return;
-      peerConnection
-        .addIceCandidate(new RTCIceCandidate(data.candidate))
-        .catch((err) => {
-          setNewIceCandidates((prev) => [...prev, data.candidate]);
-          logger.info(`Error adding ICE candidate (Adding in state for future handling):, ${err}`);
-        });
+      peerConnection.addIceCandidate(new RTCIceCandidate(data.candidate)).catch(err => {
+        setNewIceCandidates(prev => [...prev, data.candidate]);
+        logger.info(`Error adding ICE candidate (Adding in state for future handling):, ${err}`);
+      });
     },
     [chatId, peerConnection],
   );
@@ -121,7 +124,7 @@ const useWebRTCCallSetup = ({ emitSocketEvent, chatId, isClient, offerTimeoutMs 
   const handleUnAttemptedIceCandidates = useCallback(() => {
     if (!peerConnection) return;
     if (newIceCandidates.length > 0) {
-      newIceCandidates.forEach((candidate) => {
+      newIceCandidates.forEach(candidate => {
         peerConnection?.addIceCandidate(new RTCIceCandidate(candidate));
       });
     }
@@ -135,9 +138,7 @@ const useWebRTCCallSetup = ({ emitSocketEvent, chatId, isClient, offerTimeoutMs 
         clearTimeout(offerTimeoutRef.current);
       }
       try {
-        await peerConnection?.setRemoteDescription(
-          new RTCSessionDescription(data.offer),
-        );
+        await peerConnection?.setRemoteDescription(new RTCSessionDescription(data.offer));
         handleUnAttemptedIceCandidates();
         emitSocketEvent(SocketEvent.START_AUDIO_CHAT, {
           chatId,
@@ -167,12 +168,10 @@ const useWebRTCCallSetup = ({ emitSocketEvent, chatId, isClient, offerTimeoutMs 
         chatId,
       });
       try {
-        await peerConnection?.setRemoteDescription(
-          new RTCSessionDescription(data.answer),
-        );
+        await peerConnection?.setRemoteDescription(new RTCSessionDescription(data.answer));
         handleUnAttemptedIceCandidates();
       } catch (error) {
-          logger.info(`Error handling WebRTC answer:, ${error}`);
+        logger.info(`Error handling WebRTC answer:, ${error}`);
       }
     },
     [chatId, peerConnection, handleUnAttemptedIceCandidates],

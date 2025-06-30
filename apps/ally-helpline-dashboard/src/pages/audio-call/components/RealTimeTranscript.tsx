@@ -49,10 +49,10 @@ const RealTimeTranscript: FC<RealTimeTranscriptProps> = ({ isFocusMode, transcri
       exit={{ height: 0 }}
       transition={{ duration: 0.3, ease: "easeInOut" }}
     >
-      <h3 className="text-[#000] text-[18px] font-['IBM_Plex_Serif'] mb-2 font-semibold self-start ">Real-time Transcription</h3>
-      <Divider
-        className="bg-gray-200 w-[65%] mb-2.5"
-      />
+      <h3 className="text-[#000] text-[18px] font-['IBM_Plex_Serif'] mb-2 font-semibold self-start ">
+        Real-time Transcription
+      </h3>
+      <Divider className="bg-gray-200 w-[65%] mb-2.5" />
       <div
         ref={transcriptContainerRef}
         className="z-10 flex-1 overflow-y-auto text-[#000] rounded-lg p-0 
@@ -62,7 +62,11 @@ const RealTimeTranscript: FC<RealTimeTranscriptProps> = ({ isFocusMode, transcri
         {transcriptions.map((transcriptionObj, index) => (
           <div key={transcriptionObj.id} className="flex flex-col font-['IBM_Plex_Serif']">
             <div className="font-bold w-[20%] mb-[0px]">
-              {getSpeakerName(transcriptionObj.senderId, index > 0 && transcriptions[index - 1].senderId, user?.userId)}
+              {getSpeakerName(
+                transcriptionObj.senderId,
+                index > 0 && transcriptions[index - 1].senderId,
+                user?.userId,
+              )}
             </div>
             <div
               className="typing-animation w-full text-[#525252] text-[16px] leading-[22px]"

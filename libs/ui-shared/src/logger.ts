@@ -1,7 +1,7 @@
 export enum LogLevel {
-  INFO = 'info',
-  ERROR = 'error',
-  WARN = 'warn',
+  INFO = "info",
+  ERROR = "error",
+  WARN = "warn",
 }
 
 const logger = {
@@ -11,13 +11,12 @@ const logger = {
    * @param message - The log message
    */
   log: (level: LogLevel, message: string) => {
-    const logger_enabled = import.meta.env.MODE === 'development';
+    const logger_enabled = import.meta.env.MODE === "development";
     if (!logger_enabled) return;
 
     const timestamp = new Date().toISOString();
     const levelString = level.toUpperCase();
 
-    // eslint-disable-next-line no-console
     console.log(`[${timestamp}] [${levelString}] ${message}`);
   },
 
@@ -57,4 +56,3 @@ declare global {
 }
 
 export { logger };
- 

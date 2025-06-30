@@ -2,12 +2,12 @@
   width: 226px;
   height: 226px;
   border-radius: 50%;
-  box-shadow: 0 0 0 100px rgba(144, 203, 255, 0.5);;
-  background-color: #90CBFF;
+  box-shadow: 0 0 0 100px rgba(144, 203, 255, 0.5);
+  background-color: #90cbff;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: transform 2s ease-in-out;  
+  transition: transform 2s ease-in-out;
 }
 
 @keyframes breatheIn {

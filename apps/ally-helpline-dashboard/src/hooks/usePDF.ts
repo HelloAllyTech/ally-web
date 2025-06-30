@@ -31,17 +31,17 @@ const useFileExport = () => {
   const exportTxtFromText = (text: string, fileName: string) => {
     // Create a blob with the text content
     const blob = new Blob([text], { type: "text/plain;charset=utf-8" });
-    
+
     // Create a temporary URL for the blob
     const url = URL.createObjectURL(blob);
-    
+
     // Create a temporary anchor element and trigger download
     const link = document.createElement("a");
     link.href = url;
     link.download = fileName.endsWith(".txt") ? fileName : `${fileName}.txt`;
     document.body.appendChild(link);
     link.click();
-    
+
     // Clean up
     document.body.removeChild(link);
     URL.revokeObjectURL(url);

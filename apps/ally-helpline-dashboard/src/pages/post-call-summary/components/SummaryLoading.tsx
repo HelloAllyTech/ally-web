@@ -1,7 +1,6 @@
 import { FC, useEffect, useState } from "react";
 import { Spinner, RoundCheckmark } from "@/assets/icons";
 
-
 const SummaryLoading: FC = () => {
   const loadingMessages = [
     "Generating Summary",
@@ -18,10 +17,13 @@ const SummaryLoading: FC = () => {
     const timers: NodeJS.Timeout[] = [];
 
     const showNextMessage = (index: number) => {
-      const timer = setTimeout(() => {
-        setVisibleMessages(prev => [...prev, loadingMessages[index]]);
-        setCurrentMessageIndex(index);
-      }, (index - 1) * 1000);
+      const timer = setTimeout(
+        () => {
+          setVisibleMessages(prev => [...prev, loadingMessages[index]]);
+          setCurrentMessageIndex(index);
+        },
+        (index - 1) * 1000,
+      );
       timers.push(timer);
     };
 
@@ -33,7 +35,6 @@ const SummaryLoading: FC = () => {
       timers.forEach(timer => clearTimeout(timer));
     };
   }, []);
-
 
   return (
     <div className="flex flex-col items-center justify-center h-[calc(100vh-280px)] space-y-4">
@@ -49,11 +50,15 @@ const SummaryLoading: FC = () => {
             return (
               <div key={message} className="flex items-center gap-2 text-[16px]">
                 <div className="w-4 h-4">
-                  {isCompleted ? <RoundCheckmark /> : isCurrentMessage ? <div className="mb-[5px] flex justify-center items-center"><Spinner /></div> : null}
+                  {isCompleted ? (
+                    <RoundCheckmark />
+                  ) : isCurrentMessage ? (
+                    <div className="mb-[5px] flex justify-center items-center">
+                      <Spinner />
+                    </div>
+                  ) : null}
                 </div>
-                <div
-                  className={`shimmer-text ${isCurrentMessage ? "active" : "static-text"}`}
-                >
+                <div className={`shimmer-text ${isCurrentMessage ? "active" : "static-text"}`}>
                   {message}
                 </div>
               </div>

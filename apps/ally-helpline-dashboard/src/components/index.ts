@@ -1,15 +1,5 @@
-import {
-  Table,
-  TableRow,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-} from "./generic/table";
-import {
-  LiveTranscriptionHeader,
-  LiveTranscriptionMessage,
-} from "./live-transcription";
+import { Table, TableRow, TableBody, TableCell, TableHead, TableHeader } from "./generic/table";
+import { LiveTranscriptionHeader, LiveTranscriptionMessage } from "./live-transcription";
 import { Input } from "./generic/input";
 import { Button } from "./generic/button";
 import Breather from "./breather/Breather";
@@ -40,6 +30,8 @@ import Accordion from "./accordion/Accordion";
 import ActionDialog from "./action-dialog/ActionDialog";
 import Calendar from "./calendar/Calendar";
 import SearchResources from "./search-resources/SearchResources";
+import CustomCircularProgress from "./custom-circular-progress/CustomCircularProgress";
+import TagGroup from "./tag-group/TagGroup";
 
 export {
   ArticleGrid,
@@ -83,4 +75,6 @@ export {
   ActionDialog,
   Calendar,
   SearchResources,
+  CustomCircularProgress,
+  TagGroup,
 };

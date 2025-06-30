@@ -1,13 +1,5 @@
 import { FunctionComponent, useState, useRef, useEffect } from "react";
-import {
-  X,
-  Play,
-  Pause,
-  Volume2,
-  Minimize,
-  Maximize,
-  VolumeOff,
-} from "lucide-react";
+import { X, Play, Pause, Volume2, Minimize, Maximize, VolumeOff } from "lucide-react";
 import { Modal } from "@mui/material";
 import { MindfullnessVideo } from "@/assets/videos";
 import { BackgroundBottom, BackgroundTop } from "@/assets/icons";
@@ -41,17 +33,17 @@ const StressBuster: FunctionComponent<StressBusterProps> = ({
         videoRef.current.play();
         videoRef.current.muted = isMuted;
         timerRef.current = setInterval(() => {
-          setSeconds((prev) => (prev === 4 ? 1 : prev + 1));
+          setSeconds(prev => (prev === 4 ? 1 : prev + 1));
         }, 1000);
       }
-      setIsPlaying((prev) => !prev);
+      setIsPlaying(prev => !prev);
     }
   };
 
   const toggleMute = () => {
     if (videoRef.current) {
       videoRef.current.muted = !isMuted;
-      setIsMuted((prev) => !prev);
+      setIsMuted(prev => !prev);
     }
   };
 
@@ -72,7 +64,7 @@ const StressBuster: FunctionComponent<StressBusterProps> = ({
     setSeconds(1);
     setIsPlaying(false);
     setIsMuted(false);
-    setIsMaximized((prev) => !prev);
+    setIsMaximized(prev => !prev);
   };
 
   useEffect(() => {
@@ -89,7 +81,7 @@ const StressBuster: FunctionComponent<StressBusterProps> = ({
       videoRef.current?.play();
       videoRef.current.muted = isMuted;
       timerRef.current = setInterval(() => {
-        setSeconds((prev) => (prev === 4 ? 1 : prev + 1));
+        setSeconds(prev => (prev === 4 ? 1 : prev + 1));
       }, 1000);
     }
   };
@@ -163,13 +155,9 @@ const StressBuster: FunctionComponent<StressBusterProps> = ({
 
   const renderNavigationButton = () => {
     return (
-
       <div className="z-20">
         {showViewSummaryButton && isMaximized && (
-          <Button
-            className="mt-8 rounded-full"
-            onClick={onViewSummary}
-          >
+          <Button className="mt-8 rounded-full" onClick={onViewSummary}>
             Skip
           </Button>
         )}
@@ -193,9 +181,7 @@ const StressBuster: FunctionComponent<StressBusterProps> = ({
 
         {renderVideo()}
 
-        <div className={`${isMaximized ? "text-[56px]" : "text-2xl"} mb-4`}>
-          {seconds}
-        </div>
+        <div className={`${isMaximized ? "text-[56px]" : "text-2xl"} mb-4`}>{seconds}</div>
 
         {renderSteps()}
         {renderControls()}
@@ -204,11 +190,7 @@ const StressBuster: FunctionComponent<StressBusterProps> = ({
     </div>
   );
 
-  return isMaximized ? (
-    <Modal open>{StressBusterComponent}</Modal>
-  ) : (
-    StressBusterComponent
-  );
+  return isMaximized ? <Modal open>{StressBusterComponent}</Modal> : StressBusterComponent;
 };
 
 export default StressBuster;
