@@ -4,7 +4,7 @@ import { CircularProgress } from "@mui/material";
 import { Eye } from "lucide-react";
 
 import { RootState } from "@/store/store";
-import { updatePage, updateTotalCallsCount } from "@/reducer/callsReducer";
+import { updateFilters, updateTotalCallsCount } from "@/reducer/callsReducer";
 import { useGetCallLogsQuery } from "@/api/calls";
 import { Button, CustomCircularProgress, TagGroup, FallbackUI } from "@/components";
 import { NoResults } from "@/assets/icons";
@@ -16,14 +16,13 @@ import { CALL_LOGS_PAGINATION_LIMIT, TABLE_ROW_HEIGHT, tagColors } from "./const
 import { TagDisplay } from "./types";
 import { GenericTable } from "@ally-ui-mono/ui-shared";
 import { Column } from "@ally-ui-mono/ui-shared/lib/generic-table/types";
-import { useUser } from "@/hooks/useUser";
 
 const CallLogsTable = () => {
   const dispatch = useDispatch();
 
-  const {
-    filters: { page },
-  } = useSelector((state: RootState) => state.calls);
+  const { filters } = useSelector((state: RootState) => state.calls);
+
+  const { offset } = filters;
 
   const [callSummary, setCallSummary] = useState<CallLog | null>(null);
 
@@ -33,9 +32,8 @@ const CallLogsTable = () => {
     refetch: refetchCallLogs,
   } = useGetCallLogsQuery({
     limit: CALL_LOGS_PAGINATION_LIMIT,
-    offset: page * CALL_LOGS_PAGINATION_LIMIT - CALL_LOGS_PAGINATION_LIMIT,
+    offset: offset,
   });
-  const { user } = useUser();
 
   const { count, data: callLogs = [] } = callLogsData || {};
 
@@ -55,7 +53,7 @@ const CallLogsTable = () => {
     if (callLogs?.length > 0) {
       setCallLogList(prev => {
         // Avoid duplicate entries if page is reset
-        if (page === 1) return [...callLogs];
+        if (offset === 0) return [...callLogs];
         return [...prev, ...callLogs];
       });
       setIsLoadingMore(false);
@@ -67,7 +65,7 @@ const CallLogsTable = () => {
       }
       handleScroll();
     }
-  }, [callLogs, page]);
+  }, [callLogs, offset]);
 
   useEffect(() => {
     dispatch(updateTotalCallsCount(count));
@@ -76,11 +74,11 @@ const CallLogsTable = () => {
   const handleLoadMore = () => {
     if (!isLoading && !isLoadingMore && hasMore) {
       setIsLoadingMore(true);
-      dispatch(updatePage(page + 1));
+      dispatch(updateFilters({ ...filters, offset: offset + CALL_LOGS_PAGINATION_LIMIT }));
     }
   };
 
-  if (isLoading && page === 1) {
+  if (isLoading && offset === 0) {
     return (
       <div className="flex justify-center items-center h-[calc(100vh-80px)]">
         <CircularProgress />

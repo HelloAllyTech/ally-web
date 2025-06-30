@@ -64,13 +64,10 @@ function SelectedFiltersView<T extends Record<string, any>>({
         return (
           <div
             key={f.key}
-            className="rounded flex items-center gap-2 bg-[#F5F5F7]"
+            className="rounded flex items-center bg-[#F5F5F7] p-[10px]"
             title={`Filter: ${col?.header || f.key}`}
           >
-            <div
-              className="p-[10px] text-[#000] cursor-pointer"
-              onClick={e => openFilterList(col, e)}
-            >
+            <div className=" text-[#000] cursor-pointer" onClick={e => openFilterList(col, e)}>
               {col?.header || f.key}: "{displayValue}"
             </div>
             <button
@@ -90,10 +87,10 @@ function SelectedFiltersView<T extends Record<string, any>>({
         type="button"
         className="p-[10px] flex items-center justify-center rounded"
         onClick={onAddFilter}
-        aria-label="Add filter"
+        aria-label="filter"
       >
         <Plus size={18} />
-        <span className="ml-[4px]">Add Filter</span>
+        <span className="ml-[4px]">Filter</span>
       </button>
     </div>
   );

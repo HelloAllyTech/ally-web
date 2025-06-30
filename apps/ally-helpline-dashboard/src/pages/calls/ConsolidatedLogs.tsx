@@ -64,6 +64,9 @@ const ConsolidatedLogs = () => {
         setHasMore(true);
       }
       handleScroll();
+    } else if (offset === 0) {
+      setHasMore(false);
+      setCallLogList([]);
     }
   }, [callLogs, offset]);
 
@@ -135,18 +138,24 @@ const ConsolidatedLogs = () => {
       filterType: "date",
       style: { width: "15%" },
       sortable: true,
-      filterable: true,
-      filterOptions: [],
     },
     {
       key: "duration",
       header: "Duration",
       sortable: true,
+      filterable: true,
       style: { width: "15%" },
     },
     {
       key: "qualityScore",
       header: "Quality Score",
+      sortable: true,
+      filterable: true,
+      filterOptions: [
+        { label: "Excellent (85+)", value: "85-100" },
+        { label: "Good (50-80)", value: "50-80" },
+        { label: "Need attention (<50)", value: "0-50" },
+      ],
       style: { width: "15%" },
       render: value => {
         return (
@@ -185,7 +194,6 @@ const ConsolidatedLogs = () => {
 
     let updatedFilters: GetCallLogsInput = { offset: 0, limit: CALL_LOGS_PAGINATION_LIMIT };
 
-    console.log("filter", data);
     if (filter?.length > 0 || sort?.value) {
       const sortByFilter = sort?.key ? { sortBy: sort?.key, order: sort?.value } : {};
       const counselorValue = filter?.find(
@@ -204,11 +212,24 @@ const ConsolidatedLogs = () => {
         dateFilterArray?.length > 0
           ? { startDate: dateFilterArray[0], endDate: dateFilterArray[1] }
           : {};
+
+      const qualityScorefilterData = filter
+        ?.find((f: { key: string; value: any }) => f.key === "qualityScore")
+        ?.value?.split("-");
+      const qualityScoreFilter =
+        qualityScorefilterData?.length > 0
+          ? {
+              minQualityScore: qualityScorefilterData[0],
+              maxQualityScore: qualityScorefilterData[1],
+            }
+          : {};
+
       updatedFilters = {
         ...updatedFilters,
         ...sortByFilter,
         ...counselorFilter,
         ...dateFilter,
+        ...qualityScoreFilter,
       };
     }
     dispatch(updateFilters(updatedFilters));
@@ -228,7 +249,6 @@ const ConsolidatedLogs = () => {
           data={displayData}
           isLoading={isLoading}
           showSelectedFilters={true}
-          externalFilter={true}
           onFilterChange={handleFilterChange}
           handleLoadMore={callLogList?.length > 0 && hasMore && handleLoadMore}
           fallbackUI={

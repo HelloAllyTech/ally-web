@@ -31,7 +31,6 @@ export interface GenericTableProps<T> {
   initialFilter?: TableFilter;
   isLoading?: boolean;
   showSelectedFilters?: boolean;
-  externalFilter?: boolean;
   onRowClick?: (row: T) => void;
   className?: string;
   style?: React.CSSProperties;

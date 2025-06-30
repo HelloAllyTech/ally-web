@@ -195,7 +195,6 @@ const DateFilterUI = ({ selectedValues, onChange, onDateSelect }: DateFilterUIPr
   const handleSave = () => {
     if (Array.isArray(range) && range[0] && range[1]) {
       onChange([range[0].toISOString(), range[1].toISOString()]);
-      console.log("range", range);
       if (onDateSelect) onDateSelect([range[0].toISOString(), range[1].toISOString()]);
     }
   };
