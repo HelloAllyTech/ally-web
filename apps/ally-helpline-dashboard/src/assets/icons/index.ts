@@ -48,7 +48,7 @@ import Edit from "./Edit.svg?react";
 import Delete from "./Delete.svg?react";
 import Download from "./Download.svg?react";
 import CallDetails from "./CallDetails.svg?react";
-import Spinner from "./Spinner.svg?react";
+import Spinner from "./spinner.svg?react";
 import RoundCheckmark from "./RoundCheckmark.svg?react";
 import Call from "./call.svg?react";
 import UserIcon from "./userIcon.svg?react";
