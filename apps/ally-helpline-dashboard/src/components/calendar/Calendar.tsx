@@ -24,6 +24,8 @@ const Calendar: FC<CalendarProps> = ({
         return "year";
       case "year":
         return "decade";
+      default:
+        return "month";
     }
   };
 

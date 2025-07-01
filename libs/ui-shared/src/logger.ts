@@ -1,3 +1,15 @@
+// Add a local ImportMetaEnv type for compatibility
+interface ImportMetaEnv {
+  MODE: string;
+  [key: string]: any;
+}
+
+declare global {
+  interface ImportMeta {
+    env: ImportMetaEnv;
+  }
+}
+
 export enum LogLevel {
   INFO = "info",
   ERROR = "error",
@@ -11,7 +23,7 @@ const logger = {
    * @param message - The log message
    */
   log: (level: LogLevel, message: string) => {
-    const logger_enabled = import.meta.env.MODE === "development";
+    const logger_enabled = (import.meta.env as ImportMetaEnv).MODE === "development";
     if (!logger_enabled) return;
 
     const timestamp = new Date().toISOString();
@@ -44,15 +56,5 @@ const logger = {
     this.log(LogLevel.WARN, warning);
   },
 };
-
-// If not already present in the project, add:
-declare global {
-  interface ImportMeta {
-    env: {
-      MODE: string;
-      [key: string]: any;
-    };
-  }
-}
 
 export { logger };

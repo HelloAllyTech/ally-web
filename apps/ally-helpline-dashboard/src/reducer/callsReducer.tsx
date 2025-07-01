@@ -21,6 +21,8 @@ interface CallsState {
   totalCallsCount: number;
 }
 
+export type { CallsState };
+
 const initialState: CallsState = {
   filters: {
     offset: 0,

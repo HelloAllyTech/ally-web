@@ -9,6 +9,8 @@ interface UserState {
   permissions: string[];
 }
 
+export type { UserState };
+
 const initialState = {
   isAuthenticated: false,
   user: null,

@@ -20,7 +20,7 @@ const CallInterface: FC<CallInterfaceProps> = ({
   useEffect(() => {
     let interval: NodeJS.Timeout;
     if (!isMicrophoneMode) {
-      if (!activeChat?.startedAt) return;
+      if (!activeChat?.startedAt) return () => {};
 
       const updateElapsedTime = () => {
         const now = Date.now();

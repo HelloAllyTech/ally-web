@@ -31,11 +31,13 @@ export const useUser = () => {
           store.dispatch(unauthenticate());
           localStorage.removeItem("accessToken");
           localStorage.removeItem("refreshToken");
+          return null;
         }
       } else {
         store.dispatch(setUser(null));
         store.dispatch(setPermissions([]));
         store.dispatch(unauthenticate());
+        return null;
       }
     } catch (error) {
       logger.info(`Error authenticating - ${error}`);
@@ -44,6 +46,7 @@ export const useUser = () => {
       store.dispatch(unauthenticate());
       localStorage.removeItem("accessToken");
       localStorage.removeItem("refreshToken");
+      return null;
     }
   };
 
