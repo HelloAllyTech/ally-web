@@ -25,20 +25,10 @@ on:
     paths:
       - "apps/ally-helpline-dashboard/**"
       - "libs/**"
-  pull_request:
-    branches:
-      - dev
-      - stg
-      - main
-      - master
-    paths:
-      - "apps/ally-helpline-dashboard/**"
-      - "libs/**"
 
 permissions:
   id-token: write
   contents: read
-  pull-requests: read
 
 jobs:
   # Set app configuration
@@ -79,12 +69,10 @@ jobs:
           elif [ "${{ github.event_name }}" == "push" ]; then
             echo "should_proceed=true" >> $GITHUB_OUTPUT
             echo "Push event detected - changes exist (filtered by trigger)"
-          elif [ "${{ github.event_name }}" == "pull_request" ]; then
-            echo "should_proceed=true" >> $GITHUB_OUTPUT
-            echo "Pull request event detected - changes exist (filtered by trigger)"
           elif [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
             echo "should_proceed=true" >> $GITHUB_OUTPUT
             echo "Manual workflow dispatch - proceeding"
+          elif [ "${{ github.event_name }}" == "pull_request" ]; then :
           else
             echo "should_proceed=false" >> $GITHUB_OUTPUT
             echo "No valid trigger detected"
@@ -94,8 +82,7 @@ jobs:
   determine-environment:
     needs: [config, changes]
     if: |
-      (needs.changes.outputs.dashboard == 'true' || github.event.inputs.force_deploy == 'true') && 
-      github.event_name != 'pull_request'
+      (needs.changes.outputs.dashboard == 'true' || github.event.inputs.force_deploy == 'true')
     runs-on: ubuntu-22.04
     outputs:
       target_env: ${{ steps.env.outputs.target_env }}

@@ -22,14 +22,6 @@ on:
       - master
     paths:
       - '[APP_PATH]/**'
-  pull_request:
-    branches:
-      - dev
-      - stg
-      - main
-      - master
-    paths:
-      - '[APP_PATH]/**'
 
 permissions:
   id-token: write
@@ -70,8 +62,7 @@ jobs:
   determine-environment:
     needs: changes
     if: |
-      needs.changes.outputs.app == 'true' && 
-      github.event_name != 'pull_request'
+      needs.changes.outputs.app == 'true'
     runs-on: ubuntu-latest
     outputs:
       target_env: ${{ steps.env.outputs.target_env }}
