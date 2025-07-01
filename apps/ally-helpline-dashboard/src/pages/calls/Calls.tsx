@@ -35,7 +35,9 @@ const Calls: FunctionComponent = () => {
         className="relative mt-[10px] font-['IBM_Plex_Sans']"
       >
         <div className="sm:p-4 p-0 rounded-lg flex gap-4 sm:justify-between justify-start bg-transparent items-center">
-          <div className="z-10 text-[#000] text-[18px] font-[500]">Call Logs</div>
+          <div className="z-10 text-[#000] text-[18px] font-[500]">
+            {user?.role === UserRole.ADMIN ? "Consolidated Logs" : "Call Logs"}
+          </div>
           <Button
             className={`${
               userStatus === UserStatus.OFFLINE

@@ -1,9 +1,16 @@
 "use client";
-import { useState, useRef, useImperativeHandle, forwardRef, useEffect } from "react";
+import React, {
+  useState,
+  useRef,
+  useImperativeHandle,
+  forwardRef,
+  useEffect,
+  useMemo,
+} from "react";
 import { Plus } from "lucide-react";
 import { Popover, CircularProgress } from "@mui/material";
 
-import { GenericTableProps, TableSort, TableFilter, Column } from "./types";
+import { GenericTableProps, TableSort, TableFilter, Column, SortDirection } from "./types";
 import TableHeader from "./TableHeader";
 import TableBody from "./TableBody";
 import SelectedFiltersView from "./SelectedFiltersView";
@@ -13,9 +20,13 @@ import FilterPopover from "./FilterPopover";
  * GenericTable is a reusable, type-safe, and highly customizable table component.
  * Supports sorting, filtering, and row click handling.
  * Only supports external control of sort and filter logic for server-side data fetching.
+ *
+ * @template T - The type of data for each row.
+ * @param {GenericTableProps<T>} props - The props for the table.
+ * @param {React.Ref<HTMLDivElement | null>} ref - Forwarded ref to the scrollable div.
  */
 export const GenericTable = forwardRef(
-  (
+  <T extends Record<string, any>>(
     {
       columns,
       data,
@@ -29,27 +40,33 @@ export const GenericTable = forwardRef(
       showSelectedFilters = false,
       onFilterChange,
       handleLoadMore,
-    }: GenericTableProps<Record<string, any>>,
+    }: GenericTableProps<T>,
     ref: React.Ref<HTMLDivElement | null>,
   ) => {
-    // Internal state for sort and filter (used if not controlled externally)
+    // Internal state for sort and filter (if not controlled externally)
     const [sort, setSort] = useState<TableSort>(initialSort || { key: "", value: null });
     const [filter, setFilter] = useState<TableFilter>(initialFilter || []);
+
     // State for filter popover UI
     const [filterAnchorEl, setFilterAnchorEl] = useState<null | HTMLElement>(null);
     const [optionAnchorEl, setOptionAnchorEl] = useState<null | HTMLElement>(null);
     const [selectedColumn, setSelectedColumn] = useState<
-      null | (Column<any> & { filterOptions: { label: string; value: string }[] })
+      null | (Column<T> & { filterOptions: { label: string; value: string }[] })
     >(null);
     const [searchText, setSearchText] = useState("");
-    // Add state for multi-select values
     const [multiSelectValues, setMultiSelectValues] = useState<string[]>([]);
 
     // Expose the scrollable div to the parent via the forwarded ref
     const scrollRef = useRef<HTMLDivElement>(null);
     useImperativeHandle(ref, () => scrollRef.current, []);
 
-    // Open first popover (column selection)
+    // Memoize filterable columns for performance
+    const filterableColumns = useMemo(
+      () => columns.filter(c => c.filterable && c.filterOptions),
+      [columns],
+    );
+
+    // Open filter popover (column selection)
     const handleOpenFilterPopover = (event: React.MouseEvent<HTMLElement>) => {
       setFilterAnchorEl(event.currentTarget);
       setSelectedColumn(null);
@@ -57,16 +74,14 @@ export const GenericTable = forwardRef(
       setSearchText("");
     };
 
-    // Select a column and open second popover (option selection)
+    // Select a column and open option popover
     const handleSelectColumn = (
-      col: Column<any> | undefined,
+      col: Column<T> | undefined,
       event: React.MouseEvent<HTMLElement>,
     ) => {
       if (!col) return;
       if (col.filterable && col.filterOptions) {
-        setSelectedColumn(
-          col as Column<any> & { filterOptions: { label: string; value: string }[] },
-        );
+        setSelectedColumn(col as Column<T> & { filterOptions: { label: string; value: string }[] });
         setOptionAnchorEl(event.currentTarget);
         setSearchText("");
         // If multiselect, prefill with current filter values
@@ -88,7 +103,7 @@ export const GenericTable = forwardRef(
       setMultiSelectValues([]);
     };
 
-    // Select a filter option
+    // Select a filter option (single select)
     const handleSelectFilterOption = (colKey: string, value: string) => {
       handleFilterChange(colKey, value);
       handleCloseFilterPopover();
@@ -109,10 +124,12 @@ export const GenericTable = forwardRef(
       handleCloseFilterPopover();
     };
 
+    // Notify parent of filter/sort changes
     useEffect(() => {
       onFilterChange?.({ filter, sort });
     }, [filter, sort]);
 
+    // Handle date filter selection
     const handleDateSelect = (key: string, value: string[]) => {
       if (key && value) {
         handleFilterChange(key, value);
@@ -120,24 +137,19 @@ export const GenericTable = forwardRef(
       handleCloseFilterPopover();
     };
 
-    // Filterable columns
-    const filterableColumns = columns.filter(c => c.filterable && c.filterOptions);
-
     /**
-     * Handles sort changes. Uses external handler if provided, otherwise updates internal state.
+     * Handles sort changes. Cycles through ASC, DESC, and none.
+     * @param {string} key - The column key to sort by.
+     * @param {string} value - The sort direction.
      */
-    const handleSort = (key: string, value: string) => {
-      setSort(prev => {
-        if (prev.key === key) {
-          if (prev.value === "ASC") return { key, value: "DESC" };
-          if (prev.value === "DESC") return { key: "", value: null };
-        }
-        return { key, value: "ASC" };
-      });
+    const handleSort = (key: string, value: SortDirection) => {
+      setSort({ key, value });
     };
 
     /**
-     * Handles filter changes. Uses external handler if provided, otherwise updates internal state.
+     * Handles filter changes. Updates or removes filters as needed.
+     * @param {string} key - The column key to filter by.
+     * @param {string | string[]} value - The filter value(s).
      */
     const handleFilterChange = (key: string, value: string | string[]) => {
       setFilter((prev: TableFilter) => {
@@ -151,61 +163,63 @@ export const GenericTable = forwardRef(
       });
     };
 
-    const renderPopovers = () => {
-      return (
-        <>
-          <Popover
-            open={Boolean(filterAnchorEl)}
-            anchorEl={filterAnchorEl}
-            onClose={handleCloseFilterPopover}
-            anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
-            transformOrigin={{ vertical: "top", horizontal: "left" }}
-            className="font-['IBM_Plex_Serif']"
-          >
-            <div>
-              {filterableColumns.map(col => (
-                <div
-                  key={col.key as string}
-                  className="flex flex-row items-center cursor-pointer px-4 py-[14px] min-w-[200px] hover:bg-[#F5F5F7]"
-                  onClick={e => handleSelectColumn(col, e)}
-                >
-                  {col.icon && <span className="mr-2">{col.icon}</span>}
-                  <div>{col.header}</div>
-                </div>
-              ))}
-            </div>
-          </Popover>
-          {/* Use shared FilterPopover for filter options */}
-          <FilterPopover
-            anchorEl={optionAnchorEl}
-            open={Boolean(optionAnchorEl) && !!selectedColumn}
-            onClose={handleCloseFilterPopover}
-            column={selectedColumn}
-            searchText={searchText}
-            onSearchTextChange={setSearchText}
-            selectedValues={multiSelectValues}
-            onToggleOption={handleToggleMultiSelectOption}
-            onSaveMultiSelect={handleSaveMultiSelect}
-            onSelectSingle={handleSelectFilterOption}
-            singleSelectedValue={
-              selectedColumn
-                ? (() => {
-                    const found = filter.find(f => f.key === selectedColumn.key);
-                    return typeof found?.value === "string" ? found.value : "";
-                  })()
-                : ""
-            }
-            onDateSelect={handleDateSelect}
-          />
-        </>
-      );
-    };
+    // Render filter popovers
+    const renderPopovers = () => (
+      <>
+        <Popover
+          open={Boolean(filterAnchorEl)}
+          anchorEl={filterAnchorEl}
+          onClose={handleCloseFilterPopover}
+          anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
+          transformOrigin={{ vertical: "top", horizontal: "left" }}
+          className="font-['IBM_Plex_Serif'] z-50"
+          PaperProps={{
+            className: "shadow-none border border-[#E0E0E0] mt-[2px]",
+          }}
+        >
+          <div>
+            {filterableColumns.map(col => (
+              <div
+                key={col.key as string}
+                className="flex flex-row items-center cursor-pointer px-4 py-[14px] min-w-[200px] hover:bg-[#F5F5F7] text-[#6B7280]"
+                onClick={e => handleSelectColumn(col, e)}
+              >
+                {col.icon && <span className="mr-2">{col.icon}</span>}
+                <div>{col.header}</div>
+              </div>
+            ))}
+          </div>
+        </Popover>
+        {/* Use shared FilterPopover for filter options */}
+        <FilterPopover
+          anchorEl={optionAnchorEl}
+          open={Boolean(optionAnchorEl) && !!selectedColumn}
+          onClose={handleCloseFilterPopover}
+          column={selectedColumn}
+          searchText={searchText}
+          onSearchTextChange={setSearchText}
+          selectedValues={multiSelectValues}
+          onToggleOption={handleToggleMultiSelectOption}
+          onSaveMultiSelect={handleSaveMultiSelect}
+          onSelectSingle={handleSelectFilterOption}
+          singleSelectedValue={
+            selectedColumn
+              ? (() => {
+                  const found = filter.find(f => f.key === selectedColumn.key);
+                  return typeof found?.value === "string" ? found.value : "";
+                })()
+              : ""
+          }
+          onDateSelect={handleDateSelect}
+        />
+      </>
+    );
 
     return (
       <div
         ref={scrollRef}
         className={`overflow-x-auto min-w-full ${className}`}
-        style={{ scrollbarWidth: "thin", msOverflowStyle: "none", ...style }}
+        style={{ scrollbarWidth: "none", msOverflowStyle: "none", ...style }}
       >
         {/* Display selected sort and filter options */}
         {showSelectedFilters && (
@@ -241,8 +255,8 @@ export const GenericTable = forwardRef(
             onClick={handleLoadMore}
             className="flex cursor-pointer mt-4 text-center items-center"
           >
-            <Plus size={18} />
-            <span className="font-['IBM_Plex_Serif'] text-[16px] ml-[5px]">Load More</span>
+            <Plus size={20} />
+            <span className="font-['IBM_Plex_Serif'] text-[18px] ml-[5px]">Load More</span>
             {isLoading && (
               <CircularProgress color="primary" size={20} className="ml-2 mr-2 text-[#000]" />
             )}

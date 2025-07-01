@@ -43,6 +43,7 @@ export interface GetCallLogsInput {
   counselorName?: string;
   clientId?: string;
   counselorId?: string;
+  counselorIds?: string;
   startDate?: string;
   endDate?: string;
   minDuration?: number;

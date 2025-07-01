@@ -1,12 +1,19 @@
 import React, { useState } from "react";
 import { ArrowUpward, ArrowDownward, FilterAlt, Sort } from "@mui/icons-material";
-import { Popover, TextField } from "@mui/material";
+import { Popover } from "@mui/material";
 
-import { Column, TableFilter } from "./types";
+import { Column, SortDirection, TableFilter } from "./types";
 import FilterPopover from "./FilterPopover";
 
 /**
  * TableHeader renders the table's <thead> with sortable and filterable columns.
+ *
+ * @template T - The type of data for each row.
+ * @param {Object} props - The props for the header.
+ * @param {Column<T>[]} props.columns - The column definitions.
+ * @param {TableFilter} props.filter - The current filter state.
+ * @param {(key: string, value: string) => void} props.onSort - Handler for sort changes.
+ * @param {(key: string, value: string | string[]) => void} props.onFilterChange - Handler for filter changes.
  */
 function TableHeader<T extends Record<string, any>>({
   columns,
@@ -16,7 +23,7 @@ function TableHeader<T extends Record<string, any>>({
 }: {
   columns: Column<T>[];
   filter: TableFilter;
-  onSort: (key: string, value: string) => void;
+  onSort: (key: string, value: SortDirection) => void;
   onFilterChange: (key: string, value: string | string[]) => void;
 }) {
   // State for popovers
@@ -66,9 +73,9 @@ function TableHeader<T extends Record<string, any>>({
   };
 
   // Handle sort selection
-  const handleSortSelect = (direction: string) => {
+  const handleSortSelect = (value: SortDirection) => {
     if (activeCol) {
-      onSort(activeCol.key as string, direction);
+      onSort(activeCol.key as string, value);
     }
     handleCloseAll();
   };
@@ -105,7 +112,7 @@ function TableHeader<T extends Record<string, any>>({
 
   // Render filter popover content
   const renderFilterPopover = () => {
-    if (!activeCol || !activeCol.filterable || !activeCol.filterOptions) return null;
+    if (!activeCol || !activeCol.filterable) return null;
     return (
       <FilterPopover
         anchorEl={filterAnchorEl}
@@ -140,25 +147,19 @@ function TableHeader<T extends Record<string, any>>({
       anchorOrigin={{ vertical: "top", horizontal: "right" }}
       transformOrigin={{ vertical: "top", horizontal: "left" }}
       PaperProps={{
-        style: {
-          boxShadow: "none",
-          border: "1px solid #E0E0E0",
-          marginTop: "20px",
-          marginLeft: "-10px",
-        },
+        className: "shadow-none border border-[#E0E0E0] mt-5 -ml-2.5 font-['IBM_Plex_Serif']",
       }}
-      className="font-['IBM_Plex_Serif']"
     >
       <div>
         <div
-          className="flex flex-row items-center cursor-pointer px-4 py-[14px] min-w-[200px] hover:bg-[#F5F5F7]"
+          className="flex flex-row items-center cursor-pointer px-4 py-[14px] min-w-[200px] hover:bg-[#F5F5F7] text-[#6B7280]"
           onClick={() => handleSortSelect("ASC")}
         >
           <ArrowUpward fontSize="small" className="mr-2" />
           <div>Ascending</div>
         </div>
         <div
-          className="flex flex-row items-center cursor-pointer px-4 py-[14px] min-w-[200px] hover:bg-[#F5F5F7]"
+          className="flex flex-row items-center cursor-pointer px-4 py-[14px] min-w-[200px] hover:bg-[#F5F5F7] text-[#6B7280]"
           onClick={() => handleSortSelect("DESC")}
         >
           <ArrowDownward fontSize="small" className="mr-2" />
@@ -178,13 +179,13 @@ function TableHeader<T extends Record<string, any>>({
         transformOrigin={{ vertical: "top", horizontal: "left" }}
         className="font-['IBM_Plex_Serif']"
         PaperProps={{
-          style: { boxShadow: "none", border: "1px solid #E0E0E0", marginTop: "-10px" },
+          className: "shadow-none border border-[#E0E0E0] font-['IBM_Plex_Serif']",
         }}
       >
         <div>
           {col.sortable && (
             <div
-              className="flex flex-row items-center cursor-pointer px-4 py-[14px] min-w-[200px] hover:bg-[#F5F5F7]"
+              className="flex flex-row items-center cursor-pointer px-4 py-[14px] min-w-[200px] hover:bg-[#F5F5F7] text-[#6B7280]"
               onClick={handleSortClick}
             >
               <Sort fontSize="small" className="mr-2" />
@@ -193,7 +194,7 @@ function TableHeader<T extends Record<string, any>>({
           )}
           {col.filterable && col.filterOptions && (
             <div
-              className="flex flex-row items-center cursor-pointer px-4 py-[14px] min-w-[200px] hover:bg-[#F5F5F7]"
+              className="text-[#6B7280] flex flex-row items-center cursor-pointer px-4 py-[14px] min-w-[200px] hover:bg-[#F5F5F7]"
               onClick={handleFilterClick}
             >
               <FilterAlt fontSize="small" className="mr-2" />
@@ -211,23 +212,25 @@ function TableHeader<T extends Record<string, any>>({
         {columns?.map(col => (
           <th
             key={col.key as string}
-            className={` text-left font-[14px] font-[500] text-[#000] min-w-[100px] text-xs sm:text-sm ${
+            className={`text-left font-[14px] font-[500] text-[#000] min-w-[100px] text-xs sm:text-sm ${
               col.className || ""
             }`}
             style={col.style}
           >
             <div
-              className="px-4 py-[14px] flex flex-row items-center justify-between cursor-pointer"
+              className={`px-4 py-[14px] flex flex-row items-center justify-between ${
+                (col.filterable || col.sortable) && "cursor-pointer"
+              }`}
               onClick={e => handleHeaderClick(e, col)}
             >
               <div className="flex flex-row items-center">
                 {col?.icon && <div className="pr-[8px]">{col?.icon}</div>}
-                <div className="text-[14px] font-[500] text-[#000]">{col.header}</div>
+                <div className="text-[14px] font-[500] text-[#6B7280]">{col.header}</div>
               </div>
             </div>
             {renderMainPopover(col)}
             {renderSortPopover()}
-            {renderFilterPopover()}
+            {col.filterable && renderFilterPopover()}
           </th>
         ))}
       </tr>

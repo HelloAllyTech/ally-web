@@ -7,7 +7,16 @@ import { RootState } from "@/store/store";
 import { updateFilters, updateTotalCallsCount } from "@/reducer/callsReducer";
 import { useGetCallLogsQuery } from "@/api/calls";
 import { Button, CustomCircularProgress, TagGroup, FallbackUI } from "@/components";
-import { NoResults } from "@/assets/icons";
+import {
+  NoResults,
+  CallIdIcon,
+  DateIcon,
+  TimerIcon,
+  StarIcon,
+  TagsIcon,
+  ReviewIcon,
+  UserIcon,
+} from "@/assets/icons";
 import { CallLog } from "@/types/calls";
 
 import SummarySideBar from "./components/SummarySideBar";
@@ -124,16 +133,19 @@ const CallLogsTable = () => {
       key: "callName",
       header: "Call ID",
       style: { width: "15%" },
+      icon: <CallIdIcon />,
     },
     {
       key: "dateAndTime",
       header: "Date & Time",
       style: { width: "15%" },
+      icon: <DateIcon />,
     },
     {
       key: "duration",
       header: "Duration",
       style: { width: "15%" },
+      icon: <TimerIcon />,
     },
     {
       key: "qualityScore",
@@ -148,12 +160,14 @@ const CallLogsTable = () => {
           </div>
         );
       },
+      icon: <StarIcon />,
     },
     {
       key: "tags",
       header: "Tags",
       style: { width: "30%" },
       render: (value: TagDisplay[]) => <TagGroup tags={value} />,
+      icon: <TagsIcon />,
     },
     {
       key: "review",
@@ -167,15 +181,30 @@ const CallLogsTable = () => {
           <Eye className="text-[#868686] w-4 h-4" />
         </Button>
       ),
+      icon: <ReviewIcon />,
     },
   ];
 
   const displayData = callLogList.map(getCounselorDisplayData);
 
+  const renderFallbackUI = () => {
+    if (callLogList.length === 0 && !isLoading) {
+      return (
+        <FallbackUI
+          image={<NoResults />}
+          mainMessage="No call records found"
+          description="Your recent calls and insights will be listed here."
+          className="py-[100px]"
+        />
+      );
+    }
+    return null;
+  };
+
   return (
     <>
       <div
-        className={"rounded-xl w-full max-h-[calc(100vh-240px)] pt-[20px]"}
+        className="rounded-xl w-full max-h-[calc(100vh-240px)]"
         style={{
           minHeight: `${TABLE_ROW_HEIGHT * (CALL_LOGS_PAGINATION_LIMIT + 1)}px`,
         }}
@@ -186,19 +215,8 @@ const CallLogsTable = () => {
           data={displayData}
           isLoading={isLoading}
           handleLoadMore={callLogList?.length > 0 && hasMore && handleLoadMore}
-          fallbackUI={
-            callLogList.length === 0 &&
-            !isLoading && (
-              <FallbackUI
-                image={<NoResults />}
-                mainMessage="No call records found"
-                description="Your recent calls and insights will be listed here."
-                className="py-[100px]"
-              />
-            )
-          }
-          className="min-w-full max-h-[calc(100vh-140px)] font-['IBM_Plex_Sans'] overflow-y-scroll"
-          style={{ minWidth: "100%" }}
+          fallbackUI={renderFallbackUI()}
+          className="min-w-full min-w-[100%] max-h-[calc(100vh-140px)] font-['IBM_Plex_Sans'] overflow-y-scroll"
         />
       </div>
       {callSummary && callSummary?.id && (

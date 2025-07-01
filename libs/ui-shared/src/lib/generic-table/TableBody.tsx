@@ -1,7 +1,12 @@
+import React from "react";
 import { Column } from "./types";
 
 /**
  * Utility function to get a value from a row by key.
+ * @template T
+ * @param {T} row - The data row.
+ * @param {keyof T | string} key - The key to access.
+ * @returns {any} The value from the row.
  */
 function getValue<T extends Record<string, any>>(row: T, key: keyof T | string) {
   if (typeof key === "string" && key in row) return (row as any)[key];
@@ -10,6 +15,13 @@ function getValue<T extends Record<string, any>>(row: T, key: keyof T | string) 
 
 /**
  * TableBody renders the table's <tbody> with data rows and optional row click handler.
+ *
+ * @template T - The type of data for each row.
+ * @param {Object} props - The props for the table body.
+ * @param {Column<T>[]} props.columns - The column definitions.
+ * @param {T[]} props.data - The data rows.
+ * @param {React.ReactNode} [props.fallbackUI] - The fallback UI if no data.
+ * @param {(row: T) => void} [props.onRowClick] - Optional row click handler.
  */
 function TableBody<T extends Record<string, any>>({
   columns,
@@ -22,7 +34,11 @@ function TableBody<T extends Record<string, any>>({
   fallbackUI?: React.ReactNode;
   onRowClick?: (row: T) => void;
 }) {
-  if (data?.length === 0) {
+  /**
+   * Render the fallback UI if no data is provided.
+   * @returns {React.ReactNode} - The fallback UI.
+   */
+  if (!data || data.length === 0) {
     return (
       <tbody>
         <tr>
@@ -33,15 +49,20 @@ function TableBody<T extends Record<string, any>>({
       </tbody>
     );
   }
+
+  /**
+   * Render the table body.
+   * @returns {React.ReactNode} - The table body.
+   */
   return (
     <tbody>
-      {data?.map((row, rowIndex) => (
+      {data.map((row, rowIndex) => (
         <tr
           key={rowIndex}
           className="hover:bg-gray-100 cursor-pointer text-xs sm:text-sm"
           onClick={onRowClick ? () => onRowClick(row) : undefined}
         >
-          {columns?.map((col, columnIndex) => (
+          {columns.map((col, columnIndex) => (
             <td
               key={col.key as string}
               className={`px-4 py-[10px] border-b border-gray-300 ${

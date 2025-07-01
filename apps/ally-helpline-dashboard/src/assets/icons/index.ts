@@ -51,6 +51,13 @@ import CallDetails from "./CallDetails.svg?react";
 import Spinner from "./Spinner.svg?react";
 import RoundCheckmark from "./RoundCheckmark.svg?react";
 import Call from "./call.svg?react";
+import UserIcon from "./userIcon.svg?react";
+import DateIcon from "./dateIcon.svg?react";
+import TimerIcon from "./timer.svg?react";
+import StarIcon from "./star.svg?react";
+import TagsIcon from "./tagsIcon.svg?react";
+import ReviewIcon from "./reviewIcon.svg?react";
+import CallIdIcon from "./callIdIcon.svg?react";
 
 export {
   AccountCircle,
@@ -106,4 +113,11 @@ export {
   Spinner,
   RoundCheckmark,
   Call,
+  UserIcon,
+  DateIcon,
+  TimerIcon,
+  StarIcon,
+  TagsIcon,
+  ReviewIcon,
+  CallIdIcon,
 };

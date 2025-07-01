@@ -4,10 +4,19 @@ import { CircularProgress } from "@mui/material";
 import { Eye } from "lucide-react";
 
 import { RootState } from "@/store/store";
-import { updateFilters, updatePage, updateTotalCallsCount } from "@/reducer/callsReducer";
+import { updateFilters, updateTotalCallsCount } from "@/reducer/callsReducer";
 import { useGetAdminCallLogsQuery } from "@/api/calls";
 import { Button, CustomCircularProgress, FallbackUI, TagGroup } from "@/components";
-import { NoResults } from "@/assets/icons";
+import {
+  NoResults,
+  CallIdIcon,
+  DateIcon,
+  TimerIcon,
+  StarIcon,
+  TagsIcon,
+  ReviewIcon,
+  UserIcon,
+} from "@/assets/icons";
 import { CallLog, GetCallLogsInput } from "@/types/calls";
 
 import SummarySideBar from "./components/SummarySideBar";
@@ -15,7 +24,7 @@ import { convertSecondsToDuration, formatDate } from "./utils";
 import { CALL_LOGS_PAGINATION_LIMIT, TABLE_ROW_HEIGHT, tagColors } from "./constants";
 import { TagDisplay } from "./types";
 import { GenericTable } from "@ally-ui-mono/ui-shared";
-import { Column } from "@ally-ui-mono/ui-shared/lib/generic-table/types";
+import { Column, FilterType } from "@ally-ui-mono/ui-shared/lib/generic-table/types";
 
 const ConsolidatedLogs = () => {
   const dispatch = useDispatch();
@@ -95,10 +104,11 @@ const ConsolidatedLogs = () => {
       const { callInfo, startTime, callDuration, summary } = details;
       return {
         id,
+        icon: <CallIdIcon />,
         callName: callInfo?.summaryName,
         counselorName: counselor?.name,
         dateAndTime: formatDate(startTime),
-        duration: convertSecondsToDuration(callDuration ?? 60),
+        callDuration: convertSecondsToDuration(callDuration ?? 60),
         qualityScore: summary?.callQuality ?? 0,
         tags: summary?.tags?.map((tag: { tag: string; positivity_rating: number }) => {
           return {
@@ -117,12 +127,14 @@ const ConsolidatedLogs = () => {
       key: "callName",
       header: "Call ID",
       style: { width: "15%" },
+      icon: <CallIdIcon />,
     },
     {
       key: "counselorName",
       header: "Counselor Name",
-      filterType: "multiselect",
+      filterType: FilterType.MULTISELECT,
       style: { width: "15%" },
+      icon: <UserIcon />,
       sortable: true,
       filterable: true,
       filterOptions: [
@@ -135,15 +147,18 @@ const ConsolidatedLogs = () => {
     {
       key: "dateAndTime",
       header: "Date & Time",
-      filterType: "date",
+      filterType: FilterType.DATE,
       style: { width: "15%" },
       sortable: true,
+      filterable: true,
+      filterOptions: [],
+      icon: <DateIcon />,
     },
     {
-      key: "duration",
+      key: "callDuration",
       header: "Duration",
       sortable: true,
-      filterable: true,
+      icon: <TimerIcon />,
       style: { width: "15%" },
     },
     {
@@ -165,12 +180,14 @@ const ConsolidatedLogs = () => {
           </div>
         );
       },
+      icon: <StarIcon />,
     },
     {
       key: "tags",
       header: "Tags",
       style: { width: "30%" },
       render: (value: TagDisplay[]) => <TagGroup tags={value} />,
+      icon: <TagsIcon />,
     },
     {
       key: "review",
@@ -184,61 +201,77 @@ const ConsolidatedLogs = () => {
           <Eye className="text-[#868686] w-4 h-4" />
         </Button>
       ),
+      icon: <ReviewIcon />,
     },
   ];
 
   const displayData = callLogList.map(getAdminDisplayData);
 
   const handleFilterChange = (data: any) => {
-    const { filter, sort } = data;
+    const { filter = [], sort = {} } = data;
 
-    let updatedFilters: GetCallLogsInput = { offset: 0, limit: CALL_LOGS_PAGINATION_LIMIT };
+    // Always reset pagination
+    const updatedFilters: GetCallLogsInput = {
+      offset: 0,
+      limit: CALL_LOGS_PAGINATION_LIMIT,
+    };
 
-    if (filter?.length > 0 || sort?.value) {
-      const sortByFilter = sort?.key ? { sortBy: sort?.key, order: sort?.value } : {};
-      const counselorValue = filter?.find(
-        (f: { key: string; value: any }) => f.key === "counselorName",
-      )?.value;
-      const counselorIds = Array.isArray(counselorValue)
-        ? counselorValue
-        : typeof counselorValue === "string" && counselorValue
-          ? counselorValue.split(",")
-          : [];
-      const counselorFilter = counselorIds?.length > 0 ? { counselorIds } : {};
-      const dateFilterArray = filter?.find(
-        (f: { key: string; value: any }) => f.key === "dateAndTime",
-      )?.value;
-      const dateFilter =
-        dateFilterArray?.length > 0
-          ? { startDate: dateFilterArray[0], endDate: dateFilterArray[1] }
-          : {};
-
-      const qualityScorefilterData = filter
-        ?.find((f: { key: string; value: any }) => f.key === "qualityScore")
-        ?.value?.split("-");
-      const qualityScoreFilter =
-        qualityScorefilterData?.length > 0
-          ? {
-              minQualityScore: qualityScorefilterData[0],
-              maxQualityScore: qualityScorefilterData[1],
-            }
-          : {};
-
-      updatedFilters = {
-        ...updatedFilters,
-        ...sortByFilter,
-        ...counselorFilter,
-        ...dateFilter,
-        ...qualityScoreFilter,
-      };
+    // Sorting
+    if (sort.key && sort.value) {
+      updatedFilters.sortBy = sort.key;
+      updatedFilters.order = sort.value;
     }
+
+    // Counselor filter
+    const counselor = filter.find((f: { key: string }) => f.key === "counselorName");
+    if (counselor) {
+      let ids: string[] = [];
+      if (Array.isArray(counselor.value)) {
+        ids = counselor.value;
+      }
+      if (ids.length > 0) {
+        updatedFilters.counselorIds = ids.join(",");
+      }
+    }
+
+    // Date filter
+    const date = filter.find((f: { key: string }) => f.key === "dateAndTime");
+    if (date && Array.isArray(date.value) && date.value.length === 2) {
+      updatedFilters.startDate = date.value[0];
+      updatedFilters.endDate = date.value[1];
+    }
+
+    // Quality score filter
+    const quality = filter.find((f: { key: string }) => f.key === "qualityScore");
+    if (quality && typeof quality.value === "string") {
+      const [min, max] = quality.value.split("-");
+      if (min && max) {
+        updatedFilters.minQualityScore = Number(min);
+        updatedFilters.maxQualityScore = Number(max);
+      }
+    }
+
     dispatch(updateFilters(updatedFilters));
+  };
+
+  const renderFallbackUI = () => {
+    if (callLogList.length === 0 && !isLoading) {
+      return (
+        <FallbackUI
+          image={<NoResults />}
+          mainMessage="No call records found"
+          description="Your recent calls and insights will be listed here."
+          className="py-[100px]"
+        />
+      );
+    }
+    return null;
   };
 
   return (
     <>
       <div
-        className={"rounded-xl w-full max-h-[calc(100vh-240px)] pt-[20px]"}
+        className={"rounded-xl w-full max-h-[calc(100vh-240px)]"}
         style={{
           minHeight: `${TABLE_ROW_HEIGHT * (CALL_LOGS_PAGINATION_LIMIT + 1)}px`,
         }}
@@ -251,19 +284,8 @@ const ConsolidatedLogs = () => {
           showSelectedFilters={true}
           onFilterChange={handleFilterChange}
           handleLoadMore={callLogList?.length > 0 && hasMore && handleLoadMore}
-          fallbackUI={
-            callLogList.length === 0 &&
-            !isLoading && (
-              <FallbackUI
-                image={<NoResults />}
-                mainMessage="No call records found"
-                description="Your recent calls and insights will be listed here."
-                className="py-[100px]"
-              />
-            )
-          }
-          className="min-w-full max-h-[calc(100vh-140px)] font-['IBM_Plex_Sans'] overflow-y-scroll"
-          style={{ minWidth: "100%" }}
+          fallbackUI={renderFallbackUI()}
+          className="min-w-full min-w-[100%] max-h-[calc(100vh-140px)] font-['IBM_Plex_Sans'] overflow-y-scroll"
         />
       </div>
       {callSummary && callSummary?.id && (
