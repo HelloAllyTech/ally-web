@@ -1,14 +1,4 @@
-// Add a local ImportMetaEnv type for compatibility
-interface ImportMetaEnv {
-  MODE: string;
-  [key: string]: any;
-}
-
-declare global {
-  interface ImportMeta {
-    env: ImportMetaEnv;
-  }
-}
+/// <reference types="vite/client" />
 
 export enum LogLevel {
   INFO = "info",
@@ -23,7 +13,7 @@ const logger = {
    * @param message - The log message
    */
   log: (level: LogLevel, message: string) => {
-    const logger_enabled = (import.meta.env as ImportMetaEnv).MODE === "development";
+    const logger_enabled = import.meta.env.MODE === "development";
     if (!logger_enabled) return;
 
     const timestamp = new Date().toISOString();
