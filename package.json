@@ -9,7 +9,8 @@
     "format:check": "prettier --check .",
     "prepare": "husky && husky install",
     "lint": "eslint . --ext .js,.jsx,.ts,.tsx",
-    "lint:fix": "eslint . --ext .js,.jsx,.ts,.tsx --fix"
+    "lint:fix": "eslint . --ext .js,.jsx,.ts,.tsx --fix",
+    "build:prod": "npx nx build ally-helpline-dashboard --configuration=production"
   },
   "private": true,
   "dependencies": {
