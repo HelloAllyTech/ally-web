@@ -1,4 +1,4 @@
-import { FC, useState } from "react";
+import { FC, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { useSearchParams } from "react-router-dom";
 
@@ -7,21 +7,50 @@ import { Resource } from "@ally-ui-mono/ui-shared/types";
 import { useGetCategoriesQuery, useGetSearchResultsMutation } from "@/api/search";
 
 import { SearchResourcesProps } from "./types";
-import { logger } from "@ally-ui-mono/ui-shared";
 
 const SearchResources: FC<SearchResourcesProps> = ({
   isInSidebar = false,
   showHeader = true,
   fullWidth = false,
 }) => {
-  const [_, setSearchParams] = useSearchParams();
+  const [, setSearchParams] = useSearchParams();
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [searchQuery, setSearchQuery] = useState("");
   const [resources, setResources] = useState<Resource[]>([]);
+  const [categoryCountList, setCategoryCountList] = useState<{ [key: string]: number }>({});
   const [hasMore, setHasMore] = useState(true);
 
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const query = urlParams.get("q");
+    const category = urlParams.get("category");
+    if (!query && !category) {
+      return;
+    }
+    setSearchQuery(query);
+    setSelectedCategory(category || "All");
+    triggerSearch(query, category);
+  }, []);
+
   const [getSearchResults, { isLoading: isResourcesLoading }] = useGetSearchResultsMutation();
-  const { data: categories } = useGetCategoriesQuery();
+
+  const triggerSearch = async (query: string, category?: string) => {
+    let filters = undefined;
+    if (category && category !== "All") {
+      filters = { category };
+    }
+    const response = await getSearchResults({
+      query,
+      limit: 10,
+      filters,
+    });
+    if (response.data) {
+      setResources(response.data.documents);
+      setCategoryCountList(response.data.categories);
+    } else {
+      toast.error("Error fetching search results");
+    }
+  };
 
   const handleSearch = async (query: string) => {
     if (!isInSidebar) {
@@ -29,15 +58,21 @@ const SearchResources: FC<SearchResourcesProps> = ({
     }
     setSearchQuery(query);
     if (query) {
-      const response = await getSearchResults({
-        query,
-        limit: 10,
-      });
-      if (response.data) {
-        setResources(response.data.documents);
+      triggerSearch(query);
+    }
+  };
+
+  const handleCategoryChange = async (category: string, isSearchTriggered: boolean = true) => {
+    if (!isInSidebar) {
+      if (category === "All") {
+        setSearchParams({ q: searchQuery });
       } else {
-        toast.error("Error fetching search results");
+        setSearchParams({ q: searchQuery, category });
       }
+    }
+    setSelectedCategory(category);
+    if (isSearchTriggered) {
+      triggerSearch(searchQuery, category);
     }
   };
 
@@ -49,6 +84,7 @@ const SearchResources: FC<SearchResourcesProps> = ({
     });
     if (response.data) {
       const newDocuments = response.data.documents;
+      setCategoryCountList(response.data.categories);
       if (newDocuments.length > resources.length) {
         setResources(newDocuments);
       } else {
@@ -60,16 +96,16 @@ const SearchResources: FC<SearchResourcesProps> = ({
   return (
     <ResourceSearch
       resources={resources}
-      categories={categories || []}
       isLoading={isResourcesLoading}
       onSearch={handleSearch}
       onInfiniteScroll={fetchRemainingResources}
       selectedCategory={selectedCategory}
-      setSelectedCategory={setSelectedCategory}
+      onCategoryChange={handleCategoryChange}
       showHeader={showHeader}
       fullWidth={fullWidth}
       searchQuery={searchQuery}
       isSuggestionsRow={!isInSidebar}
+      categoryCountList={categoryCountList}
     />
   );
 };

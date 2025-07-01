@@ -14,6 +14,7 @@ export interface GetSearchResultsRequest {
 
 export interface GetSearchResultsResponse {
   documents: Resource[];
+  categories: { [key: string]: number };
   total: number;
   limit: number;
 }

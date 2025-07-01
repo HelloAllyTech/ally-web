@@ -1,21 +1,21 @@
 "use client";
 
-import { FC } from "react";
+import { FC, useMemo } from "react";
 import { Tab, Tabs } from "@mui/material";
 
 import { Resource } from "../../types";
 
 export interface ResourceTabsProps {
-  categories: string[];
   resources: Resource[];
+  categoryCountList?: { [key: string]: number };
   selectedCategory: string;
-  setSelectedCategory: (category: string) => void;
+  setSelectedCategory: (category: string, isSearchTriggered?: boolean) => void;
 }
 
 const ResourceTabs: FC<ResourceTabsProps> = ({
-  categories,
   resources,
   selectedCategory,
+  categoryCountList,
   setSelectedCategory,
 }) => {
   const getCategoryCount = (category: string) => {
@@ -23,11 +23,25 @@ const ResourceTabs: FC<ResourceTabsProps> = ({
   };
 
   const getCategoryLabel = (category: string) => {
+    if (categoryCountList) {
+      if (category === "All") {
+        const totalCount = Object.values(categoryCountList).reduce((sum, count) => sum + count, 0);
+        return `All (${totalCount})`;
+      }
+      return `${category} (${categoryCountList[category] || 0})`;
+    }
     if (category === "All") {
       return `All (${resources?.length || 0})`;
     }
     return `${category} (${getCategoryCount(category) || 0})`;
   };
+
+  const categoryList = useMemo(() => {
+    if (categoryCountList) {
+      return ["All", ...Object.keys(categoryCountList)];
+    }
+    return ["All"];
+  }, [categoryCountList]);
 
   return (
     <div className="relative w-full">
@@ -53,7 +67,7 @@ const ResourceTabs: FC<ResourceTabsProps> = ({
             },
           }}
         >
-          {["All", ...categories].map(category => (
+          {categoryList.map(category => (
             <Tab
               key={category}
               value={category}

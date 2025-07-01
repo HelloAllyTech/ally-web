@@ -15,9 +15,8 @@ import { sampleSuggestions } from "./constants";
 import SkeletonLoader from "../skeleton-loader/SkeletonLoader";
 
 export interface ResourceSearchProps {
-  categories?: string[];
   selectedCategory?: string;
-  setSelectedCategory?: (category: string) => void;
+  onCategoryChange?: (category: string, isSearchTriggered?: boolean) => void;
   onInfiniteScroll?: () => void;
   onSearch?: (searchTerm: string) => void;
   resources?: Resource[];
@@ -27,12 +26,12 @@ export interface ResourceSearchProps {
   fullWidth?: boolean;
   showHeaderDescriptionInMobile?: boolean;
   isSuggestionsRow?: boolean;
+  categoryCountList?: { [key: string]: number };
 }
 
 const ResourceSearch: FC<ResourceSearchProps> = ({
-  categories = [],
   selectedCategory,
-  setSelectedCategory = () => {},
+  onCategoryChange = () => {},
   onInfiniteScroll = () => {},
   onSearch,
   resources = [],
@@ -42,6 +41,7 @@ const ResourceSearch: FC<ResourceSearchProps> = ({
   fullWidth = false,
   showHeaderDescriptionInMobile = true,
   isSuggestionsRow = true,
+  categoryCountList,
 }) => {
   const getResources = () => {
     if (selectedCategory === "All") {
@@ -51,8 +51,8 @@ const ResourceSearch: FC<ResourceSearchProps> = ({
   };
 
   const handleSearch = (searchTerm: string) => {
-    if (onSearch && setSelectedCategory) {
-      setSelectedCategory("All");
+    if (onSearch && onCategoryChange) {
+      onCategoryChange("All", false);
       onSearch(searchTerm);
     }
   };
@@ -87,12 +87,12 @@ const ResourceSearch: FC<ResourceSearchProps> = ({
       return (
         <>
           <div className="w-[calc(100%-32px)] sm:w-full ml-[16px] mr-[16px]">
-            {categories && selectedCategory && setSelectedCategory && (
+            {selectedCategory && onCategoryChange && (
               <ResourceTabs
-                categories={categories}
                 resources={resources}
                 selectedCategory={selectedCategory}
-                setSelectedCategory={setSelectedCategory}
+                categoryCountList={categoryCountList}
+                setSelectedCategory={onCategoryChange}
               />
             )}
           </div>

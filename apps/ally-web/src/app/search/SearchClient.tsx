@@ -1,26 +1,24 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
-import { logger } from "@ally-ui-mono/ui-shared";
 
-import { ResourceSearch } from "@ally-ui-mono/ui-shared";
-import { Resource } from "libs/ui-shared/src/types";
+import { logger, ResourceSearch, Resource } from "@ally-ui-mono/ui-shared";
+
 import { fetchReferenceDocuments, initialFetchLimit } from "./api";
-import { useEffect } from "react";
 
 interface SearchClientProps {
   searchQuery: string;
   category: string;
-  categories: string[];
   documents: Resource[];
+  categoryCountList: { [key: string]: number };
 }
 
 export default function SearchClient({
   searchQuery,
   category,
   documents: initialDocuments,
-  categories,
+  categoryCountList,
 }: SearchClientProps) {
   const router = useRouter();
   const [documents, setDocuments] = useState<Resource[]>(initialDocuments);
@@ -69,12 +67,12 @@ export default function SearchClient({
         searchQuery={searchQuery}
         onSearch={onSearch}
         selectedCategory={category}
-        setSelectedCategory={onCategoryChange}
+        onCategoryChange={onCategoryChange}
         onInfiniteScroll={onInfiniteScroll}
         resources={documents}
         showHeaderDescriptionInMobile={false}
         isLoading={isLoading}
-        categories={categories}
+        categoryCountList={categoryCountList}
       />
     </main>
   );

@@ -406,7 +406,7 @@ const CallTranscript: FC<CallTranscriptProps> = ({ endSession, activeChat, isMic
         localStreamRef.current = null;
       }
       if (microphoneStreamRef.current) {
-        microphoneStreamRef.current.getTracks().forEach((track) => track.stop());
+        microphoneStreamRef.current.getTracks().forEach(track => track.stop());
         microphoneStreamRef.current = null;
       }
       endSession(triggerApi, activeChatId ?? microphoneChatId);

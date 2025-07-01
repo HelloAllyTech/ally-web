@@ -10,6 +10,8 @@ import GenericTable from "./lib/generic-table";
 import Pagination from "./lib/pagination";
 import { logger } from "./logger";
 
+export type { Resource } from "./types";
+
 export {
   Badge,
   Dropdown,

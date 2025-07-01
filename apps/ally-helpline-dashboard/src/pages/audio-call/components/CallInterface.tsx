@@ -27,12 +27,11 @@ const CallInterface: FC<CallInterfaceProps> = ({
         const diffInSeconds = Math.floor((now - Date.parse(activeChat.startedAt)) / 1000);
         setSeconds(diffInSeconds);
       };
-  
+
       updateElapsedTime(); // Initial update
-      interval = setInterval(updateElapsedTime, 1000);  
+      interval = setInterval(updateElapsedTime, 1000);
     }
     return () => clearInterval(interval); // Cleanup on unmount
-
   }, [activeChat, activeChat?.startedAt]);
 
   useEffect(() => {
