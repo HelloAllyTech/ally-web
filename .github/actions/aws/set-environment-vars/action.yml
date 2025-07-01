@@ -62,21 +62,21 @@ runs:
             echo "aws_role=${{ inputs.dev_aws_role }}" >> $GITHUB_OUTPUT
             echo "aws_region=${{ inputs.dev_aws_region }}" >> $GITHUB_OUTPUT
             echo "ecr_repository=${{ inputs.dev_ecr_repository }}" >> $GITHUB_OUTPUT
-            echo "project_prefix=life-dev" >> $GITHUB_OUTPUT
+            echo "project_prefix=ally-dev" >> $GITHUB_OUTPUT
             echo "project_region=sg" >> $GITHUB_OUTPUT
             ;;
           "stg")
             echo "aws_role=${{ inputs.stg_aws_role }}" >> $GITHUB_OUTPUT
             echo "aws_region=${{ inputs.stg_aws_region }}" >> $GITHUB_OUTPUT
             echo "ecr_repository=${{ inputs.stg_ecr_repository }}" >> $GITHUB_OUTPUT
-            echo "project_prefix=life-stg" >> $GITHUB_OUTPUT
+            echo "project_prefix=ally-stg" >> $GITHUB_OUTPUT
             echo "project_region=mb" >> $GITHUB_OUTPUT
             ;;
           "prd")
             echo "aws_role=${{ inputs.prd_aws_role }}" >> $GITHUB_OUTPUT
             echo "aws_region=${{ inputs.prd_aws_region }}" >> $GITHUB_OUTPUT
             echo "ecr_repository=${{ inputs.prd_ecr_repository }}" >> $GITHUB_OUTPUT
-            echo "project_prefix=life-prd" >> $GITHUB_OUTPUT
+            echo "project_prefix=ally-prd" >> $GITHUB_OUTPUT
             echo "project_region=mb" >> $GITHUB_OUTPUT
             ;;
           *)
