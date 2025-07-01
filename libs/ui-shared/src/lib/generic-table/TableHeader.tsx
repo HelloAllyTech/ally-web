@@ -1,3 +1,4 @@
+"use client";
 import React, { useState } from "react";
 import { ArrowUpward, ArrowDownward, FilterAlt, Sort } from "@mui/icons-material";
 import { Popover } from "@mui/material";
@@ -15,7 +16,7 @@ import FilterPopover from "./FilterPopover";
  * @param {(key: string, value: string) => void} props.onSort - Handler for sort changes.
  * @param {(key: string, value: string | string[]) => void} props.onFilterChange - Handler for filter changes.
  */
-function TableHeader<T extends Record<string, any>>({
+const TableHeader = <T extends Record<string, any>>({
   columns,
   filter,
   onSort,
@@ -25,7 +26,7 @@ function TableHeader<T extends Record<string, any>>({
   filter: TableFilter;
   onSort: (key: string, value: SortDirection) => void;
   onFilterChange: (key: string, value: string | string[]) => void;
-}) {
+}) => {
   // State for popovers
   const [mainAnchorEl, setMainAnchorEl] = useState<null | HTMLElement>(null);
   const [sortAnchorEl, setSortAnchorEl] = useState<null | HTMLElement>(null);
@@ -236,6 +237,6 @@ function TableHeader<T extends Record<string, any>>({
       </tr>
     </thead>
   );
-}
+};
 
 export default TableHeader;

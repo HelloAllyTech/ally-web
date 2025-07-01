@@ -1,3 +1,4 @@
+"use client";
 import React from "react";
 import { Popover, TextField } from "@mui/material";
 import { FilterPopoverProps, FilterType } from "./types";

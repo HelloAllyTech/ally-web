@@ -1,3 +1,4 @@
+"use client";
 import React from "react";
 import { Column } from "./types";
 
@@ -23,7 +24,7 @@ function getValue<T extends Record<string, any>>(row: T, key: keyof T | string) 
  * @param {React.ReactNode} [props.fallbackUI] - The fallback UI if no data.
  * @param {(row: T) => void} [props.onRowClick] - Optional row click handler.
  */
-function TableBody<T extends Record<string, any>>({
+const TableBody = <T extends Record<string, any>>({
   columns,
   data,
   fallbackUI,
@@ -33,7 +34,7 @@ function TableBody<T extends Record<string, any>>({
   data: T[];
   fallbackUI?: React.ReactNode;
   onRowClick?: (row: T) => void;
-}) {
+}) => {
   /**
    * Render the fallback UI if no data is provided.
    * @returns {React.ReactNode} - The fallback UI.
@@ -79,6 +80,6 @@ function TableBody<T extends Record<string, any>>({
       ))}
     </tbody>
   );
-}
+};
 
 export default TableBody;

@@ -12,6 +12,9 @@
     "./package.json": "./package.json"
   },
   "dependencies": {
-    "framer-motion": "^12.18.1"
+    "framer-motion": "^12.18.1",
+    "date-fns": "^3.6.0",
+    "lucide-react": "^0.462.0",
+    "react-calendar": "^6.0.0"
   }
 }
