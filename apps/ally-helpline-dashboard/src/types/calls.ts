@@ -87,6 +87,7 @@ export interface GetCounselorsInput {
 export interface GetTagsInput {
   limit?: number;
   offset?: number;
+  search?: string;
 }
 
 export interface GetCounselorsResponse {
@@ -101,5 +102,5 @@ export interface Counselor {
 
 export interface GetTagsResponse {
   count: number;
-  data: import("./summary").Tag[];
+  data: string[];
 }

@@ -28,9 +28,21 @@ const FilterPopover: React.FC<FilterPopoverProps> = ({
   // Use the explicit singleSelectedValue if provided
   const selectedValue = singleSelectedValue || "";
 
+  const renderNoOptions = () => {
+    if (
+      column?.filterOptions?.filter(option =>
+        option?.label?.toLowerCase()?.includes(searchText.toLowerCase()),
+      ).length === 0
+    ) {
+      return <div className="text-[14px] text-[#6B7280] font-[500] text-center">No options</div>;
+    }
+    return null;
+  };
+
   const renderSingleSelect = () => {
     return (
-      <div className="max-h-[300px] overflow-y-auto">
+      <div className="max-h-[300px] overflow-y-auto" style={{ scrollbarWidth: "thin" }}>
+        {renderNoOptions()}
         {column?.filterOptions
           .filter(option => option?.label?.toLowerCase()?.includes(searchText.toLowerCase()))
           .map(option => (
@@ -49,26 +61,29 @@ const FilterPopover: React.FC<FilterPopoverProps> = ({
   const renderMultiSelect = () => {
     return (
       <>
-        {column?.filterOptions
-          ?.filter(option => option?.label?.toLowerCase()?.includes(searchText.toLowerCase()))
-          ?.map(option => (
-            <div
-              key={option.value}
-              className={`flex flex-row items-center cursor-pointer px-4 py-[10px] min-w-[200px] hover:bg-[#F5F5F7] text-[#6B7280] ${selectedValues.includes(option.value) ? "bg-[#F5F5F7]" : ""}`}
-              onClick={() => onToggleOption(option.value)}
-            >
-              <input
-                type="checkbox"
-                checked={selectedValues.includes(option.value)}
-                readOnly
-                className="mr-2"
-              />
-              <div>{option.label}</div>
-            </div>
-          ))}
+        <div className="max-h-[300px] overflow-y-auto" style={{ scrollbarWidth: "thin" }}>
+          {renderNoOptions()}
+          {column?.filterOptions
+            ?.filter(option => option?.label?.toLowerCase()?.includes(searchText.toLowerCase()))
+            ?.map(option => (
+              <div
+                key={option.value}
+                className={`flex flex-row items-center cursor-pointer px-4 py-[10px] min-w-[200px] hover:bg-[#F5F5F7] text-[#6B7280] ${selectedValues.includes(option.value) ? "bg-[#F5F5F7]" : ""}`}
+                onClick={() => onToggleOption(option.value)}
+              >
+                <input
+                  type="checkbox"
+                  checked={selectedValues.includes(option.value)}
+                  readOnly
+                  className="mr-2"
+                />
+                <div>{option.label}</div>
+              </div>
+            ))}
+        </div>
         <div className="flex justify-end p-2">
           <button
-            className="bg-blue-600 text-white px-4 py-1 mb-[4px] mr-[4px] rounded hover:bg-blue-700"
+            className="bg-blue-600 text-white px-4 py-1 mb-[4px] mr-[4px] rounded hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed"
             onClick={onSaveMultiSelect}
             disabled={selectedValues.length === 0}
           >
@@ -111,16 +126,12 @@ const FilterPopover: React.FC<FilterPopoverProps> = ({
           {column.filterType === FilterType.MULTISELECT
             ? renderMultiSelect()
             : renderSingleSelect()}
-          {column.filterType === FilterType.DATE ? (
+          {column.filterType === FilterType.DATE && (
             <DateFilterUI
               selectedValues={selectedValues}
               onChange={arr => onToggleOption(JSON.stringify(arr))}
               onDateSelect={value => onDateSelect?.(column.key as string, value)}
             />
-          ) : (
-            column?.filterOptions?.filter(option =>
-              option?.label?.toLowerCase()?.includes(searchText.toLowerCase()),
-            ).length === 0 && <div>No options</div>
           )}
         </div>
       </div>

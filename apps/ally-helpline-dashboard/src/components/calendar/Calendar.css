@@ -4,8 +4,13 @@
   border-radius: 12px !important;
 }
 
+.react-calendar__tile--active {
+  background: #dae9fc !important;
+  color: #fff !important;
+}
+
 .react-calendar__tile {
-  border-radius: 16px !important;
+  border-radius: 0px !important;
   padding: 8px 0px !important;
   color: #1b1b1b !important;
 }

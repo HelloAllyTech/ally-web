@@ -31,7 +31,7 @@ const callsAPI = baseAPI.injectEndpoints({
       }),
       providesTags: ["CallLogs"],
     }),
-    getTags: builder.query<GetTagsResponse, GetTagsInput>({
+    getCallTags: builder.query<GetTagsResponse, GetTagsInput>({
       query: params => ({
         url: "/chats/tags",
         params,
@@ -45,5 +45,5 @@ export const {
   useGetCallLogsQuery,
   useGetAdminCallLogsQuery,
   useGetCounselorsQuery,
-  useGetTagsQuery,
+  useGetCallTagsQuery,
 } = callsAPI;

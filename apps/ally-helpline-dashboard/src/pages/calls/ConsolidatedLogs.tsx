@@ -5,7 +5,7 @@ import { Eye } from "lucide-react";
 
 import { RootState } from "@/store/store";
 import { updateFilters } from "@/reducer/callsReducer";
-import { useGetAdminCallLogsQuery, useGetCounselorsQuery } from "@/api/calls";
+import { useGetAdminCallLogsQuery, useGetCounselorsQuery, useGetCallTagsQuery } from "@/api/calls";
 import { Button, CustomCircularProgress, FallbackUI, TagGroup } from "@/components";
 import {
   NoResults,
@@ -44,6 +44,9 @@ const ConsolidatedLogs = () => {
   } = useGetAdminCallLogsQuery(filters);
   const { data: callLogs = [] } = callLogsData || {};
   const { data: counselorsData } = useGetCounselorsQuery({ offset: 0 });
+  const { data: tagsData } = useGetCallTagsQuery({ offset: 0 });
+
+  console.log("tagsData", tagsData);
 
   const tableRef = useRef<HTMLDivElement>(null);
 
@@ -76,7 +79,7 @@ const ConsolidatedLogs = () => {
       setHasMore(false);
       setCallLogList([]);
     }
-  }, [offset, callLogs?.length]);
+  }, [callLogsData]);
 
   const handleLoadMore = () => {
     if (!isLoading && !isLoadingMore && hasMore) {
@@ -182,6 +185,13 @@ const ConsolidatedLogs = () => {
       style: { width: "30%" },
       render: (value: TagDisplay[]) => <TagGroup tags={value} />,
       icon: <TagsIcon />,
+      // filterType: FilterType.MULTISELECT,
+      // filterable: true,
+      // filterOptions:
+      //   tagsData?.data?.map(item => ({
+      //     label: item,
+      //     value: item,
+      //   })) || [],
     },
     {
       key: "review",
@@ -245,6 +255,12 @@ const ConsolidatedLogs = () => {
       }
     }
 
+    // Tags filter
+    const tags = filter.find((f: { key: string }) => f.key === "tags");
+    if (tags && Array.isArray(tags.value) && tags.value.length > 0) {
+      updatedFilters.tags = tags.value.join(",");
+    }
+
     dispatch(updateFilters(updatedFilters));
   };
 
@@ -274,7 +290,7 @@ const ConsolidatedLogs = () => {
           onFilterChange={handleFilterChange}
           handleLoadMore={callLogList?.length > 0 && hasMore && handleLoadMore}
           fallbackUI={renderFallbackUI()}
-          className="min-w-full min-w-[100%] max-h-[calc(100vh-140px)] font-['IBM_Plex_Sans'] overflow-y-scroll"
+          className="min-w-full min-w-[100%] max-h-[calc(100vh-140px)] font-['IBM_Plex_Serif'] overflow-y-scroll"
         />
       </div>
       {callSummary && callSummary?.id && (

@@ -12,7 +12,7 @@ const TagGroup: React.FC<TagGroupProps> = ({ tags, className = "", style }) => {
 
   return (
     <div
-      className={`flex gap-[8px] items-center py-[8px] max-w-full overflow-x-scroll ${expanded ? "flex-wrap" : "flex-row"} cursor-pointer ${className}`}
+      className={`flex gap-[8px] items-center py-[8px] max-w-full overflow-x-hidden ${expanded ? "flex-wrap" : "flex-row"} cursor-pointer ${className} max-w-[300px]`}
       style={style}
       onClick={() => setExpanded(prev => !prev)}
     >

@@ -24,9 +24,7 @@ const PostCallSummary = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
 
-  const [activeSection, setActiveSection] = useState<SectionType>(
-    searchParams.get("section") === "2" ? SectionType.CallSummary : SectionType.StressBuster,
-  );
+  const [activeSection, setActiveSection] = useState<SectionType>(SectionType.CallSummary);
   const [completedSections, setCompletedSections] = useState<SectionType[]>(
     searchParams.get("section") === "2"
       ? [SectionType.StressBuster, SectionType.CallSummary]

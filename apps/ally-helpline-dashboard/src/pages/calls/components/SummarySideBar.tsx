@@ -51,10 +51,7 @@ const SummarySideBar: FC<SummarySideBarProps> = ({
     limit: transcriptPageSize,
   });
 
-  const transcript = (transcriptData?.data || []).map(msg => ({
-    content: msg.message,
-    senderId: msg.id,
-  }));
+  const transcript = transcriptData?.data || [];
   const transcriptTotal = transcriptData?.total || 0;
 
   const { exportTxtFromText } = useFileExport();

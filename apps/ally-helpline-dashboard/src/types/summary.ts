@@ -74,9 +74,10 @@ export interface GetLocationsResponse {
 }
 
 export interface TranscriptMessage {
-  id: number;
-  message: string;
-  createdAt: string;
+  chatId?: number;
+  content: string;
+  senderId: number;
+  createdAt?: string;
 }
 
 export interface GetTranscriptResponse {
