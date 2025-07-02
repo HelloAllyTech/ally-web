@@ -118,6 +118,21 @@ const Login: FunctionComponent = () => {
     }
   }, [countdown, generateOTP, email]);
 
+  const handleNext = () => {
+    if (!validateEmail(email)) {
+      setEmailError("Please enter a valid email address");
+      return;
+    }
+    if (rememberMe) {
+      localStorage.setItem("rememberedEmail", email);
+    }
+    generateOTP({ email: email.trim() });
+  };
+
+  const handleVerify = () => {
+    verifyOTP({ email: email.trim(), otp });
+  };
+
   const getLoginSection = () => {
     if (loginSection === LoginSection.EMAIL) {
       return (
@@ -168,7 +183,7 @@ const Login: FunctionComponent = () => {
             type="button"
             className="w-full rounded-[5px] mt-6"
             disabled={isLoading || isSubmitDisabled}
-            onClick={handleContinue}
+            onClick={handleNext}
           >
             {isLoading ? (
               <div className="flex items-center justify-center">
@@ -215,7 +230,7 @@ const Login: FunctionComponent = () => {
           type="button"
           className="w-full rounded-[5px] mt-6"
           disabled={isLoading || isSubmitDisabled}
-          onClick={handleContinue}
+          onClick={handleVerify}
         >
           {isLoading ? (
             <div className="flex items-center justify-center">
@@ -223,7 +238,7 @@ const Login: FunctionComponent = () => {
               Signing in...
             </div>
           ) : (
-            "Next"
+            "Verify"
           )}
         </Button>
       </motion.div>
@@ -232,21 +247,6 @@ const Login: FunctionComponent = () => {
 
   const isSubmitDisabled =
     loginSection === LoginSection.EMAIL ? !email || !!emailError : !otp || otp.length < 4;
-
-  const handleContinue = () => {
-    if (loginSection === LoginSection.EMAIL) {
-      if (!validateEmail(email)) {
-        setEmailError("Please enter a valid email address");
-        return;
-      }
-      if (rememberMe) {
-        localStorage.setItem("rememberedEmail", email);
-      }
-      generateOTP({ email: email.trim() });
-    } else {
-      verifyOTP({ email: email.trim(), otp });
-    }
-  };
 
   return (
     <div className="flex h-screen p-8">
