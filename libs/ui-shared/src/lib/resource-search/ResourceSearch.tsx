@@ -118,7 +118,7 @@ const ResourceSearch: FC<ResourceSearchProps> = ({
                 ))}
               </InfiniteScroll>
             ) : (
-              renderNoResults()
+              !isLoading && renderNoResults()
             )}
             {isLoading && <CircularProgress color="inherit" size={20} />}
           </div>

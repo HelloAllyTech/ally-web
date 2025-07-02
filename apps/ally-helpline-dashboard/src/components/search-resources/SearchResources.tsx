@@ -46,7 +46,10 @@ const SearchResources: FC<SearchResourcesProps> = ({
     });
     if (response.data) {
       setResources(response.data.documents);
-      setCategoryCountList(response.data.categories);
+      if (!(category && category !== "All")) {
+        // If there is a category, it means the query is filtered and wont return category list
+        setCategoryCountList(response.data.categories);
+      }
     } else {
       toast.error("Error fetching search results");
     }
