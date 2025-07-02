@@ -19,6 +19,7 @@ import Calendar from "./calendar/Calendar";
 import SearchResources from "./search-resources/SearchResources";
 import CustomCircularProgress from "./custom-circular-progress/CustomCircularProgress";
 import TagGroup from "./tag-group/TagGroup";
+import OTP from "./otp/OTP";
 
 export {
   ArticleGrid,
@@ -42,4 +43,5 @@ export {
   SearchResources,
   CustomCircularProgress,
   TagGroup,
+  OTP,
 };
