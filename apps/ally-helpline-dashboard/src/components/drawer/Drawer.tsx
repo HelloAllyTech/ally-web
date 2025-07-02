@@ -6,7 +6,17 @@ import { DrawerProps } from "./types";
 
 const Drawer: FC<DrawerProps> = ({ open, onClose, children, title, headerButtons, className }) => {
   return (
-    <MuiDrawer anchor="right" open={open} onClose={onClose} className={className}>
+    <MuiDrawer
+      anchor="right"
+      open={open}
+      onClose={onClose}
+      className={className}
+      PaperProps={{
+        sx: {
+          overflow: "hidden",
+        },
+      }}
+    >
       <div className="flex flex-col gap-4 h-full py-4 px-6">
         <div className="flex items-center gap-4">
           <ChevronsRight className="cursor-pointer" onClick={onClose} />
@@ -21,7 +31,7 @@ const Drawer: FC<DrawerProps> = ({ open, onClose, children, title, headerButtons
             </div>
           </div>
         </div>
-        <div className="flex-1 overflow-auto">{children}</div>
+        <div className="flex-1">{children}</div>
       </div>
     </MuiDrawer>
   );

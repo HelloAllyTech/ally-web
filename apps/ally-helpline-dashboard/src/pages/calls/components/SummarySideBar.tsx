@@ -261,7 +261,7 @@ const SummarySideBar: FC<SummarySideBarProps> = ({
         </Tabs>
 
         {selectedTab === 1 && (
-          <div className="w-full h-full overflow-y-auto p-2">
+          <div className="w-full h-full p-2">
             <div className="flex items-center mb-4">
               <TextField
                 inputRef={summaryNameRef}
