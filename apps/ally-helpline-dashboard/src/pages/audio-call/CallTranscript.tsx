@@ -57,6 +57,8 @@ const CallTranscript: FC<CallTranscriptProps> = ({
   const isCounsellor = user?.role === UserRole.COUNSELOR;
   // const isWebRTC = activeChat.provider === "WEBRTC"; // to distinguish between exotel and webrtc
 
+  const isUnmountedRef = useRef(false);
+
   const updateLastTranscription = (
     setCorrespondingTranscription: Dispatch<SetStateAction<Transcription[]>>,
   ) => {
@@ -240,6 +242,7 @@ const CallTranscript: FC<CallTranscriptProps> = ({
     };
 
     recorder.ondataavailable = event => {
+      if (isUnmountedRef.current) return;
       if (event.data.size > 0) {
         chunks.push(event.data);
         totalSize += event.data.size;
@@ -330,6 +333,7 @@ const CallTranscript: FC<CallTranscriptProps> = ({
       if (!isMicrophoneMode) {
         disconnect();
       }
+      isUnmountedRef.current = true;
     };
   }, [activeChatId, user, isCounsellor, isClient, iceServers]);
 
@@ -429,6 +433,15 @@ const CallTranscript: FC<CallTranscriptProps> = ({
       (a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime(),
     );
   }, [myTranscriptions, speakerTranscriptions]);
+
+  useEffect(() => {
+    return () => {
+      isUnmountedRef.current = true;
+      if (mediaRecorder && mediaRecorder.state !== "inactive") {
+        mediaRecorder.stop();
+      }
+    };
+  }, []);
 
   return (
     <div className="w-screen h-screen flex justify-center items-center">

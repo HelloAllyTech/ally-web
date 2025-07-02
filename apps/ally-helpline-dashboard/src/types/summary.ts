@@ -82,7 +82,7 @@ export interface TranscriptMessage {
 
 export interface GetTranscriptResponse {
   data: TranscriptMessage[];
-  total: number;
+  count?: number;
 }
 
 export interface GetTranscriptRequest {

@@ -52,7 +52,7 @@ const SummarySideBar: FC<SummarySideBarProps> = ({
   });
 
   const transcript = transcriptData?.data || [];
-  const transcriptTotal = transcriptData?.total || 0;
+  const transcriptTotal = transcriptData?.count || 0;
 
   const { exportTxtFromText } = useFileExport();
   const isLoading = isUpdating || isExporting || isUpdatingCallSummary;
@@ -182,15 +182,8 @@ const SummarySideBar: FC<SummarySideBarProps> = ({
           </div>
         )}
         {transcriptList.length < transcriptTotal && (
-          <div>
-            <Button
-              variant="outlined"
-              size="small"
-              onClick={handleLoadMore}
-              disabled={isGetTranscriptLoading}
-            >
-              {isGetTranscriptLoading ? "Loading..." : "Load More"}
-            </Button>
+          <div className="text-sm text-gray-500 cursor-pointer" onClick={handleLoadMore}>
+            {isGetTranscriptLoading ? "Loading..." : "Load More"}
           </div>
         )}
       </div>
