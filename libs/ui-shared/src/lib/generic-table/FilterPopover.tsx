@@ -32,7 +32,7 @@ const FilterPopover: React.FC<FilterPopoverProps> = ({
     return (
       <>
         {column?.filterOptions
-          .filter(option => option.label.toLowerCase().includes(searchText.toLowerCase()))
+          .filter(option => option?.label?.toLowerCase()?.includes(searchText.toLowerCase()))
           .map(option => (
             <div
               key={option.value}
@@ -50,8 +50,8 @@ const FilterPopover: React.FC<FilterPopoverProps> = ({
     return (
       <>
         {column?.filterOptions
-          .filter(option => option.label.toLowerCase().includes(searchText.toLowerCase()))
-          .map(option => (
+          ?.filter(option => option?.label?.toLowerCase()?.includes(searchText.toLowerCase()))
+          ?.map(option => (
             <div
               key={option.value}
               className={`flex flex-row items-center cursor-pointer px-4 py-[10px] min-w-[200px] hover:bg-[#F5F5F7] text-[#6B7280] ${selectedValues.includes(option.value) ? "bg-[#F5F5F7]" : ""}`}
@@ -119,7 +119,7 @@ const FilterPopover: React.FC<FilterPopoverProps> = ({
             />
           ) : (
             column?.filterOptions?.filter(option =>
-              option.label.toLowerCase().includes(searchText.toLowerCase()),
+              option?.label?.toLowerCase()?.includes(searchText.toLowerCase()),
             ).length === 0 && <div>No options</div>
           )}
         </div>

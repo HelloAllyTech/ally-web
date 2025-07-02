@@ -150,7 +150,7 @@ const CallSummary: FC<CallSummaryProps> = ({
       case "Multiline":
         return (
           <div key={field.key} className="flex flex-col gap-1">
-            {labelShownSections.includes(field.sectionKey) && (
+            {labelShownSections?.includes(field.sectionKey) && (
               <span className="font-medium text-[16px] text-[#6B7280]">{`${field.label}: `}</span>
             )}
             <TextField
@@ -265,7 +265,7 @@ const CallSummary: FC<CallSummaryProps> = ({
               defaultExpanded={[
                 SummarySectionKey.FeaturesAndDemographics,
                 SummarySectionKey.SessionSummary,
-              ].includes(key)}
+              ]?.includes(key)}
             >
               {sectionFields.map(field => getFieldDisplay(field))}
             </Accordion>

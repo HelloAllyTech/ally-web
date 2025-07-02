@@ -19,7 +19,7 @@ const Dropdown: FC<DropdownProps> = ({
     }
 
     return options.filter(option =>
-      option.toLowerCase().trim().includes(searchQuery.toLowerCase().trim()),
+      option?.toLowerCase()?.trim()?.includes(searchQuery?.toLowerCase()?.trim()),
     );
   };
 

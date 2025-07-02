@@ -59,7 +59,7 @@ const CallSummaryStepper: FC<CallSummaryStepperProps> = ({
   className,
 }) => {
   const handleSectionChange = (event: React.MouseEvent<HTMLElement>, newSection: SectionType) => {
-    if (newSection !== null && completedSections.includes(newSection)) {
+    if (newSection !== null && completedSections?.includes(newSection)) {
       setActiveSection(newSection);
     }
   };
@@ -76,10 +76,10 @@ const CallSummaryStepper: FC<CallSummaryStepperProps> = ({
       {Object.values(SectionType).map(section => (
         <StyledToggleButton
           key={section}
-          disabled={!completedSections.includes(section)}
+          disabled={!completedSections?.includes(section)}
           value={section}
           aria-label={section}
-          className={completedSections.includes(section) ? "completed" : ""}
+          className={completedSections?.includes(section) ? "completed" : ""}
         >
           {section}
         </StyledToggleButton>

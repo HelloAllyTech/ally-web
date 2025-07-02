@@ -112,7 +112,7 @@ export const GenericTable = forwardRef(
     // Toggle multi-select option
     const handleToggleMultiSelectOption = (value: string) => {
       setMultiSelectValues(prev =>
-        prev.includes(value) ? prev.filter(v => v !== value) : [...prev, value],
+        prev?.includes(value) ? prev?.filter(v => v !== value) : [...prev, value],
       );
     };
 

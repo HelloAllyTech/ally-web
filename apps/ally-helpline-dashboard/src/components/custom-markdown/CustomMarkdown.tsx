@@ -18,7 +18,7 @@ const CustomMarkdown: FunctionComponent<{ content: string; className?: string }>
       const parts: React.ReactNode[] = [];
       let remainingText = line;
 
-      while (remainingText.includes("**")) {
+      while (remainingText?.includes("**")) {
         const boldMatch = remainingText.match(/(.?)\*\*(.*?)\*\*(.*)$/);
         if (boldMatch) {
           // Add text before bold if exists
