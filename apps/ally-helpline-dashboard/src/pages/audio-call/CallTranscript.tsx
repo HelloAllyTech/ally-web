@@ -314,24 +314,24 @@ const CallTranscript: FC<CallTranscriptProps> = ({
     }
 
     return () => {
-      // Cleanup
-      if (offerTimeoutRef.current) {
-        clearTimeout(offerTimeoutRef.current);
-      }
-      if (peerConnection) {
-        peerConnection.close();
-      }
-      if (mediaRecorder && mediaRecorder.state !== "inactive") {
-        mediaRecorder.stop();
-      }
-      if (remoteMediaRecorder && remoteMediaRecorder.state !== "inactive") {
-        remoteMediaRecorder.stop();
-      }
       if (!isMicrophoneMode) {
+        // Cleanup
+        if (offerTimeoutRef.current) {
+          clearTimeout(offerTimeoutRef.current);
+        }
+        if (peerConnection) {
+          peerConnection.close();
+        }
+        if (mediaRecorder && mediaRecorder.state !== "inactive") {
+          mediaRecorder.stop();
+        }
+        if (remoteMediaRecorder && remoteMediaRecorder.state !== "inactive") {
+          remoteMediaRecorder.stop();
+        }
         disconnect();
       }
     };
-  }, [activeChatId, user, isCounsellor, isClient, iceServers]);
+  }, [activeChatId, user, isCounsellor, isClient, iceServers, isMicrophoneMode]);
 
   useEffect(() => {
     const chatId = activeChatId ?? microphoneChatId;
@@ -341,24 +341,28 @@ const CallTranscript: FC<CallTranscriptProps> = ({
     }
 
     return () => {
-      if (mediaRecorder && mediaRecorder.state !== "inactive") {
-        mediaRecorder.stop();
-      }
       if (isMicrophoneMode) {
+        if (mediaRecorder && mediaRecorder.state !== "inactive") {
+          mediaRecorder.stop();
+        }
         disconnect();
       }
     };
-  }, [activeChatId, microphoneChatId]);
+  }, [activeChatId, microphoneChatId, isMicrophoneMode]);
 
   useEffect(() => {
     if (isMicrophoneMode) {
-      (async () => {
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      navigator.mediaDevices.getUserMedia({ audio: true }).then(stream => {
         microphoneStreamRef.current = stream;
-        if (microphoneStreamRef.current) {
-          setupMediaRecorder(microphoneStreamRef.current);
-        }
-      })();
+      });
+    }
+  }, [isMicrophoneMode]);
+
+  useEffect(() => {
+    if (isMicrophoneMode) {
+      if (microphoneStreamRef.current) {
+        setupMediaRecorder(microphoneStreamRef.current);
+      }
     } else {
       if (localStreamRef.current) {
         setupMediaRecorder(localStreamRef.current);
