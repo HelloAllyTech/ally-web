@@ -100,7 +100,7 @@ const CallLogsTable = () => {
         id,
         transcript,
         callName: callInfo?.summaryName,
-        dateAndTime: formatDate(startTime),
+        dateAndTime: startTime && formatDate(startTime),
         duration: convertSecondsToDuration(callDuration ?? 60),
         qualityScore: summary?.callQuality ?? 0,
         tags: summary?.tags?.map((tag: { tag: string; positivity_rating: number }) => {
