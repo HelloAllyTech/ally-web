@@ -2,6 +2,7 @@ import React, { useEffect, FC, useRef } from "react";
 
 import { cn } from "@/utils/tailwind";
 import { Input } from "@/components/generic/input";
+import { KeyboardKeys, SINGLE_DIGIT_REGEX } from "@/constants/common";
 
 export interface OTPProps extends Omit<React.HTMLAttributes<HTMLDivElement>, "onChange"> {
   digitCount?: number;
@@ -37,7 +38,7 @@ const OTP: FC<OTPProps> = ({
 
     // Take only the last character if multiple characters are entered
     const digit = inputValue.slice(-1);
-    if (!/^\d$/.test(digit)) return;
+    if (!SINGLE_DIGIT_REGEX.test(digit)) return;
 
     const newOtpValue = value.slice(0, index) + digit;
     onChange?.(newOtpValue);
@@ -56,7 +57,7 @@ const OTP: FC<OTPProps> = ({
   const handleKeyDown = (index: number, e: React.KeyboardEvent<HTMLInputElement>) => {
     if (disabled) return;
 
-    if (e.key === "Backspace") {
+    if (e.key === KeyboardKeys.BACKSPACE) {
       const newOtpValue = value.slice(0, -1);
       onChange?.(newOtpValue);
 
@@ -66,10 +67,10 @@ const OTP: FC<OTPProps> = ({
     }
 
     // Arrow key navigation
-    if (e.key === "ArrowLeft" && index > 0) {
+    if (e.key === KeyboardKeys.ARROW_LEFT && index > 0) {
       inputRefs.current[index - 1]?.focus();
     }
-    if (e.key === "ArrowRight" && index < digitCount - 1) {
+    if (e.key === KeyboardKeys.ARROW_RIGHT && index < digitCount - 1) {
       inputRefs.current[index + 1]?.focus();
     }
   };

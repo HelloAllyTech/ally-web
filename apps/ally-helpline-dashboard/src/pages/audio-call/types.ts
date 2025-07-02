@@ -4,8 +4,10 @@ import { Chat, FeedbackResponse, Transcription } from "@/types/message";
 
 export interface CallTranscriptProps {
   activeChat: Chat;
+  microphoneChatId: number;
   endSession: (triggerApi: boolean, chatId: number) => void;
   isMicrophoneMode: boolean;
+  setMicrophoneChatId: (chatId: number) => void;
 }
 
 export interface CallInterfaceProps {

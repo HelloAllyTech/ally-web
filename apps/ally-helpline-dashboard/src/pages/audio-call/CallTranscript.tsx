@@ -30,14 +30,19 @@ import "./CallTranscript.css";
 // TODO: Bug with no trascript intermittently
 // TODO: start Audio chat not send sometimes
 
-const CallTranscript: FC<CallTranscriptProps> = ({ endSession, activeChat, isMicrophoneMode }) => {
+const CallTranscript: FC<CallTranscriptProps> = ({
+  endSession,
+  activeChat,
+  microphoneChatId,
+  isMicrophoneMode,
+  setMicrophoneChatId,
+}) => {
   const navigate = useNavigate();
 
   const user = useSelector((state: RootState) => state.user.user);
   const activeChatId = useMemo(() => activeChat?.chatId, [activeChat]);
   const microphoneStreamRef = useRef<MediaStream | null>(null);
 
-  const [microphoneChatId, setMicrophoneChatId] = useState<number | null>(null);
   const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(null);
   const [isMuted, setIsMuted] = useState<boolean>(true);
   const [isFocusMode, setIsFocusMode] = useState(true);

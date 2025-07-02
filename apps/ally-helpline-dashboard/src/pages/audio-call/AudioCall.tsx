@@ -1,7 +1,7 @@
 import { Minimize } from "lucide-react";
 import { useSelector } from "react-redux";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { useState, useEffect, FunctionComponent } from "react";
+import { useState, useEffect, FunctionComponent, useMemo } from "react";
 
 import { logger } from "@ally-ui-mono/ui-shared";
 import { UserRole, UserStatus } from "@/types/user";
@@ -26,6 +26,7 @@ const AudioCall: FunctionComponent = () => {
   const mode = searchParams.get("mode");
 
   const [activeChat, setActiveChat] = useState<Chat | null>();
+  const [microphoneChatId, setMicrophoneChatId] = useState<number | null>(null);
   const [endingMessage, setEndingMessage] = useState<string>("");
   const [isEnding, setIsEnding] = useState<boolean>(false);
   const [showStressBuster, setShowStressBuster] = useState<boolean>(false);
@@ -93,15 +94,15 @@ const AudioCall: FunctionComponent = () => {
   };
 
   const navigateOnStressBusterClose = () => {
-    if (activeChat?.chatId) {
-      navigate(`/summary/${activeChat?.chatId}`);
+    if (activeChat?.chatId || microphoneChatId) {
+      navigate(`/summary/${activeChat?.chatId || microphoneChatId}`);
     }
   };
 
   const handleViewCallHighlights = () => {
-    if (activeChat?.chatId) {
+    if (activeChat?.chatId || microphoneChatId) {
       // TODO: Update section param
-      navigate(`/summary/${activeChat?.chatId}?section=2`);
+      navigate(`/summary/${activeChat?.chatId || microphoneChatId}`);
     }
   };
 
@@ -139,7 +140,9 @@ const AudioCall: FunctionComponent = () => {
         <CallTranscript
           endSession={endSessionAndNavigate}
           activeChat={activeChat}
+          microphoneChatId={microphoneChatId}
           isMicrophoneMode={isMicrophoneMode}
+          setMicrophoneChatId={setMicrophoneChatId}
         />
       )}
       {isEnding && <EndTransitionScreen endingMessage={endingMessage} />}

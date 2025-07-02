@@ -69,7 +69,7 @@ const CallSidebar: FC<CallSidebarProps> = ({
         <CustomMarkdown content={nudge.content} className="font-['IBM_Plex_Serif']" />
         <Divider sx={{ backgroundColor: "rgba(255, 255, 255, 0.12)" }} />
         <div className="flex text-sm items-center gap-2">
-          <span>Does this help?</span>
+          <span>Is this helpful?</span>
           <button
             className="p-2 rounded-lg transition-colors"
             onClick={() => handleFeedback(nudge, 0)}
