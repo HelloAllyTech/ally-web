@@ -7,6 +7,8 @@ import {
   SummaryFieldKey,
   Tag,
   UpdateCallInfoRequest,
+  GetTranscriptResponse,
+  GetTranscriptRequest,
 } from "@/types/summary";
 
 const callSummaryAPI = baseAPI.injectEndpoints({

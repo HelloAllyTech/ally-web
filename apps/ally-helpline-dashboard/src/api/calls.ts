@@ -29,14 +29,14 @@ const callsAPI = baseAPI.injectEndpoints({
         url: "/chats/counselors",
         params,
       }),
-      providesTags: ["Counselors"],
+      providesTags: ["CallLogs"],
     }),
     getTags: builder.query<GetTagsResponse, GetTagsInput>({
       query: params => ({
         url: "/chats/tags",
         params,
       }),
-      providesTags: ["Tags"],
+      providesTags: ["CallLogs"],
     }),
   }),
 });

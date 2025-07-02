@@ -98,3 +98,8 @@ export interface Counselor {
   id: number;
   name: string;
 }
+
+export interface GetTagsResponse {
+  count: number;
+  data: import("./summary").Tag[];
+}
