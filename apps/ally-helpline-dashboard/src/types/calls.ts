@@ -78,3 +78,23 @@ export interface GetWaitingClientsResponse {
   totalWaiting: number;
   clients: WaitingClient[];
 }
+
+export interface GetCounselorsInput {
+  limit?: number;
+  offset?: number;
+}
+
+export interface GetTagsInput {
+  limit?: number;
+  offset?: number;
+}
+
+export interface GetCounselorsResponse {
+  count: number;
+  data: Counselor[];
+}
+
+export interface Counselor {
+  id: number;
+  name: string;
+}

@@ -12,18 +12,18 @@ const TagGroup: React.FC<TagGroupProps> = ({ tags, className = "", style }) => {
 
   return (
     <div
-      className={`flex gap-1 max-w-full overflow-hidden ${expanded ? "flex-wrap" : "flex-row w-[300px]"} cursor-pointer ${className}`}
+      className={`flex gap-[8px] items-center py-[8px] max-w-full overflow-x-scroll ${expanded ? "flex-wrap" : "flex-row"} cursor-pointer ${className}`}
       style={style}
       onClick={() => setExpanded(prev => !prev)}
     >
-      {tags?.map(tag => (
+      {(expanded ? tags : tags?.slice(0, 3))?.map(tag => (
         <div
           key={tag.label}
           style={{
             backgroundColor: tag?.colors?.bg,
             color: tag?.colors?.text,
           }}
-          className="rounded-md px-1.5 py-0.5 text-white text-xs font-medium whitespace-nowrap mb-1"
+          className="rounded-md px-1.5 py-0.5 text-white text-xs font-medium whitespace-nowrap"
         >
           {tag.label}
         </div>

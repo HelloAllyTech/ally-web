@@ -39,7 +39,7 @@ export const tagColors = {
   5: { bg: "#B9EFC880", text: "#1B5E20" },
 };
 
-export const CALL_LOGS_PAGINATION_LIMIT = 10;
+export const CALL_LOGS_PAGINATION_LIMIT = 25;
 export const TABLE_ROW_HEIGHT = 58; // 58px
 
 export const tabStyles = {

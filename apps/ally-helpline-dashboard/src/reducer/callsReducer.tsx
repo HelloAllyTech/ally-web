@@ -18,7 +18,6 @@ interface CallsState {
     maxQualityScore?: number;
     tags?: string;
   };
-  totalCallsCount: number;
 }
 
 export type { CallsState };
@@ -28,7 +27,6 @@ const initialState: CallsState = {
     offset: 0,
     limit: CALL_LOGS_PAGINATION_LIMIT,
   },
-  totalCallsCount: 0,
 };
 
 const callsSlice = createSlice({
@@ -38,15 +36,12 @@ const callsSlice = createSlice({
     updatePage: (state, action) => {
       state.filters.page = action.payload;
     },
-    updateTotalCallsCount: (state, action) => {
-      state.totalCallsCount = action.payload;
-    },
     updateFilters: (state, action) => {
       state.filters = { ...action.payload };
     },
   },
 });
 
-export const { updatePage, updateTotalCallsCount, updateFilters } = callsSlice.actions;
+export const { updatePage, updateFilters } = callsSlice.actions;
 
 export default callsSlice;

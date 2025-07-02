@@ -21,8 +21,11 @@ const NavSideBar: FunctionComponent<NavSideBarProps> = ({
   const { permissions, user, logout } = useUser();
 
   //TODO: Remove this once we have a proper permission system
+  const safePermissions = permissions || [];
   const filteredPermissions =
-    user?.role === UserRole.ADMIN ? permissions : [Permissions.VIEW_NAVBAR_SEARCH, ...permissions];
+    user?.role === UserRole.ADMIN
+      ? safePermissions
+      : [Permissions.VIEW_NAVBAR_SEARCH, ...safePermissions];
 
   const [isLogoutConfirmOpen, setIsLogoutConfirmOpen] = useState(false);
   const permittedTabs = navBarOptions.filter(

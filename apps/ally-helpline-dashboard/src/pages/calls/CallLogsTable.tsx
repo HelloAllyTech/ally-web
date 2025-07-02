@@ -4,7 +4,7 @@ import { CircularProgress } from "@mui/material";
 import { Eye } from "lucide-react";
 
 import { RootState } from "@/store/store";
-import { updateFilters, updateTotalCallsCount } from "@/reducer/callsReducer";
+import { updateFilters } from "@/reducer/callsReducer";
 import { useGetCallLogsQuery } from "@/api/calls";
 import { Button, CustomCircularProgress, TagGroup, FallbackUI } from "@/components";
 import {
@@ -44,7 +44,7 @@ const CallLogsTable = () => {
     offset: offset,
   });
 
-  const { count, data: callLogs = [] } = callLogsData || {};
+  const { data: callLogs = [] } = callLogsData || {};
 
   const [callLogList, setCallLogList] = useState<CallLog[]>([]);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
@@ -75,10 +75,6 @@ const CallLogsTable = () => {
       handleScroll();
     }
   }, [callLogs, offset]);
-
-  useEffect(() => {
-    dispatch(updateTotalCallsCount(count));
-  }, [count]);
 
   const handleLoadMore = () => {
     if (!isLoading && !isLoadingMore && hasMore) {
@@ -203,12 +199,7 @@ const CallLogsTable = () => {
 
   return (
     <>
-      <div
-        className="rounded-xl w-full max-h-[calc(100vh-240px)]"
-        style={{
-          minHeight: `${TABLE_ROW_HEIGHT * (CALL_LOGS_PAGINATION_LIMIT + 1)}px`,
-        }}
-      >
+      <div className="rounded-xl w-full max-h-[calc(100vh-10px)] overflow-y-hidden">
         <GenericTable
           ref={tableRef}
           columns={columns}

@@ -59,6 +59,12 @@ const callSummaryAPI = baseAPI.injectEndpoints({
         params: { query },
       }),
     }),
+    getTranscript: builder.query<GetTranscriptResponse, GetTranscriptRequest>({
+      query: ({ chatId, offset, limit }) => ({
+        url: `/chats/${chatId}/messages`,
+        params: { offset, limit, sortOrder: "ASC" },
+      }),
+    }),
   }),
 });
 
@@ -72,4 +78,5 @@ export const {
   useLazyExportCallSummaryQuery,
   useGetLocationsQuery,
   useLazySearchLocationsQuery,
+  useGetTranscriptQuery,
 } = callSummaryAPI;

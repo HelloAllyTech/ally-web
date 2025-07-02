@@ -4,8 +4,8 @@ import { CircularProgress } from "@mui/material";
 import { Eye } from "lucide-react";
 
 import { RootState } from "@/store/store";
-import { updateFilters, updateTotalCallsCount } from "@/reducer/callsReducer";
-import { useGetAdminCallLogsQuery } from "@/api/calls";
+import { updateFilters } from "@/reducer/callsReducer";
+import { useGetAdminCallLogsQuery, useGetCounselorsQuery } from "@/api/calls";
 import { Button, CustomCircularProgress, FallbackUI, TagGroup } from "@/components";
 import {
   NoResults,
@@ -21,7 +21,7 @@ import { CallLog, GetCallLogsInput } from "@/types/calls";
 
 import SummarySideBar from "./components/SummarySideBar";
 import { convertSecondsToDuration, formatDate } from "./utils";
-import { CALL_LOGS_PAGINATION_LIMIT, TABLE_ROW_HEIGHT, tagColors } from "./constants";
+import { CALL_LOGS_PAGINATION_LIMIT, tagColors } from "./constants";
 import { TagDisplay } from "./types";
 import { GenericTable } from "@ally-ui-mono/ui-shared";
 import { Column, FilterType } from "@ally-ui-mono/ui-shared/lib/generic-table/types";
@@ -29,23 +29,22 @@ import { Column, FilterType } from "@ally-ui-mono/ui-shared/lib/generic-table/ty
 const ConsolidatedLogs = () => {
   const dispatch = useDispatch();
 
-  const { filters } = useSelector((state: RootState) => state.calls);
-
-  const { offset } = filters;
-
   const [callSummary, setCallSummary] = useState<CallLog | null>(null);
+  const [callLogList, setCallLogList] = useState<CallLog[]>([]);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
+
+  const { filters } = useSelector((state: RootState) => state.calls);
+  const { offset } = filters;
 
   const {
     data: callLogsData,
     isLoading,
     refetch: refetchCallLogs,
   } = useGetAdminCallLogsQuery(filters);
+  const { data: callLogs = [] } = callLogsData || {};
+  const { data: counselorsData } = useGetCounselorsQuery({ offset: 0 });
 
-  const { count, data: callLogs = [] } = callLogsData || {};
-
-  const [callLogList, setCallLogList] = useState<CallLog[]>([]);
-  const [isLoadingMore, setIsLoadingMore] = useState(false);
-  const [hasMore, setHasMore] = useState(true);
   const tableRef = useRef<HTMLDivElement>(null);
 
   const handleScroll = () => {
@@ -77,11 +76,7 @@ const ConsolidatedLogs = () => {
       setHasMore(false);
       setCallLogList([]);
     }
-  }, [callLogs, offset]);
-
-  useEffect(() => {
-    dispatch(updateTotalCallsCount(count));
-  }, [count]);
+  }, [offset, callLogs?.length]);
 
   const handleLoadMore = () => {
     if (!isLoading && !isLoadingMore && hasMore) {
@@ -133,22 +128,21 @@ const ConsolidatedLogs = () => {
       key: "counselorName",
       header: "Counselor Name",
       filterType: FilterType.MULTISELECT,
-      style: { width: "15%" },
+      style: { width: "18%" },
       icon: <UserIcon />,
       sortable: true,
       filterable: true,
-      filterOptions: [
-        { label: "Counselor The Great", value: "3" },
-        { label: "Aarathy", value: "11" },
-        { label: "c", value: "2" },
-        { label: "Benil Jose", value: "12" },
-      ],
+      filterOptions:
+        counselorsData?.data?.map(item => ({
+          label: item?.name,
+          value: String(item?.id),
+        })) || [],
     },
     {
       key: "dateAndTime",
       header: "Date & Time",
       filterType: FilterType.DATE,
-      style: { width: "15%" },
+      style: { width: "17%" },
       sortable: true,
       filterable: true,
       filterOptions: [],
@@ -171,7 +165,7 @@ const ConsolidatedLogs = () => {
         { label: "Good (50-80)", value: "50-80" },
         { label: "Need attention (<50)", value: "0-50" },
       ],
-      style: { width: "15%" },
+      style: { width: "10%" },
       render: value => {
         return (
           <div className="flex items-center gap-3 text-[16px]">
@@ -270,12 +264,7 @@ const ConsolidatedLogs = () => {
 
   return (
     <>
-      <div
-        className={"rounded-xl w-full max-h-[calc(100vh-240px)]"}
-        style={{
-          minHeight: `${TABLE_ROW_HEIGHT * (CALL_LOGS_PAGINATION_LIMIT + 1)}px`,
-        }}
-      >
+      <div className={"rounded-xl w-full max-h-[calc(100vh-10px)] overflow-y-hidden"}>
         <GenericTable
           ref={tableRef}
           columns={columns}

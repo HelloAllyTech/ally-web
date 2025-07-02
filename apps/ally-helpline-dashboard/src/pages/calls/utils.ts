@@ -22,7 +22,7 @@ export const convertSecondsToDuration = (totalSeconds: number): string => {
   const minutes = Math.floor((totalSeconds % (60 * 60)) / 60); // Remaining hours
   const seconds = totalSeconds % 60; // Remaining minutes
 
-  return `${hours ? `${hours} hour` : ""}${hours > 1 ? "s" : ""} ${
+  return `${hours ? `${hours} hr` : ""}${hours > 1 ? "s" : ""} ${
     minutes ? `${minutes} min` : ""
-  }${minutes > 1 ? "s" : ""} ${seconds ? `${seconds} second` : ""}${seconds > 1 ? "s" : ""}`;
+  }${minutes > 1 ? "s" : ""} ${seconds ? `${seconds} sec` : ""}${seconds > 1 ? "s" : ""}`;
 };

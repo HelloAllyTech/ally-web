@@ -30,7 +30,7 @@ const FilterPopover: React.FC<FilterPopoverProps> = ({
 
   const renderSingleSelect = () => {
     return (
-      <>
+      <div className="max-h-[300px] overflow-y-auto">
         {column?.filterOptions
           .filter(option => option?.label?.toLowerCase()?.includes(searchText.toLowerCase()))
           .map(option => (
@@ -42,7 +42,7 @@ const FilterPopover: React.FC<FilterPopoverProps> = ({
               <div>{option.label}</div>
             </div>
           ))}
-      </>
+      </div>
     );
   };
 
