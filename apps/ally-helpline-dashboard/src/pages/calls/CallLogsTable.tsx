@@ -1,7 +1,6 @@
 import { useEffect, useState, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { CircularProgress } from "@mui/material";
-import { Eye } from "lucide-react";
 
 import { RootState } from "@/store/store";
 import { updateFilters } from "@/reducer/callsReducer";
@@ -15,7 +14,6 @@ import {
   StarIcon,
   TagsIcon,
   ReviewIcon,
-  UserIcon,
 } from "@/assets/icons";
 import { CallLog } from "@/types/calls";
 
@@ -174,7 +172,7 @@ const CallLogsTable = () => {
           onClick={() => setCallSummary(row.raw)}
           className="flex items-center justify-center w-full py-[8px] bg-transparent border-none hover:bg-transparent cursor-pointer"
         >
-          <Eye className="text-[#868686] w-4 h-4" />
+          <ReviewIcon />
         </Button>
       ),
       icon: <ReviewIcon />,
