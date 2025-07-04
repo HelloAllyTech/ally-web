@@ -14,11 +14,21 @@ const OrgAnalytics: FunctionComponent = () => {
   }, []);
 
   useEffect(() => {
+    let interval: NodeJS.Timeout;
     if (dashboards) {
       dashboards.forEach(async ({ externalId }) => {
         triggerDashboardUrl(externalId);
       });
+      // Refresh dashboard url every 14 minutes 30 seconds as expiry is 15 minutes
+      interval = setInterval(() => {
+        dashboards.forEach(async ({ externalId }) => {
+          triggerDashboardUrl(externalId);
+        });
+      }, 870000);
     }
+    return () => {
+      if (interval) clearInterval(interval);
+    };
   }, [dashboards]);
 
   const triggerDashboardUrl = async (dashboardId: string) => {
