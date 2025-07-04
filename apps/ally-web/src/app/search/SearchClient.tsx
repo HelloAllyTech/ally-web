@@ -73,6 +73,8 @@ export default function SearchClient({
         showHeaderDescriptionInMobile={false}
         isLoading={isLoading}
         categoryCountList={categoryCountList}
+        isSuggestionsCenter={false}
+        isSuggestionsRow={true}
       />
     </main>
   );

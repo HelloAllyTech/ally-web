@@ -25,6 +25,7 @@ export interface ResourceSearchProps {
   showHeader?: boolean;
   fullWidth?: boolean;
   showHeaderDescriptionInMobile?: boolean;
+  isSuggestionsCenter?: boolean;
   isSuggestionsRow?: boolean;
   categoryCountList?: { [key: string]: number };
 }
@@ -40,7 +41,8 @@ const ResourceSearch: FC<ResourceSearchProps> = ({
   showHeader = true,
   fullWidth = false,
   showHeaderDescriptionInMobile = true,
-  isSuggestionsRow = true,
+  isSuggestionsCenter = false,
+  isSuggestionsRow = false,
   categoryCountList,
 }) => {
   const getResources = () => {
@@ -58,11 +60,12 @@ const ResourceSearch: FC<ResourceSearchProps> = ({
 
   const renderNoResults = () => {
     return (
-      <div className="text-left px-4 pt-[10px]">
+      <div className="w-full text-left px-4 pt-[10px]">
         <span className="text-[#ADADAD]">{`No results found for "${searchQuery}"`}</span>
         <SuggestionsContainer
           suggestions={sampleSuggestions}
           isRow={false}
+          isCenter={isSuggestionsCenter}
           onSelect={handleSearch}
         />
       </div>
@@ -74,6 +77,7 @@ const ResourceSearch: FC<ResourceSearchProps> = ({
       return (
         <SuggestionsContainer
           isRow={isSuggestionsRow}
+          isCenter={isSuggestionsCenter}
           suggestions={sampleSuggestions}
           onSelect={handleSearch}
         />

@@ -106,6 +106,7 @@ const SearchResources: FC<SearchResourcesProps> = ({
       showHeader={showHeader}
       fullWidth={fullWidth}
       searchQuery={searchQuery}
+      isSuggestionsCenter={isInSidebar}
       isSuggestionsRow={!isInSidebar}
       categoryCountList={categoryCountList}
     />
