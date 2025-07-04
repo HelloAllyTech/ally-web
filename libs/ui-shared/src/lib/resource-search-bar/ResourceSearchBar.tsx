@@ -96,6 +96,7 @@ const SearchBar: FC<SearchBarProps> = ({ onSearch, initialValue = "", suggestion
         options={suggestions}
         className="w-full h-[36px] sm:h-[60px]"
         value={searchTerm}
+        disableClearable
         onChange={(_, newValue) => {
           setSearchTerm(newValue || "");
           if (newValue) onSearch(newValue);
