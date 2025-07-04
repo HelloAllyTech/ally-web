@@ -44,9 +44,7 @@ const PostCallSummary = () => {
   useEffect(() => {
     const refetchCallSummary = async () => {
       try {
-        if (!callSummary?.details) {
-          await refetch();
-        }
+        await refetch();
       } catch (error) {
         logger.info(`Error fetching call summary:, ${error}`);
       }
