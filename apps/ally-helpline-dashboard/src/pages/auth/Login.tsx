@@ -196,8 +196,8 @@ const Login: FunctionComponent = () => {
           </Button>
           <div className="text-[12px] text-[#8C8C8C] mt-2">
             By tapping next, you agree to Ally's{" "}
-            <span className="font-semibold text-[#0473F2]">Terms & Conditions</span> and acknowledge{" "}
-            <span className="font-semibold text-[#0473F2]">Privacy Policy</span>.
+            <span className="text-[#0473F2]">Terms & Conditions</span> and acknowledge{" "}
+            <span className="text-[#0473F2]">Privacy Policy</span>.
           </div>
         </motion.div>
       );
