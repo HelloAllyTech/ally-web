@@ -334,9 +334,8 @@ const CallTranscript: FC<CallTranscriptProps> = ({
   }, [activeChatId, user, isCounsellor, isClient, iceServers, isMicrophoneMode]);
 
   useEffect(() => {
-    const chatId = activeChatId ?? microphoneChatId;
     if (user && isMicrophoneMode) {
-      connect(chatId);
+      connect();
       emitSocketEvent(SocketEvent.START_AUDIO_CHAT, { platform: "WEB" });
     }
 
@@ -348,7 +347,7 @@ const CallTranscript: FC<CallTranscriptProps> = ({
         disconnect();
       }
     };
-  }, [activeChatId, microphoneChatId, isMicrophoneMode]);
+  }, [isMicrophoneMode]);
 
   useEffect(() => {
     if (isMicrophoneMode) {
