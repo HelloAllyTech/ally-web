@@ -54,7 +54,10 @@ const PostCallSummary = () => {
 
     let interval: NodeJS.Timeout;
 
-    if (!callSummary?.details?.summary) {
+    if (
+      !callSummary?.details?.summary ||
+      (Array.isArray(callSummary.details.summary) && callSummary.details.summary.length === 0)
+    ) {
       refetchCallSummary();
       interval = setInterval(refetchCallSummary, 5000);
     }

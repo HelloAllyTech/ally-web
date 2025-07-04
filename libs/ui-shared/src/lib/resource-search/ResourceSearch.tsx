@@ -16,7 +16,7 @@ import SkeletonLoader from "../skeleton-loader/SkeletonLoader";
 
 export interface ResourceSearchProps {
   selectedCategory?: string;
-  onCategoryChange?: (category: string, isSearchTriggered?: boolean) => void;
+  onCategoryChange?: (category: string) => void;
   onInfiniteScroll?: () => void;
   onSearch?: (searchTerm: string) => void;
   resources?: Resource[];
@@ -51,8 +51,7 @@ const ResourceSearch: FC<ResourceSearchProps> = ({
   };
 
   const handleSearch = (searchTerm: string) => {
-    if (onSearch && onCategoryChange) {
-      onCategoryChange("All", false);
+    if (onSearch) {
       onSearch(searchTerm);
     }
   };

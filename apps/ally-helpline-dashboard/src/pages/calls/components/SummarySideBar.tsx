@@ -11,7 +11,7 @@ import {
 } from "@/api/callSummary";
 import CallSummary from "@/pages/post-call-summary/components/CallSummary";
 import { useFileExport } from "@/hooks";
-import { logger } from "@ally-ui-mono/ui-shared";
+import { InfiniteScroll, logger } from "@ally-ui-mono/ui-shared";
 
 import { DeleteDialogData, SummarySideBarProps, Transcript } from "../types";
 import { defaultDeleteDialogData, tabStyles } from "../constants";
@@ -173,17 +173,16 @@ const SummarySideBar: FC<SummarySideBarProps> = ({
       <div className="flex-1 overflow-y-scroll p-4">
         <h3 className="font-semibold text-sm mb-4">Transcript</h3>
         {transcriptList.length > 0 ? (
-          <div className="space-y-4 flex-1 mb-[12px]">
-            {transcriptList.map((item: Transcript, index: number) => renderTranscript(item, index))}
+          <div className="space-y-4 flex-1 mb-[12px] h-[calc(100vh-250px)] overflow-y-auto">
+            <InfiniteScroll onInfiniteScroll={handleLoadMore} isLoading={isGetTranscriptLoading}>
+              {transcriptList.map((item: Transcript, index: number) =>
+                renderTranscript(item, index),
+              )}
+            </InfiniteScroll>
           </div>
         ) : (
           <div className="space-y-4 flex-1 mb-[12px]">
             <div className="text-sm text-gray-500">No transcript available</div>
-          </div>
-        )}
-        {transcriptList.length < transcriptTotal && (
-          <div className="text-sm text-gray-500 cursor-pointer" onClick={handleLoadMore}>
-            {isGetTranscriptLoading ? "Loading..." : "Load More"}
           </div>
         )}
       </div>

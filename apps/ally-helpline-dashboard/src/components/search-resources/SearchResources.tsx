@@ -55,7 +55,7 @@ const SearchResources: FC<SearchResourcesProps> = ({
     }
   };
 
-  const handleSearch = async (query: string) => {
+  const onSearch = async (query: string) => {
     if (!isInSidebar) {
       setSearchParams({ q: query });
     }
@@ -63,9 +63,10 @@ const SearchResources: FC<SearchResourcesProps> = ({
     if (query) {
       triggerSearch(query);
     }
+    setSelectedCategory("All");
   };
 
-  const handleCategoryChange = async (category: string, isSearchTriggered: boolean = true) => {
+  const onCategoryChange = async (category: string) => {
     if (!isInSidebar) {
       if (category === "All") {
         setSearchParams({ q: searchQuery });
@@ -74,9 +75,7 @@ const SearchResources: FC<SearchResourcesProps> = ({
       }
     }
     setSelectedCategory(category);
-    if (isSearchTriggered) {
-      triggerSearch(searchQuery, category);
-    }
+    triggerSearch(searchQuery, category);
   };
 
   const fetchRemainingResources = async () => {
@@ -100,10 +99,10 @@ const SearchResources: FC<SearchResourcesProps> = ({
     <ResourceSearch
       resources={resources}
       isLoading={isResourcesLoading}
-      onSearch={handleSearch}
+      onSearch={onSearch}
       onInfiniteScroll={fetchRemainingResources}
       selectedCategory={selectedCategory}
-      onCategoryChange={handleCategoryChange}
+      onCategoryChange={onCategoryChange}
       showHeader={showHeader}
       fullWidth={fullWidth}
       searchQuery={searchQuery}

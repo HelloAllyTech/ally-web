@@ -31,7 +31,7 @@ export default function SearchClient({
 
   const onSearch = (searchTerm: string) => {
     router.push(
-      `/search?q=${encodeURIComponent(searchTerm)}&category=${encodeURIComponent(category)}`,
+      `/search?q=${encodeURIComponent(searchTerm)}&category=${encodeURIComponent("All")}`,
     );
   };
 
