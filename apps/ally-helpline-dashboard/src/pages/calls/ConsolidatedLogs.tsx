@@ -20,7 +20,7 @@ import { CallLog, GetCallLogsInput } from "@/types/calls";
 
 import SummarySideBar from "./components/SummarySideBar";
 import { convertSecondsToDuration, formatDate } from "./utils";
-import { CALL_LOGS_PAGINATION_LIMIT, tagColors } from "./constants";
+import { CALL_LOGS_PAGINATION_LIMIT, defaultTags, tagColors } from "./constants";
 import { TagDisplay } from "./types";
 import { GenericTable } from "@ally-ui-mono/ui-shared";
 import { Column, FilterType } from "@ally-ui-mono/ui-shared/lib/generic-table/types";
@@ -181,16 +181,16 @@ const ConsolidatedLogs = () => {
     {
       key: "tags",
       header: "Tags",
-      style: { display: "flex", width: "30%", overflow: "hidden" },
+      style: { width: "30%", overflow: "hidden" },
       render: (value: TagDisplay[]) => <TagGroup tags={value} />,
       icon: <TagsIcon />,
-      // filterType: FilterType.MULTISELECT,
-      // filterable: true,
-      // filterOptions:
-      //   tagsData?.data?.map(item => ({
-      //     label: item,
-      //     value: item,
-      //   })) || [],
+      filterType: FilterType.MULTISELECT,
+      filterable: true,
+      filterOptions:
+        tagsData?.data?.map(item => ({
+          label: item,
+          value: item,
+        })) || defaultTags,
     },
     {
       key: "review",

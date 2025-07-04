@@ -1,6 +1,6 @@
 export default function DataPolicy() {
   return (
-    <main className="min-h-screen">
+    <main className="min-h-screen pb-[100px]">
       {/* Hero Section */}
       <div className="bg-[#000] text-white sm:py-20 py-16 px-4">
         <div className="max-w-4xl mx-auto">

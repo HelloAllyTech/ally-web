@@ -52,3 +52,15 @@ export const defaultDeleteDialogData = {
   open: false,
   chatId: null,
 };
+
+export const defaultTags = [
+  { label: "Depression", value: "Depression" },
+  { label: "Anxiety", value: "Anxiety" },
+  { label: "Stress", value: "Stress" },
+  { label: "Relationship", value: "Relationship" },
+  { label: "Family", value: "Family" },
+  { label: "Work", value: "Work" },
+  { label: "Money", value: "Money" },
+  { label: "Health", value: "Health" },
+  { label: "Life", value: "Life" },
+];
