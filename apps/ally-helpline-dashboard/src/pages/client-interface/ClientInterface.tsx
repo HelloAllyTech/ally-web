@@ -8,7 +8,11 @@ import { ChatStatus, QueueStatus, SocketEvent } from "@/types/message";
 import { UserRole } from "@/types/user";
 import { Button, Confirm } from "@/components";
 import { useSocket, useUser } from "@/hooks";
-import { useEndCallMutation, useGetClientChatQuery, useRequestCallMutation } from "@/api/audioCall";
+import {
+  useCancelRequestMutation,
+  useGetClientChatQuery,
+  useRequestCallMutation,
+} from "@/api/audioCall";
 import { Call, Logout } from "@/assets/icons";
 import { SocketConnectionTypes } from "@/constants/socket";
 import { logger } from "@ally-ui-mono/ui-shared";
@@ -83,7 +87,7 @@ const ClientInterface = () => {
   const [isLogoutConfirmOpen, setIsLogoutConfirmOpen] = useState(false);
   const [currentChatId, setCurrentChatId] = useState<string | null>(null);
 
-  const [endCall] = useEndCallMutation();
+  const [cancelRequest] = useCancelRequestMutation();
   const [requestCall] = useRequestCallMutation();
   const { data: clientChat, isLoading: isClientChatLoading } = useGetClientChatQuery(undefined, {
     refetchOnMountOrArgChange: true,
@@ -149,11 +153,11 @@ const ClientInterface = () => {
 
   const handleEndCall = useCallback(async () => {
     if (currentChatId) {
-      await endCall({ chatId: parseInt(currentChatId) });
+      await cancelRequest({ chatId: parseInt(currentChatId) });
       setIsWaiting(false);
       setCurrentChatId(null);
     }
-  }, [currentChatId, endCall]);
+  }, [currentChatId, cancelRequest]);
 
   const handleLogout = () => {
     setIsLogoutConfirmOpen(true);
