@@ -1,6 +1,7 @@
 import { useEffect, useState, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { CircularProgress } from "@mui/material";
+import { toast } from "sonner";
 
 import { RootState } from "@/store/store";
 import { updateFilters } from "@/reducer/callsReducer";
@@ -20,7 +21,7 @@ import { CallLog, GetCallLogsInput } from "@/types/calls";
 
 import SummarySideBar from "./components/SummarySideBar";
 import { convertSecondsToDuration, formatDate } from "./utils";
-import { CALL_LOGS_PAGINATION_LIMIT, tagColors } from "./constants";
+import { CALL_LOGS_PAGINATION_LIMIT, defaultTags, tagColors } from "./constants";
 import { TagDisplay } from "./types";
 import { GenericTable } from "@ally-ui-mono/ui-shared";
 import { Column, FilterType } from "@ally-ui-mono/ui-shared/lib/generic-table/types";
@@ -40,12 +41,11 @@ const ConsolidatedLogs = () => {
     data: callLogsData,
     isLoading,
     refetch: refetchCallLogs,
+    error: callLogsError,
   } = useGetAdminCallLogsQuery(filters);
   const { data: callLogs = [] } = callLogsData || {};
   const { data: counselorsData } = useGetCounselorsQuery({ offset: 0 });
   const { data: tagsData } = useGetCallTagsQuery({ offset: 0 });
-
-  console.log("tagsData", tagsData);
 
   const tableRef = useRef<HTMLDivElement>(null);
 
@@ -86,6 +86,30 @@ const ConsolidatedLogs = () => {
       dispatch(updateFilters({ ...filters, offset: filters?.offset + CALL_LOGS_PAGINATION_LIMIT }));
     }
   };
+
+  useEffect(() => {
+    if (callLogsError && !isLoading) {
+      let errorMessage = "Failed to fetch call logs. Please try again.";
+      // RTK Query error types
+      if (typeof callLogsError === "object" && callLogsError !== null) {
+        // FetchBaseQueryError: { status, data }
+        if (
+          "data" in callLogsError &&
+          callLogsError.data &&
+          typeof callLogsError.data === "object" &&
+          callLogsError.data !== null &&
+          "message" in callLogsError.data &&
+          typeof (callLogsError.data as any).message === "string"
+        ) {
+          errorMessage = (callLogsError.data as any).message;
+        } else if ("error" in callLogsError && typeof callLogsError.error === "string") {
+          // SerializedError: { error: string }
+          errorMessage = callLogsError.error;
+        }
+      }
+      toast.error(`${errorMessage}. It can be issue with applied filters. Please try again.`);
+    }
+  }, [callLogsError, isLoading]);
 
   if (isLoading && offset === 0) {
     return (
@@ -181,16 +205,16 @@ const ConsolidatedLogs = () => {
     {
       key: "tags",
       header: "Tags",
-      style: { display: "flex", width: "30%", overflow: "hidden" },
+      style: { width: "30%", overflow: "hidden" },
       render: (value: TagDisplay[]) => <TagGroup tags={value} />,
       icon: <TagsIcon />,
-      // filterType: FilterType.MULTISELECT,
-      // filterable: true,
-      // filterOptions:
-      //   tagsData?.data?.map(item => ({
-      //     label: item,
-      //     value: item,
-      //   })) || [],
+      filterType: FilterType.MULTISELECT,
+      filterable: true,
+      filterOptions:
+        tagsData?.data?.map(item => ({
+          label: item,
+          value: item,
+        })) || defaultTags,
     },
     {
       key: "review",

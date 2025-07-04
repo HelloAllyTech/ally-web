@@ -123,15 +123,16 @@ const FilterPopover: React.FC<FilterPopoverProps> = ({
           </div>
         )}
         <div>
-          {column.filterType === FilterType.MULTISELECT
-            ? renderMultiSelect()
-            : renderSingleSelect()}
-          {column.filterType === FilterType.DATE && (
+          {column.filterType === FilterType.MULTISELECT ? (
+            renderMultiSelect()
+          ) : column.filterType === FilterType.DATE ? (
             <DateFilterUI
               selectedValues={selectedValues}
               onChange={arr => onToggleOption(JSON.stringify(arr))}
               onDateSelect={value => onDateSelect?.(column.key as string, value)}
             />
+          ) : (
+            column.filterType === FilterType.SINGLESELECT && renderSingleSelect()
           )}
         </div>
       </div>

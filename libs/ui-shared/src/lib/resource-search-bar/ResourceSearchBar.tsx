@@ -82,6 +82,7 @@ const SearchBar: FC<SearchBarProps> = ({ onSearch, initialValue = "", suggestion
               {params.InputProps.startAdornment}
             </>
           ),
+          endAdornment: null,
         }}
       />
     );

@@ -194,10 +194,10 @@ const Login: FunctionComponent = () => {
               "Next"
             )}
           </Button>
-          <div className="text-[12px] text-[#49454F] mt-2">
+          <div className="text-[12px] text-[#8C8C8C] mt-2">
             By tapping next, you agree to Ally's{" "}
-            <span className="font-semibold text-[#0957D0]">Terms of Service</span> and{" "}
-            <span className="font-semibold text-[#0957D0]">Privacy Policy</span>.
+            <span className="text-[#0473F2]">Terms & Conditions</span> and acknowledge{" "}
+            <span className="text-[#0473F2]">Privacy Policy</span>.
           </div>
         </motion.div>
       );
@@ -221,7 +221,10 @@ const Login: FunctionComponent = () => {
           <OTP value={otp} onChange={setOtp} />
           <div className="text-[12px] text-[#49454F]">
             Didn't receive the code?{" "}
-            <span className="text-[#C4C4C4] cursor-pointer" onClick={handleResendCode}>
+            <span
+              className={`${countdown > 0 ? "text-[#C4C4C4]" : "text-[#0473F2]"} cursor-pointer`}
+              onClick={handleResendCode}
+            >
               Resend {countdown > 0 ? `(${countdown}s)` : ""}
             </span>
           </div>
