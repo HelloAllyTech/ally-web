@@ -1,4 +1,4 @@
-import { FC, useEffect, useState, useRef } from "react";
+import { FC, useEffect, useState, useRef, useMemo } from "react";
 import { Tabs, Tab, Button } from "@mui/material";
 
 import { ActionDialog, Drawer, TextField } from "@/components";
@@ -51,20 +51,18 @@ const SummarySideBar: FC<SummarySideBarProps> = ({
     limit: transcriptPageSize,
   });
 
-  const transcript = transcriptData?.data || [];
-  const transcriptTotal = transcriptData?.count || 0;
+  const transcript = useMemo(() => transcriptData?.data || [], [transcriptData]);
+  const transcriptTotal = useMemo(() => transcriptData?.count || 0, [transcriptData]);
 
   const { exportTxtFromText } = useFileExport();
   const isLoading = isUpdating || isExporting || isUpdatingCallSummary;
 
   // Append new results when transcriptData changes
   useEffect(() => {
-    if (transcriptOffset === 0) {
-      setTranscriptList(transcript);
-    } else if (transcript.length > 0) {
+    if (transcript.length > 0) {
       setTranscriptList(prev => [...prev, ...transcript]);
     }
-  }, [transcriptData]);
+  }, [transcript]);
 
   // Reset transcript list when call changes
   useEffect(() => {
@@ -72,6 +70,7 @@ const SummarySideBar: FC<SummarySideBarProps> = ({
   }, [callSummary?.id]);
 
   const handleLoadMore = () => {
+    if (transcriptOffset >= transcriptTotal) return;
     setTranscriptOffset(prev => prev + transcriptPageSize);
   };
 
