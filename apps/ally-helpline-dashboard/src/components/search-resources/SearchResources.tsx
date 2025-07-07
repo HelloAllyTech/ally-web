@@ -8,6 +8,8 @@ import { useGetSearchResultsMutation } from "@/api/search";
 
 import { SearchResourcesProps } from "./types";
 
+const PAGE_SIZE = 10;
+
 const SearchResources: FC<SearchResourcesProps> = ({
   isInSidebar = false,
   showHeader = true,
@@ -29,7 +31,7 @@ const SearchResources: FC<SearchResourcesProps> = ({
     }
     setSearchQuery(query);
     setSelectedCategory(category || "All");
-    triggerSearch(query, category);
+    triggerSearch(query);
   }, []);
 
   const [getSearchResults, { isLoading: isResourcesLoading }] = useGetSearchResultsMutation();
@@ -41,7 +43,7 @@ const SearchResources: FC<SearchResourcesProps> = ({
     }
     const response = await getSearchResults({
       query,
-      limit: 10,
+      limit: PAGE_SIZE,
       filters,
     });
     if (response.data) {
@@ -53,6 +55,7 @@ const SearchResources: FC<SearchResourcesProps> = ({
     } else {
       toast.error("Error fetching search results");
     }
+    setHasMore(response.data?.documents?.length === PAGE_SIZE);
   };
 
   const onSearch = async (query: string) => {
@@ -80,18 +83,20 @@ const SearchResources: FC<SearchResourcesProps> = ({
 
   const fetchRemainingResources = async () => {
     if (isResourcesLoading || !hasMore) return;
+    let filters = undefined;
+    if (selectedCategory && selectedCategory !== "All") {
+      filters = { category: selectedCategory };
+    }
     const response = await getSearchResults({
       query: searchQuery,
-      limit: resources.length + 10,
+      limit: PAGE_SIZE,
+      filters,
+      excludedIds: resources.map(resource => resource.id),
     });
     if (response.data) {
       const newDocuments = response.data.documents;
-      setCategoryCountList(response.data.categories);
-      if (newDocuments.length > resources.length) {
-        setResources(newDocuments);
-      } else {
-        setHasMore(false);
-      }
+      setResources(prevResources => [...prevResources, ...newDocuments]);
+      setHasMore(newDocuments.length === PAGE_SIZE);
     }
   };
 
