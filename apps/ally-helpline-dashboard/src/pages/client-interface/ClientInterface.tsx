@@ -53,13 +53,13 @@ const MainContent = ({ isWaiting, onStartAudioChat, onEndCall }: MainContentProp
           <div className="flex justify-center my-[30px]">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
           </div>
-          <Button
+          {/* <Button
             className="sm:text-[22px] text-[16px] font-[600] py-[24px] px-[20px] bg-[#F93535] hover:bg-[#F93535]"
             onClick={onEndCall}
           >
             <Call width={32} height={32} />
             <div>End Call</div>
-          </Button>
+          </Button> */}
         </>
       ) : (
         <>

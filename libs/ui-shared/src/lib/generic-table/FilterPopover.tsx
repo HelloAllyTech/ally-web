@@ -85,7 +85,6 @@ const FilterPopover: React.FC<FilterPopoverProps> = ({
           <button
             className="bg-blue-600 text-white px-4 py-1 mb-[4px] mr-[4px] rounded hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed"
             onClick={onSaveMultiSelect}
-            disabled={selectedValues.length === 0}
           >
             Apply
           </button>
