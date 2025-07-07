@@ -10,7 +10,7 @@ import { Button, Confirm } from "@/components";
 import { useSocket, useUser } from "@/hooks";
 import {
   useCancelRequestMutation,
-  useGetClientChatQuery,
+  useLazyGetClientChatQuery,
   useRequestCallMutation,
 } from "@/api/audioCall";
 import { Call, Logout } from "@/assets/icons";
@@ -89,9 +89,8 @@ const ClientInterface = () => {
 
   const [cancelRequest] = useCancelRequestMutation();
   const [requestCall] = useRequestCallMutation();
-  const { data: clientChat, isLoading: isClientChatLoading } = useGetClientChatQuery(undefined, {
-    refetchOnMountOrArgChange: true,
-  });
+  const [getClientChat, { data: clientChat, isLoading: isClientChatLoading }] =
+    useLazyGetClientChatQuery();
 
   // Socket event callbacks
   const socketEventCallbacks = useMemo(
@@ -120,21 +119,18 @@ const ClientInterface = () => {
   // Handle client chat status changes
   useEffect(() => {
     if (isClient) {
-      // TODO: Need to redirect to AudioCall page if a call is ongoing
-      // currently clientChat value persists even after call is ended, triggering repeated navigations
-      // if (clientChat?.counselorId) {
-      //   navigate(ROUTES.AUDIO_CALL);
-      // }
-      if (clientChat?.status === ChatStatus.PAUSED) {
-        setIsWaiting(true);
-      } else if (clientChat?.status === ChatStatus.ACTIVE) {
-        navigate(ROUTES.AUDIO_CALL);
-      }
-      if (!currentChatId) {
-        setCurrentChatId(clientChat?.chatId.toString());
-      }
+      const handleClientChat = async () => {
+        const response = await getClientChat();
+        if (response?.data?.status === ChatStatus.PAUSED) {
+          setIsWaiting(true);
+        } else if (response?.data?.status === ChatStatus.ACTIVE) {
+          navigate(ROUTES.AUDIO_CALL);
+        }
+        setCurrentChatId(response?.data?.chatId?.toString());
+      };
+      handleClientChat();
     }
-  }, [isClient, clientChat]);
+  }, [isClient]);
 
   const handleStartAudioChat = async () => {
     try {

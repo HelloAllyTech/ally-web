@@ -42,6 +42,7 @@ export interface Chat {
 export enum QueueStatus {
   WAITING = "WAITING",
   MATCHED = "MATCHED",
+  ENDED = "ENDED",
 }
 
 export type SocketMessage = {
