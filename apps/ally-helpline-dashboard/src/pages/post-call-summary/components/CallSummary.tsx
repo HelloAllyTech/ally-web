@@ -252,7 +252,7 @@ const CallSummary: FC<CallSummaryProps> = ({
 
   return (
     <>
-      <div className="max-h-[calc(100vh-180px)] overflow-y-auto font-['IBM_Plex_Serif']">
+      <div className="max-h-[calc(100vh-260px)] overflow-y-auto font-['IBM_Plex_Serif']">
         {summarySections.map(({ title, icon, key }) => {
           const sectionFields = getSectionFields(key, visibleFields);
           if (sectionFields?.length === 0) return null;
