@@ -23,15 +23,22 @@ const SearchResources: FC<SearchResourcesProps> = ({
   const [hasMore, setHasMore] = useState(true);
 
   useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const query = urlParams.get("q");
-    const category = urlParams.get("category");
-    if (!query && !category) {
-      return;
-    }
-    setSearchQuery(query);
-    setSelectedCategory(category || "All");
-    triggerSearch(query);
+    const initializeSearchWithQueryParams = async () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      const query = urlParams.get("q");
+      const category = urlParams.get("category");
+      if (!query && !category) {
+        return;
+      }
+      setSearchQuery(query);
+      setSelectedCategory(category || "All");
+      // To get the category count list
+      // TODO: Will be removed in future when a seperate api is introduced
+      await triggerSearch(query);
+      if (category) triggerSearch(query, category);
+    };
+
+    initializeSearchWithQueryParams();
   }, []);
 
   const [getSearchResults, { isLoading: isResourcesLoading }] = useGetSearchResultsMutation();
@@ -46,6 +53,7 @@ const SearchResources: FC<SearchResourcesProps> = ({
       limit: PAGE_SIZE,
       filters,
     });
+    setHasMore(response.data?.total > resources.length + response.data?.documents?.length);
     if (response.data) {
       setResources(response.data.documents);
       if (!(category && category !== "All")) {
@@ -55,7 +63,6 @@ const SearchResources: FC<SearchResourcesProps> = ({
     } else {
       toast.error("Error fetching search results");
     }
-    setHasMore(response.data?.documents?.length === PAGE_SIZE);
   };
 
   const onSearch = async (query: string) => {
