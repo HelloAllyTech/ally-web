@@ -53,13 +53,13 @@ const MainContent = ({ isWaiting, onStartAudioChat, onEndCall }: MainContentProp
           <div className="flex justify-center my-[30px]">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
           </div>
-          {/* <Button
+          <Button
             className="sm:text-[22px] text-[16px] font-[600] py-[24px] px-[20px] bg-[#F93535] hover:bg-[#F93535]"
             onClick={onEndCall}
           >
             <Call width={32} height={32} />
             <div>End Call</div>
-          </Button> */}
+          </Button>
         </>
       ) : (
         <>
@@ -127,6 +127,11 @@ const ClientInterface = () => {
       // }
       if (clientChat?.status === ChatStatus.PAUSED) {
         setIsWaiting(true);
+      } else if (clientChat?.status === ChatStatus.ACTIVE) {
+        navigate(ROUTES.AUDIO_CALL);
+      }
+      if (!currentChatId) {
+        setCurrentChatId(clientChat?.chatId.toString());
       }
     }
   }, [isClient, clientChat]);
@@ -135,10 +140,14 @@ const ClientInterface = () => {
     try {
       const response = await requestCall();
       setCurrentChatId(response?.data?.chatId);
-      if (response?.data?.status === QueueStatus.WAITING) {
-        setIsWaiting(true);
+      if (response?.data) {
+        if (response?.data?.status === QueueStatus.WAITING) {
+          setIsWaiting(true);
+        } else {
+          navigate(ROUTES.AUDIO_CALL);
+        }
       } else {
-        navigate(ROUTES.AUDIO_CALL);
+        toast.error("Something went wrong. Please try again later!");
       }
     } catch (error: any) {
       logger.info(`Error in handleStartAudioChat:, ${error}`);
