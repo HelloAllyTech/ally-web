@@ -336,7 +336,11 @@ const CallTranscript: FC<CallTranscriptProps> = ({
   useEffect(() => {
     if (user && isMicrophoneMode) {
       connect();
-      emitSocketEvent(SocketEvent.START_AUDIO_CHAT, { platform: "WEB" });
+      // Delaying the start of audio chat to ensure the connection is established and session is created
+      // TODO: Remove this delay in future once session_created event is generated on the server side
+      setTimeout(() => {
+        emitSocketEvent(SocketEvent.START_AUDIO_CHAT, { platform: "WEB" });
+      }, 2000);
     }
 
     return () => {
