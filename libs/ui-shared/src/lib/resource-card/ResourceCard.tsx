@@ -36,7 +36,7 @@ const ResourceCard: FC<ResourceCardProps> = ({ title, description, category, tag
         <div className="w-full sm:max-w-[80%] relative">
           <div
             style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
-            className="flex gap-1 overflow-x-auto whitespace-nowrap ml-[20px] scrollbar-hide"
+            className="flex gap-1 justify-end overflow-x-auto whitespace-nowrap ml-[20px] scrollbar-hide"
           >
             {tags.map(tag => (
               <Badge key={tag} text={tag} variant="outlined" />
