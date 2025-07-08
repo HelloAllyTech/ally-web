@@ -2,6 +2,16 @@
 
 import { FC, useEffect, useRef, useCallback } from "react";
 
+/**
+ * InfiniteScroll component triggers a callback when the user scrolls near the bottom of the list.
+ * Useful for implementing infinite loading of content.
+ * @component
+ * @param {InfiniteScrollProps} props - Props for InfiniteScroll
+ */
+
+/**
+ * Props for InfiniteScroll component.
+ */
 interface InfiniteScrollProps {
   onInfiniteScroll: () => void;
   children: React.ReactNode[];
@@ -14,6 +24,9 @@ const InfiniteScroll: FC<InfiniteScrollProps> = ({ onInfiniteScroll, children, i
   const observerTarget = useRef<HTMLDivElement>(null);
   const lastTriggerTime = useRef<number>(0);
 
+  /**
+   * Debounced callback to prevent multiple triggers in quick succession.
+   */
   const debouncedOnInfiniteScroll = useCallback(() => {
     const now = Date.now();
     // Prevent multiple triggers within 500ms

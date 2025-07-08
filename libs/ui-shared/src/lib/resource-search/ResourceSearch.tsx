@@ -14,6 +14,11 @@ import ResourceTabs from "./ResourceTabs";
 import { sampleSuggestions } from "./constants";
 import SkeletonLoader from "../skeleton-loader/SkeletonLoader";
 
+/**
+ * ResourceSearch component provides a search interface for resources with category filtering, infinite scroll, and suggestions.
+ * @component
+ * @param {ResourceSearchProps} props - Props for ResourceSearch
+ */
 export interface ResourceSearchProps {
   selectedCategory?: string;
   onCategoryChange?: (category: string) => void;
@@ -45,12 +50,20 @@ const ResourceSearch: FC<ResourceSearchProps> = ({
   isSuggestionsRow = false,
   categoryCountList,
 }) => {
+  /**
+   * Handles search action and calls onSearch prop if provided.
+   * @param {string} searchTerm - The search term entered by the user
+   */
   const handleSearch = (searchTerm: string) => {
     if (onSearch) {
       onSearch(searchTerm);
     }
   };
 
+  /**
+   * Renders the UI when no results are found.
+   * @returns {JSX.Element}
+   */
   const renderNoResults = () => {
     return (
       <div className="w-full text-left px-4 pt-[10px]">
@@ -65,6 +78,10 @@ const ResourceSearch: FC<ResourceSearchProps> = ({
     );
   };
 
+  /**
+   * Renders the main results body based on search and loading state.
+   * @returns {React.ReactNode | null}
+   */
   const renderResultsBody = (): React.ReactNode | null => {
     if (!searchQuery) {
       return (

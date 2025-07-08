@@ -5,6 +5,11 @@ import PlayArrow from "@mui/icons-material/PlayArrow";
 import { DropdownFieldProps } from "./types";
 import { Dropdown } from ".";
 
+/**
+ * DropdownField component displays a dropdown with search and selection capabilities.
+ * @component
+ * @param {DropdownFieldProps} props - Props for DropdownField
+ */
 const DropdownField: FC<DropdownFieldProps> = ({
   disabled,
   label,
@@ -18,6 +23,10 @@ const DropdownField: FC<DropdownFieldProps> = ({
 
   const dropdownRef = useRef<HTMLDivElement>(null);
 
+  /**
+   * Handles option selection and closes the dropdown.
+   * @param {string} value
+   */
   const handleChange = (value: string) => {
     onChange(value);
     setIsOpen(false);
@@ -61,4 +70,7 @@ const DropdownField: FC<DropdownFieldProps> = ({
   );
 };
 
+/**
+ * Props for DropdownField component.
+ */
 export default DropdownField;
