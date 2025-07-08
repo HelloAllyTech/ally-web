@@ -252,7 +252,6 @@ const CallSummary: FC<CallSummaryProps> = ({
         return true;
       }
     }
-    console.log("no changes");
 
     return false;
   };

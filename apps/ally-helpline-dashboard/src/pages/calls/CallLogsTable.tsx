@@ -195,6 +195,14 @@ const CallLogsTable = () => {
     return null;
   };
 
+  const onSummarySubmit = async () => {
+    const chatId = callSummary?.id;
+    const response = await refetchCallLogs();
+
+    const selectedCallLog = response.data?.data?.find(log => log.id === chatId);
+    setCallSummary(selectedCallLog);
+  };
+
   return (
     <>
       <div className="rounded-xl w-full max-h-[calc(100vh-10px)] overflow-y-hidden">
@@ -211,7 +219,7 @@ const CallLogsTable = () => {
       {callSummary && callSummary?.id && (
         <SummarySideBar
           callSummary={callSummary}
-          refetchCallLogs={refetchCallLogs}
+          refetchCallLogs={onSummarySubmit}
           setCallSummary={setCallSummary}
         />
       )}
