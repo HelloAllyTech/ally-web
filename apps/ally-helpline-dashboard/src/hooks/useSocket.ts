@@ -7,57 +7,49 @@ import { getPathForConnectionType } from "@/utils/socket";
 import { logger } from "@ally-ui-mono/ui-shared";
 
 interface UseSocketOptions {
-  userId: number;
   connectionType: SocketConnectionTypes;
   eventCallbacks?: Partial<Record<SocketEvent, (params?: any) => void>>;
 }
 
-export const useSocket = ({ userId, eventCallbacks, connectionType }: UseSocketOptions) => {
+export const useSocket = ({ eventCallbacks, connectionType }: UseSocketOptions) => {
   const socketRef = useRef<Socket | null>(null);
   const connectionAttemptsRef = useRef(0);
   const maxAttempts = 5;
   const baseUrl = `${import.meta.env.VITE_API_BASE_URL}/${getPathForConnectionType(
     connectionType,
   )}`;
-  // const appVersionPath = import.meta.env.VITE_APP_VERSION_PATH;
 
-  const connect = useCallback(
-    (chatId?: number) => {
-      if (connectionAttemptsRef.current >= maxAttempts) {
-        logger.info("Max connection attempts reached");
-        return;
-      }
-      try {
-        socketRef.current = io(baseUrl, {
-          path: "",
-          transports: ["websocket", "polling"] as const,
-          auth: {
-            user: {
-              userId,
-              chatId,
-            },
-          },
-          reconnection: true,
-          reconnectionAttempts: 5,
-          reconnectionDelay: 1000,
-          reconnectionDelayMax: 5000,
-          timeout: 10000,
-          forceNew: true,
-          autoConnect: false,
-        });
+  const connect = useCallback((chatId?: number) => {
+    if (connectionAttemptsRef.current >= maxAttempts) {
+      logger.info("Max connection attempts reached");
+      return;
+    }
+    try {
+      socketRef.current = io(baseUrl, {
+        path: "",
+        transports: ["websocket", "polling"] as const,
+        auth: {
+          token: localStorage.getItem("accessToken"),
+        },
+        reconnection: true,
+        reconnectionAttempts: 5,
+        reconnectionDelay: 1000,
+        reconnectionDelayMax: 5000,
+        timeout: 10000,
+        forceNew: true,
+        autoConnect: false,
+      });
 
-        socketRef.current.connect();
+      socketRef.current.connect();
 
-        setupDefaultListeners();
-        connectionAttemptsRef.current++;
-      } catch (error) {
-        logger.info(`Socket connection error:, ${error}`);
-        connectionAttemptsRef.current++;
-        setTimeout(() => connect(chatId), 2000);
-      }
-    },
-    [userId],
-  );
+      setupDefaultListeners();
+      connectionAttemptsRef.current++;
+    } catch (error) {
+      logger.info(`Socket connection error:, ${error}`);
+      connectionAttemptsRef.current++;
+      setTimeout(() => connect(chatId), 2000);
+    }
+  }, []);
 
   const setupDefaultListeners = useCallback(() => {
     if (!socketRef.current) return;
