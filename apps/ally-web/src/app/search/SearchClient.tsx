@@ -18,7 +18,7 @@ interface SearchClientProps {
 export default function SearchClient({
   searchQuery,
   category,
-  documents: initialDocuments,
+  documents: initialDocuments = [],
   categoryCountList,
   totalDocumentCount,
 }: SearchClientProps) {
