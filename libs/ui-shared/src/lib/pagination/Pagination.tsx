@@ -8,14 +8,25 @@ const PAGE_NUMBER_CLASSES =
 const PAGE_NUMBER_ACTIVE_CLASSES = "bg-gray-200 text-black";
 const PAGE_NUMBER_INACTIVE_CLASSES = "text-gray-700 hover:bg-gray-100";
 
+/**
+ * Props for Pagination component.
+ */
 export interface PaginationProps {
   page: number;
   totalPages: number;
   onPageChange: (page: number) => void;
 }
 
+/**
+ * Pagination component displays page navigation controls with ellipsis for large page sets.
+ * @component
+ * @param {PaginationProps} props - Props for Pagination
+ */
 const Pagination: React.FC<PaginationProps> = ({ page, totalPages, onPageChange }) => {
-  // Helper to generate page numbers with ellipsis for large page sets
+  /**
+   * Helper to generate page numbers with ellipsis for large page sets.
+   * @returns {(number|string)[]} Array of page numbers and ellipsis
+   */
   const getPageNumbers = () => {
     const pages = [];
     if (totalPages <= MAX_VISIBLE_PAGES) {

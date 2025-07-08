@@ -2,6 +2,9 @@ import { FC } from "react";
 
 export type BadgeVariant = "outlined" | "ghost";
 
+/**
+ * Props for Badge component.
+ */
 export interface BadgeProps {
   text: string;
   variant: BadgeVariant;
@@ -9,6 +12,11 @@ export interface BadgeProps {
 }
 
 const Badge: FC<BadgeProps> = ({ variant, text, className }) => {
+  /**
+   * Returns the style classes for the given badge variant.
+   * @param {BadgeVariant} variant
+   * @returns {string}
+   */
   const getStyles = (variant: BadgeVariant) => {
     switch (variant) {
       case "outlined":

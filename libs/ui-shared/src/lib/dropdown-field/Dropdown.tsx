@@ -4,6 +4,11 @@ import { FC, useState } from "react";
 
 import { DropdownProps } from "./types";
 
+/**
+ * Dropdown component displays a searchable dropdown list of options.
+ * @component
+ * @param {DropdownProps} props - Props for Dropdown
+ */
 const Dropdown: FC<DropdownProps> = ({
   options,
   handleChange,
@@ -13,6 +18,9 @@ const Dropdown: FC<DropdownProps> = ({
 }) => {
   const [searchQuery, setSearchQuery] = useState("");
 
+  /**
+   * Returns the filtered options based on the search query.
+   */
   const getOptions = () => {
     if (onHandleSearch) {
       return options;
@@ -23,6 +31,10 @@ const Dropdown: FC<DropdownProps> = ({
     );
   };
 
+  /**
+   * Handles search input changes and triggers optional search callback.
+   * @param {string} query
+   */
   const handleSearch = (query: string) => {
     if (onHandleSearch) {
       onHandleSearch(query);

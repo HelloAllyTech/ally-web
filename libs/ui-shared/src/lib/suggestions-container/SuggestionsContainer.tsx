@@ -1,6 +1,9 @@
 import React from "react";
 import SearchIcon from "@mui/icons-material/Search";
 
+/**
+ * Props for SuggestionsContainer component.
+ */
 interface SuggestionsContainerProps {
   suggestions: string[];
   onSelect: (suggestion: string) => void;
@@ -8,6 +11,11 @@ interface SuggestionsContainerProps {
   isCenter?: boolean;
 }
 
+/**
+ * SuggestionsContainer displays a list of suggestion chips for quick search or action.
+ * @component
+ * @param {SuggestionsContainerProps} props - Props for SuggestionsContainer
+ */
 const SuggestionsContainer: React.FC<SuggestionsContainerProps> = ({
   suggestions,
   onSelect,

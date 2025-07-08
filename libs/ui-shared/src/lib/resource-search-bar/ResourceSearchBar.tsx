@@ -4,12 +4,20 @@ import { FC, useState, useEffect } from "react";
 import { Autocomplete, TextField, InputAdornment } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
 
+/**
+ * Props for SearchBar component.
+ */
 export interface SearchBarProps {
   onSearch: (searchTerm: string) => void;
   initialValue?: string;
   suggestions?: string[];
 }
 
+/**
+ * SearchBar component provides a search input with suggestions and autocomplete.
+ * @component
+ * @param {SearchBarProps} props - Props for SearchBar
+ */
 const SearchBar: FC<SearchBarProps> = ({ onSearch, initialValue = "", suggestions = [] }) => {
   const [searchTerm, setSearchTerm] = useState(initialValue);
 
@@ -19,6 +27,10 @@ const SearchBar: FC<SearchBarProps> = ({ onSearch, initialValue = "", suggestion
     }
   }, [initialValue]);
 
+  /**
+   * Handles form submission and triggers the onSearch callback.
+   * @param {React.FormEvent} event
+   */
   const handleSubmit = (event: React.FormEvent) => {
     event.preventDefault();
     onSearch(searchTerm);
@@ -27,6 +39,9 @@ const SearchBar: FC<SearchBarProps> = ({ onSearch, initialValue = "", suggestion
     }
   };
 
+  /**
+   * Renders a suggestion card for the autocomplete dropdown.
+   */
   const renderSuggestionCard = (
     props: any,
     option: string,
@@ -45,6 +60,9 @@ const SearchBar: FC<SearchBarProps> = ({ onSearch, initialValue = "", suggestion
     );
   };
 
+  /**
+   * Renders the search input field.
+   */
   const renderInput = (params: any) => {
     return (
       <TextField
