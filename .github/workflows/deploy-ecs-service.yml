@@ -1,0 +1,151 @@
+name: Deploy ECS Service
+
+on:
+  workflow_call:
+    inputs:
+      service_name:
+        required: true
+        type: string
+        description: "Service name (used directly after project prefix)"
+      app_path:
+        required: true
+        type: string
+        description: "Path to the application directory"
+      environment:
+        required: true
+        type: string
+        description: "Environment to deploy to (dev, stg, prd)"
+      dockerfile_path:
+        required: false
+        type: string
+        default: "dockerfile"
+        description: "Path to Dockerfile relative to app_path"
+      build_command:
+        required: false
+        type: string
+        default: "npm run build"
+        description: "Build command to run"
+      node_version:
+        required: false
+        type: string
+        default: "20"
+        description: "Node.js version to use"
+      port:
+        required: false
+        type: string
+        default: "8080"
+        description: "Port the application runs on"
+      use_build_time_env:
+        required: false
+        type: string
+        default: "true"
+        description: "Enable build-time environment variables from S3"
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  prepare-env:
+    name: Prepare Environment
+    runs-on: ubuntu-22.04
+    timeout-minutes: 2
+    outputs:
+      aws_role: ${{ steps.env-vars.outputs.aws_role }}
+      aws_region: ${{ steps.env-vars.outputs.aws_region }}
+      ecr_repository: ${{ steps.env-vars.outputs.ecr_repository }}
+      project_prefix: ${{ steps.env-vars.outputs.project_prefix }}
+      project_region: ${{ steps.env-vars.outputs.project_region }}
+      ecs_cluster: ${{ steps.service-vars.outputs.ecs_cluster }}
+      ecs_service: ${{ steps.service-vars.outputs.ecs_service }}
+      ecr_repository_name: ${{ steps.service-vars.outputs.ecr_repository_name }}
+      task_definition: ${{ steps.service-vars.outputs.task_definition }}
+      s3_bucket: ${{ steps.service-vars.outputs.s3_bucket }}
+      container_name: ${{ steps.service-vars.outputs.container_name }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set Environment Variables
+        id: env-vars
+        uses: ./.github/actions/aws/set-environment-vars
+        with:
+          environment: ${{ inputs.environment }}
+          dev_aws_role: ${{ vars.DEV_AWS_ROLE }}
+          dev_aws_region: ${{ vars.DEV_AWS_REGION }}
+          dev_ecr_repository: ${{ vars.DEV_ECR_REPOSITORY }}
+          stg_aws_role: ${{ vars.STG_AWS_ROLE }}
+          stg_aws_region: ${{ vars.STG_AWS_REGION }}
+          stg_ecr_repository: ${{ vars.STG_ECR_REPOSITORY }}
+          prd_aws_role: ${{ vars.PRD_AWS_ROLE }}
+          prd_aws_region: ${{ vars.PRD_AWS_REGION }}
+          prd_ecr_repository: ${{ vars.PRD_ECR_REPOSITORY }}
+
+      - name: Set Service Variables
+        id: service-vars
+        uses: ./.github/actions/aws/set-service-vars
+        with:
+          service_name: ${{ inputs.service_name }}
+          project_prefix: ${{ steps.env-vars.outputs.project_prefix }}
+          project_region: ${{ steps.env-vars.outputs.project_region }}
+
+  build:
+    needs: prepare-env
+    runs-on: ubuntu-22.04
+    outputs:
+      image_uri: ${{ steps.build-push.outputs.image_uri }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ needs.prepare-env.outputs.aws_role }}
+          aws-region: ${{ needs.prepare-env.outputs.aws_region }}
+
+      - name: Generate short SHA
+        id: vars
+        run: echo "short_sha=${GITHUB_SHA::10}" >> $GITHUB_OUTPUT
+
+      - name: Build and Push Docker Image
+        id: build-push
+        uses: ./.github/actions/docker/build-push
+        with:
+          app_path: ${{ inputs.app_path }}
+          dockerfile_path: ${{ inputs.dockerfile_path }}
+          ecr_repository: ${{ needs.prepare-env.outputs.ecr_repository }}
+          ecr_repository_name: ${{ needs.prepare-env.outputs.ecr_repository_name }}
+          aws_region: ${{ needs.prepare-env.outputs.aws_region }}
+          image_tag: ${{ steps.vars.outputs.short_sha }}
+          service_name: ${{ inputs.service_name }}
+          s3_bucket: ${{ needs.prepare-env.outputs.s3_bucket }}
+          use_build_time_env: ${{ inputs.use_build_time_env }}
+  deploy:
+    needs:
+      - build
+      - prepare-env
+    runs-on: ubuntu-22.04
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ needs.prepare-env.outputs.aws_role }}
+          aws-region: ${{ needs.prepare-env.outputs.aws_region }}
+
+      - name: Deploy to ECS
+        uses: ./.github/actions/aws/deploy-ecs
+        with:
+          image_uri: ${{ needs.build.outputs.image_uri }}
+          ecs_cluster: ${{ needs.prepare-env.outputs.ecs_cluster }}
+          ecs_service: ${{ needs.prepare-env.outputs.ecs_service }}
+          task_definition: ${{ needs.prepare-env.outputs.task_definition }}
+          aws_region: ${{ needs.prepare-env.outputs.aws_region }}
+          port: ${{ inputs.port }}
+          container_name: ${{ needs.prepare-env.outputs.container_name }}
