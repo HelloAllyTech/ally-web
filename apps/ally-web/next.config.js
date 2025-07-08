@@ -10,6 +10,16 @@ const nextConfig = {
   },
   // Configure which pages should be statically generated
   pageExtensions: ["tsx", "ts", "jsx", "js"],
+
+  async redirects() {
+    return [
+      {
+        source: "/",
+        destination: "/about",
+        permanent: false,
+      },
+    ];
+  },
 };
 
 module.exports = nextConfig;
