@@ -53,7 +53,7 @@ const SearchResources: FC<SearchResourcesProps> = ({
       limit: PAGE_SIZE,
       filters,
     });
-    setHasMore(response.data?.total > resources.length + response.data?.documents?.length);
+    setHasMore(response.data?.total > response.data?.documents?.length);
     if (response.data) {
       setResources(response.data.documents);
       if (!(category && category !== "All")) {
@@ -103,7 +103,7 @@ const SearchResources: FC<SearchResourcesProps> = ({
     if (response.data) {
       const newDocuments = response.data.documents;
       setResources(prevResources => [...prevResources, ...newDocuments]);
-      setHasMore(newDocuments.length === PAGE_SIZE);
+      setHasMore(response.data?.total > response.data?.documents?.length);
     }
   };
 
