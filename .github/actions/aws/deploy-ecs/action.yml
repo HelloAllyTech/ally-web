@@ -1,0 +1,63 @@
+name: "Deploy to ECS"
+description: "Deploys application to ECS with task definition updates"
+
+inputs:
+  image_uri:
+    description: "Docker image URI"
+    required: true
+  ecs_cluster:
+    description: "ECS cluster name"
+    required: true
+  ecs_service:
+    description: "ECS service name"
+    required: true
+  task_definition:
+    description: "Task definition name"
+    required: true
+  aws_region:
+    description: "AWS region"
+    required: true
+  port:
+    description: "Container port"
+    required: true
+    default: "8080"
+  container_name:
+    description: "Container name"
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - name: Download current task definition
+      shell: bash
+      run: |
+        echo ":gear: Downloading current task definition..." >> $GITHUB_STEP_SUMMARY
+        aws ecs describe-task-definition \
+          --task-definition ${{ inputs.task_definition }} \
+          --query taskDefinition > task-definition.json
+
+    - name: Update task definition with new image
+      id: task-def
+      uses: aws-actions/amazon-ecs-render-task-definition@v1
+      with:
+        task-definition: task-definition.json
+        container-name: ${{ inputs.container_name }}
+        image: ${{ inputs.image_uri }}
+
+    - name: Deploy to Amazon ECS
+      uses: aws-actions/amazon-ecs-deploy-task-definition@v1
+      with:
+        task-definition: ${{ steps.task-def.outputs.task-definition }}
+        service: ${{ inputs.ecs_service }}
+        cluster: ${{ inputs.ecs_cluster }}
+        wait-for-service-stability: true
+
+    - name: Deployment Summary
+      shell: bash
+      run: |
+        echo ":rocket: ECS Deployment Completed!" >> $GITHUB_STEP_SUMMARY
+        echo "- Cluster: ${{ inputs.ecs_cluster }}" >> $GITHUB_STEP_SUMMARY
+        echo "- Service: ${{ inputs.ecs_service }}" >> $GITHUB_STEP_SUMMARY
+        echo "- Task Definition: ${{ inputs.task_definition }}" >> $GITHUB_STEP_SUMMARY
+        echo "- Image: ${{ inputs.image_uri }}" >> $GITHUB_STEP_SUMMARY
+        echo "- Port: ${{ inputs.port }}" >> $GITHUB_STEP_SUMMARY

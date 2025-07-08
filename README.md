@@ -1,82 +1,112 @@
-# AllyUIMono
+# Ally UI Monorepo
 
-<a alt="Nx logo" href="https://nx.dev" target="_blank" rel="noreferrer"><img src="https://raw.githubusercontent.com/nrwl/nx/master/images/nx-logo.png" width="45"></a>
+This monorepo contains multiple applications for the Ally platform:
 
-✨ Your new, shiny [Nx workspace](https://nx.dev) is almost ready ✨.
+- Ally Web: A modern landing page for our mental health AI assistance platform
+- Ally Helpline Dashboard: Dashboard application for mental health professionals
 
-[Learn more about this workspace setup and its capabilities](https://nx.dev/getting-started/tutorials/react-monorepo-tutorial?utm_source=nx_project&amp;utm_medium=readme&amp;utm_campaign=nx_projects) or run `npx nx graph` to visually explore what was created. Now, let's get you up to speed!
+## Prerequisites
 
-## Finish your CI setup
+- Node.js (LTS version recommended)
+- npm or yarn
+- Git
 
-[Click here to finish setting up your workspace!](https://cloud.nx.app/connect/bX9HC7npjo)
+## Setup Instructions
 
+1. Clone the repository:
 
-## Run tasks
-
-To run the dev server for your app, use:
-
-```sh
-npx nx serve ally-UI-mono
+```bash
+git clone <repository-url>
+cd ally-UI-mono
 ```
 
-To create a production bundle:
+2. Install dependencies:
 
-```sh
-npx nx build ally-UI-mono
+```bash
+npm install
 ```
 
-To see all available targets to run for a project, run:
+3. Start the development servers:
 
-```sh
-npx nx show project ally-UI-mono
+For Ally Web:
+
+```bash
+npx nx dev ally-web
 ```
 
-These targets are either [inferred automatically](https://nx.dev/concepts/inferred-tasks?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) or defined in the `project.json` or `package.json` files.
+For Ally Helpline Dashboard:
 
-[More about running tasks in the docs &raquo;](https://nx.dev/features/run-tasks?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-
-## Add new projects
-
-While you could add new projects to your workspace manually, you might want to leverage [Nx plugins](https://nx.dev/concepts/nx-plugins?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) and their [code generation](https://nx.dev/features/generate-code?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) feature.
-
-Use the plugin's generator to create new projects.
-
-To generate a new application, use:
-
-```sh
-npx nx g @nx/react:app demo
+```bash
+npx nx serve ally-helpline-dashboard
 ```
 
-To generate a new library, use:
+## Project Structure
 
-```sh
-npx nx g @nx/react:lib mylib
+```
+ally-UI-mono/
+├── apps/
+│   ├── ally-web/                  # Landing page application
+│   └── ally-helpline-dashboard/   # Main dashboard application
+├── libs/                          # Shared libraries
+├── nx.json                        # NX configuration
+├── package.json                   # Root dependencies
+└── tsconfig.base.json            # Base TypeScript configuration
 ```
 
-You can use `npx nx list` to get a list of installed plugins. Then, run `npx nx list <plugin-name>` to learn about more specific capabilities of a particular plugin. Alternatively, [install Nx Console](https://nx.dev/getting-started/editor-setup?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) to browse plugins and generators in your IDE.
+## Applications
 
-[Learn more about Nx plugins &raquo;](https://nx.dev/concepts/nx-plugins?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) | [Browse the plugin registry &raquo;](https://nx.dev/plugin-registry?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+### Ally Web (apps/ally-web)
 
+A Next.js application showcasing our platform's features and mission:
 
-[Learn more about Nx on CI](https://nx.dev/ci/intro/ci-with-nx#ready-get-started-with-your-provider?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+- Modern, responsive design
+- Gradient-based UI components
+- Interactive elements and smooth animations
+- Optimized for performance and accessibility
 
-## Install Nx Console
+### Ally Helpline Dashboard (apps/ally-helpline-dashboard)
 
-Nx Console is an editor extension that enriches your developer experience. It lets you run tasks, generate code, and improves code autocompletion in your IDE. It is available for VSCode and IntelliJ.
+The main dashboard application for mental health professionals.
 
-[Install Nx Console &raquo;](https://nx.dev/getting-started/editor-setup?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+## Available Commands
 
-## Useful links
+```bash
+# Ally Web Commands
+npx nx dev ally-web           # Start development server
+npx nx build ally-web        # Build for production
+npx nx lint ally-web        # Lint code
 
-Learn more:
+# Ally Helpline Dashboard Commands
+npx nx serve ally-helpline-dashboard
+npx nx build ally-helpline-dashboard
+npx nx test ally-helpline-dashboard
+npx nx lint ally-helpline-dashboard
+```
 
-- [Learn more about this workspace setup](https://nx.dev/getting-started/tutorials/react-monorepo-tutorial?utm_source=nx_project&amp;utm_medium=readme&amp;utm_campaign=nx_projects)
-- [Learn about Nx on CI](https://nx.dev/ci/intro/ci-with-nx?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [Releasing Packages with Nx release](https://nx.dev/features/manage-releases?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [What are Nx plugins?](https://nx.dev/concepts/nx-plugins?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+## Development Guidelines
 
-And join the Nx community:
-- [Discord](https://go.nx.dev/community)
-- [Follow us on X](https://twitter.com/nxdevtools) or [LinkedIn](https://www.linkedin.com/company/nrwl)
-- [Our Youtube channel](https://www.youtube.com/@nxdevtools)
-- [Our blog](https://nx.dev/blog?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+1. **Code Style**: Follow the project's ESLint and Prettier configurations
+2. **Styling**:
+   - Ally Web: Uses CSS Modules with custom properties
+   - Dashboard: Uses Tailwind CSS
+3. **TypeScript**: Maintain strict type checking and follow the base TSConfig
+4. **Components**: Create reusable components in the appropriate application's components directory
+
+## Contributing
+
+1. Create a new branch for your feature/fix
+2. Follow the project's code style and conventions
+3. Test your changes thoroughly
+4. Submit a pull request with a clear description of changes
+
+## Support
+
+For issues and support:
+
+- Check the project documentation
+- Review existing issues
+- Contact the development team
+
+## License
+
+[Add your license information here]

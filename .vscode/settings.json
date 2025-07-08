@@ -1,0 +1,7 @@
+{
+  "nxConsole.generateAiAgentRules": true,
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "[typescript]": {
+    "editor.defaultFormatter": "rvest.vs-code-prettier-eslint"
+  }
+}

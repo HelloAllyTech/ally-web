@@ -1,0 +1,272 @@
+import { useEffect, useState, useCallback, FunctionComponent } from "react";
+import { useNavigate } from "react-router-dom";
+import { FetchBaseQueryError } from "@reduxjs/toolkit/query";
+import { toast } from "sonner";
+import { motion, AnimatePresence } from "framer-motion";
+
+import { useUser } from "@/hooks";
+import { BackCircle } from "@/assets/icons";
+import { validateEmail } from "@/utils/common";
+import { Button, OTP, TextField } from "@/components";
+import { LoginImage } from "@/assets/images";
+import { useGenerateOTPMutation, useVerifyOTPMutation } from "@/api/auth";
+
+import { LoginSection } from "./constants";
+
+const Login: FunctionComponent = () => {
+  const navigate = useNavigate();
+
+  const [loginSection, setLoginSection] = useState<LoginSection>(LoginSection.EMAIL);
+  const [email, setEmail] = useState<string>("");
+  const [emailError, setEmailError] = useState<string>("");
+  const [otp, setOtp] = useState<string>("");
+  const [countdown, setCountdown] = useState<number>(0);
+  const [rememberMe, setRememberMe] = useState<boolean>(false);
+
+  const [
+    generateOTP,
+    {
+      isLoading: isGeneratingOTP,
+      isSuccess: isGenerateOTPSuccess,
+      data: generateOTPData,
+      error: generateOTPError,
+    },
+  ] = useGenerateOTPMutation();
+  const [
+    verifyOTP,
+    {
+      isLoading: isVerifyingOTP,
+      isSuccess: isVerifyOTPSuccess,
+      data: verifyOTPData,
+      error: verifyOTPError,
+    },
+  ] = useVerifyOTPMutation();
+
+  const { isAuthenticated, checkAuth } = useUser();
+
+  const isLoading = isGeneratingOTP || isVerifyingOTP;
+
+  useEffect(() => {
+    const rememberedEmail = localStorage.getItem("rememberedEmail");
+    if (rememberedEmail) {
+      setEmail(rememberedEmail);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate("/");
+    }
+  }, [isAuthenticated, navigate]);
+
+  useEffect(() => {
+    if (generateOTPError) {
+      const error = generateOTPError as FetchBaseQueryError;
+      const errorData = error.data as { message: string } | undefined;
+      const errorMessage = errorData?.message ?? "Failed to generate OTP. Please try again.";
+      toast.error(errorMessage);
+    } else if (isGenerateOTPSuccess && generateOTPData) {
+      setLoginSection(LoginSection.OTP);
+      setCountdown(10); // Start 10 second countdown when OTP is generated
+    }
+  }, [isGenerateOTPSuccess, generateOTPError, generateOTPData]);
+
+  useEffect(() => {
+    let timer: NodeJS.Timeout;
+    if (countdown > 0) {
+      timer = setInterval(() => {
+        setCountdown(prev => prev - 1);
+      }, 1000);
+    }
+    return () => {
+      if (timer) clearInterval(timer);
+    };
+  }, [countdown]);
+
+  useEffect(() => {
+    (async () => {
+      if (verifyOTPError) {
+        const error = verifyOTPError as FetchBaseQueryError;
+        const errorData = error.data as { message: string } | undefined;
+        const errorMessage = errorData?.message ?? "Failed to verify OTP. Please try again.";
+        toast.error(errorMessage);
+      } else if (isVerifyOTPSuccess && verifyOTPData) {
+        localStorage.setItem("accessToken", verifyOTPData.accessToken);
+        localStorage.setItem("refreshToken", verifyOTPData.refreshToken);
+        await checkAuth();
+        navigate("/");
+      }
+    })();
+  }, [isVerifyOTPSuccess, verifyOTPError, verifyOTPData]);
+
+  const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newEmail = e.target.value;
+    setEmail(newEmail?.toLowerCase());
+    if (emailError) {
+      setEmailError("");
+    }
+  };
+
+  const handleBack = () => {
+    setLoginSection(LoginSection.EMAIL);
+    setOtp("");
+  };
+
+  const handleResendCode = useCallback(() => {
+    if (countdown === 0) {
+      generateOTP({ email });
+    }
+  }, [countdown, generateOTP, email]);
+
+  const handleNext = () => {
+    if (!validateEmail(email)) {
+      setEmailError("Please enter a valid email address");
+      return;
+    }
+    if (rememberMe) {
+      localStorage.setItem("rememberedEmail", email);
+    }
+    generateOTP({ email: email.trim() });
+  };
+
+  const handleVerify = () => {
+    verifyOTP({ email: email.trim(), otp });
+  };
+
+  const getLoginSection = () => {
+    if (loginSection === LoginSection.EMAIL) {
+      return (
+        <motion.div
+          key="email"
+          initial={{ opacity: 0, x: -50 }}
+          animate={{ opacity: 1, x: 0 }}
+          exit={{ opacity: 0, x: 50 }}
+          transition={{ duration: 0.4, ease: "easeInOut" }}
+          className="flex flex-col gap-4"
+        >
+          <div className="flex flex-col text-[32px] font-['Replay_Pro']">
+            <span>Hey,</span>
+            <h1>
+              <span>Welcome to </span>
+              <span className="font-bold italic">Ally</span>
+            </h1>
+            <span className="text-[24px] mt-[24px]">Enter your email address to continue</span>
+          </div>
+          <div className="flex flex-col gap-1">
+            <TextField
+              fieldSize="medium"
+              type="email"
+              inputMode="email"
+              label="Email"
+              value={email}
+              onChange={handleEmailChange}
+              errorMessage={emailError}
+              hideError={false}
+              placeholder="Enter your email address"
+              className="w-full rounded-xs"
+            />
+
+            <div className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                id="remember"
+                className="h-4 w-4 rounded border-2 border-[#E5E7EB] text-blue-600 focus:ring-blue-500 cursor-pointer"
+                checked={rememberMe}
+                onChange={e => setRememberMe(e.target.checked)}
+              />
+              <label htmlFor="remember" className="text-sm text-[#49454F] cursor-pointer">
+                Remember me
+              </label>
+            </div>
+          </div>
+          <Button
+            type="button"
+            className="w-full rounded-[5px] mt-6"
+            disabled={isLoading || isSubmitDisabled}
+            onClick={handleNext}
+          >
+            {isLoading ? (
+              <div className="flex items-center justify-center">
+                <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-[5px] animate-spin mr-2"></div>
+                Generating OTP...
+              </div>
+            ) : (
+              "Next"
+            )}
+          </Button>
+          <div className="text-[12px] text-[#8C8C8C] mt-2">
+            By tapping next, you agree to Ally's{" "}
+            <span className="text-[#0473F2]">Terms & Conditions</span> and acknowledge{" "}
+            <span className="text-[#0473F2]">Privacy Policy</span>.
+          </div>
+        </motion.div>
+      );
+    }
+    return (
+      <motion.div
+        key="otp"
+        initial={{ opacity: 0, x: 50 }}
+        animate={{ opacity: 1, x: 0 }}
+        exit={{ opacity: 0, x: -50 }}
+        transition={{ duration: 0.4, ease: "easeInOut" }}
+        className="flex flex-col justify-start gap-6"
+      >
+        <BackCircle className="self-start cursor-pointer" onClick={handleBack} />
+        <h1 className="text-[32px] font-['Replay_Pro']">Verify your email address</h1>
+        <div className="text-base mb-2 font-['Replay_Pro'] flex flex-col">
+          <span className="text-[24px]">Enter the code sent to</span>
+          <span className="font-semibold text-[24px]">{email}</span>
+        </div>
+        <div className="flex flex-col gap-2">
+          <OTP value={otp} onChange={setOtp} />
+          <div className="text-[12px] text-[#49454F]">
+            Didn't receive the code?{" "}
+            <span
+              className={`${countdown > 0 ? "text-[#C4C4C4]" : "text-[#0473F2]"} cursor-pointer`}
+              onClick={handleResendCode}
+            >
+              Resend {countdown > 0 ? `(${countdown}s)` : ""}
+            </span>
+          </div>
+        </div>
+        <Button
+          type="button"
+          className="w-full rounded-[5px] mt-6"
+          disabled={isLoading || isSubmitDisabled}
+          onClick={handleVerify}
+        >
+          {isLoading ? (
+            <div className="flex items-center justify-center">
+              <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-[5px] animate-spin mr-2"></div>
+              Signing in...
+            </div>
+          ) : (
+            "Verify"
+          )}
+        </Button>
+      </motion.div>
+    );
+  };
+
+  const isSubmitDisabled =
+    loginSection === LoginSection.EMAIL ? !email || !!emailError : !otp || otp.length < 4;
+
+  return (
+    <div className="flex h-screen p-8">
+      <img
+        src={LoginImage}
+        alt="Login"
+        className="max-w-[50%] flex-1 h-full object-cover hidden sm:block rounded-[16px]"
+      />
+      <div className="flex-1 flex flex-col items-center justify-center">
+        <div className="sm:w-1/2 w-[90%] flex flex-col gap-6">
+          <div className="flex flex-col">
+            <AnimatePresence mode="wait">{getLoginSection()}</AnimatePresence>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default Login;

@@ -1,0 +1,94 @@
+name: "Build and Push Docker Image"
+description: "Builds and pushes optimized Docker images to ECR"
+
+inputs:
+  app_path:
+    description: "Path to the application directory"
+    required: true
+  dockerfile_path:
+    description: "Path to Dockerfile relative to app directory"
+    required: true
+  ecr_repository:
+    description: "ECR repository URL"
+    required: true
+  ecr_repository_name:
+    description: "ECR repository name"
+    required: true
+  aws_region:
+    description: "AWS region"
+    required: true
+  image_tag:
+    description: "Docker image tag"
+    required: true
+    default: "latest"
+  service_name:
+    description: "Service name"
+    required: true
+  s3_bucket:
+    description: "S3 bucket name"
+    required: true
+  use_build_time_env:
+    description: "Enable build-time environment variables from S3"
+    required: false
+    default: "true"
+
+outputs:
+  image_uri:
+    description: "Full ECR image URI with tag"
+    value: ${{ steps.build.outputs.image_uri }}
+
+runs:
+  using: "composite"
+  steps:
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+
+    - name: Log in to Amazon ECR
+      id: login-ecr
+      uses: aws-actions/amazon-ecr-login@v2
+
+    - name: Download Environment Variables
+      shell: bash
+      run: |
+        if [ "${{ inputs.use_build_time_env }}" = "true" ]; then
+          echo ":gear: Build-time environment variables enabled - checking for .env file..." >> $GITHUB_STEP_SUMMARY
+          if aws s3 cp s3://${{ inputs.s3_bucket }}/${{ inputs.service_name }}/.env ${{ inputs.app_path }}/.env 2>/dev/null; then
+            echo ":white_check_mark: Environment variables downloaded successfully" >> $GITHUB_STEP_SUMMARY
+            echo "- S3 Path: s3://${{ inputs.s3_bucket }}/${{ inputs.service_name }}/.env" >> $GITHUB_STEP_SUMMARY
+            echo "- Local Path: ${{ inputs.app_path }}/.env" >> $GITHUB_STEP_SUMMARY
+            echo "- File will be available during Docker build" >> $GITHUB_STEP_SUMMARY
+          else
+            echo ":information_source: No build-time environment variables found" >> $GITHUB_STEP_SUMMARY
+            echo "- S3 Path: s3://${{ inputs.s3_bucket }}/${{ inputs.service_name }}/.env (not found)" >> $GITHUB_STEP_SUMMARY
+            echo "- Proceeding with build without environment variables" >> $GITHUB_STEP_SUMMARY
+          fi
+        else
+          echo ":no_entry_sign: Build-time environment variables disabled" >> $GITHUB_STEP_SUMMARY
+          echo "- Skipping S3 environment variable download" >> $GITHUB_STEP_SUMMARY
+          echo "- Build will proceed without build-time environment variables" >> $GITHUB_STEP_SUMMARY
+        fi
+
+    - name: Build and push Docker image
+      id: build
+      shell: bash
+      run: |
+        # Set image URI
+        IMAGE_URI="${{ inputs.ecr_repository }}/${{ inputs.ecr_repository_name }}:${{ inputs.image_tag }}"
+
+        echo ":building_construction: Building Docker image..." >> $GITHUB_STEP_SUMMARY
+        echo "- Repository: ${{ inputs.ecr_repository_name }}" >> $GITHUB_STEP_SUMMARY
+        echo "- Tag: ${{ inputs.image_tag }}" >> $GITHUB_STEP_SUMMARY
+        echo "- Dockerfile: ${{ inputs.app_path }}/${{ inputs.dockerfile_path }}" >> $GITHUB_STEP_SUMMARY
+        echo "- Build Context: workspace root" >> $GITHUB_STEP_SUMMARY
+
+        # Build and push image using workspace root as context
+        docker buildx build \
+          --platform linux/amd64 \
+          --file ${{ inputs.app_path }}/${{ inputs.dockerfile_path }} \
+          --tag $IMAGE_URI \
+          --push \
+          .
+
+        echo "image_uri=$IMAGE_URI" >> $GITHUB_OUTPUT
+        echo ":white_check_mark: Image built and pushed successfully!" >> $GITHUB_STEP_SUMMARY
+        echo "- Image URI: $IMAGE_URI" >> $GITHUB_STEP_SUMMARY

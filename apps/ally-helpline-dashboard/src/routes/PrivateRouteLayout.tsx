@@ -1,0 +1,257 @@
+import { useState, useEffect } from "react";
+import { Route, Routes, Navigate, matchPath, useNavigate, useLocation } from "react-router-dom";
+import { useSelector } from "react-redux";
+import { toast } from "sonner";
+
+import {
+  Calls,
+  Learn,
+  Calendar,
+  Settings,
+  Analytics,
+  AudioCall,
+  StressBusters,
+  PostCallSummary,
+  ClientInterface,
+  Search,
+  StartSession,
+} from "@/pages";
+import { useUser } from "@/hooks";
+import { TabId } from "@/constants/tabs";
+import { RootState, store } from "@/store/store";
+import { UserRole, UserStatus } from "@/types/user";
+import { WaitingClient } from "@/types/calls";
+import { setUserStatus } from "@/reducer/userReducer";
+import { Permissions } from "@/constants/permissions";
+import { navBarOptions, ROUTES } from "@/constants/routes";
+import { CallPicker, NavSideBar } from "@/components";
+import { MenuIcon } from "@/assets/icons";
+import { useAcceptCallMutation, useGetWaitingClientsQuery } from "@/api/audioCall";
+import { logger } from "@ally-ui-mono/ui-shared";
+
+import PermissionGuardedRoute from "./PermissionGuardedRoute";
+
+// TODO: Remove all un used pages
+// TODO: Restrict client access to pages
+
+const PrivateRouteLayout = () => {
+  const { user, checkAuth } = useUser();
+  const navigate = useNavigate();
+  const { pathname } = useLocation();
+
+  const isClient = user?.role === UserRole.CLIENT;
+  const isAdmin = user?.role === UserRole.ADMIN;
+  const [activeTab, setActiveTab] = useState<TabId>(TabId.CALLS);
+  const [alertCall, setAlertCall] = useState(true);
+  const [waitingClients, setWaitingClients] = useState<WaitingClient[]>([]);
+  const [isSidebarOpen, setSidebarOpen] = useState(false);
+
+  const { userStatus } = useSelector((state: RootState) => state.user);
+
+  const excludeNavBar = [ROUTES.AUDIO_CALL, ROUTES.SUMMARY] as string[];
+  const excludeCallPicker = [ROUTES.AUDIO_CALL, ROUTES.SUMMARY] as string[];
+  const isAvailable = userStatus === UserStatus.AVAILABLE;
+
+  const { data: getWaitingClientsData, isSuccess: isWaitingClientsSuccess } =
+    useGetWaitingClientsQuery(undefined, {
+      skip: user?.role !== UserRole.COUNSELOR || !isAvailable,
+      pollingInterval: 5000,
+    });
+  const [acceptCall] = useAcceptCallMutation();
+
+  useEffect(() => {
+    const userStatusLocalStorage = localStorage.getItem("userStatus");
+    if (userStatusLocalStorage) {
+      store.dispatch(setUserStatus(userStatusLocalStorage as UserStatus));
+    }
+    const verifyAuth = async () => {
+      const userData = await checkAuth();
+      if (!userData) {
+        navigate(ROUTES.LOGIN);
+      }
+    };
+    verifyAuth();
+  }, []);
+
+  useEffect(() => {
+    if (isWaitingClientsSuccess) {
+      setWaitingClients(getWaitingClientsData?.clients || []);
+    }
+  }, [isWaitingClientsSuccess, getWaitingClientsData]);
+
+  useEffect(() => {
+    setActiveTab(getActiveTab());
+  }, [pathname]);
+
+  const getActiveTab = () =>
+    navBarOptions.find(option => option.path === pathname)?.id ?? TabId.CALLS;
+
+  const handleTabChange = (path: string) => {
+    navigate(path);
+  };
+
+  const isPathExcluded = (currentPath: string, excludedPaths: string[]) => {
+    return excludedPaths.some(path => matchPath(path, currentPath));
+  };
+
+  const onAcceptCall = async () => {
+    try {
+      await acceptCall({ chatId: waitingClients[0]?.chat?.chatId });
+      store.dispatch(setUserStatus(UserStatus.OFFLINE));
+      localStorage.setItem("userStatus", UserStatus.OFFLINE);
+
+      // Clearing waitingClients to prevent call pop-up after the call due to outdated waitingClients
+      setWaitingClients([]);
+      navigate(ROUTES.AUDIO_CALL);
+    } catch (error) {
+      toast.error(error?.response?.data?.detail ?? "Something went wrong. Please try again later!");
+      logger.info(`Error accepting chat: ${error}`);
+    }
+  };
+
+  const showNavbar = !isClient && !isPathExcluded(pathname, excludeNavBar);
+
+  const toggleSidebar = () => {
+    setSidebarOpen(!isSidebarOpen);
+  };
+
+  if (user)
+    return (
+      <div className="flex h-screen w-full ">
+        {showNavbar && (
+          <NavSideBar
+            activeTab={activeTab}
+            onTabChange={handleTabChange}
+            isOpen={isSidebarOpen}
+            onClose={toggleSidebar}
+          />
+        )}
+        <div className={"flex-1 min-h-screen overflow-auto bg-white custom-scrollbar"}>
+          <div className={`${showNavbar && "md:ml-72 h-[100vh]"}`}>
+            {!isClient && (
+              <button onClick={toggleSidebar} className="md:hidden p-4 fixed top-0 right-0 z-30">
+                <MenuIcon />
+              </button>
+            )}
+            <Routes>
+              <Route
+                index
+                element={
+                  isClient ? (
+                    <Navigate to={ROUTES.CLIENT} />
+                  ) : isAdmin ? (
+                    <Navigate to={ROUTES.ANALYTICS} />
+                  ) : (
+                    <Navigate to={ROUTES.SEARCH} />
+                  )
+                }
+              />
+              <Route path={ROUTES.AUDIO_CALL} element={<AudioCall />} />
+              <Route
+                path={ROUTES.CLIENT}
+                element={
+                  <PermissionGuardedRoute
+                    permission={Permissions.VIEW_START_CALL_PAGE}
+                    element={<ClientInterface />}
+                  />
+                }
+              />
+              <Route
+                path={ROUTES.CALLS}
+                element={
+                  <PermissionGuardedRoute
+                    permission={Permissions.VIEW_NAVBAR_CALLS}
+                    element={<Calls />}
+                  />
+                }
+              />
+              <Route
+                path={ROUTES.CALENDER}
+                element={
+                  <PermissionGuardedRoute
+                    permission={Permissions.VIEW_NAVBAR_CALENDAR}
+                    element={<Calendar />}
+                  />
+                }
+              />
+              <Route
+                path={ROUTES.LEARN}
+                element={
+                  <PermissionGuardedRoute
+                    permission={Permissions.VIEW_NAVBAR_LEARN}
+                    element={<Learn />}
+                  />
+                }
+              />
+              <Route
+                path={ROUTES.ANALYTICS}
+                element={
+                  <PermissionGuardedRoute
+                    permission={Permissions.VIEW_NAVBAR_ANALYTICS}
+                    element={<Analytics />}
+                  />
+                }
+              />
+              <Route
+                path={ROUTES.SETTINGS}
+                element={
+                  <PermissionGuardedRoute
+                    permission={Permissions.VIEW_NAVBAR_SETTINGS}
+                    element={<Settings />}
+                  />
+                }
+              />
+              <Route
+                path={ROUTES.STRESS_BUSTERS}
+                element={
+                  <PermissionGuardedRoute
+                    permission={Permissions.VIEW_NAVBAR_STRESS_BUSTER}
+                    element={<StressBusters />}
+                  />
+                }
+              />
+              <Route
+                path={ROUTES.SUMMARY}
+                element={
+                  <PermissionGuardedRoute
+                    permission={Permissions.EDIT_SUMMARY}
+                    element={<PostCallSummary />}
+                  />
+                }
+              />
+              <Route
+                path={ROUTES.SEARCH}
+                element={
+                  <PermissionGuardedRoute
+                    // TODO: Add correct permission for search
+                    permission={Permissions.VIEW_NAVBAR_LEARN}
+                    element={<Search />}
+                  />
+                }
+              />
+              <Route
+                path={ROUTES.START_SESSION}
+                element={
+                  <PermissionGuardedRoute
+                    // TODO: Add correct permission for search
+                    permission={Permissions.VIEW_NAVBAR_LEARN}
+                    element={<StartSession />}
+                  />
+                }
+              />
+              <Route path="*" element={<Navigate to="/" replace />} />
+            </Routes>
+          </div>
+        </div>
+        {alertCall &&
+          waitingClients.length > 0 &&
+          isAvailable &&
+          !isPathExcluded(pathname, excludeCallPicker) && (
+            <CallPicker onAccept={onAcceptCall} onDecline={() => setAlertCall(false)} />
+          )}
+      </div>
+    );
+  else return <></>;
+};
+
+export default PrivateRouteLayout;
