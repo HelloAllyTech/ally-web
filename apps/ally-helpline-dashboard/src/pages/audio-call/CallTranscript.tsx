@@ -6,7 +6,13 @@ import { useGetNudgeStatusQuery } from "@/api/audioCall";
 import { RootState } from "@/store/store";
 import { useSocket, useWebRTCCallSetup } from "@/hooks";
 import { UserRole } from "@/types/user";
-import { FeedbackResponse, MessageType, SocketEvent, Transcription } from "@/types/message";
+import {
+  ChatStatus,
+  FeedbackResponse,
+  MessageType,
+  SocketEvent,
+  Transcription,
+} from "@/types/message";
 import { SocketConnectionTypes } from "@/constants/socket";
 import { logger } from "@ally-ui-mono/ui-shared";
 
@@ -291,6 +297,15 @@ const CallTranscript: FC<CallTranscriptProps> = ({
         }));
       setNudges(existingNudges);
     }
+    if (
+      isMicrophoneMode &&
+      activeChat?.status === ChatStatus.ACTIVE &&
+      activeChat?.provider === "MICROPHONE"
+    ) {
+      setMicrophoneChatId(activeChat.chatId);
+      // To notify that call has started
+      setIsUserJoined(true);
+    }
   }, [activeChat]);
 
   useEffect(() => {
@@ -458,6 +473,7 @@ const CallTranscript: FC<CallTranscriptProps> = ({
         <CallControls
           isFocusMode={isFocusMode}
           isMuted={isMuted}
+          isPrimaryButtonDisabled={isMicrophoneMode && !microphoneChatId}
           isSecondaryButtonDisabled={!isUserJoined}
           showFocusButton={isCounsellor}
           onCutCallButtonClick={() => confirmEndSession(true)}

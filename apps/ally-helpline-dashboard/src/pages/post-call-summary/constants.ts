@@ -17,7 +17,7 @@ import {
 } from "@/assets/icons";
 import { SummaryFieldKey } from "@/types/summary";
 
-import { SummaryField, SummarySectionKey } from "./types";
+import { SectionType, SummaryField, SummarySectionKey } from "./types";
 
 export const summarySections = [
   {
@@ -393,4 +393,10 @@ export const summaryFields: SummaryField[] = [
 export const labelShownSections = [
   SummarySectionKey.FeaturesAndDemographics,
   SummarySectionKey.Metrics,
+];
+
+export const postCallSectionOrder = [
+  SectionType.StressBuster,
+  SectionType.CallSummary,
+  SectionType.Resources,
 ];

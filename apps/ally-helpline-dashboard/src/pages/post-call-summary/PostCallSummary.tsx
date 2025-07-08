@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { useSelector } from "react-redux";
-import { Container } from "@mui/material";
 import { useSearchParams, useNavigate, useParams } from "react-router-dom";
 
 import { RootState, store } from "@/store/store";
@@ -17,6 +16,7 @@ import ArticleGridStep from "./components/ArticleGridStep";
 import CallSummary from "./components/CallSummary";
 import { useGetCallSummaryQuery } from "@/api/callSummary";
 import { logger } from "@ally-ui-mono/ui-shared";
+import { getNextSection } from "./helper";
 
 const PostCallSummary = () => {
   const { chatId } = useParams();
@@ -71,15 +71,16 @@ const PostCallSummary = () => {
     setModalData({ type: "article", article });
   };
 
-  const handleProceed = (nextSection: SectionType) => {
-    setCompletedSections((prev: SectionType[]) => [...prev, nextSection]);
+  const handleProceed = () => {
+    const nextSection = getNextSection(activeSection);
+    setCompletedSections((prev: SectionType[]) => [...prev, activeSection]);
     setActiveSection(nextSection);
   };
 
   const renderSection = () => {
     switch (activeSection) {
       case SectionType.StressBuster:
-        return <StressBusterStep onProceed={() => handleProceed(SectionType.CallSummary)} />;
+        return <StressBusterStep onProceed={handleProceed} />;
       case SectionType.CallSummary:
         return (
           <CallSummary
@@ -87,7 +88,7 @@ const PostCallSummary = () => {
             callSummary={callSummary}
             chatId={Number(chatId)}
             isSummaryLoading={isGetCallSummaryLoading}
-            onProceed={() => handleProceed(SectionType.Resources)}
+            onProceed={handleProceed}
             showInitialLoading={showInitialLoading}
             setShowInitialLoading={setShowInitialLoading}
           />

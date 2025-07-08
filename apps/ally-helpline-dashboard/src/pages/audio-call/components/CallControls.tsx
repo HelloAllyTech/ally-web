@@ -7,6 +7,7 @@ import { CallControlsProps } from "../types";
 const CallControls: FC<CallControlsProps> = ({
   isFocusMode,
   isMuted,
+  isPrimaryButtonDisabled = false,
   isSecondaryButtonDisabled,
   showFocusButton,
   onCutCallButtonClick,
@@ -22,7 +23,11 @@ const CallControls: FC<CallControlsProps> = ({
       >
         {isMuted ? <NoRecord /> : <Record />}
       </button>
-      <button onClick={onCutCallButtonClick} className="w-[56px] h-[56px]">
+      <button
+        disabled={isPrimaryButtonDisabled}
+        onClick={onCutCallButtonClick}
+        className="w-[56px] h-[56px]"
+      >
         <CutCall />
       </button>
       {showFocusButton && (

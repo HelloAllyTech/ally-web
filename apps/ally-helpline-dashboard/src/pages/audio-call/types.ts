@@ -28,6 +28,7 @@ export interface RealTimeTranscriptProps {
 export interface CallControlsProps {
   isFocusMode: boolean;
   isMuted: boolean;
+  isPrimaryButtonDisabled?: boolean;
   isSecondaryButtonDisabled: boolean;
   showFocusButton: boolean;
   onCutCallButtonClick: () => void;
