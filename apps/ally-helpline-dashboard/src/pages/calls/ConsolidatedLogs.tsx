@@ -186,7 +186,7 @@ const ConsolidatedLogs = () => {
       header: "Quality Score",
       sortable: true,
       filterable: true,
-      filterType: FilterType.MULTISELECT,
+      filterType: FilterType.SINGLESELECT,
       filterOptions: [
         { label: "Excellent (85+)", value: "85-100" },
         { label: "Good (50-80)", value: "50-80" },
