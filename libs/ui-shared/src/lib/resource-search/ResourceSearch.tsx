@@ -45,13 +45,6 @@ const ResourceSearch: FC<ResourceSearchProps> = ({
   isSuggestionsRow = false,
   categoryCountList,
 }) => {
-  const getResources = () => {
-    if (selectedCategory === "All") {
-      return resources;
-    }
-    return resources?.filter(resource => resource.category === selectedCategory);
-  };
-
   const handleSearch = (searchTerm: string) => {
     if (onSearch) {
       onSearch(searchTerm);
@@ -86,14 +79,13 @@ const ResourceSearch: FC<ResourceSearchProps> = ({
     if (isLoading && (!resources || resources.length === 0)) {
       return <SkeletonLoader />;
     } else if (resources && resources.length > 0) {
-      const filteredResources = getResources();
       return (
         <>
           <div className="w-[calc(100%-32px)] sm:w-full ml-[16px] mr-[16px]">
-            {selectedCategory && onCategoryChange && (
+            {categoryCountList && (
               <ResourceTabs
                 resources={resources}
-                selectedCategory={selectedCategory}
+                selectedCategory={selectedCategory ?? "All"}
                 categoryCountList={categoryCountList}
                 setSelectedCategory={onCategoryChange}
               />
@@ -105,12 +97,12 @@ const ResourceSearch: FC<ResourceSearchProps> = ({
               "w-full pt-[14px] h-[90vh] overflow-y-auto flex flex-col gap-2 md:gap-4 items-center px-4 md:px-0 pb-[300px]"
             }
           >
-            {filteredResources && filteredResources.length > 0 ? (
+            {resources && resources.length > 0 ? (
               <InfiniteScroll
                 onInfiniteScroll={onInfiniteScroll || (() => {})}
                 isLoading={isLoading || false}
               >
-                {filteredResources.map(resource => (
+                {resources.map(resource => (
                   <ResourceCard
                     key={resource.id}
                     title={resource.heading}

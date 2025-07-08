@@ -9,9 +9,10 @@ import { fetchReferenceDocuments, initialFetchLimit } from "./api";
 
 interface SearchClientProps {
   searchQuery: string;
-  category: string;
+  category?: string;
   documents: Resource[];
   categoryCountList: { [key: string]: number };
+  totalDocumentCount: number;
 }
 
 export default function SearchClient({
@@ -19,25 +20,25 @@ export default function SearchClient({
   category,
   documents: initialDocuments,
   categoryCountList,
+  totalDocumentCount,
 }: SearchClientProps) {
   const router = useRouter();
   const [documents, setDocuments] = useState<Resource[]>(initialDocuments);
   const [isLoading, setIsLoading] = useState(false);
-  const [hasMore, setHasMore] = useState(true);
+  const [hasMore, setHasMore] = useState(initialDocuments.length < totalDocumentCount);
 
   useEffect(() => {
     setDocuments(initialDocuments);
-  }, [initialDocuments]);
+    setHasMore(initialDocuments.length < totalDocumentCount);
+  }, [initialDocuments, totalDocumentCount]);
 
   const onSearch = (searchTerm: string) => {
-    router.push(
-      `/search?q=${encodeURIComponent(searchTerm)}&category=${encodeURIComponent("All")}`,
-    );
+    router.push(`/search?q=${encodeURIComponent(searchTerm)}`);
   };
 
   const onCategoryChange = (newCategory: string) => {
     router.push(
-      `/search?q=${encodeURIComponent(searchQuery)}&category=${encodeURIComponent(newCategory)}`,
+      `/search?q=${encodeURIComponent(searchQuery)}${newCategory !== "All" ? `&category=${encodeURIComponent(newCategory)}` : ""}`,
     );
   };
 
@@ -45,16 +46,15 @@ export default function SearchClient({
     if (isLoading || !hasMore) return;
     setIsLoading(true);
     try {
-      const { documents: newDocuments } = await fetchReferenceDocuments(
+      const { documents: newDocuments, total } = await fetchReferenceDocuments(
         searchQuery,
         category,
-        documents.length + initialFetchLimit,
+        initialFetchLimit,
+        documents.map(doc => doc.id),
       );
-      if (newDocuments.length > documents.length) {
-        setDocuments(newDocuments);
-      } else {
-        setHasMore(false);
-      }
+      setDocuments(prev => [...prev, ...newDocuments]);
+      // The total value on infinite scroll after excluded Ids are added is the total after the first fetch
+      setHasMore(total > newDocuments.length);
     } catch (error) {
       logger.info(`Error in onInfiniteScroll: ${error}`);
     }
