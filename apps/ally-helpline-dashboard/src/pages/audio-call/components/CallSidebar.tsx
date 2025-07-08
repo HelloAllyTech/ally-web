@@ -1,9 +1,8 @@
 import { FC, useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Divider } from "@mui/material";
-import { ThumbUpAlt, ThumbDownAlt, ThumbUpOffAlt, ThumbDownOffAlt } from "@mui/icons-material";
 
-import { Close } from "@/assets/icons";
+import { Close, ThumbDown, ThumbDownFilled, ThumbUp, ThumbUpFilled } from "@/assets/icons";
 import { CustomMarkdown, SearchResources } from "@/components";
 import { useAddFeedbackMutation, useUpdateFeedbackMutation } from "@/api/audioCall";
 import { FeedbackResponse } from "@/types/message";
@@ -71,14 +70,14 @@ const CallSidebar: FC<CallSidebarProps> = ({
         <div className="flex text-sm items-center gap-2">
           <span>Is this helpful?</span>
           <button
-            className="p-2 rounded-lg transition-colors"
+            className="rounded-lg transition-colors"
             onClick={() => handleFeedback(nudge, 0)}
             disabled={isLoading}
           >
             {feedbacks[nudge.id]?.rating === 0 ? (
-              <ThumbDownAlt className="w-5 h-5" />
+              <ThumbDownFilled className="w-5 h-5" />
             ) : (
-              <ThumbDownOffAlt className="w-5 h-5" />
+              <ThumbDown className="w-5 h-5" />
             )}
           </button>
           <button
@@ -87,9 +86,9 @@ const CallSidebar: FC<CallSidebarProps> = ({
             disabled={isLoading}
           >
             {feedbacks[nudge.id]?.rating === 1 ? (
-              <ThumbUpAlt className="w-5 h-5" />
+              <ThumbUpFilled className="w-5 h-5" />
             ) : (
-              <ThumbUpOffAlt className="w-5 h-5" />
+              <ThumbUp className="w-5 h-5" />
             )}
           </button>
         </div>

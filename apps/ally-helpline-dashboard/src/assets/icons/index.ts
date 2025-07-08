@@ -58,6 +58,10 @@ import StarIcon from "./star.svg?react";
 import TagsIcon from "./tagsIcon.svg?react";
 import ReviewIcon from "./reviewIcon.svg?react";
 import CallIdIcon from "./callIdIcon.svg?react";
+import ThumbUp from "./ThumbUp.svg?react";
+import ThumbDown from "./ThumbDown.svg?react";
+import ThumbUpFilled from "./ThumbUpFilled.svg?react";
+import ThumbDownFilled from "./ThumbDownFilled.svg?react";
 
 export {
   AccountCircle,
@@ -120,4 +124,8 @@ export {
   TagsIcon,
   ReviewIcon,
   CallIdIcon,
+  ThumbUp,
+  ThumbDown,
+  ThumbUpFilled,
+  ThumbDownFilled,
 };

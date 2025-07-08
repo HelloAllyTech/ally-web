@@ -53,10 +53,12 @@ export interface StressBusterProps {
 
 export interface CallSummaryProps {
   // TODO: create a type for the call summary
+  className?: string;
   callSummary: any;
   chatId: number;
   onProceed: () => void;
   isSummaryLoading: boolean;
+  isInSidebar?: boolean;
   showInitialLoading: boolean;
   setShowInitialLoading: Dispatch<SetStateAction<boolean>>;
 }

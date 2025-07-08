@@ -273,12 +273,14 @@ const SummarySideBar: FC<SummarySideBarProps> = ({
               {!isRenaming && <Edit onClick={onRenameButtonClick} className="cursor-pointer" />}
             </div>
             <CallSummary
+              className="max-h-[calc(100vh-260px)]"
               callSummary={callSummary}
               chatId={callSummary.id}
               isSummaryLoading={isLoading}
               onProceed={() => refetchCallLogs()}
               showInitialLoading={false}
               setShowInitialLoading={() => {}}
+              isInSidebar={true}
             />
           </div>
         )}

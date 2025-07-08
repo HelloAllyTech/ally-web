@@ -83,6 +83,7 @@ const PostCallSummary = () => {
       case SectionType.CallSummary:
         return (
           <CallSummary
+            className="max-h-[calc(100vh-180px)]"
             callSummary={callSummary}
             chatId={Number(chatId)}
             isSummaryLoading={isGetCallSummaryLoading}
