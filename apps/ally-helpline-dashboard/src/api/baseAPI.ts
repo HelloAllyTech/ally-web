@@ -75,7 +75,6 @@ const baseQueryWithReauth: BaseQueryFn<string | FetchArgs, unknown, FetchBaseQue
         localStorage.setItem("refreshToken", tokens.refreshToken);
 
         // Retry the original query
-        result = await baseQuery(args, store, extraOptions);
         try {
           result = await baseQuery(args, store, extraOptions);
         } catch (error) {
