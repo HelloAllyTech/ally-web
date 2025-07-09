@@ -255,7 +255,7 @@ const SummarySideBar: FC<SummarySideBarProps> = ({
           }}
         >
           <Tab label="Summary" value={1} sx={tabStyles} />
-          <Tab label="Feedback" value={2} sx={tabStyles} />
+          <Tab label="Transcription" value={2} sx={tabStyles} />
         </Tabs>
 
         {selectedTab === 1 && (
