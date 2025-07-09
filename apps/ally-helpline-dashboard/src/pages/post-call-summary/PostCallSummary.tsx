@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { useSelector } from "react-redux";
-import { Container } from "@mui/material";
 import { useSearchParams, useNavigate, useParams } from "react-router-dom";
 
 import { RootState, store } from "@/store/store";
@@ -17,6 +16,7 @@ import ArticleGridStep from "./components/ArticleGridStep";
 import CallSummary from "./components/CallSummary";
 import { useGetCallSummaryQuery } from "@/api/callSummary";
 import { logger } from "@ally-ui-mono/ui-shared";
+import { getNextSection } from "./helper";
 
 const PostCallSummary = () => {
   const { chatId } = useParams();
@@ -24,9 +24,7 @@ const PostCallSummary = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
 
-  const [activeSection, setActiveSection] = useState<SectionType>(
-    searchParams.get("section") === "2" ? SectionType.CallSummary : SectionType.StressBuster,
-  );
+  const [activeSection, setActiveSection] = useState<SectionType>(SectionType.CallSummary);
   const [completedSections, setCompletedSections] = useState<SectionType[]>(
     searchParams.get("section") === "2"
       ? [SectionType.StressBuster, SectionType.CallSummary]
@@ -46,9 +44,7 @@ const PostCallSummary = () => {
   useEffect(() => {
     const refetchCallSummary = async () => {
       try {
-        if (!callSummary?.details) {
-          await refetch();
-        }
+        await refetch();
       } catch (error) {
         logger.info(`Error fetching call summary:, ${error}`);
       }
@@ -56,7 +52,10 @@ const PostCallSummary = () => {
 
     let interval: NodeJS.Timeout;
 
-    if (!callSummary?.details?.summary) {
+    if (
+      !callSummary?.details?.summary ||
+      (Array.isArray(callSummary.details.summary) && callSummary.details.summary.length === 0)
+    ) {
       refetchCallSummary();
       interval = setInterval(refetchCallSummary, 5000);
     }
@@ -72,22 +71,24 @@ const PostCallSummary = () => {
     setModalData({ type: "article", article });
   };
 
-  const handleProceed = (nextSection: SectionType) => {
-    setCompletedSections((prev: SectionType[]) => [...prev, nextSection]);
+  const handleProceed = () => {
+    const nextSection = getNextSection(activeSection);
+    setCompletedSections((prev: SectionType[]) => [...prev, activeSection]);
     setActiveSection(nextSection);
   };
 
   const renderSection = () => {
     switch (activeSection) {
       case SectionType.StressBuster:
-        return <StressBusterStep onProceed={() => handleProceed(SectionType.CallSummary)} />;
+        return <StressBusterStep onProceed={handleProceed} />;
       case SectionType.CallSummary:
         return (
           <CallSummary
+            className="max-h-[calc(100vh-180px)]"
             callSummary={callSummary}
             chatId={Number(chatId)}
             isSummaryLoading={isGetCallSummaryLoading}
-            onProceed={() => handleProceed(SectionType.Resources)}
+            onProceed={handleProceed}
             showInitialLoading={showInitialLoading}
             setShowInitialLoading={setShowInitialLoading}
           />

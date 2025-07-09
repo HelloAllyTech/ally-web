@@ -14,9 +14,14 @@ import ResourceTabs from "./ResourceTabs";
 import { sampleSuggestions } from "./constants";
 import SkeletonLoader from "../skeleton-loader/SkeletonLoader";
 
+/**
+ * ResourceSearch component provides a search interface for resources with category filtering, infinite scroll, and suggestions.
+ * @component
+ * @param {ResourceSearchProps} props - Props for ResourceSearch
+ */
 export interface ResourceSearchProps {
   selectedCategory?: string;
-  onCategoryChange?: (category: string, isSearchTriggered?: boolean) => void;
+  onCategoryChange?: (category: string) => void;
   onInfiniteScroll?: () => void;
   onSearch?: (searchTerm: string) => void;
   resources?: Resource[];
@@ -25,6 +30,7 @@ export interface ResourceSearchProps {
   showHeader?: boolean;
   fullWidth?: boolean;
   showHeaderDescriptionInMobile?: boolean;
+  isSuggestionsCenter?: boolean;
   isSuggestionsRow?: boolean;
   categoryCountList?: { [key: string]: number };
 }
@@ -40,41 +46,48 @@ const ResourceSearch: FC<ResourceSearchProps> = ({
   showHeader = true,
   fullWidth = false,
   showHeaderDescriptionInMobile = true,
-  isSuggestionsRow = true,
+  isSuggestionsCenter = false,
+  isSuggestionsRow = false,
   categoryCountList,
 }) => {
-  const getResources = () => {
-    if (selectedCategory === "All") {
-      return resources;
-    }
-    return resources?.filter(resource => resource.category === selectedCategory);
-  };
-
+  /**
+   * Handles search action and calls onSearch prop if provided.
+   * @param {string} searchTerm - The search term entered by the user
+   */
   const handleSearch = (searchTerm: string) => {
-    if (onSearch && onCategoryChange) {
-      onCategoryChange("All", false);
+    if (onSearch) {
       onSearch(searchTerm);
     }
   };
 
+  /**
+   * Renders the UI when no results are found.
+   * @returns {JSX.Element}
+   */
   const renderNoResults = () => {
     return (
-      <div className="text-left px-4 pt-[10px]">
+      <div className="w-full text-left px-4 pt-[10px]">
         <span className="text-[#ADADAD]">{`No results found for "${searchQuery}"`}</span>
         <SuggestionsContainer
           suggestions={sampleSuggestions}
           isRow={false}
+          isCenter={isSuggestionsCenter}
           onSelect={handleSearch}
         />
       </div>
     );
   };
 
+  /**
+   * Renders the main results body based on search and loading state.
+   * @returns {React.ReactNode | null}
+   */
   const renderResultsBody = (): React.ReactNode | null => {
     if (!searchQuery) {
       return (
         <SuggestionsContainer
           isRow={isSuggestionsRow}
+          isCenter={isSuggestionsCenter}
           suggestions={sampleSuggestions}
           onSelect={handleSearch}
         />
@@ -83,14 +96,13 @@ const ResourceSearch: FC<ResourceSearchProps> = ({
     if (isLoading && (!resources || resources.length === 0)) {
       return <SkeletonLoader />;
     } else if (resources && resources.length > 0) {
-      const filteredResources = getResources();
       return (
         <>
           <div className="w-[calc(100%-32px)] sm:w-full ml-[16px] mr-[16px]">
-            {selectedCategory && onCategoryChange && (
+            {categoryCountList && (
               <ResourceTabs
                 resources={resources}
-                selectedCategory={selectedCategory}
+                selectedCategory={selectedCategory ?? "All"}
                 categoryCountList={categoryCountList}
                 setSelectedCategory={onCategoryChange}
               />
@@ -102,12 +114,12 @@ const ResourceSearch: FC<ResourceSearchProps> = ({
               "w-full pt-[14px] h-[90vh] overflow-y-auto flex flex-col gap-2 md:gap-4 items-center px-4 md:px-0 pb-[300px]"
             }
           >
-            {filteredResources && filteredResources.length > 0 ? (
+            {resources && resources.length > 0 ? (
               <InfiniteScroll
                 onInfiniteScroll={onInfiniteScroll || (() => {})}
                 isLoading={isLoading || false}
               >
-                {filteredResources.map(resource => (
+                {resources.map(resource => (
                   <ResourceCard
                     key={resource.id}
                     title={resource.heading}
@@ -118,7 +130,7 @@ const ResourceSearch: FC<ResourceSearchProps> = ({
                 ))}
               </InfiniteScroll>
             ) : (
-              renderNoResults()
+              !isLoading && renderNoResults()
             )}
             {isLoading && <CircularProgress color="inherit" size={20} />}
           </div>

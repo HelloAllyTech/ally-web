@@ -72,3 +72,21 @@ export interface GetLocationsResponse {
   data: Place[];
   total: number;
 }
+
+export interface TranscriptMessage {
+  chatId?: number;
+  content: string;
+  senderId: number;
+  createdAt?: string;
+}
+
+export interface GetTranscriptResponse {
+  data: TranscriptMessage[];
+  count?: number;
+}
+
+export interface GetTranscriptRequest {
+  chatId: number;
+  offset: number;
+  limit: number;
+}

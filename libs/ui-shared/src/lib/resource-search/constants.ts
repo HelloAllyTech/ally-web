@@ -1,6 +1,6 @@
 export const sampleSuggestions = [
-  "Grounding techniques",
-  "Boundaries",
-  "Questions to encourage disclosure",
-  "Things to say to help process grief",
+  "Violence safety plan",
+  "Suicide assesment",
+  "Survivors of abuse",
+  "Client’s resistance",
 ];

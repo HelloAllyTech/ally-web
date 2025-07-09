@@ -1,6 +1,5 @@
 import { FC, useEffect, useRef, useState } from "react";
 import { useSelector } from "react-redux";
-import { Divider } from "@mui/material";
 import { motion } from "framer-motion";
 
 import { RootState } from "@/store/store";
@@ -52,7 +51,7 @@ const RealTimeTranscript: FC<RealTimeTranscriptProps> = ({ isFocusMode, transcri
       <h3 className="text-[#000] text-[18px] font-['IBM_Plex_Serif'] mb-2 font-semibold self-start ">
         Real-time Transcription
       </h3>
-      <Divider className="bg-gray-200 w-[65%] mb-2.5" />
+      <div className="w-full mb-2.5 h-[1px] bg-gradient-to-r from-[#E5E7EB] via-[#E5E7EB] to-transparent" />
       <div
         ref={transcriptContainerRef}
         className="z-10 flex-1 overflow-y-auto text-[#000] rounded-lg p-0 

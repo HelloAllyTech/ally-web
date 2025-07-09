@@ -2,8 +2,8 @@ import { format } from "date-fns";
 
 import { SummaryFieldKey } from "@/types/summary";
 
-import { summaryFields } from "./constants";
-import { SummarySectionKey } from "./types";
+import { postCallSectionOrder, summaryFields } from "./constants";
+import { SectionType, SummarySectionKey } from "./types";
 
 export const getFormattedDateTime = (dateTime: string, formatString: string) => {
   if (!dateTime) return "--";
@@ -15,4 +15,9 @@ export const getSectionFields = (section: SummarySectionKey, visibleFields: Summ
   return summaryFields.filter(
     field => field.sectionKey === section && visibleFields?.includes(field.key),
   );
+};
+
+export const getNextSection = (section: SectionType) => {
+  const index = postCallSectionOrder.indexOf(section);
+  return postCallSectionOrder[index + 1];
 };

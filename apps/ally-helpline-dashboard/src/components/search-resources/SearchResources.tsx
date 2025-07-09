@@ -4,9 +4,11 @@ import { useSearchParams } from "react-router-dom";
 
 import { ResourceSearch } from "@ally-ui-mono/ui-shared";
 import { Resource } from "@ally-ui-mono/ui-shared/types";
-import { useGetCategoriesQuery, useGetSearchResultsMutation } from "@/api/search";
+import { useGetSearchResultsMutation } from "@/api/search";
 
 import { SearchResourcesProps } from "./types";
+
+const PAGE_SIZE = 10;
 
 const SearchResources: FC<SearchResourcesProps> = ({
   isInSidebar = false,
@@ -21,15 +23,22 @@ const SearchResources: FC<SearchResourcesProps> = ({
   const [hasMore, setHasMore] = useState(true);
 
   useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const query = urlParams.get("q");
-    const category = urlParams.get("category");
-    if (!query && !category) {
-      return;
-    }
-    setSearchQuery(query);
-    setSelectedCategory(category || "All");
-    triggerSearch(query, category);
+    const initializeSearchWithQueryParams = async () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      const query = urlParams.get("q");
+      const category = urlParams.get("category");
+      if (!query && !category) {
+        return;
+      }
+      setSearchQuery(query);
+      setSelectedCategory(category || "All");
+      // To get the category count list
+      // TODO: Will be removed in future when a seperate api is introduced
+      await triggerSearch(query);
+      if (category) triggerSearch(query, category);
+    };
+
+    initializeSearchWithQueryParams();
   }, []);
 
   const [getSearchResults, { isLoading: isResourcesLoading }] = useGetSearchResultsMutation();
@@ -41,18 +50,22 @@ const SearchResources: FC<SearchResourcesProps> = ({
     }
     const response = await getSearchResults({
       query,
-      limit: 10,
+      limit: PAGE_SIZE,
       filters,
     });
+    setHasMore(response.data?.total > response.data?.documents?.length);
     if (response.data) {
       setResources(response.data.documents);
-      setCategoryCountList(response.data.categories);
+      if (!(category && category !== "All")) {
+        // If there is a category, it means the query is filtered and wont return category list
+        setCategoryCountList(response.data.categories);
+      }
     } else {
       toast.error("Error fetching search results");
     }
   };
 
-  const handleSearch = async (query: string) => {
+  const onSearch = async (query: string) => {
     if (!isInSidebar) {
       setSearchParams({ q: query });
     }
@@ -60,9 +73,10 @@ const SearchResources: FC<SearchResourcesProps> = ({
     if (query) {
       triggerSearch(query);
     }
+    setSelectedCategory("All");
   };
 
-  const handleCategoryChange = async (category: string, isSearchTriggered: boolean = true) => {
+  const onCategoryChange = async (category: string) => {
     if (!isInSidebar) {
       if (category === "All") {
         setSearchParams({ q: searchQuery });
@@ -71,25 +85,25 @@ const SearchResources: FC<SearchResourcesProps> = ({
       }
     }
     setSelectedCategory(category);
-    if (isSearchTriggered) {
-      triggerSearch(searchQuery, category);
-    }
+    triggerSearch(searchQuery, category);
   };
 
   const fetchRemainingResources = async () => {
     if (isResourcesLoading || !hasMore) return;
+    let filters = undefined;
+    if (selectedCategory && selectedCategory !== "All") {
+      filters = { category: selectedCategory };
+    }
     const response = await getSearchResults({
       query: searchQuery,
-      limit: resources.length + 10,
+      limit: PAGE_SIZE,
+      filters,
+      excludedIds: resources.map(resource => resource.id),
     });
     if (response.data) {
       const newDocuments = response.data.documents;
-      setCategoryCountList(response.data.categories);
-      if (newDocuments.length > resources.length) {
-        setResources(newDocuments);
-      } else {
-        setHasMore(false);
-      }
+      setResources(prevResources => [...prevResources, ...newDocuments]);
+      setHasMore(response.data?.total > response.data?.documents?.length);
     }
   };
 
@@ -97,13 +111,14 @@ const SearchResources: FC<SearchResourcesProps> = ({
     <ResourceSearch
       resources={resources}
       isLoading={isResourcesLoading}
-      onSearch={handleSearch}
+      onSearch={onSearch}
       onInfiniteScroll={fetchRemainingResources}
       selectedCategory={selectedCategory}
-      onCategoryChange={handleCategoryChange}
+      onCategoryChange={onCategoryChange}
       showHeader={showHeader}
       fullWidth={fullWidth}
       searchQuery={searchQuery}
+      isSuggestionsCenter={isInSidebar}
       isSuggestionsRow={!isInSidebar}
       categoryCountList={categoryCountList}
     />

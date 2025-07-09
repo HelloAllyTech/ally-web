@@ -1,18 +1,19 @@
-import { FC, useEffect, useState, useRef } from "react";
-import { Tabs, Tab } from "@mui/material";
+import { FC, useEffect, useState, useRef, useMemo } from "react";
+import { Tabs, Tab, Button } from "@mui/material";
 
 import { ActionDialog, Drawer, TextField } from "@/components";
-import { Delete, Download, Edit } from "@/assets/icons";
+import { Download, Edit } from "@/assets/icons";
 import {
+  useGetTranscriptQuery,
   useLazyExportCallSummaryQuery,
   useUpdateCallInfoMutation,
   useUpdateCallSummaryMutation,
 } from "@/api/callSummary";
 import CallSummary from "@/pages/post-call-summary/components/CallSummary";
 import { useFileExport } from "@/hooks";
-import { logger } from "@ally-ui-mono/ui-shared";
+import { InfiniteScroll, logger } from "@ally-ui-mono/ui-shared";
 
-import { DeleteDialogData, SummarySideBarProps } from "../types";
+import { DeleteDialogData, SummarySideBarProps, Transcript } from "../types";
 import { defaultDeleteDialogData, tabStyles } from "../constants";
 
 // TODO: Added only for removing lint error - remove and find actual solution
@@ -40,9 +41,38 @@ const SummarySideBar: FC<SummarySideBarProps> = ({
   const [exportCallSummary, { isLoading: isExporting }] = useLazyExportCallSummaryQuery();
   const [updateCallSummary, { isLoading: isUpdatingCallSummary }] = useUpdateCallSummaryMutation();
 
-  const { exportTxtFromText } = useFileExport();
+  const [transcriptOffset, setTranscriptOffset] = useState(0);
+  const [transcriptList, setTranscriptList] = useState<Transcript[]>([]);
+  const transcriptPageSize = 30;
 
+  const { data: transcriptData, isLoading: isGetTranscriptLoading } = useGetTranscriptQuery({
+    chatId: callSummary?.id,
+    offset: transcriptOffset,
+    limit: transcriptPageSize,
+  });
+
+  const transcript = useMemo(() => transcriptData?.data || [], [transcriptData]);
+  const transcriptTotal = useMemo(() => transcriptData?.count || 0, [transcriptData]);
+
+  const { exportTxtFromText } = useFileExport();
   const isLoading = isUpdating || isExporting || isUpdatingCallSummary;
+
+  // Append new results when transcriptData changes
+  useEffect(() => {
+    if (transcript.length > 0) {
+      setTranscriptList(prev => [...prev, ...transcript]);
+    }
+  }, [transcript]);
+
+  // Reset transcript list when call changes
+  useEffect(() => {
+    setTranscriptOffset(0);
+  }, [callSummary?.id]);
+
+  const handleLoadMore = () => {
+    if (transcriptOffset >= transcriptTotal) return;
+    setTranscriptOffset(prev => prev + transcriptPageSize);
+  };
 
   useEffect(() => {
     setSummaryName(callSummary?.details?.callInfo?.summaryName);
@@ -112,61 +142,45 @@ const SummarySideBar: FC<SummarySideBarProps> = ({
     }
   };
 
-  const renderTranscript = (line: string, index: number) => {
-    const [speaker, ...rest] = line.split(":");
-    const message = rest.join(":");
+  const renderTranscript = (item: Transcript, index: number) => {
+    const { content, senderId } = item;
+    let speaker = "User";
+    if (senderId === callSummary.clientId) {
+      speaker = "Client";
+    } else if (senderId === callSummary.counselorId) {
+      speaker = "Counselor";
+    } else {
+      speaker = `User ${senderId}`;
+    }
 
     window.handleCommentClick = (comment: string) => {
       setSelectedComment(comment === selectedComment ? "" : comment);
     };
-    // Create highlighted message by checking for comment keywords
-    // TODO: check if comments are correctly destructured
-    const highlightedMessage = callSummary?.details?.comments?.length
-      ? callSummary?.details?.comments.reduce((text, { comment }) => {
-          const regex = new RegExp(`(${comment})`, "gi");
-          return text.replace(
-            regex,
-            selectedComment === comment
-              ? `<button
-                onclick="window.handleCommentClick('${comment}')"
-                style="background-color: #FFF9E6; border-bottom: 2px solid #fef08a; pointer: cursor;">$1
-                </button>`
-              : `<button
-                onclick="window.handleCommentClick('${comment}')"
-                style="border-bottom: 2px solid #fef08a; cursor: pointer;">$1</button>`,
-          );
-        }, message)
-      : message;
-
+    // Just display the content as plain text, no regex or highlighting
     return (
-      <div key={`${speaker}-${index}`} className="flex">
-        <div className="text-sm text-gray-500 w-[40px]">{(0.01 + index / 100).toFixed(2)}</div>
+      <div key={`${senderId}-${index}`} className="flex">
         <div className="flex-1 text-sm">
           <span className="font-semibold">{speaker}: </span>
-          <span
-            className="font-['IBM_Plex_Serif']"
-            dangerouslySetInnerHTML={{
-              __html: highlightedMessage,
-            }}
-          />
+          <span className="font-['IBM_Plex_Serif']">{content}</span>
         </div>
       </div>
     );
   };
 
   const renderTranscripts = () => {
-    const transcriptArray = callSummary?.details?.transcript
-      ?.split("\n")
-      ?.filter((line: string) => line.trim() !== "");
     return (
       <div className="flex-1 overflow-y-scroll p-4">
         <h3 className="font-semibold text-sm mb-4">Transcript</h3>
-        {callSummary?.details?.transcript?.length > 0 ? (
-          <div className="space-y-4 flex-1 mb-20">
-            {transcriptArray.map((line: string, index: number) => renderTranscript(line, index))}
+        {transcriptList.length > 0 ? (
+          <div className="space-y-4 flex-1 mb-[12px] h-[calc(100vh-250px)] overflow-y-auto">
+            <InfiniteScroll onInfiniteScroll={handleLoadMore} isLoading={isGetTranscriptLoading}>
+              {transcriptList.map((item: Transcript, index: number) =>
+                renderTranscript(item, index),
+              )}
+            </InfiniteScroll>
           </div>
         ) : (
-          <div className="space-y-4 flex-1 mb-20">
+          <div className="space-y-4 flex-1 mb-[12px]">
             <div className="text-sm text-gray-500">No transcript available</div>
           </div>
         )}
@@ -241,11 +255,11 @@ const SummarySideBar: FC<SummarySideBarProps> = ({
           }}
         >
           <Tab label="Summary" value={1} sx={tabStyles} />
-          <Tab label="Feedback" value={2} sx={tabStyles} />
+          <Tab label="Transcription" value={2} sx={tabStyles} />
         </Tabs>
 
         {selectedTab === 1 && (
-          <div className="w-full h-full overflow-y-auto p-2">
+          <div className="w-full h-full p-2">
             <div className="flex items-center mb-4">
               <TextField
                 inputRef={summaryNameRef}
@@ -259,12 +273,14 @@ const SummarySideBar: FC<SummarySideBarProps> = ({
               {!isRenaming && <Edit onClick={onRenameButtonClick} className="cursor-pointer" />}
             </div>
             <CallSummary
+              className="max-h-[calc(100vh-260px)]"
               callSummary={callSummary}
               chatId={callSummary.id}
               isSummaryLoading={isLoading}
               onProceed={() => refetchCallLogs()}
               showInitialLoading={false}
               setShowInitialLoading={() => {}}
+              isInSidebar={true}
             />
           </div>
         )}

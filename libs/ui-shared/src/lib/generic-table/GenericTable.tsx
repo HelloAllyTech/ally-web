@@ -66,7 +66,10 @@ export const GenericTable = forwardRef(
       [columns],
     );
 
-    // Open filter popover (column selection)
+    /**
+     * Opens the filter popover for column selection.
+     * @param {React.MouseEvent<HTMLElement>} event
+     */
     const handleOpenFilterPopover = (event: React.MouseEvent<HTMLElement>) => {
       setFilterAnchorEl(event.currentTarget);
       setSelectedColumn(null);
@@ -74,7 +77,11 @@ export const GenericTable = forwardRef(
       setSearchText("");
     };
 
-    // Select a column and open option popover
+    /**
+     * Selects a column and opens the option popover.
+     * @param {Column<T> | undefined} col
+     * @param {React.MouseEvent<HTMLElement>} event
+     */
     const handleSelectColumn = (
       col: Column<T> | undefined,
       event: React.MouseEvent<HTMLElement>,
@@ -94,7 +101,9 @@ export const GenericTable = forwardRef(
       }
     };
 
-    // Close all popovers
+    /**
+     * Closes all filter and option popovers.
+     */
     const handleCloseFilterPopover = () => {
       setFilterAnchorEl(null);
       setSelectedColumn(null);
@@ -103,20 +112,29 @@ export const GenericTable = forwardRef(
       setMultiSelectValues([]);
     };
 
-    // Select a filter option (single select)
+    /**
+     * Selects a filter option (single select).
+     * @param {string} colKey
+     * @param {string} value
+     */
     const handleSelectFilterOption = (colKey: string, value: string) => {
       handleFilterChange(colKey, value);
       handleCloseFilterPopover();
     };
 
-    // Toggle multi-select option
+    /**
+     * Toggles a multi-select filter option.
+     * @param {string} value
+     */
     const handleToggleMultiSelectOption = (value: string) => {
       setMultiSelectValues(prev =>
-        prev.includes(value) ? prev.filter(v => v !== value) : [...prev, value],
+        prev?.includes(value) ? prev?.filter(v => v !== value) : [...prev, value],
       );
     };
 
-    // Save multi-select filter
+    /**
+     * Saves the selected multi-select filter values.
+     */
     const handleSaveMultiSelect = () => {
       if (selectedColumn) {
         handleFilterChange(selectedColumn.key as string, multiSelectValues);
@@ -129,7 +147,11 @@ export const GenericTable = forwardRef(
       onFilterChange?.({ filter, sort });
     }, [filter, sort]);
 
-    // Handle date filter selection
+    /**
+     * Handles date filter selection.
+     * @param {string} key
+     * @param {string[]} value
+     */
     const handleDateSelect = (key: string, value: string[]) => {
       if (key && value) {
         handleFilterChange(key, value);
@@ -163,7 +185,10 @@ export const GenericTable = forwardRef(
       });
     };
 
-    // Render filter popovers
+    /**
+     * Renders the filter popover UIs.
+     * @returns {JSX.Element}
+     */
     const renderPopovers = () => (
       <>
         <Popover

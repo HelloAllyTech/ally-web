@@ -15,7 +15,7 @@ const StartSession = () => {
     <div className="flex flex-col items-center justify-center h-screen">
       <div className="w-[50%] bg-[#F8F8F8] border-[0.5px] border-[#D3D3D3] rounded-[6px] p-2 text-center">
         <div
-          className="flex flex-col items-center justify-center gap-8 bg-white rounded-[6px] mb-4 p-8 
+          className="flex flex-col items-center justify-center gap-8 bg-white rounded-[6px] p-8 
             border-[0.5px] border-[#D3D3D3] shadow-[8.52px_11.36px_14.2px_0px_rgba(160,158,158,0.09)]"
         >
           <div className="text-[44px] font-['Replay_Pro']">
@@ -34,9 +34,9 @@ const StartSession = () => {
             <span className="text-white  text-[24px] font-['IBM_Plex_Serif']">Start</span>
           </Button>
         </div>
-        <span className="text-[#656565] text-[14px] rounded=[8px]">
+        <div className="text-[#656565] text-[14px] mt-4 mb-2">
           By starting, you confirm everyone being transcribed has given consent
-        </span>
+        </div>
       </div>
     </div>
   );

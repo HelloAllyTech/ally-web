@@ -10,7 +10,7 @@ import Article2 from "./Article2.png";
 import Article3 from "./Article3.png";
 import Article4 from "./Article4.png";
 import Article5 from "./Article5.png";
-import Login from "./Login.png";
+import LoginImage from "./LoginImage.png";
 
 export {
   Flower,
@@ -25,5 +25,5 @@ export {
   Article3,
   Article4,
   Article5,
-  Login,
+  LoginImage,
 };

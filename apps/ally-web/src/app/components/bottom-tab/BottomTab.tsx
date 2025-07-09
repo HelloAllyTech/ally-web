@@ -6,7 +6,6 @@ const BottomTab = () => {
   const pathname = usePathname();
 
   const tabs = [
-    { id: "home", label: "Home", href: "/" },
     { id: "about", label: "About", href: "/about" },
     { id: "community", label: "Community", href: "https://community.helloally.ai/" },
     { id: "data-policy", label: "Data policy", href: "/data-policy" },

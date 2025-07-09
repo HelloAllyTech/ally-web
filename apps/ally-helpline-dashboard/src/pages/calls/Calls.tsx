@@ -32,7 +32,7 @@ const Calls: FunctionComponent = () => {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.3, ease: "easeOut" }}
-        className="relative mt-[10px] font-['IBM_Plex_Sans']"
+        className="relative mt-[10px] font-['IBM_Plex_Serif']"
       >
         <div className="sm:p-4 p-0 rounded-lg flex gap-4 sm:justify-between justify-start bg-transparent items-center">
           <div className="z-10 text-[#000] text-[18px] font-[500]">

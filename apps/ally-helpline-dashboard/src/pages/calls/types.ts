@@ -20,3 +20,8 @@ export interface DeleteDialogData {
   open: boolean;
   chatId: number | null;
 }
+
+export interface Transcript {
+  content?: string | number;
+  senderId?: string | number;
+}

@@ -138,6 +138,7 @@ const DateFilterUI: React.FC<DateFilterUIProps> = ({ selectedValues, onChange, o
         <ReactCalendar
           selectRange
           value={range}
+          maxDate={new Date()}
           onChange={handleCalendarChange}
           className="w-full"
         />

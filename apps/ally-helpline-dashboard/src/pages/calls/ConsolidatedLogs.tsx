@@ -1,11 +1,11 @@
 import { useEffect, useState, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { CircularProgress } from "@mui/material";
-import { Eye } from "lucide-react";
+import { toast } from "sonner";
 
 import { RootState } from "@/store/store";
-import { updateFilters, updateTotalCallsCount } from "@/reducer/callsReducer";
-import { useGetAdminCallLogsQuery } from "@/api/calls";
+import { updateFilters } from "@/reducer/callsReducer";
+import { useGetAdminCallLogsQuery, useGetCounselorsQuery, useGetCallTagsQuery } from "@/api/calls";
 import { Button, CustomCircularProgress, FallbackUI, TagGroup } from "@/components";
 import {
   NoResults,
@@ -21,7 +21,7 @@ import { CallLog, GetCallLogsInput } from "@/types/calls";
 
 import SummarySideBar from "./components/SummarySideBar";
 import { convertSecondsToDuration, formatDate } from "./utils";
-import { CALL_LOGS_PAGINATION_LIMIT, TABLE_ROW_HEIGHT, tagColors } from "./constants";
+import { CALL_LOGS_PAGINATION_LIMIT, defaultTags, tagColors } from "./constants";
 import { TagDisplay } from "./types";
 import { GenericTable } from "@ally-ui-mono/ui-shared";
 import { Column, FilterType } from "@ally-ui-mono/ui-shared/lib/generic-table/types";
@@ -29,23 +29,24 @@ import { Column, FilterType } from "@ally-ui-mono/ui-shared/lib/generic-table/ty
 const ConsolidatedLogs = () => {
   const dispatch = useDispatch();
 
-  const { filters } = useSelector((state: RootState) => state.calls);
-
-  const { offset } = filters;
-
   const [callSummary, setCallSummary] = useState<CallLog | null>(null);
+  const [callLogList, setCallLogList] = useState<CallLog[]>([]);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
+
+  const { filters } = useSelector((state: RootState) => state.calls);
+  const { offset } = filters;
 
   const {
     data: callLogsData,
     isLoading,
     refetch: refetchCallLogs,
+    error: callLogsError,
   } = useGetAdminCallLogsQuery(filters);
+  const { data: callLogs = [] } = callLogsData || {};
+  const { data: counselorsData } = useGetCounselorsQuery({ offset: 0 });
+  const { data: tagsData } = useGetCallTagsQuery({ offset: 0 });
 
-  const { count, data: callLogs = [] } = callLogsData || {};
-
-  const [callLogList, setCallLogList] = useState<CallLog[]>([]);
-  const [isLoadingMore, setIsLoadingMore] = useState(false);
-  const [hasMore, setHasMore] = useState(true);
   const tableRef = useRef<HTMLDivElement>(null);
 
   const handleScroll = () => {
@@ -77,11 +78,7 @@ const ConsolidatedLogs = () => {
       setHasMore(false);
       setCallLogList([]);
     }
-  }, [callLogs, offset]);
-
-  useEffect(() => {
-    dispatch(updateTotalCallsCount(count));
-  }, [count]);
+  }, [callLogsData]);
 
   const handleLoadMore = () => {
     if (!isLoading && !isLoadingMore && hasMore) {
@@ -89,6 +86,30 @@ const ConsolidatedLogs = () => {
       dispatch(updateFilters({ ...filters, offset: filters?.offset + CALL_LOGS_PAGINATION_LIMIT }));
     }
   };
+
+  useEffect(() => {
+    if (callLogsError && !isLoading) {
+      let errorMessage = "Failed to fetch call logs. Please try again.";
+      // RTK Query error types
+      if (typeof callLogsError === "object" && callLogsError !== null) {
+        // FetchBaseQueryError: { status, data }
+        if (
+          "data" in callLogsError &&
+          callLogsError.data &&
+          typeof callLogsError.data === "object" &&
+          callLogsError.data !== null &&
+          "message" in callLogsError.data &&
+          typeof (callLogsError.data as any).message === "string"
+        ) {
+          errorMessage = (callLogsError.data as any).message;
+        } else if ("error" in callLogsError && typeof callLogsError.error === "string") {
+          // SerializedError: { error: string }
+          errorMessage = callLogsError.error;
+        }
+      }
+      toast.error(`${errorMessage}. It can be issue with applied filters. Please try again.`);
+    }
+  }, [callLogsError, isLoading]);
 
   if (isLoading && offset === 0) {
     return (
@@ -107,8 +128,8 @@ const ConsolidatedLogs = () => {
         icon: <CallIdIcon />,
         callName: callInfo?.summaryName,
         counselorName: counselor?.name,
-        dateAndTime: formatDate(startTime),
-        callDuration: convertSecondsToDuration(callDuration ?? 60),
+        dateAndTime: startTime && formatDate(startTime),
+        callDuration: callDuration > 0 ? convertSecondsToDuration(callDuration ?? 60) : "",
         qualityScore: summary?.callQuality ?? 0,
         tags: summary?.tags?.map((tag: { tag: string; positivity_rating: number }) => {
           return {
@@ -133,22 +154,21 @@ const ConsolidatedLogs = () => {
       key: "counselorName",
       header: "Counselor Name",
       filterType: FilterType.MULTISELECT,
-      style: { width: "15%" },
+      style: { width: "18%" },
       icon: <UserIcon />,
       sortable: true,
       filterable: true,
-      filterOptions: [
-        { label: "Counselor The Great", value: "3" },
-        { label: "Aarathy", value: "11" },
-        { label: "c", value: "2" },
-        { label: "Benil Jose", value: "12" },
-      ],
+      filterOptions:
+        counselorsData?.data?.map(item => ({
+          label: item?.name,
+          value: String(item?.id),
+        })) || [],
     },
     {
       key: "dateAndTime",
       header: "Date & Time",
       filterType: FilterType.DATE,
-      style: { width: "15%" },
+      style: { width: "17%" },
       sortable: true,
       filterable: true,
       filterOptions: [],
@@ -166,12 +186,13 @@ const ConsolidatedLogs = () => {
       header: "Quality Score",
       sortable: true,
       filterable: true,
+      filterType: FilterType.SINGLESELECT,
       filterOptions: [
         { label: "Excellent (85+)", value: "85-100" },
         { label: "Good (50-80)", value: "50-80" },
         { label: "Need attention (<50)", value: "0-50" },
       ],
-      style: { width: "15%" },
+      style: { width: "10%" },
       render: value => {
         return (
           <div className="flex items-center gap-3 text-[16px]">
@@ -185,9 +206,16 @@ const ConsolidatedLogs = () => {
     {
       key: "tags",
       header: "Tags",
-      style: { width: "30%" },
+      style: { width: "30%", overflow: "hidden" },
       render: (value: TagDisplay[]) => <TagGroup tags={value} />,
       icon: <TagsIcon />,
+      filterType: FilterType.MULTISELECT,
+      filterable: true,
+      filterOptions:
+        tagsData?.data?.map(item => ({
+          label: item,
+          value: item,
+        })) || defaultTags,
     },
     {
       key: "review",
@@ -198,7 +226,7 @@ const ConsolidatedLogs = () => {
           onClick={() => setCallSummary(row.raw)}
           className="flex items-center justify-center w-full py-[8px] bg-transparent border-none hover:bg-transparent cursor-pointer"
         >
-          <Eye className="text-[#868686] w-4 h-4" />
+          <ReviewIcon />
         </Button>
       ),
       icon: <ReviewIcon />,
@@ -251,6 +279,12 @@ const ConsolidatedLogs = () => {
       }
     }
 
+    // Tags filter
+    const tags = filter.find((f: { key: string }) => f.key === "tags");
+    if (tags && Array.isArray(tags.value) && tags.value.length > 0) {
+      updatedFilters.tags = tags.value.join(",");
+    }
+
     dispatch(updateFilters(updatedFilters));
   };
 
@@ -268,14 +302,17 @@ const ConsolidatedLogs = () => {
     return null;
   };
 
+  const onSummarySubmit = async () => {
+    const chatId = callSummary?.id;
+    const response = await refetchCallLogs();
+
+    const selectedCallLog = response.data?.data?.find(log => log.id === chatId);
+    setCallSummary(selectedCallLog);
+  };
+
   return (
     <>
-      <div
-        className={"rounded-xl w-full max-h-[calc(100vh-240px)]"}
-        style={{
-          minHeight: `${TABLE_ROW_HEIGHT * (CALL_LOGS_PAGINATION_LIMIT + 1)}px`,
-        }}
-      >
+      <div className={"rounded-xl w-full max-h-[calc(100vh-10px)] overflow-y-hidden"}>
         <GenericTable
           ref={tableRef}
           columns={columns}
@@ -285,13 +322,13 @@ const ConsolidatedLogs = () => {
           onFilterChange={handleFilterChange}
           handleLoadMore={callLogList?.length > 0 && hasMore && handleLoadMore}
           fallbackUI={renderFallbackUI()}
-          className="min-w-full min-w-[100%] max-h-[calc(100vh-140px)] font-['IBM_Plex_Sans'] overflow-y-scroll"
+          className="min-w-full min-w-[100%] max-h-[calc(100vh-140px)] font-['IBM_Plex_Serif'] overflow-y-scroll"
         />
       </div>
       {callSummary && callSummary?.id && (
         <SummarySideBar
           callSummary={callSummary}
-          refetchCallLogs={refetchCallLogs}
+          refetchCallLogs={onSummarySubmit}
           setCallSummary={setCallSummary}
         />
       )}

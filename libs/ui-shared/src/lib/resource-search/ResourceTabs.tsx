@@ -5,6 +5,11 @@ import { Tab, Tabs } from "@mui/material";
 
 import { Resource } from "../../types";
 
+/**
+ * ResourceTabs component displays category tabs for filtering resources.
+ * @component
+ * @param {ResourceTabsProps} props - Props for ResourceTabs
+ */
 export interface ResourceTabsProps {
   resources: Resource[];
   categoryCountList?: { [key: string]: number };
@@ -18,10 +23,20 @@ const ResourceTabs: FC<ResourceTabsProps> = ({
   categoryCountList,
   setSelectedCategory,
 }) => {
+  /**
+   * Returns the count of resources in a category.
+   * @param {string} category
+   * @returns {number}
+   */
   const getCategoryCount = (category: string) => {
     return resources?.filter(resource => resource.category === category).length;
   };
 
+  /**
+   * Returns the label for a category tab, including count.
+   * @param {string} category
+   * @returns {string}
+   */
   const getCategoryLabel = (category: string) => {
     if (categoryCountList) {
       if (category === "All") {

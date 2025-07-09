@@ -13,6 +13,12 @@ const audioCallAPI = baseAPI.injectEndpoints({
         method: "POST",
       }),
     }),
+    cancelRequest: builder.mutation<any, { chatId: number }>({
+      query: ({ chatId }) => ({
+        url: `/chats/${chatId}/cancel`,
+        method: "POST",
+      }),
+    }),
     acceptCall: builder.mutation<any, { chatId: number }>({
       query: ({ chatId }) => ({
         url: `/chats/${chatId}/accept`,
@@ -62,6 +68,7 @@ export const {
   useGetClientChatQuery,
   useLazyGetClientChatQuery,
   useEndCallMutation,
+  useCancelRequestMutation,
   useAddFeedbackMutation,
   useUpdateFeedbackMutation,
   useGetNudgeStatusQuery,

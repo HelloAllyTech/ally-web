@@ -1,3 +1,3 @@
-import MindfullnessVideo from "./Mindfullness.mp4";
+import MindfullnessVideo from "./Mindfullness.webm";
 
 export { MindfullnessVideo };

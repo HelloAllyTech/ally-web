@@ -4,8 +4,10 @@ import { Chat, FeedbackResponse, Transcription } from "@/types/message";
 
 export interface CallTranscriptProps {
   activeChat: Chat;
+  microphoneChatId: number;
   endSession: (triggerApi: boolean, chatId: number) => void;
   isMicrophoneMode: boolean;
+  setMicrophoneChatId: (chatId: number) => void;
 }
 
 export interface CallInterfaceProps {
@@ -26,6 +28,7 @@ export interface RealTimeTranscriptProps {
 export interface CallControlsProps {
   isFocusMode: boolean;
   isMuted: boolean;
+  isPrimaryButtonDisabled?: boolean;
   isSecondaryButtonDisabled: boolean;
   showFocusButton: boolean;
   onCutCallButtonClick: () => void;

@@ -8,7 +8,11 @@ import { ChatStatus, QueueStatus, SocketEvent } from "@/types/message";
 import { UserRole } from "@/types/user";
 import { Button, Confirm } from "@/components";
 import { useSocket, useUser } from "@/hooks";
-import { useEndCallMutation, useGetClientChatQuery, useRequestCallMutation } from "@/api/audioCall";
+import {
+  useCancelRequestMutation,
+  useLazyGetClientChatQuery,
+  useRequestCallMutation,
+} from "@/api/audioCall";
 import { Call, Logout } from "@/assets/icons";
 import { SocketConnectionTypes } from "@/constants/socket";
 import { logger } from "@ally-ui-mono/ui-shared";
@@ -83,11 +87,10 @@ const ClientInterface = () => {
   const [isLogoutConfirmOpen, setIsLogoutConfirmOpen] = useState(false);
   const [currentChatId, setCurrentChatId] = useState<string | null>(null);
 
-  const [endCall] = useEndCallMutation();
+  const [cancelRequest] = useCancelRequestMutation();
   const [requestCall] = useRequestCallMutation();
-  const { data: clientChat, isLoading: isClientChatLoading } = useGetClientChatQuery(undefined, {
-    refetchOnMountOrArgChange: true,
-  });
+  const [getClientChat, { data: clientChat, isLoading: isClientChatLoading }] =
+    useLazyGetClientChatQuery();
 
   // Socket event callbacks
   const socketEventCallbacks = useMemo(
@@ -101,7 +104,6 @@ const ClientInterface = () => {
   );
 
   const socket = useSocket({
-    userId: user?.userId,
     eventCallbacks: socketEventCallbacks,
     connectionType: SocketConnectionTypes.WEBRTC_AUDIO_CALL,
   });
@@ -116,25 +118,31 @@ const ClientInterface = () => {
   // Handle client chat status changes
   useEffect(() => {
     if (isClient) {
-      // TODO: Need to redirect to AudioCall page if a call is ongoing
-      // currently clientChat value persists even after call is ended, triggering repeated navigations
-      // if (clientChat?.counselorId) {
-      //   navigate(ROUTES.AUDIO_CALL);
-      // }
-      if (clientChat?.status === ChatStatus.PAUSED) {
-        setIsWaiting(true);
-      }
+      const handleClientChat = async () => {
+        const response = await getClientChat();
+        if (response?.data?.status === ChatStatus.PAUSED) {
+          setIsWaiting(true);
+        } else if (response?.data?.status === ChatStatus.ACTIVE) {
+          navigate(ROUTES.AUDIO_CALL);
+        }
+        setCurrentChatId(response?.data?.chatId?.toString());
+      };
+      handleClientChat();
     }
-  }, [isClient, clientChat]);
+  }, [isClient]);
 
   const handleStartAudioChat = async () => {
     try {
       const response = await requestCall();
       setCurrentChatId(response?.data?.chatId);
-      if (response?.data?.status === QueueStatus.WAITING) {
-        setIsWaiting(true);
+      if (response?.data) {
+        if (response?.data?.status === QueueStatus.WAITING) {
+          setIsWaiting(true);
+        } else {
+          navigate(ROUTES.AUDIO_CALL);
+        }
       } else {
-        navigate(ROUTES.AUDIO_CALL);
+        toast.error("Something went wrong. Please try again later!");
       }
     } catch (error: any) {
       logger.info(`Error in handleStartAudioChat:, ${error}`);
@@ -149,11 +157,11 @@ const ClientInterface = () => {
 
   const handleEndCall = useCallback(async () => {
     if (currentChatId) {
-      await endCall({ chatId: parseInt(currentChatId) });
+      await cancelRequest({ chatId: parseInt(currentChatId) });
       setIsWaiting(false);
       setCurrentChatId(null);
     }
-  }, [currentChatId, endCall]);
+  }, [currentChatId, cancelRequest]);
 
   const handleLogout = () => {
     setIsLogoutConfirmOpen(true);

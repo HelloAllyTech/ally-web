@@ -1,11 +1,12 @@
 import { Minimize } from "lucide-react";
 import { useSelector } from "react-redux";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { useState, useEffect, FunctionComponent } from "react";
+import { useState, useEffect, FunctionComponent, useMemo } from "react";
+import { toast } from "sonner";
 
 import { logger } from "@ally-ui-mono/ui-shared";
 import { UserRole, UserStatus } from "@/types/user";
-import { Chat } from "@/types/message";
+import { Chat, QueueStatus } from "@/types/message";
 import { RootState } from "@/store/store";
 import { NoResults } from "@/assets/icons";
 import { setUserStatus } from "@/reducer/userReducer";
@@ -26,6 +27,7 @@ const AudioCall: FunctionComponent = () => {
   const mode = searchParams.get("mode");
 
   const [activeChat, setActiveChat] = useState<Chat | null>();
+  const [microphoneChatId, setMicrophoneChatId] = useState<number | null>(null);
   const [endingMessage, setEndingMessage] = useState<string>("");
   const [isEnding, setIsEnding] = useState<boolean>(false);
   const [showStressBuster, setShowStressBuster] = useState<boolean>(false);
@@ -87,21 +89,25 @@ const AudioCall: FunctionComponent = () => {
 
   const endSessionAndNavigate = async (triggerApi: boolean = true, chatId: number) => {
     if (triggerApi) {
-      await endCall({ chatId });
+      const response = await endCall({ chatId });
+      if (response?.data?.status !== QueueStatus.ENDED) {
+        toast.error("Something went wrong. Please try again later!");
+        return;
+      }
     }
     handleEndSequence();
   };
 
   const navigateOnStressBusterClose = () => {
-    if (activeChat?.chatId) {
-      navigate(`/summary/${activeChat?.chatId}`);
+    if (activeChat?.chatId || microphoneChatId) {
+      navigate(`/summary/${activeChat?.chatId || microphoneChatId}`);
     }
   };
 
   const handleViewCallHighlights = () => {
-    if (activeChat?.chatId) {
+    if (activeChat?.chatId || microphoneChatId) {
       // TODO: Update section param
-      navigate(`/summary/${activeChat?.chatId}?section=2`);
+      navigate(`/summary/${activeChat?.chatId || microphoneChatId}`);
     }
   };
 
@@ -135,11 +141,13 @@ const AudioCall: FunctionComponent = () => {
     <div className="min-h-screen flex items-center justify-center bg-gray-50">
       <video src={MindfullnessVideo} preload="auto" className="hidden" />
       {getFallbackUI()}
-      {!isEnding && (
+      {!isEnding && (activeChat?.chatId || isMicrophoneMode) && (
         <CallTranscript
           endSession={endSessionAndNavigate}
           activeChat={activeChat}
+          microphoneChatId={microphoneChatId}
           isMicrophoneMode={isMicrophoneMode}
+          setMicrophoneChatId={setMicrophoneChatId}
         />
       )}
       {isEnding && <EndTransitionScreen endingMessage={endingMessage} />}

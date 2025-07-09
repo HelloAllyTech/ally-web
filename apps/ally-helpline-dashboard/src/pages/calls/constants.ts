@@ -39,7 +39,7 @@ export const tagColors = {
   5: { bg: "#B9EFC880", text: "#1B5E20" },
 };
 
-export const CALL_LOGS_PAGINATION_LIMIT = 10;
+export const CALL_LOGS_PAGINATION_LIMIT = 25;
 export const TABLE_ROW_HEIGHT = 58; // 58px
 
 export const tabStyles = {
@@ -52,3 +52,15 @@ export const defaultDeleteDialogData = {
   open: false,
   chatId: null,
 };
+
+export const defaultTags = [
+  { label: "Depression", value: "Depression" },
+  { label: "Anxiety", value: "Anxiety" },
+  { label: "Stress", value: "Stress" },
+  { label: "Relationship", value: "Relationship" },
+  { label: "Family", value: "Family" },
+  { label: "Work", value: "Work" },
+  { label: "Money", value: "Money" },
+  { label: "Health", value: "Health" },
+  { label: "Life", value: "Life" },
+];

@@ -5,12 +5,18 @@ const API_VERSION = process.env.NEXT_PUBLIC_API_VERSION;
 
 export const initialFetchLimit = 10;
 
+// TODO: make the params in object
 const fetchReferenceDocuments = async (
   query: string,
   category?: string,
   limit: number = initialFetchLimit,
+  excludedIds?: string[],
 ) => {
   try {
+    let filters = undefined;
+    if (category) {
+      filters = { category };
+    }
     const response = await fetch(
       `${API_BASE_URL}/api/${API_VERSION}/reference-document/search/public`,
       {
@@ -18,7 +24,7 @@ const fetchReferenceDocuments = async (
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ query, limit }),
+        body: JSON.stringify({ query, limit, filters, excludedIds }),
       },
     );
     return response.json();

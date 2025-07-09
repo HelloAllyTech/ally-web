@@ -6,7 +6,13 @@ import { useGetNudgeStatusQuery } from "@/api/audioCall";
 import { RootState } from "@/store/store";
 import { useSocket, useWebRTCCallSetup } from "@/hooks";
 import { UserRole } from "@/types/user";
-import { FeedbackResponse, MessageType, SocketEvent, Transcription } from "@/types/message";
+import {
+  ChatStatus,
+  FeedbackResponse,
+  MessageType,
+  SocketEvent,
+  Transcription,
+} from "@/types/message";
 import { SocketConnectionTypes } from "@/constants/socket";
 import { logger } from "@ally-ui-mono/ui-shared";
 
@@ -30,14 +36,19 @@ import "./CallTranscript.css";
 // TODO: Bug with no trascript intermittently
 // TODO: start Audio chat not send sometimes
 
-const CallTranscript: FC<CallTranscriptProps> = ({ endSession, activeChat, isMicrophoneMode }) => {
+const CallTranscript: FC<CallTranscriptProps> = ({
+  endSession,
+  activeChat,
+  microphoneChatId,
+  isMicrophoneMode,
+  setMicrophoneChatId,
+}) => {
   const navigate = useNavigate();
 
   const user = useSelector((state: RootState) => state.user.user);
   const activeChatId = useMemo(() => activeChat?.chatId, [activeChat]);
   const microphoneStreamRef = useRef<MediaStream | null>(null);
 
-  const [microphoneChatId, setMicrophoneChatId] = useState<number | null>(null);
   const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(null);
   const [isMuted, setIsMuted] = useState<boolean>(true);
   const [isFocusMode, setIsFocusMode] = useState(true);
@@ -182,7 +193,6 @@ const CallTranscript: FC<CallTranscriptProps> = ({ endSession, activeChat, isMic
 
   const { connect, disconnect, emitSocketEvent, setListenerForEvent, removeIfListenerPresent } =
     useSocket({
-      userId: user.userId,
       eventCallbacks: socketEventCallbacks,
       connectionType: isMicrophoneMode
         ? SocketConnectionTypes.MICROPHONE_MODE
@@ -286,6 +296,15 @@ const CallTranscript: FC<CallTranscriptProps> = ({ endSession, activeChat, isMic
         }));
       setNudges(existingNudges);
     }
+    if (
+      isMicrophoneMode &&
+      activeChat?.status === ChatStatus.ACTIVE &&
+      activeChat?.provider === "MICROPHONE"
+    ) {
+      setMicrophoneChatId(activeChat.chatId);
+      // To notify that call has started
+      setIsUserJoined(true);
+    }
   }, [activeChat]);
 
   useEffect(() => {
@@ -309,51 +328,58 @@ const CallTranscript: FC<CallTranscriptProps> = ({ endSession, activeChat, isMic
     }
 
     return () => {
-      // Cleanup
-      if (offerTimeoutRef.current) {
-        clearTimeout(offerTimeoutRef.current);
-      }
-      if (peerConnection) {
-        peerConnection.close();
-      }
-      if (mediaRecorder && mediaRecorder.state !== "inactive") {
-        mediaRecorder.stop();
-      }
-      if (remoteMediaRecorder && remoteMediaRecorder.state !== "inactive") {
-        remoteMediaRecorder.stop();
-      }
       if (!isMicrophoneMode) {
+        // Cleanup
+        if (offerTimeoutRef.current) {
+          clearTimeout(offerTimeoutRef.current);
+        }
+        if (peerConnection) {
+          peerConnection.close();
+        }
+        if (mediaRecorder && mediaRecorder.state !== "inactive") {
+          mediaRecorder.stop();
+        }
+        if (remoteMediaRecorder && remoteMediaRecorder.state !== "inactive") {
+          remoteMediaRecorder.stop();
+        }
         disconnect();
       }
     };
-  }, [activeChatId, user, isCounsellor, isClient, iceServers]);
+  }, [activeChatId, user, isCounsellor, isClient, iceServers, isMicrophoneMode]);
 
   useEffect(() => {
-    const chatId = activeChatId ?? microphoneChatId;
     if (user && isMicrophoneMode) {
-      connect(chatId);
-      emitSocketEvent(SocketEvent.START_AUDIO_CHAT, { platform: "WEB" });
+      connect();
+      // Delaying the start of audio chat to ensure the connection is established and session is created
+      // TODO: Remove this delay in future once session_created event is generated on the server side
+      setTimeout(() => {
+        emitSocketEvent(SocketEvent.START_AUDIO_CHAT, { platform: "WEB" });
+      }, 2000);
     }
 
     return () => {
-      if (mediaRecorder && mediaRecorder.state !== "inactive") {
-        mediaRecorder.stop();
-      }
       if (isMicrophoneMode) {
+        if (mediaRecorder && mediaRecorder.state !== "inactive") {
+          mediaRecorder.stop();
+        }
         disconnect();
       }
     };
-  }, [activeChatId, microphoneChatId]);
+  }, [isMicrophoneMode]);
 
   useEffect(() => {
     if (isMicrophoneMode) {
-      (async () => {
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      navigator.mediaDevices.getUserMedia({ audio: true }).then(stream => {
         microphoneStreamRef.current = stream;
-        if (microphoneStreamRef.current) {
-          setupMediaRecorder(microphoneStreamRef.current);
-        }
-      })();
+      });
+    }
+  }, [isMicrophoneMode]);
+
+  useEffect(() => {
+    if (isMicrophoneMode) {
+      if (microphoneStreamRef.current) {
+        setupMediaRecorder(microphoneStreamRef.current);
+      }
     } else {
       if (localStreamRef.current) {
         setupMediaRecorder(localStreamRef.current);
@@ -446,6 +472,7 @@ const CallTranscript: FC<CallTranscriptProps> = ({ endSession, activeChat, isMic
         <CallControls
           isFocusMode={isFocusMode}
           isMuted={isMuted}
+          isPrimaryButtonDisabled={isMicrophoneMode && !microphoneChatId}
           isSecondaryButtonDisabled={!isUserJoined}
           showFocusButton={isCounsellor}
           onCutCallButtonClick={() => confirmEndSession(true)}

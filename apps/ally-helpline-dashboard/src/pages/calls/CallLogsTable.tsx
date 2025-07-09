@@ -1,10 +1,9 @@
 import { useEffect, useState, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { CircularProgress } from "@mui/material";
-import { Eye } from "lucide-react";
 
 import { RootState } from "@/store/store";
-import { updateFilters, updateTotalCallsCount } from "@/reducer/callsReducer";
+import { updateFilters } from "@/reducer/callsReducer";
 import { useGetCallLogsQuery } from "@/api/calls";
 import { Button, CustomCircularProgress, TagGroup, FallbackUI } from "@/components";
 import {
@@ -15,7 +14,6 @@ import {
   StarIcon,
   TagsIcon,
   ReviewIcon,
-  UserIcon,
 } from "@/assets/icons";
 import { CallLog } from "@/types/calls";
 
@@ -44,7 +42,7 @@ const CallLogsTable = () => {
     offset: offset,
   });
 
-  const { count, data: callLogs = [] } = callLogsData || {};
+  const { data: callLogs = [] } = callLogsData || {};
 
   const [callLogList, setCallLogList] = useState<CallLog[]>([]);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
@@ -74,11 +72,7 @@ const CallLogsTable = () => {
       }
       handleScroll();
     }
-  }, [callLogs, offset]);
-
-  useEffect(() => {
-    dispatch(updateTotalCallsCount(count));
-  }, [count]);
+  }, [callLogsData]);
 
   const handleLoadMore = () => {
     if (!isLoading && !isLoadingMore && hasMore) {
@@ -104,7 +98,7 @@ const CallLogsTable = () => {
         id,
         transcript,
         callName: callInfo?.summaryName,
-        dateAndTime: formatDate(startTime),
+        dateAndTime: startTime && formatDate(startTime),
         duration: convertSecondsToDuration(callDuration ?? 60),
         qualityScore: summary?.callQuality ?? 0,
         tags: summary?.tags?.map((tag: { tag: string; positivity_rating: number }) => {
@@ -178,7 +172,7 @@ const CallLogsTable = () => {
           onClick={() => setCallSummary(row.raw)}
           className="flex items-center justify-center w-full py-[8px] bg-transparent border-none hover:bg-transparent cursor-pointer"
         >
-          <Eye className="text-[#868686] w-4 h-4" />
+          <ReviewIcon />
         </Button>
       ),
       icon: <ReviewIcon />,
@@ -201,14 +195,17 @@ const CallLogsTable = () => {
     return null;
   };
 
+  const onSummarySubmit = async () => {
+    const chatId = callSummary?.id;
+    const response = await refetchCallLogs();
+
+    const selectedCallLog = response.data?.data?.find(log => log.id === chatId);
+    setCallSummary(selectedCallLog);
+  };
+
   return (
     <>
-      <div
-        className="rounded-xl w-full max-h-[calc(100vh-240px)]"
-        style={{
-          minHeight: `${TABLE_ROW_HEIGHT * (CALL_LOGS_PAGINATION_LIMIT + 1)}px`,
-        }}
-      >
+      <div className="rounded-xl w-full max-h-[calc(100vh-10px)] overflow-y-hidden">
         <GenericTable
           ref={tableRef}
           columns={columns}
@@ -216,13 +213,13 @@ const CallLogsTable = () => {
           isLoading={isLoading}
           handleLoadMore={callLogList?.length > 0 && hasMore && handleLoadMore}
           fallbackUI={renderFallbackUI()}
-          className="min-w-full min-w-[100%] max-h-[calc(100vh-140px)] font-['IBM_Plex_Sans'] overflow-y-scroll"
+          className="min-w-full min-w-[100%] max-h-[calc(100vh-140px)] font-['IBM_Plex_Serif'] overflow-y-scroll"
         />
       </div>
       {callSummary && callSummary?.id && (
         <SummarySideBar
           callSummary={callSummary}
-          refetchCallLogs={refetchCallLogs}
+          refetchCallLogs={onSummarySubmit}
           setCallSummary={setCallSummary}
         />
       )}

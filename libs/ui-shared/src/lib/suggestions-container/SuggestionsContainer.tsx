@@ -1,18 +1,28 @@
 import React from "react";
 import SearchIcon from "@mui/icons-material/Search";
 
+/**
+ * Props for SuggestionsContainer component.
+ */
 interface SuggestionsContainerProps {
   suggestions: string[];
   onSelect: (suggestion: string) => void;
   isRow?: boolean;
+  isCenter?: boolean;
 }
 
+/**
+ * SuggestionsContainer displays a list of suggestion chips for quick search or action.
+ * @component
+ * @param {SuggestionsContainerProps} props - Props for SuggestionsContainer
+ */
 const SuggestionsContainer: React.FC<SuggestionsContainerProps> = ({
   suggestions,
   onSelect,
   isRow = true,
+  isCenter = false,
 }) => (
-  <div className="flex justify-center w-full mt-[10%] sm:mt-[5%]">
+  <div className={`flex ${isCenter ? "justify-center" : ""} w-full mt-[10%] sm:mt-[5%]`}>
     <div className="text-left min-w-[200px] font-['IBM_Plex_Serif']">
       <div className="text-[16px] font-normal leading-[100%] tracking-[0] mb-4">Try:</div>
       <div

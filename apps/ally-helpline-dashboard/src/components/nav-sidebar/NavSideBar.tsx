@@ -21,12 +21,15 @@ const NavSideBar: FunctionComponent<NavSideBarProps> = ({
   const { permissions, user, logout } = useUser();
 
   //TODO: Remove this once we have a proper permission system
+  const safePermissions = permissions || [];
   const filteredPermissions =
-    user?.role === UserRole.ADMIN ? permissions : [Permissions.VIEW_NAVBAR_SEARCH, ...permissions];
+    user?.role === UserRole.ADMIN
+      ? safePermissions
+      : [Permissions.VIEW_NAVBAR_SEARCH, ...safePermissions];
 
   const [isLogoutConfirmOpen, setIsLogoutConfirmOpen] = useState(false);
   const permittedTabs = navBarOptions.filter(
-    tab => !tab.permission || filteredPermissions.includes(tab.permission),
+    tab => !tab.permission || filteredPermissions?.includes(tab.permission),
   );
 
   const navigate = useNavigate();
@@ -86,7 +89,7 @@ const NavSideBar: FunctionComponent<NavSideBarProps> = ({
   const renderTabs = () => {
     return (
       <div className="flex flex-col gap-1 m-3">
-        {permittedTabs.map(({ id, Icon, title, path }) => (
+        {permittedTabs?.map(({ id, Icon, title, path }) => (
           <div
             key={id}
             className={`

@@ -1,3 +1,8 @@
+/**
+ * SkeletonLoader component displays a loading skeleton UI for resource lists and headers.
+ * Useful for indicating loading state while fetching data.
+ * @component
+ */
 export default function SkeletonLoader() {
   return (
     <main className="w-full min-h-screen flex justify-center overflow-y-hidden ">

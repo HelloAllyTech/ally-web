@@ -26,6 +26,8 @@ const CallSummary: FC<CallSummaryProps> = ({
   onProceed,
   showInitialLoading,
   setShowInitialLoading,
+  isInSidebar = false,
+  className,
 }) => {
   const [summaryData, setSummaryData] = useState(null);
   const [searchedLocations, setSearchedLocations] = useState(null);
@@ -150,7 +152,7 @@ const CallSummary: FC<CallSummaryProps> = ({
       case "Multiline":
         return (
           <div key={field.key} className="flex flex-col gap-1">
-            {labelShownSections.includes(field.sectionKey) && (
+            {labelShownSections?.includes(field.sectionKey) && (
               <span className="font-medium text-[16px] text-[#6B7280]">{`${field.label}: `}</span>
             )}
             <TextField
@@ -223,7 +225,45 @@ const CallSummary: FC<CallSummaryProps> = ({
     }
   };
 
+  const hasDataChanged = () => {
+    if (!callSummary?.details?.summary || !summaryData) {
+      return false;
+    }
+
+    const originalTags = callSummary.details.summary.tags;
+    const originalFormattedTags = originalTags?.map(({ tag }) => tag).join(", ");
+
+    // Compare the formatted data with the original API response
+    const originalData = {
+      ...callSummary.details.summary,
+      tags: originalFormattedTags,
+    };
+
+    // Deep comparison of the data
+    const originalKeys = Object.keys(originalData);
+    const currentKeys = Object.keys(summaryData);
+
+    if (originalKeys.length !== currentKeys.length) {
+      return true;
+    }
+
+    for (const key of originalKeys) {
+      if (originalData[key] !== summaryData[key]) {
+        return true;
+      }
+    }
+
+    return false;
+  };
+
   const handleSubmit = async () => {
+    // Only proceed if data has actually changed
+    if (!hasDataChanged()) {
+      logger.info("No changes detected in summary data, skipping update");
+      onProceed();
+      return;
+    }
+
     const tags = summaryData?.tags?.split(", ");
     let tagsInput: Tag[] = [];
     if (tags?.length > 0) {
@@ -252,7 +292,7 @@ const CallSummary: FC<CallSummaryProps> = ({
 
   return (
     <>
-      <div className="max-h-[calc(100vh-180px)] overflow-y-auto font-['IBM_Plex_Serif']">
+      <div className={`overflow-y-auto font-['IBM_Plex_Serif'] ${className}`}>
         {summarySections.map(({ title, icon, key }) => {
           const sectionFields = getSectionFields(key, visibleFields);
           if (sectionFields?.length === 0) return null;
@@ -265,7 +305,7 @@ const CallSummary: FC<CallSummaryProps> = ({
               defaultExpanded={[
                 SummarySectionKey.FeaturesAndDemographics,
                 SummarySectionKey.SessionSummary,
-              ].includes(key)}
+              ]?.includes(key)}
             >
               {sectionFields.map(field => getFieldDisplay(field))}
             </Accordion>
@@ -273,7 +313,11 @@ const CallSummary: FC<CallSummaryProps> = ({
         })}
       </div>
       <div className="flex justify-center pt-4">
-        <Button className="rounded-[100px]" onClick={handleSubmit} disabled={isLoading}>
+        <Button
+          className="rounded-[100px]"
+          onClick={handleSubmit}
+          disabled={isLoading || (isInSidebar && !hasDataChanged())}
+        >
           {isUpdateLoading || isGetTagsLoading ? "Submitting..." : "Submit"}
         </Button>
       </div>

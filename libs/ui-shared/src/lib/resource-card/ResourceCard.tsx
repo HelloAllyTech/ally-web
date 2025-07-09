@@ -3,6 +3,12 @@ import { FC, useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Badge from "../badge";
 
+/**
+ * ResourceCard component displays a resource with title, description, category, and tags.
+ * It supports expandable/collapsible descriptions and tag badges.
+ * @component
+ * @param {ResourceCardProps} props - Props for ResourceCard
+ */
 export interface ResourceCardProps {
   title: string;
   description: string;
@@ -26,6 +32,10 @@ const ResourceCard: FC<ResourceCardProps> = ({ title, description, category, tag
     }
   }, [description]);
 
+  /**
+   * Renders the category and tag badges.
+   * @returns {JSX.Element}
+   */
   const renderTags = () => {
     return (
       <div
@@ -33,10 +43,10 @@ const ResourceCard: FC<ResourceCardProps> = ({ title, description, category, tag
         className="flex flex-row justify-between gap-2 overflow-x-hidden"
       >
         <Badge text={category} variant="ghost" className="capitalize flex-shrink-0" />
-        <div className="w-full sm:max-w-[80%] relative">
+        <div className="flex justify-end w-full sm:max-w-[80%] relative">
           <div
             style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
-            className="flex justify-normal sm:justify-end gap-1 overflow-x-auto whitespace-nowrap ml-[20px]"
+            className="flex gap-1 overflow-x-auto whitespace-nowrap ml-[20px] scrollbar-hide"
           >
             {tags.map(tag => (
               <Badge key={tag} text={tag} variant="outlined" />
@@ -47,6 +57,10 @@ const ResourceCard: FC<ResourceCardProps> = ({ title, description, category, tag
     );
   };
 
+  /**
+   * Renders the show more/less button for the description.
+   * @returns {JSX.Element | null}
+   */
   const renderShowMoreLess = () => {
     if (!shouldShowButton) return null;
 
@@ -93,6 +107,10 @@ const ResourceCard: FC<ResourceCardProps> = ({ title, description, category, tag
     }
   };
 
+  /**
+   * Renders the resource description with expand/collapse animation.
+   * @returns {JSX.Element}
+   */
   const renderDescription = () => {
     return (
       <div className="relative">
