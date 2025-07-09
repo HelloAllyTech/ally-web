@@ -193,7 +193,6 @@ const CallTranscript: FC<CallTranscriptProps> = ({
 
   const { connect, disconnect, emitSocketEvent, setListenerForEvent, removeIfListenerPresent } =
     useSocket({
-      userId: user.userId,
       eventCallbacks: socketEventCallbacks,
       connectionType: isMicrophoneMode
         ? SocketConnectionTypes.MICROPHONE_MODE
