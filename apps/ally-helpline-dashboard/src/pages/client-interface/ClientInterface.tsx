@@ -104,7 +104,6 @@ const ClientInterface = () => {
   );
 
   const socket = useSocket({
-    userId: user?.userId,
     eventCallbacks: socketEventCallbacks,
     connectionType: SocketConnectionTypes.WEBRTC_AUDIO_CALL,
   });
