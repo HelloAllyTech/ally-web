@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { Headphones } from "@mui/icons-material";
 
-import { Button } from "@/components/generic/button";
+import { Button } from "@/components";
 import { ROUTES } from "@/constants/routes";
 
 const StartSession = () => {
