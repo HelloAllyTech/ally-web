@@ -1,6 +1,8 @@
 import { FC, useEffect, useState } from "react";
 import { Divider } from "@mui/material";
+import { useSelector } from "react-redux";
 
+import { RootState } from "@/store/store";
 import { DropdownField } from "@ally-ui-mono/ui-shared";
 import { Accordion, TextField, Button } from "@/components";
 import {
@@ -12,6 +14,7 @@ import {
 } from "@/api/callSummary";
 import { useEnhance } from "@/hooks";
 import { SummaryFieldKey, Tag } from "@/types/summary";
+import { UserRole } from "@/types/user";
 import { logger } from "@ally-ui-mono/ui-shared";
 
 import { labelShownSections, summarySections } from "../constants";
@@ -29,6 +32,8 @@ const CallSummary: FC<CallSummaryProps> = ({
   isInSidebar = false,
   className,
 }) => {
+  const { user } = useSelector((state: RootState) => state.user);
+
   const [summaryData, setSummaryData] = useState(null);
   const [searchedLocations, setSearchedLocations] = useState(null);
 
@@ -40,6 +45,7 @@ const CallSummary: FC<CallSummaryProps> = ({
 
   const { enhancing, EnhanceButton, EnhancementLoadingSkeleton, isEnhanceLoading } = useEnhance();
 
+  const isAdmin = user?.role === UserRole.ADMIN;
   const isLoading =
     isGetSummaryFieldsLoading ||
     isSummaryLoading ||
@@ -131,6 +137,10 @@ const CallSummary: FC<CallSummaryProps> = ({
     }
   };
 
+  const isFieldDisabled = (field: SummaryField) => {
+    return !field.isEditable || isAdmin;
+  };
+
   const getFieldDisplay = (field: SummaryField) => {
     const value = getFieldValue(field.key, field.type);
     switch (field.type) {
@@ -139,7 +149,7 @@ const CallSummary: FC<CallSummaryProps> = ({
           <div key={field.key} className="flex gap-1">
             <span className="font-medium text-[16px] text-[#6B7280]">{`${field.label}: `}</span>
             <DropdownField
-              disabled={!field.isEditable}
+              disabled={isFieldDisabled(field)}
               value={value ?? "--"}
               valueClassName={`${field.isEditable ? "text-[#1A1A1A]" : "text-[#9CA3AF]"} 
                 text-[16px] font-['IBM_Plex_Serif']`}
@@ -165,7 +175,7 @@ const CallSummary: FC<CallSummaryProps> = ({
               }
               multiline
               rows={4}
-              className={`w-full ${field.isEditable ? "" : "pointer-events-none"}`}
+              className={`w-full ${isFieldDisabled(field) ? "pointer-events-none" : ""}`}
               inputStyles={{
                 color: field.isEditable ? "#1A1A1A" : "#9CA3AF",
                 fontSize: "16px",
@@ -176,7 +186,7 @@ const CallSummary: FC<CallSummaryProps> = ({
               showBorder={false}
               InputProps={{
                 startAdornment: enhancing === field.key && EnhancementLoadingSkeleton,
-                endAdornment: field.isEnhanceable && (
+                endAdornment: field.isEnhanceable && !isAdmin && (
                   <EnhanceButton
                     fieldName={field.key}
                     inputText={value}
@@ -201,7 +211,7 @@ const CallSummary: FC<CallSummaryProps> = ({
               <span className="font-medium text-[16px] text-[#6B7280]">{`${field.label}: `}</span>
               <div className="flex-1">
                 <TextField
-                  className={`${field.isEditable ? "" : "pointer-events-none"}`}
+                  className={`${isFieldDisabled(field) ? "pointer-events-none" : ""}`}
                   value={value ?? "--"}
                   onChange={e =>
                     setSummaryData(prev => ({
@@ -312,15 +322,17 @@ const CallSummary: FC<CallSummaryProps> = ({
           );
         })}
       </div>
-      <div className="flex justify-center pt-4">
-        <Button
-          className="rounded-[100px]"
-          onClick={handleSubmit}
-          disabled={isLoading || (isInSidebar && !hasDataChanged())}
-        >
-          {isUpdateLoading || isGetTagsLoading ? "Submitting..." : "Submit"}
-        </Button>
-      </div>
+      {!isAdmin && (
+        <div className="flex justify-center pt-4">
+          <Button
+            className="rounded-[100px]"
+            onClick={handleSubmit}
+            disabled={isLoading || (isInSidebar && !hasDataChanged())}
+          >
+            {isUpdateLoading || isGetTagsLoading ? "Submitting..." : "Submit"}
+          </Button>
+        </div>
+      )}
     </>
   );
 };
