@@ -10,5 +10,6 @@ export interface DrawerProps {
     alt: string;
     icon: ReactNode;
     onClick: () => void;
+    show?: boolean;
   }[];
 }

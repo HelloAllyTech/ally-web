@@ -24,7 +24,11 @@ const Drawer: FC<DrawerProps> = ({ open, onClose, children, title, headerButtons
             <span className="text-[16px] font-semibold text-[#79747E]">{title || ""}</span>
             <div className="flex items-center gap-2">
               {headerButtons?.map(button => (
-                <button key={button.alt} onClick={button.onClick}>
+                <button
+                  key={button.alt}
+                  onClick={button.onClick}
+                  className={`${button.show ? "" : "hidden"}`}
+                >
                   {button.icon}
                 </button>
               ))}
