@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { CheckCircle } from "lucide-react";
 
-import LifelineLogo from "@/assets/icons/LifelineLogo.svg?react";
+import { LifelineLogo } from "@/assets/icons";
 
 const Health = () => {
   const [lastChecked, setLastChecked] = useState(new Date());

@@ -14,7 +14,7 @@ type ToggleButtonGroupProps = {
   successValue?: string;
 };
 
-export const ToggleButtonGroup: FC<ToggleButtonGroupProps> = ({
+const ToggleButtonGroup: FC<ToggleButtonGroupProps> = ({
   disabled,
   value,
   onValueChange,
@@ -74,3 +74,5 @@ export const ToggleButtonGroup: FC<ToggleButtonGroupProps> = ({
     </MuiToggleButtonGroup>
   );
 };
+
+export default ToggleButtonGroup;

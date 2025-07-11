@@ -1,5 +1,5 @@
 import React from "react";
-import { Button } from "../generic/button";
+import { Button } from "@/components";
 
 interface ConfirmProps {
   open: boolean;

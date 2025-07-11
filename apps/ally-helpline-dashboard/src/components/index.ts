@@ -1,9 +1,9 @@
-import { Input } from "./generic/input";
-import { Button } from "./generic/button";
+import Input from "./input/Input";
+import Button from "./button/Button";
 import CallPicker from "./call/CallPicker";
 import NavSideBar from "./nav-sidebar";
 import Confirm from "./confirmation-box/Confirm";
-import { ToggleButtonGroup } from "./generic/toggle-button-group";
+import ToggleButtonGroup from "./toggle-button-group/ToggleButtonGroup";
 import CustomMarkdown from "./custom-markdown";
 import StressBuster from "./stress-buster";
 import ArticleGrid from "./article/ArticleGrid";
