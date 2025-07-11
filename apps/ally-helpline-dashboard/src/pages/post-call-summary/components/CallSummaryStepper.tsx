@@ -1,7 +1,7 @@
 import { FC } from "react";
 import { ToggleButtonGroup, ToggleButton, styled } from "@mui/material";
 
-import { CallSummaryStepperProps, SectionType } from "./types";
+import { CallSummaryStepperProps, SectionType } from "../types";
 
 const StyledToggleButtonGroup = styled(ToggleButtonGroup)(() => ({
   padding: 0,

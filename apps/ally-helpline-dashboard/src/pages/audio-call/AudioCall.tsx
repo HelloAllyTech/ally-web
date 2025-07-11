@@ -1,16 +1,16 @@
-import { Minimize } from "lucide-react";
-import { useSelector } from "react-redux";
+import { useState, useEffect, FunctionComponent } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { useState, useEffect, FunctionComponent, useMemo } from "react";
+import { useSelector } from "react-redux";
+import { Minimize } from "lucide-react";
 import { toast } from "sonner";
 
 import { logger } from "@ally-ui-mono/ui-shared";
+import { RootState } from "@/store/store";
 import { UserRole, UserStatus } from "@/types/user";
 import { Chat, QueueStatus } from "@/types/message";
-import { RootState } from "@/store/store";
-import { NoResults } from "@/assets/icons";
 import { setUserStatus } from "@/reducer/userReducer";
 import { FallbackUI, StressBuster } from "@/components";
+import { NoResults } from "@/assets/icons";
 import {
   useEndCallMutation,
   useLazyGetClientChatQuery,
@@ -18,8 +18,7 @@ import {
 } from "@/api/audioCall";
 import { MindfullnessVideo } from "@/assets/videos";
 
-import CallTranscript from "./CallTranscript";
-import EndTransitionScreen from "./components/EndTransition";
+import { CallTranscript, EndTransitionScreen } from "./components";
 
 const AudioCall: FunctionComponent = () => {
   const navigate = useNavigate();

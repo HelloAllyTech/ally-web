@@ -1,9 +1,9 @@
 import { FC, useEffect, useState } from "react";
 import { LiveAudioVisualizer } from "react-audio-visualize";
+import { motion } from "framer-motion";
 
 import { formatTime } from "../utils";
 import { CallInterfaceProps } from "../types";
-import { motion } from "framer-motion";
 
 const CallInterface: FC<CallInterfaceProps> = ({
   activeChat,

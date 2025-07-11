@@ -16,14 +16,16 @@ import {
 import { SocketConnectionTypes } from "@/constants/socket";
 import { logger } from "@ally-ui-mono/ui-shared";
 
-import { reduceTranscriptions } from "./utils";
-import { CallTranscriptProps, Nudge } from "./types";
-import { AUDIO_FILE_SIZE, OFFER_TIMEOUT_MS } from "./constants";
-import AudioCallBackgroundWrapper from "./components/AudioCallBackgroundWrapper";
-import CallSidebar from "./components/CallSidebar";
-import RealTimeTranscript from "./components/RealTimeTranscript";
-import CallControls from "./components/CallControls";
-import CallInterface from "./components/CallInterface";
+import { reduceTranscriptions } from "../utils";
+import { CallTranscriptProps, Nudge } from "../types";
+import { AUDIO_FILE_SIZE, OFFER_TIMEOUT_MS } from "../constants";
+import {
+  AudioCallBackgroundWrapper,
+  CallSidebar,
+  RealTimeTranscript,
+  CallControls,
+  CallInterface,
+} from ".";
 
 import "./CallTranscript.css";
 

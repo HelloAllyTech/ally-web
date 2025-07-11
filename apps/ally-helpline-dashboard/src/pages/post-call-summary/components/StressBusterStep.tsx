@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 
 import { Button, StressBuster } from "@/components";
 
-import { StressBusterProps } from "./types";
+import { StressBusterProps } from "../types";
 
 const StressBusterStep: FC<StressBusterProps> = ({ onProceed }) => {
   return (

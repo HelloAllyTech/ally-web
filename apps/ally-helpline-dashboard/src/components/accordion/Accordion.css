@@ -1,3 +1,6 @@
+/* TODO: Phase 4 - Convert to CSS Module (Accordion.module.css) for better style scoping */
+/* TODO: Update import in Accordion.tsx to use CSS module syntax */
+
 .MuiAccordion-root.MuiPaper-root {
   box-shadow: none;
   border-radius: 0px !important;
