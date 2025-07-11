@@ -1,3 +1,5 @@
 import ListeningChart from "./ListeningChart";
+import UserAnalytics from "./UserAnalytics";
+import OrgAnalytics from "./OrgAnalytics";
 
-export { ListeningChart };
+export { ListeningChart, UserAnalytics, OrgAnalytics };

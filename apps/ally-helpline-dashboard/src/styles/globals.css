@@ -1,3 +1,6 @@
+/* TODO: Phase 4 - Review for consolidation with index.css */
+/* TODO: Consider moving component-specific styles to CSS modules */
+
 @keyframes pulse {
   0%,
   100% {

@@ -9,11 +9,8 @@ import { Article } from "@/components/article/types";
 import { setUserStatus } from "@/reducer/userReducer";
 import { UserStatus } from "@/types/user";
 
-import CallSummaryStepper from "./CallSummaryStepper";
-import StressBusterStep from "./StressBusterStep";
 import { ModalData, SectionType } from "./types";
-import ArticleGridStep from "./components/ArticleGridStep";
-import CallSummary from "./components/CallSummary";
+import { ArticleGridStep, CallSummary, CallSummaryStepper, StressBusterStep } from "./components";
 import { useGetCallSummaryQuery } from "@/api/callSummary";
 import { logger } from "@ally-ui-mono/ui-shared";
 import { getNextSection } from "./helper";

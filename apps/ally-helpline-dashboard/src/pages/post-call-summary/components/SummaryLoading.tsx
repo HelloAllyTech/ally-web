@@ -1,4 +1,5 @@
 import { FC, useEffect, useState } from "react";
+
 import { Spinner, RoundCheckmark } from "@/assets/icons";
 
 const SummaryLoading: FC = () => {

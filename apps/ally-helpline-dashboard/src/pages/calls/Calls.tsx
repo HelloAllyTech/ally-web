@@ -8,8 +8,7 @@ import { setUserStatus } from "@/reducer/userReducer";
 import { UserStatus, UserRole } from "@/types/user";
 import { useUser } from "@/hooks/useUser";
 
-import CallLogsTable from "./CallLogsTable";
-import ConsolidatedLogs from "./ConsolidatedLogs";
+import { CallLogsTable, ConsolidatedLogs } from "./components";
 
 const Calls: FunctionComponent = () => {
   const { userStatus } = useSelector((state: RootState) => state.user);

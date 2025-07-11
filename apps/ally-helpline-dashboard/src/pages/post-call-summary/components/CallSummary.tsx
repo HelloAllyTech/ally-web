@@ -20,7 +20,7 @@ import { logger } from "@ally-ui-mono/ui-shared";
 import { labelShownSections, summarySections } from "../constants";
 import { CallSummaryProps, SummaryField, SummarySectionKey } from "../types";
 import { getFormattedDateTime, getSectionFields } from "../helper";
-import SummaryLoading from "./SummaryLoading";
+import { SummaryLoading } from ".";
 
 const CallSummary: FC<CallSummaryProps> = ({
   callSummary,

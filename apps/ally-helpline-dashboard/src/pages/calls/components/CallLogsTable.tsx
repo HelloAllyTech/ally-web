@@ -2,6 +2,8 @@ import { useEffect, useState, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { CircularProgress } from "@mui/material";
 
+import { GenericTable } from "@ally-ui-mono/ui-shared";
+import { Column } from "@ally-ui-mono/ui-shared/lib/generic-table/types";
 import { RootState } from "@/store/store";
 import { updateFilters } from "@/reducer/callsReducer";
 import { useGetCallLogsQuery } from "@/api/calls";
@@ -17,12 +19,10 @@ import {
 } from "@/assets/icons";
 import { CallLog } from "@/types/calls";
 
-import SummarySideBar from "./components/SummarySideBar";
-import { convertSecondsToDuration, formatDate } from "./utils";
-import { CALL_LOGS_PAGINATION_LIMIT, TABLE_ROW_HEIGHT, tagColors } from "./constants";
-import { TagDisplay } from "./types";
-import { GenericTable } from "@ally-ui-mono/ui-shared";
-import { Column } from "@ally-ui-mono/ui-shared/lib/generic-table/types";
+import { convertSecondsToDuration, formatDate } from "../utils";
+import { CALL_LOGS_PAGINATION_LIMIT, TABLE_ROW_HEIGHT, tagColors } from "../constants";
+import { TagDisplay } from "../types";
+import { SummarySideBar } from ".";
 
 const CallLogsTable = () => {
   const dispatch = useDispatch();

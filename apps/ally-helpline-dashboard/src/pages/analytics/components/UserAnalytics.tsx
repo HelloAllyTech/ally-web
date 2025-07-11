@@ -7,8 +7,8 @@ import { Button, Calendar } from "@/components";
 import { useLazyGetCounselorStatsQuery } from "@/api/analytics";
 import { getDateRange } from "@/utils/date";
 
-import { ListeningChart } from "./components";
-import { CalendarMode } from "./types";
+import { CalendarMode } from "../types";
+import { ListeningChart } from ".";
 
 const UserAnalytics: FunctionComponent = () => {
   const [

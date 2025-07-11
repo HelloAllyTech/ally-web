@@ -1,11 +1,11 @@
-import React from "react";
+import { FC, ReactNode } from "react";
 import { Button } from "@/components";
 
 interface ConfirmProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   title?: string;
-  text: string | React.ReactNode;
+  text: string | ReactNode;
   onConfirm: () => void;
   onCancel: () => void;
   confirmText?: string;
@@ -14,7 +14,7 @@ interface ConfirmProps {
   destructive?: boolean;
 }
 
-const Confirm = ({
+const Confirm: FC<ConfirmProps> = ({
   open,
   onOpenChange,
   title,
@@ -25,7 +25,7 @@ const Confirm = ({
   cancelText = "No",
   isLoading = false,
   destructive = false,
-}: ConfirmProps) => {
+}) => {
   if (!open) return null;
 
   return (

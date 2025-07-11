@@ -1,3 +1,6 @@
+/* TODO: Phase 4 - Convert to CSS Module (CallTranscript.module.css) for better style scoping */
+/* TODO: Update import in CallTranscript.tsx to use CSS module syntax */
+
 .waveForm {
   background-image: linear-gradient(to right, #00000060, transparent 100%);
   background-size: 100% 100%;
