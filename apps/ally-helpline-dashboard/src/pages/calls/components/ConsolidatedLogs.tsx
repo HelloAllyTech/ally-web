@@ -154,7 +154,7 @@ const ConsolidatedLogs = () => {
       key: "counselorName",
       header: "Counselor Name",
       filterType: FilterType.MULTISELECT,
-      style: { width: "18%" },
+      style: { width: "15%" },
       icon: <UserIcon />,
       sortable: true,
       filterable: true,
@@ -168,7 +168,7 @@ const ConsolidatedLogs = () => {
       key: "dateAndTime",
       header: "Date & Time",
       filterType: FilterType.DATE,
-      style: { width: "17%" },
+      style: { width: "15%" },
       sortable: true,
       filterable: true,
       filterOptions: [],
@@ -180,28 +180,6 @@ const ConsolidatedLogs = () => {
       sortable: true,
       icon: <TimerIcon />,
       style: { width: "15%" },
-    },
-    {
-      key: "qualityScore",
-      header: "Quality Score",
-      sortable: true,
-      filterable: true,
-      filterType: FilterType.SINGLESELECT,
-      filterOptions: [
-        { label: "Excellent (85+)", value: "85-100" },
-        { label: "Good (50-80)", value: "50-80" },
-        { label: "Need attention (<50)", value: "0-50" },
-      ],
-      style: { width: "10%" },
-      render: value => {
-        return (
-          <div className="flex items-center gap-3 text-[16px]">
-            <span className="w-[20px]">{value}</span>
-            <CustomCircularProgress value={value} />
-          </div>
-        );
-      },
-      icon: <StarIcon />,
     },
     {
       key: "tags",

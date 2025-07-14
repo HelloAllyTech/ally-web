@@ -126,35 +126,20 @@ const CallLogsTable = () => {
     {
       key: "callName",
       header: "Call ID",
-      style: { width: "15%" },
+      style: { width: "20%" },
       icon: <CallIdIcon />,
     },
     {
       key: "dateAndTime",
       header: "Date & Time",
-      style: { width: "15%" },
+      style: { width: "20%" },
       icon: <DateIcon />,
     },
     {
       key: "duration",
       header: "Duration",
-      style: { width: "15%" },
+      style: { width: "20%" },
       icon: <TimerIcon />,
-    },
-    {
-      key: "qualityScore",
-      header: "Quality Score",
-      style: { width: "15%" },
-      render: (value, row) => {
-        // row is displayData
-        return (
-          <div className="flex items-center gap-3 text-[16px]">
-            <span>{value}</span>
-            <CustomCircularProgress value={value} />
-          </div>
-        );
-      },
-      icon: <StarIcon />,
     },
     {
       key: "tags",
