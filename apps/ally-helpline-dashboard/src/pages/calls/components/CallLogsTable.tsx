@@ -126,19 +126,19 @@ const CallLogsTable = () => {
     {
       key: "callName",
       header: "Call ID",
-      style: { width: "15%" },
+      style: { width: "20%" },
       icon: <CallIdIcon />,
     },
     {
       key: "dateAndTime",
       header: "Date & Time",
-      style: { width: "15%" },
+      style: { width: "20%" },
       icon: <DateIcon />,
     },
     {
       key: "duration",
       header: "Duration",
-      style: { width: "15%" },
+      style: { width: "20%" },
       icon: <TimerIcon />,
     },
     {
