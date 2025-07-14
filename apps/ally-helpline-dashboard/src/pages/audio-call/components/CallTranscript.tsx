@@ -60,6 +60,8 @@ const CallTranscript: FC<CallTranscriptProps> = ({
   const [stage, setStage] = useState<string>();
   const [isUserJoined, setIsUserJoined] = useState(null);
   const { data: nudgeStatus } = useGetNudgeStatusQuery();
+  const [isSessionCreated, setIsSessionCreated] = useState(false);
+  const [isStartAudioChatEmitted, setIsStartAudioChatEmitted] = useState(false);
 
   const isClient = user?.role === UserRole.CLIENT;
   const isCounsellor = user?.role === UserRole.COUNSELOR;
@@ -137,61 +139,71 @@ const CallTranscript: FC<CallTranscriptProps> = ({
     });
   };
 
-  const socketEventCallbacks = useMemo(
-    () => ({
-      [SocketEvent.STAGE]: data => {
-        setStage(data?.payload?.content);
-      },
-      [SocketEvent.CHAT_ENDED]: () => {
+  const socketEventCallbacks = {
+    [SocketEvent.SESSION_CREATED]: () => {
+      setIsSessionCreated(true);
+    },
+    [SocketEvent.STAGE]: data => {
+      setStage(data?.payload?.content);
+    },
+    [SocketEvent.CHAT_ENDED]: () => {
+      disconnect();
+      if (isClient) {
+        navigate("/");
+        return;
+      }
+      confirmEndSession(false);
+    },
+    [SocketEvent.NUDGE]: data => {
+      const nudge = data.payload;
+      if (nudge.type === MessageType.NUDGE) {
+        setNudges(prev => [
+          ...prev,
+          {
+            content: nudge.content as string,
+            id: nudge.id as number,
+            feedback: nudge.feedback as FeedbackResponse,
+          },
+        ]);
+      }
+    },
+    [SocketEvent.MESSAGE_RECEIVED]: data => {
+      const message = data.payload;
+      if (message.type === MessageType.TEXT) {
+        if (message.senderId === user?.userId) {
+          processTranscription(setMyTranscriptions, message);
+        } else {
+          processTranscription(setSpeakerTranscriptions, message);
+        }
+      }
+    },
+    [SocketEvent.UTTERANCE_ENDED]: data => {
+      if (data?.payload.senderId === user?.userId) {
+        updateLastTranscription(setMyTranscriptions);
+      } else {
+        updateLastTranscription(setSpeakerTranscriptions);
+      }
+    },
+    [SocketEvent.USER_JOINED]: data => {
+      if (isMicrophoneMode) {
+        setMicrophoneChatId(data.payload.chatId);
+      }
+      setIsUserJoined(true);
+    },
+    [SocketEvent.USER_DISCONNECTED]: () => {
+      setIsUserJoined(false);
+    },
+    [SocketEvent.AUDIO_CHAT_ENDED]: () => {
+      if (isMicrophoneMode) {
         disconnect();
         if (isClient) {
           navigate("/");
           return;
         }
         confirmEndSession(false);
-      },
-      [SocketEvent.NUDGE]: data => {
-        const nudge = data.payload;
-        if (nudge.type === MessageType.NUDGE) {
-          setNudges(prev => [
-            ...prev,
-            {
-              content: nudge.content as string,
-              id: nudge.id as number,
-              feedback: nudge.feedback as FeedbackResponse,
-            },
-          ]);
-        }
-      },
-      [SocketEvent.MESSAGE_RECEIVED]: data => {
-        const message = data.payload;
-        if (message.type === MessageType.TEXT) {
-          if (message.senderId === user?.userId) {
-            processTranscription(setMyTranscriptions, message);
-          } else {
-            processTranscription(setSpeakerTranscriptions, message);
-          }
-        }
-      },
-      [SocketEvent.UTTERANCE_ENDED]: data => {
-        if (data?.payload.senderId === user?.userId) {
-          updateLastTranscription(setMyTranscriptions);
-        } else {
-          updateLastTranscription(setSpeakerTranscriptions);
-        }
-      },
-      [SocketEvent.USER_JOINED]: data => {
-        if (isMicrophoneMode) {
-          setMicrophoneChatId(data.payload.chatId);
-        }
-        setIsUserJoined(true);
-      },
-      [SocketEvent.USER_DISCONNECTED]: () => {
-        setIsUserJoined(false);
-      },
-    }),
-    [],
-  );
+      }
+    },
+  };
 
   const { connect, disconnect, emitSocketEvent, setListenerForEvent, removeIfListenerPresent } =
     useSocket({
@@ -352,11 +364,6 @@ const CallTranscript: FC<CallTranscriptProps> = ({
   useEffect(() => {
     if (user && isMicrophoneMode) {
       connect();
-      // Delaying the start of audio chat to ensure the connection is established and session is created
-      // TODO: Remove this delay in future once session_created event is generated on the server side
-      setTimeout(() => {
-        emitSocketEvent(SocketEvent.START_AUDIO_CHAT, { platform: "WEB" });
-      }, 2000);
     }
 
     return () => {
@@ -364,7 +371,6 @@ const CallTranscript: FC<CallTranscriptProps> = ({
         if (mediaRecorder && mediaRecorder.state !== "inactive") {
           mediaRecorder.stop();
         }
-        disconnect();
       }
     };
   }, [isMicrophoneMode]);
@@ -437,12 +443,26 @@ const CallTranscript: FC<CallTranscriptProps> = ({
         microphoneStreamRef.current.getTracks().forEach(track => track.stop());
         microphoneStreamRef.current = null;
       }
-      endSession(triggerApi, activeChatId ?? microphoneChatId);
-      disconnect();
+      if (isMicrophoneMode) {
+        emitSocketEvent(SocketEvent.AUDIO_CHAT_ENDED, {
+          chatId: microphoneChatId,
+        });
+      }
+      endSession(isMicrophoneMode ? false : triggerApi, activeChatId);
     } catch (error) {
       logger.info(`Error ending session:, ${error}`);
     }
   };
+
+  useEffect(() => {
+    if (isMicrophoneMode && isSessionCreated && !isStartAudioChatEmitted) {
+      emitSocketEvent(SocketEvent.START_AUDIO_CHAT, {
+        platform: "WEB",
+        activeChatId: microphoneChatId,
+      });
+      setIsStartAudioChatEmitted(true);
+    }
+  }, [isMicrophoneMode, microphoneChatId, isSessionCreated, isStartAudioChatEmitted]);
 
   const transcriptions = useMemo(() => {
     const reducedMyTranscriptions = reduceTranscriptions(myTranscriptions);

@@ -60,6 +60,9 @@ const AudioCall: FunctionComponent = () => {
         if (response) {
           setUserStatus(UserStatus.OFFLINE);
           setActiveChat(response.data);
+          if (response.data.provider === "MICROPHONE") {
+            setMicrophoneChatId(response.data.chatId);
+          }
         }
       } catch (error) {
         logger.info(`Error fetching active chat:, ${error}`);
