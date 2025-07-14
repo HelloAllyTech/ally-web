@@ -141,21 +141,6 @@ const CallLogsTable = () => {
       style: { width: "15%" },
       icon: <TimerIcon />,
     },
-    // {
-    //   key: "qualityScore",
-    //   header: "Quality Score",
-    //   style: { width: "15%" },
-    //   render: (value, row) => {
-    //     // row is displayData
-    //     return (
-    //       <div className="flex items-center gap-3 text-[16px]">
-    //         <span>{value}</span>
-    //         <CustomCircularProgress value={value} />
-    //       </div>
-    //     );
-    //   },
-    //   icon: <StarIcon />,
-    // },
     {
       key: "tags",
       header: "Tags",
