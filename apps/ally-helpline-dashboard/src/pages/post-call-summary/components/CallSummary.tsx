@@ -15,6 +15,7 @@ import {
 import { useEnhance } from "@/hooks";
 import { SummaryFieldKey, Tag } from "@/types/summary";
 import { UserRole } from "@/types/user";
+import { LanguageMap } from "@/constants/common";
 import { logger } from "@ally-ui-mono/ui-shared";
 
 import { labelShownSections, summarySections } from "../constants";
@@ -127,7 +128,7 @@ const CallSummary: FC<CallSummaryProps> = ({
       case SummaryFieldKey.Languages:
         return (
           summaryData.languages
-            ?.map(({ language, percentage }) => `${language} (${percentage}%)`)
+            ?.map(({ language, percentage }) => `${LanguageMap[language]} (${percentage}%)`)
             .join(", ") || ""
         );
       case SummaryFieldKey.ListeningShare:

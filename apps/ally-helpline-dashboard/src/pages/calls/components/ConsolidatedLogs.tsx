@@ -181,28 +181,28 @@ const ConsolidatedLogs = () => {
       icon: <TimerIcon />,
       style: { width: "15%" },
     },
-    {
-      key: "qualityScore",
-      header: "Quality Score",
-      sortable: true,
-      filterable: true,
-      filterType: FilterType.SINGLESELECT,
-      filterOptions: [
-        { label: "Excellent (85+)", value: "85-100" },
-        { label: "Good (50-80)", value: "50-80" },
-        { label: "Need attention (<50)", value: "0-50" },
-      ],
-      style: { width: "10%" },
-      render: value => {
-        return (
-          <div className="flex items-center gap-3 text-[16px]">
-            <span className="w-[20px]">{value}</span>
-            <CustomCircularProgress value={value} />
-          </div>
-        );
-      },
-      icon: <StarIcon />,
-    },
+    // {
+    //   key: "qualityScore",
+    //   header: "Quality Score",
+    //   sortable: true,
+    //   filterable: true,
+    //   filterType: FilterType.SINGLESELECT,
+    //   filterOptions: [
+    //     { label: "Excellent (85+)", value: "85-100" },
+    //     { label: "Good (50-80)", value: "50-80" },
+    //     { label: "Need attention (<50)", value: "0-50" },
+    //   ],
+    //   style: { width: "10%" },
+    //   render: value => {
+    //     return (
+    //       <div className="flex items-center gap-3 text-[16px]">
+    //         <span className="w-[20px]">{value}</span>
+    //         <CustomCircularProgress value={value} />
+    //       </div>
+    //     );
+    //   },
+    //   icon: <StarIcon />,
+    // },
     {
       key: "tags",
       header: "Tags",
