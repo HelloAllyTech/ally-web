@@ -18,7 +18,7 @@ const StressBusterStep: FC<StressBusterProps> = ({ onProceed }) => {
       <div className="w-full aspect-video mb-4 rounded-3xl overflow-hidden">
         <StressBuster showViewSummaryButton onViewSummary={onProceed} />
       </div>
-      <Button className="rounded-full w-fit self-end" onClick={onProceed}>
+      <Button className="rounded-full w-fit self-center" onClick={onProceed}>
         View Call summary
       </Button>
     </motion.div>
