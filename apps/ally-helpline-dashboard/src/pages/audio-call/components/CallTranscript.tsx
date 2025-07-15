@@ -147,12 +147,14 @@ const CallTranscript: FC<CallTranscriptProps> = ({
       setStage(data?.payload?.content);
     },
     [SocketEvent.CHAT_ENDED]: () => {
+      cleanupMediaRecorder();
       disconnect();
       if (isClient) {
         navigate("/");
         return;
       }
-      confirmEndSession(false);
+      // trigegrApi is false as this event will be received only upon ending the call
+      endSession(false, activeChatId);
     },
     [SocketEvent.NUDGE]: data => {
       const nudge = data.payload;
@@ -356,7 +358,6 @@ const CallTranscript: FC<CallTranscriptProps> = ({
         if (remoteMediaRecorder && remoteMediaRecorder.state !== "inactive") {
           remoteMediaRecorder.stop();
         }
-        disconnect();
       }
     };
   }, [activeChatId, user, isCounsellor, isClient, iceServers, isMicrophoneMode]);
@@ -429,25 +430,30 @@ const CallTranscript: FC<CallTranscriptProps> = ({
     }
   }, [handleWebRTCOffer, activeChatId, handleWebRTCAnswer, handleOnIceCandidate]);
 
+  const cleanupMediaRecorder = () => {
+    if (mediaRecorder && mediaRecorder.state !== "inactive") {
+      mediaRecorder.stop();
+    }
+    // Stop all tracks in the local stream to release the microphone
+    if (localStreamRef.current) {
+      localStreamRef.current.getTracks().forEach(track => track.stop());
+      localStreamRef.current = null;
+    }
+    if (microphoneStreamRef.current) {
+      microphoneStreamRef.current.getTracks().forEach(track => track.stop());
+      microphoneStreamRef.current = null;
+    }
+  };
+
   const confirmEndSession = async (triggerApi: boolean = true) => {
     try {
-      if (mediaRecorder && mediaRecorder.state !== "inactive") {
-        mediaRecorder.stop();
-      }
-      // Stop all tracks in the local stream to release the microphone
-      if (localStreamRef.current) {
-        localStreamRef.current.getTracks().forEach(track => track.stop());
-        localStreamRef.current = null;
-      }
-      if (microphoneStreamRef.current) {
-        microphoneStreamRef.current.getTracks().forEach(track => track.stop());
-        microphoneStreamRef.current = null;
-      }
       if (isMicrophoneMode) {
         emitSocketEvent(SocketEvent.AUDIO_CHAT_ENDED, {
           chatId: microphoneChatId,
         });
+        return;
       }
+      cleanupMediaRecorder();
       endSession(isMicrophoneMode ? false : triggerApi, activeChatId);
     } catch (error) {
       logger.info(`Error ending session:, ${error}`);
