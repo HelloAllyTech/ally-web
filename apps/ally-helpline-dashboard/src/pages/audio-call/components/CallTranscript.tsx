@@ -1,3 +1,4 @@
+import { toast } from "sonner";
 import { FC, useEffect, useMemo, useState, Dispatch, SetStateAction, useRef } from "react";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
@@ -483,6 +484,11 @@ const CallTranscript: FC<CallTranscriptProps> = ({
 
   useEffect(() => {
     if (isMicrophoneMode && isSessionCreated && !isStartAudioChatEmitted) {
+      if (microphoneChatId) {
+        toast.info(
+          "You've joined an active call. To start a fresh conversation, simply end this call and begin a new one.",
+        );
+      }
       emitSocketEvent(SocketEvent.START_AUDIO_CHAT, {
         platform: "WEB",
         activeChatId: microphoneChatId,

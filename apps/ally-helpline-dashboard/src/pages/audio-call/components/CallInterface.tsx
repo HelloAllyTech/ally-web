@@ -16,38 +16,30 @@ const CallInterface: FC<CallInterfaceProps> = ({
 }) => {
   const [seconds, setSeconds] = useState(0);
 
-  // TODO: REthink the logic; A ref could be used for the interval
   useEffect(() => {
-    let interval: NodeJS.Timeout;
-    if (!isMicrophoneMode) {
-      if (!activeChat?.startedAt) return () => {};
+    // Don't start timer if no chat has started and not in microphone mode
+    if (!activeChat?.startedAt && !isMicrophoneMode) return () => {};
 
-      const updateElapsedTime = () => {
+    const updateElapsedTime = () => {
+      if (isMicrophoneMode && !activeChat?.startedAt) {
+        // In microphone mode without startedAt, increment from current seconds
+        setSeconds(prev => prev + 1);
+      } else if (activeChat?.startedAt) {
+        // Calculate elapsed time from startedAt
         const now = Date.now();
         const diffInSeconds = Math.floor((now - Date.parse(activeChat.startedAt)) / 1000);
         setSeconds(diffInSeconds);
-      };
+      }
+    };
+    // Initial update
+    updateElapsedTime();
 
-      updateElapsedTime(); // Initial update
-      interval = setInterval(updateElapsedTime, 1000);
-    }
-    return () => clearInterval(interval); // Cleanup on unmount
-  }, [activeChat, activeChat?.startedAt]);
+    // Set up interval
+    const interval = setInterval(updateElapsedTime, 1000);
 
-  useEffect(() => {
-    let interval: NodeJS.Timeout;
-    if (isMicrophoneMode) {
-      const startedAt = Date.now();
-      const updateElapsedTime = () => {
-        const now = Date.now();
-        const diffInSeconds = Math.floor((now - startedAt) / 1000);
-        setSeconds(diffInSeconds);
-      };
-      updateElapsedTime(); // Initial update
-      interval = setInterval(updateElapsedTime, 1000);
-    }
-    return () => clearInterval(interval); // Cleanup on unmount
-  }, [isMicrophoneMode]);
+    // Cleanup on unmount or dependency change
+    return () => clearInterval(interval);
+  }, [activeChat?.startedAt, isMicrophoneMode]);
 
   const getEmptyScreen = () => {
     let message;
