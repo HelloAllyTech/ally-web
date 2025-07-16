@@ -345,19 +345,7 @@ const CallTranscript: FC<CallTranscriptProps> = ({
 
     return () => {
       if (!isMicrophoneMode) {
-        // Cleanup
-        if (offerTimeoutRef.current) {
-          clearTimeout(offerTimeoutRef.current);
-        }
-        if (peerConnection) {
-          peerConnection.close();
-        }
-        if (mediaRecorder && mediaRecorder.state !== "inactive") {
-          mediaRecorder.stop();
-        }
-        if (remoteMediaRecorder && remoteMediaRecorder.state !== "inactive") {
-          remoteMediaRecorder.stop();
-        }
+        cleanupMediaRecorder();
       }
     };
   }, [activeChatId, user, isCounsellor, isClient, iceServers, isMicrophoneMode]);
@@ -369,9 +357,7 @@ const CallTranscript: FC<CallTranscriptProps> = ({
 
     return () => {
       if (isMicrophoneMode) {
-        if (mediaRecorder && mediaRecorder.state !== "inactive") {
-          mediaRecorder.stop();
-        }
+        cleanupMediaRecorder();
       }
     };
   }, [isMicrophoneMode]);
@@ -431,17 +417,52 @@ const CallTranscript: FC<CallTranscriptProps> = ({
   }, [handleWebRTCOffer, activeChatId, handleWebRTCAnswer, handleOnIceCandidate]);
 
   const cleanupMediaRecorder = () => {
+    // Stop and cleanup media recorder
     if (mediaRecorder && mediaRecorder.state !== "inactive") {
       mediaRecorder.stop();
     }
-    // Stop all tracks in the local stream to release the microphone
+
+    // Stop remote media recorder
+    if (remoteMediaRecorder && remoteMediaRecorder.state !== "inactive") {
+      remoteMediaRecorder.stop();
+    }
+
+    // Stop all tracks in the local stream
     if (localStreamRef.current) {
-      localStreamRef.current.getTracks().forEach(track => track.stop());
+      localStreamRef.current.getTracks().forEach(track => {
+        track.stop();
+        track.enabled = false;
+      });
       localStreamRef.current = null;
     }
+
+    // Stop all tracks in the microphone stream
     if (microphoneStreamRef.current) {
-      microphoneStreamRef.current.getTracks().forEach(track => track.stop());
+      microphoneStreamRef.current.getTracks().forEach(track => {
+        track.stop();
+        track.enabled = false;
+      });
       microphoneStreamRef.current = null;
+    }
+
+    // Stop all tracks in the remote stream
+    if (remoteStreamRef.current) {
+      remoteStreamRef.current.getTracks().forEach(track => {
+        track.stop();
+        track.enabled = false;
+      });
+      remoteStreamRef.current = new MediaStream();
+    }
+
+    // Close peer connection
+    if (peerConnection) {
+      peerConnection.close();
+    }
+
+    // Clear timeout
+    if (offerTimeoutRef.current) {
+      clearTimeout(offerTimeoutRef.current);
+      offerTimeoutRef.current = null;
     }
   };
 
@@ -465,6 +486,7 @@ const CallTranscript: FC<CallTranscriptProps> = ({
       emitSocketEvent(SocketEvent.START_AUDIO_CHAT, {
         platform: "WEB",
         activeChatId: microphoneChatId,
+        sampleRate: 48000,
       });
       setIsStartAudioChatEmitted(true);
     }

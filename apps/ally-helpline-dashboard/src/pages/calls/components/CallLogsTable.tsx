@@ -154,6 +154,7 @@ const CallLogsTable = () => {
       style: { width: "10%" },
       render: (_value, row) => (
         <Button
+          disabled={row.raw.details?.summary === null}
           onClick={() => setCallSummary(row.raw)}
           className="flex items-center justify-center w-full py-[8px] bg-transparent border-none hover:bg-transparent cursor-pointer"
         >

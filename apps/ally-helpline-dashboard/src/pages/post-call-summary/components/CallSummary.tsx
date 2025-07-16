@@ -108,7 +108,7 @@ const CallSummary: FC<CallSummaryProps> = ({
         return callSummary?.details?.chatId || summaryData.callId;
       case SummaryFieldKey.CallDuration: {
         const duration = callSummary?.details?.callDuration || summaryData.callDuration;
-        return `${Math.floor(Number(duration) / 60)} minutes`;
+        return duration ? `${Math.floor(Number(duration) / 60)} minutes` : "--";
       }
       case SummaryFieldKey.CallDate:
         return getFormattedDateTime(callSummary?.details?.startTime, "do MMMM yyyy");
@@ -297,8 +297,12 @@ const CallSummary: FC<CallSummaryProps> = ({
   };
 
   // Show loading screen only on first visit
-  if (showInitialLoading) {
-    return <SummaryLoading />;
+  if (showInitialLoading || callSummary?.details?.summary === null) {
+    return (
+      <SummaryLoading
+        isSummaryDelayed={callSummary?.details?.callInfo?.provider === "MICROPHONE"}
+      />
+    );
   }
 
   return (

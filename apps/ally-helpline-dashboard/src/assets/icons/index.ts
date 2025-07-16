@@ -51,6 +51,7 @@ import ThumbUp from "./thumb-up.svg?react";
 import ThumbUpFilled from "./thumb-up-filled.svg?react";
 import TimerIcon from "./timer.svg?react";
 import UserIcon from "./user-icon.svg?react";
+import Waveform from "./waveform.svg?react";
 
 export {
   AccountCircle,
@@ -106,4 +107,5 @@ export {
   ThumbUpFilled,
   TimerIcon,
   UserIcon,
+  Waveform,
 };

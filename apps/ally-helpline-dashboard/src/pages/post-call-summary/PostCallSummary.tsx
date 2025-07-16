@@ -38,6 +38,7 @@ const PostCallSummary = () => {
     }
   }, [searchParams]);
 
+  // TODO: Revamp the logic
   useEffect(() => {
     const refetchCallSummary = async () => {
       try {
@@ -49,9 +50,12 @@ const PostCallSummary = () => {
 
     let interval: NodeJS.Timeout;
 
+    // polling only for webRTC and not Microphone
     if (
       !callSummary?.details?.summary ||
-      (Array.isArray(callSummary.details.summary) && callSummary.details.summary.length === 0)
+      (Array.isArray(callSummary.details.summary) &&
+        callSummary.details.summary.length === 0 &&
+        callSummary?.details?.callInfo?.provider !== "MICROPHONE")
     ) {
       refetchCallSummary();
       interval = setInterval(refetchCallSummary, 5000);
@@ -106,13 +110,21 @@ const PostCallSummary = () => {
     navigate("/calls");
   };
 
+  const onTabChange = (event: React.SyntheticEvent, newValue: SectionType) => {
+    setSelectedTab(newValue);
+
+    // Set query parameter
+    const searchParams = new URLSearchParams(window.location.search);
+    searchParams.set("section", newValue === SectionType.CallSummary ? "2" : "1");
+
+    // Update URL without page reload
+    const newUrl = `${window.location.pathname}?${searchParams.toString()}`;
+    window.history.pushState({}, "", newUrl);
+  };
+
   return (
     <div className="h-[100vh] w-[50%] pt-6 mx-auto flex flex-col gap-4 items-center bg-white">
-      <TabGroup
-        value={selectedTab}
-        onChange={(event, newValue) => setSelectedTab(newValue)}
-        tabs={summaryTabs}
-      >
+      <TabGroup value={selectedTab} onChange={onTabChange} tabs={summaryTabs}>
         <motion.div
           layout="position"
           layoutId="content-container"
