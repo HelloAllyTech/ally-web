@@ -5,7 +5,6 @@ import { toast } from "sonner";
 
 import {
   Calls,
-  Learn,
   Calendar,
   Settings,
   Analytics,
@@ -171,15 +170,6 @@ const PrivateRouteLayout = () => {
                   <PermissionGuardedRoute
                     permission={Permissions.VIEW_NAVBAR_CALENDAR}
                     element={<Calendar />}
-                  />
-                }
-              />
-              <Route
-                path={ROUTES.LEARN}
-                element={
-                  <PermissionGuardedRoute
-                    permission={Permissions.VIEW_NAVBAR_LEARN}
-                    element={<Learn />}
                   />
                 }
               />

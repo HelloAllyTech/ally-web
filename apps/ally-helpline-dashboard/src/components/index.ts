@@ -1,6 +1,5 @@
 import Accordion from "./accordion";
 import ActionDialog from "./action-dialog";
-import { ArticleGrid, ArticleReader } from "./article";
 import Button from "./button";
 import Calendar from "./calendar";
 import CallPicker from "./call";
@@ -16,6 +15,7 @@ import NavSideBar from "./nav-sidebar";
 import OTP from "./otp";
 import SearchResources from "./search-resources";
 import StressBuster from "./stress-buster";
+import TabGroup from "./tab-group";
 import TagGroup from "./tag-group";
 import TextField from "./text-field";
 import ToggleButtonGroup from "./toggle-button-group";
@@ -23,8 +23,6 @@ import ToggleButtonGroup from "./toggle-button-group";
 export {
   Accordion,
   ActionDialog,
-  ArticleGrid,
-  ArticleReader,
   Button,
   Calendar,
   CallPicker,
@@ -40,6 +38,7 @@ export {
   OTP,
   SearchResources,
   StressBuster,
+  TabGroup,
   TagGroup,
   TextField,
   ToggleButtonGroup,

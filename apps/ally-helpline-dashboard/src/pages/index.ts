@@ -5,7 +5,6 @@ import Calls from "./calls";
 import Calendar from "./calendar";
 import ClientInterface from "./client-interface";
 import Health from "./health-check";
-import Learn from "./learn";
 import Login from "./auth";
 import PostCallSummary from "./post-call-summary";
 import Search from "./search";
@@ -22,7 +21,6 @@ export {
   Calendar,
   ClientInterface,
   Health,
-  Learn,
   Login,
   PostCallSummary,
   Search,
