@@ -297,7 +297,11 @@ const CallSummary: FC<CallSummaryProps> = ({
   };
 
   // Show loading screen only on first visit
-  if (showInitialLoading || callSummary?.details?.summary === null) {
+  if (
+    callSummary?.details?.callInfo?.provider === "MICROPHONE"
+      ? callSummary?.details?.summary === null
+      : showInitialLoading
+  ) {
     return (
       <SummaryLoading
         isSummaryDelayed={callSummary?.details?.callInfo?.provider === "MICROPHONE"}

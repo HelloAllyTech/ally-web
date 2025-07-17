@@ -62,8 +62,12 @@ const useWebRTCCallSetup = ({
       if (offerTimeoutRef.current) {
         clearTimeout(offerTimeoutRef.current);
       }
+      const xirsysServers =
+        iceServers?.urls?.length > 0
+          ? [{ ...iceServers, urls: iceServers.urls.slice(0, 4) }]
+          : ICE_SERVERS;
       const pc = new RTCPeerConnection({
-        iceServers: iceServers?.urls?.length > 0 ? [iceServers] : ICE_SERVERS,
+        iceServers: xirsysServers,
       });
       stream.getTracks().forEach(track => {
         pc.addTrack(track, stream);
