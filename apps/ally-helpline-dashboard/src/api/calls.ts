@@ -1,4 +1,5 @@
 import { baseAPI } from "@/api/baseAPI";
+import { CallType } from "@/constants/call";
 import {
   GetCallLogsInput,
   GetCallLogsResponse,
@@ -38,6 +39,9 @@ const callsAPI = baseAPI.injectEndpoints({
       }),
       providesTags: ["CallLogs"],
     }),
+    getChatTypes: builder.query<CallType[], void>({
+      query: () => "/settings/chat-types",
+    }),
   }),
 });
 
@@ -46,4 +50,5 @@ export const {
   useGetAdminCallLogsQuery,
   useGetCounselorsQuery,
   useGetCallTagsQuery,
+  useGetChatTypesQuery,
 } = callsAPI;
