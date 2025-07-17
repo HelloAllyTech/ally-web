@@ -126,10 +126,10 @@ const ConsolidatedLogs = () => {
       return {
         id,
         icon: <CallIdIcon />,
-        callName: callInfo?.summaryName,
+        callName: callInfo?.summaryName ?? "--",
         counselorName: counselor?.name,
         dateAndTime: startTime && formatDate(startTime),
-        callDuration: callDuration > 0 ? convertSecondsToDuration(callDuration ?? 60) : "",
+        callDuration: convertSecondsToDuration(callDuration),
         qualityScore: summary?.callQuality ?? 0,
         tags: summary?.tags?.map((tag: { tag: string; positivity_rating: number }) => {
           return {

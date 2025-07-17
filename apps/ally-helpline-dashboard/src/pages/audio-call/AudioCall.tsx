@@ -1,4 +1,4 @@
-import { useState, useEffect, FunctionComponent } from "react";
+import { useState, useEffect, FunctionComponent, useRef } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { Minimize } from "lucide-react";
@@ -30,6 +30,7 @@ const AudioCall: FunctionComponent = () => {
   const [endingMessage, setEndingMessage] = useState<string>("");
   const [isEnding, setIsEnding] = useState<boolean>(false);
   const [showStressBuster, setShowStressBuster] = useState<boolean>(false);
+  const wakeLockRef = useRef<WakeLockSentinel | null>(null);
 
   const user = useSelector((state: RootState) => state.user.user);
 
@@ -47,6 +48,56 @@ const AudioCall: FunctionComponent = () => {
       setShowStressBuster(false);
     };
   }, []);
+
+  // This is used to keep the screen on when the user is on the call page
+  useEffect(() => {
+    // Request wake lock when component mounts and there's an active chat
+    const requestWakeLock = async () => {
+      try {
+        if ("wakeLock" in navigator) {
+          wakeLockRef.current = await navigator.wakeLock.request("screen");
+          logger.info("Wake Lock is active");
+        }
+      } catch (err) {
+        logger.info(`Wake Lock request failed:${err}`);
+      }
+    };
+
+    // Request wake lock when component mounts and there's an active chat
+    if (activeChat?.chatId || microphoneChatId) {
+      requestWakeLock();
+    }
+
+    // Handle visibility change to reacquire wake lock when user returns to tab
+    const handleVisibilityChange = async () => {
+      if (document.visibilityState === "visible" && (activeChat?.chatId || microphoneChatId)) {
+        try {
+          if ("wakeLock" in navigator) {
+            wakeLockRef.current = await navigator.wakeLock.request("screen");
+            logger.info("Wake Lock reacquired");
+          }
+        } catch (err) {
+          logger.info(`Error reacquiring Wake Lock:${err}`);
+        }
+      }
+    };
+
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    // Cleanup: Release wake lock and remove event listener when component unmounts
+    return () => {
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+      if (wakeLockRef.current) {
+        wakeLockRef.current
+          .release()
+          .then(() => {
+            wakeLockRef.current = null;
+            logger.info("Wake Lock released");
+          })
+          .catch(err => logger.info(`Error releasing Wake Lock:${err}`));
+      }
+    };
+  }, [activeChat?.chatId, microphoneChatId]);
 
   useEffect(() => {
     const fetchActiveChat = async () => {

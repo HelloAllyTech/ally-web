@@ -141,7 +141,7 @@ const PrivateRouteLayout = () => {
                   ) : isAdmin ? (
                     <Navigate to={ROUTES.ANALYTICS} />
                   ) : (
-                    <Navigate to={ROUTES.SEARCH} />
+                    <Navigate to={ROUTES.START_SESSION} />
                   )
                 }
               />

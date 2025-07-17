@@ -26,13 +26,6 @@ export const ROUTES = {
 
 export const navBarOptions = [
   {
-    id: TabId.SEARCH,
-    title: "Search",
-    Icon: SearchIcon,
-    path: ROUTES.SEARCH,
-    permission: Permissions.VIEW_NAVBAR_SEARCH,
-  },
-  {
     id: TabId.START_SESSION,
     title: "Start Session",
     Icon: StartSessionIcon,
@@ -74,6 +67,13 @@ export const navBarOptions = [
   //   path: ROUTES.STRESS_BUSTERS,
   //   permission: Permissions.VIEW_NAVBAR_STRESS_BUSTER
   // },
+  {
+    id: TabId.SEARCH,
+    title: "Search",
+    Icon: SearchIcon,
+    path: ROUTES.SEARCH,
+    permission: Permissions.VIEW_NAVBAR_SEARCH,
+  },
   {
     id: TabId.COMMUNITY,
     title: "Community",

@@ -102,7 +102,7 @@ const NavSideBar: FunctionComponent<NavSideBarProps> = ({
             <Icon className={`${activeTab === id ? "stroke-[#000] stroke-[1px]" : ""}`} />
             <div
               className={`${
-                activeTab === id ? "text-[#000] font-semibold" : "text-[#444] font-medium"
+                activeTab === id ? "text-[#000] font-[500]" : "text-[#444] font-[400]"
               } font-['IBM_Plex_Serif'] text-[16px]`}
             >
               {title}

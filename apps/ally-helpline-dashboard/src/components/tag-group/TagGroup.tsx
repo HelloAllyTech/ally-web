@@ -35,7 +35,7 @@ const TagGroup: React.FC<TagGroupProps> = ({ tags, className = "", style }) => {
             backgroundColor: tag?.colors?.bg,
             color: tag?.colors?.text,
           }}
-          className="rounded-md px-1.5 py-0.5 text-white text-xs font-medium whitespace-nowrap"
+          className="rounded-[3px] px-[5px] text-white text-[12px] pt-[2px] font-[400] whitespace-nowrap"
         >
           {expanded || tag?.label?.length < 16 || tags?.length < 3
             ? tag.label
