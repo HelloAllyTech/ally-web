@@ -16,11 +16,11 @@ import {
   useLazyGetClientChatQuery,
   useLazyGetCounsellorChatQuery,
 } from "@/api/audioCall";
+import { CallType } from "@/constants/call";
 import { useGetChatTypesQuery } from "@/api/calls";
 import { MindfullnessVideo } from "@/assets/videos";
 
 import { CallTranscript, EndTransitionScreen } from "./components";
-import { CallType } from "@/constants/call";
 
 const AudioCall: FunctionComponent = () => {
   const navigate = useNavigate();
