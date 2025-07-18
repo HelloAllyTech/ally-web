@@ -16,9 +16,11 @@ import {
   useLazyGetClientChatQuery,
   useLazyGetCounsellorChatQuery,
 } from "@/api/audioCall";
+import { useGetChatTypesQuery } from "@/api/calls";
 import { MindfullnessVideo } from "@/assets/videos";
 
 import { CallTranscript, EndTransitionScreen } from "./components";
+import { CallType } from "@/constants/call";
 
 const AudioCall: FunctionComponent = () => {
   const navigate = useNavigate();
@@ -38,6 +40,7 @@ const AudioCall: FunctionComponent = () => {
     useLazyGetCounsellorChatQuery();
   const [getClientChat, { isLoading: isClientChatLoading }] = useLazyGetClientChatQuery();
   const [endCall, { isLoading: isEndCallLoading }] = useEndCallMutation();
+  const { data: chatTypes } = useGetChatTypesQuery();
 
   const isMicrophoneMode = mode === "microphone";
   const isLoading = isCounsellorChatLoading || isClientChatLoading || isEndCallLoading;
@@ -187,6 +190,17 @@ const AudioCall: FunctionComponent = () => {
         />
       );
     }
+
+    if (isMicrophoneMode && !chatTypes?.includes(CallType.MICROPHONE_CHAT)) {
+      return (
+        <FallbackUI
+          image={<NoResults />}
+          mainMessage="Microphone mode is not available"
+          description="You don't have permission to access microphone mode"
+        />
+      );
+    }
+
     return null;
   };
 
@@ -194,15 +208,17 @@ const AudioCall: FunctionComponent = () => {
     <div className="min-h-screen flex items-center justify-center bg-gray-50">
       <video src={MindfullnessVideo} preload="auto" className="hidden" />
       {getFallbackUI()}
-      {!isEnding && (activeChat?.chatId || isMicrophoneMode) && (
-        <CallTranscript
-          endSession={endSessionAndNavigate}
-          activeChat={activeChat}
-          microphoneChatId={microphoneChatId}
-          isMicrophoneMode={isMicrophoneMode}
-          setMicrophoneChatId={setMicrophoneChatId}
-        />
-      )}
+      {!isEnding &&
+        (activeChat?.chatId ||
+          (isMicrophoneMode && chatTypes?.includes(CallType.MICROPHONE_CHAT))) && (
+          <CallTranscript
+            endSession={endSessionAndNavigate}
+            activeChat={activeChat}
+            microphoneChatId={microphoneChatId}
+            isMicrophoneMode={isMicrophoneMode}
+            setMicrophoneChatId={setMicrophoneChatId}
+          />
+        )}
       {isEnding && <EndTransitionScreen endingMessage={endingMessage} />}
       {showStressBuster && (
         <StressBuster
