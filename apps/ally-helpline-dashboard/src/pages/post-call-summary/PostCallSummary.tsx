@@ -1,11 +1,13 @@
 import { useEffect, useState } from "react";
+import { useSelector } from "react-redux";
 import { motion } from "framer-motion";
 import { useSearchParams, useNavigate, useParams } from "react-router-dom";
 
-import { store } from "@/store/store";
+import { RootState, store } from "@/store/store";
 import { ActionDialog, TabGroup } from "@/components";
 import { setUserStatus } from "@/reducer/userReducer";
 import { UserStatus } from "@/types/user";
+import { CallType } from "@/constants/call";
 
 import { ModalData, SectionType } from "./types";
 import { CallSummary, StressBusterStep } from "./components";
@@ -19,6 +21,7 @@ const PostCallSummary = () => {
 
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  const { userStatus, availableChatTypes } = useSelector((state: RootState) => state.user);
 
   const [selectedTab, setSelectedTab] = useState<SectionType>(SectionType.CallSummary);
   const [modalData, setModalData] = useState<ModalData | null>({ type: null });
@@ -72,6 +75,8 @@ const PostCallSummary = () => {
     const nextSection = getNextSection(selectedTab);
     if (nextSection) {
       setSelectedTab(nextSection);
+    } else if (availableChatTypes?.includes(CallType.WEBRTC_CHAT)) {
+      setModalData({ type: "redirect" });
     } else {
       navigate("/calls");
     }

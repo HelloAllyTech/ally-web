@@ -7,7 +7,7 @@ import { Column } from "@ally-ui-mono/ui-shared/lib/generic-table/types";
 import { RootState } from "@/store/store";
 import { updateFilters } from "@/reducer/callsReducer";
 import { useGetCallLogsQuery } from "@/api/calls";
-import { Button, CustomCircularProgress, TagGroup, FallbackUI } from "@/components";
+import { Button, TagGroup, FallbackUI } from "@/components";
 import {
   NoResults,
   CallIdIcon,
@@ -20,7 +20,7 @@ import {
 import { CallLog } from "@/types/calls";
 
 import { convertSecondsToDuration, formatDate } from "../utils";
-import { CALL_LOGS_PAGINATION_LIMIT, TABLE_ROW_HEIGHT, tagColors } from "../constants";
+import { CALL_LOGS_PAGINATION_LIMIT, tagColors } from "../constants";
 import { TagDisplay } from "../types";
 import { SummarySideBar } from ".";
 

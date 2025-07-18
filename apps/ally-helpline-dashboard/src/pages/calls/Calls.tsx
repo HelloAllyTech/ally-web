@@ -7,11 +7,12 @@ import { RootState, store } from "@/store/store";
 import { setUserStatus } from "@/reducer/userReducer";
 import { UserStatus, UserRole } from "@/types/user";
 import { useUser } from "@/hooks/useUser";
+import { CallType } from "@/constants/call";
 
 import { CallLogsTable, ConsolidatedLogs } from "./components";
 
 const Calls: FunctionComponent = () => {
-  const { userStatus } = useSelector((state: RootState) => state.user);
+  const { userStatus, availableChatTypes } = useSelector((state: RootState) => state.user);
   const { user } = useUser();
 
   const isAdmin = user?.role === UserRole.ADMIN;
@@ -39,7 +40,7 @@ const Calls: FunctionComponent = () => {
           <div className="z-10 text-[#000] text-[18px] font-[500]">
             {isAdmin ? "Consolidated Logs" : "Call Logs"}
           </div>
-          {!isAdmin && (
+          {!isAdmin && availableChatTypes?.includes(CallType.WEBRTC_CHAT) && (
             <Button
               className={`${
                 userStatus === UserStatus.OFFLINE

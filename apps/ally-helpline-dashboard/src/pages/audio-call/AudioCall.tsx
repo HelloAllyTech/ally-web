@@ -17,7 +17,6 @@ import {
   useLazyGetCounsellorChatQuery,
 } from "@/api/audioCall";
 import { CallType } from "@/constants/call";
-import { useGetChatTypesQuery } from "@/api/calls";
 import { MindfullnessVideo } from "@/assets/videos";
 
 import { CallTranscript, EndTransitionScreen } from "./components";
@@ -40,7 +39,7 @@ const AudioCall: FunctionComponent = () => {
     useLazyGetCounsellorChatQuery();
   const [getClientChat, { isLoading: isClientChatLoading }] = useLazyGetClientChatQuery();
   const [endCall, { isLoading: isEndCallLoading }] = useEndCallMutation();
-  const { data: chatTypes } = useGetChatTypesQuery();
+  const { availableChatTypes } = useSelector((state: RootState) => state.user);
 
   const isMicrophoneMode = mode === "microphone";
   const isLoading = isCounsellorChatLoading || isClientChatLoading || isEndCallLoading;
@@ -191,7 +190,7 @@ const AudioCall: FunctionComponent = () => {
       );
     }
 
-    if (isMicrophoneMode && !chatTypes?.includes(CallType.MICROPHONE_CHAT)) {
+    if (isMicrophoneMode && !availableChatTypes?.includes(CallType.MICROPHONE_CHAT)) {
       return (
         <FallbackUI
           image={<NoResults />}
@@ -210,7 +209,7 @@ const AudioCall: FunctionComponent = () => {
       {getFallbackUI()}
       {!isEnding &&
         (activeChat?.chatId ||
-          (isMicrophoneMode && chatTypes?.includes(CallType.MICROPHONE_CHAT))) && (
+          (isMicrophoneMode && availableChatTypes?.includes(CallType.MICROPHONE_CHAT))) && (
           <CallTranscript
             endSession={endSessionAndNavigate}
             activeChat={activeChat}
