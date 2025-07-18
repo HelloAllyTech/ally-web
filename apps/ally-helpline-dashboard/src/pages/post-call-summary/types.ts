@@ -1,12 +1,10 @@
 import { Dispatch, SetStateAction } from "react";
 
-import { Article } from "@/components/article/types";
 import { SummaryFieldKey } from "@/types/summary";
 
 export enum SectionType {
-  StressBuster = "Stress buster",
+  BoxBreathing = "Box breathing",
   CallSummary = "Call summary",
-  Resources = "You might also like",
 }
 
 export enum SummarySectionKey {
@@ -65,10 +63,4 @@ export interface CallSummaryProps {
 
 export interface ModalData {
   type: "article" | "redirect";
-  article: Article;
-}
-
-export interface ArticleGridStepProps {
-  onArticleClick: (article: Article) => void;
-  onProceed: () => void;
 }

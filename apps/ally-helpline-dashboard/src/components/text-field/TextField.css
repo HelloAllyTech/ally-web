@@ -1,3 +1,6 @@
+/* TODO: Phase 4 - Convert to CSS Module (TextField.module.css) for better style scoping */
+/* TODO: Update import in TextField.tsx to use CSS module syntax */
+
 /* Hide number input spinners */
 input[type="number"]::-webkit-inner-spin-button,
 input[type="number"]::-webkit-outer-spin-button {

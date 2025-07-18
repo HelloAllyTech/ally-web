@@ -5,7 +5,6 @@ import { toast } from "sonner";
 
 import {
   Calls,
-  Learn,
   Calendar,
   Settings,
   Analytics,
@@ -21,13 +20,15 @@ import { TabId } from "@/constants/tabs";
 import { RootState, store } from "@/store/store";
 import { UserRole, UserStatus } from "@/types/user";
 import { WaitingClient } from "@/types/calls";
-import { setUserStatus } from "@/reducer/userReducer";
+import { setUserStatus, setAvailableChatTypes } from "@/reducer/userReducer";
 import { Permissions } from "@/constants/permissions";
 import { navBarOptions, ROUTES } from "@/constants/routes";
 import { CallPicker, NavSideBar } from "@/components";
 import { MenuIcon } from "@/assets/icons";
 import { useAcceptCallMutation, useGetWaitingClientsQuery } from "@/api/audioCall";
 import { logger } from "@ally-ui-mono/ui-shared";
+import { useGetChatTypesQuery } from "@/api/calls";
+import { CallType } from "@/constants/call";
 
 import PermissionGuardedRoute from "./PermissionGuardedRoute";
 
@@ -52,12 +53,20 @@ const PrivateRouteLayout = () => {
   const excludeCallPicker = [ROUTES.AUDIO_CALL, ROUTES.SUMMARY] as string[];
   const isAvailable = userStatus === UserStatus.AVAILABLE;
 
+  const { data: chatTypes } = useGetChatTypesQuery();
   const { data: getWaitingClientsData, isSuccess: isWaitingClientsSuccess } =
     useGetWaitingClientsQuery(undefined, {
-      skip: user?.role !== UserRole.COUNSELOR || !isAvailable,
+      skip:
+        user?.role !== UserRole.COUNSELOR ||
+        !isAvailable ||
+        !chatTypes?.includes(CallType.WEBRTC_CHAT),
       pollingInterval: 5000,
     });
   const [acceptCall] = useAcceptCallMutation();
+
+  useEffect(() => {
+    store.dispatch(setAvailableChatTypes(chatTypes || []));
+  }, [chatTypes]);
 
   useEffect(() => {
     const userStatusLocalStorage = localStorage.getItem("userStatus");
@@ -142,7 +151,7 @@ const PrivateRouteLayout = () => {
                   ) : isAdmin ? (
                     <Navigate to={ROUTES.ANALYTICS} />
                   ) : (
-                    <Navigate to={ROUTES.SEARCH} />
+                    <Navigate to={ROUTES.CALLS} />
                   )
                 }
               />
@@ -171,15 +180,6 @@ const PrivateRouteLayout = () => {
                   <PermissionGuardedRoute
                     permission={Permissions.VIEW_NAVBAR_CALENDAR}
                     element={<Calendar />}
-                  />
-                }
-              />
-              <Route
-                path={ROUTES.LEARN}
-                element={
-                  <PermissionGuardedRoute
-                    permission={Permissions.VIEW_NAVBAR_LEARN}
-                    element={<Learn />}
                   />
                 }
               />
@@ -229,16 +229,18 @@ const PrivateRouteLayout = () => {
                   />
                 }
               />
-              <Route
-                path={ROUTES.START_SESSION}
-                element={
-                  <PermissionGuardedRoute
-                    // TODO: Add correct permission for search
-                    permission={Permissions.VIEW_NAVBAR_LEARN}
-                    element={<StartSession />}
-                  />
-                }
-              />
+              {chatTypes?.includes(CallType.MICROPHONE_CHAT) && (
+                <Route
+                  path={ROUTES.START_SESSION}
+                  element={
+                    <PermissionGuardedRoute
+                      // TODO: Add correct permission for search
+                      permission={Permissions.VIEW_NAVBAR_LEARN}
+                      element={<StartSession />}
+                    />
+                  }
+                />
+              )}
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
           </div>

@@ -1,6 +1,8 @@
 import { FC, useEffect, useState, useRef, useMemo } from "react";
-import { Tabs, Tab, Button } from "@mui/material";
+import { useSelector } from "react-redux";
+import { Tabs, Tab } from "@mui/material";
 
+import { RootState } from "@/store/store";
 import { ActionDialog, Drawer, TextField } from "@/components";
 import { Download, Edit } from "@/assets/icons";
 import {
@@ -12,6 +14,7 @@ import {
 import CallSummary from "@/pages/post-call-summary/components/CallSummary";
 import { useFileExport } from "@/hooks";
 import { InfiniteScroll, logger } from "@ally-ui-mono/ui-shared";
+import { UserRole } from "@/types/user";
 
 import { DeleteDialogData, SummarySideBarProps, Transcript } from "../types";
 import { defaultDeleteDialogData, tabStyles } from "../constants";
@@ -28,6 +31,8 @@ const SummarySideBar: FC<SummarySideBarProps> = ({
   refetchCallLogs,
   setCallSummary,
 }) => {
+  const { user } = useSelector((state: RootState) => state.user);
+
   const [selectedTab, setSelectedTab] = useState(1);
   const [selectedComment, setSelectedComment] = useState<string>("");
   const [summaryName, setSummaryName] = useState<string>("");
@@ -56,6 +61,7 @@ const SummarySideBar: FC<SummarySideBarProps> = ({
 
   const { exportTxtFromText } = useFileExport();
   const isLoading = isUpdating || isExporting || isUpdatingCallSummary;
+  const isAdmin = user?.role === UserRole.ADMIN;
 
   // Append new results when transcriptData changes
   useEffect(() => {
@@ -234,6 +240,8 @@ const SummarySideBar: FC<SummarySideBarProps> = ({
           alt: "Export",
           icon: <Download />,
           onClick: onExportClick,
+          // TODO: To be shown when the export functionality is implemented for admin
+          show: !isAdmin,
         },
         // Hidden till a clarity is achieved on the delete functionality
         // {
@@ -270,7 +278,9 @@ const SummarySideBar: FC<SummarySideBarProps> = ({
                 inputStyles={{ fontSize: "24px", fontWeight: "700", fontFamily: "IBM_Plex_Serif" }}
                 showBorder={false}
               />
-              {!isRenaming && <Edit onClick={onRenameButtonClick} className="cursor-pointer" />}
+              {!isRenaming && !isAdmin && (
+                <Edit onClick={onRenameButtonClick} className="cursor-pointer" />
+              )}
             </div>
             <CallSummary
               className="max-h-[calc(100vh-260px)]"

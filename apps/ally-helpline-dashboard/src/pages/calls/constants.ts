@@ -32,11 +32,11 @@ export const tableHeaders = [
 ];
 
 export const tagColors = {
-  1: { bg: "#FEE1E180", text: "#C62828" },
-  2: { bg: "#FFE8D580", text: "#F55A00" },
-  3: { bg: "#EBEBEB80", text: "#424242" },
-  4: { bg: "#D7F4DC80", text: "#388E3C" },
-  5: { bg: "#B9EFC880", text: "#1B5E20" },
+  1: { bg: "#FFCDD2", text: "#5C0A0A" },
+  2: { bg: "#FFE0B2", text: "#662400" },
+  3: { bg: "#E0E0E0", text: "#333333" },
+  4: { bg: "#B9EFC880", text: "#1B5E20" },
+  5: { bg: "#D0F0C080", text: "#174F1B" },
 };
 
 export const CALL_LOGS_PAGINATION_LIMIT = 25;

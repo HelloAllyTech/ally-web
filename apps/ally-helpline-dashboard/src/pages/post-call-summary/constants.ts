@@ -19,6 +19,17 @@ import { SummaryFieldKey } from "@/types/summary";
 
 import { SectionType, SummaryField, SummarySectionKey } from "./types";
 
+export const summaryTabs = [
+  {
+    label: "Stress Buster",
+    value: SectionType.BoxBreathing,
+  },
+  {
+    label: "Call Summary",
+    value: SectionType.CallSummary,
+  },
+];
+
 export const summarySections = [
   {
     icon: {
@@ -395,8 +406,4 @@ export const labelShownSections = [
   SummarySectionKey.Metrics,
 ];
 
-export const postCallSectionOrder = [
-  SectionType.StressBuster,
-  SectionType.CallSummary,
-  SectionType.Resources,
-];
+export const postCallSectionOrder = [SectionType.BoxBreathing, SectionType.CallSummary];

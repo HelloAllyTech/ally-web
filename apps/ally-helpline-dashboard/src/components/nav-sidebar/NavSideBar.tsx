@@ -1,16 +1,18 @@
+import { useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
 import { FunctionComponent, useState } from "react";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
-import { useNavigate } from "react-router-dom";
 
 import { useUser } from "@/hooks";
-import { navBarOptions } from "@/constants/routes";
-import { AccountCircle, Logout, Close } from "@/assets/icons";
+import { UserRole } from "@/types/user";
+import { TabId } from "@/constants/tabs";
+import { RootState } from "@/store/store";
 import Confirm from "../confirmation-box/Confirm";
+import { navBarOptions } from "@/constants/routes";
+import { Permissions } from "@/constants/permissions";
+import { AccountCircle, Logout, Close } from "@/assets/icons";
 
 import { NavSideBarProps } from "./types";
-import { TabId } from "@/constants/tabs";
-import { UserRole } from "@/types/user";
-import { Permissions } from "@/constants/permissions";
 
 const NavSideBar: FunctionComponent<NavSideBarProps> = ({
   activeTab,
@@ -19,6 +21,7 @@ const NavSideBar: FunctionComponent<NavSideBarProps> = ({
   onClose,
 }: NavSideBarProps) => {
   const { permissions, user, logout } = useUser();
+  const { availableChatTypes } = useSelector((state: RootState) => state.user);
 
   //TODO: Remove this once we have a proper permission system
   const safePermissions = permissions || [];
@@ -29,7 +32,10 @@ const NavSideBar: FunctionComponent<NavSideBarProps> = ({
 
   const [isLogoutConfirmOpen, setIsLogoutConfirmOpen] = useState(false);
   const permittedTabs = navBarOptions.filter(
-    tab => !tab.permission || filteredPermissions?.includes(tab.permission),
+    tab =>
+      !tab.permission ||
+      (filteredPermissions?.includes(tab.permission) &&
+        (!tab.relatedChatType || availableChatTypes.includes(tab.relatedChatType))),
   );
 
   const navigate = useNavigate();
@@ -102,7 +108,7 @@ const NavSideBar: FunctionComponent<NavSideBarProps> = ({
             <Icon className={`${activeTab === id ? "stroke-[#000] stroke-[1px]" : ""}`} />
             <div
               className={`${
-                activeTab === id ? "text-[#000] font-semibold" : "text-[#444] font-medium"
+                activeTab === id ? "text-[#000] font-[500]" : "text-[#444] font-[400]"
               } font-['IBM_Plex_Serif'] text-[16px]`}
             >
               {title}

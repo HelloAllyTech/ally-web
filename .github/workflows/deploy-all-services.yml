@@ -9,7 +9,6 @@ on:
         description: Choose environment to deploy all services
         options:
           - dev
-          - stg
           - prd
       reason:
         required: false
@@ -35,9 +34,6 @@ jobs:
           case "${{ github.event.inputs.environment }}" in
             "dev")
               BRANCH="dev"
-              ;;
-            "stg")
-              BRANCH="stg"
               ;;
             "prd")
               BRANCH="main"

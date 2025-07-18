@@ -8,11 +8,11 @@ import {
   SearchHeader,
   InfiniteScroll,
   SuggestionsContainer,
+  SkeletonLoader,
 } from "../..";
 import { Resource } from "../../types";
 import ResourceTabs from "./ResourceTabs";
 import { sampleSuggestions } from "./constants";
-import SkeletonLoader from "../skeleton-loader/SkeletonLoader";
 
 /**
  * ResourceSearch component provides a search interface for resources with category filtering, infinite scroll, and suggestions.

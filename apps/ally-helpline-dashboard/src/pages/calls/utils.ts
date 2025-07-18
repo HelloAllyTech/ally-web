@@ -17,7 +17,10 @@ export const formatDate = (date: Date | string): string => {
   return `${formattedDate} ${formattedTime}`; // Concatenating manually to avoid 'at' in between
 };
 
-export const convertSecondsToDuration = (totalSeconds: number): string => {
+export const convertSecondsToDuration = (totalSeconds?: number): string => {
+  if (!totalSeconds) return "--";
+  if (totalSeconds < 60) return "Less than 1 min";
+
   const hours = Math.floor(totalSeconds / (60 * 60)); // Calculate
   const minutes = Math.floor((totalSeconds % (60 * 60)) / 60); // Remaining hours
   const seconds = totalSeconds % 60; // Remaining minutes

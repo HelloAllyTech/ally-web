@@ -1,13 +1,19 @@
+import { useStore } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { Headphones } from "@mui/icons-material";
 
-import { Button } from "@/components/generic/button";
+import { Button } from "@/components";
 import { ROUTES } from "@/constants/routes";
+import { setUserStatus } from "@/reducer/userReducer";
+import { UserStatus } from "@/types/user";
 
 const StartSession = () => {
   const navigate = useNavigate();
+  const store = useStore();
 
   const onStartSession = () => {
+    store.dispatch(setUserStatus(UserStatus.OFFLINE));
+    localStorage.setItem("userStatus", UserStatus.OFFLINE);
     navigate(`${ROUTES.AUDIO_CALL}?mode=microphone`);
   };
 

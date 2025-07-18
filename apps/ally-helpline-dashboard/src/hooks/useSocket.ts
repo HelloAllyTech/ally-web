@@ -125,7 +125,7 @@ export const useSocket = ({ eventCallbacks, connectionType }: UseSocketOptions) 
     return () => {
       socketRef.current?.disconnect();
     };
-  }, [disconnect]);
+  }, []);
 
   return {
     connect,

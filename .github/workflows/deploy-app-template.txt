@@ -12,14 +12,10 @@ on:
         description: Choose environment
         options:
           - dev
-          - stg
           - prd
   push:
     branches:
       - dev
-      - stg
-      - main
-      - master
     paths:
       - '[APP_PATH]/**'
 
@@ -82,10 +78,7 @@ jobs:
               "dev")
                 TARGET_ENV="dev"
                 ;;
-              "stg")
-                TARGET_ENV="stg"
-                ;;
-              "main"|"master")
+              "prd")
                 TARGET_ENV="prd"
                 ;;
               *)

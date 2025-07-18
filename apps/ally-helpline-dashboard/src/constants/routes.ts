@@ -1,6 +1,7 @@
 import { SearchIcon, LogsIcon, StatsIcon, CommunityIcon, StartSessionIcon } from "@/assets/icons";
 
 import { TabId } from "./tabs";
+import { CallType } from "./call";
 import { Permissions } from "./permissions";
 
 export const ROUTES = {
@@ -15,7 +16,6 @@ export const ROUTES = {
   AUDIO_CALL: "/audio-call",
   CALLS: "/calls",
   CALENDER: "/calender",
-  LEARN: "/learn",
   STRESS_BUSTERS: "/stress_busters",
   ANALYTICS: "/analytics",
   SETTINGS: "/settings",
@@ -27,18 +27,12 @@ export const ROUTES = {
 
 export const navBarOptions = [
   {
-    id: TabId.SEARCH,
-    title: "Search",
-    Icon: SearchIcon,
-    path: ROUTES.SEARCH,
-    permission: Permissions.VIEW_NAVBAR_SEARCH,
-  },
-  {
     id: TabId.START_SESSION,
     title: "Start Session",
     Icon: StartSessionIcon,
     path: ROUTES.START_SESSION,
     permission: Permissions.VIEW_NAVBAR_SEARCH,
+    relatedChatType: CallType.MICROPHONE_CHAT,
   },
   {
     id: TabId.CALLS,
@@ -54,27 +48,13 @@ export const navBarOptions = [
     path: ROUTES.ANALYTICS,
     permission: Permissions.VIEW_NAVBAR_ANALYTICS,
   },
-  // {
-  //   id: TabId.CALENDER,
-  //   title: "Calender",
-  //   Icon: DateRangeOutlinedIcon,
-  //   path: ROUTES.CALENDER,
-  //   permission: Permissions.VIEW_NAVBAR_CALENDAR
-  // },
-  // {
-  //   id: TabId.LEARN,
-  //   title: "Learn",
-  //   Icon: SearchIcon,
-  //   path: ROUTES.LEARN,
-  //   permission: Permissions.VIEW_NAVBAR_LEARN
-  // },
-  // {
-  //   id: TabId.STRESS_BUSTERS,
-  //   title: "Stress Busters",
-  //   Icon: SearchIcon,
-  //   path: ROUTES.STRESS_BUSTERS,
-  //   permission: Permissions.VIEW_NAVBAR_STRESS_BUSTER
-  // },
+  {
+    id: TabId.SEARCH,
+    title: "Search",
+    Icon: SearchIcon,
+    path: ROUTES.SEARCH,
+    permission: Permissions.VIEW_NAVBAR_SEARCH,
+  },
   {
     id: TabId.COMMUNITY,
     title: "Community",
@@ -82,11 +62,4 @@ export const navBarOptions = [
     path: "https://community.helloally.ai/",
     permission: "",
   },
-  // {
-  //   id: TabId.SETTINGS,
-  //   title: "Settings",
-  //   Icon: SettingsOutlinedIcon,
-  //   path: ROUTES.SETTINGS,
-  //   permission: Permissions.VIEW_NAVBAR_SETTINGS
-  // },
 ];

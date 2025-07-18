@@ -3,9 +3,9 @@ import { X, Play, Pause, Volume2, Minimize, Maximize, VolumeOff } from "lucide-r
 import { Modal } from "@mui/material";
 import { MindfullnessVideo } from "@/assets/videos";
 import { BackgroundBottom, BackgroundTop } from "@/assets/icons";
+import { Button } from "@/components";
 
 import { StressBusterProps } from "./types";
-import { Button } from "..";
 
 const StressBuster: FunctionComponent<StressBusterProps> = ({
   isFullScreenMode,

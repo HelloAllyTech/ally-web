@@ -4,8 +4,7 @@ import { FunctionComponent } from "react";
 import { UserRole } from "@/types/user";
 import { RootState } from "@/store/store";
 
-import OrgAnalytics from "./OrgAnalytics";
-import UserAnalytics from "./UserAnalytics";
+import { OrgAnalytics, UserAnalytics } from "./components";
 
 const Analytics: FunctionComponent = () => {
   const user = useSelector((state: RootState) => state.user.user);

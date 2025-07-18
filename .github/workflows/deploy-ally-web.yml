@@ -9,8 +9,6 @@ on:
         description: Choose environment
         options:
           - dev
-          - stg
-          - prd
       force_deploy:
         required: false
         type: boolean
@@ -19,9 +17,6 @@ on:
   push:
     branches:
       - dev
-      - stg
-      - main
-      - master
     paths:
       - "apps/ally-web/**"
       - "libs/**"
@@ -103,10 +98,7 @@ jobs:
               "dev")
                 TARGET_ENV="dev"
                 ;;
-              "stg")
-                TARGET_ENV="stg"
-                ;;
-              "main"|"master")
+              "prd")
                 TARGET_ENV="prd"
                 ;;
               *)
