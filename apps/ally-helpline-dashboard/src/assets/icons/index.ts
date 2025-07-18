@@ -1,131 +1,111 @@
-import AccountCircle from "./account_circle.svg?react";
-import Logout from "./LogoutIcon.svg?react";
-import SearchIcon from "./search.svg?react";
-import LogsIcon from "./logs.svg?react";
-import StatsIcon from "./stats.svg?react";
-import CommunityIcon from "./community.svg?react";
-import StartSessionIcon from "./StartSession.svg?react";
-import Book from "./Book.svg?react";
-import Relax from "./Relax.svg?react";
-import MenuIcon from "./MenuIcon.svg?react";
-import CopilotIcon from "./CopilotIcon.svg?react";
-import CallLogIcon from "./CallLogIcon.svg?react";
-import LiveCallIcon from "./LiveCallIcon.svg?react";
-import HomeIcon from "./HomeIcon.svg?react";
-import LifelineLogo from "./LifelineLogo.svg?react";
-import SendIcon from "./SendIcon.svg?react";
-import ClientHandledIcon from "./Icon_client_handled.png";
-import CounsellorSuccessIcon from "./Icon_counsellor_success_rate.png";
-import TotalSessionsIcon from "./Icon_total_sessions.png";
-import WorkloadIcon from "./Icon_workload.png";
-import BackgroundTop from "./Transcript-background-top.svg?react";
-import Record from "./Record.svg?react";
-import NoRecord from "./No-Record.svg?react";
-import CutCall from "./CutCall.svg?react";
-import FocusOn from "./FocusOn.svg?react";
-import FocusOff from "./FocusOff.svg?react";
-import Close from "./Close.svg?react";
-import BackgroundBottom from "./Transcript-background-bottom.svg?react";
-import CallAttend from "./Call_attend.svg?react";
-import BackCircle from "./BackCircle.svg?react";
-import ComingSoon from "./ComingSoon.svg?react";
-import NoResults from "./NoResults.svg?react";
-import SessionSummary from "./SessionSummary.svg?react";
-import Flow from "./Flow.svg?react";
-import KeyConcerns from "./KeyConcerns.svg?react";
-import Assessment from "./Assessment.svg?react";
-import DominantFeelings from "./DominantFeelings.svg?react";
-import HomeworkRecommended from "./HomeworkRecommended.svg?react";
-import IssuesWorkedOn from "./IssuesWorkedOn.svg?react";
-import Metrics from "./Metrics.svg?react";
-import ObjectiveObservations from "./ObjectiveObservations.svg?react";
-import PlansForNextCall from "./PlansForNextCall.svg?react";
-import ReferralsProvided from "./ReferralsProvided.svg?react";
-import SubjectiveObservations from "./SubjectiveObservations.svg?react";
-import Tags from "./Tags.svg?react";
-import TherapeuticTechniques from "./TherapeuticTechniques.svg?react";
-import Edit from "./Edit.svg?react";
-import Delete from "./Delete.svg?react";
-import Download from "./Download.svg?react";
-import CallDetails from "./CallDetails.svg?react";
-import Spinner from "./spinner.svg?react";
-import RoundCheckmark from "./roundCheckmark.svg?react";
+import AccountCircle from "./account-circle.svg?react";
+import Assessment from "./assessment.svg?react";
+import BackCircle from "./back-circle.svg?react";
+import BackgroundBottom from "./transcript-background-bottom.svg?react";
+import BackgroundTop from "./transcript-background-top.svg?react";
 import Call from "./call.svg?react";
-import UserIcon from "./userIcon.svg?react";
-import DateIcon from "./dateIcon.svg?react";
-import TimerIcon from "./timer.svg?react";
+import CallAttend from "./call-attend.svg?react";
+import CallDetails from "./call-details.svg?react";
+import CallIdIcon from "./call-id-icon.svg?react";
+import Close from "./close.svg?react";
+import CommunityIcon from "./community.svg?react";
+import ComingSoon from "./coming-soon.svg?react";
+import CutCall from "./cut-call.svg?react";
+import DateIcon from "./date-icon.svg?react";
+import Delete from "./delete.svg?react";
+import DominantFeelings from "./dominant-feelings.svg?react";
+import Download from "./download.svg?react";
+import Edit from "./edit.svg?react";
+import Flow from "./flow.svg?react";
+import FocusOff from "./focus-off.svg?react";
+import FocusOn from "./focus-on.svg?react";
+import HomeworkRecommended from "./homework-recommended.svg?react";
+import IssuesWorkedOn from "./issues-worked-on.svg?react";
+import KeyConcerns from "./key-concerns.svg?react";
+import LifelineLogo from "./lifeline-logo.svg?react";
+import Logout from "./logout-icon.svg?react";
+import LogsIcon from "./logs.svg?react";
+import MenuIcon from "./menu-icon.svg?react";
+import Metrics from "./metrics.svg?react";
+import NoRecord from "./no-record.svg?react";
+import NoResults from "./no-results.svg?react";
+import ObjectiveObservations from "./objective-observations.svg?react";
+import PlansForNextCall from "./plans-for-next-call.svg?react";
+import Record from "./record.svg?react";
+import ReferralsProvided from "./referrals-provided.svg?react";
+import ReviewIcon from "./review-icon.svg?react";
+import RoundCheckmark from "./round-checkmark.svg?react";
+import SearchIcon from "./search.svg?react";
+import SessionSummary from "./session-summary.svg?react";
+import Spinner from "./spinner.svg?react";
 import StarIcon from "./star.svg?react";
-import TagsIcon from "./tagsIcon.svg?react";
-import ReviewIcon from "./reviewIcon.svg?react";
-import CallIdIcon from "./callIdIcon.svg?react";
-import ThumbUp from "./ThumbUp.svg?react";
-import ThumbDown from "./ThumbDown.svg?react";
-import ThumbUpFilled from "./ThumbUpFilled.svg?react";
-import ThumbDownFilled from "./ThumbDownFilled.svg?react";
+import StartSessionIcon from "./start-session.svg?react";
+import StatsIcon from "./stats.svg?react";
+import SubjectiveObservations from "./subjective-observations.svg?react";
+import Tags from "./tags.svg?react";
+import TagsIcon from "./tags-icon.svg?react";
+import TherapeuticTechniques from "./therapeutic-techniques.svg?react";
+import ThumbDown from "./thumb-down.svg?react";
+import ThumbDownFilled from "./thumb-down-filled.svg?react";
+import ThumbUp from "./thumb-up.svg?react";
+import ThumbUpFilled from "./thumb-up-filled.svg?react";
+import TimerIcon from "./timer.svg?react";
+import UserIcon from "./user-icon.svg?react";
+import Waveform from "./waveform.svg?react";
 
 export {
   AccountCircle,
-  Logout,
-  SearchIcon,
-  LogsIcon,
-  StatsIcon,
-  CommunityIcon,
-  StartSessionIcon,
-  Book,
-  Relax,
-  MenuIcon,
-  CopilotIcon,
-  CallLogIcon,
-  LiveCallIcon,
-  HomeIcon,
-  SendIcon,
-  ClientHandledIcon,
-  CounsellorSuccessIcon,
-  TotalSessionsIcon,
-  WorkloadIcon,
+  Assessment,
+  BackCircle,
+  BackgroundBottom,
   BackgroundTop,
-  Record,
-  NoRecord,
+  Call,
+  CallAttend,
+  CallDetails,
+  CallIdIcon,
+  Close,
+  CommunityIcon,
+  ComingSoon,
   CutCall,
+  DateIcon,
+  Delete,
+  DominantFeelings,
+  Download,
+  Edit,
+  Flow,
   FocusOff,
   FocusOn,
-  Close,
-  BackgroundBottom,
-  CallAttend,
-  LifelineLogo,
-  BackCircle,
-  ComingSoon,
-  NoResults,
-  SessionSummary,
-  Tags,
+  HomeworkRecommended,
   IssuesWorkedOn,
   KeyConcerns,
-  DominantFeelings,
-  SubjectiveObservations,
-  ObjectiveObservations,
-  TherapeuticTechniques,
-  ReferralsProvided,
-  HomeworkRecommended,
-  PlansForNextCall,
-  Assessment,
+  LifelineLogo,
+  Logout,
+  LogsIcon,
+  MenuIcon,
   Metrics,
-  Flow,
-  CallDetails,
-  Edit,
-  Delete,
-  Download,
-  Spinner,
-  RoundCheckmark,
-  Call,
-  UserIcon,
-  DateIcon,
-  TimerIcon,
-  StarIcon,
-  TagsIcon,
+  NoRecord,
+  NoResults,
+  ObjectiveObservations,
+  PlansForNextCall,
+  Record,
+  ReferralsProvided,
   ReviewIcon,
-  CallIdIcon,
-  ThumbUp,
+  RoundCheckmark,
+  SearchIcon,
+  SessionSummary,
+  Spinner,
+  StarIcon,
+  StartSessionIcon,
+  StatsIcon,
+  SubjectiveObservations,
+  Tags,
+  TagsIcon,
+  TherapeuticTechniques,
   ThumbDown,
-  ThumbUpFilled,
   ThumbDownFilled,
+  ThumbUp,
+  ThumbUpFilled,
+  TimerIcon,
+  UserIcon,
+  Waveform,
 };

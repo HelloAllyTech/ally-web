@@ -1,39 +1,31 @@
 import { useEffect, useState } from "react";
-import { motion } from "framer-motion";
 import { useSelector } from "react-redux";
+import { motion } from "framer-motion";
 import { useSearchParams, useNavigate, useParams } from "react-router-dom";
 
 import { RootState, store } from "@/store/store";
-import { ActionDialog, ArticleReader, Drawer } from "@/components";
-import { Article } from "@/components/article/types";
+import { ActionDialog, TabGroup } from "@/components";
 import { setUserStatus } from "@/reducer/userReducer";
 import { UserStatus } from "@/types/user";
+import { CallType } from "@/constants/call";
 
-import CallSummaryStepper from "./CallSummaryStepper";
-import StressBusterStep from "./StressBusterStep";
 import { ModalData, SectionType } from "./types";
-import ArticleGridStep from "./components/ArticleGridStep";
-import CallSummary from "./components/CallSummary";
+import { CallSummary, StressBusterStep } from "./components";
 import { useGetCallSummaryQuery } from "@/api/callSummary";
 import { logger } from "@ally-ui-mono/ui-shared";
 import { getNextSection } from "./helper";
+import { summaryTabs } from "./constants";
 
 const PostCallSummary = () => {
   const { chatId } = useParams();
 
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  const { userStatus, availableChatTypes } = useSelector((state: RootState) => state.user);
 
-  const [activeSection, setActiveSection] = useState<SectionType>(SectionType.CallSummary);
-  const [completedSections, setCompletedSections] = useState<SectionType[]>(
-    searchParams.get("section") === "2"
-      ? [SectionType.StressBuster, SectionType.CallSummary]
-      : [SectionType.StressBuster],
-  );
-  const [modalData, setModalData] = useState<ModalData | null>({ type: null, article: null });
+  const [selectedTab, setSelectedTab] = useState<SectionType>(SectionType.CallSummary);
+  const [modalData, setModalData] = useState<ModalData | null>({ type: null });
   const [showInitialLoading, setShowInitialLoading] = useState(true);
-
-  const { userStatus } = useSelector((state: RootState) => state.user);
 
   const {
     data: callSummary,
@@ -41,6 +33,15 @@ const PostCallSummary = () => {
     isLoading: isGetCallSummaryLoading,
   } = useGetCallSummaryQuery(chatId);
 
+  useEffect(() => {
+    if (searchParams.get("section") === "2") {
+      setSelectedTab(SectionType.CallSummary);
+    } else {
+      setSelectedTab(SectionType.BoxBreathing);
+    }
+  }, [searchParams]);
+
+  // TODO: Revamp the logic
   useEffect(() => {
     const refetchCallSummary = async () => {
       try {
@@ -52,9 +53,12 @@ const PostCallSummary = () => {
 
     let interval: NodeJS.Timeout;
 
+    // polling only for webRTC and not Microphone
     if (
       !callSummary?.details?.summary ||
-      (Array.isArray(callSummary.details.summary) && callSummary.details.summary.length === 0)
+      (Array.isArray(callSummary.details.summary) &&
+        callSummary.details.summary.length === 0 &&
+        callSummary?.details?.callInfo?.provider !== "MICROPHONE")
     ) {
       refetchCallSummary();
       interval = setInterval(refetchCallSummary, 5000);
@@ -67,19 +71,20 @@ const PostCallSummary = () => {
     };
   }, [callSummary]);
 
-  const handleArticleClick = (article: Article) => {
-    setModalData({ type: "article", article });
-  };
-
   const handleProceed = () => {
-    const nextSection = getNextSection(activeSection);
-    setCompletedSections((prev: SectionType[]) => [...prev, activeSection]);
-    setActiveSection(nextSection);
+    const nextSection = getNextSection(selectedTab);
+    if (nextSection) {
+      setSelectedTab(nextSection);
+    } else if (availableChatTypes?.includes(CallType.WEBRTC_CHAT)) {
+      setModalData({ type: "redirect" });
+    } else {
+      navigate("/calls");
+    }
   };
 
   const renderSection = () => {
-    switch (activeSection) {
-      case SectionType.StressBuster:
+    switch (selectedTab) {
+      case SectionType.BoxBreathing:
         return <StressBusterStep onProceed={handleProceed} />;
       case SectionType.CallSummary:
         return (
@@ -91,17 +96,6 @@ const PostCallSummary = () => {
             onProceed={handleProceed}
             showInitialLoading={showInitialLoading}
             setShowInitialLoading={setShowInitialLoading}
-          />
-        );
-      case SectionType.Resources:
-        return (
-          <ArticleGridStep
-            onArticleClick={handleArticleClick}
-            onProceed={() => {
-              if (userStatus === UserStatus.OFFLINE)
-                setModalData({ type: "redirect", article: null });
-              else navigate("/");
-            }}
           />
         );
       default:
@@ -121,24 +115,32 @@ const PostCallSummary = () => {
     navigate("/calls");
   };
 
+  const onTabChange = (event: React.SyntheticEvent, newValue: SectionType) => {
+    setSelectedTab(newValue);
+
+    // Set query parameter
+    const searchParams = new URLSearchParams(window.location.search);
+    searchParams.set("section", newValue === SectionType.CallSummary ? "2" : "1");
+
+    // Update URL without page reload
+    const newUrl = `${window.location.pathname}?${searchParams.toString()}`;
+    window.history.pushState({}, "", newUrl);
+  };
+
   return (
-    <div className="h-[100vh] pt-6 mx-auto flex flex-col gap-4 items-center bg-white">
-      <CallSummaryStepper
-        activeSection={activeSection}
-        completedSections={completedSections}
-        setActiveSection={setActiveSection}
-        className="max-w-[30%] mx-auto"
-      />
-      <motion.div
-        layout="position"
-        layoutId="content-container"
-        transition={{ duration: 0.3 }}
-        className="h-fit overflow-hidden w-[50%]"
-      >
-        <motion.div className="flex flex-col gap-4" layout={false}>
-          {renderSection()}
+    <div className="h-[100vh] w-[50%] pt-6 mx-auto flex flex-col gap-4 items-center bg-white">
+      <TabGroup value={selectedTab} onChange={onTabChange} tabs={summaryTabs}>
+        <motion.div
+          layout="position"
+          layoutId="content-container"
+          transition={{ duration: 0.3 }}
+          className="h-fit overflow-hidden w-full"
+        >
+          <motion.div className="flex flex-col gap-4" layout={false}>
+            {renderSection()}
+          </motion.div>
         </motion.div>
-      </motion.div>
+      </TabGroup>
 
       <ActionDialog
         open={modalData?.type === "redirect"}
@@ -157,14 +159,6 @@ const PostCallSummary = () => {
           You&apos;ve done a great job! Would you like to mark yourself as available for new calls?
         </span>
       </ActionDialog>
-
-      <Drawer
-        open={modalData?.type === "article"}
-        onClose={() => setModalData(prev => ({ ...prev, type: null }))}
-        title="Article"
-      >
-        <ArticleReader article={modalData?.article} isPage={false} />
-      </Drawer>
     </div>
   );
 };

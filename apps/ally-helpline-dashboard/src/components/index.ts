@@ -1,47 +1,45 @@
-import { Input } from "./generic/input";
-import { Button } from "./generic/button";
-import CallPicker from "./call/CallPicker";
-import NavSideBar from "./nav-sidebar";
-import Confirm from "./confirmation-box/Confirm";
-import { ToggleButtonGroup } from "./generic/toggle-button-group";
+import Accordion from "./accordion";
+import ActionDialog from "./action-dialog";
+import Button from "./button";
+import Calendar from "./calendar";
+import CallPicker from "./call";
+import Confirm from "./confirmation-box";
+import CustomCircularProgress from "./custom-circular-progress";
 import CustomMarkdown from "./custom-markdown";
+import Drawer from "./drawer";
+import Dropdown from "./dropdown";
+import ExpandingSection from "./expanding-section";
+import FallbackUI from "./fallback-ui";
+import Input from "./input";
+import NavSideBar from "./nav-sidebar";
+import OTP from "./otp";
+import SearchResources from "./search-resources";
 import StressBuster from "./stress-buster";
-import ArticleGrid from "./article/ArticleGrid";
-import ArticleReader from "./article/ArticleReader";
-import Dropdown from "./dropdown/Dropdown";
-import Drawer from "./drawer/Drawer";
-import FallbackUI from "./fallback-ui/FallbackUI";
-import TextField from "./text-field/TextField";
-import ExpandingSection from "./expanding-section/ExpandingSection";
-import Accordion from "./accordion/Accordion";
-import ActionDialog from "./action-dialog/ActionDialog";
-import Calendar from "./calendar/Calendar";
-import SearchResources from "./search-resources/SearchResources";
-import CustomCircularProgress from "./custom-circular-progress/CustomCircularProgress";
-import TagGroup from "./tag-group/TagGroup";
-import OTP from "./otp/OTP";
+import TabGroup from "./tab-group";
+import TagGroup from "./tag-group";
+import TextField from "./text-field";
+import ToggleButtonGroup from "./toggle-button-group";
 
 export {
-  ArticleGrid,
-  ArticleReader,
-  CallPicker,
-  Input,
-  Button,
-  Confirm,
-  NavSideBar,
-  StressBuster,
-  CustomMarkdown,
-  ToggleButtonGroup,
-  Dropdown,
-  Drawer,
-  FallbackUI,
-  TextField,
-  ExpandingSection,
   Accordion,
   ActionDialog,
+  Button,
   Calendar,
-  SearchResources,
+  CallPicker,
+  Confirm,
   CustomCircularProgress,
-  TagGroup,
+  CustomMarkdown,
+  Drawer,
+  Dropdown,
+  ExpandingSection,
+  FallbackUI,
+  Input,
+  NavSideBar,
   OTP,
+  SearchResources,
+  StressBuster,
+  TabGroup,
+  TagGroup,
+  TextField,
+  ToggleButtonGroup,
 };

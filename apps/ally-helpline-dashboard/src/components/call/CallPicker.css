@@ -1,3 +1,6 @@
+/* TODO: Phase 4 - Convert to CSS Module (CallPicker.module.css) for better style scoping */
+/* TODO: Update import in CallPicker.tsx to use CSS module syntax */
+
 @keyframes ripple {
   0%,
   100% {

@@ -3,6 +3,7 @@ import { useSelector } from "react-redux";
 import { motion } from "framer-motion";
 
 import { RootState } from "@/store/store";
+import { getKeyFromIndex } from "@/utils/common";
 
 import { getSpeakerName } from "../utils";
 import { RealTimeTranscriptProps } from "../types";
@@ -59,7 +60,10 @@ const RealTimeTranscript: FC<RealTimeTranscriptProps> = ({ isFocusMode, transcri
         onScroll={handleScroll}
       >
         {transcriptions.map((transcriptionObj, index) => (
-          <div key={transcriptionObj.id} className="flex flex-col font-['IBM_Plex_Serif']">
+          <div
+            key={transcriptionObj.id ?? getKeyFromIndex(index, "transcript")}
+            className="flex flex-col font-['IBM_Plex_Serif']"
+          >
             <div className="font-bold w-[20%] mb-[0px]">
               {getSpeakerName(
                 transcriptionObj.senderId,

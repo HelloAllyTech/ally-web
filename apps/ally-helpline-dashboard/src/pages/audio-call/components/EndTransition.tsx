@@ -1,11 +1,13 @@
+import { FC } from "react";
 import { motion } from "framer-motion";
-import AudioCallBackgroundWrapper from "./AudioCallBackgroundWrapper";
+
+import { AudioCallBackgroundWrapper } from ".";
 
 interface EndTransitionScreenProps {
   endingMessage: string;
 }
 
-const EndTransitionScreen = ({ endingMessage }: EndTransitionScreenProps) => {
+const EndTransitionScreen: FC<EndTransitionScreenProps> = ({ endingMessage }) => {
   return (
     <AudioCallBackgroundWrapper>
       <motion.div

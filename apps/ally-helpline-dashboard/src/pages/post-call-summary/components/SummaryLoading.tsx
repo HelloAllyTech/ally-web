@@ -1,7 +1,16 @@
+import { AlertCircle } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { FC, useEffect, useState } from "react";
-import { Spinner, RoundCheckmark } from "@/assets/icons";
 
-const SummaryLoading: FC = () => {
+import { Button } from "@/components";
+import { Spinner, RoundCheckmark, Waveform } from "@/assets/icons";
+
+interface SummaryLoadingProps {
+  isSummaryDelayed?: boolean;
+}
+
+const SummaryLoading: FC<SummaryLoadingProps> = ({ isSummaryDelayed = false }) => {
+  const navigate = useNavigate();
   const loadingMessages = [
     "Generating Summary",
     "Understanding context...",
@@ -36,7 +45,7 @@ const SummaryLoading: FC = () => {
     };
   }, []);
 
-  return (
+  return !isSummaryDelayed ? (
     <div className="flex flex-col items-center justify-center h-[calc(100vh-280px)] space-y-4">
       <div className="flex flex-col items-center gap-3">
         <h2 className="text-2xl font-bold text-[#1A1A1A]">{loadingMessages[0]}</h2>
@@ -66,7 +75,6 @@ const SummaryLoading: FC = () => {
           })}
         </div>
       </div>
-
       <style
         dangerouslySetInnerHTML={{
           __html: `
@@ -130,6 +138,37 @@ const SummaryLoading: FC = () => {
           `,
         }}
       />
+    </div>
+  ) : (
+    <div className="flex flex-col items-center justify-center bg-white text-gray-800 h-[70vh] space-y-4">
+      <div className="h-full flex flex-col justify-around">
+        {/* Audio Wave Animation */}
+        <div className="flex flex-col items-center justify-center">
+          <div className="flex items-start justify-center text-sm mb-4 self-center">
+            <AlertCircle className="w-4 h-4 mr-2" />
+            <span className="font-['IBM_Plex_Serif'] text-[#6B7280]">
+              Refresh page to see if your summary is ready.
+            </span>
+          </div>
+          <Waveform />
+
+          {/* Text */}
+          <h1 className="font-semibold mb-2 font-['IBM_Plex_Serif'] text-2xl">
+            Generating your session summary
+          </h1>
+          <p className="text-gray-600 text-base text-center max-w-md font-['IBM_Plex_Serif']">
+            This may take some time. You can find the summary in the call logs
+          </p>
+        </div>
+        <div className="flex flex-col items-center justify-center">
+          <Button
+            onClick={() => navigate("/call-logs")}
+            className="mt-6 px-6 py-2 bg-white border border-black text-black rounded-full hover:bg-gray-50 transition-colors font-['IBM_Plex_Serif'] text-sm"
+          >
+            View Call Logs
+          </Button>
+        </div>
+      </div>
     </div>
   );
 };

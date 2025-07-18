@@ -1,3 +1,5 @@
+import { CallType } from "@/constants/call";
+
 interface CallClient {
   createdAt: string;
   updatedAt: string;
