@@ -235,6 +235,8 @@ const CallTranscript: FC<CallTranscriptProps> = ({
     offerTimeoutMs: OFFER_TIMEOUT_MS,
   });
 
+  const isNonWebChat = activeChat?.platform && activeChat?.platform !== "WEB";
+
   const setupMediaRecorder = (stream: MediaStream) => {
     // Setup media recorder
     const chunks: BlobPart[] = [];
@@ -528,8 +530,9 @@ const CallTranscript: FC<CallTranscriptProps> = ({
         <CallControls
           isFocusMode={isFocusMode}
           isMuted={isMuted}
-          isPrimaryButtonDisabled={isMicrophoneMode && !microphoneChatId}
-          isSecondaryButtonDisabled={!isUserJoined}
+          isPrimaryButtonDisabled={isMicrophoneMode && (!microphoneChatId || isNonWebChat)}
+          isSecondaryButtonDisabled={!isUserJoined || isNonWebChat}
+          isTertiaryButtonDisabled={!isUserJoined}
           showFocusButton={isCounsellor}
           onCutCallButtonClick={() => confirmEndSession(true)}
           onFocusButtonClick={(isFocused: boolean) => setIsFocusMode(isFocused)}

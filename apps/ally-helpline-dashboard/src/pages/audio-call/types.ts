@@ -34,6 +34,7 @@ export interface CallControlsProps {
   onCutCallButtonClick: () => void;
   onFocusButtonClick: (isFocused: boolean) => void;
   onMuteButtonClick: () => void;
+  isTertiaryButtonDisabled?: boolean;
 }
 
 export interface CallSidebarProps {
