@@ -174,13 +174,31 @@ const AudioCall: FunctionComponent = () => {
           image={<NoResults />}
           // TODO: update message and description
           mainMessage="There is an ongoing call"
-          description="Your active call will be shown here."
+          description="You have an active call happening now"
         />
       );
     }
 
+    if (
+      isMicrophoneMode &&
+      activeChat?.chatId &&
+      activeChat.provider === "MICROPHONE" &&
+      activeChat?.platform !== "WEB"
+    )
+      return (
+        <FallbackUI
+          image={<NoResults />}
+          mainMessage="Active Microphone Session on another platform"
+          description="You have an active microphone session running on another platform. Please end the call there first, or continue using that session if you prefer."
+        />
+      );
+
     // Fallback shown when user starts webrtc mode but there is no ongoing call
-    if (!isMicrophoneMode && !isLoading && !activeChat?.chatId) {
+    if (
+      !isMicrophoneMode &&
+      !isLoading &&
+      (!activeChat?.chatId || (Array.isArray(activeChat) && activeChat.length === 0))
+    ) {
       return (
         <FallbackUI
           image={<NoResults />}
@@ -190,7 +208,11 @@ const AudioCall: FunctionComponent = () => {
       );
     }
 
-    if (isMicrophoneMode && !availableChatTypes?.includes(CallType.MICROPHONE_CHAT)) {
+    if (
+      isMicrophoneMode &&
+      !activeChat?.chatId &&
+      !availableChatTypes?.includes(CallType.MICROPHONE_CHAT)
+    ) {
       return (
         <FallbackUI
           image={<NoResults />}
@@ -208,8 +230,15 @@ const AudioCall: FunctionComponent = () => {
       <video src={MindfullnessVideo} preload="auto" className="hidden" />
       {getFallbackUI()}
       {!isEnding &&
-        (activeChat?.chatId ||
-          (isMicrophoneMode && availableChatTypes?.includes(CallType.MICROPHONE_CHAT))) && (
+        ((activeChat?.chatId &&
+          (activeChat?.provider === "WEBRTC" ||
+            (isMicrophoneMode &&
+              activeChat?.provider === "MICROPHONE" &&
+              activeChat?.platform === "WEB"))) ||
+          (Array.isArray(activeChat) &&
+            activeChat.length === 0 &&
+            isMicrophoneMode &&
+            availableChatTypes?.includes(CallType.MICROPHONE_CHAT))) && (
           <CallTranscript
             endSession={endSessionAndNavigate}
             activeChat={activeChat}

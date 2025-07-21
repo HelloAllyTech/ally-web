@@ -97,10 +97,10 @@ const CallInterface: FC<CallInterfaceProps> = ({
             autoPlay
           />
           <div className="relative gap-1 flex rounded-lg">
-            {remoteMediaRecorder && (
+            {(remoteMediaRecorder || (isMicrophoneMode && mediaRecorder)) && (
               <div className="rotate-180 z-0 translate-x-[4px] translate-y-[1px]  ">
                 <LiveAudioVisualizer
-                  mediaRecorder={remoteMediaRecorder}
+                  mediaRecorder={remoteMediaRecorder || mediaRecorder}
                   width={200}
                   height={140}
                   barWidth={4}

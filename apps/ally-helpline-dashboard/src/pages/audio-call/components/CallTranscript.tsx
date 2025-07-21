@@ -194,7 +194,10 @@ const CallTranscript: FC<CallTranscriptProps> = ({
       setIsUserJoined(true);
     },
     [SocketEvent.USER_DISCONNECTED]: () => {
-      setIsUserJoined(false);
+      // User disconnected event might happen if mobile is open and gets closed as mobile have a live socket conenction on login for microphone-mode
+      if (!isMicrophoneMode) {
+        setIsUserJoined(false);
+      }
     },
     [SocketEvent.AUDIO_CHAT_ENDED]: () => {
       if (isMicrophoneMode) {
