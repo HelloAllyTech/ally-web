@@ -197,7 +197,9 @@ const AudioCall: FunctionComponent = () => {
     if (
       !isMicrophoneMode &&
       !isLoading &&
-      (!activeChat?.chatId || (Array.isArray(activeChat) && activeChat.length === 0))
+      (!activeChat?.chatId ||
+        (activeChat?.chatId && activeChat?.provider !== "WEBRTC") ||
+        (Array.isArray(activeChat) && activeChat.length === 0))
     ) {
       return (
         <FallbackUI
