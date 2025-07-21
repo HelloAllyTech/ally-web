@@ -42,7 +42,11 @@ const ResourceCard: FC<ResourceCardProps> = ({ title, description, category, tag
         style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
         className="flex flex-row justify-between gap-2 overflow-x-hidden"
       >
-        <Badge text={category} variant="ghost" className="capitalize flex-shrink-0" />
+        <Badge
+          text={category}
+          variant="ghost"
+          className={`capitalize flex-shrink-0 ${category?.trim().length > 0 ? "" : "hidden"}`}
+        />
         <div className="flex justify-end w-full sm:max-w-[80%] relative">
           <div
             style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
