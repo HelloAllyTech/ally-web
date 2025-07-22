@@ -45,7 +45,7 @@ const ResourceCard: FC<ResourceCardProps> = ({ title, description, category, tag
         <Badge
           text={category}
           variant="ghost"
-          className={`capitalize flex-shrink-0 ${category?.trim().length > 0 ? "" : "hidden"}`}
+          className={`capitalize flex-shrink-0 ${category?.trim().length > 0 ? "" : "bg-transparent"}`}
         />
         <div className="flex justify-end w-full sm:max-w-[80%] relative">
           <div
