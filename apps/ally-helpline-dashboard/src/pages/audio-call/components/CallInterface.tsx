@@ -46,7 +46,7 @@ const CallInterface: FC<CallInterfaceProps> = ({
     if (isUserJoined === false) {
       message = isCounsellor ? "Participant left the call" : "Counsellor left the call";
     } else if (!isUserJoined) {
-      message = isCounsellor ? "Session is starting now.." : "Connecting to your counselor...";
+      message = isCounsellor ? "Session is starting now.." : "Connecting to your counsellor...";
     }
     return (
       <motion.div

@@ -54,18 +54,18 @@ const CallTranscript: FC<CallTranscriptProps> = ({
 
   const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(null);
   const [isMuted, setIsMuted] = useState<boolean>(true);
-  const [isFocusMode, setIsFocusMode] = useState(true);
+  const [isFocusMode, setIsFocusMode] = useState<boolean>(true);
   const [speakerTranscriptions, setSpeakerTranscriptions] = useState<Transcription[]>([]);
   const [myTranscriptions, setMyTranscriptions] = useState<Transcription[]>([]);
   const [nudges, setNudges] = useState<Nudge[]>([]);
   const [stage, setStage] = useState<string>();
   const [isUserJoined, setIsUserJoined] = useState(null);
   const { data: nudgeStatus } = useGetNudgeStatusQuery();
-  const [isSessionCreated, setIsSessionCreated] = useState(false);
-  const [isStartAudioChatEmitted, setIsStartAudioChatEmitted] = useState(false);
+  const [isSessionCreated, setIsSessionCreated] = useState<boolean>(false);
+  const [isStartAudioChatEmitted, setIsStartAudioChatEmitted] = useState<boolean>(false);
 
   const isClient = user?.role === UserRole.CLIENT;
-  const isCounsellor = user?.role === UserRole.COUNSELOR;
+  const isCounsellor = user?.role === UserRole.COUNSELLOR;
   // const isWebRTC = activeChat.provider === "WEBRTC"; // to distinguish between exotel and webrtc
 
   const updateLastTranscription = (

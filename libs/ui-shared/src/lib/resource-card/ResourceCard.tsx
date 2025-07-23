@@ -25,10 +25,10 @@ const ResourceCard: FC<ResourceCardProps> = ({ title, description, category, tag
   useEffect(() => {
     // Check if content height is greater than 2 lines (assuming line height of 1.5rem)
     if (contentRef.current) {
-      const lineHeight = 24; // 1.5rem = 24px
+      const LINE_HEIGHT = 24; // 1.5rem = 24px
       const height = contentRef.current.scrollHeight;
       setContentHeight(height);
-      setShouldShowButton(height > lineHeight * 2);
+      setShouldShowButton(height > LINE_HEIGHT * 2);
     }
   }, [description]);
 

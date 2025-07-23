@@ -30,7 +30,7 @@ const NavSideBar: FunctionComponent<NavSideBarProps> = ({
       ? safePermissions
       : [Permissions.VIEW_NAVBAR_SEARCH, ...safePermissions];
 
-  const [isLogoutConfirmOpen, setIsLogoutConfirmOpen] = useState(false);
+  const [isLogoutConfirmOpen, setIsLogoutConfirmOpen] = useState<boolean>(false);
   const permittedTabs = navBarOptions.filter(
     tab =>
       !tab.permission ||

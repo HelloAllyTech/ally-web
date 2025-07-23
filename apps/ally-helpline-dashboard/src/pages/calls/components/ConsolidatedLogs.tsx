@@ -7,8 +7,8 @@ import { GenericTable } from "@ally-ui-mono/ui-shared";
 import { Column, FilterType } from "@ally-ui-mono/ui-shared/lib/generic-table/types";
 import { RootState } from "@/store/store";
 import { updateFilters } from "@/reducer/callsReducer";
-import { useGetAdminCallLogsQuery, useGetCounselorsQuery, useGetCallTagsQuery } from "@/api/calls";
-import { Button, CustomCircularProgress, FallbackUI, TagGroup } from "@/components";
+import { useGetAdminCallLogsQuery, useGetCounsellorsQuery, useGetCallTagsQuery } from "@/api/calls";
+import { Button, FallbackUI, TagGroup } from "@/components";
 import {
   NoResults,
   CallIdIcon,
@@ -21,7 +21,7 @@ import {
 } from "@/assets/icons";
 import { CallLog, GetCallLogsInput } from "@/types/calls";
 
-import { convertSecondsToDuration, formatDate } from "../utils";
+import { convertSecondsToDuration, getFormattedDate } from "../utils";
 import { CALL_LOGS_PAGINATION_LIMIT, defaultTags, tagColors } from "../constants";
 import { TagDisplay } from "../types";
 import { SummarySideBar } from ".";
@@ -31,8 +31,8 @@ const ConsolidatedLogs = () => {
 
   const [callSummary, setCallSummary] = useState<CallLog | null>(null);
   const [callLogList, setCallLogList] = useState<CallLog[]>([]);
-  const [isLoadingMore, setIsLoadingMore] = useState(false);
-  const [hasMore, setHasMore] = useState(true);
+  const [isLoadingMore, setIsLoadingMore] = useState<boolean>(false);
+  const [hasMore, setHasMore] = useState<boolean>(true);
 
   const { filters } = useSelector((state: RootState) => state.calls);
   const { offset } = filters;
@@ -44,7 +44,7 @@ const ConsolidatedLogs = () => {
     error: callLogsError,
   } = useGetAdminCallLogsQuery(filters);
   const { data: callLogs = [] } = callLogsData || {};
-  const { data: counselorsData } = useGetCounselorsQuery({ offset: 0 });
+  const { data: counsellorsData } = useGetCounsellorsQuery({ offset: 0 });
   const { data: tagsData } = useGetCallTagsQuery({ offset: 0 });
 
   const tableRef = useRef<HTMLDivElement>(null);
@@ -128,7 +128,7 @@ const ConsolidatedLogs = () => {
         icon: <CallIdIcon />,
         callName: callInfo?.summaryName ?? "--",
         counselorName: counselor?.name,
-        dateAndTime: startTime && formatDate(startTime),
+        dateAndTime: startTime && getFormattedDate(startTime),
         callDuration: convertSecondsToDuration(callDuration),
         qualityScore: summary?.callQuality ?? 0,
         tags: summary?.tags?.map((tag: { tag: string; positivity_rating: number }) => {
@@ -151,15 +151,15 @@ const ConsolidatedLogs = () => {
       icon: <CallIdIcon />,
     },
     {
-      key: "counselorName",
-      header: "Counselor Name",
+      key: "counsellorName",
+      header: "Counsellor Name",
       filterType: FilterType.MULTISELECT,
       style: { width: "15%" },
       icon: <UserIcon />,
       sortable: true,
       filterable: true,
       filterOptions:
-        counselorsData?.data?.map(item => ({
+        counsellorsData?.data?.map(item => ({
           label: item?.name,
           value: String(item?.id),
         })) || [],
@@ -229,16 +229,16 @@ const ConsolidatedLogs = () => {
       updatedFilters.order = sort.value;
     }
 
-    // Counselor filter
-    const counselor = filter.find((f: { key: string }) => f.key === "counselorName");
-    if (counselor) {
+    // Counsellor filter
+    const counsellor = filter.find((f: { key: string }) => f.key === "counsellorName");
+    if (counsellor) {
       let ids: string[] = [];
-      if (Array.isArray(counselor.value)) {
-        ids = counselor.value;
+      if (Array.isArray(counsellor.value)) {
+        ids = counsellor.value;
+      } else {
+        ids = [counsellor.value];
       }
-      if (ids.length > 0) {
-        updatedFilters.counselorIds = ids.join(",");
-      }
+      updatedFilters.counselorIds = ids.join(",");
     }
 
     // Date filter

@@ -48,8 +48,8 @@ const MainContent = ({ isWaiting, onStartAudioChat, onEndCall }: MainContentProp
     <div className="text-[#000] font-['IBM_Plex_Serif'] text-[20px]">
       {isWaiting ? (
         <>
-          <h2 className="text-xl font-[600] mb-2">Finding a counselor for you..</h2>
-          <p className="text-[16px]">Please wait while we find the best counselor for you</p>
+          <h2 className="text-xl font-[600] mb-2">Finding a counsellor for you..</h2>
+          <p className="text-[16px]">Please wait while we find the best counsellor for you</p>
           <div className="flex justify-center my-[30px]">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
           </div>
@@ -64,13 +64,13 @@ const MainContent = ({ isWaiting, onStartAudioChat, onEndCall }: MainContentProp
       ) : (
         <>
           <div className="mb-[24px]">
-            Connect with a counselor instantly and start your journey towards better mental health.
+            Connect with a counsellor instantly and start your journey towards better mental health.
           </div>
           <Button
             className="sm:text-[22px] text-[16px] font-[600] py-[24px] px-[20px]"
             onClick={onStartAudioChat}
           >
-            Call with a Counselor
+            Call with a Counsellor
           </Button>
         </>
       )}
@@ -83,8 +83,8 @@ const ClientInterface = () => {
   const { user, logout } = useUser();
   const isClient = user?.role === UserRole.CLIENT;
 
-  const [isWaiting, setIsWaiting] = useState(false);
-  const [isLogoutConfirmOpen, setIsLogoutConfirmOpen] = useState(false);
+  const [isWaiting, setIsWaiting] = useState<boolean>(false);
+  const [isLogoutConfirmOpen, setIsLogoutConfirmOpen] = useState<boolean>(false);
   const [currentChatId, setCurrentChatId] = useState<string | null>(null);
 
   const [cancelRequest] = useCancelRequestMutation();

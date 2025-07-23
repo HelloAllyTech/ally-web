@@ -105,7 +105,7 @@ const AudioCall: FunctionComponent = () => {
     const fetchActiveChat = async () => {
       try {
         let response;
-        if (user?.role === UserRole.COUNSELOR) {
+        if (user?.role === UserRole.COUNSELLOR) {
           response = await getCounsellorChat();
         } else if (user?.role === UserRole.CLIENT) {
           response = await getClientChat();

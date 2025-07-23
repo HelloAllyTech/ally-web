@@ -40,7 +40,6 @@ export const tagColors = {
 };
 
 export const CALL_LOGS_PAGINATION_LIMIT = 25;
-export const TABLE_ROW_HEIGHT = 58; // 58px
 
 export const tabStyles = {
   textTransform: "none",

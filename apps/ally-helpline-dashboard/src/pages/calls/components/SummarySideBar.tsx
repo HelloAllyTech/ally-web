@@ -48,12 +48,12 @@ const SummarySideBar: FC<SummarySideBarProps> = ({
 
   const [transcriptOffset, setTranscriptOffset] = useState(0);
   const [transcriptList, setTranscriptList] = useState<Transcript[]>([]);
-  const transcriptPageSize = 30;
+  const TRANSCRIPT_PAGE_SIZE = 30;
 
   const { data: transcriptData, isLoading: isGetTranscriptLoading } = useGetTranscriptQuery({
     chatId: callSummary?.id,
     offset: transcriptOffset,
-    limit: transcriptPageSize,
+    limit: TRANSCRIPT_PAGE_SIZE,
   });
 
   const transcript = useMemo(() => transcriptData?.data || [], [transcriptData]);
@@ -77,7 +77,7 @@ const SummarySideBar: FC<SummarySideBarProps> = ({
 
   const handleLoadMore = () => {
     if (transcriptOffset >= transcriptTotal) return;
-    setTranscriptOffset(prev => prev + transcriptPageSize);
+    setTranscriptOffset(prev => prev + TRANSCRIPT_PAGE_SIZE);
   };
 
   useEffect(() => {
@@ -154,7 +154,7 @@ const SummarySideBar: FC<SummarySideBarProps> = ({
     if (senderId === callSummary.clientId) {
       speaker = "Client";
     } else if (senderId === callSummary.counselorId) {
-      speaker = "Counselor";
+      speaker = "Counsellor";
     } else {
       speaker = `User ${senderId}`;
     }

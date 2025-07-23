@@ -25,7 +25,7 @@ const PostCallSummary = () => {
 
   const [selectedTab, setSelectedTab] = useState<SectionType>(SectionType.CallSummary);
   const [modalData, setModalData] = useState<ModalData | null>({ type: null });
-  const [showInitialLoading, setShowInitialLoading] = useState(true);
+  const [showInitialLoading, setShowInitialLoading] = useState<boolean>(true);
 
   const {
     data: callSummary,
