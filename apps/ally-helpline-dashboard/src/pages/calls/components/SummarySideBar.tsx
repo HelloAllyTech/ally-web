@@ -54,6 +54,7 @@ const SummarySideBar: FC<SummarySideBarProps> = ({
     chatId: callSummary?.id,
     offset: transcriptOffset,
     limit: transcriptPageSize,
+    sortBy: callSummary?.details?.callInfo?.provider === "WEBRTC" ? "createdAt" : "startSeconds",
   });
 
   const transcript = useMemo(() => transcriptData?.data || [], [transcriptData]);
