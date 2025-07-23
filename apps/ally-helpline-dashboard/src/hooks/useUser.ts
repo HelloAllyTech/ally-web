@@ -4,6 +4,7 @@ import { RootState, store } from "@/store/store";
 import { useLazyGetUserQuery, useLazyGetPermissionsQuery } from "@/api/auth";
 import { setUser, authenticate, unauthenticate, setPermissions } from "@/reducer/userReducer";
 import { logger } from "@ally-ui-mono/ui-shared";
+import { baseAPI } from "@/api/baseAPI";
 
 export const useUser = () => {
   const isAuthenticated = useSelector((state: RootState) => state.user.isAuthenticated);
@@ -51,9 +52,15 @@ export const useUser = () => {
   };
 
   const logout = () => {
+    // Clear RTK Query cache
+    store.dispatch(baseAPI.util.resetApiState());
+
+    // Clear user state
     store.dispatch(setUser(null));
     store.dispatch(setPermissions([]));
     store.dispatch(unauthenticate());
+
+    // Clear tokens
     localStorage.removeItem("accessToken");
     localStorage.removeItem("refreshToken");
   };
