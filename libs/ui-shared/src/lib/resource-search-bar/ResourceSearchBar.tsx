@@ -70,6 +70,7 @@ const SearchBar: FC<SearchBarProps> = ({ onSearch, initialValue = "", suggestion
         variant="outlined"
         placeholder="Search"
         value={searchTerm}
+        maxLength={150}
         onChange={e => setSearchTerm(e.target.value)}
         className="font-['IBM_Plex_Serif'] text-[16px] h-[40px] sm:h-[56px]"
         sx={{

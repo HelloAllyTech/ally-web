@@ -111,6 +111,15 @@ const ResourceCard: FC<ResourceCardProps> = ({ title, description, category, tag
     }
   };
 
+  const processDescription = (description: string) => {
+    return description.split("\n").map((line, index) => (
+      <span key={index}>
+        {line}
+        {index < description.split("\n").length - 1 && <br />}
+      </span>
+    ));
+  };
+
   /**
    * Renders the resource description with expand/collapse animation.
    * @returns {JSX.Element}
@@ -137,7 +146,7 @@ const ResourceCard: FC<ResourceCardProps> = ({ title, description, category, tag
               overflow: "hidden",
             }}
           >
-            {description}
+            {processDescription(description)}
           </motion.div>
         </AnimatePresence>
         <AnimatePresence>{renderShowMoreLess()}</AnimatePresence>
