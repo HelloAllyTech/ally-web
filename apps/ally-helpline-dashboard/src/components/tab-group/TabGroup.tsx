@@ -20,7 +20,7 @@ const TabGroup: FC<TabGroupProps> = ({ value, onChange, tabs, className, childre
       <Tabs
         value={value}
         onChange={onChange}
-        className={`${className} w-full`}
+        className={`${className} w-full border-b border-[#E5E7EB]`}
         variant="fullWidth"
         sx={{
           "& .MuiButtonBase-root": {

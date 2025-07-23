@@ -127,7 +127,7 @@ const ConsolidatedLogs = () => {
         id,
         icon: <CallIdIcon />,
         callName: callInfo?.summaryName ?? "--",
-        counselorName: counselor?.name,
+        counsellorName: counselor?.name,
         dateAndTime: startTime && getFormattedDate(startTime),
         callDuration: convertSecondsToDuration(callDuration),
         qualityScore: summary?.callQuality ?? 0,
