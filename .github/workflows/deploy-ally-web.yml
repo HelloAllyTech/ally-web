@@ -9,6 +9,7 @@ on:
         description: Choose environment
         options:
           - dev
+          - prd
       force_deploy:
         required: false
         type: boolean
