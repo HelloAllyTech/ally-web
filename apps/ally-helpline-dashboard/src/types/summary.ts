@@ -89,4 +89,5 @@ export interface GetTranscriptRequest {
   chatId: number;
   offset: number;
   limit: number;
+  sortBy: string;
 }
