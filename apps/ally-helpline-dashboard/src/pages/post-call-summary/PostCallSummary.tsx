@@ -21,7 +21,7 @@ const PostCallSummary = () => {
 
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const { userStatus, availableChatTypes } = useSelector((state: RootState) => state.user);
+  const { availableChatTypes } = useSelector((state: RootState) => state.user);
 
   const [selectedTab, setSelectedTab] = useState<SectionType>(SectionType.CallSummary);
   const [modalData, setModalData] = useState<ModalData | null>({ type: null });
@@ -55,8 +55,8 @@ const PostCallSummary = () => {
 
     // polling only for webRTC and not Microphone
     if (
-      !callSummary?.details?.summary ||
-      (Array.isArray(callSummary.details.summary) &&
+      (!callSummary?.details?.summary && callSummary?.details?.callInfo?.provider === "WEBRTC") ||
+      (Array.isArray(callSummary?.details?.summary) &&
         callSummary.details.summary.length === 0 &&
         callSummary?.details?.callInfo?.provider !== "MICROPHONE")
     ) {
@@ -74,7 +74,7 @@ const PostCallSummary = () => {
   const handleProceed = () => {
     const nextSection = getNextSection(selectedTab);
     if (nextSection) {
-      setSelectedTab(nextSection);
+      onTabChange(null, nextSection);
     } else if (availableChatTypes?.includes(CallType.WEBRTC_CHAT)) {
       setModalData({ type: "redirect" });
     } else {

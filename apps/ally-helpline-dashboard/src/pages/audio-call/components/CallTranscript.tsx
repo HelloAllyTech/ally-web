@@ -194,7 +194,10 @@ const CallTranscript: FC<CallTranscriptProps> = ({
       setIsUserJoined(true);
     },
     [SocketEvent.USER_DISCONNECTED]: () => {
-      setIsUserJoined(false);
+      // User disconnected event might happen if mobile is open and gets closed as mobile have a live socket conenction on login for microphone-mode
+      if (!isMicrophoneMode) {
+        setIsUserJoined(false);
+      }
     },
     [SocketEvent.AUDIO_CHAT_ENDED]: () => {
       if (isMicrophoneMode) {
@@ -234,6 +237,8 @@ const CallTranscript: FC<CallTranscriptProps> = ({
     isClient,
     offerTimeoutMs: OFFER_TIMEOUT_MS,
   });
+
+  const isNonWebChat = activeChat?.platform && activeChat?.platform !== "WEB";
 
   const setupMediaRecorder = (stream: MediaStream) => {
     // Setup media recorder
@@ -528,8 +533,9 @@ const CallTranscript: FC<CallTranscriptProps> = ({
         <CallControls
           isFocusMode={isFocusMode}
           isMuted={isMuted}
-          isPrimaryButtonDisabled={isMicrophoneMode && !microphoneChatId}
-          isSecondaryButtonDisabled={!isUserJoined}
+          isPrimaryButtonDisabled={isMicrophoneMode && (!microphoneChatId || isNonWebChat)}
+          isSecondaryButtonDisabled={!isUserJoined || isNonWebChat}
+          isTertiaryButtonDisabled={!isUserJoined}
           showFocusButton={isCounsellor}
           onCutCallButtonClick={() => confirmEndSession(true)}
           onFocusButtonClick={(isFocused: boolean) => setIsFocusMode(isFocused)}

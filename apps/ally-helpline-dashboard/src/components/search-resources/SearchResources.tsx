@@ -1,4 +1,4 @@
-import { FC, useEffect, useState } from "react";
+import { FC, useEffect, useState, useRef } from "react";
 import { toast } from "sonner";
 import { useSearchParams } from "react-router-dom";
 
@@ -21,6 +21,8 @@ const SearchResources: FC<SearchResourcesProps> = ({
   const [resources, setResources] = useState<Resource[]>([]);
   const [categoryCountList, setCategoryCountList] = useState<{ [key: string]: number }>({});
   const [hasMore, setHasMore] = useState(true);
+  const lastRequestId = useRef(0);
+  const currentRequestId = useRef(0);
 
   useEffect(() => {
     const initializeSearchWithQueryParams = async () => {
@@ -44,6 +46,8 @@ const SearchResources: FC<SearchResourcesProps> = ({
   const [getSearchResults, { isLoading: isResourcesLoading }] = useGetSearchResultsMutation();
 
   const triggerSearch = async (query: string, category?: string) => {
+    const requestId = ++currentRequestId.current;
+
     let filters = undefined;
     if (category && category !== "All") {
       filters = { category };
@@ -54,14 +58,19 @@ const SearchResources: FC<SearchResourcesProps> = ({
       filters,
     });
     setHasMore(response.data?.total > response.data?.documents?.length);
-    if (response.data) {
-      setResources(response.data.documents);
-      if (!(category && category !== "All")) {
-        // If there is a category, it means the query is filtered and wont return category list
-        setCategoryCountList(response.data.categories);
+
+    // Only process the response if it's from the most recent request
+    if (requestId > lastRequestId.current) {
+      lastRequestId.current = requestId;
+      if (response.data) {
+        setResources(response.data.documents);
+        if (!(category && category !== "All")) {
+          // If there is a category, it means the query is filtered and wont return category list
+          setCategoryCountList(response.data.categories);
+        }
+      } else {
+        toast.error("Error fetching search results");
       }
-    } else {
-      toast.error("Error fetching search results");
     }
   };
 
@@ -90,6 +99,8 @@ const SearchResources: FC<SearchResourcesProps> = ({
 
   const fetchRemainingResources = async () => {
     if (isResourcesLoading || !hasMore) return;
+
+    const requestId = ++currentRequestId.current;
     let filters = undefined;
     if (selectedCategory && selectedCategory !== "All") {
       filters = { category: selectedCategory };
@@ -100,10 +111,21 @@ const SearchResources: FC<SearchResourcesProps> = ({
       filters,
       excludedIds: resources.map(resource => resource.id),
     });
-    if (response.data) {
-      const newDocuments = response.data.documents;
-      setResources(prevResources => [...prevResources, ...newDocuments]);
-      setHasMore(response.data?.total > response.data?.documents?.length);
+
+    // Only process the response if it's from the most recent request
+    if (requestId > lastRequestId.current) {
+      lastRequestId.current = requestId;
+      if (response.data) {
+        const newDocuments = response.data.documents;
+        setResources(prevResources => {
+          // Check to ensure no duplicates when combining with previous resources
+          const combinedResources = [...prevResources, ...newDocuments];
+          return combinedResources.filter(
+            (resource, index, self) => index === self.findIndex(r => r.id === resource.id),
+          );
+        });
+        setHasMore(response.data?.total > response.data?.documents?.length);
+      }
     }
   };
 
