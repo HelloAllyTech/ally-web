@@ -6,6 +6,7 @@ import {
   FetchBaseQueryError,
 } from "@reduxjs/toolkit/query/react";
 import { logger } from "@ally-ui-mono/ui-shared";
+import { store } from "@/store/store";
 
 const API_URL = import.meta.env.VITE_API_BASE_URL;
 const VITE_API_VERSION = import.meta.env.VITE_API_VERSION;
@@ -16,8 +17,14 @@ interface RefreshResponse {
 }
 
 const handleLogout = () => {
+  // Clear RTK Query cache
+  store.dispatch(baseAPI.util.resetApiState());
+
+  // Clear tokens
   localStorage.removeItem("accessToken");
   localStorage.removeItem("refreshToken");
+
+  // Redirect to login
   window.location.href = "/login";
 };
 
