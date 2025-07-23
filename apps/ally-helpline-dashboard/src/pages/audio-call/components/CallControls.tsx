@@ -9,6 +9,7 @@ const CallControls: FC<CallControlsProps> = ({
   isMuted,
   isPrimaryButtonDisabled = false,
   isSecondaryButtonDisabled,
+  isTertiaryButtonDisabled,
   showFocusButton,
   onCutCallButtonClick,
   onFocusButtonClick,
@@ -31,7 +32,7 @@ const CallControls: FC<CallControlsProps> = ({
         <CutCall />
       </button>
       {showFocusButton && (
-        <button disabled={isSecondaryButtonDisabled} className="w-[56px] h-[56px]">
+        <button disabled={isTertiaryButtonDisabled} className="w-[56px] h-[56px]">
           {isFocusMode ? (
             <FocusOn onClick={() => onFocusButtonClick(false)} />
           ) : (

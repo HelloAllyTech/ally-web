@@ -42,7 +42,11 @@ const ResourceCard: FC<ResourceCardProps> = ({ title, description, category, tag
         style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
         className="flex flex-row justify-between gap-2 overflow-x-hidden"
       >
-        <Badge text={category} variant="ghost" className="capitalize flex-shrink-0" />
+        <Badge
+          text={category}
+          variant="ghost"
+          className={`capitalize flex-shrink-0 ${category?.trim().length > 0 ? "" : "bg-transparent"}`}
+        />
         <div className="flex justify-end w-full sm:max-w-[80%] relative">
           <div
             style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
@@ -107,6 +111,15 @@ const ResourceCard: FC<ResourceCardProps> = ({ title, description, category, tag
     }
   };
 
+  const processDescription = (description: string) => {
+    return description.split("\n").map((line, index) => (
+      <span key={index}>
+        {line}
+        {index < description.split("\n").length - 1 && <br />}
+      </span>
+    ));
+  };
+
   /**
    * Renders the resource description with expand/collapse animation.
    * @returns {JSX.Element}
@@ -133,7 +146,7 @@ const ResourceCard: FC<ResourceCardProps> = ({ title, description, category, tag
               overflow: "hidden",
             }}
           >
-            {description}
+            {processDescription(description)}
           </motion.div>
         </AnimatePresence>
         <AnimatePresence>{renderShowMoreLess()}</AnimatePresence>

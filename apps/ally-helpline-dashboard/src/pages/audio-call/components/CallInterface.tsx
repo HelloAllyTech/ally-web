@@ -76,6 +76,12 @@ const CallInterface: FC<CallInterfaceProps> = ({
           <div className="text-[#000] flex justify-center items-center flex-col gap-2">
             <div className="text-[20px] font-['IBM_Plex_Serif'] font-bold">Taking notes</div>
             <div className="text-[16px] font-medium text-[#525252]">{formatTime(seconds)}</div>
+            {activeChat?.platform && activeChat?.platform !== "WEB" && (
+              <div className="text-[12px] text-[#666] text-center max-w-xs mt-1">
+                Note: This call was initiated from a different platform. You can listen but cannot
+                control the call (end/unmute).
+              </div>
+            )}
           </div>
           {/* Hidden Audio Element */}
           <audio
@@ -91,10 +97,10 @@ const CallInterface: FC<CallInterfaceProps> = ({
             autoPlay
           />
           <div className="relative gap-1 flex rounded-lg">
-            {remoteMediaRecorder && (
+            {(remoteMediaRecorder || (isMicrophoneMode && mediaRecorder)) && (
               <div className="rotate-180 z-0 translate-x-[4px] translate-y-[1px]  ">
                 <LiveAudioVisualizer
-                  mediaRecorder={remoteMediaRecorder}
+                  mediaRecorder={remoteMediaRecorder || mediaRecorder}
                   width={200}
                   height={140}
                   barWidth={4}

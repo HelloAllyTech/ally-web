@@ -37,6 +37,7 @@ export interface Chat {
   startedAt: string;
   status: ChatStatus;
   provider: "WEBRTC" | "MICROPHONE";
+  platform: "WEB" | "MOBILE";
 }
 
 export enum QueueStatus {
