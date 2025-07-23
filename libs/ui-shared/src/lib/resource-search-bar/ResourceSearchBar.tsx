@@ -13,6 +13,8 @@ export interface SearchBarProps {
   suggestions?: string[];
 }
 
+const MAX_CHARACTER_LIMIT = 150;
+
 /**
  * SearchBar component provides a search input with suggestions and autocomplete.
  * @component
@@ -70,8 +72,8 @@ const SearchBar: FC<SearchBarProps> = ({ onSearch, initialValue = "", suggestion
         variant="outlined"
         placeholder="Search"
         value={searchTerm}
-        maxLength={150}
-        onChange={e => setSearchTerm(e.target.value)}
+        maxLength={MAX_CHARACTER_LIMIT}
+        onChange={e => setSearchTerm(e.target.value.slice(0, MAX_CHARACTER_LIMIT))}
         className="font-['IBM_Plex_Serif'] text-[16px] h-[40px] sm:h-[56px]"
         sx={{
           "& .MuiOutlinedInput-root": {
@@ -117,8 +119,9 @@ const SearchBar: FC<SearchBarProps> = ({ onSearch, initialValue = "", suggestion
         value={searchTerm}
         disableClearable
         onChange={(_, newValue) => {
-          setSearchTerm(newValue || "");
-          if (newValue) onSearch(newValue);
+          const limitedValue = newValue ? newValue.slice(0, MAX_CHARACTER_LIMIT) : "";
+          setSearchTerm(limitedValue);
+          if (limitedValue) onSearch(limitedValue);
         }}
         renderOption={renderSuggestionCard}
         renderInput={renderInput}
