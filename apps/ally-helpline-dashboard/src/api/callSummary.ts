@@ -62,9 +62,9 @@ const callSummaryAPI = baseAPI.injectEndpoints({
       }),
     }),
     getTranscript: builder.query<GetTranscriptResponse, GetTranscriptRequest>({
-      query: ({ chatId, offset, limit }) => ({
+      query: ({ chatId, offset, limit, sortBy }) => ({
         url: `/chats/${chatId}/messages`,
-        params: { offset, limit, sortOrder: "ASC" },
+        params: { offset, limit, sortOrder: "ASC", sortBy },
       }),
     }),
   }),
