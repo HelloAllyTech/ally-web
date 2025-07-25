@@ -175,7 +175,7 @@ const CallSummary: FC<CallSummaryProps> = ({
                 }))
               }
               multiline
-              rows={4}
+              rows={field.key === SummaryFieldKey.SessionSummary ? 10 : 4}
               className={`w-full ${isFieldDisabled(field) ? "pointer-events-none" : ""}`}
               inputStyles={{
                 color: field.isEditable ? "#1A1A1A" : "#9CA3AF",
