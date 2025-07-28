@@ -474,14 +474,8 @@ const CallTranscript: FC<CallTranscriptProps> = ({
 
   const confirmEndSession = async (triggerApi: boolean = true) => {
     try {
-      if (isMicrophoneMode) {
-        emitSocketEvent(SocketEvent.AUDIO_CHAT_ENDED, {
-          chatId: microphoneChatId,
-        });
-        return;
-      }
       cleanupMediaRecorder();
-      endSession(isMicrophoneMode ? false : triggerApi, activeChatId);
+      endSession(triggerApi, activeChatId ?? microphoneChatId);
     } catch (error) {
       logger.info(`Error ending session:, ${error}`);
     }
@@ -490,9 +484,11 @@ const CallTranscript: FC<CallTranscriptProps> = ({
   useEffect(() => {
     if (isMicrophoneMode && isSessionCreated && !isStartAudioChatEmitted) {
       if (microphoneChatId) {
+        setIsStartAudioChatEmitted(true);
         toast.info(
           "You've joined an active call. To start a fresh conversation, simply end this call and begin a new one.",
         );
+        return;
       }
       emitSocketEvent(SocketEvent.START_AUDIO_CHAT, {
         platform: "WEB",
