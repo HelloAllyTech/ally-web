@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
 import { logger, ResourceSearch, Resource } from "@ally-ui-mono/ui-shared";
@@ -27,17 +27,12 @@ export default function SearchClient({
   const [isLoading, setIsLoading] = useState(false);
   const [hasMore, setHasMore] = useState(false);
 
-  // Memoize values to prevent infinite loops from server component re-renders creating new object references
-  const memoizedDocuments = useMemo(() => initialDocuments, [JSON.stringify(initialDocuments)]);
-  const memoizedHasMore = useMemo(
-    () => initialDocuments.length < totalDocumentCount,
-    [initialDocuments.length, totalDocumentCount],
-  );
-
   useEffect(() => {
-    setDocuments(memoizedDocuments);
-    setHasMore(memoizedHasMore);
-  }, [memoizedDocuments, memoizedHasMore]);
+    if (initialDocuments.length > 0 && searchQuery) {
+      setDocuments(initialDocuments);
+      setHasMore(initialDocuments.length < totalDocumentCount);
+    }
+  }, [initialDocuments, totalDocumentCount, searchQuery]);
 
   const onSearch = (searchTerm: string) => {
     router.push(`/search?q=${encodeURIComponent(searchTerm)}`);
