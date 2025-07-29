@@ -199,15 +199,21 @@ const ConsolidatedLogs = () => {
       key: "review",
       header: "Review",
       style: { width: "10%" },
-      render: (_value, row) => (
-        <Button
-          disabled={row.raw.details?.summary === null}
-          onClick={() => setCallSummary(row.raw)}
-          className="flex items-center justify-center w-full py-[8px] bg-transparent border-none hover:bg-transparent cursor-pointer"
-        >
-          <ReviewIcon />
-        </Button>
-      ),
+      render: (_value, row) => {
+        const isSummaryNull = row.raw.details?.summary === null;
+        console.log(isSummaryNull);
+        return (
+          <Button
+            disabled={isSummaryNull}
+            onClick={() => setCallSummary(row.raw)}
+            className={`flex items-center justify-center w-full py-[8px] bg-transparent border-none hover:bg-transparent ${
+              isSummaryNull ? "!pointer-events-auto !cursor-default" : "cursor-pointer"
+            }`}
+          >
+            <ReviewIcon />
+          </Button>
+        );
+      },
       icon: <ReviewIcon />,
     },
   ];

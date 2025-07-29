@@ -1,11 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 
 import { logger, ResourceSearch, Resource } from "@ally-ui-mono/ui-shared";
 
-import { fetchReferenceDocuments, initialFetchLimit } from "./api";
+import { fetchReferenceDocuments, INITIAL_FETCH_LIMIT } from "./api";
 
 interface SearchClientProps {
   searchQuery: string;
@@ -23,14 +23,21 @@ export default function SearchClient({
   totalDocumentCount,
 }: SearchClientProps) {
   const router = useRouter();
-  const [documents, setDocuments] = useState<Resource[]>(initialDocuments);
+  const [documents, setDocuments] = useState<Resource[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [hasMore, setHasMore] = useState(initialDocuments.length < totalDocumentCount);
+  const [hasMore, setHasMore] = useState(false);
+
+  // Memoize values to prevent infinite loops from server component re-renders creating new object references
+  const memoizedDocuments = useMemo(() => initialDocuments, [JSON.stringify(initialDocuments)]);
+  const memoizedHasMore = useMemo(
+    () => initialDocuments.length < totalDocumentCount,
+    [initialDocuments.length, totalDocumentCount],
+  );
 
   useEffect(() => {
-    setDocuments(initialDocuments);
-    setHasMore(initialDocuments.length < totalDocumentCount);
-  }, [initialDocuments, totalDocumentCount]);
+    setDocuments(memoizedDocuments);
+    setHasMore(memoizedHasMore);
+  }, [memoizedDocuments, memoizedHasMore]);
 
   const onSearch = (searchTerm: string) => {
     router.push(`/search?q=${encodeURIComponent(searchTerm)}`);
@@ -49,7 +56,7 @@ export default function SearchClient({
       const { documents: newDocuments, total } = await fetchReferenceDocuments(
         searchQuery,
         category,
-        initialFetchLimit,
+        INITIAL_FETCH_LIMIT,
         documents.map(doc => doc.id),
       );
       setDocuments(prev => [...prev, ...newDocuments]);

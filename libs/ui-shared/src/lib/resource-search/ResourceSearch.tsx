@@ -55,7 +55,7 @@ const ResourceSearch: FC<ResourceSearchProps> = ({
    * @param {string} searchTerm - The search term entered by the user
    */
   const handleSearch = (searchTerm: string) => {
-    if (onSearch) {
+    if (onSearch && searchTerm) {
       onSearch(searchTerm);
     }
   };
