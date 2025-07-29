@@ -378,7 +378,7 @@ const CallTranscript: FC<CallTranscriptProps> = ({
 
   useEffect(() => {
     if (isMicrophoneMode) {
-      if (microphoneStreamRef.current) {
+      if (microphoneStreamRef.current && microphoneChatId) {
         setupMediaRecorder(microphoneStreamRef.current);
       }
     } else {
@@ -386,7 +386,7 @@ const CallTranscript: FC<CallTranscriptProps> = ({
         setupMediaRecorder(localStreamRef.current);
       }
     }
-  }, [localStreamRef.current, microphoneStreamRef.current]);
+  }, [localStreamRef.current, microphoneStreamRef.current, microphoneChatId]);
 
   useEffect(() => {
     if (!mediaRecorder) return;
@@ -492,7 +492,6 @@ const CallTranscript: FC<CallTranscriptProps> = ({
       }
       emitSocketEvent(SocketEvent.START_AUDIO_CHAT, {
         platform: "WEB",
-        activeChatId: microphoneChatId,
         sampleRate: 48000,
       });
       setIsStartAudioChatEmitted(true);
