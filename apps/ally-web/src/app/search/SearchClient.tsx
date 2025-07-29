@@ -28,7 +28,7 @@ export default function SearchClient({
   const [hasMore, setHasMore] = useState(false);
 
   useEffect(() => {
-    if (initialDocuments.length > 0 && searchQuery) {
+    if (searchQuery) {
       setDocuments(initialDocuments);
       setHasMore(initialDocuments.length < totalDocumentCount);
     }
