@@ -1,5 +1,5 @@
 "use client";
-import { FC } from "react";
+import { FC, useRef, useCallback, useEffect } from "react";
 import { CircularProgress } from "@mui/material";
 
 import {
@@ -50,6 +50,53 @@ const ResourceSearch: FC<ResourceSearchProps> = ({
   isSuggestionsRow = false,
   categoryCountList,
 }) => {
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  /**
+   * Scrolls the container to the top
+   */
+  const scrollToTop = useCallback(() => {
+    if (scrollContainerRef.current) {
+      // Clear any existing timeout
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+
+      // Small delay to ensure content has rendered
+      timeoutRef.current = setTimeout(() => {
+        scrollContainerRef.current?.scrollTo({
+          top: 0,
+          behavior: "smooth",
+        });
+        timeoutRef.current = null;
+      }, 50);
+    }
+  }, []);
+
+  useEffect(() => {
+    // Scroll to top when search query changes
+    if (searchQuery) {
+      scrollToTop();
+    }
+  }, [searchQuery, scrollToTop]);
+
+  useEffect(() => {
+    // Scroll to top when category changes
+    if (selectedCategory) {
+      scrollToTop();
+    }
+  }, [selectedCategory, scrollToTop]);
+
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+    };
+  }, []);
+
   /**
    * Handles search action and calls onSearch prop if provided.
    * @param {string} searchTerm - The search term entered by the user
@@ -109,6 +156,7 @@ const ResourceSearch: FC<ResourceSearchProps> = ({
             )}
           </div>
           <div
+            ref={scrollContainerRef}
             style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
             className={
               "w-full pt-[14px] h-[90vh] overflow-y-auto flex flex-col gap-2 md:gap-4 items-center px-4 md:px-0 pb-[300px]"
