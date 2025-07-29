@@ -154,7 +154,6 @@ const CallLogsTable = () => {
       style: { width: "10%" },
       render: (_value, row) => {
         const isSummaryNull = row.raw.details?.summary === null;
-        console.log(isSummaryNull);
         return (
           <Button
             disabled={isSummaryNull}
