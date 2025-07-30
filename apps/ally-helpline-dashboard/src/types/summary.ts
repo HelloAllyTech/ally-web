@@ -91,3 +91,8 @@ export interface GetTranscriptRequest {
   limit: number;
   sortBy: string;
 }
+
+export interface UpdateCallSummaryNotesRequest {
+  chatId: string;
+  notes: string;
+}

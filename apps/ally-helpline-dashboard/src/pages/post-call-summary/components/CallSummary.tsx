@@ -11,12 +11,14 @@ import {
   useGetTagsMutation,
   useGetLocationsQuery,
   useLazySearchLocationsQuery,
+  useUpdateCallSummaryNotesMutation,
 } from "@/api/callSummary";
 import { useEnhance } from "@/hooks";
 import { SummaryFieldKey, Tag } from "@/types/summary";
 import { UserRole } from "@/types/user";
 import { LanguageMap } from "@/constants/common";
 import { logger } from "@ally-ui-mono/ui-shared";
+import { useDebounce } from "@/hooks/useDebounce";
 
 import { labelShownSections, summarySections } from "../constants";
 import { CallSummaryProps, SummaryField, SummarySectionKey } from "../types";
@@ -28,10 +30,10 @@ const CallSummary: FC<CallSummaryProps> = ({
   chatId,
   isSummaryLoading,
   onProceed,
-  showInitialLoading,
-  setShowInitialLoading,
   isInSidebar = false,
+  isSummaryPolling = false,
   className,
+  fromSummarySidebar = false,
 }) => {
   const { user } = useSelector((state: RootState) => state.user);
 
@@ -43,6 +45,9 @@ const CallSummary: FC<CallSummaryProps> = ({
   const [getTags, { isLoading: isGetTagsLoading }] = useGetTagsMutation();
   const { data: locations, isLoading: isGetLocationsLoading } = useGetLocationsQuery();
   const [searchLocations, { isLoading: isSearchLocationsLoading }] = useLazySearchLocationsQuery();
+  const [updateCallSummaryNotes] = useUpdateCallSummaryNotesMutation();
+  const [canShowSummary, setCanShowSummary] = useState(fromSummarySidebar);
+  const [notes, setNotes] = useState("");
 
   const { enhancing, EnhanceButton, EnhancementLoadingSkeleton, isEnhanceLoading } = useEnhance();
 
@@ -55,18 +60,6 @@ const CallSummary: FC<CallSummaryProps> = ({
     isGetTagsLoading ||
     isGetLocationsLoading ||
     isSearchLocationsLoading;
-
-  useEffect(() => {
-    let timer: NodeJS.Timeout;
-    if (showInitialLoading) {
-      // Show loading screen
-      timer = setTimeout(() => {
-        setShowInitialLoading(false);
-      }, 4000); // 4 seconds to allow all loading messages to appear
-    }
-
-    return () => clearTimeout(timer);
-  }, []);
 
   useEffect(() => {
     if (callSummary?.details?.summary) {
@@ -299,53 +292,69 @@ const CallSummary: FC<CallSummaryProps> = ({
     }
   };
 
-  // Show loading screen only on first visit
-  if (
-    callSummary?.details?.callInfo?.provider === "MICROPHONE"
-      ? callSummary?.details?.summary === null
-      : showInitialLoading
-  ) {
+  const onViewSummary = () => {
+    setCanShowSummary(true);
+  };
+
+  const debouncedUpdateNotes = useDebounce((notes: string) => {
+    updateCallSummaryNotes({
+      chatId: chatId.toString(),
+      notes,
+    });
+  }, 500);
+
+  const handleNotesChange = (newNotes: string) => {
+    setNotes(newNotes);
+    debouncedUpdateNotes(newNotes);
+  };
+
+  if (canShowSummary && callSummary?.details?.summary) {
     return (
-      <SummaryLoading
-        isSummaryDelayed={callSummary?.details?.callInfo?.provider === "MICROPHONE"}
-      />
+      <>
+        <div className={`overflow-y-auto font-['IBM_Plex_Serif'] ${className}`}>
+          {summarySections.map(({ title, icon, key }) => {
+            const sectionFields = getSectionFields(key, visibleFields);
+            if (sectionFields?.length === 0) return null;
+
+            return (
+              <Accordion
+                key={key}
+                title={title}
+                titleIcon={icon}
+                defaultExpanded={[
+                  SummarySectionKey.FeaturesAndDemographics,
+                  SummarySectionKey.SessionSummary,
+                ]?.includes(key)}
+              >
+                {sectionFields.map(field => getFieldDisplay(field))}
+              </Accordion>
+            );
+          })}
+        </div>
+        {!isAdmin && (
+          <div className="flex justify-center pt-4">
+            <Button
+              className="rounded-[100px]"
+              onClick={handleSubmit}
+              disabled={isLoading || (isInSidebar && !hasDataChanged())}
+            >
+              {isUpdateLoading || isGetTagsLoading ? "Submitting..." : "Submit"}
+            </Button>
+          </div>
+        )}
+      </>
     );
   }
 
   return (
-    <>
-      <div className={`overflow-y-auto font-['IBM_Plex_Serif'] ${className}`}>
-        {summarySections.map(({ title, icon, key }) => {
-          const sectionFields = getSectionFields(key, visibleFields);
-          if (sectionFields?.length === 0) return null;
-
-          return (
-            <Accordion
-              key={key}
-              title={title}
-              titleIcon={icon}
-              defaultExpanded={[
-                SummarySectionKey.FeaturesAndDemographics,
-                SummarySectionKey.SessionSummary,
-              ]?.includes(key)}
-            >
-              {sectionFields.map(field => getFieldDisplay(field))}
-            </Accordion>
-          );
-        })}
-      </div>
-      {!isAdmin && (
-        <div className="flex justify-center pt-4">
-          <Button
-            className="rounded-[100px]"
-            onClick={handleSubmit}
-            disabled={isLoading || (isInSidebar && !hasDataChanged())}
-          >
-            {isUpdateLoading || isGetTagsLoading ? "Submitting..." : "Submit"}
-          </Button>
-        </div>
-      )}
-    </>
+    <SummaryLoading
+      isSummaryDelayed={callSummary?.details?.callInfo?.provider === "MICROPHONE"}
+      isSummaryPolling={isSummaryPolling}
+      isSummaryGenerated={callSummary?.details?.summary}
+      onViewSummary={onViewSummary}
+      onNotesChange={handleNotesChange}
+      notes={notes}
+    />
   );
 };
 

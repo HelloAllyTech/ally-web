@@ -25,6 +25,7 @@ const PostCallSummary = () => {
 
   const [selectedTab, setSelectedTab] = useState<SectionType>(SectionType.CallSummary);
   const [modalData, setModalData] = useState<ModalData | null>({ type: null });
+  const [isSummaryPolling, setIsSummaryPolling] = useState(true);
   const [showInitialLoading, setShowInitialLoading] = useState<boolean>(true);
 
   const {
@@ -41,35 +42,36 @@ const PostCallSummary = () => {
     }
   }, [searchParams]);
 
-  // TODO: Revamp the logic
   useEffect(() => {
+    let count = 0;
     const refetchCallSummary = async () => {
+      count++;
+
+      if (count >= 5) {
+        clearInterval(interval);
+        setIsSummaryPolling(false);
+      }
+      logger.info(`Count: ${count}`);
       try {
-        await refetch();
+        const data = await refetch();
+        if (data.data?.details?.summary) {
+          clearInterval(interval);
+        }
       } catch (error) {
         logger.info(`Error fetching call summary:, ${error}`);
       }
     };
 
-    let interval: NodeJS.Timeout;
+    const interval: NodeJS.Timeout = setInterval(refetchCallSummary, 5000);
 
-    // polling only for webRTC and not Microphone
-    if (
-      (!callSummary?.details?.summary && callSummary?.details?.callInfo?.provider === "WEBRTC") ||
-      (Array.isArray(callSummary?.details?.summary) &&
-        callSummary.details.summary.length === 0 &&
-        callSummary?.details?.callInfo?.provider !== "MICROPHONE")
-    ) {
-      refetchCallSummary();
-      interval = setInterval(refetchCallSummary, 5000);
-    }
+    refetchCallSummary();
 
     return () => {
       if (interval) {
         clearInterval(interval);
       }
     };
-  }, [callSummary]);
+  }, []);
 
   const handleProceed = () => {
     const nextSection = getNextSection(selectedTab);
@@ -94,8 +96,7 @@ const PostCallSummary = () => {
             chatId={Number(chatId)}
             isSummaryLoading={isGetCallSummaryLoading}
             onProceed={handleProceed}
-            showInitialLoading={showInitialLoading}
-            setShowInitialLoading={setShowInitialLoading}
+            isSummaryPolling={isSummaryPolling}
           />
         );
       default:

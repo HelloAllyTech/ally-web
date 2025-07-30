@@ -289,8 +289,7 @@ const SummarySideBar: FC<SummarySideBarProps> = ({
               chatId={callSummary.id}
               isSummaryLoading={isLoading}
               onProceed={() => refetchCallLogs()}
-              showInitialLoading={false}
-              setShowInitialLoading={() => {}}
+              fromSummarySidebar={true}
               isInSidebar={true}
             />
           </div>
