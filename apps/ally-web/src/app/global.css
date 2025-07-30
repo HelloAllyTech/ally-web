@@ -1,6 +1,40 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Font loading optimization for better cross-platform compatibility */
+@font-face {
+  font-family: "IBM Plex Sans";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: local("IBM Plex Sans"), local("IBMPlexSans");
+}
+
+@font-face {
+  font-family: "IBM Plex Sans";
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: local("IBM Plex Sans Medium"), local("IBMPlexSans-Medium");
+}
+
+@font-face {
+  font-family: "IBM Plex Sans";
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: local("IBM Plex Sans SemiBold"), local("IBMPlexSans-SemiBold");
+}
+
+@font-face {
+  font-family: "IBM Plex Sans";
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: local("IBM Plex Sans Bold"), local("IBMPlexSans-Bold");
+}
+
 :root {
   --primary: #7c3aed;
   --primary-light: #ddd6fe;
@@ -34,6 +68,14 @@ body {
   background-color: var(--light);
   line-height: 1.6;
   scroll-behavior: smooth;
+  /* Improve font rendering on Android */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  font-feature-settings:
+    "kern" 1,
+    "liga" 1,
+    "calt" 1;
 }
 
 h1,

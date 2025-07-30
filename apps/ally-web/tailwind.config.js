@@ -10,7 +10,7 @@ module.exports = {
   theme: {
     extend: {
       fontFamily: {
-        sans: ["var(--font-ibm-plex-sans)"],
+        sans: ["var(--font-ibm-plex-sans)", "var(--font-inter)", "Inter"],
       },
     },
   },
