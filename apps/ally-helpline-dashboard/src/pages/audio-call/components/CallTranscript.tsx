@@ -54,18 +54,18 @@ const CallTranscript: FC<CallTranscriptProps> = ({
 
   const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(null);
   const [isMuted, setIsMuted] = useState<boolean>(true);
-  const [isFocusMode, setIsFocusMode] = useState(true);
+  const [isFocusMode, setIsFocusMode] = useState<boolean>(true);
   const [speakerTranscriptions, setSpeakerTranscriptions] = useState<Transcription[]>([]);
   const [myTranscriptions, setMyTranscriptions] = useState<Transcription[]>([]);
   const [nudges, setNudges] = useState<Nudge[]>([]);
   const [stage, setStage] = useState<string>();
   const [isUserJoined, setIsUserJoined] = useState(null);
   const { data: nudgeStatus } = useGetNudgeStatusQuery();
-  const [isSessionCreated, setIsSessionCreated] = useState(false);
-  const [isStartAudioChatEmitted, setIsStartAudioChatEmitted] = useState(false);
+  const [isSessionCreated, setIsSessionCreated] = useState<boolean>(false);
+  const [isStartAudioChatEmitted, setIsStartAudioChatEmitted] = useState<boolean>(false);
 
   const isClient = user?.role === UserRole.CLIENT;
-  const isCounsellor = user?.role === UserRole.COUNSELOR;
+  const isCounsellor = user?.role === UserRole.COUNSELLOR;
   // const isWebRTC = activeChat.provider === "WEBRTC"; // to distinguish between exotel and webrtc
 
   const updateLastTranscription = (
@@ -378,7 +378,7 @@ const CallTranscript: FC<CallTranscriptProps> = ({
 
   useEffect(() => {
     if (isMicrophoneMode) {
-      if (microphoneStreamRef.current) {
+      if (microphoneStreamRef.current && microphoneChatId) {
         setupMediaRecorder(microphoneStreamRef.current);
       }
     } else {
@@ -386,7 +386,7 @@ const CallTranscript: FC<CallTranscriptProps> = ({
         setupMediaRecorder(localStreamRef.current);
       }
     }
-  }, [localStreamRef.current, microphoneStreamRef.current]);
+  }, [localStreamRef.current, microphoneStreamRef.current, microphoneChatId]);
 
   useEffect(() => {
     if (!mediaRecorder) return;
@@ -474,14 +474,8 @@ const CallTranscript: FC<CallTranscriptProps> = ({
 
   const confirmEndSession = async (triggerApi: boolean = true) => {
     try {
-      if (isMicrophoneMode) {
-        emitSocketEvent(SocketEvent.AUDIO_CHAT_ENDED, {
-          chatId: microphoneChatId,
-        });
-        return;
-      }
       cleanupMediaRecorder();
-      endSession(isMicrophoneMode ? false : triggerApi, activeChatId);
+      endSession(triggerApi, activeChatId ?? microphoneChatId);
     } catch (error) {
       logger.info(`Error ending session:, ${error}`);
     }
@@ -490,13 +484,14 @@ const CallTranscript: FC<CallTranscriptProps> = ({
   useEffect(() => {
     if (isMicrophoneMode && isSessionCreated && !isStartAudioChatEmitted) {
       if (microphoneChatId) {
+        setIsStartAudioChatEmitted(true);
         toast.info(
           "You've joined an active call. To start a fresh conversation, simply end this call and begin a new one.",
         );
+        return;
       }
       emitSocketEvent(SocketEvent.START_AUDIO_CHAT, {
         platform: "WEB",
-        activeChatId: microphoneChatId,
         sampleRate: 48000,
       });
       setIsStartAudioChatEmitted(true);
@@ -533,7 +528,7 @@ const CallTranscript: FC<CallTranscriptProps> = ({
         <CallControls
           isFocusMode={isFocusMode}
           isMuted={isMuted}
-          isPrimaryButtonDisabled={isMicrophoneMode && (!microphoneChatId || isNonWebChat)}
+          isPrimaryButtonDisabled={isMicrophoneMode && !microphoneChatId}
           isSecondaryButtonDisabled={!isUserJoined || isNonWebChat}
           isTertiaryButtonDisabled={!isUserJoined}
           showFocusButton={isCounsellor}

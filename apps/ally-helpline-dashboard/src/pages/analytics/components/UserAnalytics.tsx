@@ -4,7 +4,7 @@ import { format } from "date-fns";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
 import { Button, Calendar } from "@/components";
-import { useLazyGetCounselorStatsQuery } from "@/api/analytics";
+import { useLazyGetCounsellorStatsQuery } from "@/api/analytics";
 import { getDateRange } from "@/utils/date";
 
 import { CalendarMode } from "../types";
@@ -12,12 +12,12 @@ import { ListeningChart } from ".";
 
 const UserAnalytics: FunctionComponent = () => {
   const [
-    getCounselorStats,
-    { data: counselorStats, isLoading: statsLoading, isError: isStatsError },
-  ] = useLazyGetCounselorStatsQuery();
+    getCounsellorStats,
+    { data: counsellorStats, isLoading: statsLoading, isError: isStatsError },
+  ] = useLazyGetCounsellorStatsQuery();
 
   const isLoading = useMemo(() => statsLoading, [statsLoading]);
-  const [isCalendarOpen, setIsCalendarOpen] = useState(false);
+  const [isCalendarOpen, setIsCalendarOpen] = useState<boolean>(false);
   const [calendarValue, setCalendarValue] = useState<[Date, Date]>([new Date(), new Date()]);
   const [mode, setMode] = useState<CalendarMode>(CalendarMode.DAY);
   const [displayDate, setDisplayDate] = useState<[Date, Date]>([new Date(), new Date()]);
@@ -32,9 +32,9 @@ const UserAnalytics: FunctionComponent = () => {
 
   useEffect(() => {
     if (mode === CalendarMode.ALL) {
-      getCounselorStats();
+      getCounsellorStats();
     } else {
-      getCounselorStats({
+      getCounsellorStats({
         startDate: format(calendarValue[0], "yyyy-MM-dd"),
         endDate: format(calendarValue[1], "yyyy-MM-dd"),
       });
@@ -154,7 +154,7 @@ const UserAnalytics: FunctionComponent = () => {
 
   const handleOk = () => {
     setDisplayDate(calendarValue);
-    getCounselorStats({
+    getCounsellorStats({
       startDate: format(calendarValue[0], "yyyy-MM-dd"),
       endDate: format(calendarValue[1], "yyyy-MM-dd"),
     });
@@ -163,7 +163,7 @@ const UserAnalytics: FunctionComponent = () => {
 
   return (
     <div className="flex justify-start items-start bg-white p-6 w-full h-full gap-6">
-      {isLoading && !counselorStats ? (
+      {isLoading && !counsellorStats ? (
         <div className="flex justify-center items-center h-[calc(100%_-_80px)]">
           <CircularProgress />
         </div>
@@ -171,11 +171,11 @@ const UserAnalytics: FunctionComponent = () => {
         <div className="flex flex-col w-[70%] ml-8 flex-2">
           <ListeningChart
             isEmpty={
-              counselorStats?.counselorListeningDuration === 0 &&
-              counselorStats?.counselorSharingDuration === 0
+              counsellorStats?.counselorListeningDuration === 0 &&
+              counsellorStats?.counselorSharingDuration === 0
             }
             listeningPercentage={
-              isStatsError ? 0 : 100 - (counselorStats?.counselorSharingPercentage ?? 0)
+              isStatsError ? 0 : 100 - (counsellorStats?.counselorSharingPercentage ?? 0)
             }
           />
         </div>

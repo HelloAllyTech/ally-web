@@ -5,7 +5,7 @@ export enum SummaryFieldKey {
   CallDate = "callDate",
   CallTime = "callTime",
   ClientId = "clientId",
-  CounselorName = "counselorName",
+  CounsellorName = "counselorName",
   CallType = "callType",
   Age = "age",
   Gender = "gender",

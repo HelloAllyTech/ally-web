@@ -43,9 +43,9 @@ const PrivateRouteLayout = () => {
   const isClient = user?.role === UserRole.CLIENT;
   const isAdmin = user?.role === UserRole.ADMIN;
   const [activeTab, setActiveTab] = useState<TabId>(TabId.CALLS);
-  const [alertCall, setAlertCall] = useState(true);
+  const [showAlertCall, setShowAlertCall] = useState<boolean>(true);
   const [waitingClients, setWaitingClients] = useState<WaitingClient[]>([]);
-  const [isSidebarOpen, setSidebarOpen] = useState(false);
+  const [isSidebarOpen, setSidebarOpen] = useState<boolean>(false);
 
   const { userStatus } = useSelector((state: RootState) => state.user);
 
@@ -57,7 +57,7 @@ const PrivateRouteLayout = () => {
   const { data: getWaitingClientsData, isSuccess: isWaitingClientsSuccess } =
     useGetWaitingClientsQuery(undefined, {
       skip:
-        user?.role !== UserRole.COUNSELOR ||
+        user?.role !== UserRole.COUNSELLOR ||
         !isAvailable ||
         !chatTypes?.includes(CallType.WEBRTC_CHAT),
       pollingInterval: 5000,
@@ -245,11 +245,11 @@ const PrivateRouteLayout = () => {
             </Routes>
           </div>
         </div>
-        {alertCall &&
+        {showAlertCall &&
           waitingClients.length > 0 &&
           isAvailable &&
           !isPathExcluded(pathname, excludeCallPicker) && (
-            <CallPicker onAccept={onAcceptCall} onDecline={() => setAlertCall(false)} />
+            <CallPicker onAccept={onAcceptCall} onDecline={() => setShowAlertCall(false)} />
           )}
       </div>
     );

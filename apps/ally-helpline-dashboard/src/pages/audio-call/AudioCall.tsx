@@ -105,7 +105,7 @@ const AudioCall: FunctionComponent = () => {
     const fetchActiveChat = async () => {
       try {
         let response;
-        if (user?.role === UserRole.COUNSELOR) {
+        if (user?.role === UserRole.COUNSELLOR) {
           response = await getCounsellorChat();
         } else if (user?.role === UserRole.CLIENT) {
           response = await getClientChat();
@@ -179,20 +179,6 @@ const AudioCall: FunctionComponent = () => {
       );
     }
 
-    if (
-      isMicrophoneMode &&
-      activeChat?.chatId &&
-      activeChat.provider === "MICROPHONE" &&
-      activeChat?.platform !== "WEB"
-    )
-      return (
-        <FallbackUI
-          image={<NoResults />}
-          mainMessage="Active Microphone Session on another platform"
-          description="You have an active microphone session running on another platform. Please end the call there first, or continue using that session if you prefer."
-        />
-      );
-
     // Fallback shown when user starts webrtc mode but there is no ongoing call
     if (
       !isMicrophoneMode &&
@@ -234,9 +220,7 @@ const AudioCall: FunctionComponent = () => {
       {!isEnding &&
         ((activeChat?.chatId &&
           (activeChat?.provider === "WEBRTC" ||
-            (isMicrophoneMode &&
-              activeChat?.provider === "MICROPHONE" &&
-              activeChat?.platform === "WEB"))) ||
+            (isMicrophoneMode && activeChat?.provider === "MICROPHONE"))) ||
           (Array.isArray(activeChat) &&
             activeChat.length === 0 &&
             isMicrophoneMode &&

@@ -1,4 +1,4 @@
-interface StressBusterProps {
+export interface StressBusterProps {
   onClose?: () => void;
   playOnMount?: boolean;
   isFullScreenMode?: boolean;
@@ -6,5 +6,3 @@ interface StressBusterProps {
   showViewSummaryButton?: boolean;
   onViewSummary?: () => void;
 }
-
-export type { StressBusterProps };

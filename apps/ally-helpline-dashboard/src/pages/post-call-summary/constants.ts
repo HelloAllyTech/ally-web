@@ -192,7 +192,7 @@ export const summaryFields: SummaryField[] = [
   },
   {
     isEditable: false,
-    key: SummaryFieldKey.CounselorName,
+    key: SummaryFieldKey.CounsellorName,
     label: "Counsellor Name",
     sectionKey: SummarySectionKey.FeaturesAndDemographics,
     type: "Text",

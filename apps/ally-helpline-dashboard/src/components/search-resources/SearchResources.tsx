@@ -20,9 +20,9 @@ const SearchResources: FC<SearchResourcesProps> = ({
   const [searchQuery, setSearchQuery] = useState("");
   const [resources, setResources] = useState<Resource[]>([]);
   const [categoryCountList, setCategoryCountList] = useState<{ [key: string]: number }>({});
-  const [hasMore, setHasMore] = useState(true);
-  const lastRequestId = useRef(0);
-  const currentRequestId = useRef(0);
+  const [hasMore, setHasMore] = useState<boolean>(true);
+  const lastRequestId = useRef<number>(0);
+  const currentRequestId = useRef<number>(0);
 
   useEffect(() => {
     const initializeSearchWithQueryParams = async () => {

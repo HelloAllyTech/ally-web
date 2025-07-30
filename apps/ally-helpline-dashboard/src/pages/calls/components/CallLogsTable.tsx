@@ -19,7 +19,7 @@ import {
 } from "@/assets/icons";
 import { CallLog } from "@/types/calls";
 
-import { convertSecondsToDuration, formatDate } from "../utils";
+import { convertSecondsToDuration, getFormattedDate } from "../utils";
 import { CALL_LOGS_PAGINATION_LIMIT, tagColors } from "../constants";
 import { TagDisplay } from "../types";
 import { SummarySideBar } from ".";
@@ -45,8 +45,8 @@ const CallLogsTable = () => {
   const { data: callLogs = [] } = callLogsData || {};
 
   const [callLogList, setCallLogList] = useState<CallLog[]>([]);
-  const [isLoadingMore, setIsLoadingMore] = useState(false);
-  const [hasMore, setHasMore] = useState(true);
+  const [isLoadingMore, setIsLoadingMore] = useState<boolean>(false);
+  const [hasMore, setHasMore] = useState<boolean>(true);
   const tableRef = useRef<HTMLDivElement>(null);
 
   const handleScroll = () => {
@@ -89,7 +89,7 @@ const CallLogsTable = () => {
     );
   }
 
-  const getCounselorDisplayData = (row: CallLog) => {
+  const getCounsellorDisplayData = (row: CallLog) => {
     const { details, id } = row;
     if (details) {
       const { callDuration, callInfo, startTime, summary, transcript } = details;
@@ -98,7 +98,7 @@ const CallLogsTable = () => {
         id,
         transcript,
         callName: callInfo?.summaryName ?? "--",
-        dateAndTime: startTime && formatDate(startTime),
+        dateAndTime: startTime && getFormattedDate(startTime),
         duration: convertSecondsToDuration(callDuration),
         qualityScore: summary?.callQuality ?? 0,
         tags: summary?.tags?.map((tag: { tag: string; positivity_rating: number }) => {
@@ -152,20 +152,25 @@ const CallLogsTable = () => {
       key: "review",
       header: "Review",
       style: { width: "10%" },
-      render: (_value, row) => (
-        <Button
-          disabled={row.raw.details?.summary === null}
-          onClick={() => setCallSummary(row.raw)}
-          className="flex items-center justify-center w-full py-[8px] bg-transparent border-none hover:bg-transparent cursor-pointer"
-        >
-          <ReviewIcon />
-        </Button>
-      ),
+      render: (_value, row) => {
+        const isSummaryNull = row.raw.details?.summary === null;
+        return (
+          <Button
+            disabled={isSummaryNull}
+            onClick={() => setCallSummary(row.raw)}
+            className={`flex items-center justify-center w-full py-[8px] bg-transparent border-none hover:bg-transparent ${
+              isSummaryNull ? "!pointer-events-auto !cursor-default" : "cursor-pointer"
+            }`}
+          >
+            <ReviewIcon />
+          </Button>
+        );
+      },
       icon: <ReviewIcon />,
     },
   ];
 
-  const displayData = callLogList.map(getCounselorDisplayData);
+  const displayData = callLogList.map(getCounsellorDisplayData);
 
   const renderFallbackUI = () => {
     if (callLogList.length === 0 && !isLoading) {

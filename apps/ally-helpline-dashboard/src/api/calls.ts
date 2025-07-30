@@ -3,9 +3,9 @@ import { CallType } from "@/constants/call";
 import {
   GetCallLogsInput,
   GetCallLogsResponse,
-  GetCounselorsResponse,
+  GetCounsellorsResponse,
   GetTagsResponse,
-  GetCounselorsInput,
+  GetCounsellorsInput,
   GetTagsInput,
 } from "@/types/calls";
 
@@ -25,7 +25,7 @@ const callsAPI = baseAPI.injectEndpoints({
       }),
       providesTags: ["CallLogs"],
     }),
-    getCounselors: builder.query<GetCounselorsResponse, GetCounselorsInput>({
+    getCounsellors: builder.query<GetCounsellorsResponse, GetCounsellorsInput>({
       query: params => ({
         url: "/chats/counselors",
         params,
@@ -48,7 +48,7 @@ const callsAPI = baseAPI.injectEndpoints({
 export const {
   useGetCallLogsQuery,
   useGetAdminCallLogsQuery,
-  useGetCounselorsQuery,
+  useGetCounsellorsQuery,
   useGetCallTagsQuery,
   useGetChatTypesQuery,
 } = callsAPI;
