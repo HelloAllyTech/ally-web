@@ -72,7 +72,6 @@ export default function SearchClient({
         onCategoryChange={onCategoryChange}
         onInfiniteScroll={onInfiniteScroll}
         resources={documents}
-        showHeaderDescriptionInMobile={false}
         isLoading={isLoading}
         categoryCountList={categoryCountList}
         isSuggestionsCenter={false}
