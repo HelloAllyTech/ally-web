@@ -13,7 +13,7 @@ const TagGroup: React.FC<TagGroupProps> = ({ tags, className = "", style }) => {
   const updateExpanded = () => {
     setIsExpanded(prev => {
       if (prev === false) {
-        if (tags.length < 3) {
+        if (tags?.length < 3) {
           return false;
         }
         return true;

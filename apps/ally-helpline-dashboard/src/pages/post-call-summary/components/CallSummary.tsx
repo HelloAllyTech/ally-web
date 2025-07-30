@@ -175,8 +175,8 @@ const CallSummary: FC<CallSummaryProps> = ({
                 }))
               }
               multiline
-              rows={4}
-              className={`w-full ${isFieldDisabled(field) ? "pointer-events-none" : ""}`}
+              rows={field.key === SummaryFieldKey.SessionSummary ? 10 : 4}
+              className="w-full"
               inputStyles={{
                 color: field.isEditable ? "#1A1A1A" : "#9CA3AF",
                 fontSize: "16px",
@@ -186,6 +186,7 @@ const CallSummary: FC<CallSummaryProps> = ({
               placeholder={enhancing === field.key ? "" : field.placeholder}
               showBorder={false}
               InputProps={{
+                readOnly: isFieldDisabled(field),
                 startAdornment: enhancing === field.key && EnhancementLoadingSkeleton,
                 endAdornment: field.isEnhanceable && !isAdmin && (
                   <EnhanceButton
@@ -212,7 +213,6 @@ const CallSummary: FC<CallSummaryProps> = ({
               <span className="font-medium text-[16px] text-[#6B7280]">{`${field.label}: `}</span>
               <div className="flex-1">
                 <TextField
-                  className={`${isFieldDisabled(field) ? "pointer-events-none" : ""}`}
                   value={value ?? "--"}
                   onChange={e =>
                     setSummaryData(prev => ({
@@ -225,6 +225,9 @@ const CallSummary: FC<CallSummaryProps> = ({
                     color: field.isEditable ? "#1A1A1A" : "#9CA3AF",
                     fontSize: "16px",
                     fontFamily: "IBM_Plex_Serif",
+                  }}
+                  InputProps={{
+                    readOnly: isFieldDisabled(field),
                   }}
                   showBorder={false}
                 />
