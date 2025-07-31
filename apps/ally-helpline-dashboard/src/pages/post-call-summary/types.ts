@@ -59,6 +59,7 @@ export interface CallSummaryProps {
   isInSidebar?: boolean;
   isSummaryPolling?: boolean;
   fromSummarySidebar?: boolean;
+  onClickViewSummary?: () => void;
 }
 
 export interface ModalData {

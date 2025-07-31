@@ -97,6 +97,7 @@ const PostCallSummary = () => {
             isSummaryLoading={isGetCallSummaryLoading}
             onProceed={handleProceed}
             isSummaryPolling={isSummaryPolling}
+            onClickViewSummary={refetch}
           />
         );
       default:

@@ -1,6 +1,7 @@
 import { AlertCircle, Info } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { FC, useEffect, useState } from "react";
+import { Tooltip } from "@mui/material";
 
 import { Button } from "@/components";
 import { Spinner, RoundCheckmark, Waveform, NotesIcon } from "@/assets/icons";
@@ -31,6 +32,16 @@ const SummaryLoading: FC<SummaryLoadingProps> = ({
     "Extracting insights...",
   ];
 
+  const tooltipProps = {
+    tooltip: {
+      sx: {
+        backgroundColor: "#1C1B1F",
+        color: "white",
+        fontSize: "12px",
+      },
+    },
+  };
+
   const [visibleMessages, setVisibleMessages] = useState<string[]>(loadingMessages.slice(0, 2));
   const [currentMessageIndex, setCurrentMessageIndex] = useState(1);
 
@@ -59,7 +70,7 @@ const SummaryLoading: FC<SummaryLoadingProps> = ({
 
   const renderNotes = () => {
     return (
-      <div className="w-full max-w-2xl border-t border-gray-200 pt-[20px]">
+      <div className="w-full max-w-2xl border-t border-gray-200 pt-[20px] mx-auto">
         <div className="flex flex-row justify-between items-center mb-2 px-[10px]">
           <div className="flex flex-row items-center gap-[16px]">
             <NotesIcon />
@@ -70,7 +81,15 @@ const SummaryLoading: FC<SummaryLoadingProps> = ({
               Add Notes(Optional)
             </label>
           </div>
-          <Info className="w-[12px] h-[12px] text-[#1C1B1F]" />
+          <Tooltip
+            title="Your notes are auto-saved and will appear under 'Additional Notes' after the summary and highlights are generated"
+            placement="bottom-end"
+            className="b"
+            componentsProps={tooltipProps}
+            arrow
+          >
+            <Info className="w-[12px] h-[12px] text-[#1C1B1F] cursor-pointer" />
+          </Tooltip>
         </div>
         <textarea
           id="notes"
@@ -203,7 +222,7 @@ const SummaryLoading: FC<SummaryLoadingProps> = ({
     </div>
   ) : (
     <div className="flex flex-col items-center justify-center bg-white text-gray-800 h-[70vh] space-y-4">
-      <div className="h-full flex flex-col justify-around">
+      <div className="h-full flex flex-col justify-around w-full">
         {/* Audio Wave Animation */}
         <div className="flex flex-col items-center justify-center">
           <div
