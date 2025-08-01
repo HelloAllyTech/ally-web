@@ -367,6 +367,7 @@ const CallSummary: FC<CallSummaryProps> = ({
       isSummaryGenerated={callSummary?.details?.summary}
       onViewSummary={onViewSummary}
       onNotesChange={handleNotesChange}
+      onViewCallLogs={onProceed}
       notes={notes}
     />
   );

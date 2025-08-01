@@ -36,7 +36,7 @@ import PermissionGuardedRoute from "./PermissionGuardedRoute";
 // TODO: Restrict client access to pages
 
 const PrivateRouteLayout = () => {
-  const { user, checkAuth } = useUser();
+  const { user, checkAuth, updateUserStatus } = useUser();
   const navigate = useNavigate();
   const { pathname } = useLocation();
 
@@ -72,6 +72,8 @@ const PrivateRouteLayout = () => {
     const userStatusLocalStorage = localStorage.getItem("userStatus");
     if (userStatusLocalStorage) {
       store.dispatch(setUserStatus(userStatusLocalStorage as UserStatus));
+    } else {
+      updateUserStatus(UserStatus.AVAILABLE);
     }
     const verifyAuth = async () => {
       const userData = await checkAuth();
@@ -106,8 +108,7 @@ const PrivateRouteLayout = () => {
   const onAcceptCall = async () => {
     try {
       await acceptCall({ chatId: waitingClients[0]?.chat?.chatId });
-      store.dispatch(setUserStatus(UserStatus.OFFLINE));
-      localStorage.setItem("userStatus", UserStatus.OFFLINE);
+      updateUserStatus(UserStatus.OFFLINE);
 
       // Clearing waitingClients to prevent call pop-up after the call due to outdated waitingClients
       setWaitingClients([]);
@@ -223,8 +224,8 @@ const PrivateRouteLayout = () => {
                 path={ROUTES.SEARCH}
                 element={
                   <PermissionGuardedRoute
-                    // TODO: Add correct permission for search
-                    permission={Permissions.VIEW_NAVBAR_LEARN}
+                    // TODO: Add correct permission for Search once BE implementation is done
+                    permission={Permissions.VIEW_START_CALL_PAGE}
                     element={<Search />}
                   />
                 }
@@ -234,8 +235,8 @@ const PrivateRouteLayout = () => {
                   path={ROUTES.START_SESSION}
                   element={
                     <PermissionGuardedRoute
-                      // TODO: Add correct permission for search
-                      permission={Permissions.VIEW_NAVBAR_LEARN}
+                      // TODO: Add correct permission for Start Session once BE implementation is done
+                      permission={Permissions.VIEW_START_CALL_PAGE}
                       element={<StartSession />}
                     />
                   }

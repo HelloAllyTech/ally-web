@@ -104,7 +104,7 @@ const ResourceCard: FC<ResourceCardProps> = ({ title, description, category, tag
               setIsExpanded(true);
             }}
           >
-            ...more
+            more
           </button>
         </motion.div>
       );

@@ -61,7 +61,3 @@ export interface CallSummaryProps {
   fromSummarySidebar?: boolean;
   onClickViewSummary?: () => void;
 }
-
-export interface ModalData {
-  type: "article" | "redirect";
-}

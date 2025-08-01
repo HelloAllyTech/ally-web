@@ -1,5 +1,6 @@
 import { useEffect, useState, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { useLocation } from "react-router-dom";
 import { CircularProgress } from "@mui/material";
 
 import { GenericTable } from "@ally-ui-mono/ui-shared";
@@ -8,15 +9,7 @@ import { RootState } from "@/store/store";
 import { updateFilters } from "@/reducer/callsReducer";
 import { useGetCallLogsQuery } from "@/api/calls";
 import { Button, TagGroup, FallbackUI } from "@/components";
-import {
-  NoResults,
-  CallIdIcon,
-  DateIcon,
-  TimerIcon,
-  StarIcon,
-  TagsIcon,
-  ReviewIcon,
-} from "@/assets/icons";
+import { NoResults, CallIdIcon, DateIcon, TimerIcon, TagsIcon, ReviewIcon } from "@/assets/icons";
 import { CallLog } from "@/types/calls";
 
 import { convertSecondsToDuration, getFormattedDate } from "../utils";
@@ -26,6 +19,7 @@ import { SummarySideBar } from ".";
 
 const CallLogsTable = () => {
   const dispatch = useDispatch();
+  const location = useLocation();
 
   const { filters } = useSelector((state: RootState) => state.calls);
 
@@ -70,9 +64,19 @@ const CallLogsTable = () => {
       } else {
         setHasMore(true);
       }
-      handleScroll();
+      // Only scroll when loading more data (pagination), not when refetching
+      if (offset > 0) {
+        handleScroll();
+      }
     }
   }, [callLogsData]);
+
+  // Refetch call logs when navigating from PostCallSummary
+  useEffect(() => {
+    if (location.state?.refetch) {
+      refetchCallLogs();
+    }
+  }, [location, refetchCallLogs]);
 
   const handleLoadMore = () => {
     if (!isLoading && !isLoadingMore && hasMore) {

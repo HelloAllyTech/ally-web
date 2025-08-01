@@ -1,5 +1,4 @@
 import { AlertCircle, Info } from "lucide-react";
-import { useNavigate } from "react-router-dom";
 import { FC, useEffect, useState } from "react";
 import { Tooltip } from "@mui/material";
 
@@ -12,6 +11,7 @@ interface SummaryLoadingProps {
   isSummaryGenerated?: boolean;
   onViewSummary?: () => void;
   onNotesChange?: (notes: string) => void;
+  onViewCallLogs: () => void;
   notes?: string;
 }
 
@@ -21,9 +21,9 @@ const SummaryLoading: FC<SummaryLoadingProps> = ({
   isSummaryGenerated = false,
   onViewSummary = () => {},
   onNotesChange = () => {},
+  onViewCallLogs,
   notes = "",
 }) => {
-  const navigate = useNavigate();
   const loadingMessages = [
     "Generating Summary",
     "Understanding context...",
@@ -107,7 +107,7 @@ const SummaryLoading: FC<SummaryLoadingProps> = ({
     return (
       <div className="flex flex-row gap-4 items-center justify-center">
         <Button
-          onClick={() => navigate("/call-logs")}
+          onClick={onViewCallLogs}
           className="mt-6 px-6 py-2 bg-white border border-black text-black rounded-full hover:bg-gray-50 transition-colors font-['IBM_Plex_Serif'] text-sm"
         >
           View Call Logs
