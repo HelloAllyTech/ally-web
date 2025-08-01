@@ -97,7 +97,7 @@ const SummaryLoading: FC<SummaryLoadingProps> = ({
           value={notes}
           onChange={e => onNotesChange(e.target.value)}
           placeholder="What would like to remember from today’s session"
-          className="w-full p-[10px] border-none focus:ring-transparent focus:ring-0 font-['IBM_Plex_Serif'] text-sm"
+          className="w-full p-[10px] border-none focus:ring-transparent focus:ring-0 font-['IBM_Plex_Serif'] text-sm resize-none"
         />
       </div>
     );
