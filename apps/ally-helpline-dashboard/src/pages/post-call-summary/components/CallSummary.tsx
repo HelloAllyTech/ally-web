@@ -39,6 +39,8 @@ const CallSummary: FC<CallSummaryProps> = ({
 }) => {
   const { user } = useSelector((state: RootState) => state.user);
 
+  const initialNotes = callSummary?.details?.callInfo?.notes || "";
+
   const [summaryData, setSummaryData] = useState(null);
   const [searchedLocations, setSearchedLocations] = useState(null);
 
@@ -49,7 +51,7 @@ const CallSummary: FC<CallSummaryProps> = ({
   const [searchLocations, { isLoading: isSearchLocationsLoading }] = useLazySearchLocationsQuery();
   const [updateCallSummaryNotes] = useUpdateCallSummaryNotesMutation();
   const [canShowSummary, setCanShowSummary] = useState(fromSummarySidebar);
-  const [notes, setNotes] = useState("");
+  const [notes, setNotes] = useState(initialNotes);
 
   const { enhancing, EnhanceButton, EnhancementLoadingSkeleton, isEnhanceLoading } = useEnhance();
 
@@ -72,6 +74,12 @@ const CallSummary: FC<CallSummaryProps> = ({
       });
     }
   }, [callSummary]);
+
+  useEffect(() => {
+    if (initialNotes?.length > 0) {
+      setNotes(initialNotes);
+    }
+  }, [initialNotes]);
 
   const onHandleSearch = async (query: string) => {
     if (query) {
