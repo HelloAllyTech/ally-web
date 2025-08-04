@@ -534,9 +534,7 @@ const CallTranscript: FC<CallTranscriptProps> = ({
         <CallControls
           isFocusMode={isFocusMode}
           isMuted={isMuted}
-          isPrimaryButtonDisabled={
-            (isMicrophoneMode && !microphoneChatId) || isSharedMicrophoneMode
-          }
+          isPrimaryButtonDisabled={isMicrophoneMode && !microphoneChatId}
           isSecondaryButtonDisabled={!isUserJoined || isNonWebChat || isSharedMicrophoneMode}
           isTertiaryButtonDisabled={!isUserJoined}
           showFocusButton={isCounsellor}
