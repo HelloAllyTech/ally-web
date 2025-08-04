@@ -43,6 +43,7 @@ const AudioCall: FunctionComponent = () => {
 
   const isMicrophoneMode = mode === "microphone";
   const isLoading = isCounsellorChatLoading || isClientChatLoading || isEndCallLoading;
+  const isActiveMicrophoneSession = isMicrophoneMode && microphoneChatId && !activeChat?.chatId;
 
   useEffect(() => {
     return () => {
@@ -100,6 +101,24 @@ const AudioCall: FunctionComponent = () => {
       }
     };
   }, [activeChat?.chatId, microphoneChatId]);
+
+  // Handle page refresh for microphone mode - show browser's default confirmation dialog
+  useEffect(() => {
+    const handleBeforeUnload = (event: BeforeUnloadEvent) => {
+      // Show browser's default confirmation dialog
+      // Note: Browser may remember user's choice after first interaction
+      event.preventDefault();
+      event.returnValue = "";
+    };
+
+    if (isActiveMicrophoneSession) {
+      window.addEventListener("beforeunload", handleBeforeUnload);
+    }
+
+    return () => {
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+    };
+  }, [isActiveMicrophoneSession]);
 
   useEffect(() => {
     const fetchActiveChat = async () => {

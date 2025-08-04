@@ -66,6 +66,9 @@ const CallTranscript: FC<CallTranscriptProps> = ({
 
   const isClient = user?.role === UserRole.CLIENT;
   const isCounsellor = user?.role === UserRole.COUNSELLOR;
+  const isSharedMicrophoneMode =
+    isMicrophoneMode && activeChat?.chatId && activeChat?.provider === "MICROPHONE";
+
   // const isWebRTC = activeChat.provider === "WEBRTC"; // to distinguish between exotel and webrtc
 
   const updateLastTranscription = (
@@ -528,8 +531,10 @@ const CallTranscript: FC<CallTranscriptProps> = ({
         <CallControls
           isFocusMode={isFocusMode}
           isMuted={isMuted}
-          isPrimaryButtonDisabled={isMicrophoneMode && !microphoneChatId}
-          isSecondaryButtonDisabled={!isUserJoined || isNonWebChat}
+          isPrimaryButtonDisabled={
+            (isMicrophoneMode && !microphoneChatId) || isSharedMicrophoneMode
+          }
+          isSecondaryButtonDisabled={!isUserJoined || isNonWebChat || isSharedMicrophoneMode}
           isTertiaryButtonDisabled={!isUserJoined}
           showFocusButton={isCounsellor}
           onCutCallButtonClick={() => confirmEndSession(true)}
