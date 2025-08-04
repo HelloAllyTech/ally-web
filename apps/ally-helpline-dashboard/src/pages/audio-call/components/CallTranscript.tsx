@@ -67,7 +67,10 @@ const CallTranscript: FC<CallTranscriptProps> = ({
   const isClient = user?.role === UserRole.CLIENT;
   const isCounsellor = user?.role === UserRole.COUNSELLOR;
   const isSharedMicrophoneMode =
-    isMicrophoneMode && activeChat?.chatId && activeChat?.provider === "MICROPHONE";
+    isMicrophoneMode &&
+    activeChat?.chatId &&
+    activeChat?.platform === "WEB" &&
+    activeChat?.provider === "MICROPHONE";
 
   // const isWebRTC = activeChat.provider === "WEBRTC"; // to distinguish between exotel and webrtc
 
