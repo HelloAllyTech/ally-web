@@ -14,19 +14,19 @@ const ListeningChart: FC<ListeningChartProps> = ({
   const [animatedPercentage, setAnimatedPercentage] = useState(0);
 
   useEffect(() => {
-    const animationDuration = 1000; // 1 second
-    const steps = 60; // 60 steps for smooth animation
-    const increment = listeningPercentage / steps;
+    const ANIMATION_DURATION = 1000; // 1 second
+    const STEPS = 60; // 60 steps for smooth animation
+    const increment = listeningPercentage / STEPS;
     let currentStep = 0;
 
     const timer = setInterval(() => {
-      if (currentStep < steps) {
+      if (currentStep < STEPS) {
         setAnimatedPercentage(prev => Math.min(prev + increment, listeningPercentage));
         currentStep++;
       } else {
         clearInterval(timer);
       }
-    }, animationDuration / steps);
+    }, ANIMATION_DURATION / STEPS);
 
     return () => clearInterval(timer);
   }, [listeningPercentage]);

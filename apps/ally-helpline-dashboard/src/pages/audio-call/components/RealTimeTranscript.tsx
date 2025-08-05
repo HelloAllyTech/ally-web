@@ -13,7 +13,7 @@ const RealTimeTranscript: FC<RealTimeTranscriptProps> = ({ isFocusMode, transcri
 
   const transcriptContainerRef = useRef<HTMLDivElement>(null);
 
-  const [isUserScrolling, setIsUserScrolling] = useState(false);
+  const [isUserScrolling, setIsUserScrolling] = useState<boolean>(false);
 
   useEffect(() => {
     if (transcriptContainerRef.current && isFocusMode && !isUserScrolling) {

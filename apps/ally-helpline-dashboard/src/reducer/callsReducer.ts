@@ -8,7 +8,7 @@ interface CallsState {
     limit?: number;
     sortBy?: string;
     order?: "ASC" | "DESC";
-    counselorName?: string;
+    counsellorName?: string;
     clientId?: string;
     startDate?: string;
     endDate?: string;

@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 
 import { logger, ResourceSearch, Resource } from "@ally-ui-mono/ui-shared";
 
-import { fetchReferenceDocuments, initialFetchLimit } from "./api";
+import { fetchReferenceDocuments, INITIAL_FETCH_LIMIT } from "./api";
 
 interface SearchClientProps {
   searchQuery: string;
@@ -23,14 +23,16 @@ export default function SearchClient({
   totalDocumentCount,
 }: SearchClientProps) {
   const router = useRouter();
-  const [documents, setDocuments] = useState<Resource[]>(initialDocuments);
+  const [documents, setDocuments] = useState<Resource[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [hasMore, setHasMore] = useState(initialDocuments.length < totalDocumentCount);
+  const [hasMore, setHasMore] = useState(false);
 
   useEffect(() => {
-    setDocuments(initialDocuments);
-    setHasMore(initialDocuments.length < totalDocumentCount);
-  }, [initialDocuments, totalDocumentCount]);
+    if (searchQuery) {
+      setDocuments(initialDocuments);
+      setHasMore(initialDocuments.length < totalDocumentCount);
+    }
+  }, [initialDocuments, totalDocumentCount, searchQuery]);
 
   const onSearch = (searchTerm: string) => {
     router.push(`/search?q=${encodeURIComponent(searchTerm)}`);
@@ -49,7 +51,7 @@ export default function SearchClient({
       const { documents: newDocuments, total } = await fetchReferenceDocuments(
         searchQuery,
         category,
-        initialFetchLimit,
+        INITIAL_FETCH_LIMIT,
         documents.map(doc => doc.id),
       );
       setDocuments(prev => [...prev, ...newDocuments]);
@@ -70,7 +72,7 @@ export default function SearchClient({
         onCategoryChange={onCategoryChange}
         onInfiniteScroll={onInfiniteScroll}
         resources={documents}
-        showHeaderDescriptionInMobile={false}
+        showHeaderDescriptionInMobile={!searchQuery}
         isLoading={isLoading}
         categoryCountList={categoryCountList}
         isSuggestionsCenter={false}

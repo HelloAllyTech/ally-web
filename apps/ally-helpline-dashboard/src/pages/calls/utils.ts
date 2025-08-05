@@ -1,5 +1,5 @@
 //TODO: removal of disable-max-len
-export const formatDate = (date: Date | string): string => {
+export const getFormattedDate = (date: Date | string): string => {
   const d = new Date(date);
 
   const formattedDate = d.toLocaleDateString("en-US", {

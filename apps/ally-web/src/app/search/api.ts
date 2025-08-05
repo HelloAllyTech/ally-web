@@ -3,13 +3,13 @@ import { logger } from "@ally-ui-mono/ui-shared";
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 const API_VERSION = process.env.NEXT_PUBLIC_API_VERSION;
 
-export const initialFetchLimit = 10;
+export const INITIAL_FETCH_LIMIT = 10;
 
 // TODO: make the params in object
 const fetchReferenceDocuments = async (
   query: string,
   category?: string,
-  limit: number = initialFetchLimit,
+  limit: number = INITIAL_FETCH_LIMIT,
   excludedIds?: string[],
 ) => {
   try {

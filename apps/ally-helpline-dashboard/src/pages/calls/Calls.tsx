@@ -1,30 +1,20 @@
-import { Button } from "@mui/material";
+import { FC } from "react";
 import { motion } from "framer-motion";
-import { FunctionComponent } from "react";
-import { useSelector } from "react-redux";
 
-import { RootState, store } from "@/store/store";
-import { setUserStatus } from "@/reducer/userReducer";
-import { UserStatus, UserRole } from "@/types/user";
+import { UserRole, UserStatus } from "@/types/user";
+import { Button } from "@/components";
 import { useUser } from "@/hooks/useUser";
 import { CallType } from "@/constants/call";
 
 import { CallLogsTable, ConsolidatedLogs } from "./components";
 
-const Calls: FunctionComponent = () => {
-  const { userStatus, availableChatTypes } = useSelector((state: RootState) => state.user);
-  const { user } = useUser();
+const Calls: FC = () => {
+  const { availableChatTypes, updateUserStatus, user, userStatus } = useUser();
 
   const isAdmin = user?.role === UserRole.ADMIN;
 
-  const markAvailable = () => {
-    localStorage.setItem("userStatus", UserStatus.AVAILABLE);
-    store.dispatch(setUserStatus(UserStatus.AVAILABLE));
-  };
-
-  const markAway = () => {
-    localStorage.setItem("userStatus", UserStatus.OFFLINE);
-    store.dispatch(setUserStatus(UserStatus.OFFLINE));
+  const handleUserStatusChange = () => {
+    updateUserStatus(userStatus === UserStatus.OFFLINE ? UserStatus.AVAILABLE : UserStatus.OFFLINE);
   };
 
   return (
@@ -47,7 +37,7 @@ const Calls: FunctionComponent = () => {
                   ? "text-[#027236] bg-[#D7FFD7] hover:bg-[#D7FFD7]"
                   : "text-[#FFF] bg-red-500 hover:bg-red-600"
               } rounded-[20px] text-[14px] capitalize px-4`}
-              onClick={userStatus === UserStatus.OFFLINE ? markAvailable : markAway}
+              onClick={handleUserStatusChange}
             >
               {userStatus === UserStatus.OFFLINE ? "Mark Available" : "Mark Away"}
             </Button>

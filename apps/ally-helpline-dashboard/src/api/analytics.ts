@@ -1,7 +1,7 @@
 import { baseAPI } from "@/api/baseAPI";
 import {
-  GetCounselorStatsRequest,
-  GetCounselorStatsResponse,
+  GetCounsellorStatsRequest,
+  GetCounsellorStatsResponse,
   GetDashboardUrlResponse,
   GetDashboardsResponse,
 } from "@/pages/analytics/types";
@@ -14,7 +14,7 @@ const analyticsAPI = baseAPI.injectEndpoints({
     getDashboards: builder.query<GetDashboardsResponse, void>({
       query: () => "/analytics/dashboard",
     }),
-    getCounselorStats: builder.query<GetCounselorStatsResponse, GetCounselorStatsRequest>({
+    getCounsellorStats: builder.query<GetCounsellorStatsResponse, GetCounsellorStatsRequest>({
       query: params => ({
         url: "analytics/counselor-stats",
         method: "GET",
@@ -27,5 +27,5 @@ const analyticsAPI = baseAPI.injectEndpoints({
 export const {
   useLazyGetDashboardUrlQuery,
   useLazyGetDashboardsQuery,
-  useLazyGetCounselorStatsQuery,
+  useLazyGetCounsellorStatsQuery,
 } = analyticsAPI;

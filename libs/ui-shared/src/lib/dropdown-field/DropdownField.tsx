@@ -19,7 +19,7 @@ const DropdownField: FC<DropdownFieldProps> = ({
   valueClassName,
   onHandleSearch,
 }) => {
-  const [isOpen, setIsOpen] = useState(false);
+  const [isOpen, setIsOpen] = useState<boolean>(false);
 
   const dropdownRef = useRef<HTMLDivElement>(null);
 

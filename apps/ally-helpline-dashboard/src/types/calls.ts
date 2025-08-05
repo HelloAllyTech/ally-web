@@ -81,7 +81,7 @@ export interface GetWaitingClientsResponse {
   clients: WaitingClient[];
 }
 
-export interface GetCounselorsInput {
+export interface GetCounsellorsInput {
   limit?: number;
   offset?: number;
 }
@@ -92,12 +92,12 @@ export interface GetTagsInput {
   search?: string;
 }
 
-export interface GetCounselorsResponse {
+export interface GetCounsellorsResponse {
   count: number;
-  data: Counselor[];
+  data: Counsellor[];
 }
 
-export interface Counselor {
+export interface Counsellor {
   id: number;
   name: string;
 }

@@ -5,7 +5,7 @@ export enum SummaryFieldKey {
   CallDate = "callDate",
   CallTime = "callTime",
   ClientId = "clientId",
-  CounselorName = "counselorName",
+  CounsellorName = "counselorName",
   CallType = "callType",
   Age = "age",
   Gender = "gender",
@@ -90,4 +90,9 @@ export interface GetTranscriptRequest {
   offset: number;
   limit: number;
   sortBy: string;
+}
+
+export interface UpdateCallSummaryNotesRequest {
+  chatId: string;
+  notes: string;
 }
