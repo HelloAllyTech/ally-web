@@ -2,13 +2,20 @@ import { useSelector } from "react-redux";
 
 import { RootState, store } from "@/store/store";
 import { useLazyGetUserQuery, useLazyGetPermissionsQuery } from "@/api/auth";
-import { setUser, authenticate, unauthenticate, setPermissions } from "@/reducer/userReducer";
+import {
+  setUser,
+  authenticate,
+  unauthenticate,
+  setPermissions,
+  setUserStatus,
+} from "@/reducer/userReducer";
 import { logger } from "@ally-ui-mono/ui-shared";
 import { baseAPI } from "@/api/baseAPI";
+import { UserStatus } from "@/types/user";
 
 export const useUser = () => {
   const isAuthenticated = useSelector((state: RootState) => state.user.isAuthenticated);
-  const user = useSelector((state: RootState) => state.user.user);
+  const { availableChatTypes, user, userStatus } = useSelector((state: RootState) => state.user);
   const permissions = useSelector((state: RootState) => state.user.permissions);
 
   const [getUser, { isLoading: isUserLoading }] = useLazyGetUserQuery();
@@ -65,13 +72,21 @@ export const useUser = () => {
     localStorage.removeItem("refreshToken");
   };
 
+  const updateUserStatus = (status: UserStatus) => {
+    localStorage.setItem("userStatus", status);
+    store.dispatch(setUserStatus(status));
+  };
+
   return {
-    user,
-    logout,
-    setUser,
+    availableChatTypes,
     checkAuth,
-    permissions,
-    isAuthenticated,
     isAuthLoading: isUserLoading || isPermissionsLoading,
+    isAuthenticated,
+    logout,
+    permissions,
+    setUser,
+    updateUserStatus,
+    user,
+    userStatus,
   };
 };

@@ -16,14 +16,14 @@ export type GetDashboardsResponse = {
   name: string;
 }[];
 
-export type GetCounselorStatsResponse = {
+export type GetCounsellorStatsResponse = {
   counselorListeningDuration: number;
   counselorName: string;
   counselorSharingDuration: number;
   counselorSharingPercentage: number;
 };
 
-export type GetCounselorStatsRequest = {
+export type GetCounsellorStatsRequest = {
   startDate?: string;
   endDate?: string;
 } | void;

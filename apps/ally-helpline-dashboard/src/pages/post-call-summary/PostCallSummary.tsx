@@ -1,31 +1,29 @@
 import { useEffect, useState } from "react";
-import { useSelector } from "react-redux";
 import { motion } from "framer-motion";
 import { useSearchParams, useNavigate, useParams } from "react-router-dom";
 
-import { RootState, store } from "@/store/store";
-import { ActionDialog, TabGroup } from "@/components";
-import { setUserStatus } from "@/reducer/userReducer";
-import { UserStatus } from "@/types/user";
-import { CallType } from "@/constants/call";
-
-import { ModalData, SectionType } from "./types";
-import { CallSummary, StressBusterStep } from "./components";
-import { useGetCallSummaryQuery } from "@/api/callSummary";
 import { logger } from "@ally-ui-mono/ui-shared";
+import { CallType } from "@/constants/call";
+import { useUser } from "@/hooks/useUser";
+import { UserStatus } from "@/types/user";
+import { ActionDialog, TabGroup } from "@/components";
+import { useGetCallSummaryQuery } from "@/api/callSummary";
+
+import { SectionType } from "./types";
+import { CallSummary, StressBusterStep } from "./components";
 import { getNextSection } from "./helper";
 import { summaryTabs } from "./constants";
 
 const PostCallSummary = () => {
   const { chatId } = useParams();
-
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const { availableChatTypes } = useSelector((state: RootState) => state.user);
 
+  const { availableChatTypes, updateUserStatus } = useUser();
+
+  const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
   const [selectedTab, setSelectedTab] = useState<SectionType>(SectionType.CallSummary);
-  const [modalData, setModalData] = useState<ModalData | null>({ type: null });
-  const [showInitialLoading, setShowInitialLoading] = useState(true);
+  const [isSummaryPolling, setIsSummaryPolling] = useState(true);
 
   const {
     data: callSummary,
@@ -41,44 +39,49 @@ const PostCallSummary = () => {
     }
   }, [searchParams]);
 
-  // TODO: Revamp the logic
   useEffect(() => {
+    let count = 0;
     const refetchCallSummary = async () => {
+      count++;
+
+      if (count >= 5) {
+        clearInterval(interval);
+        setIsSummaryPolling(false);
+      }
+      logger.info(`Count: ${count}`);
       try {
-        await refetch();
+        const data = await refetch();
+        if (data.data?.details?.summary) {
+          clearInterval(interval);
+        }
       } catch (error) {
         logger.info(`Error fetching call summary:, ${error}`);
       }
     };
 
-    let interval: NodeJS.Timeout;
+    const interval: NodeJS.Timeout = setInterval(refetchCallSummary, 5000);
 
-    // polling only for webRTC and not Microphone
-    if (
-      (!callSummary?.details?.summary && callSummary?.details?.callInfo?.provider === "WEBRTC") ||
-      (Array.isArray(callSummary?.details?.summary) &&
-        callSummary.details.summary.length === 0 &&
-        callSummary?.details?.callInfo?.provider !== "MICROPHONE")
-    ) {
-      refetchCallSummary();
-      interval = setInterval(refetchCallSummary, 5000);
-    }
+    refetchCallSummary();
 
     return () => {
       if (interval) {
         clearInterval(interval);
       }
     };
-  }, [callSummary]);
+  }, []);
 
   const handleProceed = () => {
     const nextSection = getNextSection(selectedTab);
     if (nextSection) {
       onTabChange(null, nextSection);
-    } else if (availableChatTypes?.includes(CallType.WEBRTC_CHAT)) {
-      setModalData({ type: "redirect" });
+    } else if (
+      availableChatTypes?.includes(CallType.WEBRTC_CHAT) &&
+      callSummary?.details?.callInfo?.provider === "WEBRTC"
+    ) {
+      setIsDialogOpen(true);
     } else {
-      navigate("/calls");
+      updateUserStatus(UserStatus.AVAILABLE);
+      navigate("/calls", { state: { refetch: true } });
     }
   };
 
@@ -94,25 +97,13 @@ const PostCallSummary = () => {
             chatId={Number(chatId)}
             isSummaryLoading={isGetCallSummaryLoading}
             onProceed={handleProceed}
-            showInitialLoading={showInitialLoading}
-            setShowInitialLoading={setShowInitialLoading}
+            isSummaryPolling={isSummaryPolling}
+            onClickViewSummary={refetch}
           />
         );
       default:
         return null;
     }
-  };
-
-  const handleMakeAvailable = () => {
-    localStorage.setItem("userStatus", UserStatus.AVAILABLE);
-    store.dispatch(setUserStatus(UserStatus.AVAILABLE));
-    navigate("/calls");
-  };
-
-  const handleKeepOffline = () => {
-    localStorage.setItem("userStatus", UserStatus.OFFLINE);
-    store.dispatch(setUserStatus(UserStatus.OFFLINE));
-    navigate("/calls");
   };
 
   const onTabChange = (event: React.SyntheticEvent, newValue: SectionType) => {
@@ -125,6 +116,11 @@ const PostCallSummary = () => {
     // Update URL without page reload
     const newUrl = `${window.location.pathname}?${searchParams.toString()}`;
     window.history.pushState({}, "", newUrl);
+  };
+  const onDialogConfirm = (status: UserStatus) => {
+    updateUserStatus(status);
+    setIsDialogOpen(false);
+    navigate("/calls", { state: { refetch: true } });
   };
 
   return (
@@ -143,16 +139,16 @@ const PostCallSummary = () => {
       </TabGroup>
 
       <ActionDialog
-        open={modalData?.type === "redirect"}
-        onClose={() => setModalData(null)}
+        open={isDialogOpen}
+        onClose={() => setIsDialogOpen(false)}
         primaryButton={{
           label: "Yes, mark me available",
-          onClick: handleMakeAvailable,
+          onClick: () => onDialogConfirm(UserStatus.AVAILABLE),
           variant: "default",
         }}
         secondaryButton={{
           label: "No, keep me offline",
-          onClick: handleKeepOffline,
+          onClick: () => onDialogConfirm(UserStatus.OFFLINE),
         }}
       >
         <span className="text-[14px] text-[#47464F]">

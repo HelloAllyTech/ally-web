@@ -14,13 +14,13 @@ interface UseSocketOptions {
 export const useSocket = ({ eventCallbacks, connectionType }: UseSocketOptions) => {
   const socketRef = useRef<Socket | null>(null);
   const connectionAttemptsRef = useRef(0);
-  const maxAttempts = 5;
+  const MAX_ATTEMPTS = 5;
   const baseUrl = `${import.meta.env.VITE_API_BASE_URL}/${getPathForConnectionType(
     connectionType,
   )}`;
 
   const connect = useCallback((chatId?: number) => {
-    if (connectionAttemptsRef.current >= maxAttempts) {
+    if (connectionAttemptsRef.current >= MAX_ATTEMPTS) {
       logger.info("Max connection attempts reached");
       return;
     }

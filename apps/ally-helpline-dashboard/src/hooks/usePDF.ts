@@ -12,16 +12,16 @@ const useFileExport = () => {
     // Split text into lines and handle page breaks
     const lines = doc.splitTextToSize(text, 180); // 180 is page width minus margins
     let yPosition = 20;
-    const lineHeight = 7;
-    const pageHeight = 280; // A4 page height minus margins
+    const LINE_HEIGHT = 7;
+    const PAGE_HEIGHT = 280; // A4 page height minus margins
 
     lines.forEach((line: string) => {
-      if (yPosition > pageHeight) {
+      if (yPosition > PAGE_HEIGHT) {
         doc.addPage();
         yPosition = 20;
       }
       doc.text(line, 15, yPosition);
-      yPosition += lineHeight;
+      yPosition += LINE_HEIGHT;
     });
 
     // Download the PDF

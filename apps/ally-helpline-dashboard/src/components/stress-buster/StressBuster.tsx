@@ -15,8 +15,8 @@ const StressBuster: FunctionComponent<StressBusterProps> = ({
   showViewSummaryButton = false,
   onViewSummary,
 }) => {
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [isMuted, setIsMuted] = useState(true);
+  const [isPlaying, setIsPlaying] = useState<boolean>(false);
+  const [isMuted, setIsMuted] = useState<boolean>(true);
   const [isMaximized, setIsMaximized] = useState(isFullScreenMode);
   const [seconds, setSeconds] = useState(1);
   const videoRef = useRef<HTMLVideoElement>(null);

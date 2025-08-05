@@ -9,6 +9,7 @@ import {
   UpdateCallInfoRequest,
   GetTranscriptResponse,
   GetTranscriptRequest,
+  UpdateCallSummaryNotesRequest,
 } from "@/types/summary";
 
 const callSummaryAPI = baseAPI.injectEndpoints({
@@ -67,6 +68,13 @@ const callSummaryAPI = baseAPI.injectEndpoints({
         params: { offset, limit, sortOrder: "ASC", sortBy },
       }),
     }),
+    updateCallSummaryNotes: builder.mutation<void, UpdateCallSummaryNotesRequest>({
+      query: ({ chatId, notes }) => ({
+        url: `/chats/${chatId}/notes`,
+        method: "POST",
+        body: { content: notes },
+      }),
+    }),
   }),
 });
 
@@ -81,4 +89,5 @@ export const {
   useGetLocationsQuery,
   useLazySearchLocationsQuery,
   useGetTranscriptQuery,
+  useUpdateCallSummaryNotesMutation,
 } = callSummaryAPI;

@@ -57,10 +57,7 @@ export interface CallSummaryProps {
   onProceed: () => void;
   isSummaryLoading: boolean;
   isInSidebar?: boolean;
-  showInitialLoading: boolean;
-  setShowInitialLoading: Dispatch<SetStateAction<boolean>>;
-}
-
-export interface ModalData {
-  type: "article" | "redirect";
+  isSummaryPolling?: boolean;
+  fromSummarySidebar?: boolean;
+  onClickViewSummary?: () => void;
 }

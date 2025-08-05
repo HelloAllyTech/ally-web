@@ -11,7 +11,7 @@ const Analytics: FunctionComponent = () => {
 
   return (
     <div className={"flex items-center justify-center m-6 overflow-hidden h-[calc(100vh-100px)]"}>
-      {user?.role === UserRole.COUNSELOR ? <UserAnalytics /> : <OrgAnalytics />}
+      {user?.role === UserRole.COUNSELLOR ? <UserAnalytics /> : <OrgAnalytics />}
     </div>
   );
 };

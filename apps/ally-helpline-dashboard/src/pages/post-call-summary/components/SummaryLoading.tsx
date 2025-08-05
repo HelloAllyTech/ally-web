@@ -1,16 +1,29 @@
-import { AlertCircle } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { AlertCircle, Info } from "lucide-react";
 import { FC, useEffect, useState } from "react";
+import { Tooltip } from "@mui/material";
 
 import { Button } from "@/components";
-import { Spinner, RoundCheckmark, Waveform } from "@/assets/icons";
+import { Spinner, RoundCheckmark, Waveform, NotesIcon } from "@/assets/icons";
 
 interface SummaryLoadingProps {
   isSummaryDelayed?: boolean;
+  isSummaryPolling?: boolean;
+  isSummaryGenerated?: boolean;
+  onViewSummary?: () => void;
+  onNotesChange?: (notes: string) => void;
+  onViewCallLogs: () => void;
+  notes?: string;
 }
 
-const SummaryLoading: FC<SummaryLoadingProps> = ({ isSummaryDelayed = false }) => {
-  const navigate = useNavigate();
+const SummaryLoading: FC<SummaryLoadingProps> = ({
+  isSummaryDelayed = false,
+  isSummaryPolling = false,
+  isSummaryGenerated = false,
+  onViewSummary = () => {},
+  onNotesChange = () => {},
+  onViewCallLogs,
+  notes = "",
+}) => {
   const loadingMessages = [
     "Generating Summary",
     "Understanding context...",
@@ -18,6 +31,16 @@ const SummaryLoading: FC<SummaryLoadingProps> = ({ isSummaryDelayed = false }) =
     "Identifying key points...",
     "Extracting insights...",
   ];
+
+  const tooltipProps = {
+    tooltip: {
+      sx: {
+        backgroundColor: "#1C1B1F",
+        color: "white",
+        fontSize: "12px",
+      },
+    },
+  };
 
   const [visibleMessages, setVisibleMessages] = useState<string[]>(loadingMessages.slice(0, 2));
   const [currentMessageIndex, setCurrentMessageIndex] = useState(1);
@@ -44,6 +67,64 @@ const SummaryLoading: FC<SummaryLoadingProps> = ({ isSummaryDelayed = false }) =
       timers.forEach(timer => clearTimeout(timer));
     };
   }, []);
+
+  const renderNotes = () => {
+    return (
+      <div className="w-full max-w-2xl border-t border-gray-200 pt-[20px] mx-auto">
+        <div className="flex flex-row justify-between items-center mb-2 px-[10px]">
+          <div className="flex flex-row items-center gap-[16px]">
+            <NotesIcon />
+            <label
+              htmlFor="notes"
+              className="block font-['IBM_Plex_Serif'] text-sm font-medium text-gray-700"
+            >
+              Add Notes(Optional)
+            </label>
+          </div>
+          <Tooltip
+            title="Your notes are auto-saved and will appear under 'Additional Notes' after the summary and highlights are generated"
+            placement="bottom-end"
+            className="b"
+            componentsProps={tooltipProps}
+            arrow
+          >
+            <Info className="w-[12px] h-[12px] text-[#1C1B1F] cursor-pointer" />
+          </Tooltip>
+        </div>
+        <textarea
+          id="notes"
+          rows={4}
+          value={notes}
+          onChange={e => onNotesChange(e.target.value)}
+          placeholder="What would like to remember from today’s session"
+          className="w-full p-[10px] border-none focus:ring-transparent focus:ring-0 font-['IBM_Plex_Serif'] text-sm resize-none"
+        />
+      </div>
+    );
+  };
+
+  const renderButtonContainer = () => {
+    return (
+      <div className="flex flex-row gap-4 items-center justify-center">
+        <Button
+          onClick={onViewCallLogs}
+          className="mt-6 px-6 py-2 bg-white border border-black text-black rounded-full hover:bg-gray-50 transition-colors font-['IBM_Plex_Serif'] text-sm"
+        >
+          View Call Logs
+        </Button>
+
+        {isSummaryGenerated && (
+          <Button
+            onClick={onViewSummary}
+            disabled={!isSummaryGenerated}
+            className="mt-6 px-6 py-2 bg-[#0957D0] border border-[#0957D0] text-white rounded-full hover:bg-[#0957D0]/80 transition-colors font-['IBM_Plex_Serif'] text-sm"
+          >
+            View Summary
+          </Button>
+        )}
+      </div>
+    );
+  };
 
   return !isSummaryDelayed ? (
     <div className="flex flex-col items-center justify-center h-[calc(100vh-280px)] space-y-4">
@@ -141,33 +222,35 @@ const SummaryLoading: FC<SummaryLoadingProps> = ({ isSummaryDelayed = false }) =
     </div>
   ) : (
     <div className="flex flex-col items-center justify-center bg-white text-gray-800 h-[70vh] space-y-4">
-      <div className="h-full flex flex-col justify-around">
+      <div className="h-full flex flex-col justify-around w-full">
         {/* Audio Wave Animation */}
         <div className="flex flex-col items-center justify-center">
-          <div className="flex items-start justify-center text-sm mb-4 self-center">
-            <AlertCircle className="w-4 h-4 mr-2" />
-            <span className="font-['IBM_Plex_Serif'] text-[#6B7280]">
-              Refresh page to see if your summary is ready.
-            </span>
+          <div
+            className={`flex items-start justify-center text-sm mb-4 self-center ${isSummaryPolling ? "h-5" : ""}`}
+          >
+            {!isSummaryPolling && (
+              <>
+                <AlertCircle className="w-4 h-4 mr-2" />
+                <span className="font-['IBM_Plex_Serif'] text-[#6B7280]">
+                  Refresh page to see if your summary is ready.
+                </span>
+              </>
+            )}
           </div>
           <Waveform />
 
           {/* Text */}
           <h1 className="font-semibold mb-2 font-['IBM_Plex_Serif'] text-2xl">
-            Generating your session summary
+            {isSummaryGenerated ? "Summary is generated" : "Generating your session summary"}
           </h1>
           <p className="text-gray-600 text-base text-center max-w-md font-['IBM_Plex_Serif']">
-            This may take some time. You can find the summary in the call logs
+            {isSummaryGenerated
+              ? "The summary has been generated successfully. You can review the session now."
+              : "This may take some time. You can find the summary in the call logs"}
           </p>
         </div>
-        <div className="flex flex-col items-center justify-center">
-          <Button
-            onClick={() => navigate("/call-logs")}
-            className="mt-6 px-6 py-2 bg-white border border-black text-black rounded-full hover:bg-gray-50 transition-colors font-['IBM_Plex_Serif'] text-sm"
-          >
-            View Call Logs
-          </Button>
-        </div>
+        {renderNotes()}
+        {renderButtonContainer()}
       </div>
     </div>
   );

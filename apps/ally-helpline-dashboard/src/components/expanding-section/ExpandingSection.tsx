@@ -9,7 +9,7 @@ const ExpandingSection: FC<ExpandingSectionProps> = ({
   loading = false,
   className = "",
 }) => {
-  const [isLoaded, setIsLoaded] = useState(false);
+  const [isLoaded, setIsLoaded] = useState<boolean>(false);
 
   useEffect(() => {
     let timer: NodeJS.Timeout;

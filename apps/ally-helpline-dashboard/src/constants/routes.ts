@@ -31,6 +31,7 @@ export const navBarOptions = [
     title: "Start Session",
     Icon: StartSessionIcon,
     path: ROUTES.START_SESSION,
+    // TODO: Add correct permission for Start Session once BE implementation is done
     permission: Permissions.VIEW_NAVBAR_SEARCH,
     relatedChatType: CallType.MICROPHONE_CHAT,
   },
@@ -53,6 +54,7 @@ export const navBarOptions = [
     title: "Search",
     Icon: SearchIcon,
     path: ROUTES.SEARCH,
+    // TODO: Add correct permission for Search once BE implementation is done
     permission: Permissions.VIEW_NAVBAR_SEARCH,
   },
   {

@@ -36,16 +36,16 @@ import PermissionGuardedRoute from "./PermissionGuardedRoute";
 // TODO: Restrict client access to pages
 
 const PrivateRouteLayout = () => {
-  const { user, checkAuth } = useUser();
+  const { user, checkAuth, updateUserStatus } = useUser();
   const navigate = useNavigate();
   const { pathname } = useLocation();
 
   const isClient = user?.role === UserRole.CLIENT;
   const isAdmin = user?.role === UserRole.ADMIN;
   const [activeTab, setActiveTab] = useState<TabId>(TabId.CALLS);
-  const [alertCall, setAlertCall] = useState(true);
+  const [showAlertCall, setShowAlertCall] = useState<boolean>(true);
   const [waitingClients, setWaitingClients] = useState<WaitingClient[]>([]);
-  const [isSidebarOpen, setSidebarOpen] = useState(false);
+  const [isSidebarOpen, setSidebarOpen] = useState<boolean>(false);
 
   const { userStatus } = useSelector((state: RootState) => state.user);
 
@@ -57,7 +57,7 @@ const PrivateRouteLayout = () => {
   const { data: getWaitingClientsData, isSuccess: isWaitingClientsSuccess } =
     useGetWaitingClientsQuery(undefined, {
       skip:
-        user?.role !== UserRole.COUNSELOR ||
+        user?.role !== UserRole.COUNSELLOR ||
         !isAvailable ||
         !chatTypes?.includes(CallType.WEBRTC_CHAT),
       pollingInterval: 5000,
@@ -72,6 +72,8 @@ const PrivateRouteLayout = () => {
     const userStatusLocalStorage = localStorage.getItem("userStatus");
     if (userStatusLocalStorage) {
       store.dispatch(setUserStatus(userStatusLocalStorage as UserStatus));
+    } else {
+      updateUserStatus(UserStatus.AVAILABLE);
     }
     const verifyAuth = async () => {
       const userData = await checkAuth();
@@ -106,8 +108,7 @@ const PrivateRouteLayout = () => {
   const onAcceptCall = async () => {
     try {
       await acceptCall({ chatId: waitingClients[0]?.chat?.chatId });
-      store.dispatch(setUserStatus(UserStatus.OFFLINE));
-      localStorage.setItem("userStatus", UserStatus.OFFLINE);
+      updateUserStatus(UserStatus.OFFLINE);
 
       // Clearing waitingClients to prevent call pop-up after the call due to outdated waitingClients
       setWaitingClients([]);
@@ -223,8 +224,8 @@ const PrivateRouteLayout = () => {
                 path={ROUTES.SEARCH}
                 element={
                   <PermissionGuardedRoute
-                    // TODO: Add correct permission for search
-                    permission={Permissions.VIEW_NAVBAR_LEARN}
+                    // TODO: Add correct permission for Search once BE implementation is done
+                    permission={Permissions.VIEW_START_CALL_PAGE}
                     element={<Search />}
                   />
                 }
@@ -234,8 +235,8 @@ const PrivateRouteLayout = () => {
                   path={ROUTES.START_SESSION}
                   element={
                     <PermissionGuardedRoute
-                      // TODO: Add correct permission for search
-                      permission={Permissions.VIEW_NAVBAR_LEARN}
+                      // TODO: Add correct permission for Start Session once BE implementation is done
+                      permission={Permissions.VIEW_START_CALL_PAGE}
                       element={<StartSession />}
                     />
                   }
@@ -245,11 +246,11 @@ const PrivateRouteLayout = () => {
             </Routes>
           </div>
         </div>
-        {alertCall &&
+        {showAlertCall &&
           waitingClients.length > 0 &&
           isAvailable &&
           !isPathExcluded(pathname, excludeCallPicker) && (
-            <CallPicker onAccept={onAcceptCall} onDecline={() => setAlertCall(false)} />
+            <CallPicker onAccept={onAcceptCall} onDecline={() => setShowAlertCall(false)} />
           )}
       </div>
     );

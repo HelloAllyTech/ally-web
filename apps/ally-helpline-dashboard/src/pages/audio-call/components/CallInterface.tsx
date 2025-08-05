@@ -16,6 +16,9 @@ const CallInterface: FC<CallInterfaceProps> = ({
 }) => {
   const [seconds, setSeconds] = useState(0);
 
+  const isSharedMicrophoneMode =
+    isMicrophoneMode && activeChat?.chatId && activeChat?.provider === "MICROPHONE";
+
   useEffect(() => {
     // Don't start timer if no chat has started and not in microphone mode
     if (!activeChat?.startedAt && !isMicrophoneMode) return () => {};
@@ -46,7 +49,7 @@ const CallInterface: FC<CallInterfaceProps> = ({
     if (isUserJoined === false) {
       message = isCounsellor ? "Participant left the call" : "Counsellor left the call";
     } else if (!isUserJoined) {
-      message = isCounsellor ? "Session is starting now.." : "Connecting to your counselor...";
+      message = isCounsellor ? "Session is starting now.." : "Connecting to your counsellor...";
     }
     return (
       <motion.div
@@ -65,6 +68,15 @@ const CallInterface: FC<CallInterfaceProps> = ({
       </motion.div>
     );
   };
+  const getDescriptionText = () => {
+    if (activeChat?.platform && activeChat?.platform !== "WEB") {
+      return "Note: This call was initiated from a different platform. You can listen but cannot control the call (mute/unmute).";
+    } else if (isSharedMicrophoneMode) {
+      return "Note: This call is already active in another tab/window. You can listen but cannot control the call (mute/unmute).";
+    } else {
+      return "Note: Refreshing or closing the active tab will end the call.";
+    }
+  };
 
   return (
     <>
@@ -76,12 +88,9 @@ const CallInterface: FC<CallInterfaceProps> = ({
           <div className="text-[#000] flex justify-center items-center flex-col gap-2">
             <div className="text-[20px] font-['IBM_Plex_Serif'] font-bold">Taking notes</div>
             <div className="text-[16px] font-medium text-[#525252]">{formatTime(seconds)}</div>
-            {activeChat?.platform && activeChat?.platform !== "WEB" && (
-              <div className="text-[12px] text-[#666] text-center max-w-xs mt-1">
-                Note: This call was initiated from a different platform. You can listen but cannot
-                control the call (end/unmute).
-              </div>
-            )}
+            <div className="text-[12px] text-[#666] text-center max-w-xs mt-1">
+              {getDescriptionText()}
+            </div>
           </div>
           {/* Hidden Audio Element */}
           <audio

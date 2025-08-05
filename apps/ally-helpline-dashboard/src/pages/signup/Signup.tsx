@@ -114,7 +114,7 @@ export const Signup = () => {
                 }
               >
                 <option value={UserRole.CLIENT}>Client</option>
-                <option value={UserRole.COUNSELOR}>Counselor</option>
+                <option value={UserRole.COUNSELLOR}>Counsellor</option>
               </select>
             </div>
             <motion.div
