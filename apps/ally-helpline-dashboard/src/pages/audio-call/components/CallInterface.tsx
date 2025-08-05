@@ -70,9 +70,9 @@ const CallInterface: FC<CallInterfaceProps> = ({
   };
   const getDescriptionText = () => {
     if (activeChat?.platform && activeChat?.platform !== "WEB") {
-      return "Note: This call was initiated from a different platform. You can listen but cannot control the call (end/unmute).";
+      return "Note: This call was initiated from a different platform. You can listen but cannot control the call (mute/unmute).";
     } else if (isSharedMicrophoneMode) {
-      return "Note: This call is already active in another tab/window. You can listen but cannot control the call (end/unmute).";
+      return "Note: This call is already active in another tab/window. You can listen but cannot control the call (mute/unmute).";
     } else {
       return "Note: Refreshing or closing the active tab will end the call.";
     }
