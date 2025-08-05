@@ -534,7 +534,13 @@ const CallTranscript: FC<CallTranscriptProps> = ({
         <CallControls
           isFocusMode={isFocusMode}
           isMuted={isMuted}
-          isPrimaryButtonDisabled={isMicrophoneMode && !microphoneChatId}
+          // This is to disable end call till chat creation is done (meaning chatId is received through event)
+          // The second condition is to handle the case of refresh
+          isPrimaryButtonDisabled={
+            isMicrophoneMode &&
+            !microphoneChatId &&
+            (activeChat?.provider !== "MICROPHONE" || !activeChatId)
+          }
           isSecondaryButtonDisabled={!isUserJoined || isNonWebChat || isSharedMicrophoneMode}
           isTertiaryButtonDisabled={!isUserJoined}
           showFocusButton={isCounsellor}
