@@ -1,11 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 
 import { logger, ResourceSearch, Resource } from "@ally-ui-mono/ui-shared";
 
-import { fetchReferenceDocuments, INITIAL_FETCH_LIMIT } from "./api";
+import { fetchReferenceDocuments, INITIAL_FETCH_LIMIT } from "../../api";
 
 interface SearchClientProps {
   searchQuery: string;
@@ -23,6 +23,8 @@ export default function SearchClient({
   totalDocumentCount,
 }: SearchClientProps) {
   const router = useRouter();
+  const pathname = usePathname();
+
   const [documents, setDocuments] = useState<Resource[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [hasMore, setHasMore] = useState(false);
@@ -35,13 +37,24 @@ export default function SearchClient({
   }, [initialDocuments, totalDocumentCount, searchQuery]);
 
   const onSearch = (searchTerm: string) => {
-    router.push(`/search?q=${encodeURIComponent(searchTerm)}`);
+    const searchParams = new URLSearchParams();
+    if (searchTerm) {
+      searchParams.set("q", searchTerm);
+    }
+    const queryString = searchParams.toString();
+    router.push(`${pathname}?${queryString ?? ""}`);
   };
 
   const onCategoryChange = (newCategory: string) => {
-    router.push(
-      `/search?q=${encodeURIComponent(searchQuery)}${newCategory !== "All" ? `&category=${encodeURIComponent(newCategory)}` : ""}`,
-    );
+    const searchParams = new URLSearchParams();
+    if (searchQuery) {
+      searchParams.set("q", searchQuery);
+    }
+    if (newCategory !== "All") {
+      searchParams.set("category", newCategory);
+    }
+    const queryString = searchParams.toString();
+    router.push(`${pathname}?${queryString ?? ""}`);
   };
 
   const onInfiniteScroll = async () => {
