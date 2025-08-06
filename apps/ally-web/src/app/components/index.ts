@@ -1,3 +1,3 @@
-import BottomTab from "./bottom-tab";
+import SearchClient from "./search-client/SearchClient";
 
-export { BottomTab };
+export { SearchClient };

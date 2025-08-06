@@ -1,5 +1,4 @@
 import "./global.css";
-import { BottomTab } from "./components";
 import { IBM_Plex_Sans, Inter } from "next/font/google";
 
 const ibmPlexSans = IBM_Plex_Sans({
@@ -24,10 +23,7 @@ export const metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className={`${ibmPlexSans.variable} ${inter.variable}`}>
-      <body className="min-h-screen bg-white font-sans">
-        {children}
-        <BottomTab />
-      </body>
+      <body className="min-h-screen bg-white font-sans">{children}</body>
     </html>
   );
 }
