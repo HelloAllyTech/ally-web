@@ -12,6 +12,7 @@ import {
 import { logger } from "@ally-ui-mono/ui-shared";
 import { baseAPI } from "@/api/baseAPI";
 import { UserStatus } from "@/types/user";
+import { LOCAL_STORAGE_KEYS } from "@/constants/common";
 
 export const useUser = () => {
   const isAuthenticated = useSelector((state: RootState) => state.user.isAuthenticated);
@@ -34,26 +35,16 @@ export const useUser = () => {
           return userData?.data;
         } catch (error) {
           logger.info(`Error fetching user or permissions:, ${error}`);
-          store.dispatch(setUser(null));
-          store.dispatch(setPermissions([]));
-          store.dispatch(unauthenticate());
-          localStorage.removeItem("accessToken");
-          localStorage.removeItem("refreshToken");
+          logout();
           return null;
         }
       } else {
-        store.dispatch(setUser(null));
-        store.dispatch(setPermissions([]));
-        store.dispatch(unauthenticate());
+        logout();
         return null;
       }
     } catch (error) {
       logger.info(`Error authenticating - ${error}`);
-      store.dispatch(setUser(null));
-      store.dispatch(setPermissions([]));
-      store.dispatch(unauthenticate());
-      localStorage.removeItem("accessToken");
-      localStorage.removeItem("refreshToken");
+      logout();
       return null;
     }
   };
@@ -73,7 +64,7 @@ export const useUser = () => {
   };
 
   const updateUserStatus = (status: UserStatus) => {
-    localStorage.setItem("userStatus", status);
+    localStorage.setItem(LOCAL_STORAGE_KEYS.USER_STATUS, status);
     store.dispatch(setUserStatus(status));
   };
 

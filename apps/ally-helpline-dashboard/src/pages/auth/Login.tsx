@@ -3,8 +3,10 @@ import { useNavigate } from "react-router-dom";
 import { FetchBaseQueryError } from "@reduxjs/toolkit/query";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
+import { useSelector } from "react-redux";
 
 import { useUser } from "@/hooks";
+import { RootState } from "@/store/store";
 import { BackCircle } from "@/assets/icons";
 import { validateEmail } from "@/utils/common";
 import { Button, OTP, TextField } from "@/components";
@@ -15,6 +17,7 @@ import { LoginSection } from "./constants";
 
 const Login: FunctionComponent = () => {
   const navigate = useNavigate();
+  const { user } = useSelector((state: RootState) => state.user);
 
   const [loginSection, setLoginSection] = useState<LoginSection>(LoginSection.EMAIL);
   const [email, setEmail] = useState<string>("");
@@ -54,10 +57,14 @@ const Login: FunctionComponent = () => {
   }, []);
 
   useEffect(() => {
-    if (isAuthenticated) {
+    checkAuth();
+  }, []);
+
+  useEffect(() => {
+    if (isAuthenticated && user) {
       navigate("/");
     }
-  }, [isAuthenticated, navigate]);
+  }, [isAuthenticated, navigate, user]);
 
   useEffect(() => {
     if (generateOTPError) {
@@ -93,8 +100,10 @@ const Login: FunctionComponent = () => {
       } else if (isVerifyOTPSuccess && verifyOTPData) {
         localStorage.setItem("accessToken", verifyOTPData.accessToken);
         localStorage.setItem("refreshToken", verifyOTPData.refreshToken);
-        await checkAuth();
-        navigate("/");
+        const userData = await checkAuth();
+        if (userData) {
+          navigate("/");
+        }
       }
     })();
   }, [isVerifyOTPSuccess, verifyOTPError, verifyOTPData]);

@@ -1,3 +1,10 @@
+/**
+ * This module provides all authentication-related API endpoints including:
+ * - User registration and login
+ * - OTP generation and verification
+ * - User profile and permissions retrieval
+ */
+
 import { baseAPI } from "@/api/baseAPI";
 import { User } from "@/types/user";
 import {
@@ -6,40 +13,75 @@ import {
   GenerateOTPRequest,
   GenerateOTPResponse,
 } from "@/types/auth";
+import { ApiEndpoints, HttpMethod } from "@/constants/common";
 
 const authAPI = baseAPI.injectEndpoints({
   endpoints: builder => ({
+    /**
+     * Creates a new user account with the provided registration data.
+     * @param {any} data - User registration data (email, password, etc.)
+     * @returns {Promise<any>} Registration response
+     */
     signup: builder.mutation({
       query: data => ({
-        url: "/auth/signup",
-        method: "POST",
+        url: ApiEndpoints.AUTH.SIGNUP,
+        method: HttpMethod.POST,
         body: data,
       }),
     }),
+
+    /**
+     * Authenticates user credentials and returns access/refresh tokens.
+     * @param {any} data - Login credentials (email, password)
+     * @returns {Promise<any>} Login response with tokens
+     */
     login: builder.mutation({
       query: data => ({
-        url: "/auth/login",
-        method: "POST",
+        url: ApiEndpoints.AUTH.LOGIN,
+        method: HttpMethod.POST,
         body: data,
       }),
     }),
+
+    /**
+     * Retrieves the authenticated user's profile information.
+     * @returns {Promise<User>} User profile data
+     */
     getUser: builder.query<User, void>({
-      query: () => "/users/me",
+      query: () => ApiEndpoints.AUTH.GET_USER,
     }),
+
+    /**
+     * Retrieves the list of permissions assigned to the current user.
+     * Used for role-based access control.
+     * @returns {Promise<string[]>} Array of permission strings
+     */
     getPermissions: builder.query<string[], void>({
-      query: () => "/auth/permissions",
+      query: () => ApiEndpoints.AUTH.GET_PERMISSIONS,
     }),
+
+    /**
+     * Sends a one-time password to the specified phone number or email address.
+     * @param {GenerateOTPRequest} data - Contains phone and/or email
+     * @returns {Promise<GenerateOTPResponse>} OTP generation response
+     */
     generateOTP: builder.mutation<GenerateOTPResponse, GenerateOTPRequest>({
       query: ({ phone, email }) => ({
-        url: "/auth/generate-otp",
-        method: "POST",
+        url: ApiEndpoints.AUTH.GENERATE_OTP,
+        method: HttpMethod.POST,
         body: { phone, email },
       }),
     }),
+
+    /**
+     * Validates the one-time password sent to the user's phone or email.
+     * @param {VerifyOTPRequest} data - Contains phone, OTP, and email
+     * @returns {Promise<VerifyOTPResponse>} OTP verification response
+     */
     verifyOTP: builder.mutation<VerifyOTPResponse, VerifyOTPRequest>({
       query: ({ phone, otp, email }) => ({
-        url: "/auth/verify-otp",
-        method: "POST",
+        url: ApiEndpoints.AUTH.VERIFY_OTP,
+        method: HttpMethod.POST,
         body: { phone, otp, email },
       }),
     }),

@@ -20,7 +20,7 @@ import { TabId } from "@/constants/tabs";
 import { RootState, store } from "@/store/store";
 import { UserRole, UserStatus } from "@/types/user";
 import { WaitingClient } from "@/types/calls";
-import { setUserStatus, setAvailableChatTypes } from "@/reducer/userReducer";
+import { setUserStatus, setAvailableChatTypes, unauthenticate } from "@/reducer/userReducer";
 import { Permissions } from "@/constants/permissions";
 import { navBarOptions, ROUTES } from "@/constants/routes";
 import { CallPicker, NavSideBar } from "@/components";
@@ -29,6 +29,7 @@ import { useAcceptCallMutation, useGetWaitingClientsQuery } from "@/api/audioCal
 import { logger } from "@ally-ui-mono/ui-shared";
 import { useGetChatTypesQuery } from "@/api/calls";
 import { CallType } from "@/constants/call";
+import { LOCAL_STORAGE_KEYS, AUTH_RETRY_CONFIG } from "@/constants/common";
 
 import PermissionGuardedRoute from "./PermissionGuardedRoute";
 
@@ -69,15 +70,46 @@ const PrivateRouteLayout = () => {
   }, [chatTypes]);
 
   useEffect(() => {
-    const userStatusLocalStorage = localStorage.getItem("userStatus");
+    const userStatusLocalStorage = localStorage.getItem(LOCAL_STORAGE_KEYS.USER_STATUS);
     if (userStatusLocalStorage) {
       store.dispatch(setUserStatus(userStatusLocalStorage as UserStatus));
     } else {
       updateUserStatus(UserStatus.AVAILABLE);
     }
     const verifyAuth = async () => {
-      const userData = await checkAuth();
+      const attemptAuthentication = async (attempt: number): Promise<any> => {
+        try {
+          const data = await checkAuth();
+
+          if (data) {
+            return data;
+          }
+
+          // If this is not the last attempt, wait before retrying
+          if (attempt < AUTH_RETRY_CONFIG.MAX_ATTEMPTS) {
+            await new Promise(resolve => setTimeout(resolve, AUTH_RETRY_CONFIG.RETRY_DELAY_MS));
+            return attemptAuthentication(attempt + 1);
+          }
+
+          return null;
+        } catch (error) {
+          logger.info(`Authentication attempt ${attempt} failed: ${JSON.stringify(error)}`);
+
+          // If this is not the last attempt, wait before retrying
+          if (attempt < AUTH_RETRY_CONFIG.MAX_ATTEMPTS) {
+            await new Promise(resolve => setTimeout(resolve, AUTH_RETRY_CONFIG.RETRY_DELAY_MS));
+            return attemptAuthentication(attempt + 1);
+          }
+
+          return null;
+        }
+      };
+
+      const userData = await attemptAuthentication(1);
       if (!userData) {
+        localStorage.removeItem(LOCAL_STORAGE_KEYS.ACCESS_TOKEN);
+        localStorage.removeItem(LOCAL_STORAGE_KEYS.REFRESH_TOKEN);
+        store.dispatch(unauthenticate());
         navigate(ROUTES.LOGIN);
       }
     };
