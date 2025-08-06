@@ -1,6 +1,7 @@
-import { fetchReferenceDocuments } from "./api";
-import SearchClient from "./SearchClient";
 import { logger } from "@ally-ui-mono/ui-shared";
+
+import { fetchReferenceDocuments } from "./api";
+import { SearchClient } from "./components";
 
 export default async function SearchPage({
   searchParams,
