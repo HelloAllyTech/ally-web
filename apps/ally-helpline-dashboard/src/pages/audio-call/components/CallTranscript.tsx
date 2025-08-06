@@ -16,6 +16,7 @@ import {
 } from "@/types/message";
 import { SocketConnectionTypes } from "@/constants/socket";
 import { logger } from "@ally-ui-mono/ui-shared";
+import { CallProvider } from "@/constants/call";
 
 import { reduceTranscriptions } from "../utils";
 import { CallTranscriptProps, Nudge } from "../types";
@@ -44,6 +45,7 @@ const CallTranscript: FC<CallTranscriptProps> = ({
   activeChat,
   microphoneChatId,
   isMicrophoneMode,
+  isExotelMode,
   setMicrophoneChatId,
 }) => {
   const navigate = useNavigate();
@@ -70,7 +72,7 @@ const CallTranscript: FC<CallTranscriptProps> = ({
     isMicrophoneMode &&
     activeChat?.chatId &&
     activeChat?.platform === "WEB" &&
-    activeChat?.provider === "MICROPHONE";
+    activeChat?.provider === CallProvider.MICROPHONE;
 
   // const isWebRTC = activeChat.provider === "WEBRTC"; // to distinguish between exotel and webrtc
 
@@ -201,7 +203,7 @@ const CallTranscript: FC<CallTranscriptProps> = ({
     },
     [SocketEvent.USER_DISCONNECTED]: () => {
       // User disconnected event might happen if mobile is open and gets closed as mobile have a live socket conenction on login for microphone-mode
-      if (!isMicrophoneMode) {
+      if (!isMicrophoneMode && !isExotelMode) {
         setIsUserJoined(false);
       }
     },
@@ -217,12 +219,16 @@ const CallTranscript: FC<CallTranscriptProps> = ({
     },
   };
 
+  const getConnectionType = () => {
+    if (isMicrophoneMode) return SocketConnectionTypes.MICROPHONE_MODE;
+    if (isExotelMode) return SocketConnectionTypes.CLOUD_TELEPHONY_CHAT;
+    return SocketConnectionTypes.WEBRTC_AUDIO_CALL;
+  };
+
   const { connect, disconnect, emitSocketEvent, setListenerForEvent, removeIfListenerPresent } =
     useSocket({
       eventCallbacks: socketEventCallbacks,
-      connectionType: isMicrophoneMode
-        ? SocketConnectionTypes.MICROPHONE_MODE
-        : SocketConnectionTypes.WEBRTC_AUDIO_CALL,
+      connectionType: getConnectionType(),
     });
 
   const {
@@ -327,10 +333,17 @@ const CallTranscript: FC<CallTranscriptProps> = ({
     if (
       isMicrophoneMode &&
       activeChat?.status === ChatStatus.ACTIVE &&
-      activeChat?.provider === "MICROPHONE"
+      activeChat?.provider === CallProvider.MICROPHONE
     ) {
       setMicrophoneChatId(activeChat.chatId);
       // To notify that call has started
+      setIsUserJoined(true);
+    }
+    if (
+      isExotelMode &&
+      activeChat?.status === ChatStatus.ACTIVE &&
+      activeChat?.provider === CallProvider.EXOTEL_CONFERENCE_CALL
+    ) {
       setIsUserJoined(true);
     }
   }, [activeChat]);
@@ -350,9 +363,11 @@ const CallTranscript: FC<CallTranscriptProps> = ({
   }, []);
 
   useEffect(() => {
-    if (user && !isMicrophoneMode && iceServers && activeChatId) {
+    if (user && !isMicrophoneMode && !isExotelMode && iceServers && activeChatId) {
       connect(activeChatId);
       setupWebRTC();
+    } else if (isExotelMode) {
+      connect();
     }
 
     return () => {
@@ -524,6 +539,7 @@ const CallTranscript: FC<CallTranscriptProps> = ({
           remoteMediaRecorder={remoteMediaRecorder}
           remoteStreamRef={remoteStreamRef}
           isMicrophoneMode={isMicrophoneMode}
+          isExotelMode={isExotelMode}
         />
 
         {/* Update transcription container with max-height */}
@@ -534,9 +550,10 @@ const CallTranscript: FC<CallTranscriptProps> = ({
         <CallControls
           isFocusMode={isFocusMode}
           isMuted={isMuted}
-          // This is to disable end call till chat creation is done
           isPrimaryButtonDisabled={isMicrophoneMode && !microphoneChatId}
-          isSecondaryButtonDisabled={!isUserJoined || isNonWebChat || isSharedMicrophoneMode}
+          isSecondaryButtonDisabled={
+            !isUserJoined || isNonWebChat || isSharedMicrophoneMode || isExotelMode
+          }
           isTertiaryButtonDisabled={!isUserJoined}
           showFocusButton={isCounsellor}
           onCutCallButtonClick={() => confirmEndSession(true)}

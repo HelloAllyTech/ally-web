@@ -20,6 +20,7 @@ import { LanguageMap } from "@/constants/common";
 import { logger } from "@ally-ui-mono/ui-shared";
 import { useDebounce } from "@/hooks/useDebounce";
 import { Assessment } from "@/assets/icons";
+import { CallProvider } from "@/constants/call";
 
 import { labelShownSections, summarySections } from "../constants";
 import { CallSummaryProps, SummaryField, SummarySectionKey } from "../types";
@@ -368,9 +369,14 @@ const CallSummary: FC<CallSummaryProps> = ({
     );
   }
 
+  const callProvider = callSummary?.details?.callInfo?.provider;
+
   return (
     <SummaryLoading
-      isSummaryDelayed={callSummary?.details?.callInfo?.provider === "MICROPHONE"}
+      isSummaryDelayed={
+        callProvider === CallProvider.MICROPHONE ||
+        callProvider === CallProvider.EXOTEL_CONFERENCE_CALL
+      }
       isSummaryPolling={isSummaryPolling}
       isSummaryGenerated={callSummary?.details?.summary}
       onViewSummary={onViewSummary}

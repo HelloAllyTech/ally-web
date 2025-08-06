@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import { useSearchParams, useNavigate, useParams } from "react-router-dom";
 
 import { logger } from "@ally-ui-mono/ui-shared";
-import { CallType } from "@/constants/call";
+import { CallProvider, CallType } from "@/constants/call";
 import { useUser } from "@/hooks/useUser";
 import { UserStatus } from "@/types/user";
 import { ActionDialog, TabGroup } from "@/components";
@@ -76,7 +76,7 @@ const PostCallSummary = () => {
       onTabChange(null, nextSection);
     } else if (
       availableChatTypes?.includes(CallType.WEBRTC_CHAT) &&
-      callSummary?.details?.callInfo?.provider === "WEBRTC"
+      callSummary?.details?.callInfo?.provider === CallProvider.WEBRTC
     ) {
       setIsDialogOpen(true);
     } else {

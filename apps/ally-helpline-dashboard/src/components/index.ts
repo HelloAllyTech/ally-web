@@ -1,5 +1,6 @@
 import Accordion from "./accordion";
 import ActionDialog from "./action-dialog";
+import AudioCallPopup from "./audio-call-popup";
 import Button from "./button";
 import Calendar from "./calendar";
 import CallPicker from "./call";
@@ -23,6 +24,7 @@ import ToggleButtonGroup from "./toggle-button-group";
 export {
   Accordion,
   ActionDialog,
+  AudioCallPopup,
   Button,
   Calendar,
   CallPicker,

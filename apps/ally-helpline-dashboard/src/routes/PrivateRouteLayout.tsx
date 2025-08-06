@@ -23,7 +23,7 @@ import { WaitingClient } from "@/types/calls";
 import { setUserStatus, setAvailableChatTypes, unauthenticate } from "@/reducer/userReducer";
 import { Permissions } from "@/constants/permissions";
 import { navBarOptions, ROUTES } from "@/constants/routes";
-import { CallPicker, NavSideBar } from "@/components";
+import { AudioCallPopup, CallPicker, NavSideBar } from "@/components";
 import { MenuIcon } from "@/assets/icons";
 import { useAcceptCallMutation, useGetWaitingClientsQuery } from "@/api/audioCall";
 import { logger } from "@ally-ui-mono/ui-shared";
@@ -284,6 +284,7 @@ const PrivateRouteLayout = () => {
           !isPathExcluded(pathname, excludeCallPicker) && (
             <CallPicker onAccept={onAcceptCall} onDecline={() => setShowAlertCall(false)} />
           )}
+        <AudioCallPopup />
       </div>
     );
   else return <></>;

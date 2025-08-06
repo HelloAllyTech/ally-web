@@ -7,6 +7,7 @@ export interface CallTranscriptProps {
   microphoneChatId: number;
   endSession: (triggerApi: boolean, chatId: number) => void;
   isMicrophoneMode: boolean;
+  isExotelMode: boolean;
   setMicrophoneChatId: (chatId: number) => void;
 }
 
@@ -18,6 +19,7 @@ export interface CallInterfaceProps {
   remoteMediaRecorder: MediaRecorder | null;
   remoteStreamRef: MutableRefObject<MediaStream>;
   isMicrophoneMode: boolean;
+  isExotelMode: boolean;
 }
 
 export interface RealTimeTranscriptProps {

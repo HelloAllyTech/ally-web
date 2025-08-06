@@ -2,8 +2,10 @@ import { FC, useEffect, useState } from "react";
 import { LiveAudioVisualizer } from "react-audio-visualize";
 import { motion } from "framer-motion";
 
-import { formatTime } from "../utils";
+import { CallProvider } from "@/constants/call";
+
 import { CallInterfaceProps } from "../types";
+import { formatTime } from "../utils";
 
 const CallInterface: FC<CallInterfaceProps> = ({
   activeChat,
@@ -17,7 +19,7 @@ const CallInterface: FC<CallInterfaceProps> = ({
   const [seconds, setSeconds] = useState(0);
 
   const isSharedMicrophoneMode =
-    isMicrophoneMode && activeChat?.chatId && activeChat?.provider === "MICROPHONE";
+    isMicrophoneMode && activeChat?.chatId && activeChat?.provider === CallProvider.MICROPHONE;
 
   useEffect(() => {
     // Don't start timer if no chat has started and not in microphone mode

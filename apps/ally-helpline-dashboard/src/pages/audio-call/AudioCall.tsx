@@ -16,7 +16,7 @@ import {
   useLazyGetClientChatQuery,
   useLazyGetCounsellorChatQuery,
 } from "@/api/audioCall";
-import { CallType } from "@/constants/call";
+import { CallProvider, CallType } from "@/constants/call";
 import { MindfullnessVideo } from "@/assets/videos";
 
 import { CallTranscript, EndTransitionScreen } from "./components";
@@ -42,6 +42,7 @@ const AudioCall: FunctionComponent = () => {
   const { availableChatTypes } = useSelector((state: RootState) => state.user);
 
   const isMicrophoneMode = mode === "microphone";
+  const isExotelMode = mode === "exotel";
   const isLoading = isCounsellorChatLoading || isClientChatLoading || isEndCallLoading;
   const isActiveMicrophoneSession = isMicrophoneMode && microphoneChatId && !activeChat?.chatId;
 
@@ -132,7 +133,7 @@ const AudioCall: FunctionComponent = () => {
         if (response) {
           setUserStatus(UserStatus.OFFLINE);
           setActiveChat(response.data);
-          if (response.data.provider === "MICROPHONE") {
+          if (response.data.provider === CallProvider.MICROPHONE) {
             setMicrophoneChatId(response.data.chatId);
           }
         }
@@ -187,7 +188,7 @@ const AudioCall: FunctionComponent = () => {
 
   const getFallbackUI = () => {
     // Fallback shown when user starts microphone mode but there is an ongoing webrtc call
-    if (isMicrophoneMode && activeChat?.chatId && activeChat.provider !== "MICROPHONE") {
+    if (isMicrophoneMode && activeChat?.chatId && activeChat.provider !== CallProvider.MICROPHONE) {
       return (
         <FallbackUI
           image={<NoResults />}
@@ -203,7 +204,9 @@ const AudioCall: FunctionComponent = () => {
       !isMicrophoneMode &&
       !isLoading &&
       (!activeChat?.chatId ||
-        (activeChat?.chatId && activeChat?.provider !== "WEBRTC") ||
+        (activeChat?.chatId &&
+          activeChat?.provider !== CallProvider.WEBRTC &&
+          activeChat?.provider !== CallProvider.EXOTEL_CONFERENCE_CALL) ||
         (Array.isArray(activeChat) && activeChat.length === 0))
     ) {
       return (
@@ -238,8 +241,9 @@ const AudioCall: FunctionComponent = () => {
       {getFallbackUI()}
       {!isEnding &&
         ((activeChat?.chatId &&
-          (activeChat?.provider === "WEBRTC" ||
-            (isMicrophoneMode && activeChat?.provider === "MICROPHONE"))) ||
+          (activeChat?.provider === CallProvider.WEBRTC ||
+            (isMicrophoneMode && activeChat?.provider === CallProvider.MICROPHONE))) ||
+          (isExotelMode && activeChat?.provider === CallProvider.EXOTEL_CONFERENCE_CALL) ||
           (Array.isArray(activeChat) &&
             activeChat.length === 0 &&
             isMicrophoneMode &&
@@ -249,6 +253,7 @@ const AudioCall: FunctionComponent = () => {
             activeChat={activeChat}
             microphoneChatId={microphoneChatId}
             isMicrophoneMode={isMicrophoneMode}
+            isExotelMode={isExotelMode}
             setMicrophoneChatId={setMicrophoneChatId}
           />
         )}

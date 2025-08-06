@@ -14,6 +14,7 @@ import {
 import CallSummary from "@/pages/post-call-summary/components/CallSummary";
 import { useFileExport } from "@/hooks";
 import { InfiniteScroll, logger } from "@ally-ui-mono/ui-shared";
+import { CallProvider } from "@/constants/call";
 import { UserRole } from "@/types/user";
 
 import { DeleteDialogData, SummarySideBarProps, Transcript } from "../types";
@@ -54,7 +55,10 @@ const SummarySideBar: FC<SummarySideBarProps> = ({
     chatId: callSummary?.id,
     offset: transcriptOffset,
     limit: TRANSCRIPT_PAGE_SIZE,
-    sortBy: callSummary?.details?.callInfo?.provider === "WEBRTC" ? "createdAt" : "startSeconds",
+    sortBy:
+      callSummary?.details?.callInfo?.provider === CallProvider.WEBRTC
+        ? "createdAt"
+        : "startSeconds",
   });
 
   const transcript = useMemo(() => transcriptData?.data || [], [transcriptData]);
