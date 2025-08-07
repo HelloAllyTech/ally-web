@@ -5,23 +5,17 @@ import { Minimize } from "lucide-react";
 import { toast } from "sonner";
 
 import { logger } from "@ally-ui-mono/ui-shared";
-import { RootState } from "@/store/store";
-import { UserRole, UserStatus } from "@/types/user";
-import { Chat, QueueStatus } from "@/types/message";
-import { setUserStatus } from "@/reducer/userReducer";
-import { FallbackUI, StressBuster } from "@/components";
-import { NoResults } from "@/assets/icons";
-import {
-  useEndCallMutation,
-  useLazyGetClientChatQuery,
-  useLazyGetCounsellorChatQuery,
-} from "@/api/audioCall";
-import { CallProvider, CallType } from "@/constants/call";
-import { MindfullnessVideo } from "@/assets/videos";
+import { useEndCallMutation, useLazyGetClientChatQuery, useLazyGetCounsellorChatQuery } from "@api";
+import { RootState } from "@store";
+import { UserRole, UserStatus, Chat, QueueStatus } from "@types";
+import { setUserStatus } from "@reducer";
+import { FallbackUI, StressBuster } from "@components";
+import { CallProvider, CallType } from "@constants";
+import { NoResults, MindfullnessVideo } from "@assets";
 
 import { CallTranscript, EndTransitionScreen } from "./components";
 
-const AudioCall: FunctionComponent = () => {
+export const AudioCall: FunctionComponent = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const mode = searchParams.get("mode");
@@ -271,5 +265,3 @@ const AudioCall: FunctionComponent = () => {
     </div>
   );
 };
-
-export default AudioCall;

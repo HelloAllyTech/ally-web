@@ -5,14 +5,14 @@
  * - Analytics data retrieval and processing
  */
 
-import { baseAPI } from "@/api/baseAPI";
+import { baseAPI } from "@api";
 import {
   GetCounsellorStatsRequest,
   GetCounsellorStatsResponse,
   GetDashboardUrlResponse,
   GetDashboardsResponse,
-} from "@/pages/analytics/types";
-import { ApiEndpoints, HttpMethod } from "@/constants/common";
+} from "@types";
+import { ApiEndpoints, HttpMethod } from "@constants";
 
 const analyticsAPI = baseAPI.injectEndpoints({
   endpoints: builder => ({

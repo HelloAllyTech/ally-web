@@ -14,8 +14,8 @@ import {
   PlansForNextCall,
   Tags,
   Metrics,
-} from "@/assets/icons";
-import { SummaryFieldKey } from "@/types/summary";
+} from "@assets/icons";
+import { SummaryFieldKey } from "@types";
 
 import { SectionType, SummaryField, SummarySectionKey } from "./types";
 

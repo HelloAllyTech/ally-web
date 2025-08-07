@@ -1,4 +1,4 @@
-import { TabId } from "@/constants/tabs";
+import { TabId } from "@constants";
 
 export interface NavSideBarProps {
   activeTab: TabId;

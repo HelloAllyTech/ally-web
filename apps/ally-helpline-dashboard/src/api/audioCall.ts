@@ -7,10 +7,9 @@
  * - Call status monitoring
  */
 
-import { baseAPI } from "@/api/baseAPI";
-import { ApiEndpoints, HttpMethod } from "@/constants/common";
-import { GetWaitingClientsResponse } from "@/types/calls";
-import { Chat, FeedbackInput, FeedbackResponse } from "@/types/message";
+import { baseAPI } from "@api";
+import { ApiEndpoints, HttpMethod } from "@constants";
+import { GetWaitingClientsResponse, Chat, FeedbackInput, FeedbackResponse } from "@types";
 
 const audioCallAPI = baseAPI.injectEndpoints({
   endpoints: builder => ({

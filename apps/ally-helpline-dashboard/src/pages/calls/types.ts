@@ -1,6 +1,6 @@
 import { Dispatch, SetStateAction } from "react";
 
-import { CallLog } from "@/types/calls";
+import { CallLog } from "@types";
 
 export interface TagDisplay {
   label: string;

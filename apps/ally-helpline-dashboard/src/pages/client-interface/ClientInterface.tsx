@@ -3,19 +3,13 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
 
-import { ROUTES } from "@/constants/routes";
-import { ChatStatus, QueueStatus, SocketEvent } from "@/types/message";
-import { UserRole } from "@/types/user";
-import { Button, Confirm } from "@/components";
-import { useSocket, useUser } from "@/hooks";
-import {
-  useCancelRequestMutation,
-  useLazyGetClientChatQuery,
-  useRequestCallMutation,
-} from "@/api/audioCall";
-import { Call, Logout } from "@/assets/icons";
-import { SocketConnectionTypes } from "@/constants/socket";
 import { logger } from "@ally-ui-mono/ui-shared";
+import { useCancelRequestMutation, useLazyGetClientChatQuery, useRequestCallMutation } from "@api";
+import { ROUTES, SocketConnectionTypes } from "@constants";
+import { ChatStatus, QueueStatus, SocketEvent, UserRole } from "@types";
+import { Button, Confirm } from "@components";
+import { useSocket, useUser } from "@hooks";
+import { Call, Logout } from "@assets";
 
 interface LogoutButtonProps {
   onLogout: () => void;
@@ -78,7 +72,7 @@ const MainContent = ({ isWaiting, onStartAudioChat, onEndCall }: MainContentProp
   </div>
 );
 
-const ClientInterface = () => {
+export const ClientInterface = () => {
   const navigate = useNavigate();
   const { user, logout } = useUser();
   const isClient = user?.role === UserRole.CLIENT;
@@ -216,5 +210,3 @@ const ClientInterface = () => {
     </div>
   );
 };
-
-export default ClientInterface;

@@ -1,8 +1,8 @@
 import React, { useEffect, FC, useRef } from "react";
 
-import { cn } from "@/utils/tailwind";
-import { Input } from "@/components";
-import { KeyboardKeys, SINGLE_DIGIT_REGEX } from "@/constants/common";
+import { cn } from "@utils";
+import { Input } from "@components";
+import { KeyboardKeys, SINGLE_DIGIT_REGEX } from "@constants";
 
 export interface OTPProps extends Omit<React.HTMLAttributes<HTMLDivElement>, "onChange"> {
   digitCount?: number;

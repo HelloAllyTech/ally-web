@@ -5,12 +5,12 @@ import { CircularProgress } from "@mui/material";
 
 import { GenericTable } from "@ally-ui-mono/ui-shared";
 import { Column } from "@ally-ui-mono/ui-shared/lib/generic-table/types";
-import { RootState } from "@/store/store";
-import { updateFilters } from "@/reducer/callsReducer";
-import { useGetCallLogsQuery } from "@/api/calls";
-import { Button, TagGroup, FallbackUI } from "@/components";
-import { NoResults, CallIdIcon, DateIcon, TimerIcon, TagsIcon, ReviewIcon } from "@/assets/icons";
-import { CallLog } from "@/types/calls";
+import { RootState } from "@store";
+import { updateFilters } from "@reducer";
+import { useGetCallLogsQuery } from "@api";
+import { Button, TagGroup, FallbackUI } from "@components";
+import { CallLog } from "@types";
+import { NoResults, CallIdIcon, DateIcon, TimerIcon, TagsIcon, ReviewIcon } from "@assets";
 
 import { convertSecondsToDuration, getFormattedDate } from "../utils";
 import { CALL_LOGS_PAGINATION_LIMIT, tagColors } from "../constants";

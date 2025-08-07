@@ -5,21 +5,20 @@ import { toast } from "sonner";
 
 import { GenericTable } from "@ally-ui-mono/ui-shared";
 import { Column, FilterType } from "@ally-ui-mono/ui-shared/lib/generic-table/types";
-import { RootState } from "@/store/store";
-import { updateFilters } from "@/reducer/callsReducer";
-import { useGetAdminCallLogsQuery, useGetCounsellorsQuery, useGetCallTagsQuery } from "@/api/calls";
-import { Button, FallbackUI, TagGroup } from "@/components";
+import { RootState } from "@store";
+import { updateFilters } from "@reducer";
+import { useGetAdminCallLogsQuery, useGetCounsellorsQuery, useGetCallTagsQuery } from "@api";
+import { Button, FallbackUI, TagGroup } from "@components";
 import {
   NoResults,
   CallIdIcon,
   DateIcon,
   TimerIcon,
-  StarIcon,
   TagsIcon,
   ReviewIcon,
   UserIcon,
-} from "@/assets/icons";
-import { CallLog, GetCallLogsInput } from "@/types/calls";
+} from "@assets";
+import { CallLog, GetCallLogsInput } from "@types";
 
 import { convertSecondsToDuration, getFormattedDate } from "../utils";
 import { CALL_LOGS_PAGINATION_LIMIT, defaultTags, tagColors } from "../constants";

@@ -1,8 +1,8 @@
 import { FunctionComponent } from "react";
 
-import { useUser } from "@/hooks";
-import { AccessDenied } from "@/pages";
-import { Permissions } from "@/constants/permissions";
+import { useUser } from "@hooks";
+import { AccessDenied } from "@pages";
+import { Permissions } from "@constants";
 
 interface PermissionGuardedRouteType {
   permission: Permissions;

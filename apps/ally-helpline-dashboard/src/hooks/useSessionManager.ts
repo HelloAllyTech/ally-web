@@ -2,48 +2,57 @@ import { useState, useCallback, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import { useSelector } from "react-redux";
 
-import { useLazyGetCounsellorChatQuery } from "@/api/audioCall";
-import { SocketConnectionTypes } from "@/constants/socket";
-import { ROUTES } from "@/constants/routes";
-import { CallProvider, CallType } from "@/constants/call";
 import { logger } from "@ally-ui-mono/ui-shared/logger";
-import { RootState } from "@/store/store";
-import { SocketEvent } from "@/types/message";
-import { UserRole } from "@/types/user";
+import { RootState } from "@store";
+import { useLazyGetCounsellorChatQuery } from "@api";
+import { SocketConnectionTypes, ROUTES, CallProvider, CallType } from "@constants";
+import { SocketEvent, UserRole, Session, UseSessionManagerOptions } from "@types";
 
 import { useSocket } from "./useSocket";
-
-interface Session {
-  type: string;
-  [key: string]: any;
-}
-
-interface UseSessionManagerOptions {
-  autoConnect?: boolean;
-  connectionType?: SocketConnectionTypes;
-}
 
 export const useSessionManager = (options: UseSessionManagerOptions = {}) => {
   const { autoConnect = true, connectionType = SocketConnectionTypes.CLOUD_TELEPHONY_CHAT } =
     options;
   const { availableChatTypes, user } = useSelector((state: RootState) => state.user);
+
   const location = useLocation();
-
-  const isCloudTelephonyMode = availableChatTypes?.includes(CallType.EXOTEL_CONFERENCE_CHAT);
-  const enableConnection =
-    autoConnect && !location.pathname.includes(ROUTES.AUDIO_CALL) && isCloudTelephonyMode;
-
-  const [activeSession, setActiveSession] = useState<Session | null>(null);
   const [getCounsellorChat] = useLazyGetCounsellorChatQuery();
 
+  // Check if the cloud telephony mode is available for the user
+  const isCloudTelephonyModeAvailable = availableChatTypes?.includes(
+    CallType.EXOTEL_CONFERENCE_CHAT,
+  );
+  const enableConnection =
+    autoConnect && !location.pathname.includes(ROUTES.AUDIO_CALL) && isCloudTelephonyModeAvailable;
+
+  const [activeSession, setActiveSession] = useState<Session | null>(null);
+
+  /**
+   * Sets the active session with provided data and type.
+   * @param {any} sessionData - Session data object
+   * @param {string} type - Type of session (e.g., 'cloud_telephony_chat')
+   */
   const setSession = useCallback((sessionData: any, type: string) => {
     setActiveSession({ ...sessionData, type });
   }, []);
 
+  /**
+   * Clears the current active session.
+   */
   const clearSession = useCallback(() => {
     setActiveSession(null);
   }, []);
 
+  /**
+   * Creates event callbacks for different socket events.
+   * - SESSION_CREATED: Logs session creation
+   * - USER_JOINED: Handles user joining and sets session
+   * - AUDIO_MESSAGE: Handles audio messages and updates session
+   * - CHAT_ENDED: Clears session when chat ends
+   * - USER_DISCONNECTED: Logs user disconnection
+   * @param {string} type - Type of connection for event handling
+   * @returns {Object} Object containing event callback functions
+   */
   const getEventCallback = useCallback(
     (type: string) => {
       return {
@@ -79,6 +88,13 @@ export const useSessionManager = (options: UseSessionManagerOptions = {}) => {
 
   // Fetch active chat sessions
   useEffect(() => {
+    /**
+     * Fetches active chat sessions for counsellors.
+     * - Checks if user is a counsellor
+     * - Fetches active chat data from API
+     * - Sets session with appropriate provider type
+     * - Only runs when connection is enabled
+     */
     const fetchActiveChat = async () => {
       if (user?.role === UserRole.COUNSELLOR) {
         const response = await getCounsellorChat();

@@ -1,4 +1,4 @@
-import { EMAIL_REGEX } from "@/constants/common";
+import { EMAIL_REGEX } from "@constants";
 
 export const validateEmail = (email: string): boolean => {
   return email && EMAIL_REGEX.test(email);

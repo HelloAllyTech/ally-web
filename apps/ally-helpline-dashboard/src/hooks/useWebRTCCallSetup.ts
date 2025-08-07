@@ -1,9 +1,9 @@
 import { useCallback, useRef, useState } from "react";
 
-import { ICE_SERVERS } from "@/constants/common";
-import { IceServer, SocketEvent } from "@/types/message";
-import { xirsysChannel, xirsysDomain, xirsysIdent, xirsysSecret } from "@/constants/envVariables";
 import { logger } from "@ally-ui-mono/ui-shared";
+import { ICE_SERVERS } from "@constants";
+import { IceServer, SocketEvent } from "@types";
+import { xirsysChannel, xirsysDomain, xirsysIdent, xirsysSecret } from "@constants";
 
 interface UseWebRTCParams {
   emitSocketEvent: (socketEvent: SocketEvent, message: any) => void;
@@ -12,7 +12,7 @@ interface UseWebRTCParams {
   offerTimeoutMs: number;
 }
 
-const useWebRTCCallSetup = ({
+export const useWebRTCCallSetup = ({
   emitSocketEvent,
   chatId,
   isClient,
@@ -28,6 +28,13 @@ const useWebRTCCallSetup = ({
   const [peerConnection, setPeerConnection] = useState<RTCPeerConnection | null>(null);
   const [remoteMediaRecorder, setRemoteMediaRecorder] = useState<MediaRecorder | null>(null);
 
+  /**
+   * Fetches ICE servers from XirSys service for WebRTC connection.
+   * - Makes a PUT request to XirSys API
+   * - Authenticates using Basic Auth with XirSys credentials
+   * - Requests ICE servers for the current domain
+   * - Updates the iceServers state with fetched configuration
+   */
   const fetchIceServers = async () => {
     try {
       const response = await fetch(`${xirsysDomain}/${xirsysChannel}`, {
@@ -55,6 +62,15 @@ const useWebRTCCallSetup = ({
     }
   };
 
+  /**
+   * Sets up WebRTC peer connection and media streams.
+   * - Requests user media (audio) permissions
+   * - Creates RTCPeerConnection with ICE servers
+   * - Adds local media tracks to peer connection
+   * - Sets up ICE candidate handling
+   * - Sets up remote track handling with recording
+   * - Creates and sends offer if client, or waits for offer if not
+   */
   const setupWebRTC = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -112,7 +128,16 @@ const useWebRTCCallSetup = ({
     }
   };
 
-  // Handle incoming ICE candidates
+  /**
+   * Handles incoming ICE candidates from the remote peer.
+   * - Validates that the candidate belongs to the current chat
+   * - Adds the ICE candidate to the peer connection
+   * - Stores failed candidates for later retry
+   * - Logs errors for debugging
+   * @param {Object} data - ICE candidate data from socket
+   * @param {RTCIceCandidate} data.candidate - ICE candidate object
+   * @param {number} data.chatId - Chat ID for validation
+   */
   const handleOnIceCandidate = useCallback(
     data => {
       if (!peerConnection || data.chatId !== chatId) return;
@@ -124,7 +149,12 @@ const useWebRTCCallSetup = ({
     [chatId, peerConnection],
   );
 
-  // Try to add unattempted ICE candidates to the peer connection
+  /**
+   * Attempts to add previously failed ICE candidates to the peer connection.
+   * - Checks if there are unattempted ICE candidates
+   * - Adds each candidate to the peer connection
+   * - Clears the candidates array after processing
+   */
   const handleUnAttemptedIceCandidates = useCallback(() => {
     if (!peerConnection) return;
     if (newIceCandidates.length > 0) {
@@ -134,7 +164,17 @@ const useWebRTCCallSetup = ({
     }
   }, [peerConnection, newIceCandidates]);
 
-  // Handle incoming WebRTC offer
+  /**
+   * Handles incoming WebRTC offers from the remote peer.
+   * - Validates that the offer belongs to the current chat
+   * - Sets the remote description with the offer
+   * - Processes any unattempted ICE candidates
+   * - Creates and sends an answer back to the remote peer
+   * - Emits start audio chat event
+   * @param {Object} data - WebRTC offer data from socket
+   * @param {number} data.chatId - Chat ID for validation
+   * @param {RTCSessionDescriptionInit} data.offer - WebRTC offer object
+   */
   const handleWebRTCOffer = useCallback(
     async (data: { chatId: number; offer: RTCSessionDescriptionInit }) => {
       if (data.chatId !== chatId) return;
@@ -164,7 +204,17 @@ const useWebRTCCallSetup = ({
     [chatId, peerConnection, offerTimeoutRef, handleUnAttemptedIceCandidates],
   );
 
-  // Handle incoming WebRTC answer
+  /**
+   * Handles incoming WebRTC answers from the remote peer.
+   * - Validates that the answer belongs to the current chat
+   * - Sets the remote description with the answer
+   * - Processes any unattempted ICE candidates
+   * - Emits start audio chat event
+   *
+   * @param {Object} data - WebRTC answer data from socket
+   * @param {number} data.chatId - Chat ID for validation
+   * @param {RTCSessionDescriptionInit} data.answer - WebRTC answer object
+   */
   const handleWebRTCAnswer = useCallback(
     async (data: { chatId: number; answer: RTCSessionDescriptionInit }) => {
       if (data.chatId !== chatId) return;
@@ -195,5 +245,3 @@ const useWebRTCCallSetup = ({
     handleWebRTCAnswer,
   };
 };
-
-export default useWebRTCCallSetup;

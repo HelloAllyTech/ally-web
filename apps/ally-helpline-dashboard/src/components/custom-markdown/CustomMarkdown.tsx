@@ -1,4 +1,4 @@
-import { getKeyFromIndex } from "@/utils/common";
+import { getKeyFromIndex } from "@utils";
 import { FunctionComponent } from "react";
 
 const CustomMarkdown: FunctionComponent<{ content: string; className?: string }> = ({

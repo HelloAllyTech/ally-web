@@ -2,9 +2,9 @@ import { FC, useEffect, useState } from "react";
 import { Divider } from "@mui/material";
 import { useSelector } from "react-redux";
 
-import { RootState } from "@/store/store";
-import { DropdownField } from "@ally-ui-mono/ui-shared";
-import { Accordion, TextField, Button } from "@/components";
+import { logger, DropdownField } from "@ally-ui-mono/ui-shared";
+import { RootState } from "@store";
+import { Accordion, TextField, Button } from "@components";
 import {
   useGetSummaryFieldsQuery,
   useUpdateCallSummaryMutation,
@@ -12,15 +12,11 @@ import {
   useGetLocationsQuery,
   useLazySearchLocationsQuery,
   useUpdateCallSummaryNotesMutation,
-} from "@/api/callSummary";
-import { useEnhance } from "@/hooks";
-import { SummaryFieldKey, Tag } from "@/types/summary";
-import { UserRole } from "@/types/user";
-import { LanguageMap } from "@/constants/common";
-import { logger } from "@ally-ui-mono/ui-shared";
-import { useDebounce } from "@/hooks/useDebounce";
-import { Assessment } from "@/assets/icons";
-import { CallProvider } from "@/constants/call";
+} from "@api";
+import { useEnhance, useDebounce } from "@hooks";
+import { SummaryFieldKey, Tag, UserRole } from "@types";
+import { LanguageMap, CallProvider } from "@constants";
+import { Assessment } from "@assets";
 
 import { labelShownSections, summarySections } from "../constants";
 import { CallSummaryProps, SummaryField, SummarySectionKey } from "../types";

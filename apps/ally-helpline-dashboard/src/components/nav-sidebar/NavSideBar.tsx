@@ -3,14 +3,14 @@ import { useNavigate } from "react-router-dom";
 import { FunctionComponent, useState } from "react";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 
-import { useUser } from "@/hooks";
-import { UserRole } from "@/types/user";
-import { TabId } from "@/constants/tabs";
-import { RootState } from "@/store/store";
+import { useUser } from "@hooks";
+import { UserRole } from "@types";
+import { TabId } from "@constants";
+import { RootState } from "@store";
 import Confirm from "../confirmation-box/Confirm";
-import { navBarOptions } from "@/constants/routes";
-import { Permissions } from "@/constants/permissions";
-import { AccountCircle, Logout, Close } from "@/assets/icons";
+import { navBarOptions } from "@constants";
+import { Permissions } from "@constants";
+import { AccountCircle, Logout, Close } from "@assets/icons";
 
 import { NavSideBarProps } from "./types";
 

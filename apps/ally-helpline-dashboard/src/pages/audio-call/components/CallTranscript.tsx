@@ -3,20 +3,19 @@ import { FC, useEffect, useMemo, useState, Dispatch, SetStateAction, useRef } fr
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 
-import { useGetNudgeStatusQuery } from "@/api/audioCall";
-import { RootState } from "@/store/store";
-import { useSocket, useWebRTCCallSetup } from "@/hooks";
-import { UserRole } from "@/types/user";
+import { logger } from "@ally-ui-mono/ui-shared";
+import { RootState } from "@store";
+import { useGetNudgeStatusQuery } from "@api";
+import { useSocket, useWebRTCCallSetup } from "@hooks";
+import { SocketConnectionTypes, CallProvider } from "@constants";
 import {
   ChatStatus,
   FeedbackResponse,
   MessageType,
   SocketEvent,
   Transcription,
-} from "@/types/message";
-import { SocketConnectionTypes } from "@/constants/socket";
-import { logger } from "@ally-ui-mono/ui-shared";
-import { CallProvider } from "@/constants/call";
+  UserRole,
+} from "@types";
 
 import { reduceTranscriptions } from "../utils";
 import { CallTranscriptProps, Nudge } from "../types";

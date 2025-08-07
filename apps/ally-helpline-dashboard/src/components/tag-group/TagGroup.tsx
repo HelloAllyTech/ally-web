@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { TagDisplay } from "@/pages/calls/types";
+import { TagDisplay } from "@pages/calls/types";
 
 interface TagGroupProps {
   tags: TagDisplay[];

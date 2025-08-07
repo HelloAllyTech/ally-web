@@ -1,6 +1,6 @@
 import { useEffect, useState, FunctionComponent } from "react";
 
-import { useLazyGetDashboardUrlQuery, useLazyGetDashboardsQuery } from "@/api/analytics";
+import { useLazyGetDashboardUrlQuery, useLazyGetDashboardsQuery } from "@api/analytics";
 import { logger } from "@ally-ui-mono/ui-shared";
 
 const OrgAnalytics: FunctionComponent = () => {

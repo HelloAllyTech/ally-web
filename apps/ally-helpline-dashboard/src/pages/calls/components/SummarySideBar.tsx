@@ -2,20 +2,20 @@ import { FC, useEffect, useState, useRef, useMemo } from "react";
 import { useSelector } from "react-redux";
 import { Tabs, Tab } from "@mui/material";
 
-import { RootState } from "@/store/store";
-import { ActionDialog, Drawer, TextField } from "@/components";
-import { Download, Edit } from "@/assets/icons";
+import { RootState } from "@store";
+import { ActionDialog, Drawer, TextField } from "@components";
+import { Download, Edit } from "@assets/icons";
 import {
   useGetTranscriptQuery,
   useLazyExportCallSummaryQuery,
   useUpdateCallInfoMutation,
   useUpdateCallSummaryMutation,
-} from "@/api/callSummary";
-import CallSummary from "@/pages/post-call-summary/components/CallSummary";
-import { useFileExport } from "@/hooks";
+} from "@api/callSummary";
+import CallSummary from "@pages/post-call-summary/components/CallSummary";
+import { useFileExport } from "@hooks";
 import { InfiniteScroll, logger } from "@ally-ui-mono/ui-shared";
-import { CallProvider } from "@/constants/call";
-import { UserRole } from "@/types/user";
+import { CallProvider } from "@constants";
+import { UserRole } from "@types";
 
 import { DeleteDialogData, SummarySideBarProps, Transcript } from "../types";
 import { defaultDeleteDialogData, tabStyles } from "../constants";

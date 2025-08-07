@@ -1,7 +1,7 @@
-import { ComingSoon } from "@/assets/icons";
-import { FallbackUI } from "@/components";
+import { ComingSoon } from "@assets/icons";
+import { FallbackUI } from "@components";
 
-const Calendar = () => {
+export const Calendar = () => {
   return (
     <div className="h-[90vh] flex items-center justify-center">
       <FallbackUI
@@ -12,5 +12,3 @@ const Calendar = () => {
     </div>
   );
 };
-
-export default Calendar;

@@ -2,7 +2,7 @@ import { FC, useEffect, useState } from "react";
 import { LiveAudioVisualizer } from "react-audio-visualize";
 import { motion } from "framer-motion";
 
-import { CallProvider } from "@/constants/call";
+import { CallProvider } from "@constants";
 
 import { CallInterfaceProps } from "../types";
 import { formatTime } from "../utils";

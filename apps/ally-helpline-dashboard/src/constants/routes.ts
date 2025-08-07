@@ -1,4 +1,4 @@
-import { SearchIcon, LogsIcon, StatsIcon, CommunityIcon, StartSessionIcon } from "@/assets/icons";
+import { SearchIcon, LogsIcon, StatsIcon, CommunityIcon, StartSessionIcon } from "@assets/icons";
 
 import { TabId } from "./tabs";
 import { CallType } from "./call";

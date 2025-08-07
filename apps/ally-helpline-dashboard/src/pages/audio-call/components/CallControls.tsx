@@ -1,6 +1,6 @@
 import { FC } from "react";
 
-import { CutCall, FocusOff, FocusOn, NoRecord, Record } from "@/assets/icons";
+import { CutCall, FocusOff, FocusOn, NoRecord, Record } from "@assets/icons";
 
 import { CallControlsProps } from "../types";
 

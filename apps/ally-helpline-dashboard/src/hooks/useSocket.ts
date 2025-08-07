@@ -1,15 +1,10 @@
 import { useEffect, useRef, useCallback } from "react";
 import { Socket, io } from "socket.io-client";
 
-import { SocketEvent } from "@/types/message";
-import { SocketConnectionTypes } from "@/constants/socket";
-import { getPathForConnectionType } from "@/utils/socket";
 import { logger } from "@ally-ui-mono/ui-shared";
-
-interface UseSocketOptions {
-  connectionType: SocketConnectionTypes;
-  eventCallbacks?: Partial<Record<SocketEvent, (params?: any) => void>>;
-}
+import { getPathForConnectionType } from "@utils";
+import { SocketEvent, UseSocketOptions } from "@types";
+import { LOCAL_STORAGE_KEYS } from "@constants";
 
 export const useSocket = ({ eventCallbacks, connectionType }: UseSocketOptions) => {
   const socketRef = useRef<Socket | null>(null);
@@ -19,6 +14,15 @@ export const useSocket = ({ eventCallbacks, connectionType }: UseSocketOptions) 
     connectionType,
   )}`;
 
+  /**
+   * Establishes a WebSocket connection with automatic retry logic.
+   * - Creates a new socket connection with authentication
+   * - Sets up reconnection parameters
+   * - Handles connection errors with retry logic
+   * - Sets up default event listeners
+   * - Limits connection attempts to prevent infinite loops
+   * @param {number} [chatId] - Optional chat ID for connection context
+   */
   const connect = useCallback((chatId?: number) => {
     if (connectionAttemptsRef.current >= MAX_ATTEMPTS) {
       logger.info("Max connection attempts reached");
@@ -29,7 +33,7 @@ export const useSocket = ({ eventCallbacks, connectionType }: UseSocketOptions) 
         path: "",
         transports: ["websocket", "polling"] as const,
         auth: {
-          token: localStorage.getItem("accessToken"),
+          token: localStorage.getItem(LOCAL_STORAGE_KEYS.ACCESS_TOKEN),
         },
         reconnection: true,
         reconnectionAttempts: 5,
@@ -51,6 +55,14 @@ export const useSocket = ({ eventCallbacks, connectionType }: UseSocketOptions) 
     }
   }, []);
 
+  /**
+   * Sets up default event listeners for socket connection events.
+   * - connect: Resets connection attempts counter
+   * - connect_error: Logs connection errors
+   * - disconnect: Logs disconnection events
+   * - error: Logs general socket errors
+   * - Custom event callbacks provided in options
+   */
   const setupDefaultListeners = useCallback(() => {
     if (!socketRef.current) return;
 
@@ -75,6 +87,12 @@ export const useSocket = ({ eventCallbacks, connectionType }: UseSocketOptions) 
     });
   }, [eventCallbacks]);
 
+  /**
+   * Disconnects from the WebSocket and cleans up resources.
+   * - Disconnects the socket connection
+   * - Clears the socket reference
+   * - Prevents memory leaks
+   */
   const disconnect = useCallback(() => {
     if (socketRef.current) {
       socketRef.current.disconnect();
@@ -82,6 +100,10 @@ export const useSocket = ({ eventCallbacks, connectionType }: UseSocketOptions) 
     }
   }, []);
 
+  /**
+   * Sends a message through the WebSocket connection.
+   * @param {any} message - Message object to send
+   */
   const sendMessage = useCallback((message: any) => {
     if (!socketRef.current) {
       logger.info("Socket not connected");
@@ -90,6 +112,11 @@ export const useSocket = ({ eventCallbacks, connectionType }: UseSocketOptions) 
     socketRef.current.emit(SocketEvent.SEND_MESSAGE, message);
   }, []);
 
+  /**
+   * Emits a custom socket event with optional data.
+   * @param {SocketEvent} socketEvent - The socket event to emit
+   * @param {any} message - Data to send with the event
+   */
   const emitSocketEvent = useCallback((socketEvent: SocketEvent, message: any) => {
     if (!socketRef.current) {
       logger.info("Socket not connected");
@@ -98,10 +125,19 @@ export const useSocket = ({ eventCallbacks, connectionType }: UseSocketOptions) 
     socketRef.current.emit(socketEvent, message);
   }, []);
 
+  /**
+   * Checks if the WebSocket is currently connected.
+   * @returns {boolean} True if connected, false otherwise
+   */
   const isConnected = useCallback(() => {
     return socketRef.current?.connected || false;
   }, []);
 
+  /**
+   * Adds a listener for a specific socket event.
+   * @param {SocketEvent} socketEvent - The socket event to listen for
+   * @param {Function} callback - Function to call when event is received
+   */
   const setListenerForEvent = useCallback(
     (socketEvent: SocketEvent, callback: (data: any) => void) => {
       if (!socketRef.current) {
@@ -113,6 +149,10 @@ export const useSocket = ({ eventCallbacks, connectionType }: UseSocketOptions) 
     [],
   );
 
+  /**
+   * Removes a listener for a specific socket event.
+   * @param {SocketEvent} socketEvent - The socket event to remove listener for
+   */
   const removeIfListenerPresent = useCallback((socketEvent: SocketEvent) => {
     if (!socketRef.current) {
       logger.info("Socket not connected");

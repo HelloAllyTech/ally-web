@@ -6,9 +6,8 @@
  * - Chat type definitions
  */
 
-import { baseAPI } from "@/api/baseAPI";
-import { CallType } from "@/constants/call";
-import { ApiEndpoints } from "@/constants/common";
+import { baseAPI } from "@api";
+import { CallType, ApiEndpoints } from "@constants";
 import {
   GetCallLogsInput,
   GetCallLogsResponse,
@@ -16,7 +15,7 @@ import {
   GetTagsResponse,
   GetCounsellorsInput,
   GetTagsInput,
-} from "@/types/calls";
+} from "@types";
 
 const callsAPI = baseAPI.injectEndpoints({
   endpoints: builder => ({

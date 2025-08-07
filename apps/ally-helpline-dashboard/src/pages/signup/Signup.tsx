@@ -3,11 +3,11 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
 
-import { UserRole } from "@/types/user";
-import { Button, Input } from "@/components";
-import { useUser } from "@/hooks";
-import { useSignupMutation } from "@/api/auth";
 import { logger } from "@ally-ui-mono/ui-shared";
+import { UserRole } from "@types";
+import { Button, Input } from "@components";
+import { useUser } from "@hooks";
+import { useSignupMutation } from "@api";
 
 export const Signup = () => {
   const navigate = useNavigate();

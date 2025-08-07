@@ -2,16 +2,11 @@ import { FC, useEffect, useRef, useState } from "react";
 import { Skeleton } from "@mui/material";
 import { WandSparkles } from "lucide-react";
 
-import { useEnhanceContentMutation } from "@/api/callSummary";
 import { logger } from "@ally-ui-mono/ui-shared";
+import { useEnhanceContentMutation } from "@api";
+import { EnhanceButtonProps } from "@types";
 
-interface EnhanceButtonProps {
-  fieldName: string;
-  inputText: string;
-  updateValue: (text: string) => void;
-}
-
-const useEnhance = () => {
+export const useEnhance = () => {
   const [enhancing, setEnhancing] = useState("");
   const [streaming, setStreaming] = useState("");
 
@@ -28,6 +23,17 @@ const useEnhance = () => {
     };
   }, []);
 
+  /**
+   * Triggers content enhancement for a specific field with streaming effect.
+   * - Calls the enhance content API with the provided text
+   * - Shows loading state during API call
+   * - Creates a streaming effect by gradually updating the text
+   * - Handles errors gracefully with proper cleanup
+   * - Updates the specified field with enhanced content
+   * @param {string} key - Unique identifier for the field being enhanced
+   * @param {string} inputText - The text content to enhance
+   * @param {Function} updateValue - Function to update the field value
+   */
   const triggerEnhance = async (
     key: string,
     inputText: string,
@@ -79,6 +85,17 @@ const useEnhance = () => {
     }
   };
 
+  /**
+   * React component for the enhance button with loading states.
+   * - Displays a wand sparkles icon for enhancement
+   * - Shows loading state when enhancement is in progress
+   * - Disables interaction during enhancement or streaming
+   * - Triggers enhancement when clicked
+   * @param {EnhanceButtonProps} props - Component props
+   * @param {string} props.fieldName - Unique identifier for the field
+   * @param {string} props.inputText - Text content to enhance
+   * @param {Function} props.updateValue - Function to update field value
+   */
   const EnhanceButton: FC<EnhanceButtonProps> = ({ fieldName, inputText, updateValue }) => (
     <div
       className={`absolute bottom-2 right-2 
@@ -93,6 +110,11 @@ const useEnhance = () => {
     </div>
   );
 
+  /**
+   * Loading skeleton component for enhancement operations.
+   * This component displays three skeleton lines to indicate
+   * that content enhancement is in progress.
+   */
   const EnhancementLoadingSkeleton = (
     <div className="w-full">
       <Skeleton />
@@ -103,5 +125,3 @@ const useEnhance = () => {
 
   return { enhancing, EnhanceButton, EnhancementLoadingSkeleton, isEnhanceLoading };
 };
-
-export default useEnhance;

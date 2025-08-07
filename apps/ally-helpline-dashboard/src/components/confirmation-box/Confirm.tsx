@@ -1,6 +1,6 @@
 import { FC, ReactNode } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Button } from "@/components";
+import { Button } from "@components";
 
 interface ConfirmProps {
   open: boolean;

@@ -1,18 +1,15 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
-import { User, UserStatus } from "@/types/user";
-import { CallType } from "@/constants/call";
+import { CallType } from "@constants";
+import { UserState, UserStatus } from "@types";
 
-interface UserState {
-  isAuthenticated: boolean;
-  user: User;
-  userStatus: UserStatus;
-  permissions: string[];
-  availableChatTypes: CallType[];
-}
-
-export type { UserState };
-
+/*
+  This reducer is used to manage the state of the user.
+  It is used to store the user's authentication status.
+  It is used to store the user's status.
+  It is used to store the user's permissions.
+  It is used to store the user's available chat types.
+*/
 const initialState = {
   isAuthenticated: false,
   user: null,

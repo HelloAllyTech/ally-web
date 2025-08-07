@@ -3,11 +3,11 @@ import { FunctionComponent, useEffect, useMemo, useState } from "react";
 import { format } from "date-fns";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
-import { Button, Calendar } from "@/components";
-import { useLazyGetCounsellorStatsQuery } from "@/api/analytics";
-import { getDateRange } from "@/utils/date";
+import { Button, Calendar } from "@components";
+import { useLazyGetCounsellorStatsQuery } from "@api/analytics";
+import { getDateRange } from "@utils";
+import { CalendarMode } from "@types";
 
-import { CalendarMode } from "../types";
 import { ListeningChart } from ".";
 
 const UserAnalytics: FunctionComponent = () => {

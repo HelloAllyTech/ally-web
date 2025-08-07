@@ -1,8 +1,8 @@
 import { configureStore } from "@reduxjs/toolkit";
 
-import { baseAPI } from "@/api/baseAPI";
-import userSlice from "@/reducer/userReducer";
-import callsSlice from "@/reducer/callsReducer";
+import { baseAPI } from "@api/baseAPI";
+import userSlice from "@reducer/userReducer";
+import callsSlice from "@reducer/callsReducer";
 
 export const store = configureStore({
   reducer: {

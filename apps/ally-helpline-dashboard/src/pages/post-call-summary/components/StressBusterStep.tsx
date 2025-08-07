@@ -1,7 +1,7 @@
 import { FC } from "react";
 import { motion } from "framer-motion";
 
-import { Button, StressBuster } from "@/components";
+import { Button, StressBuster } from "@components";
 
 import { StressBusterProps } from "../types";
 

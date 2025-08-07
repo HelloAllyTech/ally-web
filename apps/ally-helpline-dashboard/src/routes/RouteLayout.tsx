@@ -1,6 +1,8 @@
 import { Route, Routes, BrowserRouter } from "react-router-dom";
-import { Health, Login } from "@/pages";
-import { ROUTES } from "@/constants/routes";
+
+import { Health, Login } from "@pages";
+import { ROUTES } from "@constants";
+
 import PrivateRouteLayout from "./PrivateRouteLayout";
 
 const RouteLayout = () => {

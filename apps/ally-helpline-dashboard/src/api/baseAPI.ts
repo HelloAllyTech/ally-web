@@ -16,10 +16,11 @@ import {
   fetchBaseQuery,
   FetchBaseQueryError,
 } from "@reduxjs/toolkit/query/react";
+
 import { logger } from "@ally-ui-mono/ui-shared";
-import { store } from "@/store/store";
-import { RefreshResponse } from "@/types/auth";
-import { ApiEndpoints, HttpMethod, LOCAL_STORAGE_KEYS } from "@/constants/common";
+import { store } from "@store";
+import { RefreshResponse } from "@types";
+import { ApiEndpoints, HttpMethod, LOCAL_STORAGE_KEYS } from "@constants";
 
 // Environment variables for API configuration
 const API_URL = import.meta.env.VITE_API_BASE_URL;

@@ -2,12 +2,12 @@ import { useNavigate } from "react-router-dom";
 import { Headphones } from "@mui/icons-material";
 import { motion } from "framer-motion";
 
-import { Button } from "@/components";
-import { ROUTES } from "@/constants/routes";
-import { useUser } from "@/hooks/useUser";
-import { UserStatus } from "@/types/user";
+import { Button } from "@components";
+import { ROUTES } from "@constants";
+import { useUser } from "@hooks";
+import { UserStatus } from "@types";
 
-const StartSession = () => {
+export const StartSession = () => {
   const navigate = useNavigate();
 
   const { updateUserStatus } = useUser();
@@ -91,5 +91,3 @@ const StartSession = () => {
     </motion.div>
   );
 };
-
-export default StartSession;

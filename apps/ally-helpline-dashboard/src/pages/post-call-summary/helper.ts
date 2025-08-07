@@ -1,6 +1,6 @@
 import { format } from "date-fns";
 
-import { SummaryFieldKey } from "@/types/summary";
+import { SummaryFieldKey } from "@types";
 
 import { postCallSectionOrder, summaryFields } from "./constants";
 import { SectionType, SummarySectionKey } from "./types";

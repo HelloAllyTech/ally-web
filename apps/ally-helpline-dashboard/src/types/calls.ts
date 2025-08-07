@@ -1,4 +1,4 @@
-import { CallType } from "@/constants/call";
+import { CallType } from "@constants";
 
 interface CallClient {
   createdAt: string;

@@ -3,18 +3,18 @@ import { motion } from "framer-motion";
 import { useSearchParams, useNavigate, useParams } from "react-router-dom";
 
 import { logger } from "@ally-ui-mono/ui-shared";
-import { CallProvider, CallType } from "@/constants/call";
-import { useUser } from "@/hooks/useUser";
-import { UserStatus } from "@/types/user";
-import { ActionDialog, TabGroup } from "@/components";
-import { useGetCallSummaryQuery } from "@/api/callSummary";
+import { CallProvider, CallType } from "@constants";
+import { useUser } from "@hooks";
+import { UserStatus } from "@types";
+import { ActionDialog, TabGroup } from "@components";
+import { useGetCallSummaryQuery } from "@api";
 
 import { SectionType } from "./types";
 import { CallSummary, StressBusterStep } from "./components";
 import { getNextSection } from "./helper";
 import { summaryTabs } from "./constants";
 
-const PostCallSummary = () => {
+export const PostCallSummary = () => {
   const { chatId } = useParams();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
@@ -158,5 +158,3 @@ const PostCallSummary = () => {
     </div>
   );
 };
-
-export default PostCallSummary;

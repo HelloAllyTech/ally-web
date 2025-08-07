@@ -1,9 +1,9 @@
 import { AnimatePresence } from "framer-motion";
 import { useNavigate, useLocation } from "react-router-dom";
 
-import { useSessionManager } from "@/hooks";
-import { SocketConnectionTypes } from "@/constants/socket";
-import { ROUTES } from "@/constants/routes";
+import { useSessionManager } from "@hooks";
+import { SocketConnectionTypes } from "@constants";
+import { ROUTES } from "@constants";
 
 const AudioCallPopup = () => {
   const navigate = useNavigate();

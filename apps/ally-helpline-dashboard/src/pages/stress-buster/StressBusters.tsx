@@ -1,12 +1,11 @@
 import { FunctionComponent, useState } from "react";
 
-import { Flower } from "@/assets/images";
-import { Button, StressBuster } from "@/components";
-import { BackgroundBottom, BackgroundTop } from "@/assets/icons";
+import { Button, StressBuster } from "@components";
+import { BackgroundBottom, BackgroundTop, Flower } from "@assets";
 
 import { STRESS_BUSTERS } from "./constants";
 
-const StressBusters: FunctionComponent = () => {
+export const StressBusters: FunctionComponent = () => {
   const [showStressBuster, setShowStressBuster] = useState<boolean>(false);
 
   const handleFunctionMap = {
@@ -67,5 +66,3 @@ const StressBusters: FunctionComponent = () => {
     </div>
   );
 };
-
-export default StressBusters;

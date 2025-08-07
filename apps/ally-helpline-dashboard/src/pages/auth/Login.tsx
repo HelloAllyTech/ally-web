@@ -5,17 +5,17 @@ import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 import { useSelector } from "react-redux";
 
-import { useUser } from "@/hooks";
-import { RootState } from "@/store/store";
-import { BackCircle } from "@/assets/icons";
-import { validateEmail } from "@/utils/common";
-import { Button, OTP, TextField } from "@/components";
-import { LoginImage } from "@/assets/images";
-import { useGenerateOTPMutation, useVerifyOTPMutation } from "@/api/auth";
+import { useUser } from "@hooks";
+import { RootState } from "@store";
+import { validateEmail } from "@utils";
+import { Button, OTP, TextField } from "@components";
+import { LOCAL_STORAGE_KEYS } from "@constants";
+import { useGenerateOTPMutation, useVerifyOTPMutation } from "@api";
+import { BackCircle, LoginImage } from "@assets";
 
 import { LoginSection } from "./constants";
 
-const Login: FunctionComponent = () => {
+export const Login: FunctionComponent = () => {
   const navigate = useNavigate();
   const { user } = useSelector((state: RootState) => state.user);
 
@@ -98,8 +98,8 @@ const Login: FunctionComponent = () => {
         const errorMessage = errorData?.message ?? "Failed to verify OTP. Please try again.";
         toast.error(errorMessage);
       } else if (isVerifyOTPSuccess && verifyOTPData) {
-        localStorage.setItem("accessToken", verifyOTPData.accessToken);
-        localStorage.setItem("refreshToken", verifyOTPData.refreshToken);
+        localStorage.setItem(LOCAL_STORAGE_KEYS.ACCESS_TOKEN, verifyOTPData.accessToken);
+        localStorage.setItem(LOCAL_STORAGE_KEYS.REFRESH_TOKEN, verifyOTPData.refreshToken);
         const userData = await checkAuth();
         if (userData) {
           navigate("/");
@@ -277,5 +277,3 @@ const Login: FunctionComponent = () => {
     </div>
   );
 };
-
-export default Login;

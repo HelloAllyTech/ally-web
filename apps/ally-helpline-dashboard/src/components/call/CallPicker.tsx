@@ -1,7 +1,7 @@
 import { FC } from "react";
 
-import { BackgroundTop, BackgroundBottom, CallAttend, CutCall } from "@/assets/icons";
-import { DefaultProfile } from "@/assets/images";
+import { BackgroundTop, BackgroundBottom, CallAttend, CutCall } from "@assets/icons";
+import { DefaultProfile } from "@assets/images";
 
 import "./CallPicker.css";
 

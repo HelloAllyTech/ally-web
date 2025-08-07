@@ -1,14 +1,14 @@
 import { FC } from "react";
 import { motion } from "framer-motion";
 
-import { UserRole, UserStatus } from "@/types/user";
-import { Button } from "@/components";
-import { useUser } from "@/hooks/useUser";
-import { CallType } from "@/constants/call";
+import { UserRole, UserStatus } from "@types";
+import { Button } from "@components";
+import { useUser } from "@hooks";
+import { CallType } from "@constants";
 
 import { CallLogsTable, ConsolidatedLogs } from "./components";
 
-const Calls: FC = () => {
+export const Calls: FC = () => {
   const { availableChatTypes, updateUserStatus, user, userStatus } = useUser();
 
   const isAdmin = user?.role === UserRole.ADMIN;
@@ -48,5 +48,3 @@ const Calls: FC = () => {
     </div>
   );
 };
-
-export default Calls;

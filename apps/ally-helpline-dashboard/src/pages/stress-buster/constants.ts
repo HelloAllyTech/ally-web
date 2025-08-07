@@ -4,7 +4,7 @@ import {
   PositiveReflection,
   QuickLaugh,
   SoothingSounds,
-} from "@/assets/images";
+} from "@assets/images";
 
 const STRESS_BUSTERS = [
   {

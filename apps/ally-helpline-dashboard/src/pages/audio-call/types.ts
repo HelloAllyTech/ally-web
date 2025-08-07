@@ -1,6 +1,6 @@
 import { MutableRefObject } from "react";
 
-import { Chat, FeedbackResponse, Transcription } from "@/types/message";
+import { Chat, FeedbackResponse, Transcription } from "@types";
 
 export interface CallTranscriptProps {
   activeChat: Chat;

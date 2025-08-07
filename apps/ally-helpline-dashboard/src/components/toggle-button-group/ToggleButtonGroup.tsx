@@ -1,6 +1,6 @@
 import React, { FC } from "react";
 import { ToggleButton, ToggleButtonGroup as MuiToggleButtonGroup } from "@mui/material";
-import { cn } from "@/utils/tailwind";
+import { cn } from "@utils";
 
 type ToggleButtonGroupProps = {
   disabled?: boolean;

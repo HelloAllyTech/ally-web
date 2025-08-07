@@ -1,6 +1,6 @@
 import { Dispatch, SetStateAction } from "react";
 
-import { SummaryFieldKey } from "@/types/summary";
+import { SummaryFieldKey } from "@types";
 
 export enum SectionType {
   BoxBreathing = "Box breathing",

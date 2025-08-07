@@ -1,4 +1,5 @@
-import { CallProvider } from "@/constants/call";
+import { CallProvider } from "@constants";
+
 import { User } from "./user";
 
 export interface IceServer {
