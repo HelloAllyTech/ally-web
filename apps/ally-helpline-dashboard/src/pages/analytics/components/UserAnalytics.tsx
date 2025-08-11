@@ -225,16 +225,10 @@ const UserAnalytics: FunctionComponent = () => {
               disableFuture={true}
             />
             <div className="flex justify-end gap-4 py-2 px-3 border-t border-[#E5E5E5]">
-              <Button
-                className="bg-transparent text-[#000] hover:bg-transparent"
-                onClick={handleCancel}
-              >
+              <Button variant="text" className="text-[#000]" onClick={handleCancel}>
                 Cancel
               </Button>
-              <Button
-                className="bg-transparent text-[#1480FB] hover:bg-transparent"
-                onClick={handleOk}
-              >
+              <Button variant="text" className="text-[#1480FB]" onClick={handleOk}>
                 OK
               </Button>
             </div>

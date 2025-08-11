@@ -40,9 +40,7 @@ export const StressBusters: FunctionComponent = () => {
             A simple breathing technique to calm your nervous system, improve focus, and reduce
             stress. Follow the 4-4-4-4 method for instant relaxation.
           </div>
-          <Button className="rounded-full" onClick={toggleStressBuster}>
-            Try now
-          </Button>
+          <Button onClick={toggleStressBuster}>Try now</Button>
         </div>
       </div>
       <div className="text-lg font-medium text-[#47464F]">Other Techniques</div>

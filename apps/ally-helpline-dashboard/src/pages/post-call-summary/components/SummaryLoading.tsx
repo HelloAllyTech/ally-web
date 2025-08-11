@@ -105,11 +105,8 @@ const SummaryLoading: FC<SummaryLoadingProps> = ({
 
   const renderButtonContainer = () => {
     return (
-      <div className="flex flex-row gap-4 items-center justify-center">
-        <Button
-          onClick={onViewCallLogs}
-          className="mt-6 px-6 py-2 bg-white border border-black text-black rounded-full hover:bg-gray-50 transition-colors font-['IBM_Plex_Serif'] text-sm"
-        >
+      <div className="flex flex-row gap-4 items-center justify-center mt-6">
+        <Button variant="secondary" onClick={onViewCallLogs} className="font-['IBM_Plex_Serif']">
           View Call Logs
         </Button>
 
@@ -117,7 +114,7 @@ const SummaryLoading: FC<SummaryLoadingProps> = ({
           <Button
             onClick={onViewSummary}
             disabled={!isSummaryGenerated}
-            className="mt-6 px-6 py-2 bg-[#0957D0] border border-[#0957D0] text-white rounded-full hover:bg-[#0957D0]/80 transition-colors font-['IBM_Plex_Serif'] text-sm"
+            className="transition-colors font-['IBM_Plex_Serif']"
           >
             View Summary
           </Button>

@@ -157,7 +157,7 @@ const StressBuster: FunctionComponent<StressBusterProps> = ({
     return (
       <div className="z-20">
         {showViewSummaryButton && isMaximized && (
-          <Button className="mt-8 rounded-full" onClick={onViewSummary}>
+          <Button className="mt-8" onClick={onViewSummary}>
             Skip
           </Button>
         )}

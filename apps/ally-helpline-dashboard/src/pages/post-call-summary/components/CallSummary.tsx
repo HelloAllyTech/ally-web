@@ -353,7 +353,6 @@ const CallSummary: FC<CallSummaryProps> = ({
         {!isAdmin && (
           <div className="flex justify-center pt-4">
             <Button
-              className="rounded-[100px]"
               onClick={handleSubmit}
               disabled={isLoading || (isInSidebar && !hasDataChanged())}
             >

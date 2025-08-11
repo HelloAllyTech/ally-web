@@ -54,7 +54,8 @@ const Confirm: FC<ConfirmProps> = ({
                   onOpenChange(false);
                 }}
                 disabled={isLoading}
-                className="py-2.5 px-6 flex-1 text-center text-[15px] font-medium text-[#47464F] bg-white border border-[#C8C5D0] rounded-full hover:bg-gray-50 disabled:opacity-50"
+                variant="secondary"
+                className="flex-1"
               >
                 {cancelText}
               </Button>
@@ -63,12 +64,9 @@ const Confirm: FC<ConfirmProps> = ({
                   onConfirm();
                   onOpenChange(false);
                 }}
+                variant={destructive ? "destructive" : "primary"}
                 disabled={isLoading}
-                className={`py-2.5 flex-1 px-6 text-center text-[15px] font-medium text-white rounded-full disabled:opacity-50 ${
-                  destructive
-                    ? "bg-[#F93535] hover:bg-[#F93535]"
-                    : "bg-indigo-600 hover:bg-indigo-700"
-                }`}
+                className="flex-1"
               >
                 {isLoading ? "..." : confirmText}
               </Button>

@@ -17,8 +17,9 @@ interface LogoutButtonProps {
 
 const LogoutButton = ({ onLogout }: LogoutButtonProps) => (
   <Button
-    className="absolute top-0 right-0 flex flex-row h-[60px] items-center px-[10px] mx-[15px] cursor-pointer mb-[6px] bg-transparent hover:bg-transparent"
+    className="absolute top-0 right-0 h-[60px] px-[10px] mx-[15px] mb-[6px]"
     onClick={onLogout}
+    variant="icon"
   >
     <Logout />
     <div className="pl-[10px]">
@@ -39,7 +40,7 @@ const MainContent = ({ isWaiting, onStartAudioChat, onEndCall }: MainContentProp
       <div className="font-[400]">Welcome to</div>
       <div className="italic font-[900]">Ally</div>
     </div>
-    <div className="text-[#000] font-['IBM_Plex_Serif'] text-[20px]">
+    <div className="flex flex-col items-center text-[#000] font-['IBM_Plex_Serif'] text-[20px]">
       {isWaiting ? (
         <>
           <h2 className="text-xl font-[600] mb-2">Finding a counsellor for you..</h2>
@@ -48,8 +49,9 @@ const MainContent = ({ isWaiting, onStartAudioChat, onEndCall }: MainContentProp
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
           </div>
           <Button
-            className="sm:text-[22px] text-[16px] font-[600] py-[24px] px-[20px] bg-[#F93535] hover:bg-[#F93535]"
+            className="sm:text-[22px] text-[16px] !font-[600] py-[24px] px-[20px] rounded-md"
             onClick={onEndCall}
+            variant="destructive"
           >
             <Call width={32} height={32} />
             <div>End Call</div>
@@ -61,7 +63,7 @@ const MainContent = ({ isWaiting, onStartAudioChat, onEndCall }: MainContentProp
             Connect with a counsellor instantly and start your journey towards better mental health.
           </div>
           <Button
-            className="sm:text-[22px] text-[16px] font-[600] py-[24px] px-[20px]"
+            className="sm:text-[22px] text-[16px] !font-[600] py-[24px] px-[20px] rounded-md"
             onClick={onStartAudioChat}
           >
             Call with a Counsellor

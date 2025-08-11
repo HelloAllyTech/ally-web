@@ -65,7 +65,7 @@ export const StartSession = () => {
             whileTap={{ scale: 0.95 }}
           >
             <Button
-              className="bg-[#4C4C4C] hover:bg-[#4C4C4C] flex items-center gap-2 transition-all duration-300"
+              className="bg-[#4C4C4C] hover:!bg-[#4C4C4C] gap-2 transition-all duration-300 rounded-md"
               onClick={onStartSession}
             >
               <motion.div

@@ -204,9 +204,8 @@ const ConsolidatedLogs = () => {
           <Button
             disabled={isSummaryNull}
             onClick={() => setCallSummary(row.raw)}
-            className={`flex items-center justify-center w-full py-[8px] bg-transparent border-none hover:bg-transparent ${
-              isSummaryNull ? "!pointer-events-auto !cursor-default" : "cursor-pointer"
-            }`}
+            fullWidth={true}
+            variant="icon"
           >
             <ReviewIcon />
           </Button>

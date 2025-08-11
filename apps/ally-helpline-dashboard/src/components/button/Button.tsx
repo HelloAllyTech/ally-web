@@ -1,46 +1,40 @@
-import * as React from "react";
-import { cva, type VariantProps } from "class-variance-authority";
+import { FC } from "react";
 
-import { cn } from "@utils";
+import { ButtonProps } from "./types";
 
-const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
-  {
-    variants: {
-      variant: {
-        default: "bg-primary text-primary-foreground hover:bg-primary/90",
-        destructive: "bg-[#F93535] text-[#fff] hover:bg-destructive/90",
-        outline: "border border-[#C8C5D0] hover:bg-accent hover:text-accent-foreground",
-        secondary: "bg-[#F9F9F9] text-[#AAAAAA] hover:bg-secondary/80",
-      },
-      size: {
-        default: "h-10 px-4 py-2",
-        sm: "h-9 rounded-md px-3",
-        lg: "h-11 rounded-md px-8",
-        icon: "h-10 w-10",
-      },
-    },
-    defaultVariants: {
-      variant: "default",
-      size: "default",
-    },
-  },
-);
+// TODO update styles when design system is finalized
+const getButtonStyles = (variant: ButtonProps["variant"]) => {
+  switch (variant) {
+    case "destructive":
+      return "bg-[#F93535] text-[#FFFFFF] hover:bg-destructive/90 disabled:bg-destructive/50";
+    case "secondary":
+      return "border border-[#C8C5D0] hover:bg-accent hover:text-accent-foreground disabled:bg-accent/50";
+    case "icon":
+      return "bg-transparent border-none hover:bg-transparent disabled:bg-transparent";
+    case "text":
+      return "bg-transparent border-none hover:bg-transparent disabled:bg-transparent";
+    case "primary":
+    default:
+      return "bg-[#0957D0] text-[#FFFFFF] hover:bg-primary/90 disabled:bg-primary/50";
+  }
+};
 
-export interface ButtonProps
-  extends React.ButtonHTMLAttributes<HTMLButtonElement>,
-    VariantProps<typeof buttonVariants> {
-  asChild?: boolean;
-}
-
-const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ className, variant, size, asChild = false, ...props }, ref) => {
-    const Comp = "button";
-    return (
-      <Comp className={cn(buttonVariants({ variant, size, className }))} ref={ref} {...props} />
-    );
-  },
-);
-Button.displayName = "Button";
+const Button: FC<ButtonProps> = ({
+  className,
+  variant = "primary",
+  fullWidth,
+  children,
+  ...props
+}) => {
+  return (
+    <button
+      className={`h-10 flex items-center justify-center gap-2 py-2 px-4 whitespace-nowrap text-sm font-medium rounded-[100px] 
+        disabled:cursor-default disabled:opacity-50 ${getButtonStyles(variant)} ${fullWidth ? "w-full" : ""} ${className}`}
+      {...props}
+    >
+      {children}
+    </button>
+  );
+};
 
 export default Button;

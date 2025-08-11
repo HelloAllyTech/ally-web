@@ -144,7 +144,7 @@ export const PostCallSummary = () => {
         primaryButton={{
           label: "Yes, mark me available",
           onClick: () => onDialogConfirm(UserStatus.AVAILABLE),
-          variant: "default",
+          variant: "primary",
         }}
         secondaryButton={{
           label: "No, keep me offline",
