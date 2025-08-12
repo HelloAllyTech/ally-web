@@ -6,7 +6,7 @@
  * - Chat type definitions
  */
 
-import { baseAPI } from "@api";
+import { baseAPI } from "@api/baseAPI";
 import { CallType, ApiEndpoints } from "@constants";
 import {
   GetCallLogsInput,

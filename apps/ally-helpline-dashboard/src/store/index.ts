@@ -1,6 +1,6 @@
 import { configureStore } from "@reduxjs/toolkit";
 
-import { baseAPI } from "@api";
+import { baseAPI } from "@api/baseAPI";
 import callsSlice from "@reducer/callsReducer";
 import userSlice from "@reducer/userReducer";
 

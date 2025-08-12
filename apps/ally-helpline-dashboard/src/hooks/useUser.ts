@@ -1,7 +1,8 @@
 import { useSelector } from "react-redux";
 
 import { logger } from "@ally-ui-mono/ui-shared";
-import { baseAPI, useLazyGetUserQuery, useLazyGetPermissionsQuery } from "@api";
+import { useLazyGetUserQuery, useLazyGetPermissionsQuery } from "@api";
+import { baseAPI } from "@api/baseAPI";
 import { LOCAL_STORAGE_KEYS } from "@constants";
 import { setUser, authenticate, unauthenticate, setPermissions, setUserStatus } from "@reducer";
 import { RootState, store } from "@store";

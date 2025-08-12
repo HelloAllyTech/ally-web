@@ -19,7 +19,6 @@ import {
 
 import { logger } from "@ally-ui-mono/ui-shared";
 import { ApiEndpoints, HttpMethod, LOCAL_STORAGE_KEYS } from "@constants";
-import { store } from "@store";
 import { RefreshResponse } from "@types";
 
 // Environment variables for API configuration
@@ -33,9 +32,6 @@ const VITE_API_VERSION = import.meta.env.VITE_API_VERSION;
  * @returns {void}
  */
 const handleLogout = () => {
-  // Clear RTK Query cache
-  store.dispatch(baseAPI.util.resetApiState());
-
   // Clear tokens
   localStorage.removeItem(LOCAL_STORAGE_KEYS.ACCESS_TOKEN);
   localStorage.removeItem(LOCAL_STORAGE_KEYS.REFRESH_TOKEN);

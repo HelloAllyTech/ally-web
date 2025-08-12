@@ -5,7 +5,7 @@
  * - User profile and permissions retrieval
  */
 
-import { baseAPI } from "@api";
+import { baseAPI } from "@api/baseAPI";
 import { ApiEndpoints, HttpMethod } from "@constants";
 import {
   User,
