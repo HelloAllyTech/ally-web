@@ -1,8 +1,9 @@
 "use client";
 
 import { FC, useState, useEffect } from "react";
-import { Autocomplete, TextField, InputAdornment } from "@mui/material";
+
 import SearchIcon from "@mui/icons-material/Search";
+import { Autocomplete, TextField, InputAdornment } from "@mui/material";
 
 /**
  * Props for SearchBar component.

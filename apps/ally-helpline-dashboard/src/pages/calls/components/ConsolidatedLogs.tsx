@@ -1,14 +1,12 @@
 import { useEffect, useState, useRef } from "react";
-import { useDispatch, useSelector } from "react-redux";
+
 import { CircularProgress } from "@mui/material";
+import { useDispatch, useSelector } from "react-redux";
 import { toast } from "sonner";
 
 import { GenericTable } from "@ally-ui-mono/ui-shared";
 import { Column, FilterType } from "@ally-ui-mono/ui-shared/lib/generic-table/types";
-import { RootState } from "@store";
-import { updateFilters } from "@reducer";
 import { useGetAdminCallLogsQuery, useGetCounsellorsQuery, useGetCallTagsQuery } from "@api";
-import { Button, FallbackUI, TagGroup } from "@components";
 import {
   NoResults,
   CallIdIcon,
@@ -18,12 +16,15 @@ import {
   ReviewIcon,
   UserIcon,
 } from "@assets";
+import { Button, FallbackUI, TagGroup } from "@components";
+import { updateFilters } from "@reducer";
+import { RootState } from "@store";
 import { CallLog, GetCallLogsInput } from "@types";
 
-import { convertSecondsToDuration, getFormattedDate } from "../utils";
+import { SummarySideBar } from ".";
 import { CALL_LOGS_PAGINATION_LIMIT, defaultTags, tagColors } from "../constants";
 import { TagDisplay } from "../types";
-import { SummarySideBar } from ".";
+import { convertSecondsToDuration, getFormattedDate } from "../utils";
 
 const ConsolidatedLogs = () => {
   const dispatch = useDispatch();

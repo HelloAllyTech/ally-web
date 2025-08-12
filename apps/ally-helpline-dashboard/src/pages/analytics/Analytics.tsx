@@ -1,8 +1,9 @@
-import { useSelector } from "react-redux";
 import { FunctionComponent } from "react";
 
-import { UserRole } from "@types";
+import { useSelector } from "react-redux";
+
 import { RootState } from "@store";
+import { UserRole } from "@types";
 
 import { OrgAnalytics, UserAnalytics } from "./components";
 

@@ -1,13 +1,14 @@
 import { useState, useEffect, ChangeEvent } from "react";
+
+import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-import { motion } from "framer-motion";
 
 import { logger } from "@ally-ui-mono/ui-shared";
-import { UserRole } from "@types";
+import { useSignupMutation } from "@api";
 import { Button, Input } from "@components";
 import { useUser } from "@hooks";
-import { useSignupMutation } from "@api";
+import { UserRole } from "@types";
 
 export const Signup = () => {
   const navigate = useNavigate();

@@ -1,12 +1,13 @@
-import { CircularProgress } from "@mui/material";
 import { FunctionComponent, useEffect, useMemo, useState } from "react";
+
+import { CircularProgress } from "@mui/material";
 import { format } from "date-fns";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
+import { useLazyGetCounsellorStatsQuery } from "@api";
 import { Button, Calendar } from "@components";
-import { useLazyGetCounsellorStatsQuery } from "@api/analytics";
-import { getDateRange } from "@utils";
 import { CalendarMode } from "@types";
+import { getDateRange } from "@utils";
 
 import { ListeningChart } from ".";
 

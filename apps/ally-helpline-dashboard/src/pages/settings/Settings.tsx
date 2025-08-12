@@ -1,5 +1,5 @@
-import { FallbackUI } from "@components";
 import { ComingSoon } from "@assets";
+import { FallbackUI } from "@components";
 
 export const Settings = () => {
   return (

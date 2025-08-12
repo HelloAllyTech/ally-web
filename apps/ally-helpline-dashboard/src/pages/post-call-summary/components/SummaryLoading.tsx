@@ -1,9 +1,10 @@
-import { AlertCircle, Info } from "lucide-react";
 import { FC, useEffect, useState } from "react";
-import { Tooltip } from "@mui/material";
 
-import { Button } from "@components";
+import { Tooltip } from "@mui/material";
+import { AlertCircle, Info } from "lucide-react";
+
 import { Spinner, RoundCheckmark, Waveform, NotesIcon } from "@assets/icons";
+import { Button } from "@components";
 
 interface SummaryLoadingProps {
   isSummaryDelayed?: boolean;

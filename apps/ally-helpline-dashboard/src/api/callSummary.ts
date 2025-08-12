@@ -9,6 +9,7 @@
  */
 
 import { baseAPI } from "@api";
+import { ApiEndpoints, HttpMethod } from "@constants";
 import {
   EnhanceContentRequest,
   EnhanceContentResponse,
@@ -21,7 +22,6 @@ import {
   GetTranscriptRequest,
   UpdateCallSummaryNotesRequest,
 } from "@types";
-import { ApiEndpoints, HttpMethod } from "@constants";
 
 const callSummaryAPI = baseAPI.injectEndpoints({
   endpoints: builder => ({

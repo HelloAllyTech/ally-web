@@ -1,15 +1,13 @@
 import AccountCircle from "./account-circle.svg?react";
 import Assessment from "./assessment.svg?react";
 import BackCircle from "./back-circle.svg?react";
-import BackgroundBottom from "./transcript-background-bottom.svg?react";
-import BackgroundTop from "./transcript-background-top.svg?react";
-import Call from "./call.svg?react";
 import CallAttend from "./call-attend.svg?react";
 import CallDetails from "./call-details.svg?react";
 import CallIdIcon from "./call-id-icon.svg?react";
+import Call from "./call.svg?react";
 import Close from "./close.svg?react";
-import CommunityIcon from "./community.svg?react";
 import ComingSoon from "./coming-soon.svg?react";
+import CommunityIcon from "./community.svg?react";
 import CutCall from "./cut-call.svg?react";
 import DateIcon from "./date-icon.svg?react";
 import Delete from "./delete.svg?react";
@@ -29,6 +27,7 @@ import MenuIcon from "./menu-icon.svg?react";
 import Metrics from "./metrics.svg?react";
 import NoRecord from "./no-record.svg?react";
 import NoResults from "./no-results.svg?react";
+import NotesIcon from "./notes.svg?react";
 import ObjectiveObservations from "./objective-observations.svg?react";
 import PlansForNextCall from "./plans-for-next-call.svg?react";
 import Record from "./record.svg?react";
@@ -42,17 +41,18 @@ import StarIcon from "./star.svg?react";
 import StartSessionIcon from "./start-session.svg?react";
 import StatsIcon from "./stats.svg?react";
 import SubjectiveObservations from "./subjective-observations.svg?react";
-import Tags from "./tags.svg?react";
 import TagsIcon from "./tags-icon.svg?react";
+import Tags from "./tags.svg?react";
 import TherapeuticTechniques from "./therapeutic-techniques.svg?react";
-import ThumbDown from "./thumb-down.svg?react";
 import ThumbDownFilled from "./thumb-down-filled.svg?react";
-import ThumbUp from "./thumb-up.svg?react";
+import ThumbDown from "./thumb-down.svg?react";
 import ThumbUpFilled from "./thumb-up-filled.svg?react";
+import ThumbUp from "./thumb-up.svg?react";
 import TimerIcon from "./timer.svg?react";
+import BackgroundBottom from "./transcript-background-bottom.svg?react";
+import BackgroundTop from "./transcript-background-top.svg?react";
 import UserIcon from "./user-icon.svg?react";
 import Waveform from "./waveform.svg?react";
-import NotesIcon from "./notes.svg?react";
 
 export {
   AccountCircle,

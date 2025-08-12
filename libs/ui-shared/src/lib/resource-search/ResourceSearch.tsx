@@ -1,5 +1,6 @@
 "use client";
 import { FC, useRef, useCallback, useEffect } from "react";
+
 import { CircularProgress } from "@mui/material";
 
 import {
@@ -10,9 +11,9 @@ import {
   SuggestionsContainer,
   SkeletonLoader,
 } from "../..";
-import { Resource } from "../../types";
-import ResourceTabs from "./ResourceTabs";
 import { sampleSuggestions } from "./constants";
+import ResourceTabs from "./ResourceTabs";
+import { Resource } from "../../types";
 
 /**
  * ResourceSearch component provides a search interface for resources with category filtering, infinite scroll, and suggestions.

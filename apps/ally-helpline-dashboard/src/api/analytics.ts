@@ -6,13 +6,13 @@
  */
 
 import { baseAPI } from "@api";
+import { ApiEndpoints, HttpMethod } from "@constants";
 import {
   GetCounsellorStatsRequest,
   GetCounsellorStatsResponse,
   GetDashboardUrlResponse,
   GetDashboardsResponse,
 } from "@types";
-import { ApiEndpoints, HttpMethod } from "@constants";
 
 const analyticsAPI = baseAPI.injectEndpoints({
   endpoints: builder => ({

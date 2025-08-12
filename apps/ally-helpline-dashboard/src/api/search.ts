@@ -5,9 +5,9 @@
  * - Resource search functionality
  */
 
-import { GetSearchResultsRequest, GetSearchResultsResponse } from "@types";
-import { ApiEndpoints, HttpMethod } from "@constants";
 import { baseAPI } from "@api";
+import { ApiEndpoints, HttpMethod } from "@constants";
+import { GetSearchResultsRequest, GetSearchResultsResponse } from "@types";
 
 const searchAPI = baseAPI.injectEndpoints({
   endpoints: builder => ({

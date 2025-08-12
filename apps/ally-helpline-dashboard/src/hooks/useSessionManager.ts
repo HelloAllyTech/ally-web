@@ -1,11 +1,12 @@
 import { useState, useCallback, useEffect } from "react";
-import { useLocation } from "react-router-dom";
+
 import { useSelector } from "react-redux";
+import { useLocation } from "react-router-dom";
 
 import { logger } from "@ally-ui-mono/ui-shared/logger";
-import { RootState } from "@store";
 import { useLazyGetCounsellorChatQuery } from "@api";
 import { SocketConnectionTypes, ROUTES, CallProvider, CallType } from "@constants";
+import { RootState } from "@store";
 import { SocketEvent, UserRole, Session, UseSessionManagerOptions } from "@types";
 
 import { useSocket } from "./useSocket";

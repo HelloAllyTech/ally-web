@@ -1,15 +1,16 @@
 import { useEffect, useMemo, useState, useCallback } from "react";
+
+import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-import { motion } from "framer-motion";
 
 import { logger } from "@ally-ui-mono/ui-shared";
 import { useCancelRequestMutation, useLazyGetClientChatQuery, useRequestCallMutation } from "@api";
-import { ROUTES, SocketConnectionTypes } from "@constants";
-import { ChatStatus, QueueStatus, SocketEvent, UserRole } from "@types";
-import { Button, Confirm } from "@components";
-import { useSocket, useUser } from "@hooks";
 import { Call, Logout } from "@assets";
+import { Button, Confirm } from "@components";
+import { ROUTES, SocketConnectionTypes } from "@constants";
+import { useSocket, useUser } from "@hooks";
+import { ChatStatus, QueueStatus, SocketEvent, UserRole } from "@types";
 
 interface LogoutButtonProps {
   onLogout: () => void;

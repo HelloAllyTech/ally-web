@@ -1,8 +1,8 @@
 import { SearchIcon, LogsIcon, StatsIcon, CommunityIcon, StartSessionIcon } from "@assets/icons";
 
-import { TabId } from "./tabs";
 import { CallType } from "./call";
 import { Permissions } from "./permissions";
+import { TabId } from "./tabs";
 
 export const ROUTES = {
   // Public Routes

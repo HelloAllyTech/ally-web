@@ -1,6 +1,7 @@
 "use client";
-import { Plus, X } from "lucide-react";
 import { format } from "date-fns";
+import { Plus, X } from "lucide-react";
+
 import { SelectedFiltersViewProps } from "./types";
 
 /**

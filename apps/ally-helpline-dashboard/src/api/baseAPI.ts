@@ -18,9 +18,9 @@ import {
 } from "@reduxjs/toolkit/query/react";
 
 import { logger } from "@ally-ui-mono/ui-shared";
+import { ApiEndpoints, HttpMethod, LOCAL_STORAGE_KEYS } from "@constants";
 import { store } from "@store";
 import { RefreshResponse } from "@types";
-import { ApiEndpoints, HttpMethod, LOCAL_STORAGE_KEYS } from "@constants";
 
 // Environment variables for API configuration
 const API_URL = import.meta.env.VITE_API_BASE_URL;

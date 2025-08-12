@@ -1,10 +1,9 @@
 import { FC, useEffect, useState } from "react";
+
 import { Divider } from "@mui/material";
 import { useSelector } from "react-redux";
 
 import { logger, DropdownField } from "@ally-ui-mono/ui-shared";
-import { RootState } from "@store";
-import { Accordion, TextField, Button } from "@components";
 import {
   useGetSummaryFieldsQuery,
   useUpdateCallSummaryMutation,
@@ -13,15 +12,17 @@ import {
   useLazySearchLocationsQuery,
   useUpdateCallSummaryNotesMutation,
 } from "@api";
-import { useEnhance, useDebounce } from "@hooks";
-import { SummaryFieldKey, Tag, UserRole } from "@types";
-import { LanguageMap, CallProvider } from "@constants";
 import { Assessment } from "@assets";
+import { Accordion, TextField, Button } from "@components";
+import { LanguageMap, CallProvider } from "@constants";
+import { useEnhance, useDebounce } from "@hooks";
+import { RootState } from "@store";
+import { SummaryFieldKey, Tag, UserRole } from "@types";
 
-import { labelShownSections, summarySections } from "../constants";
-import { CallSummaryProps, SummaryField, SummarySectionKey } from "../types";
-import { getFormattedDateTime, getSectionFields } from "../helper";
 import { SummaryLoading } from ".";
+import { labelShownSections, summarySections } from "../constants";
+import { getFormattedDateTime, getSectionFields } from "../helper";
+import { CallSummaryProps, SummaryField, SummarySectionKey } from "../types";
 
 const CallSummary: FC<CallSummaryProps> = ({
   onClickViewSummary,

@@ -1,10 +1,11 @@
 import { useEffect, useRef, useCallback } from "react";
+
 import { Socket, io } from "socket.io-client";
 
 import { logger } from "@ally-ui-mono/ui-shared";
-import { getPathForConnectionType } from "@utils";
-import { SocketEvent, UseSocketOptions } from "@types";
 import { LOCAL_STORAGE_KEYS } from "@constants";
+import { SocketEvent, UseSocketOptions } from "@types";
+import { getPathForConnectionType } from "@utils";
 
 export const useSocket = ({ eventCallbacks, connectionType }: UseSocketOptions) => {
   const socketRef = useRef<Socket | null>(null);

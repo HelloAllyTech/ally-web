@@ -1,24 +1,25 @@
 import { FC, useEffect, useState, useRef, useMemo } from "react";
-import { useSelector } from "react-redux";
-import { Tabs, Tab } from "@mui/material";
 
-import { RootState } from "@store";
-import { ActionDialog, Drawer, TextField } from "@components";
-import { Download, Edit } from "@assets/icons";
+import { Tabs, Tab } from "@mui/material";
+import { useSelector } from "react-redux";
+
+import { InfiniteScroll, logger } from "@ally-ui-mono/ui-shared";
 import {
   useGetTranscriptQuery,
   useLazyExportCallSummaryQuery,
   useUpdateCallInfoMutation,
   useUpdateCallSummaryMutation,
-} from "@api/callSummary";
-import CallSummary from "@pages/post-call-summary/components/CallSummary";
-import { useFileExport } from "@hooks";
-import { InfiniteScroll, logger } from "@ally-ui-mono/ui-shared";
+} from "@api";
+import { Download, Edit } from "@assets/icons";
+import { ActionDialog, Drawer, TextField } from "@components";
 import { CallProvider } from "@constants";
+import { useFileExport } from "@hooks";
+import CallSummary from "@pages/post-call-summary/components/CallSummary";
+import { RootState } from "@store";
 import { UserRole } from "@types";
 
-import { DeleteDialogData, SummarySideBarProps, Transcript } from "../types";
 import { defaultDeleteDialogData, tabStyles } from "../constants";
+import { DeleteDialogData, SummarySideBarProps, Transcript } from "../types";
 
 // TODO: Added only for removing lint error - remove and find actual solution
 declare global {

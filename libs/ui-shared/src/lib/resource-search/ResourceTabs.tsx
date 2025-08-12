@@ -1,6 +1,7 @@
 "use client";
 
 import { FC, useMemo } from "react";
+
 import { Tab, Tabs } from "@mui/material";
 
 import { Resource } from "../../types";

@@ -1,7 +1,7 @@
 import { FunctionComponent, useState } from "react";
 
-import { Button, StressBuster } from "@components";
 import { BackgroundBottom, BackgroundTop, Flower } from "@assets";
+import { Button, StressBuster } from "@components";
 
 import { STRESS_BUSTERS } from "./constants";
 

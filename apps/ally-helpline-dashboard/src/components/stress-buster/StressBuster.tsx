@@ -1,8 +1,10 @@
 import { FunctionComponent, useState, useRef, useEffect } from "react";
-import { X, Play, Pause, Volume2, Minimize, Maximize, VolumeOff } from "lucide-react";
+
 import { Modal } from "@mui/material";
-import { MindfullnessVideo } from "@assets/videos";
+import { X, Play, Pause, Volume2, Minimize, Maximize, VolumeOff } from "lucide-react";
+
 import { BackgroundBottom, BackgroundTop } from "@assets/icons";
+import { MindfullnessVideo } from "@assets/videos";
 import { Button } from "@components";
 
 import { StressBusterProps } from "./types";

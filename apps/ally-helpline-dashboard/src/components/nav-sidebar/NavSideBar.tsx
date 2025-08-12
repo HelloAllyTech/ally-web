@@ -1,16 +1,15 @@
+import { FunctionComponent, useState } from "react";
+
+import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
-import { FunctionComponent, useState } from "react";
-import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 
+import { AccountCircle, Close, Logout } from "@assets/icons";
+import { Confirm } from "@components";
+import { TabId, Permissions, navBarOptions } from "@constants";
 import { useUser } from "@hooks";
-import { UserRole } from "@types";
-import { TabId } from "@constants";
 import { RootState } from "@store";
-import Confirm from "../confirmation-box/Confirm";
-import { navBarOptions } from "@constants";
-import { Permissions } from "@constants";
-import { AccountCircle, Logout, Close } from "@assets/icons";
+import { UserRole } from "@types";
 
 import { NavSideBarProps } from "./types";
 

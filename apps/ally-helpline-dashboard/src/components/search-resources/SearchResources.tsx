@@ -1,10 +1,11 @@
 import { FC, useEffect, useState, useRef } from "react";
-import { toast } from "sonner";
+
 import { useSearchParams } from "react-router-dom";
+import { toast } from "sonner";
 
 import { ResourceSearch } from "@ally-ui-mono/ui-shared";
 import { Resource } from "@ally-ui-mono/ui-shared/types";
-import { useGetSearchResultsMutation } from "@api/search";
+import { useGetSearchResultsMutation } from "@api";
 
 import { SearchResourcesProps } from "./types";
 

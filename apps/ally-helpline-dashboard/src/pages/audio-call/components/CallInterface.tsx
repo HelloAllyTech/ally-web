@@ -1,6 +1,7 @@
 import { FC, useEffect, useState } from "react";
-import { LiveAudioVisualizer } from "react-audio-visualize";
+
 import { motion } from "framer-motion";
+import { LiveAudioVisualizer } from "react-audio-visualize";
 
 import { CallProvider } from "@constants";
 

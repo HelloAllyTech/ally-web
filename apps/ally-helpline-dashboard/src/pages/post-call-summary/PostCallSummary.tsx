@@ -1,18 +1,19 @@
 import { useEffect, useState } from "react";
+
 import { motion } from "framer-motion";
 import { useSearchParams, useNavigate, useParams } from "react-router-dom";
 
 import { logger } from "@ally-ui-mono/ui-shared";
+import { useGetCallSummaryQuery } from "@api";
+import { ActionDialog, TabGroup } from "@components";
 import { CallProvider, CallType } from "@constants";
 import { useUser } from "@hooks";
 import { UserStatus } from "@types";
-import { ActionDialog, TabGroup } from "@components";
-import { useGetCallSummaryQuery } from "@api";
 
-import { SectionType } from "./types";
 import { CallSummary, StressBusterStep } from "./components";
-import { getNextSection } from "./helper";
 import { summaryTabs } from "./constants";
+import { getNextSection } from "./helper";
+import { SectionType } from "./types";
 
 export const PostCallSummary = () => {
   const { chatId } = useParams();

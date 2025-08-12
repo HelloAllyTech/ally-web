@@ -6,6 +6,7 @@
  */
 
 import { baseAPI } from "@api";
+import { ApiEndpoints, HttpMethod } from "@constants";
 import {
   User,
   VerifyOTPRequest,
@@ -13,7 +14,6 @@ import {
   GenerateOTPRequest,
   GenerateOTPResponse,
 } from "@types";
-import { ApiEndpoints, HttpMethod } from "@constants";
 
 const authAPI = baseAPI.injectEndpoints({
   endpoints: builder => ({

@@ -1,6 +1,8 @@
 "use client";
 import { FC, useState, useRef, useEffect } from "react";
+
 import { motion, AnimatePresence } from "framer-motion";
+
 import Badge from "../badge";
 
 /**

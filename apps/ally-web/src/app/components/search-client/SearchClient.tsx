@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+
 import { useRouter, usePathname } from "next/navigation";
 
 import { logger, ResourceSearch, Resource } from "@ally-ui-mono/ui-shared";

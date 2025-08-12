@@ -1,9 +1,23 @@
 import { useState, useEffect } from "react";
-import { Route, Routes, Navigate, matchPath, useNavigate, useLocation } from "react-router-dom";
+
 import { useSelector } from "react-redux";
+import { Route, Routes, Navigate, matchPath, useNavigate, useLocation } from "react-router-dom";
 import { toast } from "sonner";
 
 import { logger } from "@ally-ui-mono/ui-shared";
+import { useAcceptCallMutation, useGetWaitingClientsQuery, useGetChatTypesQuery } from "@api";
+import { MenuIcon } from "@assets";
+import { AudioCallPopup, CallPicker, NavSideBar } from "@components";
+import {
+  TabId,
+  CallType,
+  LOCAL_STORAGE_KEYS,
+  AUTH_RETRY_CONFIG,
+  Permissions,
+  ROUTES,
+  navBarOptions,
+} from "@constants";
+import { useUser } from "@hooks";
 import {
   Calls,
   Calendar,
@@ -16,22 +30,9 @@ import {
   Search,
   StartSession,
 } from "@pages";
-import {
-  TabId,
-  CallType,
-  LOCAL_STORAGE_KEYS,
-  AUTH_RETRY_CONFIG,
-  Permissions,
-  ROUTES,
-  navBarOptions,
-} from "@constants";
-import { useAcceptCallMutation, useGetWaitingClientsQuery, useGetChatTypesQuery } from "@api";
-import { useUser } from "@hooks";
+import { setUserStatus, setAvailableChatTypes, unauthenticate } from "@reducer";
 import { RootState, store } from "@store";
 import { UserRole, UserStatus, WaitingClient } from "@types";
-import { setUserStatus, setAvailableChatTypes, unauthenticate } from "@reducer";
-import { AudioCallPopup, CallPicker, NavSideBar } from "@components";
-import { MenuIcon } from "@assets";
 
 import PermissionGuardedRoute from "./PermissionGuardedRoute";
 

@@ -1,17 +1,18 @@
 import { useState, useEffect, FunctionComponent, useRef } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
-import { useSelector } from "react-redux";
+
 import { Minimize } from "lucide-react";
+import { useSelector } from "react-redux";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 
 import { logger } from "@ally-ui-mono/ui-shared";
 import { useEndCallMutation, useLazyGetClientChatQuery, useLazyGetCounsellorChatQuery } from "@api";
-import { RootState } from "@store";
-import { UserRole, UserStatus, Chat, QueueStatus } from "@types";
-import { setUserStatus } from "@reducer";
+import { NoResults, MindfullnessVideo } from "@assets";
 import { FallbackUI, StressBuster } from "@components";
 import { CallProvider, CallType } from "@constants";
-import { NoResults, MindfullnessVideo } from "@assets";
+import { setUserStatus } from "@reducer";
+import { RootState } from "@store";
+import { UserRole, UserStatus, Chat, QueueStatus } from "@types";
 
 import { CallTranscript, EndTransitionScreen } from "./components";
 

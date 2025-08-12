@@ -1,17 +1,18 @@
 import { useEffect, useState, useCallback, FunctionComponent } from "react";
-import { useNavigate } from "react-router-dom";
+
 import { FetchBaseQueryError } from "@reduxjs/toolkit/query";
-import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 import { useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 
+import { useGenerateOTPMutation, useVerifyOTPMutation } from "@api";
+import { BackCircle, LoginImage } from "@assets";
+import { Button, OTP, TextField } from "@components";
+import { LOCAL_STORAGE_KEYS } from "@constants";
 import { useUser } from "@hooks";
 import { RootState } from "@store";
 import { validateEmail } from "@utils";
-import { Button, OTP, TextField } from "@components";
-import { LOCAL_STORAGE_KEYS } from "@constants";
-import { useGenerateOTPMutation, useVerifyOTPMutation } from "@api";
-import { BackCircle, LoginImage } from "@assets";
 
 import { LoginSection } from "./constants";
 

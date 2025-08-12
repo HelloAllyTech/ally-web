@@ -1,13 +1,14 @@
-import { toast } from "sonner";
 import { FC, useEffect, useMemo, useState, Dispatch, SetStateAction, useRef } from "react";
+
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 
 import { logger } from "@ally-ui-mono/ui-shared";
-import { RootState } from "@store";
 import { useGetNudgeStatusQuery } from "@api";
-import { useSocket, useWebRTCCallSetup } from "@hooks";
 import { SocketConnectionTypes, CallProvider } from "@constants";
+import { useSocket, useWebRTCCallSetup } from "@hooks";
+import { RootState } from "@store";
 import {
   ChatStatus,
   FeedbackResponse,
@@ -17,9 +18,6 @@ import {
   UserRole,
 } from "@types";
 
-import { reduceTranscriptions } from "../utils";
-import { CallTranscriptProps, Nudge } from "../types";
-import { AUDIO_FILE_SIZE, OFFER_TIMEOUT_MS } from "../constants";
 import {
   AudioCallBackgroundWrapper,
   CallSidebar,
@@ -27,6 +25,9 @@ import {
   CallControls,
   CallInterface,
 } from ".";
+import { AUDIO_FILE_SIZE, OFFER_TIMEOUT_MS } from "../constants";
+import { CallTranscriptProps, Nudge } from "../types";
+import { reduceTranscriptions } from "../utils";
 
 import "./CallTranscript.css";
 

@@ -1,12 +1,13 @@
 import { FC, useEffect, useRef, useState } from "react";
-import { useSelector } from "react-redux";
+
 import { motion } from "framer-motion";
+import { useSelector } from "react-redux";
 
 import { RootState } from "@store";
 import { getKeyFromIndex } from "@utils";
 
-import { getSpeakerName } from "../utils";
 import { RealTimeTranscriptProps } from "../types";
+import { getSpeakerName } from "../utils";
 
 const RealTimeTranscript: FC<RealTimeTranscriptProps> = ({ isFocusMode, transcriptions }) => {
   const user = useSelector((state: RootState) => state.user.user);

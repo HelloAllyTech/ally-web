@@ -1,9 +1,8 @@
 import { useCallback, useRef, useState } from "react";
 
 import { logger } from "@ally-ui-mono/ui-shared";
-import { ICE_SERVERS } from "@constants";
+import { ICE_SERVERS, xirsysChannel, xirsysDomain, xirsysIdent, xirsysSecret } from "@constants";
 import { IceServer, SocketEvent } from "@types";
-import { xirsysChannel, xirsysDomain, xirsysIdent, xirsysSecret } from "@constants";
 
 interface UseWebRTCParams {
   emitSocketEvent: (socketEvent: SocketEvent, message: any) => void;
