@@ -8,7 +8,6 @@
  * - Export functionality
  */
 
-import { baseAPI } from "@api/baseAPI";
 import { ApiEndpoints, HttpMethod } from "@constants";
 import {
   EnhanceContentRequest,
@@ -22,6 +21,8 @@ import {
   GetTranscriptRequest,
   UpdateCallSummaryNotesRequest,
 } from "@types";
+
+import { baseAPI } from "./baseAPI";
 
 const callSummaryAPI = baseAPI.injectEndpoints({
   endpoints: builder => ({
