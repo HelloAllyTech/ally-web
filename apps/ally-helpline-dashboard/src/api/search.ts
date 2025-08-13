@@ -5,9 +5,10 @@
  * - Resource search functionality
  */
 
-import { baseAPI } from "@api";
 import { ApiEndpoints, HttpMethod } from "@constants";
 import { GetSearchResultsRequest, GetSearchResultsResponse } from "@types";
+
+import { baseAPI } from "./baseAPI";
 
 const searchAPI = baseAPI.injectEndpoints({
   endpoints: builder => ({

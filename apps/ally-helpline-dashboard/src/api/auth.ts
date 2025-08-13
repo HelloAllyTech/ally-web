@@ -5,7 +5,6 @@
  * - User profile and permissions retrieval
  */
 
-import { baseAPI } from "@api";
 import { ApiEndpoints, HttpMethod } from "@constants";
 import {
   User,
@@ -14,6 +13,8 @@ import {
   GenerateOTPRequest,
   GenerateOTPResponse,
 } from "@types";
+
+import { baseAPI } from "./baseAPI";
 
 const authAPI = baseAPI.injectEndpoints({
   endpoints: builder => ({
