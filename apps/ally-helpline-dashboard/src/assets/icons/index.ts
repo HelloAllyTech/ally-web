@@ -5,6 +5,7 @@ import CallAttend from "./call-attend.svg?react";
 import CallDetails from "./call-details.svg?react";
 import CallIdIcon from "./call-id-icon.svg?react";
 import Call from "./call.svg?react";
+import CloseIcon from "./close-icon.svg?react";
 import Close from "./close.svg?react";
 import ComingSoon from "./coming-soon.svg?react";
 import CommunityIcon from "./community.svg?react";
@@ -36,9 +37,10 @@ import ReviewIcon from "./review-icon.svg?react";
 import RoundCheckmark from "./round-checkmark.svg?react";
 import SearchIcon from "./search.svg?react";
 import SessionSummary from "./session-summary.svg?react";
+import Session from "./session.svg?react";
 import Spinner from "./spinner.svg?react";
 import StarIcon from "./star.svg?react";
-import StartSessionIcon from "./start-session.svg?react";
+import StartSession from "./start-session.svg?react";
 import StatsIcon from "./stats.svg?react";
 import SubjectiveObservations from "./subjective-observations.svg?react";
 import TagsIcon from "./tags-icon.svg?react";
@@ -64,6 +66,7 @@ export {
   CallAttend,
   CallDetails,
   CallIdIcon,
+  CloseIcon,
   Close,
   CommunityIcon,
   ComingSoon,
@@ -93,10 +96,11 @@ export {
   ReviewIcon,
   RoundCheckmark,
   SearchIcon,
+  Session,
   SessionSummary,
   Spinner,
   StarIcon,
-  StartSessionIcon,
+  StartSession,
   StatsIcon,
   SubjectiveObservations,
   Tags,

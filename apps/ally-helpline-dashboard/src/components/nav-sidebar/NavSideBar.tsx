@@ -31,10 +31,7 @@ const NavSideBar: FunctionComponent<NavSideBarProps> = ({
 
   const [isLogoutConfirmOpen, setIsLogoutConfirmOpen] = useState<boolean>(false);
   const permittedTabs = navBarOptions.filter(
-    tab =>
-      !tab.permission ||
-      (filteredPermissions?.includes(tab.permission) &&
-        (!tab.relatedChatType || availableChatTypes.includes(tab.relatedChatType))),
+    tab => !tab.permission || filteredPermissions?.includes(tab.permission),
   );
 
   const navigate = useNavigate();

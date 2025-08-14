@@ -1,6 +1,5 @@
-import { SearchIcon, LogsIcon, StatsIcon, CommunityIcon, StartSessionIcon } from "@assets/icons";
+import { SearchIcon, LogsIcon, StatsIcon, CommunityIcon } from "@assets/icons";
 
-import { CallType } from "./call";
 import { Permissions } from "./permissions";
 import { TabId } from "./tabs";
 
@@ -22,22 +21,12 @@ export const ROUTES = {
   SUMMARY: "/summary/:chatId",
   CLIENT: "/client",
   SEARCH: "/search",
-  START_SESSION: "/start-session",
   LEARN: "/learn",
   SCENARIO: "/scenario/:scenarioId",
   SIMULATION_SUMMARY: "/simulation-summary",
 } as const;
 
 export const navBarOptions = [
-  {
-    id: TabId.START_SESSION,
-    title: "Start Session",
-    Icon: StartSessionIcon,
-    path: ROUTES.START_SESSION,
-    // TODO: Add correct permission for Start Session once BE implementation is done
-    permission: Permissions.VIEW_NAVBAR_SEARCH,
-    relatedChatType: CallType.MICROPHONE_CHAT,
-  },
   {
     id: TabId.CALLS,
     title: "Logs",

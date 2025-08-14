@@ -1,8 +1,9 @@
-import { FC } from "react";
+import { FC, useState } from "react";
 
 import { motion } from "framer-motion";
 
-import { Button } from "@components";
+import { StartSession } from "@assets/icons";
+import { Button, StartSessionDialog } from "@components";
 import { CallType } from "@constants";
 import { useUser } from "@hooks";
 import { UserRole, UserStatus } from "@types";
@@ -10,6 +11,8 @@ import { UserRole, UserStatus } from "@types";
 import { CallLogsTable, ConsolidatedLogs } from "./components";
 
 export const Calls: FC = () => {
+  const [isStartSessionDialogOpen, setIsStartSessionDialogOpen] = useState(false);
+
   const { availableChatTypes, updateUserStatus, user, userStatus } = useUser();
 
   const isAdmin = user?.role === UserRole.ADMIN;
@@ -31,6 +34,12 @@ export const Calls: FC = () => {
           <div className="z-10 text-[#000] text-[18px] font-[500]">
             {isAdmin ? "Consolidated Logs" : "Call Logs"}
           </div>
+          {availableChatTypes?.includes(CallType.MICROPHONE_CHAT) && (
+            <Button onClick={() => setIsStartSessionDialogOpen(true)}>
+              <StartSession />
+              Start Session
+            </Button>
+          )}
           {!isAdmin && availableChatTypes?.includes(CallType.WEBRTC_CHAT) && (
             <Button
               className={`${
@@ -46,6 +55,10 @@ export const Calls: FC = () => {
         </div>
       </motion.div>
       {isAdmin ? <ConsolidatedLogs /> : <CallLogsTable />}
+      <StartSessionDialog
+        isOpen={isStartSessionDialogOpen}
+        onClose={() => setIsStartSessionDialogOpen(false)}
+      />
     </div>
   );
 };

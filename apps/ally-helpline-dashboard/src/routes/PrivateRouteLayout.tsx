@@ -28,7 +28,6 @@ import {
   PostCallSummary,
   ClientInterface,
   Search,
-  StartSession,
   Learn,
   Scenario,
   SimulationSummary,
@@ -268,18 +267,6 @@ const PrivateRouteLayout = () => {
                   />
                 }
               />
-              {chatTypes?.includes(CallType.MICROPHONE_CHAT) && (
-                <Route
-                  path={ROUTES.START_SESSION}
-                  element={
-                    <PermissionGuardedRoute
-                      // TODO: Add correct permission for Start Session once BE implementation is done
-                      permission={Permissions.VIEW_START_CALL_PAGE}
-                      element={<StartSession />}
-                    />
-                  }
-                />
-              )}
               <Route
                 path={ROUTES.LEARN}
                 element={

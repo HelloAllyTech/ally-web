@@ -17,6 +17,7 @@ import OTP from "./otp";
 import ScenarioCard from "./scenario-card";
 import ScenarioDetailsCard from "./scenario-details-card";
 import SearchResources from "./search-resources";
+import StartSessionDialog from "./start-session-dialog";
 import StressBuster from "./stress-buster";
 import TabGroup from "./tab-group";
 import TagGroup from "./tag-group";
@@ -43,6 +44,7 @@ export {
   ScenarioCard,
   ScenarioDetailsCard,
   SearchResources,
+  StartSessionDialog,
   StressBuster,
   TabGroup,
   TagGroup,
