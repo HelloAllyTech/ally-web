@@ -29,6 +29,9 @@ import {
   ClientInterface,
   Search,
   StartSession,
+  Learn,
+  Scenario,
+  SimulationSummary,
 } from "@pages";
 import { setUserStatus, setAvailableChatTypes, unauthenticate } from "@reducer";
 import { RootState, store } from "@store";
@@ -277,6 +280,27 @@ const PrivateRouteLayout = () => {
                   }
                 />
               )}
+              <Route
+                path={ROUTES.LEARN}
+                element={
+                  <PermissionGuardedRoute
+                    // TODO: Add correct permission for Learn once BE implementation is done
+                    permission={Permissions.VIEW_NAVBAR_LEARN}
+                    element={<Learn />}
+                  />
+                }
+              />
+              <Route path={ROUTES.SCENARIO} element={<Scenario />} />
+              <Route
+                path={ROUTES.SIMULATION_SUMMARY}
+                element={
+                  <PermissionGuardedRoute
+                    // TODO: Add correct permission for Summary once BE implementation is done
+                    permission={Permissions.VIEW_NAVBAR_LEARN}
+                    element={<SimulationSummary />}
+                  />
+                }
+              />
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
           </div>

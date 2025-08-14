@@ -14,6 +14,8 @@ import FallbackUI from "./fallback-ui";
 import Input from "./input";
 import NavSideBar from "./nav-sidebar";
 import OTP from "./otp";
+import ScenarioCard from "./scenario-card";
+import ScenarioDetailsCard from "./scenario-details-card";
 import SearchResources from "./search-resources";
 import StressBuster from "./stress-buster";
 import TabGroup from "./tab-group";
@@ -38,6 +40,8 @@ export {
   Input,
   NavSideBar,
   OTP,
+  ScenarioCard,
+  ScenarioDetailsCard,
   SearchResources,
   StressBuster,
   TabGroup,

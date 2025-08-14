@@ -23,6 +23,9 @@ export const ROUTES = {
   CLIENT: "/client",
   SEARCH: "/search",
   START_SESSION: "/start-session",
+  LEARN: "/learn",
+  SCENARIO: "/scenario/:scenarioId",
+  SIMULATION_SUMMARY: "/simulation-summary",
 } as const;
 
 export const navBarOptions = [
@@ -62,6 +65,14 @@ export const navBarOptions = [
     title: "Community",
     Icon: CommunityIcon,
     path: "https://community.helloally.ai/",
+    permission: "",
+  },
+  {
+    id: TabId.LEARN,
+    title: "Learn",
+    // TODO: Add correct permission and icon for Learn once available
+    Icon: CommunityIcon,
+    path: ROUTES.LEARN,
     permission: "",
   },
 ];

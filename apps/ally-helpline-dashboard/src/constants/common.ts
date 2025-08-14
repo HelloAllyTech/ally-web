@@ -103,4 +103,11 @@ export const ApiEndpoints = {
     GET_CATEGORIES: "/reference-document/categories",
     GET_SEARCH_RESULTS: "/reference-document/search",
   },
+  LEARN: {
+    DELETE_ROOM: (roomId: string) => `/rooms/${roomId}`,
+    ROOM: "/rooms",
+    SEND_OTP: "/auth/send-otp",
+    SCENARIOS: "/scenarios",
+    VERIFY_OTP: "/auth/verify-otp",
+  },
 };
