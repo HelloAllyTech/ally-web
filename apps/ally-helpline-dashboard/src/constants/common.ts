@@ -1,3 +1,6 @@
+import { Carousel1, Carousel4, Carousel3, Carousel2 } from "@assets";
+import { CarouselSlideType } from "@components";
+
 export const ICE_SERVERS = [
   { urls: "stun:stun.l.google.com:19302" },
   { urls: "stun:stun1.l.google.com:19302" },
@@ -111,3 +114,22 @@ export const ApiEndpoints = {
     VERIFY_OTP: "/auth/verify-otp",
   },
 };
+
+export const CAROUSEL_SLIDES: CarouselSlideType[] = [
+  {
+    imageSrc: Carousel1,
+    text: "We do not save audio recordings",
+  },
+  {
+    imageSrc: Carousel2,
+    text: "We do not use your client’s data to train our models",
+  },
+  {
+    imageSrc: Carousel3,
+    text: "Personal information of clients is automatically removed",
+  },
+  {
+    imageSrc: Carousel4,
+    text: "Data is encrypted",
+  },
+];

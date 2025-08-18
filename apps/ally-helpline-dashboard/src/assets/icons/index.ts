@@ -5,11 +5,16 @@ import CallAttend from "./call-attend.svg?react";
 import CallDetails from "./call-details.svg?react";
 import CallIdIcon from "./call-id-icon.svg?react";
 import Call from "./call.svg?react";
+import Carousel1 from "./carousel-1.svg?react";
+import Carousel2 from "./carousel-2.svg?react";
+import Carousel3 from "./carousel-3.svg?react";
+import Carousel4 from "./carousel-4.svg?react";
 import CloseIcon from "./close-icon.svg?react";
 import Close from "./close.svg?react";
 import ComingSoon from "./coming-soon.svg?react";
 import CommunityIcon from "./community.svg?react";
 import CutCall from "./cut-call.svg?react";
+import DataPolicy from "./data-policy.svg?react";
 import DateIcon from "./date-icon.svg?react";
 import Delete from "./delete.svg?react";
 import DominantFeelings from "./dominant-feelings.svg?react";
@@ -33,6 +38,7 @@ import ObjectiveObservations from "./objective-observations.svg?react";
 import PlansForNextCall from "./plans-for-next-call.svg?react";
 import Record from "./record.svg?react";
 import ReferralsProvided from "./referrals-provided.svg?react";
+import Refresh from "./refresh.svg?react";
 import ReviewIcon from "./review-icon.svg?react";
 import RoundCheckmark from "./round-checkmark.svg?react";
 import SearchIcon from "./search.svg?react";
@@ -54,6 +60,7 @@ import TimerIcon from "./timer.svg?react";
 import BackgroundBottom from "./transcript-background-bottom.svg?react";
 import BackgroundTop from "./transcript-background-top.svg?react";
 import UserIcon from "./user-icon.svg?react";
+import Warning from "./warning.svg?react";
 import Waveform from "./waveform.svg?react";
 
 export {
@@ -66,11 +73,16 @@ export {
   CallAttend,
   CallDetails,
   CallIdIcon,
+  Carousel1,
+  Carousel2,
+  Carousel3,
+  Carousel4,
   CloseIcon,
   Close,
   CommunityIcon,
   ComingSoon,
   CutCall,
+  DataPolicy,
   DateIcon,
   Delete,
   DominantFeelings,
@@ -89,10 +101,12 @@ export {
   Metrics,
   NoRecord,
   NoResults,
+  NotesIcon,
   ObjectiveObservations,
   PlansForNextCall,
   Record,
   ReferralsProvided,
+  Refresh,
   ReviewIcon,
   RoundCheckmark,
   SearchIcon,
@@ -113,5 +127,5 @@ export {
   TimerIcon,
   UserIcon,
   Waveform,
-  NotesIcon,
+  Warning,
 };

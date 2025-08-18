@@ -1,14 +1,12 @@
 import { FunctionComponent, useState } from "react";
 
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
-import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 
-import { AccountCircle, Close, Logout } from "@assets/icons";
-import { Confirm } from "@components";
-import { TabId, Permissions, navBarOptions } from "@constants";
+import { AccountCircle, Close, Logout } from "@assets";
+import { Carousel, CarouselSize, CarouselVariant, Confirm } from "@components";
+import { TabId, Permissions, navBarOptions, CAROUSEL_SLIDES } from "@constants";
 import { useUser } from "@hooks";
-import { RootState } from "@store";
 import { UserRole } from "@types";
 
 import { NavSideBarProps } from "./types";
@@ -20,7 +18,6 @@ const NavSideBar: FunctionComponent<NavSideBarProps> = ({
   onClose,
 }: NavSideBarProps) => {
   const { permissions, user, logout } = useUser();
-  const { availableChatTypes } = useSelector((state: RootState) => state.user);
 
   //TODO: Remove this once we have a proper permission system
   const safePermissions = permissions || [];
@@ -74,7 +71,7 @@ const NavSideBar: FunctionComponent<NavSideBarProps> = ({
   const renderLogoutButton = () => {
     return (
       <button
-        className="flex flex-row h-[60px] items-center px-[26px] border-t 
+        className="w-full flex flex-row h-[60px] items-center px-[26px] border-t 
           border-t-[#E5E7EB] mx-[15px] cursor-pointer mb-[6px]"
         onClick={handleLogout}
       >
@@ -144,7 +141,7 @@ const NavSideBar: FunctionComponent<NavSideBarProps> = ({
     <>
       {renderConfirmationBox()}
       <div
-        className={`w-72 bg-[#F9FAFB] h-screen flex flex-col justify-between border-r border-r-[#E5E7EB]
+        className={`w-72 bg-white h-screen flex flex-col justify-between border-r border-r-[#E5E7EB]
           z-20 transition-all duration-300 ${isOpen ? "fixed" : "max-md:hidden md:fixed"}`}
       >
         <button onClick={onClose} className="md:hidden absolute top-4 right-4">
@@ -154,7 +151,14 @@ const NavSideBar: FunctionComponent<NavSideBarProps> = ({
           {renderUserInfo()}
           {renderTabs()}
         </div>
-        {renderLogoutButton()}
+        <div className="flex flex-col items-center gap-3 m-3">
+          <Carousel
+            slides={CAROUSEL_SLIDES}
+            variant={CarouselVariant.DARK}
+            size={CarouselSize.SMALL}
+          />
+          {renderLogoutButton()}
+        </div>
       </div>
       {isOpen && renderCloseButton()}
     </>

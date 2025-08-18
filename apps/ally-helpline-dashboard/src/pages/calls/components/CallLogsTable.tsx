@@ -112,7 +112,7 @@ const CallLogsTable = () => {
             colors: tagColors[tag?.positivity_rating],
           };
         }),
-        raw: row, // keep original row for review action
+        raw: row, // keep original row for summary action
       };
     }
     return {
@@ -130,7 +130,7 @@ const CallLogsTable = () => {
   const columns: Column<any>[] = [
     {
       key: "callName",
-      header: "Call ID",
+      header: "Session ID",
       style: { width: "20%" },
       icon: <CallIdIcon />,
     },
@@ -154,8 +154,8 @@ const CallLogsTable = () => {
       icon: <TagsIcon />,
     },
     {
-      key: "review",
-      header: "Review",
+      key: "summary",
+      header: "Summary",
       style: { width: "10%" },
       render: (_value, row) => {
         const isSummaryNull = row.raw.details?.summary === null;

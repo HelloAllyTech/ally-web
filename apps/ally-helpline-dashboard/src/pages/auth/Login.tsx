@@ -8,8 +8,8 @@ import { toast } from "sonner";
 
 import { useGenerateOTPMutation, useVerifyOTPMutation } from "@api";
 import { BackCircle, LoginImage } from "@assets";
-import { Button, OTP, TextField } from "@components";
-import { LOCAL_STORAGE_KEYS } from "@constants";
+import { Button, Carousel, OTP, TextField } from "@components";
+import { CAROUSEL_SLIDES, LOCAL_STORAGE_KEYS } from "@constants";
 import { useUser } from "@hooks";
 import { RootState } from "@store";
 import { validateEmail } from "@utils";
@@ -158,7 +158,7 @@ export const Login: FunctionComponent = () => {
             <span>Hey,</span>
             <h1>
               <span>Welcome to </span>
-              <span className="font-bold italic">Ally</span>
+              <span className="font-bold italic">ally</span>
             </h1>
             <span className="text-[24px] mt-[24px]">Enter your email address to continue</span>
           </div>
@@ -224,7 +224,7 @@ export const Login: FunctionComponent = () => {
         <BackCircle className="self-start cursor-pointer" onClick={handleBack} />
         <h1 className="text-[32px] font-['Replay_Pro']">Verify your email address</h1>
         <div className="text-base mb-2 font-['Replay_Pro'] flex flex-col">
-          <span className="text-[24px]">Enter the code sent to</span>
+          <span className="text-[24px]">Enter the security code sent to</span>
           <span className="font-semibold text-[24px]">{email}</span>
         </div>
         <div className="flex flex-col gap-2">
@@ -263,11 +263,17 @@ export const Login: FunctionComponent = () => {
 
   return (
     <div className="flex h-screen p-8">
-      <img
-        src={LoginImage}
-        alt="Login"
-        className="max-w-[50%] flex-1 h-full object-cover hidden sm:block rounded-[16px]"
-      />
+      <div className="max-w-[50%] flex-1 h-full relative">
+        <img
+          src={LoginImage}
+          alt="Login"
+          className="w-full h-full object-cover hidden sm:block rounded-[16px]"
+        />
+        <Carousel
+          slides={CAROUSEL_SLIDES}
+          className="absolute top-[50%] left-[50%] translate-x-[-50%] translate-y-[-50%] max-h-[470px] max-w-[380px]"
+        />
+      </div>
       <div className="flex-1 flex flex-col items-center justify-center">
         <div className="sm:w-1/2 w-[90%] flex flex-col gap-6">
           <div className="flex flex-col">

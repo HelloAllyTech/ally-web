@@ -29,14 +29,14 @@ export const ROUTES = {
 export const navBarOptions = [
   {
     id: TabId.CALLS,
-    title: "Logs",
+    title: "Scribe",
     Icon: LogsIcon,
     path: ROUTES.CALLS,
     permission: Permissions.VIEW_NAVBAR_CALLS,
   },
   {
     id: TabId.ANALYTICS,
-    title: "Stats",
+    title: "Statistics",
     Icon: StatsIcon,
     path: ROUTES.ANALYTICS,
     permission: Permissions.VIEW_NAVBAR_ANALYTICS,

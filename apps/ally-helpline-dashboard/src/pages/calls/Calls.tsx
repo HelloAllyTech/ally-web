@@ -2,7 +2,7 @@ import { FC, useState } from "react";
 
 import { motion } from "framer-motion";
 
-import { StartSession } from "@assets/icons";
+import { Refresh, StartSession } from "@assets";
 import { Button, StartSessionDialog } from "@components";
 import { CallType } from "@constants";
 import { useUser } from "@hooks";
@@ -31,8 +31,9 @@ export const Calls: FC = () => {
         className="relative mt-[10px] font-['IBM_Plex_Serif']"
       >
         <div className="sm:p-4 p-0 rounded-lg flex gap-4 sm:justify-between justify-start bg-transparent items-center">
-          <div className="z-10 text-[#000] text-[18px] font-[500]">
-            {isAdmin ? "Consolidated Logs" : "Call Logs"}
+          <div className="z-10 text-[#0D0D0D] text-[24px] font-[500] flex items-center gap-2">
+            Session Logs
+            <Refresh className="w-6 h-6 cursor-pointer border-l-[0.5px] border-[#D2D2D2] pl-2" />
           </div>
           {availableChatTypes?.includes(CallType.MICROPHONE_CHAT) && (
             <Button onClick={() => setIsStartSessionDialogOpen(true)}>

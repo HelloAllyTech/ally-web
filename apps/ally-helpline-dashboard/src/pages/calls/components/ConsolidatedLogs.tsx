@@ -146,7 +146,7 @@ const ConsolidatedLogs = () => {
   const columns: Column<any>[] = [
     {
       key: "callName",
-      header: "Call ID",
+      header: "Session ID",
       style: { width: "15%" },
       icon: <CallIdIcon />,
     },
@@ -196,8 +196,8 @@ const ConsolidatedLogs = () => {
         })) || defaultTags,
     },
     {
-      key: "review",
-      header: "Review",
+      key: "summary",
+      header: "Summary",
       style: { width: "10%" },
       render: (_value, row) => {
         const isSummaryNull = row.raw.details?.summary === null;

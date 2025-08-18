@@ -4,6 +4,7 @@ import AudioCallPopup from "./audio-call-popup";
 import Button from "./button";
 import Calendar from "./calendar";
 import CallPicker from "./call";
+import { Carousel, CarouselSize, CarouselVariant, CarouselSlideType } from "./carousel";
 import Confirm from "./confirmation-box";
 import CustomCircularProgress from "./custom-circular-progress";
 import CustomMarkdown from "./custom-markdown";
@@ -24,6 +25,8 @@ import TagGroup from "./tag-group";
 import TextField from "./text-field";
 import ToggleButtonGroup from "./toggle-button-group";
 
+export { type CarouselSlideType, CarouselSize, CarouselVariant };
+
 export {
   Accordion,
   ActionDialog,
@@ -37,6 +40,7 @@ export {
   Drawer,
   Dropdown,
   ExpandingSection,
+  Carousel,
   FallbackUI,
   Input,
   NavSideBar,
