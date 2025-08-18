@@ -28,6 +28,7 @@ import IssuesWorkedOn from "./issues-worked-on.svg?react";
 import KeyConcerns from "./key-concerns.svg?react";
 import LifelineLogo from "./lifeline-logo.svg?react";
 import Logout from "./logout-icon.svg?react";
+import LogoutIllustration from "./logout-illustration.svg?react";
 import LogsIcon from "./logs.svg?react";
 import MenuIcon from "./menu-icon.svg?react";
 import Metrics from "./metrics.svg?react";
@@ -128,4 +129,5 @@ export {
   UserIcon,
   Waveform,
   Warning,
+  LogoutIllustration,
 };

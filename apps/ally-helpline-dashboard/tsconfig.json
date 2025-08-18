@@ -5,7 +5,6 @@
   "compilerOptions": {
     "baseUrl": ".",
     "paths": {
-      //TODO: Remove this once we have a proper path mapping
       "@src*": ["src/"],
       "@src/*": ["src/*"],
       "@components": ["src/components"],
