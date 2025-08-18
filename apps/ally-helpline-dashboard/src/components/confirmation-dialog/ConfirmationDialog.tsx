@@ -91,7 +91,7 @@ const ConfirmationDialog: FC<ConfirmationDialogProps> = ({
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.6, duration: 0.3 }}
         >
-          <Button className="w-full" onClick={onButtonClick} variant={buttonVariant}>
+          <Button fullWidth onClick={onButtonClick} variant={buttonVariant}>
             {buttonText}
           </Button>
         </motion.div>
