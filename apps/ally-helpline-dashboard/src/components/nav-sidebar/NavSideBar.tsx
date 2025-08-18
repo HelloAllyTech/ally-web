@@ -10,19 +10,17 @@ import { useUser } from "@hooks";
 import { User, UserRole } from "@types";
 
 import { ButtonVariant } from "../button";
-import { NavSideBarProps } from "./types";
+import { NavSideBarProps, TabProps } from "./types";
 
 const UserInfo: FC<{ user?: User }> = ({ user }) => (
   <div
-    className="flex items-center justify-between gap-2 border-gray-200 w-[calc(100%-30px)] 
-    border-b border-b-[#E5E7EB] py-[20px] px-[5px] mx-[15px]"
+    className="flex border-gray-200 w-[calc(100%-30px)] 
+    border-b border-b-[#E5E7EB] py-[20px] px-[5px] mx-[15px] gap-[10px] flex-row items-center"
   >
-    <div className="flex gap-3 flex-row items-center">
-      <AccountCircle className="w-[30px] h-[30px]" />
-      <div className="flex flex-col">
-        <div className="text-[16px] text-gray-800">{user?.name}</div>
-        <div className="text-[12px] text-gray-500">{user?.email}</div>
-      </div>
+    <AccountCircle className="w-[30px] h-[30px]" />
+    <div className="flex flex-col">
+      <div className="text-[16px] text-gray-800">{user?.name}</div>
+      <div className="text-[12px] text-gray-500">{user?.email}</div>
     </div>
   </div>
 );
@@ -31,21 +29,14 @@ const LogoutButton: FC<{ onClick: () => void }> = ({ onClick }) => (
   <Button
     variant={ButtonVariant.TEXT}
     onClick={onClick}
-    className="flex flex-row h-[60px] items-center px-[26px] border-t 
-    border-t-[#E5E7EB] mx-[15px] mb-[6px] justify-start rounded-none hover:bg-gray-50"
+    className="flex flex-row items-center mb-[6px] justify-start rounded-none hover:bg-gray-50 gap-[10px]"
   >
     <Logout />
-    <div className="pl-[10px] text-[16px] font-['IBM_Plex_Serif'] text-[#444]">Log Out</div>
+    <div className="font-['IBM_Plex_Serif'] text-[#444]">Log Out</div>
   </Button>
 );
 
-const Tab: FC<{
-  id: TabId;
-  Icon: FC<SVGProps<SVGSVGElement>>;
-  title: string;
-  activeTab: TabId;
-  onClick: () => void;
-}> = ({ id, Icon, title, activeTab, onClick }) => (
+const Tab: FC<TabProps> = ({ id, Icon, title, activeTab, onClick }) => (
   <div
     className={`
           w-full h-14 rounded-md p-4 flex items-center gap-3 cursor-pointer
@@ -137,12 +128,13 @@ const NavSideBar: FC<NavSideBarProps> = ({ activeTab, onTabChange, isOpen, onClo
           <UserInfo user={user} />
           {renderTabs()}
         </div>
-        <div className="flex flex-col items-center gap-3 m-3">
+        <div className="flex flex-col items-start gap-3 m-3">
           <Carousel
             slides={CAROUSEL_SLIDES}
             variant={CarouselVariant.DARK}
             size={CarouselSize.SMALL}
           />
+          <hr className="w-full border-t border-gray-200" />
           <LogoutButton onClick={handleLogout} />
         </div>
       </div>

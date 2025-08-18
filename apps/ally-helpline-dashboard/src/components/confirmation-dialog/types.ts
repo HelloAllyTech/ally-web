@@ -1,6 +1,6 @@
 import type { FC, SVGProps, ReactNode } from "react";
 
-import type { ButtonVariantType } from "../button";
+import { ButtonVariantType } from "../button";
 
 export interface ConfirmationDialogProps {
   isOpen: boolean;

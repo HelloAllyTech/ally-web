@@ -19,7 +19,7 @@ import { RootState } from "@store";
 import { UserRole } from "@types";
 
 import { defaultDeleteDialogData, tabStyles } from "../constants";
-import { DeleteDialogData, SummarySideBarProps, Transcript } from "../types";
+import { DeleteDialogData, SummarySideBarProps, Transcript } from "./types";
 
 // TODO: Added only for removing lint error - remove and find actual solution
 declare global {

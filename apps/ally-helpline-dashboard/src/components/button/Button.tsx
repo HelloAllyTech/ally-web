@@ -1,19 +1,19 @@
 import { FC } from "react";
 
-import { ButtonProps } from "./types";
+import { ButtonProps, ButtonVariant } from "./types";
 
 // TODO update styles when design system is finalized
 const getButtonStyles = (variant: ButtonProps["variant"]) => {
   switch (variant) {
-    case "destructive":
+    case ButtonVariant.DESTRUCTIVE:
       return "bg-[#F93535] text-[#FFFFFF] hover:bg-destructive/90 disabled:bg-destructive/50";
-    case "secondary":
+    case ButtonVariant.SECONDARY:
       return "border border-[#C8C5D0] hover:bg-accent hover:text-accent-foreground disabled:bg-accent/50";
-    case "icon":
+    case ButtonVariant.ICON:
       return "bg-transparent border-none hover:bg-transparent disabled:bg-transparent";
-    case "text":
+    case ButtonVariant.TEXT:
       return "bg-transparent border-none hover:bg-transparent disabled:bg-transparent";
-    case "primary":
+    case ButtonVariant.PRIMARY:
     default:
       return "bg-[#0957D0] text-[#FFFFFF] hover:bg-primary/90 disabled:bg-primary/50";
   }

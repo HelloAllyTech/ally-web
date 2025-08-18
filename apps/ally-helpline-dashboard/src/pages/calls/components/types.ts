@@ -10,6 +10,11 @@ export interface TagDisplay {
   };
 }
 
+export interface StartSessionDialogProps {
+  isOpen: boolean;
+  onClose: () => void;
+}
+
 export interface SummarySideBarProps {
   callSummary: CallLog;
   refetchCallLogs: () => void;

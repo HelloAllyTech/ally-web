@@ -4,16 +4,13 @@ import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 
 import { Session } from "@assets/icons";
-import { Button, ConfirmationDialog } from "@components";
-import { ButtonVariant } from "@components/button";
+import { ConfirmationDialog } from "@components";
+import { ButtonVariant } from "@components";
 import { ROUTES } from "@constants";
 import { useUser } from "@hooks";
 import { UserStatus } from "@types";
 
-interface StartSessionDialogProps {
-  isOpen: boolean;
-  onClose: () => void;
-}
+import { StartSessionDialogProps } from "./types";
 
 const StartSessionDialog: FC<StartSessionDialogProps> = ({ isOpen, onClose }) => {
   const navigate = useNavigate();

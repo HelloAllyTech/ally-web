@@ -1,3 +1,5 @@
+import { FC, SVGProps } from "react";
+
 import { TabId } from "@constants";
 
 export interface NavSideBarProps {
@@ -5,4 +7,12 @@ export interface NavSideBarProps {
   onTabChange: (tab: string) => void;
   isOpen: boolean;
   onClose: () => void;
+}
+
+export interface TabProps {
+  id: TabId;
+  Icon: FC<SVGProps<SVGSVGElement>>;
+  title: string;
+  activeTab: TabId;
+  onClick: () => void;
 }

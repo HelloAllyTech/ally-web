@@ -1,7 +1,7 @@
 import Accordion from "./accordion";
 import ActionDialog from "./action-dialog";
 import AudioCallPopup from "./audio-call-popup";
-import { Button } from "./button";
+import { Button, ButtonVariant, ButtonVariantType } from "./button";
 import Calendar from "./calendar";
 import CallPicker from "./call";
 import { Carousel, CarouselSize, CarouselVariant, CarouselSlideType } from "./carousel";
@@ -24,7 +24,13 @@ import TagGroup from "./tag-group";
 import TextField from "./text-field";
 import ToggleButtonGroup from "./toggle-button-group";
 
-export { type CarouselSlideType, CarouselSize, CarouselVariant };
+export {
+  type CarouselSlideType,
+  CarouselSize,
+  CarouselVariant,
+  ButtonVariant,
+  type ButtonVariantType,
+};
 
 export {
   Accordion,
