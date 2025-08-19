@@ -8,26 +8,26 @@ export const getStatusConfig = (status: ChatSummaryStatus): StatusConfig => {
     case ChatSummaryStatus.IN_PROGRESS:
       return {
         label: "Processing",
-        dotColor: "#FFAD0D", // Yellow
-        backgroundColor: "#F8E6BA", // Light yellow
+        outerDivClassName: "bg-[#F8E6BA]", // Light yellow
+        dotClassName: "bg-[#FFAD0D]", // Yellow
       };
     case ChatSummaryStatus.SUCCESS:
       return {
         label: "Generated",
-        dotColor: "#47B881", // Green
-        backgroundColor: "#DCEBDD", // Light green
+        dotClassName: "bg-[#47B881]", // Green
+        outerDivClassName: "bg-[#DCEBDD]", // Light green
       };
     case ChatSummaryStatus.FAILED:
       return {
         label: "Error",
-        dotColor: "#E5675A", // Red
-        backgroundColor: "#FBDED9", // Light red
+        dotClassName: "bg-[#E5675A]", // Red
+        outerDivClassName: "bg-[#FBDED9]", // Light red
       };
     default:
       return {
         label: "Unknown",
-        dotColor: "#6B7280", // Gray
-        backgroundColor: "#F3F4F6", // Light gray
+        dotClassName: "bg-[#6B7280]", // Gray
+        outerDivClassName: "bg-[#F3F4F6]", // Light gray
       };
   }
 };

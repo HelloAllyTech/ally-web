@@ -55,9 +55,9 @@ export {
   ScenarioDetailsCard,
   SearchResources,
   StressBuster,
+  SummaryStatusChip,
   TabGroup,
   TagGroup,
   TextField,
   ToggleButtonGroup,
-  SummaryStatusChip,
 };

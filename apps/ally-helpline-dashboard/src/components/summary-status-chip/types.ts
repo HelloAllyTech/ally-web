@@ -7,6 +7,6 @@ export interface SummaryStatusProps {
 
 export interface StatusConfig {
   label: string;
-  dotColor: string;
-  backgroundColor: string;
+  dotClassName: string;
+  outerDivClassName: string;
 }
