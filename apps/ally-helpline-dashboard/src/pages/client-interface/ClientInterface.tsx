@@ -6,8 +6,8 @@ import { toast } from "sonner";
 
 import { logger } from "@ally-ui-mono/ui-shared";
 import { useCancelRequestMutation, useLazyGetClientChatQuery, useRequestCallMutation } from "@api";
-import { Call, Logout } from "@assets";
-import { Button, Confirm } from "@components";
+import { Call, Logout, LogoutIllustration } from "@assets";
+import { Button, ConfirmationDialog, ButtonVariant } from "@components";
 import { ROUTES, SocketConnectionTypes } from "@constants";
 import { useSocket, useUser } from "@hooks";
 import { ChatStatus, QueueStatus, SocketEvent, UserRole } from "@types";
@@ -172,16 +172,15 @@ export const ClientInterface = () => {
 
   const renderConfirmationBox = () => {
     return (
-      <Confirm
-        open={isLogoutConfirmOpen}
-        onOpenChange={setIsLogoutConfirmOpen}
-        text="Are you sure you want to log out? You will need to log back in to access your account."
-        onConfirm={handleConfirmLogout}
-        onCancel={() => setIsLogoutConfirmOpen(false)}
-        confirmText="Logout"
-        cancelText="Cancel"
-        destructive
-        title="Logout"
+      <ConfirmationDialog
+        title={{ normal: "Safeguard your ", italic: "account" }}
+        isOpen={isLogoutConfirmOpen}
+        onClose={() => setIsLogoutConfirmOpen(false)}
+        content="Are you sure you want to log out? You will need to enter secure OTP to login again."
+        buttonVariant={ButtonVariant.DESTRUCTIVE}
+        onButtonClick={handleConfirmLogout}
+        buttonText="Logout & lock my Ally account"
+        icon={LogoutIllustration}
       />
     );
   };

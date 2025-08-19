@@ -3,12 +3,12 @@ import { FC, useState } from "react";
 import { motion } from "framer-motion";
 
 import { Refresh, StartSession } from "@assets";
-import { Button, StartSessionDialog } from "@components";
+import { Button } from "@components";
 import { CallType } from "@constants";
 import { useUser } from "@hooks";
 import { UserRole, UserStatus } from "@types";
 
-import { CallLogsTable, ConsolidatedLogs } from "./components";
+import { CallLogsTable, ConsolidatedLogs, StartSessionDialog } from "./components";
 
 export const Calls: FC = () => {
   const [isStartSessionDialogOpen, setIsStartSessionDialogOpen] = useState(false);
@@ -19,6 +19,10 @@ export const Calls: FC = () => {
 
   const handleUserStatusChange = () => {
     updateUserStatus(userStatus === UserStatus.OFFLINE ? UserStatus.AVAILABLE : UserStatus.OFFLINE);
+  };
+
+  const handleStartSession = () => {
+    setIsStartSessionDialogOpen(true);
   };
 
   return (
@@ -36,7 +40,7 @@ export const Calls: FC = () => {
             <Refresh className="w-6 h-6 cursor-pointer border-l-[0.5px] border-[#D2D2D2] pl-2" />
           </div>
           {availableChatTypes?.includes(CallType.MICROPHONE_CHAT) && (
-            <Button onClick={() => setIsStartSessionDialogOpen(true)}>
+            <Button onClick={handleStartSession}>
               <StartSession />
               Start Session
             </Button>

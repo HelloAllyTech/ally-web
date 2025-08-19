@@ -25,7 +25,6 @@ export default defineConfig({
   plugins: [react() as unknown as PluginOption, svgr() as unknown as PluginOption],
   resolve: {
     alias: {
-      //TODO: Remove this once we have a proper path mapping
       "@src": path.resolve(projectRoot, "./src"),
       "@src/*": path.resolve(projectRoot, "./src/*"),
       "@components": path.resolve(projectRoot, "./src/components"),

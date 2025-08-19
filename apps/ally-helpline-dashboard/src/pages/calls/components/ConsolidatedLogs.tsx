@@ -20,11 +20,11 @@ import { Button, FallbackUI, TagGroup } from "@components";
 import { updateFilters } from "@reducer";
 import { RootState } from "@store";
 import { CallLog, GetCallLogsInput } from "@types";
+import { convertSecondsToDuration, getFormattedDate } from "@utils";
 
 import { SummarySideBar } from ".";
 import { CALL_LOGS_PAGINATION_LIMIT, defaultTags, tagColors } from "../constants";
-import { TagDisplay } from "../types";
-import { convertSecondsToDuration, getFormattedDate } from "../utils";
+import { TagDisplay } from "./types";
 
 const ConsolidatedLogs = () => {
   const dispatch = useDispatch();

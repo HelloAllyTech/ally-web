@@ -72,7 +72,7 @@ export default [
             "./tsconfig.json",
             "./apps/ally-helpline-dashboard/tsconfig.json",
             "./apps/ally-web/tsconfig.json",
-            "./libs/ui-shared/tsconfig.json",
+            "./libs/ui-shared/tsconfig.lib.json",
           ],
         },
       },

@@ -1,3 +1,16 @@
+/**
+ * Icon Imports
+ *
+ * IMPORTANT: Maintain alphabetical order for all imports and exports.
+ * This makes it easier to find icons and prevents merge conflicts.
+ *
+ * Naming Convention:
+ * - Use PascalCase for component names
+ * - Use descriptive names that match the icon's purpose
+ * - Add "Icon" suffix for generic icons (e.g., SearchIcon, UserIcon)
+ * - Use specific names for unique icons (e.g., LifelineLogo, CallAttend)
+ */
+
 import AccountCircle from "./account-circle.svg?react";
 import Assessment from "./assessment.svg?react";
 import BackCircle from "./back-circle.svg?react";
@@ -28,6 +41,7 @@ import IssuesWorkedOn from "./issues-worked-on.svg?react";
 import KeyConcerns from "./key-concerns.svg?react";
 import LifelineLogo from "./lifeline-logo.svg?react";
 import Logout from "./logout-icon.svg?react";
+import LogoutIllustration from "./logout-illustration.svg?react";
 import LogsIcon from "./logs.svg?react";
 import MenuIcon from "./menu-icon.svg?react";
 import Metrics from "./metrics.svg?react";
@@ -63,6 +77,13 @@ import UserIcon from "./user-icon.svg?react";
 import Warning from "./warning.svg?react";
 import Waveform from "./waveform.svg?react";
 
+/**
+ * Icon Exports
+ *
+ * IMPORTANT: Maintain alphabetical order in exports to match imports.
+ * This ensures consistency and makes it easier to find specific icons.
+ * When adding new icons, place them in the correct alphabetical position.
+ */
 export {
   AccountCircle,
   Assessment,
@@ -96,6 +117,7 @@ export {
   KeyConcerns,
   LifelineLogo,
   Logout,
+  LogoutIllustration,
   LogsIcon,
   MenuIcon,
   Metrics,
