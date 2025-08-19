@@ -15,7 +15,7 @@ import { NavSideBarProps, TabProps } from "./types";
 const UserInfo: FC<{ user?: User }> = ({ user }) => (
   <div
     className="flex border-gray-200 w-[calc(100%-30px)] 
-    border-b border-b-[#E5E7EB] py-[20px] px-[5px] mx-[15px] gap-[10px] flex-row items-center"
+    border-b border-b-[#E5E7EB] py-[20px] px-[5px] mx-[15px] gap-[10px] items-center"
   >
     <AccountCircle className="w-[30px] h-[30px]" />
     <div className="flex flex-col">
@@ -29,7 +29,7 @@ const LogoutButton: FC<{ onClick: () => void }> = ({ onClick }) => (
   <Button
     variant={ButtonVariant.TEXT}
     onClick={onClick}
-    className="flex flex-row items-center mb-[6px] justify-start rounded-none hover:bg-gray-50 gap-[10px]"
+    className="flex items-center mb-[6px] justify-start rounded-none hover:bg-gray-50 gap-[10px]"
   >
     <Logout />
     <div className="font-['IBM_Plex_Serif'] text-[#444]">Log Out</div>
