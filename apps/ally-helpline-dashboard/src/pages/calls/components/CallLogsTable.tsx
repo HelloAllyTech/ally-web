@@ -7,8 +7,16 @@ import { useLocation } from "react-router-dom";
 import { GenericTable } from "@ally-ui-mono/ui-shared";
 import { Column } from "@ally-ui-mono/ui-shared/lib/generic-table/types";
 import { useGetCallLogsQuery } from "@api";
-import { NoResults, CallIdIcon, DateIcon, TimerIcon, TagsIcon, ReviewIcon } from "@assets";
-import { Button, TagGroup, FallbackUI } from "@components";
+import {
+  NoResults,
+  CallIdIcon,
+  DateIcon,
+  TimerIcon,
+  TagsIcon,
+  ReviewIcon,
+  SummaryGenerationIcon,
+} from "@assets";
+import { Button, TagGroup, FallbackUI, SummaryStatusChip } from "@components";
 import { updateFilters } from "@reducer";
 import { RootState } from "@store";
 import { CallLog } from "@types";
@@ -131,19 +139,19 @@ const CallLogsTable = () => {
     {
       key: "callName",
       header: "Session ID",
-      style: { width: "20%" },
+      style: { width: "15%" },
       icon: <CallIdIcon />,
     },
     {
       key: "dateAndTime",
       header: "Date & Time",
-      style: { width: "20%" },
+      style: { width: "15%" },
       icon: <DateIcon />,
     },
     {
       key: "duration",
       header: "Duration",
-      style: { width: "20%" },
+      style: { width: "15%" },
       icon: <TimerIcon />,
     },
     {
@@ -152,6 +160,13 @@ const CallLogsTable = () => {
       style: { width: "30%" },
       render: (value: TagDisplay[]) => <TagGroup tags={value} />,
       icon: <TagsIcon />,
+    },
+    {
+      key: "summaryStatus",
+      header: "Summary Status",
+      style: { width: "10%" },
+      render: (_value, row) => <SummaryStatusChip status={row.raw.summaryStatus} />,
+      icon: <SummaryGenerationIcon />,
     },
     {
       key: "summary",
@@ -208,7 +223,7 @@ const CallLogsTable = () => {
           isLoading={isLoading}
           handleLoadMore={callLogList?.length > 0 && hasMore && handleLoadMore}
           fallbackUI={renderFallbackUI()}
-          className="min-w-full min-w-[100%] max-h-[calc(100vh-140px)] font-['IBM_Plex_Serif'] overflow-y-scroll"
+          className="min-w-full max-h-[calc(100vh-140px)] font-['IBM_Plex_Serif'] overflow-y-scroll"
         />
       </div>
       {callSummary && callSummary?.id && (
