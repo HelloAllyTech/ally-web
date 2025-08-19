@@ -19,6 +19,7 @@ import ScenarioCard from "./scenario-card";
 import ScenarioDetailsCard from "./scenario-details-card";
 import SearchResources from "./search-resources";
 import StressBuster from "./stress-buster";
+import SummaryStatusChip from "./summary-status-chip";
 import TabGroup from "./tab-group";
 import TagGroup from "./tag-group";
 import TextField from "./text-field";
@@ -58,4 +59,5 @@ export {
   TagGroup,
   TextField,
   ToggleButtonGroup,
+  SummaryStatusChip,
 };

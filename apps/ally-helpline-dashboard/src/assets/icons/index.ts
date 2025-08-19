@@ -63,6 +63,7 @@ import StarIcon from "./star.svg?react";
 import StartSession from "./start-session.svg?react";
 import StatsIcon from "./stats.svg?react";
 import SubjectiveObservations from "./subjective-observations.svg?react";
+import SummaryGenerationIcon from "./summary-generation-icon.svg?react";
 import TagsIcon from "./tags-icon.svg?react";
 import Tags from "./tags.svg?react";
 import TherapeuticTechniques from "./therapeutic-techniques.svg?react";
@@ -139,6 +140,7 @@ export {
   StartSession,
   StatsIcon,
   SubjectiveObservations,
+  SummaryGenerationIcon,
   Tags,
   TagsIcon,
   TherapeuticTechniques,

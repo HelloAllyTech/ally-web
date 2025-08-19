@@ -96,3 +96,10 @@ export interface UpdateCallSummaryNotesRequest {
   chatId: string;
   notes: string;
 }
+
+export enum ChatSummaryStatus {
+  PENDING = "PENDING",
+  IN_PROGRESS = "IN_PROGRESS",
+  SUCCESS = "SUCCESS",
+  FAILED = "FAILED",
+}
