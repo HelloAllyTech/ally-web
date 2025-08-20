@@ -1,46 +1,50 @@
 import { FC } from "react";
 
-import { CutCall, FocusOff, FocusOn, NoRecord, Record } from "@assets/icons";
+import { Focus, PauseIcon, ResumeIcon, StopIcon, Warning } from "@assets";
+import { ButtonGroup } from "@components";
 
 import { CallControlsProps } from "../types";
 
 const CallControls: FC<CallControlsProps> = ({
   isFocusMode,
-  isMuted,
-  isPrimaryButtonDisabled = false,
-  isSecondaryButtonDisabled,
-  isTertiaryButtonDisabled,
-  showFocusButton,
-  onCutCallButtonClick,
+  isPaused,
+  onEndSessionClick,
   onFocusButtonClick,
-  onMuteButtonClick,
+  onPauseTranscriptionClick,
+  showPauseTranscription,
+  showEndSession,
 }) => {
+  const callButtonList = [
+    {
+      action: onPauseTranscriptionClick,
+      isActive: isPaused,
+      leftIcon: isPaused ? <ResumeIcon /> : <PauseIcon />,
+      show: showPauseTranscription,
+      text: isPaused ? "Resume Transcription" : "Pause Transcription",
+    },
+    {
+      action: () => onFocusButtonClick(!isFocusMode),
+      isActive: isFocusMode,
+      leftIcon: <Focus className={isFocusMode ? "" : "[&_path]:fill-[#FFFFFF]"} />,
+      show: true,
+      text: "Focused",
+    },
+    {
+      action: onEndSessionClick,
+      isActive: false,
+      leftIcon: <StopIcon />,
+      show: showEndSession,
+      text: "End session",
+    },
+  ];
+
   return (
-    <div className="z-10 absolute bottom-10 w-full flex justify-center items-center gap-4 bg-gradient-to-b from-transparent to-white  pt-[100px]">
-      {/* TODO: use Button component */}
-      <button
-        disabled={isSecondaryButtonDisabled}
-        onClick={onMuteButtonClick}
-        className={`w-[56px] h-[56px] ${isSecondaryButtonDisabled ? "cursor-not-allowed" : ""}`}
-      >
-        {isMuted ? <NoRecord /> : <Record />}
-      </button>
-      <button
-        disabled={isPrimaryButtonDisabled}
-        onClick={onCutCallButtonClick}
-        className={`w-[56px] h-[56px] ${isPrimaryButtonDisabled ? "cursor-not-allowed" : ""}`}
-      >
-        <CutCall />
-      </button>
-      {showFocusButton && (
-        <button disabled={isTertiaryButtonDisabled} className="w-[56px] h-[56px]">
-          {isFocusMode ? (
-            <FocusOn onClick={() => onFocusButtonClick(false)} />
-          ) : (
-            <FocusOff onClick={() => onFocusButtonClick(true)} />
-          )}
-        </button>
-      )}
+    <div className="z-10 absolute bottom-10 w-full flex flex-col items-center gap-4 pt-[100px]">
+      <ButtonGroup buttonList={callButtonList} />
+      <div className="flex items-center gap-2">
+        <Warning className="[&_path]:fill-[#B6B5B9]" />
+        <span className="text-[12px] text-[#fff] font-medium">Your data is safe</span>
+      </div>
     </div>
   );
 };

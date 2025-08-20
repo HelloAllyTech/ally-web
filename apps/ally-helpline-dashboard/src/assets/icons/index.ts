@@ -33,26 +33,27 @@ import Delete from "./delete.svg?react";
 import DominantFeelings from "./dominant-feelings.svg?react";
 import Download from "./download.svg?react";
 import Edit from "./edit.svg?react";
+import EndSessionIllustration from "./end-session-illustration.svg?react";
 import Flow from "./flow.svg?react";
-import FocusOff from "./focus-off.svg?react";
-import FocusOn from "./focus-on.svg?react";
+import Focus from "./focus.svg?react";
 import HomeworkRecommended from "./homework-recommended.svg?react";
 import IssuesWorkedOn from "./issues-worked-on.svg?react";
 import KeyConcerns from "./key-concerns.svg?react";
 import LifelineLogo from "./lifeline-logo.svg?react";
+import Lock from "./lock.svg?react";
 import Logout from "./logout-icon.svg?react";
 import LogoutIllustration from "./logout-illustration.svg?react";
 import LogsIcon from "./logs.svg?react";
 import MenuIcon from "./menu-icon.svg?react";
 import Metrics from "./metrics.svg?react";
-import NoRecord from "./no-record.svg?react";
 import NoResults from "./no-results.svg?react";
 import NotesIcon from "./notes.svg?react";
 import ObjectiveObservations from "./objective-observations.svg?react";
+import PauseIcon from "./pause-icon.svg?react";
 import PlansForNextCall from "./plans-for-next-call.svg?react";
-import Record from "./record.svg?react";
 import ReferralsProvided from "./referrals-provided.svg?react";
 import Refresh from "./refresh.svg?react";
+import ResumeIcon from "./resume-icon.svg?react";
 import ReviewIcon from "./review-icon.svg?react";
 import RoundCheckmark from "./round-checkmark.svg?react";
 import SearchIcon from "./search.svg?react";
@@ -62,6 +63,7 @@ import Spinner from "./spinner.svg?react";
 import StarIcon from "./star.svg?react";
 import StartSession from "./start-session.svg?react";
 import StatsIcon from "./stats.svg?react";
+import StopIcon from "./stop-icon.svg?react";
 import SubjectiveObservations from "./subjective-observations.svg?react";
 import SummaryGenerationIcon from "./summary-generation-icon.svg?react";
 import TagsIcon from "./tags-icon.svg?react";
@@ -75,6 +77,7 @@ import TimerIcon from "./timer.svg?react";
 import BackgroundBottom from "./transcript-background-bottom.svg?react";
 import BackgroundTop from "./transcript-background-top.svg?react";
 import UserIcon from "./user-icon.svg?react";
+import WarningTriangle from "./warning-triangle.svg?react";
 import Warning from "./warning.svg?react";
 import Waveform from "./waveform.svg?react";
 
@@ -110,26 +113,27 @@ export {
   DominantFeelings,
   Download,
   Edit,
+  EndSessionIllustration,
   Flow,
-  FocusOff,
-  FocusOn,
+  Focus,
   HomeworkRecommended,
   IssuesWorkedOn,
   KeyConcerns,
   LifelineLogo,
+  Lock,
   Logout,
   LogoutIllustration,
   LogsIcon,
   MenuIcon,
   Metrics,
-  NoRecord,
   NoResults,
   NotesIcon,
   ObjectiveObservations,
+  PauseIcon,
   PlansForNextCall,
-  Record,
   ReferralsProvided,
   Refresh,
+  ResumeIcon,
   ReviewIcon,
   RoundCheckmark,
   SearchIcon,
@@ -139,6 +143,7 @@ export {
   StarIcon,
   StartSession,
   StatsIcon,
+  StopIcon,
   SubjectiveObservations,
   SummaryGenerationIcon,
   Tags,
@@ -151,5 +156,6 @@ export {
   TimerIcon,
   UserIcon,
   Waveform,
+  WarningTriangle,
   Warning,
 };

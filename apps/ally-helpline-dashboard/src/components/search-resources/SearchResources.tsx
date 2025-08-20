@@ -4,7 +4,7 @@ import { useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 
 import { ResourceSearch } from "@ally-ui-mono/ui-shared";
-import { Resource } from "@ally-ui-mono/ui-shared/types";
+import { Resource, SearchVariant } from "@ally-ui-mono/ui-shared/types";
 import { useGetSearchResultsMutation } from "@api";
 
 import { SearchResourcesProps } from "./types";
@@ -143,6 +143,7 @@ const SearchResources: FC<SearchResourcesProps> = ({
       searchQuery={searchQuery}
       isSuggestionsCenter={isInSidebar}
       isSuggestionsRow={!isInSidebar}
+      mode={isInSidebar ? SearchVariant.DARK : SearchVariant.LIGHT}
       categoryCountList={categoryCountList}
     />
   );

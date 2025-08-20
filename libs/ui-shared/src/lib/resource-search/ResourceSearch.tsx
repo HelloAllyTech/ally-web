@@ -1,5 +1,5 @@
 "use client";
-import { FC, useRef, useCallback, useEffect } from "react";
+import { FC, useRef, useCallback, useEffect, useState } from "react";
 
 import { CircularProgress } from "@mui/material";
 
@@ -13,7 +13,7 @@ import {
 } from "../..";
 import { sampleSuggestions } from "./constants";
 import ResourceTabs from "./ResourceTabs";
-import { Resource } from "../../types";
+import { Resource, SearchVariant } from "../../types";
 
 /**
  * ResourceSearch component provides a search interface for resources with category filtering, infinite scroll, and suggestions.
@@ -33,6 +33,7 @@ export interface ResourceSearchProps {
   showHeaderDescriptionInMobile?: boolean;
   isSuggestionsCenter?: boolean;
   isSuggestionsRow?: boolean;
+  mode?: SearchVariant;
   categoryCountList?: { [key: string]: number };
 }
 
@@ -47,12 +48,15 @@ const ResourceSearch: FC<ResourceSearchProps> = ({
   showHeader = true,
   fullWidth = false,
   showHeaderDescriptionInMobile = true,
+  // TODO: Refactor isSuggestionsCenter and isSuggestionsRow props
   isSuggestionsCenter = false,
   isSuggestionsRow = false,
   categoryCountList,
+  mode = SearchVariant.LIGHT,
 }) => {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const [expandedCard, setExpandedCard] = useState<string | null>(null);
 
   /**
    * Scrolls the container to the top
@@ -121,6 +125,7 @@ const ResourceSearch: FC<ResourceSearchProps> = ({
           isRow={false}
           isCenter={isSuggestionsCenter}
           onSelect={handleSearch}
+          mode={mode}
         />
       </div>
     );
@@ -138,6 +143,7 @@ const ResourceSearch: FC<ResourceSearchProps> = ({
           isCenter={isSuggestionsCenter}
           suggestions={sampleSuggestions}
           onSelect={handleSearch}
+          mode={mode}
         />
       );
     }
@@ -153,6 +159,7 @@ const ResourceSearch: FC<ResourceSearchProps> = ({
                 selectedCategory={selectedCategory ?? "All"}
                 categoryCountList={categoryCountList}
                 setSelectedCategory={onCategoryChange}
+                mode={mode}
               />
             )}
           </div>
@@ -175,6 +182,11 @@ const ResourceSearch: FC<ResourceSearchProps> = ({
                     description={resource.content}
                     category={resource.category}
                     tags={resource.tags}
+                    mode={mode}
+                    isExpanded={expandedCard === resource.id}
+                    setExpandedCard={(expanded: boolean) =>
+                      setExpandedCard(expanded ? resource.id : null)
+                    }
                   />
                 ))}
               </InfiniteScroll>
@@ -207,6 +219,7 @@ const ResourceSearch: FC<ResourceSearchProps> = ({
             onSearch={handleSearch}
             suggestions={sampleSuggestions}
             initialValue={searchQuery ?? ""}
+            mode={mode}
           />
         </div>
         {renderResultsBody()}

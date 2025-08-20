@@ -131,13 +131,13 @@ const Carousel: FC<CarouselProps> = ({
 
   return (
     <div
-      className={`flex flex-col items-center justify-between p-4 select-none rounded-2xl backdrop-blur-sm shadow
+      className={`flex flex-col items-center justify-between p-4 select-none rounded-md backdrop-blur-sm shadow
         ${getContainerStyles()} ${className}`}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
       aria-roledescription="carousel"
     >
-      <div className="overflow-hidden rounded-2xl" aria-live="polite">
+      <div className="overflow-hidden rounded-lg" aria-live="polite">
         <AnimatePresence mode="wait" initial={false}>
           <motion.div
             key={getKeyFromIndex(activeIndex, "slide")}

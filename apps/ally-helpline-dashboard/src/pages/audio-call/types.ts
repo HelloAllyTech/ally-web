@@ -6,6 +6,7 @@ export interface CallTranscriptProps {
   activeChat: Chat;
   microphoneChatId: number;
   endSession: (triggerApi: boolean, chatId: number) => void;
+  // TODO: Refactor isMicrophoneMode and isExotelMode props to use callMode prop
   isMicrophoneMode: boolean;
   isExotelMode: boolean;
   setMicrophoneChatId: (chatId: number) => void;
@@ -18,6 +19,7 @@ export interface CallInterfaceProps {
   mediaRecorder: MediaRecorder | null;
   remoteMediaRecorder: MediaRecorder | null;
   remoteStreamRef: MutableRefObject<MediaStream>;
+  // TODO: Refactor isMicrophoneMode and isExotelMode props to use callMode prop
   isMicrophoneMode: boolean;
   isExotelMode: boolean;
 }
@@ -29,14 +31,12 @@ export interface RealTimeTranscriptProps {
 
 export interface CallControlsProps {
   isFocusMode: boolean;
-  isMuted: boolean;
-  isPrimaryButtonDisabled?: boolean;
-  isSecondaryButtonDisabled: boolean;
-  showFocusButton: boolean;
-  onCutCallButtonClick: () => void;
+  isPaused: boolean;
+  onEndSessionClick?: () => void;
   onFocusButtonClick: (isFocused: boolean) => void;
-  onMuteButtonClick: () => void;
-  isTertiaryButtonDisabled?: boolean;
+  onPauseTranscriptionClick?: () => void;
+  showEndSession: boolean;
+  showPauseTranscription: boolean;
 }
 
 export interface CallSidebarProps {

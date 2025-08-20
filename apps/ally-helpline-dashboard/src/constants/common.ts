@@ -133,3 +133,15 @@ export const CAROUSEL_SLIDES: CarouselSlideType[] = [
     text: "Data is encrypted",
   },
 ];
+
+export const TOOLTIP_PROPS = {
+  tooltip: {
+    sx: {
+      backgroundColor: "#FFFFFF",
+      color: "#1D1B20",
+      fontSize: "12px",
+      maxWidth: "400px",
+      zIndex: 1000,
+    },
+  },
+};

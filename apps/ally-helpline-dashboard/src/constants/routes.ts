@@ -56,12 +56,12 @@ export const navBarOptions = [
     path: "https://community.helloally.ai/",
     permission: "",
   },
-  {
-    id: TabId.LEARN,
-    title: "Learn",
-    // TODO: Add correct permission and icon for Learn once available
-    Icon: CommunityIcon,
-    path: ROUTES.LEARN,
-    permission: "",
-  },
+  // {
+  //   id: TabId.LEARN,
+  //   title: "Learn",
+  //   // TODO: Add correct permission and icon for Learn once available
+  //   Icon: CommunityIcon,
+  //   path: ROUTES.LEARN,
+  //   permission: "",
+  // },
 ];

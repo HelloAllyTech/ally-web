@@ -1,12 +1,23 @@
 import { FC, useEffect, useState } from "react";
 
+import { Tooltip } from "@mui/material";
 import { motion } from "framer-motion";
 import { LiveAudioVisualizer } from "react-audio-visualize";
 
-import { CallProvider } from "@constants";
+import { Lock, WarningTriangle } from "@assets";
+import { CallProvider, TOOLTIP_PROPS } from "@constants";
 
 import { CallInterfaceProps } from "../types";
 import { formatTime } from "../utils";
+
+const PrivacyTooltip = () => (
+  <ul className="list-disc list-inside">
+    <li>We do not save audio recordings</li>
+    <li>Data is encrypted</li>
+    <li>We do not use your client’s data to train our models</li>
+    <li>Personal information of clients is automatically removed</li>
+  </ul>
+);
 
 const CallInterface: FC<CallInterfaceProps> = ({
   activeChat,
@@ -16,6 +27,7 @@ const CallInterface: FC<CallInterfaceProps> = ({
   remoteMediaRecorder,
   remoteStreamRef,
   isMicrophoneMode,
+  isExotelMode,
 }) => {
   const [seconds, setSeconds] = useState(0);
 
@@ -84,13 +96,25 @@ const CallInterface: FC<CallInterfaceProps> = ({
   return (
     <>
       {isUserJoined ? (
-        <div
-          className="flex flex-col justify-center items-center
-            gap-4 z-10 transition-all duration-500 ease-in-out min-h-[20vh]"
-        >
-          <div className="text-[#000] flex justify-center items-center flex-col gap-2">
-            <div className="text-[20px] font-['IBM_Plex_Serif'] font-bold">Taking notes</div>
-            <div className="text-[16px] font-medium text-[#525252]">{formatTime(seconds)}</div>
+        <div className="flex flex-col pt-9 items-center gap-4 z-10 transition-all duration-500 ease-in-out min-h-[20vh]">
+          {isExotelMode && (
+            <div className="flex items-center gap-[2px] bg-[#EEF8FF] border-[0.5px] border-[#0171D9] rounded-[8px] p-2">
+              <WarningTriangle />
+              <span className="text-[#0D0D0D] text-sm">
+                The scribe will stop taking notes once you end the call.
+              </span>
+            </div>
+          )}
+          <div className="text-[#fff] flex justify-center items-center flex-col gap-2">
+            <div className="flex items-center gap-2 font-['IBM_Plex_Serif'] font-medium">
+              <Tooltip title={<PrivacyTooltip />} placement="top" arrow slotProps={TOOLTIP_PROPS}>
+                <span>
+                  <Lock />
+                </span>
+              </Tooltip>
+              Taking notes
+            </div>
+            <div className="text-[14px] font-semibold font-['Roboto']">{formatTime(seconds)}</div>
             <div className="text-[12px] text-[#666] text-center max-w-xs mt-1">
               {getDescriptionText()}
             </div>
@@ -116,7 +140,7 @@ const CallInterface: FC<CallInterfaceProps> = ({
                   width={200}
                   height={140}
                   barWidth={4}
-                  barColor="#000"
+                  barColor="#fff"
                 />
               </div>
             )}
@@ -127,12 +151,10 @@ const CallInterface: FC<CallInterfaceProps> = ({
                   width={200}
                   height={140}
                   barWidth={4}
-                  barColor="#000"
+                  barColor="#fff"
                 />
               </div>
             )}
-            <div className="bg-gradient-to-l from-transparent to-[#FFF] absolute bg top-0 left-0 w-1/2 h-full" />
-            <div className="bg-gradient-to-r from-transparent to-[#FFF] absolute top-0 right-0 w-1/2 h-full" />
           </div>
         </div>
       ) : (

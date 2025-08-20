@@ -6,6 +6,8 @@ import { toast } from "sonner";
 
 import { logger } from "@ally-ui-mono/ui-shared";
 import { useGetNudgeStatusQuery } from "@api";
+import { EndSessionIllustration } from "@assets";
+import { ButtonVariant, ConfirmationDialog } from "@components";
 import { SocketConnectionTypes, CallProvider } from "@constants";
 import { useSocket, useWebRTCCallSetup } from "@hooks";
 import { RootState } from "@store";
@@ -61,10 +63,12 @@ const CallTranscript: FC<CallTranscriptProps> = ({
   const [myTranscriptions, setMyTranscriptions] = useState<Transcription[]>([]);
   const [nudges, setNudges] = useState<Nudge[]>([]);
   const [stage, setStage] = useState<string>();
-  const [isUserJoined, setIsUserJoined] = useState(null);
-  const { data: nudgeStatus } = useGetNudgeStatusQuery();
+  const [isUserJoined, setIsUserJoined] = useState<boolean>(false);
   const [isSessionCreated, setIsSessionCreated] = useState<boolean>(false);
   const [isStartAudioChatEmitted, setIsStartAudioChatEmitted] = useState<boolean>(false);
+  const [isEndCallDialogOpen, setIsEndCallDialogOpen] = useState<boolean>(false);
+
+  const { data: nudgeStatus } = useGetNudgeStatusQuery();
 
   const isClient = user?.role === UserRole.CLIENT;
   const isCounsellor = user?.role === UserRole.COUNSELLOR;
@@ -549,18 +553,24 @@ const CallTranscript: FC<CallTranscriptProps> = ({
 
         <CallControls
           isFocusMode={isFocusMode}
-          isMuted={isMuted}
-          isPrimaryButtonDisabled={isMicrophoneMode && !microphoneChatId}
-          isSecondaryButtonDisabled={
-            !isUserJoined || isNonWebChat || isSharedMicrophoneMode || isExotelMode
-          }
-          isTertiaryButtonDisabled={!isUserJoined}
-          showFocusButton={isCounsellor}
-          onCutCallButtonClick={() => confirmEndSession(true)}
+          isPaused={isMuted}
+          onEndSessionClick={() => setIsEndCallDialogOpen(true)}
           onFocusButtonClick={(isFocused: boolean) => setIsFocusMode(isFocused)}
-          onMuteButtonClick={() => setIsMuted(prev => !prev)}
+          onPauseTranscriptionClick={() => setIsMuted(prev => !prev)}
+          showEndSession={isMicrophoneMode}
+          showPauseTranscription={isMicrophoneMode}
         />
       </AudioCallBackgroundWrapper>
+      <ConfirmationDialog
+        title={{ normal: "End ", italic: "Session" }}
+        isOpen={isEndCallDialogOpen}
+        onClose={() => setIsEndCallDialogOpen(false)}
+        content="Are you sure you want to end this Session"
+        buttonVariant={ButtonVariant.DESTRUCTIVE}
+        onButtonClick={() => confirmEndSession(true)}
+        buttonText="End Session"
+        icon={EndSessionIllustration}
+      />
       {nudgeStatus && (
         <CallSidebar
           showSidebar={isCounsellor && isUserJoined}

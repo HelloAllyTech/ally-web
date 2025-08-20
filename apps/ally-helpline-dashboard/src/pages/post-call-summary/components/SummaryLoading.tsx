@@ -5,6 +5,7 @@ import { AlertCircle, Info } from "lucide-react";
 
 import { Spinner, RoundCheckmark, Waveform, NotesIcon } from "@assets/icons";
 import { Button } from "@components";
+import { TOOLTIP_PROPS } from "@constants";
 
 interface SummaryLoadingProps {
   isSummaryDelayed?: boolean;
@@ -32,16 +33,6 @@ const SummaryLoading: FC<SummaryLoadingProps> = ({
     "Identifying key points...",
     "Extracting insights...",
   ];
-
-  const tooltipProps = {
-    tooltip: {
-      sx: {
-        backgroundColor: "#1C1B1F",
-        color: "white",
-        fontSize: "12px",
-      },
-    },
-  };
 
   const [visibleMessages, setVisibleMessages] = useState<string[]>(loadingMessages.slice(0, 2));
   const [currentMessageIndex, setCurrentMessageIndex] = useState(1);
@@ -86,7 +77,7 @@ const SummaryLoading: FC<SummaryLoadingProps> = ({
             title="Your notes are auto-saved and will appear under 'Additional Notes' after the summary and highlights are generated"
             placement="bottom-end"
             className="b"
-            componentsProps={tooltipProps}
+            componentsProps={TOOLTIP_PROPS}
             arrow
           >
             <Info className="w-[12px] h-[12px] text-[#1C1B1F] cursor-pointer" />

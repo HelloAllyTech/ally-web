@@ -2,6 +2,7 @@ import Accordion from "./accordion";
 import ActionDialog from "./action-dialog";
 import AudioCallPopup from "./audio-call-popup";
 import { Button, ButtonVariant, ButtonVariantType } from "./button";
+import ButtonGroup from "./button-group";
 import Calendar from "./calendar";
 import CallPicker from "./call";
 import { Carousel, CarouselSize, CarouselVariant, CarouselSlideType } from "./carousel";
@@ -38,6 +39,7 @@ export {
   ActionDialog,
   AudioCallPopup,
   Button,
+  ButtonGroup,
   Calendar,
   CallPicker,
   ConfirmationDialog,

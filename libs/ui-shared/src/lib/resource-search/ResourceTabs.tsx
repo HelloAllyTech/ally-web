@@ -4,7 +4,9 @@ import { FC, useMemo } from "react";
 
 import { Tab, Tabs } from "@mui/material";
 
-import { Resource } from "../../types";
+import { Resource, SearchVariant } from "@ally-ui-mono/ui-shared/types";
+
+import { resourceTabsStyles } from "./constants";
 
 /**
  * ResourceTabs component displays category tabs for filtering resources.
@@ -16,6 +18,7 @@ export interface ResourceTabsProps {
   categoryCountList?: { [key: string]: number };
   selectedCategory: string;
   setSelectedCategory: (category: string, isSearchTriggered?: boolean) => void;
+  mode?: SearchVariant;
 }
 
 const ResourceTabs: FC<ResourceTabsProps> = ({
@@ -23,6 +26,7 @@ const ResourceTabs: FC<ResourceTabsProps> = ({
   selectedCategory,
   categoryCountList,
   setSelectedCategory,
+  mode = SearchVariant.LIGHT,
 }) => {
   /**
    * Returns the count of resources in a category.
@@ -70,12 +74,12 @@ const ResourceTabs: FC<ResourceTabsProps> = ({
         }}
       >
         <Tabs
-          className="w-full border-b border-[#D4D4D4] min-w-max"
+          className={`w-full border-b-[0.5px] min-w-max ${resourceTabsStyles[mode].tabs}`}
           value={selectedCategory}
           onChange={(_, value) => setSelectedCategory(value)}
           sx={{
             "& .MuiTabs-indicator": {
-              backgroundColor: "#0D0D0D",
+              backgroundColor: resourceTabsStyles[mode].indicator,
               height: "2px",
             },
             "& .MuiTabs-flexContainer": {
@@ -88,13 +92,13 @@ const ResourceTabs: FC<ResourceTabsProps> = ({
               key={category}
               value={category}
               label={getCategoryLabel(category)}
-              className="text-[14px] sm:text-[16px]"
+              className={`sm:text-[16px] ${resourceTabsStyles[mode].tab}`}
               sx={{
-                color: "#525252",
+                color: resourceTabsStyles[mode].tabColor,
                 textTransform: "capitalize",
                 fontFamily: "IBM Plex Serif",
                 "&.Mui-selected": {
-                  color: "#0D0D0D",
+                  color: resourceTabsStyles[mode].selectedTabColor,
                   fontWeight: 500,
                 },
               }}
