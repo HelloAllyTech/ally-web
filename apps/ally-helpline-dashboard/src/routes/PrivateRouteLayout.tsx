@@ -24,10 +24,10 @@ import {
   Settings,
   Analytics,
   AudioCall,
-  StressBusters,
   PostCallSummary,
   ClientInterface,
   Search,
+  StressBuster,
 } from "@pages";
 import { setUserStatus, setAvailableChatTypes, unauthenticate } from "@reducer";
 import { RootState, store } from "@store";
@@ -52,8 +52,8 @@ const PrivateRouteLayout = () => {
 
   const { userStatus } = useSelector((state: RootState) => state.user);
 
-  const excludeNavBar = [ROUTES.AUDIO_CALL, ROUTES.SUMMARY] as string[];
-  const excludeCallPicker = [ROUTES.AUDIO_CALL, ROUTES.SUMMARY] as string[];
+  const excludeNavBar = [ROUTES.AUDIO_CALL, ROUTES.SUMMARY, ROUTES.STRESS_BUSTER] as string[];
+  const excludeCallPicker = [ROUTES.AUDIO_CALL, ROUTES.SUMMARY, ROUTES.STRESS_BUSTER] as string[];
   const isAvailable = userStatus === UserStatus.AVAILABLE;
 
   const { data: chatTypes } = useGetChatTypesQuery();
@@ -237,11 +237,11 @@ const PrivateRouteLayout = () => {
                 }
               />
               <Route
-                path={ROUTES.STRESS_BUSTERS}
+                path={ROUTES.STRESS_BUSTER}
                 element={
                   <PermissionGuardedRoute
                     permission={Permissions.VIEW_NAVBAR_STRESS_BUSTER}
-                    element={<StressBusters />}
+                    element={<StressBuster />}
                   />
                 }
               />

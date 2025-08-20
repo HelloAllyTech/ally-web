@@ -1,4 +1,4 @@
-import { FunctionComponent, useState, useRef, useEffect } from "react";
+import { FC, useState, useRef, useEffect } from "react";
 
 import { Modal } from "@mui/material";
 import { X, Play, Pause, Volume2, Minimize, Maximize, VolumeOff } from "lucide-react";
@@ -9,7 +9,8 @@ import { Button } from "@components";
 
 import { StressBusterProps } from "./types";
 
-const StressBuster: FunctionComponent<StressBusterProps> = ({
+// TODO: Rename as BoxBreathing
+const StressBuster: FC<StressBusterProps> = ({
   isFullScreenMode,
   onClose,
   closeIcon,
