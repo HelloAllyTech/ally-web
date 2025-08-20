@@ -2,14 +2,6 @@ import { Dispatch, SetStateAction } from "react";
 
 import { CallLog } from "@types";
 
-export interface TagDisplay {
-  label: string;
-  colors: {
-    bg: string;
-    text: string;
-  };
-}
-
 export interface StartSessionDialogProps {
   isOpen: boolean;
   onClose: () => void;

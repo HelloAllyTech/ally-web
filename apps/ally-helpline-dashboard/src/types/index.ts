@@ -8,3 +8,4 @@ export * from "./user";
 export * from "./analytics";
 export * from "./common";
 export * from "./learn";
+export * from "./components";

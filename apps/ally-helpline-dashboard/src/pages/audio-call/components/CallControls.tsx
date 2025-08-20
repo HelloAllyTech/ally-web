@@ -8,6 +8,9 @@ import { CallControlsProps } from "../types";
 const CallControls: FC<CallControlsProps> = ({
   isFocusMode,
   isPaused,
+  isEndSessionDisabled,
+  isFocusButtonDisabled,
+  isPauseTranscriptionDisabled,
   onEndSessionClick,
   onFocusButtonClick,
   onPauseTranscriptionClick,
@@ -18,6 +21,7 @@ const CallControls: FC<CallControlsProps> = ({
     {
       action: onPauseTranscriptionClick,
       isActive: isPaused,
+      isDisabled: isPauseTranscriptionDisabled,
       leftIcon: isPaused ? <ResumeIcon /> : <PauseIcon />,
       show: showPauseTranscription,
       text: isPaused ? "Resume Transcription" : "Pause Transcription",
@@ -25,6 +29,7 @@ const CallControls: FC<CallControlsProps> = ({
     {
       action: () => onFocusButtonClick(!isFocusMode),
       isActive: isFocusMode,
+      isDisabled: isFocusButtonDisabled,
       leftIcon: <Focus className={isFocusMode ? "" : "[&_path]:fill-[#FFFFFF]"} />,
       show: true,
       text: "Focused",
@@ -32,6 +37,7 @@ const CallControls: FC<CallControlsProps> = ({
     {
       action: onEndSessionClick,
       isActive: false,
+      isDisabled: isEndSessionDisabled,
       leftIcon: <StopIcon />,
       show: showEndSession,
       text: "End session",

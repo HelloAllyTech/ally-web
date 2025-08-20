@@ -19,12 +19,11 @@ import {
 import { Button, TagGroup, FallbackUI, SummaryStatusChip } from "@components";
 import { updateFilters } from "@reducer";
 import { RootState } from "@store";
-import { CallLog } from "@types";
+import { CallLog, TagDisplay } from "@types";
 import { convertSecondsToDuration, getFormattedDate } from "@utils";
 
 import { SummarySideBar } from ".";
 import { CALL_LOGS_PAGINATION_LIMIT, tagColors } from "../constants";
-import { TagDisplay } from "./types";
 
 const CallLogsTable = () => {
   const dispatch = useDispatch();

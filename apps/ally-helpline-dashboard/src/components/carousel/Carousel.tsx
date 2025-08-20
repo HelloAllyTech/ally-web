@@ -15,6 +15,7 @@ const TRANSITION_DURATION = 0.45;
  * - Auto-advances on an interval (0 = no auto-advance)
  * - Pauses on hover
  * - Displays an image and a text caption
+ * - Slider to navigate between slides
  */
 const Carousel: FC<CarouselProps> = ({
   slides,
@@ -111,22 +112,6 @@ const Carousel: FC<CarouselProps> = ({
     }
   };
 
-  const getAnimationValues = () => {
-    const isBackward = activeIndex < prevIndexRef.current;
-
-    if (isBackward) {
-      return {
-        initial: { opacity: 0, x: -SLIDE_ANIMATION_OFFSET },
-        exit: { opacity: 0, x: SLIDE_ANIMATION_OFFSET },
-      };
-    }
-    // Forward direction (default)
-    return {
-      initial: { opacity: 0, x: SLIDE_ANIMATION_OFFSET },
-      exit: { opacity: 0, x: -SLIDE_ANIMATION_OFFSET },
-    };
-  };
-
   if (!hasSlides) return null;
 
   return (
@@ -141,9 +126,9 @@ const Carousel: FC<CarouselProps> = ({
         <AnimatePresence mode="wait" initial={false}>
           <motion.div
             key={getKeyFromIndex(activeIndex, "slide")}
-            initial={getAnimationValues().initial}
+            initial={{ opacity: 0, x: -SLIDE_ANIMATION_OFFSET }}
             animate={{ opacity: 1, x: 0 }}
-            exit={getAnimationValues().exit}
+            exit={{ opacity: 0, x: SLIDE_ANIMATION_OFFSET }}
             transition={{ duration: TRANSITION_DURATION, ease: "easeOut" }}
             className="flex flex-col items-center gap-4"
           >

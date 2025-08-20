@@ -554,6 +554,11 @@ const CallTranscript: FC<CallTranscriptProps> = ({
         <CallControls
           isFocusMode={isFocusMode}
           isPaused={isMuted}
+          isEndSessionDisabled={isMicrophoneMode && !microphoneChatId}
+          isFocusButtonDisabled={!isUserJoined}
+          isPauseTranscriptionDisabled={
+            !isUserJoined || isNonWebChat || isSharedMicrophoneMode || isExotelMode
+          }
           onEndSessionClick={() => setIsEndCallDialogOpen(true)}
           onFocusButtonClick={(isFocused: boolean) => setIsFocusMode(isFocused)}
           onPauseTranscriptionClick={() => setIsMuted(prev => !prev)}

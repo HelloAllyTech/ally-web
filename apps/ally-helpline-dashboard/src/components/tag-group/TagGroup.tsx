@@ -1,14 +1,8 @@
-import React, { useState } from "react";
+import { FC, useState } from "react";
 
-import { TagDisplay } from "@pages/calls/types";
+import { TagGroupProps } from "./types";
 
-interface TagGroupProps {
-  tags: TagDisplay[];
-  className?: string;
-  style?: React.CSSProperties;
-}
-
-const TagGroup: React.FC<TagGroupProps> = ({ tags, className = "", style }) => {
+const TagGroup: FC<TagGroupProps> = ({ tags, className = "", style }) => {
   const [isExpanded, setIsExpanded] = useState<boolean>(false);
 
   const updateExpanded = () => {

@@ -32,6 +32,9 @@ export interface RealTimeTranscriptProps {
 export interface CallControlsProps {
   isFocusMode: boolean;
   isPaused: boolean;
+  isEndSessionDisabled: boolean;
+  isFocusButtonDisabled: boolean;
+  isPauseTranscriptionDisabled: boolean;
   onEndSessionClick?: () => void;
   onFocusButtonClick: (isFocused: boolean) => void;
   onPauseTranscriptionClick?: () => void;
