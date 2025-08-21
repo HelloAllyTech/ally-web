@@ -20,13 +20,7 @@ import {
   UserRole,
 } from "@types";
 
-import {
-  AudioCallBackgroundWrapper,
-  CallSidebar,
-  RealTimeTranscript,
-  CallControls,
-  CallInterface,
-} from ".";
+import { CallSidebar, RealTimeTranscript, CallControls, CallInterface } from ".";
 import { AUDIO_FILE_SIZE, OFFER_TIMEOUT_MS } from "../constants";
 import { CallTranscriptProps, Nudge } from "../types";
 import { reduceTranscriptions } from "../utils";
@@ -534,7 +528,7 @@ const CallTranscript: FC<CallTranscriptProps> = ({
 
   return (
     <div className="w-screen h-screen flex justify-center items-center">
-      <AudioCallBackgroundWrapper>
+      <div className="w-screen h-screen bg-[#17181A] flex flex-col gap-10 justify-center items-center overflow-hidden">
         <CallInterface
           activeChat={activeChat}
           isCounsellor={isCounsellor}
@@ -565,7 +559,7 @@ const CallTranscript: FC<CallTranscriptProps> = ({
           showEndSession={isMicrophoneMode}
           showPauseTranscription={isMicrophoneMode}
         />
-      </AudioCallBackgroundWrapper>
+      </div>
       <ConfirmationDialog
         title={{ normal: "End ", italic: "Session" }}
         isOpen={isEndCallDialogOpen}

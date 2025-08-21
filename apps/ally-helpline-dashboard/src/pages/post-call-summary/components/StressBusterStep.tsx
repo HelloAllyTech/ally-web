@@ -2,7 +2,7 @@ import { FC } from "react";
 
 import { motion } from "framer-motion";
 
-import { Button, StressBuster } from "@components";
+import { Button, BoxBreathing } from "@components";
 
 import { StressBusterProps } from "../types";
 
@@ -17,7 +17,7 @@ const StressBusterStep: FC<StressBusterProps> = ({ onProceed }) => {
     >
       <h2 className="text-base font-medium text-[#47464F]">Let&apos;s try a stress buster</h2>
       <div className="w-full aspect-video mb-4 rounded-3xl overflow-hidden">
-        <StressBuster showViewSummaryButton onViewSummary={onProceed} />
+        <BoxBreathing showViewSummaryButton onViewSummary={onProceed} />
       </div>
       <Button className="self-center" onClick={onProceed}>
         View Call summary

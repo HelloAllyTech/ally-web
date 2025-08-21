@@ -2,6 +2,7 @@ import { FC, useEffect, useState } from "react";
 
 import { Tooltip } from "@mui/material";
 import { motion } from "framer-motion";
+import { X } from "lucide-react";
 import { LiveAudioVisualizer } from "react-audio-visualize";
 
 import { Lock, WarningTriangle } from "@assets";
@@ -30,6 +31,7 @@ const CallInterface: FC<CallInterfaceProps> = ({
   isExotelMode,
 }) => {
   const [seconds, setSeconds] = useState(0);
+  const [showExotelBanner, setShowExotelBanner] = useState(true);
 
   const isSharedMicrophoneMode =
     isMicrophoneMode && activeChat?.chatId && activeChat?.provider === CallProvider.MICROPHONE;
@@ -96,13 +98,16 @@ const CallInterface: FC<CallInterfaceProps> = ({
   return (
     <>
       {isUserJoined ? (
-        <div className="flex flex-col pt-9 items-center gap-4 z-10 transition-all duration-500 ease-in-out min-h-[20vh]">
-          {isExotelMode && (
-            <div className="flex items-center gap-[2px] bg-[#EEF8FF] border-[0.5px] border-[#0171D9] rounded-[8px] p-2">
-              <WarningTriangle />
-              <span className="text-[#0D0D0D] text-sm">
-                The scribe will stop taking notes once you end the call.
-              </span>
+        <div className="flex flex-col pt-9 items-center gap-4 z-10 transition-all duration-500 ease-in-out min-h-[20vh] relative">
+          {isExotelMode && showExotelBanner && (
+            <div className="w-fit flex gap-4 justify-between items-center bg-[#EEF8FF] border-[0.5px] border-[#0171D9] rounded-[8px] p-2 absolute top-[-24px]">
+              <div className="flex items-center gap-[2px] ">
+                <WarningTriangle />
+                <span className="text-[#0D0D0D] text-sm whitespace-nowrap">
+                  The scribe will stop taking notes once you end the call.
+                </span>
+              </div>
+              <X className="w-4 h-4 cursor-pointer" onClick={() => setShowExotelBanner(false)} />
             </div>
           )}
           <div className="text-[#fff] flex justify-center items-center flex-col gap-2">

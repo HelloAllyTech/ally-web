@@ -13,7 +13,7 @@ import { setUserStatus } from "@reducer";
 import { RootState } from "@store";
 import { UserRole, UserStatus, Chat, QueueStatus } from "@types";
 
-import { CallTranscript, EndTransitionScreen } from "./components";
+import { CallTranscript } from "./components";
 
 export const AudioCall: FunctionComponent = () => {
   const navigate = useNavigate();

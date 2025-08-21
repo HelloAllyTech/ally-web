@@ -14,6 +14,9 @@
 import AccountCircle from "./account-circle.svg?react";
 import Assessment from "./assessment.svg?react";
 import BackCircle from "./back-circle.svg?react";
+import BackgroundGradientBlue from "./background-gradient-blue.svg?react";
+import BoxBreathingBottomGradient from "./box-breathing-bottom-gradient.svg?react";
+import BoxBreathingTopGradient from "./box-breathing-top-gradient.svg?react";
 import CallAttend from "./call-attend.svg?react";
 import CallDetails from "./call-details.svg?react";
 import CallIdIcon from "./call-id-icon.svg?react";
@@ -94,6 +97,9 @@ export {
   BackCircle,
   BackgroundBottom,
   BackgroundTop,
+  BackgroundGradientBlue,
+  BoxBreathingBottomGradient,
+  BoxBreathingTopGradient,
   Call,
   CallAttend,
   CallDetails,

@@ -10,7 +10,7 @@ const getButtonStyles = (variant: ButtonProps["variant"]) => {
     case ButtonVariant.SECONDARY:
       return "border border-[#C8C5D0] hover:bg-accent hover:text-accent-foreground disabled:bg-accent/50";
     case ButtonVariant.ICON:
-      return "bg-transparent border-none hover:bg-transparent disabled:bg-transparent";
+      return "bg-transparent border-none hover:bg-transparent disabled:bg-transparent !p-2 !h-fit";
     case ButtonVariant.TEXT:
       return "bg-transparent border-none hover:bg-transparent disabled:bg-transparent";
     case ButtonVariant.PRIMARY:

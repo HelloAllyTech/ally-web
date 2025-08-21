@@ -1,6 +1,7 @@
 import Accordion from "./accordion";
 import ActionDialog from "./action-dialog";
 import AudioCallPopup from "./audio-call-popup";
+import BoxBreathing from "./box-breathing";
 import { Button, ButtonVariant, ButtonVariantType } from "./button";
 import ButtonGroup from "./button-group";
 import Calendar from "./calendar";
@@ -19,7 +20,6 @@ import OTP from "./otp";
 import ScenarioCard from "./scenario-card";
 import ScenarioDetailsCard from "./scenario-details-card";
 import SearchResources from "./search-resources";
-import StressBuster from "./stress-buster";
 import SummaryStatusChip from "./summary-status-chip";
 import TabGroup from "./tab-group";
 import TagGroup from "./tag-group";
@@ -38,6 +38,7 @@ export {
   Accordion,
   ActionDialog,
   AudioCallPopup,
+  BoxBreathing,
   Button,
   ButtonGroup,
   Calendar,
@@ -56,7 +57,6 @@ export {
   ScenarioCard,
   ScenarioDetailsCard,
   SearchResources,
-  StressBuster,
   SummaryStatusChip,
   TabGroup,
   TagGroup,
