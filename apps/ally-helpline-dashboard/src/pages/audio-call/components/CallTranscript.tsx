@@ -29,6 +29,7 @@ import {
 } from ".";
 
 import "./CallTranscript.css";
+import { NetworkIssuesList } from "./constants";
 
 // TODO: Uninstall react-audio-voice-recorder
 // TODO: Split transcription to client-counselor
@@ -224,14 +225,7 @@ const CallTranscript: FC<CallTranscriptProps> = ({
         setMicrophoneChatId(null);
         // Check if it's a network-related disconnection
         const isNetworkIssue =
-          reason &&
-          [
-            "io client disconnect",
-            "io server disconnect",
-            "transport close",
-            "ping timeout",
-            "transport error",
-          ].some(networkReason => reason.includes(networkReason));
+          reason && NetworkIssuesList.some(networkReason => reason.includes(networkReason));
 
         if (isNetworkIssue) {
           setSocketDisconnectionReason(SocketDisconnectionReasons.NO_NETWORK);

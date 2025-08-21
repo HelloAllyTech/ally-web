@@ -1,7 +1,6 @@
-import { Button } from "@/components";
-
 import { motion } from "framer-motion";
 
+import { Button } from "@/components";
 import { SocketDisconnectionReasons } from "@/constants/socket";
 
 import { getContentByDisconnectionReason } from "./utils";

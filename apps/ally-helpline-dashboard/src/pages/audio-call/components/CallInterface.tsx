@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 
 import { formatTime } from "../utils";
 import { CallInterfaceProps } from "../types";
-import ErrorScreen from "./ErrorScreen";
+import { ErrorScreen } from ".";
 
 const CallInterface: FC<CallInterfaceProps> = ({
   activeChat,

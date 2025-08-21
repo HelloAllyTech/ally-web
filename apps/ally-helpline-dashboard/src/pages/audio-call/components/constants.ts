@@ -14,3 +14,11 @@ export const socketDisconnectionReasonContentMap = {
     description: "Call ended due to unknown reason, please try again..",
   },
 };
+
+export const NetworkIssuesList = [
+  "io client disconnect",
+  "io server disconnect",
+  "transport close",
+  "ping timeout",
+  "transport error",
+];
