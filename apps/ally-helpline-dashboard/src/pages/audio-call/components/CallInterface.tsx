@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 
 import { formatTime } from "../utils";
 import { CallInterfaceProps } from "../types";
+import { ErrorScreen } from ".";
 
 const CallInterface: FC<CallInterfaceProps> = ({
   activeChat,
@@ -13,6 +14,7 @@ const CallInterface: FC<CallInterfaceProps> = ({
   remoteMediaRecorder,
   remoteStreamRef,
   isMicrophoneMode,
+  socketDisconnectionReason,
 }) => {
   const [seconds, setSeconds] = useState(0);
 
@@ -46,6 +48,9 @@ const CallInterface: FC<CallInterfaceProps> = ({
 
   const getEmptyScreen = () => {
     let message;
+    if (socketDisconnectionReason) {
+      return <ErrorScreen socketDisconnectionReason={socketDisconnectionReason} />;
+    }
     if (isUserJoined === false) {
       message = isCounsellor ? "Participant left the call" : "Counsellor left the call";
     } else if (!isUserJoined) {
@@ -74,13 +79,13 @@ const CallInterface: FC<CallInterfaceProps> = ({
     } else if (isSharedMicrophoneMode) {
       return "Note: This call is already active in another tab/window. You can listen but cannot control the call (mute/unmute).";
     } else {
-      return "Note: Refreshing or closing the active tab will end the call.";
+      return "Note: Refreshing, closing the active tab, or network interruptions will end the call.";
     }
   };
 
   return (
     <>
-      {isUserJoined ? (
+      {isUserJoined && !socketDisconnectionReason ? (
         <div
           className="flex flex-col justify-center items-center
             gap-4 z-10 transition-all duration-500 ease-in-out min-h-[20vh]"

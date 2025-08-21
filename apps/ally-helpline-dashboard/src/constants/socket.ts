@@ -12,3 +12,8 @@ export const socketConnectMap = {
   [SocketConnectionTypes.WEBRTC_AUDIO_CALL]: SocketConnectionPaths.WEBRTC_AUDIO_CALL,
   [SocketConnectionTypes.MICROPHONE_MODE]: SocketConnectionPaths.MICROPHONE_MODE,
 };
+
+export enum SocketDisconnectionReasons {
+  NO_NETWORK = "no-network",
+  SOMETHING_WENT_WRONG = "something-went-wrong",
+}

@@ -5,6 +5,7 @@ import CallSidebar from "./CallSidebar";
 import CallTranscript from "./CallTranscript";
 import EndTransitionScreen from "./EndTransition";
 import RealTimeTranscript from "./RealTimeTranscript";
+import ErrorScreen from "./ErrorScreen";
 
 export {
   AudioCallBackgroundWrapper,
@@ -14,4 +15,5 @@ export {
   CallTranscript,
   EndTransitionScreen,
   RealTimeTranscript,
+  ErrorScreen,
 };
