@@ -1,4 +1,4 @@
-import { SearchVariant } from "@ally-ui-mono/ui-shared/types";
+import { SearchVariant } from "../../types";
 
 export const sampleSuggestions = [
   "Violence safety plan",

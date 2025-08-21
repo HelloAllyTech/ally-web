@@ -6,9 +6,8 @@ import SearchIcon from "@mui/icons-material/Search";
 import { Autocomplete, TextField, InputAdornment } from "@mui/material";
 import { X } from "lucide-react";
 
-import { SearchVariant } from "@ally-ui-mono/ui-shared/types";
-
 import { searchBarStyles } from "./constants";
+import { SearchVariant } from "../../types";
 
 /**
  * Props for SearchBar component.
