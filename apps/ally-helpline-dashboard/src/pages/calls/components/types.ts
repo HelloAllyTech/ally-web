@@ -22,3 +22,7 @@ export interface Transcript {
   content?: string | number;
   senderId?: string | number;
 }
+
+export interface LogsTableProps {
+  refreshKey?: string;
+}

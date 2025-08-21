@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, FC } from "react";
 
 import { CircularProgress } from "@mui/material";
 import { useDispatch, useSelector } from "react-redux";
@@ -24,8 +24,9 @@ import { convertSecondsToDuration, getFormattedDate } from "@utils";
 
 import { SummarySideBar } from ".";
 import { CALL_LOGS_PAGINATION_LIMIT, tagColors } from "../constants";
+import { LogsTableProps } from "./types";
 
-const CallLogsTable = () => {
+const CallLogsTable: FC<LogsTableProps> = ({ refreshKey }) => {
   const dispatch = useDispatch();
   const location = useLocation();
 
@@ -81,10 +82,10 @@ const CallLogsTable = () => {
 
   // Refetch call logs when navigating from PostCallSummary
   useEffect(() => {
-    if (location.state?.refetch) {
+    if (location.state?.refetch || refreshKey) {
       refetchCallLogs();
     }
-  }, [location, refetchCallLogs]);
+  }, [location, refetchCallLogs, refreshKey]);
 
   const handleLoadMore = () => {
     if (!isLoading && !isLoadingMore && hasMore) {
