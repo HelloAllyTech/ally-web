@@ -222,7 +222,6 @@ const CallTranscript: FC<CallTranscriptProps> = ({
     },
     [SocketEvent.DISCONNECT]: (reason?: string) => {
       if (isMicrophoneMode) {
-        setMicrophoneChatId(null);
         // Check if it's a network-related disconnection
         const isNetworkIssue =
           reason && NetworkIssuesList.some(networkReason => reason.includes(networkReason));
