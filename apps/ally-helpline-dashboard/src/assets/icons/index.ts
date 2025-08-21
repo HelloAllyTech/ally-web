@@ -53,6 +53,8 @@ import TimerIcon from "./timer.svg?react";
 import UserIcon from "./user-icon.svg?react";
 import Waveform from "./waveform.svg?react";
 import NotesIcon from "./notes.svg?react";
+import NoNetwork from "./no-network.svg?react";
+import InDoubt from "./in-doubt.svg?react";
 
 export {
   AccountCircle,
@@ -110,4 +112,6 @@ export {
   UserIcon,
   Waveform,
   NotesIcon,
+  NoNetwork,
+  InDoubt,
 };
