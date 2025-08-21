@@ -1,6 +1,7 @@
 import { MutableRefObject } from "react";
 
 import { Chat, FeedbackResponse, Transcription } from "@/types/message";
+import { SocketDisconnectionReasons } from "@/constants/socket";
 
 export interface CallTranscriptProps {
   activeChat: Chat;
@@ -18,6 +19,7 @@ export interface CallInterfaceProps {
   remoteMediaRecorder: MediaRecorder | null;
   remoteStreamRef: MutableRefObject<MediaStream>;
   isMicrophoneMode: boolean;
+  socketDisconnectionReason?: SocketDisconnectionReasons;
 }
 
 export interface RealTimeTranscriptProps {
