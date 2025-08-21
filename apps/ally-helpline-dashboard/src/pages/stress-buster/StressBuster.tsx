@@ -85,7 +85,7 @@ export const StressBuster = () => {
 
   const onViewSummary = () => {
     if (chatId) {
-      navigate(`/summary/${chatId}`);
+      navigate(`/summary/${chatId}?section=2`);
     }
   };
 
