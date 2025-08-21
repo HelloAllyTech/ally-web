@@ -12,6 +12,7 @@ import { CallLogsTable, ConsolidatedLogs, StartSessionDialog } from "./component
 
 export const Calls: FC = () => {
   const [isStartSessionDialogOpen, setIsStartSessionDialogOpen] = useState(false);
+  const [refreshKey, setRefreshKey] = useState<number>(0);
 
   const { availableChatTypes, updateUserStatus, user, userStatus } = useUser();
 
@@ -23,6 +24,10 @@ export const Calls: FC = () => {
 
   const handleStartSession = () => {
     setIsStartSessionDialogOpen(true);
+  };
+
+  const handleRefresh = () => {
+    setRefreshKey(prev => prev + 1);
   };
 
   return (
@@ -37,7 +42,10 @@ export const Calls: FC = () => {
         <div className="sm:p-4 p-0 rounded-lg flex gap-4 sm:justify-between justify-start bg-transparent items-center">
           <div className="z-10 text-[#0D0D0D] text-[24px] font-[500] flex items-center gap-2">
             Session Logs
-            <Refresh className="w-6 h-6 cursor-pointer border-l-[0.5px] border-[#D2D2D2] pl-2" />
+            <Refresh
+              className="w-6 h-6 cursor-pointer border-l-[0.5px] border-[#D2D2D2] pl-2"
+              onClick={handleRefresh}
+            />
           </div>
           {availableChatTypes?.includes(CallType.MICROPHONE_CHAT) && (
             <Button onClick={handleStartSession}>
@@ -59,7 +67,7 @@ export const Calls: FC = () => {
           )}
         </div>
       </motion.div>
-      {isAdmin ? <ConsolidatedLogs /> : <CallLogsTable />}
+      {isAdmin ? <ConsolidatedLogs key={refreshKey} /> : <CallLogsTable key={refreshKey} />}
       <StartSessionDialog
         isOpen={isStartSessionDialogOpen}
         onClose={() => setIsStartSessionDialogOpen(false)}

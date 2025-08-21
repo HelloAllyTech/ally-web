@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, FC } from "react";
 
 import { CircularProgress } from "@mui/material";
 import { useDispatch, useSelector } from "react-redux";
@@ -24,8 +24,9 @@ import { convertSecondsToDuration, getFormattedDate } from "@utils";
 
 import { SummarySideBar } from ".";
 import { CALL_LOGS_PAGINATION_LIMIT, defaultTags, tagColors } from "../constants";
+import { LogsTableProps } from "./types";
 
-const ConsolidatedLogs = () => {
+const ConsolidatedLogs: FC<LogsTableProps> = ({ refreshKey }) => {
   const dispatch = useDispatch();
 
   const [callSummary, setCallSummary] = useState<CallLog | null>(null);
@@ -56,6 +57,12 @@ const ConsolidatedLogs = () => {
       });
     }
   };
+
+  useEffect(() => {
+    if (refreshKey) {
+      refetchCallLogs();
+    }
+  }, [refreshKey]);
 
   // Append new callLogs to the list and handle hasMore
   useEffect(() => {
@@ -304,7 +311,7 @@ const ConsolidatedLogs = () => {
           onFilterChange={handleFilterChange}
           handleLoadMore={callLogList?.length > 0 && hasMore && handleLoadMore}
           fallbackUI={renderFallbackUI()}
-          className="min-w-full min-w-[100%] max-h-[calc(100vh-140px)] font-['IBM_Plex_Serif'] overflow-y-scroll"
+          className="min-w-full max-h-[calc(100vh-140px)] font-['IBM_Plex_Serif'] overflow-y-scroll"
         />
       </div>
       {callSummary && callSummary?.id && (
