@@ -14,8 +14,9 @@ const CallControls: FC<CallControlsProps> = ({
   onEndSessionClick,
   onFocusButtonClick,
   onPauseTranscriptionClick,
-  showPauseTranscription,
   showEndSession,
+  showFocusButton,
+  showPauseTranscription,
 }) => {
   const callButtonList = [
     {
@@ -31,7 +32,7 @@ const CallControls: FC<CallControlsProps> = ({
       isActive: isFocusMode,
       isDisabled: isFocusButtonDisabled,
       leftIcon: <Focus className={isFocusMode ? "" : "[&_path]:fill-[#FFFFFF]"} />,
-      show: true,
+      show: showFocusButton,
       text: "Focused",
     },
     {

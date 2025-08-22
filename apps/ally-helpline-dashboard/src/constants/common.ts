@@ -6,6 +6,12 @@ export const ICE_SERVERS = [
   { urls: "stun:stun1.l.google.com:19302" },
 ];
 
+export enum MediaRecorderState {
+  INACTIVE = "inactive",
+  RECORDING = "recording",
+  PAUSED = "paused",
+}
+
 export enum KeyboardKeys {
   BACKSPACE = "Backspace",
   ARROW_LEFT = "ArrowLeft",
