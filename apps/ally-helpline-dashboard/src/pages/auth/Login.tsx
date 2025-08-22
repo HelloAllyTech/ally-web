@@ -9,7 +9,13 @@ import { toast } from "sonner";
 import { useGenerateOTPMutation, useVerifyOTPMutation } from "@api";
 import { Ally, BackCircle, LoginImage, RedirectIcon } from "@assets";
 import { Button, Carousel, OTP, TextField } from "@components";
-import { CAROUSEL_SLIDES, LOCAL_STORAGE_KEYS } from "@constants";
+import {
+  ALLY_PRIVACY_POLICY_URL,
+  ALLY_TERMS_URL,
+  ALLY_URL,
+  CAROUSEL_SLIDES,
+  LOCAL_STORAGE_KEYS,
+} from "@constants";
 import { useUser } from "@hooks";
 import { RootState } from "@store";
 import { openLinkInNewTab, validateEmail } from "@utils";
@@ -208,14 +214,14 @@ export const Login: FunctionComponent = () => {
             By tapping next, you agree to Ally's{" "}
             <span
               className="text-[#0473F2] cursor-pointer"
-              onClick={() => openLinkInNewTab("https://www.helloally.ai/terms")}
+              onClick={() => openLinkInNewTab(ALLY_TERMS_URL)}
             >
               Terms & Conditions
             </span>{" "}
             and acknowledge{" "}
             <span
               className="text-[#0473F2] cursor-pointer"
-              onClick={() => openLinkInNewTab("https://www.helloally.ai/policy")}
+              onClick={() => openLinkInNewTab(ALLY_PRIVACY_POLICY_URL)}
             >
               Privacy Policy
             </span>
@@ -287,7 +293,7 @@ export const Login: FunctionComponent = () => {
         />
         <div
           className="flex items-center gap-2 p-3 rounded-tl-2xl bg-white absolute bottom-0 right-0 cursor-pointer"
-          onClick={() => openLinkInNewTab("https://www.helloally.ai")}
+          onClick={() => openLinkInNewTab(ALLY_URL)}
         >
           <Ally className="w-10 h-10" />
           <div className="flex flex-col mr-4 font-['Replay_Pro']">

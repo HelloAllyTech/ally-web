@@ -12,7 +12,7 @@ import {
 } from "@api";
 import { DataPolicy, Download, Edit, Warning } from "@assets";
 import { ActionDialog, Drawer, TextField } from "@components";
-import { CallProvider } from "@constants";
+import { ALLY_DATA_POLICY_URL, CallProvider } from "@constants";
 import { useFileExport } from "@hooks";
 import CallSummary from "@pages/post-call-summary/components/CallSummary";
 import { RootState } from "@store";
@@ -242,7 +242,7 @@ const SummarySideBar: FC<SummarySideBarProps> = ({
         {
           alt: "Data policy",
           icon: <DataPolicy />,
-          onClick: () => openLinkInNewTab("https://www.helloally.ai/data-policy"),
+          onClick: () => openLinkInNewTab(ALLY_DATA_POLICY_URL),
           show: true,
           text: "Data policy",
         },
