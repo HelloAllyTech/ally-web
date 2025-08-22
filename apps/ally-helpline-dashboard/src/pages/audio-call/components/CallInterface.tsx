@@ -81,9 +81,9 @@ const CallInterface: FC<CallInterfaceProps> = ({
         exit={{ opacity: 0 }}
         transition={{ duration: 0.5 }}
       >
-        <div className="text-[#0D0D0D] text-4xl font-normal">{message}</div>
+        <div className="text-white text-4xl font-normal">{message}</div>
         {!(isUserJoined == null) && (
-          <div className="text-[#0D0D0D] text-sm text-center mt-1">
+          <div className="text-white text-sm text-center mt-1">
             You can wait for them to rejoin or end the call.
           </div>
         )}
@@ -115,7 +115,7 @@ const CallInterface: FC<CallInterfaceProps> = ({
               <X className="w-4 h-4 cursor-pointer" onClick={() => setShowExotelBanner(false)} />
             </div>
           )}
-          <div className="text-[#fff] flex justify-center items-center flex-col gap-2">
+          <div className="text-white flex justify-center items-center flex-col gap-2">
             <div className="flex items-center gap-2 font-['IBM_Plex_Serif'] font-medium">
               <Tooltip title={<PrivacyTooltip />} placement="top" arrow slotProps={TOOLTIP_PROPS}>
                 <span>

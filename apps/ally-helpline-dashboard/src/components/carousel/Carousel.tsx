@@ -77,7 +77,7 @@ const Carousel: FC<CarouselProps> = ({
   const getContainerStyles = () => {
     switch (variant) {
       case CarouselVariant.LIGHT:
-        return "bg-[#F3F3F3]/[0.21]";
+        return "bg-[#F3F3F3]/[0.21] shadow";
       case CarouselVariant.DARK:
         return "!bg-[#F3F3F3] border-[0.5px] border-[#D3D3D3] !p-2";
     }
@@ -116,7 +116,7 @@ const Carousel: FC<CarouselProps> = ({
 
   return (
     <div
-      className={`flex flex-col items-center justify-between p-4 select-none rounded-md backdrop-blur-sm shadow
+      className={`flex flex-col items-center justify-between p-4 select-none rounded-md backdrop-blur-sm
         ${getContainerStyles()} ${className}`}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}

@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 
-import { Button } from "@components";
+import { Button, ButtonVariant } from "@components";
 import { SocketDisconnectionReasons } from "@constants";
 
 import { getContentByDisconnectionReason } from "./utils";
@@ -36,14 +36,14 @@ const ErrorScreen = ({
         animate={{ opacity: 1, scale: 1, rotate: 0 }}
         transition={{ duration: 0.5, delay: 0.1 }}
       >
-        <Icon />
+        <Icon stroke="#fff" />
       </motion.div>
 
       <motion.div
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4, delay: 0.2 }}
-        className="text-[#0D0D0D] text-2xl text-center mt-1"
+        className="text-white text-2xl text-center mt-1 font-['Replay_Pro']"
       >
         {title}
       </motion.div>
@@ -52,7 +52,7 @@ const ErrorScreen = ({
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4, delay: 0.3 }}
-        className="text-[#0D0D0D] text-sm text-center mt-1"
+        className="text-white text-sm text-center mt-1 font-['IBM_Plex_Serif']"
       >
         {description}
       </motion.div>
@@ -64,13 +64,14 @@ const ErrorScreen = ({
         className="w-full text-center flex justify-center items-center gap-4 mt-1"
       >
         <Button
-          variant="outline"
-          className="rounded-full w-full"
+          variant={ButtonVariant.SECONDARY}
+          className="text-white"
+          fullWidth
           onClick={() => window.history.back()}
         >
           Go back
         </Button>
-        <Button className="rounded-full w-full" onClick={() => window.location.reload()}>
+        <Button fullWidth onClick={() => window.location.reload()}>
           Try again
         </Button>
       </motion.div>
