@@ -12,6 +12,7 @@
  */
 
 import AccountCircle from "./account-circle.svg?react";
+import Ally from "./ally.svg?react";
 import Assessment from "./assessment.svg?react";
 import BackCircle from "./back-circle.svg?react";
 import BackgroundGradientBlue from "./background-gradient-blue.svg?react";
@@ -56,6 +57,7 @@ import NotesIcon from "./notes.svg?react";
 import ObjectiveObservations from "./objective-observations.svg?react";
 import PauseIcon from "./pause-icon.svg?react";
 import PlansForNextCall from "./plans-for-next-call.svg?react";
+import RedirectIcon from "./redirect-icon.svg?react";
 import ReferralsProvided from "./referrals-provided.svg?react";
 import Refresh from "./refresh.svg?react";
 import ResumeIcon from "./resume-icon.svg?react";
@@ -95,6 +97,7 @@ import Waveform from "./waveform.svg?react";
  */
 export {
   AccountCircle,
+  Ally,
   Assessment,
   BackCircle,
   BackgroundBottom,
@@ -141,6 +144,7 @@ export {
   ObjectiveObservations,
   PauseIcon,
   PlansForNextCall,
+  RedirectIcon,
   ReferralsProvided,
   Refresh,
   ResumeIcon,
