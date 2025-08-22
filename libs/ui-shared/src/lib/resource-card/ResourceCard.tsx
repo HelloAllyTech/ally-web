@@ -4,8 +4,7 @@ import { FC, useState, useRef, useEffect } from "react";
 import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 import { motion, AnimatePresence } from "framer-motion";
 
-import { SearchVariant } from "@ally-ui-mono/ui-shared/types";
-
+import { SearchVariant } from "../../types";
 import Badge from "../badge";
 import { resourceCardStyles } from "./constants";
 

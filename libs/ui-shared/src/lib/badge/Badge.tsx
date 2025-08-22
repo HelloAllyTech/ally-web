@@ -1,6 +1,6 @@
 import { FC } from "react";
 
-import { SearchVariant } from "@ally-ui-mono/ui-shared/types";
+import { SearchVariant } from "../../types";
 
 export type BadgeVariant = SearchVariant | "outlined";
 

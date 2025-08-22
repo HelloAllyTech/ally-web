@@ -4,9 +4,8 @@ import { FC, useMemo } from "react";
 
 import { Tab, Tabs } from "@mui/material";
 
-import { Resource, SearchVariant } from "@ally-ui-mono/ui-shared/types";
-
 import { resourceTabsStyles } from "./constants";
+import { Resource, SearchVariant } from "../../types";
 
 /**
  * ResourceTabs component displays category tabs for filtering resources.

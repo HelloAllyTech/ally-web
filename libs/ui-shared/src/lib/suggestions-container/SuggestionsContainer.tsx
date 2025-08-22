@@ -2,9 +2,8 @@ import { FC } from "react";
 
 import SearchIcon from "@mui/icons-material/Search";
 
-import { SearchVariant } from "@ally-ui-mono/ui-shared/types";
-
 import { suggestionsStyles } from "./constants";
+import { SearchVariant } from "../../types";
 
 /**
  * Props for SuggestionsContainer component.
