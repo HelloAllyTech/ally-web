@@ -8,6 +8,7 @@ import { Button, Carousel, CarouselSize, CarouselVariant, ConfirmationDialog } f
 import { TabId, Permissions, navBarOptions, CAROUSEL_SLIDES } from "@constants";
 import { useUser } from "@hooks";
 import { User, UserRole } from "@types";
+import { openLinkInNewTab } from "@utils";
 
 import { ButtonVariant } from "../button";
 import { NavSideBarProps, TabProps } from "./types";
@@ -78,7 +79,7 @@ const NavSideBar: FC<NavSideBarProps> = ({ activeTab, onTabChange, isOpen, onClo
 
   const onTabClick = (id: TabId, path: string) => {
     if (id === TabId.COMMUNITY) {
-      window.open(path, "_blank");
+      openLinkInNewTab(path);
     } else {
       onTabChange(path);
     }

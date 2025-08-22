@@ -12,11 +12,12 @@ import {
 } from "@api";
 import { DataPolicy, Download, Edit, Warning } from "@assets";
 import { ActionDialog, Drawer, TextField } from "@components";
-import { CallProvider } from "@constants";
+import { ALLY_DATA_POLICY_URL, CallProvider } from "@constants";
 import { useFileExport } from "@hooks";
 import CallSummary from "@pages/post-call-summary/components/CallSummary";
 import { RootState } from "@store";
 import { UserRole } from "@types";
+import { openLinkInNewTab } from "@utils";
 
 import { defaultDeleteDialogData, tabStyles } from "../constants";
 import { DeleteDialogData, SummarySideBarProps, Transcript } from "./types";
@@ -241,8 +242,7 @@ const SummarySideBar: FC<SummarySideBarProps> = ({
         {
           alt: "Data policy",
           icon: <DataPolicy />,
-          onClick: () =>
-            window.open("https://www.helloally.ai/privacy-policy", "_blank", "noopener,noreferrer"),
+          onClick: () => openLinkInNewTab(ALLY_DATA_POLICY_URL),
           show: true,
           text: "Data policy",
         },
