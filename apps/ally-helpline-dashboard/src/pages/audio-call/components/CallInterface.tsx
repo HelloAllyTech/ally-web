@@ -8,6 +8,7 @@ import { LiveAudioVisualizer } from "react-audio-visualize";
 import { Lock, WarningTriangle } from "@assets";
 import { CallProvider, TOOLTIP_PROPS } from "@constants";
 
+import { ErrorScreen } from ".";
 import { CallInterfaceProps } from "../types";
 import { formatTime } from "../utils";
 
@@ -29,6 +30,7 @@ const CallInterface: FC<CallInterfaceProps> = ({
   remoteStreamRef,
   isMicrophoneMode,
   isExotelMode,
+  socketDisconnectionReason,
 }) => {
   const [seconds, setSeconds] = useState(0);
   const [showExotelBanner, setShowExotelBanner] = useState(true);
@@ -63,6 +65,9 @@ const CallInterface: FC<CallInterfaceProps> = ({
 
   const getEmptyScreen = () => {
     let message;
+    if (socketDisconnectionReason) {
+      return <ErrorScreen socketDisconnectionReason={socketDisconnectionReason} />;
+    }
     if (isUserJoined === false) {
       message = isCounsellor ? "Participant left the call" : "Counsellor left the call";
     } else if (!isUserJoined) {
@@ -91,13 +96,13 @@ const CallInterface: FC<CallInterfaceProps> = ({
     } else if (isSharedMicrophoneMode) {
       return "Note: This call is already active in another tab/window. You can listen but cannot control the call (mute/unmute).";
     } else {
-      return "Note: Refreshing or closing the active tab will end the call.";
+      return "Note: Refreshing, closing the active tab, or network interruptions will end the call.";
     }
   };
 
   return (
     <>
-      {isUserJoined ? (
+      {isUserJoined && !socketDisconnectionReason ? (
         <div className="flex flex-col pt-9 items-center gap-4 z-10 transition-all duration-500 ease-in-out min-h-[20vh] relative">
           {isExotelMode && showExotelBanner && (
             <div className="w-fit flex gap-4 justify-between items-center bg-[#EEF8FF] border-[0.5px] border-[#0171D9] rounded-[8px] p-2 absolute top-[-24px]">

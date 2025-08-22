@@ -103,6 +103,7 @@ export enum SocketEvent {
   SESSION_CREATED = "SESSION_CREATED",
   AUDIO_CHAT_ENDED = "AUDIO_CHAT_ENDED",
   AUDIO_STREAM = "AUDIO_STREAM",
+  DISCONNECT = "disconnect",
 }
 
 export interface FeedbackInput {

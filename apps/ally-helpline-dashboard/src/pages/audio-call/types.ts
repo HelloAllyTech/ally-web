@@ -1,5 +1,6 @@
 import { MutableRefObject } from "react";
 
+import { SocketDisconnectionReasons } from "@constants";
 import { Chat, FeedbackResponse, Transcription } from "@types";
 
 export interface CallTranscriptProps {
@@ -22,6 +23,7 @@ export interface CallInterfaceProps {
   // TODO: Refactor isMicrophoneMode and isExotelMode props to use callMode prop
   isMicrophoneMode: boolean;
   isExotelMode: boolean;
+  socketDisconnectionReason?: SocketDisconnectionReasons;
 }
 
 export interface RealTimeTranscriptProps {
@@ -39,6 +41,7 @@ export interface CallControlsProps {
   onFocusButtonClick: (isFocused: boolean) => void;
   onPauseTranscriptionClick?: () => void;
   showEndSession: boolean;
+  showFocusButton: boolean;
   showPauseTranscription: boolean;
 }
 

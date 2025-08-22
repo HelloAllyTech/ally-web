@@ -15,3 +15,8 @@ export const socketConnectMap = {
   [SocketConnectionTypes.MICROPHONE_MODE]: SocketConnectionPaths.MICROPHONE_MODE,
   [SocketConnectionTypes.CLOUD_TELEPHONY_CHAT]: SocketConnectionPaths.CLOUD_TELEPHONY_CHAT,
 };
+
+export enum SocketDisconnectionReasons {
+  NO_NETWORK = "no-network",
+  SOMETHING_WENT_WRONG = "something-went-wrong",
+}

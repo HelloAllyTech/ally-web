@@ -40,6 +40,7 @@ import EndSessionIllustration from "./end-session-illustration.svg?react";
 import Flow from "./flow.svg?react";
 import Focus from "./focus.svg?react";
 import HomeworkRecommended from "./homework-recommended.svg?react";
+import InDoubt from "./in-doubt.svg?react";
 import IssuesWorkedOn from "./issues-worked-on.svg?react";
 import KeyConcerns from "./key-concerns.svg?react";
 import LifelineLogo from "./lifeline-logo.svg?react";
@@ -49,6 +50,7 @@ import LogoutIllustration from "./logout-illustration.svg?react";
 import LogsIcon from "./logs.svg?react";
 import MenuIcon from "./menu-icon.svg?react";
 import Metrics from "./metrics.svg?react";
+import NoNetwork from "./no-network.svg?react";
 import NoResults from "./no-results.svg?react";
 import NotesIcon from "./notes.svg?react";
 import ObjectiveObservations from "./objective-observations.svg?react";
@@ -123,6 +125,7 @@ export {
   Flow,
   Focus,
   HomeworkRecommended,
+  InDoubt,
   IssuesWorkedOn,
   KeyConcerns,
   LifelineLogo,
@@ -132,6 +135,7 @@ export {
   LogsIcon,
   MenuIcon,
   Metrics,
+  NoNetwork,
   NoResults,
   NotesIcon,
   ObjectiveObservations,
@@ -161,7 +165,7 @@ export {
   ThumbUpFilled,
   TimerIcon,
   UserIcon,
-  Waveform,
   WarningTriangle,
   Warning,
+  Waveform,
 };

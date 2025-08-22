@@ -75,7 +75,7 @@ export const useSocket = ({ eventCallbacks, connectionType }: UseSocketOptions) 
       logger.info(`Socket connection error:, ${error}`);
     });
 
-    socketRef.current.on("disconnect", reason => {
+    socketRef.current.on(SocketEvent.DISCONNECT, reason => {
       logger.info(`Socket disconnected:, ${reason}`);
     });
 
