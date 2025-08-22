@@ -1,6 +1,5 @@
 import { useState, useEffect, FunctionComponent, useRef } from "react";
 
-import { Minimize } from "lucide-react";
 import { useSelector } from "react-redux";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
@@ -8,13 +7,13 @@ import { toast } from "sonner";
 import { logger } from "@ally-ui-mono/ui-shared";
 import { useEndCallMutation, useLazyGetClientChatQuery, useLazyGetCounsellorChatQuery } from "@api";
 import { NoResults, MindfullnessVideo } from "@assets";
-import { FallbackUI, StressBuster } from "@components";
-import { CallProvider, CallType } from "@constants";
+import { FallbackUI } from "@components";
+import { CallProvider, CallType, ROUTES } from "@constants";
 import { setUserStatus } from "@reducer";
 import { RootState } from "@store";
 import { UserRole, UserStatus, Chat, QueueStatus } from "@types";
 
-import { CallTranscript, EndTransitionScreen } from "./components";
+import { CallTranscript } from "./components";
 
 export const AudioCall: FunctionComponent = () => {
   const navigate = useNavigate();
@@ -23,9 +22,6 @@ export const AudioCall: FunctionComponent = () => {
 
   const [activeChat, setActiveChat] = useState<Chat | null>();
   const [microphoneChatId, setMicrophoneChatId] = useState<number | null>(null);
-  const [endingMessage, setEndingMessage] = useState<string>("");
-  const [isEnding, setIsEnding] = useState<boolean>(false);
-  const [showStressBuster, setShowStressBuster] = useState<boolean>(false);
   const wakeLockRef = useRef<WakeLockSentinel | null>(null);
 
   const user = useSelector((state: RootState) => state.user.user);
@@ -40,13 +36,6 @@ export const AudioCall: FunctionComponent = () => {
   const isExotelMode = mode === "exotel";
   const isLoading = isCounsellorChatLoading || isClientChatLoading || isEndCallLoading;
   const isActiveMicrophoneSession = isMicrophoneMode && microphoneChatId && !activeChat?.chatId;
-
-  useEffect(() => {
-    return () => {
-      setIsEnding(false);
-      setShowStressBuster(false);
-    };
-  }, []);
 
   // This is used to keep the screen on when the user is on the call page
   useEffect(() => {
@@ -140,23 +129,6 @@ export const AudioCall: FunctionComponent = () => {
     fetchActiveChat();
   }, [user]);
 
-  const handleEndSequence = async () => {
-    if (user?.role === UserRole.CLIENT) {
-      navigate("/");
-      return;
-    }
-    setIsEnding(true);
-    setEndingMessage("You gave your best on that call!");
-    try {
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      setEndingMessage("Now, take a moment for yourself");
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      setShowStressBuster(true);
-    } catch (error) {
-      logger.info(`Error in handleEndSequence:, ${error}`);
-    }
-  };
-
   const endSessionAndNavigate = async (triggerApi: boolean = true, chatId: number) => {
     if (triggerApi) {
       const response = await endCall({ chatId });
@@ -165,20 +137,7 @@ export const AudioCall: FunctionComponent = () => {
         return;
       }
     }
-    handleEndSequence();
-  };
-
-  const navigateOnStressBusterClose = () => {
-    if (activeChat?.chatId || microphoneChatId) {
-      navigate(`/summary/${activeChat?.chatId || microphoneChatId}`);
-    }
-  };
-
-  const handleViewCallHighlights = () => {
-    if (activeChat?.chatId || microphoneChatId) {
-      // TODO: Update section param
-      navigate(`/summary/${activeChat?.chatId || microphoneChatId}`);
-    }
+    navigate(ROUTES.STRESS_BUSTER, { state: { chatId: activeChat?.chatId || microphoneChatId } });
   };
 
   const getFallbackUI = () => {
@@ -234,33 +193,21 @@ export const AudioCall: FunctionComponent = () => {
     <div className="min-h-screen flex items-center justify-center bg-gray-50">
       <video src={MindfullnessVideo} preload="auto" className="hidden" />
       {getFallbackUI()}
-      {!isEnding &&
-        ((activeChat?.chatId &&
-          (activeChat?.provider === CallProvider.WEBRTC ||
-            (isMicrophoneMode && activeChat?.provider === CallProvider.MICROPHONE))) ||
-          (isExotelMode && activeChat?.provider === CallProvider.EXOTEL_CONFERENCE_CALL) ||
-          (Array.isArray(activeChat) &&
-            activeChat.length === 0 &&
-            isMicrophoneMode &&
-            availableChatTypes?.includes(CallType.MICROPHONE_CHAT))) && (
-          <CallTranscript
-            endSession={endSessionAndNavigate}
-            activeChat={activeChat}
-            microphoneChatId={microphoneChatId}
-            isMicrophoneMode={isMicrophoneMode}
-            isExotelMode={isExotelMode}
-            setMicrophoneChatId={setMicrophoneChatId}
-          />
-        )}
-      {isEnding && <EndTransitionScreen endingMessage={endingMessage} />}
-      {showStressBuster && (
-        <StressBuster
-          playOnMount
-          isFullScreenMode
-          closeIcon={<Minimize />}
-          onClose={navigateOnStressBusterClose}
-          showViewSummaryButton
-          onViewSummary={handleViewCallHighlights}
+      {((activeChat?.chatId &&
+        (activeChat?.provider === CallProvider.WEBRTC ||
+          (isMicrophoneMode && activeChat?.provider === CallProvider.MICROPHONE))) ||
+        (isExotelMode && activeChat?.provider === CallProvider.EXOTEL_CONFERENCE_CALL) ||
+        (Array.isArray(activeChat) &&
+          activeChat.length === 0 &&
+          isMicrophoneMode &&
+          availableChatTypes?.includes(CallType.MICROPHONE_CHAT))) && (
+        <CallTranscript
+          endSession={endSessionAndNavigate}
+          activeChat={activeChat}
+          microphoneChatId={microphoneChatId}
+          isMicrophoneMode={isMicrophoneMode}
+          isExotelMode={isExotelMode}
+          setMicrophoneChatId={setMicrophoneChatId}
         />
       )}
     </div>

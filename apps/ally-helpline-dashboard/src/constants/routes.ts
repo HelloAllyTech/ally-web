@@ -15,7 +15,7 @@ export const ROUTES = {
   AUDIO_CALL: "/audio-call",
   CALLS: "/calls",
   CALENDER: "/calender",
-  STRESS_BUSTERS: "/stress_busters",
+  STRESS_BUSTER: "/stress-buster",
   ANALYTICS: "/analytics",
   SETTINGS: "/settings",
   SUMMARY: "/summary/:chatId",
