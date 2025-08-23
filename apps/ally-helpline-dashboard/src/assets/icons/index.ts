@@ -28,6 +28,7 @@ import Carousel3 from "./carousel-3.svg?react";
 import Carousel4 from "./carousel-4.svg?react";
 import CloseIcon from "./close-icon.svg?react";
 import Close from "./close.svg?react";
+import Cloud from "./cloud.svg?react";
 import ComingSoon from "./coming-soon.svg?react";
 import CommunityIcon from "./community.svg?react";
 import CutCall from "./cut-call.svg?react";
@@ -72,6 +73,7 @@ import StartSession from "./start-session.svg?react";
 import StatsIcon from "./stats.svg?react";
 import StopIcon from "./stop-icon.svg?react";
 import SubjectiveObservations from "./subjective-observations.svg?react";
+import SummaryGeneratedIllustration from "./summary-generated-illustration.svg?react";
 import SummaryGenerationIcon from "./summary-generation-icon.svg?react";
 import TagsIcon from "./tags-icon.svg?react";
 import Tags from "./tags.svg?react";
@@ -84,6 +86,7 @@ import TimerIcon from "./timer.svg?react";
 import BackgroundBottom from "./transcript-background-bottom.svg?react";
 import BackgroundTop from "./transcript-background-top.svg?react";
 import UserIcon from "./user-icon.svg?react";
+import VerifiedBadge from "./verified-badge.svg?react";
 import WarningTriangle from "./warning-triangle.svg?react";
 import Warning from "./warning.svg?react";
 import Waveform from "./waveform.svg?react";
@@ -115,6 +118,7 @@ export {
   Carousel4,
   CloseIcon,
   Close,
+  Cloud,
   CommunityIcon,
   ComingSoon,
   CutCall,
@@ -159,6 +163,7 @@ export {
   StatsIcon,
   StopIcon,
   SubjectiveObservations,
+  SummaryGeneratedIllustration,
   SummaryGenerationIcon,
   Tags,
   TagsIcon,
@@ -169,6 +174,7 @@ export {
   ThumbUpFilled,
   TimerIcon,
   UserIcon,
+  VerifiedBadge,
   WarningTriangle,
   Warning,
   Waveform,

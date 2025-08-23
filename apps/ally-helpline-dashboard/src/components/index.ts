@@ -14,12 +14,14 @@ import Drawer from "./drawer";
 import Dropdown from "./dropdown";
 import ExpandingSection from "./expanding-section";
 import FallbackUI from "./fallback-ui";
+import InfoBanner from "./info-banner";
 import Input from "./input";
 import NavSideBar from "./nav-sidebar";
 import OTP from "./otp";
 import ScenarioCard from "./scenario-card";
 import ScenarioDetailsCard from "./scenario-details-card";
 import SearchResources from "./search-resources";
+import ShinyText from "./shiny-text";
 import SummaryStatusChip from "./summary-status-chip";
 import TabGroup from "./tab-group";
 import TagGroup from "./tag-group";
@@ -51,12 +53,14 @@ export {
   ExpandingSection,
   Carousel,
   FallbackUI,
+  InfoBanner,
   Input,
   NavSideBar,
   OTP,
   ScenarioCard,
   ScenarioDetailsCard,
   SearchResources,
+  ShinyText,
   SummaryStatusChip,
   TabGroup,
   TagGroup,

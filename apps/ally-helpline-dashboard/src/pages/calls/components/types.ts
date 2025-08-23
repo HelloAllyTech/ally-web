@@ -1,6 +1,6 @@
 import { Dispatch, SetStateAction } from "react";
 
-import { CallLog } from "@types";
+import { CallLog, ChatSummaryStatus } from "@types";
 
 export interface StartSessionDialogProps {
   isOpen: boolean;
@@ -9,7 +9,7 @@ export interface StartSessionDialogProps {
 
 export interface SummarySideBarProps {
   callSummary: CallLog;
-  refetchCallLogs: () => void;
+  refetchCallLogs: (status?: ChatSummaryStatus) => void;
   setCallSummary: Dispatch<SetStateAction<CallLog>>;
 }
 
@@ -25,4 +25,10 @@ export interface Transcript {
 
 export interface LogsTableProps {
   refreshKey?: string;
+}
+
+export interface SummaryHeaderProps {
+  summaryName: string;
+  setSummaryName: (summaryName: string) => void;
+  chatId: number;
 }

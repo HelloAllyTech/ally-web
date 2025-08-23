@@ -15,7 +15,6 @@ const StressBusterStep: FC<StressBusterProps> = ({ onProceed }) => {
       transition={{ duration: 0.3, ease: "easeOut" }}
       className="flex flex-col gap-4"
     >
-      <h2 className="text-base font-medium text-[#47464F]">Let&apos;s try a stress buster</h2>
       <div className="w-full aspect-video mb-4 rounded-3xl overflow-hidden">
         <BoxBreathing showViewSummaryButton onViewSummary={onProceed} />
       </div>

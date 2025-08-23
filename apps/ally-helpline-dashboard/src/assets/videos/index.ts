@@ -1,3 +1,4 @@
-import MindfullnessVideo from "./Mindfullness.webm";
+import MindfullnessVideo from "./mindfulness.webm";
+import SummaryGenenerationVideo from "./summary-generation.mp4";
 
-export { MindfullnessVideo };
+export { MindfullnessVideo, SummaryGenenerationVideo };

@@ -1,3 +1,5 @@
+import { format } from "date-fns";
+
 /**
  * Converts a date to a formatted time string (e.g., "2:30 PM")
  * @param date - Optional date string or Date object. If not provided, uses current date
@@ -121,4 +123,29 @@ export const convertSecondsToDuration = (totalSeconds?: number): string => {
   return `${hours ? `${hours} hr` : ""}${hours > 1 ? "s" : ""} ${
     minutes ? `${minutes} min` : ""
   }${minutes > 1 ? "s" : ""} ${seconds ? `${seconds} sec` : ""}${seconds > 1 ? "s" : ""}`;
+};
+
+/**
+ * Formats a date-time string according to a specified format string
+ *
+ * @param dateTime - The date-time string to format (ISO string, date string, etc.)
+ * @param formatString - The format string to apply (e.g., 'MMM dd, yyyy', 'HH:mm:ss')
+ * @returns Formatted date string or '--' if dateTime is invalid/empty
+ *
+ * @example
+ * ```typescript
+ * getFormattedDateTime('2024-01-15T10:30:00Z', 'MMM dd, yyyy')
+ * // Returns: 'Jan 15, 2024'
+ *
+ * getFormattedDateTime('2024-01-15T10:30:00Z', 'HH:mm:ss')
+ * // Returns: '10:30:00'
+ *
+ * getFormattedDateTime('', 'MMM dd, yyyy')
+ * // Returns: '--'
+ * ```
+ */
+export const getFormattedDateTime = (dateTime: string, formatString: string) => {
+  if (!dateTime) return "--";
+  const date = new Date(dateTime);
+  return format(date, formatString);
 };

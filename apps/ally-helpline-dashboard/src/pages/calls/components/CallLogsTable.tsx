@@ -19,8 +19,8 @@ import {
 import { Button, TagGroup, FallbackUI, SummaryStatusChip } from "@components";
 import { updateFilters } from "@reducer";
 import { RootState } from "@store";
-import { CallLog, TagDisplay } from "@types";
-import { convertSecondsToDuration, getFormattedDate } from "@utils";
+import { CallLog, ChatSummaryStatus, TagDisplay } from "@types";
+import { convertSecondsToDuration, getFormattedDate, getSummaryEnabledStatus } from "@utils";
 
 import { SummarySideBar } from ".";
 import { CALL_LOGS_PAGINATION_LIMIT, tagColors } from "../constants";
@@ -173,10 +173,10 @@ const CallLogsTable: FC<LogsTableProps> = ({ refreshKey }) => {
       header: "Summary",
       style: { width: "10%" },
       render: (_value, row) => {
-        const isSummaryNull = row.raw.details?.summary === null;
+        const isSummaryEnabled = getSummaryEnabledStatus(row.raw.summaryStatus);
         return (
           <Button
-            disabled={isSummaryNull}
+            disabled={!isSummaryEnabled}
             onClick={() => setCallSummary(row.raw)}
             fullWidth={true}
             variant="icon"
@@ -205,7 +205,8 @@ const CallLogsTable: FC<LogsTableProps> = ({ refreshKey }) => {
     return null;
   };
 
-  const onSummarySubmit = async () => {
+  const onSummarySubmit = async (newStatus?: ChatSummaryStatus) => {
+    if (newStatus && callSummary?.summaryStatus === newStatus) return;
     const chatId = callSummary?.id;
     const response = await refetchCallLogs();
 

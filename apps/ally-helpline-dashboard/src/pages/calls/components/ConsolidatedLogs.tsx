@@ -19,8 +19,8 @@ import {
 import { Button, FallbackUI, TagGroup } from "@components";
 import { updateFilters } from "@reducer";
 import { RootState } from "@store";
-import { CallLog, GetCallLogsInput, TagDisplay } from "@types";
-import { convertSecondsToDuration, getFormattedDate } from "@utils";
+import { CallLog, ChatSummaryStatus, GetCallLogsInput, TagDisplay } from "@types";
+import { convertSecondsToDuration, getFormattedDate, getSummaryEnabledStatus } from "@utils";
 
 import { SummarySideBar } from ".";
 import { CALL_LOGS_PAGINATION_LIMIT, defaultTags, tagColors } from "../constants";
@@ -206,10 +206,10 @@ const ConsolidatedLogs: FC<LogsTableProps> = ({ refreshKey }) => {
       header: "Summary",
       style: { width: "10%" },
       render: (_value, row) => {
-        const isSummaryNull = row.raw.details?.summary === null;
+        const isSummaryEnabled = getSummaryEnabledStatus(row.raw.summaryStatus);
         return (
           <Button
-            disabled={isSummaryNull}
+            disabled={!isSummaryEnabled}
             onClick={() => setCallSummary(row.raw)}
             fullWidth={true}
             variant="icon"
@@ -291,7 +291,8 @@ const ConsolidatedLogs: FC<LogsTableProps> = ({ refreshKey }) => {
     return null;
   };
 
-  const onSummarySubmit = async () => {
+  const onSummarySubmit = async (newStatus?: ChatSummaryStatus) => {
+    if (newStatus && callSummary?.summaryStatus === newStatus) return;
     const chatId = callSummary?.id;
     const response = await refetchCallLogs();
 
@@ -317,8 +318,8 @@ const ConsolidatedLogs: FC<LogsTableProps> = ({ refreshKey }) => {
       {callSummary && callSummary?.id && (
         <SummarySideBar
           callSummary={callSummary}
-          refetchCallLogs={onSummarySubmit}
           setCallSummary={setCallSummary}
+          refetchCallLogs={onSummarySubmit}
         />
       )}
     </>

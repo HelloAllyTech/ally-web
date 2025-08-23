@@ -103,3 +103,9 @@ export enum ChatSummaryStatus {
   SUCCESS = "SUCCESS",
   FAILED = "FAILED",
 }
+
+export const SummaryEnabledStatuses = [
+  ChatSummaryStatus.PENDING,
+  ChatSummaryStatus.IN_PROGRESS,
+  ChatSummaryStatus.SUCCESS,
+];
