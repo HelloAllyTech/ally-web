@@ -95,7 +95,7 @@ const Carousel: FC<CarouselProps> = ({
     }
     switch (size) {
       case CarouselSize.SMALL:
-        styles += " text-[14px]";
+        styles += " text-[16px] px-4";
         break;
       case CarouselSize.LARGE:
         styles += " text-[22px]";
@@ -152,13 +152,15 @@ const Carousel: FC<CarouselProps> = ({
         {slides.map((_, slideIndex) => {
           const isActive = slideIndex === activeIndex;
           return (
-            <span
-              key={getKeyFromIndex(slideIndex, "slide-indicator")}
+            <div
               aria-label={`Go to slide ${slideIndex + 1}`}
               aria-current={isActive}
+              key={getKeyFromIndex(slideIndex, "slide-indicator")}
+              className="h-1 w-4 p-2 cursor-pointer"
               onClick={() => onSelectSlide(slideIndex)}
-              className={`h-1 w-4 transition-colors ${getSliderStyles(isActive)} cursor-pointer`}
-            />
+            >
+              <div className={`h-[2px] w-[8px] transition-colors ${getSliderStyles(isActive)}`} />
+            </div>
           );
         })}
       </div>

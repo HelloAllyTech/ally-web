@@ -148,7 +148,7 @@ const ResourceSearch: FC<ResourceSearchProps> = ({
       );
     }
     if (isLoading && (!resources || resources.length === 0)) {
-      return <SkeletonLoader />;
+      return <SkeletonLoader mode={mode} />;
     } else if (resources && resources.length > 0) {
       return (
         <>

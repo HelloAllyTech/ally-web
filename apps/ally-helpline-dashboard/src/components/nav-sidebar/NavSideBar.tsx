@@ -19,7 +19,7 @@ const UserInfo: FC<{ user?: User }> = ({ user }) => (
     border-b border-b-[#E5E7EB] py-[20px] px-[5px] mx-[15px] gap-[10px] items-center"
   >
     <AccountCircle className="w-[30px] h-[30px]" />
-    <div className="flex flex-col">
+    <div className="flex flex-col font-['IBM_Plex_Serif']">
       <div className="text-[16px] text-gray-800">{user?.name}</div>
       <div className="text-[12px] text-gray-500">{user?.email}</div>
     </div>
@@ -49,7 +49,7 @@ const Tab: FC<TabProps> = ({ id, Icon, title, activeTab, onClick }) => (
     <Icon className={`${activeTab === id ? "stroke-[#000] stroke-[1px]" : ""}`} />
     <div
       className={`${
-        activeTab === id ? "text-[#000] font-[500]" : "text-[#444] font-[400]"
+        activeTab === id ? "text-[#000] font-[500]" : "text-[#6B7280] font-[400]"
       } font-['IBM_Plex_Serif'] text-[16px]`}
     >
       {title}

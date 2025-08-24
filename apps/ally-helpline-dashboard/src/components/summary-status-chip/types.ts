@@ -1,3 +1,5 @@
+import { FunctionComponent, SVGProps } from "react";
+
 import { ChatSummaryStatus } from "@types";
 
 export interface SummaryStatusProps {
@@ -7,6 +9,7 @@ export interface SummaryStatusProps {
 
 export interface StatusConfig {
   label: string;
-  dotClassName: string;
-  outerDivClassName: string;
+  dotClassName?: string;
+  outerDivClassName?: string;
+  icon?: FunctionComponent<SVGProps<SVGSVGElement>>;
 }

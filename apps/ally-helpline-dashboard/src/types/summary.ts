@@ -102,6 +102,7 @@ export enum ChatSummaryStatus {
   IN_PROGRESS = "IN_PROGRESS",
   SUCCESS = "SUCCESS",
   FAILED = "FAILED",
+  NO_AUDIO = "NO_AUDIO",
 }
 
 export const SummaryEnabledStatuses = [

@@ -1,3 +1,4 @@
+import { ErrorIcon } from "@assets";
 import { ChatSummaryStatus } from "@types";
 
 import { StatusConfig } from "./types";
@@ -22,6 +23,11 @@ export const getStatusConfig = (status: ChatSummaryStatus): StatusConfig => {
         label: "Error",
         dotClassName: "bg-[#E5675A]", // Red
         outerDivClassName: "bg-[#FBDED9]", // Light red
+      };
+    case ChatSummaryStatus.NO_AUDIO:
+      return {
+        label: "No audio detected",
+        icon: ErrorIcon,
       };
     default:
       return {

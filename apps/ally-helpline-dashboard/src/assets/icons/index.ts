@@ -39,6 +39,7 @@ import DominantFeelings from "./dominant-feelings.svg?react";
 import Download from "./download.svg?react";
 import Edit from "./edit.svg?react";
 import EndSessionIllustration from "./end-session-illustration.svg?react";
+import ErrorIcon from "./error-icon.svg?react";
 import Flow from "./flow.svg?react";
 import Focus from "./focus.svg?react";
 import HomeworkRecommended from "./homework-recommended.svg?react";
@@ -129,6 +130,7 @@ export {
   Download,
   Edit,
   EndSessionIllustration,
+  ErrorIcon,
   Flow,
   Focus,
   HomeworkRecommended,

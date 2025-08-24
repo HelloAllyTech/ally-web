@@ -139,19 +139,19 @@ const CallLogsTable: FC<LogsTableProps> = ({ refreshKey }) => {
     {
       key: "callName",
       header: "Session ID",
-      style: { width: "15%" },
+      style: { width: "12%" },
       icon: <CallIdIcon />,
     },
     {
       key: "dateAndTime",
       header: "Date & Time",
-      style: { width: "15%" },
+      style: { width: "14%" },
       icon: <DateIcon />,
     },
     {
       key: "duration",
       header: "Duration",
-      style: { width: "15%" },
+      style: { width: "12%" },
       icon: <TimerIcon />,
     },
     {
@@ -164,7 +164,7 @@ const CallLogsTable: FC<LogsTableProps> = ({ refreshKey }) => {
     {
       key: "summaryStatus",
       header: "Summary Status",
-      style: { width: "10%" },
+      style: { width: "16%" },
       render: (_value, row) => <SummaryStatusChip status={row.raw.summaryStatus} />,
       icon: <SummaryGenerationIcon />,
     },
