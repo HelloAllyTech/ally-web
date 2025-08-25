@@ -74,6 +74,7 @@ import StartSession from "./start-session.svg?react";
 import StatsIcon from "./stats.svg?react";
 import StopIcon from "./stop-icon.svg?react";
 import SubjectiveObservations from "./subjective-observations.svg?react";
+import SummaryFailed from "./summary-failed.svg?react";
 import SummaryGeneratedIllustration from "./summary-generated-illustration.svg?react";
 import SummaryGenerationIcon from "./summary-generation-icon.svg?react";
 import TagsIcon from "./tags-icon.svg?react";
@@ -165,6 +166,7 @@ export {
   StatsIcon,
   StopIcon,
   SubjectiveObservations,
+  SummaryFailed,
   SummaryGeneratedIllustration,
   SummaryGenerationIcon,
   Tags,

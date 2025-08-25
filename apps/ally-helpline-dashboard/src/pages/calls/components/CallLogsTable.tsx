@@ -172,19 +172,11 @@ const CallLogsTable: FC<LogsTableProps> = ({ refreshKey }) => {
       key: "summary",
       header: "Summary",
       style: { width: "10%" },
-      render: (_value, row) => {
-        const isSummaryEnabled = getSummaryEnabledStatus(row.raw.summaryStatus);
-        return (
-          <Button
-            disabled={!isSummaryEnabled}
-            onClick={() => setCallSummary(row.raw)}
-            fullWidth={true}
-            variant="icon"
-          >
-            <ReviewIcon />
-          </Button>
-        );
-      },
+      render: (_value, row) => (
+        <Button onClick={() => setCallSummary(row.raw)} fullWidth={true} variant="icon">
+          <ReviewIcon />
+        </Button>
+      ),
       icon: <ReviewIcon />,
     },
   ];

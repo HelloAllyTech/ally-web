@@ -64,7 +64,7 @@ export interface CallSummaryProps {
 }
 
 export interface SummaryLoadingProps {
-  isSummaryGenerated?: boolean;
+  summaryStatus: ChatSummaryStatus;
   estimatedTime?: number;
   isNotesSaving?: boolean;
   onNotesChange?: (notes: string) => void;
