@@ -8,7 +8,7 @@ import { logger } from "@ally-ui-mono/ui-shared";
 import { useEndCallMutation, useLazyGetClientChatQuery, useLazyGetCounsellorChatQuery } from "@api";
 import { NoResults, MindfullnessVideo } from "@assets";
 import { FallbackUI } from "@components";
-import { CallProvider, CallType, ROUTES } from "@constants";
+import { CallProvider, CallType, ROUTES, SESSION_STORAGE_KEYS } from "@constants";
 import { setUserStatus } from "@reducer";
 import { RootState } from "@store";
 import { UserRole, UserStatus, Chat, QueueStatus } from "@types";
@@ -97,6 +97,7 @@ export const AudioCall: FunctionComponent = () => {
     };
 
     if (isActiveMicrophoneSession) {
+      sessionStorage.setItem(SESSION_STORAGE_KEYS.TRANSCRIPTION_GENERATION_VIDEO_SEEN, "false");
       window.addEventListener("beforeunload", handleBeforeUnload);
     }
 
