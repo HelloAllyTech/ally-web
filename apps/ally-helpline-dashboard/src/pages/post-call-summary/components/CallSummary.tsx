@@ -423,7 +423,7 @@ const CallSummary: FC<CallSummaryProps> = ({
 
   return (
     <SummaryLoading
-      isSummaryGenerated={callSummary?.details?.summary}
+      summaryStatus={callSummary?.summaryStatus}
       estimatedTime={getEstimatedSummaryGenerationTime(callSummary?.details?.callDuration)}
       isNotesSaving={isUpdateNotesLoading}
       onNotesChange={handleNotesChange}

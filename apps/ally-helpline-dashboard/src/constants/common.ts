@@ -60,6 +60,10 @@ export const LOCAL_STORAGE_KEYS = {
   USER_STATUS: "userStatus",
 };
 
+export const SESSION_STORAGE_KEYS = {
+  TRANSCRIPTION_GENERATION_VIDEO_SEEN: "transcription-generation-video-seen",
+};
+
 export const AUTH_RETRY_CONFIG = {
   MAX_ATTEMPTS: 4,
   RETRY_DELAY_MS: 1000,
