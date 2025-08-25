@@ -4,6 +4,7 @@ import { CircularProgress, Divider } from "@mui/material";
 import { motion } from "framer-motion";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 
 import { logger, DropdownField } from "@ally-ui-mono/ui-shared";
 import {
@@ -404,7 +405,7 @@ const CallSummary: FC<CallSummaryProps> = ({
               onClick={handleSubmit}
               disabled={isLoading || (isInSidebar && !hasDataChanged())}
             >
-              {isUpdateLoading || isGetTagsLoading ? "Submitting..." : "Submit"}
+              {isUpdateLoading || isGetTagsLoading ? "Saving..." : "Save"}
             </Button>
           </div>
         )}
@@ -414,7 +415,14 @@ const CallSummary: FC<CallSummaryProps> = ({
 
   const retriggerSummary = async () => {
     setCanShowSummary(false);
-    refetchSummary();
+    const result = await refetchSummary();
+    if (
+      [ChatSummaryStatus.PENDING, ChatSummaryStatus.IN_PROGRESS].includes(
+        result?.data?.summaryStatus,
+      )
+    ) {
+      toast.warning("The summary isn't available yet. It will be available shortly.");
+    }
   };
 
   const onViewCallLogs = () => {

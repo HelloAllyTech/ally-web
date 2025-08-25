@@ -15,8 +15,9 @@ import {
   TagsIcon,
   ReviewIcon,
   UserIcon,
+  SummaryGenerationIcon,
 } from "@assets";
-import { Button, FallbackUI, TagGroup } from "@components";
+import { Button, FallbackUI, SummaryStatusChip, TagGroup } from "@components";
 import { updateFilters } from "@reducer";
 import { RootState } from "@store";
 import { CallLog, ChatSummaryStatus, GetCallLogsInput, TagDisplay } from "@types";
@@ -200,6 +201,13 @@ const ConsolidatedLogs: FC<LogsTableProps> = ({ refreshKey }) => {
           label: item,
           value: item,
         })) || defaultTags,
+    },
+    {
+      key: "summaryStatus",
+      header: "Summary Status",
+      style: { width: "16%" },
+      render: (_value, row) => <SummaryStatusChip status={row.raw.summaryStatus} />,
+      icon: <SummaryGenerationIcon />,
     },
     {
       key: "summary",

@@ -50,7 +50,6 @@ import LifelineLogo from "./lifeline-logo.svg?react";
 import Lock from "./lock.svg?react";
 import Logout from "./logout-icon.svg?react";
 import LogoutIllustration from "./logout-illustration.svg?react";
-import LogsIcon from "./logs.svg?react";
 import MenuIcon from "./menu-icon.svg?react";
 import Metrics from "./metrics.svg?react";
 import NoNetwork from "./no-network.svg?react";
@@ -65,6 +64,7 @@ import Refresh from "./refresh.svg?react";
 import ResumeIcon from "./resume-icon.svg?react";
 import ReviewIcon from "./review-icon.svg?react";
 import RoundCheckmark from "./round-checkmark.svg?react";
+import ScribeIcon from "./scribe.svg?react";
 import SearchIcon from "./search.svg?react";
 import SessionSummary from "./session-summary.svg?react";
 import Session from "./session.svg?react";
@@ -142,7 +142,6 @@ export {
   Lock,
   Logout,
   LogoutIllustration,
-  LogsIcon,
   MenuIcon,
   Metrics,
   NoNetwork,
@@ -157,6 +156,7 @@ export {
   ResumeIcon,
   ReviewIcon,
   RoundCheckmark,
+  ScribeIcon,
   SearchIcon,
   Session,
   SessionSummary,

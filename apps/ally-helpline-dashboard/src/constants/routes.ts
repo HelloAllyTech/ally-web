@@ -1,4 +1,4 @@
-import { SearchIcon, LogsIcon, StatsIcon, CommunityIcon } from "@assets/icons";
+import { SearchIcon, StatsIcon, CommunityIcon, ScribeIcon } from "@assets/icons";
 
 import { Permissions } from "./permissions";
 import { TabId } from "./tabs";
@@ -30,7 +30,7 @@ export const navBarOptions = [
   {
     id: TabId.CALLS,
     title: "Scribe",
-    Icon: LogsIcon,
+    Icon: ScribeIcon,
     path: ROUTES.CALLS,
     permission: Permissions.VIEW_NAVBAR_CALLS,
   },
