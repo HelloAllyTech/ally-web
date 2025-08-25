@@ -229,6 +229,7 @@ const CallTranscript: FC<CallTranscriptProps> = ({
       }
     },
     [SocketEvent.DISCONNECT]: (reason?: string) => {
+      cleanupMediaRecorder();
       if (isMicrophoneMode) {
         // Check if it's a network-related disconnection
         const isNetworkIssue =
@@ -241,6 +242,56 @@ const CallTranscript: FC<CallTranscriptProps> = ({
         }
       }
     },
+  };
+
+  const cleanupMediaRecorder = () => {
+    // Stop and cleanup media recorder
+    if (mediaRecorder && mediaRecorder.state !== MediaRecorderState.INACTIVE) {
+      mediaRecorder.stop();
+    }
+
+    // Stop remote media recorder
+    if (remoteMediaRecorder && remoteMediaRecorder.state !== MediaRecorderState.INACTIVE) {
+      remoteMediaRecorder.stop();
+    }
+
+    // Stop all tracks in the local stream
+    if (localStreamRef.current) {
+      localStreamRef.current.getTracks().forEach(track => {
+        track.stop();
+        track.enabled = false;
+      });
+      localStreamRef.current = null;
+    }
+
+    // Stop all tracks in the microphone stream
+    if (microphoneStreamRef.current) {
+      microphoneStreamRef.current.getTracks().forEach(track => {
+        track.stop();
+        track.enabled = false;
+      });
+      microphoneStreamRef.current = null;
+    }
+
+    // Stop all tracks in the remote stream
+    if (remoteStreamRef.current) {
+      remoteStreamRef.current.getTracks().forEach(track => {
+        track.stop();
+        track.enabled = false;
+      });
+      remoteStreamRef.current = new MediaStream();
+    }
+
+    // Close peer connection
+    if (peerConnection) {
+      peerConnection.close();
+    }
+
+    // Clear timeout
+    if (offerTimeoutRef.current) {
+      clearTimeout(offerTimeoutRef.current);
+      offerTimeoutRef.current = null;
+    }
   };
 
   const getConnectionType = () => {
@@ -471,56 +522,6 @@ const CallTranscript: FC<CallTranscriptProps> = ({
       setListenerForEvent(SocketEvent.ICE_CANDIDATE, handleOnIceCandidate);
     }
   }, [handleWebRTCOffer, activeChatId, handleWebRTCAnswer, handleOnIceCandidate]);
-
-  const cleanupMediaRecorder = () => {
-    // Stop and cleanup media recorder
-    if (mediaRecorder && mediaRecorder.state !== MediaRecorderState.INACTIVE) {
-      mediaRecorder.stop();
-    }
-
-    // Stop remote media recorder
-    if (remoteMediaRecorder && remoteMediaRecorder.state !== MediaRecorderState.INACTIVE) {
-      remoteMediaRecorder.stop();
-    }
-
-    // Stop all tracks in the local stream
-    if (localStreamRef.current) {
-      localStreamRef.current.getTracks().forEach(track => {
-        track.stop();
-        track.enabled = false;
-      });
-      localStreamRef.current = null;
-    }
-
-    // Stop all tracks in the microphone stream
-    if (microphoneStreamRef.current) {
-      microphoneStreamRef.current.getTracks().forEach(track => {
-        track.stop();
-        track.enabled = false;
-      });
-      microphoneStreamRef.current = null;
-    }
-
-    // Stop all tracks in the remote stream
-    if (remoteStreamRef.current) {
-      remoteStreamRef.current.getTracks().forEach(track => {
-        track.stop();
-        track.enabled = false;
-      });
-      remoteStreamRef.current = new MediaStream();
-    }
-
-    // Close peer connection
-    if (peerConnection) {
-      peerConnection.close();
-    }
-
-    // Clear timeout
-    if (offerTimeoutRef.current) {
-      clearTimeout(offerTimeoutRef.current);
-      offerTimeoutRef.current = null;
-    }
-  };
 
   const confirmEndSession = async (triggerApi: boolean = true) => {
     try {

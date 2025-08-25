@@ -28,7 +28,7 @@ const CallSidebar: FC<CallSidebarProps> = ({
 
   // Add this effect to scroll to bottom when nudges change
   useEffect(() => {
-    if (nudgesContainerRef.current && isFocusMode) {
+    if (nudgesContainerRef.current && !isFocusMode) {
       nudgesContainerRef.current.scrollTop = nudgesContainerRef.current.scrollHeight;
     }
   }, [nudges, isFocusMode]);
@@ -102,10 +102,10 @@ const CallSidebar: FC<CallSidebarProps> = ({
       {showSidebar && (
         <motion.div
           initial={{ width: 0 }}
-          animate={{ width: isFocusMode ? "70%" : 0 }}
+          animate={{ width: isFocusMode ? 0 : "70%" }}
           exit={{ width: 0 }}
           transition={{ duration: 0.3, ease: "easeInOut" }}
-          className="h-full bg-[#17181A] overflow-hidden border-l-[0.5px] border-l-[#5A5F6A]"
+          className="h-full bg-[#17181A] overflow-hidden border-l-[0.5px] border-l-[#5A5F6A] z-20"
         >
           <div className="h-14 px-4 flex justify-between items-center">
             <div />

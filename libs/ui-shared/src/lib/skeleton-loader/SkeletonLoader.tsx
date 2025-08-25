@@ -1,9 +1,8 @@
 import { FC } from "react";
 
-import { SearchVariant } from "@ally-ui-mono/ui-shared/types";
-
 import { skeletonLoaderStyles } from "./constants";
 import { SkeletonLoaderProps } from "./types";
+import { SearchVariant } from "../../types";
 
 /**
  * SkeletonLoader component displays a loading skeleton UI for resource lists and headers.

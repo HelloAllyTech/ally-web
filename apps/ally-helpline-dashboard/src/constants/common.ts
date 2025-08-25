@@ -145,11 +145,23 @@ export const CAROUSEL_SLIDES: CarouselSlideType[] = [
   },
 ];
 
-export const TOOLTIP_PROPS = {
+export const TOOLTIP_LIGHT_PROPS = {
   tooltip: {
     sx: {
       backgroundColor: "#FFFFFF",
       color: "#1D1B20",
+      fontSize: "12px",
+      maxWidth: "400px",
+      zIndex: 1000,
+    },
+  },
+};
+
+export const TOOLTIP_DARK_PROPS = {
+  tooltip: {
+    sx: {
+      backgroundColor: "#1C1B1F",
+      color: "white",
       fontSize: "12px",
       maxWidth: "400px",
       zIndex: 1000,

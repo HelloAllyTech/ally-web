@@ -33,7 +33,7 @@ const CallControls: FC<CallControlsProps> = ({
       isDisabled: isFocusButtonDisabled,
       leftIcon: <Focus className={isFocusMode ? "" : "[&_path]:fill-[#FFFFFF]"} />,
       show: showFocusButton,
-      text: "Focused",
+      text: isFocusMode ? "Focused" : "Focus",
     },
     {
       action: onEndSessionClick,

@@ -6,7 +6,7 @@ import { X } from "lucide-react";
 import { LiveAudioVisualizer } from "react-audio-visualize";
 
 import { Lock, WarningTriangle } from "@assets";
-import { CallProvider, TOOLTIP_PROPS } from "@constants";
+import { CallProvider, TOOLTIP_LIGHT_PROPS } from "@constants";
 
 import { ErrorScreen } from ".";
 import { CallInterfaceProps } from "../types";
@@ -68,7 +68,9 @@ const CallInterface: FC<CallInterfaceProps> = ({
     if (socketDisconnectionReason) {
       return <ErrorScreen socketDisconnectionReason={socketDisconnectionReason} />;
     }
-    if (isUserJoined === false) {
+    if (isUserJoined === false && isMicrophoneMode) {
+      message = "Connecting to your session...";
+    } else if (isUserJoined === false) {
       message = isCounsellor ? "Participant left the call" : "Counsellor left the call";
     } else if (!isUserJoined) {
       message = isCounsellor ? "Session is starting now.." : "Connecting to your counsellor...";
@@ -82,7 +84,7 @@ const CallInterface: FC<CallInterfaceProps> = ({
         transition={{ duration: 0.5 }}
       >
         <div className="text-white text-4xl font-normal">{message}</div>
-        {!(isUserJoined == null) && (
+        {isUserJoined === false && !isMicrophoneMode && (
           <div className="text-white text-sm text-center mt-1">
             You can wait for them to rejoin or end the call.
           </div>
@@ -117,7 +119,12 @@ const CallInterface: FC<CallInterfaceProps> = ({
           )}
           <div className="text-white flex justify-center items-center flex-col gap-2">
             <div className="flex items-center gap-2 font-['IBM_Plex_Serif'] font-medium">
-              <Tooltip title={<PrivacyTooltip />} placement="top" arrow slotProps={TOOLTIP_PROPS}>
+              <Tooltip
+                title={<PrivacyTooltip />}
+                placement="top"
+                arrow
+                slotProps={TOOLTIP_LIGHT_PROPS}
+              >
                 <span>
                   <Lock />
                 </span>
