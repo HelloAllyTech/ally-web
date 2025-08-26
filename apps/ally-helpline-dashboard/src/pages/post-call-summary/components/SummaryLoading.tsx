@@ -1,4 +1,4 @@
-import { FC, useEffect, useRef, useState } from "react";
+import { FC, useEffect, useState } from "react";
 
 import { CircularProgress, Tooltip } from "@mui/material";
 import { Check, Info, CircleX } from "lucide-react";
