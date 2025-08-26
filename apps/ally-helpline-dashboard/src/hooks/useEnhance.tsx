@@ -105,7 +105,7 @@ export const useEnhance = () => {
         }`}
       onClick={() => triggerEnhance(fieldName, inputText, updateValue)}
     >
-      <div className="border-[0.5px] border-[#49454F] rounded-[100%] p-2 cursor-pointer bg-white">
+      <div className="border-[0.5px] border-[#49454F] rounded-full p-2 cursor-pointer bg-white">
         <Enhance />
       </div>
     </div>
