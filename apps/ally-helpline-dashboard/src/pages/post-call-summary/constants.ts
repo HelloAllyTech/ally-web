@@ -25,8 +25,8 @@ export const summaryTabs = [
     value: SectionType.BoxBreathing,
   },
   {
-    label: "Call Summary",
-    value: SectionType.CallSummary,
+    label: "Session summary",
+    value: SectionType.SessionSummary,
   },
 ];
 
@@ -406,7 +406,7 @@ export const labelShownSections = [
   SummarySectionKey.Metrics,
 ];
 
-export const postCallSectionOrder = [SectionType.BoxBreathing, SectionType.CallSummary];
+export const postCallSectionOrder = [SectionType.BoxBreathing, SectionType.SessionSummary];
 
 export const SectionQueryKey = "section";
 

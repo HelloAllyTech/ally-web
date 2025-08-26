@@ -20,7 +20,7 @@ export const PostCallSummary = () => {
 
   const { availableChatTypes, updateUserStatus, userStatus } = useUser();
 
-  const [selectedTab, setSelectedTab] = useState<SectionType>(SectionType.CallSummary);
+  const [selectedTab, setSelectedTab] = useState<SectionType>(SectionType.SessionSummary);
 
   useEffect(() => {
     const sectionNumber = Number(searchParams.get(SectionQueryKey) ?? "1");
@@ -28,7 +28,7 @@ export const PostCallSummary = () => {
   }, [searchParams]);
 
   const gotoSummaryTab = () => {
-    onTabChange(null, SectionType.CallSummary);
+    onTabChange(null, SectionType.SessionSummary);
   };
 
   // TODO: Remove once WEBRTC is removed
@@ -42,7 +42,7 @@ export const PostCallSummary = () => {
     switch (selectedTab) {
       case SectionType.BoxBreathing:
         return <StressBusterStep onProceed={gotoSummaryTab} />;
-      case SectionType.CallSummary:
+      case SectionType.SessionSummary:
         return (
           <CallSummary
             className="max-h-[calc(100vh-250px)]"
