@@ -47,7 +47,7 @@ export const Calls: FC = () => {
               onClick={handleRefresh}
             />
           </div>
-          {availableChatTypes?.includes(CallType.MICROPHONE_CHAT) && (
+          {!isAdmin && availableChatTypes?.includes(CallType.MICROPHONE_CHAT) && (
             <Button onClick={handleStartSession}>
               <StartSession />
               Start Session
