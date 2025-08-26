@@ -1,8 +1,10 @@
 "use client";
 import React from "react";
+
 import { Popover, TextField } from "@mui/material";
-import { FilterPopoverProps, FilterType } from "./types";
+
 import DateFilterUI from "./DateFilterUI";
+import { FilterPopoverProps, FilterType } from "./types";
 
 /**
  * Props for the FilterPopover component.

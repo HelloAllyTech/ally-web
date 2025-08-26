@@ -14,14 +14,14 @@ import {
   PlansForNextCall,
   Tags,
   Metrics,
-} from "@/assets/icons";
-import { SummaryFieldKey } from "@/types/summary";
+} from "@assets/icons";
+import { SummaryFieldKey } from "@types";
 
-import { SectionType, SummaryField, SummarySectionKey } from "./types";
+import { FieldType, SectionType, SummaryField, SummarySectionKey } from "./types";
 
 export const summaryTabs = [
   {
-    label: "Stress Buster",
+    label: "Return to Self",
     value: SectionType.BoxBreathing,
   },
   {
@@ -160,49 +160,49 @@ export const summaryFields: SummaryField[] = [
     key: SummaryFieldKey.CallId,
     label: "Call ID",
     sectionKey: SummarySectionKey.FeaturesAndDemographics,
-    type: "Text",
+    type: FieldType.Text,
   },
   {
     isEditable: false,
     key: SummaryFieldKey.CallDuration,
     label: "Call Duration",
     sectionKey: SummarySectionKey.FeaturesAndDemographics,
-    type: "Text",
+    type: FieldType.Text,
   },
   {
     isEditable: false,
     key: SummaryFieldKey.CallDate,
     label: "Call Date",
     sectionKey: SummarySectionKey.FeaturesAndDemographics,
-    type: "Text",
+    type: FieldType.Text,
   },
   {
     isEditable: false,
     key: SummaryFieldKey.CallTime,
     label: "Call time",
     sectionKey: SummarySectionKey.FeaturesAndDemographics,
-    type: "Text",
+    type: FieldType.Text,
   },
   {
     isEditable: false,
     key: SummaryFieldKey.ClientId,
     label: "Caller ID",
     sectionKey: SummarySectionKey.FeaturesAndDemographics,
-    type: "Text",
+    type: FieldType.Text,
   },
   {
     isEditable: false,
     key: SummaryFieldKey.CounsellorName,
     label: "Counsellor Name",
     sectionKey: SummarySectionKey.FeaturesAndDemographics,
-    type: "Text",
+    type: FieldType.Text,
   },
   {
     isEditable: false,
     key: SummaryFieldKey.CallType,
     label: "Caller type",
     sectionKey: SummarySectionKey.FeaturesAndDemographics,
-    type: "Text",
+    type: FieldType.Text,
   },
   {
     isEditable: true,
@@ -210,7 +210,7 @@ export const summaryFields: SummaryField[] = [
     label: "Age",
     options: ["18-24", "25-34", "35-44", "45-54", "55-64", "65+"],
     sectionKey: SummarySectionKey.FeaturesAndDemographics,
-    type: "Dropdown",
+    type: FieldType.Dropdown,
   },
   {
     isEditable: true,
@@ -218,28 +218,28 @@ export const summaryFields: SummaryField[] = [
     label: "Gender",
     options: ["Male", "Female", "Non-binary", "Client Prefers Not to Say"],
     sectionKey: SummarySectionKey.FeaturesAndDemographics,
-    type: "Dropdown",
+    type: FieldType.Dropdown,
   },
   {
     isEditable: true,
     key: SummaryFieldKey.Profession,
     label: "Profession",
     sectionKey: SummarySectionKey.FeaturesAndDemographics,
-    type: "Text",
+    type: FieldType.Text,
   },
   {
     isEditable: true,
     key: SummaryFieldKey.RelationshipStatus,
     label: "Relationship status",
     sectionKey: SummarySectionKey.FeaturesAndDemographics,
-    type: "Text",
+    type: FieldType.Text,
   },
   {
     isEditable: false,
     key: SummaryFieldKey.Languages,
     label: "Languages",
     sectionKey: SummarySectionKey.FeaturesAndDemographics,
-    type: "Text",
+    type: FieldType.Text,
   },
   {
     isEditable: true,
@@ -247,14 +247,14 @@ export const summaryFields: SummaryField[] = [
     label: "Location",
     options: [],
     sectionKey: SummarySectionKey.FeaturesAndDemographics,
-    type: "Dropdown",
+    type: FieldType.Dropdown,
   },
   {
     isEditable: true,
     key: SummaryFieldKey.CodeOfConcern,
     label: "Concern code",
     sectionKey: SummarySectionKey.FeaturesAndDemographics,
-    type: "Text",
+    type: FieldType.Text,
   },
 
   // Other fields
@@ -265,7 +265,7 @@ export const summaryFields: SummaryField[] = [
     label: "Session Summary",
     placeholder: "Add a quick summary of the session's key themes and takeaways here.",
     sectionKey: SummarySectionKey.SessionSummary,
-    type: "Multiline",
+    type: FieldType.Multiline,
   },
   {
     isEditable: true,
@@ -275,7 +275,7 @@ export const summaryFields: SummaryField[] = [
     placeholder:
       "Capture the flow of conversation, reflections, or shifts in the client’s mood here.",
     sectionKey: SummarySectionKey.Flow,
-    type: "Multiline",
+    type: FieldType.Multiline,
   },
   {
     isEditable: true,
@@ -284,7 +284,7 @@ export const summaryFields: SummaryField[] = [
     label: "Key concerns",
     placeholder: "List any main concerns or stressors raised by the client in this session.",
     sectionKey: SummarySectionKey.KeyConcerns,
-    type: "Multiline",
+    type: FieldType.Multiline,
   },
   {
     isEditable: true,
@@ -293,7 +293,7 @@ export const summaryFields: SummaryField[] = [
     label: "Objective Observations",
     placeholder: "Note factual observations or statements made by the client here.",
     sectionKey: SummarySectionKey.ObjectiveObservations,
-    type: "Multiline",
+    type: FieldType.Multiline,
   },
   {
     isEditable: true,
@@ -302,7 +302,7 @@ export const summaryFields: SummaryField[] = [
     label: "Subjective Observations",
     placeholder: "Use this space for your impressions, intuitions, or emotional insights.",
     sectionKey: SummarySectionKey.SubjectiveObservations,
-    type: "Multiline",
+    type: FieldType.Multiline,
   },
   {
     isEditable: true,
@@ -311,7 +311,7 @@ export const summaryFields: SummaryField[] = [
     label: "Assessment",
     placeholder: "Summarize your overall take or clinical impression from today’s session.",
     sectionKey: SummarySectionKey.Assessment,
-    type: "Multiline",
+    type: FieldType.Multiline,
   },
   {
     isEditable: true,
@@ -320,7 +320,7 @@ export const summaryFields: SummaryField[] = [
     label: "Dominant Feelings",
     placeholder: "Highlight any emotions that stood out strongly during the session.",
     sectionKey: SummarySectionKey.DominantFeelings,
-    type: "Multiline",
+    type: FieldType.Multiline,
   },
   {
     isEditable: true,
@@ -329,7 +329,7 @@ export const summaryFields: SummaryField[] = [
     label: "Issues Worked On",
     placeholder: "Mention what was explored or worked on during the session.",
     sectionKey: SummarySectionKey.IssuesWorkedOn,
-    type: "Multiline",
+    type: FieldType.Multiline,
   },
   {
     isEditable: true,
@@ -338,7 +338,7 @@ export const summaryFields: SummaryField[] = [
     label: "Key Therapeutic Techniques",
     placeholder: "Note any tools, frameworks, or strategies applied in the session.",
     sectionKey: SummarySectionKey.KeyTherapeuticTechniques,
-    type: "Multiline",
+    type: FieldType.Multiline,
   },
   {
     isEditable: true,
@@ -347,7 +347,7 @@ export const summaryFields: SummaryField[] = [
     label: "Referrals Provided",
     placeholder: "Note any internal or external referrals or resources shared with the client.",
     sectionKey: SummarySectionKey.ReferralsProvided,
-    type: "Multiline",
+    type: FieldType.Multiline,
   },
   {
     isEditable: true,
@@ -356,7 +356,7 @@ export const summaryFields: SummaryField[] = [
     label: "Homework Recommended",
     placeholder: "Add suggestions or tasks for the client to work on between sessions.",
     sectionKey: SummarySectionKey.HomeworkRecommended,
-    type: "Multiline",
+    type: FieldType.Multiline,
   },
   {
     isEditable: true,
@@ -365,7 +365,7 @@ export const summaryFields: SummaryField[] = [
     label: "Plans for Next Call",
     placeholder: "Mention goals or topics to revisit in the next session.",
     sectionKey: SummarySectionKey.PlansForNextCall,
-    type: "Multiline",
+    type: FieldType.Multiline,
   },
   {
     isEditable: true,
@@ -374,7 +374,7 @@ export const summaryFields: SummaryField[] = [
     label: "Tags",
     placeholder: "Add keywords to help organize or categorize this session.",
     sectionKey: SummarySectionKey.Tags,
-    type: "Multiline",
+    type: FieldType.Multiline,
   },
 
   // Metrics section
@@ -383,21 +383,21 @@ export const summaryFields: SummaryField[] = [
     key: SummaryFieldKey.ListeningShare,
     label: "Listening Ratio",
     sectionKey: SummarySectionKey.Metrics,
-    type: "Text",
+    type: FieldType.Text,
   },
   {
     isEditable: false,
     key: SummaryFieldKey.ReflectiveQuestionsAsked,
     label: "No of Reflective Questions asked",
     sectionKey: SummarySectionKey.Metrics,
-    type: "Text",
+    type: FieldType.Text,
   },
   {
     isEditable: false,
     key: SummaryFieldKey.EmotionalLift,
     label: "Emotions Lift",
     sectionKey: SummarySectionKey.Metrics,
-    type: "Text",
+    type: FieldType.Text,
   },
 ];
 
@@ -407,3 +407,23 @@ export const labelShownSections = [
 ];
 
 export const postCallSectionOrder = [SectionType.BoxBreathing, SectionType.CallSummary];
+
+export const SectionQueryKey = "section";
+
+export const PostCallProcessingMessages = [
+  "Generating transcription",
+  "Deleting audio",
+  "Segregating utterances",
+  "Understanding conversation",
+  "Charting flow",
+  "Extracting key points",
+  "Identifying themes",
+  "Analysing",
+  "Generating summary",
+  "Enriching summary",
+  "Validating summary",
+];
+
+// TODO: Decide on  a format for const files
+// Start index of sumamry message that should be loopedß
+export const SUMMARY_GENERATION_START_INDEX = 8;

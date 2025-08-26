@@ -1,27 +1,14 @@
-import { CALL_LOGS_PAGINATION_LIMIT } from "@/pages/calls/constants";
 import { createSlice } from "@reduxjs/toolkit";
 
-interface CallsState {
-  filters: {
-    page?: number;
-    offset?: number;
-    limit?: number;
-    sortBy?: string;
-    order?: "ASC" | "DESC";
-    counsellorName?: string;
-    clientId?: string;
-    startDate?: string;
-    endDate?: string;
-    minDuration?: number;
-    maxDuration?: number;
-    minQualityScore?: number;
-    maxQualityScore?: number;
-    tags?: string;
-  };
-}
+import { CALL_LOGS_PAGINATION_LIMIT } from "@pages/calls/constants";
+import { CallsState } from "@types";
 
-export type { CallsState };
-
+/*
+  This reducer is used to manage the state of the calls page.
+  It is used to store the filters for the calls page.
+  It is used to store the page number for the calls page.
+  It is used to store the filters for the calls page.
+*/
 const initialState: CallsState = {
   filters: {
     offset: 0,

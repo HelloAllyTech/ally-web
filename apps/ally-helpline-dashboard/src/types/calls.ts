@@ -1,4 +1,4 @@
-import { CallType } from "@/constants/call";
+import { ChatSummaryStatus } from "./summary";
 
 interface CallClient {
   createdAt: string;
@@ -21,6 +21,7 @@ export interface CallLog {
   clientId: number;
   counselorId: number;
   status: string;
+  summaryStatus: ChatSummaryStatus;
   startedAt: string;
   endedAt: string;
   details: any;

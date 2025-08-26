@@ -1,12 +1,13 @@
-import { useSelector } from "react-redux";
 import { FunctionComponent } from "react";
 
-import { UserRole } from "@/types/user";
-import { RootState } from "@/store/store";
+import { useSelector } from "react-redux";
+
+import { RootState } from "@store";
+import { UserRole } from "@types";
 
 import { OrgAnalytics, UserAnalytics } from "./components";
 
-const Analytics: FunctionComponent = () => {
+export const Analytics: FunctionComponent = () => {
   const user = useSelector((state: RootState) => state.user.user);
 
   return (
@@ -15,5 +16,3 @@ const Analytics: FunctionComponent = () => {
     </div>
   );
 };
-
-export default Analytics;

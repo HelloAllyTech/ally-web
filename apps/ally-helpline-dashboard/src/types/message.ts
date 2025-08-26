@@ -1,3 +1,5 @@
+import { CallProvider } from "@constants";
+
 import { User } from "./user";
 
 export interface IceServer {
@@ -36,7 +38,7 @@ export interface Chat {
   messages: ChatMessage[];
   startedAt: string;
   status: ChatStatus;
-  provider: "WEBRTC" | "MICROPHONE";
+  provider: CallProvider;
   platform: "WEB" | "MOBILE";
 }
 
@@ -100,6 +102,7 @@ export enum SocketEvent {
   USER_DISCONNECTED = "USER_DISCONNECTED",
   SESSION_CREATED = "SESSION_CREATED",
   AUDIO_CHAT_ENDED = "AUDIO_CHAT_ENDED",
+  AUDIO_STREAM = "AUDIO_STREAM",
   DISCONNECT = "disconnect",
 }
 

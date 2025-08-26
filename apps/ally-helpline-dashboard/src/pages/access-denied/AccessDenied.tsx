@@ -1,7 +1,7 @@
-import { FallbackUI } from "@/components";
-import { NoResults } from "@/assets/icons";
+import { NoResults } from "@assets";
+import { FallbackUI } from "@components";
 
-const AccessDenied = () => (
+export const AccessDenied = () => (
   <div className="h-[90vh] flex items-center justify-center">
     <FallbackUI
       image={<NoResults />}
@@ -10,5 +10,3 @@ const AccessDenied = () => (
     />
   </div>
 );
-
-export default AccessDenied;

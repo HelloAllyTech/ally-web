@@ -1,6 +1,7 @@
 "use client"; // Error boundaries must be Client Components
 
 import { useEffect } from "react";
+
 import { logger } from "@ally-ui-mono/ui-shared";
 
 export default function Error({ error }: { error: Error & { digest?: string } }) {

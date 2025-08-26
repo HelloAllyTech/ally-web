@@ -1,10 +1,12 @@
 import { FC, useEffect, useState } from "react";
-import { Divider } from "@mui/material";
-import { useSelector } from "react-redux";
 
-import { RootState } from "@/store/store";
-import { DropdownField } from "@ally-ui-mono/ui-shared";
-import { Accordion, TextField, Button } from "@/components";
+import { CircularProgress, Divider } from "@mui/material";
+import { motion } from "framer-motion";
+import { useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
+
+import { logger, DropdownField } from "@ally-ui-mono/ui-shared";
 import {
   useGetSummaryFieldsQuery,
   useUpdateCallSummaryMutation,
@@ -12,46 +14,53 @@ import {
   useGetLocationsQuery,
   useLazySearchLocationsQuery,
   useUpdateCallSummaryNotesMutation,
-} from "@/api/callSummary";
-import { useEnhance } from "@/hooks";
-import { SummaryFieldKey, Tag } from "@/types/summary";
-import { UserRole } from "@/types/user";
-import { LanguageMap } from "@/constants/common";
-import { logger } from "@ally-ui-mono/ui-shared";
-import { useDebounce } from "@/hooks/useDebounce";
-import { Assessment } from "@/assets/icons";
+  useGetCallSummaryQuery,
+} from "@api";
+import { Assessment, Warning } from "@assets";
+import { Accordion, TextField, Button, InfoBanner } from "@components";
+import { LanguageMap, ROUTES } from "@constants";
+import { useEnhance, useDebounce } from "@hooks";
+import { RootState } from "@store";
+import { ChatSummaryStatus, SummaryFieldKey, Tag, UserRole } from "@types";
+import { getEstimatedSummaryGenerationTime, getFormattedDateTime } from "@utils";
 
-import { labelShownSections, summarySections } from "../constants";
-import { CallSummaryProps, SummaryField, SummarySectionKey } from "../types";
-import { getFormattedDateTime, getSectionFields } from "../helper";
 import { SummaryLoading } from ".";
+import { labelShownSections, summarySections } from "../constants";
+import { CallSummaryProps, FieldType, SummaryField, SummarySectionKey } from "../types";
+import { getSectionFields } from "../utils";
+
+// TODO: Keep it outside the pages since two pages are using this componentß
 
 const CallSummary: FC<CallSummaryProps> = ({
-  onClickViewSummary,
-  callSummary,
   chatId,
-  isSummaryLoading,
-  onProceed,
   isInSidebar = false,
-  isSummaryPolling = false,
   className,
-  fromSummarySidebar = false,
+  headerContent,
+  postProcess,
 }) => {
   const { user } = useSelector((state: RootState) => state.user);
-
-  const initialNotes = callSummary?.details?.callInfo?.notes || "";
 
   const [summaryData, setSummaryData] = useState(null);
   const [searchedLocations, setSearchedLocations] = useState(null);
 
+  const initialNotes = summaryData?.details?.callInfo?.notes || "";
+
+  const navigate = useNavigate();
+
+  const {
+    data: callSummary,
+    refetch: refetchSummary,
+    isLoading: isSummaryLoading,
+  } = useGetCallSummaryQuery(chatId);
   const { data: visibleFields, isLoading: isGetSummaryFieldsLoading } = useGetSummaryFieldsQuery();
   const [updateCallSummary, { isLoading: isUpdateLoading }] = useUpdateCallSummaryMutation();
   const [getTags, { isLoading: isGetTagsLoading }] = useGetTagsMutation();
   const { data: locations, isLoading: isGetLocationsLoading } = useGetLocationsQuery();
   const [searchLocations, { isLoading: isSearchLocationsLoading }] = useLazySearchLocationsQuery();
-  const [updateCallSummaryNotes] = useUpdateCallSummaryNotesMutation();
-  const [canShowSummary, setCanShowSummary] = useState(fromSummarySidebar);
-  const [notes, setNotes] = useState(initialNotes);
+  const [updateCallSummaryNotes, { isLoading: isUpdateNotesLoading }] =
+    useUpdateCallSummaryNotesMutation();
+  const [canShowSummary, setCanShowSummary] = useState<boolean>(true);
+  const [notes, setNotes] = useState<string>(initialNotes);
 
   const { enhancing, EnhanceButton, EnhancementLoadingSkeleton, isEnhanceLoading } = useEnhance();
 
@@ -66,14 +75,20 @@ const CallSummary: FC<CallSummaryProps> = ({
     isSearchLocationsLoading;
 
   useEffect(() => {
-    if (callSummary?.details?.summary) {
+    if (callSummary?.summaryStatus === ChatSummaryStatus.SUCCESS) {
       const tags = callSummary.details.summary?.tags;
       setSummaryData({
         ...callSummary.details.summary,
         tags: tags?.map(({ tag }) => tag).join(", "),
       });
+      if (isInSidebar) {
+        postProcess?.(ChatSummaryStatus.SUCCESS);
+      }
+      setTimeout(() => {
+        setCanShowSummary(true);
+      }, 4000);
     }
-  }, [callSummary]);
+  }, [callSummary?.summaryStatus, isInSidebar]);
 
   useEffect(() => {
     if (initialNotes?.length > 0) {
@@ -104,7 +119,7 @@ const CallSummary: FC<CallSummaryProps> = ({
 
   const getFieldValue = (key: string, type: string) => {
     if (!summaryData) {
-      return type !== "Dropdown" ? "--" : "";
+      return type !== FieldType.Dropdown ? "--" : "";
     }
     switch (key) {
       case SummaryFieldKey.CallId:
@@ -148,7 +163,7 @@ const CallSummary: FC<CallSummaryProps> = ({
   const getFieldDisplay = (field: SummaryField) => {
     const value = getFieldValue(field.key, field.type);
     switch (field.type) {
-      case "Dropdown":
+      case FieldType.Dropdown:
         return (
           <div key={field.key} className="flex gap-1">
             <span className="font-medium text-[16px] text-[#6B7280]">{`${field.label}: `}</span>
@@ -163,7 +178,7 @@ const CallSummary: FC<CallSummaryProps> = ({
             />
           </div>
         );
-      case "Multiline":
+      case FieldType.Multiline:
         return (
           <div key={field.key} className="flex flex-col gap-1">
             {labelShownSections?.includes(field.sectionKey) && (
@@ -207,8 +222,8 @@ const CallSummary: FC<CallSummaryProps> = ({
             />
           </div>
         );
-      case "Number":
-      case "Text":
+      case FieldType.Number:
+      case FieldType.Text:
       default:
         return (
           <div key={field.key}>
@@ -274,37 +289,29 @@ const CallSummary: FC<CallSummaryProps> = ({
   };
 
   const handleSubmit = async () => {
-    // Only proceed if data has actually changed
-    if (!hasDataChanged()) {
-      logger.info("No changes detected in summary data, skipping update");
-      onProceed();
-      return;
-    }
-
-    const tags = summaryData?.tags?.split(", ");
-    let tagsInput: Tag[] = [];
-    if (tags?.length > 0) {
-      const response = await getTags({ tags });
-      if (response.error) {
-        logger.info(`Error getting tags: ${response.error}`);
-      } else if (response.data) {
-        tagsInput = response.data;
+    if (hasDataChanged()) {
+      const tags = summaryData?.tags?.split(", ");
+      let tagsInput: Tag[] = [];
+      if (tags?.length > 0) {
+        const response = await getTags({ tags });
+        if (response.error) {
+          logger.info(`Error getting tags: ${response.error}`);
+        } else if (response.data) {
+          tagsInput = response.data;
+        }
+      }
+      try {
+        await updateCallSummary({
+          chatId,
+          data: { summary: { ...summaryData, tags: tagsInput } },
+        });
+      } catch (error) {
+        logger.info(`Error updating call summary:, ${error}`);
       }
     }
-    try {
-      await updateCallSummary({
-        chatId,
-        data: { summary: { ...summaryData, tags: tagsInput } },
-      });
-      onProceed();
-    } catch (error) {
-      logger.info(`Error updating call summary:, ${error}`);
-    }
-  };
-
-  const onViewSummary = () => {
-    onClickViewSummary?.();
-    setCanShowSummary(true);
+    postProcess?.();
+    if (!isInSidebar) navigate(ROUTES.CALLS, { state: { refetch: true } });
+    return;
   };
 
   const debouncedUpdateNotes = useDebounce((notes: string) => {
@@ -319,48 +326,86 @@ const CallSummary: FC<CallSummaryProps> = ({
     debouncedUpdateNotes(newNotes);
   };
 
+  if (canShowSummary && isSummaryLoading) {
+    return (
+      <div className="flex justify-center items-center h-[calc(100vh-80px)]">
+        <CircularProgress />
+      </div>
+    );
+  }
+
   if (canShowSummary && callSummary?.details?.summary) {
     return (
       <>
-        <div className={`overflow-y-auto font-['IBM_Plex_Serif'] pb-[40px] ${className}`}>
-          {summarySections.map(({ title, icon, key }) => {
+        <InfoBanner
+          message="This summary has been generated by AI. Ally AI can make mistakes. Review and edit important info before saving the summary."
+          icon={() => (
+            <Warning className="border-[#EC930F] border-[0.5px] rounded-[100px] p-2 w-8 h-8 shadow-lg" />
+          )}
+          wrapperClassName="border-[#EC930F] bg-[#FDF8E4]"
+          messageClassName="text-[#873200]"
+        />
+        {headerContent}
+        <div className={`overflow-y-auto font-['IBM_Plex_Serif'] pb-[60px] ${className}`}>
+          {summarySections.map(({ title, icon, key }, index) => {
             const sectionFields = getSectionFields(key, visibleFields);
             if (sectionFields?.length === 0) return null;
 
             return (
-              <Accordion
+              <motion.div
                 key={key}
-                title={title}
-                titleIcon={icon}
-                defaultExpanded={[
-                  SummarySectionKey.FeaturesAndDemographics,
-                  SummarySectionKey.SessionSummary,
-                ]?.includes(key)}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{
+                  duration: 0.4,
+                  delay: index * 0.1,
+                  ease: "easeOut",
+                }}
               >
-                {sectionFields.map(field => getFieldDisplay(field))}
-              </Accordion>
+                <Accordion
+                  title={title}
+                  titleIcon={icon}
+                  defaultExpanded={[
+                    SummarySectionKey.FeaturesAndDemographics,
+                    SummarySectionKey.SessionSummary,
+                  ]?.includes(key)}
+                >
+                  {sectionFields.map(field => getFieldDisplay(field))}
+                </Accordion>
+              </motion.div>
             );
           })}
-          {/* TO DO: For now Additional Notes is not conditionally rendered, because it is not generated by the AI. In future, we will conditionally render this accordion based on the notes field */}
-          <Accordion
+          {/* TO DO: For now Additional Notes is not conditionally rendered, because it is not generated by the AI( and not involved in config).
+          In future, we will conditionally render this accordion based on the notes field */}
+          <motion.div
             key="notes"
-            title="Additional Notes"
-            titleIcon={{ icon: Assessment, alt: "Notes" }}
-            defaultExpanded={false}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{
+              duration: 0.4,
+              delay: ((summarySections?.length ?? 0) + 1) * 0.1,
+              ease: "easeOut",
+            }}
           >
-            <div className="text-[16px] font-['IBM_Plex_Serif'] text-[#6B7280] mb-[8px]">
-              {callSummary?.details?.callInfo?.notes || "--"}
-            </div>
-          </Accordion>
+            <Accordion
+              key="notes"
+              title="Additional Notes"
+              titleIcon={{ icon: Assessment, alt: "Notes" }}
+              defaultExpanded={false}
+            >
+              <div className="text-[16px] font-['IBM_Plex_Serif'] text-[#6B7280] mb-[8px]">
+                {callSummary?.details?.callInfo?.notes || "--"}
+              </div>
+            </Accordion>
+          </motion.div>
         </div>
         {!isAdmin && (
-          <div className="flex justify-center pt-4">
+          <div className="flex justify-center">
             <Button
-              className="rounded-[100px]"
               onClick={handleSubmit}
               disabled={isLoading || (isInSidebar && !hasDataChanged())}
             >
-              {isUpdateLoading || isGetTagsLoading ? "Submitting..." : "Submit"}
+              {isUpdateLoading || isGetTagsLoading ? "Saving..." : "Save"}
             </Button>
           </div>
         )}
@@ -368,15 +413,32 @@ const CallSummary: FC<CallSummaryProps> = ({
     );
   }
 
+  const retriggerSummary = async () => {
+    setCanShowSummary(false);
+    const result = await refetchSummary();
+    if (
+      [ChatSummaryStatus.PENDING, ChatSummaryStatus.IN_PROGRESS].includes(
+        result?.data?.summaryStatus,
+      )
+    ) {
+      toast.warning("The summary isn't available yet. It will be available shortly.");
+    }
+  };
+
+  const onViewCallLogs = () => {
+    navigate(ROUTES.CALLS, { state: { refetch: true } });
+  };
+
   return (
     <SummaryLoading
-      isSummaryDelayed={callSummary?.details?.callInfo?.provider === "MICROPHONE"}
-      isSummaryPolling={isSummaryPolling}
-      isSummaryGenerated={callSummary?.details?.summary}
-      onViewSummary={onViewSummary}
+      summaryStatus={callSummary?.summaryStatus}
+      estimatedTime={getEstimatedSummaryGenerationTime(callSummary?.details?.callDuration)}
+      isNotesSaving={isUpdateNotesLoading}
       onNotesChange={handleNotesChange}
-      onViewCallLogs={onProceed}
+      onViewCallLogs={onViewCallLogs}
       notes={notes}
+      refetchSummary={retriggerSummary}
+      inSummarySidebar={isInSidebar}
     />
   );
 };

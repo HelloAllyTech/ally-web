@@ -1,6 +1,4 @@
-import { Dispatch, SetStateAction } from "react";
-
-import { SummaryFieldKey } from "@/types/summary";
+import { ChatSummaryStatus, SummaryFieldKey } from "@types";
 
 export enum SectionType {
   BoxBreathing = "Box breathing",
@@ -25,7 +23,12 @@ export enum SummarySectionKey {
   Metrics = "metrics",
 }
 
-export type FieldType = "Text" | "Number" | "Dropdown" | "Multiline" | "Boolean";
+export enum FieldType {
+  Text = "Text",
+  Number = "Number",
+  Dropdown = "Dropdown",
+  Multiline = "Multiline",
+}
 
 export interface SummaryField {
   isEditable: boolean;
@@ -52,12 +55,21 @@ export interface StressBusterProps {
 export interface CallSummaryProps {
   // TODO: create a type for the call summary
   className?: string;
-  callSummary: any;
+  postProcess?: (status?: ChatSummaryStatus) => void;
   chatId: number;
-  onProceed: () => void;
-  isSummaryLoading: boolean;
+  refetchCallLogs?: () => void;
   isInSidebar?: boolean;
-  isSummaryPolling?: boolean;
   fromSummarySidebar?: boolean;
-  onClickViewSummary?: () => void;
+  headerContent?: React.ReactNode;
+}
+
+export interface SummaryLoadingProps {
+  summaryStatus: ChatSummaryStatus;
+  estimatedTime?: number;
+  isNotesSaving?: boolean;
+  onNotesChange?: (notes: string) => void;
+  onViewCallLogs: () => void;
+  notes?: string;
+  refetchSummary: () => void;
+  inSummarySidebar?: boolean;
 }

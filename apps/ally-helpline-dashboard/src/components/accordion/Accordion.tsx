@@ -1,6 +1,7 @@
 import { FC } from "react";
-import { Accordion as MuiAccordion, AccordionDetails, AccordionSummary } from "@mui/material";
+
 import PlayArrowRounded from "@mui/icons-material/PlayArrowRounded";
+import { Accordion as MuiAccordion, AccordionDetails, AccordionSummary } from "@mui/material";
 
 import { AccordionProps } from "./types";
 

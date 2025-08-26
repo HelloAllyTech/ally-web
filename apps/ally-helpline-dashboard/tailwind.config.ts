@@ -1,6 +1,7 @@
-import type { Config } from "tailwindcss";
-import tailwindcssAnimate from "tailwindcss-animate";
 import { join } from "path";
+import tailwindcssAnimate from "tailwindcss-animate";
+
+import type { Config } from "tailwindcss";
 
 const projectRoot = __dirname;
 
@@ -79,11 +80,16 @@ export default {
           "0%": { width: "35%" },
           "100%": { width: "788px" },
         },
+        shine: {
+          "0%": { "background-position": "100%" },
+          "100%": { "background-position": "-100%" },
+        },
       },
       animation: {
         "message-in": "message-in 0.3s ease-out forwards",
         "fade-in": "fadeIn 0.5s ease-in-out",
         expand: "expand 0.5s ease-out forwards",
+        shine: "shine 5s linear infinite",
       },
       borderRadius: {
         lg: "var(--radius)",

@@ -1,9 +1,10 @@
 "use client";
 import { FC, useState, useRef, useEffect } from "react";
+
 import PlayArrow from "@mui/icons-material/PlayArrow";
 
-import { DropdownFieldProps } from "./types";
 import { Dropdown } from ".";
+import { DropdownFieldProps } from "./types";
 
 /**
  * DropdownField component displays a dropdown with search and selection capabilities.

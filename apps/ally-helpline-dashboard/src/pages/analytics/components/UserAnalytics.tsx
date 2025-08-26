@@ -1,13 +1,14 @@
-import { CircularProgress } from "@mui/material";
 import { FunctionComponent, useEffect, useMemo, useState } from "react";
+
+import { CircularProgress } from "@mui/material";
 import { format } from "date-fns";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
-import { Button, Calendar } from "@/components";
-import { useLazyGetCounsellorStatsQuery } from "@/api/analytics";
-import { getDateRange } from "@/utils/date";
+import { useLazyGetCounsellorStatsQuery } from "@api";
+import { Button, Calendar } from "@components";
+import { CalendarMode } from "@types";
+import { getDateRange } from "@utils";
 
-import { CalendarMode } from "../types";
 import { ListeningChart } from ".";
 
 const UserAnalytics: FunctionComponent = () => {
@@ -164,83 +165,79 @@ const UserAnalytics: FunctionComponent = () => {
   return (
     <div className="flex justify-start items-start bg-white p-6 w-full h-full gap-6">
       {isLoading && !counsellorStats ? (
-        <div className="flex justify-center items-center h-[calc(100%_-_80px)]">
+        <div className="flex justify-center items-center w-full h-[calc(100%_-_80px)]">
           <CircularProgress />
         </div>
       ) : (
-        <div className="flex flex-col w-[70%] ml-8 flex-2">
-          <ListeningChart
-            isEmpty={
-              counsellorStats?.counselorListeningDuration === 0 &&
-              counsellorStats?.counselorSharingDuration === 0
-            }
-            listeningPercentage={
-              isStatsError ? 0 : 100 - (counsellorStats?.counselorSharingPercentage ?? 0)
-            }
-          />
+        <div className="w-full flex ml-8 flex-2">
+          <div className="w-[70%]">
+            <ListeningChart
+              isEmpty={
+                counsellorStats?.counselorListeningDuration === 0 &&
+                counsellorStats?.counselorSharingDuration === 0
+              }
+              listeningPercentage={
+                isStatsError ? 0 : 100 - (counsellorStats?.counselorSharingPercentage ?? 0)
+              }
+            />
+          </div>
+
+          <div className="flex flex-col gap-2 items-center flex-1 relative">
+            <div className="flex gap-2 bg-[#F5F5F5] p-2 rounded-[4px]">
+              {viewButtons.map(button => (
+                <button
+                  key={button.label}
+                  onClick={() => handleModeChange(button.view)}
+                  className={`px-[16px] py-[4px] rounded-[4px] text-[12px] transition-colors text-[#000] ${
+                    mode === button.view ? "bg-[#fff] font-medium" : ""
+                  }`}
+                >
+                  {button.label}
+                </button>
+              ))}
+            </div>
+            <div className="flex items-center gap-2">
+              <ChevronLeft
+                className="cursor-pointer w-4 h-4"
+                onClick={() => handleDisplayDateChange("prev")}
+              />
+              <div
+                className="w-[140px] text-[14px] text-center border border-[#E5E5E5] rounded-[4px] py-2 px-3 cursor-pointer"
+                onClick={() => setIsCalendarOpen(prev => !prev)}
+              >
+                {getDisplayDate()}
+              </div>
+              <ChevronRight
+                className="cursor-pointer w-4 h-4"
+                onClick={() => handleDisplayDateChange("next")}
+              />
+            </div>
+            {mode !== CalendarMode.ALL && isCalendarOpen && (
+              <div
+                className="flex flex-col gap-4 bg-[#fff] rounded-[12px] shadow-[0px_0px_10.7px_0px_rgba(0,0,0,0.17)]
+              z-10 absolute top-[100px] left-[10px]"
+              >
+                <Calendar
+                  mode={mode}
+                  onChange={handleDateChange}
+                  value={calendarValue}
+                  onMonthClick={handleMonthChange}
+                  onYearClick={handleYearChange}
+                  disableFuture={true}
+                />
+                <div className="flex justify-end gap-4 py-2 px-3 border-t border-[#E5E5E5]">
+                  <Button variant="text" className="text-[#000]" onClick={handleCancel}>
+                    Cancel
+                  </Button>
+                  <Button variant="text" className="text-[#1480FB]" onClick={handleOk}>
+                    OK
+                  </Button>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       )}
-
-      <div className="flex flex-col gap-2 items-center flex-1 relative">
-        <div className="flex gap-2 bg-[#F5F5F5] p-2 rounded-[4px]">
-          {viewButtons.map(button => (
-            <button
-              key={button.label}
-              onClick={() => handleModeChange(button.view)}
-              className={`px-[16px] py-[4px] rounded-[4px] text-[12px] transition-colors text-[#000] ${
-                mode === button.view ? "bg-[#fff] font-medium" : ""
-              }`}
-            >
-              {button.label}
-            </button>
-          ))}
-        </div>
-        <div className="flex items-center gap-2">
-          <ChevronLeft
-            className="cursor-pointer w-4 h-4"
-            onClick={() => handleDisplayDateChange("prev")}
-          />
-          <div
-            className="w-[140px] text-[14px] text-center border border-[#E5E5E5] rounded-[4px] py-2 px-3 cursor-pointer"
-            onClick={() => setIsCalendarOpen(prev => !prev)}
-          >
-            {getDisplayDate()}
-          </div>
-          <ChevronRight
-            className="cursor-pointer w-4 h-4"
-            onClick={() => handleDisplayDateChange("next")}
-          />
-        </div>
-        {mode !== CalendarMode.ALL && isCalendarOpen && (
-          <div
-            className="flex flex-col gap-4 bg-[#fff] rounded-[12px] shadow-[0px_0px_10.7px_0px_rgba(0,0,0,0.17)]
-              z-10 absolute top-[100px] left-[10px]"
-          >
-            <Calendar
-              mode={mode}
-              onChange={handleDateChange}
-              value={calendarValue}
-              onMonthClick={handleMonthChange}
-              onYearClick={handleYearChange}
-              disableFuture={true}
-            />
-            <div className="flex justify-end gap-4 py-2 px-3 border-t border-[#E5E5E5]">
-              <Button
-                className="bg-transparent text-[#000] hover:bg-transparent"
-                onClick={handleCancel}
-              >
-                Cancel
-              </Button>
-              <Button
-                className="bg-transparent text-[#1480FB] hover:bg-transparent"
-                onClick={handleOk}
-              >
-                OK
-              </Button>
-            </div>
-          </div>
-        )}
-      </div>
     </div>
   );
 };

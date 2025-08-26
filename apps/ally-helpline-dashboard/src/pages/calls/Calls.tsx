@@ -1,20 +1,33 @@
-import { FC } from "react";
+import { FC, useState } from "react";
+
 import { motion } from "framer-motion";
 
-import { UserRole, UserStatus } from "@/types/user";
-import { Button } from "@/components";
-import { useUser } from "@/hooks/useUser";
-import { CallType } from "@/constants/call";
+import { Refresh, StartSession } from "@assets";
+import { Button } from "@components";
+import { CallType } from "@constants";
+import { useUser } from "@hooks";
+import { UserRole, UserStatus } from "@types";
 
-import { CallLogsTable, ConsolidatedLogs } from "./components";
+import { CallLogsTable, ConsolidatedLogs, StartSessionDialog } from "./components";
 
-const Calls: FC = () => {
+export const Calls: FC = () => {
+  const [isStartSessionDialogOpen, setIsStartSessionDialogOpen] = useState(false);
+  const [refreshKey, setRefreshKey] = useState<number>(0);
+
   const { availableChatTypes, updateUserStatus, user, userStatus } = useUser();
 
   const isAdmin = user?.role === UserRole.ADMIN;
 
   const handleUserStatusChange = () => {
     updateUserStatus(userStatus === UserStatus.OFFLINE ? UserStatus.AVAILABLE : UserStatus.OFFLINE);
+  };
+
+  const handleStartSession = () => {
+    setIsStartSessionDialogOpen(true);
+  };
+
+  const handleRefresh = () => {
+    setRefreshKey(prev => prev + 1);
   };
 
   return (
@@ -27,9 +40,19 @@ const Calls: FC = () => {
         className="relative mt-[10px] font-['IBM_Plex_Serif']"
       >
         <div className="sm:p-4 p-0 rounded-lg flex gap-4 sm:justify-between justify-start bg-transparent items-center">
-          <div className="z-10 text-[#000] text-[18px] font-[500]">
-            {isAdmin ? "Consolidated Logs" : "Call Logs"}
+          <div className="z-10 text-[#0D0D0D] text-[24px] font-[500] flex items-center gap-2">
+            Session Logs
+            <Refresh
+              className="w-6 h-6 cursor-pointer border-l-[0.5px] border-[#D2D2D2] pl-2"
+              onClick={handleRefresh}
+            />
           </div>
+          {!isAdmin && availableChatTypes?.includes(CallType.MICROPHONE_CHAT) && (
+            <Button onClick={handleStartSession}>
+              <StartSession />
+              Start Session
+            </Button>
+          )}
           {!isAdmin && availableChatTypes?.includes(CallType.WEBRTC_CHAT) && (
             <Button
               className={`${
@@ -44,9 +67,11 @@ const Calls: FC = () => {
           )}
         </div>
       </motion.div>
-      {isAdmin ? <ConsolidatedLogs /> : <CallLogsTable />}
+      {isAdmin ? <ConsolidatedLogs key={refreshKey} /> : <CallLogsTable key={refreshKey} />}
+      <StartSessionDialog
+        isOpen={isStartSessionDialogOpen}
+        onClose={() => setIsStartSessionDialogOpen(false)}
+      />
     </div>
   );
 };
-
-export default Calls;

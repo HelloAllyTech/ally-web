@@ -1,6 +1,8 @@
 import { FC } from "react";
 
-export type BadgeVariant = "outlined" | "ghost";
+import { SearchVariant } from "../../types";
+
+export type BadgeVariant = SearchVariant | "outlined";
 
 /**
  * Props for Badge component.
@@ -21,15 +23,15 @@ const Badge: FC<BadgeProps> = ({ variant, text, className }) => {
     switch (variant) {
       case "outlined":
         return "bg-[#FDFDFD] text-[#616161] border border-[#D5D9EB]";
-      case "ghost":
+      case SearchVariant.DARK:
+        return "bg-[#FDFDFD] text-[#1E2025]";
+      case SearchVariant.LIGHT:
         return "bg-[#ECECEC] text-[#535353]";
     }
   };
   return (
     <div
-      className={`rounded-[16px] text-[#000] px-[8px] py-[2px] text-[12px] font-medium ${getStyles(
-        variant,
-      )} ${className}`}
+      className={`rounded-2xl px-2 py-0.5 text-[12px] font-medium ${getStyles(variant)} ${className}`}
     >
       {text}
     </div>

@@ -11,7 +11,7 @@ import SkeletonLoader from "./lib/skeleton-loader";
 import SuggestionsContainer from "./lib/suggestions-container";
 import { logger } from "./logger";
 
-export type { Resource } from "./types";
+export type { Resource, SearchVariant } from "./types";
 
 export {
   Badge,

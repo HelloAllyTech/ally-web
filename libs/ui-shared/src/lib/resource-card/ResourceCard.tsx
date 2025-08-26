@@ -1,7 +1,12 @@
 "use client";
 import { FC, useState, useRef, useEffect } from "react";
+
+import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 import { motion, AnimatePresence } from "framer-motion";
+
+import { SearchVariant } from "../../types";
 import Badge from "../badge";
+import { resourceCardStyles } from "./constants";
 
 /**
  * ResourceCard component displays a resource with title, description, category, and tags.
@@ -14,10 +19,20 @@ export interface ResourceCardProps {
   description: string;
   category: string;
   tags: string[];
+  mode?: SearchVariant;
+  isExpanded: boolean;
+  setExpandedCard: (value: boolean) => void;
 }
 
-const ResourceCard: FC<ResourceCardProps> = ({ title, description, category, tags }) => {
-  const [isExpanded, setIsExpanded] = useState(false);
+const ResourceCard: FC<ResourceCardProps> = ({
+  title,
+  description,
+  category,
+  tags,
+  mode = SearchVariant.LIGHT,
+  isExpanded = false,
+  setExpandedCard,
+}) => {
   const contentRef = useRef<HTMLDivElement>(null);
   const [shouldShowButton, setShouldShowButton] = useState(false);
   const [contentHeight, setContentHeight] = useState(0);
@@ -44,7 +59,7 @@ const ResourceCard: FC<ResourceCardProps> = ({ title, description, category, tag
       >
         <Badge
           text={category}
-          variant="ghost"
+          variant={mode}
           className={`capitalize flex-shrink-0 ${category?.trim().length > 0 ? "" : "bg-transparent"}`}
         />
         <div className="flex justify-end w-full sm:max-w-[80%] relative">
@@ -61,6 +76,10 @@ const ResourceCard: FC<ResourceCardProps> = ({ title, description, category, tag
     );
   };
 
+  const onExpandCard = () => {
+    setExpandedCard(!isExpanded);
+  };
+
   /**
    * Renders the show more/less button for the description.
    * @returns {JSX.Element | null}
@@ -68,47 +87,37 @@ const ResourceCard: FC<ResourceCardProps> = ({ title, description, category, tag
   const renderShowMoreLess = () => {
     if (!shouldShowButton) return null;
 
-    if (isExpanded) {
-      return (
+    return (
+      <AnimatePresence>
         <motion.div
-          className="flex justify-end mt-2"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.2 }}
+          className="mt-1"
         >
           <button
-            className="text-sm text-[#525252] hover:text-[#000] transition-colors"
+            className={`text-sm transition-colors ${resourceCardStyles[mode].showMoreLess}`}
             onClick={e => {
               e.stopPropagation();
-              setIsExpanded(false);
+              onExpandCard();
             }}
           >
-            Show less
+            {isExpanded ? (
+              <div className="flex items-center">
+                View less
+                <ArrowDropDownIcon className="rotate-180" />
+              </div>
+            ) : (
+              <div className="flex items-center">
+                View more
+                <ArrowDropDownIcon />
+              </div>
+            )}
           </button>
         </motion.div>
-      );
-    } else {
-      return (
-        <motion.div
-          className="absolute bottom-0 right-0 bg-gradient-to-l from-white via-white to-transparent pl-8 pr-1"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.2 }}
-        >
-          <button
-            className="text-sm text-[#525252] hover:text-[#000] transition-colors"
-            onClick={e => {
-              e.stopPropagation();
-              setIsExpanded(true);
-            }}
-          >
-            more
-          </button>
-        </motion.div>
-      );
-    }
+      </AnimatePresence>
+    );
   };
 
   const processDescription = (description: string) => {
@@ -126,13 +135,11 @@ const ResourceCard: FC<ResourceCardProps> = ({ title, description, category, tag
    */
   const renderDescription = () => {
     return (
-      <div className="relative">
+      <div>
         <AnimatePresence mode="wait">
           <motion.div
             ref={contentRef}
-            className={`text-[15px] sm:text-[16px] text-[#525252] leading-6 ${
-              !isExpanded ? "line-clamp-2" : ""
-            }`}
+            className={`text-[15px] sm:text-[16px] leading-6 ${!isExpanded ? "line-clamp-2" : ""} ${resourceCardStyles[mode].description}`}
             initial={false}
             animate={{
               height: isExpanded ? contentHeight : Math.min(48, contentHeight), // 48px = 2 lines * 24px line height
@@ -149,20 +156,22 @@ const ResourceCard: FC<ResourceCardProps> = ({ title, description, category, tag
             {processDescription(description)}
           </motion.div>
         </AnimatePresence>
-        <AnimatePresence>{renderShowMoreLess()}</AnimatePresence>
       </div>
     );
   };
 
   return (
     <div
-      onClick={() => setIsExpanded(prev => !prev)}
-      className="w-full flex flex-col gap-2 border border-[#DADCE1] rounded-[8px] p-3 sm:p-4 bg-white"
+      onClick={onExpandCard}
+      className={`w-full flex flex-col gap-2 rounded-[8px] p-3 sm:p-4 ${resourceCardStyles[mode].card}`}
     >
       {renderTags()}
-      <div className="flex flex-col font-['IBM_Plex_Serif'] gap-1">
-        <span className="font-[500] text-[15px] sm:text-[16px] text-[#000]">{title}</span>
+      <div className="flex flex-col font-['IBM_Plex_Serif']">
+        <span className={`font-[500] text-[15px] sm:text-[16px] ${resourceCardStyles[mode].title}`}>
+          {title}
+        </span>
         {renderDescription()}
+        {renderShowMoreLess()}
       </div>
     </div>
   );

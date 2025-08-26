@@ -1,4 +1,5 @@
 import { FC } from "react";
+
 import { Drawer as MuiDrawer } from "@mui/material";
 import { ChevronsRight } from "lucide-react";
 
@@ -21,17 +22,23 @@ const Drawer: FC<DrawerProps> = ({ open, onClose, children, title, headerButtons
         <div className="flex items-center gap-4">
           <ChevronsRight className="cursor-pointer" onClick={onClose} />
           <div className="flex justify-between w-full">
-            <span className="text-[16px] font-semibold text-[#79747E]">{title || ""}</span>
-            <div className="flex items-center gap-2">
-              {headerButtons?.map(button => (
-                <button
-                  key={button.alt}
-                  onClick={button.onClick}
-                  className={`${button.show ? "" : "hidden"}`}
-                >
-                  {button.icon}
-                </button>
-              ))}
+            <span className="text-[16px] font-semibold font-['Roboto'] text-[#79747E]">
+              {title || ""}
+            </span>
+            <div className="flex items-center gap-3">
+              {headerButtons
+                ?.filter(button => button.show)
+                .map(button => (
+                  // TODO: Add button component
+                  <button
+                    key={button.alt}
+                    onClick={button.onClick}
+                    className="flex items-center gap-2 font-['Roboto'] text-[12px] text-[#1A1A1A]"
+                  >
+                    {button.icon}
+                    {button.text}
+                  </button>
+                ))}
             </div>
           </div>
         </div>

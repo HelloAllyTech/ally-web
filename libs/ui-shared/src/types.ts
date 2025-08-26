@@ -7,3 +7,8 @@ export interface Resource {
   tags: string[];
   score: number;
 }
+
+export enum SearchVariant {
+  DARK = "dark",
+  LIGHT = "light",
+}
