@@ -1,7 +1,7 @@
-import { ComingSoon } from "@/assets/icons";
-import { FallbackUI } from "@/components";
+import { ComingSoon } from "@assets";
+import { FallbackUI } from "@components";
 
-const Settings = () => {
+export const Settings = () => {
   return (
     <div className="h-[90vh] flex items-center justify-center">
       <FallbackUI
@@ -12,5 +12,3 @@ const Settings = () => {
     </div>
   );
 };
-
-export default Settings;

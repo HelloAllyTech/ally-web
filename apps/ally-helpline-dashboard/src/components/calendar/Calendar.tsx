@@ -1,4 +1,5 @@
 import { FC } from "react";
+
 import { Calendar as ReactCalendar } from "react-calendar";
 
 import { CalendarProps } from "./types";

@@ -1,35 +1,37 @@
-import { toast } from "sonner";
 import { FC, useEffect, useMemo, useState, Dispatch, SetStateAction, useRef } from "react";
+
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 
-import { useGetNudgeStatusQuery } from "@/api/audioCall";
-import { RootState } from "@/store/store";
-import { useSocket, useWebRTCCallSetup } from "@/hooks";
-import { UserRole } from "@/types/user";
+import { logger } from "@ally-ui-mono/ui-shared";
+import { useGetNudgeStatusQuery } from "@api";
+import { EndSessionIllustration } from "@assets";
+import { ButtonVariant, ConfirmationDialog } from "@components";
+import {
+  SocketConnectionTypes,
+  CallProvider,
+  SocketDisconnectionReasons,
+  MediaRecorderState,
+} from "@constants";
+import { useSocket, useWebRTCCallSetup } from "@hooks";
+import { RootState } from "@store";
 import {
   ChatStatus,
   FeedbackResponse,
   MessageType,
   SocketEvent,
   Transcription,
-} from "@/types/message";
-import { SocketConnectionTypes, SocketDisconnectionReasons } from "@/constants/socket";
-import { logger } from "@ally-ui-mono/ui-shared";
+  UserRole,
+} from "@types";
 
-import { reduceTranscriptions } from "../utils";
-import { CallTranscriptProps, Nudge } from "../types";
+import { CallSidebar, RealTimeTranscript, CallControls, CallInterface } from ".";
 import { AUDIO_FILE_SIZE, OFFER_TIMEOUT_MS } from "../constants";
-import {
-  AudioCallBackgroundWrapper,
-  CallSidebar,
-  RealTimeTranscript,
-  CallControls,
-  CallInterface,
-} from ".";
+import { CallTranscriptProps, Nudge } from "../types";
+import { reduceTranscriptions } from "../utils";
+import { NetworkIssuesList } from "./constants";
 
 import "./CallTranscript.css";
-import { NetworkIssuesList } from "./constants";
 
 // TODO: Uninstall react-audio-voice-recorder
 // TODO: Split transcription to client-counselor
@@ -45,6 +47,7 @@ const CallTranscript: FC<CallTranscriptProps> = ({
   activeChat,
   microphoneChatId,
   isMicrophoneMode,
+  isExotelMode,
   setMicrophoneChatId,
 }) => {
   const navigate = useNavigate();
@@ -55,17 +58,19 @@ const CallTranscript: FC<CallTranscriptProps> = ({
 
   const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(null);
   const [isMuted, setIsMuted] = useState<boolean>(true);
-  const [isFocusMode, setIsFocusMode] = useState<boolean>(true);
+  const [isFocusMode, setIsFocusMode] = useState<boolean>(false);
   const [speakerTranscriptions, setSpeakerTranscriptions] = useState<Transcription[]>([]);
   const [myTranscriptions, setMyTranscriptions] = useState<Transcription[]>([]);
   const [nudges, setNudges] = useState<Nudge[]>([]);
   const [stage, setStage] = useState<string>();
-  const [isUserJoined, setIsUserJoined] = useState(null);
+  const [isUserJoined, setIsUserJoined] = useState<boolean>(false);
   const [socketDisconnectionReason, setSocketDisconnectionReason] =
     useState<SocketDisconnectionReasons>();
-  const { data: nudgeStatus } = useGetNudgeStatusQuery();
   const [isSessionCreated, setIsSessionCreated] = useState<boolean>(false);
   const [isStartAudioChatEmitted, setIsStartAudioChatEmitted] = useState<boolean>(false);
+  const [isEndCallDialogOpen, setIsEndCallDialogOpen] = useState<boolean>(false);
+
+  const { data: nudgeStatus } = useGetNudgeStatusQuery();
 
   const isClient = user?.role === UserRole.CLIENT;
   const isCounsellor = user?.role === UserRole.COUNSELLOR;
@@ -73,11 +78,14 @@ const CallTranscript: FC<CallTranscriptProps> = ({
     isMicrophoneMode &&
     activeChat?.chatId &&
     activeChat?.platform === "WEB" &&
-    activeChat?.provider === "MICROPHONE";
-
-  // const isWebRTC = activeChat.provider === "WEBRTC"; // to distinguish between exotel and webrtc
-
+    activeChat?.provider === CallProvider.MICROPHONE;
+  const isNonWebChat = activeChat?.platform && activeChat?.platform !== "WEB";
   const isSocketDisconnected = !!socketDisconnectionReason;
+
+  const isEndSessionDisabled = isMicrophoneMode && (!microphoneChatId || isSocketDisconnected);
+  const isFocusButtonDisabled = !isUserJoined || isSocketDisconnected;
+  const isPauseTranscriptionDisabled =
+    !isUserJoined || isNonWebChat || isSharedMicrophoneMode || isExotelMode || isSocketDisconnected;
 
   const updateLastTranscription = (
     setCorrespondingTranscription: Dispatch<SetStateAction<Transcription[]>>,
@@ -206,7 +214,7 @@ const CallTranscript: FC<CallTranscriptProps> = ({
     },
     [SocketEvent.USER_DISCONNECTED]: () => {
       // User disconnected event might happen if mobile is open and gets closed as mobile have a live socket conenction on login for microphone-mode
-      if (!isMicrophoneMode) {
+      if (!isMicrophoneMode && !isExotelMode) {
         setIsUserJoined(false);
       }
     },
@@ -221,6 +229,7 @@ const CallTranscript: FC<CallTranscriptProps> = ({
       }
     },
     [SocketEvent.DISCONNECT]: (reason?: string) => {
+      cleanupMediaRecorder();
       if (isMicrophoneMode) {
         // Check if it's a network-related disconnection
         const isNetworkIssue =
@@ -235,12 +244,66 @@ const CallTranscript: FC<CallTranscriptProps> = ({
     },
   };
 
+  const cleanupMediaRecorder = () => {
+    // Stop and cleanup media recorder
+    if (mediaRecorder && mediaRecorder.state !== MediaRecorderState.INACTIVE) {
+      mediaRecorder.stop();
+    }
+
+    // Stop remote media recorder
+    if (remoteMediaRecorder && remoteMediaRecorder.state !== MediaRecorderState.INACTIVE) {
+      remoteMediaRecorder.stop();
+    }
+
+    // Stop all tracks in the local stream
+    if (localStreamRef.current) {
+      localStreamRef.current.getTracks().forEach(track => {
+        track.stop();
+        track.enabled = false;
+      });
+      localStreamRef.current = null;
+    }
+
+    // Stop all tracks in the microphone stream
+    if (microphoneStreamRef.current) {
+      microphoneStreamRef.current.getTracks().forEach(track => {
+        track.stop();
+        track.enabled = false;
+      });
+      microphoneStreamRef.current = null;
+    }
+
+    // Stop all tracks in the remote stream
+    if (remoteStreamRef.current) {
+      remoteStreamRef.current.getTracks().forEach(track => {
+        track.stop();
+        track.enabled = false;
+      });
+      remoteStreamRef.current = new MediaStream();
+    }
+
+    // Close peer connection
+    if (peerConnection) {
+      peerConnection.close();
+    }
+
+    // Clear timeout
+    if (offerTimeoutRef.current) {
+      clearTimeout(offerTimeoutRef.current);
+      offerTimeoutRef.current = null;
+    }
+  };
+
+  const getConnectionType = () => {
+    if (isMicrophoneMode) return SocketConnectionTypes.MICROPHONE_MODE;
+    if (isExotelMode) return SocketConnectionTypes.CLOUD_TELEPHONY_CHAT;
+    return SocketConnectionTypes.WEBRTC_AUDIO_CALL;
+  };
+
   const { connect, disconnect, emitSocketEvent, setListenerForEvent, removeIfListenerPresent } =
     useSocket({
       eventCallbacks: socketEventCallbacks,
-      connectionType: isMicrophoneMode
-        ? SocketConnectionTypes.MICROPHONE_MODE
-        : SocketConnectionTypes.WEBRTC_AUDIO_CALL,
+      connectionType: getConnectionType(),
     });
 
   const {
@@ -261,8 +324,6 @@ const CallTranscript: FC<CallTranscriptProps> = ({
     isClient,
     offerTimeoutMs: OFFER_TIMEOUT_MS,
   });
-
-  const isNonWebChat = activeChat?.platform && activeChat?.platform !== "WEB";
 
   const setupMediaRecorder = (stream: MediaStream) => {
     // Setup media recorder
@@ -345,10 +406,17 @@ const CallTranscript: FC<CallTranscriptProps> = ({
     if (
       isMicrophoneMode &&
       activeChat?.status === ChatStatus.ACTIVE &&
-      activeChat?.provider === "MICROPHONE"
+      activeChat?.provider === CallProvider.MICROPHONE
     ) {
       setMicrophoneChatId(activeChat.chatId);
       // To notify that call has started
+      setIsUserJoined(true);
+    }
+    if (
+      isExotelMode &&
+      activeChat?.status === ChatStatus.ACTIVE &&
+      activeChat?.provider === CallProvider.EXOTEL_CONFERENCE_CALL
+    ) {
       setIsUserJoined(true);
     }
   }, [activeChat]);
@@ -368,9 +436,11 @@ const CallTranscript: FC<CallTranscriptProps> = ({
   }, []);
 
   useEffect(() => {
-    if (user && !isMicrophoneMode && iceServers && activeChatId) {
+    if (user && !isMicrophoneMode && !isExotelMode && iceServers && activeChatId) {
       connect(activeChatId);
       setupWebRTC();
+    } else if (isExotelMode) {
+      connect();
     }
 
     return () => {
@@ -417,7 +487,7 @@ const CallTranscript: FC<CallTranscriptProps> = ({
 
     if (isMuted) {
       // Only pause if MediaRecorder is in recording state
-      if (mediaRecorder.state === "recording") {
+      if (mediaRecorder.state === MediaRecorderState.RECORDING) {
         mediaRecorder.pause();
       }
       // Mute all audio tracks in the local stream
@@ -429,7 +499,7 @@ const CallTranscript: FC<CallTranscriptProps> = ({
       });
     } else {
       // Only resume if MediaRecorder is in paused state
-      if (mediaRecorder.state === "paused") {
+      if (mediaRecorder.state === MediaRecorderState.PAUSED) {
         mediaRecorder.resume();
       }
       // Unmute all audio tracks in the local stream
@@ -452,56 +522,6 @@ const CallTranscript: FC<CallTranscriptProps> = ({
       setListenerForEvent(SocketEvent.ICE_CANDIDATE, handleOnIceCandidate);
     }
   }, [handleWebRTCOffer, activeChatId, handleWebRTCAnswer, handleOnIceCandidate]);
-
-  const cleanupMediaRecorder = () => {
-    // Stop and cleanup media recorder
-    if (mediaRecorder && mediaRecorder.state !== "inactive") {
-      mediaRecorder.stop();
-    }
-
-    // Stop remote media recorder
-    if (remoteMediaRecorder && remoteMediaRecorder.state !== "inactive") {
-      remoteMediaRecorder.stop();
-    }
-
-    // Stop all tracks in the local stream
-    if (localStreamRef.current) {
-      localStreamRef.current.getTracks().forEach(track => {
-        track.stop();
-        track.enabled = false;
-      });
-      localStreamRef.current = null;
-    }
-
-    // Stop all tracks in the microphone stream
-    if (microphoneStreamRef.current) {
-      microphoneStreamRef.current.getTracks().forEach(track => {
-        track.stop();
-        track.enabled = false;
-      });
-      microphoneStreamRef.current = null;
-    }
-
-    // Stop all tracks in the remote stream
-    if (remoteStreamRef.current) {
-      remoteStreamRef.current.getTracks().forEach(track => {
-        track.stop();
-        track.enabled = false;
-      });
-      remoteStreamRef.current = new MediaStream();
-    }
-
-    // Close peer connection
-    if (peerConnection) {
-      peerConnection.close();
-    }
-
-    // Clear timeout
-    if (offerTimeoutRef.current) {
-      clearTimeout(offerTimeoutRef.current);
-      offerTimeoutRef.current = null;
-    }
-  };
 
   const confirmEndSession = async (triggerApi: boolean = true) => {
     try {
@@ -540,7 +560,7 @@ const CallTranscript: FC<CallTranscriptProps> = ({
 
   return (
     <div className="w-screen h-screen flex justify-center items-center">
-      <AudioCallBackgroundWrapper>
+      <div className="w-screen h-screen bg-[#17181A] flex flex-col gap-10 justify-center items-center overflow-hidden">
         <CallInterface
           activeChat={activeChat}
           isCounsellor={isCounsellor}
@@ -550,6 +570,7 @@ const CallTranscript: FC<CallTranscriptProps> = ({
           remoteMediaRecorder={remoteMediaRecorder}
           remoteStreamRef={remoteStreamRef}
           isMicrophoneMode={isMicrophoneMode}
+          isExotelMode={isExotelMode}
         />
 
         {/* Update transcription container with max-height */}
@@ -559,25 +580,34 @@ const CallTranscript: FC<CallTranscriptProps> = ({
 
         <CallControls
           isFocusMode={isFocusMode}
-          isMuted={isMuted}
-          // This is to disable end call till chat creation is done
-          isPrimaryButtonDisabled={isMicrophoneMode && (!microphoneChatId || isSocketDisconnected)}
-          isSecondaryButtonDisabled={
-            !isUserJoined || isNonWebChat || isSharedMicrophoneMode || isSocketDisconnected
-          }
-          isTertiaryButtonDisabled={!isUserJoined || isSocketDisconnected}
-          showFocusButton={isCounsellor}
-          onCutCallButtonClick={() => confirmEndSession(true)}
+          isPaused={isMuted}
+          isEndSessionDisabled={isEndSessionDisabled}
+          isFocusButtonDisabled={isFocusButtonDisabled}
+          isPauseTranscriptionDisabled={isPauseTranscriptionDisabled}
+          onEndSessionClick={() => setIsEndCallDialogOpen(true)}
           onFocusButtonClick={(isFocused: boolean) => setIsFocusMode(isFocused)}
-          onMuteButtonClick={() => setIsMuted(prev => !prev)}
+          onPauseTranscriptionClick={() => setIsMuted(prev => !prev)}
+          showEndSession={isMicrophoneMode}
+          showFocusButton={isCounsellor}
+          showPauseTranscription={isMicrophoneMode}
         />
-      </AudioCallBackgroundWrapper>
+      </div>
+      <ConfirmationDialog
+        title={{ normal: "End ", italic: "Session" }}
+        isOpen={isEndCallDialogOpen}
+        onClose={() => setIsEndCallDialogOpen(false)}
+        content="Are you sure you want to end this Session"
+        buttonVariant={ButtonVariant.DESTRUCTIVE}
+        onButtonClick={() => confirmEndSession(true)}
+        buttonText="End Session"
+        icon={EndSessionIllustration}
+      />
       {nudgeStatus && (!isMicrophoneMode || !socketDisconnectionReason) && (
         <CallSidebar
           showSidebar={isCounsellor && isUserJoined && !isSocketDisconnected}
           isFocusMode={isFocusMode}
           nudges={nudges}
-          onClose={() => setIsFocusMode(false)}
+          onClose={() => setIsFocusMode(true)}
           stage={stage}
         />
       )}

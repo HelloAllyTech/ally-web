@@ -1,10 +1,12 @@
 "use client";
+
 import React, { useState } from "react";
+
 import { ArrowUpward, ArrowDownward, FilterAlt, Sort } from "@mui/icons-material";
 import { Popover } from "@mui/material";
 
-import { Column, SortDirection, TableFilter } from "./types";
 import FilterPopover from "./FilterPopover";
+import { Column, SortDirection, TableFilter } from "./types";
 
 /**
  * TableHeader renders the table's <thead> with sortable and filterable columns.

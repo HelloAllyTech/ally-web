@@ -11,5 +11,6 @@ export interface DrawerProps {
     icon: ReactNode;
     onClick: () => void;
     show?: boolean;
+    text?: string;
   }[];
 }

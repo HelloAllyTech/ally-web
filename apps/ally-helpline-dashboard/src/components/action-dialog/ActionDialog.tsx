@@ -1,8 +1,10 @@
 import { FC } from "react";
+
 import { Dialog } from "@mui/material";
 import { X } from "lucide-react";
 
-import { Button } from "@/components";
+import { Button } from "@components";
+
 import { ActionDialogProps } from "./types";
 
 const ActionDialog: FC<ActionDialogProps> = ({
@@ -29,16 +31,12 @@ const ActionDialog: FC<ActionDialogProps> = ({
         </div>
         {children}
         <div className="flex gap-4 items-center">
-          <Button
-            variant="outline"
-            className="text-[14px] rounded-full flex-1"
-            onClick={secondaryButton?.onClick}
-          >
+          <Button variant="secondary" className="flex-1" onClick={secondaryButton?.onClick}>
             {secondaryButton?.label}
           </Button>
           <Button
             variant={primaryButton?.variant}
-            className="text-[14px] rounded-full flex-1"
+            className="text-[14px] flex-1"
             onClick={primaryButton?.onClick}
           >
             {primaryButton?.label}

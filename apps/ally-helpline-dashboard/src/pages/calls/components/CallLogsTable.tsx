@@ -1,23 +1,32 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, FC } from "react";
+
+import { CircularProgress } from "@mui/material";
 import { useDispatch, useSelector } from "react-redux";
 import { useLocation } from "react-router-dom";
-import { CircularProgress } from "@mui/material";
 
 import { GenericTable } from "@ally-ui-mono/ui-shared";
 import { Column } from "@ally-ui-mono/ui-shared/lib/generic-table/types";
-import { RootState } from "@/store/store";
-import { updateFilters } from "@/reducer/callsReducer";
-import { useGetCallLogsQuery } from "@/api/calls";
-import { Button, TagGroup, FallbackUI } from "@/components";
-import { NoResults, CallIdIcon, DateIcon, TimerIcon, TagsIcon, ReviewIcon } from "@/assets/icons";
-import { CallLog } from "@/types/calls";
+import { useGetCallLogsQuery } from "@api";
+import {
+  NoResults,
+  CallIdIcon,
+  DateIcon,
+  TimerIcon,
+  TagsIcon,
+  ReviewIcon,
+  SummaryGenerationIcon,
+} from "@assets";
+import { Button, TagGroup, FallbackUI, SummaryStatusChip } from "@components";
+import { updateFilters } from "@reducer";
+import { RootState } from "@store";
+import { CallLog, ChatSummaryStatus, TagDisplay } from "@types";
+import { convertSecondsToDuration, getFormattedDate, getSummaryEnabledStatus } from "@utils";
 
-import { convertSecondsToDuration, getFormattedDate } from "../utils";
-import { CALL_LOGS_PAGINATION_LIMIT, tagColors } from "../constants";
-import { TagDisplay } from "../types";
 import { SummarySideBar } from ".";
+import { CALL_LOGS_PAGINATION_LIMIT, tagColors } from "../constants";
+import { LogsTableProps } from "./types";
 
-const CallLogsTable = () => {
+const CallLogsTable: FC<LogsTableProps> = ({ refreshKey }) => {
   const dispatch = useDispatch();
   const location = useLocation();
 
@@ -73,10 +82,10 @@ const CallLogsTable = () => {
 
   // Refetch call logs when navigating from PostCallSummary
   useEffect(() => {
-    if (location.state?.refetch) {
+    if (location.state?.refetch || refreshKey) {
       refetchCallLogs();
     }
-  }, [location, refetchCallLogs]);
+  }, [location, refetchCallLogs, refreshKey]);
 
   const handleLoadMore = () => {
     if (!isLoading && !isLoadingMore && hasMore) {
@@ -111,7 +120,7 @@ const CallLogsTable = () => {
             colors: tagColors[tag?.positivity_rating],
           };
         }),
-        raw: row, // keep original row for review action
+        raw: row, // keep original row for summary action
       };
     }
     return {
@@ -129,20 +138,20 @@ const CallLogsTable = () => {
   const columns: Column<any>[] = [
     {
       key: "callName",
-      header: "Call ID",
-      style: { width: "20%" },
+      header: "Session ID",
+      style: { width: "12%" },
       icon: <CallIdIcon />,
     },
     {
       key: "dateAndTime",
       header: "Date & Time",
-      style: { width: "20%" },
+      style: { width: "14%" },
       icon: <DateIcon />,
     },
     {
       key: "duration",
       header: "Duration",
-      style: { width: "20%" },
+      style: { width: "12%" },
       icon: <TimerIcon />,
     },
     {
@@ -153,23 +162,21 @@ const CallLogsTable = () => {
       icon: <TagsIcon />,
     },
     {
-      key: "review",
-      header: "Review",
+      key: "summaryStatus",
+      header: "Summary Status",
+      style: { width: "16%" },
+      render: (_value, row) => <SummaryStatusChip status={row.raw.summaryStatus} />,
+      icon: <SummaryGenerationIcon />,
+    },
+    {
+      key: "summary",
+      header: "Summary",
       style: { width: "10%" },
-      render: (_value, row) => {
-        const isSummaryNull = row.raw.details?.summary === null;
-        return (
-          <Button
-            disabled={isSummaryNull}
-            onClick={() => setCallSummary(row.raw)}
-            className={`flex items-center justify-center w-full py-[8px] bg-transparent border-none hover:bg-transparent ${
-              isSummaryNull ? "!pointer-events-auto !cursor-default" : "cursor-pointer"
-            }`}
-          >
-            <ReviewIcon />
-          </Button>
-        );
-      },
+      render: (_value, row) => (
+        <Button onClick={() => setCallSummary(row.raw)} fullWidth={true} variant="icon">
+          <ReviewIcon />
+        </Button>
+      ),
       icon: <ReviewIcon />,
     },
   ];
@@ -190,7 +197,8 @@ const CallLogsTable = () => {
     return null;
   };
 
-  const onSummarySubmit = async () => {
+  const onSummarySubmit = async (newStatus?: ChatSummaryStatus) => {
+    if (newStatus && callSummary?.summaryStatus === newStatus) return;
     const chatId = callSummary?.id;
     const response = await refetchCallLogs();
 
@@ -208,7 +216,7 @@ const CallLogsTable = () => {
           isLoading={isLoading}
           handleLoadMore={callLogList?.length > 0 && hasMore && handleLoadMore}
           fallbackUI={renderFallbackUI()}
-          className="min-w-full min-w-[100%] max-h-[calc(100vh-140px)] font-['IBM_Plex_Serif'] overflow-y-scroll"
+          className="min-w-full max-h-[calc(100vh-140px)] font-['IBM_Plex_Serif'] overflow-y-scroll"
         />
       </div>
       {callSummary && callSummary?.id && (

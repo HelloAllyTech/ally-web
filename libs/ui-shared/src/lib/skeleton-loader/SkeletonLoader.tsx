@@ -1,25 +1,29 @@
+import { FC } from "react";
+
+import { skeletonLoaderStyles } from "./constants";
+import { SkeletonLoaderProps } from "./types";
+import { SearchVariant } from "../../types";
+
 /**
  * SkeletonLoader component displays a loading skeleton UI for resource lists and headers.
  * Useful for indicating loading state while fetching data.
  * @component
  */
-export default function SkeletonLoader() {
+const SkeletonLoader: FC<SkeletonLoaderProps> = ({ mode = SearchVariant.LIGHT }) => {
   return (
     <main className="w-full min-h-screen flex justify-center overflow-y-hidden ">
-      <div className="w-full mx-auto">
-        {/* Search Header Skeleton */}
-        <div className="flex flex-col items-center gap-4 mb-8">
-          <div className="w-full h-8 bg-gray-200 rounded animate-pulse"></div>
-          <div className="w-full h-10 bg-gray-200 rounded-lg animate-pulse"></div>
-        </div>
-
+      <div className="w-full mx-auto mt-8">
         {/* Tabs Skeleton */}
         <div className="w-full border-b border-gray-200 mb-6">
           <div className="flex gap-8">
             {[1, 2, 3, 4, 5].map(i => (
               <div key={i} className="flex flex-col items-center gap-1">
-                <div className="w-16 h-4 bg-gray-200 rounded animate-pulse"></div>
-                <div className="w-8 h-0.5 bg-gray-200 rounded animate-pulse"></div>
+                <div
+                  className={`w-16 h-4 rounded animate-pulse ${skeletonLoaderStyles[mode].tab}`}
+                ></div>
+                <div
+                  className={`w-8 h-0.5 rounded animate-pulse ${skeletonLoaderStyles[mode].tab}`}
+                ></div>
               </div>
             ))}
           </div>
@@ -28,25 +32,33 @@ export default function SkeletonLoader() {
         {/* Resource Cards Skeleton */}
         <div className="flex flex-col gap-4">
           {[1, 2, 3].map(i => (
-            <div key={i} className="w-full border border-gray-200 rounded-lg p-4 bg-white">
+            <div
+              key={i}
+              className={`w-full border border-[#DADCE1] rounded-lg p-4 ${skeletonLoaderStyles[mode].card}`}
+            >
               {/* Tags Row */}
               <div className="flex justify-between gap-2 mb-3">
-                <div className="w-20 h-6 bg-gray-200 rounded-full animate-pulse"></div>
-                <div className="flex gap-2">
-                  <div className="w-16 h-6 bg-gray-200 rounded-full animate-pulse"></div>
-                  <div className="w-20 h-6 bg-gray-200 rounded-full animate-pulse"></div>
-                  <div className="w-14 h-6 bg-gray-200 rounded-full animate-pulse"></div>
-                </div>
+                <div
+                  className={`w-20 h-6 rounded-full animate-pulse ${skeletonLoaderStyles[mode].text}`}
+                ></div>
               </div>
 
               {/* Title */}
-              <div className="w-3/4 h-5 bg-gray-200 rounded mb-2 animate-pulse"></div>
+              <div
+                className={`w-3/4 h-5 rounded mb-2 animate-pulse ${skeletonLoaderStyles[mode].text}`}
+              ></div>
 
               {/* Description */}
               <div className="space-y-2">
-                <div className="w-full h-4 bg-gray-200 rounded animate-pulse"></div>
-                <div className="w-5/6 h-4 bg-gray-200 rounded animate-pulse"></div>
-                <div className="w-4/5 h-4 bg-gray-200 rounded animate-pulse"></div>
+                <div
+                  className={`w-full h-4 rounded animate-pulse ${skeletonLoaderStyles[mode].text}`}
+                ></div>
+                <div
+                  className={`w-5/6 h-4 rounded animate-pulse ${skeletonLoaderStyles[mode].text}`}
+                ></div>
+                <div
+                  className={`w-4/5 h-4 rounded animate-pulse ${skeletonLoaderStyles[mode].text}`}
+                ></div>
               </div>
             </div>
           ))}
@@ -62,4 +74,6 @@ export default function SkeletonLoader() {
       </div>
     </main>
   );
-}
+};
+
+export default SkeletonLoader;

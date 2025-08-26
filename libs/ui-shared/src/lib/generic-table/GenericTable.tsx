@@ -1,4 +1,5 @@
 "use client";
+
 import React, {
   useState,
   useRef,
@@ -7,14 +8,15 @@ import React, {
   useEffect,
   useMemo,
 } from "react";
-import { Plus } from "lucide-react";
-import { Popover, CircularProgress } from "@mui/material";
 
-import { GenericTableProps, TableSort, TableFilter, Column, SortDirection } from "./types";
-import TableHeader from "./TableHeader";
-import TableBody from "./TableBody";
-import SelectedFiltersView from "./SelectedFiltersView";
+import { Popover, CircularProgress } from "@mui/material";
+import { Plus } from "lucide-react";
+
 import FilterPopover from "./FilterPopover";
+import SelectedFiltersView from "./SelectedFiltersView";
+import TableBody from "./TableBody";
+import TableHeader from "./TableHeader";
+import { GenericTableProps, TableSort, TableFilter, Column, SortDirection } from "./types";
 
 /**
  * GenericTable is a reusable, type-safe, and highly customizable table component.

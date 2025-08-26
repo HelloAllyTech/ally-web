@@ -1,23 +1,26 @@
 import { FC, useEffect, useState, useRef, useMemo } from "react";
-import { useSelector } from "react-redux";
-import { Tabs, Tab } from "@mui/material";
 
-import { RootState } from "@/store/store";
-import { ActionDialog, Drawer, TextField } from "@/components";
-import { Download, Edit } from "@/assets/icons";
+import { Tabs, Tab } from "@mui/material";
+import { useSelector } from "react-redux";
+
+import { InfiniteScroll, logger } from "@ally-ui-mono/ui-shared";
 import {
   useGetTranscriptQuery,
   useLazyExportCallSummaryQuery,
-  useUpdateCallInfoMutation,
   useUpdateCallSummaryMutation,
-} from "@/api/callSummary";
-import CallSummary from "@/pages/post-call-summary/components/CallSummary";
-import { useFileExport } from "@/hooks";
-import { InfiniteScroll, logger } from "@ally-ui-mono/ui-shared";
-import { UserRole } from "@/types/user";
+} from "@api";
+import { DataPolicy, Download } from "@assets";
+import { ActionDialog, Drawer } from "@components";
+import { ALLY_DATA_POLICY_URL, CallProvider } from "@constants";
+import { useFileExport } from "@hooks";
+import CallSummary from "@pages/post-call-summary/components/CallSummary";
+import { RootState } from "@store";
+import { UserRole } from "@types";
+import { openLinkInNewTab } from "@utils";
 
-import { DeleteDialogData, SummarySideBarProps, Transcript } from "../types";
+import { SummaryHeader } from ".";
 import { defaultDeleteDialogData, tabStyles } from "../constants";
+import { DeleteDialogData, SummarySideBarProps, Transcript } from "./types";
 
 // TODO: Added only for removing lint error - remove and find actual solution
 declare global {
@@ -35,14 +38,10 @@ const SummarySideBar: FC<SummarySideBarProps> = ({
 
   const [selectedTab, setSelectedTab] = useState(1);
   const [selectedComment, setSelectedComment] = useState<string>("");
-  const [summaryName, setSummaryName] = useState<string>("");
-  const [isRenaming, setIsRenaming] = useState<boolean>(false);
   const [deleteDialogData, setDeleteDialogData] =
     useState<DeleteDialogData>(defaultDeleteDialogData);
+  const [summaryName, setSummaryName] = useState<string>();
 
-  const summaryNameRef = useRef<HTMLInputElement>(null);
-
-  const [updateCallInfo, { isLoading: isUpdating }] = useUpdateCallInfoMutation();
   const [exportCallSummary, { isLoading: isExporting }] = useLazyExportCallSummaryQuery();
   const [updateCallSummary, { isLoading: isUpdatingCallSummary }] = useUpdateCallSummaryMutation();
 
@@ -54,14 +53,17 @@ const SummarySideBar: FC<SummarySideBarProps> = ({
     chatId: callSummary?.id,
     offset: transcriptOffset,
     limit: TRANSCRIPT_PAGE_SIZE,
-    sortBy: callSummary?.details?.callInfo?.provider === "WEBRTC" ? "createdAt" : "startSeconds",
+    sortBy:
+      callSummary?.details?.callInfo?.provider === CallProvider.WEBRTC
+        ? "createdAt"
+        : "startSeconds",
   });
 
   const transcript = useMemo(() => transcriptData?.data || [], [transcriptData]);
   const transcriptTotal = useMemo(() => transcriptData?.count || 0, [transcriptData]);
 
   const { exportTxtFromText } = useFileExport();
-  const isLoading = isUpdating || isExporting || isUpdatingCallSummary;
+  const isLoading = isExporting || isUpdatingCallSummary;
   const isAdmin = user?.role === UserRole.ADMIN;
 
   // Append new results when transcriptData changes
@@ -76,20 +78,16 @@ const SummarySideBar: FC<SummarySideBarProps> = ({
     setTranscriptOffset(0);
   }, [callSummary?.id]);
 
+  useEffect(() => {
+    if (callSummary?.details?.callInfo?.summaryName) {
+      setSummaryName(callSummary?.details?.callInfo?.summaryName);
+    }
+  }, [callSummary?.details?.callInfo?.summaryName]);
+
   const handleLoadMore = () => {
     if (transcriptOffset >= transcriptTotal) return;
     setTranscriptOffset(prev => prev + TRANSCRIPT_PAGE_SIZE);
   };
-
-  useEffect(() => {
-    setSummaryName(callSummary?.details?.callInfo?.summaryName);
-  }, [callSummary]);
-
-  useEffect(() => {
-    if (isRenaming) {
-      summaryNameRef.current?.focus();
-    }
-  }, [isRenaming]);
 
   const onExportClick = async () => {
     try {
@@ -117,10 +115,6 @@ const SummarySideBar: FC<SummarySideBarProps> = ({
     }
   };
 
-  // const onDeleteClick = () => {
-  //   setDeleteDialogData({ open: true, chatId: callSummary?.id });
-  // };
-
   const onDeleteConfirm = () => {
     updateCallSummary({ chatId: callSummary?.id, data: { summary: [] } });
     refetchCallLogs();
@@ -129,24 +123,6 @@ const SummarySideBar: FC<SummarySideBarProps> = ({
 
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
     setSelectedTab(newValue);
-  };
-
-  const onRenameButtonClick = () => {
-    setIsRenaming(true);
-  };
-
-  const onRenameSummary = async (value: string) => {
-    if (!value.trim() || value === callSummary?.details?.callInfo?.summaryName) {
-      setIsRenaming(false);
-      return;
-    }
-    try {
-      await updateCallInfo({ chatId: callSummary?.id, callInfo: { summaryName: value } });
-    } catch (error) {
-      logger.info(`Error updating call summary:, ${error}`);
-    } finally {
-      setIsRenaming(false);
-    }
   };
 
   const renderTranscript = (item: Transcript, index: number) => {
@@ -235,21 +211,23 @@ const SummarySideBar: FC<SummarySideBarProps> = ({
       open={true}
       onClose={() => setCallSummary(null)}
       className="font-['IBM_Plex_Serif']"
-      title={summaryName}
+      title="Summary"
       headerButtons={[
+        {
+          alt: "Data policy",
+          icon: <DataPolicy />,
+          onClick: () => openLinkInNewTab(ALLY_DATA_POLICY_URL),
+          show: true,
+          text: "Data policy",
+        },
         {
           alt: "Export",
           icon: <Download />,
           onClick: onExportClick,
           // TODO: To be shown when the export functionality is implemented for admin
           show: !isAdmin,
+          text: "Export summary",
         },
-        // Hidden till a clarity is achieved on the delete functionality
-        // {
-        //   alt: "Delete",
-        //   icon: <Delete />,
-        //   onClick: onDeleteClick,
-        // },
       ]}
     >
       <div className="w-[55vw] h-full flex flex-col">
@@ -269,27 +247,17 @@ const SummarySideBar: FC<SummarySideBarProps> = ({
 
         {selectedTab === 1 && (
           <div className="w-full h-full p-2">
-            <div className="flex items-center mb-4">
-              <TextField
-                inputRef={summaryNameRef}
-                value={summaryName}
-                onChange={e => setSummaryName(e.target.value)}
-                onBlur={() => onRenameSummary(summaryName)}
-                className={`${isRenaming ? "" : "pointer-events-none"} w-fit`}
-                inputStyles={{ fontSize: "24px", fontWeight: "700", fontFamily: "IBM_Plex_Serif" }}
-                showBorder={false}
-              />
-              {!isRenaming && !isAdmin && (
-                <Edit onClick={onRenameButtonClick} className="cursor-pointer" />
-              )}
-            </div>
             <CallSummary
-              className="max-h-[calc(100vh-260px)]"
-              callSummary={callSummary}
+              headerContent={
+                <SummaryHeader
+                  summaryName={summaryName}
+                  setSummaryName={setSummaryName}
+                  chatId={callSummary.id}
+                />
+              }
+              className="max-h-[calc(100vh-320px)]"
               chatId={callSummary.id}
-              isSummaryLoading={isLoading}
-              onProceed={() => refetchCallLogs()}
-              fromSummarySidebar={true}
+              postProcess={refetchCallLogs}
               isInSidebar={true}
             />
           </div>

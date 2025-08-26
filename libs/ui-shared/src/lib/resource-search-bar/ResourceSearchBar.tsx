@@ -1,16 +1,23 @@
 "use client";
 
 import { FC, useState, useEffect } from "react";
-import { Autocomplete, TextField, InputAdornment } from "@mui/material";
+
 import SearchIcon from "@mui/icons-material/Search";
+import { Autocomplete, TextField, InputAdornment } from "@mui/material";
+import { X } from "lucide-react";
+
+import { searchBarStyles } from "./constants";
+import { SearchVariant } from "../../types";
 
 /**
  * Props for SearchBar component.
  */
+
 export interface SearchBarProps {
   onSearch: (searchTerm: string) => void;
   initialValue?: string;
   suggestions?: string[];
+  mode?: SearchVariant;
 }
 
 const MAX_CHARACTER_LIMIT = 150;
@@ -20,7 +27,12 @@ const MAX_CHARACTER_LIMIT = 150;
  * @component
  * @param {SearchBarProps} props - Props for SearchBar
  */
-const SearchBar: FC<SearchBarProps> = ({ onSearch, initialValue = "", suggestions = [] }) => {
+const SearchBar: FC<SearchBarProps> = ({
+  onSearch,
+  initialValue = "",
+  suggestions = [],
+  mode = SearchVariant.LIGHT,
+}) => {
   const [searchTerm, setSearchTerm] = useState(initialValue);
 
   useEffect(() => {
@@ -42,19 +54,14 @@ const SearchBar: FC<SearchBarProps> = ({ onSearch, initialValue = "", suggestion
   };
 
   /**
-   * Renders a suggestion card for the autocomplete dropdown.
+   * Renders a option card for the autocomplete dropdown.
    */
-  const renderSuggestionCard = (
-    props: any,
-    option: string,
-    { selected }: { selected: boolean },
-  ) => {
+  const renderOptionCard = (props: any, option: string, { selected }: { selected: boolean }) => {
     return (
       <li
         {...props}
-        className={`flex items-center h-12 sm:text-[16px] text-[14px] font-['IBM_Plex_Serif'] font-serif text-[#555] cursor-pointer pl-4 transition-colors ${
-          selected ? "bg-[#fafafa]" : "bg-white"
-        }`}
+        className={`flex items-center h-12 sm:text-[16px] text-[14px] font-['IBM_Plex_Serif'] cursor-pointer pl-4 transition-colors 
+          ${selected ? "bg-[#fafafa]" : searchBarStyles[mode].optionCard}`}
       >
         <SearchIcon className="mr-2 text-[#888]" />
         {option}
@@ -70,40 +77,50 @@ const SearchBar: FC<SearchBarProps> = ({ onSearch, initialValue = "", suggestion
       <TextField
         {...params}
         variant="outlined"
-        placeholder="Search"
+        placeholder="Need guidance? Search here.."
         value={searchTerm}
         maxLength={MAX_CHARACTER_LIMIT}
         onChange={e => setSearchTerm(e.target.value.slice(0, MAX_CHARACTER_LIMIT))}
-        className="font-['IBM_Plex_Serif'] text-[16px] h-[40px] sm:h-[56px]"
+        className={`font-['IBM_Plex_Serif'] text-[16px] ${searchBarStyles[mode].textFieldHeight}`}
         sx={{
+          borderRadius: "8px",
+          overflow: "hidden",
+          border: searchBarStyles[mode].border,
           "& .MuiOutlinedInput-root": {
-            height: { xs: "40px", sm: "56px" },
+            height: searchBarStyles[mode].rootHeight,
             fontFamily: "IBM_Plex_Serif",
             fontSize: { xs: "16px", sm: "18px" },
+            "& input": {
+              color: searchBarStyles[mode].color,
+            },
             "& fieldset": {
-              border: "0.5px solid #D6D7DB",
+              border: searchBarStyles[mode].border,
               borderRadius: "8px",
             },
             "&:hover fieldset": {
-              border: "0.5px solid #D6D7DB",
+              border: searchBarStyles[mode].border,
             },
             "&.Mui-focused fieldset": {
-              border: "0.5px solid #D6D7DB",
+              border: searchBarStyles[mode].border,
             },
           },
-          backgroundColor: "#FFF",
+          "& .MuiInputBase-input::placeholder": {
+            color: searchBarStyles[mode].placeholderColor,
+          },
+          backgroundColor: searchBarStyles[mode].backgroundColor,
         }}
         InputProps={{
           ...params.InputProps,
+          maxLength: MAX_CHARACTER_LIMIT,
           startAdornment: (
             <>
               <InputAdornment position="start">
-                <SearchIcon className="ml-[6px]" />
+                <SearchIcon className={`ml-[6px] ${searchBarStyles[mode].searchIcon}`} />
               </InputAdornment>
               {params.InputProps.startAdornment}
             </>
           ),
-          endAdornment: null,
+          endAdornment: searchTerm && params.InputProps.endAdornment,
         }}
       />
     );
@@ -116,15 +133,27 @@ const SearchBar: FC<SearchBarProps> = ({ onSearch, initialValue = "", suggestion
         id="free-solo-2-demo"
         options={suggestions}
         className="w-full h-[36px] sm:h-[60px]"
+        clearIcon={<X width={16} height={16} stroke={searchBarStyles[mode].clearIcon} />}
         value={searchTerm}
-        disableClearable
         onChange={(_, newValue) => {
           const limitedValue = newValue ? newValue.slice(0, MAX_CHARACTER_LIMIT) : "";
           setSearchTerm(limitedValue);
           if (limitedValue) onSearch(limitedValue);
         }}
-        renderOption={renderSuggestionCard}
+        renderOption={renderOptionCard}
         renderInput={renderInput}
+        slotProps={{
+          paper: {
+            sx: {
+              borderRadius: "0px 0px 8px 8px",
+              overflow: "hidden",
+              backgroundColor: searchBarStyles[mode].backgroundColor,
+              "& .MuiAutocomplete-listbox": {
+                padding: "0px !important",
+              },
+            },
+          },
+        }}
       />
     </form>
   );

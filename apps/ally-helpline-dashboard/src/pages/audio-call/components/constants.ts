@@ -1,5 +1,5 @@
-import { InDoubt, NoNetwork } from "@/assets/icons";
-import { SocketDisconnectionReasons } from "@/constants/socket";
+import { InDoubt, NoNetwork } from "@assets";
+import { SocketDisconnectionReasons } from "@constants";
 
 export const socketDisconnectionReasonContentMap = {
   [SocketDisconnectionReasons.NO_NETWORK]: {

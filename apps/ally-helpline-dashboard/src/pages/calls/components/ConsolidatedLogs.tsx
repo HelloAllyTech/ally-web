@@ -1,32 +1,33 @@
-import { useEffect, useState, useRef } from "react";
-import { useDispatch, useSelector } from "react-redux";
+import { useEffect, useState, useRef, FC } from "react";
+
 import { CircularProgress } from "@mui/material";
+import { useDispatch, useSelector } from "react-redux";
 import { toast } from "sonner";
 
 import { GenericTable } from "@ally-ui-mono/ui-shared";
 import { Column, FilterType } from "@ally-ui-mono/ui-shared/lib/generic-table/types";
-import { RootState } from "@/store/store";
-import { updateFilters } from "@/reducer/callsReducer";
-import { useGetAdminCallLogsQuery, useGetCounsellorsQuery, useGetCallTagsQuery } from "@/api/calls";
-import { Button, FallbackUI, TagGroup } from "@/components";
+import { useGetAdminCallLogsQuery, useGetCounsellorsQuery, useGetCallTagsQuery } from "@api";
 import {
   NoResults,
   CallIdIcon,
   DateIcon,
   TimerIcon,
-  StarIcon,
   TagsIcon,
   ReviewIcon,
   UserIcon,
-} from "@/assets/icons";
-import { CallLog, GetCallLogsInput } from "@/types/calls";
+  SummaryGenerationIcon,
+} from "@assets";
+import { Button, FallbackUI, SummaryStatusChip, TagGroup } from "@components";
+import { updateFilters } from "@reducer";
+import { RootState } from "@store";
+import { CallLog, ChatSummaryStatus, GetCallLogsInput, TagDisplay } from "@types";
+import { convertSecondsToDuration, getFormattedDate, getSummaryEnabledStatus } from "@utils";
 
-import { convertSecondsToDuration, getFormattedDate } from "../utils";
-import { CALL_LOGS_PAGINATION_LIMIT, defaultTags, tagColors } from "../constants";
-import { TagDisplay } from "../types";
 import { SummarySideBar } from ".";
+import { CALL_LOGS_PAGINATION_LIMIT, defaultTags, tagColors } from "../constants";
+import { LogsTableProps } from "./types";
 
-const ConsolidatedLogs = () => {
+const ConsolidatedLogs: FC<LogsTableProps> = ({ refreshKey }) => {
   const dispatch = useDispatch();
 
   const [callSummary, setCallSummary] = useState<CallLog | null>(null);
@@ -57,6 +58,12 @@ const ConsolidatedLogs = () => {
       });
     }
   };
+
+  useEffect(() => {
+    if (refreshKey) {
+      refetchCallLogs();
+    }
+  }, [refreshKey]);
 
   // Append new callLogs to the list and handle hasMore
   useEffect(() => {
@@ -146,7 +153,7 @@ const ConsolidatedLogs = () => {
   const columns: Column<any>[] = [
     {
       key: "callName",
-      header: "Call ID",
+      header: "Session ID",
       style: { width: "15%" },
       icon: <CallIdIcon />,
     },
@@ -196,18 +203,24 @@ const ConsolidatedLogs = () => {
         })) || defaultTags,
     },
     {
-      key: "review",
-      header: "Review",
+      key: "summaryStatus",
+      header: "Summary Status",
+      style: { width: "16%" },
+      render: (_value, row) => <SummaryStatusChip status={row.raw.summaryStatus} />,
+      icon: <SummaryGenerationIcon />,
+    },
+    {
+      key: "summary",
+      header: "Summary",
       style: { width: "10%" },
       render: (_value, row) => {
-        const isSummaryNull = row.raw.details?.summary === null;
+        const isSummaryEnabled = getSummaryEnabledStatus(row.raw.summaryStatus);
         return (
           <Button
-            disabled={isSummaryNull}
+            disabled={!isSummaryEnabled}
             onClick={() => setCallSummary(row.raw)}
-            className={`flex items-center justify-center w-full py-[8px] bg-transparent border-none hover:bg-transparent ${
-              isSummaryNull ? "!pointer-events-auto !cursor-default" : "cursor-pointer"
-            }`}
+            fullWidth={true}
+            variant="icon"
           >
             <ReviewIcon />
           </Button>
@@ -286,7 +299,8 @@ const ConsolidatedLogs = () => {
     return null;
   };
 
-  const onSummarySubmit = async () => {
+  const onSummarySubmit = async (newStatus?: ChatSummaryStatus) => {
+    if (newStatus && callSummary?.summaryStatus === newStatus) return;
     const chatId = callSummary?.id;
     const response = await refetchCallLogs();
 
@@ -306,14 +320,14 @@ const ConsolidatedLogs = () => {
           onFilterChange={handleFilterChange}
           handleLoadMore={callLogList?.length > 0 && hasMore && handleLoadMore}
           fallbackUI={renderFallbackUI()}
-          className="min-w-full min-w-[100%] max-h-[calc(100vh-140px)] font-['IBM_Plex_Serif'] overflow-y-scroll"
+          className="min-w-full max-h-[calc(100vh-140px)] font-['IBM_Plex_Serif'] overflow-y-scroll"
         />
       </div>
       {callSummary && callSummary?.id && (
         <SummarySideBar
           callSummary={callSummary}
-          refetchCallLogs={onSummarySubmit}
           setCallSummary={setCallSummary}
+          refetchCallLogs={onSummarySubmit}
         />
       )}
     </>

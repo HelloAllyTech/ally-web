@@ -1,34 +1,37 @@
 import { useState, useEffect } from "react";
-import { Route, Routes, Navigate, matchPath, useNavigate, useLocation } from "react-router-dom";
+
 import { useSelector } from "react-redux";
+import { Route, Routes, Navigate, matchPath, useNavigate, useLocation } from "react-router-dom";
 import { toast } from "sonner";
 
+import { logger } from "@ally-ui-mono/ui-shared";
+import { useAcceptCallMutation, useGetWaitingClientsQuery, useGetChatTypesQuery } from "@api";
+import { MenuIcon } from "@assets";
+import { AudioCallPopup, CallPicker, NavSideBar } from "@components";
+import {
+  TabId,
+  CallType,
+  LOCAL_STORAGE_KEYS,
+  AUTH_RETRY_CONFIG,
+  Permissions,
+  ROUTES,
+  navBarOptions,
+} from "@constants";
+import { useUser } from "@hooks";
 import {
   Calls,
   Calendar,
   Settings,
   Analytics,
   AudioCall,
-  StressBusters,
   PostCallSummary,
   ClientInterface,
   Search,
-  StartSession,
-} from "@/pages";
-import { useUser } from "@/hooks";
-import { TabId } from "@/constants/tabs";
-import { RootState, store } from "@/store/store";
-import { UserRole, UserStatus } from "@/types/user";
-import { WaitingClient } from "@/types/calls";
-import { setUserStatus, setAvailableChatTypes } from "@/reducer/userReducer";
-import { Permissions } from "@/constants/permissions";
-import { navBarOptions, ROUTES } from "@/constants/routes";
-import { CallPicker, NavSideBar } from "@/components";
-import { MenuIcon } from "@/assets/icons";
-import { useAcceptCallMutation, useGetWaitingClientsQuery } from "@/api/audioCall";
-import { logger } from "@ally-ui-mono/ui-shared";
-import { useGetChatTypesQuery } from "@/api/calls";
-import { CallType } from "@/constants/call";
+  StressBuster,
+} from "@pages";
+import { setUserStatus, setAvailableChatTypes, unauthenticate } from "@reducer";
+import { RootState, store } from "@store";
+import { UserRole, UserStatus, WaitingClient } from "@types";
 
 import PermissionGuardedRoute from "./PermissionGuardedRoute";
 
@@ -49,8 +52,8 @@ const PrivateRouteLayout = () => {
 
   const { userStatus } = useSelector((state: RootState) => state.user);
 
-  const excludeNavBar = [ROUTES.AUDIO_CALL, ROUTES.SUMMARY] as string[];
-  const excludeCallPicker = [ROUTES.AUDIO_CALL, ROUTES.SUMMARY] as string[];
+  const excludeNavBar = [ROUTES.AUDIO_CALL, ROUTES.SUMMARY, ROUTES.STRESS_BUSTER] as string[];
+  const excludeCallPicker = [ROUTES.AUDIO_CALL, ROUTES.SUMMARY, ROUTES.STRESS_BUSTER] as string[];
   const isAvailable = userStatus === UserStatus.AVAILABLE;
 
   const { data: chatTypes } = useGetChatTypesQuery();
@@ -69,15 +72,46 @@ const PrivateRouteLayout = () => {
   }, [chatTypes]);
 
   useEffect(() => {
-    const userStatusLocalStorage = localStorage.getItem("userStatus");
+    const userStatusLocalStorage = localStorage.getItem(LOCAL_STORAGE_KEYS.USER_STATUS);
     if (userStatusLocalStorage) {
       store.dispatch(setUserStatus(userStatusLocalStorage as UserStatus));
     } else {
       updateUserStatus(UserStatus.AVAILABLE);
     }
     const verifyAuth = async () => {
-      const userData = await checkAuth();
+      const attemptAuthentication = async (attempt: number): Promise<any> => {
+        try {
+          const data = await checkAuth();
+
+          if (data) {
+            return data;
+          }
+
+          // If this is not the last attempt, wait before retrying
+          if (attempt < AUTH_RETRY_CONFIG.MAX_ATTEMPTS) {
+            await new Promise(resolve => setTimeout(resolve, AUTH_RETRY_CONFIG.RETRY_DELAY_MS));
+            return attemptAuthentication(attempt + 1);
+          }
+
+          return null;
+        } catch (error) {
+          logger.info(`Authentication attempt ${attempt} failed: ${JSON.stringify(error)}`);
+
+          // If this is not the last attempt, wait before retrying
+          if (attempt < AUTH_RETRY_CONFIG.MAX_ATTEMPTS) {
+            await new Promise(resolve => setTimeout(resolve, AUTH_RETRY_CONFIG.RETRY_DELAY_MS));
+            return attemptAuthentication(attempt + 1);
+          }
+
+          return null;
+        }
+      };
+
+      const userData = await attemptAuthentication(1);
       if (!userData) {
+        localStorage.removeItem(LOCAL_STORAGE_KEYS.ACCESS_TOKEN);
+        localStorage.removeItem(LOCAL_STORAGE_KEYS.REFRESH_TOKEN);
+        store.dispatch(unauthenticate());
         navigate(ROUTES.LOGIN);
       }
     };
@@ -156,7 +190,15 @@ const PrivateRouteLayout = () => {
                   )
                 }
               />
-              <Route path={ROUTES.AUDIO_CALL} element={<AudioCall />} />
+              <Route
+                path={ROUTES.AUDIO_CALL}
+                element={
+                  <PermissionGuardedRoute
+                    permission={Permissions.VIEW_START_CALL_PAGE}
+                    element={<AudioCall />}
+                  />
+                }
+              />
               <Route
                 path={ROUTES.CLIENT}
                 element={
@@ -203,11 +245,11 @@ const PrivateRouteLayout = () => {
                 }
               />
               <Route
-                path={ROUTES.STRESS_BUSTERS}
+                path={ROUTES.STRESS_BUSTER}
                 element={
                   <PermissionGuardedRoute
                     permission={Permissions.VIEW_NAVBAR_STRESS_BUSTER}
-                    element={<StressBusters />}
+                    element={<StressBuster />}
                   />
                 }
               />
@@ -230,18 +272,27 @@ const PrivateRouteLayout = () => {
                   />
                 }
               />
-              {chatTypes?.includes(CallType.MICROPHONE_CHAT) && (
-                <Route
-                  path={ROUTES.START_SESSION}
-                  element={
-                    <PermissionGuardedRoute
-                      // TODO: Add correct permission for Start Session once BE implementation is done
-                      permission={Permissions.VIEW_START_CALL_PAGE}
-                      element={<StartSession />}
-                    />
-                  }
-                />
-              )}
+              {/* <Route
+                path={ROUTES.LEARN}
+                element={
+                  <PermissionGuardedRoute
+                    // TODO: Add correct permission for Learn once BE implementation is done
+                    permission={Permissions.VIEW_NAVBAR_LEARN}
+                    element={<Learn />}
+                  />
+                }
+              />
+              <Route path={ROUTES.SCENARIO} element={<Scenario />} />
+              <Route
+                path={ROUTES.SIMULATION_SUMMARY}
+                element={
+                  <PermissionGuardedRoute
+                    // TODO: Add correct permission for Summary once BE implementation is done
+                    permission={Permissions.VIEW_NAVBAR_LEARN}
+                    element={<SimulationSummary />}
+                  />
+                }
+              /> */}
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
           </div>
@@ -252,6 +303,7 @@ const PrivateRouteLayout = () => {
           !isPathExcluded(pathname, excludeCallPicker) && (
             <CallPicker onAccept={onAcceptCall} onDecline={() => setShowAlertCall(false)} />
           )}
+        <AudioCallPopup />
       </div>
     );
   else return <></>;

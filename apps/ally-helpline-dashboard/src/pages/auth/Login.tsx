@@ -1,20 +1,30 @@
 import { useEffect, useState, useCallback, FunctionComponent } from "react";
-import { useNavigate } from "react-router-dom";
-import { FetchBaseQueryError } from "@reduxjs/toolkit/query";
-import { toast } from "sonner";
-import { motion, AnimatePresence } from "framer-motion";
 
-import { useUser } from "@/hooks";
-import { BackCircle } from "@/assets/icons";
-import { validateEmail } from "@/utils/common";
-import { Button, OTP, TextField } from "@/components";
-import { LoginImage } from "@/assets/images";
-import { useGenerateOTPMutation, useVerifyOTPMutation } from "@/api/auth";
+import { FetchBaseQueryError } from "@reduxjs/toolkit/query";
+import { motion, AnimatePresence } from "framer-motion";
+import { useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
+
+import { useGenerateOTPMutation, useVerifyOTPMutation } from "@api";
+import { Ally, BackCircle, LoginImage, RedirectIcon } from "@assets";
+import { Button, Carousel, OTP, TextField } from "@components";
+import {
+  ALLY_PRIVACY_POLICY_URL,
+  ALLY_TERMS_URL,
+  ALLY_URL,
+  CAROUSEL_SLIDES,
+  LOCAL_STORAGE_KEYS,
+} from "@constants";
+import { useUser } from "@hooks";
+import { RootState } from "@store";
+import { openLinkInNewTab, validateEmail } from "@utils";
 
 import { LoginSection } from "./constants";
 
-const Login: FunctionComponent = () => {
+export const Login: FunctionComponent = () => {
   const navigate = useNavigate();
+  const { user } = useSelector((state: RootState) => state.user);
 
   const [loginSection, setLoginSection] = useState<LoginSection>(LoginSection.EMAIL);
   const [email, setEmail] = useState<string>("");
@@ -54,10 +64,14 @@ const Login: FunctionComponent = () => {
   }, []);
 
   useEffect(() => {
-    if (isAuthenticated) {
+    checkAuth();
+  }, []);
+
+  useEffect(() => {
+    if (isAuthenticated && user) {
       navigate("/");
     }
-  }, [isAuthenticated, navigate]);
+  }, [isAuthenticated, navigate, user]);
 
   useEffect(() => {
     if (generateOTPError) {
@@ -91,10 +105,12 @@ const Login: FunctionComponent = () => {
         const errorMessage = errorData?.message ?? "Failed to verify OTP. Please try again.";
         toast.error(errorMessage);
       } else if (isVerifyOTPSuccess && verifyOTPData) {
-        localStorage.setItem("accessToken", verifyOTPData.accessToken);
-        localStorage.setItem("refreshToken", verifyOTPData.refreshToken);
-        await checkAuth();
-        navigate("/");
+        localStorage.setItem(LOCAL_STORAGE_KEYS.ACCESS_TOKEN, verifyOTPData.accessToken);
+        localStorage.setItem(LOCAL_STORAGE_KEYS.REFRESH_TOKEN, verifyOTPData.refreshToken);
+        const userData = await checkAuth();
+        if (userData) {
+          navigate("/");
+        }
       }
     })();
   }, [isVerifyOTPSuccess, verifyOTPError, verifyOTPData]);
@@ -148,7 +164,7 @@ const Login: FunctionComponent = () => {
             <span>Hey,</span>
             <h1>
               <span>Welcome to </span>
-              <span className="font-bold italic">Ally</span>
+              <span className="font-bold italic">ally</span>
             </h1>
             <span className="text-[24px] mt-[24px]">Enter your email address to continue</span>
           </div>
@@ -196,8 +212,20 @@ const Login: FunctionComponent = () => {
           </Button>
           <div className="text-[12px] text-[#8C8C8C] mt-2">
             By tapping next, you agree to Ally's{" "}
-            <span className="text-[#0473F2]">Terms & Conditions</span> and acknowledge{" "}
-            <span className="text-[#0473F2]">Privacy Policy</span>.
+            <span
+              className="text-[#0473F2] cursor-pointer"
+              onClick={() => openLinkInNewTab(ALLY_TERMS_URL)}
+            >
+              Terms & Conditions
+            </span>{" "}
+            and acknowledge{" "}
+            <span
+              className="text-[#0473F2] cursor-pointer"
+              onClick={() => openLinkInNewTab(ALLY_PRIVACY_POLICY_URL)}
+            >
+              Privacy Policy
+            </span>
+            .
           </div>
         </motion.div>
       );
@@ -214,7 +242,7 @@ const Login: FunctionComponent = () => {
         <BackCircle className="self-start cursor-pointer" onClick={handleBack} />
         <h1 className="text-[32px] font-['Replay_Pro']">Verify your email address</h1>
         <div className="text-base mb-2 font-['Replay_Pro'] flex flex-col">
-          <span className="text-[24px]">Enter the code sent to</span>
+          <span className="text-[24px]">Enter the security code sent to</span>
           <span className="font-semibold text-[24px]">{email}</span>
         </div>
         <div className="flex flex-col gap-2">
@@ -253,11 +281,28 @@ const Login: FunctionComponent = () => {
 
   return (
     <div className="flex h-screen p-8">
-      <img
-        src={LoginImage}
-        alt="Login"
-        className="max-w-[50%] flex-1 h-full object-cover hidden sm:block rounded-[16px]"
-      />
+      <div className="max-w-[50%] flex-1 h-full relative">
+        <img
+          src={LoginImage}
+          alt="Login"
+          className="w-full h-full object-cover hidden sm:block rounded-[16px]"
+        />
+        <Carousel
+          slides={CAROUSEL_SLIDES}
+          className="absolute top-[50%] left-[50%] translate-x-[-50%] translate-y-[-50%] max-h-[470px] max-w-[380px]"
+        />
+        <div
+          className="flex items-center gap-2 p-3 rounded-tl-2xl bg-white absolute bottom-0 right-0 cursor-pointer"
+          onClick={() => openLinkInNewTab(ALLY_URL)}
+        >
+          <Ally className="w-10 h-10" />
+          <div className="flex flex-col mr-4 font-['Replay_Pro']">
+            <span className="text-xl font-bold text-[#0F172A]">Ally</span>
+            <span className="text-sm font-medium text-[#858688]">helloally.ai</span>
+          </div>
+          <RedirectIcon width={36} height={36} className="border border-[#E8E8E8] rounded-sm p-2" />
+        </div>
+      </div>
       <div className="flex-1 flex flex-col items-center justify-center">
         <div className="sm:w-1/2 w-[90%] flex flex-col gap-6">
           <div className="flex flex-col">
@@ -268,5 +313,3 @@ const Login: FunctionComponent = () => {
     </div>
   );
 };
-
-export default Login;

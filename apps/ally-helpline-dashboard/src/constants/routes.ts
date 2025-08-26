@@ -1,8 +1,7 @@
-import { SearchIcon, LogsIcon, StatsIcon, CommunityIcon, StartSessionIcon } from "@/assets/icons";
+import { SearchIcon, StatsIcon, CommunityIcon, ScribeIcon } from "@assets/icons";
 
-import { TabId } from "./tabs";
-import { CallType } from "./call";
 import { Permissions } from "./permissions";
+import { TabId } from "./tabs";
 
 export const ROUTES = {
   // Public Routes
@@ -16,35 +15,28 @@ export const ROUTES = {
   AUDIO_CALL: "/audio-call",
   CALLS: "/calls",
   CALENDER: "/calender",
-  STRESS_BUSTERS: "/stress_busters",
+  STRESS_BUSTER: "/stress-buster",
   ANALYTICS: "/analytics",
   SETTINGS: "/settings",
   SUMMARY: "/summary/:chatId",
   CLIENT: "/client",
   SEARCH: "/search",
-  START_SESSION: "/start-session",
+  LEARN: "/learn",
+  SCENARIO: "/scenario/:scenarioId",
+  SIMULATION_SUMMARY: "/simulation-summary",
 } as const;
 
 export const navBarOptions = [
   {
-    id: TabId.START_SESSION,
-    title: "Start Session",
-    Icon: StartSessionIcon,
-    path: ROUTES.START_SESSION,
-    // TODO: Add correct permission for Start Session once BE implementation is done
-    permission: Permissions.VIEW_NAVBAR_SEARCH,
-    relatedChatType: CallType.MICROPHONE_CHAT,
-  },
-  {
     id: TabId.CALLS,
-    title: "Logs",
-    Icon: LogsIcon,
+    title: "Scribe",
+    Icon: ScribeIcon,
     path: ROUTES.CALLS,
     permission: Permissions.VIEW_NAVBAR_CALLS,
   },
   {
     id: TabId.ANALYTICS,
-    title: "Stats",
+    title: "Statistics",
     Icon: StatsIcon,
     path: ROUTES.ANALYTICS,
     permission: Permissions.VIEW_NAVBAR_ANALYTICS,
@@ -64,4 +56,12 @@ export const navBarOptions = [
     path: "https://community.helloally.ai/",
     permission: "",
   },
+  // {
+  //   id: TabId.LEARN,
+  //   title: "Learn",
+  //   // TODO: Add correct permission and icon for Learn once available
+  //   Icon: CommunityIcon,
+  //   path: ROUTES.LEARN,
+  //   permission: "",
+  // },
 ];

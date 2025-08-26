@@ -1,10 +1,10 @@
-import { Provider } from "react-redux";
-import { createRoot } from "react-dom/client";
 import { StyledEngineProvider } from "@mui/material/styles";
+import { createRoot } from "react-dom/client";
+import { Provider } from "react-redux";
 
 import "./index.css";
 import App from "./App.tsx";
-import { store } from "./store/store";
+import { store } from "./store";
 
 createRoot(document.getElementById("root")!).render(
   <StyledEngineProvider injectFirst>

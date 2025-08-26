@@ -1,12 +1,13 @@
 import { FC, useEffect, useRef, useState } from "react";
-import { useSelector } from "react-redux";
+
+import { getKeyFromIndex } from "@utils";
 import { motion } from "framer-motion";
+import { useSelector } from "react-redux";
 
-import { RootState } from "@/store/store";
-import { getKeyFromIndex } from "@/utils/common";
+import { RootState } from "@store";
 
-import { getSpeakerName } from "../utils";
 import { RealTimeTranscriptProps } from "../types";
+import { getSpeakerName } from "../utils";
 
 const RealTimeTranscript: FC<RealTimeTranscriptProps> = ({ isFocusMode, transcriptions }) => {
   const user = useSelector((state: RootState) => state.user.user);
@@ -16,7 +17,7 @@ const RealTimeTranscript: FC<RealTimeTranscriptProps> = ({ isFocusMode, transcri
   const [isUserScrolling, setIsUserScrolling] = useState<boolean>(false);
 
   useEffect(() => {
-    if (transcriptContainerRef.current && isFocusMode && !isUserScrolling) {
+    if (transcriptContainerRef.current && !isFocusMode && !isUserScrolling) {
       // Add a small delay to ensure content is rendered before scrolling
       setTimeout(() => {
         if (transcriptContainerRef.current) {
@@ -45,7 +46,7 @@ const RealTimeTranscript: FC<RealTimeTranscriptProps> = ({ isFocusMode, transcri
     <motion.div
       className="w-[85%] h-[55vh] flex flex-col overflow-hidden"
       initial={{ height: 0 }}
-      animate={{ height: isFocusMode ? "55vh" : 0 }}
+      animate={{ height: isFocusMode ? 0 : "55vh" }}
       exit={{ height: 0 }}
       transition={{ duration: 0.3, ease: "easeInOut" }}
     >

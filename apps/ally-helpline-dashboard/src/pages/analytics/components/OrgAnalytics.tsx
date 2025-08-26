@@ -1,7 +1,7 @@
 import { useEffect, useState, FunctionComponent } from "react";
 
-import { useLazyGetDashboardUrlQuery, useLazyGetDashboardsQuery } from "@/api/analytics";
 import { logger } from "@ally-ui-mono/ui-shared";
+import { useLazyGetDashboardUrlQuery, useLazyGetDashboardsQuery } from "@api";
 
 const OrgAnalytics: FunctionComponent = () => {
   const [getDashboardUrl] = useLazyGetDashboardUrlQuery();

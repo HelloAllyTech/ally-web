@@ -7,7 +7,7 @@ export interface ActionDialogProps {
   primaryButton: {
     label: string;
     onClick: () => void | null;
-    variant: "default" | "destructive" | "outline" | "secondary";
+    variant: "primary" | "destructive" | "secondary";
   } | null;
   secondaryButton: {
     label: string;

@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react";
+
 import { CheckCircle } from "lucide-react";
 
-import { LifelineLogo } from "@/assets/icons";
+import { LifelineLogo } from "@assets";
 
-const Health = () => {
+export const Health = () => {
   const [lastChecked, setLastChecked] = useState(new Date());
 
   useEffect(() => {
@@ -42,5 +43,3 @@ const Health = () => {
     </div>
   );
 };
-
-export default Health;
