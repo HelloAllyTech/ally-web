@@ -60,7 +60,7 @@ const SearchBar: FC<SearchBarProps> = ({
     return (
       <li
         {...props}
-        className={`flex items-center h-12 sm:text-[16px] text-[14px] font-['IBM_Plex_Serif'] text-[#555] cursor-pointer pl-4 transition-colors 
+        className={`flex items-center h-12 sm:text-[16px] text-[14px] font-['IBM_Plex_Serif'] cursor-pointer pl-4 transition-colors 
           ${selected ? "bg-[#fafafa]" : searchBarStyles[mode].optionCard}`}
       >
         <SearchIcon className="mr-2 text-[#888]" />

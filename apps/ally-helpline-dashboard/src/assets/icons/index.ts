@@ -39,6 +39,7 @@ import DominantFeelings from "./dominant-feelings.svg?react";
 import Download from "./download.svg?react";
 import Edit from "./edit.svg?react";
 import EndSessionIllustration from "./end-session-illustration.svg?react";
+import Enhance from "./enhance.svg?react";
 import ErrorIcon from "./error-icon.svg?react";
 import Flow from "./flow.svg?react";
 import Focus from "./focus.svg?react";
@@ -58,6 +59,7 @@ import NotesIcon from "./notes.svg?react";
 import ObjectiveObservations from "./objective-observations.svg?react";
 import PauseIcon from "./pause-icon.svg?react";
 import PlansForNextCall from "./plans-for-next-call.svg?react";
+import PlayIcon from "./play-icon.svg?react";
 import RedirectIcon from "./redirect-icon.svg?react";
 import ReferralsProvided from "./referrals-provided.svg?react";
 import Refresh from "./refresh.svg?react";
@@ -89,6 +91,8 @@ import BackgroundBottom from "./transcript-background-bottom.svg?react";
 import BackgroundTop from "./transcript-background-top.svg?react";
 import UserIcon from "./user-icon.svg?react";
 import VerifiedBadge from "./verified-badge.svg?react";
+import VolumeOffIcon from "./volume-off-icon.svg?react";
+import VolumeUpIcon from "./volume-up-icon.svg?react";
 import WarningTriangle from "./warning-triangle.svg?react";
 import Warning from "./warning.svg?react";
 import Waveform from "./waveform.svg?react";
@@ -131,6 +135,7 @@ export {
   Download,
   Edit,
   EndSessionIllustration,
+  Enhance,
   ErrorIcon,
   Flow,
   Focus,
@@ -150,6 +155,7 @@ export {
   ObjectiveObservations,
   PauseIcon,
   PlansForNextCall,
+  PlayIcon,
   RedirectIcon,
   ReferralsProvided,
   Refresh,
@@ -179,6 +185,8 @@ export {
   TimerIcon,
   UserIcon,
   VerifiedBadge,
+  VolumeOffIcon,
+  VolumeUpIcon,
   WarningTriangle,
   Warning,
   Waveform,

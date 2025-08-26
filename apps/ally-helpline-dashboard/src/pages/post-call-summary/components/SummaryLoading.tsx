@@ -97,11 +97,13 @@ const SummaryLoading: FC<SummaryLoadingProps> = ({
   refetchSummary,
   inSummarySidebar = false,
 }) => {
+  const { user } = useUser();
+
   const [currentMessageIndex, setCurrentMessageIndex] = useState<number>(
     inSummarySidebar ? SUMMARY_GENERATION_START_INDEX : 0,
   );
   const [isSummaryRefetching, setIsSummaryRefetching] = useState<boolean>(false);
-  const { user } = useUser();
+
   const isAdmin = user?.role === UserRole.ADMIN;
 
   // Loop the messages from SUMMARY_GENERATION_START_INDEX

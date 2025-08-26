@@ -11,7 +11,7 @@ export const searchBarStyles = {
     textFieldHeight: "40px",
     searchIcon: "[&_path]:fill-[#797C84]",
     clearIcon: "#FFFFFF",
-    optionCard: "bg-[#1E2025]",
+    optionCard: "bg-[#1E2025] text-[#F8F8F8]",
   },
   [SearchVariant.LIGHT]: {
     backgroundColor: "#FFF",
@@ -22,6 +22,6 @@ export const searchBarStyles = {
     placeholderColor: {},
     searchIcon: "",
     clearIcon: "#000000",
-    optionCard: "bg-[#FFF]",
+    optionCard: "bg-[#FFF] text-[#555]",
   },
 };

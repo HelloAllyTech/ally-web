@@ -58,7 +58,7 @@ const CallTranscript: FC<CallTranscriptProps> = ({
 
   const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(null);
   const [isMuted, setIsMuted] = useState<boolean>(true);
-  const [isFocusMode, setIsFocusMode] = useState<boolean>(true);
+  const [isFocusMode, setIsFocusMode] = useState<boolean>(false);
   const [speakerTranscriptions, setSpeakerTranscriptions] = useState<Transcription[]>([]);
   const [myTranscriptions, setMyTranscriptions] = useState<Transcription[]>([]);
   const [nudges, setNudges] = useState<Nudge[]>([]);
@@ -607,7 +607,7 @@ const CallTranscript: FC<CallTranscriptProps> = ({
           showSidebar={isCounsellor && isUserJoined && !isSocketDisconnected}
           isFocusMode={isFocusMode}
           nudges={nudges}
-          onClose={() => setIsFocusMode(false)}
+          onClose={() => setIsFocusMode(true)}
           stage={stage}
         />
       )}

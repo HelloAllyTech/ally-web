@@ -3,7 +3,7 @@ import { SearchVariant } from "../../types";
 export const suggestionsStyles = {
   [SearchVariant.DARK]: {
     header: "text-[14px] text-[#FFFFFF]",
-    suggestionButton: "bg-[#1E2025] border-[#292C33] text-[#999999] text-[12px]",
+    suggestionButton: "bg-[#1E2025] border-[#292C33] text-[#F8F8F8] text-[14px]",
     searchIcon: "text-[#797C84]",
   },
   [SearchVariant.LIGHT]: {

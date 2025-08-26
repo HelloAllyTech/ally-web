@@ -1,10 +1,10 @@
 import { FC, useEffect, useRef, useState } from "react";
 
 import { Skeleton } from "@mui/material";
-import { WandSparkles } from "lucide-react";
 
 import { logger } from "@ally-ui-mono/ui-shared";
 import { useEnhanceContentMutation } from "@api";
+import { Enhance } from "@assets";
 import { EnhanceButtonProps } from "@types";
 
 export const useEnhance = () => {
@@ -105,8 +105,8 @@ export const useEnhance = () => {
         }`}
       onClick={() => triggerEnhance(fieldName, inputText, updateValue)}
     >
-      <div className="bg-[#E5EFFE] rounded-sm p-2 cursor-pointer">
-        <WandSparkles className="text-[#046BE0]" size={20} />
+      <div className="border-[0.5px] border-[#49454F] rounded-[100%] p-2 cursor-pointer bg-white">
+        <Enhance />
       </div>
     </div>
   );

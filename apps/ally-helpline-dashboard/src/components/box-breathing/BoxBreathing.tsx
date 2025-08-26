@@ -1,9 +1,17 @@
 import { FC, useState, useRef, useEffect } from "react";
 
 import { Modal } from "@mui/material";
-import { X, Play, Pause, Volume2, Minimize, Maximize, VolumeOff } from "lucide-react";
+import { X, Minimize, Maximize } from "lucide-react";
 
-import { BoxBreathingBottomGradient, BoxBreathingTopGradient, MindfullnessVideo } from "@assets";
+import {
+  BoxBreathingBottomGradient,
+  BoxBreathingTopGradient,
+  MindfullnessVideo,
+  PauseIcon,
+  PlayIcon,
+  VolumeOffIcon,
+  VolumeUpIcon,
+} from "@assets";
 import { Button, ButtonVariant } from "@components";
 import { getKeyFromIndex } from "@utils";
 
@@ -145,14 +153,14 @@ const BoxBreathing: FC<BoxBreathingProps> = ({
           className="bg-white/10 hover:bg-white/20 transition-colors z-10"
           variant={ButtonVariant.ICON}
         >
-          {isPlaying ? <Pause size={16} /> : <Play size={16} />}
+          {isPlaying ? <PauseIcon /> : <PlayIcon />}
         </Button>
         <Button
           onClick={toggleMute}
           className="bg-white/10 hover:bg-white/20 transition-colors z-10"
           variant={ButtonVariant.ICON}
         >
-          {isMuted ? <VolumeOff size={16} /> : <Volume2 size={16} />}
+          {isMuted ? <VolumeOffIcon /> : <VolumeUpIcon />}
         </Button>
       </div>
 
