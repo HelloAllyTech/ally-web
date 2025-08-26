@@ -2,7 +2,7 @@ import { ChatSummaryStatus, SummaryFieldKey } from "@types";
 
 export enum SectionType {
   BoxBreathing = "Box breathing",
-  CallSummary = "Call summary",
+  SessionSummary = "Session summary",
 }
 
 export enum SummarySectionKey {
