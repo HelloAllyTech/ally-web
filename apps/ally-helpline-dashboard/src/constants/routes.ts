@@ -1,4 +1,4 @@
-import { SearchIcon, StatsIcon, CommunityIcon, ScribeIcon } from "@assets/icons";
+import { SearchIcon, StatsIcon, CommunityIcon, ScribeIcon, LearnIcon } from "@assets/icons";
 
 import { Permissions } from "./permissions";
 import { TabId } from "./tabs";
@@ -60,7 +60,7 @@ export const navBarOptions = [
   //   id: TabId.LEARN,
   //   title: "Learn",
   //   // TODO: Add correct permission and icon for Learn once available
-  //   Icon: CommunityIcon,
+  //   Icon: LearnIcon,
   //   path: ROUTES.LEARN,
   //   permission: "",
   // },

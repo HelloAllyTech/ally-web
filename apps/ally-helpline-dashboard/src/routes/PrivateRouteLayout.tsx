@@ -28,6 +28,9 @@ import {
   ClientInterface,
   Search,
   StressBuster,
+  Learn,
+  Scenario,
+  SimulationSummary,
 } from "@pages";
 import { setUserStatus, setAvailableChatTypes, unauthenticate } from "@reducer";
 import { RootState, store } from "@store";
@@ -273,7 +276,7 @@ const PrivateRouteLayout = () => {
                   />
                 }
               />
-              {/* <Route
+              <Route
                 path={ROUTES.LEARN}
                 element={
                   <PermissionGuardedRoute
@@ -293,7 +296,7 @@ const PrivateRouteLayout = () => {
                     element={<SimulationSummary />}
                   />
                 }
-              /> */}
+              />
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
           </div>

@@ -47,6 +47,7 @@ import HomeworkRecommended from "./homework-recommended.svg?react";
 import InDoubt from "./in-doubt.svg?react";
 import IssuesWorkedOn from "./issues-worked-on.svg?react";
 import KeyConcerns from "./key-concerns.svg?react";
+import LearnIcon from "./learn-icon.svg?react";
 import LifelineLogo from "./lifeline-logo.svg?react";
 import Lock from "./lock.svg?react";
 import Logout from "./logout-icon.svg?react";
@@ -70,6 +71,7 @@ import ScribeIcon from "./scribe.svg?react";
 import SearchIcon from "./search.svg?react";
 import SessionSummary from "./session-summary.svg?react";
 import Session from "./session.svg?react";
+import ShareIcon from "./share-icon.svg?react";
 import Spinner from "./spinner.svg?react";
 import StarIcon from "./star.svg?react";
 import StartSession from "./start-session.svg?react";
@@ -143,6 +145,7 @@ export {
   InDoubt,
   IssuesWorkedOn,
   KeyConcerns,
+  LearnIcon,
   LifelineLogo,
   Lock,
   Logout,
@@ -166,6 +169,7 @@ export {
   SearchIcon,
   Session,
   SessionSummary,
+  ShareIcon,
   Spinner,
   StarIcon,
   StartSession,
