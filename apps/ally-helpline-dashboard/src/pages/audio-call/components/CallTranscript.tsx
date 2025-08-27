@@ -230,6 +230,7 @@ const CallTranscript: FC<CallTranscriptProps> = ({
     },
     [SocketEvent.DISCONNECT]: (reason?: string) => {
       cleanupMediaRecorder();
+      console.log(`Socket disconnected:, ${reason}`);
       if (isMicrophoneMode) {
         // Check if it's a network-related disconnection
         const isNetworkIssue =

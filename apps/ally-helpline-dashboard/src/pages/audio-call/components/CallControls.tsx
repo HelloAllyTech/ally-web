@@ -1,4 +1,6 @@
-import { FC } from "react";
+import { FC, useEffect, useState } from "react";
+
+import { X } from "lucide-react";
 
 import { Focus, PauseIcon, ResumeIcon, StopIcon, Warning } from "@assets";
 import { ButtonGroup } from "@components";
@@ -18,6 +20,16 @@ const CallControls: FC<CallControlsProps> = ({
   showFocusButton,
   showPauseTranscription,
 }) => {
+  const [isMuteTooltipOpen, setIsMuteTooltipOpen] = useState(true);
+
+  useEffect(() => {
+    if (isPaused) {
+      setIsMuteTooltipOpen(true);
+    } else {
+      setIsMuteTooltipOpen(false);
+    }
+  }, [isPaused]);
+
   const callButtonList = [
     {
       action: onPauseTranscriptionClick,
@@ -44,10 +56,22 @@ const CallControls: FC<CallControlsProps> = ({
       text: "End session",
     },
   ];
+  const showMuteTooltip =
+    isPaused && showPauseTranscription && !isPauseTranscriptionDisabled && isMuteTooltipOpen;
 
   return (
     <div className="z-10 absolute bottom-10 w-full flex flex-col items-center gap-4 pt-[100px]">
-      <ButtonGroup buttonList={callButtonList} />
+      <div className="relative">
+        <ButtonGroup buttonList={callButtonList} />
+        {/* TODO: Reimplement tooltip with Tooltip component */}
+        {showMuteTooltip && (
+          <div className="flex gap-2 items-center text-[12px] text-[#1D1B20] bg-[#FFFFFF] absolute top-[-64px] left-0 max-w-[300px] rounded-[4px] p-2">
+            Transcription is paused. Resume to let AI keep taking notes.
+            <X className="w-4 h-4 cursor-pointer" onClick={() => setIsMuteTooltipOpen(false)} />
+            <span className="w-0 h-0 border-l-[8px] border-r-[8px] border-t-[8px] border-l-transparent border-r-transparent border-t-[#FFFFFF] absolute bottom-[-8px] left-16" />
+          </div>
+        )}
+      </div>
       <div className="flex items-center gap-2">
         <Warning className="[&_path]:fill-[#B6B5B9]" />
         <span className="text-[12px] text-[#fff] font-medium">Your data is safe</span>
