@@ -237,7 +237,11 @@ const CallTranscript: FC<CallTranscriptProps> = ({
           reason && NetworkIssuesList.some(networkReason => reason.includes(networkReason));
 
         if (isNetworkIssue) {
-          setSocketDisconnectionReason(SocketDisconnectionReasons.NO_NETWORK);
+          setSocketDisconnectionReason(
+            isNonWebChat || isSharedMicrophoneMode
+              ? SocketDisconnectionReasons.NO_NETWORK_IN_SHARED_SESSION
+              : SocketDisconnectionReasons.NO_NETWORK,
+          );
         } else {
           setSocketDisconnectionReason(SocketDisconnectionReasons.SOMETHING_WENT_WRONG);
         }
