@@ -42,6 +42,7 @@ const PrivateRouteLayout = () => {
   const { user, checkAuth, updateUserStatus } = useUser();
   const navigate = useNavigate();
   const { pathname } = useLocation();
+  AudioCallPopup();
 
   const isClient = user?.role === UserRole.CLIENT;
   const isAdmin = user?.role === UserRole.ADMIN;
@@ -303,7 +304,6 @@ const PrivateRouteLayout = () => {
           !isPathExcluded(pathname, excludeCallPicker) && (
             <CallPicker onAccept={onAcceptCall} onDecline={() => setShowAlertCall(false)} />
           )}
-        <AudioCallPopup />
       </div>
     );
   else return <></>;
