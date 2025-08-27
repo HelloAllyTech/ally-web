@@ -65,10 +65,10 @@ const CallControls: FC<CallControlsProps> = ({
         <ButtonGroup buttonList={callButtonList} />
         {/* TODO: Reimplement tooltip with Tooltip component */}
         {showMuteTooltip && (
-          <div className="flex gap-2 items-center text-[12px] text-[#1D1B20] bg-[#FFFFFF] absolute top-[-64px] left-[-40px] max-w-[300px] rounded-[4px] p-2">
+          <div className="flex gap-2 items-center text-[12px] text-[#1D1B20] bg-[#FFFFFF] absolute top-[-64px] left-8 max-w-[300px] rounded-[4px] p-2">
             Need notes captured? AI can’t hear you right now. Resume to let it listen.
             <X className="w-4 h-4 cursor-pointer" onClick={() => setIsMuteTooltipOpen(false)} />
-            <span className="w-0 h-0 border-l-[8px] border-r-[8px] border-t-[8px] border-l-transparent border-r-transparent border-t-[#FFFFFF] absolute bottom-[-8px] left-32" />
+            <span className="w-0 h-0 border-l-[8px] border-r-[8px] border-t-[8px] border-l-transparent border-r-transparent border-t-[#FFFFFF] absolute bottom-[-8px] sm:left-[10%] md:left-[20%] lg:left-[30%]" />
           </div>
         )}
       </div>
