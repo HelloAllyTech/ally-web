@@ -5,9 +5,10 @@ import { useLocation } from "react-router-dom";
 
 import { logger } from "@ally-ui-mono/ui-shared/logger";
 import { useLazyGetCounsellorChatQuery } from "@api";
-import { SocketConnectionTypes, ROUTES, CallProvider, CallType } from "@constants";
+import { SocketConnectionTypes, ROUTES, CallType } from "@constants";
 import { RootState } from "@store";
 import { SocketEvent, UserRole, Session, UseSessionManagerOptions } from "@types";
+import { isProviderCloudTelephony } from "@utils";
 
 import { useSocket } from "./useSocket";
 
@@ -101,10 +102,9 @@ export const useSessionManager = (options: UseSessionManagerOptions = {}) => {
         const response = await getCounsellorChat();
         if (response?.data?.chatId) {
           const audioProvider = response?.data?.provider;
-          const type =
-            audioProvider === CallProvider.EXOTEL_CONFERENCE_CALL
-              ? SocketConnectionTypes.CLOUD_TELEPHONY_CHAT
-              : audioProvider;
+          const type = isProviderCloudTelephony(audioProvider)
+            ? SocketConnectionTypes.CLOUD_TELEPHONY_CHAT
+            : audioProvider;
           setSession(response.data, type);
         }
       }

@@ -1,6 +1,5 @@
 import Accordion from "./accordion";
 import ActionDialog from "./action-dialog";
-import AudioCallPopup from "./audio-call-popup";
 import BoxBreathing from "./box-breathing";
 import { Button, ButtonVariant, ButtonVariantType } from "./button";
 import ButtonGroup from "./button-group";
@@ -39,7 +38,6 @@ export {
 export {
   Accordion,
   ActionDialog,
-  AudioCallPopup,
   BoxBreathing,
   Button,
   ButtonGroup,

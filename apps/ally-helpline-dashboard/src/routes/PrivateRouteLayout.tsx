@@ -7,7 +7,7 @@ import { toast } from "sonner";
 import { logger } from "@ally-ui-mono/ui-shared";
 import { useAcceptCallMutation, useGetWaitingClientsQuery, useGetChatTypesQuery } from "@api";
 import { MenuIcon } from "@assets";
-import { AudioCallPopup, CallPicker, NavSideBar } from "@components";
+import { CallPicker, NavSideBar } from "@components";
 import {
   TabId,
   CallType,
@@ -17,7 +17,7 @@ import {
   ROUTES,
   navBarOptions,
 } from "@constants";
-import { useUser } from "@hooks";
+import { useUser, useAutoActiveCallRedirect } from "@hooks";
 import {
   Calls,
   Calendar,
@@ -42,7 +42,7 @@ const PrivateRouteLayout = () => {
   const { user, checkAuth, updateUserStatus } = useUser();
   const navigate = useNavigate();
   const { pathname } = useLocation();
-  AudioCallPopup();
+  useAutoActiveCallRedirect();
 
   const isClient = user?.role === UserRole.CLIENT;
   const isAdmin = user?.role === UserRole.ADMIN;
