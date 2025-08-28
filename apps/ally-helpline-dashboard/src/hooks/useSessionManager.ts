@@ -109,7 +109,7 @@ export const useSessionManager = (options: UseSessionManagerOptions = {}) => {
           const audioProvider = response?.data?.provider;
           const type = isProviderCloudTelephony(audioProvider)
             ? SocketConnectionTypes.CLOUD_TELEPHONY_CHAT
-            : audioProvider;
+            : SocketConnectionTypes.MICROPHONE_MODE;
           setSession(response.data, type);
         }
       }
