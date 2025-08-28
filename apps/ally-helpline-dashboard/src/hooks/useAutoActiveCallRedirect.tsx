@@ -8,16 +8,19 @@ export const useAutoActiveCallRedirect = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const { activeSession, disconnect } = useSessionManager({
+  const { activeSession, disconnectAll } = useSessionManager({
     autoConnect: true,
-    connectionType: SocketConnectionTypes.CLOUD_TELEPHONY_CHAT,
   });
 
   const navigateToSession = () => {
     switch (activeSession?.type) {
       case SocketConnectionTypes.CLOUD_TELEPHONY_CHAT:
         navigate(`${ROUTES.AUDIO_CALL}?mode=cloud-telephony`);
-        disconnect();
+        disconnectAll();
+        break;
+      case SocketConnectionTypes.MICROPHONE_MODE:
+        navigate(`${ROUTES.AUDIO_CALL}?mode=microphone`);
+        disconnectAll();
         break;
       default:
         break;

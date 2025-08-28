@@ -13,9 +13,8 @@ import { isProviderCloudTelephony } from "@utils";
 import { useSocket } from "./useSocket";
 
 export const useSessionManager = (options: UseSessionManagerOptions = {}) => {
-  const { autoConnect = true, connectionType = SocketConnectionTypes.CLOUD_TELEPHONY_CHAT } =
-    options;
-  const { availableChatTypes, user } = useSelector((state: RootState) => state.user);
+  const { autoConnect = true } = options;
+  const { user } = useSelector((state: RootState) => state.user);
 
   const location = useLocation();
   const [getCounsellorChat] = useLazyGetCounsellorChatQuery();
@@ -39,6 +38,11 @@ export const useSessionManager = (options: UseSessionManagerOptions = {}) => {
   const clearSession = useCallback(() => {
     setActiveSession(null);
   }, []);
+
+  const disconnectAll = () => {
+    cloudTelephonySocketDisconnect();
+    microphoneSocketDisconnect();
+  };
 
   /**
    * Creates event callbacks for different socket events.
@@ -78,9 +82,15 @@ export const useSessionManager = (options: UseSessionManagerOptions = {}) => {
     [setSession, clearSession],
   );
 
-  const { connect, disconnect } = useSocket({
-    eventCallbacks: getEventCallback(connectionType),
-    connectionType,
+  const { connect: cloudTelephonySocketConnect, disconnect: cloudTelephonySocketDisconnect } =
+    useSocket({
+      eventCallbacks: getEventCallback(SocketConnectionTypes.CLOUD_TELEPHONY_CHAT),
+      connectionType: SocketConnectionTypes.CLOUD_TELEPHONY_CHAT,
+    });
+
+  const { connect: microphoneSocketConnect, disconnect: microphoneSocketDisconnect } = useSocket({
+    eventCallbacks: getEventCallback(SocketConnectionTypes.MICROPHONE_MODE),
+    connectionType: SocketConnectionTypes.MICROPHONE_MODE,
   });
 
   // Fetch active chat sessions
@@ -113,21 +123,29 @@ export const useSessionManager = (options: UseSessionManagerOptions = {}) => {
   // Handle socket connection
   useEffect(() => {
     if (enableConnection) {
-      connect();
+      cloudTelephonySocketConnect();
+      microphoneSocketConnect();
     }
 
     return () => {
       clearSession();
-      disconnect();
+      cloudTelephonySocketDisconnect();
+      microphoneSocketDisconnect();
     };
-  }, [enableConnection, connect, disconnect, clearSession]);
+  }, [
+    enableConnection,
+    cloudTelephonySocketConnect,
+    cloudTelephonySocketDisconnect,
+    microphoneSocketConnect,
+    microphoneSocketDisconnect,
+    clearSession,
+  ]);
 
   return {
     activeSession,
     setSession,
     clearSession,
-    connect,
-    disconnect,
+    disconnectAll,
     getEventCallback,
   };
 };
