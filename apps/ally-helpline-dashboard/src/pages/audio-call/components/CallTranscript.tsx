@@ -24,6 +24,7 @@ import {
   Transcription,
   UserRole,
 } from "@types";
+import { isProviderCloudTelephony } from "@utils";
 
 import { CallSidebar, RealTimeTranscript, CallControls, CallInterface } from ".";
 import { AUDIO_FILE_SIZE, OFFER_TIMEOUT_MS } from "../constants";
@@ -420,7 +421,7 @@ const CallTranscript: FC<CallTranscriptProps> = ({
     if (
       isExotelMode &&
       activeChat?.status === ChatStatus.ACTIVE &&
-      activeChat?.provider === CallProvider.EXOTEL_CONFERENCE_CALL
+      isProviderCloudTelephony(activeChat?.provider)
     ) {
       setIsUserJoined(true);
     }

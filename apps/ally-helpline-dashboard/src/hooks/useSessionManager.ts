@@ -20,12 +20,7 @@ export const useSessionManager = (options: UseSessionManagerOptions = {}) => {
   const location = useLocation();
   const [getCounsellorChat] = useLazyGetCounsellorChatQuery();
 
-  // Check if the cloud telephony mode is available for the user
-  const isCloudTelephonyModeAvailable = availableChatTypes?.includes(
-    CallType.EXOTEL_CONFERENCE_CHAT,
-  );
-  const enableConnection =
-    autoConnect && !location.pathname.includes(ROUTES.AUDIO_CALL) && isCloudTelephonyModeAvailable;
+  const enableConnection = autoConnect && !location.pathname.includes(ROUTES.AUDIO_CALL);
 
   const [activeSession, setActiveSession] = useState<Session | null>(null);
 

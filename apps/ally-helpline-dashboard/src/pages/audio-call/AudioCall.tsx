@@ -162,7 +162,7 @@ export const AudioCall: FunctionComponent = () => {
       (!activeChat?.chatId ||
         (activeChat?.chatId &&
           activeChat?.provider !== CallProvider.WEBRTC &&
-          activeChat?.provider !== CallProvider.EXOTEL_CONFERENCE_CALL) ||
+          !isProviderCloudTelephony(activeChat?.provider)) ||
         (Array.isArray(activeChat) && activeChat.length === 0))
     ) {
       return (
