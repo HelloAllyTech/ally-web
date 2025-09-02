@@ -167,7 +167,7 @@ const CallTranscript: FC<CallTranscriptProps> = ({
     [SocketEvent.STAGE]: data => {
       setStage(data?.payload?.content);
     },
-    [SocketEvent.CHAT_ENDED]: () => {
+    [SocketEvent.CHAT_ENDED]: data => {
       cleanupMediaRecorder();
       disconnect();
       if (isClient) {
@@ -175,7 +175,7 @@ const CallTranscript: FC<CallTranscriptProps> = ({
         return;
       }
       // trigegrApi is false as this event will be received only upon ending the call
-      endSession(false, activeChatId);
+      endSession(false, data?.payload?.chatId);
     },
     [SocketEvent.NUDGE]: data => {
       const nudge = data.payload;
