@@ -24,7 +24,7 @@ export interface Transcript {
 }
 
 export interface LogsTableProps {
-  refreshKey?: string;
+  refreshKey?: number;
 }
 
 export interface SummaryHeaderProps {

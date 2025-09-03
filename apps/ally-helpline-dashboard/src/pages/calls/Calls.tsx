@@ -62,7 +62,11 @@ export const Calls: FC = () => {
           </div>
         </div>
       </motion.div>
-      {isAdmin ? <ConsolidatedLogs key={refreshKey} /> : <CallLogsTable key={refreshKey} />}
+      {isAdmin ? (
+        <ConsolidatedLogs refreshKey={refreshKey} />
+      ) : (
+        <CallLogsTable refreshKey={refreshKey} />
+      )}
       <StartSessionDialog
         isOpen={isStartSessionDialogOpen}
         onClose={() => setIsStartSessionDialogOpen(false)}
