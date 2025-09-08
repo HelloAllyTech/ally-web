@@ -1,4 +1,4 @@
-import { FunctionComponent } from "react";
+import { FC } from "react";
 
 import { Permissions } from "@constants";
 import { useUser } from "@hooks";
@@ -9,11 +9,10 @@ interface PermissionGuardedRouteType {
   element: JSX.Element;
 }
 
-const PermissionGuardedRoute: FunctionComponent<PermissionGuardedRouteType> = ({
-  permission,
-  element,
-}) => {
-  const { permissions } = useUser();
+const PermissionGuardedRoute: FC<PermissionGuardedRouteType> = ({ permission, element }) => {
+  const { permissions, user } = useUser();
+  // Expecting permission guarded route to work only if user is present
+  if (!user) return null;
 
   return !permission || permissions?.includes(permission) ? element : <AccessDenied />;
 };

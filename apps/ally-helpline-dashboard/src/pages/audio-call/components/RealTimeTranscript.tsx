@@ -1,10 +1,10 @@
 import { FC, useEffect, useRef, useState } from "react";
 
-import { getKeyFromIndex } from "@utils";
 import { motion } from "framer-motion";
 import { useSelector } from "react-redux";
 
 import { RootState } from "@store";
+import { getKeyFromIndex } from "@utils";
 
 import { RealTimeTranscriptProps } from "../types";
 import { getSpeakerName } from "../utils";
