@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 
 import { CloseIcon } from "@assets/icons";
 
-import { Button } from "../button";
+import { Button, ButtonVariant } from "../button";
 import { ConfirmationDialogProps } from "./types";
 
 const ConfirmationDialog: FC<ConfirmationDialogProps> = ({
@@ -19,6 +19,8 @@ const ConfirmationDialog: FC<ConfirmationDialogProps> = ({
   onButtonClick,
   footerText,
   children,
+  secondaryButtonText,
+  onSecondaryButtonClick,
 }) => {
   return (
     <Dialog
@@ -91,9 +93,16 @@ const ConfirmationDialog: FC<ConfirmationDialogProps> = ({
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.6, duration: 0.3 }}
         >
-          <Button fullWidth onClick={onButtonClick} variant={buttonVariant}>
-            {buttonText}
-          </Button>
+          <div className="w-full flex items-center justify-center gap-2">
+            {secondaryButtonText && (
+              <Button fullWidth onClick={onSecondaryButtonClick} variant={ButtonVariant.SECONDARY}>
+                {secondaryButtonText}
+              </Button>
+            )}
+            <Button fullWidth onClick={onButtonClick} variant={buttonVariant}>
+              {buttonText}
+            </Button>
+          </div>
         </motion.div>
 
         {footerText && (

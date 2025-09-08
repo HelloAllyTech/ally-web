@@ -13,11 +13,11 @@ export const Learn: FC = () => {
 
   const [scenarios, setScenarios] = useState<Scenario[]>([]);
 
-  // TODO: Remove this with API loading state once the API is implemented.
+  // TODO: Remove this with getScenarios API loading state once the API is implemented.
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // TODO: Remove this once the API is implemented.
+    // TODO: Remove this once the getScenarios API is implemented.
     setTimeout(() => {
       setIsLoading(false);
       setScenarios(dummyScenarios);
@@ -25,14 +25,19 @@ export const Learn: FC = () => {
   }, []);
 
   const renderPageDescription = () => {
+    const emphasisStyles = "font-bold text-[#0957D0]";
     return (
       <motion.div
         variants={learnPageItemVariants}
         initial="hidden"
         animate="visible"
-        className="w-full font-['Replay_Pro'] text-[32px] text-[#1A1A1A] font-bold sm:mb-[66px] mb-[48px] sm:leading-[40px] leading-[28px]"
+        className="w-full font-['Replay_Pro'] text-[28px] text-[#1A1A1A] sm:mb-[66px] mb-[48px] sm:leading-[40px] leading-[28px]"
       >
-        AI-voice based hyper realistic training role plays to help counsellors build expertise.
+        <span className={emphasisStyles}>AI</span>
+        -voice based hyper realistic training role plays to help
+        <span className={emphasisStyles}> counsellors </span>
+        build
+        <span className={emphasisStyles}> expertise</span>.
       </motion.div>
     );
   };
@@ -76,7 +81,7 @@ export const Learn: FC = () => {
         exit="exit"
       >
         {isLoading ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
             {Array.from({ length: 6 }).map((_, index) => (
               <div
                 key={index}
@@ -86,7 +91,7 @@ export const Learn: FC = () => {
           </div>
         ) : scenarios.length > 0 ? (
           <div
-            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 relative mx-auto"
+            className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 relative mx-auto"
             role="list"
             aria-label="Available scenarios"
           >
@@ -102,6 +107,7 @@ export const Learn: FC = () => {
                   title={scenario.title || ""}
                   description={scenario.short_description || ""}
                   onClick={() => navigate(`/scenario/${scenario.unique_id}`)}
+                  isComingSoon={scenario.is_coming_soon}
                 />
               </motion.div>
             ))}
@@ -114,13 +120,9 @@ export const Learn: FC = () => {
   );
 
   return (
-    <div className="h-full bg-white flex flex-col font-replay">
-      <div className="flex justify-center w-full h-full relative">
-        <div className="flex flex-col max-w-5xl h-full p-[10px] sm:p-[24px]">
-          {renderPageDescription()}
-          <AnimatePresence mode="wait">{renderScenarioGrid()}</AnimatePresence>
-        </div>
-      </div>
+    <div className="flex flex-col w-full h-screen bg-white p-[10px] sm:p-[24px] justify-center font-replay">
+      {renderPageDescription()}
+      <AnimatePresence mode="wait">{renderScenarioGrid()}</AnimatePresence>
     </div>
   );
 };

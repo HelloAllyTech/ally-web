@@ -13,6 +13,9 @@ const ActionDialog: FC<ActionDialogProps> = ({
   onClose,
   primaryButton,
   secondaryButton,
+  showPrimaryButton = true,
+  showSecondaryButton = true,
+  title,
 }) => {
   return (
     <Dialog
@@ -26,21 +29,25 @@ const ActionDialog: FC<ActionDialogProps> = ({
     >
       <div className="py-4 px-6 bg-white h-fit w-[400px] flex flex-col gap-6 rounded-[8px]">
         <div className="flex justify-between items-center">
-          <span className="font-medium text-[#47464F]">Ready for More?</span>
+          <span className="font-medium text-[#47464F]">{title}</span>
           <X className="cursor-pointer" onClick={onClose} />
         </div>
         {children}
         <div className="flex gap-4 items-center">
-          <Button variant="secondary" className="flex-1" onClick={secondaryButton?.onClick}>
-            {secondaryButton?.label}
-          </Button>
-          <Button
-            variant={primaryButton?.variant}
-            className="text-[14px] flex-1"
-            onClick={primaryButton?.onClick}
-          >
-            {primaryButton?.label}
-          </Button>
+          {showSecondaryButton && (
+            <Button variant="secondary" className="flex-1" onClick={secondaryButton?.onClick}>
+              {secondaryButton?.label}
+            </Button>
+          )}
+          {showPrimaryButton && (
+            <Button
+              variant={primaryButton?.variant}
+              className="text-[14px] flex-1"
+              onClick={primaryButton?.onClick}
+            >
+              {primaryButton?.label}
+            </Button>
+          )}
         </div>
       </div>
     </Dialog>

@@ -566,7 +566,7 @@ const CallTranscript: FC<CallTranscriptProps> = ({
 
   return (
     <div className="w-screen h-screen flex justify-center items-center">
-      <div className="w-screen h-screen bg-[#17181A] flex flex-col gap-10 justify-center items-center overflow-hidden">
+      <div className="w-screen h-screen bg-[#171A1A] flex flex-col gap-10 justify-center items-center overflow-hidden">
         <CallInterface
           activeChat={activeChat}
           isCounsellor={isCounsellor}

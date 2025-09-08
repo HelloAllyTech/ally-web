@@ -4,7 +4,13 @@ import { motion } from "framer-motion";
 
 import { ScenarioCardProps } from "./types";
 
-const ScenarioCard: FC<ScenarioCardProps> = ({ coverImage, description, onClick, title }) => {
+const ScenarioCard: FC<ScenarioCardProps> = ({
+  coverImage,
+  description,
+  isComingSoon,
+  onClick,
+  title,
+}) => {
   const [imageError, setImageError] = useState(false);
 
   const renderImage = () => (
@@ -13,7 +19,7 @@ const ScenarioCard: FC<ScenarioCardProps> = ({ coverImage, description, onClick,
         <img
           src={coverImage}
           alt={`${title} scenario cover`}
-          className="w-full h-full object-cover rounded-[4px]"
+          className={`w-full h-full object-cover rounded-[4px] ${isComingSoon ? "blur grayscale opacity-50" : ""}`}
           loading="lazy"
           onError={() => setImageError(true)}
         />
@@ -22,6 +28,11 @@ const ScenarioCard: FC<ScenarioCardProps> = ({ coverImage, description, onClick,
           <span className="text-sm">Image not available</span>
         </div>
       )}
+      {isComingSoon && (
+        <span className="py-1 px-2 rounded-[4px] absolute top-2 right-2 text-[12px] font-['IBM_Plex_Serif'] text-[#292929] bg-white border-[0.5px] border-[#D2D2D2]">
+          Coming Soon
+        </span>
+      )}
     </div>
   );
 
@@ -29,7 +40,7 @@ const ScenarioCard: FC<ScenarioCardProps> = ({ coverImage, description, onClick,
     <motion.div
       layout
       onClick={onClick}
-      className="bg-white overflow-hidden transition-all duration-300 h-full rounded-lg cursor-pointer shadow-[0_2px_8px_rgba(0,0,0,0.1)] hover:shadow-[0_8px_16px_rgba(0,0,0,0.15)]"
+      className={`bg-white overflow-hidden transition-all duration-300 h-full rounded-[8px] shadow-[0_2px_8px_rgba(0,0,0,0.1)] hover:shadow-[0_8px_16px_rgba(0,0,0,0.15)] ${isComingSoon ? "pointer-events-none" : "cursor-pointer"}`}
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
@@ -46,12 +57,12 @@ const ScenarioCard: FC<ScenarioCardProps> = ({ coverImage, description, onClick,
     >
       <div className="flex flex-col h-full gap-3">
         {renderImage()}
-        <div className="flex flex-col flex-grow text-[14px] font-['IBM_Plex_Serif'] px-3 pb-3 sm:px-[14px] gap-1">
-          <div id="scenario-title" className="font-medium text-[#0D0D0D]">
+        <div className="flex flex-col flex-grow font-['IBM_Plex_Serif'] px-3 pb-3 sm:px-[14px] gap-1">
+          <div id="scenario-title" className="text-[14px] font-medium text-[#0D0D0D]">
             {title}
           </div>
 
-          <div className="text-[#656565]">
+          <div className="text-[12px] text-[#656565]">
             <p>{description}</p>
           </div>
         </div>

@@ -32,6 +32,7 @@ export interface Scenario {
   short_description?: string;
   long_description?: string;
   cover_image?: string | null;
+  is_coming_soon?: boolean;
 }
 
 export interface GetScenariosResponse {

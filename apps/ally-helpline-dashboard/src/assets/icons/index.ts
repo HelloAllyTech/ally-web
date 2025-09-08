@@ -18,6 +18,7 @@ import BackCircle from "./back-circle.svg?react";
 import BackgroundGradientBlue from "./background-gradient-blue.svg?react";
 import BoxBreathingBottomGradient from "./box-breathing-bottom-gradient.svg?react";
 import BoxBreathingTopGradient from "./box-breathing-top-gradient.svg?react";
+import BulbIcon from "./bulb-icon.svg?react";
 import CallAttend from "./call-attend.svg?react";
 import CallDetails from "./call-details.svg?react";
 import CallIdIcon from "./call-id-icon.svg?react";
@@ -49,11 +50,14 @@ import IssuesWorkedOn from "./issues-worked-on.svg?react";
 import KeyConcerns from "./key-concerns.svg?react";
 import LearnIcon from "./learn-icon.svg?react";
 import LifelineLogo from "./lifeline-logo.svg?react";
+import ListIcon from "./list-icon.svg?react";
 import Lock from "./lock.svg?react";
 import Logout from "./logout-icon.svg?react";
 import LogoutIllustration from "./logout-illustration.svg?react";
 import MenuIcon from "./menu-icon.svg?react";
 import Metrics from "./metrics.svg?react";
+import MicIcon from "./mic-icon.svg?react";
+import MicOffIcon from "./mic-off-icon.svg?react";
 import NoNetwork from "./no-network.svg?react";
 import NoResults from "./no-results.svg?react";
 import NotesIcon from "./notes.svg?react";
@@ -72,6 +76,7 @@ import SearchIcon from "./search.svg?react";
 import SessionSummary from "./session-summary.svg?react";
 import Session from "./session.svg?react";
 import ShareIcon from "./share-icon.svg?react";
+import SimulationWarningIllustration from "./simulation-warning-illustration.svg?react";
 import Spinner from "./spinner.svg?react";
 import StarIcon from "./star.svg?react";
 import StartSession from "./start-session.svg?react";
@@ -116,6 +121,7 @@ export {
   BackgroundGradientBlue,
   BoxBreathingBottomGradient,
   BoxBreathingTopGradient,
+  BulbIcon,
   Call,
   CallAttend,
   CallDetails,
@@ -147,11 +153,14 @@ export {
   KeyConcerns,
   LearnIcon,
   LifelineLogo,
+  ListIcon,
   Lock,
   Logout,
   LogoutIllustration,
   MenuIcon,
   Metrics,
+  MicIcon,
+  MicOffIcon,
   NoNetwork,
   NoResults,
   NotesIcon,
@@ -170,6 +179,7 @@ export {
   Session,
   SessionSummary,
   ShareIcon,
+  SimulationWarningIllustration,
   Spinner,
   StarIcon,
   StartSession,

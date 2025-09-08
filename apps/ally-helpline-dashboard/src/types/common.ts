@@ -14,11 +14,13 @@ export interface Session {
   [key: string]: any;
 }
 
+// TODO: Move to hooks/types.ts
 export interface UseSessionManagerOptions {
   autoConnect?: boolean;
   connectionType?: SocketConnectionTypes;
 }
 
+// TODO: Move to hooks/types.ts
 export interface UseSocketOptions {
   connectionType: SocketConnectionTypes;
   eventCallbacks?: Partial<Record<SocketEvent, (params?: any) => void>>;

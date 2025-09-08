@@ -269,6 +269,7 @@ const SummarySideBar: FC<SummarySideBarProps> = ({
           </div>
         )}
       </div>
+      {/* TODO: Remove if delete summary is not needed */}
       <ActionDialog
         open={deleteDialogData.open}
         onClose={() => setDeleteDialogData(defaultDeleteDialogData)}
@@ -281,6 +282,7 @@ const SummarySideBar: FC<SummarySideBarProps> = ({
           label: "Cancel",
           onClick: () => setDeleteDialogData(defaultDeleteDialogData),
         }}
+        title="Delete Summary"
       >
         <span className="text-[14px] text-[#47464F]">
           Are you sure you want to delete this summary? This action can&apos;t be undone.

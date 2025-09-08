@@ -16,6 +16,8 @@ import {
   Permissions,
   ROUTES,
   navBarOptions,
+  excludeNavBar,
+  excludeCallPicker,
 } from "@constants";
 import { useUser, useAutoActiveCallRedirect } from "@hooks";
 import {
@@ -31,6 +33,7 @@ import {
   Learn,
   Scenario,
   SimulationSummary,
+  Simulation,
 } from "@pages";
 import { setUserStatus, setAvailableChatTypes, unauthenticate } from "@reducer";
 import { RootState, store } from "@store";
@@ -56,8 +59,6 @@ const PrivateRouteLayout = () => {
 
   const { userStatus } = useSelector((state: RootState) => state.user);
 
-  const excludeNavBar = [ROUTES.AUDIO_CALL, ROUTES.SUMMARY, ROUTES.STRESS_BUSTER] as string[];
-  const excludeCallPicker = [ROUTES.AUDIO_CALL, ROUTES.SUMMARY, ROUTES.STRESS_BUSTER] as string[];
   const isAvailable = userStatus === UserStatus.AVAILABLE;
 
   const { data: chatTypes } = useGetChatTypesQuery();
@@ -276,22 +277,23 @@ const PrivateRouteLayout = () => {
                   />
                 }
               />
+              <Route path={ROUTES.LEARN} element={<Learn />} />
+              <Route path={ROUTES.SCENARIO} element={<Scenario />} />
               <Route
-                path={ROUTES.LEARN}
+                path={ROUTES.SIMULATION}
                 element={
                   <PermissionGuardedRoute
-                    // TODO: Add correct permission for Learn once BE implementation is done
+                    // TODO: Add correct permission for Simulation once BE implementation is done
                     permission={Permissions.VIEW_NAVBAR_LEARN}
-                    element={<Learn />}
+                    element={<Simulation />}
                   />
                 }
               />
-              <Route path={ROUTES.SCENARIO} element={<Scenario />} />
               <Route
                 path={ROUTES.SIMULATION_SUMMARY}
                 element={
                   <PermissionGuardedRoute
-                    // TODO: Add correct permission for Summary once BE implementation is done
+                    // TODO: Add correct permission for Simulation Summary once BE implementation is done
                     permission={Permissions.VIEW_NAVBAR_LEARN}
                     element={<SimulationSummary />}
                   />

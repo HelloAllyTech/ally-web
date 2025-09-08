@@ -32,26 +32,16 @@ export const Scenario: FC = () => {
     );
   };
 
-  const renderSimulationLoading = () => {
-    return (
-      <div className="flex justify-center items-center absolute top-0 left-0 bg-white w-full h-full z-50">
-        <div className="flex flex-col items-center justify-center">
-          <div className="flex flex-col items-center justify-center h-full text-center">
-            <p className="text-[24px] font-[500] text-[#0D0D0D] mb-[20px]">
-              Simulation starting...
-            </p>
-            <p className="text-[14px] text-[#656565]">
-              To start the simulation, please allow us to use your microphone.
-            </p>
-          </div>
-        </div>
-      </div>
-    );
+  const onStartSimulation = () => {
+    // TODO: Implement API call to create room
+    // TODO: Store room data in localStorage: LOCAL_STORAGE_KEYS.ROOM_DATA
+    // TODO: Redirect to simulation page with room ID appended to the URL
+    navigate(ROUTES.SIMULATION);
   };
 
   return (
     <AnimatePresence mode="wait">
-      <div className="h-full w-full flex justify-center items-center bg-white">
+      <div className="h-screen w-full flex justify-center items-center bg-white">
         {scenario && (
           <motion.div
             variants={learnPageExpandedVariants}
@@ -70,10 +60,7 @@ export const Scenario: FC = () => {
               title={scenario?.title || ""}
               description={scenario?.short_description || ""}
               longDescription={scenario?.long_description || ""}
-              onStart={() => {
-                console.log("onStart");
-                navigate(`/simulation-summary`);
-              }}
+              onStart={onStartSimulation}
             />
           </motion.div>
         )}

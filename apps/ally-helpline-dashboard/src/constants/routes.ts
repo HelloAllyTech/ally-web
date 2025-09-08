@@ -23,8 +23,25 @@ export const ROUTES = {
   SEARCH: "/search",
   LEARN: "/learn",
   SCENARIO: "/scenario/:scenarioId",
+  SIMULATION: "/simulation",
   SIMULATION_SUMMARY: "/simulation-summary",
 } as const;
+
+export const excludeNavBar = [
+  ROUTES.AUDIO_CALL,
+  ROUTES.SUMMARY,
+  ROUTES.STRESS_BUSTER,
+  ROUTES.SIMULATION,
+  ROUTES.SIMULATION_SUMMARY,
+] as string[];
+
+export const excludeCallPicker = [
+  ROUTES.AUDIO_CALL,
+  ROUTES.SUMMARY,
+  ROUTES.STRESS_BUSTER,
+  ROUTES.SIMULATION,
+  ROUTES.SIMULATION_SUMMARY,
+] as string[];
 
 export const navBarOptions = [
   {
@@ -56,12 +73,12 @@ export const navBarOptions = [
     path: "https://community.helloally.ai/",
     permission: "",
   },
-  // {
-  //   id: TabId.LEARN,
-  //   title: "Learn",
-  //   // TODO: Add correct permission and icon for Learn once available
-  //   Icon: LearnIcon,
-  //   path: ROUTES.LEARN,
-  //   permission: "",
-  // },
+  {
+    id: TabId.LEARN,
+    title: "Learn",
+    // TODO: Add correct permission and icon for Learn once available
+    Icon: LearnIcon,
+    path: ROUTES.LEARN,
+    permission: "",
+  },
 ];

@@ -9,3 +9,4 @@ export * from "./analytics";
 export * from "./common";
 export * from "./learn";
 export * from "./components";
+export * from "./simulation";

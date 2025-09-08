@@ -1,0 +1,16 @@
+import type { RoomOptions } from "livekit-client";
+
+export const LIVEKIT_CONFIG: RoomOptions = {
+  adaptiveStream: true,
+  dynacast: true,
+  publishDefaults: {
+    simulcast: true,
+    videoSimulcastLayers: [],
+  },
+};
+
+export const audioLevelConfig = {
+  fftSize: 256,
+  normalizationFactor: 128,
+  threshold: 0.01,
+} as const;
