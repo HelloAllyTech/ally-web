@@ -12,15 +12,67 @@ export interface Scenario {
   status?: ScenarioStatus;
 }
 
-export interface GetScenariosInput {
-  _t: string;
+export interface ScenarioSession {
+  tenantId: string;
+  id: string;
+  roomId: string;
+  scenarioId: number;
+  counselorId: number;
+  startedAt: string;
+  endedAt: string | null;
+  score: number | null;
+  metadata: unknown | null;
+  createdAt: string;
+  updatedAt: string;
+  status: string;
+}
+
+export interface ScenarioSessionLog {
+  createdAt: string;
+  updatedAt: string;
+  tenantId: string;
+  id: string;
+  roomId: string;
+  scenarioId: number;
+  counselorId: number;
+  status: string;
+  startedAt: string;
+  endedAt: string;
+  score: number | null;
+  metadata: unknown | null;
+  scenario: {
+    createdAt: string;
+    updatedAt: string;
+    id: number;
+    title: string;
+    scenario: string;
+    description: string;
+    coverImageUrl: string;
+    status: string;
+    prompt: string | null;
+    metadata: unknown | null;
+  };
+}
+
+export interface AdminScenarioSessionLog extends ScenarioSessionLog {
+  counselor: {
+    createdAt: string;
+    updatedAt: string;
+    tenantId: string;
+    id: number;
+    email: string;
+    name: string;
+    role: string;
+    status: string;
+    username: string;
+    metadata: unknown | null;
+    phone: string;
+    externalId: string | null;
+  };
 }
 
 export interface GetScenariosResponse {
-  data?: {
-    scenarios: Scenario[];
-  };
-  // error?: ErrorResponse;
+  scenarios: Scenario[];
 }
 
 export interface GetScenarioInput {
@@ -28,41 +80,49 @@ export interface GetScenarioInput {
 }
 
 export interface GetScenarioResponse {
-  data?: {
-    scenario: Scenario;
-  };
-  // error?: ErrorResponse;
-}
-export interface ListRoomsResponse {
-  data?: {
-    sid: string;
-    name: string;
-    created_at: string;
-  };
-  // error?: ErrorResponse;
+  scenario: Scenario;
 }
 
-export interface CreateRoomInput {
-  script_type: string;
+export interface StartSimulationInput {
+  scenarioId: number;
 }
 
-export interface CreateRoomResponse {
-  data?: {
-    room_id: string;
-    participant_id: string;
-    access_token: string;
-    created_at: string;
+export interface StartSimulationResponse {
+  scenarioSession: ScenarioSession;
+  accessToken: {
+    token: string;
+    roomName: string;
+    serverUrl: string;
   };
-  // error?: ErrorResponse;
 }
 
-export interface DeleteRoomInput {
-  roomId: string;
+export interface EndSimulationInput {
+  sessionId: string;
 }
 
-export interface DeleteRoomResponse {
-  data?: {
-    message?: string;
-  };
-  //   error?: ErrorResponse;
+export interface EndSimulationResponse {
+  message?: string;
+}
+
+export interface GetScenarioSessionsInput {
+  statuses: string[];
+  limit?: number;
+  offset?: number;
+  sortBy?: string;
+  order?: "ASC" | "DESC";
+}
+
+export interface GetScenarioSessionsResponse {
+  sessions: ScenarioSessionLog[];
+}
+
+export interface GetAdminScenarioSessionsInput {
+  limit?: number;
+  offset?: number;
+  sortBy?: string;
+  order?: "ASC" | "DESC";
+}
+
+export interface GetAdminScenarioSessionsResponse {
+  sessions: AdminScenarioSessionLog[];
 }

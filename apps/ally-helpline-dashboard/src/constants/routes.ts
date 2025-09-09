@@ -67,18 +67,18 @@ export const navBarOptions = [
     permission: Permissions.VIEW_NAVBAR_SEARCH,
   },
   {
-    id: TabId.COMMUNITY,
-    title: "Community",
-    Icon: CommunityIcon,
-    path: "https://community.helloally.ai/",
-    permission: "",
-  },
-  {
     id: TabId.LEARN,
     title: "Learn",
     // TODO: Add correct permission and icon for Learn once available
     Icon: LearnIcon,
     path: ROUTES.LEARN,
+    permission: "",
+  },
+  {
+    id: TabId.COMMUNITY,
+    title: "Community",
+    Icon: CommunityIcon,
+    path: "https://community.helloally.ai/",
     permission: "",
   },
 ];

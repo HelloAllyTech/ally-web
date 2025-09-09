@@ -1,6 +1,7 @@
-import { FC, useState } from "react";
+import { FC, useState, type MouseEvent } from "react";
 
 import { motion } from "framer-motion";
+import { toast } from "sonner";
 
 import { ShareIcon } from "@assets/icons";
 
@@ -15,6 +16,35 @@ const ScenarioDetailsCard: FC<ScenarioDetailsCardProps> = ({
   title,
 }) => {
   const [imageError, setImageError] = useState(false);
+
+  /**
+   * Copy the current page URL to the clipboard.
+   * - Prefers the async Clipboard API when available
+   * - Falls back to a hidden textarea for older browsers
+   */
+  const handleShareScenario = (event: MouseEvent<HTMLDivElement>) => {
+    // Avoid triggering any parent click handlers
+    event.stopPropagation();
+    if (typeof window === "undefined") return;
+
+    const url = window.location.href;
+
+    // Use modern Clipboard API if supported
+    if (navigator?.clipboard?.writeText) {
+      void navigator.clipboard.writeText(url);
+    } else {
+      // Fallback: temporary hidden textarea + execCommand
+      const textArea = document.createElement("textarea");
+      textArea.value = url;
+      textArea.style.position = "fixed";
+      textArea.style.left = "-9999px";
+      document.body.appendChild(textArea);
+      textArea.select();
+      document.execCommand("copy");
+      document.body.removeChild(textArea);
+    }
+    toast.success("Scenario link copied to clipboard!");
+  };
 
   const renderImage = () => (
     <div>
@@ -50,7 +80,13 @@ const ScenarioDetailsCard: FC<ScenarioDetailsCardProps> = ({
         <div className="flex flex-col gap-2">
           <div id="scenario-title" className="flex items-center justify-between">
             <span className="text-[#0D0D0D] text-xl">{title}</span>
-            <div className="flex items-center gap-[4px]" onClick={() => {}}>
+            <div
+              className="flex items-center gap-[4px] cursor-pointer"
+              onClick={handleShareScenario}
+              aria-label="Copy link"
+              role="button"
+              title="Copy link to clipboard"
+            >
               <ShareIcon />
               <span className="text-[#6B7280] text-[14px] font-['Roboto']">Share</span>
             </div>

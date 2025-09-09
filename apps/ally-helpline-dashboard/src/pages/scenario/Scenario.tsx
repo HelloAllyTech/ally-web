@@ -3,7 +3,7 @@ import { FC, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useNavigate, useParams } from "react-router-dom";
 
-import { useCreateRoomMutation, useGetScenarioQuery } from "@api";
+import { useGetScenarioQuery, useStartSimulationMutation } from "@api";
 import { BackCircle } from "@assets";
 import { LoginDialog, ScenarioDetailsCard } from "@components";
 import { LOCAL_STORAGE_KEYS, ROUTES } from "@constants";
@@ -37,7 +37,14 @@ export const Scenario: FC = () => {
     );
   };
 
-  const onStartSimulation = () => {
+  const handleStartSimulation = () => {
+    // TODO: Implement API call to start simulation
+    // TODO: Store room data (with cover image url) in localStorage: LOCAL_STORAGE_KEYS.ROOM_DATA
+    // TODO: Redirect to simulation page with room ID appended to the URL
+    navigate(ROUTES.SIMULATION, { state: { imageUrl: scenario?.coverImageUrl } });
+  };
+
+  const onStartSimulationClick = () => {
     const accessToken = localStorage.getItem(LOCAL_STORAGE_KEYS.ACCESS_TOKEN);
     // const refreshToken = localStorage.getItem(LOCAL_STORAGE_KEYS.REFRESH_TOKEN);
 
@@ -46,10 +53,7 @@ export const Scenario: FC = () => {
       return;
     }
 
-    // TODO: Implement API call to create room
-    // TODO: Store room data in localStorage: LOCAL_STORAGE_KEYS.ROOM_DATA
-    // TODO: Redirect to simulation page with room ID appended to the URL
-    navigate(ROUTES.SIMULATION);
+    handleStartSimulation();
   };
 
   return (
@@ -73,7 +77,7 @@ export const Scenario: FC = () => {
               title={scenario?.title || ""}
               description={scenario?.scenario || ""}
               longDescription={scenario?.description || ""}
-              onStart={onStartSimulation}
+              onStart={onStartSimulationClick}
             />
           </motion.div>
         )}
@@ -82,7 +86,7 @@ export const Scenario: FC = () => {
         <LoginDialog
           isOpen={isLoginDialogOpen}
           onClose={() => setIsLoginDialogOpen(false)}
-          onSuccess={() => setIsLoginDialogOpen(false)}
+          onSuccess={handleStartSimulation}
         />
       </div>
     </AnimatePresence>

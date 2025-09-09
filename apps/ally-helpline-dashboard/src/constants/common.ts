@@ -123,10 +123,14 @@ export const ApiEndpoints = {
     GET_SEARCH_RESULTS: "/reference-document/search",
   },
   LEARN: {
-    DELETE_ROOM: (roomId: string) => `/rooms/${roomId}`,
-    ROOM: "/rooms",
-    SCENARIOS: "/learn/scenarios",
-    SCENARIO: (scenarioId: number) => `/learn/scenarios/${scenarioId}`,
+    END_SIMULATION: (sessionId: string) => `/learn/scenario-session/${sessionId}/end`,
+    START_SIMULATION: "/learn/scenario-session-start",
+    GET_SCENARIOS: "/learn/scenarios",
+    GET_SCENARIO: (scenarioId: number) => `/learn/scenarios/${scenarioId}`,
+    GET_SCENARIO_SESSIONS: "/learn/scenario-sessions",
+    GET_ADMIN_SCENARIO_SESSIONS: "/learn/admin-scenario-sessions",
+    GET_SCENARIO_SESSION_SUMMARY: "",
+    SUBMIT_SCENARIO_SESSION_FEEDBACK: "",
   },
 };
 

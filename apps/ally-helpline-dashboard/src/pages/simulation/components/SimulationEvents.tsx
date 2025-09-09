@@ -1,4 +1,4 @@
-import { FC, useEffect, useState } from "react";
+import { FC, useEffect, useRef, useState } from "react";
 
 import { motion } from "framer-motion";
 
@@ -15,12 +15,34 @@ const SimulationEvents: FC = () => {
 
   const hasEvents = events.length > 0;
 
+  // Scroll container and last event refs
+  const containerRef = useRef<HTMLDivElement | null>(null);
+  const lastEventRef = useRef<HTMLDivElement | null>(null);
+
   // TODO: remove this useEffect after LiveKit event logic is implemented
   useEffect(() => {
-    setInterval(() => {
+    const id = setInterval(() => {
       setEvents(prev => [...prev, "Event 3"]);
     }, 4000);
+    return () => clearInterval(id);
   }, []);
+
+  // When a new event arrives, auto-scroll only if user is already near the bottom
+  useEffect(() => {
+    const container = containerRef.current;
+    const last = lastEventRef.current;
+    if (!container || !last) return;
+
+    // Determine if user is already near the bottom of the container
+    const thresholdPx = 60;
+    const distanceFromBottom =
+      container.scrollHeight - (container.scrollTop + container.clientHeight);
+    const isNearBottom = distanceFromBottom <= thresholdPx;
+
+    if (isNearBottom) {
+      last.scrollIntoView({ behavior: "smooth", block: "end" });
+    }
+  }, [events.length]);
 
   return (
     <motion.div
@@ -36,6 +58,7 @@ const SimulationEvents: FC = () => {
         animate={{ x: hasEvents ? "0%" : "100%", opacity: hasEvents ? 1 : 0 }}
         transition={{ duration: 0.35, ease: [0.4, 0, 0.2, 1] }}
         className="flex flex-col items-end gap-4 bg-[#1D2020] p-4 h-full overflow-y-auto"
+        ref={containerRef}
       >
         {events.map((event, index) => {
           const isLast = index === events.length - 1;
@@ -46,6 +69,7 @@ const SimulationEvents: FC = () => {
               initial={{ opacity: 0, y: 6 }}
               animate={{ opacity: isLast ? 1 : 0.5, y: 0 }}
               transition={{ duration: 0.4 }}
+              ref={isLast ? lastEventRef : undefined}
             >
               <span className="text-[14px] text-white italic font-['IBM_Plex_Serif']">{event}</span>
               <span className="text-[12px] text-[#9CA3AF] font-['Roboto']">2 mins</span>

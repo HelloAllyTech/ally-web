@@ -1,8 +1,6 @@
 import { CircleConfig } from "./types";
 
 export const circleList: CircleConfig[] = [
-  { scale: 1, isStatic: true },
-  { scale: 2, isStatic: true },
   { scale: 3, isStatic: false },
   { scale: 4, isStatic: false },
 ];
@@ -15,11 +13,7 @@ export const circleStyles = {
     WIDTH: 0.5,
     COLOR: "rgba(45, 115, 186, 0.3)",
   },
-  GRADIENT: {
-    START_COLOR: "45, 115, 186", // RGB for #2D73BA
-    END_COLOR: "231, 244, 255", // RGB for #E7F4FF
-    ANGLE: 180,
-  },
+  BACKGROUND_COLOR: "#57585B",
 } as const;
 
 export const scoreLevels = [
@@ -45,5 +39,5 @@ export const scoreLevels = [
   },
 ];
 
-export const MAX_SESSION_MINUTES = 600; // 10 mins
+export const MAX_SESSION_MINUTES = 1800; // 30 mins
 export const WARNING_THRESHOLD = 30; // 30 seconds before end
