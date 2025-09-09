@@ -1,3 +1,5 @@
+import { matchPath } from "react-router-dom";
+
 import { EMAIL_REGEX } from "@constants";
 
 export const validateEmail = (email: string): boolean => {
@@ -22,4 +24,8 @@ export const updateQueryParamListWithoutReload = (
 
 export const openLinkInNewTab = (url: string, target: string = "_blank") => {
   window.open(url, target, "noopener,noreferrer");
+};
+
+export const isPathExcluded = (currentPath: string, excludedPaths: string[]) => {
+  return excludedPaths.some(path => matchPath(path, currentPath));
 };

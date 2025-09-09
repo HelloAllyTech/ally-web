@@ -120,7 +120,7 @@ const NavSideBar: FC<NavSideBarProps> = ({ activeTab, onTabChange, isOpen, onClo
     <>
       <div
         className={`w-72 bg-white h-screen flex flex-col justify-between border-r border-r-[#E5E7EB]
-          z-20 transition-all duration-300 ${isOpen ? "fixed" : "max-md:hidden md:fixed"}`}
+        transition-all duration-300 ${isOpen ? "z-20" : "max-md:hidden"}`}
       >
         <button onClick={onClose} className="md:hidden absolute top-4 right-4">
           <Close />

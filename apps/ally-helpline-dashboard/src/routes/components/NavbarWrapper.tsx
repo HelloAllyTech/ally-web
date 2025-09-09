@@ -1,0 +1,63 @@
+import { FC, useEffect, useMemo, useState } from "react";
+
+import { MenuIcon } from "lucide-react";
+import { useLocation, useNavigate } from "react-router-dom";
+
+import { NavSideBar } from "@components";
+import { excludeNavBar, navBarOptions, TabId } from "@constants";
+import { useUser } from "@hooks";
+import { UserRole } from "@types";
+import { isPathExcluded } from "@utils";
+
+const NavbarWrapper: FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { user, checkAuth } = useUser();
+  const { pathname } = useLocation();
+  const navigate = useNavigate();
+
+  const [isSidebarOpen, setSidebarOpen] = useState<boolean>(false);
+
+  useEffect(() => {
+    checkAuth();
+  }, []);
+
+  const isClient = user?.role === UserRole.CLIENT;
+
+  const showNavbar = user && !isClient && !isPathExcluded(pathname, excludeNavBar);
+
+  const activeTab = useMemo(
+    () => navBarOptions.find(option => option.path === pathname)?.id ?? TabId.CALLS,
+    [pathname],
+  );
+  const handleTabChange = (path: string) => {
+    navigate(path);
+  };
+  const toggleSidebar = () => {
+    setSidebarOpen(prev => !prev);
+  };
+
+  return (
+    <div className="flex h-screen w-full ">
+      {showNavbar && (
+        <NavSideBar
+          activeTab={activeTab}
+          onTabChange={handleTabChange}
+          isOpen={isSidebarOpen}
+          onClose={toggleSidebar}
+        />
+      )}
+      <div className={"flex-1 min-h-screen overflow-auto bg-white custom-scrollbar"}>
+        <div className={`${showNavbar && "h-[100vh]"}`}>
+          {/* show menu bar in small screen only for non client users */}
+          {!isClient && (
+            <button onClick={toggleSidebar} className="md:hidden p-4 fixed top-0 right-0 z-30">
+              <MenuIcon />
+            </button>
+          )}
+          {children}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default NavbarWrapper;
