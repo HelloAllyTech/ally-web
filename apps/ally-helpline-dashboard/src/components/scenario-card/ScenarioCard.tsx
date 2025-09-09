@@ -19,7 +19,7 @@ const ScenarioCard: FC<ScenarioCardProps> = ({
         <img
           src={coverImage}
           alt={`${title} scenario cover`}
-          className={`w-full h-full object-cover rounded-[4px] ${isComingSoon ? "blur grayscale opacity-50" : ""}`}
+          className={`w-full h-full object-cover rounded-t-[4px] ${isComingSoon ? "blur-[2px] grayscale opacity-50" : ""}`}
           loading="lazy"
           onError={() => setImageError(true)}
         />

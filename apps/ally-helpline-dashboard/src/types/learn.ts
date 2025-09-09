@@ -1,38 +1,19 @@
-export interface SendLearnOTPInput {
-  email: string;
+export enum ScenarioStatus {
+  AVAILABLE = "AVAILABLE",
+  COMING_SOON = "COMING_SOON",
 }
 
-export interface SendLearnOTPResponse {
-  data?: {
-    message: string;
-  };
-  // error?: ErrorResponse;
-}
-
-export interface VerifyLearnOTPInput {
-  code: string;
-  email: string;
-}
-
-export interface VerifyLearnOTPResponse {
-  data?: {
-    name?: string;
-    tokens: { access_token: string; refresh_token: string };
-  };
-  //   error?: ErrorResponse;
+export interface Scenario {
+  id?: number;
+  title?: string;
+  scenario?: string;
+  description?: string;
+  coverImageUrl?: string | null;
+  status?: ScenarioStatus;
 }
 
 export interface GetScenariosInput {
   _t: string;
-}
-
-export interface Scenario {
-  unique_id: string;
-  title?: string;
-  short_description?: string;
-  long_description?: string;
-  cover_image?: string | null;
-  is_coming_soon?: boolean;
 }
 
 export interface GetScenariosResponse {
@@ -42,6 +23,16 @@ export interface GetScenariosResponse {
   // error?: ErrorResponse;
 }
 
+export interface GetScenarioInput {
+  scenarioId: number;
+}
+
+export interface GetScenarioResponse {
+  data?: {
+    scenario: Scenario;
+  };
+  // error?: ErrorResponse;
+}
 export interface ListRoomsResponse {
   data?: {
     sid: string;

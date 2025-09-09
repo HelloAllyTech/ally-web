@@ -1,11 +1,12 @@
-import { FC } from "react";
+import { FC, useState } from "react";
 
 import { AnimatePresence, motion } from "framer-motion";
 import { useNavigate, useParams } from "react-router-dom";
 
+import { useCreateRoomMutation, useGetScenarioQuery } from "@api";
 import { BackCircle } from "@assets";
-import { ScenarioDetailsCard } from "@components";
-import { ROUTES } from "@constants";
+import { LoginDialog, ScenarioDetailsCard } from "@components";
+import { LOCAL_STORAGE_KEYS, ROUTES } from "@constants";
 
 import { dummyScenarios, learnPageExpandedVariants } from "../learn/constants";
 
@@ -13,8 +14,12 @@ export const Scenario: FC = () => {
   const { scenarioId } = useParams();
   const navigate = useNavigate();
 
+  const id = Number(scenarioId);
+
+  const [isLoginDialogOpen, setIsLoginDialogOpen] = useState(false);
+
   // TODO: Remove dummy data once API is implemented
-  const scenario = dummyScenarios.find(scenario => scenario.unique_id === scenarioId);
+  const scenario = dummyScenarios.find(scenario => scenario.id === id);
 
   const renderBackButton = () => {
     return (
@@ -33,6 +38,14 @@ export const Scenario: FC = () => {
   };
 
   const onStartSimulation = () => {
+    const accessToken = localStorage.getItem(LOCAL_STORAGE_KEYS.ACCESS_TOKEN);
+    // const refreshToken = localStorage.getItem(LOCAL_STORAGE_KEYS.REFRESH_TOKEN);
+
+    if (!accessToken) {
+      setIsLoginDialogOpen(true);
+      return;
+    }
+
     // TODO: Implement API call to create room
     // TODO: Store room data in localStorage: LOCAL_STORAGE_KEYS.ROOM_DATA
     // TODO: Redirect to simulation page with room ID appended to the URL
@@ -56,22 +69,21 @@ export const Scenario: FC = () => {
               <span className="font-bold italic"> Simulation</span>
             </div>
             <ScenarioDetailsCard
-              coverImage={scenario?.cover_image || ""}
+              coverImage={scenario?.coverImageUrl || ""}
               title={scenario?.title || ""}
-              description={scenario?.short_description || ""}
-              longDescription={scenario?.long_description || ""}
+              description={scenario?.scenario || ""}
+              longDescription={scenario?.description || ""}
               onStart={onStartSimulation}
             />
           </motion.div>
         )}
         {/* TODO: Add temporary OTP input dialog when clicking on start simulation */}
         {/* {isCreatingRoom && renderSimulationLoading()} */}
-        {/* <LoginPopup
-          isOpen={openLoginPopup}
-          onSubmit={handleLogin}
-          onSendOtpTrigger={handleOtpGeneration}
-          onClose={() => setOpenLoginPopup(false)}
-        /> */}
+        <LoginDialog
+          isOpen={isLoginDialogOpen}
+          onClose={() => setIsLoginDialogOpen(false)}
+          onSuccess={() => setIsLoginDialogOpen(false)}
+        />
       </div>
     </AnimatePresence>
   );

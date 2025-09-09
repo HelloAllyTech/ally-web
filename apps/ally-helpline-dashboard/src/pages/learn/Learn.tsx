@@ -3,17 +3,17 @@ import { FC, useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 
+import { useGetScenariosQuery } from "@api";
 import { ScenarioCard } from "@components";
-import { Scenario } from "@types";
+import { Scenario, ScenarioStatus } from "@types";
 
 import { learnPageContainerVariants, learnPageItemVariants, dummyScenarios } from "./constants";
 
 export const Learn: FC = () => {
   const navigate = useNavigate();
 
+  // TODO: Remove this with getScenarios API data and loading state once the API is implemented.
   const [scenarios, setScenarios] = useState<Scenario[]>([]);
-
-  // TODO: Remove this with getScenarios API loading state once the API is implemented.
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -95,19 +95,19 @@ export const Learn: FC = () => {
             role="list"
             aria-label="Available scenarios"
           >
-            {scenarios.map((scenario: Scenario) => (
+            {scenarios.map(scenario => (
               <motion.div
-                key={scenario.unique_id}
+                key={scenario.id}
                 variants={learnPageItemVariants}
                 role="listitem"
                 className="h-full"
               >
                 <ScenarioCard
-                  coverImage={scenario.cover_image || ""}
+                  coverImage={scenario.coverImageUrl || ""}
                   title={scenario.title || ""}
-                  description={scenario.short_description || ""}
-                  onClick={() => navigate(`/scenario/${scenario.unique_id}`)}
-                  isComingSoon={scenario.is_coming_soon}
+                  description={scenario.scenario || ""}
+                  onClick={() => navigate(`/scenario/${scenario.id}`)}
+                  isComingSoon={scenario.status === ScenarioStatus.COMING_SOON}
                 />
               </motion.div>
             ))}

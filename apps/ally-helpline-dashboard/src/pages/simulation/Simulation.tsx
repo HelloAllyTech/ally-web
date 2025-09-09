@@ -1,6 +1,7 @@
 import { useState } from "react";
 
 import { RoomContext } from "@livekit/components-react";
+import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 
 import { SimulationWarningIllustration, Warning } from "@assets";
@@ -10,6 +11,7 @@ import { useLiveKitRoom } from "@hooks";
 
 import {
   SimulationControls,
+  SimulationEvents,
   SimulationInterface,
   SimulationScoreMeter,
   SimulationTimer,
@@ -44,8 +46,12 @@ export const Simulation = () => {
   return (
     <RoomContext.Provider value={room}>
       <div className="min-h-screen p-6 flex flex-col gap-6 justify-between items-center bg-[#171A1A]">
-        <SimulationInterface roomStatus={roomStatus} />
-        <SimulationScoreMeter />
+        <motion.div layout className="max-h-[calc(100vh-170px)] w-full flex flex-1 gap-2">
+          <SimulationInterface roomStatus={roomStatus} />
+          <SimulationEvents />
+        </motion.div>
+        {/* TODO: Add score from api */}
+        <SimulationScoreMeter score={45} />
         <div className="w-full flex justify-between items-center">
           <SimulationTimer
             isWarning={isWarning}

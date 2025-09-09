@@ -15,7 +15,7 @@ const SimulationTimer: FC<SimulationTimerProps> = ({
   const [timer, setTimer] = useState<number>(0);
 
   useEffect(() => {
-    if (!startTime) return;
+    if (!startTime) return () => {};
 
     const interval = setInterval(() => {
       const now = Date.now();

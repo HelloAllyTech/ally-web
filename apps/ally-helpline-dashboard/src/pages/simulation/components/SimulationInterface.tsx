@@ -1,6 +1,7 @@
 import { FC } from "react";
 
 import { RoomAudioRenderer } from "@livekit/components-react";
+import { motion } from "framer-motion";
 
 import { RoomStatus } from "@types";
 
@@ -34,9 +35,13 @@ const SimulationInterface: FC<SimulationInterfaceProps> = ({ roomStatus }) => {
   };
 
   return (
-    <div className="w-full flex justify-center items-center flex-1 bg-[#1D2020] rounded-lg">
+    <motion.div
+      layout
+      transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
+      className="w-full flex justify-center items-center flex-1 bg-[#1D2020] rounded-lg"
+    >
       {renderContent()}
-    </div>
+    </motion.div>
   );
 };
 

@@ -1,30 +1,23 @@
-import { useEffect, useState, useCallback, FunctionComponent } from "react";
+import { FC, useCallback, useEffect, useState } from "react";
 
+import { Dialog } from "@mui/material";
 import { FetchBaseQueryError } from "@reduxjs/toolkit/query";
-import { motion, AnimatePresence } from "framer-motion";
-import { useSelector } from "react-redux";
-import { useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
 import { toast } from "sonner";
 
 import { useGenerateOTPMutation, useVerifyOTPMutation } from "@api";
-import { Ally, BackCircle, LoginImage, RedirectIcon } from "@assets";
-import { Button, Carousel, OTP, TextField } from "@components";
-import {
-  ALLY_PRIVACY_POLICY_URL,
-  ALLY_TERMS_URL,
-  ALLY_URL,
-  CAROUSEL_SLIDES,
-  LOCAL_STORAGE_KEYS,
-  LoginSection,
-} from "@constants";
-import { useUser } from "@hooks";
-import { RootState } from "@store";
+import { BackCircle, CloseIcon } from "@assets";
+import { ALLY_PRIVACY_POLICY_URL, ALLY_TERMS_URL, LoginSection } from "@constants";
 import { openLinkInNewTab, validateEmail } from "@utils";
 
-export const Login: FunctionComponent = () => {
-  const navigate = useNavigate();
-  const { user } = useSelector((state: RootState) => state.user);
+import { LoginPopupProps } from "./types";
+import { Button } from "../button";
+import OTP from "../otp";
+import TextField from "../text-field";
 
+// TODO: Reuse in Login page
+
+const LoginDialog: FC<LoginPopupProps> = ({ isOpen, onClose, onSuccess }) => {
   const [loginSection, setLoginSection] = useState<LoginSection>(LoginSection.EMAIL);
   const [email, setEmail] = useState<string>("");
   const [emailError, setEmailError] = useState<string>("");
@@ -51,9 +44,9 @@ export const Login: FunctionComponent = () => {
     },
   ] = useVerifyOTPMutation();
 
-  const { isAuthenticated, checkAuth } = useUser();
-
   const isLoading = isGeneratingOTP || isVerifyingOTP;
+  const isSubmitDisabled =
+    loginSection === LoginSection.EMAIL ? !email || !!emailError : !otp || otp.length < 4;
 
   useEffect(() => {
     const rememberedEmail = localStorage.getItem("rememberedEmail");
@@ -61,16 +54,6 @@ export const Login: FunctionComponent = () => {
       setEmail(rememberedEmail);
     }
   }, []);
-
-  useEffect(() => {
-    checkAuth();
-  }, []);
-
-  useEffect(() => {
-    if (isAuthenticated && user) {
-      navigate("/");
-    }
-  }, [isAuthenticated, navigate, user]);
 
   useEffect(() => {
     if (generateOTPError) {
@@ -104,12 +87,8 @@ export const Login: FunctionComponent = () => {
         const errorMessage = errorData?.message ?? "Failed to verify OTP. Please try again.";
         toast.error(errorMessage);
       } else if (isVerifyOTPSuccess && verifyOTPData) {
-        localStorage.setItem(LOCAL_STORAGE_KEYS.ACCESS_TOKEN, verifyOTPData.accessToken);
-        localStorage.setItem(LOCAL_STORAGE_KEYS.REFRESH_TOKEN, verifyOTPData.refreshToken);
-        const userData = await checkAuth();
-        if (userData) {
-          navigate("/");
-        }
+        // function to be called when OTP is verified successfully
+        onSuccess();
       }
     })();
   }, [isVerifyOTPSuccess, verifyOTPError, verifyOTPData]);
@@ -122,17 +101,6 @@ export const Login: FunctionComponent = () => {
     }
   };
 
-  const handleBack = () => {
-    setLoginSection(LoginSection.EMAIL);
-    setOtp("");
-  };
-
-  const handleResendCode = useCallback(() => {
-    if (countdown === 0) {
-      generateOTP({ email });
-    }
-  }, [countdown, generateOTP, email]);
-
   const handleNext = () => {
     if (!validateEmail(email)) {
       setEmailError("Please enter a valid email address");
@@ -143,6 +111,17 @@ export const Login: FunctionComponent = () => {
     }
     generateOTP({ email: email.trim() });
   };
+
+  const handleBack = () => {
+    setLoginSection(LoginSection.EMAIL);
+    setOtp("");
+  };
+
+  const handleResendCode = useCallback(() => {
+    if (countdown === 0) {
+      generateOTP({ email });
+    }
+  }, [countdown, generateOTP, email]);
 
   const handleVerify = () => {
     verifyOTP({ email: email.trim(), otp });
@@ -274,41 +253,32 @@ export const Login: FunctionComponent = () => {
       </motion.div>
     );
   };
-
-  const isSubmitDisabled =
-    loginSection === LoginSection.EMAIL ? !email || !!emailError : !otp || otp.length < 4;
-
   return (
-    <div className="flex h-screen p-8">
-      <div className="max-w-[50%] flex-1 h-full relative">
-        <img
-          src={LoginImage}
-          alt="Login"
-          className="w-full h-full object-cover hidden sm:block rounded-[16px]"
-        />
-        <Carousel
-          slides={CAROUSEL_SLIDES}
-          className="absolute top-[50%] left-[50%] translate-x-[-50%] translate-y-[-50%] max-h-[470px] max-w-[380px]"
-        />
-        <div
-          className="flex items-center gap-2 p-3 rounded-tl-2xl bg-white absolute bottom-0 right-0 cursor-pointer"
-          onClick={() => openLinkInNewTab(ALLY_URL)}
+    <Dialog open={isOpen} onClose={onClose}>
+      <motion.div
+        className="max-w-[500px] min-w-[200px] flex flex-col gap-4 items-center p-4 sm:p-6 md:p-10 relative mx-4"
+        initial={{ opacity: 0, scale: 0.8, y: 20 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        transition={{
+          duration: 0.3,
+          ease: "easeOut",
+          type: "spring",
+          stiffness: 300,
+          damping: 25,
+        }}
+      >
+        <motion.div
+          initial={{ opacity: 0, x: 20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ delay: 0.1, duration: 0.2 }}
+          className="absolute top-3 right-3"
         >
-          <Ally className="w-10 h-10" />
-          <div className="flex flex-col mr-4 font-['Replay_Pro']">
-            <span className="text-xl font-bold text-[#0F172A]">Ally</span>
-            <span className="text-sm font-medium text-[#858688]">helloally.ai</span>
-          </div>
-          <RedirectIcon width={36} height={36} className="border border-[#E8E8E8] rounded-sm p-2" />
-        </div>
-      </div>
-      <div className="flex-1 flex flex-col items-center justify-center">
-        <div className="sm:w-1/2 w-[90%] flex flex-col gap-6">
-          <div className="flex flex-col">
-            <AnimatePresence mode="wait">{getLoginSection()}</AnimatePresence>
-          </div>
-        </div>
-      </div>
-    </div>
+          <CloseIcon onClick={onClose} className="cursor-pointer" />
+        </motion.div>
+        {getLoginSection()}
+      </motion.div>
+    </Dialog>
   );
 };
+
+export default LoginDialog;

@@ -125,9 +125,8 @@ export const ApiEndpoints = {
   LEARN: {
     DELETE_ROOM: (roomId: string) => `/rooms/${roomId}`,
     ROOM: "/rooms",
-    SEND_OTP: "/auth/send-otp",
-    SCENARIOS: "/scenarios",
-    VERIFY_OTP: "/auth/verify-otp",
+    SCENARIOS: "/learn/scenarios",
+    SCENARIO: (scenarioId: number) => `/learn/scenarios/${scenarioId}`,
   },
 };
 
@@ -173,3 +172,8 @@ export const TOOLTIP_DARK_PROPS = {
     },
   },
 };
+
+export enum LoginSection {
+  EMAIL = "Email",
+  OTP = "OTP",
+}

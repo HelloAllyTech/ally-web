@@ -37,3 +37,7 @@ export interface SimulationTimerProps {
   startTime: string;
   timeLimit?: number;
 }
+
+export interface SimulationScoreMeterProps {
+  score?: number;
+}

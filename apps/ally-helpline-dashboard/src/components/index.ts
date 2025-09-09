@@ -15,6 +15,7 @@ import ExpandingSection from "./expanding-section";
 import FallbackUI from "./fallback-ui";
 import InfoBanner from "./info-banner";
 import Input from "./input";
+import LoginDialog from "./login-dialog";
 import NavSideBar from "./nav-sidebar";
 import OTP from "./otp";
 import ScenarioCard from "./scenario-card";
@@ -53,6 +54,7 @@ export {
   FallbackUI,
   InfoBanner,
   Input,
+  LoginDialog,
   NavSideBar,
   OTP,
   ScenarioCard,
