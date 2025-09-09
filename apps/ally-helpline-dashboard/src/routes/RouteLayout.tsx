@@ -17,7 +17,7 @@ const RouteLayout = () => {
           <Route path={ROUTES.HEALTH} element={<Health />} />
         </Route>
 
-        {/* Hybrid routes - routes which are ublic but have navbar upon login */}
+        {/* Hybrid routes - routes which are public but have navbar upon login */}
         <Route element={<HybridRouteLayout />}>
           <Route path={ROUTES.LEARN} element={<Learn />} />
           <Route path={ROUTES.SCENARIO} element={<Scenario />} />
