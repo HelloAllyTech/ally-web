@@ -26,11 +26,18 @@ export const useLiveKitRoom = (): UseLiveKitRoomReturn => {
   const isConnecting = roomStatus === RoomStatus.CONNECTING;
 
   const getLiveKitUrl = (): string => {
-    const url = import.meta.env.VITE_LIVEKIT_URL;
+    const url = roomData?.serverUrl || import.meta.env.VITE_LIVEKIT_URL;
     if (!url) {
-      throw new Error("LiveKit URL not found in environment variables");
+      throw new Error("LiveKit URL not found in room data or environment variables");
     }
     return url;
+  };
+
+  const onDataReceived = (payload: any, participant: any, kind: any, topic: any) => {
+    const payloadString = atob(payload);
+    console.log("payloadString", payloadString);
+    const payloadObject = JSON.parse(payloadString);
+    console.log("payload", payloadObject);
   };
 
   const connectToRoom = async () => {
@@ -85,6 +92,8 @@ export const useLiveKitRoom = (): UseLiveKitRoomReturn => {
           logger.debug(`Track unsubscribed: ${track.kind}`);
         });
 
+        room.on(RoomEvent.DataReceived, onDataReceived);
+
         room.on(RoomEvent.Disconnected, () => {
           logger.info("Disconnected from room");
           setRoomStatus(RoomStatus.DISCONNECTED);
@@ -118,7 +127,6 @@ export const useLiveKitRoom = (): UseLiveKitRoomReturn => {
 
     return () => {
       clearTimeout(connectionTimeout);
-      localStorage.removeItem(LOCAL_STORAGE_KEYS.ROOM_DATA);
 
       // Only disconnect if we're actually connected
       if (isConnected && room.localParticipant) {
@@ -130,6 +138,12 @@ export const useLiveKitRoom = (): UseLiveKitRoomReturn => {
       }
     };
   }, [id]);
+
+  useEffect(() => {
+    return () => {
+      localStorage.removeItem(LOCAL_STORAGE_KEYS.ROOM_DATA);
+    };
+  }, [room]);
 
   return {
     room,

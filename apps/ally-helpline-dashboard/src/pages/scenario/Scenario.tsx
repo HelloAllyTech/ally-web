@@ -50,6 +50,7 @@ export const Scenario: FC = () => {
           coverImageUrl: scenario?.coverImageUrl,
           accessToken: accessToken.token,
           createdAt: scenarioSession.startedAt,
+          serverUrl: accessToken.serverUrl,
         }),
       );
       navigate(`/simulation/${scenarioSession.id}`);

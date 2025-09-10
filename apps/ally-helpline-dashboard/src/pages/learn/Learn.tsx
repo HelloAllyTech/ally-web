@@ -48,6 +48,14 @@ export const Learn: FC = () => {
     </div>
   );
 
+  const getSortedScenarios = () =>
+    scenarios?.slice().sort((a, b) => {
+      const aActive = a.status === ScenarioStatus.ACTIVE;
+      const bActive = b.status === ScenarioStatus.ACTIVE;
+      if (aActive === bActive) return 0;
+      return aActive ? -1 : 1;
+    });
+
   const renderScenarioGrid = () => (
     <>
       <motion.div
@@ -89,7 +97,7 @@ export const Learn: FC = () => {
             role="list"
             aria-label="Available scenarios"
           >
-            {scenarios.map(scenario => (
+            {getSortedScenarios().map(scenario => (
               <motion.div
                 key={scenario.id}
                 variants={learnPageItemVariants}
