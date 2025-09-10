@@ -48,6 +48,7 @@ import HomeworkRecommended from "./homework-recommended.svg?react";
 import InDoubt from "./in-doubt.svg?react";
 import IssuesWorkedOn from "./issues-worked-on.svg?react";
 import KeyConcerns from "./key-concerns.svg?react";
+import KeyEvents from "./key-events.svg?react";
 import LearnIcon from "./learn-icon.svg?react";
 import LifelineLogo from "./lifeline-logo.svg?react";
 import ListIcon from "./list-icon.svg?react";
@@ -152,6 +153,7 @@ export {
   InDoubt,
   IssuesWorkedOn,
   KeyConcerns,
+  KeyEvents,
   LearnIcon,
   LifelineLogo,
   ListIcon,

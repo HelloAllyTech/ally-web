@@ -7,4 +7,3 @@ export * from "./permissions";
 export * from "./routes";
 export * from "./socket";
 export * from "./tabs";
-export * from "./feedback";

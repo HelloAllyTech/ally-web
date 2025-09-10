@@ -3,3 +3,8 @@ export enum RoomStatus {
   CONNECTING = "connecting",
   DISCONNECTED = "disconnected",
 }
+
+export enum FeedbackSectioonType {
+  BULLET_TEXT = "BULLET_TEXT",
+  TABLE = "TABLE",
+}
