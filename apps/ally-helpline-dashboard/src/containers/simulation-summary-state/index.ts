@@ -1,3 +1,3 @@
-import SimulationSummaryState from "./SimulationSummaryState";
+import SimulationSummary from "./SimulationSummary";
 
-export default SimulationSummaryState;
+export default SimulationSummary;

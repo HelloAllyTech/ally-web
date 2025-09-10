@@ -14,10 +14,8 @@ import {
   ClientInterface,
   Search,
   StressBuster,
-  Learn,
-  Scenario,
-  SimulationSummary,
   Simulation,
+  PostSimulationSummary,
 } from "@pages";
 import { setUserStatus, setAvailableChatTypes, unauthenticate } from "@reducer";
 import { store } from "@store";
@@ -187,7 +185,7 @@ const PrivateRouteLayout: FC = () => {
             <PermissionGuardedRoute
               // TODO: Add correct permission for Simulation Summary once BE implementation is done
               permission={Permissions.VIEW_NAVBAR_LEARN}
-              element={<SimulationSummary />}
+              element={<PostSimulationSummary />}
             />
           }
         />

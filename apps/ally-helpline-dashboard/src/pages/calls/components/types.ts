@@ -39,3 +39,11 @@ export interface SummaryHeaderProps {
   setSummaryName: (summaryName: string) => void;
   chatId: number;
 }
+
+export interface CallSummaryProps {
+  selectedTab: number;
+}
+
+export interface CallTranscriptTabProps {
+  callSummary: CallLog;
+}

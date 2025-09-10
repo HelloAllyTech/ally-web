@@ -1,26 +1,23 @@
-import { FC, useEffect, useState, useRef, useMemo } from "react";
+import { FC, useEffect, useState } from "react";
 
 import { Tabs, Tab } from "@mui/material";
 import { useSelector } from "react-redux";
 
-import { InfiniteScroll, logger } from "@ally-ui-mono/ui-shared";
-import {
-  useGetTranscriptQuery,
-  useLazyExportCallSummaryQuery,
-  useUpdateCallSummaryMutation,
-} from "@api";
+import { logger } from "@ally-ui-mono/ui-shared";
+import { useLazyExportCallSummaryQuery, useUpdateCallSummaryMutation } from "@api";
 import { DataPolicy, Download } from "@assets";
 import { ActionDialog, Drawer } from "@components";
 import { ALLY_DATA_POLICY_URL, CallProvider } from "@constants";
 import { useFileExport } from "@hooks";
 import CallSummary from "@pages/post-call-summary/components/CallSummary";
+import { SimulationSummary } from "@src/containers";
 import { RootState } from "@store";
 import { UserRole } from "@types";
 import { openLinkInNewTab } from "@utils";
 
-import { SummaryHeader } from ".";
+import { SummaryHeader, CallTranscriptTab } from ".";
 import { defaultDeleteDialogData, tabStyles } from "../constants";
-import { DeleteDialogData, SummarySideBarProps, Transcript } from "./types";
+import { DeleteDialogData, SessionType, SummarySideBarProps } from "./types";
 
 // TODO: Added only for removing lint error - remove and find actual solution
 declare global {
@@ -46,49 +43,14 @@ const SummarySideBar: FC<SummarySideBarProps> = ({
   const [exportCallSummary, { isLoading: isExporting }] = useLazyExportCallSummaryQuery();
   const [updateCallSummary, { isLoading: isUpdatingCallSummary }] = useUpdateCallSummaryMutation();
 
-  const [transcriptOffset, setTranscriptOffset] = useState(0);
-  const [transcriptList, setTranscriptList] = useState<Transcript[]>([]);
-  const TRANSCRIPT_PAGE_SIZE = 30;
-
-  const { data: transcriptData, isLoading: isGetTranscriptLoading } = useGetTranscriptQuery({
-    chatId: callSummary?.id,
-    offset: transcriptOffset,
-    limit: TRANSCRIPT_PAGE_SIZE,
-    sortBy:
-      callSummary?.details?.callInfo?.provider === CallProvider.WEBRTC
-        ? "createdAt"
-        : "startSeconds",
-  });
-
-  const transcript = useMemo(() => transcriptData?.data || [], [transcriptData]);
-  const transcriptTotal = useMemo(() => transcriptData?.count || 0, [transcriptData]);
-
   const { exportTxtFromText } = useFileExport();
-  const isLoading = isExporting || isUpdatingCallSummary;
   const isAdmin = user?.role === UserRole.ADMIN;
-
-  // Append new results when transcriptData changes
-  useEffect(() => {
-    if (transcript.length > 0) {
-      setTranscriptList(prev => [...prev, ...transcript]);
-    }
-  }, [transcript]);
-
-  // Reset transcript list when call changes
-  useEffect(() => {
-    setTranscriptOffset(0);
-  }, [callSummary?.id]);
 
   useEffect(() => {
     if (callSummary?.details?.callInfo?.summaryName) {
       setSummaryName(callSummary?.details?.callInfo?.summaryName);
     }
   }, [callSummary?.details?.callInfo?.summaryName]);
-
-  const handleLoadMore = () => {
-    if (transcriptOffset >= transcriptTotal) return;
-    setTranscriptOffset(prev => prev + TRANSCRIPT_PAGE_SIZE);
-  };
 
   const onExportClick = async () => {
     try {
@@ -124,52 +86,6 @@ const SummarySideBar: FC<SummarySideBarProps> = ({
 
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
     setSelectedTab(newValue);
-  };
-
-  const renderTranscript = (item: Transcript, index: number) => {
-    const { content, senderId } = item;
-    let speaker = "User";
-    if (senderId === callSummary.clientId) {
-      speaker = "Client";
-    } else if (senderId === callSummary.counselorId) {
-      speaker = "Counsellor";
-    } else {
-      speaker = `User ${senderId}`;
-    }
-
-    window.handleCommentClick = (comment: string) => {
-      setSelectedComment(comment === selectedComment ? "" : comment);
-    };
-    // Just display the content as plain text, no regex or highlighting
-    return (
-      <div key={`${senderId}-${index}`} className="flex">
-        <div className="flex-1 text-sm">
-          <span className="font-semibold">{speaker}: </span>
-          <span className="font-['IBM_Plex_Serif']">{content}</span>
-        </div>
-      </div>
-    );
-  };
-
-  const renderTranscripts = () => {
-    return (
-      <div className="flex-1 overflow-y-scroll p-4">
-        <h3 className="font-semibold text-sm mb-4">Transcript</h3>
-        {transcriptList.length > 0 ? (
-          <div className="space-y-4 flex-1 mb-[12px] h-[calc(100vh-250px)] overflow-y-auto">
-            <InfiniteScroll onInfiniteScroll={handleLoadMore} isLoading={isGetTranscriptLoading}>
-              {transcriptList.map((item: Transcript, index: number) =>
-                renderTranscript(item, index),
-              )}
-            </InfiniteScroll>
-          </div>
-        ) : (
-          <div className="space-y-4 flex-1 mb-[12px]">
-            <div className="text-sm text-gray-500">No transcript available</div>
-          </div>
-        )}
-      </div>
-    );
   };
 
   const renderComments = () => {
@@ -248,24 +164,28 @@ const SummarySideBar: FC<SummarySideBarProps> = ({
 
         {selectedTab === 1 && (
           <div className="w-full h-full p-2">
-            <CallSummary
-              headerContent={
-                <SummaryHeader
-                  summaryName={summaryName}
-                  setSummaryName={setSummaryName}
-                  chatId={callSummary.id}
-                />
-              }
-              className="max-h-[calc(100vh-320px)]"
-              chatId={callSummary.id}
-              postProcess={refetchCallLogs}
-              isInSidebar={true}
-            />
+            {sessionType === SessionType.CALL ? (
+              <CallSummary
+                headerContent={
+                  <SummaryHeader
+                    summaryName={summaryName}
+                    setSummaryName={setSummaryName}
+                    chatId={callSummary.id}
+                  />
+                }
+                className="max-h-[calc(100vh-320px)]"
+                chatId={callSummary.id}
+                postProcess={refetchCallLogs}
+                isInSidebar={true}
+              />
+            ) : (
+              <SimulationSummary className="max-h-[calc(100vh-150px)]" />
+            )}
           </div>
         )}
         {selectedTab === 2 && (
           <div className="flex flex-1 overflow-y-hidden h-[calc(100vh-75px)]">
-            {renderTranscripts()}
+            <CallTranscriptTab callSummary={callSummary} />
             {renderComments()}
           </div>
         )}

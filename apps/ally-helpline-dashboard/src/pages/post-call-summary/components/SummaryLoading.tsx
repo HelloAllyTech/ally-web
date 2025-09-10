@@ -3,6 +3,7 @@ import { FC, useEffect, useState } from "react";
 import { CircularProgress, Tooltip } from "@mui/material";
 import { Check, Info, CircleX } from "lucide-react";
 
+import { SummaryGenenerationVideo } from "@assets";
 import {
   NotesIcon,
   VerifiedBadge,
@@ -10,7 +11,7 @@ import {
   SummaryGeneratedIllustration,
   SummaryFailed,
 } from "@assets/icons";
-import { Button, ButtonVariant, InfoBanner, SummaryGenerationLoader } from "@components";
+import { Button, ButtonVariant, InfoBanner, ShinyText } from "@components";
 import { SESSION_STORAGE_KEYS, TOOLTIP_DARK_PROPS } from "@constants";
 import { useUser } from "@hooks";
 import { ChatSummaryStatus, UserRole } from "@types";
@@ -59,7 +60,19 @@ const SummaryProcessingState = ({
         />
       )}
     </div>
-    <SummaryGenerationLoader text={summaryMessage} />
+    <video
+      src={SummaryGenenerationVideo}
+      autoPlay
+      loop
+      muted
+      playsInline
+      className="w-64 object-contain"
+    />
+
+    {/* Shiny Text Animation */}
+    <div className="mb-8">
+      <ShinyText text={summaryMessage} className="text-xl font-['IBM_Plex_Serif']" />
+    </div>
     <p className="text-[#6B7280] text-base text-center font-['IBM_Plex_Serif'] mb-1">
       {inSummarySidebar
         ? "An AI-generated summary will be available shortly on this screen. In the meantime, you can add notes below."

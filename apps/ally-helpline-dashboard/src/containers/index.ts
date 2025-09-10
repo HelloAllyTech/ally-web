@@ -1,3 +1,3 @@
-import SimulationSummaryState from "./simulation-summary-state";
+import SimulationSummary from "./simulation-summary-state";
 
-export { SimulationSummaryState };
+export { SimulationSummary };
