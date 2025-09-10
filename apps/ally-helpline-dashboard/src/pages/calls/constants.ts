@@ -63,3 +63,8 @@ export const defaultTags = [
   { label: "Health", value: "Health" },
   { label: "Life", value: "Life" },
 ];
+
+export const sessionTypeOptions = [
+  { value: "call", label: "Real call logs" },
+  { value: "simulation", label: "Simulations" },
+];

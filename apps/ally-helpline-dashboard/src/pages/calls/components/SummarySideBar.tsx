@@ -33,6 +33,7 @@ const SummarySideBar: FC<SummarySideBarProps> = ({
   callSummary,
   refetchCallLogs,
   setCallSummary,
+  sessionType,
 }) => {
   const { user } = useSelector((state: RootState) => state.user);
 

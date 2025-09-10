@@ -1,31 +1,17 @@
-import { FC, useEffect, useRef, useState } from "react";
+import { FC, useEffect, useRef } from "react";
 
 import { motion } from "framer-motion";
 
-import { getKeyFromIndex } from "@src/utils";
+import { getElapsedTimeInMinutes, getKeyFromIndex } from "@utils";
 
-const SimulationEvents: FC = () => {
-  // TODO: remove this with LiveKit event data once implemented.
-  const [events, setEvents] = useState<string[]>([
-    "Try asking an open ended question to get client to open up",
-    "Great Question",
-    "Event 3",
-    "Try asking an open ended question to get client to open up",
-  ]);
+import { SimulationEventsProps } from "./types";
 
+const SimulationEvents: FC<SimulationEventsProps> = ({ events }) => {
   const hasEvents = events.length > 0;
 
   // Scroll container and last event refs
   const containerRef = useRef<HTMLDivElement | null>(null);
   const lastEventRef = useRef<HTMLDivElement | null>(null);
-
-  // TODO: remove this useEffect after LiveKit event logic is implemented
-  useEffect(() => {
-    const id = setInterval(() => {
-      setEvents(prev => [...prev, "Event 3"]);
-    }, 4000);
-    return () => clearInterval(id);
-  }, []);
 
   // When a new event arrives, auto-scroll only if user is already near the bottom
   useEffect(() => {
@@ -44,6 +30,11 @@ const SimulationEvents: FC = () => {
     }
   }, [events.length]);
 
+  const getEventTime = (timestamp: string): string => {
+    const elapsedTime = getElapsedTimeInMinutes(timestamp);
+    return `${elapsedTime} min${elapsedTime === 1 ? "" : "s"}`;
+  };
+
   return (
     <motion.div
       layout
@@ -60,7 +51,7 @@ const SimulationEvents: FC = () => {
         className="flex flex-col items-end gap-4 bg-[#1D2020] p-4 h-full overflow-y-auto"
         ref={containerRef}
       >
-        {events.map((event, index) => {
+        {events.map(({ emoji, message, timestamp }, index) => {
           const isLast = index === events.length - 1;
           return (
             <motion.div
@@ -71,8 +62,12 @@ const SimulationEvents: FC = () => {
               transition={{ duration: 0.4 }}
               ref={isLast ? lastEventRef : undefined}
             >
-              <span className="text-[14px] text-white italic font-['IBM_Plex_Serif']">{event}</span>
-              <span className="text-[12px] text-[#9CA3AF] font-['Roboto']">2 mins</span>
+              <span className="text-[14px] text-white italic font-['IBM_Plex_Serif']">
+                {`${emoji} ${message}`}
+              </span>
+              <span className="text-[12px] text-[#9CA3AF] font-['Roboto']">
+                {getEventTime(timestamp)}
+              </span>
             </motion.div>
           );
         })}

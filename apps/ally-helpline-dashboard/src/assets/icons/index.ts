@@ -73,6 +73,7 @@ import ReviewIcon from "./review-icon.svg?react";
 import RoundCheckmark from "./round-checkmark.svg?react";
 import ScribeIcon from "./scribe.svg?react";
 import SearchIcon from "./search.svg?react";
+import SessionScoreIcon from "./session-score.svg?react";
 import SessionSummary from "./session-summary.svg?react";
 import Session from "./session.svg?react";
 import ShareIcon from "./share-icon.svg?react";
@@ -176,8 +177,9 @@ export {
   RoundCheckmark,
   ScribeIcon,
   SearchIcon,
-  Session,
+  SessionScoreIcon,
   SessionSummary,
+  Session,
   ShareIcon,
   SimulationWarningIllustration,
   Spinner,

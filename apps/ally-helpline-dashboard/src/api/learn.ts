@@ -9,12 +9,12 @@ import { ApiEndpoints, HttpMethod } from "@constants";
 import {
   EndSimulationInput,
   EndSimulationResponse,
-  GetAdminScenarioSessionsInput,
-  GetAdminScenarioSessionsResponse,
+  GetAdminSimulationLogsInput,
+  GetAdminSimulationLogsResponse,
   GetScenarioInput,
   GetScenarioResponse,
-  GetScenarioSessionsInput,
-  GetScenarioSessionsResponse,
+  GetSimulationLogsInput,
+  GetSimulationLogsResponse,
   GetScenariosResponse,
   StartSimulationInput,
   StartSimulationResponse,
@@ -85,9 +85,9 @@ const learnAPI = baseAPI.injectEndpoints({
      * @param {"ASC"|"DESC"} [params.order] - Sort order
      * @returns {Promise<GetScenarioSessionsResponse>} Sessions list
      */
-    getScenarioSessions: builder.query<GetScenarioSessionsResponse, GetScenarioSessionsInput>({
+    getSimulationLogs: builder.query<GetSimulationLogsResponse, GetSimulationLogsInput>({
       query: params => ({
-        url: ApiEndpoints.LEARN.GET_SCENARIO_SESSIONS,
+        url: ApiEndpoints.LEARN.GET_SIMULATION_LOGS,
         method: HttpMethod.GET,
         params,
       }),
@@ -95,19 +95,19 @@ const learnAPI = baseAPI.injectEndpoints({
 
     /**
      * List scenario session logs for admins across counselors.
-     * @param {GetAdminScenarioSessionsInput} params - Query parameters
+     * @param {GetAdminSimulationLogsInput} params - Query parameters
      * @param {number} [params.limit] - Page size
      * @param {number} [params.offset] - Offset for pagination
      * @param {string} [params.sortBy] - Field to sort by
      * @param {"ASC"|"DESC"} [params.order] - Sort order
-     * @returns {Promise<GetAdminScenarioSessionsResponse>} Admin sessions list
+     * @returns {Promise<GetAdminSimulationLogsResponse>} Admin sessions list
      */
-    getAdminScenarioSessions: builder.query<
-      GetAdminScenarioSessionsResponse,
-      GetAdminScenarioSessionsInput
+    getAdminSimulationLogs: builder.query<
+      GetAdminSimulationLogsResponse,
+      GetAdminSimulationLogsInput
     >({
       query: params => ({
-        url: ApiEndpoints.LEARN.GET_ADMIN_SCENARIO_SESSIONS,
+        url: ApiEndpoints.LEARN.GET_ADMIN_SIMULATION_LOGS,
         method: HttpMethod.GET,
         params,
       }),
@@ -117,9 +117,9 @@ const learnAPI = baseAPI.injectEndpoints({
      * Get aggregated summary for a single scenario session.
      * @returns {Promise<void>} Summary payload
      */
-    getScenarioSessionSummary: builder.query<void, void>({
+    getSimulationSummary: builder.query<void, void>({
       query: () => ({
-        url: ApiEndpoints.LEARN.GET_SCENARIO_SESSION_SUMMARY,
+        url: ApiEndpoints.LEARN.GET_SIMULATION_SUMMARY,
         method: HttpMethod.GET,
       }),
     }),
@@ -142,8 +142,8 @@ export const {
   useGetScenarioQuery,
   useGetScenariosQuery,
   useStartSimulationMutation,
-  useGetScenarioSessionsQuery,
-  useGetAdminScenarioSessionsQuery,
-  useGetScenarioSessionSummaryQuery,
+  useGetSimulationLogsQuery,
+  useGetAdminSimulationLogsQuery,
+  useGetSimulationSummaryQuery,
   useSubmitSessionFeedbackMutation,
 } = learnAPI;

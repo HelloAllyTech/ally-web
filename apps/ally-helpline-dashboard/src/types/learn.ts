@@ -27,7 +27,7 @@ export interface ScenarioSession {
   status: string;
 }
 
-export interface ScenarioSessionLog {
+export interface SimulationLog {
   createdAt: string;
   updatedAt: string;
   tenantId: string;
@@ -54,7 +54,7 @@ export interface ScenarioSessionLog {
   };
 }
 
-export interface AdminScenarioSessionLog extends ScenarioSessionLog {
+export interface AdminSimulationLog extends SimulationLog {
   counselor: {
     createdAt: string;
     updatedAt: string;
@@ -104,25 +104,25 @@ export interface EndSimulationResponse {
   message?: string;
 }
 
-export interface GetScenarioSessionsInput {
-  statuses: string[];
+export interface GetSimulationLogsInput {
+  statuses?: string[];
   limit?: number;
   offset?: number;
   sortBy?: string;
   order?: "ASC" | "DESC";
 }
 
-export interface GetScenarioSessionsResponse {
-  sessions: ScenarioSessionLog[];
+export interface GetSimulationLogsResponse {
+  sessions: SimulationLog[];
 }
 
-export interface GetAdminScenarioSessionsInput {
+export interface GetAdminSimulationLogsInput {
   limit?: number;
   offset?: number;
   sortBy?: string;
   order?: "ASC" | "DESC";
 }
 
-export interface GetAdminScenarioSessionsResponse {
-  sessions: AdminScenarioSessionLog[];
+export interface GetAdminSimulationLogsResponse {
+  sessions: AdminSimulationLog[];
 }

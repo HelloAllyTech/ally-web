@@ -127,9 +127,9 @@ export const ApiEndpoints = {
     START_SIMULATION: "/learn/scenario-session-start",
     GET_SCENARIOS: "/learn/scenarios",
     GET_SCENARIO: (scenarioId: number) => `/learn/scenarios/${scenarioId}`,
-    GET_SCENARIO_SESSIONS: "/learn/scenario-sessions",
-    GET_ADMIN_SCENARIO_SESSIONS: "/learn/admin-scenario-sessions",
-    GET_SCENARIO_SESSION_SUMMARY: "",
+    GET_SIMULATION_LOGS: "/learn/scenario-sessions",
+    GET_ADMIN_SIMULATION_LOGS: "/learn/admin-scenario-sessions",
+    GET_SIMULATION_SUMMARY: "",
     SUBMIT_SCENARIO_SESSION_FEEDBACK: "",
   },
 };

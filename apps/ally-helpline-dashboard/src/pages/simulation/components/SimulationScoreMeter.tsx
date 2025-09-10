@@ -5,9 +5,9 @@ import { motion } from "framer-motion";
 import { scoreLevels } from "./constants";
 import { SimulationScoreMeterProps } from "./types";
 
-const SimulationScoreMeter: FC<SimulationScoreMeterProps> = ({ score = 45 }) => {
-  // Clamp the score between 0 and 100 range
-  const clamped = Math.max(0, Math.min(100, score));
+const SimulationScoreMeter: FC<SimulationScoreMeterProps> = ({ score = 0 }) => {
+  const clamped = Math.max(-100, Math.min(100, score));
+  const leftPercent = (clamped + 100) / 2;
 
   return (
     <div className="flex gap-2">
@@ -19,7 +19,7 @@ const SimulationScoreMeter: FC<SimulationScoreMeterProps> = ({ score = 45 }) => 
         <motion.div
           aria-label="score-indicator"
           className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-4 h-4 border-[6px] border-[#E8E8E8] rounded-full bg-white"
-          animate={{ left: `${clamped}%` }}
+          animate={{ left: `${leftPercent}%` }}
           transition={{ type: "spring", stiffness: 100, damping: 26 }}
         />
       </div>

@@ -149,3 +149,10 @@ export const getFormattedDateTime = (dateTime: string, formatString: string) => 
   const date = new Date(dateTime);
   return format(date, formatString);
 };
+
+export const getElapsedTimeInMinutes = (startTime: string) => {
+  const now = new Date();
+  const startTimeDate = new Date(startTime);
+  const elapsedTime = now.getTime() - startTimeDate.getTime();
+  return Math.floor(elapsedTime / 60000);
+};

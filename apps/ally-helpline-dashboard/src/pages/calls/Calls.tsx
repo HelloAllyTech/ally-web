@@ -3,16 +3,18 @@ import { FC, useState } from "react";
 import { motion } from "framer-motion";
 
 import { Refresh, StartSession } from "@assets";
-import { Button } from "@components";
+import { Button, ToggleButtonGroup } from "@components";
 import { CallType } from "@constants";
 import { useUser } from "@hooks";
 import { UserRole, UserStatus } from "@types";
 
-import { CallLogsTable, ConsolidatedLogs, StartSessionDialog } from "./components";
+import { CallLogsTable, ConsolidatedLogs, StartSessionDialog, SessionType } from "./components";
+import { sessionTypeOptions } from "./constants";
 
 export const Calls: FC = () => {
   const [isStartSessionDialogOpen, setIsStartSessionDialogOpen] = useState(false);
   const [refreshKey, setRefreshKey] = useState<number>(0);
+  const [sessionType, setSessionType] = useState<SessionType>(SessionType.CALL);
 
   const { availableChatTypes, updateUserStatus, user, userStatus } = useUser();
 
@@ -61,11 +63,16 @@ export const Calls: FC = () => {
             )}
           </div>
         </div>
+        <ToggleButtonGroup
+          value={sessionType}
+          onValueChange={(value: SessionType) => setSessionType(value)}
+          items={sessionTypeOptions}
+        />
       </motion.div>
       {isAdmin ? (
-        <ConsolidatedLogs refreshKey={refreshKey} />
+        <ConsolidatedLogs refreshKey={refreshKey} sessionType={sessionType} />
       ) : (
-        <CallLogsTable refreshKey={refreshKey} />
+        <CallLogsTable refreshKey={refreshKey} sessionType={sessionType} />
       )}
       <StartSessionDialog
         isOpen={isStartSessionDialogOpen}

@@ -10,6 +10,7 @@ export interface StartSessionDialogProps {
 export interface SummarySideBarProps {
   callSummary: CallLog;
   refetchCallLogs: (status?: ChatSummaryStatus) => void;
+  sessionType: SessionType;
   setCallSummary: Dispatch<SetStateAction<CallLog>>;
 }
 
@@ -23,8 +24,14 @@ export interface Transcript {
   senderId?: string | number;
 }
 
+export enum SessionType {
+  CALL = "call",
+  SIMULATION = "simulation",
+}
+
 export interface LogsTableProps {
   refreshKey?: number;
+  sessionType: SessionType;
 }
 
 export interface SummaryHeaderProps {

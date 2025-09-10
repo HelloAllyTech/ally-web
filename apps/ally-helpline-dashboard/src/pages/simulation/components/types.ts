@@ -41,3 +41,14 @@ export interface SimulationTimerProps {
 export interface SimulationScoreMeterProps {
   score?: number;
 }
+
+export interface SimulationEventType {
+  score: number | null;
+  emoji: string;
+  message: string;
+  timestamp: string;
+}
+
+export interface SimulationEventsProps {
+  events: SimulationEventType[];
+}

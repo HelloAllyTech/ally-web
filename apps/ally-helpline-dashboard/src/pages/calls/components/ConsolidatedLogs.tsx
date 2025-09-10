@@ -6,7 +6,12 @@ import { toast } from "sonner";
 
 import { GenericTable } from "@ally-ui-mono/ui-shared";
 import { Column, FilterType } from "@ally-ui-mono/ui-shared/lib/generic-table/types";
-import { useGetAdminCallLogsQuery, useGetCounsellorsQuery, useGetCallTagsQuery } from "@api";
+import {
+  useGetAdminCallLogsQuery,
+  useGetCounsellorsQuery,
+  useGetCallTagsQuery,
+  useGetAdminSimulationLogsQuery,
+} from "@api";
 import {
   NoResults,
   CallIdIcon,
@@ -16,37 +21,57 @@ import {
   ReviewIcon,
   UserIcon,
   SummaryGenerationIcon,
+  SessionScoreIcon,
 } from "@assets";
 import { Button, FallbackUI, SummaryStatusChip, TagGroup } from "@components";
 import { updateFilters } from "@reducer";
 import { RootState } from "@store";
-import { CallLog, ChatSummaryStatus, GetCallLogsInput, TagDisplay } from "@types";
-import { convertSecondsToDuration, getFormattedDate, getSummaryEnabledStatus } from "@utils";
+import {
+  AdminSimulationLog,
+  CallLog,
+  ChatSummaryStatus,
+  GetCallLogsInput,
+  TagDisplay,
+} from "@types";
+import { convertSecondsToDuration, getFormattedDate } from "@utils";
 
 import { SummarySideBar } from ".";
 import { CALL_LOGS_PAGINATION_LIMIT, defaultTags, tagColors } from "../constants";
-import { LogsTableProps } from "./types";
+import { LogsTableProps, SessionType } from "./types";
 
-const ConsolidatedLogs: FC<LogsTableProps> = ({ refreshKey }) => {
+const ConsolidatedLogs: FC<LogsTableProps> = ({ refreshKey, sessionType }) => {
   const dispatch = useDispatch();
 
+  const [logs, setLogs] = useState<any[]>([]);
   const [callSummary, setCallSummary] = useState<CallLog | null>(null);
-  const [callLogList, setCallLogList] = useState<CallLog[]>([]);
   const [isLoadingMore, setIsLoadingMore] = useState<boolean>(false);
   const [hasMore, setHasMore] = useState<boolean>(true);
 
   const { filters } = useSelector((state: RootState) => state.calls);
   const { offset } = filters;
 
+  const isCall = sessionType === SessionType.CALL;
+  const isSimulation = sessionType === SessionType.SIMULATION;
+
   const {
     data: callLogsData,
-    isLoading,
+    isLoading: isCallLogsLoading,
     refetch: refetchCallLogs,
     error: callLogsError,
-  } = useGetAdminCallLogsQuery(filters);
+  } = useGetAdminCallLogsQuery(filters, { skip: !isCall });
+
+  const {
+    data: simulationLogsData,
+    isLoading: isSimulationLogsLoading,
+    refetch: refetchSimulationLogs,
+  } = useGetAdminSimulationLogsQuery(filters, { skip: !isSimulation });
+
   const { data: callLogs = [] } = callLogsData || {};
+  const { sessions: simulationLogs = [] } = (simulationLogsData || {}) as any;
   const { data: counsellorsData } = useGetCounsellorsQuery({ offset: 0 });
   const { data: tagsData } = useGetCallTagsQuery({ offset: 0 });
+
+  const isLoading = isCall ? isCallLogsLoading : isSimulationLogsLoading;
 
   const tableRef = useRef<HTMLDivElement>(null);
 
@@ -59,33 +84,42 @@ const ConsolidatedLogs: FC<LogsTableProps> = ({ refreshKey }) => {
     }
   };
 
+  // Reset data and pagination when switching session type
   useEffect(() => {
-    if (refreshKey) {
-      refetchCallLogs();
-    }
-  }, [refreshKey]);
+    setLogs([]);
+    setHasMore(true);
+    // Reset pagination to first page
+    dispatch(updateFilters({ ...filters, offset: 0 }));
+  }, [sessionType]);
 
-  // Append new callLogs to the list and handle hasMore
+  // Append new logs to the list and handle hasMore for both modes
   useEffect(() => {
-    if (callLogs?.length > 0) {
-      setCallLogList(prev => {
+    const sourceLogs = isCall ? callLogs : simulationLogs;
+    if (sourceLogs?.length > 0) {
+      setLogs(prev => {
         // Avoid duplicate entries if page is reset
-        if (offset === 0) return [...callLogs];
-        return [...prev, ...callLogs];
+        if (offset === 0) return [...sourceLogs];
+        return [...prev, ...sourceLogs];
       });
       setIsLoadingMore(false);
       // If less than limit, no more data
-      if (!callLogs.length || callLogs.length < CALL_LOGS_PAGINATION_LIMIT) {
-        setHasMore(false);
-      } else {
-        setHasMore(true);
+      setHasMore(sourceLogs.length >= CALL_LOGS_PAGINATION_LIMIT);
+      if (offset > 0) {
+        handleScroll();
       }
-      handleScroll();
     } else if (offset === 0) {
       setHasMore(false);
-      setCallLogList([]);
+      setLogs([]);
     }
-  }, [callLogsData]);
+  }, [callLogsData, simulationLogsData, sessionType]);
+
+  // Refetch on refreshKey for active source
+  useEffect(() => {
+    if (refreshKey) {
+      const refetchFn = isCall ? refetchCallLogs : refetchSimulationLogs;
+      refetchFn();
+    }
+  }, [refreshKey, isCall, refetchCallLogs, refetchSimulationLogs]);
 
   const handleLoadMore = () => {
     if (!isLoading && !isLoadingMore && hasMore) {
@@ -95,7 +129,7 @@ const ConsolidatedLogs: FC<LogsTableProps> = ({ refreshKey }) => {
   };
 
   useEffect(() => {
-    if (callLogsError && !isLoading) {
+    if (callLogsError && !isCallLogsLoading) {
       let errorMessage = "Failed to fetch call logs. Please try again.";
       // RTK Query error types
       if (typeof callLogsError === "object" && callLogsError !== null) {
@@ -116,7 +150,7 @@ const ConsolidatedLogs: FC<LogsTableProps> = ({ refreshKey }) => {
       }
       toast.error(`${errorMessage}. It can be issue with applied filters. Please try again.`);
     }
-  }, [callLogsError, isLoading]);
+  }, [callLogsError, isCallLogsLoading]);
 
   if (isLoading && offset === 0) {
     return (
@@ -126,7 +160,7 @@ const ConsolidatedLogs: FC<LogsTableProps> = ({ refreshKey }) => {
     );
   }
 
-  const getAdminDisplayData = (row: CallLog) => {
+  const getAdminCallDisplayData = (row: CallLog) => {
     const { details, id, counselor } = row;
     if (details) {
       const { callInfo, startTime, callDuration, summary } = details;
@@ -150,7 +184,7 @@ const ConsolidatedLogs: FC<LogsTableProps> = ({ refreshKey }) => {
     return { id, callName: "", dateAndTime: "", raw: row };
   };
 
-  const columns: Column<any>[] = [
+  const callColumns: Column<any>[] = [
     {
       key: "callName",
       header: "Session ID",
@@ -213,24 +247,81 @@ const ConsolidatedLogs: FC<LogsTableProps> = ({ refreshKey }) => {
       key: "summary",
       header: "Summary",
       style: { width: "10%" },
-      render: (_value, row) => {
-        const isSummaryEnabled = getSummaryEnabledStatus(row.raw.summaryStatus);
-        return (
-          <Button
-            disabled={!isSummaryEnabled}
-            onClick={() => setCallSummary(row.raw)}
-            fullWidth={true}
-            variant="icon"
-          >
-            <ReviewIcon />
-          </Button>
-        );
-      },
+      render: (_value, row) => (
+        <Button onClick={() => setCallSummary(row.raw)} fullWidth={true} variant="icon">
+          <ReviewIcon />
+        </Button>
+      ),
       icon: <ReviewIcon />,
     },
   ];
 
-  const displayData = callLogList.map(getAdminDisplayData);
+  const getAdminSimulationDisplayData = (row: AdminSimulationLog) => {
+    const { id, startedAt, endedAt, scenario, score, counselor } = row || {};
+    const startMs = startedAt ? new Date(startedAt).getTime() : 0;
+    const endMs = endedAt ? new Date(endedAt).getTime() : 0;
+    // TODO: check if duration can be received directly from BE
+    const durationSec =
+      startedAt && endedAt ? Math.max(0, Math.floor((endMs - startMs) / 1000)) : 0;
+
+    return {
+      id,
+      sessionId: scenario?.title ?? String(id ?? "--"),
+      counsellorName: counselor?.name,
+      dateAndTime: startedAt && getFormattedDate(startedAt),
+      duration: convertSecondsToDuration(durationSec),
+      sessionScore: score ?? 0,
+      raw: row,
+    };
+  };
+
+  const simulationColumns: Column<any>[] = [
+    {
+      key: "sessionId",
+      header: "Session ID",
+      style: { width: "15%" },
+      icon: <CallIdIcon />,
+    },
+    {
+      key: "counsellorName",
+      header: "Counsellor Name",
+      style: { width: "15%" },
+      icon: <UserIcon />,
+    },
+    {
+      key: "dateAndTime",
+      header: "Date & Time",
+      style: { width: "15%" },
+      icon: <DateIcon />,
+    },
+    {
+      key: "duration",
+      header: "Duration",
+      style: { width: "15%" },
+      icon: <TimerIcon />,
+    },
+    {
+      key: "sessionScore",
+      header: "Session score",
+      style: { width: "15%" },
+      icon: <SessionScoreIcon />,
+    },
+    {
+      key: "summary",
+      header: "Summary",
+      style: { width: "10%" },
+      render: (_value, row) => (
+        <Button onClick={() => setCallSummary(row.raw)} fullWidth={true} variant="icon">
+          <ReviewIcon />
+        </Button>
+      ),
+      icon: <ReviewIcon />,
+    },
+  ];
+
+  const displayData = isCall
+    ? logs.map(getAdminCallDisplayData)
+    : logs.map(getAdminSimulationDisplayData);
 
   const handleFilterChange = (data: any) => {
     const { filter = [], sort = {} } = data;
@@ -286,12 +377,16 @@ const ConsolidatedLogs: FC<LogsTableProps> = ({ refreshKey }) => {
   };
 
   const renderFallbackUI = () => {
-    if (callLogList.length === 0 && !isLoading) {
+    if (logs.length === 0 && !isLoading) {
       return (
         <FallbackUI
           image={<NoResults />}
-          mainMessage="No call records found"
-          description="Your recent calls and insights will be listed here."
+          mainMessage={isCall ? "No call records found" : "No simulation records found"}
+          description={
+            isCall
+              ? "Your recent calls and insights will be listed here."
+              : "Your recent simulations will be listed here."
+          }
           className="py-[100px]"
         />
       );
@@ -313,12 +408,12 @@ const ConsolidatedLogs: FC<LogsTableProps> = ({ refreshKey }) => {
       <div className={"rounded-xl w-full max-h-[calc(100vh-10px)] overflow-y-hidden"}>
         <GenericTable
           ref={tableRef}
-          columns={columns}
+          columns={isCall ? callColumns : simulationColumns}
           data={displayData}
           isLoading={isLoading}
-          showSelectedFilters={true}
-          onFilterChange={handleFilterChange}
-          handleLoadMore={callLogList?.length > 0 && hasMore && handleLoadMore}
+          showSelectedFilters={isCall}
+          onFilterChange={isCall ? handleFilterChange : undefined}
+          handleLoadMore={logs?.length > 0 && hasMore && handleLoadMore}
           fallbackUI={renderFallbackUI()}
           className="min-w-full max-h-[calc(100vh-140px)] font-['IBM_Plex_Serif'] overflow-y-scroll"
         />
@@ -328,6 +423,7 @@ const ConsolidatedLogs: FC<LogsTableProps> = ({ refreshKey }) => {
           callSummary={callSummary}
           setCallSummary={setCallSummary}
           refetchCallLogs={onSummarySubmit}
+          sessionType={sessionType}
         />
       )}
     </>
