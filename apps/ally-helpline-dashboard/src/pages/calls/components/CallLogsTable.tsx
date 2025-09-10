@@ -23,8 +23,9 @@ import { RootState } from "@store";
 import { CallLog, ChatSummaryStatus, SimulationLog, TagDisplay } from "@types";
 import { convertSecondsToDuration, getFormattedDate } from "@utils";
 
-import { SummarySideBar } from ".";
 import { CALL_LOGS_PAGINATION_LIMIT, tagColors } from "../constants";
+import CallSummarySidebar from "./CallSummarySidebar";
+import SimulationSummarySidebar from "./SimulationSummarySidebar";
 import { LogsTableProps, SessionType } from "./types";
 
 const CallLogsTable: FC<LogsTableProps> = ({ refreshKey, sessionType }) => {
@@ -39,7 +40,7 @@ const CallLogsTable: FC<LogsTableProps> = ({ refreshKey, sessionType }) => {
   const [isLoadingMore, setIsLoadingMore] = useState<boolean>(false);
   const [hasMore, setHasMore] = useState<boolean>(true);
   const tableRef = useRef<HTMLDivElement>(null);
-  const [callSummary, setCallSummary] = useState<CallLog | null>(null);
+  const [summary, setSummary] = useState<CallLog | SimulationLog>();
 
   const isCall = sessionType === SessionType.CALL;
   const isSimulation = sessionType === SessionType.SIMULATION;
@@ -69,7 +70,8 @@ const CallLogsTable: FC<LogsTableProps> = ({ refreshKey, sessionType }) => {
   );
 
   const { data: callLogs = [] } = callLogsData || {};
-  const { sessions: simulationLogs = [] } = (simulationLogsData || {}) as any;
+  // TODO: Update when pagination is implemented
+  const simulationLogs = simulationLogsData || [];
 
   const isLoading = isCall ? isCallLogsLoading : isSimulationLogsLoading;
 
@@ -202,7 +204,7 @@ const CallLogsTable: FC<LogsTableProps> = ({ refreshKey, sessionType }) => {
       header: "Summary",
       style: { width: "10%" },
       render: (_value, row) => (
-        <Button onClick={() => setCallSummary(row.raw)} fullWidth={true} variant="icon">
+        <Button onClick={() => setSummary(row.raw)} fullWidth={true} variant="icon">
           <ReviewIcon />
         </Button>
       ),
@@ -260,7 +262,7 @@ const CallLogsTable: FC<LogsTableProps> = ({ refreshKey, sessionType }) => {
       header: "Summary",
       style: { width: "10%" },
       render: (_value, row) => (
-        <Button onClick={() => setCallSummary(row.raw)} fullWidth={true} variant="icon">
+        <Button onClick={() => setSummary(row.raw)} fullWidth={true} variant="icon">
           <ReviewIcon />
         </Button>
       ),
@@ -289,12 +291,37 @@ const CallLogsTable: FC<LogsTableProps> = ({ refreshKey, sessionType }) => {
   };
 
   const onSummarySubmit = async (newStatus?: ChatSummaryStatus) => {
-    if (newStatus && callSummary?.summaryStatus === newStatus) return;
-    const chatId = callSummary?.id;
+    if (newStatus && "summaryStatus" in summary && summary.summaryStatus === newStatus) return;
+    const chatId = summary?.id;
     const response = await refetchCallLogs();
 
     const selectedCallLog = response.data?.data?.find(log => log.id === chatId);
-    setCallSummary(selectedCallLog);
+    setSummary(selectedCallLog);
+  };
+
+  const closeSummarySidebar = () => {
+    setSummary(null);
+  };
+
+  const getSummarySideBar = () => {
+    switch (sessionType) {
+      case SessionType.CALL:
+        return (
+          <CallSummarySidebar
+            callSummary={summary as CallLog}
+            refetchCallLogs={onSummarySubmit}
+            setCallSummary={setSummary}
+            sessionType={sessionType}
+          />
+        );
+      case SessionType.SIMULATION:
+        return (
+          <SimulationSummarySidebar
+            summaryId={summary?.id as string}
+            closeSummarySidebar={closeSummarySidebar}
+          />
+        );
+    }
   };
 
   return (
@@ -310,14 +337,7 @@ const CallLogsTable: FC<LogsTableProps> = ({ refreshKey, sessionType }) => {
           className="min-w-full max-h-[calc(100vh-140px)] font-['IBM_Plex_Serif'] overflow-y-scroll"
         />
       </div>
-      {callSummary && callSummary?.id && (
-        <SummarySideBar
-          callSummary={callSummary}
-          refetchCallLogs={onSummarySubmit}
-          setCallSummary={setCallSummary}
-          sessionType={sessionType}
-        />
-      )}
+      {summary && summary.id && getSummarySideBar()}
     </>
   );
 };

@@ -35,7 +35,7 @@ import {
 } from "@types";
 import { convertSecondsToDuration, getFormattedDate } from "@utils";
 
-import { SummarySideBar } from ".";
+import { CallSummarySidebar, SimulationSummarySidebar } from ".";
 import { CALL_LOGS_PAGINATION_LIMIT, defaultTags, tagColors } from "../constants";
 import { LogsTableProps, SessionType } from "./types";
 
@@ -43,7 +43,7 @@ const ConsolidatedLogs: FC<LogsTableProps> = ({ refreshKey, sessionType }) => {
   const dispatch = useDispatch();
 
   const [logs, setLogs] = useState<any[]>([]);
-  const [callSummary, setCallSummary] = useState<CallLog | null>(null);
+  const [summary, setSummary] = useState<CallLog | null>(null);
   const [isLoadingMore, setIsLoadingMore] = useState<boolean>(false);
   const [hasMore, setHasMore] = useState<boolean>(true);
 
@@ -248,7 +248,7 @@ const ConsolidatedLogs: FC<LogsTableProps> = ({ refreshKey, sessionType }) => {
       header: "Summary",
       style: { width: "10%" },
       render: (_value, row) => (
-        <Button onClick={() => setCallSummary(row.raw)} fullWidth={true} variant="icon">
+        <Button onClick={() => setSummary(row.raw)} fullWidth={true} variant="icon">
           <ReviewIcon />
         </Button>
       ),
@@ -311,7 +311,7 @@ const ConsolidatedLogs: FC<LogsTableProps> = ({ refreshKey, sessionType }) => {
       header: "Summary",
       style: { width: "10%" },
       render: (_value, row) => (
-        <Button onClick={() => setCallSummary(row.raw)} fullWidth={true} variant="icon">
+        <Button onClick={() => setSummary(row.raw)} fullWidth={true} variant="icon">
           <ReviewIcon />
         </Button>
       ),
@@ -395,12 +395,37 @@ const ConsolidatedLogs: FC<LogsTableProps> = ({ refreshKey, sessionType }) => {
   };
 
   const onSummarySubmit = async (newStatus?: ChatSummaryStatus) => {
-    if (newStatus && callSummary?.summaryStatus === newStatus) return;
-    const chatId = callSummary?.id;
+    if (newStatus && summary?.summaryStatus === newStatus) return;
+    const chatId = summary?.id;
     const response = await refetchCallLogs();
 
     const selectedCallLog = response.data?.data?.find(log => log.id === chatId);
-    setCallSummary(selectedCallLog);
+    setSummary(selectedCallLog);
+  };
+
+  const closeSummarySidebar = () => {
+    setSummary(null);
+  };
+
+  const getSummarySideBar = () => {
+    switch (sessionType) {
+      case SessionType.CALL:
+        return (
+          <CallSummarySidebar
+            callSummary={summary as CallLog}
+            refetchCallLogs={onSummarySubmit}
+            setCallSummary={setSummary}
+            sessionType={sessionType}
+          />
+        );
+      case SessionType.SIMULATION:
+        return (
+          <SimulationSummarySidebar
+            summaryId={summary?.id.toString()}
+            closeSummarySidebar={closeSummarySidebar}
+          />
+        );
+    }
   };
 
   return (
@@ -418,14 +443,7 @@ const ConsolidatedLogs: FC<LogsTableProps> = ({ refreshKey, sessionType }) => {
           className="min-w-full max-h-[calc(100vh-140px)] font-['IBM_Plex_Serif'] overflow-y-scroll"
         />
       </div>
-      {callSummary && callSummary?.id && (
-        <SummarySideBar
-          callSummary={callSummary}
-          setCallSummary={setCallSummary}
-          refetchCallLogs={onSummarySubmit}
-          sessionType={sessionType}
-        />
-      )}
+      {summary && summary.id && getSummarySideBar()}
     </>
   );
 };

@@ -104,9 +104,7 @@ export interface GetSimulationLogsInput {
   order?: "ASC" | "DESC";
 }
 
-export interface GetSimulationLogsResponse {
-  sessions: SimulationLog[];
-}
+export type GetSimulationLogsResponse = SimulationLog[];
 
 export interface GetAdminSimulationLogsInput {
   limit?: number;
@@ -117,4 +115,40 @@ export interface GetAdminSimulationLogsInput {
 
 export interface GetAdminSimulationLogsResponse {
   sessions: AdminSimulationLog[];
+}
+
+export interface GetSimulationSummaryResponse {
+  id: string;
+  counselorId: number;
+  createdAt: string;
+  endedAt: string;
+  metadata: any;
+  roomId: string;
+  scenarioId: number;
+  score: number | null;
+  startedAt: string;
+  status: string;
+  tenantId: string;
+  updatedAt: string;
+  summary?: SimulationFindingsSummary;
+}
+
+export interface SimulationFindingsSummary {
+  keyEvents: KeyEvent[];
+  whatWentWell: string[];
+  improvementTips: string[];
+}
+
+export interface KeyEvent {
+  data: {
+    score?: number;
+    emoji?: string;
+    message?: string;
+  };
+  timestamp: string;
+}
+
+export interface SubmitSessionFeedbackInput {
+  sessionId: string;
+  sessionFeedback: { rating: number; feedback?: string };
 }
