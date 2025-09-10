@@ -1,23 +1,19 @@
 import { FC, useEffect, useState } from "react";
 
-import { Tabs, Tab } from "@mui/material";
 import { useSelector } from "react-redux";
 
 import { logger } from "@ally-ui-mono/ui-shared";
 import { useLazyExportCallSummaryQuery, useUpdateCallSummaryMutation } from "@api";
-import { DataPolicy, Download } from "@assets";
-import { ActionDialog, Drawer } from "@components";
-import { ALLY_DATA_POLICY_URL, CallProvider } from "@constants";
+import { Download } from "@assets";
+import { ActionDialog } from "@components";
 import { useFileExport } from "@hooks";
 import CallSummary from "@pages/post-call-summary/components/CallSummary";
-import { SimulationSummary } from "@src/containers";
 import { RootState } from "@store";
 import { UserRole } from "@types";
-import { openLinkInNewTab } from "@utils";
 
-import { SummaryHeader, CallTranscriptTab } from ".";
-import { defaultDeleteDialogData, tabStyles } from "../constants";
-import { DeleteDialogData, SessionType, SummarySideBarProps } from "./types";
+import { SummaryHeader, CallTranscriptTab, SummarySidebarWrapper } from ".";
+import { defaultDeleteDialogData } from "../constants";
+import { CallSummarySidebarProps, DeleteDialogData } from "./types";
 
 // TODO: Added only for removing lint error - remove and find actual solution
 declare global {
@@ -26,22 +22,20 @@ declare global {
   }
 }
 
-const SummarySideBar: FC<SummarySideBarProps> = ({
+const CallSummarySidebar: FC<CallSummarySidebarProps> = ({
   callSummary,
   refetchCallLogs,
   setCallSummary,
-  sessionType,
 }) => {
   const { user } = useSelector((state: RootState) => state.user);
 
-  const [selectedTab, setSelectedTab] = useState(1);
   const [selectedComment, setSelectedComment] = useState<string>("");
   const [deleteDialogData, setDeleteDialogData] =
     useState<DeleteDialogData>(defaultDeleteDialogData);
   const [summaryName, setSummaryName] = useState<string>();
 
-  const [exportCallSummary, { isLoading: isExporting }] = useLazyExportCallSummaryQuery();
-  const [updateCallSummary, { isLoading: isUpdatingCallSummary }] = useUpdateCallSummaryMutation();
+  const [exportCallSummary] = useLazyExportCallSummaryQuery();
+  const [updateCallSummary] = useUpdateCallSummaryMutation();
 
   const { exportTxtFromText } = useFileExport();
   const isAdmin = user?.role === UserRole.ADMIN;
@@ -84,10 +78,6 @@ const SummarySideBar: FC<SummarySideBarProps> = ({
     setDeleteDialogData(defaultDeleteDialogData);
   };
 
-  const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
-    setSelectedTab(newValue);
-  };
-
   const renderComments = () => {
     return (
       <>
@@ -123,74 +113,59 @@ const SummarySideBar: FC<SummarySideBarProps> = ({
     );
   };
 
-  return (
-    <Drawer
-      open={true}
-      onClose={() => setCallSummary(null)}
-      className="font-['IBM_Plex_Serif']"
-      title="Summary"
-      headerButtons={[
-        {
-          alt: "Data policy",
-          icon: <DataPolicy />,
-          onClick: () => openLinkInNewTab(ALLY_DATA_POLICY_URL),
-          show: true,
-          text: "Data policy",
-        },
-        {
-          alt: "Export",
-          icon: <Download />,
-          onClick: onExportClick,
-          // TODO: To be shown when the export functionality is implemented for admin
-          show: !isAdmin,
-          text: "Export summary",
-        },
-      ]}
-    >
-      <div className="w-[55vw] h-full flex flex-col">
-        <Tabs
-          value={selectedTab}
-          onChange={handleTabChange}
-          className="w-full normal-case border-b border-[#DBDBDB] mb-4"
-          sx={{
-            "& .MuiButtonBase-root": {
-              fontFamily: "IBM_Plex_Serif",
-            },
-          }}
-        >
-          <Tab label="Summary" value={1} sx={tabStyles} />
-          <Tab label="Transcription" value={2} sx={tabStyles} />
-        </Tabs>
+  const TranscriptionSubTab = () => (
+    <div className="flex flex-1 overflow-y-hidden h-[calc(100vh-75px)]">
+      <CallTranscriptTab callSummary={callSummary} />
+      {renderComments()}
+    </div>
+  );
 
-        {selectedTab === 1 && (
-          <div className="w-full h-full p-2">
-            {sessionType === SessionType.CALL ? (
-              <CallSummary
-                headerContent={
-                  <SummaryHeader
-                    summaryName={summaryName}
-                    setSummaryName={setSummaryName}
-                    chatId={callSummary.id}
-                  />
-                }
-                className="max-h-[calc(100vh-320px)]"
-                chatId={callSummary.id}
-                postProcess={refetchCallLogs}
-                isInSidebar={true}
-              />
-            ) : (
-              <SimulationSummary className="max-h-[calc(100vh-150px)]" />
-            )}
-          </div>
-        )}
-        {selectedTab === 2 && (
-          <div className="flex flex-1 overflow-y-hidden h-[calc(100vh-75px)]">
-            <CallTranscriptTab callSummary={callSummary} />
-            {renderComments()}
-          </div>
-        )}
-      </div>
-      {/* TODO: Remove if delete summary is not needed */}
+  const extraHeaderList = [
+    {
+      alt: "Export",
+      icon: <Download />,
+      onClick: onExportClick,
+      // TODO: To be shown when the export functionality is implemented for admin
+      show: !isAdmin,
+      text: "Export summary",
+    },
+  ];
+
+  const tabList = [
+    {
+      id: 1,
+      label: "Summary",
+      content: (
+        <CallSummary
+          headerContent={
+            <SummaryHeader
+              summaryName={summaryName}
+              setSummaryName={setSummaryName}
+              chatId={callSummary.id}
+            />
+          }
+          className="max-h-[calc(100vh-320px)]"
+          chatId={callSummary.id}
+          postProcess={refetchCallLogs}
+          isInSidebar={true}
+        />
+      ),
+    },
+    {
+      id: 2,
+      label: "Transcription",
+      content: <TranscriptionSubTab />,
+    },
+  ];
+
+  return (
+    <SummarySidebarWrapper
+      onSidebarClose={() => setCallSummary(null)}
+      extraHeaderList={extraHeaderList}
+      tabList={tabList}
+    >
+      {/* TODO: Remove if delete summary is not needed 
+      Anyway, noo trigger button present for delete summary in this sidebar*/}
       <ActionDialog
         open={deleteDialogData.open}
         onClose={() => setDeleteDialogData(defaultDeleteDialogData)}
@@ -209,8 +184,8 @@ const SummarySideBar: FC<SummarySideBarProps> = ({
           Are you sure you want to delete this summary? This action can&apos;t be undone.
         </span>
       </ActionDialog>
-    </Drawer>
+    </SummarySidebarWrapper>
   );
 };
 
-export default SummarySideBar;
+export default CallSummarySidebar;

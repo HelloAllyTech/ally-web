@@ -47,3 +47,32 @@ export interface CallSummaryProps {
 export interface CallTranscriptTabProps {
   callSummary: CallLog;
 }
+
+export interface SummarySidebarWrapperProps {
+  onSidebarClose?: () => void;
+  extraHeaderList?: {
+    alt: string;
+    icon: React.ReactNode;
+    onClick: () => void;
+    show: boolean;
+    text: string;
+  }[];
+  tabList: {
+    id: number;
+    label: string;
+    content: React.ReactNode;
+  }[];
+  children?: React.ReactNode;
+}
+
+export interface SimulationSummarySidebarProps {
+  summaryId: string;
+  closeSummarySidebar: () => void;
+}
+
+export interface CallSummarySidebarProps {
+  callSummary: CallLog;
+  refetchCallLogs: (status?: ChatSummaryStatus) => void;
+  sessionType: SessionType;
+  setCallSummary: Dispatch<SetStateAction<CallLog>>;
+}

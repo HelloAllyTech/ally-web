@@ -1,33 +1,52 @@
-import { FC, useEffect, useState } from "react";
+import { FC, useEffect } from "react";
 
-import { motion } from "framer-motion";
-import { useNavigate } from "react-router-dom";
-
-import { Button } from "@components";
+import { useLazyGetSimulationSummaryQuery } from "@api";
 
 import { FeedbackSection, LoaderSkeleton, ReviewSection } from "./components";
 import { SimulationSummaryProps } from "./types";
 
-const SimulationSummary: FC<SimulationSummaryProps> = ({ className }) => {
-  const navigate = useNavigate();
+const SimulationSummary: FC<SimulationSummaryProps> = ({
+  className,
+  summaryId,
+  onSummaryClose,
+}) => {
+  const [getSimulationSummary, { data: summary }] = useLazyGetSimulationSummaryQuery();
 
-  const [isSummary, setIsSummary] = useState<boolean>(false);
-
-  const handleTryAgain = () => {
-    navigate("/learn");
-  };
-
-  // TODO: Add api call to get summary
   useEffect(() => {
-    setTimeout(() => setIsSummary(true), 5000);
-  }, []);
+    let pollCount = 0;
+    const maxPolls = 5;
+    let summaryPollingInterval;
+
+    const pollForSummary = async () => {
+      const { data: summaryData } = await getSimulationSummary(summaryId);
+      if (summaryId && !summaryData?.summary) {
+        summaryPollingInterval = setInterval(async () => {
+          pollCount++;
+          const { data } = await getSimulationSummary(summaryId);
+
+          if (data?.summary || pollCount >= maxPolls) {
+            clearInterval(summaryPollingInterval);
+          }
+        }, 3500);
+      }
+    };
+
+    pollForSummary();
+
+    return () => {
+      if (summaryPollingInterval) {
+        clearInterval(summaryPollingInterval);
+      }
+    };
+  }, [summaryId]);
+
   return (
     <div className={`relative flex flex-col h-full w-full ${className}`}>
       <div className="flex flex-col gap-6 overflow-y-auto pb-20 flex-1">
-        {isSummary ? (
+        {summary?.summary ? (
           <>
-            <FeedbackSection />
-            <ReviewSection />
+            <FeedbackSection {...summary} />
+            <ReviewSection summaryId={summaryId} onSummaryClose={onSummaryClose} />
           </>
         ) : (
           <div className="max-h-full w-full overflow-hidden">
@@ -35,20 +54,6 @@ const SimulationSummary: FC<SimulationSummaryProps> = ({ className }) => {
           </div>
         )}
       </div>
-
-      {/* Sticky Button - Fixed to parent container bottom */}
-      {isSummary && (
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.8 }}
-          className="absolute bottom-4 left-4 right-4 z-10 max-w-lg mx-auto"
-        >
-          <Button onClick={handleTryAgain} fullWidth>
-            Try another Simulation
-          </Button>
-        </motion.div>
-      )}
     </div>
   );
 };

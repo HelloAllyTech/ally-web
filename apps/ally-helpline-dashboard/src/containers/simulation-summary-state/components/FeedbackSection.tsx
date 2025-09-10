@@ -3,11 +3,11 @@ import { FC } from "react";
 import { motion } from "framer-motion";
 
 import { GenericTable } from "@ally-ui-mono/ui-shared";
-import { KeyEvents } from "@assets/icons";
 import { Accordion } from "@components";
 import { FeedbackSectioonType } from "@types";
 
 import { feedbackDemographics, feedbackSections } from "./constants";
+import { FeedbackSectionProps } from "./types";
 
 const getFeedbackSectionByType = ({
   type,
@@ -50,57 +50,28 @@ const getFeedbackSectionByType = ({
   }
 };
 
-export const FeedbackSection: FC = () => {
-  const mockApiData = {
-    whatWentWell: [
-      "Explore emotional keywords more deeply instead of moving on.",
-      "Reduce speaking time during emotionally heavy moments.",
-      "Reduce speaking time during emotionally heavy moments.",
-    ],
-    improvementTips: [
-      "Explore emotional keywords more deeply instead of moving on.",
-      "Reduce speaking time during emotionally heavy moments.",
-      "Reduce speaking time during emotionally heavy moments.",
-    ],
-    keyEvents: [
-      {
-        time: "00.30",
-        event:
-          "You are eager to help, holding back a little longer will allow the client to express fully. ",
-        score: "3",
-      },
-      {
-        time: "00.30",
-        event:
-          "You are eager to help, holding back a little longer will allow the client to express fully. ",
-        score: "3",
-      },
-      {
-        time: "00.30",
-        event:
-          "You are eager to help, holding back a little longer will allow the client to express fully. ",
-        score: "3",
-      },
-      {
-        time: "00.30",
-        event:
-          "You are eager to help, holding back a little longer will allow the client to express fully. ",
-        score: "3",
-      },
-      {
-        time: "00.30",
-        event:
-          "You are eager to help, holding back a little longer will allow the client to express fully. ",
-        score: "3",
-      },
-      {
-        time: "00.30",
-        event:
-          "You are eager to help, holding back a little longer will allow the client to express fully. ",
-        score: "3",
-      },
-    ],
+export const FeedbackSection: FC<FeedbackSectionProps> = props => {
+  const formattedData = {
+    whatWentWell: props.summary?.whatWentWell,
+    improvementTips: props.summary?.improvementTips,
+    keyEvents: props.summary?.keyEvents?.map(keyEvent => {
+      // Calculate time difference from session start
+      const sessionStartTime = new Date(props.startedAt).getTime();
+      const eventTime = new Date(keyEvent.timestamp).getTime();
+      const timeDiffMs = eventTime - sessionStartTime;
+
+      const totalSeconds = Math.floor(timeDiffMs / 1000);
+      const minutes = Math.floor(totalSeconds / 60);
+      const seconds = totalSeconds % 60;
+
+      return {
+        time: `${minutes}:${seconds.toString().padStart(2, "0")}`,
+        event: keyEvent.data.message,
+        score: keyEvent.data.score,
+      };
+    }),
   };
+
   return (
     <motion.div className="flex flex-col gap-6 w-full">
       <motion.div className="flex flex-row items-center text-[#9CA3AF]">
@@ -116,7 +87,9 @@ export const FeedbackSection: FC = () => {
             className="flex flex-col gap-2 flex-1 min-w-[120px] sm:min-w-[145px] font-['IBM_Plex_Serif'] border-[0.5px] border-[#D2D2D2] rounded-[4px] p-[10px]"
           >
             <span className="text-[12px] text-[#656565]">{feedback.label}</span>
-            <span className="text-[14px] text-[#0D0D0D] font-medium">value</span>
+            <span className="text-[14px] text-[#0D0D0D] font-medium">
+              {feedback.getValue(props)}
+            </span>
           </div>
         ))}
       </motion.div>
@@ -136,7 +109,7 @@ export const FeedbackSection: FC = () => {
             >
               <Accordion title={label} titleIcon={icon} defaultExpanded={true}>
                 <div className="max-h-[250px] overflow-y-scroll">
-                  {getFeedbackSectionByType({ type, columns, data: mockApiData[key] })}
+                  {getFeedbackSectionByType({ type, columns, data: formattedData[key] })}
                 </div>
               </Accordion>
             </motion.div>

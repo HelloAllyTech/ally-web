@@ -1,23 +1,41 @@
 import { BulbIcon, KeyEvents, ThumbUp } from "@assets/icons";
 import { FeedbackSectioonType } from "@types";
 
+import { FeedbackSectionProps } from "./types";
+
 // TODO: update keys based on api response
 export const feedbackDemographics = [
   {
     key: "duration",
     label: "Session Duration",
+    getValue: (summary: FeedbackSectionProps) => {
+      if (!summary.startedAt || !summary.endedAt) return "--";
+
+      const startTime = new Date(summary.startedAt).getTime();
+      const endTime = new Date(summary.endedAt).getTime();
+      const durationMs = endTime - startTime;
+
+      const totalSeconds = Math.floor(durationMs / 1000);
+      const minutes = Math.floor(totalSeconds / 60);
+      const seconds = totalSeconds % 60;
+
+      return `${minutes}m ${seconds}s`;
+    },
   },
   {
     key: "questions",
     label: "Open-Ended Questions",
+    getValue: (summary: FeedbackSectionProps) => summary?.metadata?.openEndedQuestions,
   },
   {
     key: "empathy",
     label: "Empathy & Validation",
+    getValue: (summary: FeedbackSectionProps) => summary?.metadata?.empathyAndValidation,
   },
   {
     key: "activeListening",
     label: "Active Listening",
+    getValue: (summary: FeedbackSectionProps) => summary?.metadata?.activeListening,
   },
 ];
 

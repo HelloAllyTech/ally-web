@@ -78,7 +78,7 @@ export const Simulation = () => {
     try {
       await endSimulation({ sessionId: id });
       logger.info(`Ended simulation for session: ${id}`);
-      navigate(ROUTES.SIMULATION_SUMMARY, { replace: true });
+      navigate(`${ROUTES.SIMULATION_SUMMARY}/${id}`, { replace: true });
     } catch (error) {
       logger.error(`Failed to end simulation: ${error}`);
     }

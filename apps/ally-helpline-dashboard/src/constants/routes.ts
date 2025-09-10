@@ -25,6 +25,7 @@ export const ROUTES = {
   SCENARIO: "/scenario/:scenarioId",
   SIMULATION: "/simulation/:id",
   SIMULATION_SUMMARY: "/simulation-summary",
+  SIMULATION_SUMMARY_FULL: "/simulation-summary/:sessionId",
 } as const;
 
 export const excludeNavBar = [

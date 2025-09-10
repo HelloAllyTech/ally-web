@@ -17,6 +17,8 @@ import {
   StartSimulationInput,
   StartSimulationResponse,
   Scenario,
+  GetSimulationSummaryResponse,
+  SubmitSessionFeedbackInput,
 } from "@types";
 
 import { baseAPI } from "./baseAPI";
@@ -116,21 +118,27 @@ const learnAPI = baseAPI.injectEndpoints({
      * Get aggregated summary for a single scenario session.
      * @returns {Promise<void>} Summary payload
      */
-    getSimulationSummary: builder.query<void, void>({
-      query: () => ({
-        url: ApiEndpoints.LEARN.GET_SIMULATION_SUMMARY,
+    getSimulationSummary: builder.query<GetSimulationSummaryResponse, string>({
+      query: sessionId => ({
+        url: ApiEndpoints.LEARN.GET_SIMULATION_SUMMARY(sessionId),
         method: HttpMethod.GET,
       }),
+    }),
+
+    getCallSummary: builder.query({
+      query: chatId => `${ApiEndpoints.CALL_SUMMARY.GET_CALL_SUMMARY}/${chatId}`,
+      providesTags: ["CallSummary"],
     }),
 
     /**
      * Submit feedback for a scenario session.
      * @returns {Promise<void>} No content
      */
-    submitSessionFeedback: builder.mutation<void, void>({
-      query: () => ({
-        url: ApiEndpoints.LEARN.SUBMIT_SCENARIO_SESSION_FEEDBACK,
+    submitSessionFeedback: builder.mutation<void, SubmitSessionFeedbackInput>({
+      query: ({ sessionId, sessionFeedback }) => ({
+        url: ApiEndpoints.LEARN.SUBMIT_SCENARIO_SESSION_FEEDBACK(sessionId),
         method: HttpMethod.POST,
+        body: sessionFeedback,
       }),
     }),
   }),
@@ -143,6 +151,6 @@ export const {
   useStartSimulationMutation,
   useGetSimulationLogsQuery,
   useGetAdminSimulationLogsQuery,
-  useGetSimulationSummaryQuery,
+  useLazyGetSimulationSummaryQuery,
   useSubmitSessionFeedbackMutation,
 } = learnAPI;

@@ -180,7 +180,7 @@ const PrivateRouteLayout: FC = () => {
           }
         />
         <Route
-          path={ROUTES.SIMULATION_SUMMARY}
+          path={ROUTES.SIMULATION_SUMMARY_FULL}
           element={
             <PermissionGuardedRoute
               // TODO: Add correct permission for Simulation Summary once BE implementation is done
