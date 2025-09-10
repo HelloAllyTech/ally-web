@@ -7,7 +7,13 @@ import { toast } from "sonner";
 
 import { useGenerateOTPMutation, useVerifyOTPMutation } from "@api";
 import { BackCircle, CloseIcon } from "@assets";
-import { ALLY_PRIVACY_POLICY_URL, ALLY_TERMS_URL, LoginSection } from "@constants";
+import {
+  ALLY_PRIVACY_POLICY_URL,
+  ALLY_TERMS_URL,
+  LOCAL_STORAGE_KEYS,
+  LoginSection,
+} from "@constants";
+import { useUser } from "@hooks";
 import { openLinkInNewTab, validateEmail } from "@utils";
 
 import { LoginPopupProps } from "./types";
@@ -43,6 +49,8 @@ const LoginDialog: FC<LoginPopupProps> = ({ isOpen, onClose, onSuccess }) => {
       error: verifyOTPError,
     },
   ] = useVerifyOTPMutation();
+
+  const { checkAuth } = useUser();
 
   const isLoading = isGeneratingOTP || isVerifyingOTP;
   const isSubmitDisabled =
@@ -87,6 +95,9 @@ const LoginDialog: FC<LoginPopupProps> = ({ isOpen, onClose, onSuccess }) => {
         const errorMessage = errorData?.message ?? "Failed to verify OTP. Please try again.";
         toast.error(errorMessage);
       } else if (isVerifyOTPSuccess && verifyOTPData) {
+        localStorage.setItem(LOCAL_STORAGE_KEYS.ACCESS_TOKEN, verifyOTPData.accessToken);
+        localStorage.setItem(LOCAL_STORAGE_KEYS.REFRESH_TOKEN, verifyOTPData.refreshToken);
+        const userData = await checkAuth();
         // function to be called when OTP is verified successfully
         onSuccess();
       }

@@ -61,6 +61,13 @@ export const Simulation = () => {
     setIsWarning(false);
   };
 
+  const onMuteSimulation = () => {
+    setIsMuted(prev => {
+      room.localParticipant.setMicrophoneEnabled(prev);
+      return !prev;
+    });
+  };
+
   const onEndSimulation = () => {
     handleEndSession();
     navigate(ROUTES.SIMULATION_SUMMARY, { replace: true });
@@ -85,7 +92,7 @@ export const Simulation = () => {
             isMuted={isMuted}
             isEndSessionDisabled={false}
             onEndSessionClick={onEndSimulation}
-            onMuteClick={() => setIsMuted(prev => !prev)}
+            onMuteClick={onMuteSimulation}
           />
           <div className="flex items-center gap-2">
             <Warning className="[&_path]:fill-[#B6B5B9]" />

@@ -1,6 +1,6 @@
 import { FC, useMemo } from "react";
 
-import { useLocalParticipant } from "@livekit/components-react";
+import { useRemoteParticipants } from "@livekit/components-react";
 import { Track } from "livekit-client";
 import { useLocation } from "react-router-dom";
 
@@ -56,8 +56,9 @@ const CircleWaveVisualizer = ({ trackRef }: { trackRef: AudioTrackRef }) => {
 };
 
 const SimulationWaveform: FC = () => {
-  const { localParticipant } = useLocalParticipant();
-  const audioPublication = localParticipant
+  const remoteParticipants = useRemoteParticipants();
+  const remoteParticipant = remoteParticipants.length > 0 ? remoteParticipants[0] : null;
+  const audioPublication = remoteParticipant
     ?.getTrackPublications()
     .find(pub => pub.kind === Track.Kind.Audio);
 
@@ -65,7 +66,7 @@ const SimulationWaveform: FC = () => {
     <div className="flex justify-center items-center w-[90%] sm:w-[60%] lg:w-[60%] xl:w-[50%] 2xl:w-[40%] h-[70vh]">
       <CircleWaveVisualizer
         trackRef={{
-          participant: localParticipant,
+          participant: remoteParticipant,
           source: Track.Source.Microphone,
           publication: audioPublication,
         }}

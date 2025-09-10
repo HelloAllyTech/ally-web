@@ -57,7 +57,7 @@ const ScenarioCard: FC<ScenarioCardProps> = ({
     >
       <div className="flex flex-col h-full gap-3">
         {renderImage()}
-        <div className="flex flex-col flex-grow font-['IBM_Plex_Serif'] px-3 pb-3 sm:px-[14px] gap-1">
+        <div className="flex flex-col flex-grow font-['IBM_Plex_Serif'] px-3 pb-3 sm:px-[14px] sm:pb-[14px] gap-1">
           <div id="scenario-title" className="font-medium text-[#0D0D0D]">
             {title}
           </div>
