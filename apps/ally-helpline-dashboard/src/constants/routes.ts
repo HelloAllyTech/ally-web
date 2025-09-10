@@ -33,7 +33,7 @@ export const excludeNavBar = [
   ROUTES.SUMMARY,
   ROUTES.STRESS_BUSTER,
   ROUTES.SIMULATION,
-  ROUTES.SIMULATION_SUMMARY,
+  ROUTES.SIMULATION_SUMMARY_FULL,
 ] as string[];
 
 export const excludeCallPicker = [

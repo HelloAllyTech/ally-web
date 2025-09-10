@@ -125,11 +125,6 @@ const learnAPI = baseAPI.injectEndpoints({
       }),
     }),
 
-    getCallSummary: builder.query({
-      query: chatId => `${ApiEndpoints.CALL_SUMMARY.GET_CALL_SUMMARY}/${chatId}`,
-      providesTags: ["CallSummary"],
-    }),
-
     /**
      * Submit feedback for a scenario session.
      * @returns {Promise<void>} No content
