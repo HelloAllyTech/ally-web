@@ -13,5 +13,5 @@ export * from "./search/Search";
 export * from "./settings/Settings";
 export * from "./signup/Signup";
 export * from "./simulation/Simulation";
-export * from "./simulation-summary/SimulationSummary";
+export * from "./simulation-summary";
 export * from "./stress-buster/StressBuster";

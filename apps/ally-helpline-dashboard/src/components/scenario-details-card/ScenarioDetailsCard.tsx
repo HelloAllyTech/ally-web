@@ -47,7 +47,7 @@ const ScenarioDetailsCard: FC<ScenarioDetailsCardProps> = ({
   };
 
   const renderImage = () => (
-    <div>
+    <div className="flex">
       {!imageError ? (
         <img
           src={coverImage}

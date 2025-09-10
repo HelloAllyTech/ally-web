@@ -1,4 +1,4 @@
-import { BulbIcon, ListIcon } from "@src/assets/icons";
+import { BulbIcon, ListIcon } from "@assets/icons";
 
 // TODO: update keys based on api response
 export const feedbackDemographics = [

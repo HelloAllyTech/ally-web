@@ -3,8 +3,7 @@ import { FC } from "react";
 import { motion } from "framer-motion";
 
 import { Accordion } from "@components";
-
-import { feedbackDemographics, feedbackSections } from "./constants";
+import { feedbackDemographics, feedbackSections } from "@constants";
 
 export const FeedbackSection: FC = () => {
   return (
@@ -38,9 +37,12 @@ export const FeedbackSection: FC = () => {
                 delay: index * 0.1,
                 ease: "easeOut",
               }}
+              className="bg-slate-600"
             >
               <Accordion title={label} titleIcon={icon} defaultExpanded={true}>
-                Value
+                <span className="pb-4">
+                  Explore emotional keywords more deeply instead of moving on.
+                </span>
               </Accordion>
             </motion.div>
           );

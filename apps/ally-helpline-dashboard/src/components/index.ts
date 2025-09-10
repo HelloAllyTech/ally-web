@@ -22,6 +22,7 @@ import ScenarioCard from "./scenario-card";
 import ScenarioDetailsCard from "./scenario-details-card";
 import SearchResources from "./search-resources";
 import ShinyText from "./shiny-text";
+import SummaryGenerationLoader from "./summary-generation-loader";
 import SummaryStatusChip from "./summary-status-chip";
 import TabGroup from "./tab-group";
 import TagGroup from "./tag-group";
@@ -61,6 +62,7 @@ export {
   ScenarioDetailsCard,
   SearchResources,
   ShinyText,
+  SummaryGenerationLoader,
   SummaryStatusChip,
   TabGroup,
   TagGroup,

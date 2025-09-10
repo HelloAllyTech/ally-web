@@ -4,6 +4,7 @@ import { Button, ButtonVariant } from "@components";
 
 import { StarRatingProps } from "./types";
 
+// TODO: Move to COMPONENTS ONCE BASE CALL SUMAMRY GENERATION IS DONE
 const StarRating: FC<StarRatingProps> = ({ rating, setRating }) => {
   return (
     <div className="flex gap-1 sm:gap-2">
