@@ -8,7 +8,7 @@ import { BackCircle } from "@assets";
 import { LoginDialog, ScenarioDetailsCard } from "@components";
 import { LOCAL_STORAGE_KEYS, ROUTES } from "@constants";
 
-import { dummyScenarios, learnPageExpandedVariants } from "../learn/constants";
+import { learnPageExpandedVariants } from "../learn/constants";
 
 export const Scenario: FC = () => {
   const { scenarioId } = useParams();
@@ -18,8 +18,8 @@ export const Scenario: FC = () => {
 
   const [isLoginDialogOpen, setIsLoginDialogOpen] = useState(false);
 
-  // TODO: Remove dummy data once API is implemented
-  const scenario = dummyScenarios.find(scenario => scenario.id === id);
+  const { data: scenario, isLoading: isScenarioLoading } = useGetScenarioQuery({ scenarioId: id });
+  const [startSimulation, { isLoading: isStartingSimulation }] = useStartSimulationMutation();
 
   const renderBackButton = () => {
     return (
@@ -37,29 +37,45 @@ export const Scenario: FC = () => {
     );
   };
 
-  const handleStartSimulation = () => {
-    // TODO: Implement API call to start simulation
-    // TODO: Store room data (with cover image url) in localStorage: LOCAL_STORAGE_KEYS.ROOM_DATA
-    // TODO: Redirect to simulation page with room ID appended to the URL
-    navigate(ROUTES.SIMULATION, { state: { imageUrl: scenario?.coverImageUrl } });
+  const handleStartSimulation = async () => {
+    const { data } = await startSimulation({ scenarioId: id });
+
+    if (data) {
+      const { scenarioSession, accessToken } = data;
+      // Store room data in localStorage
+      localStorage.setItem(
+        LOCAL_STORAGE_KEYS.ROOM_DATA,
+        JSON.stringify({
+          roomId: scenarioSession.id,
+          coverImageUrl: scenario?.coverImageUrl,
+          accessToken: accessToken.token,
+          createdAt: scenarioSession.startedAt,
+        }),
+      );
+      navigate(`/simulation/${scenarioSession.id}`);
+    }
   };
 
   const onStartSimulationClick = () => {
+    // TODO: update authorization check
     const accessToken = localStorage.getItem(LOCAL_STORAGE_KEYS.ACCESS_TOKEN);
-    // const refreshToken = localStorage.getItem(LOCAL_STORAGE_KEYS.REFRESH_TOKEN);
 
     if (!accessToken) {
+      // TODO: Retest login through dialog
       setIsLoginDialogOpen(true);
       return;
+    } else {
+      handleStartSimulation();
     }
-
-    handleStartSimulation();
   };
+
+  // TODO: Add loading fallback UI for scenario
+  // TODO: Add loading fallback UI for starting simulation
 
   return (
     <AnimatePresence mode="wait">
       <div className="h-screen w-full flex justify-center items-center bg-white">
-        {scenario && (
+        {scenario && !isScenarioLoading && (
           <motion.div
             variants={learnPageExpandedVariants}
             initial="hidden"
@@ -81,8 +97,6 @@ export const Scenario: FC = () => {
             />
           </motion.div>
         )}
-        {/* TODO: Add temporary OTP input dialog when clicking on start simulation */}
-        {/* {isCreatingRoom && renderSimulationLoading()} */}
         <LoginDialog
           isOpen={isLoginDialogOpen}
           onClose={() => setIsLoginDialogOpen(false)}

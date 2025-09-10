@@ -2,8 +2,10 @@ import { useEffect, useState } from "react";
 
 import { RoomContext } from "@livekit/components-react";
 import { motion } from "framer-motion";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 
+import { logger } from "@ally-ui-mono/ui-shared/logger";
+import { useEndSimulationMutation } from "@api";
 import { SimulationWarningIllustration, Warning } from "@assets";
 import { ButtonVariant, ConfirmationDialog } from "@components";
 import { ROUTES } from "@constants";
@@ -21,11 +23,14 @@ import { getSimulationEvent } from "./utils";
 
 export const Simulation = () => {
   const navigate = useNavigate();
+  const { id } = useParams();
 
   const [isMuted, setIsMuted] = useState(false);
   const [isWarning, setIsWarning] = useState(false);
   const [events, setEvents] = useState<SimulationEventType[]>([]);
   const [score, setScore] = useState<number>(0);
+
+  const [endSimulation, { isLoading: isEndSimulationLoading }] = useEndSimulationMutation();
 
   const { room, roomStatus, error, startTime, handleEndSession, handleRetryConnection } =
     useLiveKitRoom();
@@ -68,9 +73,15 @@ export const Simulation = () => {
     });
   };
 
-  const onEndSimulation = () => {
+  const onEndSimulation = async () => {
     handleEndSession();
-    navigate(ROUTES.SIMULATION_SUMMARY, { replace: true });
+    try {
+      await endSimulation({ sessionId: id });
+      logger.info(`Ended simulation for session: ${id}`);
+      navigate(ROUTES.SIMULATION_SUMMARY, { replace: true });
+    } catch (error) {
+      logger.error(`Failed to end simulation: ${error}`);
+    }
   };
 
   return (
@@ -90,7 +101,7 @@ export const Simulation = () => {
           />
           <SimulationControls
             isMuted={isMuted}
-            isEndSessionDisabled={false}
+            isEndSessionDisabled={isEndSimulationLoading}
             onEndSessionClick={onEndSimulation}
             onMuteClick={onMuteSimulation}
           />

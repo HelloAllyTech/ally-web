@@ -23,7 +23,7 @@ export const ROUTES = {
   SEARCH: "/search",
   LEARN: "/learn",
   SCENARIO: "/scenario/:scenarioId",
-  SIMULATION: "/simulation",
+  SIMULATION: "/simulation/:id",
   SIMULATION_SUMMARY: "/simulation-summary",
 } as const;
 

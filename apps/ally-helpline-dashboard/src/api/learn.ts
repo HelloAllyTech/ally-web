@@ -12,12 +12,11 @@ import {
   GetAdminSimulationLogsInput,
   GetAdminSimulationLogsResponse,
   GetScenarioInput,
-  GetScenarioResponse,
   GetSimulationLogsInput,
   GetSimulationLogsResponse,
-  GetScenariosResponse,
   StartSimulationInput,
   StartSimulationResponse,
+  Scenario,
 } from "@types";
 
 import { baseAPI } from "./baseAPI";
@@ -28,7 +27,7 @@ const learnAPI = baseAPI.injectEndpoints({
      * Get all scenarios available in the Learn catalog.
      * @returns {Promise<GetScenariosResponse>} List of scenarios
      */
-    getScenarios: builder.query<GetScenariosResponse, void>({
+    getScenarios: builder.query<Scenario[], void>({
       query: () => ({
         url: ApiEndpoints.LEARN.GET_SCENARIOS,
         method: HttpMethod.GET,
@@ -41,7 +40,7 @@ const learnAPI = baseAPI.injectEndpoints({
      * @param {string} params.scenarioId - Scenario identifier
      * @returns {Promise<GetScenarioResponse>} Scenario details
      */
-    getScenario: builder.query<GetScenarioResponse, GetScenarioInput>({
+    getScenario: builder.query<Scenario, GetScenarioInput>({
       query: params => ({
         url: ApiEndpoints.LEARN.GET_SCENARIO(params.scenarioId),
         method: HttpMethod.GET,

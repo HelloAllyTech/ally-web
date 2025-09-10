@@ -16,12 +16,12 @@ export const useLiveKitRoom = (): UseLiveKitRoomReturn => {
   const [roomStatus, setRoomStatus] = useState<RoomStatus>(RoomStatus.DISCONNECTED);
   const [error, setError] = useState<string | null>(null);
 
-  const { roomId } = useParams<{ roomId?: string }>();
+  const { id } = useParams();
 
   // TODO: check if this is the correct way to get the room data: recheck keys after api implementation
   const roomDataString = localStorage.getItem(LOCAL_STORAGE_KEYS.ROOM_DATA);
   const roomData = roomDataString ? JSON.parse(roomDataString) : null;
-  const startTime = roomData?.created_at ? new Date(roomData?.created_at) : new Date();
+  const startTime = roomData?.createdAt ? new Date(roomData?.createdAt) : new Date();
   const isConnected = roomStatus === RoomStatus.CONNECTED;
   const isConnecting = roomStatus === RoomStatus.CONNECTING;
 
@@ -35,7 +35,7 @@ export const useLiveKitRoom = (): UseLiveKitRoomReturn => {
 
   const connectToRoom = async () => {
     try {
-      if (!roomId || !roomData) {
+      if (!id || !roomData) {
         logger.info("Missing roomId or roomData, redirecting to home");
         navigate(ROUTES.LEARN);
         return;
@@ -45,7 +45,7 @@ export const useLiveKitRoom = (): UseLiveKitRoomReturn => {
         setRoomStatus(RoomStatus.CONNECTING);
         setError(null);
 
-        const token = roomData?.access_token;
+        const token = roomData?.accessToken;
         const livekitUrl = getLiveKitUrl();
 
         if (!token) {
@@ -103,13 +103,6 @@ export const useLiveKitRoom = (): UseLiveKitRoomReturn => {
   };
 
   const handleEndSession = async () => {
-    try {
-      // TODO: Implement deleteRoom api when available
-      // await deleteRoom(room?.name);
-    } catch (error) {
-      logger.error(`Failed to delete room: ${error}`);
-    }
-
     if (room.localParticipant) {
       room.localParticipant.setMicrophoneEnabled(false);
     }
@@ -136,7 +129,7 @@ export const useLiveKitRoom = (): UseLiveKitRoomReturn => {
         room.disconnect();
       }
     };
-  }, [roomId]);
+  }, [id]);
 
   return {
     room,

@@ -1,5 +1,5 @@
 export enum ScenarioStatus {
-  AVAILABLE = "AVAILABLE",
+  ACTIVE = "ACTIVE",
   COMING_SOON = "COMING_SOON",
 }
 
@@ -71,16 +71,8 @@ export interface AdminSimulationLog extends SimulationLog {
   };
 }
 
-export interface GetScenariosResponse {
-  scenarios: Scenario[];
-}
-
 export interface GetScenarioInput {
   scenarioId: number;
-}
-
-export interface GetScenarioResponse {
-  scenario: Scenario;
 }
 
 export interface StartSimulationInput {

@@ -1,28 +1,22 @@
-import { FC, useEffect, useState } from "react";
+import { FC } from "react";
 
 import { AnimatePresence, motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 
 import { useGetScenariosQuery } from "@api";
 import { ScenarioCard } from "@components";
-import { Scenario, ScenarioStatus } from "@types";
+import { ScenarioStatus } from "@types";
 
-import { learnPageContainerVariants, learnPageItemVariants, dummyScenarios } from "./constants";
+import { learnPageContainerVariants, learnPageItemVariants } from "./constants";
 
 export const Learn: FC = () => {
   const navigate = useNavigate();
 
-  // TODO: Remove this with getScenarios API data and loading state once the API is implemented.
-  const [scenarios, setScenarios] = useState<Scenario[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    // TODO: Remove this once the getScenarios API is implemented.
-    setTimeout(() => {
-      setIsLoading(false);
-      setScenarios(dummyScenarios);
-    }, 2000);
-  }, []);
+  const {
+    data: scenarios,
+    isLoading: isScenariosLoading,
+    refetch: refetchScenarios,
+  } = useGetScenariosQuery();
 
   const renderPageDescription = () => {
     const emphasisStyles = "font-bold text-[#0957D0]";
@@ -46,7 +40,7 @@ export const Learn: FC = () => {
     <div className="flex flex-col items-center justify-center w-full py-8 min-h-[30vh]">
       <div className="text-gray-500 text-lg mb-4">No scenarios available at the moment</div>
       <button
-        onClick={() => window.location.reload()}
+        onClick={() => refetchScenarios()}
         className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors"
       >
         Refresh Page
@@ -80,7 +74,7 @@ export const Learn: FC = () => {
         animate="visible"
         exit="exit"
       >
-        {isLoading ? (
+        {isScenariosLoading ? (
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
             {Array.from({ length: 6 }).map((_, index) => (
               <div

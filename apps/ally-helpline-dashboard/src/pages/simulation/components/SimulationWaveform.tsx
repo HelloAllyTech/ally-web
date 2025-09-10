@@ -2,9 +2,8 @@ import { FC, useMemo } from "react";
 
 import { useRemoteParticipants } from "@livekit/components-react";
 import { Track } from "livekit-client";
-import { useLocation } from "react-router-dom";
 
-import { audioLevelConfig } from "@constants";
+import { audioLevelConfig, LOCAL_STORAGE_KEYS } from "@constants";
 import { useAudioLevel } from "@hooks";
 
 import { circleList, circleStyles } from "./constants";
@@ -35,8 +34,10 @@ const Circle: FC<CircleProps> = ({ circleNumber, config, audioLevel }) => {
 
 const CircleWaveVisualizer = ({ trackRef }: { trackRef: AudioTrackRef }) => {
   const audioLevel = useAudioLevel(trackRef.publication?.track?.mediaStreamTrack);
-  const location = useLocation();
-  const imageUrl = (location.state as { imageUrl: string })?.imageUrl;
+
+  const imageUrl = localStorage.getItem(LOCAL_STORAGE_KEYS.ROOM_DATA)
+    ? JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEYS.ROOM_DATA) || "{}")?.coverImageUrl
+    : null;
 
   return (
     <div className="relative w-full h-full flex items-center justify-center">
