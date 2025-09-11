@@ -7,7 +7,7 @@ import { logger } from "@ally-ui-mono/ui-shared";
 import { LIVEKIT_CONFIG, LOCAL_STORAGE_KEYS, ROUTES } from "@constants";
 import { RoomStatus } from "@types";
 
-import { UseLiveKitRoomReturn } from "./types";
+import { LiveKitEvent, UseLiveKitRoomReturn } from "./types";
 
 export const useLiveKitRoom = (): UseLiveKitRoomReturn => {
   const navigate = useNavigate();
@@ -15,6 +15,8 @@ export const useLiveKitRoom = (): UseLiveKitRoomReturn => {
   const [room] = useState(() => new Room(LIVEKIT_CONFIG));
   const [roomStatus, setRoomStatus] = useState<RoomStatus>(RoomStatus.DISCONNECTED);
   const [error, setError] = useState<string | null>(null);
+  const [events, setEvents] = useState<LiveKitEvent[]>([]);
+  const [score, setScore] = useState<number>(0);
 
   const { id } = useParams();
 
@@ -33,11 +35,13 @@ export const useLiveKitRoom = (): UseLiveKitRoomReturn => {
     return url;
   };
 
-  const onDataReceived = (payload: any, participant: any, kind: any, topic: any) => {
+  const onDataReceived = (payload: any, _participant: any, _kind: any, _topic: any) => {
     const payloadString = atob(payload);
     console.log("payloadString", payloadString);
     const payloadObject = JSON.parse(payloadString);
     console.log("payload", payloadObject);
+    setEvents(prev => [...prev, payloadObject]);
+    setScore(prev => prev + (payloadObject.data.score ?? 0));
   };
 
   const connectToRoom = async () => {
@@ -146,11 +150,13 @@ export const useLiveKitRoom = (): UseLiveKitRoomReturn => {
   }, [room]);
 
   return {
-    room,
-    roomStatus,
     error,
-    startTime,
+    events,
     handleEndSession,
     handleRetryConnection,
+    room,
+    roomStatus,
+    score,
+    startTime,
   };
 };

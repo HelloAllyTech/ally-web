@@ -3,7 +3,7 @@ import { Track, TrackPublication } from "livekit-client";
 import { RoomStatus } from "@types";
 
 export interface SimulationControlsProps {
-  isEndSessionDisabled: boolean;
+  isEndingSession: boolean;
   isMuted: boolean;
   onEndSessionClick: () => void;
   onMuteClick: () => void;

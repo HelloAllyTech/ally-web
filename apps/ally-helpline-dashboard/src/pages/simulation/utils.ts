@@ -1,11 +1,15 @@
+import { LiveKitEvent } from "@hooks/types";
+
 import { SimulationEventType } from "./components";
 
-export const getSimulationEvent = (payload): SimulationEventType => {
-  const { data, timestamp } = payload;
-  return {
-    score: data?.score ?? null,
-    emoji: data?.emoji ?? "",
-    message: data?.message ?? "",
-    timestamp,
-  };
+export const getSimulationEvents = (events: LiveKitEvent[]): SimulationEventType[] => {
+  return events.map(event => {
+    const { data, timestamp } = event;
+    return {
+      score: data?.score ?? null,
+      emoji: data?.emoji ?? "",
+      message: data?.message ?? "",
+      timestamp,
+    };
+  });
 };

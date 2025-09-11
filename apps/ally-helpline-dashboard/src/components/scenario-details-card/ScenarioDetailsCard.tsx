@@ -1,5 +1,6 @@
 import { FC, useState, type MouseEvent } from "react";
 
+import { CircularProgress } from "@mui/material";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
 
@@ -10,7 +11,7 @@ import { ScenarioDetailsCardProps } from "./types";
 
 const ScenarioDetailsCard: FC<ScenarioDetailsCardProps> = ({
   coverImage,
-  description,
+  isStarting,
   longDescription,
   onStart,
   title,
@@ -107,8 +108,10 @@ const ScenarioDetailsCard: FC<ScenarioDetailsCardProps> = ({
             }}
             variant="secondary"
             className="!font-['Roboto']"
+            disabled={isStarting}
             aria-label="Start simulation"
           >
+            {isStarting && <CircularProgress size={16} />}
             Start Simulation
           </Button>
         </div>

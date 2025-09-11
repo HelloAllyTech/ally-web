@@ -1,5 +1,7 @@
 import { FC } from "react";
 
+import { CircularProgress } from "@mui/material";
+
 import { MicIcon, MicOffIcon, StopIcon } from "@assets";
 import { ButtonGroup } from "@components";
 
@@ -7,7 +9,7 @@ import { SimulationControlsProps } from "./types";
 
 const SimulationControls: FC<SimulationControlsProps> = ({
   isMuted,
-  isEndSessionDisabled,
+  isEndingSession,
   onEndSessionClick,
   onMuteClick,
 }) => {
@@ -15,7 +17,7 @@ const SimulationControls: FC<SimulationControlsProps> = ({
     {
       action: onMuteClick,
       isActive: isMuted,
-      isDisabled: false,
+      isDisabled: isEndingSession,
       leftIcon: isMuted ? <MicOffIcon /> : <MicIcon />,
       show: true,
       text: isMuted ? "Unmute" : "Mute",
@@ -23,8 +25,8 @@ const SimulationControls: FC<SimulationControlsProps> = ({
     {
       action: onEndSessionClick,
       isActive: false,
-      isDisabled: isEndSessionDisabled,
-      leftIcon: <StopIcon />,
+      isDisabled: isEndingSession,
+      leftIcon: isEndingSession ? <CircularProgress size={16} /> : <StopIcon />,
       show: true,
       text: "End session",
     },

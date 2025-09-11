@@ -12,14 +12,13 @@ import { ROUTES } from "@constants";
 import { useLiveKitRoom } from "@hooks";
 
 import {
-  SimulationEventType,
   SimulationControls,
   SimulationEvents,
   SimulationInterface,
   SimulationScoreMeter,
   SimulationTimer,
 } from "./components";
-import { getSimulationEvent } from "./utils";
+import { getSimulationEvents } from "./utils";
 
 export const Simulation = () => {
   const navigate = useNavigate();
@@ -27,32 +26,19 @@ export const Simulation = () => {
 
   const [isMuted, setIsMuted] = useState(false);
   const [isWarning, setIsWarning] = useState(false);
-  const [events, setEvents] = useState<SimulationEventType[]>([]);
-  const [score, setScore] = useState<number>(0);
 
   const [endSimulation, { isLoading: isEndSimulationLoading }] = useEndSimulationMutation();
 
-  const { room, roomStatus, error, startTime, handleEndSession, handleRetryConnection } =
-    useLiveKitRoom();
-
-  // TODO: update this useEffect after LiveKit event logic is implemented
-  useEffect(() => {
-    const id = setInterval(() => {
-      const incoming = {
-        version: "1.0",
-        data: {
-          score: Math.floor(Math.random() * 21) - 10,
-          emoji: ":D",
-          message: "Good Job!",
-        },
-        timestamp: new Date().toISOString(),
-      };
-      const mappedEvent = getSimulationEvent(incoming);
-      setEvents(prev => [...prev, mappedEvent]);
-      setScore(prev => prev + (mappedEvent.score ?? 0));
-    }, 4000);
-    return () => clearInterval(id);
-  }, []);
+  const {
+    room,
+    roomStatus,
+    error,
+    startTime,
+    handleEndSession,
+    handleRetryConnection,
+    events,
+    score,
+  } = useLiveKitRoom();
 
   const onTimeLimitWarning = () => {
     setIsWarning(true);
@@ -89,7 +75,7 @@ export const Simulation = () => {
       <div className="min-h-screen p-6 flex flex-col gap-6 justify-between items-center bg-[#171A1A]">
         <motion.div layout className="max-h-[calc(100vh-170px)] w-full flex flex-1 gap-2">
           <SimulationInterface roomStatus={roomStatus} />
-          <SimulationEvents events={events} />
+          <SimulationEvents events={getSimulationEvents(events)} />
         </motion.div>
         <SimulationScoreMeter score={score} />
         <div className="w-full flex justify-between items-center">
@@ -101,7 +87,7 @@ export const Simulation = () => {
           />
           <SimulationControls
             isMuted={isMuted}
-            isEndSessionDisabled={isEndSimulationLoading}
+            isEndingSession={isEndSimulationLoading}
             onEndSessionClick={onEndSimulation}
             onMuteClick={onMuteSimulation}
           />

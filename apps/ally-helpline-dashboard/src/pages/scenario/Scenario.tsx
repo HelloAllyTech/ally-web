@@ -71,7 +71,6 @@ export const Scenario: FC = () => {
   };
 
   // TODO: Add loading fallback UI for scenario
-  // TODO: Add loading fallback UI for starting simulation
 
   return (
     <AnimatePresence mode="wait">
@@ -91,8 +90,8 @@ export const Scenario: FC = () => {
             </div>
             <ScenarioDetailsCard
               coverImage={scenario?.coverImageUrl || ""}
+              isStarting={isStartingSimulation}
               title={scenario?.title || ""}
-              description={scenario?.scenario || ""}
               longDescription={scenario?.description || ""}
               onStart={onStartSimulationClick}
             />

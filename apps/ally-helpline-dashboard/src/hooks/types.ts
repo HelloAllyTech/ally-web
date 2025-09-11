@@ -2,11 +2,23 @@ import { Room } from "livekit-client";
 
 import { RoomStatus } from "@types";
 
+export interface LiveKitEvent {
+  version: string;
+  data: {
+    score: number | null;
+    emoji: string;
+    message: string;
+  };
+  timestamp: string;
+}
+
 export interface UseLiveKitRoomReturn {
-  room: Room;
-  roomStatus: RoomStatus;
   error: string | null;
-  startTime: Date;
+  events: LiveKitEvent[];
   handleEndSession: () => void;
   handleRetryConnection: () => void;
+  room: Room;
+  roomStatus: RoomStatus;
+  score: number;
+  startTime: Date;
 }
