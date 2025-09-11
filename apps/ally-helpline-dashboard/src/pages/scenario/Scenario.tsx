@@ -47,6 +47,7 @@ export const Scenario: FC = () => {
         LOCAL_STORAGE_KEYS.ROOM_DATA,
         JSON.stringify({
           roomId: scenarioSession.id,
+          name: scenario?.title,
           coverImageUrl: scenario?.coverImageUrl,
           accessToken: accessToken.token,
           createdAt: scenarioSession.startedAt,

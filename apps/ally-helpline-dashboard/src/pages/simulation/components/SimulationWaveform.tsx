@@ -14,7 +14,7 @@ const Circle: FC<CircleProps> = ({ circleNumber, config, audioLevel }) => {
   const { BASE_SIZE, BORDER, MIN_SCALE, TRANSITION_MS, BACKGROUND_COLOR } = circleStyles;
 
   const isActive = audioLevel > audioLevelConfig.threshold;
-  const circleScale = scale * (isStatic ? 1 : MIN_SCALE + (audioLevel * circleNumber) / 3);
+  const circleScale = scale * (MIN_SCALE + (audioLevel * circleNumber) / 3);
 
   const styles = useMemo(
     () => ({
@@ -24,7 +24,7 @@ const Circle: FC<CircleProps> = ({ circleNumber, config, audioLevel }) => {
       background: BACKGROUND_COLOR,
       transitionDuration: `${TRANSITION_MS}ms`,
       border: `${isStatic && isActive ? BORDER.WIDTH : 0}px solid ${BORDER.COLOR}`,
-      opacity: isActive ? `${scale * 10}%` : 0,
+      opacity: isActive ? `${scale === 3 ? 30 : 10}%` : 0,
     }),
     [isStatic, isActive, circleScale],
   );
@@ -49,8 +49,9 @@ const CircleWaveVisualizer = ({ trackRef }: { trackRef: AudioTrackRef }) => {
           loading="lazy"
         />
       ) : null}
+      {/* TODO: optimize circle style logic and make it faster */}
       {circleList.map((config, index) => (
-        <Circle key={index} circleNumber={index} config={config} audioLevel={audioLevel} />
+        <Circle key={index} circleNumber={index + 1} config={config} audioLevel={audioLevel} />
       ))}
     </div>
   );

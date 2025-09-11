@@ -3,12 +3,16 @@ import { FC } from "react";
 import { RoomAudioRenderer } from "@livekit/components-react";
 import { motion } from "framer-motion";
 
+import { LOCAL_STORAGE_KEYS } from "@constants";
 import { RoomStatus } from "@types";
 
 import { SimulationWaveform } from ".";
 import { SimulationInterfaceProps } from "./types";
 
 const SimulationInterface: FC<SimulationInterfaceProps> = ({ roomStatus }) => {
+  const roomDataString = localStorage.getItem(LOCAL_STORAGE_KEYS.ROOM_DATA);
+  const roomData = roomDataString ? JSON.parse(roomDataString) : null;
+
   const renderContent = () => {
     switch (roomStatus) {
       case RoomStatus.CONNECTING:
@@ -29,6 +33,7 @@ const SimulationInterface: FC<SimulationInterfaceProps> = ({ roomStatus }) => {
           <>
             <RoomAudioRenderer />
             <SimulationWaveform />
+            <span className="absolute bottom-4 left-4 text-white">{roomData?.name}</span>
           </>
         );
     }
@@ -38,7 +43,7 @@ const SimulationInterface: FC<SimulationInterfaceProps> = ({ roomStatus }) => {
     <motion.div
       layout
       transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
-      className="w-full flex justify-center items-center flex-1 bg-[#1D2020] rounded-lg"
+      className="w-full flex justify-center items-center flex-1 bg-[#1D2020] rounded-lg relative"
     >
       {renderContent()}
     </motion.div>
