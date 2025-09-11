@@ -6,6 +6,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { logger } from "@ally-ui-mono/ui-shared";
 import { LIVEKIT_CONFIG, LOCAL_STORAGE_KEYS, ROUTES } from "@constants";
 import { RoomStatus } from "@types";
+import { decodeUint8ToJson } from "@utils";
 
 import { LiveKitEvent, UseLiveKitRoomReturn } from "./types";
 
@@ -36,12 +37,10 @@ export const useLiveKitRoom = (): UseLiveKitRoomReturn => {
   };
 
   const onDataReceived = (payload: any, _participant: any, _kind: any, _topic: any) => {
-    const payloadString = atob(payload);
-    console.log("payloadString", payloadString);
-    const payloadObject = JSON.parse(payloadString);
-    console.log("payload", payloadObject);
-    setEvents(prev => [...prev, payloadObject]);
-    setScore(prev => prev + (payloadObject.data.score ?? 0));
+    const eventObj = decodeUint8ToJson(payload) as LiveKitEvent;
+
+    setEvents(prev => [...prev, eventObj]);
+    setScore(prev => prev + (eventObj?.data?.score ?? 0));
   };
 
   const connectToRoom = async () => {

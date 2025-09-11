@@ -154,5 +154,5 @@ export const getElapsedTimeInMinutes = (startTime: string) => {
   const now = new Date();
   const startTimeDate = new Date(startTime);
   const elapsedTime = now.getTime() - startTimeDate.getTime();
-  return Math.floor(elapsedTime / 60000);
+  return Math.max(0, Math.floor(elapsedTime / 60000));
 };

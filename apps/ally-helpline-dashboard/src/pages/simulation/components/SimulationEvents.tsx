@@ -63,7 +63,7 @@ const SimulationEvents: FC<SimulationEventsProps> = ({ events }) => {
               ref={isLast ? lastEventRef : undefined}
             >
               <span className="text-[14px] text-white italic font-['IBM_Plex_Serif']">
-                {`${emoji} ${message}`}
+                {`${emoji}  ${message}`}
               </span>
               <span className="text-[12px] text-[#9CA3AF] font-['Roboto']">
                 {getEventTime(timestamp)}

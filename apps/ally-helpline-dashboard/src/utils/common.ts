@@ -29,3 +29,35 @@ export const openLinkInNewTab = (url: string, target: string = "_blank") => {
 export const isPathExcluded = (currentPath: string, excludedPaths: string[]) => {
   return excludedPaths.some(path => matchPath(path, currentPath));
 };
+
+const tryParseJson = (str: string): unknown => {
+  try {
+    return JSON.parse(str);
+  } catch {
+    return null;
+  }
+};
+
+const uint8ToString = (bytes: Uint8Array): string => {
+  let result = "";
+  const chunkSize = 8192;
+  for (let i = 0; i < bytes.length; i += chunkSize) {
+    const chunk = bytes.subarray(i, i + chunkSize);
+    result += String.fromCharCode.apply(null, Array.from(chunk));
+  }
+  return result;
+};
+
+export const decodeUint8ToJson = (payload: unknown): unknown => {
+  if (
+    payload &&
+    typeof payload === "object" &&
+    typeof (payload as { length?: number }).length === "number"
+  ) {
+    const raw = uint8ToString(payload as Uint8Array);
+    const parsed = tryParseJson(raw);
+    if (parsed) return parsed;
+    return null;
+  }
+  return null;
+};
