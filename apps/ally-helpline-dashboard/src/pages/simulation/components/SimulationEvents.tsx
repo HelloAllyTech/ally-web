@@ -31,7 +31,9 @@ const SimulationEvents: FC<SimulationEventsProps> = ({ events }) => {
   }, [events.length]);
 
   const getEventTime = (timestamp: string): string => {
+    // TODO: update logic to show only the latest event as 'now'
     const elapsedTime = getElapsedTimeInMinutes(timestamp);
+    if (elapsedTime === 0) return "now";
     return `${elapsedTime} min${elapsedTime === 1 ? "" : "s"}`;
   };
 

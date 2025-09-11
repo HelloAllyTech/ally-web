@@ -65,6 +65,8 @@ const CallLogsTable: FC<LogsTableProps> = ({ refreshKey, sessionType }) => {
     {
       limit: CALL_LOGS_PAGINATION_LIMIT,
       offset: offset,
+      sortBy: "createdAt",
+      order: "DESC",
     },
     { skip: !isSimulation },
   );

@@ -64,7 +64,10 @@ const ConsolidatedLogs: FC<LogsTableProps> = ({ refreshKey, sessionType }) => {
     data: simulationLogsData,
     isLoading: isSimulationLogsLoading,
     refetch: refetchSimulationLogs,
-  } = useGetAdminSimulationLogsQuery(filters, { skip: !isSimulation });
+  } = useGetAdminSimulationLogsQuery(
+    { ...filters, sortBy: "createdAt", order: "DESC" },
+    { skip: !isSimulation },
+  );
 
   const { data: callLogs = [] } = callLogsData || {};
   const { sessions: simulationLogs = [] } = (simulationLogsData || {}) as any;
