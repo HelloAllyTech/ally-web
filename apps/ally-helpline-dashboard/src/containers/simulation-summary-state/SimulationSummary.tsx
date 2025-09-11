@@ -3,6 +3,7 @@ import { FC, useEffect } from "react";
 import { useLazyGetSimulationSummaryQuery } from "@api";
 
 import { FeedbackSection, LoaderSkeleton, ReviewSection } from "./components";
+import { formattedMockData } from "./components/mockData";
 import { SimulationSummaryProps } from "./types";
 
 const SimulationSummary: FC<SimulationSummaryProps> = ({
@@ -43,9 +44,9 @@ const SimulationSummary: FC<SimulationSummaryProps> = ({
   return (
     <div className={`relative flex flex-col h-full w-full ${className}`}>
       <div className="flex flex-col gap-6 overflow-y-auto pb-20 flex-1">
-        {summary?.summary ? (
+        {summary?.id ? (
           <>
-            <FeedbackSection {...summary} />
+            <FeedbackSection {...formattedMockData} />
             <ReviewSection summaryId={summaryId} onSummaryClose={onSummaryClose} />
           </>
         ) : (

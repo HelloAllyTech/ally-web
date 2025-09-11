@@ -107,10 +107,10 @@ export const ReviewSection: FC<ReviewSectionProps> = ({ summaryId, onSummaryClos
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.8 }}
-        className="absolute bottom-4 left-4 right-4 z-10 max-w-lg mx-auto"
+        className="absolute bottom-0 left-4 right-4 z-10 max-w-full bg-white"
       >
-        <Button disabled={!rating} onClick={submitFeedbackRating} fullWidth>
-          Save and close {isLoading ? "Saving..." : "Save and close"}
+        <Button disabled={!rating} onClick={submitFeedbackRating} className="w-[80%] mx-auto">
+          {isLoading ? "Saving..." : "Save and close"}
         </Button>
       </motion.div>
     </>

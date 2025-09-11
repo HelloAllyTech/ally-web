@@ -23,19 +23,9 @@ export const feedbackDemographics = [
     },
   },
   {
-    key: "questions",
-    label: "Open-Ended Questions",
-    getValue: (summary: FeedbackSectionProps) => summary?.metadata?.openEndedQuestions,
-  },
-  {
-    key: "empathy",
-    label: "Empathy & Validation",
-    getValue: (summary: FeedbackSectionProps) => summary?.metadata?.empathyAndValidation,
-  },
-  {
-    key: "activeListening",
-    label: "Active Listening",
-    getValue: (summary: FeedbackSectionProps) => summary?.metadata?.activeListening,
+    key: "score",
+    label: "Total Score",
+    getValue: (summary: FeedbackSectionProps) => summary?.score ?? "--",
   },
 ];
 
