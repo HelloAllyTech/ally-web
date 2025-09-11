@@ -24,7 +24,7 @@ const SimulationSummarySidebar: FC<SimulationSummarySidebarProps> = ({
     {
       id: 2,
       label: "Transcription",
-      content: <div></div>,
+      content: <div>Coming Soon!!!</div>,
     },
   ];
 

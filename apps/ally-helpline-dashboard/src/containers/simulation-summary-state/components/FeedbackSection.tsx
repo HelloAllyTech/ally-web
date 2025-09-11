@@ -8,6 +8,7 @@ import { FeedbackSectioonType } from "@types";
 
 import { feedbackDemographics, feedbackSections } from "./constants";
 import { FeedbackSectionProps } from "./types";
+import { getFormattedFeedbackSection } from "./utils";
 
 const getFeedbackSectionByType = ({
   type,
@@ -51,26 +52,7 @@ const getFeedbackSectionByType = ({
 };
 
 export const FeedbackSection: FC<FeedbackSectionProps> = props => {
-  const formattedData = {
-    whatWentWell: props.summary?.whatWentWell,
-    improvementTips: props.summary?.improvementTips,
-    keyEvents: props.summary?.keyEvents?.map(keyEvent => {
-      // Calculate time difference from session start
-      const sessionStartTime = new Date(props.startedAt).getTime();
-      const eventTime = new Date(keyEvent.timestamp).getTime();
-      const timeDiffMs = eventTime - sessionStartTime;
-
-      const totalSeconds = Math.floor(timeDiffMs / 1000);
-      const minutes = Math.floor(totalSeconds / 60);
-      const seconds = totalSeconds % 60;
-
-      return {
-        time: `${minutes}:${seconds.toString().padStart(2, "0")}`,
-        event: keyEvent.data.message,
-        score: keyEvent.data.score,
-      };
-    }),
-  };
+  const formattedData = getFormattedFeedbackSection(props);
 
   return (
     <motion.div className="flex flex-col gap-6 w-full">

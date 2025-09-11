@@ -13,7 +13,7 @@ import { ReviewSectionProps } from "./types";
 // TODO: Move to shared constants
 export const ReviewSection: FC<ReviewSectionProps> = ({ summaryId, onSummaryClose }) => {
   const [rating, setRating] = useState<number>(0);
-  const [feedback, setFeedback] = useState("");
+  const [feedback, setFeedback] = useState<string>("");
   const [submitSessionFeedback, { isLoading }] = useSubmitSessionFeedbackMutation();
 
   // Rating text mapping
@@ -36,14 +36,16 @@ export const ReviewSection: FC<ReviewSectionProps> = ({ summaryId, onSummaryClos
 
   const submitFeedbackRating = async () => {
     try {
-      const response = await submitSessionFeedback({
-        sessionId: summaryId,
-        sessionFeedback: { rating, feedback },
-      });
-      if (response.error) {
-        throw new Error();
+      if (rating) {
+        const response = await submitSessionFeedback({
+          sessionId: summaryId,
+          sessionFeedback: { rating, feedback },
+        });
+        if (response.error) {
+          throw new Error();
+        }
+        toast.success("Feedback submitted successfully");
       }
-      toast.success("Feedback submitted successfully");
       onSummaryClose();
     } catch (error) {
       const errorMessage = "Failed to submit feedback. Please try again.";
@@ -109,7 +111,7 @@ export const ReviewSection: FC<ReviewSectionProps> = ({ summaryId, onSummaryClos
         transition={{ duration: 0.5, delay: 0.8 }}
         className="absolute bottom-0 left-4 right-4 z-10 max-w-full bg-white"
       >
-        <Button disabled={!rating} onClick={submitFeedbackRating} className="w-[80%] mx-auto">
+        <Button onClick={submitFeedbackRating} className="w-[80%] mx-auto">
           {isLoading ? "Saving..." : "Save and close"}
         </Button>
       </motion.div>

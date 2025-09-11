@@ -3,7 +3,6 @@ import { FC, useEffect } from "react";
 import { useLazyGetSimulationSummaryQuery } from "@api";
 
 import { FeedbackSection, LoaderSkeleton, ReviewSection } from "./components";
-import { formattedMockData } from "./components/mockData";
 import { SimulationSummaryProps } from "./types";
 
 const SimulationSummary: FC<SimulationSummaryProps> = ({
@@ -20,12 +19,12 @@ const SimulationSummary: FC<SimulationSummaryProps> = ({
 
     const pollForSummary = async () => {
       const { data: summaryData } = await getSimulationSummary(summaryId);
-      if (summaryId && !summaryData?.summary) {
+      if (summaryId && !summaryData?.events) {
         summaryPollingInterval = setInterval(async () => {
           pollCount++;
           const { data } = await getSimulationSummary(summaryId);
 
-          if (data?.summary || pollCount >= maxPolls) {
+          if (data?.events || pollCount >= maxPolls) {
             clearInterval(summaryPollingInterval);
           }
         }, 3500);
@@ -46,7 +45,7 @@ const SimulationSummary: FC<SimulationSummaryProps> = ({
       <div className="flex flex-col gap-6 overflow-y-auto pb-20 flex-1">
         {summary?.id ? (
           <>
-            <FeedbackSection {...formattedMockData} />
+            <FeedbackSection {...summary} />
             <ReviewSection summaryId={summaryId} onSummaryClose={onSummaryClose} />
           </>
         ) : (

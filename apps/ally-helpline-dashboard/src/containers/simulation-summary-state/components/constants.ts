@@ -9,17 +9,9 @@ export const feedbackDemographics = [
     key: "duration",
     label: "Session Duration",
     getValue: (summary: FeedbackSectionProps) => {
-      if (!summary.startedAt || !summary.endedAt) return "--";
+      const callDurationInms = summary?.details?.callDuration;
 
-      const startTime = new Date(summary.startedAt).getTime();
-      const endTime = new Date(summary.endedAt).getTime();
-      const durationMs = endTime - startTime;
-
-      const totalSeconds = Math.floor(durationMs / 1000);
-      const minutes = Math.floor(totalSeconds / 60);
-      const seconds = totalSeconds % 60;
-
-      return `${minutes}m ${seconds}s`;
+      return `${Math.floor(callDurationInms / 60000)}m ${Math.floor((callDurationInms % 60000) / 1000)}s`;
     },
   },
   {
@@ -49,7 +41,7 @@ export const feedbackSections = [
       icon: ThumbUp,
       alt: "what-went-well",
     },
-    key: "whatWentWell",
+    key: "positives",
     label: "What Went Well",
     type: FeedbackSectioonType.BULLET_TEXT,
   },
@@ -58,7 +50,7 @@ export const feedbackSections = [
       icon: BulbIcon,
       alt: "improvement-tips",
     },
-    key: "improvementTips",
+    key: "improvements",
     label: "Improvement Tips",
     type: FeedbackSectioonType.BULLET_TEXT,
   },
