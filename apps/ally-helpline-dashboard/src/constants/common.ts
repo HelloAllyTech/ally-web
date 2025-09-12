@@ -132,6 +132,8 @@ export const ApiEndpoints = {
     GET_SIMULATION_SUMMARY: (sessionId: string) => `/learn/scenario-session/${sessionId}`,
     SUBMIT_SCENARIO_SESSION_FEEDBACK: (sessionId: string) =>
       `/learn/scenario-session/${sessionId}/feedback`,
+    GET_SIMULATION_TRANSCRIPT: (sessionId: string) =>
+      `/learn/scenario-session/${sessionId}/messages`,
   },
 };
 

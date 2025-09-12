@@ -2,7 +2,7 @@ import { FC } from "react";
 
 import { SimulationSummary } from "@containers";
 
-import { SummarySidebarWrapper } from ".";
+import { SummarySidebarWrapper, SimulationTranscriptTab } from ".";
 import { SimulationSummarySidebarProps } from "./types";
 
 const SimulationSummarySidebar: FC<SimulationSummarySidebarProps> = ({
@@ -24,7 +24,7 @@ const SimulationSummarySidebar: FC<SimulationSummarySidebarProps> = ({
     {
       id: 2,
       label: "Transcription",
-      content: <div>Coming Soon!!!</div>,
+      content: <SimulationTranscriptTab sessionId={summaryId} />,
     },
   ];
 

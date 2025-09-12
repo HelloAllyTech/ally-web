@@ -1,39 +1,34 @@
 import { FC, useEffect, useMemo, useState } from "react";
 
-import { useGetTranscriptQuery } from "@api";
-import { CallProvider } from "@constants";
+import { useGetSimulationTranscriptQuery } from "@api";
 
 import { TranscriptTab } from ".";
 import { TRANSCRIPT_PAGE_SIZE } from "./constants";
-import { CallTranscriptTabProps, Transcript } from "./types";
+import { SimulationTranscriptTabProps, Transcript } from "./types";
 
-const CallTranscriptTab: FC<CallTranscriptTabProps> = ({ callSummary }) => {
+const SimulationTranscriptTab: FC<SimulationTranscriptTabProps> = ({ sessionId }) => {
   const [transcriptOffset, setTranscriptOffset] = useState(0);
   const [transcriptList, setTranscriptList] = useState<Transcript[]>([]);
 
-  const { data: transcriptData, isLoading: isGetTranscriptLoading } = useGetTranscriptQuery({
-    chatId: callSummary?.id,
-    offset: transcriptOffset,
-    limit: TRANSCRIPT_PAGE_SIZE,
-    sortBy:
-      callSummary?.details?.callInfo?.provider === CallProvider.WEBRTC
-        ? "createdAt"
-        : "startSeconds",
-  });
-
-  const transcriptTotal = useMemo(() => transcriptData?.count || 0, [transcriptData]);
+  const { data: transcriptData, isLoading: isGetTranscriptLoading } =
+    useGetSimulationTranscriptQuery({
+      sessionId,
+      offset: transcriptOffset,
+      limit: TRANSCRIPT_PAGE_SIZE,
+      sortBy: "createdAt",
+    });
 
   const transcript = useMemo(() => {
-    return transcriptData?.data?.map(item => ({
-      speaker: item.senderId === callSummary.clientId ? "Client" : "Counsellor",
+    return transcriptData?.messages?.map(item => ({
+      speaker: item.senderId === -1 ? "Client" : "Counsellor",
       content: item.content,
     }));
-  }, [transcriptData, callSummary]);
+  }, [transcriptData]);
 
-  // Reset transcript list when call changes
+  // Reset transcript list when sessionId changes
   useEffect(() => {
     setTranscriptOffset(0);
-  }, [callSummary?.id]);
+  }, [sessionId]);
 
   // Append new results when transcriptData changes
   useEffect(() => {
@@ -43,7 +38,8 @@ const CallTranscriptTab: FC<CallTranscriptTabProps> = ({ callSummary }) => {
   }, [transcript]);
 
   const handleLoadMore = () => {
-    if (transcriptOffset >= transcriptTotal) return;
+    // TODO: Temporary hack and need to change to count logic
+    if (transcriptOffset >= transcript?.length) return;
     setTranscriptOffset(prev => prev + TRANSCRIPT_PAGE_SIZE);
   };
 
@@ -61,4 +57,4 @@ const CallTranscriptTab: FC<CallTranscriptTabProps> = ({ callSummary }) => {
   );
 };
 
-export default CallTranscriptTab;
+export default SimulationTranscriptTab;

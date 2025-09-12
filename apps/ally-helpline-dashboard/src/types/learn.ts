@@ -150,3 +150,21 @@ export interface SubmitSessionFeedbackInput {
   sessionId: string;
   sessionFeedback: { rating: number; feedback?: string };
 }
+
+export interface GetSimulationTranscriptRequest {
+  sessionId: string;
+  offset: number;
+  limit: number;
+  sortBy: string;
+}
+
+export interface GetSimulationTranscriptResponse {
+  messages: SimulationTranscriptMessage[];
+}
+
+export interface SimulationTranscriptMessage {
+  id: number;
+  content: string;
+  senderId: number;
+  createdAt?: string;
+}
