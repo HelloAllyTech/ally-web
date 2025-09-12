@@ -20,8 +20,8 @@ export interface DeleteDialogData {
 }
 
 export interface Transcript {
-  content?: string | number;
-  senderId?: string | number;
+  content: string;
+  speaker: string;
 }
 
 export enum SessionType {
@@ -75,4 +75,14 @@ export interface CallSummarySidebarProps {
   refetchCallLogs: (status?: ChatSummaryStatus) => void;
   sessionType: SessionType;
   setCallSummary: Dispatch<SetStateAction<CallLog>>;
+}
+
+export interface TranscriptTabProps {
+  transcriptList: { speaker: string; content: string }[];
+  handleLoadMore: () => void;
+  isLoading: boolean;
+}
+
+export interface SimulationTranscriptTabProps {
+  sessionId: string;
 }

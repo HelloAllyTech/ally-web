@@ -19,6 +19,8 @@ import {
   Scenario,
   GetSimulationSummaryResponse,
   SubmitSessionFeedbackInput,
+  GetSimulationTranscriptResponse,
+  GetSimulationTranscriptRequest,
 } from "@types";
 
 import { baseAPI } from "./baseAPI";
@@ -136,6 +138,22 @@ const learnAPI = baseAPI.injectEndpoints({
         body: sessionFeedback,
       }),
     }),
+
+    /**
+     * Retrieves the transcript data for a specific simulation session
+     * with pagination and sorting options.
+     * @param {GetSimulationTranscriptRequest} data - Simulation transcript request parameters
+     * @returns {Promise<GetSimulationTranscriptResponse>} Simulation transcript data
+     */
+    getSimulationTranscript: builder.query<
+      GetSimulationTranscriptResponse,
+      GetSimulationTranscriptRequest
+    >({
+      query: ({ sessionId, offset, limit, sortBy }) => ({
+        url: ApiEndpoints.LEARN.GET_SIMULATION_TRANSCRIPT(sessionId),
+        params: { offset, limit, sortOrder: "ASC", sortBy },
+      }),
+    }),
   }),
 });
 
@@ -148,4 +166,5 @@ export const {
   useGetAdminSimulationLogsQuery,
   useLazyGetSimulationSummaryQuery,
   useSubmitSessionFeedbackMutation,
+  useGetSimulationTranscriptQuery,
 } = learnAPI;
