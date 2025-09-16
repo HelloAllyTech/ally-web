@@ -34,8 +34,8 @@ const userSlice = createSlice({
     setUserStatus(state, action: PayloadAction<UserStatus>) {
       state.userStatus = action.payload;
     },
-    setPermissions(state, action: PayloadAction<Permissions[]>) {
-      state.permissions = action.payload;
+    setPermissions(state, action: PayloadAction<string[]>) {
+      state.permissions = action.payload as Permissions[];
     },
     setAvailableChatTypes(state, action: PayloadAction<CallType[]>) {
       state.availableChatTypes = action.payload;
