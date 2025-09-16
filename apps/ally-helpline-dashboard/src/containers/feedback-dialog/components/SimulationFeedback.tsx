@@ -51,7 +51,7 @@ export const SimulationFeedback: FC<FeedbackSectionProps> = ({ id, onSubmitCompl
     <>
       <span className="text-[#6B7280] font-medium">How was your experience?</span>
       <StarRating rating={rating} setRating={setRating} />
-      <span>{getSimulationRatingText(rating)}</span>
+      <span className="h-6">{getSimulationRatingText(rating)}</span>
       <TextField
         value={comment}
         onChange={e => setComment(e.target.value)}

@@ -67,7 +67,7 @@ const SimulationEvents: FC<SimulationEventsProps> = ({ events }) => {
               <span className="text-[14px] text-white italic font-['IBM_Plex_Serif']">
                 {`${emoji}  ${message}`}
               </span>
-              <span className="text-[12px] text-[#9CA3AF] font-['Roboto']">
+              <span className="text-[12px] text-[#9CA3AF] font-['Roboto'] flex-none">
                 {getEventTime(timestamp)}
               </span>
             </motion.div>

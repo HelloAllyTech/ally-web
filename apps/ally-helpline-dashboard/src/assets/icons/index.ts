@@ -42,6 +42,7 @@ import Edit from "./edit.svg?react";
 import EndSessionIllustration from "./end-session-illustration.svg?react";
 import Enhance from "./enhance.svg?react";
 import ErrorIcon from "./error-icon.svg?react";
+import ExistingCall from "./existing-call.svg?react";
 import Flow from "./flow.svg?react";
 import Focus from "./focus.svg?react";
 import HomeworkRecommended from "./homework-recommended.svg?react";
@@ -147,6 +148,7 @@ export {
   EndSessionIllustration,
   Enhance,
   ErrorIcon,
+  ExistingCall,
   Flow,
   Focus,
   HomeworkRecommended,

@@ -128,6 +128,7 @@ export interface SimulationSummary {
   endedAt: string;
   score: number | null;
   metadata: unknown;
+  totalScore: number;
   details: {
     id: string;
     createdAt: string;
@@ -143,7 +144,6 @@ export interface SimulationSummary {
     };
   };
   events: KeyEvent[];
-  totalScore: number;
   hasFeedback: boolean;
 }
 

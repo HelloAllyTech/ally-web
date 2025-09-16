@@ -126,6 +126,23 @@ export const convertSecondsToDuration = (totalSeconds?: number): string => {
 };
 
 /**
+ * Converts seconds to a human-readable duration string
+ * @param totalSeconds - Number of seconds to convert
+ * @returns Formatted duration string (e.g., "2 hrs 30 mins 45 secs") or "--" if no seconds provided
+ */
+export const convertSecondsToHMS = (totalSeconds?: number): string => {
+  if (!totalSeconds) return "--";
+
+  const hours = Math.floor(totalSeconds / (60 * 60)); // Calculate total hours
+  const minutes = Math.floor((totalSeconds % (60 * 60)) / 60); // Calculate remaining minutes
+  const seconds = totalSeconds % 60; // Calculate remaining seconds
+
+  return `${hours ? `${hours} hr` : ""}${hours > 1 ? "s" : ""} ${
+    minutes ? `${minutes} min` : ""
+  }${minutes > 1 ? "s" : ""} ${seconds ? `${seconds} sec` : ""}${seconds > 1 ? "s" : ""}`;
+};
+
+/**
  * Formats a date-time string according to a specified format string
  *
  * @param dateTime - The date-time string to format (ISO string, date string, etc.)
