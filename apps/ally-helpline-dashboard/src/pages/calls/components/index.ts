@@ -8,7 +8,6 @@ import StartSessionDialog from "./StartSessionDialog";
 import SummaryHeader from "./SummaryHeader";
 import SummarySidebarWrapper from "./SummarySidebarWrapper";
 import TranscriptTab from "./TranscriptTab";
-import { SessionType } from "./types";
 
 export {
   CallLogsTable,
@@ -20,6 +19,5 @@ export {
   SummaryHeader,
   SummarySidebarWrapper,
   StartSessionDialog,
-  SessionType,
   TranscriptTab,
 };

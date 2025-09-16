@@ -279,8 +279,8 @@ export const Login: FunctionComponent = () => {
     loginSection === LoginSection.EMAIL ? !email || !!emailError : !otp || otp.length < 4;
 
   return (
-    <div className="flex h-screen p-8">
-      <div className="max-w-[50%] flex-1 h-full relative">
+    <div className="flex sm:flex-col md:flex-row h-screen p-8">
+      <div className="sm:max-w-full md:max-w-[50%] flex-1 h-full relative">
         <img
           src={LoginImage}
           alt="Login"

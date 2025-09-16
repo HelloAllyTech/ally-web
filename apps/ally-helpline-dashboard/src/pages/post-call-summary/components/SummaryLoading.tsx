@@ -265,7 +265,7 @@ const SummaryLoading: FC<SummaryLoadingProps> = ({
   };
 
   return (
-    <div className="flex flex-col items-center justify-center bg-white text-gray-800 h-[70vh] space-y-4">
+    <div className="flex flex-col items-center justify-center bg-white text-gray-800 h-fit space-y-4">
       <div className="h-full flex flex-col justify-around w-full">
         <div className="flex flex-col items-center justify-center">{renderSummaryState()}</div>
         {renderNotes()}

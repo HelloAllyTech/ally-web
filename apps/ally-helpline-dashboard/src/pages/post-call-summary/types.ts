@@ -59,7 +59,6 @@ export interface CallSummaryProps {
   chatId: number;
   refetchCallLogs?: () => void;
   isInSidebar?: boolean;
-  fromSummarySidebar?: boolean;
   headerContent?: React.ReactNode;
 }
 

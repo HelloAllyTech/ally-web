@@ -6,8 +6,3 @@ export interface StarRatingProps {
 }
 
 export type FeedbackSectionProps = SimulationSummary;
-
-export interface ReviewSectionProps {
-  summaryId: string;
-  onSummaryClose: () => void;
-}

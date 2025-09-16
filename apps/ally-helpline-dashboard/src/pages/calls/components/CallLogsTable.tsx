@@ -20,13 +20,13 @@ import {
 import { Button, TagGroup, FallbackUI, SummaryStatusChip } from "@components";
 import { updateFilters } from "@reducer";
 import { RootState } from "@store";
-import { CallLog, ChatSummaryStatus, SimulationLog, TagDisplay } from "@types";
+import { CallLog, ChatSummaryStatus, SimulationLog, TagDisplay, SessionType } from "@types";
 import { convertSecondsToDuration, getFormattedDate } from "@utils";
 
 import { CALL_LOGS_PAGINATION_LIMIT, tagColors } from "../constants";
 import CallSummarySidebar from "./CallSummarySidebar";
 import SimulationSummarySidebar from "./SimulationSummarySidebar";
-import { LogsTableProps, SessionType } from "./types";
+import { LogsTableProps } from "./types";
 
 const CallLogsTable: FC<LogsTableProps> = ({ refreshKey, sessionType }) => {
   const dispatch = useDispatch();

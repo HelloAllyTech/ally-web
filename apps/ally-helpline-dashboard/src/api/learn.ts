@@ -18,9 +18,10 @@ import {
   StartSimulationResponse,
   Scenario,
   GetSimulationSummaryResponse,
-  SubmitSessionFeedbackInput,
   GetSimulationTranscriptResponse,
   GetSimulationTranscriptRequest,
+  SubmitSimulationFeedbackRequest,
+  SubmitSimulationFeedbackResponse,
 } from "@types";
 
 import { baseAPI } from "./baseAPI";
@@ -131,9 +132,12 @@ const learnAPI = baseAPI.injectEndpoints({
      * Submit feedback for a scenario session.
      * @returns {Promise<void>} No content
      */
-    submitSessionFeedback: builder.mutation<void, SubmitSessionFeedbackInput>({
+    submitSimulationFeedback: builder.mutation<
+      SubmitSimulationFeedbackResponse,
+      SubmitSimulationFeedbackRequest
+    >({
       query: ({ sessionId, sessionFeedback }) => ({
-        url: ApiEndpoints.LEARN.SUBMIT_SCENARIO_SESSION_FEEDBACK(sessionId),
+        url: ApiEndpoints.LEARN.SUBMIT_SIMULATION_FEEDBACK(sessionId),
         method: HttpMethod.POST,
         body: sessionFeedback,
       }),
@@ -165,6 +169,6 @@ export const {
   useGetSimulationLogsQuery,
   useGetAdminSimulationLogsQuery,
   useLazyGetSimulationSummaryQuery,
-  useSubmitSessionFeedbackMutation,
+  useSubmitSimulationFeedbackMutation,
   useGetSimulationTranscriptQuery,
 } = learnAPI;

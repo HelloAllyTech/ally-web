@@ -118,8 +118,22 @@ export type GetAdminSimulationLogsResponse = AdminSimulationLog[];
 export interface SimulationSummary {
   id: string;
   createdAt: string;
-  score: number;
+  updatedAt: string;
+  tenantId: string;
+  roomId: string;
+  scenarioId: number;
+  counselorId: number;
+  status: string;
+  startedAt: string;
+  endedAt: string;
+  score: number | null;
+  metadata: unknown;
   details: {
+    id: string;
+    createdAt: string;
+    updatedAt: string;
+    tenantId: string;
+    scenarioSessionId: string;
     callDuration: number;
     summary: {
       feedback: {
@@ -129,6 +143,8 @@ export interface SimulationSummary {
     };
   };
   events: KeyEvent[];
+  totalScore: number;
+  hasFeedback: boolean;
 }
 
 export interface KeyEvent {
@@ -146,9 +162,19 @@ export interface KeyEvent {
 
 export type GetSimulationSummaryResponse = SimulationSummary;
 
-export interface SubmitSessionFeedbackInput {
+export interface SubmitSimulationFeedbackRequest {
   sessionId: string;
   sessionFeedback: { rating: number; feedback?: string };
+}
+
+export interface SubmitSimulationFeedbackResponse {
+  tenantId: string;
+  scenarioSessionId: string;
+  rating: number;
+  feedback: string;
+  createdAt: string;
+  updatedAt: string;
+  id: string;
 }
 
 export interface GetSimulationTranscriptRequest {

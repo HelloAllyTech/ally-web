@@ -52,3 +52,17 @@ export interface UserState {
   permissions: string[];
   availableChatTypes: CallType[];
 }
+
+export enum SessionType {
+  CALL = "call",
+  SIMULATION = "simulation",
+}
+
+export enum IssueOptions {
+  MISSING_KEY_INFORMATION = "MISSING_KEY_INFORMATION",
+  INACCURATE = "INACCURATE",
+  TOO_VAGUE = "TOO_VAGUE",
+  DIFFICULT_TO_UNDERSTAND = "DIFFICULT_TO_UNDERSTAND",
+  TOO_SHORT = "TOO_SHORT",
+  OTHER = "OTHER",
+}

@@ -1,4 +1,4 @@
-import { FC, useEffect, useState } from "react";
+import { FC, useEffect, useRef, useState } from "react";
 
 import { useSelector } from "react-redux";
 
@@ -6,13 +6,15 @@ import { logger } from "@ally-ui-mono/ui-shared";
 import { useLazyExportCallSummaryQuery, useUpdateCallSummaryMutation } from "@api";
 import { Download } from "@assets";
 import { ActionDialog } from "@components";
+import { FeedbackDialog } from "@containers";
 import { useFileExport } from "@hooks";
 import CallSummary from "@pages/post-call-summary/components/CallSummary";
 import { RootState } from "@store";
-import { UserRole } from "@types";
+import { SessionType, UserRole } from "@types";
 
 import { SummaryHeader, CallTranscriptTab, SummarySidebarWrapper } from ".";
 import { defaultDeleteDialogData } from "../constants";
+import { SUMMARY_FEEDBACK_TIMEOUT } from "./constants";
 import { CallSummarySidebarProps, DeleteDialogData } from "./types";
 
 // TODO: Added only for removing lint error - remove and find actual solution
@@ -33,6 +35,9 @@ const CallSummarySidebar: FC<CallSummarySidebarProps> = ({
   const [deleteDialogData, setDeleteDialogData] =
     useState<DeleteDialogData>(defaultDeleteDialogData);
   const [summaryName, setSummaryName] = useState<string>();
+  const [showFeedbackDialog, setShowFeedbackDialog] = useState<boolean>(false);
+
+  const startTimeRef = useRef<number | null>(null);
 
   const [exportCallSummary] = useLazyExportCallSummaryQuery();
   const [updateCallSummary] = useUpdateCallSummaryMutation();
@@ -45,6 +50,19 @@ const CallSummarySidebar: FC<CallSummarySidebarProps> = ({
       setSummaryName(callSummary?.details?.callInfo?.summaryName);
     }
   }, [callSummary?.details?.callInfo?.summaryName]);
+
+  useEffect(() => {
+    if (callSummary?.id) {
+      startTimeRef.current = Date.now();
+    } else {
+      startTimeRef.current = null;
+    }
+  }, [callSummary?.id]);
+
+  const hasThresholdElapsed = (): boolean => {
+    if (startTimeRef.current == null) return false;
+    return Date.now() - startTimeRef.current >= SUMMARY_FEEDBACK_TIMEOUT;
+  };
 
   const onExportClick = async () => {
     try {
@@ -158,12 +176,34 @@ const CallSummarySidebar: FC<CallSummarySidebarProps> = ({
     },
   ];
 
+  const onSidebarClose = () => {
+    const hasFeedback = Boolean(callSummary?.details?.callInfo?.isSummaryFeedbackAdded);
+    const overThirtySeconds = hasThresholdElapsed();
+
+    if (!hasFeedback && overThirtySeconds) {
+      setShowFeedbackDialog(true);
+    } else {
+      setCallSummary(null);
+    }
+  };
+
+  const onCloseFeedbackDialog = () => {
+    setShowFeedbackDialog(false);
+    setCallSummary(null);
+  };
+
   return (
     <SummarySidebarWrapper
-      onSidebarClose={() => setCallSummary(null)}
+      onSidebarClose={onSidebarClose}
       extraHeaderList={extraHeaderList}
       tabList={tabList}
     >
+      <FeedbackDialog
+        open={showFeedbackDialog}
+        onClose={onCloseFeedbackDialog}
+        id={callSummary?.id}
+        sessionType={SessionType.CALL}
+      />
       {/* TODO: Remove if delete summary is not needed 
       Anyway, noo trigger button present for delete summary in this sidebar*/}
       <ActionDialog

@@ -32,12 +32,13 @@ import {
   ChatSummaryStatus,
   GetCallLogsInput,
   TagDisplay,
+  SessionType,
 } from "@types";
 import { convertSecondsToDuration, getFormattedDate } from "@utils";
 
 import { CallSummarySidebar, SimulationSummarySidebar } from ".";
 import { CALL_LOGS_PAGINATION_LIMIT, defaultTags, tagColors } from "../constants";
-import { LogsTableProps, SessionType } from "./types";
+import { LogsTableProps } from "./types";
 
 const ConsolidatedLogs: FC<LogsTableProps> = ({ refreshKey, sessionType }) => {
   const dispatch = useDispatch();

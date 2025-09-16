@@ -117,6 +117,7 @@ export const ApiEndpoints = {
     EXPORT_CALL_SUMMARY: (chatId: number) => `/chats/${chatId}/export-summary`,
     GET_TRANSCRIPT: (chatId: number) => `/chats/${chatId}/messages`,
     UPDATE_CALL_SUMMARY_NOTES: (chatId: string) => `/chats/${chatId}/notes`,
+    SUBMIT_FEEDBACK: (chatId: string) => `/chats/${chatId}/summary-feedback`,
   },
   SEARCH: {
     GET_CATEGORIES: "/reference-document/categories",
@@ -130,7 +131,7 @@ export const ApiEndpoints = {
     GET_SIMULATION_LOGS: "/learn/scenario-sessions",
     GET_ADMIN_SIMULATION_LOGS: "/learn/admin-scenario-sessions",
     GET_SIMULATION_SUMMARY: (sessionId: string) => `/learn/scenario-session/${sessionId}`,
-    SUBMIT_SCENARIO_SESSION_FEEDBACK: (sessionId: string) =>
+    SUBMIT_SIMULATION_FEEDBACK: (sessionId: string) =>
       `/learn/scenario-session/${sessionId}/feedback`,
     GET_SIMULATION_TRANSCRIPT: (sessionId: string) =>
       `/learn/scenario-session/${sessionId}/messages`,

@@ -6,9 +6,9 @@ import { Refresh, StartSession } from "@assets";
 import { Button, ToggleButtonGroup } from "@components";
 import { CallType } from "@constants";
 import { useUser } from "@hooks";
-import { UserRole, UserStatus } from "@types";
+import { UserRole, UserStatus, SessionType } from "@types";
 
-import { CallLogsTable, ConsolidatedLogs, StartSessionDialog, SessionType } from "./components";
+import { CallLogsTable, ConsolidatedLogs, StartSessionDialog } from "./components";
 import { sessionTypeOptions } from "./constants";
 
 export const Calls: FC = () => {

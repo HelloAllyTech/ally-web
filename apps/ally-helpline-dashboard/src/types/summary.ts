@@ -104,3 +104,25 @@ export enum ChatSummaryStatus {
   FAILED = "FAILED",
   NO_AUDIO = "NO_AUDIO",
 }
+
+export interface SubmitFeedbackRequest {
+  chatId: string;
+  rating: number;
+  feedback: {
+    issues: string[];
+    comment: string;
+  };
+}
+
+export interface SubmitFeedbackResponse {
+  message: string;
+  feedback: {
+    chatId: number;
+    rating: number;
+    feedback: {
+      issues: string[];
+      comment: string;
+    };
+    id: number;
+  };
+}

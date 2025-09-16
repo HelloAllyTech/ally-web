@@ -1,3 +1,4 @@
+import FeedbackDialog from "./feedback-dialog";
 import SimulationSummary from "./simulation-summary-state";
 
-export { SimulationSummary };
+export { FeedbackDialog, SimulationSummary };

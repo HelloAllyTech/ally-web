@@ -1,6 +1,6 @@
 import { Dispatch, SetStateAction } from "react";
 
-import { CallLog, ChatSummaryStatus } from "@types";
+import { CallLog, ChatSummaryStatus, SessionType } from "@types";
 
 export interface StartSessionDialogProps {
   isOpen: boolean;
@@ -22,11 +22,6 @@ export interface DeleteDialogData {
 export interface Transcript {
   content: string;
   speaker: string;
-}
-
-export enum SessionType {
-  CALL = "call",
-  SIMULATION = "simulation",
 }
 
 export interface LogsTableProps {

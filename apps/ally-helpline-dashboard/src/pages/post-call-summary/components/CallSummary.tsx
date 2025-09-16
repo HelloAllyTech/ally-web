@@ -19,9 +19,10 @@ import {
 import { Assessment, Warning } from "@assets";
 import { Accordion, TextField, Button, InfoBanner } from "@components";
 import { LanguageMap, ROUTES } from "@constants";
+import { FeedbackDialog } from "@containers";
 import { useEnhance, useDebounce } from "@hooks";
 import { RootState } from "@store";
-import { ChatSummaryStatus, SummaryFieldKey, Tag, UserRole } from "@types";
+import { ChatSummaryStatus, SessionType, SummaryFieldKey, Tag, UserRole } from "@types";
 import { getEstimatedSummaryGenerationTime, getFormattedDateTime } from "@utils";
 
 import { SummaryLoading } from ".";
@@ -42,8 +43,12 @@ const CallSummary: FC<CallSummaryProps> = ({
 
   const [summaryData, setSummaryData] = useState(null);
   const [searchedLocations, setSearchedLocations] = useState(null);
+  const [showFeedbackDialog, setShowFeedbackDialog] = useState(false);
+  const [canShowSummary, setCanShowSummary] = useState<boolean>(true);
 
   const initialNotes = summaryData?.details?.callInfo?.notes || "";
+
+  const [notes, setNotes] = useState<string>(initialNotes);
 
   const navigate = useNavigate();
 
@@ -59,8 +64,6 @@ const CallSummary: FC<CallSummaryProps> = ({
   const [searchLocations, { isLoading: isSearchLocationsLoading }] = useLazySearchLocationsQuery();
   const [updateCallSummaryNotes, { isLoading: isUpdateNotesLoading }] =
     useUpdateCallSummaryNotesMutation();
-  const [canShowSummary, setCanShowSummary] = useState<boolean>(true);
-  const [notes, setNotes] = useState<string>(initialNotes);
 
   const { enhancing, EnhanceButton, EnhancementLoadingSkeleton, isEnhanceLoading } = useEnhance();
 
@@ -288,7 +291,11 @@ const CallSummary: FC<CallSummaryProps> = ({
     return false;
   };
 
-  const handleSubmit = async () => {
+  const navigateToCallLogs = () => {
+    navigate(ROUTES.CALLS, { state: { refetch: true } });
+  };
+
+  const handleSave = async () => {
     if (hasDataChanged()) {
       const tags = summaryData?.tags?.split(", ");
       let tagsInput: Tag[] = [];
@@ -310,7 +317,13 @@ const CallSummary: FC<CallSummaryProps> = ({
       }
     }
     postProcess?.();
-    if (!isInSidebar) navigate(ROUTES.CALLS, { state: { refetch: true } });
+    if (!isInSidebar) {
+      if (summaryData?.details?.callInfo?.isSummaryFeedbackAdded) {
+        navigateToCallLogs();
+      } else {
+        setShowFeedbackDialog(true);
+      }
+    }
     return;
   };
 
@@ -324,6 +337,11 @@ const CallSummary: FC<CallSummaryProps> = ({
   const handleNotesChange = (newNotes: string) => {
     setNotes(newNotes);
     debouncedUpdateNotes(newNotes);
+  };
+
+  const onSubmitFeedback = () => {
+    setShowFeedbackDialog(false);
+    navigateToCallLogs();
   };
 
   if (canShowSummary && isSummaryLoading) {
@@ -401,14 +419,17 @@ const CallSummary: FC<CallSummaryProps> = ({
         </div>
         {!isAdmin && (
           <div className="flex justify-center">
-            <Button
-              onClick={handleSubmit}
-              disabled={isLoading || (isInSidebar && !hasDataChanged())}
-            >
+            <Button onClick={handleSave} disabled={isLoading || (isInSidebar && !hasDataChanged())}>
               {isUpdateLoading || isGetTagsLoading ? "Saving..." : "Save"}
             </Button>
           </div>
         )}
+        <FeedbackDialog
+          id={chatId}
+          open={!isInSidebar && showFeedbackDialog}
+          sessionType={SessionType.SIMULATION}
+          onClose={onSubmitFeedback}
+        />
       </>
     );
   }
@@ -426,7 +447,7 @@ const CallSummary: FC<CallSummaryProps> = ({
   };
 
   const onViewCallLogs = () => {
-    navigate(ROUTES.CALLS, { state: { refetch: true } });
+    navigateToCallLogs();
   };
 
   return (
