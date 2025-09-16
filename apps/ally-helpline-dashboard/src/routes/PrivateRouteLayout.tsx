@@ -109,7 +109,7 @@ const PrivateRouteLayout: FC = () => {
           path={ROUTES.AUDIO_CALL}
           element={
             <PermissionGuardedRoute
-              permission={Permissions.VIEW_START_CALL_PAGE}
+              permission={[Permissions.VIEW_START_CALL_PAGE]}
               element={<AudioCall />}
             />
           }
@@ -118,7 +118,7 @@ const PrivateRouteLayout: FC = () => {
           path={ROUTES.CLIENT}
           element={
             <PermissionGuardedRoute
-              permission={Permissions.VIEW_START_CALL_PAGE}
+              permission={[Permissions.VIEW_START_CALL_PAGE]}
               element={<ClientInterface />}
             />
           }
@@ -127,7 +127,7 @@ const PrivateRouteLayout: FC = () => {
           path={ROUTES.CALLS}
           element={
             <PermissionGuardedRoute
-              permission={Permissions.VIEW_NAVBAR_CALLS}
+              permission={[Permissions.VIEW_NAVBAR_CALLS]}
               element={<Calls />}
             />
           }
@@ -136,7 +136,7 @@ const PrivateRouteLayout: FC = () => {
           path={ROUTES.ANALYTICS}
           element={
             <PermissionGuardedRoute
-              permission={Permissions.VIEW_NAVBAR_ANALYTICS}
+              permission={[Permissions.VIEW_NAVBAR_ANALYTICS]}
               element={<Analytics />}
             />
           }
@@ -145,7 +145,7 @@ const PrivateRouteLayout: FC = () => {
           path={ROUTES.STRESS_BUSTER}
           element={
             <PermissionGuardedRoute
-              permission={Permissions.VIEW_NAVBAR_STRESS_BUSTER}
+              permission={[Permissions.VIEW_NAVBAR_STRESS_BUSTER]}
               element={<StressBuster />}
             />
           }
@@ -154,7 +154,7 @@ const PrivateRouteLayout: FC = () => {
           path={ROUTES.SUMMARY}
           element={
             <PermissionGuardedRoute
-              permission={Permissions.EDIT_SUMMARY}
+              permission={[Permissions.EDIT_SUMMARY]}
               element={<PostCallSummary />}
             />
           }
@@ -164,7 +164,7 @@ const PrivateRouteLayout: FC = () => {
           element={
             <PermissionGuardedRoute
               // TODO: Add correct permission for Search once BE implementation is done
-              permission={Permissions.VIEW_START_CALL_PAGE}
+              permission={[Permissions.VIEW_START_CALL_PAGE]}
               element={<Search />}
             />
           }
@@ -173,7 +173,7 @@ const PrivateRouteLayout: FC = () => {
           path={ROUTES.SIMULATION}
           element={
             <PermissionGuardedRoute
-              permission={Permissions.VIEW_NAVBAR_LEARN}
+              permission={[Permissions.VIEW_NAVBAR_LEARN]}
               element={<Simulation />}
             />
           }
@@ -182,7 +182,7 @@ const PrivateRouteLayout: FC = () => {
           path={ROUTES.SIMULATION_SUMMARY_FULL}
           element={
             <PermissionGuardedRoute
-              permission={Permissions.VIEW_SCENARIO_SESSION_SUMMARY}
+              permission={[Permissions.VIEW_SCENARIO_SESSION_SUMMARY]}
               element={<PostSimulationSummary />}
             />
           }

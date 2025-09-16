@@ -1,6 +1,7 @@
 import { FC, useEffect, useState } from "react";
 
 import { motion } from "framer-motion";
+import { toast } from "sonner";
 
 import { useLazyGetSimulationSummaryQuery } from "@api";
 import { Button } from "@components";
@@ -21,6 +22,8 @@ const SimulationSummary: FC<SimulationSummaryProps> = ({
 
   const [getSimulationSummary, { data: summary }] = useLazyGetSimulationSummaryQuery();
 
+  const [retryMaxReached, setRetryMaxReached] = useState<boolean>(false);
+
   useEffect(() => {
     let pollCount = 0;
     const maxPolls = 5;
@@ -38,6 +41,13 @@ const SimulationSummary: FC<SimulationSummaryProps> = ({
 
           if (data?.details?.summary?.feedback || pollCount >= maxPolls) {
             clearInterval(summaryPollingInterval);
+            // TODO: Replace this hack once BE gives {} fr feedback
+            if (pollCount >= maxPolls) {
+              setRetryMaxReached(true);
+              if (!data?.details?.summary?.feedback) {
+                toast.error("Something went wrong. Please try again later.");
+              }
+            }
           }
         }, 3500);
       }
@@ -63,7 +73,7 @@ const SimulationSummary: FC<SimulationSummaryProps> = ({
   return (
     <div className={`relative flex flex-col h-full w-full ${className}`}>
       <div className="flex flex-col gap-6 overflow-y-auto pb-20 flex-1">
-        {summary?.details?.summary?.feedback ? (
+        {retryMaxReached || summary?.details?.summary?.feedback ? (
           <>
             <FeedbackSection {...summary} />
             {!isInSidebar && (

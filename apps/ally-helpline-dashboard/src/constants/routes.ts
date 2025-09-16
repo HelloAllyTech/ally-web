@@ -50,14 +50,18 @@ export const navBarOptions = [
     title: "Scribe",
     Icon: ScribeIcon,
     path: ROUTES.CALLS,
-    permission: Permissions.VIEW_NAVBAR_CALLS,
+    permissions: [
+      Permissions.VIEW_NAVBAR_CALLS,
+      Permissions.VIEW_SCENARIO_SESSION,
+      Permissions.VIEW_ADMIN_SCENARIO_SESSION,
+    ],
   },
   {
     id: TabId.ANALYTICS,
     title: "Statistics",
     Icon: StatsIcon,
     path: ROUTES.ANALYTICS,
-    permission: Permissions.VIEW_NAVBAR_ANALYTICS,
+    permissions: [Permissions.VIEW_NAVBAR_ANALYTICS],
   },
   {
     id: TabId.SEARCH,
@@ -65,7 +69,7 @@ export const navBarOptions = [
     Icon: SearchIcon,
     path: ROUTES.SEARCH,
     // TODO: Add correct permission for Search once BE implementation is done
-    permission: Permissions.VIEW_NAVBAR_SEARCH,
+    permissions: [Permissions.VIEW_NAVBAR_CALLS],
   },
   {
     id: TabId.LEARN,
@@ -73,13 +77,13 @@ export const navBarOptions = [
     // TODO: Add correct permission and icon for Learn once available
     Icon: LearnIcon,
     path: ROUTES.LEARN,
-    permission: "",
+    permissions: [Permissions.VIEW_NAVBAR_LEARN],
   },
   {
     id: TabId.COMMUNITY,
     title: "Community",
     Icon: CommunityIcon,
     path: "https://community.helloally.ai/",
-    permission: "",
+    permissions: "",
   },
 ];

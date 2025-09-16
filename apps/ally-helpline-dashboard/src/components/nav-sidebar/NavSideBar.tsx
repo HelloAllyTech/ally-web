@@ -72,7 +72,9 @@ const NavSideBar: FC<NavSideBarProps> = ({ activeTab, onTabChange, isOpen, onClo
 
   const [isLogoutDialogOpen, setIsLogoutDialogOpen] = useState<boolean>(false);
   const permittedTabs = navBarOptions.filter(
-    tab => !tab.permission || filteredPermissions?.includes(tab.permission as Permissions),
+    tab =>
+      !tab.permissions ||
+      filteredPermissions?.some(permission => tab.permissions.includes(permission)),
   );
 
   const navigate = useNavigate();

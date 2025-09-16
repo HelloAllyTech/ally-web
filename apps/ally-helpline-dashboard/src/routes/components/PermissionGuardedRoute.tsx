@@ -5,7 +5,7 @@ import { useUser } from "@hooks";
 import { AccessDenied } from "@pages";
 
 interface PermissionGuardedRouteType {
-  permission: Permissions;
+  permission: Permissions[];
   element: JSX.Element;
 }
 
@@ -14,7 +14,12 @@ const PermissionGuardedRoute: FC<PermissionGuardedRouteType> = ({ permission, el
   // Expecting permission guarded route to work only if user is present
   if (!user) return null;
 
-  return !permission || permissions?.includes(permission) ? element : <AccessDenied />;
+  return !permission ||
+    permissions?.some(permission => permission.includes(permission as Permissions)) ? (
+    element
+  ) : (
+    <AccessDenied />
+  );
 };
 
 export default PermissionGuardedRoute;

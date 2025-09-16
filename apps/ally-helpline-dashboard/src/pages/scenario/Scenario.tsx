@@ -45,7 +45,13 @@ export const Scenario: FC = () => {
   const handleStartSimulation = async () => {
     const { data, error } = await startSimulation({ scenarioId: id });
     if (error) {
-      setIsExistingSimulationConfirmOpen(true);
+      console.log({ error });
+      const errorData = error as { data?: { statusCode?: number } };
+      if (errorData.data?.statusCode === 403) {
+        toast.error("You are not authorized to start this simulation");
+      } else if (errorData.data?.statusCode === 400) {
+        setIsExistingSimulationConfirmOpen(true);
+      }
       return;
     }
 
