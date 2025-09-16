@@ -173,7 +173,6 @@ const PrivateRouteLayout: FC = () => {
           path={ROUTES.SIMULATION}
           element={
             <PermissionGuardedRoute
-              // TODO: Add correct permission for Simulation once BE implementation is done
               permission={Permissions.VIEW_NAVBAR_LEARN}
               element={<Simulation />}
             />
@@ -183,8 +182,7 @@ const PrivateRouteLayout: FC = () => {
           path={ROUTES.SIMULATION_SUMMARY_FULL}
           element={
             <PermissionGuardedRoute
-              // TODO: Add correct permission for Simulation Summary once BE implementation is done
-              permission={Permissions.VIEW_NAVBAR_LEARN}
+              permission={Permissions.VIEW_SCENARIO_SESSION_SUMMARY}
               element={<PostSimulationSummary />}
             />
           }

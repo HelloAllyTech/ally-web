@@ -1,3 +1,5 @@
+import { Permissions } from "@constants";
+
 export const tableHeaders = [
   {
     id: "callName",
@@ -65,6 +67,10 @@ export const defaultTags = [
 ];
 
 export const sessionTypeOptions = [
-  { value: "call", label: "Real call logs" },
-  { value: "simulation", label: "Simulations" },
+  { value: "call", label: "Real call logs", permissionList: [Permissions.VIEW_NAVBAR_CALLS] },
+  {
+    value: "simulation",
+    label: "Simulations",
+    permissionList: [Permissions.VIEW_SCENARIO_SESSION, Permissions.VIEW_ADMIN_SCENARIO_SESSION],
+  },
 ];

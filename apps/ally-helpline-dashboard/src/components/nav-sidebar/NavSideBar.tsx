@@ -1,4 +1,4 @@
-import { FC, SVGProps, useState } from "react";
+import { FC, useState } from "react";
 
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import { useNavigate } from "react-router-dom";
@@ -72,7 +72,7 @@ const NavSideBar: FC<NavSideBarProps> = ({ activeTab, onTabChange, isOpen, onClo
 
   const [isLogoutDialogOpen, setIsLogoutDialogOpen] = useState<boolean>(false);
   const permittedTabs = navBarOptions.filter(
-    tab => !tab.permission || filteredPermissions?.includes(tab.permission),
+    tab => !tab.permission || filteredPermissions?.includes(tab.permission as Permissions),
   );
 
   const navigate = useNavigate();

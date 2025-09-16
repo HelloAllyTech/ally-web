@@ -1,4 +1,4 @@
-import { CallType, SocketConnectionTypes } from "@constants";
+import { CallType, Permissions, SocketConnectionTypes } from "@constants";
 
 import { SocketEvent } from "./message";
 import { User, UserStatus } from "./user";
@@ -49,7 +49,7 @@ export interface UserState {
   isAuthenticated: boolean;
   user: User;
   userStatus: UserStatus;
-  permissions: string[];
+  permissions: Permissions[];
   availableChatTypes: CallType[];
 }
 

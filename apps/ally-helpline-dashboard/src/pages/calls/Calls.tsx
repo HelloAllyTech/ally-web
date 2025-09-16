@@ -1,4 +1,4 @@
-import { FC, useState } from "react";
+import { FC, useEffect, useState } from "react";
 
 import { motion } from "framer-motion";
 
@@ -9,14 +9,22 @@ import { useUser } from "@hooks";
 import { UserRole, UserStatus, SessionType } from "@types";
 
 import { CallLogsTable, ConsolidatedLogs, StartSessionDialog } from "./components";
-import { sessionTypeOptions } from "./constants";
+import { getPermittedSessionTypeOptions } from "./utils";
 
 export const Calls: FC = () => {
   const [isStartSessionDialogOpen, setIsStartSessionDialogOpen] = useState(false);
   const [refreshKey, setRefreshKey] = useState<number>(0);
-  const [sessionType, setSessionType] = useState<SessionType>(SessionType.CALL);
+  const [sessionType, setSessionType] = useState<SessionType>();
+  const [sessionTypeOptions, setSessionTypeOptions] = useState([]);
 
-  const { availableChatTypes, updateUserStatus, user, userStatus } = useUser();
+  const { availableChatTypes, updateUserStatus, user, userStatus, permissions } = useUser();
+
+  useEffect(() => {
+    const permittedSessionTypeOptions = getPermittedSessionTypeOptions(permissions);
+    setSessionTypeOptions(permittedSessionTypeOptions);
+    if (permittedSessionTypeOptions[0].value)
+      setSessionType(permittedSessionTypeOptions[0].value as SessionType);
+  }, [permissions]);
 
   const isAdmin = user?.role === UserRole.ADMIN;
 
@@ -63,11 +71,13 @@ export const Calls: FC = () => {
             )}
           </div>
         </div>
-        <ToggleButtonGroup
-          value={sessionType}
-          onValueChange={(value: SessionType) => setSessionType(value)}
-          items={sessionTypeOptions}
-        />
+        {sessionTypeOptions?.length > 1 && (
+          <ToggleButtonGroup
+            value={sessionType}
+            onValueChange={(value: SessionType) => setSessionType(value)}
+            items={sessionTypeOptions}
+          />
+        )}
       </motion.div>
       {isAdmin ? (
         <ConsolidatedLogs refreshKey={refreshKey} sessionType={sessionType} />
