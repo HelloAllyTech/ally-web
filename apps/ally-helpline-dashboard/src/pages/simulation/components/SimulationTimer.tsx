@@ -1,4 +1,4 @@
-import { FC, useEffect, useState } from "react";
+import { FC, useEffect, useRef, useState } from "react";
 
 import { formatTime } from "@pages/audio-call/utils";
 
@@ -14,6 +14,8 @@ const SimulationTimer: FC<SimulationTimerProps> = ({
 }) => {
   const [timer, setTimer] = useState<number>(0);
 
+  const hasWarnedRef = useRef(false);
+
   useEffect(() => {
     if (!startTime) return () => {};
 
@@ -23,8 +25,9 @@ const SimulationTimer: FC<SimulationTimerProps> = ({
       setTimer(timeElapsed);
 
       // show warning popup before time limit
-      if (timeLimit - timeElapsed <= WARNING_THRESHOLD && !isWarning) {
+      if (timeLimit - timeElapsed <= WARNING_THRESHOLD && !hasWarnedRef.current) {
         onWarning?.();
+        hasWarnedRef.current = true;
       }
 
       // check if time limit is reached

@@ -1,6 +1,6 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 
-import { Room, RoomEvent, Track } from "livekit-client";
+import { Room, RoomEvent } from "livekit-client";
 import { useParams, useNavigate } from "react-router-dom";
 
 import { logger } from "@ally-ui-mono/ui-shared";
@@ -19,6 +19,8 @@ export const useLiveKitRoom = (): UseLiveKitRoomReturn => {
   const [events, setEvents] = useState<LiveKitEvent[]>([]);
   const [score, setScore] = useState<number>(0);
 
+  const lastEventTimestampRef = useRef<number | null>(null);
+
   const { id } = useParams();
 
   // TODO: check if this is the correct way to get the room data: recheck keys after api implementation
@@ -36,12 +38,54 @@ export const useLiveKitRoom = (): UseLiveKitRoomReturn => {
     return url;
   };
 
-  const onDataReceived = (payload: any, _participant: any, _kind: any, _topic: any) => {
+  const onDataReceived = useCallback((payload: any, _participant: any, _kind: any, _topic: any) => {
     const eventObj = decodeUint8ToJson(payload) as LiveKitEvent;
 
-    setEvents(prev => [...prev, eventObj]);
-    setScore(prev => prev + (eventObj?.data?.score ?? 0));
-  };
+    const incomingMs = Date.parse(eventObj?.timestamp ?? "");
+    const lastMs = lastEventTimestampRef.current;
+
+    const incomingValid = !Number.isNaN(incomingMs);
+    const lastValid = typeof lastMs === "number" && !Number.isNaN(lastMs);
+    const shouldAppend = lastValid && incomingValid ? incomingMs - lastMs >= 10000 : true;
+
+    if (shouldAppend) {
+      setEvents(prev => [...prev, eventObj]);
+      setScore(prev => prev + (eventObj?.data?.score ?? 0));
+      if (incomingValid) {
+        lastEventTimestampRef.current = incomingMs;
+      }
+    } else {
+      logger.debug("Skipping event append due to 10s gating");
+    }
+  }, []);
+
+  const onRoomDisconnect = useCallback(() => {
+    logger.info("Disconnected from room");
+    setRoomStatus(RoomStatus.DISCONNECTED);
+  }, []);
+
+  const cleanupRoom = useCallback(() => {
+    try {
+      if (room.localParticipant) {
+        logger.info("Cleaning up: disabling microphone");
+        room.localParticipant.setMicrophoneEnabled(false);
+      }
+    } catch (cleanupError) {
+      logger.warn(`Error while disabling microphone during cleanup: ${cleanupError}`);
+    }
+
+    // Remove room-level listeners to prevent duplication on reconnect
+    room.off(RoomEvent.DataReceived, onDataReceived);
+    room.off(RoomEvent.Disconnected, onRoomDisconnect);
+    room.removeAllListeners();
+
+    logger.info("Disconnecting from room");
+    setRoomStatus(RoomStatus.DISCONNECTED);
+    room.disconnect();
+
+    // Reset the last event timestamp on cleanup
+    lastEventTimestampRef.current = null;
+  }, [room, onDataReceived, onRoomDisconnect]);
 
   const connectToRoom = async () => {
     try {
@@ -71,36 +115,11 @@ export const useLiveKitRoom = (): UseLiveKitRoomReturn => {
         await room.localParticipant.setMicrophoneEnabled(true);
         logger.info("Microphone enabled");
 
-        // Set up audio track listeners
-        room.localParticipant.on(RoomEvent.TrackPublished, publication => {
-          try {
-            if (publication.kind === Track.Kind.Audio) {
-              if (!publication.track) {
-                throw new Error("Audio track is undefined");
-              }
-              logger.debug("Attaching audio track...");
-              publication.track.attach();
-              logger.debug("Audio track attached successfully");
-            }
-          } catch (error) {
-            logger.error(`Error handling audio track: ${error}`);
-          }
-        });
-
-        room.localParticipant.on(RoomEvent.TrackSubscribed, track => {
-          logger.debug(`New track subscribed: ${track.kind}`);
-        });
-
-        room.localParticipant.on(RoomEvent.TrackUnsubscribed, track => {
-          logger.debug(`Track unsubscribed: ${track.kind}`);
-        });
+        // Reset last event timestamp on a fresh connection
+        lastEventTimestampRef.current = null;
 
         room.on(RoomEvent.DataReceived, onDataReceived);
-
-        room.on(RoomEvent.Disconnected, () => {
-          logger.info("Disconnected from room");
-          setRoomStatus(RoomStatus.DISCONNECTED);
-        });
+        room.on(RoomEvent.Disconnected, onRoomDisconnect);
       }
     } catch (error) {
       logger.error(`Failed to connect to LiveKit room: ${error}`);
@@ -130,23 +149,17 @@ export const useLiveKitRoom = (): UseLiveKitRoomReturn => {
 
     return () => {
       clearTimeout(connectionTimeout);
-
-      // Only disconnect if we're actually connected
-      if (isConnected && room.localParticipant) {
-        logger.info("Cleaning up: disabling microphone");
-        room.localParticipant.setMicrophoneEnabled(false);
-        logger.info("Disconnecting from room");
-        setRoomStatus(RoomStatus.DISCONNECTED);
-        room.disconnect();
-      }
+      // Cleanup on route change to avoid duplicate listeners and ensure disconnect
+      cleanupRoom();
     };
-  }, [id]);
+  }, [id, cleanupRoom]);
 
   useEffect(() => {
     return () => {
       localStorage.removeItem(LOCAL_STORAGE_KEYS.ROOM_DATA);
+      cleanupRoom();
     };
-  }, [room]);
+  }, [cleanupRoom]);
 
   return {
     error,

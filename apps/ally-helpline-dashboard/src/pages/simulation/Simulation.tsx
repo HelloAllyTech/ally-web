@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { RoomContext } from "@livekit/components-react";
 import { motion } from "framer-motion";
@@ -10,6 +10,7 @@ import { SimulationWarningIllustration, Warning } from "@assets";
 import { ButtonVariant, ConfirmationDialog } from "@components";
 import { ROUTES } from "@constants";
 import { useLiveKitRoom } from "@hooks";
+import { RoomStatus } from "@types";
 
 import {
   SimulationControls,
@@ -27,6 +28,8 @@ export const Simulation = () => {
   const [isMuted, setIsMuted] = useState(false);
   const [isWarning, setIsWarning] = useState(false);
 
+  const wakeLockRef = useRef<WakeLockSentinel | null>(null);
+
   const [endSimulation, { isLoading: isEndSimulationLoading }] = useEndSimulationMutation();
 
   const {
@@ -39,6 +42,52 @@ export const Simulation = () => {
     events,
     score,
   } = useLiveKitRoom();
+
+  // Keep screen awake during an active simulation and handle tab visibility changes
+  useEffect(() => {
+    const requestWakeLock = async () => {
+      try {
+        if ("wakeLock" in navigator) {
+          wakeLockRef.current = await navigator.wakeLock.request("screen");
+          logger.info("Wake Lock is active");
+        }
+      } catch (err) {
+        logger.info(`Wake Lock request failed:${err}`);
+      }
+    };
+
+    if (roomStatus === RoomStatus.CONNECTED && id) {
+      requestWakeLock();
+    }
+
+    const handleVisibilityChange = async () => {
+      if (document.visibilityState === "visible" && roomStatus === RoomStatus.CONNECTED && id) {
+        try {
+          if ("wakeLock" in navigator) {
+            wakeLockRef.current = await navigator.wakeLock.request("screen");
+            logger.info("Wake Lock reacquired");
+          }
+        } catch (err) {
+          logger.info(`Error reacquiring Wake Lock:${err}`);
+        }
+      }
+    };
+
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    return () => {
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+      if (wakeLockRef.current) {
+        wakeLockRef.current
+          .release()
+          .then(() => {
+            wakeLockRef.current = null;
+            logger.info("Wake Lock released");
+          })
+          .catch(err => logger.info(`Error releasing Wake Lock:${err}`));
+      }
+    };
+  }, [roomStatus, id]);
 
   const onTimeLimitWarning = () => {
     setIsWarning(true);

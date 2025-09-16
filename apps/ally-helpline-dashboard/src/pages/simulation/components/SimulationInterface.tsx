@@ -33,7 +33,9 @@ const SimulationInterface: FC<SimulationInterfaceProps> = ({ roomStatus }) => {
           <>
             <RoomAudioRenderer />
             <SimulationWaveform />
-            <span className="absolute bottom-4 left-4 text-white">{roomData?.name}</span>
+            <span className="absolute bottom-4 left-4 text-white font-['IBM_Plex_Serif']">
+              {roomData?.name}
+            </span>
           </>
         );
     }

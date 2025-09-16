@@ -427,7 +427,7 @@ const CallSummary: FC<CallSummaryProps> = ({
         <FeedbackDialog
           id={chatId}
           open={!isInSidebar && showFeedbackDialog}
-          sessionType={SessionType.SIMULATION}
+          sessionType={SessionType.CALL}
           onClose={onSubmitFeedback}
         />
       </>
