@@ -1,7 +1,10 @@
 import { BulbIcon, KeyEvents, ThumbUp } from "@assets/icons";
 import { FeedbackSectioonType } from "@types";
+import { convertSecondsToHMS } from "@utils";
 
 import { FeedbackSectionProps } from "./types";
+
+const SIMULATON_BENCHMARK_SCORE = 100;
 
 // TODO: update keys based on api response
 export const feedbackDemographics = [
@@ -9,15 +12,25 @@ export const feedbackDemographics = [
     key: "duration",
     label: "Session Duration",
     getValue: (summary: FeedbackSectionProps) => {
-      const callDurationInms = summary?.details?.callDuration;
+      const createdAt = summary?.createdAt;
+      const endedAt = summary?.endedAt;
 
-      return `${Math.floor(callDurationInms / 60000)}m ${Math.floor((callDurationInms % 60000) / 1000)}s`;
+      if (!createdAt || !endedAt) return "--";
+
+      const startTime = new Date(createdAt).getTime();
+      const endTime = new Date(endedAt).getTime();
+      const durationInSeconds = Math.floor((endTime - startTime) / 1000);
+
+      return convertSecondsToHMS(durationInSeconds);
     },
   },
   {
     key: "score",
     label: "Total Score",
-    getValue: (summary: FeedbackSectionProps) => summary?.score ?? "--",
+    getValue: (summary: FeedbackSectionProps) =>
+      summary?.totalScore || summary?.totalScore === 0
+        ? `${summary.totalScore}/${SIMULATON_BENCHMARK_SCORE}`
+        : "--",
   },
 ];
 

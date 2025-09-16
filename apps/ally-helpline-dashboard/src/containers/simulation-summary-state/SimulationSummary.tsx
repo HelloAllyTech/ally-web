@@ -31,12 +31,12 @@ const SimulationSummary: FC<SimulationSummaryProps> = ({
       if (summaryData) {
         onSummaryFetch?.(summaryData);
       }
-      if (summaryId && !summaryData?.events) {
+      if (summaryId && !summaryData?.details?.summary) {
         summaryPollingInterval = setInterval(async () => {
           pollCount++;
           const { data } = await getSimulationSummary(summaryId);
 
-          if (data?.events || pollCount >= maxPolls) {
+          if (data?.details?.summary?.feedback || pollCount >= maxPolls) {
             clearInterval(summaryPollingInterval);
           }
         }, 3500);
@@ -63,7 +63,7 @@ const SimulationSummary: FC<SimulationSummaryProps> = ({
   return (
     <div className={`relative flex flex-col h-full w-full ${className}`}>
       <div className="flex flex-col gap-6 overflow-y-auto pb-20 flex-1">
-        {summary?.id ? (
+        {summary?.details?.summary?.feedback ? (
           <>
             <FeedbackSection {...summary} />
             {!isInSidebar && (

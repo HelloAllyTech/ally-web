@@ -91,7 +91,13 @@ export const FeedbackSection: FC<FeedbackSectionProps> = props => {
             >
               <Accordion title={label} titleIcon={icon} defaultExpanded={true}>
                 <div className="max-h-[250px] overflow-y-scroll">
-                  {getFeedbackSectionByType({ type, columns, data: formattedData[key] })}
+                  {formattedData[key] ? (
+                    getFeedbackSectionByType({ type, columns, data: formattedData[key] })
+                  ) : (
+                    <div className="text-[#9CA3AF] font-['IBM_Plex_Serif'] text-center mb-2">
+                      No data found
+                    </div>
+                  )}
                 </div>
               </Accordion>
             </motion.div>
