@@ -147,7 +147,9 @@ export const CallFeedback: FC<FeedbackSectionProps> = ({ id, onSubmitComplete })
       <span className="text-[#6B7280] text-[14px] text-center">
         Please rate the quality, let us know what worked well, and share areas for improvement.
       </span>
-      <span className="text-[#000000] text-[14px] h-6">{getCallRatingText(rating)}</span>
+      <span className={`text-[#000000] text-[14px] ${rating === null ? "hidden" : ""}`}>
+        {getCallRatingText(rating)}
+      </span>
       <StarRating rating={rating} setRating={setRating} />
 
       <AnimatePresence mode="wait">

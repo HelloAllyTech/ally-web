@@ -1,5 +1,6 @@
 import { FC } from "react";
 
+import { StarYellowIcon } from "@assets";
 import { Button, ButtonVariant } from "@components";
 
 import { StarRatingProps } from "./types";
@@ -13,9 +14,9 @@ const StarRating: FC<StarRatingProps> = ({ rating, setRating }) => {
           key={star}
           onClick={() => setRating(star)}
           variant={ButtonVariant.ICON}
-          className={`text-2xl sm:text-3xl !p-0 ${star <= rating ? "text-[#F9CC49]" : "text-gray-300"}`}
+          className={`text-2xl sm:text-3xl !p-0`}
         >
-          ★
+          <StarYellowIcon fill={star <= rating ? "#F9CC49" : "#ffffff"} />
         </Button>
       ))}
     </div>

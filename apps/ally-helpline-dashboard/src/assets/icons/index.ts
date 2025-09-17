@@ -81,6 +81,7 @@ import Session from "./session.svg?react";
 import ShareIcon from "./share-icon.svg?react";
 import SimulationWarningIllustration from "./simulation-warning-illustration.svg?react";
 import Spinner from "./spinner.svg?react";
+import StarYellowIcon from "./star-yellow-icon.svg?react";
 import StarIcon from "./star.svg?react";
 import StartSession from "./start-session.svg?react";
 import StatsIcon from "./stats.svg?react";
@@ -188,6 +189,7 @@ export {
   SimulationWarningIllustration,
   Spinner,
   StarIcon,
+  StarYellowIcon,
   StartSession,
   StatsIcon,
   StopIcon,
