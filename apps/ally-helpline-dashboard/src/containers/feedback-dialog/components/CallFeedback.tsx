@@ -1,4 +1,4 @@
-import { FC, useState } from "react";
+import { FC, useEffect, useRef, useState } from "react";
 
 import { AnimatePresence, motion } from "framer-motion";
 import { toast } from "sonner";
@@ -18,7 +18,19 @@ export const CallFeedback: FC<FeedbackSectionProps> = ({ id, onSubmitComplete })
   const [comment, setComment] = useState<string>("");
   const [issues, setIssues] = useState<IssueOptions[]>([]);
 
+  const isPrevFive = useRef<boolean | null>(null);
+
   const [submitCallFeedback, { isLoading }] = useSubmitCallFeedbackMutation();
+
+  // Reset comment and issues when switching between 5-star and non-5-star ratings
+  useEffect(() => {
+    const isFive = rating === 5;
+    if (isPrevFive.current !== null && isPrevFive.current !== isFive) {
+      setComment("");
+      setIssues([]);
+    }
+    isPrevFive.current = isFive;
+  }, [rating]);
 
   const isSubmitDisabled =
     rating === null ||
