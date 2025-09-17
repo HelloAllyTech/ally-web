@@ -73,7 +73,7 @@ const CallLogsTable: FC<LogsTableProps> = ({ refreshKey, sessionType }) => {
 
   const { data: callLogs = [] } = callLogsData || {};
   // TODO: Update when pagination is implemented
-  const simulationLogs = simulationLogsData || [];
+  const { data: simulationLogs = [] } = simulationLogsData || {};
 
   const isLoading = isCall ? isCallLogsLoading : isSimulationLogsLoading;
 
@@ -93,7 +93,7 @@ const CallLogsTable: FC<LogsTableProps> = ({ refreshKey, sessionType }) => {
 
   // Append new logs to the list and handle hasMore for both modes
   useEffect(() => {
-    const sourceLogs = isCall ? callLogs : simulationLogs;
+    const sourceLogs = isCall ? callLogs : simulationLogs || [];
     if (sourceLogs?.length > 0) {
       setLogs(prev => {
         // Avoid duplicate entries if page is reset

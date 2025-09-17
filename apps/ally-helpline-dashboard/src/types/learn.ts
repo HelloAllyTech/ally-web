@@ -104,7 +104,9 @@ export interface GetSimulationLogsInput {
   order?: "ASC" | "DESC";
 }
 
-export type GetSimulationLogsResponse = SimulationLog[];
+export type GetSimulationLogsResponse = {
+  data: SimulationLog[];
+};
 
 export interface GetAdminSimulationLogsInput {
   limit?: number;
