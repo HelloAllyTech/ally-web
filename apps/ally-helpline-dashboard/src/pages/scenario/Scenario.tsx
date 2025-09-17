@@ -93,12 +93,10 @@ export const Scenario: FC = () => {
       if (errorData.entityId) {
         await endSimulation({ sessionId: errorData.entityId });
         toast.success("Simulation ended successfully");
-      } else {
-        toast.error("Session ID not found in error data");
+        return;
       }
-    } else {
-      toast.error("Backend yet to implement sessionId in error");
     }
+    toast.error("Something went wrong!");
     setIsExistingSimulationConfirmOpen(false);
   };
 
