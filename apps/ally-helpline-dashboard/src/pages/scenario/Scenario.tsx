@@ -43,13 +43,14 @@ export const Scenario: FC = () => {
   };
 
   const handleStartSimulation = async () => {
+    setIsLoginDialogOpen(false);
+
     const { data, error } = await startSimulation({ scenarioId: id });
     if (error) {
-      console.log({ error });
-      const errorData = error as { data?: { statusCode?: number } };
+      const errorData = error as { data?: { statusCode?: number; entityId?: string } };
       if (errorData.data?.statusCode === 403) {
         toast.error("You are not authorized to start this simulation");
-      } else if (errorData.data?.statusCode === 400) {
+      } else if (errorData.data?.statusCode === 400 && errorData?.data?.entityId) {
         setIsExistingSimulationConfirmOpen(true);
       }
       return;
@@ -87,15 +88,16 @@ export const Scenario: FC = () => {
   };
 
   const endExistingSimulation = async () => {
-    if (startSimulationError && startSimulationError["activeSessionId"]) {
-      // TODO: Add api integration to end existing session
-      await endSimulation({ sessionId: startSimulationError["activeSessionId"] });
-      setIsExistingSimulationConfirmOpen(false);
-      toast.success("Simulation ended successfully");
-    } else {
-      toast.success("Backend yet to implement sessionId in error");
-      setIsExistingSimulationConfirmOpen(false);
+    if (startSimulationError && "data" in startSimulationError) {
+      const errorData = startSimulationError.data as { entityId?: string };
+      if (errorData.entityId) {
+        await endSimulation({ sessionId: errorData.entityId });
+        toast.success("Simulation ended successfully");
+        return;
+      }
     }
+    toast.error("Something went wrong!");
+    setIsExistingSimulationConfirmOpen(false);
   };
 
   const onSecondaryButtonClick = () => {
