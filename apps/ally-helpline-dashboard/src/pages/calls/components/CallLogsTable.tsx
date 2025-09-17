@@ -114,11 +114,14 @@ const CallLogsTable: FC<LogsTableProps> = ({ refreshKey, sessionType }) => {
 
   // Refetch logs when navigating or refresh is triggered
   useEffect(() => {
-    const refetchFn = isCall ? refetchCallLogs : refetchSimulationLogs;
     if (location.state?.refetch || refreshKey) {
-      refetchFn();
+      if (isCall && refetchCallLogs) {
+        refetchCallLogs();
+      } else if (isSimulation && refetchSimulationLogs) {
+        refetchSimulationLogs();
+      }
     }
-  }, [location, refreshKey, isCall, refetchCallLogs, refetchSimulationLogs]);
+  }, [location, refreshKey, isCall, isSimulation, refetchCallLogs, refetchSimulationLogs]);
 
   const handleLoadMore = () => {
     if (!isLoading && !isLoadingMore && hasMore) {
