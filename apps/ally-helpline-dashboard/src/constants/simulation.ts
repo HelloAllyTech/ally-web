@@ -14,3 +14,5 @@ export const audioLevelConfig = {
   normalizationFactor: 128,
   threshold: 0.01,
 } as const;
+
+export const SIMULATON_BENCHMARK_SCORE = 50;

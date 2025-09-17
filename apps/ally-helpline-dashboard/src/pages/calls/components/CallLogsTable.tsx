@@ -21,7 +21,7 @@ import { Button, TagGroup, FallbackUI, SummaryStatusChip } from "@components";
 import { updateFilters } from "@reducer";
 import { RootState } from "@store";
 import { CallLog, ChatSummaryStatus, SimulationLog, TagDisplay, SessionType } from "@types";
-import { convertSecondsToDuration, getFormattedDate } from "@utils";
+import { convertSecondsToDuration, getFormattedDate, getSimulationScoreDisplay } from "@utils";
 
 import { CALL_LOGS_PAGINATION_LIMIT, tagColors } from "../constants";
 import CallSummarySidebar from "./CallSummarySidebar";
@@ -219,7 +219,6 @@ const CallLogsTable: FC<LogsTableProps> = ({ refreshKey, sessionType }) => {
 
     const startMs = startedAt ? new Date(startedAt).getTime() : 0;
     const endMs = endedAt ? new Date(endedAt).getTime() : 0;
-    // TODO: check if duration can be received directly from BE
     const durationSec =
       startedAt && endedAt ? Math.max(0, Math.floor((endMs - startMs) / 1000)) : 0;
 
@@ -229,7 +228,7 @@ const CallLogsTable: FC<LogsTableProps> = ({ refreshKey, sessionType }) => {
       sessionId: scenario?.title ?? String(id ?? "--"),
       dateAndTime: startedAt && getFormattedDate(startedAt),
       duration: convertSecondsToDuration(durationSec),
-      sessionScore: score ?? 0,
+      sessionScore: getSimulationScoreDisplay(score),
       raw: row,
     };
   };

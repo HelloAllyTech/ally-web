@@ -74,7 +74,6 @@ export const navBarOptions = [
   {
     id: TabId.LEARN,
     title: "Learn",
-    // TODO: Add correct permission and icon for Learn once available
     Icon: LearnIcon,
     path: ROUTES.LEARN,
     permissions: [Permissions.VIEW_NAVBAR_LEARN],

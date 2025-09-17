@@ -4,7 +4,7 @@ import { MenuIcon } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 
 import { NavSideBar } from "@components";
-import { excludeNavBar, navBarOptions, TabId } from "@constants";
+import { excludeNavBar, navBarOptions, TabId, LOCAL_STORAGE_KEYS } from "@constants";
 import { useUser } from "@hooks";
 import { UserRole } from "@types";
 import { isPathExcluded } from "@utils";
@@ -17,7 +17,12 @@ const NavbarWrapper: FC<{ children: React.ReactNode }> = ({ children }) => {
   const [isSidebarOpen, setSidebarOpen] = useState<boolean>(false);
 
   useEffect(() => {
-    checkAuth();
+    // checkAuth only for logged in users
+    // TODO: try to optimize this
+    const token = localStorage.getItem(LOCAL_STORAGE_KEYS.ACCESS_TOKEN);
+    if (token) {
+      checkAuth();
+    }
   }, []);
 
   const isClient = user?.role === UserRole.CLIENT;

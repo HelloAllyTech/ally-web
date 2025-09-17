@@ -1,12 +1,9 @@
 import { BulbIcon, KeyEvents, ThumbUp } from "@assets/icons";
 import { FeedbackSectioonType } from "@types";
-import { convertSecondsToHMS } from "@utils";
+import { convertSecondsToHMS, getSimulationScoreDisplay } from "@utils";
 
 import { FeedbackSectionProps } from "./types";
 
-const SIMULATON_BENCHMARK_SCORE = 100;
-
-// TODO: update keys based on api response
 export const feedbackDemographics = [
   {
     key: "duration",
@@ -27,10 +24,7 @@ export const feedbackDemographics = [
   {
     key: "score",
     label: "Total Score",
-    getValue: (summary: FeedbackSectionProps) =>
-      summary?.totalScore || summary?.totalScore === 0
-        ? `${summary.totalScore}/${SIMULATON_BENCHMARK_SCORE}`
-        : "--",
+    getValue: (summary: FeedbackSectionProps) => getSimulationScoreDisplay(summary?.totalScore),
   },
 ];
 

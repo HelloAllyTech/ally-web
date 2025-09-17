@@ -43,6 +43,8 @@ export const Scenario: FC = () => {
   };
 
   const handleStartSimulation = async () => {
+    setIsLoginDialogOpen(false);
+
     const { data, error } = await startSimulation({ scenarioId: id });
     if (error) {
       console.log({ error });

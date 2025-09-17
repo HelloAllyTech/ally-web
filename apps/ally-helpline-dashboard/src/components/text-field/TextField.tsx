@@ -52,7 +52,7 @@ const TextField: FC<TextFieldProps> = ({
           "& .MuiOutlinedInput-root": {
             ...(!multiline && { height: heights[fieldSize] }),
             backgroundColor: "#FFF",
-            ...(showBorder ? { padding: "12px" } : { padding: 0 }),
+            ...(showBorder && multiline ? { padding: "12px" } : { padding: 0 }),
             "& fieldset": {
               border: showBorder ? "1px solid #E5E7EB" : "none",
               borderColor: "#E5E7EB !important",

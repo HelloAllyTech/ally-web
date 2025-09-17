@@ -34,7 +34,7 @@ import {
   TagDisplay,
   SessionType,
 } from "@types";
-import { convertSecondsToDuration, getFormattedDate } from "@utils";
+import { convertSecondsToDuration, getFormattedDate, getSimulationScoreDisplay } from "@utils";
 
 import { CallSummarySidebar, SimulationSummarySidebar } from ".";
 import { CALL_LOGS_PAGINATION_LIMIT, defaultTags, tagColors } from "../constants";
@@ -264,7 +264,6 @@ const ConsolidatedLogs: FC<LogsTableProps> = ({ refreshKey, sessionType }) => {
     const { id, startedAt, endedAt, scenario, score, counselor } = row || {};
     const startMs = startedAt ? new Date(startedAt).getTime() : 0;
     const endMs = endedAt ? new Date(endedAt).getTime() : 0;
-    // TODO: check if duration can be received directly from BE
     const durationSec =
       startedAt && endedAt ? Math.max(0, Math.floor((endMs - startMs) / 1000)) : 0;
 
@@ -274,7 +273,7 @@ const ConsolidatedLogs: FC<LogsTableProps> = ({ refreshKey, sessionType }) => {
       counsellorName: counselor?.name,
       dateAndTime: startedAt && getFormattedDate(startedAt),
       duration: convertSecondsToDuration(durationSec),
-      sessionScore: score ?? 0,
+      sessionScore: getSimulationScoreDisplay(score),
       raw: row,
     };
   };
