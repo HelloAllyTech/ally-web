@@ -93,6 +93,7 @@ export const Scenario: FC = () => {
       if (errorData.entityId) {
         await endSimulation({ sessionId: errorData.entityId });
         toast.success("Simulation ended successfully");
+        setIsExistingSimulationConfirmOpen(false);
         return;
       }
     }
