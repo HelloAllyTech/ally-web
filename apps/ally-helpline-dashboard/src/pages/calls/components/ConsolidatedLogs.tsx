@@ -71,7 +71,7 @@ const ConsolidatedLogs: FC<LogsTableProps> = ({ refreshKey, sessionType }) => {
   );
 
   const { data: callLogs = [] } = callLogsData || {};
-  const simulationLogs = simulationLogsData || [];
+  const { data: simulationLogs = [] } = simulationLogsData || {};
   const { data: counsellorsData } = useGetCounsellorsQuery({ offset: 0 });
   const { data: tagsData } = useGetCallTagsQuery({ offset: 0 });
 

@@ -115,8 +115,9 @@ export interface GetAdminSimulationLogsInput {
   order?: "ASC" | "DESC";
 }
 
-export type GetAdminSimulationLogsResponse = AdminSimulationLog[];
-
+export type GetAdminSimulationLogsResponse = {
+  data: AdminSimulationLog[];
+};
 export interface SimulationSummary {
   id: string;
   createdAt: string;
