@@ -68,8 +68,7 @@ export const navBarOptions = [
     title: "Search",
     Icon: SearchIcon,
     path: ROUTES.SEARCH,
-    // TODO: Add correct permission for Search once BE implementation is done
-    permissions: [Permissions.VIEW_NAVBAR_CALLS],
+    permissions: [Permissions.VIEW_NAVBAR_SEARCH],
   },
   {
     id: TabId.LEARN,

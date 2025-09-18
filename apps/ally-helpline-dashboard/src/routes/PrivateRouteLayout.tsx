@@ -163,8 +163,7 @@ const PrivateRouteLayout: FC = () => {
           path={ROUTES.SEARCH}
           element={
             <PermissionGuardedRoute
-              // TODO: Add correct permission for Search once BE implementation is done
-              permission={[Permissions.VIEW_START_CALL_PAGE]}
+              permission={[Permissions.VIEW_NAVBAR_SEARCH]}
               element={<Search />}
             />
           }
