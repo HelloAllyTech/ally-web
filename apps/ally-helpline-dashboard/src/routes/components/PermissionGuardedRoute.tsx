@@ -14,8 +14,7 @@ const PermissionGuardedRoute: FC<PermissionGuardedRouteType> = ({ permission, el
   // Expecting permission guarded route to work only if user is present
   if (!user) return null;
 
-  return !permission ||
-    permissions?.some(permission => permission.includes(permission as Permissions)) ? (
+  return !permission || permissions?.some(item => permission.includes(item as Permissions)) ? (
     element
   ) : (
     <AccessDenied />

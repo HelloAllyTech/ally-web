@@ -63,18 +63,10 @@ const Tab: FC<TabProps> = ({ id, Icon, title, activeTab, onClick }) => (
 const NavSideBar: FC<NavSideBarProps> = ({ activeTab, onTabChange, isOpen, onClose }) => {
   const { permissions, user, logout } = useUser();
 
-  //TODO: Remove this once we have a proper permission system
-  const safePermissions = permissions || [];
-  const filteredPermissions =
-    user?.role === UserRole.ADMIN
-      ? safePermissions
-      : safePermissions.concat([Permissions.VIEW_NAVBAR_SEARCH]);
-
   const [isLogoutDialogOpen, setIsLogoutDialogOpen] = useState<boolean>(false);
   const permittedTabs = navBarOptions.filter(
     tab =>
-      !tab.permissions ||
-      filteredPermissions?.some(permission => tab.permissions.includes(permission)),
+      !tab.permissions || permissions?.some(permission => tab.permissions.includes(permission)),
   );
 
   const navigate = useNavigate();
