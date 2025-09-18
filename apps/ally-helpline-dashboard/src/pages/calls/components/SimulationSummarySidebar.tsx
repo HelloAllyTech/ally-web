@@ -10,6 +10,7 @@ import { SimulationSummarySidebarProps } from "./types";
 
 const SimulationSummarySidebar: FC<SimulationSummarySidebarProps> = ({
   summaryId,
+  summaryName,
   closeSummarySidebar,
 }) => {
   const [showFeedbackDialog, setShowFeedbackDialog] = useState<boolean>(false);
@@ -36,6 +37,13 @@ const SimulationSummarySidebar: FC<SimulationSummarySidebarProps> = ({
     if (startTimeRef.current == null) return false;
     return Date.now() - startTimeRef.current >= SUMMARY_FEEDBACK_TIMEOUT;
   };
+
+  const SidebarTitle = (
+    <span className="text-[14px] flex items-center gap-2">
+      <span className="font-semibold font-['Roboto'] text-[#79747E]">Summary</span>
+      <span className="font-normal font-['IBM_Plex_Serif'] text-[#000000]/38">{`#${summaryName}`}</span>
+    </span>
+  );
 
   const tabList = [
     {
@@ -75,7 +83,7 @@ const SimulationSummarySidebar: FC<SimulationSummarySidebarProps> = ({
   };
 
   return (
-    <SummarySidebarWrapper tabList={tabList} onSidebarClose={onSidebarClose}>
+    <SummarySidebarWrapper tabList={tabList} onSidebarClose={onSidebarClose} title={SidebarTitle}>
       <FeedbackDialog
         open={showFeedbackDialog}
         onClose={onCloseFeedbackDialog}

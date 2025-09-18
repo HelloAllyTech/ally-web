@@ -22,6 +22,7 @@ import {
   UserIcon,
   SummaryGenerationIcon,
   SessionScoreIcon,
+  ScenarioIcon,
 } from "@assets";
 import { Button, FallbackUI, SummaryStatusChip, TagGroup } from "@components";
 import { updateFilters } from "@reducer";
@@ -33,6 +34,7 @@ import {
   GetCallLogsInput,
   TagDisplay,
   SessionType,
+  SimulationLog,
 } from "@types";
 import { convertSecondsToDuration, getFormattedDate, getSimulationScoreDisplay } from "@utils";
 
@@ -44,7 +46,7 @@ const ConsolidatedLogs: FC<LogsTableProps> = ({ refreshKey, sessionType }) => {
   const dispatch = useDispatch();
 
   const [logs, setLogs] = useState<any[]>([]);
-  const [summary, setSummary] = useState<CallLog | null>(null);
+  const [summary, setSummary] = useState<CallLog | SimulationLog | null>(null);
   const [isLoadingMore, setIsLoadingMore] = useState<boolean>(false);
   const [hasMore, setHasMore] = useState<boolean>(true);
 
@@ -261,7 +263,7 @@ const ConsolidatedLogs: FC<LogsTableProps> = ({ refreshKey, sessionType }) => {
   ];
 
   const getAdminSimulationDisplayData = (row: AdminSimulationLog) => {
-    const { id, startedAt, endedAt, scenario, score, counselor } = row || {};
+    const { id, startedAt, endedAt, score, counselor, metadata, scenario } = row || {};
     const startMs = startedAt ? new Date(startedAt).getTime() : 0;
     const endMs = endedAt ? new Date(endedAt).getTime() : 0;
     const durationSec =
@@ -269,7 +271,8 @@ const ConsolidatedLogs: FC<LogsTableProps> = ({ refreshKey, sessionType }) => {
 
     return {
       id,
-      sessionId: scenario?.title ?? String(id ?? "--"),
+      sessionId: metadata?.sessionName ?? "--",
+      scenarioTitle: scenario?.title ?? "--",
       counsellorName: counselor?.name,
       dateAndTime: startedAt && getFormattedDate(startedAt),
       duration: convertSecondsToDuration(durationSec),
@@ -284,6 +287,12 @@ const ConsolidatedLogs: FC<LogsTableProps> = ({ refreshKey, sessionType }) => {
       header: "Session ID",
       style: { width: "15%" },
       icon: <CallIdIcon />,
+    },
+    {
+      key: "scenarioTitle",
+      header: "Scenario",
+      style: { width: "15%" },
+      icon: <ScenarioIcon />,
     },
     {
       key: "counsellorName",
@@ -398,7 +407,7 @@ const ConsolidatedLogs: FC<LogsTableProps> = ({ refreshKey, sessionType }) => {
   };
 
   const onSummarySubmit = async (newStatus?: ChatSummaryStatus) => {
-    if (newStatus && summary?.summaryStatus === newStatus) return;
+    if (newStatus && (summary as CallLog)?.summaryStatus === newStatus) return;
     const chatId = summary?.id;
     const response = await refetchCallLogs();
 
@@ -425,6 +434,7 @@ const ConsolidatedLogs: FC<LogsTableProps> = ({ refreshKey, sessionType }) => {
         return (
           <SimulationSummarySidebar
             summaryId={summary?.id.toString()}
+            summaryName={(summary as SimulationLog)?.metadata?.sessionName ?? ""}
             closeSummarySidebar={closeSummarySidebar}
           />
         );

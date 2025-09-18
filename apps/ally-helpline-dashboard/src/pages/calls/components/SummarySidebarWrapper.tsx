@@ -14,6 +14,7 @@ const SummarySidebarWrapper: FC<SummarySidebarWrapperProps> = ({
   onSidebarClose = () => {},
   extraHeaderList = [],
   tabList,
+  title,
   children,
 }) => {
   const [selectedTab, setSelectedTab] = useState<number>(tabList?.[0].id);
@@ -35,7 +36,7 @@ const SummarySidebarWrapper: FC<SummarySidebarWrapperProps> = ({
       open={true}
       onClose={onSidebarClose}
       className="font-['IBM_Plex_Serif']"
-      title="Summary"
+      title={title}
       headerButtons={[
         {
           alt: "Data policy",

@@ -1,4 +1,4 @@
-import { Dispatch, SetStateAction } from "react";
+import { Dispatch, ReactNode, SetStateAction } from "react";
 
 import { CallLog, ChatSummaryStatus, SessionType } from "@types";
 
@@ -47,7 +47,7 @@ export interface SummarySidebarWrapperProps {
   onSidebarClose?: () => void;
   extraHeaderList?: {
     alt: string;
-    icon: React.ReactNode;
+    icon: ReactNode;
     onClick: () => void;
     show: boolean;
     text: string;
@@ -55,13 +55,15 @@ export interface SummarySidebarWrapperProps {
   tabList: {
     id: number;
     label: string;
-    content: React.ReactNode;
+    content: ReactNode;
   }[];
-  children?: React.ReactNode;
+  title: ReactNode;
+  children?: ReactNode;
 }
 
 export interface SimulationSummarySidebarProps {
   summaryId: string;
+  summaryName: string;
   closeSummarySidebar: () => void;
 }
 

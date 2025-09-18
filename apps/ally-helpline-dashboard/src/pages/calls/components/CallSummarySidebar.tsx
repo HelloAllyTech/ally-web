@@ -198,6 +198,7 @@ const CallSummarySidebar: FC<CallSummarySidebarProps> = ({
       onSidebarClose={onSidebarClose}
       extraHeaderList={extraHeaderList}
       tabList={tabList}
+      title="Summary"
     >
       <FeedbackDialog
         open={showFeedbackDialog}

@@ -15,6 +15,7 @@ import {
   TagsIcon,
   ReviewIcon,
   SummaryGenerationIcon,
+  ScenarioIcon,
   SessionScoreIcon,
 } from "@assets";
 import { Button, TagGroup, FallbackUI, SummaryStatusChip } from "@components";
@@ -218,7 +219,7 @@ const CallLogsTable: FC<LogsTableProps> = ({ refreshKey, sessionType }) => {
   ];
 
   const getSimulationDisplayData = (row: SimulationLog) => {
-    const { id, startedAt, endedAt, scenario, score } = row || {};
+    const { id, startedAt, endedAt, score, metadata, scenario } = row || {};
 
     const startMs = startedAt ? new Date(startedAt).getTime() : 0;
     const endMs = endedAt ? new Date(endedAt).getTime() : 0;
@@ -227,8 +228,8 @@ const CallLogsTable: FC<LogsTableProps> = ({ refreshKey, sessionType }) => {
 
     return {
       id,
-      // TODO: recheck value to be shown for session ID
-      sessionId: scenario?.title ?? String(id ?? "--"),
+      sessionId: metadata?.sessionName ?? "--",
+      scenarioTitle: scenario?.title ?? "--",
       dateAndTime: startedAt && getFormattedDate(startedAt),
       duration: convertSecondsToDuration(durationSec),
       sessionScore: getSimulationScoreDisplay(score),
@@ -242,6 +243,12 @@ const CallLogsTable: FC<LogsTableProps> = ({ refreshKey, sessionType }) => {
       header: "Session ID",
       style: { width: "20%" },
       icon: <CallIdIcon />,
+    },
+    {
+      key: "scenarioTitle",
+      header: "Scenario",
+      style: { width: "20%" },
+      icon: <ScenarioIcon />,
     },
     {
       key: "dateAndTime",
@@ -258,7 +265,7 @@ const CallLogsTable: FC<LogsTableProps> = ({ refreshKey, sessionType }) => {
     {
       key: "sessionScore",
       header: "Session score",
-      style: { width: "20%" },
+      style: { width: "10%" },
       icon: <SessionScoreIcon />,
     },
     {
@@ -322,6 +329,7 @@ const CallLogsTable: FC<LogsTableProps> = ({ refreshKey, sessionType }) => {
         return (
           <SimulationSummarySidebar
             summaryId={summary?.id as string}
+            summaryName={(summary as SimulationLog)?.metadata?.sessionName ?? ""}
             closeSummarySidebar={closeSummarySidebar}
           />
         );

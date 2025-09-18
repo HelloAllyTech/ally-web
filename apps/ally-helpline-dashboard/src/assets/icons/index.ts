@@ -73,6 +73,7 @@ import Refresh from "./refresh.svg?react";
 import ResumeIcon from "./resume-icon.svg?react";
 import ReviewIcon from "./review-icon.svg?react";
 import RoundCheckmark from "./round-checkmark.svg?react";
+import ScenarioIcon from "./scenario-icon.svg?react";
 import ScribeIcon from "./scribe.svg?react";
 import SearchIcon from "./search.svg?react";
 import SessionScoreIcon from "./session-score.svg?react";
@@ -180,6 +181,7 @@ export {
   ResumeIcon,
   ReviewIcon,
   RoundCheckmark,
+  ScenarioIcon,
   ScribeIcon,
   SearchIcon,
   SessionScoreIcon,

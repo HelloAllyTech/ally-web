@@ -83,6 +83,6 @@ export const navBarOptions = [
     title: "Community",
     Icon: CommunityIcon,
     path: "https://community.helloally.ai/",
-    permissions: "",
+    permissions: [Permissions.VIEW_NAVBAR_COMMUNITY],
   },
 ];

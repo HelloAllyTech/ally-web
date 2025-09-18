@@ -39,7 +39,9 @@ export interface SimulationLog {
   startedAt: string;
   endedAt: string;
   score: number | null;
-  metadata: unknown | null;
+  metadata: {
+    sessionName: string;
+  };
   scenario: {
     createdAt: string;
     updatedAt: string;
@@ -130,7 +132,9 @@ export interface SimulationSummary {
   startedAt: string;
   endedAt: string;
   score: number | null;
-  metadata: unknown;
+  metadata: {
+    sessionName: string;
+  };
   totalScore: number;
   details: {
     id: string;
