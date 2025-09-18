@@ -5,7 +5,8 @@ import { toast } from "sonner";
 
 import { useLazyGetSimulationSummaryQuery } from "@api";
 import { Button } from "@components";
-import { SessionType } from "@types";
+import { useUser } from "@hooks";
+import { SessionType, UserRole } from "@types";
 
 import { FeedbackDialog } from "..";
 import { FeedbackSection, LoaderSkeleton } from "./components";
@@ -19,10 +20,12 @@ const SimulationSummary: FC<SimulationSummaryProps> = ({
   onSummaryFetch,
 }) => {
   const [showFeedbackDialog, setShowFeedbackDialog] = useState<boolean>(false);
+  const [retryMaxReached, setRetryMaxReached] = useState<boolean>(false);
 
   const [getSimulationSummary, { data: summary }] = useLazyGetSimulationSummaryQuery();
 
-  const [retryMaxReached, setRetryMaxReached] = useState<boolean>(false);
+  const { user } = useUser();
+  const isAdmin = user?.role === UserRole.ADMIN;
 
   useEffect(() => {
     let pollCount = 0;
@@ -63,10 +66,13 @@ const SimulationSummary: FC<SimulationSummaryProps> = ({
   }, [summaryId]);
 
   const onSubmit = () => {
-    if (summary?.hasFeedback || isInSidebar) {
-      onSummaryClose();
-    } else {
-      setShowFeedbackDialog(true);
+    // TODO: Remove  !isAdmin once permissions are implemented
+    if (!isAdmin) {
+      if (summary?.hasFeedback || isInSidebar) {
+        onSummaryClose();
+      } else {
+        setShowFeedbackDialog(true);
+      }
     }
   };
 

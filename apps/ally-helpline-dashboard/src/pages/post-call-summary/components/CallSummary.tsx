@@ -317,7 +317,8 @@ const CallSummary: FC<CallSummaryProps> = ({
       }
     }
     postProcess?.();
-    if (!isInSidebar) {
+    // TODO: Remove  !isAdmin once permissions are implemented
+    if (!isInSidebar && !isAdmin) {
       if (summaryData?.details?.callInfo?.isSummaryFeedbackAdded) {
         navigateToCallLogs();
       } else {
@@ -426,7 +427,7 @@ const CallSummary: FC<CallSummaryProps> = ({
         )}
         <FeedbackDialog
           id={chatId}
-          open={!isInSidebar && showFeedbackDialog}
+          open={showFeedbackDialog}
           sessionType={SessionType.CALL}
           onClose={onSubmitFeedback}
         />

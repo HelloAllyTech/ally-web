@@ -180,7 +180,8 @@ const CallSummarySidebar: FC<CallSummarySidebarProps> = ({
     const hasFeedback = Boolean(callSummary?.details?.callInfo?.isSummaryFeedbackAdded);
     const overThirtySeconds = hasThresholdElapsed();
 
-    if (!hasFeedback && overThirtySeconds) {
+    // TODO: Remove  !isAdmin once permissions are implemented
+    if (!hasFeedback && overThirtySeconds && !isAdmin) {
       setShowFeedbackDialog(true);
     } else {
       setCallSummary(null);

@@ -1,7 +1,8 @@
 import { FC, useEffect, useRef, useState } from "react";
 
 import { FeedbackDialog, SimulationSummary } from "@containers";
-import { SessionType, SimulationSummary as SimulationSummaryType } from "@types";
+import { useUser } from "@hooks";
+import { SessionType, SimulationSummary as SimulationSummaryType, UserRole } from "@types";
 
 import { SummarySidebarWrapper, SimulationTranscriptTab } from ".";
 import { SUMMARY_FEEDBACK_TIMEOUT } from "./constants";
@@ -15,6 +16,9 @@ const SimulationSummarySidebar: FC<SimulationSummarySidebarProps> = ({
 
   const hasFeedback = useRef<boolean>(false);
   const startTimeRef = useRef<number | null>(null);
+
+  const { user } = useUser();
+  const isAdmin = user?.role === UserRole.ADMIN;
 
   const onSummaryFetch = (summary: SimulationSummaryType) => {
     hasFeedback.current = summary.hasFeedback;
@@ -57,7 +61,8 @@ const SimulationSummarySidebar: FC<SimulationSummarySidebarProps> = ({
   const onSidebarClose = () => {
     const overThirtySeconds = hasThresholdElapsed();
 
-    if (!hasFeedback.current && overThirtySeconds) {
+    // TODO: Remove  !isAdmin once permissions are implemented
+    if (!hasFeedback.current && overThirtySeconds && !isAdmin) {
       setShowFeedbackDialog(true);
     } else {
       closeSummarySidebar();
