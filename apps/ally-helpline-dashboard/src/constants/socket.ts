@@ -18,5 +18,6 @@ export const socketConnectMap = {
 
 export enum SocketDisconnectionReasons {
   NO_NETWORK = "no-network",
+  NO_NETWORK_IN_SHARED_SESSION = "no-network-in-shared-session",
   SOMETHING_WENT_WRONG = "something-went-wrong",
 }

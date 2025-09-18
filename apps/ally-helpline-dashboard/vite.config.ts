@@ -29,6 +29,8 @@ export default defineConfig({
       "@src/*": path.resolve(projectRoot, "./src/*"),
       "@components": path.resolve(projectRoot, "./src/components"),
       "@components/*": path.resolve(projectRoot, "./src/components/*"),
+      "@containers": path.resolve(projectRoot, "./src/containers"),
+      "@containers/*": path.resolve(projectRoot, "./src/containers/*"),
       "@api": path.resolve(projectRoot, "./src/api"),
       "@api/*": path.resolve(projectRoot, "./src/api/*"),
       "@pages": path.resolve(projectRoot, "./src/pages"),

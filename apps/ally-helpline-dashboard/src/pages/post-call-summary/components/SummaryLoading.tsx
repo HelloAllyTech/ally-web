@@ -3,6 +3,7 @@ import { FC, useEffect, useState } from "react";
 import { CircularProgress, Tooltip } from "@mui/material";
 import { Check, Info, CircleX } from "lucide-react";
 
+import { SummaryGenenerationVideo } from "@assets";
 import {
   NotesIcon,
   VerifiedBadge,
@@ -10,7 +11,6 @@ import {
   SummaryGeneratedIllustration,
   SummaryFailed,
 } from "@assets/icons";
-import { SummaryGenenerationVideo } from "@assets/videos";
 import { Button, ButtonVariant, InfoBanner, ShinyText } from "@components";
 import { SESSION_STORAGE_KEYS, TOOLTIP_DARK_PROPS } from "@constants";
 import { useUser } from "@hooks";
@@ -60,7 +60,6 @@ const SummaryProcessingState = ({
         />
       )}
     </div>
-
     <video
       src={SummaryGenenerationVideo}
       autoPlay
@@ -266,7 +265,7 @@ const SummaryLoading: FC<SummaryLoadingProps> = ({
   };
 
   return (
-    <div className="flex flex-col items-center justify-center bg-white text-gray-800 h-[70vh] space-y-4">
+    <div className="flex flex-col items-center justify-center bg-white text-gray-800 h-fit space-y-4">
       <div className="h-full flex flex-col justify-around w-full">
         <div className="flex flex-col items-center justify-center">{renderSummaryState()}</div>
         {renderNotes()}

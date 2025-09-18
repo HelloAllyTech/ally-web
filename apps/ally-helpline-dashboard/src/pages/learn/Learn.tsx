@@ -1,38 +1,37 @@
-import { FC, useEffect, useState } from "react";
+import { FC } from "react";
 
 import { AnimatePresence, motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 
+import { useGetScenariosQuery } from "@api";
 import { ScenarioCard } from "@components";
-import { Scenario } from "@types";
+import { ScenarioStatus } from "@types";
 
-import { learnPageContainerVariants, learnPageItemVariants, dummyScenarios } from "./constants";
+import { learnPageContainerVariants, learnPageItemVariants } from "./constants";
 
 export const Learn: FC = () => {
   const navigate = useNavigate();
 
-  const [scenarios, setScenarios] = useState<Scenario[]>([]);
-
-  // TODO: Remove this with API loading state once the API is implemented.
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    // TODO: Remove this once the API is implemented.
-    setTimeout(() => {
-      setIsLoading(false);
-      setScenarios(dummyScenarios);
-    }, 2000);
-  }, []);
+  const {
+    data: scenarios,
+    isLoading: isScenariosLoading,
+    refetch: refetchScenarios,
+  } = useGetScenariosQuery();
 
   const renderPageDescription = () => {
+    const emphasisStyles = "font-bold text-[#0957D0]";
     return (
       <motion.div
         variants={learnPageItemVariants}
         initial="hidden"
         animate="visible"
-        className="w-full font-['Replay_Pro'] text-[32px] text-[#1A1A1A] font-bold sm:mb-[66px] mb-[48px] sm:leading-[40px] leading-[28px]"
+        className="w-full font-['Replay_Pro'] text-[28px] text-[#1A1A1A] sm:mb-[66px] mb-[48px] sm:leading-[40px] leading-[28px]"
       >
-        AI-voice based hyper realistic training role plays to help counsellors build expertise.
+        <span className={emphasisStyles}>AI</span>
+        -voice based hyper realistic training role plays to help
+        <span className={emphasisStyles}> counsellors </span>
+        build
+        <span className={emphasisStyles}> expertise</span>.
       </motion.div>
     );
   };
@@ -41,13 +40,21 @@ export const Learn: FC = () => {
     <div className="flex flex-col items-center justify-center w-full py-8 min-h-[30vh]">
       <div className="text-gray-500 text-lg mb-4">No scenarios available at the moment</div>
       <button
-        onClick={() => window.location.reload()}
+        onClick={() => refetchScenarios()}
         className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors"
       >
         Refresh Page
       </button>
     </div>
   );
+
+  const getSortedScenarios = () =>
+    scenarios?.slice().sort((a, b) => {
+      const aActive = a.status === ScenarioStatus.ACTIVE;
+      const bActive = b.status === ScenarioStatus.ACTIVE;
+      if (aActive === bActive) return 0;
+      return aActive ? -1 : 1;
+    });
 
   const renderScenarioGrid = () => (
     <>
@@ -75,8 +82,8 @@ export const Learn: FC = () => {
         animate="visible"
         exit="exit"
       >
-        {isLoading ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+        {isScenariosLoading ? (
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
             {Array.from({ length: 6 }).map((_, index) => (
               <div
                 key={index}
@@ -84,24 +91,25 @@ export const Learn: FC = () => {
               />
             ))}
           </div>
-        ) : scenarios.length > 0 ? (
+        ) : scenarios?.length > 0 ? (
           <div
-            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 relative mx-auto"
+            className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 relative mx-auto"
             role="list"
             aria-label="Available scenarios"
           >
-            {scenarios.map((scenario: Scenario) => (
+            {getSortedScenarios().map(scenario => (
               <motion.div
-                key={scenario.unique_id}
+                key={scenario.id}
                 variants={learnPageItemVariants}
                 role="listitem"
                 className="h-full"
               >
                 <ScenarioCard
-                  coverImage={scenario.cover_image || ""}
+                  coverImage={scenario.coverImageUrl || ""}
                   title={scenario.title || ""}
-                  description={scenario.short_description || ""}
-                  onClick={() => navigate(`/scenario/${scenario.unique_id}`)}
+                  description={scenario.scenario || ""}
+                  onClick={() => navigate(`/scenario/${scenario.id}`)}
+                  isComingSoon={scenario.status === ScenarioStatus.COMING_SOON}
                 />
               </motion.div>
             ))}
@@ -114,13 +122,9 @@ export const Learn: FC = () => {
   );
 
   return (
-    <div className="h-full bg-white flex flex-col font-replay">
-      <div className="flex justify-center w-full h-full relative">
-        <div className="flex flex-col max-w-5xl h-full p-[10px] sm:p-[24px]">
-          {renderPageDescription()}
-          <AnimatePresence mode="wait">{renderScenarioGrid()}</AnimatePresence>
-        </div>
-      </div>
+    <div className="flex flex-col w-full h-screen bg-white p-[10px] sm:p-[24px] justify-center font-replay">
+      {renderPageDescription()}
+      <AnimatePresence mode="wait">{renderScenarioGrid()}</AnimatePresence>
     </div>
   );
 };

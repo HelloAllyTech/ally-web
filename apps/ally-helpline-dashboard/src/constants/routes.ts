@@ -1,4 +1,4 @@
-import { SearchIcon, StatsIcon, CommunityIcon, ScribeIcon } from "@assets/icons";
+import { SearchIcon, StatsIcon, CommunityIcon, ScribeIcon, LearnIcon } from "@assets/icons";
 
 import { Permissions } from "./permissions";
 import { TabId } from "./tabs";
@@ -23,8 +23,26 @@ export const ROUTES = {
   SEARCH: "/search",
   LEARN: "/learn",
   SCENARIO: "/scenario/:scenarioId",
+  SIMULATION: "/simulation/:id",
   SIMULATION_SUMMARY: "/simulation-summary",
+  SIMULATION_SUMMARY_FULL: "/simulation-summary/:sessionId",
 } as const;
+
+export const excludeNavBar = [
+  ROUTES.AUDIO_CALL,
+  ROUTES.SUMMARY,
+  ROUTES.STRESS_BUSTER,
+  ROUTES.SIMULATION,
+  ROUTES.SIMULATION_SUMMARY_FULL,
+] as string[];
+
+export const excludeCallPicker = [
+  ROUTES.AUDIO_CALL,
+  ROUTES.SUMMARY,
+  ROUTES.STRESS_BUSTER,
+  ROUTES.SIMULATION,
+  ROUTES.SIMULATION_SUMMARY,
+] as string[];
 
 export const navBarOptions = [
   {
@@ -32,36 +50,38 @@ export const navBarOptions = [
     title: "Scribe",
     Icon: ScribeIcon,
     path: ROUTES.CALLS,
-    permission: Permissions.VIEW_NAVBAR_CALLS,
+    permissions: [
+      Permissions.VIEW_NAVBAR_CALLS,
+      Permissions.VIEW_SCENARIO_SESSION,
+      Permissions.VIEW_ADMIN_SCENARIO_SESSION,
+    ],
   },
   {
     id: TabId.ANALYTICS,
     title: "Statistics",
     Icon: StatsIcon,
     path: ROUTES.ANALYTICS,
-    permission: Permissions.VIEW_NAVBAR_ANALYTICS,
+    permissions: [Permissions.VIEW_NAVBAR_ANALYTICS],
   },
   {
     id: TabId.SEARCH,
     title: "Search",
     Icon: SearchIcon,
     path: ROUTES.SEARCH,
-    // TODO: Add correct permission for Search once BE implementation is done
-    permission: Permissions.VIEW_NAVBAR_SEARCH,
+    permissions: [Permissions.VIEW_NAVBAR_SEARCH],
+  },
+  {
+    id: TabId.LEARN,
+    title: "Learn",
+    Icon: LearnIcon,
+    path: ROUTES.LEARN,
+    permissions: [Permissions.VIEW_NAVBAR_LEARN],
   },
   {
     id: TabId.COMMUNITY,
     title: "Community",
     Icon: CommunityIcon,
     path: "https://community.helloally.ai/",
-    permission: "",
+    permissions: [Permissions.VIEW_NAVBAR_COMMUNITY],
   },
-  // {
-  //   id: TabId.LEARN,
-  //   title: "Learn",
-  //   // TODO: Add correct permission and icon for Learn once available
-  //   Icon: CommunityIcon,
-  //   path: ROUTES.LEARN,
-  //   permission: "",
-  // },
 ];

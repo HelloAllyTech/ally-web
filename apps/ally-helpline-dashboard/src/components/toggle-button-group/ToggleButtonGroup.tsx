@@ -4,17 +4,7 @@ import { ToggleButton, ToggleButtonGroup as MuiToggleButtonGroup } from "@mui/ma
 
 import { cn } from "@utils";
 
-type ToggleButtonGroupProps = {
-  disabled?: boolean;
-  value: string;
-  onValueChange: (value: string) => void;
-  items: {
-    value: string;
-    label: string;
-  }[];
-  className?: string;
-  successValue?: string;
-};
+import { ToggleButtonGroupProps } from "./types";
 
 const ToggleButtonGroup: FC<ToggleButtonGroupProps> = ({
   disabled,
@@ -36,21 +26,22 @@ const ToggleButtonGroup: FC<ToggleButtonGroupProps> = ({
       exclusive
       disabled={disabled}
       onChange={handleChange}
-      className={cn("h-9 !rounded-[32px] bg-[#FFFFFF] border border-[#E5E7EB] p-[4px]", className)}
+      className={cn("h-9 !rounded-[4px] bg-[#F3F3F3] border-[0.5px] border-[#D2D2D2]", className)}
       sx={{
         "& .MuiToggleButton-root": {
           border: "none",
-          borderRadius: "32px",
-          padding: "6px 16px",
+          borderRadius: "4px",
+          padding: "16px 24px",
           textTransform: "none",
           fontSize: "14px",
           fontWeight: 500,
           "&.Mui-selected": {
-            backgroundColor: value === successValue ? "#33BA60" : "#49454F",
-            color: "#FFFFFF",
+            backgroundColor: value === successValue ? "#33BA60" : "#FFFFFF",
+            color: "#4D4D4D",
             boxShadow: "0 1px 2px rgba(0, 0, 0, 0.1)",
+            border: "0.5px solid #D2D2D2",
             "&:hover": {
-              backgroundColor: value === successValue ? "#33BA60" : "#49454F",
+              backgroundColor: value === successValue ? "#33BA60" : "#FFFFFF",
             },
           },
           "&:hover": {

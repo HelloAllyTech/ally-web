@@ -105,8 +105,24 @@ export enum ChatSummaryStatus {
   NO_AUDIO = "NO_AUDIO",
 }
 
-export const SummaryEnabledStatuses = [
-  ChatSummaryStatus.PENDING,
-  ChatSummaryStatus.IN_PROGRESS,
-  ChatSummaryStatus.SUCCESS,
-];
+export interface SubmitFeedbackRequest {
+  chatId: string;
+  rating: number;
+  feedback: {
+    issues: string[];
+    comment: string;
+  };
+}
+
+export interface SubmitFeedbackResponse {
+  message: string;
+  feedback: {
+    chatId: number;
+    rating: number;
+    feedback: {
+      issues: string[];
+      comment: string;
+    };
+    id: number;
+  };
+}

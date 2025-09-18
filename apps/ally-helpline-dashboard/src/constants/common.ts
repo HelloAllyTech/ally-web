@@ -4,7 +4,7 @@ import { CarouselSlideType } from "@components";
 export const ALLY_URL = "https://www.helloally.ai";
 export const ALLY_TERMS_URL = "https://www.helloally.ai/terms";
 export const ALLY_PRIVACY_POLICY_URL = "https://www.helloally.ai/policy";
-export const ALLY_DATA_POLICY_URL = "https://www.helloally.ai/data-policy";
+export const ALLY_DATA_POLICY_URL = "https://www.helloally.ai/privacy";
 
 export const ICE_SERVERS = [
   { urls: "stun:stun.l.google.com:19302" },
@@ -58,6 +58,7 @@ export const LOCAL_STORAGE_KEYS = {
   ACCESS_TOKEN: "accessToken",
   REFRESH_TOKEN: "refreshToken",
   USER_STATUS: "userStatus",
+  ROOM_DATA: "roomData",
 };
 
 export const SESSION_STORAGE_KEYS = {
@@ -116,17 +117,24 @@ export const ApiEndpoints = {
     EXPORT_CALL_SUMMARY: (chatId: number) => `/chats/${chatId}/export-summary`,
     GET_TRANSCRIPT: (chatId: number) => `/chats/${chatId}/messages`,
     UPDATE_CALL_SUMMARY_NOTES: (chatId: string) => `/chats/${chatId}/notes`,
+    SUBMIT_FEEDBACK: (chatId: string) => `/chats/${chatId}/summary-feedback`,
   },
   SEARCH: {
     GET_CATEGORIES: "/reference-document/categories",
     GET_SEARCH_RESULTS: "/reference-document/search",
   },
   LEARN: {
-    DELETE_ROOM: (roomId: string) => `/rooms/${roomId}`,
-    ROOM: "/rooms",
-    SEND_OTP: "/auth/send-otp",
-    SCENARIOS: "/scenarios",
-    VERIFY_OTP: "/auth/verify-otp",
+    END_SIMULATION: (sessionId: string) => `/learn/scenario-session/${sessionId}/end`,
+    START_SIMULATION: "/learn/scenario-session-start",
+    GET_SCENARIOS: "/learn/scenarios",
+    GET_SCENARIO: (scenarioId: number) => `/learn/scenarios/${scenarioId}`,
+    GET_SIMULATION_LOGS: "/learn/scenario-sessions",
+    GET_ADMIN_SIMULATION_LOGS: "/learn/admin-scenario-sessions",
+    GET_SIMULATION_SUMMARY: (sessionId: string) => `/learn/scenario-session/${sessionId}`,
+    SUBMIT_SIMULATION_FEEDBACK: (sessionId: string) =>
+      `/learn/scenario-session/${sessionId}/feedback`,
+    GET_SIMULATION_TRANSCRIPT: (sessionId: string) =>
+      `/learn/scenario-session/${sessionId}/messages`,
   },
 };
 
@@ -172,3 +180,8 @@ export const TOOLTIP_DARK_PROPS = {
     },
   },
 };
+
+export enum LoginSection {
+  EMAIL = "Email",
+  OTP = "OTP",
+}

@@ -1,6 +1,6 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
-import { CallType } from "@constants";
+import { CallType, Permissions } from "@constants";
 import { UserState, UserStatus } from "@types";
 
 /*
@@ -35,7 +35,7 @@ const userSlice = createSlice({
       state.userStatus = action.payload;
     },
     setPermissions(state, action: PayloadAction<string[]>) {
-      state.permissions = action.payload;
+      state.permissions = action.payload as Permissions[];
     },
     setAvailableChatTypes(state, action: PayloadAction<CallType[]>) {
       state.availableChatTypes = action.payload;

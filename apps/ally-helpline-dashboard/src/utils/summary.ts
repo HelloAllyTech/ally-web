@@ -1,5 +1,4 @@
 import { CallSummaryGenerationData } from "@constants";
-import { ChatSummaryStatus, SummaryEnabledStatuses } from "@types";
 
 export const getEstimatedSummaryGenerationTime = (callDuration: number) => {
   // calculate the estimated generation time in seconds based on actual generation time
@@ -11,6 +10,3 @@ export const getEstimatedSummaryGenerationTime = (callDuration: number) => {
 
   return Math.ceil(estimatedGenerationTimeInseconds / 60);
 };
-
-export const getSummaryEnabledStatus = (status: ChatSummaryStatus) =>
-  SummaryEnabledStatuses.includes(status);

@@ -1,6 +1,5 @@
 import Accordion from "./accordion";
 import ActionDialog from "./action-dialog";
-import AudioCallPopup from "./audio-call-popup";
 import BoxBreathing from "./box-breathing";
 import { Button, ButtonVariant, ButtonVariantType } from "./button";
 import ButtonGroup from "./button-group";
@@ -16,6 +15,7 @@ import ExpandingSection from "./expanding-section";
 import FallbackUI from "./fallback-ui";
 import InfoBanner from "./info-banner";
 import Input from "./input";
+import LoginDialog from "./login-dialog";
 import NavSideBar from "./nav-sidebar";
 import OTP from "./otp";
 import ScenarioCard from "./scenario-card";
@@ -39,7 +39,6 @@ export {
 export {
   Accordion,
   ActionDialog,
-  AudioCallPopup,
   BoxBreathing,
   Button,
   ButtonGroup,
@@ -55,6 +54,7 @@ export {
   FallbackUI,
   InfoBanner,
   Input,
+  LoginDialog,
   NavSideBar,
   OTP,
   ScenarioCard,

@@ -4,6 +4,7 @@ export enum LogLevel {
   INFO = "info",
   ERROR = "error",
   WARN = "warn",
+  DEBUG = "debug",
 }
 
 const logger = {
@@ -44,6 +45,14 @@ const logger = {
    */
   warn(warning: string) {
     this.log(LogLevel.WARN, warning);
+  },
+
+  /**
+   * Logs a debug message.
+   * @param debug - The debug message
+   */
+  debug(message: string) {
+    this.log(LogLevel.DEBUG, message);
   },
 };
 

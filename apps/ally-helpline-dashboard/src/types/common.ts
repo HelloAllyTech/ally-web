@@ -1,4 +1,4 @@
-import { CallType, SocketConnectionTypes } from "@constants";
+import { CallType, Permissions, SocketConnectionTypes } from "@constants";
 
 import { SocketEvent } from "./message";
 import { User, UserStatus } from "./user";
@@ -14,11 +14,13 @@ export interface Session {
   [key: string]: any;
 }
 
+// TODO: Move to hooks/types.ts
 export interface UseSessionManagerOptions {
   autoConnect?: boolean;
   connectionType?: SocketConnectionTypes;
 }
 
+// TODO: Move to hooks/types.ts
 export interface UseSocketOptions {
   connectionType: SocketConnectionTypes;
   eventCallbacks?: Partial<Record<SocketEvent, (params?: any) => void>>;
@@ -47,6 +49,20 @@ export interface UserState {
   isAuthenticated: boolean;
   user: User;
   userStatus: UserStatus;
-  permissions: string[];
+  permissions: Permissions[];
   availableChatTypes: CallType[];
+}
+
+export enum SessionType {
+  CALL = "call",
+  SIMULATION = "simulation",
+}
+
+export enum IssueOptions {
+  MISSING_KEY_INFORMATION = "MISSING_KEY_INFORMATION",
+  INACCURATE = "INACCURATE",
+  TOO_VAGUE = "TOO_VAGUE",
+  DIFFICULT_TO_UNDERSTAND = "DIFFICULT_TO_UNDERSTAND",
+  TOO_SHORT = "TOO_SHORT",
+  OTHER = "OTHER",
 }

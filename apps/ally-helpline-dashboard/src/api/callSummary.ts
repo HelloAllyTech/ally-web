@@ -20,6 +20,8 @@ import {
   GetTranscriptResponse,
   GetTranscriptRequest,
   UpdateCallSummaryNotesRequest,
+  SubmitFeedbackRequest,
+  SubmitFeedbackResponse,
 } from "@types";
 
 import { baseAPI } from "./baseAPI";
@@ -162,6 +164,13 @@ const callSummaryAPI = baseAPI.injectEndpoints({
         body: { content: notes },
       }),
     }),
+    submitCallFeedback: builder.mutation<SubmitFeedbackResponse, SubmitFeedbackRequest>({
+      query: ({ chatId, rating, feedback }) => ({
+        url: ApiEndpoints.CALL_SUMMARY.SUBMIT_FEEDBACK(chatId),
+        method: HttpMethod.POST,
+        body: { rating, feedback },
+      }),
+    }),
   }),
 });
 
@@ -177,4 +186,5 @@ export const {
   useLazySearchLocationsQuery,
   useGetTranscriptQuery,
   useUpdateCallSummaryNotesMutation,
+  useSubmitCallFeedbackMutation,
 } = callSummaryAPI;

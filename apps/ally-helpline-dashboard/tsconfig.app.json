@@ -30,6 +30,8 @@
       "@src/*": ["src/*"],
       "@components": ["src/components"],
       "@components/*": ["src/components/*"],
+      "@containers": ["src/containers"],
+      "@containers/*": ["src/containers/*"],
       "@api": ["src/api"],
       "@api/*": ["src/api/*"],
       "@pages": ["src/pages"],
