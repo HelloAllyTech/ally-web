@@ -8,7 +8,10 @@ export enum CallProvider {
   WEBRTC = "WEBRTC",
   MICROPHONE = "MICROPHONE",
   EXOTEL_CONFERENCE_CALL = "EXOTEL_CONFERENCE_CALL",
+  OZONETEL = "OZONETEL",
 }
+
+export const CloudTelephonyList = [CallProvider.EXOTEL_CONFERENCE_CALL, CallProvider.OZONETEL];
 
 export const CallSummaryGenerationData = {
   durationInSeconds: 2503, // 41 mins 43 secs

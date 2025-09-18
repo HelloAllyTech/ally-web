@@ -5,7 +5,7 @@ export interface DrawerProps {
   onClose: () => void;
   children: ReactNode;
   className?: string;
-  title?: string;
+  title?: string | ReactNode;
   headerButtons?: {
     alt: string;
     icon: ReactNode;

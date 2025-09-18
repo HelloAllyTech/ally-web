@@ -1,20 +1,30 @@
-import { FC, useState } from "react";
+import { FC, useEffect, useState } from "react";
 
 import { motion } from "framer-motion";
 
 import { Refresh, StartSession } from "@assets";
-import { Button } from "@components";
+import { Button, ToggleButtonGroup } from "@components";
 import { CallType } from "@constants";
 import { useUser } from "@hooks";
-import { UserRole, UserStatus } from "@types";
+import { UserRole, UserStatus, SessionType } from "@types";
 
 import { CallLogsTable, ConsolidatedLogs, StartSessionDialog } from "./components";
+import { getPermittedSessionTypeOptions } from "./utils";
 
 export const Calls: FC = () => {
   const [isStartSessionDialogOpen, setIsStartSessionDialogOpen] = useState(false);
   const [refreshKey, setRefreshKey] = useState<number>(0);
+  const [sessionType, setSessionType] = useState<SessionType>();
+  const [sessionTypeOptions, setSessionTypeOptions] = useState([]);
 
-  const { availableChatTypes, updateUserStatus, user, userStatus } = useUser();
+  const { availableChatTypes, updateUserStatus, user, userStatus, permissions } = useUser();
+
+  useEffect(() => {
+    const permittedSessionTypeOptions = getPermittedSessionTypeOptions(permissions);
+    setSessionTypeOptions(permittedSessionTypeOptions);
+    if (permittedSessionTypeOptions[0].value)
+      setSessionType(permittedSessionTypeOptions[0].value as SessionType);
+  }, [permissions]);
 
   const isAdmin = user?.role === UserRole.ADMIN;
 
@@ -55,21 +65,25 @@ export const Calls: FC = () => {
               </Button>
             )}
             {!isAdmin && availableChatTypes?.includes(CallType.WEBRTC_CHAT) && (
-              <Button
-                className={`${
-                  userStatus === UserStatus.OFFLINE
-                    ? "text-[#027236] bg-[#D7FFD7] hover:bg-[#D7FFD7]"
-                    : "text-[#FFF] bg-red-500 hover:bg-red-600"
-                } rounded-[20px] text-[14px] capitalize px-4`}
-                onClick={handleUserStatusChange}
-              >
+              <Button onClick={handleUserStatusChange}>
                 {userStatus === UserStatus.OFFLINE ? "Mark Available" : "Mark Away"}
               </Button>
             )}
           </div>
         </div>
+        {sessionTypeOptions?.length > 1 && (
+          <ToggleButtonGroup
+            value={sessionType}
+            onValueChange={(value: SessionType) => setSessionType(value)}
+            items={sessionTypeOptions}
+          />
+        )}
       </motion.div>
-      {isAdmin ? <ConsolidatedLogs key={refreshKey} /> : <CallLogsTable key={refreshKey} />}
+      {isAdmin ? (
+        <ConsolidatedLogs refreshKey={refreshKey} sessionType={sessionType} />
+      ) : (
+        <CallLogsTable refreshKey={refreshKey} sessionType={sessionType} />
+      )}
       <StartSessionDialog
         isOpen={isStartSessionDialogOpen}
         onClose={() => setIsStartSessionDialogOpen(false)}

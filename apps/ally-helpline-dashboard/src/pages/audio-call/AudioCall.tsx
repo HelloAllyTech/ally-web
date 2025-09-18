@@ -12,6 +12,7 @@ import { CallProvider, CallType, ROUTES, SESSION_STORAGE_KEYS } from "@constants
 import { setUserStatus } from "@reducer";
 import { RootState } from "@store";
 import { UserRole, UserStatus, Chat, QueueStatus } from "@types";
+import { isProviderCloudTelephony } from "@utils";
 
 import { CallTranscript } from "./components";
 
@@ -33,7 +34,7 @@ export const AudioCall: FunctionComponent = () => {
   const { availableChatTypes } = useSelector((state: RootState) => state.user);
 
   const isMicrophoneMode = mode === "microphone";
-  const isExotelMode = mode === "exotel";
+  const isExotelMode = mode === "cloud-telephony";
   const isLoading = isCounsellorChatLoading || isClientChatLoading || isEndCallLoading;
   const isActiveMicrophoneSession = isMicrophoneMode && microphoneChatId && !activeChat?.chatId;
 
@@ -161,7 +162,7 @@ export const AudioCall: FunctionComponent = () => {
       (!activeChat?.chatId ||
         (activeChat?.chatId &&
           activeChat?.provider !== CallProvider.WEBRTC &&
-          activeChat?.provider !== CallProvider.EXOTEL_CONFERENCE_CALL) ||
+          !isProviderCloudTelephony(activeChat?.provider)) ||
         (Array.isArray(activeChat) && activeChat.length === 0))
     ) {
       return (
@@ -197,7 +198,7 @@ export const AudioCall: FunctionComponent = () => {
       {((activeChat?.chatId &&
         (activeChat?.provider === CallProvider.WEBRTC ||
           (isMicrophoneMode && activeChat?.provider === CallProvider.MICROPHONE))) ||
-        (isExotelMode && activeChat?.provider === CallProvider.EXOTEL_CONFERENCE_CALL) ||
+        (isExotelMode && activeChat?.provider && isProviderCloudTelephony(activeChat?.provider)) ||
         (Array.isArray(activeChat) &&
           activeChat.length === 0 &&
           isMicrophoneMode &&

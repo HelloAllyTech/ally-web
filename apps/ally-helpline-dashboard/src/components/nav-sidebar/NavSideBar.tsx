@@ -1,4 +1,4 @@
-import { FC, SVGProps, useState } from "react";
+import { FC, useState } from "react";
 
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import { useNavigate } from "react-router-dom";
@@ -63,16 +63,10 @@ const Tab: FC<TabProps> = ({ id, Icon, title, activeTab, onClick }) => (
 const NavSideBar: FC<NavSideBarProps> = ({ activeTab, onTabChange, isOpen, onClose }) => {
   const { permissions, user, logout } = useUser();
 
-  //TODO: Remove this once we have a proper permission system
-  const safePermissions = permissions || [];
-  const filteredPermissions =
-    user?.role === UserRole.ADMIN
-      ? safePermissions
-      : safePermissions.concat([Permissions.VIEW_NAVBAR_SEARCH]);
-
   const [isLogoutDialogOpen, setIsLogoutDialogOpen] = useState<boolean>(false);
   const permittedTabs = navBarOptions.filter(
-    tab => !tab.permission || filteredPermissions?.includes(tab.permission),
+    tab =>
+      !tab.permissions || permissions?.some(permission => tab.permissions.includes(permission)),
   );
 
   const navigate = useNavigate();
@@ -120,7 +114,7 @@ const NavSideBar: FC<NavSideBarProps> = ({ activeTab, onTabChange, isOpen, onClo
     <>
       <div
         className={`w-72 bg-white h-screen flex flex-col justify-between border-r border-r-[#E5E7EB]
-          z-20 transition-all duration-300 ${isOpen ? "fixed" : "max-md:hidden md:fixed"}`}
+        transition-all duration-300 ${isOpen ? "z-20" : "max-md:hidden"}`}
       >
         <button onClick={onClose} className="md:hidden absolute top-4 right-4">
           <Close />

@@ -1,0 +1,61 @@
+import { FC } from "react";
+
+import { Dialog } from "@mui/material";
+import { AnimatePresence, motion } from "framer-motion";
+
+import { SessionType } from "@types";
+
+import { CallFeedback, SimulationFeedback } from "./components";
+import { FeedbackDialogProps } from "./types";
+
+const FeedbackDialog: FC<FeedbackDialogProps> = ({ id, open, sessionType, onClose }) => {
+  const motionVariants = {
+    initial: { opacity: 0, y: 16, scale: 0.98 },
+    animate: { opacity: 1, y: 0, scale: 1 },
+    exit: { opacity: 0, y: 16, scale: 0.98 },
+  } as const;
+
+  const getFeedbackContent = () => {
+    switch (sessionType) {
+      case SessionType.CALL:
+        return <CallFeedback id={id} onSubmitComplete={onClose} />;
+      case SessionType.SIMULATION:
+        return <SimulationFeedback id={id} onSubmitComplete={onClose} />;
+    }
+  };
+
+  return (
+    <AnimatePresence>
+      <Dialog
+        open={open}
+        onClose={onClose}
+        PaperProps={{
+          sx: {
+            borderRadius: "8px",
+            padding: "24px",
+            overflow: "hidden",
+            width: { xs: 360, sm: 480 },
+          },
+        }}
+      >
+        <motion.div
+          initial={motionVariants.initial}
+          animate={motionVariants.animate}
+          exit={motionVariants.exit}
+          transition={{
+            duration: 0.25,
+            ease: [0.4, 0, 0.2, 1],
+            layout: { duration: 0.25, ease: [0.4, 0, 0.2, 1] },
+          }}
+          layout
+          className="flex flex-col items-center gap-4 font-['IBM_Plex_Serif']"
+          style={{ overflow: "hidden", width: "100%" }}
+        >
+          {getFeedbackContent()}
+        </motion.div>
+      </Dialog>
+    </AnimatePresence>
+  );
+};
+
+export default FeedbackDialog;

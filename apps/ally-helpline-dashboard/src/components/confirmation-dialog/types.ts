@@ -16,4 +16,6 @@ export interface ConfirmationDialogProps {
   onButtonClick: () => void;
   footerText?: string;
   children?: ReactNode;
+  secondaryButtonText?: string;
+  onSecondaryButtonClick?: () => void;
 }

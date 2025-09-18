@@ -8,6 +8,11 @@ export const socketDisconnectionReasonContentMap = {
     description:
       "Call ended due to network interruption, please check your connection and try again.",
   },
+  [SocketDisconnectionReasons.NO_NETWORK_IN_SHARED_SESSION]: {
+    icon: NoNetwork,
+    title: "No internet connection",
+    description: "Please check your connection and try again.",
+  },
   [SocketDisconnectionReasons.SOMETHING_WENT_WRONG]: {
     icon: InDoubt,
     title: "Something went wrong",

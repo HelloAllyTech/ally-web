@@ -23,11 +23,7 @@ const CallControls: FC<CallControlsProps> = ({
   const [isMuteTooltipOpen, setIsMuteTooltipOpen] = useState(true);
 
   useEffect(() => {
-    if (isPaused) {
-      setIsMuteTooltipOpen(true);
-    } else {
-      setIsMuteTooltipOpen(false);
-    }
+    setIsMuteTooltipOpen(isPaused);
   }, [isPaused]);
 
   const callButtonList = [

@@ -24,6 +24,7 @@ import {
   Transcription,
   UserRole,
 } from "@types";
+import { isProviderCloudTelephony } from "@utils";
 
 import { CallSidebar, RealTimeTranscript, CallControls, CallInterface } from ".";
 import { AUDIO_FILE_SIZE, OFFER_TIMEOUT_MS } from "../constants";
@@ -166,7 +167,7 @@ const CallTranscript: FC<CallTranscriptProps> = ({
     [SocketEvent.STAGE]: data => {
       setStage(data?.payload?.content);
     },
-    [SocketEvent.CHAT_ENDED]: () => {
+    [SocketEvent.CHAT_ENDED]: data => {
       cleanupMediaRecorder();
       disconnect();
       if (isClient) {
@@ -174,7 +175,7 @@ const CallTranscript: FC<CallTranscriptProps> = ({
         return;
       }
       // trigegrApi is false as this event will be received only upon ending the call
-      endSession(false, activeChatId);
+      endSession(false, data?.payload?.chatId);
     },
     [SocketEvent.NUDGE]: data => {
       const nudge = data.payload;
@@ -237,7 +238,11 @@ const CallTranscript: FC<CallTranscriptProps> = ({
           reason && NetworkIssuesList.some(networkReason => reason.includes(networkReason));
 
         if (isNetworkIssue) {
-          setSocketDisconnectionReason(SocketDisconnectionReasons.NO_NETWORK);
+          setSocketDisconnectionReason(
+            isNonWebChat || isSharedMicrophoneMode
+              ? SocketDisconnectionReasons.NO_NETWORK_IN_SHARED_SESSION
+              : SocketDisconnectionReasons.NO_NETWORK,
+          );
         } else {
           setSocketDisconnectionReason(SocketDisconnectionReasons.SOMETHING_WENT_WRONG);
         }
@@ -416,7 +421,7 @@ const CallTranscript: FC<CallTranscriptProps> = ({
     if (
       isExotelMode &&
       activeChat?.status === ChatStatus.ACTIVE &&
-      activeChat?.provider === CallProvider.EXOTEL_CONFERENCE_CALL
+      isProviderCloudTelephony(activeChat?.provider)
     ) {
       setIsUserJoined(true);
     }
@@ -561,7 +566,7 @@ const CallTranscript: FC<CallTranscriptProps> = ({
 
   return (
     <div className="w-screen h-screen flex justify-center items-center">
-      <div className="w-screen h-screen bg-[#17181A] flex flex-col gap-10 justify-center items-center overflow-hidden">
+      <div className="w-screen h-screen bg-[#171A1A] flex flex-col gap-10 justify-center items-center overflow-hidden">
         <CallInterface
           activeChat={activeChat}
           isCounsellor={isCounsellor}

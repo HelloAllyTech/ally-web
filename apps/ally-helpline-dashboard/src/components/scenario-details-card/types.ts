@@ -1,6 +1,6 @@
 export interface ScenarioDetailsCardProps {
   coverImage: string;
-  description: string;
+  isStarting: boolean;
   longDescription?: string;
   onStart: () => void;
   title: string;

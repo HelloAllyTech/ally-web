@@ -18,6 +18,7 @@ import BackCircle from "./back-circle.svg?react";
 import BackgroundGradientBlue from "./background-gradient-blue.svg?react";
 import BoxBreathingBottomGradient from "./box-breathing-bottom-gradient.svg?react";
 import BoxBreathingTopGradient from "./box-breathing-top-gradient.svg?react";
+import BulbIcon from "./bulb-icon.svg?react";
 import CallAttend from "./call-attend.svg?react";
 import CallDetails from "./call-details.svg?react";
 import CallIdIcon from "./call-id-icon.svg?react";
@@ -41,18 +42,24 @@ import Edit from "./edit.svg?react";
 import EndSessionIllustration from "./end-session-illustration.svg?react";
 import Enhance from "./enhance.svg?react";
 import ErrorIcon from "./error-icon.svg?react";
+import ExistingCall from "./existing-call.svg?react";
 import Flow from "./flow.svg?react";
 import Focus from "./focus.svg?react";
 import HomeworkRecommended from "./homework-recommended.svg?react";
 import InDoubt from "./in-doubt.svg?react";
 import IssuesWorkedOn from "./issues-worked-on.svg?react";
 import KeyConcerns from "./key-concerns.svg?react";
+import KeyEvents from "./key-events.svg?react";
+import LearnIcon from "./learn-icon.svg?react";
 import LifelineLogo from "./lifeline-logo.svg?react";
+import ListIcon from "./list-icon.svg?react";
 import Lock from "./lock.svg?react";
 import Logout from "./logout-icon.svg?react";
 import LogoutIllustration from "./logout-illustration.svg?react";
 import MenuIcon from "./menu-icon.svg?react";
 import Metrics from "./metrics.svg?react";
+import MicIcon from "./mic-icon.svg?react";
+import MicOffIcon from "./mic-off-icon.svg?react";
 import NoNetwork from "./no-network.svg?react";
 import NoResults from "./no-results.svg?react";
 import NotesIcon from "./notes.svg?react";
@@ -66,11 +73,16 @@ import Refresh from "./refresh.svg?react";
 import ResumeIcon from "./resume-icon.svg?react";
 import ReviewIcon from "./review-icon.svg?react";
 import RoundCheckmark from "./round-checkmark.svg?react";
+import ScenarioIcon from "./scenario-icon.svg?react";
 import ScribeIcon from "./scribe.svg?react";
 import SearchIcon from "./search.svg?react";
+import SessionScoreIcon from "./session-score.svg?react";
 import SessionSummary from "./session-summary.svg?react";
 import Session from "./session.svg?react";
+import ShareIcon from "./share-icon.svg?react";
+import SimulationWarningIllustration from "./simulation-warning-illustration.svg?react";
 import Spinner from "./spinner.svg?react";
+import StarYellowIcon from "./star-yellow-icon.svg?react";
 import StarIcon from "./star.svg?react";
 import StartSession from "./start-session.svg?react";
 import StatsIcon from "./stats.svg?react";
@@ -114,6 +126,7 @@ export {
   BackgroundGradientBlue,
   BoxBreathingBottomGradient,
   BoxBreathingTopGradient,
+  BulbIcon,
   Call,
   CallAttend,
   CallDetails,
@@ -137,18 +150,24 @@ export {
   EndSessionIllustration,
   Enhance,
   ErrorIcon,
+  ExistingCall,
   Flow,
   Focus,
   HomeworkRecommended,
   InDoubt,
   IssuesWorkedOn,
   KeyConcerns,
+  KeyEvents,
+  LearnIcon,
   LifelineLogo,
+  ListIcon,
   Lock,
   Logout,
   LogoutIllustration,
   MenuIcon,
   Metrics,
+  MicIcon,
+  MicOffIcon,
   NoNetwork,
   NoResults,
   NotesIcon,
@@ -162,12 +181,17 @@ export {
   ResumeIcon,
   ReviewIcon,
   RoundCheckmark,
+  ScenarioIcon,
   ScribeIcon,
   SearchIcon,
-  Session,
+  SessionScoreIcon,
   SessionSummary,
+  Session,
+  ShareIcon,
+  SimulationWarningIllustration,
   Spinner,
   StarIcon,
+  StarYellowIcon,
   StartSession,
   StatsIcon,
   StopIcon,

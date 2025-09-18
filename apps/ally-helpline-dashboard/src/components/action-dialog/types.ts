@@ -4,13 +4,16 @@ export interface ActionDialogProps {
   children: ReactNode;
   open: boolean;
   onClose: () => void;
-  primaryButton: {
+  primaryButton?: {
     label: string;
     onClick: () => void | null;
     variant: "primary" | "destructive" | "secondary";
   } | null;
-  secondaryButton: {
+  secondaryButton?: {
     label: string;
     onClick: () => void | null;
   } | null;
+  showPrimaryButton?: boolean;
+  showSecondaryButton?: boolean;
+  title: string;
 }

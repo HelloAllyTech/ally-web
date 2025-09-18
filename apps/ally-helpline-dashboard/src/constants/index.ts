@@ -1,6 +1,7 @@
 export * from "./call";
 export * from "./common";
 export * from "./envVariables";
+export * from "./simulation";
 export * from "./socket";
 export * from "./permissions";
 export * from "./routes";
