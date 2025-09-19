@@ -127,7 +127,11 @@ const PrivateRouteLayout: FC = () => {
           path={ROUTES.CALLS}
           element={
             <PermissionGuardedRoute
-              permission={[Permissions.VIEW_NAVBAR_CALLS]}
+              permission={[
+                Permissions.VIEW_NAVBAR_CALLS,
+                Permissions.VIEW_SCENARIO_SESSION,
+                Permissions.VIEW_ADMIN_SCENARIO_SESSION,
+              ]}
               element={<Calls />}
             />
           }

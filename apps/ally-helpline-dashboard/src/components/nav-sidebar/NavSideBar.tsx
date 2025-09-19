@@ -5,9 +5,9 @@ import { useNavigate } from "react-router-dom";
 
 import { AccountCircle, Close, Logout, LogoutIllustration } from "@assets/icons";
 import { Button, Carousel, CarouselSize, CarouselVariant, ConfirmationDialog } from "@components";
-import { TabId, Permissions, navBarOptions, CAROUSEL_SLIDES } from "@constants";
+import { TabId, navBarOptions, CAROUSEL_SLIDES } from "@constants";
 import { useUser } from "@hooks";
-import { User, UserRole } from "@types";
+import { User } from "@types";
 import { openLinkInNewTab } from "@utils";
 
 import { ButtonVariant } from "../button";
