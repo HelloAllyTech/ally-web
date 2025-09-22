@@ -30,7 +30,7 @@ const getFeedbackSectionByType = ({
       );
     case FeedbackSectioonType.BULLET_TEXT:
       return (
-        <ul className="pb-4 space-y-2">
+        <ul className="pb-4 space-y-2 text-[16px]">
           {Array.isArray(data) ? (
             data.map((item, index) => (
               <li key={index} className="flex items-start">

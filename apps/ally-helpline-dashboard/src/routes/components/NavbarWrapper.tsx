@@ -1,7 +1,7 @@
 import { FC, useEffect, useMemo, useState } from "react";
 
 import { MenuIcon } from "lucide-react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { matchPath, useLocation, useNavigate } from "react-router-dom";
 
 import { NavSideBar } from "@components";
 import { excludeNavBar, navBarOptions, TabId, LOCAL_STORAGE_KEYS } from "@constants";
@@ -30,7 +30,11 @@ const NavbarWrapper: FC<{ children: React.ReactNode }> = ({ children }) => {
   const showNavbar = user && !isClient && !isPathExcluded(pathname, excludeNavBar);
 
   const activeTab = useMemo(
-    () => navBarOptions.find(option => option.path === pathname)?.id ?? TabId.CALLS,
+    () =>
+      navBarOptions.find(
+        option =>
+          option.path === pathname || option.activePages.some(page => matchPath(page, pathname)),
+      )?.id ?? TabId.CALLS,
     [pathname],
   );
   const handleTabChange = (path: string) => {

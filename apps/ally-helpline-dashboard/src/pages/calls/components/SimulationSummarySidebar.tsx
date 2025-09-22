@@ -41,7 +41,7 @@ const SimulationSummarySidebar: FC<SimulationSummarySidebarProps> = ({
   const SidebarTitle = (
     <span className="text-[14px] flex items-center gap-2">
       <span className="font-semibold font-['Roboto'] text-[#79747E]">Summary</span>
-      <span className="font-normal font-['IBM_Plex_Serif'] text-[#000000]/38">{`#${summaryName}`}</span>
+      <span className="font-normal font-['IBM_Plex_Serif'] text-[#000000]/38">{summaryName}</span>
     </span>
   );
 

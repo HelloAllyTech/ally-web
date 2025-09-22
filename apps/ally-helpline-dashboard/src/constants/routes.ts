@@ -50,6 +50,7 @@ export const navBarOptions = [
     title: "Scribe",
     Icon: ScribeIcon,
     path: ROUTES.CALLS,
+    activePages: [],
     permissions: [
       Permissions.VIEW_NAVBAR_CALLS,
       Permissions.VIEW_SCENARIO_SESSION,
@@ -61,6 +62,7 @@ export const navBarOptions = [
     title: "Statistics",
     Icon: StatsIcon,
     path: ROUTES.ANALYTICS,
+    activePages: [],
     permissions: [Permissions.VIEW_NAVBAR_ANALYTICS],
   },
   {
@@ -68,6 +70,7 @@ export const navBarOptions = [
     title: "Search",
     Icon: SearchIcon,
     path: ROUTES.SEARCH,
+    activePages: [],
     permissions: [Permissions.VIEW_NAVBAR_SEARCH],
   },
   {
@@ -75,6 +78,7 @@ export const navBarOptions = [
     title: "Learn",
     Icon: LearnIcon,
     path: ROUTES.LEARN,
+    activePages: [ROUTES.SCENARIO],
     permissions: [Permissions.VIEW_NAVBAR_LEARN],
   },
   {
@@ -82,6 +86,7 @@ export const navBarOptions = [
     title: "Community",
     Icon: CommunityIcon,
     path: "https://community.helloally.ai/",
+    activePages: [],
     permissions: [Permissions.VIEW_NAVBAR_COMMUNITY],
   },
 ];
