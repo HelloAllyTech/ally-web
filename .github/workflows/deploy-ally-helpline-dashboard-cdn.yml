@@ -161,10 +161,14 @@ jobs:
         run: npm ci --legacy-peer-deps
 
       - name: Build Application
+        working-directory: apps/ally-helpline-dashboard
+        env:
+          NODE_ENV: production
         run: |
           echo ":hammer: Building ally-helpline-dashboard for static hosting..." >> $GITHUB_STEP_SUMMARY
-          npx nx build ally-helpline-dashboard
+          npm run build
           echo ":white_check_mark: Build completed successfully" >> $GITHUB_STEP_SUMMARY
+          echo "- Build output directory: dist/" >> $GITHUB_STEP_SUMMARY
 
       - name: Sync to S3
         run: |
