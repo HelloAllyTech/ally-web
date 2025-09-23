@@ -24,7 +24,7 @@ export const feedbackDemographics = [
   {
     key: "score",
     label: "Total Score",
-    getValue: (summary: FeedbackSectionProps) => getSimulationScoreDisplay(summary?.score),
+    getValue: (summary: FeedbackSectionProps) => getSimulationScoreDisplay(summary?.score, true),
   },
 ];
 
