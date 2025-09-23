@@ -5,4 +5,8 @@ export interface FallbackUIProps {
   mainMessage: string;
   description: string;
   className?: string;
+  button?: {
+    text: string;
+    onClick: () => void;
+  };
 }

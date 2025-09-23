@@ -5,8 +5,14 @@ import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
 
 import { useEndSimulationMutation, useGetScenarioQuery, useStartSimulationMutation } from "@api";
-import { BackCircle, ExistingCall } from "@assets";
-import { LoginDialog, ScenarioDetailsCard, ConfirmationDialog, ButtonVariant } from "@components";
+import { BackCircle, ExistingCall, PageNotFoundIllustration } from "@assets";
+import {
+  LoginDialog,
+  ScenarioDetailsCard,
+  ConfirmationDialog,
+  ButtonVariant,
+  FallbackUI,
+} from "@components";
 import { LOCAL_STORAGE_KEYS, ROUTES } from "@constants";
 
 import { learnPageExpandedVariants } from "../learn/constants";
@@ -21,8 +27,8 @@ export const Scenario: FC = () => {
   const [isExistingSimulationConfirmOpen, setIsExistingSimulationConfirmOpen] =
     useState<boolean>(false);
 
-  const { data: scenario, isLoading: isScenarioLoading } = useGetScenarioQuery({ scenarioId: id });
-  const [endSimulation, { isLoading: isEndSimulationLoading }] = useEndSimulationMutation();
+  const { data: scenario, isSuccess: isScenarioSuccess } = useGetScenarioQuery({ scenarioId: id });
+  const [endSimulation] = useEndSimulationMutation();
   const [startSimulation, { isLoading: isStartingSimulation, error: startSimulationError }] =
     useStartSimulationMutation();
 
@@ -110,7 +116,7 @@ export const Scenario: FC = () => {
   return (
     <AnimatePresence mode="wait">
       <div className="h-screen w-full flex justify-center items-center bg-white">
-        {scenario && !isScenarioLoading && (
+        {scenario && isScenarioSuccess ? (
           <motion.div
             variants={learnPageExpandedVariants}
             initial="hidden"
@@ -131,6 +137,16 @@ export const Scenario: FC = () => {
               onStart={onStartSimulationClick}
             />
           </motion.div>
+        ) : (
+          <FallbackUI
+            image={<PageNotFoundIllustration />}
+            mainMessage="Scenario not found"
+            description="The scenario you are looking for does not exist."
+            button={{
+              text: "Go back",
+              onClick: () => navigate(ROUTES.LEARN),
+            }}
+          />
         )}
         <LoginDialog
           isOpen={isLoginDialogOpen}
