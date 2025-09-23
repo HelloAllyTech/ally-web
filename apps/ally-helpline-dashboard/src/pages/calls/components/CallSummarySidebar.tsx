@@ -207,7 +207,7 @@ const CallSummarySidebar: FC<CallSummarySidebarProps> = ({
         sessionType={SessionType.CALL}
       />
       {/* TODO: Remove if delete summary is not needed 
-      Anyway, noo trigger button present for delete summary in this sidebar*/}
+      Anyway, no trigger button present for delete summary in this sidebar*/}
       <ActionDialog
         open={deleteDialogData.open}
         onClose={() => setDeleteDialogData(defaultDeleteDialogData)}

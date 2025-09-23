@@ -25,9 +25,7 @@ const NavbarWrapper: FC<{ children: React.ReactNode }> = ({ children }) => {
     }
   }, []);
 
-  const isClient = user?.role === UserRole.CLIENT;
-
-  const showNavbar = user && !isClient && !isPathExcluded(pathname, excludeNavBar);
+  const showNavbar = user && !isPathExcluded(pathname, excludeNavBar);
 
   const activeTab = useMemo(
     () =>
@@ -56,12 +54,9 @@ const NavbarWrapper: FC<{ children: React.ReactNode }> = ({ children }) => {
       )}
       <div className={"flex-1 min-h-screen overflow-auto bg-white custom-scrollbar"}>
         <div className={`${showNavbar && "h-[100vh]"}`}>
-          {/* show menu bar in small screen only for non client users */}
-          {!isClient && (
-            <button onClick={toggleSidebar} className="md:hidden p-4 fixed top-0 right-0 z-30">
-              <MenuIcon />
-            </button>
-          )}
+          <button onClick={toggleSidebar} className="md:hidden p-4 fixed top-0 right-0 z-30">
+            <MenuIcon />
+          </button>
           {children}
         </div>
       </div>

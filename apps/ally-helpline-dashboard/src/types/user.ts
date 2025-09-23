@@ -7,10 +7,8 @@ export interface User {
 }
 
 export enum UserRole {
-  CLIENT = "CLIENT",
   COUNSELLOR = "COUNSELOR",
   ADMIN = "ADMIN",
-  // TODO: Confirm and update with correct role
   LEARNER = "LEARNER",
 }
 

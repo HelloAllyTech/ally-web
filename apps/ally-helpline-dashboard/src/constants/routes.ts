@@ -19,7 +19,6 @@ export const ROUTES = {
   ANALYTICS: "/analytics",
   SETTINGS: "/settings",
   SUMMARY: "/summary/:chatId",
-  CLIENT: "/client",
   SEARCH: "/search",
   LEARN: "/learn",
   SCENARIO: "/scenario/:scenarioId",
@@ -34,14 +33,6 @@ export const excludeNavBar = [
   ROUTES.STRESS_BUSTER,
   ROUTES.SIMULATION,
   ROUTES.SIMULATION_SUMMARY_FULL,
-] as string[];
-
-export const excludeCallPicker = [
-  ROUTES.AUDIO_CALL,
-  ROUTES.SUMMARY,
-  ROUTES.STRESS_BUSTER,
-  ROUTES.SIMULATION,
-  ROUTES.SIMULATION_SUMMARY,
 ] as string[];
 
 export const navBarOptions = [

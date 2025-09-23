@@ -18,8 +18,6 @@ export interface CallInterfaceProps {
   isCounsellor: boolean;
   isUserJoined: boolean;
   mediaRecorder: MediaRecorder | null;
-  remoteMediaRecorder: MediaRecorder | null;
-  remoteStreamRef: MutableRefObject<MediaStream>;
   // TODO: Refactor isMicrophoneMode and isExotelMode props to use callMode prop
   isMicrophoneMode: boolean;
   isExotelMode: boolean;

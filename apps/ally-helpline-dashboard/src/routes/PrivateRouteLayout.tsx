@@ -11,7 +11,6 @@ import {
   Analytics,
   AudioCall,
   PostCallSummary,
-  ClientInterface,
   Search,
   StressBuster,
   Simulation,
@@ -21,7 +20,7 @@ import { setUserStatus, setAvailableChatTypes, unauthenticate } from "@reducer";
 import { store } from "@store";
 import { UserRole, UserStatus } from "@types";
 
-import { ClientCallPicker, NavbarWrapper, PermissionGuardedRoute } from "./components";
+import { NavbarWrapper, PermissionGuardedRoute } from "./components";
 
 // TODO: Remove all un used pages
 // TODO: Restrict client access to pages
@@ -87,8 +86,6 @@ const PrivateRouteLayout: FC = () => {
   // TODO: Update it in a way that it uses permissions rather than role
   const getLandingPageByRole = () => {
     switch (user?.role) {
-      case UserRole.CLIENT:
-        return ROUTES.CLIENT;
       case UserRole.ADMIN:
         return ROUTES.ANALYTICS;
       case UserRole.LEARNER:
@@ -111,15 +108,6 @@ const PrivateRouteLayout: FC = () => {
             <PermissionGuardedRoute
               permission={[Permissions.VIEW_START_CALL_PAGE]}
               element={<AudioCall />}
-            />
-          }
-        />
-        <Route
-          path={ROUTES.CLIENT}
-          element={
-            <PermissionGuardedRoute
-              permission={[Permissions.VIEW_START_CALL_PAGE]}
-              element={<ClientInterface />}
             />
           }
         />
@@ -192,7 +180,6 @@ const PrivateRouteLayout: FC = () => {
         />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
-      <ClientCallPicker />
     </NavbarWrapper>
   );
 };

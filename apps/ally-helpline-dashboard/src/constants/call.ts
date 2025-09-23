@@ -5,7 +5,6 @@ export enum CallType {
 }
 
 export enum CallProvider {
-  WEBRTC = "WEBRTC",
   MICROPHONE = "MICROPHONE",
   EXOTEL_CONFERENCE_CALL = "EXOTEL_CONFERENCE_CALL",
   OZONETEL = "OZONETEL",
