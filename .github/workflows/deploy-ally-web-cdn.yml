@@ -158,9 +158,12 @@ jobs:
         run: npm ci --legacy-peer-deps
 
       - name: Build Application
+        env:
+          NX_CLOUD_DISTRIBUTED_EXECUTION: false
+          NX_REJECT_UNKNOWN_LOCAL_CACHE: 0
         run: |
           echo ":hammer: Building ally-web for static hosting..." >> $GITHUB_STEP_SUMMARY
-          npx nx build ally-web
+          npx nx build ally-web --skip-nx-cloud
           echo ":white_check_mark: Build completed successfully" >> $GITHUB_STEP_SUMMARY
 
       - name: Sync to S3
