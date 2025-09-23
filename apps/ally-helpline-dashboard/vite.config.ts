@@ -11,7 +11,7 @@ const projectRoot = __dirname;
 export default defineConfig({
   root: projectRoot,
   publicDir: "public",
-  base: process.env.NODE_ENV === 'production' ? "/ally-helpline-dashboard/" : "/",
+  base: "/",
   build: {
     outDir: "dist",
     emptyOutDir: true,

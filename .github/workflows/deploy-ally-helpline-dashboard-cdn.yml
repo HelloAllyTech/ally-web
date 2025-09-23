@@ -48,7 +48,7 @@ jobs:
           echo "node_version=20" >> $GITHUB_OUTPUT
           echo "cdn_distribution_id=E1AP5BIP58LJDY" >> $GITHUB_OUTPUT
           echo "s3_bucket=ally-dev-web-website" >> $GITHUB_OUTPUT
-          echo "subdirectory=ally-helpline-dashboard" >> $GITHUB_OUTPUT
+          echo "subdirectory=" >> $GITHUB_OUTPUT
 
   # Check if there are changes in the app directory
   changes:
@@ -173,25 +173,25 @@ jobs:
       - name: Sync to S3
         run: |
           echo ":cloud: Syncing files to S3..." >> $GITHUB_STEP_SUMMARY
-          aws s3 sync apps/ally-helpline-dashboard/dist/ s3://${{ needs.config.outputs.s3_bucket }}/${{ needs.config.outputs.subdirectory }}/ \
+          aws s3 sync apps/ally-helpline-dashboard/dist/ s3://${{ needs.config.outputs.s3_bucket }}/ \
             --delete \
             --cache-control "public, max-age=86400" \
             --metadata-directive REPLACE
           echo ":white_check_mark: Files synced to S3 successfully" >> $GITHUB_STEP_SUMMARY
-          echo "- S3 Bucket: s3://${{ needs.config.outputs.s3_bucket }}/${{ needs.config.outputs.subdirectory }}/" >> $GITHUB_STEP_SUMMARY
+          echo "- S3 Bucket: s3://${{ needs.config.outputs.s3_bucket }}/" >> $GITHUB_STEP_SUMMARY
 
       - name: Invalidate CloudFront
         run: |
           echo ":arrows_counterclockwise: Creating CloudFront invalidation..." >> $GITHUB_STEP_SUMMARY
           INVALIDATION_ID=$(aws cloudfront create-invalidation \
             --distribution-id ${{ needs.config.outputs.cdn_distribution_id }} \
-            --paths "/${{ needs.config.outputs.subdirectory }}/*" \
+            --paths "/*" \
             --query 'Invalidation.Id' \
             --output text)
           echo ":white_check_mark: CloudFront invalidation created" >> $GITHUB_STEP_SUMMARY
           echo "- Distribution ID: ${{ needs.config.outputs.cdn_distribution_id }}" >> $GITHUB_STEP_SUMMARY
           echo "- Invalidation ID: $INVALIDATION_ID" >> $GITHUB_STEP_SUMMARY
-          echo "- Invalidation Path: /${{ needs.config.outputs.subdirectory }}/*" >> $GITHUB_STEP_SUMMARY
+          echo "- Invalidation Path: /*" >> $GITHUB_STEP_SUMMARY
 
       - name: Deployment Summary
         run: |
