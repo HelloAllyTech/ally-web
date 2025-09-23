@@ -63,7 +63,16 @@ const ScenarioCard: FC<ScenarioCardProps> = ({
           </div>
 
           <div className="text-[14px] text-[#656565]">
-            <p>{description}</p>
+            <p
+              style={{
+                display: "-webkit-box",
+                WebkitLineClamp: 2,
+                WebkitBoxOrient: "vertical",
+                overflow: "hidden",
+              }}
+            >
+              {description}
+            </p>
           </div>
         </div>
       </div>
