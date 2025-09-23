@@ -11,11 +11,20 @@ const projectRoot = __dirname;
 export default defineConfig({
   root: projectRoot,
   publicDir: "public",
-  base: "/",
+  base: process.env.NODE_ENV === 'production' ? "/ally-helpline-dashboard/" : "/",
   build: {
-    outDir: "../../dist/apps/ally-helpline-dashboard",
+    outDir: "dist",
     emptyOutDir: true,
     cssCodeSplit: true,
+    assetsDir: "assets",
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          vendor: ['react', 'react-dom'],
+          ui: ['@mui/material', '@mui/icons-material'],
+        },
+      },
+    },
   },
   server: {
     port: 8080,

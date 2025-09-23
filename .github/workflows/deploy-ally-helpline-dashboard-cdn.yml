@@ -1,4 +1,4 @@
-name: Deploy Ally Web to CDN
+name: Deploy Ally Helpline Dashboard to CDN
 
 on:
   workflow_dispatch:
@@ -19,7 +19,7 @@ on:
     branches:
       - dev
     paths:
-      - "apps/ally-web/**"
+      - "apps/ally-helpline-dashboard/**"
       - "libs/**"
 
 permissions:
@@ -42,20 +42,20 @@ jobs:
       - name: Set Configuration
         id: set-config
         run: |
-          echo "service_name=ally-web" >> $GITHUB_OUTPUT
-          echo "app_path=apps/ally-web" >> $GITHUB_OUTPUT
+          echo "service_name=ally-helpline-dashboard" >> $GITHUB_OUTPUT
+          echo "app_path=apps/ally-helpline-dashboard" >> $GITHUB_OUTPUT
           echo "build_command=npm run build" >> $GITHUB_OUTPUT
           echo "node_version=20" >> $GITHUB_OUTPUT
           echo "cdn_distribution_id=E1AP5BIP58LJDY" >> $GITHUB_OUTPUT
           echo "s3_bucket=ally-dev-web-website" >> $GITHUB_OUTPUT
-          echo "subdirectory=ally-web" >> $GITHUB_OUTPUT
+          echo "subdirectory=ally-helpline-dashboard" >> $GITHUB_OUTPUT
 
   # Check if there are changes in the app directory
   changes:
     needs: config
     runs-on: ubuntu-22.04
     outputs:
-      web: ${{ steps.determine.outputs.should_proceed }}
+      dashboard: ${{ steps.determine.outputs.should_proceed }}
     steps:
       - name: Determine if should proceed
         id: determine
@@ -78,7 +78,7 @@ jobs:
   # Determine target environment
   determine-environment:
     needs: [config, changes]
-    if: needs.changes.outputs.web == 'true' || github.event.inputs.force_deploy == 'true'
+    if: needs.changes.outputs.dashboard == 'true' || github.event.inputs.force_deploy == 'true'
     runs-on: ubuntu-22.04
     outputs:
       target_env: ${{ steps.env.outputs.target_env }}
@@ -161,16 +161,15 @@ jobs:
         run: npm ci --legacy-peer-deps
 
       - name: Build Application
-        working-directory: apps/ally-web
         run: |
-          echo ":hammer: Building ally-web for static hosting..." >> $GITHUB_STEP_SUMMARY
-          npm run build
+          echo ":hammer: Building ally-helpline-dashboard for static hosting..." >> $GITHUB_STEP_SUMMARY
+          npx nx build ally-helpline-dashboard
           echo ":white_check_mark: Build completed successfully" >> $GITHUB_STEP_SUMMARY
 
       - name: Sync to S3
         run: |
           echo ":cloud: Syncing files to S3..." >> $GITHUB_STEP_SUMMARY
-          aws s3 sync apps/ally-web/out/ s3://${{ needs.config.outputs.s3_bucket }}/${{ needs.config.outputs.subdirectory }}/ \
+          aws s3 sync apps/ally-helpline-dashboard/dist/ s3://${{ needs.config.outputs.s3_bucket }}/${{ needs.config.outputs.subdirectory }}/ \
             --delete \
             --cache-control "public, max-age=86400" \
             --metadata-directive REPLACE
@@ -195,7 +194,7 @@ jobs:
           echo ":rocket: CDN Deployment Completed!" >> $GITHUB_STEP_SUMMARY
           echo "## Deployment Details" >> $GITHUB_STEP_SUMMARY
           echo "- **Environment**: ${{ needs.determine-environment.outputs.target_env }}" >> $GITHUB_STEP_SUMMARY
-          echo "- **Application**: ally-web" >> $GITHUB_STEP_SUMMARY
+          echo "- **Application**: ally-helpline-dashboard" >> $GITHUB_STEP_SUMMARY
           echo "- **S3 Bucket**: ${{ needs.config.outputs.s3_bucket }}" >> $GITHUB_STEP_SUMMARY
           echo "- **Subdirectory**: ${{ needs.config.outputs.subdirectory }}" >> $GITHUB_STEP_SUMMARY
           echo "- **CloudFront Distribution**: ${{ needs.config.outputs.cdn_distribution_id }}" >> $GITHUB_STEP_SUMMARY
