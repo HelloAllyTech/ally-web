@@ -137,8 +137,7 @@ jobs:
     if: needs.determine-environment.outputs.should_deploy == 'true'
     runs-on: ubuntu-22.04
     env:
-      NX_CLOUD_DISTRIBUTED_EXECUTION: false
-      NX_REJECT_UNKNOWN_LOCAL_CACHE: 0
+      NX_NO_CLOUD: true
       NX_SKIP_NX_CACHE: true
     steps:
       - name: Checkout
@@ -162,9 +161,10 @@ jobs:
         run: npm ci --legacy-peer-deps
 
       - name: Build Application
+        working-directory: apps/ally-web
         run: |
           echo ":hammer: Building ally-web for static hosting..." >> $GITHUB_STEP_SUMMARY
-          npx nx build ally-web --skip-nx-cloud --no-cloud
+          npm run build
           echo ":white_check_mark: Build completed successfully" >> $GITHUB_STEP_SUMMARY
 
       - name: Sync to S3
