@@ -2,6 +2,7 @@ import { FC, useState } from "react";
 
 import { motion } from "framer-motion";
 
+import { scenarioDescriptionStyle } from "./constants";
 import { ScenarioCardProps } from "./types";
 
 const ScenarioCard: FC<ScenarioCardProps> = ({
@@ -63,16 +64,7 @@ const ScenarioCard: FC<ScenarioCardProps> = ({
           </div>
 
           <div className="text-[14px] text-[#656565]">
-            <p
-              style={{
-                display: "-webkit-box",
-                WebkitLineClamp: 2,
-                WebkitBoxOrient: "vertical",
-                overflow: "hidden",
-              }}
-            >
-              {description}
-            </p>
+            <p style={scenarioDescriptionStyle}>{description}</p>
           </div>
         </div>
       </div>

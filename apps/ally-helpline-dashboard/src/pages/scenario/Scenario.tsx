@@ -27,7 +27,11 @@ export const Scenario: FC = () => {
   const [isExistingSimulationConfirmOpen, setIsExistingSimulationConfirmOpen] =
     useState<boolean>(false);
 
-  const { data: scenario, isSuccess: isScenarioSuccess } = useGetScenarioQuery({ scenarioId: id });
+  const {
+    data: scenario,
+    isSuccess: isScenarioSuccess,
+    isLoading: isScenarioLoading,
+  } = useGetScenarioQuery({ scenarioId: id });
   const [endSimulation] = useEndSimulationMutation();
   const [startSimulation, { isLoading: isStartingSimulation, error: startSimulationError }] =
     useStartSimulationMutation();
@@ -140,6 +144,7 @@ export const Scenario: FC = () => {
         ) : (
           <FallbackUI
             image={<PageNotFoundIllustration />}
+            isLoading={isScenarioLoading}
             mainMessage="Scenario not found"
             description="The scenario you are looking for does not exist."
             button={{
