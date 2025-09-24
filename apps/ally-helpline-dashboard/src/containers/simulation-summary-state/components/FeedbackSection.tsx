@@ -56,13 +56,7 @@ export const FeedbackSection: FC<FeedbackSectionProps> = props => {
 
   return (
     <motion.div className="flex flex-col gap-6 w-full">
-      <motion.div className="flex flex-row items-center text-[#9CA3AF]">
-        <div className="text-[12px] font-semibold min-w-[120px] sm:min-w-[145px] font-['Roboto']">
-          SESSION FEEDBACKS
-        </div>
-        <div className="flex w-full h-[1px] bg-[#D2D2D2] ml-[5px] opacity-70" role="separator" />
-      </motion.div>
-      <motion.div className="flex items-center gap-1 sm:gap-2">
+      <motion.div className="flex items-center gap-1 sm:gap-2 px-4">
         {feedbackDemographics.map(feedback => (
           <div
             key={feedback.key}

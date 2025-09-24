@@ -107,7 +107,7 @@ export const Learn: FC = () => {
                 <ScenarioCard
                   coverImage={scenario.coverImageUrl || ""}
                   title={scenario.title || ""}
-                  description={scenario.scenario || ""}
+                  description={scenario.description || ""}
                   onClick={() => navigate(`/scenario/${scenario.id}`)}
                   isComingSoon={scenario.status === ScenarioStatus.COMING_SOON}
                 />

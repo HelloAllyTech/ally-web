@@ -64,6 +64,7 @@ import NoNetwork from "./no-network.svg?react";
 import NoResults from "./no-results.svg?react";
 import NotesIcon from "./notes.svg?react";
 import ObjectiveObservations from "./objective-observations.svg?react";
+import PageNotFoundIllustration from "./page-not-found-illustration.svg?react";
 import PauseIcon from "./pause-icon.svg?react";
 import PlansForNextCall from "./plans-for-next-call.svg?react";
 import PlayIcon from "./play-icon.svg?react";
@@ -172,6 +173,7 @@ export {
   NoResults,
   NotesIcon,
   ObjectiveObservations,
+  PageNotFoundIllustration,
   PauseIcon,
   PlansForNextCall,
   PlayIcon,
