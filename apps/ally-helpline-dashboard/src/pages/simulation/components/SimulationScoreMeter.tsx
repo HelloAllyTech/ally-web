@@ -11,7 +11,7 @@ const SimulationScoreMeter: FC<SimulationScoreMeterProps> = ({ score = 0 }) => {
 
   return (
     <div className="flex gap-2">
-      <span className="text-[#9CA3AF] text-[12px] font-medium">Practice Session Score</span>
+      <span className="text-[#9CA3AF] text-[12px] font-medium mr-1">Practice Session Score</span>
       <div className="flex gap-1 items-center relative z-50">
         {scoreLevels.map(({ level, meterClassname }) => (
           <div key={level} className={`w-16 h-1 rounded-[34px] ${meterClassname}`} />

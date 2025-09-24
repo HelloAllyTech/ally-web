@@ -38,7 +38,7 @@ export const excludeNavBar = [
 export const navBarOptions = [
   {
     id: TabId.CALLS,
-    title: "Scribe",
+    title: "Sessions",
     Icon: ScribeIcon,
     path: ROUTES.CALLS,
     activePages: [],
