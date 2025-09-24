@@ -1,8 +1,5 @@
 import { FC, useEffect } from "react";
 
-import { Route, Routes, Navigate, useNavigate } from "react-router-dom";
-
-import { logger } from "@ally-ui-mono/ui-shared";
 import { useGetChatTypesQuery } from "@api";
 import { LOCAL_STORAGE_KEYS, AUTH_RETRY_CONFIG, Permissions, ROUTES } from "@constants";
 import { useUser, useAutoActiveCallRedirect } from "@hooks";
@@ -19,11 +16,11 @@ import {
 import { setUserStatus, setAvailableChatTypes, unauthenticate } from "@reducer";
 import { store } from "@store";
 import { UserRole, UserStatus } from "@types";
+import { Route, Routes, Navigate, useNavigate } from "react-router-dom";
+
+import { logger } from "@ally-ui-mono/ui-shared";
 
 import { NavbarWrapper, PermissionGuardedRoute } from "./components";
-
-// TODO: Remove all un used pages
-// TODO: Restrict client access to pages
 
 const PrivateRouteLayout: FC = () => {
   const { user, checkAuth, updateUserStatus } = useUser();
@@ -93,7 +90,7 @@ const PrivateRouteLayout: FC = () => {
       case UserRole.COUNSELLOR:
         return ROUTES.CALLS;
       default:
-        return ROUTES.LOGIN;
+        return ROUTES.HOME;
     }
   };
 
