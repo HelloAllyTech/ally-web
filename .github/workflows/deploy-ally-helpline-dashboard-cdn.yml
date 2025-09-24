@@ -160,6 +160,20 @@ jobs:
       - name: Install Dependencies
         run: npm ci --legacy-peer-deps
 
+      - name: Download Environment Variables
+        run: |
+          echo ":gear: Downloading build-time environment variables..." >> $GITHUB_STEP_SUMMARY
+          if aws s3 cp s3://ally-dev-s3-environment/fe/.env apps/ally-helpline-dashboard/.env 2>/dev/null; then
+            echo ":white_check_mark: Environment variables downloaded successfully" >> $GITHUB_STEP_SUMMARY
+            echo "- S3 Path: s3://ally-dev-s3-environment/fe/.env" >> $GITHUB_STEP_SUMMARY
+            echo "- Local Path: apps/ally-helpline-dashboard/.env" >> $GITHUB_STEP_SUMMARY
+            echo "- File will be available during build" >> $GITHUB_STEP_SUMMARY
+          else
+            echo ":information_source: No build-time environment variables found" >> $GITHUB_STEP_SUMMARY
+            echo "- S3 Path: s3://ally-dev-s3-environment/fe/.env (not found)" >> $GITHUB_STEP_SUMMARY
+            echo "- Proceeding with build without environment variables" >> $GITHUB_STEP_SUMMARY
+          fi
+
       - name: Build Application
         working-directory: apps/ally-helpline-dashboard
         env:
