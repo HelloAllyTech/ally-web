@@ -1,7 +1,7 @@
 import { FC, useEffect, useMemo, useState } from "react";
 
 import { MenuIcon } from "lucide-react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { matchPath, useLocation, useNavigate } from "react-router-dom";
 
 import { NavSideBar } from "@components";
 import { excludeNavBar, navBarOptions, TabId, LOCAL_STORAGE_KEYS } from "@constants";
@@ -25,12 +25,14 @@ const NavbarWrapper: FC<{ children: React.ReactNode }> = ({ children }) => {
     }
   }, []);
 
-  const isClient = user?.role === UserRole.CLIENT;
-
-  const showNavbar = user && !isClient && !isPathExcluded(pathname, excludeNavBar);
+  const showNavbar = user && !isPathExcluded(pathname, excludeNavBar);
 
   const activeTab = useMemo(
-    () => navBarOptions.find(option => option.path === pathname)?.id ?? TabId.CALLS,
+    () =>
+      navBarOptions.find(
+        option =>
+          option.path === pathname || option.activePages.some(page => matchPath(page, pathname)),
+      )?.id ?? TabId.CALLS,
     [pathname],
   );
   const handleTabChange = (path: string) => {
@@ -52,12 +54,9 @@ const NavbarWrapper: FC<{ children: React.ReactNode }> = ({ children }) => {
       )}
       <div className={"flex-1 min-h-screen overflow-auto bg-white custom-scrollbar"}>
         <div className={`${showNavbar && "h-[100vh]"}`}>
-          {/* show menu bar in small screen only for non client users */}
-          {!isClient && (
-            <button onClick={toggleSidebar} className="md:hidden p-4 fixed top-0 right-0 z-30">
-              <MenuIcon />
-            </button>
-          )}
+          <button onClick={toggleSidebar} className="md:hidden p-4 fixed top-0 right-0 z-30">
+            <MenuIcon />
+          </button>
           {children}
         </div>
       </div>

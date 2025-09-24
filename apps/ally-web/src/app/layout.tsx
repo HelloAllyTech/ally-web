@@ -16,8 +16,11 @@ const inter = Inter({
 });
 
 export const metadata = {
-  title: "Ally.ai - AI Copilot for Mental Health Professionals",
-  description: "Assisting humans, not competing with them.",
+  title: "Ally.ai - Mental Health Resource Library",
+  description:
+    "Search through comprehensive mental health resources, guidelines, and professional documents. Find evidence-based information to support your practice.",
+  keywords:
+    "mental health, resources, documents, guidelines, professional, therapy, counseling, psychology",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

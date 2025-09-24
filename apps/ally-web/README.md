@@ -1,14 +1,15 @@
-# Ally Web
+# Ally Web - Mental Health Resource Library
 
-A modern, responsive landing page for the Ally platform, built with Next.js. This application showcases our mission of empowering mental health professionals with AI assistance.
+A comprehensive document search platform for mental health professionals, built with Next.js. This application provides access to evidence-based resources, guidelines, and professional documents to support mental health practice.
 
 ## Features
 
-- **Modern Design**: Gradient-based UI with smooth animations and transitions
-- **Responsive Layout**: Optimized for all screen sizes
-- **Performance Focused**: Built with Next.js for optimal loading and rendering
-- **Accessibility**: WCAG compliant design and implementation
-- **Interactive Elements**: Engaging user interactions and hover effects
+- **Document Search**: Advanced search functionality for mental health resources
+- **Category Filtering**: Browse resources by specific categories and topics
+- **Infinite Scroll**: Seamless loading of search results
+- **Responsive Design**: Optimized for desktop and mobile devices
+- **Real-time Search**: Instant search results with debounced input
+- **Resource Management**: Access to comprehensive mental health documentation
 
 ## Technology Stack
 
@@ -46,10 +47,14 @@ The application will be available at `http://localhost:3000`
 ally-web/
 ├── src/
 │   ├── app/                    # App router components
-│   │   ├── layout.tsx         # Root layout with fonts
-│   │   ├── page.tsx          # Landing page component
+│   │   ├── layout.tsx         # Root layout with fonts and metadata
+│   │   ├── page.tsx          # Main search page component
+│   │   ├── api.ts            # API functions for document search
+│   │   ├── error.tsx         # Error boundary component
+│   │   ├── loading.tsx       # Loading state component
 │   │   └── global.css        # Global styles
 │   ├── components/            # Reusable components
+│   │   └── search-client/    # Search client components
 │   └── styles/               # Component-specific styles
 ├── public/                    # Static assets
 └── README.md                 # This file
@@ -68,26 +73,30 @@ npx nx build ally-web        # Create production build
 npx nx lint ally-web        # Run ESLint
 ```
 
-## Styling Guide
+## API Integration
 
-The application uses a custom design system with CSS variables:
+The application integrates with the Ally backend API to provide:
 
-- **Colors**:
-  - Primary: `#7C3AED` (Purple)
-  - Secondary: `#22D3EE` (Cyan)
-  - Dark: `#1E293B`
-  - Light: `#F8FAFC`
-  - Accent: `#FB7185`
+- **Document Search**: Search through mental health resources and documents
+- **Category Management**: Filter resources by categories and topics
+- **Pagination**: Efficient loading of large document collections
+- **Real-time Updates**: Dynamic content updates and search results
 
-- **Typography**:
-  - Headings: Fraunces
-  - Body: Inter
-  - Base size: 16px
+### Environment Variables
 
-- **Spacing**:
-  - Section padding: 6rem (desktop) / 4rem (mobile)
-  - Container max-width: 1200px
-  - Grid gap: 2rem
+Configure the following environment variables:
+
+```bash
+NEXT_PUBLIC_API_BASE_URL=your_api_base_url
+NEXT_PUBLIC_API_VERSION=your_api_version
+```
+
+## Search Features
+
+- **Full-text Search**: Search across document titles, content, and metadata
+- **Category Filtering**: Filter results by mental health categories
+- **Infinite Scroll**: Load more results as you scroll
+- **Responsive Design**: Optimized for all device sizes
 
 ## Development Guidelines
 

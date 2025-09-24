@@ -10,7 +10,7 @@ import { FeedbackDialog } from "@containers";
 import { useFileExport } from "@hooks";
 import CallSummary from "@pages/post-call-summary/components/CallSummary";
 import { RootState } from "@store";
-import { SessionType, UserRole } from "@types";
+import { ChatSummaryStatus, SessionType, UserRole } from "@types";
 
 import { SummaryHeader, CallTranscriptTab, SummarySidebarWrapper } from ".";
 import { defaultDeleteDialogData } from "../constants";
@@ -144,7 +144,7 @@ const CallSummarySidebar: FC<CallSummarySidebarProps> = ({
       icon: <Download />,
       onClick: onExportClick,
       // TODO: To be shown when the export functionality is implemented for admin
-      show: !isAdmin,
+      show: !isAdmin && callSummary?.summaryStatus === ChatSummaryStatus.SUCCESS,
       text: "Export summary",
     },
   ];
@@ -207,7 +207,7 @@ const CallSummarySidebar: FC<CallSummarySidebarProps> = ({
         sessionType={SessionType.CALL}
       />
       {/* TODO: Remove if delete summary is not needed 
-      Anyway, noo trigger button present for delete summary in this sidebar*/}
+      Anyway, no trigger button present for delete summary in this sidebar*/}
       <ActionDialog
         open={deleteDialogData.open}
         onClose={() => setDeleteDialogData(defaultDeleteDialogData)}

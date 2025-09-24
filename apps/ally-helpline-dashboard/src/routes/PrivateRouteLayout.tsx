@@ -1,8 +1,5 @@
 import { FC, useEffect } from "react";
 
-import { Route, Routes, Navigate, useNavigate } from "react-router-dom";
-
-import { logger } from "@ally-ui-mono/ui-shared";
 import { useGetChatTypesQuery } from "@api";
 import { LOCAL_STORAGE_KEYS, AUTH_RETRY_CONFIG, Permissions, ROUTES } from "@constants";
 import { useUser, useAutoActiveCallRedirect } from "@hooks";
@@ -11,7 +8,6 @@ import {
   Analytics,
   AudioCall,
   PostCallSummary,
-  ClientInterface,
   Search,
   StressBuster,
   Simulation,
@@ -20,11 +16,11 @@ import {
 import { setUserStatus, setAvailableChatTypes, unauthenticate } from "@reducer";
 import { store } from "@store";
 import { UserRole, UserStatus } from "@types";
+import { Route, Routes, Navigate, useNavigate } from "react-router-dom";
 
-import { ClientCallPicker, NavbarWrapper, PermissionGuardedRoute } from "./components";
+import { logger } from "@ally-ui-mono/ui-shared";
 
-// TODO: Remove all un used pages
-// TODO: Restrict client access to pages
+import { NavbarWrapper, PermissionGuardedRoute } from "./components";
 
 const PrivateRouteLayout: FC = () => {
   const { user, checkAuth, updateUserStatus } = useUser();
@@ -87,8 +83,6 @@ const PrivateRouteLayout: FC = () => {
   // TODO: Update it in a way that it uses permissions rather than role
   const getLandingPageByRole = () => {
     switch (user?.role) {
-      case UserRole.CLIENT:
-        return ROUTES.CLIENT;
       case UserRole.ADMIN:
         return ROUTES.ANALYTICS;
       case UserRole.LEARNER:
@@ -96,7 +90,7 @@ const PrivateRouteLayout: FC = () => {
       case UserRole.COUNSELLOR:
         return ROUTES.CALLS;
       default:
-        return ROUTES.LOGIN;
+        return ROUTES.HOME;
     }
   };
 
@@ -111,15 +105,6 @@ const PrivateRouteLayout: FC = () => {
             <PermissionGuardedRoute
               permission={[Permissions.VIEW_START_CALL_PAGE]}
               element={<AudioCall />}
-            />
-          }
-        />
-        <Route
-          path={ROUTES.CLIENT}
-          element={
-            <PermissionGuardedRoute
-              permission={[Permissions.VIEW_START_CALL_PAGE]}
-              element={<ClientInterface />}
             />
           }
         />
@@ -192,7 +177,6 @@ const PrivateRouteLayout: FC = () => {
         />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
-      <ClientCallPicker />
     </NavbarWrapper>
   );
 };

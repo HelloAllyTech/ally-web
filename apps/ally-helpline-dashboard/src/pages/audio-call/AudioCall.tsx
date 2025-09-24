@@ -5,13 +5,13 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 
 import { logger } from "@ally-ui-mono/ui-shared";
-import { useEndCallMutation, useLazyGetClientChatQuery, useLazyGetCounsellorChatQuery } from "@api";
+import { useEndCallMutation, useLazyGetCounsellorChatQuery } from "@api";
 import { NoResults, MindfullnessVideo } from "@assets";
 import { FallbackUI } from "@components";
 import { CallProvider, CallType, ROUTES, SESSION_STORAGE_KEYS } from "@constants";
 import { setUserStatus } from "@reducer";
 import { RootState } from "@store";
-import { UserRole, UserStatus, Chat, QueueStatus } from "@types";
+import { UserStatus, Chat, QueueStatus } from "@types";
 import { isProviderCloudTelephony } from "@utils";
 
 import { CallTranscript } from "./components";
@@ -29,13 +29,12 @@ export const AudioCall: FunctionComponent = () => {
 
   const [getCounsellorChat, { isLoading: isCounsellorChatLoading }] =
     useLazyGetCounsellorChatQuery();
-  const [getClientChat, { isLoading: isClientChatLoading }] = useLazyGetClientChatQuery();
   const [endCall, { isLoading: isEndCallLoading }] = useEndCallMutation();
   const { availableChatTypes } = useSelector((state: RootState) => state.user);
 
   const isMicrophoneMode = mode === "microphone";
   const isExotelMode = mode === "cloud-telephony";
-  const isLoading = isCounsellorChatLoading || isClientChatLoading || isEndCallLoading;
+  const isLoading = isCounsellorChatLoading || isEndCallLoading;
   const isActiveMicrophoneSession = isMicrophoneMode && microphoneChatId && !activeChat?.chatId;
 
   // This is used to keep the screen on when the user is on the call page
@@ -110,12 +109,7 @@ export const AudioCall: FunctionComponent = () => {
   useEffect(() => {
     const fetchActiveChat = async () => {
       try {
-        let response;
-        if (user?.role === UserRole.COUNSELLOR) {
-          response = await getCounsellorChat();
-        } else if (user?.role === UserRole.CLIENT) {
-          response = await getClientChat();
-        }
+        const response = await getCounsellorChat();
         if (response) {
           setUserStatus(UserStatus.OFFLINE);
           setActiveChat(response.data);
@@ -143,12 +137,11 @@ export const AudioCall: FunctionComponent = () => {
   };
 
   const getFallbackUI = () => {
-    // Fallback shown when user starts microphone mode but there is an ongoing webrtc call
+    // Fallback shown when user starts microphone mode but there is an ongoing call in other provider
     if (isMicrophoneMode && activeChat?.chatId && activeChat.provider !== CallProvider.MICROPHONE) {
       return (
         <FallbackUI
           image={<NoResults />}
-          // TODO: update message and description
           mainMessage="There is an ongoing call"
           description="You have an active call happening now"
         />
@@ -160,9 +153,7 @@ export const AudioCall: FunctionComponent = () => {
       !isMicrophoneMode &&
       !isLoading &&
       (!activeChat?.chatId ||
-        (activeChat?.chatId &&
-          activeChat?.provider !== CallProvider.WEBRTC &&
-          !isProviderCloudTelephony(activeChat?.provider)) ||
+        (activeChat?.chatId && activeChat?.provider === CallProvider.MICROPHONE) ||
         (Array.isArray(activeChat) && activeChat.length === 0))
     ) {
       return (
@@ -196,8 +187,8 @@ export const AudioCall: FunctionComponent = () => {
       <video src={MindfullnessVideo} preload="auto" className="hidden" />
       {getFallbackUI()}
       {((activeChat?.chatId &&
-        (activeChat?.provider === CallProvider.WEBRTC ||
-          (isMicrophoneMode && activeChat?.provider === CallProvider.MICROPHONE))) ||
+        isMicrophoneMode &&
+        activeChat?.provider === CallProvider.MICROPHONE) ||
         (isExotelMode && activeChat?.provider && isProviderCloudTelephony(activeChat?.provider)) ||
         (Array.isArray(activeChat) &&
           activeChat.length === 0 &&
