@@ -73,7 +73,6 @@ const CallLogsTable: FC<LogsTableProps> = ({ refreshKey, sessionType }) => {
   );
 
   const { data: callLogs = [] } = callLogsData || {};
-  // TODO: Update when pagination is implemented
   const { data: simulationLogs = [] } = simulationLogsData || {};
 
   const isLoading = isCall ? isCallLogsLoading : isSimulationLogsLoading;

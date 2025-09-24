@@ -26,8 +26,6 @@ const CallInterface: FC<CallInterfaceProps> = ({
   isCounsellor,
   isUserJoined,
   mediaRecorder,
-  remoteMediaRecorder,
-  remoteStreamRef,
   isMicrophoneMode,
   isExotelMode,
   socketDisconnectionReason,
@@ -136,24 +134,11 @@ const CallInterface: FC<CallInterfaceProps> = ({
               {getDescriptionText()}
             </div>
           </div>
-          {/* Hidden Audio Element */}
-          <audio
-            ref={audio => {
-              if (audio) {
-                audio.srcObject = remoteStreamRef.current;
-                audio.onloadedmetadata = () => {
-                  audio.play().catch(e => console.error("Audio playback failed:", e));
-                };
-              }
-            }}
-            muted={false}
-            autoPlay
-          />
           <div className="relative gap-1 flex rounded-lg">
-            {(remoteMediaRecorder || (isMicrophoneMode && mediaRecorder)) && (
+            {mediaRecorder && (
               <div className="rotate-180 z-0 translate-x-[4px] translate-y-[1px]  ">
                 <LiveAudioVisualizer
-                  mediaRecorder={remoteMediaRecorder || mediaRecorder}
+                  mediaRecorder={mediaRecorder}
                   width={200}
                   height={140}
                   barWidth={4}

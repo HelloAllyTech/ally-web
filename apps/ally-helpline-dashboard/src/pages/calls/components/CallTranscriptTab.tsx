@@ -1,7 +1,6 @@
 import { FC, useEffect, useMemo, useState } from "react";
 
 import { useGetTranscriptQuery } from "@api";
-import { CallProvider } from "@constants";
 
 import { TranscriptTab } from ".";
 import { TRANSCRIPT_PAGE_SIZE } from "./constants";
@@ -15,10 +14,7 @@ const CallTranscriptTab: FC<CallTranscriptTabProps> = ({ callSummary }) => {
     chatId: callSummary?.id,
     offset: transcriptOffset,
     limit: TRANSCRIPT_PAGE_SIZE,
-    sortBy:
-      callSummary?.details?.callInfo?.provider === CallProvider.WEBRTC
-        ? "createdAt"
-        : "startSeconds",
+    sortBy: "startSeconds",
   });
 
   const transcriptTotal = useMemo(() => transcriptData?.count || 0, [transcriptData]);

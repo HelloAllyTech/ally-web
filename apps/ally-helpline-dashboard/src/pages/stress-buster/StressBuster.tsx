@@ -36,10 +36,6 @@ export const StressBuster = () => {
 
   useEffect(() => {
     (async () => {
-      if (user?.role === UserRole.CLIENT) {
-        navigate("/");
-        return;
-      }
       setIsEnding(true);
       setMessageIndex(0);
       try {

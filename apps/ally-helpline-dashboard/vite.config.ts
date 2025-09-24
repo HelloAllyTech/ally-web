@@ -13,9 +13,18 @@ export default defineConfig({
   publicDir: "public",
   base: "/",
   build: {
-    outDir: "../../dist/apps/ally-helpline-dashboard",
+    outDir: "dist",
     emptyOutDir: true,
     cssCodeSplit: true,
+    assetsDir: "assets",
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          vendor: ['react', 'react-dom'],
+          ui: ['@mui/material', '@mui/icons-material'],
+        },
+      },
+    },
   },
   server: {
     port: 8080,

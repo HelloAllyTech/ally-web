@@ -14,7 +14,7 @@ import {
   SocketDisconnectionReasons,
   MediaRecorderState,
 } from "@constants";
-import { useSocket, useWebRTCCallSetup } from "@hooks";
+import { useSocket } from "@hooks";
 import { RootState } from "@store";
 import {
   ChatStatus,
@@ -27,21 +27,12 @@ import {
 import { isProviderCloudTelephony } from "@utils";
 
 import { CallSidebar, RealTimeTranscript, CallControls, CallInterface } from ".";
-import { AUDIO_FILE_SIZE, OFFER_TIMEOUT_MS } from "../constants";
+import { AUDIO_FILE_SIZE } from "../constants";
 import { CallTranscriptProps, Nudge } from "../types";
 import { reduceTranscriptions } from "../utils";
 import { NetworkIssuesList } from "./constants";
 
 import "./CallTranscript.css";
-
-// TODO: Uninstall react-audio-voice-recorder
-// TODO: Split transcription to client-counselor
-// TODO: Try to make it more similar to Figma
-// TODO: Responsiveness
-// TODO: Blurry effect at the top and bottom of the conversation
-// TODO: Find firefox issue
-// TODO: Bug with no trascript intermittently
-// TODO: start Audio chat not send sometimes
 
 const CallTranscript: FC<CallTranscriptProps> = ({
   endSession,
@@ -73,7 +64,6 @@ const CallTranscript: FC<CallTranscriptProps> = ({
 
   const { data: nudgeStatus } = useGetNudgeStatusQuery();
 
-  const isClient = user?.role === UserRole.CLIENT;
   const isCounsellor = user?.role === UserRole.COUNSELLOR;
   const isSharedMicrophoneMode =
     isMicrophoneMode &&
@@ -170,10 +160,6 @@ const CallTranscript: FC<CallTranscriptProps> = ({
     [SocketEvent.CHAT_ENDED]: data => {
       cleanupMediaRecorder();
       disconnect();
-      if (isClient) {
-        navigate("/");
-        return;
-      }
       // trigegrApi is false as this event will be received only upon ending the call
       endSession(false, data?.payload?.chatId);
     },
@@ -222,10 +208,6 @@ const CallTranscript: FC<CallTranscriptProps> = ({
     [SocketEvent.AUDIO_CHAT_ENDED]: () => {
       if (isMicrophoneMode) {
         disconnect();
-        if (isClient) {
-          navigate("/");
-          return;
-        }
         confirmEndSession(false);
       }
     },
@@ -256,20 +238,6 @@ const CallTranscript: FC<CallTranscriptProps> = ({
       mediaRecorder.stop();
     }
 
-    // Stop remote media recorder
-    if (remoteMediaRecorder && remoteMediaRecorder.state !== MediaRecorderState.INACTIVE) {
-      remoteMediaRecorder.stop();
-    }
-
-    // Stop all tracks in the local stream
-    if (localStreamRef.current) {
-      localStreamRef.current.getTracks().forEach(track => {
-        track.stop();
-        track.enabled = false;
-      });
-      localStreamRef.current = null;
-    }
-
     // Stop all tracks in the microphone stream
     if (microphoneStreamRef.current) {
       microphoneStreamRef.current.getTracks().forEach(track => {
@@ -277,26 +245,6 @@ const CallTranscript: FC<CallTranscriptProps> = ({
         track.enabled = false;
       });
       microphoneStreamRef.current = null;
-    }
-
-    // Stop all tracks in the remote stream
-    if (remoteStreamRef.current) {
-      remoteStreamRef.current.getTracks().forEach(track => {
-        track.stop();
-        track.enabled = false;
-      });
-      remoteStreamRef.current = new MediaStream();
-    }
-
-    // Close peer connection
-    if (peerConnection) {
-      peerConnection.close();
-    }
-
-    // Clear timeout
-    if (offerTimeoutRef.current) {
-      clearTimeout(offerTimeoutRef.current);
-      offerTimeoutRef.current = null;
     }
   };
 
@@ -311,25 +259,6 @@ const CallTranscript: FC<CallTranscriptProps> = ({
       eventCallbacks: socketEventCallbacks,
       connectionType: getConnectionType(),
     });
-
-  const {
-    localStreamRef,
-    remoteStreamRef,
-    offerTimeoutRef,
-    iceServers,
-    peerConnection,
-    remoteMediaRecorder,
-    fetchIceServers,
-    setupWebRTC,
-    handleOnIceCandidate,
-    handleWebRTCOffer,
-    handleWebRTCAnswer,
-  } = useWebRTCCallSetup({
-    emitSocketEvent,
-    chatId: activeChatId,
-    isClient,
-    offerTimeoutMs: OFFER_TIMEOUT_MS,
-  });
 
   const setupMediaRecorder = (stream: MediaStream) => {
     // Setup media recorder
@@ -436,16 +365,7 @@ const CallTranscript: FC<CallTranscriptProps> = ({
   }, [isMuted]);
 
   useEffect(() => {
-    if (!isMicrophoneMode) {
-      fetchIceServers();
-    }
-  }, []);
-
-  useEffect(() => {
-    if (user && !isMicrophoneMode && !isExotelMode && iceServers && activeChatId) {
-      connect(activeChatId);
-      setupWebRTC();
-    } else if (isExotelMode) {
+    if (isExotelMode) {
       connect();
     }
 
@@ -454,7 +374,7 @@ const CallTranscript: FC<CallTranscriptProps> = ({
         cleanupMediaRecorder();
       }
     };
-  }, [activeChatId, user, isCounsellor, isClient, iceServers, isMicrophoneMode]);
+  }, [activeChatId, isMicrophoneMode]);
 
   useEffect(() => {
     if (user && isMicrophoneMode) {
@@ -481,12 +401,8 @@ const CallTranscript: FC<CallTranscriptProps> = ({
       if (microphoneStreamRef.current && microphoneChatId) {
         setupMediaRecorder(microphoneStreamRef.current);
       }
-    } else {
-      if (localStreamRef.current) {
-        setupMediaRecorder(localStreamRef.current);
-      }
     }
-  }, [localStreamRef.current, microphoneStreamRef.current, microphoneChatId]);
+  }, [microphoneStreamRef.current, microphoneChatId]);
 
   useEffect(() => {
     if (!mediaRecorder) return;
@@ -496,10 +412,6 @@ const CallTranscript: FC<CallTranscriptProps> = ({
       if (mediaRecorder.state === MediaRecorderState.RECORDING) {
         mediaRecorder.pause();
       }
-      // Mute all audio tracks in the local stream
-      localStreamRef.current?.getAudioTracks().forEach(track => {
-        track.enabled = false;
-      });
       microphoneStreamRef.current?.getAudioTracks().forEach(track => {
         track.enabled = false;
       });
@@ -508,26 +420,11 @@ const CallTranscript: FC<CallTranscriptProps> = ({
       if (mediaRecorder.state === MediaRecorderState.PAUSED) {
         mediaRecorder.resume();
       }
-      // Unmute all audio tracks in the local stream
-      localStreamRef.current?.getAudioTracks().forEach(track => {
-        track.enabled = true;
-      });
       microphoneStreamRef.current?.getAudioTracks().forEach(track => {
         track.enabled = true;
       });
     }
   }, [isMuted, mediaRecorder]);
-
-  useEffect(() => {
-    if (activeChatId) {
-      removeIfListenerPresent(SocketEvent.WEBRTC_OFFER);
-      removeIfListenerPresent(SocketEvent.WEBRTC_ANSWER);
-      removeIfListenerPresent(SocketEvent.ICE_CANDIDATE);
-      setListenerForEvent(SocketEvent.WEBRTC_OFFER, handleWebRTCOffer);
-      setListenerForEvent(SocketEvent.WEBRTC_ANSWER, handleWebRTCAnswer);
-      setListenerForEvent(SocketEvent.ICE_CANDIDATE, handleOnIceCandidate);
-    }
-  }, [handleWebRTCOffer, activeChatId, handleWebRTCAnswer, handleOnIceCandidate]);
 
   const confirmEndSession = async (triggerApi: boolean = true) => {
     try {
@@ -573,8 +470,6 @@ const CallTranscript: FC<CallTranscriptProps> = ({
           isUserJoined={isUserJoined}
           socketDisconnectionReason={socketDisconnectionReason}
           mediaRecorder={mediaRecorder}
-          remoteMediaRecorder={remoteMediaRecorder}
-          remoteStreamRef={remoteStreamRef}
           isMicrophoneMode={isMicrophoneMode}
           isExotelMode={isExotelMode}
         />

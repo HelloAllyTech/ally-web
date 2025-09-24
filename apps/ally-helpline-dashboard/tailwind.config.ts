@@ -106,5 +106,3 @@ export default {
     optimizeUniversalDefaults: true,
   },
 } satisfies Config;
-
-// TODO: Add .env.example for env field confirmation

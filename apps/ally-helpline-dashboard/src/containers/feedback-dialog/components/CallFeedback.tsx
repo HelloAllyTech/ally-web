@@ -6,7 +6,6 @@ import { toast } from "sonner";
 import { logger } from "@ally-ui-mono/ui-shared";
 import { useSubmitCallFeedbackMutation } from "@api";
 import { Button, TextField } from "@components";
-// TODO: Move to COMPONENTS ONCE BASE CALL SUMAMRY GENERATION IS DONE
 import StarRating from "@containers/simulation-summary-state/components/StarRating";
 import { IssueOptions } from "@types";
 

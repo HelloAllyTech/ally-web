@@ -72,16 +72,6 @@ const audioCallAPI = baseAPI.injectEndpoints({
     }),
 
     /**
-     * Get client chat data
-     * Retrieves chat information and data for the client's view
-     * of the current call session.
-     * @returns {Promise<Chat>} Client chat data
-     */
-    getClientChat: builder.query<Chat, void>({
-      query: () => ApiEndpoints.AUDIO_CALL.GET_CLIENT_CHAT,
-    }),
-
-    /**
      * Terminates an active call session.
      * Used by either counsellor or client to end the call.
      * @param {Object} data - End call parameters
@@ -146,8 +136,6 @@ export const {
   useRequestCallMutation,
   useAcceptCallMutation,
   useLazyGetCounsellorChatQuery,
-  useGetClientChatQuery,
-  useLazyGetClientChatQuery,
   useEndCallMutation,
   useCancelRequestMutation,
   useAddFeedbackMutation,
