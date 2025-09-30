@@ -100,10 +100,12 @@ export const Calls: FC = () => {
         isOpen={isStartSessionDialogOpen}
         onClose={() => setIsStartSessionDialogOpen(false)}
       />
-      <AudioUploadDialog
-        isOpen={isAudioUploadDialogOpen}
-        onClose={() => setIsAudioUploadDialogOpen(false)}
-      />
+      <PermissionGuard requiredPermissions={[Permissions.VIEW_AUDIO_UPLOAD]}>
+        <AudioUploadDialog
+          isOpen={isAudioUploadDialogOpen}
+          onClose={() => setIsAudioUploadDialogOpen(false)}
+        />
+      </PermissionGuard>
     </div>
   );
 };

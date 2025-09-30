@@ -112,6 +112,14 @@ const AudioUploadInterface: FC<AudioUploadInterfaceProps> = ({
     return (audioFile?.size / 1000000).toFixed(2);
   };
 
+  const onAudioDelete = () => {
+    setAudioUrl(null);
+    setWavesurfer(null);
+    setIsPlaying(false);
+    setCurrentSec(0);
+    onDeleteClick();
+  };
+
   const getFileUploadSection = () => {
     if (files.length > 0) {
       if (typeof isDropping === "number" && isDropping < 100) {
@@ -167,7 +175,7 @@ const AudioUploadInterface: FC<AudioUploadInterfaceProps> = ({
                 {getFileSize()} MB
               </span>
             </div>
-            <Delete className="cursor-pointer" onClick={onDeleteClick} />
+            <Delete className="cursor-pointer" onClick={onAudioDelete} />
           </div>
         </div>
       );

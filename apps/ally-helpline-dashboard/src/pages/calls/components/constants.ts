@@ -7,9 +7,22 @@ export const TRANSCRIPT_PAGE_SIZE = 30;
 export const SUMMARY_FEEDBACK_TIMEOUT = 30000; // 30 seconds
 
 export const audioUploadExtensions: Accept = {
+  // MP3 files - various MIME types
   "audio/mpeg": [".mp3"],
+  "audio/mp3": [".mp3"],
+  "audio/x-mp3": [".mp3"],
+
+  // WAV files - various MIME types
   "audio/wav": [".wav"],
+  "audio/x-wav": [".wav"],
+  "audio/wave": [".wav"],
+  "audio/vnd.wave": [".wav"],
+
+  // M4A files - various MIME types
   "audio/mp4": [".m4a"],
+  "audio/x-m4a": [".m4a"],
+  "audio/m4a": [".m4a"],
+  "audio/mp4a-latm": [".m4a"],
 };
 
 export const AUDIO_UPLOAD_SIZE_IN_BYTES = 300 * 1024 * 1024; // 300MB
