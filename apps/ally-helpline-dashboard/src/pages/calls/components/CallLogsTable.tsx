@@ -17,8 +17,9 @@ import {
   SummaryGenerationIcon,
   ScenarioIcon,
   SessionScoreIcon,
+  SourceIcon,
 } from "@assets";
-import { Button, TagGroup, FallbackUI, SummaryStatusChip } from "@components";
+import { Button, Chip, TagGroup, FallbackUI } from "@components";
 import { updateFilters } from "@reducer";
 import { RootState } from "@store";
 import { CallLog, ChatSummaryStatus, SimulationLog, TagDisplay, SessionType } from "@types";
@@ -28,6 +29,7 @@ import { CALL_LOGS_PAGINATION_LIMIT, tagColors } from "../constants";
 import CallSummarySidebar from "./CallSummarySidebar";
 import SimulationSummarySidebar from "./SimulationSummarySidebar";
 import { LogsTableProps } from "./types";
+import { getSourceChipConfig, getStatusChipConfig } from "./utils";
 
 const CallLogsTable: FC<LogsTableProps> = ({ refreshKey, sessionType }) => {
   const dispatch = useDispatch();
@@ -156,6 +158,7 @@ const CallLogsTable: FC<LogsTableProps> = ({ refreshKey, sessionType }) => {
             colors: tagColors[tag?.positivity_rating],
           };
         }),
+        provider: callInfo?.provider,
         raw: row, // keep original row for summary action
       };
     }
@@ -165,6 +168,7 @@ const CallLogsTable: FC<LogsTableProps> = ({ refreshKey, sessionType }) => {
       dateAndTime: "",
       duration: "",
       qualityScore: 0,
+      source: "--",
       tags: [],
       transcript: "",
       raw: row,
@@ -201,8 +205,15 @@ const CallLogsTable: FC<LogsTableProps> = ({ refreshKey, sessionType }) => {
       key: "summaryStatus",
       header: "Summary Status",
       style: { width: "16%" },
-      render: (_value, row) => <SummaryStatusChip status={row.raw.summaryStatus} />,
+      render: (_value, row) => <Chip config={getStatusChipConfig(row.raw.summaryStatus)} />,
       icon: <SummaryGenerationIcon />,
+    },
+    {
+      key: "source",
+      header: "Source",
+      style: { width: "16%" },
+      render: (_value, row) => <Chip config={getSourceChipConfig(row.source)} />,
+      icon: <SourceIcon />,
     },
     {
       key: "summary",

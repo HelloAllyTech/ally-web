@@ -17,11 +17,15 @@
     "@livekit/components-styles": "^1.1.6",
     "@mui/icons-material": "^5.15.11",
     "@mui/material": "^5.15.11",
+    "@mui/x-date-pickers": "^8.11.3",
     "@reduxjs/toolkit": "^2.6.0",
+    "@wavesurfer/react": "^1.0.11",
     "aria-hidden": "^1.2.6",
+    "axios": "^1.12.2",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "date-fns": "^3.6.0",
+    "dayjs": "^1.11.18",
     "framer-motion": "^11.15.0",
     "jspdf": "^3.0.1",
     "livekit-client": "^2.15.2",
@@ -31,6 +35,7 @@
     "react-audio-visualize": "^1.2.0",
     "react-calendar": "^6.0.0",
     "react-dom": "18.3.1",
+    "react-dropzone": "^14.3.8",
     "react-hook-form": "^7.53.0",
     "react-redux": "^9.2.0",
     "react-router-dom": "^6.26.2",
@@ -38,7 +43,8 @@
     "sonner": "^1.5.0",
     "tailwind-merge": "^2.5.2",
     "tailwindcss-animate": "^1.0.7",
-    "vite-plugin-svgr": "^4.3.0"
+    "vite-plugin-svgr": "^4.3.0",
+    "wavesurfer.js": "^7.10.1"
   },
   "devDependencies": {
     "@eslint/js": "^9.19.0",

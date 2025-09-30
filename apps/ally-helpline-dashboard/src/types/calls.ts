@@ -107,3 +107,26 @@ export interface GetTagsResponse {
   count: number;
   data: string[];
 }
+
+export interface GetAudioUploadUrlInput {
+  fileName: string;
+  fileSize: number;
+  contentType: string;
+  counselorId: number;
+  startedAt: string;
+  platform: string;
+  duration: number;
+}
+
+export interface GetAudioUploadUrlResponse {
+  presignedUrl: string;
+  chatId: number;
+}
+
+export interface CancelAudioUploadInput {
+  chatId: number;
+}
+
+export interface CancelAudioUploadResponse {
+  message: string;
+}

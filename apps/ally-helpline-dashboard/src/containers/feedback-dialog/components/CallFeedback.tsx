@@ -1,5 +1,6 @@
 import { FC, useEffect, useRef, useState } from "react";
 
+import { IssueOptions } from "@types";
 import { AnimatePresence, motion } from "framer-motion";
 import { toast } from "sonner";
 
@@ -7,7 +8,6 @@ import { logger } from "@ally-ui-mono/ui-shared";
 import { useSubmitCallFeedbackMutation } from "@api";
 import { Button, TextField } from "@components";
 import StarRating from "@containers/simulation-summary-state/components/StarRating";
-import { IssueOptions } from "@types";
 
 import { issueOptions } from "../constants";
 import { FeedbackSectionProps } from "../types";

@@ -6,7 +6,7 @@
  * - Chat type definitions
  */
 
-import { CallType, ApiEndpoints } from "@constants";
+import { CallType, ApiEndpoints, HttpMethod } from "@constants";
 import {
   GetCallLogsInput,
   GetCallLogsResponse,
@@ -14,6 +14,10 @@ import {
   GetTagsResponse,
   GetCounsellorsInput,
   GetTagsInput,
+  GetAudioUploadUrlInput,
+  GetAudioUploadUrlResponse,
+  CancelAudioUploadInput,
+  CancelAudioUploadResponse,
 } from "@types";
 
 import { baseAPI } from "./baseAPI";
@@ -84,6 +88,47 @@ const callsAPI = baseAPI.injectEndpoints({
     getChatTypes: builder.query<CallType[], void>({
       query: () => ApiEndpoints.CALLS.GET_CHAT_TYPES,
     }),
+
+    /**
+     * Requests a presigned S3 URL to upload an audio file and returns the
+     * associated identifiers to track the upload.
+     * @param {GetAudioUploadUrlInput} params - File metadata and context for signing
+     * @returns {Promise<GetAudioUploadUrlResponse>} Presigned URL and chat id
+     */
+    getAudioUploadUrl: builder.mutation<GetAudioUploadUrlResponse, GetAudioUploadUrlInput>({
+      query: params => ({
+        url: ApiEndpoints.CALLS.GET_AUDIO_UPLOAD_URL,
+        method: HttpMethod.POST,
+        body: params,
+      }),
+    }),
+
+    /**
+     * Cancels a pending/active audio upload session by chat id.
+     * Useful for aborting client-side uploads and cleaning server resources.
+     * @param {CancelAudioUploadInput} params - Object with chatId to cancel
+     * @returns {Promise<CancelAudioUploadResponse>} Confirmation message
+     */
+    cancelAudioUpload: builder.mutation<CancelAudioUploadResponse, CancelAudioUploadInput>({
+      query: params => ({
+        url: ApiEndpoints.CALLS.CANCEL_AUDIO_UPLOAD,
+        method: HttpMethod.POST,
+        body: params,
+      }),
+    }),
+
+    /**
+     * Permanently deletes a call log by id. This action is irreversible and
+     * should typically be restricted to admin roles.
+     * @param {number} chatId - The id of the call/chat to delete
+     * @returns {Promise<string>} Success message
+     */
+    deleteCallLog: builder.mutation<string, number>({
+      query: chatId => ({
+        url: ApiEndpoints.CALLS.DELETE_CALL_LOG(chatId),
+        method: HttpMethod.DELETE,
+      }),
+    }),
   }),
 });
 
@@ -93,4 +138,7 @@ export const {
   useGetCounsellorsQuery,
   useGetCallTagsQuery,
   useGetChatTypesQuery,
+  useGetAudioUploadUrlMutation,
+  useCancelAudioUploadMutation,
+  useDeleteCallLogMutation,
 } = callsAPI;

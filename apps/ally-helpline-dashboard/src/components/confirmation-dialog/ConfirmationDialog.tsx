@@ -20,6 +20,7 @@ const ConfirmationDialog: FC<ConfirmationDialogProps> = ({
   footerText,
   children,
   secondaryButtonText,
+  secondaryButtonVariant,
   onSecondaryButtonClick,
 }) => {
   return (
@@ -95,7 +96,11 @@ const ConfirmationDialog: FC<ConfirmationDialogProps> = ({
         >
           <div className="w-full flex items-center justify-center gap-2">
             {secondaryButtonText && (
-              <Button fullWidth onClick={onSecondaryButtonClick} variant={ButtonVariant.SECONDARY}>
+              <Button
+                fullWidth
+                onClick={onSecondaryButtonClick}
+                variant={secondaryButtonVariant ?? ButtonVariant.SECONDARY}
+              >
                 {secondaryButtonText}
               </Button>
             )}

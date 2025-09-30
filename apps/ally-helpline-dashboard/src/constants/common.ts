@@ -103,6 +103,9 @@ export const ApiEndpoints = {
     GET_COUNSELLORS: "/chats/counselors",
     GET_CALL_TAGS: "/chats/tags",
     GET_CHAT_TYPES: "/settings/chat-types",
+    GET_AUDIO_UPLOAD_URL: "/chats/upload-url",
+    CANCEL_AUDIO_UPLOAD: "/chats/cancel-upload",
+    DELETE_CALL_LOG: (chatId: number) => `/chats/${chatId}`,
   },
   CALL_SUMMARY: {
     GET_SUMMARY_FIELDS: "/settings/summary-fields",

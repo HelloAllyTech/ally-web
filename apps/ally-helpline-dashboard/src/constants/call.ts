@@ -8,6 +8,7 @@ export enum CallProvider {
   MICROPHONE = "MICROPHONE",
   EXOTEL_CONFERENCE_CALL = "EXOTEL_CONFERENCE_CALL",
   OZONETEL = "OZONETEL",
+  AUDIO_UPLOAD = "AUDIO_UPLOAD",
 }
 
 export const CloudTelephonyList = [CallProvider.EXOTEL_CONFERENCE_CALL, CallProvider.OZONETEL];

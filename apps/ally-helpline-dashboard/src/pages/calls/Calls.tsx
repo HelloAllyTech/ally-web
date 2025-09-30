@@ -2,13 +2,18 @@ import { FC, useEffect, useState } from "react";
 
 import { motion } from "framer-motion";
 
-import { Refresh, StartSession } from "@assets";
-import { Button, ToggleButtonGroup } from "@components";
-import { CallType } from "@constants";
+import { Refresh, StartSession, UploadIcon } from "@assets";
+import { Button, PermissionGuard, ToggleButtonGroup } from "@components";
+import { CallType, Permissions } from "@constants";
 import { useUser } from "@hooks";
 import { UserRole, UserStatus, SessionType } from "@types";
 
-import { CallLogsTable, ConsolidatedLogs, StartSessionDialog } from "./components";
+import {
+  AudioUploadDialog,
+  CallLogsTable,
+  ConsolidatedLogs,
+  StartSessionDialog,
+} from "./components";
 import { getPermittedSessionTypeOptions } from "./utils";
 
 export const Calls: FC = () => {
@@ -16,13 +21,14 @@ export const Calls: FC = () => {
   const [refreshKey, setRefreshKey] = useState<number>(0);
   const [sessionType, setSessionType] = useState<SessionType>();
   const [sessionTypeOptions, setSessionTypeOptions] = useState([]);
+  const [isAudioUploadDialogOpen, setIsAudioUploadDialogOpen] = useState(false);
 
   const { availableChatTypes, updateUserStatus, user, userStatus, permissions } = useUser();
 
   useEffect(() => {
     const permittedSessionTypeOptions = getPermittedSessionTypeOptions(permissions);
     setSessionTypeOptions(permittedSessionTypeOptions);
-    if (permittedSessionTypeOptions[0].value)
+    if (permittedSessionTypeOptions[0]?.value)
       setSessionType(permittedSessionTypeOptions[0].value as SessionType);
   }, [permissions]);
 
@@ -69,6 +75,12 @@ export const Calls: FC = () => {
                 {userStatus === UserStatus.OFFLINE ? "Mark Available" : "Mark Away"}
               </Button>
             )}
+            <PermissionGuard requiredPermissions={[Permissions.VIEW_AUDIO_UPLOAD]}>
+              <Button onClick={() => setIsAudioUploadDialogOpen(true)}>
+                <UploadIcon />
+                Upload audio
+              </Button>
+            </PermissionGuard>
           </div>
         </div>
         {sessionTypeOptions?.length > 1 && (
@@ -87,6 +99,10 @@ export const Calls: FC = () => {
       <StartSessionDialog
         isOpen={isStartSessionDialogOpen}
         onClose={() => setIsStartSessionDialogOpen(false)}
+      />
+      <AudioUploadDialog
+        isOpen={isAudioUploadDialogOpen}
+        onClose={() => setIsAudioUploadDialogOpen(false)}
       />
     </div>
   );

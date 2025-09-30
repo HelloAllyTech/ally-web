@@ -26,6 +26,13 @@ export interface UseSocketOptions {
   eventCallbacks?: Partial<Record<SocketEvent, (params?: any) => void>>;
 }
 
+export enum UploadStatus {
+  IN_PROGRESS = "IN_PROGRESS",
+  FAILED = "FAILED",
+  COMPLETED = "COMPLETED",
+  CANCELLED = "CANCELLED",
+}
+
 export interface CallsState {
   filters: {
     page?: number;
@@ -43,6 +50,13 @@ export interface CallsState {
     maxQualityScore?: number;
     tags?: string;
   };
+  audioUpload: {
+    chatId: number;
+    fileName: string;
+    status: UploadStatus;
+    progress: number;
+    error: string | null;
+  }[];
 }
 
 export interface UserState {

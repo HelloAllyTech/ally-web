@@ -12,4 +12,6 @@ export enum Permissions {
   VIEW_SCENARIO_SESSION = "view:scenario-session", //  view permission to have session logs
   VIEW_ADMIN_SCENARIO_SESSION = "view:admin:scenario-session", // view permission to have session logs for admin
   VIEW_SCENARIO_SESSION_SUMMARY = "view:scenario-session:summary",
+  VIEW_AUDIO_UPLOAD = "view:audio-upload-url",
+  DELETE_CHAT = "delete:chat",
 }

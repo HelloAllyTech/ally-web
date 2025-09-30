@@ -1,63 +1,57 @@
 import { FC } from "react";
 
-import { FormControl, MenuItem, Select, SelectChangeEvent } from "@mui/material";
+import { Autocomplete, TextField } from "@mui/material";
 
 import { DropdownProps } from "./types";
 
-const Dropdown: FC<DropdownProps> = ({ value, options, onChange, minWidth = 200, sx }) => {
-  const handleChange = (event: SelectChangeEvent<string>) => {
-    onChange(event.target.value);
-  };
+const Dropdown: FC<DropdownProps> = ({
+  value,
+  options,
+  onChange,
+  minWidth = 200,
+  sx,
+  placeholder,
+}) => {
+  const selectedOption = options.find(o => String(o.value) === value) ?? null;
 
   return (
-    <FormControl size="small" sx={{ minWidth }}>
-      <Select
-        value={value}
-        onChange={handleChange}
-        sx={{
+    <Autocomplete
+      disablePortal
+      options={options}
+      value={selectedOption}
+      onChange={(_, opt) => onChange(opt ? String(opt.value) : "")}
+      isOptionEqualToValue={(o, v) => String(o.value) === String(v.value)}
+      getOptionLabel={o => o.label}
+      renderOption={(props, option) => (
+        <li {...props} key={String(option.value)}>
+          {option.label}
+        </li>
+      )}
+      ListboxProps={{ sx: { maxHeight: 240, overflowY: "auto" } }}
+      slotProps={{ popper: { placement: "bottom-start" } }}
+      renderInput={params => <TextField {...params} size="small" placeholder={placeholder} />}
+      sx={{
+        minWidth,
+        ".MuiOutlinedInput-root": {
+          height: "36px",
           borderRadius: "4px",
-          color: "#14171D",
-          ".MuiOutlinedInput-notchedOutline": {
-            borderColor: "#E5E7EB",
-          },
-          "&:hover .MuiOutlinedInput-notchedOutline": {
-            borderColor: "#E5E7EB",
-          },
-          "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-            borderColor: "#E5E7EB",
-          },
-          ".MuiSelect-select": {
-            color: "#47464F",
-            fontSize: "14px",
-            fontWeight: "500",
-          },
-          ...sx,
-        }}
-      >
-        {options.map(option => (
-          <MenuItem
-            key={option}
-            value={option}
-            sx={{
-              fontSize: "14px",
-              color: "#47464F",
-              "&.Mui-selected": {
-                backgroundColor: "#F3E8FF",
-                color: "#6941C6",
-                "&:hover": {
-                  backgroundColor: "#F3E8FF",
-                },
-              },
-              "&:hover": {
-                backgroundColor: "#F9FAFB",
-              },
-            }}
-          >
-            {option}
-          </MenuItem>
-        ))}
-      </Select>
-    </FormControl>
+        },
+        ".MuiOutlinedInput-notchedOutline": {
+          borderColor: "#E5E7EB",
+        },
+        "&:hover .MuiOutlinedInput-notchedOutline": {
+          borderColor: "#E5E7EB",
+        },
+        "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+          borderColor: "#E5E7EB",
+        },
+        ".MuiAutocomplete-option": {
+          fontSize: "14px",
+          color: "#47464F",
+        },
+        ...sx,
+      }}
+    />
   );
 };
 
