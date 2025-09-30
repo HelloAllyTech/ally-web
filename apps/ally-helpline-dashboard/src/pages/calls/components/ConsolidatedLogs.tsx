@@ -82,7 +82,10 @@ const ConsolidatedLogs: FC<LogsTableProps> = ({ refreshKey, sessionType }) => {
     isLoading: isCallLogsLoading,
     refetch: refetchCallLogs,
     error: callLogsError,
-  } = useGetAdminCallLogsQuery(filters, { skip: !isCall });
+  } = useGetAdminCallLogsQuery(
+    { ...filters, sortBy: "createdAt", order: "DESC" },
+    { skip: !isCall },
+  );
   const [deleteCallLog] = useDeleteCallLogMutation();
 
   const {
