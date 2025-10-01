@@ -162,8 +162,9 @@ export const Login: FunctionComponent = () => {
           <div className="flex flex-col text-[32px] font-['Replay_Pro']">
             <span>Hey,</span>
             <h1>
-              <span>Welcome to </span>
-              <span className="font-bold italic">ally</span>
+              <span className="inline-flex items-center gap-2">
+                Welcome to <Ally className="mt-2" />
+              </span>
             </h1>
             <span className="text-[24px] mt-[24px]">Enter your email address to continue</span>
           </div>
@@ -291,12 +292,11 @@ export const Login: FunctionComponent = () => {
           className="absolute top-[50%] left-[50%] translate-x-[-50%] translate-y-[-50%] max-h-[470px] max-w-[380px]"
         />
         <div
-          className="flex items-center gap-2 p-3 rounded-tl-2xl bg-white absolute bottom-0 right-0 cursor-pointer"
+          className="flex items-center gap-2 p-3 rounded-tl-2xl bg-white pl-5 absolute bottom-0 right-0 cursor-pointer"
           onClick={() => openLinkInNewTab(ALLY_URL)}
         >
-          <Ally className="w-10 h-10" />
           <div className="flex flex-col mr-4 font-['Replay_Pro']">
-            <span className="text-xl font-bold text-[#0F172A]">Ally</span>
+            <Ally className="w-10 h-10" />
             <span className="text-sm font-medium text-[#858688]">helloally.ai</span>
           </div>
           <RedirectIcon width={36} height={36} className="border border-[#E8E8E8] rounded-sm p-2" />

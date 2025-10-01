@@ -28,6 +28,7 @@ import TabGroup from "./tab-group";
 import TagGroup from "./tag-group";
 import TextField from "./text-field";
 import ToggleButtonGroup from "./toggle-button-group";
+import UserInfo from "./user-info";
 
 export {
   type CarouselSlideType,
@@ -70,4 +71,5 @@ export {
   TextField,
   TimePicker,
   ToggleButtonGroup,
+  UserInfo,
 };

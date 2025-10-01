@@ -14,6 +14,7 @@
 import AccountCircle from "./account-circle.svg?react";
 import ActionsIcon from "./actions-icon.svg?react";
 import Ally from "./ally.svg?react";
+import Arrow from "./arrow.svg?react";
 import Assessment from "./assessment.svg?react";
 import AudioFile from "./audio-file.svg?react";
 import BackCircle from "./back-circle.svg?react";
@@ -230,4 +231,5 @@ export {
   WarningTriangle,
   Warning,
   Waveform,
+  Arrow,
 };
