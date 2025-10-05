@@ -1,0 +1,229 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`Scenario Component > Snapshot Testing > should match snapshot with scenario loaded 1`] = `
+<DocumentFragment>
+  <div
+    data-testid="browser-router"
+  >
+    <div
+      data-testid="animate-presence"
+    >
+      <div
+        class="h-screen w-full flex justify-center items-center bg-white"
+      >
+        <div
+          class="flex flex-col gap-6 max-w-[70%] m-auto"
+          data-animate="visible"
+          data-exit="exit"
+          data-initial="hidden"
+          data-testid="motion-div"
+          data-variants="{\\"hidden\\":{\\"opacity\\":0,\\"scale\\":0.95},\\"visible\\":{\\"opacity\\":1,\\"scale\\":1,\\"transition\\":{\\"duration\\":0.4,\\"ease\\":[0.4,0,0.2,1]}},\\"exit\\":{\\"opacity\\":0,\\"scale\\":0.95,\\"transition\\":{\\"duration\\":0.3}}}"
+        >
+          <div
+            class="flex items-center gap-2 font-['Replay_Pro'] text-[28px]"
+          >
+            <button
+              animate="[object Object]"
+              aria-label="Close scenario details"
+              class="hover:scale-105 transition-transform"
+              data-testid="motion-button"
+              exit="[object Object]"
+              initial="[object Object]"
+              transition="[object Object]"
+            >
+              <div
+                data-testid="back-circle"
+              >
+                BackCircle
+              </div>
+            </button>
+            <span>
+              Start
+            </span>
+            <span
+              class="font-bold italic"
+            >
+               Simulation
+            </span>
+          </div>
+          <div
+            data-testid="scenario-details-card"
+          >
+            <div
+              data-testid="cover-image"
+            >
+              https://example.com/image.jpg
+            </div>
+            <div
+              data-testid="scenario-title"
+            >
+              Test Scenario
+            </div>
+            <div
+              data-testid="scenario-description"
+            >
+              This is a test scenario description
+            </div>
+            <div
+              data-testid="is-starting"
+            >
+              false
+            </div>
+            <button
+              data-testid="start-simulation-btn"
+            >
+              Start Simulation
+            </button>
+          </div>
+        </div>
+        <div
+          data-testid="login-dialog"
+          style="display: none;"
+        >
+          <button
+            data-testid="login-close"
+          >
+            Close Login
+          </button>
+          <button
+            data-testid="login-success"
+          >
+            Login Success
+          </button>
+        </div>
+        <div
+          data-testid="confirmation-dialog"
+          style="display: none;"
+        >
+          <div
+            data-testid="dialog-title"
+          >
+            {"normal":"Active Simulation ","italic":"Detected"}
+          </div>
+          <div
+            data-testid="dialog-content"
+          >
+            You have a running simulation. End the existing session to start a new one.
+          </div>
+          <div
+            data-testid="dialog-icon"
+          />
+          <button
+            data-testid="dialog-primary-btn"
+          >
+            End session
+          </button>
+          <button
+            data-testid="dialog-secondary-btn"
+          >
+            Cancel
+          </button>
+          <button
+            data-testid="dialog-close"
+          >
+            Close Dialog
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</DocumentFragment>
+`;
+
+exports[`Scenario Component > Snapshot Testing > should match snapshot with scenario not found 1`] = `
+<DocumentFragment>
+  <div
+    data-testid="browser-router"
+  >
+    <div
+      data-testid="animate-presence"
+    >
+      <div
+        class="h-screen w-full flex justify-center items-center bg-white"
+      >
+        <div
+          data-testid="fallback-ui"
+        >
+          <div
+            data-testid="fallback-image"
+          >
+            <div
+              data-testid="page-not-found"
+            >
+              PageNotFound
+            </div>
+          </div>
+          <div
+            data-testid="fallback-loading"
+          >
+            false
+          </div>
+          <div
+            data-testid="fallback-message"
+          >
+            Scenario not found
+          </div>
+          <div
+            data-testid="fallback-description"
+          >
+            The scenario you are looking for does not exist.
+          </div>
+          <button
+            data-testid="fallback-button"
+          >
+            Go back
+          </button>
+        </div>
+        <div
+          data-testid="login-dialog"
+          style="display: none;"
+        >
+          <button
+            data-testid="login-close"
+          >
+            Close Login
+          </button>
+          <button
+            data-testid="login-success"
+          >
+            Login Success
+          </button>
+        </div>
+        <div
+          data-testid="confirmation-dialog"
+          style="display: none;"
+        >
+          <div
+            data-testid="dialog-title"
+          >
+            {"normal":"Active Simulation ","italic":"Detected"}
+          </div>
+          <div
+            data-testid="dialog-content"
+          >
+            You have a running simulation. End the existing session to start a new one.
+          </div>
+          <div
+            data-testid="dialog-icon"
+          />
+          <button
+            data-testid="dialog-primary-btn"
+          >
+            End session
+          </button>
+          <button
+            data-testid="dialog-secondary-btn"
+          >
+            Cancel
+          </button>
+          <button
+            data-testid="dialog-close"
+          >
+            Close Dialog
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</DocumentFragment>
+`;

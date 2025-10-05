@@ -1,8 +1,8 @@
-import { defineConfig } from "vite";
+/// <reference types="vitest" />
+import { defineConfig } from "vitest/config";
 import react from "@vitejs/plugin-react-swc";
 import svgr from "vite-plugin-svgr";
 import path from "path";
-import type { PluginOption } from "vite";
 
 // Get absolute paths
 const projectRoot = __dirname;
@@ -20,8 +20,8 @@ export default defineConfig({
     rollupOptions: {
       output: {
         manualChunks: {
-          vendor: ['react', 'react-dom'],
-          ui: ['@mui/material', '@mui/icons-material'],
+          vendor: ["react", "react-dom"],
+          ui: ["@mui/material", "@mui/icons-material"],
         },
       },
     },
@@ -31,7 +31,7 @@ export default defineConfig({
     strictPort: true,
     host: true,
   },
-  plugins: [react() as unknown as PluginOption, svgr() as unknown as PluginOption],
+  plugins: [react(), svgr()],
   resolve: {
     alias: {
       "@src": path.resolve(projectRoot, "./src"),
@@ -66,5 +66,30 @@ export default defineConfig({
   },
   optimizeDeps: {
     include: ["tailwindcss", "postcss", "autoprefixer"],
+  },
+  test: {
+    globals: true,
+    environment: "jsdom",
+    setupFiles: ["./src/test-setup.ts"],
+    include: ["src/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}"],
+    exclude: ["node_modules", "dist", ".next", ".nx"],
+    snapshotFormat: {
+      escapeString: true,
+      printBasicPrototype: false,
+    },
+    coverage: {
+      provider: "v8",
+      reporter: ["text", "json", "html"],
+      exclude: [
+        "node_modules/",
+        "src/test-setup.ts",
+        "**/*.d.ts",
+        "**/*.config.{js,ts}",
+        "**/coverage/**",
+        "**/dist/**",
+        "**/.{idea,git,cache,output,temp}/**",
+        "**/{karma,rollup,webpack,vite,vitest,jest,ava,babel,nyc,cypress,tsup,build}.config.*",
+      ],
+    },
   },
 });

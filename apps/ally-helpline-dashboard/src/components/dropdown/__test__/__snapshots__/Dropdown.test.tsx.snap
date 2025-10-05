@@ -1,0 +1,31 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`Dropdown Component > should match snapshot with default props 1`] = `
+<DocumentFragment>
+  <div
+    data-min-width="200"
+    data-size="small"
+    data-testid="mock-form-control"
+  >
+    <select
+      data-testid="mock-select"
+    >
+      <option
+        value="Option A"
+      >
+        Option A
+      </option>
+      <option
+        value="Option B"
+      >
+        Option B
+      </option>
+      <option
+        value="Option C"
+      >
+        Option C
+      </option>
+    </select>
+  </div>
+</DocumentFragment>
+`;

@@ -1,0 +1,196 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`ListeningChart Component > Snapshot Testing > should match snapshot with custom className 1`] = `
+<DocumentFragment>
+  <div
+    class="flex flex-col gap-4 custom-class"
+  >
+    <h2
+      class="text-xl font-semibold text-[#081033]"
+    >
+      Listening : Talking Distribution
+    </h2>
+    <div
+      class="flex flex-col gap-2 mt-16"
+    >
+      <div
+        class="w-full h-12 flex rounded-lg overflow-hidden bg-[#BBD6FF]"
+      >
+        <div
+          class="bg-[#BBD6FF] flex items-center justify-start pl-4 transition-all duration-300 ease-out"
+          style="width: 0%;"
+        >
+          <span
+            class="text-[#081033] z-10 font-medium"
+          >
+            0%
+          </span>
+        </div>
+        <div
+          class="bg-[#5B7BAF] flex items-center justify-end transition-all duration-300 ease-out"
+          style="width: 100%;"
+        >
+          <span
+            class="text-white pr-4 font-medium"
+          >
+            100%
+          </span>
+        </div>
+      </div>
+      <div
+        class="flex gap-6 mt-4"
+      >
+        <div
+          class="flex items-center gap-2"
+        >
+          <div
+            class="w-4 h-4 rounded bg-[#BBD6FF]"
+          />
+          <span
+            class="text-sm text-[#4A4459]"
+          >
+            Listening
+          </span>
+        </div>
+        <div
+          class="flex items-center gap-2"
+        >
+          <div
+            class="w-4 h-4 rounded bg-[#5B7BAF]"
+          />
+          <span
+            class="text-sm text-[#4A4459]"
+          >
+            Talking
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+</DocumentFragment>
+`;
+
+exports[`ListeningChart Component > Snapshot Testing > should match snapshot with default props 1`] = `
+<DocumentFragment>
+  <div
+    class="flex flex-col gap-4 "
+  >
+    <h2
+      class="text-xl font-semibold text-[#081033]"
+    >
+      Listening : Talking Distribution
+    </h2>
+    <div
+      class="flex flex-col gap-2 mt-16"
+    >
+      <div
+        class="w-full h-12 flex rounded-lg overflow-hidden bg-[#BBD6FF]"
+      >
+        <div
+          class="bg-[#BBD6FF] flex items-center justify-start pl-4 transition-all duration-300 ease-out"
+          style="width: 0%;"
+        >
+          <span
+            class="text-[#081033] z-10 font-medium"
+          >
+            0%
+          </span>
+        </div>
+        <div
+          class="bg-[#5B7BAF] flex items-center justify-end transition-all duration-300 ease-out"
+          style="width: 100%;"
+        >
+          <span
+            class="text-white pr-4 font-medium"
+          >
+            100%
+          </span>
+        </div>
+      </div>
+      <div
+        class="flex gap-6 mt-4"
+      >
+        <div
+          class="flex items-center gap-2"
+        >
+          <div
+            class="w-4 h-4 rounded bg-[#BBD6FF]"
+          />
+          <span
+            class="text-sm text-[#4A4459]"
+          >
+            Listening
+          </span>
+        </div>
+        <div
+          class="flex items-center gap-2"
+        >
+          <div
+            class="w-4 h-4 rounded bg-[#5B7BAF]"
+          />
+          <span
+            class="text-sm text-[#4A4459]"
+          >
+            Talking
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+</DocumentFragment>
+`;
+
+exports[`ListeningChart Component > Snapshot Testing > should match snapshot with empty state 1`] = `
+<DocumentFragment>
+  <div
+    class="flex flex-col gap-4 "
+  >
+    <h2
+      class="text-xl font-semibold text-[#081033]"
+    >
+      Listening : Talking Distribution
+    </h2>
+    <div
+      class="flex flex-col gap-2 mt-16"
+    >
+      <div
+        class="w-full h-12 flex rounded-lg overflow-hidden bg-[#F5F5F5]"
+      >
+        <div
+          class="text-sm text-[#4A4459] self-center w-full text-center"
+        >
+          No data found
+        </div>
+      </div>
+      <div
+        class="flex gap-6 mt-4"
+      >
+        <div
+          class="flex items-center gap-2"
+        >
+          <div
+            class="w-4 h-4 rounded bg-[#BBD6FF]"
+          />
+          <span
+            class="text-sm text-[#4A4459]"
+          >
+            Listening
+          </span>
+        </div>
+        <div
+          class="flex items-center gap-2"
+        >
+          <div
+            class="w-4 h-4 rounded bg-[#5B7BAF]"
+          />
+          <span
+            class="text-sm text-[#4A4459]"
+          >
+            Talking
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+</DocumentFragment>
+`;

@@ -121,6 +121,9 @@ const Carousel: FC<CarouselProps> = ({
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
       aria-roledescription="carousel"
+      data-testid="carousel-container"
+      role="group"
+      aria-label="carousel"
     >
       <div className="overflow-hidden rounded-lg" aria-live="polite">
         <AnimatePresence mode="wait" initial={false}>
@@ -153,6 +156,7 @@ const Carousel: FC<CarouselProps> = ({
           const isActive = slideIndex === activeIndex;
           return (
             <div
+              data-testid={`indicator-${slideIndex}`}
               aria-label={`Go to slide ${slideIndex + 1}`}
               aria-current={isActive}
               key={getKeyFromIndex(slideIndex, "slide-indicator")}

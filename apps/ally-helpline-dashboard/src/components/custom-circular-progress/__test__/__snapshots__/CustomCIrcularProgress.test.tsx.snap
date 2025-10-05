@@ -1,0 +1,34 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`CustomCircularProgress > should match snapshot with default props and 50% value 1`] = `
+<DocumentFragment>
+  <svg
+    height="20"
+    role="progressbar"
+    style="display: block;"
+    viewBox="0 0 20 20"
+    width="20"
+  >
+    <circle
+      cx="10"
+      cy="10"
+      fill="none"
+      r="8.5"
+      stroke="#E0E0E0"
+      stroke-width="3"
+    />
+    <circle
+      cx="10"
+      cy="10"
+      fill="none"
+      r="8.5"
+      stroke="#00723F"
+      stroke-dasharray="53.40707511102649"
+      stroke-dashoffset="26.703537555513243"
+      stroke-linecap="round"
+      stroke-width="3"
+      style="transition: stroke-dashoffset 0.5s;"
+    />
+  </svg>
+</DocumentFragment>
+`;
