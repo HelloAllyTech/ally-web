@@ -1,5 +1,5 @@
 import { render, screen, waitFor } from "@testing-library/react";
-import { vi } from "vitest";
+import { vi, describe, it, expect, beforeEach } from "vitest";
 
 import { useLazyGetSimulationSummaryQuery } from "@api";
 import { useUser } from "@hooks";
@@ -18,7 +18,7 @@ vi.mock("@api", () => ({
 // Mock the user hook
 const mockUser = {
   id: "user-123",
-  role: UserRole.USER,
+  role: UserRole.LEARNER,
   name: "Test User",
   email: "test@example.com",
 };
@@ -48,7 +48,7 @@ describe("SimulationSummary", () => {
   const defaultProps: SimulationSummaryProps = {
     summaryId: "test-summary-123",
     onSummaryFetch: vi.fn(),
-    onTryAnotherSimulation: vi.fn(),
+    onSummaryClose: vi.fn(),
     isInSidebar: false,
   };
 

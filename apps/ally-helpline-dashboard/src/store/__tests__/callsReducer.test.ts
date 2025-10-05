@@ -3,9 +3,10 @@ import { describe, it, expect, beforeEach } from "vitest";
 
 import { CALL_LOGS_PAGINATION_LIMIT } from "@pages/calls/constants";
 import callsSlice, { updatePage, updateFilters } from "@reducer/callsReducer";
+import { CallsState } from "@types";
 
 describe("Calls Reducer", () => {
-  let testStore: ReturnType<typeof configureStore>;
+  let testStore: ReturnType<typeof configureStore<{ calls: CallsState }>>;
 
   beforeEach(() => {
     testStore = configureStore({

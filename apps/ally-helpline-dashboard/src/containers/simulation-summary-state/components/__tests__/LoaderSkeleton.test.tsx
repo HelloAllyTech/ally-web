@@ -1,5 +1,5 @@
 import { render, screen } from "@testing-library/react";
-import { vi } from "vitest";
+import { vi, describe, it, expect } from "vitest";
 
 import { LoaderSkeleton } from "../LoaderSkeleton";
 

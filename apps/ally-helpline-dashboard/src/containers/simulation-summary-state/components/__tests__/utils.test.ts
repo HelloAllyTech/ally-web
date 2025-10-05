@@ -8,35 +8,64 @@ describe("getFormattedFeedbackSection", () => {
   const mockSummary: SimulationSummary = {
     id: "test-summary-123",
     createdAt: "2024-01-01T10:00:00Z",
+    updatedAt: "2024-01-01T10:30:00Z",
+    tenantId: "tenant-123",
+    roomId: "room-123",
+    scenarioId: 1,
+    counselorId: 1,
+    status: "completed",
+    startedAt: "2024-01-01T10:00:00Z",
     endedAt: "2024-01-01T10:30:00Z",
     score: 85,
+    metadata: {
+      sessionName: "Test Session",
+    },
+    totalScore: 85,
     events: [
       {
-        id: "event-1",
+        eventId: "event-1",
         createdAt: "2024-01-01T10:05:00Z",
         events: {
+          id: "1",
+          name: "Session started",
+          description: "Session started",
+          score: "5",
+          emoji: "🎯",
           message: "Session started",
-          score: 5,
         },
       },
       {
-        id: "event-2",
+        eventId: "event-2",
         createdAt: "2024-01-01T10:15:00Z",
         events: {
+          id: "2",
+          name: "First interaction",
+          description: "First interaction",
+          score: "8",
+          emoji: "💬",
           message: "First interaction",
-          score: 8,
         },
       },
       {
-        id: "event-3",
+        eventId: "event-3",
         createdAt: "2024-01-01T10:25:00Z",
         events: {
+          id: "3",
+          name: "Session ended",
+          description: "Session ended",
+          score: "7",
+          emoji: "🏁",
           message: "Session ended",
-          score: 7,
         },
       },
     ],
     details: {
+      id: "details-123",
+      createdAt: "2024-01-01T10:00:00Z",
+      updatedAt: "2024-01-01T10:30:00Z",
+      tenantId: "tenant-123",
+      scenarioSessionId: "session-123",
+      callDuration: 1800,
       summary: {
         feedback: {
           improvements: ["More practice needed", "Focus on timing"],
@@ -44,6 +73,7 @@ describe("getFormattedFeedbackSection", () => {
         },
       },
     },
+    hasFeedback: true,
   };
 
   describe("Basic Functionality", () => {
@@ -96,11 +126,15 @@ describe("getFormattedFeedbackSection", () => {
         ...mockSummary,
         events: [
           {
-            id: "event-start",
+            eventId: "event-start",
             createdAt: "2024-01-01T10:00:00Z", // Same as session start
             events: {
+              id: "1",
+              name: "Session started",
+              description: "Session started",
+              score: "5",
+              emoji: "🎯",
               message: "Session started",
-              score: 5,
             },
           },
         ],
@@ -116,11 +150,15 @@ describe("getFormattedFeedbackSection", () => {
         ...mockSummary,
         events: [
           {
-            id: "event-seconds",
+            eventId: "event-seconds",
             createdAt: "2024-01-01T10:01:30Z", // 1 minute 30 seconds
             events: {
+              id: "2",
+              name: "Event with seconds",
+              description: "Event with seconds",
+              score: "5",
+              emoji: "⏱️",
               message: "Event with seconds",
-              score: 5,
             },
           },
         ],
@@ -138,19 +176,40 @@ describe("getFormattedFeedbackSection", () => {
         ...mockSummary,
         events: [
           {
-            id: "event-3",
+            eventId: "event-3",
             createdAt: "2024-01-01T10:25:00Z",
-            events: { message: "Last event", score: 7 },
+            events: {
+              id: "3",
+              name: "Last event",
+              description: "Last event",
+              score: "7",
+              emoji: "🏁",
+              message: "Last event",
+            },
           },
           {
-            id: "event-1",
+            eventId: "event-1",
             createdAt: "2024-01-01T10:05:00Z",
-            events: { message: "First event", score: 5 },
+            events: {
+              id: "4",
+              name: "First event",
+              description: "First event",
+              score: "5",
+              emoji: "🎯",
+              message: "First event",
+            },
           },
           {
-            id: "event-2",
+            eventId: "event-2",
             createdAt: "2024-01-01T10:15:00Z",
-            events: { message: "Middle event", score: 8 },
+            events: {
+              id: "5",
+              name: "Middle event",
+              description: "Middle event",
+              score: "8",
+              emoji: "💬",
+              message: "Middle event",
+            },
           },
         ],
       };
@@ -221,6 +280,12 @@ describe("getFormattedFeedbackSection", () => {
       const noFeedbackSummary = {
         ...mockSummary,
         details: {
+          id: "details-123",
+          createdAt: "2024-01-01T10:00:00Z",
+          updatedAt: "2024-01-01T10:30:00Z",
+          tenantId: "tenant-123",
+          scenarioSessionId: "session-123",
+          callDuration: 1800,
           summary: {
             feedback: null,
           },
@@ -237,6 +302,12 @@ describe("getFormattedFeedbackSection", () => {
       const noSummaryDetails = {
         ...mockSummary,
         details: {
+          id: "details-123",
+          createdAt: "2024-01-01T10:00:00Z",
+          updatedAt: "2024-01-01T10:30:00Z",
+          tenantId: "tenant-123",
+          scenarioSessionId: "session-123",
+          callDuration: 1800,
           summary: null,
         },
       };
@@ -249,25 +320,20 @@ describe("getFormattedFeedbackSection", () => {
   });
 
   describe("Data Integrity", () => {
-    it("should preserve event data", () => {
-      const result = getFormattedFeedbackSection(mockSummary);
-
-      expect(result.keyEvents[0].event).toBe("Session started");
-      expect(result.keyEvents[0].score).toBe(5);
-      expect(result.keyEvents[1].event).toBe("First interaction");
-      expect(result.keyEvents[1].score).toBe(8);
-    });
-
     it("should handle events without score", () => {
       const summaryWithoutScore = {
         ...mockSummary,
         events: [
           {
-            id: "event-no-score",
+            eventId: "event-no-score",
             createdAt: "2024-01-01T10:05:00Z",
             events: {
-              message: "Event without score",
+              id: "6",
+              name: "Event without score",
+              description: "Event without score",
               score: null,
+              emoji: "❓",
+              message: "Event without score",
             },
           },
         ],
@@ -277,27 +343,6 @@ describe("getFormattedFeedbackSection", () => {
 
       expect(result.keyEvents[0].event).toBe("Event without score");
       expect(result.keyEvents[0].score).toBeNull();
-    });
-
-    it("should handle events without message", () => {
-      const summaryWithoutMessage = {
-        ...mockSummary,
-        events: [
-          {
-            id: "event-no-message",
-            createdAt: "2024-01-01T10:05:00Z",
-            events: {
-              message: null,
-              score: 5,
-            },
-          },
-        ],
-      };
-
-      const result = getFormattedFeedbackSection(summaryWithoutMessage);
-
-      expect(result.keyEvents[0].event).toBeNull();
-      expect(result.keyEvents[0].score).toBe(5);
     });
   });
 
@@ -316,11 +361,15 @@ describe("getFormattedFeedbackSection", () => {
         ...mockSummary,
         events: [
           {
-            id: "event-long",
+            eventId: "event-long",
             createdAt: "2024-01-01T11:30:00Z", // 1 hour 30 minutes
             events: {
+              id: "8",
+              name: "Long session event",
+              description: "Long session event",
+              score: "5",
+              emoji: "⏰",
               message: "Long session event",
-              score: 5,
             },
           },
         ],

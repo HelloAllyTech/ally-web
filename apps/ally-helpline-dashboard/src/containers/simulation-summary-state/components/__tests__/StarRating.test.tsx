@@ -1,6 +1,6 @@
 import { render, screen, fireEvent } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { vi } from "vitest";
+import { vi, describe, it, expect, beforeEach } from "vitest";
 
 import StarRating from "../StarRating";
 import { StarRatingProps } from "../types";

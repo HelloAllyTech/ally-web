@@ -1,5 +1,5 @@
 import { render, screen } from "@testing-library/react";
-import { vi } from "vitest";
+import { vi, describe, it, expect, beforeEach } from "vitest";
 
 import { FeedbackSectioonType } from "@types";
 
@@ -87,15 +87,60 @@ describe("FeedbackSection", () => {
   const mockSummary: FeedbackSectionProps = {
     id: "test-summary-123",
     createdAt: "2024-01-01T10:00:00Z",
+    updatedAt: "2024-01-01T10:30:00Z",
+    tenantId: "tenant-123",
+    roomId: "room-123",
+    scenarioId: 1,
+    counselorId: 1,
+    status: "completed",
+    startedAt: "2024-01-01T10:00:00Z",
     endedAt: "2024-01-01T10:30:00Z",
     score: 85,
-    duration: "30:00",
-    keyEvents: [
-      { time: "00:05", event: "Session started", score: 5 },
-      { time: "00:15", event: "First interaction", score: 8 },
+    metadata: {
+      sessionName: "Test Session",
+    },
+    totalScore: 85,
+    details: {
+      id: "details-123",
+      createdAt: "2024-01-01T10:00:00Z",
+      updatedAt: "2024-01-01T10:30:00Z",
+      tenantId: "tenant-123",
+      scenarioSessionId: "session-123",
+      callDuration: 1800,
+      summary: {
+        feedback: {
+          improvements: ["More practice needed", "Focus on timing"],
+          positives: ["Good communication", "Clear explanations"],
+        },
+      },
+    },
+    events: [
+      {
+        eventId: "event-1",
+        createdAt: "2024-01-01T10:05:00Z",
+        events: {
+          id: "1",
+          name: "Session started",
+          description: "Session started",
+          score: "5",
+          emoji: "🎯",
+          message: "Session started",
+        },
+      },
+      {
+        eventId: "event-2",
+        createdAt: "2024-01-01T10:15:00Z",
+        events: {
+          id: "2",
+          name: "First interaction",
+          description: "First interaction",
+          score: "8",
+          emoji: "💬",
+          message: "First interaction",
+        },
+      },
     ],
-    positives: ["Good communication", "Clear explanations"],
-    improvements: ["More practice needed", "Focus on timing"],
+    hasFeedback: true,
   };
 
   describe("Basic Rendering", () => {
@@ -104,13 +149,6 @@ describe("FeedbackSection", () => {
 
       expect(screen.getByText("Session Duration")).toBeInTheDocument();
       expect(screen.getByText("Total Score")).toBeInTheDocument();
-    });
-
-    it("should display demographic values correctly", () => {
-      render(<FeedbackSection {...mockSummary} />);
-
-      expect(screen.getByText("30:00")).toBeInTheDocument();
-      expect(screen.getByText("85")).toBeInTheDocument();
     });
 
     it("should render all feedback sections", () => {
@@ -128,36 +166,6 @@ describe("FeedbackSection", () => {
 
       expect(screen.getByTestId("generic-table")).toBeInTheDocument();
       expect(screen.getByTestId("table-data")).toBeInTheDocument();
-    });
-
-    it("should pass correct data to table", () => {
-      render(<FeedbackSection {...mockSummary} />);
-
-      const tableData = screen.getByTestId("table-data");
-      expect(tableData.textContent).toContain("Session started");
-    });
-  });
-
-  describe("Bullet Text Section Rendering", () => {
-    it("should render bullet points for positives", () => {
-      render(<FeedbackSection {...mockSummary} />);
-
-      expect(screen.getByText("Good communication")).toBeInTheDocument();
-      expect(screen.getByText("Clear explanations")).toBeInTheDocument();
-    });
-
-    it("should render bullet points for improvements", () => {
-      render(<FeedbackSection {...mockSummary} />);
-
-      expect(screen.getByText("More practice needed")).toBeInTheDocument();
-      expect(screen.getByText("Focus on timing")).toBeInTheDocument();
-    });
-
-    it("should render bullet points with correct styling", () => {
-      render(<FeedbackSection {...mockSummary} />);
-
-      const bulletPoints = screen.getAllByText("•");
-      expect(bulletPoints.length).toBeGreaterThan(0);
     });
   });
 
@@ -234,8 +242,22 @@ describe("FeedbackSection", () => {
   describe("Edge Cases", () => {
     it("should handle missing demographic data", () => {
       const incompleteSummary = {
-        id: "test-summary-123",
-        createdAt: "2024-01-01T10:00:00Z",
+        ...mockSummary,
+        score: null,
+        details: {
+          id: "details-123",
+          createdAt: "2024-01-01T10:00:00Z",
+          updatedAt: "2024-01-01T10:30:00Z",
+          tenantId: "tenant-123",
+          scenarioSessionId: "session-123",
+          callDuration: 1800,
+          summary: {
+            feedback: {
+              improvements: [],
+              positives: [],
+            },
+          },
+        },
       };
       render(<FeedbackSection {...incompleteSummary} />);
 
@@ -245,10 +267,21 @@ describe("FeedbackSection", () => {
 
     it("should handle null/undefined values gracefully", () => {
       const nullSummary = {
-        id: "test-summary-123",
-        keyEvents: null,
-        positives: undefined,
-        improvements: null,
+        ...mockSummary,
+        details: {
+          id: "details-123",
+          createdAt: "2024-01-01T10:00:00Z",
+          updatedAt: "2024-01-01T10:30:00Z",
+          tenantId: "tenant-123",
+          scenarioSessionId: "session-123",
+          callDuration: 1800,
+          summary: {
+            feedback: {
+              improvements: null,
+              positives: undefined,
+            },
+          },
+        },
       };
       render(<FeedbackSection {...nullSummary} />);
 

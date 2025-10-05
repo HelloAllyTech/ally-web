@@ -33,7 +33,7 @@ vi.mock("@containers", () => ({
 // Mock hooks
 vi.mock("@hooks", () => ({
   useUser: () => ({
-    user: { role: UserRole.COUNSELOR },
+    user: { role: UserRole.COUNSELLOR },
   }),
 }));
 
@@ -87,7 +87,7 @@ vi.mock("../SimulationTranscriptTab", () => ({
 const renderComponent = (
   summaryId: string = "test-summary-id",
   summaryName: string = "Test Simulation Summary",
-  userRole: UserRole = UserRole.COUNSELOR,
+  userRole: UserRole = UserRole.COUNSELLOR,
 ) => {
   const mockCloseSummarySidebar = vi.fn();
 

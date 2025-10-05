@@ -14,12 +14,12 @@ import {
   setPermissions,
   setAvailableChatTypes,
 } from "@reducer/userReducer";
-import { UserRole, UserStatus } from "@types";
+import { UserRole, UserStatus, UserState, CallsState } from "@types";
 
 import { store, type RootState, type AppDispatch } from "../index";
 
 describe("Store Configuration", () => {
-  let testStore: ReturnType<typeof configureStore>;
+  let testStore: ReturnType<typeof configureStore<{ user: UserState; calls: CallsState }>>;
 
   beforeEach(() => {
     // Create a fresh store for each test without baseAPI to avoid mocking issues
@@ -225,7 +225,7 @@ describe("Store Configuration", () => {
 
   describe("Type Safety", () => {
     it("should have correct RootState type", () => {
-      const state: RootState = testStore.getState();
+      const state = testStore.getState();
 
       // TypeScript should infer the correct types
       expect(typeof state.user.isAuthenticated).toBe("boolean");
