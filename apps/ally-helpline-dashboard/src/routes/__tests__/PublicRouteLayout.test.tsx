@@ -1,5 +1,5 @@
 import { render, screen } from "@testing-library/react";
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 
 import PublicRouteLayout from "../PublicRouteLayout";
 
@@ -25,7 +25,7 @@ describe("PublicRouteLayout", () => {
   it("has correct structure with div wrapper", () => {
     const { container } = render(<PublicRouteLayout />);
 
-    const wrapperDiv = container.firstChild;
+    const wrapperDiv = container.firstChild as HTMLElement;
     expect(wrapperDiv).toBeInTheDocument();
     expect(wrapperDiv?.tagName).toBe("DIV");
   });

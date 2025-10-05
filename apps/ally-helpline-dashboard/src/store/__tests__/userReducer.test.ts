@@ -11,11 +11,10 @@ import userSlice, {
   setPermissions,
   setAvailableChatTypes,
 } from "@reducer/userReducer";
-import { UserRole, UserStatus } from "@types";
-import { User } from "@types";
+import { UserRole, UserStatus, User, UserState } from "@types";
 
 describe("User Reducer", () => {
-  let testStore: ReturnType<typeof configureStore>;
+  let testStore: ReturnType<typeof configureStore<{ user: UserState }>>;
 
   beforeEach(() => {
     testStore = configureStore({

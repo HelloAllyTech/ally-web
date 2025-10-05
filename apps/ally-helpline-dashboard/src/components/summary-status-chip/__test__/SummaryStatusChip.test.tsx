@@ -56,7 +56,7 @@ interface StatusConfig {
   icon?: FC;
 }
 
-const mockGetStatusConfig = vi.fn<(status: SummaryStatus) => StatusConfig>();
+const mockGetStatusConfig = vi.fn();
 
 vi.mock("./utils", () => ({
   getStatusConfig: mockGetStatusConfig,

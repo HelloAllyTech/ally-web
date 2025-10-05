@@ -161,7 +161,6 @@ describe("analytics API", () => {
       trigger({
         startDate: "2023-02-01",
         endDate: "2023-02-28",
-        counsellorId: "c123",
       }),
     ).not.toThrow();
 

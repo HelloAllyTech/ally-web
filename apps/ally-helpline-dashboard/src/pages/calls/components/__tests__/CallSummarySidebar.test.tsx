@@ -197,7 +197,7 @@ vi.mock("../SummarySidebarWrapper", () => ({
 }));
 
 // Mock Redux store
-const createMockStore = (userState: any = { user: { role: UserRole.COUNSELOR } }) => {
+const createMockStore = (userState: any = { user: { role: UserRole.COUNSELLOR } }) => {
   return configureStore({
     reducer: {
       user: (state = { user: userState }, action) => state,
@@ -264,7 +264,7 @@ const mockCallSummary: CallLog = {
 
 const renderComponent = (
   callSummary: CallLog = mockCallSummary,
-  userState: any = { user: { role: UserRole.COUNSELOR } },
+  userState: any = { user: { role: UserRole.COUNSELLOR } },
 ) => {
   const store = createMockStore(userState);
   const mockRefetchCallLogs = vi.fn();
@@ -617,7 +617,7 @@ describe("CallSummarySidebar Component", () => {
       };
 
       rerender(
-        <Provider store={createMockStore({ user: { role: UserRole.COUNSELOR } })}>
+        <Provider store={createMockStore({ user: { role: UserRole.COUNSELLOR } })}>
           <BrowserRouter>
             <CallSummarySidebar
               callSummary={updatedCallSummary}
