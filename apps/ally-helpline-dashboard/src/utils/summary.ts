@@ -1,11 +1,15 @@
-import { CallSummaryGenerationData } from "@constants";
+import { CallProvider, CallSummaryGenerationDataMap } from "@constants";
 
-export const getEstimatedSummaryGenerationTime = (callDuration: number) => {
+export const getEstimatedSummaryGenerationTime = (
+  callDuration: number,
+  callProvider: CallProvider,
+) => {
   // calculate the estimated generation time in seconds based on actual generation time
   // 1.2 is a buffer to account for the time it takes to generate the summary
+  const callSumamryGenerationData = CallSummaryGenerationDataMap[callProvider];
   const estimatedGenerationTimeInseconds =
-    ((CallSummaryGenerationData.summaryGenerationDurationInSeconds * callDuration) /
-      CallSummaryGenerationData.durationInSeconds) *
+    ((callSumamryGenerationData.summaryGenerationDurationInSeconds * callDuration) /
+      callSumamryGenerationData.durationInSeconds) *
     1.2;
 
   return Math.ceil(estimatedGenerationTimeInseconds / 60);

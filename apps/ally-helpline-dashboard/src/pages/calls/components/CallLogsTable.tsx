@@ -141,15 +141,15 @@ const CallLogsTable: FC<LogsTableProps> = ({ refreshKey, sessionType }) => {
   }
 
   const getCallDisplayData = (row: CallLog) => {
-    const { details, id } = row;
+    const { details, id, startedAt } = row;
     if (details) {
-      const { callDuration, callInfo, startTime, summary, transcript } = details;
+      const { callDuration, callInfo, summary, transcript } = details;
 
       return {
         id,
         transcript,
         callName: callInfo?.summaryName ?? "--",
-        dateAndTime: startTime && getFormattedDate(startTime),
+        dateAndTime: startedAt && getFormattedDate(startedAt),
         duration: convertSecondsToDuration(callDuration),
         qualityScore: summary?.callQuality ?? 0,
         tags: summary?.tags?.map((tag: { tag: string; positivity_rating: number }) => {

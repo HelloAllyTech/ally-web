@@ -192,15 +192,15 @@ const ConsolidatedLogs: FC<LogsTableProps> = ({ refreshKey, sessionType }) => {
   }
 
   const getAdminCallDisplayData = (row: CallLog) => {
-    const { details, id, counselor } = row;
+    const { details, id, counselor, startedAt } = row;
     if (details) {
-      const { callInfo, startTime, callDuration, summary } = details;
+      const { callInfo, callDuration, summary } = details;
       return {
         id,
         icon: <CallIdIcon />,
         callName: callInfo?.summaryName ?? "--",
         counsellorName: counselor?.name,
-        dateAndTime: startTime && getFormattedDate(startTime),
+        dateAndTime: startedAt && getFormattedDate(startedAt),
         callDuration: convertSecondsToDuration(callDuration),
         qualityScore: summary?.callQuality ?? 0,
         provider: callInfo?.provider,

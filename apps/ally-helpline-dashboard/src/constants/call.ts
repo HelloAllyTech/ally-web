@@ -13,7 +13,17 @@ export enum CallProvider {
 
 export const CloudTelephonyList = [CallProvider.EXOTEL_CONFERENCE_CALL, CallProvider.OZONETEL];
 
-export const CallSummaryGenerationData = {
-  durationInSeconds: 2503, // 41 mins 43 secs
-  summaryGenerationDurationInSeconds: 178, // 2 mins 58 secs
+export const CallSummaryGenerationDataMap = {
+  [CallProvider.MICROPHONE]: {
+    durationInSeconds: 2503, // 41 mins 43 secs
+    summaryGenerationDurationInSeconds: 178, // 2 mins 58 secs
+  },
+  [CallProvider.AUDIO_UPLOAD]: {
+    durationInSeconds: 2503, // 41 mins 43 secs
+    summaryGenerationDurationInSeconds: 178, // 2 mins 58 secs
+  },
+  [CallProvider.OZONETEL]: {
+    durationInSeconds: 2503, // 41 mins 43 secs
+    summaryGenerationDurationInSeconds: 178, // 2 mins 58 secs
+  },
 };

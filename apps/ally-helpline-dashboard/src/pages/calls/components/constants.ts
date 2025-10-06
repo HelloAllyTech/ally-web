@@ -25,7 +25,7 @@ export const audioUploadExtensions: Accept = {
   "audio/mp4a-latm": [".m4a"],
 };
 
-export const AUDIO_UPLOAD_SIZE_IN_BYTES = 300 * 1024 * 1024; // 300MB
+export const AUDIO_UPLOAD_SIZE_IN_BYTES = 1024 * 1024 * 1024; // 1 GB
 
 export const defaultAudioFormData: AudioUploadFormData = {
   counsellorId: "",

@@ -33,8 +33,10 @@ const AudioUploadDialog: FC<AudioUploadDialogProps> = ({ isOpen, onClose }) => {
   const [duration, setDuration] = useState<number>(0);
 
   const { data: counsellorsData } = useGetCounsellorsQuery({ offset: 0 });
-  const [getAudioUploadUrl, { isLoading: isGetAudioUploadUrlLoading }] =
-    useGetAudioUploadUrlMutation();
+  const [
+    getAudioUploadUrl,
+    { isLoading: isGetAudioUploadUrlLoading, error: getAudioUploadUrlError },
+  ] = useGetAudioUploadUrlMutation();
   const [cancelAudioUpload] = useCancelAudioUploadMutation();
   const { data: counsellors = [] } = counsellorsData || {};
 
@@ -50,6 +52,12 @@ const AudioUploadDialog: FC<AudioUploadDialogProps> = ({ isOpen, onClose }) => {
       setFiles([]);
     }
   }, [isOpen]);
+
+  useEffect(() => {
+    if (getAudioUploadUrlError) {
+      toast.error((getAudioUploadUrlError as any)?.data?.message || "Audio Upload failed!");
+    }
+  }, [getAudioUploadUrlError]);
 
   const onDropAccepted = (files: File[]) => {
     setFiles(files);

@@ -1,3 +1,4 @@
+export * from "./audio-upload";
 export * from "./call";
 export * from "./common";
 export * from "./envVariables";

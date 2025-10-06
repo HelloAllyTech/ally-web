@@ -1,9 +1,10 @@
 import { FC, useCallback } from "react";
 
 import { Accept, FileRejection, useDropzone } from "react-dropzone";
+import { toast } from "sonner";
 
 import { FileUpload } from "@assets";
-import { formatSizeInBytes } from "@utils";
+import { formatSizeInBytes, getErrorToastMessageForFileUpload } from "@utils";
 
 import { DraggableAreaProps } from "./types";
 
@@ -27,6 +28,10 @@ const DraggableArea: FC<DraggableAreaProps> = ({
   sizeInBytes,
 }) => {
   const onDrop = useCallback((acceptedFiles: File[], rejectedFiles: FileRejection[]) => {
+    if (rejectedFiles?.length > 0) {
+      toast.error(getErrorToastMessageForFileUpload(rejectedFiles?.[0]?.errors?.[0]?.code));
+      onDropRejected(rejectedFiles);
+    }
     if (acceptedFiles.length) {
       onDropAccepted(acceptedFiles);
     }
@@ -49,7 +54,7 @@ const DraggableArea: FC<DraggableAreaProps> = ({
       <span className="text-[#8A8A8A] font-['IBM_Plex_Serif'] text-sm">
         Drag & drop or <span className="text-[#0957D0] font-medium">choose</span> a{" "}
         {getAllowedUniqueExtensionsDisplay(supportedExtensions)} file under{" "}
-        {formatSizeInBytes(sizeInBytes, "MB")}MB.
+        {formatSizeInBytes(sizeInBytes, "GB")}GB.
       </span>
     </div>
   );
