@@ -27,11 +27,11 @@ export const Learn: FC = () => {
         animate="visible"
         className="w-full font-['Replay_Pro'] text-[28px] text-[#1A1A1A] sm:mb-[66px] mb-[48px] sm:leading-[40px] leading-[28px]"
       >
-        <span className={emphasisStyles}>AI</span>
-        -voice based hyper realistic training role plays to help
-        <span className={emphasisStyles}> counsellors </span>
-        build
-        <span className={emphasisStyles}> expertise</span>.
+        <span>Use </span>
+        <span className={emphasisStyles}>AI-voice based </span>
+        hyper realistic training
+        <span className={emphasisStyles}> role plays </span>
+        to build mental healthcare skills.
       </motion.div>
     );
   };
