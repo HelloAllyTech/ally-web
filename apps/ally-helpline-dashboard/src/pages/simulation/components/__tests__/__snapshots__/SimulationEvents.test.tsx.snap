@@ -1,0 +1,60 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`SimulationEvents > renders correctly with events (snapshot) 1`] = `
+<div>
+  <div
+    class="overflow-hidden rounded-lg"
+    style="will-change: width; width: 0px;"
+  >
+    <div
+      class="flex flex-col items-end gap-4 bg-[#1D2020] p-4 h-full overflow-y-auto"
+      style="opacity: 0; transform: translateX(100%);"
+    >
+      <div
+        class="flex items-center gap-2 bg-[#282B31] px-4 py-1 rounded-full"
+        style="opacity: 0; transform: translateY(6px);"
+      >
+        <span
+          class="text-[14px] text-white italic font-['IBM_Plex_Serif']"
+        >
+          🎤  User started speaking
+        </span>
+        <span
+          class="text-[12px] text-[#9CA3AF] font-['Roboto'] flex-none"
+        >
+          now
+        </span>
+      </div>
+      <div
+        class="flex items-center gap-2 bg-[#282B31] px-4 py-1 rounded-full"
+        style="opacity: 0; transform: translateY(6px);"
+      >
+        <span
+          class="text-[14px] text-white italic font-['IBM_Plex_Serif']"
+        >
+          ⏹️  User stopped
+        </span>
+        <span
+          class="text-[12px] text-[#9CA3AF] font-['Roboto'] flex-none"
+        >
+          now
+        </span>
+      </div>
+    </div>
+  </div>
+</div>
+`;
+
+exports[`SimulationEvents > renders correctly with no events (snapshot) 1`] = `
+<div>
+  <div
+    class="overflow-hidden rounded-lg"
+    style="will-change: width; width: 0px;"
+  >
+    <div
+      class="flex flex-col items-end gap-4 bg-[#1D2020] p-4 h-full overflow-y-auto"
+      style="opacity: 0; transform: translateX(100%);"
+    />
+  </div>
+</div>
+`;

@@ -1,0 +1,341 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`Login Component > Snapshot Testing > should match snapshot for email section 1`] = `
+<div>
+  <div
+    class="flex sm:flex-col md:flex-row h-screen p-8"
+  >
+    <div
+      class="sm:max-w-full md:max-w-[50%] flex-1 h-full relative"
+    >
+      <img
+        alt="Login"
+        class="w-full h-full object-cover hidden sm:block rounded-[16px]"
+        src=({ className })=>/*#__PURE__*/ __vi_import_0__.jsxDEV("div", {
+                "data-testid": "login-image",
+                className: className,
+                children: "LoginImage"
+            }, void 0, false, {
+                fileName: "src/pages/auth/__tests__/Login.test.tsx",
+                lineNumber: 58,
+                columnNumber: 5
+            }, this)
+      />
+      <div
+        data-testid="carousel"
+      >
+        <div
+          data-testid="carousel-slide-0"
+        >
+          Slide 1
+        </div>
+        <div
+          data-testid="carousel-slide-1"
+        >
+          Slide 2
+        </div>
+      </div>
+      <div
+        class="flex items-center gap-2 p-3 rounded-tl-2xl bg-white absolute bottom-0 right-0 cursor-pointer"
+      >
+        <div
+          class="w-10 h-10"
+          data-testid="ally-logo"
+        >
+          Ally
+        </div>
+        <div
+          class="flex flex-col mr-4 font-['Replay_Pro']"
+        >
+          <span
+            class="text-xl font-bold text-[#0F172A]"
+          >
+            Ally
+          </span>
+          <span
+            class="text-sm font-medium text-[#858688]"
+          >
+            helloally.ai
+          </span>
+        </div>
+        <div
+          class="border border-[#E8E8E8] rounded-sm p-2"
+          data-testid="redirect-icon"
+        >
+          RedirectIcon
+        </div>
+      </div>
+    </div>
+    <div
+      class="flex-1 flex flex-col items-center justify-center"
+    >
+      <div
+        class="sm:w-1/2 w-[90%] flex flex-col gap-6"
+      >
+        <div
+          class="flex flex-col"
+        >
+          <div
+            animate="[object Object]"
+            class="flex flex-col gap-4"
+            exit="[object Object]"
+            initial="[object Object]"
+            transition="[object Object]"
+          >
+            <div
+              class="flex flex-col text-[32px] font-['Replay_Pro']"
+            >
+              <span>
+                Hey,
+              </span>
+              <h1>
+                <span>
+                  Welcome to 
+                </span>
+                <span
+                  class="font-bold italic"
+                >
+                  ally
+                </span>
+              </h1>
+              <span
+                class="text-[24px] mt-[24px]"
+              >
+                Enter your email address to continue
+              </span>
+            </div>
+            <div
+              class="flex flex-col gap-1"
+            >
+              <div>
+                <label
+                  data-testid="textfield-label"
+                >
+                  Email
+                </label>
+                <input
+                  data-testid="textfield-input"
+                  type="email"
+                  value=""
+                />
+              </div>
+              <div
+                class="flex items-center gap-2"
+              >
+                <input
+                  class="h-4 w-4 rounded border-2 border-[#E5E7EB] text-blue-600 focus:ring-blue-500 cursor-pointer"
+                  id="remember"
+                  type="checkbox"
+                />
+                <label
+                  class="text-sm text-[#49454F] cursor-pointer"
+                  for="remember"
+                >
+                  Remember me
+                </label>
+              </div>
+            </div>
+            <button
+              class="w-full rounded-[5px] mt-6"
+              data-testid="button"
+              disabled=""
+            >
+              Next
+            </button>
+            <div
+              class="text-[12px] text-[#8C8C8C] mt-2"
+            >
+              By tapping next, you agree to Ally's
+               
+              <span
+                class="text-[#0473F2] cursor-pointer"
+              >
+                Terms & Conditions
+              </span>
+               
+              and acknowledge
+               
+              <span
+                class="text-[#0473F2] cursor-pointer"
+              >
+                Privacy Policy
+              </span>
+              .
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+`;
+
+exports[`Login Component > Snapshot Testing > should match snapshot for initial render 1`] = `
+<div>
+  <div
+    class="flex sm:flex-col md:flex-row h-screen p-8"
+  >
+    <div
+      class="sm:max-w-full md:max-w-[50%] flex-1 h-full relative"
+    >
+      <img
+        alt="Login"
+        class="w-full h-full object-cover hidden sm:block rounded-[16px]"
+        src=({ className })=>/*#__PURE__*/ __vi_import_0__.jsxDEV("div", {
+                "data-testid": "login-image",
+                className: className,
+                children: "LoginImage"
+            }, void 0, false, {
+                fileName: "src/pages/auth/__tests__/Login.test.tsx",
+                lineNumber: 58,
+                columnNumber: 5
+            }, this)
+      />
+      <div
+        data-testid="carousel"
+      >
+        <div
+          data-testid="carousel-slide-0"
+        >
+          Slide 1
+        </div>
+        <div
+          data-testid="carousel-slide-1"
+        >
+          Slide 2
+        </div>
+      </div>
+      <div
+        class="flex items-center gap-2 p-3 rounded-tl-2xl bg-white absolute bottom-0 right-0 cursor-pointer"
+      >
+        <div
+          class="w-10 h-10"
+          data-testid="ally-logo"
+        >
+          Ally
+        </div>
+        <div
+          class="flex flex-col mr-4 font-['Replay_Pro']"
+        >
+          <span
+            class="text-xl font-bold text-[#0F172A]"
+          >
+            Ally
+          </span>
+          <span
+            class="text-sm font-medium text-[#858688]"
+          >
+            helloally.ai
+          </span>
+        </div>
+        <div
+          class="border border-[#E8E8E8] rounded-sm p-2"
+          data-testid="redirect-icon"
+        >
+          RedirectIcon
+        </div>
+      </div>
+    </div>
+    <div
+      class="flex-1 flex flex-col items-center justify-center"
+    >
+      <div
+        class="sm:w-1/2 w-[90%] flex flex-col gap-6"
+      >
+        <div
+          class="flex flex-col"
+        >
+          <div
+            animate="[object Object]"
+            class="flex flex-col gap-4"
+            exit="[object Object]"
+            initial="[object Object]"
+            transition="[object Object]"
+          >
+            <div
+              class="flex flex-col text-[32px] font-['Replay_Pro']"
+            >
+              <span>
+                Hey,
+              </span>
+              <h1>
+                <span>
+                  Welcome to 
+                </span>
+                <span
+                  class="font-bold italic"
+                >
+                  ally
+                </span>
+              </h1>
+              <span
+                class="text-[24px] mt-[24px]"
+              >
+                Enter your email address to continue
+              </span>
+            </div>
+            <div
+              class="flex flex-col gap-1"
+            >
+              <div>
+                <label
+                  data-testid="textfield-label"
+                >
+                  Email
+                </label>
+                <input
+                  data-testid="textfield-input"
+                  type="email"
+                  value=""
+                />
+              </div>
+              <div
+                class="flex items-center gap-2"
+              >
+                <input
+                  class="h-4 w-4 rounded border-2 border-[#E5E7EB] text-blue-600 focus:ring-blue-500 cursor-pointer"
+                  id="remember"
+                  type="checkbox"
+                />
+                <label
+                  class="text-sm text-[#49454F] cursor-pointer"
+                  for="remember"
+                >
+                  Remember me
+                </label>
+              </div>
+            </div>
+            <button
+              class="w-full rounded-[5px] mt-6"
+              data-testid="button"
+              disabled=""
+            >
+              Next
+            </button>
+            <div
+              class="text-[12px] text-[#8C8C8C] mt-2"
+            >
+              By tapping next, you agree to Ally's
+               
+              <span
+                class="text-[#0473F2] cursor-pointer"
+              >
+                Terms & Conditions
+              </span>
+               
+              and acknowledge
+               
+              <span
+                class="text-[#0473F2] cursor-pointer"
+              >
+                Privacy Policy
+              </span>
+              .
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+`;

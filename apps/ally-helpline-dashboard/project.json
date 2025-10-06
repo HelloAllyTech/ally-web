@@ -50,11 +50,23 @@
       }
     },
     "test": {
-      "executor": "@nx/vite:test",
-      "outputs": ["{options.reportsDirectory}"],
+      "executor": "nx:run-script",
       "options": {
-        "reportsDirectory": "../../coverage/apps/ally-helpline-dashboard"
-      }
+        "script": "test"
+      },
+      "metadata": {
+        "scriptContent": "vitest run",
+        "runCommand": "npm run test"
+      },
+      "configurations": {
+        "watch": {
+          "script": "test:watch"
+        },
+        "coverage": {
+          "script": "test:coverage"
+        }
+      },
+      "parallelism": true
     },
     "lint": {
       "executor": "@nx/eslint:lint",

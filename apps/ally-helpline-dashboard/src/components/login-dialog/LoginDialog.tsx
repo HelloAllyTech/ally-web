@@ -118,7 +118,7 @@ const LoginDialog: FC<LoginPopupProps> = ({ isOpen, onClose, onSuccess }) => {
       return;
     }
     if (rememberMe) {
-      localStorage.setItem("rememberedEmail", email);
+      localStorage.setItem("rememberedEmail", email.trim());
     }
     generateOTP({ email: email.trim() });
   };

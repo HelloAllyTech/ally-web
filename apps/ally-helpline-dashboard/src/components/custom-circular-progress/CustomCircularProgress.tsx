@@ -11,7 +11,13 @@ const CustomCircularProgress: React.FC<{ value: number; size?: number; color?: s
   color = "#00723F",
 }) => {
   return (
-    <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} style={{ display: "block" }}>
+    <svg
+      role="progressbar"
+      width={size}
+      height={size}
+      viewBox={`0 0 ${size} ${size}`}
+      style={{ display: "block" }}
+    >
       {/* Background circle */}
       <circle
         cx={SIZE / 2}

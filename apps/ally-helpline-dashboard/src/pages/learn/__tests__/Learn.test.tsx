@@ -1,0 +1,742 @@
+/**
+ * Comprehensive Unit Tests for Learn Component
+ *
+ * Test Coverage:
+ * - Component rendering with different states
+ * - API integration and data handling
+ * - Loading states and empty states
+ * - Scenario sorting and filtering
+ * - Navigation functionality
+ * - Animation and motion components
+ * - Accessibility features
+ * - Error handling
+ */
+
+import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import { BrowserRouter } from "react-router-dom";
+import { describe, expect, it, vi, beforeEach } from "vitest";
+
+import { Learn } from "../Learn";
+
+// Mock the API hook
+const mockUseGetScenariosQuery = vi.fn();
+vi.mock("@api", () => ({
+  useGetScenariosQuery: () => mockUseGetScenariosQuery(),
+}));
+
+// Mock the ScenarioCard component
+vi.mock("@components", () => ({
+  ScenarioCard: ({
+    coverImage,
+    title,
+    description,
+    onClick,
+    isComingSoon,
+  }: {
+    coverImage: string;
+    title: string;
+    description: string;
+    onClick: () => void;
+    isComingSoon: boolean;
+  }) => (
+    <div
+      data-testid="scenario-card"
+      onClick={onClick}
+      className={isComingSoon ? "coming-soon" : ""}
+    >
+      <img src={coverImage} alt={title} />
+      <h3>{title}</h3>
+      <p>{description}</p>
+      {isComingSoon && <span>Coming Soon</span>}
+    </div>
+  ),
+}));
+
+// Mock framer-motion
+vi.mock("framer-motion", () => ({
+  motion: {
+    div: ({ children, variants, initial, animate, exit, className, ...props }: any) => (
+      <div className={className} {...props}>
+        {children}
+      </div>
+    ),
+  },
+  AnimatePresence: ({ children, mode }: any) => (
+    <div data-testid="animate-presence">{children}</div>
+  ),
+}));
+
+// Mock react-router-dom
+const mockNavigate = vi.fn();
+vi.mock("react-router-dom", () => ({
+  useNavigate: () => mockNavigate,
+  BrowserRouter: ({ children }: { children: React.ReactNode }) => (
+    <div data-testid="browser-router">{children}</div>
+  ),
+}));
+
+// Mock constants
+vi.mock("../constants", () => ({
+  learnPageContainerVariants: {},
+  learnPageItemVariants: {},
+}));
+
+// Mock types
+vi.mock("@types", () => ({
+  ScenarioStatus: {
+    ACTIVE: "ACTIVE",
+    COMING_SOON: "COMING_SOON",
+    INACTIVE: "INACTIVE",
+  },
+}));
+
+// Test wrapper component
+const TestWrapper = ({ children }: { children: React.ReactNode }) => (
+  <BrowserRouter>{children}</BrowserRouter>
+);
+
+describe("Learn Component", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockUseGetScenariosQuery.mockReturnValue({
+      data: [],
+      isLoading: false,
+      refetch: vi.fn(),
+    });
+  });
+
+  /**
+   * TEST GROUP: Basic Rendering
+   * Verifies that the component renders without errors
+   */
+  describe("Basic Rendering", () => {
+    it("should render the Learn component successfully", () => {
+      const { container } = render(
+        <TestWrapper>
+          <Learn />
+        </TestWrapper>,
+      );
+      expect(container).not.toBeNull();
+    });
+
+    it("should render without throwing errors", () => {
+      expect(() =>
+        render(
+          <TestWrapper>
+            <Learn />
+          </TestWrapper>,
+        ),
+      ).not.toThrow();
+    });
+
+    it("should render a non-empty component", () => {
+      const { container } = render(
+        <TestWrapper>
+          <Learn />
+        </TestWrapper>,
+      );
+      expect(container.firstChild).not.toBeNull();
+    });
+  });
+
+  /**
+   * TEST GROUP: Component Structure
+   * Verifies the correct HTML structure and layout
+   */
+  describe("Component Structure", () => {
+    it("should render main container with correct classes", () => {
+      const { container } = render(
+        <TestWrapper>
+          <Learn />
+        </TestWrapper>,
+      );
+      const mainContainer = container.querySelector("div.flex.flex-col");
+      expect(mainContainer).not.toBeNull();
+      expect(mainContainer?.className).toContain("w-full");
+      expect(mainContainer?.className).toContain("h-screen");
+      expect(mainContainer?.className).toContain("bg-white");
+    });
+
+    it("should render page description section", () => {
+      render(
+        <TestWrapper>
+          <Learn />
+        </TestWrapper>,
+      );
+      const description = screen.getByText(/hyper realistic training/);
+      expect(description).not.toBeNull();
+    });
+
+    it("should render scenario grid section", () => {
+      render(
+        <TestWrapper>
+          <Learn />
+        </TestWrapper>,
+      );
+      const scenarioSection = screen.getByText(/Choose your/);
+      expect(scenarioSection).not.toBeNull();
+    });
+  });
+
+  /**
+   * TEST GROUP: Page Description
+   * Verifies the page description content and styling
+   */
+  describe("Page Description", () => {
+    it("should display the main description text", () => {
+      render(
+        <TestWrapper>
+          <Learn />
+        </TestWrapper>,
+      );
+      const description = screen.getByText(/hyper realistic training role plays/);
+      expect(description).not.toBeNull();
+    });
+
+    it("should highlight key terms with emphasis styles", () => {
+      render(
+        <TestWrapper>
+          <Learn />
+        </TestWrapper>,
+      );
+      const aiText = screen.getByText("AI");
+      const counsellorsText = screen.getByText("counsellors");
+      const expertiseText = screen.getByText("expertise");
+
+      expect(aiText).not.toBeNull();
+      expect(counsellorsText).not.toBeNull();
+      expect(expertiseText).not.toBeNull();
+    });
+
+    it("should apply correct styling classes to description", () => {
+      const { container } = render(
+        <TestWrapper>
+          <Learn />
+        </TestWrapper>,
+      );
+      const description = container.querySelector("div[class*='Replay_Pro']");
+      expect(description).not.toBeNull();
+      expect(description?.className).toContain("text-[28px]");
+      expect(description?.className).toContain("text-[#1A1A1A]");
+    });
+  });
+
+  /**
+   * TEST GROUP: Loading State
+   * Verifies loading state rendering
+   */
+  describe("Loading State", () => {
+    beforeEach(() => {
+      mockUseGetScenariosQuery.mockReturnValue({
+        data: undefined,
+        isLoading: true,
+        refetch: vi.fn(),
+      });
+    });
+
+    it("should show loading skeleton when scenarios are loading", () => {
+      render(
+        <TestWrapper>
+          <Learn />
+        </TestWrapper>,
+      );
+      const skeletonCards = document.querySelectorAll("div[class*='animate-pulse']");
+      expect(skeletonCards.length).toBe(6);
+    });
+
+    it("should render correct number of skeleton cards", () => {
+      render(
+        <TestWrapper>
+          <Learn />
+        </TestWrapper>,
+      );
+      const skeletonCards = document.querySelectorAll("div[class*='h-[200px]']");
+      expect(skeletonCards.length).toBe(6);
+    });
+
+    it("should apply correct grid layout for loading state", () => {
+      render(
+        <TestWrapper>
+          <Learn />
+        </TestWrapper>,
+      );
+      const grid = document.querySelector("div[class*='grid-cols-2']");
+      expect(grid).not.toBeNull();
+    });
+  });
+
+  /**
+   * TEST GROUP: Empty State
+   * Verifies empty state rendering when no scenarios are available
+   */
+  describe("Empty State", () => {
+    beforeEach(() => {
+      mockUseGetScenariosQuery.mockReturnValue({
+        data: [],
+        isLoading: false,
+        refetch: vi.fn(),
+      });
+    });
+
+    it("should show empty state message when no scenarios", () => {
+      render(
+        <TestWrapper>
+          <Learn />
+        </TestWrapper>,
+      );
+      const emptyMessage = screen.getByText("No scenarios available at the moment");
+      expect(emptyMessage).not.toBeNull();
+    });
+
+    it("should show refresh button in empty state", () => {
+      render(
+        <TestWrapper>
+          <Learn />
+        </TestWrapper>,
+      );
+      const refreshButton = screen.getByText("Refresh Page");
+      expect(refreshButton).not.toBeNull();
+    });
+
+    it("should call refetch when refresh button is clicked", () => {
+      const mockRefetch = vi.fn();
+      mockUseGetScenariosQuery.mockReturnValue({
+        data: [],
+        isLoading: false,
+        refetch: mockRefetch,
+      });
+
+      render(
+        <TestWrapper>
+          <Learn />
+        </TestWrapper>,
+      );
+      const refreshButton = screen.getByText("Refresh Page");
+      fireEvent.click(refreshButton);
+
+      expect(mockRefetch).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  /**
+   * TEST GROUP: Scenarios Display
+   * Verifies scenarios are displayed correctly
+   */
+  describe("Scenarios Display", () => {
+    const mockScenarios = [
+      {
+        id: "1",
+        title: "Scenario 1",
+        description: "Description 1",
+        coverImageUrl: "image1.jpg",
+        status: "ACTIVE",
+      },
+      {
+        id: "2",
+        title: "Scenario 2",
+        description: "Description 2",
+        coverImageUrl: "image2.jpg",
+        status: "COMING_SOON",
+      },
+    ];
+
+    beforeEach(() => {
+      mockUseGetScenariosQuery.mockReturnValue({
+        data: mockScenarios,
+        isLoading: false,
+        refetch: vi.fn(),
+      });
+    });
+
+    it("should render scenario cards when scenarios are available", () => {
+      render(
+        <TestWrapper>
+          <Learn />
+        </TestWrapper>,
+      );
+      const scenarioCards = screen.getAllByTestId("scenario-card");
+      expect(scenarioCards.length).toBe(2);
+    });
+
+    it("should display scenario titles", () => {
+      render(
+        <TestWrapper>
+          <Learn />
+        </TestWrapper>,
+      );
+      expect(screen.getByText("Scenario 1")).not.toBeNull();
+      expect(screen.getByText("Scenario 2")).not.toBeNull();
+    });
+
+    it("should display scenario descriptions", () => {
+      render(
+        <TestWrapper>
+          <Learn />
+        </TestWrapper>,
+      );
+      expect(screen.getByText("Description 1")).not.toBeNull();
+      expect(screen.getByText("Description 2")).not.toBeNull();
+    });
+
+    it("should display scenario cover images", () => {
+      render(
+        <TestWrapper>
+          <Learn />
+        </TestWrapper>,
+      );
+      const images = screen.getAllByRole("img");
+      expect(images[0]).toHaveAttribute("src", "image1.jpg");
+      expect(images[1]).toHaveAttribute("src", "image2.jpg");
+    });
+
+    it("should show 'Coming Soon' for coming soon scenarios", () => {
+      render(
+        <TestWrapper>
+          <Learn />
+        </TestWrapper>,
+      );
+      expect(screen.getByText("Coming Soon")).not.toBeNull();
+    });
+  });
+
+  /**
+   * TEST GROUP: Scenario Sorting
+   * Verifies scenarios are sorted correctly
+   */
+  describe("Scenario Sorting", () => {
+    const mockScenarios = [
+      {
+        id: "1",
+        title: "Inactive Scenario",
+        description: "Description 1",
+        coverImageUrl: "image1.jpg",
+        status: "INACTIVE",
+      },
+      {
+        id: "2",
+        title: "Active Scenario",
+        description: "Description 2",
+        coverImageUrl: "image2.jpg",
+        status: "ACTIVE",
+      },
+    ];
+
+    beforeEach(() => {
+      mockUseGetScenariosQuery.mockReturnValue({
+        data: mockScenarios,
+        isLoading: false,
+        refetch: vi.fn(),
+      });
+    });
+
+    it("should sort active scenarios before inactive ones", () => {
+      render(
+        <TestWrapper>
+          <Learn />
+        </TestWrapper>,
+      );
+      const scenarioCards = screen.getAllByTestId("scenario-card");
+      expect(scenarioCards[0]).toHaveTextContent("Active Scenario");
+      expect(scenarioCards[1]).toHaveTextContent("Inactive Scenario");
+    });
+  });
+
+  /**
+   * TEST GROUP: Navigation
+   * Verifies navigation functionality
+   */
+  describe("Navigation", () => {
+    const mockScenarios = [
+      {
+        id: "1",
+        title: "Scenario 1",
+        description: "Description 1",
+        coverImageUrl: "image1.jpg",
+        status: "ACTIVE",
+      },
+    ];
+
+    beforeEach(() => {
+      mockUseGetScenariosQuery.mockReturnValue({
+        data: mockScenarios,
+        isLoading: false,
+        refetch: vi.fn(),
+      });
+    });
+
+    it("should navigate to scenario page when scenario card is clicked", () => {
+      render(
+        <TestWrapper>
+          <Learn />
+        </TestWrapper>,
+      );
+      const scenarioCard = screen.getByTestId("scenario-card");
+      fireEvent.click(scenarioCard);
+
+      expect(mockNavigate).toHaveBeenCalledWith("/scenario/1");
+    });
+  });
+
+  /**
+   * TEST GROUP: Accessibility
+   * Verifies accessibility features
+   */
+  describe("Accessibility", () => {
+    const mockScenarios = [
+      {
+        id: "1",
+        title: "Scenario 1",
+        description: "Description 1",
+        coverImageUrl: "image1.jpg",
+        status: "ACTIVE",
+      },
+    ];
+
+    beforeEach(() => {
+      mockUseGetScenariosQuery.mockReturnValue({
+        data: mockScenarios,
+        isLoading: false,
+        refetch: vi.fn(),
+      });
+    });
+
+    it("should have proper heading structure", () => {
+      render(
+        <TestWrapper>
+          <Learn />
+        </TestWrapper>,
+      );
+      const heading = screen.getByRole("heading", { level: 1 });
+      expect(heading).not.toBeNull();
+      expect(heading.textContent).toContain("Choose your Scenario");
+    });
+
+    it("should have proper list structure for scenarios", () => {
+      render(
+        <TestWrapper>
+          <Learn />
+        </TestWrapper>,
+      );
+      const list = screen.getByRole("list");
+      const listItems = screen.getAllByRole("listitem");
+      expect(list).not.toBeNull();
+      expect(listItems.length).toBe(1);
+    });
+
+    it("should have proper aria-label for scenarios list", () => {
+      render(
+        <TestWrapper>
+          <Learn />
+        </TestWrapper>,
+      );
+      const list = screen.getByLabelText("Available scenarios");
+      expect(list).not.toBeNull();
+    });
+
+    it("should have proper alt text for scenario images", () => {
+      render(
+        <TestWrapper>
+          <Learn />
+        </TestWrapper>,
+      );
+      const image = screen.getByAltText("Scenario 1");
+      expect(image).not.toBeNull();
+    });
+  });
+
+  /**
+   * TEST GROUP: Grid Layout
+   * Verifies grid layout and responsive design
+   */
+  describe("Grid Layout", () => {
+    const mockScenarios = [
+      {
+        id: "1",
+        title: "Scenario 1",
+        description: "Description 1",
+        coverImageUrl: "image1.jpg",
+        status: "ACTIVE",
+      },
+    ];
+
+    beforeEach(() => {
+      mockUseGetScenariosQuery.mockReturnValue({
+        data: mockScenarios,
+        isLoading: false,
+        refetch: vi.fn(),
+      });
+    });
+
+    it("should apply correct grid classes", () => {
+      render(
+        <TestWrapper>
+          <Learn />
+        </TestWrapper>,
+      );
+      const grid = document.querySelector(".grid.grid-cols-2.sm\\:grid-cols-3.lg\\:grid-cols-4");
+      expect(grid).not.toBeNull();
+    });
+
+    it("should apply correct gap classes", () => {
+      render(
+        <TestWrapper>
+          <Learn />
+        </TestWrapper>,
+      );
+      const grid = document.querySelector(".gap-3.sm\\:gap-4");
+      expect(grid).not.toBeNull();
+    });
+  });
+
+  /**
+   * TEST GROUP: Motion Components
+   * Verifies motion components are rendered
+   */
+  describe("Motion Components", () => {
+    it("should render AnimatePresence component", () => {
+      render(
+        <TestWrapper>
+          <Learn />
+        </TestWrapper>,
+      );
+      const animatePresence = screen.getByTestId("animate-presence");
+      expect(animatePresence).not.toBeNull();
+    });
+
+    it("should render motion div components", () => {
+      const { container } = render(
+        <TestWrapper>
+          <Learn />
+        </TestWrapper>,
+      );
+      const motionDivs = container.querySelectorAll("div");
+      expect(motionDivs.length).toBeGreaterThan(0);
+    });
+  });
+
+  /**
+   * TEST GROUP: Edge Cases
+   * Verifies component handles edge cases gracefully
+   */
+  describe("Edge Cases", () => {
+    it("should handle undefined scenarios data", () => {
+      mockUseGetScenariosQuery.mockReturnValue({
+        data: undefined,
+        isLoading: false,
+        refetch: vi.fn(),
+      });
+
+      render(
+        <TestWrapper>
+          <Learn />
+        </TestWrapper>,
+      );
+      const emptyMessage = screen.getByText("No scenarios available at the moment");
+      expect(emptyMessage).not.toBeNull();
+    });
+
+    it("should handle scenarios with missing properties", () => {
+      const mockScenarios = [
+        {
+          id: "1",
+          title: null,
+          description: null,
+          coverImageUrl: null,
+          status: "ACTIVE",
+        },
+      ];
+
+      mockUseGetScenariosQuery.mockReturnValue({
+        data: mockScenarios,
+        isLoading: false,
+        refetch: vi.fn(),
+      });
+
+      expect(() =>
+        render(
+          <TestWrapper>
+            <Learn />
+          </TestWrapper>,
+        ),
+      ).not.toThrow();
+    });
+
+    it("should render consistently on multiple renders", () => {
+      const { container: container1 } = render(
+        <TestWrapper>
+          <Learn />
+        </TestWrapper>,
+      );
+      const { container: container2 } = render(
+        <TestWrapper>
+          <Learn />
+        </TestWrapper>,
+      );
+
+      expect(container1.innerHTML).toBe(container2.innerHTML);
+    });
+  });
+
+  /**
+   * TEST GROUP: Component Type and Export
+   * Verifies component is properly exported and typed
+   */
+  describe("Component Type and Export", () => {
+    it("should be a function component", () => {
+      expect(typeof Learn).toBe("function");
+    });
+
+    it("should return a valid React element", () => {
+      const result = render(
+        <TestWrapper>
+          <Learn />
+        </TestWrapper>,
+      );
+      expect(result.container.firstChild).not.toBeNull();
+    });
+
+    it("should be callable as a React component", () => {
+      expect(() => (
+        <TestWrapper>
+          <Learn />
+        </TestWrapper>
+      )).not.toThrow();
+    });
+  });
+
+  /**
+   * TEST GROUP: Responsive Design
+   * Verifies responsive design classes are applied
+   */
+  describe("Responsive Design", () => {
+    it("should apply responsive padding classes", () => {
+      const { container } = render(
+        <TestWrapper>
+          <Learn />
+        </TestWrapper>,
+      );
+      const mainContainer = container.querySelector("div[class*='p-[10px]']");
+      expect(mainContainer).not.toBeNull();
+    });
+
+    it("should apply responsive text size classes", () => {
+      const { container } = render(
+        <TestWrapper>
+          <Learn />
+        </TestWrapper>,
+      );
+      const description = container.querySelector("div[class*='text-[28px]']");
+      expect(description?.className).toContain("text-[28px]");
+    });
+
+    it("should apply responsive margin classes", () => {
+      const { container } = render(
+        <TestWrapper>
+          <Learn />
+        </TestWrapper>,
+      );
+      const description = container.querySelector("div[class*='mb-[48px]']");
+      expect(description).not.toBeNull();
+    });
+  });
+});

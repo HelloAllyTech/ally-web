@@ -1,0 +1,38 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`SimulationScoreMeter > renders with default score (snapshot) 1`] = `
+<div>
+  <div
+    class="flex gap-2"
+  >
+    <span
+      class="text-[#9CA3AF] text-[12px] font-medium mr-1"
+    >
+      Practice Session Score
+    </span>
+    <div
+      class="flex gap-1 items-center relative z-50"
+    >
+      <div
+        class="w-16 h-1 rounded-[34px] bg-[#FF5454]"
+      />
+      <div
+        class="w-16 h-1 rounded-[34px] bg-[#FF8A8A]"
+      />
+      <div
+        class="w-16 h-1 rounded-[34px] bg-[#E8E8E8]"
+      />
+      <div
+        class="w-16 h-1 rounded-[34px] bg-[#BAD4B8]"
+      />
+      <div
+        class="w-16 h-1 rounded-[34px] bg-[#26AF6C]"
+      />
+      <div
+        aria-label="score-indicator"
+        class="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-4 h-4 border-[6px] border-[#E8E8E8] rounded-full bg-white"
+      />
+    </div>
+  </div>
+</div>
+`;

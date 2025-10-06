@@ -1,0 +1,330 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`CallInterface Component > Snapshot Testing > should match snapshot in microphone mode 1`] = `
+<div
+  class="flex flex-col pt-9 items-center gap-4 z-10 transition-all duration-500 ease-in-out min-h-[20vh] relative"
+>
+  <div
+    class="text-white flex justify-center items-center flex-col gap-2"
+  >
+    <div
+      class="flex items-center gap-2 font-['IBM_Plex_Serif'] font-medium"
+    >
+      <div
+        data-arrow="true"
+        data-placement="top"
+        data-slot-props="{\\"test\\":\\"light-props\\"}"
+        data-testid="tooltip"
+      >
+        <span>
+          <div
+            data-testid="lock-icon"
+          >
+            Lock Icon
+          </div>
+        </span>
+        <div
+          data-testid="tooltip-content"
+        >
+          <ul
+            class="list-disc list-inside"
+          >
+            <li>
+              We do not save audio recordings
+            </li>
+            <li>
+              Data is encrypted
+            </li>
+            <li>
+              We do not use your client’s data to train our models
+            </li>
+            <li>
+              Personal information of clients is automatically removed
+            </li>
+          </ul>
+        </div>
+      </div>
+      Taking notes
+    </div>
+    <div
+      class="text-[14px] font-semibold font-['Roboto']"
+    >
+      00 : 00 : 00
+    </div>
+    <div
+      class="text-[12px] text-[#666] text-center max-w-xs mt-1"
+    >
+      Note: This call is already active in another tab/window. You can listen but cannot control the call (mute/unmute).
+    </div>
+  </div>
+  <div
+    class="relative gap-1 flex rounded-lg"
+  >
+    <div
+      class="rotate-180 z-0 translate-x-[4px] translate-y-[1px]  "
+    >
+      <div
+        data-bar-color="#fff"
+        data-bar-width="4"
+        data-height="140"
+        data-media-recorder="true"
+        data-testid="live-audio-visualizer"
+        data-width="200"
+      >
+        Audio Visualizer
+      </div>
+    </div>
+    <div
+      class="z-0"
+    >
+      <div
+        data-bar-color="#fff"
+        data-bar-width="4"
+        data-height="140"
+        data-media-recorder="true"
+        data-testid="live-audio-visualizer"
+        data-width="200"
+      >
+        Audio Visualizer
+      </div>
+    </div>
+  </div>
+</div>
+`;
+
+exports[`CallInterface Component > Snapshot Testing > should match snapshot when user not joined 1`] = `
+<div
+  animate="[object Object]"
+  exit="[object Object]"
+  initial="[object Object]"
+  transition="[object Object]"
+>
+  <div
+    class="text-white text-4xl font-normal"
+  >
+    Participant left the call
+  </div>
+  <div
+    class="text-white text-sm text-center mt-1"
+  >
+    You can wait for them to rejoin or end the call.
+  </div>
+</div>
+`;
+
+exports[`CallInterface Component > Snapshot Testing > should match snapshot with Exotel banner 1`] = `
+<div
+  class="flex flex-col pt-9 items-center gap-4 z-10 transition-all duration-500 ease-in-out min-h-[20vh] relative"
+>
+  <div
+    class="w-fit flex gap-4 justify-between items-center bg-[#EEF8FF] border-[0.5px] border-[#0171D9] rounded-[8px] p-2 absolute top-[-24px]"
+  >
+    <div
+      class="flex items-center gap-[2px] "
+    >
+      <div
+        data-testid="warning-triangle-icon"
+      >
+        Warning Triangle Icon
+      </div>
+      <span
+        class="text-[#0D0D0D] text-sm whitespace-nowrap"
+      >
+        The scribe will stop taking notes once you end the call.
+      </span>
+    </div>
+    <div
+      class="w-4 h-4 cursor-pointer"
+      data-testid="x-icon"
+    >
+      X Icon
+    </div>
+  </div>
+  <div
+    class="text-white flex justify-center items-center flex-col gap-2"
+  >
+    <div
+      class="flex items-center gap-2 font-['IBM_Plex_Serif'] font-medium"
+    >
+      <div
+        data-arrow="true"
+        data-placement="top"
+        data-slot-props="{\\"test\\":\\"light-props\\"}"
+        data-testid="tooltip"
+      >
+        <span>
+          <div
+            data-testid="lock-icon"
+          >
+            Lock Icon
+          </div>
+        </span>
+        <div
+          data-testid="tooltip-content"
+        >
+          <ul
+            class="list-disc list-inside"
+          >
+            <li>
+              We do not save audio recordings
+            </li>
+            <li>
+              Data is encrypted
+            </li>
+            <li>
+              We do not use your client’s data to train our models
+            </li>
+            <li>
+              Personal information of clients is automatically removed
+            </li>
+          </ul>
+        </div>
+      </div>
+      Taking notes
+    </div>
+    <div
+      class="text-[14px] font-semibold font-['Roboto']"
+    >
+      00 : 00 : 00
+    </div>
+    <div
+      class="text-[12px] text-[#666] text-center max-w-xs mt-1"
+    >
+      Note: Refreshing, closing the active tab, or network interruptions will end the call.
+    </div>
+  </div>
+  <div
+    class="relative gap-1 flex rounded-lg"
+  >
+    <div
+      class="rotate-180 z-0 translate-x-[4px] translate-y-[1px]  "
+    >
+      <div
+        data-bar-color="#fff"
+        data-bar-width="4"
+        data-height="140"
+        data-media-recorder="true"
+        data-testid="live-audio-visualizer"
+        data-width="200"
+      >
+        Audio Visualizer
+      </div>
+    </div>
+    <div
+      class="z-0"
+    >
+      <div
+        data-bar-color="#fff"
+        data-bar-width="4"
+        data-height="140"
+        data-media-recorder="true"
+        data-testid="live-audio-visualizer"
+        data-width="200"
+      >
+        Audio Visualizer
+      </div>
+    </div>
+  </div>
+</div>
+`;
+
+exports[`CallInterface Component > Snapshot Testing > should match snapshot with default props 1`] = `
+<div
+  class="flex flex-col pt-9 items-center gap-4 z-10 transition-all duration-500 ease-in-out min-h-[20vh] relative"
+>
+  <div
+    class="text-white flex justify-center items-center flex-col gap-2"
+  >
+    <div
+      class="flex items-center gap-2 font-['IBM_Plex_Serif'] font-medium"
+    >
+      <div
+        data-arrow="true"
+        data-placement="top"
+        data-slot-props="{\\"test\\":\\"light-props\\"}"
+        data-testid="tooltip"
+      >
+        <span>
+          <div
+            data-testid="lock-icon"
+          >
+            Lock Icon
+          </div>
+        </span>
+        <div
+          data-testid="tooltip-content"
+        >
+          <ul
+            class="list-disc list-inside"
+          >
+            <li>
+              We do not save audio recordings
+            </li>
+            <li>
+              Data is encrypted
+            </li>
+            <li>
+              We do not use your client’s data to train our models
+            </li>
+            <li>
+              Personal information of clients is automatically removed
+            </li>
+          </ul>
+        </div>
+      </div>
+      Taking notes
+    </div>
+    <div
+      class="text-[14px] font-semibold font-['Roboto']"
+    >
+      00 : 00 : 00
+    </div>
+    <div
+      class="text-[12px] text-[#666] text-center max-w-xs mt-1"
+    >
+      Note: Refreshing, closing the active tab, or network interruptions will end the call.
+    </div>
+  </div>
+  <div
+    class="relative gap-1 flex rounded-lg"
+  >
+    <div
+      class="rotate-180 z-0 translate-x-[4px] translate-y-[1px]  "
+    >
+      <div
+        data-bar-color="#fff"
+        data-bar-width="4"
+        data-height="140"
+        data-media-recorder="true"
+        data-testid="live-audio-visualizer"
+        data-width="200"
+      >
+        Audio Visualizer
+      </div>
+    </div>
+    <div
+      class="z-0"
+    >
+      <div
+        data-bar-color="#fff"
+        data-bar-width="4"
+        data-height="140"
+        data-media-recorder="true"
+        data-testid="live-audio-visualizer"
+        data-width="200"
+      >
+        Audio Visualizer
+      </div>
+    </div>
+  </div>
+</div>
+`;
+
+exports[`CallInterface Component > Snapshot Testing > should match snapshot with error screen 1`] = `
+<div
+  data-reason="NO_NETWORK"
+  data-testid="error-screen"
+>
+  Error Screen
+</div>
+`;
