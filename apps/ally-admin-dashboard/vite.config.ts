@@ -1,0 +1,93 @@
+/// <reference types='vitest' />
+import { defineConfig } from "vite";
+import react from "@vitejs/plugin-react";
+import { nxViteTsPaths } from "@nx/vite/plugins/nx-tsconfig-paths.plugin";
+import { nxCopyAssetsPlugin } from "@nx/vite/plugins/nx-copy-assets.plugin";
+import svgr from "vite-plugin-svgr";
+import path from "path";
+
+// Get absolute paths
+const projectRoot = __dirname;
+
+export default defineConfig(() => ({
+  root: __dirname,
+  cacheDir: "../../node_modules/.vite/apps/ally-admin-dashboard",
+  server: {
+    port: 8080,
+    host: "localhost",
+  },
+  preview: {
+    port: 4300,
+    host: "localhost",
+  },
+  plugins: [
+    react(),
+    nxViteTsPaths(),
+    nxCopyAssetsPlugin(["*.md"]),
+    svgr({
+      svgrOptions: {
+        exportType: "default",
+        ref: true,
+        svgo: false,
+        titleProp: true,
+      },
+      include: "**/*.svg",
+    }),
+  ],
+  // Uncomment this if you are using workers.
+  // worker: {
+  //  plugins: [ nxViteTsPaths() ],
+  // },
+  build: {
+    outDir: "../../dist/apps/ally-admin-dashboard",
+    emptyOutDir: true,
+    reportCompressedSize: true,
+    commonjsOptions: {
+      transformMixedEsModules: true,
+    },
+  },
+  test: {
+    watch: false,
+    globals: true,
+    environment: "jsdom",
+    include: ["{src,tests}/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}"],
+    reporters: ["default"],
+    coverage: {
+      reportsDirectory: "../../coverage/apps/ally-admin-dashboard",
+      provider: "v8" as const,
+    },
+    passWithNoTests: true,
+  },
+  resolve: {
+    alias: {
+      "@src": path.resolve(projectRoot, "./src"),
+      "@src/*": path.resolve(projectRoot, "./src/*"),
+      "@components": path.resolve(projectRoot, "./src/components"),
+      "@components/*": path.resolve(projectRoot, "./src/components/*"),
+      "@containers": path.resolve(projectRoot, "./src/containers"),
+      "@containers/*": path.resolve(projectRoot, "./src/containers/*"),
+      "@api": path.resolve(projectRoot, "./src/api"),
+      "@api/*": path.resolve(projectRoot, "./src/api/*"),
+      "@pages": path.resolve(projectRoot, "./src/pages"),
+      "@pages/*": path.resolve(projectRoot, "./src/pages/*"),
+      "@utils": path.resolve(projectRoot, "./src/utils"),
+      "@utils/*": path.resolve(projectRoot, "./src/utils/*"),
+      "@assets": path.resolve(projectRoot, "./src/assets"),
+      "@assets/*": path.resolve(projectRoot, "./src/assets/*"),
+      "@hooks": path.resolve(projectRoot, "./src/hooks"),
+      "@hooks/*": path.resolve(projectRoot, "./src/hooks/*"),
+      "@constants": path.resolve(projectRoot, "./src/constants"),
+      "@constants/*": path.resolve(projectRoot, "./src/constants/*"),
+      "@types": path.resolve(projectRoot, "./src/types"),
+      "@types/*": path.resolve(projectRoot, "./src/types/*"),
+      "@routes": path.resolve(projectRoot, "./src/routes"),
+      "@routes/*": path.resolve(projectRoot, "./src/routes/*"),
+      "@store": path.resolve(projectRoot, "./src/store"),
+      "@store/*": path.resolve(projectRoot, "./src/store/*"),
+      "@reducer": path.resolve(projectRoot, "./src/reducer"),
+      "@reducer/*": path.resolve(projectRoot, "./src/reducer/*"),
+      "@ally-ui-mono/ui-shared": path.resolve(projectRoot, "../../libs/ui-shared/src"),
+      // Add any other aliases from tsconfig.base.json here
+    },
+  },
+}));

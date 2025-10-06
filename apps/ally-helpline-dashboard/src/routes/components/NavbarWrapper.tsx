@@ -9,6 +9,9 @@ import { useUser } from "@hooks";
 import { UserRole } from "@types";
 import { isPathExcluded } from "@utils";
 
+import UploadProgressDialog from "./UploadProgressDialog";
+
+// TODO: Rename to LayoutWrapper
 const NavbarWrapper: FC<{ children: React.ReactNode }> = ({ children }) => {
   const { user, checkAuth } = useUser();
   const { pathname } = useLocation();
@@ -58,6 +61,7 @@ const NavbarWrapper: FC<{ children: React.ReactNode }> = ({ children }) => {
             <MenuIcon />
           </button>
           {children}
+          <UploadProgressDialog />
         </div>
       </div>
     </div>

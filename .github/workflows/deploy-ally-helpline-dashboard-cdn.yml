@@ -27,67 +27,27 @@ permissions:
   contents: read
 
 jobs:
-  # Set app configuration
-  config:
+  # Prepare environment variables
+  prepare-env:
+    name: Prepare Environment
     runs-on: ubuntu-22.04
+    timeout-minutes: 2
     outputs:
-      service_name: ${{ steps.set-config.outputs.service_name }}
-      app_path: ${{ steps.set-config.outputs.app_path }}
-      build_command: ${{ steps.set-config.outputs.build_command }}
-      node_version: ${{ steps.set-config.outputs.node_version }}
-      cdn_distribution_id: ${{ steps.set-config.outputs.cdn_distribution_id }}
-      s3_bucket: ${{ steps.set-config.outputs.s3_bucket }}
-      subdirectory: ${{ steps.set-config.outputs.subdirectory }}
-    steps:
-      - name: Set Configuration
-        id: set-config
-        run: |
-          echo "service_name=ally-helpline-dashboard" >> $GITHUB_OUTPUT
-          echo "app_path=apps/ally-helpline-dashboard" >> $GITHUB_OUTPUT
-          echo "build_command=npm run build" >> $GITHUB_OUTPUT
-          echo "node_version=20" >> $GITHUB_OUTPUT
-          echo "cdn_distribution_id=E1AP5BIP58LJDY" >> $GITHUB_OUTPUT
-          echo "s3_bucket=ally-dev-web-website" >> $GITHUB_OUTPUT
-          echo "subdirectory=" >> $GITHUB_OUTPUT
+      aws_role: ${{ steps.env-vars.outputs.aws_role }}
+      aws_region: ${{ steps.env-vars.outputs.aws_region }}
+      project_prefix: ${{ steps.env-vars.outputs.project_prefix }}
+      project_region: ${{ steps.env-vars.outputs.project_region }}
+      s3_env_bucket: ${{ steps.cdn-vars.outputs.s3_env_bucket }}
+      service_path: ${{ steps.cdn-vars.outputs.service_path }}
+      target_env: ${{ steps.determine-env.outputs.target_env }}
+      should_deploy: ${{ steps.determine-env.outputs.should_deploy }}
 
-  # Check if there are changes in the app directory
-  changes:
-    needs: config
-    runs-on: ubuntu-22.04
-    outputs:
-      dashboard: ${{ steps.determine.outputs.should_proceed }}
     steps:
-      - name: Determine if should proceed
-        id: determine
-        run: |
-          # Simplified logic - no redundant path checking
-          if [ "${{ github.event.inputs.force_deploy }}" == "true" ]; then
-            echo "should_proceed=true" >> $GITHUB_OUTPUT
-            echo "Force deploy requested - proceeding without change check"
-          elif [ "${{ github.event_name }}" == "push" ]; then
-            echo "should_proceed=true" >> $GITHUB_OUTPUT
-            echo "Push event detected - changes exist (filtered by trigger)"
-          elif [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
-            echo "should_proceed=true" >> $GITHUB_OUTPUT
-            echo "Manual workflow dispatch - proceeding"
-          else
-            echo "should_proceed=false" >> $GITHUB_OUTPUT
-            echo "No valid trigger detected"
-          fi
+      - name: Checkout
+        uses: actions/checkout@v4
 
-  # Determine target environment
-  determine-environment:
-    needs: [config, changes]
-    if: needs.changes.outputs.dashboard == 'true' || github.event.inputs.force_deploy == 'true'
-    runs-on: ubuntu-22.04
-    outputs:
-      target_env: ${{ steps.env.outputs.target_env }}
-      should_deploy: ${{ steps.env.outputs.should_deploy }}
-      aws_role: ${{ steps.env.outputs.aws_role }}
-      aws_region: ${{ steps.env.outputs.aws_region }}
-    steps:
       - name: Determine Environment
-        id: env
+        id: determine-env
         run: |
           BRANCH="${GITHUB_REF#refs/heads/}"
           MANUAL_ENV="${{ github.event.inputs.environment }}"
@@ -114,27 +74,62 @@ jobs:
             echo "target_env=$TARGET_ENV" >> $GITHUB_OUTPUT
             echo "should_deploy=true" >> $GITHUB_OUTPUT
             echo ":rocket: Deploying to: $TARGET_ENV" >> $GITHUB_STEP_SUMMARY
-            
-            # Set AWS credentials based on environment
-            if [ "$TARGET_ENV" == "dev" ]; then
-              echo "aws_role=${{ vars.DEV_AWS_ROLE }}" >> $GITHUB_OUTPUT
-              echo "aws_region=${{ vars.DEV_AWS_REGION }}" >> $GITHUB_OUTPUT
-            elif [ "$TARGET_ENV" == "prd" ]; then
-              echo "aws_role=${{ vars.PRD_AWS_ROLE }}" >> $GITHUB_OUTPUT
-              echo "aws_region=${{ vars.PRD_AWS_REGION }}" >> $GITHUB_OUTPUT
-            fi
           else
             echo "should_deploy=false" >> $GITHUB_OUTPUT
             echo ":warning: No deployment target determined" >> $GITHUB_STEP_SUMMARY
           fi
 
+      - name: Set Environment Variables
+        id: env-vars
+        if: steps.determine-env.outputs.should_deploy == 'true'
+        uses: ./.github/actions/aws/set-environment-vars
+        with:
+          environment: ${{ steps.determine-env.outputs.target_env }}
+          dev_aws_role: ${{ vars.DEV_AWS_ROLE }}
+          dev_aws_region: ${{ vars.DEV_AWS_REGION }}
+          prd_aws_role: ${{ vars.PRD_AWS_ROLE }}
+          prd_aws_region: ${{ vars.PRD_AWS_REGION }}
+
+      - name: Set CDN Variables
+        id: cdn-vars
+        if: steps.determine-env.outputs.should_deploy == 'true'
+        uses: ./.github/actions/aws/set-cdn-vars
+        with:
+          service_name: "helpline-dashboard"
+          project_prefix: ${{ steps.env-vars.outputs.project_prefix }}
+          project_region: ${{ steps.env-vars.outputs.project_region }}
+
+  # Check if there are changes in the app directory
+  changes:
+    needs: prepare-env
+    runs-on: ubuntu-22.04
+    outputs:
+      dashboard: ${{ steps.determine.outputs.should_proceed }}
+    steps:
+      - name: Determine if should proceed
+        id: determine
+        run: |
+          # Simplified logic - no redundant path checking
+          if [ "${{ github.event.inputs.force_deploy }}" == "true" ]; then
+            echo "should_proceed=true" >> $GITHUB_OUTPUT
+            echo "Force deploy requested - proceeding without change check"
+          elif [ "${{ github.event_name }}" == "push" ]; then
+            echo "should_proceed=true" >> $GITHUB_OUTPUT
+            echo "Push event detected - changes exist (filtered by trigger)"
+          elif [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+            echo "should_proceed=true" >> $GITHUB_OUTPUT
+            echo "Manual workflow dispatch - proceeding"
+          else
+            echo "should_proceed=false" >> $GITHUB_OUTPUT
+            echo "No valid trigger detected"
+          fi
+
   # Build and deploy to CDN
   deploy:
     needs:
-      - config
+      - prepare-env
       - changes
-      - determine-environment
-    if: needs.determine-environment.outputs.should_deploy == 'true'
+    if: needs.prepare-env.outputs.should_deploy == 'true' && needs.changes.outputs.dashboard == 'true'
     runs-on: ubuntu-22.04
     env:
       NX_NO_CLOUD: true
@@ -145,17 +140,11 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ needs.config.outputs.node_version }}
-          cache: "npm"
-
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: ${{ needs.determine-environment.outputs.aws_role }}
-          aws-region: ${{ needs.determine-environment.outputs.aws_region }}
+          role-to-assume: ${{ needs.prepare-env.outputs.aws_role }}
+          aws-region: ${{ needs.prepare-env.outputs.aws_region }}
 
       - name: Install Dependencies
         run: npm ci --legacy-peer-deps
@@ -163,14 +152,14 @@ jobs:
       - name: Download Environment Variables
         run: |
           echo ":gear: Downloading build-time environment variables..." >> $GITHUB_STEP_SUMMARY
-          if aws s3 cp s3://ally-dev-s3-environment/fe/.env apps/ally-helpline-dashboard/.env 2>/dev/null; then
+          if aws s3 cp s3://${{ needs.prepare-env.outputs.s3_env_bucket }}/${{ needs.prepare-env.outputs.service_path }}/.env apps/ally-helpline-dashboard/.env 2>/dev/null; then
             echo ":white_check_mark: Environment variables downloaded successfully" >> $GITHUB_STEP_SUMMARY
-            echo "- S3 Path: s3://ally-dev-s3-environment/fe/.env" >> $GITHUB_STEP_SUMMARY
+            echo "- S3 Path: s3://${{ needs.prepare-env.outputs.s3_env_bucket }}/${{ needs.prepare-env.outputs.service_path }}/.env" >> $GITHUB_STEP_SUMMARY
             echo "- Local Path: apps/ally-helpline-dashboard/.env" >> $GITHUB_STEP_SUMMARY
             echo "- File will be available during build" >> $GITHUB_STEP_SUMMARY
           else
             echo ":information_source: No build-time environment variables found" >> $GITHUB_STEP_SUMMARY
-            echo "- S3 Path: s3://ally-dev-s3-environment/fe/.env (not found)" >> $GITHUB_STEP_SUMMARY
+            echo "- S3 Path: s3://${{ needs.prepare-env.outputs.s3_env_bucket }}/${{ needs.prepare-env.outputs.service_path }}/.env (not found)" >> $GITHUB_STEP_SUMMARY
             echo "- Proceeding with build without environment variables" >> $GITHUB_STEP_SUMMARY
           fi
 
@@ -184,26 +173,51 @@ jobs:
           echo ":white_check_mark: Build completed successfully" >> $GITHUB_STEP_SUMMARY
           echo "- Build output directory: dist/" >> $GITHUB_STEP_SUMMARY
 
+      - name: Set CDN Configuration
+        id: cdn-config
+        run: |
+          # Set CDN configuration based on environment
+          TARGET_ENV="${{ needs.prepare-env.outputs.target_env }}"
+
+          if [ "$TARGET_ENV" == "dev" ]; then
+            CDN_DISTRIBUTION_ID="${{ vars.DEV_DASHBOARD_DISTRIBUTION_ID }}"
+            S3_WEBSITE_BUCKET="${{ vars.DEV_DASHBOARD_S3_BUCKET }}"
+          elif [ "$TARGET_ENV" == "prd" ]; then
+            CDN_DISTRIBUTION_ID="${{ vars.PRD_DASHBOARD_DISTRIBUTION_ID }}"
+            S3_WEBSITE_BUCKET="${{ vars.PRD_DASHBOARD_S3_BUCKET }}"
+          else
+            echo "Error: Unknown environment $TARGET_ENV"
+            exit 1
+          fi
+
+          echo "cdn_distribution_id=$CDN_DISTRIBUTION_ID" >> $GITHUB_OUTPUT
+          echo "s3_website_bucket=$S3_WEBSITE_BUCKET" >> $GITHUB_OUTPUT
+
+          echo ":gear: CDN Configuration" >> $GITHUB_STEP_SUMMARY
+          echo "- Environment: $TARGET_ENV" >> $GITHUB_STEP_SUMMARY
+          echo "- Distribution ID: $CDN_DISTRIBUTION_ID" >> $GITHUB_STEP_SUMMARY
+          echo "- S3 Website Bucket: $S3_WEBSITE_BUCKET" >> $GITHUB_STEP_SUMMARY
+
       - name: Sync to S3
         run: |
           echo ":cloud: Syncing files to S3..." >> $GITHUB_STEP_SUMMARY
-          aws s3 sync apps/ally-helpline-dashboard/dist/ s3://${{ needs.config.outputs.s3_bucket }}/ \
+          aws s3 sync apps/ally-helpline-dashboard/dist/ s3://${{ steps.cdn-config.outputs.s3_website_bucket }}/ \
             --delete \
             --cache-control "public, max-age=86400" \
             --metadata-directive REPLACE
           echo ":white_check_mark: Files synced to S3 successfully" >> $GITHUB_STEP_SUMMARY
-          echo "- S3 Bucket: s3://${{ needs.config.outputs.s3_bucket }}/" >> $GITHUB_STEP_SUMMARY
+          echo "- S3 Bucket: s3://${{ steps.cdn-config.outputs.s3_website_bucket }}/" >> $GITHUB_STEP_SUMMARY
 
       - name: Invalidate CloudFront
         run: |
           echo ":arrows_counterclockwise: Creating CloudFront invalidation..." >> $GITHUB_STEP_SUMMARY
           INVALIDATION_ID=$(aws cloudfront create-invalidation \
-            --distribution-id ${{ needs.config.outputs.cdn_distribution_id }} \
+            --distribution-id ${{ steps.cdn-config.outputs.cdn_distribution_id }} \
             --paths "/*" \
             --query 'Invalidation.Id' \
             --output text)
           echo ":white_check_mark: CloudFront invalidation created" >> $GITHUB_STEP_SUMMARY
-          echo "- Distribution ID: ${{ needs.config.outputs.cdn_distribution_id }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Distribution ID: ${{ steps.cdn-config.outputs.cdn_distribution_id }}" >> $GITHUB_STEP_SUMMARY
           echo "- Invalidation ID: $INVALIDATION_ID" >> $GITHUB_STEP_SUMMARY
           echo "- Invalidation Path: /*" >> $GITHUB_STEP_SUMMARY
 
@@ -211,10 +225,11 @@ jobs:
         run: |
           echo ":rocket: CDN Deployment Completed!" >> $GITHUB_STEP_SUMMARY
           echo "## Deployment Details" >> $GITHUB_STEP_SUMMARY
-          echo "- **Environment**: ${{ needs.determine-environment.outputs.target_env }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Environment**: ${{ needs.prepare-env.outputs.target_env }}" >> $GITHUB_STEP_SUMMARY
           echo "- **Application**: ally-helpline-dashboard" >> $GITHUB_STEP_SUMMARY
-          echo "- **S3 Bucket**: ${{ needs.config.outputs.s3_bucket }}" >> $GITHUB_STEP_SUMMARY
-          echo "- **Subdirectory**: ${{ needs.config.outputs.subdirectory }}" >> $GITHUB_STEP_SUMMARY
-          echo "- **CloudFront Distribution**: ${{ needs.config.outputs.cdn_distribution_id }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Project Prefix**: ${{ needs.prepare-env.outputs.project_prefix }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Region**: ${{ needs.prepare-env.outputs.project_region }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **S3 Bucket**: ${{ steps.cdn-config.outputs.s3_website_bucket }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **CloudFront Distribution**: ${{ steps.cdn-config.outputs.cdn_distribution_id }}" >> $GITHUB_STEP_SUMMARY
           echo "- **Branch**: ${GITHUB_REF#refs/heads/}" >> $GITHUB_STEP_SUMMARY
           echo "- **Commit**: ${GITHUB_SHA::8}" >> $GITHUB_STEP_SUMMARY

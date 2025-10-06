@@ -12,8 +12,11 @@
  */
 
 import AccountCircle from "./account-circle.svg?react";
+import ActionsIcon from "./actions-icon.svg?react";
 import Ally from "./ally.svg?react";
+import Arrow from "./arrow.svg?react";
 import Assessment from "./assessment.svg?react";
+import AudioFile from "./audio-file.svg?react";
 import BackCircle from "./back-circle.svg?react";
 import BackgroundGradientBlue from "./background-gradient-blue.svg?react";
 import BoxBreathingBottomGradient from "./box-breathing-bottom-gradient.svg?react";
@@ -32,6 +35,7 @@ import Close from "./close.svg?react";
 import Cloud from "./cloud.svg?react";
 import ComingSoon from "./coming-soon.svg?react";
 import CommunityIcon from "./community.svg?react";
+import CrossRedBackground from "./cross-red-background.svg?react";
 import CutCall from "./cut-call.svg?react";
 import DataPolicy from "./data-policy.svg?react";
 import DateIcon from "./date-icon.svg?react";
@@ -43,6 +47,7 @@ import EndSessionIllustration from "./end-session-illustration.svg?react";
 import Enhance from "./enhance.svg?react";
 import ErrorIcon from "./error-icon.svg?react";
 import ExistingCall from "./existing-call.svg?react";
+import FileUpload from "./file-upload.svg?react";
 import Flow from "./flow.svg?react";
 import Focus from "./focus.svg?react";
 import HomeworkRecommended from "./homework-recommended.svg?react";
@@ -62,6 +67,7 @@ import MicIcon from "./mic-icon.svg?react";
 import MicOffIcon from "./mic-off-icon.svg?react";
 import NoNetwork from "./no-network.svg?react";
 import NoResults from "./no-results.svg?react";
+import NoAnalytics from "./noAnalytics.svg?react";
 import NotesIcon from "./notes.svg?react";
 import ObjectiveObservations from "./objective-observations.svg?react";
 import PageNotFoundIllustration from "./page-not-found-illustration.svg?react";
@@ -82,6 +88,7 @@ import SessionSummary from "./session-summary.svg?react";
 import Session from "./session.svg?react";
 import ShareIcon from "./share-icon.svg?react";
 import SimulationWarningIllustration from "./simulation-warning-illustration.svg?react";
+import SourceIcon from "./source-icon.svg?react";
 import Spinner from "./spinner.svg?react";
 import StarYellowIcon from "./star-yellow-icon.svg?react";
 import StarIcon from "./star.svg?react";
@@ -99,9 +106,11 @@ import ThumbDownFilled from "./thumb-down-filled.svg?react";
 import ThumbDown from "./thumb-down.svg?react";
 import ThumbUpFilled from "./thumb-up-filled.svg?react";
 import ThumbUp from "./thumb-up.svg?react";
+import TickGreenBackground from "./tick-green-background.svg?react";
 import TimerIcon from "./timer.svg?react";
 import BackgroundBottom from "./transcript-background-bottom.svg?react";
 import BackgroundTop from "./transcript-background-top.svg?react";
+import UploadIcon from "./upload-icon.svg?react";
 import UserIcon from "./user-icon.svg?react";
 import VerifiedBadge from "./verified-badge.svg?react";
 import VolumeOffIcon from "./volume-off-icon.svg?react";
@@ -119,8 +128,10 @@ import Waveform from "./waveform.svg?react";
  */
 export {
   AccountCircle,
+  ActionsIcon,
   Ally,
   Assessment,
+  AudioFile,
   BackCircle,
   BackgroundBottom,
   BackgroundTop,
@@ -141,6 +152,7 @@ export {
   Cloud,
   CommunityIcon,
   ComingSoon,
+  CrossRedBackground,
   CutCall,
   DataPolicy,
   DateIcon,
@@ -152,6 +164,7 @@ export {
   Enhance,
   ErrorIcon,
   ExistingCall,
+  FileUpload,
   Flow,
   Focus,
   HomeworkRecommended,
@@ -191,6 +204,7 @@ export {
   Session,
   ShareIcon,
   SimulationWarningIllustration,
+  SourceIcon,
   Spinner,
   StarIcon,
   StarYellowIcon,
@@ -208,7 +222,9 @@ export {
   ThumbDownFilled,
   ThumbUp,
   ThumbUpFilled,
+  TickGreenBackground,
   TimerIcon,
+  UploadIcon,
   UserIcon,
   VerifiedBadge,
   VolumeOffIcon,
@@ -216,4 +232,6 @@ export {
   WarningTriangle,
   Warning,
   Waveform,
+  Arrow,
+  NoAnalytics,
 };

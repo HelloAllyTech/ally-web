@@ -11,6 +11,7 @@ import {
   useGetCounsellorsQuery,
   useGetCallTagsQuery,
   useGetAdminSimulationLogsQuery,
+  useDeleteCallLogMutation,
 } from "@api";
 import {
   NoResults,
@@ -23,8 +24,19 @@ import {
   SummaryGenerationIcon,
   SessionScoreIcon,
   ScenarioIcon,
+  SourceIcon,
+  Delete,
+  ActionsIcon,
 } from "@assets";
-import { Button, FallbackUI, SummaryStatusChip, TagGroup } from "@components";
+import {
+  Button,
+  Chip,
+  ConfirmationDialog,
+  FallbackUI,
+  PermissionGuard,
+  TagGroup,
+} from "@components";
+import { CallProvider, Permissions } from "@constants";
 import { updateFilters } from "@reducer";
 import { RootState } from "@store";
 import {
@@ -39,9 +51,16 @@ import {
 import { convertSecondsToDuration, getFormattedDate, getSimulationScoreDisplay } from "@utils";
 
 import { CallSummarySidebar, SimulationSummarySidebar } from ".";
-import { CALL_LOGS_PAGINATION_LIMIT, defaultTags, tagColors } from "../constants";
-import { LogsTableProps } from "./types";
+import {
+  CALL_LOGS_PAGINATION_LIMIT,
+  defaultDeleteDialogData,
+  defaultTags,
+  tagColors,
+} from "../constants";
+import { DeleteDialogData, LogsTableProps } from "./types";
+import { getSourceChipConfig, getStatusChipConfig } from "./utils";
 
+// TODO: Rename to AdminCallLogsTable
 const ConsolidatedLogs: FC<LogsTableProps> = ({ refreshKey, sessionType }) => {
   const dispatch = useDispatch();
 
@@ -49,6 +68,8 @@ const ConsolidatedLogs: FC<LogsTableProps> = ({ refreshKey, sessionType }) => {
   const [summary, setSummary] = useState<CallLog | SimulationLog | null>(null);
   const [isLoadingMore, setIsLoadingMore] = useState<boolean>(false);
   const [hasMore, setHasMore] = useState<boolean>(true);
+  const [deleteCallLogData, setDeleteCallLogData] =
+    useState<DeleteDialogData>(defaultDeleteDialogData);
 
   const { filters } = useSelector((state: RootState) => state.calls);
   const { offset } = filters;
@@ -61,7 +82,11 @@ const ConsolidatedLogs: FC<LogsTableProps> = ({ refreshKey, sessionType }) => {
     isLoading: isCallLogsLoading,
     refetch: refetchCallLogs,
     error: callLogsError,
-  } = useGetAdminCallLogsQuery(filters, { skip: !isCall });
+  } = useGetAdminCallLogsQuery(
+    { ...filters, sortBy: "createdAt", order: "DESC" },
+    { skip: !isCall },
+  );
+  const [deleteCallLog] = useDeleteCallLogMutation();
 
   const {
     data: simulationLogsData,
@@ -167,17 +192,18 @@ const ConsolidatedLogs: FC<LogsTableProps> = ({ refreshKey, sessionType }) => {
   }
 
   const getAdminCallDisplayData = (row: CallLog) => {
-    const { details, id, counselor } = row;
+    const { details, id, counselor, startedAt } = row;
     if (details) {
-      const { callInfo, startTime, callDuration, summary } = details;
+      const { callInfo, callDuration, summary } = details;
       return {
         id,
         icon: <CallIdIcon />,
         callName: callInfo?.summaryName ?? "--",
         counsellorName: counselor?.name,
-        dateAndTime: startTime && getFormattedDate(startTime),
+        dateAndTime: startedAt && getFormattedDate(startedAt),
         callDuration: convertSecondsToDuration(callDuration),
         qualityScore: summary?.callQuality ?? 0,
+        provider: callInfo?.provider,
         tags: summary?.tags?.map((tag: { tag: string; positivity_rating: number }) => {
           return {
             label: tag?.tag,
@@ -187,7 +213,7 @@ const ConsolidatedLogs: FC<LogsTableProps> = ({ refreshKey, sessionType }) => {
         raw: row,
       };
     }
-    return { id, callName: "", dateAndTime: "", raw: row };
+    return { id, callName: "", dateAndTime: "", provider: "--", raw: row };
   };
 
   const callColumns: Column<any>[] = [
@@ -246,19 +272,39 @@ const ConsolidatedLogs: FC<LogsTableProps> = ({ refreshKey, sessionType }) => {
       key: "summaryStatus",
       header: "Summary Status",
       style: { width: "16%" },
-      render: (_value, row) => <SummaryStatusChip status={row.raw.summaryStatus} />,
+      render: (_value, row) => <Chip config={getStatusChipConfig(row.raw.summaryStatus)} />,
       icon: <SummaryGenerationIcon />,
     },
     {
-      key: "summary",
-      header: "Summary",
+      key: "source",
+      header: "Source",
+      style: { width: "16%" },
+      render: (_value, row) => <Chip config={getSourceChipConfig(row.provider)} />,
+      icon: <SourceIcon />,
+    },
+    {
+      key: "actions",
+      header: "Action(s)",
       style: { width: "10%" },
       render: (_value, row) => (
-        <Button onClick={() => setSummary(row.raw)} fullWidth={true} variant="icon">
-          <ReviewIcon />
-        </Button>
+        <div className="flex gap-2 items-center justify-start">
+          <Button onClick={() => setSummary(row.raw)} variant="icon">
+            <ReviewIcon />
+          </Button>
+          {row?.provider === CallProvider.AUDIO_UPLOAD && (
+            <PermissionGuard requiredPermissions={[Permissions.DELETE_CHAT]}>
+              <Button
+                onClick={() => setDeleteCallLogData({ open: true, chatId: row.raw.id })}
+                fullWidth={true}
+                variant="icon"
+              >
+                <Delete />
+              </Button>
+            </PermissionGuard>
+          )}
+        </div>
       ),
-      icon: <ReviewIcon />,
+      icon: <ActionsIcon />,
     },
   ];
 
@@ -441,6 +487,13 @@ const ConsolidatedLogs: FC<LogsTableProps> = ({ refreshKey, sessionType }) => {
     }
   };
 
+  const onDeleteConfirm = async () => {
+    if (!deleteCallLogData.chatId) return;
+    await deleteCallLog(deleteCallLogData.chatId);
+    setDeleteCallLogData(defaultDeleteDialogData);
+    refetchCallLogs();
+  };
+
   return (
     <>
       <div className={"rounded-xl w-full max-h-[calc(100vh-10px)] overflow-y-hidden"}>
@@ -453,10 +506,21 @@ const ConsolidatedLogs: FC<LogsTableProps> = ({ refreshKey, sessionType }) => {
           onFilterChange={isCall ? handleFilterChange : undefined}
           handleLoadMore={logs?.length > 0 && hasMore && handleLoadMore}
           fallbackUI={renderFallbackUI()}
-          className="min-w-full max-h-[calc(100vh-140px)] font-['IBM_Plex_Serif'] overflow-y-scroll"
+          className="min-w-full max-h-[calc(100vh-140px)] font-['ReplayPro'] overflow-y-scroll"
         />
       </div>
       {summary && summary.id && getSummarySideBar()}
+      <ConfirmationDialog
+        isOpen={deleteCallLogData.open}
+        onClose={() => setDeleteCallLogData(defaultDeleteDialogData)}
+        onButtonClick={onDeleteConfirm}
+        title={{ normal: "Delete", italic: "Session log?" }}
+        content="Do you really want to delete this record? This process cannot be undone."
+        buttonText="Delete"
+        buttonVariant="destructive"
+        secondaryButtonText="Cancel"
+        onSecondaryButtonClick={() => setDeleteCallLogData(defaultDeleteDialogData)}
+      />
     </>
   );
 };

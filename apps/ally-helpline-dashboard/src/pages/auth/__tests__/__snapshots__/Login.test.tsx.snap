@@ -36,22 +36,17 @@ exports[`Login Component > Snapshot Testing > should match snapshot for email se
         </div>
       </div>
       <div
-        class="flex items-center gap-2 p-3 rounded-tl-2xl bg-white absolute bottom-0 right-0 cursor-pointer"
+        class="flex items-center gap-2 p-3 rounded-tl-2xl bg-white pl-5 absolute bottom-0 right-0 cursor-pointer"
       >
-        <div
-          class="w-10 h-10"
-          data-testid="ally-logo"
-        >
-          Ally
-        </div>
         <div
           class="flex flex-col mr-4 font-['Replay_Pro']"
         >
-          <span
-            class="text-xl font-bold text-[#0F172A]"
+          <div
+            class="w-10 h-10"
+            data-testid="ally-logo"
           >
             Ally
-          </span>
+          </div>
           <span
             class="text-sm font-medium text-[#858688]"
           >
@@ -89,13 +84,16 @@ exports[`Login Component > Snapshot Testing > should match snapshot for email se
                 Hey,
               </span>
               <h1>
-                <span>
-                  Welcome to 
-                </span>
                 <span
-                  class="font-bold italic"
+                  class="inline-flex items-center gap-2"
                 >
-                  ally
+                  Welcome to 
+                  <div
+                    class="mt-2"
+                    data-testid="ally-logo"
+                  >
+                    Ally
+                  </div>
                 </span>
               </h1>
               <span
@@ -206,22 +204,17 @@ exports[`Login Component > Snapshot Testing > should match snapshot for initial 
         </div>
       </div>
       <div
-        class="flex items-center gap-2 p-3 rounded-tl-2xl bg-white absolute bottom-0 right-0 cursor-pointer"
+        class="flex items-center gap-2 p-3 rounded-tl-2xl bg-white pl-5 absolute bottom-0 right-0 cursor-pointer"
       >
-        <div
-          class="w-10 h-10"
-          data-testid="ally-logo"
-        >
-          Ally
-        </div>
         <div
           class="flex flex-col mr-4 font-['Replay_Pro']"
         >
-          <span
-            class="text-xl font-bold text-[#0F172A]"
+          <div
+            class="w-10 h-10"
+            data-testid="ally-logo"
           >
             Ally
-          </span>
+          </div>
           <span
             class="text-sm font-medium text-[#858688]"
           >
@@ -259,13 +252,16 @@ exports[`Login Component > Snapshot Testing > should match snapshot for initial 
                 Hey,
               </span>
               <h1>
-                <span>
-                  Welcome to 
-                </span>
                 <span
-                  class="font-bold italic"
+                  class="inline-flex items-center gap-2"
                 >
-                  ally
+                  Welcome to 
+                  <div
+                    class="mt-2"
+                    data-testid="ally-logo"
+                  >
+                    Ally
+                  </div>
                 </span>
               </h1>
               <span

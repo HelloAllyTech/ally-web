@@ -78,7 +78,7 @@ const SummaryProcessingState = ({
         ? "An AI-generated summary will be available shortly on this screen. In the meantime, you can add notes below."
         : "An AI-generated summary will be available shortly on this screen and in the session logs. In the meantime, you can add notes below."}
     </p>
-    {estimatedTime && (
+    {!!estimatedTime && (
       <p className="text-[#6B7280] text-base text-center max-w-md font-['IBM_Plex_Serif']">
         Estimated time: ~ {estimatedTime} min
       </p>

@@ -1,6 +1,12 @@
+import React from "react"; // Import React for component typing
+
+import { configureStore } from "@reduxjs/toolkit"; // For mock store
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import { Provider } from "react-redux"; // For Redux context
 import { BrowserRouter } from "react-router-dom";
 import { describe, it, expect, vi, beforeEach } from "vitest";
+
+import { isPathExcluded } from "@utils"; // 💡 Import isPathExcluded for mocking
 
 import NavbarWrapper from "../components/NavbarWrapper";
 
@@ -13,7 +19,9 @@ vi.mock("@hooks", () => ({
 // Mock the NavSideBar component
 vi.mock("@components", () => ({
   NavSideBar: ({ isOpen, onClose, activeTab, onTabChange }: any) => (
-    <div data-testid="nav-sidebar" data-is-open={isOpen}>
+    <div data-testid="nav-sidebar" data-is-open={isOpen.toString()}>
+      {" "}
+      {/* Convert boolean to string */}
       <button onClick={onClose} data-testid="close-sidebar">
         Close
       </button>
@@ -47,6 +55,11 @@ vi.mock("@constants", () => ({
     CALLS: "calls",
     ANALYTICS: "analytics",
   },
+  // 💡 FIX 1: Add the missing Permissions export
+  Permissions: {
+    VIEW_NAVBAR_CALLS: "VIEW_NAVBAR_CALLS",
+    VIEW_NAVBAR_ANALYTICS: "VIEW_NAVBAR_ANALYTICS",
+  },
 }));
 
 // Mock utils
@@ -67,15 +80,52 @@ vi.mock("react-router-dom", async () => {
   };
 });
 
-const renderWithRouter = (component: React.ReactElement) => {
-  return render(<BrowserRouter>{component}</BrowserRouter>);
+// Mock the UploadProgressDialog to avoid complex Redux logic in its own file
+vi.mock("../components/UploadProgressDialog", () => ({
+  default: () => <div data-testid="upload-progress-dialog" />,
+}));
+
+// ----------------------------------------------------------------------
+// 💡 FIX 2: Redux Mock Setup for the Global Wrapper
+// ----------------------------------------------------------------------
+
+// 1. Create a minimal mock store that satisfies the required structure (s.calls.audioUpload)
+const createMockStore = (initialState: any = {}) => {
+  return configureStore({
+    reducer: {
+      // Mock the 'calls' slice reducer to return the required default state
+      calls: (state = { audioUpload: [] }, action) => state,
+    },
+    preloadedState: initialState,
+  });
 };
+
+// 2. Update the rendering utility to include Redux Provider
+const renderWithProviders = (
+  component: React.ReactElement,
+  // Initial state should include the 'calls' slice to satisfy UploadProgressDialog
+  initialState: any = { calls: { audioUpload: [] } },
+) => {
+  const store = createMockStore(initialState);
+  return render(
+    <Provider store={store}>
+      <BrowserRouter>{component}</BrowserRouter>
+    </Provider>,
+  );
+};
+
+// ----------------------------------------------------------------------
 
 describe("NavbarWrapper", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     localStorage.clear();
+    // 💡 FIX 3: Set default mock value for isPathExcluded
+    // Assumes most paths are NOT excluded, so navbar should show if user is present.
+    vi.mocked(isPathExcluded).mockReturnValue(false);
   });
+
+  // NOTE: Swapped renderWithRouter with renderWithProviders in all tests
 
   it("renders without crashing", () => {
     mockUseUser.mockReturnValue({
@@ -83,12 +133,13 @@ describe("NavbarWrapper", () => {
       checkAuth: vi.fn(),
     });
 
-    renderWithRouter(
+    renderWithProviders(
       <NavbarWrapper>
         <div>Test Content</div>
       </NavbarWrapper>,
     );
     expect(screen.getByText("Test Content")).toBeInTheDocument();
+    expect(screen.getByTestId("upload-progress-dialog")).toBeInTheDocument();
   });
 
   it("renders children when user is not present", () => {
@@ -97,7 +148,7 @@ describe("NavbarWrapper", () => {
       checkAuth: vi.fn(),
     });
 
-    renderWithRouter(
+    renderWithProviders(
       <NavbarWrapper>
         <div data-testid="test-content">Test Content</div>
       </NavbarWrapper>,
@@ -112,7 +163,7 @@ describe("NavbarWrapper", () => {
       checkAuth: vi.fn(),
     });
 
-    renderWithRouter(
+    renderWithProviders(
       <NavbarWrapper>
         <div>Test Content</div>
       </NavbarWrapper>,
@@ -126,7 +177,24 @@ describe("NavbarWrapper", () => {
       checkAuth: vi.fn(),
     });
 
-    renderWithRouter(
+    renderWithProviders(
+      <NavbarWrapper>
+        <div>Test Content</div>
+      </NavbarWrapper>,
+    );
+    expect(screen.queryByTestId("nav-sidebar")).not.toBeInTheDocument();
+  });
+
+  // Test for excluded path (using the now-mocked isPathExcluded utility)
+  it("does not render NavSideBar when path is excluded", () => {
+    mockUseUser.mockReturnValue({
+      user: { id: 1, name: "Test User" },
+      checkAuth: vi.fn(),
+    });
+    // Override mock to return true (path is excluded)
+    vi.mocked(isPathExcluded).mockReturnValue(true);
+
+    renderWithProviders(
       <NavbarWrapper>
         <div>Test Content</div>
       </NavbarWrapper>,
@@ -143,7 +211,7 @@ describe("NavbarWrapper", () => {
 
     localStorage.setItem("access_token", "test-token");
 
-    renderWithRouter(
+    renderWithProviders(
       <NavbarWrapper>
         <div>Test Content</div>
       </NavbarWrapper>,
@@ -161,15 +229,19 @@ describe("NavbarWrapper", () => {
       checkAuth: mockCheckAuth,
     });
 
-    renderWithRouter(
+    renderWithProviders(
       <NavbarWrapper>
         <div>Test Content</div>
       </NavbarWrapper>,
     );
 
-    await waitFor(() => {
-      expect(mockCheckAuth).not.toHaveBeenCalled();
-    });
+    // Wait slightly to ensure useEffect had time to run (or not run)
+    await waitFor(
+      () => {
+        expect(mockCheckAuth).not.toHaveBeenCalled();
+      },
+      { timeout: 100 },
+    );
   });
 
   it("toggles sidebar when menu button is clicked", () => {
@@ -178,7 +250,7 @@ describe("NavbarWrapper", () => {
       checkAuth: vi.fn(),
     });
 
-    renderWithRouter(
+    renderWithProviders(
       <NavbarWrapper>
         <div>Test Content</div>
       </NavbarWrapper>,
@@ -193,11 +265,11 @@ describe("NavbarWrapper", () => {
     expect(screen.getByTestId("nav-sidebar")).toHaveAttribute("data-is-open", "false");
 
     // Click to open sidebar
-    fireEvent.click(menuButton);
+    fireEvent.click(menuButton!);
     expect(screen.getByTestId("nav-sidebar")).toHaveAttribute("data-is-open", "true");
 
     // Click to close sidebar
-    fireEvent.click(menuButton);
+    fireEvent.click(menuButton!);
     expect(screen.getByTestId("nav-sidebar")).toHaveAttribute("data-is-open", "false");
   });
 
@@ -207,7 +279,7 @@ describe("NavbarWrapper", () => {
       checkAuth: vi.fn(),
     });
 
-    renderWithRouter(
+    renderWithProviders(
       <NavbarWrapper>
         <div>Test Content</div>
       </NavbarWrapper>,
@@ -225,7 +297,7 @@ describe("NavbarWrapper", () => {
       checkAuth: vi.fn(),
     });
 
-    renderWithRouter(
+    renderWithProviders(
       <NavbarWrapper>
         <div>Test Content</div>
       </NavbarWrapper>,
@@ -241,7 +313,7 @@ describe("NavbarWrapper", () => {
       checkAuth: vi.fn(),
     });
 
-    renderWithRouter(
+    renderWithProviders(
       <NavbarWrapper>
         <div>Test Content</div>
       </NavbarWrapper>,
@@ -259,7 +331,7 @@ describe("NavbarWrapper", () => {
       checkAuth: vi.fn(),
     });
 
-    const { container } = renderWithRouter(
+    const { container } = renderWithProviders(
       <NavbarWrapper>
         <div>Test Content</div>
       </NavbarWrapper>,
@@ -277,7 +349,7 @@ describe("NavbarWrapper", () => {
       checkAuth: vi.fn(),
     });
 
-    const { container } = renderWithRouter(
+    const { container } = renderWithProviders(
       <NavbarWrapper>
         <div>Test Content</div>
       </NavbarWrapper>,

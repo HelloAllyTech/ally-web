@@ -68,7 +68,6 @@ export const CallFeedback: FC<FeedbackSectionProps> = ({ id, onSubmitComplete })
     if (response.error) {
       logger.info(`Error submitting feedback: ${response.error}`);
     } else if (response.data) {
-      console.log("response", response.data);
       toast.success("Feedback submitted successfully");
       onSubmitComplete();
     }

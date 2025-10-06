@@ -23,23 +23,24 @@ import { Calls } from "../Calls";
 // Mock framer-motion
 vi.mock("framer-motion", () => ({
   motion: {
-    div: ({ children, ...props }: any) => (
-      <div data-testid="motion-div" {...props}>
-        {children}
-      </div>
-    ),
+    div: ({ children, ...props }: any) => <div {...props}>{children}</div>,
   },
 }));
 
 // Mock assets
 vi.mock("@assets", () => ({
-  Refresh: () => <div data-testid="refresh-icon">Refresh</div>,
+  Refresh: ({ className, onClick }: any) => (
+    <div data-testid="refresh-icon" className={className} onClick={onClick}>
+      Refresh
+    </div>
+  ),
   StartSession: () => <div data-testid="start-session-icon">StartSession</div>,
+  UploadIcon: () => <div data-testid="upload-icon">Upload</div>,
 }));
 
 // Mock components
 vi.mock("@components", () => ({
-  Button: vi.fn(({ children, onClick, variant, className, disabled }) => (
+  Button: ({ children, onClick, variant, className, disabled }: any) => (
     <button
       data-testid="mock-button"
       onClick={onClick}
@@ -49,26 +50,27 @@ vi.mock("@components", () => ({
     >
       {children}
     </button>
-  )),
-  ToggleButtonGroup: vi.fn(({ options = [], value, onChange }) => (
+  ),
+  ToggleButtonGroup: ({ items = [], value, onValueChange }: any) => (
     <div data-testid="toggle-button-group">
-      {options.map((option: any) => (
+      {items.map((item: any) => (
         <button
-          key={option.value}
-          data-testid={`toggle-option-${option.value}`}
-          onClick={() => onChange(option.value)}
-          className={value === option.value ? "active" : ""}
+          key={item.value}
+          data-testid={`toggle-option-${item.value}`}
+          onClick={() => onValueChange(item.value)}
+          className={value === item.value ? "active" : ""}
         >
-          {option.label}
+          {item.label}
         </button>
       ))}
     </div>
-  )),
+  ),
+  PermissionGuard: ({ children }: any) => <div>{children}</div>,
 }));
 
 // Mock child components
 vi.mock("../components", () => ({
-  CallLogsTable: vi.fn(({ refreshKey, sessionType }) => (
+  CallLogsTable: ({ refreshKey, sessionType }: any) => (
     <div
       data-testid="call-logs-table"
       data-refresh-key={refreshKey}
@@ -76,8 +78,8 @@ vi.mock("../components", () => ({
     >
       Call Logs Table
     </div>
-  )),
-  ConsolidatedLogs: vi.fn(({ refreshKey, sessionType }) => (
+  ),
+  ConsolidatedLogs: ({ refreshKey, sessionType }: any) => (
     <div
       data-testid="consolidated-logs"
       data-refresh-key={refreshKey}
@@ -85,14 +87,21 @@ vi.mock("../components", () => ({
     >
       Consolidated Logs
     </div>
-  )),
-  StartSessionDialog: vi.fn(({ isOpen, onClose }) => (
+  ),
+  StartSessionDialog: ({ isOpen, onClose }: any) => (
     <div data-testid="start-session-dialog" data-is-open={isOpen}>
       <button data-testid="close-dialog" onClick={onClose}>
         Close Dialog
       </button>
     </div>
-  )),
+  ),
+  AudioUploadDialog: ({ isOpen, onClose }: any) => (
+    <div data-testid="audio-upload-dialog" data-is-open={isOpen}>
+      <button data-testid="close-audio-dialog" onClick={onClose}>
+        Close Audio Dialog
+      </button>
+    </div>
+  ),
 }));
 
 // Mock utils
@@ -106,18 +115,15 @@ vi.mock("@hooks", () => ({
   useUser: () => mockUseUser(),
 }));
 
-// Mock Redux useSelector
-const mockUseSelector = vi.fn();
-vi.mock("react-redux", () => ({
-  useSelector: () => mockUseSelector(),
-}));
-
 // Mock constants
 vi.mock("@constants", () => ({
   CallType: {
     WEBRTC_CHAT: "WEBRTC_CHAT",
     MICROPHONE_CHAT: "MICROPHONE_CHAT",
     EXOTEL_CONFERENCE_CHAT: "EXOTEL_CONFERENCE_CHAT",
+  },
+  Permissions: {
+    VIEW_AUDIO_UPLOAD: "VIEW_AUDIO_UPLOAD",
   },
 }));
 
@@ -146,9 +152,6 @@ describe("Calls Component", () => {
       user: mockUser,
       userStatus: UserStatus.AVAILABLE,
       permissions: mockPermissions,
-    });
-    mockUseSelector.mockReturnValue({
-      user: mockUser,
     });
     mockGetPermittedSessionTypeOptions.mockReturnValue([
       {
@@ -202,25 +205,12 @@ describe("Calls Component", () => {
       expect(mainContainer).not.toBeNull();
     });
 
-    it("should render motion div with correct props", () => {
-      const { container } = render(<Calls />);
-      const motionDiv = container.querySelector("div[data-testid='motion-div']");
-      expect(motionDiv).not.toBeNull();
-    });
-
     it("should render call logs table", () => {
       render(<Calls />);
       expect(screen.getByTestId("call-logs-table")).toBeInTheDocument();
     });
 
     it("should render consolidated logs for admin role", () => {
-      mockUseSelector.mockReturnValue({
-        user: {
-          role: UserRole.ADMIN,
-          status: UserStatus.AVAILABLE,
-          permissions: mockPermissions,
-        },
-      });
       mockUseUser.mockReturnValue({
         availableChatTypes: ["WEBRTC_CHAT", "MICROPHONE_CHAT"],
         updateUserStatus: vi.fn(),
@@ -230,6 +220,11 @@ describe("Calls Component", () => {
       });
       render(<Calls />);
       expect(screen.getByTestId("consolidated-logs")).toBeInTheDocument();
+    });
+
+    it("should render Session Logs heading", () => {
+      render(<Calls />);
+      expect(screen.getByText("Session Logs")).toBeInTheDocument();
     });
   });
 
@@ -255,7 +250,7 @@ describe("Calls Component", () => {
       expect(mockGetPermittedSessionTypeOptions).toHaveBeenCalledWith(mockPermissions);
     });
 
-    it("should handle empty session type options", () => {
+    it("should handle single session type option", () => {
       mockGetPermittedSessionTypeOptions.mockReturnValue([
         {
           label: "Call",
@@ -266,8 +261,15 @@ describe("Calls Component", () => {
 
       render(<Calls />);
 
-      // Component should render without errors
-      expect(screen.getByTestId("call-logs-table")).toBeInTheDocument();
+      // Toggle button group should not be rendered
+      expect(screen.queryByTestId("toggle-button-group")).not.toBeInTheDocument();
+    });
+
+    it("should render toggle button group with multiple options", () => {
+      render(<Calls />);
+
+      // Toggle button group should be rendered
+      expect(screen.getByTestId("toggle-button-group")).toBeInTheDocument();
     });
   });
 
@@ -302,17 +304,22 @@ describe("Calls Component", () => {
       expect(screen.getByTestId("consolidated-logs")).toBeInTheDocument();
     });
 
-    it("should handle missing user data", () => {
+    it("should show Start Session button for non-admin with MICROPHONE_CHAT", () => {
+      render(<Calls />);
+      expect(screen.getByText("Start Session")).toBeInTheDocument();
+    });
+
+    it("should not show Start Session button for admin", () => {
       mockUseUser.mockReturnValue({
-        availableChatTypes: [],
+        availableChatTypes: ["WEBRTC_CHAT", "MICROPHONE_CHAT"],
         updateUserStatus: vi.fn(),
-        user: null,
-        userStatus: UserStatus.OFFLINE,
-        permissions: {},
+        user: { ...mockUser, role: UserRole.ADMIN },
+        userStatus: UserStatus.AVAILABLE,
+        permissions: mockPermissions,
       });
 
       render(<Calls />);
-      expect(screen.getByTestId("call-logs-table")).toBeInTheDocument();
+      expect(screen.queryByText("Start Session")).not.toBeInTheDocument();
     });
   });
 
@@ -324,26 +331,23 @@ describe("Calls Component", () => {
     it("should handle start session button click", () => {
       render(<Calls />);
 
-      // Find and click the start session button
       const startSessionButton = screen.getByText("Start Session");
       fireEvent.click(startSessionButton);
 
-      // Dialog should be open
       expect(screen.getByTestId("start-session-dialog")).toHaveAttribute("data-is-open", "true");
     });
 
     it("should handle refresh button click", () => {
       render(<Calls />);
 
-      // Find and click the refresh button
-      const refreshButton = screen.getByText("Refresh");
-      fireEvent.click(refreshButton);
+      const refreshIcon = screen.getByTestId("refresh-icon");
+      fireEvent.click(refreshIcon);
 
-      // Component should render without errors after refresh
-      expect(screen.getByTestId("call-logs-table")).toBeInTheDocument();
+      // Refresh key should increment
+      expect(screen.getByTestId("call-logs-table")).toHaveAttribute("data-refresh-key", "1");
     });
 
-    it("should handle user status toggle", () => {
+    it("should handle user status toggle from AVAILABLE to OFFLINE", () => {
       const mockUpdateUserStatus = vi.fn();
       mockUseUser.mockReturnValue({
         availableChatTypes: ["WEBRTC_CHAT", "MICROPHONE_CHAT"],
@@ -355,12 +359,28 @@ describe("Calls Component", () => {
 
       render(<Calls />);
 
-      // Find and click the status toggle button (Mark Away button)
       const statusButton = screen.getByText("Mark Away");
       fireEvent.click(statusButton);
 
-      // Should call updateUserStatus with OFFLINE
       expect(mockUpdateUserStatus).toHaveBeenCalledWith(UserStatus.OFFLINE);
+    });
+
+    it("should handle user status toggle from OFFLINE to AVAILABLE", () => {
+      const mockUpdateUserStatus = vi.fn();
+      mockUseUser.mockReturnValue({
+        availableChatTypes: ["WEBRTC_CHAT", "MICROPHONE_CHAT"],
+        updateUserStatus: mockUpdateUserStatus,
+        user: mockUser,
+        userStatus: UserStatus.OFFLINE,
+        permissions: mockPermissions,
+      });
+
+      render(<Calls />);
+
+      const statusButton = screen.getByText("Mark Available");
+      fireEvent.click(statusButton);
+
+      expect(mockUpdateUserStatus).toHaveBeenCalledWith(UserStatus.AVAILABLE);
     });
   });
 
@@ -381,11 +401,9 @@ describe("Calls Component", () => {
     it("should close start session dialog", () => {
       render(<Calls />);
 
-      // Open dialog first
       const startSessionButton = screen.getByText("Start Session");
       fireEvent.click(startSessionButton);
 
-      // Close dialog
       const closeButton = screen.getByTestId("close-dialog");
       fireEvent.click(closeButton);
 
@@ -398,32 +416,25 @@ describe("Calls Component", () => {
    * Verifies session type selection and updates
    */
   describe("Session Type Handling", () => {
-    it("should handle session type change", () => {
-      // Mock the session type options
-      mockGetPermittedSessionTypeOptions.mockReturnValue([
-        {
-          value: SessionType.CALL,
-          label: "Call",
-          permissionList: [],
-        },
-        {
-          value: SessionType.SIMULATION,
-          label: "Simulation",
-          permissionList: [],
-        },
-      ]);
-
-      render(<Calls />);
-
-      // Component should render without errors
-      expect(screen.getByTestId("call-logs-table")).toBeInTheDocument();
-    });
-
     it("should pass session type to child components", () => {
       render(<Calls />);
 
-      // Child component should receive the session type
-      expect(screen.getByTestId("call-logs-table")).toHaveAttribute("data-session-type");
+      expect(screen.getByTestId("call-logs-table")).toHaveAttribute(
+        "data-session-type",
+        SessionType.CALL,
+      );
+    });
+
+    it("should update session type when toggle is clicked", () => {
+      render(<Calls />);
+
+      const simulationToggle = screen.getByTestId(`toggle-option-${SessionType.SIMULATION}`);
+      fireEvent.click(simulationToggle);
+
+      expect(screen.getByTestId("call-logs-table")).toHaveAttribute(
+        "data-session-type",
+        SessionType.SIMULATION,
+      );
     });
   });
 
@@ -435,17 +446,23 @@ describe("Calls Component", () => {
     it("should increment refresh key on refresh", () => {
       render(<Calls />);
 
-      const refreshButton = screen.getByText("Refresh");
-      fireEvent.click(refreshButton);
+      const refreshIcon = screen.getByTestId("refresh-icon");
 
-      // Component should render without errors after refresh
-      expect(screen.getByTestId("call-logs-table")).toBeInTheDocument();
+      // Initial state
+      expect(screen.getByTestId("call-logs-table")).toHaveAttribute("data-refresh-key", "0");
+
+      // First refresh
+      fireEvent.click(refreshIcon);
+      expect(screen.getByTestId("call-logs-table")).toHaveAttribute("data-refresh-key", "1");
+
+      // Second refresh
+      fireEvent.click(refreshIcon);
+      expect(screen.getByTestId("call-logs-table")).toHaveAttribute("data-refresh-key", "2");
     });
 
     it("should pass refresh key to child components", () => {
       render(<Calls />);
 
-      // Child component should receive the refresh key
       expect(screen.getByTestId("call-logs-table")).toHaveAttribute("data-refresh-key");
     });
   });
@@ -455,22 +472,36 @@ describe("Calls Component", () => {
    * Verifies error handling and edge cases
    */
   describe("Error Handling", () => {
-    it("should handle missing permissions gracefully", () => {
+    it("should handle empty permissions", () => {
       mockUseUser.mockReturnValue({
         availableChatTypes: [],
         updateUserStatus: vi.fn(),
         user: mockUser,
         userStatus: UserStatus.AVAILABLE,
-        permissions: null,
+        permissions: {},
+      });
+      mockGetPermittedSessionTypeOptions.mockReturnValue([]);
+
+      render(<Calls />);
+      expect(screen.getByTestId("call-logs-table")).toBeInTheDocument();
+    });
+
+    it("should handle null user", () => {
+      mockUseUser.mockReturnValue({
+        availableChatTypes: [],
+        updateUserStatus: vi.fn(),
+        user: null,
+        userStatus: UserStatus.OFFLINE,
+        permissions: {},
       });
 
       render(<Calls />);
       expect(screen.getByTestId("call-logs-table")).toBeInTheDocument();
     });
 
-    it("should handle missing available chat types", () => {
+    it("should handle empty available chat types", () => {
       mockUseUser.mockReturnValue({
-        availableChatTypes: null,
+        availableChatTypes: [],
         updateUserStatus: vi.fn(),
         user: mockUser,
         userStatus: UserStatus.AVAILABLE,
@@ -478,7 +509,8 @@ describe("Calls Component", () => {
       });
 
       render(<Calls />);
-      expect(screen.getByTestId("call-logs-table")).toBeInTheDocument();
+      expect(screen.queryByText("Start Session")).not.toBeInTheDocument();
+      expect(screen.queryByText("Mark Away")).not.toBeInTheDocument();
     });
   });
 
@@ -498,7 +530,6 @@ describe("Calls Component", () => {
       render(<Calls />);
 
       expect(screen.getByText("Start Session")).toBeInTheDocument();
-      expect(screen.getByText("Refresh")).toBeInTheDocument();
     });
   });
 

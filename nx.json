@@ -53,6 +53,12 @@
         "devTargetName": "dev",
         "serveStaticTargetName": "serve-static"
       }
+    },
+    {
+      "plugin": "@nx/eslint/plugin",
+      "options": {
+        "targetName": "eslint:lint"
+      }
     }
   ],
   "generators": {
@@ -60,6 +66,7 @@
       "application": {
         "babel": true,
         "style": "tailwind",
+        "linter": "eslint",
         "bundler": "vite"
       },
       "component": {
@@ -67,6 +74,7 @@
       },
       "library": {
         "style": "tailwind",
+        "linter": "eslint",
         "unitTestRunner": "none"
       }
     },

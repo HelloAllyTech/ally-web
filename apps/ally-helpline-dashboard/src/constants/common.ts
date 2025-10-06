@@ -4,7 +4,7 @@ import { CarouselSlideType } from "@components";
 export const ALLY_URL = "https://www.helloally.ai";
 export const ALLY_TERMS_URL = "https://www.helloally.ai/terms";
 export const ALLY_PRIVACY_POLICY_URL = "https://www.helloally.ai/policy";
-export const ALLY_DATA_POLICY_URL = "https://www.helloally.ai/privacy";
+export const ALLY_DATA_POLICY_URL = "https://www.helloally.ai/policy";
 
 export const ICE_SERVERS = [
   { urls: "stun:stun.l.google.com:19302" },
@@ -103,6 +103,9 @@ export const ApiEndpoints = {
     GET_COUNSELLORS: "/chats/counselors",
     GET_CALL_TAGS: "/chats/tags",
     GET_CHAT_TYPES: "/settings/chat-types",
+    GET_AUDIO_UPLOAD_URL: "/chats/upload-url",
+    CANCEL_AUDIO_UPLOAD: "/chats/cancel-upload",
+    DELETE_CALL_LOG: (chatId: number) => `/chats/${chatId}`,
   },
   CALL_SUMMARY: {
     GET_SUMMARY_FIELDS: "/settings/summary-fields",
