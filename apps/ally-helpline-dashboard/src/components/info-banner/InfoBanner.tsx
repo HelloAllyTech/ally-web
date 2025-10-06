@@ -15,6 +15,7 @@ const InfoBanner: FC<InfoBannerProps> = ({
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3, ease: "easeOut" }}
+      data-testid="info-banner-wrapper"
       className={`p-[10px] mb-4 flex items-center gap-2 border-[0.5px] rounded-[8px] ${wrapperClassName}`}
     >
       <motion.div

@@ -56,6 +56,7 @@ export default defineConfig(() => ({
       reportsDirectory: "../../coverage/apps/ally-admin-dashboard",
       provider: "v8" as const,
     },
+    passWithNoTests: true,
   },
   resolve: {
     alias: {

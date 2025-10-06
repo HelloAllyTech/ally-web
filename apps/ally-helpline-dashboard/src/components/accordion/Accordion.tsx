@@ -10,7 +10,9 @@ import "./Accordion.css";
 const Accordion: FC<AccordionProps> = ({ children, defaultExpanded, title, titleIcon }) => {
   return (
     <MuiAccordion defaultExpanded={defaultExpanded}>
-      <AccordionSummary expandIcon={<PlayArrowRounded className="rotate-90 text-[#000]" />}>
+      <AccordionSummary
+        expandIcon={<PlayArrowRounded className="rotate-90 text-[#000]" aria-label="expand icon" />}
+      >
         {titleIcon && <titleIcon.icon className="h-6 w-6" />}
         <span className="text-[16px] font-medium text-[#000]">{title}</span>
       </AccordionSummary>

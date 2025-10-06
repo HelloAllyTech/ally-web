@@ -1,0 +1,65 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`Calendar Component > Snapshot Testing > should have consistent HTML output 1`] = `"<div class=\\"h-[90vh] flex items-center justify-center\\"><div data-testid=\\"fallback-ui-mock\\"><div data-testid=\\"fallback-image\\"><div data-testid=\\"coming-soon-icon\\">ComingSoon</div></div><h2 data-testid=\\"fallback-main-message\\">Coming Soon</h2><p data-testid=\\"fallback-description\\">We’re working on something exciting! This feature will be available soon.</p></div></div>"`;
+
+exports[`Calendar Component > Snapshot Testing > should match snapshot for basic render 1`] = `
+<div>
+  <div
+    class="h-[90vh] flex items-center justify-center"
+  >
+    <div
+      data-testid="fallback-ui-mock"
+    >
+      <div
+        data-testid="fallback-image"
+      >
+        <div
+          data-testid="coming-soon-icon"
+        >
+          ComingSoon
+        </div>
+      </div>
+      <h2
+        data-testid="fallback-main-message"
+      >
+        Coming Soon
+      </h2>
+      <p
+        data-testid="fallback-description"
+      >
+        We’re working on something exciting! This feature will be available soon.
+      </p>
+    </div>
+  </div>
+</div>
+`;
+
+exports[`Calendar Component > Snapshot Testing > should match snapshot for component structure 1`] = `
+<div
+  class="h-[90vh] flex items-center justify-center"
+>
+  <div
+    data-testid="fallback-ui-mock"
+  >
+    <div
+      data-testid="fallback-image"
+    >
+      <div
+        data-testid="coming-soon-icon"
+      >
+        ComingSoon
+      </div>
+    </div>
+    <h2
+      data-testid="fallback-main-message"
+    >
+      Coming Soon
+    </h2>
+    <p
+      data-testid="fallback-description"
+    >
+      We’re working on something exciting! This feature will be available soon.
+    </p>
+  </div>
+</div>
+`;
