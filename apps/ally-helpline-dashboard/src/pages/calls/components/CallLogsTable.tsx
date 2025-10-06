@@ -212,7 +212,7 @@ const CallLogsTable: FC<LogsTableProps> = ({ refreshKey, sessionType }) => {
       key: "source",
       header: "Source",
       style: { width: "16%" },
-      render: (_value, row) => <Chip config={getSourceChipConfig(row.source)} />,
+      render: (_value, row) => <Chip config={getSourceChipConfig(row.provider)} />,
       icon: <SourceIcon />,
     },
     {
