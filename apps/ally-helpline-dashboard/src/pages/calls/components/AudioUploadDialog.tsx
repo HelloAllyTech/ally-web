@@ -201,7 +201,7 @@ const AudioUploadDialog: FC<AudioUploadDialogProps> = ({ isOpen, onClose }) => {
 
           {/* Date */}
           <div className="flex flex-col gap-2">
-            <label>Date</label>
+            <label>Session date</label>
             <DatePicker
               value={formData.date}
               onChange={value => setFormData({ ...formData, date: value })}
@@ -211,7 +211,7 @@ const AudioUploadDialog: FC<AudioUploadDialogProps> = ({ isOpen, onClose }) => {
 
           {/* Time */}
           <div className="flex flex-col gap-2">
-            <label>Time</label>
+            <label>Session time</label>
             <TimePicker
               value={formData.time}
               onChange={value => setFormData({ ...formData, time: value })}
