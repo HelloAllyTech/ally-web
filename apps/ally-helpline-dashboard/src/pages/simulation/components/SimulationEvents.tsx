@@ -64,7 +64,7 @@ const SimulationEvents: FC<SimulationEventsProps> = ({ events }) => {
               transition={{ duration: 0.4 }}
               ref={isLast ? lastEventRef : undefined}
             >
-              <span className="text-[14px] text-white italic font-['IBM_Plex_Serif']">
+              <span className="text-[14px] text-white font-['IBM_Plex_Serif']">
                 {`${emoji}  ${message}`}
               </span>
               <span className="text-[12px] text-[#9CA3AF] font-['Roboto'] flex-none">
