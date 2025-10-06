@@ -1,5 +1,7 @@
 import { Dispatch, ReactNode, SetStateAction } from "react";
 
+import { Dayjs } from "dayjs";
+
 import { CallLog, ChatSummaryStatus, SessionType } from "@types";
 
 export interface StartSessionDialogProps {
@@ -82,4 +84,24 @@ export interface TranscriptTabProps {
 
 export interface SimulationTranscriptTabProps {
   sessionId: string;
+}
+
+export interface AudioUploadDialogProps {
+  isOpen: boolean;
+  onClose: () => void;
+}
+
+export interface AudioUploadInterfaceProps {
+  duration: number;
+  files: File[];
+  onAudioAvailable: (duration: number) => void;
+  onDropSuccess: (files: File[]) => void;
+  onDeleteClick: () => void;
+}
+
+export interface AudioUploadFormData {
+  counsellorId: string;
+  date: Dayjs | null;
+  time: Dayjs | null;
+  timeZone: string;
 }

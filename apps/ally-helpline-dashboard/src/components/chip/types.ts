@@ -1,13 +1,11 @@
 import { FunctionComponent, SVGProps } from "react";
 
-import { ChatSummaryStatus } from "@types";
-
-export interface SummaryStatusProps {
-  status: ChatSummaryStatus;
+export interface ChipProps {
   className?: string;
+  config: ChipConfig;
 }
 
-export interface StatusConfig {
+export interface ChipConfig {
   label: string;
   dotClassName?: string;
   outerDivClassName?: string;

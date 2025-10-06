@@ -3,39 +3,14 @@ import { FC, useState } from "react";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import { useNavigate } from "react-router-dom";
 
-import { AccountCircle, Close, Logout, LogoutIllustration } from "@assets/icons";
-import { Button, Carousel, CarouselSize, CarouselVariant, ConfirmationDialog } from "@components";
+import { Ally, Close, LogoutIllustration } from "@assets";
+import { Carousel, CarouselSize, CarouselVariant, ConfirmationDialog, UserInfo } from "@components";
 import { TabId, navBarOptions, CAROUSEL_SLIDES } from "@constants";
 import { useUser } from "@hooks";
-import { User } from "@types";
 import { openLinkInNewTab } from "@utils";
 
 import { ButtonVariant } from "../button";
 import { NavSideBarProps, TabProps } from "./types";
-
-const UserInfo: FC<{ user?: User }> = ({ user }) => (
-  <div
-    className="flex border-gray-200 w-[calc(100%-30px)] 
-    border-b border-b-[#E5E7EB] py-[20px] px-[5px] mx-[15px] gap-[10px] items-center"
-  >
-    <AccountCircle className="w-[30px] h-[30px]" />
-    <div className="flex flex-col font-['IBM_Plex_Serif']">
-      <div className="text-[16px] text-gray-800">{user?.name}</div>
-      <div className="text-[12px] text-gray-500">{user?.email}</div>
-    </div>
-  </div>
-);
-
-const LogoutButton: FC<{ onClick: () => void }> = ({ onClick }) => (
-  <Button
-    variant={ButtonVariant.TEXT}
-    onClick={onClick}
-    className="flex items-center mb-[6px] justify-start rounded-none hover:bg-gray-50 gap-[10px]"
-  >
-    <Logout />
-    <div className="font-['IBM_Plex_Serif'] text-[#444]">Log Out</div>
-  </Button>
-);
 
 const Tab: FC<TabProps> = ({ id, Icon, title, activeTab, onClick }) => (
   <div
@@ -95,7 +70,7 @@ const NavSideBar: FC<NavSideBarProps> = ({ activeTab, onTabChange, isOpen, onClo
 
   const renderTabs = () => {
     return (
-      <div className="flex flex-col gap-1 m-3">
+      <div className="flex flex-col gap-1 m-3 border-t border-t-[#E5E7EB] pt-3">
         {permittedTabs?.map(({ id, Icon, title, path }) => (
           <Tab
             key={id}
@@ -119,10 +94,12 @@ const NavSideBar: FC<NavSideBarProps> = ({ activeTab, onTabChange, isOpen, onClo
         <button onClick={onClose} className="md:hidden absolute top-4 right-4">
           <Close />
         </button>
+
         <div className="flex flex-col">
-          <UserInfo user={user} />
+          <Ally className="m-3 mt-7" />
           {renderTabs()}
         </div>
+
         <div className="flex flex-col items-start gap-3 m-3">
           <Carousel
             slides={CAROUSEL_SLIDES}
@@ -130,7 +107,7 @@ const NavSideBar: FC<NavSideBarProps> = ({ activeTab, onTabChange, isOpen, onClo
             size={CarouselSize.SMALL}
           />
           <hr className="w-full border-t border-gray-200" />
-          <LogoutButton onClick={handleLogout} />
+          <UserInfo user={user} onLogout={handleLogout} />
         </div>
       </div>
       <ConfirmationDialog

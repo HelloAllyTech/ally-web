@@ -1,3 +1,5 @@
+import AudioUploadDialog from "./AudioUploadDialog";
+import AudioUploadInterface from "./AudioUploadInterface";
 import CallLogsTable from "./CallLogsTable";
 import CallSummarySidebar from "./CallSummarySidebar";
 import CallTranscriptTab from "./CallTranscriptTab";
@@ -10,6 +12,8 @@ import SummarySidebarWrapper from "./SummarySidebarWrapper";
 import TranscriptTab from "./TranscriptTab";
 
 export {
+  AudioUploadDialog,
+  AudioUploadInterface,
   CallLogsTable,
   CallSummarySidebar,
   CallTranscriptTab,

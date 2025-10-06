@@ -61,3 +61,13 @@ export const decodeUint8ToJson = (payload: unknown): unknown => {
   }
   return null;
 };
+
+export const formatSizeInBytes = (sizeInBytes: number, targetUnit: "KB" | "MB" | "GB") => {
+  if (targetUnit === "KB") {
+    return sizeInBytes / 1024;
+  }
+  if (targetUnit === "MB") {
+    return sizeInBytes / 1024 / 1024;
+  }
+  return sizeInBytes / 1024 / 1024 / 1024;
+};

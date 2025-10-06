@@ -1,15 +1,16 @@
+import allyIcon from "./ally.svg";
+
 /**
  * SearchHeader component displays the main header and optional description for the search UI.
  * @component
  * @param {Object} props
  * @param {boolean} [props.showDescriptionInMobile=true] - Whether to show the description on mobile devices.
  */
+
 const SearchHeader = ({ showDescriptionInMobile = true }) => {
   return (
-    <div className="w-full flex flex-col gap-2 items-center justify-center font-['IBM_Plex_Serif'] mb-[18px]">
-      <span className="sm:text-[64px] text-[48px] sm:leading-[70px] leading-[50px] text-[#0D0D0D] italic">
-        Ally
-      </span>
+    <div className="w-full flex flex-col gap-2 items-center justify-center font-['IBM_Plex_Serif'] mb-4 mt-10">
+      <img src={allyIcon} alt="Ally Logo" className="w-24 h-16" />
       <span
         className={`${
           showDescriptionInMobile ? "block" : "hidden"

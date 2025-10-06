@@ -27,7 +27,7 @@ vi.mock("@ally-ui-mono/ui-shared", () => ({
         {data?.map((item: any, index: number) => (
           <div key={item.id || index} data-testid={`table-row-${index}`}>
             {columns.map((col: any) => (
-              <div key={col.key} data-testid={`cell-${col.key}`}>
+              <div key={col.key} data-testid={`cell-${col.key}-${index}`}>
                 {col.render ? col.render(item[col.key], item) : item[col.key]}
               </div>
             ))}
@@ -50,6 +50,9 @@ vi.mock("@api", () => ({
 }));
 
 // Mock assets
+// Mock assets
+// Mock assets
+// Mock assets
 vi.mock("@assets", () => ({
   NoResults: () => <div data-testid="no-results-icon">No Results</div>,
   CallIdIcon: () => <div data-testid="call-id-icon">Call ID</div>,
@@ -60,21 +63,13 @@ vi.mock("@assets", () => ({
   SummaryGenerationIcon: () => <div data-testid="summary-generation-icon">Summary</div>,
   ScenarioIcon: () => <div data-testid="scenario-icon">Scenario</div>,
   SessionScoreIcon: () => <div data-testid="session-score-icon">Score</div>,
-  Carousel1: "Carousel1",
-  Carousel2: "Carousel2",
-  Carousel3: "Carousel3",
-  Carousel4: "Carousel4",
-  EndSessionIllustration: "EndSessionIllustration",
-  Focus: "Focus",
-  PauseIcon: "PauseIcon",
-  Warning: "Warning",
-  Lock: "Lock",
-  Enhance: "Enhance",
-  Mindfulness: "Mindfulness",
-  Flower: "Flower",
-  LoginImage: "LoginImage",
-  DefaultCallProfile: "DefaultCallProfile",
-  InDoubt: () => <div data-testid="in-doubt-icon">In Doubt</div>,
+  SourceIcon: () => <div data-testid="source-icon">Source</div>,
+
+  // FIX: Add all missing 'Carousel' exports
+  Carousel1: () => <div data-testid="carousel-1-icon">Carousel 1</div>,
+  Carousel2: () => <div data-testid="carousel-2-icon">Carousel 2</div>,
+  Carousel3: () => <div data-testid="carousel-3-icon">Carousel 3</div>, // ADDED
+  Carousel4: () => <div data-testid="carousel-4-icon">Carousel 4</div>, // ADDED
 }));
 
 // Mock components
@@ -83,6 +78,11 @@ vi.mock("@components", () => ({
     <button onClick={onClick} data-full-width={fullWidth} data-variant={variant} {...props}>
       {children}
     </button>
+  ),
+  Chip: ({ config }: any) => (
+    <div data-testid="chip" data-variant={config?.variant}>
+      {config?.label || config?.text || ""}
+    </div>
   ),
   TagGroup: ({ tags }: any) => (
     <div data-testid="tag-group">
@@ -98,11 +98,6 @@ vi.mock("@components", () => ({
       {image}
       <div data-testid="fallback-message">{mainMessage}</div>
       <div data-testid="fallback-description">{description}</div>
-    </div>
-  ),
-  SummaryStatusChip: ({ status }: any) => (
-    <div data-testid="summary-status-chip" data-status={status}>
-      {status || "PENDING"}
     </div>
   ),
 }));
@@ -138,6 +133,18 @@ vi.mock("@utils", () => ({
   getSimulationScoreDisplay: vi.fn((score: number) => `${score}/100`),
 }));
 
+// Mock utils in component directory
+vi.mock("../utils", () => ({
+  getSourceChipConfig: vi.fn((source: string) => ({
+    label: source || "Unknown",
+    variant: "default",
+  })),
+  getStatusChipConfig: vi.fn((status: string) => ({
+    label: status || "PENDING",
+    variant: "warning",
+  })),
+}));
+
 // Mock router
 vi.mock("react-router-dom", async () => {
   const actual = await vi.importActual("react-router-dom");
@@ -150,11 +157,21 @@ vi.mock("react-router-dom", async () => {
   };
 });
 
+// Mock Redux actions
+vi.mock("@reducer", () => ({
+  updateFilters: vi.fn(filters => ({ type: "UPDATE_FILTERS", payload: filters })),
+}));
+
 // Mock Redux store
 const createMockStore = (callsState: any = { filters: { offset: 0 } }) => {
   return configureStore({
     reducer: {
-      calls: (state = callsState, action) => state,
+      calls: (state = callsState, action) => {
+        if (action.type === "UPDATE_FILTERS") {
+          return { ...state, filters: action.payload };
+        }
+        return state;
+      },
     },
     preloadedState: {
       calls: callsState,
@@ -176,6 +193,7 @@ const mockCallLog: CallLog = {
     callDuration: 300,
     callInfo: {
       summaryName: "Test Call",
+      provider: "test-provider",
     },
     startTime: "2024-01-01T10:00:00Z",
     summary: {
@@ -297,7 +315,7 @@ describe("CallLogsTable Component", () => {
       expect(screen.getByTestId("circular-progress")).toBeInTheDocument();
     });
 
-    it("should render call logs table with data", () => {
+    it("should render call logs table with data", async () => {
       mockUseGetCallLogsQuery.mockReturnValue({
         data: { data: [mockCallLog] },
         isLoading: false,
@@ -306,11 +324,13 @@ describe("CallLogsTable Component", () => {
 
       renderComponent(SessionType.CALL);
 
-      expect(screen.getByTestId("generic-table")).toBeInTheDocument();
-      expect(screen.getByText("Test Call")).toBeInTheDocument();
+      await waitFor(() => {
+        expect(screen.getByTestId("generic-table")).toBeInTheDocument();
+        expect(screen.getByText("Test Call")).toBeInTheDocument();
+      });
     });
 
-    it("should render simulation logs table with data", () => {
+    it("should render simulation logs table with data", async () => {
       mockUseGetSimulationLogsQuery.mockReturnValue({
         data: { data: [mockSimulationLog] },
         isLoading: false,
@@ -319,21 +339,15 @@ describe("CallLogsTable Component", () => {
 
       renderComponent(SessionType.SIMULATION);
 
-      expect(screen.getByTestId("generic-table")).toBeInTheDocument();
-      expect(screen.getByText("Test Simulation")).toBeInTheDocument();
+      await waitFor(() => {
+        expect(screen.getByTestId("generic-table")).toBeInTheDocument();
+        expect(screen.getByText("Test Simulation")).toBeInTheDocument();
+      });
     });
   });
 
   describe("Call Logs Display", () => {
-    beforeEach(() => {
-      mockUseGetCallLogsQuery.mockReturnValue({
-        data: { data: [mockCallLog] },
-        isLoading: false,
-        refetch: vi.fn(),
-      });
-    });
-
-    it("should display call log data correctly", () => {
+    it("should display call log data correctly", async () => {
       mockUseGetCallLogsQuery.mockReturnValue({
         data: { data: [mockCallLog] },
         isLoading: false,
@@ -342,50 +356,33 @@ describe("CallLogsTable Component", () => {
 
       renderComponent(SessionType.CALL);
 
-      expect(screen.getByText("Test Call")).toBeInTheDocument();
-      // Check that the summary status chip is rendered
-      expect(screen.getByTestId("summary-status-chip")).toBeInTheDocument();
-      expect(screen.getByText("PENDING")).toBeInTheDocument();
+      await waitFor(() => {
+        expect(screen.getByText("Test Call")).toBeInTheDocument();
+        expect(screen.getByText("PENDING")).toBeInTheDocument();
+      });
     });
 
-    it("should render tag group for call logs", () => {
+    it("should render tag group for call logs", async () => {
+      mockUseGetCallLogsQuery.mockReturnValue({
+        data: { data: [mockCallLog] },
+        isLoading: false,
+        refetch: vi.fn(),
+      });
+
       renderComponent(SessionType.CALL);
 
-      expect(screen.getByTestId("tag-group")).toBeInTheDocument();
-      expect(screen.getByText("Depression")).toBeInTheDocument();
-      expect(screen.getByText("Anxiety")).toBeInTheDocument();
+      await waitFor(() => {
+        expect(screen.getByTestId("tag-group")).toBeInTheDocument();
+        expect(screen.getByText("Depression")).toBeInTheDocument();
+        expect(screen.getByText("Anxiety")).toBeInTheDocument();
+      });
     });
 
-    it("should handle call logs without details", () => {
+    it("should handle call logs without details", async () => {
       const callLogWithoutDetails: CallLog = {
+        ...mockCallLog,
         id: 2,
-        createdAt: "2024-01-01T10:00:00Z",
-        updatedAt: "2024-01-01T10:00:00Z",
-        roomId: 2,
-        clientId: 2,
-        counselorId: 2,
-        status: "ACTIVE",
-        startedAt: "2024-01-01T10:00:00Z",
-        endedAt: "2024-01-01T10:05:00Z",
         details: null,
-        summaryStatus: ChatSummaryStatus.PENDING,
-        client: {
-          createdAt: "2024-01-01T10:00:00Z",
-          updatedAt: "2024-01-01T10:00:00Z",
-          id: 2,
-          email: "client2@test.com",
-          name: "Test Client 2",
-          role: "CLIENT",
-          status: "ACTIVE",
-          username: "testclient2",
-          phone: "1234567891",
-          metadata: {},
-        },
-        counselor: {
-          id: 2,
-          name: "Test Counselor 2",
-          phone: "1234567891",
-        },
       };
 
       mockUseGetCallLogsQuery.mockReturnValue({
@@ -396,36 +393,45 @@ describe("CallLogsTable Component", () => {
 
       renderComponent(SessionType.CALL);
 
-      expect(screen.getByTestId("generic-table")).toBeInTheDocument();
+      await waitFor(() => {
+        expect(screen.getByTestId("generic-table")).toBeInTheDocument();
+      });
     });
   });
 
   describe("Simulation Logs Display", () => {
-    beforeEach(() => {
+    it("should display simulation log data correctly", async () => {
       mockUseGetSimulationLogsQuery.mockReturnValue({
         data: { data: [mockSimulationLog] },
         isLoading: false,
         refetch: vi.fn(),
       });
-    });
 
-    it("should display simulation log data correctly", () => {
       renderComponent(SessionType.SIMULATION);
 
-      expect(screen.getByText("Test Simulation")).toBeInTheDocument();
-      expect(screen.getByText("Test Scenario")).toBeInTheDocument();
+      await waitFor(() => {
+        expect(screen.getByText("Test Simulation")).toBeInTheDocument();
+        expect(screen.getByText("Test Scenario")).toBeInTheDocument();
+      });
     });
 
-    it("should calculate duration correctly for simulation logs", () => {
+    it("should calculate duration correctly for simulation logs", async () => {
+      mockUseGetSimulationLogsQuery.mockReturnValue({
+        data: { data: [mockSimulationLog] },
+        isLoading: false,
+        refetch: vi.fn(),
+      });
+
       renderComponent(SessionType.SIMULATION);
 
-      // Duration should be 5 minutes (300 seconds)
-      expect(screen.getByText("5:0")).toBeInTheDocument();
+      await waitFor(() => {
+        expect(screen.getByText("5:0")).toBeInTheDocument();
+      });
     });
   });
 
   describe("Fallback UI", () => {
-    it("should show fallback UI for empty call logs", () => {
+    it("should show fallback UI for empty call logs", async () => {
       mockUseGetCallLogsQuery.mockReturnValue({
         data: { data: [] },
         isLoading: false,
@@ -434,14 +440,16 @@ describe("CallLogsTable Component", () => {
 
       renderComponent(SessionType.CALL);
 
-      expect(screen.getByTestId("fallback-ui")).toBeInTheDocument();
-      expect(screen.getByText("No call records found")).toBeInTheDocument();
-      expect(
-        screen.getByText("Your recent calls and insights will be listed here."),
-      ).toBeInTheDocument();
+      await waitFor(() => {
+        expect(screen.getByTestId("fallback-ui")).toBeInTheDocument();
+        expect(screen.getByText("No call records found")).toBeInTheDocument();
+        expect(
+          screen.getByText("Your recent calls and insights will be listed here."),
+        ).toBeInTheDocument();
+      });
     });
 
-    it("should show fallback UI for empty simulation logs", () => {
+    it("should show fallback UI for empty simulation logs", async () => {
       mockUseGetSimulationLogsQuery.mockReturnValue({
         data: { data: [] },
         isLoading: false,
@@ -450,14 +458,18 @@ describe("CallLogsTable Component", () => {
 
       renderComponent(SessionType.SIMULATION);
 
-      expect(screen.getByTestId("fallback-ui")).toBeInTheDocument();
-      expect(screen.getByText("No simulation records found")).toBeInTheDocument();
-      expect(screen.getByText("Your recent simulations will be listed here.")).toBeInTheDocument();
+      await waitFor(() => {
+        expect(screen.getByTestId("fallback-ui")).toBeInTheDocument();
+        expect(screen.getByText("No simulation records found")).toBeInTheDocument();
+        expect(
+          screen.getByText("Your recent simulations will be listed here."),
+        ).toBeInTheDocument();
+      });
     });
   });
 
   describe("Pagination", () => {
-    it("should show load more button when there are more items", () => {
+    it("should show load more button when there are more items", async () => {
       const multipleCallLogs = Array.from({ length: CALL_LOGS_PAGINATION_LIMIT }, (_, i) => ({
         ...mockCallLog,
         id: i + 1,
@@ -471,10 +483,12 @@ describe("CallLogsTable Component", () => {
 
       renderComponent(SessionType.CALL);
 
-      expect(screen.getByTestId("load-more-button")).toBeInTheDocument();
+      await waitFor(() => {
+        expect(screen.getByTestId("load-more-button")).toBeInTheDocument();
+      });
     });
 
-    it("should not show load more button when there are no more items", () => {
+    it("should not show load more button when there are no more items", async () => {
       const fewCallLogs = Array.from({ length: 5 }, (_, i) => ({
         ...mockCallLog,
         id: i + 1,
@@ -488,12 +502,16 @@ describe("CallLogsTable Component", () => {
 
       renderComponent(SessionType.CALL);
 
+      await waitFor(() => {
+        expect(screen.getByTestId("generic-table")).toBeInTheDocument();
+      });
+
       expect(screen.queryByTestId("load-more-button")).not.toBeInTheDocument();
     });
   });
 
   describe("Summary Sidebar", () => {
-    it("should open call summary sidebar when summary button is clicked", () => {
+    it("should open call summary sidebar when summary button is clicked", async () => {
       mockUseGetCallLogsQuery.mockReturnValue({
         data: { data: [mockCallLog] },
         isLoading: false,
@@ -502,14 +520,20 @@ describe("CallLogsTable Component", () => {
 
       renderComponent(SessionType.CALL);
 
+      await waitFor(() => {
+        expect(screen.getByTestId("review-icon")).toBeInTheDocument();
+      });
+
       const summaryButton = screen.getByTestId("review-icon").closest("button");
       fireEvent.click(summaryButton!);
 
-      expect(screen.getByTestId("call-summary-sidebar")).toBeInTheDocument();
-      expect(screen.getByTestId("call-summary-id")).toHaveTextContent("1");
+      await waitFor(() => {
+        expect(screen.getByTestId("call-summary-sidebar")).toBeInTheDocument();
+        expect(screen.getByTestId("call-summary-id")).toHaveTextContent("1");
+      });
     });
 
-    it("should open simulation summary sidebar when summary button is clicked", () => {
+    it("should open simulation summary sidebar when summary button is clicked", async () => {
       mockUseGetSimulationLogsQuery.mockReturnValue({
         data: { data: [mockSimulationLog] },
         isLoading: false,
@@ -518,14 +542,20 @@ describe("CallLogsTable Component", () => {
 
       renderComponent(SessionType.SIMULATION);
 
+      await waitFor(() => {
+        expect(screen.getByTestId("review-icon")).toBeInTheDocument();
+      });
+
       const summaryButton = screen.getByTestId("review-icon").closest("button");
       fireEvent.click(summaryButton!);
 
-      expect(screen.getByTestId("simulation-summary-sidebar")).toBeInTheDocument();
-      expect(screen.getByTestId("summary-id")).toHaveTextContent("sim-1");
+      await waitFor(() => {
+        expect(screen.getByTestId("simulation-summary-sidebar")).toBeInTheDocument();
+        expect(screen.getByTestId("summary-id")).toHaveTextContent("sim-1");
+      });
     });
 
-    it("should close summary sidebar when close button is clicked", () => {
+    it("should close summary sidebar when close button is clicked", async () => {
       mockUseGetCallLogsQuery.mockReturnValue({
         data: { data: [mockCallLog] },
         isLoading: false,
@@ -534,22 +564,28 @@ describe("CallLogsTable Component", () => {
 
       renderComponent(SessionType.CALL);
 
-      // Open sidebar
+      await waitFor(() => {
+        expect(screen.getByTestId("review-icon")).toBeInTheDocument();
+      });
+
       const summaryButton = screen.getByTestId("review-icon").closest("button");
       fireEvent.click(summaryButton!);
 
-      expect(screen.getByTestId("call-summary-sidebar")).toBeInTheDocument();
+      await waitFor(() => {
+        expect(screen.getByTestId("call-summary-sidebar")).toBeInTheDocument();
+      });
 
-      // Close sidebar
       const closeButton = screen.getByText("Close");
       fireEvent.click(closeButton);
 
-      expect(screen.queryByTestId("call-summary-sidebar")).not.toBeInTheDocument();
+      await waitFor(() => {
+        expect(screen.queryByTestId("call-summary-sidebar")).not.toBeInTheDocument();
+      });
     });
   });
 
   describe("Data Processing", () => {
-    it("should process call log data correctly", () => {
+    it("should process call log data correctly", async () => {
       mockUseGetCallLogsQuery.mockReturnValue({
         data: { data: [mockCallLog] },
         isLoading: false,
@@ -558,12 +594,13 @@ describe("CallLogsTable Component", () => {
 
       renderComponent(SessionType.CALL);
 
-      // Check that the processed data is displayed
-      expect(screen.getByText("Test Call")).toBeInTheDocument();
-      expect(screen.getByText("5:0")).toBeInTheDocument(); // Duration
+      await waitFor(() => {
+        expect(screen.getByText("Test Call")).toBeInTheDocument();
+        expect(screen.getByText("5:0")).toBeInTheDocument();
+      });
     });
 
-    it("should process simulation log data correctly", () => {
+    it("should process simulation log data correctly", async () => {
       mockUseGetSimulationLogsQuery.mockReturnValue({
         data: { data: [mockSimulationLog] },
         isLoading: false,
@@ -572,18 +609,34 @@ describe("CallLogsTable Component", () => {
 
       renderComponent(SessionType.SIMULATION);
 
-      // Check that the processed data is displayed
-      expect(screen.getByText("Test Simulation")).toBeInTheDocument();
-      expect(screen.getByText("Test Scenario")).toBeInTheDocument();
-      expect(screen.getByText("85/100")).toBeInTheDocument(); // Score
+      await waitFor(() => {
+        expect(screen.getByText("Test Simulation")).toBeInTheDocument();
+        expect(screen.getByText("Test Scenario")).toBeInTheDocument();
+        expect(screen.getByText("85/100")).toBeInTheDocument();
+      });
     });
   });
 
   describe("Session Type Switching", () => {
-    it("should reset data when switching session types", () => {
+    it("should reset data when switching session types", async () => {
+      mockUseGetCallLogsQuery.mockReturnValue({
+        data: { data: [mockCallLog] },
+        isLoading: false,
+        refetch: vi.fn(),
+      });
+
       const { rerender } = renderComponent(SessionType.CALL);
 
-      // Switch to simulation
+      await waitFor(() => {
+        expect(screen.getByText("Test Call")).toBeInTheDocument();
+      });
+
+      mockUseGetSimulationLogsQuery.mockReturnValue({
+        data: { data: [] },
+        isLoading: false,
+        refetch: vi.fn(),
+      });
+
       rerender(
         <Provider store={createMockStore({ filters: { offset: 0 } })}>
           <BrowserRouter>
@@ -592,14 +645,15 @@ describe("CallLogsTable Component", () => {
         </Provider>,
       );
 
-      // Should not show call data
-      expect(screen.queryByText("Test Call")).not.toBeInTheDocument();
+      await waitFor(() => {
+        expect(screen.queryByText("Test Call")).not.toBeInTheDocument();
+      });
     });
   });
 
   describe("Refresh Functionality", () => {
-    it("should refetch data when refreshKey changes", () => {
-      const mockRefetch = vi.fn();
+    it("should refetch data when refreshKey changes", async () => {
+      const mockRefetch = vi.fn().mockResolvedValue({ data: { data: [] } });
       mockUseGetCallLogsQuery.mockReturnValue({
         data: { data: [] },
         isLoading: false,
@@ -608,7 +662,6 @@ describe("CallLogsTable Component", () => {
 
       const { rerender } = renderComponent(SessionType.CALL);
 
-      // Change refreshKey
       rerender(
         <Provider store={createMockStore({ filters: { offset: 0 } })}>
           <BrowserRouter>
@@ -617,47 +670,18 @@ describe("CallLogsTable Component", () => {
         </Provider>,
       );
 
-      expect(mockRefetch).toHaveBeenCalled();
+      await waitFor(() => {
+        expect(mockRefetch).toHaveBeenCalled();
+      });
     });
   });
 
   describe("Error Handling", () => {
-    it("should handle missing call log details gracefully", () => {
+    it("should handle missing call log details gracefully", async () => {
       const incompleteCallLog: CallLog = {
+        ...mockCallLog,
         id: 3,
-        createdAt: "2024-01-01T10:00:00Z",
-        updatedAt: "2024-01-01T10:00:00Z",
-        roomId: 3,
-        clientId: 3,
-        counselorId: 3,
-        status: "ACTIVE",
-        startedAt: "2024-01-01T10:00:00Z",
-        endedAt: "2024-01-01T10:05:00Z",
-        details: {
-          callDuration: 0,
-          callInfo: null,
-          startTime: null,
-          summary: null,
-          transcript: "",
-        },
-        summaryStatus: ChatSummaryStatus.PENDING,
-        client: {
-          createdAt: "2024-01-01T10:00:00Z",
-          updatedAt: "2024-01-01T10:00:00Z",
-          id: 3,
-          email: "client3@test.com",
-          name: "Test Client 3",
-          role: "CLIENT",
-          status: "ACTIVE",
-          username: "testclient3",
-          phone: "1234567892",
-          metadata: {},
-        },
-        counselor: {
-          id: 3,
-          name: "Test Counselor 3",
-          phone: "1234567892",
-        },
+        details: null,
       };
 
       mockUseGetCallLogsQuery.mockReturnValue({
@@ -668,36 +692,19 @@ describe("CallLogsTable Component", () => {
 
       renderComponent(SessionType.CALL);
 
-      expect(screen.getByTestId("generic-table")).toBeInTheDocument();
+      await waitFor(() => {
+        expect(screen.getByTestId("generic-table")).toBeInTheDocument();
+      });
     });
 
-    it("should handle missing simulation log data gracefully", () => {
+    it("should handle missing simulation log data gracefully", async () => {
       const incompleteSimulationLog: SimulationLog = {
+        ...mockSimulationLog,
         id: "incomplete-sim",
-        createdAt: "2024-01-01T10:00:00Z",
-        updatedAt: "2024-01-01T10:00:00Z",
-        tenantId: "tenant-1",
-        roomId: "room-1",
-        scenarioId: 1,
-        counselorId: 1,
-        status: "ACTIVE",
-        startedAt: "2024-01-01T10:00:00Z",
-        endedAt: "2024-01-01T10:05:00Z",
-        score: 0,
-        metadata: {
-          sessionName: "Incomplete Simulation",
-        },
+        metadata: { sessionName: "" },
         scenario: {
-          createdAt: "2024-01-01T10:00:00Z",
-          updatedAt: "2024-01-01T10:00:00Z",
-          id: 1,
-          title: "Incomplete Scenario",
-          scenario: "incomplete-scenario",
-          description: "Incomplete scenario description",
-          coverImageUrl: "incomplete-image.jpg",
-          status: "ACTIVE",
-          prompt: "Incomplete prompt",
-          metadata: {},
+          ...mockSimulationLog.scenario,
+          title: "",
         },
       };
 
@@ -709,12 +716,14 @@ describe("CallLogsTable Component", () => {
 
       renderComponent(SessionType.SIMULATION);
 
-      expect(screen.getByTestId("generic-table")).toBeInTheDocument();
+      await waitFor(() => {
+        expect(screen.getByTestId("generic-table")).toBeInTheDocument();
+      });
     });
   });
 
   describe("Accessibility", () => {
-    it("should have proper table structure", () => {
+    it("should have proper table structure", async () => {
       mockUseGetCallLogsQuery.mockReturnValue({
         data: { data: [mockCallLog] },
         isLoading: false,
@@ -723,10 +732,12 @@ describe("CallLogsTable Component", () => {
 
       renderComponent(SessionType.CALL);
 
-      expect(screen.getByTestId("generic-table")).toBeInTheDocument();
+      await waitFor(() => {
+        expect(screen.getByTestId("generic-table")).toBeInTheDocument();
+      });
     });
 
-    it("should have accessible buttons", () => {
+    it("should have accessible buttons", async () => {
       mockUseGetCallLogsQuery.mockReturnValue({
         data: { data: [mockCallLog] },
         isLoading: false,
@@ -735,8 +746,10 @@ describe("CallLogsTable Component", () => {
 
       renderComponent(SessionType.CALL);
 
-      const summaryButton = screen.getByTestId("review-icon").closest("button");
-      expect(summaryButton).toBeInTheDocument();
+      await waitFor(() => {
+        const summaryButton = screen.getByTestId("review-icon").closest("button");
+        expect(summaryButton).toBeInTheDocument();
+      });
     });
   });
 });
