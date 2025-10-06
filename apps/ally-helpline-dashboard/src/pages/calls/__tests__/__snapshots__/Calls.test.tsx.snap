@@ -1,0 +1,202 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`Calls Component > Snapshot Testing > should match snapshot 1`] = `
+<DocumentFragment>
+  <div
+    class="px-6 pb-6 h-full flex flex-col"
+  >
+    <div
+      animate="[object Object]"
+      class="relative mt-[10px] font-['IBM_Plex_Serif']"
+      initial="[object Object]"
+      layout="position"
+      transition="[object Object]"
+    >
+      <div
+        class="sm:p-4 p-0 rounded-lg flex gap-4 sm:justify-between justify-start bg-transparent items-center"
+      >
+        <div
+          class="z-10 text-[#0D0D0D] text-[24px] font-[500] flex items-center gap-2"
+        >
+          Session Logs
+          <div
+            class="w-6 h-6 cursor-pointer border-l-[0.5px] border-[#D2D2D2] pl-2"
+            data-testid="refresh-icon"
+          >
+            Refresh
+          </div>
+        </div>
+        <div
+          class="flex gap-2 items-center"
+        >
+          <button
+            data-testid="mock-button"
+          >
+            <div
+              data-testid="start-session-icon"
+            >
+              StartSession
+            </div>
+            Start Session
+          </button>
+          <button
+            data-testid="mock-button"
+          >
+            Mark Away
+          </button>
+          <div>
+            <button
+              data-testid="mock-button"
+            >
+              <div
+                data-testid="upload-icon"
+              >
+                Upload
+              </div>
+              Upload audio
+            </button>
+          </div>
+        </div>
+      </div>
+      <div
+        data-testid="toggle-button-group"
+      >
+        <button
+          class="active"
+          data-testid="toggle-option-call"
+        >
+          Call
+        </button>
+        <button
+          class=""
+          data-testid="toggle-option-simulation"
+        >
+          Simulation
+        </button>
+      </div>
+    </div>
+    <div
+      data-refresh-key="0"
+      data-session-type="call"
+      data-testid="call-logs-table"
+    >
+      Call Logs Table
+    </div>
+    <div
+      data-is-open="false"
+      data-testid="start-session-dialog"
+    >
+      <button
+        data-testid="close-dialog"
+      >
+        Close Dialog
+      </button>
+    </div>
+    <div>
+      <div
+        data-is-open="false"
+        data-testid="audio-upload-dialog"
+      >
+        <button
+          data-testid="close-audio-dialog"
+        >
+          Close Audio Dialog
+        </button>
+      </div>
+    </div>
+  </div>
+</DocumentFragment>
+`;
+
+exports[`Calls Component > Snapshot Testing > should match snapshot with admin role 1`] = `
+<DocumentFragment>
+  <div
+    class="px-6 pb-6 h-full flex flex-col"
+  >
+    <div
+      animate="[object Object]"
+      class="relative mt-[10px] font-['IBM_Plex_Serif']"
+      initial="[object Object]"
+      layout="position"
+      transition="[object Object]"
+    >
+      <div
+        class="sm:p-4 p-0 rounded-lg flex gap-4 sm:justify-between justify-start bg-transparent items-center"
+      >
+        <div
+          class="z-10 text-[#0D0D0D] text-[24px] font-[500] flex items-center gap-2"
+        >
+          Session Logs
+          <div
+            class="w-6 h-6 cursor-pointer border-l-[0.5px] border-[#D2D2D2] pl-2"
+            data-testid="refresh-icon"
+          >
+            Refresh
+          </div>
+        </div>
+        <div
+          class="flex gap-2 items-center"
+        >
+          <div>
+            <button
+              data-testid="mock-button"
+            >
+              <div
+                data-testid="upload-icon"
+              >
+                Upload
+              </div>
+              Upload audio
+            </button>
+          </div>
+        </div>
+      </div>
+      <div
+        data-testid="toggle-button-group"
+      >
+        <button
+          class="active"
+          data-testid="toggle-option-call"
+        >
+          Call
+        </button>
+        <button
+          class=""
+          data-testid="toggle-option-simulation"
+        >
+          Simulation
+        </button>
+      </div>
+    </div>
+    <div
+      data-refresh-key="0"
+      data-session-type="call"
+      data-testid="consolidated-logs"
+    >
+      Consolidated Logs
+    </div>
+    <div
+      data-is-open="false"
+      data-testid="start-session-dialog"
+    >
+      <button
+        data-testid="close-dialog"
+      >
+        Close Dialog
+      </button>
+    </div>
+    <div>
+      <div
+        data-is-open="false"
+        data-testid="audio-upload-dialog"
+      >
+        <button
+          data-testid="close-audio-dialog"
+        >
+          Close Audio Dialog
+        </button>
+      </div>
+    </div>
+  </div>
+</DocumentFragment>
+`;

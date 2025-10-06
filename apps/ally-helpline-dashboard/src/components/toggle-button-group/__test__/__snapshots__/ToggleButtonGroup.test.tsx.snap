@@ -1,0 +1,87 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`ToggleButtonGroup > should match snapshot when disabled 1`] = `
+<DocumentFragment>
+  <div
+    class="MuiToggleButtonGroup-root h-9 !rounded-[4px] bg-[#F3F3F3] border-[0.5px] border-[#D2D2D2] css-1908ofk-MuiToggleButtonGroup-root"
+    role="group"
+  >
+    <button
+      aria-pressed="false"
+      class="MuiButtonBase-root Mui-disabled MuiToggleButtonGroup-grouped MuiToggleButtonGroup-groupedHorizontal Mui-disabled MuiToggleButton-root Mui-disabled MuiToggleButton-sizeMedium MuiToggleButton-standard MuiToggleButtonGroup-grouped MuiToggleButtonGroup-groupedHorizontal Mui-disabled MuiToggleButtonGroup-firstButton css-mswh2k-MuiButtonBase-root-MuiToggleButton-root"
+      disabled=""
+      tabindex="-1"
+      type="button"
+      value="optionA"
+    >
+      Option A
+    </button>
+    <button
+      aria-pressed="true"
+      class="MuiButtonBase-root Mui-disabled MuiToggleButtonGroup-grouped MuiToggleButtonGroup-groupedHorizontal Mui-disabled MuiToggleButton-root Mui-selected Mui-disabled MuiToggleButton-sizeMedium MuiToggleButton-standard MuiToggleButtonGroup-grouped MuiToggleButtonGroup-groupedHorizontal Mui-disabled MuiToggleButtonGroup-middleButton css-mswh2k-MuiButtonBase-root-MuiToggleButton-root"
+      disabled=""
+      tabindex="-1"
+      type="button"
+      value="optionB"
+    >
+      Option B
+    </button>
+    <button
+      aria-pressed="false"
+      class="MuiButtonBase-root Mui-disabled MuiToggleButtonGroup-grouped MuiToggleButtonGroup-groupedHorizontal Mui-disabled MuiToggleButton-root Mui-disabled MuiToggleButton-sizeMedium MuiToggleButton-standard MuiToggleButtonGroup-grouped MuiToggleButtonGroup-groupedHorizontal Mui-disabled MuiToggleButtonGroup-lastButton css-mswh2k-MuiButtonBase-root-MuiToggleButton-root"
+      disabled=""
+      tabindex="-1"
+      type="button"
+      value="optionC"
+    >
+      Option C
+    </button>
+  </div>
+</DocumentFragment>
+`;
+
+exports[`ToggleButtonGroup > should match snapshot when rendered with default props 1`] = `
+<DocumentFragment>
+  <div
+    class="MuiToggleButtonGroup-root h-9 !rounded-[4px] bg-[#F3F3F3] border-[0.5px] border-[#D2D2D2] css-1908ofk-MuiToggleButtonGroup-root"
+    role="group"
+  >
+    <button
+      aria-pressed="true"
+      class="MuiButtonBase-root MuiToggleButtonGroup-grouped MuiToggleButtonGroup-groupedHorizontal MuiToggleButton-root Mui-selected MuiToggleButton-sizeMedium MuiToggleButton-standard MuiToggleButtonGroup-grouped MuiToggleButtonGroup-groupedHorizontal MuiToggleButtonGroup-firstButton css-mswh2k-MuiButtonBase-root-MuiToggleButton-root"
+      tabindex="0"
+      type="button"
+      value="optionA"
+    >
+      Option A
+      <span
+        class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
+      />
+    </button>
+    <button
+      aria-pressed="false"
+      class="MuiButtonBase-root MuiToggleButtonGroup-grouped MuiToggleButtonGroup-groupedHorizontal MuiToggleButton-root MuiToggleButton-sizeMedium MuiToggleButton-standard MuiToggleButtonGroup-grouped MuiToggleButtonGroup-groupedHorizontal MuiToggleButtonGroup-middleButton css-mswh2k-MuiButtonBase-root-MuiToggleButton-root"
+      tabindex="0"
+      type="button"
+      value="optionB"
+    >
+      Option B
+      <span
+        class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
+      />
+    </button>
+    <button
+      aria-pressed="false"
+      class="MuiButtonBase-root MuiToggleButtonGroup-grouped MuiToggleButtonGroup-groupedHorizontal MuiToggleButton-root MuiToggleButton-sizeMedium MuiToggleButton-standard MuiToggleButtonGroup-grouped MuiToggleButtonGroup-groupedHorizontal MuiToggleButtonGroup-lastButton css-mswh2k-MuiButtonBase-root-MuiToggleButton-root"
+      tabindex="0"
+      type="button"
+      value="optionC"
+    >
+      Option C
+      <span
+        class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
+      />
+    </button>
+  </div>
+</DocumentFragment>
+`;

@@ -1,4 +1,4 @@
-import { FunctionComponent } from "react";
+import { FunctionComponent, type ReactNode } from "react";
 
 import { getKeyFromIndex } from "@utils";
 
@@ -8,7 +8,7 @@ const CustomMarkdown: FunctionComponent<{ content: string; className?: string }>
 }) => {
   const parseMarkdown = (text: string) => {
     const lines = text.split("\n");
-    const parsedContent: React.ReactNode[] = [];
+    const parsedContent: ReactNode[] = [];
 
     let currentSection: {
       type: "title" | "list" | "text";
@@ -16,11 +16,11 @@ const CustomMarkdown: FunctionComponent<{ content: string; className?: string }>
     } | null = null;
 
     const parseBoldAndText = (line: string) => {
-      const parts: React.ReactNode[] = [];
+      const parts: ReactNode[] = [];
       let remainingText = line;
 
       while (remainingText?.includes("**")) {
-        const boldMatch = remainingText.match(/(.?)\*\*(.*?)\*\*(.*)$/);
+        const boldMatch = remainingText.match(/^(.*?)\*\*(.*?)\*\*(.*)$/);
         if (boldMatch) {
           // Add text before bold if exists
           if (boldMatch[1]) {
