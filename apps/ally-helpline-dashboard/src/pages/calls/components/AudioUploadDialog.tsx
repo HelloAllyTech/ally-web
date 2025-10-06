@@ -18,6 +18,7 @@ import { Dropdown, DatePicker, TimePicker, Button, ButtonVariant } from "@compon
 import { addAudioUpload, updateUploadProgress, updateUploadError } from "@reducer";
 import { store } from "@src/store";
 import { UploadStatus } from "@types";
+import { registerUploadController, removeUploadController } from "@utils/uploadControllers";
 
 import AudioUploadInterface from "./AudioUploadInterface";
 import { defaultAudioFormData, timezoneOptions } from "./constants";
@@ -98,6 +99,7 @@ const AudioUploadDialog: FC<AudioUploadDialogProps> = ({ isOpen, onClose }) => {
     try {
       if (presignedUrl && chatId) {
         let uploadStarted = false;
+        const controller = registerUploadController(chatId);
         await axios.put(presignedUrl, audioFile, {
           headers: { "Content-Type": audioFile.type },
           onUploadProgress: e => {
@@ -122,15 +124,24 @@ const AudioUploadDialog: FC<AudioUploadDialogProps> = ({ isOpen, onClose }) => {
                 }),
               );
           },
-          timeout: 120000,
+          signal: controller.signal,
+          timeout: 300000,
         });
+        removeUploadController(chatId);
       }
     } catch (error) {
-      console.error(error);
-      store.dispatch(updateUploadError({ chatId, error: "Failed to upload audio" }));
-      // store.dispatch(removeAudioUpload(chatId));
-      cancelAudioUpload({ chatId });
-      toast.error("Failed to upload audio");
+      if (
+        axios.isCancel?.(error) ||
+        (error as any)?.name === "CanceledError" ||
+        (error as any)?.code === "ERR_CANCELED"
+      ) {
+        removeUploadController(chatId);
+      } else {
+        console.error(error);
+        store.dispatch(updateUploadError({ chatId, error: "Failed to upload audio" }));
+        cancelAudioUpload({ chatId });
+        toast.error("Failed to upload audio");
+      }
     }
   };
 
