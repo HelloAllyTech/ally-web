@@ -122,7 +122,7 @@ const AudioUploadDialog: FC<AudioUploadDialogProps> = ({ isOpen, onClose }) => {
                 }),
               );
           },
-          timeout: 120000,
+          timeout: 600000,
         });
       }
     } catch (error) {
