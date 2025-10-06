@@ -26,4 +26,8 @@ export const CallSummaryGenerationDataMap = {
     durationInSeconds: 2503, // 41 mins 43 secs
     summaryGenerationDurationInSeconds: 178, // 2 mins 58 secs
   },
+  [CallProvider.EXOTEL_CONFERENCE_CALL]: {
+    durationInSeconds: 2503, // 41 mins 43 secs
+    summaryGenerationDurationInSeconds: 178, // 2 mins 58 secs
+  },
 };
