@@ -1,4 +1,4 @@
-import allyIcon from "./ally.svg";
+import allyIcon from "./ally.svg?url";
 
 /**
  * SearchHeader component displays the main header and optional description for the search UI.
