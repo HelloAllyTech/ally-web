@@ -34,6 +34,11 @@ const callsSlice = createSlice({
       state.audioUpload = state.audioUpload.filter(upload => upload.chatId !== action.payload);
     },
     updateUploadProgress: (state, action) => {
+      const existingUpload = state.audioUpload.find(
+        upload => upload.chatId === action.payload.chatId,
+      );
+      const isUploadCancelled = !existingUpload || existingUpload.status === UploadStatus.CANCELLED;
+      if (isUploadCancelled) return;
       state.audioUpload = state.audioUpload.map(upload =>
         upload.chatId === action.payload.chatId
           ? {
