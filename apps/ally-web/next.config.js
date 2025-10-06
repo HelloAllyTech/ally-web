@@ -10,6 +10,17 @@ const nextConfig = {
   },
   // Configure which pages should be statically generated
   pageExtensions: ["tsx", "ts", "jsx", "js"],
+  webpack: config => {
+    // Allow importing from workspace libs outside app dir
+    config.externals = config.externals || [];
+    // Ensure Next handles svg?url as asset/resource
+    config.module.rules.push({
+      test: /\.svg$/i,
+      resourceQuery: /url/, // *.svg?url
+      type: "asset/resource",
+    });
+    return config;
+  },
 };
 
 module.exports = nextConfig;
