@@ -67,6 +67,7 @@ import MicIcon from "./mic-icon.svg?react";
 import MicOffIcon from "./mic-off-icon.svg?react";
 import NoNetwork from "./no-network.svg?react";
 import NoResults from "./no-results.svg?react";
+import NoAnalytics from "./noAnalytics.svg?react";
 import NotesIcon from "./notes.svg?react";
 import ObjectiveObservations from "./objective-observations.svg?react";
 import PageNotFoundIllustration from "./page-not-found-illustration.svg?react";
@@ -232,4 +233,5 @@ export {
   Warning,
   Waveform,
   Arrow,
+  NoAnalytics,
 };
