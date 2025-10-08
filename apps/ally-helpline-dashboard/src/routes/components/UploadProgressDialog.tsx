@@ -1,4 +1,4 @@
-import { FC, useMemo, useState } from "react";
+import { FC, useEffect, useMemo, useState } from "react";
 
 import { ChevronDown, ChevronUp, XCircle } from "lucide-react";
 import { useSelector } from "react-redux";
@@ -18,25 +18,23 @@ const UploadProgressDialogHeader: FC<UploadProgressHeaderProps> = ({
   expanded,
   onClose,
   onToggle,
-}) => {
-  return (
-    <div className="flex items-center justify-between mx-4 py-2 border-b border-[#EFEFEF]">
-      <span className="text-sm font-medium text-[#1A1A1A]">{`${total} Upload${total > 1 ? "s" : ""} in progress`}</span>
-      <div className="flex items-center gap-2 text-[#656565]">
-        <Button
-          onClick={onToggle}
-          variant={ButtonVariant.ICON}
-          aria-label={expanded ? "Collapse" : "Expand"}
-        >
-          {expanded ? <ChevronDown /> : <ChevronUp />}
-        </Button>
-        <Button onClick={onClose} variant={ButtonVariant.ICON} aria-label="Clear all">
-          <Close />
-        </Button>
-      </div>
+}) => (
+  <div className="flex items-center justify-between mx-4 py-2 border-b border-[#EFEFEF]">
+    <span className="text-sm font-medium text-[#1A1A1A]">{`${total} Upload${total > 1 ? "s" : ""} in progress`}</span>
+    <div className="flex items-center gap-2 text-[#656565]">
+      <Button
+        onClick={onToggle}
+        variant={ButtonVariant.ICON}
+        aria-label={expanded ? "Collapse" : "Expand"}
+      >
+        {expanded ? <ChevronDown /> : <ChevronUp />}
+      </Button>
+      <Button onClick={onClose} variant={ButtonVariant.ICON} aria-label="Clear all">
+        <Close />
+      </Button>
     </div>
-  );
-};
+  </div>
+);
 
 const ProgressCircle: FC<ProgressCircleProps> = ({ progress }) => {
   const size = 20;
@@ -92,6 +90,23 @@ const UploadProgressDialog: FC = () => {
       return 3;
     };
     return [...uploads].sort((a, b) => priority(a) - priority(b));
+  }, [uploads]);
+
+  useEffect(() => {
+    const handleBeforeUnload = (event: BeforeUnloadEvent) => {
+      // Show browser's default confirmation dialog
+      // Note: Browser may remember user's choice after first interaction
+      event.preventDefault();
+      event.returnValue = "";
+    };
+
+    if (uploads.some(u => u.status === UploadStatus.IN_PROGRESS)) {
+      window.addEventListener("beforeunload", handleBeforeUnload);
+    }
+
+    return () => {
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+    };
   }, [uploads]);
 
   const shouldScroll = uploads.length > 2;

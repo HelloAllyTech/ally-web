@@ -1,3 +1,7 @@
+import dayjs, { Dayjs } from "dayjs";
+import timezone from "dayjs/plugin/timezone";
+import utc from "dayjs/plugin/utc";
+
 import { ErrorIcon } from "@assets";
 import { ChipConfig } from "@components";
 import { CallProvider } from "@constants";
@@ -53,4 +57,37 @@ export const getSourceChipConfig = (provider: CallProvider): ChipConfig => {
         outerDivClassName: "bg-[#EDE7F6] text-[#673AB7]", // Purple
       };
   }
+};
+
+// Ensure required dayjs plugins are active for timezone-aware logic
+dayjs.extend(utc);
+dayjs.extend(timezone);
+
+/**
+ * Returns the maximum selectable time for a given date considering the provided timezone.
+ * - If the date (in tz) is today: returns the current time in that timezone.
+ * - If the date (in tz) is in the past: returns null (no max constraint).
+ * - If the date (in tz) is in the future: returns start of day in that timezone (effectively disallowing selection).
+ */
+export const getMaxSelectableTimeForDate = (
+  timezoneId: string | null | undefined,
+  date: Dayjs | null,
+): Dayjs | null => {
+  if (!timezoneId || !date) return null;
+
+  const nowInTz = dayjs().tz(timezoneId);
+  const selectedDateInTz = dayjs.tz(date.format("YYYY-MM-DD"), "YYYY-MM-DD", timezoneId);
+
+  if (selectedDateInTz.isAfter(nowInTz, "day")) {
+    // Future date: disallow selection by constraining to SOD
+    return selectedDateInTz.startOf("day");
+  }
+
+  if (selectedDateInTz.isBefore(nowInTz, "day")) {
+    // Past date: no max time constraint
+    return null;
+  }
+
+  // Today in timezone: cap at current time in tz
+  return nowInTz;
 };
