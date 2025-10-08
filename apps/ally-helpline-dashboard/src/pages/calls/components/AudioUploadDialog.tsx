@@ -46,7 +46,8 @@ const AudioUploadDialog: FC<AudioUploadDialogProps> = ({ isOpen, onClose }) => {
     !formData.counsellorId ||
     !formData.date ||
     !formData.time ||
-    !formData.timeZone;
+    !formData.timeZone ||
+    !duration;
 
   useEffect(() => {
     if (!isOpen) {
@@ -179,7 +180,7 @@ const AudioUploadDialog: FC<AudioUploadDialogProps> = ({ isOpen, onClose }) => {
         >
           <AudioUploadInterface
             duration={duration}
-            onAudioAvailable={setDuration}
+            setDuration={setDuration}
             files={files}
             onDropSuccess={onDropAccepted}
             onDeleteClick={() => setFiles([])}

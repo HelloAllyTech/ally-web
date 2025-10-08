@@ -11,7 +11,6 @@ import {
   useGetCounsellorsQuery,
   useGetCallTagsQuery,
   useGetAdminSimulationLogsQuery,
-  useDeleteCallLogMutation,
 } from "@api";
 import {
   NoResults,
@@ -28,14 +27,7 @@ import {
   Delete,
   ActionsIcon,
 } from "@assets";
-import {
-  Button,
-  Chip,
-  ConfirmationDialog,
-  FallbackUI,
-  PermissionGuard,
-  TagGroup,
-} from "@components";
+import { Button, Chip, FallbackUI, PermissionGuard, TagGroup } from "@components";
 import { CallProvider, Permissions } from "@constants";
 import { updateFilters } from "@reducer";
 import { RootState } from "@store";
@@ -50,14 +42,9 @@ import {
 } from "@types";
 import { convertSecondsToDuration, getFormattedDate, getSimulationScoreDisplay } from "@utils";
 
-import { CallSummarySidebar, SimulationSummarySidebar } from ".";
-import {
-  CALL_LOGS_PAGINATION_LIMIT,
-  defaultDeleteDialogData,
-  defaultTags,
-  tagColors,
-} from "../constants";
-import { DeleteDialogData, LogsTableProps } from "./types";
+import { CallSummarySidebar, DeleteCallLogConfirmationDialog, SimulationSummarySidebar } from ".";
+import { CALL_LOGS_PAGINATION_LIMIT, defaultTags, tagColors } from "../constants";
+import { LogsTableProps } from "./types";
 import { getSourceChipConfig, getStatusChipConfig } from "./utils";
 
 // TODO: Rename to AdminCallLogsTable
@@ -68,8 +55,8 @@ const ConsolidatedLogs: FC<LogsTableProps> = ({ refreshKey, sessionType }) => {
   const [summary, setSummary] = useState<CallLog | SimulationLog | null>(null);
   const [isLoadingMore, setIsLoadingMore] = useState<boolean>(false);
   const [hasMore, setHasMore] = useState<boolean>(true);
-  const [deleteCallLogData, setDeleteCallLogData] =
-    useState<DeleteDialogData>(defaultDeleteDialogData);
+
+  const [deleteLogChatId, setDeleteLogChatId] = useState<number | null>(null);
 
   const { filters } = useSelector((state: RootState) => state.calls);
   const { offset } = filters;
@@ -86,7 +73,6 @@ const ConsolidatedLogs: FC<LogsTableProps> = ({ refreshKey, sessionType }) => {
     { ...filters, sortBy: "createdAt", order: "DESC" },
     { skip: !isCall },
   );
-  const [deleteCallLog] = useDeleteCallLogMutation();
 
   const {
     data: simulationLogsData,
@@ -294,11 +280,11 @@ const ConsolidatedLogs: FC<LogsTableProps> = ({ refreshKey, sessionType }) => {
           {row?.provider === CallProvider.AUDIO_UPLOAD && (
             <PermissionGuard requiredPermissions={[Permissions.DELETE_CHAT]}>
               <Button
-                onClick={() => setDeleteCallLogData({ open: true, chatId: row.raw.id })}
+                onClick={() => setDeleteLogChatId(row.raw.id)}
                 fullWidth={true}
                 variant="icon"
               >
-                <Delete />
+                <Delete className="text-[#F93535]" />
               </Button>
             </PermissionGuard>
           )}
@@ -487,11 +473,9 @@ const ConsolidatedLogs: FC<LogsTableProps> = ({ refreshKey, sessionType }) => {
     }
   };
 
-  const onDeleteConfirm = async () => {
-    if (!deleteCallLogData.chatId) return;
-    await deleteCallLog(deleteCallLogData.chatId);
-    setDeleteCallLogData(defaultDeleteDialogData);
-    refetchCallLogs();
+  const onDeleteCallConfirm = async (refetch?: boolean) => {
+    setDeleteLogChatId(null);
+    if (refetch) refetchCallLogs();
   };
 
   return (
@@ -510,17 +494,7 @@ const ConsolidatedLogs: FC<LogsTableProps> = ({ refreshKey, sessionType }) => {
         />
       </div>
       {summary && summary.id && getSummarySideBar()}
-      <ConfirmationDialog
-        isOpen={deleteCallLogData.open}
-        onClose={() => setDeleteCallLogData(defaultDeleteDialogData)}
-        onButtonClick={onDeleteConfirm}
-        title={{ normal: "Delete", italic: "Session log?" }}
-        content="Do you really want to delete this record? This process cannot be undone."
-        buttonText="Delete"
-        buttonVariant="destructive"
-        secondaryButtonText="Cancel"
-        onSecondaryButtonClick={() => setDeleteCallLogData(defaultDeleteDialogData)}
-      />
+      <DeleteCallLogConfirmationDialog chatId={deleteLogChatId} closeDialog={onDeleteCallConfirm} />
     </>
   );
 };

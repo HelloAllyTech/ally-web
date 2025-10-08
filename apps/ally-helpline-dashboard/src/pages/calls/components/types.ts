@@ -21,6 +21,11 @@ export interface DeleteDialogData {
   chatId: number | null;
 }
 
+export interface DeleteCallLogDialogDataProps {
+  chatId?: number;
+  closeDialog: (isDeletionDone?: boolean) => void;
+}
+
 export interface Transcript {
   content: string;
   speaker: string;
@@ -94,7 +99,7 @@ export interface AudioUploadDialogProps {
 export interface AudioUploadInterfaceProps {
   duration: number;
   files: File[];
-  onAudioAvailable: (duration: number) => void;
+  setDuration: (duration: number) => void;
   onDropSuccess: (files: File[]) => void;
   onDeleteClick: () => void;
 }

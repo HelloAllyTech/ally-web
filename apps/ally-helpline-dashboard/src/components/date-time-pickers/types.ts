@@ -11,5 +11,6 @@ export interface TimePickerProps {
   value: Dayjs | null;
   onChange: (time: Dayjs | null) => void;
   maxTime?: Dayjs | null;
+  minTime?: Dayjs | null;
   disabled?: boolean;
 }

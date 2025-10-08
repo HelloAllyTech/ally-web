@@ -73,7 +73,7 @@ export const getMaxSelectableTimeForDate = (
   timezoneId: string | null | undefined,
   date: Dayjs | null,
 ): Dayjs | null => {
-  if (!timezoneId || !date) return null;
+  if (!timezoneId || !date || !date.isValid()) return null;
 
   const nowInTz = dayjs().tz(timezoneId);
   const selectedDateInTz = dayjs.tz(date.format("YYYY-MM-DD"), "YYYY-MM-DD", timezoneId);
