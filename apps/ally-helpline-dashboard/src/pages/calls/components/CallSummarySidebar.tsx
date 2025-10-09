@@ -4,18 +4,22 @@ import { useSelector } from "react-redux";
 
 import { logger } from "@ally-ui-mono/ui-shared";
 import { useLazyExportCallSummaryQuery, useUpdateCallSummaryMutation } from "@api";
-import { Download } from "@assets";
-import { ActionDialog } from "@components";
+import { Delete, Download } from "@assets";
+import { CallProvider } from "@constants";
 import { FeedbackDialog } from "@containers";
 import { useFileExport } from "@hooks";
 import CallSummary from "@pages/post-call-summary/components/CallSummary";
 import { RootState } from "@store";
 import { ChatSummaryStatus, SessionType, UserRole } from "@types";
 
-import { SummaryHeader, CallTranscriptTab, SummarySidebarWrapper } from ".";
-import { defaultDeleteDialogData } from "../constants";
+import {
+  SummaryHeader,
+  CallTranscriptTab,
+  SummarySidebarWrapper,
+  DeleteCallLogConfirmationDialog,
+} from ".";
 import { SUMMARY_FEEDBACK_TIMEOUT } from "./constants";
-import { CallSummarySidebarProps, DeleteDialogData } from "./types";
+import { CallSummarySidebarProps } from "./types";
 
 // TODO: Added only for removing lint error - remove and find actual solution
 declare global {
@@ -32,8 +36,7 @@ const CallSummarySidebar: FC<CallSummarySidebarProps> = ({
   const { user } = useSelector((state: RootState) => state.user);
 
   const [selectedComment, setSelectedComment] = useState<string>("");
-  const [deleteDialogData, setDeleteDialogData] =
-    useState<DeleteDialogData>(defaultDeleteDialogData);
+  const [deleteDialogChatId, setDeleteDialogChatId] = useState<number | null>(null);
   const [summaryName, setSummaryName] = useState<string>();
   const [showFeedbackDialog, setShowFeedbackDialog] = useState<boolean>(false);
 
@@ -90,12 +93,6 @@ const CallSummarySidebar: FC<CallSummarySidebarProps> = ({
     }
   };
 
-  const onDeleteConfirm = () => {
-    updateCallSummary({ chatId: callSummary?.id, data: { summary: [] } });
-    refetchCallLogs();
-    setDeleteDialogData(defaultDeleteDialogData);
-  };
-
   const renderComments = () => {
     return (
       <>
@@ -139,6 +136,15 @@ const CallSummarySidebar: FC<CallSummarySidebarProps> = ({
   );
 
   const extraHeaderList = [
+    {
+      alt: "Delete Log",
+      icon: <Delete />,
+      onClick: () => {
+        setDeleteDialogChatId(callSummary?.id);
+      },
+      show: isAdmin && callSummary?.details?.callInfo?.provider === CallProvider.AUDIO_UPLOAD,
+      text: "Delete Log",
+    },
     {
       alt: "Export",
       icon: <Download />,
@@ -198,6 +204,14 @@ const CallSummarySidebar: FC<CallSummarySidebarProps> = ({
     setCallSummary(null);
   };
 
+  const onDeleteDialogClose = (isDeletionDone?: boolean) => {
+    setDeleteDialogChatId(null);
+    if (isDeletionDone) {
+      refetchCallLogs();
+      setCallSummary(null);
+    }
+  };
+
   return (
     <SummarySidebarWrapper
       onSidebarClose={onSidebarClose}
@@ -211,26 +225,10 @@ const CallSummarySidebar: FC<CallSummarySidebarProps> = ({
         id={callSummary?.id}
         sessionType={SessionType.CALL}
       />
-      {/* TODO: Remove if delete summary is not needed 
-      Anyway, no trigger button present for delete summary in this sidebar*/}
-      <ActionDialog
-        open={deleteDialogData.open}
-        onClose={() => setDeleteDialogData(defaultDeleteDialogData)}
-        primaryButton={{
-          label: "Delete",
-          onClick: onDeleteConfirm,
-          variant: "destructive",
-        }}
-        secondaryButton={{
-          label: "Cancel",
-          onClick: () => setDeleteDialogData(defaultDeleteDialogData),
-        }}
-        title="Delete Summary"
-      >
-        <span className="text-[14px] text-[#47464F]">
-          Are you sure you want to delete this summary? This action can&apos;t be undone.
-        </span>
-      </ActionDialog>
+      <DeleteCallLogConfirmationDialog
+        chatId={deleteDialogChatId}
+        closeDialog={onDeleteDialogClose}
+      />
     </SummarySidebarWrapper>
   );
 };
