@@ -12,7 +12,7 @@ import { AudioUploadInterfaceProps } from "./types";
 const AudioUploadInterface: FC<AudioUploadInterfaceProps> = ({
   duration,
   files,
-  onAudioAvailable,
+  setDuration,
   onDropSuccess,
   onDeleteClick,
 }) => {
@@ -87,7 +87,7 @@ const AudioUploadInterface: FC<AudioUploadInterfaceProps> = ({
 
   const onAudioReady = (wavesurfer: WaveSurfer) => {
     setWavesurfer(wavesurfer);
-    onAudioAvailable(wavesurfer.getDuration() || 0);
+    setDuration(wavesurfer.getDuration() || 0);
   };
 
   const onPlayClick = () => {
@@ -101,11 +101,14 @@ const AudioUploadInterface: FC<AudioUploadInterfaceProps> = ({
   };
 
   const formatTime = (s: number) => {
-    const minutes = Math.floor(s / 60);
+    const hr = Math.floor(s / 3600);
+    const minutes = Math.floor((s % 3600) / 60)
+      .toString()
+      .padStart(2, "0");
     const seconds = Math.floor(s % 60)
       .toString()
       .padStart(2, "0");
-    return `${minutes}:${seconds}`;
+    return `${hr > 0 ? `${hr}:` : ""}${minutes}:${seconds}`;
   };
 
   const getFileSize = () => {
@@ -117,6 +120,7 @@ const AudioUploadInterface: FC<AudioUploadInterfaceProps> = ({
     setWavesurfer(null);
     setIsPlaying(false);
     setCurrentSec(0);
+    setDuration(0);
     onDeleteClick();
   };
 
@@ -175,7 +179,7 @@ const AudioUploadInterface: FC<AudioUploadInterfaceProps> = ({
                 {getFileSize()} MB
               </span>
             </div>
-            <Delete className="cursor-pointer" onClick={onAudioDelete} />
+            <Delete className="text-[#F93535] cursor-pointer" onClick={onAudioDelete} />
           </div>
         </div>
       );

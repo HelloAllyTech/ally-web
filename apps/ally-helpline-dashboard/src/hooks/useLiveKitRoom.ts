@@ -40,23 +40,8 @@ export const useLiveKitRoom = (): UseLiveKitRoomReturn => {
 
   const onDataReceived = useCallback((payload: any, _participant: any, _kind: any, _topic: any) => {
     const eventObj = decodeUint8ToJson(payload) as LiveKitEvent;
-
-    const incomingMs = Date.parse(eventObj?.timestamp ?? "");
-    const lastMs = lastEventTimestampRef.current;
-
-    const incomingValid = !Number.isNaN(incomingMs);
-    const lastValid = typeof lastMs === "number" && !Number.isNaN(lastMs);
-    const shouldAppend = lastValid && incomingValid ? incomingMs - lastMs >= 10000 : true;
-
-    if (shouldAppend) {
-      setEvents(prev => [...prev, eventObj]);
-      setScore(prev => prev + (eventObj?.data?.score ?? 0));
-      if (incomingValid) {
-        lastEventTimestampRef.current = incomingMs;
-      }
-    } else {
-      logger.debug("Skipping event append due to 10s gating");
-    }
+    setEvents(prev => [...prev, eventObj]);
+    setScore(prev => prev + (eventObj?.data?.score ?? 0));
   }, []);
 
   const onRoomDisconnect = useCallback(() => {

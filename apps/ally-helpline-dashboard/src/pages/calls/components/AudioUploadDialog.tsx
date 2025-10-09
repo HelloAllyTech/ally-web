@@ -22,6 +22,7 @@ import { UploadStatus } from "@types";
 import AudioUploadInterface from "./AudioUploadInterface";
 import { defaultAudioFormData, timezoneOptions } from "./constants";
 import { AudioUploadDialogProps, AudioUploadFormData } from "./types";
+import { getMaxSelectableTimeForDate } from "./utils";
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
@@ -45,7 +46,8 @@ const AudioUploadDialog: FC<AudioUploadDialogProps> = ({ isOpen, onClose }) => {
     !formData.counsellorId ||
     !formData.date ||
     !formData.time ||
-    !formData.timeZone;
+    !formData.timeZone ||
+    !duration;
 
   useEffect(() => {
     if (!isOpen) {
@@ -134,6 +136,13 @@ const AudioUploadDialog: FC<AudioUploadDialogProps> = ({ isOpen, onClose }) => {
     }
   };
 
+  // Disable future selections considering the selected time zone
+  const nowInSelectedTz = formData.timeZone ? dayjs().tz(formData.timeZone) : dayjs();
+  const maxDateForTz = dayjs(nowInSelectedTz.format("YYYY-MM-DD"), "YYYY-MM-DD");
+
+  const maxTimeForPicker = getMaxSelectableTimeForDate(formData.timeZone, formData.date);
+  const disableTimePicker = !formData.date || !formData.timeZone;
+
   return (
     <Dialog
       open={isOpen}
@@ -171,7 +180,7 @@ const AudioUploadDialog: FC<AudioUploadDialogProps> = ({ isOpen, onClose }) => {
         >
           <AudioUploadInterface
             duration={duration}
-            onAudioAvailable={setDuration}
+            setDuration={setDuration}
             files={files}
             onDropSuccess={onDropAccepted}
             onDeleteClick={() => setFiles([])}
@@ -205,16 +214,7 @@ const AudioUploadDialog: FC<AudioUploadDialogProps> = ({ isOpen, onClose }) => {
             <DatePicker
               value={formData.date}
               onChange={value => setFormData({ ...formData, date: value })}
-              disableFuture
-            />
-          </div>
-
-          {/* Time */}
-          <div className="flex flex-col gap-2">
-            <label>Session time</label>
-            <TimePicker
-              value={formData.time}
-              onChange={value => setFormData({ ...formData, time: value })}
+              maxDate={maxDateForTz}
             />
           </div>
 
@@ -226,6 +226,17 @@ const AudioUploadDialog: FC<AudioUploadDialogProps> = ({ isOpen, onClose }) => {
               options={timezoneOptions}
               onChange={value => setFormData({ ...formData, timeZone: value })}
               placeholder="Select time zone"
+            />
+          </div>
+
+          {/* Time */}
+          <div className="flex flex-col gap-2">
+            <label>Session time</label>
+            <TimePicker
+              value={formData.time}
+              onChange={value => setFormData({ ...formData, time: value })}
+              maxTime={maxTimeForPicker}
+              disabled={disableTimePicker}
             />
           </div>
         </motion.div>

@@ -71,3 +71,14 @@ export const formatSizeInBytes = (sizeInBytes: number, targetUnit: "KB" | "MB" |
   }
   return sizeInBytes / 1024 / 1024 / 1024;
 };
+
+export const formatSizeByByteSize = (sizeInBytes: number) => {
+  if (sizeInBytes < 1024) {
+    return `${sizeInBytes} bytes`;
+  }
+  if (sizeInBytes < 1024 * 1024) {
+    return `${sizeInBytes / 1024} KB`;
+  }
+  if (sizeInBytes < 1024 * 1024 * 1024) return `${sizeInBytes / (1024 * 1024)} MB`;
+  return `${(sizeInBytes / (1024 * 1024 * 1024)).toFixed(2)} GB`;
+};

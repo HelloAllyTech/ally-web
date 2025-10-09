@@ -25,7 +25,7 @@ export const audioUploadExtensions: Accept = {
   "audio/mp4a-latm": [".m4a"],
 };
 
-export const AUDIO_UPLOAD_SIZE_IN_BYTES = 1024 * 1024 * 1024; // 1 GB
+export const AUDIO_UPLOAD_SIZE_IN_BYTES = 800 * 1024 * 1024; // 800 MB
 
 export const timezoneOptions = [
   { label: "(GMT -5:30) IST (Asia/Calcutta)", value: "Asia/Kolkata" },

@@ -4,7 +4,7 @@ import { Accept, FileRejection, useDropzone } from "react-dropzone";
 import { toast } from "sonner";
 
 import { FileUpload } from "@assets";
-import { formatSizeInBytes, getErrorToastMessageForFileUpload } from "@utils";
+import { formatSizeByByteSize, getErrorToastMessageForFileUpload } from "@utils";
 
 import { DraggableAreaProps } from "./types";
 
@@ -54,7 +54,7 @@ const DraggableArea: FC<DraggableAreaProps> = ({
       <span className="text-[#8A8A8A] font-['IBM_Plex_Serif'] text-sm">
         Drag & drop or <span className="text-[#0957D0] font-medium">choose</span> a{" "}
         {getAllowedUniqueExtensionsDisplay(supportedExtensions)} file under{" "}
-        {formatSizeInBytes(sizeInBytes, "GB")}GB.
+        {formatSizeByByteSize(sizeInBytes)}
       </span>
     </div>
   );

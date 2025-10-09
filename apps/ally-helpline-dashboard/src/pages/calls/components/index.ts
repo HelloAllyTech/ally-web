@@ -4,6 +4,7 @@ import CallLogsTable from "./CallLogsTable";
 import CallSummarySidebar from "./CallSummarySidebar";
 import CallTranscriptTab from "./CallTranscriptTab";
 import ConsolidatedLogs from "./ConsolidatedLogs";
+import DeleteCallLogConfirmationDialog from "./DeleteCallLogConfirmationDialog";
 import SimulationSummarySidebar from "./SimulationSummarySidebar";
 import SimulationTranscriptTab from "./SimulationTranscriptTab";
 import StartSessionDialog from "./StartSessionDialog";
@@ -18,6 +19,7 @@ export {
   CallSummarySidebar,
   CallTranscriptTab,
   ConsolidatedLogs,
+  DeleteCallLogConfirmationDialog,
   SimulationSummarySidebar,
   SimulationTranscriptTab,
   SummaryHeader,

@@ -4,12 +4,13 @@ import { DatePicker as MuiDatePicker } from "@mui/x-date-pickers/DatePicker";
 
 import { DatePickerProps } from "./types";
 
-const DatePicker: FC<DatePickerProps> = ({ value, onChange, disableFuture }) => {
+const DatePicker: FC<DatePickerProps> = ({ value, onChange, disableFuture, maxDate }) => {
   return (
     <MuiDatePicker
       value={value}
       onChange={onChange}
       disableFuture={disableFuture}
+      maxDate={maxDate}
       format="DD/MM/YYYY"
       slotProps={{
         textField: {
