@@ -11,3 +11,5 @@ export const analyticsTypeOptions = [
     label: "Org Analytics",
   },
 ];
+
+export const ANALYTICS_DASHBOARD_REFRESH_INTERVAL = 870000; //every 14 minutes 30 seconds as expiry is 15 minutes

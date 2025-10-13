@@ -319,7 +319,7 @@ const CallSummary: FC<CallSummaryProps> = ({
     postProcess?.();
     // TODO: Remove  !isAdmin once permissions are implemented
     if (!isInSidebar && !isAdmin) {
-      if (summaryData?.details?.callInfo?.isSummaryFeedbackAdded) {
+      if (callSummary?.details?.callInfo?.isSummaryFeedbackAdded) {
         navigateToCallLogs();
       } else {
         setShowFeedbackDialog(true);
