@@ -23,7 +23,11 @@
     "test:ui-shared:watch": "npx nx test ui-shared --watch",
     "test:web:coverage": "npx nx test ally-web --configuration=coverage",
     "test:helpline:coverage": "npx nx test ally-helpline-dashboard --configuration=coverage",
-    "test:ui-shared:coverage": "npx nx test ui-shared --configuration=coverage"
+    "test:ui-shared:coverage": "npx nx test ui-shared --configuration=coverage",
+    "test:update-snapshots": "npx nx run-many --target=test --all --update",
+    "test:web:update-snapshots": "npx nx test ally-web --update",
+    "test:helpline:update-snapshots": "npx nx test ally-helpline-dashboard --update",
+    "test:ui-shared:update-snapshots": "npx nx test ui-shared --update"
   },
   "private": true,
   "overrides": {
