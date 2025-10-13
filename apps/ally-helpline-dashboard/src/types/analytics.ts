@@ -1,3 +1,5 @@
+import { AnalyticsType } from "@constants";
+
 export enum CalendarMode {
   DAY = "day",
   WEEK = "week",
@@ -14,6 +16,7 @@ export type GetDashboardsResponse = {
   id: string;
   externalId: string;
   name: string;
+  analyticsType: AnalyticsType;
 }[];
 
 export type GetCounsellorStatsResponse = {

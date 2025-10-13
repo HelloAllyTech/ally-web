@@ -14,4 +14,5 @@ export enum Permissions {
   VIEW_SCENARIO_SESSION_SUMMARY = "view:scenario-session:summary",
   VIEW_AUDIO_UPLOAD = "view:audio-upload-url",
   DELETE_CHAT = "delete:chat",
+  VIEW_ANALYTICS_DASHBOARD = "view:analytics:dashboard",
 }
