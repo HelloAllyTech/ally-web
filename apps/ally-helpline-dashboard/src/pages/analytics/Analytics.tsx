@@ -6,7 +6,7 @@ import { NoAnalytics } from "@assets";
 import { ToggleButtonGroup } from "@components";
 import { AnalyticsType } from "@constants";
 
-import { analyticsTypeOptions } from "./constants";
+import { analyticsTypeOptions, ANALYTICS_DASHBOARD_REFRESH_INTERVAL } from "./constants";
 
 export const Analytics: FunctionComponent = () => {
   const [getDashboardUrl] = useLazyGetDashboardUrlQuery();
@@ -38,20 +38,21 @@ export const Analytics: FunctionComponent = () => {
         .forEach(async ({ externalId }) => {
           triggerDashboardUrl(externalId);
         });
-      // Refresh dashboard url every 14 minutes 30 seconds as expiry is 15 minutes
+      // Auto refresh of all dashboards as there is an expiry for signed url
       interval = setInterval(() => {
         dashboards
           .filter(dashboard => dashboard.analyticsType === analyticsType)
           .forEach(async ({ externalId }) => {
             triggerDashboardUrl(externalId);
           });
-      }, 870000);
+      }, ANALYTICS_DASHBOARD_REFRESH_INTERVAL);
     }
     return () => {
       if (interval) clearInterval(interval);
     };
   }, [dashboards, analyticsType]);
 
+  // Setting the first one from toggle group as default
   useEffect(() => {
     if (analyticsToggleOptions?.[0]) setAnalyticsType(analyticsToggleOptions[0].value);
   }, [analyticsToggleOptions]);
