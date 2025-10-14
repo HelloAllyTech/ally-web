@@ -15,7 +15,9 @@ exports[`AudioCall Component > Snapshot Testing > should match snapshot 1`] = `
       <div
         data-testid="fallback-ui"
       >
-        <h1 />
+        <h1>
+          No Active Call
+        </h1>
         <p>
           Your active call will be shown here.
         </p>
@@ -45,7 +47,9 @@ exports[`AudioCall Component > Snapshot Testing > should match snapshot with mic
       <div
         data-testid="fallback-ui"
       >
-        <h1 />
+        <h1>
+          No Active Call
+        </h1>
         <p>
           Your active call will be shown here.
         </p>
