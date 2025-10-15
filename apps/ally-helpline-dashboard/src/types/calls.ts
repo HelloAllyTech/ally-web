@@ -130,3 +130,18 @@ export interface CancelAudioUploadInput {
 export interface CancelAudioUploadResponse {
   message: string;
 }
+
+export interface AudioUpload {
+  chatId: number;
+  fileName: string;
+  status: UploadStatus;
+  progress: number;
+  error: string | null;
+}
+
+export enum UploadStatus {
+  IN_PROGRESS = "IN_PROGRESS",
+  FAILED = "FAILED",
+  COMPLETED = "COMPLETED",
+  CANCELLED = "CANCELLED",
+}

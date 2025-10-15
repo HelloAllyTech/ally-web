@@ -10,9 +10,11 @@ vi.mock("@assets", () => ({
 }));
 
 vi.mock("@utils", () => ({
-  formatSizeInBytes: vi.fn((size: number, unit: string) =>
-    size === 10485760 ? `10${unit}` : `${size / 1024 / 1024}${unit}`,
-  ),
+  formatSizeByByteSize: vi.fn((size: number) => {
+    if (size === 10485760) return "10 MB";
+    return `${Math.round(size / 1024 / 1024)} MB`;
+  }),
+  getErrorToastMessageForFileUpload: vi.fn(),
 }));
 
 let capturedOnDrop: (acceptedFiles: File[], rejectedFiles: FileRejection[]) => void;
@@ -87,9 +89,8 @@ describe("DraggableArea", () => {
 
       // Expected text calculation:
       // Extensions: JPG, JPEG, PDF or CSV (from mockAccept)
-      // Size: 10MB (from mocked formatSizeInBytes) + MB (redundant unit from component JSX)
-      // The component output is "10MBMB" because the utility returns "10MB" and the JSX appends "MB."
-      const expectedText = "Drag & drop or choose a JPG, JPEG, PDF or CSV file under 10MBMB.";
+      // Size: 10 MB (from mocked formatSizeByByteSize)
+      const expectedText = "Drag & drop or choose a JPG, JPEG, PDF or CSV file under 10 MB";
 
       // Check for the descriptive text content
       expect(screen.getByText(/Drag & drop or/)).toHaveTextContent(expectedText);

@@ -410,6 +410,10 @@ export const postCallSectionOrder = [SectionType.BoxBreathing, SectionType.Sessi
 
 export const SectionQueryKey = "section";
 
+export const SourceQueryKey = "source";
+
+export const DeeplinkSourceValue = "deeplink";
+
 export const PostCallProcessingMessages = [
   "Generating transcription",
   "Deleting audio",

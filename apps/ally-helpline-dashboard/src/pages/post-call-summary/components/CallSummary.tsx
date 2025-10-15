@@ -16,8 +16,8 @@ import {
   useUpdateCallSummaryNotesMutation,
   useGetCallSummaryQuery,
 } from "@api";
-import { Assessment, Warning } from "@assets";
-import { Accordion, TextField, Button, InfoBanner } from "@components";
+import { Assessment, PageNotFoundIllustration, Warning } from "@assets";
+import { Accordion, TextField, Button, InfoBanner, FallbackUI } from "@components";
 import { LanguageMap, ROUTES } from "@constants";
 import { FeedbackDialog } from "@containers";
 import { useEnhance, useDebounce } from "@hooks";
@@ -56,6 +56,7 @@ const CallSummary: FC<CallSummaryProps> = ({
     data: callSummary,
     refetch: refetchSummary,
     isLoading: isSummaryLoading,
+    error: summaryLoadingError,
   } = useGetCallSummaryQuery(chatId);
   const { data: visibleFields, isLoading: isGetSummaryFieldsLoading } = useGetSummaryFieldsQuery();
   const [updateCallSummary, { isLoading: isUpdateLoading }] = useUpdateCallSummaryMutation();
@@ -319,7 +320,7 @@ const CallSummary: FC<CallSummaryProps> = ({
     postProcess?.();
     // TODO: Remove  !isAdmin once permissions are implemented
     if (!isInSidebar && !isAdmin) {
-      if (summaryData?.details?.callInfo?.isSummaryFeedbackAdded) {
+      if (callSummary?.details?.callInfo?.isSummaryFeedbackAdded) {
         navigateToCallLogs();
       } else {
         setShowFeedbackDialog(true);
@@ -349,6 +350,22 @@ const CallSummary: FC<CallSummaryProps> = ({
     return (
       <div className="flex justify-center items-center h-[calc(100vh-80px)]">
         <CircularProgress />
+      </div>
+    );
+  }
+
+  if (summaryLoadingError) {
+    return (
+      <div className="flex h-[90vh] items-center justify-center">
+        <FallbackUI
+          icon={<PageNotFoundIllustration />}
+          mainMessage="Summary Not Found"
+          description="The summary you are looking for does not exist."
+          button={{
+            text: "Go to Home",
+            onClick: () => navigate(ROUTES.HOME),
+          }}
+        />
       </div>
     );
   }
@@ -418,6 +435,7 @@ const CallSummary: FC<CallSummaryProps> = ({
             </Accordion>
           </motion.div>
         </div>
+
         {!isAdmin && (
           <div className="flex justify-center">
             <Button onClick={handleSave} disabled={isLoading || (isInSidebar && !hasDataChanged())}>

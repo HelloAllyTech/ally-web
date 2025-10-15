@@ -93,9 +93,9 @@ vi.mock("@components", () => ({
       ))}
     </div>
   ),
-  FallbackUI: ({ image, mainMessage, description, className }: any) => (
+  FallbackUI: ({ icon, mainMessage, description, className }: any) => (
     <div className={className} data-testid="fallback-ui">
-      {image}
+      {icon}
       <div data-testid="fallback-message">{mainMessage}</div>
       <div data-testid="fallback-description">{description}</div>
     </div>

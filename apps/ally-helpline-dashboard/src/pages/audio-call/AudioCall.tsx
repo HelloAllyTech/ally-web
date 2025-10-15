@@ -141,7 +141,7 @@ export const AudioCall: FunctionComponent = () => {
     if (isMicrophoneMode && activeChat?.chatId && activeChat.provider !== CallProvider.MICROPHONE) {
       return (
         <FallbackUI
-          image={<NoResults />}
+          icon={<NoResults />}
           mainMessage="There is an ongoing call"
           description="You have an active call happening now"
         />
@@ -158,7 +158,7 @@ export const AudioCall: FunctionComponent = () => {
     ) {
       return (
         <FallbackUI
-          image={<NoResults />}
+          icon={<NoResults />}
           mainMessage="No Active Call"
           description="Your active call will be shown here."
         />
@@ -172,7 +172,7 @@ export const AudioCall: FunctionComponent = () => {
     ) {
       return (
         <FallbackUI
-          image={<NoResults />}
+          icon={<NoResults />}
           mainMessage="Microphone mode is not available"
           description="You don't have permission to access microphone mode"
         />

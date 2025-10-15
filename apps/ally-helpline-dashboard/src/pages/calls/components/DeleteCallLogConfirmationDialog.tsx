@@ -20,14 +20,14 @@ const DeleteCallLogConfirmationDialog: FC<DeleteCallLogDialogDataProps> = ({
   return (
     <ConfirmationDialog
       isOpen={!!chatId}
-      onClose={closeDialog}
+      onClose={() => closeDialog(false)}
       onButtonClick={onDeleteConfirm}
       title={{ normal: "Delete", italic: "Session log?" }}
       content="Do you really want to delete this record? This process cannot be undone."
       buttonText="Delete"
       buttonVariant="destructive"
       secondaryButtonText="Cancel"
-      onSecondaryButtonClick={closeDialog}
+      onSecondaryButtonClick={() => closeDialog(false)}
     />
   );
 };

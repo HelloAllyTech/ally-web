@@ -29,16 +29,16 @@ vi.mock("@assets", () => ({
 // Mock the FallbackUI component to verify props are passed correctly
 vi.mock("@components", () => ({
   FallbackUI: ({
-    image,
+    icon,
     mainMessage,
     description,
   }: {
-    image: React.ReactNode;
+    icon: React.ReactNode;
     mainMessage: string;
     description: string;
   }) => (
     <div data-testid="fallback-ui-mock">
-      <div data-testid="fallback-image">{image}</div>
+      <div data-testid="fallback-image">{icon}</div>
       <h2 data-testid="fallback-main-message">{mainMessage}</h2>
       <p data-testid="fallback-description">{description}</p>
     </div>

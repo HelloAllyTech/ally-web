@@ -7,6 +7,7 @@ export const getEstimatedSummaryGenerationTime = (
   // calculate the estimated generation time in seconds based on actual generation time
   // 1.2 is a buffer to account for the time it takes to generate the summary
   const callSumamryGenerationData = CallSummaryGenerationDataMap[callProvider];
+  if (!callSumamryGenerationData) return 0;
   const estimatedGenerationTimeInseconds =
     ((callSumamryGenerationData.summaryGenerationDurationInSeconds * callDuration) /
       callSumamryGenerationData.durationInSeconds) *

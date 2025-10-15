@@ -5,7 +5,7 @@ export const Settings = () => {
   return (
     <div className="h-[90vh] flex items-center justify-center">
       <FallbackUI
-        image={<ComingSoon />}
+        icon={<ComingSoon />}
         mainMessage="Coming Soon"
         description="We’re working on something exciting! This feature will be available soon."
       />

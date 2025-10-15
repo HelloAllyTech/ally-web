@@ -4,11 +4,11 @@ export const getFormattedFeedbackSection = (summary: SimulationSummary) => {
   return {
     keyEvents: summary.events
       ?.slice()
-      ?.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime())
+      ?.sort((a, b) => new Date(a.occurredAt).getTime() - new Date(b.occurredAt).getTime())
       ?.map(item => {
-        // Calculate time difference from summary.createdAt to item.createdAt
+        // Calculate time difference from summary.createdAt to item.occurredAt
         const sessionStartTime = new Date(summary.createdAt).getTime();
-        const eventTime = new Date(item.createdAt).getTime();
+        const eventTime = new Date(item.occurredAt).getTime();
         const timeDiffMs = eventTime - sessionStartTime;
 
         const totalSeconds = Math.floor(timeDiffMs / 1000);
