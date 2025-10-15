@@ -143,7 +143,7 @@ export const Scenario: FC = () => {
           </motion.div>
         ) : (
           <FallbackUI
-            image={<PageNotFoundIllustration />}
+            icon={<PageNotFoundIllustration />}
             isLoading={isScenarioLoading}
             mainMessage="Scenario not found"
             description="The scenario you are looking for does not exist."

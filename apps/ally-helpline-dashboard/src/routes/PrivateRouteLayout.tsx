@@ -125,7 +125,7 @@ const PrivateRouteLayout: FC = () => {
           path={ROUTES.ANALYTICS}
           element={
             <PermissionGuardedRoute
-              permission={[Permissions.VIEW_NAVBAR_ANALYTICS]}
+              permission={[Permissions.VIEW_ANALYTICS_DASHBOARD]}
               element={<Analytics />}
             />
           }

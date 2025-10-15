@@ -86,11 +86,11 @@ vi.mock("@assets", () => ({
 
 // Mock components
 vi.mock("@components", () => ({
-  FallbackUI: vi.fn(({ title, description, image, children }) => (
+  FallbackUI: vi.fn(({ icon, mainMessage, description, children }) => (
     <div data-testid="fallback-ui">
-      <h1>{title}</h1>
+      <h1>{mainMessage}</h1>
       <p>{description}</p>
-      {image}
+      {icon}
       {children}
     </div>
   )),

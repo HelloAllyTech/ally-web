@@ -4,38 +4,33 @@ import { motion } from "framer-motion";
 import { useSearchParams, useParams } from "react-router-dom";
 
 import { TabGroup } from "@components";
-import { CallType } from "@constants";
-import { useUser } from "@hooks";
-import { UserStatus } from "@types";
 import { updateQueryParamListWithoutReload } from "@utils";
 
 import { CallSummary, StressBusterStep } from "./components";
 import { SectionQueryKey, summaryTabs } from "./constants";
 import { SectionType } from "./types";
-import { getNumberForSectionKey, getSectionTabForIndex } from "./utils";
+import {
+  getNumberForSectionKey,
+  getSectionTabForIndex,
+  getSelectedSection,
+  isSourceDeeplink,
+} from "./utils";
 
 export const PostCallSummary = () => {
   const { chatId } = useParams();
   const [searchParams] = useSearchParams();
 
-  const { availableChatTypes, updateUserStatus, userStatus } = useUser();
-
   const [selectedTab, setSelectedTab] = useState<SectionType>(SectionType.SessionSummary);
 
   useEffect(() => {
-    const sectionNumber = Number(searchParams.get(SectionQueryKey) ?? "1");
+    const sectionNumber = Number(getSelectedSection(searchParams));
     setSelectedTab(getSectionTabForIndex(sectionNumber));
   }, [searchParams]);
 
+  const isDeeplink = isSourceDeeplink(searchParams);
+
   const gotoSummaryTab = () => {
     onTabChange(null, SectionType.SessionSummary);
-  };
-
-  // TODO: Remove once WEBRTC is removed
-  const updateUserStatusForWebrtcCalls = () => {
-    if (availableChatTypes?.includes(CallType.WEBRTC_CHAT) && userStatus !== UserStatus.AVAILABLE) {
-      updateUserStatus(UserStatus.AVAILABLE);
-    }
   };
 
   const renderSection = () => {
@@ -43,13 +38,7 @@ export const PostCallSummary = () => {
       case SectionType.BoxBreathing:
         return <StressBusterStep onProceed={gotoSummaryTab} />;
       case SectionType.SessionSummary:
-        return (
-          <CallSummary
-            className="max-h-[calc(100vh-250px)]"
-            chatId={Number(chatId)}
-            postProcess={updateUserStatusForWebrtcCalls}
-          />
-        );
+        return <CallSummary className="max-h-[calc(100vh-250px)]" chatId={Number(chatId)} />;
       default:
         return null;
     }
@@ -64,20 +53,28 @@ export const PostCallSummary = () => {
     updateQueryParamListWithoutReload(queryParamList);
   };
 
+  const Content = () => (
+    <motion.div
+      layout="position"
+      layoutId="content-container"
+      transition={{ duration: 0.3 }}
+      className="h-fit overflow-hidden w-full"
+    >
+      <motion.div className="flex flex-col gap-4" layout={false}>
+        {renderSection()}
+      </motion.div>
+    </motion.div>
+  );
+
   return (
     <div className="h-[100vh] w-[50%] pt-6 mx-auto flex flex-col gap-4 items-center bg-white">
-      <TabGroup value={selectedTab} onChange={onTabChange} tabs={summaryTabs}>
-        <motion.div
-          layout="position"
-          layoutId="content-container"
-          transition={{ duration: 0.3 }}
-          className="h-fit overflow-hidden w-full"
-        >
-          <motion.div className="flex flex-col gap-4" layout={false}>
-            {renderSection()}
-          </motion.div>
-        </motion.div>
-      </TabGroup>
+      {isDeeplink ? (
+        <Content />
+      ) : (
+        <TabGroup value={selectedTab} onChange={onTabChange} tabs={isDeeplink ? [] : summaryTabs}>
+          <Content />
+        </TabGroup>
+      )}
     </div>
   );
 };

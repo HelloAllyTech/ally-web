@@ -1,7 +1,7 @@
 import { ReactNode } from "react";
 
 export interface FallbackUIProps {
-  image: ReactNode;
+  icon: ReactNode;
   isLoading?: boolean;
   mainMessage: string;
   description: string;

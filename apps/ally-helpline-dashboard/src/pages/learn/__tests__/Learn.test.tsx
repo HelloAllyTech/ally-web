@@ -189,8 +189,15 @@ describe("Learn Component", () => {
           <Learn />
         </TestWrapper>,
       );
-      const description = screen.getByText(/hyper realistic training role plays/);
-      expect(description).not.toBeNull();
+      // Use getAllByText to get all matching elements and check the first one
+      const descriptions = screen.getAllByText((content, element) => {
+        return (
+          (element?.textContent?.includes("hyper realistic training role plays") &&
+            element?.textContent?.includes("Use AI-voice based")) ||
+          false
+        );
+      });
+      expect(descriptions[0]).not.toBeNull();
     });
 
     it("should highlight key terms with emphasis styles", () => {
@@ -199,13 +206,11 @@ describe("Learn Component", () => {
           <Learn />
         </TestWrapper>,
       );
-      const aiText = screen.getByText("AI");
-      const counsellorsText = screen.getByText("counsellors");
-      const expertiseText = screen.getByText("expertise");
+      const aiVoiceText = screen.getByText("AI-voice based");
+      const rolePlaysText = screen.getByText("role plays");
 
-      expect(aiText).not.toBeNull();
-      expect(counsellorsText).not.toBeNull();
-      expect(expertiseText).not.toBeNull();
+      expect(aiVoiceText).not.toBeNull();
+      expect(rolePlaysText).not.toBeNull();
     });
 
     it("should apply correct styling classes to description", () => {

@@ -54,7 +54,7 @@ export const navBarOptions = [
     Icon: StatsIcon,
     path: ROUTES.ANALYTICS,
     activePages: [],
-    permissions: [Permissions.VIEW_NAVBAR_ANALYTICS],
+    permissions: [Permissions.VIEW_ANALYTICS_DASHBOARD],
   },
   {
     id: TabId.SEARCH,

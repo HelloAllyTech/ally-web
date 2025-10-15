@@ -6,7 +6,7 @@ import { Button } from "../button";
 import { FallbackUIProps } from "./types";
 
 const FallbackUI: FC<FallbackUIProps> = ({
-  image,
+  icon: Icon,
   mainMessage,
   description,
   className,
@@ -20,6 +20,7 @@ const FallbackUI: FC<FallbackUIProps> = ({
       ) : (
         <>
           <div className="flex flex-col items-center gap-2 text-center">
+            {Icon}
             <h2 className="text-[24px] text-[#49454F]">{mainMessage}</h2>
             <p className="text-[12px] text-[#787680]">{description}</p>
           </div>

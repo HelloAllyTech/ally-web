@@ -1,8 +1,12 @@
-import { format } from "date-fns";
-
 import { SummaryFieldKey } from "@types";
 
-import { postCallSectionOrder, summaryFields } from "./constants";
+import {
+  DeeplinkSourceValue,
+  postCallSectionOrder,
+  SectionQueryKey,
+  SourceQueryKey,
+  summaryFields,
+} from "./constants";
 import { SectionType, SummarySectionKey } from "./types";
 
 export const getSectionFields = (section: SummarySectionKey, visibleFields: SummaryFieldKey[]) => {
@@ -20,3 +24,12 @@ export const getSectionTabForIndex = (order: number) => postCallSectionOrder[ord
 
 export const getNumberForSectionKey = (section: SectionType) =>
   postCallSectionOrder.indexOf(section) + 1;
+
+export const getSelectedSection = (searchParams: URLSearchParams) => {
+  if (isSourceDeeplink(searchParams)) return "2";
+  if (searchParams.get(SectionQueryKey)) return searchParams.get(SectionQueryKey);
+  return "1";
+};
+
+export const isSourceDeeplink = (searchParams: URLSearchParams) =>
+  searchParams.get(SourceQueryKey) === DeeplinkSourceValue;

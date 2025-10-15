@@ -148,9 +148,9 @@ vi.mock("@components", () => ({
       </div>
     ),
   ),
-  FallbackUI: vi.fn(({ image, isLoading, mainMessage, description, button }) => (
+  FallbackUI: vi.fn(({ icon, isLoading, mainMessage, description, button }) => (
     <div data-testid="fallback-ui">
-      <div data-testid="fallback-image">{image}</div>
+      <div data-testid="fallback-image">{icon}</div>
       <div data-testid="fallback-loading">{isLoading ? "true" : "false"}</div>
       <div data-testid="fallback-message">{mainMessage}</div>
       <div data-testid="fallback-description">{description}</div>

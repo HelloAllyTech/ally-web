@@ -201,12 +201,36 @@ jobs:
       - name: Sync to S3
         run: |
           echo ":cloud: Syncing files to S3..." >> $GITHUB_STEP_SUMMARY
+
+          # Sync all files first with default settings
           aws s3 sync apps/ally-helpline-dashboard/dist/ s3://${{ steps.cdn-config.outputs.s3_website_bucket }}/ \
             --delete \
             --cache-control "public, max-age=86400" \
             --metadata-directive REPLACE
+
+          # Fix Content-Type for .well-known files (Apple App Site Association)
+          if [ -f "apps/ally-helpline-dashboard/dist/.well-known/apple-app-site-association" ]; then
+            echo ":gear: Setting correct Content-Type for apple-app-site-association..." >> $GITHUB_STEP_SUMMARY
+            aws s3 cp apps/ally-helpline-dashboard/dist/.well-known/apple-app-site-association \
+              s3://${{ steps.cdn-config.outputs.s3_website_bucket }}/.well-known/apple-app-site-association \
+              --content-type "application/json" \
+              --cache-control "public, max-age=86400" \
+              --metadata-directive REPLACE
+          fi
+
+          # Fix Content-Type for assetlinks.json (Android App Links)
+          if [ -f "apps/ally-helpline-dashboard/dist/.well-known/assetlinks.json" ]; then
+            echo ":gear: Setting correct Content-Type for assetlinks.json..." >> $GITHUB_STEP_SUMMARY
+            aws s3 cp apps/ally-helpline-dashboard/dist/.well-known/assetlinks.json \
+              s3://${{ steps.cdn-config.outputs.s3_website_bucket }}/.well-known/assetlinks.json \
+              --content-type "application/json" \
+              --cache-control "public, max-age=86400" \
+              --metadata-directive REPLACE
+          fi
+
           echo ":white_check_mark: Files synced to S3 successfully" >> $GITHUB_STEP_SUMMARY
           echo "- S3 Bucket: s3://${{ steps.cdn-config.outputs.s3_website_bucket }}/" >> $GITHUB_STEP_SUMMARY
+          echo "- .well-known files configured with correct Content-Type" >> $GITHUB_STEP_SUMMARY
 
       - name: Invalidate CloudFront
         run: |

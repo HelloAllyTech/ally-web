@@ -12,15 +12,16 @@ import { UploadStatus } from "@types";
 import { getKeyFromIndex } from "@utils";
 
 import { ProgressCircleProps, UploadProgressHeaderProps } from "./types";
+import { getUploadHeader } from "./utils";
 
 const UploadProgressDialogHeader: FC<UploadProgressHeaderProps> = ({
-  total,
+  uploads,
   expanded,
   onClose,
   onToggle,
 }) => (
   <div className="flex items-center justify-between mx-4 py-2 border-b border-[#EFEFEF]">
-    <span className="text-sm font-medium text-[#1A1A1A]">{`${total} Upload${total > 1 ? "s" : ""} in progress`}</span>
+    <span className="text-sm font-medium text-[#1A1A1A]">{getUploadHeader(uploads)}</span>
     <div className="flex items-center gap-2 text-[#656565]">
       <Button
         onClick={onToggle}
@@ -155,7 +156,7 @@ const UploadProgressDialog: FC = () => {
     <div className="fixed bottom-0 right-6 z-40 font-['IBM_Plex_Serif']">
       <div className="w-[360px] bg-white shadow-[0_2px_10px_rgba(0,0,0,0.15)] rounded-t-[8px] border border-[#E5E7EB] overflow-hidden">
         <UploadProgressDialogHeader
-          total={uploads.length}
+          uploads={uploads}
           expanded={expanded}
           onClose={onClose}
           onToggle={() => setExpanded(p => !p)}

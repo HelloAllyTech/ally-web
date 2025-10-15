@@ -1,8 +1,10 @@
+import { AudioUpload } from "@types";
+
 export interface UploadProgressHeaderProps {
-  total: number;
   expanded: boolean;
   onClose: () => void;
   onToggle: () => void;
+  uploads: AudioUpload[];
 }
 
 export interface ProgressCircleProps {
