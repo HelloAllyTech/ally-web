@@ -157,6 +157,7 @@ export interface SimulationSummary {
 export interface KeyEvent {
   eventId: string;
   createdAt: string;
+  occurredAt: string;
   events: {
     id: string;
     name: string;

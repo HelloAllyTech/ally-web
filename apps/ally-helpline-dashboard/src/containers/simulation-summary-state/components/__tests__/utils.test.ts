@@ -25,6 +25,7 @@ describe("getFormattedFeedbackSection", () => {
       {
         eventId: "event-1",
         createdAt: "2024-01-01T10:05:00Z",
+        occurredAt: "2024-01-01T10:05:00Z",
         events: {
           id: "1",
           name: "Session started",
@@ -37,6 +38,7 @@ describe("getFormattedFeedbackSection", () => {
       {
         eventId: "event-2",
         createdAt: "2024-01-01T10:15:00Z",
+        occurredAt: "2024-01-01T10:15:00Z",
         events: {
           id: "2",
           name: "First interaction",
@@ -49,6 +51,7 @@ describe("getFormattedFeedbackSection", () => {
       {
         eventId: "event-3",
         createdAt: "2024-01-01T10:25:00Z",
+        occurredAt: "2024-01-01T10:25:00Z",
         events: {
           id: "3",
           name: "Session ended",
@@ -128,6 +131,7 @@ describe("getFormattedFeedbackSection", () => {
           {
             eventId: "event-start",
             createdAt: "2024-01-01T10:00:00Z", // Same as session start
+            occurredAt: "2024-01-01T10:00:00Z",
             events: {
               id: "1",
               name: "Session started",
@@ -152,6 +156,7 @@ describe("getFormattedFeedbackSection", () => {
           {
             eventId: "event-seconds",
             createdAt: "2024-01-01T10:01:30Z", // 1 minute 30 seconds
+            occurredAt: "2024-01-01T10:01:30Z",
             events: {
               id: "2",
               name: "Event with seconds",
@@ -171,13 +176,14 @@ describe("getFormattedFeedbackSection", () => {
   });
 
   describe("Event Sorting", () => {
-    it("should sort events by creation time", () => {
+    it("should sort events by occurred time", () => {
       const unsortedSummary = {
         ...mockSummary,
         events: [
           {
             eventId: "event-3",
             createdAt: "2024-01-01T10:25:00Z",
+            occurredAt: "2024-01-01T10:25:00Z",
             events: {
               id: "3",
               name: "Last event",
@@ -190,6 +196,7 @@ describe("getFormattedFeedbackSection", () => {
           {
             eventId: "event-1",
             createdAt: "2024-01-01T10:05:00Z",
+            occurredAt: "2024-01-01T10:05:00Z",
             events: {
               id: "4",
               name: "First event",
@@ -202,6 +209,7 @@ describe("getFormattedFeedbackSection", () => {
           {
             eventId: "event-2",
             createdAt: "2024-01-01T10:15:00Z",
+            occurredAt: "2024-01-01T10:15:00Z",
             events: {
               id: "5",
               name: "Middle event",
@@ -327,6 +335,7 @@ describe("getFormattedFeedbackSection", () => {
           {
             eventId: "event-no-score",
             createdAt: "2024-01-01T10:05:00Z",
+            occurredAt: "2024-01-01T10:05:00Z",
             events: {
               id: "6",
               name: "Event without score",
@@ -363,6 +372,7 @@ describe("getFormattedFeedbackSection", () => {
           {
             eventId: "event-long",
             createdAt: "2024-01-01T11:30:00Z", // 1 hour 30 minutes
+            occurredAt: "2024-01-01T11:30:00Z",
             events: {
               id: "8",
               name: "Long session event",
