@@ -124,11 +124,60 @@ jobs:
             echo "No valid trigger detected"
           fi
 
+  # Run tests before deployment
+  test:
+    needs:
+      - prepare-env
+      - changes
+    if: needs.prepare-env.outputs.should_deploy == 'true' && needs.changes.outputs.dashboard == 'true'
+    runs-on: ubuntu-22.04
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install Dependencies
+        run: npm ci --legacy-peer-deps
+
+      - name: Run Tests
+        run: |
+          echo ":test_tube: Running tests for ally-helpline-dashboard and dependencies..." >> $GITHUB_STEP_SUMMARY
+
+          # Run tests for the helpline dashboard
+          npm run test:helpline
+
+          # Run tests for ui-shared library (dependency)
+          npm run test:ui-shared
+
+          echo ":white_check_mark: All tests passed successfully" >> $GITHUB_STEP_SUMMARY
+
+      - name: Test Results Summary
+        if: always()
+        run: |
+          if [ $? -eq 0 ]; then
+            echo ":white_check_mark: **Test Status**: All tests passed" >> $GITHUB_STEP_SUMMARY
+            echo "- ally-helpline-dashboard tests: ✅" >> $GITHUB_STEP_SUMMARY
+            echo "- ui-shared library tests: ✅" >> $GITHUB_STEP_SUMMARY
+          else
+            echo ":x: **Test Status**: Tests failed" >> $GITHUB_STEP_SUMMARY
+            echo "Deployment will be blocked until all tests pass." >> $GITHUB_STEP_SUMMARY
+            exit 1
+          fi
+
   # Build and deploy to CDN
   deploy:
     needs:
       - prepare-env
       - changes
+      - test
     if: needs.prepare-env.outputs.should_deploy == 'true' && needs.changes.outputs.dashboard == 'true'
     runs-on: ubuntu-22.04
     env:
