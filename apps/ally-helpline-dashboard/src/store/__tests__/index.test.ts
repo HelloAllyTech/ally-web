@@ -105,7 +105,7 @@ describe("Store Configuration", () => {
     });
 
     it("should handle setPermissions action", () => {
-      const mockPermissions = [Permissions.VIEW_NAVBAR_CALLS, Permissions.VIEW_NAVBAR_CALENDAR];
+      const mockPermissions = [Permissions.VIEW_NAVBAR_CALLS, Permissions.EDIT_SCENARIO_SESSION];
 
       testStore.dispatch(setPermissions(mockPermissions));
 

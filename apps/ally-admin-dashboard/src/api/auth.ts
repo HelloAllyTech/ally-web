@@ -57,7 +57,7 @@ const authAPI = baseAPI.injectEndpoints({
      * @returns {Promise<string[]>} Array of permission strings
      */
     getPermissions: builder.query<string[], void>({
-      query: () => ApiEndpoints.AUTH.GET_PERMISSIONS,
+      query: () => ApiEndpoints.AUTHORIZATION.GET_PERMISSIONS,
     }),
 
     /**

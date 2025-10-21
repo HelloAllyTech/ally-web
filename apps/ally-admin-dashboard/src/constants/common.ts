@@ -11,7 +11,6 @@ export const ApiEndpoints = {
     SIGNUP: "/auth/signup",
     LOGIN: "/auth/login",
     GET_USER: "/users/me",
-    GET_PERMISSIONS: "/auth/permissions",
     GENERATE_OTP: "/auth/generate-otp",
     VERIFY_OTP: "/auth/verify-otp",
     REFRESH: "/auth/refresh",
@@ -23,6 +22,9 @@ export const ApiEndpoints = {
     ADD_USER: "/users/add-user",
     GET_ROLES: "/user-groups",
     CHANGE_USER_ROLES: "/user-groups/change-roles",
+  },
+  AUTHORIZATION: {
+    GET_PERMISSIONS: "/authorization/permissions",
   },
 };
 

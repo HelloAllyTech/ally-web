@@ -149,8 +149,7 @@ const CallSummarySidebar: FC<CallSummarySidebarProps> = ({
       alt: "Export",
       icon: <Download />,
       onClick: onExportClick,
-      // TODO: To be shown when the export functionality is implemented for admin
-      show: !isAdmin && callSummary?.summaryStatus === ChatSummaryStatus.SUCCESS,
+      show: callSummary?.summaryStatus === ChatSummaryStatus.SUCCESS,
       text: "Export summary",
     },
   ];

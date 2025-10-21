@@ -62,7 +62,7 @@ export const navBarOptions = [
     Icon: SearchIcon,
     path: ROUTES.SEARCH,
     activePages: [],
-    permissions: [Permissions.VIEW_NAVBAR_SEARCH],
+    permissions: [Permissions.VIEW_REFERNCE_DOCUMENT],
   },
   {
     id: TabId.LEARN,
@@ -70,7 +70,7 @@ export const navBarOptions = [
     Icon: LearnIcon,
     path: ROUTES.LEARN,
     activePages: [ROUTES.SCENARIO],
-    permissions: [Permissions.VIEW_NAVBAR_LEARN],
+    permissions: [Permissions.EDIT_SCENARIO_SESSION],
   },
   {
     id: TabId.COMMUNITY,

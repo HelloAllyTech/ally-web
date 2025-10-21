@@ -68,15 +68,9 @@ vi.mock("@constants", () => ({
     RETRY_DELAY_MS: 1000,
   },
   Permissions: {
-    VIEW_START_CALL_PAGE: "view:button:start-call",
     VIEW_NAVBAR_CALLS: "view:navbar:calls",
     VIEW_SCENARIO_SESSION: "view:scenario-session",
     VIEW_ADMIN_SCENARIO_SESSION: "view:admin:scenario-session",
-    VIEW_NAVBAR_ANALYTICS: "view:navbar:analytics",
-    VIEW_NAVBAR_STRESS_BUSTER: "view:navbar:stress-buster",
-    EDIT_SUMMARY: "edit:summary",
-    VIEW_NAVBAR_SEARCH: "view:navbar:search",
-    VIEW_NAVBAR_LEARN: "view:navbar:learn",
     VIEW_SCENARIO_SESSION_SUMMARY: "view:scenario-session:summary",
   },
   ROUTES: {

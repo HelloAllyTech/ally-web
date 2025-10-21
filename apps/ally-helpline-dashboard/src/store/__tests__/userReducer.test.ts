@@ -180,7 +180,7 @@ describe("User Reducer", () => {
     });
 
     it("should handle setPermissions with multiple permissions", () => {
-      const permissions = [Permissions.VIEW_NAVBAR_CALLS, Permissions.VIEW_NAVBAR_CALENDAR];
+      const permissions = [Permissions.VIEW_NAVBAR_CALLS, Permissions.EDIT_SCENARIO_SESSION];
 
       testStore.dispatch(setPermissions(permissions));
 
@@ -244,7 +244,7 @@ describe("User Reducer", () => {
         userId: 1,
       };
 
-      const permissions = [Permissions.VIEW_NAVBAR_CALLS, Permissions.VIEW_NAVBAR_CALENDAR];
+      const permissions = [Permissions.VIEW_NAVBAR_CALLS, Permissions.EDIT_SCENARIO_SESSION];
       const chatTypes = [CallType.WEBRTC_CHAT, CallType.MICROPHONE_CHAT];
 
       // Perform all actions

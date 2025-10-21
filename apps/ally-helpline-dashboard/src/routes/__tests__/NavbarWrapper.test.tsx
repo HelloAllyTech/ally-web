@@ -58,7 +58,7 @@ vi.mock("@constants", () => ({
   // 💡 FIX 1: Add the missing Permissions export
   Permissions: {
     VIEW_NAVBAR_CALLS: "VIEW_NAVBAR_CALLS",
-    VIEW_NAVBAR_ANALYTICS: "VIEW_NAVBAR_ANALYTICS",
+    VIEW_ANALYTICS_DASHBOARD: "VIEW_ANALYTICS_DASHBOARD",
   },
 }));
 

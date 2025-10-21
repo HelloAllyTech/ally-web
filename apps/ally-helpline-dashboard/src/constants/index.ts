@@ -9,3 +9,4 @@ export * from "./routes";
 export * from "./socket";
 export * from "./tabs";
 export * from "./analytics";
+export * from "./api";

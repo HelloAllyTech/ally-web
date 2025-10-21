@@ -103,7 +103,10 @@ const PrivateRouteLayout: FC = () => {
           path={ROUTES.AUDIO_CALL}
           element={
             <PermissionGuardedRoute
-              permission={[Permissions.VIEW_START_CALL_PAGE]}
+              permission={[
+                Permissions.START_MICROPHONE_CHAT,
+                Permissions.START_CLOUD_TELEPHONY_CHAT,
+              ]}
               element={<AudioCall />}
             />
           }
@@ -134,7 +137,10 @@ const PrivateRouteLayout: FC = () => {
           path={ROUTES.STRESS_BUSTER}
           element={
             <PermissionGuardedRoute
-              permission={[Permissions.VIEW_NAVBAR_STRESS_BUSTER]}
+              permission={[
+                Permissions.START_MICROPHONE_CHAT,
+                Permissions.START_CLOUD_TELEPHONY_CHAT,
+              ]}
               element={<StressBuster />}
             />
           }
@@ -143,7 +149,10 @@ const PrivateRouteLayout: FC = () => {
           path={ROUTES.SUMMARY}
           element={
             <PermissionGuardedRoute
-              permission={[Permissions.EDIT_SUMMARY]}
+              permission={[
+                Permissions.START_MICROPHONE_CHAT,
+                Permissions.START_CLOUD_TELEPHONY_CHAT,
+              ]}
               element={<PostCallSummary />}
             />
           }
@@ -152,7 +161,7 @@ const PrivateRouteLayout: FC = () => {
           path={ROUTES.SEARCH}
           element={
             <PermissionGuardedRoute
-              permission={[Permissions.VIEW_NAVBAR_SEARCH]}
+              permission={[Permissions.VIEW_REFERNCE_DOCUMENT]}
               element={<Search />}
             />
           }
@@ -161,7 +170,7 @@ const PrivateRouteLayout: FC = () => {
           path={ROUTES.SIMULATION}
           element={
             <PermissionGuardedRoute
-              permission={[Permissions.VIEW_NAVBAR_LEARN]}
+              permission={[Permissions.EDIT_SCENARIO_SESSION]}
               element={<Simulation />}
             />
           }

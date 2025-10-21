@@ -5,8 +5,9 @@ import { Navigate, useLocation } from "react-router-dom";
 
 import { useGetUserQuery, useGetPermissionsQuery } from "@api";
 import { Sidebar, AccessDenied } from "@components";
-import { LOCAL_STORAGE_KEYS, NAVIGATION_ITEM_PERMISSIONS, ROUTES } from "@constants";
+import { LOCAL_STORAGE_KEYS, ROUTES } from "@constants";
 import { setUser, setPermissions } from "@reducer";
+import { hasPermissions } from "@utils";
 
 interface PrivateLayoutProps {
   children: React.ReactNode;
@@ -18,14 +19,14 @@ export const PrivateLayout: React.FC<PrivateLayoutProps> = ({ children }) => {
     localStorage.getItem(LOCAL_STORAGE_KEYS.ADMIN_IS_AUTHENTICATED) === "true";
 
   const { data: userData, isLoading: isUserLoading } = useGetUserQuery();
-  const { data: permissionsData, isLoading: isPermissionsLoading } = useGetPermissionsQuery();
+  const { data: permissions, isLoading: isPermissionsLoading } = useGetPermissionsQuery();
 
   const dispatch = useDispatch();
 
   useEffect(() => {
     if (userData) dispatch(setUser(userData));
-    if (permissionsData) dispatch(setPermissions(permissionsData));
-  }, [userData, permissionsData]);
+    if (permissions) dispatch(setPermissions(permissions));
+  }, [userData, permissions]);
 
   if (!isAuthenticated) {
     return <Navigate to={ROUTES.LOGIN} replace />;
@@ -35,16 +36,7 @@ export const PrivateLayout: React.FC<PrivateLayoutProps> = ({ children }) => {
   let hasPermission = true;
 
   if (!isUserLoading && !isPermissionsLoading) {
-    switch (currentRoute) {
-      case ROUTES.USER_MANAGEMENT:
-        hasPermission = permissionsData?.some(permission =>
-          permission.includes(NAVIGATION_ITEM_PERMISSIONS.USER_MANAGEMENT),
-        );
-        break;
-      default:
-        hasPermission = true;
-        break;
-    }
+    hasPermission = hasPermissions(currentRoute, permissions);
   }
 
   return (
