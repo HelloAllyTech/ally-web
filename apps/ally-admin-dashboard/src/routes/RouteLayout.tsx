@@ -40,9 +40,9 @@ export const RouteLayout: React.FC = () => {
           }
         />
 
-        <Route path="/" element={<Navigate to={ROUTES.SIMULATION_STUDIO} replace />} />
+        <Route path="/" element={<Navigate to={ROUTES.USER_MANAGEMENT} replace />} />
 
-        <Route path="*" element={<Navigate to={ROUTES.SIMULATION_STUDIO} replace />} />
+        <Route path="*" element={<Navigate to={ROUTES.USER_MANAGEMENT} replace />} />
       </Routes>
     </BrowserRouter>
   );

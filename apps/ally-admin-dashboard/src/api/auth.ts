@@ -93,6 +93,7 @@ export const {
   useSignupMutation,
   useGetUserQuery,
   useLazyGetUserQuery,
+  useGetPermissionsQuery,
   useLazyGetPermissionsQuery,
   useGenerateOTPMutation,
   useVerifyOTPMutation,

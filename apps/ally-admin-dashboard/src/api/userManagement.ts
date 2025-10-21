@@ -1,0 +1,129 @@
+import { baseAPI } from "@api";
+import { ApiEndpoints, HttpMethod, TAG_TYPES } from "@constants";
+import {
+  Tenant,
+  TenantParams,
+  UsersParams,
+  GetTenantRespose,
+  GetUsersRespose,
+  CreateUserBody,
+  CreateTenantBody,
+  EditUserBody,
+  UserRoles,
+} from "@types";
+
+const userManagementAPI = baseAPI.injectEndpoints({
+  endpoints: builder => ({
+    getTenants: builder.query<GetTenantRespose, TenantParams>({
+      query: params => ({
+        url: ApiEndpoints.USER_MANAGEMENT.TENANTS,
+        params,
+      }),
+      providesTags: [TAG_TYPES.TENANTS],
+    }),
+
+    createTenant: builder.mutation<Tenant, CreateTenantBody>({
+      query: body => ({
+        url: ApiEndpoints.USER_MANAGEMENT.TENANTS,
+        method: HttpMethod.POST,
+        body,
+      }),
+      invalidatesTags: [TAG_TYPES.TENANTS],
+    }),
+
+    updateTenant: builder.mutation<Tenant, { id: string; data: Partial<CreateTenantBody> }>({
+      query: ({ id, data }) => ({
+        url: `${ApiEndpoints.USER_MANAGEMENT.TENANTS}/${id}`,
+        method: HttpMethod.PUT,
+        body: data,
+      }),
+      invalidatesTags: [TAG_TYPES.TENANTS],
+    }),
+
+    deleteUser: builder.mutation<{ success: boolean }, { userId: number }>({
+      query: ({ userId }) => ({
+        url: `${ApiEndpoints.USER_MANAGEMENT.USERS}/${userId}`,
+        method: HttpMethod.DELETE,
+      }),
+      invalidatesTags: [TAG_TYPES.USERS],
+    }),
+
+    updateUserStatus: builder.mutation<{ success: boolean }, { userId: number; status: string }>({
+      query: ({ userId, status }) => ({
+        url: `${ApiEndpoints.USER_MANAGEMENT.USERS}/${userId}/status`,
+        method: HttpMethod.PATCH,
+        body: { status },
+      }),
+      invalidatesTags: [TAG_TYPES.USERS],
+    }),
+
+    changeRole: builder.mutation<{ success: boolean }, { userId: number; groupIds: number[] }>({
+      query: body => ({
+        url: ApiEndpoints.USER_MANAGEMENT.CHANGE_USER_ROLES,
+        method: HttpMethod.POST,
+        body,
+      }),
+      invalidatesTags: [TAG_TYPES.USERS],
+    }),
+
+    getUsers: builder.query<GetUsersRespose, UsersParams>({
+      query: params => ({
+        url: ApiEndpoints.USER_MANAGEMENT.USERS,
+        params,
+      }),
+      providesTags: [TAG_TYPES.USERS],
+    }),
+
+    addUser: builder.mutation<{ id: number }, CreateUserBody>({
+      query: body => ({
+        url: ApiEndpoints.USER_MANAGEMENT.ADD_USER,
+        method: HttpMethod.POST,
+        body,
+      }),
+      invalidatesTags: [TAG_TYPES.USERS],
+    }),
+
+    changeUserRoles: builder.mutation<{ success: boolean }, { userId: number; groupIds: number[] }>(
+      {
+        query: body => ({
+          url: ApiEndpoints.USER_MANAGEMENT.CHANGE_USER_ROLES,
+          method: HttpMethod.POST,
+          body,
+        }),
+        invalidatesTags: [TAG_TYPES.USERS],
+      },
+    ),
+
+    editUser: builder.mutation<{ success: boolean }, { userId: number; data: EditUserBody }>({
+      query: ({ userId, data }) => ({
+        url: `${ApiEndpoints.USER_MANAGEMENT.USERS}/${userId}`,
+        method: HttpMethod.PATCH,
+        body: data,
+      }),
+      invalidatesTags: [TAG_TYPES.USERS],
+    }),
+
+    getRole: builder.query<UserRoles[], void>({
+      query: () => ({
+        url: ApiEndpoints.USER_MANAGEMENT.GET_ROLES,
+      }),
+      providesTags: [TAG_TYPES.USERS],
+    }),
+  }),
+});
+
+export const {
+  useGetUsersQuery,
+  useGetTenantsQuery,
+  useLazyGetUsersQuery,
+  useLazyGetTenantsQuery,
+  useCreateTenantMutation,
+  useUpdateTenantMutation,
+  useDeleteUserMutation,
+  useUpdateUserStatusMutation,
+  useAddUserMutation,
+  useEditUserMutation,
+  useChangeUserRolesMutation,
+  useChangeRoleMutation,
+  useGetRoleQuery,
+} = userManagementAPI;

@@ -7,7 +7,7 @@ import {
 } from "@reduxjs/toolkit/query/react";
 import { toast } from "sonner";
 
-import { ApiEndpoints, HttpMethod, LOCAL_STORAGE_KEYS, ROUTES, en } from "@constants";
+import { ApiEndpoints, HttpMethod, LOCAL_STORAGE_KEYS, ROUTES, TAG_TYPES, en } from "@constants";
 import { RefreshResponse } from "@types";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
@@ -102,7 +102,7 @@ const baseQueryWithReauth: BaseQueryFn<string | FetchArgs, unknown, FetchBaseQue
 export const baseAPI = createApi({
   reducerPath: "baseAPI",
   baseQuery: baseQueryWithReauth,
-  tagTypes: [],
+  tagTypes: [TAG_TYPES.USERS, TAG_TYPES.TENANTS],
   endpoints: () => ({}),
 });
 

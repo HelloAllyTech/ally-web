@@ -256,7 +256,7 @@ export const Login: React.FC = () => {
         </div>
         <div className="flex flex-col gap-2">
           <OTP value={otp} onChange={setOtp as any} />
-          <div className="text-xs sm:text-[12px] text-[#49454F]">
+          <div className="text-xs sm:text-[12px] text-[#49454F] mt-2">
             {`${en.auth.didNotReceiveTheCode} `}
             <span
               className={`${countdown > 0 ? "text-[#C4C4C4]" : "text-[#0473F2]"} cursor-pointer`}

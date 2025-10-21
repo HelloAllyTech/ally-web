@@ -1,6 +1,7 @@
 import { matchPath } from "react-router-dom";
 
 import { EMAIL_REGEX } from "@constants";
+import { UserRoles } from "@types";
 
 export const validateEmail = (email: string): boolean => {
   return Boolean(email && EMAIL_REGEX.test(email));
@@ -60,4 +61,12 @@ export const decodeUint8ToJson = (payload: unknown): unknown => {
     return null;
   }
   return null;
+};
+
+export const formatCapitalizedEnum = (str: string | UserRoles) => {
+  const value = typeof str === "string" ? str : str?.name;
+  if (!value) return "";
+  let capitalized = value.charAt(0).toUpperCase() + value.slice(1).toLowerCase();
+  capitalized = capitalized.replace(/_/g, " ");
+  return capitalized;
 };

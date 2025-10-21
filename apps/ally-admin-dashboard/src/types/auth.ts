@@ -39,7 +39,7 @@ export enum UserRole {
   LEARNER = "LEARNER",
 }
 
-export enum UserStatus {
+export enum UserAvailabilityStatus {
   OFFLINE = "offline",
   AVAILABLE = "available",
 }
@@ -47,8 +47,8 @@ export enum UserStatus {
 export interface UserState {
   isAuthenticated: boolean;
   user: User;
-  userStatus: UserStatus;
-  permissions: Permissions[];
+  userStatus: UserAvailabilityStatus;
+  permissions: string[];
   availableChatTypes: CallType[];
 }
 
