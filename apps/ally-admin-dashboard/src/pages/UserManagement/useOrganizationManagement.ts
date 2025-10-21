@@ -27,6 +27,7 @@ export function useOrganizationManagement() {
   // Form methods
   const tenantMethods = useForm({
     defaultValues: defaultTenantValues,
+    mode: "onChange",
   });
 
   // Mutations
@@ -38,9 +39,14 @@ export function useOrganizationManagement() {
     offset: tenantsOffset,
     sortBy: SORT_BY.CREATED_AT,
     sortOrder: SORT_ORDER.DESC,
+    search: orgSearch || undefined,
   };
 
   const { data: tenantsResponse, isFetching: isTenantsFetching } = useGetTenantsQuery(tenantParams);
+
+  useEffect(() => {
+    setTenantsOffset(0);
+  }, [orgSearch]);
 
   useEffect(() => {
     if (!tenantsResponse) return;
@@ -141,12 +147,6 @@ export function useOrganizationManagement() {
     tenantMethods.reset();
   };
 
-  const filteredTenants = useMemo(() => {
-    return tenants.filter(org =>
-      orgSearch ? org.name?.toLowerCase().includes(orgSearch.toLowerCase()) : true,
-    );
-  }, [tenants, orgSearch]);
-
   return {
     // state
     orgSearch,
@@ -162,7 +162,6 @@ export function useOrganizationManagement() {
     tenantsOffset,
     loadTenants,
     isTenantsFetching,
-    filteredTenants,
 
     // form methods
     tenantMethods,

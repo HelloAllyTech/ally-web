@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 
 import { Trash } from "@assets";
-import { FilterDropdownProps, FilterDropdownType } from "@components/types";
+import { FilterDropdownProps, FilterDropdownType, FilterValues } from "@components/types";
 import {
   KeyboardKeys,
   en,
@@ -17,10 +17,9 @@ export const FilterDropdown: React.FC<FilterDropdownProps> = ({
   isOpen,
   onClose,
   organizations,
-  onApplyOrganizations,
-  onApplyRoles,
-  onApplyStatuses,
+  onApplyFilters,
   anchorRect,
+  currentFilters,
 }) => {
   const orgItems = organizations || [];
 
@@ -31,9 +30,11 @@ export const FilterDropdown: React.FC<FilterDropdownProps> = ({
   ];
 
   const [viewSubList, setViewSubList] = useState<FilterDropdownType | null>(null);
-  const [selectedOrgs, setSelectedOrgs] = useState<Record<string, boolean>>({});
-  const [selectedRoles, setSelectedRoles] = useState<Record<string, boolean>>({});
-  const [selectedStatuses, setSelectedStatuses] = useState<Record<string, boolean>>({});
+  const [selectedFilters, setSelectedFilters] = useState<Record<string, Record<string, boolean>>>({
+    organizations: {},
+    roles: {},
+    statuses: {},
+  });
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -49,30 +50,60 @@ export const FilterDropdown: React.FC<FilterDropdownProps> = ({
     };
   }, [isOpen, onClose]);
 
+  useEffect(() => {
+    setSelectedFilters({
+      organizations:
+        organizations?.reduce(
+          (acc, name) => ({ ...acc, [name]: currentFilters.organizations.includes(name) }),
+          {},
+        ) || {},
+      roles: userRoleItems.reduce(
+        (acc, name) => ({ ...acc, [name]: currentFilters.roles.includes(name) }),
+        {},
+      ),
+      statuses: userStatusItems.reduce(
+        (acc, name) => ({ ...acc, [name]: currentFilters.statuses.includes(name) }),
+        {},
+      ),
+    });
+  }, [currentFilters, organizations]);
+
   if (!isOpen) return null;
 
   const handleClose = () => {
-    setSelectedOrgs({});
-    setSelectedRoles({});
-    setSelectedStatuses({});
     setViewSubList(null);
     onClose();
   };
 
-  const applyOrgs = () => {
-    const selected = orgItems.filter(name => selectedOrgs[name]);
-    onApplyOrganizations?.(selected);
+  const handleApplyFilters = () => {
+    const filters: FilterValues = {
+      organizations: orgItems.filter(name => selectedFilters.organizations[name]),
+      roles: userRoleItems.filter(name => selectedFilters.roles[name]),
+      statuses: userStatusItems.filter(name => selectedFilters.statuses[name]),
+    };
+    onApplyFilters(filters);
     handleClose();
   };
-  const applyRoles = () => {
-    const selected = userRoleItems.filter(name => selectedRoles[name]);
-    onApplyRoles?.(selected);
-    handleClose();
+
+  const updateSelectedFilters = (
+    filterType: keyof typeof selectedFilters,
+    itemName: string,
+    checked: boolean,
+  ) => {
+    setSelectedFilters(previousFilters => ({
+      ...previousFilters,
+      [filterType]: {
+        ...previousFilters[filterType],
+        [itemName]: checked,
+      },
+    }));
   };
-  const applyStatuses = () => {
-    const selected = userStatusItems.filter(name => selectedStatuses[name]);
-    onApplyStatuses?.(selected);
-    handleClose();
+
+  const clearFilterSection = (filterType: keyof typeof selectedFilters) => {
+    setSelectedFilters(previousFilters => ({
+      ...previousFilters,
+      [filterType]: {},
+    }));
   };
 
   const top = anchorRect ? anchorRect.bottom + 8 : 100;
@@ -81,10 +112,9 @@ export const FilterDropdown: React.FC<FilterDropdownProps> = ({
   const renderSelectablePanel = (
     title: string,
     items: string[],
-    selected: Record<string, boolean>,
-    setSelected: React.Dispatch<React.SetStateAction<Record<string, boolean>>>,
-    onApply: () => void,
+    filterType: keyof typeof selectedFilters,
   ) => {
+    const selected = selectedFilters[filterType];
     return (
       <>
         <div className="flex items-center justify-between mb-3">
@@ -92,7 +122,7 @@ export const FilterDropdown: React.FC<FilterDropdownProps> = ({
           <button
             className="text-gray-400 hover:text-gray-600"
             title="Clear"
-            onClick={() => setSelected({})}
+            onClick={() => clearFilterSection(filterType)}
           >
             <Trash />
           </button>
@@ -104,19 +134,11 @@ export const FilterDropdown: React.FC<FilterDropdownProps> = ({
                 type="checkbox"
                 className="h-4 w-4 border-[#9CA3AF]"
                 checked={!!selected[name]}
-                onChange={e => setSelected(prev => ({ ...prev, [name]: e.target.checked }))}
+                onChange={e => updateSelectedFilters(filterType, name, e.target.checked)}
               />
               <span className="text-gray-800 text-[14px]">{formatCapitalizedEnum(name)}</span>
             </label>
           ))}
-        </div>
-        <div className="border-t mt-3 pt-3 flex justify-end">
-          <button
-            className="bg-[#0957D0] hover:bg-[#0957D0]/90 text-[#FFFFFF] font-medium px-8 py-2 rounded-full"
-            onClick={onApply}
-          >
-            {en.common.apply}
-          </button>
         </div>
       </>
     );
@@ -129,28 +151,14 @@ export const FilterDropdown: React.FC<FilterDropdownProps> = ({
         children = renderSelectablePanel(
           filterDropdownOptions.ORGANIZATION,
           orgItems,
-          selectedOrgs,
-          setSelectedOrgs,
-          applyOrgs,
+          "organizations",
         );
         break;
       case FilterDropdownType.ROLE:
-        children = renderSelectablePanel(
-          filterDropdownOptions.ROLE,
-          userRoleItems,
-          selectedRoles,
-          setSelectedRoles,
-          applyRoles,
-        );
+        children = renderSelectablePanel(filterDropdownOptions.ROLE, userRoleItems, "roles");
         break;
       case FilterDropdownType.STATUS:
-        children = renderSelectablePanel(
-          filterDropdownOptions.STATUS,
-          userStatusItems,
-          selectedStatuses,
-          setSelectedStatuses,
-          applyStatuses,
-        );
+        children = renderSelectablePanel(filterDropdownOptions.STATUS, userStatusItems, "statuses");
         break;
       default:
         children = null;
@@ -164,6 +172,14 @@ export const FilterDropdown: React.FC<FilterDropdownProps> = ({
         style={{ top, left: anchorRect ? anchorRect.left + listWidth + 20 : left + listWidth + 20 }}
       >
         {children}
+        <div className="border-t mt-3 pt-3 flex justify-end">
+          <button
+            className="bg-[#0957D0] hover:bg-[#0957D0]/90 text-[#FFFFFF] font-medium px-8 py-2 rounded-full"
+            onClick={handleApplyFilters}
+          >
+            {en.common.apply}
+          </button>
+        </div>
       </div>
     );
   };
@@ -185,7 +201,7 @@ export const FilterDropdown: React.FC<FilterDropdownProps> = ({
               }`}
               onClick={() => setViewSubList(item.id)}
               style={{ width: listWidth }}
-              aria-selected={isActive}
+              aria-pressed={isActive}
             >
               {item.label}
             </button>

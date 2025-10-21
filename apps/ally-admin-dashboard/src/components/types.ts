@@ -190,14 +190,19 @@ export interface NavigationItem {
   icon?: React.ReactNode;
 }
 
+export interface FilterValues {
+  organizations: string[];
+  roles: string[];
+  statuses: string[];
+}
+
 export interface FilterDropdownProps {
   isOpen: boolean;
   onClose: () => void;
   organizations: string[];
-  onApplyOrganizations?: (orgNames: string[]) => void;
-  onApplyRoles?: (roles: string[]) => void;
-  onApplyStatuses?: (statuses: string[]) => void;
+  onApplyFilters: (filters: FilterValues) => void;
   anchorRect?: DOMRect | null;
+  currentFilters: FilterValues;
 }
 
 export enum FilterDropdownType {

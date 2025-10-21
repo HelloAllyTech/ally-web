@@ -3,6 +3,7 @@ import React from "react";
 import { Close, Plus, Search } from "@assets";
 import { ListToolbarProps } from "@components/types";
 import { en } from "@constants";
+import { formatCapitalizedEnum } from "@utils";
 
 export const ListToolbar: React.FC<ListToolbarProps> = ({
   searchValue,
@@ -30,16 +31,20 @@ export const ListToolbar: React.FC<ListToolbarProps> = ({
 
   const renderFilterChip = (chip: NonNullable<ListToolbarProps["filterChips"]>[number]) => {
     return (
-      <span
+      <div
         key={`${chip.label}-${chip.value}`}
-        className="inline-flex items-center text-gray-700 px-3 py-1 text-sm"
+        className="flex items-center text-gray-700 px-2 text-sm border border-gray-200 rounded-[20px]"
       >
-        <span className="mr-1 text-[14px]">{chip.label}:</span>
-        <span className="font-medium mr-1 text-[14px]">{chip.value}</span>
-        <button onClick={chip.onClear} className="text-gray-500 hover:text-gray-700">
-          <Close />
-        </button>
-      </span>
+        <span className="mr-1 text-[12px]">{chip.label}:</span>
+        <div className="flex">
+          <span className="font-medium mr-1 text-[12px]">
+            {formatCapitalizedEnum(chip.value as string)}
+          </span>
+          <button onClick={chip.onClear} className="text-gray-500 hover:text-gray-700">
+            <Close />
+          </button>
+        </div>
+      </div>
     );
   };
 
@@ -47,9 +52,9 @@ export const ListToolbar: React.FC<ListToolbarProps> = ({
     <button
       ref={addFilterButtonRef}
       onClick={addFilterCta.onClick}
-      className="inline-flex items-center text-gray-600 hover:text-gray-700 text-sm"
+      className="inline-flex items-center text-gray-600 hover:text-gray-700 text-[12px]"
     >
-      <span className="mr-1 text-[18px] p-[1px]">
+      <span className="mr-1 text-[14px] p-[1px]">
         <Plus />
       </span>
       {addFilterCta.label}
@@ -70,16 +75,15 @@ export const ListToolbar: React.FC<ListToolbarProps> = ({
   };
 
   return (
-    <div className={`flex items-center justify-between gap-4 ${className ?? ""}`}>
-      <div className="flex items-center gap-3 flex-1 min-w-0">
+    <div className={`flex items-center justify-between gap-4 min-h-[50px] ${className ?? ""}`}>
+      <div className="flex items-center gap-1 flex-1 min-w-0">
         {searchInput}
+        {addFilterButton}
         {filterChips && filterChips.length > 0 && (
-          <div className="flex items-center gap-2 flex-wrap">
+          <div className="flex items-center gap-1 flex-wrap px-2">
             {filterChips.map(chip => renderFilterChip(chip))}
           </div>
         )}
-
-        {addFilterButton}
       </div>
 
       {renderAction()}

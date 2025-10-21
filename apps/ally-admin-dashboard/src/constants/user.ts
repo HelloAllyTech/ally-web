@@ -14,6 +14,7 @@ export enum FieldOptions {
   DROPDOWN = "dropdown",
   DROPDOWN_WITH_TAG = "dropdownWithTag",
   TEXTAREA = "textarea",
+  CREDITS = "credits",
 }
 
 export enum UserMenuOptions {
@@ -21,34 +22,46 @@ export enum UserMenuOptions {
   CHANGE_ROLE = "Change Role",
   ADD_CREDIT = "Add Credit",
   SUSPEND_USER = "Suspend User",
-  ACTIVATE_USER = "Activate User",
+  GRANT_ACCESS = "Grant Access",
   REMOVE_USER = "Remove User",
 }
 
+export const USER_MODAL_FIELDS_IDS = {
+  NAME: "name",
+  EMAIL: "email",
+  TENANTID: "tenantId",
+  EXTERNALID: "externalId",
+  ROLES: "roles",
+  CREDITS: "simulationCreditLimit",
+  ORGNAME: "orgname",
+  ORGCODE: "orgcode",
+  DESCRIPTION: "description",
+};
+
 export const addUser = [
   {
-    id: "name",
+    id: USER_MODAL_FIELDS_IDS.NAME,
     label: "Name",
     placeholder: "User 01",
     fieldType: "input",
     inputType: "text",
   },
   {
-    id: "email",
+    id: USER_MODAL_FIELDS_IDS.EMAIL,
     label: "Email",
     placeholder: "example.user@gmail.com",
     fieldType: "input",
     inputType: "email",
   },
   {
-    id: "telephonyId",
+    id: USER_MODAL_FIELDS_IDS.EXTERNALID,
     label: "Cloud Telephony ID",
     placeholder: "TEL002",
     fieldType: "input",
     inputType: "text",
   },
   {
-    id: "tenantId",
+    id: USER_MODAL_FIELDS_IDS.TENANTID,
     label: "Assign Organization",
     placeholder: "Lifeline",
     fieldType: "dropdown",
@@ -56,14 +69,14 @@ export const addUser = [
     options: [],
   },
   {
-    id: "roles",
+    id: USER_MODAL_FIELDS_IDS.ROLES,
     label: "Role access",
     options: [],
     fieldType: "dropdownWithTag",
     inputType: "text",
   },
   {
-    id: "credits",
+    id: USER_MODAL_FIELDS_IDS.CREDITS,
     label: "Simulation Credits",
     inputType: "number",
     fieldType: "input",
@@ -76,27 +89,27 @@ export const userEditMenu = [
   { id: UserMenuOptions.CHANGE_ROLE, label: "Change Role" },
   { id: UserMenuOptions.ADD_CREDIT, label: "Add Credit" },
   { id: UserMenuOptions.SUSPEND_USER, label: "Suspend User" },
-  { id: UserMenuOptions.ACTIVATE_USER, label: "Activate User" },
+  { id: UserMenuOptions.GRANT_ACCESS, label: "Grant Access" },
   // { id: UserMenuOptions.REMOVE_USER, label: "Remove User" }, // TODO: Add this after backend change for delete user is implemented
 ];
 
 export const userEditModal = [
   {
-    id: "name",
+    id: USER_MODAL_FIELDS_IDS.NAME,
     label: "Name",
     placeholder: "eg:User 01",
     fieldType: "input",
     inputType: "text",
   },
   {
-    id: "email",
+    id: USER_MODAL_FIELDS_IDS.EMAIL,
     label: "Email",
     placeholder: "jorge.ortiz@sample.com",
     fieldType: "input",
     inputType: "email",
   },
   {
-    id: "telephonyId",
+    id: USER_MODAL_FIELDS_IDS.EXTERNALID,
     label: "Cloud Telephony ID",
     placeholder: "TEL002",
     fieldType: "input",
@@ -106,7 +119,7 @@ export const userEditModal = [
 
 export const changeUserRoles = [
   {
-    id: "roles",
+    id: USER_MODAL_FIELDS_IDS.ROLES,
     label: "Change to",
     placeholder: "eg:User 01",
     fieldType: "dropdownWithTag",
@@ -115,16 +128,33 @@ export const changeUserRoles = [
   },
 ];
 
+export const addCredit = [
+  {
+    id: USER_MODAL_FIELDS_IDS.CREDITS,
+    label: "Add credits",
+    placeholder: "0",
+    fieldType: "credits",
+    inputType: "number",
+  },
+];
+
 export const addNewOrganizationModal = [
   {
-    id: "name",
+    id: USER_MODAL_FIELDS_IDS.ORGNAME,
     label: "Name",
     placeholder: "Enter Organization name",
     fieldType: "input",
     inputType: "text",
   },
   {
-    id: "description",
+    id: USER_MODAL_FIELDS_IDS.ORGCODE,
+    label: "Organization code",
+    placeholder: "Enter code",
+    fieldType: "input",
+    inputType: "text",
+  },
+  {
+    id: USER_MODAL_FIELDS_IDS.DESCRIPTION,
     label: "Description",
     placeholder: "Add description",
     fieldType: "textarea",
@@ -157,8 +187,13 @@ export enum fieldType {
 export enum fieldId {
   NAME = "name",
   EMAIL = "email",
-  TELEPHONY_ID = "telephonyId",
   TENANTID = "tenantId",
   ROLES = "roles",
   CREDITS = "credits",
+}
+
+export enum UserRole {
+  COUNSELLOR = "COUNSELOR",
+  ADMIN = "ADMIN",
+  LEARNER = "LEARNER",
 }

@@ -22,6 +22,7 @@ export const ApiEndpoints = {
     ADD_USER: "/users/add-user",
     GET_ROLES: "/user-groups",
     CHANGE_USER_ROLES: "/user-groups/change-roles",
+    SIMULATION_CREDITS: "/simulation-credits",
   },
   AUTHORIZATION: {
     GET_PERMISSIONS: "/authorization/permissions",

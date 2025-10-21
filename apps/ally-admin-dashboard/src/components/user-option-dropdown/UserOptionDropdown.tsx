@@ -86,7 +86,7 @@ export const UserOptionDropdown: React.FC<UserOptionDropdownProps> = ({
       item =>
         item.id !==
         (user?.status === userStatus.ACTIVE
-          ? UserMenuOptions.ACTIVATE_USER
+          ? UserMenuOptions.GRANT_ACCESS
           : UserMenuOptions.SUSPEND_USER),
     );
   };
@@ -109,7 +109,7 @@ export const UserOptionDropdown: React.FC<UserOptionDropdownProps> = ({
             className={`px-4 py-2 cursor-pointer hover:bg-gray-50 transition-colors ${
               index !== getFilteredOptionList().length - 1 ? "border-b border-gray-100" : ""
             }`}
-            onClick={() => handleOptionClick(item.label)}
+            onClick={() => handleOptionClick(item.id)}
           >
             {item.label}
           </div>

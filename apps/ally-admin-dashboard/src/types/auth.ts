@@ -1,4 +1,4 @@
-import { CallType } from "@constants";
+import { CallType, UserRole } from "@constants";
 
 export interface GenerateOTPRequest {
   phone?: string;
@@ -31,12 +31,6 @@ export interface User {
   name: string;
   role: UserRole;
   userId: number;
-}
-
-export enum UserRole {
-  COUNSELLOR = "COUNSELOR",
-  ADMIN = "ADMIN",
-  LEARNER = "LEARNER",
 }
 
 export enum UserAvailabilityStatus {

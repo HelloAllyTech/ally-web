@@ -13,6 +13,7 @@ import {
   useChangeRoleMutation,
   useGetRoleQuery,
 } from "@api";
+import { FilterValues } from "@components/types";
 import { ROUTES, SORT_BY, SORT_ORDER, en, fieldId, fieldType, userStatus } from "@constants";
 import { AddUserFormData, FieldProps, TabType, Tenant, UserListUser, UserRoles } from "@types";
 
@@ -25,10 +26,12 @@ export function useUserManagement(tenants: Tenant[]) {
   const [isFilterOpen, setIsFilterOpen] = useState<boolean>(false);
   const [addUsermodalOpen, setAddUserModalOpen] = useState<boolean>(false);
 
-  const [orgFilters, setOrgFilters] = useState<string[]>([]);
+  const [filters, setFilters] = useState<FilterValues>({
+    organizations: [],
+    roles: [],
+    statuses: [],
+  });
   const [tenantIdFilters, setTenantIdFilters] = useState<string[]>([]);
-  const [roleFilters, setRoleFilters] = useState<string[]>([]);
-  const [statusFilters, setStatusFilters] = useState<string[]>([]);
 
   const [users, setUsers] = useState<UserListUser[]>([]);
   const [usersCount, setUsersCount] = useState<number>(0);
@@ -42,16 +45,17 @@ export function useUserManagement(tenants: Tenant[]) {
   const defaultUserValues = {
     name: "",
     email: "",
-    telephonyId: "",
+    externalId: "",
     tenantId: "",
     roles: [],
-    credits: 0,
+    credits: { consumedCredits: 0, newCredits: 0 },
     description: "",
   };
 
   // Form methods
   const userMethods = useForm({
     defaultValues: defaultUserValues,
+    mode: "onChange",
   });
 
   // Users are subscribed so invalidation triggers refetch automatically
@@ -75,8 +79,8 @@ export function useUserManagement(tenants: Tenant[]) {
     sortBy: SORT_BY.CREATED_AT,
     sortOrder: SORT_ORDER.DESC,
     tenantIds: tenantIdFilters.length ? tenantIdFilters : undefined,
-    roles: roleFilters.length ? roleFilters : undefined,
-    statuses: statusFilters.length ? statusFilters : undefined,
+    roles: filters.roles.length ? filters.roles : undefined,
+    statuses: filters.statuses.length ? filters.statuses : undefined,
     search: search || undefined,
   };
 
@@ -84,7 +88,7 @@ export function useUserManagement(tenants: Tenant[]) {
 
   useEffect(() => {
     setUsersOffset(0);
-  }, [search, orgFilters, roleFilters, statusFilters]);
+  }, [search, filters]);
 
   useEffect(() => {
     if (!usersResponse) return;
@@ -122,36 +126,48 @@ export function useUserManagement(tenants: Tenant[]) {
 
   const filterChips = useMemo(() => {
     const chips: Array<{ label: string; value: string; onClear: () => void }> = [];
-    if (orgFilters.length) {
+    if (filters.organizations.length) {
       const value =
-        orgFilters.length > 1 ? `${orgFilters[0]} +${orgFilters.length - 1}` : orgFilters[0];
+        filters.organizations.length > 1
+          ? `${filters.organizations[0]} +${filters.organizations.length - 1}`
+          : filters.organizations[0];
       chips.push({
         label: en.userManagement.organization,
         value,
         onClear: () => {
-          setOrgFilters([]);
+          setFilters(previousFilters => ({ ...previousFilters, organizations: [] }));
           setTenantIdFilters([]);
         },
       });
     }
-    if (roleFilters.length) {
+    if (filters.roles.length) {
       const value =
-        roleFilters.length > 1 ? `${roleFilters[0]} +${roleFilters.length - 1}` : roleFilters[0];
-      chips.push({ label: "Role", value, onClear: () => setRoleFilters([]) });
+        filters.roles.length > 1
+          ? `${filters.roles[0]} +${filters.roles.length - 1}`
+          : filters.roles[0];
+      chips.push({
+        label: "Role",
+        value,
+        onClear: () => setFilters(previousFilters => ({ ...previousFilters, roles: [] })),
+      });
     }
-    if (statusFilters.length) {
-      const value = statusFilters?.join(", ");
-      chips.push({ label: "Status", value, onClear: () => setStatusFilters([]) });
+    if (filters.statuses.length) {
+      const value = filters.statuses?.join(", ");
+      chips.push({
+        label: "Status",
+        value,
+        onClear: () => setFilters(previousFilters => ({ ...previousFilters, statuses: [] })),
+      });
     }
     return chips;
-  }, [orgFilters, roleFilters, statusFilters]);
+  }, [filters]);
 
-  const onApplyOrganizations = (names: string[]) => {
-    setOrgFilters(names);
-    const ids = names
-      .map(name => tenants.find(t => t.name === name)?.id)
+  const handleApplyFilters = (newFilters: FilterValues) => {
+    setFilters(newFilters);
+    const organizationIds = newFilters.organizations
+      .map(name => tenants.find(tenant => tenant.name === name)?.id)
       .filter((id): id is string => Boolean(id));
-    setTenantIdFilters(ids);
+    setTenantIdFilters(organizationIds);
   };
 
   const getField = (userData: FieldProps[]) => {
@@ -183,14 +199,11 @@ export function useUserManagement(tenants: Tenant[]) {
   };
 
   const addFilterCtaMemo = useMemo(
-    () =>
-      orgFilters.length === 0
-        ? {
-            label: en.userManagement.addFilter,
-            onClick: () => setIsFilterOpen(true),
-          }
-        : undefined,
-    [orgFilters.length],
+    () => ({
+      label: en.userManagement.addFilter,
+      onClick: () => setIsFilterOpen(true),
+    }),
+    [],
   );
 
   const handleOptionSelect = (option: string, user: UserListUser) => {
@@ -199,7 +212,7 @@ export function useUserManagement(tenants: Tenant[]) {
     userMethods.reset({
       name: user.name,
       email: user.email,
-      telephonyId: user.telephonyId,
+      externalId: user.telephonyId,
       tenantId: user.tenantId,
       roles: user.roles || [],
     });
@@ -213,14 +226,27 @@ export function useUserManagement(tenants: Tenant[]) {
 
   const handleAddUser = async (data: AddUserFormData) => {
     try {
-      await addUserdata({ ...data, externalId: data.telephonyId }).unwrap();
+      const payload = {
+        name: data?.name,
+        email: data?.email,
+        roles: data?.roles,
+        externalId: data?.externalId,
+        tenantId: data?.tenantId,
+        credits: data?.credits,
+      };
+      await addUserdata(payload).unwrap();
       setAddUserModalOpen(false);
-      userMethods.reset();
+      userMethods.reset(defaultUserValues);
       toast.success("User added successfully");
       // no manual reload required; subscribed query refetches due to invalidation
     } catch (error: any) {
       toast.error(error?.data?.message || "Failed to add user");
     }
+  };
+
+  const handleUserAddClick = () => {
+    userMethods.reset(defaultUserValues);
+    setAddUserModalOpen(true);
   };
 
   const handleRemoveUser = async (userId: number) => {
@@ -237,13 +263,20 @@ export function useUserManagement(tenants: Tenant[]) {
     }
   };
 
-  const handleEditUser = async (data: any) => {
+  const handleEditUser = async (data: {
+    id: number;
+    email: string;
+    name: string;
+    externalId: string;
+  }) => {
     try {
-      const { telephonyId: externalId, organizations, roles, ...rest } = data;
-
       const payload = {
-        userId: data?.id,
-        data: { ...rest, externalId },
+        id: Number(data?.id),
+        data: {
+          email: data?.email,
+          name: data?.name,
+          externalId: data?.externalId,
+        },
       };
 
       await editUser(payload).unwrap();
@@ -304,6 +337,11 @@ export function useUserManagement(tenants: Tenant[]) {
     }
   };
 
+  const handleAddUserClose = () => {
+    setAddUserModalOpen(false);
+    userMethods.reset();
+  };
+
   return {
     // state
     activeTab,
@@ -320,12 +358,8 @@ export function useUserManagement(tenants: Tenant[]) {
     setRoles,
 
     // filters
-    orgFilters,
-    roleFilters,
-    statusFilters,
-    setRoleFilters,
-    setStatusFilters,
-    onApplyOrganizations,
+    filters,
+    handleApplyFilters,
     addFilterCtaMemo,
 
     // data
@@ -350,6 +384,8 @@ export function useUserManagement(tenants: Tenant[]) {
     handleSuspendUser,
     handleChangeRole,
     handleActivateUser,
+    handleAddUserClose,
+    handleUserAddClick,
 
     // user operations
     getField,

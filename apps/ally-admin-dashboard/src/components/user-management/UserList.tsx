@@ -87,10 +87,10 @@ export const UserList: React.FC<UserListProps> = ({
               key={user.id}
               className="grid [grid-template-columns:repeat(48,minmax(0,1fr))] items-center px-4 py-3 text-gray-700 border-b border-gray-200 hover:bg-gray-50 relative"
             >
-              <div className="col-span-11 justify-start flex items-center min-w-0">
+              <div className="col-span-11 justify-start flex items-center min-w-0 overflow-hidden ">
                 <Avatar name={user.name} />
                 <div className="min-w-0">
-                  <div className="truncate">{formatCapitalizedEnum(user.name)}</div>
+                  <div className="truncate  max-w-[250px]">{formatCapitalizedEnum(user.name)}</div>
                   <div className="text-gray-500 truncate">{user.email}</div>
                 </div>
               </div>
@@ -104,10 +104,11 @@ export const UserList: React.FC<UserListProps> = ({
               </div>
               <div className="col-span-8 pr-1">{user.organization ?? "--"}</div>
               <div className="col-span-4 pr-1">
-                {typeof user.usedCredits === "number" && typeof user.maxCredits === "number"
-                  ? `${user.usedCredits}/${user.maxCredits} min`
+                {typeof user.consumedCredits === "number" && typeof user.creditLimit === "number"
+                  ? `${user.consumedCredits}/${user.creditLimit} min`
                   : "-"}
               </div>
+
               <div className="col-span-6 pr-1">{formatDate(user.createdAt)}</div>
               <div className="col-span-5 pr-1 ml-auto flex items-center justify-between gap-3 w-full min-w-[100px]">
                 <StatusBadge status={user.status} />

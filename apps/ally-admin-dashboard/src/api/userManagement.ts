@@ -4,17 +4,19 @@ import {
   Tenant,
   TenantParams,
   UsersParams,
-  GetTenantRespose,
-  GetUsersRespose,
+  GetTenantResponse,
+  GetUsersResponse,
   CreateUserBody,
   CreateTenantBody,
   EditUserBody,
   UserRoles,
+  GetCreditResponse,
+  AddSimulationBody,
 } from "@types";
 
 const userManagementAPI = baseAPI.injectEndpoints({
   endpoints: builder => ({
-    getTenants: builder.query<GetTenantRespose, TenantParams>({
+    getTenants: builder.query<GetTenantResponse, TenantParams>({
       query: params => ({
         url: ApiEndpoints.USER_MANAGEMENT.TENANTS,
         params,
@@ -66,7 +68,7 @@ const userManagementAPI = baseAPI.injectEndpoints({
       invalidatesTags: [TAG_TYPES.USERS],
     }),
 
-    getUsers: builder.query<GetUsersRespose, UsersParams>({
+    getUsers: builder.query<GetUsersResponse, UsersParams>({
       query: params => ({
         url: ApiEndpoints.USER_MANAGEMENT.USERS,
         params,
@@ -83,20 +85,9 @@ const userManagementAPI = baseAPI.injectEndpoints({
       invalidatesTags: [TAG_TYPES.USERS],
     }),
 
-    changeUserRoles: builder.mutation<{ success: boolean }, { userId: number; groupIds: number[] }>(
-      {
-        query: body => ({
-          url: ApiEndpoints.USER_MANAGEMENT.CHANGE_USER_ROLES,
-          method: HttpMethod.POST,
-          body,
-        }),
-        invalidatesTags: [TAG_TYPES.USERS],
-      },
-    ),
-
-    editUser: builder.mutation<{ success: boolean }, { userId: number; data: EditUserBody }>({
-      query: ({ userId, data }) => ({
-        url: `${ApiEndpoints.USER_MANAGEMENT.USERS}/${userId}`,
+    editUser: builder.mutation<{ success: boolean }, EditUserBody>({
+      query: ({ id, data }) => ({
+        url: `${ApiEndpoints.USER_MANAGEMENT.USERS}/${id}`,
         method: HttpMethod.PATCH,
         body: data,
       }),
@@ -108,6 +99,20 @@ const userManagementAPI = baseAPI.injectEndpoints({
         url: ApiEndpoints.USER_MANAGEMENT.GET_ROLES,
       }),
       providesTags: [TAG_TYPES.USERS],
+    }),
+
+    getSimulationCredits: builder.query<GetCreditResponse, number>({
+      query: id => ({
+        url: `${ApiEndpoints.USER_MANAGEMENT.SIMULATION_CREDITS}/${id}`,
+      }),
+    }),
+
+    addSimulationCreditLimit: builder.mutation<{ success: boolean }, AddSimulationBody>({
+      query: body => ({
+        url: `${ApiEndpoints.USER_MANAGEMENT.SIMULATION_CREDITS}`,
+        method: HttpMethod.PUT,
+        body,
+      }),
     }),
   }),
 });
@@ -123,7 +128,8 @@ export const {
   useUpdateUserStatusMutation,
   useAddUserMutation,
   useEditUserMutation,
-  useChangeUserRolesMutation,
   useChangeRoleMutation,
   useGetRoleQuery,
+  useGetSimulationCreditsQuery,
+  useAddSimulationCreditLimitMutation,
 } = userManagementAPI;

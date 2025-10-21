@@ -1,6 +1,4 @@
-import React, { FC } from "react";
-
-import { toast } from "sonner";
+import { FC } from "react";
 
 import {
   Tabs,
@@ -15,6 +13,7 @@ import {
   ActionConfirmationPopup,
 } from "@components";
 import {
+  addCredit,
   addNewOrganizationModal,
   addUser,
   changeUserRoles,
@@ -45,7 +44,6 @@ export const UserManagement: FC = () => {
     tenants,
     loadTenants,
     isTenantsFetching,
-    filteredTenants,
     tenantMethods,
     handleNewgroupClick,
     onEditTenant,
@@ -62,9 +60,8 @@ export const UserManagement: FC = () => {
     isFilterOpen,
     setIsFilterOpen,
     addFilterBtnRef,
-    setRoleFilters,
-    setStatusFilters,
-    onApplyOrganizations,
+    filters,
+    handleApplyFilters,
     users,
     loadUsers,
     isUsersFetching,
@@ -85,6 +82,8 @@ export const UserManagement: FC = () => {
     handleSuspendUser,
     handleChangeRole,
     handleActivateUser,
+    handleAddUserClose,
+    handleUserAddClick,
   } = useUserManagement(tenants);
 
   const TABS = [
@@ -97,7 +96,6 @@ export const UserManagement: FC = () => {
       case UserMenuOptions.EDIT_DETAILS:
         return (
           <UserModal
-            isOpen={true}
             onClose={handleDropdownClose}
             title={en.userManagement.editDetails}
             fields={getField(userEditModal)}
@@ -109,7 +107,6 @@ export const UserManagement: FC = () => {
       case UserMenuOptions.CHANGE_ROLE:
         return (
           <UserModal
-            isOpen={true}
             onClose={handleDropdownClose}
             title={en.userManagement.changeRole}
             fields={getField(changeUserRoles)}
@@ -117,6 +114,17 @@ export const UserManagement: FC = () => {
             buttonName={en.userManagement.confirm}
             formMethods={userMethods}
             handleClick={handleChangeRole}
+          />
+        );
+      case UserMenuOptions.ADD_CREDIT:
+        return (
+          <UserModal
+            onClose={handleDropdownClose}
+            title={en.userManagement.addCredit}
+            fields={addCredit}
+            formMethods={userMethods}
+            buttonName={en.common.update}
+            details={selectedUser}
           />
         );
       case UserMenuOptions.SUSPEND_USER:
@@ -138,20 +146,20 @@ export const UserManagement: FC = () => {
             }}
           />
         );
-      case UserMenuOptions.ACTIVATE_USER:
+      case UserMenuOptions.GRANT_ACCESS:
         return (
           <ActionConfirmationPopup
             isOpen={true}
             onClose={handleDropdownClose}
-            title={en.userManagement.activateUser}
-            description={en.userManagement.activateUserConfirmation(selectedUser?.name ?? "")}
+            title={en.userManagement.grantAccess}
+            description={en.userManagement.grantAccessConfirmation(selectedUser?.name ?? "")}
             secondaryButton={{
               label: en.userManagement.cancel,
               onClick: handleDropdownClose,
               variant: "secondary",
             }}
             primaryButton={{
-              label: en.userManagement.activateUser,
+              label: en.userManagement.grantAccess,
               onClick: () => handleActivateUser(),
               variant: "primary",
             }}
@@ -176,9 +184,6 @@ export const UserManagement: FC = () => {
             }}
           />
         );
-      case UserMenuOptions.ADD_CREDIT:
-        toast.success("This feature is not available yet");
-        return null;
 
       default:
         return null;
@@ -217,13 +222,13 @@ export const UserManagement: FC = () => {
               addFilterButtonRef={addFilterBtnRef}
               action={{
                 label: en.userManagement.addUser,
-                onClick: () => setAddUserModalOpen(true),
+                onClick: handleUserAddClick,
               }}
             />
 
             <UserModal
               isOpen={addUsermodalOpen}
-              onClose={() => setAddUserModalOpen(false)}
+              onClose={handleAddUserClose}
               title={en.userManagement.noUsersActionLabel}
               fields={getField(addUser)}
               buttonName={en.userManagement.addUser}
@@ -235,10 +240,9 @@ export const UserManagement: FC = () => {
               isOpen={isFilterOpen}
               onClose={() => setIsFilterOpen(false)}
               organizations={tenants.map(org => org.name)}
-              onApplyOrganizations={onApplyOrganizations}
-              onApplyRoles={names => setRoleFilters(names)}
-              onApplyStatuses={names => setStatusFilters(names)}
+              onApplyFilters={handleApplyFilters}
               anchorRect={addFilterBtnRef.current?.getBoundingClientRect() ?? null}
+              currentFilters={filters}
             />
 
             {users.length === 0 && isUsersFetching ? (
@@ -247,8 +251,6 @@ export const UserManagement: FC = () => {
               <EmptyState
                 title={en.userManagement.noUsers}
                 subtitle={en.userManagement.noUsersSubtitle}
-                actionLabel={en.userManagement.noUsersActionLabel}
-                hideActionButton={true}
               />
             ) : (
               <UserList
@@ -280,23 +282,22 @@ export const UserManagement: FC = () => {
                   ? en.userManagement.editOrganization
                   : en.userManagement.noOrganizationActionLabel
               }
-              buttonName={selectedTenant ? en.common.update : en.userManagement.addOrganization}
+              buttonName={selectedTenant ? en.common.save : en.userManagement.addOrganization}
               fields={addNewOrganizationModal}
               formMethods={tenantMethods}
+              details={selectedTenant}
               handleClick={handleTenantFormSubmit}
             />
-            {tenants.length === 0 && isTenantsFetching ? (
+            {isTenantsFetching ? (
               <OrganizationListLoader />
-            ) : tenants.length === 0 && !isTenantsFetching ? (
+            ) : tenants.length === 0 ? (
               <EmptyState
                 title={en.userManagement.noOrganization}
                 subtitle={en.userManagement.noOrganizationSubtitle}
-                actionLabel={en.userManagement.noOrganizationActionLabel}
-                hideActionButton={true}
               />
             ) : (
               <OrganizationList
-                organizations={filteredTenants}
+                organizations={tenants}
                 onEditPress={onEditTenant}
                 formatDate={formatDate}
                 renderFooter={() =>

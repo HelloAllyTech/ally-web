@@ -3,12 +3,12 @@ import { useEffect } from "react";
 import { Controller } from "react-hook-form";
 
 import { Close } from "@assets";
-import { Button, DropdownwithTag, CustomDropdown } from "@components";
-import { en, FieldOptions, KeyboardKeys } from "@constants";
+import { Button, DropdownwithTag, CustomDropdown, CreditField, ProfileCard } from "@components";
+import { en, FieldOptions, KeyboardKeys, USER_MODAL_FIELDS_IDS, UserRole } from "@constants";
 import { UserModalProps, FieldProps } from "@types";
 
 export const UserModal: React.FC<UserModalProps> = ({
-  isOpen,
+  isOpen = true,
   onClose,
   title,
   fields,
@@ -38,7 +38,8 @@ export const UserModal: React.FC<UserModalProps> = ({
   }, [isOpen, onClose]);
 
   const control = formMethods?.control;
-  const watchRoles = formMethods?.watch?.("roles") || [];
+  const watchRoles = formMethods?.watch?.(USER_MODAL_FIELDS_IDS.ROLES) || [];
+  const { isValid } = formMethods?.formState || {};
 
   const handlePrimaryAction = formMethods
     ? formMethods.handleSubmit((data: any) => {
@@ -54,13 +55,15 @@ export const UserModal: React.FC<UserModalProps> = ({
     onClose();
   };
 
-  const shouldShowField = (field: FieldProps) => {
-    if (field.id === "credits") {
-      return Array.isArray(watchRoles) && watchRoles.includes("LEARNER");
+  const shouldShowField = (selectedField: FieldProps) => {
+    if (
+      selectedField.id === USER_MODAL_FIELDS_IDS.CREDITS &&
+      fields.some(field => field.id === USER_MODAL_FIELDS_IDS.ROLES)
+    ) {
+      return Array.isArray(watchRoles) && watchRoles.includes(UserRole.LEARNER);
     }
     return true;
   };
-
   const renderInputField = (field: FieldProps, index: number) => {
     if (!control) return null;
 
@@ -70,7 +73,11 @@ export const UserModal: React.FC<UserModalProps> = ({
         name={field.id}
         control={control}
         defaultValue={details?.[field.id] ?? ""}
-        render={({ field: controllerField }) => (
+        rules={{
+          required: field.id === USER_MODAL_FIELDS_IDS.EXTERNALID ? false : true,
+          maxLength: field.id === USER_MODAL_FIELDS_IDS.ORGNAME ? 20 : 50,
+        }}
+        render={({ field: controllerField, fieldState }) => (
           <div className="flex flex-col gap-2">
             <label htmlFor={field.id} className="text-sm text-[#49454F] cursor-pointer">
               {field.label}
@@ -80,8 +87,17 @@ export const UserModal: React.FC<UserModalProps> = ({
               id={field.id}
               type={field.inputType}
               placeholder={field.placeholder}
-              className="border rounded-md px-2 py-2 outline-none font-['Replay_Pro']"
+              className={`border rounded-md px-2 py-2 outline-none font-['Replay_Pro']  ${
+                fieldState.error ? "border-red-500" : "border-gray-300"
+              }`}
             />
+            {fieldState.error?.type === "maxLength" && (
+              <span className="text-red-500 text-xs">
+                {en.userManagement.maxCharError(
+                  field.id === USER_MODAL_FIELDS_IDS.ORGNAME ? 20 : 50,
+                )}
+              </span>
+            )}
           </div>
         )}
       />
@@ -96,6 +112,9 @@ export const UserModal: React.FC<UserModalProps> = ({
         key={index}
         name={field.id}
         control={control}
+        rules={{
+          required: true,
+        }}
         defaultValue={details?.[field.id] ?? ""}
         render={({ field: controllerField }) => (
           <CustomDropdown
@@ -114,22 +133,34 @@ export const UserModal: React.FC<UserModalProps> = ({
     if (!control) return null;
 
     return (
-      <Controller
-        key={index}
-        name={field.id}
-        control={control}
-        defaultValue={details?.roles || []}
-        render={({ field: controllerField }) => (
-          <DropdownwithTag
-            label={field.label}
-            options={field.options ?? []}
-            value={controllerField.value || []}
-            onChange={(selectedRoles: string[]) => {
-              controllerField.onChange(selectedRoles);
-            }}
-          />
-        )}
-      />
+      <div key={field.id} className="flex flex-col gap-3">
+        {details && <ProfileCard user={details} />}
+        <Controller
+          key={index}
+          name={field.id}
+          control={control}
+          defaultValue={details?.roles || []}
+          rules={{
+            validate: (value: string[]) =>
+              (value && value.length > 0) || en.userManagement.changeRoleErrorMessage,
+          }}
+          render={({ field: controllerField, fieldState }) => (
+            <div className="flex flex-col gap-1">
+              <DropdownwithTag
+                label={field.label}
+                options={field.options ?? []}
+                initialValue={details?.roles || []}
+                onChange={(selectedRoles: string[]) => {
+                  controllerField.onChange(selectedRoles);
+                }}
+              />
+              {fieldState.error && (
+                <span className="text-red-500 text-xs">{fieldState.error.message}</span>
+              )}
+            </div>
+          )}
+        />
+      </div>
     );
   };
 
@@ -142,7 +173,10 @@ export const UserModal: React.FC<UserModalProps> = ({
         name={field.id}
         control={control}
         defaultValue={details?.[field.id] ?? ""}
-        render={({ field: controllerField }) => (
+        rules={{
+          maxLength: 500,
+        }}
+        render={({ field: controllerField, fieldState }) => (
           <div className="flex flex-col gap-2">
             <label htmlFor={field.id} className="text-sm text-[#49454F] cursor-pointer">
               {field.label}
@@ -154,7 +188,38 @@ export const UserModal: React.FC<UserModalProps> = ({
               className="border rounded-md px-2 py-2 font-['Replay_Pro'] outline-none"
               rows={4}
             />
+            {fieldState.error?.type === "maxLength" && (
+              <span className="text-red-500 text-xs">{en.userManagement.textAreaUpperLimit}</span>
+            )}
           </div>
+        )}
+      />
+    );
+  };
+
+  const renderCreditField = (field: FieldProps, index: number) => {
+    if (!control) return null;
+    return (
+      <Controller
+        key={index}
+        name={field.id}
+        control={control}
+        rules={{
+          validate: (value: { consumedCredits: number; newCredits: number }) =>
+            value && value.newCredits >= 0 && value.newCredits <= 10000, // TODO: What is the max credit limit?
+        }}
+        defaultValue={details?.credits || { consumedCredits: 0, newCredits: 0 }}
+        render={({ field: controllerField, fieldState }) => (
+          <>
+            <CreditField
+              value={controllerField.value}
+              onChange={controllerField.onChange}
+              userData={details}
+            />
+            {fieldState.error && (
+              <span className="text-red-500 text-xs">{fieldState.error.message}</span>
+            )}
+          </>
         )}
       />
     );
@@ -164,7 +229,6 @@ export const UserModal: React.FC<UserModalProps> = ({
     if (!shouldShowField(field)) {
       return null;
     }
-
     switch (field.fieldType) {
       case FieldOptions.INPUT:
         return renderInputField(field, index);
@@ -174,6 +238,8 @@ export const UserModal: React.FC<UserModalProps> = ({
         return renderDropdownWithTagField(field, index);
       case FieldOptions.TEXTAREA:
         return renderTextareaField(field, index);
+      case FieldOptions.CREDITS:
+        return renderCreditField(field, index);
       default:
         return null;
     }
@@ -192,7 +258,7 @@ export const UserModal: React.FC<UserModalProps> = ({
       className="fixed top-[-100px] inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-[1px]"
       onClick={handleBackdropClick}
     >
-      <div className="py-5 px-6 bg-white w-[380px] flex flex-col gap-5 relative font-['IBM_Plex_Serif'] rounded-[10px] shadow-2xl animate-fadeIn">
+      <div className="py-5 px-6 bg-white min-w-[400px] max-w-[90vw] w-auto flex flex-col gap-5 relative font-['IBM_Plex_Serif'] rounded-[10px] shadow-2xl animate-fadeIn">
         {/* Header */}
         <div className="text-[#47464F] flex justify-center w-full text-2xl font-['Replay_Pro'] relative">
           {title}
@@ -214,7 +280,14 @@ export const UserModal: React.FC<UserModalProps> = ({
           <Button variant="secondary" className="w-full" onClick={handleCancel}>
             {en.userManagement.cancel}
           </Button>
-          <Button variant="primary" className="w-full" onClick={handlePrimaryAction}>
+          <Button
+            variant="primary"
+            className={`w-full ${
+              isValid ? "bg-blue-600 hover:bg-blue-700" : "bg-gray-400 cursor-not-allowed"
+            }`}
+            onClick={handlePrimaryAction}
+            disabled={!isValid}
+          >
             {buttonName}
           </Button>
         </div>

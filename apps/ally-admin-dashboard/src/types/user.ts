@@ -35,7 +35,7 @@ export interface Tenant {
   userCount: string;
 }
 
-export interface GetTenantRespose {
+export interface GetTenantResponse {
   data: Tenant[];
   count?: number;
   total?: number;
@@ -44,6 +44,11 @@ export interface GetTenantRespose {
 export enum TabType {
   USERS = "users",
   ORGANIZATIONS = "organizations",
+}
+
+interface UserCredits {
+  consumedCredits: number;
+  newCredits: number;
 }
 
 export interface UserListUser {
@@ -60,8 +65,9 @@ export interface UserListUser {
   createdAt: string; // ISO date
   updatedAt: string; // ISO date
   roles: UserRoles[];
-  maxCredits: number | null;
-  usedCredits: number | null;
+  credits: UserCredits;
+  creditLimit: number | null;
+  consumedCredits: number | null;
 }
 
 export interface UserListProps {
@@ -112,7 +118,7 @@ export interface CreateTenantBody {
   description?: string;
 }
 
-export interface GetUsersRespose {
+export interface GetUsersResponse {
   data: UserListUser[];
   count: number;
 }
@@ -121,8 +127,9 @@ export interface CreateUserBody {
   email: string;
   name: string;
   roles: string[];
+  externalId: string;
   tenantId: string;
-  externalId?: string;
+  simulationCreditLimit?: number;
   status?: "ACTIVE" | "INACTIVE" | string;
 }
 
@@ -130,19 +137,18 @@ export type AddUserFormData = {
   name: string;
   email: string;
   externalId: string;
-  telephonyId: string;
   tenantId: string;
   roles: string[];
   credits: number;
 };
 
 export interface UserModalProps {
-  isOpen: boolean;
+  isOpen?: boolean;
   onClose: () => void;
   title: string;
   buttonName?: string;
   fields: FieldProps[];
-  details?: UserListUser;
+  details?: any;
   handleClick?: any;
   formMethods?: any;
 }
@@ -163,18 +169,44 @@ export interface FieldProps {
 export interface dropdownWithTagProps {
   label: string;
   options: UserRoles[] | Option[];
-  value: string[];
+  initialValue: string[];
   onChange?: (selected: string[]) => void;
 }
 
 export interface EditUserBody {
   id: number;
-  name: string;
-  tenantId: string;
-  externalId: string;
+  data: {
+    name: string;
+    email: string;
+    externalId: string;
+  };
 }
 
 export interface UserRoles {
   id: number;
   name: string;
+}
+
+export interface CreditFieldProps {
+  value: { consumedCredits: number; newCredits: number };
+  onChange: (value: { consumedCredits: number; newCredits: number }) => void;
+  userData: UserListUser;
+}
+
+export interface GetCreditResponse {
+  creditLimit: number;
+  consumedCredits: number;
+  secondsAllowedPerCredit: number;
+}
+
+export interface AddSimulationBody {
+  creditLimit: number;
+  userId: number;
+}
+
+export interface InputProps {
+  id: keyof CreditFieldProps["value"];
+  label: string;
+  type?: string;
+  disabled?: boolean;
 }
