@@ -156,7 +156,10 @@ jobs:
             echo ":white_check_mark: Environment variables downloaded successfully" >> $GITHUB_STEP_SUMMARY
             echo "- S3 Path: s3://${{ needs.prepare-env.outputs.s3_env_bucket }}/${{ needs.prepare-env.outputs.service_path }}/.env" >> $GITHUB_STEP_SUMMARY
             echo "- Local Path: apps/ally-admin-dashboard/.env" >> $GITHUB_STEP_SUMMARY
-            echo "- File will be available during build" >> $GITHUB_STEP_SUMMARY
+            
+            # Copy .env file to workspace root so Nx can find it during build
+            cp apps/ally-admin-dashboard/.env .env
+            echo "- Copied .env to workspace root for Nx build" >> $GITHUB_STEP_SUMMARY
           else
             echo ":information_source: No build-time environment variables found" >> $GITHUB_STEP_SUMMARY
             echo "- S3 Path: s3://${{ needs.prepare-env.outputs.s3_env_bucket }}/${{ needs.prepare-env.outputs.service_path }}/.env (not found)" >> $GITHUB_STEP_SUMMARY
