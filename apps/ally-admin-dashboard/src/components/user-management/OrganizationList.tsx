@@ -16,8 +16,9 @@ export const OrganizationList: React.FC<OrganizationListProps> = ({
   const renderHeader = () => {
     return (
       <div className="grid grid-cols-12 px-4 py-2 text-[14px] text-gray-500 border-b border-gray-200">
-        <div className="col-span-4">{en.userManagement.organization}</div>
-        <div className="col-span-4">{en.userManagement.description}</div>
+        <div className="col-span-3">{en.userManagement.organization}</div>
+        <div className="col-span-2">{en.userManagement.code}</div>
+        <div className="col-span-3">{en.userManagement.description}</div>
         <div className="col-span-2">{en.userManagement.createdOn}</div>
         <div className="col-span-2">{en.userManagement.noOfUsers}</div>
       </div>
@@ -35,8 +36,11 @@ export const OrganizationList: React.FC<OrganizationListProps> = ({
               key={tenant.id}
               className="grid grid-cols-12 items-center px-4 py-3 text-gray-700 border-b border-gray-200 hover:bg-gray-50"
             >
-              <div className="col-span-4">{tenant.name}</div>
-              <div className="col-span-4 text-gray-600">{tenant.description}</div>
+              <div className="col-span-3">{tenant.name}</div>
+              <div className="col-span-2 text-gray-600">{tenant.code}</div>
+              <div className="col-span-3 text-gray-600 overflow-hidden whitespace-nowrap truncate w-[200px]">
+                {tenant.description}
+              </div>
               <div className="col-span-2 text-gray-600">{formatDate(tenant.createdAt)}</div>
               <div className="col-span-2 flex items-center justify-between text-gray-600">
                 <span>{tenant.userCount}</span>

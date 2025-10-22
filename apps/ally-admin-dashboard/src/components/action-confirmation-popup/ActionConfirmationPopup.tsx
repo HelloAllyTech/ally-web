@@ -16,6 +16,19 @@ const ActionConfirmationPopup: FC<ActionConfirmationPopupProps> = ({
 }) => {
   if (!isOpen) return null;
 
+  const renderBoldFromString = (text: string) => {
+    const parts = text.split(/(\*\*.*?\*\*)/g);
+    return parts.map((part, index) =>
+      part.startsWith("**") && part.endsWith("**") ? (
+        <span key={index} className="font-bold">
+          {part.slice(2, -2)}
+        </span>
+      ) : (
+        <span key={index}>{part}</span>
+      ),
+    );
+  };
+
   const popupHeader = (
     <div className="flex flex-col items-center justify-between p-5">
       <button
@@ -29,7 +42,9 @@ const ActionConfirmationPopup: FC<ActionConfirmationPopupProps> = ({
         {title}{" "}
         {titleItalic && <span className="italic font-semibold ml-1">{`${titleItalic}`}</span>}
       </div>
-      <p className="text-black  text-[14px] my-2 text-center mb-[16px] text-base">{description}</p>
+      <p className="text-black  text-[14px] my-2 text-center mb-[16px] text-base">
+        {renderBoldFromString(description)}
+      </p>
     </div>
   );
 
@@ -37,13 +52,13 @@ const ActionConfirmationPopup: FC<ActionConfirmationPopupProps> = ({
     <div className="flex gap-2 pb-[16px] justify-center">
       <button
         onClick={secondaryButton.onClick}
-        className={`${getButtonStyles(secondaryButton.variant)} border w-full rounded-full p-2`}
+        className={`${getButtonStyles(secondaryButton.variant)} border w-full rounded-full p-2 font-['Roboto']`}
       >
         {secondaryButton.label}
       </button>
       <button
         onClick={primaryButton.onClick}
-        className={`${getButtonStyles(primaryButton.variant)} rounded-full w-full p-2`}
+        className={`${getButtonStyles(primaryButton.variant)} rounded-full w-full p-2 font-['Roboto']`}
       >
         {primaryButton.label}
       </button>

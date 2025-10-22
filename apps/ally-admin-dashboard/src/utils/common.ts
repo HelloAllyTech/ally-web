@@ -70,3 +70,8 @@ export const formatCapitalizedEnum = (str: string | UserRoles) => {
   capitalized = capitalized.replace(/_/g, " ");
   return capitalized;
 };
+
+export const getChipValue = (items: string[]): string => {
+  if (!items || items.length === 0) return "";
+  return items.length > 1 ? `${items[0]} +${items.length - 1}` : items[0];
+};

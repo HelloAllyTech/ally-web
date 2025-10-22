@@ -48,7 +48,7 @@ export enum TabType {
 
 interface UserCredits {
   consumedCredits: number;
-  newCredits: number;
+  creditLimit: number;
 }
 
 export interface UserListUser {
@@ -56,7 +56,7 @@ export interface UserListUser {
   name: string;
   email: string;
   username: string;
-  telephonyId: string;
+  externalId: string;
   status: userStatus | string;
   role: string;
   metadata: Record<string, unknown>;
@@ -64,7 +64,7 @@ export interface UserListUser {
   tenantId: string;
   createdAt: string; // ISO date
   updatedAt: string; // ISO date
-  roles: UserRoles[];
+  roles: string[];
   credits: UserCredits;
   creditLimit: number | null;
   consumedCredits: number | null;
@@ -163,14 +163,18 @@ export interface FieldProps {
   placeholder?: string;
   fieldType: string;
   inputType: string;
+  maxLength?: number;
+  required?: boolean;
   options?: Option[] | UserRoles[];
 }
 
 export interface dropdownWithTagProps {
   label: string;
+  placeholder: string;
   options: UserRoles[] | Option[];
   initialValue: string[];
   onChange?: (selected: string[]) => void;
+  required: boolean;
 }
 
 export interface EditUserBody {
@@ -188,9 +192,10 @@ export interface UserRoles {
 }
 
 export interface CreditFieldProps {
-  value: { consumedCredits: number; newCredits: number };
-  onChange: (value: { consumedCredits: number; newCredits: number }) => void;
+  value: { consumedCredits: number; creditLimit: number };
+  onChange: (value: { consumedCredits: number; creditLimit: number }) => void;
   userData: UserListUser;
+  required: boolean;
 }
 
 export interface GetCreditResponse {
@@ -199,9 +204,9 @@ export interface GetCreditResponse {
   secondsAllowedPerCredit: number;
 }
 
-export interface AddSimulationBody {
-  creditLimit: number;
+export interface AddCreditBody {
   userId: number;
+  creditLimit: number;
 }
 
 export interface InputProps {

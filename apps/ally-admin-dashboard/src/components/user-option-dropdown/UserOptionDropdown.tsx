@@ -1,8 +1,8 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useMemo } from "react";
 
 import { createPortal } from "react-dom";
 
-import { UserMenuOptions, userEditMenu, userStatus } from "@constants";
+import { UserMenuOptions, UserRole, userEditMenu, userStatus } from "@constants";
 import { UserListUser } from "@types";
 
 interface UserOptionDropdownProps {
@@ -71,6 +71,25 @@ export const UserOptionDropdown: React.FC<UserOptionDropdownProps> = ({
     };
   }, [isOpen, anchorElement]);
 
+  const filteredOptionList = useMemo(() => {
+    return userEditMenu.filter(item => {
+      switch (item) {
+        case UserMenuOptions.ADD_CREDIT:
+          return (
+            user?.roles?.some(role => role === UserRole.LEARNER) &&
+            user?.status === userStatus.ACTIVE
+          );
+        case UserMenuOptions.GRANT_ACCESS:
+          return user?.status !== userStatus.ACTIVE;
+        case UserMenuOptions.SUSPEND_USER:
+          return user?.status === userStatus.ACTIVE;
+        case UserMenuOptions.CHANGE_ROLE:
+          return user?.status === userStatus.ACTIVE;
+      }
+      return true;
+    });
+  }, [user?.status, user?.roles]);
+
   if (!isOpen) return null;
 
   const handleOptionClick = (option: string) => {
@@ -80,16 +99,6 @@ export const UserOptionDropdown: React.FC<UserOptionDropdownProps> = ({
 
   // Don't render until position is calculated to prevent flashing
   if (!position) return null;
-
-  const getFilteredOptionList = () => {
-    return userEditMenu.filter(
-      item =>
-        item.id !==
-        (user?.status === userStatus.ACTIVE
-          ? UserMenuOptions.GRANT_ACCESS
-          : UserMenuOptions.SUSPEND_USER),
-    );
-  };
 
   const dropdown = (
     <>
@@ -103,15 +112,15 @@ export const UserOptionDropdown: React.FC<UserOptionDropdownProps> = ({
           left: `${position.left}px`,
         }}
       >
-        {getFilteredOptionList()?.map((item, index) => (
+        {filteredOptionList?.map((filteredOption, index) => (
           <div
-            key={item.label}
+            key={filteredOption}
             className={`px-4 py-2 cursor-pointer hover:bg-gray-50 transition-colors ${
-              index !== getFilteredOptionList().length - 1 ? "border-b border-gray-100" : ""
-            }`}
-            onClick={() => handleOptionClick(item.id)}
+              index !== filteredOptionList.length - 1 ? "border-b border-gray-100" : ""
+            } ${filteredOption === UserMenuOptions.SUSPEND_USER ? "text-red-500" : "text-black"}`}
+            onClick={() => handleOptionClick(filteredOption)}
           >
-            {item.label}
+            {filteredOption}
           </div>
         ))}
       </div>

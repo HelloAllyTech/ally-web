@@ -11,6 +11,7 @@ import {
   OrganizationListLoader,
   UserModal,
   ActionConfirmationPopup,
+  ButtonVariant,
 } from "@components";
 import {
   addCredit,
@@ -68,7 +69,6 @@ export const UserManagement: FC = () => {
     filterChips,
     getField,
     addUsermodalOpen,
-    setAddUserModalOpen,
     handleTabChange,
     selectedUser,
     selectedOption,
@@ -84,6 +84,7 @@ export const UserManagement: FC = () => {
     handleActivateUser,
     handleAddUserClose,
     handleUserAddClick,
+    handleAddCredit,
   } = useUserManagement(tenants);
 
   const TABS = [
@@ -125,6 +126,7 @@ export const UserManagement: FC = () => {
             formMethods={userMethods}
             buttonName={en.common.update}
             details={selectedUser}
+            handleClick={handleAddCredit}
           />
         );
       case UserMenuOptions.SUSPEND_USER:
@@ -137,12 +139,12 @@ export const UserManagement: FC = () => {
             secondaryButton={{
               label: en.userManagement.cancel,
               onClick: handleDropdownClose,
-              variant: "secondary",
+              variant: ButtonVariant.SECONDARY,
             }}
             primaryButton={{
               label: en.userManagement.suspendUser,
               onClick: () => handleSuspendUser(),
-              variant: "destructive",
+              variant: ButtonVariant.DESTRUCTIVE,
             }}
           />
         );
@@ -156,12 +158,12 @@ export const UserManagement: FC = () => {
             secondaryButton={{
               label: en.userManagement.cancel,
               onClick: handleDropdownClose,
-              variant: "secondary",
+              variant: ButtonVariant.SECONDARY,
             }}
             primaryButton={{
               label: en.userManagement.grantAccess,
               onClick: () => handleActivateUser(),
-              variant: "primary",
+              variant: ButtonVariant.PRIMARY,
             }}
           />
         );
@@ -175,12 +177,12 @@ export const UserManagement: FC = () => {
             secondaryButton={{
               label: en.userManagement.cancel,
               onClick: handleDropdownClose,
-              variant: "secondary",
+              variant: ButtonVariant.SECONDARY,
             }}
             primaryButton={{
               label: en.userManagement.removeUser,
               onClick: () => handleRemoveUser(selectedUser?.id),
-              variant: "destructive",
+              variant: ButtonVariant.DESTRUCTIVE,
             }}
           />
         );
@@ -272,7 +274,7 @@ export const UserManagement: FC = () => {
             <ListToolbar
               searchValue={orgSearch}
               onSearchChange={setOrgSearch}
-              action={{ label: "New group", onClick: handleNewgroupClick }}
+              action={{ label: en.userManagement.newGroup, onClick: handleNewgroupClick }}
             />
             <UserModal
               isOpen={addOrganizationModalOpen}

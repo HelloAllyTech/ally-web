@@ -38,42 +38,60 @@ export const USER_MODAL_FIELDS_IDS = {
   DESCRIPTION: "description",
 };
 
+export const userEditMenu = [
+  UserMenuOptions.EDIT_DETAILS,
+  UserMenuOptions.CHANGE_ROLE,
+  UserMenuOptions.ADD_CREDIT,
+  UserMenuOptions.SUSPEND_USER,
+  UserMenuOptions.GRANT_ACCESS,
+  // UserMenuOptions.REMOVE_USER, // TODO: Add this after backend change for delete user is implemented
+];
+
 export const addUser = [
   {
     id: USER_MODAL_FIELDS_IDS.NAME,
     label: "Name",
-    placeholder: "User 01",
+    placeholder: "Enter full name",
     fieldType: "input",
     inputType: "text",
+    maxLength: 100,
+    required: true,
   },
   {
     id: USER_MODAL_FIELDS_IDS.EMAIL,
     label: "Email",
-    placeholder: "example.user@gmail.com",
+    placeholder: "Enter email address",
     fieldType: "input",
     inputType: "email",
+    maxLength: 100,
+    required: true,
   },
   {
     id: USER_MODAL_FIELDS_IDS.EXTERNALID,
     label: "Cloud Telephony ID",
-    placeholder: "TEL002",
+    placeholder: "Enter ID",
     fieldType: "input",
     inputType: "text",
+    maxLength: 50,
   },
   {
     id: USER_MODAL_FIELDS_IDS.TENANTID,
     label: "Assign Organization",
-    placeholder: "Lifeline",
+    placeholder: "Select Organization",
     fieldType: "dropdown",
     inputType: "text",
     options: [],
+    maxLength: 50,
+    required: true,
   },
   {
     id: USER_MODAL_FIELDS_IDS.ROLES,
     label: "Role access",
+    placeholder: "Select Role",
     options: [],
     fieldType: "dropdownWithTag",
     inputType: "text",
+    required: true,
   },
   {
     id: USER_MODAL_FIELDS_IDS.CREDITS,
@@ -81,16 +99,9 @@ export const addUser = [
     inputType: "number",
     fieldType: "input",
     placeholder: "0",
+    maxLength: 10,
+    required: true,
   },
-];
-
-export const userEditMenu = [
-  { id: UserMenuOptions.EDIT_DETAILS, label: "Edit Details" },
-  { id: UserMenuOptions.CHANGE_ROLE, label: "Change Role" },
-  { id: UserMenuOptions.ADD_CREDIT, label: "Add Credit" },
-  { id: UserMenuOptions.SUSPEND_USER, label: "Suspend User" },
-  { id: UserMenuOptions.GRANT_ACCESS, label: "Grant Access" },
-  // { id: UserMenuOptions.REMOVE_USER, label: "Remove User" }, // TODO: Add this after backend change for delete user is implemented
 ];
 
 export const userEditModal = [
@@ -100,6 +111,8 @@ export const userEditModal = [
     placeholder: "eg:User 01",
     fieldType: "input",
     inputType: "text",
+    maxLength: 100,
+    required: false,
   },
   {
     id: USER_MODAL_FIELDS_IDS.EMAIL,
@@ -107,6 +120,8 @@ export const userEditModal = [
     placeholder: "jorge.ortiz@sample.com",
     fieldType: "input",
     inputType: "email",
+    maxLength: 100,
+    required: false,
   },
   {
     id: USER_MODAL_FIELDS_IDS.EXTERNALID,
@@ -114,6 +129,8 @@ export const userEditModal = [
     placeholder: "TEL002",
     fieldType: "input",
     inputType: "text",
+    maxLength: 50,
+    required: false,
   },
 ];
 
@@ -125,6 +142,7 @@ export const changeUserRoles = [
     fieldType: "dropdownWithTag",
     inputType: "text",
     options: [],
+    required: true,
   },
 ];
 
@@ -135,6 +153,8 @@ export const addCredit = [
     placeholder: "0",
     fieldType: "credits",
     inputType: "number",
+    maxLength: 10000, // TODO: What is the max credit limit?
+    required: true,
   },
 ];
 
@@ -145,6 +165,8 @@ export const addNewOrganizationModal = [
     placeholder: "Enter Organization name",
     fieldType: "input",
     inputType: "text",
+    maxLength: 100,
+    required: true,
   },
   {
     id: USER_MODAL_FIELDS_IDS.ORGCODE,
@@ -152,6 +174,8 @@ export const addNewOrganizationModal = [
     placeholder: "Enter code",
     fieldType: "input",
     inputType: "text",
+    maxLength: 50,
+    required: true,
   },
   {
     id: USER_MODAL_FIELDS_IDS.DESCRIPTION,
@@ -159,21 +183,21 @@ export const addNewOrganizationModal = [
     placeholder: "Add description",
     fieldType: "textarea",
     inputType: "text",
+    maxLength: 500,
+    required: false,
   },
 ];
 export const userRoleItems = ["CLIENT", "COUNSELOR", "SUPER_ADMIN", "ADMIN", "LEARNER"];
-export const userStatusItems = ["ACTIVE", "INACTIVE", "BLOCKED", "SUSPENDED"];
+export const userStatusItems = ["ACTIVE", "SUSPENDED"];
 
-export const filterDropdownOptions = {
-  ORGANIZATION: "Organisation",
-  ROLE: "Role",
-  STATUS: "Status",
-};
+export enum FilterDropdownOptions {
+  ORGANIZATION = "Organisation",
+  ROLE = "Role",
+  STATUS = "Status",
+}
 
 export enum userStatus {
   ACTIVE = "ACTIVE",
-  INACTIVE = "INACTIVE",
-  BLOCKED = "BLOCKED",
   SUSPENDED = "SUSPENDED",
 }
 
@@ -196,4 +220,6 @@ export enum UserRole {
   COUNSELLOR = "COUNSELOR",
   ADMIN = "ADMIN",
   LEARNER = "LEARNER",
+  SUPER_ADMIN = "SUPER_ADMIN",
+  CLIENT = "CLIENT",
 }

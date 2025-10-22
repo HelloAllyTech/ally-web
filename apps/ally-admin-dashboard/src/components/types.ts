@@ -205,12 +205,6 @@ export interface FilterDropdownProps {
   currentFilters: FilterValues;
 }
 
-export enum FilterDropdownType {
-  ORGANIZATION = "organization",
-  ROLE = "role",
-  STATUS = "status",
-}
-
 export interface TabItem {
   id: string;
   label: string;
@@ -224,7 +218,7 @@ export interface TabsProps {
   className?: string;
 }
 
-interface FilterChipProps {
+export interface FilterChipProps {
   label: string;
   value: string;
   onClear: () => void;

@@ -8,14 +8,14 @@ import { formatCapitalizedEnum } from "@utils";
 interface ProfileFieldProps {
   user: UserListUser;
   consumedCredits?: number;
-  newCredits?: number;
+  creditLimit?: number;
   showCredits?: boolean;
 }
 
 export const ProfileCard: React.FC<ProfileFieldProps> = ({
   user,
   consumedCredits = 0,
-  newCredits = 0,
+  creditLimit = 0,
   showCredits = false,
 }) => {
   const Avatar: React.FC<{ name: string }> = ({ name }) => {
@@ -43,7 +43,7 @@ export const ProfileCard: React.FC<ProfileFieldProps> = ({
             <Bolt />
             <div>
               <span className="text-red-500 text-3xl">{consumedCredits}</span>
-              <span className="text-gray-500"> / {newCredits}</span>
+              <span className="text-gray-500"> / {creditLimit}</span>
             </div>
           </div>
         </div>

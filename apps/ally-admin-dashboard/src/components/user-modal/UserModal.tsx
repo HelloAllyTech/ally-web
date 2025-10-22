@@ -1,8 +1,7 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 
 import { Controller } from "react-hook-form";
 
-import { Close } from "@assets";
 import { Button, DropdownwithTag, CustomDropdown, CreditField, ProfileCard } from "@components";
 import { en, FieldOptions, KeyboardKeys, USER_MODAL_FIELDS_IDS, UserRole } from "@constants";
 import { UserModalProps, FieldProps } from "@types";
@@ -20,9 +19,7 @@ export const UserModal: React.FC<UserModalProps> = ({
   // Handle ESC key to close modal
   useEffect(() => {
     const handleEscKey = (event: KeyboardEvent) => {
-      if (event.key === KeyboardKeys.ESCAPE && isOpen) {
-        onClose();
-      }
+      if (event.key === KeyboardKeys.ESCAPE && isOpen) return onClose();
     };
 
     if (isOpen) {
@@ -41,13 +38,12 @@ export const UserModal: React.FC<UserModalProps> = ({
   const watchRoles = formMethods?.watch?.(USER_MODAL_FIELDS_IDS.ROLES) || [];
   const { isValid } = formMethods?.formState || {};
 
+  const backdropMouseDownRef = useRef(false);
+
   const handlePrimaryAction = formMethods
     ? formMethods.handleSubmit((data: any) => {
-        if (handleClick) {
-          handleClick({ id: details?.id, ...data });
-        }
+        if (handleClick) handleClick({ id: details?.id, ...data });
         formMethods.reset(data);
-        onClose();
       })
     : handleClick;
 
@@ -74,28 +70,27 @@ export const UserModal: React.FC<UserModalProps> = ({
         control={control}
         defaultValue={details?.[field.id] ?? ""}
         rules={{
-          required: field.id === USER_MODAL_FIELDS_IDS.EXTERNALID ? false : true,
-          maxLength: field.id === USER_MODAL_FIELDS_IDS.ORGNAME ? 20 : 50,
+          required: field.required,
+          maxLength: field.maxLength,
         }}
         render={({ field: controllerField, fieldState }) => (
           <div className="flex flex-col gap-2">
             <label htmlFor={field.id} className="text-sm text-[#49454F] cursor-pointer">
               {field.label}
+              {field.required && <span className="text-red-500">*</span>}
             </label>
             <input
               {...controllerField}
               id={field.id}
               type={field.inputType}
               placeholder={field.placeholder}
-              className={`border rounded-md px-2 py-2 outline-none font-['Replay_Pro']  ${
+              className={`border rounded-md px-2 py-2 outline-none font-['Replay_Pro'] text-[14px] ${
                 fieldState.error ? "border-red-500" : "border-gray-300"
               }`}
             />
             {fieldState.error?.type === "maxLength" && (
-              <span className="text-red-500 text-xs">
-                {en.userManagement.maxCharError(
-                  field.id === USER_MODAL_FIELDS_IDS.ORGNAME ? 20 : 50,
-                )}
+              <span className="text-red-500 text-[14px]">
+                {en.userManagement.maxCharError(field.maxLength)}
               </span>
             )}
           </div>
@@ -113,7 +108,7 @@ export const UserModal: React.FC<UserModalProps> = ({
         name={field.id}
         control={control}
         rules={{
-          required: true,
+          required: field.required,
         }}
         defaultValue={details?.[field.id] ?? ""}
         render={({ field: controllerField }) => (
@@ -123,6 +118,7 @@ export const UserModal: React.FC<UserModalProps> = ({
             value={controllerField.value?.toString() || ""}
             onChange={value => controllerField.onChange(value)}
             placeholder={en.userManagement.selectOrg}
+            required={field.required}
           />
         )}
       />
@@ -153,6 +149,8 @@ export const UserModal: React.FC<UserModalProps> = ({
                 onChange={(selectedRoles: string[]) => {
                   controllerField.onChange(selectedRoles);
                 }}
+                placeholder={field.placeholder}
+                required={field.required}
               />
               {fieldState.error && (
                 <span className="text-red-500 text-xs">{fieldState.error.message}</span>
@@ -174,12 +172,14 @@ export const UserModal: React.FC<UserModalProps> = ({
         control={control}
         defaultValue={details?.[field.id] ?? ""}
         rules={{
-          maxLength: 500,
+          maxLength: field.maxLength,
+          required: field.required,
         }}
         render={({ field: controllerField, fieldState }) => (
           <div className="flex flex-col gap-2">
             <label htmlFor={field.id} className="text-sm text-[#49454F] cursor-pointer">
               {field.label}
+              {field.required && <span className="text-red-500">*</span>}
             </label>
             <textarea
               {...controllerField}
@@ -205,16 +205,21 @@ export const UserModal: React.FC<UserModalProps> = ({
         name={field.id}
         control={control}
         rules={{
-          validate: (value: { consumedCredits: number; newCredits: number }) =>
-            value && value.newCredits >= 0 && value.newCredits <= 10000, // TODO: What is the max credit limit?
+          validate: (value: { consumedCredits: number; newCredits: number }) => {
+            if (!value) return en.userManagement.creditRequiredError;
+            if (value.newCredits < 0) return en.userManagement.creditNotNegativeError;
+            if (value.newCredits > field.maxLength) return en.userManagement.creditLimitError;
+            return true;
+          },
         }}
-        defaultValue={details?.credits || { consumedCredits: 0, newCredits: 0 }}
+        defaultValue={details?.credits || { consumedCredits: 0, creditLimit: 0 }}
         render={({ field: controllerField, fieldState }) => (
           <>
             <CreditField
               value={controllerField.value}
               onChange={controllerField.onChange}
               userData={details}
+              required={field.required}
             />
             {fieldState.error && (
               <span className="text-red-500 text-xs">{fieldState.error.message}</span>
@@ -247,30 +252,29 @@ export const UserModal: React.FC<UserModalProps> = ({
 
   if (!isOpen) return null;
 
-  const handleBackdropClick = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (e.target === e.currentTarget) {
+  const handleBackdropMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
+    backdropMouseDownRef.current = e.target === e.currentTarget;
+  };
+
+  const handleBackdropMouseUp = (e: React.MouseEvent<HTMLDivElement>) => {
+    const isBackdropTarget = e.target === e.currentTarget;
+    if (backdropMouseDownRef.current && isBackdropTarget) {
       onClose();
     }
+    backdropMouseDownRef.current = false;
   };
 
   return (
     <div
       className="fixed top-[-100px] inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-[1px]"
-      onClick={handleBackdropClick}
+      onMouseDown={handleBackdropMouseDown}
+      onMouseUp={handleBackdropMouseUp}
     >
       <div className="py-5 px-6 bg-white min-w-[400px] max-w-[90vw] w-auto flex flex-col gap-5 relative font-['IBM_Plex_Serif'] rounded-[10px] shadow-2xl animate-fadeIn">
         {/* Header */}
         <div className="text-[#47464F] flex justify-center w-full text-2xl font-['Replay_Pro'] relative">
           {title}
         </div>
-
-        {/* Close Button */}
-        <button
-          className="cursor-pointer w-4 h-4 absolute right-2 top-2 text-gray-500 hover:text-gray-700 transition-colors"
-          onClick={onClose}
-        >
-          <Close />
-        </button>
 
         {/* Dynamic Form Fields */}
         {fields.map((field, index) => renderField(field, index))}

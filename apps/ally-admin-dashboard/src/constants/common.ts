@@ -19,9 +19,9 @@ export const ApiEndpoints = {
     USERS: "/users",
     TENANT: "/tenant",
     TENANTS: "/tenants",
-    ADD_USER: "/users/add-user",
-    GET_ROLES: "/user-groups",
-    CHANGE_USER_ROLES: "/user-groups/change-roles",
+    ADD_USER: "/users",
+    GET_ROLES: "/authorization/roles",
+    CHANGE_USER_ROLES: "/authorization/change-roles",
     SIMULATION_CREDITS: "/simulation-credits",
   },
   AUTHORIZATION: {

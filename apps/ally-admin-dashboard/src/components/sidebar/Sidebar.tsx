@@ -97,14 +97,14 @@ export const Sidebar: React.FC = () => {
             onClick={handleUserMenuToggle}
             className="flex flex-row items-center p-3 h-8 py-0 cursor-pointer"
           >
-            <div className="w-8 h-8 rounded-full flex items-center justify-center mr-3">
+            <div className="w-8 flex items-center justify-center mr-3">
               <User />
             </div>
             <div className="flex-1 text-left min-w-[100px]">
               <div className="text-[16px] font-medium text-gray-700 text-ellipsis overflow-hidden whitespace-nowrap">
                 {user?.name}
               </div>
-              <div className="text-[12px] text-gray-500 text-ellipsis overflow-hidden whitespace-nowrap">
+              <div className="text-[12px] mb-1 text-gray-500 text-ellipsis overflow-hidden whitespace-nowrap">
                 {user?.email}
               </div>
             </div>
@@ -151,14 +151,12 @@ export const Sidebar: React.FC = () => {
       } p-[12px] font-['IBM_Plex_Serif']`}
     >
       <div className="flex justify-between border-b border-gray-200 relative">
-        <div
-          className={`${isExpanded ? "px-5 mx-2" : "px-3 mx-0"} py-4  flex items-center justify-between`}
-        >
+        <div className={`px-2 pr-5 py-4  flex items-center justify-between`}>
           <Ally />
         </div>
         <button
           onClick={handleToggleSidebar}
-          className={`${isExpanded ? "px-5 mx-2" : "absolute z-10 top-0 bg-white px-[30px] py-[20px] opacity-0 hover:opacity-100"} w-6 h-6   transition-colors py-4 outline-none`}
+          className={`${isExpanded ? "px-5 mx-2" : "absolute z-10 top-0 bg-white mx-2 px-[20px] py-[15px] opacity-0 hover:opacity-100"} hover:bg-gray-50 hover:rounded-md my-2`}
           title={isExpanded ? "Collapse sidebar" : "Expand sidebar"}
         >
           <DockToRight />

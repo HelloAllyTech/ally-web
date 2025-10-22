@@ -12,10 +12,22 @@ import {
   useUpdateUserStatusMutation,
   useChangeRoleMutation,
   useGetRoleQuery,
+  useAddSimulationCreditLimitMutation,
 } from "@api";
 import { FilterValues } from "@components/types";
-import { ROUTES, SORT_BY, SORT_ORDER, en, fieldId, fieldType, userStatus } from "@constants";
+import {
+  ROUTES,
+  SORT_BY,
+  SORT_ORDER,
+  en,
+  fieldId,
+  fieldType,
+  FilterDropdownOptions,
+  userStatus,
+  UserRole,
+} from "@constants";
 import { AddUserFormData, FieldProps, TabType, Tenant, UserListUser, UserRoles } from "@types";
+import { getChipValue } from "@utils";
 
 export const USERS_PAGE_SIZE = 20;
 
@@ -48,7 +60,7 @@ export function useUserManagement(tenants: Tenant[]) {
     externalId: "",
     tenantId: "",
     roles: [],
-    credits: { consumedCredits: 0, newCredits: 0 },
+    credits: { consumedCredits: 0, creditLimit: 0 },
     description: "",
   };
 
@@ -64,6 +76,7 @@ export function useUserManagement(tenants: Tenant[]) {
   const [editUser] = useEditUserMutation();
   const [updateUserStatus] = useUpdateUserStatusMutation();
   const [changeRole] = useChangeRoleMutation();
+  const [addSimulationCreditLimit] = useAddSimulationCreditLimitMutation();
   const { data: userRoles } = useGetRoleQuery();
 
   const addFilterBtnRef = useRef<HTMLButtonElement>(null);
@@ -116,7 +129,11 @@ export function useUserManagement(tenants: Tenant[]) {
 
   useEffect(() => {
     if (!userRoles) return;
-    setRoles(userRoles);
+
+    const filteredRoles = userRoles.filter(
+      role => role.name !== UserRole.SUPER_ADMIN && role.name !== UserRole.CLIENT,
+    );
+    setRoles(filteredRoles);
   }, [userRoles]);
 
   const loadUsers = async (append = false) => {
@@ -124,16 +141,16 @@ export function useUserManagement(tenants: Tenant[]) {
     setUsersOffset(prev => (append ? prev + USERS_PAGE_SIZE : 0));
   };
 
+  // Filter chips are used to display the filter chips in the list toolbar
   const filterChips = useMemo(() => {
     const chips: Array<{ label: string; value: string; onClear: () => void }> = [];
     if (filters.organizations.length) {
-      const value =
-        filters.organizations.length > 1
-          ? `${filters.organizations[0]} +${filters.organizations.length - 1}`
-          : filters.organizations[0];
       chips.push({
-        label: en.userManagement.organization,
-        value,
+        label: FilterDropdownOptions.ORGANIZATION,
+        value:
+          filters.organizations.length > 1
+            ? `${filters.organizations[0]} +${filters.organizations.length - 1}`
+            : filters.organizations[0],
         onClear: () => {
           setFilters(previousFilters => ({ ...previousFilters, organizations: [] }));
           setTenantIdFilters([]);
@@ -141,21 +158,16 @@ export function useUserManagement(tenants: Tenant[]) {
       });
     }
     if (filters.roles.length) {
-      const value =
-        filters.roles.length > 1
-          ? `${filters.roles[0]} +${filters.roles.length - 1}`
-          : filters.roles[0];
       chips.push({
-        label: "Role",
-        value,
+        label: FilterDropdownOptions.ROLE,
+        value: getChipValue(filters.roles),
         onClear: () => setFilters(previousFilters => ({ ...previousFilters, roles: [] })),
       });
     }
     if (filters.statuses.length) {
-      const value = filters.statuses?.join(", ");
       chips.push({
-        label: "Status",
-        value,
+        label: FilterDropdownOptions.STATUS,
+        value: getChipValue(filters.statuses),
         onClear: () => setFilters(previousFilters => ({ ...previousFilters, statuses: [] })),
       });
     }
@@ -237,8 +249,8 @@ export function useUserManagement(tenants: Tenant[]) {
       await addUserdata(payload).unwrap();
       setAddUserModalOpen(false);
       userMethods.reset(defaultUserValues);
+      handleAddUserClose();
       toast.success("User added successfully");
-      // no manual reload required; subscribed query refetches due to invalidation
     } catch (error: any) {
       toast.error(error?.data?.message || "Failed to add user");
     }
@@ -322,9 +334,7 @@ export function useUserManagement(tenants: Tenant[]) {
   const handleChangeRole = async (data: any) => {
     try {
       const selectedRoleNames = data.roles || [];
-
       const groupIds = selectedRoleNames.map(name => roles.find(role => role.name === name)?.id);
-
       const payload = {
         userId: data.id,
         groupIds,
@@ -334,6 +344,21 @@ export function useUserManagement(tenants: Tenant[]) {
       toast.success("User role changed successfully");
     } catch (error: any) {
       toast.error(error?.data?.message || "Failed to change user role");
+    }
+  };
+
+  const handleAddCredit = async (data: { simulationCreditLimit: { creditLimit: number } }) => {
+    if (!selectedUser) return;
+    try {
+      const payload = {
+        userId: selectedUser.id,
+        creditLimit: data.simulationCreditLimit?.creditLimit,
+      };
+      await addSimulationCreditLimit(payload).unwrap();
+      handleDropdownClose();
+      toast.success("Credit added successfully");
+    } catch (error: any) {
+      toast.error(error?.data?.message || "Failed to add credit");
     }
   };
 
@@ -386,6 +411,7 @@ export function useUserManagement(tenants: Tenant[]) {
     handleActivateUser,
     handleAddUserClose,
     handleUserAddClick,
+    handleAddCredit,
 
     // user operations
     getField,

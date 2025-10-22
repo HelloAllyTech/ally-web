@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
@@ -18,9 +18,10 @@ export function useOrganizationManagement() {
   const [tenantsCount, setTenantsCount] = useState<number>(0);
   const [tenantsOffset, setTenantsOffset] = useState<number>(0);
 
-  // Form default values
-  const defaultTenantValues = {
-    name: "",
+  // Form default values (match field ids used in modal configuration)
+  const defaultTenantValues: { orgname: string; orgcode: string; description: string } = {
+    orgname: "",
+    orgcode: "",
     description: "",
   };
 
@@ -62,7 +63,7 @@ export function useOrganizationManagement() {
         return [...prev, ...newItems];
       });
     }
-    const count = tenantsResponse?.total || 0; // TODO: change this after backend is updated
+    const count = tenantsResponse?.count || 0;
     setTenantsCount(count);
   }, [tenantsResponse, tenantsOffset]);
 
@@ -72,28 +73,25 @@ export function useOrganizationManagement() {
 
   const handleNewgroupClick = () => {
     setSelectedTenant(null);
-    tenantMethods.reset({
-      name: "",
-      description: "",
-    });
+    tenantMethods.reset(defaultTenantValues);
     setAddOrganizationModalOpen(true);
   };
 
-  const handleCreateTenant = async (data: { name: string; description?: string }) => {
+  const handleCreateTenant = async (data: {
+    orgname: string;
+    orgcode: string;
+    description?: string;
+  }) => {
     try {
-      // TODO: remove this after backend is updated
-      // Generate code from name by converting to uppercase and replacing spaces with underscores
-      const code = data.name.toUpperCase().replace(/\s+/g, "_");
-
-      const tenantBody = {
-        name: data.name,
-        code: code,
+      const payload = {
+        name: data.orgname,
+        code: data.orgcode,
         description: data.description || "",
       };
 
-      await createTenant(tenantBody).unwrap();
+      await createTenant(payload).unwrap();
       setAddOrganizationModalOpen(false);
-      tenantMethods.reset();
+      tenantMethods.reset(defaultTenantValues);
       toast.success("Organization created successfully");
     } catch (error: any) {
       toast.error(error?.data?.message || "Failed to create organization");
@@ -103,37 +101,41 @@ export function useOrganizationManagement() {
   const onEditTenant = (tenant: Tenant) => {
     setSelectedTenant(tenant);
     tenantMethods.reset({
-      name: tenant.name,
-      description: tenant.description,
+      orgname: tenant.name ?? "",
+      orgcode: tenant.code ?? "",
+      description: tenant.description ?? "",
     });
     setAddOrganizationModalOpen(true);
   };
 
-  const handleEditTenant = async (data: { name: string; description?: string }) => {
+  const handleEditTenant = async (data: {
+    orgname: string;
+    orgcode: string;
+    description?: string;
+  }) => {
     if (!selectedTenant) return;
-
     try {
-      // TODO: remove this after backend is updated
-      // Generate code from name if name changed
-      const code = data.name.toUpperCase().replace(/\s+/g, "_");
-
-      const updateBody = {
-        name: data.name,
-        code: code,
+      const payload = {
+        name: data.orgname,
+        code: data.orgcode,
         description: data.description || "",
       };
 
-      await updateTenant({ id: selectedTenant.id, data: updateBody }).unwrap();
+      await updateTenant({ id: selectedTenant.id, data: payload }).unwrap();
       setAddOrganizationModalOpen(false);
       setSelectedTenant(null);
-      tenantMethods.reset();
+      tenantMethods.reset(defaultTenantValues);
       toast.success("Organization updated successfully");
     } catch (error: any) {
       toast.error(error?.data?.message || "Failed to update organization");
     }
   };
 
-  const handleTenantFormSubmit = async (data: { name: string; description?: string }) => {
+  const handleTenantFormSubmit = async (data: {
+    orgname: string;
+    orgcode: string;
+    description?: string;
+  }) => {
     if (selectedTenant) {
       await handleEditTenant(data);
     } else {
@@ -144,7 +146,7 @@ export function useOrganizationManagement() {
   const onCloseOrganizationEditModal = () => {
     setAddOrganizationModalOpen(false);
     setSelectedTenant(null);
-    tenantMethods.reset();
+    tenantMethods.reset(defaultTenantValues);
   };
 
   return {

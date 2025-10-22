@@ -11,7 +11,7 @@ import {
   EditUserBody,
   UserRoles,
   GetCreditResponse,
-  AddSimulationBody,
+  AddCreditBody,
 } from "@types";
 
 const userManagementAPI = baseAPI.injectEndpoints({
@@ -36,7 +36,7 @@ const userManagementAPI = baseAPI.injectEndpoints({
     updateTenant: builder.mutation<Tenant, { id: string; data: Partial<CreateTenantBody> }>({
       query: ({ id, data }) => ({
         url: `${ApiEndpoints.USER_MANAGEMENT.TENANTS}/${id}`,
-        method: HttpMethod.PUT,
+        method: HttpMethod.PATCH,
         body: data,
       }),
       invalidatesTags: [TAG_TYPES.TENANTS],
@@ -107,7 +107,7 @@ const userManagementAPI = baseAPI.injectEndpoints({
       }),
     }),
 
-    addSimulationCreditLimit: builder.mutation<{ success: boolean }, AddSimulationBody>({
+    addSimulationCreditLimit: builder.mutation<{ success: boolean }, AddCreditBody>({
       query: body => ({
         url: `${ApiEndpoints.USER_MANAGEMENT.SIMULATION_CREDITS}`,
         method: HttpMethod.PUT,

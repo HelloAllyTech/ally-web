@@ -10,6 +10,8 @@ export const DropdownwithTag: React.FC<dropdownWithTagProps> = ({
   options,
   initialValue,
   onChange,
+  placeholder,
+  required = false,
 }) => {
   const [open, setOpen] = useState(false);
   const [value, setValue] = useState(initialValue);
@@ -37,34 +39,43 @@ export const DropdownwithTag: React.FC<dropdownWithTagProps> = ({
 
   return (
     <>
-      <div className="flex gap-1 text-[14px] text-gray-800">
-        {en.userManagement.currentRoles}
-        {initialValue.map((roleName, index) => (
-          <span key={roleName} className="text-gray-600">
-            {formatCapitalizedEnum(roleName)}
-            {index < initialValue.length - 1 ? ", " : ""}
-          </span>
-        ))}
-      </div>
+      {initialValue.length > 0 && (
+        <div className="flex gap-1 text-[14px] text-gray-800">
+          {en.userManagement.currentRoles}
+          {initialValue.map((roleName, index) => (
+            <span key={roleName} className="text-gray-600">
+              {formatCapitalizedEnum(roleName)}
+              {index < initialValue.length - 1 ? ", " : ""}
+            </span>
+          ))}
+        </div>
+      )}
 
       <div className="w-full" onClick={() => setOpen(!open)}>
-        <label className="block text-gray-800 mb-2 font-['Replay_Pro'] text-[14px]">{label}</label>
+        <label className="block text-gray-800 mb-2 font-['Replay_Pro'] text-[14px]">
+          {label} {required && <span className="text-red-500">*</span>}
+        </label>
         <div className="relative">
           <div
             className="border border-gray-200 rounded-md flex flex-wrap items-center gap-2 px-2 py-1 min-h-[40px] cursor-pointer"
             onClick={() => setOpen(!open)}
           >
-            {value.map(roleName => (
-              <span
-                key={roleName}
-                className="flex items-center bg-gray-100 text-gray-700 pl-3 rounded-full text-sm"
-              >
-                {formatCapitalizedEnum(roleName)}
-                <button className="px-2" onClick={e => handleClose(e, roleName)}>
-                  <Close />
-                </button>
-              </span>
-            ))}
+            {value.length > 0 ? (
+              value.map(roleName => (
+                <span
+                  key={roleName}
+                  className="flex items-center bg-gray-100 text-gray-700 pl-3 rounded-full text-sm"
+                >
+                  {formatCapitalizedEnum(roleName)}
+                  <button className="px-2" onClick={e => handleClose(e, roleName)}>
+                    <Close />
+                  </button>
+                </span>
+              ))
+            ) : (
+              <span className="text-gray-400 text-sm font-['Replay_Pro']">{placeholder}</span>
+            )}
+
             <div className="ml-auto text-gray-500">
               <ArrowSolid />
             </div>

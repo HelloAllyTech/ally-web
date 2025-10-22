@@ -107,6 +107,7 @@ export const en = {
     simulationPreview: "Simulation Preview",
   },
   userManagement: {
+    newGroup: "New group",
     users: "Users",
     organizations: "Organizations",
     userManagement: "User Management",
@@ -140,7 +141,7 @@ export const en = {
     editDetails: "Edit Details",
     changeRole: "Change User Role",
     suspendUserConfirmation: (name: string) =>
-      `Are you sure you want to suspend "${name}"? They won't be able to log in until reactivated.`,
+      `Are you sure you want to suspend "**${name}**"? They won't be able to log in until reactivated.`,
     removeUserConfirmation: (name: string) =>
       `Are you sure you want to remove "${name}"? This action cannot be undone.`,
     suspendUser: "Suspend User",
@@ -155,16 +156,18 @@ export const en = {
     selectOrg: "Select Organization",
     grantAccess: "Grant Access",
     grantAccessConfirmation: (name: string) =>
-      `Are you sure you want to grant access to "${name}"? They will be able to log in and use the system.`,
+      `Are you sure you want to grant access to "**${name}**"? They will be able to log in and use the system.`,
     consumedCredits: "Consumed credits",
     newCreditLimit: "New credit limit",
     oneCreditInMin: "1 credit = 1 min",
     creditsUsage: "Credits usage",
-    activateUserConfirmation: (name: string) =>
-      `Are you sure you want to activate "${name}"? This action cannot be undone.`,
     currentRoles: "Current roles:",
     textAreaUpperLimit: "Maximum 500 characters allowed",
     maxCharError: (count: number) => `Maximum ${count} characters allowed`,
     changeRoleErrorMessage: "At least one role must be selected",
+    creditRequiredError: "Credit details are required",
+    creditNotNegativeError: "Credits cannot be negative",
+    creditLimitError: "Maximum credit limit is 10,000",
+    code: "Code",
   },
 };

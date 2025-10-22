@@ -1,11 +1,11 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 
 import { Trash } from "@assets";
-import { FilterDropdownProps, FilterDropdownType, FilterValues } from "@components/types";
+import { FilterDropdownProps, FilterValues } from "@components/types";
 import {
   KeyboardKeys,
   en,
-  filterDropdownOptions,
+  FilterDropdownOptions,
   userRoleItems,
   userStatusItems,
 } from "@constants";
@@ -24,21 +24,33 @@ export const FilterDropdown: React.FC<FilterDropdownProps> = ({
   const orgItems = organizations || [];
 
   const menuItems = [
-    { id: FilterDropdownType.ROLE, label: filterDropdownOptions.ROLE },
-    { id: FilterDropdownType.ORGANIZATION, label: filterDropdownOptions.ORGANIZATION },
-    { id: FilterDropdownType.STATUS, label: filterDropdownOptions.STATUS },
+    FilterDropdownOptions.ROLE,
+    FilterDropdownOptions.ORGANIZATION,
+    FilterDropdownOptions.STATUS,
   ];
 
-  const [viewSubList, setViewSubList] = useState<FilterDropdownType | null>(null);
+  const [viewSubList, setViewSubList] = useState<FilterDropdownOptions | null>(null);
   const [selectedFilters, setSelectedFilters] = useState<Record<string, Record<string, boolean>>>({
     organizations: {},
     roles: {},
     statuses: {},
   });
 
+  const selectedCounts = useMemo(
+    () => ({
+      [FilterDropdownOptions.ORGANIZATION]: Object.values(selectedFilters.organizations).filter(
+        Boolean,
+      ).length,
+      [FilterDropdownOptions.ROLE]: Object.values(selectedFilters.roles).filter(Boolean).length,
+      [FilterDropdownOptions.STATUS]: Object.values(selectedFilters.statuses).filter(Boolean)
+        .length,
+    }),
+    [selectedFilters],
+  );
+
   useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === KeyboardKeys.ESCAPE) onClose();
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === KeyboardKeys.ESCAPE) onClose();
     };
     if (isOpen) {
       window.addEventListener(KeyboardKeys.KEYDOWN, onKey);
@@ -51,22 +63,23 @@ export const FilterDropdown: React.FC<FilterDropdownProps> = ({
   }, [isOpen, onClose]);
 
   useEffect(() => {
+    // Initialize selected filters based on current filters
+    const initializeFilterSection = (items: string[], selectedItems: string[]) => {
+      return items.reduce(
+        (accumulator, itemName) => ({
+          ...accumulator,
+          [itemName]: selectedItems.includes(itemName),
+        }),
+        {},
+      );
+    };
+
     setSelectedFilters({
-      organizations:
-        organizations?.reduce(
-          (acc, name) => ({ ...acc, [name]: currentFilters.organizations.includes(name) }),
-          {},
-        ) || {},
-      roles: userRoleItems.reduce(
-        (acc, name) => ({ ...acc, [name]: currentFilters.roles.includes(name) }),
-        {},
-      ),
-      statuses: userStatusItems.reduce(
-        (acc, name) => ({ ...acc, [name]: currentFilters.statuses.includes(name) }),
-        {},
-      ),
+      organizations: initializeFilterSection(orgItems, currentFilters.organizations),
+      roles: initializeFilterSection(userRoleItems, currentFilters.roles),
+      statuses: initializeFilterSection(userStatusItems, currentFilters.statuses),
     });
-  }, [currentFilters, organizations]);
+  }, [currentFilters, organizations, orgItems]);
 
   if (!isOpen) return null;
 
@@ -147,18 +160,18 @@ export const FilterDropdown: React.FC<FilterDropdownProps> = ({
   const renderRightPanel = () => {
     let children = null;
     switch (viewSubList) {
-      case FilterDropdownType.ORGANIZATION:
+      case FilterDropdownOptions.ORGANIZATION:
         children = renderSelectablePanel(
-          filterDropdownOptions.ORGANIZATION,
+          FilterDropdownOptions.ORGANIZATION,
           orgItems,
           "organizations",
         );
         break;
-      case FilterDropdownType.ROLE:
-        children = renderSelectablePanel(filterDropdownOptions.ROLE, userRoleItems, "roles");
+      case FilterDropdownOptions.ROLE:
+        children = renderSelectablePanel(FilterDropdownOptions.ROLE, userRoleItems, "roles");
         break;
-      case FilterDropdownType.STATUS:
-        children = renderSelectablePanel(filterDropdownOptions.STATUS, userStatusItems, "statuses");
+      case FilterDropdownOptions.STATUS:
+        children = renderSelectablePanel(FilterDropdownOptions.STATUS, userStatusItems, "statuses");
         break;
       default:
         children = null;
@@ -169,7 +182,7 @@ export const FilterDropdown: React.FC<FilterDropdownProps> = ({
     return (
       <div
         className="fixed z-[9999] min-w-[220px] bg-white border border-gray-200 shadow-lg rounded-lg p-4"
-        style={{ top, left: anchorRect ? anchorRect.left + listWidth + 20 : left + listWidth + 20 }}
+        style={{ top, left: anchorRect ? anchorRect.left + listWidth + 10 : left + listWidth + 20 }}
       >
         {children}
         <div className="border-t mt-3 pt-3 flex justify-end">
@@ -188,22 +201,26 @@ export const FilterDropdown: React.FC<FilterDropdownProps> = ({
     <div>
       <div className="fixed inset-0 z-[9998]" onClick={onClose} />
       <div
-        className={`fixed z-[9999] w-[${listWidth}px] bg-white border border-gray-200 shadow-lg rounded-lg p-2`}
+        className={`fixed z-[9999] w-[${listWidth}px] bg-white border border-gray-200 shadow-lg rounded-lg`}
         style={{ top, left }}
       >
         {menuItems.map(item => {
-          const isActive = viewSubList === item.id;
+          const isActive = viewSubList === item;
+          const count = selectedCounts[item] ?? 0;
           return (
             <button
-              key={item.id}
-              className={`block w-full font-normal text-[14px] text-left px-4 py-2 rounded-md transition-colors ${
+              key={item}
+              className={`block font-normal text-[14px] text-left px-4 py-2 m-2 rounded-md transition-colors ${
                 isActive ? "bg-gray-100 text-gray-900" : "hover:bg-gray-50 text-gray-800"
               }`}
-              onClick={() => setViewSubList(item.id)}
-              style={{ width: listWidth }}
+              onClick={() => setViewSubList(item)}
+              style={{ width: listWidth - 20 }}
               aria-pressed={isActive}
             >
-              {item.label}
+              <div className="flex items-center justify-between">
+                <span>{item}</span>
+                {count > 0 && <span className="text-blue-600">{count}</span>}
+              </div>
             </button>
           );
         })}

@@ -2,10 +2,10 @@ import React from "react";
 
 import { ProfileCard } from "@components";
 import { en } from "@constants";
-import { CreditFieldProps, InputProps } from "@types";
+import { CreditFieldProps } from "@types";
 
 export const CreditField: React.FC<CreditFieldProps> = ({
-  value = { consumedCredits: 0, newCredits: 0 },
+  value = { consumedCredits: 0, creditLimit: 0 },
   onChange,
   userData,
 }) => {
@@ -14,7 +14,7 @@ export const CreditField: React.FC<CreditFieldProps> = ({
       <ProfileCard
         user={userData}
         consumedCredits={value?.consumedCredits ?? 0}
-        newCredits={value?.newCredits ?? 0}
+        creditLimit={value?.creditLimit ?? 0}
         showCredits={true}
       />
       <div className="flex gap-4 border-t pt-3">
@@ -33,8 +33,8 @@ export const CreditField: React.FC<CreditFieldProps> = ({
           <input
             type="number"
             className="border rounded-md py-2 outline-none font-['Replay_Pro'] w-full p-2"
-            value={value?.newCredits === 0 ? "" : value?.newCredits}
-            onChange={e => onChange({ ...value, newCredits: Number(e.target.value) })}
+            value={value?.creditLimit === 0 ? "" : value?.creditLimit}
+            onChange={e => onChange({ ...value, creditLimit: Number(e.target.value) })}
           />
         </div>
       </div>

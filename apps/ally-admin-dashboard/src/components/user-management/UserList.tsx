@@ -7,9 +7,9 @@ import { formatCapitalizedEnum } from "@utils";
 
 const StatusBadge: React.FC<{ status: userStatus | string }> = ({ status }) => {
   const STATUS_STYLES: Record<string, { dot: string; bg: string; text: string }> = {
-    ACTIVE: { dot: "bg-green-500", bg: "bg-green-100", text: "text-black-700" },
+    ACTIVE: { dot: "bg-[#66BB6A]", bg: "bg-[#E8F5E9]", text: "text-black-700" },
     INACTIVE: { dot: "bg-gray-400", bg: "bg-gray-100", text: "text-black-700" },
-    SUSPENDED: { dot: "bg-red-500", bg: "bg-red-100", text: "text-black-700" },
+    SUSPENDED: { dot: "bg-[#FE6F64]", bg: "bg-[#FBE9E7]", text: "text-black-700" },
     BLOCKED: { dot: "bg-red-500", bg: "bg-red-100", text: "text-black-700" },
   };
 
@@ -63,23 +63,22 @@ export const UserList: React.FC<UserListProps> = ({
     setAnchorElement(null);
   };
 
-  const renderHeader = () => {
-    return (
-      <div className="grid [grid-template-columns:repeat(48,minmax(0,0.8fr))] px-4 py-2 text-[14px] text-gray-500 border-b border-gray-200">
-        <div className="col-span-11 pr-1">{en.userManagement.user}</div>
-        <div className="col-span-6 pr-1">{en.userManagement.telephonyId}</div>
-        <div className="col-span-8 pr-1">{en.userManagement.role}</div>
-        <div className="col-span-8 pr-1">{en.userManagement.organization}</div>
-        <div className="col-span-4 pr-1">{en.userManagement.credits}</div>
-        <div className="col-span-6 pr-1">{en.userManagement.addedOn}</div>
-        <div className="col-span-5 pr-1">{en.userManagement.status}</div>
-      </div>
-    );
-  };
+  const tableHeader = (
+    <div className="grid [grid-template-columns:repeat(48,minmax(0,0.8fr))] px-4 py-2 text-[14px] text-gray-500 border-b border-gray-200">
+      <div className="col-span-11 pr-1">{en.userManagement.user}</div>
+      <div className="col-span-6 pr-1">{en.userManagement.telephonyId}</div>
+      <div className="col-span-8 pr-1">{en.userManagement.role}</div>
+      <div className="col-span-8 pr-1">{en.userManagement.organization}</div>
+      <div className="col-span-4 pr-1">{en.userManagement.credits}</div>
+      <div className="col-span-6 pr-1">{en.userManagement.addedOn}</div>
+      <div className="col-span-5 pr-1">{en.userManagement.status}</div>
+    </div>
+  );
+
   return (
     <div className="w-full overflow-x-auto text-[13px] text-gray-600">
       <div className="min-w-[900px]">
-        {renderHeader()}
+        {tableHeader}
 
         <div className="h-[calc(100vh-270px)] overflow-y-auto">
           {users.map(user => (
@@ -94,7 +93,7 @@ export const UserList: React.FC<UserListProps> = ({
                   <div className="text-gray-500 truncate">{user.email}</div>
                 </div>
               </div>
-              <div className="col-span-6 pr-1">{user.telephonyId}</div>
+              <div className="col-span-6 pr-1">{user.externalId}</div>
               <div className="col-span-8 pr-[15px]">
                 {user.roles?.length
                   ? user.roles.map(role => formatCapitalizedEnum(role)).join(", ")
