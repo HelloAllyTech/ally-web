@@ -60,7 +60,7 @@ export function useUserManagement(tenants: Tenant[]) {
     externalId: "",
     tenantId: "",
     roles: [],
-    credits: { consumedCredits: 0, creditLimit: 0 },
+    simulationCreditLimit: 0,
     description: "",
   };
 
@@ -224,7 +224,7 @@ export function useUserManagement(tenants: Tenant[]) {
     userMethods.reset({
       name: user.name,
       email: user.email,
-      externalId: user.telephonyId,
+      externalId: user.externalId,
       tenantId: user.tenantId,
       roles: user.roles || [],
     });
@@ -244,7 +244,7 @@ export function useUserManagement(tenants: Tenant[]) {
         roles: data?.roles,
         externalId: data?.externalId,
         tenantId: data?.tenantId,
-        credits: data?.credits,
+        simulationCreditLimit: data?.simulationCreditLimit,
       };
       await addUserdata(payload).unwrap();
       setAddUserModalOpen(false);

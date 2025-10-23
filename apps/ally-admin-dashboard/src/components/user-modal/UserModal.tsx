@@ -216,7 +216,6 @@ export const UserModal: React.FC<UserModalProps> = ({
         render={({ field: controllerField, fieldState }) => (
           <>
             <CreditField
-              value={controllerField.value}
               onChange={controllerField.onChange}
               userData={details}
               required={field.required}

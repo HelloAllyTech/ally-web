@@ -7,7 +7,7 @@ import { useCreateTenantMutation, useUpdateTenantMutation, useGetTenantsQuery } 
 import { SORT_BY, SORT_ORDER } from "@constants";
 import { Tenant } from "@types";
 
-export const TENANTS_PAGE_SIZE = 10;
+export const TENANTS_PAGE_SIZE = 30;
 
 export function useOrganizationManagement() {
   const [orgSearch, setOrgSearch] = useState<string>("");

@@ -46,11 +46,6 @@ export enum TabType {
   ORGANIZATIONS = "organizations",
 }
 
-interface UserCredits {
-  consumedCredits: number;
-  creditLimit: number;
-}
-
 export interface UserListUser {
   id: number;
   name: string;
@@ -65,9 +60,9 @@ export interface UserListUser {
   createdAt: string; // ISO date
   updatedAt: string; // ISO date
   roles: string[];
-  credits: UserCredits;
   creditLimit: number | null;
   consumedCredits: number | null;
+  secondsAllowedPerCredit: number;
 }
 
 export interface UserListProps {
@@ -139,7 +134,7 @@ export type AddUserFormData = {
   externalId: string;
   tenantId: string;
   roles: string[];
-  credits: number;
+  simulationCreditLimit: number;
 };
 
 export interface UserModalProps {
@@ -192,8 +187,7 @@ export interface UserRoles {
 }
 
 export interface CreditFieldProps {
-  value: { consumedCredits: number; creditLimit: number };
-  onChange: (value: { consumedCredits: number; creditLimit: number }) => void;
+  onChange: (newCreditLimit: number) => void;
   userData: UserListUser;
   required: boolean;
 }
@@ -207,11 +201,4 @@ export interface GetCreditResponse {
 export interface AddCreditBody {
   userId: number;
   creditLimit: number;
-}
-
-export interface InputProps {
-  id: keyof CreditFieldProps["value"];
-  label: string;
-  type?: string;
-  disabled?: boolean;
 }

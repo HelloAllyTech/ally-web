@@ -27,7 +27,7 @@ const StatusBadge: React.FC<{ status: userStatus | string }> = ({ status }) => {
 const Avatar: React.FC<{ name: string }> = ({ name }) => {
   const initial = name?.[0]?.toUpperCase() ?? "?";
   return (
-    <div className="w-[40px] h-[40px] rounded-full border border-gray-200 text-gray-500 flex items-center justify-center mr-3">
+    <div className="min-w-[40px] min-h-[40px] rounded-full border border-gray-200 text-gray-500 flex items-center justify-center mr-3">
       {initial}
     </div>
   );
@@ -64,7 +64,7 @@ export const UserList: React.FC<UserListProps> = ({
   };
 
   const tableHeader = (
-    <div className="grid [grid-template-columns:repeat(48,minmax(0,0.8fr))] px-4 py-2 text-[14px] text-gray-500 border-b border-gray-200">
+    <div className="grid [grid-template-columns:repeat(48,minmax(0,1fr))] px-4 py-2 text-[14px] text-gray-500 border-b border-gray-200">
       <div className="col-span-11 pr-1">{en.userManagement.user}</div>
       <div className="col-span-6 pr-1">{en.userManagement.telephonyId}</div>
       <div className="col-span-8 pr-1">{en.userManagement.role}</div>
@@ -89,19 +89,21 @@ export const UserList: React.FC<UserListProps> = ({
               <div className="col-span-11 justify-start flex items-center min-w-0 overflow-hidden ">
                 <Avatar name={user.name} />
                 <div className="min-w-0">
-                  <div className="truncate  max-w-[250px]">{formatCapitalizedEnum(user.name)}</div>
-                  <div className="text-gray-500 truncate">{user.email}</div>
+                  <div className="truncate pr-5 ">{formatCapitalizedEnum(user.name)}</div>
+                  <div className="text-gray-500 truncate pr-5">{user.email}</div>
                 </div>
               </div>
               <div className="col-span-6 pr-1">{user.externalId}</div>
-              <div className="col-span-8 pr-[15px]">
+              <div className="col-span-8 pr-5">
                 {user.roles?.length
                   ? user.roles.map(role => formatCapitalizedEnum(role)).join(", ")
                   : user.role
                     ? formatCapitalizedEnum(user.role)
                     : "--"}
               </div>
-              <div className="col-span-8 pr-1">{user.organization ?? "--"}</div>
+              <div className="col-span-8 pr-5 whitespace-nowrap truncate">
+                {formatCapitalizedEnum(user.organization) ?? "--"}
+              </div>
               <div className="col-span-4 pr-1">
                 {typeof user.consumedCredits === "number" && typeof user.creditLimit === "number"
                   ? `${user.consumedCredits}/${user.creditLimit} min`

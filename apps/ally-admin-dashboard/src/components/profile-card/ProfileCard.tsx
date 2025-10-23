@@ -7,17 +7,10 @@ import { formatCapitalizedEnum } from "@utils";
 
 interface ProfileFieldProps {
   user: UserListUser;
-  consumedCredits?: number;
-  creditLimit?: number;
   showCredits?: boolean;
 }
 
-export const ProfileCard: React.FC<ProfileFieldProps> = ({
-  user,
-  consumedCredits = 0,
-  creditLimit = 0,
-  showCredits = false,
-}) => {
+export const ProfileCard: React.FC<ProfileFieldProps> = ({ user, showCredits = false }) => {
   const Avatar: React.FC<{ name: string }> = ({ name }) => {
     const initial = name?.[0]?.toUpperCase() ?? "?";
     return (
@@ -42,8 +35,8 @@ export const ProfileCard: React.FC<ProfileFieldProps> = ({
           <div className="flex items-center gap-2">
             <Bolt />
             <div>
-              <span className="text-red-500 text-3xl">{consumedCredits}</span>
-              <span className="text-gray-500"> / {creditLimit}</span>
+              <span className="text-red-500 text-3xl">{user.consumedCredits}</span>
+              <span className="text-gray-500"> / {user.creditLimit}</span>
             </div>
           </div>
         </div>
