@@ -1,0 +1,13 @@
+import { CALL_PERMISSIONS, Permissions, SESSION_LOGS_PERMISSIONS } from "@src/constants";
+
+export const hasCallPermission = (permissions: Permissions[]) =>
+  permissions?.some(permission => CALL_PERMISSIONS.includes(permission));
+
+export const hasLearnPermission = (permissions: Permissions[]) =>
+  permissions?.find(permission => permission === Permissions.EDIT_SCENARIO_SESSION);
+
+export const hasAnalyticsPermission = (permissions: Permissions[]) =>
+  permissions?.find(permission => permission === Permissions.VIEW_ANALYTICS_DASHBOARD);
+
+export const hasSessionLogsPermission = (permissions: Permissions[]) =>
+  permissions?.some(permission => SESSION_LOGS_PERMISSIONS.includes(permission));

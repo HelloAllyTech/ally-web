@@ -42,20 +42,13 @@ exports[`Calls Component > Snapshot Testing > should match snapshot 1`] = `
           <button
             data-testid="mock-button"
           >
-            Mark Away
-          </button>
-          <div>
-            <button
-              data-testid="mock-button"
+            <div
+              data-testid="upload-icon"
             >
-              <div
-                data-testid="upload-icon"
-              >
-                Upload
-              </div>
-              Upload audio
-            </button>
-          </div>
+              Upload
+            </div>
+            Upload audio
+          </button>
         </div>
       </div>
       <div
@@ -92,17 +85,15 @@ exports[`Calls Component > Snapshot Testing > should match snapshot 1`] = `
         Close Dialog
       </button>
     </div>
-    <div>
-      <div
-        data-is-open="false"
-        data-testid="audio-upload-dialog"
+    <div
+      data-is-open="false"
+      data-testid="audio-upload-dialog"
+    >
+      <button
+        data-testid="close-audio-dialog"
       >
-        <button
-          data-testid="close-audio-dialog"
-        >
-          Close Audio Dialog
-        </button>
-      </div>
+        Close Audio Dialog
+      </button>
     </div>
   </div>
 </DocumentFragment>
@@ -137,18 +128,26 @@ exports[`Calls Component > Snapshot Testing > should match snapshot with admin r
         <div
           class="flex gap-2 items-center"
         >
-          <div>
-            <button
-              data-testid="mock-button"
+          <button
+            data-testid="mock-button"
+          >
+            <div
+              data-testid="start-session-icon"
             >
-              <div
-                data-testid="upload-icon"
-              >
-                Upload
-              </div>
-              Upload audio
-            </button>
-          </div>
+              StartSession
+            </div>
+            Start Session
+          </button>
+          <button
+            data-testid="mock-button"
+          >
+            <div
+              data-testid="upload-icon"
+            >
+              Upload
+            </div>
+            Upload audio
+          </button>
         </div>
       </div>
       <div
@@ -185,17 +184,15 @@ exports[`Calls Component > Snapshot Testing > should match snapshot with admin r
         Close Dialog
       </button>
     </div>
-    <div>
-      <div
-        data-is-open="false"
-        data-testid="audio-upload-dialog"
+    <div
+      data-is-open="false"
+      data-testid="audio-upload-dialog"
+    >
+      <button
+        data-testid="close-audio-dialog"
       >
-        <button
-          data-testid="close-audio-dialog"
-        >
-          Close Audio Dialog
-        </button>
-      </div>
+        Close Audio Dialog
+      </button>
     </div>
   </div>
 </DocumentFragment>

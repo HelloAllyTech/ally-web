@@ -4,9 +4,9 @@ import { motion } from "framer-motion";
 
 import { Refresh, StartSession, UploadIcon } from "@assets";
 import { Button, PermissionGuard, ToggleButtonGroup } from "@components";
-import { CallType, Permissions } from "@constants";
+import { Permissions } from "@constants";
 import { useUser } from "@hooks";
-import { UserRole, UserStatus, SessionType } from "@types";
+import { UserRole, SessionType } from "@types";
 
 import {
   AudioUploadDialog,
@@ -23,7 +23,7 @@ export const Calls: FC = () => {
   const [sessionTypeOptions, setSessionTypeOptions] = useState([]);
   const [isAudioUploadDialogOpen, setIsAudioUploadDialogOpen] = useState(false);
 
-  const { availableChatTypes, updateUserStatus, user, userStatus, permissions } = useUser();
+  const { user, permissions } = useUser();
 
   useEffect(() => {
     const permittedSessionTypeOptions = getPermittedSessionTypeOptions(permissions);
@@ -33,10 +33,6 @@ export const Calls: FC = () => {
   }, [permissions]);
 
   const isAdmin = user?.role === UserRole.ADMIN;
-
-  const handleUserStatusChange = () => {
-    updateUserStatus(userStatus === UserStatus.OFFLINE ? UserStatus.AVAILABLE : UserStatus.OFFLINE);
-  };
 
   const handleStartSession = () => {
     setIsStartSessionDialogOpen(true);
@@ -64,17 +60,12 @@ export const Calls: FC = () => {
             />
           </div>
           <div className="flex gap-2 items-center">
-            {!isAdmin && availableChatTypes?.includes(CallType.MICROPHONE_CHAT) && (
+            <PermissionGuard requiredPermissions={[Permissions.START_MICROPHONE_CHAT]}>
               <Button onClick={handleStartSession}>
                 <StartSession />
                 Start Session
               </Button>
-            )}
-            {!isAdmin && availableChatTypes?.includes(CallType.WEBRTC_CHAT) && (
-              <Button onClick={handleUserStatusChange}>
-                {userStatus === UserStatus.OFFLINE ? "Mark Available" : "Mark Away"}
-              </Button>
-            )}
+            </PermissionGuard>
             <PermissionGuard requiredPermissions={[Permissions.VIEW_AUDIO_UPLOAD]}>
               <Button onClick={() => setIsAudioUploadDialogOpen(true)}>
                 <UploadIcon />

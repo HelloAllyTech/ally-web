@@ -23,7 +23,6 @@ import { RefreshResponse } from "@types";
 
 // Environment variables for API configuration
 const API_URL = import.meta.env.VITE_API_BASE_URL;
-const VITE_API_VERSION = import.meta.env.VITE_API_VERSION;
 
 /**
  * Handles user logout by clearing tokens, cache, and redirecting to login
@@ -45,7 +44,7 @@ const handleLogout = () => {
  * The base URL is constructed from environment variables.
  */
 const baseQuery = fetchBaseQuery({
-  baseUrl: API_URL + "/api/" + VITE_API_VERSION,
+  baseUrl: API_URL + "/api",
   prepareHeaders: headers => {
     const token = localStorage.getItem(LOCAL_STORAGE_KEYS.ACCESS_TOKEN);
     if (token) {

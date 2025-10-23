@@ -12,9 +12,8 @@ import {
   NAVIGATION_ITEM_IDS,
   NAVIGATION_ITEM_PERMISSIONS,
 } from "@constants";
-import { setUser, authenticate, unauthenticate, setPermissions, setUserStatus } from "@reducer";
+import { setUser, authenticate, unauthenticate, setPermissions } from "@reducer";
 import { RootState, store } from "@store";
-import { UserAvailabilityStatus } from "@types";
 
 export const useUser = () => {
   const isAuthenticated = useSelector((state: RootState) => state.user.isAuthenticated);
@@ -93,15 +92,6 @@ export const useUser = () => {
     localStorage.removeItem(LOCAL_STORAGE_KEYS.ADMIN_REFRESH_TOKEN);
   };
 
-  /**
-   * Updates the user status in both localStorage and Redux store.
-   * @param {UserStatus} status - The new user status to set
-   */
-  const updateUserStatus = (status: UserAvailabilityStatus) => {
-    localStorage.setItem(LOCAL_STORAGE_KEYS.ADMIN_USER_STATUS, status);
-    store.dispatch(setUserStatus(status));
-  };
-
   const filteredNavigationItems = useMemo(() => {
     // Return empty array if permissions are not loaded yet
     if (!permissions || permissions.length === 0) {
@@ -129,7 +119,6 @@ export const useUser = () => {
     logout,
     permissions,
     setUser,
-    updateUserStatus,
     user,
     userStatus,
     filteredNavigationItems,

@@ -11,7 +11,6 @@ import { ApiEndpoints, HttpMethod, LOCAL_STORAGE_KEYS, ROUTES, TAG_TYPES, en } f
 import { RefreshResponse } from "@types";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
-const API_VERSION = import.meta.env.VITE_API_VERSION;
 
 const handleLogout = () => {
   localStorage.removeItem(LOCAL_STORAGE_KEYS.ADMIN_ACCESS_TOKEN);
@@ -22,7 +21,7 @@ const handleLogout = () => {
 };
 
 const baseQuery = fetchBaseQuery({
-  baseUrl: `${API_BASE_URL}/api/${API_VERSION}`,
+  baseUrl: `${API_BASE_URL}/api`,
   prepareHeaders: headers => {
     const token = localStorage.getItem(LOCAL_STORAGE_KEYS.ADMIN_ACCESS_TOKEN);
     if (token) {

@@ -126,6 +126,7 @@ describe("FeedbackSection", () => {
           emoji: "🎯",
           message: "Session started",
         },
+        occurredAt: "2024-01-01T10:15:00Z",
       },
       {
         eventId: "event-2",
@@ -138,6 +139,7 @@ describe("FeedbackSection", () => {
           emoji: "💬",
           message: "First interaction",
         },
+        occurredAt: "",
       },
     ],
     hasFeedback: true,

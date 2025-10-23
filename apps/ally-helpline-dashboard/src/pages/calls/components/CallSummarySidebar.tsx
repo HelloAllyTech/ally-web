@@ -5,12 +5,12 @@ import { useSelector } from "react-redux";
 import { logger } from "@ally-ui-mono/ui-shared";
 import { useLazyExportCallSummaryQuery, useUpdateCallSummaryMutation } from "@api";
 import { Delete, Download } from "@assets";
-import { CallProvider } from "@constants";
+import { CallProvider, Permissions } from "@constants";
 import { FeedbackDialog } from "@containers";
 import { useFileExport } from "@hooks";
 import CallSummary from "@pages/post-call-summary/components/CallSummary";
 import { RootState } from "@store";
-import { ChatSummaryStatus, SessionType, UserRole } from "@types";
+import { ChatSummaryStatus, SessionType } from "@types";
 
 import {
   SummaryHeader,
@@ -21,19 +21,12 @@ import {
 import { SUMMARY_FEEDBACK_TIMEOUT } from "./constants";
 import { CallSummarySidebarProps } from "./types";
 
-// TODO: Added only for removing lint error - remove and find actual solution
-declare global {
-  interface Window {
-    handleCommentClick: (comment: string) => void;
-  }
-}
-
 const CallSummarySidebar: FC<CallSummarySidebarProps> = ({
   callSummary,
   refetchCallLogs,
   setCallSummary,
 }) => {
-  const { user } = useSelector((state: RootState) => state.user);
+  const { permissions } = useSelector((state: RootState) => state.user);
 
   const [selectedComment, setSelectedComment] = useState<string>("");
   const [deleteDialogChatId, setDeleteDialogChatId] = useState<number | null>(null);
@@ -43,10 +36,8 @@ const CallSummarySidebar: FC<CallSummarySidebarProps> = ({
   const startTimeRef = useRef<number | null>(null);
 
   const [exportCallSummary] = useLazyExportCallSummaryQuery();
-  const [updateCallSummary] = useUpdateCallSummaryMutation();
 
   const { exportTxtFromText } = useFileExport();
-  const isAdmin = user?.role === UserRole.ADMIN;
 
   useEffect(() => {
     if (callSummary?.details?.callInfo?.summaryName) {
@@ -135,6 +126,8 @@ const CallSummarySidebar: FC<CallSummarySidebarProps> = ({
     </div>
   );
 
+  const hasAdequatePermission = (permission: Permissions) => permissions?.includes(permission);
+
   const extraHeaderList = [
     {
       alt: "Delete Log",
@@ -142,14 +135,18 @@ const CallSummarySidebar: FC<CallSummarySidebarProps> = ({
       onClick: () => {
         setDeleteDialogChatId(callSummary?.id);
       },
-      show: isAdmin && callSummary?.details?.callInfo?.provider === CallProvider.AUDIO_UPLOAD,
+      show:
+        hasAdequatePermission(Permissions.DELETE_CHAT) &&
+        callSummary?.details?.callInfo?.provider === CallProvider.AUDIO_UPLOAD,
       text: "Delete Log",
     },
     {
       alt: "Export",
       icon: <Download />,
       onClick: onExportClick,
-      show: callSummary?.summaryStatus === ChatSummaryStatus.SUCCESS,
+      show:
+        hasAdequatePermission(Permissions.EXPORT_CHAT_SUMMARY) &&
+        callSummary?.summaryStatus === ChatSummaryStatus.SUCCESS,
       text: "Export summary",
     },
   ];
@@ -185,11 +182,10 @@ const CallSummarySidebar: FC<CallSummarySidebarProps> = ({
     const hasFeedback = Boolean(callSummary?.details?.callInfo?.isSummaryFeedbackAdded);
     const overThirtySeconds = hasThresholdElapsed();
 
-    // TODO: Remove  !isAdmin once permissions are implemented
     if (
       !hasFeedback &&
       overThirtySeconds &&
-      !isAdmin &&
+      hasAdequatePermission(Permissions.EDIT_SCENARIO_SESSION) &&
       callSummary?.summaryStatus === ChatSummaryStatus.SUCCESS
     ) {
       setShowFeedbackDialog(true);

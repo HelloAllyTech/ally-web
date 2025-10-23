@@ -6,7 +6,7 @@
  */
 
 import { baseAPI } from "@api";
-import { ApiEndpoints, HttpMethod } from "@constants";
+import { ApiEndpoints, HttpMethod, UserRole } from "@constants";
 import {
   VerifyOTPRequest,
   VerifyOTPResponse,
@@ -69,7 +69,7 @@ const authAPI = baseAPI.injectEndpoints({
       query: ({ phone, email }) => ({
         url: ApiEndpoints.AUTH.GENERATE_OTP,
         method: HttpMethod.POST,
-        body: { phone, email },
+        body: { phone, email, allowedRoles: [UserRole.SUPER_ADMIN] },
       }),
     }),
 
@@ -82,7 +82,7 @@ const authAPI = baseAPI.injectEndpoints({
       query: ({ phone, otp, email }) => ({
         url: ApiEndpoints.AUTH.VERIFY_OTP,
         method: HttpMethod.POST,
-        body: { phone, otp, email },
+        body: { phone, otp, email, allowedRoles: [UserRole.SUPER_ADMIN] },
       }),
     }),
   }),

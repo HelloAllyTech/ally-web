@@ -8,24 +8,25 @@ export const HttpMethod = {
 
 export const ApiEndpoints = {
   AUTH: {
-    SIGNUP: "/auth/signup",
-    LOGIN: "/auth/login",
-    GET_USER: "/users/me",
-    GENERATE_OTP: "/auth/generate-otp",
-    VERIFY_OTP: "/auth/verify-otp",
-    REFRESH: "/auth/refresh",
+    SIGNUP: "/v1/auth/signup",
+    LOGIN: "/v1/auth/login",
+    GET_USER: "/v1/users/me",
+    GENERATE_OTP: "/v2/auth/generate-otp",
+    VERIFY_OTP: "/v2/auth/verify-otp",
+    REFRESH: "/v1/auth/refresh",
   },
   USER_MANAGEMENT: {
-    USERS: "/users",
-    TENANT: "/tenant",
-    TENANTS: "/tenants",
-    ADD_USER: "/users",
-    GET_ROLES: "/authorization/roles",
-    CHANGE_USER_ROLES: "/authorization/change-roles",
-    SIMULATION_CREDITS: "/simulation-credits",
+    USERS: "/v1/users",
+    TENANT: "/v1/tenant",
+    TENANTS: "/v1/tenants",
+    ADD_USER: "/v1/users",
+    // TODO: Move this to AUTHORIZATION group
+    GET_ROLES: "/v1/authorization/roles",
+    CHANGE_USER_ROLES: "/v1/authorization/change-roles",
+    SIMULATION_CREDITS: "/v1/simulation-credits",
   },
   AUTHORIZATION: {
-    GET_PERMISSIONS: "/authorization/permissions",
+    GET_PERMISSIONS: "/v1/authorization/permissions",
   },
 };
 

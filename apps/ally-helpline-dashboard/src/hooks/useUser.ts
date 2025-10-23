@@ -4,13 +4,12 @@ import { logger } from "@ally-ui-mono/ui-shared";
 import { useLazyGetUserQuery, useLazyGetPermissionsQuery } from "@api";
 import { baseAPI } from "@api/baseAPI";
 import { LOCAL_STORAGE_KEYS } from "@constants";
-import { setUser, authenticate, unauthenticate, setPermissions, setUserStatus } from "@reducer";
+import { setUser, authenticate, unauthenticate, setPermissions } from "@reducer";
 import { RootState, store } from "@store";
-import { UserStatus } from "@types";
 
 export const useUser = () => {
   const isAuthenticated = useSelector((state: RootState) => state.user.isAuthenticated);
-  const { availableChatTypes, user, userStatus } = useSelector((state: RootState) => state.user);
+  const { availableChatTypes, user } = useSelector((state: RootState) => state.user);
   const permissions = useSelector((state: RootState) => state.user.permissions);
 
   const [getUser, { isLoading: isUserLoading }] = useLazyGetUserQuery();
@@ -29,6 +28,7 @@ export const useUser = () => {
       const token = localStorage.getItem(LOCAL_STORAGE_KEYS.ACCESS_TOKEN);
       if (token) {
         try {
+          if (user) return user;
           const userData = await getUser();
           const permissionsData = await getPermissions();
           store.dispatch(setUser(userData?.data));
@@ -72,15 +72,6 @@ export const useUser = () => {
     localStorage.removeItem(LOCAL_STORAGE_KEYS.REFRESH_TOKEN);
   };
 
-  /**
-   * Updates the user status in both localStorage and Redux store.
-   * @param {UserStatus} status - The new user status to set
-   */
-  const updateUserStatus = (status: UserStatus) => {
-    localStorage.setItem(LOCAL_STORAGE_KEYS.USER_STATUS, status);
-    store.dispatch(setUserStatus(status));
-  };
-
   return {
     availableChatTypes,
     checkAuth,
@@ -89,8 +80,6 @@ export const useUser = () => {
     logout,
     permissions,
     setUser,
-    updateUserStatus,
     user,
-    userStatus,
   };
 };

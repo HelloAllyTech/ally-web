@@ -4,15 +4,15 @@ import { motion } from "framer-motion";
 import { toast } from "sonner";
 
 import { useLazyGetSimulationSummaryQuery } from "@api";
-import { Button } from "@components";
-import { useUser } from "@hooks";
-import { SessionType, UserRole } from "@types";
+import { Button, PermissionGuard } from "@components";
+import { Permissions } from "@constants";
+import { SessionType } from "@types";
 
 import { FeedbackDialog } from "..";
 import { FeedbackSection, LoaderSkeleton } from "./components";
 import { SimulationSummaryProps } from "./types";
 
-const SimulationSummary: FC<SimulationSummaryProps> = ({
+export const SimulationSummary: FC<SimulationSummaryProps> = ({
   className,
   isInSidebar = false,
   summaryId,
@@ -23,9 +23,6 @@ const SimulationSummary: FC<SimulationSummaryProps> = ({
   const [retryMaxReached, setRetryMaxReached] = useState<boolean>(false);
 
   const [getSimulationSummary, { data: summary }] = useLazyGetSimulationSummaryQuery();
-
-  const { user } = useUser();
-  const isAdmin = user?.role === UserRole.ADMIN;
 
   useEffect(() => {
     let pollCount = 0;
@@ -66,33 +63,35 @@ const SimulationSummary: FC<SimulationSummaryProps> = ({
   }, [summaryId]);
 
   const onSubmit = () => {
-    // TODO: Remove  !isAdmin once permissions are implemented
-    if (!isAdmin) {
-      if (summary?.hasFeedback || isInSidebar) {
-        onSummaryClose();
-      } else {
-        setShowFeedbackDialog(true);
-      }
+    if (summary?.hasFeedback || isInSidebar) {
+      onSummaryClose();
+    } else {
+      setShowFeedbackDialog(true);
     }
   };
 
   return (
-    <div className={`relative flex flex-col h-full w-full ${className}`}>
+    <div
+      className={`relative flex flex-col h-full w-full ${className}`}
+      data-testid="simulation-summary"
+    >
       <div className="flex flex-col gap-6 overflow-y-auto pb-20 flex-1">
         {retryMaxReached || summary?.details?.summary?.feedback ? (
           <>
             <FeedbackSection {...summary} />
             {!isInSidebar && (
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 0.8 }}
-                className="absolute bottom-0 left-4 right-4 z-10 max-w-full bg-white"
-              >
-                <Button onClick={onSubmit} className="w-[80%] mx-auto">
-                  Try another Simulation
-                </Button>
-              </motion.div>
+              <PermissionGuard requiredPermissions={[Permissions.EDIT_SCENARIO_SESSION]}>
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5, delay: 0.8 }}
+                  className="absolute bottom-0 left-4 right-4 z-10 max-w-full bg-white"
+                >
+                  <Button onClick={onSubmit} className="w-[80%] mx-auto">
+                    Try another Simulation
+                  </Button>
+                </motion.div>
+              </PermissionGuard>
             )}
             <FeedbackDialog
               open={showFeedbackDialog}
@@ -110,5 +109,3 @@ const SimulationSummary: FC<SimulationSummaryProps> = ({
     </div>
   );
 };
-
-export default SimulationSummary;

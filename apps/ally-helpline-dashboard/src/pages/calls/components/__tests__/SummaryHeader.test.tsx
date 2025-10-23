@@ -7,7 +7,10 @@ import SummaryHeader from "../SummaryHeader";
 vi.mock("react-redux", () => ({
   useSelector: (fn: any) =>
     fn({
-      user: { user: { role: "USER" } }, // default non-admin
+      user: {
+        user: { role: "COUNSELLOR" },
+        permissions: ["edit:call:info"],
+      },
     }),
 }));
 
@@ -23,7 +26,13 @@ vi.mock("@hooks", () => ({
 }));
 
 // Mock assets/components
-vi.mock("@assets", () => ({ Edit: (props: any) => <div {...props}>EditIcon</div> }));
+vi.mock("@assets", () => ({
+  Edit: (props: any) => <div {...props}>EditIcon</div>,
+  Carousel1: (props: any) => <div {...props}>Carousel1</div>,
+  Carousel2: (props: any) => <div {...props}>Carousel2</div>,
+  Carousel3: (props: any) => <div {...props}>Carousel3</div>,
+  Carousel4: (props: any) => <div {...props}>Carousel4</div>,
+}));
 vi.mock("@components", () => ({ TextField: (props: any) => <input {...props} /> }));
 
 describe("SummaryHeader", () => {

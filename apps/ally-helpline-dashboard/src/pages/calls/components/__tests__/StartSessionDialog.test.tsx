@@ -2,7 +2,6 @@ import { render, screen, fireEvent } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { ROUTES } from "@constants";
-import { UserStatus } from "@types";
 
 import StartSessionDialog from "../StartSessionDialog";
 
@@ -12,10 +11,8 @@ vi.mock("react-router-dom", () => ({
   useNavigate: () => mockNavigate,
 }));
 
-// Mock useUser hook
-const mockUpdateUserStatus = vi.fn();
 vi.mock("@hooks", () => ({
-  useUser: () => ({ updateUserStatus: mockUpdateUserStatus }),
+  useUser: () => ({}),
 }));
 
 // Mock ConfirmationDialog and Session icon
@@ -51,10 +48,9 @@ describe("StartSessionDialog", () => {
     expect(screen.getByText("Listen Live")).toBeInTheDocument();
   });
 
-  it("calls updateUserStatus and navigates when start button is clicked", () => {
+  it("navigates when start button is clicked", () => {
     render(<StartSessionDialog isOpen={true} onClose={onClose} />);
     fireEvent.click(screen.getByText("Start Session now"));
-    expect(mockUpdateUserStatus).toHaveBeenCalledWith(UserStatus.OFFLINE);
     expect(mockNavigate).toHaveBeenCalledWith(`${ROUTES.AUDIO_CALL}?mode=microphone`);
   });
 });

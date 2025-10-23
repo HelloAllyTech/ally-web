@@ -7,18 +7,13 @@ import { Session } from "@assets/icons";
 import { ConfirmationDialog } from "@components";
 import { ButtonVariant } from "@components";
 import { ROUTES } from "@constants";
-import { useUser } from "@hooks";
-import { UserStatus } from "@types";
 
 import { StartSessionDialogProps } from "./types";
 
 const StartSessionDialog: FC<StartSessionDialogProps> = ({ isOpen, onClose }) => {
   const navigate = useNavigate();
 
-  const { updateUserStatus } = useUser();
-
   const onStartSession = () => {
-    updateUserStatus(UserStatus.OFFLINE);
     navigate(`${ROUTES.AUDIO_CALL}?mode=microphone`);
   };
 

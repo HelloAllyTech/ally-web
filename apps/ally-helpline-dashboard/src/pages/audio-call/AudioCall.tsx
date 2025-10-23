@@ -9,9 +9,8 @@ import { useEndCallMutation, useLazyGetCounsellorChatQuery } from "@api";
 import { NoResults, MindfullnessVideo } from "@assets";
 import { FallbackUI } from "@components";
 import { CallProvider, CallType, ROUTES, SESSION_STORAGE_KEYS } from "@constants";
-import { setUserStatus } from "@reducer";
 import { RootState } from "@store";
-import { UserStatus, Chat, QueueStatus } from "@types";
+import { Chat, QueueStatus } from "@types";
 import { isProviderCloudTelephony } from "@utils";
 
 import { CallTranscript } from "./components";
@@ -111,7 +110,6 @@ export const AudioCall: FunctionComponent = () => {
       try {
         const response = await getCounsellorChat();
         if (response) {
-          setUserStatus(UserStatus.OFFLINE);
           setActiveChat(response.data);
           if (response.data.provider === CallProvider.MICROPHONE) {
             setMicrophoneChatId(response.data.chatId);

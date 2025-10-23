@@ -24,7 +24,7 @@ const defaultProps = {
 };
 
 const renderComponent = (props = {}) => {
-  return render(<FallbackUI {...defaultProps} {...props} />);
+  return render(<FallbackUI icon={""} {...defaultProps} {...props} />);
 };
 
 // --- TEST SUITE ---
