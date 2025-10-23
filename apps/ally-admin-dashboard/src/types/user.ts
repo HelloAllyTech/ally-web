@@ -134,7 +134,7 @@ export type AddUserFormData = {
   externalId: string;
   tenantId: string;
   roles: string[];
-  simulationCreditLimit: number;
+  simulationCreditLimit?: number;
 };
 
 export interface UserModalProps {
@@ -190,6 +190,7 @@ export interface CreditFieldProps {
   onChange: (newCreditLimit: number) => void;
   userData: UserListUser;
   required: boolean;
+  value: number;
 }
 
 export interface GetCreditResponse {

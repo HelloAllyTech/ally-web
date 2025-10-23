@@ -60,6 +60,15 @@ export const UserModal: React.FC<UserModalProps> = ({
     }
     return true;
   };
+
+  const handleLearnerRoleChange = (selectedRoles: string[]) => {
+    if (!selectedRoles.includes(UserRole.LEARNER)) {
+      formMethods.setValue(USER_MODAL_FIELDS_IDS.CREDITS, "", {
+        shouldValidate: true,
+      });
+    }
+  };
+
   const renderInputField = (field: FieldProps, index: number) => {
     if (!control) return null;
 
@@ -148,6 +157,7 @@ export const UserModal: React.FC<UserModalProps> = ({
                 initialValue={details?.roles || []}
                 onChange={(selectedRoles: string[]) => {
                   controllerField.onChange(selectedRoles);
+                  handleLearnerRoleChange(selectedRoles);
                 }}
                 placeholder={field.placeholder}
                 required={field.required}
@@ -219,6 +229,7 @@ export const UserModal: React.FC<UserModalProps> = ({
               onChange={controllerField.onChange}
               userData={details}
               required={field.required}
+              value={controllerField.value ?? ""}
             />
             {fieldState.error && (
               <span className="text-red-500 text-xs">{fieldState.error.message}</span>

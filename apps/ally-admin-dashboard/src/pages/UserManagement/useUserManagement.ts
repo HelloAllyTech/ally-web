@@ -238,14 +238,15 @@ export function useUserManagement(tenants: Tenant[]) {
 
   const handleAddUser = async (data: AddUserFormData) => {
     try {
-      const payload = {
+      const payload: AddUserFormData = {
         name: data?.name,
         email: data?.email,
         roles: data?.roles,
         externalId: data?.externalId,
         tenantId: data?.tenantId,
-        simulationCreditLimit: data?.simulationCreditLimit,
       };
+      if (data?.roles?.includes(UserRole.LEARNER))
+        payload.simulationCreditLimit = Number(data?.simulationCreditLimit);
       await addUserdata(payload).unwrap();
       setAddUserModalOpen(false);
       userMethods.reset(defaultUserValues);
@@ -347,12 +348,12 @@ export function useUserManagement(tenants: Tenant[]) {
     }
   };
 
-  const handleAddCredit = async (data: { simulationCreditLimit: { creditLimit: number } }) => {
+  const handleAddCredit = async (data: any) => {
     if (!selectedUser) return;
     try {
       const payload = {
         userId: selectedUser.id,
-        creditLimit: data.simulationCreditLimit?.creditLimit,
+        creditLimit: Number(data.simulationCreditLimit),
       };
       await addSimulationCreditLimit(payload).unwrap();
       handleDropdownClose();

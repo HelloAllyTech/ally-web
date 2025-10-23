@@ -4,7 +4,7 @@ import { ProfileCard } from "@components";
 import { en } from "@constants";
 import { CreditFieldProps } from "@types";
 
-export const CreditField: React.FC<CreditFieldProps> = ({ onChange, userData }) => {
+export const CreditField: React.FC<CreditFieldProps> = ({ onChange, userData, value }) => {
   return (
     <div className="flex flex-col gap-4">
       <ProfileCard user={userData} showCredits={true} />
@@ -24,7 +24,7 @@ export const CreditField: React.FC<CreditFieldProps> = ({ onChange, userData }) 
           <input
             type="number"
             className="border rounded-md py-2 outline-none font-['Replay_Pro'] w-full p-2"
-            value={userData?.creditLimit === 0 ? "" : userData?.creditLimit}
+            value={value === 0 ? "" : (value ?? "")}
             onChange={e => onChange(Number(e.target.value))}
           />
         </div>
