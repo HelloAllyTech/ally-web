@@ -68,4 +68,7 @@ export const ApiEndpoints = {
     GET_SIMULATION_TRANSCRIPT: (sessionId: string) =>
       `/v1/learn/scenario-session/${sessionId}/messages`,
   },
+  SIMULATION: {
+    SIMULATION_CREDITS: "/v1/simulation-credits",
+  },
 };

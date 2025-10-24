@@ -1,4 +1,4 @@
-import { FC, useState } from "react";
+import { FC, useEffect, useState } from "react";
 
 import { AnimatePresence, motion } from "framer-motion";
 import { useNavigate, useParams } from "react-router-dom";
@@ -12,20 +12,25 @@ import {
   ConfirmationDialog,
   ButtonVariant,
   FallbackUI,
+  CreditInfo,
 } from "@components";
 import { LOCAL_STORAGE_KEYS, ROUTES } from "@constants";
+import { useSimulationCredits } from "@hooks";
 
 import { learnPageExpandedVariants } from "../learn/constants";
 
 export const Scenario: FC = () => {
   const { scenarioId } = useParams();
   const navigate = useNavigate();
+  const { credits } = useSimulationCredits();
 
   const id = Number(scenarioId);
 
   const [isLoginDialogOpen, setIsLoginDialogOpen] = useState<boolean>(false);
   const [isExistingSimulationConfirmOpen, setIsExistingSimulationConfirmOpen] =
     useState<boolean>(false);
+  const [noCreditsLeft, setNoCreditsLeft] = useState<boolean>(false);
+  const [notEnoghCredits, setNoEnoughCredits] = useState<boolean>(false);
 
   const {
     data: scenario,
@@ -35,6 +40,14 @@ export const Scenario: FC = () => {
   const [endSimulation] = useEndSimulationMutation();
   const [startSimulation, { isLoading: isStartingSimulation, error: startSimulationError }] =
     useStartSimulationMutation();
+
+  useEffect(() => {
+    if (credits?.consumedCredits === credits?.creditLimit) {
+      setNoCreditsLeft(true);
+      return;
+    }
+    if (credits?.creditLimit - credits?.consumedCredits < 20) setNoEnoughCredits(true);
+  }, [credits]);
 
   const renderBackButton = () => {
     return (
@@ -139,6 +152,7 @@ export const Scenario: FC = () => {
               title={scenario?.title || ""}
               longDescription={scenario?.description || ""}
               onStart={onStartSimulationClick}
+              noCredits={true}
             />
           </motion.div>
         ) : (
@@ -169,6 +183,18 @@ export const Scenario: FC = () => {
           secondaryButtonText="Cancel"
           onSecondaryButtonClick={onSecondaryButtonClick}
           icon={ExistingCall}
+        />
+        <CreditInfo
+          open={noCreditsLeft}
+          onClose={() => setNoCreditsLeft(false)}
+          title="No Credits Left"
+          description="Looks like you have run out of simulation credits"
+        />
+        <CreditInfo
+          open={notEnoghCredits}
+          onClose={() => setNoEnoughCredits(false)}
+          title="Not Enough Credits"
+          description="You don't have enough simulation credits to start this session"
         />
       </div>
     </AnimatePresence>

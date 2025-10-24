@@ -15,6 +15,7 @@ const ScenarioDetailsCard: FC<ScenarioDetailsCardProps> = ({
   longDescription,
   onStart,
   title,
+  noCredits = false,
 }) => {
   const [imageError, setImageError] = useState(false);
 
@@ -108,7 +109,7 @@ const ScenarioDetailsCard: FC<ScenarioDetailsCardProps> = ({
             }}
             variant="secondary"
             className="!font-['Roboto']"
-            disabled={isStarting}
+            disabled={isStarting || noCredits}
             aria-label="Start simulation"
           >
             {isStarting && <CircularProgress size={16} />}
