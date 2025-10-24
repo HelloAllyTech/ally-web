@@ -97,6 +97,13 @@ vi.mock("@assets", () => ({
   Carousel10: "carousel10.jpg",
 }));
 
+// Mock hooks to avoid needing Redux Provider in tests
+vi.mock("@hooks", () => ({
+  useSimulationCredits: () => ({
+    credits: { creditLimit: 100, consumedCredits: 0 },
+  }),
+}));
+
 // Mock components
 vi.mock("@components", () => ({
   LoginDialog: vi.fn(({ isOpen, onClose, onSuccess }) => (
@@ -163,6 +170,7 @@ vi.mock("@components", () => ({
     PRIMARY: "primary",
     SECONDARY: "secondary",
   },
+  CreditInfo: vi.fn(() => null),
 }));
 
 // Mock learn constants
