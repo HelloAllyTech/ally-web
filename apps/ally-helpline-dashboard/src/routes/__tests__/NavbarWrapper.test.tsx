@@ -93,9 +93,8 @@ vi.mock("../components/UploadProgressDialog", () => ({
 const createMockStore = (initialState: any = {}) => {
   return configureStore({
     reducer: {
-      // Mock the 'calls' slice reducer to return the required default state
       calls: (state = { audioUpload: [] }, action) => state,
-    },
+    } as any,
     preloadedState: initialState,
   });
 };
