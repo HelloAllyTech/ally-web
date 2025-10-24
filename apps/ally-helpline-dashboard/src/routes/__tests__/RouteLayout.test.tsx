@@ -10,6 +10,7 @@ vi.mock("@pages", () => ({
   Login: () => <div data-testid="login-page">Login Page</div>,
   Learn: () => <div data-testid="learn-page">Learn Page</div>,
   Scenario: () => <div data-testid="scenario-page">Scenario Page</div>,
+  SuspendedUser: () => <div data-testid="suspended-user-page">Suspended User Page</div>,
 }));
 
 // Mock the route layouts

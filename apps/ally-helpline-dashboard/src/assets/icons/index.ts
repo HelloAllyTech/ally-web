@@ -99,6 +99,7 @@ import SubjectiveObservations from "./subjective-observations.svg?react";
 import SummaryFailed from "./summary-failed.svg?react";
 import SummaryGeneratedIllustration from "./summary-generated-illustration.svg?react";
 import SummaryGenerationIcon from "./summary-generation-icon.svg?react";
+import SuspendedUserIcon from "./suspended-icon.svg?react";
 import TagsIcon from "./tags-icon.svg?react";
 import Tags from "./tags.svg?react";
 import TherapeuticTechniques from "./therapeutic-techniques.svg?react";
@@ -215,6 +216,7 @@ export {
   SummaryFailed,
   SummaryGeneratedIllustration,
   SummaryGenerationIcon,
+  SuspendedUserIcon,
   Tags,
   TagsIcon,
   TherapeuticTechniques,

@@ -11,5 +11,6 @@ export * from "./scenario/Scenario";
 export * from "./search/Search";
 export * from "./settings/Settings";
 export * from "./simulation/Simulation";
+export * from "./suspended-user/SuspendedUser";
 export * from "./post-simulation-summary";
 export * from "./stress-buster/StressBuster";

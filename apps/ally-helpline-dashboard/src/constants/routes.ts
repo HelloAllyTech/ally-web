@@ -8,6 +8,7 @@ export const ROUTES = {
   LOGIN: "/login",
   SIGNUP: "/signup",
   HEALTH: "/health",
+  SUSPENDED_USER: "/suspended-user",
 
   // Private Routes
   HOME: "/",

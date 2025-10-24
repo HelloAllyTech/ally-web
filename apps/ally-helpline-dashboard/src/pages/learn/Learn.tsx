@@ -93,7 +93,7 @@ export const Learn: FC = () => {
           </div>
         ) : scenarios?.length > 0 ? (
           <div
-            className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 relative mx-auto"
+            className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4  mx-auto"
             role="list"
             aria-label="Available scenarios"
           >
