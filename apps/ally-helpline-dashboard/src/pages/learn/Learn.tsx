@@ -123,7 +123,7 @@ export const Learn: FC = () => {
   );
 
   return (
-    <div className="flex flex-col w-full max-h-screen overflow-y-hidden p-[10px] sm:p-[24px] justify-center font-replay">
+    <div className="flex flex-col w-full bg-white max-h-screen overflow-y-hidden p-[10px] sm:p-[24px] justify-center font-replay">
       {renderPageDescription()}
       <AnimatePresence mode="wait">{renderScenarioGrid()}</AnimatePresence>
     </div>
