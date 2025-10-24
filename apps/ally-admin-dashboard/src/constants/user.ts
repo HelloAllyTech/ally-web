@@ -187,7 +187,7 @@ export const addNewOrganizationModal = [
     required: false,
   },
 ];
-export const userRoleItems = ["CLIENT", "COUNSELOR", "SUPER_ADMIN", "ADMIN", "LEARNER"];
+export const userRoleItems = ["COUNSELOR", "ADMIN", "LEARNER"];
 export const userStatusItems = ["ACTIVE", "SUSPENDED"];
 
 export enum FilterDropdownOptions {

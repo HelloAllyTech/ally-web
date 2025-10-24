@@ -25,7 +25,7 @@ export const Learn: FC = () => {
         variants={learnPageItemVariants}
         initial="hidden"
         animate="visible"
-        className="w-full font-['Replay_Pro'] text-[28px] text-[#1A1A1A] sm:mb-[66px] mb-[48px] sm:leading-[40px] leading-[28px]"
+        className="w-full font-['Replay_Pro'] text-[28px] text-[#1A1A1A] sm:mb-[30px] mb-[48px] sm:leading-[40px] leading-[28px] pt-[30px]"
       >
         <span>Use </span>
         <span className={emphasisStyles}>AI-voice based </span>
@@ -81,6 +81,7 @@ export const Learn: FC = () => {
         initial="hidden"
         animate="visible"
         exit="exit"
+        className="max-h-[calc(100vh-200px)] overflow-y-scroll"
       >
         {isScenariosLoading ? (
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
@@ -122,7 +123,7 @@ export const Learn: FC = () => {
   );
 
   return (
-    <div className="flex flex-col w-full h-screen bg-white p-[10px] sm:p-[24px] justify-center font-replay">
+    <div className="flex flex-col w-full max-h-screen overflow-y-hidden p-[10px] sm:p-[24px] justify-center font-replay">
       {renderPageDescription()}
       <AnimatePresence mode="wait">{renderScenarioGrid()}</AnimatePresence>
     </div>

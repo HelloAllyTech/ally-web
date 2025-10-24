@@ -15,6 +15,10 @@ export const ListToolbar: React.FC<ListToolbarProps> = ({
   className,
   addFilterButtonRef,
 }) => {
+  const ClearSearch = () => {
+    onSearchChange("");
+  };
+
   const searchInput = (
     <div className="flex relative items-center w-full max-w-xl">
       <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-400">
@@ -24,8 +28,13 @@ export const ListToolbar: React.FC<ListToolbarProps> = ({
         value={searchValue}
         onChange={e => onSearchChange(e.target.value)}
         placeholder={placeholder}
-        className="block w-full rounded-md border border-[#D2D2D2] bg-transparent pl-10 pr-3 py-2 placeholder-gray-400"
+        className="block w-full rounded-md border border-[#D2D2D2] bg-transparent pl-10 pr-3 py-2 placeholder-gray-400 outline-none font-['IBM_Plex_Serif'] text-[14px]"
       />
+      {searchValue.length > 0 && (
+        <button className="absolute right-2 " onClick={ClearSearch}>
+          <Close />
+        </button>
+      )}
     </div>
   );
 

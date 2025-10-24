@@ -17,6 +17,7 @@ export const UserModal: React.FC<UserModalProps> = ({
   formMethods,
 }) => {
   // Handle ESC key to close modal
+
   useEffect(() => {
     const handleEscKey = (event: KeyboardEvent) => {
       if (event.key === KeyboardKeys.ESCAPE && isOpen) return onClose();
@@ -36,7 +37,7 @@ export const UserModal: React.FC<UserModalProps> = ({
 
   const control = formMethods?.control;
   const watchRoles = formMethods?.watch?.(USER_MODAL_FIELDS_IDS.ROLES) || [];
-  const { isValid } = formMethods?.formState || {};
+  const { isValid, isDirty } = formMethods?.formState || {};
 
   const backdropMouseDownRef = useRef(false);
 
@@ -84,7 +85,10 @@ export const UserModal: React.FC<UserModalProps> = ({
         }}
         render={({ field: controllerField, fieldState }) => (
           <div className="flex flex-col gap-2">
-            <label htmlFor={field.id} className="text-sm text-[#49454F] cursor-pointer">
+            <label
+              htmlFor={field.id}
+              className="text-sm text-[#49454F] cursor-pointer font-['IBM_Plex_Serif']"
+            >
               {field.label}
               {field.required && <span className="text-red-500">*</span>}
             </label>
@@ -93,7 +97,7 @@ export const UserModal: React.FC<UserModalProps> = ({
               id={field.id}
               type={field.inputType}
               placeholder={field.placeholder}
-              className={`border rounded-md px-2 py-2 outline-none font-['Replay_Pro'] text-[14px] ${
+              className={`border rounded-md px-2 py-2 outline-none  text-[14px] font-['IBM_Plex_Serif'] ${
                 fieldState.error ? "border-red-500" : "border-gray-300"
               }`}
             />
@@ -187,7 +191,10 @@ export const UserModal: React.FC<UserModalProps> = ({
         }}
         render={({ field: controllerField, fieldState }) => (
           <div className="flex flex-col gap-2">
-            <label htmlFor={field.id} className="text-sm text-[#49454F] cursor-pointer">
+            <label
+              htmlFor={field.id}
+              className="text-sm text-[#49454F] cursor-pointer font-['IBM_Plex_Serif']"
+            >
               {field.label}
               {field.required && <span className="text-red-500">*</span>}
             </label>
@@ -195,7 +202,7 @@ export const UserModal: React.FC<UserModalProps> = ({
               {...controllerField}
               id={field.id}
               placeholder={field.placeholder}
-              className="border rounded-md px-2 py-2 font-['Replay_Pro'] outline-none"
+              className="border rounded-md px-2 py-2 font-['IBM_Plex_Serif'] outline-none"
               rows={4}
             />
             {fieldState.error?.type === "maxLength" && (
@@ -222,7 +229,10 @@ export const UserModal: React.FC<UserModalProps> = ({
             return true;
           },
         }}
-        defaultValue={details?.credits || { consumedCredits: 0, creditLimit: 0 }}
+        defaultValue={{
+          consumedCredits: details?.consumedCredits ?? 0,
+          creditLimit: details?.creditLimit ?? 0,
+        }}
         render={({ field: controllerField, fieldState }) => (
           <>
             <CreditField
@@ -297,10 +307,12 @@ export const UserModal: React.FC<UserModalProps> = ({
           <Button
             variant="primary"
             className={`w-full ${
-              isValid ? "bg-blue-600 hover:bg-blue-700" : "bg-gray-400 cursor-not-allowed"
+              isValid && isDirty
+                ? "bg-blue-600 hover:bg-blue-700"
+                : "bg-gray-400 cursor-not-allowed"
             }`}
             onClick={handlePrimaryAction}
-            disabled={!isValid}
+            disabled={!isValid || !isDirty}
           >
             {buttonName}
           </Button>

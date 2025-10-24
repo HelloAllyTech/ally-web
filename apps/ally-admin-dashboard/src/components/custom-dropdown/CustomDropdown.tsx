@@ -61,13 +61,13 @@ export const CustomDropdown: React.FC<CustomDropdownProps> = ({
 
   return (
     <div className="flex flex-col gap-2" ref={dropdownRef}>
-      <label className="text-sm text-[#49454F] cursor-pointer">
+      <label className="text-sm text-[#49454F] cursor-pointer font-['IBM_Plex_Serif']">
         {label}
         {required && <span className="text-red-500">*</span>}
       </label>
       <div className="relative">
         <div
-          className="border rounded-md px-3 py-2 bg-white w-full outline-none font-['Replay_Pro'] text-[14px] cursor-pointer flex items-center justify-between hover:border-gray-400 transition-colors"
+          className="border rounded-md px-3 py-2 bg-white w-full outline-none font-['IBM_Plex_Serif'] text-[14px] cursor-pointer flex items-center justify-between hover:border-gray-400 transition-colors"
           onClick={() => setIsOpen(!isOpen)}
         >
           <span className={selectedOption ? "text-gray-900" : "text-gray-400"}>
@@ -82,9 +82,9 @@ export const CustomDropdown: React.FC<CustomDropdownProps> = ({
         </div>
 
         {isOpen && (
-          <div className="absolute left-0 top-full mt-1 w-full bg-white border rounded-md shadow-lg max-h-[240px] overflow-auto z-10 animate-fadeIn">
+          <div className="absolute left-0 top-full mt-1 w-full bg-white border rounded-md shadow-lg max-h-[240px] overflow-auto z-10 animate-fadeIn ">
             {options.length === 0 ? (
-              <div className="px-3 py-2 text-sm text-gray-400">{en.common.noOptionsAvailable}</div>
+              <div className="px-3 py-2 text-sm text-gray-400 ">{en.common.noOptionsAvailable}</div>
             ) : (
               options.map(option => {
                 const optionId = getOptionId(option);
@@ -101,7 +101,7 @@ export const CustomDropdown: React.FC<CustomDropdownProps> = ({
                     }`}
                     onClick={() => handleSelect(optionId)}
                   >
-                    <div className="flex items-center justify-between text-[14px]">
+                    <div className="flex items-center justify-between text-[14px] font-['IBM_Plex_Serif']">
                       <span>{formatCapitalizedEnum(optionValue)}</span>
                     </div>
                   </div>

@@ -1,4 +1,4 @@
-import { FC } from "react";
+import { FC, useEffect, useRef } from "react";
 
 import { Close } from "@assets";
 import { getButtonStyles } from "@constants";
@@ -14,6 +14,24 @@ const ActionConfirmationPopup: FC<ActionConfirmationPopupProps> = ({
   secondaryButton,
   titleItalic,
 }) => {
+  const popupRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (popupRef.current && !popupRef.current.contains(event.target as Node)) {
+        onClose();
+      }
+    };
+
+    if (isOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [isOpen, onClose]);
+
   if (!isOpen) return null;
 
   const renderBoldFromString = (text: string) => {
@@ -67,9 +85,12 @@ const ActionConfirmationPopup: FC<ActionConfirmationPopupProps> = ({
 
   return (
     <div className="fixed inset-0 z-50">
-      <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-[1px]" onClick={onClose} />
+      <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-[1px]" />
       <div className="fixed inset-0 flex items-center justify-center px-4 shadow-2xl animate-fadeIn">
-        <div className="relative bg-white rounded-lg shadow-xl max-w-md w-full animate-in fade-in-0 zoom-in-95 duration-200 px-8 py-2">
+        <div
+          className="relative bg-white rounded-lg shadow-xl max-w-md w-full animate-in fade-in-0 zoom-in-95 duration-200 px-8 py-2 "
+          ref={popupRef}
+        >
           {popupHeader}
           {popupButtons}
         </div>

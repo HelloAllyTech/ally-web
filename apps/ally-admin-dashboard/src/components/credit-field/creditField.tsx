@@ -13,7 +13,7 @@ export const CreditField: React.FC<CreditFieldProps> = ({ onChange, userData, va
           <label className="text-[12px] pb-[8px] text-[#49454F] cursor-pointer">
             {en.userManagement.consumedCredits}
           </label>
-          <div className="border rounded-md py-2 outline-none font-['Replay_Pro'] w-full p-2 opacity-50">
+          <div className="border rounded-md py-2 outline-none  font-['IBM_Plex_Serif'] w-full p-2 opacity-50">
             {userData?.consumedCredits}
           </div>
         </div>

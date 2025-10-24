@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { ArrowSolid, Close } from "@assets";
 import { en } from "@constants";
@@ -15,6 +15,21 @@ export const DropdownwithTag: React.FC<dropdownWithTagProps> = ({
 }) => {
   const [open, setOpen] = useState(false);
   const [value, setValue] = useState(initialValue);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  //close dropdown on outside click
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
 
   const toggleRole = (role: UserRoles | Option) => {
     if (!onChange) return;
@@ -51,8 +66,8 @@ export const DropdownwithTag: React.FC<dropdownWithTagProps> = ({
         </div>
       )}
 
-      <div className="w-full" onClick={() => setOpen(!open)}>
-        <label className="block text-gray-800 mb-2 font-['Replay_Pro'] text-[14px]">
+      <div className="w-full" ref={dropdownRef}>
+        <label className="block text-gray-800 mb-2  font-['IBM_Plex_Serif'] text-[14px]">
           {label} {required && <span className="text-red-500">*</span>}
         </label>
         <div className="relative">
@@ -64,7 +79,7 @@ export const DropdownwithTag: React.FC<dropdownWithTagProps> = ({
               value.map(roleName => (
                 <span
                   key={roleName}
-                  className="flex items-center bg-gray-100 text-gray-700 pl-3 rounded-full text-sm"
+                  className="flex items-center bg-gray-100 text-gray-700 pl-3 rounded-full text-[14px]  font-['IBM_Plex_Serif']"
                 >
                   {formatCapitalizedEnum(roleName)}
                   <button className="px-2" onClick={e => handleClose(e, roleName)}>
@@ -73,7 +88,7 @@ export const DropdownwithTag: React.FC<dropdownWithTagProps> = ({
                 </span>
               ))
             ) : (
-              <span className="text-gray-400 text-sm font-['Replay_Pro']">{placeholder}</span>
+              <span className="text-gray-400 text-sm  font-['IBM_Plex_Serif']">{placeholder}</span>
             )}
 
             <div className="ml-auto text-gray-500">

@@ -274,7 +274,7 @@ export const UserManagement: FC = () => {
             <ListToolbar
               searchValue={orgSearch}
               onSearchChange={setOrgSearch}
-              action={{ label: en.userManagement.newGroup, onClick: handleNewgroupClick }}
+              action={{ label: en.userManagement.addOrganization, onClick: handleNewgroupClick }}
             />
             <UserModal
               isOpen={addOrganizationModalOpen}

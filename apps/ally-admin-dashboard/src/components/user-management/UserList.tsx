@@ -64,11 +64,11 @@ export const UserList: React.FC<UserListProps> = ({
   };
 
   const tableHeader = (
-    <div className="grid [grid-template-columns:repeat(48,minmax(0,1fr))] px-4 py-2 text-[14px] text-gray-500 border-b border-gray-200">
-      <div className="col-span-11 pr-1">{en.userManagement.user}</div>
+    <div className="grid [grid-template-columns:repeat(48,minmax(0,1fr))] px-4 py-2 mr-[12px]  text-[14px] text-gray-500 border-b border-gray-200 ">
+      <div className="col-span-11">{en.userManagement.user}</div>
       <div className="col-span-6 pr-1">{en.userManagement.telephonyId}</div>
-      <div className="col-span-8 pr-1">{en.userManagement.role}</div>
-      <div className="col-span-8 pr-1">{en.userManagement.organization}</div>
+      <div className="col-span-8 pr-5">{en.userManagement.role}</div>
+      <div className="col-span-8 pr-5">{en.userManagement.organization}</div>
       <div className="col-span-4 pr-1">{en.userManagement.credits}</div>
       <div className="col-span-6 pr-1">{en.userManagement.addedOn}</div>
       <div className="col-span-5 pr-1">{en.userManagement.status}</div>
@@ -89,12 +89,12 @@ export const UserList: React.FC<UserListProps> = ({
               <div className="col-span-11 justify-start flex items-center min-w-0 overflow-hidden ">
                 <Avatar name={user.name} />
                 <div className="min-w-0">
-                  <div className="truncate pr-5 ">{formatCapitalizedEnum(user.name)}</div>
-                  <div className="text-gray-500 truncate pr-5">{user.email}</div>
+                  <div className="truncate pr-5">{formatCapitalizedEnum(user.name)}</div>
+                  <div className="text-gray-500 truncate pr-5 ">{user.email}</div>
                 </div>
               </div>
-              <div className="col-span-6 pr-1">{user.externalId}</div>
-              <div className="col-span-8 pr-5">
+              <div className="col-span-6 px-1">{user.externalId}</div>
+              <div className="col-span-8 pr-5 whitespace-nowrap truncate">
                 {user.roles?.length
                   ? user.roles.map(role => formatCapitalizedEnum(role)).join(", ")
                   : user.role
@@ -111,7 +111,7 @@ export const UserList: React.FC<UserListProps> = ({
               </div>
 
               <div className="col-span-6 pr-1">{formatDate(user.createdAt)}</div>
-              <div className="col-span-5 pr-1 ml-auto flex items-center justify-between gap-3 w-full min-w-[100px]">
+              <div className="col-span-5 pr-1  flex items-center justify-between w-full min-w-[100px]">
                 <StatusBadge status={user.status} />
                 <button
                   className="text-gray-500 hover:text-gray-700"

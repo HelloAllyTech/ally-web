@@ -107,7 +107,7 @@ export const en = {
     simulationPreview: "Simulation Preview",
   },
   userManagement: {
-    newGroup: "New group",
+    addOrganization: "Add organization",
     users: "Users",
     organizations: "Organizations",
     userManagement: "User Management",
@@ -124,7 +124,6 @@ export const en = {
     active: "Active",
     suspended: "Suspended",
     addUser: "Add user",
-    addOrganization: "Add Organization",
     search: "Search",
     addFilter: "Filter",
     delete: "Delete",
