@@ -19,6 +19,7 @@ import Assessment from "./assessment.svg?react";
 import AudioFile from "./audio-file.svg?react";
 import BackCircle from "./back-circle.svg?react";
 import BackgroundGradientBlue from "./background-gradient-blue.svg?react";
+import Bolt from "./bolt.svg?react";
 import BoxBreathingBottomGradient from "./box-breathing-bottom-gradient.svg?react";
 import BoxBreathingTopGradient from "./box-breathing-top-gradient.svg?react";
 import BulbIcon from "./bulb-icon.svg?react";
@@ -139,6 +140,7 @@ export {
   BackgroundTop,
   BackgroundGradientBlue,
   BoxBreathingBottomGradient,
+  Bolt,
   BoxBreathingTopGradient,
   BulbIcon,
   Call,

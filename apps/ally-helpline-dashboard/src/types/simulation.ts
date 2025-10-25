@@ -12,4 +12,5 @@ export enum FeedbackSectioonType {
 export interface SimulationCredits {
   consumedCredits: number;
   creditLimit: number;
+  secondsAllowedPerCredit: number;
 }

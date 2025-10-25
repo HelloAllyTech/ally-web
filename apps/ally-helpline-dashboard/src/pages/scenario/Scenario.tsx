@@ -22,7 +22,7 @@ import { learnPageExpandedVariants } from "../learn/constants";
 export const Scenario: FC = () => {
   const { scenarioId } = useParams();
   const navigate = useNavigate();
-  const { credits } = useSimulationCredits();
+  const { credits, limitReached } = useSimulationCredits();
 
   const id = Number(scenarioId);
 
@@ -30,7 +30,8 @@ export const Scenario: FC = () => {
   const [isExistingSimulationConfirmOpen, setIsExistingSimulationConfirmOpen] =
     useState<boolean>(false);
   const [noCreditsLeft, setNoCreditsLeft] = useState<boolean>(false);
-  const [notEnoghCredits, setNoEnoughCredits] = useState<boolean>(false);
+  const [notEnoughCredits, setNoEnoughCredits] = useState<boolean>(false);
+  const [buttonDisable, setButtonDisable] = useState<boolean>(false);
 
   const {
     data: scenario,
@@ -42,11 +43,13 @@ export const Scenario: FC = () => {
     useStartSimulationMutation();
 
   useEffect(() => {
+    if (!credits) return;
+
     if (credits?.consumedCredits === credits?.creditLimit) {
       setNoCreditsLeft(true);
       return;
     }
-    if (credits?.creditLimit - credits?.consumedCredits < 20) setNoEnoughCredits(true);
+    if (limitReached) setNoEnoughCredits(true);
   }, [credits]);
 
   const renderBackButton = () => {
@@ -128,6 +131,14 @@ export const Scenario: FC = () => {
     setIsExistingSimulationConfirmOpen(false);
   };
 
+  const handleCreditClose = (type: string) => {
+    if (type === "noCredits") {
+      setNoCreditsLeft(false);
+    } else if (type === "notEnough") {
+      setNoEnoughCredits(false);
+    }
+    setButtonDisable(true);
+  };
   // TODO: Add loading fallback UI for scenario
 
   return (
@@ -152,7 +163,7 @@ export const Scenario: FC = () => {
               title={scenario?.title || ""}
               longDescription={scenario?.description || ""}
               onStart={onStartSimulationClick}
-              noCredits={true}
+              noCredits={buttonDisable}
             />
           </motion.div>
         ) : (
@@ -186,13 +197,13 @@ export const Scenario: FC = () => {
         />
         <CreditInfo
           open={noCreditsLeft}
-          onClose={() => setNoCreditsLeft(false)}
+          onClose={() => handleCreditClose("noCredits")}
           title="No Credits Left"
           description="Looks like you have run out of simulation credits"
         />
         <CreditInfo
-          open={notEnoghCredits}
-          onClose={() => setNoEnoughCredits(false)}
+          open={notEnoughCredits}
+          onClose={() => handleCreditClose("notEnough")}
           title="Not Enough Credits"
           description="You don't have enough simulation credits to start this session"
         />

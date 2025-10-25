@@ -12,7 +12,9 @@
  * - Error handling
  */
 
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import { configureStore } from "@reduxjs/toolkit";
+import { render, screen, fireEvent } from "@testing-library/react";
+import { Provider } from "react-redux";
 import { BrowserRouter } from "react-router-dom";
 import { describe, expect, it, vi, beforeEach } from "vitest";
 
@@ -22,6 +24,12 @@ import { Learn } from "../Learn";
 const mockUseGetScenariosQuery = vi.fn();
 vi.mock("@api", () => ({
   useGetScenariosQuery: () => mockUseGetScenariosQuery(),
+}));
+
+// Mock the useSimulationCredits hook
+const mockUseSimulationCredits = vi.fn();
+vi.mock("@hooks", () => ({
+  useSimulationCredits: () => mockUseSimulationCredits(),
 }));
 
 // Mock the ScenarioCard component
@@ -50,6 +58,11 @@ vi.mock("@components", () => ({
       {isComingSoon && <span>Coming Soon</span>}
     </div>
   ),
+}));
+
+// Mock the Bolt asset
+vi.mock("@assets", () => ({
+  Bolt: () => <div data-testid="bolt-icon">⚡</div>,
 }));
 
 // Mock framer-motion
@@ -90,9 +103,37 @@ vi.mock("@types", () => ({
   },
 }));
 
-// Test wrapper component
-const TestWrapper = ({ children }: { children: React.ReactNode }) => (
-  <BrowserRouter>{children}</BrowserRouter>
+// Create a mock Redux store
+const createMockStore = (initialState = {}) => {
+  const userReducer = (
+    state = {
+      isAuthenticated: true,
+      availableChatTypes: [],
+      user: { id: "1", name: "Test User" },
+      permissions: [],
+    },
+    action: any,
+  ) => state;
+
+  return configureStore({
+    reducer: {
+      user: userReducer,
+    },
+    preloadedState: initialState,
+  });
+};
+
+// Test wrapper component with Redux Provider
+const TestWrapper = ({
+  children,
+  store = createMockStore(),
+}: {
+  children: React.ReactNode;
+  store?: any;
+}) => (
+  <Provider store={store}>
+    <BrowserRouter>{children}</BrowserRouter>
+  </Provider>
 );
 
 describe("Learn Component", () => {
@@ -102,6 +143,13 @@ describe("Learn Component", () => {
       data: [],
       isLoading: false,
       refetch: vi.fn(),
+    });
+    mockUseSimulationCredits.mockReturnValue({
+      credits: {
+        consumedCredits: 5,
+        creditLimit: 10,
+      },
+      limitReached: false,
     });
   });
 
@@ -153,7 +201,7 @@ describe("Learn Component", () => {
       const mainContainer = container.querySelector("div.flex.flex-col");
       expect(mainContainer).not.toBeNull();
       expect(mainContainer?.className).toContain("w-full");
-      expect(mainContainer?.className).toContain("h-screen");
+      expect(mainContainer?.className).toContain("max-h-screen");
       expect(mainContainer?.className).toContain("bg-white");
     });
 
@@ -189,28 +237,19 @@ describe("Learn Component", () => {
           <Learn />
         </TestWrapper>,
       );
-      // Use getAllByText to get all matching elements and check the first one
-      const descriptions = screen.getAllByText((content, element) => {
-        return (
-          (element?.textContent?.includes("hyper realistic training role plays") &&
-            element?.textContent?.includes("Use AI-voice based")) ||
-          false
-        );
-      });
-      expect(descriptions[0]).not.toBeNull();
+      expect(screen.getByText(/AI-voice based/)).not.toBeNull();
+      expect(screen.getByText(/hyper realistic training/)).not.toBeNull();
+      expect(screen.getByText(/role plays/)).not.toBeNull();
     });
 
     it("should highlight key terms with emphasis styles", () => {
-      render(
+      const { container } = render(
         <TestWrapper>
           <Learn />
         </TestWrapper>,
       );
-      const aiVoiceText = screen.getByText("AI-voice based");
-      const rolePlaysText = screen.getByText("role plays");
-
-      expect(aiVoiceText).not.toBeNull();
-      expect(rolePlaysText).not.toBeNull();
+      const emphasizedElements = container.querySelectorAll("span.font-bold.text-\\[\\#0957D0\\]");
+      expect(emphasizedElements.length).toBeGreaterThanOrEqual(2);
     });
 
     it("should apply correct styling classes to description", () => {
@@ -223,6 +262,59 @@ describe("Learn Component", () => {
       expect(description).not.toBeNull();
       expect(description?.className).toContain("text-[28px]");
       expect(description?.className).toContain("text-[#1A1A1A]");
+    });
+  });
+
+  /**
+   * TEST GROUP: Credits Display
+   * Verifies credits display functionality
+   */
+  describe("Credits Display", () => {
+    it("should display consumed credits and limit", () => {
+      render(
+        <TestWrapper>
+          <Learn />
+        </TestWrapper>,
+      );
+      expect(screen.getByText("5")).not.toBeNull();
+      expect(screen.getByText("/10")).not.toBeNull();
+    });
+
+    it("should display Bolt icon", () => {
+      render(
+        <TestWrapper>
+          <Learn />
+        </TestWrapper>,
+      );
+      expect(screen.getByTestId("bolt-icon")).not.toBeNull();
+    });
+
+    it("should show red text when limit is reached", () => {
+      mockUseSimulationCredits.mockReturnValue({
+        credits: {
+          consumedCredits: 10,
+          creditLimit: 10,
+        },
+        limitReached: true,
+      });
+
+      const { container } = render(
+        <TestWrapper>
+          <Learn />
+        </TestWrapper>,
+      );
+      const creditsText = container.querySelector(".text-red-500");
+      expect(creditsText).not.toBeNull();
+    });
+
+    it("should show black text when limit is not reached", () => {
+      const { container } = render(
+        <TestWrapper>
+          <Learn />
+        </TestWrapper>,
+      );
+      const creditsText = container.querySelector(".text-black");
+      expect(creditsText).not.toBeNull();
     });
   });
 
@@ -255,7 +347,7 @@ describe("Learn Component", () => {
           <Learn />
         </TestWrapper>,
       );
-      const skeletonCards = document.querySelectorAll("div[class*='h-[200px]']");
+      const skeletonCards = document.querySelectorAll("div.h-\\[200px\\]");
       expect(skeletonCards.length).toBe(6);
     });
 
@@ -265,7 +357,7 @@ describe("Learn Component", () => {
           <Learn />
         </TestWrapper>,
       );
-      const grid = document.querySelector("div[class*='grid-cols-2']");
+      const grid = document.querySelector("div.grid.grid-cols-2");
       expect(grid).not.toBeNull();
     });
   });
@@ -513,7 +605,8 @@ describe("Learn Component", () => {
       );
       const heading = screen.getByRole("heading", { level: 1 });
       expect(heading).not.toBeNull();
-      expect(heading.textContent).toContain("Choose your Scenario");
+      expect(heading.textContent).toContain("Choose your");
+      expect(heading.textContent).toContain("Scenario");
     });
 
     it("should have proper list structure for scenarios", () => {
@@ -666,6 +759,20 @@ describe("Learn Component", () => {
       ).not.toThrow();
     });
 
+    it("should handle missing credits data", () => {
+      mockUseSimulationCredits.mockReturnValue({
+        credits: null,
+        limitReached: false,
+      });
+
+      const { container } = render(
+        <TestWrapper>
+          <Learn />
+        </TestWrapper>,
+      );
+      expect(container.textContent).toContain("0");
+    });
+
     it("should render consistently on multiple renders", () => {
       const { container: container1 } = render(
         <TestWrapper>
@@ -720,7 +827,7 @@ describe("Learn Component", () => {
           <Learn />
         </TestWrapper>,
       );
-      const mainContainer = container.querySelector("div[class*='p-[10px]']");
+      const mainContainer = container.querySelector("div.p-\\[10px\\]");
       expect(mainContainer).not.toBeNull();
     });
 
@@ -742,6 +849,21 @@ describe("Learn Component", () => {
       );
       const description = container.querySelector("div[class*='mb-[48px]']");
       expect(description).not.toBeNull();
+    });
+  });
+
+  /**
+   * TEST GROUP: Scenarios Label
+   * Verifies the scenarios label is displayed
+   */
+  describe("Scenarios Label", () => {
+    it("should display SCENARIOS label", () => {
+      render(
+        <TestWrapper>
+          <Learn />
+        </TestWrapper>,
+      );
+      expect(screen.getByText("SCENARIOS")).not.toBeNull();
     });
   });
 });

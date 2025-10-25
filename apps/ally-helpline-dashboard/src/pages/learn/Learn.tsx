@@ -4,14 +4,16 @@ import { AnimatePresence, motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 
 import { useGetScenariosQuery } from "@api";
+import { Bolt } from "@assets";
 import { ScenarioCard } from "@components";
+import { useSimulationCredits } from "@hooks";
 import { ScenarioStatus } from "@types";
 
 import { learnPageContainerVariants, learnPageItemVariants } from "./constants";
 
 export const Learn: FC = () => {
   const navigate = useNavigate();
-
+  const { credits, limitReached } = useSimulationCredits();
   const {
     data: scenarios,
     isLoading: isScenariosLoading,
@@ -74,6 +76,15 @@ export const Learn: FC = () => {
             SCENARIOS
           </span>
           <div className="border-b border-[#D3D3D3] w-full" />
+          <div className="flex items-end">
+            <Bolt />
+            <span
+              className={`font-bold text-[16px]  ${limitReached ? "text-red-500" : "text-black"}`}
+            >
+              {credits?.consumedCredits ?? 0}
+            </span>
+            <span className="text-[14px] text-gray-500">/{credits?.creditLimit ?? 0}</span>
+          </div>
         </div>
       </motion.div>
       <motion.div
