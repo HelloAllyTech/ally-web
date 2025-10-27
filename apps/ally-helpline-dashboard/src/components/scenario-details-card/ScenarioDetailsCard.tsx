@@ -49,12 +49,12 @@ const ScenarioDetailsCard: FC<ScenarioDetailsCardProps> = ({
   };
 
   const renderImage = () => (
-    <div className="flex">
+    <div>
       {!imageError ? (
         <img
           src={coverImage}
           alt={`${title} scenario details`}
-          className="object-cover"
+          className="w-full h-full object-cover"
           loading="lazy"
           onError={() => setImageError(true)}
         />
@@ -69,7 +69,7 @@ const ScenarioDetailsCard: FC<ScenarioDetailsCardProps> = ({
   return (
     <motion.div
       layout
-      className="flex h-full gap-6 bg-white overflow-hidden transition-all duration-300 rounded-md origin-top-left border-[0.3px] border-[#D3D3D3]"
+      className="flex h-full w-full gap-6 bg-white overflow-hidden transition-all duration-300 rounded-md origin-top-left border-[0.3px] border-[#D3D3D3]"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
@@ -78,7 +78,7 @@ const ScenarioDetailsCard: FC<ScenarioDetailsCardProps> = ({
       aria-labelledby="scenario-title"
     >
       {renderImage()}
-      <div className="flex flex-col justify-between flex-grow p-6 text-[14px] font-['IBM_Plex_Serif'] overflow-y-auto">
+      <div className="flex flex-col min-w-[400px] justify-between flex-grow p-6 text-[14px] font-['IBM_Plex_Serif'] overflow-y-auto">
         <div className="flex flex-col gap-2">
           <div id="scenario-title" className="flex items-center justify-between">
             <span className="text-[#0D0D0D] text-xl">{title}</span>
