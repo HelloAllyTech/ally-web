@@ -25,6 +25,7 @@ export enum Permissions {
   EXPORT_CHAT_SUMMARY = "export:chat:summary",
   EDIT_CALL_INFO = "edit:call:info",
   EDIT_CALL_DETAILS = "edit:call:details",
+  VIEW_SIMULATION_CREDITS = "view:simulation-credits",
 }
 
 export const CALL_PERMISSIONS = [

@@ -9,11 +9,27 @@ import UserInfo from "../UserInfo";
 
 // --- MOCKS ---
 
-// Mock useSimulationCredits hook
+// Mock hooks
 const mockUseSimulationCredits = vi.fn();
-vi.mock("@hooks", () => ({
-  useSimulationCredits: () => mockUseSimulationCredits(),
-}));
+const mockUseUser = vi.fn();
+
+vi.mock("@hooks", async importOriginal => {
+  const actual = await importOriginal();
+  return {
+    ...actual,
+    useSimulationCredits: () => mockUseSimulationCredits(),
+    useUser: () => mockUseUser(),
+  };
+});
+
+// Mock PermissionGuard to render children without permission checks
+vi.mock("@components", async importOriginal => {
+  const actual = await importOriginal();
+  return {
+    ...actual,
+    PermissionGuard: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+  };
+});
 
 // Mock external dependencies using importOriginal to preserve other exports
 vi.mock("@assets", async importOriginal => {
@@ -26,6 +42,13 @@ vi.mock("@assets", async importOriginal => {
     Bolt: (props: any) => <div data-testid="bolt-icon" {...props}></div>,
   };
 });
+
+// Mock constants
+vi.mock("@constants", () => ({
+  Permissions: {
+    VIEW_SIMULATION_CREDITS: "VIEW_SIMULATION_CREDITS",
+  },
+}));
 
 // --- SETUP DATA ---
 
@@ -76,6 +99,7 @@ describe("UserInfo", () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+
     mockUseSimulationCredits.mockReturnValue({
       credits: {
         consumedCredits: 5,
@@ -83,6 +107,12 @@ describe("UserInfo", () => {
       },
       limitReached: false,
       Creditpercentage: 50,
+    });
+
+    mockUseUser.mockReturnValue({
+      permissions: [],
+      user: mockUser,
+      isAuthenticated: true,
     });
   });
 

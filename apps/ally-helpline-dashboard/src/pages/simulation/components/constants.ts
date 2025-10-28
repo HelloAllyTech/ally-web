@@ -39,5 +39,5 @@ export const scoreLevels = [
   },
 ];
 
-export const MAX_SESSION_MINUTES = 1800; // 30 mins
+export const MAX_SESSION_MINUTES = 1200; // 20 mins
 export const WARNING_THRESHOLD = 30; // 30 seconds before end

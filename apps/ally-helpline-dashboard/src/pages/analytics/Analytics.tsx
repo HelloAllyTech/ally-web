@@ -102,14 +102,9 @@ export const Analytics: FunctionComponent = () => {
             />
           ))}
         {dashboards?.length === 0 && !hasValidDashboards && (
-          <>
-            <div className="ml-15 mb-4 text-2xl text-gray-700 self-start">
-              Organization Admin Dashboard
-            </div>
-            <div className="flex-1 w-full flex items-center justify-center">
-              <NoAnalytics />
-            </div>
-          </>
+          <div className="flex-1 w-full flex items-center justify-center">
+            <NoAnalytics />
+          </div>
         )}
       </div>
     </div>
