@@ -127,7 +127,6 @@ describe("CallInterface Component", () => {
 
   const defaultProps: CallInterfaceProps = {
     activeChat: mockActiveChat,
-    isCounsellor: true,
     isUserJoined: true,
     mediaRecorder: mockMediaRecorder,
     isMicrophoneMode: false,
@@ -417,36 +416,6 @@ describe("CallInterface Component", () => {
       render(<CallInterface {...defaultProps} isUserJoined={false} isMicrophoneMode={true} />);
 
       expect(screen.getByText("Connecting to your session...")).toBeInTheDocument();
-    });
-
-    it("should show participant left message for counsellor when user not joined", () => {
-      render(<CallInterface {...defaultProps} isUserJoined={false} isCounsellor={true} />);
-
-      expect(screen.getByText("Participant left the call")).toBeInTheDocument();
-      expect(
-        screen.getByText("You can wait for them to rejoin or end the call."),
-      ).toBeInTheDocument();
-    });
-
-    it("should show counsellor left message for participant when user not joined", () => {
-      render(<CallInterface {...defaultProps} isUserJoined={false} isCounsellor={false} />);
-
-      expect(screen.getByText("Counsellor left the call")).toBeInTheDocument();
-      expect(
-        screen.getByText("You can wait for them to rejoin or end the call."),
-      ).toBeInTheDocument();
-    });
-
-    it("should show session starting message for counsellor when user not joined", () => {
-      render(<CallInterface {...defaultProps} isUserJoined={undefined} isCounsellor={true} />);
-
-      expect(screen.getByText("Session is starting now..")).toBeInTheDocument();
-    });
-
-    it("should show connecting to counsellor message for participant when user not joined", () => {
-      render(<CallInterface {...defaultProps} isUserJoined={undefined} isCounsellor={false} />);
-
-      expect(screen.getByText("Connecting to your counsellor...")).toBeInTheDocument();
     });
   });
 

@@ -145,7 +145,7 @@ const CallSummarySidebar: FC<CallSummarySidebarProps> = ({
       icon: <Download />,
       onClick: onExportClick,
       show:
-        hasAdequatePermission(Permissions.EXPORT_CHAT_SUMMARY) &&
+        hasAdequatePermission(Permissions.EXPORT_SUMMARY) &&
         callSummary?.summaryStatus === ChatSummaryStatus.SUCCESS,
       text: "Export summary",
     },

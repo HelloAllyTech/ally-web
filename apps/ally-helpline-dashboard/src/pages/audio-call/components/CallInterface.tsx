@@ -23,7 +23,6 @@ const PrivacyTooltip = () => (
 
 const CallInterface: FC<CallInterfaceProps> = ({
   activeChat,
-  isCounsellor,
   isUserJoined,
   mediaRecorder,
   isMicrophoneMode,
@@ -66,12 +65,10 @@ const CallInterface: FC<CallInterfaceProps> = ({
     if (socketDisconnectionReason) {
       return <ErrorScreen socketDisconnectionReason={socketDisconnectionReason} />;
     }
-    if (isUserJoined === false && isMicrophoneMode) {
+    if (!isUserJoined && isMicrophoneMode) {
       message = "Connecting to your session...";
-    } else if (isUserJoined === false) {
-      message = isCounsellor ? "Participant left the call" : "Counsellor left the call";
     } else if (!isUserJoined) {
-      message = isCounsellor ? "Session is starting now.." : "Connecting to your counsellor...";
+      message = "Session is starting now..";
     }
     return (
       <motion.div

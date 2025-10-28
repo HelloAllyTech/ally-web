@@ -15,7 +15,6 @@ export interface CallTranscriptProps {
 
 export interface CallInterfaceProps {
   activeChat: Chat;
-  isCounsellor: boolean;
   isUserJoined: boolean;
   mediaRecorder: MediaRecorder | null;
   // TODO: Refactor isMicrophoneMode and isExotelMode props to use callMode prop

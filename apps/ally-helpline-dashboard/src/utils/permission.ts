@@ -11,3 +11,13 @@ export const hasAnalyticsPermission = (permissions: Permissions[]) =>
 
 export const hasSessionLogsPermission = (permissions: Permissions[]) =>
   permissions?.some(permission => SESSION_LOGS_PERMISSIONS.includes(permission));
+
+export const hasPermissions = (
+  permissions: Permissions[] | null | undefined,
+  requiredPermissions: Permissions,
+) => {
+  if (!permissions || !Array.isArray(permissions)) {
+    return false;
+  }
+  return permissions.some(permission => permission === requiredPermissions);
+};

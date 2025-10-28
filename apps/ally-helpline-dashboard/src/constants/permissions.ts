@@ -22,7 +22,7 @@ export enum Permissions {
   VIEW_SCENARIO_SESSION_SUMMARY = "view:scenario-session:summary",
   VIEW_AUDIO_UPLOAD = "view:audio-upload-url",
   DELETE_CHAT = "delete:chat",
-  EXPORT_CHAT_SUMMARY = "export:chat:summary",
+  EXPORT_SUMMARY = "export:summary",
   EDIT_CALL_INFO = "edit:call:info",
   EDIT_CALL_DETAILS = "edit:call:details",
   VIEW_SIMULATION_CREDITS = "view:simulation-credits",
