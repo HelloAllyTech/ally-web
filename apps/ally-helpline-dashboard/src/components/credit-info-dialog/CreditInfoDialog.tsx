@@ -1,4 +1,4 @@
-import { FC } from "react";
+import { FC, useEffect } from "react";
 
 import { Dialog } from "@mui/material";
 
@@ -6,7 +6,21 @@ import { CloseIcon, NoCreditLeft } from "@assets";
 
 import { CreditInfoProps } from "./types";
 
-const CreditInfoDialog: FC<CreditInfoProps> = ({ open, onClose, title, description }) => {
+const CreditInfoDialog: FC<CreditInfoProps> = ({
+  open,
+  onClose,
+  title,
+  description,
+  autoCloseDuration,
+}) => {
+  useEffect(() => {
+    if (open && autoCloseDuration) {
+      const timer = setTimeout(() => onClose(), autoCloseDuration);
+      return () => clearTimeout(timer);
+    }
+    return () => {};
+  }, [open, autoCloseDuration, onClose]);
+
   return (
     <Dialog
       open={open}

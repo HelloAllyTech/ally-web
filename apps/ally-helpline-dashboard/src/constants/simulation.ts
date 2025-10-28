@@ -16,3 +16,5 @@ export const audioLevelConfig = {
 } as const;
 
 export const SIMULATON_BENCHMARK_SCORE = 50;
+
+export const AUTO_CLOSE_DIALOG_DURATION = 5000;

@@ -3,4 +3,5 @@ export interface CreditInfoProps {
   onClose: () => void;
   title: string;
   description: string;
+  autoCloseDuration?: number;
 }

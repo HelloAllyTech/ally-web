@@ -14,7 +14,7 @@ import {
   FallbackUI,
   CreditInfo,
 } from "@components";
-import { LOCAL_STORAGE_KEYS, ROUTES } from "@constants";
+import { AUTO_CLOSE_DIALOG_DURATION, LOCAL_STORAGE_KEYS, ROUTES } from "@constants";
 import { useSimulationCredits } from "@hooks";
 
 import { learnPageExpandedVariants } from "../learn/constants";
@@ -200,12 +200,14 @@ export const Scenario: FC = () => {
           onClose={() => handleCreditClose("noCredits")}
           title="No Credits Left"
           description="Looks like you have run out of simulation credits"
+          autoCloseDuration={AUTO_CLOSE_DIALOG_DURATION}
         />
         <CreditInfo
           open={notEnoughCredits}
           onClose={() => handleCreditClose("notEnough")}
           title="Not Enough Credits"
           description="You don't have enough simulation credits to start this session"
+          autoCloseDuration={AUTO_CLOSE_DIALOG_DURATION}
         />
       </div>
     </AnimatePresence>
