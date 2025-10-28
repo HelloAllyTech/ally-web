@@ -55,7 +55,7 @@ const UserInfo: FC<{ user?: User; onLogout: () => void }> = ({ user, onLogout })
       </div>
 
       {showLogout && (
-        <div className="absolute bottom-3 left-full bg-white border shadow-md rounded-md p-2 w-[240px] flex flex-col gap-3 font-['IBM_Plex_Sans']">
+        <div className="absolute z-10 bottom-3 left-full bg-white border shadow-md rounded-md p-2 w-[240px] flex flex-col gap-3 font-['IBM_Plex_Sans']">
           <PermissionGuard requiredPermissions={[Permissions.VIEW_SIMULATION_CREDITS]}>
             <div className="flex items-center gap-2">
               <Bolt />
