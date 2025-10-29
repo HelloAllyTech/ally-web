@@ -106,7 +106,7 @@ describe("UserInfo", () => {
         creditLimit: 10,
       },
       limitReached: false,
-      Creditpercentage: 50,
+      CreditPercentage: 50,
     });
 
     mockUseUser.mockReturnValue({
@@ -233,7 +233,7 @@ describe("UserInfo", () => {
           creditLimit: 10,
         },
         limitReached: true,
-        Creditpercentage: 100,
+        CreditPercentage: 100,
       });
 
       renderComponent();
@@ -249,14 +249,14 @@ describe("UserInfo", () => {
       mockUseSimulationCredits.mockReturnValue({
         credits: null,
         limitReached: false,
-        Creditpercentage: 0,
+        CreditPercentage: 0,
       });
 
       renderComponent();
 
       fireEvent.click(screen.getByText("Jane Doe"));
 
-      expect(screen.getByText("0")).toBeInTheDocument();
+      expect(screen.getAllByText("0")[0]).toBeInTheDocument();
       expect(screen.getByText("/0")).toBeInTheDocument();
       expect(screen.getByText("0%")).toBeInTheDocument();
     });

@@ -12,7 +12,7 @@ exports[`Scenario Component > Snapshot Testing > should match snapshot with scen
         class="h-screen w-full flex justify-center items-center bg-white"
       >
         <div
-          class="flex flex-col gap-6 max-w-[70%] m-auto"
+          class="flex flex-col gap-6 w-[60%] m-auto"
           data-animate="visible"
           data-exit="exit"
           data-initial="hidden"
@@ -20,31 +20,75 @@ exports[`Scenario Component > Snapshot Testing > should match snapshot with scen
           data-variants="{\\"hidden\\":{\\"opacity\\":0,\\"scale\\":0.95},\\"visible\\":{\\"opacity\\":1,\\"scale\\":1,\\"transition\\":{\\"duration\\":0.4,\\"ease\\":[0.4,0,0.2,1]}},\\"exit\\":{\\"opacity\\":0,\\"scale\\":0.95,\\"transition\\":{\\"duration\\":0.3}}}"
         >
           <div
-            class="flex items-center gap-2 font-['Replay_Pro'] text-[28px]"
+            class="flex justify-between"
           >
-            <button
-              animate="[object Object]"
-              aria-label="Close scenario details"
-              class="hover:scale-105 transition-transform"
-              data-testid="motion-button"
-              exit="[object Object]"
-              initial="[object Object]"
-              transition="[object Object]"
+            <div
+              class="flex items-center gap-2 font-['Replay_Pro'] text-[28px]"
+            >
+              <button
+                animate="[object Object]"
+                aria-label="Close scenario details"
+                class="hover:scale-105 transition-transform"
+                data-testid="motion-button"
+                exit="[object Object]"
+                initial="[object Object]"
+                transition="[object Object]"
+              >
+                <div
+                  data-testid="back-circle"
+                >
+                  BackCircle
+                </div>
+              </button>
+              <span>
+                Start
+              </span>
+              <span
+                class="font-bold italic"
+              >
+                 Simulation
+              </span>
+            </div>
+            <div
+              class="font-['IBM_Plex_Serif'] flex  items-center"
             >
               <div
-                data-testid="back-circle"
+                class="font-['IBM_Plex_Serif'] text-[14px] text-gray-500"
               >
-                BackCircle
+                Credits used:
               </div>
-            </button>
-            <span>
-              Start
-            </span>
-            <span
-              class="font-bold italic"
-            >
-               Simulation
-            </span>
+              <svg
+                class="lucide lucide-bolt mb-2"
+                fill="none"
+                height="24"
+                stroke="currentColor"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                viewBox="0 0 24 24"
+                width="24"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"
+                />
+                <circle
+                  cx="12"
+                  cy="12"
+                  r="4"
+                />
+              </svg>
+              <span
+                class="font-bold text-[18px] mb-1 text-black"
+              >
+                0
+              </span>
+              <span
+                class="text-[14px] text-gray-500"
+              >
+                /100
+              </span>
+            </div>
           </div>
           <div
             data-testid="scenario-details-card"

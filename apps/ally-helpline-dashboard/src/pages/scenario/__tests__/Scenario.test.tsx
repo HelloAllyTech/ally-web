@@ -14,6 +14,7 @@
  */
 
 import { render, screen, waitFor, fireEvent } from "@testing-library/react";
+import { Bolt } from "lucide-react";
 import { BrowserRouter } from "react-router-dom";
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 
@@ -95,6 +96,7 @@ vi.mock("@assets", () => ({
   Carousel8: "carousel8.jpg",
   Carousel9: "carousel9.jpg",
   Carousel10: "carousel10.jpg",
+  Bolt: Bolt,
 }));
 
 // Mock hooks to avoid needing Redux Provider in tests
@@ -320,7 +322,7 @@ describe("Scenario Component", () => {
       expect(motionDiv.className).toContain("flex");
       expect(motionDiv.className).toContain("flex-col");
       expect(motionDiv.className).toContain("gap-6");
-      expect(motionDiv.className).toContain("max-w-[70%]");
+      expect(motionDiv.className).toContain("w-[60%]");
       expect(motionDiv.className).toContain("m-auto");
     });
   });

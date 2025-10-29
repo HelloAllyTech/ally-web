@@ -14,7 +14,7 @@ export const useSimulationCredits = () => {
       (credits?.secondsAllowedPerCredit ?? 0) <
     20 * 60;
 
-  const Creditpercentage = credits?.creditLimit
+  const CreditPercentage = credits?.creditLimit
     ? credits.creditLimit > 0
       ? Math.round((credits.consumedCredits / credits.creditLimit) * 100)
       : 0
@@ -23,7 +23,7 @@ export const useSimulationCredits = () => {
   return {
     //data
     limitReached,
-    Creditpercentage,
+    CreditPercentage,
 
     credits,
   };

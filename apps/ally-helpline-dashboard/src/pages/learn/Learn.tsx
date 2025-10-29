@@ -76,14 +76,19 @@ export const Learn: FC = () => {
             SCENARIOS
           </span>
           <div className="border-b border-[#D3D3D3] w-full" />
-          <div className="flex items-end">
+          <div className="flex flex-row items-center min-w-[130px] justify-end">
+            <div className="font-['IBM_Plex_Serif'] text-[14px] text-gray-500 whitespace-nowrap">
+              Credits used:
+            </div>
             <Bolt />
             <span
-              className={`font-bold text-[16px]  ${limitReached ? "text-red-500" : "text-black"}`}
+              className={`font-['IBM_Plex_Serif'] font-bold text-[16px]  ${limitReached ? "text-red-500" : "text-black"}`}
             >
               {credits?.consumedCredits ?? 0}
             </span>
-            <span className="text-[14px] text-gray-500">/{credits?.creditLimit ?? 0}</span>
+            <span className="font-['IBM_Plex_Serif'] text-[14px] text-gray-500">
+              /{credits?.creditLimit ?? 0}
+            </span>
           </div>
         </div>
       </motion.div>

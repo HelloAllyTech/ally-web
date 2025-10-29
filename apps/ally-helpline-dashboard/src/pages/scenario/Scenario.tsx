@@ -5,7 +5,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
 
 import { useEndSimulationMutation, useGetScenarioQuery, useStartSimulationMutation } from "@api";
-import { BackCircle, ExistingCall, PageNotFoundIllustration } from "@assets";
+import { BackCircle, Bolt, ExistingCall, PageNotFoundIllustration } from "@assets";
 import {
   LoginDialog,
   ScenarioDetailsCard,
@@ -150,12 +150,26 @@ export const Scenario: FC = () => {
             initial="hidden"
             animate="visible"
             exit="exit"
-            className="flex flex-col gap-6 max-w-[70%] m-auto"
+            className="flex flex-col gap-6 w-[60%] m-auto"
           >
-            <div className="flex items-center gap-2 font-['Replay_Pro'] text-[28px]">
-              {renderBackButton()}
-              <span>Start</span>
-              <span className="font-bold italic"> Simulation</span>
+            <div className="flex justify-between">
+              <div className="flex items-center gap-2 font-['Replay_Pro'] text-[28px]">
+                {renderBackButton()}
+                <span>Start</span>
+                <span className="font-bold italic"> Simulation</span>
+              </div>
+              <div className="font-['IBM_Plex_Serif'] flex  items-center">
+                <div className="font-['IBM_Plex_Serif'] text-[14px] text-gray-500">
+                  Credits used:
+                </div>
+                <Bolt className="mb-2" />
+                <span
+                  className={`font-bold text-[18px] mb-1 ${limitReached ? "text-red-500" : "text-black"}`}
+                >
+                  {credits?.consumedCredits ?? 0}
+                </span>
+                <span className="text-[14px] text-gray-500">/{credits?.creditLimit ?? 0}</span>
+              </div>
             </div>
             <ScenarioDetailsCard
               coverImage={scenario?.coverImageUrl || ""}

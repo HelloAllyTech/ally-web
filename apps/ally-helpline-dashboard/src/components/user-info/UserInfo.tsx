@@ -9,9 +9,9 @@ import { User } from "@types";
 const UserInfo: FC<{ user?: User; onLogout: () => void }> = ({ user, onLogout }) => {
   const [showLogout, setShowLogout] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
-  const { credits, limitReached, Creditpercentage } = useSimulationCredits();
+  const { credits, limitReached, CreditPercentage } = useSimulationCredits();
 
-  const hasPercentage = typeof Creditpercentage === "number" && Creditpercentage >= 0;
+  const hasPercentage = typeof CreditPercentage === "number" && CreditPercentage >= 0;
   const ringColor = limitReached ? "#FE6F64" : "#5F99FC";
 
   useEffect(() => {
@@ -36,7 +36,7 @@ const UserInfo: FC<{ user?: User; onLogout: () => void }> = ({ user, onLogout })
             style={
               hasPercentage
                 ? {
-                    background: `conic-gradient(${ringColor} ${Creditpercentage * 3.6}deg, #e5e7eb ${Creditpercentage * 3.6}deg)`,
+                    background: `conic-gradient(${ringColor} ${CreditPercentage * 3.6}deg, #e5e7eb ${CreditPercentage * 3.6}deg)`,
                   }
                 : undefined
             }
@@ -72,7 +72,7 @@ const UserInfo: FC<{ user?: User; onLogout: () => void }> = ({ user, onLogout })
                 <span className="font-semibold text-[18px] ">{credits?.consumedCredits ?? 0}</span>
                 <span className="text-gray-500 text-[14px]">/{credits?.creditLimit ?? 0}</span>
               </div>
-              <span>{credits?.creditLimit ? `${Creditpercentage}%` : "0%"}</span>
+              <span>{credits?.creditLimit ? `${CreditPercentage}%` : "0%"}</span>
             </div>
 
             <div className="w-full bg-gray-200 rounded-full h-2">
@@ -80,7 +80,7 @@ const UserInfo: FC<{ user?: User; onLogout: () => void }> = ({ user, onLogout })
                 className={`h-2 rounded-full transition-all duration-300 ${
                   limitReached ? "bg-red-500" : "bg-blue-600"
                 }`}
-                style={{ width: `${Creditpercentage}%` }}
+                style={{ width: `${CreditPercentage}%` }}
               />
             </div>
             <div className="border-b" />
