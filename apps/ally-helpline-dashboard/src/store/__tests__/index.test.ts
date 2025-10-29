@@ -96,7 +96,7 @@ describe("Store Configuration", () => {
     });
 
     it("should handle setPermissions action", () => {
-      const mockPermissions = [Permissions.VIEW_NAVBAR_CALLS, Permissions.EDIT_SCENARIO_SESSION];
+      const mockPermissions = [Permissions.VIEW_CALL_LOGS, Permissions.EDIT_SCENARIO_SESSION];
 
       testStore.dispatch(setPermissions(mockPermissions));
 
@@ -162,7 +162,7 @@ describe("Store Configuration", () => {
       // Perform multiple actions
       testStore.dispatch(authenticate());
       testStore.dispatch(setUser(mockUser));
-      testStore.dispatch(setPermissions([Permissions.VIEW_NAVBAR_CALLS]));
+      testStore.dispatch(setPermissions([Permissions.VIEW_CALL_LOGS]));
       testStore.dispatch(setAvailableChatTypes([CallType.WEBRTC_CHAT]));
       testStore.dispatch(updatePage(2));
       testStore.dispatch(updateFilters({ offset: 20, limit: 10 }));
@@ -172,7 +172,7 @@ describe("Store Configuration", () => {
       // Check user state
       expect(finalState.user.isAuthenticated).toBe(true);
       expect(finalState.user.user).toEqual(mockUser);
-      expect(finalState.user.permissions).toEqual([Permissions.VIEW_NAVBAR_CALLS]);
+      expect(finalState.user.permissions).toEqual([Permissions.VIEW_CALL_LOGS]);
       expect(finalState.user.availableChatTypes).toEqual([CallType.WEBRTC_CHAT]);
 
       // Check calls state (page is lost because updateFilters replaces the entire filters object)
@@ -193,7 +193,7 @@ describe("Store Configuration", () => {
 
       testStore.dispatch(authenticate());
       testStore.dispatch(setUser(mockUser));
-      testStore.dispatch(setPermissions([Permissions.VIEW_NAVBAR_CALLS]));
+      testStore.dispatch(setPermissions([Permissions.VIEW_CALL_LOGS]));
 
       // Verify state is set
       let state = testStore.getState() as RootState;

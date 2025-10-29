@@ -23,7 +23,7 @@ import { FeedbackDialog } from "@containers";
 import { useEnhance, useDebounce } from "@hooks";
 import { RootState } from "@store";
 import { ChatSummaryStatus, SessionType, SummaryFieldKey, Tag } from "@types";
-import { getEstimatedSummaryGenerationTime, getFormattedDateTime } from "@utils";
+import { getEstimatedSummaryGenerationTime, getFormattedDateTime, hasPermissions } from "@utils";
 
 import { SummaryLoading } from ".";
 import { labelShownSections, summarySections } from "../constants";
@@ -58,7 +58,12 @@ const CallSummary: FC<CallSummaryProps> = ({
     isLoading: isSummaryLoading,
     error: summaryLoadingError,
   } = useGetCallSummaryQuery(chatId);
-  const { data: visibleFields, isLoading: isGetSummaryFieldsLoading } = useGetSummaryFieldsQuery();
+  const { data: visibleFields, isLoading: isGetSummaryFieldsLoading } = useGetSummaryFieldsQuery(
+    undefined,
+    {
+      skip: !hasPermissions(permissions, Permissions.VIEW_SUMMARY_FIELDS),
+    },
+  );
   const [updateCallSummary, { isLoading: isUpdateLoading }] = useUpdateCallSummaryMutation();
   const [getTags, { isLoading: isGetTagsLoading }] = useGetTagsMutation();
   const { data: locations, isLoading: isGetLocationsLoading } = useGetLocationsQuery();

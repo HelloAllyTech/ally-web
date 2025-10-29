@@ -65,12 +65,12 @@ vi.mock("@constants", () => ({
     RETRY_DELAY_MS: 1000,
   },
   Permissions: {
-    VIEW_NAVBAR_CALLS: "view:navbar:calls",
     VIEW_SCENARIO_SESSION: "view:scenario-session",
     VIEW_ADMIN_SCENARIO_SESSION: "view:admin:scenario-session",
     VIEW_SCENARIO_SESSION_SUMMARY: "view:scenario-session:summary",
     START_MICROPHONE_CHAT: "start:microphone-chat",
     START_CLOUD_TELEPHONY_CHAT: "start:cloud-telephony-chat",
+    VIEW_CHAT_TYPES: "view:settings:chat-types",
   },
   CALL_PERMISSIONS: ["start:cloud-telephony-chat", "start:microphone-chat"],
   ROUTES: {
@@ -114,6 +114,19 @@ vi.mock("@ally-ui-mono/ui-shared", () => ({
   },
 }));
 
+// Mock utils
+vi.mock("@utils", () => ({
+  hasAnalyticsPermission: vi.fn((permissions: any[]) => true),
+  hasCallPermission: vi.fn((permissions: any[]) => true),
+  hasLearnPermission: vi.fn((permissions: any[]) => false),
+  hasPermissions: (permissions: any[], requiredPermission: any) => {
+    if (!permissions || !Array.isArray(permissions)) {
+      return false;
+    }
+    return permissions.some(permission => permission === requiredPermission);
+  },
+}));
+
 const renderWithRouter = (component: React.ReactElement) => {
   return render(<BrowserRouter>{component}</BrowserRouter>);
 };
@@ -128,6 +141,7 @@ describe("PrivateRouteLayout", () => {
     mockUseUser.mockReturnValue({
       user: { id: 1, role: UserRole.ADMIN },
       checkAuth: vi.fn().mockResolvedValue({ id: 1, role: UserRole.ADMIN }),
+      permissions: ["view:settings:chat-types"],
     });
 
     mockUseGetChatTypesQuery.mockReturnValue({
@@ -142,6 +156,7 @@ describe("PrivateRouteLayout", () => {
     mockUseUser.mockReturnValue({
       user: null,
       checkAuth: vi.fn(),
+      permissions: [],
     });
 
     mockUseGetChatTypesQuery.mockReturnValue({
@@ -158,6 +173,7 @@ describe("PrivateRouteLayout", () => {
     mockUseUser.mockReturnValue({
       user: { id: 1, role: UserRole.ADMIN },
       checkAuth: vi.fn().mockResolvedValue({ id: 1, role: UserRole.ADMIN }),
+      permissions: ["view:settings:chat-types"],
     });
 
     mockUseGetChatTypesQuery.mockReturnValue({
@@ -174,6 +190,7 @@ describe("PrivateRouteLayout", () => {
     mockUseUser.mockReturnValue({
       user: { id: 1, role: UserRole.ADMIN },
       checkAuth: vi.fn().mockResolvedValue(null),
+      permissions: [],
     });
 
     mockUseGetChatTypesQuery.mockReturnValue({
@@ -190,6 +207,7 @@ describe("PrivateRouteLayout", () => {
     mockUseUser.mockReturnValue({
       user: { id: 1, role: UserRole.ADMIN },
       checkAuth: vi.fn().mockResolvedValue({ id: 1, role: UserRole.ADMIN }),
+      permissions: ["view:settings:chat-types"],
     });
 
     mockUseGetChatTypesQuery.mockReturnValue({
@@ -206,6 +224,7 @@ describe("PrivateRouteLayout", () => {
     mockUseUser.mockReturnValue({
       user: { id: 1, role: UserRole.LEARNER },
       checkAuth: vi.fn().mockResolvedValue({ id: 1, role: UserRole.LEARNER }),
+      permissions: ["view:settings:chat-types"],
     });
 
     mockUseGetChatTypesQuery.mockReturnValue({
@@ -222,6 +241,7 @@ describe("PrivateRouteLayout", () => {
     mockUseUser.mockReturnValue({
       user: { id: 1, role: UserRole.COUNSELLOR },
       checkAuth: vi.fn().mockResolvedValue({ id: 1, role: UserRole.COUNSELLOR }),
+      permissions: ["view:settings:chat-types"],
     });
 
     mockUseGetChatTypesQuery.mockReturnValue({
@@ -238,6 +258,7 @@ describe("PrivateRouteLayout", () => {
     mockUseUser.mockReturnValue({
       user: { id: 1, role: UserRole.ADMIN },
       checkAuth: vi.fn().mockResolvedValue({ id: 1, role: UserRole.ADMIN }),
+      permissions: ["view:settings:chat-types"],
     });
 
     mockUseGetChatTypesQuery.mockReturnValue({
@@ -256,6 +277,7 @@ describe("PrivateRouteLayout", () => {
     mockUseUser.mockReturnValue({
       user: { id: 1, role: UserRole.ADMIN },
       checkAuth: mockCheckAuth,
+      permissions: ["view:settings:chat-types"],
     });
 
     mockUseGetChatTypesQuery.mockReturnValue({
@@ -276,6 +298,7 @@ describe("PrivateRouteLayout", () => {
     mockUseUser.mockReturnValue({
       user: { id: 1, role: UserRole.ADMIN },
       checkAuth: mockCheckAuth,
+      permissions: [],
     });
 
     mockUseGetChatTypesQuery.mockReturnValue({

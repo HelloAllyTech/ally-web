@@ -23,8 +23,13 @@ import {
   PostSimulationSummary,
 } from "@pages";
 import { setAvailableChatTypes, unauthenticate } from "@reducer";
-import { hasAnalyticsPermission, hasCallPermission, hasLearnPermission } from "@src/utils";
 import { store } from "@store";
+import {
+  hasAnalyticsPermission,
+  hasCallPermission,
+  hasLearnPermission,
+  hasPermissions,
+} from "@utils";
 
 import { NavbarWrapper, PermissionGuardedRoute } from "./components";
 
@@ -33,7 +38,10 @@ const PrivateRouteLayout: FC = () => {
   const navigate = useNavigate();
   useAutoActiveCallRedirect();
 
-  const { data: chatTypes } = useGetChatTypesQuery();
+  const hasChatTypePermissions = hasPermissions(permissions, Permissions.VIEW_CHAT_TYPES);
+  const { data: chatTypes } = useGetChatTypesQuery(undefined, {
+    skip: !hasChatTypePermissions,
+  });
 
   useEffect(() => {
     store.dispatch(setAvailableChatTypes(chatTypes || []));
@@ -101,7 +109,8 @@ const PrivateRouteLayout: FC = () => {
           element={
             <PermissionGuardedRoute
               permission={[
-                Permissions.VIEW_NAVBAR_CALLS,
+                Permissions.VIEW_CALL_LOGS,
+                Permissions.VIEW_CONSOLIDATED_LOGS,
                 Permissions.VIEW_SCENARIO_SESSION,
                 Permissions.VIEW_ADMIN_SCENARIO_SESSION,
               ]}
@@ -127,7 +136,10 @@ const PrivateRouteLayout: FC = () => {
         <Route
           path={ROUTES.SUMMARY}
           element={
-            <PermissionGuardedRoute permission={CALL_PERMISSIONS} element={<PostCallSummary />} />
+            <PermissionGuardedRoute
+              permission={[Permissions.VIEW_CHAT_DETAILS]}
+              element={<PostCallSummary />}
+            />
           }
         />
         <Route

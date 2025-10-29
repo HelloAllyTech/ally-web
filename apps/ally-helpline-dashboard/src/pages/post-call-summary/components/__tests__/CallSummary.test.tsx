@@ -66,6 +66,12 @@ vi.mock("@assets", () => ({
 vi.mock("@utils", () => ({
   getFormattedDateTime: (date: string, format: string) => `formatted-${date}`,
   getEstimatedSummaryGenerationTime: () => 2,
+  hasPermissions: (permissions: any[], requiredPermission: any) => {
+    if (!permissions || !Array.isArray(permissions)) {
+      return false;
+    }
+    return permissions.some(permission => permission === requiredPermission);
+  },
 }));
 vi.mock("@containers", () => ({
   FeedbackDialog: ({ open, onClose }: any) =>
@@ -86,7 +92,10 @@ describe("CallSummary Component", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.useFakeTimers();
-    mockUseSelector.mockReturnValue({ user: { role: UserRole.COUNSELLOR } });
+    mockUseSelector.mockReturnValue({
+      user: { role: UserRole.COUNSELLOR },
+      permissions: ["view:settings:summary-fields"],
+    });
     // Set up default mock behavior for useGetCallSummaryQuery
     vi.mocked(useGetCallSummaryQuery).mockReturnValue({
       data: {

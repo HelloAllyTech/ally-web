@@ -20,7 +20,7 @@ vi.mock("@pages", () => ({
 // Mock constants
 vi.mock("@constants", () => ({
   Permissions: {
-    VIEW_NAVBAR_CALLS: "view:navbar:calls",
+    VIEW_CALL_LOGS: "view:navbar:calls",
     VIEW_ANALYTICS_DASHBOARD: "view:analytics:dashboard",
     EDIT_SCENARIO_SESSION: "edit:scenario-session",
   },
@@ -45,12 +45,12 @@ describe("PermissionGuardedRoute", () => {
   it("renders element when user has required permissions", () => {
     mockUseUser.mockReturnValue({
       user: { id: 1, role: UserRole.ADMIN },
-      permissions: [Permissions.VIEW_NAVBAR_CALLS, Permissions.VIEW_ANALYTICS_DASHBOARD],
+      permissions: [Permissions.VIEW_CALL_LOGS, Permissions.VIEW_ANALYTICS_DASHBOARD],
     });
 
     render(
       <PermissionGuardedRoute
-        permission={[Permissions.VIEW_NAVBAR_CALLS]}
+        permission={[Permissions.VIEW_CALL_LOGS]}
         element={<TestElement />}
       />,
     );
@@ -67,7 +67,7 @@ describe("PermissionGuardedRoute", () => {
 
     render(
       <PermissionGuardedRoute
-        permission={[Permissions.VIEW_NAVBAR_CALLS]}
+        permission={[Permissions.VIEW_CALL_LOGS]}
         element={<TestElement />}
       />,
     );
@@ -84,7 +84,7 @@ describe("PermissionGuardedRoute", () => {
 
     render(
       <PermissionGuardedRoute
-        permission={[Permissions.VIEW_NAVBAR_CALLS, Permissions.VIEW_ANALYTICS_DASHBOARD]}
+        permission={[Permissions.VIEW_CALL_LOGS, Permissions.VIEW_ANALYTICS_DASHBOARD]}
         element={<TestElement />}
       />,
     );
@@ -101,7 +101,7 @@ describe("PermissionGuardedRoute", () => {
 
     render(
       <PermissionGuardedRoute
-        permission={[Permissions.VIEW_NAVBAR_CALLS, Permissions.VIEW_ANALYTICS_DASHBOARD]}
+        permission={[Permissions.VIEW_CALL_LOGS, Permissions.VIEW_ANALYTICS_DASHBOARD]}
         element={<TestElement />}
       />,
     );
@@ -118,7 +118,7 @@ describe("PermissionGuardedRoute", () => {
 
     const { container } = render(
       <PermissionGuardedRoute
-        permission={[Permissions.VIEW_NAVBAR_CALLS]}
+        permission={[Permissions.VIEW_CALL_LOGS]}
         element={<TestElement />}
       />,
     );
@@ -153,12 +153,12 @@ describe("PermissionGuardedRoute", () => {
   it("handles multiple permissions correctly", () => {
     mockUseUser.mockReturnValue({
       user: { id: 1, role: UserRole.ADMIN },
-      permissions: [Permissions.VIEW_NAVBAR_CALLS, Permissions.EDIT_SCENARIO_SESSION],
+      permissions: [Permissions.VIEW_CALL_LOGS, Permissions.EDIT_SCENARIO_SESSION],
     });
 
     render(
       <PermissionGuardedRoute
-        permission={[Permissions.VIEW_NAVBAR_CALLS, Permissions.EDIT_SCENARIO_SESSION]}
+        permission={[Permissions.VIEW_CALL_LOGS, Permissions.EDIT_SCENARIO_SESSION]}
         element={<TestElement />}
       />,
     );
@@ -175,7 +175,7 @@ describe("PermissionGuardedRoute", () => {
 
     render(
       <PermissionGuardedRoute
-        permission={[Permissions.VIEW_NAVBAR_CALLS]}
+        permission={[Permissions.VIEW_CALL_LOGS]}
         element={<TestElement />}
       />,
     );

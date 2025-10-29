@@ -137,7 +137,7 @@ describe("User Reducer", () => {
     });
 
     it("should handle setPermissions with single permission", () => {
-      const permissions = [Permissions.VIEW_NAVBAR_CALLS];
+      const permissions = [Permissions.VIEW_CALL_LOGS];
 
       testStore.dispatch(setPermissions(permissions));
 
@@ -146,7 +146,7 @@ describe("User Reducer", () => {
     });
 
     it("should handle setPermissions with multiple permissions", () => {
-      const permissions = [Permissions.VIEW_NAVBAR_CALLS, Permissions.EDIT_SCENARIO_SESSION];
+      const permissions = [Permissions.VIEW_CALL_LOGS, Permissions.EDIT_SCENARIO_SESSION];
 
       testStore.dispatch(setPermissions(permissions));
 
@@ -210,7 +210,7 @@ describe("User Reducer", () => {
         userId: 1,
       };
 
-      const permissions = [Permissions.VIEW_NAVBAR_CALLS, Permissions.EDIT_SCENARIO_SESSION];
+      const permissions = [Permissions.VIEW_CALL_LOGS, Permissions.EDIT_SCENARIO_SESSION];
       const chatTypes = [CallType.WEBRTC_CHAT, CallType.MICROPHONE_CHAT];
 
       // Perform all actions
@@ -239,7 +239,7 @@ describe("User Reducer", () => {
 
       testStore.dispatch(authenticate());
       testStore.dispatch(setUser(mockUser));
-      testStore.dispatch(setPermissions([Permissions.VIEW_NAVBAR_CALLS]));
+      testStore.dispatch(setPermissions([Permissions.VIEW_CALL_LOGS]));
 
       // Verify authenticated state
       let state = testStore.getState();
@@ -269,7 +269,7 @@ describe("User Reducer", () => {
     });
 
     it("should handle large permission arrays", () => {
-      const largePermissions = Array(1000).fill(Permissions.VIEW_NAVBAR_CALLS);
+      const largePermissions = Array(1000).fill(Permissions.VIEW_CALL_LOGS);
 
       testStore.dispatch(setPermissions(largePermissions));
 

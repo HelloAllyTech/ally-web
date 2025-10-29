@@ -44,7 +44,8 @@ export const navBarOptions = [
     path: ROUTES.CALLS,
     activePages: [],
     permissions: [
-      Permissions.VIEW_NAVBAR_CALLS,
+      Permissions.VIEW_CALL_LOGS,
+      Permissions.VIEW_CONSOLIDATED_LOGS,
       Permissions.VIEW_SCENARIO_SESSION,
       Permissions.VIEW_ADMIN_SCENARIO_SESSION,
     ],
@@ -79,6 +80,6 @@ export const navBarOptions = [
     Icon: CommunityIcon,
     path: "https://community.helloally.ai/",
     activePages: [],
-    permissions: [Permissions.VIEW_NAVBAR_COMMUNITY],
+    permissions: [Permissions.VIEW_COMMUNITY],
   },
 ];

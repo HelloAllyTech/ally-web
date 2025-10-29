@@ -155,6 +155,7 @@ const CallSummarySidebar: FC<CallSummarySidebarProps> = ({
     {
       id: 1,
       label: "Summary",
+      permissions: [Permissions.VIEW_CHAT_DETAILS],
       content: (
         <CallSummary
           headerContent={
@@ -174,9 +175,14 @@ const CallSummarySidebar: FC<CallSummarySidebarProps> = ({
     {
       id: 2,
       label: "Transcription",
+      permissions: [Permissions.VIEW_TRANSCRIPTION],
       content: <TranscriptionSubTab />,
     },
   ];
+
+  const permittedTabList = tabList.filter(tab =>
+    tab.permissions?.some(item => hasAdequatePermission(item)),
+  );
 
   const onSidebarClose = () => {
     const hasFeedback = Boolean(callSummary?.details?.callInfo?.isSummaryFeedbackAdded);
@@ -211,7 +217,7 @@ const CallSummarySidebar: FC<CallSummarySidebarProps> = ({
     <SummarySidebarWrapper
       onSidebarClose={onSidebarClose}
       extraHeaderList={extraHeaderList}
-      tabList={tabList}
+      tabList={permittedTabList}
       title="Summary"
     >
       <FeedbackDialog

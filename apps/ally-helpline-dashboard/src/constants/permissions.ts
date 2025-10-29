@@ -1,8 +1,4 @@
 export enum Permissions {
-  VIEW_NAVBAR_CALLS = "view:navbar:calls",
-  VIEW_NAVBAR_COMMUNITY = "view:navbar:community", // BE to change the naming
-
-  // need to revisit call logs permission, community permission,
   VIEW_ANALYTICS_DASHBOARD = "view:analytics:dashboard",
 
   // Call related permissions
@@ -26,6 +22,11 @@ export enum Permissions {
   EDIT_CALL_INFO = "edit:call:info",
   EDIT_CALL_DETAILS = "edit:call:details",
   VIEW_SIMULATION_CREDITS = "view:simulation-credits",
+  VIEW_COMMUNITY = "view:community",
+  VIEW_CHAT_DETAILS = "view:chat:details",
+  VIEW_TRANSCRIPTION = "view:messages",
+  VIEW_CHAT_TYPES = "view:settings:chat-types",
+  VIEW_SUMMARY_FIELDS = "view:settings:summary-fields",
 }
 
 export const CALL_PERMISSIONS = [
