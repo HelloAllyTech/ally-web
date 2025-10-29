@@ -327,7 +327,7 @@ export const CreateSimulation: FC = () => {
   };
 
   return (
-    <div className="h-[100vh] overflow-hidden font-['IBM_Plex_Serif']">
+    <div className="h-[100vh] overflow-hidden font-['IBM_Plex_Serif'] ml-[-10px] lg:ml-0">
       <Header
         isValid={areAllMandatoryFieldsFilled}
         onBack={handlePageBack}

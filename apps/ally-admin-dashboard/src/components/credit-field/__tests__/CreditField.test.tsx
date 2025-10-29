@@ -323,7 +323,7 @@ describe("CreditField", () => {
 
       const consumedCreditsLabel = screen.getByText("Consumed Credits");
       const newCreditLimitLabel = screen.getByText("New Credit Limit");
-      
+
       expect(consumedCreditsLabel).toBeInTheDocument();
       expect(newCreditLimitLabel).toBeInTheDocument();
     });

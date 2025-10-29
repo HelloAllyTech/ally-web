@@ -37,7 +37,7 @@ export const SimulationList: React.FC<SimulationListProps> = ({
       <div className="w-[50%] lg:w-[39%]">{en.simulation.simulation}</div>
       <div className="w-[12%] lg:w-[11%] px-4" />
       <div className="hidden lg:block w-[10%] px-4">{en.simulation.createdBy}</div>
-      <div className="w-[12%] lg:w-[10%] px-4">{en.simulation.lastModified}</div>
+      <div className="hidden lg:block w-[12%] lg:w-[10%] px-4">{en.simulation.lastModified}</div>
       <div className="w-[12%] lg:w-[10%] px-4">{en.simulation.status}</div>
       <div className="hidden lg:block w-[10%] px-4">{en.simulation.usage}</div>
       <div className="w-[14%] lg:w-[10%] px-4" />
@@ -131,7 +131,7 @@ export const SimulationList: React.FC<SimulationListProps> = ({
         </div>
 
         {/* Last Modified */}
-        <div className="w-[14%] md:w-[12%] lg:w-[10%] px-4 overflow-x-hidden">
+        <div className="hidden lg:block w-[14%] md:w-[12%] lg:w-[10%] px-4 overflow-x-hidden">
           {formatDate(simulation.updatedAt)}
         </div>
 

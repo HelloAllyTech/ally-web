@@ -12,7 +12,7 @@ export const Tabs: React.FC<TabsProps> = ({ items, activeId, onChange, className
             <button
               key={item.id}
               onClick={() => onChange(item.id)}
-              className={`relative font-normal whitespace-nowrap py-3 px-3 text-[15px] leading-6 ${
+              className={`relative font-normal whitespace-nowrap py-3 px-3 text-[15px] min-w-[90px] leading-6 ${
                 isActive ? "text-blue-600" : "text-gray-800 hover:text-gray-900"
               }`}
             >

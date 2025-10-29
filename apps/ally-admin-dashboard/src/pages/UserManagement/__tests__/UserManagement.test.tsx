@@ -304,7 +304,7 @@ describe("UserManagement", () => {
     it("should show edit modal when editing user", () => {
       vi.mocked(useUserManagementHook.useUserManagement).mockReturnValue({
         ...mockUserManagementHook,
-        selectedOption: "Edit Details",
+        selectedOption: "Edit details",
         selectedUser: mockUsers[0],
       });
 
@@ -317,7 +317,7 @@ describe("UserManagement", () => {
     it("should show confirmation popup when suspending user", () => {
       vi.mocked(useUserManagementHook.useUserManagement).mockReturnValue({
         ...mockUserManagementHook,
-        selectedOption: "Suspend User",
+        selectedOption: "Suspend user",
         selectedUser: mockUsers[0],
       });
 
@@ -330,7 +330,7 @@ describe("UserManagement", () => {
     it("should show confirmation popup when removing user", () => {
       vi.mocked(useUserManagementHook.useUserManagement).mockReturnValue({
         ...mockUserManagementHook,
-        selectedOption: "Remove User",
+        selectedOption: "Remove user",
         selectedUser: mockUsers[0],
       });
 
@@ -532,7 +532,7 @@ describe("UserManagement", () => {
     it("should show change role modal", () => {
       vi.mocked(useUserManagementHook.useUserManagement).mockReturnValue({
         ...mockUserManagementHook,
-        selectedOption: "Change Role",
+        selectedOption: "Change role",
         selectedUser: mockUsers[0],
         activeTab: TabType.USERS,
       });
@@ -546,7 +546,7 @@ describe("UserManagement", () => {
     it("should show add credit modal", () => {
       vi.mocked(useUserManagementHook.useUserManagement).mockReturnValue({
         ...mockUserManagementHook,
-        selectedOption: "Add Credit",
+        selectedOption: "Manage credits",
         selectedUser: mockUsers[0],
         activeTab: TabType.USERS,
       });
@@ -554,13 +554,13 @@ describe("UserManagement", () => {
       renderUserManagement();
 
       expect(screen.getByTestId("user-modal")).toBeInTheDocument();
-      expect(screen.getByText("Add Simulation Credits")).toBeInTheDocument();
+      expect(screen.getByText("Manage Simulation Credits")).toBeInTheDocument();
     });
 
     it("should show grant access confirmation", () => {
       vi.mocked(useUserManagementHook.useUserManagement).mockReturnValue({
         ...mockUserManagementHook,
-        selectedOption: "Grant Access",
+        selectedOption: "Grant access",
         selectedUser: mockUsers[0],
         activeTab: TabType.USERS,
       });

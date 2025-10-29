@@ -25,8 +25,8 @@ interface EmojiPickerProps {
 
 export const EmojiPickerComponent: React.FC<EmojiPickerProps> = ({
   onEmojiClick,
-  width = 350,
-  height = 450,
+  width = 300,
+  height = 400,
   className = "",
   buttonClassName = "",
   buttonText = "😀",
@@ -99,7 +99,7 @@ export const EmojiPickerComponent: React.FC<EmojiPickerProps> = ({
           }`}
           style={{ width, height: pickerHeight }}
         >
-          <EmojiPicker onEmojiClick={handleEmojiClick} />
+          <EmojiPicker width={width} height={height} onEmojiClick={handleEmojiClick} />
         </div>
       )}
     </div>

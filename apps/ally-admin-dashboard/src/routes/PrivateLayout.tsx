@@ -50,7 +50,7 @@ export const PrivateLayout: React.FC<PrivateLayoutProps> = ({
     <div className="flex h-screen bg-white">
       <Sidebar />
       <main className="flex-1 overflow-auto">
-        <div className="p-6 h-[100vh] overflow-y-hidden">
+        <div className="p-4 lg:p-6 h-[100vh] overflow-y-hidden">
           {hasPermission ? children : <AccessDenied />}
         </div>
       </main>

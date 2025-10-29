@@ -336,7 +336,7 @@ export const SimulationEventMapTable: FC<SimulationEventMapTableProps> = ({ simu
         </h2>
         {!isLoading && renderActionButtons()}
       </div>
-      <div className="p-6 pt-4 overflow-y-hidden overflow-x-scroll max-w-[calc(100vw-380px)]">
+      <div className="p-6 pt-4 pr-0 overflow-y-hidden overflow-x-scroll w-[calc(100vw-270px)] lg:w-[calc(100vw-320px)] max-w-full">
         {isLoading ? (
           <EventMapTableLoader />
         ) : (

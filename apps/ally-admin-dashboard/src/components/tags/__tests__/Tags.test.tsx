@@ -127,34 +127,6 @@ describe("Tags", () => {
     expect(reactTags.length).toBe(1);
   });
 
-  it.skip("displays existing tags", async () => {
-    // Skipped: useWatch requires special setup for testing
-    render(
-      <TestWrapper defaultValues={{ tags: ["React", "Vue", "Angular"] }}>
-        {formMethods => <Tags formMethods={formMethods} />}
-      </TestWrapper>,
-    );
-
-    await waitFor(
-      () => {
-        expect(screen.getByText("React")).toBeInTheDocument();
-      },
-      { timeout: 3000 },
-    );
-  });
-
-  it.skip("renders close button for each tag", async () => {
-    // Skipped: useWatch requires special setup for testing
-  });
-
-  it.skip("removes tag when close button is clicked", async () => {
-    // Skipped: useWatch requires special setup for testing
-  });
-
-  it.skip("tag has correct styling", async () => {
-    // Skipped: useWatch requires special setup for testing
-  });
-
   it("input has correct width", () => {
     render(<TestWrapper>{formMethods => <Tags formMethods={formMethods} />}</TestWrapper>);
 
@@ -234,14 +206,6 @@ describe("Tags", () => {
 
     const inputContainer = screen.getByPlaceholderText("Add tag").parentElement;
     expect(inputContainer?.className).toContain("px-2");
-  });
-
-  it.skip("close button has cursor pointer", async () => {
-    // Skipped: useWatch requires special setup for testing
-  });
-
-  it.skip("close button has correct margin", async () => {
-    // Skipped: useWatch requires special setup for testing
   });
 
   it("add button has correct margin", () => {
