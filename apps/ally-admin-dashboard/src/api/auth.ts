@@ -6,7 +6,7 @@
  */
 
 import { baseAPI } from "@api";
-import { ApiEndpoints, HttpMethod, UserRole } from "@constants";
+import { ApiEndpoints, HttpMethod, Permissions, UserRole } from "@constants";
 import {
   VerifyOTPRequest,
   VerifyOTPResponse,
@@ -56,7 +56,7 @@ const authAPI = baseAPI.injectEndpoints({
      * Used for role-based access control.
      * @returns {Promise<string[]>} Array of permission strings
      */
-    getPermissions: builder.query<string[], void>({
+    getPermissions: builder.query<Permissions[], void>({
       query: () => ApiEndpoints.AUTHORIZATION.GET_PERMISSIONS,
     }),
 

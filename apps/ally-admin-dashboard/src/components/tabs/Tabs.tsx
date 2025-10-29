@@ -30,5 +30,3 @@ export const Tabs: React.FC<TabsProps> = ({ items, activeId, onChange, className
     </div>
   );
 };
-
-export default Tabs;

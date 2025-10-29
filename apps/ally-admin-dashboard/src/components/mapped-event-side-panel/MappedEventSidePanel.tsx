@@ -1,0 +1,398 @@
+import React, { useState, useCallback, useEffect, useRef, useMemo } from "react";
+
+import { ArrowDownFilled, DoubleArrowRight, Trash } from "@assets";
+import {
+  AutoExpandableTextarea,
+  EmojiPickerComponent,
+  NumberInput,
+  ToggleSwitch,
+} from "@components";
+import { en } from "@constants";
+import { useDebounce, useClickOutside } from "@hooks";
+import { UpdateScenarioEventDataParam, SessionEvent } from "@types";
+import { isObject, MAPPED_EVENT_FIELDS } from "@utils";
+
+// Constants
+const DEBOUNCE_DELAY = 500;
+const TEXTAREA_MAX_LINES = 20;
+const TEXTAREA_MIN_HEIGHT = 20;
+
+const FIELD_DEPENDENCIES: Record<string, readonly string[]> = {
+  feedbackStatus: [
+    MAPPED_EVENT_FIELDS.SCORE,
+    MAPPED_EVENT_FIELDS.EMOJI,
+    MAPPED_EVENT_FIELDS.MESSAGE,
+  ],
+  branchingStatus: [MAPPED_EVENT_FIELDS.BRANCH_INSTRUCTION],
+};
+
+interface MappedEventSidePanelProps {
+  selectedEvent: UpdateScenarioEventDataParam | null;
+  isOpen: boolean;
+  onClose: () => void;
+  onDelete: (eventId: string) => void;
+  onUpdate: (event: UpdateScenarioEventDataParam) => void;
+  sessionEvents: SessionEvent[];
+  availableEventOptions: Array<{ label: string; value: string }>;
+  onEventSelect: (eventId: string) => void;
+}
+
+interface FieldProps {
+  label: string;
+  children: React.ReactNode;
+  multiline?: boolean;
+}
+
+const Field: React.FC<FieldProps> = ({ label, children, multiline = false }) => (
+  <div
+    className={`flex flex-row min-h-[40px] ${multiline ? "items-start" : "items-center"} text-[14px] justify-between`}
+  >
+    <div className={`w-[40%] ${multiline && "mt-[8px]"}`}>
+      <span className="text-sm font-medium text-gray-600">{label}</span>
+    </div>
+    <div className="w-[60%] flex text-left justify-start text-gray-800">{children}</div>
+  </div>
+);
+
+const PanelHeader: React.FC<{
+  eventId: string;
+  onClose: () => void;
+  onDelete: (eventId: string) => void;
+  hasEvent: boolean;
+}> = ({ eventId, onClose, onDelete, hasEvent }) => (
+  <div className="flex items-center justify-between p-6">
+    <button
+      onClick={onClose}
+      className="flex flex-row items-center justify-center gap-2 text-gray-600 hover:text-gray-800"
+    >
+      <span className="inline-flex w-[14px] h-[14px]">
+        <DoubleArrowRight />
+      </span>
+      <span className="text-sm">{en.simulation.editEvent}</span>
+    </button>
+    {hasEvent && (
+      <button onClick={() => onDelete(eventId)} className="flex items-center gap-2">
+        <span className="inline-flex w-[14px] h-[14px]">
+          <Trash />
+        </span>
+        <span className="text-sm">{en.simulation.deleteEvent}</span>
+      </button>
+    )}
+  </div>
+);
+
+const EventDropdown: React.FC<{
+  isOpen: boolean;
+  selectedEventName: string;
+  availableOptions: Array<{ label: string; value: string }>;
+  onToggle: () => void;
+  onSelect: (eventId: string) => void;
+  dropdownRef: React.RefObject<HTMLDivElement>;
+}> = ({ isOpen, selectedEventName, availableOptions, onToggle, onSelect, dropdownRef }) => {
+  const [query, setQuery] = useState("");
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  const filteredOptions = useMemo(() => {
+    const normalizedQuery = query.trim().toLowerCase();
+    if (!normalizedQuery) return availableOptions;
+    return availableOptions.filter(option => option.label.toLowerCase().includes(normalizedQuery));
+  }, [availableOptions, query]);
+
+  useEffect(() => {
+    if (isOpen) {
+      inputRef.current?.focus();
+    } else {
+      setQuery("");
+    }
+  }, [isOpen]);
+
+  return (
+    <div className="relative" ref={dropdownRef}>
+      <button
+        type="button"
+        onClick={onToggle}
+        className="text-2xl font-light w-full text-left flex items-center justify-start hover:text-gray-600 transition-colors"
+      >
+        <span className={selectedEventName === "Select an event" ? "text-gray-400" : ""}>
+          {selectedEventName}
+        </span>
+        <span className="ml-2 inline-flex w-[12px] h-[12px]">
+          <ArrowDownFilled />
+        </span>
+      </button>
+      {isOpen && (
+        <div className="absolute z-10 bg-white border border-gray-300 min-w-[300px] max-h-[300px] overflow-y-auto rounded-[6px] left-0 top-[40px] shadow-lg">
+          <div className="sticky top-0 bg-white p-2 border-b">
+            <input
+              ref={inputRef}
+              value={query}
+              onChange={e => setQuery(e.target.value)}
+              placeholder="Search events"
+              className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-100 text-sm"
+              type="text"
+            />
+          </div>
+          {filteredOptions.length > 0 ? (
+            filteredOptions.map(option => (
+              <div
+                key={option.value}
+                onClick={() => onSelect(option.value)}
+                className="px-4 py-3 cursor-pointer hover:bg-blue-50 transition-colors"
+              >
+                <span className="text-sm">{option.label}</span>
+              </div>
+            ))
+          ) : (
+            <div className="px-4 py-3 text-sm text-gray-500">No results</div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+};
+
+const FormTextarea: React.FC<{
+  value: string;
+  onChange: (value: string) => void;
+  placeholder: string;
+  disabled?: boolean;
+}> = ({ value, onChange, placeholder, disabled }) => (
+  <AutoExpandableTextarea
+    maxLines={TEXTAREA_MAX_LINES}
+    minHeight={TEXTAREA_MIN_HEIGHT}
+    value={value}
+    onChange={onChange}
+    placeholder={placeholder}
+    className="py-2 pt-[16px] px-0 border-none disabled:bg-transparent focus:outline-none text-sm w-full resize-none overflow-y-auto [&::-webkit-scrollbar]:w-[1px] [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-gray-400"
+    disabled={disabled}
+  />
+);
+
+export const MappedEventSidePanel: React.FC<MappedEventSidePanelProps> = ({
+  selectedEvent,
+  isOpen,
+  onClose,
+  onDelete,
+  onUpdate,
+  sessionEvents,
+  availableEventOptions,
+  onEventSelect,
+}) => {
+  const [formData, setFormData] = useState(selectedEvent);
+  const [isEventDropdownOpen, setIsEventDropdownOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  useClickOutside(dropdownRef, () => setIsEventDropdownOpen(false));
+
+  // Memoized computed values
+  const isNewEvent = useMemo(() => !selectedEvent?.id?.value, [selectedEvent?.id?.value]);
+
+  const selectedEventName = useMemo(
+    () =>
+      sessionEvents.find(event => event.id === selectedEvent?.id?.value)?.name || "Select an event",
+    [sessionEvents, selectedEvent?.id?.value],
+  );
+
+  // Sync form data with selected event
+  useEffect(() => {
+    setFormData(selectedEvent);
+  }, [selectedEvent]);
+
+  // Create a stable debounced update function
+  const triggerUpdate = useCallback(
+    (updatedData: UpdateScenarioEventDataParam) => {
+      if (updatedData?.id?.value) {
+        onUpdate(updatedData);
+      }
+    },
+    [onUpdate],
+  );
+
+  const debouncedUpdate = useDebounce(triggerUpdate, DEBOUNCE_DELAY);
+
+  // Update field value helper
+  const updateFieldValue = useCallback(
+    (fieldName: keyof UpdateScenarioEventDataParam, value: string | number | boolean) => {
+      setFormData(previousData => {
+        if (!previousData) return previousData;
+
+        const currentField = previousData[fieldName];
+        if (isObject(currentField) && currentField !== null && "value" in currentField) {
+          const updatedData = {
+            ...previousData,
+            [fieldName]: {
+              ...currentField,
+              value,
+            },
+          };
+          // Trigger debounced update with the new data
+          debouncedUpdate(updatedData);
+          return updatedData;
+        }
+        return previousData;
+      });
+    },
+    [debouncedUpdate],
+  );
+
+  // Update dependent fields based on toggle status
+  const updateDependentFields = useCallback(
+    (updatedData: UpdateScenarioEventDataParam, fieldName: string, enabled: boolean) => {
+      const dependentFields = FIELD_DEPENDENCIES[fieldName] || [];
+
+      dependentFields.forEach(dependentField => {
+        const field = updatedData[dependentField as keyof UpdateScenarioEventDataParam];
+        if (isObject(field) && field !== null && "disabled" in field) {
+          (updatedData[dependentField as keyof UpdateScenarioEventDataParam] as any) = {
+            ...field,
+            disabled: !enabled,
+          };
+        }
+      });
+
+      return updatedData;
+    },
+    [],
+  );
+
+  const handleFieldChange = useCallback(
+    (fieldName: keyof UpdateScenarioEventDataParam, value: string | number | boolean) => {
+      if (!selectedEvent) return;
+      updateFieldValue(fieldName, value);
+    },
+    [selectedEvent, updateFieldValue],
+  );
+
+  const handleToggleChange = useCallback(
+    (fieldName: keyof UpdateScenarioEventDataParam, enabled: boolean) => {
+      if (!selectedEvent) return;
+
+      setFormData(previousData => {
+        if (!previousData) return previousData;
+
+        let updatedData = {
+          ...previousData,
+          [fieldName]: {
+            ...previousData[fieldName],
+            value: enabled,
+          },
+        };
+
+        updatedData = updateDependentFields(updatedData, fieldName, enabled);
+        // Trigger debounced update with the new data
+        debouncedUpdate(updatedData);
+        return updatedData;
+      });
+    },
+    [selectedEvent, updateDependentFields, debouncedUpdate],
+  );
+
+  const handleDelete = useCallback(() => {
+    if (selectedEvent?.id?.value) {
+      onDelete(selectedEvent.id.value);
+    }
+  }, [selectedEvent, onDelete]);
+
+  const handleEventSelection = useCallback(
+    (eventId: string) => {
+      setIsEventDropdownOpen(false);
+      onEventSelect(eventId);
+    },
+    [onEventSelect],
+  );
+
+  const toggleDropdown = useCallback(() => {
+    setIsEventDropdownOpen(prev => !prev);
+  }, []);
+
+  if (!isOpen || !formData) return null;
+
+  return (
+    <div className="fixed inset-0 z-50 flex">
+      <div className="flex-1 bg-black bg-opacity-50" onClick={onClose} />
+
+      <div className="w-[50%] min-w-[700px] bg-white shadow-xl border-l-[1px] border-gray-300">
+        <PanelHeader
+          eventId={selectedEvent?.id?.value || ""}
+          onClose={onClose}
+          onDelete={handleDelete}
+          hasEvent={!!selectedEvent}
+        />
+
+        <div className="h-[calc(100vh-100px)] px-10 pl-[46px] pt-2 overflow-y-auto [&::-webkit-scrollbar]:w-[1px] [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-gray-400">
+          <div className="mb-4">
+            {isNewEvent ? (
+              <EventDropdown
+                isOpen={isEventDropdownOpen}
+                selectedEventName={selectedEventName}
+                availableOptions={availableEventOptions}
+                onToggle={toggleDropdown}
+                onSelect={handleEventSelection}
+                dropdownRef={dropdownRef}
+              />
+            ) : (
+              <div className="text-2xl font-light w-full">{selectedEventName}</div>
+            )}
+          </div>
+
+          <div className="space-y-3">
+            <Field label="Real time feedback status">
+              <ToggleSwitch
+                enabled={formData.feedbackStatus?.value || false}
+                onChange={enabled =>
+                  handleToggleChange(MAPPED_EVENT_FIELDS.FEEDBACK_STATUS, enabled)
+                }
+                label="Real time feedback status"
+              />
+            </Field>
+
+            <Field label="Real time feedback emoji">
+              <EmojiPickerComponent
+                className="max-w-[60px] pr-[25px]"
+                onEmojiClick={emoji => handleFieldChange(MAPPED_EVENT_FIELDS.EMOJI, emoji)}
+                buttonText={formData.emoji?.value || "🫥"}
+                disabled={formData.emoji?.disabled}
+              />
+            </Field>
+
+            <Field label="Real time feedback message" multiline={true}>
+              <FormTextarea
+                value={formData.message?.value || ""}
+                onChange={value => handleFieldChange(MAPPED_EVENT_FIELDS.MESSAGE, value)}
+                placeholder="Add feedback message"
+                disabled={formData.message?.disabled}
+              />
+            </Field>
+
+            <Field label="Session quality score">
+              <NumberInput
+                value={Number(formData.score?.value || 0)}
+                onChange={value => handleFieldChange(MAPPED_EVENT_FIELDS.SCORE, value)}
+                disabled={formData.score?.disabled}
+              />
+            </Field>
+
+            <Field label="Branching status">
+              <ToggleSwitch
+                enabled={formData.branchingStatus?.value || false}
+                onChange={enabled =>
+                  handleToggleChange(MAPPED_EVENT_FIELDS.BRANCHING_STATUS, enabled)
+                }
+                label="Branching status"
+              />
+            </Field>
+
+            <Field label="Branch to state" multiline={true}>
+              <FormTextarea
+                value={formData.branchInstruction?.value || ""}
+                onChange={value => handleFieldChange(MAPPED_EVENT_FIELDS.BRANCH_INSTRUCTION, value)}
+                placeholder="Add branch to state"
+                disabled={formData.branchInstruction?.disabled}
+              />
+            </Field>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};

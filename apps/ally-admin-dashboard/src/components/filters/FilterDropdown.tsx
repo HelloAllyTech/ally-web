@@ -8,8 +8,11 @@ import {
   FilterDropdownOptions,
   userRoleItems,
   userStatusItems,
+  userStatus,
 } from "@constants";
 import { formatCapitalizedEnum } from "@utils";
+
+import { StatusBadge } from "../status-badge";
 
 const listWidth = 200;
 
@@ -149,7 +152,13 @@ export const FilterDropdown: React.FC<FilterDropdownProps> = ({
                 checked={!!selected[name]}
                 onChange={e => updateSelectedFilters(filterType, name, e.target.checked)}
               />
-              <span className="text-gray-800 text-[14px]">{formatCapitalizedEnum(name)}</span>
+              <span className={"text-gray-800 text-[14px]"}>
+                {name === userStatus.SUSPENDED || name === userStatus.ACTIVE ? (
+                  <StatusBadge status={name} />
+                ) : (
+                  formatCapitalizedEnum(name)
+                )}
+              </span>
             </label>
           ))}
         </div>
@@ -229,5 +238,3 @@ export const FilterDropdown: React.FC<FilterDropdownProps> = ({
     </div>
   );
 };
-
-export default FilterDropdown;

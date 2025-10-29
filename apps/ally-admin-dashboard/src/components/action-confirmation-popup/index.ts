@@ -1,1 +1,1 @@
-export { default as ActionConfirmationPopup } from "./ActionConfirmationPopup";
+export { ActionConfirmationPopup } from "./ActionConfirmationPopup";

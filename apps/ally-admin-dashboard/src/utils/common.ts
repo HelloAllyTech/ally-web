@@ -1,7 +1,8 @@
 import { matchPath } from "react-router-dom";
 
+import { ButtonProps, ButtonVariant } from "@components/types";
 import { EMAIL_REGEX } from "@constants";
-import { UserRoles } from "@types";
+import { Simulation, SimulationStatus, UserRoles } from "@types";
 
 export const validateEmail = (email: string): boolean => {
   return Boolean(email && EMAIL_REGEX.test(email));
@@ -63,15 +64,87 @@ export const decodeUint8ToJson = (payload: unknown): unknown => {
   return null;
 };
 
+export const formatDate = (dateString: string) => {
+  const date = new Date(dateString);
+  return date.toLocaleDateString("en-GB", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  });
+};
+
 export const formatCapitalizedEnum = (str: string | UserRoles) => {
   const value = typeof str === "string" ? str : str?.name;
   if (!value) return "";
   let capitalized = value.charAt(0).toUpperCase() + value.slice(1).toLowerCase();
-  capitalized = capitalized.replace(/_/g, " ");
+  capitalized = capitalized.replace(/_|-/g, " ");
   return capitalized;
+};
+
+export const getButtonStyles = (variant: ButtonProps["variant"]) => {
+  switch (variant) {
+    case ButtonVariant.DESTRUCTIVE:
+      return "bg-[#F93535] text-[#FFFFFF] hover:bg-destructive/90 disabled:bg-destructive/50";
+    case ButtonVariant.SECONDARY:
+      return "border border-[#C8C5D0] hover:bg-accent hover:text-accent-foreground disabled:bg-accent/50 text-gray-800";
+    case ButtonVariant.ICON:
+      return "bg-transparent border-none hover:bg-transparent disabled:bg-transparent !p-2 !h-fit";
+    case ButtonVariant.TEXT:
+      return "bg-transparent border-none hover:bg-transparent disabled:bg-transparent";
+    case ButtonVariant.PRIMARY:
+    default:
+      return "bg-[#0957D0] text-[#FFFFFF] hover:bg-primary/90 disabled:bg-primary/50";
+  }
+};
+
+export const getSimulationStatusColor = (status: Simulation["status"]) => {
+  switch (status) {
+    case SimulationStatus.ACTIVE:
+      return "bg-[#C8E6C9] text-[#18441B]";
+    case SimulationStatus.DRAFT:
+      return "bg-[#EEEEEE] text-[#424242]";
+    case SimulationStatus.ARCHIVED:
+      return "bg-[#FFE0B2] text-[#662400]";
+    default:
+      return "bg-gray-100 text-gray-800";
+  }
+};
+
+export const formatSimulationUsage = (usage: number) => {
+  if (usage === 1) return `${usage} time`;
+  return `${usage || 0} times`;
 };
 
 export const getChipValue = (items: string[]): string => {
   if (!items || items.length === 0) return "";
   return items.length > 1 ? `${items[0]} +${items.length - 1}` : items[0];
+};
+
+// Map voices API response to dropdown options
+export const getSimulationVoiceOptions = (
+  voices: Array<{ id?: string; name?: string }> = [],
+): Array<{ value: string; label: string }> => {
+  return voices
+    .map(v => ({
+      value: v?.id ?? v?.name ?? "",
+      label: formatCapitalizedEnum(v?.name ?? v?.id ?? ""),
+    }))
+    .filter(o => Boolean(o.value) && Boolean(o.label));
+};
+
+// Type checking utility functions
+export const isObject = (value: unknown): value is Record<string, unknown> => {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+};
+
+export const isNumber = (value: unknown): value is number => {
+  return typeof value === "number" && !isNaN(value) && isFinite(value);
+};
+
+export const isNonEmptyString = (value: unknown): value is string => {
+  return typeof value === "string" && value.trim() !== "";
+};
+
+export const isArray = (value: unknown): value is unknown[] => {
+  return Array.isArray(value);
 };

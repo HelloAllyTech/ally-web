@@ -5,13 +5,7 @@ import { useSelector } from "react-redux";
 import { logger } from "@ally-ui-mono/ui-shared";
 import { useLazyGetUserQuery, useLazyGetPermissionsQuery, baseAPI } from "@api";
 import { NavigationItem } from "@components/types";
-import {
-  LOCAL_STORAGE_KEYS,
-  ROUTES,
-  en,
-  NAVIGATION_ITEM_IDS,
-  NAVIGATION_ITEM_PERMISSIONS,
-} from "@constants";
+import { LOCAL_STORAGE_KEYS, ROUTES, en, SIDEBAR_ITEMS, Permissions } from "@constants";
 import { setUser, authenticate, unauthenticate, setPermissions } from "@reducer";
 import { RootState, store } from "@store";
 
@@ -24,13 +18,18 @@ export const useUser = () => {
   const [getPermissions, { isLoading: isPermissionsLoading }] = useLazyGetPermissionsQuery();
 
   const navigationItems: NavigationItem[] = [
-    // {
-    //   id: NAVIGATION_ITEM_IDS.SIMULATION_STUDIO,
-    //   label: en.simulation.simulationStudio,
-    //   path: ROUTES.SIMULATION_STUDIO,
-    // },
     {
-      id: NAVIGATION_ITEM_IDS.USER_MANAGEMENT,
+      id: SIDEBAR_ITEMS.SIMULATION_STUDIO,
+      label: en.simulation.simulationStudio,
+      path: ROUTES.SIMULATION_STUDIO,
+    },
+    {
+      id: SIDEBAR_ITEMS.EVENT_MANAGEMENT,
+      label: en.simulation.eventManagement,
+      path: ROUTES.MANAGE_EVENTS,
+    },
+    {
+      id: SIDEBAR_ITEMS.USER_MANAGEMENT,
       label: en.userManagement.userManagement,
       path: ROUTES.USER_MANAGEMENT,
     },
@@ -101,10 +100,12 @@ export const useUser = () => {
     // Filter navigation items based on user permissions
     return navigationItems.filter(item => {
       switch (item.id) {
-        // case NAVIGATION_ITEM_IDS.SIMULATION_STUDIO:
-        //   return permissions.includes(NAVIGATION_ITEM_PERMISSIONS.SIMULATION_STUDIO);
-        case NAVIGATION_ITEM_IDS.USER_MANAGEMENT:
-          return permissions.includes(NAVIGATION_ITEM_PERMISSIONS.USER_MANAGEMENT);
+        case SIDEBAR_ITEMS.SIMULATION_STUDIO:
+          return permissions.includes(Permissions.EDIT_SCENARIO);
+        case SIDEBAR_ITEMS.EVENT_MANAGEMENT:
+          return permissions.includes(Permissions.EDIT_EVENT);
+        case SIDEBAR_ITEMS.USER_MANAGEMENT:
+          return permissions.includes(Permissions.EDIT_USER);
         default:
           return true;
       }

@@ -13,22 +13,20 @@ export const OrganizationList: React.FC<OrganizationListProps> = ({
 }) => {
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
 
-  const renderHeader = () => {
-    return (
-      <div className="grid grid-cols-12 px-4 py-2 text-[14px] text-gray-500 border-b border-gray-200">
-        <div className="col-span-3">{en.userManagement.organization}</div>
-        <div className="col-span-2">{en.userManagement.code}</div>
-        <div className="col-span-3">{en.userManagement.description}</div>
-        <div className="col-span-2">{en.userManagement.createdOn}</div>
-        <div className="col-span-2">{en.userManagement.noOfUsers}</div>
-      </div>
-    );
-  };
+  const renderHeader = (
+    <div className="grid grid-cols-12 px-4 py-2 text-[14px] text-gray-500 border-b border-gray-200">
+      <div className="col-span-3">{en.userManagement.organization}</div>
+      <div className="col-span-2">{en.userManagement.code}</div>
+      <div className="col-span-3">{en.userManagement.description}</div>
+      <div className="col-span-2">{en.userManagement.createdOn}</div>
+      <div className="col-span-2">{en.userManagement.noOfUsers}</div>
+    </div>
+  );
 
   return (
     <div className="w-full text-[13px] overflow-x-auto">
       <div className="min-w-[900px]">
-        {renderHeader()}
+        {renderHeader}
 
         <div className="h-[calc(100vh-270px)] overflow-y-auto">
           {organizations.map(tenant => (
@@ -42,7 +40,7 @@ export const OrganizationList: React.FC<OrganizationListProps> = ({
                 {tenant.description}
               </div>
               <div className="col-span-2 text-gray-600">{formatDate(tenant.createdAt)}</div>
-              <div className="col-span-2 flex items-center justify-between text-gray-600">
+              <div className="col-span-2 flex items-center justify-between text-gray-600 pl-1">
                 <span>{tenant.userCount}</span>
                 <button
                   className="text-gray-400 hover:text-gray-600 px-2"

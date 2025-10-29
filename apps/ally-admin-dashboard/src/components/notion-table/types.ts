@@ -1,0 +1,79 @@
+export interface EditableTextPopupProps {
+  value: string;
+  onChange: (value: string) => void;
+  placeholder?: string;
+  disabled?: boolean;
+  className?: string;
+  width?: number;
+}
+
+export interface EditableTextPopupState {
+  isOpen: boolean;
+  editValue: string;
+}
+
+export interface EmojiPickerState {
+  isOpen: boolean;
+  selectedEmoji: string;
+}
+
+export interface NumberInputProps {
+  value?: number;
+  onChange?: (value: number) => void;
+  min?: number;
+  max?: number;
+  step?: number;
+  placeholder?: string;
+  disabled?: boolean;
+  className?: string;
+  inputClassName?: string;
+  spinnerClassName?: string;
+  size?: "sm" | "md" | "lg";
+}
+
+export interface NumberInputState {
+  inputValue: string;
+  isFocused: boolean;
+}
+
+export type NumberInputSize = "sm" | "md" | "lg";
+
+export interface SwitchProps {
+  checked: boolean;
+  onChange: (checked: boolean) => void;
+  disabled?: boolean;
+  className?: string;
+}
+
+export interface SelectComponentProps {
+  value: string;
+  options: Array<{ label: string; value: string; backgroundColor?: string }>;
+  onChange: (value: string) => void;
+  onAddOption?: (option: string, backgroundColor: string) => void;
+  placeholder?: string;
+  className?: string;
+  disabled?: boolean;
+}
+
+export interface HeaderProps {
+  column: {
+    headerIndex: number;
+    label: string;
+    getResizerProps: () => {
+      [key: string]: any;
+    };
+    getHeaderProps: () => {
+      key: string;
+      [key: string]: any;
+    };
+  };
+}
+
+export interface NotionTableProps {
+  tableData: { data: any[]; columns: any[] } | undefined;
+  tableStyle?: React.CSSProperties;
+  tableFooter?: React.ReactNode;
+  onRowChange?: (action: any) => void;
+  onRowClick?: (rowIndex: number) => void;
+  onSelectionChange?: (selectedRows: any[]) => void;
+}

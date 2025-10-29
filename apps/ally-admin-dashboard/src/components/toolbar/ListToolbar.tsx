@@ -1,6 +1,9 @@
 import React from "react";
 
+import { Tooltip } from "@mui/material";
+
 import { Close, Plus, Search } from "@assets";
+import { Button } from "@components";
 import { ListToolbarProps, FilterChipProps } from "@components/types";
 import { en } from "@constants";
 import { formatCapitalizedEnum } from "@utils";
@@ -46,7 +49,11 @@ export const ListToolbar: React.FC<ListToolbarProps> = ({
       >
         <span className="mr-1 text-[12px]">{chip.label}:</span>
         <div className="flex">
-          <span className="font-medium mr-1 text-[12px]">{formatCapitalizedEnum(chip.value)}</span>
+          <Tooltip title={formatCapitalizedEnum(chip.allValue.join(", "))} placement="top" arrow>
+            <span className="font-medium mr-1 text-[12px]">
+              {formatCapitalizedEnum(chip.value)}
+            </span>
+          </Tooltip>
           <button onClick={chip.onClear} className="text-gray-500 hover:text-gray-700">
             <Close />
           </button>
@@ -69,13 +76,14 @@ export const ListToolbar: React.FC<ListToolbarProps> = ({
   ) : null;
 
   const actionButton = action ? (
-    <button
+    <Button
       onClick={action.onClick}
-      className="inline-flex font-['Roboto'] items-center bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-6 py-2 rounded-full"
+      variant={action.variant}
+      className={`inline-flex font-['Roboto'] items-center text-sm font-medium px-4 py-2 rounded-full`}
     >
-      <span className="mr-2 text-lg">+</span>
+      {<span className="mr-[1px] text-lg">{action?.icon || "+"}</span>}
       {action.label}
-    </button>
+    </Button>
   ) : null;
 
   return (

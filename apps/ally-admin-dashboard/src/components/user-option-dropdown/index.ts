@@ -1,1 +1,1 @@
-export * from "./UserOptionDropdown";
+export { UserOptionDropdown } from "./UserOptionDropdown";

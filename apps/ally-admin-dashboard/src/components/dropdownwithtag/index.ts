@@ -1,1 +1,1 @@
-export * from "./DropdownWithTag";
+export { DropdownwithTag } from "./DropdownWithTag";

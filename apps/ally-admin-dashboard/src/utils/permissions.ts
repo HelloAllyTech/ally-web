@@ -1,6 +1,8 @@
-import { PERMISSION_ROUTE_MAP } from "@constants";
+import { Permissions } from "@constants";
 
-// TODO: Update logic for param based route matching
-export const hasPermissions = (route: string, userPermissions: string[]) => {
-  return PERMISSION_ROUTE_MAP[route]?.some(permission => userPermissions?.includes(permission));
-};
+export const hasPermissions = (
+  userPermissions: Permissions[],
+  requiredPermissions: Permissions[] = [],
+) =>
+  !requiredPermissions.length ||
+  requiredPermissions.some(permission => userPermissions?.includes(permission));

@@ -11,8 +11,8 @@ import {
   OrganizationListLoader,
   UserModal,
   ActionConfirmationPopup,
-  ButtonVariant,
 } from "@components";
+import { ButtonVariant } from "@components/types";
 import {
   addCredit,
   addNewOrganizationModal,

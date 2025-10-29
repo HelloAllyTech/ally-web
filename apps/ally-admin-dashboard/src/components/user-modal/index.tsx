@@ -1,1 +1,1 @@
-export * from "./UserModal";
+export { UserModal } from "./UserModal";

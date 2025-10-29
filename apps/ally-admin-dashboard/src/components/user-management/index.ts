@@ -1,2 +1,2 @@
-export * from "./UserList";
-export * from "./OrganizationList";
+export { UserList } from "./UserList";
+export { OrganizationList } from "./OrganizationList";

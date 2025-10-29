@@ -8,6 +8,7 @@
       "vite/client",
       "node",
       "vitest",
+      "@testing-library/jest-dom",
       "@nx/react/typings/cssmodule.d.ts",
       "@nx/react/typings/image.d.ts"
     ]
