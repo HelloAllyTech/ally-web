@@ -2,13 +2,6 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 
 import { LOCAL_STORAGE_KEYS } from "@constants";
 
-// Mock environment variable
-vi.stubGlobal("import.meta", {
-  env: {
-    VITE_API_BASE_URL: "http://localhost:3000",
-  },
-});
-
 // Mock sonner toast
 vi.mock("sonner", () => ({
   toast: {
