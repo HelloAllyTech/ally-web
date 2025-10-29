@@ -3,31 +3,12 @@ import { ButtonHTMLAttributes, ChangeEvent, CSSProperties, ReactNode } from "rea
 import { TextFieldProps as MuiTextFieldProps } from "@mui/material";
 import { UseFormRegister, UseFormReturn, FieldErrors } from "react-hook-form";
 
-export interface Simulation {
-  id: string;
-  title: string;
-  description: string;
-  coverImageUrl: string;
-  createdBy: string;
-  lastModified: string;
-  status: "Published" | "Draft" | "Archived";
-  usage: number;
-}
+import { Simulation } from "@types";
 
 export interface PopupButtonProps {
   label: string;
   onClick: () => void;
   variant?: ButtonVariantType;
-}
-
-export interface ActionConfirmationPopupProps {
-  isOpen: boolean;
-  onClose: () => void;
-  title: string;
-  titleItalic?: string;
-  description: string;
-  primaryButton: PopupButtonProps;
-  secondaryButton: PopupButtonProps;
 }
 
 export interface HeaderProps {
@@ -45,10 +26,6 @@ export const ButtonVariant = {
   ICON: "icon",
   TEXT: "text",
 } as const;
-
-export interface BasicInfoProps {
-  formMethods: any;
-}
 
 export type ButtonVariantType = (typeof ButtonVariant)[keyof typeof ButtonVariant];
 
@@ -69,7 +46,8 @@ export interface DeleteSimulationPopupProps {
 export interface FilterListProps {
   isOpen: boolean;
   onClose: () => void;
-  onFilterChange?: (selectedStatuses: string[]) => void;
+  onApply: (selectedStatuses: Array<{ id: string; label: string }>) => void;
+  selectedFilters: Array<{ id: string; label: string }>;
   options?: { id: string; label: string }[];
 }
 
@@ -79,18 +57,31 @@ export interface FooterProps {
   showPrevious?: boolean;
   showNext?: boolean;
   isNextDisabled?: boolean;
+  isLastStep?: boolean;
 }
 
 // InputField
 export interface InputFieldProps {
+  type?: string;
   label: string;
   id: string;
-  aiAssist?: boolean;
   formMethods: any;
   multiline?: boolean;
   placeholder?: string;
-  wordCount?: boolean;
+  maxLength?: number;
   minHeight?: string;
+  infoIconContent?: string;
+  isMandatory?: boolean;
+}
+
+// DropdownField
+export interface DropdownFieldProps {
+  label: string;
+  id: string;
+  formMethods: UseFormReturn<any>;
+  options: Array<{ value: string; label: string }>;
+  placeholder?: string;
+  isMandatory?: boolean;
 }
 
 // NarrativeContext
@@ -154,7 +145,6 @@ export interface FormFieldConfig {
   placeholder?: string;
   type: "text" | "select";
   options?: Array<{ value: string; label: string }>;
-  hasInfoIcon?: boolean;
 }
 
 export interface FieldGroupType {
@@ -221,12 +211,15 @@ export interface TabsProps {
 export interface FilterChipProps {
   label: string;
   value: string;
+  allValue: string[];
   onClear: () => void;
 }
 
 export interface ActionProps {
   label: string;
   onClick?: () => void;
+  icon?: React.ReactNode;
+  variant?: ButtonVariantType;
 }
 
 export interface AddFilterCtaProps {

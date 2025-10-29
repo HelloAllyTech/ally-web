@@ -1,18 +1,8 @@
 import React, { useEffect, FC, useRef } from "react";
 
 import { Input } from "@components";
+import { OTPProps } from "@components/types";
 import { KeyboardKeys, SINGLE_DIGIT_REGEX } from "@constants";
-
-export interface OTPProps extends Omit<React.HTMLAttributes<HTMLDivElement>, "onChange"> {
-  digitCount?: number;
-  value?: string;
-  onChange?: (value: string) => void;
-  onComplete?: (value: string) => void;
-  disabled?: boolean;
-  autoFocus?: boolean;
-  placeholder?: string;
-  inputClassName?: string;
-}
 
 export const OTP: FC<OTPProps> = ({
   className,

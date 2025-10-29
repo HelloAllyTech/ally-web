@@ -2,7 +2,7 @@ import { FC } from "react";
 
 import { TextField as MuiTextField } from "@mui/material";
 
-import { TextFieldProps } from "./types";
+import { TextFieldProps } from "../types";
 
 const heights = {
   small: "30px",

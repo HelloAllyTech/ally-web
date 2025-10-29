@@ -112,7 +112,7 @@ export const userEditModal = [
     fieldType: "input",
     inputType: "text",
     maxLength: 100,
-    required: false,
+    required: true,
   },
   {
     id: USER_MODAL_FIELDS_IDS.EMAIL,
@@ -121,7 +121,7 @@ export const userEditModal = [
     fieldType: "input",
     inputType: "email",
     maxLength: 100,
-    required: false,
+    required: true,
   },
   {
     id: USER_MODAL_FIELDS_IDS.EXTERNALID,

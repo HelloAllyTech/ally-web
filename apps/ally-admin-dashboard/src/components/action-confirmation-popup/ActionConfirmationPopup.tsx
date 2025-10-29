@@ -1,11 +1,20 @@
 import { FC, useEffect, useRef } from "react";
 
 import { Close } from "@assets";
-import { getButtonStyles } from "@constants";
+import { PopupButtonProps } from "@components/types";
+import { getButtonStyles } from "@utils";
 
-import { ActionConfirmationPopupProps } from "../types";
+interface ActionConfirmationPopupProps {
+  isOpen: boolean;
+  onClose: () => void;
+  title: string;
+  titleItalic?: string;
+  description: string;
+  primaryButton: PopupButtonProps;
+  secondaryButton: PopupButtonProps;
+}
 
-const ActionConfirmationPopup: FC<ActionConfirmationPopupProps> = ({
+export const ActionConfirmationPopup: FC<ActionConfirmationPopupProps> = ({
   isOpen,
   onClose,
   title,
@@ -56,11 +65,11 @@ const ActionConfirmationPopup: FC<ActionConfirmationPopupProps> = ({
         <Close width={15} height={20} />
       </button>
 
-      <div className="flex justify-center items-center relative text-[24px] font-medium text-center w-full">
+      <div className="flex justify-center items-center relative text-[24px] font-medium text-center w-full font-['Replay_Pro']">
         {title}{" "}
         {titleItalic && <span className="italic font-semibold ml-1">{`${titleItalic}`}</span>}
       </div>
-      <p className="text-black  text-[14px] my-2 text-center mb-[16px] text-base">
+      <p className="text-gray-600 font-['IBM_Plex_Serif'] text-[14px] my-2 text-center ">
         {renderBoldFromString(description)}
       </p>
     </div>
@@ -98,5 +107,3 @@ const ActionConfirmationPopup: FC<ActionConfirmationPopupProps> = ({
     </div>
   );
 };
-
-export default ActionConfirmationPopup;

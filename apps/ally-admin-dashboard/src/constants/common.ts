@@ -15,6 +15,26 @@ export const ApiEndpoints = {
     VERIFY_OTP: "/v2/auth/verify-otp",
     REFRESH: "/v1/auth/refresh",
   },
+  SIMULATION_STUDIO: {
+    GET_SIMULATIONS: "/v1/learn/admin-scenarios",
+    GET_ADMIN_SIMULATION_BY_ID: (id: string) => `/v1/learn/admin-scenarios/${id}`,
+    CREATE_SIMULATION: "/v1/learn/scenarios",
+    UPDATE_SIMULATION_BY_ID: (id: string) => `/v1/learn/scenarios/${id}`,
+    SIMULATION_BY_ID: (id: string) => `/v1/learn/admin-scenarios/${id}`,
+    START_SIMULATION: "/v1/learn/scenario-session-start",
+    END_SIMULATION: (sessionId: string) => `/v1/learn/scenario-session/${sessionId}/end`,
+    SCENARIO_VOICES: "/v1/learn/scenario-voices",
+    SESSION_EVENTS: "/v1/session-events",
+    UPDATE_SESSION_EVENT: (eventId: string) => `/v1/session-events/events/${eventId}`,
+    DELETE_SESSION_EVENTS: "/v1/session-events/events",
+    GET_COVER_IMAGE_URL: "/v1/learn/scenarios/cover-image-url",
+    DELETE_COVER_IMAGE: "/v1/learn/cover-image",
+    MAP_SCENARIO_EVENTS: "/v1/learn/scenarios/map-events",
+    GET_MAPPED_SCENARIO_EVENTS: (id: string) => `/v1/learn/scenarios/${id}/events`,
+    SCENARIO_EVENTS: "/v1/learn/scenarios/events",
+    SCENARIO_PREVIEW: "/v1/learn/scenarios/preview",
+    END_SCENARIO_PREVIEW: (sessionId: string) => `/v1/learn/scenarios/preview/${sessionId}/end`,
+  },
   USER_MANAGEMENT: {
     USERS: "/v1/users",
     TENANT: "/v1/tenant",
@@ -34,6 +54,10 @@ export const ROUTES = {
   LOGIN: "/login",
   SIMULATION_STUDIO: "/simulation-studio",
   USER_MANAGEMENT: "/user-management",
+  MANAGE_EVENTS: "/manage-events",
+  CREATE_SIMULATION: "/create-simulation",
+  SIMULATION_PREVIEW: (id: string) => `/simulation-preview/${id}`,
+  EDIT_SIMULATION: (id: string) => `/create-simulation/edit/${id}`,
 };
 
 export const LOCAL_STORAGE_KEYS = {
@@ -41,6 +65,7 @@ export const LOCAL_STORAGE_KEYS = {
   ADMIN_REFRESH_TOKEN: "adminRefreshToken",
   ADMIN_USER_STATUS: "adminUserStatus",
   ADMIN_IS_AUTHENTICATED: "adminIsAuthenticated",
+  PREVIEW_ROOM_DATA: "previewRoomData",
 };
 
 export enum KeyboardKeys {
@@ -75,18 +100,10 @@ export const SORT_ORDER = {
   DESC: "DESC",
 };
 
-export const NAVIGATION_ITEM_IDS = {
-  SIMULATION_STUDIO: "simulation-studio",
-  USER_MANAGEMENT: "user-management",
-};
-
-export const NAVIGATION_ITEM_PERMISSIONS = {
-  SIMULATION_STUDIO: "edit:scenario", // TODO: change when scenario studio is implemented
-  USER_MANAGEMENT: "edit:user",
-  TENANT_MANAGEMENT: "edit:tenant",
-};
-
 export const TAG_TYPES = {
   USERS: "users",
   TENANTS: "tenants",
+  SESSION_EVENTS: "sessionEvents",
+  SIMULATION: "simulation",
+  SIMULATION_EVENTS: "simulationEvents",
 };

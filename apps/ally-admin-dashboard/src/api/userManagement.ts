@@ -113,6 +113,7 @@ const userManagementAPI = baseAPI.injectEndpoints({
         method: HttpMethod.PUT,
         body,
       }),
+      invalidatesTags: [TAG_TYPES.USERS],
     }),
   }),
 });

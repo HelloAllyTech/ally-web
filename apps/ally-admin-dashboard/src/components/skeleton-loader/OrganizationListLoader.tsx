@@ -7,7 +7,7 @@ type OrganizationListLoaderProps = {
 };
 
 export const OrganizationListLoader: React.FC<OrganizationListLoaderProps> = ({ rows = 20 }) => {
-  const renderHeader = () => (
+  const renderHeader = (
     <div className="grid grid-cols-12 px-4 py-2 text-sm text-gray-500 border-b border-gray-200">
       <div className="col-span-4">{en.userManagement.organization}</div>
       <div className="col-span-4">{en.userManagement.description}</div>
@@ -19,7 +19,7 @@ export const OrganizationListLoader: React.FC<OrganizationListLoaderProps> = ({ 
   return (
     <div className="w-full overflow-x-auto text-sm text-gray-600">
       <div className="min-w-[900px]">
-        {renderHeader()}
+        {renderHeader}
 
         {Array.from({ length: rows }).map((_, idx) => (
           <div
@@ -45,5 +45,3 @@ export const OrganizationListLoader: React.FC<OrganizationListLoaderProps> = ({ 
     </div>
   );
 };
-
-export default OrganizationListLoader;

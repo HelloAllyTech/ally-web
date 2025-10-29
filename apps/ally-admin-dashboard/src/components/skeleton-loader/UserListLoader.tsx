@@ -7,7 +7,7 @@ type UserListLoaderProps = {
 };
 
 export const UserListLoader: React.FC<UserListLoaderProps> = ({ rows = 15 }) => {
-  const renderHeader = () => (
+  const renderHeader = (
     <div className="grid [grid-template-columns:repeat(48,minmax(0,0.8fr))] px-4 py-2 text-sm text-gray-500 border-b border-gray-200">
       <div className="col-span-11 pr-1">{en.userManagement.user}</div>
       <div className="col-span-6 pr-1">{en.userManagement.telephonyId}</div>
@@ -22,7 +22,7 @@ export const UserListLoader: React.FC<UserListLoaderProps> = ({ rows = 15 }) => 
   return (
     <div className="w-full overflow-x-auto text-sm text-gray-600">
       <div className="min-w-[900px]">
-        {renderHeader()}
+        {renderHeader}
 
         {Array.from({ length: rows }).map((_, idx) => (
           <div

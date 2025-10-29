@@ -143,14 +143,13 @@ export function useUserManagement(tenants: Tenant[]) {
 
   // Filter chips are used to display the filter chips in the list toolbar
   const filterChips = useMemo(() => {
-    const chips: Array<{ label: string; value: string; onClear: () => void }> = [];
+    const chips: Array<{ label: string; value: string; allValue: string[]; onClear: () => void }> =
+      [];
     if (filters.organizations.length) {
       chips.push({
         label: FilterDropdownOptions.ORGANIZATION,
-        value:
-          filters.organizations.length > 1
-            ? `${filters.organizations[0]} +${filters.organizations.length - 1}`
-            : filters.organizations[0],
+        value: getChipValue(filters.organizations),
+        allValue: filters.organizations,
         onClear: () => {
           setFilters(previousFilters => ({ ...previousFilters, organizations: [] }));
           setTenantIdFilters([]);
@@ -161,6 +160,7 @@ export function useUserManagement(tenants: Tenant[]) {
       chips.push({
         label: FilterDropdownOptions.ROLE,
         value: getChipValue(filters.roles),
+        allValue: filters.roles,
         onClear: () => setFilters(previousFilters => ({ ...previousFilters, roles: [] })),
       });
     }
@@ -168,6 +168,7 @@ export function useUserManagement(tenants: Tenant[]) {
       chips.push({
         label: FilterDropdownOptions.STATUS,
         value: getChipValue(filters.statuses),
+        allValue: filters.statuses,
         onClear: () => setFilters(previousFilters => ({ ...previousFilters, statuses: [] })),
       });
     }

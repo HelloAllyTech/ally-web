@@ -1,20 +1,25 @@
 import React, { useEffect } from "react";
 
 import { useDispatch } from "react-redux";
-import { Navigate, useLocation } from "react-router-dom";
+import { Navigate } from "react-router-dom";
 
 import { useGetUserQuery, useGetPermissionsQuery } from "@api";
 import { Sidebar, AccessDenied } from "@components";
-import { LOCAL_STORAGE_KEYS, ROUTES } from "@constants";
+import { LOCAL_STORAGE_KEYS, ROUTES, Permissions } from "@constants";
 import { setUser, setPermissions } from "@reducer";
 import { hasPermissions } from "@utils";
 
 interface PrivateLayoutProps {
   children: React.ReactNode;
+  requiredPermissions?: Permissions[];
+  isPreview?: boolean;
 }
 
-export const PrivateLayout: React.FC<PrivateLayoutProps> = ({ children }) => {
-  const { pathname: currentRoute } = useLocation();
+export const PrivateLayout: React.FC<PrivateLayoutProps> = ({
+  children,
+  isPreview,
+  requiredPermissions = [],
+}) => {
   const isAuthenticated =
     localStorage.getItem(LOCAL_STORAGE_KEYS.ADMIN_IS_AUTHENTICATED) === "true";
 
@@ -36,8 +41,10 @@ export const PrivateLayout: React.FC<PrivateLayoutProps> = ({ children }) => {
   let hasPermission = true;
 
   if (!isUserLoading && !isPermissionsLoading) {
-    hasPermission = hasPermissions(currentRoute, permissions);
+    hasPermission = hasPermissions(permissions, requiredPermissions);
   }
+
+  if (hasPermission && isPreview) return children;
 
   return (
     <div className="flex h-screen bg-white">
