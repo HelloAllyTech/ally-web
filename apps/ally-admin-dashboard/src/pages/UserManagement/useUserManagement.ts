@@ -246,8 +246,9 @@ export function useUserManagement(tenants: Tenant[]) {
         externalId: data?.externalId,
         tenantId: data?.tenantId,
       };
-      if (data?.roles?.includes(UserRole.LEARNER))
-        payload.simulationCreditLimit = Number(data?.simulationCreditLimit);
+      if (data?.roles?.includes(UserRole.LEARNER)) {
+        payload.simulationCreditLimit = Math.max(Number(data?.simulationCreditLimit || 0), 20);
+      }
       await addUserdata(payload).unwrap();
       setAddUserModalOpen(false);
       userMethods.reset(defaultUserValues);

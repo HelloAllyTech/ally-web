@@ -18,12 +18,12 @@ export enum FieldOptions {
 }
 
 export enum UserMenuOptions {
-  EDIT_DETAILS = "Edit Details",
-  CHANGE_ROLE = "Change Role",
-  ADD_CREDIT = "Add Credit",
-  SUSPEND_USER = "Suspend User",
-  GRANT_ACCESS = "Grant Access",
-  REMOVE_USER = "Remove User",
+  EDIT_DETAILS = "Edit details",
+  CHANGE_ROLE = "Change role",
+  MANAGE_CREDITS = "Manage credits",
+  SUSPEND_USER = "Suspend user",
+  GRANT_ACCESS = "Grant access",
+  REMOVE_USER = "Remove user",
 }
 
 export const USER_MODAL_FIELDS_IDS = {
@@ -41,7 +41,7 @@ export const USER_MODAL_FIELDS_IDS = {
 export const userEditMenu = [
   UserMenuOptions.EDIT_DETAILS,
   UserMenuOptions.CHANGE_ROLE,
-  UserMenuOptions.ADD_CREDIT,
+  UserMenuOptions.MANAGE_CREDITS,
   UserMenuOptions.SUSPEND_USER,
   UserMenuOptions.GRANT_ACCESS,
   // UserMenuOptions.REMOVE_USER, // TODO: Add this after backend change for delete user is implemented
@@ -98,7 +98,7 @@ export const addUser = [
     label: "Simulation Credits",
     inputType: "number",
     fieldType: "input",
-    placeholder: "0",
+    placeholder: "20",
     maxLength: 10,
     required: true,
   },

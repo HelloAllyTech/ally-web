@@ -24,8 +24,8 @@ export const CreditField: React.FC<CreditFieldProps> = ({ onChange, userData, va
           <input
             type="number"
             className="border rounded-md py-2 outline-none font-['Replay_Pro'] w-full p-2"
-            value={value === 0 ? "" : (value ?? "")}
-            onChange={e => onChange(Number(e.target.value))}
+            value={value ?? ""}
+            onChange={e => onChange(e.target.value === "" ? "" : Number(e.target.value))}
           />
         </div>
       </div>

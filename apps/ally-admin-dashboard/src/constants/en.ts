@@ -169,7 +169,7 @@ export const en = {
       `Are you sure you want to remove "${name}"? This action cannot be undone.`,
     suspendUser: "Suspend User",
     removeUser: "Remove User",
-    addCredit: "Add Simulation Credits",
+    manageCredit: "Manage Simulation Credits",
     deleteOrganization: "Delete Organization",
     deleteOrganizationConfirmation: (name: string) =>
       `Are you sure you want to remove "${name}"? This action cannot be undone.`,

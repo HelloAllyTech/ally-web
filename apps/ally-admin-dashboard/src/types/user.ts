@@ -187,9 +187,8 @@ export interface UserRoles {
 }
 
 export interface CreditFieldProps {
-  onChange: (newCreditLimit: number) => void;
+  onChange: (newCreditLimit: number | string) => void;
   userData: UserListUser;
-  required: boolean;
   value: number;
 }
 

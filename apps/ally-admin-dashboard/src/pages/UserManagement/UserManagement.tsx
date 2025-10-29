@@ -117,11 +117,11 @@ export const UserManagement: FC = () => {
             handleClick={handleChangeRole}
           />
         );
-      case UserMenuOptions.ADD_CREDIT:
+      case UserMenuOptions.MANAGE_CREDITS:
         return (
           <UserModal
             onClose={handleDropdownClose}
-            title={en.userManagement.addCredit}
+            title={en.userManagement.manageCredit}
             fields={addCredit}
             formMethods={userMethods}
             buttonName={en.common.update}

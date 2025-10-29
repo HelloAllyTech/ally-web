@@ -74,7 +74,7 @@ export const UserOptionDropdown: React.FC<UserOptionDropdownProps> = ({
   const filteredOptionList = useMemo(() => {
     return userEditMenu.filter(item => {
       switch (item) {
-        case UserMenuOptions.ADD_CREDIT:
+        case UserMenuOptions.MANAGE_CREDITS:
           return (
             user?.roles?.some(role => role === UserRole.LEARNER) &&
             user?.status === userStatus.ACTIVE

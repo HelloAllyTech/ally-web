@@ -229,16 +229,12 @@ export const UserModal: React.FC<UserModalProps> = ({
             return true;
           },
         }}
-        defaultValue={{
-          consumedCredits: details?.consumedCredits ?? 0,
-          creditLimit: details?.creditLimit ?? 0,
-        }}
+        defaultValue={details?.creditLimit ?? 0}
         render={({ field: controllerField, fieldState }) => (
           <>
             <CreditField
               onChange={controllerField.onChange}
               userData={details}
-              required={field.required}
               value={controllerField.value ?? ""}
             />
             {fieldState.error && (
