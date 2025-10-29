@@ -11,6 +11,7 @@ const UserInfo: FC<{ user?: User; onLogout: () => void }> = ({ user, onLogout })
   const containerRef = useRef<HTMLDivElement>(null);
   const { credits, limitReached, Creditpercentage } = useSimulationCredits();
 
+  const hasPercentage = typeof Creditpercentage === "number" && Creditpercentage >= 0;
   const ringColor = limitReached ? "#FE6F64" : "#5F99FC";
 
   useEffect(() => {
@@ -31,10 +32,14 @@ const UserInfo: FC<{ user?: User; onLogout: () => void }> = ({ user, onLogout })
       >
         <div className="flex gap-2 items-center w-full">
           <div
-            className="w-[40px] h-[40px] rounded-full p-[2px]"
-            style={{
-              background: `conic-gradient(${ringColor} ${Creditpercentage * 3.6}deg, #e5e7eb ${Creditpercentage * 3.6}deg)`,
-            }}
+            className={"w-[40px] h-[40px] rounded-full p-[2px]"}
+            style={
+              hasPercentage
+                ? {
+                    background: `conic-gradient(${ringColor} ${Creditpercentage * 3.6}deg, #e5e7eb ${Creditpercentage * 3.6}deg)`,
+                  }
+                : undefined
+            }
           >
             <div className="bg-white rounded-full flex items-center justify-center w-full h-full">
               <AccountCircle className="text-gray-700 w-[28px] h-[28px]" />
