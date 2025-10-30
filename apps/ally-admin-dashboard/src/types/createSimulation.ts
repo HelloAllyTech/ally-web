@@ -124,7 +124,7 @@ export interface SimulationPreviewProps {
 }
 
 export interface UpdateEventDataParam {
-  id: string;
+  id?: string;
   name?: string;
   description?: string;
   branchInstruction?: string;

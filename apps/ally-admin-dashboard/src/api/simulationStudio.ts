@@ -107,7 +107,7 @@ const simulationStudioAPI = baseAPI.injectEndpoints({
     /**
      * Create Session Events (bulk)
      */
-    createSessionEvents: builder.mutation<void, { events: SessionEvent[] }>({
+    createSessionEvents: builder.mutation<Array<{ id?: string }>, { events: SessionEvent[] }>({
       query: ({ events }) => ({
         url: ApiEndpoints.SIMULATION_STUDIO.SESSION_EVENTS,
         method: HttpMethod.POST,
@@ -119,9 +119,9 @@ const simulationStudioAPI = baseAPI.injectEndpoints({
     /**
      * Update Events
      */
-    updateSessionEvent: builder.mutation<void, { event: SessionEvent }>({
-      query: ({ event }) => ({
-        url: ApiEndpoints.SIMULATION_STUDIO.UPDATE_SESSION_EVENT(event.id),
+    updateSessionEvent: builder.mutation<void, { id: string; event: SessionEvent }>({
+      query: ({ id, event }) => ({
+        url: ApiEndpoints.SIMULATION_STUDIO.UPDATE_SESSION_EVENT(id),
         method: HttpMethod.PUT,
         body: event,
       }),

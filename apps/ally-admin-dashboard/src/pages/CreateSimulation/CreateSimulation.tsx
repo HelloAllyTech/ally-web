@@ -245,7 +245,7 @@ export const CreateSimulation: FC = () => {
       if (response) {
         setCurrentStep(stepId);
       } else {
-        toast.error("Fill all mandatory fields to proceed to Event Configuration!");
+        toast.error("Fill atleast name field to proceed to Event Configuration!");
       }
     } else {
       setCurrentStep(stepId);

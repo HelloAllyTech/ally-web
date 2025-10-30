@@ -490,8 +490,8 @@ describe("EventManagement", () => {
 
       await waitFor(() => {
         expect(mockUpdateSessionEvent).toHaveBeenCalledWith({
+          id: "event-1",
           event: expect.objectContaining({
-            id: "event-1",
             name: "Updated Event",
           }),
         });
@@ -849,8 +849,8 @@ describe("EventManagement", () => {
 
       await waitFor(() => {
         expect(mockUpdateSessionEvent).toHaveBeenCalledWith({
+          id: "event-1",
           event: expect.objectContaining({
-            id: "event-1",
             name: "Updated Event",
           }),
         });

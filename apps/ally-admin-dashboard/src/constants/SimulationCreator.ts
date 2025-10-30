@@ -263,7 +263,7 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: SimulationCreatorFieldGroups[] = [
         id: "openingStatements",
         label: "Begin the conversation by saying:",
         type: FORM_FIELD_TYPES.TEXT,
-        placeholder: "Comma-separated lines or one per line",
+        placeholder: "Add opening statements as new line",
         isMandatory: true,
         multiline: true,
         fullWidth: true,

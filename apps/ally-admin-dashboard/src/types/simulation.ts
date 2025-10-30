@@ -133,7 +133,7 @@ export interface Pagination {
 }
 
 export interface SessionEvent {
-  id: string;
+  id?: string;
   name?: string;
   description?: string;
   score?: number;

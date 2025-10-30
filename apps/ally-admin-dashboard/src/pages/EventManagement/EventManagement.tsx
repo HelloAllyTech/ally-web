@@ -60,7 +60,6 @@ export const EventManagement: React.FC = () => {
 
   const handleNewEventClick = async () => {
     const newEvent = {
-      id: `${Date.now()}`, // Time based id
       name: "New Event",
       description: "",
       score: 0,
@@ -78,7 +77,7 @@ export const EventManagement: React.FC = () => {
         toast.error("Failed to create event");
       } else {
         toast.success("Event created successfully");
-        setSelectedEvent(newEvent);
+        setSelectedEvent({ ...newEvent, id: response.data?.[0]?.id || "" });
         setIsSidePanelOpen(true);
       }
     } catch (error) {
@@ -180,7 +179,6 @@ export const EventManagement: React.FC = () => {
     if (event) {
       // Convert back to plain format for API
       const payload = {
-        id: event.id || "",
         name: event.name || "",
         detectionType: event.detectionType || "",
         speaker: event.speaker || "",
@@ -193,7 +191,7 @@ export const EventManagement: React.FC = () => {
         sentences: event.description?.length > 0 ? event.description?.split("\n") : [],
       };
       try {
-        const response = await updateSessionEvent({ event: payload });
+        const response = await updateSessionEvent({ id: event.id || "", event: payload });
         if (response.error) toast.error("Error updating event");
       } catch (error) {
         toast.error("Error updating event");
