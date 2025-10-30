@@ -36,6 +36,28 @@ export const Header: FC<HeaderProps> = ({
       toast.error("Failed to save simulation changes!");
     }
   };
+
+  const publishButton = (
+    <Button
+      variant={ButtonVariant.SECONDARY}
+      onClick={onPublish}
+      disabled={!isValid || isPublishing}
+      className={`px-4 py-1 h-[40px] text-white border-gray-200  ${isValid && !isPublishing ? "bg-blue-700 hover:bg-blue-800" : "bg-gray-300 cursor-not-allowed"}`}
+    >
+      {isPublishing ? en.simulation.publishing : en.simulation.publish}
+    </Button>
+  );
+  const previewButton = (
+    <Button
+      variant={ButtonVariant.TEXT}
+      onClick={onPreview}
+      disabled={!isValid}
+      className={`${isValid ? "text-blue-700" : "text-gray-400 cursor-not-allowed"}`}
+    >
+      {en.simulation.preview}
+    </Button>
+  );
+
   return (
     <>
       <div className="flex items-center px-2 py-4 gap-2">
@@ -61,40 +83,30 @@ export const Header: FC<HeaderProps> = ({
           >
             {en.simulation.save}
           </Button>
-          <Tooltip
-            title={en.simulation.publishTooltipMessage}
-            placement="top"
-            arrow
-            slotProps={toolTipStyles}
-          >
-            <span>
-              <Button
-                variant={ButtonVariant.TEXT}
-                onClick={onPreview}
-                disabled={!isValid}
-                className={`${isValid ? "text-blue-700" : "text-gray-400 cursor-not-allowed"}`}
-              >
-                {en.simulation.preview}
-              </Button>
-            </span>
-          </Tooltip>
-          <Tooltip
-            title={en.simulation.previewTooltipMessage}
-            placement="top"
-            arrow
-            slotProps={toolTipStyles}
-          >
-            <span>
-              <Button
-                variant={ButtonVariant.SECONDARY}
-                onClick={onPublish}
-                disabled={!isValid || isPublishing}
-                className={`px-4 py-1 h-[40px] text-white border-gray-200  ${isValid && !isPublishing ? "bg-blue-700 hover:bg-blue-800" : "bg-gray-300 cursor-not-allowed"}`}
-              >
-                {isPublishing ? en.simulation.publishing : en.simulation.publish}
-              </Button>
-            </span>
-          </Tooltip>
+          {isValid ? (
+            previewButton
+          ) : (
+            <Tooltip
+              title={en.simulation.previewTooltipMessage}
+              placement="top"
+              arrow
+              slotProps={toolTipStyles}
+            >
+              {previewButton}
+            </Tooltip>
+          )}
+          {isValid ? (
+            publishButton
+          ) : (
+            <Tooltip
+              title={en.simulation.publishTooltipMessage}
+              placement="top"
+              arrow
+              slotProps={toolTipStyles}
+            >
+              {publishButton}
+            </Tooltip>
+          )}
         </div>
       </div>
     </>

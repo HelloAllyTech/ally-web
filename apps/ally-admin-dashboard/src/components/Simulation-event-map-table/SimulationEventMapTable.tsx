@@ -310,6 +310,7 @@ export const SimulationEventMapTable: FC<SimulationEventMapTableProps> = ({ simu
 
   // Render action buttons (Add or Delete)
   const renderActionButtons = () => {
+    const disabled = Boolean(mappedEvents?.find(event => event?.id?.value === ""));
     if (selectedEventRows?.length > 0) {
       return (
         <Button variant={ButtonVariant.SECONDARY} onClick={handleDeleteSelectedEvents}>
@@ -319,7 +320,8 @@ export const SimulationEventMapTable: FC<SimulationEventMapTableProps> = ({ simu
     }
     return (
       <Button
-        disabled={Boolean(mappedEvents?.find(event => event?.id?.value === ""))}
+        disabled={disabled}
+        className={`${disabled ? "bg-gray-300 cursor-not-allowed" : "bg-blue-700 hover:bg-blue-800"}`}
         variant={ButtonVariant.PRIMARY}
         onClick={handleAddEventInternal}
       >

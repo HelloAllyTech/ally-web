@@ -85,7 +85,7 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: SimulationCreatorFieldGroups[] = [
       {
         id: "title",
         label: "Title",
-        placeholder: "Enter your title",
+        placeholder: "Enter title",
         type: FORM_FIELD_TYPES.TEXT,
         isMandatory: true,
         fullWidth: true,
@@ -134,7 +134,7 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: SimulationCreatorFieldGroups[] = [
       },
       {
         id: "age",
-        label: "Age",
+        label: "Your age",
         placeholder: "e.g. 25",
         type: FORM_FIELD_TYPES.NUMBER,
         isMandatory: true,
@@ -142,14 +142,14 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: SimulationCreatorFieldGroups[] = [
       },
       {
         id: "gender",
-        label: "Gender",
+        label: "Your gender",
         type: FORM_FIELD_TYPES.SELECT,
         options: GENDER_OPTIONS,
         isMandatory: true,
       },
       {
         id: "genderIdentity",
-        label: "Gender identity",
+        label: "Your gender identity",
         type: FORM_FIELD_TYPES.SELECT,
         options: GENDER_IDENTITY_OPTIONS,
         maxLength: 100,
@@ -164,7 +164,7 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: SimulationCreatorFieldGroups[] = [
       },
       {
         id: "profession",
-        label: "Profession",
+        label: "Your profession",
         placeholder: "e.g. Software Engineer",
         type: FORM_FIELD_TYPES.TEXT,
         maxLength: 100,
@@ -179,7 +179,7 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: SimulationCreatorFieldGroups[] = [
       },
       {
         id: "context",
-        label: "Your context",
+        label: "Your current context",
         placeholder: "Describe the immediate situations",
         type: FORM_FIELD_TYPES.TEXT,
         isMandatory: true,
