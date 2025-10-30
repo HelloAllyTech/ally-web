@@ -57,8 +57,8 @@ vi.mock("@constants", () => ({
   },
   // 💡 FIX 1: Add the missing Permissions export
   Permissions: {
-    VIEW_NAVBAR_CALLS: "VIEW_NAVBAR_CALLS",
-    VIEW_NAVBAR_ANALYTICS: "VIEW_NAVBAR_ANALYTICS",
+    VIEW_CALL_LOGS: "VIEW_CALL_LOGS",
+    VIEW_ANALYTICS_DASHBOARD: "VIEW_ANALYTICS_DASHBOARD",
   },
 }));
 
@@ -93,9 +93,8 @@ vi.mock("../components/UploadProgressDialog", () => ({
 const createMockStore = (initialState: any = {}) => {
   return configureStore({
     reducer: {
-      // Mock the 'calls' slice reducer to return the required default state
       calls: (state = { audioUpload: [] }, action) => state,
-    },
+    } as any,
     preloadedState: initialState,
   });
 };

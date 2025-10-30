@@ -6,7 +6,6 @@ import { matchPath, useLocation, useNavigate } from "react-router-dom";
 import { NavSideBar } from "@components";
 import { excludeNavBar, navBarOptions, TabId, LOCAL_STORAGE_KEYS } from "@constants";
 import { useUser } from "@hooks";
-import { UserRole } from "@types";
 import { isPathExcluded } from "@utils";
 
 import UploadProgressDialog from "./UploadProgressDialog";

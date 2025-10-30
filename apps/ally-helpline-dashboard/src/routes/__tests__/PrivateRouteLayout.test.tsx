@@ -2,8 +2,7 @@ import { render, screen, waitFor } from "@testing-library/react";
 import { BrowserRouter } from "react-router-dom";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
-import { Permissions } from "@constants";
-import { UserRole, UserStatus } from "@types";
+import { UserRole } from "@types";
 
 import PrivateRouteLayout from "../PrivateRouteLayout";
 
@@ -36,7 +35,6 @@ vi.mock("@pages", () => ({
 
 // Mock the reducer actions
 vi.mock("@reducer", () => ({
-  setUserStatus: (status: string) => ({ type: "SET_USER_STATUS", payload: status }),
   setAvailableChatTypes: (types: any[]) => ({ type: "SET_AVAILABLE_CHAT_TYPES", payload: types }),
   unauthenticate: () => ({ type: "UNAUTHENTICATE" }),
 }));
@@ -59,7 +57,6 @@ vi.mock("../components", () => ({
 // Mock constants
 vi.mock("@constants", () => ({
   LOCAL_STORAGE_KEYS: {
-    USER_STATUS: "user_status",
     ACCESS_TOKEN: "access_token",
     REFRESH_TOKEN: "refresh_token",
   },
@@ -68,17 +65,14 @@ vi.mock("@constants", () => ({
     RETRY_DELAY_MS: 1000,
   },
   Permissions: {
-    VIEW_START_CALL_PAGE: "view:button:start-call",
-    VIEW_NAVBAR_CALLS: "view:navbar:calls",
     VIEW_SCENARIO_SESSION: "view:scenario-session",
     VIEW_ADMIN_SCENARIO_SESSION: "view:admin:scenario-session",
-    VIEW_NAVBAR_ANALYTICS: "view:navbar:analytics",
-    VIEW_NAVBAR_STRESS_BUSTER: "view:navbar:stress-buster",
-    EDIT_SUMMARY: "edit:summary",
-    VIEW_NAVBAR_SEARCH: "view:navbar:search",
-    VIEW_NAVBAR_LEARN: "view:navbar:learn",
     VIEW_SCENARIO_SESSION_SUMMARY: "view:scenario-session:summary",
+    START_MICROPHONE_CHAT: "start:microphone-chat",
+    START_CLOUD_TELEPHONY_CHAT: "start:cloud-telephony-chat",
+    VIEW_CHAT_TYPES: "view:settings:chat-types",
   },
+  CALL_PERMISSIONS: ["start:cloud-telephony-chat", "start:microphone-chat"],
   ROUTES: {
     LOGIN: "/login",
     ANALYTICS: "/analytics",
@@ -101,10 +95,6 @@ vi.mock("@types", () => ({
     COUNSELLOR: "COUNSELOR",
     LEARNER: "LEARNER",
   },
-  UserStatus: {
-    OFFLINE: "offline",
-    AVAILABLE: "available",
-  },
 }));
 
 // Mock react-router-dom
@@ -124,6 +114,19 @@ vi.mock("@ally-ui-mono/ui-shared", () => ({
   },
 }));
 
+// Mock utils
+vi.mock("@utils", () => ({
+  hasAnalyticsPermission: vi.fn((permissions: any[]) => true),
+  hasCallPermission: vi.fn((permissions: any[]) => true),
+  hasLearnPermission: vi.fn((permissions: any[]) => false),
+  hasPermissions: (permissions: any[], requiredPermission: any) => {
+    if (!permissions || !Array.isArray(permissions)) {
+      return false;
+    }
+    return permissions.some(permission => permission === requiredPermission);
+  },
+}));
+
 const renderWithRouter = (component: React.ReactElement) => {
   return render(<BrowserRouter>{component}</BrowserRouter>);
 };
@@ -138,7 +141,7 @@ describe("PrivateRouteLayout", () => {
     mockUseUser.mockReturnValue({
       user: { id: 1, role: UserRole.ADMIN },
       checkAuth: vi.fn().mockResolvedValue({ id: 1, role: UserRole.ADMIN }),
-      updateUserStatus: vi.fn(),
+      permissions: ["view:settings:chat-types"],
     });
 
     mockUseGetChatTypesQuery.mockReturnValue({
@@ -153,7 +156,7 @@ describe("PrivateRouteLayout", () => {
     mockUseUser.mockReturnValue({
       user: null,
       checkAuth: vi.fn(),
-      updateUserStatus: vi.fn(),
+      permissions: [],
     });
 
     mockUseGetChatTypesQuery.mockReturnValue({
@@ -170,7 +173,7 @@ describe("PrivateRouteLayout", () => {
     mockUseUser.mockReturnValue({
       user: { id: 1, role: UserRole.ADMIN },
       checkAuth: vi.fn().mockResolvedValue({ id: 1, role: UserRole.ADMIN }),
-      updateUserStatus: vi.fn(),
+      permissions: ["view:settings:chat-types"],
     });
 
     mockUseGetChatTypesQuery.mockReturnValue({
@@ -183,50 +186,11 @@ describe("PrivateRouteLayout", () => {
     expect(screen.getByTestId("navbar-wrapper")).toBeInTheDocument();
   });
 
-  it("handles user status from localStorage", async () => {
-    localStorage.setItem("user_status", UserStatus.OFFLINE);
-
-    mockUseUser.mockReturnValue({
-      user: { id: 1, role: UserRole.ADMIN },
-      checkAuth: vi.fn().mockResolvedValue({ id: 1, role: UserRole.ADMIN }),
-      updateUserStatus: vi.fn(),
-    });
-
-    mockUseGetChatTypesQuery.mockReturnValue({
-      data: [],
-    });
-
-    renderWithRouter(<PrivateRouteLayout />);
-
-    // Should render without errors
-    expect(screen.getByTestId("navbar-wrapper")).toBeInTheDocument();
-  });
-
-  it("calls updateUserStatus when no user status in localStorage", async () => {
-    const mockUpdateUserStatus = vi.fn();
-
-    mockUseUser.mockReturnValue({
-      user: { id: 1, role: UserRole.ADMIN },
-      checkAuth: vi.fn().mockResolvedValue({ id: 1, role: UserRole.ADMIN }),
-      updateUserStatus: mockUpdateUserStatus,
-    });
-
-    mockUseGetChatTypesQuery.mockReturnValue({
-      data: [],
-    });
-
-    renderWithRouter(<PrivateRouteLayout />);
-
-    await waitFor(() => {
-      expect(mockUpdateUserStatus).toHaveBeenCalledWith(UserStatus.AVAILABLE);
-    });
-  });
-
   it("handles authentication failure gracefully", async () => {
     mockUseUser.mockReturnValue({
       user: { id: 1, role: UserRole.ADMIN },
       checkAuth: vi.fn().mockResolvedValue(null),
-      updateUserStatus: vi.fn(),
+      permissions: [],
     });
 
     mockUseGetChatTypesQuery.mockReturnValue({
@@ -243,7 +207,7 @@ describe("PrivateRouteLayout", () => {
     mockUseUser.mockReturnValue({
       user: { id: 1, role: UserRole.ADMIN },
       checkAuth: vi.fn().mockResolvedValue({ id: 1, role: UserRole.ADMIN }),
-      updateUserStatus: vi.fn(),
+      permissions: ["view:settings:chat-types"],
     });
 
     mockUseGetChatTypesQuery.mockReturnValue({
@@ -260,7 +224,7 @@ describe("PrivateRouteLayout", () => {
     mockUseUser.mockReturnValue({
       user: { id: 1, role: UserRole.LEARNER },
       checkAuth: vi.fn().mockResolvedValue({ id: 1, role: UserRole.LEARNER }),
-      updateUserStatus: vi.fn(),
+      permissions: ["view:settings:chat-types"],
     });
 
     mockUseGetChatTypesQuery.mockReturnValue({
@@ -277,7 +241,7 @@ describe("PrivateRouteLayout", () => {
     mockUseUser.mockReturnValue({
       user: { id: 1, role: UserRole.COUNSELLOR },
       checkAuth: vi.fn().mockResolvedValue({ id: 1, role: UserRole.COUNSELLOR }),
-      updateUserStatus: vi.fn(),
+      permissions: ["view:settings:chat-types"],
     });
 
     mockUseGetChatTypesQuery.mockReturnValue({
@@ -294,7 +258,7 @@ describe("PrivateRouteLayout", () => {
     mockUseUser.mockReturnValue({
       user: { id: 1, role: UserRole.ADMIN },
       checkAuth: vi.fn().mockResolvedValue({ id: 1, role: UserRole.ADMIN }),
-      updateUserStatus: vi.fn(),
+      permissions: ["view:settings:chat-types"],
     });
 
     mockUseGetChatTypesQuery.mockReturnValue({
@@ -313,7 +277,7 @@ describe("PrivateRouteLayout", () => {
     mockUseUser.mockReturnValue({
       user: { id: 1, role: UserRole.ADMIN },
       checkAuth: mockCheckAuth,
-      updateUserStatus: vi.fn(),
+      permissions: ["view:settings:chat-types"],
     });
 
     mockUseGetChatTypesQuery.mockReturnValue({
@@ -334,7 +298,7 @@ describe("PrivateRouteLayout", () => {
     mockUseUser.mockReturnValue({
       user: { id: 1, role: UserRole.ADMIN },
       checkAuth: mockCheckAuth,
-      updateUserStatus: vi.fn(),
+      permissions: [],
     });
 
     mockUseGetChatTypesQuery.mockReturnValue({

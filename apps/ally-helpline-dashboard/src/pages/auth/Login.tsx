@@ -16,6 +16,8 @@ import {
   CAROUSEL_SLIDES,
   LOCAL_STORAGE_KEYS,
   LoginSection,
+  ROUTES,
+  User,
 } from "@constants";
 import { useUser } from "@hooks";
 import { RootState } from "@store";
@@ -101,6 +103,12 @@ export const Login: FunctionComponent = () => {
       if (verifyOTPError) {
         const error = verifyOTPError as FetchBaseQueryError;
         const errorData = error.data as { message: string } | undefined;
+        //TODO: Change navigation based on error message
+        if (errorData?.message?.toLowerCase() === User.USER_SUSPENDED) {
+          navigate(ROUTES.SUSPENDED_USER);
+          return;
+        }
+
         const errorMessage = errorData?.message ?? "Failed to verify OTP. Please try again.";
         toast.error(errorMessage);
       } else if (isVerifyOTPSuccess && verifyOTPData) {

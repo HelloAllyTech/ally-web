@@ -5,5 +5,5 @@ export * from "./tailwind";
 export * from "./simulation";
 export * from "./summary";
 export * from "./call";
-export * from "./user";
 export * from "./audio-upload";
+export * from "./permission";

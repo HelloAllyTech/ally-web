@@ -1,4 +1,4 @@
-import { CallType } from "@constants";
+import { CallType, UserRole } from "@constants";
 
 export interface GenerateOTPRequest {
   phone?: string;
@@ -33,13 +33,7 @@ export interface User {
   userId: number;
 }
 
-export enum UserRole {
-  COUNSELLOR = "COUNSELOR",
-  ADMIN = "ADMIN",
-  LEARNER = "LEARNER",
-}
-
-export enum UserStatus {
+export enum UserAvailabilityStatus {
   OFFLINE = "offline",
   AVAILABLE = "available",
 }
@@ -47,8 +41,8 @@ export enum UserStatus {
 export interface UserState {
   isAuthenticated: boolean;
   user: User;
-  userStatus: UserStatus;
-  permissions: Permissions[];
+  userStatus: UserAvailabilityStatus;
+  permissions: string[];
   availableChatTypes: CallType[];
 }
 

@@ -1,4 +1,5 @@
 import { Permissions } from "@constants";
+import { SessionType } from "@types";
 
 export const tableHeaders = [
   {
@@ -66,11 +67,45 @@ export const defaultTags = [
   { label: "Life", value: "Life" },
 ];
 
-export const sessionTypeOptions = [
-  { value: "call", label: "Real call logs", permissionList: [Permissions.VIEW_NAVBAR_CALLS] },
+export enum SessionUserGroup {
+  MY_LOGS = "my-logs",
+  ORG_LOGS = "org-logs",
+}
+
+export const sessionLogViewList = [
   {
-    value: "simulation",
-    label: "Simulations",
-    permissionList: [Permissions.VIEW_SCENARIO_SESSION, Permissions.VIEW_ADMIN_SCENARIO_SESSION],
+    sessionUserGroup: SessionUserGroup.MY_LOGS,
+    sessionType: SessionType.CALL,
+    permissionList: [Permissions.VIEW_CALL_LOGS],
+  },
+  {
+    sessionUserGroup: SessionUserGroup.MY_LOGS,
+    sessionType: SessionType.SIMULATION,
+    permissionList: [Permissions.VIEW_SCENARIO_SESSION],
+  },
+  {
+    sessionUserGroup: SessionUserGroup.ORG_LOGS,
+    sessionType: SessionType.CALL,
+    permissionList: [Permissions.VIEW_CONSOLIDATED_LOGS],
+  },
+  {
+    sessionUserGroup: SessionUserGroup.ORG_LOGS,
+    sessionType: SessionType.SIMULATION,
+    permissionList: [Permissions.VIEW_ADMIN_SCENARIO_SESSION],
   },
 ];
+
+export const sessionLogsMap = {
+  [SessionUserGroup.MY_LOGS]: {
+    label: "My Logs",
+  },
+  [SessionUserGroup.ORG_LOGS]: {
+    label: "Organization Logs",
+  },
+  [SessionType.CALL]: {
+    label: "Real call logs",
+  },
+  [SessionType.SIMULATION]: {
+    label: "Simulations",
+  },
+};

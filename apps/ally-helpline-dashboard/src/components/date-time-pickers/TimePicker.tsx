@@ -4,14 +4,7 @@ import { TimePicker as MuiTimePicker } from "@mui/x-date-pickers/TimePicker";
 
 import { TimePickerProps } from "./types";
 
-const TimePicker: FC<TimePickerProps> = ({
-  value,
-  onChange,
-  maxTime,
-  minTime,
-  disabled,
-  onError,
-}) => {
+const TimePicker: FC<TimePickerProps> = ({ value, onChange, maxTime, minTime, disabled }) => {
   return (
     <MuiTimePicker
       value={value}

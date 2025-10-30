@@ -4,7 +4,13 @@ import { Route, Routes, Navigate, useNavigate } from "react-router-dom";
 
 import { logger } from "@ally-ui-mono/ui-shared";
 import { useGetChatTypesQuery } from "@api";
-import { LOCAL_STORAGE_KEYS, AUTH_RETRY_CONFIG, Permissions, ROUTES } from "@constants";
+import {
+  LOCAL_STORAGE_KEYS,
+  AUTH_RETRY_CONFIG,
+  Permissions,
+  ROUTES,
+  CALL_PERMISSIONS,
+} from "@constants";
 import { useUser, useAutoActiveCallRedirect } from "@hooks";
 import {
   Calls,
@@ -16,30 +22,32 @@ import {
   Simulation,
   PostSimulationSummary,
 } from "@pages";
-import { setUserStatus, setAvailableChatTypes, unauthenticate } from "@reducer";
+import { setAvailableChatTypes, unauthenticate } from "@reducer";
 import { store } from "@store";
-import { UserRole, UserStatus } from "@types";
+import {
+  hasAnalyticsPermission,
+  hasCallPermission,
+  hasLearnPermission,
+  hasPermissions,
+} from "@utils";
 
 import { NavbarWrapper, PermissionGuardedRoute } from "./components";
 
 const PrivateRouteLayout: FC = () => {
-  const { user, checkAuth, updateUserStatus } = useUser();
+  const { user, checkAuth, permissions } = useUser();
   const navigate = useNavigate();
   useAutoActiveCallRedirect();
 
-  const { data: chatTypes } = useGetChatTypesQuery();
+  const hasChatTypePermissions = hasPermissions(permissions, Permissions.VIEW_CHAT_TYPES);
+  const { data: chatTypes } = useGetChatTypesQuery(undefined, {
+    skip: !hasChatTypePermissions,
+  });
 
   useEffect(() => {
     store.dispatch(setAvailableChatTypes(chatTypes || []));
   }, [chatTypes]);
 
   useEffect(() => {
-    const userStatusLocalStorage = localStorage.getItem(LOCAL_STORAGE_KEYS.USER_STATUS);
-    if (userStatusLocalStorage) {
-      store.dispatch(setUserStatus(userStatusLocalStorage as UserStatus));
-    } else {
-      updateUserStatus(UserStatus.AVAILABLE);
-    }
     const verifyAuth = async () => {
       const attemptAuthentication = async (attempt: number): Promise<any> => {
         try {
@@ -80,18 +88,11 @@ const PrivateRouteLayout: FC = () => {
     verifyAuth();
   }, []);
 
-  // TODO: Update it in a way that it uses permissions rather than role
   const getLandingPageByRole = () => {
-    switch (user?.role) {
-      case UserRole.ADMIN:
-        return ROUTES.ANALYTICS;
-      case UserRole.LEARNER:
-        return ROUTES.LEARN;
-      case UserRole.COUNSELLOR:
-        return ROUTES.CALLS;
-      default:
-        return ROUTES.HOME;
-    }
+    if (hasLearnPermission(permissions)) return ROUTES.LEARN;
+    if (hasAnalyticsPermission(permissions)) return ROUTES.ANALYTICS;
+    if (hasCallPermission(permissions)) return ROUTES.CALLS;
+    return ROUTES.HOME;
   };
 
   if (!user) return <></>;
@@ -101,19 +102,15 @@ const PrivateRouteLayout: FC = () => {
         <Route index element={<Navigate to={getLandingPageByRole()} />} />
         <Route
           path={ROUTES.AUDIO_CALL}
-          element={
-            <PermissionGuardedRoute
-              permission={[Permissions.VIEW_START_CALL_PAGE]}
-              element={<AudioCall />}
-            />
-          }
+          element={<PermissionGuardedRoute permission={CALL_PERMISSIONS} element={<AudioCall />} />}
         />
         <Route
           path={ROUTES.CALLS}
           element={
             <PermissionGuardedRoute
               permission={[
-                Permissions.VIEW_NAVBAR_CALLS,
+                Permissions.VIEW_CALL_LOGS,
+                Permissions.VIEW_CONSOLIDATED_LOGS,
                 Permissions.VIEW_SCENARIO_SESSION,
                 Permissions.VIEW_ADMIN_SCENARIO_SESSION,
               ]}
@@ -133,17 +130,14 @@ const PrivateRouteLayout: FC = () => {
         <Route
           path={ROUTES.STRESS_BUSTER}
           element={
-            <PermissionGuardedRoute
-              permission={[Permissions.VIEW_NAVBAR_STRESS_BUSTER]}
-              element={<StressBuster />}
-            />
+            <PermissionGuardedRoute permission={CALL_PERMISSIONS} element={<StressBuster />} />
           }
         />
         <Route
           path={ROUTES.SUMMARY}
           element={
             <PermissionGuardedRoute
-              permission={[Permissions.EDIT_SUMMARY]}
+              permission={[Permissions.VIEW_CHAT_DETAILS]}
               element={<PostCallSummary />}
             />
           }
@@ -152,7 +146,7 @@ const PrivateRouteLayout: FC = () => {
           path={ROUTES.SEARCH}
           element={
             <PermissionGuardedRoute
-              permission={[Permissions.VIEW_NAVBAR_SEARCH]}
+              permission={[Permissions.VIEW_REFERNCE_DOCUMENT]}
               element={<Search />}
             />
           }
@@ -161,7 +155,7 @@ const PrivateRouteLayout: FC = () => {
           path={ROUTES.SIMULATION}
           element={
             <PermissionGuardedRoute
-              permission={[Permissions.VIEW_NAVBAR_LEARN]}
+              permission={[Permissions.EDIT_SCENARIO_SESSION]}
               element={<Simulation />}
             />
           }

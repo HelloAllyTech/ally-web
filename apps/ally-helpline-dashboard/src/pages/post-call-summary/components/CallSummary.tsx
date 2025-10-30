@@ -18,12 +18,12 @@ import {
 } from "@api";
 import { Assessment, PageNotFoundIllustration, Warning } from "@assets";
 import { Accordion, TextField, Button, InfoBanner, FallbackUI } from "@components";
-import { LanguageMap, ROUTES } from "@constants";
+import { LanguageMap, Permissions, ROUTES } from "@constants";
 import { FeedbackDialog } from "@containers";
 import { useEnhance, useDebounce } from "@hooks";
 import { RootState } from "@store";
-import { ChatSummaryStatus, SessionType, SummaryFieldKey, Tag, UserRole } from "@types";
-import { getEstimatedSummaryGenerationTime, getFormattedDateTime } from "@utils";
+import { ChatSummaryStatus, SessionType, SummaryFieldKey, Tag } from "@types";
+import { getEstimatedSummaryGenerationTime, getFormattedDateTime, hasPermissions } from "@utils";
 
 import { SummaryLoading } from ".";
 import { labelShownSections, summarySections } from "../constants";
@@ -39,7 +39,7 @@ const CallSummary: FC<CallSummaryProps> = ({
   headerContent,
   postProcess,
 }) => {
-  const { user } = useSelector((state: RootState) => state.user);
+  const { permissions } = useSelector((state: RootState) => state.user);
 
   const [summaryData, setSummaryData] = useState(null);
   const [searchedLocations, setSearchedLocations] = useState(null);
@@ -58,7 +58,12 @@ const CallSummary: FC<CallSummaryProps> = ({
     isLoading: isSummaryLoading,
     error: summaryLoadingError,
   } = useGetCallSummaryQuery(chatId);
-  const { data: visibleFields, isLoading: isGetSummaryFieldsLoading } = useGetSummaryFieldsQuery();
+  const { data: visibleFields, isLoading: isGetSummaryFieldsLoading } = useGetSummaryFieldsQuery(
+    undefined,
+    {
+      skip: !hasPermissions(permissions, Permissions.VIEW_SUMMARY_FIELDS),
+    },
+  );
   const [updateCallSummary, { isLoading: isUpdateLoading }] = useUpdateCallSummaryMutation();
   const [getTags, { isLoading: isGetTagsLoading }] = useGetTagsMutation();
   const { data: locations, isLoading: isGetLocationsLoading } = useGetLocationsQuery();
@@ -68,7 +73,8 @@ const CallSummary: FC<CallSummaryProps> = ({
 
   const { enhancing, EnhanceButton, EnhancementLoadingSkeleton, isEnhanceLoading } = useEnhance();
 
-  const isAdmin = user?.role === UserRole.ADMIN;
+  const hasEditSummaryPermission = permissions?.includes(Permissions.EDIT_CALL_DETAILS);
+
   const isLoading =
     isGetSummaryFieldsLoading ||
     isSummaryLoading ||
@@ -161,7 +167,7 @@ const CallSummary: FC<CallSummaryProps> = ({
   };
 
   const isFieldDisabled = (field: SummaryField) => {
-    return !field.isEditable || isAdmin;
+    return !field.isEditable || !hasEditSummaryPermission;
   };
 
   const getFieldDisplay = (field: SummaryField) => {
@@ -210,7 +216,7 @@ const CallSummary: FC<CallSummaryProps> = ({
               InputProps={{
                 readOnly: isFieldDisabled(field),
                 startAdornment: enhancing === field.key && EnhancementLoadingSkeleton,
-                endAdornment: field.isEnhanceable && !isAdmin && (
+                endAdornment: field.isEnhanceable && hasEditSummaryPermission && (
                   <EnhanceButton
                     fieldName={field.key}
                     inputText={value}
@@ -318,8 +324,7 @@ const CallSummary: FC<CallSummaryProps> = ({
       }
     }
     postProcess?.();
-    // TODO: Remove  !isAdmin once permissions are implemented
-    if (!isInSidebar && !isAdmin) {
+    if (!isInSidebar && hasEditSummaryPermission) {
       if (callSummary?.details?.callInfo?.isSummaryFeedbackAdded) {
         navigateToCallLogs();
       } else {
@@ -436,7 +441,7 @@ const CallSummary: FC<CallSummaryProps> = ({
           </motion.div>
         </div>
 
-        {!isAdmin && (
+        {hasEditSummaryPermission && (
           <div className="flex justify-center">
             <Button onClick={handleSave} disabled={isLoading || (isInSidebar && !hasDataChanged())}>
               {isUpdateLoading || isGetTagsLoading ? "Saving..." : "Save"}

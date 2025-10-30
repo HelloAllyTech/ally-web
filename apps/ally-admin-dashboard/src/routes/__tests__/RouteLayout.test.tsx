@@ -1,0 +1,76 @@
+import React from "react";
+
+import { render, screen } from "@testing-library/react";
+import { describe, it, expect, beforeEach, vi } from "vitest";
+
+import { ROUTES } from "@constants";
+
+import { RouteLayout } from "../RouteLayout";
+
+// Pass-through wrappers for layouts
+vi.mock("../PrivateLayout", () => ({
+  PrivateLayout: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+}));
+vi.mock("../PublicRoute", () => ({
+  PublicRoute: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+}));
+
+// Stub out pages referenced by the router
+vi.mock("@pages", () => ({
+  CreateSimulation: () => <div>CreateSimulationPage</div>,
+  Login: () => <div>LoginPage</div>,
+  LiveSimulationPreview: () => <div>LiveSimulationPreviewPage</div>,
+  SimulationStudio: () => <div>SimulationStudioPage</div>,
+  UserManagement: () => <div>UserManagementPage</div>,
+  EventManagement: () => <div>EventManagementPage</div>,
+}));
+
+describe("RouteLayout", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it("renders Login route", () => {
+    window.history.pushState({}, "", ROUTES.LOGIN);
+    render(<RouteLayout />);
+    expect(screen.getByText("LoginPage")).toBeInTheDocument();
+  });
+
+  it("renders Simulation Studio route", () => {
+    window.history.pushState({}, "", ROUTES.SIMULATION_STUDIO);
+    render(<RouteLayout />);
+    expect(screen.getByText("SimulationStudioPage")).toBeInTheDocument();
+  });
+
+  it("renders User Management route", () => {
+    window.history.pushState({}, "", ROUTES.USER_MANAGEMENT);
+    render(<RouteLayout />);
+    expect(screen.getByText("UserManagementPage")).toBeInTheDocument();
+  });
+
+  it("renders Create Simulation route", () => {
+    window.history.pushState({}, "", ROUTES.CREATE_SIMULATION);
+    render(<RouteLayout />);
+    expect(screen.getByText("CreateSimulationPage")).toBeInTheDocument();
+  });
+
+  it("renders Simulation Preview route with id", () => {
+    const path = ROUTES.SIMULATION_PREVIEW("123");
+    window.history.pushState({}, "", path);
+    render(<RouteLayout />);
+    expect(screen.getByText("LiveSimulationPreviewPage")).toBeInTheDocument();
+  });
+
+  it("renders Edit Simulation route with id", () => {
+    const path = ROUTES.EDIT_SIMULATION("999");
+    window.history.pushState({}, "", path);
+    render(<RouteLayout />);
+    expect(screen.getByText("CreateSimulationPage")).toBeInTheDocument();
+  });
+
+  it("redirects unknown route to Simulation Studio", () => {
+    window.history.pushState({}, "", "/unknown-path");
+    render(<RouteLayout />);
+    expect(screen.getByText("SimulationStudioPage")).toBeInTheDocument();
+  });
+});

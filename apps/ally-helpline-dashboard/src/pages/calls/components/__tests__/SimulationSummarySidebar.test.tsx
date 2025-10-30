@@ -1,10 +1,10 @@
-import React from "react";
-
 import { render, screen, fireEvent, waitFor, act } from "@testing-library/react";
+import { Provider } from "react-redux";
 import { BrowserRouter } from "react-router-dom";
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 
-import { SessionType, SimulationSummary, UserRole } from "@types";
+import { store } from "@store";
+import { UserRole } from "@types";
 
 import { SUMMARY_FEEDBACK_TIMEOUT } from "../constants";
 import SimulationSummarySidebar from "../SimulationSummarySidebar";
@@ -93,13 +93,15 @@ const renderComponent = (
 
   return {
     ...render(
-      <BrowserRouter>
-        <SimulationSummarySidebar
-          summaryId={summaryId}
-          summaryName={summaryName}
-          closeSummarySidebar={mockCloseSummarySidebar}
-        />
-      </BrowserRouter>,
+      <Provider store={store}>
+        <BrowserRouter>
+          <SimulationSummarySidebar
+            summaryId={summaryId}
+            summaryName={summaryName}
+            closeSummarySidebar={mockCloseSummarySidebar}
+          />
+        </BrowserRouter>
+      </Provider>,
     ),
     mockCloseSummarySidebar,
   };

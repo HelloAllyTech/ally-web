@@ -22,7 +22,7 @@ import { BrowserRouter } from "react-router-dom";
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 
 import { CallProvider, CallType } from "@constants";
-import { UserStatus, Chat, ChatStatus, UserRole } from "@types";
+import { Chat, ChatStatus, UserRole } from "@types";
 
 import { AudioCall } from "../AudioCall";
 
@@ -128,11 +128,6 @@ vi.mock("@constants", () => ({
   },
 }));
 
-// Mock reducer
-vi.mock("@reducer", () => ({
-  setUserStatus: vi.fn(),
-}));
-
 // Mock utils
 vi.mock("@utils", () => ({
   isProviderCloudTelephony: vi.fn(() => false),
@@ -170,7 +165,6 @@ describe("AudioCall Component", () => {
     name: "Test User",
     email: "test@example.com",
     role: UserRole.COUNSELLOR,
-    status: UserStatus.AVAILABLE,
     availableChatTypes: [CallType.WEBRTC_CHAT, CallType.MICROPHONE_CHAT],
   };
 

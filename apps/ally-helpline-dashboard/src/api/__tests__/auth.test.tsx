@@ -22,9 +22,11 @@ vi.mock("@constants", () => ({
       LOGIN: "/auth/login",
       SIGNUP: "/auth/signup",
       GET_USER: "/auth/user",
-      GET_PERMISSIONS: "/auth/permissions",
       GENERATE_OTP: "/auth/generate-otp",
       VERIFY_OTP: "/auth/verify-otp",
+    },
+    AUTHORIZATION: {
+      GET_PERMISSIONS: "/authorization/permissions",
     },
   },
   HttpMethod: {

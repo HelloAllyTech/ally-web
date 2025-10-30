@@ -4,4 +4,5 @@ export interface ScenarioDetailsCardProps {
   longDescription?: string;
   onStart: () => void;
   title: string;
+  noCredits?: boolean;
 }

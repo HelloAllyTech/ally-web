@@ -179,13 +179,13 @@ const CallLogsTable: FC<LogsTableProps> = ({ refreshKey, sessionType }) => {
     {
       key: "callName",
       header: "Session ID",
-      style: { width: "12%" },
+      style: { width: "17%" },
       icon: <CallIdIcon />,
     },
     {
       key: "dateAndTime",
       header: "Date & Time",
-      style: { width: "14%" },
+      style: { width: "20%" },
       icon: <DateIcon />,
     },
     {
@@ -197,28 +197,28 @@ const CallLogsTable: FC<LogsTableProps> = ({ refreshKey, sessionType }) => {
     {
       key: "tags",
       header: "Tags",
-      style: { width: "30%" },
+      style: { width: "25%" },
       render: (value: TagDisplay[]) => <TagGroup tags={value} />,
       icon: <TagsIcon />,
     },
     {
       key: "summaryStatus",
       header: "Summary Status",
-      style: { width: "16%" },
+      style: { width: "10%" },
       render: (_value, row) => <Chip config={getStatusChipConfig(row.raw.summaryStatus)} />,
       icon: <SummaryGenerationIcon />,
     },
     {
       key: "source",
       header: "Source",
-      style: { width: "16%" },
+      style: { width: "10%" },
       render: (_value, row) => <Chip config={getSourceChipConfig(row.provider)} />,
       icon: <SourceIcon />,
     },
     {
       key: "summary",
       header: "Summary",
-      style: { width: "10%" },
+      style: { width: "6%" },
       render: (_value, row) => (
         <Button onClick={() => setSummary(row.raw)} fullWidth={true} variant="icon">
           <ReviewIcon />
@@ -269,13 +269,13 @@ const CallLogsTable: FC<LogsTableProps> = ({ refreshKey, sessionType }) => {
     {
       key: "duration",
       header: "Duration",
-      style: { width: "20%" },
+      style: { width: "15%" },
       icon: <TimerIcon />,
     },
     {
       key: "sessionScore",
       header: "Session score",
-      style: { width: "10%" },
+      style: { width: "15%" },
       icon: <SessionScoreIcon />,
     },
     {
@@ -356,7 +356,7 @@ const CallLogsTable: FC<LogsTableProps> = ({ refreshKey, sessionType }) => {
           isLoading={isLoading}
           handleLoadMore={logs?.length > 0 && hasMore && handleLoadMore}
           fallbackUI={renderFallbackUI()}
-          className="min-w-full max-h-[calc(100vh-140px)] font-['IBM_Plex_Serif'] overflow-y-scroll"
+          className="min-w-full max-h-[calc(100vh-140px)] font-['IBM_Plex_Serif'] overflow-y-scroll text-[13px]"
         />
       </div>
       {summary && summary.id && getSummarySideBar()}

@@ -31,6 +31,17 @@ exports[`Calls Component > Snapshot Testing > should match snapshot 1`] = `
         >
           <button
             data-testid="mock-button"
+            variant="secondary"
+          >
+            <div
+              data-testid="upload-icon"
+            >
+              Upload
+            </div>
+            Upload audio
+          </button>
+          <button
+            data-testid="mock-button"
           >
             <div
               data-testid="start-session-icon"
@@ -39,45 +50,11 @@ exports[`Calls Component > Snapshot Testing > should match snapshot 1`] = `
             </div>
             Start Session
           </button>
-          <button
-            data-testid="mock-button"
-          >
-            Mark Away
-          </button>
-          <div>
-            <button
-              data-testid="mock-button"
-            >
-              <div
-                data-testid="upload-icon"
-              >
-                Upload
-              </div>
-              Upload audio
-            </button>
-          </div>
         </div>
-      </div>
-      <div
-        data-testid="toggle-button-group"
-      >
-        <button
-          class="active"
-          data-testid="toggle-option-call"
-        >
-          Call
-        </button>
-        <button
-          class=""
-          data-testid="toggle-option-simulation"
-        >
-          Simulation
-        </button>
       </div>
     </div>
     <div
       data-refresh-key="0"
-      data-session-type="call"
       data-testid="call-logs-table"
     >
       Call Logs Table
@@ -92,17 +69,15 @@ exports[`Calls Component > Snapshot Testing > should match snapshot 1`] = `
         Close Dialog
       </button>
     </div>
-    <div>
-      <div
-        data-is-open="false"
-        data-testid="audio-upload-dialog"
+    <div
+      data-is-open="false"
+      data-testid="audio-upload-dialog"
+    >
+      <button
+        data-testid="close-audio-dialog"
       >
-        <button
-          data-testid="close-audio-dialog"
-        >
-          Close Audio Dialog
-        </button>
-      </div>
+        Close Audio Dialog
+      </button>
     </div>
   </div>
 </DocumentFragment>
@@ -137,43 +112,35 @@ exports[`Calls Component > Snapshot Testing > should match snapshot with admin r
         <div
           class="flex gap-2 items-center"
         >
-          <div>
-            <button
-              data-testid="mock-button"
+          <button
+            data-testid="mock-button"
+            variant="secondary"
+          >
+            <div
+              data-testid="upload-icon"
             >
-              <div
-                data-testid="upload-icon"
-              >
-                Upload
-              </div>
-              Upload audio
-            </button>
-          </div>
+              Upload
+            </div>
+            Upload audio
+          </button>
+          <button
+            data-testid="mock-button"
+          >
+            <div
+              data-testid="start-session-icon"
+            >
+              StartSession
+            </div>
+            Start Session
+          </button>
         </div>
-      </div>
-      <div
-        data-testid="toggle-button-group"
-      >
-        <button
-          class="active"
-          data-testid="toggle-option-call"
-        >
-          Call
-        </button>
-        <button
-          class=""
-          data-testid="toggle-option-simulation"
-        >
-          Simulation
-        </button>
       </div>
     </div>
     <div
       data-refresh-key="0"
-      data-session-type="call"
-      data-testid="consolidated-logs"
+      data-testid="call-logs-table"
     >
-      Consolidated Logs
+      Call Logs Table
     </div>
     <div
       data-is-open="false"
@@ -185,17 +152,15 @@ exports[`Calls Component > Snapshot Testing > should match snapshot with admin r
         Close Dialog
       </button>
     </div>
-    <div>
-      <div
-        data-is-open="false"
-        data-testid="audio-upload-dialog"
+    <div
+      data-is-open="false"
+      data-testid="audio-upload-dialog"
+    >
+      <button
+        data-testid="close-audio-dialog"
       >
-        <button
-          data-testid="close-audio-dialog"
-        >
-          Close Audio Dialog
-        </button>
-      </div>
+        Close Audio Dialog
+      </button>
     </div>
   </div>
 </DocumentFragment>

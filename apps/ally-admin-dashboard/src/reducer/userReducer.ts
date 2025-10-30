@@ -1,7 +1,7 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
-import { CallType } from "@constants";
-import { UserState, UserStatus } from "@types";
+import { CallType, Permissions } from "@constants";
+import { UserAvailabilityStatus, UserState } from "@types";
 
 /*
   This reducer is used to manage the state of the user.
@@ -13,7 +13,7 @@ import { UserState, UserStatus } from "@types";
 const initialState: UserState = {
   isAuthenticated: false,
   user: null as any,
-  userStatus: UserStatus.OFFLINE,
+  userStatus: UserAvailabilityStatus.OFFLINE,
   permissions: [],
   availableChatTypes: [],
 };
@@ -31,11 +31,11 @@ const userSlice = createSlice({
     setUser(state, action) {
       state.user = action.payload;
     },
-    setUserStatus(state, action: PayloadAction<UserStatus>) {
+    setUserStatus(state, action: PayloadAction<UserAvailabilityStatus>) {
       state.userStatus = action.payload;
     },
-    setPermissions(state, action: PayloadAction<string[]>) {
-      state.permissions = action.payload as any;
+    setPermissions(state, action: PayloadAction<Permissions[]>) {
+      state.permissions = action.payload;
     },
     setAvailableChatTypes(state, action: PayloadAction<CallType[]>) {
       state.availableChatTypes = action.payload;

@@ -17,8 +17,7 @@ import { render, screen, waitFor } from "@testing-library/react";
 import { BrowserRouter } from "react-router-dom";
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 
-import { CallProvider, CallType } from "@constants";
-import { UserStatus, UserRole } from "@types";
+import { CallType } from "@constants";
 
 import { PostCallSummary } from "../PostCallSummary";
 import { SectionType } from "../types";
@@ -78,12 +77,8 @@ vi.mock("@components", () => ({
   )),
 }));
 
-// Mock hooks
-const mockUpdateUserStatus = vi.fn();
 const mockUseUser = vi.fn(() => ({
   availableChatTypes: [CallType.WEBRTC_CHAT, CallType.MICROPHONE_CHAT],
-  updateUserStatus: mockUpdateUserStatus,
-  userStatus: UserStatus.AVAILABLE,
 }));
 
 vi.mock("@hooks", () => ({
@@ -413,32 +408,6 @@ describe("PostCallSummary Component", () => {
   });
 
   /**
-   * TEST GROUP: User Status Updates
-   * Verifies user status update functionality
-   */
-  describe("User Status Updates", () => {
-    it("should not call updateUserStatus for non-WEBRTC calls", () => {
-      mockSearchParams.get.mockReturnValue("2");
-      mockUseUser.mockReturnValue({
-        availableChatTypes: [CallType.MICROPHONE_CHAT],
-        updateUserStatus: mockUpdateUserStatus,
-        userStatus: undefined,
-      });
-
-      render(
-        <TestWrapper>
-          <PostCallSummary />
-        </TestWrapper>,
-      );
-
-      const postProcessButton = screen.getByTestId("post-process-btn");
-      postProcessButton.click();
-
-      expect(mockUpdateUserStatus).not.toHaveBeenCalled();
-    });
-  });
-
-  /**
    * TEST GROUP: Navigation and Proceed
    * Verifies navigation functionality
    */
@@ -482,8 +451,6 @@ describe("PostCallSummary Component", () => {
     it("should handle missing user data gracefully", () => {
       mockUseUser.mockReturnValue({
         availableChatTypes: [],
-        updateUserStatus: mockUpdateUserStatus,
-        userStatus: null,
       });
 
       render(

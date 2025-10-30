@@ -19,6 +19,7 @@ import Assessment from "./assessment.svg?react";
 import AudioFile from "./audio-file.svg?react";
 import BackCircle from "./back-circle.svg?react";
 import BackgroundGradientBlue from "./background-gradient-blue.svg?react";
+import Bolt from "./bolt.svg?react";
 import BoxBreathingBottomGradient from "./box-breathing-bottom-gradient.svg?react";
 import BoxBreathingTopGradient from "./box-breathing-top-gradient.svg?react";
 import BulbIcon from "./bulb-icon.svg?react";
@@ -65,6 +66,7 @@ import MenuIcon from "./menu-icon.svg?react";
 import Metrics from "./metrics.svg?react";
 import MicIcon from "./mic-icon.svg?react";
 import MicOffIcon from "./mic-off-icon.svg?react";
+import NoCreditLeft from "./no-credit-left.svg?react";
 import NoNetwork from "./no-network.svg?react";
 import NoResults from "./no-results.svg?react";
 import NoAnalytics from "./noAnalytics.svg?react";
@@ -99,6 +101,7 @@ import SubjectiveObservations from "./subjective-observations.svg?react";
 import SummaryFailed from "./summary-failed.svg?react";
 import SummaryGeneratedIllustration from "./summary-generated-illustration.svg?react";
 import SummaryGenerationIcon from "./summary-generation-icon.svg?react";
+import SuspendedUserIcon from "./suspended-icon.svg?react";
 import TagsIcon from "./tags-icon.svg?react";
 import Tags from "./tags.svg?react";
 import TherapeuticTechniques from "./therapeutic-techniques.svg?react";
@@ -137,6 +140,7 @@ export {
   BackgroundTop,
   BackgroundGradientBlue,
   BoxBreathingBottomGradient,
+  Bolt,
   BoxBreathingTopGradient,
   BulbIcon,
   Call,
@@ -182,6 +186,7 @@ export {
   Metrics,
   MicIcon,
   MicOffIcon,
+  NoCreditLeft,
   NoNetwork,
   NoResults,
   NotesIcon,
@@ -215,6 +220,7 @@ export {
   SummaryFailed,
   SummaryGeneratedIllustration,
   SummaryGenerationIcon,
+  SuspendedUserIcon,
   Tags,
   TagsIcon,
   TherapeuticTechniques,

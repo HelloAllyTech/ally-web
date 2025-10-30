@@ -1,11 +1,9 @@
 import { render, screen, waitFor } from "@testing-library/react";
 import { vi, describe, it, expect, beforeEach } from "vitest";
 
-import { useLazyGetSimulationSummaryQuery } from "@api";
-import { useUser } from "@hooks";
 import { UserRole } from "@types";
 
-import SimulationSummary from "../SimulationSummary";
+import { SimulationSummary } from "../SimulationSummary";
 import { SimulationSummaryProps } from "../types";
 
 // Mock the API hook
@@ -33,7 +31,7 @@ vi.mock("../components", () => ({
 }));
 
 // Mock the FeedbackDialog completely
-vi.mock("../../feedback-dialog", () => ({
+vi.mock("..", () => ({
   FeedbackDialog: () => <div data-testid="feedback-dialog">Feedback Dialog</div>,
 }));
 
@@ -42,7 +40,50 @@ vi.mock("framer-motion", () => ({
   motion: {
     div: ({ children, ...props }: any) => <div {...props}>{children}</div>,
   },
+  AnimatePresence: ({ children }: any) => <div>{children}</div>,
 }));
+
+// Mock components
+vi.mock("@components", () => ({
+  Button: ({ children, ...props }: any) => <button {...props}>{children}</button>,
+  PermissionGuard: ({ children }: any) => <div>{children}</div>,
+}));
+
+// Mock constants
+vi.mock("@constants", () => ({
+  Permissions: {
+    EDIT_SCENARIO_SESSION: "edit:scenario-session",
+  },
+}));
+
+// Mock types
+vi.mock("@types", () => ({
+  SessionType: {
+    SIMULATION: "simulation",
+  },
+  IssueOptions: {
+    MISSING_KEY_INFORMATION: "MISSING_KEY_INFORMATION",
+    INACCURATE: "INACCURATE",
+    TOO_VAGUE: "TOO_VAGUE",
+    DIFFICULT_TO_UNDERSTAND: "DIFFICULT_TO_UNDERSTAND",
+    TOO_SHORT: "TOO_SHORT",
+    OTHER: "OTHER",
+  },
+  UserRole: {
+    LEARNER: "LEARNER",
+    COUNSELLOR: "COUNSELLOR",
+    ADMIN: "ADMIN",
+  },
+}));
+
+// Mock sonner toast
+vi.mock("sonner", () => ({
+  toast: {
+    error: vi.fn(),
+  },
+}));
+
+// Remove the mock of the actual component since we want to test the real component
 
 describe("SimulationSummary", () => {
   const defaultProps: SimulationSummaryProps = {
@@ -69,9 +110,7 @@ describe("SimulationSummary", () => {
       render(<SimulationSummary {...defaultProps} className="custom-class" />);
 
       // Check the main container div that has the className
-      const container = screen
-        .getByTestId("loader-skeleton")
-        .closest(".relative.flex.flex-col.h-full.w-full");
+      const container = screen.getByTestId("simulation-summary");
       expect(container).toHaveClass("custom-class");
     });
 
@@ -83,10 +122,12 @@ describe("SimulationSummary", () => {
   });
 
   describe("Data Fetching", () => {
-    it("should call getSimulationSummary on mount", () => {
+    it("should call getSimulationSummary on mount", async () => {
       render(<SimulationSummary {...defaultProps} />);
 
-      expect(mockLazyQuery).toHaveBeenCalledWith(defaultProps.summaryId);
+      await waitFor(() => {
+        expect(mockLazyQuery).toHaveBeenCalledWith(defaultProps.summaryId);
+      });
     });
 
     it("should call onSummaryFetch when data is received", async () => {
@@ -96,6 +137,7 @@ describe("SimulationSummary", () => {
         hasFeedback: true,
       };
       mockLazyQuery.mockResolvedValue({ data: mockSummary });
+      mockGetSimulationSummary.mockReturnValue(mockSummary);
 
       render(<SimulationSummary {...defaultProps} />);
 
@@ -124,14 +166,16 @@ describe("SimulationSummary", () => {
   });
 
   describe("Component Integration", () => {
-    it("should handle rapid summaryId changes", () => {
+    it("should handle rapid summaryId changes", async () => {
       const { rerender } = render(<SimulationSummary {...defaultProps} />);
 
       // Change summaryId rapidly
       rerender(<SimulationSummary {...defaultProps} summaryId="new-id-1" />);
       rerender(<SimulationSummary {...defaultProps} summaryId="new-id-2" />);
 
-      expect(mockLazyQuery).toHaveBeenCalledTimes(3);
+      await waitFor(() => {
+        expect(mockLazyQuery).toHaveBeenCalledTimes(3);
+      });
     });
   });
 });

@@ -1,4 +1,6 @@
+import { configureStore } from "@reduxjs/toolkit";
 import { render, screen, fireEvent } from "@testing-library/react";
+import { Provider } from "react-redux";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
 import { User } from "@types";
@@ -7,11 +9,45 @@ import UserInfo from "../UserInfo";
 
 // --- MOCKS ---
 
-// Mock external dependencies (icons) using data-testid for easy selection
-vi.mock("@assets", () => ({
-  AccountCircle: (props: any) => <div data-testid="account-icon" {...props}></div>,
-  Arrow: (props: any) => <div data-testid="arrow-icon" className={props.className}></div>,
-  Logout: (props: any) => <div data-testid="logout-icon" {...props}></div>,
+// Mock hooks
+const mockUseSimulationCredits = vi.fn();
+const mockUseUser = vi.fn();
+
+vi.mock("@hooks", async importOriginal => {
+  const actual = await importOriginal();
+  return {
+    ...actual,
+    useSimulationCredits: () => mockUseSimulationCredits(),
+    useUser: () => mockUseUser(),
+  };
+});
+
+// Mock PermissionGuard to render children without permission checks
+vi.mock("@components", async importOriginal => {
+  const actual = await importOriginal();
+  return {
+    ...actual,
+    PermissionGuard: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+  };
+});
+
+// Mock external dependencies using importOriginal to preserve other exports
+vi.mock("@assets", async importOriginal => {
+  const actual = await importOriginal();
+  return {
+    ...actual,
+    AccountCircle: (props: any) => <div data-testid="account-icon" {...props}></div>,
+    Arrow: (props: any) => <div data-testid="arrow-icon" className={props.className}></div>,
+    Logout: (props: any) => <div data-testid="logout-icon" {...props}></div>,
+    Bolt: (props: any) => <div data-testid="bolt-icon" {...props}></div>,
+  };
+});
+
+// Mock constants
+vi.mock("@constants", () => ({
+  Permissions: {
+    VIEW_SIMULATION_CREDITS: "VIEW_SIMULATION_CREDITS",
+  },
 }));
 
 // --- SETUP DATA ---
@@ -19,30 +55,69 @@ vi.mock("@assets", () => ({
 const mockUser: User = {
   name: "Jane Doe",
   email: "jane.doe@example.com",
-  // Added required properties to satisfy the 'User' type
   id: 123,
-  // Cast the 'standard' string to 'any' to satisfy the 'UserRole' type
-  // since its definition is not available in the test file scope.
   role: "standard" as any,
   userId: 123,
 };
 
 const mockOnLogout = vi.fn();
 
+// Create a mock Redux store (in case the hook needs Redux)
+const createMockStore = () => {
+  const userReducer = (
+    state = {
+      isAuthenticated: true,
+      availableChatTypes: [],
+      user: mockUser,
+      permissions: [],
+    },
+    action: any,
+  ) => state;
+
+  return configureStore({
+    reducer: {
+      user: userReducer,
+    },
+  });
+};
+
+// Test wrapper component with Redux Provider
+const TestWrapper = ({ children }: { children: React.ReactNode }) => (
+  <Provider store={createMockStore()}>{children}</Provider>
+);
+
 // --- TEST SUITE ---
 
 describe("UserInfo", () => {
   const renderComponent = (user = mockUser) => {
-    return render(<UserInfo user={user} onLogout={mockOnLogout} />);
+    return render(
+      <TestWrapper>
+        <UserInfo user={user} onLogout={mockOnLogout} />
+      </TestWrapper>,
+    );
   };
 
   beforeEach(() => {
     vi.clearAllMocks();
+
+    mockUseSimulationCredits.mockReturnValue({
+      credits: {
+        consumedCredits: 5,
+        creditLimit: 10,
+      },
+      limitReached: false,
+      CreditPercentage: 50,
+    });
+
+    mockUseUser.mockReturnValue({
+      permissions: [],
+      user: mockUser,
+      isAuthenticated: true,
+    });
   });
 
   // Helper to simulate a click outside the component area
   const simulateClickOutside = () => {
-    // We use fireEvent.mouseDown on the document since the component listens globally for this event
     fireEvent.mouseDown(document.body);
   };
 
@@ -57,7 +132,6 @@ describe("UserInfo", () => {
 
     it("should initially hide the logout menu", () => {
       renderComponent();
-      // Use queryByText to assert that the element is NOT in the document
       expect(screen.queryByText("Logout")).not.toBeInTheDocument();
     });
   });
@@ -66,10 +140,8 @@ describe("UserInfo", () => {
     it("should show the logout menu when the user info area is clicked", () => {
       renderComponent();
 
-      // Click the element that contains the onClick handler (using the name element inside)
       fireEvent.click(screen.getByText("Jane Doe"));
 
-      // Check if the Logout button is now visible
       const logoutButton = screen.getByRole("button", { name: /Logout/i });
       expect(logoutButton).toBeInTheDocument();
     });
@@ -79,13 +151,10 @@ describe("UserInfo", () => {
 
       const arrowIcon = screen.getByTestId("arrow-icon");
 
-      // Initial state (hidden menu)
       expect(arrowIcon).not.toHaveClass("-rotate-90");
 
-      // Click to show menu
       fireEvent.click(screen.getByText("Jane Doe"));
 
-      // State after click (shown menu)
       expect(arrowIcon).toHaveClass("-rotate-90");
     });
   });
@@ -94,28 +163,22 @@ describe("UserInfo", () => {
     it("should hide the logout menu when a click occurs outside the component", () => {
       renderComponent();
 
-      // 1. Click to show menu
       fireEvent.click(screen.getByText("Jane Doe"));
       expect(screen.getByText("Logout")).toBeInTheDocument();
 
-      // 2. Simulate click outside
       simulateClickOutside();
 
-      // 3. Verify menu is hidden
       expect(screen.queryByText("Logout")).not.toBeInTheDocument();
     });
 
     it("should NOT hide the logout menu when a click occurs inside the component", () => {
       renderComponent();
 
-      // 1. Click to show menu
       fireEvent.click(screen.getByText("Jane Doe"));
       expect(screen.getByText("Logout")).toBeInTheDocument();
 
-      // 2. Simulate a click on the visible logout button (which is inside the component's ref area)
       fireEvent.click(screen.getByRole("button", { name: /Logout/i }));
 
-      // 3. Verify menu is still visible (since onLogout is mocked and does not unmount the component)
       expect(screen.getByText("Logout")).toBeInTheDocument();
     });
   });
@@ -124,15 +187,163 @@ describe("UserInfo", () => {
     it("should call the onLogout prop when the Logout button is clicked", () => {
       renderComponent();
 
-      // 1. Show the menu
       fireEvent.click(screen.getByText("Jane Doe"));
 
-      // 2. Click the Logout button
       const logoutButton = screen.getByRole("button", { name: /Logout/i });
       fireEvent.click(logoutButton);
 
-      // 3. Verify onLogout was called
       expect(mockOnLogout).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  describe("Credit Display", () => {
+    it("should display credit usage information when menu is open", () => {
+      renderComponent();
+
+      fireEvent.click(screen.getByText("Jane Doe"));
+
+      expect(screen.getByText("Credit usage")).toBeInTheDocument();
+      expect(screen.getByText("5")).toBeInTheDocument();
+      expect(screen.getByText("/10")).toBeInTheDocument();
+      expect(screen.getByText("50%")).toBeInTheDocument();
+    });
+
+    it("should display Bolt icon in credit section", () => {
+      renderComponent();
+
+      fireEvent.click(screen.getByText("Jane Doe"));
+
+      expect(screen.getByTestId("bolt-icon")).toBeInTheDocument();
+    });
+
+    it("should show blue progress bar when limit not reached", () => {
+      renderComponent();
+
+      fireEvent.click(screen.getByText("Jane Doe"));
+
+      const progressBar = document.querySelector(".bg-blue-600");
+      expect(progressBar).toBeInTheDocument();
+      expect(progressBar).toHaveStyle({ width: "50%" });
+    });
+
+    it("should show red progress bar when limit is reached", () => {
+      mockUseSimulationCredits.mockReturnValue({
+        credits: {
+          consumedCredits: 10,
+          creditLimit: 10,
+        },
+        limitReached: true,
+        CreditPercentage: 100,
+      });
+
+      renderComponent();
+
+      fireEvent.click(screen.getByText("Jane Doe"));
+
+      const progressBar = document.querySelector(".bg-red-500");
+      expect(progressBar).toBeInTheDocument();
+      expect(progressBar).toHaveStyle({ width: "100%" });
+    });
+
+    it("should handle missing credits data gracefully", () => {
+      mockUseSimulationCredits.mockReturnValue({
+        credits: null,
+        limitReached: false,
+        CreditPercentage: 0,
+      });
+
+      renderComponent();
+
+      fireEvent.click(screen.getByText("Jane Doe"));
+
+      expect(screen.getAllByText("0")[0]).toBeInTheDocument();
+      expect(screen.getByText("/0")).toBeInTheDocument();
+      expect(screen.getByText("0%")).toBeInTheDocument();
+    });
+  });
+
+  describe("Menu Positioning", () => {
+    it("should position the menu absolutely to the left when open", () => {
+      renderComponent();
+
+      fireEvent.click(screen.getByText("Jane Doe"));
+
+      const menu = document.querySelector(".absolute.bottom-3.left-full");
+      expect(menu).toBeInTheDocument();
+    });
+  });
+
+  describe("Edge Cases", () => {
+    it("should render without user data", () => {
+      render(
+        <TestWrapper>
+          <UserInfo user={undefined} onLogout={mockOnLogout} />
+        </TestWrapper>,
+      );
+
+      expect(screen.getByTestId("account-icon")).toBeInTheDocument();
+    });
+
+    it("should toggle menu multiple times", () => {
+      renderComponent();
+
+      // First toggle - open
+      fireEvent.click(screen.getByText("Jane Doe"));
+      expect(screen.getByText("Logout")).toBeInTheDocument();
+
+      // Second toggle - close
+      fireEvent.click(screen.getByText("Jane Doe"));
+      expect(screen.queryByText("Logout")).not.toBeInTheDocument();
+
+      // Third toggle - open again
+      fireEvent.click(screen.getByText("Jane Doe"));
+      expect(screen.getByText("Logout")).toBeInTheDocument();
+    });
+  });
+
+  describe("Accessibility", () => {
+    it("should have proper button role for logout", () => {
+      renderComponent();
+
+      fireEvent.click(screen.getByText("Jane Doe"));
+
+      const logoutButton = screen.getByRole("button", { name: /Logout/i });
+      expect(logoutButton).toBeInTheDocument();
+    });
+
+    it("should have cursor pointer on clickable area", () => {
+      const { container } = renderComponent();
+
+      const clickableArea = container.querySelector(".cursor-pointer");
+      expect(clickableArea).toBeInTheDocument();
+    });
+  });
+
+  describe("Styling and Animation", () => {
+    it("should apply transition classes to arrow icon", () => {
+      renderComponent();
+
+      const arrowIcon = screen.getByTestId("arrow-icon");
+      expect(arrowIcon.className).toContain("transition-transform");
+      expect(arrowIcon.className).toContain("duration-300");
+    });
+
+    it("should apply hover styles to logout button", () => {
+      renderComponent();
+
+      fireEvent.click(screen.getByText("Jane Doe"));
+
+      const logoutButton = screen.getByRole("button", { name: /Logout/i });
+      expect(logoutButton.className).toContain("hover:bg-gray-100");
+    });
+
+    it("should apply transition to progress bar", () => {
+      renderComponent();
+
+      fireEvent.click(screen.getByText("Jane Doe"));
+
+      const progressBar = document.querySelector(".transition-all.duration-300");
+      expect(progressBar).toBeInTheDocument();
     });
   });
 });

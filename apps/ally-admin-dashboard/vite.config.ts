@@ -50,13 +50,27 @@ export default defineConfig(() => ({
     watch: false,
     globals: true,
     environment: "jsdom",
+    setupFiles: ["./src/test-setup.ts"],
     include: ["{src,tests}/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}"],
     reporters: ["default"],
     coverage: {
       reportsDirectory: "../../coverage/apps/ally-admin-dashboard",
       provider: "v8" as const,
+      exclude: [
+        "node_modules/",
+        "src/test-setup.ts",
+        "**/*.d.ts",
+        "**/*.config.{js,ts}",
+        "**/coverage/**",
+        "**/dist/**",
+        "**/.{idea,git,cache,output,temp}/**",
+        "**/{karma,rollup,webpack,vite,vitest,jest,ava,babel,nyc,cypress,tsup,build}.config.*",
+      ],
     },
     passWithNoTests: true,
+    env: {
+      VITE_API_BASE_URL: "http://localhost:3000",
+    },
   },
   resolve: {
     alias: {

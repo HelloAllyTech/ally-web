@@ -10,20 +10,9 @@ exports[`CallTranscript Component > Snapshot Testing > should match snapshot for
     <div
       data-testid="call-interface"
     >
-      CallInterface - 
-      Counsellor
-       -
-       
+      CallInterface - User - 
       Joined
        - Microphone Mode
-    </div>
-    <div
-      data-testid="real-time-transcript"
-    >
-      RealTimeTranscript - Focus: 
-      No
-       - Messages: 
-      2
     </div>
     <div
       data-testid="call-controls"
@@ -100,20 +89,9 @@ exports[`CallTranscript Component > Snapshot Testing > should match snapshot for
     <div
       data-testid="call-interface"
     >
-      CallInterface - 
-      Counsellor
-       -
-       
+      CallInterface - User - 
       Joined
        - Microphone Mode
-    </div>
-    <div
-      data-testid="real-time-transcript"
-    >
-      RealTimeTranscript - Focus: 
-      No
-       - Messages: 
-      2
     </div>
     <div
       data-testid="call-controls"
@@ -190,21 +168,10 @@ exports[`CallTranscript Component > Snapshot Testing > should match snapshot for
     <div
       data-testid="call-interface"
     >
-      CallInterface - 
-      Counsellor
-       -
-       
+      CallInterface - User - 
       Joined
        - Microphone Mode
        - Exotel Mode
-    </div>
-    <div
-      data-testid="real-time-transcript"
-    >
-      RealTimeTranscript - Focus: 
-      No
-       - Messages: 
-      2
     </div>
     <div
       data-testid="call-controls"
@@ -281,20 +248,9 @@ exports[`CallTranscript Component > Snapshot Testing > should match snapshot for
     <div
       data-testid="call-interface"
     >
-      CallInterface - 
-      Counsellor
-       -
-       
+      CallInterface - User - 
       Joined
        - Microphone Mode
-    </div>
-    <div
-      data-testid="real-time-transcript"
-    >
-      RealTimeTranscript - Focus: 
-      No
-       - Messages: 
-      2
     </div>
     <div
       data-testid="call-controls"

@@ -33,7 +33,6 @@ cd apps/ally-helpline-dashboard
 
 ```env
 VITE_API_BASE_URL=your_api_url
-VITE_API_VERSION=v1
 ```
 
 3. Start the development server:

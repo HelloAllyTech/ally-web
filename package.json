@@ -18,6 +18,7 @@
     "test:web": "npx nx test ally-web",
     "test:helpline": "npx nx test ally-helpline-dashboard",
     "test:ui-shared": "npx nx test ui-shared",
+    "test:admin": "npx nx test ally-admin-dashboard",
     "test:web:watch": "npx nx test ally-web --watch",
     "test:helpline:watch": "npx nx test ally-helpline-dashboard --watch",
     "test:ui-shared:watch": "npx nx test ui-shared --watch",
@@ -42,6 +43,7 @@
     "@react-router/serve": "^7.2.0",
     "@reduxjs/toolkit": "^2.9.0",
     "aria-hidden": "^1.2.6",
+    "emoji-picker-react": "^4.13.3",
     "framer-motion": "^12.23.22",
     "isbot": "^4.4.0",
     "next": "~15.2.4",
@@ -49,7 +51,9 @@
     "react-dom": "18.3.1",
     "react-redux": "^9.2.0",
     "react-router": "^7.2.0",
-    "react-router-dom": "6.29.0"
+    "react-router-dom": "6.29.0",
+    "react-table": "^7.8.0",
+    "sonner": "^2.0.7"
   },
   "devDependencies": {
     "@babel/core": "^7.14.5",

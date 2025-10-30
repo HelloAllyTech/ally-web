@@ -6,18 +6,16 @@ import { logger } from "@ally-ui-mono/ui-shared";
 import { useUpdateCallInfoMutation } from "@api";
 import { Edit } from "@assets";
 import { TextField } from "@components";
+import { Permissions } from "@constants";
 import { useDebounce } from "@hooks";
 import { RootState } from "@store";
-import { UserRole } from "@types";
 
 import { SummaryHeaderProps } from "./types";
 
 const SummaryHeader: FC<SummaryHeaderProps> = ({ summaryName, setSummaryName, chatId }) => {
   const summaryNameRef = useRef<HTMLInputElement>(null);
   const [isRenaming, setIsRenaming] = useState<boolean>(false);
-  const { user } = useSelector((state: RootState) => state.user);
-
-  const isAdmin = user?.role === UserRole.ADMIN;
+  const { permissions } = useSelector((state: RootState) => state.user);
 
   const [updateCallInfo] = useUpdateCallInfoMutation();
 
@@ -48,6 +46,8 @@ const SummaryHeader: FC<SummaryHeaderProps> = ({ summaryName, setSummaryName, ch
     setIsRenaming(true);
   };
 
+  const hasAdequatePermission = permissions?.includes(Permissions.EDIT_CALL_INFO);
+
   return (
     <div className="flex items-center mb-4">
       <TextField
@@ -59,7 +59,9 @@ const SummaryHeader: FC<SummaryHeaderProps> = ({ summaryName, setSummaryName, ch
         inputStyles={{ fontSize: "24px", fontWeight: "700", fontFamily: "IBM_Plex_Serif" }}
         showBorder={false}
       />
-      {!isRenaming && !isAdmin && <Edit onClick={onRenameButtonClick} className="cursor-pointer" />}
+      {!isRenaming && hasAdequatePermission && (
+        <Edit onClick={onRenameButtonClick} className="cursor-pointer" />
+      )}
     </div>
   );
 };

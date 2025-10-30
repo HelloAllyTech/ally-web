@@ -16,7 +16,7 @@
 import { render, screen, fireEvent, cleanup } from "@testing-library/react";
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 
-import { UserRole, UserStatus, SessionType } from "@types";
+import { UserRole, SessionType } from "@types";
 
 import { Calls } from "../Calls";
 
@@ -40,17 +40,18 @@ vi.mock("@assets", () => ({
 
 // Mock components
 vi.mock("@components", () => ({
-  Button: ({ children, onClick, variant, className, disabled }: any) => (
-    <button
-      data-testid="mock-button"
-      onClick={onClick}
-      data-variant={variant}
-      className={className}
-      disabled={disabled}
-    >
+  Button: ({ children, ...props }: any) => (
+    <button data-testid="mock-button" {...props}>
       {children}
     </button>
   ),
+  ButtonVariant: {
+    PRIMARY: "primary",
+    SECONDARY: "secondary",
+    DESTRUCTIVE: "destructive",
+    ICON: "icon",
+    TEXT: "text",
+  },
   ToggleButtonGroup: ({ items = [], value, onValueChange }: any) => (
     <div data-testid="toggle-button-group">
       {items.map((item: any) => (
@@ -65,7 +66,15 @@ vi.mock("@components", () => ({
       ))}
     </div>
   ),
-  PermissionGuard: ({ children }: any) => <div>{children}</div>,
+  PermissionGuard: ({ children, requiredPermissions }: any) => {
+    const userData = mockUseUser();
+    const permissions = userData?.permissions || [];
+    const hasAccess = requiredPermissions.every(
+      (permission: string) =>
+        permissions && Array.isArray(permissions) && permissions.includes(permission),
+    );
+    return hasAccess ? children : null;
+  },
 }));
 
 // Mock child components
@@ -106,7 +115,9 @@ vi.mock("../components", () => ({
 
 // Mock utils
 vi.mock("../utils", () => ({
-  getPermittedSessionTypeOptions: vi.fn(),
+  getPermittedSessionLogList: vi.fn(),
+  getFormattedSupportedSessionUserGroups: vi.fn(),
+  getSupportedSessionTypeListByUserGroup: vi.fn(),
 }));
 
 // Mock useUser hook
@@ -123,13 +134,12 @@ vi.mock("@constants", () => ({
     EXOTEL_CONFERENCE_CHAT: "EXOTEL_CONFERENCE_CHAT",
   },
   Permissions: {
-    VIEW_AUDIO_UPLOAD: "VIEW_AUDIO_UPLOAD",
+    START_MICROPHONE_CHAT: "start:microphone-chat",
+    VIEW_AUDIO_UPLOAD: "view:audio-upload-url",
   },
 }));
 
 // Get mock functions after mocks are set up
-const { getPermittedSessionTypeOptions } = await import("../utils");
-const mockGetPermittedSessionTypeOptions = vi.mocked(getPermittedSessionTypeOptions);
 
 describe("Calls Component", () => {
   const mockUser = {
@@ -139,32 +149,15 @@ describe("Calls Component", () => {
     role: UserRole.COUNSELLOR,
   };
 
-  const mockPermissions = {
-    canStartCall: true,
-    canStartSimulation: true,
-  };
+  const mockPermissions = ["start:microphone-chat", "view:audio-upload-url"];
 
   beforeEach(() => {
     vi.clearAllMocks();
     mockUseUser.mockReturnValue({
       availableChatTypes: ["WEBRTC_CHAT", "MICROPHONE_CHAT"],
-      updateUserStatus: vi.fn(),
       user: mockUser,
-      userStatus: UserStatus.AVAILABLE,
       permissions: mockPermissions,
     });
-    mockGetPermittedSessionTypeOptions.mockReturnValue([
-      {
-        label: "Call",
-        value: SessionType.CALL,
-        permissionList: [],
-      },
-      {
-        label: "Simulation",
-        value: SessionType.SIMULATION,
-        permissionList: [],
-      },
-    ]);
   });
 
   afterEach(() => {
@@ -210,18 +203,6 @@ describe("Calls Component", () => {
       expect(screen.getByTestId("call-logs-table")).toBeInTheDocument();
     });
 
-    it("should render consolidated logs for admin role", () => {
-      mockUseUser.mockReturnValue({
-        availableChatTypes: ["WEBRTC_CHAT", "MICROPHONE_CHAT"],
-        updateUserStatus: vi.fn(),
-        user: { ...mockUser, role: UserRole.ADMIN },
-        userStatus: UserStatus.AVAILABLE,
-        permissions: mockPermissions,
-      });
-      render(<Calls />);
-      expect(screen.getByTestId("consolidated-logs")).toBeInTheDocument();
-    });
-
     it("should render Session Logs heading", () => {
       render(<Calls />);
       expect(screen.getByText("Session Logs")).toBeInTheDocument();
@@ -242,35 +223,6 @@ describe("Calls Component", () => {
       // Refresh key should be 0 by default
       expect(screen.getByTestId("call-logs-table")).toHaveAttribute("data-refresh-key", "0");
     });
-
-    it("should set session type from permissions", () => {
-      render(<Calls />);
-
-      // Should call getPermittedSessionTypeOptions with permissions
-      expect(mockGetPermittedSessionTypeOptions).toHaveBeenCalledWith(mockPermissions);
-    });
-
-    it("should handle single session type option", () => {
-      mockGetPermittedSessionTypeOptions.mockReturnValue([
-        {
-          label: "Call",
-          value: SessionType.CALL,
-          permissionList: [],
-        },
-      ]);
-
-      render(<Calls />);
-
-      // Toggle button group should not be rendered
-      expect(screen.queryByTestId("toggle-button-group")).not.toBeInTheDocument();
-    });
-
-    it("should render toggle button group with multiple options", () => {
-      render(<Calls />);
-
-      // Toggle button group should be rendered
-      expect(screen.getByTestId("toggle-button-group")).toBeInTheDocument();
-    });
   });
 
   /**
@@ -281,27 +233,12 @@ describe("Calls Component", () => {
     it("should render for counsellor role", () => {
       mockUseUser.mockReturnValue({
         availableChatTypes: ["WEBRTC_CHAT", "MICROPHONE_CHAT"],
-        updateUserStatus: vi.fn(),
         user: { ...mockUser, role: UserRole.COUNSELLOR },
-        userStatus: UserStatus.AVAILABLE,
         permissions: mockPermissions,
       });
 
       render(<Calls />);
       expect(screen.getByTestId("call-logs-table")).toBeInTheDocument();
-    });
-
-    it("should render for admin role", () => {
-      mockUseUser.mockReturnValue({
-        availableChatTypes: ["WEBRTC_CHAT", "MICROPHONE_CHAT"],
-        updateUserStatus: vi.fn(),
-        user: { ...mockUser, role: UserRole.ADMIN },
-        userStatus: UserStatus.AVAILABLE,
-        permissions: mockPermissions,
-      });
-
-      render(<Calls />);
-      expect(screen.getByTestId("consolidated-logs")).toBeInTheDocument();
     });
 
     it("should show Start Session button for non-admin with MICROPHONE_CHAT", () => {
@@ -312,10 +249,8 @@ describe("Calls Component", () => {
     it("should not show Start Session button for admin", () => {
       mockUseUser.mockReturnValue({
         availableChatTypes: ["WEBRTC_CHAT", "MICROPHONE_CHAT"],
-        updateUserStatus: vi.fn(),
         user: { ...mockUser, role: UserRole.ADMIN },
-        userStatus: UserStatus.AVAILABLE,
-        permissions: mockPermissions,
+        permissions: [], // Admin users don't have START_MICROPHONE_CHAT permission
       });
 
       render(<Calls />);
@@ -346,42 +281,6 @@ describe("Calls Component", () => {
       // Refresh key should increment
       expect(screen.getByTestId("call-logs-table")).toHaveAttribute("data-refresh-key", "1");
     });
-
-    it("should handle user status toggle from AVAILABLE to OFFLINE", () => {
-      const mockUpdateUserStatus = vi.fn();
-      mockUseUser.mockReturnValue({
-        availableChatTypes: ["WEBRTC_CHAT", "MICROPHONE_CHAT"],
-        updateUserStatus: mockUpdateUserStatus,
-        user: mockUser,
-        userStatus: UserStatus.AVAILABLE,
-        permissions: mockPermissions,
-      });
-
-      render(<Calls />);
-
-      const statusButton = screen.getByText("Mark Away");
-      fireEvent.click(statusButton);
-
-      expect(mockUpdateUserStatus).toHaveBeenCalledWith(UserStatus.OFFLINE);
-    });
-
-    it("should handle user status toggle from OFFLINE to AVAILABLE", () => {
-      const mockUpdateUserStatus = vi.fn();
-      mockUseUser.mockReturnValue({
-        availableChatTypes: ["WEBRTC_CHAT", "MICROPHONE_CHAT"],
-        updateUserStatus: mockUpdateUserStatus,
-        user: mockUser,
-        userStatus: UserStatus.OFFLINE,
-        permissions: mockPermissions,
-      });
-
-      render(<Calls />);
-
-      const statusButton = screen.getByText("Mark Available");
-      fireEvent.click(statusButton);
-
-      expect(mockUpdateUserStatus).toHaveBeenCalledWith(UserStatus.AVAILABLE);
-    });
   });
 
   /**
@@ -408,33 +307,6 @@ describe("Calls Component", () => {
       fireEvent.click(closeButton);
 
       expect(screen.getByTestId("start-session-dialog")).toHaveAttribute("data-is-open", "false");
-    });
-  });
-
-  /**
-   * TEST GROUP: Session Type Handling
-   * Verifies session type selection and updates
-   */
-  describe("Session Type Handling", () => {
-    it("should pass session type to child components", () => {
-      render(<Calls />);
-
-      expect(screen.getByTestId("call-logs-table")).toHaveAttribute(
-        "data-session-type",
-        SessionType.CALL,
-      );
-    });
-
-    it("should update session type when toggle is clicked", () => {
-      render(<Calls />);
-
-      const simulationToggle = screen.getByTestId(`toggle-option-${SessionType.SIMULATION}`);
-      fireEvent.click(simulationToggle);
-
-      expect(screen.getByTestId("call-logs-table")).toHaveAttribute(
-        "data-session-type",
-        SessionType.SIMULATION,
-      );
     });
   });
 
@@ -475,12 +347,8 @@ describe("Calls Component", () => {
     it("should handle empty permissions", () => {
       mockUseUser.mockReturnValue({
         availableChatTypes: [],
-        updateUserStatus: vi.fn(),
-        user: mockUser,
-        userStatus: UserStatus.AVAILABLE,
         permissions: {},
       });
-      mockGetPermittedSessionTypeOptions.mockReturnValue([]);
 
       render(<Calls />);
       expect(screen.getByTestId("call-logs-table")).toBeInTheDocument();
@@ -489,9 +357,7 @@ describe("Calls Component", () => {
     it("should handle null user", () => {
       mockUseUser.mockReturnValue({
         availableChatTypes: [],
-        updateUserStatus: vi.fn(),
         user: null,
-        userStatus: UserStatus.OFFLINE,
         permissions: {},
       });
 
@@ -502,15 +368,12 @@ describe("Calls Component", () => {
     it("should handle empty available chat types", () => {
       mockUseUser.mockReturnValue({
         availableChatTypes: [],
-        updateUserStatus: vi.fn(),
         user: mockUser,
-        userStatus: UserStatus.AVAILABLE,
-        permissions: mockPermissions,
+        permissions: ["edit:summary"], // No permissions when no available chat types
       });
 
       render(<Calls />);
       expect(screen.queryByText("Start Session")).not.toBeInTheDocument();
-      expect(screen.queryByText("Mark Away")).not.toBeInTheDocument();
     });
   });
 
@@ -546,9 +409,7 @@ describe("Calls Component", () => {
     it("should match snapshot with admin role", () => {
       mockUseUser.mockReturnValue({
         availableChatTypes: ["WEBRTC_CHAT", "MICROPHONE_CHAT"],
-        updateUserStatus: vi.fn(),
         user: { ...mockUser, role: UserRole.ADMIN },
-        userStatus: UserStatus.AVAILABLE,
         permissions: mockPermissions,
       });
 

@@ -1,18 +1,42 @@
 export enum Permissions {
-  VIEW_NAVBAR_CALLS = "view:navbar:calls",
-  VIEW_NAVBAR_CALENDAR = "view:navbar:calendar",
-  VIEW_NAVBAR_LEARN = "view:navbar:learn",
-  VIEW_NAVBAR_STRESS_BUSTER = "view:navbar:stress-buster",
-  VIEW_NAVBAR_SETTINGS = "view:navbar:settings",
-  VIEW_NAVBAR_ANALYTICS = "view:navbar:analytics",
-  VIEW_NAVBAR_COMMUNITY = "view:navbar:community",
-  EDIT_SUMMARY = "edit:summary",
-  VIEW_START_CALL_PAGE = "view:button:start-call",
-  VIEW_NAVBAR_SEARCH = "view:navbar:search",
-  VIEW_SCENARIO_SESSION = "view:scenario-session", //  view permission to have session logs
-  VIEW_ADMIN_SCENARIO_SESSION = "view:admin:scenario-session", // view permission to have session logs for admin
+  VIEW_ANALYTICS_DASHBOARD = "view:analytics:dashboard",
+
+  // Call related permissions
+  START_MICROPHONE_CHAT = "start:microphone-chat",
+  START_CLOUD_TELEPHONY_CHAT = "start:cloud-telephony-chat",
+  // Search permission
+  VIEW_REFERNCE_DOCUMENT = "view:reference-document",
+  // Learn permission
+  EDIT_SCENARIO_SESSION = "edit:scenario-session",
+
+  // Logs Permission
+  VIEW_CALL_LOGS = "view:call:logs",
+  VIEW_CONSOLIDATED_LOGS = "view:call:logs-summary", // Admin logs permission
+  VIEW_SCENARIO_SESSION = "view:scenario-session",
+  VIEW_ADMIN_SCENARIO_SESSION = "view:admin:scenario-session", // Admin simulation logs permission
+
   VIEW_SCENARIO_SESSION_SUMMARY = "view:scenario-session:summary",
   VIEW_AUDIO_UPLOAD = "view:audio-upload-url",
   DELETE_CHAT = "delete:chat",
-  VIEW_ANALYTICS_DASHBOARD = "view:analytics:dashboard",
+  EXPORT_SUMMARY = "export:summary",
+  EDIT_CALL_INFO = "edit:call:info",
+  EDIT_CALL_DETAILS = "edit:call:details",
+  VIEW_SIMULATION_CREDITS = "view:simulation-credits",
+  VIEW_COMMUNITY = "view:community",
+  VIEW_CHAT_DETAILS = "view:chat:details",
+  VIEW_TRANSCRIPTION = "view:messages",
+  VIEW_CHAT_TYPES = "view:settings:chat-types",
+  VIEW_SUMMARY_FIELDS = "view:settings:summary-fields",
 }
+
+export const CALL_PERMISSIONS = [
+  Permissions.START_CLOUD_TELEPHONY_CHAT,
+  Permissions.START_MICROPHONE_CHAT,
+];
+
+export const SESSION_LOGS_PERMISSIONS = [
+  Permissions.VIEW_CALL_LOGS,
+  Permissions.VIEW_CONSOLIDATED_LOGS,
+  Permissions.VIEW_SCENARIO_SESSION,
+  Permissions.VIEW_ADMIN_SCENARIO_SESSION,
+];

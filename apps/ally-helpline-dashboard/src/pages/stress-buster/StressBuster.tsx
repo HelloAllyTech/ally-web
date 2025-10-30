@@ -9,7 +9,6 @@ import { logger } from "@ally-ui-mono/ui-shared/logger";
 import { BackgroundGradientBlue } from "@assets/icons";
 import { BoxBreathing } from "@components";
 import { RootState } from "@store";
-import { UserRole } from "@types";
 import { getKeyFromIndex } from "@utils";
 
 export const StressBuster = () => {
