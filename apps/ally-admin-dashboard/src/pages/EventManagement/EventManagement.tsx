@@ -58,6 +58,11 @@ export const EventManagement: React.FC = () => {
     }
   }, [sessionEventsData, offset]);
 
+  const onSearchChange = (value: string) => {
+    setEventSearch(value);
+    setOffset(0);
+  };
+
   const handleNewEventClick = async () => {
     const newEvent = {
       name: "New Event",
@@ -230,7 +235,7 @@ export const EventManagement: React.FC = () => {
         <h1 className="text-2xl text-gray-800 pb-6">{en.simulation.simulationEvents}</h1>
         <ListToolbar
           searchValue={eventSearch}
-          onSearchChange={setEventSearch}
+          onSearchChange={onSearchChange}
           action={
             selectedEvents.length > 0
               ? {
