@@ -25,7 +25,6 @@ import { useDebounce } from "@hooks";
 import { SimulationStatus, SimulationPreviewType } from "@types";
 import {
   getCreateSimulationSubSectionById,
-  extractValidData,
   formatSimulationResponseData,
   isNonEmptyString,
 } from "@utils";
@@ -85,8 +84,8 @@ export const CreateSimulation: FC = () => {
 
   useEffect(() => {
     if (adminSimulationByIdData) {
-      const formatteddata = formatSimulationResponseData(adminSimulationByIdData);
-      formMethods.reset(formatteddata);
+      const formattedData = formatSimulationResponseData(adminSimulationByIdData);
+      formMethods.reset(formattedData);
     }
   }, [adminSimulationByIdData, formMethods]);
 
@@ -174,12 +173,14 @@ export const CreateSimulation: FC = () => {
         : undefined;
 
     const simulationData = {
-      ...extractValidData(restForm),
+      ...restForm,
+      genderIdentity: formData.genderIdentity?.length > 0 ? formData.genderIdentity : null,
+      gender: formData.gender?.length > 0 ? formData.gender : null,
+      sexualOrientation: formData.sexualOrientation?.length > 0 ? formData.sexualOrientation : null,
       coverImageUrl: formData.coverImageUrl?.length > 0 ? formData.coverImageUrl : null,
-      age: formData.age ? parseInt(formData.age) : undefined,
-      ...(openingStatementsArray && openingStatementsArray.length > 0
-        ? { openingStatements: openingStatementsArray }
-        : {}),
+      voiceId: formData.voiceId?.length > 0 ? formData.voiceId : null,
+      age: formData.age ? parseInt(formData.age) : null,
+      openingStatements: openingStatementsArray?.length > 0 ? openingStatementsArray : null,
       status,
     };
     let response;

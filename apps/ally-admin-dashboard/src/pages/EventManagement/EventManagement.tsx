@@ -11,7 +11,13 @@ import {
 import { Trash } from "@assets";
 import { NotionTable, EventSidePanel, ListToolbar, ActionConfirmationPopup } from "@components";
 import { ButtonVariant } from "@components/types";
-import { SORT_BY, SORT_ORDER, EVENT_MANAGEMENT_TABLE_COLUMNS, en } from "@constants";
+import {
+  SORT_BY,
+  SORT_ORDER,
+  EVENT_MANAGEMENT_TABLE_COLUMNS,
+  en,
+  SESSION_EVENT_STATUS_OPTIONS,
+} from "@constants";
 import { UpdateEventDataParam } from "@types";
 
 export const EventManagement: React.FC = () => {
@@ -27,6 +33,7 @@ export const EventManagement: React.FC = () => {
   const [showDeleteConfirmationPopup, setShowDeleteConfirmationPopup] = useState<boolean>(false);
 
   const { data: sessionEventsData, isFetching } = useGetSessionEventsQuery({
+    visibilityType: SESSION_EVENT_STATUS_OPTIONS.ACTIVE,
     limit,
     offset,
     sortBy: SORT_BY.CREATED_AT,

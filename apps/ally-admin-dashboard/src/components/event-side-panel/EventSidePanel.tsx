@@ -156,7 +156,7 @@ export const EventSidePanel: React.FC<EventSidePanelProps> = ({
               </div>
             </Field>
 
-            <Field label="Add description" multiline={true}>
+            <Field label="Event description" multiline={true}>
               <AutoExpandableTextarea
                 maxLines={20}
                 minHeight={20}
@@ -167,7 +167,7 @@ export const EventSidePanel: React.FC<EventSidePanelProps> = ({
               />
             </Field>
 
-            <Field label="Add instruction" multiline={true}>
+            <Field label="Default branch description" multiline={true}>
               <AutoExpandableTextarea
                 maxLines={20}
                 minHeight={20}

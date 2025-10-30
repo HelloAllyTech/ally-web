@@ -19,7 +19,7 @@ import {
   EventMapTableLoader,
 } from "@components";
 import { ButtonVariant } from "@components/types";
-import { en } from "@constants";
+import { SESSION_EVENT_STATUS_OPTIONS, SORT_BY, SORT_ORDER, en } from "@constants";
 import { UpdateScenarioEventDataParam } from "@types";
 import {
   createNewEvent,
@@ -45,9 +45,11 @@ export const SimulationEventMapTable: FC<SimulationEventMapTableProps> = ({ simu
   const [selectedEventForEdit, setSelectedEventForEdit] =
     useState<UpdateScenarioEventDataParam | null>(null);
 
-  const { data: sessionEventsData, isLoading: isSessionEventsLoading } = useGetSessionEventsQuery(
-    {},
-  );
+  const { data: sessionEventsData, isLoading: isSessionEventsLoading } = useGetSessionEventsQuery({
+    visibilityType: SESSION_EVENT_STATUS_OPTIONS.ACTIVE,
+    sortBy: SORT_BY.CREATED_AT,
+    order: SORT_ORDER.DESC,
+  });
   const { data: mappedScenarioEventsData, isLoading: isMappedEventsLoading } =
     useGetMappedScenarioEventsQuery({
       id: String(simulationId || ""),

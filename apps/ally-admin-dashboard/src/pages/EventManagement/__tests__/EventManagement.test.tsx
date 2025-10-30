@@ -185,6 +185,9 @@ vi.mock("@constants", async importOriginal => {
     SORT_ORDER: {
       DESC: "desc",
     },
+    SESSION_EVENT_STATUS_OPTIONS: {
+      ACTIVE: "ACTIVE",
+    },
   };
 });
 
@@ -352,6 +355,7 @@ describe("EventManagement", () => {
       await waitFor(() => {
         expect(mockUseGetSessionEventsQuery).toHaveBeenCalledWith(
           expect.objectContaining({
+            visibilityType: "ACTIVE",
             searchName: "Event 1",
           }),
         );
@@ -742,6 +746,7 @@ describe("EventManagement", () => {
       await waitFor(() => {
         expect(mockUseGetSessionEventsQuery).toHaveBeenCalledWith(
           expect.objectContaining({
+            visibilityType: "ACTIVE",
             offset: 30,
           }),
         );
@@ -813,6 +818,7 @@ describe("EventManagement", () => {
       renderComponent();
 
       expect(mockUseGetSessionEventsQuery).toHaveBeenCalledWith({
+        visibilityType: "ACTIVE",
         limit: 30,
         offset: 0,
         sortBy: "createdAt",
@@ -830,6 +836,7 @@ describe("EventManagement", () => {
       await waitFor(() => {
         expect(mockUseGetSessionEventsQuery).toHaveBeenCalledWith(
           expect.objectContaining({
+            visibilityType: "ACTIVE",
             offset: 0,
             searchName: "new search",
           }),

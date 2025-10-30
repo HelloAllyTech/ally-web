@@ -107,7 +107,7 @@ export const InputField: React.FC<InputFieldProps> = ({
                 }
               : {})}
             onChange={handleFieldChange}
-            className="w-full rounded border border-[#E5E7EB] focus:ring-1 focus:ring-blue-600 focus:outline-none px-2 py-1 pr-[50px]"
+            className={`w-full rounded border border-[#E5E7EB] focus:ring-1 focus:ring-blue-600 focus:outline-none px-2 py-1 ${type === FORM_FIELD_TYPES.NUMBER ? "pr-[8px]" : "pr-[50px]"}`}
           />
         )}
         {maxLength && type === FORM_FIELD_TYPES.TEXT && (

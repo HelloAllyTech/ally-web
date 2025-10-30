@@ -350,3 +350,7 @@ export const EVENT_MANAGEMENT_TABLE_COLUMNS = [
     minWidth: 130,
   },
 ];
+
+export const SESSION_EVENT_STATUS_OPTIONS = {
+  ACTIVE: "ACTIVE",
+};

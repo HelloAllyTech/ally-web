@@ -68,6 +68,15 @@ vi.mock("@constants", () => ({
     SIMULATION: "simulation",
     SIMULATION_EVENTS: "simulationEvents",
   },
+  SESSION_EVENT_STATUS_OPTIONS: {
+    ACTIVE: "ACTIVE",
+  },
+  SORT_BY: {
+    CREATED_AT: "createdAt",
+  },
+  SORT_ORDER: {
+    DESC: "desc",
+  },
 }));
 
 vi.mock("sonner", () => ({
