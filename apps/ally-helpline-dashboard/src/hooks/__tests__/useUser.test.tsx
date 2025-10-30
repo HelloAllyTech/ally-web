@@ -110,20 +110,4 @@ describe("useUser", () => {
     expect(localStorage.getItem("refreshToken")).toBeNull();
     expect(store.getState().user.isAuthenticated).toBe(false);
   });
-
-  it("updateUserStatus stores status and dispatches", () => {
-    let api!: ReturnType<typeof useUser>;
-    render(
-      <Wrapper>
-        <Harness onReady={a => (api = a)} />
-      </Wrapper>,
-    );
-
-    act(() => {
-      api.updateUserStatus("online" as any);
-    });
-
-    expect(localStorage.getItem("userStatus")).toBe("online");
-    expect(store.getState().user.userStatus).toBe("online");
-  });
 });

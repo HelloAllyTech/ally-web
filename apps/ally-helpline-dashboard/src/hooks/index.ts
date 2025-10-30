@@ -7,3 +7,4 @@ export * from "./useDebounce";
 export * from "./useAutoActiveCallRedirect";
 export * from "./useAudioLevel";
 export * from "./useLiveKitRoom";
+export * from "./useSimulationCredits";

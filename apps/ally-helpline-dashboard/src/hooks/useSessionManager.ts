@@ -5,16 +5,16 @@ import { useLocation } from "react-router-dom";
 
 import { logger } from "@ally-ui-mono/ui-shared/logger";
 import { useLazyGetCounsellorChatQuery } from "@api";
-import { SocketConnectionTypes, ROUTES, CallType } from "@constants";
+import { SocketConnectionTypes, ROUTES } from "@constants";
 import { RootState } from "@store";
-import { SocketEvent, UserRole, Session, UseSessionManagerOptions } from "@types";
-import { isProviderCloudTelephony } from "@utils";
+import { SocketEvent, Session, UseSessionManagerOptions } from "@types";
+import { hasCallPermission, isProviderCloudTelephony } from "@utils";
 
 import { useSocket } from "./useSocket";
 
 export const useSessionManager = (options: UseSessionManagerOptions = {}) => {
   const { autoConnect = true } = options;
-  const { user } = useSelector((state: RootState) => state.user);
+  const { user, permissions } = useSelector((state: RootState) => state.user);
 
   const location = useLocation();
   const [getCounsellorChat] = useLazyGetCounsellorChatQuery();
@@ -103,7 +103,7 @@ export const useSessionManager = (options: UseSessionManagerOptions = {}) => {
      * - Only runs when connection is enabled
      */
     const fetchActiveChat = async () => {
-      if (user?.role === UserRole.COUNSELLOR) {
+      if (hasCallPermission(permissions)) {
         const response = await getCounsellorChat();
         if (response?.data?.chatId) {
           const audioProvider = response?.data?.provider;

@@ -64,7 +64,6 @@ vi.mock("@ally-ui-mono/ui-shared", () => ({
 vi.mock("../CallInterface", () => ({
   default: ({
     activeChat,
-    isCounsellor,
     isUserJoined,
     socketDisconnectionReason,
     mediaRecorder,
@@ -72,8 +71,7 @@ vi.mock("../CallInterface", () => ({
     isExotelMode,
   }: any) => (
     <div data-testid="call-interface">
-      CallInterface - {isCounsellor ? "Counsellor" : "User"} -{" "}
-      {isUserJoined ? "Joined" : "Not Joined"}
+      CallInterface - User - {isUserJoined ? "Joined" : "Not Joined"}
       {socketDisconnectionReason && ` - ${socketDisconnectionReason}`}
       {isMicrophoneMode && " - Microphone Mode"}
       {isExotelMode && " - Exotel Mode"}
@@ -329,18 +327,6 @@ describe("CallTranscript Component", () => {
       expect(screen.getByTestId("call-controls")).toBeInTheDocument();
     });
 
-    it("should render with counsellor user", () => {
-      renderComponent();
-
-      expect(screen.getByText(/CallInterface - Counsellor - Joined/)).toBeInTheDocument();
-    });
-
-    it("should render with regular user", () => {
-      renderComponent({}, { userId: 2, role: UserRole.COUNSELLOR });
-
-      expect(screen.getByText(/CallInterface - Counsellor - Joined/)).toBeInTheDocument();
-    });
-
     it("should render confirmation dialog when end call is clicked", async () => {
       renderComponent();
 
@@ -385,30 +371,6 @@ describe("CallTranscript Component", () => {
 
       const pauseBtn = screen.getByTestId("pause-transcription-btn");
       expect(pauseBtn).not.toBeVisible();
-    });
-  });
-
-  describe("Transcription Processing", () => {
-    it("should process existing messages on mount", () => {
-      renderComponent();
-
-      // Should show transcriptions in RealTimeTranscript when user is joined
-      expect(screen.getByTestId("real-time-transcript")).toBeInTheDocument();
-    });
-
-    it("should handle empty messages array", () => {
-      renderComponent({
-        activeChat: { ...mockActiveChat, messages: [] },
-      });
-
-      expect(screen.getByTestId("call-interface")).toBeInTheDocument();
-    });
-
-    it("should render with existing transcriptions", () => {
-      renderComponent();
-
-      // Should show transcriptions in RealTimeTranscript
-      expect(screen.getByTestId("real-time-transcript")).toBeInTheDocument();
     });
   });
 
@@ -478,13 +440,6 @@ describe("CallTranscript Component", () => {
   });
 
   describe("Conditional Rendering", () => {
-    it("should show RealTimeTranscript for counselor users", () => {
-      renderComponent({}, { userId: 2, role: UserRole.COUNSELLOR });
-
-      // RealTimeTranscript should be visible for counsellors
-      expect(screen.getByTestId("real-time-transcript")).toBeInTheDocument();
-    });
-
     it("should show CallSidebar for counsellors", () => {
       renderComponent();
 

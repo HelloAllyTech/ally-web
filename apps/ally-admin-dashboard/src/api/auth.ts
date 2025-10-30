@@ -6,7 +6,7 @@
  */
 
 import { baseAPI } from "@api";
-import { ApiEndpoints, HttpMethod } from "@constants";
+import { ApiEndpoints, HttpMethod, Permissions, UserRole } from "@constants";
 import {
   VerifyOTPRequest,
   VerifyOTPResponse,
@@ -56,8 +56,8 @@ const authAPI = baseAPI.injectEndpoints({
      * Used for role-based access control.
      * @returns {Promise<string[]>} Array of permission strings
      */
-    getPermissions: builder.query<string[], void>({
-      query: () => ApiEndpoints.AUTH.GET_PERMISSIONS,
+    getPermissions: builder.query<Permissions[], void>({
+      query: () => ApiEndpoints.AUTHORIZATION.GET_PERMISSIONS,
     }),
 
     /**
@@ -69,7 +69,7 @@ const authAPI = baseAPI.injectEndpoints({
       query: ({ phone, email }) => ({
         url: ApiEndpoints.AUTH.GENERATE_OTP,
         method: HttpMethod.POST,
-        body: { phone, email },
+        body: { phone, email, allowedRoles: [UserRole.SUPER_ADMIN] },
       }),
     }),
 
@@ -82,7 +82,7 @@ const authAPI = baseAPI.injectEndpoints({
       query: ({ phone, otp, email }) => ({
         url: ApiEndpoints.AUTH.VERIFY_OTP,
         method: HttpMethod.POST,
-        body: { phone, otp, email },
+        body: { phone, otp, email, allowedRoles: [UserRole.SUPER_ADMIN] },
       }),
     }),
   }),
@@ -93,6 +93,7 @@ export const {
   useSignupMutation,
   useGetUserQuery,
   useLazyGetUserQuery,
+  useGetPermissionsQuery,
   useLazyGetPermissionsQuery,
   useGenerateOTPMutation,
   useVerifyOTPMutation,

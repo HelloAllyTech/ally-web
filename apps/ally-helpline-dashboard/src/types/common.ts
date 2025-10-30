@@ -2,7 +2,7 @@ import { CallType, Permissions, SocketConnectionTypes } from "@constants";
 
 import { AudioUpload } from "./calls";
 import { SocketEvent } from "./message";
-import { User, UserStatus } from "./user";
+import { User } from "./user";
 
 export interface EnhanceButtonProps {
   fieldName: string;
@@ -50,7 +50,6 @@ export interface CallsState {
 export interface UserState {
   isAuthenticated: boolean;
   user: User;
-  userStatus: UserStatus;
   permissions: Permissions[];
   availableChatTypes: CallType[];
 }

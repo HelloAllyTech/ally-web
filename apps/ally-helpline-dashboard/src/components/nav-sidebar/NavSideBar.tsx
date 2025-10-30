@@ -16,12 +16,12 @@ const Tab: FC<TabProps> = ({ id, Icon, title, activeTab, onClick }) => (
   <div
     className={`
           w-full h-14 rounded-md p-4 flex items-center gap-3 cursor-pointer
-          ${activeTab === id ? "bg-[#F3F3F3]" : "hover:bg-[#F5F5F5]"}
+          ${activeTab === id ? "bg-[#F3F3F3] rounded-[2px]" : "hover:bg-[#F5F5F5]"}
           transition-all duration-300 group
         `}
     onClick={onClick}
   >
-    <Icon className={`${activeTab === id ? "stroke-[#000] stroke-[1px]" : ""}`} />
+    <Icon className={`${activeTab === id ? "" : "opacity-60"}`} />
     <div
       className={`${
         activeTab === id ? "text-[#000] font-[500]" : "text-[#6B7280] font-[400]"

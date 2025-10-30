@@ -6,12 +6,11 @@ import { Permissions } from "@constants";
 import userSlice, {
   setUser,
   authenticate,
-  setUserStatus,
   unauthenticate,
   setPermissions,
   setAvailableChatTypes,
 } from "@reducer/userReducer";
-import { UserRole, UserStatus, User, UserState } from "@types";
+import { UserRole, User, UserState } from "@types";
 
 describe("User Reducer", () => {
   let testStore: ReturnType<typeof configureStore<{ user: UserState }>>;
@@ -30,7 +29,6 @@ describe("User Reducer", () => {
 
       expect(state.user.isAuthenticated).toBe(false);
       expect(state.user.user).toBeNull();
-      expect(state.user.userStatus).toBe(UserStatus.OFFLINE);
       expect(state.user.permissions).toEqual([]);
       expect(state.user.availableChatTypes).toEqual([]);
     });
@@ -130,38 +128,6 @@ describe("User Reducer", () => {
     });
   });
 
-  describe("User Status Actions", () => {
-    it("should handle setUserStatus to AVAILABLE", () => {
-      testStore.dispatch(setUserStatus(UserStatus.AVAILABLE));
-
-      const newState = testStore.getState();
-      expect(newState.user.userStatus).toBe(UserStatus.AVAILABLE);
-    });
-
-    it("should handle setUserStatus to OFFLINE", () => {
-      // First set to available
-      testStore.dispatch(setUserStatus(UserStatus.AVAILABLE));
-      expect(testStore.getState().user.userStatus).toBe(UserStatus.AVAILABLE);
-
-      // Then set to offline
-      testStore.dispatch(setUserStatus(UserStatus.OFFLINE));
-
-      const newState = testStore.getState();
-      expect(newState.user.userStatus).toBe(UserStatus.OFFLINE);
-    });
-
-    it("should handle multiple status changes", () => {
-      testStore.dispatch(setUserStatus(UserStatus.AVAILABLE));
-      expect(testStore.getState().user.userStatus).toBe(UserStatus.AVAILABLE);
-
-      testStore.dispatch(setUserStatus(UserStatus.OFFLINE));
-      expect(testStore.getState().user.userStatus).toBe(UserStatus.OFFLINE);
-
-      testStore.dispatch(setUserStatus(UserStatus.AVAILABLE));
-      expect(testStore.getState().user.userStatus).toBe(UserStatus.AVAILABLE);
-    });
-  });
-
   describe("Permissions Actions", () => {
     it("should handle setPermissions with empty array", () => {
       testStore.dispatch(setPermissions([]));
@@ -171,7 +137,7 @@ describe("User Reducer", () => {
     });
 
     it("should handle setPermissions with single permission", () => {
-      const permissions = [Permissions.VIEW_NAVBAR_CALLS];
+      const permissions = [Permissions.VIEW_CALL_LOGS];
 
       testStore.dispatch(setPermissions(permissions));
 
@@ -180,7 +146,7 @@ describe("User Reducer", () => {
     });
 
     it("should handle setPermissions with multiple permissions", () => {
-      const permissions = [Permissions.VIEW_NAVBAR_CALLS, Permissions.VIEW_NAVBAR_CALENDAR];
+      const permissions = [Permissions.VIEW_CALL_LOGS, Permissions.EDIT_SCENARIO_SESSION];
 
       testStore.dispatch(setPermissions(permissions));
 
@@ -244,13 +210,12 @@ describe("User Reducer", () => {
         userId: 1,
       };
 
-      const permissions = [Permissions.VIEW_NAVBAR_CALLS, Permissions.VIEW_NAVBAR_CALENDAR];
+      const permissions = [Permissions.VIEW_CALL_LOGS, Permissions.EDIT_SCENARIO_SESSION];
       const chatTypes = [CallType.WEBRTC_CHAT, CallType.MICROPHONE_CHAT];
 
       // Perform all actions
       testStore.dispatch(authenticate());
       testStore.dispatch(setUser(mockUser));
-      testStore.dispatch(setUserStatus(UserStatus.AVAILABLE));
       testStore.dispatch(setPermissions(permissions));
       testStore.dispatch(setAvailableChatTypes(chatTypes));
 
@@ -258,7 +223,6 @@ describe("User Reducer", () => {
 
       expect(finalState.user.isAuthenticated).toBe(true);
       expect(finalState.user.user).toEqual(mockUser);
-      expect(finalState.user.userStatus).toBe(UserStatus.AVAILABLE);
       expect(finalState.user.permissions).toEqual(permissions);
       expect(finalState.user.availableChatTypes).toEqual(chatTypes);
     });
@@ -275,8 +239,7 @@ describe("User Reducer", () => {
 
       testStore.dispatch(authenticate());
       testStore.dispatch(setUser(mockUser));
-      testStore.dispatch(setUserStatus(UserStatus.AVAILABLE));
-      testStore.dispatch(setPermissions([Permissions.VIEW_NAVBAR_CALLS]));
+      testStore.dispatch(setPermissions([Permissions.VIEW_CALL_LOGS]));
 
       // Verify authenticated state
       let state = testStore.getState();
@@ -306,7 +269,7 @@ describe("User Reducer", () => {
     });
 
     it("should handle large permission arrays", () => {
-      const largePermissions = Array(1000).fill(Permissions.VIEW_NAVBAR_CALLS);
+      const largePermissions = Array(1000).fill(Permissions.VIEW_CALL_LOGS);
 
       testStore.dispatch(setPermissions(largePermissions));
 

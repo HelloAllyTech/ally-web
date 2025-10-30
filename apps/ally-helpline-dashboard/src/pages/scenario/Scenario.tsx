@@ -1,31 +1,37 @@
-import { FC, useState } from "react";
+import { FC, useEffect, useState } from "react";
 
 import { AnimatePresence, motion } from "framer-motion";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
 
 import { useEndSimulationMutation, useGetScenarioQuery, useStartSimulationMutation } from "@api";
-import { BackCircle, ExistingCall, PageNotFoundIllustration } from "@assets";
+import { BackCircle, Bolt, ExistingCall, PageNotFoundIllustration } from "@assets";
 import {
   LoginDialog,
   ScenarioDetailsCard,
   ConfirmationDialog,
   ButtonVariant,
   FallbackUI,
+  CreditInfo,
 } from "@components";
-import { LOCAL_STORAGE_KEYS, ROUTES } from "@constants";
+import { AUTO_CLOSE_DIALOG_DURATION, LOCAL_STORAGE_KEYS, ROUTES } from "@constants";
+import { useSimulationCredits } from "@hooks";
 
 import { learnPageExpandedVariants } from "../learn/constants";
 
 export const Scenario: FC = () => {
   const { scenarioId } = useParams();
   const navigate = useNavigate();
+  const { credits, limitReached } = useSimulationCredits();
 
   const id = Number(scenarioId);
 
   const [isLoginDialogOpen, setIsLoginDialogOpen] = useState<boolean>(false);
   const [isExistingSimulationConfirmOpen, setIsExistingSimulationConfirmOpen] =
     useState<boolean>(false);
+  const [noCreditsLeft, setNoCreditsLeft] = useState<boolean>(false);
+  const [notEnoughCredits, setNoEnoughCredits] = useState<boolean>(false);
+  const [buttonDisable, setButtonDisable] = useState<boolean>(false);
 
   const {
     data: scenario,
@@ -35,6 +41,16 @@ export const Scenario: FC = () => {
   const [endSimulation] = useEndSimulationMutation();
   const [startSimulation, { isLoading: isStartingSimulation, error: startSimulationError }] =
     useStartSimulationMutation();
+
+  useEffect(() => {
+    if (!credits) return;
+
+    if (credits?.consumedCredits === credits?.creditLimit) {
+      setNoCreditsLeft(true);
+      return;
+    }
+    if (limitReached) setNoEnoughCredits(true);
+  }, [credits]);
 
   const renderBackButton = () => {
     return (
@@ -115,6 +131,14 @@ export const Scenario: FC = () => {
     setIsExistingSimulationConfirmOpen(false);
   };
 
+  const handleCreditClose = (type: string) => {
+    if (type === "noCredits") {
+      setNoCreditsLeft(false);
+    } else if (type === "notEnough") {
+      setNoEnoughCredits(false);
+    }
+    setButtonDisable(true);
+  };
   // TODO: Add loading fallback UI for scenario
 
   return (
@@ -126,12 +150,26 @@ export const Scenario: FC = () => {
             initial="hidden"
             animate="visible"
             exit="exit"
-            className="flex flex-col gap-6 max-w-[70%] m-auto"
+            className="flex flex-col gap-6 w-[60%] m-auto"
           >
-            <div className="flex items-center gap-2 font-['Replay_Pro'] text-[28px]">
-              {renderBackButton()}
-              <span>Start</span>
-              <span className="font-bold italic"> Simulation</span>
+            <div className="flex justify-between">
+              <div className="flex items-center gap-2 font-['Replay_Pro'] text-[28px]">
+                {renderBackButton()}
+                <span>Start</span>
+                <span className="font-bold italic"> Simulation</span>
+              </div>
+              <div className="font-['IBM_Plex_Serif'] flex  items-center">
+                <div className="font-['IBM_Plex_Serif'] text-[14px] text-gray-500">
+                  Credits used:
+                </div>
+                <Bolt className="mb-2" />
+                <span
+                  className={`font-bold text-[18px] mb-1 ${limitReached ? "text-red-500" : "text-black"}`}
+                >
+                  {credits?.consumedCredits ?? 0}
+                </span>
+                <span className="text-[14px] text-gray-500">/{credits?.creditLimit ?? 0}</span>
+              </div>
             </div>
             <ScenarioDetailsCard
               coverImage={scenario?.coverImageUrl || ""}
@@ -139,6 +177,7 @@ export const Scenario: FC = () => {
               title={scenario?.title || ""}
               longDescription={scenario?.description || ""}
               onStart={onStartSimulationClick}
+              noCredits={buttonDisable}
             />
           </motion.div>
         ) : (
@@ -169,6 +208,20 @@ export const Scenario: FC = () => {
           secondaryButtonText="Cancel"
           onSecondaryButtonClick={onSecondaryButtonClick}
           icon={ExistingCall}
+        />
+        <CreditInfo
+          open={noCreditsLeft}
+          onClose={() => handleCreditClose("noCredits")}
+          title="No Credits Left"
+          description="Looks like you have run out of simulation credits"
+          autoCloseDuration={AUTO_CLOSE_DIALOG_DURATION}
+        />
+        <CreditInfo
+          open={notEnoughCredits}
+          onClose={() => handleCreditClose("notEnough")}
+          title="Not Enough Credits"
+          description="You don't have enough simulation credits to start this session"
+          autoCloseDuration={AUTO_CLOSE_DIALOG_DURATION}
         />
       </div>
     </AnimatePresence>

@@ -11,8 +11,3 @@ export enum UserRole {
   ADMIN = "ADMIN",
   LEARNER = "LEARNER",
 }
-
-export enum UserStatus {
-  OFFLINE = "offline",
-  AVAILABLE = "available",
-}

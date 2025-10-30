@@ -158,6 +158,9 @@ export interface KeyEvent {
   eventId: string;
   createdAt: string;
   occurredAt: string;
+  score: string;
+  emoji: string;
+  message: string;
   events: {
     id: string;
     name: string;

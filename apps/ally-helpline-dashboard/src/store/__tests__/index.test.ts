@@ -9,12 +9,11 @@ import userSlice from "@reducer/userReducer";
 import {
   setUser,
   authenticate,
-  setUserStatus,
   unauthenticate,
   setPermissions,
   setAvailableChatTypes,
 } from "@reducer/userReducer";
-import { UserRole, UserStatus, UserState, CallsState } from "@types";
+import { UserRole, UserState, CallsState } from "@types";
 
 import { store, type RootState, type AppDispatch } from "../index";
 
@@ -44,7 +43,6 @@ describe("Store Configuration", () => {
 
       expect(state.user.isAuthenticated).toBe(false);
       expect(state.user.user).toBeNull();
-      expect(state.user.userStatus).toBe(UserStatus.OFFLINE);
       expect(state.user.permissions).toEqual([]);
       expect(state.user.availableChatTypes).toEqual([]);
     });
@@ -97,15 +95,8 @@ describe("Store Configuration", () => {
       expect(newState.user.user).toEqual(mockUser);
     });
 
-    it("should handle setUserStatus action", () => {
-      testStore.dispatch(setUserStatus(UserStatus.AVAILABLE));
-
-      const newState = testStore.getState() as RootState;
-      expect(newState.user.userStatus).toBe(UserStatus.AVAILABLE);
-    });
-
     it("should handle setPermissions action", () => {
-      const mockPermissions = [Permissions.VIEW_NAVBAR_CALLS, Permissions.VIEW_NAVBAR_CALENDAR];
+      const mockPermissions = [Permissions.VIEW_CALL_LOGS, Permissions.EDIT_SCENARIO_SESSION];
 
       testStore.dispatch(setPermissions(mockPermissions));
 
@@ -171,8 +162,7 @@ describe("Store Configuration", () => {
       // Perform multiple actions
       testStore.dispatch(authenticate());
       testStore.dispatch(setUser(mockUser));
-      testStore.dispatch(setUserStatus(UserStatus.AVAILABLE));
-      testStore.dispatch(setPermissions([Permissions.VIEW_NAVBAR_CALLS]));
+      testStore.dispatch(setPermissions([Permissions.VIEW_CALL_LOGS]));
       testStore.dispatch(setAvailableChatTypes([CallType.WEBRTC_CHAT]));
       testStore.dispatch(updatePage(2));
       testStore.dispatch(updateFilters({ offset: 20, limit: 10 }));
@@ -182,8 +172,7 @@ describe("Store Configuration", () => {
       // Check user state
       expect(finalState.user.isAuthenticated).toBe(true);
       expect(finalState.user.user).toEqual(mockUser);
-      expect(finalState.user.userStatus).toBe(UserStatus.AVAILABLE);
-      expect(finalState.user.permissions).toEqual([Permissions.VIEW_NAVBAR_CALLS]);
+      expect(finalState.user.permissions).toEqual([Permissions.VIEW_CALL_LOGS]);
       expect(finalState.user.availableChatTypes).toEqual([CallType.WEBRTC_CHAT]);
 
       // Check calls state (page is lost because updateFilters replaces the entire filters object)
@@ -204,8 +193,7 @@ describe("Store Configuration", () => {
 
       testStore.dispatch(authenticate());
       testStore.dispatch(setUser(mockUser));
-      testStore.dispatch(setUserStatus(UserStatus.AVAILABLE));
-      testStore.dispatch(setPermissions([Permissions.VIEW_NAVBAR_CALLS]));
+      testStore.dispatch(setPermissions([Permissions.VIEW_CALL_LOGS]));
 
       // Verify state is set
       let state = testStore.getState() as RootState;
@@ -229,7 +217,6 @@ describe("Store Configuration", () => {
 
       // TypeScript should infer the correct types
       expect(typeof state.user.isAuthenticated).toBe("boolean");
-      expect(typeof state.user.userStatus).toBe("string");
       expect(Array.isArray(state.user.permissions)).toBe(true);
       expect(Array.isArray(state.user.availableChatTypes)).toBe(true);
       expect(typeof state.calls.filters).toBe("object");
@@ -240,7 +227,6 @@ describe("Store Configuration", () => {
 
       // These should not cause TypeScript errors
       dispatch(authenticate());
-      dispatch(setUserStatus(UserStatus.AVAILABLE));
       dispatch(updatePage(1));
       dispatch(updateFilters({ offset: 0 }));
     });

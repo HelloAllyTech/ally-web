@@ -424,7 +424,7 @@ const ConsolidatedLogs: FC<LogsTableProps> = ({ refreshKey, sessionType }) => {
     if (logs.length === 0 && !isLoading) {
       return (
         <FallbackUI
-          image={<NoResults />}
+          icon={<NoResults />}
           mainMessage={isCall ? "No call records found" : "No simulation records found"}
           description={
             isCall

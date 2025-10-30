@@ -102,7 +102,7 @@ exports[`CallInterface Component > Snapshot Testing > should match snapshot when
   <div
     class="text-white text-4xl font-normal"
   >
-    Participant left the call
+    Session is starting now..
   </div>
   <div
     class="text-white text-sm text-center mt-1"

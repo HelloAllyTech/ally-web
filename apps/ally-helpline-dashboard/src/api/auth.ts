@@ -12,6 +12,7 @@ import {
   VerifyOTPResponse,
   GenerateOTPRequest,
   GenerateOTPResponse,
+  UserRole,
 } from "@types";
 
 import { baseAPI } from "./baseAPI";
@@ -58,7 +59,7 @@ const authAPI = baseAPI.injectEndpoints({
      * @returns {Promise<string[]>} Array of permission strings
      */
     getPermissions: builder.query<string[], void>({
-      query: () => ApiEndpoints.AUTH.GET_PERMISSIONS,
+      query: () => ApiEndpoints.AUTHORIZATION.GET_PERMISSIONS,
     }),
 
     /**
@@ -70,7 +71,11 @@ const authAPI = baseAPI.injectEndpoints({
       query: ({ phone, email }) => ({
         url: ApiEndpoints.AUTH.GENERATE_OTP,
         method: HttpMethod.POST,
-        body: { phone, email },
+        body: {
+          phone,
+          email,
+          allowedRoles: [UserRole.COUNSELLOR, UserRole.ADMIN, UserRole.LEARNER],
+        },
       }),
     }),
 
@@ -83,7 +88,12 @@ const authAPI = baseAPI.injectEndpoints({
       query: ({ phone, otp, email }) => ({
         url: ApiEndpoints.AUTH.VERIFY_OTP,
         method: HttpMethod.POST,
-        body: { phone, otp, email },
+        body: {
+          phone,
+          otp,
+          email,
+          allowedRoles: [UserRole.COUNSELLOR, UserRole.ADMIN, UserRole.LEARNER],
+        },
       }),
     }),
   }),

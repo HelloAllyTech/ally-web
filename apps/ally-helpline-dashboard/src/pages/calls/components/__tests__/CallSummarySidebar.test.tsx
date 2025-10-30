@@ -231,9 +231,20 @@ vi.mock("../SummarySidebarWrapper", () => ({
 const createMockStore = (userState: any = { user: { role: UserRole.COUNSELLOR } }) => {
   return configureStore({
     reducer: {
-      user: (state = { user: userState }, action) => state,
+      user: (
+        state = {
+          user: userState,
+          permissions: ["edit:scenario-session", "view:chat:details", "view:messages"],
+        },
+        action,
+      ) => state,
     },
-    preloadedState: { user: { user: userState } },
+    preloadedState: {
+      user: {
+        user: userState,
+        permissions: ["edit:scenario-session", "view:chat:details", "view:messages"],
+      },
+    },
   });
 };
 

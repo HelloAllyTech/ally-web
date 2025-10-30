@@ -7,6 +7,7 @@ import Calendar from "./calendar";
 import { Carousel, CarouselSize, CarouselVariant, CarouselSlideType } from "./carousel";
 import Chip, { ChipConfig } from "./chip";
 import ConfirmationDialog from "./confirmation-dialog";
+import CreditInfo from "./credit-info-dialog";
 import CustomCircularProgress from "./custom-circular-progress";
 import CustomMarkdown from "./custom-markdown";
 import { DatePicker, TimePicker } from "./date-time-pickers";
@@ -72,4 +73,5 @@ export {
   TimePicker,
   ToggleButtonGroup,
   UserInfo,
+  CreditInfo,
 };

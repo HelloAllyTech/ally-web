@@ -1,3 +1,3 @@
-import SimulationSummary from "./SimulationSummary";
+import { SimulationSummary } from "./SimulationSummary";
 
-export default SimulationSummary;
+export { SimulationSummary };

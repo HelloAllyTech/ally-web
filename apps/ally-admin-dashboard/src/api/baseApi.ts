@@ -7,11 +7,10 @@ import {
 } from "@reduxjs/toolkit/query/react";
 import { toast } from "sonner";
 
-import { ApiEndpoints, HttpMethod, LOCAL_STORAGE_KEYS, ROUTES, en } from "@constants";
+import { ApiEndpoints, HttpMethod, LOCAL_STORAGE_KEYS, ROUTES, TAG_TYPES, en } from "@constants";
 import { RefreshResponse } from "@types";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
-const API_VERSION = import.meta.env.VITE_API_VERSION;
 
 const handleLogout = () => {
   localStorage.removeItem(LOCAL_STORAGE_KEYS.ADMIN_ACCESS_TOKEN);
@@ -22,15 +21,12 @@ const handleLogout = () => {
 };
 
 const baseQuery = fetchBaseQuery({
-  baseUrl: `${API_BASE_URL}/api/${API_VERSION}`,
+  baseUrl: `${API_BASE_URL}/api`,
   prepareHeaders: headers => {
     const token = localStorage.getItem(LOCAL_STORAGE_KEYS.ADMIN_ACCESS_TOKEN);
     if (token) {
       headers.set("authorization", `Bearer ${token}`);
     }
-    // Set common headers
-    headers.set("Content-Type", "application/json");
-    headers.set("Accept", "application/json");
     return headers;
   },
 });
@@ -102,7 +98,13 @@ const baseQueryWithReauth: BaseQueryFn<string | FetchArgs, unknown, FetchBaseQue
 export const baseAPI = createApi({
   reducerPath: "baseAPI",
   baseQuery: baseQueryWithReauth,
-  tagTypes: [],
+  tagTypes: [
+    TAG_TYPES.USERS,
+    TAG_TYPES.TENANTS,
+    TAG_TYPES.SESSION_EVENTS,
+    TAG_TYPES.SIMULATION,
+    TAG_TYPES.SIMULATION_EVENTS,
+  ],
   endpoints: () => ({}),
 });
 

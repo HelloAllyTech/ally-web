@@ -2,6 +2,7 @@ import { FC, useEffect, useState } from "react";
 
 import { CircularProgress, Tooltip } from "@mui/material";
 import { Check, Info, CircleX } from "lucide-react";
+import { useSelector } from "react-redux";
 
 import { SummaryGenenerationVideo } from "@assets";
 import {
@@ -12,9 +13,9 @@ import {
   SummaryFailed,
 } from "@assets/icons";
 import { Button, ButtonVariant, InfoBanner, ShinyText } from "@components";
-import { SESSION_STORAGE_KEYS, TOOLTIP_DARK_PROPS } from "@constants";
-import { useUser } from "@hooks";
-import { ChatSummaryStatus, UserRole } from "@types";
+import { Permissions, SESSION_STORAGE_KEYS, TOOLTIP_DARK_PROPS } from "@constants";
+import { RootState } from "@store";
+import { ChatSummaryStatus } from "@types";
 
 import { PostCallProcessingMessages, SUMMARY_GENERATION_START_INDEX } from "../constants";
 import { SummaryLoadingProps } from "../types";
@@ -96,14 +97,14 @@ const SummaryLoading: FC<SummaryLoadingProps> = ({
   refetchSummary,
   inSummarySidebar = false,
 }) => {
-  const { user } = useUser();
+  const { permissions } = useSelector((state: RootState) => state.user);
 
   const [currentMessageIndex, setCurrentMessageIndex] = useState<number>(
     inSummarySidebar ? SUMMARY_GENERATION_START_INDEX : 0,
   );
   const [isSummaryRefetching, setIsSummaryRefetching] = useState<boolean>(false);
 
-  const isAdmin = user?.role === UserRole.ADMIN;
+  const hasEditSummaryPermission = permissions?.includes(Permissions.EDIT_CALL_DETAILS);
 
   // Loop the messages from SUMMARY_GENERATION_START_INDEX
   useEffect(() => {
@@ -173,7 +174,7 @@ const SummaryLoading: FC<SummaryLoadingProps> = ({
           id="notes"
           rows={4}
           value={notes}
-          disabled={isAdmin}
+          disabled={!hasEditSummaryPermission}
           onChange={e => onNotesChange(e.target.value)}
           placeholder="Jot down your thoughts"
           className="w-full p-[10px] border-none focus:ring-transparent focus:ring-0 focus:outline-none font-['IBM_Plex_Serif'] text-sm resize-none"

@@ -1,18 +1,8 @@
 import React, { useEffect, FC, useRef } from "react";
 
 import { Input } from "@components";
+import { OTPProps } from "@components/types";
 import { KeyboardKeys, SINGLE_DIGIT_REGEX } from "@constants";
-
-export interface OTPProps extends Omit<React.HTMLAttributes<HTMLDivElement>, "onChange"> {
-  digitCount?: number;
-  value?: string;
-  onChange?: (value: string) => void;
-  onComplete?: (value: string) => void;
-  disabled?: boolean;
-  autoFocus?: boolean;
-  placeholder?: string;
-  inputClassName?: string;
-}
 
 export const OTP: FC<OTPProps> = ({
   className,
@@ -70,7 +60,7 @@ export const OTP: FC<OTPProps> = ({
   };
 
   return (
-    <div className="flex gap-6 items-center" {...props}>
+    <div className={`flex gap-6 items-center ${className ?? ""}`} {...props}>
       {Array.from({ length: digitCount }, (_, index) => (
         <Input
           key={index}
@@ -85,7 +75,7 @@ export const OTP: FC<OTPProps> = ({
           disabled={disabled}
           autoFocus={autoFocus && index === 0}
           placeholder={placeholder}
-          className="w-[64px] h-[64px] bg-[#F5F5F5] rounded-[12px] text-center text-[20px] font-medium placeholder:text-[#bdbdbd] placeholder:font-normal placeholder:text-[28px] border-0 focus-visible:ring-0"
+          className={`w-[64px] h-[64px] bg-[#F5F5F5] rounded-[12px] text-center text-[28px] font-medium placeholder:text-[#bdbdbd] placeholder:font-normal placeholder:text-[28px] border-0 focus-visible:ring-0 ${inputClassName ?? ""}`}
         />
       ))}
     </div>

@@ -16,17 +16,10 @@ import {
 } from "@constants";
 import { useSocket } from "@hooks";
 import { RootState } from "@store";
-import {
-  ChatStatus,
-  FeedbackResponse,
-  MessageType,
-  SocketEvent,
-  Transcription,
-  UserRole,
-} from "@types";
+import { ChatStatus, FeedbackResponse, MessageType, SocketEvent, Transcription } from "@types";
 import { isProviderCloudTelephony } from "@utils";
 
-import { CallSidebar, RealTimeTranscript, CallControls, CallInterface } from ".";
+import { CallSidebar, CallControls, CallInterface } from ".";
 import { AUDIO_FILE_SIZE } from "../constants";
 import { CallTranscriptProps, Nudge } from "../types";
 import { reduceTranscriptions } from "../utils";
@@ -64,7 +57,6 @@ const CallTranscript: FC<CallTranscriptProps> = ({
 
   const { data: nudgeStatus } = useGetNudgeStatusQuery();
 
-  const isCounsellor = user?.role === UserRole.COUNSELLOR;
   const isSharedMicrophoneMode =
     isMicrophoneMode &&
     activeChat?.chatId &&
@@ -465,18 +457,12 @@ const CallTranscript: FC<CallTranscriptProps> = ({
       <div className="w-screen h-screen bg-[#171A1A] flex flex-col gap-10 justify-center items-center overflow-hidden">
         <CallInterface
           activeChat={activeChat}
-          isCounsellor={isCounsellor}
           isUserJoined={isUserJoined}
           socketDisconnectionReason={socketDisconnectionReason}
           mediaRecorder={mediaRecorder}
           isMicrophoneMode={isMicrophoneMode}
           isExotelMode={isExotelMode}
         />
-
-        {/* Update transcription container with max-height */}
-        {isCounsellor && isUserJoined && !isSocketDisconnected && (
-          <RealTimeTranscript isFocusMode={isFocusMode} transcriptions={transcriptions} />
-        )}
 
         <CallControls
           isFocusMode={isFocusMode}
@@ -488,7 +474,7 @@ const CallTranscript: FC<CallTranscriptProps> = ({
           onFocusButtonClick={(isFocused: boolean) => setIsFocusMode(isFocused)}
           onPauseTranscriptionClick={() => setIsMuted(prev => !prev)}
           showEndSession={isMicrophoneMode}
-          showFocusButton={isCounsellor}
+          showFocusButton={true}
           showPauseTranscription={isMicrophoneMode}
         />
       </div>
@@ -504,7 +490,7 @@ const CallTranscript: FC<CallTranscriptProps> = ({
       />
       {nudgeStatus && (!isMicrophoneMode || !socketDisconnectionReason) && (
         <CallSidebar
-          showSidebar={isCounsellor && isUserJoined && !isSocketDisconnected}
+          showSidebar={isUserJoined && !isSocketDisconnected}
           isFocusMode={isFocusMode}
           nudges={nudges}
           onClose={() => setIsFocusMode(true)}

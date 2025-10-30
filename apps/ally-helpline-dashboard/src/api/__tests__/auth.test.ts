@@ -17,9 +17,11 @@ vi.mock("@constants", () => ({
       SIGNUP: "/auth/signup",
       LOGIN: "/auth/login",
       GET_USER: "/auth/user",
-      GET_PERMISSIONS: "/auth/permissions",
       GENERATE_OTP: "/auth/generate-otp",
       VERIFY_OTP: "/auth/verify-otp",
+    },
+    AUTHORIZATION: {
+      GET_PERMISSIONS: "/authorization/permissions",
     },
   },
   HttpMethod: {
@@ -55,7 +57,6 @@ describe("auth API", () => {
       "/auth/signup",
       "/auth/login",
       "/auth/user",
-      "/auth/permissions",
       "/auth/generate-otp",
       "/auth/verify-otp",
     ];

@@ -8,6 +8,7 @@ export const ROUTES = {
   LOGIN: "/login",
   SIGNUP: "/signup",
   HEALTH: "/health",
+  SUSPENDED_USER: "/suspended-user",
 
   // Private Routes
   HOME: "/",
@@ -43,7 +44,8 @@ export const navBarOptions = [
     path: ROUTES.CALLS,
     activePages: [],
     permissions: [
-      Permissions.VIEW_NAVBAR_CALLS,
+      Permissions.VIEW_CALL_LOGS,
+      Permissions.VIEW_CONSOLIDATED_LOGS,
       Permissions.VIEW_SCENARIO_SESSION,
       Permissions.VIEW_ADMIN_SCENARIO_SESSION,
     ],
@@ -62,7 +64,7 @@ export const navBarOptions = [
     Icon: SearchIcon,
     path: ROUTES.SEARCH,
     activePages: [],
-    permissions: [Permissions.VIEW_NAVBAR_SEARCH],
+    permissions: [Permissions.VIEW_REFERNCE_DOCUMENT],
   },
   {
     id: TabId.LEARN,
@@ -70,7 +72,7 @@ export const navBarOptions = [
     Icon: LearnIcon,
     path: ROUTES.LEARN,
     activePages: [ROUTES.SCENARIO],
-    permissions: [Permissions.VIEW_NAVBAR_LEARN],
+    permissions: [Permissions.EDIT_SCENARIO_SESSION],
   },
   {
     id: TabId.COMMUNITY,
@@ -78,6 +80,6 @@ export const navBarOptions = [
     Icon: CommunityIcon,
     path: "https://community.helloally.ai/",
     activePages: [],
-    permissions: [Permissions.VIEW_NAVBAR_COMMUNITY],
+    permissions: [Permissions.VIEW_COMMUNITY],
   },
 ];

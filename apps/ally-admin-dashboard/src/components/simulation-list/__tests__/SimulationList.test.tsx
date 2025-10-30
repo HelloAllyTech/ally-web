@@ -1,0 +1,439 @@
+import { render, screen, fireEvent } from "@testing-library/react";
+import { describe, it, expect, vi, beforeEach } from "vitest";
+
+import { Simulation, SimulationStatus } from "@types";
+
+import { SimulationList } from "../SimulationList";
+
+// Mock the assets
+vi.mock("@assets", () => ({
+  Edit: () => <div data-testid="edit-icon">Edit</div>,
+  Unpublish: () => <div data-testid="unpublish-icon">Unpublish</div>,
+  Archive: () => <div data-testid="archive-icon">Archive</div>,
+  Delete: () => <div data-testid="delete-icon">Delete</div>,
+  Play: () => <div data-testid="play-icon">Play</div>,
+  Unarchive: () => <div data-testid="unarchive-icon">Unarchive</div>,
+}));
+
+// Mock CustomImage component
+vi.mock("@components", () => ({
+  CustomImage: ({ src, alt, className }: any) => (
+    <img src={src} alt={alt} className={className} data-testid="custom-image" />
+  ),
+}));
+
+// Mock constants
+vi.mock("@constants", () => ({
+  en: {
+    simulation: {
+      simulation: "Simulation",
+      createdBy: "Created By",
+      lastModified: "Last Modified",
+      status: "Status",
+      usage: "Usage",
+      edit: "Edit",
+      unpublish: "Unpublish",
+      archive: "Archive",
+      unarchive: "Unarchive",
+      delete: "Delete",
+    },
+  },
+  toolTipStyles: {
+    tooltip: {
+      sx: {
+        bgcolor: "common.black",
+        "& .MuiTooltip-arrow": {
+          color: "common.black",
+        },
+      },
+    },
+  },
+}));
+
+// Mock utils
+vi.mock("@utils", () => ({
+  formatDate: (date: string) => new Date(date).toLocaleDateString(),
+  getSimulationStatusColor: (status: string) =>
+    status === "ACTIVE" ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-800",
+  formatSimulationUsage: (usage: number) => `${usage} times`,
+  formatCapitalizedEnum: (value: string) =>
+    value.charAt(0).toUpperCase() + value.slice(1).toLowerCase(),
+}));
+
+describe("SimulationList", () => {
+  const mockSimulations: Simulation[] = [
+    {
+      id: "1",
+      title: "Test Simulation 1",
+      description: "Description for simulation 1",
+      coverImageUrl: "https://example.com/image1.jpg",
+      createdBy: "John Doe",
+      updatedAt: "2024-01-15T10:00:00Z",
+      status: SimulationStatus.ACTIVE,
+      usage: 10,
+      isPreviewEnabled: true,
+    },
+    {
+      id: "2",
+      title: "Test Simulation 2",
+      description: "Description for simulation 2",
+      coverImageUrl: "https://example.com/image2.jpg",
+      createdBy: "Jane Smith",
+      updatedAt: "2024-01-20T15:30:00Z",
+      status: SimulationStatus.DRAFT,
+      usage: 0,
+      isPreviewEnabled: false,
+    },
+    {
+      id: "3",
+      title: "Test Simulation 3",
+      description: "Description for simulation 3",
+      coverImageUrl: "https://example.com/image3.jpg",
+      createdBy: "Bob Johnson",
+      updatedAt: "2024-02-01T08:45:00Z",
+      status: SimulationStatus.ARCHIVED,
+      usage: 25,
+      isPreviewEnabled: false,
+    },
+  ];
+
+  const mockCallbacks = {
+    onEdit: vi.fn(),
+    onDelete: vi.fn(),
+    onPreview: vi.fn(),
+    onArchive: vi.fn(),
+    onUnpublish: vi.fn(),
+    onUnarchive: vi.fn(),
+  };
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  describe("Rendering", () => {
+    it("renders table header correctly", () => {
+      render(<SimulationList simulations={mockSimulations} {...mockCallbacks} />);
+
+      expect(screen.getByText("Simulation")).toBeInTheDocument();
+      expect(screen.getByText("Created By")).toBeInTheDocument();
+      expect(screen.getByText("Last Modified")).toBeInTheDocument();
+      expect(screen.getByText("Status")).toBeInTheDocument();
+      expect(screen.getByText("Usage")).toBeInTheDocument();
+    });
+
+    it("renders all simulations", () => {
+      render(<SimulationList simulations={mockSimulations} {...mockCallbacks} />);
+
+      expect(screen.getByText("Test Simulation 1")).toBeInTheDocument();
+      expect(screen.getByText("Test Simulation 2")).toBeInTheDocument();
+      expect(screen.getByText("Test Simulation 3")).toBeInTheDocument();
+    });
+
+    it("renders simulation images", () => {
+      render(<SimulationList simulations={mockSimulations} {...mockCallbacks} />);
+
+      const images = screen.getAllByTestId("custom-image");
+      expect(images).toHaveLength(3);
+      expect(images[0]).toHaveAttribute("src", "https://example.com/image1.jpg");
+      expect(images[0]).toHaveAttribute("alt", "Test Simulation 1");
+    });
+
+    it("renders simulation descriptions", () => {
+      render(<SimulationList simulations={mockSimulations} {...mockCallbacks} />);
+
+      expect(screen.getByText("Description for simulation 1")).toBeInTheDocument();
+      expect(screen.getByText("Description for simulation 2")).toBeInTheDocument();
+      expect(screen.getByText("Description for simulation 3")).toBeInTheDocument();
+    });
+
+    it("renders footer when provided", () => {
+      const footer = <div data-testid="custom-footer">Custom Footer</div>;
+      render(<SimulationList simulations={mockSimulations} footer={footer} {...mockCallbacks} />);
+
+      expect(screen.getByTestId("custom-footer")).toBeInTheDocument();
+      expect(screen.getByText("Custom Footer")).toBeInTheDocument();
+    });
+
+    it("renders empty list when no simulations", () => {
+      render(<SimulationList simulations={[]} {...mockCallbacks} />);
+
+      expect(screen.queryByText("Test Simulation 1")).not.toBeInTheDocument();
+    });
+  });
+
+  describe("Status Display", () => {
+    it("displays correct status for ACTIVE simulations", () => {
+      render(<SimulationList simulations={[mockSimulations[0]]} {...mockCallbacks} />);
+
+      expect(screen.getByText("Published")).toBeInTheDocument();
+    });
+
+    it("displays correct status for DRAFT simulations", () => {
+      render(<SimulationList simulations={[mockSimulations[1]]} {...mockCallbacks} />);
+
+      expect(screen.getByText("Draft")).toBeInTheDocument();
+    });
+
+    it("displays correct status for ARCHIVED simulations", () => {
+      render(<SimulationList simulations={[mockSimulations[2]]} {...mockCallbacks} />);
+
+      expect(screen.getByText("Archived")).toBeInTheDocument();
+    });
+  });
+
+  describe("Action Buttons", () => {
+    it("renders edit button for all simulations", () => {
+      render(<SimulationList simulations={mockSimulations} {...mockCallbacks} />);
+
+      const editButtons = screen.getAllByTestId("edit-icon");
+      expect(editButtons).toHaveLength(3);
+    });
+
+    it("calls onEdit when edit button is clicked", () => {
+      render(<SimulationList simulations={[mockSimulations[0]]} {...mockCallbacks} />);
+
+      const editButton = screen.getByTestId("edit-icon");
+      fireEvent.click(editButton);
+
+      expect(mockCallbacks.onEdit).toHaveBeenCalledTimes(1);
+      expect(mockCallbacks.onEdit).toHaveBeenCalledWith(mockSimulations[0]);
+    });
+
+    it("calls onDelete when delete button is clicked", () => {
+      render(<SimulationList simulations={[mockSimulations[0]]} {...mockCallbacks} />);
+
+      const deleteButton = screen.getByTestId("delete-icon");
+      fireEvent.click(deleteButton);
+
+      expect(mockCallbacks.onDelete).toHaveBeenCalledTimes(1);
+      expect(mockCallbacks.onDelete).toHaveBeenCalledWith(mockSimulations[0]);
+    });
+
+    it("renders unpublish button for ACTIVE simulations", () => {
+      render(<SimulationList simulations={[mockSimulations[0]]} {...mockCallbacks} />);
+
+      expect(screen.getByTestId("unpublish-icon")).toBeInTheDocument();
+    });
+
+    it("does not render unpublish button for DRAFT simulations", () => {
+      render(<SimulationList simulations={[mockSimulations[1]]} {...mockCallbacks} />);
+
+      expect(screen.queryByTestId("unpublish-icon")).not.toBeInTheDocument();
+    });
+
+    it("calls onUnpublish when unpublish button is clicked", () => {
+      render(<SimulationList simulations={[mockSimulations[0]]} {...mockCallbacks} />);
+
+      const unpublishButton = screen.getByTestId("unpublish-icon");
+      fireEvent.click(unpublishButton);
+
+      expect(mockCallbacks.onUnpublish).toHaveBeenCalledTimes(1);
+      expect(mockCallbacks.onUnpublish).toHaveBeenCalledWith(mockSimulations[0]);
+    });
+
+    it("renders archive button for ACTIVE simulations", () => {
+      render(<SimulationList simulations={[mockSimulations[0]]} {...mockCallbacks} />);
+
+      expect(screen.getByTestId("archive-icon")).toBeInTheDocument();
+    });
+
+    it("renders unarchive button for ARCHIVED simulations", () => {
+      render(<SimulationList simulations={[mockSimulations[2]]} {...mockCallbacks} />);
+
+      expect(screen.getByTestId("unarchive-icon")).toBeInTheDocument();
+    });
+
+    it("calls onArchive when archive button is clicked for ACTIVE simulation", () => {
+      render(<SimulationList simulations={[mockSimulations[0]]} {...mockCallbacks} />);
+
+      const archiveButton = screen.getByTestId("archive-icon");
+      fireEvent.click(archiveButton);
+
+      expect(mockCallbacks.onArchive).toHaveBeenCalledTimes(1);
+      expect(mockCallbacks.onArchive).toHaveBeenCalledWith(mockSimulations[0]);
+    });
+
+    it("calls onUnarchive when unarchive button is clicked for ARCHIVED simulation", () => {
+      render(<SimulationList simulations={[mockSimulations[2]]} {...mockCallbacks} />);
+
+      const unarchiveButton = screen.getByTestId("unarchive-icon");
+      fireEvent.click(unarchiveButton);
+
+      expect(mockCallbacks.onUnarchive).toHaveBeenCalledTimes(1);
+      expect(mockCallbacks.onUnarchive).toHaveBeenCalledWith(mockSimulations[2]);
+    });
+
+    it("does not render archive/unarchive buttons for DRAFT simulations", () => {
+      render(<SimulationList simulations={[mockSimulations[1]]} {...mockCallbacks} />);
+
+      expect(screen.queryByTestId("archive-icon")).not.toBeInTheDocument();
+      expect(screen.queryByTestId("unarchive-icon")).not.toBeInTheDocument();
+    });
+  });
+
+  describe("Preview Functionality", () => {
+    it("renders preview button for ACTIVE simulations", () => {
+      render(<SimulationList simulations={[mockSimulations[0]]} {...mockCallbacks} />);
+
+      expect(screen.getByText("Preview")).toBeInTheDocument();
+      expect(screen.getByTestId("play-icon")).toBeInTheDocument();
+    });
+
+    it("does not render preview button for DRAFT simulations", () => {
+      render(<SimulationList simulations={[mockSimulations[1]]} {...mockCallbacks} />);
+
+      expect(screen.queryByText("Preview")).not.toBeInTheDocument();
+      expect(screen.getByText("-")).toBeInTheDocument();
+    });
+
+    it("calls onPreview when preview button is clicked", () => {
+      render(<SimulationList simulations={[mockSimulations[0]]} {...mockCallbacks} />);
+
+      const previewButton = screen.getByText("Preview");
+      fireEvent.click(previewButton);
+
+      expect(mockCallbacks.onPreview).toHaveBeenCalledTimes(1);
+      expect(mockCallbacks.onPreview).toHaveBeenCalledWith(mockSimulations[0]);
+    });
+
+    it("calls onPreview when clicking on simulation image for ACTIVE simulation", () => {
+      render(<SimulationList simulations={[mockSimulations[0]]} {...mockCallbacks} />);
+
+      const images = screen.getAllByTestId("custom-image");
+      fireEvent.click(images[0].parentElement!);
+
+      expect(mockCallbacks.onPreview).toHaveBeenCalledTimes(1);
+      expect(mockCallbacks.onPreview).toHaveBeenCalledWith(mockSimulations[0]);
+    });
+
+    it("does not call onPreview when clicking on DRAFT simulation image", () => {
+      render(<SimulationList simulations={[mockSimulations[1]]} {...mockCallbacks} />);
+
+      const images = screen.getAllByTestId("custom-image");
+      fireEvent.click(images[0].parentElement!);
+
+      expect(mockCallbacks.onPreview).not.toHaveBeenCalled();
+    });
+
+    it("calls onPreview when clicking on simulation title for ACTIVE simulation", () => {
+      render(<SimulationList simulations={[mockSimulations[0]]} {...mockCallbacks} />);
+
+      const title = screen.getByText("Test Simulation 1");
+      fireEvent.click(title.parentElement!);
+
+      expect(mockCallbacks.onPreview).toHaveBeenCalledTimes(1);
+      expect(mockCallbacks.onPreview).toHaveBeenCalledWith(mockSimulations[0]);
+    });
+  });
+
+  describe("Data Formatting", () => {
+    it("formats dates correctly", () => {
+      render(<SimulationList simulations={[mockSimulations[0]]} {...mockCallbacks} />);
+
+      const formattedDate = new Date("2024-01-15T10:00:00Z").toLocaleDateString();
+      expect(screen.getByText(formattedDate)).toBeInTheDocument();
+    });
+
+    it("formats usage correctly", () => {
+      render(<SimulationList simulations={[mockSimulations[0]]} {...mockCallbacks} />);
+
+      expect(screen.getByText("10 times")).toBeInTheDocument();
+    });
+
+    it("displays created by information", () => {
+      render(<SimulationList simulations={[mockSimulations[0]]} {...mockCallbacks} />);
+
+      expect(screen.getByText("John Doe")).toBeInTheDocument();
+    });
+
+    it("displays -- for missing created by information", () => {
+      const simulationWithoutCreator = {
+        ...mockSimulations[0],
+        createdBy: "",
+      };
+      render(<SimulationList simulations={[simulationWithoutCreator]} {...mockCallbacks} />);
+
+      expect(screen.getByText("--")).toBeInTheDocument();
+    });
+  });
+
+  describe("Styling and Layout", () => {
+    it("applies hover styles to simulation rows", () => {
+      const { container } = render(
+        <SimulationList simulations={[mockSimulations[0]]} {...mockCallbacks} />,
+      );
+
+      const row = container.querySelector(".hover\\:shadow-sm");
+      expect(row).toBeInTheDocument();
+    });
+
+    it("applies correct styling to simulation cards", () => {
+      const { container } = render(
+        <SimulationList simulations={[mockSimulations[0]]} {...mockCallbacks} />,
+      );
+
+      const card = container.querySelector(".group");
+      expect(card).toBeInTheDocument();
+      expect(card).toHaveClass("hover:shadow-sm");
+      expect(card).toHaveClass("hover:bg-gray-100");
+    });
+
+    it("applies correct overflow styles", () => {
+      const { container } = render(
+        <SimulationList simulations={mockSimulations} {...mockCallbacks} />,
+      );
+
+      const mainContainer = container.firstChild;
+      expect(mainContainer).toHaveClass("overflow-x-auto");
+      expect(mainContainer).toHaveClass("overflow-y-scroll");
+    });
+  });
+
+  describe("Edge Cases", () => {
+    it("handles simulations with missing optional data", () => {
+      const simulationWithMissingData: Simulation = {
+        id: "4",
+        title: "Minimal Simulation",
+        description: "",
+        coverImageUrl: "",
+        createdBy: "",
+        updatedAt: "2024-01-01T00:00:00Z",
+        status: SimulationStatus.DRAFT,
+        usage: 0,
+        isPreviewEnabled: false,
+      };
+
+      render(<SimulationList simulations={[simulationWithMissingData]} {...mockCallbacks} />);
+
+      expect(screen.getByText("Minimal Simulation")).toBeInTheDocument();
+      expect(screen.getByText("--")).toBeInTheDocument();
+    });
+
+    it("handles callbacks being undefined", () => {
+      render(<SimulationList simulations={[mockSimulations[0]]} />);
+
+      const editButton = screen.getByTestId("edit-icon");
+      expect(() => fireEvent.click(editButton)).not.toThrow();
+    });
+
+    it("renders correctly with single simulation", () => {
+      render(<SimulationList simulations={[mockSimulations[0]]} {...mockCallbacks} />);
+
+      expect(screen.getByText("Test Simulation 1")).toBeInTheDocument();
+      expect(screen.queryByText("Test Simulation 2")).not.toBeInTheDocument();
+    });
+
+    it("renders correctly with many simulations", () => {
+      const manySimulations = Array.from({ length: 20 }, (_, i) => ({
+        ...mockSimulations[0],
+        id: `sim-${i}`,
+        title: `Simulation ${i}`,
+      }));
+
+      render(<SimulationList simulations={manySimulations} {...mockCallbacks} />);
+
+      expect(screen.getByText("Simulation 0")).toBeInTheDocument();
+      expect(screen.getByText("Simulation 19")).toBeInTheDocument();
+    });
+  });
+});

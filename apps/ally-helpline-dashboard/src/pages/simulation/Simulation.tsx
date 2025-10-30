@@ -32,16 +32,7 @@ export const Simulation = () => {
 
   const [endSimulation, { isLoading: isEndSimulationLoading }] = useEndSimulationMutation();
 
-  const {
-    room,
-    roomStatus,
-    error,
-    startTime,
-    handleEndSession,
-    handleRetryConnection,
-    events,
-    score,
-  } = useLiveKitRoom();
+  const { room, roomStatus, startTime, handleEndSession, events, score } = useLiveKitRoom();
 
   // Keep screen awake during an active simulation and handle tab visibility changes
   useEffect(() => {

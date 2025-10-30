@@ -1,13 +1,13 @@
-import { useCallback } from "react";
+import { useCallback, useMemo } from "react";
 
 import { useSelector } from "react-redux";
 
 import { logger } from "@ally-ui-mono/ui-shared";
 import { useLazyGetUserQuery, useLazyGetPermissionsQuery, baseAPI } from "@api";
-import { LOCAL_STORAGE_KEYS } from "@constants";
-import { setUser, authenticate, unauthenticate, setPermissions, setUserStatus } from "@reducer";
+import { NavigationItem } from "@components/types";
+import { LOCAL_STORAGE_KEYS, ROUTES, en, SIDEBAR_ITEMS, Permissions } from "@constants";
+import { setUser, authenticate, unauthenticate, setPermissions } from "@reducer";
 import { RootState, store } from "@store";
-import { UserStatus } from "@types";
 
 export const useUser = () => {
   const isAuthenticated = useSelector((state: RootState) => state.user.isAuthenticated);
@@ -16,6 +16,24 @@ export const useUser = () => {
 
   const [getUser, { isLoading: isUserLoading }] = useLazyGetUserQuery();
   const [getPermissions, { isLoading: isPermissionsLoading }] = useLazyGetPermissionsQuery();
+
+  const navigationItems: NavigationItem[] = [
+    {
+      id: SIDEBAR_ITEMS.SIMULATION_STUDIO,
+      label: en.simulation.simulationStudio,
+      path: ROUTES.SIMULATION_STUDIO,
+    },
+    {
+      id: SIDEBAR_ITEMS.EVENT_MANAGEMENT,
+      label: en.simulation.eventManagement,
+      path: ROUTES.MANAGE_EVENTS,
+    },
+    {
+      id: SIDEBAR_ITEMS.USER_MANAGEMENT,
+      label: en.userManagement.userManagement,
+      path: ROUTES.USER_MANAGEMENT,
+    },
+  ];
 
   /**
    * Checks user authentication status and fetches user data if authenticated.
@@ -73,14 +91,26 @@ export const useUser = () => {
     localStorage.removeItem(LOCAL_STORAGE_KEYS.ADMIN_REFRESH_TOKEN);
   };
 
-  /**
-   * Updates the user status in both localStorage and Redux store.
-   * @param {UserStatus} status - The new user status to set
-   */
-  const updateUserStatus = (status: UserStatus) => {
-    localStorage.setItem(LOCAL_STORAGE_KEYS.ADMIN_USER_STATUS, status);
-    store.dispatch(setUserStatus(status));
-  };
+  const filteredNavigationItems = useMemo(() => {
+    // Return empty array if permissions are not loaded yet
+    if (!permissions || permissions.length === 0) {
+      return [];
+    }
+
+    // Filter navigation items based on user permissions
+    return navigationItems.filter(item => {
+      switch (item.id) {
+        case SIDEBAR_ITEMS.SIMULATION_STUDIO:
+          return permissions.includes(Permissions.EDIT_SCENARIO);
+        case SIDEBAR_ITEMS.EVENT_MANAGEMENT:
+          return permissions.includes(Permissions.EDIT_EVENT);
+        case SIDEBAR_ITEMS.USER_MANAGEMENT:
+          return permissions.includes(Permissions.EDIT_USER);
+        default:
+          return true;
+      }
+    });
+  }, [permissions]);
 
   return {
     availableChatTypes,
@@ -90,8 +120,8 @@ export const useUser = () => {
     logout,
     permissions,
     setUser,
-    updateUserStatus,
     user,
     userStatus,
+    filteredNavigationItems,
   };
 };
