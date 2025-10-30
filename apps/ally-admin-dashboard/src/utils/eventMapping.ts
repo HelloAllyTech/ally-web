@@ -1,5 +1,7 @@
 import { SessionEvent, UpdateScenarioEventDataParam } from "@types";
 
+import { isNonEmptyString } from "./common";
+
 // Constants for event fields
 export const MAPPED_EVENT_FIELDS = {
   ID: "id",
@@ -100,16 +102,18 @@ export const formatToMappedEvent = (event: SessionEvent): UpdateScenarioEventDat
 
 // Convert UpdateScenarioEventDataParam array to API format
 export const convertToApiFormat = (events: UpdateScenarioEventDataParam[]) => {
-  return events.map(event => ({
-    id: event.id?.value,
-    name: event.name?.value,
-    score: event.score?.value,
-    emoji: event.emoji?.value,
-    message: event.message?.value,
-    feedbackStatus: event.feedbackStatus?.value,
-    branchingStatus: event.branchingStatus?.value,
-    branchInstruction: event.branchInstruction?.value,
-  }));
+  return events
+    .map(event => ({
+      id: event.id?.value,
+      name: event.name?.value,
+      score: event.score?.value,
+      emoji: event.emoji?.value,
+      message: event.message?.value,
+      feedbackStatus: event.feedbackStatus?.value,
+      branchingStatus: event.branchingStatus?.value,
+      branchInstruction: event.branchInstruction?.value,
+    }))
+    ?.filter(event => isNonEmptyString(event?.id));
 };
 
 // Format API response to UpdateScenarioEventDataParam

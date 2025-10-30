@@ -96,16 +96,18 @@ vi.mock("@utils", () => ({
     branchInstruction: { value: ev.branchInstruction || "", disabled: false, rowId: ev.id },
   })),
   convertToApiFormat: vi.fn((events: any[]) =>
-    events.map((e: any) => ({
-      id: e.id?.value,
-      name: e.name?.value,
-      score: e.score?.value,
-      emoji: e.emoji?.value,
-      message: e.message?.value,
-      feedbackStatus: e.feedbackStatus?.value,
-      branchingStatus: e.branchingStatus?.value,
-      branchInstruction: e.branchInstruction?.value,
-    })),
+    events
+      .map((e: any) => ({
+        id: e.id?.value,
+        name: e.name?.value,
+        score: e.score?.value,
+        emoji: e.emoji?.value,
+        message: e.message?.value,
+        feedbackStatus: e.feedbackStatus?.value,
+        branchingStatus: e.branchingStatus?.value,
+        branchInstruction: e.branchInstruction?.value,
+      }))
+      .filter((ev: any) => typeof ev?.id === "string" && ev.id.trim().length > 0),
   ),
   formatApiResponseToMappedEvent: vi.fn((ev: any) => ({
     id: { value: ev.eventId, disabled: false, rowId: ev.eventId },
@@ -128,6 +130,7 @@ vi.mock("@utils", () => ({
     BRANCH_INSTRUCTION: "branchInstruction",
   },
   isObject: vi.fn((v: any) => typeof v === "object" && v !== null),
+  isNonEmptyString: vi.fn((v: any) => typeof v === "string" && v.trim().length > 0),
 }));
 
 describe("SimulationEventMapTable", () => {

@@ -1,6 +1,11 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 
 import { SessionEvent, UpdateScenarioEventDataParam } from "@types";
+
+// Mock the MappedEventSidePanel component to prevent circular dependency issues during testing
+vi.mock("@components/mapped-event-side-panel/MappedEventSidePanel", () => ({
+  MappedEventSidePanel: vi.fn(),
+}));
 
 import {
   MAPPED_EVENT_FIELDS,

@@ -29,6 +29,7 @@ import {
   createSessionEventsMap,
   MAPPED_EVENT_FIELDS,
   isObject,
+  isNonEmptyString,
 } from "@utils";
 
 interface SimulationEventMapTableProps {
@@ -206,10 +207,13 @@ export const SimulationEventMapTable: FC<SimulationEventMapTableProps> = ({ simu
   // Delete selected events
   const handleDeleteSelectedEvents = async () => {
     try {
-      await deleteScenarioEvents({
-        scenarioId: Number(simulationId),
-        eventIds: selectedEventRows.map(event => event.id.value),
-      });
+      const eventIds = selectedEventRows.map(event => event.id.value)?.filter(isNonEmptyString);
+      if (eventIds?.length > 0) {
+        await deleteScenarioEvents({
+          scenarioId: Number(simulationId),
+          eventIds: selectedEventRows.map(event => event.id.value),
+        });
+      }
       setMappedEvents(previousEvents =>
         previousEvents.filter(event => !selectedEventRows.includes(event)),
       );
@@ -252,8 +256,10 @@ export const SimulationEventMapTable: FC<SimulationEventMapTableProps> = ({ simu
     const selectedEvent = mappedEvents[rowIndex];
     if (selectedEvent && selectedEvent.id?.value) {
       setSelectedEventForEdit(selectedEvent);
-      setIsSidePanelOpen(true);
+    } else {
+      setSelectedEventForEdit(createNewEvent());
     }
+    setIsSidePanelOpen(true);
   };
 
   // Close side panel
@@ -272,9 +278,9 @@ export const SimulationEventMapTable: FC<SimulationEventMapTableProps> = ({ simu
   };
 
   // Delete mapped event from side panel
-  const handleDeleteMappedEvent = async (eventId: string) => {
+  const handleDeleteMappedEvent = async (eventId?: string) => {
     try {
-      if (eventId) {
+      if (isNonEmptyString(eventId)) {
         await deleteScenarioEvents({
           scenarioId: Number(simulationId),
           eventIds: [eventId],

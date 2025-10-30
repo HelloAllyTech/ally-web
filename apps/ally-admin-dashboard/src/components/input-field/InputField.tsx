@@ -18,7 +18,8 @@ export const InputField: React.FC<InputFieldProps> = ({
   const MAX_AGE = 150;
   const MIN_AGE = 0;
 
-  const handleAgeFieldChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFieldChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    registerResult.onChange(e);
     if (isAgeField) {
       const value = e.target.value;
       if (Number(value) < MIN_AGE) formMethods.setValue(id, MIN_AGE.toString());
@@ -68,6 +69,7 @@ export const InputField: React.FC<InputFieldProps> = ({
     register,
   } = formMethods;
   const requiredErrorMessage = isMandatory ? `${label} is required` : false;
+  const registerResult = register(id, { required: requiredErrorMessage });
   return (
     <div className="flex flex-col gap-2">
       <div className="flex justify-between">
@@ -80,7 +82,7 @@ export const InputField: React.FC<InputFieldProps> = ({
       <div className="relative mb-[15px]">
         {multiline ? (
           <textarea
-            {...register(id, { required: requiredErrorMessage })}
+            {...registerResult}
             id={id}
             maxLength={maxLength}
             placeholder={placeholder}
@@ -89,7 +91,7 @@ export const InputField: React.FC<InputFieldProps> = ({
           />
         ) : (
           <input
-            {...register(id, { required: requiredErrorMessage })}
+            {...registerResult}
             id={id}
             type={type}
             {...(maxLength && { maxLength })}
@@ -104,8 +106,8 @@ export const InputField: React.FC<InputFieldProps> = ({
                   onInput: handleAgeInput,
                 }
               : {})}
-            onChange={handleAgeFieldChange}
-            className="w-full rounded border border-[#E5E7EB] focus:ring-1 focus:ring-blue-600 focus:outline-none px-2 py-1"
+            onChange={handleFieldChange}
+            className="w-full rounded border border-[#E5E7EB] focus:ring-1 focus:ring-blue-600 focus:outline-none px-2 py-1 pr-[50px]"
           />
         )}
         {maxLength && type === FORM_FIELD_TYPES.TEXT && (

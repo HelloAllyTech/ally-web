@@ -288,9 +288,7 @@ export const MappedEventSidePanel: React.FC<MappedEventSidePanelProps> = ({
   );
 
   const handleDelete = useCallback(() => {
-    if (selectedEvent?.id?.value) {
-      onDelete(selectedEvent.id.value);
-    }
+    onDelete(selectedEvent?.id?.value);
   }, [selectedEvent, onDelete]);
 
   const handleEventSelection = useCallback(
