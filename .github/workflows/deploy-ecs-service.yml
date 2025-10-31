@@ -95,6 +95,11 @@ jobs:
     needs: prepare-env
     runs-on: ubuntu-22.04
     timeout-minutes: 10
+    env:
+      NX_NO_CLOUD: true
+      NX_SKIP_NX_CACHE: true
+      NX_CLOUD_ACCESS_TOKEN: ""
+      CI: true
     steps:
       - name: Checkout
         uses: actions/checkout@v4

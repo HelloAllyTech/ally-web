@@ -490,7 +490,7 @@ const ConsolidatedLogs: FC<LogsTableProps> = ({ refreshKey, sessionType }) => {
           onFilterChange={isCall ? handleFilterChange : undefined}
           handleLoadMore={logs?.length > 0 && hasMore && handleLoadMore}
           fallbackUI={renderFallbackUI()}
-          className="min-w-full max-h-[calc(100vh-140px)] font-['ReplayPro'] overflow-y-scroll"
+          className="min-w-full max-h-[calc(100vh-200px)] font-['ReplayPro'] overflow-y-scroll"
         />
       </div>
       {summary && summary.id && getSummarySideBar()}
