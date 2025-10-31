@@ -63,9 +63,25 @@ export const Calls: FC = () => {
 
   const getContent = () => {
     if (sessionUserGroup === SessionUserGroup.ORG_LOGS) {
-      return <ConsolidatedLogs refreshKey={refreshKey} sessionType={sessionType} />;
+      return (
+        <ConsolidatedLogs
+          refreshKey={refreshKey}
+          sessionType={sessionType}
+          className={
+            userGroupList?.length > 1 ? "max-h-[calc(100vh-200px)]" : "max-h-[calc(100vh-140px)]"
+          }
+        />
+      );
     }
-    return <CallLogsTable refreshKey={refreshKey} sessionType={sessionType} />;
+    return (
+      <CallLogsTable
+        refreshKey={refreshKey}
+        sessionType={sessionType}
+        className={
+          userGroupList?.length > 1 ? "max-h-[calc(100vh-200px)]" : "max-h-[calc(100vh-140px)]"
+        }
+      />
+    );
   };
 
   return (

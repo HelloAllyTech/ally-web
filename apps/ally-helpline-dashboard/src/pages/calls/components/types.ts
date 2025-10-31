@@ -34,6 +34,7 @@ export interface Transcript {
 export interface LogsTableProps {
   refreshKey?: number;
   sessionType: SessionType;
+  className?: string;
 }
 
 export interface SummaryHeaderProps {

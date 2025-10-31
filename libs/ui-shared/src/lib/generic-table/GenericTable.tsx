@@ -280,7 +280,7 @@ export const GenericTable = forwardRef(
         {handleLoadMore && (
           <div
             onClick={handleLoadMore}
-            className="flex cursor-pointer mt-4 text-center items-center"
+            className="flex cursor-pointer mt-4 text-center items-center pb-[60px]"
           >
             <Plus size={20} />
             <span className="font-['IBM_Plex_Serif'] text-[16px] ml-[5px]">Load More</span>
