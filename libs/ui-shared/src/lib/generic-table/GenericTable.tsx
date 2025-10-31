@@ -283,7 +283,7 @@ export const GenericTable = forwardRef(
             className="flex cursor-pointer mt-4 text-center items-center"
           >
             <Plus size={20} />
-            <span className="font-['IBM_Plex_Serif'] text-[18px] ml-[5px]">Load More</span>
+            <span className="font-['IBM_Plex_Serif'] text-[16px] ml-[5px]">Load More</span>
             {isLoading && (
               <CircularProgress color="primary" size={20} className="ml-2 mr-2 text-[#000]" />
             )}
