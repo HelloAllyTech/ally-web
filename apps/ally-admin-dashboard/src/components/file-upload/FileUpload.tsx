@@ -98,7 +98,7 @@ export const FileUpload = ({ id, formMethods, isMandatory, label }) => {
           // Update state with S3 URL
           setUploadedFile(file);
           setValue(id, response.coverImageUrl, { shouldValidate: true });
-        } catch (error) {
+        } catch {
           setError(id, { type: "manual", message: "Failed to upload file. Please try again." });
         } finally {
           setIsUploading(false);
@@ -145,7 +145,7 @@ export const FileUpload = ({ id, formMethods, isMandatory, label }) => {
       }
       setUploadedFile(null);
       setValue(id, null);
-    } catch (error) {
+    } catch {
       toast.error("Failed to delete image. Please try again.");
     }
   };

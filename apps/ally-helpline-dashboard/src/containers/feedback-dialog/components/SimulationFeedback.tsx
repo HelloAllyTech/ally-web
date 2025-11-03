@@ -3,8 +3,7 @@ import { FC, useState } from "react";
 import { toast } from "sonner";
 
 import { useSubmitSimulationFeedbackMutation } from "@api";
-import { Button, TextField } from "@components";
-import StarRating from "@containers/simulation-summary-state/components/StarRating";
+import { Button, StarRating, TextField } from "@components";
 
 import { FeedbackSectionProps } from "../types";
 

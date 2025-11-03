@@ -4,7 +4,7 @@ export const Header = ({
   column: { label, getResizerProps, getHeaderProps, headerIndex },
 }: HeaderProps) => {
   const headerProps = getHeaderProps();
-  const { key, ...restHeaderProps } = headerProps;
+  const { ...restHeaderProps } = headerProps;
 
   return (
     <div

@@ -25,8 +25,6 @@ import { CallTranscriptProps, Nudge } from "../types";
 import { reduceTranscriptions } from "../utils";
 import { NetworkIssuesList } from "./constants";
 
-import "./CallTranscript.css";
-
 const CallTranscript: FC<CallTranscriptProps> = ({
   endSession,
   activeChat,
@@ -35,7 +33,7 @@ const CallTranscript: FC<CallTranscriptProps> = ({
   isExotelMode,
   setMicrophoneChatId,
 }) => {
-  const navigate = useNavigate();
+  useNavigate();
 
   const user = useSelector((state: RootState) => state.user.user);
   const activeChatId = useMemo(() => activeChat?.chatId, [activeChat]);
@@ -245,11 +243,10 @@ const CallTranscript: FC<CallTranscriptProps> = ({
     return SocketConnectionTypes.WEBRTC_AUDIO_CALL;
   };
 
-  const { connect, disconnect, emitSocketEvent, setListenerForEvent, removeIfListenerPresent } =
-    useSocket({
-      eventCallbacks: socketEventCallbacks,
-      connectionType: getConnectionType(),
-    });
+  const { connect, disconnect, emitSocketEvent } = useSocket({
+    eventCallbacks: socketEventCallbacks,
+    connectionType: getConnectionType(),
+  });
 
   const setupMediaRecorder = (stream: MediaStream) => {
     // Setup media recorder
@@ -443,7 +440,7 @@ const CallTranscript: FC<CallTranscriptProps> = ({
     }
   }, [isMicrophoneMode, microphoneChatId, isSessionCreated, isStartAudioChatEmitted]);
 
-  const transcriptions = useMemo(() => {
+  useMemo(() => {
     const reducedMyTranscriptions = reduceTranscriptions(myTranscriptions);
     const reducedSpeakerTranscriptions = reduceTranscriptions(speakerTranscriptions);
 

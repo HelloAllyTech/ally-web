@@ -289,12 +289,12 @@ export const Login: React.FC = () => {
     loginSection === LoginSection.EMAIL ? !email || !!emailError : !otp || otp.length < 4;
 
   return (
-    <div className="flex flex-col lg:flex-row h-screen p-4 sm:p-6 lg:p-8">
+    <div className="flex flex-col lg:flex-row h-screen lg:p-8">
       <div className="hidden md:block lg:max-w-[50%] flex-1 h-full relative">
         <CustomImage
           src={LoginImage}
           alt="Login"
-          className="w-full h-full object-cover rounded-[16px]"
+          className="w-full h-full object-cover lg:rounded-[16px]"
         />
         <div
           className="flex items-center gap-2 p-3 rounded-tl-2xl bg-white absolute bottom-0 right-0 cursor-pointer"
@@ -307,7 +307,7 @@ export const Login: React.FC = () => {
         </div>
       </div>
 
-      <div className="flex-1 absolute min-h-[50vh] px-4 rounded-[10px] bottom-[8%] right-[20%] left-[20%] lg:static bg-white  flex flex-col items-center justify-center min-h-[100vh] md:min-h-auto">
+      <div className="flex-1 absolute min-h-[35vh] p-5 rounded-[10px] bottom-[10%] right-[25%] left-[25%] lg:static bg-white  flex flex-col items-center justify-center md:min-h-auto">
         <div className="w-full max-w-md lg:max-w-lg xl:max-w-xl flex flex-col gap-4 sm:gap-6">
           <div className="flex flex-col">
             <AnimatePresence mode="wait">{getLoginSection()}</AnimatePresence>

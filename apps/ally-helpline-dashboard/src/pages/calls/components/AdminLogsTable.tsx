@@ -1,11 +1,5 @@
 import { useEffect, useState, useRef, FC } from "react";
 
-import { CircularProgress } from "@mui/material";
-import { useDispatch, useSelector } from "react-redux";
-import { toast } from "sonner";
-
-import { GenericTable } from "@ally-ui-mono/ui-shared";
-import { Column, FilterType } from "@ally-ui-mono/ui-shared/lib/generic-table/types";
 import {
   useGetAdminCallLogsQuery,
   useGetCounsellorsQuery,
@@ -29,8 +23,15 @@ import {
 } from "@assets";
 import { Button, Chip, FallbackUI, PermissionGuard, TagGroup } from "@components";
 import { CallProvider, Permissions } from "@constants";
+import { CircularProgress } from "@mui/material";
 import { updateFilters } from "@reducer";
 import { RootState } from "@store";
+import { convertSecondsToDuration, getFormattedDate, getSimulationScoreDisplay } from "@utils";
+import { useDispatch, useSelector } from "react-redux";
+import { toast } from "sonner";
+
+import { GenericTable } from "@ally-ui-mono/ui-shared";
+import { Column, FilterType } from "@ally-ui-mono/ui-shared/lib/generic-table/types";
 import {
   AdminSimulationLog,
   CallLog,
@@ -40,15 +41,13 @@ import {
   SessionType,
   SimulationLog,
 } from "@types";
-import { convertSecondsToDuration, getFormattedDate, getSimulationScoreDisplay } from "@utils";
 
 import { CallSummarySidebar, DeleteCallLogConfirmationDialog, SimulationSummarySidebar } from ".";
 import { CALL_LOGS_PAGINATION_LIMIT, defaultTags, tagColors } from "../constants";
 import { LogsTableProps } from "./types";
 import { getSourceChipConfig, getStatusChipConfig } from "./utils";
 
-// TODO: Rename to AdminCallLogsTable
-const ConsolidatedLogs: FC<LogsTableProps> = ({ refreshKey, sessionType }) => {
+const AdminLogsTable: FC<LogsTableProps> = ({ refreshKey, sessionType, className }) => {
   const dispatch = useDispatch();
 
   const [logs, setLogs] = useState<any[]>([]);
@@ -490,7 +489,7 @@ const ConsolidatedLogs: FC<LogsTableProps> = ({ refreshKey, sessionType }) => {
           onFilterChange={isCall ? handleFilterChange : undefined}
           handleLoadMore={logs?.length > 0 && hasMore && handleLoadMore}
           fallbackUI={renderFallbackUI()}
-          className="min-w-full max-h-[calc(100vh-200px)] font-['ReplayPro'] overflow-y-scroll"
+          className={`min-w-full font-['ReplayPro'] overflow-y-scroll text-[13px] ${className}`}
         />
       </div>
       {summary && summary.id && getSummarySideBar()}
@@ -499,4 +498,4 @@ const ConsolidatedLogs: FC<LogsTableProps> = ({ refreshKey, sessionType }) => {
   );
 };
 
-export default ConsolidatedLogs;
+export default AdminLogsTable;

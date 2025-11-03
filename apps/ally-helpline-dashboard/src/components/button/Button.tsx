@@ -2,7 +2,7 @@ import { FC } from "react";
 
 import { ButtonProps, ButtonVariant } from "./types";
 
-// TODO update styles when design system is finalized
+// TODO: update styles when design system is finalized
 const getButtonStyles = (variant: ButtonProps["variant"]) => {
   switch (variant) {
     case ButtonVariant.DESTRUCTIVE:

@@ -6,7 +6,11 @@ import { Permissions } from "@constants";
 import { useSimulationCredits } from "@hooks";
 import { User } from "@types";
 
-const UserInfo: FC<{ user?: User; onLogout: () => void }> = ({ user, onLogout }) => {
+const UserInfo: FC<{ user?: User; isExpanded?: boolean; onLogout: () => void }> = ({
+  user,
+  isExpanded,
+  onLogout,
+}) => {
   const [showLogout, setShowLogout] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const { credits, limitReached, CreditPercentage } = useSimulationCredits();
@@ -45,22 +49,28 @@ const UserInfo: FC<{ user?: User; onLogout: () => void }> = ({ user, onLogout })
               <AccountCircle className="text-gray-700 w-[28px] h-[28px]" />
             </div>
           </div>
-          <div className="flex flex-col font-['IBM_Plex_Serif']">
-            <div className="text-[16px] text-gray-800">{user?.name}</div>
-            <div className="text-[12px] text-gray-500">{user?.email}</div>
+          {isExpanded && (
+            <div className="flex flex-col font-['IBM_Plex_Serif']">
+              <div className="text-[16px] text-gray-800">{user?.name}</div>
+              <div className="text-[12px] text-gray-500">{user?.email}</div>
+            </div>
+          )}
+        </div>
+        {isExpanded && (
+          <div className="flex-shrink-0">
+            <Arrow
+              className={`w-5 h-2 text-gray-600 transition-transform duration-300 ${
+                showLogout ? "-rotate-90" : ""
+              }`}
+            />
           </div>
-        </div>
-        <div className="flex-shrink-0">
-          <Arrow
-            className={`w-5 h-2 text-gray-600 transition-transform duration-300 ${
-              showLogout ? "-rotate-90" : ""
-            }`}
-          />
-        </div>
+        )}
       </div>
 
       {showLogout && (
-        <div className="absolute z-10 bottom-3 left-full bg-white border shadow-md rounded-md p-2 w-[240px] flex flex-col gap-3 font-['IBM_Plex_Sans']">
+        <div
+          className={`absolute z-10 bottom-3  bg-white border shadow-md rounded-md p-2 w-[240px] flex flex-col gap-3 font-['IBM_Plex_Sans'] ${isExpanded ? "left-[240px]" : "left-[80px]"}`}
+        >
           <PermissionGuard requiredPermissions={[Permissions.VIEW_SIMULATION_CREDITS]}>
             <div className="flex items-center gap-2">
               <Bolt />

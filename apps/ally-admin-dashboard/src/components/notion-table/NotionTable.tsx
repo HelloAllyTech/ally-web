@@ -215,7 +215,7 @@ export const NotionTable = ({
                 {headerGroup.headers.map((column, headerIndex) => {
                   const colKey = column.getHeaderProps?.().key ?? `${column.id}-${headerIndex}`;
                   const headerProps = column.getHeaderProps();
-                  const { key: headerKey, ...restHeaderProps } = headerProps;
+                  const { ...restHeaderProps } = headerProps;
 
                   return (
                     <div

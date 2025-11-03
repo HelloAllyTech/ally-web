@@ -5,8 +5,7 @@ import { toast } from "sonner";
 
 import { logger } from "@ally-ui-mono/ui-shared";
 import { useSubmitCallFeedbackMutation } from "@api";
-import { Button, TextField } from "@components";
-import StarRating from "@containers/simulation-summary-state/components/StarRating";
+import { Button, StarRating, TextField } from "@components";
 import { IssueOptions } from "@types";
 
 import { issueOptions } from "../constants";

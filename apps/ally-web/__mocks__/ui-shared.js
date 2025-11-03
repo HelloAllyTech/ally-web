@@ -5,13 +5,7 @@ export const logger = {
   debug: () => {},
 };
 
-export const SearchClient = ({
-  searchQuery,
-  category,
-  documents,
-  totalDocumentCount,
-  categoryCountList,
-}) => (
+export const SearchClient = ({ searchQuery, category, totalDocumentCount }) => (
   <div data-testid="search-client">
     <h1>Search Results</h1>
     <p>Query: {searchQuery}</p>

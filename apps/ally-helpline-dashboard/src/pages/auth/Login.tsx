@@ -170,7 +170,7 @@ export const Login: FunctionComponent = () => {
           <div className="flex flex-col text-[32px] font-['Replay_Pro']">
             <span>Hey,</span>
             <h1>
-              <span className="inline-flex items-center gap-2">
+              <span className="inline-flex items-center gap-2 whitespace-nowrap">
                 Welcome to <Ally className="mt-2" />
               </span>
             </h1>
@@ -288,16 +288,16 @@ export const Login: FunctionComponent = () => {
     loginSection === LoginSection.EMAIL ? !email || !!emailError : !otp || otp.length < 4;
 
   return (
-    <div className="flex sm:flex-col md:flex-row h-screen p-8">
-      <div className="sm:max-w-full md:max-w-[50%] flex-1 h-full relative">
+    <div className="flex sm:flex-col md:flex-row h-screen lg:p-8">
+      <div className="sm:max-w-full lg:max-w-[50%] flex-1 h-full relative">
         <img
           src={LoginImage}
           alt="Login"
-          className="w-full h-full object-cover hidden sm:block rounded-[16px]"
+          className="w-full h-full object-cover hidden sm:block lg:rounded-[16px]"
         />
         <Carousel
           slides={CAROUSEL_SLIDES}
-          className="absolute top-[50%] left-[50%] translate-x-[-50%] translate-y-[-50%] max-h-[470px] max-w-[380px]"
+          className="absolute top-[50%] left-[50%] translate-x-[-50%] translate-y-[-50%] max-h-[470px] max-w-[380px] hidden lg:block"
         />
         <div
           className="flex items-center gap-2 p-3 rounded-tl-2xl bg-white pl-5 absolute bottom-0 right-0 cursor-pointer"
@@ -310,8 +310,8 @@ export const Login: FunctionComponent = () => {
           <RedirectIcon width={36} height={36} className="border border-[#E8E8E8] rounded-sm p-2" />
         </div>
       </div>
-      <div className="flex-1 flex flex-col items-center justify-center">
-        <div className="sm:w-1/2 w-[90%] flex flex-col gap-6">
+      <div className="flex-1 absolute min-h-[35vh] p-5 rounded-[10px] bottom-[10%] right-[25%] left-[25%] lg:static bg-white  flex flex-col items-center justify-center md:min-h-auto">
+        <div className="w-full max-w-md flex flex-col gap-6">
           <div className="flex flex-col">
             <AnimatePresence mode="wait">{getLoginSection()}</AnimatePresence>
           </div>

@@ -21,8 +21,6 @@ import { Button } from "../button";
 import OTP from "../otp";
 import TextField from "../text-field";
 
-// TODO: Reuse in Login page
-
 const LoginDialog: FC<LoginPopupProps> = ({ isOpen, onClose, onSuccess }) => {
   const [loginSection, setLoginSection] = useState<LoginSection>(LoginSection.EMAIL);
   const [email, setEmail] = useState<string>("");
@@ -97,7 +95,7 @@ const LoginDialog: FC<LoginPopupProps> = ({ isOpen, onClose, onSuccess }) => {
       } else if (isVerifyOTPSuccess && verifyOTPData) {
         localStorage.setItem(LOCAL_STORAGE_KEYS.ACCESS_TOKEN, verifyOTPData.accessToken);
         localStorage.setItem(LOCAL_STORAGE_KEYS.REFRESH_TOKEN, verifyOTPData.refreshToken);
-        const userData = await checkAuth();
+        await checkAuth();
         // function to be called when OTP is verified successfully
         onSuccess();
       }

@@ -15,4 +15,5 @@ export interface TabProps {
   title: string;
   activeTab: TabId;
   onClick: () => void;
+  isExpanded: boolean;
 }

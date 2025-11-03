@@ -10,7 +10,6 @@ const App = () => (
     <Toaster
       position="bottom-right"
       closeButton
-      // TODO: Refactor Toast styles after design is finalized
       toastOptions={{
         classNames: {
           content: "mr-3",

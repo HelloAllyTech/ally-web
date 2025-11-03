@@ -3,7 +3,7 @@ import { FC, useEffect, useRef, useState } from "react";
 import { useSelector } from "react-redux";
 
 import { logger } from "@ally-ui-mono/ui-shared";
-import { useLazyExportCallSummaryQuery, useUpdateCallSummaryMutation } from "@api";
+import { useLazyExportCallSummaryQuery } from "@api";
 import { Delete, Download } from "@assets";
 import { CallProvider, Permissions } from "@constants";
 import { FeedbackDialog } from "@containers";
@@ -28,7 +28,7 @@ const CallSummarySidebar: FC<CallSummarySidebarProps> = ({
 }) => {
   const { permissions } = useSelector((state: RootState) => state.user);
 
-  const [selectedComment, setSelectedComment] = useState<string>("");
+  const [selectedComment] = useState<string>("");
   const [deleteDialogChatId, setDeleteDialogChatId] = useState<number | null>(null);
   const [summaryName, setSummaryName] = useState<string>();
   const [showFeedbackDialog, setShowFeedbackDialog] = useState<boolean>(false);

@@ -13,12 +13,22 @@ const nextConfig = {
   webpack: config => {
     // Allow importing from workspace libs outside app dir
     config.externals = config.externals || [];
+
+    // Handle SVG imports
+    config.module.rules.push({
+      test: /\.svg$/i,
+      issuer: /\.[jt]sx?$/,
+      resourceQuery: { not: [/url/] }, // exclude if *.svg?url
+      use: ["@svgr/webpack"],
+    });
+
     // Ensure Next handles svg?url as asset/resource
     config.module.rules.push({
       test: /\.svg$/i,
       resourceQuery: /url/, // *.svg?url
       type: "asset/resource",
     });
+
     return config;
   },
 };

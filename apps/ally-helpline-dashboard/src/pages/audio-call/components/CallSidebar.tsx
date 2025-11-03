@@ -122,7 +122,7 @@ const CallSidebar: FC<CallSidebarProps> = ({
           <div ref={nudgesContainerRef} className="mx-4 mb-4">
             {nudges?.length > 0 && renderNudgeCard(nudges[nudges?.length - 1])}
           </div>
-          <div className="mx-[20px] mb-[100px]">
+          <div className="mx-4 md:mx-2 lg:mx-[20px] mb-[100px] overflow-x-hidden">
             <SearchResources isInSidebar fullWidth showHeader={false} />
           </div>
         </motion.div>

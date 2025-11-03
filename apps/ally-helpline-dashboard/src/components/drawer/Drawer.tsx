@@ -4,6 +4,7 @@ import { Drawer as MuiDrawer } from "@mui/material";
 import { ChevronsRight } from "lucide-react";
 
 import { DrawerProps } from "./types";
+import { Button, ButtonVariant } from "../button";
 
 const Drawer: FC<DrawerProps> = ({ open, onClose, children, title, headerButtons, className }) => {
   return (
@@ -21,7 +22,7 @@ const Drawer: FC<DrawerProps> = ({ open, onClose, children, title, headerButtons
       <div className="flex flex-col gap-4 h-full py-4 px-6">
         <div className="flex items-center gap-4">
           <ChevronsRight className="cursor-pointer" onClick={onClose} />
-          <div className="flex justify-between w-full">
+          <div className="flex justify-between w-full items-center">
             <span className="text-[16px] font-semibold font-['Roboto'] text-[#79747E]">
               {title || ""}
             </span>
@@ -29,15 +30,15 @@ const Drawer: FC<DrawerProps> = ({ open, onClose, children, title, headerButtons
               {headerButtons
                 ?.filter(button => button.show)
                 .map(button => (
-                  // TODO: Add button component
-                  <button
+                  <Button
                     key={button.alt}
+                    variant={ButtonVariant.ICON}
                     onClick={button.onClick}
                     className="flex items-center gap-2 font-['Roboto'] text-[12px] text-[#1A1A1A]"
                   >
                     {button.icon}
                     {button.text}
-                  </button>
+                  </Button>
                 ))}
             </div>
           </div>

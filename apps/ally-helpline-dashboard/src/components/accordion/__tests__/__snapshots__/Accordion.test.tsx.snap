@@ -3,11 +3,11 @@
 exports[`Accordion > matches snapshot (collapsed) 1`] = `
 <div>
   <div
-    class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 MuiAccordion-root MuiAccordion-rounded MuiAccordion-gutters css-1086bdv-MuiPaper-root-MuiAccordion-root"
+    class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 MuiAccordion-root MuiAccordion-rounded MuiAccordion-gutters css-uftwe0-MuiPaper-root-MuiAccordion-root"
   >
     <div
       aria-expanded="false"
-      class="MuiButtonBase-root MuiAccordionSummary-root MuiAccordionSummary-gutters css-1f773le-MuiButtonBase-root-MuiAccordionSummary-root"
+      class="MuiButtonBase-root MuiAccordionSummary-root MuiAccordionSummary-gutters css-14wytk3-MuiButtonBase-root-MuiAccordionSummary-root"
       role="button"
       tabindex="0"
     >
@@ -52,7 +52,7 @@ exports[`Accordion > matches snapshot (collapsed) 1`] = `
             role="region"
           >
             <div
-              class="MuiAccordionDetails-root css-15v22id-MuiAccordionDetails-root"
+              class="MuiAccordionDetails-root css-2jn36u-MuiAccordionDetails-root"
             >
               Test Content
             </div>
@@ -67,11 +67,11 @@ exports[`Accordion > matches snapshot (collapsed) 1`] = `
 exports[`Accordion > matches snapshot (expanded) 1`] = `
 <div>
   <div
-    class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 MuiAccordion-root MuiAccordion-rounded Mui-expanded MuiAccordion-gutters css-1086bdv-MuiPaper-root-MuiAccordion-root"
+    class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 MuiAccordion-root MuiAccordion-rounded Mui-expanded MuiAccordion-gutters css-uftwe0-MuiPaper-root-MuiAccordion-root"
   >
     <div
       aria-expanded="true"
-      class="MuiButtonBase-root MuiAccordionSummary-root Mui-expanded MuiAccordionSummary-gutters css-1f773le-MuiButtonBase-root-MuiAccordionSummary-root"
+      class="MuiButtonBase-root MuiAccordionSummary-root Mui-expanded MuiAccordionSummary-gutters css-14wytk3-MuiButtonBase-root-MuiAccordionSummary-root"
       role="button"
       tabindex="0"
     >
@@ -116,7 +116,7 @@ exports[`Accordion > matches snapshot (expanded) 1`] = `
             role="region"
           >
             <div
-              class="MuiAccordionDetails-root css-15v22id-MuiAccordionDetails-root"
+              class="MuiAccordionDetails-root css-2jn36u-MuiAccordionDetails-root"
             >
               Test Content
             </div>

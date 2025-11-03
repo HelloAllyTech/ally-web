@@ -5,7 +5,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { SimulationPage, getSimulationEvents } from "@ally-ui-mono/ui-shared";
 import { ActionConfirmationPopup } from "@components";
 import { ButtonVariant } from "@components/types";
-import { en, LOCAL_STORAGE_KEYS, ROUTES } from "@constants";
+import { en, LOCAL_STORAGE_KEYS } from "@constants";
 import { useLiveKitRoom } from "@hooks/useLiveKitRoom";
 import { RoomStatus } from "@types";
 

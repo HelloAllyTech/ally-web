@@ -35,7 +35,6 @@ const ConfirmationDialog: FC<ConfirmationDialogProps> = ({
         },
       }}
     >
-      {/* TODO:  responsive design, and constants and use of easeout */}
       <motion.div
         className="max-w-[500px] min-w-[200px] flex flex-col gap-4 items-center p-4 sm:p-6 md:p-10 relative mx-4"
         initial={{ opacity: 0, scale: 0.8, y: 20 }}

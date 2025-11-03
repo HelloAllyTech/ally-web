@@ -1,7 +1,10 @@
+"use client";
+
 import { FC, useEffect, useRef, useState } from "react";
 
 import { RoomContext } from "@livekit/components-react";
 import { motion } from "framer-motion";
+import { toast } from "sonner";
 
 import { BottomSection } from "./SimulationBottomSection";
 import { SimulationEvents } from "./SimulationEvents";
@@ -35,7 +38,7 @@ export const SimulationPage: FC<SimulationPageProps> = ({
           wakeLockRef.current = await (navigator as any).wakeLock.request("screen");
         }
       } catch {
-        console.error("Failed to request wake lock");
+        toast.error("Failed to request wake lock");
       }
     };
 
@@ -50,7 +53,7 @@ export const SimulationPage: FC<SimulationPageProps> = ({
             wakeLockRef.current = await (navigator as any).wakeLock.request("screen");
           }
         } catch {
-          console.error("Failed to request wake lock");
+          toast.error("Failed to request wake lock");
         }
       }
     };
@@ -82,7 +85,7 @@ export const SimulationPage: FC<SimulationPageProps> = ({
       try {
         room?.localParticipant?.setMicrophoneEnabled?.(prev);
       } catch {
-        console.error("Failed to mute simulation");
+        toast.error("Failed to mute simulation");
       }
       return !prev;
     });

@@ -40,13 +40,12 @@ export const ApiEndpoints = {
     TENANT: "/v1/tenant",
     TENANTS: "/v1/tenants",
     ADD_USER: "/v1/users",
-    // TODO: Move this to AUTHORIZATION group
-    GET_ROLES: "/v1/authorization/roles",
-    CHANGE_USER_ROLES: "/v1/authorization/change-roles",
     SIMULATION_CREDITS: "/v1/simulation-credits",
   },
   AUTHORIZATION: {
     GET_PERMISSIONS: "/v1/authorization/permissions",
+    GET_ROLES: "/v1/authorization/roles",
+    CHANGE_USER_ROLES: "/v1/authorization/change-roles",
   },
 };
 

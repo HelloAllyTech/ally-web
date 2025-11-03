@@ -61,7 +61,7 @@ const TableBody = <T extends Record<string, any>>({
       {data.map((row, rowIndex) => (
         <tr
           key={rowIndex}
-          className="hover:bg-gray-100 cursor-pointer text-xs sm:text-sm"
+          className="hover:bg-gray-100 cursor-pointer"
           onClick={onRowClick ? () => onRowClick(row) : undefined}
         >
           {columns.map((col, columnIndex) => (
@@ -69,7 +69,7 @@ const TableBody = <T extends Record<string, any>>({
               key={col.key as string}
               className={`px-4 min-h-[36px] border-b border-gray-300 ${
                 columnIndex === columns.length - 1 ? "border-r-0" : "border-r"
-              } text-xs sm:text-sm ${col.className || ""}`}
+              } ${col.className || ""}`}
               style={col.style}
             >
               {col.render

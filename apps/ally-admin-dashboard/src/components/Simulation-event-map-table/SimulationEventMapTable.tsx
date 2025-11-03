@@ -221,7 +221,7 @@ export const SimulationEventMapTable: FC<SimulationEventMapTableProps> = ({ simu
       );
       setSelectedEventRows([]);
       toast.success("Events deleted successfully");
-    } catch (error) {
+    } catch {
       toast.error("Failed to delete events. Please try again.");
     }
   };
@@ -293,7 +293,7 @@ export const SimulationEventMapTable: FC<SimulationEventMapTableProps> = ({ simu
         previousEvents.filter(event => event.id?.value !== eventId),
       );
       handleCloseSidePanel();
-    } catch (error) {
+    } catch {
       toast.error("Failed to delete event. Please try again.");
     }
   };

@@ -127,8 +127,7 @@ const AudioUploadDialog: FC<AudioUploadDialogProps> = ({ isOpen, onClose }) => {
           timeout: 1800000, // 30 Minutes
         });
       }
-    } catch (error) {
-      console.error(error);
+    } catch {
       store.dispatch(updateUploadError({ chatId, error: "Failed to upload audio" }));
       // store.dispatch(removeAudioUpload(chatId));
       cancelAudioUpload({ chatId });

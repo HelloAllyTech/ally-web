@@ -83,7 +83,6 @@ export enum MessageType {
   TEXT = "TEXT",
 }
 
-// TODO: Update the socket event names to UPPER CASE
 export enum SocketEvent {
   NUDGE = "NUDGE",
   STAGE = "STAGE",

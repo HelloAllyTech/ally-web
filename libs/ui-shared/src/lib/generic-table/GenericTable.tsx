@@ -261,7 +261,7 @@ export const GenericTable = forwardRef(
           />
         )}
         {renderPopovers()}
-        <table className="w-full min-w-full text-xs sm:text-sm">
+        <table className="w-full min-w-full">
           <TableHeader
             columns={columns}
             filter={filter}

@@ -139,7 +139,7 @@ const ResourceCard: FC<ResourceCardProps> = ({
         <AnimatePresence mode="wait">
           <motion.div
             ref={contentRef}
-            className={`text-[15px] sm:text-[16px] leading-6 ${!isExpanded ? "line-clamp-2" : ""} ${resourceCardStyles[mode].description}`}
+            className={`text-[15px] sm:text-[14px] md:text-[14px] lg:text-[16px] leading-6 ${!isExpanded ? "line-clamp-2" : ""} ${resourceCardStyles[mode].description}`}
             initial={false}
             animate={{
               height: isExpanded ? contentHeight : Math.min(48, contentHeight), // 48px = 2 lines * 24px line height
@@ -163,11 +163,13 @@ const ResourceCard: FC<ResourceCardProps> = ({
   return (
     <div
       onClick={onExpandCard}
-      className={`w-full flex flex-col gap-2 rounded-[8px] p-3 sm:p-4 ${resourceCardStyles[mode].card}`}
+      className={`w-full flex flex-col gap-2 rounded-[8px] p-3 sm:p-4 md:p-3 lg:p-4 min-w-0 ${resourceCardStyles[mode].card}`}
     >
       {renderTags()}
       <div className="flex flex-col font-['IBM_Plex_Serif']">
-        <span className={`font-[500] text-[15px] sm:text-[16px] ${resourceCardStyles[mode].title}`}>
+        <span
+          className={`font-[500] text-[15px] sm:text-[14px] md:text-[14px] lg:text-[16px] ${resourceCardStyles[mode].title}`}
+        >
           {title}
         </span>
         {renderDescription()}

@@ -60,7 +60,7 @@ const SearchBar: FC<SearchBarProps> = ({
     return (
       <li
         {...props}
-        className={`flex items-center h-12 sm:text-[16px] text-[14px] font-['IBM_Plex_Serif'] cursor-pointer pl-4 transition-colors 
+        className={`flex items-center h-12 sm:text-[12px] text-[14px] md:text-[12px] lg:text-[16px] font-['IBM_Plex_Serif'] cursor-pointer pl-4 transition-colors 
           ${selected ? "bg-[#fafafa]" : searchBarStyles[mode].optionCard}`}
       >
         <SearchIcon className="mr-2 text-[#888]" />
@@ -89,7 +89,7 @@ const SearchBar: FC<SearchBarProps> = ({
           "& .MuiOutlinedInput-root": {
             height: searchBarStyles[mode].rootHeight,
             fontFamily: "IBM_Plex_Serif",
-            fontSize: { xs: "16px", sm: "18px" },
+            fontSize: { xs: "14px", md: "14px", lg: "18px" },
             "& input": {
               color: searchBarStyles[mode].color,
             },

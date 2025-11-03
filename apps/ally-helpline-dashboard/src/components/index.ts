@@ -3,7 +3,6 @@ import ActionDialog from "./action-dialog";
 import BoxBreathing from "./box-breathing";
 import { Button, ButtonVariant, ButtonVariantType } from "./button";
 import ButtonGroup from "./button-group";
-import Calendar from "./calendar";
 import { Carousel, CarouselSize, CarouselVariant, CarouselSlideType } from "./carousel";
 import Chip, { ChipConfig } from "./chip";
 import ConfirmationDialog from "./confirmation-dialog";
@@ -25,6 +24,7 @@ import ScenarioCard from "./scenario-card";
 import ScenarioDetailsCard from "./scenario-details-card";
 import SearchResources from "./search-resources";
 import ShinyText from "./shiny-text";
+import { StarRating } from "./star-rating";
 import TabGroup from "./tab-group";
 import TagGroup from "./tag-group";
 import TextField from "./text-field";
@@ -46,7 +46,6 @@ export {
   BoxBreathing,
   Button,
   ButtonGroup,
-  Calendar,
   Chip,
   ConfirmationDialog,
   CustomCircularProgress,
@@ -67,6 +66,7 @@ export {
   ScenarioDetailsCard,
   SearchResources,
   ShinyText,
+  StarRating,
   TabGroup,
   TagGroup,
   TextField,

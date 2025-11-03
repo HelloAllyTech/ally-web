@@ -215,9 +215,7 @@ const TableHeader = <T extends Record<string, any>>({
         {columns?.map(col => (
           <th
             key={col.key as string}
-            className={`text-left font-[14px] font-[500] text-[#000] min-w-[100px] text-xs sm:text-sm ${
-              col.className || ""
-            }`}
+            className={`text-left font-[500] text-[#000] min-w-[100px] ${col.className || ""}`}
             style={col.style}
           >
             <div
@@ -228,7 +226,7 @@ const TableHeader = <T extends Record<string, any>>({
             >
               <div className="flex flex-row items-center">
                 {col?.icon && <div className="pr-[8px]">{col?.icon}</div>}
-                <div className="text-[14px] font-[500] text-[#6B7280]">{col.header}</div>
+                <div className="font-[500] text-[#6B7280]">{col.header}</div>
               </div>
             </div>
             {renderMainPopover(col)}

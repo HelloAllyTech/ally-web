@@ -142,9 +142,13 @@ export const isNumber = (value: unknown): value is number => {
 };
 
 export const isNonEmptyString = (value: unknown): value is string => {
-  return typeof value === "string" && value.trim() !== "";
+  return typeof value === "string" && value?.trim() !== "";
 };
 
 export const isArray = (value: unknown): value is unknown[] => {
   return Array.isArray(value);
+};
+
+export const isNonEmptyArray = <T>(value: unknown): value is T[] => {
+  return Array.isArray(value) && value?.length > 0;
 };

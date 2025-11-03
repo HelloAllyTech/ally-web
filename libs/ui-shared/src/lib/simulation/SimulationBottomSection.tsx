@@ -1,10 +1,11 @@
-import { FC } from "react";
+"use client";
 
-import { Warning } from "@ally-ui-mono/ui-shared/assets";
+import { FC } from "react";
 
 import { SimulationControls } from "./SimulationControls";
 import { SimulationTimer } from "./SimulationTimer";
 import { BottomSectionProps } from "./types";
+import { Warning } from "../../assets";
 
 export const BottomSection: FC<BottomSectionProps> = ({
   isWarning,

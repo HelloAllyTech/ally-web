@@ -10,7 +10,7 @@ import { useGetCallLogsQuery, useGetSimulationLogsQuery } from "@api";
 import { SessionType, CallLog, SimulationLog, ChatSummaryStatus } from "@types";
 
 import { CALL_LOGS_PAGINATION_LIMIT } from "../../constants";
-import CallLogsTable from "../CallLogsTable";
+import CallLogsTable from "../UserLogsTable";
 
 // Mock MUI components
 vi.mock("@mui/material", () => ({

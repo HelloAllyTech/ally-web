@@ -27,6 +27,7 @@ import {
   getCreateSimulationSubSectionById,
   formatSimulationResponseData,
   isNonEmptyString,
+  extractValidData,
 } from "@utils";
 
 const stepIds = {
@@ -157,30 +158,23 @@ export const CreateSimulation: FC = () => {
     ) {
       try {
         await deleteCoverImage({ coverImageUrl: adminSimulationByIdData.coverImageUrl }).unwrap();
-      } catch (error) {
-        console.error("Failed to delete cover image. Please try again.", error);
+      } catch {
+        toast.error("Failed to delete cover image. Please try again.");
       }
     }
 
     const { openingStatements, ...restForm } = formData as any;
 
-    const openingStatementsArray =
-      typeof openingStatements === "string"
-        ? openingStatements
-            .split("\n")
-            .map((line: string) => line.trim())
-            .filter((line: string) => line.length > 0)
-        : undefined;
+    const openingStatementsArray = isNonEmptyString(openingStatements)
+      ? openingStatements
+          .split("\n")
+          .map((line: string) => line.trim())
+          .filter((line: string) => line.length > 0)
+      : null;
 
     const simulationData = {
-      ...restForm,
-      genderIdentity: formData.genderIdentity?.length > 0 ? formData.genderIdentity : null,
-      gender: formData.gender?.length > 0 ? formData.gender : null,
-      sexualOrientation: formData.sexualOrientation?.length > 0 ? formData.sexualOrientation : null,
-      coverImageUrl: formData.coverImageUrl?.length > 0 ? formData.coverImageUrl : null,
-      voiceId: formData.voiceId?.length > 0 ? formData.voiceId : null,
-      age: formData.age ? parseInt(formData.age) : null,
-      openingStatements: openingStatementsArray?.length > 0 ? openingStatementsArray : null,
+      ...extractValidData(restForm),
+      openingStatements: openingStatementsArray,
       status,
     };
     let response;
@@ -201,11 +195,29 @@ export const CreateSimulation: FC = () => {
   const saveSimulationChanges = useDebounce(saveSimulationChangesCore, 500);
 
   const handleSaveDraft = async () => {
-    const response = await saveSimulationChanges(SimulationStatus.DRAFT);
-    if (response && response?.data?.[0]?.id) {
-      setSimulationId(response?.data?.[0]?.id);
+    try {
+      const response = await saveSimulationChanges(SimulationStatus.DRAFT);
+      if (response && !response.error) {
+        if (response?.data?.[0]?.id && !simulationId) {
+          setSimulationId(response?.data?.[0]?.id);
+        }
+        // Reset form to clear dirtyFields after successful save
+        const currentFormValues = formMethods.getValues();
+        formMethods.reset(currentFormValues);
+        // Refetch to ensure form is in sync with saved data
+        if (simulationId) {
+          getAdminSimulationByIdQuery(simulationId);
+        }
+        return response?.data;
+      } else if (response?.error) {
+        toast.error("Failed to save draft. Please try again.");
+        return null;
+      }
+      return response?.data;
+    } catch {
+      toast.error("Failed to save draft. Please try again.");
+      return null;
     }
-    return response?.data;
     // TODO: Handle any navigations here
   };
 
@@ -215,7 +227,7 @@ export const CreateSimulation: FC = () => {
 
       // Navigate to simulation studio or the created simulation
       if (response) navigate(ROUTES.SIMULATION_STUDIO);
-    } catch (error) {
+    } catch {
       toast.error("Failed to create simulation. Please try again.");
     }
   };

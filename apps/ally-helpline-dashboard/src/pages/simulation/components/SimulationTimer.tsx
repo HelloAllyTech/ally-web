@@ -6,7 +6,6 @@ import { MAX_SESSION_MINUTES, WARNING_THRESHOLD } from "./constants";
 import { SimulationTimerProps } from "./types";
 
 const SimulationTimer: FC<SimulationTimerProps> = ({
-  isWarning,
   onTimeLimit,
   onWarning,
   startTime,

@@ -37,7 +37,7 @@ const DraggableArea: FC<DraggableAreaProps> = ({
     }
   }, []);
 
-  const { getRootProps, getInputProps, isDragActive, open } = useDropzone({
+  const { getRootProps, getInputProps } = useDropzone({
     noKeyboard: true,
     multiple: allowMultiple,
     onDrop,

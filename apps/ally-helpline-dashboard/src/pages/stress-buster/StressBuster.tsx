@@ -18,7 +18,7 @@ export const StressBuster = () => {
   const [messageIndex, setMessageIndex] = useState<number>(0);
   const [isEnding, setIsEnding] = useState<boolean>(true);
 
-  const user = useSelector((state: RootState) => state.user.user);
+  useSelector((state: RootState) => state.user.user);
 
   const chatId = location.state?.chatId;
 

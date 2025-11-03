@@ -25,7 +25,7 @@ const getFeedbackSectionByType = ({
         <GenericTable
           columns={columns}
           data={data}
-          className="min-w-full font-['IBM_Plex_Serif'] overflow-y-scroll mb-4"
+          className="min-w-full text-[13px] font-['IBM_Plex_Serif'] overflow-y-scroll mb-4"
         />
       );
     case FeedbackSectioonType.BULLET_TEXT:

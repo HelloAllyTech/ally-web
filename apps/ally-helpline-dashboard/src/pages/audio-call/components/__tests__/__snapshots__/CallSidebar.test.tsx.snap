@@ -83,7 +83,7 @@ exports[`CallSidebar > Snapshot Testing > should match snapshot when in focus mo
       </div>
     </div>
     <div
-      class="mx-[20px] mb-[100px]"
+      class="mx-4 md:mx-2 lg:mx-[20px] mb-[100px] overflow-x-hidden"
     >
       <div
         data-full-width="true"
@@ -187,7 +187,7 @@ exports[`CallSidebar > Snapshot Testing > should match snapshot when sidebar is 
       </div>
     </div>
     <div
-      class="mx-[20px] mb-[100px]"
+      class="mx-4 md:mx-2 lg:mx-[20px] mb-[100px] overflow-x-hidden"
     >
       <div
         data-full-width="true"
@@ -285,7 +285,7 @@ exports[`CallSidebar > Snapshot Testing > should match snapshot with nudges 1`] 
       </div>
     </div>
     <div
-      class="mx-[20px] mb-[100px]"
+      class="mx-4 md:mx-2 lg:mx-[20px] mb-[100px] overflow-x-hidden"
     >
       <div
         data-full-width="true"
@@ -383,7 +383,7 @@ exports[`CallSidebar > Snapshot Testing > should match snapshot with stage 1`] =
       </div>
     </div>
     <div
-      class="mx-[20px] mb-[100px]"
+      class="mx-4 md:mx-2 lg:mx-[20px] mb-[100px] overflow-x-hidden"
     >
       <div
         data-full-width="true"

@@ -55,9 +55,9 @@ exports[`Calls Component > Snapshot Testing > should match snapshot 1`] = `
     </div>
     <div
       data-refresh-key="0"
-      data-testid="call-logs-table"
+      data-testid="user-logs-table"
     >
-      Call Logs Table
+      User Logs Table
     </div>
     <div
       data-is-open="false"
@@ -138,9 +138,9 @@ exports[`Calls Component > Snapshot Testing > should match snapshot with admin r
     </div>
     <div
       data-refresh-key="0"
-      data-testid="call-logs-table"
+      data-testid="user-logs-table"
     >
-      Call Logs Table
+      User Logs Table
     </div>
     <div
       data-is-open="false"

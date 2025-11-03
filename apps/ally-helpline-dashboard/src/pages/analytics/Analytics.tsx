@@ -97,7 +97,6 @@ export const Analytics: FunctionComponent = () => {
               src={dashboardUrls[id]?.replace("bordered=true", "bordered=false")}
               width="100%"
               height="100%"
-              // TODO: Handle error in a way that url is triggered only when token expiry is triggered
               onError={() => triggerDashboardUrl(id)}
             />
           ))}

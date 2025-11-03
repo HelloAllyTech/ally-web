@@ -92,7 +92,7 @@ export const EventManagement: React.FC = () => {
         setSelectedEvent({ ...newEvent, id: response.data?.[0]?.id || "" });
         setIsSidePanelOpen(true);
       }
-    } catch (error) {
+    } catch {
       toast.error("An error occurred while creating event");
     }
   };
@@ -205,7 +205,7 @@ export const EventManagement: React.FC = () => {
       try {
         const response = await updateSessionEvent({ id: event.id || "", event: payload });
         if (response.error) toast.error("Error updating event");
-      } catch (error) {
+      } catch {
         toast.error("Error updating event");
       }
     }
@@ -231,7 +231,7 @@ export const EventManagement: React.FC = () => {
         setIsSidePanelOpen(false);
         setSelectedEvent(null);
       }
-    } catch (error) {
+    } catch {
       toast.error("An error occurred while deleting events");
     }
   };

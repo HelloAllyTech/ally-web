@@ -1,6 +1,6 @@
 import React from "react";
 
-const Calendar = ({ onChange, value, ...props }) => (
+const Calendar = ({ ...props }) => (
   <div data-testid="calendar" {...props}>
     Mock Calendar Component
   </div>

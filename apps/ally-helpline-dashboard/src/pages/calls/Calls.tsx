@@ -10,12 +10,7 @@ import { useUser } from "@hooks";
 import { SessionType } from "@types";
 import { hasPermissions } from "@utils";
 
-import {
-  AudioUploadDialog,
-  CallLogsTable,
-  ConsolidatedLogs,
-  StartSessionDialog,
-} from "./components";
+import { AudioUploadDialog, AdminLogsTable, StartSessionDialog, UserLogsTable } from "./components";
 import { SessionUserGroup, tabStyles } from "./constants";
 import {
   getFormattedSupportedSessionUserGroups,
@@ -64,7 +59,7 @@ export const Calls: FC = () => {
   const getContent = () => {
     if (sessionUserGroup === SessionUserGroup.ORG_LOGS) {
       return (
-        <ConsolidatedLogs
+        <AdminLogsTable
           refreshKey={refreshKey}
           sessionType={sessionType}
           className={
@@ -74,7 +69,7 @@ export const Calls: FC = () => {
       );
     }
     return (
-      <CallLogsTable
+      <UserLogsTable
         refreshKey={refreshKey}
         sessionType={sessionType}
         className={

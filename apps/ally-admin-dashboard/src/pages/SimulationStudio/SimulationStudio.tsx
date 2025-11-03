@@ -21,6 +21,7 @@ import {
 } from "@components";
 import { en, ROUTES, SimulationStatus, SORT_BY, SORT_ORDER } from "@constants";
 import { Simulation } from "@types";
+import { isNonEmptyArray } from "@utils";
 
 const SIMULATIONS_PAGE_SIZE = 30;
 
@@ -50,8 +51,11 @@ export const SimulationStudio: React.FC = () => {
       selectedFilters.length > 0 ? selectedFilters?.map(filter => filter.id)?.join(",") : undefined,
   };
 
-  const { data: simulationsResponse, isFetching: isSimulationsFetching } =
-    useGetSimulationsQuery(simulationParams);
+  const {
+    data: simulationsResponse,
+    isFetching: isSimulationsFetching,
+    isLoading: isSimulationsLoading,
+  } = useGetSimulationsQuery(simulationParams);
 
   const [deleteSimulationById] = useDeleteSimulationByIdMutation();
   const [updateSimulationById] = useUpdateSimulationByIdMutation();
@@ -113,7 +117,7 @@ export const SimulationStudio: React.FC = () => {
       setIsDeletePopupOpen(false);
       setCurrentSimulation(null);
       toast.success("Simulation deleted successfully");
-    } catch (error) {
+    } catch {
       toast.error("Failed to delete simulation");
     }
   };
@@ -130,7 +134,7 @@ export const SimulationStudio: React.FC = () => {
       setIsUnarchivePopupOpen(false);
       setCurrentSimulation(null);
       toast.success("Updated simulation status to " + status);
-    } catch (error) {
+    } catch {
       toast.error("Failed to change simulation status");
     }
   };
@@ -248,7 +252,11 @@ export const SimulationStudio: React.FC = () => {
           onApply={handleApplyFilters}
         />
       </div>
-      {isSimulationsFetching && simulations.length === 0 ? (
+      {isSimulationsLoading ||
+      (simulationsOffset === 0 &&
+        simulations.length === 0 &&
+        simulationsResponse &&
+        isNonEmptyArray(simulationsResponse.data)) ? (
         <SimulationListSkeleton />
       ) : simulations.length > 0 ? (
         <SimulationList

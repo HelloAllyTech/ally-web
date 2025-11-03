@@ -1,10 +1,11 @@
+"use client";
+
 import { FC } from "react";
 
 import { CircularProgress } from "@mui/material";
 
-import { MicOn, MicOff, Stop } from "@ally-ui-mono/ui-shared/assets";
-
 import { SimulationControlsProps } from "./types";
+import { MicOn, MicOff, Stop } from "../../assets";
 import ButtonGroup from "../button-group";
 
 export const SimulationControls: FC<SimulationControlsProps> = ({

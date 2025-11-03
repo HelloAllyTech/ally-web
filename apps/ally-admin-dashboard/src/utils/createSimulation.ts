@@ -1,5 +1,7 @@
-import { SIMULATION_CREATOR_FIELD_GROUPS } from "@constants";
+import { FORM_FIELD_TYPES, SIMULATION_CREATOR_FIELD_GROUPS } from "@constants";
 import { GetSimulationByIdResponse } from "@types";
+
+import { isNonEmptyString } from "./common";
 
 export const getCreateSimulationSubSectionById = (id: string) => {
   return SIMULATION_CREATOR_FIELD_GROUPS.find(section => section.id === id);
@@ -33,8 +35,26 @@ export const formatSimulationResponseData = (data: GetSimulationByIdResponse) =>
   };
 };
 
-export const extractValidData = (formData: object) => {
+export const extractValidData = (formData: Record<string, any>): Record<string, any> => {
+  const allFields = SIMULATION_CREATOR_FIELD_GROUPS.flatMap(group => group.fields);
   return Object.fromEntries(
-    Object.entries(formData).filter(([_, value]) => value !== undefined && value !== ""),
+    Object.entries(formData).map(([key, value]) => {
+      const field = allFields.find(field => field.id === key);
+
+      switch (field?.type) {
+        case FORM_FIELD_TYPES.SELECT:
+        case FORM_FIELD_TYPES.CUSTOM.VOICE_DROPDOWN: //handles dropdown case
+          return [key, isNonEmptyString(value) ? value : null];
+
+        case FORM_FIELD_TYPES.NUMBER: //convert string to number and empty val to null
+          return [key, value ? parseInt(value) : null];
+
+        case FORM_FIELD_TYPES.IMAGE_UPLOAD: //image upload if empty returns object,so convert to null
+          return [key, value?.length > 0 ? value : null];
+
+        default:
+          return [key, isNonEmptyString(value) ? value.trim() : value];
+      }
+    }),
   );
 };
