@@ -1,0 +1,356 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`SummaryLoading > should match snapshot when FAILED 1`] = `
+<DocumentFragment>
+  <div
+    class="flex flex-col items-center justify-center bg-white text-gray-800 h-fit space-y-4"
+  >
+    <div
+      class="h-full flex flex-col justify-around w-full"
+    >
+      <div
+        class="flex flex-col items-center justify-center"
+      >
+        <svg
+          class="w-64"
+          data-testid="summary-failed-icon"
+        />
+        <h1
+          class="font-semibold mb-2 font-['IBM_Plex_Serif'] text-2xl"
+        >
+          Failed to generate session summary
+        </h1>
+      </div>
+      <div
+        class="w-full max-w-2xl border-t border-gray-200 pt-[20px] mx-auto"
+      >
+        <div
+          class="flex flex-row justify-between items-center mb-2 px-[10px]"
+        >
+          <div
+            class="flex flex-row items-center gap-[16px]"
+          >
+            <svg
+              data-testid="notes-icon"
+            />
+            <label
+              class="flex items-center gap-2 font-['IBM_Plex_Serif'] text-sm font-medium text-gray-700"
+              for="notes"
+            >
+              <span>
+                Add Notes(Optional)
+              </span>
+            </label>
+          </div>
+          <div
+            class="b"
+            componentsprops="[object Object]"
+            data-testid="tooltip"
+            data-title="Your notes are auto-saved and will appear under 'Additional Notes' after the summary and highlights are generated"
+            placement="bottom-end"
+          >
+            <svg
+              class="w-[12px] h-[12px] text-[#1C1B1F] cursor-pointer"
+              data-testid="info-icon"
+            />
+          </div>
+        </div>
+        <textarea
+          class="w-full p-[10px] border-none focus:ring-transparent focus:ring-0 focus:outline-none font-['IBM_Plex_Serif'] text-sm resize-none"
+          disabled=""
+          id="notes"
+          placeholder="Jot down your thoughts"
+          rows="4"
+        />
+      </div>
+      <div
+        class="flex flex-row gap-8 items-center justify-center mt-6 "
+      >
+        <button
+          class=" w-40 font-['IBM_Plex_Serif']"
+          data-variant="secondary"
+        >
+          Back to session logs
+        </button>
+      </div>
+    </div>
+  </div>
+</DocumentFragment>
+`;
+
+exports[`SummaryLoading > should match snapshot when IN_PROGRESS 1`] = `
+<DocumentFragment>
+  <div
+    class="flex flex-col items-center justify-center bg-white text-gray-800 h-fit space-y-4"
+  >
+    <div
+      class="h-full flex flex-col justify-around w-full"
+    >
+      <div
+        class="flex flex-col items-center justify-center"
+      >
+        <div
+          class="h-8"
+        />
+        <video
+          autoplay=""
+          class="w-64 object-contain"
+          loop=""
+          playsinline=""
+          src="video-path.mp4"
+        />
+        <div
+          class="mb-8"
+        >
+          <div
+            class="text-xl font-['IBM_Plex_Serif']"
+            data-testid="shiny-text"
+          >
+            Generating transcription
+          </div>
+        </div>
+        <p
+          class="text-[#6B7280] text-base text-center font-['IBM_Plex_Serif'] mb-1"
+        >
+          An AI-generated summary will be available shortly on this screen and in the session logs. In the meantime, you can add notes below.
+        </p>
+      </div>
+      <div
+        class="w-full max-w-2xl border-t border-gray-200 pt-[20px] mx-auto"
+      >
+        <div
+          class="flex flex-row justify-between items-center mb-2 px-[10px]"
+        >
+          <div
+            class="flex flex-row items-center gap-[16px]"
+          >
+            <svg
+              data-testid="notes-icon"
+            />
+            <label
+              class="flex items-center gap-2 font-['IBM_Plex_Serif'] text-sm font-medium text-gray-700"
+              for="notes"
+            >
+              <span>
+                Add Notes(Optional)
+              </span>
+            </label>
+          </div>
+          <div
+            class="b"
+            componentsprops="[object Object]"
+            data-testid="tooltip"
+            data-title="Your notes are auto-saved and will appear under 'Additional Notes' after the summary and highlights are generated"
+            placement="bottom-end"
+          >
+            <svg
+              class="w-[12px] h-[12px] text-[#1C1B1F] cursor-pointer"
+              data-testid="info-icon"
+            />
+          </div>
+        </div>
+        <textarea
+          class="w-full p-[10px] border-none focus:ring-transparent focus:ring-0 focus:outline-none font-['IBM_Plex_Serif'] text-sm resize-none"
+          disabled=""
+          id="notes"
+          placeholder="Jot down your thoughts"
+          rows="4"
+        />
+      </div>
+      <div
+        class="flex flex-row gap-8 items-center justify-center mt-6 "
+      >
+        <button
+          class=" w-40 font-['IBM_Plex_Serif']"
+          data-variant="text"
+        >
+          I’ll check later
+        </button>
+        <button
+          class=" w-40 font-['IBM_Plex_Serif']"
+          data-variant="secondary"
+        >
+          See if its ready
+        </button>
+      </div>
+    </div>
+  </div>
+</DocumentFragment>
+`;
+
+exports[`SummaryLoading > should match snapshot when NO_AUDIO 1`] = `
+<DocumentFragment>
+  <div
+    class="flex flex-col items-center justify-center bg-white text-gray-800 h-fit space-y-4"
+  >
+    <div
+      class="h-full flex flex-col justify-around w-full"
+    >
+      <div
+        class="flex flex-col items-center justify-center"
+      >
+        <span
+          class="rounded-full border-[0.5px] border-[#E5675A] px-2 py-1 text-[#E5675A] text-xs mb-8 flex items-center gap-1"
+        >
+          <svg
+            class="w-4 h-4 text-[#E5675A]"
+            data-testid="circle-x-icon"
+          />
+           No audio detected
+        </span>
+        <svg
+          class="w-64"
+          data-testid="summary-failed-icon"
+        />
+        <h1
+          class="font-semibold mb-2 font-['IBM_Plex_Serif'] text-2xl"
+        >
+          Failed to generate session summary
+        </h1>
+      </div>
+      <div
+        class="w-full max-w-2xl border-t border-gray-200 pt-[20px] mx-auto"
+      >
+        <div
+          class="flex flex-row justify-between items-center mb-2 px-[10px]"
+        >
+          <div
+            class="flex flex-row items-center gap-[16px]"
+          >
+            <svg
+              data-testid="notes-icon"
+            />
+            <label
+              class="flex items-center gap-2 font-['IBM_Plex_Serif'] text-sm font-medium text-gray-700"
+              for="notes"
+            >
+              <span>
+                Add Notes(Optional)
+              </span>
+            </label>
+          </div>
+          <div
+            class="b"
+            componentsprops="[object Object]"
+            data-testid="tooltip"
+            data-title="Your notes are auto-saved and will appear under 'Additional Notes' after the summary and highlights are generated"
+            placement="bottom-end"
+          >
+            <svg
+              class="w-[12px] h-[12px] text-[#1C1B1F] cursor-pointer"
+              data-testid="info-icon"
+            />
+          </div>
+        </div>
+        <textarea
+          class="w-full p-[10px] border-none focus:ring-transparent focus:ring-0 focus:outline-none font-['IBM_Plex_Serif'] text-sm resize-none"
+          disabled=""
+          id="notes"
+          placeholder="Jot down your thoughts"
+          rows="4"
+        />
+      </div>
+      <div
+        class="flex flex-row gap-8 items-center justify-center mt-6 "
+      >
+        <button
+          class=" w-40 font-['IBM_Plex_Serif']"
+          data-variant="secondary"
+        >
+          Back to session logs
+        </button>
+      </div>
+    </div>
+  </div>
+</DocumentFragment>
+`;
+
+exports[`SummaryLoading > should match snapshot when SUCCESS 1`] = `
+<DocumentFragment>
+  <div
+    class="flex flex-col items-center justify-center bg-white text-gray-800 h-fit space-y-4"
+  >
+    <div
+      class="h-full flex flex-col justify-around w-full"
+    >
+      <div
+        class="flex flex-col items-center justify-center"
+      >
+        <svg
+          class="w-64"
+          data-testid="summary-generated-illustration"
+        />
+        <h1
+          class="font-semibold mb-2 font-['IBM_Plex_Serif'] text-2xl"
+        >
+          Summary is generated
+        </h1>
+        <p
+          class="text-[#6B7280] text-base text-center max-w-md font-['IBM_Plex_Serif'] mb-1"
+        >
+          You can review the session now.
+        </p>
+      </div>
+      <div
+        class="w-full max-w-2xl border-t border-gray-200 pt-[20px] mx-auto"
+      >
+        <div
+          class="flex flex-row justify-between items-center mb-2 px-[10px]"
+        >
+          <div
+            class="flex flex-row items-center gap-[16px]"
+          >
+            <svg
+              data-testid="notes-icon"
+            />
+            <label
+              class="flex items-center gap-2 font-['IBM_Plex_Serif'] text-sm font-medium text-gray-700"
+              for="notes"
+            >
+              <span>
+                Add Notes(Optional)
+              </span>
+            </label>
+          </div>
+          <div
+            class="b"
+            componentsprops="[object Object]"
+            data-testid="tooltip"
+            data-title="Your notes are auto-saved and will appear under 'Additional Notes' after the summary and highlights are generated"
+            placement="bottom-end"
+          >
+            <svg
+              class="w-[12px] h-[12px] text-[#1C1B1F] cursor-pointer"
+              data-testid="info-icon"
+            />
+          </div>
+        </div>
+        <textarea
+          class="w-full p-[10px] border-none focus:ring-transparent focus:ring-0 focus:outline-none font-['IBM_Plex_Serif'] text-sm resize-none"
+          disabled=""
+          id="notes"
+          placeholder="Jot down your thoughts"
+          rows="4"
+        />
+      </div>
+      <div
+        class="flex flex-row gap-8 items-center justify-center mt-6 "
+      >
+        <button
+          class="w-72"
+          data-variant="secondary"
+          disabled=""
+        >
+          <div
+            data-size="16"
+            data-testid="circular-progress"
+          >
+            Loading
+          </div>
+           Setting up your summary screen
+        </button>
+      </div>
+    </div>
+  </div>
+</DocumentFragment>
+`;

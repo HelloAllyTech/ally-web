@@ -1,0 +1,61 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`CallTranscriptTab > should match snapshot when rendered 1`] = `
+<DocumentFragment>
+  <div
+    data-testid="transcript-tab"
+  >
+    <div
+      data-testid="transcript-list"
+    >
+      <div
+        data-testid="transcript-item-0"
+      >
+        <div
+          data-testid="speaker-0"
+        >
+          Client
+        </div>
+        <div
+          data-testid="content-0"
+        >
+          Client message 1
+        </div>
+      </div>
+      <div
+        data-testid="transcript-item-1"
+      >
+        <div
+          data-testid="speaker-1"
+        >
+          Counsellor
+        </div>
+        <div
+          data-testid="content-1"
+        >
+          Counsellor message 1
+        </div>
+      </div>
+      <div
+        data-testid="transcript-item-2"
+      >
+        <div
+          data-testid="speaker-2"
+        >
+          Client
+        </div>
+        <div
+          data-testid="content-2"
+        >
+          Client message 2
+        </div>
+      </div>
+    </div>
+    <button
+      data-testid="load-more-button"
+    >
+      Load More
+    </button>
+  </div>
+</DocumentFragment>
+`;

@@ -1,0 +1,33 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`CreditInfoDialog > should match snapshot when fully populated 1`] = `
+<DocumentFragment>
+  <div
+    data-open="true"
+    data-testid="mock-dialog"
+    paperprops="[object Object]"
+  >
+    <div
+      class="bg-white h-fit w-[400px] flex flex-col gap-6 rounded-[8px] items-center justify-center pb-10"
+    >
+      <svg
+        class="cursor-pointer self-end"
+        data-testid="mock-close-icon"
+      />
+      <div
+        class="font-medium text-[#47464F] text-[24px] font-['Replay_Pro']"
+      >
+        No Credits Available
+      </div>
+      <svg
+        data-testid="mock-no-credit-left-icon"
+      />
+      <div
+        class="w-[300px] flex  justify-center text-center font-['IBM_Plex_Serif'] text-[20px]"
+      >
+        You have run out of credits. Please purchase more to continue.
+      </div>
+    </div>
+  </div>
+</DocumentFragment>
+`;

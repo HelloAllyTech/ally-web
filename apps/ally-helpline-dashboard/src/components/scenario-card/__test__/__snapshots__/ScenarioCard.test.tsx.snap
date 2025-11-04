@@ -1,0 +1,106 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`ScenarioCard > should match snapshot when fully rendered 1`] = `
+<DocumentFragment>
+  <div
+    animate="[object Object]"
+    aria-label="Select Test Scenario scenario"
+    class="bg-white overflow-hidden transition-all duration-300 h-full rounded-[8px] shadow-[0_2px_8px_rgba(0,0,0,0.1)] hover:shadow-[0_8px_16px_rgba(0,0,0,0.15)] cursor-pointer"
+    exit="[object Object]"
+    initial="[object Object]"
+    role="button"
+    tabindex="0"
+    transition="[object Object]"
+    whilehover="[object Object]"
+  >
+    <div
+      class="flex flex-col h-full gap-3"
+    >
+      <div
+        class="w-full relative h-[100px] sm:h-[120px]"
+      >
+        <img
+          alt="Test Scenario scenario cover"
+          class="w-full h-full object-cover rounded-t-[4px] "
+          loading="lazy"
+          src="https://example.com/scenario-image.jpg"
+        />
+      </div>
+      <div
+        class="flex flex-col flex-grow font-['IBM_Plex_Serif'] px-3 pb-3 sm:px-[14px] sm:pb-[14px] gap-1"
+      >
+        <div
+          class="font-medium text-[#0D0D0D]"
+          id="scenario-title"
+        >
+          Test Scenario
+        </div>
+        <div
+          class="text-[14px] text-[#656565]"
+        >
+          <p
+            style="display: -webkit-box; -webkit-line-clamp: 2; overflow: hidden;"
+          >
+            This is a test scenario description that provides details about the simulation.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</DocumentFragment>
+`;
+
+exports[`ScenarioCard > should match snapshot when isComingSoon is true 1`] = `
+<DocumentFragment>
+  <div
+    animate="[object Object]"
+    aria-label="Select Test Scenario scenario"
+    class="bg-white overflow-hidden transition-all duration-300 h-full rounded-[8px] shadow-[0_2px_8px_rgba(0,0,0,0.1)] hover:shadow-[0_8px_16px_rgba(0,0,0,0.15)] pointer-events-none"
+    exit="[object Object]"
+    initial="[object Object]"
+    role="button"
+    tabindex="0"
+    transition="[object Object]"
+    whilehover="[object Object]"
+  >
+    <div
+      class="flex flex-col h-full gap-3"
+    >
+      <div
+        class="w-full relative h-[100px] sm:h-[120px]"
+      >
+        <img
+          alt="Test Scenario scenario cover"
+          class="w-full h-full object-cover rounded-t-[4px] blur-[2px] grayscale opacity-50"
+          loading="lazy"
+          src="https://example.com/scenario-image.jpg"
+        />
+        <span
+          class="py-1 px-2 rounded-[4px] absolute top-2 right-2 text-[12px] font-['IBM_Plex_Serif'] text-[#292929] bg-white border-[0.5px] border-[#D2D2D2]"
+        >
+          Coming Soon
+        </span>
+      </div>
+      <div
+        class="flex flex-col flex-grow font-['IBM_Plex_Serif'] px-3 pb-3 sm:px-[14px] sm:pb-[14px] gap-1"
+      >
+        <div
+          class="font-medium text-[#0D0D0D]"
+          id="scenario-title"
+        >
+          Test Scenario
+        </div>
+        <div
+          class="text-[14px] text-[#656565]"
+        >
+          <p
+            style="display: -webkit-box; -webkit-line-clamp: 2; overflow: hidden;"
+          >
+            This is a test scenario description that provides details about the simulation.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</DocumentFragment>
+`;

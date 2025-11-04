@@ -1,0 +1,41 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`SuspendedUser > should match snapshot when fully rendered 1`] = `
+<DocumentFragment>
+  <div
+    data-testid="browser-router"
+  >
+    <div
+      class="flex  flex-col justify-center  items-center h-screen gap-2"
+    >
+      <div
+        class="border rounded-lg px-16 py-10 flex flex-col justify-center items-center gap-2"
+      >
+        <svg
+          data-testid="suspended-user-icon"
+        />
+        <div
+          class="text-2xl font-[Replay-pro]"
+        >
+          Account Suspended
+        </div>
+        <div
+          class="flex flex-col text-center font-['IBM_Plex_Serif']"
+        >
+          <div>
+            Your account has been suspended. Contact your
+          </div>
+          <div>
+            administrator for assistance
+          </div>
+        </div>
+        <button
+          class="border border-gray-300 rounded-full px-5 py-2 font-['Roboto'] mt-8"
+        >
+          Go to login
+        </button>
+      </div>
+    </div>
+  </div>
+</DocumentFragment>
+`;
