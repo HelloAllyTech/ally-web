@@ -9,6 +9,8 @@ import { X } from "lucide-react";
 import { searchBarStyles } from "./constants";
 import { SearchVariant } from "../../types";
 
+import type { AutocompleteRenderOptionState } from "@mui/material";
+
 /**
  * Props for SearchBar component.
  */
@@ -33,10 +35,12 @@ const SearchBar: FC<SearchBarProps> = ({
   suggestions = [],
   mode = SearchVariant.LIGHT,
 }) => {
+  // Initialize with initialValue to match server render
   const [searchTerm, setSearchTerm] = useState(initialValue);
 
+  // Only update after mount to prevent hydration mismatch
   useEffect(() => {
-    if (initialValue?.length > 0) {
+    if (initialValue?.length > 0 && initialValue !== searchTerm) {
       setSearchTerm(initialValue);
     }
   }, [initialValue]);
@@ -48,7 +52,8 @@ const SearchBar: FC<SearchBarProps> = ({
   const handleSubmit = (event: React.FormEvent) => {
     event.preventDefault();
     onSearch(searchTerm);
-    if (document.activeElement instanceof HTMLElement) {
+    // Only access document in browser environment
+    if (typeof window !== "undefined" && document.activeElement instanceof HTMLElement) {
       document.activeElement.blur();
     }
   };
@@ -56,12 +61,21 @@ const SearchBar: FC<SearchBarProps> = ({
   /**
    * Renders a option card for the autocomplete dropdown.
    */
-  const renderOptionCard = (props: any, option: string, { selected }: { selected: boolean }) => {
+  const renderOptionCard = (
+    props: React.HTMLAttributes<HTMLLIElement>,
+    option: string,
+    state: AutocompleteRenderOptionState,
+  ) => {
+    // Material-UI passes key in props but TypeScript doesn't include it in HTMLAttributes
+    const { key, ...restProps } = props as React.HTMLAttributes<HTMLLIElement> & {
+      key?: React.Key;
+    };
     return (
       <li
-        {...props}
+        key={key}
+        {...restProps}
         className={`flex items-center h-12 sm:text-[12px] text-[14px] md:text-[12px] lg:text-[16px] font-['IBM_Plex_Serif'] cursor-pointer pl-4 transition-colors 
-          ${selected ? "bg-[#fafafa]" : searchBarStyles[mode].optionCard}`}
+          ${state.selected ? "bg-[#fafafa]" : searchBarStyles[mode].optionCard}`}
       >
         <SearchIcon className="mr-2 text-[#888]" />
         {option}
@@ -142,6 +156,7 @@ const SearchBar: FC<SearchBarProps> = ({
         }}
         renderOption={renderOptionCard}
         renderInput={renderInput}
+        disablePortal
         slotProps={{
           paper: {
             sx: {
