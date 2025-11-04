@@ -4,8 +4,19 @@ import { describe, it, expect, vi } from "vitest";
 import HybridRouteLayout from "../HybridRouteLayout";
 
 // Mock react-router-dom
-vi.mock("react-router-dom", () => ({
-  Outlet: () => <div data-testid="outlet">Outlet Content</div>,
+vi.mock("react-router-dom", async importOriginal => {
+  const actual = await importOriginal();
+  return {
+    ...actual,
+    Outlet: () => <div data-testid="outlet">Outlet Content</div>,
+    useNavigate: vi.fn(() => vi.fn()),
+    useLocation: vi.fn(() => ({ pathname: "/test" })),
+  };
+});
+
+// Mock useAutoActiveCallRedirect hook
+vi.mock("@hooks", () => ({
+  useAutoActiveCallRedirect: vi.fn(),
 }));
 
 // Mock NavbarWrapper
