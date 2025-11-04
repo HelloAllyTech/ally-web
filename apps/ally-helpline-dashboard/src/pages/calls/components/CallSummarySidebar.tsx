@@ -131,7 +131,7 @@ const CallSummarySidebar: FC<CallSummarySidebarProps> = ({
   const extraHeaderList = [
     {
       alt: "Delete Log",
-      icon: <Delete />,
+      icon: <Delete className="-m-1.5" />,
       onClick: () => {
         setDeleteDialogChatId(callSummary?.id);
       },
