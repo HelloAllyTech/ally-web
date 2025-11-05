@@ -460,6 +460,7 @@ const ConsolidatedLogs: FC<LogsTableProps> = ({ refreshKey, sessionType }) => {
             refetchCallLogs={onSummarySubmit}
             setCallSummary={setSummary}
             sessionType={sessionType}
+            canEditSummary={false}
           />
         );
       case SessionType.SIMULATION:
