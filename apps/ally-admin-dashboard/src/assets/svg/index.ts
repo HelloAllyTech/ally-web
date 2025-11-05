@@ -26,6 +26,7 @@ import Unarchive from "./unArchiveIcon.svg?react";
 import Unpublish from "./unpublish.svg?react";
 import User from "./user.svg?react";
 import Users from "./users.svg?react";
+import VideoCamera from "./videoCamera.svg?react";
 import WandStars from "./wandStars.svg?react";
 
 export {
@@ -58,4 +59,5 @@ export {
   ArrowDownFilled,
   DoubleArrowRight,
   Unarchive,
+  VideoCamera,
 };

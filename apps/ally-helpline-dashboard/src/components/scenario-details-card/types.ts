@@ -1,5 +1,6 @@
 export interface ScenarioDetailsCardProps {
   coverImage: string;
+  coverVideo?: string;
   isStarting: boolean;
   longDescription?: string;
   onStart: () => void;

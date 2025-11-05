@@ -5,3 +5,4 @@ export * from "./uiStyles";
 export * from "./SimulationCreator";
 export * from "./simulation";
 export * from "./permissions";
+export * from "./file";

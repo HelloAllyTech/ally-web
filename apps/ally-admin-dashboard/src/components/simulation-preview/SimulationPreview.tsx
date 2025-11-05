@@ -2,11 +2,13 @@ import { FC, useRef, useState } from "react";
 
 import { useNavigate } from "react-router-dom";
 
+import { CustomVideo } from "@ally-ui-mono/ui-shared";
 import { useEndScenarioPreviewMutation, useScenarioPreviewMutation } from "@api";
 import { CustomImage } from "@components";
 import { en, LOCAL_STORAGE_KEYS, ROUTES } from "@constants";
 import { useClickOutside } from "@hooks";
 import { SimulationPreviewProps, StartSimulationResponse } from "@types";
+import { isNonEmptyString } from "@utils";
 
 export const SimulationPreview: FC<SimulationPreviewProps> = ({ simulation, isOpen, onClose }) => {
   const navigate = useNavigate();
@@ -67,14 +69,23 @@ export const SimulationPreview: FC<SimulationPreviewProps> = ({ simulation, isOp
           </h2>
 
           <div className="flex flex-col items-center border border-gray-200 rounded-lg p-3">
-            {/* Image Section */}
+            {/* Image/Video Section */}
             <div className="mb-6 w-full">
               <div className="w-full h-64 rounded-lg flex items-center justify-center relative overflow-hidden">
-                <CustomImage
-                  src={simulation.coverImageUrl}
-                  alt={simulation.title}
-                  className="w-full h-full object-cover"
-                />
+                {isNonEmptyString(simulation.coverVideoUrl) ? (
+                  <CustomVideo
+                    src={simulation.coverVideoUrl}
+                    alt={simulation.title}
+                    className="w-full h-full object-cover"
+                    poster={simulation.coverImageUrl}
+                  />
+                ) : (
+                  <CustomImage
+                    src={simulation.coverImageUrl}
+                    alt={simulation.title}
+                    className="w-full h-full object-cover"
+                  />
+                )}
               </div>
             </div>
 

@@ -32,6 +32,7 @@ export const formatSimulationResponseData = (data: GetSimulationByIdResponse) =>
     tone: data?.metadata?.tone,
     voiceId: data?.metadata?.voiceId,
     coverImageUrl: data?.coverImageUrl,
+    coverVideoUrl: data?.coverVideoUrl,
   };
 };
 
@@ -50,6 +51,9 @@ export const extractValidData = (formData: Record<string, any>): Record<string, 
           return [key, value ? parseInt(value) : null];
 
         case FORM_FIELD_TYPES.IMAGE_UPLOAD: //image upload if empty returns object,so convert to null
+          return [key, value?.length > 0 ? value : null];
+
+        case FORM_FIELD_TYPES.VIDEO_UPLOAD: //video upload if empty returns object,so convert to null
           return [key, value?.length > 0 ? value : null];
 
         default:

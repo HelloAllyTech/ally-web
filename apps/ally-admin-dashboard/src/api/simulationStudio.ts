@@ -13,6 +13,9 @@ import {
   GetCoverImageUrlRequest,
   GetCoverImageUrlResponse,
   DeleteCoverImageRequest,
+  GetCoverVideoUrlRequest,
+  GetCoverVideoUrlResponse,
+  DeleteCoverVideoRequest,
   ScenarioVoice,
 } from "@types";
 
@@ -163,6 +166,28 @@ const simulationStudioAPI = baseAPI.injectEndpoints({
     }),
 
     /**
+     * Get presigned URL for cover video S3 upload
+     */
+    getCoverVideoUrl: builder.mutation<GetCoverVideoUrlResponse, GetCoverVideoUrlRequest>({
+      query: body => ({
+        url: ApiEndpoints.SIMULATION_STUDIO.GET_COVER_VIDEO_URL,
+        method: HttpMethod.POST,
+        body,
+      }),
+    }),
+
+    /**
+     * Delete cover video from S3
+     */
+    deleteCoverVideo: builder.mutation<void, DeleteCoverVideoRequest>({
+      query: body => ({
+        url: ApiEndpoints.SIMULATION_STUDIO.DELETE_COVER_VIDEO,
+        method: HttpMethod.DELETE,
+        body,
+      }),
+    }),
+
+    /**
      * Get all scenario voices
      */
     getScenarioVoices: builder.query<ScenarioVoice[], void>({
@@ -246,6 +271,8 @@ export const {
   useDeleteSessionEventsMutation,
   useGetCoverImageUrlMutation,
   useDeleteCoverImageMutation,
+  useGetCoverVideoUrlMutation,
+  useDeleteCoverVideoMutation,
   useGetScenarioVoicesQuery,
   useScenarioPreviewMutation,
   useEndScenarioPreviewMutation,

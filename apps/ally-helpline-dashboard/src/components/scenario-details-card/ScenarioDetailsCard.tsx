@@ -4,6 +4,7 @@ import { CircularProgress } from "@mui/material";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
 
+import { CustomVideo } from "@ally-ui-mono/ui-shared";
 import { ShareIcon } from "@assets/icons";
 
 import { Button } from "..";
@@ -11,6 +12,7 @@ import { ScenarioDetailsCardProps } from "./types";
 
 const ScenarioDetailsCard: FC<ScenarioDetailsCardProps> = ({
   coverImage,
+  coverVideo,
   isStarting,
   longDescription,
   onStart,
@@ -25,7 +27,7 @@ const ScenarioDetailsCard: FC<ScenarioDetailsCardProps> = ({
    * - Prefers the async Clipboard API when available
    * - Falls back to a hidden textarea for older browsers
    */
-  const handleShareScenario = (event: MouseEvent<HTMLDivElement>) => {
+  const handleShareScenario = (event: MouseEvent<HTMLButtonElement>) => {
     // Avoid triggering any parent click handlers
     event.stopPropagation();
     if (typeof window === "undefined") return;
@@ -49,19 +51,27 @@ const ScenarioDetailsCard: FC<ScenarioDetailsCardProps> = ({
     toast.success("Scenario link copied to clipboard!");
   };
 
-  const renderImage = () => (
-    <div>
+  const renderMedia = () => (
+    <div className="relative w-full rounded-lg overflow-hidden">
       {!imageError ? (
-        <img
-          src={coverImage}
-          alt={`${title} scenario details`}
-          className="w-[320px] h-[320px] object-cover"
-          loading="lazy"
-          onError={() => setImageError(true)}
-        />
+        coverVideo?.length > 0 ? (
+          <CustomVideo
+            src={coverVideo}
+            alt={`${title} scenario preview`}
+            className="w-full max-h-[320px] object-cover rounded-lg"
+          />
+        ) : (
+          <img
+            src={coverImage}
+            alt={`${title} scenario preview`}
+            className="w-full max-h-[320px] object-cover rounded-md"
+            loading="lazy"
+            onError={() => setImageError(true)}
+          />
+        )
       ) : (
-        <div className="w-full h-full flex items-center justify-center text-gray-400 bg-gray-100">
-          <span className="text-sm">Image not available</span>
+        <div className="w-full h-64 flex items-center justify-center text-gray-400 bg-gray-100 rounded-md">
+          <span className="text-sm">Media not available</span>
         </div>
       )}
     </div>
@@ -70,7 +80,7 @@ const ScenarioDetailsCard: FC<ScenarioDetailsCardProps> = ({
   return (
     <motion.div
       layout
-      className="flex h-full w-full gap-6 bg-white overflow-hidden transition-all duration-300 rounded-md origin-top-left border-[0.3px] border-[#D3D3D3]"
+      className="flex flex-col w-full max-w-[600px] bg-white overflow-hidden transition-all duration-300 rounded-lg origin-top border border-[#E5E7EB] p-3"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
@@ -78,43 +88,44 @@ const ScenarioDetailsCard: FC<ScenarioDetailsCardProps> = ({
       role="dialog"
       aria-labelledby="scenario-title"
     >
-      {renderImage()}
-      <div className="flex flex-col min-w-[400px] w-[calc(100%-320px)] justify-between flex-grow p-6 text-[14px] font-['IBM_Plex_Serif'] overflow-y-auto">
-        <div className="flex flex-col gap-2">
-          <div id="scenario-title" className="flex items-center justify-between">
-            <span className="text-[#0D0D0D] text-xl">{title}</span>
-            <div
-              className="flex items-center gap-[4px] cursor-pointer"
-              onClick={handleShareScenario}
-              aria-label="Copy link"
-              role="button"
-              title="Copy link to clipboard"
-            >
-              <ShareIcon />
-              <span className="text-[#6B7280] text-[14px] font-['Roboto']">Share</span>
-            </div>
+      {renderMedia()}
+
+      <div className="flex flex-col gap-1 mt-3 font-['IBM_Plex_Serif']">
+        <div className="flex items-start justify-between">
+          <div id="scenario-title" className="text-[#0D0D0D] text-[20px]">
+            {title}
           </div>
-          {longDescription && (
-            <div>
-              <div className="font-semibold text-black">Scenario:</div>
-              <p className="text-[#656565]">{longDescription}</p>
-            </div>
-          )}
+          <button
+            className="flex items-center gap-2 px-4 py-2 text-[#374151] hover:bg-gray-50 rounded-md transition-colors"
+            onClick={handleShareScenario}
+            aria-label="Share scenario"
+            title="Share this scenario"
+          >
+            <ShareIcon />
+            <span className="text-[14px]">Share</span>
+          </button>
         </div>
 
-        <div className="mt-4">
+        {longDescription && (
+          <div className="flex flex-col">
+            <div className="text-[14px] font-semibold text-[#0D0D0D]">Scenario:</div>
+            <p className="text-[14px] text-[#656565]">{longDescription}</p>
+          </div>
+        )}
+
+        <div className="flex justify-center mt-2 mb-2">
           <Button
             onClick={e => {
               e.stopPropagation();
               onStart?.();
             }}
             variant="primary"
-            className={`!font-['Roboto']  ${isDisabled ? "!bg-gray-400" : ""}`}
+            className={`!font-['Roboto'] !text-[16px]  !py-3 ${isDisabled && "!bg-gray-400"}`}
             disabled={isDisabled}
-            aria-label="Start simulation"
+            aria-label="Start session"
           >
-            {isStarting && <CircularProgress size={16} />}
-            Start Simulation
+            {isStarting && <CircularProgress size={16} className="mr-2" />}
+            Start session
           </Button>
         </div>
       </div>

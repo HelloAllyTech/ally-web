@@ -1,6 +1,6 @@
 import { FC } from "react";
 
-import { FORM_FIELD_TYPES } from "@constants";
+import { FILE_TYPE, FORM_FIELD_TYPES, en } from "@constants";
 import { FormFieldProps } from "@types";
 
 import { DropdownField } from "../dropdown-field";
@@ -60,7 +60,28 @@ export const FormField: FC<FormFieldProps> = ({ config, formMethods }) => {
       case FORM_FIELD_TYPES.IMAGE_UPLOAD:
         return (
           <div className="w-full">
-            <FileUpload id={id} formMethods={formMethods} isMandatory={isMandatory} label={label} />
+            <FileUpload
+              id={id}
+              formMethods={formMethods}
+              isMandatory={isMandatory}
+              label={label}
+              header={en.simulation.coverImage}
+              fileType={FILE_TYPE.IMAGE}
+            />
+          </div>
+        );
+
+      case FORM_FIELD_TYPES.VIDEO_UPLOAD:
+        return (
+          <div className="w-full">
+            <FileUpload
+              id={id}
+              formMethods={formMethods}
+              isMandatory={isMandatory}
+              label={label}
+              header={en.simulation.coverVideo}
+              fileType={FILE_TYPE.VIDEO}
+            />
           </div>
         );
 
