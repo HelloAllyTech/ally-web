@@ -36,16 +36,22 @@ const ResourceCard: FC<ResourceCardProps> = ({
   const contentRef = useRef<HTMLDivElement>(null);
   const [shouldShowButton, setShouldShowButton] = useState(false);
   const [contentHeight, setContentHeight] = useState(0);
+  const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
-    // Check if content height is greater than 2 lines (assuming line height of 1.5rem)
-    if (contentRef.current) {
+    setIsMounted(true);
+  }, []);
+
+  useEffect(() => {
+    // Only check height after component is mounted to prevent hydration mismatch
+    if (isMounted && contentRef.current) {
+      // Check if content height is greater than 2 lines (assuming line height of 1.5rem)
       const LINE_HEIGHT = 24; // 1.5rem = 24px
       const height = contentRef.current.scrollHeight;
       setContentHeight(height);
       setShouldShowButton(height > LINE_HEIGHT * 2);
     }
-  }, [description]);
+  }, [description, isMounted]);
 
   /**
    * Renders the category and tag badges.
@@ -142,7 +148,12 @@ const ResourceCard: FC<ResourceCardProps> = ({
             className={`text-[15px] sm:text-[14px] md:text-[14px] lg:text-[16px] leading-6 ${!isExpanded ? "line-clamp-2" : ""} ${resourceCardStyles[mode].description}`}
             initial={false}
             animate={{
-              height: isExpanded ? contentHeight : Math.min(48, contentHeight), // 48px = 2 lines * 24px line height
+              height:
+                isMounted && contentHeight > 0
+                  ? isExpanded
+                    ? contentHeight
+                    : Math.min(48, contentHeight)
+                  : undefined, // Don't animate until mounted
               opacity: 1,
             }}
             transition={{

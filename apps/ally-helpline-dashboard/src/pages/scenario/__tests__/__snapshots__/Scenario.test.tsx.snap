@@ -12,7 +12,7 @@ exports[`Scenario Component > Snapshot Testing > should match snapshot with scen
         class="h-screen w-full flex justify-center items-center bg-white"
       >
         <div
-          class="flex flex-col gap-6 w-[60%] m-auto"
+          class="flex flex-col gap-6 w-full m-auto justify-center items-center"
           data-animate="visible"
           data-exit="exit"
           data-initial="hidden"
@@ -20,7 +20,7 @@ exports[`Scenario Component > Snapshot Testing > should match snapshot with scen
           data-variants="{\\"hidden\\":{\\"opacity\\":0,\\"scale\\":0.95},\\"visible\\":{\\"opacity\\":1,\\"scale\\":1,\\"transition\\":{\\"duration\\":0.4,\\"ease\\":[0.4,0,0.2,1]}},\\"exit\\":{\\"opacity\\":0,\\"scale\\":0.95,\\"transition\\":{\\"duration\\":0.3}}}"
         >
           <div
-            class="flex justify-between"
+            class="flex justify-between w-full max-w-[600px]"
           >
             <div
               class="flex items-center gap-2 font-['Replay_Pro'] text-[28px]"

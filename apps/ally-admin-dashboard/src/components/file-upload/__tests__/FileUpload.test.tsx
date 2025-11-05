@@ -4,18 +4,57 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 // Mock constants early to avoid importing real module that pulls in SimulationCreator
 vi.mock("@constants", () => ({
   en: {
+    common: {
+      uploading: "Uploading...",
+    },
+    errors: {
+      fileMustBeJPEGOrPNG: "File must be JPEG or PNG.",
+      fileMustBeVideo: "File must be a video.",
+      fileUploadFailed: "Failed to upload file. Please try again.",
+      fileMetadataLoadFailed: "Failed to load video metadata",
+      imageMustHave169AspectRatio: "Image must have a 16:9 aspect ratio.",
+      fileDeleteFailed: "Failed to delete file. Please try again.",
+    },
     simulation: {
+      file: "File",
       upload: "Upload",
-      dragDrop: "Drag & drop files or",
-      choose: "Choose",
-      pngUploadGuidelines: " PNG/JPG",
-      resolution: " 1920x1080 recommended",
+      dragDrop: "Drag & drop or",
+      choose: "choose",
+      pngUploadGuidelines: "a JPEG or PNG file with a",
+      videoUploadGuidelines: "a MP4 or MOV file with a resolution of 16:9 ratio and under 15MB.",
+      resolution: "resolution of 1920x1080 and under 2MB.",
+      imageMaxSizeLabel: "2MB",
+      videoMaxSizeLabel: "15MB",
     },
   },
   imageTypes: {
     JPEG: "image/jpeg",
     PNG: "image/png",
   },
+  FILE_TYPE: {
+    IMAGE: "image",
+    VIDEO: "video",
+    ANY: "any",
+  },
+  ACCEPTED_FILE_TYPES: {
+    IMAGE: { "image/jpeg": [".jpeg", ".jpg"], "image/png": [".png"] },
+    VIDEO: {
+      "video/mp4": [".mp4"],
+      "video/quicktime": [".mov"],
+      "video/x-msvideo": [".avi"],
+    },
+  },
+  ACCEPT_ATTRIBUTES: {
+    IMAGE: "image/jpeg,image/png",
+    VIDEO: "video/mp4,video/quicktime,video/x-msvideo",
+    ANY: "image/jpeg,image/png,video/mp4,video/quicktime,video/x-msvideo",
+  },
+  FILE_SIZE_LIMITS: {
+    IMAGE: 2 * 1024 * 1024, // 2MB
+    VIDEO: 15 * 1024 * 1024, // 15MB
+  },
+  ASPECT_RATIO: 16 / 9,
+  ASPECT_RATIO_TOLERANCE: 0.01,
   TAG_TYPES: {
     USERS: "users",
     TENANTS: "tenants",
@@ -30,6 +69,7 @@ import { FileUpload } from "../FileUpload";
 vi.mock("@assets", () => ({
   DragUpload: () => <svg data-testid="drag-upload" />,
   Trash: () => <svg data-testid="trash-icon" />,
+  VideoCamera: () => <svg data-testid="video-camera" />,
 }));
 
 // Do not mock @components to avoid breaking other exports used across the app
@@ -52,6 +92,8 @@ vi.mock("axios", () => ({
 
 const getCoverImageUrlMock = vi.fn();
 const deleteCoverImageMock = vi.fn();
+const getCoverVideoUrlMock = vi.fn();
+const deleteCoverVideoMock = vi.fn();
 vi.mock("@api", async importOriginal => {
   const actual: any = await importOriginal();
   return {
@@ -65,6 +107,16 @@ vi.mock("@api", async importOriginal => {
     useDeleteCoverImageMutation: () => [
       () => ({
         unwrap: () => deleteCoverImageMock(),
+      }),
+    ],
+    useGetCoverVideoUrlMutation: () => [
+      () => ({
+        unwrap: () => getCoverVideoUrlMock(),
+      }),
+    ],
+    useDeleteCoverVideoMutation: () => [
+      () => ({
+        unwrap: () => deleteCoverVideoMock(),
       }),
     ],
   };
@@ -150,7 +202,7 @@ describe("FileUpload", () => {
   it("renders label and required asterisk when mandatory", () => {
     render(<FileUpload id={id} formMethods={makeFormMethods()} isMandatory={true} label="Cover" />);
 
-    expect(screen.getByText(/upload/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/file/i)).toBeInTheDocument();
     expect(screen.getByText("*")).toBeInTheDocument();
     expect(screen.getByTestId("drag-upload")).toBeInTheDocument();
   });
@@ -161,7 +213,7 @@ describe("FileUpload", () => {
     );
 
     const input = screen
-      .getByLabelText(/upload/i)
+      .getByLabelText(/file/i)
       .parentElement!.parentElement!.querySelector(`input#${id}[type="file"]`) as HTMLInputElement;
 
     const badFile = createFile("doc.pdf", "application/pdf", 1000);
@@ -177,7 +229,7 @@ describe("FileUpload", () => {
     );
 
     const input = screen
-      .getByLabelText(/upload/i)
+      .getByLabelText(/file/i)
       .parentElement!.parentElement!.querySelector(`input#${id}[type="file"]`) as HTMLInputElement;
 
     const bigFile = createFile("big.jpg", "image/jpeg", 2 * 1024 * 1024 + 1);
@@ -197,7 +249,7 @@ describe("FileUpload", () => {
     );
 
     const input = screen
-      .getByLabelText(/upload/i)
+      .getByLabelText(/file/i)
       .parentElement!.parentElement!.querySelector(`input#${id}[type="file"]`) as HTMLInputElement;
 
     const okSizeFile = createFile("ok.jpg", "image/jpeg", 1000);
@@ -222,7 +274,7 @@ describe("FileUpload", () => {
     );
 
     const input = screen
-      .getByLabelText(/upload/i)
+      .getByLabelText(/file/i)
       .parentElement!.parentElement!.querySelector(`input#${id}[type="file"]`) as HTMLInputElement;
 
     const goodFile = createFile("good.jpg", "image/jpeg", 1000);

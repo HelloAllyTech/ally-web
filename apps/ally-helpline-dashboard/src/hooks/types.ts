@@ -21,4 +21,5 @@ export interface UseLiveKitRoomReturn {
   roomStatus: RoomStatus;
   score: number;
   startTime: Date;
+  roomData: any;
 }

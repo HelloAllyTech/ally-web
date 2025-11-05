@@ -48,6 +48,11 @@ vi.mock("@constants", () => ({
   Permissions: {
     VIEW_SIMULATION_CREDITS: "VIEW_SIMULATION_CREDITS",
   },
+  TAG_TYPES: {
+    CALL_SUMMARY: "CallSummary",
+    CALL_LOGS: "CallLogs",
+    SIMULATION_LOGS: "SimulationLogs",
+  },
 }));
 
 // --- SETUP DATA ---

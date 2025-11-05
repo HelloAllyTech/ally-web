@@ -22,11 +22,14 @@ const Dropdown: FC<DropdownProps> = ({
       onChange={(_, opt) => onChange(opt ? String(opt.value) : "")}
       isOptionEqualToValue={(o, v) => String(o.value) === String(v.value)}
       getOptionLabel={o => o.label}
-      renderOption={(props, option) => (
-        <li {...props} key={String(option.value)}>
-          {option.label}
-        </li>
-      )}
+      renderOption={(props, option) => {
+        const { key, ...restProps } = props;
+        return (
+          <li key={key} {...restProps}>
+            {option.label}
+          </li>
+        );
+      }}
       ListboxProps={{ sx: { maxHeight: 240, overflowY: "auto" } }}
       slotProps={{ popper: { placement: "bottom-start" } }}
       renderInput={params => <TextField {...params} size="small" placeholder={placeholder} />}

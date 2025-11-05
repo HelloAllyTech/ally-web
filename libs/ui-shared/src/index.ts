@@ -1,5 +1,6 @@
 import Badge from "./lib/badge";
 import ButtonGroup from "./lib/button-group";
+import { CustomVideo } from "./lib/custom-video";
 import { Dropdown, DropdownField } from "./lib/dropdown-field";
 import GenericTable from "./lib/generic-table";
 import InfiniteScroll from "./lib/infinite-scroll";
@@ -23,6 +24,8 @@ export type { Resource, SearchVariant } from "./types";
 
 export {
   Badge,
+  ButtonGroup,
+  CustomVideo,
   Dropdown,
   DropdownField,
   GenericTable,
@@ -40,5 +43,4 @@ export {
   SimulationTimer,
   SimulationScoreMeter,
   getSimulationEvents,
-  ButtonGroup,
 };

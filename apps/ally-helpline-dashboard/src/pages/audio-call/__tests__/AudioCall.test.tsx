@@ -156,6 +156,11 @@ vi.mock("@constants", () => ({
     RECORDING: "recording",
     PAUSED: "paused",
   },
+  TAG_TYPES: {
+    CALL_SUMMARY: "CallSummary",
+    CALL_LOGS: "CallLogs",
+    SIMULATION_LOGS: "SimulationLogs",
+  },
 }));
 
 // Mock utils

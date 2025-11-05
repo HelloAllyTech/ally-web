@@ -74,6 +74,11 @@ vi.mock("@constants", () => ({
     CALL_LOGS: "CALL_LOGS",
     SIMULATION_LOGS: "SIMULATION_LOGS",
   },
+  TAG_TYPES: {
+    CALL_SUMMARY: "CallSummary",
+    CALL_LOGS: "CallLogs",
+    SIMULATION_LOGS: "SimulationLogs",
+  },
 }));
 
 // Mock ErrorScreen

@@ -76,6 +76,13 @@ vi.mock("@components", async importOriginal => {
   };
 });
 
+// Mock CustomVideo from ui-shared
+vi.mock("@ally-ui-mono/ui-shared", () => ({
+  CustomVideo: ({ src, alt, className }: any) => (
+    <video data-testid="custom-video" src={src} aria-label={alt} className={className} />
+  ),
+}));
+
 // Mock Clipboard API - this will be set up in beforeEach
 let mockWriteText: any;
 
@@ -146,7 +153,7 @@ describe("ScenarioDetailsCard", () => {
     const title = "Custom Scenario Title";
     renderComponent({ title });
     expect(screen.getByText(title)).toBeInTheDocument();
-    expect(screen.getByText(title)).toHaveClass("text-[#0D0D0D]", "text-xl");
+    expect(screen.getByText(title)).toHaveClass("text-[#0D0D0D]", "text-[20px]");
   });
 
   it("should render the long description when provided", () => {
@@ -164,7 +171,7 @@ describe("ScenarioDetailsCard", () => {
   it("should render the cover image with correct attributes", () => {
     const imageUrl = "https://example.com/test-image.jpg";
     renderComponent({ coverImage: imageUrl });
-    const image = screen.getByAltText("Test Scenario Details scenario details");
+    const image = screen.getByAltText("Test Scenario Details scenario preview");
     expect(image).toBeInTheDocument();
     expect(image).toHaveAttribute("src", imageUrl);
     expect(image).toHaveAttribute("loading", "lazy");
@@ -178,57 +185,53 @@ describe("ScenarioDetailsCard", () => {
   it("should render the Share button text", () => {
     renderComponent();
     expect(screen.getByText("Share")).toBeInTheDocument();
-    expect(screen.getByText("Share")).toHaveClass(
-      "text-[#6B7280]",
-      "text-[14px]",
-      "font-['Roboto']",
-    );
+    expect(screen.getByText("Share")).toHaveClass("text-[14px]");
   });
 
-  it("should render the Start Simulation button", () => {
+  it("should render the Start session button", () => {
     renderComponent();
-    const button = screen.getByRole("button", { name: /Start Simulation/i });
+    const button = screen.getByRole("button", { name: /Start session/i });
     expect(button).toBeInTheDocument();
-    expect(button).toHaveAttribute("aria-label", "Start simulation");
+    expect(button).toHaveAttribute("aria-label", "Start session");
   });
 
   // --- Image Error Handling Tests ---
 
   it("should show fallback message when image fails to load", () => {
     renderComponent();
-    const image = screen.getByAltText("Test Scenario Details scenario details");
+    const image = screen.getByAltText("Test Scenario Details scenario preview");
 
     fireEvent.error(image);
 
-    expect(screen.getByText("Image not available")).toBeInTheDocument();
-    expect(screen.queryByAltText("Test Scenario Details scenario details")).not.toBeInTheDocument();
+    expect(screen.getByText("Media not available")).toBeInTheDocument();
+    expect(screen.queryByAltText("Test Scenario Details scenario preview")).not.toBeInTheDocument();
   });
 
   // --- Button State Tests ---
 
   it("should disable button when isStarting is true", () => {
     renderComponent({ isStarting: true });
-    const button = screen.getByRole("button", { name: /Start Simulation/i });
+    const button = screen.getByRole("button", { name: /Start session/i });
     expect(button).toBeDisabled();
     expect(button).toHaveClass("!bg-gray-400");
   });
 
   it("should disable button when noCredits is true", () => {
     renderComponent({ noCredits: true });
-    const button = screen.getByRole("button", { name: /Start Simulation/i });
+    const button = screen.getByRole("button", { name: /Start session/i });
     expect(button).toBeDisabled();
     expect(button).toHaveClass("!bg-gray-400");
   });
 
   it("should disable button when both isStarting and noCredits are true", () => {
     renderComponent({ isStarting: true, noCredits: true });
-    const button = screen.getByRole("button", { name: /Start Simulation/i });
+    const button = screen.getByRole("button", { name: /Start session/i });
     expect(button).toBeDisabled();
   });
 
   it("should enable button when both isStarting and noCredits are false", () => {
     renderComponent({ isStarting: false, noCredits: false });
-    const button = screen.getByRole("button", { name: /Start Simulation/i });
+    const button = screen.getByRole("button", { name: /Start session/i });
     expect(button).not.toBeDisabled();
   });
 
@@ -245,15 +248,15 @@ describe("ScenarioDetailsCard", () => {
 
   // --- Interaction Tests ---
 
-  it("should call onStart when Start Simulation button is clicked", () => {
+  it("should call onStart when Start session button is clicked", () => {
     renderComponent();
-    const button = screen.getByRole("button", { name: /Start Simulation/i });
+    const button = screen.getByRole("button", { name: /Start session/i });
 
     fireEvent.click(button);
     expect(mockOnStart).toHaveBeenCalledTimes(1);
   });
 
-  it("should stop event propagation when Start Simulation button is clicked", () => {
+  it("should stop event propagation when Start session button is clicked", () => {
     const parentClickHandler = vi.fn();
     const { container } = renderComponent();
     const card = container.querySelector('[role="dialog"]');
@@ -261,7 +264,7 @@ describe("ScenarioDetailsCard", () => {
       card.addEventListener("click", parentClickHandler);
     }
 
-    const button = screen.getByRole("button", { name: /Start Simulation/i });
+    const button = screen.getByRole("button", { name: /Start session/i });
     fireEvent.click(button);
 
     expect(mockOnStart).toHaveBeenCalledTimes(1);
@@ -273,7 +276,7 @@ describe("ScenarioDetailsCard", () => {
     window.location.href = "https://example.com/scenario/test-123";
     renderComponent();
 
-    const shareButton = screen.getByRole("button", { name: /Copy link/i });
+    const shareButton = screen.getByRole("button", { name: /Share scenario/i });
     fireEvent.click(shareButton);
 
     await waitFor(() => {
@@ -290,7 +293,7 @@ describe("ScenarioDetailsCard", () => {
       card.addEventListener("click", parentClickHandler);
     }
 
-    const shareButton = screen.getByRole("button", { name: /Copy link/i });
+    const shareButton = screen.getByRole("button", { name: /Share scenario/i });
     fireEvent.click(shareButton);
 
     // Verify share functionality was called

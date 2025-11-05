@@ -5,74 +5,73 @@ exports[`ScenarioDetailsCard > should match snapshot when fully rendered 1`] = `
   <div
     animate="[object Object]"
     aria-labelledby="scenario-title"
-    class="flex h-full w-full gap-6 bg-white overflow-hidden transition-all duration-300 rounded-md origin-top-left border-[0.3px] border-[#D3D3D3]"
+    class="flex flex-col w-full max-w-[600px] bg-white overflow-hidden transition-all duration-300 rounded-lg origin-top border border-[#E5E7EB] p-3"
     exit="[object Object]"
     initial="[object Object]"
     role="dialog"
     transition="[object Object]"
   >
-    <div>
+    <div
+      class="relative w-full rounded-lg overflow-hidden"
+    >
       <img
-        alt="Test Scenario Details scenario details"
-        class="w-[320px] h-[320px] object-cover"
+        alt="Test Scenario Details scenario preview"
+        class="w-full max-h-[320px] object-cover rounded-md"
         loading="lazy"
         src="https://example.com/scenario-details-image.jpg"
       />
     </div>
     <div
-      class="flex flex-col min-w-[400px] w-[calc(100%-320px)] justify-between flex-grow p-6 text-[14px] font-['IBM_Plex_Serif'] overflow-y-auto"
+      class="flex flex-col gap-1 mt-3 font-['IBM_Plex_Serif']"
     >
       <div
-        class="flex flex-col gap-2"
+        class="flex items-start justify-between"
       >
         <div
-          class="flex items-center justify-between"
+          class="text-[#0D0D0D] text-[20px]"
           id="scenario-title"
         >
+          Test Scenario Details
+        </div>
+        <button
+          aria-label="Share scenario"
+          class="flex items-center gap-2 px-4 py-2 text-[#374151] hover:bg-gray-50 rounded-md transition-colors"
+          title="Share this scenario"
+        >
+          <svg
+            data-testid="share-icon"
+          />
           <span
-            class="text-[#0D0D0D] text-xl"
+            class="text-[14px]"
           >
-            Test Scenario Details
+            Share
           </span>
-          <div
-            aria-label="Copy link"
-            class="flex items-center gap-[4px] cursor-pointer"
-            role="button"
-            title="Copy link to clipboard"
-          >
-            <svg
-              data-testid="share-icon"
-            />
-            <span
-              class="text-[#6B7280] text-[14px] font-['Roboto']"
-            >
-              Share
-            </span>
-          </div>
-        </div>
-        <div>
-          <div
-            class="font-semibold text-black"
-          >
-            Scenario:
-          </div>
-          <p
-            class="text-[#656565]"
-          >
-            This is a detailed description of the scenario that explains what the simulation covers.
-          </p>
-        </div>
+        </button>
       </div>
       <div
-        class="mt-4"
+        class="flex flex-col"
+      >
+        <div
+          class="text-[14px] font-semibold text-[#0D0D0D]"
+        >
+          Scenario:
+        </div>
+        <p
+          class="text-[14px] text-[#656565]"
+        >
+          This is a detailed description of the scenario that explains what the simulation covers.
+        </p>
+      </div>
+      <div
+        class="flex justify-center mt-2 mb-2"
       >
         <button
-          aria-label="Start simulation"
-          class="!font-['Roboto']  "
+          aria-label="Start session"
+          class="!font-['Roboto'] !text-[16px]  !py-3 false"
           data-testid="mock-button"
           data-variant="primary"
         >
-          Start Simulation
+          Start session
         </button>
       </div>
     </div>
@@ -85,79 +84,79 @@ exports[`ScenarioDetailsCard > should match snapshot when isStarting is true 1`]
   <div
     animate="[object Object]"
     aria-labelledby="scenario-title"
-    class="flex h-full w-full gap-6 bg-white overflow-hidden transition-all duration-300 rounded-md origin-top-left border-[0.3px] border-[#D3D3D3]"
+    class="flex flex-col w-full max-w-[600px] bg-white overflow-hidden transition-all duration-300 rounded-lg origin-top border border-[#E5E7EB] p-3"
     exit="[object Object]"
     initial="[object Object]"
     role="dialog"
     transition="[object Object]"
   >
-    <div>
+    <div
+      class="relative w-full rounded-lg overflow-hidden"
+    >
       <img
-        alt="Test Scenario Details scenario details"
-        class="w-[320px] h-[320px] object-cover"
+        alt="Test Scenario Details scenario preview"
+        class="w-full max-h-[320px] object-cover rounded-md"
         loading="lazy"
         src="https://example.com/scenario-details-image.jpg"
       />
     </div>
     <div
-      class="flex flex-col min-w-[400px] w-[calc(100%-320px)] justify-between flex-grow p-6 text-[14px] font-['IBM_Plex_Serif'] overflow-y-auto"
+      class="flex flex-col gap-1 mt-3 font-['IBM_Plex_Serif']"
     >
       <div
-        class="flex flex-col gap-2"
+        class="flex items-start justify-between"
       >
         <div
-          class="flex items-center justify-between"
+          class="text-[#0D0D0D] text-[20px]"
           id="scenario-title"
         >
+          Test Scenario Details
+        </div>
+        <button
+          aria-label="Share scenario"
+          class="flex items-center gap-2 px-4 py-2 text-[#374151] hover:bg-gray-50 rounded-md transition-colors"
+          title="Share this scenario"
+        >
+          <svg
+            data-testid="share-icon"
+          />
           <span
-            class="text-[#0D0D0D] text-xl"
+            class="text-[14px]"
           >
-            Test Scenario Details
+            Share
           </span>
-          <div
-            aria-label="Copy link"
-            class="flex items-center gap-[4px] cursor-pointer"
-            role="button"
-            title="Copy link to clipboard"
-          >
-            <svg
-              data-testid="share-icon"
-            />
-            <span
-              class="text-[#6B7280] text-[14px] font-['Roboto']"
-            >
-              Share
-            </span>
-          </div>
-        </div>
-        <div>
-          <div
-            class="font-semibold text-black"
-          >
-            Scenario:
-          </div>
-          <p
-            class="text-[#656565]"
-          >
-            This is a detailed description of the scenario that explains what the simulation covers.
-          </p>
-        </div>
+        </button>
       </div>
       <div
-        class="mt-4"
+        class="flex flex-col"
+      >
+        <div
+          class="text-[14px] font-semibold text-[#0D0D0D]"
+        >
+          Scenario:
+        </div>
+        <p
+          class="text-[14px] text-[#656565]"
+        >
+          This is a detailed description of the scenario that explains what the simulation covers.
+        </p>
+      </div>
+      <div
+        class="flex justify-center mt-2 mb-2"
       >
         <button
-          aria-label="Start simulation"
-          class="!font-['Roboto']  !bg-gray-400"
+          aria-label="Start session"
+          class="!font-['Roboto'] !text-[16px]  !py-3 !bg-gray-400"
           data-testid="mock-button"
           data-variant="primary"
           disabled=""
         >
           <div
+            class="mr-2"
             data-size="16"
             data-testid="circular-progress"
           />
-          Start Simulation
+          Start session
         </button>
       </div>
     </div>
@@ -170,75 +169,74 @@ exports[`ScenarioDetailsCard > should match snapshot when noCredits is true 1`] 
   <div
     animate="[object Object]"
     aria-labelledby="scenario-title"
-    class="flex h-full w-full gap-6 bg-white overflow-hidden transition-all duration-300 rounded-md origin-top-left border-[0.3px] border-[#D3D3D3]"
+    class="flex flex-col w-full max-w-[600px] bg-white overflow-hidden transition-all duration-300 rounded-lg origin-top border border-[#E5E7EB] p-3"
     exit="[object Object]"
     initial="[object Object]"
     role="dialog"
     transition="[object Object]"
   >
-    <div>
+    <div
+      class="relative w-full rounded-lg overflow-hidden"
+    >
       <img
-        alt="Test Scenario Details scenario details"
-        class="w-[320px] h-[320px] object-cover"
+        alt="Test Scenario Details scenario preview"
+        class="w-full max-h-[320px] object-cover rounded-md"
         loading="lazy"
         src="https://example.com/scenario-details-image.jpg"
       />
     </div>
     <div
-      class="flex flex-col min-w-[400px] w-[calc(100%-320px)] justify-between flex-grow p-6 text-[14px] font-['IBM_Plex_Serif'] overflow-y-auto"
+      class="flex flex-col gap-1 mt-3 font-['IBM_Plex_Serif']"
     >
       <div
-        class="flex flex-col gap-2"
+        class="flex items-start justify-between"
       >
         <div
-          class="flex items-center justify-between"
+          class="text-[#0D0D0D] text-[20px]"
           id="scenario-title"
         >
+          Test Scenario Details
+        </div>
+        <button
+          aria-label="Share scenario"
+          class="flex items-center gap-2 px-4 py-2 text-[#374151] hover:bg-gray-50 rounded-md transition-colors"
+          title="Share this scenario"
+        >
+          <svg
+            data-testid="share-icon"
+          />
           <span
-            class="text-[#0D0D0D] text-xl"
+            class="text-[14px]"
           >
-            Test Scenario Details
+            Share
           </span>
-          <div
-            aria-label="Copy link"
-            class="flex items-center gap-[4px] cursor-pointer"
-            role="button"
-            title="Copy link to clipboard"
-          >
-            <svg
-              data-testid="share-icon"
-            />
-            <span
-              class="text-[#6B7280] text-[14px] font-['Roboto']"
-            >
-              Share
-            </span>
-          </div>
-        </div>
-        <div>
-          <div
-            class="font-semibold text-black"
-          >
-            Scenario:
-          </div>
-          <p
-            class="text-[#656565]"
-          >
-            This is a detailed description of the scenario that explains what the simulation covers.
-          </p>
-        </div>
+        </button>
       </div>
       <div
-        class="mt-4"
+        class="flex flex-col"
+      >
+        <div
+          class="text-[14px] font-semibold text-[#0D0D0D]"
+        >
+          Scenario:
+        </div>
+        <p
+          class="text-[14px] text-[#656565]"
+        >
+          This is a detailed description of the scenario that explains what the simulation covers.
+        </p>
+      </div>
+      <div
+        class="flex justify-center mt-2 mb-2"
       >
         <button
-          aria-label="Start simulation"
-          class="!font-['Roboto']  !bg-gray-400"
+          aria-label="Start session"
+          class="!font-['Roboto'] !text-[16px]  !py-3 !bg-gray-400"
           data-testid="mock-button"
           data-variant="primary"
           disabled=""
         >
-          Start Simulation
+          Start session
         </button>
       </div>
     </div>

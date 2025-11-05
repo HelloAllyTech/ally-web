@@ -6,7 +6,7 @@ import { motion } from "framer-motion";
 
 import { SimulationEventsProps } from "./types";
 
-export const SimulationEvents: FC<SimulationEventsProps> = ({ events }) => {
+export const SimulationEvents: FC<SimulationEventsProps> = ({ events = [] }) => {
   const hasEvents = events.length > 0;
 
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -39,6 +39,8 @@ export const SimulationEvents: FC<SimulationEventsProps> = ({ events }) => {
     if (elapsedTime === 0) return "now";
     return `${elapsedTime} min${elapsedTime === 1 ? "" : "s"}`;
   };
+
+  if (events?.length === 0) return null;
 
   return (
     <motion.div

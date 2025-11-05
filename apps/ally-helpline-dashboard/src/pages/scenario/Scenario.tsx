@@ -150,9 +150,9 @@ export const Scenario: FC = () => {
             initial="hidden"
             animate="visible"
             exit="exit"
-            className="flex flex-col gap-6 w-[60%] m-auto"
+            className="flex flex-col gap-6 w-full m-auto justify-center items-center"
           >
-            <div className="flex justify-between">
+            <div className="flex justify-between w-full max-w-[600px]">
               <div className="flex items-center gap-2 font-['Replay_Pro'] text-[28px]">
                 {renderBackButton()}
                 <span>Start</span>
@@ -173,6 +173,7 @@ export const Scenario: FC = () => {
             </div>
             <ScenarioDetailsCard
               coverImage={scenario?.coverImageUrl || ""}
+              coverVideo={scenario?.coverVideoUrl || ""}
               isStarting={isStartingSimulation}
               title={scenario?.title || ""}
               longDescription={scenario?.description || ""}
