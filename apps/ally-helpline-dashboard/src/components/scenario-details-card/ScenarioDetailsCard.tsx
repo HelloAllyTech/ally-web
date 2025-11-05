@@ -120,12 +120,12 @@ const ScenarioDetailsCard: FC<ScenarioDetailsCardProps> = ({
               onStart?.();
             }}
             variant="primary"
-            className={`!font-['Roboto'] !text-[16px]  !py-3 ${isDisabled && "!bg-gray-400"}`}
+            className={`!font-['Roboto'] !text-[14px]  !py-3 ${isDisabled && "!bg-gray-400"} w-[240px]`}
             disabled={isDisabled}
-            aria-label="Start session"
+            aria-label="Start simulation"
           >
             {isStarting && <CircularProgress size={16} className="mr-2" />}
-            Start session
+            Start Simulation
           </Button>
         </div>
       </div>

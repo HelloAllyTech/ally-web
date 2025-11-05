@@ -66,12 +66,12 @@ exports[`ScenarioDetailsCard > should match snapshot when fully rendered 1`] = `
         class="flex justify-center mt-2 mb-2"
       >
         <button
-          aria-label="Start session"
-          class="!font-['Roboto'] !text-[16px]  !py-3 false"
+          aria-label="Start simulation"
+          class="!font-['Roboto'] !text-[14px]  !py-3 false w-[240px]"
           data-testid="mock-button"
           data-variant="primary"
         >
-          Start session
+          Start Simulation
         </button>
       </div>
     </div>
@@ -145,8 +145,8 @@ exports[`ScenarioDetailsCard > should match snapshot when isStarting is true 1`]
         class="flex justify-center mt-2 mb-2"
       >
         <button
-          aria-label="Start session"
-          class="!font-['Roboto'] !text-[16px]  !py-3 !bg-gray-400"
+          aria-label="Start simulation"
+          class="!font-['Roboto'] !text-[14px]  !py-3 !bg-gray-400 w-[240px]"
           data-testid="mock-button"
           data-variant="primary"
           disabled=""
@@ -156,7 +156,7 @@ exports[`ScenarioDetailsCard > should match snapshot when isStarting is true 1`]
             data-size="16"
             data-testid="circular-progress"
           />
-          Start session
+          Start Simulation
         </button>
       </div>
     </div>
@@ -230,13 +230,13 @@ exports[`ScenarioDetailsCard > should match snapshot when noCredits is true 1`] 
         class="flex justify-center mt-2 mb-2"
       >
         <button
-          aria-label="Start session"
-          class="!font-['Roboto'] !text-[16px]  !py-3 !bg-gray-400"
+          aria-label="Start simulation"
+          class="!font-['Roboto'] !text-[14px]  !py-3 !bg-gray-400 w-[240px]"
           data-testid="mock-button"
           data-variant="primary"
           disabled=""
         >
-          Start session
+          Start Simulation
         </button>
       </div>
     </div>
