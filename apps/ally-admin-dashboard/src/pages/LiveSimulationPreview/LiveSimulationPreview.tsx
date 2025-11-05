@@ -43,8 +43,7 @@ export const LiveSimulationPreview: React.FC = () => {
       room={room}
       roomData={roomData}
       roomStatus={roomStatus}
-      sessionId={id || null}
-      isConnected={true}
+      sessionId={id}
       isEndingSession={roomStatus !== RoomStatus.CONNECTED}
       startTime={startTime.toISOString()}
       events={getSimulationEvents(events)}

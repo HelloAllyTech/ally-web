@@ -17,7 +17,6 @@ export const SimulationPage: FC<SimulationPageProps> = ({
   roomData,
   roomStatus,
   sessionId,
-  isConnected,
   isEndingSession,
   startTime,
   events,
@@ -29,6 +28,7 @@ export const SimulationPage: FC<SimulationPageProps> = ({
 }) => {
   const [isMuted, setIsMuted] = useState(false);
   const [isWarning, setIsWarning] = useState(false);
+  const [isFocusMode, setIsFocusMode] = useState(false);
   const wakeLockRef = useRef<WakeLockSentinel | null>(null);
 
   useEffect(() => {
@@ -42,12 +42,12 @@ export const SimulationPage: FC<SimulationPageProps> = ({
       }
     };
 
-    if (isConnected && sessionId) {
+    if (sessionId) {
       requestWakeLock();
     }
 
     const handleVisibilityChange = async () => {
-      if (document.visibilityState === "visible" && isConnected && sessionId) {
+      if (document.visibilityState === "visible" && sessionId) {
         try {
           if ("wakeLock" in navigator) {
             wakeLockRef.current = await (navigator as any).wakeLock.request("screen");
@@ -71,7 +71,7 @@ export const SimulationPage: FC<SimulationPageProps> = ({
           .catch(() => {});
       }
     };
-  }, [isConnected, sessionId]);
+  }, [sessionId]);
 
   const onTimeLimitWarning = () => {
     setIsWarning(true);
@@ -91,6 +91,10 @@ export const SimulationPage: FC<SimulationPageProps> = ({
     });
   };
 
+  const onFocusButtonClick = () => {
+    setIsFocusMode(prev => !prev);
+  };
+
   const handleEndSimulation = async () => {
     await onEndSimulation?.();
   };
@@ -107,7 +111,7 @@ export const SimulationPage: FC<SimulationPageProps> = ({
       )}
       <motion.div layout className="max-h-[calc(100vh-170px)] w-full flex flex-1 gap-2">
         <SimulationInterface roomStatus={roomStatus} roomData={roomData} />
-        <SimulationEvents events={events} />
+        {!isFocusMode && <SimulationEvents events={events} />}
       </motion.div>
       <SimulationScoreMeter score={score} />
 
@@ -119,6 +123,8 @@ export const SimulationPage: FC<SimulationPageProps> = ({
         isMuted={isMuted}
         isEndingSession={isEndingSession}
         startTime={startTime}
+        isFocusMode={isFocusMode}
+        onFocusButtonClick={onFocusButtonClick}
       />
 
       {renderFooter?.()}

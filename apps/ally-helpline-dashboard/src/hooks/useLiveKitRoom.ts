@@ -154,5 +154,6 @@ export const useLiveKitRoom = (): UseLiveKitRoomReturn => {
     roomStatus,
     score,
     startTime,
+    roomData,
   };
 };

@@ -5,7 +5,7 @@ export type ButtonGroupProps = {
     action: (...args: any[]) => void;
     isActive?: boolean;
     isDisabled?: boolean;
-    leftIcon: ReactNode;
+    leftIcon?: ReactNode;
     show: boolean;
     text: string;
   }[];
