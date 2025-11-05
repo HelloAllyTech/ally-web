@@ -64,6 +64,7 @@ const learnAPI = baseAPI.injectEndpoints({
         method: HttpMethod.POST,
         body: params,
       }),
+      invalidatesTags: ["SimulationLogs"],
     }),
 
     /**
@@ -77,6 +78,7 @@ const learnAPI = baseAPI.injectEndpoints({
         url: ApiEndpoints.LEARN.END_SIMULATION(params.sessionId),
         method: HttpMethod.POST,
       }),
+      invalidatesTags: ["SimulationLogs"],
     }),
 
     /**
@@ -95,6 +97,7 @@ const learnAPI = baseAPI.injectEndpoints({
         method: HttpMethod.GET,
         params,
       }),
+      providesTags: ["SimulationLogs"],
     }),
 
     /**
@@ -115,6 +118,7 @@ const learnAPI = baseAPI.injectEndpoints({
         method: HttpMethod.GET,
         params,
       }),
+      providesTags: ["SimulationLogs"],
     }),
 
     /**

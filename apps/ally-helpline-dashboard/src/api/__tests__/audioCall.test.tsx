@@ -38,6 +38,11 @@ vi.mock("@constants", () => ({
     GET: "GET",
     PUT: "PUT",
   },
+  TAG_TYPES: {
+    CALL_SUMMARY: "CallSummary",
+    CALL_LOGS: "CallLogs",
+    SIMULATION_LOGS: "SimulationLogs",
+  },
 }));
 
 // Mock types

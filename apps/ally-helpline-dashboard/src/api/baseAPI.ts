@@ -18,7 +18,7 @@ import {
 } from "@reduxjs/toolkit/query/react";
 
 import { logger } from "@ally-ui-mono/ui-shared";
-import { ApiEndpoints, HttpMethod, LOCAL_STORAGE_KEYS } from "@constants";
+import { ApiEndpoints, HttpMethod, LOCAL_STORAGE_KEYS, TAG_TYPES } from "@constants";
 import { RefreshResponse } from "@types";
 
 // Environment variables for API configuration
@@ -132,6 +132,6 @@ const baseQueryWithReauth: BaseQueryFn<string | FetchArgs, unknown, FetchBaseQue
 export const baseAPI = createApi({
   reducerPath: "baseAPI",
   baseQuery: baseQueryWithReauth,
-  tagTypes: ["CallSummary", "CallLogs"],
+  tagTypes: [TAG_TYPES.CALL_SUMMARY, TAG_TYPES.CALL_LOGS, TAG_TYPES.SIMULATION_LOGS],
   endpoints: () => ({}),
 });
