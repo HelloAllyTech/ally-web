@@ -1,5 +1,11 @@
 import { useEffect, useState, useRef, FC } from "react";
 
+import { CircularProgress } from "@mui/material";
+import { useDispatch, useSelector } from "react-redux";
+import { toast } from "sonner";
+
+import { GenericTable } from "@ally-ui-mono/ui-shared";
+import { Column, FilterType } from "@ally-ui-mono/ui-shared/lib/generic-table/types";
 import {
   useGetAdminCallLogsQuery,
   useGetCounsellorsQuery,
@@ -23,15 +29,8 @@ import {
 } from "@assets";
 import { Button, Chip, FallbackUI, PermissionGuard, TagGroup } from "@components";
 import { CallProvider, Permissions } from "@constants";
-import { CircularProgress } from "@mui/material";
 import { updateFilters } from "@reducer";
 import { RootState } from "@store";
-import { convertSecondsToDuration, getFormattedDate, getSimulationScoreDisplay } from "@utils";
-import { useDispatch, useSelector } from "react-redux";
-import { toast } from "sonner";
-
-import { GenericTable } from "@ally-ui-mono/ui-shared";
-import { Column, FilterType } from "@ally-ui-mono/ui-shared/lib/generic-table/types";
 import {
   AdminSimulationLog,
   CallLog,
@@ -41,6 +40,7 @@ import {
   SessionType,
   SimulationLog,
 } from "@types";
+import { convertSecondsToDuration, getFormattedDate, getSimulationScoreDisplay } from "@utils";
 
 import { CallSummarySidebar, DeleteCallLogConfirmationDialog, SimulationSummarySidebar } from ".";
 import { CALL_LOGS_PAGINATION_LIMIT, defaultTags, tagColors } from "../constants";
@@ -459,6 +459,7 @@ const AdminLogsTable: FC<LogsTableProps> = ({ refreshKey, sessionType, className
             refetchCallLogs={onSummarySubmit}
             setCallSummary={setSummary}
             sessionType={sessionType}
+            canEditSummary={false}
           />
         );
       case SessionType.SIMULATION:
