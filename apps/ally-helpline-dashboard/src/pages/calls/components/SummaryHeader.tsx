@@ -16,13 +16,23 @@ const SummaryHeader: FC<SummaryHeaderProps> = ({
   summaryName,
   setSummaryName,
   chatId,
-  counselorId,
+  canEditSummary = true,
+  counsellorId,
 }) => {
-  const summaryNameRef = useRef<HTMLInputElement>(null);
-  const [isRenaming, setIsRenaming] = useState<boolean>(false);
   const { permissions, user } = useSelector((state: RootState) => state.user);
 
+  const summaryNameRef = useRef<HTMLInputElement>(null);
+  const [isRenaming, setIsRenaming] = useState<boolean>(false);
+
   const [updateCallInfo] = useUpdateCallInfoMutation();
+
+  // Determine if editing should be allowed
+  // If canEditSummary is explicitly false (from ConsolidatedLogs), respect that
+  // Otherwise (true/undefined/default), check permissions AND counselor match
+  const hasEditSummaryPermission = permissions?.includes(Permissions.EDIT_CALL_DETAILS);
+  const isCounsellorForCall = Boolean(user?.userId && counsellorId && counsellorId === user.userId);
+  const shouldAllowEdit =
+    canEditSummary !== false && hasEditSummaryPermission && isCounsellorForCall;
 
   useEffect(() => {
     if (isRenaming) {
@@ -51,10 +61,6 @@ const SummaryHeader: FC<SummaryHeaderProps> = ({
     setIsRenaming(true);
   };
 
-  const hasAdequatePermission = permissions?.includes(Permissions.EDIT_CALL_INFO);
-  const isCounsellorForCall = Boolean(user?.userId && counselorId && counselorId === user.userId);
-  const canEditName = hasAdequatePermission && isCounsellorForCall;
-
   return (
     <div className="flex items-center mb-4">
       <TextField
@@ -66,7 +72,7 @@ const SummaryHeader: FC<SummaryHeaderProps> = ({
         inputStyles={{ fontSize: "24px", fontWeight: "700", fontFamily: "IBM_Plex_Serif" }}
         showBorder={false}
       />
-      {!isRenaming && canEditName && (
+      {!isRenaming && shouldAllowEdit && (
         <Edit onClick={onRenameButtonClick} className="cursor-pointer" />
       )}
     </div>

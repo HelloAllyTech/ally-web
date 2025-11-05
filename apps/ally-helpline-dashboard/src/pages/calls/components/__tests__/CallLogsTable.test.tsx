@@ -163,18 +163,39 @@ vi.mock("@reducer", () => ({
 }));
 
 // Mock Redux store
-const createMockStore = (callsState: any = { filters: { offset: 0 } }) => {
+const createMockStore = (callsState: any = { filters: { offset: 0 } }, userState: any = {}) => {
+  const userReducer = (
+    state = {
+      isAuthenticated: true,
+      user: { userId: 1, name: "Test User" },
+      permissions: [],
+      availableChatTypes: [],
+      ...userState,
+    },
+    action: any,
+  ) => state;
+
+  const callsReducer = (state = callsState, action: any) => {
+    if (action.type === "UPDATE_FILTERS") {
+      return { ...state, filters: action.payload };
+    }
+    return state;
+  };
+
   return configureStore({
     reducer: {
-      calls: (state = callsState, action) => {
-        if (action.type === "UPDATE_FILTERS") {
-          return { ...state, filters: action.payload };
-        }
-        return state;
-      },
+      calls: callsReducer,
+      user: userReducer,
     },
     preloadedState: {
       calls: callsState,
+      user: {
+        isAuthenticated: true,
+        user: { userId: 1, name: "Test User" },
+        permissions: [],
+        availableChatTypes: [],
+        ...userState,
+      },
     },
   });
 };
@@ -258,8 +279,9 @@ const renderComponent = (
   sessionType: SessionType,
   refreshKey?: number,
   callsState: any = { filters: { offset: 0 } },
+  userState: any = {},
 ) => {
-  const store = createMockStore(callsState);
+  const store = createMockStore(callsState, userState);
   return render(
     <Provider store={store}>
       <BrowserRouter>
@@ -663,7 +685,7 @@ describe("CallLogsTable Component", () => {
       const { rerender } = renderComponent(SessionType.CALL);
 
       rerender(
-        <Provider store={createMockStore({ filters: { offset: 0 } })}>
+        <Provider store={createMockStore({ filters: { offset: 0 } }, {})}>
           <BrowserRouter>
             <CallLogsTable sessionType={SessionType.CALL} refreshKey={1} />
           </BrowserRouter>

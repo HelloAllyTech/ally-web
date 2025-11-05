@@ -38,6 +38,7 @@ const CallSummary: FC<CallSummaryProps> = ({
   className,
   headerContent,
   postProcess,
+  canEditSummary = true,
 }) => {
   const { permissions, user } = useSelector((state: RootState) => state.user);
 
@@ -73,11 +74,15 @@ const CallSummary: FC<CallSummaryProps> = ({
 
   const { enhancing, EnhanceButton, EnhancementLoadingSkeleton, isEnhanceLoading } = useEnhance();
 
+  // Determine if editing should be allowed
+  // If canEditSummary is explicitly false (from ConsolidatedLogs), respect that
+  // Otherwise (true/undefined/default), check permissions and counselor match
   const hasEditSummaryPermission = permissions?.includes(Permissions.EDIT_CALL_DETAILS);
   const isCounsellorForCall = Boolean(
     user?.userId && callSummary?.counselorId && callSummary.counselorId === user.userId,
   );
-  const canEditSummary = hasEditSummaryPermission && isCounsellorForCall;
+  const shouldAllowEdit =
+    canEditSummary !== false && hasEditSummaryPermission && isCounsellorForCall;
 
   const isLoading =
     isGetSummaryFieldsLoading ||
@@ -171,7 +176,7 @@ const CallSummary: FC<CallSummaryProps> = ({
   };
 
   const isFieldDisabled = (field: SummaryField) => {
-    return !field.isEditable || !canEditSummary;
+    return !field.isEditable || !shouldAllowEdit;
   };
 
   const getFieldDisplay = (field: SummaryField) => {
@@ -220,7 +225,7 @@ const CallSummary: FC<CallSummaryProps> = ({
               InputProps={{
                 readOnly: isFieldDisabled(field),
                 startAdornment: enhancing === field.key && EnhancementLoadingSkeleton,
-                endAdornment: field.isEnhanceable && canEditSummary && (
+                endAdornment: field.isEnhanceable && shouldAllowEdit && (
                   <EnhanceButton
                     fieldName={field.key}
                     inputText={value}
@@ -328,7 +333,7 @@ const CallSummary: FC<CallSummaryProps> = ({
       }
     }
     postProcess?.();
-    if (!isInSidebar && hasEditSummaryPermission) {
+    if (!isInSidebar && shouldAllowEdit) {
       if (callSummary?.details?.callInfo?.isSummaryFeedbackAdded) {
         navigateToCallLogs();
       } else {
@@ -445,7 +450,7 @@ const CallSummary: FC<CallSummaryProps> = ({
           </motion.div>
         </div>
 
-        {canEditSummary && (
+        {shouldAllowEdit && (
           <div className="flex justify-center">
             <Button onClick={handleSave} disabled={isLoading || (isInSidebar && !hasDataChanged())}>
               {isUpdateLoading || isGetTagsLoading ? "Saving..." : "Save"}

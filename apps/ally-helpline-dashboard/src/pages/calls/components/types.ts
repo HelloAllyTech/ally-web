@@ -40,7 +40,8 @@ export interface SummaryHeaderProps {
   summaryName: string;
   setSummaryName: (summaryName: string) => void;
   chatId: number;
-  counselorId?: number;
+  canEditSummary?: boolean;
+  counsellorId: number;
 }
 
 export interface CallSummaryProps {
@@ -80,6 +81,7 @@ export interface CallSummarySidebarProps {
   refetchCallLogs: (status?: ChatSummaryStatus) => void;
   sessionType: SessionType;
   setCallSummary: Dispatch<SetStateAction<CallLog>>;
+  canEditSummary?: boolean;
 }
 
 export interface TranscriptTabProps {
