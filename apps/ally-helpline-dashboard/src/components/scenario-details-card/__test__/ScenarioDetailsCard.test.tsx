@@ -190,9 +190,9 @@ describe("ScenarioDetailsCard", () => {
 
   it("should render the Start session button", () => {
     renderComponent();
-    const button = screen.getByRole("button", { name: /Start session/i });
+    const button = screen.getByRole("button", { name: /Start Simulation/i });
     expect(button).toBeInTheDocument();
-    expect(button).toHaveAttribute("aria-label", "Start session");
+    expect(button).toHaveAttribute("aria-label", "Start simulation");
   });
 
   // --- Image Error Handling Tests ---
@@ -211,27 +211,27 @@ describe("ScenarioDetailsCard", () => {
 
   it("should disable button when isStarting is true", () => {
     renderComponent({ isStarting: true });
-    const button = screen.getByRole("button", { name: /Start session/i });
+    const button = screen.getByRole("button", { name: /Start Simulation/i });
     expect(button).toBeDisabled();
     expect(button).toHaveClass("!bg-gray-400");
   });
 
   it("should disable button when noCredits is true", () => {
     renderComponent({ noCredits: true });
-    const button = screen.getByRole("button", { name: /Start session/i });
+    const button = screen.getByRole("button", { name: /Start simulation/i });
     expect(button).toBeDisabled();
     expect(button).toHaveClass("!bg-gray-400");
   });
 
   it("should disable button when both isStarting and noCredits are true", () => {
     renderComponent({ isStarting: true, noCredits: true });
-    const button = screen.getByRole("button", { name: /Start session/i });
+    const button = screen.getByRole("button", { name: /Start Simulation/i });
     expect(button).toBeDisabled();
   });
 
   it("should enable button when both isStarting and noCredits are false", () => {
     renderComponent({ isStarting: false, noCredits: false });
-    const button = screen.getByRole("button", { name: /Start session/i });
+    const button = screen.getByRole("button", { name: /Start Simulation/i });
     expect(button).not.toBeDisabled();
   });
 
@@ -248,15 +248,15 @@ describe("ScenarioDetailsCard", () => {
 
   // --- Interaction Tests ---
 
-  it("should call onStart when Start session button is clicked", () => {
+  it("should call onStart when Start simulation button is clicked", () => {
     renderComponent();
-    const button = screen.getByRole("button", { name: /Start session/i });
+    const button = screen.getByRole("button", { name: /Start Simulation/i });
 
     fireEvent.click(button);
     expect(mockOnStart).toHaveBeenCalledTimes(1);
   });
 
-  it("should stop event propagation when Start session button is clicked", () => {
+  it("should stop event propagation when Start simulation button is clicked", () => {
     const parentClickHandler = vi.fn();
     const { container } = renderComponent();
     const card = container.querySelector('[role="dialog"]');
@@ -264,7 +264,7 @@ describe("ScenarioDetailsCard", () => {
       card.addEventListener("click", parentClickHandler);
     }
 
-    const button = screen.getByRole("button", { name: /Start session/i });
+    const button = screen.getByRole("button", { name: /Start Simulation/i });
     fireEvent.click(button);
 
     expect(mockOnStart).toHaveBeenCalledTimes(1);
