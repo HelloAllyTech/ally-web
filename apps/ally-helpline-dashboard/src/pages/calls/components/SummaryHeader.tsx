@@ -12,10 +12,15 @@ import { RootState } from "@store";
 
 import { SummaryHeaderProps } from "./types";
 
-const SummaryHeader: FC<SummaryHeaderProps> = ({ summaryName, setSummaryName, chatId }) => {
+const SummaryHeader: FC<SummaryHeaderProps> = ({
+  summaryName,
+  setSummaryName,
+  chatId,
+  counselorId,
+}) => {
   const summaryNameRef = useRef<HTMLInputElement>(null);
   const [isRenaming, setIsRenaming] = useState<boolean>(false);
-  const { permissions } = useSelector((state: RootState) => state.user);
+  const { permissions, user } = useSelector((state: RootState) => state.user);
 
   const [updateCallInfo] = useUpdateCallInfoMutation();
 
@@ -47,6 +52,8 @@ const SummaryHeader: FC<SummaryHeaderProps> = ({ summaryName, setSummaryName, ch
   };
 
   const hasAdequatePermission = permissions?.includes(Permissions.EDIT_CALL_INFO);
+  const isCounsellorForCall = Boolean(user?.userId && counselorId && counselorId === user.userId);
+  const canEditName = hasAdequatePermission && isCounsellorForCall;
 
   return (
     <div className="flex items-center mb-4">
@@ -59,7 +66,7 @@ const SummaryHeader: FC<SummaryHeaderProps> = ({ summaryName, setSummaryName, ch
         inputStyles={{ fontSize: "24px", fontWeight: "700", fontFamily: "IBM_Plex_Serif" }}
         showBorder={false}
       />
-      {!isRenaming && hasAdequatePermission && (
+      {!isRenaming && canEditName && (
         <Edit onClick={onRenameButtonClick} className="cursor-pointer" />
       )}
     </div>

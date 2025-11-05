@@ -8,16 +8,17 @@ vi.mock("react-redux", () => ({
   useSelector: (fn: any) =>
     fn({
       user: {
-        user: { role: "COUNSELLOR" },
+        user: { role: "COUNSELLOR", userId: 1 },
         permissions: ["edit:call:info"],
       },
     }),
 }));
 
-// Mock API mutation
+// Mock API hooks
 const mockUpdateCallInfo = vi.fn();
 vi.mock("@api", () => ({
   useUpdateCallInfoMutation: () => [mockUpdateCallInfo],
+  useGetCallSummaryQuery: (_chatId: number) => ({ data: { counselorId: 1 } }),
 }));
 
 // Mock hooks
@@ -45,14 +46,24 @@ describe("SummaryHeader", () => {
 
   it("renders summary name", () => {
     render(
-      <SummaryHeader summaryName="Test Summary" setSummaryName={setSummaryName} chatId={chatId} />,
+      <SummaryHeader
+        summaryName="Test Summary"
+        setSummaryName={setSummaryName}
+        chatId={chatId}
+        counselorId={1}
+      />,
     );
     expect(screen.getByDisplayValue("Test Summary")).toBeInTheDocument();
   });
 
   it("clicking Edit enables renaming and focuses input", () => {
     render(
-      <SummaryHeader summaryName="Test Summary" setSummaryName={setSummaryName} chatId={chatId} />,
+      <SummaryHeader
+        summaryName="Test Summary"
+        setSummaryName={setSummaryName}
+        chatId={chatId}
+        counselorId={1}
+      />,
     );
     fireEvent.click(screen.getByText("EditIcon"));
     const input = screen.getByDisplayValue("Test Summary") as HTMLInputElement;
@@ -66,7 +77,12 @@ describe("SummaryHeader", () => {
 
   it("changing input calls setSummaryName and updateCallInfo", () => {
     render(
-      <SummaryHeader summaryName="Old Name" setSummaryName={setSummaryName} chatId={chatId} />,
+      <SummaryHeader
+        summaryName="Old Name"
+        setSummaryName={setSummaryName}
+        chatId={chatId}
+        counselorId={1}
+      />,
     );
     const input = screen.getByDisplayValue("Old Name") as HTMLInputElement;
     fireEvent.change(input, { target: { value: "New Name" } });
@@ -79,7 +95,12 @@ describe("SummaryHeader", () => {
 
   it("blurring input disables renaming", () => {
     render(
-      <SummaryHeader summaryName="Test Summary" setSummaryName={setSummaryName} chatId={chatId} />,
+      <SummaryHeader
+        summaryName="Test Summary"
+        setSummaryName={setSummaryName}
+        chatId={chatId}
+        counselorId={1}
+      />,
     );
     const input = screen.getByDisplayValue("Test Summary") as HTMLInputElement;
     fireEvent.blur(input);

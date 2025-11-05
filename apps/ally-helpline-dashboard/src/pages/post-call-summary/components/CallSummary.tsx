@@ -39,7 +39,7 @@ const CallSummary: FC<CallSummaryProps> = ({
   headerContent,
   postProcess,
 }) => {
-  const { permissions } = useSelector((state: RootState) => state.user);
+  const { permissions, user } = useSelector((state: RootState) => state.user);
 
   const [summaryData, setSummaryData] = useState(null);
   const [searchedLocations, setSearchedLocations] = useState(null);
@@ -74,6 +74,10 @@ const CallSummary: FC<CallSummaryProps> = ({
   const { enhancing, EnhanceButton, EnhancementLoadingSkeleton, isEnhanceLoading } = useEnhance();
 
   const hasEditSummaryPermission = permissions?.includes(Permissions.EDIT_CALL_DETAILS);
+  const isCounsellorForCall = Boolean(
+    user?.userId && callSummary?.counselorId && callSummary.counselorId === user.userId,
+  );
+  const canEditSummary = hasEditSummaryPermission && isCounsellorForCall;
 
   const isLoading =
     isGetSummaryFieldsLoading ||
@@ -167,7 +171,7 @@ const CallSummary: FC<CallSummaryProps> = ({
   };
 
   const isFieldDisabled = (field: SummaryField) => {
-    return !field.isEditable || !hasEditSummaryPermission;
+    return !field.isEditable || !canEditSummary;
   };
 
   const getFieldDisplay = (field: SummaryField) => {
@@ -216,7 +220,7 @@ const CallSummary: FC<CallSummaryProps> = ({
               InputProps={{
                 readOnly: isFieldDisabled(field),
                 startAdornment: enhancing === field.key && EnhancementLoadingSkeleton,
-                endAdornment: field.isEnhanceable && hasEditSummaryPermission && (
+                endAdornment: field.isEnhanceable && canEditSummary && (
                   <EnhanceButton
                     fieldName={field.key}
                     inputText={value}
@@ -441,7 +445,7 @@ const CallSummary: FC<CallSummaryProps> = ({
           </motion.div>
         </div>
 
-        {hasEditSummaryPermission && (
+        {canEditSummary && (
           <div className="flex justify-center">
             <Button onClick={handleSave} disabled={isLoading || (isInSidebar && !hasDataChanged())}>
               {isUpdateLoading || isGetTagsLoading ? "Saving..." : "Save"}

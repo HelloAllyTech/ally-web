@@ -163,6 +163,7 @@ const CallSummarySidebar: FC<CallSummarySidebarProps> = ({
               summaryName={summaryName}
               setSummaryName={setSummaryName}
               chatId={callSummary.id}
+              counselorId={callSummary.counselorId}
             />
           }
           className="max-h-[calc(100vh-320px)]"

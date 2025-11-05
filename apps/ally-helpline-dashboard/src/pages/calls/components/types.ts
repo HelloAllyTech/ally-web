@@ -40,6 +40,7 @@ export interface SummaryHeaderProps {
   summaryName: string;
   setSummaryName: (summaryName: string) => void;
   chatId: number;
+  counselorId?: number;
 }
 
 export interface CallSummaryProps {
