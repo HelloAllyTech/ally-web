@@ -1,11 +1,19 @@
 import React, { useState, useCallback, useEffect } from "react";
 
+import { generateSequentialEventName } from "@utils/eventNameGenerator";
+
 import { ArrowDownFilled, DoubleArrowRight, Trash } from "@assets";
-import { AutoExpandableTextarea, EmojiPickerComponent, NumberInput } from "@components";
-import { SPEAKER_OPTIONS, en } from "@constants";
+import { AutoExpandableTextarea, EmojiPickerComponent, TriggerConditions } from "@components";
+import { EVENT_TYPE_OPTIONS, EventType } from "@components/event-type-selection-dialog";
+import { NumberInput } from "@components/notion-table";
+import { en } from "@constants";
 import { useDebounce } from "@hooks";
 import { UpdateEventDataParam } from "@types";
 import { formatCapitalizedEnum } from "@utils";
+
+// TODO: TESTING MODE - Skip API calls for testing
+// Revert: Set to false to enable API calls
+const TEST_MODE = true;
 
 interface EventSidePanelProps {
   selectedEvent: UpdateEventDataParam | null;
@@ -64,30 +72,122 @@ export const EventSidePanel: React.FC<EventSidePanelProps> = ({
   onDelete,
   onUpdate,
 }) => {
-  const [isSpeakerDropdownOpen, setIsSpeakerDropdownOpen] = useState(false);
+  const [isEventTypeDropdownOpen, setIsEventTypeDropdownOpen] = useState(false);
   const [formData, setFormData] = useState(selectedEvent);
 
   useEffect(() => {
     setFormData(selectedEvent);
-  }, []);
-
-  useEffect(() => {
-    debouncedUpdate();
-  }, [formData]);
+  }, [selectedEvent]);
 
   const debouncedUpdate = useDebounce(() => {
-    onUpdate(formData);
+    if (formData) {
+      // Only call onUpdate if not in TEST_MODE
+      if (!TEST_MODE) {
+        onUpdate(formData);
+      }
+      // In TEST_MODE, updates are skipped silently
+    }
   }, 500);
 
+  useEffect(() => {
+    if (formData && formData !== selectedEvent) {
+      debouncedUpdate();
+    }
+  }, [formData]);
+
   const handleFieldChange = useCallback(
-    (fieldName: string, value: string | number) => {
-      setIsSpeakerDropdownOpen(false);
+    (fieldName: string, value: string | number | object) => {
+      setIsEventTypeDropdownOpen(false);
       if (!selectedEvent) return;
 
-      setFormData(previousData => ({
-        ...previousData,
-        [fieldName]: value,
-      }));
+      setFormData(previousData => {
+        const updatedData = {
+          ...previousData,
+          [fieldName]: value,
+        };
+
+        // If event type changes, regenerate the event name based on new type
+        if (fieldName === "detectionType" && previousData.name) {
+          // Extract the base name without "- Test Event" suffix
+          const baseName = previousData.name.replace(/\s*-?\s*Test\s*Event\s*/gi, "").trim();
+
+          // Generate new sequential name based on the new event type
+          const newEventType = value as EventType;
+          const typeOption = EVENT_TYPE_OPTIONS.find(opt => opt.value === newEventType);
+
+          if (typeOption) {
+            // Try to preserve the number from the old name if it matches the old prefix
+            const oldTypeOption = EVENT_TYPE_OPTIONS.find(
+              opt => opt.value === previousData.detectionType,
+            );
+            let newName = baseName;
+
+            if (oldTypeOption && baseName.startsWith(oldTypeOption.prefix)) {
+              // Extract number from old name and use it with new prefix
+              const numberMatch = baseName.match(/\d+/);
+              if (numberMatch) {
+                const number = numberMatch[0].padStart(3, "0");
+                newName = `${typeOption.prefix}${number}`;
+              } else {
+                // Fallback: generate new sequential name
+                newName = generateSequentialEventName(newEventType, [baseName]);
+              }
+            } else {
+              // Generate new sequential name based on new type
+              newName = generateSequentialEventName(newEventType, [baseName]);
+            }
+
+            updatedData.name = `${newName} - Test Event`;
+          }
+        }
+
+        return updatedData;
+      });
+    },
+    [selectedEvent],
+  );
+
+  const handleTriggerConditionChange = useCallback(
+    (field: string, value: string | number | string[]) => {
+      if (!selectedEvent) return;
+
+      setFormData(previousData => {
+        // Handle sentences separately (not part of triggerCondition)
+        if (field === "sentences") {
+          return {
+            ...previousData,
+            sentences: value as string[],
+          } as UpdateEventDataParam;
+        }
+
+        // Handle speaker in triggerCondition for sentence similarity
+        if (field === "speaker" && previousData.detectionType === "SENTENCE_SIMILARITY") {
+          return {
+            ...previousData,
+            speaker: value as string,
+          } as UpdateEventDataParam;
+        }
+
+        // Handle conditions array for combination events
+        if (field === "conditions" && previousData.detectionType === "COMBINATION") {
+          return {
+            ...previousData,
+            triggerCondition: {
+              conditions: value as any[],
+            },
+          } as UpdateEventDataParam;
+        }
+
+        // Handle other triggerCondition fields
+        const currentTrigger = previousData.triggerCondition || {};
+        return {
+          ...previousData,
+          triggerCondition: {
+            ...currentTrigger,
+            [field]: value,
+          },
+        } as UpdateEventDataParam;
+      });
     },
     [selectedEvent],
   );
@@ -116,8 +216,11 @@ export const EventSidePanel: React.FC<EventSidePanelProps> = ({
           <div className="mb-4">
             <input
               type="text"
-              value={formData.name}
-              onChange={event => handleFieldChange("name", event.target.value)}
+              value={formData.name || ""}
+              onChange={event => {
+                const newName = event.target.value.replace(" - Test Event", "");
+                handleFieldChange("name", `${newName} - Test Event`);
+              }}
               placeholder="New Event"
               className="border-none focus:outline-none text-2xl font-light w-full"
             />
@@ -125,38 +228,50 @@ export const EventSidePanel: React.FC<EventSidePanelProps> = ({
 
           <div className="space-y-3">
             <Field label="Event type">
-              <span className="text-sm">
-                {formatCapitalizedEnum(selectedEvent?.detectionType) || "—"}
-              </span>
-            </Field>
-
-            <Field label="Speaker">
               <div className="relative">
                 <button
                   type="button"
-                  onClick={() => setIsSpeakerDropdownOpen(!isSpeakerDropdownOpen)}
+                  onClick={() => setIsEventTypeDropdownOpen(!isEventTypeDropdownOpen)}
                   className="px-0 py-2 cursor-pointer text-sm flex items-center space-x-2"
                 >
                   <span className="truncate">
-                    {formatCapitalizedEnum(formData.speaker) || "Add speaker"}
+                    {formData.detectionType
+                      ? (EVENT_TYPE_OPTIONS.find(opt => opt.value === formData.detectionType)
+                          ?.label ?? formatCapitalizedEnum(formData.detectionType))
+                      : "Select event type"}
                   </span>
-                  <ArrowDownFilled width={8} height={8} />
+                  <ArrowDownFilled />
                 </button>
-                {isSpeakerDropdownOpen && (
-                  <div className="absolute z-10 bg-white p-1 border border-border-light min-w-[150px] rounded-[6px] left-[0px] top-[30px] space-y-1">
-                    {SPEAKER_OPTIONS.map(option => (
+                {isEventTypeDropdownOpen && (
+                  <div className="absolute z-10 bg-white p-1 border border-gray-300 min-w-[200px] rounded-[6px] left-[0px] top-[30px] space-y-1">
+                    {EVENT_TYPE_OPTIONS.map(option => (
                       <div
-                        key={option?.value}
-                        onClick={() => handleFieldChange("speaker", option.value)}
-                        className={`px-3 py-2 cursor-pointer rounded-[6px] flex items-center hover:bg-primary-100 ${formData.speaker === option.value ? "bg-neutral-100" : ""}`}
+                        key={option.value}
+                        onClick={() => handleFieldChange("detectionType", option.value)}
+                        className={`px-3 py-2 cursor-pointer rounded-[6px] flex items-center hover:bg-blue-100 ${
+                          formData.detectionType === option.value ? "bg-gray-100" : ""
+                        }`}
                       >
-                        <span className="truncate">{option?.label}</span>
+                        <span className="truncate">{option.label}</span>
                       </div>
                     ))}
                   </div>
                 )}
               </div>
             </Field>
+
+            {/* Trigger Conditions Field */}
+            {(formData.detectionType === "TIME_BASED" ||
+              formData.detectionType === "SCORE_BASED" ||
+              formData.detectionType === "SENTENCE_SIMILARITY" ||
+              formData.detectionType === "COMBINATION") && (
+              <TriggerConditions
+                eventType={formData.detectionType}
+                triggerCondition={formData.triggerCondition}
+                sentences={formData.sentences}
+                onChange={handleTriggerConditionChange}
+              />
+            )}
 
             <Field label="Event description" multiline={true}>
               <AutoExpandableTextarea

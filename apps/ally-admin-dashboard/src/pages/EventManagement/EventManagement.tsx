@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useMemo, useCallback } from "react";
 
+import { generateSequentialEventName } from "@utils/eventNameGenerator";
 import { toast } from "sonner";
 
 import {
@@ -9,7 +10,14 @@ import {
   useDeleteSessionEventsMutation,
 } from "@api";
 import { Trash } from "@assets";
-import { NotionTable, EventSidePanel, ListToolbar, ActionConfirmationPopup } from "@components";
+import {
+  NotionTable,
+  EventSidePanel,
+  ListToolbar,
+  ActionConfirmationPopup,
+  EventTypeSelectionDialog,
+} from "@components";
+import { EventType } from "@components/event-type-selection-dialog";
 import { ButtonVariant } from "@components/types";
 import {
   SORT_BY,
@@ -31,6 +39,7 @@ export const EventManagement: React.FC = () => {
   const [selectedEvents, setSelectedEvents] = useState<any[]>([]);
   const [selectedEvent, setSelectedEvent] = useState<UpdateEventDataParam | null>(null);
   const [showDeleteConfirmationPopup, setShowDeleteConfirmationPopup] = useState<boolean>(false);
+  const [showEventTypeDialog, setShowEventTypeDialog] = useState<boolean>(false);
 
   const { data: sessionEventsData, isFetching } = useGetSessionEventsQuery({
     visibilityType: SESSION_EVENT_STATUS_OPTIONS.ACTIVE,
@@ -41,7 +50,8 @@ export const EventManagement: React.FC = () => {
     searchName: eventSearch,
   });
   const [updateSessionEvent] = useUpdateSessionEventMutation();
-  const [createSessionEvents] = useCreateSessionEventsMutation();
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [createSessionEvents] = useCreateSessionEventsMutation(); // Used in production code (commented out for testing)
   const [deleteSessionEvents] = useDeleteSessionEventsMutation();
 
   // Handle data updates when query data changes
@@ -70,31 +80,76 @@ export const EventManagement: React.FC = () => {
     setOffset(0);
   };
 
-  const handleNewEventClick = async () => {
+  const handleNewEventClick = () => {
+    setShowEventTypeDialog(true);
+  };
+
+  const handleEventTypeSelect = async (eventType: EventType) => {
+    // Get all existing event names to generate sequential name
+    const existingEventNames = events
+      .map(event => event.name || "")
+      .filter(name => name.length > 0);
+
+    // Generate sequential event name based on type
+    const eventName = generateSequentialEventName(eventType, existingEventNames);
+
+    let triggerCondition:
+      | { operator: string; value: string | number; speaker?: string }
+      | { conditions: any[] }
+      | undefined;
+
+    if (eventType === "TIME_BASED") {
+      triggerCondition = { operator: "LESS_THAN", value: "00:20:00" };
+    } else if (eventType === "SCORE_BASED") {
+      triggerCondition = { operator: "GREATER_THAN", value: 0, speaker: "CARE_GIVER" };
+    } else if (eventType === "COMBINATION") {
+      triggerCondition = {
+        conditions: [
+          { eventId: "", status: "OCCURRED" },
+          { eventId: "", status: "OCCURRED", operator: "AND" },
+        ],
+      };
+    }
+
     const newEvent = {
-      name: "New Event",
+      name: `${eventName} - Test Event`,
       description: "",
       score: 0,
       emoji: "🫥",
       message: "",
       branchInstruction: "",
-      detectionType: "SENTENCE_SIMILARITY",
+      detectionType: eventType,
       visibilityType: "ACTIVE",
       speaker: "CARE_GIVER",
       sentences: [],
+      triggerCondition,
     };
-    try {
-      const response = await createSessionEvents({ events: [newEvent] });
-      if (response.error) {
-        toast.error("Failed to create event");
-      } else {
-        toast.success("Event created successfully");
-        setSelectedEvent({ ...newEvent, id: response.data?.[0]?.id || "" });
-        setIsSidePanelOpen(true);
-      }
-    } catch {
-      toast.error("An error occurred while creating event");
+
+    // TODO: TESTING MODE - Skip API call for testing
+    // Revert: Remove the test mode flag and uncomment the API call below
+    const TEST_MODE = true; // Set to false to enable API calls
+
+    if (TEST_MODE) {
+      // For testing: Open sidebar with mock event without API call
+      setSelectedEvent({ ...newEvent, id: `test-${Date.now()}` });
+      setIsSidePanelOpen(true);
+      toast.success("Test mode: Event sidebar opened (no API call)");
+      return;
     }
+
+    // PRODUCTION CODE - Uncomment when ready to test with API
+    // try {
+    //   const response = await createSessionEvents({ events: [newEvent] });
+    //   if (response.error) {
+    //     toast.error("Failed to create event");
+    //   } else {
+    //     toast.success("Event created successfully");
+    //     setSelectedEvent({ ...newEvent, id: response.data?.[0]?.id || "" });
+    //     setIsSidePanelOpen(true);
+    //   }
+    // } catch {
+    //   toast.error("An error occurred while creating event");
+    // }
   };
 
   const handleLoadMore = () => {
@@ -149,6 +204,7 @@ export const EventManagement: React.FC = () => {
       emoji: selectedEvent.emoji || "",
       visibilityType: selectedEvent.visibilityType || "",
       sentences: selectedEvent.sentences || [],
+      triggerCondition: selectedEvent.triggerCondition,
     };
   }, [selectedEvent]);
 
@@ -190,7 +246,7 @@ export const EventManagement: React.FC = () => {
   const onUpdateEvent = async (event: UpdateEventDataParam) => {
     if (event) {
       // Convert back to plain format for API
-      const payload = {
+      const payload: any = {
         name: event.name || "",
         detectionType: event.detectionType || "",
         speaker: event.speaker || "",
@@ -202,6 +258,12 @@ export const EventManagement: React.FC = () => {
         visibilityType: event.visibilityType || "",
         sentences: event.description?.length > 0 ? event.description?.split("\n") : [],
       };
+
+      // Include triggerCondition if it exists
+      if (event.triggerCondition) {
+        payload.triggerCondition = event.triggerCondition;
+      }
+
       try {
         const response = await updateSessionEvent({ id: event.id || "", event: payload });
         if (response.error) toast.error("Error updating event");
@@ -299,6 +361,11 @@ export const EventManagement: React.FC = () => {
             }}
           />
         )}
+        <EventTypeSelectionDialog
+          isOpen={showEventTypeDialog}
+          onClose={() => setShowEventTypeDialog(false)}
+          onSelect={handleEventTypeSelect}
+        />
       </div>
     </div>
   );

@@ -138,6 +138,9 @@ export interface UpdateEventDataParam {
   emoji?: string;
   sentences?: string[];
   visibilityType?: string;
+  triggerCondition?:
+    | { operator: string; value: string | number; speaker?: string }
+    | { conditions: any[] };
 }
 
 export interface UpdateScenarioEventDataParam {
