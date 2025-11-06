@@ -1,0 +1,90 @@
+import React from "react";
+
+import { EventType } from "@components/event-type-selection-dialog";
+import { getTriggerConditionConfig, TRIGGER_FIELD_TYPES } from "@constants/TriggerConditionsConfig";
+
+import { TriggerConditionField } from "./TriggerConditionField";
+
+interface StandardTriggerConditionsProps {
+  eventType: EventType | string;
+  triggerCondition: any;
+  onChange: (field: string, value: string | number | string[]) => void;
+}
+
+export const StandardTriggerConditions: React.FC<StandardTriggerConditionsProps> = ({
+  eventType,
+  triggerCondition,
+  onChange,
+}) => {
+  const config = getTriggerConditionConfig(eventType);
+  if (!config) return null;
+
+  const fields = config.fields || [];
+  const isTimeBased = eventType === "TIME_BASED";
+  const isSentenceSimilarity = eventType === "SENTENCE_SIMILARITY";
+
+  return (
+    <>
+      <div
+        className={`relative ${isSentenceSimilarity ? "flex items-start" : "flex items-center"} gap-2`}
+      >
+        {/* Vertical blue line - full height for sentence similarity */}
+        <div
+          className={`absolute left-0 top-0 bottom-0 w-[1px] bg-blue-500 ${
+            isSentenceSimilarity ? "" : "h-8"
+          }`}
+        ></div>
+        {isSentenceSimilarity ? (
+          <>
+            <div className="flex items-center gap-2 pl-2 flex-shrink-0">
+              <span className="text-sm text-gray-500 flex-shrink-0 pl-2">if</span>
+              {fields
+                .filter(field => field.type !== TRIGGER_FIELD_TYPES.MULTILINE_TEXT)
+                .map(field => {
+                  const fieldValue = triggerCondition?.[field.id];
+                  return (
+                    <TriggerConditionField
+                      key={field.id}
+                      field={field}
+                      value={fieldValue}
+                      onChange={onChange}
+                    />
+                  );
+                })}
+            </div>
+            {fields
+              .filter(field => field.type === TRIGGER_FIELD_TYPES.MULTILINE_TEXT)
+              .map(field => {
+                const fieldValue = triggerCondition?.[field.id];
+                return (
+                  <TriggerConditionField
+                    key={field.id}
+                    field={field}
+                    value={fieldValue}
+                    onChange={onChange}
+                  />
+                );
+              })}
+          </>
+        ) : (
+          <>
+            <span className="text-sm text-gray-500 flex-shrink-0 pl-2">if</span>
+            {isTimeBased && <span className="text-sm">Time</span>}
+            {fields.map(field => {
+              const fieldValue = triggerCondition?.[field.id];
+              return (
+                <TriggerConditionField
+                  key={field.id}
+                  field={field}
+                  value={fieldValue}
+                  onChange={onChange}
+                />
+              );
+            })}
+          </>
+        )}
+      </div>
+      <div className="border-t border-gray-300 mt-2"></div>
+    </>
+  );
+};
