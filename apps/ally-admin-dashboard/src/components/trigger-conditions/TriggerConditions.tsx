@@ -10,6 +10,7 @@ interface TriggerConditionsProps {
   triggerCondition: any;
   sentences?: string[]; // Sentences field for SENTENCE_SIMILARITY events
   onChange: (field: string, value: string | number | string[]) => void;
+  isInTable?: boolean; // Flag to indicate if rendered in table (for styling adjustments)
 }
 
 export const TriggerConditions: React.FC<TriggerConditionsProps> = ({
@@ -17,6 +18,7 @@ export const TriggerConditions: React.FC<TriggerConditionsProps> = ({
   triggerCondition,
   sentences,
   onChange,
+  isInTable = false,
 }) => {
   if (!eventType) return null;
 
@@ -28,20 +30,27 @@ export const TriggerConditions: React.FC<TriggerConditionsProps> = ({
 
   return (
     <div className="flex flex-col">
-      {/* Label with horizontal grey line */}
-      <div className="flex items-center mb-2">
-        <span className="text-sm font-medium text-gray-600 mr-2">Trigger conditions</span>
-        <div className="flex-1 border-t border-gray-300"></div>
-      </div>
+      {/* Label with horizontal grey line - hide in table */}
+      {!isInTable && (
+        <div className="flex items-center mb-2">
+          <span className="text-sm font-medium text-gray-600 mr-2">Trigger conditions</span>
+          <div className="flex-1 border-t border-gray-300"></div>
+        </div>
+      )}
       <div className="flex items-start relative">
         <div className="flex-1">
           {eventType === "COMBINATION" ? (
-            <CombinationTriggerConditions triggerCondition={triggerCondition} onChange={onChange} />
+            <CombinationTriggerConditions
+              triggerCondition={triggerCondition}
+              onChange={onChange}
+              isInTable={isInTable}
+            />
           ) : (
             <StandardTriggerConditions
               eventType={eventType}
               triggerCondition={enhancedTriggerCondition}
               onChange={onChange}
+              isInTable={isInTable}
             />
           )}
         </div>

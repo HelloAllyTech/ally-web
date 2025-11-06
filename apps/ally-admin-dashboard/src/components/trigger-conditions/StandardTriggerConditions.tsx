@@ -9,12 +9,14 @@ interface StandardTriggerConditionsProps {
   eventType: EventType | string;
   triggerCondition: any;
   onChange: (field: string, value: string | number | string[]) => void;
+  isInTable?: boolean;
 }
 
 export const StandardTriggerConditions: React.FC<StandardTriggerConditionsProps> = ({
   eventType,
   triggerCondition,
   onChange,
+  isInTable = false,
 }) => {
   const config = getTriggerConditionConfig(eventType);
   if (!config) return null;
@@ -28,16 +30,20 @@ export const StandardTriggerConditions: React.FC<StandardTriggerConditionsProps>
       <div
         className={`relative ${isSentenceSimilarity ? "flex items-start" : "flex items-center"} gap-2`}
       >
-        {/* Vertical blue line - full height for sentence similarity */}
-        <div
-          className={`absolute left-0 top-0 bottom-0 w-[1px] bg-blue-500 ${
-            isSentenceSimilarity ? "" : "h-8"
-          }`}
-        ></div>
+        {/* Vertical blue line - hide in table */}
+        {!isInTable && (
+          <div
+            className={`absolute left-0 top-0 bottom-0 w-[1px] bg-blue-500 ${
+              isSentenceSimilarity ? "" : "h-8"
+            }`}
+          ></div>
+        )}
         {isSentenceSimilarity ? (
           <>
-            <div className="flex items-center gap-2 pl-2 flex-shrink-0">
-              <span className="text-sm text-gray-500 flex-shrink-0 pl-2">if</span>
+            <div className={`flex items-center gap-2 ${isInTable ? "" : "pl-2"} flex-shrink-0`}>
+              <span className={`text-sm text-gray-500 flex-shrink-0 ${isInTable ? "" : "pl-2"}`}>
+                if
+              </span>
               {fields
                 .filter(field => field.type !== TRIGGER_FIELD_TYPES.MULTILINE_TEXT)
                 .map(field => {
@@ -48,6 +54,7 @@ export const StandardTriggerConditions: React.FC<StandardTriggerConditionsProps>
                       field={field}
                       value={fieldValue}
                       onChange={onChange}
+                      isInTable={isInTable}
                     />
                   );
                 })}
@@ -62,13 +69,16 @@ export const StandardTriggerConditions: React.FC<StandardTriggerConditionsProps>
                     field={field}
                     value={fieldValue}
                     onChange={onChange}
+                    isInTable={isInTable}
                   />
                 );
               })}
           </>
         ) : (
           <>
-            <span className="text-sm text-gray-500 flex-shrink-0 pl-2">if</span>
+            <span className={`text-sm text-gray-500 flex-shrink-0 ${isInTable ? "" : "pl-2"}`}>
+              if
+            </span>
             {isTimeBased && <span className="text-sm">Time</span>}
             {fields.map(field => {
               const fieldValue = triggerCondition?.[field.id];
@@ -78,13 +88,14 @@ export const StandardTriggerConditions: React.FC<StandardTriggerConditionsProps>
                   field={field}
                   value={fieldValue}
                   onChange={onChange}
+                  isInTable={isInTable}
                 />
               );
             })}
           </>
         )}
       </div>
-      <div className="border-t border-gray-300 mt-2"></div>
+      {!isInTable && <div className="border-t border-gray-300 mt-2"></div>}
     </>
   );
 };

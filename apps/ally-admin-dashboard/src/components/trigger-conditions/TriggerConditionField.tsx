@@ -18,12 +18,14 @@ interface TriggerConditionFieldProps {
   };
   value: any;
   onChange: (fieldId: string, value: any) => void;
+  isInTable?: boolean;
 }
 
 export const TriggerConditionField: React.FC<TriggerConditionFieldProps> = ({
   field,
   value,
   onChange,
+  isInTable = false,
 }) => {
   const fieldValue = value ?? field.defaultValue;
 
@@ -73,6 +75,25 @@ export const TriggerConditionField: React.FC<TriggerConditionFieldProps> = ({
       case TRIGGER_FIELD_TYPES.MULTILINE_TEXT: {
         const sentencesArray = Array.isArray(fieldValue) ? fieldValue : [];
         const sentencesText = sentencesArray.join("\n");
+
+        // In table mode, use single-line input instead of textarea
+        if (isInTable) {
+          return (
+            <div className="flex-1">
+              <input
+                type="text"
+                value={sentencesText}
+                onChange={e => {
+                  // For single-line input, treat as single sentence
+                  onChange(field.id, e.target.value ? [e.target.value] : []);
+                }}
+                placeholder={field.placeholder}
+                className="px-3 py-2 text-sm border-[0.5px] border-gray-300 bg-white focus:outline-none focus:border-blue-500 h-6 rounded-sm w-full"
+              />
+            </div>
+          );
+        }
+
         return (
           <div className="flex-1">
             <AutoExpandableTextarea

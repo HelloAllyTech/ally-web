@@ -13,6 +13,34 @@ export const DEFAULT_SIMULATION_STATUS_OPTIONS = [
 
 export const SPEAKER_OPTIONS = [{ value: "CARE_GIVER", label: "Care giver" }];
 
+export const EVENT_TYPE_OPTIONS = [
+  { value: "TIME_BASED", label: "Time Based" },
+  { value: "SCORE_BASED", label: "Score Based" },
+  { value: "SENTENCE_SIMILARITY", label: "Sentence Similarity" },
+  { value: "COMBINATION", label: "Combination" },
+];
+
+export const TIME_CONDITION_OPTIONS = [
+  { value: "EXACT", label: "Exact" },
+  { value: "GREATER_THAN", label: "Greater than" },
+  { value: "LESS_THAN", label: "Less than" },
+];
+
+export const SCORE_CONDITION_OPTIONS = [
+  { value: "GREATER_THAN", label: "Greater than" },
+  { value: "LESS_THAN", label: "Less than" },
+];
+
+export const COMBINE_TIME_SCORE_OPTIONS = [
+  { value: "AND", label: "AND" },
+  { value: "OR", label: "OR" },
+];
+
+export const YES_NO_OPTIONS = [
+  { value: "Yes", label: "Yes" },
+  { value: "No", label: "No" },
+];
+
 export const GENDER_OPTIONS = [
   { value: "male", label: "Male" },
   { value: "female", label: "Female" },
@@ -287,6 +315,14 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: SimulationCreatorFieldGroups[] = [
 
 export const EVENT_MANAGEMENT_TABLE_COLUMNS = [
   {
+    id: "detectionType",
+    label: "Event type",
+    accessor: "detectionType",
+    dataType: cellTypes.dropdown,
+    options: EVENT_TYPE_OPTIONS,
+    minWidth: 150,
+  },
+  {
     id: "name",
     label: "Event name",
     accessor: "name",
@@ -295,28 +331,59 @@ export const EVENT_MANAGEMENT_TABLE_COLUMNS = [
     minWidth: 180,
   },
   {
-    id: "detectionType",
-    label: "Event Type",
-    accessor: "detectionType",
-    dataType: cellTypes.normalText,
-    minWidth: 180,
+    id: "triggerConditions",
+    label: "Trigger conditions",
+    accessor: "triggerConditions",
+    dataType: cellTypes.triggerConditions,
+    minWidth: 400,
   },
   {
-    id: "speaker",
-    label: "Speaker",
-    accessor: "speaker",
+    id: "timeDependent",
+    label: "Time dependent",
+    accessor: "timeDependent",
     dataType: cellTypes.dropdown,
-    options: SPEAKER_OPTIONS,
-    minWidth: 150,
+    options: YES_NO_OPTIONS,
+    minWidth: 130,
   },
   {
-    id: "description",
-    label: "Event description",
-    accessor: "description",
-    placeholder: "Add Description",
+    id: "sessionTime",
+    label: "Session time",
+    accessor: "sessionTime",
+    placeholder: "00:20:00",
     dataType: cellTypes.editableText,
-    options: [],
-    minWidth: 240,
+    minWidth: 120,
+  },
+  {
+    id: "timeCondition",
+    label: "Time condition",
+    accessor: "timeCondition",
+    dataType: cellTypes.dropdown,
+    options: TIME_CONDITION_OPTIONS,
+    minWidth: 140,
+  },
+  {
+    id: "scoreDependent",
+    label: "Score dependent",
+    accessor: "scoreDependent",
+    dataType: cellTypes.dropdown,
+    options: YES_NO_OPTIONS,
+    minWidth: 130,
+  },
+  {
+    id: "scoreCondition",
+    label: "Score condition",
+    accessor: "scoreCondition",
+    dataType: cellTypes.dropdown,
+    options: SCORE_CONDITION_OPTIONS,
+    minWidth: 140,
+  },
+  {
+    id: "combineTimeScore",
+    label: "Combine time & score",
+    accessor: "combineTimeScore",
+    dataType: cellTypes.dropdown,
+    options: COMBINE_TIME_SCORE_OPTIONS,
+    minWidth: 160,
   },
   {
     id: "branchInstruction",
@@ -333,7 +400,7 @@ export const EVENT_MANAGEMENT_TABLE_COLUMNS = [
     accessor: "score",
     dataType: cellTypes.number,
     options: [],
-    minWidth: 170,
+    minWidth: 200,
   },
   {
     id: "message",
@@ -350,7 +417,7 @@ export const EVENT_MANAGEMENT_TABLE_COLUMNS = [
     accessor: "emoji",
     dataType: cellTypes.emoji_select,
     options: [],
-    minWidth: 130,
+    minWidth: 200,
   },
 ];
 

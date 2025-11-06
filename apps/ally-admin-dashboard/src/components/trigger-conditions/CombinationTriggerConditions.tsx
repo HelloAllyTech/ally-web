@@ -9,11 +9,13 @@ import { TriggerConditionDropdown } from "./TriggerConditionDropdown";
 interface CombinationTriggerConditionsProps {
   triggerCondition: any;
   onChange: (field: string, value: string | number | string[]) => void;
+  isInTable?: boolean;
 }
 
 export const CombinationTriggerConditions: React.FC<CombinationTriggerConditionsProps> = ({
   triggerCondition,
   onChange,
+  isInTable = false,
 }) => {
   // Fetch events for combination event dropdowns
   const { data: eventsData } = useGetSessionEventsQuery({
@@ -69,10 +71,11 @@ export const CombinationTriggerConditions: React.FC<CombinationTriggerConditions
     <>
       <div className="flex flex-col gap-2">
         <div className="relative flex flex-col gap-2">
-          <div className="absolute left-0 top-0 bottom-0 w-[1px] bg-blue-500"></div>
+          {/* Vertical blue line - hide in table */}
+          {!isInTable && <div className="absolute left-0 top-0 bottom-0 w-[1px] bg-blue-500"></div>}
           <div className="flex flex-col gap-2">
             {displayConditions.map((condition, index) => (
-              <div key={index} className="flex items-center gap-2 pl-3">
+              <div key={index} className={`flex items-center gap-2 ${isInTable ? "" : "pl-3"}`}>
                 {index === 0 ? (
                   <span className="text-sm text-gray-500">if</span>
                 ) : (
@@ -113,7 +116,7 @@ export const CombinationTriggerConditions: React.FC<CombinationTriggerConditions
           </div>
         </div>
       </div>
-      <div className="border-t border-gray-300 mt-2"></div>
+      {!isInTable && <div className="border-t border-gray-300 mt-2"></div>}
     </>
   );
 };
