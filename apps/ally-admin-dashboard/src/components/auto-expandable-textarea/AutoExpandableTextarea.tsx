@@ -8,6 +8,7 @@ export interface AutoExpandableTextareaProps {
   width?: number | string;
   className?: string;
   minHeight?: number;
+  minWidth?: number;
   maxLines?: number;
   onKeyDown?: (event: React.KeyboardEvent<HTMLTextAreaElement>) => void;
   onBlur?: (event: React.FocusEvent<HTMLTextAreaElement>) => void;
@@ -22,6 +23,7 @@ export const AutoExpandableTextarea: React.FC<AutoExpandableTextareaProps> = ({
   width,
   className = "",
   minHeight = 50,
+  minWidth = 100,
   maxLines = 20,
   onKeyDown,
   onBlur,
@@ -63,7 +65,7 @@ export const AutoExpandableTextarea: React.FC<AutoExpandableTextareaProps> = ({
     <textarea
       ref={textareaRef}
       value={value}
-      style={{ width: width }}
+      style={{ width, minWidth }}
       onChange={handleChange}
       onKeyDown={onKeyDown}
       onBlur={onBlur}

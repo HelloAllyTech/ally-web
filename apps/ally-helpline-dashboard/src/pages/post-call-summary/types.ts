@@ -60,6 +60,7 @@ export interface CallSummaryProps {
   refetchCallLogs?: () => void;
   isInSidebar?: boolean;
   headerContent?: React.ReactNode;
+  canEditSummary?: boolean;
 }
 
 export interface SummaryLoadingProps {

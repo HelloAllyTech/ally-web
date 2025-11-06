@@ -25,6 +25,7 @@ const CallSummarySidebar: FC<CallSummarySidebarProps> = ({
   callSummary,
   refetchCallLogs,
   setCallSummary,
+  canEditSummary = true,
 }) => {
   const { permissions } = useSelector((state: RootState) => state.user);
 
@@ -163,12 +164,15 @@ const CallSummarySidebar: FC<CallSummarySidebarProps> = ({
               summaryName={summaryName}
               setSummaryName={setSummaryName}
               chatId={callSummary.id}
+              canEditSummary={canEditSummary}
+              counsellorId={callSummary.counselorId}
             />
           }
           className="max-h-[calc(100vh-320px)]"
           chatId={callSummary.id}
           postProcess={refetchCallLogs}
           isInSidebar={true}
+          canEditSummary={canEditSummary}
         />
       ),
     },
