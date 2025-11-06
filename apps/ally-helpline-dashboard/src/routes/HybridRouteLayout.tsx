@@ -2,12 +2,16 @@ import { FC } from "react";
 
 import { Outlet } from "react-router-dom";
 
-import { useAutoActiveCallRedirect } from "@hooks";
+import { useAutoActiveCallRedirect, useUser } from "@hooks";
 
 import { NavbarWrapper } from "./components";
 
 const HybridRouteLayout: FC = () => {
-  useAutoActiveCallRedirect();
+  const { isAuthenticated } = useUser();
+
+  if (isAuthenticated) {
+    useAutoActiveCallRedirect();
+  }
 
   return (
     <NavbarWrapper>

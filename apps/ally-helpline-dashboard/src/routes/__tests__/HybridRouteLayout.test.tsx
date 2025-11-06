@@ -14,9 +14,19 @@ vi.mock("react-router-dom", async importOriginal => {
   };
 });
 
-// Mock useAutoActiveCallRedirect hook
+// Mock hooks
 vi.mock("@hooks", () => ({
   useAutoActiveCallRedirect: vi.fn(),
+  useUser: vi.fn(() => ({
+    isAuthenticated: true,
+    user: null,
+    availableChatTypes: [],
+    permissions: [],
+    checkAuth: vi.fn(),
+    logout: vi.fn(),
+    isAuthLoading: false,
+    setUser: vi.fn(),
+  })),
 }));
 
 // Mock NavbarWrapper

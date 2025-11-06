@@ -123,13 +123,11 @@ vi.mock("../components", () => ({
 vi.mock("@constants", () => ({
   CallProvider: {
     EXOTEL: "exotel",
-    EXOTEL_CONFERENCE_CALL: "exotel_conference_call",
     MICROPHONE: "microphone",
   },
   CallType: {
     INBOUND: "inbound",
     OUTBOUND: "outbound",
-    WEBRTC_CHAT: "webrtc_chat",
     MICROPHONE_CHAT: "microphone_chat",
   },
   ROUTES: {
