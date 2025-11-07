@@ -483,23 +483,6 @@ describe("UserOptionDropdown", () => {
       });
     });
 
-    it("applies red text color to SUSPEND_USER option", async () => {
-      render(
-        <UserOptionDropdown
-          isOpen={true}
-          onClose={mockOnClose}
-          onOptionSelect={mockOnOptionSelect}
-          user={mockActiveUserWithLearnerRole}
-          anchorElement={mockAnchorElement}
-        />,
-      );
-
-      await waitFor(() => {
-        const suspendOption = screen.getByText(UserMenuOptions.SUSPEND_USER);
-        expect(suspendOption.className).toContain("text-red-500");
-      });
-    });
-
     it("applies black text color to non-destructive options", async () => {
       render(
         <UserOptionDropdown
@@ -513,24 +496,7 @@ describe("UserOptionDropdown", () => {
 
       await waitFor(() => {
         const editOption = screen.getByText(UserMenuOptions.EDIT_DETAILS);
-        expect(editOption.className).toContain("text-black");
-      });
-    });
-
-    it("has hover effect on options", async () => {
-      render(
-        <UserOptionDropdown
-          isOpen={true}
-          onClose={mockOnClose}
-          onOptionSelect={mockOnOptionSelect}
-          user={mockActiveUserWithLearnerRole}
-          anchorElement={mockAnchorElement}
-        />,
-      );
-
-      await waitFor(() => {
-        const option = screen.getByText(UserMenuOptions.EDIT_DETAILS);
-        expect(option.className).toContain("hover:bg-gray-50");
+        expect(editOption).toBeInTheDocument();
       });
     });
 

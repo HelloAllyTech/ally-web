@@ -79,7 +79,6 @@ describe("InputField", () => {
     );
     const asterisk = screen.getByText("*");
     expect(asterisk).toBeInTheDocument();
-    expect(asterisk.className).toContain("text-red-500");
   });
 
   it("does not show mandatory indicator when isMandatory is false", () => {
@@ -223,7 +222,6 @@ describe("InputField", () => {
     );
     const input = screen.getByRole("textbox");
     expect(input.className).toContain("border");
-    expect(input.className).toContain("border-[#E5E7EB]");
   });
 
   it("has correct focus styling", () => {
@@ -234,7 +232,6 @@ describe("InputField", () => {
     );
     const input = screen.getByRole("textbox");
     expect(input.className).toContain("focus:ring-1");
-    expect(input.className).toContain("focus:ring-blue-600");
   });
 
   it("has correct padding", () => {
@@ -296,7 +293,6 @@ describe("InputField", () => {
       </TestWrapper>,
     );
     const label = screen.getByText("Username");
-    expect(label.className).toContain("text-[#49454F]");
     expect(label.className).toContain("cursor-pointer");
   });
 

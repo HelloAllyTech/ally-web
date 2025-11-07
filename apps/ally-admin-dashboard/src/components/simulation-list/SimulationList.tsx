@@ -33,7 +33,7 @@ export const SimulationList: React.FC<SimulationListProps> = ({
       : onUnarchive?.(simulation);
 
   const tableHeader = (
-    <div className="hidden md:flex flex-row items-center justify-between w-full text-[13px] text-gray-500 border-b border-gray-200 px-4 py-2">
+    <div className="hidden md:flex flex-row items-center justify-between w-full text-sm text-text-500 border-b border-border-light px-4 py-2">
       <div className="w-[50%] lg:w-[39%]">{en.simulation.simulation}</div>
       <div className="w-[12%] lg:w-[11%] px-4" />
       <div className="hidden lg:block w-[10%] px-4">{en.simulation.createdBy}</div>
@@ -95,12 +95,12 @@ export const SimulationList: React.FC<SimulationListProps> = ({
     return (
       <div
         key={simulation.id}
-        className="group flex flex-row  text-[13px] items-center justify-between w-full text-gray-600 border-b border-gray-200 px-4 py-3 hover:shadow-sm hover:bg-gray-100 transition-shadow"
+        className="group flex flex-row  text-sm items-center justify-between w-full text-text-700 border-b border-border-light px-4 py-3 hover:shadow-sm hover:bg-neutral-100 transition-shadow"
       >
         {/* Simulation Image */}
         <div
           onClick={() => showPreview(simulation) && onPreview?.(simulation)}
-          className="w-[18%] md:w-[10%] lg:w-[7%] h-[56px] cursor-pointer rounded-lg overflow-hidden flex-shrink-0 bg-gray-100"
+          className="w-[18%] md:w-[10%] lg:w-[7%] h-[56px] cursor-pointer rounded-lg overflow-hidden flex-shrink-0 bg-neutral-100"
         >
           <CustomImage
             src={simulation.coverImageUrl}
@@ -114,8 +114,8 @@ export const SimulationList: React.FC<SimulationListProps> = ({
           onClick={() => showPreview(simulation) && onPreview?.(simulation)}
           className="flex flex-col justify-between align-middle min-h-[55px] w-[44%] md:w-[40%] lg:w-[33%] px-4 py-1 cursor-pointer overflow-x-hidden"
         >
-          <h3 className="text-[13px]">{simulation.title}</h3>
-          <div className="text-gray-500 leading-relaxed line-clamp-2">
+          <h3 className="text-sm text-text-700">{simulation.title}</h3>
+          <div className="text-text-500 leading-relaxed line-clamp-2">
             {simulation?.description}
           </div>
         </div>
@@ -138,7 +138,7 @@ export const SimulationList: React.FC<SimulationListProps> = ({
         {/* Status */}
         <div className={`w-[16%] md:w-[12%] lg:w-[10%] flex items-center overflow-x-hidden`}>
           <div
-            className={`w-auto py-1 rounded-[4px] px-2 text-[13px] ${getSimulationStatusColor(simulation.status)}`}
+            className={`w-auto py-1 rounded-[4px] px-2 text-sm ${getSimulationStatusColor(simulation.status)}`}
           >
             {simulation.status === SimulationStatus.ACTIVE
               ? formatCapitalizedEnum(SimulationStatus.PUBLISHED)
@@ -162,7 +162,7 @@ export const SimulationList: React.FC<SimulationListProps> = ({
               <span>Preview</span>
             </button>
           ) : (
-            <span className="text-gray-400">-</span>
+            <span className="text-text-400">-</span>
           )}
         </div>
       </div>
@@ -170,7 +170,7 @@ export const SimulationList: React.FC<SimulationListProps> = ({
   };
 
   return (
-    <div className="flex flex-col w-full overflow-x-auto font-['IBM_Plex_Serif'] overflow-y-scroll h-[calc(100vh-140px)]">
+    <div className="flex flex-col w-full overflow-x-auto font-primary overflow-y-scroll h-[calc(100vh-140px)]">
       {tableHeader}
       {simulations?.map(simulation => renderSimutionCard(simulation))}
       {footer}

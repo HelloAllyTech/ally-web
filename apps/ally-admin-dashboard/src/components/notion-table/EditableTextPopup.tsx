@@ -12,7 +12,6 @@ export const EditableTextPopup: React.FC<EditableTextPopupProps> = ({
   placeholder = "Click to edit",
   disabled = false,
   width = 100,
-  minWidth = 100,
   className = "",
 }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -70,13 +69,13 @@ export const EditableTextPopup: React.FC<EditableTextPopupProps> = ({
   const isPlaceholder = !value;
 
   return (
-    <div className={`${className}`} style={{ width, minWidth }}>
+    <div className={`${className}`} style={{ width: width }}>
       <div
         onClick={handleTextClick}
         className={`
           cursor-pointer max-h-[36px] overflow-hidden max-w-[calc(100%-20px)]
-          ${disabled ? "cursor-not-allowed opacity-50" : "hover:bg-gray-50"}
-          ${isPlaceholder ? "text-gray-400" : ""}
+          ${disabled ? "cursor-not-allowed opacity-50" : "hover:bg-background-secondary"}
+          ${isPlaceholder ? "text-text-400" : ""}
         `}
       >
         {disabled ? (
@@ -97,14 +96,13 @@ export const EditableTextPopup: React.FC<EditableTextPopupProps> = ({
           <AutoExpandableTextarea
             value={editValue}
             width={width}
-            minWidth={minWidth}
             autoFocus={true}
             onChange={setEditValue}
             onKeyDown={handleKeyDown}
             onBlur={handleSave}
             placeholder={placeholder}
             disabled={disabled}
-            className="w-full py-1 px-2 border border-blue-500 rounded focus:outline-none disabled:bg-gray-100 disabled:text-gray-500 resize-none overflow-y-auto [&::-webkit-scrollbar]:w-[1px] [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-gray-400"
+            className="w-full py-1 px-2 border border-primary rounded focus:outline-none disabled:bg-neutral-100 disabled:text-text-500 resize-none overflow-y-auto [&::-webkit-scrollbar]:w-[1px] [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-scrollbar-thumb"
           />
         </div>
       )}

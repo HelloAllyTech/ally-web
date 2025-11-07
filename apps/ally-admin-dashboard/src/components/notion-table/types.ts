@@ -5,7 +5,6 @@ export interface EditableTextPopupProps {
   disabled?: boolean;
   className?: string;
   width?: number;
-  minWidth?: number;
 }
 
 export interface EditableTextPopupState {

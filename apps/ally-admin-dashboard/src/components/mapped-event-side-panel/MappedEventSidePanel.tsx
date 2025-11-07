@@ -45,12 +45,12 @@ interface FieldProps {
 
 const Field: React.FC<FieldProps> = ({ label, children, multiline = false }) => (
   <div
-    className={`flex flex-row min-h-[40px] ${multiline ? "items-start" : "items-center"} text-[14px] justify-between`}
+    className={`flex flex-row min-h-[40px] ${multiline ? "items-start" : "items-center"} text-base justify-between`}
   >
     <div className={`w-[40%] ${multiline && "mt-[8px]"}`}>
-      <span className="text-sm font-medium text-gray-600">{label}</span>
+      <span className="text-sm font-medium text-text-500">{label}</span>
     </div>
-    <div className="w-[60%] flex text-left justify-start text-gray-800">{children}</div>
+    <div className="w-[60%] flex text-left justify-start text-neutral-800">{children}</div>
   </div>
 );
 
@@ -63,7 +63,7 @@ const PanelHeader: React.FC<{
   <div className="flex items-center justify-between p-6">
     <button
       onClick={onClose}
-      className="flex flex-row items-center justify-center gap-2 text-gray-600 hover:text-gray-800"
+      className="flex flex-row items-center justify-center gap-2 text-text-500 hover:text-neutral-800"
     >
       <span className="inline-flex w-[14px] h-[14px]">
         <DoubleArrowRight />
@@ -111,9 +111,9 @@ const EventDropdown: React.FC<{
       <button
         type="button"
         onClick={onToggle}
-        className="text-2xl font-light w-full text-left flex items-center justify-start hover:text-gray-600 transition-colors"
+        className="text-2xl font-light w-full text-left flex items-center justify-start hover:text-text-500 transition-colors"
       >
-        <span className={selectedEventName === "Select an event" ? "text-gray-400" : ""}>
+        <span className={selectedEventName === "Select an event" ? "text-text-400" : ""}>
           {selectedEventName}
         </span>
         <span className="ml-2 inline-flex w-[12px] h-[12px]">
@@ -121,14 +121,14 @@ const EventDropdown: React.FC<{
         </span>
       </button>
       {isOpen && (
-        <div className="absolute z-10 bg-white border border-gray-300 min-w-[300px] max-h-[300px] overflow-y-auto rounded-[6px] left-0 top-[40px] shadow-lg">
+        <div className="absolute z-10 bg-white border border-border-light min-w-[300px] max-h-[300px] overflow-y-auto rounded-[6px] left-0 top-[40px] shadow-lg">
           <div className="sticky top-0 bg-white p-2 border-b">
             <input
               ref={inputRef}
               value={query}
               onChange={e => setQuery(e.target.value)}
               placeholder="Search events"
-              className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-100 text-sm"
+              className="w-full px-3 py-2 border border-border-light rounded focus:outline-none focus:ring-2 focus:ring-primary-100 text-sm"
               type="text"
             />
           </div>
@@ -137,13 +137,13 @@ const EventDropdown: React.FC<{
               <div
                 key={option.value}
                 onClick={() => onSelect(option.value)}
-                className="px-4 py-3 cursor-pointer hover:bg-blue-50 transition-colors"
+                className="px-4 py-3 cursor-pointer hover:bg-primary-50 transition-colors"
               >
                 <span className="text-sm">{option.label}</span>
               </div>
             ))
           ) : (
-            <div className="px-4 py-3 text-sm text-gray-500">No results</div>
+            <div className="px-4 py-3 text-sm text-text-500">No results</div>
           )}
         </div>
       )}
@@ -163,7 +163,7 @@ const FormTextarea: React.FC<{
     value={value}
     onChange={onChange}
     placeholder={placeholder}
-    className="py-2 pt-[16px] px-0 border-none disabled:bg-transparent focus:outline-none text-sm w-full resize-none overflow-y-auto [&::-webkit-scrollbar]:w-[1px] [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-gray-400"
+    className="py-2 pt-[16px] px-0 border-none disabled:bg-transparent focus:outline-none text-sm w-full resize-none overflow-y-auto [&::-webkit-scrollbar]:w-[1px] [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-scrollbar-thumb"
     disabled={disabled}
   />
 );
@@ -309,7 +309,7 @@ export const MappedEventSidePanel: React.FC<MappedEventSidePanelProps> = ({
     <div className="fixed inset-0 z-50 flex">
       <div className="flex-1 bg-black bg-opacity-50" onClick={onClose} />
 
-      <div className="w-[50%] min-w-[700px] bg-white shadow-xl border-l-[1px] border-gray-300">
+      <div className="w-[50%] min-w-[700px] bg-white shadow-xl border-l-[1px] border-border-light">
         <PanelHeader
           eventId={selectedEvent?.id?.value || ""}
           onClose={onClose}
@@ -317,7 +317,7 @@ export const MappedEventSidePanel: React.FC<MappedEventSidePanelProps> = ({
           hasEvent={!!selectedEvent}
         />
 
-        <div className="h-[calc(100vh-100px)] px-10 pl-[46px] pt-2 overflow-y-auto [&::-webkit-scrollbar]:w-[1px] [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-gray-400">
+        <div className="h-[calc(100vh-100px)] px-10 pl-[46px] pt-2 overflow-y-auto [&::-webkit-scrollbar]:w-[1px] [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-scrollbar-thumb">
           <div className="mb-4">
             {isNewEvent ? (
               <EventDropdown

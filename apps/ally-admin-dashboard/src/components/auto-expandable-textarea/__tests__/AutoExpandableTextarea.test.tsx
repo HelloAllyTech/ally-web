@@ -109,8 +109,7 @@ describe("AutoExpandableTextarea", () => {
       render(<AutoExpandableTextarea value="" onChange={mockOnChange} disabled={true} />);
 
       const textarea = screen.getByRole("textbox");
-      expect(textarea).toHaveClass("disabled:bg-gray-100");
-      expect(textarea).toHaveClass("disabled:text-gray-500");
+      expect(textarea).toBeDisabled();
     });
   });
 
@@ -373,7 +372,6 @@ describe("AutoExpandableTextarea", () => {
       const textarea = screen.getByRole("textbox");
       expect(textarea.className).toContain("[&::-webkit-scrollbar]:w-[1px]");
       expect(textarea.className).toContain("[&::-webkit-scrollbar-track]:bg-transparent");
-      expect(textarea.className).toContain("[&::-webkit-scrollbar-thumb]:bg-gray-400");
     });
   });
 

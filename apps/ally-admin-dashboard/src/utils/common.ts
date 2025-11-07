@@ -84,29 +84,29 @@ export const formatCapitalizedEnum = (str: string | UserRoles) => {
 export const getButtonStyles = (variant: ButtonProps["variant"]) => {
   switch (variant) {
     case ButtonVariant.DESTRUCTIVE:
-      return "bg-[#F93535] text-[#FFFFFF] hover:bg-destructive/90 disabled:bg-destructive/50";
+      return "bg-destructive text-white hover:bg-destructive/90 disabled:bg-destructive/50";
     case ButtonVariant.SECONDARY:
-      return "border border-[#C8C5D0] hover:bg-accent hover:text-accent-foreground disabled:bg-accent/50 text-gray-800";
+      return "border border-secondary hover:bg-accent hover:text-accent-foreground disabled:bg-accent/50 text-text-700";
     case ButtonVariant.ICON:
       return "bg-transparent border-none hover:bg-transparent disabled:bg-transparent !p-2 !h-fit";
     case ButtonVariant.TEXT:
       return "bg-transparent border-none hover:bg-transparent disabled:bg-transparent";
     case ButtonVariant.PRIMARY:
     default:
-      return "bg-[#0957D0] text-[#FFFFFF] hover:bg-primary/90 disabled:bg-primary/50";
+      return "bg-primary text-white hover:bg-primary/90 disabled:bg-primary/50";
   }
 };
 
 export const getSimulationStatusColor = (status: Simulation["status"]) => {
   switch (status) {
     case SimulationStatus.ACTIVE:
-      return "bg-[#C8E6C9] text-[#18441B]";
+      return "bg-success-100 text-success-darkText";
     case SimulationStatus.DRAFT:
-      return "bg-[#EEEEEE] text-[#424242]";
+      return "bg-neutral-200 text-neutral";
     case SimulationStatus.ARCHIVED:
-      return "bg-[#FFE0B2] text-[#662400]";
+      return "bg-warning-100 text-warning-text";
     default:
-      return "bg-gray-100 text-gray-800";
+      return "bg-neutral-100 text-neutral-800";
   }
 };
 

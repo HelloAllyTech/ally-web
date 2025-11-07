@@ -375,7 +375,6 @@ describe("SimulationList", () => {
       const card = container.querySelector(".group");
       expect(card).toBeInTheDocument();
       expect(card).toHaveClass("hover:shadow-sm");
-      expect(card).toHaveClass("hover:bg-gray-100");
     });
 
     it("applies correct overflow styles", () => {

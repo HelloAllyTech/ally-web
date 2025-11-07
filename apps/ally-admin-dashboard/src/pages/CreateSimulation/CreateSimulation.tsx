@@ -278,8 +278,8 @@ export const CreateSimulation: FC = () => {
   const renderStep = (title: string, component: React.ReactNode) => {
     return (
       <div className="flex flex-col h-full w-100%">
-        <div className="sticky flex flex-row justify-between top-0 z-10 pt-3 mx-6 pb-4 border-b border-gray-200">
-          <h2 className="text-[18px] font-medium text-gray-900">{title}</h2>
+        <div className="sticky flex flex-row justify-between top-0 z-10 pt-3 mx-6 pb-4 border-b border-border-light">
+          <h2 className="text-lg font-medium text-text-900">{title}</h2>
         </div>
         <div ref={containerRef} className="p-6 pt-4 overflow-y-auto h-full">
           {component}
@@ -340,7 +340,7 @@ export const CreateSimulation: FC = () => {
   };
 
   return (
-    <div className="h-[100vh] overflow-hidden font-['IBM_Plex_Serif'] ml-[-10px] lg:ml-0">
+    <div className="h-[100vh] overflow-hidden font-primary ml-[-10px] lg:ml-0">
       <Header
         isValid={areAllMandatoryFieldsFilled}
         onBack={handlePageBack}

@@ -55,10 +55,10 @@ export const DropdownwithTag: React.FC<dropdownWithTagProps> = ({
   return (
     <>
       {initialValue.length > 0 && (
-        <div className="flex gap-1 text-[14px] text-gray-800">
+        <div className="flex gap-1 text-base text-neutral-800">
           {en.userManagement.currentRoles}
           {initialValue.map((roleName, index) => (
-            <span key={roleName} className="text-gray-600">
+            <span key={roleName} className="text-text-500">
               {formatCapitalizedEnum(roleName)}
               {index < initialValue.length - 1 ? ", " : ""}
             </span>
@@ -67,19 +67,19 @@ export const DropdownwithTag: React.FC<dropdownWithTagProps> = ({
       )}
 
       <div className="w-full" ref={dropdownRef}>
-        <label className="block text-gray-800 mb-2  font-['IBM_Plex_Serif'] text-[14px]">
-          {label} {required && <span className="text-red-500">*</span>}
+        <label className="block text-neutral-800 mb-2 font-primary text-base">
+          {label} {required && <span className="text-destructive-500">*</span>}
         </label>
         <div className="relative">
           <div
-            className="border border-gray-200 rounded-md flex flex-wrap items-center gap-2 px-2 py-1 min-h-[40px] cursor-pointer"
+            className="border border-border-light rounded-md flex flex-wrap items-center gap-2 px-2 py-1 min-h-[40px] cursor-pointer"
             onClick={() => setOpen(!open)}
           >
             {value.length > 0 ? (
               value.map(roleName => (
                 <span
                   key={roleName}
-                  className="flex items-center bg-gray-100 text-gray-700 pl-3 rounded-full text-[14px]  font-['IBM_Plex_Serif']"
+                  className="flex items-center bg-neutral-100 text-text-700 pl-3 rounded-full text-base font-primary"
                 >
                   {formatCapitalizedEnum(roleName)}
                   <button className="px-2" onClick={e => handleClose(e, roleName)}>
@@ -88,10 +88,10 @@ export const DropdownwithTag: React.FC<dropdownWithTagProps> = ({
                 </span>
               ))
             ) : (
-              <span className="text-gray-400 text-sm  font-['IBM_Plex_Serif']">{placeholder}</span>
+              <span className="text-text-400 text-sm font-primary">{placeholder}</span>
             )}
 
-            <div className="ml-auto text-gray-500">
+            <div className="ml-auto text-text-500">
               <ArrowSolid />
             </div>
           </div>
@@ -105,7 +105,7 @@ export const DropdownwithTag: React.FC<dropdownWithTagProps> = ({
                 return (
                   <div
                     key={role.id || role.value}
-                    className={`px-3 py-2 text-sm cursor-pointer ${isSelected ? "bg-gray-100" : ""}`}
+                    className={`px-3 py-2 text-sm cursor-pointer ${isSelected ? "bg-neutral-100" : ""}`}
                     onClick={() => toggleRole(role)}
                   >
                     {formatCapitalizedEnum(roleName)}

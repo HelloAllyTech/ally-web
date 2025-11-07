@@ -12,7 +12,7 @@ export const CustomImage: React.FC<CustomImageProps> = ({
   src,
   alt,
   className = "",
-  fallbackClassName = "w-full h-full flex items-center justify-center text-gray-400 bg-gray-100",
+  fallbackClassName = "w-full h-full flex items-center justify-center text-text-400 bg-neutral-100",
   fallbackText = "Image not available",
   containerClassName = "",
   loading = "lazy",

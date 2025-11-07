@@ -7,7 +7,7 @@ export const ToggleSwitch: React.FC<{
     type="button"
     onClick={() => onChange(!enabled)}
     className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none ${
-      enabled ? "bg-green-500" : "bg-gray-300"
+      enabled ? "bg-success-500" : "bg-neutral-300"
     }`}
     aria-label={label}
   >

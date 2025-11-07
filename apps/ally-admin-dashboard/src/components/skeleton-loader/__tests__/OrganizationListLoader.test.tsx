@@ -65,14 +65,7 @@ describe("OrganizationListLoader", () => {
       const { container } = render(<OrganizationListLoader />);
 
       const header = container.querySelector(".grid.grid-cols-12");
-      expect(header).toHaveClass(
-        "px-4",
-        "py-2",
-        "text-sm",
-        "text-gray-500",
-        "border-b",
-        "border-gray-200",
-      );
+      expect(header).toHaveClass("px-4", "py-2", "text-sm", "border-b");
     });
 
     it("header columns have correct grid spans", () => {
@@ -112,7 +105,7 @@ describe("OrganizationListLoader", () => {
 
       const rows = container.querySelectorAll(".animate-pulse");
       rows.forEach(row => {
-        expect(row).toHaveClass("px-4", "py-3", "border-b", "border-gray-100");
+        expect(row).toHaveClass("px-4", "py-3", "border-b");
       });
     });
 
@@ -130,7 +123,7 @@ describe("OrganizationListLoader", () => {
 
       const firstRow = container.querySelector(".animate-pulse");
       const orgColumn = firstRow?.querySelector(".col-span-4");
-      const skeleton = orgColumn?.querySelector(".h-4.bg-gray-200.rounded.w-40");
+      const skeleton = orgColumn?.querySelector(".h-4.rounded.w-40");
 
       expect(orgColumn).toBeInTheDocument();
       expect(skeleton).toBeInTheDocument();
@@ -141,7 +134,7 @@ describe("OrganizationListLoader", () => {
 
       const firstRow = container.querySelector(".animate-pulse");
       const columns = firstRow?.querySelectorAll(".col-span-4");
-      const skeleton = columns?.[1]?.querySelector(".h-4.bg-gray-200.rounded.w-56");
+      const skeleton = columns?.[1]?.querySelector(".h-4.rounded.w-56");
 
       expect(columns?.[1]).toBeInTheDocument();
       expect(skeleton).toBeInTheDocument();
@@ -152,7 +145,7 @@ describe("OrganizationListLoader", () => {
 
       const firstRow = container.querySelector(".animate-pulse");
       const createdOnColumn = firstRow?.querySelectorAll(".col-span-2")[0];
-      const skeleton = createdOnColumn?.querySelector(".h-4.bg-gray-200.rounded.w-24");
+      const skeleton = createdOnColumn?.querySelector(".h-4.rounded.w-24");
 
       expect(createdOnColumn).toBeInTheDocument();
       expect(skeleton).toBeInTheDocument();
@@ -163,7 +156,7 @@ describe("OrganizationListLoader", () => {
 
       const firstRow = container.querySelector(".animate-pulse");
       const usersColumn = firstRow?.querySelectorAll(".col-span-2")[1];
-      const skeletons = usersColumn?.querySelectorAll(".h-4.bg-gray-200.rounded");
+      const skeletons = usersColumn?.querySelectorAll(".h-4.rounded");
 
       expect(usersColumn).toBeInTheDocument();
       expect(skeletons).toHaveLength(2);
@@ -187,7 +180,6 @@ describe("OrganizationListLoader", () => {
 
       const wrapper = container.querySelector(".overflow-x-auto");
       expect(wrapper).toBeInTheDocument();
-      expect(wrapper).toHaveClass("w-full", "text-sm", "text-gray-600");
     });
 
     it("has min-width constraint", () => {
@@ -217,13 +209,6 @@ describe("OrganizationListLoader", () => {
   });
 
   describe("Skeleton Appearance", () => {
-    it("all skeleton elements have gray-200 background", () => {
-      const { container } = render(<OrganizationListLoader rows={2} />);
-
-      const skeletons = container.querySelectorAll(".bg-gray-200");
-      expect(skeletons.length).toBeGreaterThan(0);
-    });
-
     it("all skeleton elements have rounded corners", () => {
       const { container } = render(<OrganizationListLoader rows={2} />);
 

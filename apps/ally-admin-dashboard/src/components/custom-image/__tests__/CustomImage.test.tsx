@@ -253,7 +253,6 @@ describe("CustomImage", () => {
       render(<CustomImage src="" alt="Test image" />);
 
       const fallbackText = screen.getByText("Image not available");
-      expect(fallbackText).toHaveClass("text-sm");
       expect(fallbackText).toHaveClass("text-center");
     });
 

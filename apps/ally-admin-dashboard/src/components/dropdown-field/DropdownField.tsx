@@ -41,14 +41,14 @@ export const DropdownField: React.FC<DropdownFieldProps> = ({
             return (
               <>
                 <div
-                  className="w-full rounded border border-[#E5E7EB] px-3 py-2 bg-white text-sm cursor-pointer flex items-center justify-between focus-within:ring-1 focus-within:ring-blue-600"
+                  className="w-full rounded border border-border-light px-3 py-2 bg-white text-sm cursor-pointer flex items-center justify-between focus-within:ring-1 focus-within:ring-primary"
                   onClick={() => setIsOpen(prev => !prev)}
                 >
-                  <span className={selected ? "text-gray-900" : "text-gray-400"}>
+                  <span className={selected ? "text-text" : "text-text-400"}>
                     {selected ? selected.label : placeholder}
                   </span>
                   <span
-                    className={`text-gray-400 transition-transform ${isOpen ? "rotate-180" : ""}`}
+                    className={`text-text-400 transition-transform ${isOpen ? "rotate-180" : ""}`}
                   >
                     <ArrowSolid />
                   </span>
@@ -57,7 +57,7 @@ export const DropdownField: React.FC<DropdownFieldProps> = ({
                 {isOpen && (
                   <div className="absolute left-0 top-full mt-1 w-full bg-white border rounded-md shadow-lg max-h-[240px] overflow-auto z-10">
                     {options.length === 0 ? (
-                      <div className="px-3 py-2 text-sm text-gray-400">
+                      <div className="px-3 py-2 text-sm text-text-400">
                         {en.common.noOptionsAvailable}
                       </div>
                     ) : (
@@ -66,12 +66,12 @@ export const DropdownField: React.FC<DropdownFieldProps> = ({
                           key={opt.value}
                           className={`px-3 py-2 text-sm cursor-pointer transition-colors ${
                             opt.value === field.value
-                              ? "bg-blue-50 text-blue-600 font-medium"
-                              : "text-gray-700 hover:bg-gray-50"
+                              ? "bg-primary-50 text-primary font-medium"
+                              : "text-text-700 hover:bg-background-secondary"
                           }`}
                           onClick={() => handleSelect(field, opt.value)}
                         >
-                          <div className="flex items-center justify-between text-[14px]">
+                          <div className="flex items-center justify-between text-base">
                             <span>{opt.label}</span>
                           </div>
                         </div>

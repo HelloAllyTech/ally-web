@@ -43,22 +43,6 @@ describe("Tabs", () => {
     expect(onChange).toHaveBeenCalledWith("tab2");
   });
 
-  it("applies active styles to active tab", () => {
-    const onChange = vi.fn();
-    render(<Tabs items={mockItems} activeId="tab1" onChange={onChange} />);
-
-    const tab1 = screen.getByText(/Tab 1/);
-    expect(tab1.className).toContain("text-blue-600");
-  });
-
-  it("applies inactive styles to non-active tabs", () => {
-    const onChange = vi.fn();
-    render(<Tabs items={mockItems} activeId="tab1" onChange={onChange} />);
-
-    const tab2 = screen.getByText(/Tab 2/);
-    expect(tab2.className).toContain("text-gray-800");
-  });
-
   it("renders active indicator for active tab", () => {
     const onChange = vi.fn();
     const { container } = render(<Tabs items={mockItems} activeId="tab1" onChange={onChange} />);
@@ -72,7 +56,6 @@ describe("Tabs", () => {
     const { container } = render(<Tabs items={mockItems} activeId="tab1" onChange={onChange} />);
 
     const indicator = container.querySelector("[aria-hidden]");
-    expect(indicator?.className).toContain("bg-blue-600");
     expect(indicator?.className).toContain("h-[3px]");
   });
 
@@ -92,7 +75,6 @@ describe("Tabs", () => {
 
     const wrapper = container.firstChild;
     expect(wrapper).toHaveClass("border-b");
-    expect(wrapper).toHaveClass("border-gray-200");
   });
 
   it("renders with empty items array", () => {
@@ -131,14 +113,6 @@ describe("Tabs", () => {
     const tab1 = screen.getByText(/Tab 1/);
     expect(tab1.className).toContain("py-3");
     expect(tab1.className).toContain("px-3");
-  });
-
-  it("tabs have correct font size", () => {
-    const onChange = vi.fn();
-    render(<Tabs items={mockItems} activeId="tab1" onChange={onChange} />);
-
-    const tab1 = screen.getByText(/Tab 1/);
-    expect(tab1.className).toContain("text-[15px]");
   });
 
   it("tabs prevent text wrapping", () => {

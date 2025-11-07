@@ -33,7 +33,7 @@ export const Tags = ({ formMethods }) => {
 
   return (
     <div className="flex flex-col gap-2">
-      <label htmlFor="tags" className="text-[#49454F] cursor-pointer">
+      <label htmlFor="tags" className="text-text-500 cursor-pointer">
         {en.simulation.tags}
       </label>
 
@@ -41,7 +41,7 @@ export const Tags = ({ formMethods }) => {
         {tags?.map((tag, index) => (
           <div
             key={index}
-            className="flex items-center px-2 bg-white border border-gray-300 rounded-full text-gray-700"
+            className="flex items-center px-2 bg-white border border-border-light rounded-full text-text"
           >
             <span>{tag}</span>
             <button type="button" className="cursor-pointer ml-2" onClick={() => removeTag(tag)}>
@@ -50,7 +50,7 @@ export const Tags = ({ formMethods }) => {
           </div>
         ))}
 
-        <div className="flex items-center border border-gray-300 rounded-full px-2">
+        <div className="flex items-center border border-border-light rounded-full px-2">
           <input
             type="text"
             value={inputValue}
@@ -59,7 +59,7 @@ export const Tags = ({ formMethods }) => {
             placeholder="Add tag"
             className="w-[80px] focus:outline-none"
           />
-          <button type="button" onClick={addTag} className="ml-2 text-blue-600 text-sm">
+          <button type="button" onClick={addTag} className="ml-2 text-primary text-sm">
             +
           </button>
         </div>

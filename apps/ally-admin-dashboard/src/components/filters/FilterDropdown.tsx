@@ -134,9 +134,9 @@ export const FilterDropdown: React.FC<FilterDropdownProps> = ({
     return (
       <>
         <div className="flex items-center justify-between mb-3">
-          <div className="text-[#9CA3AF] text-[14px]">{title}</div>
+          <div className="text-text-400 text-base">{title}</div>
           <button
-            className="text-gray-400 hover:text-gray-600"
+            className="text-text-400 hover:text-text-500"
             title="Clear"
             onClick={() => clearFilterSection(filterType)}
           >
@@ -148,11 +148,11 @@ export const FilterDropdown: React.FC<FilterDropdownProps> = ({
             <label key={name} className="flex items-center gap-3 px-1 py-2">
               <input
                 type="checkbox"
-                className="h-4 w-4 border-[#9CA3AF]"
+                className="h-4 w-4 border-border-dark"
                 checked={!!selected[name]}
                 onChange={e => updateSelectedFilters(filterType, name, e.target.checked)}
               />
-              <span className={"text-gray-800 text-[14px]"}>
+              <span className={"text-neutral-800 text-base"}>
                 {name === userStatus.SUSPENDED || name === userStatus.ACTIVE ? (
                   <StatusBadge status={name} />
                 ) : (
@@ -190,13 +190,13 @@ export const FilterDropdown: React.FC<FilterDropdownProps> = ({
 
     return (
       <div
-        className="fixed z-[9999] min-w-[220px] bg-white border border-gray-200 shadow-lg rounded-lg p-4"
+        className="fixed z-[9999] min-w-[220px] bg-white border border-border-light shadow-lg rounded-lg p-4"
         style={{ top, left: anchorRect ? anchorRect.left + listWidth + 10 : left + listWidth + 20 }}
       >
         {children}
         <div className="border-t mt-3 pt-3 flex justify-end">
           <button
-            className="bg-[#0957D0] hover:bg-[#0957D0]/90 text-[#FFFFFF] font-medium px-8 py-2 rounded-full"
+            className="bg-primary font-tertiary text-base hover:bg-primary/90 text-white font-medium px-8 py-2 rounded-full"
             onClick={handleApplyFilters}
           >
             {en.common.apply}
@@ -210,7 +210,7 @@ export const FilterDropdown: React.FC<FilterDropdownProps> = ({
     <div>
       <div className="fixed inset-0 z-[9998]" onClick={onClose} />
       <div
-        className={`fixed z-[9999] w-[${listWidth}px] bg-white border border-gray-200 shadow-lg rounded-lg`}
+        className={`fixed z-[9999] w-[${listWidth}px] bg-white border border-border-light shadow-lg rounded-lg`}
         style={{ top, left }}
       >
         {menuItems.map(item => {
@@ -219,8 +219,10 @@ export const FilterDropdown: React.FC<FilterDropdownProps> = ({
           return (
             <button
               key={item}
-              className={`block font-normal text-[14px] text-left px-4 py-2 m-2 rounded-md transition-colors ${
-                isActive ? "bg-gray-100 text-gray-900" : "hover:bg-gray-50 text-gray-800"
+              className={`block font-normal text-base text-left px-4 py-2 m-2 rounded-md transition-colors ${
+                isActive
+                  ? "bg-neutral-100 text-text"
+                  : "hover:bg-background-secondary text-neutral-800"
               }`}
               onClick={() => setViewSubList(item)}
               style={{ width: listWidth - 20 }}
@@ -228,7 +230,7 @@ export const FilterDropdown: React.FC<FilterDropdownProps> = ({
             >
               <div className="flex items-center justify-between">
                 <span>{item}</span>
-                {count > 0 && <span className="text-blue-600">{count}</span>}
+                {count > 0 && <span className="text-primary">{count}</span>}
               </div>
             </button>
           );

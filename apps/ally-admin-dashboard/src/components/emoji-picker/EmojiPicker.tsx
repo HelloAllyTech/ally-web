@@ -87,7 +87,7 @@ export const EmojiPickerComponent: React.FC<EmojiPickerProps> = ({
           `}
       >
         <span className="text-xl min-w-[20px]">{selectedEmoji}</span>
-        <div className="text-gray-400 w-2 h-2">
+        <div className="text-text-400 w-2 h-2">
           <ArrowDownFilled />
         </div>
       </button>

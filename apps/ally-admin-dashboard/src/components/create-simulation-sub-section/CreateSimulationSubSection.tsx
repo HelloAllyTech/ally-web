@@ -20,7 +20,7 @@ export const CreateSimulationSubSection: FC<CreateSimulationSubSectionProps> = (
       {items?.map(item => (
         <Fragment key={item.id}>
           {item.isDashedLineAbove && (
-            <div className="border-t border-dashed border-gray-300 w-full mb-6" />
+            <div className="border-t border-dashed border-border-light w-full mb-6" />
           )}
           <div className={item.fullWidth ? "w-full" : "w-[48%]"}>
             <FormField config={item} formMethods={formMethods} />

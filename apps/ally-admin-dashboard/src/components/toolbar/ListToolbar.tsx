@@ -2,7 +2,7 @@ import React from "react";
 
 import { Tooltip } from "@mui/material";
 
-import { Close, Plus, Search } from "@assets";
+import { Add, Close, Plus, Search } from "@assets";
 import { Button } from "@components";
 import { ListToolbarProps, FilterChipProps } from "@components/types";
 import { en } from "@constants";
@@ -24,14 +24,14 @@ export const ListToolbar: React.FC<ListToolbarProps> = ({
 
   const searchInput = (
     <div className="flex relative items-center w-full max-w-xl">
-      <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-400">
+      <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-text-400">
         <Search />
       </span>
       <input
         value={searchValue}
         onChange={e => onSearchChange(e.target.value)}
         placeholder={placeholder}
-        className="block w-full rounded-md border border-[#D2D2D2] bg-transparent pl-10 pr-3 py-2 placeholder-gray-400 outline-none font-['IBM_Plex_Serif'] text-[14px]"
+        className="block w-full rounded-md border border-border bg-transparent pl-10 pr-3 py-2 placeholder-text-tertiary outline-none font-ibmPlexSerif text-base"
       />
       {searchValue.length > 0 && (
         <button className="absolute right-2 " onClick={ClearSearch}>
@@ -45,16 +45,14 @@ export const ListToolbar: React.FC<ListToolbarProps> = ({
     return (
       <div
         key={`${chip.label}-${chip.value}`}
-        className="flex items-center text-gray-700 px-2 text-sm border border-gray-200 rounded-[20px]"
+        className="flex items-center text-text-700 px-2 text-sm border border-border-light rounded-[20px]"
       >
-        <span className="mr-1 text-[12px]">{chip.label}:</span>
+        <span className="mr-1 text-xs">{chip.label}:</span>
         <div className="flex">
           <Tooltip title={formatCapitalizedEnum(chip.allValue.join(", "))} placement="top" arrow>
-            <span className="font-medium mr-1 text-[12px]">
-              {formatCapitalizedEnum(chip.value)}
-            </span>
+            <span className="font-medium mr-1 text-xs">{formatCapitalizedEnum(chip.value)}</span>
           </Tooltip>
-          <button onClick={chip.onClear} className="text-gray-500 hover:text-gray-700">
+          <button onClick={chip.onClear} className="text-text-500 hover:text-text">
             <Close />
           </button>
         </div>
@@ -66,9 +64,9 @@ export const ListToolbar: React.FC<ListToolbarProps> = ({
     <button
       ref={addFilterButtonRef}
       onClick={addFilterCta.onClick}
-      className="inline-flex items-center text-gray-600 hover:text-gray-700 text-[12px]"
+      className="inline-flex items-center text-text-500 hover:text-text-700 text-xs"
     >
-      <span className="mr-1 text-[14px] p-[1px]">
+      <span className="mr-1 text-base p-[1px]">
         <Plus />
       </span>
       {addFilterCta.label}
@@ -81,7 +79,7 @@ export const ListToolbar: React.FC<ListToolbarProps> = ({
       variant={action.variant}
       className={`inline-flex font-['Roboto'] items-center text-sm font-medium px-4 py-2 rounded-full`}
     >
-      {<span className="mr-[1px] text-lg">{action?.icon || "+"}</span>}
+      {action?.icon ? <span className="mr-[1px] text-lg">{action?.icon}</span> : <Add />}
       {action.label}
     </Button>
   ) : null;

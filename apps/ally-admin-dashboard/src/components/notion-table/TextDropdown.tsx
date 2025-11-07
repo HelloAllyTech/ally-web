@@ -150,28 +150,28 @@ export const TextDropdown = ({
           "w-full bg-transparent py-2 text-left",
           "flex items-center justify-between",
           {
-            "bg-gray-50 cursor-not-allowed": disabled,
+            "bg-background-secondary cursor-not-allowed": disabled,
             "cursor-pointer": !disabled,
           },
         )}
       >
-        <span className={clsx("truncate mr-1", { "text-gray-500": !value })}>{displayValue}</span>
+        <span className={clsx("truncate mr-1", { "text-text-500": !value })}>{displayValue}</span>
         {!disabled && <ArrowDownFilled width={8} height={8} />}
       </button>
 
       {/* Dropdown Menu */}
       {isOpen && (
-        <div className="absolute z-50 w-[calc(100%+24px)] left-[-12px] mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-hidden">
+        <div className="absolute z-50 w-[calc(100%+24px)] left-[-12px] mt-1 bg-white border border-border-light rounded-md shadow-lg max-h-60 overflow-hidden">
           {/* Search Input */}
           {isSearchable && (
-            <div className="p-2 border-b border-gray-200">
+            <div className="p-2 border-b border-border-light">
               <input
                 ref={searchInputRef}
                 type="text"
                 placeholder={searchPlaceholder}
                 value={searchTerm}
                 onChange={handleSearchChange}
-                className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full px-2 py-1 text-sm border border-border-light rounded focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary"
               />
             </div>
           )}
@@ -179,7 +179,7 @@ export const TextDropdown = ({
           {/* Options List */}
           <div className="max-h-48 overflow-y-auto">
             {filteredOptions.length === 0 ? (
-              <div className="px-3 py-2 text-sm text-gray-500 text-center">No options found</div>
+              <div className="px-3 py-2 text-sm text-text-500 text-center">No options found</div>
             ) : (
               filteredOptions.map((option, index) => (
                 <div
@@ -187,8 +187,9 @@ export const TextDropdown = ({
                   ref={el => (optionRefs.current[index] = el)}
                   onClick={() => selectOption(option)}
                   className={clsx("px-3 py-2 cursor-pointer text-sm flex items-center", {
-                    "bg-blue-50 text-blue-700": index === highlightedIndex,
-                    "bg-white text-gray-900 hover:bg-gray-50": index !== highlightedIndex,
+                    "bg-primary-50 text-primary-700": index === highlightedIndex,
+                    "bg-white text-text-700 hover:bg-background-secondary":
+                      index !== highlightedIndex,
                   })}
                 >
                   {option.backgroundColor && (

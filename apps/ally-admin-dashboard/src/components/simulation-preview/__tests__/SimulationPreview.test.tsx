@@ -25,6 +25,18 @@ vi.mock("@api", () => ({
 
 vi.mock("@components", () => ({
   CustomImage: (props: any) => <img data-testid="custom-image" {...props} />,
+  Button: React.forwardRef<HTMLButtonElement, any>(({ children, onClick, className }, ref) => (
+    <button ref={ref} onClick={onClick} className={className}>
+      {children}
+    </button>
+  )),
+  ButtonVariant: {
+    PRIMARY: "primary" as const,
+    DESTRUCTIVE: "destructive" as const,
+    SECONDARY: "secondary" as const,
+    ICON: "icon" as const,
+    TEXT: "text" as const,
+  },
   cellTypes: {
     editableText: "editableText",
     normalText: "normalText",

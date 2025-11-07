@@ -37,7 +37,7 @@ const IndeterminateCheckbox = React.forwardRef<
       type="checkbox"
       ref={resolvedRef}
       {...rest}
-      className="w-4 h-4 text-black border-gray-300 rounded focus:ring-black cursor-pointer"
+      className="w-4 h-4 text-black border-border-light rounded focus:ring-black cursor-pointer"
     />
   );
 });
@@ -61,7 +61,7 @@ const isSelectionColumn = (columnId: string) => columnId === SELECTION_COLUMN_ID
 const renderHeaderCell = (column: any, headerIndex: number) => {
   if (isSelectionColumn(column.id)) {
     return (
-      <div className="relative bg-white border-[1px] min-h-[45.5px] border-gray-200 select-none border-l-1">
+      <div className="relative bg-white border-[1px] min-h-[45.5px] border-border-light select-none border-l-1">
         <div className="flex items-center justify-center p-3 w-full h-full">
           {column.render("Header")}
         </div>
@@ -201,10 +201,7 @@ export const NotionTable = ({
     <div style={tableStyle} className="overflow-auto flex h-[calc(100vh-160px)]">
       <div
         {...getTableProps()}
-        className={clsx(
-          "w-full font-['IBM_Plex_Serif'] text-[13px]",
-          isTableResizing() && "select-none",
-        )}
+        className={clsx("w-full font-primary text-sm", isTableResizing() && "select-none")}
       >
         <div className="flex w-full sticky top-0 z-10">
           {headerGroups.map(headerGroup => {
@@ -226,7 +223,7 @@ export const NotionTable = ({
                         minWidth: column.minWidth,
                         maxWidth: column.maxWidth,
                       }}
-                      className="border-1 border-gray-200"
+                      className="border-1 border-border-light"
                     >
                       {renderHeaderCell(column, headerIndex)}
                     </div>
@@ -236,7 +233,7 @@ export const NotionTable = ({
             );
           })}
         </div>
-        <div {...getTableBodyProps()} className="w-full">
+        <div {...getTableBodyProps()} className="w-full text-text-700">
           {rows.map((row, rowIndex) => {
             prepareRow(row);
             const rowProps = row.getRowProps();
@@ -245,11 +242,11 @@ export const NotionTable = ({
               <div
                 key={key}
                 {...restRowProps}
-                className="relative flex w-full border-b border-gray-200 hover:bg-gray-50 border-l"
+                className="relative flex w-full border-b border-border-light hover:bg-background-secondary border-l"
               >
                 {onRowClick && (
                   <button
-                    className="absolute p-1 bg-white border-[1px] border-gray-300 shadow-md rounded-[3px] z-10 top-[12px] left-[190px] opacity-0 hover:opacity-100"
+                    className="absolute p-1 bg-white border-[1px] border-border-light shadow-md rounded-[3px] z-10 top-[12px] left-[190px] opacity-0 hover:opacity-100"
                     onClick={() => onRowClick(rowIndex)}
                   >
                     <DockToRight />
@@ -263,7 +260,7 @@ export const NotionTable = ({
                     <div
                       key={cellKey}
                       {...restCellProps}
-                      className="relative flex items-center w-full px-3 py-[7px] border-r border-gray-200"
+                      className="relative flex items-center w-full px-3 py-[7px] border-r border-border-light"
                       style={{
                         width: isSelectionColumn(cell.column.id)
                           ? SELECTION_COLUMN_WIDTH - 1

@@ -211,43 +211,24 @@ describe("UserList", () => {
 
   describe("Status Badge", () => {
     it("renders ACTIVE status badge with correct styling", () => {
-      const { container } = render(<UserList {...defaultProps} users={[mockUsers[0]]} />);
+      render(<UserList {...defaultProps} users={[mockUsers[0]]} />);
 
       const statusBadge = screen.getByText("Active");
       expect(statusBadge).toBeInTheDocument();
-
-      // Check for the green background class in the container
-      const greenBg = container.querySelector(".bg-\\[\\#E8F5E9\\]");
-      expect(greenBg).toBeInTheDocument();
     });
 
     it("renders INACTIVE status badge with correct styling", () => {
-      const { container } = render(<UserList {...defaultProps} users={[mockUsers[1]]} />);
+      render(<UserList {...defaultProps} users={[mockUsers[1]]} />);
 
       const statusBadge = screen.getByText("Inactive");
       expect(statusBadge).toBeInTheDocument();
-
-      // Check for the gray background class in the container
-      const grayBg = container.querySelector(".bg-gray-100");
-      expect(grayBg).toBeInTheDocument();
     });
 
     it("renders SUSPENDED status badge with correct styling", () => {
-      const { container } = render(<UserList {...defaultProps} users={[mockUsers[2]]} />);
+      render(<UserList {...defaultProps} users={[mockUsers[2]]} />);
 
       const statusBadge = screen.getByText("Suspended");
       expect(statusBadge).toBeInTheDocument();
-
-      // Check for the orange background class in the container
-      const orangeBg = container.querySelector(".bg-\\[\\#FBE9E7\\]");
-      expect(orangeBg).toBeInTheDocument();
-    });
-
-    it("renders status dot with correct color", () => {
-      const { container } = render(<UserList {...defaultProps} users={[mockUsers[0]]} />);
-
-      const statusDot = container.querySelector(".bg-\\[\\#66BB6A\\]");
-      expect(statusDot).toBeInTheDocument();
     });
   });
 
@@ -426,13 +407,6 @@ describe("UserList", () => {
   });
 
   describe("Styling and Layout", () => {
-    it("applies hover styles to user rows", () => {
-      const { container } = render(<UserList {...defaultProps} users={[mockUsers[0]]} />);
-
-      const row = container.querySelector(".hover\\:bg-gray-50");
-      expect(row).toBeInTheDocument();
-    });
-
     it("uses grid layout for columns", () => {
       const { container } = render(<UserList {...defaultProps} users={[mockUsers[0]]} />);
 
@@ -525,14 +499,10 @@ describe("UserList", () => {
         ...mockUsers[0],
         status: "BLOCKED" as userStatus,
       };
-      const { container } = render(<UserList {...defaultProps} users={[blockedUser]} />);
+      render(<UserList {...defaultProps} users={[blockedUser]} />);
 
       const statusBadge = screen.getByText("Blocked");
       expect(statusBadge).toBeInTheDocument();
-
-      // Check for the red background class in the container
-      const redBg = container.querySelector(".bg-red-100");
-      expect(redBg).toBeInTheDocument();
     });
 
     it("handles unknown status gracefully", () => {

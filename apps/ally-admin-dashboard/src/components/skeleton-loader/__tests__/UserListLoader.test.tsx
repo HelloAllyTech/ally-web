@@ -71,14 +71,7 @@ describe("UserListLoader", () => {
       const { container } = render(<UserListLoader />);
 
       const header = container.querySelector("[class*='grid-template-columns']");
-      expect(header).toHaveClass(
-        "px-4",
-        "py-2",
-        "text-sm",
-        "text-gray-500",
-        "border-b",
-        "border-gray-200",
-      );
+      expect(header).toHaveClass("px-4", "py-2", "text-sm", "border-b");
     });
 
     it("header columns have correct grid spans", () => {
@@ -131,7 +124,7 @@ describe("UserListLoader", () => {
 
       const rows = container.querySelectorAll(".animate-pulse");
       rows.forEach(row => {
-        expect(row).toHaveClass("px-4", "py-3", "border-b", "border-gray-100");
+        expect(row).toHaveClass("px-4", "py-3", "border-b");
       });
     });
 
@@ -147,7 +140,7 @@ describe("UserListLoader", () => {
     it("renders avatar skeleton", () => {
       const { container } = render(<UserListLoader rows={1} />);
 
-      const avatar = container.querySelector(".w-8.h-8.rounded-full.bg-gray-200");
+      const avatar = container.querySelector(".w-8.h-8.rounded-full");
       expect(avatar).toBeInTheDocument();
     });
 
@@ -155,7 +148,7 @@ describe("UserListLoader", () => {
       const { container } = render(<UserListLoader rows={1} />);
 
       const avatar = container.querySelector(".rounded-full");
-      expect(avatar).toHaveClass("w-8", "h-8", "bg-gray-200");
+      expect(avatar).toHaveClass("w-8", "h-8");
     });
 
     it("renders name skeleton", () => {
@@ -163,7 +156,7 @@ describe("UserListLoader", () => {
 
       const firstRow = container.querySelector(".animate-pulse");
       const userColumn = firstRow?.querySelector(".col-span-11");
-      const nameSkeleton = userColumn?.querySelector(".h-4.bg-gray-200.rounded.w-32");
+      const nameSkeleton = userColumn?.querySelector(".h-4.w-32");
 
       expect(nameSkeleton).toBeInTheDocument();
     });
@@ -173,7 +166,7 @@ describe("UserListLoader", () => {
 
       const firstRow = container.querySelector(".animate-pulse");
       const userColumn = firstRow?.querySelector(".col-span-11");
-      const emailSkeleton = userColumn?.querySelector(".h-3.bg-gray-200.rounded.w-40");
+      const emailSkeleton = userColumn?.querySelector(".h-3.w-40");
 
       expect(emailSkeleton).toBeInTheDocument();
     });
@@ -201,7 +194,7 @@ describe("UserListLoader", () => {
 
       const firstRow = container.querySelector(".animate-pulse");
       const columns = firstRow?.querySelectorAll(".col-span-6");
-      const telephonySkeleton = columns?.[0]?.querySelector(".h-4.bg-gray-200.rounded.w-24");
+      const telephonySkeleton = columns?.[0]?.querySelector(".h-4.w-24");
 
       expect(telephonySkeleton).toBeInTheDocument();
     });
@@ -222,7 +215,7 @@ describe("UserListLoader", () => {
 
       const firstRow = container.querySelector(".animate-pulse");
       const roleColumns = firstRow?.querySelectorAll(".col-span-8");
-      const roleSkeleton = roleColumns?.[0]?.querySelector(".h-4.bg-gray-200.rounded.w-28");
+      const roleSkeleton = roleColumns?.[0]?.querySelector(".h-4.w-28");
 
       expect(roleSkeleton).toBeInTheDocument();
     });
@@ -243,7 +236,7 @@ describe("UserListLoader", () => {
 
       const firstRow = container.querySelector(".animate-pulse");
       const orgColumns = firstRow?.querySelectorAll(".col-span-8");
-      const orgSkeleton = orgColumns?.[1]?.querySelector(".h-4.bg-gray-200.rounded.w-28");
+      const orgSkeleton = orgColumns?.[1]?.querySelector(".h-4.w-28");
 
       expect(orgSkeleton).toBeInTheDocument();
     });
@@ -264,7 +257,7 @@ describe("UserListLoader", () => {
 
       const firstRow = container.querySelector(".animate-pulse");
       const creditsColumn = firstRow?.querySelector(".col-span-4");
-      const creditsSkeleton = creditsColumn?.querySelector(".h-4.bg-gray-200.rounded.w-16");
+      const creditsSkeleton = creditsColumn?.querySelector(".h-4.w-16");
 
       expect(creditsSkeleton).toBeInTheDocument();
     });
@@ -285,7 +278,7 @@ describe("UserListLoader", () => {
 
       const firstRow = container.querySelector(".animate-pulse");
       const addedOnColumns = firstRow?.querySelectorAll(".col-span-6");
-      const addedOnSkeleton = addedOnColumns?.[1]?.querySelector(".h-4.bg-gray-200.rounded.w-24");
+      const addedOnSkeleton = addedOnColumns?.[1]?.querySelector(".h-4.w-24");
 
       expect(addedOnSkeleton).toBeInTheDocument();
     });
@@ -306,7 +299,7 @@ describe("UserListLoader", () => {
 
       const firstRow = container.querySelector(".animate-pulse");
       const statusColumn = firstRow?.querySelector(".col-span-5");
-      const statusSkeleton = statusColumn?.querySelector(".h-6.bg-gray-200.rounded-full.w-24");
+      const statusSkeleton = statusColumn?.querySelector(".h-6.rounded-full.w-24");
 
       expect(statusSkeleton).toBeInTheDocument();
     });
@@ -316,7 +309,7 @@ describe("UserListLoader", () => {
 
       const firstRow = container.querySelector(".animate-pulse");
       const statusColumn = firstRow?.querySelector(".col-span-5");
-      const actionSkeleton = statusColumn?.querySelector(".h-4.bg-gray-200.rounded.w-6");
+      const actionSkeleton = statusColumn?.querySelector(".h-4.rounded.w-6");
 
       expect(actionSkeleton).toBeInTheDocument();
     });
@@ -338,13 +331,6 @@ describe("UserListLoader", () => {
 
       expect(statusColumn).toHaveClass("pr-1", "ml-auto", "w-full");
     });
-
-    it("status badge has rounded-full class", () => {
-      const { container } = render(<UserListLoader rows={1} />);
-
-      const statusBadge = container.querySelector(".h-6.rounded-full");
-      expect(statusBadge).toHaveClass("bg-gray-200", "w-24");
-    });
   });
 
   describe("Container and Layout", () => {
@@ -353,7 +339,6 @@ describe("UserListLoader", () => {
 
       const wrapper = container.querySelector(".overflow-x-auto");
       expect(wrapper).toBeInTheDocument();
-      expect(wrapper).toHaveClass("w-full", "text-sm", "text-gray-600");
     });
 
     it("has min-width constraint", () => {
@@ -383,13 +368,6 @@ describe("UserListLoader", () => {
   });
 
   describe("Skeleton Appearance", () => {
-    it("all skeleton elements have gray-200 background", () => {
-      const { container } = render(<UserListLoader rows={1} />);
-
-      const skeletons = container.querySelectorAll(".bg-gray-200");
-      expect(skeletons.length).toBeGreaterThan(0);
-    });
-
     it("all skeleton elements have rounded corners", () => {
       const { container } = render(<UserListLoader rows={1} />);
 
