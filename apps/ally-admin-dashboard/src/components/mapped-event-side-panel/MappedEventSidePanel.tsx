@@ -48,7 +48,7 @@ const Field: React.FC<FieldProps> = ({ label, children, multiline = false }) => 
     className={`flex flex-row min-h-[40px] ${multiline ? "items-start" : "items-center"} text-base justify-between`}
   >
     <div className={`w-[40%] ${multiline && "mt-[8px]"}`}>
-      <span className="text-sm font-medium text-text-500">{label}</span>
+      <span className="text-sm font-medium text-typography-500">{label}</span>
     </div>
     <div className="w-[60%] flex text-left justify-start text-neutral-800">{children}</div>
   </div>
@@ -63,7 +63,7 @@ const PanelHeader: React.FC<{
   <div className="flex items-center justify-between p-6">
     <button
       onClick={onClose}
-      className="flex flex-row items-center justify-center gap-2 text-text-500 hover:text-neutral-800"
+      className="flex flex-row items-center justify-center gap-2 text-typography-500 hover:text-neutral-800"
     >
       <span className="inline-flex w-[14px] h-[14px]">
         <DoubleArrowRight />
@@ -111,9 +111,9 @@ const EventDropdown: React.FC<{
       <button
         type="button"
         onClick={onToggle}
-        className="text-2xl font-light w-full text-left flex items-center justify-start hover:text-text-500 transition-colors"
+        className="text-2xl font-light w-full text-left flex items-center justify-start hover:text-typography-500 transition-colors"
       >
-        <span className={selectedEventName === "Select an event" ? "text-text-400" : ""}>
+        <span className={selectedEventName === "Select an event" ? "text-typography-400" : ""}>
           {selectedEventName}
         </span>
         <span className="ml-2 inline-flex w-[12px] h-[12px]">
@@ -143,7 +143,7 @@ const EventDropdown: React.FC<{
               </div>
             ))
           ) : (
-            <div className="px-4 py-3 text-sm text-text-500">No results</div>
+            <div className="px-4 py-3 text-sm text-typography-500">No results</div>
           )}
         </div>
       )}

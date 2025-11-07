@@ -91,7 +91,7 @@ export const NumberInput: React.FC<NumberInputProps> = ({
         className={`
           w-[70%] min-w-[60px] pr-8 py-2
           bg-transparent
-          disabled:disabled:text-text-500 disabled:cursor-not-allowed
+          disabled:disabled:text-typography-500 disabled:cursor-not-allowed
           hover:bg-transparent focus:outline-none
           text-left
           ${inputClassName}
@@ -105,10 +105,10 @@ export const NumberInput: React.FC<NumberInputProps> = ({
           disabled={disabled || normalizedValue >= max}
           className={`
             flex items-center justify-center
-            text-text-400 hover:text-text-500
+            text-typography-400 hover:text-typography-500
             disabled:text-border-light disabled:cursor-not-allowed
             transition-colors duration-150
-            ${isFocused ? "text-text-500" : ""}
+            ${isFocused ? "text-typography-500" : ""}
           `}
         >
           <ArrowDownFilled width={8} height={8} className="rotate-180 transform" />
@@ -120,10 +120,10 @@ export const NumberInput: React.FC<NumberInputProps> = ({
           disabled={disabled || normalizedValue <= min}
           className={`
             flex items-center justify-center
-            text-text-400 hover:text-text-500
+            text-typography-400 hover:text-typography-500
             disabled:text-border-light disabled:cursor-not-allowed
             transition-colors duration-150
-            ${isFocused ? "text-text-500" : ""}
+            ${isFocused ? "text-typography-500" : ""}
           `}
         >
           <ArrowDownFilled width={8} height={8} />

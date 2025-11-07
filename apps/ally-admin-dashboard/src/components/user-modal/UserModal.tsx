@@ -87,7 +87,10 @@ export const UserModal: React.FC<UserModalProps> = ({
         }}
         render={({ field: controllerField, fieldState }) => (
           <div className="flex flex-col gap-2">
-            <label htmlFor={field.id} className="text-sm text-text-700 cursor-pointer font-primary">
+            <label
+              htmlFor={field.id}
+              className="text-sm text-typography-700 cursor-pointer font-primary"
+            >
               {field.label}
               {field.required && <span className="text-destructive-500">*</span>}
             </label>
@@ -190,7 +193,10 @@ export const UserModal: React.FC<UserModalProps> = ({
         }}
         render={({ field: controllerField, fieldState }) => (
           <div className="flex flex-col gap-2">
-            <label htmlFor={field.id} className="text-sm text-text-600 cursor-pointer font-primary">
+            <label
+              htmlFor={field.id}
+              className="text-sm text-typography-600 cursor-pointer font-primary"
+            >
               {field.label}
               {field.required && <span className="text-destructive-500">*</span>}
             </label>
@@ -286,7 +292,7 @@ export const UserModal: React.FC<UserModalProps> = ({
     >
       <div className="py-5 px-6 bg-white min-w-[400px] max-w-[90vw] w-auto flex flex-col gap-5 relative font-primary rounded-[10px] shadow-2xl animate-fadeIn">
         {/* Header */}
-        <div className="text-text-600 flex justify-center w-full text-2xl font-primary relative">
+        <div className="text-typography-600 flex justify-center w-full text-2xl font-primary relative">
           {title}
         </div>
 

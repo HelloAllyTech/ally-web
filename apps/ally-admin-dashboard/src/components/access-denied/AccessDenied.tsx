@@ -21,8 +21,8 @@ export const AccessDenied: React.FC<AccessDeniedProps> = ({
     <div
       className={`flex flex-col font-primary items-center justify-center h-full min-h-[500px] px-4 ${className}`}
     >
-      <h1 className="text-2xl font-medium text-text-800 mb-3 text-center">{title}</h1>
-      <p className="text-text-500 text-center max-w-md mb-8 leading-relaxed">{message}</p>
+      <h1 className="text-2xl font-medium text-typography-800 mb-3 text-center">{title}</h1>
+      <p className="text-typography-500 text-center max-w-md mb-8 leading-relaxed">{message}</p>
 
       {/* Action Buttons */}
       {showBackButton && (

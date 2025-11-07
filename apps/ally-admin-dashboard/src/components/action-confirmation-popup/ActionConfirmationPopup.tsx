@@ -60,7 +60,7 @@ export const ActionConfirmationPopup: FC<ActionConfirmationPopupProps> = ({
     <div className="flex flex-col items-center justify-between p-5">
       <button
         onClick={onClose}
-        className="absolute top-[5px] right-[5px] text-text-400 hover:text-text-500 transition-colors"
+        className="absolute top-[5px] right-[5px] text-typography-400 hover:text-typography-500 transition-colors"
       >
         <Close width={15} height={20} />
       </button>
@@ -69,7 +69,7 @@ export const ActionConfirmationPopup: FC<ActionConfirmationPopupProps> = ({
         {title}{" "}
         {titleItalic && <span className="italic font-semibold ml-1">{`${titleItalic}`}</span>}
       </div>
-      <p className="text-text-500 font-primary text-base my-2 text-center ">
+      <p className="text-typography-500 font-primary text-base my-2 text-center ">
         {renderBoldFromString(description)}
       </p>
     </div>
@@ -80,7 +80,7 @@ export const ActionConfirmationPopup: FC<ActionConfirmationPopupProps> = ({
       <Button
         onClick={secondaryButton.onClick}
         variant={ButtonVariant.SECONDARY}
-        className="text-text-700 text-base border w-full border-border-dark rounded-full p-2 font-tertiary"
+        className="text-typography-700 text-base border w-full border-border-dark rounded-full p-2 font-tertiary"
       >
         {secondaryButton.label}
       </Button>

@@ -76,7 +76,7 @@ export const EditableTextPopup: React.FC<EditableTextPopupProps> = ({
         className={`
           cursor-pointer max-h-[36px] overflow-hidden max-w-[calc(100%-20px)]
           ${disabled ? "cursor-not-allowed opacity-50" : "hover:bg-background-secondary"}
-          ${isPlaceholder ? "text-text-400" : ""}
+          ${isPlaceholder ? "text-typography-400" : ""}
         `}
       >
         {disabled ? (
@@ -104,7 +104,7 @@ export const EditableTextPopup: React.FC<EditableTextPopupProps> = ({
             onBlur={handleSave}
             placeholder={placeholder}
             disabled={disabled}
-            className="w-full py-1 px-2 border border-primary rounded focus:outline-none disabled:bg-neutral-100 disabled:text-text-500 resize-none overflow-y-auto [&::-webkit-scrollbar]:w-[1px] [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-scrollbar-thumb"
+            className="w-full py-1 px-2 border border-primary rounded focus:outline-none disabled:bg-neutral-100 disabled:text-typography-500 resize-none overflow-y-auto [&::-webkit-scrollbar]:w-[1px] [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-scrollbar-thumb"
           />
         </div>
       )}

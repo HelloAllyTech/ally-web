@@ -233,7 +233,7 @@ export const NotionTable = ({
             );
           })}
         </div>
-        <div {...getTableBodyProps()} className="w-full text-text-700">
+        <div {...getTableBodyProps()} className="w-full text-typography-700">
           {rows.map((row, rowIndex) => {
             prepareRow(row);
             const rowProps = row.getRowProps();

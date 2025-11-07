@@ -93,10 +93,12 @@ export const SimulationPreview: FC<SimulationPreviewProps> = ({ simulation, isOp
 
             {/* Content Section */}
             <div className="space-y-3 w-full">
-              <h3 className="text-lg text-text">{simulation.title}</h3>
+              <h3 className="text-lg text-typography-700">{simulation.title}</h3>
               <div>
-                <h4 className="text-base font-semibold text-text-500 mb-1">{`${en.simulation.scenario}:`}</h4>
-                <p className="text-base text-text-500 leading-relaxed">{simulation.description}</p>
+                <h4 className="text-base font-semibold text-typography-500 mb-1">{`${en.simulation.scenario}:`}</h4>
+                <p className="text-base text-typography-500 leading-relaxed">
+                  {simulation.description}
+                </p>
               </div>
             </div>
           </div>
@@ -107,7 +109,7 @@ export const SimulationPreview: FC<SimulationPreviewProps> = ({ simulation, isOp
           <Button
             onClick={onClose}
             variant={ButtonVariant.SECONDARY}
-            className="w-[49%] px-6 py-2 border border-border-light rounded-[40px] text-text-700 font-medium hover:bg-background-secondary transition-colors"
+            className="w-[49%] px-6 py-2 border border-border-light rounded-[40px] text-typography-700 font-medium hover:bg-background-secondary transition-colors"
           >
             {en.simulation.close}
           </Button>

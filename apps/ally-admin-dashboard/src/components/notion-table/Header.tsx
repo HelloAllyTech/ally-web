@@ -12,7 +12,7 @@ export const Header = ({
       className={`relative bg-white border-[1px] border-border-light select-none ${headerIndex === 0 ? "border-l-1" : "border-l-0"}`}
     >
       <div className="flex items-center p-3 cursor-pointer hover:bg-neutral-100 w-full">
-        <span className="font-medium text-text-500 truncate">{label}</span>
+        <span className="font-medium text-typography-500 truncate">{label}</span>
       </div>
       <div
         {...getResizerProps()}

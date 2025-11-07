@@ -136,7 +136,7 @@ module.exports = {
           dark: "#9CA3AF",
         },
         // Text Colors
-        text: {
+        typography: {
           Default: "#0D0D0D",
           50: "#F9FAFB",
           100: "#F3F4F6",

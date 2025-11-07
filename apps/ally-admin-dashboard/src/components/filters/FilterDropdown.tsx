@@ -134,9 +134,9 @@ export const FilterDropdown: React.FC<FilterDropdownProps> = ({
     return (
       <>
         <div className="flex items-center justify-between mb-3">
-          <div className="text-text-400 text-base">{title}</div>
+          <div className="text-typography-400 text-base">{title}</div>
           <button
-            className="text-text-400 hover:text-text-500"
+            className="text-typography-400 hover:text-typography-500"
             title="Clear"
             onClick={() => clearFilterSection(filterType)}
           >
@@ -152,7 +152,7 @@ export const FilterDropdown: React.FC<FilterDropdownProps> = ({
                 checked={!!selected[name]}
                 onChange={e => updateSelectedFilters(filterType, name, e.target.checked)}
               />
-              <span className={"text-neutral-800 text-base"}>
+              <span className={"text-typography-700 text-base"}>
                 {name === userStatus.SUSPENDED || name === userStatus.ACTIVE ? (
                   <StatusBadge status={name} />
                 ) : (
@@ -219,9 +219,9 @@ export const FilterDropdown: React.FC<FilterDropdownProps> = ({
           return (
             <button
               key={item}
-              className={`block font-normal text-base text-left px-4 py-2 m-2 rounded-md transition-colors ${
+              className={`block font-normal text-base text-typography-700 text-left px-4 py-2 m-2 rounded-md transition-colors ${
                 isActive
-                  ? "bg-neutral-100 text-text"
+                  ? "bg-neutral-100 text-typography-700"
                   : "hover:bg-background-secondary text-neutral-800"
               }`}
               onClick={() => setViewSubList(item)}

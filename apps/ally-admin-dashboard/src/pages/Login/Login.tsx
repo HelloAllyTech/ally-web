@@ -156,12 +156,14 @@ export const Login: React.FC = () => {
           className="flex flex-col gap-3 sm:gap-4"
         >
           <div className="flex flex-col text-2xl font-['Replay_Pro']">
-            <span className="text-text-900">{`${en.auth.hey},`}</span>
-            <h1 className="text-text-900">
+            <span className="text-typography-900">{`${en.auth.hey},`}</span>
+            <h1 className="text-typography-900">
               <span>{`${en.auth.welcomeTo} `}</span>
               <span className="font-bold italic">ally</span>
             </h1>
-            <span className="text-xl mt-6 text-text-700">Enter your email address to continue</span>
+            <span className="text-xl mt-6 text-typography-700">
+              Enter your email address to continue
+            </span>
           </div>
           <div className="flex flex-col gap-1">
             <TextField
@@ -185,7 +187,7 @@ export const Login: React.FC = () => {
                 checked={rememberMe}
                 onChange={e => setRememberMe(e.target.checked)}
               />
-              <label htmlFor="remember" className="text-sm text-text-600 cursor-pointer">
+              <label htmlFor="remember" className="text-sm text-typography-600 cursor-pointer">
                 {en.auth.rememberMe}
               </label>
             </div>
@@ -205,7 +207,7 @@ export const Login: React.FC = () => {
               "Next"
             )}
           </Button>
-          <div className="text-xs text-text-500 mt-2 leading-relaxed">
+          <div className="text-xs text-typography-500 mt-2 leading-relaxed">
             By tapping next, you agree to Ally's{" "}
             <span
               className="text-primary-500 cursor-pointer hover:text-primary-600"
@@ -240,17 +242,19 @@ export const Login: React.FC = () => {
         >
           <ArrowDown />
         </div>
-        <h1 className="text-2xl font-['Replay_Pro'] text-text-900">Verify your email address</h1>
+        <h1 className="text-2xl font-['Replay_Pro'] text-typography-900">
+          Verify your email address
+        </h1>
         <div className="text-base mb-2 font-['Replay_Pro'] flex flex-col">
-          <span className="text-xl mb-2 text-text-700">Enter the security code sent to</span>
-          <span className="font-semibold text-xl break-all text-text-900">{email}</span>
+          <span className="text-xl mb-2 text-typography-700">Enter the security code sent to</span>
+          <span className="font-semibold text-xl break-all text-typography-900">{email}</span>
         </div>
         <div className="flex flex-col gap-2">
           <OTP value={otp} onChange={setOtp as any} />
-          <div className="text-xs text-text-600 mt-2">
+          <div className="text-xs text-typography-600 mt-2">
             {`${en.auth.didNotReceiveTheCode} `}
             <span
-              className={`${countdown > 0 ? "text-text-400" : "text-primary-500 hover:text-primary-600"} cursor-pointer`}
+              className={`${countdown > 0 ? "text-typography-400" : "text-primary-500 hover:text-primary-600"} cursor-pointer`}
               onClick={handleResendCode}
             >
               Resend {countdown > 0 ? `(${countdown}s)` : ""}
@@ -292,8 +296,8 @@ export const Login: React.FC = () => {
           onClick={() => openLinkInNewTab(ALLY_URL)}
         >
           <div className="flex flex-col mr-4 font-['Replay_Pro']">
-            <span className="text-xl font-bold text-text-900">Ally</span>
-            <span className="text-sm font-medium text-text-500">helloally.ai</span>
+            <span className="text-xl font-bold text-typography-900">Ally</span>
+            <span className="text-sm font-medium text-typography-500">helloally.ai</span>
           </div>
         </div>
       </div>

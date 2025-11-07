@@ -52,7 +52,7 @@ export const Header: FC<HeaderProps> = ({
       variant={ButtonVariant.TEXT}
       onClick={onPreview}
       disabled={!isValid}
-      className={`${isValid ? "text-primary-700" : "text-text-400 cursor-not-allowed"}`}
+      className={`${isValid ? "text-primary-700" : "text-typography-400 cursor-not-allowed"}`}
     >
       {en.simulation.preview}
     </Button>
@@ -61,25 +61,25 @@ export const Header: FC<HeaderProps> = ({
   return (
     <>
       <div className="flex items-center px-2 py-4 gap-2">
-        <span className="text-text-500 cursor-pointer" onClick={onBack}>
+        <span className="text-typography-500 cursor-pointer" onClick={onBack}>
           {en.simulation.simulationstudio}
         </span>
         <span className="-rotate-90">
           <ArrowDown />
         </span>
-        <span className="text-text-700">
+        <span className="text-typography-700">
           {id.id ? en.simulation.editSimulation : en.simulation.createSimulation}
         </span>
       </div>
       <div className="flex items-center justify-between w-full px-2 pb-2 h-[80px] relative">
-        <h1 className="text-2xl text-text-700 whitespace-nowrap">
+        <h1 className="text-2xl text-typography-700 whitespace-nowrap">
           {id.id ? en.simulation.editSimulation : en.simulation.createNewSimulation}
         </h1>
         <div className="flex items-center gap-3">
           <Button
             variant={ButtonVariant.TEXT}
             onClick={handleSaveDraft}
-            className="px-4 py-1 h-[36px] text-text-700"
+            className="px-4 py-1 h-[36px] text-typography-700"
           >
             {en.simulation.save}
           </Button>

@@ -71,7 +71,7 @@ export const AutoExpandableTextarea: React.FC<AutoExpandableTextareaProps> = ({
       onBlur={onBlur}
       placeholder={placeholder}
       disabled={disabled}
-      className={`w-full mt-[-8px] px-0 py-0 text-text-700 focus:outline-none disabled:bg-neutral-100 disabled:text-text-500 resize-none overflow-y-auto [&::-webkit-scrollbar]:w-[1px] [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-scrollbar-thumb ${className}`}
+      className={`w-full mt-[-8px] px-0 py-0 text-typography-700 focus:outline-none disabled:bg-neutral-100 disabled:text-typography-500 resize-none overflow-y-auto [&::-webkit-scrollbar]:w-[1px] [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-scrollbar-thumb ${className}`}
     />
   );
 };

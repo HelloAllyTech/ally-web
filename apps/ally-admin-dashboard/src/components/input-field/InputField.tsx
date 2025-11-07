@@ -73,7 +73,10 @@ export const InputField: React.FC<InputFieldProps> = ({
   return (
     <div className="flex flex-col gap-2">
       <div className="flex justify-between">
-        <label htmlFor="title" className="text-text-700 cursor-pointer flex items-center gap-1">
+        <label
+          htmlFor="title"
+          className="text-typography-700 cursor-pointer flex items-center gap-1"
+        >
           {label}
           {isMandatory && <span className="text-destructive-500">*</span>}
           {infoIconContent && <InfoIcon />}
@@ -112,7 +115,7 @@ export const InputField: React.FC<InputFieldProps> = ({
         )}
         {maxLength && type === FORM_FIELD_TYPES.TEXT && (
           <span
-            className={`absolute right-2 text-sm text-text-400 ${
+            className={`absolute right-2 text-sm text-typography-400 ${
               multiline ? "bottom-0 -translate-y-1/2" : "top-1/2 -translate-y-1/2"
             }`}
           >

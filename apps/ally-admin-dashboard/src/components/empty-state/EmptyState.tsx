@@ -23,8 +23,10 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
     <div
       className={`w-full py-[15%] flex flex-col items-center justify-center text-center ${className ?? ""}`}
     >
-      <h2 className="font-normal text-2xl text-text-900 mb-2">{title}</h2>
-      {subtitle && <p className="max-w-xl text-text-500 text-base mb-4 w-[250px]">{subtitle}</p>}
+      <h2 className="font-normal text-2xl text-typography-900 mb-2">{title}</h2>
+      {subtitle && (
+        <p className="max-w-xl text-typography-500 text-base mb-4 w-[250px]">{subtitle}</p>
+      )}
       {actionLabel && !hideActionButton && (
         <button
           onClick={onAction}

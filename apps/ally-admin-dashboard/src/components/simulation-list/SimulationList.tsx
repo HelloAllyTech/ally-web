@@ -33,7 +33,7 @@ export const SimulationList: React.FC<SimulationListProps> = ({
       : onUnarchive?.(simulation);
 
   const tableHeader = (
-    <div className="hidden md:flex flex-row items-center justify-between w-full text-sm text-text-500 border-b border-border-light px-4 py-2">
+    <div className="hidden md:flex flex-row items-center justify-between w-full text-sm text-typography-500 border-b border-border-light px-4 py-2">
       <div className="w-[50%] lg:w-[39%]">{en.simulation.simulation}</div>
       <div className="w-[12%] lg:w-[11%] px-4" />
       <div className="hidden lg:block w-[10%] px-4">{en.simulation.createdBy}</div>
@@ -95,7 +95,7 @@ export const SimulationList: React.FC<SimulationListProps> = ({
     return (
       <div
         key={simulation.id}
-        className="group flex flex-row  text-sm items-center justify-between w-full text-text-700 border-b border-border-light px-4 py-3 hover:shadow-sm hover:bg-neutral-100 transition-shadow"
+        className="group flex flex-row  text-sm items-center justify-between w-full text-typography-700 border-b border-border-light px-4 py-3 hover:shadow-sm hover:bg-neutral-100 transition-shadow"
       >
         {/* Simulation Image */}
         <div
@@ -114,8 +114,8 @@ export const SimulationList: React.FC<SimulationListProps> = ({
           onClick={() => showPreview(simulation) && onPreview?.(simulation)}
           className="flex flex-col justify-between align-middle min-h-[55px] w-[44%] md:w-[40%] lg:w-[33%] px-4 py-1 cursor-pointer overflow-x-hidden"
         >
-          <h3 className="text-sm text-text-700">{simulation.title}</h3>
-          <div className="text-text-500 leading-relaxed line-clamp-2">
+          <h3 className="text-sm text-typography-700">{simulation.title}</h3>
+          <div className="text-typography-500 leading-relaxed line-clamp-2">
             {simulation?.description}
           </div>
         </div>
@@ -162,7 +162,7 @@ export const SimulationList: React.FC<SimulationListProps> = ({
               <span>Preview</span>
             </button>
           ) : (
-            <span className="text-text-400">-</span>
+            <span className="text-typography-400">-</span>
           )}
         </div>
       </div>

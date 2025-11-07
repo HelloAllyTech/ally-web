@@ -13,7 +13,7 @@ export const Tabs: React.FC<TabsProps> = ({ items, activeId, onChange, className
               key={item.id}
               onClick={() => onChange(item.id)}
               className={`relative font-normal whitespace-nowrap py-3 px-3 text-base min-w-[90px] leading-6 ${
-                isActive ? "text-primary-500" : "text-text-700 hover:text-text-900"
+                isActive ? "text-primary-500" : "text-typography-700 hover:text-typography-900"
               }`}
             >
               {item.label} {item.count || "0"}

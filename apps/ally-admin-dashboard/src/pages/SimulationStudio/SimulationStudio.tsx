@@ -180,11 +180,11 @@ export const SimulationStudio: React.FC = () => {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
         <div className="text-center max-w-md">
-          <h2 className="text-2xl text-text-900 mb-4">
+          <h2 className="text-2xl text-typography-900 mb-4">
             {en.simulation.createYourFirstSimulation}{" "}
             <span className="italic">{en.simulation.simulation}</span>
           </h2>
-          <p className="text-text-600 text-base mb-8 leading-relaxed font-primary">
+          <p className="text-typography-600 text-base mb-8 leading-relaxed font-primary">
             {en.simulation.newSimulationDescription}
           </p>
           <button
@@ -206,7 +206,7 @@ export const SimulationStudio: React.FC = () => {
         <button
           onClick={() => loadSimulations(true)}
           disabled={isSimulationsFetching}
-          className="inline-flex font-tertiary items-center disabled:opacity-50 text-sm text-text-600 font-medium py-1 px-1 hover:text-text-700"
+          className="inline-flex font-tertiary items-center disabled:opacity-50 text-sm text-typography-600 font-medium py-1 px-1 hover:text-typography-700"
         >
           + {isSimulationsFetching ? en.common.loading : en.common.loadMore}
         </button>
@@ -217,7 +217,9 @@ export const SimulationStudio: React.FC = () => {
   return (
     <div className="min-h-full font-secondary">
       <div className="flex justify-between items-center mb-4 border-b border-border-light pb-4">
-        <h1 className="text-2xl text-text-900 font-primary">{en.simulation.simulationstudio}</h1>
+        <h1 className="text-2xl text-typography-900 font-primary">
+          {en.simulation.simulationstudio}
+        </h1>
         <button
           onClick={handleNewSimulation}
           className="font-tertiary bg-primary hover:bg-primary-600 text-white text-base pl-4 pr-5 py-2 rounded-full flex items-center gap-2 transition-colors h-[40px]"
@@ -237,7 +239,7 @@ export const SimulationStudio: React.FC = () => {
                 key={filter.id}
                 className="flex flex-row items-center gap-1 border border-border-light rounded-full px-2 py-1"
               >
-                <span className="text-xs text-text-500">{filter.label}</span>
+                <span className="text-xs text-typography-500">{filter.label}</span>
 
                 <button onClick={() => handleFilterItemClose(filter)}>
                   <Close />

@@ -27,11 +27,11 @@ export const VerticalStepper: FC<VerticalStepperProps> = ({ steps, currentStep, 
 
     switch (status) {
       case stepStatusMap.completed:
-        return `${baseStyles} text-text-500`;
+        return `${baseStyles} text-typography-500`;
       case stepStatusMap.active:
-        return `${baseStyles} text-text-700`;
+        return `${baseStyles} text-typography-700`;
       case stepStatusMap.pending:
-        return `${baseStyles} text-text-500`;
+        return `${baseStyles} text-typography-500`;
       default:
         return baseStyles;
     }

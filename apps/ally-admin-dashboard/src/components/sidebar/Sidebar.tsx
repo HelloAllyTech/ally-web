@@ -96,13 +96,13 @@ export const Sidebar: React.FC = () => {
                 onClick={() => handleNavigation(item.path)}
                 className={`w-full flex items-center px-3 py-3 mb-3 rounded-lg text-left transition-colors ${
                   isActive
-                    ? "bg-neutral-100 text-text-700"
-                    : "text-text-500 hover:bg-background-secondary hover:text-text"
+                    ? "bg-neutral-100 text-typography-700"
+                    : "text-typography-500 hover:bg-background-secondary hover:text-typography-700"
                 }`}
                 title={!isExpanded ? item.label : ""}
               >
                 <span
-                  className={`${isExpanded ? "mr-3" : "mx-auto"} ${isActive ? "text-text-500" : "text-text-400"}`}
+                  className={`${isExpanded ? "mr-3" : "mx-auto"} ${isActive ? "text-typography-500" : "text-typography-400"}`}
                 >
                   {renderIcon(item.id)}
                 </span>
@@ -130,10 +130,10 @@ export const Sidebar: React.FC = () => {
             <User />
           </div>
           <div className="flex-1 text-left min-w-[100px]">
-            <div className="text-lg font-medium text-text-700 text-ellipsis overflow-hidden whitespace-nowrap">
+            <div className="text-lg font-medium text-typography-700 text-ellipsis overflow-hidden whitespace-nowrap">
               {user?.name}
             </div>
-            <div className="text-xs mb-1 text-text-500 text-ellipsis overflow-hidden whitespace-nowrap">
+            <div className="text-xs mb-1 text-typography-500 text-ellipsis overflow-hidden whitespace-nowrap">
               {user?.email}
             </div>
           </div>
@@ -161,7 +161,7 @@ export const Sidebar: React.FC = () => {
           <div className="py-1">
             <button
               onClick={handleLogout}
-              className="flex flex-row items-center w-full px-4 py-2 text-left text-sm text-text-700 hover:bg-background-secondary transition-colors"
+              className="flex flex-row items-center w-full px-4 py-2 text-left text-sm text-typography-700 hover:bg-background-secondary transition-colors"
             >
               <Logout />
               <span className="ml-2">{en.auth.logout}</span>

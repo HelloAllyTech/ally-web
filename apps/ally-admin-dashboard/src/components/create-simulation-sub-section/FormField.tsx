@@ -19,7 +19,7 @@ export const FormField: FC<FormFieldProps> = ({ config, formMethods }) => {
       case FORM_FIELD_TYPES.SELECT:
         return (
           <div className="flex flex-col gap-2">
-            <label className="text-text-700 cursor-pointer flex items-center gap-1">
+            <label className="text-typography-700 cursor-pointer flex items-center gap-1">
               {label} {isMandatory && <span className="text-destructive-500">*</span>}
             </label>
             <DropdownField

@@ -304,7 +304,7 @@ export const FileUpload = ({
         onClick={open}
       >
         {fileType === FILE_TYPE.VIDEO ? <VideoCamera /> : <DragUpload />}
-        <div className="mt-4 text-text-500">
+        <div className="mt-4 text-typography-500">
           {isUploading ? (
             <div className="flex items-center gap-2">
               <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
@@ -342,7 +342,9 @@ export const FileUpload = ({
     return (
       <div className="flex items-center justify-between mt-2">
         <div className="flex flex-col">
-          {uploadedFile && <span className="text-text-700 truncate">{uploadedFile.name}</span>}
+          {uploadedFile && (
+            <span className="text-typography-700 truncate">{uploadedFile.name}</span>
+          )}
         </div>
         <button type="button" onClick={handleDeleteFile}>
           <Trash />
@@ -353,7 +355,7 @@ export const FileUpload = ({
 
   return (
     <div className="flex flex-col gap-2">
-      <label htmlFor={id} className="text-text-700 cursor-pointer flex items-center">
+      <label htmlFor={id} className="text-typography-700 cursor-pointer flex items-center">
         {header || en.simulation.file}
         {isMandatory && <span className="text-destructive-500">*</span>}
       </label>

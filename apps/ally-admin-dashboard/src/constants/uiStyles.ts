@@ -1,9 +1,9 @@
 export const BUTTON_STYLES = {
   base: "flex text-base justify-center items-center w-1/2 px-4 py-2 rounded-[50px] transition-colors font-medium",
   primary: "bg-primary-600 text-white hover:bg-primary-700",
-  secondary: "text-text-500 hover:bg-background-secondary",
+  secondary: "text-typography-500 hover:bg-background-secondary",
   danger: "bg-destructive-600 text-white hover:bg-destructive-700",
-  default: "border border-border text-text-500 hover:bg-background-secondary",
+  default: "border border-border text-typography-500 hover:bg-background-secondary",
 };
 
 export const toolTipStyles = {

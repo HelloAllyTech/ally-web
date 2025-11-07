@@ -342,7 +342,9 @@ export const SimulationEventMapTable: FC<SimulationEventMapTableProps> = ({ simu
   return (
     <div className="flex flex-col h-full w-100%">
       <div className="sticky flex flex-row justify-between top-0 z-10 pt-3 mx-6 pb-4 border-b border-border-light">
-        <h2 className="text-xl font-medium text-text-700">{en.simulation.eventConfiguration}</h2>
+        <h2 className="text-xl font-medium text-typography-700">
+          {en.simulation.eventConfiguration}
+        </h2>
         {!isLoading && renderActionButtons()}
       </div>
       <div className="p-6 pt-4 pr-0 overflow-y-hidden overflow-x-scroll w-[calc(100vw-270px)] lg:w-[calc(100vw-320px)] max-w-full">
