@@ -65,7 +65,7 @@ export const SimulationPreview: FC<SimulationPreviewProps> = ({ simulation, isOp
       >
         {/* Header */}
         <div className="p-6 pb-4">
-          <h2 className="text-4xl text-neutral-800 mb-4 font-thin font-primary">
+          <h2 className="text-4xl text-typography-700 mb-4 font-thin font-primary">
             <span>{en.simulation.simulation}</span>
             {` ${en.simulation.preview}`}
           </h2>
