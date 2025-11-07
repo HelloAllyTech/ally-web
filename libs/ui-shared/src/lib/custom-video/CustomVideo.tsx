@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 
 import { Pause, Play, VolumeMute, VolumeUp } from "../../assets";
 
@@ -10,13 +10,28 @@ interface CustomVideoProps {
   className?: string;
   poster?: string;
   loop?: boolean;
+  autoPlay?: boolean;
 }
 
-export const CustomVideo = ({ src, alt, className = "", poster, loop }: CustomVideoProps) => {
+export const CustomVideo = ({
+  src,
+  alt,
+  className = "",
+  poster,
+  loop,
+  autoPlay = false,
+}: CustomVideoProps) => {
   const [isMuted, setIsMuted] = useState(true);
   const [isPlaying, setIsPlaying] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
+
+  useEffect(() => {
+    if (videoRef.current && autoPlay) {
+      setIsPlaying(true);
+      videoRef.current.play();
+    }
+  }, [src, autoPlay]);
 
   const handleToggleMute = () => {
     if (videoRef.current) {
