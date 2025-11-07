@@ -23,8 +23,8 @@ import { SummaryLoadingProps } from "../types";
 const SummaryGeneratedState = () => (
   <>
     <SummaryGeneratedIllustration className="w-64" />
-    <h1 className="font-semibold mb-2 font-['IBM_Plex_Serif'] text-2xl">Summary is generated</h1>
-    <p className="text-[#6B7280] text-base text-center max-w-md font-['IBM_Plex_Serif'] mb-1">
+    <h1 className="font-semibold mb-2 font-primary text-2xl">Summary is generated</h1>
+    <p className="text-[#6B7280] text-base text-center max-w-md font-primary mb-1">
       You can review the session now.
     </p>
   </>
@@ -33,12 +33,12 @@ const SummaryGeneratedState = () => (
 const SummaryFailedState = ({ extraMessage = "" }) => (
   <>
     {extraMessage?.length > 0 && (
-      <span className="rounded-full border-[0.5px] border-[#E5675A] px-2 py-1 text-[#E5675A] text-xs mb-8 flex items-center gap-1">
-        <CircleX className="w-4 h-4 text-[#E5675A]" /> No audio detected
+      <span className="rounded-full border-[0.5px] border-destructive-300 px-2 py-1 text-[#E5675A] text-xs mb-8 flex items-center gap-1">
+        <CircleX className="w-4 h-4 text-destructive-300" /> No audio detected
       </span>
     )}
     <SummaryFailed className="w-64" />
-    <h1 className="font-semibold mb-2 font-['IBM_Plex_Serif'] text-2xl">
+    <h1 className="font-semibold mb-2 font-primary text-2xl">
       Failed to generate session summary
     </h1>
   </>
@@ -55,9 +55,9 @@ const SummaryProcessingState = ({
       {showInfoBanner && (
         <InfoBanner
           message="Transcription generated & audio deleted"
-          icon={() => <VerifiedBadge className="text-[#0957D0]" />}
-          wrapperClassName="rounded-full py-1 px-2 border-[#0957D0] bg-[#EEF8FF]"
-          messageClassName="text-[#0957D0]"
+          icon={() => <VerifiedBadge className="text-primary-500" />}
+          wrapperClassName="rounded-full py-1 px-2 border-primary-500 bg-primary-50"
+          messageClassName="text-text-primary-500"
         />
       )}
     </div>
@@ -72,15 +72,15 @@ const SummaryProcessingState = ({
 
     {/* Shiny Text Animation */}
     <div className="mb-8">
-      <ShinyText text={summaryMessage} className="text-xl font-['IBM_Plex_Serif']" />
+      <ShinyText text={summaryMessage} className="text-xl font-primary" />
     </div>
-    <p className="text-[#6B7280] text-base text-center font-['IBM_Plex_Serif'] mb-1">
+    <p className="text-neutral-600 text-base text-center font-primary mb-1">
       {inSummarySidebar
         ? "An AI-generated summary will be available shortly on this screen. In the meantime, you can add notes below."
         : "An AI-generated summary will be available shortly on this screen and in the session logs. In the meantime, you can add notes below."}
     </p>
     {!!estimatedTime && (
-      <p className="text-[#6B7280] text-base text-center max-w-md font-['IBM_Plex_Serif']">
+      <p className="text-neutral-600 text-base text-center max-w-md font-primary">
         Estimated time: ~ {estimatedTime} min
       </p>
     )}
@@ -143,19 +143,19 @@ const SummaryLoading: FC<SummaryLoadingProps> = ({
             <NotesIcon />
             <label
               htmlFor="notes"
-              className="flex items-center gap-2 font-['IBM_Plex_Serif'] text-sm font-medium text-gray-700"
+              className="flex items-center gap-2 font-primary text-sm font-medium text-gray-700"
             >
               <span>Add Notes(Optional)</span>
               {isNotesSaving && (
                 <>
                   <Cloud />
-                  <span className="text-sm font-['IBM_Plex_Serif'] text-[#9CA3AF]">Autosaving</span>
+                  <span className="text-sm font-primary text-neutral-500">Autosaving</span>
                 </>
               )}
               {!isNotesSaving && !!notes && (
                 <>
-                  <Check className="w-4 h-4 text-[#9CA3AF]" />
-                  <span className="text-sm font-['IBM_Plex_Serif'] text-[#9CA3AF]">Saved</span>
+                  <Check className="w-4 h-4 text-neutral-500" />
+                  <span className="text-sm font-primary text-neutral-500">Saved</span>
                 </>
               )}
             </label>
@@ -177,7 +177,7 @@ const SummaryLoading: FC<SummaryLoadingProps> = ({
           disabled={!hasEditSummaryPermission}
           onChange={e => onNotesChange(e.target.value)}
           placeholder="Jot down your thoughts"
-          className="w-full p-[10px] border-none focus:ring-transparent focus:ring-0 focus:outline-none font-['IBM_Plex_Serif'] text-sm resize-none"
+          className="w-full p-[10px] border-none focus:ring-transparent focus:ring-0 focus:outline-none font-primary text-sm resize-none"
         />
       </div>
     );
@@ -207,7 +207,7 @@ const SummaryLoading: FC<SummaryLoadingProps> = ({
               <Button
                 variant={ButtonVariant.TEXT}
                 onClick={onViewCallLogs}
-                className=" w-40 font-['IBM_Plex_Serif']"
+                className=" w-40 font-primary"
               >
                 I’ll check later
               </Button>
@@ -215,7 +215,7 @@ const SummaryLoading: FC<SummaryLoadingProps> = ({
             <Button
               variant={ButtonVariant.SECONDARY}
               onClick={onReadyButtonClick}
-              className=" w-40 font-['IBM_Plex_Serif']"
+              className=" w-40 font-primary"
             >
               {isSummaryRefetching && <CircularProgress size={16} />}
               See if its ready
@@ -230,7 +230,7 @@ const SummaryLoading: FC<SummaryLoadingProps> = ({
               <Button
                 variant={ButtonVariant.SECONDARY}
                 onClick={onViewCallLogs}
-                className=" w-40 font-['IBM_Plex_Serif']"
+                className=" w-40 font-primary"
               >
                 Back to session logs
               </Button>

@@ -88,7 +88,7 @@ describe("CreditInfoDialog", () => {
     const description = "Test description message";
     renderComponent({ description });
     expect(screen.getByText(description)).toBeInTheDocument();
-    expect(screen.getByText(description)).toHaveClass("font-['IBM_Plex_Serif']", "text-[20px]");
+    expect(screen.getByText(description)).toHaveClass("font-primary", "text-[20px]");
   });
 
   it("should render the CloseIcon", () => {

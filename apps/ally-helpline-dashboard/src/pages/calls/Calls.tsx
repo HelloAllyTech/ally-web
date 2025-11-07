@@ -86,13 +86,13 @@ export const Calls: FC = () => {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.3, ease: "easeOut" }}
-        className="relative mt-[10px] font-['IBM_Plex_Serif']"
+        className="relative mt-[10px] font-primary"
       >
         <div className="sm:p-4 p-0 rounded-lg flex gap-4 sm:justify-between justify-start bg-transparent items-center">
-          <div className="z-10 text-[#0D0D0D] text-[24px] font-[500] flex items-center gap-2">
+          <div className="z-10 text-typography-900 text-2xl font-[500] flex items-center gap-2">
             Session Logs
             <Refresh
-              className="w-6 h-6 cursor-pointer border-l-[0.5px] border-[#D2D2D2] pl-2"
+              className="w-6 h-6 cursor-pointer border-l-[0.5px] border-border pl-2"
               onClick={handleRefresh}
             />
           </div>
@@ -109,7 +109,7 @@ export const Calls: FC = () => {
                 <UploadIcon
                   className={
                     hasPermissions(permissions, Permissions.START_MICROPHONE_CHAT)
-                      ? "text-gray-500 path-fill-current"
+                      ? "text-neutral-500 path-fill-current"
                       : "text-white path-fill-current"
                   }
                 />
@@ -128,7 +128,7 @@ export const Calls: FC = () => {
           <Tabs
             value={sessionUserGroup}
             onChange={handleTabChange}
-            className="w-full normal-case border-b border-[#DBDBDB] mb-4"
+            className="w-full normal-case border-b border-border mb-4"
             sx={{
               "& .MuiButtonBase-root": {
                 fontFamily: "IBM_Plex_Serif",

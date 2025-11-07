@@ -7,7 +7,7 @@ exports[`Calls Component > Snapshot Testing > should match snapshot 1`] = `
   >
     <div
       animate="[object Object]"
-      class="relative mt-[10px] font-['IBM_Plex_Serif']"
+      class="relative mt-[10px] font-primary"
       initial="[object Object]"
       layout="position"
       transition="[object Object]"
@@ -90,7 +90,7 @@ exports[`Calls Component > Snapshot Testing > should match snapshot with admin r
   >
     <div
       animate="[object Object]"
-      class="relative mt-[10px] font-['IBM_Plex_Serif']"
+      class="relative mt-[10px] font-primary"
       initial="[object Object]"
       layout="position"
       transition="[object Object]"

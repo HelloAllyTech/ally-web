@@ -102,7 +102,7 @@ const FilterPopover: React.FC<FilterPopoverProps> = ({
       onClose={onClose}
       anchorOrigin={anchorOrigin || { vertical: "top", horizontal: "right" }}
       transformOrigin={{ vertical: "top", horizontal: "left" }}
-      className="font-['IBM_Plex_Serif']"
+      className="font-primary"
       PaperProps={{
         className: "shadow-none border border-[#E0E0E0] -ml-[15px] mt-[15px]",
       }}

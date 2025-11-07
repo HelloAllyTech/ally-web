@@ -190,7 +190,7 @@ const CallSummary: FC<CallSummaryProps> = ({
               disabled={isFieldDisabled(field)}
               value={value ?? "--"}
               valueClassName={`${field.isEditable ? "text-[#1A1A1A]" : "text-[#9CA3AF]"} 
-                text-[16px] font-['IBM_Plex_Serif']`}
+                text-[16px] font-primary`}
               onChange={value => setSummaryData(prev => ({ ...prev, [field.key]: value }))}
               onHandleSearch={field.key === SummaryFieldKey.Location ? onHandleSearch : undefined}
               options={getDropdownOptions(field.key, field.options)}
@@ -396,7 +396,7 @@ const CallSummary: FC<CallSummaryProps> = ({
           messageClassName="text-[#873200]"
         />
         {headerContent}
-        <div className={`overflow-y-auto font-['IBM_Plex_Serif'] pb-[60px] ${className}`}>
+        <div className={`overflow-y-auto font-primary pb-[60px] ${className}`}>
           {summarySections.map(({ title, icon, key }, index) => {
             const sectionFields = getSectionFields(key, visibleFields);
             if (sectionFields?.length === 0) return null;
@@ -443,7 +443,7 @@ const CallSummary: FC<CallSummaryProps> = ({
               titleIcon={{ icon: Assessment, alt: "Notes" }}
               defaultExpanded={false}
             >
-              <div className="text-[16px] font-['IBM_Plex_Serif'] text-[#6B7280] mb-[8px]">
+              <div className="text-[16px] font-primary text-[#6B7280] mb-[8px]">
                 {callSummary?.details?.callInfo?.notes || "--"}
               </div>
             </Accordion>

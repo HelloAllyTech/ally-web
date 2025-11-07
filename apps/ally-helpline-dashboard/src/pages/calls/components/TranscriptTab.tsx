@@ -15,7 +15,7 @@ const TranscriptTab: FC<TranscriptTabProps> = ({ transcriptList, handleLoadMore,
               <div key={`${speaker}-${index}`} className="flex">
                 <div className="flex-1 text-sm">
                   <span className="font-semibold">{speaker}: </span>
-                  <span className="font-['IBM_Plex_Serif']">{content}</span>
+                  <span className="font-primary">{content}</span>
                 </div>
               </div>
             ))}

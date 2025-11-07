@@ -167,7 +167,7 @@ export const Login: FunctionComponent = () => {
           transition={{ duration: 0.4, ease: "easeInOut" }}
           className="flex flex-col gap-4"
         >
-          <div className="flex flex-col text-[32px] font-['Replay_Pro']">
+          <div className="flex flex-col text-[32px] font-secondary">
             <span>Hey,</span>
             <h1>
               <span className="inline-flex items-center gap-2 whitespace-nowrap">
@@ -248,8 +248,8 @@ export const Login: FunctionComponent = () => {
         className="flex flex-col justify-start gap-6"
       >
         <BackCircle className="self-start cursor-pointer" onClick={handleBack} />
-        <h1 className="text-[32px] font-['Replay_Pro']">Verify your email address</h1>
-        <div className="text-base mb-2 font-['Replay_Pro'] flex flex-col">
+        <h1 className="text-[32px] font-secondary">Verify your email address</h1>
+        <div className="text-base mb-2 font-secondary flex flex-col">
           <span className="text-[24px]">Enter the security code sent to</span>
           <span className="font-semibold text-[24px]">{email}</span>
         </div>
@@ -303,7 +303,7 @@ export const Login: FunctionComponent = () => {
           className="flex items-center gap-2 p-3 rounded-tl-2xl bg-white pl-5 absolute bottom-0 right-0 cursor-pointer"
           onClick={() => openLinkInNewTab(ALLY_URL)}
         >
-          <div className="flex flex-col mr-4 font-['Replay_Pro']">
+          <div className="flex flex-col mr-4 font-secondary">
             <Ally className="w-10 h-10" />
             <span className="text-sm font-medium text-[#858688]">helloally.ai</span>
           </div>

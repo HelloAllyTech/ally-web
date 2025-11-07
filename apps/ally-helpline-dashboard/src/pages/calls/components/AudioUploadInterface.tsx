@@ -130,7 +130,7 @@ const AudioUploadInterface: FC<AudioUploadInterfaceProps> = ({
         return (
           <div className="flex gap-5 w-full border-[0.5px] border-[#D2D2D2] rounded-[8px] p-6">
             <FileUpload />
-            <div className="flex flex-col gap-2 flex-1 font-['IBM_Plex_Serif']">
+            <div className="flex flex-col gap-2 flex-1 font-primary">
               <span className="text-[#000000DE] text-sm">Uploading your audio file</span>
               <div className="w-full h-2 bg-[#EDEDED] rounded">
                 <div
@@ -150,7 +150,7 @@ const AudioUploadInterface: FC<AudioUploadInterfaceProps> = ({
               className={`w-10 h-10 rounded-full ${isPlaying ? "bg-[#E2F2FF]" : "bg-[#F5F5F5]"} cursor-pointer grid place-items-center`}
             >
               {isPlaying ? (
-                <PauseIcon className="text-[#0957D0]" onClick={onPauseClick} />
+                <PauseIcon className="text-primary-500" onClick={onPauseClick} />
               ) : (
                 <PlayIcon className="text-[#757575]" onClick={onPlayClick} />
               )}
@@ -172,7 +172,7 @@ const AudioUploadInterface: FC<AudioUploadInterfaceProps> = ({
               {formatTime(duration)}
             </span>
           </div>
-          <div className="flex gap-2 w-full justify-between items-center font-['IBM_Plex_Serif']">
+          <div className="flex gap-2 w-full justify-between items-center font-primary">
             <div className="flex gap-2 items-center">
               <span className="text-[12px] text-black">{audioFile?.name}</span>
               <span className="text-[10px] text-[#424242] bg-[#F5F5F5] rounded-[2px] p-1">

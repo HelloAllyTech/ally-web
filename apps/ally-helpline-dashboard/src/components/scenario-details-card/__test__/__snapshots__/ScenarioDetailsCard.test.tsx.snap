@@ -22,7 +22,7 @@ exports[`ScenarioDetailsCard > should match snapshot when fully rendered 1`] = `
       />
     </div>
     <div
-      class="flex flex-col gap-1 mt-3 font-['IBM_Plex_Serif']"
+      class="flex flex-col gap-1 mt-3 font-primary"
     >
       <div
         class="flex items-start justify-between"
@@ -67,7 +67,7 @@ exports[`ScenarioDetailsCard > should match snapshot when fully rendered 1`] = `
       >
         <button
           aria-label="Start simulation"
-          class="!font-['Roboto'] !text-[14px]  !py-3 false w-[240px]"
+          class="!font-tertiary !text-[14px]  !py-3 false w-[240px]"
           data-testid="mock-button"
           data-variant="primary"
         >
@@ -101,7 +101,7 @@ exports[`ScenarioDetailsCard > should match snapshot when isStarting is true 1`]
       />
     </div>
     <div
-      class="flex flex-col gap-1 mt-3 font-['IBM_Plex_Serif']"
+      class="flex flex-col gap-1 mt-3 font-primary"
     >
       <div
         class="flex items-start justify-between"
@@ -146,7 +146,7 @@ exports[`ScenarioDetailsCard > should match snapshot when isStarting is true 1`]
       >
         <button
           aria-label="Start simulation"
-          class="!font-['Roboto'] !text-[14px]  !py-3 !bg-gray-400 w-[240px]"
+          class="!font-tertiary !text-[14px]  !py-3 !bg-gray-400 w-[240px]"
           data-testid="mock-button"
           data-variant="primary"
           disabled=""
@@ -186,7 +186,7 @@ exports[`ScenarioDetailsCard > should match snapshot when noCredits is true 1`] 
       />
     </div>
     <div
-      class="flex flex-col gap-1 mt-3 font-['IBM_Plex_Serif']"
+      class="flex flex-col gap-1 mt-3 font-primary"
     >
       <div
         class="flex items-start justify-between"
@@ -231,7 +231,7 @@ exports[`ScenarioDetailsCard > should match snapshot when noCredits is true 1`] 
       >
         <button
           aria-label="Start simulation"
-          class="!font-['Roboto'] !text-[14px]  !py-3 !bg-gray-400 w-[240px]"
+          class="!font-tertiary !text-[14px]  !py-3 !bg-gray-400 w-[240px]"
           data-testid="mock-button"
           data-variant="primary"
           disabled=""

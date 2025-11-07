@@ -256,7 +256,7 @@ describe("CallSidebar", () => {
         "mb-4",
         "border",
         "border-[#0473F2]",
-        "font-['IBM_Plex_Serif']",
+        "font-primary",
         "rounded-lg",
         "bg-[#8CD3FF26]",
       );
@@ -332,7 +332,7 @@ describe("CallSidebar", () => {
       render(<CallSidebar {...defaultProps} />);
 
       const customMarkdown = screen.getByTestId("custom-markdown");
-      expect(customMarkdown).toHaveClass("font-['IBM_Plex_Serif']");
+      expect(customMarkdown).toHaveClass("font-primary");
       expect(customMarkdown).toHaveTextContent("This is a test nudge content");
     });
 

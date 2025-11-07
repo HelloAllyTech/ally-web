@@ -14,13 +14,13 @@ export const SuspendedUser = () => {
       <div className="border rounded-lg px-16 py-10 flex flex-col justify-center items-center gap-2">
         <SuspendedUserIcon />
         <div className="text-2xl font-[Replay-pro]">Account Suspended</div>
-        <div className="flex flex-col text-center font-['IBM_Plex_Serif']">
+        <div className="flex flex-col text-center font-primary">
           <div>Your account has been suspended. Contact your</div>
           <div>administrator for assistance</div>
         </div>
 
         <button
-          className="border border-gray-300 rounded-full px-5 py-2 font-['Roboto'] mt-8"
+          className="border border-gray-300 rounded-full px-5 py-2 font-tertiary mt-8"
           onClick={GoToLogin}
         >
           Go to login

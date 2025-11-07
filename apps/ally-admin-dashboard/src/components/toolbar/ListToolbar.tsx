@@ -77,7 +77,7 @@ export const ListToolbar: React.FC<ListToolbarProps> = ({
     <Button
       onClick={action.onClick}
       variant={action.variant}
-      className={`inline-flex font-['Roboto'] items-center text-sm font-medium px-4 py-2 rounded-full`}
+      className={`inline-flex font-tertiary items-center text-sm font-medium px-4 py-2 rounded-full`}
     >
       {action?.icon ? <span className="mr-[1px] text-lg">{action?.icon}</span> : <Add />}
       {action.label}

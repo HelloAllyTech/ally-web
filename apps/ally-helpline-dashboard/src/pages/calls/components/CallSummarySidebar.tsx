@@ -91,7 +91,7 @@ const CallSummarySidebar: FC<CallSummarySidebarProps> = ({
         {callSummary?.details?.comments?.length > 0 && (
           <div className="flex-1 p-4 bg-[#F0F4F8]">
             <h3 className="font-semibold text-sm mb-2">Comments</h3>
-            <div className="space-y-4 font-['IBM_Plex_Serif']">
+            <div className="space-y-4 font-primary">
               {callSummary?.details?.comments.map(({ comment, description }, index) => (
                 <div
                   key={`comment-${index}`}

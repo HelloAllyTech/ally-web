@@ -3,7 +3,7 @@
 exports[`NavSideBar > should match snapshot when fully rendered 1`] = `
 <DocumentFragment>
   <div
-    class="bg-white h-screen flex flex-col justify-between border-r border-r-[#E5E7EB] transition-all duration-300 relative w-64 p-[12px] font-['IBM_Plex_Serif']"
+    class="bg-white h-screen flex flex-col justify-between border-r border-r-[#E5E7EB] transition-all duration-300 relative w-64 p-[12px] font-primary"
   >
     <div
       class="flex justify-between"
@@ -36,7 +36,7 @@ exports[`NavSideBar > should match snapshot when fully rendered 1`] = `
           data-testid="calls-icon"
         />
         <div
-          class="text-[#000] font-[500] font-['IBM_Plex_Serif'] text-[16px]"
+          class="text-[#000] font-[500] font-primary text-[16px]"
         >
           Sessions
         </div>
@@ -53,7 +53,7 @@ exports[`NavSideBar > should match snapshot when fully rendered 1`] = `
           data-testid="analytics-icon"
         />
         <div
-          class="text-[#6B7280] font-[400] font-['IBM_Plex_Serif'] text-[16px]"
+          class="text-[#6B7280] font-[400] font-primary text-[16px]"
         >
           Statistics
         </div>

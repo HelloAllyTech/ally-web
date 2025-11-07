@@ -113,7 +113,7 @@ const CallInterface: FC<CallInterfaceProps> = ({
             </div>
           )}
           <div className="text-white flex justify-center items-center flex-col gap-2">
-            <div className="flex items-center gap-2 font-['IBM_Plex_Serif'] font-medium">
+            <div className="flex items-center gap-2 font-primary font-medium">
               <Tooltip
                 title={<PrivacyTooltip />}
                 placement="top"
@@ -126,7 +126,7 @@ const CallInterface: FC<CallInterfaceProps> = ({
               </Tooltip>
               Taking notes
             </div>
-            <div className="text-[14px] font-semibold font-['Roboto']">{formatTime(seconds)}</div>
+            <div className="text-[14px] font-semibold font-tertiary">{formatTime(seconds)}</div>
             <div className="text-[12px] text-[#666] text-center max-w-xs mt-1">
               {getDescriptionText()}
             </div>

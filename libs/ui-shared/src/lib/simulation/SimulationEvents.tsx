@@ -55,7 +55,7 @@ export const SimulationEvents: FC<SimulationEventsProps> = ({ events = [] }) => 
         initial={{ x: "100%", opacity: 0 }}
         animate={{ x: hasEvents ? "0%" : "100%", opacity: hasEvents ? 1 : 0 }}
         transition={{ duration: 0.35, ease: [0.4, 0, 0.2, 1] }}
-        className="flex flex-col items-end gap-4 bg-[#1D2020] p-4 h-full overflow-y-auto"
+        className="flex flex-col items-end gap-4 bg-neutral-900 p-4 h-full overflow-y-auto"
         ref={containerRef}
       >
         {events.map(({ emoji, message, timestamp }, index) => {
@@ -63,16 +63,16 @@ export const SimulationEvents: FC<SimulationEventsProps> = ({ events = [] }) => 
           return (
             <motion.div
               key={`${timestamp}-${index}`}
-              className="flex items-center gap-2 bg-[#282B31] px-4 py-1 rounded-full"
+              className="flex items-center gap-2 bg-neutral-800 px-4 py-1 rounded-full"
               initial={{ opacity: 0, y: 6 }}
               animate={{ opacity: isLast ? 1 : 0.5, y: 0 }}
               transition={{ duration: 0.4 }}
               ref={isLast ? lastEventRef : undefined}
             >
-              <span className="text-[14px] text-white italic font-['IBM_Plex_Serif']">
+              <span className="text-base text-white italic font-primary">
                 {`${emoji}  ${message}`}
               </span>
-              <span className="text-[12px] text-[#9CA3AF] font-['Roboto'] flex-none">
+              <span className="text-xs text-neutral-800 font-tertiary flex-none">
                 {getEventTime(timestamp)}
               </span>
             </motion.div>

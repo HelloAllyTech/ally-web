@@ -39,7 +39,7 @@ exports[`Login Component > Snapshot Testing > should match snapshot for email se
         class="flex items-center gap-2 p-3 rounded-tl-2xl bg-white pl-5 absolute bottom-0 right-0 cursor-pointer"
       >
         <div
-          class="flex flex-col mr-4 font-['Replay_Pro']"
+          class="flex flex-col mr-4 font-secondary"
         >
           <div
             class="w-10 h-10"
@@ -78,7 +78,7 @@ exports[`Login Component > Snapshot Testing > should match snapshot for email se
             transition="[object Object]"
           >
             <div
-              class="flex flex-col text-[32px] font-['Replay_Pro']"
+              class="flex flex-col text-[32px] font-secondary"
             >
               <span>
                 Hey,
@@ -207,7 +207,7 @@ exports[`Login Component > Snapshot Testing > should match snapshot for initial 
         class="flex items-center gap-2 p-3 rounded-tl-2xl bg-white pl-5 absolute bottom-0 right-0 cursor-pointer"
       >
         <div
-          class="flex flex-col mr-4 font-['Replay_Pro']"
+          class="flex flex-col mr-4 font-secondary"
         >
           <div
             class="w-10 h-10"
@@ -246,7 +246,7 @@ exports[`Login Component > Snapshot Testing > should match snapshot for initial 
             transition="[object Object]"
           >
             <div
-              class="flex flex-col text-[32px] font-['Replay_Pro']"
+              class="flex flex-col text-[32px] font-secondary"
             >
               <span>
                 Hey,

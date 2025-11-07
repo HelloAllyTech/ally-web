@@ -50,7 +50,7 @@ const UserInfo: FC<{ user?: User; isExpanded?: boolean; onLogout: () => void }> 
             </div>
           </div>
           {isExpanded && (
-            <div className="flex flex-col font-['IBM_Plex_Serif']">
+            <div className="flex flex-col font-primary">
               <div className="text-[16px] text-gray-800">{user?.name}</div>
               <div className="text-[12px] text-gray-500">{user?.email}</div>
             </div>

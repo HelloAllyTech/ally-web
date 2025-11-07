@@ -283,7 +283,7 @@ const AdminLogsTable: FC<LogsTableProps> = ({ refreshKey, sessionType, className
                 fullWidth={true}
                 variant="icon"
               >
-                <Delete className="text-[#F93535]" />
+                <Delete className="text-destructive-400" />
               </Button>
             </PermissionGuard>
           )}
@@ -490,7 +490,7 @@ const AdminLogsTable: FC<LogsTableProps> = ({ refreshKey, sessionType, className
           onFilterChange={isCall ? handleFilterChange : undefined}
           handleLoadMore={logs?.length > 0 && hasMore && handleLoadMore}
           fallbackUI={renderFallbackUI()}
-          className={`min-w-full font-['ReplayPro'] overflow-y-scroll text-[13px] ${className}`}
+          className={`min-w-full font-secondary overflow-y-scroll text-sm text-typography-800 ${className}`}
         />
       </div>
       {summary && summary.id && getSummarySideBar()}

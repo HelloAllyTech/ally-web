@@ -77,7 +77,7 @@ export const Analytics: FunctionComponent = () => {
   return (
     <div className={"flex flex-col justify-center m-6 overflow-hidden h-[calc(100vh-100px)]"}>
       <div>
-        <div className="text-[#0D0D0D] font-['IBM_Plex_Serif'] text-[24px] font-[500] flex items-center gap-2 mb-2">
+        <div className="text-[#0D0D0D] font-primary text-[24px] font-[500] flex items-center gap-2 mb-2">
           Session Analytics
         </div>
         {analyticsToggleOptions?.length > 1 && (

@@ -104,7 +104,7 @@ export const CallFeedback: FC<FeedbackSectionProps> = ({ id, onSubmitComplete })
                 <div
                   key={value}
                   onClick={() => onIssueClick(value)}
-                  className={`text-[14px] rounded-full border  py-1 px-2 cursor-pointer ${selected ? "border-[#5F99FC] text-[#0957D0]" : "border-[#D8D8D8] text-[#47464F]"}`}
+                  className={`text-[14px] rounded-full border  py-1 px-2 cursor-pointer ${selected ? "border-[#5F99FC] text-primary-500" : "border-[#D8D8D8] text-[#47464F]"}`}
                 >
                   {text}
                 </div>

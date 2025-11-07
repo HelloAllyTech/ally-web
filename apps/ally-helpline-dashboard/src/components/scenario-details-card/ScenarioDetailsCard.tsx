@@ -90,7 +90,7 @@ const ScenarioDetailsCard: FC<ScenarioDetailsCardProps> = ({
     >
       {renderMedia()}
 
-      <div className="flex flex-col gap-1 mt-3 font-['IBM_Plex_Serif']">
+      <div className="flex flex-col gap-1 mt-3 font-primary">
         <div className="flex items-start justify-between">
           <div id="scenario-title" className="text-[#0D0D0D] text-[20px]">
             {title}
@@ -120,7 +120,7 @@ const ScenarioDetailsCard: FC<ScenarioDetailsCardProps> = ({
               onStart?.();
             }}
             variant="primary"
-            className={`!font-['Roboto'] !text-[14px]  !py-3 ${isDisabled && "!bg-gray-400"} w-[240px]`}
+            className={`!font-tertiary !text-[14px]  !py-3 ${isDisabled && "!bg-gray-400"} w-[240px]`}
             disabled={isDisabled}
             aria-label="Start simulation"
           >

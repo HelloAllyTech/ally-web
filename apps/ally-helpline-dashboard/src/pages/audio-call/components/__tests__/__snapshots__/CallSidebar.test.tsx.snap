@@ -24,7 +24,7 @@ exports[`CallSidebar > Snapshot Testing > should match snapshot when in focus mo
       </div>
     </div>
     <div
-      class="px-6 py-4 mx-4 mb-4 border border-[#0473F2]  font-['IBM_Plex_Serif'] rounded-lg bg-[#8CD3FF26]"
+      class="px-6 py-4 mx-4 mb-4 border border-[#0473F2]  font-primary rounded-lg bg-[#8CD3FF26]"
     >
       <div
         class="text-base font-medium text-[#0473F2] "
@@ -44,7 +44,7 @@ exports[`CallSidebar > Snapshot Testing > should match snapshot when in focus mo
         class="border border-gray-200 text-[#fff] rounded-lg p-4 mb-2"
       >
         <div
-          class="font-['IBM_Plex_Serif']"
+          class="font-primary"
           data-testid="custom-markdown"
         >
           This is a test nudge content
@@ -128,7 +128,7 @@ exports[`CallSidebar > Snapshot Testing > should match snapshot when sidebar is 
       </div>
     </div>
     <div
-      class="px-6 py-4 mx-4 mb-4 border border-[#0473F2]  font-['IBM_Plex_Serif'] rounded-lg bg-[#8CD3FF26]"
+      class="px-6 py-4 mx-4 mb-4 border border-[#0473F2]  font-primary rounded-lg bg-[#8CD3FF26]"
     >
       <div
         class="text-base font-medium text-[#0473F2] "
@@ -148,7 +148,7 @@ exports[`CallSidebar > Snapshot Testing > should match snapshot when sidebar is 
         class="border border-gray-200 text-[#fff] rounded-lg p-4 mb-2"
       >
         <div
-          class="font-['IBM_Plex_Serif']"
+          class="font-primary"
           data-testid="custom-markdown"
         >
           This is a test nudge content
@@ -226,7 +226,7 @@ exports[`CallSidebar > Snapshot Testing > should match snapshot with nudges 1`] 
       </div>
     </div>
     <div
-      class="px-6 py-4 mx-4 mb-4 border border-[#0473F2]  font-['IBM_Plex_Serif'] rounded-lg bg-[#8CD3FF26]"
+      class="px-6 py-4 mx-4 mb-4 border border-[#0473F2]  font-primary rounded-lg bg-[#8CD3FF26]"
     >
       <div
         class="text-base font-medium text-[#0473F2] "
@@ -246,7 +246,7 @@ exports[`CallSidebar > Snapshot Testing > should match snapshot with nudges 1`] 
         class="border border-gray-200 text-[#fff] rounded-lg p-4 mb-2"
       >
         <div
-          class="font-['IBM_Plex_Serif']"
+          class="font-primary"
           data-testid="custom-markdown"
         >
           This is a test nudge content
@@ -324,7 +324,7 @@ exports[`CallSidebar > Snapshot Testing > should match snapshot with stage 1`] =
       </div>
     </div>
     <div
-      class="px-6 py-4 mx-4 mb-4 border border-[#0473F2]  font-['IBM_Plex_Serif'] rounded-lg bg-[#8CD3FF26]"
+      class="px-6 py-4 mx-4 mb-4 border border-[#0473F2]  font-primary rounded-lg bg-[#8CD3FF26]"
     >
       <div
         class="text-base font-medium text-[#0473F2] "
@@ -344,7 +344,7 @@ exports[`CallSidebar > Snapshot Testing > should match snapshot with stage 1`] =
         class="border border-gray-200 text-[#fff] rounded-lg p-4 mb-2"
       >
         <div
-          class="font-['IBM_Plex_Serif']"
+          class="font-primary"
           data-testid="custom-markdown"
         >
           This is a test nudge content

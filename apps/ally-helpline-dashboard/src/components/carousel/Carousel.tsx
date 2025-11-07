@@ -95,10 +95,10 @@ const Carousel: FC<CarouselProps> = ({
     }
     switch (size) {
       case CarouselSize.SMALL:
-        styles += " text-[16px] px-4";
+        styles += " text-lg px-4";
         break;
       case CarouselSize.LARGE:
-        styles += " text-[22px]";
+        styles += " text-2xl";
     }
     return styles;
   };
@@ -142,7 +142,7 @@ const Carousel: FC<CarouselProps> = ({
             </div>
             <div className="text-center h-16 flex items-center justify-center">
               <p
-                className={`font-['IBM_Plex_Serif'] leading-2 ${getTextStyles()} ${textClassName}`}
+                className={`font-primary leading-2 ${getTextStyles()} ${textClassName}`}
               >
                 {activeSlide.text}
               </p>

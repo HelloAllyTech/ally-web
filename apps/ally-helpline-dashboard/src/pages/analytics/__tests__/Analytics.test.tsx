@@ -107,7 +107,7 @@ describe("Analytics Component", () => {
       const title = screen.getByText("Session Analytics");
       expect(title).toBeInTheDocument();
       expect(title.className).toContain("text-[#0D0D0D]");
-      expect(title.className).toContain("font-['IBM_Plex_Serif']");
+      expect(title.className).toContain("font-primary");
       expect(title.className).toContain("text-[24px]");
     });
 

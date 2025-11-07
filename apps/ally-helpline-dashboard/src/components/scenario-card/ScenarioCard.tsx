@@ -30,7 +30,7 @@ const ScenarioCard: FC<ScenarioCardProps> = ({
         </div>
       )}
       {isComingSoon && (
-        <span className="py-1 px-2 rounded-[4px] absolute top-2 right-2 text-[12px] font-['IBM_Plex_Serif'] text-[#292929] bg-white border-[0.5px] border-[#D2D2D2]">
+        <span className="py-1 px-2 rounded-[4px] absolute top-2 right-2 text-[12px] font-primary text-[#292929] bg-white border-[0.5px] border-[#D2D2D2]">
           Coming Soon
         </span>
       )}
@@ -58,7 +58,7 @@ const ScenarioCard: FC<ScenarioCardProps> = ({
     >
       <div className="flex flex-col h-full gap-3">
         {renderImage()}
-        <div className="flex flex-col flex-grow font-['IBM_Plex_Serif'] px-3 pb-3 sm:px-[14px] sm:pb-[14px] gap-1">
+        <div className="flex flex-col flex-grow font-primary px-3 pb-3 sm:px-[14px] sm:pb-[14px] gap-1">
           <div id="scenario-title" className="font-medium text-[#0D0D0D]">
             {title}
           </div>

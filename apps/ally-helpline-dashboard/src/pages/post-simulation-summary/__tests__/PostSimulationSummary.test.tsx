@@ -187,7 +187,7 @@ describe("PostSimulationSummary Component", () => {
       expect(title.className).toContain("sm:text-[32px]");
       expect(title.className).toContain("font-normal");
       expect(title.className).toContain("text-left");
-      expect(title.className).toContain("font-['Replay_Pro']");
+      expect(title.className).toContain("font-secondary");
       expect(title.className).toContain("mt-8");
       expect(title.className).toContain("px-4");
     });

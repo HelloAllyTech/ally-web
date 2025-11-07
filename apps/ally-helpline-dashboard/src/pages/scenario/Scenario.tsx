@@ -153,13 +153,13 @@ export const Scenario: FC = () => {
             className="flex flex-col gap-6 w-full m-auto justify-center items-center"
           >
             <div className="flex justify-between w-full max-w-[600px]">
-              <div className="flex items-center gap-2 font-['Replay_Pro'] text-[28px]">
+              <div className="flex items-center gap-2 font-secondary text-[28px]">
                 {renderBackButton()}
                 <span>Start</span>
                 <span className="font-bold italic"> Simulation</span>
               </div>
-              <div className="font-['IBM_Plex_Serif'] flex  items-center">
-                <div className="font-['IBM_Plex_Serif'] text-[14px] text-gray-500">
+              <div className="font-primary flex  items-center">
+                <div className="font-primary text-[14px] text-gray-500">
                   Credits used:
                 </div>
                 <Bolt className="mb-2" />

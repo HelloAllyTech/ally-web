@@ -153,7 +153,7 @@ const UploadProgressDialog: FC = () => {
   if (uploads.length === 0) return null;
 
   return (
-    <div className="fixed bottom-0 right-6 z-40 font-['IBM_Plex_Serif']">
+    <div className="fixed bottom-0 right-6 z-40 font-primary">
       <div className="w-[360px] bg-white shadow-[0_2px_10px_rgba(0,0,0,0.15)] rounded-t-[8px] border border-[#E5E7EB] overflow-hidden">
         <UploadProgressDialogHeader
           uploads={uploads}

@@ -23,7 +23,7 @@ exports[`Scenario Component > Snapshot Testing > should match snapshot with scen
             class="flex justify-between w-full max-w-[600px]"
           >
             <div
-              class="flex items-center gap-2 font-['Replay_Pro'] text-[28px]"
+              class="flex items-center gap-2 font-secondary text-[28px]"
             >
               <button
                 animate="[object Object]"
@@ -50,10 +50,10 @@ exports[`Scenario Component > Snapshot Testing > should match snapshot with scen
               </span>
             </div>
             <div
-              class="font-['IBM_Plex_Serif'] flex  items-center"
+              class="font-primary flex  items-center"
             >
               <div
-                class="font-['IBM_Plex_Serif'] text-[14px] text-gray-500"
+                class="font-primary text-[14px] text-gray-500"
               >
                 Credits used:
               </div>

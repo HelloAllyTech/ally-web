@@ -247,7 +247,7 @@ describe("ErrorScreen Component", () => {
         "text-2xl",
         "text-center",
         "mt-1",
-        "font-['Replay_Pro']",
+        "font-secondary",
       );
     });
 
@@ -262,7 +262,7 @@ describe("ErrorScreen Component", () => {
         "text-sm",
         "text-center",
         "mt-1",
-        "font-['IBM_Plex_Serif']",
+        "font-primary",
       );
     });
 

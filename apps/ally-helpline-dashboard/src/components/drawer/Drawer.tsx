@@ -23,7 +23,7 @@ const Drawer: FC<DrawerProps> = ({ open, onClose, children, title, headerButtons
         <div className="flex items-center gap-4">
           <ChevronsRight className="cursor-pointer" onClick={onClose} />
           <div className="flex justify-between w-full items-center">
-            <span className="text-[16px] font-semibold font-['Roboto'] text-[#79747E]">
+            <span className="text-[16px] font-semibold font-tertiary text-[#79747E]">
               {title || ""}
             </span>
             <div className="flex items-center gap-3">
@@ -34,7 +34,7 @@ const Drawer: FC<DrawerProps> = ({ open, onClose, children, title, headerButtons
                     key={button.alt}
                     variant={ButtonVariant.ICON}
                     onClick={button.onClick}
-                    className="flex items-center gap-2 font-['Roboto'] text-[12px] text-[#1A1A1A]"
+                    className="flex items-center gap-2 font-tertiary text-[12px] text-[#1A1A1A]"
                   >
                     {button.icon}
                     {button.text}

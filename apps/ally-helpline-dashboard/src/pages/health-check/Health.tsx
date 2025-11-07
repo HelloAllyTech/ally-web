@@ -20,7 +20,7 @@ export const Health = () => {
       <div className="w-full max-w-md bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8 text-center">
         <div className="flex items-center justify-center space-x-3 mb-6">
           <LifelineLogo className="h-10 w-10" />
-          <h1 className="text-3xl font-bold text-gray-800 dark:text-white font-['IBM_Plex_Serif']">
+          <h1 className="text-3xl font-bold text-gray-800 dark:text-white font-primary">
             Application Health Status
           </h1>
         </div>

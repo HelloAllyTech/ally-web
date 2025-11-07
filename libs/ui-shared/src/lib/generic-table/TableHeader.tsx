@@ -150,7 +150,7 @@ const TableHeader = <T extends Record<string, any>>({
       anchorOrigin={{ vertical: "top", horizontal: "right" }}
       transformOrigin={{ vertical: "top", horizontal: "left" }}
       PaperProps={{
-        className: "shadow-none border border-[#E0E0E0] mt-5 -ml-2.5 font-['IBM_Plex_Serif']",
+        className: "shadow-none border border-[#E0E0E0] mt-5 -ml-2.5 font-primary",
       }}
     >
       <div>
@@ -180,9 +180,9 @@ const TableHeader = <T extends Record<string, any>>({
         onClose={handleCloseAll}
         anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
         transformOrigin={{ vertical: "top", horizontal: "left" }}
-        className="font-['IBM_Plex_Serif']"
+        className="font-primary"
         PaperProps={{
-          className: "shadow-none border border-[#E0E0E0] font-['IBM_Plex_Serif']",
+          className: "shadow-none border border-[#E0E0E0] font-primary",
         }}
       >
         <div>
