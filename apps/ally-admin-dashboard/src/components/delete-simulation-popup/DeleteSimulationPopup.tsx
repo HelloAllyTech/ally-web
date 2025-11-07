@@ -30,11 +30,11 @@ export const DeleteSimulationPopup: FC<DeleteSimulationPopupProps> = ({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       <div className="absolute inset-0 bg-black bg-opacity-50" onClick={handleClose} />
-      <div className="relative bg-white rounded-lg shadow-xl max-w-md w-full mx-4 animate-in fade-in-0 zoom-in-95 duration-200 px-[32px] py-[24px] text-typography-700 font-primary">
+      <div className="relative bg-white rounded-lg shadow-xl max-w-md w-full mx-4 animate-in fade-in-0 zoom-in-95 duration-200 px-[32px] py-[24px] text-typography-900 font-primary">
         {/* Close button */}
         <button
           onClick={handleClose}
-          className="absolute top-[8px] right-[8px] text-typography-400 hover:text-typography-500 transition-colors"
+          className="absolute top-[8px] right-[8px] text-typography-600 hover:text-typography-800 transition-colors"
         >
           <Close width={24} height={24} />
         </button>
@@ -61,7 +61,7 @@ export const DeleteSimulationPopup: FC<DeleteSimulationPopupProps> = ({
           </div>
           <div className="flex-1 min-w-0">
             <h3 className="text-lg truncate">{simulation.title}</h3>
-            <p className="text-typography-500 text-base mt-1 line-clamp-2">
+            <p className="text-typography-800 text-base mt-1 line-clamp-2">
               {simulation.description}
             </p>
           </div>

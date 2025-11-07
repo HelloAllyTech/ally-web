@@ -3,10 +3,10 @@ import { formatCapitalizedEnum } from "@utils";
 
 export const StatusBadge: React.FC<{ status: userStatus | string }> = ({ status }) => {
   const STATUS_STYLES: Record<string, { dot: string; bg: string; text: string }> = {
-    ACTIVE: { dot: "bg-success-400", bg: "bg-success-100", text: "text-typography-600" },
-    SUSPENDED: { dot: "bg-destructive-400", bg: "bg-destructive-50", text: "text-typography-600" },
-    INACTIVE: { dot: "bg-neutral-400", bg: "bg-neutral-100", text: "text-typography-600" },
-    BLOCKED: { dot: "bg-destructive-500", bg: "bg-destructive-100", text: "text-typography-600" },
+    ACTIVE: { dot: "bg-success-400", bg: "bg-success-100", text: "text-typography-900" },
+    SUSPENDED: { dot: "bg-destructive-400", bg: "bg-destructive-50", text: "text-typography-900" },
+    INACTIVE: { dot: "bg-neutral-400", bg: "bg-neutral-100", text: "text-typography-900" },
+    BLOCKED: { dot: "bg-destructive-500", bg: "bg-destructive-100", text: "text-typography-900" },
   };
 
   const key = String(status).toUpperCase();

@@ -155,7 +155,7 @@ export const TextDropdown = ({
           },
         )}
       >
-        <span className={clsx("truncate mr-1", { "text-typography-500": !value })}>
+        <span className={clsx("truncate mr-1", { "text-typography-800": !value })}>
           {displayValue}
         </span>
         {!disabled && <ArrowDownFilled width={8} height={8} />}
@@ -181,7 +181,7 @@ export const TextDropdown = ({
           {/* Options List */}
           <div className="max-h-48 overflow-y-auto">
             {filteredOptions.length === 0 ? (
-              <div className="px-3 py-2 text-sm text-typography-500 text-center">
+              <div className="px-3 py-2 text-sm text-typography-800 text-center">
                 No options found
               </div>
             ) : (
@@ -192,7 +192,7 @@ export const TextDropdown = ({
                   onClick={() => selectOption(option)}
                   className={clsx("px-3 py-2 cursor-pointer text-sm flex items-center", {
                     "bg-primary-50 text-primary-700": index === highlightedIndex,
-                    "bg-white text-typography-700 hover:bg-background-secondary":
+                    "bg-white text-typography-900 hover:bg-background-secondary":
                       index !== highlightedIndex,
                   })}
                 >

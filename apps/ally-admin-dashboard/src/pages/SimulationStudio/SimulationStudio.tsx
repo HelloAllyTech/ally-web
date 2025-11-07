@@ -18,6 +18,7 @@ import {
   SimulationPreview,
   FilterList,
   EmptyState,
+  Button,
 } from "@components";
 import { en, ROUTES, SimulationStatus, SORT_BY, SORT_ORDER } from "@constants";
 import { Simulation } from "@types";
@@ -189,7 +190,7 @@ export const SimulationStudio: React.FC = () => {
           </p>
           <button
             onClick={handleCreateSimulation}
-            className="bg-primary hover:bg-primary-600 text-base text-white px-6 py-3 rounded-[100px] flex items-center gap-2 mx-auto font-primary transition-colors"
+            className="bg-primary-500 hover:bg-primary-600 text-base text-white px-6 py-3 rounded-[100px] flex items-center gap-2 mx-auto font-primary transition-colors"
           >
             <Add />
             {en.simulation.createSimulation}
@@ -206,7 +207,7 @@ export const SimulationStudio: React.FC = () => {
         <button
           onClick={() => loadSimulations(true)}
           disabled={isSimulationsFetching}
-          className="inline-flex font-tertiary items-center disabled:opacity-50 text-sm text-typography-600 font-medium py-1 px-1 hover:text-typography-700"
+          className="inline-flex font-tertiary items-center disabled:opacity-50 text-sm text-typography-600 font-medium py-1 px-1 hover:text-typography-900"
         >
           + {isSimulationsFetching ? en.common.loading : en.common.loadMore}
         </button>
@@ -220,13 +221,14 @@ export const SimulationStudio: React.FC = () => {
         <h1 className="text-2xl text-typography-900 font-primary">
           {en.simulation.simulationstudio}
         </h1>
-        <button
+        <Button
+          variant={ButtonVariant.PRIMARY}
           onClick={handleNewSimulation}
-          className="font-tertiary bg-primary hover:bg-primary-600 text-white text-base pl-4 pr-5 py-2 rounded-full flex items-center gap-2 transition-colors h-[40px]"
+          className="transition-colors h-[40px]"
         >
           <Add />
           {en.simulation.newSimulation}
-        </button>
+        </Button>
       </div>
       <div className="flex flex-row items-center border-b border-border-light pb-4 pl-5 relative">
         <button onClick={handleFilterClick}>
@@ -239,7 +241,7 @@ export const SimulationStudio: React.FC = () => {
                 key={filter.id}
                 className="flex flex-row items-center gap-1 border border-border-light rounded-full px-2 py-1"
               >
-                <span className="text-xs text-typography-500">{filter.label}</span>
+                <span className="text-xs text-typography-800">{filter.label}</span>
 
                 <button onClick={() => handleFilterItemClose(filter)}>
                   <Close />

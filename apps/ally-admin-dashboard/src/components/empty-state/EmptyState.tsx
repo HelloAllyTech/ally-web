@@ -25,12 +25,12 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
     >
       <h2 className="font-normal text-2xl text-typography-900 mb-2">{title}</h2>
       {subtitle && (
-        <p className="max-w-xl text-typography-500 text-base mb-4 w-[250px]">{subtitle}</p>
+        <p className="max-w-xl text-typography-800 text-base mb-4 w-[250px]">{subtitle}</p>
       )}
       {actionLabel && !hideActionButton && (
         <button
           onClick={onAction}
-          className="inline-flex items-center bg-primary hover:bg-primary/90 text-white text-base font-medium px-6 sm:px-8 py-3 rounded-full shadow-sm"
+          className="inline-flex items-center hover:bg-primary-600 text-white text-base font-medium px-6 sm:px-8 py-3 rounded-full shadow-sm"
         >
           <span className="mr-3">
             <Plus />

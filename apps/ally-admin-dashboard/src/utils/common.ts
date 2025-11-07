@@ -86,27 +86,27 @@ export const getButtonStyles = (variant: ButtonProps["variant"]) => {
     case ButtonVariant.DESTRUCTIVE:
       return "bg-destructive text-white hover:bg-destructive/90 disabled:bg-destructive/50";
     case ButtonVariant.SECONDARY:
-      return "border border-secondary hover:bg-accent hover:text-accent-foreground disabled:bg-accent/50 text-typography-700";
+      return "border border-secondary hover:bg-accent hover:text-accent-foreground disabled:bg-accent/50 text-typography-900";
     case ButtonVariant.ICON:
       return "bg-transparent border-none hover:bg-transparent disabled:bg-transparent !p-2 !h-fit";
     case ButtonVariant.TEXT:
       return "bg-transparent border-none hover:bg-transparent disabled:bg-transparent";
     case ButtonVariant.PRIMARY:
     default:
-      return "bg-primary text-white hover:bg-primary/90 disabled:bg-primary/50";
+      return "text-white bg-primary-500 hover:bg-primary-600 disabled:bg-primary/50";
   }
 };
 
 export const getSimulationStatusColor = (status: Simulation["status"]) => {
   switch (status) {
     case SimulationStatus.ACTIVE:
-      return "bg-success-100 text-success-darkText";
+      return "bg-success-100 text-success-900";
     case SimulationStatus.DRAFT:
-      return "bg-neutral-200 text-neutral";
+      return "bg-neutral-200 text-typography-800";
     case SimulationStatus.ARCHIVED:
-      return "bg-warning-100 text-warning-text";
+      return "bg-warning-100 text-typography-800";
     default:
-      return "bg-neutral-100 text-neutral-800";
+      return "bg-neutral-100 text-typography-800";
   }
 };
 

@@ -26,7 +26,7 @@ const Field: React.FC<FieldProps> = ({ label, children, multiline = false }) => 
     className={`flex flex-row min-h-[40px] ${multiline ? "items-start" : "items-center"} text-base justify-between`}
   >
     <div className={`w-[40%] ${multiline && "mt-[8px]"}`}>
-      <span className="text-sm font-medium text-typography-500">{label}</span>
+      <span className="text-sm font-medium text-typography-800">{label}</span>
     </div>
     <div className="w-[60%] flex text-left justify-start text-neutral-800">{children}</div>
   </div>
@@ -41,7 +41,7 @@ const PanelHeader: React.FC<{
   <div className="flex items-center justify-between p-6">
     <button
       onClick={onClose}
-      className="flex flex-row items-center justify-center gap-2 text-typography-500 hover:text-neutral-800"
+      className="flex flex-row items-center justify-center gap-2 text-typography-600 hover:text-neutral-800"
     >
       <DoubleArrowRight width={14} height={14} />
       <span className="text-base font-tertiary font-[500]">{en.simulation.editEvent}</span>
@@ -49,7 +49,7 @@ const PanelHeader: React.FC<{
     {hasEvent && (
       <button onClick={() => onDelete(eventId)} className="flex items-center gap-2">
         <Trash width={14} height={14} />
-        <span className="text-sm font-tertiary font-medium text-typography-700">
+        <span className="text-sm font-tertiary font-medium text-typography-900">
           {en.simulation.deleteEvent}
         </span>
       </button>

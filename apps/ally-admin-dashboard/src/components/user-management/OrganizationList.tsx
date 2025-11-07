@@ -14,7 +14,7 @@ export const OrganizationList: React.FC<OrganizationListProps> = ({
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
 
   const renderHeader = (
-    <div className="grid grid-cols-12 px-4 py-2 text-base text-typography-500 border-b border-border-light">
+    <div className="grid grid-cols-12 px-4 py-2 text-base text-typography-800 border-b border-border-light">
       <div className="col-span-3">{en.userManagement.organization}</div>
       <div className="col-span-2">{en.userManagement.code}</div>
       <div className="col-span-3">{en.userManagement.description}</div>
@@ -32,18 +32,18 @@ export const OrganizationList: React.FC<OrganizationListProps> = ({
           {organizations.map(tenant => (
             <div
               key={tenant.id}
-              className="grid grid-cols-12 items-center px-4 py-3 text-typography-700 border-b border-border-light hover:bg-background-secondary"
+              className="grid grid-cols-12 items-center px-4 py-3 text-typography-900 border-b border-border-light hover:bg-background-secondary"
             >
-              <div className="col-span-3 text-typography-700">{tenant.name}</div>
-              <div className="col-span-2 text-typography-600">{tenant.code}</div>
-              <div className="col-span-3 text-typography-600 overflow-hidden whitespace-nowrap truncate w-[200px]">
+              <div className="col-span-3 text-typography-900">{tenant.name}</div>
+              <div className="col-span-2 text-typography-900">{tenant.code}</div>
+              <div className="col-span-3 text-typography-900 overflow-hidden whitespace-nowrap truncate w-[200px]">
                 {tenant.description}
               </div>
-              <div className="col-span-2 text-typography-600">{formatDate(tenant.createdAt)}</div>
-              <div className="col-span-2 flex items-center justify-between text-typography-600 pl-1">
+              <div className="col-span-2 text-typography-900">{formatDate(tenant.createdAt)}</div>
+              <div className="col-span-2 flex items-center justify-between text-typography-900 pl-1">
                 <span>{tenant.userCount}</span>
                 <button
-                  className="text-typography-400 hover:text-typography-600 px-2"
+                  className="text-typography-600 hover:text-typography-900 px-2"
                   title={en.userManagement.edit}
                   onClick={() => onEditPress?.(tenant)}
                 >

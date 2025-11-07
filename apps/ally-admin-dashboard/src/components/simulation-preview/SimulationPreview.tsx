@@ -65,7 +65,7 @@ export const SimulationPreview: FC<SimulationPreviewProps> = ({ simulation, isOp
       >
         {/* Header */}
         <div className="p-6 pb-4">
-          <h2 className="text-4xl text-typography-700 mb-4 font-thin font-primary">
+          <h2 className="text-4xl text-typography-900 mb-4 font-thin font-primary">
             <span>{en.simulation.simulation}</span>
             {` ${en.simulation.preview}`}
           </h2>
@@ -93,10 +93,10 @@ export const SimulationPreview: FC<SimulationPreviewProps> = ({ simulation, isOp
 
             {/* Content Section */}
             <div className="space-y-3 w-full">
-              <h3 className="text-lg text-typography-700">{simulation.title}</h3>
+              <h3 className="text-lg text-typography-900">{simulation.title}</h3>
               <div>
-                <h4 className="text-base font-semibold text-typography-500 mb-1">{`${en.simulation.scenario}:`}</h4>
-                <p className="text-base text-typography-500 leading-relaxed">
+                <h4 className="text-base font-semibold text-typography-800 mb-1">{`${en.simulation.scenario}:`}</h4>
+                <p className="text-base text-typography-800 leading-relaxed">
                   {simulation.description}
                 </p>
               </div>
@@ -109,7 +109,7 @@ export const SimulationPreview: FC<SimulationPreviewProps> = ({ simulation, isOp
           <Button
             onClick={onClose}
             variant={ButtonVariant.SECONDARY}
-            className="w-[49%] px-6 py-2 border border-border-light rounded-[40px] text-typography-700 font-medium hover:bg-background-secondary transition-colors"
+            className="w-[49%] px-6 py-2 border border-border-light rounded-[40px] text-typography-900 font-medium hover:bg-background-secondary transition-colors"
           >
             {en.simulation.close}
           </Button>
@@ -117,7 +117,7 @@ export const SimulationPreview: FC<SimulationPreviewProps> = ({ simulation, isOp
             onClick={onPreview}
             disabled={isLoading}
             variant={ButtonVariant.PRIMARY}
-            className="w-[49%] px-6 py-2 bg-primary text-white rounded-[40px] font-medium hover:bg-primary-700 transition-colors"
+            className="w-[49%] px-6 py-2 bg-primary-500 text-white rounded-[40px] font-medium hover:bg-primary-700 transition-colors"
           >
             {isLoading ? en.simulation.starting : en.simulation.startSession}
           </Button>

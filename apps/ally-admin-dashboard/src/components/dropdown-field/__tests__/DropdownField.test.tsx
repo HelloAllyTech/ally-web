@@ -293,7 +293,7 @@ describe("DropdownField", () => {
     );
 
     const trigger = container.querySelector(".px-3");
-    expect(trigger?.className).toContain("py-2");
+    expect(trigger?.className).toContain("py-1");
   });
 
   it("has white background", () => {

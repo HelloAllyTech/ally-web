@@ -203,7 +203,7 @@ export const UserManagement: FC = () => {
         <button
           onClick={() => onLoadMore(true)}
           disabled={disabled}
-          className="inline-flex font-tertiary items-center disabled:opacity-50 text-sm text-typography-600 font-medium py-1 px-1 hover:text-typography-700"
+          className="inline-flex font-tertiary items-center disabled:opacity-50 text-sm text-typography-600 font-medium py-1 px-1 hover:text-typography-900"
         >
           + {isUsersFetching ? en.common.loading : en.common.loadMore}
         </button>

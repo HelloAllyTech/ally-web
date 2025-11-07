@@ -51,7 +51,7 @@ export const CustomDropdown: React.FC<CustomDropdownProps> = ({
 
   return (
     <div className="flex flex-col gap-2" ref={dropdownRef}>
-      <label className="text-sm text-typography-700 cursor-pointer font-primary">
+      <label className="text-sm text-typography-900 cursor-pointer font-primary">
         {label}
         {required && <span className="text-destructive-500">*</span>}
       </label>
@@ -60,12 +60,12 @@ export const CustomDropdown: React.FC<CustomDropdownProps> = ({
           className="border rounded-md px-3 py-2 bg-white w-full outline-none font-primary text-base cursor-pointer flex items-center justify-between hover:border-border-dark transition-colors"
           onClick={() => setIsOpen(!isOpen)}
         >
-          <span className={selectedOption ? "text-typography-700" : "text-typography-400"}>
+          <span className={selectedOption ? "text-typography-900" : "text-typography-600"}>
             {selectedOption ? getOptionValue(selectedOption) : placeholder}
           </span>
 
           <div
-            className={`text-typography-400 transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`}
+            className={`text-typography-700 transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`}
           >
             <ArrowSolid />
           </div>
@@ -74,7 +74,7 @@ export const CustomDropdown: React.FC<CustomDropdownProps> = ({
         {isOpen && (
           <div className="absolute left-0 top-full mt-1 w-full bg-white border rounded-md shadow-lg max-h-[240px] overflow-auto z-10 animate-fadeIn ">
             {options.length === 0 ? (
-              <div className="px-3 py-2 text-sm text-typography-400 ">
+              <div className="px-3 py-2 text-sm text-typography-900 ">
                 {en.common.noOptionsAvailable}
               </div>
             ) : (
@@ -89,7 +89,7 @@ export const CustomDropdown: React.FC<CustomDropdownProps> = ({
                     className={`px-3 py-2 text-sm cursor-pointer transition-colors ${
                       isSelected
                         ? "bg-primary-50 text-primary font-medium"
-                        : "text-typography-700 hover:bg-background-secondary"
+                        : "text-typography-900 hover:bg-background-secondary"
                     }`}
                     onClick={() => handleSelect(optionId)}
                   >

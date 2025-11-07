@@ -84,7 +84,7 @@ export const SelectComponent = ({
               </div>
             )}
             <div className="cursor-pointer mr-2 mt-2" onClick={handleAddOption}>
-              <span className="text-sm text-typography-500">
+              <span className="text-sm text-typography-800">
                 <div>+</div>
               </span>
             </div>

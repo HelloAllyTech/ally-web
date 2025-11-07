@@ -10,7 +10,7 @@ export const CreditField: React.FC<CreditFieldProps> = ({ onChange, userData, va
       <ProfileCard user={userData} showCredits={true} />
       <div className="flex gap-4 border-t pt-3">
         <div className="flex flex-col w-full">
-          <label className="text-xs pb-[8px] text-typography-700 cursor-pointer">
+          <label className="text-xs pb-[8px] text-typography-900 cursor-pointer">
             {en.userManagement.consumedCredits}
           </label>
           <div className="border rounded-md py-2 outline-none font-primary w-full p-2 opacity-50">
@@ -18,7 +18,7 @@ export const CreditField: React.FC<CreditFieldProps> = ({ onChange, userData, va
           </div>
         </div>
         <div className="flex flex-col w-full">
-          <label className="text-xs pb-[8px] text-typography-700 cursor-pointer">
+          <label className="text-xs pb-[8px] text-typography-900 cursor-pointer">
             {en.userManagement.newCreditLimit}
           </label>
           <input
@@ -29,7 +29,7 @@ export const CreditField: React.FC<CreditFieldProps> = ({ onChange, userData, va
           />
         </div>
       </div>
-      <div className="text-typography-400 text-sm">{en.userManagement.oneCreditInMin}</div>
+      <div className="text-typography-600 text-sm">{en.userManagement.oneCreditInMin}</div>
     </div>
   );
 };

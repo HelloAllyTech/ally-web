@@ -24,7 +24,7 @@ export const ListToolbar: React.FC<ListToolbarProps> = ({
 
   const searchInput = (
     <div className="flex relative items-center w-full max-w-xl">
-      <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-typography-400">
+      <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-typography-600">
         <Search />
       </span>
       <input
@@ -45,14 +45,14 @@ export const ListToolbar: React.FC<ListToolbarProps> = ({
     return (
       <div
         key={`${chip.label}-${chip.value}`}
-        className="flex items-center text-typography-700 px-2 text-sm border border-border-light rounded-[20px]"
+        className="flex items-center text-typography-900 px-2 text-sm border border-border-light rounded-[20px]"
       >
         <span className="mr-1 text-xs">{chip.label}:</span>
         <div className="flex">
           <Tooltip title={formatCapitalizedEnum(chip.allValue.join(", "))} placement="top" arrow>
             <span className="font-medium mr-1 text-xs">{formatCapitalizedEnum(chip.value)}</span>
           </Tooltip>
-          <button onClick={chip.onClear} className="text-typography-500 hover:text-typography-700">
+          <button onClick={chip.onClear} className="text-typography-800 hover:text-typography-900">
             <Close />
           </button>
         </div>
@@ -64,7 +64,7 @@ export const ListToolbar: React.FC<ListToolbarProps> = ({
     <button
       ref={addFilterButtonRef}
       onClick={addFilterCta.onClick}
-      className="inline-flex items-center text-typography-500 hover:text-typography-700 text-xs"
+      className="inline-flex items-center text-typography-800 hover:text-typography-900 text-xs"
     >
       <span className="mr-1 text-base p-[1px]">
         <Plus />

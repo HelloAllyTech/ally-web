@@ -272,14 +272,16 @@ export const FileUpload = ({
   const renderUploadPlaceholder = () => {
     let uploadText = (
       <>
-        {en.simulation.dragDrop} <span className="text-primary">{en.simulation.choose}</span>
+        {en.simulation.dragDrop}{" "}
+        <span className="text-primary text-primary-500">{en.simulation.choose}</span>
       </>
     );
 
     if (fileType === FILE_TYPE.IMAGE) {
       uploadText = (
         <>
-          {en.simulation.dragDrop} <span className="text-primary">{en.simulation.choose}</span>{" "}
+          {en.simulation.dragDrop}{" "}
+          <span className="text-primary text-primary-500">{en.simulation.choose}</span>{" "}
           {en.simulation.pngUploadGuidelines}
           <br />
           {en.simulation.resolution}
@@ -290,7 +292,8 @@ export const FileUpload = ({
     if (fileType === FILE_TYPE.VIDEO) {
       uploadText = (
         <>
-          {en.simulation.dragDrop} <span className="text-primary">{en.simulation.choose}</span>{" "}
+          {en.simulation.dragDrop}{" "}
+          <span className="text-primary text-primary-500">{en.simulation.choose}</span>{" "}
           {en.simulation.mp4UploadGuidelines}
           <br />
           {en.simulation.videoUploadGuidelines}
@@ -304,7 +307,7 @@ export const FileUpload = ({
         onClick={open}
       >
         {fileType === FILE_TYPE.VIDEO ? <VideoCamera /> : <DragUpload />}
-        <div className="mt-4 text-typography-500">
+        <div className="mt-4 text-typography-600">
           {isUploading ? (
             <div className="flex items-center gap-2">
               <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
@@ -343,7 +346,7 @@ export const FileUpload = ({
       <div className="flex items-center justify-between mt-2">
         <div className="flex flex-col">
           {uploadedFile && (
-            <span className="text-typography-700 truncate">{uploadedFile.name}</span>
+            <span className="text-typography-900 truncate">{uploadedFile.name}</span>
           )}
         </div>
         <button type="button" onClick={handleDeleteFile}>
@@ -355,7 +358,7 @@ export const FileUpload = ({
 
   return (
     <div className="flex flex-col gap-2">
-      <label htmlFor={id} className="text-typography-700 cursor-pointer flex items-center">
+      <label htmlFor={id} className="text-typography-900 cursor-pointer flex items-center">
         {header || en.simulation.file}
         {isMandatory && <span className="text-destructive-500">*</span>}
       </label>
@@ -365,7 +368,7 @@ export const FileUpload = ({
           {...getRootProps()}
           className={`border-2 border-dashed rounded-lg text-center transition-colors h-64 relative overflow-hidden ${
             isDragActive
-              ? "border-primary bg-primary-50"
+              ? "border-primary-500bg-primary-50"
               : "border-border-light hover:border-primary"
           }`}
         >

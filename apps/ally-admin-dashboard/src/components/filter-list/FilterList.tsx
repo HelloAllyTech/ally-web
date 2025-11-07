@@ -48,7 +48,7 @@ export const FilterList: FC<FilterListProps> = ({
         <Close />
       </button>
       <div className="space-y-3">
-        <h3 className="text-typography-400 font-medium">{en.simulation.status}</h3>
+        <h3 className="text-typography-600 font-medium">{en.simulation.status}</h3>
         <div className="space-y-3 border-b pb-2">
           {options.map(option => (
             <label key={option.id} className="flex items-center gap-3 cursor-pointer">
@@ -58,14 +58,14 @@ export const FilterList: FC<FilterListProps> = ({
                 checked={selectedStatuses.some(status => status.id === option.id)}
                 className="w-4 h-4 border-border-dark focus:ring-primary accent-neutral-100"
               />
-              <span className="text-base leading-relaxed text-typography-700">{option.label}</span>
+              <span className="text-base leading-relaxed text-typography-900">{option.label}</span>
             </label>
           ))}
         </div>
         <div className="flex justify-end">
           <button
             onClick={onApplyFilters}
-            className="bg-primary text-white rounded-full px-6 py-1 hover:bg-primary-700 transition-colors font-[Roboto] text-base"
+            className="bg-primary-500 text-white rounded-full px-6 py-1 hover:bg-primary-700 transition-colors font-[Roboto] text-base"
           >
             {en.simulation.apply}
           </button>

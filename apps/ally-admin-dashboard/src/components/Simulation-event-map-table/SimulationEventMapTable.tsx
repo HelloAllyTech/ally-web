@@ -329,7 +329,7 @@ export const SimulationEventMapTable: FC<SimulationEventMapTableProps> = ({ simu
     return (
       <Button
         disabled={disabled}
-        className={`${disabled ? "bg-neutral-300 cursor-not-allowed" : "bg-primary-500 hover:bg-primary-800"}`}
+        className={`${disabled ? "bg-neutral-300 cursor-not-allowed" : "bg-primary-500 hover:bg-primary-500"}`}
         variant={ButtonVariant.PRIMARY}
         onClick={handleAddEventInternal}
       >
@@ -342,7 +342,7 @@ export const SimulationEventMapTable: FC<SimulationEventMapTableProps> = ({ simu
   return (
     <div className="flex flex-col h-full w-100%">
       <div className="sticky flex flex-row justify-between top-0 z-10 pt-3 mx-6 pb-4 border-b border-border-light">
-        <h2 className="text-xl font-medium text-typography-700">
+        <h2 className="text-xl font-medium text-typography-900">
           {en.simulation.eventConfiguration}
         </h2>
         {!isLoading && renderActionButtons()}

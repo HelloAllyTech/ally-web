@@ -29,17 +29,17 @@ module.exports = {
       colors: {
         // Primary Colors
         primary: {
-          DEFAULT: "#0957D0",
-          50: "#E3F2FD",
-          100: "#BBDEFB",
-          200: "#90CAF9",
-          300: "#64B5F6",
-          400: "#42A5F5",
+          DEFAULT: "#10264C",
+          50: "#E2F2FF",
+          100: "#B7D7FF",
+          200: "#86B8FF",
+          300: "#5F99FC",
+          400: "#6188C9",
           500: "#0957D0",
-          600: "#0847B0",
-          700: "#063890",
-          800: "#052970",
-          900: "#031A50",
+          600: "#0957D0",
+          700: "#0143A8",
+          800: "#123268",
+          900: "#10264C",
         },
         // Secondary/Accent Colors
         secondary: {
@@ -71,7 +71,7 @@ module.exports = {
         },
         // Success/Active Colors
         success: {
-          DEFAULT: "#1B5E20",
+          DEFAULT: "#18441B",
           50: "#E8F5E9",
           100: "#C8E6C9",
           200: "#A5D6A7",
@@ -81,11 +81,11 @@ module.exports = {
           600: "#43A047",
           700: "#388E3C",
           800: "#2E7D32",
-          900: "#1B5E20",
-          light: "#D0F0C0",
-          lighter: "#B9EFC8",
-          text: "#174F1B",
-          darkText: "#18441B",
+          900: "#18441B",
+          light: "#B9F6CA",
+          lighter: "#69F0AE",
+          text: "#00E676",
+          darkText: "#00C853",
         },
         // Warning Colors
         warning: {
@@ -130,24 +130,24 @@ module.exports = {
         },
         // Border Colors
         border: {
-          DEFAULT: "#C8C5D0",
+          DEFAULT: "#D2D2D2",
           light: "#E5E7EB",
           medium: "#D1D5DB",
           dark: "#9CA3AF",
         },
         // Text Colors
         typography: {
-          Default: "#0D0D0D",
-          50: "#F9FAFB",
-          100: "#F3F4F6",
-          200: "#E5E7EB",
-          300: "#D1D5DB",
-          400: "#9CA3AF",
-          500: "#6B7280",
-          600: "#4B5563",
-          700: "#1A1A1A",
-          800: "#1F2937",
-          900: "#0D0D0D",
+          Default: "rgba(0, 0, 0, 0.87)",
+          50: "rgba(0, 0, 0, 0.04)",
+          100: "rgba(0, 0, 0, 0.08)", //"rgba(0, 0, 0, 0.08)"
+          200: "rgba(0, 0, 0, 0.12)", //"rgba(0, 0, 0, 0.12)"
+          300: "rgba(0, 0, 0, 0.16)", //"rgba(0, 0, 0, 0.16)" #E5E7EB
+          400: "rgba(0, 0, 0, 0.24)", //"rgba(0, 0, 0, 0.24)" #D1D5DB
+          500: "rgba(0, 0, 0, 0.32)", //"rgba(0, 0, 0, 0.32)"
+          600: "rgba(0, 0, 0, 0.38)", //"rgba(0, 0, 0, 0.38)"
+          700: "rgba(0, 0, 0, 0.54)", //"rgba(0, 0, 0, 0.54)"
+          800: "rgba(0, 0, 0, 0.6)", //"rgba(0, 0, 0, 0.6)"
+          900: "rgba(0, 0, 0, 0.87)", //"rgba(0, 0, 0, 0.87)"
         },
       },
       animation: {

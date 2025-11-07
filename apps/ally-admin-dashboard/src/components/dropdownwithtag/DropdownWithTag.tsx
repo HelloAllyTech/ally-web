@@ -58,7 +58,7 @@ export const DropdownwithTag: React.FC<dropdownWithTagProps> = ({
         <div className="flex gap-1 text-base text-neutral-800">
           {en.userManagement.currentRoles}
           {initialValue.map((roleName, index) => (
-            <span key={roleName} className="text-typography-500">
+            <span key={roleName} className="text-typography-800">
               {formatCapitalizedEnum(roleName)}
               {index < initialValue.length - 1 ? ", " : ""}
             </span>
@@ -79,7 +79,7 @@ export const DropdownwithTag: React.FC<dropdownWithTagProps> = ({
               value.map(roleName => (
                 <span
                   key={roleName}
-                  className="flex items-center bg-neutral-100 text-typography-700 pl-3 rounded-full text-base font-primary"
+                  className="flex items-center bg-neutral-100 text-typography-900 pl-3 rounded-full text-base font-primary"
                 >
                   {formatCapitalizedEnum(roleName)}
                   <button className="px-2" onClick={e => handleClose(e, roleName)}>
@@ -88,10 +88,10 @@ export const DropdownwithTag: React.FC<dropdownWithTagProps> = ({
                 </span>
               ))
             ) : (
-              <span className="text-typography-400 text-sm font-primary">{placeholder}</span>
+              <span className="text-typography-600 text-sm font-primary">{placeholder}</span>
             )}
 
-            <div className="ml-auto text-typography-500">
+            <div className="ml-auto text-typography-800">
               <ArrowSolid />
             </div>
           </div>

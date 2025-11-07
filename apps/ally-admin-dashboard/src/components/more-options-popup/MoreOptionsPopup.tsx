@@ -27,9 +27,9 @@ export const MoreOptionsPopup: FC<MoreOptionsPopupProps> = ({
     >
       <button
         onClick={onDiscardSimulation}
-        className="flex items-center gap-3 w-full px-4 py-2 text-left text-typography-700 hover:bg-background-secondary transition-colors"
+        className="flex items-center gap-3 w-full px-4 py-2 text-left text-typography-900 hover:bg-background-secondary transition-colors"
       >
-        <div className="w-4 h-4 text-typography-500">
+        <div className="w-4 h-4 text-typography-800">
           <Trash />
         </div>
         <span className="text-sm">Discard simulation</span>

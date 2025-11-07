@@ -161,7 +161,7 @@ export const Login: React.FC = () => {
               <span>{`${en.auth.welcomeTo} `}</span>
               <span className="font-bold italic">ally</span>
             </h1>
-            <span className="text-xl mt-6 text-typography-700">
+            <span className="text-xl mt-6 text-typography-900">
               Enter your email address to continue
             </span>
           </div>
@@ -207,7 +207,7 @@ export const Login: React.FC = () => {
               "Next"
             )}
           </Button>
-          <div className="text-xs text-typography-500 mt-2 leading-relaxed">
+          <div className="text-xs text-typography-800 mt-2 leading-relaxed">
             By tapping next, you agree to Ally's{" "}
             <span
               className="text-primary-500 cursor-pointer hover:text-primary-600"
@@ -246,7 +246,7 @@ export const Login: React.FC = () => {
           Verify your email address
         </h1>
         <div className="text-base mb-2 font-['Replay_Pro'] flex flex-col">
-          <span className="text-xl mb-2 text-typography-700">Enter the security code sent to</span>
+          <span className="text-xl mb-2 text-typography-900">Enter the security code sent to</span>
           <span className="font-semibold text-xl break-all text-typography-900">{email}</span>
         </div>
         <div className="flex flex-col gap-2">
@@ -254,7 +254,7 @@ export const Login: React.FC = () => {
           <div className="text-xs text-typography-600 mt-2">
             {`${en.auth.didNotReceiveTheCode} `}
             <span
-              className={`${countdown > 0 ? "text-typography-400" : "text-primary-500 hover:text-primary-600"} cursor-pointer`}
+              className={`${countdown > 0 ? "text-typography-600" : "text-primary-500 hover:text-primary-600"} cursor-pointer`}
               onClick={handleResendCode}
             >
               Resend {countdown > 0 ? `(${countdown}s)` : ""}
@@ -297,7 +297,7 @@ export const Login: React.FC = () => {
         >
           <div className="flex flex-col mr-4 font-['Replay_Pro']">
             <span className="text-xl font-bold text-typography-900">Ally</span>
-            <span className="text-sm font-medium text-typography-500">helloally.ai</span>
+            <span className="text-sm font-medium text-typography-800">helloally.ai</span>
           </div>
         </div>
       </div>

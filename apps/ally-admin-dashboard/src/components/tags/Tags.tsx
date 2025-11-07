@@ -33,7 +33,7 @@ export const Tags = ({ formMethods }) => {
 
   return (
     <div className="flex flex-col gap-2">
-      <label htmlFor="tags" className="text-typography-500 cursor-pointer">
+      <label htmlFor="tags" className="text-typography-800 cursor-pointer">
         {en.simulation.tags}
       </label>
 
@@ -41,7 +41,7 @@ export const Tags = ({ formMethods }) => {
         {tags?.map((tag, index) => (
           <div
             key={index}
-            className="flex items-center px-2 bg-white border border-border-light rounded-full text-typography-700"
+            className="flex items-center px-2 bg-white border border-border-light rounded-full text-typography-900"
           >
             <span>{tag}</span>
             <button type="button" className="cursor-pointer ml-2" onClick={() => removeTag(tag)}>
