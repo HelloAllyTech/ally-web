@@ -131,7 +131,9 @@ export const AudioCall: FunctionComponent = () => {
         return;
       }
     }
-    navigate(ROUTES.STRESS_BUSTER, { state: { chatId: activeChat?.chatId || microphoneChatId } });
+    navigate(ROUTES.STRESS_BUSTER, {
+      state: { chatId: activeChat?.chatId || microphoneChatId || chatId },
+    });
   };
 
   const getFallbackUI = () => {

@@ -12,6 +12,7 @@ export const EditableTextPopup: React.FC<EditableTextPopupProps> = ({
   placeholder = "Click to edit",
   disabled = false,
   width = 100,
+  minWidth = 100,
   className = "",
 }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -69,7 +70,7 @@ export const EditableTextPopup: React.FC<EditableTextPopupProps> = ({
   const isPlaceholder = !value;
 
   return (
-    <div className={`${className}`} style={{ width: width }}>
+    <div className={`${className}`} style={{ width, minWidth }}>
       <div
         onClick={handleTextClick}
         className={`
@@ -96,6 +97,7 @@ export const EditableTextPopup: React.FC<EditableTextPopupProps> = ({
           <AutoExpandableTextarea
             value={editValue}
             width={width}
+            minWidth={minWidth}
             autoFocus={true}
             onChange={setEditValue}
             onKeyDown={handleKeyDown}
