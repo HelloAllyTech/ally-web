@@ -2,6 +2,8 @@
 import React from "react";
 
 import { Calendar as ReactCalendar } from "react-calendar";
+import "react-calendar/dist/Calendar.css";
+import "./DateFilterUI.css";
 
 // Quick date presets for the date filter
 const quickPresets = [
@@ -136,13 +138,15 @@ const DateFilterUI: React.FC<DateFilterUIProps> = ({ selectedValues, onChange, o
         />
       </div>
       {selectedPreset === "Custom" && (
-        <ReactCalendar
-          selectRange
-          value={range}
-          maxDate={new Date()}
-          onChange={handleCalendarChange}
-          className="w-full"
-        />
+        <div className="react-calendar-wrapper">
+          <ReactCalendar
+            selectRange
+            value={range}
+            maxDate={new Date()}
+            onChange={handleCalendarChange}
+            className="w-full border-0"
+          />
+        </div>
       )}
       <div className="flex justify-end mt-2">
         <button
