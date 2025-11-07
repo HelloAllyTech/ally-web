@@ -34,9 +34,9 @@ import {
 import { NavbarWrapper, PermissionGuardedRoute } from "./components";
 
 const PrivateRouteLayout: FC = () => {
-  const { user, checkAuth, permissions } = useUser();
+  const { user, checkAuth, permissions, isAuthenticated } = useUser();
   const navigate = useNavigate();
-  useAutoActiveCallRedirect();
+  useAutoActiveCallRedirect(isAuthenticated);
 
   const hasChatTypePermissions = hasPermissions(permissions, Permissions.VIEW_CHAT_TYPES);
   const { data: chatTypes } = useGetChatTypesQuery(undefined, {
