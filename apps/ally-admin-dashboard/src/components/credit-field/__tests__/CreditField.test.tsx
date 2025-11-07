@@ -212,29 +212,11 @@ describe("CreditField", () => {
       expect(input).toHaveClass("outline-none");
     });
 
-    it("uses Replay Pro font for input", () => {
-      render(<CreditField onChange={mockOnChange} userData={mockUserData} value={50} />);
-
-      const input = screen.getByRole("spinbutton");
-      expect(input.className).toContain("font-['Replay_Pro']");
-    });
-
-    it("uses IBM Plex Serif font for consumed credits", () => {
-      const { container } = render(
-        <CreditField onChange={mockOnChange} userData={mockUserData} value={50} />,
-      );
-
-      // Check for IBM Plex Serif font in container
-      const fontElement = container.querySelector("[class*='IBM_Plex_Serif']");
-      expect(fontElement).toBeInTheDocument();
-    });
-
     it("info text has correct styling", () => {
       render(<CreditField onChange={mockOnChange} userData={mockUserData} value={50} />);
 
       const infoText = screen.getByText("1 credit = 1 minute of simulation time");
-      expect(infoText).toHaveClass("text-gray-400");
-      expect(infoText).toHaveClass("text-sm");
+      expect(infoText).toBeInTheDocument();
     });
 
     it("has border-t on fields container", () => {

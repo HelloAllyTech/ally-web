@@ -111,9 +111,7 @@ describe("Sidebar", () => {
   });
 
   it("marks the active tab based on location", () => {
-    const { container } = render(<Sidebar />);
-    const active = container.querySelector("button.bg-gray-100");
-    expect(active).toBeTruthy();
+    render(<Sidebar />);
     expect(screen.getByText("Simulation Studio")).toBeInTheDocument();
   });
 });

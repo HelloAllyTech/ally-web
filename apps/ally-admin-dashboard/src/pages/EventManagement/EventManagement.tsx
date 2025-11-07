@@ -163,11 +163,11 @@ export const EventManagement: React.FC = () => {
     <button
       type="button"
       onClick={handleLoadMore}
-      className="flex justify-start items-center py-4 text-gray-500 disabled:opacity-50 w-[200px]"
+      className="flex justify-start items-center py-4 text-typography-800 hover:text-typography-600 disabled:opacity-50 w-[200px]"
       disabled={isFetching || !hasMore}
     >
       <span>+</span>
-      <span className="text-[14px] ml-[5px]">
+      <span className="text-base ml-[5px]">
         {isFetching ? en.common.loading : hasMore ? en.common.loadMore : en.common.noMoreData}
       </span>
     </button>
@@ -237,9 +237,9 @@ export const EventManagement: React.FC = () => {
   };
 
   return (
-    <div className="p-1 font-['IBM_Plex_Serif'] overflow-hidden relative">
+    <div className="py-[2px] font-primary overflow-hidden relative">
       <div>
-        <h1 className="text-2xl text-gray-800 pb-6">{en.simulation.simulationEvents}</h1>
+        <h1 className="text-2xl text-typography-900 pb-6">{en.simulation.simulationEvents}</h1>
         <ListToolbar
           searchValue={eventSearch}
           onSearchChange={onSearchChange}

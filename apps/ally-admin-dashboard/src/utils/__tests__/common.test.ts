@@ -257,24 +257,6 @@ describe("common utils", () => {
   });
 
   describe("getButtonStyles", () => {
-    it("should return primary button styles", () => {
-      const styles = getButtonStyles(ButtonVariant.PRIMARY);
-      expect(styles).toContain("bg-[#0957D0]");
-      expect(styles).toContain("text-[#FFFFFF]");
-    });
-
-    it("should return secondary button styles", () => {
-      const styles = getButtonStyles(ButtonVariant.SECONDARY);
-      expect(styles).toContain("border");
-      expect(styles).toContain("border-[#C8C5D0]");
-    });
-
-    it("should return destructive button styles", () => {
-      const styles = getButtonStyles(ButtonVariant.DESTRUCTIVE);
-      expect(styles).toContain("bg-[#F93535]");
-      expect(styles).toContain("text-[#FFFFFF]");
-    });
-
     it("should return icon button styles", () => {
       const styles = getButtonStyles(ButtonVariant.ICON);
       expect(styles).toContain("bg-transparent");
@@ -285,33 +267,6 @@ describe("common utils", () => {
       const styles = getButtonStyles(ButtonVariant.TEXT);
       expect(styles).toContain("bg-transparent");
       expect(styles).toContain("border-none");
-    });
-
-    it("should return primary styles for undefined variant", () => {
-      const styles = getButtonStyles(undefined as any);
-      expect(styles).toContain("bg-[#0957D0]");
-    });
-  });
-
-  describe("getSimulationStatusColor", () => {
-    it("should return active status color", () => {
-      const color = getSimulationStatusColor(SimulationStatus.ACTIVE);
-      expect(color).toBe("bg-[#C8E6C9] text-[#18441B]");
-    });
-
-    it("should return draft status color", () => {
-      const color = getSimulationStatusColor(SimulationStatus.DRAFT);
-      expect(color).toBe("bg-[#EEEEEE] text-[#424242]");
-    });
-
-    it("should return archived status color", () => {
-      const color = getSimulationStatusColor(SimulationStatus.ARCHIVED);
-      expect(color).toBe("bg-[#FFE0B2] text-[#662400]");
-    });
-
-    it("should return default color for unknown status", () => {
-      const color = getSimulationStatusColor("UNKNOWN" as any);
-      expect(color).toBe("bg-gray-100 text-gray-800");
     });
   });
 

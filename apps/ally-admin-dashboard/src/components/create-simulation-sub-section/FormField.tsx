@@ -19,8 +19,8 @@ export const FormField: FC<FormFieldProps> = ({ config, formMethods }) => {
       case FORM_FIELD_TYPES.SELECT:
         return (
           <div className="flex flex-col gap-2">
-            <label className="text-[#49454F] cursor-pointer flex items-center gap-1">
-              {label} {isMandatory && <span className="text-red-500">*</span>}
+            <label className="text-typography-900 cursor-pointer flex items-center gap-1">
+              {label} {isMandatory && <span className="text-destructive-500">*</span>}
             </label>
             <DropdownField
               id={id}
@@ -30,7 +30,9 @@ export const FormField: FC<FormFieldProps> = ({ config, formMethods }) => {
               placeholder={`Select ${label.toLowerCase()}`}
               isMandatory={isMandatory}
             />
-            {errors && <p className="text-red-500 text-sm mt-1">{errors[config.id]?.message}</p>}
+            {errors && (
+              <p className="text-destructive-500 text-sm mt-1">{errors[config.id]?.message}</p>
+            )}
           </div>
         );
       case FORM_FIELD_TYPES.TEXT:

@@ -15,7 +15,7 @@ const getButtonStyles = (variant: ButtonProps["variant"]) => {
       return "bg-transparent border-none hover:bg-transparent disabled:bg-transparent";
     case ButtonVariant.PRIMARY:
     default:
-      return "bg-[#0957D0] text-[#FFFFFF] hover:bg-primary/90 disabled:bg-primary/50";
+      return "bg-[#0957D0] text-[#FFFFFF] hover:bg-primary-600 disabled:bg-primary/50";
   }
 };
 

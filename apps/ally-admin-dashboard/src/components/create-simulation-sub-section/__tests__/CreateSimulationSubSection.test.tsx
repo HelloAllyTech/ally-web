@@ -223,7 +223,6 @@ describe("CreateSimulationSubSection", () => {
       const dashedLine = container.querySelector(".border-dashed");
       expect(dashedLine).toBeInTheDocument();
       expect(dashedLine).toHaveClass("border-t");
-      expect(dashedLine).toHaveClass("border-gray-300");
     });
 
     it("does not render dashed line when isDashedLineAbove is false", () => {

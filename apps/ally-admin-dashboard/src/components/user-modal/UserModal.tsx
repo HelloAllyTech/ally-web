@@ -6,6 +6,8 @@ import { Button, DropdownwithTag, CustomDropdown, CreditField, ProfileCard } fro
 import { en, FieldOptions, KeyboardKeys, USER_MODAL_FIELDS_IDS, UserRole } from "@constants";
 import { UserModalProps, FieldProps } from "@types";
 
+import { ButtonVariant } from "../types";
+
 export const UserModal: React.FC<UserModalProps> = ({
   isOpen = true,
   onClose,
@@ -87,22 +89,22 @@ export const UserModal: React.FC<UserModalProps> = ({
           <div className="flex flex-col gap-2">
             <label
               htmlFor={field.id}
-              className="text-sm text-[#49454F] cursor-pointer font-['IBM_Plex_Serif']"
+              className="text-sm text-typography-900 cursor-pointer font-primary"
             >
               {field.label}
-              {field.required && <span className="text-red-500">*</span>}
+              {field.required && <span className="text-destructive-500">*</span>}
             </label>
             <input
               {...controllerField}
               id={field.id}
               type={field.inputType}
               placeholder={field.placeholder}
-              className={`border rounded-md px-2 py-2 outline-none  text-[14px] font-['IBM_Plex_Serif'] ${
-                fieldState.error ? "border-red-500" : "border-gray-300"
+              className={`border rounded-md px-2 py-2 outline-none text-base font-primary placeholder:text-typography-600 ${
+                fieldState.error ? "border-destructive-500" : "border-border-light"
               }`}
             />
             {fieldState.error?.type === "maxLength" && (
-              <span className="text-red-500 text-[14px]">
+              <span className="text-destructive-500 text-base">
                 {en.userManagement.maxCharError(field.maxLength)}
               </span>
             )}
@@ -167,7 +169,7 @@ export const UserModal: React.FC<UserModalProps> = ({
                 required={field.required}
               />
               {fieldState.error && (
-                <span className="text-red-500 text-xs">{fieldState.error.message}</span>
+                <span className="text-destructive-500 text-xs">{fieldState.error.message}</span>
               )}
             </div>
           )}
@@ -193,20 +195,22 @@ export const UserModal: React.FC<UserModalProps> = ({
           <div className="flex flex-col gap-2">
             <label
               htmlFor={field.id}
-              className="text-sm text-[#49454F] cursor-pointer font-['IBM_Plex_Serif']"
+              className="text-sm text-typography-900 cursor-pointer font-primary"
             >
               {field.label}
-              {field.required && <span className="text-red-500">*</span>}
+              {field.required && <span className="text-destructive-500">*</span>}
             </label>
             <textarea
               {...controllerField}
               id={field.id}
               placeholder={field.placeholder}
-              className="border rounded-md px-2 py-2 font-['IBM_Plex_Serif'] outline-none"
+              className="border rounded-md px-2 py-2 font-primary outline-none placeholder:text-typography-600"
               rows={4}
             />
             {fieldState.error?.type === "maxLength" && (
-              <span className="text-red-500 text-xs">{en.userManagement.textAreaUpperLimit}</span>
+              <span className="text-destructive-500 text-xs">
+                {en.userManagement.textAreaUpperLimit}
+              </span>
             )}
           </div>
         )}
@@ -238,7 +242,7 @@ export const UserModal: React.FC<UserModalProps> = ({
               value={controllerField.value ?? ""}
             />
             {fieldState.error && (
-              <span className="text-red-500 text-xs">{fieldState.error.message}</span>
+              <span className="text-destructive-500 text-xs">{fieldState.error.message}</span>
             )}
           </>
         )}
@@ -286,9 +290,9 @@ export const UserModal: React.FC<UserModalProps> = ({
       onMouseDown={handleBackdropMouseDown}
       onMouseUp={handleBackdropMouseUp}
     >
-      <div className="py-5 px-6 bg-white min-w-[400px] max-w-[90vw] w-auto flex flex-col gap-5 relative font-['IBM_Plex_Serif'] rounded-[10px] shadow-2xl animate-fadeIn">
+      <div className="py-5 px-6 bg-white min-w-[400px] max-w-[90vw] w-auto flex flex-col gap-5 relative font-primary rounded-[10px] shadow-2xl animate-fadeIn">
         {/* Header */}
-        <div className="text-[#47464F] flex justify-center w-full text-2xl font-['Replay_Pro'] relative">
+        <div className="text-typography-900 flex justify-center w-full text-2xl font-primary relative">
           {title}
         </div>
 
@@ -297,15 +301,15 @@ export const UserModal: React.FC<UserModalProps> = ({
 
         {/* Action Buttons */}
         <div className="flex gap-3 py-2">
-          <Button variant="secondary" className="w-full" onClick={handleCancel}>
+          <Button variant={ButtonVariant.SECONDARY} className="w-full" onClick={handleCancel}>
             {en.userManagement.cancel}
           </Button>
           <Button
-            variant="primary"
+            variant={ButtonVariant.PRIMARY}
             className={`w-full ${
               isValid && isDirty
-                ? "bg-blue-600 hover:bg-blue-700"
-                : "bg-gray-400 cursor-not-allowed"
+                ? "bg-primary-500 hover:bg-primary-700"
+                : "bg-neutral-400 cursor-not-allowed"
             }`}
             onClick={handlePrimaryAction}
             disabled={!isValid || !isDirty}

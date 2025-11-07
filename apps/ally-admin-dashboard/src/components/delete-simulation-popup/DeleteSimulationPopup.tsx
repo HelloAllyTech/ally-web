@@ -30,18 +30,18 @@ export const DeleteSimulationPopup: FC<DeleteSimulationPopupProps> = ({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       <div className="absolute inset-0 bg-black bg-opacity-50" onClick={handleClose} />
-      <div className="relative bg-white rounded-lg shadow-xl max-w-md w-full mx-4 animate-in fade-in-0 zoom-in-95 duration-200 px-[32px] py-[24px] text-gray-700 font-['IBM_Plex_Serif']">
+      <div className="relative bg-white rounded-lg shadow-xl max-w-md w-full mx-4 animate-in fade-in-0 zoom-in-95 duration-200 px-[32px] py-[24px] text-typography-900 font-primary">
         {/* Close button */}
         <button
           onClick={handleClose}
-          className="absolute top-[8px] right-[8px] text-gray-400 hover:text-gray-600 transition-colors"
+          className="absolute top-[8px] right-[8px] text-typography-600 hover:text-typography-800 transition-colors"
         >
           <Close width={24} height={24} />
         </button>
 
         {/* Header */}
         <div className="text-center mb-2">
-          <h2 className="text-[24px] font-medium font-['Replay_Pro']">
+          <h2 className="text-2xl font-medium font-primary">
             {en.simulation.deleteDescription}
             <span className="italic font-semibold ml-1">
               {en.simulation.simulation.toLowerCase()}
@@ -51,7 +51,7 @@ export const DeleteSimulationPopup: FC<DeleteSimulationPopupProps> = ({
         </div>
 
         {/* Simulation details card */}
-        <div className="rounded-lg p-2 mb-3 flex items-center gap-4 border border-gray-200">
+        <div className="rounded-lg p-2 mb-3 flex items-center gap-4 border border-border-light">
           <div className="w-24 h-16 rounded-lg flex-shrink-0 flex items-center justify-center">
             <CustomImage
               src={simulation.coverImageUrl}
@@ -60,8 +60,10 @@ export const DeleteSimulationPopup: FC<DeleteSimulationPopupProps> = ({
             />
           </div>
           <div className="flex-1 min-w-0">
-            <h3 className="text-[16px] truncate">{simulation.title}</h3>
-            <p className="text-gray-500 text-[14px] mt-1 line-clamp-2">{simulation.description}</p>
+            <h3 className="text-lg truncate">{simulation.title}</h3>
+            <p className="text-typography-800 text-base mt-1 line-clamp-2">
+              {simulation.description}
+            </p>
           </div>
         </div>
 
@@ -72,9 +74,9 @@ export const DeleteSimulationPopup: FC<DeleteSimulationPopupProps> = ({
               type="checkbox"
               checked={isConfirmed}
               onChange={e => setIsConfirmed(e.target.checked)}
-              className="mt-1 w-4 h-4 text-blue-600 border-gray-300 rounded"
+              className="mt-1 w-4 h-4 text-primary border-border-light rounded"
             />
-            <span className="text-[14px] leading-relaxed">
+            <span className="text-base leading-relaxed">
               {en.simulation.deleteConfirmationText}
             </span>
           </label>
@@ -84,17 +86,17 @@ export const DeleteSimulationPopup: FC<DeleteSimulationPopupProps> = ({
         <div className="flex gap-3">
           <button
             onClick={handleClose}
-            className="flex-1 bg-white border border-gray-300 text-[14px] font-medium py-2 px-4 rounded-[50px] hover:bg-gray-50 transition-colors"
+            className="flex-1 bg-white font-tertiary border border-border-medium text-base font-medium py-2 px-4 rounded-[50px] hover:bg-background-secondary transition-colors"
           >
             {en.simulation.cancel}
           </button>
           <button
             onClick={handleConfirmDelete}
             disabled={!isConfirmed}
-            className={`flex-1 text-[14px] font-medium py-2 px-4 rounded-[50px] transition-colors bg-red-600 text-white hover:bg-red-700 ${
+            className={`flex-1 text-base font-tertiary font-medium py-2 px-4 rounded-[50px] transition-colors bg-destructive-500 text-white hover:bg-destructive-600 ${
               isConfirmed
-                ? "hover:bg-red-700"
-                : "bg-red-600 text-white hover:bg-red-700 opacity-50 cursor-not-allowed"
+                ? "hover:bg-destructive-600"
+                : "bg-destructive-500 text-white hover:bg-destructive-600 opacity-50 cursor-not-allowed"
             }`}
           >
             {en.simulation.deleteForever}

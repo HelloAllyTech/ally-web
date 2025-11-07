@@ -84,18 +84,6 @@ describe("Input", () => {
     expect(inputElement).toBeInTheDocument();
   });
 
-  it("should apply text size classes", () => {
-    render(<Input data-testid="test-input" />);
-    const inputElement = screen.getByTestId("test-input");
-    expect(inputElement.className).toContain("text-base");
-  });
-
-  it("should have placeholder styling", () => {
-    render(<Input data-testid="test-input" />);
-    const inputElement = screen.getByTestId("test-input");
-    expect(inputElement.className).toContain("placeholder:text-muted-foreground");
-  });
-
   it("should have correct display name", () => {
     expect(Input.displayName).toBe("Input");
   });

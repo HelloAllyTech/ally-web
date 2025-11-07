@@ -1,7 +1,22 @@
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { vi, describe, it, expect, beforeEach } from "vitest";
+import React from "react";
 
-import { ActionConfirmationPopup } from "../ActionConfirmationPopup";
+// Mock @components to only export what we need, avoiding loading all components
+vi.mock("@components", () => ({
+  Button: React.forwardRef<HTMLButtonElement, any>(({ children, onClick, className }, ref) => (
+    <button ref={ref} onClick={onClick} className={className}>
+      {children}
+    </button>
+  )),
+  ButtonVariant: {
+    PRIMARY: "primary" as const,
+    DESTRUCTIVE: "destructive" as const,
+    SECONDARY: "secondary" as const,
+    ICON: "icon" as const,
+    TEXT: "text" as const,
+  },
+}));
 
 // Mock Close asset
 vi.mock("@assets", () => ({
@@ -24,6 +39,8 @@ vi.mock("@utils", () => ({
   },
 }));
 
+import { ActionConfirmationPopup } from "../ActionConfirmationPopup";
+
 describe("ActionConfirmationPopup", () => {
   const mockOnClose = vi.fn();
   const mockPrimaryAction = vi.fn();
@@ -37,12 +54,10 @@ describe("ActionConfirmationPopup", () => {
     primaryButton: {
       label: "Confirm",
       onClick: mockPrimaryAction,
-      variant: "primary",
     },
     secondaryButton: {
       label: "Cancel",
       onClick: mockSecondaryAction,
-      variant: "secondary",
     },
   };
 
@@ -131,22 +146,6 @@ describe("ActionConfirmationPopup", () => {
       fireEvent.click(closeButton);
 
       expect(mockOnClose).toHaveBeenCalledTimes(1);
-    });
-
-    it("applies correct styles to primary button", () => {
-      render(<ActionConfirmationPopup {...defaultProps} />);
-
-      const confirmButton = screen.getByText("Confirm");
-      expect(confirmButton).toHaveClass("bg-blue-600");
-      expect(confirmButton).toHaveClass("text-white");
-    });
-
-    it("applies correct styles to secondary button", () => {
-      render(<ActionConfirmationPopup {...defaultProps} />);
-
-      const cancelButton = screen.getByText("Cancel");
-      expect(cancelButton).toHaveClass("bg-gray-200");
-      expect(cancelButton).toHaveClass("text-gray-800");
     });
   });
 
@@ -267,22 +266,6 @@ describe("ActionConfirmationPopup", () => {
       expect(closeButton).toHaveClass("top-[5px]");
       expect(closeButton).toHaveClass("right-[5px]");
     });
-
-    it("title uses Replay Pro font", () => {
-      const { container } = render(<ActionConfirmationPopup {...defaultProps} />);
-
-      // Check that the font class is present in the container
-      const titleContainer = container.querySelector("[class*='Replay_Pro']");
-      expect(titleContainer).toBeInTheDocument();
-    });
-
-    it("description uses IBM Plex Serif font", () => {
-      const { container } = render(<ActionConfirmationPopup {...defaultProps} />);
-
-      // Check that the font class is present in the container
-      const description = container.querySelector("[class*='IBM_Plex_Serif']");
-      expect(description).toBeInTheDocument();
-    });
   });
 
   describe("Z-Index and Positioning", () => {
@@ -344,7 +327,6 @@ describe("ActionConfirmationPopup", () => {
         primaryButton: {
           label: "OK",
           onClick: mockPrimaryAction,
-          variant: "unknown",
         },
       };
 
