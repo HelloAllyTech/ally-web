@@ -155,7 +155,7 @@ export const Login: React.FC = () => {
           transition={{ duration: 0.4, ease: "easeInOut" }}
           className="flex flex-col gap-3 sm:gap-4"
         >
-          <div className="flex flex-col text-2xl font-['Replay_Pro']">
+          <div className="flex flex-col text-2xl font-secondary">
             <span className="text-typography-900">{`${en.auth.hey},`}</span>
             <h1 className="text-typography-900">
               <span>{`${en.auth.welcomeTo} `}</span>
@@ -242,10 +242,8 @@ export const Login: React.FC = () => {
         >
           <ArrowDown />
         </div>
-        <h1 className="text-2xl font-['Replay_Pro'] text-typography-900">
-          Verify your email address
-        </h1>
-        <div className="text-base mb-2 font-['Replay_Pro'] flex flex-col">
+        <h1 className="text-2xl font-secondary text-typography-900">Verify your email address</h1>
+        <div className="text-base mb-2 font-secondary flex flex-col">
           <span className="text-xl mb-2 text-typography-900">Enter the security code sent to</span>
           <span className="font-semibold text-xl break-all text-typography-900">{email}</span>
         </div>
@@ -295,7 +293,7 @@ export const Login: React.FC = () => {
           className="flex items-center gap-2 p-3 rounded-tl-2xl bg-background absolute bottom-0 right-0 cursor-pointer"
           onClick={() => openLinkInNewTab(ALLY_URL)}
         >
-          <div className="flex flex-col mr-4 font-['Replay_Pro']">
+          <div className="flex flex-col mr-4 font-secondary">
             <span className="text-xl font-bold text-typography-900">Ally</span>
             <span className="text-sm font-medium text-typography-800">helloally.ai</span>
           </div>
