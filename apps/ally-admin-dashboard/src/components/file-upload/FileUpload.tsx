@@ -1,5 +1,10 @@
 import { useState, useCallback, useRef } from "react";
 
+import axios from "axios";
+import { useDropzone } from "react-dropzone";
+import { toast } from "sonner";
+
+import { CustomVideo } from "@ally-ui-mono/ui-shared";
 import {
   useGetCoverImageUrlMutation,
   useDeleteCoverImageMutation,
@@ -19,11 +24,6 @@ import {
   ASPECT_RATIO_TOLERANCE,
 } from "@constants";
 import { isNonEmptyString } from "@utils";
-import axios from "axios";
-import { useDropzone } from "react-dropzone";
-import { toast } from "sonner";
-
-import { CustomVideo } from "@ally-ui-mono/ui-shared";
 
 interface FileUploadProps {
   id: string;
@@ -272,14 +272,16 @@ export const FileUpload = ({
   const renderUploadPlaceholder = () => {
     let uploadText = (
       <>
-        {en.simulation.dragDrop} <span className="text-blue-600">{en.simulation.choose}</span>
+        {en.simulation.dragDrop}{" "}
+        <span className="text-primary text-primary-500">{en.simulation.choose}</span>
       </>
     );
 
     if (fileType === FILE_TYPE.IMAGE) {
       uploadText = (
         <>
-          {en.simulation.dragDrop} <span className="text-blue-600">{en.simulation.choose}</span>{" "}
+          {en.simulation.dragDrop}{" "}
+          <span className="text-primary text-primary-500">{en.simulation.choose}</span>{" "}
           {en.simulation.pngUploadGuidelines}
           <br />
           {en.simulation.resolution}
@@ -290,7 +292,8 @@ export const FileUpload = ({
     if (fileType === FILE_TYPE.VIDEO) {
       uploadText = (
         <>
-          {en.simulation.dragDrop} <span className="text-blue-600">{en.simulation.choose}</span>{" "}
+          {en.simulation.dragDrop}{" "}
+          <span className="text-primary text-primary-500">{en.simulation.choose}</span>{" "}
           {en.simulation.mp4UploadGuidelines}
           <br />
           {en.simulation.videoUploadGuidelines}
@@ -304,10 +307,10 @@ export const FileUpload = ({
         onClick={open}
       >
         {fileType === FILE_TYPE.VIDEO ? <VideoCamera /> : <DragUpload />}
-        <div className="mt-4 text-gray-500">
+        <div className="mt-4 text-typography-600">
           {isUploading ? (
             <div className="flex items-center gap-2">
-              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
               {en.common.uploading}
             </div>
           ) : (
@@ -342,7 +345,9 @@ export const FileUpload = ({
     return (
       <div className="flex items-center justify-between mt-2">
         <div className="flex flex-col">
-          {uploadedFile && <span className="text-gray-700 truncate">{uploadedFile.name}</span>}
+          {uploadedFile && (
+            <span className="text-typography-900 truncate">{uploadedFile.name}</span>
+          )}
         </div>
         <button type="button" onClick={handleDeleteFile}>
           <Trash />
@@ -353,16 +358,18 @@ export const FileUpload = ({
 
   return (
     <div className="flex flex-col gap-2">
-      <label htmlFor={id} className="text-[#49454F] cursor-pointer flex items-center">
+      <label htmlFor={id} className="text-typography-900 cursor-pointer flex items-center">
         {header || en.simulation.file}
-        {isMandatory && <span className="text-red-500">*</span>}
+        {isMandatory && <span className="text-destructive-500">*</span>}
       </label>
 
       <div>
         <div
           {...getRootProps()}
           className={`border-2 border-dashed rounded-lg text-center transition-colors h-64 relative overflow-hidden ${
-            isDragActive ? "border-blue-600 bg-blue-50" : "border-gray-300 hover:border-blue-600"
+            isDragActive
+              ? "border-primary-500bg-primary-50"
+              : "border-border-light hover:border-primary"
           }`}
         >
           <input
@@ -383,7 +390,7 @@ export const FileUpload = ({
         {renderFileInfo()}
 
         {formState.errors.upload && (
-          <p className="text-red-500 text-sm mt-1">{formState.errors.upload.message}</p>
+          <p className="text-destructive-500 text-sm mt-1">{formState.errors.upload.message}</p>
         )}
       </div>
     </div>

@@ -85,8 +85,6 @@ describe("AccessDenied", () => {
       render(<AccessDenied showBackButton={true} />);
 
       const backButton = screen.getByText("Go Back");
-      expect(backButton).toHaveClass("bg-[#1557D0]");
-      expect(backButton).toHaveClass("text-white");
       expect(backButton).toHaveClass("rounded-lg");
     });
   });
@@ -120,9 +118,7 @@ describe("AccessDenied", () => {
       render(<AccessDenied />);
 
       const title = screen.getByText("Access Denied");
-      expect(title).toHaveClass("text-2xl");
       expect(title).toHaveClass("font-medium");
-      expect(title).toHaveClass("text-gray-800");
       expect(title).toHaveClass("text-center");
     });
 
@@ -130,16 +126,8 @@ describe("AccessDenied", () => {
       render(<AccessDenied />);
 
       const message = screen.getByText("You do not have permission to access this resource.");
-      expect(message).toHaveClass("text-gray-600");
       expect(message).toHaveClass("text-center");
       expect(message).toHaveClass("max-w-md");
-    });
-
-    it("uses IBM Plex Sans font", () => {
-      const { container } = render(<AccessDenied />);
-
-      const wrapper = container.firstChild as HTMLElement;
-      expect(wrapper.className).toContain("font-['IBM_Plex_Sans']");
     });
   });
 

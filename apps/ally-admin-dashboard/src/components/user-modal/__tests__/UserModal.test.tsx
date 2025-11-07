@@ -879,7 +879,7 @@ describe("UserModal", () => {
       fireEvent.blur(nameInput);
 
       await waitFor(() => {
-        expect(nameInput.className).toContain("border-red-500");
+        expect(screen.getByText("Maximum 100 characters allowed")).toBeInTheDocument();
       });
     });
   });

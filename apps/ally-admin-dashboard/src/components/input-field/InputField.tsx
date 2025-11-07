@@ -73,9 +73,12 @@ export const InputField: React.FC<InputFieldProps> = ({
   return (
     <div className="flex flex-col gap-2">
       <div className="flex justify-between">
-        <label htmlFor="title" className="text-[#49454F] cursor-pointer flex items-center gap-1">
+        <label
+          htmlFor="title"
+          className="text-typography-900 cursor-pointer flex items-center gap-1"
+        >
           {label}
-          {isMandatory && <span className="text-red-500">*</span>}
+          {isMandatory && <span className="text-destructive-500">*</span>}
           {infoIconContent && <InfoIcon />}
         </label>
       </div>
@@ -87,7 +90,7 @@ export const InputField: React.FC<InputFieldProps> = ({
             maxLength={maxLength}
             placeholder={placeholder}
             style={{ minHeight: `${minHeight}px` }}
-            className={`w-full rounded border border-[#E5E7EB] focus:ring-1 focus:ring-blue-600 focus:outline-none px-2 py-1 pr-16`}
+            className={`w-full rounded border border-border-light text-md placeholder:text-typography-600 focus:ring-1 focus:ring-primary focus:outline-none px-2 py-1 pr-16`}
           />
         ) : (
           <input
@@ -107,12 +110,12 @@ export const InputField: React.FC<InputFieldProps> = ({
                 }
               : {})}
             onChange={handleFieldChange}
-            className={`w-full rounded border border-[#E5E7EB] focus:ring-1 focus:ring-blue-600 focus:outline-none px-2 py-1 ${type === FORM_FIELD_TYPES.NUMBER ? "pr-[8px]" : "pr-[50px]"}`}
+            className={`w-full rounded border text-md border-border-light focus:ring-1 placeholder:text-typography-600 focus:ring-primary focus:outline-none px-2 py-1 ${type === FORM_FIELD_TYPES.NUMBER ? "pr-[8px]" : "pr-[50px]"}`}
           />
         )}
         {maxLength && type === FORM_FIELD_TYPES.TEXT && (
           <span
-            className={`absolute right-2 text-sm text-gray-400 ${
+            className={`absolute right-2 text-sm text-typography-600 ${
               multiline ? "bottom-0 -translate-y-1/2" : "top-1/2 -translate-y-1/2"
             }`}
           >
@@ -121,7 +124,7 @@ export const InputField: React.FC<InputFieldProps> = ({
         )}
         {errors[id] && (
           <p
-            className={`absolute ${multiline ? "bottom-[-20px]" : "bottom-[-25px]"} text-red-500 text-sm`}
+            className={`absolute ${multiline ? "bottom-[-20px]" : "bottom-[-25px]"} text-destructive-500 text-sm`}
           >
             {errors[id].message}
           </p>

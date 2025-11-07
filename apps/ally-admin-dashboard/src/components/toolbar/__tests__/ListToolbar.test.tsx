@@ -11,6 +11,7 @@ vi.mock("@assets", () => ({
   Close: () => <div data-testid="close-icon">Close</div>,
   Plus: () => <div data-testid="plus-icon">Plus</div>,
   Search: () => <div data-testid="search-icon">Search</div>,
+  Add: () => <div data-testid="add-icon">+</div>,
 }));
 
 // Mock the Button component

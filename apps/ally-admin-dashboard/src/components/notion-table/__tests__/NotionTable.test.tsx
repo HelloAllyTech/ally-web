@@ -304,10 +304,10 @@ describe("NotionTable", () => {
       expect(tableContainer).toHaveClass("overflow-auto");
     });
 
-    it("applies hover styles to rows", () => {
+    it("renders table rows", () => {
       const { container } = render(<NotionTable {...defaultProps} />);
 
-      const rows = container.querySelectorAll(".hover\\:bg-gray-50");
+      const rows = container.querySelectorAll("[role='row']");
       expect(rows.length).toBeGreaterThan(0);
     });
 

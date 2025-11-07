@@ -39,10 +39,10 @@ export const Header: FC<HeaderProps> = ({
 
   const publishButton = (
     <Button
-      variant={ButtonVariant.SECONDARY}
+      variant={ButtonVariant.PRIMARY}
       onClick={onPublish}
       disabled={!isValid || isPublishing}
-      className={`px-4 py-1 h-[40px] text-white border-gray-200  ${isValid && !isPublishing ? "bg-blue-700 hover:bg-blue-800" : "bg-gray-300 cursor-not-allowed"}`}
+      className="px-4 py-1 h-[40px] text-white"
     >
       {isPublishing ? en.simulation.publishing : en.simulation.publish}
     </Button>
@@ -52,7 +52,7 @@ export const Header: FC<HeaderProps> = ({
       variant={ButtonVariant.TEXT}
       onClick={onPreview}
       disabled={!isValid}
-      className={`${isValid ? "text-blue-700" : "text-gray-400 cursor-not-allowed"}`}
+      className={`${isValid ? "text-primary-500" : "text-typography-600 cursor-not-allowed"}`}
     >
       {en.simulation.preview}
     </Button>
@@ -61,25 +61,25 @@ export const Header: FC<HeaderProps> = ({
   return (
     <>
       <div className="flex items-center px-2 py-4 gap-2">
-        <span className="text-gray-600 cursor-pointer" onClick={onBack}>
+        <span className="text-typography-800 cursor-pointer" onClick={onBack}>
           {en.simulation.simulationstudio}
         </span>
         <span className="-rotate-90">
           <ArrowDown />
         </span>
-        <span className="text-blue-700">
+        <span className="text-typography-900">
           {id.id ? en.simulation.editSimulation : en.simulation.createSimulation}
         </span>
       </div>
       <div className="flex items-center justify-between w-full px-2 pb-2 h-[80px] relative">
-        <h1 className="text-[24px] text-gray-900 whitespace-nowrap">
+        <h1 className="text-2xl text-typography-900 whitespace-nowrap">
           {id.id ? en.simulation.editSimulation : en.simulation.createNewSimulation}
         </h1>
         <div className="flex items-center gap-3">
           <Button
             variant={ButtonVariant.TEXT}
             onClick={handleSaveDraft}
-            className="px-4 py-1 h-[36px]"
+            className="px-4 py-1 h-[36px] text-typography-900"
           >
             {en.simulation.save}
           </Button>

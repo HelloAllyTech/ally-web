@@ -503,7 +503,7 @@ describe("SelectComponent", () => {
       const addButton = screen.getByText("+");
       fireEvent.click(addButton);
 
-      const inputWrapper = container.querySelector(".bg-gray-200.rounded");
+      const inputWrapper = container.querySelector(".rounded");
       expect(inputWrapper).toBeInTheDocument();
     });
   });

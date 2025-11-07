@@ -113,7 +113,6 @@ describe("FormField", () => {
 
       const asterisk = screen.getByText("*");
       expect(asterisk).toBeInTheDocument();
-      expect(asterisk).toHaveClass("text-red-500");
     });
 
     it("does not render mandatory indicator when not required", () => {

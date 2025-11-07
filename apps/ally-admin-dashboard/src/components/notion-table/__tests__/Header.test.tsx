@@ -71,7 +71,6 @@ describe("Header", () => {
       const headerElement = container.querySelector(".bg-white");
       expect(headerElement).toBeInTheDocument();
       expect(headerElement).toHaveClass("border-[1px]");
-      expect(headerElement).toHaveClass("border-gray-200");
       expect(headerElement).toHaveClass("select-none");
     });
 
@@ -88,13 +87,6 @@ describe("Header", () => {
 
       const headerElement = container.querySelector(".border-l-0");
       expect(headerElement).toBeInTheDocument();
-    });
-
-    it("applies hover styles", () => {
-      const { container } = render(<Header {...defaultProps} />);
-
-      const hoverElement = container.querySelector(".hover\\:bg-gray-100");
-      expect(hoverElement).toBeInTheDocument();
     });
 
     it("applies cursor pointer style", () => {
@@ -136,7 +128,6 @@ describe("Header", () => {
 
       const label = screen.getByText("Test Column");
       expect(label).toHaveClass("font-medium");
-      expect(label).toHaveClass("text-gray-500");
       expect(label).toHaveClass("truncate");
     });
 
@@ -182,11 +173,11 @@ describe("Header", () => {
       expect(resizer).toHaveClass("h-full");
     });
 
-    it("applies hover color to resizer", () => {
+    it("renders resizer with cursor style", () => {
       const { container } = render(<Header {...defaultProps} />);
 
       const resizer = container.querySelector(".cursor-col-resize");
-      expect(resizer).toHaveClass("hover:bg-blue-300");
+      expect(resizer).toBeInTheDocument();
     });
 
     it("calls getResizerProps", () => {

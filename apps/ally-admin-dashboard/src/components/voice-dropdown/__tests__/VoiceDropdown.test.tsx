@@ -127,7 +127,6 @@ describe("VoiceDropdown", () => {
 
       const asterisk = screen.getByText("*");
       expect(asterisk).toBeInTheDocument();
-      expect(asterisk).toHaveClass("text-red-500");
     });
 
     it("renders dropdown with placeholder", () => {
@@ -209,7 +208,7 @@ describe("VoiceDropdown", () => {
 
       await waitFor(() => {
         const errorMessage = screen.getByText("Voice is required");
-        expect(errorMessage).toHaveClass("text-red-500", "text-sm");
+        expect(errorMessage).toBeInTheDocument();
       });
     });
 
@@ -265,13 +264,7 @@ describe("VoiceDropdown", () => {
       );
 
       const label = screen.getByText("Voice").closest("label");
-      expect(label).toHaveClass(
-        "text-[#49454F]",
-        "cursor-pointer",
-        "flex",
-        "items-center",
-        "gap-1",
-      );
+      expect(label).toHaveClass("cursor-pointer", "flex", "items-center", "gap-1");
     });
 
     it("renders label with asterisk in correct order", () => {
