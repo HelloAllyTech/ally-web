@@ -61,7 +61,7 @@ const TableBody = <T extends Record<string, any>>({
       {data.map((row, rowIndex) => (
         <tr
           key={rowIndex}
-          className="hover:bg-gray-100 cursor-pointer"
+          className="hover:bg-gray-100 cursor-pointer font-primary"
           onClick={onRowClick ? () => onRowClick(row) : undefined}
         >
           {columns.map((col, columnIndex) => (
