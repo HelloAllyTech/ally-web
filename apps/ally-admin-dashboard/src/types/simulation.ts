@@ -96,6 +96,9 @@ export interface GetSimulationByIdResponse {
     tone?: string;
     voiceId?: string;
     agentGoal?: string;
+    autoTermitionRule?: boolean; // To Do: Will be change when BE API is updated
+    triggerEvent?: string;
+    triggerMessage?: string;
   };
 }
 

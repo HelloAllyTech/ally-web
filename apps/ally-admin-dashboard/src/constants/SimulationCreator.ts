@@ -70,6 +70,7 @@ export const FORM_FIELD_TYPES = {
   VIDEO_UPLOAD: "video_upload",
   CUSTOM: {
     VOICE_DROPDOWN: "voice_dropdown",
+    AUTO_TERMINATION_RULE: "auto_termination_rule",
   },
 };
 
@@ -280,6 +281,12 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: SimulationCreatorFieldGroups[] = [
         multiline: true,
         fullWidth: true,
         maxLength: 1000,
+      },
+      {
+        id: "autoTermitionRule",
+        label: "Auto termination",
+        fullWidth: true,
+        type: FORM_FIELD_TYPES.CUSTOM.AUTO_TERMINATION_RULE,
       },
     ],
   },
