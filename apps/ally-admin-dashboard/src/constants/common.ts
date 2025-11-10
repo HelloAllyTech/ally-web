@@ -59,6 +59,7 @@ export const ROUTES = {
   CREATE_SIMULATION: "/create-simulation",
   SIMULATION_PREVIEW: (id: string) => `/simulation-preview/${id}`,
   EDIT_SIMULATION: (id: string) => `/create-simulation/edit/${id}`,
+  ORGANIZATION_DETAIL: (id: string) => `/user-management/organization/${id}`,
 };
 
 export const LOCAL_STORAGE_KEYS = {

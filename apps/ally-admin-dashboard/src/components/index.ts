@@ -43,3 +43,4 @@ export * from "./mapped-event-side-panel";
 export * from "./toggle-switch";
 export * from "./event-map-table-loader";
 export * from "./status-badge";
+export * from "./organization-access-details";

@@ -22,6 +22,7 @@ vi.mock("@pages", () => ({
   LiveSimulationPreview: () => <div>LiveSimulationPreviewPage</div>,
   SimulationStudio: () => <div>SimulationStudioPage</div>,
   UserManagement: () => <div>UserManagementPage</div>,
+  OrganizationDetail: () => <div>OrganizationDetailPage</div>,
   EventManagement: () => <div>EventManagementPage</div>,
 }));
 
@@ -46,6 +47,13 @@ describe("RouteLayout", () => {
     window.history.pushState({}, "", ROUTES.USER_MANAGEMENT);
     render(<RouteLayout />);
     expect(screen.getByText("UserManagementPage")).toBeInTheDocument();
+  });
+
+  it("renders Organization Detail route with id", () => {
+    const path = ROUTES.ORGANIZATION_DETAIL("123");
+    window.history.pushState({}, "", path);
+    render(<RouteLayout />);
+    expect(screen.getByText("OrganizationDetailPage")).toBeInTheDocument();
   });
 
   it("renders Create Simulation route", () => {

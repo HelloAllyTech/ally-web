@@ -207,5 +207,10 @@ export const en = {
     creditNotNegativeError: "Credits cannot be negative",
     creditLimitError: "Maximum credit limit is 10,000",
     code: "Code",
+    simulations: "Simulations",
+    path: "Paths",
+    access: "Access",
+    enabled: "Enabled",
+    disabled: "Disabled",
   },
 };

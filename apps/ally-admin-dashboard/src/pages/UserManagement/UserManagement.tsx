@@ -1,5 +1,7 @@
 import { FC } from "react";
 
+import { useNavigate } from "react-router-dom";
+
 import {
   Tabs,
   ListToolbar,
@@ -21,6 +23,7 @@ import {
   en,
   userEditModal,
   UserMenuOptions,
+  ROUTES,
 } from "@constants";
 import { TabType } from "@types";
 
@@ -35,6 +38,8 @@ const formatDate = (isoDate: string) =>
   });
 
 export const UserManagement: FC = () => {
+  const navigate = useNavigate();
+
   // Organization management hook
   const {
     tenantsCount,
@@ -301,6 +306,7 @@ export const UserManagement: FC = () => {
               <OrganizationList
                 organizations={tenants}
                 onEditPress={onEditTenant}
+                onRowClick={tenant => navigate(ROUTES.ORGANIZATION_DETAIL(tenant.id))}
                 formatDate={formatDate}
                 renderFooter={() =>
                   renderFooter(loadTenants, isTenantsFetching, tenantsCount > tenants.length)

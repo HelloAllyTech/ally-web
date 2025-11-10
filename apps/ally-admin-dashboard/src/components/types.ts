@@ -206,6 +206,7 @@ export interface TabsProps {
   activeId: string;
   onChange: (id: string) => void;
   className?: string;
+  showCount?: boolean;
 }
 
 export interface FilterChipProps {
