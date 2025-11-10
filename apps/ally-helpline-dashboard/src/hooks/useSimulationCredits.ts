@@ -7,7 +7,9 @@ export const useSimulationCredits = () => {
   const { user, permissions } = useUser();
   const canViewCredits = !!user && permissions.includes(Permissions.VIEW_SIMULATION_CREDITS);
 
-  const { data: credits } = useGetSimulationCreditsQuery(user?.id, { skip: !canViewCredits });
+  const { data: credits, refetch: refetchCredits } = useGetSimulationCreditsQuery(user?.id, {
+    skip: !canViewCredits,
+  });
 
   const limitReached =
     ((credits?.creditLimit ?? 0) - (credits?.consumedCredits ?? 0)) *
@@ -26,5 +28,6 @@ export const useSimulationCredits = () => {
     CreditPercentage,
 
     credits,
+    refetchCredits,
   };
 };
