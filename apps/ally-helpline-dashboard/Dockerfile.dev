@@ -1,0 +1,20 @@
+# Dev image for ally-helpline-dashboard (Vite)
+FROM node:20-alpine
+
+WORKDIR /app
+
+# Install dependencies using workspace manifests for cache efficiency
+COPY package*.json ./
+COPY nx.json ./
+COPY tsconfig.base.json ./
+COPY apps/ally-helpline-dashboard/package*.json ./apps/ally-helpline-dashboard/
+COPY libs/ui-shared/package*.json ./libs/ui-shared/
+
+RUN npm ci --legacy-peer-deps
+
+ENV NODE_ENV=development
+
+EXPOSE 8080
+
+# project.json already sets host: true and port: 8080 for Nx Vite
+CMD ["sh", "-lc", "if [ ! -d node_modules ] || [ -z \"$(ls -A node_modules 2>/dev/null)\" ]; then npm ci --legacy-peer-deps; fi; npx nx serve ally-helpline-dashboard"]

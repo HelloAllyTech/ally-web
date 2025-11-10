@@ -1,0 +1,19 @@
+# Dev image for ally-admin-dashboard (Vite)
+FROM node:20-alpine
+
+WORKDIR /app
+
+# Install dependencies using workspace manifests for cache efficiency
+COPY package*.json ./
+COPY nx.json ./
+COPY tsconfig.base.json ./
+COPY libs/ui-shared/package*.json ./libs/ui-shared/
+
+RUN npm ci --legacy-peer-deps
+
+ENV NODE_ENV=development
+
+EXPOSE 8080
+
+# Run vite directly; compose maps 8081->8080
+CMD ["sh", "-lc", "if [ ! -d node_modules ] || [ -z \"$(ls -A node_modules 2>/dev/null)\" ]; then npm ci --legacy-peer-deps; fi; cd apps/ally-admin-dashboard && npx vite --host 0.0.0.0 --port 8080"]
