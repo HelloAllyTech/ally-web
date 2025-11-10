@@ -54,6 +54,8 @@ export const en = {
     logout: "Logout",
   },
   simulation: {
+    pathway: "Pathway",
+    createPathway: "Create Pathway",
     videoMaxSizeLabel: "15MB",
     imageMaxSizeLabel: "2MB",
     file: "File",
@@ -68,7 +70,9 @@ export const en = {
     editEvent: "Edit event",
     simulationStudio: "Simulation Studio",
     newSimulation: "New simulation",
-    createYourFirstSimulation: "Create your first",
+    newPathway: "New path way",
+    createYourFirst: "Create your first",
+    createYourFirstPathway: "Create your first pathway",
     simulation: "Simulation",
     unpublish: "Unpublish",
     deleteEvent: "Delete event",
@@ -76,6 +80,7 @@ export const en = {
       "Are you sure you want to unpublish this simulation? This will be moved to draft state.",
     newSimulationDescription:
       "Build interactive scenarios for training, education, and practice with our intuitive creation tools.",
+    newPathwayDescription: "Search and select simulations to include in this path.",
     createSimulation: "Create simulation",
     createNewSimulation: "Create new simulation",
     publish: "Publish",

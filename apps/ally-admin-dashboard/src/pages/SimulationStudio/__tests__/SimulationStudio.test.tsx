@@ -2,48 +2,20 @@ import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { BrowserRouter } from "react-router-dom";
 import { vi, describe, it, expect, beforeEach } from "vitest";
 
+import { SimulationStatus } from "@constants";
+import type { Simulation } from "@types";
+
 // Hoist mocks to avoid initialization errors
-const {
-  mockNavigate,
-  mockToast,
-  mockUseGetSimulationsQuery,
-  mockDeleteSimulation,
-  mockUpdateSimulation,
-} = vi.hoisted(() => ({
-  mockNavigate: vi.fn(),
-  mockToast: {
-    success: vi.fn(),
-    error: vi.fn(),
-  },
-  mockUseGetSimulationsQuery: vi.fn(),
-  mockDeleteSimulation: vi.fn(),
-  mockUpdateSimulation: vi.fn(),
+const { mockUseSimulations, mockUseSimulationPathways } = vi.hoisted(() => ({
+  mockUseSimulations: vi.fn(),
+  mockUseSimulationPathways: vi.fn(),
 }));
 
-// Mock react-router-dom
-vi.mock("react-router-dom", async () => {
-  const actual = await vi.importActual("react-router-dom");
-  return {
-    ...actual,
-    useNavigate: () => mockNavigate,
-  };
-});
-
-// Mock sonner toast
-vi.mock("sonner", () => ({
-  toast: mockToast,
+// Mock the custom hooks
+vi.mock("@hooks", () => ({
+  useSimulations: mockUseSimulations,
+  useSimulationPathways: mockUseSimulationPathways,
 }));
-
-// Mock API hooks
-vi.mock("@api", async importOriginal => {
-  const actual = await importOriginal<typeof import("@api")>();
-  return {
-    ...actual,
-    useGetSimulationsQuery: (...args: any[]) => mockUseGetSimulationsQuery(...args),
-    useDeleteSimulationByIdMutation: () => [mockDeleteSimulation, {}],
-    useUpdateSimulationByIdMutation: () => [mockUpdateSimulation, {}],
-  };
-});
 
 // Mock components
 vi.mock("@components", async importOriginal => {
@@ -168,6 +140,33 @@ vi.mock("@components", async importOriginal => {
         <p>{subtitle}</p>
       </div>
     ),
+    Tabs: ({ items, activeId, onChange }: any) => (
+      <div data-testid="tabs">
+        {items.map((item: any) => (
+          <button
+            key={item.id}
+            onClick={() => onChange(item.id)}
+            data-testid={`tab-${item.id}`}
+            className={activeId === item.id ? "active" : ""}
+          >
+            {item.label}
+          </button>
+        ))}
+      </div>
+    ),
+    OptionsPopup: ({ isOpen, onClose, options, anchorElement }: any) =>
+      isOpen ? (
+        <div data-testid="options-popup">
+          {options.map((option: any) => (
+            <button key={option.id} onClick={option.onClick} data-testid={`option-${option.id}`}>
+              {option.label}
+            </button>
+          ))}
+          <button onClick={onClose} data-testid="close-options">
+            Close
+          </button>
+        </div>
+      ) : null,
   };
 });
 
@@ -176,74 +175,14 @@ vi.mock("@assets", () => ({
   Add: () => <svg data-testid="add-icon">+</svg>,
   Close: () => <svg data-testid="close-icon">×</svg>,
   Filter: () => <svg data-testid="filter-icon">Filter</svg>,
+  Simulation: () => <svg data-testid="simulation-icon">Simulation</svg>,
+  Pathway: () => <svg data-testid="pathway-icon">Pathway</svg>,
 }));
-
-// Mock SimulationCreator constants
-vi.mock("@constants/SimulationCreator", () => ({
-  STEP1_FIELDS: [],
-  STEP2_FIELDS: [],
-  STEP3_FIELDS: [],
-  STEP4_FIELDS: [],
-  STEP5_FIELDS: [],
-  eventsTableColumns: [],
-}));
-
-// Mock constants
-vi.mock("@constants", async importOriginal => {
-  const actual = await importOriginal<typeof import("@constants")>();
-  return {
-    ...actual,
-    en: {
-      ...(actual.en || {}),
-      simulation: {
-        simulationstudio: "Simulation Studio",
-        newSimulation: "New Simulation",
-        createSimulation: "Create Simulation",
-        createYourFirstSimulation: "Create your first",
-        simulation: "simulation",
-        newSimulationDescription: "Get started by creating a new simulation scenario",
-        unpublish: "Unpublish",
-        unpublishDescription: "Are you sure you want to unpublish this simulation?",
-        archive: "Archive",
-        archiveDescription: "Are you sure you want to archive this simulation?",
-        unarchive: "Unarchive",
-        unarchiveDescription: "Are you sure you want to unarchive this simulation?",
-        edit: "Edit",
-        editDescription: "Editing will create a new version",
-        cancel: "Cancel",
-        noResultFound: "No results found",
-        adjustFilter: "Try adjusting your filters",
-      },
-      common: {
-        loading: "Loading...",
-        loadMore: "Load more",
-      },
-    },
-    ROUTES: {
-      CREATE_SIMULATION: "/create-simulation",
-      EDIT_SIMULATION: (id: string) => `/edit-simulation/${id}`,
-    },
-    SimulationStatus: {
-      ACTIVE: "ACTIVE",
-      DRAFT: "DRAFT",
-      ARCHIVED: "ARCHIVED",
-      PUBLISHED: "PUBLISHED",
-    },
-    SORT_BY: {
-      UPDATED_AT: "updatedAt",
-    },
-    SORT_ORDER: {
-      DESC: "desc",
-    },
-  };
-});
-
-import { SimulationStatus } from "@types";
 
 import { SimulationStudio } from "../SimulationStudio";
 
 describe("SimulationStudio", () => {
-  const mockSimulations = [
+  const mockSimulations: Simulation[] = [
     {
       id: "sim-1",
       title: "Test Simulation 1",
@@ -266,32 +205,79 @@ describe("SimulationStudio", () => {
       isPreviewEnabled: true,
       usage: 20,
     },
+  ];
+
+  const mockPathways = [
     {
-      id: "sim-3",
-      title: "Test Simulation 3",
-      description: "Description 3",
-      coverImageUrl: "http://example.com/image3.jpg",
-      createdBy: "user3",
-      updatedAt: "2024-01-03T00:00:00Z",
-      status: SimulationStatus.ARCHIVED,
-      isPreviewEnabled: false,
-      usage: 5,
+      id: "path-1",
+      title: "Test Pathway 1",
+      description: "Pathway Description 1",
+      coverImageUrl: "http://example.com/path1.jpg",
+      createdBy: "user1",
+      updatedAt: "2024-01-01T00:00:00Z",
+      status: SimulationStatus.DRAFT,
     },
   ];
 
+  const defaultSimulationsHookReturn = {
+    simulations: mockSimulations,
+    currentSimulation: null,
+    hasMore: false,
+    isSimulationsLoading: false,
+    isSimulationsFetching: false,
+    simulationsResponse: { data: mockSimulations, count: 2 },
+    simulationsOffset: 0,
+    isPreviewOpen: false,
+    setIsPreviewOpen: vi.fn(),
+    isUnpublishPopupOpen: false,
+    setIsUnpublishPopupOpen: vi.fn(),
+    isArchivePopupOpen: false,
+    setIsArchivePopupOpen: vi.fn(),
+    isDeletePopupOpen: false,
+    setIsDeletePopupOpen: vi.fn(),
+    isUnarchivePopupOpen: false,
+    setIsUnarchivePopupOpen: vi.fn(),
+    isEditPopupOpen: false,
+    setIsEditPopupOpen: vi.fn(),
+    loadSimulations: vi.fn(),
+    handleNewSimulation: vi.fn(),
+    handleCreateSimulation: vi.fn(),
+    onEditIconClick: vi.fn(),
+    handleEditSimulation: vi.fn(),
+    handleDeleteSimulation: vi.fn(),
+    onDeleteSimulation: vi.fn(),
+    handleChangeSimulationStatus: vi.fn(),
+    onArchiveSimulation: vi.fn(),
+    onUnarchiveSimulation: vi.fn(),
+    onPreviewSimulation: vi.fn(),
+    onUnpublishSimulation: vi.fn(),
+  };
+
+  const defaultPathwaysHookReturn = {
+    pathways: [],
+    currentPathway: null,
+    hasMore: false,
+    isPathwaysLoading: false,
+    isPathwaysFetching: false,
+    pathwaysResponse: { data: [], count: 0 },
+    pathwaysOffset: 0,
+    isPreviewOpen: false,
+    setIsPreviewOpen: vi.fn(),
+    isDeletePopupOpen: false,
+    setIsDeletePopupOpen: vi.fn(),
+    loadPathways: vi.fn(),
+    handleNewPathway: vi.fn(),
+    handleCreatePathway: vi.fn(),
+    onEditPathway: vi.fn(),
+    handleDeletePathway: vi.fn(),
+    onDeletePathway: vi.fn(),
+    onPreviewPathway: vi.fn(),
+  };
+
   beforeEach(() => {
     vi.clearAllMocks();
-    mockUseGetSimulationsQuery.mockReturnValue({
-      data: { data: mockSimulations, count: 3 },
-      isFetching: false,
-      isLoading: false,
-    });
-    mockDeleteSimulation.mockReturnValue({
-      unwrap: vi.fn().mockResolvedValue({}),
-    });
-    mockUpdateSimulation.mockReturnValue({
-      unwrap: vi.fn().mockResolvedValue({}),
-    });
+    mockUseSimulations.mockReturnValue(defaultSimulationsHookReturn);
+    mockUseSimulationPathways.mockReturnValue(defaultPathwaysHookReturn);
   });
 
   const renderComponent = () => {
@@ -308,9 +294,15 @@ describe("SimulationStudio", () => {
       expect(screen.getByText("Simulation Studio")).toBeInTheDocument();
     });
 
-    it("renders the new simulation button", () => {
+    it("renders the create button", () => {
       renderComponent();
-      expect(screen.getByText("New Simulation")).toBeInTheDocument();
+      expect(screen.getByText("Create")).toBeInTheDocument();
+    });
+
+    it("renders tabs for Simulations and Pathways", () => {
+      renderComponent();
+      expect(screen.getByTestId("tab-simulations")).toBeInTheDocument();
+      expect(screen.getByTestId("tab-pathways")).toBeInTheDocument();
     });
 
     it("renders filter button", () => {
@@ -318,619 +310,696 @@ describe("SimulationStudio", () => {
       expect(screen.getByTestId("filter-icon")).toBeInTheDocument();
     });
 
-    it("renders simulation list when data is available", async () => {
+    it("renders simulation list when data is available", () => {
       renderComponent();
-
-      await waitFor(() => {
-        expect(screen.getByTestId("simulation-list")).toBeInTheDocument();
-      });
+      expect(screen.getByTestId("simulation-list")).toBeInTheDocument();
     });
 
-    it("displays all simulations", async () => {
+    it("displays all simulations", () => {
       renderComponent();
+      expect(screen.getByText("Test Simulation 1")).toBeInTheDocument();
+      expect(screen.getByText("Test Simulation 2")).toBeInTheDocument();
+    });
 
-      await waitFor(() => {
-        expect(screen.getByText("Test Simulation 1")).toBeInTheDocument();
-        expect(screen.getByText("Test Simulation 2")).toBeInTheDocument();
-        expect(screen.getByText("Test Simulation 3")).toBeInTheDocument();
-      });
+    it("Simulations tab is active by default", () => {
+      renderComponent();
+      const simulationsTab = screen.getByTestId("tab-simulations");
+      expect(simulationsTab).toHaveClass("active");
     });
   });
 
   describe("Loading state", () => {
-    it("shows skeleton loader when fetching initial data", () => {
-      mockUseGetSimulationsQuery.mockReturnValue({
-        data: undefined,
-        isFetching: false,
-        isLoading: true,
+    it("shows skeleton loader when loading simulations", () => {
+      mockUseSimulations.mockReturnValue({
+        ...defaultSimulationsHookReturn,
+        isSimulationsLoading: true,
+        simulations: [],
       });
 
       renderComponent();
       expect(screen.getByTestId("simulation-skeleton")).toBeInTheDocument();
     });
 
-    it("does not show skeleton when loading more data", async () => {
+    it("shows skeleton loader when loading pathways", () => {
+      mockUseSimulationPathways.mockReturnValue({
+        ...defaultPathwaysHookReturn,
+        isPathwaysLoading: true,
+        pathways: [],
+      });
+
       renderComponent();
 
-      await waitFor(() => {
-        expect(screen.queryByTestId("simulation-skeleton")).not.toBeInTheDocument();
-      });
+      // Switch to pathways tab
+      fireEvent.click(screen.getByTestId("tab-pathways"));
+
+      expect(screen.getByTestId("simulation-skeleton")).toBeInTheDocument();
     });
   });
 
   describe("Empty states", () => {
-    it("shows empty state when no simulations exist", async () => {
-      mockUseGetSimulationsQuery.mockReturnValue({
-        data: { data: [], count: 0 },
-        isFetching: false,
+    it("shows empty state when no simulations exist", () => {
+      mockUseSimulations.mockReturnValue({
+        ...defaultSimulationsHookReturn,
+        simulations: [],
+        simulationsResponse: { data: [], count: 0 },
       });
 
       renderComponent();
 
-      await waitFor(() => {
-        expect(screen.getByText("Create your first")).toBeInTheDocument();
-        expect(screen.getByText("simulation")).toBeInTheDocument();
-      });
+      expect(screen.getByText("Create your first")).toBeInTheDocument();
+      expect(screen.getByText("Simulation")).toBeInTheDocument();
     });
 
-    it("shows create simulation button in empty state", async () => {
-      mockUseGetSimulationsQuery.mockReturnValue({
-        data: { data: [], count: 0 },
-        isFetching: false,
+    it("shows create simulation button in empty state", () => {
+      mockUseSimulations.mockReturnValue({
+        ...defaultSimulationsHookReturn,
+        simulations: [],
+        simulationsResponse: { data: [], count: 0 },
       });
 
       renderComponent();
 
-      await waitFor(() => {
-        expect(screen.getByText("Create Simulation")).toBeInTheDocument();
-      });
+      expect(screen.getByText("Create simulation")).toBeInTheDocument();
     });
 
-    it("shows filtered empty state when filters are applied with no results", async () => {
-      mockUseGetSimulationsQuery.mockReturnValue({
-        data: { data: [], count: 0 },
-        isFetching: false,
+    it("shows filtered empty state when filters are applied with no results", () => {
+      mockUseSimulations.mockReturnValue({
+        ...defaultSimulationsHookReturn,
+        simulations: [],
+        simulationsResponse: { data: [], count: 0 },
       });
 
       renderComponent();
 
-      // Apply filter first
+      // Apply filter
       const filterButton = screen.getByTestId("filter-icon").closest("button");
       if (filterButton) fireEvent.click(filterButton);
 
-      await waitFor(() => {
-        const applyFilterButton = screen.getByTestId("apply-filter");
-        fireEvent.click(applyFilterButton);
+      fireEvent.click(screen.getByTestId("apply-filter"));
+
+      expect(screen.getByText("No results found")).toBeInTheDocument();
+      expect(screen.getByText(/Adjust your filters and try again/i)).toBeInTheDocument();
+    });
+
+    it("shows empty state for pathways when no pathways exist", () => {
+      mockUseSimulations.mockReturnValue({
+        ...defaultSimulationsHookReturn,
+        simulations: [],
+        simulationsResponse: { data: [], count: 0 },
       });
 
-      // Wait for empty state with filters
-      mockUseGetSimulationsQuery.mockReturnValue({
-        data: { data: [], count: 0 },
-        isFetching: false,
-      });
+      renderComponent();
 
-      await waitFor(() => {
-        expect(screen.getByText("No results found")).toBeInTheDocument();
-        expect(screen.getByText("Try adjusting your filters")).toBeInTheDocument();
-      });
+      // Switch to pathways tab
+      fireEvent.click(screen.getByTestId("tab-pathways"));
+
+      expect(screen.getByText("Create your first")).toBeInTheDocument();
+      expect(screen.getByText("Pathway")).toBeInTheDocument();
     });
   });
 
-  describe("Navigation", () => {
-    it("navigates to create simulation when new simulation button is clicked", () => {
+  describe("Tab switching", () => {
+    it("switches to pathways tab when clicked", () => {
       renderComponent();
 
-      const newSimButton = screen.getByText("New Simulation");
-      fireEvent.click(newSimButton);
+      fireEvent.click(screen.getByTestId("tab-pathways"));
 
-      expect(mockNavigate).toHaveBeenCalledWith("/create-simulation");
+      const pathwaysTab = screen.getByTestId("tab-pathways");
+      expect(pathwaysTab).toHaveClass("active");
     });
 
-    it("navigates to create simulation from empty state", async () => {
-      mockUseGetSimulationsQuery.mockReturnValue({
-        data: { data: [], count: 0 },
-        isFetching: false,
-      });
-
+    it("clears filters when switching tabs", () => {
       renderComponent();
 
-      await waitFor(() => {
-        const createButton = screen.getByText("Create Simulation");
-        fireEvent.click(createButton);
-      });
+      // Apply filter on simulations tab
+      const filterButton = screen.getByTestId("filter-icon").closest("button");
+      if (filterButton) fireEvent.click(filterButton);
+      fireEvent.click(screen.getByTestId("apply-filter"));
 
-      expect(mockNavigate).toHaveBeenCalledWith("/create-simulation");
+      // Verify filter is applied
+      expect(screen.getByText("Active")).toBeInTheDocument();
+
+      // Switch to pathways tab
+      fireEvent.click(screen.getByTestId("tab-pathways"));
+
+      // Filter should be cleared
+      expect(screen.queryByText("Active")).not.toBeInTheDocument();
     });
 
-    it("navigates to edit simulation for draft status", async () => {
-      renderComponent();
-
-      await waitFor(() => {
-        const editButton = screen.getByTestId("edit-sim-1");
-        fireEvent.click(editButton);
+    it("displays pathways when pathways tab is active", () => {
+      mockUseSimulationPathways.mockReturnValue({
+        ...defaultPathwaysHookReturn,
+        pathways: mockPathways,
+        pathwaysResponse: { data: mockPathways, count: 1 },
       });
 
-      expect(mockNavigate).toHaveBeenCalledWith("/edit-simulation/sim-1");
-    });
-
-    it("shows edit confirmation popup for published simulation", async () => {
       renderComponent();
 
-      await waitFor(() => {
-        const editButton = screen.getByTestId("edit-sim-2");
-        fireEvent.click(editButton);
-      });
+      // Switch to pathways tab
+      fireEvent.click(screen.getByTestId("tab-pathways"));
 
-      expect(screen.getByTestId("action-confirmation-popup")).toBeInTheDocument();
-      expect(screen.getByText("Edit simulation")).toBeInTheDocument();
-    });
-
-    it("navigates to edit when confirming edit for published simulation", async () => {
-      renderComponent();
-
-      await waitFor(() => {
-        const editButton = screen.getByTestId("edit-sim-2");
-        fireEvent.click(editButton);
-      });
-
-      const confirmButton = screen.getByTestId("primary-button");
-      fireEvent.click(confirmButton);
-
-      expect(mockNavigate).toHaveBeenCalledWith("/edit-simulation/sim-2");
+      expect(screen.getByText("Test Pathway 1")).toBeInTheDocument();
     });
   });
 
   describe("Filter functionality", () => {
-    it("opens filter list when filter button is clicked", async () => {
+    it("opens filter list when filter button is clicked", () => {
       renderComponent();
 
       const filterButton = screen.getByTestId("filter-icon").closest("button");
       if (filterButton) fireEvent.click(filterButton);
 
-      await waitFor(() => {
-        expect(screen.getByTestId("filter-list")).toBeInTheDocument();
-      });
+      expect(screen.getByTestId("filter-list")).toBeInTheDocument();
     });
 
-    it("closes filter list when close is clicked", async () => {
+    it("closes filter list when close is clicked", () => {
       renderComponent();
 
       const filterButton = screen.getByTestId("filter-icon").closest("button");
       if (filterButton) fireEvent.click(filterButton);
 
-      await waitFor(() => {
-        const closeButton = screen.getByTestId("close-filter");
-        fireEvent.click(closeButton);
-      });
+      fireEvent.click(screen.getByTestId("close-filter"));
 
       expect(screen.queryByTestId("filter-list")).not.toBeInTheDocument();
     });
 
-    it("applies filters and displays filter chips", async () => {
+    it("applies filters and displays filter chips", () => {
       renderComponent();
 
       const filterButton = screen.getByTestId("filter-icon").closest("button");
       if (filterButton) fireEvent.click(filterButton);
 
-      await waitFor(() => {
-        const applyButton = screen.getByTestId("apply-filter");
-        fireEvent.click(applyButton);
-      });
+      fireEvent.click(screen.getByTestId("apply-filter"));
 
-      await waitFor(() => {
-        expect(screen.getByText("Active")).toBeInTheDocument();
-      });
+      expect(screen.getByText("Active")).toBeInTheDocument();
     });
 
-    it("removes filter chip when close icon is clicked", async () => {
+    it("removes filter chip when close icon is clicked", () => {
       renderComponent();
 
       const filterButton = screen.getByTestId("filter-icon").closest("button");
       if (filterButton) fireEvent.click(filterButton);
 
-      await waitFor(() => {
-        const applyButton = screen.getByTestId("apply-filter");
-        fireEvent.click(applyButton);
-      });
+      fireEvent.click(screen.getByTestId("apply-filter"));
 
-      await waitFor(() => {
-        const filterChip = screen.getByText("Active");
-        expect(filterChip).toBeInTheDocument();
+      const filterChip = screen.getByText("Active");
+      expect(filterChip).toBeInTheDocument();
 
-        const closeButton = filterChip.parentElement?.querySelector("button");
-        if (closeButton) fireEvent.click(closeButton);
-      });
+      const closeButton = filterChip.parentElement?.querySelector("button");
+      if (closeButton) fireEvent.click(closeButton);
 
-      await waitFor(() => {
-        expect(screen.queryByText("Active")).not.toBeInTheDocument();
+      expect(screen.queryByText("Active")).not.toBeInTheDocument();
+    });
+
+    it("passes selectedFilters to useSimulations hook", () => {
+      renderComponent();
+
+      const filterButton = screen.getByTestId("filter-icon").closest("button");
+      if (filterButton) fireEvent.click(filterButton);
+
+      fireEvent.click(screen.getByTestId("apply-filter"));
+
+      // The hook should be called with selectedFilters
+      expect(mockUseSimulations).toHaveBeenCalledWith({
+        selectedFilters: [{ id: "ACTIVE", label: "Active" }],
       });
+    });
+  });
+
+  describe("Create options popup", () => {
+    it("opens create options popup when create button is clicked", () => {
+      renderComponent();
+
+      const createButton = screen.getByText("Create");
+      fireEvent.click(createButton);
+
+      expect(screen.getByTestId("options-popup")).toBeInTheDocument();
+    });
+
+    it("displays both simulation and pathway options", () => {
+      renderComponent();
+
+      const createButton = screen.getByText("Create");
+      fireEvent.click(createButton);
+
+      expect(screen.getByText("New simulation")).toBeInTheDocument();
+      expect(screen.getByText("New path way")).toBeInTheDocument();
+    });
+
+    it("calls handleNewSimulation when New Simulation option is clicked", () => {
+      renderComponent();
+
+      const createButton = screen.getByText("Create");
+      fireEvent.click(createButton);
+
+      fireEvent.click(screen.getByTestId("option-New simulation"));
+
+      expect(defaultSimulationsHookReturn.handleNewSimulation).toHaveBeenCalled();
+    });
+
+    it("calls handleNewPathway when New Pathway option is clicked", () => {
+      renderComponent();
+
+      const createButton = screen.getByText("Create");
+      fireEvent.click(createButton);
+
+      fireEvent.click(screen.getByTestId("option-New path way"));
+
+      expect(defaultPathwaysHookReturn.handleNewPathway).toHaveBeenCalled();
+    });
+
+    it("closes options popup when close is clicked", () => {
+      renderComponent();
+
+      const createButton = screen.getByText("Create");
+      fireEvent.click(createButton);
+
+      fireEvent.click(screen.getByTestId("close-options"));
+
+      expect(screen.queryByTestId("options-popup")).not.toBeInTheDocument();
     });
   });
 
   describe("Simulation actions", () => {
-    it("opens preview when preview button is clicked", async () => {
+    it("calls onEditIconClick when edit button is clicked", () => {
       renderComponent();
 
-      await waitFor(() => {
-        const previewButton = screen.getByTestId("preview-sim-1");
-        fireEvent.click(previewButton);
-      });
+      fireEvent.click(screen.getByTestId("edit-sim-1"));
 
-      expect(screen.getByTestId("simulation-preview")).toBeInTheDocument();
-      // Use getAllByText since the simulation title appears in both list and preview
-      const titles = screen.getAllByText("Test Simulation 1");
-      expect(titles.length).toBeGreaterThan(0);
+      expect(defaultSimulationsHookReturn.onEditIconClick).toHaveBeenCalledWith(mockSimulations[0]);
     });
 
-    it("closes preview when close is clicked", async () => {
+    it("calls handleDeleteSimulation when delete button is clicked", () => {
       renderComponent();
 
-      await waitFor(() => {
-        const previewButton = screen.getByTestId("preview-sim-1");
-        fireEvent.click(previewButton);
-      });
+      fireEvent.click(screen.getByTestId("delete-sim-1"));
 
-      const closeButton = screen.getByTestId("close-preview");
-      fireEvent.click(closeButton);
-
-      await waitFor(() => {
-        expect(screen.queryByTestId("simulation-preview")).not.toBeInTheDocument();
-      });
+      expect(defaultSimulationsHookReturn.handleDeleteSimulation).toHaveBeenCalledWith(
+        mockSimulations[0],
+      );
     });
 
-    it("opens delete popup when delete button is clicked", async () => {
+    it("calls onPreviewSimulation when preview button is clicked", () => {
       renderComponent();
 
-      await waitFor(() => {
-        const deleteButton = screen.getByTestId("delete-sim-1");
-        fireEvent.click(deleteButton);
-      });
+      fireEvent.click(screen.getByTestId("preview-sim-1"));
 
-      expect(screen.getByTestId("delete-simulation-popup")).toBeInTheDocument();
+      expect(defaultSimulationsHookReturn.onPreviewSimulation).toHaveBeenCalledWith(
+        mockSimulations[0],
+      );
     });
 
-    it("deletes simulation and shows success toast", async () => {
+    it("calls onArchiveSimulation when archive button is clicked", () => {
       renderComponent();
 
-      await waitFor(() => {
-        const deleteButton = screen.getByTestId("delete-sim-1");
-        fireEvent.click(deleteButton);
-      });
+      fireEvent.click(screen.getByTestId("archive-sim-1"));
 
-      const confirmButton = screen.getByTestId("confirm-delete");
-      fireEvent.click(confirmButton);
-
-      await waitFor(() => {
-        expect(mockDeleteSimulation).toHaveBeenCalledWith("sim-1");
-        expect(mockToast.success).toHaveBeenCalledWith("Simulation deleted successfully");
-      });
+      expect(defaultSimulationsHookReturn.onArchiveSimulation).toHaveBeenCalledWith(
+        mockSimulations[0],
+      );
     });
 
-    it("shows error toast when delete fails", async () => {
-      mockDeleteSimulation.mockReturnValue({
-        unwrap: vi.fn().mockRejectedValue(new Error("Delete failed")),
-      });
-
+    it("calls onUnpublishSimulation when unpublish button is clicked", () => {
       renderComponent();
 
-      await waitFor(() => {
-        const deleteButton = screen.getByTestId("delete-sim-1");
-        fireEvent.click(deleteButton);
-      });
+      fireEvent.click(screen.getByTestId("unpublish-sim-2"));
 
-      const confirmButton = screen.getByTestId("confirm-delete");
-      fireEvent.click(confirmButton);
-
-      await waitFor(() => {
-        expect(mockToast.error).toHaveBeenCalledWith("Failed to delete simulation");
-      });
-    });
-  });
-
-  describe("Archive functionality", () => {
-    it("opens archive popup when archive button is clicked", async () => {
-      renderComponent();
-
-      await waitFor(() => {
-        const archiveButton = screen.getByTestId("archive-sim-1");
-        fireEvent.click(archiveButton);
-      });
-
-      expect(screen.getByTestId("action-confirmation-popup")).toBeInTheDocument();
-      expect(screen.getByText("Archive simulation?")).toBeInTheDocument();
+      expect(defaultSimulationsHookReturn.onUnpublishSimulation).toHaveBeenCalledWith(
+        mockSimulations[1],
+      );
     });
 
-    it("archives simulation successfully", async () => {
+    it("calls onUnarchiveSimulation when unarchive button is clicked", () => {
       renderComponent();
 
-      await waitFor(() => {
-        const archiveButton = screen.getByTestId("archive-sim-1");
-        fireEvent.click(archiveButton);
-      });
+      fireEvent.click(screen.getByTestId("unarchive-sim-1"));
 
-      const confirmButton = screen.getByTestId("primary-button");
-      fireEvent.click(confirmButton);
-
-      await waitFor(() => {
-        expect(mockUpdateSimulation).toHaveBeenCalledWith({
-          id: "sim-1",
-          simulation: { status: "ARCHIVED", title: "Test Simulation 1" },
-        });
-        expect(mockToast.success).toHaveBeenCalledWith("Updated simulation status to ARCHIVED");
-      });
-    });
-
-    it("opens unarchive popup when unarchive button is clicked", async () => {
-      renderComponent();
-
-      await waitFor(() => {
-        const unarchiveButton = screen.getByTestId("unarchive-sim-3");
-        fireEvent.click(unarchiveButton);
-      });
-
-      expect(screen.getByTestId("action-confirmation-popup")).toBeInTheDocument();
-      expect(screen.getByText("Unarchive simulation?")).toBeInTheDocument();
-    });
-
-    it("unarchives simulation successfully", async () => {
-      renderComponent();
-
-      await waitFor(() => {
-        const unarchiveButton = screen.getByTestId("unarchive-sim-3");
-        fireEvent.click(unarchiveButton);
-      });
-
-      const confirmButton = screen.getByTestId("primary-button");
-      fireEvent.click(confirmButton);
-
-      await waitFor(() => {
-        expect(mockUpdateSimulation).toHaveBeenCalledWith({
-          id: "sim-3",
-          simulation: { status: "DRAFT", title: "Test Simulation 3" },
-        });
-      });
-    });
-  });
-
-  describe("Unpublish functionality", () => {
-    it("opens unpublish popup when unpublish button is clicked", async () => {
-      renderComponent();
-
-      await waitFor(() => {
-        const unpublishButton = screen.getByTestId("unpublish-sim-2");
-        fireEvent.click(unpublishButton);
-      });
-
-      expect(screen.getByTestId("action-confirmation-popup")).toBeInTheDocument();
-      expect(screen.getByText("Unpublish simulation?")).toBeInTheDocument();
-    });
-
-    it("unpublishes simulation successfully", async () => {
-      renderComponent();
-
-      await waitFor(() => {
-        const unpublishButton = screen.getByTestId("unpublish-sim-2");
-        fireEvent.click(unpublishButton);
-      });
-
-      const confirmButton = screen.getByTestId("primary-button");
-      fireEvent.click(confirmButton);
-
-      await waitFor(() => {
-        expect(mockUpdateSimulation).toHaveBeenCalledWith({
-          id: "sim-2",
-          simulation: { status: "DRAFT", title: "Test Simulation 2" },
-        });
-        expect(mockToast.success).toHaveBeenCalledWith("Updated simulation status to DRAFT");
-      });
-    });
-
-    it("shows error toast when status update fails", async () => {
-      mockUpdateSimulation.mockReturnValue({
-        unwrap: vi.fn().mockRejectedValue(new Error("Update failed")),
-      });
-
-      renderComponent();
-
-      await waitFor(() => {
-        const unpublishButton = screen.getByTestId("unpublish-sim-2");
-        fireEvent.click(unpublishButton);
-      });
-
-      const confirmButton = screen.getByTestId("primary-button");
-      fireEvent.click(confirmButton);
-
-      await waitFor(() => {
-        expect(mockToast.error).toHaveBeenCalledWith("Failed to change simulation status");
-      });
+      expect(defaultSimulationsHookReturn.onUnarchiveSimulation).toHaveBeenCalledWith(
+        mockSimulations[0],
+      );
     });
   });
 
   describe("Pagination", () => {
-    it("shows load more button when there are more simulations", async () => {
-      // Create exactly 30 simulations to trigger "load more" button
-      const thirtySimulations = new Array(30).fill(null).map((_, index) => ({
-        ...mockSimulations[0],
-        id: `sim-${index}`,
-        title: `Simulation ${index}`,
-      }));
-
-      mockUseGetSimulationsQuery.mockReturnValue({
-        data: { data: thirtySimulations, count: 30 },
-        isFetching: false,
+    it("shows load more button when there are more simulations", () => {
+      mockUseSimulations.mockReturnValue({
+        ...defaultSimulationsHookReturn,
+        hasMore: true,
       });
 
       renderComponent();
 
-      await waitFor(
-        () => {
-          // Check for the "+" character that precedes "Load more"
-          expect(screen.getByText(/Load more/i)).toBeInTheDocument();
-        },
-        { timeout: 2000 },
-      );
+      expect(screen.getByText(/Load more/i)).toBeInTheDocument();
     });
 
-    it("does not show load more button when all simulations are loaded", async () => {
-      mockUseGetSimulationsQuery.mockReturnValue({
-        data: { data: mockSimulations.slice(0, 2), count: 2 },
-        isFetching: false,
+    it("does not show load more button when all simulations are loaded", () => {
+      mockUseSimulations.mockReturnValue({
+        ...defaultSimulationsHookReturn,
+        hasMore: false,
       });
 
       renderComponent();
 
-      await waitFor(() => {
-        expect(screen.queryByText("Load more")).not.toBeInTheDocument();
-      });
+      expect(screen.queryByText(/Load more/i)).not.toBeInTheDocument();
     });
 
-    it("shows loading text when fetching more data", async () => {
-      const thirtySimulations = new Array(30).fill(null).map((_, index) => ({
-        ...mockSimulations[0],
-        id: `sim-${index}`,
-        title: `Simulation ${index}`,
-      }));
-
-      mockUseGetSimulationsQuery.mockReturnValue({
-        data: { data: thirtySimulations, count: 30 },
-        isFetching: true,
+    it("calls loadSimulations when load more is clicked", () => {
+      mockUseSimulations.mockReturnValue({
+        ...defaultSimulationsHookReturn,
+        hasMore: true,
       });
 
       renderComponent();
 
-      await waitFor(
-        () => {
-          expect(screen.getByText(/Loading\.\.\./i)).toBeInTheDocument();
-        },
-        { timeout: 2000 },
-      );
+      fireEvent.click(screen.getByText(/Load more/i));
+
+      expect(defaultSimulationsHookReturn.loadSimulations).toHaveBeenCalledWith(true);
+    });
+
+    it("shows loading text when fetching more data", () => {
+      mockUseSimulations.mockReturnValue({
+        ...defaultSimulationsHookReturn,
+        hasMore: true,
+        isSimulationsFetching: true,
+      });
+
+      renderComponent();
+
+      expect(screen.getByText(/Loading\.\.\./i)).toBeInTheDocument();
+    });
+
+    it("shows load more button for pathways when there are more", () => {
+      mockUseSimulationPathways.mockReturnValue({
+        ...defaultPathwaysHookReturn,
+        pathways: mockPathways,
+        pathwaysResponse: { data: mockPathways, count: 1 },
+        hasMore: true,
+      });
+
+      renderComponent();
+
+      // Switch to pathways tab
+      fireEvent.click(screen.getByTestId("tab-pathways"));
+
+      expect(screen.getByText(/Load more/i)).toBeInTheDocument();
+    });
+
+    it("calls loadPathways when load more is clicked on pathways tab", () => {
+      mockUseSimulationPathways.mockReturnValue({
+        ...defaultPathwaysHookReturn,
+        pathways: mockPathways,
+        pathwaysResponse: { data: mockPathways, count: 1 },
+        hasMore: true,
+      });
+
+      renderComponent();
+
+      // Switch to pathways tab
+      fireEvent.click(screen.getByTestId("tab-pathways"));
+
+      fireEvent.click(screen.getByText(/Load more/i));
+
+      expect(defaultPathwaysHookReturn.loadPathways).toHaveBeenCalledWith(true);
     });
   });
 
   describe("Popup interactions", () => {
-    it("closes archive popup when cancel is clicked", async () => {
+    it("renders unpublish popup when isUnpublishPopupOpen is true", () => {
+      mockUseSimulations.mockReturnValue({
+        ...defaultSimulationsHookReturn,
+        isUnpublishPopupOpen: true,
+        currentSimulation: mockSimulations[1],
+      });
+
       renderComponent();
 
-      await waitFor(() => {
-        const archiveButton = screen.getByTestId("archive-sim-1");
-        fireEvent.click(archiveButton);
-      });
-
-      const cancelButton = screen.getByTestId("secondary-button");
-      fireEvent.click(cancelButton);
-
-      await waitFor(() => {
-        expect(screen.queryByText("Archive simulation?")).not.toBeInTheDocument();
-      });
+      const popup = screen.getByTestId("action-confirmation-popup");
+      expect(popup).toBeInTheDocument();
+      expect(popup).toHaveTextContent("Unpublish");
+      expect(popup).toHaveTextContent("Simulation?");
     });
 
-    it("closes unpublish popup when cancel is clicked", async () => {
+    it("renders archive popup when isArchivePopupOpen is true", () => {
+      mockUseSimulations.mockReturnValue({
+        ...defaultSimulationsHookReturn,
+        isArchivePopupOpen: true,
+        currentSimulation: mockSimulations[0],
+      });
+
       renderComponent();
 
-      await waitFor(() => {
-        const unpublishButton = screen.getByTestId("unpublish-sim-2");
-        fireEvent.click(unpublishButton);
-      });
-
-      const cancelButton = screen.getByTestId("secondary-button");
-      fireEvent.click(cancelButton);
-
-      await waitFor(() => {
-        expect(screen.queryByText("Unpublish simulation?")).not.toBeInTheDocument();
-      });
+      const popup = screen.getByTestId("action-confirmation-popup");
+      expect(popup).toBeInTheDocument();
+      expect(popup).toHaveTextContent("Archive");
+      expect(popup).toHaveTextContent("Simulation?");
     });
 
-    it("closes delete popup when cancel is clicked", async () => {
+    it("renders unarchive popup when isUnarchivePopupOpen is true", () => {
+      mockUseSimulations.mockReturnValue({
+        ...defaultSimulationsHookReturn,
+        isUnarchivePopupOpen: true,
+        currentSimulation: mockSimulations[0],
+      });
+
       renderComponent();
 
-      await waitFor(() => {
-        const deleteButton = screen.getByTestId("delete-sim-1");
-        fireEvent.click(deleteButton);
-      });
-
-      const cancelButton = screen.getByTestId("cancel-delete");
-      fireEvent.click(cancelButton);
-
-      await waitFor(() => {
-        expect(screen.queryByTestId("delete-simulation-popup")).not.toBeInTheDocument();
-      });
+      const popup = screen.getByTestId("action-confirmation-popup");
+      expect(popup).toBeInTheDocument();
+      expect(popup).toHaveTextContent("Unarchive");
+      expect(popup).toHaveTextContent("Simulation?");
     });
 
-    it("closes edit popup when cancel is clicked", async () => {
+    it("renders delete popup when isDeletePopupOpen is true", () => {
+      mockUseSimulations.mockReturnValue({
+        ...defaultSimulationsHookReturn,
+        isDeletePopupOpen: true,
+        currentSimulation: mockSimulations[0],
+      });
+
       renderComponent();
 
-      await waitFor(() => {
-        const editButton = screen.getByTestId("edit-sim-2");
-        fireEvent.click(editButton);
+      expect(screen.getByTestId("delete-simulation-popup")).toBeInTheDocument();
+    });
+
+    it("renders edit popup when isEditPopupOpen is true", () => {
+      mockUseSimulations.mockReturnValue({
+        ...defaultSimulationsHookReturn,
+        isEditPopupOpen: true,
+        currentSimulation: mockSimulations[0],
       });
 
-      const cancelButton = screen.getByTestId("secondary-button");
-      fireEvent.click(cancelButton);
+      renderComponent();
 
-      await waitFor(() => {
-        expect(screen.queryByText("Edit simulation")).not.toBeInTheDocument();
+      const popup = screen.getByTestId("action-confirmation-popup");
+      expect(popup).toBeInTheDocument();
+      expect(popup).toHaveTextContent("Edit");
+      expect(popup).toHaveTextContent("Simulation");
+    });
+
+    it("renders preview popup when isPreviewOpen is true", () => {
+      mockUseSimulations.mockReturnValue({
+        ...defaultSimulationsHookReturn,
+        isPreviewOpen: true,
+        currentSimulation: mockSimulations[0],
       });
+
+      renderComponent();
+
+      expect(screen.getByTestId("simulation-preview")).toBeInTheDocument();
+    });
+
+    it("calls handleChangeSimulationStatus with DRAFT when unpublish is confirmed", () => {
+      mockUseSimulations.mockReturnValue({
+        ...defaultSimulationsHookReturn,
+        isUnpublishPopupOpen: true,
+        currentSimulation: mockSimulations[1],
+      });
+
+      renderComponent();
+
+      fireEvent.click(screen.getByTestId("primary-button"));
+
+      expect(defaultSimulationsHookReturn.handleChangeSimulationStatus).toHaveBeenCalledWith(
+        SimulationStatus.DRAFT,
+      );
+    });
+
+    it("calls handleChangeSimulationStatus with ARCHIVED when archive is confirmed", () => {
+      mockUseSimulations.mockReturnValue({
+        ...defaultSimulationsHookReturn,
+        isArchivePopupOpen: true,
+        currentSimulation: mockSimulations[0],
+      });
+
+      renderComponent();
+
+      fireEvent.click(screen.getByTestId("primary-button"));
+
+      expect(defaultSimulationsHookReturn.handleChangeSimulationStatus).toHaveBeenCalledWith(
+        SimulationStatus.ARCHIVED,
+      );
+    });
+
+    it("calls handleChangeSimulationStatus with DRAFT when unarchive is confirmed", () => {
+      mockUseSimulations.mockReturnValue({
+        ...defaultSimulationsHookReturn,
+        isUnarchivePopupOpen: true,
+        currentSimulation: mockSimulations[0],
+      });
+
+      renderComponent();
+
+      fireEvent.click(screen.getByTestId("primary-button"));
+
+      expect(defaultSimulationsHookReturn.handleChangeSimulationStatus).toHaveBeenCalledWith(
+        SimulationStatus.DRAFT,
+      );
+    });
+
+    it("calls setIsUnpublishPopupOpen(false) when cancel is clicked", () => {
+      mockUseSimulations.mockReturnValue({
+        ...defaultSimulationsHookReturn,
+        isUnpublishPopupOpen: true,
+        currentSimulation: mockSimulations[1],
+      });
+
+      renderComponent();
+
+      fireEvent.click(screen.getByTestId("secondary-button"));
+
+      expect(defaultSimulationsHookReturn.setIsUnpublishPopupOpen).toHaveBeenCalledWith(false);
+    });
+
+    it("calls handleEditSimulation when edit is confirmed", () => {
+      mockUseSimulations.mockReturnValue({
+        ...defaultSimulationsHookReturn,
+        isEditPopupOpen: true,
+        currentSimulation: mockSimulations[0],
+      });
+
+      renderComponent();
+
+      fireEvent.click(screen.getByTestId("primary-button"));
+
+      expect(defaultSimulationsHookReturn.handleEditSimulation).toHaveBeenCalledWith(
+        mockSimulations[0],
+      );
+    });
+
+    it("calls onDeleteSimulation when delete is confirmed", () => {
+      mockUseSimulations.mockReturnValue({
+        ...defaultSimulationsHookReturn,
+        isDeletePopupOpen: true,
+        currentSimulation: mockSimulations[0],
+      });
+
+      renderComponent();
+
+      fireEvent.click(screen.getByTestId("confirm-delete"));
+
+      expect(defaultSimulationsHookReturn.onDeleteSimulation).toHaveBeenCalled();
+    });
+
+    it("calls setIsPreviewOpen(false) when preview is closed", () => {
+      mockUseSimulations.mockReturnValue({
+        ...defaultSimulationsHookReturn,
+        isPreviewOpen: true,
+        currentSimulation: mockSimulations[0],
+      });
+
+      renderComponent();
+
+      fireEvent.click(screen.getByTestId("close-preview"));
+
+      expect(defaultSimulationsHookReturn.setIsPreviewOpen).toHaveBeenCalledWith(false);
     });
   });
 
-  describe("API query parameters", () => {
-    it("calls API with correct default parameters", () => {
+  describe("Empty state actions", () => {
+    it("calls handleCreateSimulation when create button is clicked in empty state", () => {
+      mockUseSimulations.mockReturnValue({
+        ...defaultSimulationsHookReturn,
+        simulations: [],
+        simulationsResponse: { data: [], count: 0 },
+      });
+
       renderComponent();
 
-      expect(mockUseGetSimulationsQuery).toHaveBeenCalledWith({
-        limit: 30,
-        offset: 0,
-        sortBy: "updatedAt",
-        order: "desc",
-        status: undefined,
-      });
+      const createButton = screen.getByText("Create simulation");
+      fireEvent.click(createButton);
+
+      expect(defaultSimulationsHookReturn.handleCreateSimulation).toHaveBeenCalled();
     });
 
-    it("includes filter status in API call when filters are applied", async () => {
+    it("calls handleNewPathway when create button is clicked in pathways empty state", () => {
+      mockUseSimulations.mockReturnValue({
+        ...defaultSimulationsHookReturn,
+        simulations: [],
+        simulationsResponse: { data: [], count: 0 },
+      });
+
       renderComponent();
 
-      const filterButton = screen.getByTestId("filter-icon").closest("button");
-      if (filterButton) fireEvent.click(filterButton);
+      // Switch to pathways tab
+      fireEvent.click(screen.getByTestId("tab-pathways"));
 
-      await waitFor(() => {
-        const applyButton = screen.getByTestId("apply-filter");
-        fireEvent.click(applyButton);
+      const createButton = screen.getByText(/Create pathway/i);
+      fireEvent.click(createButton);
+
+      expect(defaultPathwaysHookReturn.handleNewPathway).toHaveBeenCalled();
+    });
+  });
+
+  describe("Pathway actions", () => {
+    it("calls onEditPathway when edit button is clicked on pathway", () => {
+      mockUseSimulationPathways.mockReturnValue({
+        ...defaultPathwaysHookReturn,
+        pathways: mockPathways,
+        pathwaysResponse: { data: mockPathways, count: 1 },
       });
 
-      await waitFor(() => {
-        expect(mockUseGetSimulationsQuery).toHaveBeenCalledWith(
-          expect.objectContaining({
-            status: "ACTIVE",
-          }),
-        );
-      });
+      renderComponent();
+
+      // Switch to pathways tab
+      fireEvent.click(screen.getByTestId("tab-pathways"));
+
+      fireEvent.click(screen.getByTestId("edit-path-1"));
+
+      expect(defaultPathwaysHookReturn.onEditPathway).toHaveBeenCalledWith(mockPathways[0]);
     });
 
-    it("resets offset when filters change", async () => {
+    it("calls handleDeletePathway when delete button is clicked on pathway", () => {
+      mockUseSimulationPathways.mockReturnValue({
+        ...defaultPathwaysHookReturn,
+        pathways: mockPathways,
+        pathwaysResponse: { data: mockPathways, count: 1 },
+      });
+
       renderComponent();
 
-      // First verify initial offset is 0
-      expect(mockUseGetSimulationsQuery).toHaveBeenCalledWith(
-        expect.objectContaining({ offset: 0 }),
-      );
+      // Switch to pathways tab
+      fireEvent.click(screen.getByTestId("tab-pathways"));
 
-      const filterButton = screen.getByTestId("filter-icon").closest("button");
-      if (filterButton) fireEvent.click(filterButton);
+      fireEvent.click(screen.getByTestId("delete-path-1"));
 
-      await waitFor(() => {
-        const applyButton = screen.getByTestId("apply-filter");
-        fireEvent.click(applyButton);
+      expect(defaultPathwaysHookReturn.handleDeletePathway).toHaveBeenCalledWith(mockPathways[0]);
+    });
+
+    it("calls onPreviewPathway when preview button is clicked on pathway", () => {
+      mockUseSimulationPathways.mockReturnValue({
+        ...defaultPathwaysHookReturn,
+        pathways: mockPathways,
+        pathwaysResponse: { data: mockPathways, count: 1 },
       });
 
-      // After filter change, offset should reset to 0
-      await waitFor(() => {
-        expect(mockUseGetSimulationsQuery).toHaveBeenCalledWith(
-          expect.objectContaining({
-            offset: 0,
-            status: "ACTIVE",
-          }),
-        );
-      });
+      renderComponent();
+
+      // Switch to pathways tab
+      fireEvent.click(screen.getByTestId("tab-pathways"));
+
+      fireEvent.click(screen.getByTestId("preview-path-1"));
+
+      expect(defaultPathwaysHookReturn.onPreviewPathway).toHaveBeenCalledWith(mockPathways[0]);
     });
   });
 });

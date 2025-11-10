@@ -16,7 +16,7 @@ export const Tabs: React.FC<TabsProps> = ({ items, activeId, onChange, className
                 isActive ? "text-primary-500" : "text-typography-900 hover:text-typography-900"
               }`}
             >
-              {item.label} {item.count || "0"}
+              {item.label} {item.count !== undefined ? item.count : ""}
               {isActive && (
                 <span
                   aria-hidden

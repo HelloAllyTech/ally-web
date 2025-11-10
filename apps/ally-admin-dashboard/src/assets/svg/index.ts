@@ -17,9 +17,11 @@ import Filter from "./filter.svg?react";
 import HappyEmoji from "./happyEmoji.svg?react";
 import InfoIcon from "./info.svg?react";
 import Logout from "./logout.svg?react";
+import Pathway from "./pathway.svg?react";
 import Play from "./play.svg?react";
 import Plus from "./plus.svg?react";
 import Search from "./search.svg?react";
+import Simulation from "./simulation.svg?react";
 import ThreeDot from "./threeDot.svg?react";
 import Trash from "./trash.svg?react";
 import Unarchive from "./unArchiveIcon.svg?react";
@@ -60,4 +62,6 @@ export {
   DoubleArrowRight,
   Unarchive,
   VideoCamera,
+  Simulation,
+  Pathway,
 };
