@@ -102,14 +102,14 @@ const ScenarioDetailsCard: FC<ScenarioDetailsCardProps> = ({
             title="Share this scenario"
           >
             <ShareIcon />
-            <span className="text-[14px]">Share</span>
+            <span className="text-base">Share</span>
           </button>
         </div>
 
         {longDescription && (
           <div className="flex flex-col">
-            <div className="text-[14px] font-semibold text-[#0D0D0D]">Scenario:</div>
-            <p className="text-[14px] text-[#656565]">{longDescription}</p>
+            <div className="text-base font-semibold text-[#0D0D0D]">Scenario:</div>
+            <p className="text-base text-[#656565]">{longDescription}</p>
           </div>
         )}
 
@@ -120,7 +120,7 @@ const ScenarioDetailsCard: FC<ScenarioDetailsCardProps> = ({
               onStart?.();
             }}
             variant="primary"
-            className={`!font-tertiary !text-[14px]  !py-3 ${isDisabled && "!bg-gray-400"} w-[240px]`}
+            className={`!font-tertiary !text-base  !py-3 ${isDisabled && "!bg-gray-400"} w-[240px]`}
             disabled={isDisabled}
             aria-label="Start simulation"
           >

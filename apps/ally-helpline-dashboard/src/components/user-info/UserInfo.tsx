@@ -51,8 +51,8 @@ const UserInfo: FC<{ user?: User; isExpanded?: boolean; onLogout: () => void }> 
           </div>
           {isExpanded && (
             <div className="flex flex-col font-primary">
-              <div className="text-[16px] text-gray-800">{user?.name}</div>
-              <div className="text-[12px] text-gray-500">{user?.email}</div>
+              <div className="text-lg text-gray-800">{user?.name}</div>
+              <div className="text-xs text-gray-500">{user?.email}</div>
             </div>
           )}
         </div>
@@ -79,8 +79,8 @@ const UserInfo: FC<{ user?: User; isExpanded?: boolean; onLogout: () => void }> 
 
             <div className="flex justify-between items-center ">
               <div>
-                <span className="font-semibold text-[18px] ">{credits?.consumedCredits ?? 0}</span>
-                <span className="text-gray-500 text-[14px]">/{credits?.creditLimit ?? 0}</span>
+                <span className="font-semibold text-xl ">{credits?.consumedCredits ?? 0}</span>
+                <span className="text-gray-500 text-base">/{credits?.creditLimit ?? 0}</span>
               </div>
               <span>{credits?.creditLimit ? `${CreditPercentage}%` : "0%"}</span>
             </div>

@@ -108,7 +108,7 @@ describe("Analytics Component", () => {
       expect(title).toBeInTheDocument();
       expect(title.className).toContain("text-[#0D0D0D]");
       expect(title.className).toContain("font-primary");
-      expect(title.className).toContain("text-[24px]");
+      expect(title.className).toContain("text-2xl");
     });
 
     it("should render dashboard container with correct classes", () => {

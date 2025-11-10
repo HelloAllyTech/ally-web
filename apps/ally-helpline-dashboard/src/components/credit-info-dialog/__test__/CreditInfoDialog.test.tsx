@@ -81,7 +81,7 @@ describe("CreditInfoDialog", () => {
     const title = "Test Title";
     renderComponent({ title });
     expect(screen.getByText(title)).toBeInTheDocument();
-    expect(screen.getByText(title)).toHaveClass("font-medium", "text-[#47464F]", "text-[24px]");
+    expect(screen.getByText(title)).toHaveClass("font-medium", "text-[#47464F]", "text-2xl");
   });
 
   it("should render the description correctly", () => {

@@ -25,7 +25,7 @@ const StartSessionDialog: FC<StartSessionDialogProps> = ({ isOpen, onClose }) =>
       transition={{ delay: 0.5, duration: 0.3 }}
     >
       <span className="text-base text-typography-900">Listen Live</span>
-      <span className="text-[12px] text-typography-800">Ally will hear audio alongside you</span>
+      <span className="text-xs text-typography-800">Ally will hear audio alongside you</span>
     </motion.div>
   );
 

@@ -21,7 +21,7 @@ const ButtonGroup: FC<ButtonGroupProps> = ({ buttonList }) => (
               ${isLastButton ? "" : "!border-solid border-r-[0.5px] border-[#5A5F6A]"}`}
           >
             {leftIcon}
-            <span className={`text-[12px] ${isActive ? "text-[#1E2025]" : "text-[#fff]"}`}>
+            <span className={`text-xs ${isActive ? "text-[#1E2025]" : "text-[#fff]"}`}>
               {text}
             </span>
           </Button>

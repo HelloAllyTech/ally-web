@@ -30,7 +30,7 @@ const getFeedbackSectionByType = ({
       );
     case FeedbackSectioonType.BULLET_TEXT:
       return (
-        <ul className="pb-4 space-y-2 text-[16px]">
+        <ul className="pb-4 space-y-2 text-lg">
           {Array.isArray(data) ? (
             data.map((item, index) => (
               <li key={index} className="flex items-start">
@@ -62,8 +62,8 @@ export const FeedbackSection: FC<FeedbackSectionProps> = props => {
             key={feedback.key}
             className="flex flex-col gap-2 flex-1 min-w-[120px] sm:min-w-[145px] font-primary border-[0.5px] border-[#D2D2D2] rounded-[4px] p-[10px]"
           >
-            <span className="text-[12px] text-[#656565]">{feedback.label}</span>
-            <span className="text-[14px] text-[#0D0D0D] font-medium">
+            <span className="text-xs text-[#656565]">{feedback.label}</span>
+            <span className="text-base text-[#0D0D0D] font-medium">
               {feedback.getValue(props)}
             </span>
           </div>

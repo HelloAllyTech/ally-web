@@ -260,7 +260,7 @@ describe("Learn Component", () => {
       );
       const description = container.querySelector("div[class*='Replay_Pro']");
       expect(description).not.toBeNull();
-      expect(description?.className).toContain("text-[28px]");
+      expect(description?.className).toContain("text-3xl");
       expect(description?.className).toContain("text-[#1A1A1A]");
     });
   });
@@ -837,8 +837,8 @@ describe("Learn Component", () => {
           <Learn />
         </TestWrapper>,
       );
-      const description = container.querySelector("div[class*='text-[28px]']");
-      expect(description?.className).toContain("text-[28px]");
+      const description = container.querySelector("div[class*='text-3xl']");
+      expect(description?.className).toContain("text-3xl");
     });
 
     it("should apply responsive margin classes", () => {

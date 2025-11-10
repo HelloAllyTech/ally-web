@@ -14,7 +14,7 @@ const Accordion: FC<AccordionProps> = ({ children, defaultExpanded, title, title
         sx={accordionSummarySx}
       >
         {titleIcon && <titleIcon.icon className="h-6 w-6" />}
-        <span className="text-[16px] font-medium text-[#000]">{title}</span>
+        <span className="text-lg font-medium text-[#000]">{title}</span>
       </AccordionSummary>
       <AccordionDetails sx={accordionDetailsSx}>{children}</AccordionDetails>
     </MuiAccordion>

@@ -30,7 +30,7 @@ const TagGroup: FC<TagGroupProps> = ({ tags, className = "", style }) => {
             backgroundColor: tag?.colors?.bg,
             color: tag?.colors?.text,
           }}
-          className="rounded-[3px] px-[5px] text-white text-[12px] pt-[2px] font-[400] whitespace-nowrap"
+          className="rounded-[3px] px-[5px] text-white text-xs pt-[2px] font-[400] whitespace-nowrap"
         >
           {isExpanded || tag?.label?.length < 16 || tags?.length < 3
             ? tag.label

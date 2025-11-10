@@ -30,7 +30,7 @@ const ScenarioCard: FC<ScenarioCardProps> = ({
         </div>
       )}
       {isComingSoon && (
-        <span className="py-1 px-2 rounded-[4px] absolute top-2 right-2 text-[12px] font-primary text-[#292929] bg-white border-[0.5px] border-[#D2D2D2]">
+        <span className="py-1 px-2 rounded-[4px] absolute top-2 right-2 text-xs font-primary text-[#292929] bg-white border-[0.5px] border-[#D2D2D2]">
           Coming Soon
         </span>
       )}
@@ -63,7 +63,7 @@ const ScenarioCard: FC<ScenarioCardProps> = ({
             {title}
           </div>
 
-          <div className="text-[14px] text-[#656565]">
+          <div className="text-base text-[#656565]">
             <p style={scenarioDescriptionStyle}>{description}</p>
           </div>
         </div>

@@ -42,7 +42,7 @@ const ActionDialog: FC<ActionDialogProps> = ({
           {showPrimaryButton && (
             <Button
               variant={primaryButton?.variant}
-              className="text-[14px] flex-1"
+              className="text-base flex-1"
               onClick={primaryButton?.onClick}
             >
               {primaryButton?.label}

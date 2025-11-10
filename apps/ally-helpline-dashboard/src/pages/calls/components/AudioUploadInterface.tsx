@@ -174,7 +174,7 @@ const AudioUploadInterface: FC<AudioUploadInterfaceProps> = ({
           </div>
           <div className="flex gap-2 w-full justify-between items-center font-primary">
             <div className="flex gap-2 items-center">
-              <span className="text-[12px] text-black">{audioFile?.name}</span>
+              <span className="text-xs text-black">{audioFile?.name}</span>
               <span className="text-[10px] text-[#424242] bg-[#F5F5F5] rounded-[2px] p-1">
                 {getFileSize()} MB
               </span>

@@ -183,8 +183,8 @@ describe("PostSimulationSummary Component", () => {
       expect(title).not.toBeNull();
       expect(title.className).toContain("w-full");
       expect(title.className).toContain("text-black");
-      expect(title.className).toContain("text-[24px]");
-      expect(title.className).toContain("sm:text-[32px]");
+      expect(title.className).toContain("text-2xl");
+      expect(title.className).toContain("sm:text-4xl");
       expect(title.className).toContain("font-normal");
       expect(title.className).toContain("text-left");
       expect(title.className).toContain("font-secondary");
@@ -449,8 +449,8 @@ describe("PostSimulationSummary Component", () => {
       const title = screen.getByText((content, element) => {
         return element?.textContent === "Simulation Summary";
       });
-      expect(title.className).toContain("text-[24px]");
-      expect(title.className).toContain("sm:text-[32px]");
+      expect(title.className).toContain("text-2xl");
+      expect(title.className).toContain("sm:text-4xl");
     });
   });
 

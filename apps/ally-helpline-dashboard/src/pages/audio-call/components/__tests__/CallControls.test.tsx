@@ -157,7 +157,7 @@ describe("CallControls Component", () => {
       render(<CallControls {...defaultProps} />);
 
       const safetyText = screen.getByText("Your data is safe");
-      expect(safetyText).toHaveClass("text-[12px]", "text-[#fff]", "font-medium");
+      expect(safetyText).toHaveClass("text-xs", "text-[#fff]", "font-medium");
     });
   });
 

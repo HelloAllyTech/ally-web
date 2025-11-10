@@ -167,14 +167,14 @@ export const Login: FunctionComponent = () => {
           transition={{ duration: 0.4, ease: "easeInOut" }}
           className="flex flex-col gap-4"
         >
-          <div className="flex flex-col text-[32px] font-secondary">
+          <div className="flex flex-col text-4xl font-secondary">
             <span>Hey,</span>
             <h1>
               <span className="inline-flex items-center gap-2 whitespace-nowrap">
                 Welcome to <Ally className="mt-2" />
               </span>
             </h1>
-            <span className="text-[24px] mt-[24px]">Enter your email address to continue</span>
+            <span className="text-2xl mt-[24px]">Enter your email address to continue</span>
           </div>
           <div className="flex flex-col gap-1">
             <TextField
@@ -218,7 +218,7 @@ export const Login: FunctionComponent = () => {
               "Next"
             )}
           </Button>
-          <div className="text-[12px] text-[#8C8C8C] mt-2">
+          <div className="text-xs text-[#8C8C8C] mt-2">
             By tapping next, you agree to Ally's{" "}
             <span
               className="text-[#0473F2] cursor-pointer"
@@ -248,14 +248,14 @@ export const Login: FunctionComponent = () => {
         className="flex flex-col justify-start gap-6"
       >
         <BackCircle className="self-start cursor-pointer" onClick={handleBack} />
-        <h1 className="text-[32px] font-secondary">Verify your email address</h1>
+        <h1 className="text-4xl font-secondary">Verify your email address</h1>
         <div className="text-base mb-2 font-secondary flex flex-col">
-          <span className="text-[24px]">Enter the security code sent to</span>
-          <span className="font-semibold text-[24px]">{email}</span>
+          <span className="text-2xl">Enter the security code sent to</span>
+          <span className="font-semibold text-2xl">{email}</span>
         </div>
         <div className="flex flex-col gap-2">
           <OTP value={otp} onChange={setOtp} />
-          <div className="text-[12px] text-[#49454F]">
+          <div className="text-xs text-[#49454F]">
             Didn't receive the code?{" "}
             <span
               className={`${countdown > 0 ? "text-[#C4C4C4]" : "text-[#0473F2]"} cursor-pointer`}

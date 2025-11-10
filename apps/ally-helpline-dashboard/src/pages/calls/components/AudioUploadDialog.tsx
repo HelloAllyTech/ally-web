@@ -166,7 +166,7 @@ const AudioUploadDialog: FC<AudioUploadDialogProps> = ({ isOpen, onClose }) => {
           transition={{ delay: 0.05, duration: 0.2 }}
           className="flex items-center justify-between"
         >
-          <span className="text-[24px] font-secondary text-[#0D0D0D]">
+          <span className="text-2xl font-secondary text-[#0D0D0D]">
             Upload audio recording
           </span>
         </motion.div>

@@ -111,7 +111,7 @@ const ConfirmationDialog: FC<ConfirmationDialogProps> = ({
 
         {footerText && (
           <motion.span
-            className="text-xs sm:text-[12px] text-typography-500 font-primary text-center"
+            className="text-xs sm:text-xs text-typography-500 font-primary text-center"
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.7, duration: 0.3 }}

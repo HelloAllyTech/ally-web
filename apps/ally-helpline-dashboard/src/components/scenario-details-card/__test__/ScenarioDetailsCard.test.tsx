@@ -185,7 +185,7 @@ describe("ScenarioDetailsCard", () => {
   it("should render the Share button text", () => {
     renderComponent();
     expect(screen.getByText("Share")).toBeInTheDocument();
-    expect(screen.getByText("Share")).toHaveClass("text-[14px]");
+    expect(screen.getByText("Share")).toHaveClass("text-base");
   });
 
   it("should render the Start session button", () => {
