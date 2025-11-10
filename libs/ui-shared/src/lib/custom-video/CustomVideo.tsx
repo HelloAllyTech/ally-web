@@ -9,19 +9,29 @@ interface CustomVideoProps {
   alt?: string;
   className?: string;
   poster?: string;
+  loop?: boolean;
+  autoPlay?: boolean;
 }
 
-export const CustomVideo = ({ src, alt, className = "", poster }: CustomVideoProps) => {
+export const CustomVideo = ({
+  src,
+  alt,
+  className = "",
+  poster,
+  loop,
+  autoPlay = false,
+}: CustomVideoProps) => {
   const [isMuted, setIsMuted] = useState(true);
-  const [isPlaying, setIsPlaying] = useState(true);
+  const [isPlaying, setIsPlaying] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
-    if (videoRef.current) {
+    if (videoRef.current && autoPlay) {
+      setIsPlaying(true);
       videoRef.current.play();
     }
-  }, [src]);
+  }, [src, autoPlay]);
 
   const handleToggleMute = () => {
     if (videoRef.current) {
@@ -54,7 +64,7 @@ export const CustomVideo = ({ src, alt, className = "", poster }: CustomVideoPro
         src={src}
         className={className}
         muted={isMuted}
-        loop
+        loop={loop}
         playsInline
         poster={poster}
         aria-label={alt}
