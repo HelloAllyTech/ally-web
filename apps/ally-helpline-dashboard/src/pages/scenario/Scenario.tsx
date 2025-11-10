@@ -22,7 +22,7 @@ import { learnPageExpandedVariants } from "../learn/constants";
 export const Scenario: FC = () => {
   const { scenarioId } = useParams();
   const navigate = useNavigate();
-  const { credits, limitReached } = useSimulationCredits();
+  const { credits, limitReached, refetchCredits } = useSimulationCredits();
 
   const id = Number(scenarioId);
 
@@ -120,6 +120,7 @@ export const Scenario: FC = () => {
         await endSimulation({ sessionId: errorData.entityId });
         toast.success("Simulation ended successfully");
         setIsExistingSimulationConfirmOpen(false);
+        refetchCredits();
         return;
       }
     }
