@@ -14,16 +14,16 @@ interface AutoTerminationRuleFieldProps {
 
 const TERMINATION_FIELDS_MAP = {
   toggle: {
-    id: "autoTermitionRule",
+    id: "isAutoTerminationEnabled",
     label: en.simulation.autoTermination,
   },
   triggerEvent: {
-    id: "triggerEvent",
+    id: "terminationEventId",
     label: en.simulation.triggerEvent,
     placeholder: en.simulation.triggerEventPlaceholder,
   },
   triggerMessage: {
-    id: "triggerMessage",
+    id: "terminationMessage",
     label: en.simulation.triggerMessage,
     placeholder: en.simulation.terminationMessagePlaceholder,
   },

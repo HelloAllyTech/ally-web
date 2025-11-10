@@ -23,9 +23,9 @@ export type FormData = {
   openingStatements: string;
   voiceId: string;
   agentGoal: string;
-  autoTermitionRule: boolean; // To Do: Will be change when BE API is updated
-  triggerEvent: string;
-  triggerMessage: string;
+  isAutoTerminationEnabled: boolean; // To Do: Will be change when BE API is updated
+  terminationEventId: string;
+  terminationMessage: string;
 };
 
 export interface DemographicsSectionProps {

@@ -283,7 +283,7 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: SimulationCreatorFieldGroups[] = [
         maxLength: 1000,
       },
       {
-        id: "autoTermitionRule",
+        id: "isAutoTerminationEnabled",
         label: "Auto termination",
         fullWidth: true,
         type: FORM_FIELD_TYPES.CUSTOM.AUTO_TERMINATION_RULE,

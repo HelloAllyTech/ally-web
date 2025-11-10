@@ -33,9 +33,9 @@ export const formatSimulationResponseData = (data: GetSimulationByIdResponse) =>
     voiceId: data?.metadata?.voiceId,
     coverImageUrl: data?.coverImageUrl,
     coverVideoUrl: data?.coverVideoUrl,
-    autoTermitionRule: Boolean(data?.metadata?.autoTermitionRule), // To Do: Will be change when BE API is updated
-    triggerEvent: data?.metadata?.triggerEvent,
-    triggerMessage: data?.metadata?.triggerMessage,
+    isAutoTerminationEnabled: Boolean(data?.metadata?.isAutoTerminationEnabled), // To Do: Will be change when BE API is updated
+    terminationEventId: data?.metadata?.terminationEventId,
+    terminationMessage: data?.metadata?.terminationMessage,
   };
 };
 

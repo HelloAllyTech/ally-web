@@ -125,9 +125,9 @@ describe("createSimulation utils", () => {
         voiceId: "voice-123",
         coverImageUrl: "https://example.com/image.jpg",
         coverVideoUrl: undefined,
-        autoTermitionRule: false,
-        triggerEvent: undefined,
-        triggerMessage: undefined,
+        isAutoTerminationEnabled: false,
+        terminationEventId: undefined,
+        terminationMessage: undefined,
       });
     });
 
@@ -221,7 +221,7 @@ describe("createSimulation utils", () => {
 
       const result = formatSimulationResponseData(mockResponse);
 
-      // Check all fields are present (title, description, coverImageUrl, coverVideoUrl, autoTermitionRule, triggerEvent, triggerMessage + 18 metadata fields = 25 total)
+      // Check all fields are present (title, description, coverImageUrl, coverVideoUrl, isAutoTerminationEnabled, terminationEventId, terminationMessage + 18 metadata fields = 25 total)
       expect(Object.keys(result)).toHaveLength(25);
       expect(result.title).toBe("Test");
       expect(result.description).toBe("Test");
