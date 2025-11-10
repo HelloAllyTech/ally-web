@@ -2,7 +2,8 @@ import { Permissions } from "@constants";
 
 import { sessionLogsMap, sessionLogViewList } from "./constants";
 
-export const getPermittedSessionLogList = (permissions: Permissions[]) => {
+export const getPermittedSessionLogList = (permissions?: Permissions[]) => {
+  if (!permissions) return [];
   return sessionLogViewList.filter(option =>
     option.permissionList?.some(permission => permissions.includes(permission as Permissions)),
   );
