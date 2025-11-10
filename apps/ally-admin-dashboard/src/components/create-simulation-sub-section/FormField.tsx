@@ -6,6 +6,7 @@ import { FormFieldProps } from "@types";
 import { DropdownField } from "../dropdown-field";
 import { FileUpload } from "../file-upload";
 import { InputField } from "../input-field";
+import { ToggleSection } from "../toggle-section";
 import { VoiceDropdown } from "../voice-dropdown";
 
 export const FormField: FC<FormFieldProps> = ({ config, formMethods }) => {
@@ -96,10 +97,17 @@ export const FormField: FC<FormFieldProps> = ({ config, formMethods }) => {
             formMethods={formMethods}
           />
         );
+      case FORM_FIELD_TYPES.TOGGLE_BUTTON:
+        return (
+          <div className="w-full">
+            <ToggleSection label={label} name={id} formMethods={formMethods} />
+          </div>
+        );
+
       default:
         return null;
     }
   };
 
-  return <div>{getFieldElement()}</div>;
+  return <div className="w-full">{getFieldElement()}</div>;
 };

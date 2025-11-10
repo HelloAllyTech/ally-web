@@ -3,10 +3,6 @@ import { GetSimulationByIdResponse } from "@types";
 
 import { isNonEmptyString } from "./common";
 
-export const getCreateSimulationSubSectionById = (id: string) => {
-  return SIMULATION_CREATOR_FIELD_GROUPS.find(section => section.id === id);
-};
-
 export const formatSimulationResponseData = (data: GetSimulationByIdResponse) => {
   return {
     title: data.title,

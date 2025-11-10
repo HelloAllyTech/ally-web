@@ -10,6 +10,7 @@ import {
   SimulationStudio,
   UserManagement,
   EventManagement,
+  CreatePath,
 } from "@pages";
 
 import { PrivateLayout } from "./PrivateLayout";
@@ -76,6 +77,14 @@ export const RouteLayout: React.FC = () => {
           element={
             <PrivateLayout requiredPermissions={[Permissions.EDIT_EVENT]}>
               <EventManagement />
+            </PrivateLayout>
+          }
+        />
+        <Route
+          path={ROUTES.CREATE_PATH}
+          element={
+            <PrivateLayout requiredPermissions={[]}>
+              <CreatePath />
             </PrivateLayout>
           }
         />

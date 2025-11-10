@@ -87,6 +87,9 @@ export const SimulationStudio: React.FC = () => {
   const handleNewSimulation = () => {
     navigate(ROUTES.CREATE_SIMULATION);
   };
+  const handleNewPath = () => {
+    navigate(ROUTES.CREATE_PATH);
+  };
 
   const handleCreateSimulation = () => {
     navigate(ROUTES.CREATE_SIMULATION);
@@ -221,6 +224,14 @@ export const SimulationStudio: React.FC = () => {
         <h1 className="text-2xl text-typography-900 font-primary">
           {en.simulation.simulationstudio}
         </h1>
+        <Button
+          variant={ButtonVariant.PRIMARY}
+          onClick={handleNewPath}
+          className="transition-colors h-[40px]"
+        >
+          <Add />
+          Create
+        </Button>
         <Button
           variant={ButtonVariant.PRIMARY}
           onClick={handleNewSimulation}

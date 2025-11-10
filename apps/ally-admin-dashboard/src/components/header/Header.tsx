@@ -14,8 +14,10 @@ interface HeaderProps {
   onBack: () => void;
   onSaveDraft: () => Promise<any[]>;
   onPublish: () => void;
-  onPreview: () => void;
+  onPreview?: () => void;
   isPublishing?: boolean;
+  showPreview?: boolean;
+  title?: string;
 }
 
 export const Header: FC<HeaderProps> = ({
@@ -25,9 +27,10 @@ export const Header: FC<HeaderProps> = ({
   onPublish,
   onPreview,
   isPublishing = false,
+  showPreview = true,
+  title,
 }) => {
   const id = useParams();
-
   const handleSaveDraft = async () => {
     const response = await onSaveDraft();
     if (response) {
@@ -68,12 +71,12 @@ export const Header: FC<HeaderProps> = ({
           <ArrowDown />
         </span>
         <span className="text-typography-900">
-          {id.id ? en.simulation.editSimulation : en.simulation.createSimulation}
+          {title ? title : id?.id ? en.simulation.editSimulation : en.simulation.createSimulation}
         </span>
       </div>
       <div className="flex items-center justify-between w-full px-2 pb-2 h-[80px] relative">
         <h1 className="text-2xl text-typography-900 whitespace-nowrap">
-          {id.id ? en.simulation.editSimulation : en.simulation.createNewSimulation}
+          {title ? title : id?.id ? en.simulation.editSimulation : en.simulation.createSimulation}
         </h1>
         <div className="flex items-center gap-3">
           <Button
@@ -83,18 +86,19 @@ export const Header: FC<HeaderProps> = ({
           >
             {en.simulation.save}
           </Button>
-          {isValid ? (
-            previewButton
-          ) : (
-            <Tooltip
-              title={en.simulation.previewTooltipMessage}
-              placement="top"
-              arrow
-              slotProps={toolTipStyles}
-            >
-              {previewButton}
-            </Tooltip>
-          )}
+          {showPreview &&
+            (isValid ? (
+              previewButton
+            ) : (
+              <Tooltip
+                title={en.simulation.previewTooltipMessage}
+                placement="top"
+                arrow
+                slotProps={toolTipStyles}
+              >
+                {previewButton}
+              </Tooltip>
+            ))}
           {isValid ? (
             publishButton
           ) : (

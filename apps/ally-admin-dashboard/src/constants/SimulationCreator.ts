@@ -1,5 +1,7 @@
 import { cellTypes } from "@components";
-import { SimulationCreatorFieldGroups } from "@types";
+import { CreatorFieldGroups } from "@types";
+
+import { FORM_FIELD_TYPES } from "./common";
 
 export const minInputHeight = {
   narrativeContext: "250",
@@ -54,7 +56,7 @@ export const SIMULATION_CREATOR_STEP_IDS = {
   eventConfiguration: "event-configuration",
 };
 
-export const StepperList = [
+export const SimulationStepperList = [
   { id: SIMULATION_CREATOR_STEP_IDS.basicInfo, title: "Basic Information" },
   { id: SIMULATION_CREATOR_STEP_IDS.characterIdentity, title: "Character Identity" },
   { id: SIMULATION_CREATOR_STEP_IDS.traitsNeeds, title: "Traits & Needs" },
@@ -62,18 +64,7 @@ export const StepperList = [
   { id: SIMULATION_CREATOR_STEP_IDS.eventConfiguration, title: "Event Configuration" },
 ];
 
-export const FORM_FIELD_TYPES = {
-  TEXT: "text",
-  NUMBER: "number",
-  SELECT: "select",
-  IMAGE_UPLOAD: "image_upload",
-  VIDEO_UPLOAD: "video_upload",
-  CUSTOM: {
-    VOICE_DROPDOWN: "voice_dropdown",
-  },
-};
-
-export const SIMULATION_CREATOR_FIELD_GROUPS: SimulationCreatorFieldGroups[] = [
+export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
   {
     id: SIMULATION_CREATOR_STEP_IDS.basicInfo,
     label: "Basic Information",

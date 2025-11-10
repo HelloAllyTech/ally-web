@@ -2,7 +2,7 @@ import { matchPath } from "react-router-dom";
 
 import { ButtonProps, ButtonVariant } from "@components/types";
 import { EMAIL_REGEX } from "@constants";
-import { Simulation, SimulationStatus, UserRoles } from "@types";
+import { CreatorFieldGroups, Simulation, SimulationStatus, UserRoles } from "@types";
 
 export const validateEmail = (email: string): boolean => {
   return Boolean(email && EMAIL_REGEX.test(email));
@@ -151,4 +151,20 @@ export const isArray = (value: unknown): value is unknown[] => {
 
 export const isNonEmptyArray = <T>(value: unknown): value is T[] => {
   return Array.isArray(value) && value?.length > 0;
+};
+
+export const getCreateSubSectionById = (id: string, fields: CreatorFieldGroups[]) => {
+  return fields.find(section => section.id === id);
+};
+
+export const getMandatoryFieldIds = (fieldGroups: CreatorFieldGroups[]) => {
+  const mandatoryFields: string[] = [];
+  fieldGroups.forEach(group => {
+    group.fields.forEach(field => {
+      if (field.isMandatory) {
+        mandatoryFields.push(field.id);
+      }
+    });
+  });
+  return mandatoryFields;
 };

@@ -144,6 +144,8 @@ export const en = {
     editDescription:
       "Are you sure you want to edit this simulation? This will be moved to draft state.",
     startSession: "Start Session",
+    editPath: "Edit Path",
+    createPath: "Create Path",
   },
   userManagement: {
     addOrganization: "Add organization",

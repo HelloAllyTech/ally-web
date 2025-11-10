@@ -11,44 +11,23 @@ import {
   useUpdateSimulationByIdMutation,
 } from "@api";
 import {
-  Header,
-  VerticalStepper,
-  Footer,
-  MoreOptionsPopup,
   ActionConfirmationPopup,
+  CreateFormLayout,
+  MoreOptionsPopup,
+  SimulationEventMapTable,
   SimulationPreview,
 } from "@components";
-import { CreateSimulationSubSection, SimulationEventMapTable } from "@components";
 import { ButtonVariant } from "@components/types";
-import { en, ROUTES, StepperList, SIMULATION_CREATOR_FIELD_GROUPS } from "@constants";
+import { SIMULATION_CREATOR_FIELD_GROUPS, SimulationStepperList, ROUTES, en } from "@constants";
 import { useDebounce } from "@hooks";
-import { SimulationStatus, SimulationPreviewType } from "@types";
-import {
-  getCreateSimulationSubSectionById,
-  formatSimulationResponseData,
-  isNonEmptyString,
-  extractValidData,
-} from "@utils";
-
+import { SimulationPreviewType, SimulationStatus } from "@types";
+import { extractValidData, formatSimulationResponseData, isNonEmptyString } from "@utils";
 const stepIds = {
   basicInfo: "basic-info",
   characterIdentity: "character-identity",
   traitsNeeds: "traits-and-needs",
   conversationStyle: "conversation-style",
   eventConfiguration: "event-configuration",
-};
-
-// Get all mandatory field IDs from the configuration
-const getMandatoryFieldIds = () => {
-  const mandatoryFields: string[] = [];
-  SIMULATION_CREATOR_FIELD_GROUPS.forEach(group => {
-    group.fields.forEach(field => {
-      if (field.isMandatory) {
-        mandatoryFields.push(field.id);
-      }
-    });
-  });
-  return mandatoryFields;
 };
 
 export const CreateSimulation: FC = () => {
@@ -63,7 +42,6 @@ export const CreateSimulation: FC = () => {
 
   const moreOptionsRef = useRef<HTMLButtonElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
-
   // API mutation for creating simulation
   const [createSimulationQuery, { isLoading: isCreatingSimulation }] =
     useCreateSimulationMutation();
@@ -91,31 +69,8 @@ export const CreateSimulation: FC = () => {
   }, [adminSimulationByIdData, formMethods]);
 
   const {
-    handleSubmit,
     formState: { dirtyFields },
-    watch,
   } = formMethods;
-
-  // Watch all form values to check mandatory fields
-  const formValues = watch();
-
-  // Custom validation to check if all mandatory fields are filled
-  const areAllMandatoryFieldsFilled = useMemo(() => {
-    const mandatoryFieldIds = getMandatoryFieldIds();
-    return mandatoryFieldIds.every(fieldId => {
-      const value = formValues[fieldId];
-      // Check if value exists and is not empty
-      if (value === undefined || value === null || value === "") {
-        return false;
-      }
-      // For arrays or objects, check if they have content
-      if (Array.isArray(value) && value.length === 0) {
-        return false;
-      }
-      return true;
-    });
-  }, [formValues]);
-
   const handleDiscardSimulation = () => {
     setShowMoreOptions(false);
   };
@@ -266,61 +221,7 @@ export const CreateSimulation: FC = () => {
     // Scroll to top when moving to next step
     containerRef?.current?.scrollTo({ top: 0, behavior: "smooth" });
   };
-
-  const handlePrevious = () => {
-    const currentIndex = StepperList.findIndex(step => step.id === currentStep);
-    if (currentIndex > 0) {
-      const previousStep = StepperList[currentIndex - 1];
-      handleStepClick(previousStep.id);
-    }
-  };
-
-  const renderStep = (title: string, component: React.ReactNode) => {
-    return (
-      <div className="flex flex-col h-full w-100%">
-        <div className="sticky flex flex-row justify-between top-0 z-10 pt-3 mx-6 pb-4 border-b border-border-light">
-          <h2 className="text-lg font-medium text-typography-900">{title}</h2>
-        </div>
-        <div ref={containerRef} className="p-6 pt-4 overflow-y-auto h-full">
-          {component}
-        </div>
-      </div>
-    );
-  };
-
-  const renderCurrentStep = () => {
-    const simulationSubSectionData = getCreateSimulationSubSectionById(currentStep);
-    switch (currentStep) {
-      case stepIds.basicInfo:
-      case stepIds.characterIdentity:
-      case stepIds.traitsNeeds:
-      case stepIds.conversationStyle:
-        return renderStep(
-          simulationSubSectionData.label,
-          <CreateSimulationSubSection
-            items={simulationSubSectionData.fields}
-            formMethods={formMethods}
-          />,
-        );
-      case stepIds.eventConfiguration:
-        return <SimulationEventMapTable simulationId={simulationId} />;
-      default:
-        return null;
-    }
-  };
-
   const moreOptionsPosition = useMemo(() => getMoreOptionsPosition(), []);
-
-  const isLastStep = currentStep === stepIds.eventConfiguration;
-
-  const handleNext = async () => {
-    if (isLastStep) {
-      handleSubmit(handlePublish)();
-    } else {
-      const nextStep = StepperList.findIndex(step => step.id === currentStep) + 1;
-      handleStepClick(StepperList[nextStep].id);
-    }
-  };
 
   const handlePreview = async () => {
     const response = await saveSimulationChanges(SimulationStatus.DRAFT);
@@ -338,37 +239,26 @@ export const CreateSimulation: FC = () => {
       setIsPreviewOpen(true);
     }
   };
+  const renderCustomStep = (stepId: string) =>
+    stepId === stepIds.eventConfiguration ? (
+      <SimulationEventMapTable simulationId={simulationId} />
+    ) : null;
 
   return (
-    <div className="h-[100vh] overflow-hidden font-primary ml-[-10px] lg:ml-0">
-      <Header
-        isValid={areAllMandatoryFieldsFilled}
+    <>
+      <CreateFormLayout
+        formMethods={formMethods}
+        stepperList={SimulationStepperList}
+        fieldGroups={SIMULATION_CREATOR_FIELD_GROUPS}
+        currentStep={currentStep}
         onBack={handlePageBack}
         onSaveDraft={handleSaveDraft}
         onPublish={handlePublish}
         onPreview={handlePreview}
         isPublishing={isCreatingSimulation}
+        renderCustomStep={renderCustomStep}
+        handleStepClick={handleStepClick}
       />
-
-      <div className="flex h-[calc(100vh-100px)]">
-        <VerticalStepper
-          steps={StepperList}
-          currentStep={currentStep}
-          onStepClick={handleStepClick}
-        />
-
-        <div className="flex-1 flex flex-col h-[calc(100vh-160px)]">
-          <div className="flex-1 overflow-hidden">{renderCurrentStep()}</div>
-          <Footer
-            onPrevious={handlePrevious}
-            onNext={handleNext}
-            showPrevious={currentStep !== stepIds.basicInfo}
-            showNext={true}
-            isNextDisabled={false}
-            isLastStep={isLastStep}
-          />
-        </div>
-      </div>
 
       <ActionConfirmationPopup
         isOpen={showDiscardPopup}
@@ -400,6 +290,6 @@ export const CreateSimulation: FC = () => {
           onClose={() => setIsPreviewOpen(false)}
         />
       )}
-    </div>
+    </>
   );
 };
