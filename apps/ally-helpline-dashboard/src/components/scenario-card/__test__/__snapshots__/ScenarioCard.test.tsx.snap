@@ -36,7 +36,7 @@ exports[`ScenarioCard > should match snapshot when fully rendered 1`] = `
           Test Scenario
         </div>
         <div
-          class="text-[14px] text-[#656565]"
+          class="text-base text-[#656565]"
         >
           <p
             style="display: -webkit-box; -webkit-line-clamp: 2; overflow: hidden;"
@@ -76,7 +76,7 @@ exports[`ScenarioCard > should match snapshot when isComingSoon is true 1`] = `
           src="https://example.com/scenario-image.jpg"
         />
         <span
-          class="py-1 px-2 rounded-[4px] absolute top-2 right-2 text-[12px] font-primary text-[#292929] bg-white border-[0.5px] border-[#D2D2D2]"
+          class="py-1 px-2 rounded-[4px] absolute top-2 right-2 text-xs font-primary text-[#292929] bg-white border-[0.5px] border-[#D2D2D2]"
         >
           Coming Soon
         </span>
@@ -91,7 +91,7 @@ exports[`ScenarioCard > should match snapshot when isComingSoon is true 1`] = `
           Test Scenario
         </div>
         <div
-          class="text-[14px] text-[#656565]"
+          class="text-base text-[#656565]"
         >
           <p
             style="display: -webkit-box; -webkit-line-clamp: 2; overflow: hidden;"

@@ -23,7 +23,7 @@ exports[`Scenario Component > Snapshot Testing > should match snapshot with scen
             class="flex justify-between w-full max-w-[600px]"
           >
             <div
-              class="flex items-center gap-2 font-secondary text-[28px]"
+              class="flex items-center gap-2 font-secondary text-3xl"
             >
               <button
                 animate="[object Object]"
@@ -79,7 +79,7 @@ exports[`Scenario Component > Snapshot Testing > should match snapshot with scen
                 />
               </svg>
               <span
-                class="font-bold text-[18px] mb-1 text-black"
+                class="font-bold text-xl mb-1 text-black"
               >
                 0
               </span>

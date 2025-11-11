@@ -22,7 +22,7 @@ import { learnPageExpandedVariants } from "../learn/constants";
 export const Scenario: FC = () => {
   const { scenarioId } = useParams();
   const navigate = useNavigate();
-  const { credits, limitReached } = useSimulationCredits();
+  const { credits, limitReached, refetchCredits } = useSimulationCredits();
 
   const id = Number(scenarioId);
 
@@ -120,6 +120,7 @@ export const Scenario: FC = () => {
         await endSimulation({ sessionId: errorData.entityId });
         toast.success("Simulation ended successfully");
         setIsExistingSimulationConfirmOpen(false);
+        refetchCredits();
         return;
       }
     }
@@ -159,9 +160,7 @@ export const Scenario: FC = () => {
                 <span className="font-bold italic"> Simulation</span>
               </div>
               <div className="font-primary flex  items-center">
-                <div className="font-primary text-base text-gray-500">
-                  Credits used:
-                </div>
+                <div className="font-primary text-base text-gray-500">Credits used:</div>
                 <Bolt className="mb-2" />
                 <span
                   className={`font-bold text-xl mb-1 ${limitReached ? "text-red-500" : "text-black"}`}

@@ -81,14 +81,14 @@ exports[`ConfirmationDialog > should match snapshot when fully populated 1`] = `
           <button
             class="h-10 flex items-center justify-center gap-2 py-2 px-4 whitespace-nowrap text-sm font-medium rounded-[100px] 
         transition-transform duration-150 ease-out hover:-translate-y-[1px] disabled:hover:translate-y-0
-        disabled:cursor-default disabled:opacity-50 border border-[#C8C5D0] hover:bg-accent hover:text-accent-foreground disabled:bg-accent/50 w-full undefined"
+        disabled:cursor-default disabled:opacity-50 border border-secondary hover:bg-accent hover:text-accent-foreground disabled:bg-accent/50 text-typography-900 w-full undefined"
           >
             Cancel
           </button>
           <button
             class="h-10 flex items-center justify-center gap-2 py-2 px-4 whitespace-nowrap text-sm font-medium rounded-[100px] 
         transition-transform duration-150 ease-out hover:-translate-y-[1px] disabled:hover:translate-y-0
-        disabled:cursor-default disabled:opacity-50 border border-[#C8C5D0] hover:bg-accent hover:text-accent-foreground disabled:bg-accent/50 w-full undefined"
+        disabled:cursor-default disabled:opacity-50 border border-secondary hover:bg-accent hover:text-accent-foreground disabled:bg-accent/50 text-typography-900 w-full undefined"
           >
             Confirm Action
           </button>
@@ -96,7 +96,7 @@ exports[`ConfirmationDialog > should match snapshot when fully populated 1`] = `
       </div>
       <span
         animate="[object Object]"
-        class="text-xs sm:text-[12px] text-[#656565] font-primary text-center"
+        class="text-xs sm:text-xs text-typography-500 font-primary text-center"
         initial="[object Object]"
         transition="[object Object]"
       >

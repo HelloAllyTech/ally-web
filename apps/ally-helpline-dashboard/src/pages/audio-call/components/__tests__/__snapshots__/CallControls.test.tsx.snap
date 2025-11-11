@@ -75,7 +75,7 @@ exports[`CallControls Component > Snapshot Testing > should match snapshot when 
         Warning Icon
       </div>
       <span
-        class="text-[12px] text-[#fff] font-medium"
+        class="text-xs text-[#fff] font-medium"
       >
         Your data is safe
       </span>
@@ -149,7 +149,7 @@ exports[`CallControls Component > Snapshot Testing > should match snapshot when 
         </button>
       </div>
       <div
-        class="flex gap-2 items-center text-[12px] text-[#1D1B20] bg-[#FFFFFF] absolute top-[-64px] left-8 max-w-[300px] rounded-[4px] p-2"
+        class="flex gap-2 items-center text-xs text-[#1D1B20] bg-[#FFFFFF] absolute top-[-64px] left-8 max-w-[300px] rounded-[4px] p-2"
       >
         Need notes captured? AI can’t hear you right now. Resume to let it listen.
         <div
@@ -173,7 +173,7 @@ exports[`CallControls Component > Snapshot Testing > should match snapshot when 
         Warning Icon
       </div>
       <span
-        class="text-[12px] text-[#fff] font-medium"
+        class="text-xs text-[#fff] font-medium"
       >
         Your data is safe
       </span>
@@ -260,7 +260,7 @@ exports[`CallControls Component > Snapshot Testing > should match snapshot with 
         Warning Icon
       </div>
       <span
-        class="text-[12px] text-[#fff] font-medium"
+        class="text-xs text-[#fff] font-medium"
       >
         Your data is safe
       </span>
@@ -344,7 +344,7 @@ exports[`CallControls Component > Snapshot Testing > should match snapshot with 
         Warning Icon
       </div>
       <span
-        class="text-[12px] text-[#fff] font-medium"
+        class="text-xs text-[#fff] font-medium"
       >
         Your data is safe
       </span>
@@ -418,7 +418,7 @@ exports[`CallControls Component > Snapshot Testing > should match snapshot with 
         </button>
       </div>
       <div
-        class="flex gap-2 items-center text-[12px] text-[#1D1B20] bg-[#FFFFFF] absolute top-[-64px] left-8 max-w-[300px] rounded-[4px] p-2"
+        class="flex gap-2 items-center text-xs text-[#1D1B20] bg-[#FFFFFF] absolute top-[-64px] left-8 max-w-[300px] rounded-[4px] p-2"
       >
         Need notes captured? AI can’t hear you right now. Resume to let it listen.
         <div
@@ -442,7 +442,7 @@ exports[`CallControls Component > Snapshot Testing > should match snapshot with 
         Warning Icon
       </div>
       <span
-        class="text-[12px] text-[#fff] font-medium"
+        class="text-xs text-[#fff] font-medium"
       >
         Your data is safe
       </span>

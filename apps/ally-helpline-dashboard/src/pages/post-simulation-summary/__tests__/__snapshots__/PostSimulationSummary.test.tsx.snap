@@ -16,7 +16,7 @@ exports[`PostSimulationSummary Component > Snapshot Testing > should match snaps
         data-variants="{\\"hidden\\":{\\"opacity\\":0},\\"visible\\":{\\"opacity\\":1,\\"transition\\":{\\"staggerChildren\\":0.2,\\"delayChildren\\":0.3}}}"
       >
         <div
-          class="w-full text-black text-[24px] sm:text-[32px] font-normal text-left font-secondary mt-8 px-4"
+          class="w-full text-black text-2xl sm:text-4xl font-normal text-left font-secondary mt-8 px-4"
         >
           Simulation 
           <em>
@@ -60,7 +60,7 @@ exports[`PostSimulationSummary Component > Snapshot Testing > should match snaps
         data-variants="{\\"hidden\\":{\\"opacity\\":0},\\"visible\\":{\\"opacity\\":1,\\"transition\\":{\\"staggerChildren\\":0.2,\\"delayChildren\\":0.3}}}"
       >
         <div
-          class="w-full text-black text-[24px] sm:text-[32px] font-normal text-left font-secondary mt-8 px-4"
+          class="w-full text-black text-2xl sm:text-4xl font-normal text-left font-secondary mt-8 px-4"
         >
           Simulation 
           <em>

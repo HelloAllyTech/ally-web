@@ -17,7 +17,7 @@ exports[`ButtonGroup > should match snapshot with default visible buttons 1`] = 
         Icon1
       </div>
       <span
-        class="text-[12px] text-[#1E2025]"
+        class="text-xs text-[#1E2025]"
       >
         Active Item
       </span>
@@ -34,7 +34,7 @@ exports[`ButtonGroup > should match snapshot with default visible buttons 1`] = 
         Icon2
       </div>
       <span
-        class="text-[12px] text-[#fff]"
+        class="text-xs text-[#fff]"
       >
         Inactive Item
       </span>
@@ -52,7 +52,7 @@ exports[`ButtonGroup > should match snapshot with default visible buttons 1`] = 
         Icon4
       </div>
       <span
-        class="text-[12px] text-[#fff]"
+        class="text-xs text-[#fff]"
       >
         Last Disabled Item
       </span>

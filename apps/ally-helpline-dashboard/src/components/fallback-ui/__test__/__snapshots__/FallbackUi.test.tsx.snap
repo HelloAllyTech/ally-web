@@ -9,12 +9,12 @@ exports[`FallbackUI > should render correctly in the default (loaded, no button)
       class="flex flex-col items-center gap-2 text-center"
     >
       <h2
-        class="text-[24px] text-[#49454F]"
+        class="text-2xl text-[#49454F]"
       >
         Something went wrong!
       </h2>
       <p
-        class="text-[12px] text-[#787680]"
+        class="text-xs text-[#787680]"
       >
         We could not load the data. Please try refreshing the page.
       </p>

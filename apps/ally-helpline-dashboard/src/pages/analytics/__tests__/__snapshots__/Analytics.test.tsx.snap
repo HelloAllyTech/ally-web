@@ -7,7 +7,7 @@ exports[`Analytics Component > Snapshot Testing > should match snapshot for init
   >
     <div>
       <div
-        class="text-[#0D0D0D] font-primary text-[24px] font-[500] flex items-center gap-2 mb-2"
+        class="text-[#0D0D0D] font-primary text-2xl font-[500] flex items-center gap-2 mb-2"
       >
         Session Analytics
       </div>
@@ -26,7 +26,7 @@ exports[`Analytics Component > Snapshot Testing > should match snapshot with mul
   >
     <div>
       <div
-        class="text-[#0D0D0D] font-primary text-[24px] font-[500] flex items-center gap-2 mb-2"
+        class="text-[#0D0D0D] font-primary text-2xl font-[500] flex items-center gap-2 mb-2"
       >
         Session Analytics
       </div>
@@ -45,7 +45,7 @@ exports[`Analytics Component > Snapshot Testing > should match snapshot with no 
   >
     <div>
       <div
-        class="text-[#0D0D0D] font-primary text-[24px] font-[500] flex items-center gap-2 mb-2"
+        class="text-[#0D0D0D] font-primary text-2xl font-[500] flex items-center gap-2 mb-2"
       >
         Session Analytics
       </div>
@@ -64,7 +64,7 @@ exports[`Analytics Component > Snapshot Testing > should match snapshot with sin
   >
     <div>
       <div
-        class="text-[#0D0D0D] font-primary text-[24px] font-[500] flex items-center gap-2 mb-2"
+        class="text-[#0D0D0D] font-primary text-2xl font-[500] flex items-center gap-2 mb-2"
       >
         Session Analytics
       </div>

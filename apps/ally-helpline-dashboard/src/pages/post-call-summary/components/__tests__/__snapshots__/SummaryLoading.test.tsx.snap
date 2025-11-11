@@ -110,7 +110,7 @@ exports[`SummaryLoading > should match snapshot when IN_PROGRESS 1`] = `
           </div>
         </div>
         <p
-          class="text-[#6B7280] text-base text-center font-primary mb-1"
+          class="text-neutral-600 text-base text-center font-primary mb-1"
         >
           An AI-generated summary will be available shortly on this screen and in the session logs. In the meantime, you can add notes below.
         </p>
@@ -190,10 +190,10 @@ exports[`SummaryLoading > should match snapshot when NO_AUDIO 1`] = `
         class="flex flex-col items-center justify-center"
       >
         <span
-          class="rounded-full border-[0.5px] border-[#E5675A] px-2 py-1 text-[#E5675A] text-xs mb-8 flex items-center gap-1"
+          class="rounded-full border-[0.5px] border-destructive-300 px-2 py-1 text-[#E5675A] text-xs mb-8 flex items-center gap-1"
         >
           <svg
-            class="w-4 h-4 text-[#E5675A]"
+            class="w-4 h-4 text-destructive-300"
             data-testid="circle-x-icon"
           />
            No audio detected

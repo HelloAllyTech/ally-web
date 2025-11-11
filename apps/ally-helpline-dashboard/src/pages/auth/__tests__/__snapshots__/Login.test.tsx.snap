@@ -78,7 +78,7 @@ exports[`Login Component > Snapshot Testing > should match snapshot for email se
             transition="[object Object]"
           >
             <div
-              class="flex flex-col text-[32px] font-secondary"
+              class="flex flex-col text-4xl font-secondary"
             >
               <span>
                 Hey,
@@ -97,7 +97,7 @@ exports[`Login Component > Snapshot Testing > should match snapshot for email se
                 </span>
               </h1>
               <span
-                class="text-[24px] mt-[24px]"
+                class="text-2xl mt-[24px]"
               >
                 Enter your email address to continue
               </span>
@@ -141,7 +141,7 @@ exports[`Login Component > Snapshot Testing > should match snapshot for email se
               Next
             </button>
             <div
-              class="text-[12px] text-[#8C8C8C] mt-2"
+              class="text-xs text-[#8C8C8C] mt-2"
             >
               By tapping next, you agree to Ally's
                
@@ -246,7 +246,7 @@ exports[`Login Component > Snapshot Testing > should match snapshot for initial 
             transition="[object Object]"
           >
             <div
-              class="flex flex-col text-[32px] font-secondary"
+              class="flex flex-col text-4xl font-secondary"
             >
               <span>
                 Hey,
@@ -265,7 +265,7 @@ exports[`Login Component > Snapshot Testing > should match snapshot for initial 
                 </span>
               </h1>
               <span
-                class="text-[24px] mt-[24px]"
+                class="text-2xl mt-[24px]"
               >
                 Enter your email address to continue
               </span>
@@ -309,7 +309,7 @@ exports[`Login Component > Snapshot Testing > should match snapshot for initial 
               Next
             </button>
             <div
-              class="text-[12px] text-[#8C8C8C] mt-2"
+              class="text-xs text-[#8C8C8C] mt-2"
             >
               By tapping next, you agree to Ally's
                

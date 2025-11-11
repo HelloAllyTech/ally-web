@@ -47,12 +47,12 @@ exports[`CallInterface Component > Snapshot Testing > should match snapshot in m
       Taking notes
     </div>
     <div
-      class="text-[14px] font-semibold font-tertiary"
+      class="text-base font-semibold font-tertiary"
     >
       00 : 00 : 00
     </div>
     <div
-      class="text-[12px] text-[#666] text-center max-w-xs mt-1"
+      class="text-xs text-[#666] text-center max-w-xs mt-1"
     >
       Note: This call is already active in another tab/window. You can listen but cannot control the call (mute/unmute).
     </div>
@@ -183,12 +183,12 @@ exports[`CallInterface Component > Snapshot Testing > should match snapshot with
       Taking notes
     </div>
     <div
-      class="text-[14px] font-semibold font-tertiary"
+      class="text-base font-semibold font-tertiary"
     >
       00 : 00 : 00
     </div>
     <div
-      class="text-[12px] text-[#666] text-center max-w-xs mt-1"
+      class="text-xs text-[#666] text-center max-w-xs mt-1"
     >
       Note: Refreshing, closing the active tab, or network interruptions will end the call.
     </div>
@@ -275,12 +275,12 @@ exports[`CallInterface Component > Snapshot Testing > should match snapshot with
       Taking notes
     </div>
     <div
-      class="text-[14px] font-semibold font-tertiary"
+      class="text-base font-semibold font-tertiary"
     >
       00 : 00 : 00
     </div>
     <div
-      class="text-[12px] text-[#666] text-center max-w-xs mt-1"
+      class="text-xs text-[#666] text-center max-w-xs mt-1"
     >
       Note: Refreshing, closing the active tab, or network interruptions will end the call.
     </div>

@@ -184,8 +184,8 @@ describe("FeedbackSection", () => {
       const emptySummary = { ...mockSummary, positives: [] };
       render(<FeedbackSection {...emptySummary} />);
 
-      // Should render empty ul element
-      const emptyList = document.querySelector("ul.pb-4.space-y-2.text-\\[16px\\]");
+      // Should render empty ul element (font classes skipped as they change frequently)
+      const emptyList = document.querySelector("ul.pb-4.space-y-2");
       expect(emptyList).toBeInTheDocument();
     });
 
@@ -193,8 +193,8 @@ describe("FeedbackSection", () => {
       const emptySummary = { ...mockSummary, improvements: [] };
       render(<FeedbackSection {...emptySummary} />);
 
-      // Should render empty ul element
-      const emptyList = document.querySelector("ul.pb-4.space-y-2.text-\\[16px\\]");
+      // Should render empty ul element (font classes skipped as they change frequently)
+      const emptyList = document.querySelector("ul.pb-4.space-y-2");
       expect(emptyList).toBeInTheDocument();
     });
   });
@@ -287,8 +287,8 @@ describe("FeedbackSection", () => {
       };
       render(<FeedbackSection {...nullSummary} />);
 
-      // Should render empty elements
-      const emptyLists = document.querySelectorAll("ul.pb-4.space-y-2.text-\\[16px\\]");
+      // Should render empty elements (font classes skipped as they change frequently)
+      const emptyLists = document.querySelectorAll("ul.pb-4.space-y-2");
       expect(emptyLists.length).toBeGreaterThan(0);
     });
   });

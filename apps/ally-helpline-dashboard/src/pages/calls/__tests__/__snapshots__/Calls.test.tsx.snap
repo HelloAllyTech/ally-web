@@ -16,11 +16,11 @@ exports[`Calls Component > Snapshot Testing > should match snapshot 1`] = `
         class="sm:p-4 p-0 rounded-lg flex gap-4 sm:justify-between justify-start bg-transparent items-center"
       >
         <div
-          class="z-10 text-[#0D0D0D] text-[24px] font-[500] flex items-center gap-2"
+          class="z-10 text-typography-900 text-2xl font-[500] flex items-center gap-2"
         >
           Session Logs
           <div
-            class="w-6 h-6 cursor-pointer border-l-[0.5px] border-[#D2D2D2] pl-2"
+            class="w-6 h-6 cursor-pointer border-l-[0.5px] border-border pl-2"
             data-testid="refresh-icon"
           >
             Refresh
@@ -99,11 +99,11 @@ exports[`Calls Component > Snapshot Testing > should match snapshot with admin r
         class="sm:p-4 p-0 rounded-lg flex gap-4 sm:justify-between justify-start bg-transparent items-center"
       >
         <div
-          class="z-10 text-[#0D0D0D] text-[24px] font-[500] flex items-center gap-2"
+          class="z-10 text-typography-900 text-2xl font-[500] flex items-center gap-2"
         >
           Session Logs
           <div
-            class="w-6 h-6 cursor-pointer border-l-[0.5px] border-[#D2D2D2] pl-2"
+            class="w-6 h-6 cursor-pointer border-l-[0.5px] border-border pl-2"
             data-testid="refresh-icon"
           >
             Refresh

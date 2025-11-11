@@ -15,7 +15,7 @@ exports[`Accordion > matches snapshot (collapsed) 1`] = `
         class="MuiAccordionSummary-content MuiAccordionSummary-contentGutters css-eqpfi5-MuiAccordionSummary-content"
       >
         <span
-          class="text-[16px] font-medium text-[#000]"
+          class="text-lg font-medium text-[#000]"
         >
           Test Accordion
         </span>
@@ -79,7 +79,7 @@ exports[`Accordion > matches snapshot (expanded) 1`] = `
         class="MuiAccordionSummary-content Mui-expanded MuiAccordionSummary-contentGutters css-eqpfi5-MuiAccordionSummary-content"
       >
         <span
-          class="text-[16px] font-medium text-[#000]"
+          class="text-lg font-medium text-[#000]"
         >
           Test Accordion
         </span>
