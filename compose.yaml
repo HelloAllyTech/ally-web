@@ -1,4 +1,4 @@
-version: '3.8'
+version: "3.8"
 
 services:
   web:
@@ -53,7 +53,6 @@ volumes:
   web_node_modules:
   helpline_node_modules:
   admin_node_modules:
-
 # Notes:
 # - This file is intended for local development. It mounts your project into each container so
 #   code changes are visible immediately (hot-reload).

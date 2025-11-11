@@ -11,15 +11,11 @@ exports[`Login Component > Snapshot Testing > should match snapshot for email se
       <img
         alt="Login"
         class="w-full h-full object-cover hidden sm:block lg:rounded-[16px]"
-        src=({ className })=>/*#__PURE__*/ __vi_import_0__.jsxDEV("div", {
-                "data-testid": "login-image",
-                className: className,
-                children: "LoginImage"
-            }, void 0, false, {
-                fileName: "src/pages/auth/__tests__/Login.test.tsx",
-                lineNumber: 58,
-                columnNumber: 5
-            }, this)
+        src=({ className }) => /* @__PURE__ */ __vi_import_0__.jsxDEV("div", { "data-testid": "login-image", className, children: "LoginImage" }, void 0, false, {
+    fileName: "src/pages/auth/__tests__/Login.test.tsx",
+    lineNumber: 58,
+    columnNumber: 5
+  }, this)
       />
       <div
         data-testid="carousel"
@@ -179,15 +175,11 @@ exports[`Login Component > Snapshot Testing > should match snapshot for initial 
       <img
         alt="Login"
         class="w-full h-full object-cover hidden sm:block lg:rounded-[16px]"
-        src=({ className })=>/*#__PURE__*/ __vi_import_0__.jsxDEV("div", {
-                "data-testid": "login-image",
-                className: className,
-                children: "LoginImage"
-            }, void 0, false, {
-                fileName: "src/pages/auth/__tests__/Login.test.tsx",
-                lineNumber: 58,
-                columnNumber: 5
-            }, this)
+        src=({ className }) => /* @__PURE__ */ __vi_import_0__.jsxDEV("div", { "data-testid": "login-image", className, children: "LoginImage" }, void 0, false, {
+    fileName: "src/pages/auth/__tests__/Login.test.tsx",
+    lineNumber: 58,
+    columnNumber: 5
+  }, this)
       />
       <div
         data-testid="carousel"
