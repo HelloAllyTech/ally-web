@@ -1,6 +1,6 @@
 import { FC, useEffect, useRef, useState } from "react";
 
-import { Close } from "@assets";
+import { AccountTree, AlarmOn, Chat, Close, DiamondShine } from "@assets";
 import { ButtonVariant } from "@components/types";
 import { getButtonStyles } from "@utils";
 
@@ -9,14 +9,40 @@ export type EventType = "SENTENCE_SIMILARITY" | "TIME_BASED" | "SCORE_BASED" | "
 export interface EventTypeOption {
   value: EventType;
   label: string;
+  description: string;
+  icon: React.ComponentType<{ className?: string }>;
   prefix: string;
 }
 
 export const EVENT_TYPE_OPTIONS: EventTypeOption[] = [
-  { value: "SENTENCE_SIMILARITY", label: "Sentence similarity", prefix: "SS" },
-  { value: "TIME_BASED", label: "Time based", prefix: "TB" },
-  { value: "SCORE_BASED", label: "Score based", prefix: "SB" },
-  { value: "COMBINATION", label: "Combination events", prefix: "CE" },
+  {
+    value: "SENTENCE_SIMILARITY",
+    label: "Sentence Similarity",
+    description: "Trigger based on what the speaker says.",
+    icon: Chat,
+    prefix: "SS",
+  },
+  {
+    value: "TIME_BASED",
+    label: "Time Based",
+    description: "Trigger before, after, or at a specific time.",
+    icon: AlarmOn,
+    prefix: "TB",
+  },
+  {
+    value: "SCORE_BASED",
+    label: "Score Based",
+    description: "Trigger when score is greater, less, or equal to threshold.",
+    icon: DiamondShine,
+    prefix: "SB",
+  },
+  {
+    value: "COMBINATION",
+    label: "Combination of:",
+    description: "Trigger based on multiple events.",
+    icon: AccountTree,
+    prefix: "CE",
+  },
 ];
 
 interface EventTypeSelectionDialogProps {
@@ -30,19 +56,12 @@ export const EventTypeSelectionDialog: FC<EventTypeSelectionDialogProps> = ({
   onClose,
   onSelect,
 }) => {
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [selectedType, setSelectedType] = useState<EventType | null>(null);
-  const dropdownRef = useRef<HTMLDivElement>(null);
   const dialogRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (
-        dialogRef.current &&
-        !dialogRef.current.contains(event.target as Node) &&
-        dropdownRef.current &&
-        !dropdownRef.current.contains(event.target as Node)
-      ) {
+      if (dialogRef.current && !dialogRef.current.contains(event.target as Node)) {
         onClose();
       }
     };
@@ -59,13 +78,11 @@ export const EventTypeSelectionDialog: FC<EventTypeSelectionDialogProps> = ({
   useEffect(() => {
     if (!isOpen) {
       setSelectedType(null);
-      setIsDropdownOpen(false);
     }
   }, [isOpen]);
 
   const handleSelect = (eventType: EventType) => {
     setSelectedType(eventType);
-    setIsDropdownOpen(false);
   };
 
   const handleConfirm = () => {
@@ -82,7 +99,7 @@ export const EventTypeSelectionDialog: FC<EventTypeSelectionDialogProps> = ({
       <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-[1px]" />
       <div className="fixed inset-0 flex items-center justify-center px-4 shadow-2xl animate-fadeIn">
         <div
-          className="relative bg-white rounded-lg shadow-xl max-w-md w-full animate-in fade-in-0 zoom-in-95 duration-200 px-8 py-6"
+          className="relative bg-white rounded-lg shadow-xl max-w-[480px] w-full animate-in fade-in-0 zoom-in-95 duration-200 p-8"
           ref={dialogRef}
         >
           <button
@@ -93,66 +110,67 @@ export const EventTypeSelectionDialog: FC<EventTypeSelectionDialogProps> = ({
           </button>
 
           <div className="flex flex-col gap-4">
-            <div className="flex justify-center items-center relative text-[24px] font-medium text-center w-full font-['Replay_Pro']">
-              Select Event Type
+            <div className="flex justify-center items-center relative text-2xl font-thin text-center w-full font-['Replay_Pro','headline'] text-typography-900">
+              Create New Event
             </div>
 
-            <div className="relative" ref={dropdownRef}>
-              <button
-                type="button"
-                onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                className="w-full px-4 py-3 text-left border border-gray-300 rounded-lg flex items-center justify-between hover:border-gray-400 transition-colors"
-              >
-                <span className="text-sm font-['IBM_Plex_Serif']">
-                  {selectedType
-                    ? EVENT_TYPE_OPTIONS.find(opt => opt.value === selectedType)?.label
-                    : "Select event type"}
-                </span>
-                <svg
-                  className={`w-4 h-4 transition-transform ${isDropdownOpen ? "rotate-180" : ""}`}
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M19 9l-7 7-7-7"
-                  />
-                </svg>
-              </button>
+            <div className="text-center text-typography-600 mb-2">
+              Select the type of event you want to create.
+            </div>
 
-              {isDropdownOpen && (
-                <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-auto">
-                  {EVENT_TYPE_OPTIONS.map(option => (
-                    <div
-                      key={option.value}
-                      onClick={() => handleSelect(option.value)}
-                      className={`px-4 py-3 cursor-pointer hover:bg-blue-100 transition-colors ${
-                        selectedType === option.value ? "bg-gray-100" : ""
-                      }`}
-                    >
-                      <span className="text-sm font-['IBM_Plex_Serif']">{option.label}</span>
+            <div className="grid grid-cols-1 gap-4">
+              {EVENT_TYPE_OPTIONS.map(option => {
+                const Icon = option.icon;
+                const isSelected = selectedType === option.value;
+                return (
+                  <button
+                    key={option.value}
+                    type="button"
+                    onClick={() => handleSelect(option.value)}
+                    className={`relative p-4 border-2 rounded-lg text-left transition-all hover:border-blue-300 ${
+                      isSelected ? "border-blue-500 bg-blue-50" : "border-gray-200 bg-white"
+                    }`}
+                  >
+                    <div className="flex items-start gap-4">
+                      <div className="flex-shrink-0 mt-1">
+                        <Icon className="w-5 h-5" />
+                      </div>
+                      <div className="flex-1">
+                        <div className="font-medium text-typography-900 mb-1">{option.label}</div>
+                        <div className="text-sm text-typography-600">{option.description}</div>
+                      </div>
+                      {isSelected && (
+                        <div className="flex-shrink-0">
+                          <div className="w-6 h-6 rounded-full bg-blue-500 flex items-center justify-center">
+                            <svg
+                              className="w-4 h-4 text-white"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M5 13l4 4L19 7"
+                              />
+                            </svg>
+                          </div>
+                        </div>
+                      )}
                     </div>
-                  ))}
-                </div>
-              )}
+                  </button>
+                );
+              })}
             </div>
 
-            <div className="flex gap-2 pt-4 justify-center">
-              <button
-                onClick={onClose}
-                className={`${getButtonStyles(ButtonVariant.SECONDARY)} border rounded-full w-full p-2 font-['Roboto']`}
-              >
-                Cancel
-              </button>
+            <div className="flex justify-center pt-4">
               <button
                 onClick={handleConfirm}
                 disabled={!selectedType}
-                className={`${getButtonStyles(ButtonVariant.PRIMARY)} rounded-full w-full p-2 font-['Roboto'] disabled:opacity-50 disabled:cursor-not-allowed`}
+                className={`${getButtonStyles(ButtonVariant.PRIMARY)} rounded-full px-8 py-2 font-['Roboto'] disabled:opacity-50 disabled:cursor-not-allowed`}
               >
-                Create Event
+                Create event
               </button>
             </div>
           </div>

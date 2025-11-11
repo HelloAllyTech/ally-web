@@ -3,9 +3,13 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 
 import { FilterDropdown } from "../FilterDropdown";
 
-vi.mock("@assets", () => ({
-  Trash: () => <svg data-testid="trash-icon" />,
-}));
+vi.mock("@assets", async importOriginal => {
+  const actual = await importOriginal<typeof import("@assets")>();
+  return {
+    ...actual,
+    Trash: () => <svg data-testid="trash-icon" />,
+  };
+});
 
 // Use real constants to avoid side-effects; test with generic expectations
 

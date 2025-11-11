@@ -165,10 +165,14 @@ vi.mock("@components", async importOriginal => {
 });
 
 // Mock assets
-vi.mock("@assets", () => ({
-  Trash: () => <svg data-testid="trash-icon">Delete</svg>,
-  Close: () => <svg data-testid="close-icon">Close</svg>,
-}));
+vi.mock("@assets", async importOriginal => {
+  const actual = await importOriginal<typeof import("@assets")>();
+  return {
+    ...actual,
+    Trash: () => <svg data-testid="trash-icon">Delete</svg>,
+    Close: () => <svg data-testid="close-icon">Close</svg>,
+  };
+});
 
 // Mock SimulationCreator constants
 vi.mock("@constants/SimulationCreator", () => ({
