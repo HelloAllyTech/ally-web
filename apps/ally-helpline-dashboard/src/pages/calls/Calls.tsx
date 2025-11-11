@@ -26,15 +26,15 @@ export const Calls: FC = () => {
   const [isAudioUploadDialogOpen, setIsAudioUploadDialogOpen] = useState(false);
 
   const { permissions } = useUser();
+  const supportedLogList = useMemo(() => getPermittedSessionLogList(permissions), [permissions]);
 
   useEffect(() => {
-    if (!permissions) return;
-    const supportedLogList = getPermittedSessionLogList(permissions);
+    if (!supportedLogList) return;
     if (supportedLogList?.length > 0) {
       setSessionUserGroup(supportedLogList[0].sessionUserGroup as SessionUserGroup);
       setSessionType(supportedLogList[0].sessionType as SessionType);
     }
-  }, [permissions]);
+  }, [supportedLogList]);
 
   const handleStartSession = () => {
     setIsStartSessionDialogOpen(true);
@@ -54,6 +54,9 @@ export const Calls: FC = () => {
 
   const handleTabChange = (event: React.SyntheticEvent, newValue: SessionUserGroup) => {
     setSessionUserGroup(newValue);
+    setSessionType(
+      supportedLogList?.length > 0 ? (supportedLogList[0].sessionType as SessionType) : undefined,
+    );
   };
 
   const getContent = () => {
