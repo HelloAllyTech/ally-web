@@ -92,11 +92,11 @@ const ScenarioDetailsCard: FC<ScenarioDetailsCardProps> = ({
 
       <div className="flex flex-col gap-1 mt-3 font-primary">
         <div className="flex items-start justify-between">
-          <div id="scenario-title" className="text-[#0D0D0D] text-[20px]">
+          <div id="scenario-title" className="text-typography-900 text-2xl">
             {title}
           </div>
           <button
-            className="flex items-center gap-2 px-4 py-2 text-[#374151] hover:bg-gray-50 rounded-md transition-colors"
+            className="flex items-center gap-2 px-4 py-2 text-typography-700 hover:bg-gray-50 rounded-md transition-colors"
             onClick={handleShareScenario}
             aria-label="Share scenario"
             title="Share this scenario"
@@ -108,8 +108,8 @@ const ScenarioDetailsCard: FC<ScenarioDetailsCardProps> = ({
 
         {longDescription && (
           <div className="flex flex-col">
-            <div className="text-base font-semibold text-[#0D0D0D]">Scenario:</div>
-            <p className="text-base text-[#656565]">{longDescription}</p>
+            <div className="text-base font-semibold text-typography-900">Scenario:</div>
+            <p className="text-base text-typography-600">{longDescription}</p>
           </div>
         )}
 

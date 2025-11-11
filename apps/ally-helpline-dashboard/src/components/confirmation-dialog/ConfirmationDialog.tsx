@@ -57,7 +57,7 @@ const ConfirmationDialog: FC<ConfirmationDialogProps> = ({
         </motion.div>
 
         <motion.div
-          className="text-[30px] font-secondary text-[#434343]"
+          className="text-4xl font-secondary text-typography-800"
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2, duration: 0.3 }}

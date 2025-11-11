@@ -92,7 +92,7 @@ const OTP: FC<OTPProps> = ({
           autoFocus={autoFocus && index === 0}
           placeholder={placeholder}
           className={cn(
-            "w-[64px] h-[64px] bg-[#F5F5F5] rounded-[12px] text-center text-[20px] font-medium placeholder:text-[#bdbdbd] placeholder:font-normal placeholder:text-3xl border-0 focus-visible:ring-0",
+            "w-[64px] h-[64px] bg-[#F5F5F5] rounded-[12px] text-center text-[20px] font-medium placeholder:text-typography-500 placeholder:font-normal placeholder:text-3xl border-0 focus-visible:ring-0",
             inputClassName,
           )}
         />

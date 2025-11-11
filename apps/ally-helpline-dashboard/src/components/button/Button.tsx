@@ -8,7 +8,7 @@ const getButtonStyles = (variant: ButtonProps["variant"]) => {
     case ButtonVariant.DESTRUCTIVE:
       return "bg-destructive text-white hover:bg-destructive/90 disabled:bg-destructive/50";
     case ButtonVariant.SECONDARY:
-      return "border border-secondary hover:bg-accent hover:text-accent-foreground disabled:bg-accent/50 text-typography-900";
+      return "border border-secondary hover:bg-accent hover:text-typography-900 disabled:bg-accent/50 text-typography-900";
     case ButtonVariant.ICON:
       return "bg-transparent border-none hover:bg-transparent disabled:bg-transparent !p-2 !h-fit";
     case ButtonVariant.TEXT:

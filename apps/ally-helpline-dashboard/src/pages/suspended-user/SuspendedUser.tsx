@@ -13,7 +13,7 @@ export const SuspendedUser = () => {
     <div className="flex  flex-col justify-center  items-center h-screen gap-2">
       <div className="border rounded-lg px-16 py-10 flex flex-col justify-center items-center gap-2">
         <SuspendedUserIcon />
-        <div className="text-2xl font-[Replay-pro]">Account Suspended</div>
+        <div className="text-2xl font-secondary">Account Suspended</div>
         <div className="flex flex-col text-center font-primary">
           <div>Your account has been suspended. Contact your</div>
           <div>administrator for assistance</div>

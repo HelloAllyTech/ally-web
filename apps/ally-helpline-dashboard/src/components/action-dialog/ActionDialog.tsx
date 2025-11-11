@@ -29,7 +29,7 @@ const ActionDialog: FC<ActionDialogProps> = ({
     >
       <div className="py-4 px-6 bg-white h-fit w-[400px] flex flex-col gap-6 rounded-[8px]">
         <div className="flex justify-between items-center">
-          <span className="font-medium text-[#47464F]">{title}</span>
+          <span className="font-medium text-typography-800">{title}</span>
           <X className="cursor-pointer" onClick={onClose} data-testid="dialog-close" />
         </div>
         {children}

@@ -90,7 +90,7 @@ const Carousel: FC<CarouselProps> = ({
         styles = "text-white";
         break;
       case CarouselVariant.DARK:
-        styles = "text-[#1D1B20]";
+        styles = "text-typography-900";
         break;
     }
     switch (size) {
@@ -141,9 +141,7 @@ const Carousel: FC<CarouselProps> = ({
               <activeSlide.imageSrc className={`w-full h-full object-cover`} />
             </div>
             <div className="text-center h-16 flex items-center justify-center">
-              <p
-                className={`font-primary leading-2 ${getTextStyles()} ${textClassName}`}
-              >
+              <p className={`font-primary leading-2 ${getTextStyles()} ${textClassName}`}>
                 {activeSlide.text}
               </p>
             </div>

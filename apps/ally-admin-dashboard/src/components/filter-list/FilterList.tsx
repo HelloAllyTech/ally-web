@@ -65,7 +65,7 @@ export const FilterList: FC<FilterListProps> = ({
         <div className="flex justify-end">
           <button
             onClick={onApplyFilters}
-            className="bg-primary-500 text-white rounded-full px-6 py-1 hover:bg-primary-700 transition-colors font-[Roboto] text-base"
+            className="bg-primary-500 text-white rounded-full px-6 py-1 hover:bg-primary-700 transition-colors font-tertiary text-base"
           >
             {en.simulation.apply}
           </button>

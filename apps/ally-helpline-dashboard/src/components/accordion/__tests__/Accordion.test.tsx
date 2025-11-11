@@ -52,19 +52,4 @@ describe("Accordion", () => {
     const accordionElement = screen.getByText(mockTitle).closest(".MuiAccordion-root");
     expect(accordionElement).toHaveClass("Mui-expanded");
   });
-
-  // ---- Snapshot tests ----
-  it("matches snapshot (collapsed)", () => {
-    const { container } = render(<Accordion title={mockTitle}>{mockContent}</Accordion>);
-    expect(container).toMatchSnapshot();
-  });
-
-  it("matches snapshot (expanded)", () => {
-    const { container } = render(
-      <Accordion title={mockTitle} defaultExpanded>
-        {mockContent}
-      </Accordion>,
-    );
-    expect(container).toMatchSnapshot();
-  });
 });

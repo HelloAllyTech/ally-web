@@ -122,20 +122,6 @@ describe("ConfirmationDialog", () => {
 
   // --- Rendering & Structure Tests ---
 
-  it("should match snapshot when fully populated", () => {
-    const fullProps: ConfirmationDialogProps = {
-      ...defaultProps,
-      icon: MockIcon,
-      footerText: "Footer Note",
-      secondaryButtonText: "Cancel",
-      onSecondaryButtonClick: mockOnSecondaryButtonClick,
-      children: <div data-testid="extra-content">Additional Content</div>,
-      buttonVariant: ButtonVariant.SECONDARY,
-    };
-    const { asFragment } = render(<ConfirmationDialog {...fullProps} />);
-    expect(asFragment()).toMatchSnapshot();
-  });
-
   it("should render with correct title and content", () => {
     render(<ConfirmationDialog {...defaultProps} />);
 

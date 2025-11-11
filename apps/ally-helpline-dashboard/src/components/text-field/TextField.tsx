@@ -32,7 +32,7 @@ const TextField: FC<TextFieldProps> = ({
 }) => {
   return (
     <div className={`flex flex-col ${className}`}>
-      {label && <span className="text-xs text-[#49454F]">{label}</span>}
+      {label && <span className="text-xs text-typography-700">{label}</span>}
       <MuiTextField
         disabled={disabled}
         error={!!errors?.[name] || !!errorMessage}

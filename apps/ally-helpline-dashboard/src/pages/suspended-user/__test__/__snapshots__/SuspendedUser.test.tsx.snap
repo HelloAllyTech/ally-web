@@ -15,7 +15,7 @@ exports[`SuspendedUser > should match snapshot when fully rendered 1`] = `
           data-testid="suspended-user-icon"
         />
         <div
-          class="text-2xl font-[Replay-pro]"
+          class="text-2xl font-secondary"
         >
           Account Suspended
         </div>

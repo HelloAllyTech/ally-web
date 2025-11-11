@@ -51,7 +51,7 @@ const DraggableArea: FC<DraggableAreaProps> = ({
     >
       <input {...getInputProps()} />
       <FileUpload />
-      <span className="text-[#8A8A8A] font-primary text-sm">
+      <span className="text-typography-600 font-primary text-sm">
         Drag & drop or <span className="text-primary-500 font-medium">choose</span> a{" "}
         {getAllowedUniqueExtensionsDisplay(supportedExtensions)} file under{" "}
         {formatSizeByByteSize(sizeInBytes)}
