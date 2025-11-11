@@ -28,23 +28,6 @@ export const useSimulationPathways = ({ selectedFilters }: UseSimulationPathways
   const [pathwaysOffset, setPathwaysOffset] = useState<number>(0);
   const [hasMore, setHasMore] = useState(true);
 
-  // TODO: Uncomment when API is implemented
-  // const pathwayParams = {
-  //   limit: PATHWAYS_PAGE_SIZE,
-  //   offset: pathwaysOffset,
-  //   sortBy: SORT_BY.UPDATED_AT,
-  //   order: SORT_ORDER.DESC,
-  //   status:
-  //     selectedFilters.length > 0 ? selectedFilters?.map(filter => filter.id)?.join(",") : undefined,
-  // };
-
-  // TODO: Uncomment when API is implemented
-  // const {
-  //   data: pathwaysResponse,
-  //   isFetching: isPathwaysFetching,
-  //   isLoading: isPathwaysLoading,
-  // } = useGetSimulationPathwaysQuery(pathwayParams);
-
   // Temporary mock data for development
   const pathwaysResponse = { data: [] };
   const isPathwaysFetching = false;
@@ -52,22 +35,26 @@ export const useSimulationPathways = ({ selectedFilters }: UseSimulationPathways
 
   useEffect(() => {
     setPathwaysOffset(0);
+    // Reset pathways when filters change
+    setPathways([]);
+    setHasMore(false);
   }, [selectedFilters]);
 
-  useEffect(() => {
-    if (!pathwaysResponse) return;
-    const nextData = pathwaysResponse.data ?? [];
-    setHasMore(nextData.length >= PATHWAYS_PAGE_SIZE);
-    if (pathwaysOffset === 0) {
-      setPathways(nextData);
-    } else {
-      setPathways(previousPathways => {
-        const existingIds = new Set(previousPathways.map(pathway => pathway.id));
-        const newItems = nextData.filter(pathway => !existingIds.has(pathway.id));
-        return [...previousPathways, ...newItems];
-      });
-    }
-  }, [pathwaysResponse, pathwaysOffset]);
+  // TODO: Uncomment when API is implemented
+  // useEffect(() => {
+  //   if (!pathwaysResponse) return;
+  //   const nextData = pathwaysResponse.data ?? [];
+  //   setHasMore(nextData.length >= PATHWAYS_PAGE_SIZE);
+  //   if (pathwaysOffset === 0) {
+  //     setPathways(nextData);
+  //   } else {
+  //     setPathways(previousPathways => {
+  //       const existingIds = new Set(previousPathways.map(pathway => pathway.id));
+  //       const newItems = nextData.filter(pathway => !existingIds.has(pathway.id));
+  //       return [...previousPathways, ...newItems];
+  //     });
+  //   }
+  // }, [pathwaysResponse, pathwaysOffset]);
 
   const loadPathways = (append = false) => {
     setPathwaysOffset(previousOffset => (append ? previousOffset + PATHWAYS_PAGE_SIZE : 0));

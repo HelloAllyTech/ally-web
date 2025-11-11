@@ -37,11 +37,11 @@ export const OptionsPopup: FC<OptionsPopupProps> = ({
   const [calculatedPosition, setCalculatedPosition] = useState<Position | null>(null);
 
   const calculatePosition = useCallback((): Position | null => {
-    if (!anchorElement || !popupRef.current) return null;
+    if (!anchorElement) return null;
 
     const rect = anchorElement.getBoundingClientRect();
-    const popupWidth = popupRef.current.offsetWidth || DEFAULT_POPUP_WIDTH;
-    const popupHeight = popupRef.current.offsetHeight || DEFAULT_POPUP_HEIGHT;
+    const popupWidth = popupRef.current?.offsetWidth || DEFAULT_POPUP_WIDTH;
+    const popupHeight = popupRef.current?.offsetHeight || DEFAULT_POPUP_HEIGHT;
 
     // Calculate initial position - align right edge with button's right edge
     let top = rect.bottom + POPUP_GAP;
@@ -80,16 +80,24 @@ export const OptionsPopup: FC<OptionsPopupProps> = ({
 
     if (!anchorElement) return undefined;
 
-    requestAnimationFrame(updatePosition);
+    // Initial position calculation
+    const position = calculatePosition();
+    if (position) {
+      setCalculatedPosition(position);
+    }
+
+    // Update position on scroll/resize
+    const rafId = requestAnimationFrame(updatePosition);
 
     window.addEventListener("scroll", updatePosition, true);
     window.addEventListener("resize", updatePosition);
 
     return () => {
+      cancelAnimationFrame(rafId);
       window.removeEventListener("scroll", updatePosition, true);
       window.removeEventListener("resize", updatePosition);
     };
-  }, [isOpen, anchorElement, updatePosition]);
+  }, [isOpen, anchorElement, updatePosition, calculatePosition]);
 
   // Handle click outside
   useEffect(() => {
@@ -117,9 +125,6 @@ export const OptionsPopup: FC<OptionsPopupProps> = ({
   );
 
   if (!isOpen) return null;
-
-  // Don't render until position is calculated to prevent flashing
-  if (!calculatedPosition) return null;
 
   const renderOptionButton = (option: OptionItem, index: number) => {
     const isLastOption = index === options.length - 1;
@@ -149,11 +154,19 @@ export const OptionsPopup: FC<OptionsPopupProps> = ({
       <div className="fixed inset-0 z-40" onClick={onClose} />
       <div
         ref={popupRef}
-        className={`fixed z-50 bg-white rounded-[16px] border border-border-light shadow-[0_4px_16px_rgba(0,0,0,0.12)] animate-slideInFromRight ${className}`}
-        style={{
-          top: `${calculatedPosition.top}px`,
-          left: `${calculatedPosition.left}px`,
-        }}
+        className={`fixed z-50 bg-white rounded-[16px] border border-border-light shadow-[0_4px_16px_rgba(0,0,0,0.12)] ${calculatedPosition ? "animate-slideInFromRight" : "opacity-0"} ${className}`}
+        style={
+          calculatedPosition
+            ? {
+                top: `${calculatedPosition.top}px`,
+                left: `${calculatedPosition.left}px`,
+              }
+            : {
+                top: 0,
+                left: 0,
+                visibility: "hidden",
+              }
+        }
       >
         <div className="py-1">{options.map(renderOptionButton)}</div>
       </div>
