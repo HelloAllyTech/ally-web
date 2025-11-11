@@ -1,4 +1,6 @@
+import { ROUTES } from "@src/constants";
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 import { toast } from "sonner";
 
@@ -21,6 +23,8 @@ interface Pathway {
 }
 
 export const useSimulationPathways = ({ selectedFilters }: UseSimulationPathwaysProps) => {
+  const navigate = useNavigate();
+
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [isDeletePopupOpen, setIsDeletePopupOpen] = useState(false);
   const [currentPathway, setCurrentPathway] = useState<Pathway | null>(null);
@@ -61,8 +65,7 @@ export const useSimulationPathways = ({ selectedFilters }: UseSimulationPathways
   };
 
   const handleNewPathway = () => {
-    // TODO: Navigate to pathway creation
-    toast.info("Pathway creation coming soon!");
+    navigate(ROUTES.CREATE_PATH);
   };
 
   const handleCreatePathway = () => {

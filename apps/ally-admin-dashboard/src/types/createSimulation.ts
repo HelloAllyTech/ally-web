@@ -23,6 +23,7 @@ export type FormData = {
   openingStatements: string;
   voiceId: string;
   agentGoal: string;
+  orgVisibility: boolean;
 };
 
 export interface DemographicsSectionProps {
@@ -58,7 +59,7 @@ export interface FieldGroupProps {
   formMethods: any;
 }
 
-export interface SimulationCreatorFieldGroups {
+export interface CreatorFieldGroups {
   id: string;
   label: string;
   fields: FormFieldConfig[];

@@ -1,47 +1,35 @@
-import { FC, useEffect, useMemo, useRef, useState } from "react";
+import { FC, useMemo, useRef, useState } from "react";
 
 import { useForm } from "react-hook-form";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
 
 import {
-  useCreateSimulationMutation,
-  useDeleteCoverImageMutation,
-  useLazyGetAdminSimulationByIdQuery,
-  useUpdateSimulationByIdMutation,
-} from "@api";
-import {
   Header,
   VerticalStepper,
   Footer,
   MoreOptionsPopup,
   ActionConfirmationPopup,
-  SimulationPreview,
+  Simulations,
 } from "@components";
-import { CreateSimulationSubSection, SimulationEventMapTable } from "@components";
+import { CreateSimulationSubSection } from "@components";
 import { ButtonVariant } from "@components/types";
-import { en, ROUTES, StepperList, SIMULATION_CREATOR_FIELD_GROUPS } from "@constants";
-import { useDebounce } from "@hooks";
-import { SimulationStatus, SimulationPreviewType } from "@types";
 import {
-  getCreateSimulationSubSectionById,
-  formatSimulationResponseData,
-  isNonEmptyString,
-  extractValidData,
-} from "@utils";
-
-const stepIds = {
-  basicInfo: "basic-info",
-  characterIdentity: "character-identity",
-  traitsNeeds: "traits-and-needs",
-  conversationStyle: "conversation-style",
-  eventConfiguration: "event-configuration",
-};
+  en,
+  ROUTES,
+  StepperList,
+  PATH_CREATOR_FIELD_GROUPS,
+  PATH_CREATOR_STEP_IDS,
+  SimulationStatus,
+  PathStepperList,
+  getCreatePathSubSectionById,
+} from "@constants";
+import { useDebounce } from "@hooks";
 
 // Get all mandatory field IDs from the configuration
 const getMandatoryFieldIds = () => {
   const mandatoryFields: string[] = [];
-  SIMULATION_CREATOR_FIELD_GROUPS.forEach(group => {
+  PATH_CREATOR_FIELD_GROUPS.forEach(group => {
     group.fields.forEach(field => {
       if (field.isMandatory) {
         mandatoryFields.push(field.id);
@@ -51,44 +39,24 @@ const getMandatoryFieldIds = () => {
   return mandatoryFields;
 };
 
-export const CreateSimulation: FC = () => {
+export const CreatePath: FC = () => {
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
-  const [simulationId, setSimulationId] = useState<string | undefined>(id);
-  const [currentStep, setCurrentStep] = useState(stepIds.basicInfo);
+  const [currentStep, setCurrentStep] = useState(PATH_CREATOR_STEP_IDS.basicInfo);
   const [showDiscardPopup, setShowDiscardPopup] = useState(false);
   const [showMoreOptions, setShowMoreOptions] = useState(false);
-  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
-  const [previewSimulation, setPreviewSimulation] = useState<SimulationPreviewType | null>(null);
 
-  const moreOptionsRef = useRef<HTMLButtonElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const moreOptionsRef = useRef<HTMLButtonElement>(null);
 
-  // API mutation for creating simulation
-  const [createSimulationQuery, { isLoading: isCreatingSimulation }] =
-    useCreateSimulationMutation();
-  const [updateSimulationByIdQuery] = useUpdateSimulationByIdMutation();
-  const [getAdminSimulationByIdQuery, { data: adminSimulationByIdData }] =
-    useLazyGetAdminSimulationByIdQuery();
-  const [deleteCoverImage] = useDeleteCoverImageMutation();
+  const title = id ? en.simulation.editPath : en.simulation.createPath;
+
+  // TODO:API mutation for creating path
 
   const formMethods = useForm({
     mode: "onChange",
     reValidateMode: "onChange",
   });
-
-  useEffect(() => {
-    if (simulationId) {
-      getAdminSimulationByIdQuery(simulationId);
-    }
-  }, [simulationId, getAdminSimulationByIdQuery]);
-
-  useEffect(() => {
-    if (adminSimulationByIdData) {
-      const formattedData = formatSimulationResponseData(adminSimulationByIdData);
-      formMethods.reset(formattedData);
-    }
-  }, [adminSimulationByIdData, formMethods]);
 
   const {
     handleSubmit,
@@ -151,74 +119,14 @@ export const CreateSimulation: FC = () => {
       return null;
     }
 
-    // Delete cover image from s3 if it is changed
-    if (
-      isNonEmptyString(adminSimulationByIdData?.coverImageUrl) &&
-      adminSimulationByIdData?.coverImageUrl !== formData.coverImageUrl
-    ) {
-      try {
-        await deleteCoverImage({ coverImageUrl: adminSimulationByIdData.coverImageUrl }).unwrap();
-      } catch {
-        toast.error("Failed to delete cover image. Please try again.");
-      }
-    }
-
-    const { openingStatements, ...restForm } = formData as any;
-
-    const openingStatementsArray = isNonEmptyString(openingStatements)
-      ? openingStatements
-          .split("\n")
-          .map((line: string) => line.trim())
-          .filter((line: string) => line.length > 0)
-      : null;
-
-    const simulationData = {
-      ...extractValidData(restForm),
-      openingStatements: openingStatementsArray,
-      status,
-    };
-    let response;
-    if (simulationId) {
-      response = await updateSimulationByIdQuery({
-        id: simulationId,
-        simulation: simulationData,
-      });
-    } else {
-      response = await createSimulationQuery({
-        scenarios: [simulationData],
-      });
-    }
-    return response;
+    //TODO: Api
   };
 
   // Debounced version to prevent duplicate simulation creation (500ms delay)
   const saveSimulationChanges = useDebounce(saveSimulationChangesCore, 500);
 
   const handleSaveDraft = async () => {
-    try {
-      const response = await saveSimulationChanges(SimulationStatus.DRAFT);
-      if (response && !response.error) {
-        if (response?.data?.[0]?.id && !simulationId) {
-          setSimulationId(response?.data?.[0]?.id);
-        }
-        // Reset form to clear dirtyFields after successful save
-        const currentFormValues = formMethods.getValues();
-        formMethods.reset(currentFormValues);
-        // Refetch to ensure form is in sync with saved data
-        if (simulationId) {
-          getAdminSimulationByIdQuery(simulationId);
-        }
-        return response?.data;
-      } else if (response?.error) {
-        toast.error("Failed to save draft. Please try again.");
-        return null;
-      }
-      return response?.data;
-    } catch {
-      toast.error("Failed to save draft. Please try again.");
-      return null;
-    }
-    // TODO: Handle any navigations here
+    // TODO: API and Handle any navigations here
   };
 
   const handlePublish = async () => {
@@ -253,16 +161,7 @@ export const CreateSimulation: FC = () => {
   };
 
   const handleStepClick = async (stepId: string) => {
-    if (stepId === stepIds.eventConfiguration && !simulationId) {
-      const response = await handleSaveDraft();
-      if (response) {
-        setCurrentStep(stepId);
-      } else {
-        toast.error("Fill atleast name field to proceed to Event Configuration!");
-      }
-    } else {
-      setCurrentStep(stepId);
-    }
+    setCurrentStep(stepId);
     // Scroll to top when moving to next step
     containerRef?.current?.scrollTo({ top: 0, behavior: "smooth" });
   };
@@ -289,12 +188,9 @@ export const CreateSimulation: FC = () => {
   };
 
   const renderCurrentStep = () => {
-    const simulationSubSectionData = getCreateSimulationSubSectionById(currentStep);
+    const simulationSubSectionData = getCreatePathSubSectionById(currentStep);
     switch (currentStep) {
-      case stepIds.basicInfo:
-      case stepIds.characterIdentity:
-      case stepIds.traitsNeeds:
-      case stepIds.conversationStyle:
+      case PATH_CREATOR_STEP_IDS.basicInfo:
         return renderStep(
           simulationSubSectionData.label,
           <CreateSimulationSubSection
@@ -302,8 +198,8 @@ export const CreateSimulation: FC = () => {
             formMethods={formMethods}
           />,
         );
-      case stepIds.eventConfiguration:
-        return <SimulationEventMapTable simulationId={simulationId} />;
+      case PATH_CREATOR_STEP_IDS.simulations:
+        return renderStep(simulationSubSectionData.label, <Simulations />);
       default:
         return null;
     }
@@ -311,7 +207,7 @@ export const CreateSimulation: FC = () => {
 
   const moreOptionsPosition = useMemo(() => getMoreOptionsPosition(), []);
 
-  const isLastStep = currentStep === stepIds.eventConfiguration;
+  const isLastStep = currentStep === PATH_CREATOR_STEP_IDS.simulations;
 
   const handleNext = async () => {
     if (isLastStep) {
@@ -322,38 +218,19 @@ export const CreateSimulation: FC = () => {
     }
   };
 
-  const handlePreview = async () => {
-    const response = await saveSimulationChanges(SimulationStatus.DRAFT);
-    const id = simulationId || (response && response?.data?.[0]?.id);
-    if (id) {
-      const formData = formMethods.getValues();
-      const simulation = {
-        id: String(id),
-        title: formData.title,
-        description: formData.description,
-        coverImageUrl: formData.coverImageUrl,
-      };
-
-      setPreviewSimulation(simulation);
-      setIsPreviewOpen(true);
-    }
-  };
-
   return (
     <div className="h-[100vh] overflow-hidden font-primary ml-[-10px] lg:ml-0">
       <Header
         isValid={areAllMandatoryFieldsFilled}
         onBack={handlePageBack}
-        onSaveDraft={handleSaveDraft}
         onPublish={handlePublish}
-        onPreview={handlePreview}
-        isPublishing={isCreatingSimulation}
-        title={simulationId ? en.simulation.editSimulation : en.simulation.createNewSimulation}
+        title={title}
+        showPreview={false}
       />
 
       <div className="flex h-[calc(100vh-100px)]">
         <VerticalStepper
-          steps={StepperList}
+          steps={PathStepperList}
           currentStep={currentStep}
           onStepClick={handleStepClick}
         />
@@ -363,7 +240,7 @@ export const CreateSimulation: FC = () => {
           <Footer
             onPrevious={handlePrevious}
             onNext={handleNext}
-            showPrevious={currentStep !== stepIds.basicInfo}
+            showPrevious={currentStep !== PATH_CREATOR_STEP_IDS.basicInfo}
             showNext={true}
             isNextDisabled={false}
             isLastStep={isLastStep}
@@ -394,13 +271,6 @@ export const CreateSimulation: FC = () => {
         onDiscardSimulation={handleDiscardSimulation}
         position={moreOptionsPosition}
       />
-      {previewSimulation && (
-        <SimulationPreview
-          simulation={previewSimulation}
-          isOpen={isPreviewOpen}
-          onClose={() => setIsPreviewOpen(false)}
-        />
-      )}
     </div>
   );
 };

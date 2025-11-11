@@ -59,6 +59,8 @@ export const ROUTES = {
   CREATE_SIMULATION: "/create-simulation",
   SIMULATION_PREVIEW: (id: string) => `/simulation-preview/${id}`,
   EDIT_SIMULATION: (id: string) => `/create-simulation/edit/${id}`,
+  CREATE_PATH: "/create-path",
+  EDIT_PATH: (id: string) => `/create-path/edit/${id}`,
 };
 
 export const LOCAL_STORAGE_KEYS = {
@@ -107,4 +109,16 @@ export const TAG_TYPES = {
   SESSION_EVENTS: "sessionEvents",
   SIMULATION: "simulation",
   SIMULATION_EVENTS: "simulationEvents",
+};
+
+export const FORM_FIELD_TYPES = {
+  TEXT: "text",
+  NUMBER: "number",
+  SELECT: "select",
+  IMAGE_UPLOAD: "image_upload",
+  VIDEO_UPLOAD: "video_upload",
+  CUSTOM: {
+    VOICE_DROPDOWN: "voice_dropdown",
+  },
+  TOGGLE_BUTTON: "toggle_button",
 };
