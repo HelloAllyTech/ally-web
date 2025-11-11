@@ -62,8 +62,8 @@ export const FeedbackSection: FC<FeedbackSectionProps> = props => {
             key={feedback.key}
             className="flex flex-col gap-2 flex-1 min-w-[120px] sm:min-w-[145px] font-primary border-[0.5px] border-[#D2D2D2] rounded-[4px] p-[10px]"
           >
-            <span className="text-xs text-[#656565]">{feedback.label}</span>
-            <span className="text-base text-[#0D0D0D] font-medium">
+            <span className="text-xs text-typography-600">{feedback.label}</span>
+            <span className="text-base text-typography-900 font-medium">
               {feedback.getValue(props)}
             </span>
           </div>
@@ -88,7 +88,7 @@ export const FeedbackSection: FC<FeedbackSectionProps> = props => {
                   {formattedData[key] ? (
                     getFeedbackSectionByType({ type, columns, data: formattedData[key] })
                   ) : (
-                    <div className="text-[#9CA3AF] font-primary text-center mb-2">
+                    <div className="text-typography-700 font-primary text-center mb-2">
                       No data found
                     </div>
                   )}

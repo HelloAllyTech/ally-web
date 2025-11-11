@@ -105,7 +105,7 @@ const CallInterface: FC<CallInterfaceProps> = ({
             <div className="w-fit flex gap-4 justify-between items-center bg-[#EEF8FF] border-[0.5px] border-[#0171D9] rounded-[8px] p-2 absolute top-[-24px]">
               <div className="flex items-center gap-[2px] ">
                 <WarningTriangle />
-                <span className="text-[#0D0D0D] text-sm whitespace-nowrap">
+                <span className="text-typography-900 text-sm whitespace-nowrap">
                   The scribe will stop taking notes once you end the call.
                 </span>
               </div>
@@ -127,7 +127,7 @@ const CallInterface: FC<CallInterfaceProps> = ({
               Taking notes
             </div>
             <div className="text-base font-semibold font-tertiary">{formatTime(seconds)}</div>
-            <div className="text-xs text-[#666] text-center max-w-xs mt-1">
+            <div className="text-xs text-typography-600 text-center max-w-xs mt-1">
               {getDescriptionText()}
             </div>
           </div>

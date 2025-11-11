@@ -61,7 +61,7 @@ const CallControls: FC<CallControlsProps> = ({
         <ButtonGroup buttonList={callButtonList} />
         {/* TODO: Reimplement tooltip with Tooltip component */}
         {showMuteTooltip && (
-          <div className="flex gap-2 items-center text-xs text-[#1D1B20] bg-[#FFFFFF] absolute top-[-64px] left-8 max-w-[300px] rounded-[4px] p-2">
+          <div className="flex gap-2 items-center text-xs text-typography-900 bg-[#FFFFFF] absolute top-[-64px] left-8 max-w-[300px] rounded-[4px] p-2">
             Need notes captured? AI can’t hear you right now. Resume to let it listen.
             <X className="w-4 h-4 cursor-pointer" onClick={() => setIsMuteTooltipOpen(false)} />
             <span className="w-0 h-0 border-l-[8px] border-r-[8px] border-t-[8px] border-l-transparent border-r-transparent border-t-[#FFFFFF] absolute bottom-[-8px] sm:left-[10%] md:left-[20%] lg:left-[30%]" />
@@ -70,7 +70,7 @@ const CallControls: FC<CallControlsProps> = ({
       </div>
       <div className="flex items-center gap-2">
         <Warning className="[&_path]:fill-[#B6B5B9]" />
-        <span className="text-xs text-[#fff] font-medium">Your data is safe</span>
+        <span className="text-xs text-white font-medium">Your data is safe</span>
       </div>
     </div>
   );

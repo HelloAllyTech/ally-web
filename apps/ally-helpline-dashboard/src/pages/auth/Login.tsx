@@ -194,11 +194,11 @@ export const Login: FunctionComponent = () => {
               <input
                 type="checkbox"
                 id="remember"
-                className="h-4 w-4 rounded border-2 border-[#E5E7EB] text-blue-600 focus:ring-blue-500 cursor-pointer"
+                className="h-4 w-4 rounded border-2 border-border-light text-primary-500 focus:ring-primary-500 cursor-pointer"
                 checked={rememberMe}
                 onChange={e => setRememberMe(e.target.checked)}
               />
-              <label htmlFor="remember" className="text-sm text-[#49454F] cursor-pointer">
+              <label htmlFor="remember" className="text-sm text-typography-700 cursor-pointer">
                 Remember me
               </label>
             </div>
@@ -218,17 +218,17 @@ export const Login: FunctionComponent = () => {
               "Next"
             )}
           </Button>
-          <div className="text-xs text-[#8C8C8C] mt-2">
+          <div className="text-xs text-typography-600 mt-2">
             By tapping next, you agree to Ally's{" "}
             <span
-              className="text-[#0473F2] cursor-pointer"
+              className="text-primary-500 cursor-pointer"
               onClick={() => openLinkInNewTab(ALLY_TERMS_URL)}
             >
               Terms & Conditions
             </span>{" "}
             and acknowledge{" "}
             <span
-              className="text-[#0473F2] cursor-pointer"
+              className="text-primary-500 cursor-pointer"
               onClick={() => openLinkInNewTab(ALLY_PRIVACY_POLICY_URL)}
             >
               Privacy Policy
@@ -255,10 +255,10 @@ export const Login: FunctionComponent = () => {
         </div>
         <div className="flex flex-col gap-2">
           <OTP value={otp} onChange={setOtp} />
-          <div className="text-xs text-[#49454F]">
+          <div className="text-xs text-typography-700">
             Didn't receive the code?{" "}
             <span
-              className={`${countdown > 0 ? "text-[#C4C4C4]" : "text-[#0473F2]"} cursor-pointer`}
+              className={`${countdown > 0 ? "text-typography-600" : "text-primary-500"} cursor-pointer`}
               onClick={handleResendCode}
             >
               Resend {countdown > 0 ? `(${countdown}s)` : ""}
@@ -305,9 +305,13 @@ export const Login: FunctionComponent = () => {
         >
           <div className="flex flex-col mr-4 font-secondary">
             <Ally className="w-10 h-10" />
-            <span className="text-sm font-medium text-[#858688]">helloally.ai</span>
+            <span className="text-sm font-medium text-typography-600">helloally.ai</span>
           </div>
-          <RedirectIcon width={36} height={36} className="border border-[#E8E8E8] rounded-sm p-2" />
+          <RedirectIcon
+            width={36}
+            height={36}
+            className="border border-border-light rounded-sm p-2"
+          />
         </div>
       </div>
       <div className="flex-1 absolute min-h-[35vh] p-5 rounded-[10px] bottom-[10%] right-[25%] left-[25%] lg:static bg-white  flex flex-col items-center justify-center md:min-h-auto">
