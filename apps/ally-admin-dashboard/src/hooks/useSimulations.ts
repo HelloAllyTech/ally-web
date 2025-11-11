@@ -14,7 +14,7 @@ import { Simulation } from "@types";
 const SIMULATIONS_PAGE_SIZE = 30;
 
 interface UseSimulationsProps {
-  selectedFilters: Array<{ id: string; label: string }>;
+  selectedFilters?: Array<{ id: string; label: string }>;
 }
 
 export const useSimulations = ({ selectedFilters }: UseSimulationsProps) => {
@@ -37,7 +37,9 @@ export const useSimulations = ({ selectedFilters }: UseSimulationsProps) => {
     sortBy: SORT_BY.UPDATED_AT,
     order: SORT_ORDER.DESC,
     status:
-      selectedFilters.length > 0 ? selectedFilters?.map(filter => filter.id)?.join(",") : undefined,
+      selectedFilters?.length > 0
+        ? selectedFilters?.map(filter => filter.id)?.join(",")
+        : undefined,
   };
 
   const {

@@ -1,8 +1,9 @@
-import { ROUTES } from "@src/constants";
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
 
+import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+
+import { ROUTES } from "@constants";
 
 // TODO: Import the actual API hooks when they are implemented
 // import { useGetSimulationPathwaysQuery } from "@api";

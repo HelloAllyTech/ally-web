@@ -151,6 +151,9 @@ export const en = {
     startSession: "Start Session",
     createPath: "Create Path",
     editPath: "Edit Path",
+    addSimulationToPath: "Add simulations to path",
+    addSelected: "Add selected",
+    addSimulation: "Add Simulation",
   },
   userManagement: {
     addOrganization: "Add organization",
