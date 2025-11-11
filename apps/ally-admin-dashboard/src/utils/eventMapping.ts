@@ -75,11 +75,7 @@ export const formatToMappedEvent = (event: SessionEvent): UpdateScenarioEventDat
   return {
     id: createCell(event.id, false, event.id),
     name: createCell(event.name || event.id, false, event.id),
-    score: createCell(
-      event.score ?? DEFAULT_EVENT_VALUES.SCORE,
-      getDisabledState(MAPPED_EVENT_FIELDS.SCORE, feedbackStatus, branchingStatus),
-      event.id,
-    ),
+    score: createCell(event.score ?? DEFAULT_EVENT_VALUES.SCORE, false, event.id),
     emoji: createCell(
       event.emoji || DEFAULT_EVENT_VALUES.EMOJI,
       getDisabledState(MAPPED_EVENT_FIELDS.EMOJI, feedbackStatus, branchingStatus),
@@ -130,11 +126,7 @@ export const formatApiResponseToMappedEvent = (event: {
   return {
     id: createCell(event.eventId, false, event.eventId),
     name: createCell(event.name, false, event.name),
-    score: createCell(
-      event.score,
-      getDisabledState(MAPPED_EVENT_FIELDS.SCORE, event.feedbackStatus, event.branchingStatus),
-      event.eventId,
-    ),
+    score: createCell(event.score, false, event.eventId),
     emoji: createCell(
       event.emoji,
       getDisabledState(MAPPED_EVENT_FIELDS.EMOJI, event.feedbackStatus, event.branchingStatus),
