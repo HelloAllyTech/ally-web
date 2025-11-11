@@ -1,5 +1,5 @@
 # Dev image for ally-web (Next.js)
-FROM node:20-alpine
+FROM ally-web/deps:dev
 
 WORKDIR /app
 
