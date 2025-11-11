@@ -47,6 +47,11 @@ export const PATH_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
       },
     ],
   },
+  {
+    id: PATH_CREATOR_STEP_IDS.simulations,
+    label: "Simulations",
+    fields: [],
+  },
 ];
 
 export const PathStepperList = [

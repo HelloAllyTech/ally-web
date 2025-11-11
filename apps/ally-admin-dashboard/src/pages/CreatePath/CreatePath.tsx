@@ -17,7 +17,6 @@ import { ButtonVariant } from "@components/types";
 import {
   en,
   ROUTES,
-  StepperList,
   PATH_CREATOR_FIELD_GROUPS,
   PATH_CREATOR_STEP_IDS,
   SimulationStatus,
@@ -167,9 +166,9 @@ export const CreatePath: FC = () => {
   };
 
   const handlePrevious = () => {
-    const currentIndex = StepperList.findIndex(step => step.id === currentStep);
+    const currentIndex = PathStepperList.findIndex(step => step.id === currentStep);
     if (currentIndex > 0) {
-      const previousStep = StepperList[currentIndex - 1];
+      const previousStep = PathStepperList[currentIndex - 1];
       handleStepClick(previousStep.id);
     }
   };
@@ -213,8 +212,8 @@ export const CreatePath: FC = () => {
     if (isLastStep) {
       handleSubmit(handlePublish)();
     } else {
-      const nextStep = StepperList.findIndex(step => step.id === currentStep) + 1;
-      handleStepClick(StepperList[nextStep].id);
+      const nextStep = PathStepperList.findIndex(step => step.id === currentStep) + 1;
+      handleStepClick(PathStepperList[nextStep].id);
     }
   };
 
