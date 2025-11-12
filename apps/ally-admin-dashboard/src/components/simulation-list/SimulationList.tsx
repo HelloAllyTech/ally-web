@@ -1,9 +1,15 @@
 import React from "react";
 
-import { Edit, Unpublish, Archive, Delete, Play, Unarchive } from "@assets";
-import { DataList, ActionButton, ColumnConfig } from "@components/data-list";
+import { Add, Edit, Unpublish, Archive, Delete, Play, Unarchive } from "@assets";
+import {
+  DataList,
+  ActionButton,
+  ColumnConfig,
+  SimulationListSkeleton,
+  EmptyState,
+} from "@components";
 import { en } from "@constants";
-import { Simulation, SimulationListProps, SimulationStatus } from "@types";
+import { Simulation, SimulationStatus } from "@types";
 import {
   formatDate,
   getSimulationStatusColor,
@@ -11,16 +17,67 @@ import {
   formatCapitalizedEnum,
 } from "@utils";
 
+interface SimulationListProps {
+  simulations: Simulation[];
+  footer?: React.ReactNode;
+  isLoading?: boolean;
+  hasFilters?: boolean;
+  onEdit?: (simulation: Simulation) => void;
+  onDelete?: (simulation: Simulation) => void;
+  onPreview?: (simulation: Simulation) => void;
+  onArchive?: (simulation: Simulation) => void;
+  onUnpublish?: (simulation: Simulation) => void;
+  onUnarchive?: (simulation: Simulation) => void;
+  onCreateSimulation?: () => void;
+}
+
 export const SimulationList: React.FC<SimulationListProps> = ({
   simulations,
   footer,
+  isLoading = false,
+  hasFilters = false,
   onEdit,
   onDelete,
   onPreview,
   onArchive,
   onUnpublish,
   onUnarchive,
+  onCreateSimulation,
 }) => {
+  // Handle loading state
+  if (isLoading && simulations.length === 0) {
+    return <SimulationListSkeleton />;
+  }
+
+  // Handle empty state with filters
+  if (simulations.length === 0 && hasFilters) {
+    return <EmptyState title={en.simulation.noResultFound} subtitle={en.simulation.adjustFilter} />;
+  }
+
+  // Handle empty state without data
+  if (simulations.length === 0) {
+    return (
+      <div className="flex font-primary items-center justify-center min-h-[60vh]">
+        <div className="text-center max-w-md">
+          <h2 className="text-2xl text-typography-900 mb-4">
+            {en.simulation.createYourFirst}{" "}
+            <span className="italic">{en.simulation.simulation}</span>
+          </h2>
+          <p className="text-typography-600 text-base mb-8 leading-relaxed font-primary">
+            {en.simulation.newSimulationDescription}
+          </p>
+          <button
+            onClick={onCreateSimulation}
+            className="bg-primary-500 hover:bg-primary-600 text-base text-white px-6 py-3 rounded-[100px] flex items-center gap-2 mx-auto font-primary transition-colors"
+          >
+            <Add />
+            {en.simulation.createSimulation}
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   const showPreview = (simulation: Simulation) => {
     return simulation.isPreviewEnabled;
   };

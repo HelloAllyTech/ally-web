@@ -6,10 +6,8 @@ import {
   DeleteSimulationPopup,
   SimulationList,
   PathwayList,
-  SimulationListSkeleton,
   SimulationPreview,
   FilterList,
-  EmptyState,
   Button,
   Tabs,
   OptionsPopup,
@@ -17,7 +15,6 @@ import {
 import { ButtonVariant } from "@components/types";
 import { en, SimulationStatus } from "@constants";
 import { useSimulations, useSimulationPathways } from "@hooks";
-import { isNonEmptyArray } from "@utils";
 
 const TAB_KEYS = {
   SIMULATIONS: "simulations",
@@ -44,8 +41,6 @@ export const SimulationStudio: React.FC = () => {
     hasMore,
     isSimulationsLoading,
     isSimulationsFetching,
-    simulationsResponse,
-    simulationsOffset,
     isPreviewOpen,
     setIsPreviewOpen,
     isUnpublishPopupOpen,
@@ -129,34 +124,6 @@ export const SimulationStudio: React.FC = () => {
     },
   ];
 
-  const renderSimulationEmptyState = () => {
-    const isPathwaysTab = activeTab === TAB_KEYS.PATHWAYS;
-    return (
-      <div className="flex font-primary items-center justify-center min-h-[60vh]">
-        <div className="text-center max-w-md">
-          <h2 className="text-2xl text-typography-900 mb-4">
-            {en.simulation.createYourFirst}{" "}
-            <span className="italic">
-              {isPathwaysTab ? en.simulation.pathway : en.simulation.simulation}
-            </span>
-          </h2>
-          <p className="text-typography-600 text-base mb-8 leading-relaxed font-primary">
-            {isPathwaysTab
-              ? en.simulation.newPathwayDescription
-              : en.simulation.newSimulationDescription}
-          </p>
-          <button
-            onClick={isPathwaysTab ? handleNewPathway : handleCreateSimulation}
-            className="bg-primary-500 hover:bg-primary-600 text-base text-white px-6 py-3 rounded-[100px] flex items-center gap-2 mx-auto font-primary transition-colors"
-          >
-            <Add />
-            {isPathwaysTab ? en.simulation.createPathway : en.simulation.createSimulation}
-          </button>
-        </div>
-      </div>
-    );
-  };
-
   const renderFooter = () => {
     const isPathwaysTab = activeTab === TAB_KEYS.PATHWAYS;
     const hasMoreItems = isPathwaysTab ? hasMorePathways : hasMore;
@@ -230,67 +197,39 @@ export const SimulationStudio: React.FC = () => {
   const renderContent = () => {
     if (activeTab === TAB_KEYS.PATHWAYS) {
       // Pathways tab content
-      if (isPathwaysLoading && pathways.length === 0) {
-        return <SimulationListSkeleton />;
-      }
-
-      if (pathways.length > 0) {
-        return (
-          <PathwayList
-            pathways={pathways}
-            onEdit={onEditPathway}
-            onDelete={handleDeletePathway}
-            onDuplicate={() => {}}
-            onArchive={() => {}}
-            onUnarchive={() => {}}
-            onUnpublishPathway={() => {}}
-            footer={renderFooter()}
-          />
-        );
-      }
-
-      if (selectedFilters.length > 0) {
-        return (
-          <EmptyState title={en.simulation.noResultFound} subtitle={en.simulation.adjustFilter} />
-        );
-      }
-
-      return renderSimulationEmptyState();
-    }
-
-    // Simulations tab content
-    if (
-      isSimulationsLoading ||
-      (simulationsOffset === 0 &&
-        simulations.length === 0 &&
-        simulationsResponse &&
-        isNonEmptyArray(simulationsResponse.data))
-    ) {
-      return <SimulationListSkeleton />;
-    }
-
-    if (simulations.length > 0) {
       return (
-        <SimulationList
-          simulations={simulations}
-          onEdit={onEditIconClick}
-          onDelete={handleDeleteSimulation}
-          onPreview={onPreviewSimulation}
-          onArchive={onArchiveSimulation}
-          onUnpublish={onUnpublishSimulation}
-          onUnarchive={onUnarchiveSimulation}
+        <PathwayList
+          pathways={pathways}
+          isLoading={isPathwaysLoading}
+          hasFilters={selectedFilters.length > 0}
+          onEdit={onEditPathway}
+          onDelete={handleDeletePathway}
+          onDuplicate={() => {}}
+          onArchive={() => {}}
+          onUnarchive={() => {}}
+          onUnpublishPathway={() => {}}
+          onCreatePathway={handleNewPathway}
           footer={renderFooter()}
         />
       );
     }
 
-    if (selectedFilters.length > 0) {
-      return (
-        <EmptyState title={en.simulation.noResultFound} subtitle={en.simulation.adjustFilter} />
-      );
-    }
-
-    return renderSimulationEmptyState();
+    // Simulations tab content
+    return (
+      <SimulationList
+        simulations={simulations}
+        isLoading={isSimulationsLoading}
+        hasFilters={selectedFilters.length > 0}
+        onEdit={onEditIconClick}
+        onDelete={handleDeleteSimulation}
+        onPreview={onPreviewSimulation}
+        onArchive={onArchiveSimulation}
+        onUnpublish={onUnpublishSimulation}
+        onUnarchive={onUnarchiveSimulation}
+        onCreateSimulation={handleCreateSimulation}
+        footer={renderFooter()}
+      />
+    );
   };
 
   return (

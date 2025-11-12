@@ -1,7 +1,13 @@
 import React from "react";
 
-import { Edit, Archive, Delete, Unarchive, Unpublish, Copy } from "@assets";
-import { DataList, ActionButton, ColumnConfig } from "@components";
+import { Add, Edit, Archive, Delete, Unarchive, Unpublish, Copy } from "@assets";
+import {
+  DataList,
+  ActionButton,
+  ColumnConfig,
+  SimulationListSkeleton,
+  EmptyState,
+} from "@components";
 import { SimulationStatus, en } from "@constants";
 import { ScenarioPath } from "@types";
 import { formatCapitalizedEnum, formatDate } from "@utils";
@@ -9,24 +15,63 @@ import { formatCapitalizedEnum, formatDate } from "@utils";
 export interface PathwayListProps {
   pathways: ScenarioPath[];
   footer?: React.ReactNode;
+  isLoading?: boolean;
+  hasFilters?: boolean;
   onEdit?: (pathway: ScenarioPath) => void;
   onDelete?: (pathway: ScenarioPath) => void;
   onDuplicate?: (pathway: ScenarioPath) => void;
   onArchive?: (pathway: ScenarioPath) => void;
   onUnarchive?: (pathway: ScenarioPath) => void;
   onUnpublishPathway?: (pathway: ScenarioPath) => void;
+  onCreatePathway?: () => void;
 }
 
 export const PathwayList: React.FC<PathwayListProps> = ({
   pathways,
   footer,
+  isLoading = false,
+  hasFilters = false,
   onEdit,
   onDelete,
   onDuplicate,
   onArchive,
   onUnarchive,
   onUnpublishPathway,
+  onCreatePathway,
 }) => {
+  // Handle loading state
+  if (isLoading && pathways.length === 0) {
+    return <SimulationListSkeleton />;
+  }
+
+  // Handle empty state with filters
+  if (pathways.length === 0 && hasFilters) {
+    return <EmptyState title={en.simulation.noResultFound} subtitle={en.simulation.adjustFilter} />;
+  }
+
+  // Handle empty state without data
+  if (pathways.length === 0) {
+    return (
+      <div className="flex font-primary items-center justify-center min-h-[60vh]">
+        <div className="text-center max-w-md">
+          <h2 className="text-2xl text-typography-900 mb-4">
+            {en.simulation.createYourFirst} <span className="italic">{en.simulation.pathway}</span>
+          </h2>
+          <p className="text-typography-600 text-base mb-8 leading-relaxed font-primary">
+            {en.simulation.newPathwayDescription}
+          </p>
+          <button
+            onClick={onCreatePathway}
+            className="bg-primary-500 hover:bg-primary-600 text-base text-white px-6 py-3 rounded-[100px] flex items-center gap-2 mx-auto font-primary transition-colors"
+          >
+            <Add />
+            {en.simulation.createPathway}
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   const handleArchive = (pathway: ScenarioPath) =>
     pathway.status === SimulationStatus.DRAFT ? onArchive?.(pathway) : onUnarchive?.(pathway);
 
