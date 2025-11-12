@@ -72,8 +72,6 @@ export const SimulationStudio: React.FC = () => {
     hasMore: hasMorePathways,
     isPathwaysLoading,
     isPathwaysFetching,
-    pathwaysResponse,
-    pathwaysOffset,
     loadPathways,
     handleNewPathway: handleNewPathwayFromHook,
     onEditPathway,
@@ -227,13 +225,7 @@ export const SimulationStudio: React.FC = () => {
   const renderContent = () => {
     if (activeTab === "pathways") {
       // Pathways tab content
-      if (
-        isPathwaysLoading ||
-        (pathwaysOffset === 0 &&
-          pathways.length === 0 &&
-          pathwaysResponse &&
-          isNonEmptyArray(pathwaysResponse.data))
-      ) {
+      if (isPathwaysLoading && pathways.length === 0) {
         return <SimulationListSkeleton />;
       }
 

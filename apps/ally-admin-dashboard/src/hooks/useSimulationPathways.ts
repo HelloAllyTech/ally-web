@@ -2,9 +2,8 @@ import { useEffect, useState } from "react";
 
 import { toast } from "sonner";
 
-// TODO: Import the actual API hooks when they are implemented
-// import { useGetSimulationPathwaysQuery } from "@api";
-// import { SORT_BY, SORT_ORDER } from "@constants";
+import { useGetScenarioPathsQuery, useDeleteScenarioPathByIdMutation } from "@api";
+import { ScenarioPath } from "@types";
 
 const PATHWAYS_PAGE_SIZE = 30;
 
@@ -12,49 +11,49 @@ interface UseSimulationPathwaysProps {
   selectedFilters: Array<{ id: string; label: string }>;
 }
 
-// TODO: Define proper Pathway type
-interface Pathway {
-  id: string;
-  title: string;
-  status: string;
-  // Add other pathway properties as needed
-}
-
 export const useSimulationPathways = ({ selectedFilters }: UseSimulationPathwaysProps) => {
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [isDeletePopupOpen, setIsDeletePopupOpen] = useState(false);
-  const [currentPathway, setCurrentPathway] = useState<Pathway | null>(null);
-  const [pathways, setPathways] = useState<Pathway[]>([]);
+  const [currentPathway, setCurrentPathway] = useState<ScenarioPath | null>(null);
+  const [pathways, setPathways] = useState<ScenarioPath[]>([]);
   const [pathwaysOffset, setPathwaysOffset] = useState<number>(0);
   const [hasMore, setHasMore] = useState(true);
 
-  // Temporary mock data for development
-  const pathwaysResponse = { data: [] };
-  const isPathwaysFetching = false;
-  const isPathwaysLoading = false;
+  // API hooks
+  const {
+    data: pathwaysResponse,
+    isFetching: isPathwaysFetching,
+    isLoading: isPathwaysLoading,
+  } = useGetScenarioPathsQuery({
+    status:
+      selectedFilters.length > 0 ? selectedFilters?.map(filter => filter.id)?.join(",") : undefined,
+    offset: pathwaysOffset,
+    limit: PATHWAYS_PAGE_SIZE,
+    search: "",
+    tenantId: "",
+  });
+
+  const [deletePathwayById] = useDeleteScenarioPathByIdMutation();
 
   useEffect(() => {
     setPathwaysOffset(0);
-    // Reset pathways when filters change
-    setPathways([]);
-    setHasMore(false);
+    setHasMore(true);
   }, [selectedFilters]);
 
-  // TODO: Uncomment when API is implemented
-  // useEffect(() => {
-  //   if (!pathwaysResponse) return;
-  //   const nextData = pathwaysResponse.data ?? [];
-  //   setHasMore(nextData.length >= PATHWAYS_PAGE_SIZE);
-  //   if (pathwaysOffset === 0) {
-  //     setPathways(nextData);
-  //   } else {
-  //     setPathways(previousPathways => {
-  //       const existingIds = new Set(previousPathways.map(pathway => pathway.id));
-  //       const newItems = nextData.filter(pathway => !existingIds.has(pathway.id));
-  //       return [...previousPathways, ...newItems];
-  //     });
-  //   }
-  // }, [pathwaysResponse, pathwaysOffset]);
+  useEffect(() => {
+    if (!pathwaysResponse) return;
+    const nextData = pathwaysResponse.data ?? [];
+    setHasMore(nextData.length >= PATHWAYS_PAGE_SIZE);
+    if (pathwaysOffset === 0) {
+      setPathways(nextData);
+    } else {
+      setPathways(previousPathways => {
+        const existingIds = new Set(previousPathways.map(pathway => pathway.id));
+        const newItems = nextData.filter(pathway => !existingIds.has(pathway.id));
+        return [...previousPathways, ...newItems];
+      });
+    }
+  }, [pathwaysResponse, pathwaysOffset]);
 
   const loadPathways = (append = false) => {
     setPathwaysOffset(previousOffset => (append ? previousOffset + PATHWAYS_PAGE_SIZE : 0));
@@ -71,12 +70,12 @@ export const useSimulationPathways = ({ selectedFilters }: UseSimulationPathways
   };
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const onEditPathway = (_pathway: Pathway) => {
+  const onEditPathway = (_pathway: ScenarioPath) => {
     // TODO: Implement edit pathway logic
     toast.info("Edit pathway coming soon!");
   };
 
-  const handleDeletePathway = (pathway: Pathway) => {
+  const handleDeletePathway = (pathway: ScenarioPath) => {
     setCurrentPathway(pathway);
     setIsDeletePopupOpen(true);
   };
@@ -85,8 +84,7 @@ export const useSimulationPathways = ({ selectedFilters }: UseSimulationPathways
     if (!currentPathway) return;
 
     try {
-      // TODO: Implement delete pathway API call
-      // await deletePathwayById(currentPathway.id).unwrap();
+      await deletePathwayById(currentPathway.id).unwrap();
       setIsDeletePopupOpen(false);
       setCurrentPathway(null);
       toast.success("Pathway deleted successfully");
@@ -95,7 +93,7 @@ export const useSimulationPathways = ({ selectedFilters }: UseSimulationPathways
     }
   };
 
-  const onPreviewPathway = (pathway: Pathway) => {
+  const onPreviewPathway = (pathway: ScenarioPath) => {
     setCurrentPathway(pathway);
     setIsPreviewOpen(true);
   };
@@ -107,7 +105,6 @@ export const useSimulationPathways = ({ selectedFilters }: UseSimulationPathways
     hasMore,
     isPathwaysLoading,
     isPathwaysFetching,
-    pathwaysResponse,
     pathwaysOffset,
 
     // Popup states
