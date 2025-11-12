@@ -7,7 +7,8 @@ import { getElapsedTimeInMinutes, getKeyFromIndex } from "@utils";
 import { SimulationEventsProps } from "./types";
 
 const SimulationEvents: FC<SimulationEventsProps> = ({ events }) => {
-  const hasEvents = events.length > 0;
+  const filteredEvents = events.filter(event => event.emoji && event.message);
+  const hasEvents = filteredEvents.length > 0;
 
   // Scroll container and last event refs
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -28,7 +29,7 @@ const SimulationEvents: FC<SimulationEventsProps> = ({ events }) => {
     if (isNearBottom) {
       last.scrollIntoView({ behavior: "smooth", block: "end" });
     }
-  }, [events.length]);
+  }, [filteredEvents.length]);
 
   const getEventTime = (timestamp: string): string => {
     // TODO: update logic to show only the latest event as 'now'
@@ -53,8 +54,8 @@ const SimulationEvents: FC<SimulationEventsProps> = ({ events }) => {
         className="flex flex-col items-end gap-4 bg-[#1D2020] p-4 h-full overflow-y-auto"
         ref={containerRef}
       >
-        {events.map(({ emoji, message, timestamp }, index) => {
-          const isLast = index === events.length - 1;
+        {filteredEvents?.map(({ emoji, message, timestamp }, index) => {
+          const isLast = index === filteredEvents.length - 1;
           return (
             <motion.div
               key={getKeyFromIndex(index, "event")}
