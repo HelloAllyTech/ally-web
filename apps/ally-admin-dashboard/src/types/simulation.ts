@@ -200,7 +200,7 @@ export interface ScenarioPath {
 }
 
 export interface GetScenarioPathsQueryParams {
-  status?: SimulationStatus;
+  status?: string;
   offset?: number;
   limit?: number;
   search?: string;
