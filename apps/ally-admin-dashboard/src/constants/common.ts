@@ -36,6 +36,8 @@ export const ApiEndpoints = {
     SCENARIO_EVENTS: "/v1/learn/scenarios/events",
     SCENARIO_PREVIEW: "/v1/learn/scenarios/preview",
     END_SCENARIO_PREVIEW: (sessionId: string) => `/v1/learn/scenarios/preview/${sessionId}/end`,
+    GET_SCENARIO_PATHS: "/v1/learn/admin/scenario-paths",
+    DELETE_SCENARIO_PATH: (id: number) => `/v1/learn/admin/scenario-paths/${id}`,
   },
   USER_MANAGEMENT: {
     USERS: "/v1/users",
