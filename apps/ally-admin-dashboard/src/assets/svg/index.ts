@@ -8,9 +8,11 @@ import BackIcon from "./backIcon.svg?react";
 import Bolt from "./bolt.svg?react";
 import Book from "./book.svg?react";
 import Close from "./close.svg?react";
+import CloseRed from "./closeRed.svg?react";
 import Delete from "./delete.svg?react";
 import DockToRight from "./dockToRight.svg?react";
 import DoubleArrowRight from "./doubleArrowRight.svg?react";
+import DragIndicator from "./dragIndicator.svg?react";
 import DragUpload from "./dragUpload.svg?react";
 import Edit from "./edit.svg?react";
 import Filter from "./filter.svg?react";
@@ -46,6 +48,7 @@ export {
   Archive,
   Delete,
   WandStars,
+  DragIndicator,
   DragUpload,
   Filter,
   HappyEmoji,
@@ -53,6 +56,7 @@ export {
   Trash,
   Plus,
   Close,
+  CloseRed,
   Ally,
   ArrowSolid,
   Edit,

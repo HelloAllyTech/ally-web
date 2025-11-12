@@ -1,7 +1,6 @@
 import { FC } from "react";
 
 import { Tooltip } from "@mui/material";
-import { useParams } from "react-router-dom";
 import { toast } from "sonner";
 
 import { ArrowDown } from "@assets";

@@ -4,6 +4,7 @@ import { useForm } from "react-hook-form";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
 
+import { Plus } from "@assets";
 import {
   Header,
   VerticalStepper,
@@ -11,6 +12,7 @@ import {
   MoreOptionsPopup,
   ActionConfirmationPopup,
   Simulations,
+  Button,
 } from "@components";
 import { CreateSimulationSubSection } from "@components";
 import { ButtonVariant } from "@components/types";
@@ -44,6 +46,7 @@ export const CreatePath: FC = () => {
   const [currentStep, setCurrentStep] = useState(PATH_CREATOR_STEP_IDS.basicInfo);
   const [showDiscardPopup, setShowDiscardPopup] = useState(false);
   const [showMoreOptions, setShowMoreOptions] = useState(false);
+  const [showSimulationModal, setShowSimulationModal] = useState(false);
 
   const containerRef = useRef<HTMLDivElement>(null);
   const moreOptionsRef = useRef<HTMLButtonElement>(null);
@@ -89,6 +92,10 @@ export const CreatePath: FC = () => {
 
   const handleCloseMoreOptions = () => {
     setShowMoreOptions(false);
+  };
+
+  const toggleSimulationModal = () => {
+    setShowSimulationModal(prev => !prev);
   };
 
   const getMoreOptionsPosition = () => {
@@ -173,11 +180,17 @@ export const CreatePath: FC = () => {
     }
   };
 
-  const renderStep = (title: string, component: React.ReactNode) => {
+  const renderStep = (title: string, component: React.ReactNode, addButton?: boolean) => {
     return (
       <div className="flex flex-col h-full w-100%">
         <div className="sticky flex flex-row justify-between top-0 z-10 pt-3 mx-6 pb-4 border-b border-border-light">
           <h2 className="text-lg font-medium text-typography-900">{title}</h2>
+          {addButton && (
+            <Button variant="secondary" onClick={toggleSimulationModal}>
+              <Plus />
+              {en.simulation.addSimulation}
+            </Button>
+          )}
         </div>
         <div ref={containerRef} className="p-6 pt-4 overflow-y-auto h-full">
           {component}
@@ -198,7 +211,14 @@ export const CreatePath: FC = () => {
           />,
         );
       case PATH_CREATOR_STEP_IDS.simulations:
-        return renderStep(simulationSubSectionData.label, <Simulations />);
+        return renderStep(
+          simulationSubSectionData.label,
+          <Simulations
+            toggleSimulationModal={toggleSimulationModal}
+            showSimulation={showSimulationModal}
+          />,
+          true,
+        );
       default:
         return null;
     }
