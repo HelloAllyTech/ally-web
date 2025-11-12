@@ -193,14 +193,14 @@ export interface ScenarioPath {
   title: string;
   description: string;
   coverImageUrl: string;
-  status: "draft" | "published" | "archived";
+  status: SimulationStatus;
   isGlobal: boolean;
   totalScenarios: number;
   updatedAt: string;
 }
 
 export interface GetScenarioPathsQueryParams {
-  status?: string;
+  status?: SimulationStatus;
   offset?: number;
   limit?: number;
   search?: string;

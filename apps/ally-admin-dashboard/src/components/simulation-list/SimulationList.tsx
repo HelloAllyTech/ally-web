@@ -35,19 +35,19 @@ export const SimulationList: React.FC<SimulationListProps> = ({
     {
       key: "simulation",
       label: en.simulation.simulation,
-      width: "w-[50%] lg:w-[39%]",
-      render: () => null, // Handled by thumbnail and title config
+      width: "w-[50%] lg:w-[37%]",
+      render: () => null,
     },
     {
       key: "actions",
       label: "",
       width: "w-[12%] lg:w-[11%]",
-      render: () => null, // Handled by actions prop
+      render: () => null,
     },
     {
       key: "createdBy",
       label: en.simulation.createdBy,
-      width: "w-[10%]",
+      width: "w-[12%]",
       hidden: true,
       render: simulation => <span>{simulation.createdBy || "--"}</span>,
     },
@@ -136,22 +136,26 @@ export const SimulationList: React.FC<SimulationListProps> = ({
     },
   ];
 
+  const thumbnailConfig = {
+    width: "w-[100px]",
+    height: "h-[50px]",
+    onClick: simulation => showPreview(simulation) && onPreview?.(simulation),
+    show: showPreview,
+  };
+
+  const titleConfig = {
+    width: "w-[44%] md:w-[40%] lg:w-[33%]",
+    onClick: simulation => showPreview(simulation) && onPreview?.(simulation),
+  };
+
   return (
     <DataList
       items={simulations}
       columns={columns}
       actions={actions}
       footer={footer}
-      thumbnailConfig={{
-        width: "w-[18%] md:w-[10%] lg:w-[7%]",
-        height: "h-[56px]",
-        onClick: simulation => showPreview(simulation) && onPreview?.(simulation),
-        show: showPreview,
-      }}
-      titleConfig={{
-        width: "w-[44%] md:w-[40%] lg:w-[33%]",
-        onClick: simulation => showPreview(simulation) && onPreview?.(simulation),
-      }}
+      thumbnailConfig={thumbnailConfig}
+      titleConfig={titleConfig}
     />
   );
 };

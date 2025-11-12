@@ -75,6 +75,7 @@ export const en = {
     createYourFirstPathway: "Create your first pathway",
     simulation: "Simulation",
     unpublish: "Unpublish",
+    duplicate: "Duplicate",
     deleteEvent: "Delete event",
     unpublishDescription:
       "Are you sure you want to unpublish this simulation? This will be moved to draft state.",
