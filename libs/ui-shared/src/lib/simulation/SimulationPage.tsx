@@ -100,11 +100,11 @@ export const SimulationPage: FC<SimulationPageProps> = ({
   };
 
   const content = (
-    <div className="min-h-screen p-6 flex flex-col gap-6 justify-between items-center font-primary bg-[#171A1A]">
+    <div className="min-h-screen p-6 flex flex-col gap-6 justify-between items-center font-['IBM_Plex_Serif'] bg-[#171A1A]">
       {title && (
         <div className="flex justify-between w-full">
           <div className="text-white text-[24px] flex self-start">{title}</div>
-          <button className="text-primary-300 font-tertiary" onClick={handleEndSimulation}>
+          <button className="text-blue-300 font-['Roboto']" onClick={handleEndSimulation}>
             Close Preview
           </button>
         </div>

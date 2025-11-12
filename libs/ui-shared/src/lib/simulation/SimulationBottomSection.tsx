@@ -37,7 +37,7 @@ export const BottomSection: FC<BottomSectionProps> = ({
       />
       <div className="flex items-center gap-2">
         <Warning />
-        <span className="text-[12px] text-[#fff] font-tertiary">Your data is safe</span>
+        <span className="text-[12px] text-[#fff] font-['Roboto']">Your data is safe</span>
       </div>
     </div>
   );

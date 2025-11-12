@@ -74,7 +74,7 @@ const SearchBar: FC<SearchBarProps> = ({
       <li
         key={key}
         {...restProps}
-        className={`flex items-center h-12 sm:text-[12px] text-[14px] md:text-[12px] lg:text-[16px] font-primary cursor-pointer pl-4 transition-colors 
+        className={`flex items-center h-12 sm:text-[12px] text-[14px] md:text-[12px] lg:text-[16px] font-['IBM_Plex_Serif'] cursor-pointer pl-4 transition-colors 
           ${state.selected ? "bg-[#fafafa]" : searchBarStyles[mode].optionCard}`}
       >
         <SearchIcon className="mr-2 text-[#888]" />
@@ -95,7 +95,7 @@ const SearchBar: FC<SearchBarProps> = ({
         value={searchTerm}
         maxLength={MAX_CHARACTER_LIMIT}
         onChange={e => setSearchTerm(e.target.value.slice(0, MAX_CHARACTER_LIMIT))}
-        className={`font-primary text-[16px] ${searchBarStyles[mode].textFieldHeight}`}
+        className={`font-['IBM_Plex_Serif'] text-[16px] ${searchBarStyles[mode].textFieldHeight}`}
         sx={{
           borderRadius: "8px",
           overflow: "hidden",

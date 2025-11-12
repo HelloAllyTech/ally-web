@@ -177,7 +177,7 @@ const ResourceCard: FC<ResourceCardProps> = ({
       className={`w-full flex flex-col gap-2 rounded-[8px] p-3 sm:p-4 md:p-3 lg:p-4 min-w-0 ${resourceCardStyles[mode].card}`}
     >
       {renderTags()}
-      <div className="flex flex-col font-primary">
+      <div className="flex flex-col font-['IBM_Plex_Serif']">
         <span
           className={`font-[500] text-[15px] sm:text-[14px] md:text-[14px] lg:text-[16px] ${resourceCardStyles[mode].title}`}
         >

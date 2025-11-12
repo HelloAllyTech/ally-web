@@ -199,7 +199,7 @@ export const GenericTable = forwardRef(
           onClose={handleCloseFilterPopover}
           anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
           transformOrigin={{ vertical: "top", horizontal: "left" }}
-          className="font-primary z-50"
+          className="font-['IBM_Plex_Serif'] z-50"
           PaperProps={{
             className: "shadow-none border border-[#E0E0E0] mt-[2px]",
           }}
@@ -208,7 +208,7 @@ export const GenericTable = forwardRef(
             {filterableColumns.map(col => (
               <div
                 key={col.key as string}
-                className="flex flex-row items-center cursor-pointer px-4 py-[14px] min-w-[200px] hover:bg-secondary-50 text-typography-800"
+                className="flex flex-row items-center cursor-pointer px-4 py-[14px] min-w-[200px] hover:bg-[#F5F5F7] text-[#6B7280]"
                 onClick={e => handleSelectColumn(col, e)}
               >
                 {col.icon && <span className="mr-2">{col.icon}</span>}
@@ -283,9 +283,9 @@ export const GenericTable = forwardRef(
             className="flex cursor-pointer mt-4 text-center items-center pb-[60px]"
           >
             <Plus size={20} />
-            <span className="font-primary text-lg ml-[5px]">Load More</span>
+            <span className="font-['IBM_Plex_Serif'] text-[16px] ml-[5px]">Load More</span>
             {isLoading && (
-              <CircularProgress color="primary" size={20} className="ml-2 mr-2 text-black" />
+              <CircularProgress color="primary" size={20} className="ml-2 mr-2 text-[#000]" />
             )}
           </div>
         )}
