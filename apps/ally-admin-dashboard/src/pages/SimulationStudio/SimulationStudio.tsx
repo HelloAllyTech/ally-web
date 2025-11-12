@@ -5,6 +5,7 @@ import {
   ActionConfirmationPopup,
   DeleteSimulationPopup,
   SimulationList,
+  PathwayList,
   SimulationListSkeleton,
   SimulationPreview,
   FilterList,
@@ -17,6 +18,11 @@ import { ButtonVariant } from "@components/types";
 import { en, SimulationStatus } from "@constants";
 import { useSimulations, useSimulationPathways } from "@hooks";
 import { isNonEmptyArray } from "@utils";
+
+const TAB_KEYS = {
+  SIMULATIONS: "simulations",
+  PATHWAYS: "pathways",
+};
 
 const TABS = [
   { id: "simulations", label: "Simulations" },
@@ -76,7 +82,6 @@ export const SimulationStudio: React.FC = () => {
     handleNewPathway: handleNewPathwayFromHook,
     onEditPathway,
     handleDeletePathway,
-    onPreviewPathway,
   } = useSimulationPathways({ selectedFilters });
 
   const handleFilterClick = () => {
@@ -125,7 +130,7 @@ export const SimulationStudio: React.FC = () => {
   ];
 
   const renderSimulationEmptyState = () => {
-    const isPathwaysTab = activeTab === "pathways";
+    const isPathwaysTab = activeTab === TAB_KEYS.PATHWAYS;
     return (
       <div className="flex font-primary items-center justify-center min-h-[60vh]">
         <div className="text-center max-w-md">
@@ -153,7 +158,7 @@ export const SimulationStudio: React.FC = () => {
   };
 
   const renderFooter = () => {
-    const isPathwaysTab = activeTab === "pathways";
+    const isPathwaysTab = activeTab === TAB_KEYS.PATHWAYS;
     const hasMoreItems = isPathwaysTab ? hasMorePathways : hasMore;
     const isFetching = isPathwaysTab ? isPathwaysFetching : isSimulationsFetching;
     const loadMore = isPathwaysTab ? loadPathways : loadSimulations;
@@ -223,24 +228,22 @@ export const SimulationStudio: React.FC = () => {
   };
 
   const renderContent = () => {
-    if (activeTab === "pathways") {
+    if (activeTab === TAB_KEYS.PATHWAYS) {
       // Pathways tab content
       if (isPathwaysLoading && pathways.length === 0) {
         return <SimulationListSkeleton />;
       }
 
       if (pathways.length > 0) {
-        // TODO: Create a PathwayList component similar to SimulationList
-        // For now, we'll use SimulationList as a placeholder
         return (
-          <SimulationList
-            simulations={pathways as any}
-            onEdit={onEditPathway as any}
-            onDelete={handleDeletePathway as any}
-            onPreview={onPreviewPathway as any}
+          <PathwayList
+            pathways={pathways}
+            onEdit={onEditPathway}
+            onDelete={handleDeletePathway}
+            onDuplicate={() => {}}
             onArchive={() => {}}
-            onUnpublish={() => {}}
             onUnarchive={() => {}}
+            onUnpublishPathway={() => {}}
             footer={renderFooter()}
           />
         );

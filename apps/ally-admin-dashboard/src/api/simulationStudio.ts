@@ -270,7 +270,7 @@ const simulationStudioAPI = baseAPI.injectEndpoints({
         const dummyData = [
           {
             id: 1,
-            name: "Crisis Intervention Pathway",
+            title: "Crisis Intervention Pathway",
             description:
               "Learn essential crisis intervention techniques and de-escalation strategies",
             coverImageUrl: "https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?w=400",
@@ -281,7 +281,7 @@ const simulationStudioAPI = baseAPI.injectEndpoints({
           },
           {
             id: 2,
-            name: "Mental Health Support",
+            title: "Mental Health Support",
             description: "Comprehensive training for mental health support scenarios",
             coverImageUrl: "https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?w=400",
             status: "published" as const,
@@ -291,7 +291,7 @@ const simulationStudioAPI = baseAPI.injectEndpoints({
           },
           {
             id: 3,
-            name: "Substance Abuse Counseling",
+            title: "Substance Abuse Counseling",
             description: "Practice scenarios for substance abuse counseling and support",
             coverImageUrl: "https://images.unsplash.com/photo-1559757175-5700dde675bc?w=400",
             status: "draft" as const,
@@ -301,7 +301,7 @@ const simulationStudioAPI = baseAPI.injectEndpoints({
           },
           {
             id: 4,
-            name: "Domestic Violence Support",
+            title: "Domestic Violence Support",
             description: "Training for handling domestic violence support calls",
             coverImageUrl: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=400",
             status: "published" as const,
@@ -311,7 +311,7 @@ const simulationStudioAPI = baseAPI.injectEndpoints({
           },
           {
             id: 5,
-            name: "Youth Counseling",
+            title: "Youth Counseling",
             description: "Specialized scenarios for youth and adolescent counseling",
             coverImageUrl: "https://images.unsplash.com/photo-1503454537195-1dcabb73ffb9?w=400",
             status: "archived" as const,
@@ -321,7 +321,7 @@ const simulationStudioAPI = baseAPI.injectEndpoints({
           },
           {
             id: 6,
-            name: "Suicide Prevention",
+            title: "Suicide Prevention",
             description: "Critical training for suicide prevention and intervention",
             coverImageUrl: "https://images.unsplash.com/photo-1544027993-37dbfe43562a?w=400",
             status: "published" as const,
@@ -331,7 +331,7 @@ const simulationStudioAPI = baseAPI.injectEndpoints({
           },
           {
             id: 7,
-            name: "Grief Counseling",
+            title: "Grief Counseling",
             description: "Learn to provide support for individuals experiencing grief and loss",
             coverImageUrl: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=400",
             status: "draft" as const,
@@ -341,7 +341,7 @@ const simulationStudioAPI = baseAPI.injectEndpoints({
           },
           {
             id: 8,
-            name: "LGBTQ+ Support",
+            title: "LGBTQ+ Support",
             description: "Inclusive support scenarios for LGBTQ+ community",
             coverImageUrl: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400",
             status: "published" as const,
@@ -364,7 +364,7 @@ const simulationStudioAPI = baseAPI.injectEndpoints({
           const searchLower = params.search.toLowerCase();
           filteredData = filteredData.filter(
             item =>
-              item.name.toLowerCase().includes(searchLower) ||
+              item.title.toLowerCase().includes(searchLower) ||
               item.description.toLowerCase().includes(searchLower),
           );
         }

@@ -190,7 +190,7 @@ export interface DeleteCoverVideoRequest {
 // Scenario Paths Types
 export interface ScenarioPath {
   id: number;
-  name: string;
+  title: string;
   description: string;
   coverImageUrl: string;
   status: "draft" | "published" | "archived";
