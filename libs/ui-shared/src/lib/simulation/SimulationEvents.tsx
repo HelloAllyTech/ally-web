@@ -54,8 +54,9 @@ export const SimulationEvents: FC<SimulationEventsProps> = ({ events }) => {
         className="flex flex-col items-end gap-4 bg-[#1D2020] p-4 h-full overflow-y-auto"
         ref={containerRef}
       >
-        {events.map(({ emoji, message, timestamp }, index) => {
+        {events?.map(({ emoji, message, timestamp }, index) => {
           const isLast = index === events.length - 1;
+          if (!emoji || !message) return null;
           return (
             <motion.div
               key={`${timestamp}-${index}`}
