@@ -6,7 +6,7 @@ import { getElapsedTimeInMinutes, getKeyFromIndex } from "@utils";
 
 import { SimulationEventsProps } from "./types";
 
-const SimulationEvents: FC<SimulationEventsProps> = ({ events }) => {
+const SimulationEvents: FC<SimulationEventsProps> = ({ events = [] }) => {
   const filteredEvents = events.filter(event => event.emoji && event.message);
   const hasEvents = filteredEvents.length > 0;
 
@@ -54,7 +54,7 @@ const SimulationEvents: FC<SimulationEventsProps> = ({ events }) => {
         className="flex flex-col items-end gap-4 bg-[#1D2020] p-4 h-full overflow-y-auto"
         ref={containerRef}
       >
-        {filteredEvents?.map(({ emoji, message, timestamp }, index) => {
+        {filteredEvents.map(({ emoji, message, timestamp }, index) => {
           const isLast = index === filteredEvents.length - 1;
           return (
             <motion.div
