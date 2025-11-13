@@ -1,6 +1,6 @@
 import React from "react";
 
-import { Add, Edit, Archive, Delete, Unarchive, Unpublish, Copy } from "@assets";
+import { Add, Edit, Archive, Delete, Unarchive, Unpublish, Copy, BookWhite } from "@assets";
 import {
   DataList,
   ActionButton,
@@ -92,7 +92,7 @@ export const PathwayList: React.FC<PathwayListProps> = ({
   const columns: ColumnConfig<ScenarioPath>[] = [
     {
       key: "pathways",
-      label: `${en.simulation.pathway}s`,
+      label: en.simulation.paths,
       width: "w-[38%]",
       render: () => null,
     },
@@ -172,10 +172,17 @@ export const PathwayList: React.FC<PathwayListProps> = ({
       onClick: pathway => onDelete?.(pathway),
     },
   ];
+  const renderThumbnailOverlay = (pathway: ScenarioPath) => (
+    <div className="absolute top-0 right-0 bottom-0 w-[40%] z-10 bg-[rgba(0,0,0,0.5)] text-xs gap-1 text-white text-center flex items-center flex-col justify-center">
+      {pathway.totalScenarios}
+      <BookWhite width={14} height={14} />
+    </div>
+  );
 
   const thumbnailConfig = {
     width: "w-[100px]",
     height: "h-[50px]",
+    renderExtraContent: renderThumbnailOverlay,
   };
 
   return (

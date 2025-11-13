@@ -34,6 +34,7 @@ export interface DataListProps<T extends DataListItem> {
   thumbnailConfig?: {
     width: string;
     height: string;
+    renderExtraContent?: (item: T) => React.ReactNode;
     onClick?: (item: T) => void;
     show?: (item: T) => boolean;
   };
@@ -120,13 +121,14 @@ export function DataList<T extends DataListItem>({
                   thumbnailConfig.onClick(item);
                 }
               }}
-              className={`${thumbnailConfig.width} ${thumbnailConfig.height} ${thumbnailConfig.onClick ? "cursor-pointer" : ""} rounded-lg overflow-hidden flex-shrink-0 bg-neutral-100`}
+              className={`${thumbnailConfig.width} ${thumbnailConfig.height} ${thumbnailConfig.onClick ? "cursor-pointer" : ""} relative rounded-lg overflow-hidden flex-shrink-0 bg-neutral-100`}
             >
               <CustomImage
                 src={item.coverImageUrl}
                 alt={item.title}
                 className="w-full h-full object-cover"
               />
+              {thumbnailConfig?.renderExtraContent?.(item)}
             </div>
           )}
           <div

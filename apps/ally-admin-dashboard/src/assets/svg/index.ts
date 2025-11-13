@@ -7,6 +7,7 @@ import ArrowSolid from "./arrowSolid.svg?react";
 import BackIcon from "./backIcon.svg?react";
 import Bolt from "./bolt.svg?react";
 import Book from "./book.svg?react";
+import BookWhite from "./bookWhite.svg?react";
 import Close from "./close.svg?react";
 import CloseRed from "./closeRed.svg?react";
 import Copy from "./copy.svg?react";
@@ -70,4 +71,5 @@ export {
   Simulation,
   Pathway,
   Copy,
+  BookWhite,
 };

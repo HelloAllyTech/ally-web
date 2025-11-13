@@ -3,7 +3,7 @@
 exports[`SummaryLoading > should match snapshot when FAILED 1`] = `
 <DocumentFragment>
   <div
-    class="flex flex-col items-center justify-center bg-white text-gray-800 h-fit space-y-4"
+    class="flex flex-col items-center justify-center bg-white text-typography-800 h-fit space-y-4"
   >
     <div
       class="h-full flex flex-col justify-around w-full"
@@ -16,7 +16,7 @@ exports[`SummaryLoading > should match snapshot when FAILED 1`] = `
           data-testid="summary-failed-icon"
         />
         <h1
-          class="font-semibold mb-2 font-['IBM_Plex_Serif'] text-2xl"
+          class="font-semibold mb-2 font-primary text-2xl"
         >
           Failed to generate session summary
         </h1>
@@ -34,7 +34,7 @@ exports[`SummaryLoading > should match snapshot when FAILED 1`] = `
               data-testid="notes-icon"
             />
             <label
-              class="flex items-center gap-2 font-['IBM_Plex_Serif'] text-sm font-medium text-gray-700"
+              class="flex items-center gap-2 font-primary text-sm font-medium text-typography-800"
               for="notes"
             >
               <span>
@@ -56,7 +56,7 @@ exports[`SummaryLoading > should match snapshot when FAILED 1`] = `
           </div>
         </div>
         <textarea
-          class="w-full p-[10px] border-none focus:ring-transparent focus:ring-0 focus:outline-none font-['IBM_Plex_Serif'] text-sm resize-none"
+          class="w-full p-[10px] border-none focus:ring-transparent focus:ring-0 focus:outline-none font-primary text-sm resize-none"
           disabled=""
           id="notes"
           placeholder="Jot down your thoughts"
@@ -67,7 +67,7 @@ exports[`SummaryLoading > should match snapshot when FAILED 1`] = `
         class="flex flex-row gap-8 items-center justify-center mt-6 "
       >
         <button
-          class=" w-40 font-['IBM_Plex_Serif']"
+          class=" w-40 font-primary"
           data-variant="secondary"
         >
           Back to session logs
@@ -81,7 +81,7 @@ exports[`SummaryLoading > should match snapshot when FAILED 1`] = `
 exports[`SummaryLoading > should match snapshot when IN_PROGRESS 1`] = `
 <DocumentFragment>
   <div
-    class="flex flex-col items-center justify-center bg-white text-gray-800 h-fit space-y-4"
+    class="flex flex-col items-center justify-center bg-white text-typography-800 h-fit space-y-4"
   >
     <div
       class="h-full flex flex-col justify-around w-full"
@@ -103,14 +103,14 @@ exports[`SummaryLoading > should match snapshot when IN_PROGRESS 1`] = `
           class="mb-8"
         >
           <div
-            class="text-xl font-['IBM_Plex_Serif']"
+            class="text-xl font-primary"
             data-testid="shiny-text"
           >
             Generating transcription
           </div>
         </div>
         <p
-          class="text-[#6B7280] text-base text-center font-['IBM_Plex_Serif'] mb-1"
+          class="text-neutral-600 text-base text-center font-primary mb-1"
         >
           An AI-generated summary will be available shortly on this screen and in the session logs. In the meantime, you can add notes below.
         </p>
@@ -128,7 +128,7 @@ exports[`SummaryLoading > should match snapshot when IN_PROGRESS 1`] = `
               data-testid="notes-icon"
             />
             <label
-              class="flex items-center gap-2 font-['IBM_Plex_Serif'] text-sm font-medium text-gray-700"
+              class="flex items-center gap-2 font-primary text-sm font-medium text-typography-800"
               for="notes"
             >
               <span>
@@ -150,7 +150,7 @@ exports[`SummaryLoading > should match snapshot when IN_PROGRESS 1`] = `
           </div>
         </div>
         <textarea
-          class="w-full p-[10px] border-none focus:ring-transparent focus:ring-0 focus:outline-none font-['IBM_Plex_Serif'] text-sm resize-none"
+          class="w-full p-[10px] border-none focus:ring-transparent focus:ring-0 focus:outline-none font-primary text-sm resize-none"
           disabled=""
           id="notes"
           placeholder="Jot down your thoughts"
@@ -161,13 +161,13 @@ exports[`SummaryLoading > should match snapshot when IN_PROGRESS 1`] = `
         class="flex flex-row gap-8 items-center justify-center mt-6 "
       >
         <button
-          class=" w-40 font-['IBM_Plex_Serif']"
+          class=" w-40 font-primary"
           data-variant="text"
         >
           I’ll check later
         </button>
         <button
-          class=" w-40 font-['IBM_Plex_Serif']"
+          class=" w-40 font-primary"
           data-variant="secondary"
         >
           See if its ready
@@ -181,7 +181,7 @@ exports[`SummaryLoading > should match snapshot when IN_PROGRESS 1`] = `
 exports[`SummaryLoading > should match snapshot when NO_AUDIO 1`] = `
 <DocumentFragment>
   <div
-    class="flex flex-col items-center justify-center bg-white text-gray-800 h-fit space-y-4"
+    class="flex flex-col items-center justify-center bg-white text-typography-800 h-fit space-y-4"
   >
     <div
       class="h-full flex flex-col justify-around w-full"
@@ -190,10 +190,10 @@ exports[`SummaryLoading > should match snapshot when NO_AUDIO 1`] = `
         class="flex flex-col items-center justify-center"
       >
         <span
-          class="rounded-full border-[0.5px] border-[#E5675A] px-2 py-1 text-[#E5675A] text-xs mb-8 flex items-center gap-1"
+          class="rounded-full border-[0.5px] border-destructive-300 px-2 py-1 text-destructive-400 text-xs mb-8 flex items-center gap-1"
         >
           <svg
-            class="w-4 h-4 text-[#E5675A]"
+            class="w-4 h-4 text-destructive-300"
             data-testid="circle-x-icon"
           />
            No audio detected
@@ -203,7 +203,7 @@ exports[`SummaryLoading > should match snapshot when NO_AUDIO 1`] = `
           data-testid="summary-failed-icon"
         />
         <h1
-          class="font-semibold mb-2 font-['IBM_Plex_Serif'] text-2xl"
+          class="font-semibold mb-2 font-primary text-2xl"
         >
           Failed to generate session summary
         </h1>
@@ -221,7 +221,7 @@ exports[`SummaryLoading > should match snapshot when NO_AUDIO 1`] = `
               data-testid="notes-icon"
             />
             <label
-              class="flex items-center gap-2 font-['IBM_Plex_Serif'] text-sm font-medium text-gray-700"
+              class="flex items-center gap-2 font-primary text-sm font-medium text-typography-800"
               for="notes"
             >
               <span>
@@ -243,7 +243,7 @@ exports[`SummaryLoading > should match snapshot when NO_AUDIO 1`] = `
           </div>
         </div>
         <textarea
-          class="w-full p-[10px] border-none focus:ring-transparent focus:ring-0 focus:outline-none font-['IBM_Plex_Serif'] text-sm resize-none"
+          class="w-full p-[10px] border-none focus:ring-transparent focus:ring-0 focus:outline-none font-primary text-sm resize-none"
           disabled=""
           id="notes"
           placeholder="Jot down your thoughts"
@@ -254,7 +254,7 @@ exports[`SummaryLoading > should match snapshot when NO_AUDIO 1`] = `
         class="flex flex-row gap-8 items-center justify-center mt-6 "
       >
         <button
-          class=" w-40 font-['IBM_Plex_Serif']"
+          class=" w-40 font-primary"
           data-variant="secondary"
         >
           Back to session logs
@@ -268,7 +268,7 @@ exports[`SummaryLoading > should match snapshot when NO_AUDIO 1`] = `
 exports[`SummaryLoading > should match snapshot when SUCCESS 1`] = `
 <DocumentFragment>
   <div
-    class="flex flex-col items-center justify-center bg-white text-gray-800 h-fit space-y-4"
+    class="flex flex-col items-center justify-center bg-white text-typography-800 h-fit space-y-4"
   >
     <div
       class="h-full flex flex-col justify-around w-full"
@@ -281,12 +281,12 @@ exports[`SummaryLoading > should match snapshot when SUCCESS 1`] = `
           data-testid="summary-generated-illustration"
         />
         <h1
-          class="font-semibold mb-2 font-['IBM_Plex_Serif'] text-2xl"
+          class="font-semibold mb-2 font-primary text-2xl"
         >
           Summary is generated
         </h1>
         <p
-          class="text-[#6B7280] text-base text-center max-w-md font-['IBM_Plex_Serif'] mb-1"
+          class="text-typography-800 text-base text-center max-w-md font-primary mb-1"
         >
           You can review the session now.
         </p>
@@ -304,7 +304,7 @@ exports[`SummaryLoading > should match snapshot when SUCCESS 1`] = `
               data-testid="notes-icon"
             />
             <label
-              class="flex items-center gap-2 font-['IBM_Plex_Serif'] text-sm font-medium text-gray-700"
+              class="flex items-center gap-2 font-primary text-sm font-medium text-typography-800"
               for="notes"
             >
               <span>
@@ -326,7 +326,7 @@ exports[`SummaryLoading > should match snapshot when SUCCESS 1`] = `
           </div>
         </div>
         <textarea
-          class="w-full p-[10px] border-none focus:ring-transparent focus:ring-0 focus:outline-none font-['IBM_Plex_Serif'] text-sm resize-none"
+          class="w-full p-[10px] border-none focus:ring-transparent focus:ring-0 focus:outline-none font-primary text-sm resize-none"
           disabled=""
           id="notes"
           placeholder="Jot down your thoughts"

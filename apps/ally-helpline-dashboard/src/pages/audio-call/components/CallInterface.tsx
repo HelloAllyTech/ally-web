@@ -105,7 +105,7 @@ const CallInterface: FC<CallInterfaceProps> = ({
             <div className="w-fit flex gap-4 justify-between items-center bg-[#EEF8FF] border-[0.5px] border-[#0171D9] rounded-[8px] p-2 absolute top-[-24px]">
               <div className="flex items-center gap-[2px] ">
                 <WarningTriangle />
-                <span className="text-[#0D0D0D] text-sm whitespace-nowrap">
+                <span className="text-typography-900 text-sm whitespace-nowrap">
                   The scribe will stop taking notes once you end the call.
                 </span>
               </div>
@@ -113,7 +113,7 @@ const CallInterface: FC<CallInterfaceProps> = ({
             </div>
           )}
           <div className="text-white flex justify-center items-center flex-col gap-2">
-            <div className="flex items-center gap-2 font-['IBM_Plex_Serif'] font-medium">
+            <div className="flex items-center gap-2 font-primary font-medium">
               <Tooltip
                 title={<PrivacyTooltip />}
                 placement="top"
@@ -126,8 +126,8 @@ const CallInterface: FC<CallInterfaceProps> = ({
               </Tooltip>
               Taking notes
             </div>
-            <div className="text-[14px] font-semibold font-['Roboto']">{formatTime(seconds)}</div>
-            <div className="text-[12px] text-[#666] text-center max-w-xs mt-1">
+            <div className="text-base font-semibold font-tertiary">{formatTime(seconds)}</div>
+            <div className="text-xs text-typography-800 text-center max-w-xs mt-1">
               {getDescriptionText()}
             </div>
           </div>

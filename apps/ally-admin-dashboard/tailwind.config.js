@@ -10,7 +10,7 @@ module.exports = {
   theme: {
     fontFamily: {
       primary: ["IBM Plex Serif", "serif"],
-      secondary: ["Replay Pro", "sans-serif"],
+      secondary: ["Replay Pro", "serif"],
       tertiary: ["Roboto", "sans-serif"],
     },
     extend: {

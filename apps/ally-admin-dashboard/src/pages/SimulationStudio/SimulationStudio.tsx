@@ -23,7 +23,7 @@ const TAB_KEYS = {
 
 const TABS = [
   { id: "simulations", label: "Simulations" },
-  { id: "pathways", label: "Pathways" },
+  { id: "pathways", label: "Path ways" },
 ];
 
 export const SimulationStudio: React.FC = () => {

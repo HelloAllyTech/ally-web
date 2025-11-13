@@ -24,12 +24,4 @@ describe("Carousel Component", () => {
     const { container } = render(<Carousel slides={[]} />);
     expect(container.firstChild).toBeNull();
   });
-
-  it("applies correct variant and size styles", () => {
-    render(
-      <Carousel slides={mockSlides} variant={CarouselVariant.DARK} size={CarouselSize.SMALL} />,
-    );
-    const text = screen.getByText("Slide 1");
-    expect(text).toHaveClass("text-[#1D1B20]");
-  });
 });

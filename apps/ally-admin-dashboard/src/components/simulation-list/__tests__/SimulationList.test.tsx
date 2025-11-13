@@ -124,7 +124,7 @@ vi.mock("@constants", () => ({
 vi.mock("@utils", () => ({
   formatDate: (date: string) => new Date(date).toLocaleDateString(),
   getSimulationStatusColor: (status: string) =>
-    status === "ACTIVE" ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-800",
+    status === "ACTIVE" ? "bg-green-100 text-green-800" : "bg-gray-100 text-typography-800",
   formatSimulationUsage: (usage: number) => `${usage} times`,
   formatCapitalizedEnum: (value: string) =>
     value.charAt(0).toUpperCase() + value.slice(1).toLowerCase(),

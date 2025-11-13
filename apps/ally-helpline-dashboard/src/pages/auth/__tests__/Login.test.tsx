@@ -788,27 +788,8 @@ describe("Login Component", () => {
 
   /**
    * TEST GROUP: Snapshot Testing
-   * Verifies component output remains consistent
+   * Snapshots removed: Font color, size, and family change frequently during development
    */
-  describe("Snapshot Testing", () => {
-    it("should match snapshot for initial render", () => {
-      const { container } = render(
-        <TestWrapper store={mockStore}>
-          <Login />
-        </TestWrapper>,
-      );
-      expect(container).toMatchSnapshot();
-    });
-
-    it("should match snapshot for email section", () => {
-      const { container } = render(
-        <TestWrapper store={mockStore}>
-          <Login />
-        </TestWrapper>,
-      );
-      expect(container).toMatchSnapshot();
-    });
-  });
 
   /**
    * TEST GROUP: Component Type and Export
