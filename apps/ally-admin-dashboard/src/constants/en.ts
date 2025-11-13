@@ -55,6 +55,7 @@ export const en = {
   },
   simulation: {
     pathway: "Pathway",
+    paths: "Paths",
     createPathway: "Create Pathway",
     videoMaxSizeLabel: "15MB",
     imageMaxSizeLabel: "2MB",
