@@ -26,6 +26,7 @@ const CallSummarySidebar: FC<CallSummarySidebarProps> = ({
   refetchCallLogs,
   setCallSummary,
   canEditSummary = true,
+  canShowFeedback = true,
 }) => {
   const { permissions } = useSelector((state: RootState) => state.user);
 
@@ -193,6 +194,7 @@ const CallSummarySidebar: FC<CallSummarySidebarProps> = ({
     const overThirtySeconds = hasThresholdElapsed();
 
     if (
+      canShowFeedback &&
       !hasFeedback &&
       overThirtySeconds &&
       hasAdequatePermission(Permissions.EDIT_SCENARIO_SESSION) &&
