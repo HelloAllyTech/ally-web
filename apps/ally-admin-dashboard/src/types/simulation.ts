@@ -96,9 +96,11 @@ export interface GetSimulationByIdResponse {
     tone?: string;
     voiceId?: string;
     agentGoal?: string;
-    isAutoTerminationEnabled?: boolean; // To Do: Will be change when BE API is updated
-    terminationEventId?: string;
-    terminationMessage?: string;
+  };
+  terminationEvent: {
+    eventId: string;
+    message: string;
+    autoTerminationStatus: boolean;
   };
 }
 

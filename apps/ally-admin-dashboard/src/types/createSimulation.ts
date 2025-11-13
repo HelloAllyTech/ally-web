@@ -23,7 +23,7 @@ export type FormData = {
   openingStatements: string;
   voiceId: string;
   agentGoal: string;
-  isAutoTerminationEnabled: boolean; // To Do: Will be change when BE API is updated
+  autoTerminationStatus: boolean;
   terminationEventId: string;
   terminationMessage: string;
 };
