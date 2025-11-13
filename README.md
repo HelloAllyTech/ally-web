@@ -112,6 +112,56 @@ npx nx lint ally-admin-dashboard
 3. **TypeScript**: Maintain strict type checking and follow the base TSConfig
 4. **Components**: Create reusable components in the appropriate application's components directory
 
+## Dockerized setup (shared deps image)
+
+Use Docker for a consistent local dev environment leveraging a shared base image for dependencies.
+
+- **Prerequisites**
+  - Docker Desktop
+  - Docker Compose
+- **Build the shared base image (once or when deps change)**
+
+```bash
+docker build -f Dockerfile.deps -t ally-web/deps:dev .
+```
+
+- **Rebuild app images (now FROM ally-web/deps:dev)**
+
+```bash
+docker compose build
+```
+
+- **Run specific services**
+  Web (Next.js):
+
+```bash
+docker compose up web
+```
+
+Helpline (Vite):
+
+```bash
+docker compose up helpline
+```
+
+Admin (Vite):
+
+```bash
+docker compose up admin
+```
+
+- **Detached mode**
+
+```bash
+docker compose up -d web
+```
+
+- **Stop everything**
+
+```bash
+docker compose down
+```
+
 ## Contributing
 
 1. Create a new branch for your feature/fix

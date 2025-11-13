@@ -132,9 +132,7 @@ const BoxBreathing: FC<BoxBreathingProps> = ({
       {/* Box breathing video */}
       {renderVideo()}
 
-      <div className={`${isMaximized ? "text-4xl" : "text-2xl"} font-tertiary z-10`}>
-        {seconds}
-      </div>
+      <div className={`${isMaximized ? "text-4xl" : "text-2xl"} font-tertiary z-10`}>{seconds}</div>
 
       {/* Box Breathing Steps */}
       <div className="flex gap-6 z-10">
