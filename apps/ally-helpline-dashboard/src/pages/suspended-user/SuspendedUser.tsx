@@ -20,7 +20,7 @@ export const SuspendedUser = () => {
         </div>
 
         <button
-          className="border border-gray-300 rounded-full px-5 py-2 font-tertiary mt-8"
+          className="border border-secondary-700 rounded-full px-5 py-2 font-tertiary mt-8"
           onClick={GoToLogin}
         >
           Go to login
