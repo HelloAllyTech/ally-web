@@ -1,6 +1,6 @@
 import { UseFormReturn, useController } from "react-hook-form";
 
-import { ToggleSwitch } from "@components";
+import { ToggleSwitch } from "../toggle-switch";
 
 interface ToggleSectionProps {
   label: string;
@@ -18,7 +18,7 @@ export const ToggleSection = ({ label, name, formMethods }: ToggleSectionProps) 
 
   return (
     <div className="flex justify-between items-center py-2 w-full">
-      <span className="text-lg font-medium text-gray-800">{label}</span>
+      <span className="text-lg font-medium text-typography-900">{label}</span>
       <ToggleSwitch enabled={!!value} onChange={onChange} label={label} />
     </div>
   );

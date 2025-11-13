@@ -8,13 +8,14 @@ import { useSimulations } from "@hooks";
 import { Simulation, GetScenarioType } from "@types";
 
 import { Button } from "../button";
+import { EmptyState } from "../empty-state";
 
 interface SimulationProps {
   showSimulation: boolean;
   toggleSimulationModal: () => void;
   data: GetScenarioType[] | undefined;
 }
-export const Simulations: FC<SimulationProps> = ({
+export const SimulationSelectionModal: FC<SimulationProps> = ({
   showSimulation,
   toggleSimulationModal,
   data,
@@ -60,13 +61,12 @@ export const Simulations: FC<SimulationProps> = ({
 
   const renderEmptyScreen = () => {
     return (
-      <div className="flex flex-col h-full w-full items-center justify-center gap-3">
-        <div className="text-2xl font-secondary">{en.simulation.noSimulationsAddedYet}</div>
-        <span className="text-typography-600 font-primary">
-          {en.simulation.searchSelectSimulations}
-        </span>
-        <Button onClick={toggleSimulationModal}>{en.simulation.addSimulation}</Button>
-      </div>
+      <EmptyState
+        title={en.simulation.noSimulationsAddedYet}
+        subtitle={en.simulation.searchSelectSimulations}
+        actionLabel={en.simulation.addSimulation}
+        onAction={toggleSimulationModal}
+      />
     );
   };
 
@@ -75,18 +75,18 @@ export const Simulations: FC<SimulationProps> = ({
       <div>
         {data?.map((simulation, index) => (
           <div
-            className="flex flex-col mb-5 border p-5 relative group max-w-full overflow-hidden rounded-md shadow-sm hover:shadow-lg"
+            className="flex flex-col mb-5 border p-5 relative group max-w-full rounded-md shadow-sm hover:shadow-lg overflow-auto"
             key={simulation.scenarioId}
           >
             <button
               onClick={() => {
                 handleRemoveCard(index);
               }}
-              className="absolute right-3 top-10 opacity-0 group-hover:opacity-100 text-gray-400 hover:text-red-500 transition"
+              className="absolute right-3 top-10 opacity-0 group-hover:opacity-100 transition"
             >
               <CloseRed />
             </button>
-            <div className="flex items-center gap-5 justify-between overflow-clip">
+            <div className="flex items-center gap-5 justify-between">
               <div
                 className="flex items-center gap-3 "
                 draggable
@@ -102,11 +102,13 @@ export const Simulations: FC<SimulationProps> = ({
                 <img
                   src={simulation.coverImageUrl}
                   alt={simulation.title}
-                  className="w-28 h-16 rounded-md object-cover"
+                  className="w-28 h-16 rounded-md object-cover shrink-0"
                 />
                 <div className="flex flex-col ">
-                  <span className="text-sm text-gray-800 font-primary">{simulation.title}</span>
-                  <span className="text-xs text-gray-500 font-primary truncate max-w-xl">
+                  <span className="text-sm text-typography-900 font-primary">
+                    {simulation.title}
+                  </span>
+                  <span className="text-xs text-typography-800 font-primary truncate max-w-xl">
                     {simulation.description}
                   </span>
                 </div>
@@ -124,13 +126,13 @@ export const Simulations: FC<SimulationProps> = ({
                   </span>
                 </Tooltip>
 
-                <span className="text-sm text-gray-500 font-primary whitespace-nowrap">
+                <span className="text-sm text-typography-800 font-primary whitespace-nowrap">
                   {en.simulation.minScore}
                 </span>
                 <input
                   type="number"
-                  className="border outline-none w-16 p-1 bg-gray-100 mr-5"
-                  value={simulation.minimumScore}
+                  className="border outline-none w-16 p-1 bg-secondary-50 mr-5"
+                  defaultValue={simulation.minimumScore}
                 />
               </div>
             </div>
@@ -150,11 +152,11 @@ export const Simulations: FC<SimulationProps> = ({
 
             {/* Search bar */}
             <div className="relative w-full mt-4 ">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-typography-800" />
               <input
                 type="text"
                 placeholder="Search simulation"
-                className="pl-10 w-full !outline-none border  border-gray-200  rounded-md py-1"
+                className="pl-10 w-full !outline-none border  border-  rounded-md py-1"
               />
             </div>
 
@@ -163,7 +165,7 @@ export const Simulations: FC<SimulationProps> = ({
               {simulationsResponse?.data.map(simulation => (
                 <div
                   key={simulation.id}
-                  className="flex items-center gap-3 py-2  border-gray-100 hover:bg-gray-50 rounded-md px-2 cursor-pointer"
+                  className="flex items-center gap-3 py-2 hover:bg-secondary-50 rounded-md px-2 cursor-pointer"
                   onClick={() => toggleSelection(simulation)}
                 >
                   <input
@@ -180,7 +182,9 @@ export const Simulations: FC<SimulationProps> = ({
                     alt={simulation.title}
                     className="w-20 h-15 rounded-md object-cover"
                   />
-                  <span className="text-sm text-gray-800 font-primary">{simulation.title}</span>
+                  <span className="text-sm text-typography-900 font-primary">
+                    {simulation.title}
+                  </span>
                 </div>
               ))}
             </div>

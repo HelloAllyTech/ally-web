@@ -23,6 +23,7 @@ export const en = {
     fileMetadataLoadFailed: "Failed to load video metadata",
     imageMustHave169AspectRatio: "Image must have a 16:9 aspect ratio.",
     fileDeleteFailed: "Failed to delete file. Please try again.",
+    titleIsRequired: "Title should be filled to save as draft",
   },
   accessDenied: {
     title: "This page is not accessible",

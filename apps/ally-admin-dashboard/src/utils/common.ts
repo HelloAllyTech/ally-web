@@ -153,6 +153,12 @@ export const isNonEmptyArray = <T>(value: unknown): value is T[] => {
   return Array.isArray(value) && value?.length > 0;
 };
 
+export const isEmpty = (value: unknown): boolean => {
+  if (value === undefined || value === null || !isNonEmptyString(value)) return true;
+
+  return false;
+};
+
 export const extractValidData = (formData: Record<string, any>): Record<string, any> => {
   const allFields = SIMULATION_CREATOR_FIELD_GROUPS.flatMap(group => group.fields);
   return Object.fromEntries(

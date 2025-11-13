@@ -16,8 +16,8 @@ import {
   Footer,
   MoreOptionsPopup,
   ActionConfirmationPopup,
-  Simulations,
   Button,
+  SimulationSelectionModal,
 } from "@components";
 import { CreateSimulationSubSection } from "@components";
 import { ButtonVariant } from "@components/types";
@@ -31,7 +31,7 @@ import {
   getCreatePathSubSectionById,
 } from "@constants";
 import { useDebounce } from "@hooks";
-import { extractValidData } from "@src/utils";
+import { extractValidData, isEmpty, isNonEmptyArray } from "@utils";
 
 // Get all mandatory field IDs from the configuration
 const getMandatoryFieldIds = () => {
@@ -62,7 +62,7 @@ export const CreatePath: FC = () => {
 
   // TODO:API mutation for creating path
 
-  const { getScenarioPathById, data: individualPath } = useGetScenarioPathByIdQuery(id);
+  const { data: individualPath } = useGetScenarioPathByIdQuery(id);
   const [createSimulationPathQuery] = useCreateSimulationPathMutation();
   const [updateSimulationPathByIdQuery] = useUpdateSimulationPathByIdMutation();
 
@@ -81,7 +81,6 @@ export const CreatePath: FC = () => {
     if (individualPath) {
       formMethods.reset(individualPath);
     }
-    console.log(individualPath);
   }, [individualPath, formMethods]);
   // Watch all form values to check mandatory fields
   const formValues = watch();
@@ -92,11 +91,11 @@ export const CreatePath: FC = () => {
     return mandatoryFieldIds.every(fieldId => {
       const value = formValues[fieldId];
       // Check if value exists and is not empty
-      if (value === undefined || value === null || value === "") {
+      if (isEmpty(value)) {
         return false;
       }
       // For arrays or objects, check if they have content
-      if (Array.isArray(value) && value.length === 0) {
+      if (!isNonEmptyArray(value)) {
         return false;
       }
       return true;
@@ -138,7 +137,7 @@ export const CreatePath: FC = () => {
   const saveSimulationChangesCore = async (status: SimulationStatus) => {
     const formData = formMethods.getValues();
     if (!formData.title) {
-      toast.error("Title should be filled to save as draft");
+      toast.error(en.errors.titleIsRequired);
       return null;
     }
     const simulationPath = {
@@ -152,7 +151,7 @@ export const CreatePath: FC = () => {
       });
     } else {
       response = await createSimulationPathQuery({
-        path: [simulationPath],
+        path: simulationPath[0],
       });
     }
     return response;
@@ -172,7 +171,7 @@ export const CreatePath: FC = () => {
         const currentFormValues = formMethods.getValues();
         formMethods.reset(currentFormValues);
         if (pathId) {
-          getScenarioPathById(pathId);
+          // getScenarioPathById(pathId);
         }
         return response?.data;
       } else if (response?.error) {
@@ -264,7 +263,7 @@ export const CreatePath: FC = () => {
       case PATH_CREATOR_STEP_IDS.simulations:
         return renderStep(
           simulationSubSectionData.label,
-          <Simulations
+          <SimulationSelectionModal
             toggleSimulationModal={toggleSimulationModal}
             showSimulation={showSimulationModal}
             data={individualPath?.scenarios}

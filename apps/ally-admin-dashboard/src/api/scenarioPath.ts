@@ -173,7 +173,7 @@ const simulationPathApi = baseAPI.injectEndpoints({
                 minimumScore: 75,
                 message: "Learn to handle high-stress emergency communications effectively.",
                 order: 1,
-                coverImageUrl: "https://images.unsplash.com/photo-1603575448360-7b8b8f21e66b?w=400",
+                coverImageUrl: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=400",
                 title: "Emergency Response Scenario",
                 description:
                   "Test your crisis management and quick decision-making skills in an emergency call simulation.",
@@ -183,7 +183,7 @@ const simulationPathApi = baseAPI.injectEndpoints({
                 minimumScore: 80,
                 message: "Learn to handle high-stress emergency communications effectively.",
                 order: 1,
-                coverImageUrl: "https://images.unsplash.com/photo-1603575448360-7b8b8f21e66b?w=400",
+                coverImageUrl: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400",
                 title: "Domestic Violence Support",
                 description:
                   "Test your crisis management and quick decision-making skills in an emergency call simulation.",
@@ -203,7 +203,7 @@ const simulationPathApi = baseAPI.injectEndpoints({
                 minimumScore: 75,
                 message: "Learn to handle high-stress emergency communications effectively.",
                 order: 1,
-                coverImageUrl: "https://images.unsplash.com/photo-1603575448360-7b8b8f21e66b?w=400",
+                coverImageUrl: "https://images.unsplash.com/photo-1503454537195-1dcabb73ffb9?w=400",
                 title: "Emergency Response Scenario",
                 description:
                   "Test your crisis management and quick decision-making skills in an emergency call simulation.",

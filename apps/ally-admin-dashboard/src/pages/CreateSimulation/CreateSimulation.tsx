@@ -28,6 +28,8 @@ import {
   formatSimulationResponseData,
   isNonEmptyString,
   extractValidData,
+  isEmpty,
+  isNonEmptyArray,
 } from "@utils";
 
 const stepIds = {
@@ -105,11 +107,11 @@ export const CreateSimulation: FC = () => {
     return mandatoryFieldIds.every(fieldId => {
       const value = formValues[fieldId];
       // Check if value exists and is not empty
-      if (value === undefined || value === null || value === "") {
+      if (isEmpty(value)) {
         return false;
       }
       // For arrays or objects, check if they have content
-      if (Array.isArray(value) && value.length === 0) {
+      if (!isNonEmptyArray(value)) {
         return false;
       }
       return true;
@@ -147,7 +149,7 @@ export const CreateSimulation: FC = () => {
   const saveSimulationChangesCore = async (status: SimulationStatus) => {
     const formData = formMethods.getValues();
     if (!formData.title) {
-      toast.error("Title should be filled to save as draft");
+      toast.error(en.errors.titleIsRequired);
       return null;
     }
 
@@ -340,7 +342,7 @@ export const CreateSimulation: FC = () => {
   };
 
   return (
-    <div className="h-[100vh] overflow-hidden font-primary ml-[-10px] lg:ml-0">
+    <div className="h-[100vh] font-primary ml-[-10px] lg:ml-0">
       <Header
         isValid={areAllMandatoryFieldsFilled}
         onBack={handlePageBack}
