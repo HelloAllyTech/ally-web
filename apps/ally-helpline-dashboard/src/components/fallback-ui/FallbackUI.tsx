@@ -22,7 +22,7 @@ const FallbackUI: FC<FallbackUIProps> = ({
           <div className="flex flex-col items-center gap-2 text-center">
             {Icon}
             <h2 className="text-2xl">{mainMessage}</h2>
-            <p className="text-xs">{description}</p>
+            <p className="text-xs text-typography-700">{description}</p>
           </div>
           {button && <Button onClick={button.onClick}>{button.text}</Button>}
         </>

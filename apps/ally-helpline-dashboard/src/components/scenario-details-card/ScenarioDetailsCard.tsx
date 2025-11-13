@@ -70,7 +70,7 @@ const ScenarioDetailsCard: FC<ScenarioDetailsCardProps> = ({
           />
         )
       ) : (
-        <div className="w-full h-64 flex items-center justify-center text-gray-400 bg-gray-100 rounded-md">
+        <div className="w-full h-64 flex items-center justify-center text-typography-600 bg-gray-100 rounded-md">
           <span className="text-sm">Media not available</span>
         </div>
       )}

@@ -141,7 +141,7 @@ const SummaryLoading: FC<SummaryLoadingProps> = ({
             <NotesIcon />
             <label
               htmlFor="notes"
-              className="flex items-center gap-2 font-primary text-sm font-medium text-gray-700"
+              className="flex items-center gap-2 font-primary text-sm font-medium text-typography-800"
             >
               <span>Add Notes(Optional)</span>
               {isNotesSaving && (
@@ -264,7 +264,7 @@ const SummaryLoading: FC<SummaryLoadingProps> = ({
   };
 
   return (
-    <div className="flex flex-col items-center justify-center bg-white text-gray-800 h-fit space-y-4">
+    <div className="flex flex-col items-center justify-center bg-white text-typography-800 h-fit space-y-4">
       <div className="h-full flex flex-col justify-around w-full">
         <div className="flex flex-col items-center justify-center">{renderSummaryState()}</div>
         {renderNotes()}

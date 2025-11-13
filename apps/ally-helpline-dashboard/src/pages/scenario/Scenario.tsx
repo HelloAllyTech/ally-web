@@ -160,14 +160,14 @@ export const Scenario: FC = () => {
                 <span className="font-bold italic"> Simulation</span>
               </div>
               <div className="font-primary flex  items-center">
-                <div className="font-primary text-base text-gray-500">Credits used:</div>
+                <div className="font-primary text-base text-typography-800">Credits used:</div>
                 <Bolt className="mb-2" />
                 <span
-                  className={`font-bold text-xl mb-1 ${limitReached ? "text-red-500" : "text-black"}`}
+                  className={`font-bold text-xl mb-1 ${limitReached ? "text-destructive-500" : "text-typography-900"}`}
                 >
                   {credits?.consumedCredits ?? 0}
                 </span>
-                <span className="text-base text-gray-500">/{credits?.creditLimit ?? 0}</span>
+                <span className="text-base text-typography-800">/{credits?.creditLimit ?? 0}</span>
               </div>
             </div>
             <ScenarioDetailsCard

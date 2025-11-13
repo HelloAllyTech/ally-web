@@ -3,7 +3,7 @@
 exports[`SummaryLoading > should match snapshot when FAILED 1`] = `
 <DocumentFragment>
   <div
-    class="flex flex-col items-center justify-center bg-white text-gray-800 h-fit space-y-4"
+    class="flex flex-col items-center justify-center bg-white text-typography-800 h-fit space-y-4"
   >
     <div
       class="h-full flex flex-col justify-around w-full"
@@ -34,7 +34,7 @@ exports[`SummaryLoading > should match snapshot when FAILED 1`] = `
               data-testid="notes-icon"
             />
             <label
-              class="flex items-center gap-2 font-primary text-sm font-medium text-gray-700"
+              class="flex items-center gap-2 font-primary text-sm font-medium text-typography-800"
               for="notes"
             >
               <span>
@@ -81,7 +81,7 @@ exports[`SummaryLoading > should match snapshot when FAILED 1`] = `
 exports[`SummaryLoading > should match snapshot when IN_PROGRESS 1`] = `
 <DocumentFragment>
   <div
-    class="flex flex-col items-center justify-center bg-white text-gray-800 h-fit space-y-4"
+    class="flex flex-col items-center justify-center bg-white text-typography-800 h-fit space-y-4"
   >
     <div
       class="h-full flex flex-col justify-around w-full"
@@ -128,7 +128,7 @@ exports[`SummaryLoading > should match snapshot when IN_PROGRESS 1`] = `
               data-testid="notes-icon"
             />
             <label
-              class="flex items-center gap-2 font-primary text-sm font-medium text-gray-700"
+              class="flex items-center gap-2 font-primary text-sm font-medium text-typography-800"
               for="notes"
             >
               <span>
@@ -181,7 +181,7 @@ exports[`SummaryLoading > should match snapshot when IN_PROGRESS 1`] = `
 exports[`SummaryLoading > should match snapshot when NO_AUDIO 1`] = `
 <DocumentFragment>
   <div
-    class="flex flex-col items-center justify-center bg-white text-gray-800 h-fit space-y-4"
+    class="flex flex-col items-center justify-center bg-white text-typography-800 h-fit space-y-4"
   >
     <div
       class="h-full flex flex-col justify-around w-full"
@@ -221,7 +221,7 @@ exports[`SummaryLoading > should match snapshot when NO_AUDIO 1`] = `
               data-testid="notes-icon"
             />
             <label
-              class="flex items-center gap-2 font-primary text-sm font-medium text-gray-700"
+              class="flex items-center gap-2 font-primary text-sm font-medium text-typography-800"
               for="notes"
             >
               <span>
@@ -268,7 +268,7 @@ exports[`SummaryLoading > should match snapshot when NO_AUDIO 1`] = `
 exports[`SummaryLoading > should match snapshot when SUCCESS 1`] = `
 <DocumentFragment>
   <div
-    class="flex flex-col items-center justify-center bg-white text-gray-800 h-fit space-y-4"
+    class="flex flex-col items-center justify-center bg-white text-typography-800 h-fit space-y-4"
   >
     <div
       class="h-full flex flex-col justify-around w-full"
@@ -304,7 +304,7 @@ exports[`SummaryLoading > should match snapshot when SUCCESS 1`] = `
               data-testid="notes-icon"
             />
             <label
-              class="flex items-center gap-2 font-primary text-sm font-medium text-gray-700"
+              class="flex items-center gap-2 font-primary text-sm font-medium text-typography-800"
               for="notes"
             >
               <span>

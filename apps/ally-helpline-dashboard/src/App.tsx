@@ -14,7 +14,7 @@ const App = () => (
         classNames: {
           content: "mr-3",
           icon: "hidden",
-          warning: "bg-[#FDF8E4] border-[0.5px] border-[#EC930F] text-typography-900",
+          warning: "bg-[#FDF8E4] border-[0.5px] border-warning-500 text-typography-900",
           closeButton: "absolute top-[50%] left-[93%] !bg-transparent border-none",
         },
       }}

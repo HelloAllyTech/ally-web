@@ -40,7 +40,7 @@ export const Learn: FC = () => {
 
   const renderEmptyGrid = () => (
     <div className="flex flex-col items-center justify-center w-full py-8 min-h-[30vh]">
-      <div className="text-gray-500 text-lg mb-4">No scenarios available at the moment</div>
+      <div className="text-typography-700 text-lg mb-4">No scenarios available at the moment</div>
       <button
         onClick={() => refetchScenarios()}
         className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors"
@@ -77,7 +77,7 @@ export const Learn: FC = () => {
           </span>
           <div className="border-b border-typography-300 w-full" />
           <div className="flex flex-row items-center min-w-[130px] justify-end">
-            <div className="font-primary text-base text-gray-500 whitespace-nowrap">
+            <div className="font-primary text-base text-typography-700 whitespace-nowrap">
               Credits used:
             </div>
             <Bolt />
@@ -86,7 +86,7 @@ export const Learn: FC = () => {
             >
               {credits?.consumedCredits ?? 0}
             </span>
-            <span className="font-primary text-base text-gray-500">
+            <span className="font-primary text-base text-typography-700">
               /{credits?.creditLimit ?? 0}
             </span>
           </div>
