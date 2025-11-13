@@ -81,14 +81,12 @@ describe("CreditInfoDialog", () => {
     const title = "Test Title";
     renderComponent({ title });
     expect(screen.getByText(title)).toBeInTheDocument();
-    expect(screen.getByText(title)).toHaveClass("font-medium", "text-[#47464F]", "text-[24px]");
   });
 
   it("should render the description correctly", () => {
     const description = "Test description message";
     renderComponent({ description });
     expect(screen.getByText(description)).toBeInTheDocument();
-    expect(screen.getByText(description)).toHaveClass("font-['IBM_Plex_Serif']", "text-[20px]");
   });
 
   it("should render the CloseIcon", () => {

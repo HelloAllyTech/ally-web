@@ -15,7 +15,7 @@ exports[`CreditInfoDialog > should match snapshot when fully populated 1`] = `
         data-testid="mock-close-icon"
       />
       <div
-        class="font-medium text-[#47464F] text-[24px] font-['Replay_Pro']"
+        class="font-medium text-typography-800 text-2xl font-secondary"
       >
         No Credits Available
       </div>
@@ -23,7 +23,7 @@ exports[`CreditInfoDialog > should match snapshot when fully populated 1`] = `
         data-testid="mock-no-credit-left-icon"
       />
       <div
-        class="w-[300px] flex  justify-center text-center font-['IBM_Plex_Serif'] text-[20px]"
+        class="w-[300px] flex  justify-center text-center font-primary text-xl"
       >
         You have run out of credits. Please purchase more to continue.
       </div>

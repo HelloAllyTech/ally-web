@@ -10,11 +10,13 @@ const Accordion: FC<AccordionProps> = ({ children, defaultExpanded, title, title
   return (
     <MuiAccordion defaultExpanded={defaultExpanded} sx={accordionSx}>
       <AccordionSummary
-        expandIcon={<PlayArrowRounded className="rotate-90 text-[#000]" aria-label="expand icon" />}
+        expandIcon={
+          <PlayArrowRounded className="rotate-90 text-typography-900" aria-label="expand icon" />
+        }
         sx={accordionSummarySx}
       >
         {titleIcon && <titleIcon.icon className="h-6 w-6" />}
-        <span className="text-[16px] font-medium text-[#000]">{title}</span>
+        <span className="text-lg font-medium text-typography-900">{title}</span>
       </AccordionSummary>
       <AccordionDetails sx={accordionDetailsSx}>{children}</AccordionDetails>
     </MuiAccordion>

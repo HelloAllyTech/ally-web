@@ -147,13 +147,13 @@ const LoginDialog: FC<LoginPopupProps> = ({ isOpen, onClose, onSuccess }) => {
           transition={{ duration: 0.4, ease: "easeInOut" }}
           className="flex flex-col gap-4"
         >
-          <div className="flex flex-col text-[32px] font-['Replay_Pro']">
+          <div className="flex flex-col text-4xl font-secondary">
             <span>Hey,</span>
             <h1>
               <span>Welcome to </span>
               <span className="font-bold italic">ally</span>
             </h1>
-            <span className="text-[24px] mt-[24px]">Enter your email address to continue</span>
+            <span className="text-2xl mt-[24px]">Enter your email address to continue</span>
           </div>
           <div className="flex flex-col gap-1">
             <TextField
@@ -173,11 +173,11 @@ const LoginDialog: FC<LoginPopupProps> = ({ isOpen, onClose, onSuccess }) => {
               <input
                 type="checkbox"
                 id="remember"
-                className="h-4 w-4 rounded border-2 border-[#E5E7EB] text-blue-600 focus:ring-blue-500 cursor-pointer"
+                className="h-4 w-4 rounded border-2 border-[#E5E7EB] text-primary-500 focus:ring-primary-500 cursor-pointer"
                 checked={rememberMe}
                 onChange={e => setRememberMe(e.target.checked)}
               />
-              <label htmlFor="remember" className="text-sm text-[#49454F] cursor-pointer">
+              <label htmlFor="remember" className="text-sm text-typography-700 cursor-pointer">
                 Remember me
               </label>
             </div>
@@ -197,17 +197,17 @@ const LoginDialog: FC<LoginPopupProps> = ({ isOpen, onClose, onSuccess }) => {
               "Next"
             )}
           </Button>
-          <div className="text-[12px] text-[#8C8C8C] mt-2">
+          <div className="text-xs text-typography-800 mt-2">
             By tapping next, you agree to Ally's{" "}
             <span
-              className="text-[#0473F2] cursor-pointer"
+              className="text-primary-500 cursor-pointer"
               onClick={() => openLinkInNewTab(ALLY_TERMS_URL)}
             >
               Terms & Conditions
             </span>{" "}
             and acknowledge{" "}
             <span
-              className="text-[#0473F2] cursor-pointer"
+              className="text-primary-500 cursor-pointer"
               onClick={() => openLinkInNewTab(ALLY_PRIVACY_POLICY_URL)}
             >
               Privacy Policy
@@ -227,17 +227,17 @@ const LoginDialog: FC<LoginPopupProps> = ({ isOpen, onClose, onSuccess }) => {
         className="flex flex-col justify-start gap-6"
       >
         <BackCircle className="self-start cursor-pointer" onClick={handleBack} />
-        <h1 className="text-[32px] font-['Replay_Pro']">Verify your email address</h1>
-        <div className="text-base mb-2 font-['Replay_Pro'] flex flex-col">
-          <span className="text-[24px]">Enter the security code sent to</span>
-          <span className="font-semibold text-[24px]">{email}</span>
+        <h1 className="text-4xl font-secondary">Verify your email address</h1>
+        <div className="text-base mb-2 font-secondary flex flex-col">
+          <span className="text-2xl">Enter the security code sent to</span>
+          <span className="font-semibold text-2xl">{email}</span>
         </div>
         <div className="flex flex-col gap-2">
           <OTP value={otp} onChange={setOtp} />
-          <div className="text-[12px] text-[#49454F]">
+          <div className="text-xs text-typography-700">
             Didn't receive the code?{" "}
             <span
-              className={`${countdown > 0 ? "text-[#C4C4C4]" : "text-[#0473F2]"} cursor-pointer`}
+              className={`${countdown > 0 ? "text-typography-800" : "text-primary-500"} cursor-pointer`}
               onClick={handleResendCode}
             >
               Resend {countdown > 0 ? `(${countdown}s)` : ""}

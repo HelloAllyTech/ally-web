@@ -25,23 +25,23 @@ const getFeedbackSectionByType = ({
         <GenericTable
           columns={columns}
           data={data}
-          className="min-w-full text-[13px] font-['IBM_Plex_Serif'] overflow-y-scroll mb-4"
+          className="min-w-full text-sm font-primary overflow-y-scroll mb-4"
         />
       );
     case FeedbackSectioonType.BULLET_TEXT:
       return (
-        <ul className="pb-4 space-y-2 text-[16px]">
+        <ul className="pb-4 space-y-2 text-lg">
           {Array.isArray(data) ? (
             data.map((item, index) => (
               <li key={index} className="flex items-start">
-                <span className="text-[#0D0D0D] mr-2">•</span>
-                <span className="text-[#0D0D0D]">{item}</span>
+                <span className="text-typography-900 mr-2">•</span>
+                <span className="text-typography-900">{item}</span>
               </li>
             ))
           ) : (
             <li className="flex items-start">
-              <span className="text-[#0D0D0D] mr-2">•</span>
-              <span className="text-[#0D0D0D]">{data}</span>
+              <span className="text-typography-900 mr-2">•</span>
+              <span className="text-typography-900">{data}</span>
             </li>
           )}
         </ul>
@@ -60,16 +60,16 @@ export const FeedbackSection: FC<FeedbackSectionProps> = props => {
         {feedbackDemographics.map(feedback => (
           <div
             key={feedback.key}
-            className="flex flex-col gap-2 flex-1 min-w-[120px] sm:min-w-[145px] font-['IBM_Plex_Serif'] border-[0.5px] border-[#D2D2D2] rounded-[4px] p-[10px]"
+            className="flex flex-col gap-2 flex-1 min-w-[120px] sm:min-w-[145px] font-primary border-[0.5px] border-secondary-700 rounded-[4px] p-[10px]"
           >
-            <span className="text-[12px] text-[#656565]">{feedback.label}</span>
-            <span className="text-[14px] text-[#0D0D0D] font-medium">
+            <span className="text-xs text-typography-800">{feedback.label}</span>
+            <span className="text-base text-typography-900 font-medium">
               {feedback.getValue(props)}
             </span>
           </div>
         ))}
       </motion.div>
-      <motion.div className="overflow-y-auto font-['IBM_Plex_Serif']">
+      <motion.div className="overflow-y-auto font-primary">
         {feedbackSections.map(({ label, icon, key, type, columns }, index) => {
           return (
             <motion.div
@@ -88,7 +88,7 @@ export const FeedbackSection: FC<FeedbackSectionProps> = props => {
                   {formattedData[key] ? (
                     getFeedbackSectionByType({ type, columns, data: formattedData[key] })
                   ) : (
-                    <div className="text-[#9CA3AF] font-['IBM_Plex_Serif'] text-center mb-2">
+                    <div className="text-typography-700 font-primary text-center mb-2">
                       No data found
                     </div>
                   )}
