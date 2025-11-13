@@ -21,10 +21,23 @@ const AudioUploadInterface: FC<AudioUploadInterfaceProps> = ({
   const [wavesurfer, setWavesurfer] = useState<WaveSurfer | null>(null);
   const [isPlaying, setIsPlaying] = useState<boolean>(false);
   const [currentSec, setCurrentSec] = useState<number>(0);
+  const [isWaveformLoading, setIsWaveformLoading] = useState<boolean>(false);
 
   const progressTimerRef = useRef<number | null>(null);
 
   const audioFile = files[0];
+
+  // Show loader if waveform takes too long to load (> 3 seconds)
+  useEffect(() => {
+    if (audioUrl && !wavesurfer) {
+      const loadingTimer = window.setTimeout(() => {
+        setIsWaveformLoading(true);
+      }, 3000);
+
+      return () => clearTimeout(loadingTimer);
+    }
+    return undefined;
+  }, [audioUrl, wavesurfer]);
 
   // Start a fast progress timer when dropping begins (isDropping === 0)
   useEffect(() => {
@@ -87,6 +100,7 @@ const AudioUploadInterface: FC<AudioUploadInterfaceProps> = ({
 
   const onAudioReady = (wavesurfer: WaveSurfer) => {
     setWavesurfer(wavesurfer);
+    setIsWaveformLoading(false);
     setDuration(wavesurfer.getDuration() || 0);
   };
 
@@ -156,18 +170,28 @@ const AudioUploadInterface: FC<AudioUploadInterfaceProps> = ({
               )}
             </div>
             <span className="text-xs text-[#656565] min-w-[36px]">{formatTime(currentSec)}</span>
-            <WavesurferPlayer
-              url={audioUrl}
-              height={100}
-              width={300}
-              waveColor="#D2D2D2"
-              barGap={4}
-              barWidth={2}
-              onFinish={() => setIsPlaying(false)}
-              onReady={onAudioReady}
-              progressColor="#0957D0"
-              cursorColor="transparent"
-            />
+            <div className="relative flex-1">
+              <WavesurferPlayer
+                url={audioUrl}
+                height={100}
+                width={300}
+                waveColor="#D2D2D2"
+                barGap={4}
+                barWidth={2}
+                onFinish={() => setIsPlaying(false)}
+                onReady={onAudioReady}
+                progressColor="#0957D0"
+                cursorColor="transparent"
+              />
+              {isWaveformLoading && (
+                <div className="absolute inset-0 flex items-center justify-center bg-white/50 rounded">
+                  <div className="flex flex-col items-center gap-2">
+                    <div className="w-6 h-6 border-2 border-[#D2D2D2] border-t-[#0957D0] rounded-full animate-spin" />
+                    <span className="text-xs text-[#656565]">Loading waveform...</span>
+                  </div>
+                </div>
+              )}
+            </div>
             <span className="text-xs text-[#656565] min-w-[36px] ml-auto">
               {formatTime(duration)}
             </span>

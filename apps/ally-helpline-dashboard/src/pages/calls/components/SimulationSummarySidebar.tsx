@@ -15,6 +15,7 @@ const SimulationSummarySidebar: FC<SimulationSummarySidebarProps> = ({
   summaryId,
   summaryName,
   closeSummarySidebar,
+  canShowFeedback = true,
 }) => {
   const [showFeedbackDialog, setShowFeedbackDialog] = useState<boolean>(false);
 
@@ -72,6 +73,7 @@ const SimulationSummarySidebar: FC<SimulationSummarySidebarProps> = ({
     const overThirtySeconds = hasThresholdElapsed();
 
     if (
+      canShowFeedback &&
       !hasFeedback.current &&
       overThirtySeconds &&
       permissions?.includes(Permissions.EDIT_SCENARIO_SESSION)

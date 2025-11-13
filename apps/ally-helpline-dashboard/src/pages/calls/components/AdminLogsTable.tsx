@@ -460,6 +460,7 @@ const AdminLogsTable: FC<LogsTableProps> = ({ refreshKey, sessionType, className
             setCallSummary={setSummary}
             sessionType={sessionType}
             canEditSummary={false}
+            canShowFeedback={false}
           />
         );
       case SessionType.SIMULATION:
@@ -468,6 +469,7 @@ const AdminLogsTable: FC<LogsTableProps> = ({ refreshKey, sessionType, className
             summaryId={summary?.id.toString()}
             summaryName={(summary as SimulationLog)?.metadata?.sessionName ?? ""}
             closeSummarySidebar={closeSummarySidebar}
+            canShowFeedback={false}
           />
         );
     }

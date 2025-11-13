@@ -117,7 +117,8 @@ export const en = {
     choose: "choose",
     pngUploadGuidelines: "a JPEG or PNG file with a",
     mp4UploadGuidelines: "a MP4 or MOV file with a",
-    videoUploadGuidelines: "resolution of 16:9 ratio and under 15MB.",
+    videoUploadGuidelines:
+      "resolution of 16:9 aspect ratio,under 15MB, and a duration of up to 15 seconds.",
     resolution: "resolution of 1920x1080 and under 2MB.",
     description: "Description",
     descriptionPlaceholder: "Enter description",
