@@ -5,15 +5,20 @@ import { Tooltip } from "@mui/material";
 import { CloseRed, DragIndicator, InfoIcon, Search } from "@assets";
 import { en, toolTipStyles } from "@constants";
 import { useSimulations } from "@hooks";
-import { Simulation } from "@types";
+import { Simulation, GetScenarioType } from "@types";
 
 import { Button } from "../button";
 
 interface SimulationProps {
   showSimulation: boolean;
   toggleSimulationModal: () => void;
+  data: GetScenarioType[] | undefined;
 }
-export const Simulations: FC<SimulationProps> = ({ showSimulation, toggleSimulationModal }) => {
+export const Simulations: FC<SimulationProps> = ({
+  showSimulation,
+  toggleSimulationModal,
+  data,
+}) => {
   const [selectedSimulations, setSelectedSimulations] = useState<Simulation[]>([]);
 
   const { simulationsResponse } = useSimulations({});
@@ -67,11 +72,11 @@ export const Simulations: FC<SimulationProps> = ({ showSimulation, toggleSimulat
 
   const renderSimulationList = () => {
     return (
-      <>
-        {selectedSimulations.map((simulation, index) => (
+      <div>
+        {data?.map((simulation, index) => (
           <div
             className="flex flex-col mb-5 border p-5 relative group max-w-full overflow-hidden rounded-md shadow-sm hover:shadow-lg"
-            key={simulation.id}
+            key={simulation.scenarioId}
           >
             <button
               onClick={() => {
@@ -122,12 +127,16 @@ export const Simulations: FC<SimulationProps> = ({ showSimulation, toggleSimulat
                 <span className="text-sm text-gray-500 font-primary whitespace-nowrap">
                   {en.simulation.minScore}
                 </span>
-                <input type="number" className="border outline-none w-16 p-1 bg-gray-100 mr-5" />
+                <input
+                  type="number"
+                  className="border outline-none w-16 p-1 bg-gray-100 mr-5"
+                  value={simulation.minimumScore}
+                />
               </div>
             </div>
           </div>
         ))}
-      </>
+      </div>
     );
   };
 
@@ -197,7 +206,7 @@ export const Simulations: FC<SimulationProps> = ({ showSimulation, toggleSimulat
 
   return (
     <>
-      {selectedSimulations.length > 0 ? renderSimulationList() : renderEmptyScreen()}
+      {data?.length > 0 ? renderSimulationList() : renderEmptyScreen()}
       {showSimulation && renderSimulationModal()}
     </>
   );

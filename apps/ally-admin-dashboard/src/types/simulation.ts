@@ -186,27 +186,3 @@ export interface GetCoverVideoUrlResponse {
 export interface DeleteCoverVideoRequest {
   coverVideoUrl: string;
 }
-
-// Scenario Paths Types
-export interface ScenarioPath {
-  id: number;
-  name: string;
-  description: string;
-  coverImageUrl: string;
-  status: "draft" | "published" | "archived";
-  isGlobal: boolean;
-  totalScenarios: number;
-  updatedAt: string;
-}
-
-export interface GetScenarioPathsQueryParams {
-  status?: string;
-  offset?: number;
-  limit?: number;
-  search?: string;
-  tenantId?: string;
-}
-
-export interface GetScenarioPathsResponse {
-  data: ScenarioPath[];
-}

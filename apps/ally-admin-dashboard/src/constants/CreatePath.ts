@@ -19,8 +19,8 @@ export const PATH_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
         fullWidth: true,
       },
       {
-        id: "name",
-        label: "Name",
+        id: "title",
+        label: "Title",
         placeholder: "Enter title",
         type: FORM_FIELD_TYPES.TEXT,
         isMandatory: true,

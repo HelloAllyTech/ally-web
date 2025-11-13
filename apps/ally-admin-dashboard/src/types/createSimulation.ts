@@ -99,18 +99,6 @@ export enum SimulationStatus {
   DRAFT = "DRAFT",
   ARCHIVED = "ARCHIVED",
   PUBLISHED = "PUBLISHED",
-  COMMING_SOON = "COMMING_SOON",
-}
-
-export interface SimulationListProps {
-  simulations: Simulation[];
-  footer?: React.ReactNode;
-  onEdit?: (simulation: Simulation) => void;
-  onDelete?: (simulation: Simulation) => void;
-  onPreview?: (simulation: Simulation) => void;
-  onArchive?: (simulation: Simulation) => void;
-  onUnpublish?: (simulation: Simulation) => void;
-  onUnarchive?: (simulation: Simulation) => void;
 }
 
 export type SimulationPreviewType = {

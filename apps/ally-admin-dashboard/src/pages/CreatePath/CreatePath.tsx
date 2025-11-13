@@ -1,9 +1,14 @@
-import { FC, useMemo, useRef, useState } from "react";
+import { FC, useEffect, useMemo, useRef, useState } from "react";
 
 import { useForm } from "react-hook-form";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
 
+import {
+  useCreateSimulationPathMutation,
+  useGetScenarioPathByIdQuery,
+  useUpdateSimulationPathByIdMutation,
+} from "@api";
 import { Plus } from "@assets";
 import {
   Header,
@@ -26,6 +31,7 @@ import {
   getCreatePathSubSectionById,
 } from "@constants";
 import { useDebounce } from "@hooks";
+import { extractValidData } from "@src/utils";
 
 // Get all mandatory field IDs from the configuration
 const getMandatoryFieldIds = () => {
@@ -43,6 +49,7 @@ const getMandatoryFieldIds = () => {
 export const CreatePath: FC = () => {
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
+  const [pathId, setPathId] = useState<string | undefined>(id);
   const [currentStep, setCurrentStep] = useState(PATH_CREATOR_STEP_IDS.basicInfo);
   const [showDiscardPopup, setShowDiscardPopup] = useState(false);
   const [showMoreOptions, setShowMoreOptions] = useState(false);
@@ -55,6 +62,10 @@ export const CreatePath: FC = () => {
 
   // TODO:API mutation for creating path
 
+  const { getScenarioPathById, data: individualPath } = useGetScenarioPathByIdQuery(id);
+  const [createSimulationPathQuery] = useCreateSimulationPathMutation();
+  const [updateSimulationPathByIdQuery] = useUpdateSimulationPathByIdMutation();
+
   const formMethods = useForm({
     mode: "onChange",
     reValidateMode: "onChange",
@@ -66,6 +77,12 @@ export const CreatePath: FC = () => {
     watch,
   } = formMethods;
 
+  useEffect(() => {
+    if (individualPath) {
+      formMethods.reset(individualPath);
+    }
+    console.log(individualPath);
+  }, [individualPath, formMethods]);
   // Watch all form values to check mandatory fields
   const formValues = watch();
 
@@ -124,8 +141,21 @@ export const CreatePath: FC = () => {
       toast.error("Title should be filled to save as draft");
       return null;
     }
-
-    //TODO: Api
+    const simulationPath = {
+      ...extractValidData(formData),
+    };
+    let response;
+    if (pathId) {
+      response = await updateSimulationPathByIdQuery({
+        id: pathId,
+        data: simulationPath,
+      });
+    } else {
+      response = await createSimulationPathQuery({
+        path: [simulationPath],
+      });
+    }
+    return response;
   };
 
   // Debounced version to prevent duplicate simulation creation (500ms delay)
@@ -133,6 +163,27 @@ export const CreatePath: FC = () => {
 
   const handleSaveDraft = async () => {
     // TODO: API and Handle any navigations here
+    try {
+      const response = await saveSimulationChanges(SimulationStatus.DRAFT);
+      if (response && !response.error) {
+        if (response?.data?.[0]?.id && !pathId) {
+          setPathId(response?.data?.[0]?.id);
+        }
+        const currentFormValues = formMethods.getValues();
+        formMethods.reset(currentFormValues);
+        if (pathId) {
+          getScenarioPathById(pathId);
+        }
+        return response?.data;
+      } else if (response?.error) {
+        toast.error("Failed to save draft. Please try again.");
+        return null;
+      }
+      return response?.data;
+    } catch {
+      toast.error("Failed to save draft. Please try again.");
+      return null;
+    }
   };
 
   const handlePublish = async () => {
@@ -216,6 +267,7 @@ export const CreatePath: FC = () => {
           <Simulations
             toggleSimulationModal={toggleSimulationModal}
             showSimulation={showSimulationModal}
+            data={individualPath?.scenarios}
           />,
           true,
         );
@@ -243,6 +295,7 @@ export const CreatePath: FC = () => {
         isValid={areAllMandatoryFieldsFilled}
         onBack={handlePageBack}
         onPublish={handlePublish}
+        onSaveDraft={handleSaveDraft}
         title={title}
         showPreview={false}
       />

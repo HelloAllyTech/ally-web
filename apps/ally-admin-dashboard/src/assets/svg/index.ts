@@ -9,6 +9,7 @@ import Bolt from "./bolt.svg?react";
 import Book from "./book.svg?react";
 import Close from "./close.svg?react";
 import CloseRed from "./closeRed.svg?react";
+import Copy from "./copy.svg?react";
 import Delete from "./delete.svg?react";
 import DockToRight from "./dockToRight.svg?react";
 import DoubleArrowRight from "./doubleArrowRight.svg?react";
@@ -68,4 +69,5 @@ export {
   VideoCamera,
   Simulation,
   Pathway,
+  Copy,
 };
