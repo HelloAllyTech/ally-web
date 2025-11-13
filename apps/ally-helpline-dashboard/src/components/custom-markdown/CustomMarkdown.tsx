@@ -159,6 +159,6 @@ const CustomMarkdown: FunctionComponent<{ content: string; className?: string }>
     return parsedContent;
   };
 
-  return <div className={`text-[16px] text-[#000] ${className}`}>{parseMarkdown(content)}</div>;
+  return <div className={`text-lg text-typography-900 ${className}`}>{parseMarkdown(content)}</div>;
 };
 export default CustomMarkdown;

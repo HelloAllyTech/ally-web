@@ -65,8 +65,8 @@ const CallSidebar: FC<CallSidebarProps> = ({
 
   const renderNudgeCard = (nudge: Nudge) => {
     return (
-      <div className="border border-gray-200 text-[#fff] rounded-lg p-4 mb-2">
-        <CustomMarkdown content={nudge.content} className="font-['IBM_Plex_Serif']" />
+      <div className="border border-gray-200 text-white rounded-lg p-4 mb-2">
+        <CustomMarkdown content={nudge.content} className="font-primary" />
         <Divider sx={{ backgroundColor: "rgba(255, 255, 255, 0.12)" }} />
         <div className="flex text-sm items-center gap-2">
           <span>Is this helpful?</span>
@@ -112,10 +112,10 @@ const CallSidebar: FC<CallSidebarProps> = ({
             <Close className="cursor-pointer" onClick={onClose} />
           </div>
           {stage && (
-            <div className="px-6 py-4 mx-4 mb-4 border border-[#0473F2]  font-['IBM_Plex_Serif'] rounded-lg bg-[#8CD3FF26]">
-              <div className="text-base font-medium text-[#0473F2] ">
+            <div className="px-6 py-4 mx-4 mb-4 border border-[#0473F2]  font-primary rounded-lg bg-[#8CD3FF26]">
+              <div className="text-base font-medium text-primary-500 ">
                 Current Stage:
-                <span className="text-[#fff] text-base">{` ${stage}`}</span>
+                <span className="text-white text-base">{` ${stage}`}</span>
               </div>
             </div>
           )}

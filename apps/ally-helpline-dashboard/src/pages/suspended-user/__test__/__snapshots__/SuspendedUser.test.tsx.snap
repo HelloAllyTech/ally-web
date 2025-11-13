@@ -15,12 +15,12 @@ exports[`SuspendedUser > should match snapshot when fully rendered 1`] = `
           data-testid="suspended-user-icon"
         />
         <div
-          class="text-2xl font-[Replay-pro]"
+          class="text-2xl font-secondary"
         >
           Account Suspended
         </div>
         <div
-          class="flex flex-col text-center font-['IBM_Plex_Serif']"
+          class="flex flex-col text-center font-primary"
         >
           <div>
             Your account has been suspended. Contact your
@@ -30,7 +30,7 @@ exports[`SuspendedUser > should match snapshot when fully rendered 1`] = `
           </div>
         </div>
         <button
-          class="border border-gray-300 rounded-full px-5 py-2 font-['Roboto'] mt-8"
+          class="border border-secondary-700 rounded-full px-5 py-2 font-tertiary mt-8"
         >
           Go to login
         </button>

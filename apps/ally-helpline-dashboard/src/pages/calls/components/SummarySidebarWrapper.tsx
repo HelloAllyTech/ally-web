@@ -35,7 +35,7 @@ const SummarySidebarWrapper: FC<SummarySidebarWrapperProps> = ({
     <Drawer
       open={true}
       onClose={onSidebarClose}
-      className="font-['IBM_Plex_Serif']"
+      className="font-primary"
       title={title}
       headerButtons={[
         {

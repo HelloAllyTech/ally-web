@@ -8,7 +8,7 @@ vi.mock("@utils", () => ({
   getButtonStyles: (variant: string) => {
     const styles = {
       primary: "bg-blue-600 text-white",
-      secondary: "bg-gray-200 text-gray-800",
+      secondary: "bg-gray-200 text-typography-800",
       destructive: "bg-red-600 text-white",
       text: "bg-transparent text-blue-600",
     };

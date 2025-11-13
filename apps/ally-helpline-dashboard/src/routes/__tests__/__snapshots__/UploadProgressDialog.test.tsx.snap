@@ -3,7 +3,7 @@
 exports[`UploadProgressDialog > should match snapshot when fully rendered with uploads 1`] = `
 <DocumentFragment>
   <div
-    class="fixed bottom-0 right-6 z-40 font-['IBM_Plex_Serif']"
+    class="fixed bottom-0 right-6 z-40 font-primary"
   >
     <div
       class="w-[360px] bg-white shadow-[0_2px_10px_rgba(0,0,0,0.15)] rounded-t-[8px] border border-[#E5E7EB] overflow-hidden"
@@ -12,12 +12,12 @@ exports[`UploadProgressDialog > should match snapshot when fully rendered with u
         class="flex items-center justify-between mx-4 py-2 border-b border-[#EFEFEF]"
       >
         <span
-          class="text-sm font-medium text-[#1A1A1A]"
+          class="text-sm font-medium text-typography-900"
         >
           1 upload in progress
         </span>
         <div
-          class="flex items-center gap-2 text-[#656565]"
+          class="flex items-center gap-2 text-typography-800"
         >
           <button
             aria-label="Collapse"
@@ -46,7 +46,7 @@ exports[`UploadProgressDialog > should match snapshot when fully rendered with u
           class="flex items-center justify-between py-2"
         >
           <div
-            class="flex items-center gap-2 text-sm text-[#000000DE]"
+            class="flex items-center gap-2 text-sm text-typography-900"
           >
             <svg
               data-testid="audio-file-icon"
@@ -67,7 +67,7 @@ exports[`UploadProgressDialog > should match snapshot when fully rendered with u
           class="flex items-center justify-between py-2"
         >
           <div
-            class="flex items-center gap-2 text-sm text-[#000000DE]"
+            class="flex items-center gap-2 text-sm text-typography-900"
           >
             <svg
               data-testid="audio-file-icon"
@@ -80,7 +80,7 @@ exports[`UploadProgressDialog > should match snapshot when fully rendered with u
             class="group flex items-center gap-2 w-5 h-5 justify-end"
           >
             <svg
-              class="w-4 h-4 text-[#E53935]"
+              class="w-4 h-4 text-destructive-500"
               data-testid="x-circle-icon"
             />
           </div>
@@ -89,7 +89,7 @@ exports[`UploadProgressDialog > should match snapshot when fully rendered with u
           class="flex items-center justify-between py-2"
         >
           <div
-            class="flex items-center gap-2 text-sm text-[#000000DE]"
+            class="flex items-center gap-2 text-sm text-typography-900"
           >
             <svg
               data-testid="audio-file-icon"

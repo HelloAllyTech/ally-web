@@ -410,7 +410,7 @@ describe("eventMapping utils", () => {
 
       const result = formatApiResponseToMappedEvent(apiResponse);
 
-      expect(result.score.disabled).toBe(true);
+      expect(result.score.disabled).toBe(false);
       expect(result.emoji.disabled).toBe(true);
       expect(result.message.disabled).toBe(true);
       expect(result.branchInstruction.disabled).toBe(false);

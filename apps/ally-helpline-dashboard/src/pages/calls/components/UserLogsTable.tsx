@@ -1,5 +1,11 @@
 import { useEffect, useState, useRef, FC } from "react";
 
+import { CircularProgress } from "@mui/material";
+import { useDispatch, useSelector } from "react-redux";
+import { useLocation } from "react-router-dom";
+
+import { GenericTable } from "@ally-ui-mono/ui-shared";
+import { Column } from "@ally-ui-mono/ui-shared/lib/generic-table/types";
 import { useGetCallLogsQuery, useGetSimulationLogsQuery } from "@api";
 import {
   NoResults,
@@ -14,16 +20,10 @@ import {
   SourceIcon,
 } from "@assets";
 import { Button, Chip, TagGroup, FallbackUI } from "@components";
-import { CircularProgress } from "@mui/material";
 import { updateFilters } from "@reducer";
 import { RootState } from "@store";
-import { convertSecondsToDuration, getFormattedDate, getSimulationScoreDisplay } from "@utils";
-import { useDispatch, useSelector } from "react-redux";
-import { useLocation } from "react-router-dom";
-
-import { GenericTable } from "@ally-ui-mono/ui-shared";
-import { Column } from "@ally-ui-mono/ui-shared/lib/generic-table/types";
 import { CallLog, ChatSummaryStatus, SimulationLog, TagDisplay, SessionType } from "@types";
+import { convertSecondsToDuration, getFormattedDate, getSimulationScoreDisplay } from "@utils";
 
 import { CALL_LOGS_PAGINATION_LIMIT, tagColors } from "../constants";
 import CallSummarySidebar from "./CallSummarySidebar";
@@ -356,7 +356,7 @@ const UserLogsTable: FC<LogsTableProps> = ({ refreshKey, sessionType, className 
           isLoading={isLoading}
           handleLoadMore={logs?.length > 0 && hasMore && handleLoadMore}
           fallbackUI={renderFallbackUI()}
-          className={`min-w-full font-['IBM_Plex_Serif'] overflow-y-scroll text-[13px] ${className}`}
+          className={`min-w-full font-primary overflow-y-scroll text-sm text-typography-800 ${className}`}
         />
       </div>
       {summary && summary.id && getSummarySideBar()}
