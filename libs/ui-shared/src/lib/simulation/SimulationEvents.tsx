@@ -4,8 +4,9 @@ import { motion } from "framer-motion";
 
 import { SimulationEventsProps } from "./types";
 
-export const SimulationEvents: FC<SimulationEventsProps> = ({ events }) => {
-  const hasEvents = events.length > 0;
+export const SimulationEvents: FC<SimulationEventsProps> = ({ events = [] }) => {
+  const filteredEvents = events.filter(event => event.emoji && event.message);
+  const hasEvents = filteredEvents.length > 0;
 
   const containerRef = useRef<HTMLDivElement | null>(null);
   const lastEventRef = useRef<HTMLDivElement | null>(null);
@@ -23,7 +24,7 @@ export const SimulationEvents: FC<SimulationEventsProps> = ({ events }) => {
     if (isNearBottom) {
       last.scrollIntoView({ behavior: "smooth", block: "end" });
     }
-  }, [events.length]);
+  }, [filteredEvents.length]);
 
   const getElapsedTimeInMinutes = (startTime: string) => {
     const now = new Date();
@@ -54,8 +55,8 @@ export const SimulationEvents: FC<SimulationEventsProps> = ({ events }) => {
         className="flex flex-col items-end gap-4 bg-[#1D2020] p-4 h-full overflow-y-auto"
         ref={containerRef}
       >
-        {events.map(({ emoji, message, timestamp }, index) => {
-          const isLast = index === events.length - 1;
+        {filteredEvents.map(({ emoji, message, timestamp }, index) => {
+          const isLast = index === filteredEvents.length - 1;
           return (
             <motion.div
               key={`${timestamp}-${index}`}

@@ -51,9 +51,14 @@ export const SimulationEventMapTable: FC<SimulationEventMapTableProps> = ({ simu
     order: SORT_ORDER.DESC,
   });
   const { data: mappedScenarioEventsData, isLoading: isMappedEventsLoading } =
-    useGetMappedScenarioEventsQuery({
-      id: String(simulationId || ""),
-    });
+    useGetMappedScenarioEventsQuery(
+      {
+        id: String(simulationId || ""),
+      },
+      {
+        refetchOnMountOrArgChange: true,
+      },
+    );
 
   const [mapScenarioEvents] = useMapScenarioEventsMutation();
   const [deleteScenarioEvents] = useDeleteScenarioEventsMutation();
