@@ -136,8 +136,8 @@ export interface UpdateEventDataParam {
   detectionType?: string;
   speaker?: string;
   emoji?: string;
-  sentences?: string[];
   visibilityType?: string;
+  sentences?: string[];
   triggerCondition?:
     | { operator: string; value: string | number; speaker?: string }
     | { conditions: any[] };

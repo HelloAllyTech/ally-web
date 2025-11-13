@@ -38,7 +38,7 @@ export const EVENT_TYPE_OPTIONS: EventTypeOption[] = [
   },
   {
     value: "COMBINATION",
-    label: "Combination of:",
+    label: "Combination of",
     description: "Trigger based on multiple events.",
     icon: AccountTree,
     prefix: "CE",

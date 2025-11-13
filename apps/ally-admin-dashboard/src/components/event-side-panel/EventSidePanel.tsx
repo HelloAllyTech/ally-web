@@ -1,15 +1,12 @@
-import React, { useState, useCallback, useEffect } from "react";
+import React, { useState, useCallback, useEffect, useMemo } from "react";
 
-import { generateSequentialEventName } from "@utils/eventNameGenerator";
-
-import { ArrowDownFilled, DoubleArrowRight, Trash } from "@assets";
+import { DoubleArrowRight, Trash } from "@assets";
 import { AutoExpandableTextarea, EmojiPickerComponent, TriggerConditions } from "@components";
 import { EVENT_TYPE_OPTIONS, EventType } from "@components/event-type-selection-dialog";
 import { NumberInput } from "@components/notion-table";
 import { en } from "@constants";
 import { useDebounce } from "@hooks";
-import { UpdateEventDataParam } from "@types";
-import { formatCapitalizedEnum } from "@utils";
+import { SessionEventDetectionType, UpdateEventDataParam } from "@types";
 
 // TODO: TESTING MODE - Skip API calls for testing
 // Revert: Set to false to enable API calls
@@ -65,6 +62,31 @@ const PanelHeader: React.FC<{
   </div>
 );
 
+// Helper function to extract event code from name (e.g., "SS001 - Test Event" -> "SS001")
+const extractEventCode = (name: string | undefined): string => {
+  if (!name) return "";
+  // Match pattern like "SS001", "TB002", etc. (prefix + 3 digits)
+  const match = name.match(/^([A-Z]{2}\d{3})/);
+  return match ? match[1] : "";
+};
+
+// Helper function to get display name for event type (e.g., "TIME_BASED" -> "time based")
+const getEventTypeDisplayName = (detectionType: string | undefined): string => {
+  if (!detectionType) return "";
+  const typeOption = EVENT_TYPE_OPTIONS.find(opt => opt.value === (detectionType as EventType));
+  if (!typeOption) return "";
+
+  // Convert label to lowercase for "Sample X event" format
+  // "Sentence Similarity" -> "sentence similarity"
+  // "Time Based" -> "time based"
+  // "Score Based" -> "score based"
+  // "Combination of:" -> "combination"
+  if (typeOption.label === "Combination of") {
+    return "combination";
+  }
+  return typeOption.label.toLowerCase();
+};
+
 export const EventSidePanel: React.FC<EventSidePanelProps> = ({
   selectedEvent,
   isOpen,
@@ -72,7 +94,6 @@ export const EventSidePanel: React.FC<EventSidePanelProps> = ({
   onDelete,
   onUpdate,
 }) => {
-  const [isEventTypeDropdownOpen, setIsEventTypeDropdownOpen] = useState(false);
   const [formData, setFormData] = useState(selectedEvent);
 
   useEffect(() => {
@@ -81,6 +102,10 @@ export const EventSidePanel: React.FC<EventSidePanelProps> = ({
 
   const debouncedUpdate = useDebounce(() => {
     if (formData) {
+      // Block API calls for COMBINATION events
+      if (formData.detectionType === SessionEventDetectionType.COMBINATION) {
+        return;
+      }
       // Only call onUpdate if not in TEST_MODE
       if (!TEST_MODE) {
         onUpdate(formData);
@@ -93,11 +118,17 @@ export const EventSidePanel: React.FC<EventSidePanelProps> = ({
     if (formData && formData !== selectedEvent) {
       debouncedUpdate();
     }
-  }, [formData]);
+  }, [formData, selectedEvent, debouncedUpdate]);
+
+  // Extract event code and display name from formData
+  const eventCode = useMemo(() => extractEventCode(formData?.name), [formData?.name]);
+  const eventTypeDisplayName = useMemo(
+    () => getEventTypeDisplayName(formData?.detectionType),
+    [formData?.detectionType],
+  );
 
   const handleFieldChange = useCallback(
     (fieldName: string, value: string | number | object) => {
-      setIsEventTypeDropdownOpen(false);
       if (!selectedEvent) return;
 
       setFormData(previousData => {
@@ -105,41 +136,6 @@ export const EventSidePanel: React.FC<EventSidePanelProps> = ({
           ...previousData,
           [fieldName]: value,
         };
-
-        // If event type changes, regenerate the event name based on new type
-        if (fieldName === "detectionType" && previousData.name) {
-          // Extract the base name without "- Test Event" suffix
-          const baseName = previousData.name.replace(/\s*-?\s*Test\s*Event\s*/gi, "").trim();
-
-          // Generate new sequential name based on the new event type
-          const newEventType = value as EventType;
-          const typeOption = EVENT_TYPE_OPTIONS.find(opt => opt.value === newEventType);
-
-          if (typeOption) {
-            // Try to preserve the number from the old name if it matches the old prefix
-            const oldTypeOption = EVENT_TYPE_OPTIONS.find(
-              opt => opt.value === previousData.detectionType,
-            );
-            let newName = baseName;
-
-            if (oldTypeOption && baseName.startsWith(oldTypeOption.prefix)) {
-              // Extract number from old name and use it with new prefix
-              const numberMatch = baseName.match(/\d+/);
-              if (numberMatch) {
-                const number = numberMatch[0].padStart(3, "0");
-                newName = `${typeOption.prefix}${number}`;
-              } else {
-                // Fallback: generate new sequential name
-                newName = generateSequentialEventName(newEventType, [baseName]);
-              }
-            } else {
-              // Generate new sequential name based on new type
-              newName = generateSequentialEventName(newEventType, [baseName]);
-            }
-
-            updatedData.name = `${newName} - Test Event`;
-          }
-        }
 
         return updatedData;
       });
@@ -161,7 +157,10 @@ export const EventSidePanel: React.FC<EventSidePanelProps> = ({
         }
 
         // Handle speaker in triggerCondition for sentence similarity
-        if (field === "speaker" && previousData.detectionType === "SENTENCE_SIMILARITY") {
+        if (
+          field === "speaker" &&
+          previousData.detectionType === SessionEventDetectionType.SENTENCE_SIMILARITY
+        ) {
           return {
             ...previousData,
             speaker: value as string,
@@ -169,7 +168,10 @@ export const EventSidePanel: React.FC<EventSidePanelProps> = ({
         }
 
         // Handle conditions array for combination events
-        if (field === "conditions" && previousData.detectionType === "COMBINATION") {
+        if (
+          field === "conditions" &&
+          previousData.detectionType === SessionEventDetectionType.COMBINATION
+        ) {
           return {
             ...previousData,
             triggerCondition: {
@@ -214,57 +216,21 @@ export const EventSidePanel: React.FC<EventSidePanelProps> = ({
 
         <div className="h-[calc(100vh-100px)] px-10 pl-[46px] pt-2 overflow-y-auto [&::-webkit-scrollbar]:w-[1px] [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-scrollbar-thumb">
           <div className="mb-4">
-            <input
-              type="text"
-              value={formData.name || ""}
-              onChange={event => {
-                const newName = event.target.value.replace(" - Test Event", "");
-                handleFieldChange("name", `${newName} - Test Event`);
-              }}
-              placeholder="New Event"
-              className="border-none focus:outline-none text-2xl font-light w-full"
-            />
+            <div className="text-2xl font-light w-full">
+              {eventTypeDisplayName ? `Sample ${eventTypeDisplayName} event` : "Sample event"}
+            </div>
           </div>
 
           <div className="space-y-3">
-            <Field label="Event type">
-              <div className="relative">
-                <button
-                  type="button"
-                  onClick={() => setIsEventTypeDropdownOpen(!isEventTypeDropdownOpen)}
-                  className="px-0 py-2 cursor-pointer text-sm flex items-center space-x-2"
-                >
-                  <span className="truncate">
-                    {formData.detectionType
-                      ? (EVENT_TYPE_OPTIONS.find(opt => opt.value === formData.detectionType)
-                          ?.label ?? formatCapitalizedEnum(formData.detectionType))
-                      : "Select event type"}
-                  </span>
-                  <ArrowDownFilled />
-                </button>
-                {isEventTypeDropdownOpen && (
-                  <div className="absolute z-10 bg-white p-1 border border-gray-300 min-w-[200px] rounded-[6px] left-[0px] top-[30px] space-y-1">
-                    {EVENT_TYPE_OPTIONS.map(option => (
-                      <div
-                        key={option.value}
-                        onClick={() => handleFieldChange("detectionType", option.value)}
-                        className={`px-3 py-2 cursor-pointer rounded-[6px] flex items-center hover:bg-blue-100 ${
-                          formData.detectionType === option.value ? "bg-gray-100" : ""
-                        }`}
-                      >
-                        <span className="truncate">{option.label}</span>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
+            <Field label="Event code">
+              <div className="text-sm text-neutral-800">{eventCode || "—"}</div>
             </Field>
 
             {/* Trigger Conditions Field */}
-            {(formData.detectionType === "TIME_BASED" ||
-              formData.detectionType === "SCORE_BASED" ||
-              formData.detectionType === "SENTENCE_SIMILARITY" ||
-              formData.detectionType === "COMBINATION") && (
+            {(formData?.detectionType === "TIME_BASED" ||
+              formData?.detectionType === "SCORE_BASED" ||
+              formData?.detectionType === SessionEventDetectionType.SENTENCE_SIMILARITY ||
+              formData?.detectionType === SessionEventDetectionType.COMBINATION) && (
               <TriggerConditions
                 eventType={formData.detectionType}
                 triggerCondition={formData.triggerCondition}
@@ -273,18 +239,7 @@ export const EventSidePanel: React.FC<EventSidePanelProps> = ({
               />
             )}
 
-            <Field label="Event description" multiline={true}>
-              <AutoExpandableTextarea
-                maxLines={20}
-                minHeight={20}
-                value={formData.description}
-                onChange={value => handleFieldChange("description", value)}
-                placeholder="Add description"
-                className="py-2 pt-[16px] px-0 border-none focus:outline-none text-sm w-full resize-none overflow-y-auto [&::-webkit-scrollbar]:w-[1px] [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-scrollbar-thumb"
-              />
-            </Field>
-
-            <Field label="Default branch description" multiline={true}>
+            <Field label="Branch description" multiline={true}>
               <AutoExpandableTextarea
                 maxLines={20}
                 minHeight={20}

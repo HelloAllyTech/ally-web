@@ -315,20 +315,20 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: SimulationCreatorFieldGroups[] = [
 
 export const EVENT_MANAGEMENT_TABLE_COLUMNS = [
   {
-    id: "detectionType",
-    label: "Event type",
-    accessor: "detectionType",
-    dataType: cellTypes.dropdown,
-    options: EVENT_TYPE_OPTIONS,
-    minWidth: 150,
-  },
-  {
     id: "name",
     label: "Event name",
     accessor: "name",
     placeholder: "Add Event Name",
     dataType: cellTypes.editableText,
     minWidth: 180,
+  },
+  {
+    id: "detectionType",
+    label: "Event type",
+    accessor: "detectionType",
+    dataType: cellTypes.dropdown,
+    options: EVENT_TYPE_OPTIONS,
+    minWidth: 150,
   },
   {
     id: "triggerConditions",

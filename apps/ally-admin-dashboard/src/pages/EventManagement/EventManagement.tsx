@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useMemo, useCallback } from "react";
 
+import { convertEventToApiPayload } from "@src/utils/eventManagement";
 import { generateSequentialEventName } from "@utils/eventNameGenerator";
 import { toast } from "sonner";
 
@@ -111,7 +112,7 @@ export const EventManagement: React.FC = () => {
       };
     }
 
-    const newEvent = {
+    const newEvent: UpdateEventDataParam = {
       name: `${eventName} - Test Event`,
       description: "",
       score: 0,
@@ -138,8 +139,14 @@ export const EventManagement: React.FC = () => {
     }
 
     // PRODUCTION CODE - Uncomment when ready to test with API
+    // Convert UpdateEventDataParam to SessionEvent format for API
+    // const apiEvent = convertEventToApiPayload(newEvent);
+    // if (!apiEvent) {
+    //   toast.error("Failed to convert event to API format");
+    //   return;
+    // }
     // try {
-    //   const response = await createSessionEvents({ events: [newEvent] });
+    //   const response = await createSessionEvents({ events: [apiEvent] });
     //   if (response.error) {
     //     toast.error("Failed to create event");
     //   } else {
@@ -391,33 +398,16 @@ export const EventManagement: React.FC = () => {
 
   const onUpdateEvent = async (event: UpdateEventDataParam) => {
     if (event) {
-      // Convert back to plain format for API
-      const payload: any = {
-        name: event.name || "",
-        detectionType: event.detectionType || "",
-        speaker: event.speaker || "",
-        description: event.description || "",
-        branchInstruction: event.branchInstruction || "",
-        score: Number.isInteger(event.score) ? event.score : 0,
-        message: event.message || "",
-        emoji: event.emoji || "",
-        visibilityType: event.visibilityType || "",
-        sentences:
-          event.sentences || (event.description?.length > 0 ? event.description?.split("\n") : []),
-      };
-
-      // Include triggerCondition if it exists
-      if (event.triggerCondition) {
-        payload.triggerCondition = event.triggerCondition;
+      // Block API calls for COMBINATION events
+      if (event.detectionType === "COMBINATION") {
+        return;
       }
 
-      // Include new fields that may not be in UpdateEventDataParam type yet
-      // These will be sent to backend when API supports them
-      if ((event as any).sessionScoreEditable !== undefined) {
-        payload.sessionScoreEditable = (event as any).sessionScoreEditable;
-      }
-      if ((event as any).combineTimeScore !== undefined) {
-        payload.combineTimeScore = (event as any).combineTimeScore;
+      // Convert to API payload format using utility function
+      const payload = convertEventToApiPayload(event);
+
+      if (!payload) {
+        return;
       }
 
       try {
