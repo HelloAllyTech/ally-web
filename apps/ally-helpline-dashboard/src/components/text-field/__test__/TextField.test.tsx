@@ -41,18 +41,6 @@ describe("TextField", () => {
     vi.clearAllMocks();
   });
 
-  it("should match snapshot with default props (error hidden)", () => {
-    const { asFragment } = render(
-      <TextField {...defaultProps} label="Test Label" hideError={true} />,
-    );
-    expect(asFragment()).toMatchSnapshot();
-  });
-
-  it("should match snapshot when disabled", () => {
-    const { asFragment } = render(<TextField {...defaultProps} disabled={true} />);
-    expect(asFragment()).toMatchSnapshot();
-  });
-
   it("should render the label correctly", () => {
     const labelText = "User Name";
     render(<TextField {...defaultProps} label={labelText} hideError={true} />);

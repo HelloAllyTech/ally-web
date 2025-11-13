@@ -57,7 +57,7 @@ const ConfirmationDialog: FC<ConfirmationDialogProps> = ({
         </motion.div>
 
         <motion.div
-          className="text-[30px] font-['Replay_Pro'] text-[#434343]"
+          className="text-4xl font-secondary text-typography-800"
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2, duration: 0.3 }}
@@ -78,7 +78,7 @@ const ConfirmationDialog: FC<ConfirmationDialogProps> = ({
 
         <motion.p
           id="confirmation-dialog-description"
-          className="text-center font-['IBM_Plex_Serif'] text-sm sm:text-base"
+          className="text-center font-primary text-sm sm:text-base"
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.4, duration: 0.3 }}
@@ -111,7 +111,7 @@ const ConfirmationDialog: FC<ConfirmationDialogProps> = ({
 
         {footerText && (
           <motion.span
-            className="text-xs sm:text-[12px] text-[#656565] font-['IBM_Plex_Serif'] text-center"
+            className="text-xs sm:text-xs text-typography-800 font-primary text-center"
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.7, duration: 0.3 }}

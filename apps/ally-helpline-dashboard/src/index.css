@@ -32,12 +32,10 @@
     @apply border-border;
   }
   body {
-    @apply bg-background text-foreground antialiased;
+    @apply bg-background text-primary antialiased;
   }
 }
-body {
-  color: #484848;
-}
+
 
 /* ===== Changing colors in an SVG ===== */
 

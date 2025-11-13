@@ -63,7 +63,7 @@ export const StressBuster = () => {
     const words = text.split(" ");
 
     return (
-      <span className="text-white text-5xl font-['Replay_Pro']">
+      <span className="text-white text-5xl font-secondary">
         {words.map((word, wordIndex) => (
           <span key={getKeyFromIndex(wordIndex, "word")}>
             {word === highlight ? (

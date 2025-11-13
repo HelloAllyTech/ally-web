@@ -356,7 +356,7 @@ const UserLogsTable: FC<LogsTableProps> = ({ refreshKey, sessionType, className 
           isLoading={isLoading}
           handleLoadMore={logs?.length > 0 && hasMore && handleLoadMore}
           fallbackUI={renderFallbackUI()}
-          className={`min-w-full font-['IBM_Plex_Serif'] overflow-y-scroll text-[13px] ${className}`}
+          className={`min-w-full font-primary overflow-y-scroll text-sm text-typography-800 ${className}`}
         />
       </div>
       {summary && summary.id && getSummarySideBar()}

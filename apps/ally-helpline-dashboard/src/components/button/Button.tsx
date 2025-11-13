@@ -6,16 +6,16 @@ import { ButtonProps, ButtonVariant } from "./types";
 const getButtonStyles = (variant: ButtonProps["variant"]) => {
   switch (variant) {
     case ButtonVariant.DESTRUCTIVE:
-      return "bg-[#F93535] text-[#FFFFFF] hover:bg-destructive/90 disabled:bg-destructive/50";
+      return "bg-destructive text-white hover:bg-destructive/90 disabled:bg-destructive/50";
     case ButtonVariant.SECONDARY:
-      return "border border-[#C8C5D0] hover:bg-accent hover:text-accent-foreground disabled:bg-accent/50";
+      return "border border-secondary hover:bg-accent hover:text-typography-900 disabled:bg-accent/50 text-typography-900";
     case ButtonVariant.ICON:
       return "bg-transparent border-none hover:bg-transparent disabled:bg-transparent !p-2 !h-fit";
     case ButtonVariant.TEXT:
       return "bg-transparent border-none hover:bg-transparent disabled:bg-transparent";
     case ButtonVariant.PRIMARY:
     default:
-      return "bg-[#0957D0] text-[#FFFFFF] hover:bg-primary-600 disabled:bg-primary/50";
+      return "text-white bg-primary-500 hover:bg-primary-600 disabled:bg-primary/50";
   }
 };
 

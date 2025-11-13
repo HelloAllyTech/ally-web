@@ -48,7 +48,7 @@ export const getSourceChipConfig = (provider: CallProvider): ChipConfig => {
       return {
         label: "Uploaded",
         dotClassName: "hidden",
-        outerDivClassName: "bg-[#E2F2FF] text-[#0957D0]", // Blue
+        outerDivClassName: "bg-[#E2F2FF] text-primary-500", // Blue
       };
     default:
       return {

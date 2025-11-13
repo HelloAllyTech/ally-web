@@ -28,8 +28,8 @@ const Tab: FC<TabProps> = ({ id, Icon, title, activeTab, isExpanded, onClick }) 
     {isExpanded && (
       <div
         className={`${
-          activeTab === id ? "text-[#000] font-[500]" : "text-[#6B7280] font-[400]"
-        } font-['IBM_Plex_Serif'] text-[16px]`}
+          activeTab === id ? "text-typography-900 font-[500]" : "text-typography-800 font-[400]"
+        } font-primary text-lg`}
       >
         {title}
       </div>
@@ -115,7 +115,7 @@ const NavSideBar: FC<NavSideBarProps> = ({ activeTab, onTabChange, isOpen, onClo
       <div
         className={`bg-white h-screen flex flex-col justify-between border-r border-r-[#E5E7EB] transition-all duration-300 relative ${
           isExpanded ? "w-64" : "w-24"
-        } p-[12px] font-['IBM_Plex_Serif']`}
+        } p-[12px] font-primary`}
       >
         <div className="flex justify-between">
           <Ally className="m-3 flex-shrink-0" />
