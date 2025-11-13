@@ -3,61 +3,56 @@
 exports[`Accordion > matches snapshot (collapsed) 1`] = `
 <div>
   <div
-    class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 MuiAccordion-root MuiAccordion-rounded MuiAccordion-gutters css-1sgwnub-MuiPaper-root-MuiAccordion-root"
-    style="--Paper-shadow: 0px 2px 1px -1px rgba(0,0,0,0.2),0px 1px 1px 0px rgba(0,0,0,0.14),0px 1px 3px 0px rgba(0,0,0,0.12);"
+    class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 MuiAccordion-root MuiAccordion-rounded MuiAccordion-gutters css-uftwe0-MuiPaper-root-MuiAccordion-root"
   >
-    <h3
-      class="MuiAccordion-heading css-cy7rkm-MuiAccordion-heading"
+    <div
+      aria-expanded="false"
+      class="MuiButtonBase-root MuiAccordionSummary-root MuiAccordionSummary-gutters css-14wytk3-MuiButtonBase-root-MuiAccordionSummary-root"
+      role="button"
+      tabindex="0"
     >
-      <button
-        aria-expanded="false"
-        class="MuiButtonBase-root MuiAccordionSummary-root MuiAccordionSummary-gutters css-ycvez4-MuiButtonBase-root-MuiAccordionSummary-root"
-        tabindex="0"
-        type="button"
+      <div
+        class="MuiAccordionSummary-content MuiAccordionSummary-contentGutters css-eqpfi5-MuiAccordionSummary-content"
       >
         <span
-          class="MuiAccordionSummary-content MuiAccordionSummary-contentGutters css-yfrx4k-MuiAccordionSummary-content"
+          class="text-[16px] font-medium text-[#000]"
         >
-          <span
-            class="text-[16px] font-medium text-[#000]"
-          >
-            Test Accordion
-          </span>
+          Test Accordion
         </span>
-        <span
-          class="MuiAccordionSummary-expandIconWrapper css-1wqf3nl-MuiAccordionSummary-expandIconWrapper"
+      </div>
+      <div
+        class="MuiAccordionSummary-expandIconWrapper css-yw020d-MuiAccordionSummary-expandIconWrapper"
+      >
+        <svg
+          aria-hidden="true"
+          aria-label="expand icon"
+          class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium rotate-90 text-[#000] css-i4bv87-MuiSvgIcon-root"
+          data-testid="PlayArrowRoundedIcon"
+          focusable="false"
+          viewBox="0 0 24 24"
         >
-          <svg
-            aria-hidden="true"
-            aria-label="expand icon"
-            class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium rotate-90 text-[#000] css-1umw9bq-MuiSvgIcon-root"
-            data-testid="PlayArrowRoundedIcon"
-            focusable="false"
-            viewBox="0 0 24 24"
-          >
-            <path
-              d="M8 6.82v10.36c0 .79.87 1.27 1.54.84l8.14-5.18c.62-.39.62-1.29 0-1.69L9.54 5.98C8.87 5.55 8 6.03 8 6.82"
-            />
-          </svg>
-        </span>
-      </button>
-    </h3>
+          <path
+            d="M8 6.82v10.36c0 .79.87 1.27 1.54.84l8.14-5.18c.62-.39.62-1.29 0-1.69L9.54 5.98C8.87 5.55 8 6.03 8 6.82"
+          />
+        </svg>
+      </div>
+    </div>
     <div
-      class="MuiCollapse-root MuiCollapse-vertical MuiCollapse-hidden css-cwrbtg-MuiCollapse-root"
+      class="MuiCollapse-root MuiCollapse-vertical MuiCollapse-hidden css-bz4dnt-MuiCollapse-root"
       style="min-height: 0px;"
     >
       <div
-        class="MuiCollapse-wrapper MuiCollapse-vertical css-1x6hinx-MuiCollapse-wrapper"
+        class="MuiCollapse-wrapper MuiCollapse-vertical css-smkl36-MuiCollapse-wrapper"
       >
         <div
-          class="MuiCollapse-wrapperInner MuiCollapse-vertical css-1i4ywhz-MuiCollapse-wrapperInner"
+          class="MuiCollapse-wrapperInner MuiCollapse-vertical css-9l5vo-MuiCollapse-wrapperInner"
         >
           <div
             class="MuiAccordion-region"
             role="region"
           >
             <div
-              class="MuiAccordionDetails-root css-v9zdez-MuiAccordionDetails-root"
+              class="MuiAccordionDetails-root css-2jn36u-MuiAccordionDetails-root"
             >
               Test Content
             </div>
@@ -72,61 +67,56 @@ exports[`Accordion > matches snapshot (collapsed) 1`] = `
 exports[`Accordion > matches snapshot (expanded) 1`] = `
 <div>
   <div
-    class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 MuiAccordion-root MuiAccordion-rounded Mui-expanded MuiAccordion-gutters css-1sgwnub-MuiPaper-root-MuiAccordion-root"
-    style="--Paper-shadow: 0px 2px 1px -1px rgba(0,0,0,0.2),0px 1px 1px 0px rgba(0,0,0,0.14),0px 1px 3px 0px rgba(0,0,0,0.12);"
+    class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 MuiAccordion-root MuiAccordion-rounded Mui-expanded MuiAccordion-gutters css-uftwe0-MuiPaper-root-MuiAccordion-root"
   >
-    <h3
-      class="MuiAccordion-heading css-cy7rkm-MuiAccordion-heading"
+    <div
+      aria-expanded="true"
+      class="MuiButtonBase-root MuiAccordionSummary-root Mui-expanded MuiAccordionSummary-gutters css-14wytk3-MuiButtonBase-root-MuiAccordionSummary-root"
+      role="button"
+      tabindex="0"
     >
-      <button
-        aria-expanded="true"
-        class="MuiButtonBase-root MuiAccordionSummary-root Mui-expanded MuiAccordionSummary-gutters css-ycvez4-MuiButtonBase-root-MuiAccordionSummary-root"
-        tabindex="0"
-        type="button"
+      <div
+        class="MuiAccordionSummary-content Mui-expanded MuiAccordionSummary-contentGutters css-eqpfi5-MuiAccordionSummary-content"
       >
         <span
-          class="MuiAccordionSummary-content Mui-expanded MuiAccordionSummary-contentGutters css-yfrx4k-MuiAccordionSummary-content"
+          class="text-[16px] font-medium text-[#000]"
         >
-          <span
-            class="text-[16px] font-medium text-[#000]"
-          >
-            Test Accordion
-          </span>
+          Test Accordion
         </span>
-        <span
-          class="MuiAccordionSummary-expandIconWrapper Mui-expanded css-1wqf3nl-MuiAccordionSummary-expandIconWrapper"
+      </div>
+      <div
+        class="MuiAccordionSummary-expandIconWrapper Mui-expanded css-yw020d-MuiAccordionSummary-expandIconWrapper"
+      >
+        <svg
+          aria-hidden="true"
+          aria-label="expand icon"
+          class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium rotate-90 text-[#000] css-i4bv87-MuiSvgIcon-root"
+          data-testid="PlayArrowRoundedIcon"
+          focusable="false"
+          viewBox="0 0 24 24"
         >
-          <svg
-            aria-hidden="true"
-            aria-label="expand icon"
-            class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium rotate-90 text-[#000] css-1umw9bq-MuiSvgIcon-root"
-            data-testid="PlayArrowRoundedIcon"
-            focusable="false"
-            viewBox="0 0 24 24"
-          >
-            <path
-              d="M8 6.82v10.36c0 .79.87 1.27 1.54.84l8.14-5.18c.62-.39.62-1.29 0-1.69L9.54 5.98C8.87 5.55 8 6.03 8 6.82"
-            />
-          </svg>
-        </span>
-      </button>
-    </h3>
+          <path
+            d="M8 6.82v10.36c0 .79.87 1.27 1.54.84l8.14-5.18c.62-.39.62-1.29 0-1.69L9.54 5.98C8.87 5.55 8 6.03 8 6.82"
+          />
+        </svg>
+      </div>
+    </div>
     <div
-      class="MuiCollapse-root MuiCollapse-vertical MuiCollapse-entered css-qr6njo-MuiCollapse-root"
+      class="MuiCollapse-root MuiCollapse-vertical MuiCollapse-entered css-pwcg7p-MuiCollapse-root"
       style="min-height: 0px;"
     >
       <div
-        class="MuiCollapse-wrapper MuiCollapse-vertical css-1x6hinx-MuiCollapse-wrapper"
+        class="MuiCollapse-wrapper MuiCollapse-vertical css-smkl36-MuiCollapse-wrapper"
       >
         <div
-          class="MuiCollapse-wrapperInner MuiCollapse-vertical css-1i4ywhz-MuiCollapse-wrapperInner"
+          class="MuiCollapse-wrapperInner MuiCollapse-vertical css-9l5vo-MuiCollapse-wrapperInner"
         >
           <div
             class="MuiAccordion-region"
             role="region"
           >
             <div
-              class="MuiAccordionDetails-root css-v9zdez-MuiAccordionDetails-root"
+              class="MuiAccordionDetails-root css-2jn36u-MuiAccordionDetails-root"
             >
               Test Content
             </div>
