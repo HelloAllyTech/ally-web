@@ -1,4 +1,5 @@
 # Base workspace deps image for dev
+# Multi-stage: deps stage builds and caches node_modules
 FROM node:20-alpine AS deps
 WORKDIR /app
 
@@ -14,5 +15,7 @@ RUN npm ci --legacy-peer-deps
 
 # Final minimal base that contains node_modules
 FROM node:20-alpine
+# Set working directory for final runtime image
 WORKDIR /app
+# Copy cached node_modules from deps stage to final image
 COPY --from=deps /app/node_modules /app/node_modules
