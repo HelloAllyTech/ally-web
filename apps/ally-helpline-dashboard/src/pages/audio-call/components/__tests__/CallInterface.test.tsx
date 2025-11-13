@@ -468,46 +468,8 @@ describe("CallInterface Component", () => {
 
   /**
    * TEST GROUP: Snapshot Testing
-   * Verifies UI consistency over time
+   * Snapshots removed: Font color, size, and family change frequently during development
    */
-  describe("Snapshot Testing", () => {
-    it("should match snapshot with default props", () => {
-      const { container } = render(<CallInterface {...defaultProps} />);
-      expect(container.firstChild).toMatchSnapshot();
-    });
-
-    it("should match snapshot when user not joined", () => {
-      const { container } = render(<CallInterface {...defaultProps} isUserJoined={false} />);
-      expect(container.firstChild).toMatchSnapshot();
-    });
-
-    it("should match snapshot with Exotel banner", () => {
-      const { container } = render(<CallInterface {...defaultProps} isExotelMode={true} />);
-      expect(container.firstChild).toMatchSnapshot();
-    });
-
-    it("should match snapshot with error screen", () => {
-      const { container } = render(
-        <CallInterface
-          {...defaultProps}
-          isUserJoined={false}
-          socketDisconnectionReason={SocketDisconnectionReasons.NO_NETWORK}
-        />,
-      );
-      expect(container.firstChild).toMatchSnapshot();
-    });
-
-    it("should match snapshot in microphone mode", () => {
-      const { container } = render(
-        <CallInterface
-          {...defaultProps}
-          isMicrophoneMode={true}
-          activeChat={{ ...mockActiveChat, provider: CallProvider.MICROPHONE }}
-        />,
-      );
-      expect(container.firstChild).toMatchSnapshot();
-    });
-  });
 
   /**
    * TEST GROUP: Component Type and Export

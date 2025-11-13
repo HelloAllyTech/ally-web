@@ -29,7 +29,7 @@ const InfoBanner: FC<InfoBannerProps> = ({
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.3, delay: 0.15 }}
-        className={`text-sm font-['Roboto'] font-medium ${messageClassName}`}
+        className={`text-sm font-tertiary font-medium ${messageClassName}`}
       >
         {message}
       </motion.span>

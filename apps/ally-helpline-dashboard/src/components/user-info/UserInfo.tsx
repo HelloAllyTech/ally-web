@@ -46,20 +46,20 @@ const UserInfo: FC<{ user?: User; isExpanded?: boolean; onLogout: () => void }> 
             }
           >
             <div className="bg-white rounded-full flex items-center justify-center w-full h-full">
-              <AccountCircle className="text-gray-700 w-[28px] h-[28px]" />
+              <AccountCircle className="text-typography-700 w-[28px] h-[28px]" />
             </div>
           </div>
           {isExpanded && (
-            <div className="flex flex-col font-['IBM_Plex_Serif']">
-              <div className="text-[16px] text-gray-800">{user?.name}</div>
-              <div className="text-[12px] text-gray-500">{user?.email}</div>
+            <div className="flex flex-col font-primary">
+              <div className="text-lg text-typography-800">{user?.name}</div>
+              <div className="text-xs text-typography-800">{user?.email}</div>
             </div>
           )}
         </div>
         {isExpanded && (
           <div className="flex-shrink-0">
             <Arrow
-              className={`w-5 h-2 text-gray-600 transition-transform duration-300 ${
+              className={`w-5 h-2 text-typography-800 transition-transform duration-300 ${
                 showLogout ? "-rotate-90" : ""
               }`}
             />
@@ -69,7 +69,7 @@ const UserInfo: FC<{ user?: User; isExpanded?: boolean; onLogout: () => void }> 
 
       {showLogout && (
         <div
-          className={`absolute z-10 bottom-3  bg-white border shadow-md rounded-md p-2 w-[240px] flex flex-col gap-3 font-['IBM_Plex_Sans'] ${isExpanded ? "left-[240px]" : "left-[80px]"}`}
+          className={`absolute z-10 bottom-3  bg-white border shadow-md rounded-md p-2 w-[240px] flex flex-col gap-3 font-primary ${isExpanded ? "left-[240px]" : "left-[80px]"}`}
         >
           <PermissionGuard requiredPermissions={[Permissions.VIEW_SIMULATION_CREDITS]}>
             <div className="flex items-center gap-2">
@@ -79,8 +79,8 @@ const UserInfo: FC<{ user?: User; isExpanded?: boolean; onLogout: () => void }> 
 
             <div className="flex justify-between items-center ">
               <div>
-                <span className="font-semibold text-[18px] ">{credits?.consumedCredits ?? 0}</span>
-                <span className="text-gray-500 text-[14px]">/{credits?.creditLimit ?? 0}</span>
+                <span className="font-semibold text-xl ">{credits?.consumedCredits ?? 0}</span>
+                <span className="text-typography-800 text-base">/{credits?.creditLimit ?? 0}</span>
               </div>
               <span>{credits?.creditLimit ? `${CreditPercentage}%` : "0%"}</span>
             </div>
@@ -97,7 +97,7 @@ const UserInfo: FC<{ user?: User; isExpanded?: boolean; onLogout: () => void }> 
           </PermissionGuard>
           <button
             onClick={onLogout}
-            className="flex items-center gap-2 text-gray-700 hover:bg-gray-100 py-1 px-2 rounded justify-start w-full border-gray-200"
+            className="flex items-center gap-2 text-typography-700 hover:bg-gray-100 py-1 px-2 rounded justify-start w-full border-gray-200"
           >
             <Logout className="w-4 h-4" />
             Logout

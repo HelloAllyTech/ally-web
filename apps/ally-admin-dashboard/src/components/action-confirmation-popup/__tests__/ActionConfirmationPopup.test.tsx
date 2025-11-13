@@ -32,7 +32,7 @@ vi.mock("@utils", () => ({
   getButtonStyles: (variant: string) => {
     const styles: Record<string, string> = {
       primary: "bg-blue-600 text-white",
-      secondary: "bg-gray-200 text-gray-800",
+      secondary: "bg-gray-200 text-typography-800",
       danger: "bg-red-600 text-white",
     };
     return styles[variant] || "";

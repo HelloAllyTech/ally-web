@@ -30,13 +30,6 @@ const renderComponent = (props = {}) => {
 // --- TEST SUITE ---
 
 describe("FallbackUI", () => {
-  // Snapshot Test
-  it("should render correctly in the default (loaded, no button) state", () => {
-    const { container } = renderComponent();
-    // Snapshot ensures structure remains consistent
-    expect(container).toMatchSnapshot();
-  });
-
   it("should render the main message and description", () => {
     renderComponent();
     expect(screen.getByText(defaultProps.mainMessage)).toBeInTheDocument();

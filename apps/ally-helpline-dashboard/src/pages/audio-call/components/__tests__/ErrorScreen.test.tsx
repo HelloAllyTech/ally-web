@@ -242,13 +242,7 @@ describe("ErrorScreen Component", () => {
       renderComponent(SocketDisconnectionReasons.NO_NETWORK);
 
       const title = screen.getByText("No internet connection");
-      expect(title).toHaveClass(
-        "text-white",
-        "text-2xl",
-        "text-center",
-        "mt-1",
-        "font-['Replay_Pro']",
-      );
+      expect(title).toHaveClass("text-white", "text-2xl", "text-center", "mt-1", "font-secondary");
     });
 
     it("should have correct description styling", () => {
@@ -262,7 +256,7 @@ describe("ErrorScreen Component", () => {
         "text-sm",
         "text-center",
         "mt-1",
-        "font-['IBM_Plex_Serif']",
+        "font-primary",
       );
     });
 
