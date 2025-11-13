@@ -197,7 +197,7 @@ const LoginDialog: FC<LoginPopupProps> = ({ isOpen, onClose, onSuccess }) => {
               "Next"
             )}
           </Button>
-          <div className="text-xs text-typography-600 mt-2">
+          <div className="text-xs text-typography-800 mt-2">
             By tapping next, you agree to Ally's{" "}
             <span
               className="text-primary-500 cursor-pointer"
@@ -237,7 +237,7 @@ const LoginDialog: FC<LoginPopupProps> = ({ isOpen, onClose, onSuccess }) => {
           <div className="text-xs text-typography-700">
             Didn't receive the code?{" "}
             <span
-              className={`${countdown > 0 ? "text-typography-500" : "text-primary-500"} cursor-pointer`}
+              className={`${countdown > 0 ? "text-typography-800" : "text-primary-500"} cursor-pointer`}
               onClick={handleResendCode}
             >
               Resend {countdown > 0 ? `(${countdown}s)` : ""}

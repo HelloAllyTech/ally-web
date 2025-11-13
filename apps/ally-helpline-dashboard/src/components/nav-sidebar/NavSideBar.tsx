@@ -28,7 +28,7 @@ const Tab: FC<TabProps> = ({ id, Icon, title, activeTab, isExpanded, onClick }) 
     {isExpanded && (
       <div
         className={`${
-          activeTab === id ? "text-typography-900 font-[500]" : "text-typography-600 font-[400]"
+          activeTab === id ? "text-typography-900 font-[500]" : "text-typography-800 font-[400]"
         } font-primary text-lg`}
       >
         {title}

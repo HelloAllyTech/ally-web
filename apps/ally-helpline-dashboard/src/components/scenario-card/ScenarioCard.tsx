@@ -25,7 +25,7 @@ const ScenarioCard: FC<ScenarioCardProps> = ({
           onError={() => setImageError(true)}
         />
       ) : (
-        <div className="w-full h-full flex items-center justify-center text-typography-500 bg-gray-100">
+        <div className="w-full h-full flex items-center justify-center text-typography-800 bg-gray-100">
           <span className="text-sm">Image not available</span>
         </div>
       )}
@@ -63,7 +63,7 @@ const ScenarioCard: FC<ScenarioCardProps> = ({
             {title}
           </div>
 
-          <div className="text-base text-typography-600">
+          <div className="text-base text-typography-800">
             <p style={scenarioDescriptionStyle}>{description}</p>
           </div>
         </div>

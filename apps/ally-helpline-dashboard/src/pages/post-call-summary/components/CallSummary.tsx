@@ -185,11 +185,11 @@ const CallSummary: FC<CallSummaryProps> = ({
       case FieldType.Dropdown:
         return (
           <div key={field.key} className="flex gap-1">
-            <span className="font-medium text-lg text-[#6B7280]">{`${field.label}: `}</span>
+            <span className="font-medium text-lg text-typography-800">{`${field.label}: `}</span>
             <DropdownField
               disabled={isFieldDisabled(field)}
               value={value ?? "--"}
-              valueClassName={`${field.isEditable ? "text-[#1A1A1A]" : "text-[#9CA3AF]"} 
+              valueClassName={`${field.isEditable ? "text-typography-900" : "text-typography-800"} 
                 text-lg font-primary`}
               onChange={value => setSummaryData(prev => ({ ...prev, [field.key]: value }))}
               onHandleSearch={field.key === SummaryFieldKey.Location ? onHandleSearch : undefined}
@@ -201,7 +201,7 @@ const CallSummary: FC<CallSummaryProps> = ({
         return (
           <div key={field.key} className="flex flex-col gap-1">
             {labelShownSections?.includes(field.sectionKey) && (
-              <span className="font-medium text-lg text-[#6B7280]">{`${field.label}: `}</span>
+              <span className="font-medium text-lg text-typography-800">{`${field.label}: `}</span>
             )}
             <TextField
               value={enhancing === field.key ? "" : value || ""}
@@ -247,7 +247,7 @@ const CallSummary: FC<CallSummaryProps> = ({
         return (
           <div key={field.key}>
             <div className="flex items-center">
-              <span className="font-medium text-lg text-[#6B7280]">{`${field.label}: `}</span>
+              <span className="font-medium text-lg text-typography-800">{`${field.label}: `}</span>
               <div className="flex-1">
                 <TextField
                   value={value ?? "--"}
@@ -443,7 +443,7 @@ const CallSummary: FC<CallSummaryProps> = ({
               titleIcon={{ icon: Assessment, alt: "Notes" }}
               defaultExpanded={false}
             >
-              <div className="text-lg font-primary text-[#6B7280] mb-[8px]">
+              <div className="text-lg font-primary text-typography-800 mb-[8px]">
                 {callSummary?.details?.callInfo?.notes || "--"}
               </div>
             </Accordion>

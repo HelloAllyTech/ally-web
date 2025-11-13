@@ -52,14 +52,14 @@ const UserInfo: FC<{ user?: User; isExpanded?: boolean; onLogout: () => void }> 
           {isExpanded && (
             <div className="flex flex-col font-primary">
               <div className="text-lg text-typography-800">{user?.name}</div>
-              <div className="text-xs text-typography-600">{user?.email}</div>
+              <div className="text-xs text-typography-800">{user?.email}</div>
             </div>
           )}
         </div>
         {isExpanded && (
           <div className="flex-shrink-0">
             <Arrow
-              className={`w-5 h-2 text-typography-600 transition-transform duration-300 ${
+              className={`w-5 h-2 text-typography-800 transition-transform duration-300 ${
                 showLogout ? "-rotate-90" : ""
               }`}
             />
@@ -80,7 +80,7 @@ const UserInfo: FC<{ user?: User; isExpanded?: boolean; onLogout: () => void }> 
             <div className="flex justify-between items-center ">
               <div>
                 <span className="font-semibold text-xl ">{credits?.consumedCredits ?? 0}</span>
-                <span className="text-typography-600 text-base">/{credits?.creditLimit ?? 0}</span>
+                <span className="text-typography-800 text-base">/{credits?.creditLimit ?? 0}</span>
               </div>
               <span>{credits?.creditLimit ? `${CreditPercentage}%` : "0%"}</span>
             </div>

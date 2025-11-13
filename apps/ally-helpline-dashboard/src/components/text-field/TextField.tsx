@@ -73,7 +73,7 @@ const TextField: FC<TextFieldProps> = ({
         {...props}
       />
       {!hideError && (
-        <span className="text-xs text-[#EF4444] h-[16px]">
+        <span className="text-xs text-destructive-500 h-[16px]">
           {(errors?.[name]?.message as string) || errorMessage}
         </span>
       )}

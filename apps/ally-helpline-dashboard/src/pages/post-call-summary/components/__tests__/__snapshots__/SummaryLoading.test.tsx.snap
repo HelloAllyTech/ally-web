@@ -190,7 +190,7 @@ exports[`SummaryLoading > should match snapshot when NO_AUDIO 1`] = `
         class="flex flex-col items-center justify-center"
       >
         <span
-          class="rounded-full border-[0.5px] border-destructive-300 px-2 py-1 text-[#E5675A] text-xs mb-8 flex items-center gap-1"
+          class="rounded-full border-[0.5px] border-destructive-300 px-2 py-1 text-destructive-400 text-xs mb-8 flex items-center gap-1"
         >
           <svg
             class="w-4 h-4 text-destructive-300"
@@ -286,7 +286,7 @@ exports[`SummaryLoading > should match snapshot when SUCCESS 1`] = `
           Summary is generated
         </h1>
         <p
-          class="text-[#6B7280] text-base text-center max-w-md font-primary mb-1"
+          class="text-typography-800 text-base text-center max-w-md font-primary mb-1"
         >
           You can review the session now.
         </p>

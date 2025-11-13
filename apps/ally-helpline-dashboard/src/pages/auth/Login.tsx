@@ -218,7 +218,7 @@ export const Login: FunctionComponent = () => {
               "Next"
             )}
           </Button>
-          <div className="text-xs text-typography-600 mt-2">
+          <div className="text-xs text-typography-800 mt-2">
             By tapping next, you agree to Ally's{" "}
             <span
               className="text-primary-500 cursor-pointer"
@@ -258,7 +258,7 @@ export const Login: FunctionComponent = () => {
           <div className="text-xs text-typography-700">
             Didn't receive the code?{" "}
             <span
-              className={`${countdown > 0 ? "text-typography-600" : "text-primary-500"} cursor-pointer`}
+              className={`${countdown > 0 ? "text-typography-800" : "text-primary-500"} cursor-pointer`}
               onClick={handleResendCode}
             >
               Resend {countdown > 0 ? `(${countdown}s)` : ""}
@@ -305,7 +305,7 @@ export const Login: FunctionComponent = () => {
         >
           <div className="flex flex-col mr-4 font-secondary">
             <Ally className="w-10 h-10" />
-            <span className="text-sm font-medium text-typography-600">helloally.ai</span>
+            <span className="text-sm font-medium text-typography-800">helloally.ai</span>
           </div>
           <RedirectIcon
             width={36}

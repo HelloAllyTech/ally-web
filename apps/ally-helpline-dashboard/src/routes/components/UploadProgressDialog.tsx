@@ -21,8 +21,8 @@ const UploadProgressDialogHeader: FC<UploadProgressHeaderProps> = ({
   onToggle,
 }) => (
   <div className="flex items-center justify-between mx-4 py-2 border-b border-[#EFEFEF]">
-    <span className="text-sm font-medium text-[#1A1A1A]">{getUploadHeader(uploads)}</span>
-    <div className="flex items-center gap-2 text-[#656565]">
+    <span className="text-sm font-medium text-typography-900">{getUploadHeader(uploads)}</span>
+    <div className="flex items-center gap-2 text-typography-800">
       <Button
         onClick={onToggle}
         variant={ButtonVariant.ICON}
@@ -136,9 +136,11 @@ const UploadProgressDialog: FC = () => {
 
   const getActionIcon = (status: UploadStatus, progress: number, chatId: number) => {
     if (status === UploadStatus.CANCELLED)
-      return <span className="whitespace-nowrap text-xs text-[#9E9E9E]">Upload cancelled</span>;
+      return (
+        <span className="whitespace-nowrap text-xs text-typography-400">Upload cancelled</span>
+      );
     if (status === UploadStatus.COMPLETED) return <TickGreenBackground />;
-    if (status === UploadStatus.FAILED) return <XCircle className="w-4 h-4 text-[#E53935]" />;
+    if (status === UploadStatus.FAILED) return <XCircle className="w-4 h-4 text-destructive-500" />;
     return (
       <>
         <ProgressCircle progress={progress} />
@@ -169,7 +171,7 @@ const UploadProgressDialog: FC = () => {
                 key={getKeyFromIndex(chatId, "upload")}
                 className="flex items-center justify-between py-2"
               >
-                <div className="flex items-center gap-2 text-sm text-[#000000DE]">
+                <div className="flex items-center gap-2 text-sm text-typography-900">
                   <AudioFile />
                   <span>{fileName}</span>
                 </div>

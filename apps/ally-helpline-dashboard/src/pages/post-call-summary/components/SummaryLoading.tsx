@@ -24,7 +24,7 @@ const SummaryGeneratedState = () => (
   <>
     <SummaryGeneratedIllustration className="w-64" />
     <h1 className="font-semibold mb-2 font-primary text-2xl">Summary is generated</h1>
-    <p className="text-[#6B7280] text-base text-center max-w-md font-primary mb-1">
+    <p className="text-typography-800 text-base text-center max-w-md font-primary mb-1">
       You can review the session now.
     </p>
   </>
@@ -33,14 +33,12 @@ const SummaryGeneratedState = () => (
 const SummaryFailedState = ({ extraMessage = "" }) => (
   <>
     {extraMessage?.length > 0 && (
-      <span className="rounded-full border-[0.5px] border-destructive-300 px-2 py-1 text-[#E5675A] text-xs mb-8 flex items-center gap-1">
+      <span className="rounded-full border-[0.5px] border-destructive-300 px-2 py-1 text-destructive-400 text-xs mb-8 flex items-center gap-1">
         <CircleX className="w-4 h-4 text-destructive-300" /> No audio detected
       </span>
     )}
     <SummaryFailed className="w-64" />
-    <h1 className="font-semibold mb-2 font-primary text-2xl">
-      Failed to generate session summary
-    </h1>
+    <h1 className="font-semibold mb-2 font-primary text-2xl">Failed to generate session summary</h1>
   </>
 );
 

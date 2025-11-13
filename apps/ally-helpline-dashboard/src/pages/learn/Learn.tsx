@@ -27,7 +27,7 @@ export const Learn: FC = () => {
         variants={learnPageItemVariants}
         initial="hidden"
         animate="visible"
-        className="w-full font-secondary text-3xl text-[#1A1A1A] sm:mb-[30px] mb-[48px] sm:leading-[40px] leading-[28px] pt-[30px]"
+        className="w-full font-secondary text-3xl text-typography-900 sm:mb-[30px] mb-[48px] sm:leading-[40px] leading-[28px] pt-[30px]"
       >
         <span>Use </span>
         <span className={emphasisStyles}>AI-voice based </span>
@@ -67,15 +67,15 @@ export const Learn: FC = () => {
         exit="exit"
         className="mb-[24px] sm:mb-[32px]"
       >
-        <h1 className="text-2xl sm:text-4xl text-[#1A1A1A] mb-6 sm:mb-[24px] font-secondary">
+        <h1 className="text-2xl sm:text-4xl text-typography-900 mb-6 sm:mb-[24px] font-secondary">
           <span className="font-[350]">Choose your</span>
           <span className="font-[700] italic"> Scenario</span>
         </h1>
         <div className="flex items-center gap-2">
-          <span className="font-tertiary text-xs text-[#9CA3AF] font-semibold tracking-[4px]">
+          <span className="font-tertiary text-xs text-typography-800 font-semibold tracking-[4px]">
             SCENARIOS
           </span>
-          <div className="border-b border-[#D3D3D3] w-full" />
+          <div className="border-b border-typography-300 w-full" />
           <div className="flex flex-row items-center min-w-[130px] justify-end">
             <div className="font-primary text-base text-gray-500 whitespace-nowrap">
               Credits used:

@@ -109,7 +109,7 @@ const ScenarioDetailsCard: FC<ScenarioDetailsCardProps> = ({
         {longDescription && (
           <div className="flex flex-col">
             <div className="text-base font-semibold text-typography-900">Scenario:</div>
-            <p className="text-base text-typography-600">{longDescription}</p>
+            <p className="text-base text-typography-800">{longDescription}</p>
           </div>
         )}
 

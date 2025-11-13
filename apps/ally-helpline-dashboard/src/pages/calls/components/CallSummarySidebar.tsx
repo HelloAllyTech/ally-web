@@ -106,7 +106,7 @@ const CallSummarySidebar: FC<CallSummarySidebarProps> = ({
                   <>
                     <div
                       className={`text-sm font-medium
-                              ${comment === selectedComment ? "text-[#FF9E28]" : "text-[#605E5E]"}`}
+                              ${comment === selectedComment ? "text-[#FF9E28]" : "text-typography-800"}`}
                     >
                       ~ {comment}
                     </div>

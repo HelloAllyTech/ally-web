@@ -47,7 +47,7 @@ export const SimulationFeedback: FC<FeedbackSectionProps> = ({ id, onSubmitCompl
 
   return (
     <>
-      <span className="text-typography-600 font-medium">How was your experience?</span>
+      <span className="text-typography-800 font-medium">How was your experience?</span>
       <StarRating rating={rating} setRating={setRating} />
       <span className="h-6">{getSimulationRatingText(rating)}</span>
       <TextField

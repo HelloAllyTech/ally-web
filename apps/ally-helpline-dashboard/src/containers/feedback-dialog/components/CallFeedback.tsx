@@ -141,7 +141,7 @@ export const CallFeedback: FC<FeedbackSectionProps> = ({ id, onSubmitComplete })
   return (
     <>
       <span className="text-typography-900 font-medium">Rate the AI-generated summary?</span>
-      <span className="text-typography-600 text-base text-center">
+      <span className="text-typography-800 text-base text-center">
         Please rate the quality, let us know what worked well, and share areas for improvement.
       </span>
       <span className={`text-typography-900 text-base ${rating === null ? "hidden" : ""}`}>
