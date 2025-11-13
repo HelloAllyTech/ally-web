@@ -28,6 +28,7 @@ vi.mock("@hooks", () => ({
 vi.mock("../components", () => ({
   FeedbackSection: () => <div data-testid="feedback-section">Feedback Section</div>,
   LoaderSkeleton: () => <div data-testid="loader-skeleton">Loading...</div>,
+  UpNextSimulationCard: () => <div data-testid="up-next-simulation-card">Up Next Simulation</div>,
 }));
 
 // Mock the FeedbackDialog completely
