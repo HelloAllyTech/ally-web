@@ -116,7 +116,7 @@ const BoxBreathing: FC<BoxBreathingProps> = ({
 
   const BoxBreathingComponent = (
     <div
-      className={`w-full h-full bg-[#000] flex flex-col justify-center items-center relative font-['IBM_Plex_Serif'] text-white ${isMaximized ? "p-16 gap-6" : "p-4 gap-3"}`}
+      className={`w-full h-full bg-black flex flex-col justify-center items-center relative font-primary text-white ${isMaximized ? "p-16 gap-6" : "p-4 gap-3"}`}
     >
       <BoxBreathingTopGradient className="absolute right-0 z-0 h-full" />
       <BoxBreathingBottomGradient className="absolute bottom-0 left-0 z-0 h-[70%]" />
@@ -132,9 +132,7 @@ const BoxBreathing: FC<BoxBreathingProps> = ({
       {/* Box breathing video */}
       {renderVideo()}
 
-      <div className={`${isMaximized ? "text-[56px]" : "text-2xl"} font-['Roboto'] z-10`}>
-        {seconds}
-      </div>
+      <div className={`${isMaximized ? "text-4xl" : "text-2xl"} font-tertiary z-10`}>{seconds}</div>
 
       {/* Box Breathing Steps */}
       <div className="flex gap-6 z-10">

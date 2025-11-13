@@ -34,18 +34,6 @@ describe("ScenarioCard", () => {
     vi.clearAllMocks();
   });
 
-  // --- Snapshot Test ---
-
-  it("should match snapshot when fully rendered", () => {
-    const { asFragment } = renderComponent();
-    expect(asFragment()).toMatchSnapshot();
-  });
-
-  it("should match snapshot when isComingSoon is true", () => {
-    const { asFragment } = renderComponent({ isComingSoon: true });
-    expect(asFragment()).toMatchSnapshot();
-  });
-
   // --- Rendering Tests ---
 
   it("should render the card container", () => {

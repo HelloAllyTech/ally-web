@@ -48,7 +48,7 @@ const FeedbackDialog: FC<FeedbackDialogProps> = ({ id, open, sessionType, onClos
             layout: { duration: 0.25, ease: [0.4, 0, 0.2, 1] },
           }}
           layout
-          className="flex flex-col items-center gap-4 font-['IBM_Plex_Serif']"
+          className="flex flex-col items-center gap-4 font-primary"
           style={{ overflow: "hidden", width: "100%" }}
         >
           {getFeedbackContent()}

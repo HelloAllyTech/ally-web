@@ -26,6 +26,7 @@ const CallSummarySidebar: FC<CallSummarySidebarProps> = ({
   refetchCallLogs,
   setCallSummary,
   canEditSummary = true,
+  canShowFeedback = true,
 }) => {
   const { permissions } = useSelector((state: RootState) => state.user);
 
@@ -91,7 +92,7 @@ const CallSummarySidebar: FC<CallSummarySidebarProps> = ({
         {callSummary?.details?.comments?.length > 0 && (
           <div className="flex-1 p-4 bg-[#F0F4F8]">
             <h3 className="font-semibold text-sm mb-2">Comments</h3>
-            <div className="space-y-4 font-['IBM_Plex_Serif']">
+            <div className="space-y-4 font-primary">
               {callSummary?.details?.comments.map(({ comment, description }, index) => (
                 <div
                   key={`comment-${index}`}
@@ -105,7 +106,7 @@ const CallSummarySidebar: FC<CallSummarySidebarProps> = ({
                   <>
                     <div
                       className={`text-sm font-medium
-                              ${comment === selectedComment ? "text-[#FF9E28]" : "text-[#605E5E]"}`}
+                              ${comment === selectedComment ? "text-[#FF9E28]" : "text-typography-800"}`}
                     >
                       ~ {comment}
                     </div>
@@ -193,6 +194,7 @@ const CallSummarySidebar: FC<CallSummarySidebarProps> = ({
     const overThirtySeconds = hasThresholdElapsed();
 
     if (
+      canShowFeedback &&
       !hasFeedback &&
       overThirtySeconds &&
       hasAdequatePermission(Permissions.EDIT_SCENARIO_SESSION) &&

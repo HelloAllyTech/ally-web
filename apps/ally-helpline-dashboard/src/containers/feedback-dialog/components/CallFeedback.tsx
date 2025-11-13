@@ -79,7 +79,7 @@ export const CallFeedback: FC<FeedbackSectionProps> = ({ id, onSubmitComplete })
     if (rating === 5) {
       return (
         <>
-          <span className="text-[#000000] text-[14px] text-center">Any more suggestions?</span>
+          <span className="text-typography-900 text-base text-center">Any more suggestions?</span>
           <TextField
             value={comment}
             onChange={e => setComment(e.target.value)}
@@ -94,7 +94,7 @@ export const CallFeedback: FC<FeedbackSectionProps> = ({ id, onSubmitComplete })
     } else {
       return (
         <>
-          <span className="text-[#000000] font-medium text-center">
+          <span className="text-typography-900 font-medium text-center">
             Please select one or more issues
           </span>
           <div className="flex flex-wrap gap-2 justify-center w-full">
@@ -104,7 +104,7 @@ export const CallFeedback: FC<FeedbackSectionProps> = ({ id, onSubmitComplete })
                 <div
                   key={value}
                   onClick={() => onIssueClick(value)}
-                  className={`text-[14px] rounded-full border  py-1 px-2 cursor-pointer ${selected ? "border-[#5F99FC] text-[#0957D0]" : "border-[#D8D8D8] text-[#47464F]"}`}
+                  className={`text-base rounded-full border  py-1 px-2 cursor-pointer ${selected ? "border-[#5F99FC] text-primary-500" : "border-[#D8D8D8] text-typography-700"}`}
                 >
                   {text}
                 </div>
@@ -140,11 +140,11 @@ export const CallFeedback: FC<FeedbackSectionProps> = ({ id, onSubmitComplete })
 
   return (
     <>
-      <span className="text-[#000000] font-medium">Rate the AI-generated summary?</span>
-      <span className="text-[#6B7280] text-[14px] text-center">
+      <span className="text-typography-900 font-medium">Rate the AI-generated summary?</span>
+      <span className="text-typography-800 text-base text-center">
         Please rate the quality, let us know what worked well, and share areas for improvement.
       </span>
-      <span className={`text-[#000000] text-[14px] ${rating === null ? "hidden" : ""}`}>
+      <span className={`text-typography-900 text-base ${rating === null ? "hidden" : ""}`}>
         {getCallRatingText(rating)}
       </span>
       <StarRating rating={rating} setRating={setRating} />

@@ -79,7 +79,6 @@ export const SimulationPreview: FC<SimulationPreviewProps> = ({ simulation, isOp
                     src={simulation.coverVideoUrl}
                     alt={simulation.title}
                     className="w-full h-full object-cover"
-                    poster={simulation.coverImageUrl}
                   />
                 ) : (
                   <CustomImage
@@ -96,7 +95,7 @@ export const SimulationPreview: FC<SimulationPreviewProps> = ({ simulation, isOp
               <h3 className="text-lg text-typography-900">{simulation.title}</h3>
               <div>
                 <h4 className="text-base font-semibold text-typography-800 mb-1">{`${en.simulation.scenario}:`}</h4>
-                <p className="text-base text-typography-800 leading-relaxed">
+                <p className="text-base text-typography-800 leading-relaxed truncate">
                   {simulation.description}
                 </p>
               </div>
