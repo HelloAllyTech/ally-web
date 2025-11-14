@@ -10,6 +10,8 @@ interface StandardTriggerConditionsProps {
   triggerCondition: any;
   onChange: (field: string, value: string | number | string[]) => void;
   isInTable?: boolean;
+  isFocused?: boolean;
+  hideDecorations?: boolean; // Hide blue line and grey line (for popup mode)
 }
 
 export const StandardTriggerConditions: React.FC<StandardTriggerConditionsProps> = ({
@@ -17,6 +19,8 @@ export const StandardTriggerConditions: React.FC<StandardTriggerConditionsProps>
   triggerCondition,
   onChange,
   isInTable = false,
+  isFocused = false,
+  hideDecorations = false,
 }) => {
   const config = getTriggerConditionConfig(eventType);
   if (!config) return null;
@@ -28,10 +32,10 @@ export const StandardTriggerConditions: React.FC<StandardTriggerConditionsProps>
   return (
     <>
       <div
-        className={`relative ${isSentenceSimilarity ? "flex items-start" : "flex items-center"} gap-2`}
+        className={`relative ${isSentenceSimilarity && isFocused ? "flex items-start" : "flex items-center"} gap-2`}
       >
-        {/* Vertical blue line - hide in table */}
-        {!isInTable && (
+        {/* Vertical blue line - hide in table and popup */}
+        {!isInTable && !hideDecorations && (
           <div
             className={`absolute left-0 top-0 bottom-0 w-[1px] bg-blue-500 ${
               isSentenceSimilarity ? "" : "h-8"
@@ -55,6 +59,7 @@ export const StandardTriggerConditions: React.FC<StandardTriggerConditionsProps>
                       value={fieldValue}
                       onChange={onChange}
                       isInTable={isInTable}
+                      isFocused={isFocused}
                     />
                   );
                 })}
@@ -70,6 +75,7 @@ export const StandardTriggerConditions: React.FC<StandardTriggerConditionsProps>
                     value={fieldValue}
                     onChange={onChange}
                     isInTable={isInTable}
+                    isFocused={isFocused}
                   />
                 );
               })}
@@ -95,7 +101,7 @@ export const StandardTriggerConditions: React.FC<StandardTriggerConditionsProps>
           </>
         )}
       </div>
-      {!isInTable && <div className="border-t border-gray-300 mt-2"></div>}
+      {!isInTable && !hideDecorations && <div className="border-t border-gray-300"></div>}
     </>
   );
 };

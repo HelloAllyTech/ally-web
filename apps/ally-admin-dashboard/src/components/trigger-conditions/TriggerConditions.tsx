@@ -11,6 +11,7 @@ interface TriggerConditionsProps {
   sentences?: string[]; // Sentences field for SENTENCE_SIMILARITY events
   onChange: (field: string, value: string | number | string[]) => void;
   isInTable?: boolean; // Flag to indicate if rendered in table (for styling adjustments)
+  isFocused?: boolean; // Flag to indicate if the cell is currently focused
 }
 
 export const TriggerConditions: React.FC<TriggerConditionsProps> = ({
@@ -19,6 +20,7 @@ export const TriggerConditions: React.FC<TriggerConditionsProps> = ({
   sentences,
   onChange,
   isInTable = false,
+  isFocused = false,
 }) => {
   if (!eventType) return null;
 
@@ -51,6 +53,7 @@ export const TriggerConditions: React.FC<TriggerConditionsProps> = ({
               triggerCondition={enhancedTriggerCondition}
               onChange={onChange}
               isInTable={isInTable}
+              isFocused={isFocused}
             />
           )}
         </div>

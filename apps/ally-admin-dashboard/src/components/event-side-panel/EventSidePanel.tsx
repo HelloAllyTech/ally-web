@@ -8,10 +8,6 @@ import { en } from "@constants";
 import { useDebounce } from "@hooks";
 import { SessionEventDetectionType, UpdateEventDataParam } from "@types";
 
-// TODO: TESTING MODE - Skip API calls for testing
-// Revert: Set to false to enable API calls
-const TEST_MODE = true;
-
 interface EventSidePanelProps {
   selectedEvent: UpdateEventDataParam | null;
   isOpen: boolean;
@@ -62,25 +58,11 @@ const PanelHeader: React.FC<{
   </div>
 );
 
-// Helper function to extract event code from name (e.g., "SS001 - Test Event" -> "SS001")
-const extractEventCode = (name: string | undefined): string => {
-  if (!name) return "";
-  // Match pattern like "SS001", "TB002", etc. (prefix + 3 digits)
-  const match = name.match(/^([A-Z]{2}\d{3})/);
-  return match ? match[1] : "";
-};
-
 // Helper function to get display name for event type (e.g., "TIME_BASED" -> "time based")
 const getEventTypeDisplayName = (detectionType: string | undefined): string => {
   if (!detectionType) return "";
   const typeOption = EVENT_TYPE_OPTIONS.find(opt => opt.value === (detectionType as EventType));
   if (!typeOption) return "";
-
-  // Convert label to lowercase for "Sample X event" format
-  // "Sentence Similarity" -> "sentence similarity"
-  // "Time Based" -> "time based"
-  // "Score Based" -> "score based"
-  // "Combination of:" -> "combination"
   if (typeOption.label === "Combination of") {
     return "combination";
   }
@@ -102,15 +84,7 @@ export const EventSidePanel: React.FC<EventSidePanelProps> = ({
 
   const debouncedUpdate = useDebounce(() => {
     if (formData) {
-      // Block API calls for COMBINATION events
-      if (formData.detectionType === SessionEventDetectionType.COMBINATION) {
-        return;
-      }
-      // Only call onUpdate if not in TEST_MODE
-      if (!TEST_MODE) {
-        onUpdate(formData);
-      }
-      // In TEST_MODE, updates are skipped silently
+      onUpdate(formData);
     }
   }, 500);
 
@@ -118,10 +92,8 @@ export const EventSidePanel: React.FC<EventSidePanelProps> = ({
     if (formData && formData !== selectedEvent) {
       debouncedUpdate();
     }
-  }, [formData, selectedEvent, debouncedUpdate]);
+  }, [formData]);
 
-  // Extract event code and display name from formData
-  const eventCode = useMemo(() => extractEventCode(formData?.name), [formData?.name]);
   const eventTypeDisplayName = useMemo(
     () => getEventTypeDisplayName(formData?.detectionType),
     [formData?.detectionType],
@@ -222,9 +194,9 @@ export const EventSidePanel: React.FC<EventSidePanelProps> = ({
           </div>
 
           <div className="space-y-3">
-            <Field label="Event code">
+            {/* <Field label="Event code">
               <div className="text-sm text-neutral-800">{eventCode || "—"}</div>
-            </Field>
+            </Field> */}
 
             {/* Trigger Conditions Field */}
             {(formData?.detectionType === "TIME_BASED" ||

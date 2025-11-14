@@ -12,6 +12,7 @@ export const cellTypes = {
   emoji_select: "emoji_select",
   normalText: "normalText",
   triggerConditions: "triggerConditions",
+  triggerCondition: "triggerCondition",
 };
 
 export const keyCodes = {

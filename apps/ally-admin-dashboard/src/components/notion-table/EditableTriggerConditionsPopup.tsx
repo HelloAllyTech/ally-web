@@ -1,0 +1,156 @@
+import React, { useState, useRef, useEffect, useCallback } from "react";
+
+import { TriggerConditions } from "@components";
+import { StandardTriggerConditions } from "@components/trigger-conditions";
+import { useClickOutside } from "@hooks";
+
+interface EditableTriggerConditionsPopupProps {
+  eventType: string | undefined;
+  triggerCondition: any;
+  sentences?: string[];
+  onChange: (field: string, value: string | number | string[]) => void;
+  placeholder?: string;
+  disabled?: boolean;
+  width?: number | string;
+  minWidth?: number;
+  className?: string;
+}
+
+export const EditableTriggerConditionsPopup: React.FC<EditableTriggerConditionsPopupProps> = ({
+  eventType,
+  triggerCondition,
+  sentences,
+  onChange,
+  disabled = false,
+  width = 100,
+  minWidth = 100,
+  className = "",
+}) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const [editTriggerCondition, setEditTriggerCondition] = useState(triggerCondition || {});
+  const [editSentences, setEditSentences] = useState(sentences || []);
+  const popupRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    setEditTriggerCondition(triggerCondition || {});
+    setEditSentences(sentences || []);
+  }, [triggerCondition, sentences]);
+
+  const handleTextClick = () => {
+    if (disabled) return;
+    setIsOpen(true);
+  };
+
+  const handleSave = () => {
+    // Save is handled by onChange callbacks from TriggerConditions
+    setIsOpen(false);
+  };
+
+  const handleClickOutsideCallback = useCallback(() => {
+    if (isOpen) {
+      setIsOpen(false);
+      handleSave();
+    }
+  }, [isOpen]);
+
+  useClickOutside(popupRef, handleClickOutsideCallback);
+
+  return (
+    <div className={`${className} relative flex items-center`} style={{ width, minWidth }}>
+      {/* Always display trigger conditions inline */}
+      <div
+        onClick={handleTextClick}
+        className={`
+          cursor-pointer max-h-[36px] overflow-hidden max-w-[calc(100%-20px)] w-full
+          ${disabled ? "cursor-not-allowed opacity-50" : "hover:bg-background-secondary"}
+        `}
+      >
+        {disabled ? (
+          <div className="flex items-center justify-center w-full cursor-not-allowed">
+            <span>--</span>
+          </div>
+        ) : (
+          <TriggerConditions
+            eventType={eventType}
+            triggerCondition={triggerCondition}
+            sentences={sentences}
+            isInTable={true}
+            onChange={() => {
+              // No-op for display mode - changes only happen in popup
+            }}
+          />
+        )}
+      </div>
+      {/* Popup for editing */}
+      {isOpen && (
+        <div
+          ref={popupRef}
+          className="absolute z-50"
+          style={{ top: "-7px", left: "-12px", right: "-12px" }}
+        >
+          <div
+            className="bg-white border border-primary-500 shadow-lg"
+            style={{
+              minWidth: minWidth || width || 400,
+              width: "100%",
+              minHeight: "calc(100% + 14px)",
+              padding: "8px 16px",
+            }}
+          >
+            <div className="max-w-full overflow-hidden">
+              {eventType === "COMBINATION" ? (
+                <TriggerConditions
+                  eventType={eventType}
+                  triggerCondition={editTriggerCondition}
+                  sentences={editSentences}
+                  isInTable={false}
+                  onChange={(field: string, fieldValue: string | number | string[]) => {
+                    if (field === "sentences") {
+                      setEditSentences(fieldValue as string[]);
+                      onChange(field, fieldValue);
+                    } else {
+                      const updatedTriggerCondition = {
+                        ...editTriggerCondition,
+                        [field]: fieldValue,
+                      };
+                      setEditTriggerCondition(updatedTriggerCondition);
+                      onChange(field, fieldValue);
+                    }
+                  }}
+                />
+              ) : (
+                <StandardTriggerConditions
+                  eventType={eventType}
+                  triggerCondition={
+                    eventType === "SENTENCE_SIMILARITY" && editSentences
+                      ? { ...editTriggerCondition, sentences: editSentences }
+                      : editTriggerCondition
+                  }
+                  onChange={(field: string, fieldValue: string | number | string[]) => {
+                    if (field === "sentences") {
+                      setEditSentences(fieldValue as string[]);
+                      onChange(field, fieldValue);
+                    } else if (field === "speaker" && eventType === "SENTENCE_SIMILARITY") {
+                      onChange(field, fieldValue);
+                    } else {
+                      const updatedTriggerCondition = {
+                        ...editTriggerCondition,
+                        [field]: fieldValue,
+                      };
+                      setEditTriggerCondition(updatedTriggerCondition);
+                      onChange(field, fieldValue);
+                    }
+                  }}
+                  isInTable={false}
+                  hideDecorations={true}
+                />
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default EditableTriggerConditionsPopup;

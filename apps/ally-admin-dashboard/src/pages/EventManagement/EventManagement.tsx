@@ -1,7 +1,5 @@
 import React, { useEffect, useState, useMemo, useCallback } from "react";
 
-import { convertEventToApiPayload } from "@src/utils/eventManagement";
-import { generateSequentialEventName } from "@utils/eventNameGenerator";
 import { toast } from "sonner";
 
 import {
@@ -26,7 +24,9 @@ import {
   EVENT_MANAGEMENT_TABLE_COLUMNS,
   en,
   SESSION_EVENT_STATUS_OPTIONS,
+  EVENT_TYPE_OPTIONS,
 } from "@constants";
+import { convertEventToApiPayload, convertApiResponseToEvent } from "@src/utils/eventManagement";
 import { UpdateEventDataParam } from "@types";
 
 export const EventManagement: React.FC = () => {
@@ -51,8 +51,7 @@ export const EventManagement: React.FC = () => {
     searchName: eventSearch,
   });
   const [updateSessionEvent] = useUpdateSessionEventMutation();
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [createSessionEvents] = useCreateSessionEventsMutation(); // Used in production code (commented out for testing)
+  const [createSessionEvents] = useCreateSessionEventsMutation();
   const [deleteSessionEvents] = useDeleteSessionEventsMutation();
 
   // Handle data updates when query data changes
@@ -61,13 +60,16 @@ export const EventManagement: React.FC = () => {
     if (incoming) {
       setHasMore(incoming.length === limit);
 
+      // Convert API response format to frontend format
+      const convertedEvents = incoming.map(apiEvent => convertApiResponseToEvent(apiEvent));
+
       if (offset === 0) {
-        setEvents(incoming);
+        setEvents(convertedEvents);
       } else {
         setEvents(prev => {
           const seen = new Set(prev.map(event => event.id));
           const merged = [...prev];
-          for (const item of incoming) {
+          for (const item of convertedEvents) {
             if (!seen.has(item.id)) merged.push(item);
           }
           return merged;
@@ -86,13 +88,17 @@ export const EventManagement: React.FC = () => {
   };
 
   const handleEventTypeSelect = async (eventType: EventType) => {
-    // Get all existing event names to generate sequential name
-    const existingEventNames = events
-      .map(event => event.name || "")
-      .filter(name => name.length > 0);
+    // Helper function to get display name for event type (e.g., "TIME_BASED" -> "time based")
+    const getEventTypeDisplayName = (detectionType: EventType): string => {
+      const typeOption = EVENT_TYPE_OPTIONS.find(opt => opt.value === detectionType);
+      if (!typeOption) return "";
+      // Convert to lowercase for "Sample X event" format
+      return typeOption.label.toLowerCase();
+    };
 
-    // Generate sequential event name based on type
-    const eventName = generateSequentialEventName(eventType, existingEventNames);
+    // Generate event name in "Sample time based event" format
+    const eventTypeDisplayName = getEventTypeDisplayName(eventType);
+    const eventName = `Sample ${eventTypeDisplayName} event`;
 
     let triggerCondition:
       | { operator: string; value: string | number; speaker?: string }
@@ -113,7 +119,7 @@ export const EventManagement: React.FC = () => {
     }
 
     const newEvent: UpdateEventDataParam = {
-      name: `${eventName} - Test Event`,
+      name: eventName,
       description: "",
       score: 0,
       emoji: "🫥",
@@ -126,37 +132,24 @@ export const EventManagement: React.FC = () => {
       triggerCondition,
     };
 
-    // TODO: TESTING MODE - Skip API call for testing
-    // Revert: Remove the test mode flag and uncomment the API call below
-    const TEST_MODE = true; // Set to false to enable API calls
-
-    if (TEST_MODE) {
-      // For testing: Open sidebar with mock event without API call
-      setSelectedEvent({ ...newEvent, id: `test-${Date.now()}` });
-      setIsSidePanelOpen(true);
-      toast.success("Test mode: Event sidebar opened (no API call)");
+    // Convert UpdateEventDataParam to SessionEvent format for API
+    const apiEvent = convertEventToApiPayload(newEvent);
+    if (!apiEvent) {
+      toast.error("Failed to convert event to API format");
       return;
     }
-
-    // PRODUCTION CODE - Uncomment when ready to test with API
-    // Convert UpdateEventDataParam to SessionEvent format for API
-    // const apiEvent = convertEventToApiPayload(newEvent);
-    // if (!apiEvent) {
-    //   toast.error("Failed to convert event to API format");
-    //   return;
-    // }
-    // try {
-    //   const response = await createSessionEvents({ events: [apiEvent] });
-    //   if (response.error) {
-    //     toast.error("Failed to create event");
-    //   } else {
-    //     toast.success("Event created successfully");
-    //     setSelectedEvent({ ...newEvent, id: response.data?.[0]?.id || "" });
-    //     setIsSidePanelOpen(true);
-    //   }
-    // } catch {
-    //   toast.error("An error occurred while creating event");
-    // }
+    try {
+      const response = await createSessionEvents({ events: [apiEvent] });
+      if (response.error) {
+        toast.error("Failed to create event");
+      } else {
+        toast.success("Event created successfully");
+        setSelectedEvent({ ...newEvent, id: response.data?.[0]?.id || "" });
+        setIsSidePanelOpen(true);
+      }
+    } catch {
+      toast.error("An error occurred while creating event");
+    }
   };
 
   const handleLoadMore = () => {
@@ -177,105 +170,20 @@ export const EventManagement: React.FC = () => {
   };
 
   const createEventObject = useCallback((event: UpdateEventDataParam) => {
-    // Helper function to extract time-dependent flag
-    const getTimeDependent = (event: UpdateEventDataParam): boolean => {
-      return (
-        event.detectionType === "TIME_BASED" ||
-        (event.triggerCondition &&
-          "value" in event.triggerCondition &&
-          typeof event.triggerCondition.value === "string")
-      );
-    };
-
-    // Helper function to extract session time
-    const getSessionTime = (event: UpdateEventDataParam): string => {
-      if (
-        event.detectionType === "TIME_BASED" &&
-        event.triggerCondition &&
-        "value" in event.triggerCondition
-      ) {
-        return typeof event.triggerCondition.value === "string" ? event.triggerCondition.value : "";
-      }
-      return "";
-    };
-
-    // Helper function to extract time condition
-    const getTimeCondition = (event: UpdateEventDataParam): string => {
-      if (
-        event.detectionType === "TIME_BASED" &&
-        event.triggerCondition &&
-        "operator" in event.triggerCondition
-      ) {
-        return event.triggerCondition.operator || "";
-      }
-      return "";
-    };
-
-    // Helper function to extract score-dependent flag
-    const getScoreDependent = (event: UpdateEventDataParam): boolean => {
-      return event.detectionType === "SCORE_BASED";
-    };
-
-    // Helper function to extract score condition
-    const getScoreCondition = (event: UpdateEventDataParam): string => {
-      if (
-        event.detectionType === "SCORE_BASED" &&
-        event.triggerCondition &&
-        "operator" in event.triggerCondition
-      ) {
-        return event.triggerCondition.operator || "";
-      }
-      return "";
-    };
-
-    // Extract values from triggerCondition or use defaults
-    const timeDependent = getTimeDependent(event);
-    const sessionTime = getSessionTime(event);
-    const timeCondition = getTimeCondition(event);
-    const scoreDependent = getScoreDependent(event);
-    const scoreCondition = getScoreCondition(event);
-
-    // For now, use dummy/default values for fields not in backend
-    // These will be replaced when API is integrated
-    const sessionScoreEditable = (event as any).sessionScoreEditable ?? false;
-    const combineTimeScore = (event as any).combineTimeScore ?? "";
-
-    // Convert booleans to "Yes"/"No" for dropdowns
-    const timeDependentValue = timeDependent ? "Yes" : "No";
-    const scoreDependentValue = scoreDependent ? "Yes" : "No";
+    const triggerCondition = event.triggerCondition || {};
 
     return {
       id: { value: event.id || "", disabled: false, rowId: event.id },
-      detectionType: { value: event.detectionType || "", disabled: false, rowId: event.id },
+      detectionType: { value: event.detectionType || "", disabled: true, rowId: event.id },
       name: { value: event.name || "", disabled: false, rowId: event.id },
-      triggerConditions: {
-        value: event.triggerCondition || null,
-        disabled: false,
-        rowId: event.id,
-      },
-      timeDependent: { value: timeDependentValue, disabled: false, rowId: event.id },
-      sessionTime: { value: sessionTime, disabled: false, rowId: event.id },
-      timeCondition: { value: timeCondition, disabled: false, rowId: event.id },
-      scoreDependent: { value: scoreDependentValue, disabled: false, rowId: event.id },
-      sessionScoreEditable: { value: sessionScoreEditable, disabled: false, rowId: event.id },
-      scoreCondition: { value: scoreCondition, disabled: false, rowId: event.id },
-      combineTimeScore: { value: combineTimeScore, disabled: false, rowId: event.id },
-      branchInstruction: {
-        value: event.branchInstruction || "",
-        disabled: false,
-        rowId: event.id,
-      },
-      score: {
-        value: Number.isInteger(event.score) ? event.score : 0,
-        disabled: false,
-        rowId: event.id,
-      },
+      triggerConditions: { value: triggerCondition, disabled: false, rowId: event.id },
+      branchInstruction: { value: event.branchInstruction || "", disabled: false, rowId: event.id },
+      score: { value: event.score ?? 0, disabled: false, rowId: event.id },
       message: { value: event.message || "", disabled: false, rowId: event.id },
       emoji: { value: event.emoji || "", disabled: false, rowId: event.id },
-      // Keep these for internal use
       visibilityType: { value: event.visibilityType || "", disabled: false, rowId: event.id },
       sentences: { value: event.sentences || [], disabled: false, rowId: event.id },
-      triggerCondition: { value: event.triggerCondition, disabled: false, rowId: event.id },
+      triggerCondition: { value: triggerCondition, disabled: false, rowId: event.id },
     };
   }, []);
 
@@ -331,60 +239,7 @@ export const EventManagement: React.FC = () => {
       const updatedEvent: UpdateEventDataParam = { ...selectedEvent };
 
       // Handle fields that update triggerCondition
-      if (columnId === "detectionType") {
-        // When event type changes, reset triggerCondition based on new type
-        updatedEvent.detectionType = value;
-        if (value === "TIME_BASED") {
-          updatedEvent.triggerCondition = { operator: "LESS_THAN", value: "00:20:00" };
-        } else if (value === "SCORE_BASED") {
-          updatedEvent.triggerCondition = { operator: "GREATER_THAN", value: 0 };
-        } else if (value === "SENTENCE_SIMILARITY") {
-          updatedEvent.triggerCondition = { operator: "", value: "" };
-          updatedEvent.sentences = [];
-        } else if (value === "COMBINATION") {
-          updatedEvent.triggerCondition = {
-            conditions: [
-              { eventId: "", status: "OCCURRED" },
-              { eventId: "", status: "OCCURRED", operator: "AND" },
-            ],
-          };
-        }
-      } else if (columnId === "sessionTime" && selectedEvent.detectionType === "TIME_BASED") {
-        // Update time value in triggerCondition
-        updatedEvent.triggerCondition = {
-          ...(selectedEvent.triggerCondition as any),
-          value: value,
-        };
-      } else if (columnId === "timeCondition" && selectedEvent.detectionType === "TIME_BASED") {
-        // Update time operator in triggerCondition
-        updatedEvent.triggerCondition = {
-          ...(selectedEvent.triggerCondition as any),
-          operator: value,
-        };
-      } else if (columnId === "scoreCondition" && selectedEvent.detectionType === "SCORE_BASED") {
-        // Update score operator in triggerCondition
-        updatedEvent.triggerCondition = {
-          ...(selectedEvent.triggerCondition as any),
-          operator: value,
-        };
-      } else if (columnId === "timeDependent") {
-        // Handle Yes/No dropdown - if Yes and not TIME_BASED, switch to TIME_BASED
-        if (value === "Yes" && selectedEvent.detectionType !== "TIME_BASED") {
-          updatedEvent.detectionType = "TIME_BASED";
-          updatedEvent.triggerCondition = { operator: "LESS_THAN", value: "00:20:00" };
-        } else if (value === "No" && selectedEvent.detectionType === "TIME_BASED") {
-          // If turning off, we might want to keep the type but this is a business logic decision
-          // For now, we'll just update the flag
-        }
-        // Note: timeDependent is derived from detectionType, so we don't store it separately
-      } else if (columnId === "scoreDependent") {
-        // Handle Yes/No dropdown - if Yes and not SCORE_BASED, switch to SCORE_BASED
-        if (value === "Yes" && selectedEvent.detectionType !== "SCORE_BASED") {
-          updatedEvent.detectionType = "SCORE_BASED";
-          updatedEvent.triggerCondition = { operator: "GREATER_THAN", value: 0 };
-        }
-        // Note: scoreDependent is derived from detectionType, so we don't store it separately
-      } else if (columnId === "triggerConditions") {
+      if (columnId === "triggerConditions") {
         // Update the triggerCondition object directly
         updatedEvent.triggerCondition = value;
       } else {

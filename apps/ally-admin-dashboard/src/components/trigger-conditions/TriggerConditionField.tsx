@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect, useRef } from "react";
 
 import { AutoExpandableTextarea } from "@components";
 import { NumberInput } from "@components/notion-table";
@@ -19,13 +19,93 @@ interface TriggerConditionFieldProps {
   value: any;
   onChange: (fieldId: string, value: any) => void;
   isInTable?: boolean;
+  isFocused?: boolean;
 }
+
+// Separate component for table input to use hooks properly
+// Uses AutoExpandableTextarea - always rendered but collapsed when not focused
+const TableSentenceInput: React.FC<{
+  value: string;
+  placeholder?: string;
+  onChange: (value: string[]) => void;
+  isFocused?: boolean;
+}> = ({ value, placeholder, onChange, isFocused = false }) => {
+  const [localValue, setLocalValue] = useState(value);
+  const wrapperRef = useRef<HTMLDivElement>(null);
+
+  // Sync local state when prop value changes (from external updates)
+  useEffect(() => {
+    setLocalValue(value);
+  }, [value]);
+
+  // Auto-focus when becomes focused
+  useEffect(() => {
+    if (isFocused) {
+      const textarea = wrapperRef.current?.querySelector("textarea");
+      if (textarea && document.activeElement !== textarea) {
+        // Use requestAnimationFrame to ensure DOM is updated
+        requestAnimationFrame(() => {
+          textarea.focus();
+          // Select all text for better UX
+          (textarea as HTMLTextAreaElement).select();
+        });
+      }
+    }
+  }, [isFocused]);
+
+  return (
+    <div ref={wrapperRef} className="flex-1 w-full flex items-center">
+      {!isFocused ? (
+        // Collapsed view - single line with fixed height
+        <textarea
+          value={localValue}
+          readOnly
+          onClick={e => e.currentTarget.focus()}
+          placeholder={placeholder}
+          className="px-3 py-2 text-sm border-[0.5px] border-gray-300 bg-gray-100 rounded-sm w-full resize-none overflow-hidden cursor-pointer focus:outline-none flex items-center"
+          style={{
+            height: "24px",
+            lineHeight: "20px",
+            paddingTop: "2px",
+            paddingBottom: "2px",
+          }}
+        />
+      ) : (
+        // Expanded view - fully auto-expanding textarea without scrollbar
+        <AutoExpandableTextarea
+          value={localValue}
+          onChange={newValue => {
+            setLocalValue(newValue);
+          }}
+          onBlur={e => {
+            // Only call onChange on blur to avoid lag (like EditableTextPopup)
+            onChange(localValue ? [localValue] : []);
+          }}
+          onKeyDown={e => {
+            // Allow Enter for new lines, Ctrl/Cmd+Enter to blur
+            if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
+              e.preventDefault();
+              e.currentTarget.blur();
+            }
+          }}
+          placeholder={placeholder}
+          disabled={false}
+          minHeight={24}
+          maxLines={100}
+          autoFocus={true}
+          className="px-3 mt-[-2px] text-sm border-[0.5px] border-gray-300 bg-gray-100 focus:outline-none focus:border-blue-500 rounded-sm w-full leading-tight !overflow-y-hidden [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
+        />
+      )}
+    </div>
+  );
+};
 
 export const TriggerConditionField: React.FC<TriggerConditionFieldProps> = ({
   field,
   value,
   onChange,
   isInTable = false,
+  isFocused = false,
 }) => {
   const fieldValue = value ?? field.defaultValue;
 
@@ -76,38 +156,30 @@ export const TriggerConditionField: React.FC<TriggerConditionFieldProps> = ({
         const sentencesArray = Array.isArray(fieldValue) ? fieldValue : [];
         const sentencesText = sentencesArray.join("\n");
 
-        // In table mode, use single-line input instead of textarea
+        // In table mode, use AutoExpandableTextarea with collapsed view when not focused
         if (isInTable) {
           return (
-            <div className="flex-1">
-              <input
-                type="text"
-                value={sentencesText}
-                onChange={e => {
-                  // For single-line input, treat as single sentence
-                  onChange(field.id, e.target.value ? [e.target.value] : []);
-                }}
-                placeholder={field.placeholder}
-                className="px-3 py-2 text-sm border-[0.5px] border-gray-300 bg-white focus:outline-none focus:border-blue-500 h-6 rounded-sm w-full"
-              />
-            </div>
+            <TableSentenceInput
+              value={sentencesText}
+              placeholder={field.placeholder}
+              onChange={newValue => onChange(field.id, newValue)}
+              isFocused={isFocused}
+            />
           );
         }
 
         return (
-          <div className="flex-1">
+          <div className="flex-1 max-w-[400px]">
             <AutoExpandableTextarea
               value={sentencesText}
               onChange={textareaValue => {
-                // Split by newline and keep all lines (including empty ones)
-                // Filter empty lines only when saving/submitting, not during editing
                 const newSentencesArray = textareaValue.split("\n");
                 onChange(field.id, newSentencesArray);
               }}
               placeholder={field.placeholder}
               disabled={false}
-              minHeight={350}
-              className="px-3 py-2 text-sm border-[0.5px] border-gray-300 bg-white focus:outline-none"
+              minHeight={20}
+              className="px-3 py-2 text-sm border-[0.5px] border-gray-300 bg-white focus:outline-none w-full"
             />
           </div>
         );

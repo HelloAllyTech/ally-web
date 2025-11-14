@@ -1,12 +1,13 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState } from "react";
 
-import { EmojiPickerComponent, TriggerConditions } from "@components";
+import { EmojiPickerComponent } from "@components";
 import {
   EditableTextPopup,
   NumberInput,
   TextDropdown,
   Switch,
   SelectComponent,
+  EditableTriggerConditionsPopup,
 } from "@components/notion-table";
 import { formatCapitalizedEnum } from "@utils";
 
@@ -17,8 +18,7 @@ export const Cell = ({
   rowIndex: index,
   column: { dataType, options, minWidth, width, id, placeholder },
   onCellChange,
-  row,
-  onTriggerConditionsFocus,
+  row
 }) => {
   // Extract value and disabled from the cell data structure
   const cellValue = initialValue?.value !== undefined ? initialValue.value : initialValue;
@@ -140,91 +140,60 @@ export const Cell = ({
         value.value || row?.triggerCondition?.value || row?.triggerCondition || {};
       const sentences = row?.sentences?.value || row?.sentences || [];
 
-      const wrapperRef = useRef<HTMLDivElement>(null);
-
-      // Handle focus events from child elements and notify parent
-      useEffect(() => {
-        const handleFocusIn = () => {
-          onTriggerConditionsFocus?.(index, true);
-        };
-
-        const handleFocusOut = () => {
-          // Check if focus moved outside the wrapper
-          setTimeout(() => {
-            if (!wrapperRef.current?.contains(document.activeElement)) {
-              onTriggerConditionsFocus?.(index, false);
-            }
-          }, 0);
-        };
-
-        const wrapper = wrapperRef.current;
-        if (wrapper) {
-          wrapper.addEventListener("focusin", handleFocusIn);
-          wrapper.addEventListener("focusout", handleFocusOut);
-        }
-
-        return () => {
-          if (wrapper) {
-            wrapper.removeEventListener("focusin", handleFocusIn);
-            wrapper.removeEventListener("focusout", handleFocusOut);
-          }
-        };
-      }, [index, onTriggerConditionsFocus]);
-
       element = (
-        <div ref={wrapperRef} data-trigger-conditions-cell className="w-full">
-          <TriggerConditions
-            eventType={eventType}
-            triggerCondition={currentTriggerCondition}
-            sentences={sentences}
-            isInTable={true}
-            onChange={(field: string, fieldValue: string | number | string[]) => {
-              // Handle trigger condition changes similar to EventSidePanel
-              let updatedTriggerCondition;
+        <EditableTriggerConditionsPopup
+          eventType={eventType}
+          triggerCondition={currentTriggerCondition}
+          sentences={sentences}
+          onChange={(field: string, fieldValue: string | number | string[]) => {
+            // Handle trigger condition changes similar to EventSidePanel
+            let updatedTriggerCondition;
 
-              // Handle sentences separately (not part of triggerCondition)
-              if (field === "sentences") {
-                // Update sentences in the row, not triggerCondition
-                onCellChange({
-                  columnId: "sentences",
-                  rowIndex: index,
-                  value: fieldValue,
-                  row: row,
-                  rowId: initialValue?.rowId,
-                });
-                return;
-              }
+            // Handle sentences separately (not part of triggerCondition)
+            if (field === "sentences") {
+              // Update sentences in the row, not triggerCondition
+              onCellChange({
+                columnId: "sentences",
+                rowIndex: index,
+                value: fieldValue,
+                row: row,
+                rowId: initialValue?.rowId,
+              });
+              return;
+            }
 
-              // Handle speaker in triggerCondition for sentence similarity
-              if (field === "speaker" && eventType === "SENTENCE_SIMILARITY") {
-                // Update speaker in the row, not triggerCondition
-                onCellChange({
-                  columnId: "speaker",
-                  rowIndex: index,
-                  value: fieldValue,
-                  row: row,
-                  rowId: initialValue?.rowId,
-                });
-                return;
-              }
+            // Handle speaker in triggerCondition for sentence similarity
+            if (field === "speaker" && eventType === "SENTENCE_SIMILARITY") {
+              // Update speaker in the row, not triggerCondition
+              onCellChange({
+                columnId: "speaker",
+                rowIndex: index,
+                value: fieldValue,
+                row: row,
+                rowId: initialValue?.rowId,
+              });
+              return;
+            }
 
-              // Handle conditions array for combination events
-              if (field === "conditions" && eventType === "COMBINATION") {
-                updatedTriggerCondition = {
-                  conditions: fieldValue as any[],
-                };
-              } else {
-                // Handle other triggerCondition fields
-                updatedTriggerCondition = {
-                  ...currentTriggerCondition,
-                  [field]: fieldValue,
-                };
-              }
+            // Handle conditions array for combination events
+            if (field === "conditions" && eventType === "COMBINATION") {
+              updatedTriggerCondition = {
+                conditions: fieldValue as any[],
+              };
+            } else {
+              // Handle other triggerCondition fields
+              updatedTriggerCondition = {
+                ...currentTriggerCondition,
+                [field]: fieldValue,
+              };
+            }
 
-              updateCellValue(updatedTriggerCondition);
-            }}
-          />
-        </div>
+            updateCellValue(updatedTriggerCondition);
+          }}
+          width={width}
+          minWidth={minWidth}
+          disabled={isDisabled}
+        />
       );
       break;
     }

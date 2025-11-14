@@ -78,7 +78,6 @@ const renderTableCell = (
   rowIndex: number,
   row: any,
   onRowChange?: (action: any) => void,
-  onTriggerConditionsFocus?: (rowIndex: number, isFocused: boolean) => void,
 ) => {
   if (isSelectionColumn(cell.column.id)) {
     return cell.render("Cell");
@@ -91,7 +90,6 @@ const renderTableCell = (
       rowIndex={rowIndex}
       row={row}
       onCellChange={onRowChange}
-      onTriggerConditionsFocus={onTriggerConditionsFocus}
     />
   );
 };
@@ -105,19 +103,6 @@ export const NotionTable = ({
   onSelectionChange,
 }: NotionTableProps) => {
   const { columns, data } = tableData;
-
-  // Track which trigger conditions cell is focused (by row index)
-  const [focusedTriggerConditionsRow, setFocusedTriggerConditionsRow] = useState<number | null>(
-    null,
-  );
-
-  const handleTriggerConditionsFocus = (rowIndex: number, isFocused: boolean) => {
-    if (isFocused) {
-      setFocusedTriggerConditionsRow(rowIndex);
-    } else {
-      setFocusedTriggerConditionsRow(null);
-    }
-  };
 
   // Auto-size columns based on content
   const autoSizedColumns = useMemo(() => {
@@ -273,17 +258,15 @@ export const NotionTable = ({
                 {row.cells.map(cell => {
                   const cellProps = cell.getCellProps();
                   const { key: cellKey, ...restCellProps } = cellProps;
-                  const isTriggerConditionsCell =
-                    cell.column.dataType === cellTypes.triggerConditions;
-                  const isFocused = focusedTriggerConditionsRow === rowIndex;
+                  // const isTriggerConditionsCell =
+                  //   cell.column.dataType === cellTypes.triggerConditions;
+                  // const isFocused = focusedTriggerConditionsRow === rowIndex;
 
                   return (
                     <div
                       key={cellKey}
                       {...restCellProps}
-                      className={`relative flex items-center w-full px-3 py-[7px] border-r border-border-light ${
-                        isTriggerConditionsCell && isFocused ? "border-2 border-primary-500 z-20" : ""
-                      }`}
+                      className={`relative flex items-center w-full px-3 py-[7px] border-r border-border-light`}
                       style={{
                         width: isSelectionColumn(cell.column.id)
                           ? SELECTION_COLUMN_WIDTH - 1
@@ -296,13 +279,7 @@ export const NotionTable = ({
                           : cell.column.maxWidth,
                       }}
                     >
-                      {renderTableCell(
-                        cell,
-                        rowIndex,
-                        row?.original,
-                        onRowChange,
-                        handleTriggerConditionsFocus,
-                      )}
+                      {renderTableCell(cell, rowIndex, row?.original, onRowChange)}
                     </div>
                   );
                 })}
