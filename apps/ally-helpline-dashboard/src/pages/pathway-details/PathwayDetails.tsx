@@ -1,12 +1,18 @@
-import { FC } from "react";
+import { FC, useState } from "react";
 
+import {
+  useEndSimulationMutation,
+  useGetScenarioPathwayDetailsQuery,
+  useStartSimulationMutation,
+} from "@api";
+import { ArrowRight, Lock, TickGreenBackground } from "@assets";
+import { LOCAL_STORAGE_KEYS, ROUTES } from "@constants";
+import { PathwayScenarioStatus, PathwayScenario } from "@types";
 import { motion } from "framer-motion";
 import { useNavigate, useParams } from "react-router-dom";
+import { toast } from "sonner";
 
-import { useGetScenarioPathwayDetailsQuery } from "@api";
-import { ArrowRight, Lock, TickGreenBackground } from "@assets";
-import { ROUTES } from "@constants";
-import { PathwayScenarioStatus, PathwayScenario } from "@types";
+import { logger, SimulationDetailsModal } from "@ally-ui-mono/ui-shared";
 
 interface ScenarioCardProps {
   scenario: PathwayScenario;
@@ -103,11 +109,87 @@ export const PathwayDetails: FC = () => {
   const { pathwayId } = useParams<{ pathwayId: string }>();
   const navigate = useNavigate();
   const { data: pathway, isLoading } = useGetScenarioPathwayDetailsQuery(pathwayId || "");
+  const [selectedScenario, setSelectedScenario] = useState<PathwayScenario | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isStarting, setIsStarting] = useState(false);
+
+  const [startSimulation] = useStartSimulationMutation();
+  const [endSimulation] = useEndSimulationMutation();
+
+  const handleStartOrContinueSimulation = () => {
+    const nextScenario = pathway?.scenarios.find(
+      scenario => scenario.status !== PathwayScenarioStatus.COMPLETED,
+    );
+    setSelectedScenario(nextScenario);
+    setIsModalOpen(true);
+  };
 
   const handleScenarioClick = (scenarioId: number, status: PathwayScenarioStatus) => {
     if (status !== PathwayScenarioStatus.LOCKED) {
-      navigate(`/scenario/${scenarioId}`);
+      const scenario = pathway?.scenarios.find(scenario => scenario.scenarioId === scenarioId);
+      if (scenario) {
+        setSelectedScenario(scenario);
+        setIsModalOpen(true);
+      }
     }
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setSelectedScenario(null);
+  };
+
+  const handleStartSimulation = async () => {
+    if (!selectedScenario || isStarting) return;
+    setIsStarting(true);
+
+    try {
+      const { data, error } = await startSimulation({ scenarioId: selectedScenario.scenarioId });
+      // Handle success
+      if (data) {
+        const { scenarioSession, accessToken } = data;
+        storeRoomDataAndNavigate(scenarioSession, accessToken);
+      }
+      // Handle error
+      if (error) {
+        const errorData = error as { data?: { statusCode?: number; entityId?: string } };
+        if (errorData.data?.statusCode === 403) {
+          toast.error("You are not authorized to start this simulation");
+        } else if (errorData.data?.statusCode === 400 && errorData?.data?.entityId) {
+          await endSimulation({ sessionId: errorData?.data?.entityId });
+          toast.success("Previous simulation ended. Starting new one...");
+          const retryResult = await startSimulation({ scenarioId: selectedScenario?.scenarioId });
+          if (retryResult?.data) {
+            const { scenarioSession, accessToken } = retryResult?.data || {};
+            storeRoomDataAndNavigate(scenarioSession, accessToken);
+          }
+        } else {
+          toast.error("Failed to start simulation");
+        }
+        setIsStarting(false);
+        return;
+      }
+    } catch {
+      logger.error(`Failed to start simulation`);
+      setIsStarting(false);
+    }
+  };
+
+  const storeRoomDataAndNavigate = (scenarioSession: any, accessToken: any) => {
+    localStorage.setItem(
+      LOCAL_STORAGE_KEYS.ROOM_DATA,
+      JSON.stringify({
+        roomId: scenarioSession.id,
+        name: selectedScenario?.scenarioTitle,
+        coverImageUrl: selectedScenario?.coverImageUrl,
+        accessToken: accessToken.token,
+        createdAt: scenarioSession.startedAt,
+        serverUrl: accessToken.serverUrl,
+      }),
+    );
+
+    handleCloseModal();
+    navigate(`/simulation/${scenarioSession.id}`);
   };
 
   if (isLoading) {
@@ -181,7 +263,10 @@ export const PathwayDetails: FC = () => {
               {pathway.description}
             </p>
           )}
-          <button className="px-6 py-2 bg-primary-500 text-white rounded-full font-tertiary text-base font-medium hover:bg-primary-600 transition-colors">
+          <button
+            onClick={handleStartOrContinueSimulation}
+            className="px-6 py-2 bg-primary-500 text-white rounded-full font-tertiary text-base font-medium hover:bg-primary-600 transition-colors"
+          >
             {hasProgress ? "Continue" : "Start"}
           </button>
         </div>
@@ -193,23 +278,43 @@ export const PathwayDetails: FC = () => {
   const progressPercentage = (pathway.completedScenarios / pathway.totalScenarios) * 100;
 
   return (
-    <div className="min-h-screen bg-white mx-[15%] font-primary">
-      {renderHeaderSection()}
-      {/* Scenarios List */}
-      <div className="pb-6 pt-3">
-        <div className="max-w-5xl mx-auto">
-          <div>
-            {pathway.scenarios.map((scenario, index) => (
-              <ScenarioCard
-                key={scenario.sessionItemId}
-                scenario={scenario}
-                index={index}
-                onScenarioClick={handleScenarioClick}
-              />
-            ))}
+    <>
+      <div className="min-h-screen bg-white mx-[15%] font-primary">
+        {renderHeaderSection()}
+        {/* Scenarios List */}
+        <div className="pb-6 pt-3">
+          <div className="max-w-5xl mx-auto">
+            <div>
+              {pathway.scenarios.map((scenario, index) => (
+                <ScenarioCard
+                  key={scenario.sessionItemId}
+                  scenario={scenario}
+                  index={index}
+                  onScenarioClick={handleScenarioClick}
+                />
+              ))}
+            </div>
           </div>
         </div>
       </div>
-    </div>
+      {selectedScenario && (
+        <SimulationDetailsModal
+          isOpen={isModalOpen}
+          title={selectedScenario.scenarioTitle}
+          description={selectedScenario.description}
+          coverImageUrl={selectedScenario.coverImageUrl}
+          coverVideoUrl={selectedScenario.coverVideoUrl}
+          headerTitle="Simulation"
+          headerSubtitle="Details"
+          scenarioLabel="Scenario:"
+          primaryButtonText={isStarting ? "Starting..." : "Start Simulation"}
+          secondaryButtonText="Close"
+          onPrimaryClick={handleStartSimulation}
+          onSecondaryClick={handleCloseModal}
+          onClickOutside={handleCloseModal}
+          isPrimaryLoading={isStarting}
+        />
+      )}
+    </>
   );
 };

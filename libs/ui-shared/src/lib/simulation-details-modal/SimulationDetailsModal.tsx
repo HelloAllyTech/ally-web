@@ -63,7 +63,7 @@ export const SimulationDetailsModal: FC<SimulationDetailsModalProps> = ({
             {/* Image/Video Section */}
             <div className="mb-6 w-full">
               <div
-                className={`w-full h-64 rounded-lg flex items-center justify-center relative overflow-hidden ${imageContainerClassName}`}
+                className={`w-full h-64 rounded-lg flex items-center justify-center relative overflow-hidden bg-background-secondary ${imageContainerClassName}`}
               >
                 {isNonEmptyString(coverVideoUrl) ? (
                   <CustomVideo
