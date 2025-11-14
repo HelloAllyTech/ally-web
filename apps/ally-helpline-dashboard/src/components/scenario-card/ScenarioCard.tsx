@@ -2,6 +2,8 @@ import { FC, useState } from "react";
 
 import { motion } from "framer-motion";
 
+import { CircularProgress } from "@components";
+
 import { scenarioDescriptionStyle } from "./constants";
 import { ScenarioCardProps } from "./types";
 
@@ -11,15 +13,18 @@ const ScenarioCard: FC<ScenarioCardProps> = ({
   isComingSoon,
   onClick,
   title,
+  totalScenarios,
+  completedScenarios = 0,
 }) => {
   const [imageError, setImageError] = useState(false);
+  const isPathway = totalScenarios !== undefined;
 
   const renderImage = () => (
     <div className="w-full relative h-[100px] sm:h-[120px]">
       {!imageError ? (
         <img
           src={coverImage}
-          alt={`${title} scenario cover`}
+          alt={`${title} ${isPathway ? "pathway" : "scenario"} cover`}
           className={`w-full h-full object-cover rounded-t-[4px] ${isComingSoon ? "blur-[2px] grayscale opacity-50" : ""}`}
           loading="lazy"
           onError={() => setImageError(true)}
@@ -58,13 +63,33 @@ const ScenarioCard: FC<ScenarioCardProps> = ({
     >
       <div className="flex flex-col h-full gap-3">
         {renderImage()}
-        <div className="flex flex-col flex-grow font-primary px-3 pb-3 sm:px-[14px] sm:pb-[14px] gap-1">
-          <div id="scenario-title" className="font-medium text-typography-900">
-            {title}
-          </div>
+        <div className="flex flex-row justify-between flex-grow font-primary px-3 pb-3 sm:px-[14px] sm:pb-[14px]">
+          <div className="flex flex-col items-start gap-2">
+            <div id="scenario-title" className="font-medium text-typography-900 text-base flex">
+              {title}
+            </div>
 
-          <div className="text-base text-typography-800">
-            <p style={scenarioDescriptionStyle}>{description}</p>
+            {description?.length > 0 && (
+              <div className="text-base text-sm text-typography-800">
+                <p style={scenarioDescriptionStyle}>{description}</p>
+              </div>
+            )}
+
+            {isPathway && (
+              <div className="text-sm text-typography-700">
+                {totalScenarios} Simulation{totalScenarios !== 1 ? "s" : ""}
+              </div>
+            )}
+          </div>
+          <div>
+            {isPathway && (
+              <CircularProgress
+                current={completedScenarios}
+                total={totalScenarios}
+                size={40}
+                strokeWidth={2}
+              />
+            )}
           </div>
         </div>
       </div>

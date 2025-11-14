@@ -4,4 +4,6 @@ export interface ScenarioCardProps {
   onClick: () => void;
   title: string;
   isComingSoon?: boolean;
+  totalScenarios?: number;
+  completedScenarios?: number;
 }

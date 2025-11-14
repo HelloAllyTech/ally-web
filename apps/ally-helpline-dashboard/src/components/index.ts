@@ -5,6 +5,7 @@ import { Button, ButtonVariant, ButtonVariantType } from "./button";
 import ButtonGroup from "./button-group";
 import { Carousel, CarouselSize, CarouselVariant, CarouselSlideType } from "./carousel";
 import Chip, { ChipConfig } from "./chip";
+import { CircularProgress } from "./circular-progress";
 import ConfirmationDialog from "./confirmation-dialog";
 import CreditInfo from "./credit-info-dialog";
 import CustomCircularProgress from "./custom-circular-progress";
@@ -47,6 +48,7 @@ export {
   Button,
   ButtonGroup,
   Chip,
+  CircularProgress,
   ConfirmationDialog,
   CustomCircularProgress,
   CustomMarkdown,
