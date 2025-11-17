@@ -4,51 +4,121 @@ import axios from "axios";
 import { useDropzone } from "react-dropzone";
 import { toast } from "sonner";
 
-import { useGetCoverImageUrlMutation, useDeleteCoverImageMutation } from "@api";
-import { DragUpload, Trash } from "@assets";
+import { CustomVideo } from "@ally-ui-mono/ui-shared";
+import {
+  useGetCoverImageUrlMutation,
+  useDeleteCoverImageMutation,
+  useGetCoverVideoUrlMutation,
+  useDeleteCoverVideoMutation,
+} from "@api";
+import { DragUpload, Trash, VideoCamera } from "@assets";
 import { CustomImage } from "@components";
-import { en, imageTypes } from "@constants";
+import {
+  en,
+  imageTypes,
+  FILE_TYPE,
+  ACCEPTED_FILE_TYPES,
+  FILE_SIZE_LIMITS,
+  ACCEPT_ATTRIBUTES,
+  ASPECT_RATIO,
+  ASPECT_RATIO_TOLERANCE,
+} from "@constants";
 import { isNonEmptyString } from "@utils";
 
-const TWO_MP = 2 * 1024 * 1024;
-const ASPECT_RATIO = 16 / 9;
-const TOLERANCE = 0.01;
-const ACCEPTED_IMAGE_TYPES = { "image/jpeg": [".jpeg", ".jpg"], "image/png": [".png"] };
+interface FileUploadProps {
+  id: string;
+  formMethods: any;
+  isMandatory: boolean;
+  label: string;
+  header?: React.ReactNode;
+  fileType?: string;
+}
 
-export const FileUpload = ({ id, formMethods, isMandatory, label }) => {
+export const FileUpload = ({
+  id,
+  formMethods,
+  isMandatory,
+  label,
+  header,
+  fileType = FILE_TYPE.IMAGE,
+}: FileUploadProps) => {
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const { setValue, setError, clearErrors, formState, register, watch } = formMethods;
   const [getCoverImageUrl] = useGetCoverImageUrlMutation();
   const [deleteCoverImage] = useDeleteCoverImageMutation();
+  const [getCoverVideoUrl] = useGetCoverVideoUrlMutation();
+  const [deleteCoverVideo] = useDeleteCoverVideoMutation();
 
-  const requiredErrorMessage = isMandatory ? `${label} is required` : false;
+  const uploadedFileUrl = watch(id);
+  const initialFileUrlRef = useRef("");
 
-  const uploadedImageUrl = watch(id);
-  const initialImageUrlRef = useRef("");
-
-  // set the initial image url only if it is not already set
-  if (isNonEmptyString(uploadedImageUrl) && !isNonEmptyString(initialImageUrlRef.current)) {
-    initialImageUrlRef.current = uploadedImageUrl;
+  // Set the initial file URL only once
+  if (isNonEmptyString(uploadedFileUrl) && !isNonEmptyString(initialFileUrlRef.current)) {
+    initialFileUrlRef.current = uploadedFileUrl;
   }
 
-  const handleFileValidation = useCallback(
-    (file: File) => {
+  // Helper functions
+  const getAcceptedTypes = () => {
+    if (fileType === FILE_TYPE.IMAGE) return ACCEPTED_FILE_TYPES.IMAGE;
+    if (fileType === FILE_TYPE.VIDEO) return ACCEPTED_FILE_TYPES.VIDEO;
+    return { ...ACCEPTED_FILE_TYPES.IMAGE, ...ACCEPTED_FILE_TYPES.VIDEO };
+  };
+
+  const getAcceptAttribute = () => {
+    if (fileType === FILE_TYPE.IMAGE) return ACCEPT_ATTRIBUTES.IMAGE;
+    if (fileType === FILE_TYPE.VIDEO) return ACCEPT_ATTRIBUTES.VIDEO;
+    return ACCEPT_ATTRIBUTES.ANY;
+  };
+
+  const isVideoFile = id === "coverVideoUrl";
+  const requiredErrorMessage = isMandatory ? `${label} is required` : false;
+
+  // Validation
+  const validateFileType = (file: File): boolean => {
+    if (fileType === FILE_TYPE.IMAGE) {
       if (![imageTypes.JPEG, imageTypes.PNG].includes(file.type)) {
-        setError(id, { type: "manual", message: "File must be JPEG or PNG." });
-        toast.error("File must be JPEG or PNG.");
+        const errorMessage = en.errors.fileMustBeJPEGOrPNG;
+        setError(id, { type: "manual", message: errorMessage });
+        toast.error(errorMessage);
         return false;
       }
-      if (file.size > TWO_MP) {
-        setError(id, { type: "manual", message: "File must be under 2MB." });
-        toast.error("File must be under 2MB.");
+    } else if (fileType === FILE_TYPE.VIDEO) {
+      if (!file.type.startsWith("video/")) {
+        const errorMessage = en.errors.fileMustBeVideo;
+        setError(id, { type: "manual", message: errorMessage });
+        toast.error(errorMessage);
         return false;
       }
-      return true;
+    }
+    return true;
+  };
+
+  const validateFileSize = (file: File): boolean => {
+    const maxFileSize =
+      fileType === FILE_TYPE.IMAGE ? FILE_SIZE_LIMITS.IMAGE : FILE_SIZE_LIMITS.VIDEO;
+    const maxFileSizeLabel =
+      fileType === FILE_TYPE.IMAGE
+        ? en.simulation.imageMaxSizeLabel
+        : en.simulation.videoMaxSizeLabel;
+
+    if (file.size > maxFileSize) {
+      const errorMessage = `File must be under ${maxFileSizeLabel}.`;
+      setError(id, { type: "manual", message: errorMessage });
+      toast.error(errorMessage);
+      return false;
+    }
+    return true;
+  };
+
+  const handleFileValidation = useCallback(
+    (file: File): boolean => {
+      return validateFileType(file) && validateFileSize(file);
     },
-    [id, setError],
+    [id, setError, fileType],
   );
 
+  // Upload handlers
   const uploadToS3 = useCallback(async (file: File, uploadUrl: string) => {
     try {
       const response = await axios.put(uploadUrl, file, {
@@ -56,178 +126,271 @@ export const FileUpload = ({ id, formMethods, isMandatory, label }) => {
       });
 
       if (response.status !== 200) {
-        throw new Error("Failed to upload file to S3");
+        throw new Error(en.errors.fileUploadFailed);
       }
 
       return true;
     } catch (error) {
-      toast.error("Failed to upload file. Please try again.");
+      toast.error(en.errors.fileUploadFailed);
       throw error;
     }
   }, []);
 
-  const processImage = useCallback(
-    async (file: File) => {
-      const img = new Image();
-      img.src = URL.createObjectURL(file);
-      img.onload = async () => {
-        const aspectRatio = img.width / img.height;
-        const targetRatio = ASPECT_RATIO;
-        const tolerance = TOLERANCE; // Allow small floating point differences
-
-        if (Math.abs(aspectRatio - targetRatio) > tolerance) {
-          setError(id, { type: "manual", message: "Image must have a 16:9 aspect ratio." });
-          toast.error("Image must have a 16:9 aspect ratio.");
-          return;
-        }
-
-        try {
-          setIsUploading(true);
-          clearErrors(id);
-
-          // Get presigned URL
-          const response = await getCoverImageUrl({
-            fileName: file.name,
-            fileSize: file.size,
-            contentType: file.type,
-          }).unwrap();
-
-          // Upload to S3
-          await uploadToS3(file, response.presignedUrl);
-
-          // Update state with S3 URL
-          setUploadedFile(file);
-          setValue(id, response.coverImageUrl, { shouldValidate: true });
-        } catch (error) {
-          setError(id, { type: "manual", message: "Failed to upload file. Please try again." });
-        } finally {
-          setIsUploading(false);
-        }
+  const getVideoDuration = (file: File): Promise<number> => {
+    return new Promise((resolve, reject) => {
+      const video = document.createElement("video");
+      video.preload = "metadata";
+      video.onloadedmetadata = () => {
+        window.URL.revokeObjectURL(video.src);
+        resolve(Math.round(video.duration));
       };
-    },
-    [setError, id, clearErrors, setValue, getCoverImageUrl, uploadToS3],
-  );
-  // Dropzone logic
-  const onDrop = useCallback(
-    (acceptedFiles: File[]) => {
-      const file = acceptedFiles[0];
-      if (!file) return;
-
-      if (!handleFileValidation(file)) return;
-      processImage(file);
-    },
-    [handleFileValidation, processImage],
-  );
-
-  const { getRootProps, getInputProps, isDragActive, open } = useDropzone({
-    onDrop,
-    noClick: true, // prevent auto opening when clicking the dropzone
-    noKeyboard: true, // disable keyboard default behavior
-    accept: ACCEPTED_IMAGE_TYPES,
-    multiple: false,
-  });
-
-  // Handle manual file choose (for button click)
-  const handleManualChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    if (!handleFileValidation(file)) return;
-    processImage(file);
+      video.onerror = () => reject(new Error(en.errors.fileMetadataLoadFailed));
+      video.src = URL.createObjectURL(file);
+    });
   };
 
-  const onDeleteClick = async () => {
-    if (!isNonEmptyString(uploadedImageUrl)) return;
+  const uploadFile = async (file: File) => {
+    try {
+      setIsUploading(true);
+      clearErrors(id);
+
+      const isVideo = file.type.startsWith("video/");
+
+      if (isVideo) {
+        const duration = await getVideoDuration(file);
+        const response = await getCoverVideoUrl({
+          fileName: file.name,
+          fileSize: file.size,
+          duration,
+          contentType: file.type,
+        }).unwrap();
+
+        await uploadToS3(file, response.presignedUrl);
+
+        setUploadedFile(file);
+        setValue(id, response.coverVideoUrl, { shouldValidate: true });
+      } else {
+        const response = await getCoverImageUrl({
+          fileName: file.name,
+          fileSize: file.size,
+          contentType: file.type,
+        }).unwrap();
+
+        await uploadToS3(file, response.presignedUrl);
+
+        setUploadedFile(file);
+        setValue(id, response.coverImageUrl, { shouldValidate: true });
+      }
+    } catch {
+      setError(id, { type: "manual", message: en.errors.fileUploadFailed });
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  const validateImageAspectRatio = (file: File): Promise<boolean> => {
+    return new Promise(resolve => {
+      const img = new Image();
+      img.src = URL.createObjectURL(file);
+      img.onload = () => {
+        const aspectRatio = img.width / img.height;
+        const isValidRatio = Math.abs(aspectRatio - ASPECT_RATIO) <= ASPECT_RATIO_TOLERANCE;
+
+        if (!isValidRatio) {
+          const errorMessage = en.errors.imageMustHave169AspectRatio;
+          setError(id, { type: "manual", message: errorMessage });
+          toast.error(errorMessage);
+        }
+
+        resolve(isValidRatio);
+      };
+      img.onerror = () => resolve(false);
+    });
+  };
+
+  const processFile = useCallback(
+    async (file: File) => {
+      if (fileType === FILE_TYPE.IMAGE) {
+        const isValidAspectRatio = await validateImageAspectRatio(file);
+        if (!isValidAspectRatio) return;
+      }
+
+      await uploadFile(file);
+    },
+    [fileType, id, setError],
+  );
+  // File handlers
+  const handleFileSelect = useCallback(
+    async (file: File) => {
+      if (!file) return;
+      if (!handleFileValidation(file)) return;
+      await processFile(file);
+    },
+    [handleFileValidation, processFile],
+  );
+
+  const onDrop = useCallback(
+    (acceptedFiles: File[]) => {
+      handleFileSelect(acceptedFiles[0]);
+    },
+    [handleFileSelect],
+  );
+
+  const handleManualChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    handleFileSelect(e.target.files?.[0] as File);
+  };
+
+  const handleDeleteFile = async () => {
+    if (!isNonEmptyString(uploadedFileUrl)) return;
 
     try {
-      if (uploadedImageUrl !== initialImageUrlRef.current) {
-        // delete the image from the s3 only if it is not the initial image
-        await deleteCoverImage({ coverImageUrl: uploadedImageUrl }).unwrap();
+      if (uploadedFileUrl !== initialFileUrlRef.current) {
+        const isVideo = uploadedFile?.type.startsWith("video/");
+        if (isVideo) {
+          await deleteCoverVideo({ coverVideoUrl: uploadedFileUrl }).unwrap();
+        } else {
+          await deleteCoverImage({ coverImageUrl: uploadedFileUrl }).unwrap();
+        }
       }
       setUploadedFile(null);
       setValue(id, null);
-    } catch (error) {
-      toast.error("Failed to delete image. Please try again.");
+    } catch {
+      toast.error(en.errors.fileDeleteFailed);
     }
+  };
+
+  // Dropzone setup
+  const { getRootProps, getInputProps, isDragActive, open } = useDropzone({
+    onDrop,
+    noClick: true,
+    noKeyboard: true,
+    accept: getAcceptedTypes(),
+    multiple: false,
+  });
+
+  // Render helpers
+  const renderUploadPlaceholder = () => {
+    let uploadText = (
+      <>
+        {en.simulation.dragDrop}{" "}
+        <span className="text-primary text-primary-500">{en.simulation.choose}</span>
+      </>
+    );
+
+    if (fileType === FILE_TYPE.IMAGE) {
+      uploadText = (
+        <>
+          {en.simulation.dragDrop}{" "}
+          <span className="text-primary text-primary-500">{en.simulation.choose}</span>{" "}
+          {en.simulation.pngUploadGuidelines}
+          <br />
+          {en.simulation.resolution}
+        </>
+      );
+    }
+
+    if (fileType === FILE_TYPE.VIDEO) {
+      uploadText = (
+        <>
+          {en.simulation.dragDrop}{" "}
+          <span className="text-primary text-primary-500">{en.simulation.choose}</span>{" "}
+          {en.simulation.mp4UploadGuidelines}
+          <br />
+          {en.simulation.videoUploadGuidelines}
+        </>
+      );
+    }
+
+    return (
+      <div
+        className="cursor-pointer flex flex-col items-center justify-center h-full"
+        onClick={open}
+      >
+        {fileType === FILE_TYPE.VIDEO ? <VideoCamera /> : <DragUpload />}
+        <div className="mt-4 text-typography-600">
+          {isUploading ? (
+            <div className="flex items-center gap-2">
+              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
+              {en.common.uploading}
+            </div>
+          ) : (
+            uploadText
+          )}
+        </div>
+      </div>
+    );
+  };
+
+  const renderFilePreview = () => {
+    if (!isNonEmptyString(uploadedFileUrl)) return null;
+
+    return isVideoFile ? (
+      <CustomVideo
+        src={uploadedFileUrl}
+        alt="Uploaded file preview"
+        className="absolute inset-0 w-full h-full object-cover"
+      />
+    ) : (
+      <CustomImage
+        src={uploadedFileUrl}
+        alt="Uploaded file preview"
+        className="absolute inset-0 w-full h-full object-cover"
+      />
+    );
+  };
+
+  const renderFileInfo = () => {
+    if (!isNonEmptyString(uploadedFileUrl)) return null;
+
+    return (
+      <div className="flex items-center justify-between mt-2">
+        <div className="flex flex-col">
+          {uploadedFile && (
+            <span className="text-typography-900 truncate">{uploadedFile.name}</span>
+          )}
+        </div>
+        <button type="button" onClick={handleDeleteFile}>
+          <Trash />
+        </button>
+      </div>
+    );
   };
 
   return (
     <div className="flex flex-col gap-2">
-      <label htmlFor={id} className="text-[#49454F] cursor-pointer flex items-center">
-        {en.simulation.upload}
-        {isMandatory && <span className="text-red-500">*</span>}
+      <label htmlFor={id} className="text-typography-900 cursor-pointer flex items-center">
+        {header || en.simulation.file}
+        {isMandatory && <span className="text-destructive-500">*</span>}
       </label>
 
       <div>
         <div
           {...getRootProps()}
           className={`border-2 border-dashed rounded-lg text-center transition-colors h-64 relative overflow-hidden ${
-            isDragActive ? "border-blue-600 bg-blue-50" : "border-gray-300 hover:border-blue-600"
+            isDragActive
+              ? "border-primary-500bg-primary-50"
+              : "border-border-light hover:border-primary"
           }`}
         >
-          {/* Hidden input for manual choose */}
           <input
             {...register(id, { required: requiredErrorMessage })}
             id={id}
             type="file"
-            accept="image/jpeg,image/png"
+            accept={getAcceptAttribute()}
             onChange={handleManualChange}
             className="hidden"
           />
 
-          {/* Dropzone input */}
           <input {...getInputProps()} />
 
-          {/* Placeholder when no file */}
-          {!uploadedFile && (
-            <div
-              className="cursor-pointer flex flex-col items-center justify-center h-full"
-              onClick={open}
-            >
-              <DragUpload />
-              <div className="mt-4 text-gray-500">
-                {isUploading ? (
-                  <div className="flex items-center gap-2">
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
-                    Uploading...
-                  </div>
-                ) : (
-                  <>
-                    {en.simulation.dragDrop}{" "}
-                    <span className="text-blue-600">{en.simulation.choose}</span>{" "}
-                    {en.simulation.pngUploadGuidelines}
-                    <br />
-                    {en.simulation.resolution}
-                  </>
-                )}
-              </div>
-            </div>
-          )}
-
-          {/* Preview */}
-          {uploadedImageUrl && uploadedImageUrl.length > 0 && (
-            <CustomImage
-              src={uploadedImageUrl}
-              alt="Uploaded file preview"
-              className="absolute inset-0 w-full h-full object-cover"
-            />
-          )}
+          {!uploadedFile && renderUploadPlaceholder()}
+          {renderFilePreview()}
         </div>
 
-        {/* File info + delete */}
-        {isNonEmptyString(uploadedImageUrl) && (
-          <div className="flex items-center justify-between mt-2">
-            <div className="flex flex-col">
-              {uploadedFile && <span className="text-gray-700 truncate">{uploadedFile.name}</span>}
-            </div>
-            <button type="button" onClick={onDeleteClick}>
-              <Trash />
-            </button>
-          </div>
-        )}
+        {renderFileInfo()}
 
-        {/* Error message */}
         {formState.errors.upload && (
-          <p className="text-red-500 text-sm mt-1">{formState.errors.upload.message}</p>
+          <p className="text-destructive-500 text-sm mt-1">{formState.errors.upload.message}</p>
         )}
       </div>
     </div>

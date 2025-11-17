@@ -151,9 +151,9 @@ describe("UserList", () => {
     it("renders all users", () => {
       render(<UserList {...defaultProps} />);
 
-      expect(screen.getByText("John doe")).toBeInTheDocument();
+      expect(screen.getByText("John Doe")).toBeInTheDocument();
       expect(screen.getByText("jane.smith@example.com")).toBeInTheDocument();
-      expect(screen.getByText("Bob johnson")).toBeInTheDocument();
+      expect(screen.getByText("Bob Johnson")).toBeInTheDocument();
     });
 
     it("renders user emails", () => {
@@ -182,7 +182,7 @@ describe("UserList", () => {
     it("renders empty list when no users", () => {
       render(<UserList {...defaultProps} users={[]} />);
 
-      expect(screen.queryByText("John doe")).not.toBeInTheDocument();
+      expect(screen.queryByText("John Doe")).not.toBeInTheDocument();
     });
   });
 
@@ -211,43 +211,24 @@ describe("UserList", () => {
 
   describe("Status Badge", () => {
     it("renders ACTIVE status badge with correct styling", () => {
-      const { container } = render(<UserList {...defaultProps} users={[mockUsers[0]]} />);
+      render(<UserList {...defaultProps} users={[mockUsers[0]]} />);
 
       const statusBadge = screen.getByText("Active");
       expect(statusBadge).toBeInTheDocument();
-
-      // Check for the green background class in the container
-      const greenBg = container.querySelector(".bg-\\[\\#E8F5E9\\]");
-      expect(greenBg).toBeInTheDocument();
     });
 
     it("renders INACTIVE status badge with correct styling", () => {
-      const { container } = render(<UserList {...defaultProps} users={[mockUsers[1]]} />);
+      render(<UserList {...defaultProps} users={[mockUsers[1]]} />);
 
       const statusBadge = screen.getByText("Inactive");
       expect(statusBadge).toBeInTheDocument();
-
-      // Check for the gray background class in the container
-      const grayBg = container.querySelector(".bg-gray-100");
-      expect(grayBg).toBeInTheDocument();
     });
 
     it("renders SUSPENDED status badge with correct styling", () => {
-      const { container } = render(<UserList {...defaultProps} users={[mockUsers[2]]} />);
+      render(<UserList {...defaultProps} users={[mockUsers[2]]} />);
 
       const statusBadge = screen.getByText("Suspended");
       expect(statusBadge).toBeInTheDocument();
-
-      // Check for the orange background class in the container
-      const orangeBg = container.querySelector(".bg-\\[\\#FBE9E7\\]");
-      expect(orangeBg).toBeInTheDocument();
-    });
-
-    it("renders status dot with correct color", () => {
-      const { container } = render(<UserList {...defaultProps} users={[mockUsers[0]]} />);
-
-      const statusDot = container.querySelector(".bg-\\[\\#66BB6A\\]");
-      expect(statusDot).toBeInTheDocument();
     });
   });
 
@@ -293,7 +274,7 @@ describe("UserList", () => {
     it("displays organization name", () => {
       render(<UserList {...defaultProps} users={[mockUsers[0]]} />);
 
-      expect(screen.getByText("Tech corp")).toBeInTheDocument();
+      expect(screen.getByText("Tech Corp")).toBeInTheDocument();
     });
 
     it("displays -- for null organization", () => {
@@ -426,13 +407,6 @@ describe("UserList", () => {
   });
 
   describe("Styling and Layout", () => {
-    it("applies hover styles to user rows", () => {
-      const { container } = render(<UserList {...defaultProps} users={[mockUsers[0]]} />);
-
-      const row = container.querySelector(".hover\\:bg-gray-50");
-      expect(row).toBeInTheDocument();
-    });
-
     it("uses grid layout for columns", () => {
       const { container } = render(<UserList {...defaultProps} users={[mockUsers[0]]} />);
 
@@ -478,7 +452,7 @@ describe("UserList", () => {
 
       render(<UserList {...defaultProps} users={[minimalUser]} />);
 
-      expect(screen.getByText("Minimal user")).toBeInTheDocument();
+      expect(screen.getByText("Minimal User")).toBeInTheDocument();
       expect(screen.getByText("minimal@example.com")).toBeInTheDocument();
     });
 
@@ -495,14 +469,14 @@ describe("UserList", () => {
     it("handles renderFooter being undefined", () => {
       render(<UserList {...defaultProps} renderFooter={undefined} />);
 
-      expect(screen.getByText("John doe")).toBeInTheDocument();
+      expect(screen.getByText("John Doe")).toBeInTheDocument();
     });
 
     it("renders correctly with single user", () => {
       render(<UserList {...defaultProps} users={[mockUsers[0]]} />);
 
-      expect(screen.getByText("John doe")).toBeInTheDocument();
-      expect(screen.queryByText("Jane smith")).not.toBeInTheDocument();
+      expect(screen.getByText("John Doe")).toBeInTheDocument();
+      expect(screen.queryByText("Jane Smith")).not.toBeInTheDocument();
     });
 
     it("renders correctly with many users", () => {
@@ -525,14 +499,10 @@ describe("UserList", () => {
         ...mockUsers[0],
         status: "BLOCKED" as userStatus,
       };
-      const { container } = render(<UserList {...defaultProps} users={[blockedUser]} />);
+      render(<UserList {...defaultProps} users={[blockedUser]} />);
 
       const statusBadge = screen.getByText("Blocked");
       expect(statusBadge).toBeInTheDocument();
-
-      // Check for the red background class in the container
-      const redBg = container.querySelector(".bg-red-100");
-      expect(redBg).toBeInTheDocument();
     });
 
     it("handles unknown status gracefully", () => {

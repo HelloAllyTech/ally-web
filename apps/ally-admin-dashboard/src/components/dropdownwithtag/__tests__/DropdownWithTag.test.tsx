@@ -46,7 +46,7 @@ describe("DropdownwithTag", () => {
       />,
     );
 
-    const trigger = container.querySelector(".border.border-gray-200.rounded-md") as HTMLElement;
+    const trigger = container.querySelector(".border.rounded-md") as HTMLElement;
     fireEvent.click(trigger);
 
     expect(screen.getByText(/admin/i)).toBeInTheDocument();
@@ -67,7 +67,7 @@ describe("DropdownwithTag", () => {
       />,
     );
 
-    const trigger = container.querySelector(".border.border-gray-200.rounded-md") as HTMLElement;
+    const trigger = container.querySelector(".border.rounded-md") as HTMLElement;
 
     // Open and select "admin" from options list (not from tag)
     fireEvent.click(trigger);
@@ -131,7 +131,7 @@ describe("DropdownwithTag", () => {
       />,
     );
 
-    const trigger = container.querySelector(".border.border-gray-200.rounded-md") as HTMLElement;
+    const trigger = container.querySelector(".border.rounded-md") as HTMLElement;
     fireEvent.click(trigger);
     expect(screen.getByText(/admin/i)).toBeInTheDocument();
 

@@ -28,6 +28,11 @@ vi.mock("@constants", () => ({
   HttpMethod: {
     GET: "GET",
   },
+  TAG_TYPES: {
+    CALL_SUMMARY: "CallSummary",
+    CALL_LOGS: "CallLogs",
+    SIMULATION_LOGS: "SimulationLogs",
+  },
 }));
 
 // Mock types

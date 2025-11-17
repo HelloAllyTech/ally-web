@@ -5,7 +5,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { SimulationPage, getSimulationEvents } from "@ally-ui-mono/ui-shared";
 import { ActionConfirmationPopup } from "@components";
 import { ButtonVariant } from "@components/types";
-import { en, LOCAL_STORAGE_KEYS, ROUTES } from "@constants";
+import { en, LOCAL_STORAGE_KEYS } from "@constants";
 import { useLiveKitRoom } from "@hooks/useLiveKitRoom";
 import { RoomStatus } from "@types";
 
@@ -43,8 +43,7 @@ export const LiveSimulationPreview: React.FC = () => {
       room={room}
       roomData={roomData}
       roomStatus={roomStatus}
-      sessionId={id || null}
-      isConnected={true}
+      sessionId={id}
       isEndingSession={roomStatus !== RoomStatus.CONNECTED}
       startTime={startTime.toISOString()}
       events={getSimulationEvents(events)}

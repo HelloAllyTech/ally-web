@@ -41,7 +41,6 @@ export const SimulationSummary: FC<SimulationSummaryProps> = ({
 
           if (data?.details?.summary?.feedback || pollCount >= maxPolls) {
             clearInterval(summaryPollingInterval);
-            // TODO: Replace this hack once BE gives {} fr feedback
             if (pollCount >= maxPolls) {
               setRetryMaxReached(true);
               if (!data?.details?.summary?.feedback) {

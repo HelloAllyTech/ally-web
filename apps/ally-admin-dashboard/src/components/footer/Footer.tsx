@@ -13,10 +13,14 @@ export const Footer: FC<FooterProps> = ({
   isLastStep = false,
 }) => {
   return (
-    <div className="flex items-center justify-between w-[calc(100%-32px)] mt-2 px-2 mx-4 py-4 h-[80px] border-t border-gray-200">
+    <div className="flex items-center justify-between w-[calc(100%-32px)] mt-2 px-2 mx-4 py-4 h-[80px] border-t border-border-light">
       <div className="flex items-center gap-3">
         {showPrevious && (
-          <Button variant={ButtonVariant.SECONDARY} onClick={onPrevious} className="px-6 py-2">
+          <Button
+            variant={ButtonVariant.SECONDARY}
+            onClick={onPrevious}
+            className="font-tertiary font-[500] px-6 py-2"
+          >
             {en.simulation.back}
           </Button>
         )}

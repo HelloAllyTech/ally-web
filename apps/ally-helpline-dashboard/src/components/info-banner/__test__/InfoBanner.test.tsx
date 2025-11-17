@@ -123,7 +123,7 @@ describe("InfoBanner Component", () => {
 
       const message = screen.getByText("Test banner message");
       expect(message.className).toContain("text-sm");
-      expect(message.className).toContain("font-['Roboto']");
+      expect(message.className).toContain("font-tertiary");
       expect(message.className).toContain("font-medium");
     });
   });

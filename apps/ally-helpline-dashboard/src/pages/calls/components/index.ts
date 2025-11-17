@@ -1,9 +1,8 @@
+import AdminLogsTable from "./AdminLogsTable";
 import AudioUploadDialog from "./AudioUploadDialog";
 import AudioUploadInterface from "./AudioUploadInterface";
-import CallLogsTable from "./CallLogsTable";
 import CallSummarySidebar from "./CallSummarySidebar";
 import CallTranscriptTab from "./CallTranscriptTab";
-import ConsolidatedLogs from "./ConsolidatedLogs";
 import DeleteCallLogConfirmationDialog from "./DeleteCallLogConfirmationDialog";
 import SimulationSummarySidebar from "./SimulationSummarySidebar";
 import SimulationTranscriptTab from "./SimulationTranscriptTab";
@@ -11,14 +10,14 @@ import StartSessionDialog from "./StartSessionDialog";
 import SummaryHeader from "./SummaryHeader";
 import SummarySidebarWrapper from "./SummarySidebarWrapper";
 import TranscriptTab from "./TranscriptTab";
+import UserLogsTable from "./UserLogsTable";
 
 export {
   AudioUploadDialog,
   AudioUploadInterface,
-  CallLogsTable,
+  AdminLogsTable,
   CallSummarySidebar,
   CallTranscriptTab,
-  ConsolidatedLogs,
   DeleteCallLogConfirmationDialog,
   SimulationSummarySidebar,
   SimulationTranscriptTab,
@@ -26,4 +25,5 @@ export {
   SummarySidebarWrapper,
   StartSessionDialog,
   TranscriptTab,
+  UserLogsTable,
 };

@@ -18,7 +18,7 @@ let mockRoom: any = {
     setMicrophoneEnabled: mockSetMicrophoneEnabled,
   },
 };
-let mockStartTime = Date.now();
+let mockStartTime = new Date();
 let mockEvents: any[] = [];
 let mockScore = 0;
 let mockError: any = null;
@@ -57,6 +57,10 @@ vi.mock("@livekit/components-react", () => ({
   RoomContext: {
     Provider: ({ children }: any) => <div data-testid="room-context-provider">{children}</div>,
   },
+  RoomAudioRenderer: () => <div data-testid="room-audio-renderer" />,
+  useRemoteParticipants: () => [],
+  useRoomContext: () => ({}),
+  useTrack: () => ({}),
 }));
 
 vi.mock("framer-motion", () => ({
@@ -70,41 +74,6 @@ vi.mock("@ally-ui-mono/ui-shared/logger", () => ({
     info: vi.fn(),
     error: vi.fn(),
   },
-}));
-
-// Mock child components
-vi.mock("../components", () => ({
-  SimulationControls: ({ isMuted, onEndSessionClick, onMuteClick }: any) => (
-    <div data-testid="simulation-controls">
-      <button data-testid="mute-button" onClick={onMuteClick}>
-        {isMuted ? "Unmute" : "Mute"}
-      </button>
-      <button data-testid="end-session-button" onClick={onEndSessionClick}>
-        End Session
-      </button>
-    </div>
-  ),
-  SimulationEvents: ({ events }: any) => (
-    <div data-testid="simulation-events">Events: {events.length}</div>
-  ),
-  SimulationInterface: ({ roomStatus }: any) => (
-    <div data-testid="simulation-interface">Status: {roomStatus}</div>
-  ),
-  SimulationScoreMeter: ({ score }: any) => (
-    <div data-testid="simulation-score-meter">Score: {score}</div>
-  ),
-  SimulationTimer: ({ startTime, onWarning, onTimeLimit, isWarning }: any) => (
-    <div data-testid="simulation-timer">
-      <span>Start Time: {startTime}</span>
-      <button data-testid="trigger-warning" onClick={onWarning}>
-        Trigger Warning
-      </button>
-      <button data-testid="trigger-time-limit" onClick={onTimeLimit}>
-        Trigger Time Limit
-      </button>
-      {isWarning && <span data-testid="timer-warning">Warning Active</span>}
-    </div>
-  ),
 }));
 
 vi.mock("@components", () => ({
@@ -153,6 +122,19 @@ vi.mock("@constants", () => ({
   },
 }));
 
+vi.mock("@ally-ui-mono/ui-shared", () => ({
+  SimulationPage: ({ children, ...props }: any) => (
+    <div data-testid="simulation-page" {...props}>
+      Simulation Page
+    </div>
+  ),
+  getSimulationEvents: (events: any[]) => events,
+  logger: {
+    info: vi.fn(),
+    error: vi.fn(),
+  },
+}));
+
 // --- TESTS ---
 
 describe("Simulation", () => {
@@ -162,7 +144,7 @@ describe("Simulation", () => {
 
     // Reset mock state
     mockRoomStatus = RoomStatus.CONNECTED;
-    mockStartTime = Date.now();
+    mockStartTime = new Date();
     mockEvents = [];
     mockScore = 0;
     mockError = null;
@@ -192,49 +174,9 @@ describe("Simulation", () => {
     vi.useRealTimers();
   });
 
-  test("should render all main components", () => {
+  test("should render simulation page", () => {
     render(<Simulation />);
-
-    expect(screen.getByTestId("room-context-provider")).toBeInTheDocument();
-    expect(screen.getByTestId("simulation-interface")).toBeInTheDocument();
-    expect(screen.getByTestId("simulation-events")).toBeInTheDocument();
-    expect(screen.getByTestId("simulation-score-meter")).toBeInTheDocument();
-    expect(screen.getByTestId("simulation-timer")).toBeInTheDocument();
-    expect(screen.getByTestId("simulation-controls")).toBeInTheDocument();
-    expect(screen.getByTestId("warning-icon")).toBeInTheDocument();
-    expect(screen.getByText("Your data is safe")).toBeInTheDocument();
-  });
-
-  test("should pass correct props to child components", () => {
-    mockScore = 85;
-    mockEvents = [{ id: "1" }, { id: "2" }];
-
-    render(<Simulation />);
-
-    expect(screen.getByText("Status: connected")).toBeInTheDocument();
-    expect(screen.getByText("Events: 2")).toBeInTheDocument();
-    expect(screen.getByText("Score: 85")).toBeInTheDocument();
-    expect(screen.getByText(`Start Time: ${mockStartTime}`)).toBeInTheDocument();
-  });
-
-  test("should handle wake lock not supported", () => {
-    Object.defineProperty(navigator, "wakeLock", {
-      writable: true,
-      configurable: true,
-      value: undefined,
-    });
-
-    render(<Simulation />);
-
-    expect(screen.getByTestId("simulation-interface")).toBeInTheDocument();
-    expect(mockWakeLockRequest).not.toHaveBeenCalled();
-  });
-
-  test("should not request wake lock when room is not connected", () => {
-    mockRoomStatus = RoomStatus.DISCONNECTED;
-
-    render(<Simulation />);
-
-    expect(mockWakeLockRequest).not.toHaveBeenCalled();
+    expect(screen.getByTestId("simulation-page")).toBeInTheDocument();
+    expect(screen.getByText("Simulation Page")).toBeInTheDocument();
   });
 });

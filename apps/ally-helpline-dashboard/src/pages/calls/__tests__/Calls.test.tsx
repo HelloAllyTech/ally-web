@@ -88,6 +88,24 @@ vi.mock("../components", () => ({
       Call Logs Table
     </div>
   ),
+  UserLogsTable: ({ refreshKey, sessionType }: any) => (
+    <div
+      data-testid="user-logs-table"
+      data-refresh-key={refreshKey}
+      data-session-type={sessionType}
+    >
+      User Logs Table
+    </div>
+  ),
+  AdminLogsTable: ({ refreshKey, sessionType }: any) => (
+    <div
+      data-testid="admin-logs-table"
+      data-refresh-key={refreshKey}
+      data-session-type={sessionType}
+    >
+      Admin Logs Table
+    </div>
+  ),
   ConsolidatedLogs: ({ refreshKey, sessionType }: any) => (
     <div
       data-testid="consolidated-logs"
@@ -172,7 +190,7 @@ describe("Calls Component", () => {
   describe("Basic Rendering", () => {
     it("should render successfully", () => {
       render(<Calls />);
-      expect(screen.getByTestId("call-logs-table")).toBeInTheDocument();
+      expect(screen.getByTestId("user-logs-table")).toBeInTheDocument();
     });
 
     it("should render without throwing errors", () => {
@@ -200,7 +218,7 @@ describe("Calls Component", () => {
 
     it("should render call logs table", () => {
       render(<Calls />);
-      expect(screen.getByTestId("call-logs-table")).toBeInTheDocument();
+      expect(screen.getByTestId("user-logs-table")).toBeInTheDocument();
     });
 
     it("should render Session Logs heading", () => {
@@ -221,7 +239,7 @@ describe("Calls Component", () => {
       expect(screen.getByTestId("start-session-dialog")).toHaveAttribute("data-is-open", "false");
 
       // Refresh key should be 0 by default
-      expect(screen.getByTestId("call-logs-table")).toHaveAttribute("data-refresh-key", "0");
+      expect(screen.getByTestId("user-logs-table")).toHaveAttribute("data-refresh-key", "0");
     });
   });
 
@@ -238,7 +256,7 @@ describe("Calls Component", () => {
       });
 
       render(<Calls />);
-      expect(screen.getByTestId("call-logs-table")).toBeInTheDocument();
+      expect(screen.getByTestId("user-logs-table")).toBeInTheDocument();
     });
 
     it("should show Start Session button for non-admin with MICROPHONE_CHAT", () => {
@@ -279,7 +297,7 @@ describe("Calls Component", () => {
       fireEvent.click(refreshIcon);
 
       // Refresh key should increment
-      expect(screen.getByTestId("call-logs-table")).toHaveAttribute("data-refresh-key", "1");
+      expect(screen.getByTestId("user-logs-table")).toHaveAttribute("data-refresh-key", "1");
     });
   });
 
@@ -321,21 +339,21 @@ describe("Calls Component", () => {
       const refreshIcon = screen.getByTestId("refresh-icon");
 
       // Initial state
-      expect(screen.getByTestId("call-logs-table")).toHaveAttribute("data-refresh-key", "0");
+      expect(screen.getByTestId("user-logs-table")).toHaveAttribute("data-refresh-key", "0");
 
       // First refresh
       fireEvent.click(refreshIcon);
-      expect(screen.getByTestId("call-logs-table")).toHaveAttribute("data-refresh-key", "1");
+      expect(screen.getByTestId("user-logs-table")).toHaveAttribute("data-refresh-key", "1");
 
       // Second refresh
       fireEvent.click(refreshIcon);
-      expect(screen.getByTestId("call-logs-table")).toHaveAttribute("data-refresh-key", "2");
+      expect(screen.getByTestId("user-logs-table")).toHaveAttribute("data-refresh-key", "2");
     });
 
     it("should pass refresh key to child components", () => {
       render(<Calls />);
 
-      expect(screen.getByTestId("call-logs-table")).toHaveAttribute("data-refresh-key");
+      expect(screen.getByTestId("user-logs-table")).toHaveAttribute("data-refresh-key");
     });
   });
 
@@ -351,7 +369,7 @@ describe("Calls Component", () => {
       });
 
       render(<Calls />);
-      expect(screen.getByTestId("call-logs-table")).toBeInTheDocument();
+      expect(screen.getByTestId("user-logs-table")).toBeInTheDocument();
     });
 
     it("should handle null user", () => {
@@ -362,7 +380,7 @@ describe("Calls Component", () => {
       });
 
       render(<Calls />);
-      expect(screen.getByTestId("call-logs-table")).toBeInTheDocument();
+      expect(screen.getByTestId("user-logs-table")).toBeInTheDocument();
     });
 
     it("should handle empty available chat types", () => {

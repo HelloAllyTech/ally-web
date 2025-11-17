@@ -36,7 +36,6 @@ const SearchResources: FC<SearchResourcesProps> = ({
       setSearchQuery(query);
       setSelectedCategory(category || "All");
       // To get the category count list
-      // TODO: Will be removed in future when a seperate api is introduced
       await triggerSearch(query);
       if (category) triggerSearch(query, category);
     };

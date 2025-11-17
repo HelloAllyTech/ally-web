@@ -14,6 +14,15 @@ export const en = {
     noOptionsAvailable: "No options available",
     noResultsFound: "No results found for",
     selectOption: "Select option",
+    uploading: "Uploading...",
+  },
+  errors: {
+    fileMustBeJPEGOrPNG: "File must be JPEG or PNG.",
+    fileMustBeVideo: "File must be a video.",
+    fileUploadFailed: "Failed to upload file. Please try again.",
+    fileMetadataLoadFailed: "Failed to load video metadata",
+    imageMustHave169AspectRatio: "Image must have a 16:9 aspect ratio.",
+    fileDeleteFailed: "Failed to delete file. Please try again.",
   },
   accessDenied: {
     title: "This page is not accessible",
@@ -45,6 +54,9 @@ export const en = {
     logout: "Logout",
   },
   simulation: {
+    videoMaxSizeLabel: "15MB",
+    imageMaxSizeLabel: "2MB",
+    file: "File",
     addEvent: "Add event",
     unarchive: "Unarchive",
     unarchiveDescription:
@@ -99,10 +111,14 @@ export const en = {
     deleteForever: "Delete forever",
     title: "Title",
     titlePlaceholder: "Enter title",
-    upload: "Cover image",
+    coverImage: "Cover image",
+    coverVideo: "Cover video",
     dragDrop: "Drag & drop or",
     choose: "choose",
     pngUploadGuidelines: "a JPEG or PNG file with a",
+    mp4UploadGuidelines: "a MP4 or MOV file with a",
+    videoUploadGuidelines:
+      "resolution of 16:9 aspect ratio,under 15MB, and a duration of up to 15 seconds.",
     resolution: "resolution of 1920x1080 and under 2MB.",
     description: "Description",
     descriptionPlaceholder: "Enter description",

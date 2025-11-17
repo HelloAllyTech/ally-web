@@ -1,7 +1,10 @@
+"use client";
+
 import { FC, useEffect, useRef, useState } from "react";
 
 import { RoomContext } from "@livekit/components-react";
 import { motion } from "framer-motion";
+import { toast } from "sonner";
 
 import { BottomSection } from "./SimulationBottomSection";
 import { SimulationEvents } from "./SimulationEvents";
@@ -14,7 +17,6 @@ export const SimulationPage: FC<SimulationPageProps> = ({
   roomData,
   roomStatus,
   sessionId,
-  isConnected,
   isEndingSession,
   startTime,
   events,
@@ -26,6 +28,7 @@ export const SimulationPage: FC<SimulationPageProps> = ({
 }) => {
   const [isMuted, setIsMuted] = useState(false);
   const [isWarning, setIsWarning] = useState(false);
+  const [isFocusMode, setIsFocusMode] = useState(false);
   const wakeLockRef = useRef<WakeLockSentinel | null>(null);
 
   useEffect(() => {
@@ -35,22 +38,22 @@ export const SimulationPage: FC<SimulationPageProps> = ({
           wakeLockRef.current = await (navigator as any).wakeLock.request("screen");
         }
       } catch {
-        console.error("Failed to request wake lock");
+        toast.error("Failed to request wake lock");
       }
     };
 
-    if (isConnected && sessionId) {
+    if (sessionId) {
       requestWakeLock();
     }
 
     const handleVisibilityChange = async () => {
-      if (document.visibilityState === "visible" && isConnected && sessionId) {
+      if (document.visibilityState === "visible" && sessionId) {
         try {
           if ("wakeLock" in navigator) {
             wakeLockRef.current = await (navigator as any).wakeLock.request("screen");
           }
         } catch {
-          console.error("Failed to request wake lock");
+          toast.error("Failed to request wake lock");
         }
       }
     };
@@ -68,7 +71,7 @@ export const SimulationPage: FC<SimulationPageProps> = ({
           .catch(() => {});
       }
     };
-  }, [isConnected, sessionId]);
+  }, [sessionId]);
 
   const onTimeLimitWarning = () => {
     setIsWarning(true);
@@ -82,10 +85,14 @@ export const SimulationPage: FC<SimulationPageProps> = ({
       try {
         room?.localParticipant?.setMicrophoneEnabled?.(prev);
       } catch {
-        console.error("Failed to mute simulation");
+        toast.error("Failed to mute simulation");
       }
       return !prev;
     });
+  };
+
+  const onFocusButtonClick = () => {
+    setIsFocusMode(prev => !prev);
   };
 
   const handleEndSimulation = async () => {
@@ -104,7 +111,7 @@ export const SimulationPage: FC<SimulationPageProps> = ({
       )}
       <motion.div layout className="max-h-[calc(100vh-170px)] w-full flex flex-1 gap-2">
         <SimulationInterface roomStatus={roomStatus} roomData={roomData} />
-        <SimulationEvents events={events} />
+        {!isFocusMode && <SimulationEvents events={events} />}
       </motion.div>
       <SimulationScoreMeter score={score} />
 
@@ -116,6 +123,8 @@ export const SimulationPage: FC<SimulationPageProps> = ({
         isMuted={isMuted}
         isEndingSession={isEndingSession}
         startTime={startTime}
+        isFocusMode={isFocusMode}
+        onFocusButtonClick={onFocusButtonClick}
       />
 
       {renderFooter?.()}

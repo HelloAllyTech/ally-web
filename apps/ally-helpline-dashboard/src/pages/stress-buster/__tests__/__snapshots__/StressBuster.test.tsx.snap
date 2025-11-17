@@ -16,7 +16,7 @@ exports[`StressBuster Component > Snapshot Testing > should match snapshot after
       data-transition="{\\"duration\\":2}"
     >
       <span
-        class="text-white text-5xl font-['Replay_Pro']"
+        class="text-white text-5xl font-secondary"
       >
         <span>
           You
@@ -77,7 +77,7 @@ exports[`StressBuster Component > Snapshot Testing > should match snapshot in in
       data-transition="{\\"duration\\":2}"
     >
       <span
-        class="text-white text-5xl font-['Replay_Pro']"
+        class="text-white text-5xl font-secondary"
       >
         <span>
           You

@@ -15,7 +15,7 @@ import { cellTypes } from "./utils";
 export const Cell = ({
   value: initialValue,
   rowIndex: index,
-  column: { dataType, options, minWidth, id, placeholder },
+  column: { dataType, options, minWidth, width, id, placeholder },
   onCellChange,
   row,
 }) => {
@@ -65,7 +65,8 @@ export const Cell = ({
       element = (
         <EditableTextPopup
           value={value.value}
-          width={minWidth}
+          width={width}
+          minWidth={minWidth}
           onChange={updateCellValue}
           placeholder={placeholder}
           disabled={isDisabled}

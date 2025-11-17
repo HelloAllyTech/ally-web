@@ -1,3 +1,5 @@
+"use client";
+
 import { FC } from "react";
 
 import { Warning } from "@ally-ui-mono/ui-shared/assets";
@@ -12,8 +14,10 @@ export const BottomSection: FC<BottomSectionProps> = ({
   onEndSimulation,
   onMuteSimulation,
   isMuted,
+  isFocusMode,
   isEndingSession,
   startTime,
+  onFocusButtonClick,
 }) => {
   return (
     <div className="w-full flex justify-between items-center">
@@ -25,9 +29,11 @@ export const BottomSection: FC<BottomSectionProps> = ({
       />
       <SimulationControls
         isMuted={isMuted}
+        isFocusMode={isFocusMode}
         isEndingSession={isEndingSession}
         onEndSessionClick={onEndSimulation}
         onMuteClick={onMuteSimulation}
+        onFocusButtonClick={onFocusButtonClick}
       />
       <div className="flex items-center gap-2">
         <Warning />

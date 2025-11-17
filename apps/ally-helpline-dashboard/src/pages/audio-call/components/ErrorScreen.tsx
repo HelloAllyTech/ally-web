@@ -43,7 +43,7 @@ const ErrorScreen = ({
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4, delay: 0.2 }}
-        className="text-white text-2xl text-center mt-1 font-['Replay_Pro']"
+        className="text-white text-2xl text-center mt-1 font-secondary"
       >
         {title}
       </motion.div>
@@ -52,7 +52,7 @@ const ErrorScreen = ({
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4, delay: 0.3 }}
-        className="text-white text-sm text-center mt-1 font-['IBM_Plex_Serif']"
+        className="text-white text-sm text-center mt-1 font-primary"
       >
         {description}
       </motion.div>

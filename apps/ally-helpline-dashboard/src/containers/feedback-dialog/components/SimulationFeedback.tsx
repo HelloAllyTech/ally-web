@@ -3,8 +3,7 @@ import { FC, useState } from "react";
 import { toast } from "sonner";
 
 import { useSubmitSimulationFeedbackMutation } from "@api";
-import { Button, TextField } from "@components";
-import StarRating from "@containers/simulation-summary-state/components/StarRating";
+import { Button, StarRating, TextField } from "@components";
 
 import { FeedbackSectionProps } from "../types";
 
@@ -48,7 +47,7 @@ export const SimulationFeedback: FC<FeedbackSectionProps> = ({ id, onSubmitCompl
 
   return (
     <>
-      <span className="text-[#6B7280] font-medium">How was your experience?</span>
+      <span className="text-typography-800 font-medium">How was your experience?</span>
       <StarRating rating={rating} setRating={setRating} />
       <span className="h-6">{getSimulationRatingText(rating)}</span>
       <TextField

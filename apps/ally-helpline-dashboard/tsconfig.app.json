@@ -54,5 +54,12 @@
       "@ally-ui-mono/ui-shared/*": ["../../libs/ui-shared/src/*"]
     }
   },
-  "include": ["src"]
+  "include": ["src"],
+  "exclude": [
+    "src/**/*.test.ts",
+    "src/**/*.test.tsx",
+    "src/**/*.spec.ts",
+    "src/**/*.spec.tsx",
+    "src/**/__tests__/**"
+  ]
 }

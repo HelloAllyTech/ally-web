@@ -24,7 +24,7 @@ export const PostSimulationSummary: FC = () => {
         animate="visible"
         className="flex flex-col gap-6 max-w-3xl w-full h-full pb-8 sm:pb-16 px-4 sm:px-6 items-center"
       >
-        <div className="w-full text-black text-[24px] sm:text-[32px] font-normal text-left font-['Replay_Pro'] mt-8 px-4">
+        <div className="w-full text-black text-2xl sm:text-4xl font-normal text-left font-secondary mt-8 px-4">
           Simulation <em>Summary</em>
         </div>
         <SimulationSummary

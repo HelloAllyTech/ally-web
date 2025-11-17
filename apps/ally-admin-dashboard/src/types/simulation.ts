@@ -32,6 +32,7 @@ export interface SimulationInput {
   title?: string;
   description?: string;
   coverImageUrl?: string;
+  coverVideoUrl?: string;
   status?: SimulationStatus;
   prompt?: string;
   name?: string;
@@ -73,6 +74,7 @@ export interface GetSimulationByIdResponse {
   title: string;
   description: string;
   coverImageUrl: string;
+  coverVideoUrl?: string;
   createdBy: string;
   lastModified: string;
   metadata: {
@@ -167,4 +169,20 @@ export interface GetCoverImageUrlResponse {
 
 export interface DeleteCoverImageRequest {
   coverImageUrl: string;
+}
+
+export interface GetCoverVideoUrlRequest {
+  fileName: string;
+  fileSize: number;
+  duration: number;
+  contentType: string;
+}
+
+export interface GetCoverVideoUrlResponse {
+  presignedUrl: string;
+  coverVideoUrl: string;
+}
+
+export interface DeleteCoverVideoRequest {
+  coverVideoUrl: string;
 }

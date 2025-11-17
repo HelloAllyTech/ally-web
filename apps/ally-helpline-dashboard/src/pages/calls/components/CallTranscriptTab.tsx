@@ -43,11 +43,6 @@ const CallTranscriptTab: FC<CallTranscriptTabProps> = ({ callSummary }) => {
     setTranscriptOffset(prev => prev + TRANSCRIPT_PAGE_SIZE);
   };
 
-  // TODO: Removing as not used anymore
-  // window.handleCommentClick = (comment: string) => {
-  //   setSelectedComment(comment === selectedComment ? "" : comment);
-  // };
-
   return (
     <TranscriptTab
       transcriptList={transcriptList}

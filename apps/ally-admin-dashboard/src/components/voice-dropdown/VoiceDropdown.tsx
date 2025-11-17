@@ -25,9 +25,9 @@ export const VoiceDropdown: React.FC<VoiceDropdownProps> = ({
 
   return (
     <div className="flex flex-col gap-2">
-      <label className="text-[#49454F] cursor-pointer flex items-center gap-1">
+      <label className="text-typography-900 cursor-pointer flex items-center gap-1">
         {label}
-        <span className="text-red-500">*</span>
+        <span className="text-destructive-500">*</span>
       </label>
       <DropdownField
         id={id}
@@ -37,7 +37,9 @@ export const VoiceDropdown: React.FC<VoiceDropdownProps> = ({
         placeholder={en.simulation.selectVoice}
         isMandatory={isMandatory}
       />
-      {errors[id]?.message.length && <p className="text-red-500 text-sm">{errors[id].message}</p>}
+      {errors[id]?.message.length && (
+        <p className="text-destructive-500 text-sm">{errors[id].message}</p>
+      )}
     </div>
   );
 };

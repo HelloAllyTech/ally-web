@@ -1,11 +1,6 @@
 import { cellTypes } from "@components";
 import { SimulationCreatorFieldGroups } from "@types";
 
-export const imageTypes = {
-  JPEG: "image/jpeg",
-  PNG: "image/png",
-};
-
 export const minInputHeight = {
   narrativeContext: "250",
 };
@@ -72,6 +67,7 @@ export const FORM_FIELD_TYPES = {
   NUMBER: "number",
   SELECT: "select",
   IMAGE_UPLOAD: "image_upload",
+  VIDEO_UPLOAD: "video_upload",
   CUSTOM: {
     VOICE_DROPDOWN: "voice_dropdown",
   },
@@ -96,6 +92,13 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: SimulationCreatorFieldGroups[] = [
         label: "Cover Image",
         type: FORM_FIELD_TYPES.IMAGE_UPLOAD,
         isMandatory: true,
+        fullWidth: true,
+      },
+      {
+        id: "coverVideoUrl",
+        label: "Cover Video",
+        type: FORM_FIELD_TYPES.VIDEO_UPLOAD,
+        isMandatory: false,
         fullWidth: true,
       },
       {

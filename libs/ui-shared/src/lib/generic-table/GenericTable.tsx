@@ -261,7 +261,7 @@ export const GenericTable = forwardRef(
           />
         )}
         {renderPopovers()}
-        <table className="w-full min-w-full text-xs sm:text-sm">
+        <table className="w-full min-w-full">
           <TableHeader
             columns={columns}
             filter={filter}
@@ -280,7 +280,7 @@ export const GenericTable = forwardRef(
         {handleLoadMore && (
           <div
             onClick={handleLoadMore}
-            className="flex cursor-pointer mt-4 text-center items-center"
+            className="flex cursor-pointer mt-4 text-center items-center pb-[60px]"
           >
             <Plus size={20} />
             <span className="font-['IBM_Plex_Serif'] text-[16px] ml-[5px]">Load More</span>

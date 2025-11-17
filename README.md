@@ -4,6 +4,7 @@ This monorepo contains multiple applications for the Ally platform:
 
 - Ally Web: A modern landing page for our mental health AI assistance platform
 - Ally Helpline Dashboard: Dashboard application for mental health professionals
+- Ally Admin Dashboard: Dashboard application for super admin
 
 ## Prerequisites
 
@@ -31,13 +32,19 @@ npm install
 For Ally Web:
 
 ```bash
-npx nx dev ally-web
+npm run start:web
 ```
 
 For Ally Helpline Dashboard:
 
 ```bash
-npx nx serve ally-helpline-dashboard
+npm run start:helpline
+```
+
+For Ally Admin Dashboard:
+
+```bash
+npm run start:admin
 ```
 
 ## Project Structure
@@ -47,6 +54,7 @@ ally-UI-mono/
 ├── apps/
 │   ├── ally-web/                  # Landing page application
 │   └── ally-helpline-dashboard/   # Main dashboard application
+│   └── ally-admin-dashboard/      # Main dashboard application
 ├── libs/                          # Shared libraries
 ├── nx.json                        # NX configuration
 ├── package.json                   # Root dependencies
@@ -68,19 +76,30 @@ A Next.js application showcasing our platform's features and mission:
 
 The main dashboard application for mental health professionals.
 
+### Ally Admin Dashboard (apps/ally-admin-dashboard)
+
+The main dashboard application for super admin for user managament and simulation management.
+
 ## Available Commands
 
 ```bash
 # Ally Web Commands
-npx nx dev ally-web           # Start development server
-npx nx build ally-web        # Build for production
-npx nx lint ally-web        # Lint code
+npm run start:web           # Start development server
+npm run build:web        # Build for production
+npm run test:web      # running test cases
+npx nx lint ally-web     # Lint code
 
 # Ally Helpline Dashboard Commands
-npx nx serve ally-helpline-dashboard
-npx nx build ally-helpline-dashboard
-npx nx test ally-helpline-dashboard
+npm run start:helpline           # Start development server
+npm run build:helpline        # Build for production
+npm run test:helpline      # running test cases
 npx nx lint ally-helpline-dashboard
+
+# Ally Admin Dashboard Commands
+npm run start:admin           # Start development server
+npm run build:admin        # Build for production
+npm run test:admin      # running test cases
+npx nx lint ally-admin-dashboard
 ```
 
 ## Development Guidelines
@@ -88,9 +107,60 @@ npx nx lint ally-helpline-dashboard
 1. **Code Style**: Follow the project's ESLint and Prettier configurations
 2. **Styling**:
    - Ally Web: Uses CSS Modules with custom properties
-   - Dashboard: Uses Tailwind CSS
+   - Helpline Dashboard: Uses Tailwind CSS
+   - Admin Dashboard: Uses Tailwind CSS
 3. **TypeScript**: Maintain strict type checking and follow the base TSConfig
 4. **Components**: Create reusable components in the appropriate application's components directory
+
+## Dockerized setup (shared deps image)
+
+Use Docker for a consistent local dev environment leveraging a shared base image for dependencies.
+
+- **Prerequisites**
+  - Docker Desktop
+  - Docker Compose
+- **Build the shared base image (once or when deps change)**
+
+```bash
+docker build -f Dockerfile.deps -t ally-web/deps:dev .
+```
+
+- **Rebuild app images (now FROM ally-web/deps:dev)**
+
+```bash
+docker compose build
+```
+
+- **Run specific services**
+  Web (Next.js):
+
+```bash
+docker compose up web
+```
+
+Helpline (Vite):
+
+```bash
+docker compose up helpline
+```
+
+Admin (Vite):
+
+```bash
+docker compose up admin
+```
+
+- **Detached mode**
+
+```bash
+docker compose up -d web
+```
+
+- **Stop everything**
+
+```bash
+docker compose down
+```
 
 ## Contributing
 
@@ -106,7 +176,3 @@ For issues and support:
 - Check the project documentation
 - Review existing issues
 - Contact the development team
-
-## License
-
-[Add your license information here]

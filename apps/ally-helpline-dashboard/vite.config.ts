@@ -1,12 +1,10 @@
 /// <reference types="vitest" />
-import { defineConfig } from "vitest/config";
-import react from "@vitejs/plugin-react-swc";
+import { defineConfig, type PluginOption } from "vite";
+import react from "@vitejs/plugin-react";
 import svgr from "vite-plugin-svgr";
 import path from "path";
-
 // Get absolute paths
 const projectRoot = __dirname;
-
 // https://vitejs.dev/config/
 export default defineConfig({
   root: projectRoot,
@@ -30,8 +28,21 @@ export default defineConfig({
     port: 8080,
     strictPort: true,
     host: true,
+    hmr: {
+      host: "localhost",
+      port: 8080,
+      clientPort: 8080,
+    },
+    watch: {
+      usePolling: true,
+      interval: 300,
+    },
+    fs: {
+      // allow accessing the monorepo root (e.g., ../../libs) inside container
+      allow: ["..", "/app"],
+    },
   },
-  plugins: [react(), svgr()],
+  plugins: [react(), svgr()] as PluginOption[],
   resolve: {
     alias: {
       "@src": path.resolve(projectRoot, "./src"),

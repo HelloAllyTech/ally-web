@@ -139,6 +139,14 @@ vi.mock("@utils", () => ({
   openLinkInNewTab: vi.fn(),
 }));
 
+// Mock framer-motion to eliminate animation timing issues
+vi.mock("framer-motion", () => ({
+  AnimatePresence: ({ children }: { children: React.ReactNode }) => children,
+  motion: {
+    div: ({ children, ...props }: any) => <div {...props}>{children}</div>,
+  },
+}));
+
 describe("Login", () => {
   let store: any;
 
@@ -334,7 +342,7 @@ describe("Login", () => {
         () => {
           expect(mockGenerateOTP).toHaveBeenCalledWith({ email: "test@example.com" });
         },
-        { timeout: 500 },
+        { timeout: 2000 },
       );
     });
 
@@ -355,7 +363,7 @@ describe("Login", () => {
         () => {
           expect(screen.getByText("Verify your email address")).toBeInTheDocument();
         },
-        { timeout: 500 },
+        { timeout: 2000 },
       );
     });
 
@@ -378,7 +386,7 @@ describe("Login", () => {
         () => {
           expect(toast.error).toHaveBeenCalledWith("Failed to generate OTP");
         },
-        { timeout: 500 },
+        { timeout: 2000 },
       );
     });
   });
@@ -399,15 +407,16 @@ describe("Login", () => {
     it("should render OTP section with all elements", async () => {
       renderLogin();
 
-      await waitFor(
-        () => {
-          expect(screen.getByText("Verify your email address")).toBeInTheDocument();
-          expect(screen.getByTestId("otp-input")).toBeInTheDocument();
-          expect(screen.getByTestId("arrow-down")).toBeInTheDocument();
-          expect(screen.getByText("Verify")).toBeInTheDocument();
-        },
-        { timeout: 500 },
+      // Wait for OTP section to appear after state transition
+      const otpHeading = await screen.findByText(
+        "Verify your email address",
+        {},
+        { timeout: 2000 },
       );
+      expect(otpHeading).toBeInTheDocument();
+      expect(screen.getByTestId("otp-input")).toBeInTheDocument();
+      expect(screen.getByTestId("arrow-down")).toBeInTheDocument();
+      expect(screen.getByText("Verify")).toBeInTheDocument();
     });
   });
 
@@ -427,14 +436,8 @@ describe("Login", () => {
     it("should handle OTP input and button states", async () => {
       renderLogin();
 
-      await waitFor(
-        () => {
-          expect(screen.getByTestId("otp-input")).toBeInTheDocument();
-        },
-        { timeout: 500 },
-      );
-
-      const otpInput = screen.getByTestId("otp-input");
+      // Wait for OTP section to appear
+      const otpInput = await screen.findByTestId("otp-input", {}, { timeout: 2000 });
       const verifyButton = screen.getByText("Verify");
 
       // Initially disabled
@@ -465,12 +468,9 @@ describe("Login", () => {
     it("should show resend link with countdown", async () => {
       renderLogin();
 
-      await waitFor(
-        () => {
-          expect(screen.getByText(/Resend/)).toBeInTheDocument();
-        },
-        { timeout: 500 },
-      );
+      // Wait for OTP section to appear, then check for resend link
+      await screen.findByText("Verify your email address", {}, { timeout: 2000 });
+      expect(screen.getByText(/Resend/)).toBeInTheDocument();
     });
   });
 
@@ -501,14 +501,8 @@ describe("Login", () => {
 
       renderLogin();
 
-      await waitFor(
-        () => {
-          expect(screen.getByTestId("otp-input")).toBeInTheDocument();
-        },
-        { timeout: 500 },
-      );
-
-      const otpInput = screen.getByTestId("otp-input");
+      // Wait for OTP section to appear
+      const otpInput = await screen.findByTestId("otp-input", {}, { timeout: 2000 });
       fireEvent.change(otpInput, { target: { value: "123456" } });
 
       const verifyButton = screen.getByText("Verify");
@@ -518,7 +512,7 @@ describe("Login", () => {
         () => {
           expect(mockVerifyOTP).toHaveBeenCalled();
         },
-        { timeout: 500 },
+        { timeout: 2000 },
       );
     });
   });

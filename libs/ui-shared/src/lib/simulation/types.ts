@@ -42,8 +42,7 @@ export interface RenderWarningDialogParams {
 export interface SimulationPageProps {
   room: any; // LiveKit Room instance; typed as any to avoid hard dependency for consumers
   roomData: any;
-  sessionId?: string | null;
-  isConnected: boolean;
+  sessionId?: string;
   isEndingSession: boolean;
   startTime: string;
   events: SimulationEventType[];
@@ -57,9 +56,11 @@ export interface SimulationPageProps {
 
 export interface SimulationControlsProps {
   isEndingSession: boolean;
+  isFocusMode: boolean;
   isMuted: boolean;
   onEndSessionClick: () => void;
   onMuteClick: () => void;
+  onFocusButtonClick: () => void;
 }
 
 export interface CircleConfig {
@@ -75,4 +76,6 @@ export interface BottomSectionProps {
   isMuted: boolean;
   isEndingSession: boolean;
   startTime: string;
+  isFocusMode: boolean;
+  onFocusButtonClick: () => void;
 }

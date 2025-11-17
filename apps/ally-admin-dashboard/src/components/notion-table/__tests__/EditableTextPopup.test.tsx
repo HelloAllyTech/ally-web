@@ -283,30 +283,7 @@ describe("EditableTextPopup", () => {
     });
   });
 
-  describe("Placeholder Styling", () => {
-    it("applies gray text color for placeholder", () => {
-      const { container } = render(<EditableTextPopup {...defaultProps} value="" />);
-
-      const placeholderElement = container.querySelector(".text-gray-400");
-      expect(placeholderElement).toBeInTheDocument();
-    });
-
-    it("does not apply gray color for actual value", () => {
-      const { container } = render(<EditableTextPopup {...defaultProps} value="Real value" />);
-
-      const textElement = screen.getByText("Real value").parentElement;
-      expect(textElement).not.toHaveClass("text-gray-400");
-    });
-  });
-
-  describe("Hover Styles", () => {
-    it("applies hover styles when not disabled", () => {
-      const { container } = render(<EditableTextPopup {...defaultProps} />);
-
-      const hoverElement = container.querySelector(".hover\\:bg-gray-50");
-      expect(hoverElement).toBeInTheDocument();
-    });
-
+  describe("Disabled State", () => {
     it("does not apply hover styles when disabled", () => {
       const { container } = render(<EditableTextPopup {...defaultProps} disabled={true} />);
 

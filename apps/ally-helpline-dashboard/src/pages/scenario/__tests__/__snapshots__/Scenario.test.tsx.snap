@@ -12,7 +12,7 @@ exports[`Scenario Component > Snapshot Testing > should match snapshot with scen
         class="h-screen w-full flex justify-center items-center bg-white"
       >
         <div
-          class="flex flex-col gap-6 w-[60%] m-auto"
+          class="flex flex-col gap-6 w-full m-auto justify-center items-center"
           data-animate="visible"
           data-exit="exit"
           data-initial="hidden"
@@ -20,10 +20,10 @@ exports[`Scenario Component > Snapshot Testing > should match snapshot with scen
           data-variants="{\\"hidden\\":{\\"opacity\\":0,\\"scale\\":0.95},\\"visible\\":{\\"opacity\\":1,\\"scale\\":1,\\"transition\\":{\\"duration\\":0.4,\\"ease\\":[0.4,0,0.2,1]}},\\"exit\\":{\\"opacity\\":0,\\"scale\\":0.95,\\"transition\\":{\\"duration\\":0.3}}}"
         >
           <div
-            class="flex justify-between"
+            class="flex justify-between w-full max-w-[600px]"
           >
             <div
-              class="flex items-center gap-2 font-['Replay_Pro'] text-[28px]"
+              class="flex items-center gap-2 font-secondary text-3xl"
             >
               <button
                 animate="[object Object]"
@@ -50,10 +50,10 @@ exports[`Scenario Component > Snapshot Testing > should match snapshot with scen
               </span>
             </div>
             <div
-              class="font-['IBM_Plex_Serif'] flex  items-center"
+              class="font-primary flex  items-center"
             >
               <div
-                class="font-['IBM_Plex_Serif'] text-[14px] text-gray-500"
+                class="font-primary text-base text-typography-800"
               >
                 Credits used:
               </div>
@@ -79,12 +79,12 @@ exports[`Scenario Component > Snapshot Testing > should match snapshot with scen
                 />
               </svg>
               <span
-                class="font-bold text-[18px] mb-1 text-black"
+                class="font-bold text-xl mb-1 text-typography-900"
               >
                 0
               </span>
               <span
-                class="text-[14px] text-gray-500"
+                class="text-base text-typography-800"
               >
                 /100
               </span>

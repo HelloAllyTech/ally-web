@@ -127,8 +127,7 @@ const AudioUploadDialog: FC<AudioUploadDialogProps> = ({ isOpen, onClose }) => {
           timeout: 1800000, // 30 Minutes
         });
       }
-    } catch (error) {
-      console.error(error);
+    } catch {
       store.dispatch(updateUploadError({ chatId, error: "Failed to upload audio" }));
       // store.dispatch(removeAudioUpload(chatId));
       cancelAudioUpload({ chatId });
@@ -167,7 +166,7 @@ const AudioUploadDialog: FC<AudioUploadDialogProps> = ({ isOpen, onClose }) => {
           transition={{ delay: 0.05, duration: 0.2 }}
           className="flex items-center justify-between"
         >
-          <span className="text-[24px] font-['Replay_Pro'] text-[#0D0D0D]">
+          <span className="text-2xl font-secondary text-typography-900">
             Upload audio recording
           </span>
         </motion.div>
@@ -192,7 +191,7 @@ const AudioUploadDialog: FC<AudioUploadDialogProps> = ({ isOpen, onClose }) => {
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.15, duration: 0.2 }}
-          className="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm font-['IBM_Plex_Serif'] text-[#1A1A1A]"
+          className="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm font-primary text-typography-900"
         >
           {/* Counsellor */}
           <div className="flex flex-col gap-2">

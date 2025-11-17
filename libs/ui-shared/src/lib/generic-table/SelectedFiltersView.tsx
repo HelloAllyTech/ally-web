@@ -125,7 +125,7 @@ function SelectedFiltersView<T extends Record<string, any>>({
     return (
       <button
         type="button"
-        className="p-[10px] flex items-center justify-center rounded"
+        className="p-[10px] flex items-center justify-center rounded pb-0"
         onClick={onAddFilter}
         aria-label="filter"
       >
@@ -136,7 +136,7 @@ function SelectedFiltersView<T extends Record<string, any>>({
   };
 
   return (
-    <div className="flex flex-row gap-2 mb-2 items-center text-xs sm:text-sm">
+    <div className="flex flex-row gap-2 mb-2 items-center">
       {sort.key && sort.value && renderSort()}
       {renderFilter()}
       {renderAddFilter()}

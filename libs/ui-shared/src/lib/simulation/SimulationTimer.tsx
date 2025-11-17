@@ -1,10 +1,11 @@
+"use client";
+
 import { FC, useEffect, useRef, useState } from "react";
 
 import { SimulationTimerProps } from "./types";
 import { MAX_SESSION_MINUTES, WARNING_THRESHOLD } from "./waveformConstants";
 
 export const SimulationTimer: FC<SimulationTimerProps> = ({
-  isWarning,
   onTimeLimit,
   onWarning,
   startTime,

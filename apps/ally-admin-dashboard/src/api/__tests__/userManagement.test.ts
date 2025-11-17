@@ -40,11 +40,11 @@ describe("userManagement API", () => {
     });
 
     it("should have correct get roles endpoint", () => {
-      expect(ApiEndpoints.USER_MANAGEMENT.GET_ROLES).toBe("/v1/authorization/roles");
+      expect(ApiEndpoints.AUTHORIZATION.GET_ROLES).toBe("/v1/authorization/roles");
     });
 
     it("should have correct change user roles endpoint", () => {
-      expect(ApiEndpoints.USER_MANAGEMENT.CHANGE_USER_ROLES).toBe("/v1/authorization/change-roles");
+      expect(ApiEndpoints.AUTHORIZATION.CHANGE_USER_ROLES).toBe("/v1/authorization/change-roles");
     });
 
     it("should have correct simulation credits endpoint", () => {
