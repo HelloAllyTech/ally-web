@@ -100,15 +100,14 @@ export const EventManagement: React.FC = () => {
     const eventTypeDisplayName = getEventTypeDisplayName(eventType);
     const eventName = `Sample ${eventTypeDisplayName} event`;
 
-    let triggerCondition:
-      | { operator: string; value: string | number; speaker?: string }
-      | { conditions: any[] }
-      | undefined;
+    let triggerCondition: any;
 
     if (eventType === "TIME_BASED") {
       triggerCondition = { operator: "LESS_THAN", value: "00:20:00" };
     } else if (eventType === "SCORE_BASED") {
       triggerCondition = { operator: "GREATER_THAN", value: 0, speaker: "CARE_GIVER" };
+    } else if (eventType === "SENTENCE_SIMILARITY") {
+      triggerCondition = { speaker: "CARE_GIVER", sentences: [] };
     } else if (eventType === "COMBINATION") {
       triggerCondition = {
         conditions: [
@@ -127,8 +126,6 @@ export const EventManagement: React.FC = () => {
       branchInstruction: "",
       detectionType: eventType,
       visibilityType: "ACTIVE",
-      speaker: "CARE_GIVER",
-      sentences: [],
       triggerCondition,
     };
 
@@ -182,26 +179,23 @@ export const EventManagement: React.FC = () => {
       message: { value: event.message || "", disabled: false, rowId: event.id },
       emoji: { value: event.emoji || "", disabled: false, rowId: event.id },
       visibilityType: { value: event.visibilityType || "", disabled: false, rowId: event.id },
-      sentences: { value: event.sentences || [], disabled: false, rowId: event.id },
       triggerCondition: { value: triggerCondition, disabled: false, rowId: event.id },
     };
   }, []);
 
   const sidePanelEvent = useMemo(() => {
     if (!selectedEvent) return null;
-    // Return the plain object for the side panel (it doesn't use the new structure)
+    // Return the plain object for the side panel
     return {
       id: selectedEvent.id || "",
       name: selectedEvent.name || "",
       detectionType: selectedEvent.detectionType || "",
-      speaker: selectedEvent.speaker || "",
       description: selectedEvent.description || "",
       branchInstruction: selectedEvent.branchInstruction || "",
       score: Number.isInteger(selectedEvent.score) ? selectedEvent.score : 0,
       message: selectedEvent.message || "",
       emoji: selectedEvent.emoji || "",
       visibilityType: selectedEvent.visibilityType || "",
-      sentences: selectedEvent.sentences || [],
       triggerCondition: selectedEvent.triggerCondition,
     };
   }, [selectedEvent]);

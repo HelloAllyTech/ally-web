@@ -7,7 +7,6 @@ import { useClickOutside } from "@hooks";
 interface EditableTriggerConditionsPopupProps {
   eventType: string | undefined;
   triggerCondition: any;
-  sentences?: string[];
   onChange: (field: string, value: string | number | string[]) => void;
   placeholder?: string;
   disabled?: boolean;
@@ -19,7 +18,6 @@ interface EditableTriggerConditionsPopupProps {
 export const EditableTriggerConditionsPopup: React.FC<EditableTriggerConditionsPopupProps> = ({
   eventType,
   triggerCondition,
-  sentences,
   onChange,
   disabled = false,
   width = 100,
@@ -28,13 +26,11 @@ export const EditableTriggerConditionsPopup: React.FC<EditableTriggerConditionsP
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [editTriggerCondition, setEditTriggerCondition] = useState(triggerCondition || {});
-  const [editSentences, setEditSentences] = useState(sentences || []);
   const popupRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     setEditTriggerCondition(triggerCondition || {});
-    setEditSentences(sentences || []);
-  }, [triggerCondition, sentences]);
+  }, [triggerCondition]);
 
   const handleTextClick = () => {
     if (disabled) return;
@@ -73,7 +69,6 @@ export const EditableTriggerConditionsPopup: React.FC<EditableTriggerConditionsP
           <TriggerConditions
             eventType={eventType}
             triggerCondition={triggerCondition}
-            sentences={sentences}
             isInTable={true}
             onChange={() => {
               // No-op for display mode - changes only happen in popup
@@ -102,44 +97,27 @@ export const EditableTriggerConditionsPopup: React.FC<EditableTriggerConditionsP
                 <TriggerConditions
                   eventType={eventType}
                   triggerCondition={editTriggerCondition}
-                  sentences={editSentences}
                   isInTable={false}
                   onChange={(field: string, fieldValue: string | number | string[]) => {
-                    if (field === "sentences") {
-                      setEditSentences(fieldValue as string[]);
-                      onChange(field, fieldValue);
-                    } else {
-                      const updatedTriggerCondition = {
-                        ...editTriggerCondition,
-                        [field]: fieldValue,
-                      };
-                      setEditTriggerCondition(updatedTriggerCondition);
-                      onChange(field, fieldValue);
-                    }
+                    const updatedTriggerCondition = {
+                      ...editTriggerCondition,
+                      [field]: fieldValue,
+                    };
+                    setEditTriggerCondition(updatedTriggerCondition);
+                    onChange(field, fieldValue);
                   }}
                 />
               ) : (
                 <StandardTriggerConditions
                   eventType={eventType}
-                  triggerCondition={
-                    eventType === "SENTENCE_SIMILARITY" && editSentences
-                      ? { ...editTriggerCondition, sentences: editSentences }
-                      : editTriggerCondition
-                  }
+                  triggerCondition={editTriggerCondition}
                   onChange={(field: string, fieldValue: string | number | string[]) => {
-                    if (field === "sentences") {
-                      setEditSentences(fieldValue as string[]);
-                      onChange(field, fieldValue);
-                    } else if (field === "speaker" && eventType === "SENTENCE_SIMILARITY") {
-                      onChange(field, fieldValue);
-                    } else {
-                      const updatedTriggerCondition = {
-                        ...editTriggerCondition,
-                        [field]: fieldValue,
-                      };
-                      setEditTriggerCondition(updatedTriggerCondition);
-                      onChange(field, fieldValue);
-                    }
+                    const updatedTriggerCondition = {
+                      ...editTriggerCondition,
+                      [field]: fieldValue,
+                    };
+                    setEditTriggerCondition(updatedTriggerCondition);
+                    onChange(field, fieldValue);
                   }}
                   isInTable={false}
                   hideDecorations={true}

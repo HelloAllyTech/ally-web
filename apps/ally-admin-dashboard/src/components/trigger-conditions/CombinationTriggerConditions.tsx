@@ -5,9 +5,10 @@ import { SESSION_EVENT_STATUS_OPTIONS, SORT_BY, SORT_ORDER } from "@constants";
 import { getTriggerConditionConfig } from "@constants/TriggerConditionsConfig";
 
 import { TriggerConditionDropdown } from "./TriggerConditionDropdown";
+import { CombinationTriggerCondition } from "../../types/triggerConditions";
 
 interface CombinationTriggerConditionsProps {
-  triggerCondition: any;
+  triggerCondition: CombinationTriggerCondition;
   onChange: (field: string, value: string | number | string[]) => void;
   isInTable?: boolean;
 }
@@ -37,13 +38,13 @@ export const CombinationTriggerConditions: React.FC<CombinationTriggerConditions
   const config = getTriggerConditionConfig("COMBINATION");
   if (!config) return null;
 
-  const conditions = triggerCondition?.conditions || [];
+  const conditions = triggerCondition.conditions || [];
   const displayConditions =
     conditions.length >= 2
       ? conditions.slice(0, 2)
       : [
-          { eventId: "", status: "OCCURRED" },
-          { eventId: "", status: "OCCURRED", operator: "AND" },
+          { eventId: "", status: "OCCURRED" as const },
+          { eventId: "", status: "OCCURRED" as const, operator: "AND" as const },
         ];
 
   const handleConditionChange = (index: number, field: string, value: string) => {

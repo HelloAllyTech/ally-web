@@ -126,6 +126,8 @@ export interface SimulationPreviewProps {
   onClose: () => void;
 }
 
+import { TriggerCondition } from "./triggerConditions";
+
 export interface UpdateEventDataParam {
   id?: string;
   name?: string;
@@ -134,13 +136,9 @@ export interface UpdateEventDataParam {
   score?: number;
   message?: string;
   detectionType?: string;
-  speaker?: string;
   emoji?: string;
   visibilityType?: string;
-  sentences?: string[];
-  triggerCondition?:
-    | { operator: string; value: string | number; speaker?: string }
-    | { conditions: any[] };
+  triggerCondition?: TriggerCondition;
 }
 
 export interface UpdateScenarioEventDataParam {

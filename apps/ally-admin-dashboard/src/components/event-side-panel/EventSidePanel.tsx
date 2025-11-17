@@ -99,30 +99,10 @@ export const EventSidePanel: React.FC<EventSidePanelProps> = ({
       if (!selectedEvent) return;
 
       setFormData(previousData => {
-        // Handle sentences separately (not part of triggerCondition)
-        if (field === "sentences") {
-          return {
-            ...previousData,
-            sentences: value as string[],
-          } as UpdateEventDataParam;
-        }
-
-        // Handle speaker in triggerCondition for sentence similarity
-        if (
-          field === "speaker" &&
-          previousData.detectionType === SessionEventDetectionType.SENTENCE_SIMILARITY
-        ) {
-          return {
-            ...previousData,
-            speaker: value as string,
-          } as UpdateEventDataParam;
-        }
+        const currentTrigger = previousData.triggerCondition || {};
 
         // Handle conditions array for combination events
-        if (
-          field === "conditions" &&
-          previousData.detectionType === SessionEventDetectionType.COMBINATION
-        ) {
+        if (field === "conditions") {
           return {
             ...previousData,
             triggerCondition: {
@@ -131,8 +111,7 @@ export const EventSidePanel: React.FC<EventSidePanelProps> = ({
           } as UpdateEventDataParam;
         }
 
-        // Handle other triggerCondition fields
-        const currentTrigger = previousData.triggerCondition || {};
+        // Handle all other fields (operator, value, speaker, sentences)
         return {
           ...previousData,
           triggerCondition: {
@@ -189,7 +168,6 @@ export const EventSidePanel: React.FC<EventSidePanelProps> = ({
               <TriggerConditions
                 eventType={formData.detectionType}
                 triggerCondition={formData.triggerCondition}
-                sentences={formData.sentences}
                 onChange={handleTriggerConditionChange}
               />
             )}

@@ -138,50 +138,23 @@ export const Cell = ({
       // Use value.value if it exists (from state), otherwise fall back to row data
       const currentTriggerCondition =
         value.value || row?.triggerCondition?.value || row?.triggerCondition || {};
-      const sentences = row?.sentences?.value || row?.sentences || [];
 
       element = (
         <EditableTriggerConditionsPopup
           eventType={eventType}
           triggerCondition={currentTriggerCondition}
-          sentences={sentences}
           onChange={(field: string, fieldValue: string | number | string[]) => {
-            // Handle trigger condition changes similar to EventSidePanel
+            // All fields are now part of triggerCondition
             let updatedTriggerCondition;
-
-            // Handle sentences separately (not part of triggerCondition)
-            if (field === "sentences") {
-              // Update sentences in the row, not triggerCondition
-              onCellChange({
-                columnId: "sentences",
-                rowIndex: index,
-                value: fieldValue,
-                row: row,
-                rowId: initialValue?.rowId,
-              });
-              return;
-            }
-
-            // Handle speaker in triggerCondition for sentence similarity
-            if (field === "speaker" && eventType === "SENTENCE_SIMILARITY") {
-              // Update speaker in the row, not triggerCondition
-              onCellChange({
-                columnId: "speaker",
-                rowIndex: index,
-                value: fieldValue,
-                row: row,
-                rowId: initialValue?.rowId,
-              });
-              return;
-            }
 
             // Handle conditions array for combination events
             if (field === "conditions" && eventType === "COMBINATION") {
               updatedTriggerCondition = {
+                ...currentTriggerCondition,
                 conditions: fieldValue as any[],
               };
             } else {
-              // Handle other triggerCondition fields
+              // Handle all other fields (operator, value, speaker, sentences)
               updatedTriggerCondition = {
                 ...currentTriggerCondition,
                 [field]: fieldValue,

@@ -4,11 +4,11 @@ import { EventType } from "@components/event-type-selection-dialog";
 
 import { CombinationTriggerConditions } from "./CombinationTriggerConditions";
 import { StandardTriggerConditions } from "./StandardTriggerConditions";
+import { TriggerCondition, isCombinationTriggerCondition } from "../../types/triggerConditions";
 
 interface TriggerConditionsProps {
   eventType: EventType | string | undefined;
-  triggerCondition: any;
-  sentences?: string[]; // Sentences field for SENTENCE_SIMILARITY events
+  triggerCondition: TriggerCondition | undefined;
   onChange: (field: string, value: string | number | string[]) => void;
   isInTable?: boolean; // Flag to indicate if rendered in table (for styling adjustments)
   isFocused?: boolean; // Flag to indicate if the cell is currently focused
@@ -17,18 +17,11 @@ interface TriggerConditionsProps {
 export const TriggerConditions: React.FC<TriggerConditionsProps> = ({
   eventType,
   triggerCondition,
-  sentences,
   onChange,
   isInTable = false,
   isFocused = false,
 }) => {
-  if (!eventType) return null;
-
-  // Merge sentences into triggerCondition for sentence similarity events
-  const enhancedTriggerCondition =
-    eventType === "SENTENCE_SIMILARITY" && sentences
-      ? { ...triggerCondition, sentences }
-      : triggerCondition;
+  if (!eventType || !triggerCondition) return null;
 
   return (
     <div className="flex flex-col">
@@ -41,7 +34,7 @@ export const TriggerConditions: React.FC<TriggerConditionsProps> = ({
       )}
       <div className="flex items-start relative">
         <div className="flex-1">
-          {eventType === "COMBINATION" ? (
+          {isCombinationTriggerCondition(triggerCondition) ? (
             <CombinationTriggerConditions
               triggerCondition={triggerCondition}
               onChange={onChange}
@@ -50,7 +43,7 @@ export const TriggerConditions: React.FC<TriggerConditionsProps> = ({
           ) : (
             <StandardTriggerConditions
               eventType={eventType}
-              triggerCondition={enhancedTriggerCondition}
+              triggerCondition={triggerCondition}
               onChange={onChange}
               isInTable={isInTable}
               isFocused={isFocused}

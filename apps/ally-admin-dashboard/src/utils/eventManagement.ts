@@ -67,15 +67,20 @@ export const convertEventToApiPayload = (event: UpdateEventDataParam): SessionEv
   // Build detectionData based on event type - only include relevant fields
   const detectionData: SessionEventDetectionData = {};
 
-  // For SENTENCE_SIMILARITY or SEMANTIC_SIMILARITY: only include sentences
+  // For SENTENCE_SIMILARITY or SEMANTIC_SIMILARITY: get sentences from triggerCondition
   if (
     event.detectionType === "SENTENCE_SIMILARITY" ||
     event.detectionType === SessionEventDetectionType.SENTENCE_SIMILARITY ||
     event.detectionType === "SEMANTIC_SIMILARITY" ||
     event.detectionType === SessionEventDetectionType.SEMANTIC_SIMILARITY
   ) {
-    if (event.sentences && event.sentences.length > 0) {
-      detectionData.sentences = event.sentences;
+    if (
+      event.triggerCondition &&
+      "sentences" in event.triggerCondition &&
+      Array.isArray(event.triggerCondition.sentences) &&
+      event.triggerCondition.sentences.length > 0
+    ) {
+      detectionData.sentences = event.triggerCondition.sentences;
     }
   }
 
@@ -133,10 +138,17 @@ export const convertEventToApiPayload = (event: UpdateEventDataParam): SessionEv
     visibilityType: event.visibilityType || "",
   };
 
-  // Add speaker if present (for sentence similarity events)
-  if (event.speaker) {
-    payload.speaker = event.speaker;
-  }
+  //Add speaker if present (only for sentence/semantic similarity events)
+  // if (
+  //   event.triggerCondition &&
+  //   "speaker" in event.triggerCondition &&
+  //   event.triggerCondition.speaker
+  // ) {
+  //   payload.speaker = event.triggerCondition.speaker;
+  // }
+
+  //TO-DO(pass speaker only for sentence and semantic similarity events)
+  payload.speaker = "CARE_GIVER";
 
   // Only add detectionData if it has content
   if (Object.keys(detectionData).length > 0) {
@@ -199,10 +211,7 @@ export const convertApiResponseToEvent = (apiEvent: SessionEvent): UpdateEventDa
   const frontendDetectionType = mapDetectionTypeToFrontend(apiEvent.detectionType);
 
   // Convert detectionData to triggerCondition format
-  let triggerCondition:
-    | { operator: string; value: string | number; speaker?: string }
-    | { conditions: any[] }
-    | undefined;
+  let triggerCondition: any;
 
   const detectionData = apiEvent.detectionData;
 
@@ -226,8 +235,11 @@ export const convertApiResponseToEvent = (apiEvent: SessionEvent): UpdateEventDa
       frontendDetectionType === "SENTENCE_SIMILARITY" ||
       frontendDetectionType === "SEMANTIC_SIMILARITY"
     ) {
-      // For sentence similarity, triggerCondition is empty, sentences are separate
-      triggerCondition = {};
+      // For sentence similarity, triggerCondition contains speaker and sentences
+      triggerCondition = {
+        speaker: apiEvent.speaker || "CARE_GIVER",
+        sentences: detectionData.sentences || [],
+      };
     } else if (frontendDetectionType === "COMBINATION") {
       // Combination events have conditions array
       triggerCondition = {
@@ -246,8 +258,6 @@ export const convertApiResponseToEvent = (apiEvent: SessionEvent): UpdateEventDa
     branchInstruction: apiEvent.branchInstruction || "",
     detectionType: frontendDetectionType,
     visibilityType: apiEvent.visibilityType || "",
-    speaker: apiEvent.speaker,
-    sentences: detectionData?.sentences || [],
     triggerCondition,
   };
 };
