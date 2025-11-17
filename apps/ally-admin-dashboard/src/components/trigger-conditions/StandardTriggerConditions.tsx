@@ -30,42 +30,25 @@ export const StandardTriggerConditions: React.FC<StandardTriggerConditionsProps>
   const isSentenceSimilarity = eventType === "SENTENCE_SIMILARITY";
 
   return (
-    <>
-      <div
-        className={`relative ${isSentenceSimilarity && isFocused ? "flex items-start" : "flex items-center"} gap-2`}
-      >
-        {/* Vertical blue line - hide in table and popup */}
-        {!isInTable && !hideDecorations && (
-          <div
-            className={`absolute left-0 top-0 bottom-0 w-[1px] bg-blue-500 ${
-              isSentenceSimilarity ? "" : "h-8"
-            }`}
-          ></div>
-        )}
-        {isSentenceSimilarity ? (
-          <>
-            <div className={`flex items-center gap-2 ${isInTable ? "" : "pl-2"} flex-shrink-0`}>
-              <span className={`text-sm text-gray-500 flex-shrink-0 ${isInTable ? "" : "pl-2"}`}>
-                if
-              </span>
-              {fields
-                .filter(field => field.type !== TRIGGER_FIELD_TYPES.MULTILINE_TEXT)
-                .map(field => {
-                  const fieldValue = triggerCondition?.[field.id];
-                  return (
-                    <TriggerConditionField
-                      key={field.id}
-                      field={field}
-                      value={fieldValue}
-                      onChange={onChange}
-                      isInTable={isInTable}
-                      isFocused={isFocused}
-                    />
-                  );
-                })}
-            </div>
+    <div
+      className={`relative ${isSentenceSimilarity && isFocused ? "flex items-start" : "flex items-center"} gap-2`}
+    >
+      {/* Vertical blue line - hide in table and popup */}
+      {!isInTable && !hideDecorations && (
+        <div
+          className={`absolute left-0 top-0 bottom-0 w-[1px] bg-blue-500 ${
+            isSentenceSimilarity ? "" : "h-8"
+          }`}
+        ></div>
+      )}
+      {isSentenceSimilarity ? (
+        <>
+          <div className={`flex items-center gap-2 ${isInTable ? "" : "pl-2"} flex-shrink-0`}>
+            <span className={`text-sm text-gray-500 flex-shrink-0 ${isInTable ? "" : "pl-2"}`}>
+              if
+            </span>
             {fields
-              .filter(field => field.type === TRIGGER_FIELD_TYPES.MULTILINE_TEXT)
+              .filter(field => field.type !== TRIGGER_FIELD_TYPES.MULTILINE_TEXT)
               .map(field => {
                 const fieldValue = triggerCondition?.[field.id];
                 return (
@@ -79,14 +62,10 @@ export const StandardTriggerConditions: React.FC<StandardTriggerConditionsProps>
                   />
                 );
               })}
-          </>
-        ) : (
-          <>
-            <span className={`text-sm text-gray-500 flex-shrink-0 ${isInTable ? "" : "pl-2"}`}>
-              if
-            </span>
-            {isTimeBased && <span className="text-sm">Time</span>}
-            {fields.map(field => {
+          </div>
+          {fields
+            .filter(field => field.type === TRIGGER_FIELD_TYPES.MULTILINE_TEXT)
+            .map(field => {
               const fieldValue = triggerCondition?.[field.id];
               return (
                 <TriggerConditionField
@@ -95,13 +74,31 @@ export const StandardTriggerConditions: React.FC<StandardTriggerConditionsProps>
                   value={fieldValue}
                   onChange={onChange}
                   isInTable={isInTable}
+                  isFocused={isFocused}
                 />
               );
             })}
-          </>
-        )}
-      </div>
-      {!isInTable && !hideDecorations && <div className="border-t border-gray-300"></div>}
-    </>
+        </>
+      ) : (
+        <>
+          <span className={`text-sm text-gray-500 flex-shrink-0 ${isInTable ? "" : "pl-2"}`}>
+            if
+          </span>
+          {isTimeBased && <span className="text-sm">Time</span>}
+          {fields.map(field => {
+            const fieldValue = triggerCondition?.[field.id];
+            return (
+              <TriggerConditionField
+                key={field.id}
+                field={field}
+                value={fieldValue}
+                onChange={onChange}
+                isInTable={isInTable}
+              />
+            );
+          })}
+        </>
+      )}
+    </div>
   );
 };

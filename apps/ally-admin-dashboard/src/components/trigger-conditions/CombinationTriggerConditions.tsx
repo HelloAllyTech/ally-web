@@ -69,55 +69,52 @@ export const CombinationTriggerConditions: React.FC<CombinationTriggerConditions
   const operatorField = config.fields.find(f => f.id === "operator");
 
   return (
-    <>
-      <div className="flex flex-col gap-2">
-        <div className="relative flex flex-col gap-2">
-          {/* Vertical blue line - hide in table */}
-          {!isInTable && <div className="absolute left-0 top-0 bottom-0 w-[1px] bg-blue-500"></div>}
-          <div className="flex flex-col gap-2">
-            {displayConditions.map((condition, index) => (
-              <div key={index} className={`flex items-center gap-2 ${isInTable ? "" : "pl-3"}`}>
-                {index === 0 ? (
-                  <span className="text-sm text-gray-500">if</span>
-                ) : (
-                  <TriggerConditionDropdown
-                    value={condition.operator || operatorField?.defaultValue || ""}
-                    options={operatorField?.options || []}
-                    onChange={operator => handleOperatorChange(index, operator as "AND" | "OR")}
-                    placeholder="AND"
-                    disabled={false}
-                  />
-                )}
+    <div className="flex flex-col gap-2">
+      <div className="relative flex flex-col gap-2">
+        {/* Vertical blue line - hide in table */}
+        {!isInTable && <div className="absolute left-0 top-0 bottom-0 w-[1px] bg-blue-500"></div>}
+        <div className="flex flex-col gap-2">
+          {displayConditions.map((condition, index) => (
+            <div key={index} className={`flex items-center gap-2 ${isInTable ? "" : "pl-3"}`}>
+              {index === 0 ? (
+                <span className="text-sm text-gray-500">if</span>
+              ) : (
                 <TriggerConditionDropdown
-                  value={condition.eventId || ""}
-                  options={availableEvents.map(event => ({
-                    value: event.id,
-                    label: event.name,
-                  }))}
-                  onChange={eventId => {
-                    handleConditionChange(index, "eventId", eventId);
-                  }}
-                  placeholder="Select an event"
-                  searchPlaceholder="Search events..."
-                  isSearchable={true}
+                  value={condition.operator || operatorField?.defaultValue || ""}
+                  options={operatorField?.options || []}
+                  onChange={operator => handleOperatorChange(index, operator as "AND" | "OR")}
+                  placeholder="AND"
                   disabled={false}
-                  className="min-w-[200px]"
                 />
-                <span className="text-sm text-gray-500">has</span>
-                <TriggerConditionDropdown
-                  value={condition.status || statusField?.defaultValue || ""}
-                  options={statusField?.options || []}
-                  onChange={status => handleConditionChange(index, "status", status)}
-                  placeholder={statusField?.placeholder || "Occurred"}
-                  disabled={false}
-                  className={(statusField as any)?.className || ""}
-                />
-              </div>
-            ))}
-          </div>
+              )}
+              <TriggerConditionDropdown
+                value={condition.eventId || ""}
+                options={availableEvents.map(event => ({
+                  value: event.id,
+                  label: event.name,
+                }))}
+                onChange={eventId => {
+                  handleConditionChange(index, "eventId", eventId);
+                }}
+                placeholder="Select an event"
+                searchPlaceholder="Search events..."
+                isSearchable={true}
+                disabled={false}
+                className="min-w-[200px]"
+              />
+              <span className="text-sm text-gray-500">has</span>
+              <TriggerConditionDropdown
+                value={condition.status || statusField?.defaultValue || ""}
+                options={statusField?.options || []}
+                onChange={status => handleConditionChange(index, "status", status)}
+                placeholder={statusField?.placeholder || "Occurred"}
+                disabled={false}
+                className={(statusField as any)?.className || ""}
+              />
+            </div>
+          ))}
         </div>
       </div>
-      {!isInTable && <div className="border-t border-gray-300 mt-2"></div>}
-    </>
+    </div>
   );
 };

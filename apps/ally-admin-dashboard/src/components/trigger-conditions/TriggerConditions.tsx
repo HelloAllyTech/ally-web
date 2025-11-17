@@ -51,6 +51,7 @@ export const TriggerConditions: React.FC<TriggerConditionsProps> = ({
           )}
         </div>
       </div>
+      {!isInTable && <div className="border-t border-gray-300 mt-4"></div>}
     </div>
   );
 };
