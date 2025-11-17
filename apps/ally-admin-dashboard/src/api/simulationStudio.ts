@@ -19,7 +19,6 @@ import {
   ScenarioVoice,
   GetScenarioPathsQueryParams,
   GetScenarioPathsResponse,
-  SimulationStatus,
 } from "@types";
 
 import { baseAPI } from "./baseApi";
@@ -263,121 +262,11 @@ const simulationStudioAPI = baseAPI.injectEndpoints({
      * TODO: Replace with actual API call when backend is ready
      */
     getScenarioPaths: builder.query<GetScenarioPathsResponse, GetScenarioPathsQueryParams>({
-      queryFn: async (params: GetScenarioPathsQueryParams) => {
-        // Simulate API delay
-        await new Promise(resolve => setTimeout(resolve, 500));
-
-        // Generate dummy data
-        const dummyData = [
-          {
-            id: 1,
-            title: "Crisis Intervention Pathway",
-            description:
-              "Learn essential crisis intervention techniques and de-escalation strategies",
-            coverImageUrl: "https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?w=400",
-            status: SimulationStatus.PUBLISHED,
-            isGlobal: true,
-            totalScenarios: 12,
-            updatedAt: "2024-01-15T10:30:00Z",
-          },
-          {
-            id: 2,
-            title: "Mental Health Support",
-            description: "Comprehensive training for mental health support scenarios",
-            coverImageUrl: "https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?w=400",
-            status: SimulationStatus.PUBLISHED,
-            isGlobal: false,
-            totalScenarios: 8,
-            updatedAt: "2024-01-14T14:20:00Z",
-          },
-          {
-            id: 3,
-            title: "Substance Abuse Counseling",
-            description: "Practice scenarios for substance abuse counseling and support",
-            coverImageUrl: "https://images.unsplash.com/photo-1559757175-5700dde675bc?w=400",
-            status: SimulationStatus.DRAFT,
-            isGlobal: true,
-            totalScenarios: 6,
-            updatedAt: "2024-01-13T09:15:00Z",
-          },
-          {
-            id: 4,
-            title: "Domestic Violence Support",
-            description: "Training for handling domestic violence support calls",
-            coverImageUrl: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=400",
-            status: SimulationStatus.PUBLISHED,
-            isGlobal: true,
-            totalScenarios: 10,
-            updatedAt: "2024-01-12T16:45:00Z",
-          },
-          {
-            id: 5,
-            title: "Youth Counseling",
-            description: "Specialized scenarios for youth and adolescent counseling",
-            coverImageUrl: "https://images.unsplash.com/photo-1503454537195-1dcabb73ffb9?w=400",
-            status: SimulationStatus.ARCHIVED,
-            isGlobal: false,
-            totalScenarios: 5,
-            updatedAt: "2024-01-10T11:30:00Z",
-          },
-          {
-            id: 6,
-            title: "Suicide Prevention",
-            description: "Critical training for suicide prevention and intervention",
-            coverImageUrl: "https://images.unsplash.com/photo-1544027993-37dbfe43562a?w=400",
-            status: SimulationStatus.PUBLISHED,
-            isGlobal: true,
-            totalScenarios: 15,
-            updatedAt: "2024-01-09T13:00:00Z",
-          },
-          {
-            id: 7,
-            title: "Grief Counseling",
-            description: "Learn to provide support for individuals experiencing grief and loss",
-            coverImageUrl: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=400",
-            status: SimulationStatus.DRAFT,
-            isGlobal: false,
-            totalScenarios: 7,
-            updatedAt: "2024-01-08T10:20:00Z",
-          },
-          {
-            id: 8,
-            title: "LGBTQ+ Support",
-            description: "Inclusive support scenarios for LGBTQ+ community",
-            coverImageUrl: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400",
-            status: SimulationStatus.PUBLISHED,
-            isGlobal: true,
-            totalScenarios: 9,
-            updatedAt: "2024-01-07T15:40:00Z",
-          },
-        ];
-
-        // Filter by status if provided
-        let filteredData = dummyData;
-        if (params.status) {
-          filteredData = dummyData.filter(
-            item => item.status.toLowerCase() === params.status?.toLowerCase(),
-          );
-        }
-
-        // Apply search if provided
-        if (params.search) {
-          const searchLower = params.search.toLowerCase();
-          filteredData = filteredData.filter(
-            item =>
-              item.title.toLowerCase().includes(searchLower) ||
-              item.description.toLowerCase().includes(searchLower),
-          );
-        }
-
-        // Apply pagination
-        const offset = params.offset || 0;
-        const limit = params.limit || 30;
-        const paginatedData = filteredData.slice(offset, offset + limit);
-
-        return { data: { data: paginatedData } };
-      },
-      providesTags: [TAG_TYPES.SIMULATION],
+      query: (params: GetScenarioPathsQueryParams) => ({
+        url: ApiEndpoints.SIMULATION_STUDIO.GET_SCENARIO_PATHS,
+        method: HttpMethod.GET,
+        params,
+      }),
     }),
 
     /**
