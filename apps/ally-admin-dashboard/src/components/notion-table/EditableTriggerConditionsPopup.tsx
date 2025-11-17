@@ -82,12 +82,10 @@ export const EditableTriggerConditionsPopup: React.FC<EditableTriggerConditionsP
       {isOpen && (
         <div ref={popupRef} className="absolute z-50 top-[0px] left-[0px] overflow-visible">
           <div
-            className="bg-white border border-primary-500 shadow-lg overflow-visible"
+            className="bg-white border-[0.5px] border-primary-500 shadow-lg overflow-visible py-2 px-1 min-h-[50px] w-auto"
             style={{
               minWidth: minWidth || width || 400,
               width: width,
-              minHeight: "100%",
-              padding: "8px 16px",
             }}
           >
             <div className="max-w-full overflow-visible">

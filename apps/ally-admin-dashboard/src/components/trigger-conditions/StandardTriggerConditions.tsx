@@ -29,14 +29,12 @@ export const StandardTriggerConditions: React.FC<StandardTriggerConditionsProps>
 
   return (
     <div
-      className={`relative ${isSentenceSimilarity && isFocused ? "flex items-start" : "flex items-center"} gap-2`}
+      className={`relative ${isSentenceSimilarity ? "flex items-start" : "flex items-center"} gap-2`}
     >
       {isSentenceSimilarity ? (
         <>
           <div className={`flex items-center gap-2 ${isInTable ? "" : "pl-2"} flex-shrink-0`}>
-            <span className={`text-sm text-gray-500 flex-shrink-0 ${isInTable ? "" : "pl-2"}`}>
-              if
-            </span>
+            <span className={`text-sm text-gray-500 flex-shrink-0`}>if</span>
             {fields
               .filter(field => field.type !== TRIGGER_FIELD_TYPES.MULTILINE_TEXT)
               .map(field => {
