@@ -82,11 +82,11 @@ export const EditableTriggerConditionsPopup: React.FC<EditableTriggerConditionsP
       {isOpen && (
         <div
           ref={popupRef}
-          className="absolute z-50"
+          className="absolute z-50 overflow-visible"
           style={{ top: "-7px", left: "-12px", right: "-12px" }}
         >
           <div
-            className="bg-white border border-primary-500 shadow-lg"
+            className="bg-white border border-primary-500 shadow-lg overflow-visible"
             style={{
               minWidth: minWidth || width || 400,
               width: "100%",
@@ -94,7 +94,7 @@ export const EditableTriggerConditionsPopup: React.FC<EditableTriggerConditionsP
               padding: "8px 16px",
             }}
           >
-            <div className="max-w-full overflow-hidden">
+            <div className="max-w-full overflow-visible">
               {eventType === "COMBINATION" ? (
                 <TriggerConditions
                   eventType={eventType}
