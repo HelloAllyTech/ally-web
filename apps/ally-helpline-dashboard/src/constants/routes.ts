@@ -72,7 +72,7 @@ export const navBarOptions = [
     title: "Learn",
     Icon: LearnIcon,
     path: ROUTES.LEARN,
-    activePages: [ROUTES.SCENARIO],
+    activePages: [ROUTES.SCENARIO, ROUTES.PATHWAY],
     permissions: [Permissions.EDIT_SCENARIO_SESSION],
   },
   {
