@@ -34,7 +34,7 @@ export const StandardTriggerConditions: React.FC<StandardTriggerConditionsProps>
       {isSentenceSimilarity ? (
         <>
           <div className={`flex items-center gap-2 ${isInTable ? "" : "pl-2"} flex-shrink-0`}>
-            <span className={`text-sm text-gray-500 flex-shrink-0`}>if</span>
+            <span className={`text-sm text-typography-500 flex-shrink-0`}>if</span>
             {fields
               .filter(field => field.type !== TRIGGER_FIELD_TYPES.MULTILINE_TEXT)
               .map(field => {
@@ -69,7 +69,7 @@ export const StandardTriggerConditions: React.FC<StandardTriggerConditionsProps>
         </>
       ) : (
         <>
-          <span className={`text-sm text-gray-500 flex-shrink-0 ${isInTable ? "" : "pl-2"}`}>
+          <span className={`text-sm text-typography-500 flex-shrink-0 ${isInTable ? "" : "pl-2"}`}>
             if
           </span>
           {isTimeBased && <span className="text-sm">Time</span>}

@@ -152,7 +152,7 @@ const SENTENCE_SIMILARITY_CONFIG = {
       placeholder: "Care giver",
       className: "flex-shrink-0",
       defaultValue: "CARE_GIVER",
-      labelAfter: "says", // Text to display after this field
+      labelAfter: "Says", // Text to display after this field
     },
     {
       id: "sentences",

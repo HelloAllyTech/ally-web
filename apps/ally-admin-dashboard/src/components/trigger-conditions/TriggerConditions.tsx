@@ -28,8 +28,8 @@ export const TriggerConditions: React.FC<TriggerConditionsProps> = ({
       {/* Label with horizontal grey line - hide in table */}
       {!isInTable && (
         <div className="flex items-center mb-2">
-          <span className="text-sm font-medium text-gray-600 mr-2">Trigger conditions</span>
-          <div className="flex-1 border-t border-gray-300"></div>
+          <span className="text-sm font-medium text-typography-800 mr-2">Trigger conditions</span>
+          <div className="flex-1 border-t"></div>
         </div>
       )}
       <div className="flex items-start relative">
@@ -54,7 +54,7 @@ export const TriggerConditions: React.FC<TriggerConditionsProps> = ({
           )}
         </div>
       </div>
-      {!isInTable && <div className="border-t border-gray-300 mt-4"></div>}
+      {!isInTable && <div className="border-t mt-4"></div>}
     </div>
   );
 };

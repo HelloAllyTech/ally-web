@@ -62,7 +62,7 @@ const TableSentenceInput: React.FC<{
           readOnly
           onClick={e => e.currentTarget.focus()}
           placeholder={placeholder}
-          className="px-3 py-2 text-sm  bg-gray-100 rounded-sm w-full min-w-[250px]resize-none overflow-hidden cursor-pointer focus:outline-none flex items-center"
+          className="px-3 py-2 text-sm bg-gray-100 rounded-sm w-full min-w-[240px] resize-none overflow-hidden cursor-pointer focus:outline-none"
           style={{
             height: "24px",
             lineHeight: "20px",
@@ -198,7 +198,7 @@ export const TriggerConditionField: React.FC<TriggerConditionFieldProps> = ({
     <>
       {renderedField}
       {field.labelAfter && (
-        <span className="text-sm text-gray-500 flex-shrink-0">{field.labelAfter}</span>
+        <span className="text-sm text-typography-500 flex-shrink-0">{field.labelAfter}</span>
       )}
     </>
   );

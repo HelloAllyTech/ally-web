@@ -258,9 +258,6 @@ export const NotionTable = ({
                 {row.cells.map(cell => {
                   const cellProps = cell.getCellProps();
                   const { key: cellKey, ...restCellProps } = cellProps;
-                  // const isTriggerConditionsCell =
-                  //   cell.column.dataType === cellTypes.triggerConditions;
-                  // const isFocused = focusedTriggerConditionsRow === rowIndex;
 
                   return (
                     <div
