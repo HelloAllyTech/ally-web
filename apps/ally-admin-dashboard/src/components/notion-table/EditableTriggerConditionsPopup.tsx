@@ -7,7 +7,7 @@ import { useClickOutside } from "@hooks";
 interface EditableTriggerConditionsPopupProps {
   eventType: string | undefined;
   triggerCondition: any;
-  onChange: (field: string, value: string | number | string[]) => void;
+  onChange: (value: any) => void;
   placeholder?: string;
   disabled?: boolean;
   width?: number | string;
@@ -37,17 +37,19 @@ export const EditableTriggerConditionsPopup: React.FC<EditableTriggerConditionsP
     setIsOpen(true);
   };
 
-  const handleSave = () => {
-    // Save is handled by onChange callbacks from TriggerConditions
+  const handleSave = useCallback(() => {
+    // Only call onChange when closing the popup (on blur)
+    if (JSON.stringify(editTriggerCondition) !== JSON.stringify(triggerCondition)) {
+      onChange(editTriggerCondition);
+    }
     setIsOpen(false);
-  };
+  }, [editTriggerCondition, triggerCondition, onChange]);
 
   const handleClickOutsideCallback = useCallback(() => {
     if (isOpen) {
-      setIsOpen(false);
       handleSave();
     }
-  }, [isOpen]);
+  }, [isOpen, handleSave]);
 
   useClickOutside(popupRef, handleClickOutsideCallback);
 
@@ -104,7 +106,6 @@ export const EditableTriggerConditionsPopup: React.FC<EditableTriggerConditionsP
                       [field]: fieldValue,
                     };
                     setEditTriggerCondition(updatedTriggerCondition);
-                    onChange(field, fieldValue);
                   }}
                 />
               ) : (
@@ -117,7 +118,6 @@ export const EditableTriggerConditionsPopup: React.FC<EditableTriggerConditionsP
                       [field]: fieldValue,
                     };
                     setEditTriggerCondition(updatedTriggerCondition);
-                    onChange(field, fieldValue);
                   }}
                   isInTable={false}
                   hideDecorations={true}

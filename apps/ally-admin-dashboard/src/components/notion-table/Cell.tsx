@@ -18,7 +18,7 @@ export const Cell = ({
   rowIndex: index,
   column: { dataType, options, minWidth, width, id, placeholder },
   onCellChange,
-  row
+  row,
 }) => {
   // Extract value and disabled from the cell data structure
   const cellValue = initialValue?.value !== undefined ? initialValue.value : initialValue;
@@ -143,26 +143,7 @@ export const Cell = ({
         <EditableTriggerConditionsPopup
           eventType={eventType}
           triggerCondition={currentTriggerCondition}
-          onChange={(field: string, fieldValue: string | number | string[]) => {
-            // All fields are now part of triggerCondition
-            let updatedTriggerCondition;
-
-            // Handle conditions array for combination events
-            if (field === "conditions" && eventType === "COMBINATION") {
-              updatedTriggerCondition = {
-                ...currentTriggerCondition,
-                conditions: fieldValue as any[],
-              };
-            } else {
-              // Handle all other fields (operator, value, speaker, sentences)
-              updatedTriggerCondition = {
-                ...currentTriggerCondition,
-                [field]: fieldValue,
-              };
-            }
-
-            updateCellValue(updatedTriggerCondition);
-          }}
+          onChange={updateCellValue}
           width={width}
           minWidth={minWidth}
           disabled={isDisabled}
