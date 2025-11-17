@@ -29,15 +29,23 @@ const TERMINATION_FIELDS_MAP = {
   },
 };
 
+const DEFAULT_LIMIT = 100;
+const DEFAULT_OFFSET = 0;
+
 export const AutoTerminationRuleField: React.FC<AutoTerminationRuleFieldProps> = ({
   label,
   formMethods,
 }) => {
   const [isEnabled, setIsEnabled] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
 
   const { setValue } = formMethods;
 
-  const { data: sessionEventsData } = useGetSessionEventsQuery({});
+  const { data: sessionEventsData } = useGetSessionEventsQuery({
+    offset: DEFAULT_OFFSET,
+    limit: DEFAULT_LIMIT,
+    searchName: searchTerm,
+  });
 
   const eventOptions =
     sessionEventsData?.data?.map(event => ({
@@ -46,6 +54,10 @@ export const AutoTerminationRuleField: React.FC<AutoTerminationRuleFieldProps> =
     })) || [];
 
   const mandatoryIcon = <span className="text-destructive-500">*</span>;
+
+  const handleSearchTextChange = (searchTerm: string) => {
+    setSearchTerm(searchTerm);
+  };
 
   const handleToggle = () => {
     const newValue = !isEnabled;
@@ -80,6 +92,8 @@ export const AutoTerminationRuleField: React.FC<AutoTerminationRuleFieldProps> =
               label={TERMINATION_FIELDS_MAP.triggerEvent.label}
               formMethods={formMethods}
               options={eventOptions}
+              isSearchable
+              handleSearchTextChange={handleSearchTextChange}
               placeholder={TERMINATION_FIELDS_MAP.triggerEvent.placeholder}
               isMandatory={isEnabled}
             />

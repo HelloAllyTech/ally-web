@@ -12,6 +12,10 @@ vi.mock("@assets", () => ({
 // Mock hooks
 vi.mock("@hooks", () => ({
   useClickOutside: vi.fn(),
+  useDebounce: vi.fn((callback, _delay) => {
+    // Return the callback directly without debouncing for tests
+    return callback;
+  }),
 }));
 
 // Mock API

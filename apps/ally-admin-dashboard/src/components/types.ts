@@ -82,6 +82,8 @@ export interface DropdownFieldProps {
   options: Array<{ value: string; label: string }>;
   placeholder?: string;
   isMandatory?: boolean;
+  isSearchable?: boolean;
+  handleSearchTextChange?: (searchTerm: string) => void;
 }
 
 // NarrativeContext

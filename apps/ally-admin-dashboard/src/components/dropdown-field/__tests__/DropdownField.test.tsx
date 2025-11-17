@@ -27,6 +27,10 @@ vi.mock("@hooks", () => ({
       ref.current._closeCallback = callback;
     }
   }),
+  useDebounce: vi.fn((callback, _delay) => {
+    // Return the callback directly without debouncing for tests
+    return callback;
+  }),
 }));
 
 // Wrapper component to provide form context
