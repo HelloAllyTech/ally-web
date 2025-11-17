@@ -158,7 +158,7 @@ const SENTENCE_SIMILARITY_CONFIG = {
       id: "sentences",
       label: "Sentences",
       type: TRIGGER_FIELD_TYPES.MULTILINE_TEXT,
-      placeholder: "Enter phrases, one per line...",
+      placeholder: "Add description",
       defaultValue: [],
     },
   ],

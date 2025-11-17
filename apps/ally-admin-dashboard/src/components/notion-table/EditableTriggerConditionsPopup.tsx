@@ -80,17 +80,13 @@ export const EditableTriggerConditionsPopup: React.FC<EditableTriggerConditionsP
       </div>
       {/* Popup for editing */}
       {isOpen && (
-        <div
-          ref={popupRef}
-          className="absolute z-50 overflow-visible"
-          style={{ top: "-7px", left: "-12px", right: "-12px" }}
-        >
+        <div ref={popupRef} className="absolute z-50 overflow-visible" style={{ top: 0, left: 0 }}>
           <div
             className="bg-white border border-primary-500 shadow-lg overflow-visible"
             style={{
               minWidth: minWidth || width || 400,
-              width: "100%",
-              minHeight: "calc(100% + 14px)",
+              width: width,
+              minHeight: "100%",
               padding: "8px 16px",
             }}
           >
@@ -120,7 +116,6 @@ export const EditableTriggerConditionsPopup: React.FC<EditableTriggerConditionsP
                     setEditTriggerCondition(updatedTriggerCondition);
                   }}
                   isInTable={false}
-                  hideDecorations={true}
                 />
               )}
             </div>

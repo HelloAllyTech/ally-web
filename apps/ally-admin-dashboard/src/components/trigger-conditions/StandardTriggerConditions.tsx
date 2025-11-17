@@ -11,7 +11,6 @@ interface StandardTriggerConditionsProps {
   onChange: (field: string, value: string | number | string[]) => void;
   isInTable?: boolean;
   isFocused?: boolean;
-  hideDecorations?: boolean; // Hide blue line and grey line (for popup mode)
 }
 
 export const StandardTriggerConditions: React.FC<StandardTriggerConditionsProps> = ({

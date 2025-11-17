@@ -62,7 +62,7 @@ const TableSentenceInput: React.FC<{
           readOnly
           onClick={e => e.currentTarget.focus()}
           placeholder={placeholder}
-          className="px-3 py-2 text-sm border-[0.5px] border-gray-300 bg-gray-100 rounded-sm w-full resize-none overflow-hidden cursor-pointer focus:outline-none flex items-center"
+          className="px-3 py-2 text-sm border-[0.5px] bg-gray-100 rounded-sm w-full resize-none overflow-hidden cursor-pointer focus:outline-none flex items-center"
           style={{
             height: "24px",
             lineHeight: "20px",
@@ -121,7 +121,7 @@ export const TriggerConditionField: React.FC<TriggerConditionFieldProps> = ({
             onChange={numValue => onChange(field.id, numValue)}
             className="px-2 py-1 text-sm border h-6 rounded-sm bg-gray-100 w-[60px]"
             inputClassName="w-auto min-w-0 pr-6 py-0 text-sm"
-            spinnerClassName="!left-auto right-1 flex flex-col gap-0.5"
+            spinnerClassName="!left-auto right-1 !gap-0 px-2 !items-center"
           />
         );
 
@@ -169,7 +169,7 @@ export const TriggerConditionField: React.FC<TriggerConditionFieldProps> = ({
         }
 
         return (
-          <div className="flex-1 max-w-[400px]">
+          <div className="flex-1 max-w-[400px] mt-4">
             <AutoExpandableTextarea
               value={sentencesText}
               onChange={textareaValue => {
@@ -179,7 +179,7 @@ export const TriggerConditionField: React.FC<TriggerConditionFieldProps> = ({
               placeholder={field.placeholder}
               disabled={false}
               minHeight={20}
-              className="px-3 py-2 text-sm border-[0.5px] border-gray-300 bg-white focus:outline-none w-full"
+              className="px-3 py-1 text-sm border-[0.5px] border-gray-300 bg-white focus:outline-none w-full"
             />
           </div>
         );
