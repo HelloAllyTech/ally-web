@@ -54,12 +54,12 @@ export const EditableTriggerConditionsPopup: React.FC<EditableTriggerConditionsP
   useClickOutside(popupRef, handleClickOutsideCallback);
 
   return (
-    <div className={`${className} relative flex items-center`} style={{ width, minWidth }}>
+    <div className={`${className}`}>
       {/* Always display trigger conditions inline */}
       <div
         onClick={handleTextClick}
         className={`
-          cursor-pointer max-h-[36px] overflow-hidden max-w-[calc(100%-20px)] w-full
+          cursor-pointer overflow-hidden
           ${disabled ? "cursor-not-allowed opacity-50" : "hover:bg-background-secondary"}
         `}
       >
@@ -80,7 +80,7 @@ export const EditableTriggerConditionsPopup: React.FC<EditableTriggerConditionsP
       </div>
       {/* Popup for editing */}
       {isOpen && (
-        <div ref={popupRef} className="absolute z-50 overflow-visible" style={{ top: 0, left: 0 }}>
+        <div ref={popupRef} className="absolute z-50 top-[0px] left-[0px] overflow-visible">
           <div
             className="bg-white border border-primary-500 shadow-lg overflow-visible"
             style={{
