@@ -108,8 +108,12 @@ export const CreateSimulation: FC = () => {
       if (value === undefined || value === null || value === "") {
         return false;
       }
-      // For arrays or objects, check if they have content
+      // For arrays, check if they have content
       if (Array.isArray(value) && value.length === 0) {
+        return false;
+      }
+      // For FileList objects (file uploads), check if they have files
+      if (value instanceof FileList && value.length === 0) {
         return false;
       }
       return true;
