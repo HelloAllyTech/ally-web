@@ -2,6 +2,7 @@ import { ReactNode } from "react";
 
 export interface FallbackUIProps {
   icon: ReactNode;
+  theme?: "light" | "dark";
   isLoading?: boolean;
   mainMessage: string;
   description: string;

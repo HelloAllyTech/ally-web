@@ -127,7 +127,7 @@ const CallInterface: FC<CallInterfaceProps> = ({
               Taking notes
             </div>
             <div className="text-base font-semibold font-tertiary">{formatTime(seconds)}</div>
-            <div className="text-xs text-typography-800 text-center max-w-xs mt-1">
+            <div className="text-xs text-secondary-500 text-center max-w-xs mt-1">
               {getDescriptionText()}
             </div>
           </div>

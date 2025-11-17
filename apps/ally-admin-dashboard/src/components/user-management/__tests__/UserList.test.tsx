@@ -151,9 +151,9 @@ describe("UserList", () => {
     it("renders all users", () => {
       render(<UserList {...defaultProps} />);
 
-      expect(screen.getByText("John doe")).toBeInTheDocument();
+      expect(screen.getByText("John Doe")).toBeInTheDocument();
       expect(screen.getByText("jane.smith@example.com")).toBeInTheDocument();
-      expect(screen.getByText("Bob johnson")).toBeInTheDocument();
+      expect(screen.getByText("Bob Johnson")).toBeInTheDocument();
     });
 
     it("renders user emails", () => {
@@ -182,7 +182,7 @@ describe("UserList", () => {
     it("renders empty list when no users", () => {
       render(<UserList {...defaultProps} users={[]} />);
 
-      expect(screen.queryByText("John doe")).not.toBeInTheDocument();
+      expect(screen.queryByText("John Doe")).not.toBeInTheDocument();
     });
   });
 
@@ -274,7 +274,7 @@ describe("UserList", () => {
     it("displays organization name", () => {
       render(<UserList {...defaultProps} users={[mockUsers[0]]} />);
 
-      expect(screen.getByText("Tech corp")).toBeInTheDocument();
+      expect(screen.getByText("Tech Corp")).toBeInTheDocument();
     });
 
     it("displays -- for null organization", () => {
@@ -452,7 +452,7 @@ describe("UserList", () => {
 
       render(<UserList {...defaultProps} users={[minimalUser]} />);
 
-      expect(screen.getByText("Minimal user")).toBeInTheDocument();
+      expect(screen.getByText("Minimal User")).toBeInTheDocument();
       expect(screen.getByText("minimal@example.com")).toBeInTheDocument();
     });
 
@@ -469,14 +469,14 @@ describe("UserList", () => {
     it("handles renderFooter being undefined", () => {
       render(<UserList {...defaultProps} renderFooter={undefined} />);
 
-      expect(screen.getByText("John doe")).toBeInTheDocument();
+      expect(screen.getByText("John Doe")).toBeInTheDocument();
     });
 
     it("renders correctly with single user", () => {
       render(<UserList {...defaultProps} users={[mockUsers[0]]} />);
 
-      expect(screen.getByText("John doe")).toBeInTheDocument();
-      expect(screen.queryByText("Jane smith")).not.toBeInTheDocument();
+      expect(screen.getByText("John Doe")).toBeInTheDocument();
+      expect(screen.queryByText("Jane Smith")).not.toBeInTheDocument();
     });
 
     it("renders correctly with many users", () => {
