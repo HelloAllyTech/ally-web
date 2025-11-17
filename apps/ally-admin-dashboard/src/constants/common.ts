@@ -36,7 +36,7 @@ export const ApiEndpoints = {
     SCENARIO_EVENTS: "/v1/learn/scenarios/events",
     SCENARIO_PREVIEW: "/v1/learn/scenarios/preview",
     END_SCENARIO_PREVIEW: (sessionId: string) => `/v1/learn/scenarios/preview/${sessionId}/end`,
-    SCENARIO_PATHS: "/v1/learn/admin/scenario-paths",
+    SCENARIO_PATHS: "v1/learn/admin/scenario-paths",
     SCENARIO_PATH_BY_ID: (id: string) => `/v1/learn/admin/scenario-paths/${id}`,
   },
 
@@ -125,4 +125,5 @@ export const FORM_FIELD_TYPES = {
     VOICE_DROPDOWN: "voice_dropdown",
   },
   TOGGLE_BUTTON: "toggle_button",
+  SCENARIO_PATHS: "scenarioPaths",
 };

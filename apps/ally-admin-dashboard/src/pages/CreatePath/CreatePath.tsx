@@ -31,7 +31,8 @@ import {
   getCreatePathSubSectionById,
 } from "@constants";
 import { useDebounce } from "@hooks";
-import { extractValidData, isEmpty, isNonEmptyArray } from "@utils";
+import { GetScenarioType } from "@types";
+import { extractValidData, isEmpty, isNonEmptyArray, isNonEmptyObject } from "@utils";
 
 // Get all mandatory field IDs from the configuration
 const getMandatoryFieldIds = () => {
@@ -94,9 +95,9 @@ export const CreatePath: FC = () => {
       if (isEmpty(value)) {
         return false;
       }
-      // For arrays or objects, check if they have content
-      if (!isNonEmptyArray(value)) {
-        return false;
+      if (Array.isArray(value)) {
+        //strings are getting false value otherwise
+        return !isNonEmptyArray(value);
       }
       return true;
     });
@@ -126,11 +127,20 @@ export const CreatePath: FC = () => {
   };
 
   const handlePageBack = () => {
-    if (Object.keys(dirtyFields).length > 0) {
+    if (isNonEmptyObject(dirtyFields)) {
       setShowDiscardPopup(true);
     } else {
       navigate("/");
     }
+  };
+
+  const formatScenarios = (scenarios?: GetScenarioType[]) => {
+    if (!scenarios || scenarios.length === 0) return [];
+
+    return scenarios.map((scenario, index) => ({
+      ...scenario,
+      order: index + 1,
+    }));
   };
 
   // Core function to save simulation changes
@@ -141,18 +151,18 @@ export const CreatePath: FC = () => {
       return null;
     }
     const simulationPath = {
-      ...extractValidData(formData),
+      ...extractValidData(PATH_CREATOR_FIELD_GROUPS, formData),
+      status,
     };
     let response;
+
     if (pathId) {
       response = await updateSimulationPathByIdQuery({
         id: pathId,
         data: simulationPath,
       });
     } else {
-      response = await createSimulationPathQuery({
-        path: simulationPath[0],
-      });
+      response = await createSimulationPathQuery(simulationPath);
     }
     return response;
   };
@@ -266,7 +276,7 @@ export const CreatePath: FC = () => {
           <SimulationSelectionModal
             toggleSimulationModal={toggleSimulationModal}
             showSimulation={showSimulationModal}
-            data={individualPath?.scenarios}
+            data={formatScenarios(individualPath?.scenarios)}
             formMethods={formMethods}
           />,
           true,

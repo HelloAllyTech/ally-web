@@ -1,14 +1,14 @@
 import { FC, useRef, useState } from "react";
 
-import { useNavigate } from "react-router-dom";
-
-import { CustomVideo } from "@ally-ui-mono/ui-shared";
 import { useEndScenarioPreviewMutation, useScenarioPreviewMutation } from "@api";
 import { Button, CustomImage } from "@components";
 import { en, LOCAL_STORAGE_KEYS, ROUTES } from "@constants";
 import { useClickOutside } from "@hooks";
 import { SimulationPreviewProps, StartSimulationResponse } from "@types";
 import { isNonEmptyString } from "@utils";
+import { useNavigate } from "react-router-dom";
+
+import { CustomVideo } from "@ally-ui-mono/ui-shared";
 
 import { ButtonVariant } from "../types";
 
@@ -95,7 +95,7 @@ export const SimulationPreview: FC<SimulationPreviewProps> = ({ simulation, isOp
               <h3 className="text-lg text-typography-900">{simulation.title}</h3>
               <div>
                 <h4 className="text-base font-semibold text-typography-800 mb-1">{`${en.simulation.scenario}:`}</h4>
-                <p className="text-base text-typography-800 leading-relaxed truncate">
+                <p className="text-base text-typography-800 leading-relaxed max-h-[300px] overflow-y-auto">
                   {simulation.description}
                 </p>
               </div>

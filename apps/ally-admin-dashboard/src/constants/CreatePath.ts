@@ -13,7 +13,7 @@ export const PATH_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
     label: "Basic Information",
     fields: [
       {
-        id: "orgVisibility",
+        id: "isGlobal",
         label: "Organization Visibility",
         type: FORM_FIELD_TYPES.TOGGLE_BUTTON,
         fullWidth: true,

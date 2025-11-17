@@ -23,7 +23,7 @@ export type FormData = {
   openingStatements: string;
   voiceId: string;
   agentGoal: string;
-  orgVisibility: boolean;
+  isGlobal: boolean;
 };
 
 export interface DemographicsSectionProps {

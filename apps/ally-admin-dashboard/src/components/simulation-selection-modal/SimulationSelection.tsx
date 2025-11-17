@@ -5,7 +5,7 @@ import { Tooltip } from "@mui/material";
 import { CloseRed, DragIndicator, InfoIcon, Search } from "@assets";
 import { en, toolTipStyles } from "@constants";
 import { useSimulations } from "@hooks";
-import { GetScenarioType } from "@types";
+import { GetScenarioType, Simulation } from "@types";
 
 import { AddMessageModal } from "../add-message-modal";
 import { Button } from "../button";
@@ -24,9 +24,8 @@ export const SimulationSelectionModal: FC<SimulationProps> = ({
   data,
   formMethods,
 }) => {
-  const [selectedSimulations, setSelectedSimulations] = useState<GetScenarioType[]>(
-    data?.map((simulation, index) => ({ ...simulation, order: index + 1 })) ?? [],
-  );
+  const [selectedSimulations, setSelectedSimulations] = useState<GetScenarioType[]>(data ?? []);
+
   const [openMessageIndex, setOpenMessageIndex] = useState<number | null>(null);
 
   const { simulationsResponse } = useSimulations({});
@@ -34,7 +33,7 @@ export const SimulationSelectionModal: FC<SimulationProps> = ({
   const dragCard = useRef<number>(0);
   const dragOverCard = useRef<number>(0);
 
-  const mapToGetScenarioType = (simulation: any, order: number) => {
+  const mapToGetScenarioType = (simulation: Simulation, order: number) => {
     return {
       scenarioId: simulation.id,
       order,
@@ -63,27 +62,31 @@ export const SimulationSelectionModal: FC<SimulationProps> = ({
   };
 
   const handleSort = () => {
-    const newSimulations = [...selectedSimulations];
-    const draggedItem = newSimulations[dragCard.current!];
+    const from = dragCard.current!;
+    const to = dragOverCard.current!;
 
-    // Remove the dragged item
-    newSimulations.splice(dragCard.current!, 1);
+    // If indices are same, no reordering needed
+    if (from === to) return;
 
-    // Insert it at the new position
-    newSimulations.splice(dragOverCard.current!, 0, draggedItem);
+    // Create a shallow copy
+    const updated = [...selectedSimulations];
 
-    // Update order for all items
-    const reordered = newSimulations.map((item, idx) => ({
-      ...item,
-      order: idx + 1,
-    }));
+    // Extract dragged item
+    const [draggedItem] = updated.splice(from, 1);
+
+    // Insert at new index
+    updated.splice(to, 0, draggedItem);
+
+    updated.forEach((item, index) => {
+      item.order = index + 1;
+    });
 
     // Reset refs
     dragCard.current = 0;
     dragOverCard.current = 0;
 
     // Update state
-    setSelectedSimulations(reordered);
+    setSelectedSimulations(updated);
   };
 
   const handleRemoveCard = (index: number) => {
@@ -133,7 +136,7 @@ export const SimulationSelectionModal: FC<SimulationProps> = ({
     const newSimulations = [...selectedSimulations];
     newSimulations[index] = {
       ...newSimulations[index],
-      minimumScore: value === "" ? 0 : parseInt(value) || 0,
+      minimumScore: Number(value) || 0,
     };
     setSelectedSimulations(newSimulations);
   };
@@ -269,19 +272,39 @@ export const SimulationSelectionModal: FC<SimulationProps> = ({
           </div>
         </div>
 
-        {!isLast &&
-          (!simulation.messageTitle ? (
-            <div className="relative flex justify-center my-4">
-              <button
-                className="p-2 border border-dashed rounded-md hover:bg-secondary-50"
-                onClick={() => handleMessageClick(index)}
-              >
-                {en.simulation.addMessage}
-              </button>
-            </div>
-          ) : (
-            renderMessage(simulation.messageTitle, simulation.feedback, index)
-          ))}
+        {!isLast && (
+          <>
+            {!simulation.messageTitle ? (
+              <div className="relative flex justify-center my-4">
+                <button
+                  className="p-2 border border-dashed rounded-md hover:bg-secondary-50"
+                  onClick={() => handleMessageClick(index)}
+                >
+                  {en.simulation.addMessage}
+                </button>
+              </div>
+            ) : (
+              renderMessage(simulation.messageTitle, simulation.feedback, index)
+            )}
+
+            {/* Render modal directly below this card if it's open for this index */}
+            {openMessageIndex === index && (
+              <div className="fixed inset-0 z-50 flex items-center justify-center">
+                <div className="fixed inset-0" onClick={handleCloseModal} />
+                <div className="relative z-10">
+                  <AddMessageModal
+                    handleCancel={handleCloseModal}
+                    initialValues={{
+                      messageTitle: simulation.messageTitle || "",
+                      feedback: simulation.feedback || "",
+                    }}
+                    handlePrimaryAction={handleAddMessage}
+                  />
+                </div>
+              </div>
+            )}
+          </>
+        )}
       </>
     );
   };
@@ -297,21 +320,6 @@ export const SimulationSelectionModal: FC<SimulationProps> = ({
             isLast={index === selectedSimulations.length - 1}
           />
         ))}
-        {openMessageIndex !== null && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center">
-            <div className="fixed inset-0 bg-black bg-opacity-50" onClick={handleCloseModal} />
-            <div className="relative z-10">
-              <AddMessageModal
-                handleCancel={handleCloseModal}
-                initialValues={{
-                  messageTitle: selectedSimulations[openMessageIndex]?.messageTitle || "",
-                  feedback: selectedSimulations[openMessageIndex]?.feedback || "",
-                }}
-                handlePrimaryAction={handleAddMessage}
-              />
-            </div>
-          </div>
-        )}
       </div>
     );
   };

@@ -103,7 +103,7 @@ export const PathwayList: React.FC<PathwayListProps> = ({
       render: () => null,
     },
     {
-      key: "orgVisibility",
+      key: "isGlobal",
       label: "Org visibility",
       width: "w-[15%]",
       render: pathway => <span>{pathway.isGlobal ? "Enabled" : "Disabled"}</span>,

@@ -110,8 +110,12 @@ export const CreateSimulation: FC = () => {
       if (isEmpty(value)) {
         return false;
       }
-      // For arrays or objects, check if they have content
-      if (!isNonEmptyArray(value)) {
+      // For arrays, check if they have content
+      if (Array.isArray(value) && value.length === 0) {
+        return false;
+      }
+      // For FileList objects (file uploads), check if they have files
+      if (value instanceof FileList && value.length === 0) {
         return false;
       }
       return true;
@@ -175,7 +179,7 @@ export const CreateSimulation: FC = () => {
       : null;
 
     const simulationData = {
-      ...extractValidData(restForm),
+      ...extractValidData(SIMULATION_CREATOR_FIELD_GROUPS, restForm),
       openingStatements: openingStatementsArray,
       status,
     };
