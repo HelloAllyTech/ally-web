@@ -70,9 +70,7 @@ export const UserList: React.FC<UserListProps> = ({
               <div className="col-span-11 justify-start flex items-center min-w-0 overflow-hidden ">
                 <Avatar name={user.name} />
                 <div className="min-w-0">
-                  <div className="truncate text-typography-900 pr-5">
-                    {formatCapitalizedEnum(user.name)}
-                  </div>
+                  <div className="truncate text-typography-900 pr-5">{user.name}</div>
                   <div className="text-typography-800 truncate pr-5 ">{user.email}</div>
                 </div>
               </div>
@@ -85,7 +83,7 @@ export const UserList: React.FC<UserListProps> = ({
                     : "--"}
               </div>
               <div className="col-span-8 pr-5 whitespace-nowrap truncate">
-                {formatCapitalizedEnum(user.organization) ?? "--"}
+                {user.organization ?? "--"}
               </div>
               <div className="col-span-4 pr-1">
                 {isNumber(user.consumedCredits) &&

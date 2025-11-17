@@ -105,7 +105,7 @@ export const CreateSimulation: FC = () => {
     return mandatoryFieldIds.every(fieldId => {
       const value = formValues[fieldId];
       // Check if value exists and is not empty
-      if (value === undefined || value === null || value === "") {
+      if (value === undefined || value === null || !isNonEmptyString(value)) {
         return false;
       }
       // For arrays or objects, check if they have content

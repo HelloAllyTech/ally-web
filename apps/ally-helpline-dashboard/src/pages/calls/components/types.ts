@@ -75,6 +75,7 @@ export interface SimulationSummarySidebarProps {
   summaryId: string;
   summaryName: string;
   closeSummarySidebar: () => void;
+  canShowFeedback?: boolean;
 }
 
 export interface CallSummarySidebarProps {
@@ -83,6 +84,7 @@ export interface CallSummarySidebarProps {
   sessionType: SessionType;
   setCallSummary: Dispatch<SetStateAction<CallLog>>;
   canEditSummary?: boolean;
+  canShowFeedback?: boolean;
 }
 
 export interface TranscriptTabProps {

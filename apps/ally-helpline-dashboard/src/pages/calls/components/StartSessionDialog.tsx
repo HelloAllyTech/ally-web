@@ -19,13 +19,13 @@ const StartSessionDialog: FC<StartSessionDialogProps> = ({ isOpen, onClose }) =>
 
   const StartSessionEmbed = () => (
     <motion.div
-      className="w-[90%] flex flex-col items-center border-y-[0.5px] border-[#E7E7E7] py-4 font-['IBM_Plex_Serif']"
+      className="w-[90%] flex flex-col items-center border-y-[0.5px] border-border-light py-4 font-primary"
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.5, duration: 0.3 }}
     >
-      <span className="text-[14px] text-[#0D0D0D]">Listen Live</span>
-      <span className="text-[12px] text-[#49454F]">Ally will hear audio alongside you</span>
+      <span className="text-base text-typography-900">Listen Live</span>
+      <span className="text-xs text-typography-800">Ally will hear audio alongside you</span>
     </motion.div>
   );
 

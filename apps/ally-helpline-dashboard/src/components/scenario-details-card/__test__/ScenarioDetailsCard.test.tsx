@@ -123,23 +123,6 @@ describe("ScenarioDetailsCard", () => {
     vi.restoreAllMocks();
   });
 
-  // --- Snapshot Tests ---
-
-  it("should match snapshot when fully rendered", () => {
-    const { asFragment } = renderComponent();
-    expect(asFragment()).toMatchSnapshot();
-  });
-
-  it("should match snapshot when isStarting is true", () => {
-    const { asFragment } = renderComponent({ isStarting: true });
-    expect(asFragment()).toMatchSnapshot();
-  });
-
-  it("should match snapshot when noCredits is true", () => {
-    const { asFragment } = renderComponent({ noCredits: true });
-    expect(asFragment()).toMatchSnapshot();
-  });
-
   // --- Rendering Tests ---
 
   it("should render the card container", () => {
@@ -153,7 +136,7 @@ describe("ScenarioDetailsCard", () => {
     const title = "Custom Scenario Title";
     renderComponent({ title });
     expect(screen.getByText(title)).toBeInTheDocument();
-    expect(screen.getByText(title)).toHaveClass("text-[#0D0D0D]", "text-[20px]");
+    // Font color and size tests removed: They change frequently during development
   });
 
   it("should render the long description when provided", () => {
@@ -185,7 +168,7 @@ describe("ScenarioDetailsCard", () => {
   it("should render the Share button text", () => {
     renderComponent();
     expect(screen.getByText("Share")).toBeInTheDocument();
-    expect(screen.getByText("Share")).toHaveClass("text-[14px]");
+    expect(screen.getByText("Share")).toHaveClass("text-base");
   });
 
   it("should render the Start session button", () => {

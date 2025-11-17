@@ -70,6 +70,7 @@ export const AudioCall: FunctionComponent = () => {
             icon={<NoResults />}
             mainMessage="There is an ongoing call"
             description="You have an active call happening now"
+            theme="dark"
           />
         );
       }
@@ -84,6 +85,7 @@ export const AudioCall: FunctionComponent = () => {
             icon={<NoResults />}
             mainMessage="Microphone mode is not available"
             description="You don't have permission to access microphone mode"
+            theme="dark"
           />
         );
       }
@@ -100,6 +102,7 @@ export const AudioCall: FunctionComponent = () => {
             icon={<NoResults />}
             mainMessage="No Active Call"
             description="Your active call will be shown here."
+            theme="dark"
           />
         );
       }
@@ -109,7 +112,7 @@ export const AudioCall: FunctionComponent = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
+    <div className="h-screen flex items-center justify-center bg-gray-50">
       <video src={MindfullnessVideo} preload="auto" className="hidden" />
       {getFallbackUI()}
       {shouldShowCallInterface && (
