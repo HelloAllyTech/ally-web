@@ -1,8 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 
-import { AutoExpandableTextarea } from "@components";
-import { NumberInput } from "@components/notion-table";
-import { TRIGGER_FIELD_TYPES } from "@constants/TriggerConditionsConfig";
+import { AutoExpandableTextarea, NumberInput } from "@components";
+import { TRIGGER_FIELD_TYPES } from "@constants";
 
 import { TriggerConditionDropdown } from "./TriggerConditionDropdown";
 
@@ -14,7 +13,7 @@ interface TriggerConditionFieldProps {
     placeholder?: string;
     className?: string;
     defaultValue?: any;
-    labelAfter?: string; // Text to display after this field (e.g., "says" after speaker)
+    labelAfter?: string; 
   };
   value: any;
   onChange: (fieldId: string, value: any) => void;
@@ -39,15 +38,13 @@ const TableSentenceInput: React.FC<{
     setLocalValue(value);
   }, [value]);
 
-  // Auto-focus when becomes focused
+  // Auto-focus when focused
   useEffect(() => {
     if (isFocused) {
       const textarea = wrapperRef.current?.querySelector("textarea");
       if (textarea && document.activeElement !== textarea) {
-        // Use requestAnimationFrame to ensure DOM is updated
         requestAnimationFrame(() => {
           textarea.focus();
-          // Select all text for better UX
           (textarea as HTMLTextAreaElement).select();
         });
       }
@@ -110,9 +107,6 @@ export const TriggerConditionField: React.FC<TriggerConditionFieldProps> = ({
 
   const renderField = () => {
     switch (field.type) {
-      case TRIGGER_FIELD_TYPES.TEXT:
-        return null; // Not used in current implementation
-
       case TRIGGER_FIELD_TYPES.NUMBER:
         return (
           <NumberInput

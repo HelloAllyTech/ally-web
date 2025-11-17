@@ -16,7 +16,6 @@ interface TriggerConditionDropdownProps {
 
 /**
  * Styled wrapper for TextDropdown used in Trigger Conditions
- * Applies consistent styling: white background, border, rounded corners, padding
  */
 export const TriggerConditionDropdown: React.FC<TriggerConditionDropdownProps> = ({
   value,

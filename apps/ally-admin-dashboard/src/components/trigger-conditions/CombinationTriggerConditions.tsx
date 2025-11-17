@@ -2,7 +2,7 @@ import React, { useMemo } from "react";
 
 import { useGetSessionEventsQuery } from "@api";
 import { SESSION_EVENT_STATUS_OPTIONS, SORT_BY, SORT_ORDER } from "@constants";
-import { getTriggerConditionConfig } from "@constants/TriggerConditionsConfig";
+import { getTriggerConditionConfig } from "@constants";
 
 import { TriggerConditionDropdown } from "./TriggerConditionDropdown";
 import { CombinationTriggerCondition } from "../../types/triggerConditions";

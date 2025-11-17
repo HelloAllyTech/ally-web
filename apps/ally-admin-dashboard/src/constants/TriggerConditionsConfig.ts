@@ -54,7 +54,10 @@ export const SPEAKER_OPTIONS = [{ value: "CARE_GIVER", label: "Care giver" }];
  */
 export const OPERATOR_OPTIONS = [
   { value: "LESS_THAN", label: "Less than" },
+  { value: "LESS_THAN_OR_EQUAL", label: "Less than or equal to" },
   { value: "GREATER_THAN", label: "Greater than" },
+  { value: "GREATER_THAN_OR_EQUAL", label: "Greater than or equal to" },
+  { value: "EQUAL", label: "Equal to" },
 ];
 
 /**

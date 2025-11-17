@@ -1,6 +1,6 @@
 import React from "react";
 
-import { EventType } from "@components/event-type-selection-dialog";
+import { EventType } from "@components";
 
 import { CombinationTriggerConditions } from "./CombinationTriggerConditions";
 import { StandardTriggerConditions } from "./StandardTriggerConditions";
@@ -10,8 +10,8 @@ interface TriggerConditionsProps {
   eventType: EventType | string | undefined;
   triggerCondition: TriggerCondition | undefined;
   onChange: (field: string, value: string | number | string[]) => void;
-  isInTable?: boolean; // Flag to indicate if rendered in table (for styling adjustments)
-  isFocused?: boolean; // Flag to indicate if the cell is currently focused
+  isInTable?: boolean;
+  isFocused?: boolean;
 }
 
 export const TriggerConditions: React.FC<TriggerConditionsProps> = ({
@@ -35,7 +35,7 @@ export const TriggerConditions: React.FC<TriggerConditionsProps> = ({
       <div className="flex items-start relative">
         <div className="flex-1">
           {!isInTable && (
-            <div className={`absolute left-0 top-0 bottom-0 w-[1px] bg-blue-500 `}></div>
+            <div className={`absolute left-0 top-0 bottom-0 w-[1px] bg-primary-500 `}></div>
           )}
           {isCombinationTriggerCondition(triggerCondition) ? (
             <CombinationTriggerConditions

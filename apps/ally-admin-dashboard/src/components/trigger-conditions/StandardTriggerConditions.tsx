@@ -1,7 +1,7 @@
 import React from "react";
 
-import { EventType } from "@components/event-type-selection-dialog";
-import { getTriggerConditionConfig, TRIGGER_FIELD_TYPES } from "@constants/TriggerConditionsConfig";
+import { EventType } from "@components";
+import { getTriggerConditionConfig, TRIGGER_FIELD_TYPES } from "@constants";
 
 import { TriggerConditionField } from "./TriggerConditionField";
 

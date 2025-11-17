@@ -3,9 +3,9 @@ import React, { useState, useCallback, useEffect } from "react";
 import { DoubleArrowRight, Trash } from "@assets";
 import { AutoExpandableTextarea, EmojiPickerComponent, TriggerConditions } from "@components";
 import { NumberInput } from "@components/notion-table";
-import { en } from "@constants";
+import { en, EVENT_DETECTION_TYPES } from "@constants";
 import { useDebounce } from "@hooks";
-import { SessionEventDetectionType, UpdateEventDataParam } from "@types";
+import { UpdateEventDataParam } from "@types";
 
 interface EventSidePanelProps {
   selectedEvent: UpdateEventDataParam | null;
@@ -68,7 +68,7 @@ export const EventSidePanel: React.FC<EventSidePanelProps> = ({
 
   useEffect(() => {
     setFormData(selectedEvent);
-  }, []);
+  }, [selectedEvent]);
 
   const debouncedUpdate = useDebounce(() => {
     onUpdate(formData);
@@ -76,7 +76,7 @@ export const EventSidePanel: React.FC<EventSidePanelProps> = ({
 
   useEffect(() => {
     debouncedUpdate();
-  }, [formData]);
+  }, [formData, debouncedUpdate]);
 
   const handleFieldChange = useCallback(
     (fieldName: string, value: string | number | object) => {
@@ -161,10 +161,10 @@ export const EventSidePanel: React.FC<EventSidePanelProps> = ({
             </Field> */}
 
             {/* Trigger Conditions Field */}
-            {(formData?.detectionType === "TIME_BASED" ||
-              formData?.detectionType === "SCORE_BASED" ||
-              formData?.detectionType === SessionEventDetectionType.SENTENCE_SIMILARITY ||
-              formData?.detectionType === SessionEventDetectionType.COMBINATION) && (
+            {(formData?.detectionType === EVENT_DETECTION_TYPES.TIME_BASED ||
+              formData?.detectionType === EVENT_DETECTION_TYPES.SCORE_BASED ||
+              formData?.detectionType === EVENT_DETECTION_TYPES.SENTENCE_SIMILARITY ||
+              formData?.detectionType === EVENT_DETECTION_TYPES.COMBINATION) && (
               <TriggerConditions
                 eventType={formData.detectionType}
                 triggerCondition={formData.triggerCondition}

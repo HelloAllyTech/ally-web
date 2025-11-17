@@ -11,8 +11,6 @@ export const DEFAULT_SIMULATION_STATUS_OPTIONS = [
   { id: "DRAFT", label: "Draft" },
 ];
 
-export const SPEAKER_OPTIONS = [{ value: "CARE_GIVER", label: "Care giver" }];
-
 export const EVENT_TYPE_OPTIONS = [
   { value: "TIME_BASED", label: "Time Based" },
   { value: "SCORE_BASED", label: "Score Based" },
@@ -22,13 +20,19 @@ export const EVENT_TYPE_OPTIONS = [
 
 export const TIME_CONDITION_OPTIONS = [
   { value: "EXACT", label: "Exact" },
-  { value: "GREATER_THAN", label: "Greater than" },
   { value: "LESS_THAN", label: "Less than" },
+  { value: "LESS_THAN_OR_EQUAL", label: "Less than or equal to" },
+  { value: "GREATER_THAN", label: "Greater than" },
+  { value: "GREATER_THAN_OR_EQUAL", label: "Greater than or equal to" },
+  { value: "EQUAL", label: "Equal to" },
 ];
 
 export const SCORE_CONDITION_OPTIONS = [
-  { value: "GREATER_THAN", label: "Greater than" },
   { value: "LESS_THAN", label: "Less than" },
+  { value: "LESS_THAN_OR_EQUAL", label: "Less than or equal to" },
+  { value: "GREATER_THAN", label: "Greater than" },
+  { value: "GREATER_THAN_OR_EQUAL", label: "Greater than or equal to" },
+  { value: "EQUAL", label: "Equal to" },
 ];
 
 export const COMBINE_TIME_SCORE_OPTIONS = [

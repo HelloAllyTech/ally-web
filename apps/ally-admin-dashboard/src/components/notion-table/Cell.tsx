@@ -133,11 +133,9 @@ export const Cell = ({
       );
       break;
     case cellTypes.triggerConditions: {
-      // Extract event data from row (row is already row.original from NotionTable)
-      const eventType = row?.detectionType?.value || row?.detectionType;
-      // Use value.value if it exists (from state), otherwise fall back to row data
-      const currentTriggerCondition =
-        value.value || row?.triggerCondition?.value || row?.triggerCondition || {};
+      // Extract event data from row
+      const eventType = row?.detectionType?.value;
+      const currentTriggerCondition = value.value || {};
 
       element = (
         <EditableTriggerConditionsPopup

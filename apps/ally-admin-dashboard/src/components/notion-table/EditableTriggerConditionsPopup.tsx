@@ -1,7 +1,6 @@
 import React, { useState, useRef, useEffect, useCallback } from "react";
 
-import { TriggerConditions } from "@components";
-import { StandardTriggerConditions } from "@components/trigger-conditions";
+import { TriggerConditions, StandardTriggerConditions } from "@components";
 import { useClickOutside } from "@hooks";
 
 interface EditableTriggerConditionsPopupProps {
@@ -82,7 +81,7 @@ export const EditableTriggerConditionsPopup: React.FC<EditableTriggerConditionsP
       {isOpen && (
         <div ref={popupRef} className="absolute z-50 top-[0px] left-[0px] overflow-visible">
           <div
-            className="bg-white border-[0.5px] border-primary-500 shadow-lg overflow-visible py-2 px-1 min-h-[50px] w-auto"
+            className="bg-background border-[0.5px] border-primary-500 shadow-lg overflow-visible py-2 px-1 min-h-[50px] w-auto"
             style={{
               minWidth: minWidth || width || 400,
               width: width,

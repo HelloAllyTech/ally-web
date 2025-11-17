@@ -2,6 +2,7 @@ import { FC, useEffect, useRef, useState } from "react";
 
 import { AccountTree, AlarmOn, Chat, Close, DiamondShine } from "@assets";
 import { ButtonVariant } from "@components/types";
+import { useClickOutside } from "@hooks";
 import { getButtonStyles } from "@utils";
 
 export type EventType = "SENTENCE_SIMILARITY" | "TIME_BASED" | "SCORE_BASED" | "COMBINATION";
@@ -11,7 +12,6 @@ export interface EventTypeOption {
   label: string;
   description: string;
   icon: React.ComponentType<{ className?: string }>;
-  prefix: string;
 }
 
 export const EVENT_TYPE_OPTIONS: EventTypeOption[] = [
@@ -20,28 +20,24 @@ export const EVENT_TYPE_OPTIONS: EventTypeOption[] = [
     label: "Sentence Similarity",
     description: "Trigger based on what the speaker says.",
     icon: Chat,
-    prefix: "SS",
   },
   {
     value: "TIME_BASED",
     label: "Time Based",
     description: "Trigger before, after, or at a specific time.",
     icon: AlarmOn,
-    prefix: "TB",
   },
   {
     value: "SCORE_BASED",
     label: "Score Based",
     description: "Trigger when score is greater, less, or equal to threshold.",
     icon: DiamondShine,
-    prefix: "SB",
   },
   {
     value: "COMBINATION",
     label: "Combination of",
     description: "Trigger based on multiple events.",
     icon: AccountTree,
-    prefix: "CE",
   },
 ];
 
@@ -59,21 +55,11 @@ export const EventTypeSelectionDialog: FC<EventTypeSelectionDialogProps> = ({
   const [selectedType, setSelectedType] = useState<EventType | null>(null);
   const dialogRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (dialogRef.current && !dialogRef.current.contains(event.target as Node)) {
-        onClose();
-      }
-    };
-
+  useClickOutside(dialogRef, () => {
     if (isOpen) {
-      document.addEventListener("mousedown", handleClickOutside);
+      onClose();
     }
-
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, [isOpen, onClose]);
+  });
 
   useEffect(() => {
     if (!isOpen) {
@@ -99,12 +85,12 @@ export const EventTypeSelectionDialog: FC<EventTypeSelectionDialogProps> = ({
       <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-[1px]" />
       <div className="fixed inset-0 flex items-center justify-center px-4 shadow-2xl animate-fadeIn">
         <div
-          className="relative bg-white rounded-lg shadow-xl max-w-[480px] w-full animate-in fade-in-0 zoom-in-95 duration-200 p-8"
+          className="relative bg-background rounded-lg shadow-xl max-w-[480px] w-full animate-in fade-in-0 zoom-in-95 duration-200 p-8"
           ref={dialogRef}
         >
           <button
             onClick={onClose}
-            className="absolute top-[10px] right-[10px] text-gray-400 hover:text-gray-600 transition-colors"
+            className="absolute top-[10px] right-[10px] text-neutral-600 transition-colors"
           >
             <Close width={15} height={20} />
           </button>
@@ -127,11 +113,11 @@ export const EventTypeSelectionDialog: FC<EventTypeSelectionDialogProps> = ({
                     key={option.value}
                     type="button"
                     onClick={() => handleSelect(option.value)}
-                    className={`relative p-4 border-2 rounded-lg text-left transition-all hover:border-blue-300 ${
-                      isSelected ? "border-blue-500 bg-blue-50" : "border-gray-200 bg-white"
+                    className={`relative p-4 rounded-lg text-left transition-all border-[0.5px] border-border ${
+                      isSelected && "border-primary-500"
                     }`}
                   >
-                    <div className="flex items-start gap-4">
+                    <div className="flex items-center gap-4">
                       <div className="flex-shrink-0 mt-1">
                         <Icon className="w-5 h-5" />
                       </div>
@@ -141,7 +127,7 @@ export const EventTypeSelectionDialog: FC<EventTypeSelectionDialogProps> = ({
                       </div>
                       {isSelected && (
                         <div className="flex-shrink-0">
-                          <div className="w-6 h-6 rounded-full bg-blue-500 flex items-center justify-center">
+                          <div className="w-6 h-6 rounded-full bg-primary-500 flex items-center justify-center">
                             <svg
                               className="w-4 h-4 text-white"
                               fill="none"
