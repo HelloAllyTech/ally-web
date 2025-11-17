@@ -7,22 +7,28 @@ import { FallbackUIProps } from "./types";
 
 const FallbackUI: FC<FallbackUIProps> = ({
   icon: Icon,
+  theme = "light",
   mainMessage,
   description,
   className,
   button,
   isLoading,
 }) => {
+  const isDarkTheme = theme === "dark";
   return (
-    <div className={`flex flex-col items-center justify-center gap-9 ${className}`}>
+    <div
+      className={`flex flex-col h-full w-full items-center justify-center gap-9 ${isDarkTheme ? "text-white bg-[#171A1A]" : "text-typography-700 bg-white"} ${className}`}
+    >
       {isLoading ? (
         <CircularProgress />
       ) : (
         <>
           <div className="flex flex-col items-center gap-2 text-center">
             {Icon}
-            <h2 className="text-2xl">{mainMessage}</h2>
-            <p className="text-xs text-typography-700">{description}</p>
+            <h2 className={`text-2xl ${isDarkTheme ? "text-white" : ""}`}>{mainMessage}</h2>
+            <p className={`text-xs ${isDarkTheme ? "text-white" : "text-typography-700"}`}>
+              {description}
+            </p>
           </div>
           {button && <Button onClick={button.onClick}>{button.text}</Button>}
         </>
