@@ -11,12 +11,12 @@ export default defineConfig(() => ({
   root: __dirname,
   cacheDir: "../../node_modules/.vite/apps/ally-admin-dashboard",
   server: {
-    port: 8081,
+    port: 8080,
     host: true,
     hmr: {
       host: "localhost",
-      port: 8081,
-      clientPort: 8081,
+      port: 8080,
+      clientPort: 8080,
     },
     watch: {
       usePolling: true,
