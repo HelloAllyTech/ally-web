@@ -29,7 +29,6 @@ import {
   isNonEmptyString,
   extractValidData,
   isEmpty,
-  isNonEmptyArray,
 } from "@utils";
 
 const stepIds = {

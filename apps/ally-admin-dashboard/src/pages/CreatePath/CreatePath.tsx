@@ -64,7 +64,7 @@ export const CreatePath: FC = () => {
   // TODO:API mutation for creating path
 
   const { data: individualPath } = useGetScenarioPathByIdQuery(id);
-  const [createSimulationPathQuery] = useCreateSimulationPathMutation();
+  const [createSimulationPathMutation] = useCreateSimulationPathMutation();
   const [updateSimulationPathByIdQuery] = useUpdateSimulationPathByIdMutation();
 
   const formMethods = useForm({
@@ -155,14 +155,15 @@ export const CreatePath: FC = () => {
       status,
     };
     let response;
-
+    console.log(simulationPath);
+    console.log("formdata", formData);
     if (pathId) {
       response = await updateSimulationPathByIdQuery({
         id: pathId,
         data: simulationPath,
       });
     } else {
-      response = await createSimulationPathQuery(simulationPath);
+      response = await createSimulationPathMutation(simulationPath);
     }
     return response;
   };

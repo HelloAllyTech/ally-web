@@ -113,6 +113,7 @@ export const TAG_TYPES = {
   SIMULATION: "simulation",
   SIMULATION_EVENTS: "simulationEvents",
   SIMULATION_PATHS: "simulationPaths",
+  SCENARIO_PATHS: "scenarioPaths",
 };
 
 export const FORM_FIELD_TYPES = {
@@ -125,5 +126,4 @@ export const FORM_FIELD_TYPES = {
     VOICE_DROPDOWN: "voice_dropdown",
   },
   TOGGLE_BUTTON: "toggle_button",
-  SCENARIO_PATHS: "scenarioPaths",
 };
