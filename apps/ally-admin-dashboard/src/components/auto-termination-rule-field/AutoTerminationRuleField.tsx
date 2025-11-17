@@ -36,10 +36,10 @@ export const AutoTerminationRuleField: React.FC<AutoTerminationRuleFieldProps> =
   label,
   formMethods,
 }) => {
-  const [isEnabled, setIsEnabled] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
 
-  const { setValue } = formMethods;
+  const { setValue, watch } = formMethods;
+  const autoTerminationStatus = watch(TERMINATION_FIELDS_MAP.toggle.id);
 
   const { data: sessionEventsData } = useGetSessionEventsQuery({
     offset: DEFAULT_OFFSET,
@@ -60,13 +60,7 @@ export const AutoTerminationRuleField: React.FC<AutoTerminationRuleFieldProps> =
   };
 
   const handleToggle = () => {
-    const newValue = !isEnabled;
-    setIsEnabled(newValue);
-    setValue(TERMINATION_FIELDS_MAP.toggle.id, newValue);
-    if (!newValue) {
-      setValue(TERMINATION_FIELDS_MAP.triggerEvent.id, "");
-      setValue(TERMINATION_FIELDS_MAP.triggerMessage.id, "");
-    }
+    setValue(TERMINATION_FIELDS_MAP.toggle.id, !autoTerminationStatus);
   };
 
   return (
@@ -74,18 +68,18 @@ export const AutoTerminationRuleField: React.FC<AutoTerminationRuleFieldProps> =
       <div className="flex items-center justify-between">
         <span className="text-base text-typography-900">{label}</span>
         <div className="flex items-center gap-2">
-          <ToggleSwitch enabled={isEnabled} onChange={handleToggle} />
+          <ToggleSwitch enabled={autoTerminationStatus} onChange={handleToggle} />
           <span className="text-base text-typography-900 min-w-[55px]">
-            {isEnabled ? en.common.enabled : en.common.disabled}
+            {autoTerminationStatus ? en.common.enabled : en.common.disabled}
           </span>
         </div>
       </div>
 
-      {isEnabled && (
+      {autoTerminationStatus && (
         <div className="flex flex-col gap-6">
           <div className="flex flex-col gap-2">
             <label className="text-base text-typography-900 flex items-center gap-1">
-              {TERMINATION_FIELDS_MAP.triggerEvent.label} {isEnabled && mandatoryIcon}
+              {TERMINATION_FIELDS_MAP.triggerEvent.label} {autoTerminationStatus && mandatoryIcon}
             </label>
             <DropdownField
               id={TERMINATION_FIELDS_MAP.triggerEvent.id}
@@ -95,7 +89,7 @@ export const AutoTerminationRuleField: React.FC<AutoTerminationRuleFieldProps> =
               isSearchable
               handleSearchTextChange={handleSearchTextChange}
               placeholder={TERMINATION_FIELDS_MAP.triggerEvent.placeholder}
-              isMandatory={isEnabled}
+              isMandatory={autoTerminationStatus}
             />
           </div>
 
@@ -107,7 +101,7 @@ export const AutoTerminationRuleField: React.FC<AutoTerminationRuleFieldProps> =
             placeholder={TERMINATION_FIELDS_MAP.triggerMessage.placeholder}
             maxLength={200}
             minHeight="120"
-            isMandatory={isEnabled}
+            isMandatory={autoTerminationStatus}
           />
         </div>
       )}
