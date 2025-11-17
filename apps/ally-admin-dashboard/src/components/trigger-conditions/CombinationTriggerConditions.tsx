@@ -71,8 +71,6 @@ export const CombinationTriggerConditions: React.FC<CombinationTriggerConditions
   return (
     <div className="flex flex-col gap-2">
       <div className="relative flex flex-col gap-2">
-        {/* Vertical blue line - hide in table */}
-        {!isInTable && <div className="absolute left-0 top-0 bottom-0 w-[1px] bg-blue-500"></div>}
         <div className="flex flex-col gap-2">
           {displayConditions.map((condition, index) => (
             <div key={index} className={`flex items-center gap-2 ${isInTable ? "" : "pl-3"}`}>

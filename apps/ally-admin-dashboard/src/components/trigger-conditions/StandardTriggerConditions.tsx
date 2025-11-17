@@ -20,7 +20,6 @@ export const StandardTriggerConditions: React.FC<StandardTriggerConditionsProps>
   onChange,
   isInTable = false,
   isFocused = false,
-  hideDecorations = false,
 }) => {
   const config = getTriggerConditionConfig(eventType);
   if (!config) return null;
@@ -33,14 +32,6 @@ export const StandardTriggerConditions: React.FC<StandardTriggerConditionsProps>
     <div
       className={`relative ${isSentenceSimilarity && isFocused ? "flex items-start" : "flex items-center"} gap-2`}
     >
-      {/* Vertical blue line - hide in table and popup */}
-      {!isInTable && !hideDecorations && (
-        <div
-          className={`absolute left-0 top-0 bottom-0 w-[1px] bg-blue-500 ${
-            isSentenceSimilarity ? "" : "h-8"
-          }`}
-        ></div>
-      )}
       {isSentenceSimilarity ? (
         <>
           <div className={`flex items-center gap-2 ${isInTable ? "" : "pl-2"} flex-shrink-0`}>

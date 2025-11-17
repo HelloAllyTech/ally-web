@@ -34,6 +34,9 @@ export const TriggerConditions: React.FC<TriggerConditionsProps> = ({
       )}
       <div className="flex items-start relative">
         <div className="flex-1">
+          {!isInTable && (
+            <div className={`absolute left-0 top-0 bottom-0 w-[1px] bg-blue-500 `}></div>
+          )}
           {isCombinationTriggerCondition(triggerCondition) ? (
             <CombinationTriggerConditions
               triggerCondition={triggerCondition}
