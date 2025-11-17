@@ -83,6 +83,7 @@ export const CombinationTriggerConditions: React.FC<CombinationTriggerConditions
                   onChange={operator => handleOperatorChange(index, operator as "AND" | "OR")}
                   placeholder="AND"
                   disabled={false}
+                  isInTable={isInTable}
                 />
               )}
               <TriggerConditionDropdown
@@ -99,6 +100,7 @@ export const CombinationTriggerConditions: React.FC<CombinationTriggerConditions
                 isSearchable={true}
                 disabled={false}
                 className="min-w-[200px]"
+                isInTable={isInTable}
               />
               <span className="text-sm text-gray-500">has</span>
               <TriggerConditionDropdown
@@ -108,6 +110,7 @@ export const CombinationTriggerConditions: React.FC<CombinationTriggerConditions
                 placeholder={statusField?.placeholder || "Occurred"}
                 disabled={false}
                 className={(statusField as any)?.className || ""}
+                isInTable={isInTable}
               />
             </div>
           ))}

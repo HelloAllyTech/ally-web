@@ -29,7 +29,8 @@ const TableSentenceInput: React.FC<{
   placeholder?: string;
   onChange: (value: string[]) => void;
   isFocused?: boolean;
-}> = ({ value, placeholder, onChange, isFocused = false }) => {
+  isInTable?: boolean;
+}> = ({ value, placeholder, onChange, isFocused = false, isInTable = false }) => {
   const [localValue, setLocalValue] = useState(value);
   const wrapperRef = useRef<HTMLDivElement>(null);
 
@@ -62,7 +63,7 @@ const TableSentenceInput: React.FC<{
           readOnly
           onClick={e => e.currentTarget.focus()}
           placeholder={placeholder}
-          className="px-3 py-2 text-sm bg-neutral-50 border rounded-sm w-full min-w-[240px] resize-none overflow-hidden cursor-pointer focus:outline-none"
+          className={`px-3 py-2 text-sm rounded-sm w-full min-w-[240px] resize-none overflow-hidden cursor-pointer focus:outline-none ${isInTable ? "bg-neutral-100" : "bg-neutral-50 border"}`}
           style={{
             height: "24px",
             lineHeight: "20px",
@@ -93,7 +94,7 @@ const TableSentenceInput: React.FC<{
           minHeight={24}
           maxLines={100}
           autoFocus={true}
-          className="px-3 mt-[-2px] text-sm border focus:outline-none focus:border-blue-500 rounded-sm w-full leading-tight !overflow-y-hidden [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
+          className="px-3 mt-[-2px] text-sm focus:outline-none focus:border-blue-500 rounded-sm w-full leading-tight !overflow-y-hidden [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
         />
       )}
     </div>
@@ -119,7 +120,7 @@ export const TriggerConditionField: React.FC<TriggerConditionFieldProps> = ({
           <NumberInput
             value={fieldValue || 0}
             onChange={numValue => onChange(field.id, numValue)}
-            className="px-2 py-1 text-sm border h-6 rounded-sm bg-neutral-50 w-[60px]"
+            className={`px-2 py-1 text-sm border h-6 rounded-sm w-[60px] ${isInTable ? "bg-neutral-100" : "bg-neutral-50 border"}`}
             inputClassName="w-auto min-w-0 pr-6 py-0 text-sm"
             spinnerClassName="!left-auto right-1 !gap-0 px-2 !items-center"
           />
@@ -133,7 +134,7 @@ export const TriggerConditionField: React.FC<TriggerConditionFieldProps> = ({
             onChange={e => onChange(field.id, e.target.value)}
             placeholder={field.placeholder || "00:20:00"}
             pattern="^([0-1][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]$"
-            className="px-3 py-2 text-sm border h-6 rounded-sm bg-neutral-50 w-[80px]"
+            className={`px-3 py-2 text-sm h-6 rounded-sm w-[80px] ${isInTable ? "bg-neutral-100" : "bg-neutral-50 border"}`}
           />
         );
 
@@ -149,6 +150,7 @@ export const TriggerConditionField: React.FC<TriggerConditionFieldProps> = ({
             placeholder={field.placeholder || "Select"}
             disabled={false}
             className={field.className || ""}
+            isInTable={isInTable}
           />
         );
 
@@ -164,6 +166,7 @@ export const TriggerConditionField: React.FC<TriggerConditionFieldProps> = ({
               placeholder={field.placeholder}
               onChange={newValue => onChange(field.id, newValue)}
               isFocused={isFocused}
+              isInTable={isInTable}
             />
           );
         }
@@ -179,7 +182,7 @@ export const TriggerConditionField: React.FC<TriggerConditionFieldProps> = ({
               placeholder={field.placeholder}
               disabled={false}
               minHeight={20}
-              className="px-3 py-1 text-sm border-[0.5px] border-gray-300 bg-white focus:outline-none w-full"
+              className="px-3 py-1 text-sm border focus:outline-none w-full"
             />
           </div>
         );

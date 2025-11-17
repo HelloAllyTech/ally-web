@@ -11,6 +11,7 @@ interface TriggerConditionDropdownProps {
   isSearchable?: boolean;
   disabled?: boolean;
   className?: string;
+  isInTable?: boolean;
 }
 
 /**
@@ -26,10 +27,11 @@ export const TriggerConditionDropdown: React.FC<TriggerConditionDropdownProps> =
   isSearchable = false,
   disabled = false,
   className = "",
+  isInTable = false,
 }) => {
   return (
     <div
-      className={`bg-neutral-50 border px-2 rounded-sm [&_button>span]:mr-3 [&_button>span]:text-[#4A4459] [&_button>span]:font-normal [&_button>span]:leading-none [&_button]:py-0 [&_button]:h-full [&_button]:flex [&_button]:items-center ${className}`}
+      className={`px-2 rounded-sm [&_button>span]:mr-3 [&_button>span]:text-[#4A4459] [&_button>span]:font-normal [&_button>span]:leading-none [&_button]:py-0 [&_button]:h-full [&_button]:flex [&_button]:items-center ${isInTable ? "bg-neutral-100" : "bg-neutral-50 border"} ${className}`}
     >
       <TextDropdown
         value={value}
