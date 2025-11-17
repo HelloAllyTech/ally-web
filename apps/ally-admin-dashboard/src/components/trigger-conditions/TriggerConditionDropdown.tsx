@@ -29,7 +29,7 @@ export const TriggerConditionDropdown: React.FC<TriggerConditionDropdownProps> =
 }) => {
   return (
     <div
-      className={`bg-gray-100 px-2 rounded-sm [&_button>span]:mr-3 [&_button>span]:text-[#4A4459] [&_button>span]:font-normal [&_button>span]:leading-none [&_button]:py-0 [&_button]:h-full [&_button]:flex [&_button]:items-center ${className}`}
+      className={`bg-neutral-50 border px-2 rounded-sm [&_button>span]:mr-3 [&_button>span]:text-[#4A4459] [&_button>span]:font-normal [&_button>span]:leading-none [&_button]:py-0 [&_button]:h-full [&_button]:flex [&_button]:items-center ${className}`}
     >
       <TextDropdown
         value={value}
