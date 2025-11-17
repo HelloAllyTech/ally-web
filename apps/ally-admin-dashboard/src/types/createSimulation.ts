@@ -102,7 +102,7 @@ export enum SimulationStatus {
 }
 
 export type SimulationPreviewType = {
-  id: string;
+  id: string | number;
   title: string;
   coverImageUrl: string;
   coverVideoUrl?: string;

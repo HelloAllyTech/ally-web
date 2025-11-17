@@ -1,6 +1,6 @@
 import React, { useState, useEffect, FC } from "react";
 
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 
 import { useGetTenantsQuery } from "@api";
 import { Tabs, OrganizationDetailLoader, SimulationsTab, PathTab } from "@components";
@@ -23,12 +23,16 @@ const tabs = [
 
 export const OrganizationDetail: FC = () => {
   const [organization, setOrganization] = useState<Tenant | null>(null);
-  const [activeTab, setActiveTab] = useState<TAB_IDS>(TAB_IDS.SIMULATIONS);
   const [searchValue, setSearchValue] = useState("");
   const [simulationAccess, setSimulationAccess] = useState<Record<string, boolean>>({});
+  const [pathAccess, setPathAccess] = useState<Record<string, boolean>>({});
 
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  // Get active tab from URL params, default to SIMULATIONS
+  const activeTab = (searchParams.get("tab") as TAB_IDS) || TAB_IDS.SIMULATIONS;
 
   // Fetch organization data
   const { data: tenantsResponse, isLoading: isTenantsLoading } = useGetTenantsQuery({
@@ -55,6 +59,27 @@ export const OrganizationDetail: FC = () => {
     setSimulationAccess(prev => {
       const newAccess: Record<string, boolean> = {};
       simulationIds.forEach(id => {
+        if (!(id in prev)) {
+          // TO-DO: fetch access state from API
+          newAccess[id] = false; // Default to false, can be fetched from API
+        }
+      });
+      return { ...prev, ...newAccess };
+    });
+  };
+
+  const handleTogglePathAccess = (pathId: number, enabled: boolean) => {
+    setPathAccess(prev => ({
+      ...prev,
+      [pathId]: enabled,
+    }));
+    // TODO: Call API to update path access for this organization
+  };
+
+  const handlePathsLoaded = (pathIds: string[]) => {
+    setPathAccess(prev => {
+      const newAccess: Record<string, boolean> = {};
+      pathIds.forEach(id => {
         if (!(id in prev)) {
           // TO-DO: fetch access state from API
           newAccess[id] = false; // Default to false, can be fetched from API
@@ -114,7 +139,7 @@ export const OrganizationDetail: FC = () => {
         <Tabs
           items={tabs}
           activeId={activeTab}
-          onChange={id => setActiveTab(id as TAB_IDS)}
+          onChange={id => setSearchParams({ tab: id })}
           showCount={false}
         />
       </div>
@@ -131,7 +156,14 @@ export const OrganizationDetail: FC = () => {
             onSimulationsLoaded={handleSimulationsLoaded}
           />
         ) : (
-          <PathTab />
+          <PathTab
+            organizationId={id ?? ""}
+            searchValue={searchValue}
+            onSearchChange={setSearchValue}
+            pathAccess={pathAccess}
+            onToggleAccess={handleTogglePathAccess}
+            onPathsLoaded={handlePathsLoaded}
+          />
         )}
       </div>
     </div>

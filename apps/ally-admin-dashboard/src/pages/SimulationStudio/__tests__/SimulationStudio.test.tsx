@@ -1,5 +1,5 @@
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
-import { BrowserRouter } from "react-router-dom";
+import { MemoryRouter } from "react-router-dom";
 import { vi, describe, it, expect, beforeEach } from "vitest";
 
 import { SimulationStatus } from "@constants";
@@ -386,11 +386,11 @@ describe("SimulationStudio", () => {
     mockUseSimulationPathways.mockReturnValue(defaultPathwaysHookReturn);
   });
 
-  const renderComponent = () => {
+  const renderComponent = (initialEntries = ["/"]) => {
     return render(
-      <BrowserRouter>
+      <MemoryRouter initialEntries={initialEntries}>
         <SimulationStudio />
-      </BrowserRouter>,
+      </MemoryRouter>,
     );
   };
 

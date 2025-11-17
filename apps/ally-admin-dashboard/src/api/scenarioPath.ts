@@ -11,7 +11,6 @@ const simulationPathApi = baseAPI.injectEndpoints({
   endpoints: builder => ({
     /**
      * Get all scenario paths
-     * TODO: Replace with actual API call when backend is ready
      */
     getScenarioPaths: builder.query<GetScenarioPathsResponse, GetScenarioPathsQueryParams>({
       query: (params: GetScenarioPathsQueryParams) => ({
