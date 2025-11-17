@@ -1,5 +1,9 @@
 import { FC, useEffect, useState } from "react";
 
+import { AnimatePresence, motion } from "framer-motion";
+import { useNavigate, useParams } from "react-router-dom";
+import { toast } from "sonner";
+
 import { useEndSimulationMutation, useGetScenarioQuery, useStartSimulationMutation } from "@api";
 import { BackCircle, Bolt, ExistingCall, PageNotFoundIllustration } from "@assets";
 import {
@@ -12,9 +16,6 @@ import {
 } from "@components";
 import { AUTO_CLOSE_DIALOG_DURATION, LOCAL_STORAGE_KEYS, ROUTES } from "@constants";
 import { useSimulationCredits } from "@hooks";
-import { AnimatePresence, motion } from "framer-motion";
-import { useNavigate, useParams } from "react-router-dom";
-import { toast } from "sonner";
 
 import { learnPageExpandedVariants } from "../learn/constants";
 

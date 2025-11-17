@@ -32,12 +32,13 @@ export const ApiEndpoints = {
     GET_COVER_VIDEO_URL: "/v1/learn/scenarios/cover-video-url",
     DELETE_COVER_VIDEO: "/v1/learn/cover-video",
     MAP_SCENARIO_EVENTS: "/v1/learn/scenarios/map-events",
-    GET_MAPPED_SCENARIO_EVENTS: (id: string) => `/v1/learn/scenarios/${id}/events`,
+    GET_MAPPED_SCENARIO_EVENTS: (id: number | string) => `/v1/learn/scenarios/${id}/events`,
     SCENARIO_EVENTS: "/v1/learn/scenarios/events",
     SCENARIO_PREVIEW: "/v1/learn/scenarios/preview",
-    END_SCENARIO_PREVIEW: (sessionId: string) => `/v1/learn/scenarios/preview/${sessionId}/end`,
+    END_SCENARIO_PREVIEW: (sessionId: number | string) =>
+      `/v1/learn/scenarios/preview/${sessionId}/end`,
     SCENARIO_PATHS: "v1/learn/admin/scenario-paths",
-    SCENARIO_PATH_BY_ID: (id: string) => `/v1/learn/admin/scenario-paths/${id}`,
+    SCENARIO_PATH_BY_ID: (id: number | string) => `/v1/learn/admin/scenario-paths/${id}`,
   },
 
   USER_MANAGEMENT: {

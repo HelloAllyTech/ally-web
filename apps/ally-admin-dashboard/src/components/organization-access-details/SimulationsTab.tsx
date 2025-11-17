@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState, FC } from "react";
 
 import { useGetSimulationsQuery } from "@api";
 import { ListToolbar, EmptyState, SimulationAndPathToggleCard } from "@components";
@@ -16,22 +16,22 @@ interface SimulationsTabProps {
   onSimulationsLoaded?: (simulationIds: string[]) => void;
 }
 
-export const SimulationsTab: React.FC<SimulationsTabProps> = ({
+export const SimulationsTab: FC<SimulationsTabProps> = ({
   searchValue,
   onSearchChange,
   simulationAccess,
   onToggleAccess,
   onSimulationsLoaded,
 }) => {
-  const [simulationsOffset, setSimulationsOffset] = React.useState(0);
-  const [simulations, setSimulations] = React.useState<Simulation[]>([]);
+  const [simulationsOffset, setSimulationsOffset] = useState(0);
+  const [simulations, setSimulations] = useState<Simulation[]>([]);
 
   const simulationParams = {
     limit: SIMULATIONS_PAGE_SIZE,
     offset: simulationsOffset,
     sortBy: SORT_BY.UPDATED_AT,
     order: SORT_ORDER.DESC,
-    search: searchValue || undefined,
+    search: searchValue,
   };
 
   const {
@@ -57,7 +57,7 @@ export const SimulationsTab: React.FC<SimulationsTabProps> = ({
   // Separate effect to notify parent of loaded simulations
   useEffect(() => {
     if (simulations.length > 0 && onSimulationsLoaded) {
-      onSimulationsLoaded(simulations.map(sim => sim.id.toString()));
+      onSimulationsLoaded(simulations.map(simulation => simulation.id.toString()));
     }
   }, [simulations.length]); // Only run when the count changes, not on every simulation change
 
@@ -74,9 +74,9 @@ export const SimulationsTab: React.FC<SimulationsTabProps> = ({
     : simulations.length >= SIMULATIONS_PAGE_SIZE;
 
   const filteredSimulations = simulations.filter(
-    sim =>
-      sim.title.toLowerCase().includes(searchValue.toLowerCase()) ||
-      sim.description?.toLowerCase().includes(searchValue.toLowerCase()),
+    simulation =>
+      simulation.title.toLowerCase().includes(searchValue.toLowerCase()) ||
+      simulation.description?.toLowerCase().includes(searchValue.toLowerCase()),
   );
 
   if (isSimulationsLoading) {
@@ -109,12 +109,12 @@ export const SimulationsTab: React.FC<SimulationsTabProps> = ({
             </div>
           </div>
           <div className="flex-1">
-            {filteredSimulations.map(sim => (
+            {filteredSimulations?.map(simulation => (
               <SimulationAndPathToggleCard
-                key={sim.id}
-                simulation={sim}
-                hasAccess={simulationAccess[sim.id] ?? false}
-                onToggleAccess={enabled => onToggleAccess(sim.id, enabled)}
+                key={simulation.id}
+                simulation={simulation}
+                hasAccess={simulationAccess[simulation.id] ?? false}
+                onToggleAccess={enabled => onToggleAccess(simulation.id, enabled)}
               />
             ))}
             {hasMore && (

@@ -42,7 +42,7 @@ const simulationPathApi = baseAPI.injectEndpoints({
 
     updateSimulationPathById: builder.mutation<
       { success: boolean },
-      { id: string; data: Partial<CreatePathInput> }
+      { id: number | string; data: Partial<CreatePathInput> }
     >({
       query: ({ id, data }) => ({
         url: ApiEndpoints.SIMULATION_STUDIO.SCENARIO_PATH_BY_ID(id),

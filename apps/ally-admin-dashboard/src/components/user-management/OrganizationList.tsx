@@ -32,6 +32,10 @@ export const OrganizationList: React.FC<OrganizationListProps> = ({
     onRowClick?.(tenant);
   };
 
+  const handleEditPress = (tenant: Tenant, e: React.MouseEvent) => {
+    e.stopPropagation();
+    onEditPress?.(tenant);
+  };
   return (
     <div className="w-full text-sm overflow-x-auto">
       <div className="min-w-[900px]">
@@ -54,11 +58,8 @@ export const OrganizationList: React.FC<OrganizationListProps> = ({
                 <span>{tenant.userCount}</span>
                 <button
                   className="text-typography-600 hover:text-typography-900 px-2"
-                  title={en.userManagement.edit}
-                  onClick={e => {
-                    e.stopPropagation();
-                    onEditPress?.(tenant);
-                  }}
+                  title={en.common.edit}
+                  onClick={e => handleEditPress(tenant, e)}
                 >
                   <Edit />
                 </button>

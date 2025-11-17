@@ -61,8 +61,6 @@ export const CreatePath: FC = () => {
 
   const title = id ? en.simulation.editPath : en.simulation.createPath;
 
-  // TODO:API mutation for creating path
-
   const { data: individualPath } = useGetScenarioPathByIdQuery(id);
   const [createSimulationPathMutation] = useCreateSimulationPathMutation();
   const [updateSimulationPathByIdQuery] = useUpdateSimulationPathByIdMutation();
@@ -92,13 +90,10 @@ export const CreatePath: FC = () => {
     return mandatoryFieldIds.every(fieldId => {
       const value = formValues[fieldId];
       // Check if value exists and is not empty
-      if (isEmpty(value)) {
-        return false;
-      }
-      if (Array.isArray(value)) {
-        //strings are getting false value otherwise
-        return !isNonEmptyArray(value);
-      }
+      if (isEmpty(value)) return false;
+
+      if (Array.isArray(value)) return !isNonEmptyArray(value);
+
       return true;
     });
   }, [formValues]);
@@ -150,7 +145,7 @@ export const CreatePath: FC = () => {
       toast.error(en.errors.titleIsRequired);
       return null;
     }
-    const simulationPath = {
+    const simulationPath: any = {
       ...extractValidData(PATH_CREATOR_FIELD_GROUPS, formData),
       status,
     };
@@ -179,9 +174,6 @@ export const CreatePath: FC = () => {
         }
         const currentFormValues = formMethods.getValues();
         formMethods.reset(currentFormValues);
-        if (pathId) {
-          // getScenarioPathById(pathId);
-        }
         return response?.data;
       } else if (response?.error) {
         toast.error("Failed to save draft. Please try again.");
@@ -198,7 +190,6 @@ export const CreatePath: FC = () => {
     try {
       const response = await saveSimulationChanges(SimulationStatus.ACTIVE);
 
-      // Navigate to simulation studio or the created simulation
       if (response) navigate(ROUTES.SIMULATION_STUDIO);
     } catch {
       toast.error("Failed to create simulation. Please try again.");
@@ -227,7 +218,6 @@ export const CreatePath: FC = () => {
 
   const handleStepClick = async (stepId: string) => {
     setCurrentStep(stepId);
-    // Scroll to top when moving to next step
     containerRef?.current?.scrollTo({ top: 0, behavior: "smooth" });
   };
 

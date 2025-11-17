@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, FC } from "react";
 
 import { useParams, useNavigate } from "react-router-dom";
 
@@ -6,33 +6,44 @@ import { useGetTenantsQuery } from "@api";
 import { Tabs, OrganizationDetailLoader, SimulationsTab, PathTab } from "@components";
 import { en, ROUTES } from "@constants";
 import { Tenant } from "@types";
+import { isNonEmptyArray } from "@utils";
 
-export const OrganizationDetail: React.FC = () => {
+const DEFAULT_LIMIT = 1000;
+const DEFAULT_OFFSET = 0;
+
+enum TAB_IDS {
+  SIMULATIONS = "simulations",
+  PATH = "path",
+}
+
+const tabs = [
+  { id: TAB_IDS.SIMULATIONS, label: en.userManagement.simulations },
+  { id: TAB_IDS.PATH, label: en.userManagement.path },
+];
+
+export const OrganizationDetail: FC = () => {
   const [organization, setOrganization] = useState<Tenant | null>(null);
-  const [activeTab, setActiveTab] = useState<"simulations" | "path">("simulations");
+  const [activeTab, setActiveTab] = useState<TAB_IDS>(TAB_IDS.SIMULATIONS);
   const [searchValue, setSearchValue] = useState("");
   const [simulationAccess, setSimulationAccess] = useState<Record<string, boolean>>({});
 
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
 
-  //TO-DO: replace with tenant with id specific API call
   // Fetch organization data
   const { data: tenantsResponse, isLoading: isTenantsLoading } = useGetTenantsQuery({
-    limit: 1000, // Get all to find the specific one
-    offset: 0,
+    limit: DEFAULT_LIMIT,
+    offset: DEFAULT_OFFSET,
   });
 
   useEffect(() => {
-    if (tenantsResponse?.data && id) {
+    if (isNonEmptyArray(tenantsResponse?.data) && id) {
       const found = tenantsResponse.data.find(tenant => tenant.id === id);
-      if (found) {
-        setOrganization(found);
-      }
+      if (found) setOrganization(found);
     }
   }, [tenantsResponse, id]);
 
-  const handleToggleAccess = (simulationId: string, enabled: boolean) => {
+  const handleToggleAccess = (simulationId: number, enabled: boolean) => {
     setSimulationAccess(prev => ({
       ...prev,
       [simulationId]: enabled,
@@ -52,11 +63,6 @@ export const OrganizationDetail: React.FC = () => {
       return { ...prev, ...newAccess };
     });
   };
-
-  const tabs = [
-    { id: "simulations", label: en.userManagement.simulations },
-    { id: "path", label: en.userManagement.path },
-  ];
 
   // Show skeleton loader while fetching organization data
   if (isTenantsLoading || !organization) {
@@ -108,14 +114,14 @@ export const OrganizationDetail: React.FC = () => {
         <Tabs
           items={tabs}
           activeId={activeTab}
-          onChange={id => setActiveTab(id as "simulations" | "path")}
+          onChange={id => setActiveTab(id as TAB_IDS)}
           showCount={false}
         />
       </div>
 
       {/* Tab Content */}
       <div className="flex-1 overflow-hidden min-h-0 mt-4">
-        {activeTab === "simulations" ? (
+        {activeTab === TAB_IDS.SIMULATIONS ? (
           <SimulationsTab
             organizationId={id ?? ""}
             searchValue={searchValue}

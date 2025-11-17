@@ -53,10 +53,10 @@ interface scenarioType {
 export interface CreatePathInput {
   title: string;
   description?: string;
-  coverImageUrl: string;
-  isGlobal: boolean;
-  status: SimulationStatus;
-  scenarios: scenarioType;
+  coverImageUrl?: string;
+  isGlobal?: boolean;
+  status?: SimulationStatus;
+  scenarios?: scenarioType;
 }
 
 export enum messageFieldId {
