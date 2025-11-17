@@ -25,6 +25,7 @@ import {
   en,
   SESSION_EVENT_STATUS_OPTIONS,
   EVENT_TYPE_OPTIONS,
+  EVENT_DETECTION_TYPES,
 } from "@constants";
 import { UpdateEventDataParam } from "@types";
 import { convertEventToApiPayload, convertApiResponseToEvent } from "@utils";
@@ -88,11 +89,9 @@ export const EventManagement: React.FC = () => {
   };
 
   const handleEventTypeSelect = async (eventType: EventType) => {
-    // Helper function to get display name for event type (e.g., "TIME_BASED" -> "time based")
     const getEventTypeDisplayName = (detectionType: EventType): string => {
       const typeOption = EVENT_TYPE_OPTIONS.find(opt => opt.value === detectionType);
       if (!typeOption) return "";
-      // Convert to lowercase for "Sample X event" format
       return typeOption.label.toLowerCase();
     };
 
@@ -102,13 +101,13 @@ export const EventManagement: React.FC = () => {
 
     let triggerCondition: any;
 
-    if (eventType === "TIME_BASED") {
+    if (eventType === EVENT_DETECTION_TYPES.TIME_BASED) {
       triggerCondition = { operator: "LESS_THAN", value: "00:20:00" };
-    } else if (eventType === "SCORE_BASED") {
+    } else if (eventType === EVENT_DETECTION_TYPES.SCORE_BASED) {
       triggerCondition = { operator: "GREATER_THAN", value: 0, speaker: "CARE_GIVER" };
-    } else if (eventType === "SENTENCE_SIMILARITY") {
+    } else if (eventType === EVENT_DETECTION_TYPES.SENTENCE_SIMILARITY) {
       triggerCondition = { speaker: "CARE_GIVER", sentences: [] };
-    } else if (eventType === "COMBINATION") {
+    } else if (eventType === EVENT_DETECTION_TYPES.COMBINATION) {
       triggerCondition = {
         conditions: [
           { eventId: "", status: "OCCURRED" },
@@ -129,10 +128,8 @@ export const EventManagement: React.FC = () => {
       triggerCondition,
     };
 
-    // Convert UpdateEventDataParam to SessionEvent format for API
     const apiEvent = convertEventToApiPayload(newEvent);
     if (!apiEvent) {
-      toast.error("Failed to convert event to API format");
       return;
     }
     try {

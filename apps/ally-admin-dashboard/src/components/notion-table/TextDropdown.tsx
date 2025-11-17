@@ -163,7 +163,7 @@ export const TextDropdown = ({
 
       {/* Dropdown Menu */}
       {isOpen && (
-        <div className="absolute z-50 w-[calc(100%+24px)] left-[-12px] mt-1 bg-white border border-border-light rounded-md shadow-lg max-h-60 overflow-hidden">
+        <div className="absolute z-50 w-max min-w-[calc(100%+24px)] left-[-12px] mt-1 bg-background border border-border-light rounded-md shadow-lg max-h-60 overflow-hidden">
           {/* Search Input */}
           {isSearchable && (
             <div className="p-2 border-b border-border-light">
@@ -202,7 +202,7 @@ export const TextDropdown = ({
                       style={{ backgroundColor: option.backgroundColor }}
                     />
                   )}
-                  <span className="truncate">{option?.label}</span>
+                  <span className="whitespace-nowrap">{option?.label}</span>
                 </div>
               ))
             )}

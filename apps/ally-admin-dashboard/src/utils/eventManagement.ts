@@ -61,13 +61,10 @@ export const convertEventToApiPayload = (event: UpdateEventDataParam): SessionEv
     return null;
   }
 
-  // Map frontend detection type to backend format
   const backendDetectionType = mapDetectionTypeToBackend(event.detectionType);
 
-  // Build detectionData based on event type - only include relevant fields
   const detectionData: SessionEventDetectionData = {};
 
-  // For SENTENCE_SIMILARITY or SEMANTIC_SIMILARITY: get sentences from triggerCondition
   if (
     event.detectionType === "SENTENCE_SIMILARITY" ||
     event.detectionType === SessionEventDetectionType.SENTENCE_SIMILARITY ||
@@ -84,7 +81,6 @@ export const convertEventToApiPayload = (event: UpdateEventDataParam): SessionEv
     }
   }
 
-  // For SCORE_BASED: only include score and condition
   if (
     event.detectionType === "SCORE_BASED" ||
     event.detectionType === SessionEventDetectionType.SCORE
@@ -96,7 +92,6 @@ export const convertEventToApiPayload = (event: UpdateEventDataParam): SessionEv
     ) {
       detectionData.score = event.triggerCondition.value;
     }
-    // Include condition if operator exists
     if (event.triggerCondition && "operator" in event.triggerCondition) {
       const condition = mapOperatorToCondition(event.triggerCondition.operator);
       if (condition) {
@@ -105,7 +100,6 @@ export const convertEventToApiPayload = (event: UpdateEventDataParam): SessionEv
     }
   }
 
-  // For TIME_BASED: only include time (in seconds) and condition
   if (
     event.detectionType === "TIME_BASED" ||
     event.detectionType === SessionEventDetectionType.TIME
@@ -117,7 +111,6 @@ export const convertEventToApiPayload = (event: UpdateEventDataParam): SessionEv
     ) {
       detectionData.time = convertTimeToSeconds(event.triggerCondition.value);
     }
-    // Include condition if operator exists
     if (event.triggerCondition && "operator" in event.triggerCondition) {
       const condition = mapOperatorToCondition(event.triggerCondition.operator);
       if (condition) {
@@ -126,7 +119,6 @@ export const convertEventToApiPayload = (event: UpdateEventDataParam): SessionEv
     }
   }
 
-  // Build the SessionEvent payload
   const payload: SessionEvent = {
     name: event.name || "",
     description: event.description || "",
@@ -138,24 +130,13 @@ export const convertEventToApiPayload = (event: UpdateEventDataParam): SessionEv
     visibilityType: event.visibilityType || "",
   };
 
-  //Add speaker if present (only for sentence/semantic similarity events)
-  // if (
-  //   event.triggerCondition &&
-  //   "speaker" in event.triggerCondition &&
-  //   event.triggerCondition.speaker
-  // ) {
-  //   payload.speaker = event.triggerCondition.speaker;
-  // }
-
   //TO-DO(pass speaker only for sentence and semantic similarity events)
   payload.speaker = "CARE_GIVER";
 
-  // Only add detectionData if it has content
   if (Object.keys(detectionData).length > 0) {
     payload.detectionData = detectionData;
   }
 
-  // Include id if present (for updates)
   if (event.id) {
     payload.id = event.id;
   }
@@ -202,7 +183,6 @@ const mapDetectionTypeToFrontend = (detectionType: string | undefined): string |
 };
 
 /**
- * Converts API response (SessionEvent) to frontend format (UpdateEventDataParam)
  * @param apiEvent - Event data from the API
  * @returns Formatted UpdateEventDataParam for the frontend
  */
@@ -217,7 +197,6 @@ export const convertApiResponseToEvent = (apiEvent: SessionEvent): UpdateEventDa
 
   if (detectionData) {
     if (frontendDetectionType === "TIME_BASED") {
-      // Convert time from seconds to HH:MM:SS format
       const timeString = convertSecondsToTimeString(detectionData.time);
       const operator = mapConditionToOperator(detectionData.condition);
       triggerCondition = {
@@ -235,13 +214,11 @@ export const convertApiResponseToEvent = (apiEvent: SessionEvent): UpdateEventDa
       frontendDetectionType === "SENTENCE_SIMILARITY" ||
       frontendDetectionType === "SEMANTIC_SIMILARITY"
     ) {
-      // For sentence similarity, triggerCondition contains speaker and sentences
       triggerCondition = {
         speaker: apiEvent.speaker || "CARE_GIVER",
         sentences: detectionData.sentences || [],
       };
     } else if (frontendDetectionType === "COMBINATION") {
-      // Combination events have conditions array
       triggerCondition = {
         conditions: [],
       };

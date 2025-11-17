@@ -173,7 +173,6 @@ export const isNonEmptyArray = <T>(value: unknown): value is T[] => {
 
 /**
  * Converts seconds to HH:MM:SS format for display
- * Assumption: Time is stored in seconds and needs conversion to HH:MM:SS format for UI display
  * @param seconds - Time in seconds (number)
  * @returns Time in HH:MM:SS format (string), defaults to "00:00:00" if invalid
  */
@@ -185,30 +184,4 @@ export const convertSecondsToTimeString = (seconds: number | undefined): string 
   const secs = seconds % 60;
 
   return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}:${String(secs).padStart(2, "0")}`;
-};
-
-/**
- * Converts newline-separated string to array for UI display
- * Assumption: Sentences are stored as a newline-separated string in detectionData.sentences
- * and need to be converted to an array for UI components
- * @param sentencesString - Newline-separated string of sentences
- * @returns Array of sentences (string[]), filtered to remove empty strings
- */
-export const getSentencesArray = (sentencesString: string | undefined): string[] => {
-  if (!sentencesString || typeof sentencesString !== "string") return [];
-
-  // Split by newline and filter out empty strings
-  return sentencesString.split("\n").filter(s => s.trim().length > 0);
-};
-
-/**
- * Converts array of sentences to newline-separated string
- * Assumption: UI components work with arrays, but API expects newline-separated string
- * @param sentencesArray - Array of sentences (string[])
- * @returns Newline-separated string of sentences
- */
-export const getSentencesString = (sentencesArray: string[] | undefined): string => {
-  if (!sentencesArray || !Array.isArray(sentencesArray)) return "";
-
-  return sentencesArray.filter(s => s.trim().length > 0).join("\n");
 };
