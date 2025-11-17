@@ -15,8 +15,8 @@ import {
   ListToolbar,
   ActionConfirmationPopup,
   EventTypeSelectionDialog,
+  EventType,
 } from "@components";
-import { EventType } from "@components/event-type-selection-dialog";
 import { ButtonVariant } from "@components/types";
 import {
   SORT_BY,
@@ -26,8 +26,8 @@ import {
   SESSION_EVENT_STATUS_OPTIONS,
   EVENT_TYPE_OPTIONS,
 } from "@constants";
-import { convertEventToApiPayload, convertApiResponseToEvent } from "@src/utils/eventManagement";
 import { UpdateEventDataParam } from "@types";
+import { convertEventToApiPayload, convertApiResponseToEvent } from "@utils";
 
 export const EventManagement: React.FC = () => {
   const limit = 30;

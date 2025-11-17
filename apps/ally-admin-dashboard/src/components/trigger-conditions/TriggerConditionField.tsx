@@ -78,12 +78,10 @@ const TableSentenceInput: React.FC<{
           onChange={newValue => {
             setLocalValue(newValue);
           }}
-          onBlur={e => {
-            // Only call onChange on blur to avoid lag (like EditableTextPopup)
+          onBlur={() => {
             onChange(localValue ? [localValue] : []);
           }}
           onKeyDown={e => {
-            // Allow Enter for new lines, Ctrl/Cmd+Enter to blur
             if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
               e.preventDefault();
               e.currentTarget.blur();

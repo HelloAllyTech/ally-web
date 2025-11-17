@@ -1,4 +1,4 @@
-import React, { useMemo, useEffect, useState } from "react";
+import React, { useMemo, useEffect } from "react";
 
 import clsx from "clsx";
 import { useTable, useBlockLayout, useResizeColumns, useSortBy, useRowSelect } from "react-table";
@@ -8,7 +8,6 @@ import { DockToRight } from "@assets";
 import { Cell } from "./Cell";
 import { Header } from "./Header";
 import { NotionTableProps } from "./types";
-import { cellTypes } from "./utils";
 
 const SELECTION_COLUMN_ID = "selection";
 const SELECTION_COLUMN_WIDTH = 50;

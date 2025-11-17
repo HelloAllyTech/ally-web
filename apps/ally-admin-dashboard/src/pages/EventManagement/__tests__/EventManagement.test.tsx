@@ -193,6 +193,12 @@ vi.mock("@constants", async importOriginal => {
       { id: "name", label: "Name", accessor: "name" },
       { id: "description", label: "Description", accessor: "description" },
     ],
+    EVENT_TYPE_OPTIONS: [
+      { value: "TIME_BASED", label: "Time Based" },
+      { value: "SCORE_BASED", label: "Score Based" },
+      { value: "SENTENCE_SIMILARITY", label: "Sentence Similarity" },
+      { value: "COMBINATION", label: "Combination" },
+    ],
     en: {
       ...(actual.en || {}),
       simulation: {
@@ -286,13 +292,14 @@ describe("EventManagement", () => {
       isFetching: false,
     });
     mockUpdateSessionEvent.mockReturnValue({
-      unwrap: vi.fn().mockResolvedValue({}),
+      error: null,
     });
     mockCreateSessionEvents.mockReturnValue({
-      unwrap: vi.fn().mockResolvedValue({}),
+      error: null,
+      data: [{ id: "new-event-id" }],
     });
     mockDeleteSessionEvents.mockReturnValue({
-      unwrap: vi.fn().mockResolvedValue({}),
+      error: null,
     });
   });
 
@@ -422,15 +429,13 @@ describe("EventManagement", () => {
       const selectButton = screen.getByTestId("select-sentence-similarity");
       fireEvent.click(selectButton);
 
-      // In TEST_MODE, the sidebar opens directly without API call
+      // Sidebar should open after successful creation
       await waitFor(() => {
         expect(screen.getByTestId("event-side-panel")).toBeInTheDocument();
       });
 
-      // Verify toast message for test mode
-      expect(mockToast.success).toHaveBeenCalledWith(
-        "Test mode: Event sidebar opened (no API call)",
-      );
+      // Verify toast message for successful creation
+      expect(mockToast.success).toHaveBeenCalledWith("Event created successfully");
     });
 
     it("shows success toast when event is created successfully", async () => {
@@ -447,13 +452,16 @@ describe("EventManagement", () => {
       fireEvent.click(selectButton);
 
       await waitFor(() => {
-        expect(mockToast.success).toHaveBeenCalledWith(
-          "Test mode: Event sidebar opened (no API call)",
-        );
+        expect(mockToast.success).toHaveBeenCalledWith("Event created successfully");
       });
     });
 
     it("shows error toast when event creation fails", async () => {
+      // Mock API to return error
+      mockCreateSessionEvents.mockReturnValue({
+        error: { message: "Creation failed" },
+      });
+
       renderComponent();
 
       const createButton = screen.getByText("Create New Event");
@@ -463,14 +471,17 @@ describe("EventManagement", () => {
         expect(screen.getByTestId("event-type-selection-dialog")).toBeInTheDocument();
       });
 
-      // In TEST_MODE, error won't occur, but we can test the dialog flow
+      // Select event type
       const selectButton = screen.getByTestId("select-time-based");
       fireEvent.click(selectButton);
 
-      // In TEST_MODE, it should still succeed
+      // Should show error toast
       await waitFor(() => {
-        expect(screen.getByTestId("event-side-panel")).toBeInTheDocument();
+        expect(mockToast.error).toHaveBeenCalledWith("Failed to create event");
       });
+
+      // Side panel should not open on error
+      expect(screen.queryByTestId("event-side-panel")).not.toBeInTheDocument();
     });
 
     it("opens side panel after creating event successfully", async () => {
@@ -1022,14 +1033,17 @@ describe("EventManagement", () => {
         expect(screen.getByTestId("event-type-selection-dialog")).toBeInTheDocument();
       });
 
-      // In TEST_MODE, creation errors won't occur, but we can test the dialog flow
+      // COMBINATION events return null from convertEventToApiPayload, so they show error
       const selectButton = screen.getByTestId("select-combination");
       fireEvent.click(selectButton);
 
-      // Should open sidebar successfully in TEST_MODE
+      // COMBINATION events cannot be created (convertEventToApiPayload returns null)
       await waitFor(() => {
-        expect(screen.getByTestId("event-side-panel")).toBeInTheDocument();
+        expect(mockToast.error).toHaveBeenCalledWith("Failed to convert event to API format");
       });
+
+      // Side panel should not open for COMBINATION events
+      expect(screen.queryByTestId("event-side-panel")).not.toBeInTheDocument();
     });
   });
 
