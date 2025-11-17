@@ -1,8 +1,9 @@
-import React, { useState, useEffect, FC } from "react";
+import { useState, useEffect, FC } from "react";
 
 import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 
 import { useGetTenantsQuery } from "@api";
+import { ArrowDown } from "@assets";
 import { Tabs, OrganizationDetailLoader, SimulationsTab, PathTab } from "@components";
 import { en, ROUTES } from "@constants";
 import { Tenant } from "@types";
@@ -114,7 +115,9 @@ export const OrganizationDetail: FC = () => {
             >
               {en.userManagement.organization}
             </button>
-            <span className="text-typography-600">&gt;</span>
+            <span className="-rotate-90">
+              <ArrowDown />
+            </span>
             <span className="text-primary-500">{organization.name}</span>
           </div>
         </div>

@@ -99,7 +99,7 @@ export const SimulationsTab: FC<SimulationsTabProps> = ({
       {filteredSimulations.length === 0 ? (
         <EmptyState title={en.simulation.noResultFound} subtitle={en.simulation.adjustFilter} />
       ) : (
-        <div className="flex flex-col flex-1 overflow-y-auto">
+        <div className="flex flex-col flex-1 overflow-y-auto pb-8">
           <div className="grid grid-cols-12 text-base text-typography-800 border-b border-border-light sticky top-0 z-10 bg-white">
             <div className="col-span-11 text-typography-600 text-sm">
               {en.userManagement.simulations}
@@ -118,7 +118,7 @@ export const SimulationsTab: FC<SimulationsTabProps> = ({
               />
             ))}
             {hasMore && (
-              <div className="flex justify-start mt-2 px-4 pb-4">
+              <div className="flex justify-start mt-2 pb-4 mb-4">
                 <button
                   onClick={loadMore}
                   disabled={isSimulationsFetching}
