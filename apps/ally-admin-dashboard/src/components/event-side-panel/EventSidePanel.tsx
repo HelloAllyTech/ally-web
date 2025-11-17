@@ -1,8 +1,7 @@
-import React, { useState, useCallback, useEffect, useMemo } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 
 import { DoubleArrowRight, Trash } from "@assets";
 import { AutoExpandableTextarea, EmojiPickerComponent, TriggerConditions } from "@components";
-import { EVENT_TYPE_OPTIONS, EventType } from "@components/event-type-selection-dialog";
 import { NumberInput } from "@components/notion-table";
 import { en } from "@constants";
 import { useDebounce } from "@hooks";
@@ -58,17 +57,6 @@ const PanelHeader: React.FC<{
   </div>
 );
 
-// Helper function to get display name for event type (e.g., "TIME_BASED" -> "time based")
-const getEventTypeDisplayName = (detectionType: string | undefined): string => {
-  if (!detectionType) return "";
-  const typeOption = EVENT_TYPE_OPTIONS.find(opt => opt.value === (detectionType as EventType));
-  if (!typeOption) return "";
-  if (typeOption.label === "Combination of") {
-    return "combination";
-  }
-  return typeOption.label.toLowerCase();
-};
-
 export const EventSidePanel: React.FC<EventSidePanelProps> = ({
   selectedEvent,
   isOpen,
@@ -80,24 +68,15 @@ export const EventSidePanel: React.FC<EventSidePanelProps> = ({
 
   useEffect(() => {
     setFormData(selectedEvent);
-  }, [selectedEvent]);
+  }, []);
 
   const debouncedUpdate = useDebounce(() => {
-    if (formData) {
-      onUpdate(formData);
-    }
+    onUpdate(formData);
   }, 500);
 
   useEffect(() => {
-    if (formData && formData !== selectedEvent) {
-      debouncedUpdate();
-    }
+    debouncedUpdate();
   }, [formData]);
-
-  const eventTypeDisplayName = useMemo(
-    () => getEventTypeDisplayName(formData?.detectionType),
-    [formData?.detectionType],
-  );
 
   const handleFieldChange = useCallback(
     (fieldName: string, value: string | number | object) => {
@@ -188,9 +167,13 @@ export const EventSidePanel: React.FC<EventSidePanelProps> = ({
 
         <div className="h-[calc(100vh-100px)] px-10 pl-[46px] pt-2 overflow-y-auto [&::-webkit-scrollbar]:w-[1px] [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-scrollbar-thumb">
           <div className="mb-4">
-            <div className="text-2xl font-light w-full">
-              {eventTypeDisplayName ? `Sample ${eventTypeDisplayName} event` : "Sample event"}
-            </div>
+            <input
+              type="text"
+              value={formData.name}
+              onChange={event => handleFieldChange("name", event.target.value)}
+              placeholder="New Event"
+              className="border-none focus:outline-none text-2xl font-light w-full"
+            />
           </div>
 
           <div className="space-y-3">
