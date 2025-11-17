@@ -259,7 +259,6 @@ const simulationStudioAPI = baseAPI.injectEndpoints({
 
     /**
      * Get all scenario paths
-     * TODO: Replace with actual API call when backend is ready
      */
     getScenarioPaths: builder.query<GetScenarioPathsResponse, GetScenarioPathsQueryParams>({
       query: (params: GetScenarioPathsQueryParams) => ({
@@ -267,20 +266,18 @@ const simulationStudioAPI = baseAPI.injectEndpoints({
         method: HttpMethod.GET,
         params,
       }),
+      providesTags: [TAG_TYPES.SCENARIO_PATHS],
     }),
 
     /**
      * Delete scenario path by Id
-     * TODO: Replace with actual API call when backend is ready
      */
     deleteScenarioPathById: builder.mutation<void, number>({
-      queryFn: async () => {
-        // Simulate API delay
-        await new Promise(resolve => setTimeout(resolve, 300));
-
-        return { data: undefined };
-      },
-      invalidatesTags: [TAG_TYPES.SIMULATION],
+      query: id => ({
+        url: ApiEndpoints.SIMULATION_STUDIO.DELETE_SCENARIO_PATH(id),
+        method: HttpMethod.DELETE,
+      }),
+      invalidatesTags: [TAG_TYPES.SCENARIO_PATHS],
     }),
   }),
 });

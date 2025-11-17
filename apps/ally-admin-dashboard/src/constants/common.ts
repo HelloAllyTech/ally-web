@@ -109,4 +109,5 @@ export const TAG_TYPES = {
   SESSION_EVENTS: "sessionEvents",
   SIMULATION: "simulation",
   SIMULATION_EVENTS: "simulationEvents",
+  SCENARIO_PATHS: "scenarioPaths",
 };
