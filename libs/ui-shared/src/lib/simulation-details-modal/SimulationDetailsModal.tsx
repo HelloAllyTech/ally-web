@@ -90,7 +90,7 @@ export const SimulationDetailsModal: FC<SimulationDetailsModalProps> = ({
                 <h4 className="text-base font-semibold text-typography-800 mb-1">
                   {scenarioLabel}
                 </h4>
-                <p className="text-base text-typography-800 leading-relaxed truncate">
+                <p className="text-base text-typography-800 leading-relaxed max-h-[300px] overflow-y-auto">
                   {description}
                 </p>
               </div>
