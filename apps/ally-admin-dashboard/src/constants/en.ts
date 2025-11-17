@@ -15,6 +15,7 @@ export const en = {
     noResultsFound: "No results found for",
     selectOption: "Select option",
     uploading: "Uploading...",
+    edit: "Edit",
   },
   errors: {
     fileMustBeJPEGOrPNG: "File must be JPEG or PNG.",
@@ -162,6 +163,9 @@ export const en = {
     searchSelectSimulations: "Search and select simulations to include in this path",
     minScore: "Minimum score",
     minScoreTooltip: "Minimum score required to complete this simulation",
+    addMessage: "Add Message",
+    add: "Add",
+    editMessage: "Edit Message",
   },
   userManagement: {
     addOrganization: "Add organization",
@@ -183,8 +187,6 @@ export const en = {
     addUser: "Add user",
     search: "Search",
     addFilter: "Filter",
-    delete: "Delete",
-    edit: "Edit",
     view: "View",
     noOrganization: "No organization found",
     noOrganizationSubtitle:

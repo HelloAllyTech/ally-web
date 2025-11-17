@@ -26,7 +26,8 @@ export interface GetScenarioPathsResponse {
 export interface GetScenarioType {
   scenarioId: number;
   minimumScore: number;
-  message: string;
+  messageTitle: string;
+  feedback: string;
   order: number;
   coverImageUrl: string;
   title: string;
@@ -60,4 +61,15 @@ export interface CreatePathInput {
 
 export interface CreatePathBody {
   path: CreatePathInput;
+}
+
+export enum messageFieldId {
+  messageTitle = "messageTitle",
+  feedback = "feedback",
+}
+export interface MessageFields {
+  id: messageFieldId;
+  label: string;
+  placeholder?: string;
+  multiline?: boolean;
 }

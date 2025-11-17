@@ -49,6 +49,7 @@ const baseQuery = fetchBaseQuery({
     const token = localStorage.getItem(LOCAL_STORAGE_KEYS.ACCESS_TOKEN);
     if (token) {
       headers.set("authorization", `Bearer ${token}`);
+      headers.set("ngrok-skip-browser-warning", "true");
     }
     return headers;
   },

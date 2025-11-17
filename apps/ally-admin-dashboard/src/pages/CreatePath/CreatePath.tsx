@@ -267,6 +267,7 @@ export const CreatePath: FC = () => {
             toggleSimulationModal={toggleSimulationModal}
             showSimulation={showSimulationModal}
             data={individualPath?.scenarios}
+            formMethods={formMethods}
           />,
           true,
         );

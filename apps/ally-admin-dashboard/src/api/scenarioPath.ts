@@ -171,7 +171,8 @@ const simulationPathApi = baseAPI.injectEndpoints({
               {
                 scenarioId: 1,
                 minimumScore: 75,
-                message: "Learn to handle high-stress emergency communications effectively.",
+                messageTitle: "Learn to handle high-stress emergency communications effectively.",
+                feedback: "sample data",
                 order: 1,
                 coverImageUrl: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=400",
                 title: "Emergency Response Scenario",
@@ -183,6 +184,8 @@ const simulationPathApi = baseAPI.injectEndpoints({
                 minimumScore: 80,
                 message: "Learn to handle high-stress emergency communications effectively.",
                 order: 1,
+                messageTitle: "Learn to handle high-stress emergency communications effectively.",
+                feedback: "sample data",
                 coverImageUrl: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400",
                 title: "Domestic Violence Support",
                 description:
@@ -201,7 +204,8 @@ const simulationPathApi = baseAPI.injectEndpoints({
               {
                 scenarioId: 1,
                 minimumScore: 75,
-                message: "Learn to handle high-stress emergency communications effectively.",
+                messageTitle: "Learn to handle high-stress emergency communications effectively.",
+                feedback: "sample data",
                 order: 1,
                 coverImageUrl: "https://images.unsplash.com/photo-1503454537195-1dcabb73ffb9?w=400",
                 title: "Emergency Response Scenario",
