@@ -15,6 +15,7 @@ export const en = {
     noResultsFound: "No results found for",
     selectOption: "Select option",
     uploading: "Uploading...",
+    edit: "Edit",
   },
   errors: {
     fileMustBeJPEGOrPNG: "File must be JPEG or PNG.",
@@ -23,6 +24,7 @@ export const en = {
     fileMetadataLoadFailed: "Failed to load video metadata",
     imageMustHave169AspectRatio: "Image must have a 16:9 aspect ratio.",
     fileDeleteFailed: "Failed to delete file. Please try again.",
+    titleIsRequired: "Title should be filled to save as draft",
   },
   accessDenied: {
     title: "This page is not accessible",
@@ -54,6 +56,9 @@ export const en = {
     logout: "Logout",
   },
   simulation: {
+    pathway: "Pathway",
+    paths: "Paths",
+    createPathway: "Create Pathway",
     videoMaxSizeLabel: "15MB",
     imageMaxSizeLabel: "2MB",
     file: "File",
@@ -68,14 +73,18 @@ export const en = {
     editEvent: "Edit event",
     simulationStudio: "Simulation Studio",
     newSimulation: "New simulation",
-    createYourFirstSimulation: "Create your first",
+    newPathway: "New path way",
+    createYourFirst: "Create your first",
+    createYourFirstPathway: "Create your first pathway",
     simulation: "Simulation",
     unpublish: "Unpublish",
+    duplicate: "Duplicate",
     deleteEvent: "Delete event",
     unpublishDescription:
       "Are you sure you want to unpublish this simulation? This will be moved to draft state.",
     newSimulationDescription:
       "Build interactive scenarios for training, education, and practice with our intuitive creation tools.",
+    newPathwayDescription: "Search and select simulations to include in this path.",
     createSimulation: "Create simulation",
     createNewSimulation: "Create new simulation",
     publish: "Publish",
@@ -145,6 +154,18 @@ export const en = {
     editDescription:
       "Are you sure you want to edit this simulation? This will be moved to draft state.",
     startSession: "Start Session",
+    createPath: "Create Path",
+    editPath: "Edit Path",
+    addSimulationToPath: "Add simulations to path",
+    addSelected: "Add selected",
+    addSimulation: "Add Simulation",
+    noSimulationsAddedYet: "No simulations added yet",
+    searchSelectSimulations: "Search and select simulations to include in this path",
+    minScore: "Minimum score",
+    minScoreTooltip: "Minimum score required to complete this simulation",
+    addMessage: "Add Message",
+    add: "Add",
+    editMessage: "Edit Message",
   },
   userManagement: {
     addOrganization: "Add organization",
@@ -166,8 +187,6 @@ export const en = {
     addUser: "Add user",
     search: "Search",
     addFilter: "Filter",
-    delete: "Delete",
-    edit: "Edit",
     view: "View",
     noOrganization: "No organization found",
     noOrganizationSubtitle:

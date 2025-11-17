@@ -153,6 +153,10 @@ describe("Tabs", () => {
     const itemsWithoutCount = [{ id: "tab1", label: "Tab 1" }];
     render(<Tabs items={itemsWithoutCount} activeId="tab1" onChange={onChange} />);
 
-    expect(screen.getByText(/Tab 1 0/)).toBeInTheDocument();
+    // When count is undefined, it defaults to "0"
+    expect(screen.getByText(/Tab 1/)).toBeInTheDocument();
+    // Verify that count defaults to "0" when undefined
+    const tabButton = screen.getByText(/Tab 1/);
+    expect(tabButton.textContent?.trim()).toBe("Tab 1 0");
   });
 });

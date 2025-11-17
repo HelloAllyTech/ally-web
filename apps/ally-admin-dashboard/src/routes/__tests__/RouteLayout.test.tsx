@@ -18,6 +18,7 @@ vi.mock("../PublicRoute", () => ({
 // Stub out pages referenced by the router
 vi.mock("@pages", () => ({
   CreateSimulation: () => <div>CreateSimulationPage</div>,
+  CreatePath: () => <div>CreatePathPage</div>,
   Login: () => <div>LoginPage</div>,
   LiveSimulationPreview: () => <div>LiveSimulationPreviewPage</div>,
   SimulationStudio: () => <div>SimulationStudioPage</div>,

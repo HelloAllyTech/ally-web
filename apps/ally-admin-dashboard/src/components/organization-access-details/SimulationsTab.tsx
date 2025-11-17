@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 
 import { useGetSimulationsQuery } from "@api";
 import { ListToolbar, EmptyState, SimulationAndPathToggleCard } from "@components";
@@ -12,7 +12,7 @@ interface SimulationsTabProps {
   searchValue: string;
   onSearchChange: (value: string) => void;
   simulationAccess: Record<string, boolean>;
-  onToggleAccess: (simulationId: string, enabled: boolean) => void;
+  onToggleAccess: (simulationId: number, enabled: boolean) => void;
   onSimulationsLoaded?: (simulationIds: string[]) => void;
 }
 
@@ -40,27 +40,26 @@ export const SimulationsTab: React.FC<SimulationsTabProps> = ({
     isLoading: isSimulationsLoading,
   } = useGetSimulationsQuery(simulationParams);
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (!simulationsResponse) return;
     const nextData = simulationsResponse.data ?? [];
     if (simulationsOffset === 0) {
       setSimulations(nextData);
-      // Initialize access state for new simulations
-      if (onSimulationsLoaded) {
-        onSimulationsLoaded(nextData.map(sim => sim.id));
-      }
     } else {
       setSimulations(prev => {
         const existingIds = new Set(prev.map(s => s.id));
         const newItems = nextData.filter(s => !existingIds.has(s.id));
-        // Initialize access state for newly loaded simulations
-        if (onSimulationsLoaded && newItems.length > 0) {
-          onSimulationsLoaded(newItems.map(sim => sim.id));
-        }
         return [...prev, ...newItems];
       });
     }
-  }, [simulationsResponse, simulationsOffset, onSimulationsLoaded]);
+  }, [simulationsResponse, simulationsOffset]);
+
+  // Separate effect to notify parent of loaded simulations
+  useEffect(() => {
+    if (simulations.length > 0 && onSimulationsLoaded) {
+      onSimulationsLoaded(simulations.map(sim => sim.id.toString()));
+    }
+  }, [simulations.length]); // Only run when the count changes, not on every simulation change
 
   React.useEffect(() => {
     setSimulationsOffset(0);

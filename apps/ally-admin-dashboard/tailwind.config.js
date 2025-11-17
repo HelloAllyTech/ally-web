@@ -152,11 +152,16 @@ module.exports = {
       },
       animation: {
         fadeIn: "fadeIn 0.2s ease-in-out",
+        slideInFromRight: "slideInFromRight 0.2s ease-out",
       },
       keyframes: {
         fadeIn: {
           "0%": { opacity: "0", transform: "scale(0.95)" },
           "100%": { opacity: "1", transform: "scale(1)" },
+        },
+        slideInFromRight: {
+          "0%": { opacity: "0", transform: "translateX(10px)" },
+          "100%": { opacity: "1", transform: "translateX(0)" },
         },
       },
     },

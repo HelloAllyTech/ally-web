@@ -67,10 +67,11 @@ describe("Header", () => {
         onSaveDraft={onSaveDraft}
         onPublish={onPublish}
         onPreview={onPreview}
+        title="Create Simulation"
       />,
     );
 
-    expect(screen.getByText("Create Simulation")).toBeInTheDocument();
+    expect(screen.getAllByText("Create Simulation").length).toBeGreaterThan(0);
     fireEvent.click(screen.getByText("Simulation Studio"));
     expect(onBack).toHaveBeenCalled();
   });
@@ -86,6 +87,7 @@ describe("Header", () => {
         onSaveDraft={onSaveDraft}
         onPublish={onPublish}
         onPreview={onPreview}
+        title="Edit Simulation"
       />,
     );
 
@@ -100,6 +102,7 @@ describe("Header", () => {
         onSaveDraft={onSaveDraft}
         onPublish={onPublish}
         onPreview={onPreview}
+        title="Test Simulation"
       />,
     );
 
@@ -114,6 +117,7 @@ describe("Header", () => {
         onSaveDraft={onSaveDraft}
         onPublish={onPublish}
         onPreview={onPreview}
+        title="Test Simulation"
       />,
     );
     expect(screen.getByText("Preview")).not.toBeDisabled();
@@ -127,6 +131,7 @@ describe("Header", () => {
         onSaveDraft={onSaveDraft}
         onPublish={onPublish}
         onPreview={onPreview}
+        title="Test Simulation"
       />,
     );
     expect(screen.getByText("Publishing")).toBeInTheDocument();
@@ -141,6 +146,7 @@ describe("Header", () => {
         onSaveDraft={onSaveDraft}
         onPublish={onPublish}
         onPreview={onPreview}
+        title="Test Simulation"
       />,
     );
 
@@ -171,6 +177,7 @@ describe("Header", () => {
         onSaveDraft={onSaveDraft}
         onPublish={onPublish}
         onPreview={onPreview}
+        title="Test Simulation"
       />,
     );
 

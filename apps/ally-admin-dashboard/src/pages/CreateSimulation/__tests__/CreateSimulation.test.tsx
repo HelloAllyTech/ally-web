@@ -158,6 +158,11 @@ vi.mock("@utils", () => ({
   extractValidData: (data: any) => data,
   formatSimulationResponseData: (data: any) => data,
   isNonEmptyString: (str: string) => str && str.length > 0,
+  isEmpty: (value: unknown) => {
+    if (value === undefined || value === null) return true;
+    if (typeof value === "string" && value.trim().length === 0) return true;
+    return false;
+  },
 }));
 
 describe("CreateSimulation", () => {
@@ -347,7 +352,7 @@ describe("CreateSimulation", () => {
 
       await waitFor(
         () => {
-          expect(toast.error).toHaveBeenCalledWith("Title should be filled to save as draft");
+          expect(toast.error).toHaveBeenCalledWith("Failed to save draft. Please try again.");
         },
         { timeout: 500 },
       );

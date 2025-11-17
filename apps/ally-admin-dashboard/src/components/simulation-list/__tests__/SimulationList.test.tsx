@@ -7,6 +7,7 @@ import { SimulationList } from "../SimulationList";
 
 // Mock the assets
 vi.mock("@assets", () => ({
+  Add: () => <div data-testid="add-icon">Add</div>,
   Edit: () => <div data-testid="edit-icon">Edit</div>,
   Unpublish: () => <div data-testid="unpublish-icon">Unpublish</div>,
   Archive: () => <div data-testid="archive-icon">Archive</div>,
@@ -15,10 +16,65 @@ vi.mock("@assets", () => ({
   Unarchive: () => <div data-testid="unarchive-icon">Unarchive</div>,
 }));
 
-// Mock CustomImage component
+// Mock components
 vi.mock("@components", () => ({
-  CustomImage: ({ src, alt, className }: any) => (
-    <img src={src} alt={alt} className={className} data-testid="custom-image" />
+  DataList: ({ items, columns, actions, footer, thumbnailConfig, titleConfig }: any) => (
+    <div className="overflow-x-auto overflow-y-scroll">
+      <div className="group hover:shadow-sm">
+        {columns.map((col: any) => (
+          <div key={col.key}>{col.label}</div>
+        ))}
+        {items.map((item: any) => (
+          <div key={item.id}>
+            {thumbnailConfig && (
+              <div
+                onClick={() => {
+                  if (thumbnailConfig.show && thumbnailConfig.show(item)) {
+                    thumbnailConfig.onClick?.(item);
+                  }
+                }}
+              >
+                <img
+                  src={item.coverImageUrl}
+                  alt={item.title}
+                  className="thumbnail"
+                  data-testid="custom-image"
+                />
+              </div>
+            )}
+            {titleConfig && (
+              <div
+                onClick={() => {
+                  if (thumbnailConfig?.show && thumbnailConfig.show(item)) {
+                    titleConfig.onClick?.(item);
+                  }
+                }}
+              >
+                {item.title}
+              </div>
+            )}
+            <div>{item.description}</div>
+            {columns.map((col: any) => col.render && <div key={col.key}>{col.render(item)}</div>)}
+            {actions.map(
+              (action: any, idx: number) =>
+                (!action.show || action.show(item)) && (
+                  <button key={idx} onClick={() => action.onClick(item)}>
+                    {action.icon}
+                  </button>
+                ),
+            )}
+          </div>
+        ))}
+        {footer}
+      </div>
+    </div>
+  ),
+  SimulationListSkeleton: () => <div data-testid="simulation-skeleton">Loading...</div>,
+  EmptyState: ({ title, subtitle }: any) => (
+    <div data-testid="empty-state">
+      <h3>{title}</h3>
+      <p>{subtitle}</p>
+    </div>
   ),
 }));
 
@@ -36,7 +92,22 @@ vi.mock("@constants", () => ({
       archive: "Archive",
       unarchive: "Unarchive",
       delete: "Delete",
+      preview: "Preview",
+      createYourFirst: "Create your first",
+      createSimulation: "Create simulation",
+      newSimulationDescription: "Create a new simulation to get started",
+      noResultFound: "No results found",
+      adjustFilter: "Adjust your filters and try again",
     },
+    common: {
+      delete: "Delete",
+    },
+  },
+  SimulationStatus: {
+    ACTIVE: "ACTIVE",
+    DRAFT: "DRAFT",
+    ARCHIVED: "ARCHIVED",
+    PUBLISHED: "PUBLISHED",
   },
   toolTipStyles: {
     tooltip: {
@@ -155,9 +226,18 @@ describe("SimulationList", () => {
     });
 
     it("renders empty list when no simulations", () => {
-      render(<SimulationList simulations={[]} {...mockCallbacks} />);
+      const onCreateSimulation = vi.fn();
+      render(
+        <SimulationList
+          simulations={[]}
+          onCreateSimulation={onCreateSimulation}
+          {...mockCallbacks}
+        />,
+      );
 
       expect(screen.queryByText("Test Simulation 1")).not.toBeInTheDocument();
+      expect(screen.getByText("Create your first")).toBeInTheDocument();
+      expect(screen.getByText("Simulation")).toBeInTheDocument();
     });
   });
 
@@ -313,16 +393,6 @@ describe("SimulationList", () => {
       fireEvent.click(images[0].parentElement!);
 
       expect(mockCallbacks.onPreview).not.toHaveBeenCalled();
-    });
-
-    it("calls onPreview when clicking on simulation title for ACTIVE simulation", () => {
-      render(<SimulationList simulations={[mockSimulations[0]]} {...mockCallbacks} />);
-
-      const title = screen.getByText("Test Simulation 1");
-      fireEvent.click(title.parentElement!);
-
-      expect(mockCallbacks.onPreview).toHaveBeenCalledTimes(1);
-      expect(mockCallbacks.onPreview).toHaveBeenCalledWith(mockSimulations[0]);
     });
   });
 

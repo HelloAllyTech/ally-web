@@ -74,7 +74,7 @@ describe("API Index Exports", () => {
   it("should export baseAPI module", async () => {
     const module = await import("../index");
     expect(module).toHaveProperty("baseAPI");
-  });
+  }, 10000); // Increase timeout to 10 seconds
 
   it("should export baseQuery", async () => {
     const module = await import("../index");

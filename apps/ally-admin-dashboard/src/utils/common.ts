@@ -1,8 +1,8 @@
 import { matchPath } from "react-router-dom";
 
 import { ButtonProps, ButtonVariant } from "@components/types";
-import { EMAIL_REGEX } from "@constants";
-import { Simulation, SimulationStatus, UserRoles } from "@types";
+import { EMAIL_REGEX, FORM_FIELD_TYPES } from "@constants";
+import { CreatorFieldGroups, Simulation, SimulationStatus, UserRoles } from "@types";
 
 export const validateEmail = (email: string): boolean => {
   return Boolean(email && EMAIL_REGEX.test(email));
@@ -151,4 +151,54 @@ export const isArray = (value: unknown): value is unknown[] => {
 
 export const isNonEmptyArray = <T>(value: unknown): value is T[] => {
   return Array.isArray(value) && value?.length > 0;
+};
+
+export const isEmpty = (value: unknown): boolean => {
+  if (value === undefined || value === null || !isNonEmptyString(value)) return true;
+
+  return false;
+};
+
+export const isNonEmptyObject = (value: any): boolean => {
+  return (
+    value !== null &&
+    typeof value === "object" &&
+    !Array.isArray(value) &&
+    Object.keys(value).length > 0
+  );
+};
+
+export const extractValidData = (
+  fields: CreatorFieldGroups[],
+  formData: Record<string, any>,
+): Record<string, any> => {
+  const allFields = fields.flatMap(group => group.fields);
+  return Object.fromEntries(
+    Object.entries(formData).map(([key, value]) => {
+      const field = allFields.find(field => field.id === key);
+      if (Array.isArray(value) && value.length === 0) {
+        return [key, null];
+      }
+      switch (field?.type) {
+        case FORM_FIELD_TYPES.SELECT:
+        case FORM_FIELD_TYPES.CUSTOM.VOICE_DROPDOWN: //handles dropdown case
+          return [key, isNonEmptyString(value) ? value : null];
+
+        case FORM_FIELD_TYPES.NUMBER: //convert string to number and empty val to null
+          return [key, value ? parseInt(value) : null];
+
+        case FORM_FIELD_TYPES.IMAGE_UPLOAD: //image upload if empty returns object,so convert to null
+          return [key, value?.length > 0 ? value : ""];
+
+        case FORM_FIELD_TYPES.VIDEO_UPLOAD: //video upload if empty returns object,so convert to null
+          return [key, value?.length > 0 ? value : null];
+
+        case FORM_FIELD_TYPES.TOGGLE_BUTTON:
+          return [key, Boolean(value)];
+
+        default:
+          return [key, isNonEmptyString(value) ? value.trim() : value === "" ? null : value];
+      }
+    }),
+  );
 };

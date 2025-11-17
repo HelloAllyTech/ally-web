@@ -36,7 +36,10 @@ export const ApiEndpoints = {
     SCENARIO_EVENTS: "/v1/learn/scenarios/events",
     SCENARIO_PREVIEW: "/v1/learn/scenarios/preview",
     END_SCENARIO_PREVIEW: (sessionId: string) => `/v1/learn/scenarios/preview/${sessionId}/end`,
+    SCENARIO_PATHS: "v1/learn/admin/scenario-paths",
+    SCENARIO_PATH_BY_ID: (id: string) => `/v1/learn/admin/scenario-paths/${id}`,
   },
+
   USER_MANAGEMENT: {
     USERS: "/v1/users",
     TENANT: "/v1/tenant",
@@ -60,6 +63,8 @@ export const ROUTES = {
   SIMULATION_PREVIEW: (id: string) => `/simulation-preview/${id}`,
   EDIT_SIMULATION: (id: string) => `/create-simulation/edit/${id}`,
   ORGANIZATION_DETAIL: (id: string) => `/user-management/organization/${id}`,
+  CREATE_PATH: "/create-path",
+  EDIT_PATH: (id: string) => `/create-path/edit/${id}`,
 };
 
 export const LOCAL_STORAGE_KEYS = {
@@ -108,4 +113,18 @@ export const TAG_TYPES = {
   SESSION_EVENTS: "sessionEvents",
   SIMULATION: "simulation",
   SIMULATION_EVENTS: "simulationEvents",
+  SIMULATION_PATHS: "simulationPaths",
+  SCENARIO_PATHS: "scenarioPaths",
+};
+
+export const FORM_FIELD_TYPES = {
+  TEXT: "text",
+  NUMBER: "number",
+  SELECT: "select",
+  IMAGE_UPLOAD: "image_upload",
+  VIDEO_UPLOAD: "video_upload",
+  CUSTOM: {
+    VOICE_DROPDOWN: "voice_dropdown",
+  },
+  TOGGLE_BUTTON: "toggle_button",
 };
