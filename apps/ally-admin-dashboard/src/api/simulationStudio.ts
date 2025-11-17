@@ -17,8 +17,6 @@ import {
   GetCoverVideoUrlResponse,
   DeleteCoverVideoRequest,
   ScenarioVoice,
-  GetScenarioPathsQueryParams,
-  GetScenarioPathsResponse,
 } from "@types";
 
 import { baseAPI } from "./baseApi";
@@ -256,29 +254,6 @@ const simulationStudioAPI = baseAPI.injectEndpoints({
       }),
       invalidatesTags: [TAG_TYPES.SIMULATION],
     }),
-
-    /**
-     * Get all scenario paths
-     */
-    getScenarioPaths: builder.query<GetScenarioPathsResponse, GetScenarioPathsQueryParams>({
-      query: (params: GetScenarioPathsQueryParams) => ({
-        url: ApiEndpoints.SIMULATION_STUDIO.GET_SCENARIO_PATHS,
-        method: HttpMethod.GET,
-        params,
-      }),
-      providesTags: [TAG_TYPES.SCENARIO_PATHS],
-    }),
-
-    /**
-     * Delete scenario path by Id
-     */
-    deleteScenarioPathById: builder.mutation<void, number>({
-      query: id => ({
-        url: ApiEndpoints.SIMULATION_STUDIO.DELETE_SCENARIO_PATH(id),
-        method: HttpMethod.DELETE,
-      }),
-      invalidatesTags: [TAG_TYPES.SCENARIO_PATHS],
-    }),
   }),
 });
 
@@ -304,6 +279,4 @@ export const {
   useMapScenarioEventsMutation,
   useDeleteScenarioEventsMutation,
   useGetMappedScenarioEventsQuery,
-  useGetScenarioPathsQuery,
-  useDeleteScenarioPathByIdMutation,
 } = simulationStudioAPI;

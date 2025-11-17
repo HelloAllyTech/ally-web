@@ -15,6 +15,7 @@ export const en = {
     noResultsFound: "No results found for",
     selectOption: "Select option",
     uploading: "Uploading...",
+    edit: "Edit",
   },
   errors: {
     fileMustBeJPEGOrPNG: "File must be JPEG or PNG.",
@@ -23,6 +24,7 @@ export const en = {
     fileMetadataLoadFailed: "Failed to load video metadata",
     imageMustHave169AspectRatio: "Image must have a 16:9 aspect ratio.",
     fileDeleteFailed: "Failed to delete file. Please try again.",
+    titleIsRequired: "Title should be filled to save as draft",
   },
   accessDenied: {
     title: "This page is not accessible",
@@ -152,6 +154,18 @@ export const en = {
     editDescription:
       "Are you sure you want to edit this simulation? This will be moved to draft state.",
     startSession: "Start Session",
+    createPath: "Create Path",
+    editPath: "Edit Path",
+    addSimulationToPath: "Add simulations to path",
+    addSelected: "Add selected",
+    addSimulation: "Add Simulation",
+    noSimulationsAddedYet: "No simulations added yet",
+    searchSelectSimulations: "Search and select simulations to include in this path",
+    minScore: "Minimum score",
+    minScoreTooltip: "Minimum score required to complete this simulation",
+    addMessage: "Add Message",
+    add: "Add",
+    editMessage: "Edit Message",
   },
   userManagement: {
     addOrganization: "Add organization",
@@ -173,8 +187,6 @@ export const en = {
     addUser: "Add user",
     search: "Search",
     addFilter: "Filter",
-    delete: "Delete",
-    edit: "Edit",
     view: "View",
     noOrganization: "No organization found",
     noOrganizationSubtitle:

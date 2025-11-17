@@ -1,8 +1,14 @@
 import { useEffect, useState } from "react";
 
+import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
 
-import { useGetScenarioPathsQuery, useDeleteScenarioPathByIdMutation } from "@api";
+import {
+  useGetScenarioPathsQuery,
+  useDeleteScenarioPathByIdMutation,
+  useGetScenarioPathByIdQuery,
+} from "@api";
+import { ROUTES } from "@constants";
 import { ScenarioPath } from "@types";
 
 const PATHWAYS_PAGE_SIZE = 30;
@@ -12,6 +18,8 @@ interface UseSimulationPathwaysProps {
 }
 
 export const useSimulationPathways = ({ selectedFilters }: UseSimulationPathwaysProps) => {
+  const navigate = useNavigate();
+
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [isDeletePopupOpen, setIsDeletePopupOpen] = useState(false);
   const [currentPathway, setCurrentPathway] = useState<ScenarioPath | null>(null);
@@ -60,8 +68,7 @@ export const useSimulationPathways = ({ selectedFilters }: UseSimulationPathways
   };
 
   const handleNewPathway = () => {
-    // TODO: Navigate to pathway creation
-    toast.info("Pathway creation coming soon!");
+    navigate(ROUTES.CREATE_PATH);
   };
 
   const handleCreatePathway = () => {
@@ -69,10 +76,9 @@ export const useSimulationPathways = ({ selectedFilters }: UseSimulationPathways
     toast.info("Pathway creation coming soon!");
   };
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const onEditPathway = (_pathway: ScenarioPath) => {
+  const onEditPathway = (pathway: ScenarioPath) => {
     // TODO: Implement edit pathway logic
-    toast.info("Edit pathway coming soon!");
+    navigate(ROUTES.EDIT_PATH(String(pathway.id)));
   };
 
   const handleDeletePathway = (pathway: ScenarioPath) => {

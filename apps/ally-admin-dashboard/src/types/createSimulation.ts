@@ -23,6 +23,7 @@ export type FormData = {
   openingStatements: string;
   voiceId: string;
   agentGoal: string;
+  isGlobal: boolean;
 };
 
 export interface DemographicsSectionProps {
@@ -58,14 +59,14 @@ export interface FieldGroupProps {
   formMethods: any;
 }
 
-export interface SimulationCreatorFieldGroups {
+export interface CreatorFieldGroups {
   id: string;
   label: string;
   fields: FormFieldConfig[];
 }
 
 export interface Simulation {
-  id: string;
+  id: number;
   title: string;
   description: string;
   coverImageUrl: string;
@@ -74,7 +75,7 @@ export interface Simulation {
   updatedAt: string;
   status: SimulationStatus;
   isPreviewEnabled: boolean;
-  usage: number;
+  usage: string;
 }
 
 export interface GetSimulationsQueryParams {
@@ -98,7 +99,6 @@ export enum SimulationStatus {
   DRAFT = "DRAFT",
   ARCHIVED = "ARCHIVED",
   PUBLISHED = "PUBLISHED",
-  COMMING_SOON = "COMMING_SOON",
 }
 
 export type SimulationPreviewType = {

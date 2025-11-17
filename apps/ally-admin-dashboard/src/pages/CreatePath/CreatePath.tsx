@@ -5,44 +5,39 @@ import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
 
 import {
-  useCreateSimulationMutation,
-  useDeleteCoverImageMutation,
-  useLazyGetAdminSimulationByIdQuery,
-  useUpdateSimulationByIdMutation,
+  useCreateSimulationPathMutation,
+  useGetScenarioPathByIdQuery,
+  useUpdateSimulationPathByIdMutation,
 } from "@api";
+import { Plus } from "@assets";
 import {
   Header,
   VerticalStepper,
   Footer,
   MoreOptionsPopup,
   ActionConfirmationPopup,
-  SimulationPreview,
+  Button,
+  SimulationSelectionModal,
 } from "@components";
-import { CreateSimulationSubSection, SimulationEventMapTable } from "@components";
+import { CreateSimulationSubSection } from "@components";
 import { ButtonVariant } from "@components/types";
-import { en, ROUTES, StepperList, SIMULATION_CREATOR_FIELD_GROUPS } from "@constants";
-import { useDebounce } from "@hooks";
-import { SimulationStatus, SimulationPreviewType } from "@types";
 import {
-  getCreateSimulationSubSectionById,
-  formatSimulationResponseData,
-  isNonEmptyString,
-  extractValidData,
-  isEmpty,
-} from "@utils";
-
-const stepIds = {
-  basicInfo: "basic-info",
-  characterIdentity: "character-identity",
-  traitsNeeds: "traits-and-needs",
-  conversationStyle: "conversation-style",
-  eventConfiguration: "event-configuration",
-};
+  en,
+  ROUTES,
+  PATH_CREATOR_FIELD_GROUPS,
+  PATH_CREATOR_STEP_IDS,
+  SimulationStatus,
+  PathStepperList,
+  getCreatePathSubSectionById,
+} from "@constants";
+import { useDebounce } from "@hooks";
+import { GetScenarioType } from "@types";
+import { extractValidData, isEmpty, isNonEmptyArray, isNonEmptyObject } from "@utils";
 
 // Get all mandatory field IDs from the configuration
 const getMandatoryFieldIds = () => {
   const mandatoryFields: string[] = [];
-  SIMULATION_CREATOR_FIELD_GROUPS.forEach(group => {
+  PATH_CREATOR_FIELD_GROUPS.forEach(group => {
     group.fields.forEach(field => {
       if (field.isMandatory) {
         mandatoryFields.push(field.id);
@@ -52,44 +47,30 @@ const getMandatoryFieldIds = () => {
   return mandatoryFields;
 };
 
-export const CreateSimulation: FC = () => {
+export const CreatePath: FC = () => {
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
-  const [simulationId, setSimulationId] = useState<string | undefined>(id);
-  const [currentStep, setCurrentStep] = useState(stepIds.basicInfo);
+  const [pathId, setPathId] = useState<string | undefined>(id);
+  const [currentStep, setCurrentStep] = useState(PATH_CREATOR_STEP_IDS.basicInfo);
   const [showDiscardPopup, setShowDiscardPopup] = useState(false);
   const [showMoreOptions, setShowMoreOptions] = useState(false);
-  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
-  const [previewSimulation, setPreviewSimulation] = useState<SimulationPreviewType | null>(null);
+  const [showSimulationModal, setShowSimulationModal] = useState(false);
 
-  const moreOptionsRef = useRef<HTMLButtonElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const moreOptionsRef = useRef<HTMLButtonElement>(null);
 
-  // API mutation for creating simulation
-  const [createSimulationQuery, { isLoading: isCreatingSimulation }] =
-    useCreateSimulationMutation();
-  const [updateSimulationByIdQuery] = useUpdateSimulationByIdMutation();
-  const [getAdminSimulationByIdQuery, { data: adminSimulationByIdData }] =
-    useLazyGetAdminSimulationByIdQuery();
-  const [deleteCoverImage] = useDeleteCoverImageMutation();
+  const title = id ? en.simulation.editPath : en.simulation.createPath;
+
+  // TODO:API mutation for creating path
+
+  const { data: individualPath } = useGetScenarioPathByIdQuery(id);
+  const [createSimulationPathMutation] = useCreateSimulationPathMutation();
+  const [updateSimulationPathByIdQuery] = useUpdateSimulationPathByIdMutation();
 
   const formMethods = useForm({
     mode: "onChange",
     reValidateMode: "onChange",
   });
-
-  useEffect(() => {
-    if (simulationId) {
-      getAdminSimulationByIdQuery(simulationId);
-    }
-  }, [simulationId, getAdminSimulationByIdQuery]);
-
-  useEffect(() => {
-    if (adminSimulationByIdData) {
-      const formattedData = formatSimulationResponseData(adminSimulationByIdData);
-      formMethods.reset(formattedData);
-    }
-  }, [adminSimulationByIdData, formMethods]);
 
   const {
     handleSubmit,
@@ -97,6 +78,11 @@ export const CreateSimulation: FC = () => {
     watch,
   } = formMethods;
 
+  useEffect(() => {
+    if (individualPath) {
+      formMethods.reset(individualPath);
+    }
+  }, [individualPath, formMethods]);
   // Watch all form values to check mandatory fields
   const formValues = watch();
 
@@ -109,13 +95,9 @@ export const CreateSimulation: FC = () => {
       if (isEmpty(value)) {
         return false;
       }
-      // For arrays, check if they have content
-      if (Array.isArray(value) && value.length === 0) {
-        return false;
-      }
-      // For FileList objects (file uploads), check if they have files
-      if (value instanceof FileList && value.length === 0) {
-        return false;
+      if (Array.isArray(value)) {
+        //strings are getting false value otherwise
+        return !isNonEmptyArray(value);
       }
       return true;
     });
@@ -127,6 +109,10 @@ export const CreateSimulation: FC = () => {
 
   const handleCloseMoreOptions = () => {
     setShowMoreOptions(false);
+  };
+
+  const toggleSimulationModal = () => {
+    setShowSimulationModal(prev => !prev);
   };
 
   const getMoreOptionsPosition = () => {
@@ -141,11 +127,20 @@ export const CreateSimulation: FC = () => {
   };
 
   const handlePageBack = () => {
-    if (Object.keys(dirtyFields).length > 0) {
+    if (isNonEmptyObject(dirtyFields)) {
       setShowDiscardPopup(true);
     } else {
       navigate("/");
     }
+  };
+
+  const formatScenarios = (scenarios?: GetScenarioType[]) => {
+    if (!scenarios || scenarios.length === 0) return [];
+
+    return scenarios.map((scenario, index) => ({
+      ...scenario,
+      order: index + 1,
+    }));
   };
 
   // Core function to save simulation changes
@@ -155,43 +150,20 @@ export const CreateSimulation: FC = () => {
       toast.error(en.errors.titleIsRequired);
       return null;
     }
-
-    // Delete cover image from s3 if it is changed
-    if (
-      isNonEmptyString(adminSimulationByIdData?.coverImageUrl) &&
-      adminSimulationByIdData?.coverImageUrl !== formData.coverImageUrl
-    ) {
-      try {
-        await deleteCoverImage({ coverImageUrl: adminSimulationByIdData.coverImageUrl }).unwrap();
-      } catch {
-        toast.error("Failed to delete cover image. Please try again.");
-      }
-    }
-
-    const { openingStatements, ...restForm } = formData as any;
-
-    const openingStatementsArray = isNonEmptyString(openingStatements)
-      ? openingStatements
-          .split("\n")
-          .map((line: string) => line.trim())
-          .filter((line: string) => line.length > 0)
-      : null;
-
-    const simulationData = {
-      ...extractValidData(SIMULATION_CREATOR_FIELD_GROUPS, restForm),
-      openingStatements: openingStatementsArray,
+    const simulationPath = {
+      ...extractValidData(PATH_CREATOR_FIELD_GROUPS, formData),
       status,
     };
     let response;
-    if (simulationId) {
-      response = await updateSimulationByIdQuery({
-        id: simulationId,
-        simulation: simulationData,
+    console.log(simulationPath);
+    console.log("formdata", formData);
+    if (pathId) {
+      response = await updateSimulationPathByIdQuery({
+        id: pathId,
+        data: simulationPath,
       });
     } else {
-      response = await createSimulationQuery({
-        scenarios: [simulationData],
-      });
+      response = await createSimulationPathMutation(simulationPath);
     }
     return response;
   };
@@ -200,18 +172,17 @@ export const CreateSimulation: FC = () => {
   const saveSimulationChanges = useDebounce(saveSimulationChangesCore, 500);
 
   const handleSaveDraft = async () => {
+    // TODO: API and Handle any navigations here
     try {
       const response = await saveSimulationChanges(SimulationStatus.DRAFT);
       if (response && !response.error) {
-        if (response?.data?.[0]?.id && !simulationId) {
-          setSimulationId(response?.data?.[0]?.id);
+        if (response?.data?.[0]?.id && !pathId) {
+          setPathId(response?.data?.[0]?.id);
         }
-        // Reset form to clear dirtyFields after successful save
         const currentFormValues = formMethods.getValues();
         formMethods.reset(currentFormValues);
-        // Refetch to ensure form is in sync with saved data
-        if (simulationId) {
-          getAdminSimulationByIdQuery(simulationId);
+        if (pathId) {
+          // getScenarioPathById(pathId);
         }
         return response?.data;
       } else if (response?.error) {
@@ -223,7 +194,6 @@ export const CreateSimulation: FC = () => {
       toast.error("Failed to save draft. Please try again.");
       return null;
     }
-    // TODO: Handle any navigations here
   };
 
   const handlePublish = async () => {
@@ -258,33 +228,30 @@ export const CreateSimulation: FC = () => {
   };
 
   const handleStepClick = async (stepId: string) => {
-    if (stepId === stepIds.eventConfiguration && !simulationId) {
-      const response = await handleSaveDraft();
-      if (response) {
-        setCurrentStep(stepId);
-      } else {
-        toast.error("Fill atleast name field to proceed to Event Configuration!");
-      }
-    } else {
-      setCurrentStep(stepId);
-    }
+    setCurrentStep(stepId);
     // Scroll to top when moving to next step
     containerRef?.current?.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const handlePrevious = () => {
-    const currentIndex = StepperList.findIndex(step => step.id === currentStep);
+    const currentIndex = PathStepperList.findIndex(step => step.id === currentStep);
     if (currentIndex > 0) {
-      const previousStep = StepperList[currentIndex - 1];
+      const previousStep = PathStepperList[currentIndex - 1];
       handleStepClick(previousStep.id);
     }
   };
 
-  const renderStep = (title: string, component: React.ReactNode) => {
+  const renderStep = (title: string, component: React.ReactNode, addButton?: boolean) => {
     return (
       <div className="flex flex-col h-full w-100%">
         <div className="sticky flex flex-row justify-between top-0 z-10 pt-3 mx-6 pb-4 border-b border-border-light">
           <h2 className="text-lg font-medium text-typography-900">{title}</h2>
+          {addButton && (
+            <Button variant="secondary" onClick={toggleSimulationModal}>
+              <Plus />
+              {en.simulation.addSimulation}
+            </Button>
+          )}
         </div>
         <div ref={containerRef} className="p-6 pt-4 overflow-y-auto h-full">
           {component}
@@ -294,12 +261,9 @@ export const CreateSimulation: FC = () => {
   };
 
   const renderCurrentStep = () => {
-    const simulationSubSectionData = getCreateSimulationSubSectionById(currentStep);
+    const simulationSubSectionData = getCreatePathSubSectionById(currentStep);
     switch (currentStep) {
-      case stepIds.basicInfo:
-      case stepIds.characterIdentity:
-      case stepIds.traitsNeeds:
-      case stepIds.conversationStyle:
+      case PATH_CREATOR_STEP_IDS.basicInfo:
         return renderStep(
           simulationSubSectionData.label,
           <CreateSimulationSubSection
@@ -307,8 +271,17 @@ export const CreateSimulation: FC = () => {
             formMethods={formMethods}
           />,
         );
-      case stepIds.eventConfiguration:
-        return <SimulationEventMapTable simulationId={simulationId} />;
+      case PATH_CREATOR_STEP_IDS.simulations:
+        return renderStep(
+          simulationSubSectionData.label,
+          <SimulationSelectionModal
+            toggleSimulationModal={toggleSimulationModal}
+            showSimulation={showSimulationModal}
+            data={formatScenarios(individualPath?.scenarios)}
+            formMethods={formMethods}
+          />,
+          true,
+        );
       default:
         return null;
     }
@@ -316,49 +289,31 @@ export const CreateSimulation: FC = () => {
 
   const moreOptionsPosition = useMemo(() => getMoreOptionsPosition(), []);
 
-  const isLastStep = currentStep === stepIds.eventConfiguration;
+  const isLastStep = currentStep === PATH_CREATOR_STEP_IDS.simulations;
 
   const handleNext = async () => {
     if (isLastStep) {
       handleSubmit(handlePublish)();
     } else {
-      const nextStep = StepperList.findIndex(step => step.id === currentStep) + 1;
-      handleStepClick(StepperList[nextStep].id);
-    }
-  };
-
-  const handlePreview = async () => {
-    const response = await saveSimulationChanges(SimulationStatus.DRAFT);
-    const id = simulationId || (response && response?.data?.[0]?.id);
-    if (id) {
-      const formData = formMethods.getValues();
-      const simulation = {
-        id: String(id),
-        title: formData.title,
-        description: formData.description,
-        coverImageUrl: formData.coverImageUrl,
-      };
-
-      setPreviewSimulation(simulation);
-      setIsPreviewOpen(true);
+      const nextStep = PathStepperList.findIndex(step => step.id === currentStep) + 1;
+      handleStepClick(PathStepperList[nextStep].id);
     }
   };
 
   return (
-    <div className="h-[100vh] font-primary ml-[-10px] lg:ml-0">
+    <div className="h-[100vh] overflow-hidden font-primary ml-[-10px] lg:ml-0">
       <Header
         isValid={areAllMandatoryFieldsFilled}
         onBack={handlePageBack}
-        onSaveDraft={handleSaveDraft}
         onPublish={handlePublish}
-        onPreview={handlePreview}
-        isPublishing={isCreatingSimulation}
-        title={simulationId ? en.simulation.editSimulation : en.simulation.createNewSimulation}
+        onSaveDraft={handleSaveDraft}
+        title={title}
+        showPreview={false}
       />
 
       <div className="flex h-[calc(100vh-100px)]">
         <VerticalStepper
-          steps={StepperList}
+          steps={PathStepperList}
           currentStep={currentStep}
           onStepClick={handleStepClick}
         />
@@ -368,7 +323,7 @@ export const CreateSimulation: FC = () => {
           <Footer
             onPrevious={handlePrevious}
             onNext={handleNext}
-            showPrevious={currentStep !== stepIds.basicInfo}
+            showPrevious={currentStep !== PATH_CREATOR_STEP_IDS.basicInfo}
             showNext={true}
             isNextDisabled={false}
             isLastStep={isLastStep}
@@ -399,13 +354,6 @@ export const CreateSimulation: FC = () => {
         onDiscardSimulation={handleDiscardSimulation}
         position={moreOptionsPosition}
       />
-      {previewSimulation && (
-        <SimulationPreview
-          simulation={previewSimulation}
-          isOpen={isPreviewOpen}
-          onClose={() => setIsPreviewOpen(false)}
-        />
-      )}
     </div>
   );
 };
