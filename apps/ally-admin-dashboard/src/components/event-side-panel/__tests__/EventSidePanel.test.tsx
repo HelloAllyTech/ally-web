@@ -61,6 +61,12 @@ vi.mock("@constants", () => ({
   SESSION_EVENT_STATUS_OPTIONS: { ACTIVE: "ACTIVE" },
   SORT_BY: { CREATED_AT: "createdAt" },
   SORT_ORDER: { DESC: "desc" },
+  EVENT_DETECTION_TYPES: {
+    TIME_BASED: "TIME_BASED",
+    SCORE_BASED: "SCORE_BASED",
+    SENTENCE_SIMILARITY: "SENTENCE_SIMILARITY",
+    COMBINATION: "COMBINATION",
+  },
 }));
 
 vi.mock("@hooks", () => ({

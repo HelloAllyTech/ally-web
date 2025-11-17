@@ -1033,13 +1033,15 @@ describe("EventManagement", () => {
         expect(screen.getByTestId("event-type-selection-dialog")).toBeInTheDocument();
       });
 
-      // COMBINATION events return null from convertEventToApiPayload, so they show error
+      // COMBINATION events return null from convertEventToApiPayload, so they are silently skipped
       const selectButton = screen.getByTestId("select-combination");
       fireEvent.click(selectButton);
 
       // COMBINATION events cannot be created (convertEventToApiPayload returns null)
+      // The function returns early without showing an error toast
       await waitFor(() => {
-        expect(mockToast.error).toHaveBeenCalledWith("Failed to convert event to API format");
+        // Verify no API call was made
+        expect(mockCreateSessionEvents).not.toHaveBeenCalled();
       });
 
       // Side panel should not open for COMBINATION events
