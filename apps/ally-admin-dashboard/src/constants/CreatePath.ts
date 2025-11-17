@@ -1,4 +1,4 @@
-import { CreatorFieldGroups } from "@types";
+import { CreatorFieldGroups, messageFieldId } from "@types";
 
 import { FORM_FIELD_TYPES } from "./common";
 
@@ -62,3 +62,18 @@ export const PathStepperList = [
 export const getCreatePathSubSectionById = (id: string) => {
   return PATH_CREATOR_FIELD_GROUPS.find(section => section.id === id);
 };
+
+export const addMessageModalFields = [
+  {
+    id: messageFieldId.messageTitle,
+    label: "Message Title",
+    placeholder: "Add message title",
+    required: true,
+  },
+  {
+    id: messageFieldId.feedback,
+    label: "Feedback message",
+    placeholder: "Write the full message or guidance here",
+    multiline: true,
+  },
+];

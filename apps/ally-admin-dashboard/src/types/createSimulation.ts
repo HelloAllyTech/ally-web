@@ -66,7 +66,7 @@ export interface CreatorFieldGroups {
 }
 
 export interface Simulation {
-  id: string;
+  id: number;
   title: string;
   description: string;
   coverImageUrl: string;
@@ -75,7 +75,7 @@ export interface Simulation {
   updatedAt: string;
   status: SimulationStatus;
   isPreviewEnabled: boolean;
-  usage: number;
+  usage: string;
 }
 
 export interface GetSimulationsQueryParams {
