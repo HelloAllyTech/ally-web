@@ -106,6 +106,19 @@ export function DataList<T extends DataListItem>({
     const firstColumn = columns[0];
     const otherColumns = columns.slice(1);
 
+    const handleTitleClick = () => {
+      if (titleConfig?.onClick) {
+        titleConfig.onClick(item);
+      }
+    };
+
+    const handleThumbnailClick = () => {
+      const shouldShow = thumbnailConfig?.show ? thumbnailConfig.show(item) : true;
+      if (shouldShow && thumbnailConfig?.onClick) {
+        thumbnailConfig.onClick(item);
+      }
+    };
+
     return (
       <div
         key={item.id}
@@ -115,12 +128,7 @@ export function DataList<T extends DataListItem>({
         <div className={`flex flex-row items-center ${firstColumn.width} gap-3`}>
           {thumbnailConfig && (
             <div
-              onClick={() => {
-                const shouldShow = thumbnailConfig.show ? thumbnailConfig.show(item) : true;
-                if (shouldShow && thumbnailConfig.onClick) {
-                  thumbnailConfig.onClick(item);
-                }
-              }}
+              onClick={handleThumbnailClick}
               className={`${thumbnailConfig.width} ${thumbnailConfig.height} ${thumbnailConfig.onClick ? "cursor-pointer" : ""} relative rounded-lg overflow-hidden flex-shrink-0 bg-neutral-100`}
             >
               <CustomImage
@@ -132,11 +140,7 @@ export function DataList<T extends DataListItem>({
             </div>
           )}
           <div
-            onClick={() => {
-              if (titleConfig?.onClick) {
-                titleConfig.onClick(item);
-              }
-            }}
+            onClick={handleTitleClick}
             className={`flex flex-col justify-center flex-1 min-w-0 ${titleConfig?.onClick ? "cursor-pointer" : ""}`}
           >
             <h3 className="text-sm font-medium text-typography-900 truncate">{item.title}</h3>

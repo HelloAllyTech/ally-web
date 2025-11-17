@@ -92,6 +92,7 @@ vi.mock("@constants", () => ({
       archive: "Archive",
       unarchive: "Unarchive",
       delete: "Delete",
+      preview: "Preview",
       createYourFirst: "Create your first",
       createSimulation: "Create simulation",
       newSimulationDescription: "Create a new simulation to get started",

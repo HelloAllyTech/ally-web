@@ -149,7 +149,7 @@ export const SimulationList: React.FC<SimulationListProps> = ({
             className="flex flex-row items-center space-x-1 text-sm font-medium transition-colors"
           >
             <Play />
-            <span>Preview</span>
+            <span>{en.simulation.preview}</span>
           </button>
         ) : (
           <span className="text-typography-600">-</span>

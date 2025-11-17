@@ -10,7 +10,7 @@ import {
 } from "@components";
 import { SimulationStatus, en } from "@constants";
 import { ScenarioPath } from "@types";
-import { formatCapitalizedEnum, formatDate } from "@utils";
+import { formatCapitalizedEnum, formatDate, isNonEmptyArray } from "@utils";
 
 export interface PathwayListProps {
   pathways: ScenarioPath[];
@@ -40,17 +40,17 @@ export const PathwayList: React.FC<PathwayListProps> = ({
   onCreatePathway,
 }) => {
   // Handle loading state
-  if (isLoading && pathways.length === 0) {
+  if (isLoading && !isNonEmptyArray(pathways)) {
     return <SimulationListSkeleton />;
   }
 
   // Handle empty state with filters
-  if (pathways.length === 0 && hasFilters) {
+  if (!isNonEmptyArray(pathways) && hasFilters) {
     return <EmptyState title={en.simulation.noResultFound} subtitle={en.simulation.adjustFilter} />;
   }
 
   // Handle empty state without data
-  if (pathways.length === 0) {
+  if (!isNonEmptyArray(pathways)) {
     return (
       <div className="flex font-primary items-center justify-center min-h-[60vh]">
         <div className="text-center max-w-md">
