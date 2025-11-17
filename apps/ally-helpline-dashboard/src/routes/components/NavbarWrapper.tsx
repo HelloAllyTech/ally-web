@@ -1,12 +1,11 @@
 import { FC, useEffect, useMemo, useState } from "react";
 
-import { MenuIcon } from "lucide-react";
-import { matchPath, useLocation, useNavigate } from "react-router-dom";
-
 import { NavSideBar } from "@components";
 import { excludeNavBar, navBarOptions, TabId, LOCAL_STORAGE_KEYS } from "@constants";
 import { useUser } from "@hooks";
 import { isPathExcluded } from "@utils";
+import { MenuIcon } from "lucide-react";
+import { matchPath, useLocation, useNavigate } from "react-router-dom";
 
 import UploadProgressDialog from "./UploadProgressDialog";
 
@@ -45,7 +44,7 @@ const NavbarWrapper: FC<{ children: React.ReactNode }> = ({ children }) => {
   };
 
   return (
-    <div className="flex h-screen w-full ">
+    <div className="flex h-screen w-full overflow-y-hidden">
       {showNavbar && (
         <NavSideBar
           activeTab={activeTab}

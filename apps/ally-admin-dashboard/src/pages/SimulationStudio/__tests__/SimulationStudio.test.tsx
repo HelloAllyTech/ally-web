@@ -284,6 +284,7 @@ describe("SimulationStudio", () => {
     mockUseGetSimulationsQuery.mockReturnValue({
       data: { data: mockSimulations, count: 3 },
       isFetching: false,
+      isLoading: false,
     });
     mockDeleteSimulation.mockReturnValue({
       unwrap: vi.fn().mockResolvedValue({}),
@@ -340,7 +341,8 @@ describe("SimulationStudio", () => {
     it("shows skeleton loader when fetching initial data", () => {
       mockUseGetSimulationsQuery.mockReturnValue({
         data: undefined,
-        isFetching: true,
+        isFetching: false,
+        isLoading: true,
       });
 
       renderComponent();

@@ -126,6 +126,11 @@ vi.mock("@constants", () => ({
   SESSION_STORAGE_KEYS: {
     ACTIVE_CHAT: "activeChat",
   },
+  TAG_TYPES: {
+    CALL_SUMMARY: "CallSummary",
+    CALL_LOGS: "CallLogs",
+    SIMULATION_LOGS: "SimulationLogs",
+  },
 }));
 
 // Mock utils

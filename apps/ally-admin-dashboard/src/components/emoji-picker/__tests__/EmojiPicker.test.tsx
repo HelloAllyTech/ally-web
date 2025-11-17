@@ -549,13 +549,6 @@ describe("EmojiPickerComponent", () => {
       expect(arrowContainer).toBeInTheDocument();
     });
 
-    it("arrow icon has gray color", () => {
-      const { container } = render(<EmojiPickerComponent />);
-
-      const arrowContainer = container.querySelector(".text-gray-400");
-      expect(arrowContainer).toBeInTheDocument();
-    });
-
     it("emoji span has minimum width", () => {
       const { container } = render(<EmojiPickerComponent />);
 

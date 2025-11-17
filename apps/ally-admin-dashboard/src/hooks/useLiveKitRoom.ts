@@ -36,7 +36,7 @@ export const useLiveKitRoom = (): UseLiveKitRoomReturn => {
     return url;
   };
 
-  const onDataReceived = useCallback((payload: any, _participant: any, _kind: any, _topic: any) => {
+  const onDataReceived = useCallback((payload: any) => {
     const eventObj = decodeUint8ToJson(payload) as LiveKitEvent;
 
     const incomingMs = Date.parse(eventObj?.timestamp ?? "");

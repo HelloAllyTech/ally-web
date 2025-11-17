@@ -30,6 +30,9 @@ export default [
       "**/jest.config.js",
       "**/jest.setup.js",
       "**/test-setup.ts",
+      "**/*.test.{ts,tsx}",
+      "**/__tests__/**",
+      "**/__test__/**",
     ],
   },
 
@@ -126,10 +129,19 @@ export default [
       "space-before-function-paren": "off",
       "react/react-in-jsx-scope": "off",
       "@typescript-eslint/no-explicit-any": "off",
-      "@typescript-eslint/no-unused-vars": "off",
+      "@typescript-eslint/no-unused-vars": "error",
       "react/prop-types": "off",
       "react/display-name": "off",
       "react/no-unescaped-entities": "off",
+      "no-console": "error",
+    },
+  },
+
+  // 7️⃣ Exception for logger utility (allows console.log)
+  {
+    files: ["**/logger.ts"],
+    rules: {
+      "no-console": "off",
     },
   },
 ];

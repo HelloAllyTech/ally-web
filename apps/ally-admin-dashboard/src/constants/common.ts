@@ -29,6 +29,8 @@ export const ApiEndpoints = {
     DELETE_SESSION_EVENTS: "/v1/session-events/events",
     GET_COVER_IMAGE_URL: "/v1/learn/scenarios/cover-image-url",
     DELETE_COVER_IMAGE: "/v1/learn/cover-image",
+    GET_COVER_VIDEO_URL: "/v1/learn/scenarios/cover-video-url",
+    DELETE_COVER_VIDEO: "/v1/learn/cover-video",
     MAP_SCENARIO_EVENTS: "/v1/learn/scenarios/map-events",
     GET_MAPPED_SCENARIO_EVENTS: (id: string) => `/v1/learn/scenarios/${id}/events`,
     SCENARIO_EVENTS: "/v1/learn/scenarios/events",
@@ -40,13 +42,12 @@ export const ApiEndpoints = {
     TENANT: "/v1/tenant",
     TENANTS: "/v1/tenants",
     ADD_USER: "/v1/users",
-    // TODO: Move this to AUTHORIZATION group
-    GET_ROLES: "/v1/authorization/roles",
-    CHANGE_USER_ROLES: "/v1/authorization/change-roles",
     SIMULATION_CREDITS: "/v1/simulation-credits",
   },
   AUTHORIZATION: {
     GET_PERMISSIONS: "/v1/authorization/permissions",
+    GET_ROLES: "/v1/authorization/roles",
+    CHANGE_USER_ROLES: "/v1/authorization/change-roles",
   },
 };
 

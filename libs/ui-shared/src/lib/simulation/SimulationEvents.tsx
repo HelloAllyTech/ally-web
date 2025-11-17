@@ -1,3 +1,5 @@
+"use client";
+
 import { FC, useEffect, useRef } from "react";
 
 import { motion } from "framer-motion";
@@ -38,6 +40,8 @@ export const SimulationEvents: FC<SimulationEventsProps> = ({ events = [] }) => 
     if (elapsedTime === 0) return "now";
     return `${elapsedTime} min${elapsedTime === 1 ? "" : "s"}`;
   };
+
+  if (events?.length === 0) return null;
 
   return (
     <motion.div

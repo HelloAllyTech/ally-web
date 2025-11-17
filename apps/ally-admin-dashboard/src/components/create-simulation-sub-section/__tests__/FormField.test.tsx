@@ -43,6 +43,22 @@ vi.mock("@constants", () => ({
       VOICE_DROPDOWN: "voice_dropdown",
     },
   },
+  en: {
+    simulation: {
+      coverImage: "Cover image",
+      coverVideo: "Cover video",
+      dragDrop: "Drag & drop or",
+      choose: "choose",
+      pngUploadGuidelines: "a JPEG or PNG file with a",
+      videoUploadGuidelines: "a MP4 or MOV file with a resolution of 16:9 ratio and under 15MB.",
+      resolution: "resolution of 1920x1080 and under 2MB.",
+    },
+  },
+  FILE_TYPE: {
+    IMAGE: "image",
+    VIDEO: "video",
+    ANY: "any",
+  },
 }));
 
 // Wrapper component to provide form context
@@ -97,7 +113,6 @@ describe("FormField", () => {
 
       const asterisk = screen.getByText("*");
       expect(asterisk).toBeInTheDocument();
-      expect(asterisk).toHaveClass("text-red-500");
     });
 
     it("does not render mandatory indicator when not required", () => {

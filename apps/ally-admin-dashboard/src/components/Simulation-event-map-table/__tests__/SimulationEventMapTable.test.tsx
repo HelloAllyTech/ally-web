@@ -15,6 +15,7 @@ import { SimulationEventMapTable } from "../SimulationEventMapTable";
 
 vi.mock("@assets", () => ({
   Trash: () => <svg data-testid="trash-icon" />,
+  Add: () => <svg data-testid="add-icon">+</svg>,
 }));
 
 vi.mock("@components", () => ({
@@ -170,7 +171,7 @@ describe("SimulationEventMapTable", () => {
 
     render(<SimulationEventMapTable simulationId={"123"} />);
     expect(screen.getByTestId("loader")).toBeInTheDocument();
-    expect(screen.queryByText(/Add Event/)).not.toBeInTheDocument();
+    expect(screen.queryByText("Add Event")).not.toBeInTheDocument();
   });
 
   it("renders table and disabled add button when there is a blank new row", () => {
@@ -187,7 +188,7 @@ describe("SimulationEventMapTable", () => {
 
     expect(screen.getByText("Event Configuration")).toBeInTheDocument();
     expect(screen.getByTestId("notion-table")).toBeInTheDocument();
-    const addBtn = screen.getByText(/\+\s*Add Event/).closest("button") as HTMLButtonElement;
+    const addBtn = screen.getByText("Add Event").closest("button") as HTMLButtonElement;
     expect(addBtn).toBeDisabled();
   });
 
@@ -218,11 +219,11 @@ describe("SimulationEventMapTable", () => {
 
     // Wait for the component to process the mapped events
     await waitFor(() => {
-      const addBtn = screen.getByText(/\+\s*Add Event/).closest("button") as HTMLButtonElement;
+      const addBtn = screen.getByText("Add Event").closest("button") as HTMLButtonElement;
       expect(addBtn).not.toBeDisabled();
     });
 
-    const addBtn = screen.getByText(/\+\s*Add Event/).closest("button") as HTMLButtonElement;
+    const addBtn = screen.getByText("Add Event").closest("button") as HTMLButtonElement;
     fireEvent.click(addBtn);
     expect(screen.getByTestId("side-panel-open")).toBeInTheDocument();
   });
@@ -256,7 +257,7 @@ describe("SimulationEventMapTable", () => {
 
     // Wait for mapped events to be processed
     await waitFor(() => {
-      const addBtn = screen.getByText(/\+\s*Add Event/).closest("button") as HTMLButtonElement;
+      const addBtn = screen.getByText("Add Event").closest("button") as HTMLButtonElement;
       expect(addBtn).not.toBeDisabled();
     });
 

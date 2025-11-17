@@ -1,9 +1,5 @@
 import { Variants } from "framer-motion";
 
-import { Scenario, ScenarioStatus } from "@types";
-
-// TODO: Move variant objects to a separate common file
-
 export const learnPageContainerVariants: Variants = {
   hidden: { opacity: 0, y: 20 },
   visible: {

@@ -143,7 +143,7 @@ describe("FeedbackDialog", () => {
 
       const motionDiv = screen.getByRole("dialog").querySelector("div");
       expect(motionDiv).toHaveClass("flex", "flex-col", "items-center", "gap-4");
-      expect(motionDiv).toHaveClass("font-['IBM_Plex_Serif']");
+      expect(motionDiv).toHaveClass("font-primary");
     });
   });
 

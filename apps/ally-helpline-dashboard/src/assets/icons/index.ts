@@ -41,6 +41,7 @@ import CutCall from "./cut-call.svg?react";
 import DataPolicy from "./data-policy.svg?react";
 import DateIcon from "./date-icon.svg?react";
 import Delete from "./delete.svg?react";
+import DockToRight from "./dockToRight.svg?react";
 import DominantFeelings from "./dominant-feelings.svg?react";
 import Download from "./download.svg?react";
 import Edit from "./edit.svg?react";
@@ -66,10 +67,10 @@ import MenuIcon from "./menu-icon.svg?react";
 import Metrics from "./metrics.svg?react";
 import MicIcon from "./mic-icon.svg?react";
 import MicOffIcon from "./mic-off-icon.svg?react";
+import NoAnalytics from "./no-analytics.svg?react";
 import NoCreditLeft from "./no-credit-left.svg?react";
 import NoNetwork from "./no-network.svg?react";
 import NoResults from "./no-results.svg?react";
-import NoAnalytics from "./noAnalytics.svg?react";
 import NotesIcon from "./notes.svg?react";
 import ObjectiveObservations from "./objective-observations.svg?react";
 import PageNotFoundIllustration from "./page-not-found-illustration.svg?react";
@@ -161,6 +162,7 @@ export {
   DataPolicy,
   DateIcon,
   Delete,
+  DockToRight,
   DominantFeelings,
   Download,
   Edit,

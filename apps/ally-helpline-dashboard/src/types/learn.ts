@@ -9,6 +9,7 @@ export interface Scenario {
   scenario?: string;
   description?: string;
   coverImageUrl?: string | null;
+  coverVideoUrl?: string | null;
   status?: ScenarioStatus;
 }
 

@@ -152,7 +152,7 @@ const ResourceSearch: FC<ResourceSearchProps> = ({
     } else if (resources && resources.length > 0) {
       return (
         <>
-          <div className="w-[calc(100%-32px)] sm:w-full ml-[16px] mr-[16px]">
+          <div className="w-full px-4 md:px-2 lg:px-0 md:w-[calc(100%-16px)] lg:w-full md:ml-2 lg:ml-0 md:mr-2 lg:mr-0">
             {categoryCountList && (
               <ResourceTabs
                 resources={resources}
@@ -167,7 +167,7 @@ const ResourceSearch: FC<ResourceSearchProps> = ({
             ref={scrollContainerRef}
             style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
             className={
-              "w-full pt-[14px] h-[90vh] overflow-y-auto flex flex-col gap-2 md:gap-4 items-center px-4 md:px-0 pb-[300px]"
+              "w-full pt-[14px] h-[90vh] overflow-y-auto flex flex-col gap-2 md:gap-4 items-center px-4 md:px-4 lg:px-0 pb-[300px]"
             }
           >
             {resources && resources.length > 0 ? (
@@ -211,9 +211,9 @@ const ResourceSearch: FC<ResourceSearchProps> = ({
       <div
         className={`${
           fullWidth ? "w-full" : "w-full"
-        } min-w-[300px] flex flex-col items-center overflow-hidden`}
+        } min-w-0 md:min-w-0 lg:min-w-[300px] flex flex-col items-center overflow-hidden`}
       >
-        <div className="w-full flex flex-col gap-2 items-center justify-center px-4 mb-2 md:px-0">
+        <div className="w-full flex flex-col gap-2 items-center justify-center px-4 mb-2 md:px-4 lg:px-0">
           {showHeader && <SearchHeader showDescriptionInMobile={showHeaderDescriptionInMobile} />}
           <ResourceSearchBar
             onSearch={handleSearch}

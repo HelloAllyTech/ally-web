@@ -61,7 +61,7 @@ const userManagementAPI = baseAPI.injectEndpoints({
 
     changeRole: builder.mutation<{ success: boolean }, { userId: number; groupIds: number[] }>({
       query: body => ({
-        url: ApiEndpoints.USER_MANAGEMENT.CHANGE_USER_ROLES,
+        url: ApiEndpoints.AUTHORIZATION.CHANGE_USER_ROLES,
         method: HttpMethod.POST,
         body,
       }),
@@ -96,7 +96,7 @@ const userManagementAPI = baseAPI.injectEndpoints({
 
     getRole: builder.query<UserRoles[], void>({
       query: () => ({
-        url: ApiEndpoints.USER_MANAGEMENT.GET_ROLES,
+        url: ApiEndpoints.AUTHORIZATION.GET_ROLES,
       }),
       providesTags: [TAG_TYPES.USERS],
     }),

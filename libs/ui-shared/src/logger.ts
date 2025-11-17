@@ -14,7 +14,16 @@ const logger = {
    * @param message - The log message
    */
   log: (level: LogLevel, message: string) => {
-    const logger_enabled = import.meta.env.MODE === "development";
+    // Check for development mode in both Vite and Next.js environments
+    const isVite = typeof import.meta !== "undefined" && import.meta.env;
+    const isNext = typeof process !== "undefined" && process.env;
+
+    const logger_enabled = isVite
+      ? import.meta.env.MODE === "development"
+      : isNext
+        ? process.env.NODE_ENV === "development"
+        : false;
+
     if (!logger_enabled) return;
 
     const timestamp = new Date().toISOString();

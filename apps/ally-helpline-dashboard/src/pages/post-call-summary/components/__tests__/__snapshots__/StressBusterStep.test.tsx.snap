@@ -1,0 +1,33 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`StressBusterStep > should match snapshot 1`] = `
+<DocumentFragment>
+  <div
+    animate="[object Object]"
+    class="flex flex-col gap-4"
+    data-testid="motion-div"
+    initial="[object Object]"
+    layout="position"
+    transition="[object Object]"
+  >
+    <div
+      class="w-full aspect-video mb-4 rounded-3xl overflow-hidden"
+    >
+      <div
+        data-testid="box-breathing"
+      >
+        <button
+          data-testid="box-breathing-view-summary"
+        >
+          View Summary
+        </button>
+      </div>
+    </div>
+    <button
+      class="self-center"
+    >
+      View Call summary
+    </button>
+  </div>
+</DocumentFragment>
+`;

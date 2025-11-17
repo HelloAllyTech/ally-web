@@ -1,5 +1,3 @@
-import { MutableRefObject } from "react";
-
 import { SocketDisconnectionReasons } from "@constants";
 import { Chat, FeedbackResponse, Transcription } from "@types";
 

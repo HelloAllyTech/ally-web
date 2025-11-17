@@ -19,7 +19,7 @@ export const MoreOptionsPopup: FC<MoreOptionsPopupProps> = ({
   return (
     <div
       ref={popupRef}
-      className="absolute bg-white rounded-lg shadow-lg border border-gray-200 py-2 min-w-[180px] z-50"
+      className="absolute bg-white rounded-lg shadow-lg border border-border-light py-2 min-w-[180px] z-50"
       style={{
         top: position.top,
         right: position.right,
@@ -27,9 +27,9 @@ export const MoreOptionsPopup: FC<MoreOptionsPopupProps> = ({
     >
       <button
         onClick={onDiscardSimulation}
-        className="flex items-center gap-3 w-full px-4 py-2 text-left text-gray-700 hover:bg-gray-50 transition-colors"
+        className="flex items-center gap-3 w-full px-4 py-2 text-left text-typography-900 hover:bg-background-secondary transition-colors"
       >
-        <div className="w-4 h-4 text-gray-500">
+        <div className="w-4 h-4 text-typography-800">
           <Trash />
         </div>
         <span className="text-sm">Discard simulation</span>

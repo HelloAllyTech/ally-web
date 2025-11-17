@@ -1,6 +1,6 @@
 import { FC } from "react";
 
-import { FORM_FIELD_TYPES } from "@constants";
+import { FILE_TYPE, FORM_FIELD_TYPES, en } from "@constants";
 import { FormFieldProps } from "@types";
 
 import { DropdownField } from "../dropdown-field";
@@ -19,8 +19,8 @@ export const FormField: FC<FormFieldProps> = ({ config, formMethods }) => {
       case FORM_FIELD_TYPES.SELECT:
         return (
           <div className="flex flex-col gap-2">
-            <label className="text-[#49454F] cursor-pointer flex items-center gap-1">
-              {label} {isMandatory && <span className="text-red-500">*</span>}
+            <label className="text-typography-900 cursor-pointer flex items-center gap-1">
+              {label} {isMandatory && <span className="text-destructive-500">*</span>}
             </label>
             <DropdownField
               id={id}
@@ -30,7 +30,9 @@ export const FormField: FC<FormFieldProps> = ({ config, formMethods }) => {
               placeholder={`Select ${label.toLowerCase()}`}
               isMandatory={isMandatory}
             />
-            {errors && <p className="text-red-500 text-sm mt-1">{errors[config.id]?.message}</p>}
+            {errors && (
+              <p className="text-destructive-500 text-sm mt-1">{errors[config.id]?.message}</p>
+            )}
           </div>
         );
       case FORM_FIELD_TYPES.TEXT:
@@ -60,7 +62,28 @@ export const FormField: FC<FormFieldProps> = ({ config, formMethods }) => {
       case FORM_FIELD_TYPES.IMAGE_UPLOAD:
         return (
           <div className="w-full">
-            <FileUpload id={id} formMethods={formMethods} isMandatory={isMandatory} label={label} />
+            <FileUpload
+              id={id}
+              formMethods={formMethods}
+              isMandatory={isMandatory}
+              label={label}
+              header={en.simulation.coverImage}
+              fileType={FILE_TYPE.IMAGE}
+            />
+          </div>
+        );
+
+      case FORM_FIELD_TYPES.VIDEO_UPLOAD:
+        return (
+          <div className="w-full">
+            <FileUpload
+              id={id}
+              formMethods={formMethods}
+              isMandatory={isMandatory}
+              label={label}
+              header={en.simulation.coverVideo}
+              fileType={FILE_TYPE.VIDEO}
+            />
           </div>
         );
 

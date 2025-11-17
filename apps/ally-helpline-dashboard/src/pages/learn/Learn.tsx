@@ -21,13 +21,13 @@ export const Learn: FC = () => {
   } = useGetScenariosQuery();
 
   const renderPageDescription = () => {
-    const emphasisStyles = "font-bold text-[#0957D0]";
+    const emphasisStyles = "font-bold text-primary-500";
     return (
       <motion.div
         variants={learnPageItemVariants}
         initial="hidden"
         animate="visible"
-        className="w-full font-['Replay_Pro'] text-[28px] text-[#1A1A1A] sm:mb-[30px] mb-[48px] sm:leading-[40px] leading-[28px] pt-[30px]"
+        className="w-full font-secondary text-3xl text-typography-900 sm:mb-[30px] mb-[48px] sm:leading-[40px] leading-[28px] pt-[30px]"
       >
         <span>Use </span>
         <span className={emphasisStyles}>AI-voice based </span>
@@ -40,7 +40,7 @@ export const Learn: FC = () => {
 
   const renderEmptyGrid = () => (
     <div className="flex flex-col items-center justify-center w-full py-8 min-h-[30vh]">
-      <div className="text-gray-500 text-lg mb-4">No scenarios available at the moment</div>
+      <div className="text-typography-700 text-lg mb-4">No scenarios available at the moment</div>
       <button
         onClick={() => refetchScenarios()}
         className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors"
@@ -67,26 +67,26 @@ export const Learn: FC = () => {
         exit="exit"
         className="mb-[24px] sm:mb-[32px]"
       >
-        <h1 className="text-[24px] sm:text-[32px] text-[#1A1A1A] mb-6 sm:mb-[24px] font-['Replay_Pro']">
+        <h1 className="text-2xl sm:text-4xl text-typography-900 mb-6 sm:mb-[24px] font-secondary">
           <span className="font-[350]">Choose your</span>
           <span className="font-[700] italic"> Scenario</span>
         </h1>
         <div className="flex items-center gap-2">
-          <span className="font-['Roboto'] text-[12px] text-[#9CA3AF] font-semibold tracking-[4px]">
+          <span className="font-tertiary text-xs text-typography-800 font-semibold tracking-[4px]">
             SCENARIOS
           </span>
-          <div className="border-b border-[#D3D3D3] w-full" />
+          <div className="border-b border-typography-300 w-full" />
           <div className="flex flex-row items-center min-w-[130px] justify-end">
-            <div className="font-['IBM_Plex_Serif'] text-[14px] text-gray-500 whitespace-nowrap">
+            <div className="font-primary text-base text-typography-700 whitespace-nowrap">
               Credits used:
             </div>
             <Bolt />
             <span
-              className={`font-['IBM_Plex_Serif'] font-bold text-[16px]  ${limitReached ? "text-red-500" : "text-black"}`}
+              className={`font-primary font-bold text-lg  ${limitReached ? "text-red-500" : "text-black"}`}
             >
               {credits?.consumedCredits ?? 0}
             </span>
-            <span className="font-['IBM_Plex_Serif'] text-[14px] text-gray-500">
+            <span className="font-primary text-base text-typography-700">
               /{credits?.creditLimit ?? 0}
             </span>
           </div>
@@ -139,7 +139,7 @@ export const Learn: FC = () => {
   );
 
   return (
-    <div className="flex flex-col w-full bg-white max-h-screen overflow-y-hidden p-[10px] sm:p-[24px] justify-center font-replay">
+    <div className="flex flex-col w-full bg-white max-h-screen overflow-y-hidden p-[10px] sm:p-[24px] justify-center font-tertiary">
       {renderPageDescription()}
       <AnimatePresence mode="wait">{renderScenarioGrid()}</AnimatePresence>
     </div>

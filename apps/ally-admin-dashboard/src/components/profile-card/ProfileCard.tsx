@@ -14,19 +14,19 @@ export const ProfileCard: React.FC<ProfileFieldProps> = ({ user, showCredits = f
   const Avatar: React.FC<{ name: string }> = ({ name }) => {
     const initial = name?.[0]?.toUpperCase() ?? "?";
     return (
-      <div className="w-[40px] h-[40px] rounded-full border border-gray-300 text-gray-500 flex items-center justify-center mr-2">
+      <div className="w-[40px] h-[40px] rounded-full border border-border-light text-typography-800 flex items-center justify-center mr-2">
         {initial}
       </div>
     );
   };
 
   return (
-    <div className="flex items-center gap-2 text-[12px]">
+    <div className="flex items-center gap-2 text-xs">
       <div className="flex items-center  pr-4">
         <Avatar name={user.name} />
         <div className="min-w-0">
           <div className="truncate">{formatCapitalizedEnum(user.name)}</div>
-          <div className="text-gray-500 truncate">{user.email}</div>
+          <div className="text-typography-800 truncate">{user.email}</div>
         </div>
       </div>
       {showCredits && (
@@ -35,8 +35,8 @@ export const ProfileCard: React.FC<ProfileFieldProps> = ({ user, showCredits = f
           <div className="flex items-center gap-2">
             <Bolt />
             <div>
-              <span className="text-red-500 text-3xl">{user.consumedCredits}</span>
-              <span className="text-gray-500"> / {user.creditLimit}</span>
+              <span className="text-destructive-500 text-3xl">{user.consumedCredits}</span>
+              <span className="text-typography-800"> / {user.creditLimit}</span>
             </div>
           </div>
         </div>

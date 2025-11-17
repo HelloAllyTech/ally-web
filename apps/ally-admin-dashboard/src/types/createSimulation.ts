@@ -2,6 +2,7 @@ import { UseFormReturn } from "react-hook-form";
 
 export type FormData = {
   coverImageUrl: string;
+  coverVideoUrl?: string;
   title: string;
   description: string;
   name: string;
@@ -68,6 +69,7 @@ export interface Simulation {
   title: string;
   description: string;
   coverImageUrl: string;
+  coverVideoUrl?: string;
   createdBy: string;
   updatedAt: string;
   status: SimulationStatus;
@@ -114,6 +116,7 @@ export type SimulationPreviewType = {
   id: string;
   title: string;
   coverImageUrl: string;
+  coverVideoUrl?: string;
   description: string;
 };
 

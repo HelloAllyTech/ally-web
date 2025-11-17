@@ -5,35 +5,33 @@ import { nxViteTsPaths } from "@nx/vite/plugins/nx-tsconfig-paths.plugin";
 import { nxCopyAssetsPlugin } from "@nx/vite/plugins/nx-copy-assets.plugin";
 import svgr from "vite-plugin-svgr";
 import path from "path";
-
 // Get absolute paths
 const projectRoot = __dirname;
-
 export default defineConfig(() => ({
   root: __dirname,
   cacheDir: "../../node_modules/.vite/apps/ally-admin-dashboard",
   server: {
-    port: 8080,
-    host: "localhost",
+    port: 8081,
+    host: true,
+    hmr: {
+      host: "localhost",
+      port: 8081,
+      clientPort: 8081,
+    },
+    watch: {
+      usePolling: true,
+      interval: 300,
+    },
+    fs: {
+      // allow accessing the monorepo root (e.g., ../../libs) inside container
+      allow: ["..", "/app"],
+    },
   },
   preview: {
     port: 4300,
     host: "localhost",
   },
-  plugins: [
-    react(),
-    nxViteTsPaths(),
-    nxCopyAssetsPlugin(["*.md"]),
-    svgr({
-      svgrOptions: {
-        exportType: "default",
-        ref: true,
-        svgo: false,
-        titleProp: true,
-      },
-      include: "**/*.svg",
-    }),
-  ],
+  plugins: [react(), nxViteTsPaths(), nxCopyAssetsPlugin(["*.md"]), svgr()],
   // Uncomment this if you are using workers.
   // worker: {
   //  plugins: [ nxViteTsPaths() ],

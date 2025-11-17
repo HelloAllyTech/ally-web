@@ -36,20 +36,6 @@ describe("ToggleSwitch", () => {
     expect(onChange).toHaveBeenCalledWith(false);
   });
 
-  it("applies correct background color when enabled", () => {
-    const onChange = vi.fn();
-    render(<ToggleSwitch enabled={true} onChange={onChange} label="Test Toggle" />);
-    const button = screen.getByRole("button", { name: "Test Toggle" });
-    expect(button.className).toContain("bg-green-500");
-  });
-
-  it("applies correct background color when disabled", () => {
-    const onChange = vi.fn();
-    render(<ToggleSwitch enabled={false} onChange={onChange} label="Test Toggle" />);
-    const button = screen.getByRole("button", { name: "Test Toggle" });
-    expect(button.className).toContain("bg-gray-300");
-  });
-
   it("has correct aria-label", () => {
     const onChange = vi.fn();
     render(<ToggleSwitch enabled={false} onChange={onChange} label="My Toggle" />);

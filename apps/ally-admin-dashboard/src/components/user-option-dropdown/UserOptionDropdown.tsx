@@ -106,7 +106,7 @@ export const UserOptionDropdown: React.FC<UserOptionDropdownProps> = ({
 
       <div
         ref={dropdownRef}
-        className="fixed font-['IBM_Plex_Serif'] w-[220px] bg-white border border-gray-200 shadow-[0_4px_12px_rgba(0,0,0,0.08)] rounded-xl py-2 z-50 text-sm"
+        className="fixed font-primary w-[220px] bg-white border border-border-light shadow-[0_4px_12px_rgba(0,0,0,0.08)] rounded-xl py-2 z-50 text-sm"
         style={{
           top: `${position.top}px`,
           left: `${position.left}px`,
@@ -115,9 +115,9 @@ export const UserOptionDropdown: React.FC<UserOptionDropdownProps> = ({
         {filteredOptionList?.map((filteredOption, index) => (
           <div
             key={filteredOption}
-            className={`px-4 py-2 cursor-pointer hover:bg-gray-50 transition-colors ${
-              index !== filteredOptionList.length - 1 ? "border-b border-gray-100" : ""
-            } ${filteredOption === UserMenuOptions.SUSPEND_USER ? "text-red-500" : "text-black"}`}
+            className={`px-4 py-2 cursor-pointer hover:bg-background-secondary transition-colors ${
+              index !== filteredOptionList.length - 1 ? "border-b border-neutral-100" : ""
+            } ${filteredOption === UserMenuOptions.SUSPEND_USER ? "text-destructive-500" : "text-black"}`}
             onClick={() => handleOptionClick(filteredOption)}
           >
             {filteredOption}

@@ -1,8 +1,8 @@
 import { FC, useEffect, useRef } from "react";
 
 import { Close } from "@assets";
-import { PopupButtonProps } from "@components/types";
-import { getButtonStyles } from "@utils";
+import { Button } from "@components";
+import { ButtonVariant, PopupButtonProps } from "@components/types";
 
 interface ActionConfirmationPopupProps {
   isOpen: boolean;
@@ -60,16 +60,16 @@ export const ActionConfirmationPopup: FC<ActionConfirmationPopupProps> = ({
     <div className="flex flex-col items-center justify-between p-5">
       <button
         onClick={onClose}
-        className="absolute top-[5px] right-[5px] text-gray-400 hover:text-gray-600 transition-colors"
+        className="absolute top-[5px] right-[5px] text-typography-600 hover:text-typography-800 transition-colors"
       >
         <Close width={15} height={20} />
       </button>
 
-      <div className="flex justify-center items-center relative text-[24px] font-medium text-center w-full font-['Replay_Pro']">
+      <div className="flex justify-center items-center relative text-2xl font-medium text-center w-full font-primary">
         {title}{" "}
         {titleItalic && <span className="italic font-semibold ml-1">{`${titleItalic}`}</span>}
       </div>
-      <p className="text-gray-600 font-['IBM_Plex_Serif'] text-[14px] my-2 text-center ">
+      <p className="text-typography-800 font-primary text-base my-2 text-center ">
         {renderBoldFromString(description)}
       </p>
     </div>
@@ -77,18 +77,20 @@ export const ActionConfirmationPopup: FC<ActionConfirmationPopupProps> = ({
 
   const popupButtons = (
     <div className="flex gap-2 pb-[16px] justify-center">
-      <button
+      <Button
         onClick={secondaryButton.onClick}
-        className={`${getButtonStyles(secondaryButton.variant)} border w-full rounded-full p-2 font-['Roboto']`}
+        variant={ButtonVariant.SECONDARY}
+        className="text-typography-900 text-base border w-full border-border-dark rounded-full p-2 font-tertiary"
       >
         {secondaryButton.label}
-      </button>
-      <button
+      </Button>
+      <Button
         onClick={primaryButton.onClick}
-        className={`${getButtonStyles(primaryButton.variant)} rounded-full w-full p-2 font-['Roboto']`}
+        variant={ButtonVariant.PRIMARY}
+        className="text-white text-base rounded-full w-full p-2 font-tertiary"
       >
         {primaryButton.label}
-      </button>
+      </Button>
     </div>
   );
 

@@ -23,7 +23,6 @@ export const useLiveKitRoom = (): UseLiveKitRoomReturn => {
 
   const { id } = useParams();
 
-  // TODO: check if this is the correct way to get the room data: recheck keys after api implementation
   const roomDataString = localStorage.getItem(LOCAL_STORAGE_KEYS.ROOM_DATA);
   const roomData = roomDataString ? JSON.parse(roomDataString) : null;
   const startTime = roomData?.createdAt ? new Date(roomData?.createdAt) : new Date();
@@ -38,7 +37,7 @@ export const useLiveKitRoom = (): UseLiveKitRoomReturn => {
     return url;
   };
 
-  const onDataReceived = useCallback((payload: any, _participant: any, _kind: any, _topic: any) => {
+  const onDataReceived = useCallback((payload: any) => {
     const eventObj = decodeUint8ToJson(payload) as LiveKitEvent;
     setEvents(prev => [...prev, eventObj]);
     setScore(prev => prev + (eventObj?.data?.score ?? 0));
@@ -155,5 +154,6 @@ export const useLiveKitRoom = (): UseLiveKitRoomReturn => {
     roomStatus,
     score,
     startTime,
+    roomData,
   };
 };

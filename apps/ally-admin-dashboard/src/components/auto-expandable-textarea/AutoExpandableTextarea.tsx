@@ -7,6 +7,7 @@ export interface AutoExpandableTextareaProps {
   disabled?: boolean;
   width?: number | string;
   className?: string;
+  minWidth?: number;
   minHeight?: number;
   maxLines?: number;
   onKeyDown?: (event: React.KeyboardEvent<HTMLTextAreaElement>) => void;
@@ -22,6 +23,7 @@ export const AutoExpandableTextarea: React.FC<AutoExpandableTextareaProps> = ({
   width,
   className = "",
   minHeight = 50,
+  minWidth = 100,
   maxLines = 20,
   onKeyDown,
   onBlur,
@@ -63,13 +65,13 @@ export const AutoExpandableTextarea: React.FC<AutoExpandableTextareaProps> = ({
     <textarea
       ref={textareaRef}
       value={value}
-      style={{ width: width }}
+      style={{ width, minWidth }}
       onChange={handleChange}
       onKeyDown={onKeyDown}
       onBlur={onBlur}
       placeholder={placeholder}
       disabled={disabled}
-      className={`w-full mt-[-8px] px-0 py-0 focus:outline-none disabled:bg-gray-100 disabled:text-gray-500 resize-none overflow-y-auto [&::-webkit-scrollbar]:w-[1px] [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-gray-400 ${className}`}
+      className={`w-full mt-[-8px] px-0 py-0 text-typography-900 placeholder:text-typography-600 focus:outline-none disabled:bg-neutral-100 disabled:text-typography-800 resize-none overflow-y-auto [&::-webkit-scrollbar]:w-[1px] [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-scrollbar-thumb ${className}`}
     />
   );
 };

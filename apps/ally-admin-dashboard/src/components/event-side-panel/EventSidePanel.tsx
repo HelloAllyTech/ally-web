@@ -23,12 +23,12 @@ interface FieldProps {
 
 const Field: React.FC<FieldProps> = ({ label, children, multiline = false }) => (
   <div
-    className={`flex flex-row min-h-[40px] ${multiline ? "items-start" : "items-center"} text-[14px] justify-between`}
+    className={`flex flex-row min-h-[40px] ${multiline ? "items-start" : "items-center"} text-base justify-between`}
   >
     <div className={`w-[40%] ${multiline && "mt-[8px]"}`}>
-      <span className="text-sm font-medium text-gray-600">{label}</span>
+      <span className="text-sm font-medium text-typography-800">{label}</span>
     </div>
-    <div className="w-[60%] flex text-left justify-start text-gray-800">{children}</div>
+    <div className="w-[60%] flex text-left justify-start text-neutral-800">{children}</div>
   </div>
 );
 
@@ -41,15 +41,17 @@ const PanelHeader: React.FC<{
   <div className="flex items-center justify-between p-6">
     <button
       onClick={onClose}
-      className="flex flex-row items-center justify-center gap-2 text-gray-600 hover:text-gray-800"
+      className="flex flex-row items-center justify-center gap-2 text-typography-600 hover:text-neutral-800"
     >
       <DoubleArrowRight width={14} height={14} />
-      <span className="text-sm">{en.simulation.editEvent}</span>
+      <span className="text-base font-tertiary font-[500]">{en.simulation.editEvent}</span>
     </button>
     {hasEvent && (
       <button onClick={() => onDelete(eventId)} className="flex items-center gap-2">
         <Trash width={14} height={14} />
-        <span className="text-sm">{en.simulation.deleteEvent}</span>
+        <span className="text-sm font-tertiary font-medium text-typography-900">
+          {en.simulation.deleteEvent}
+        </span>
       </button>
     )}
   </div>
@@ -102,7 +104,7 @@ export const EventSidePanel: React.FC<EventSidePanelProps> = ({
     <div className="fixed inset-0 z-50 flex">
       <div className="flex-1 bg-black bg-opacity-50" onClick={onClose} />
 
-      <div className="w-[50%] min-w-[700px] bg-white shadow-xl border-l-[1px] border-gray-300">
+      <div className="w-[50%] min-w-[700px] bg-white shadow-xl border-l-[1px] border-border-light">
         <PanelHeader
           eventId={selectedEvent?.id}
           onClose={onClose}
@@ -110,7 +112,7 @@ export const EventSidePanel: React.FC<EventSidePanelProps> = ({
           hasEvent={!!selectedEvent}
         />
 
-        <div className="h-[calc(100vh-100px)] px-10 pl-[46px] pt-2 overflow-y-auto [&::-webkit-scrollbar]:w-[1px] [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-gray-400">
+        <div className="h-[calc(100vh-100px)] px-10 pl-[46px] pt-2 overflow-y-auto [&::-webkit-scrollbar]:w-[1px] [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-scrollbar-thumb">
           <div className="mb-4">
             <input
               type="text"
@@ -141,12 +143,12 @@ export const EventSidePanel: React.FC<EventSidePanelProps> = ({
                   <ArrowDownFilled width={8} height={8} />
                 </button>
                 {isSpeakerDropdownOpen && (
-                  <div className="absolute z-10 bg-white p-1 border border-gray-300 min-w-[150px] rounded-[6px] left-[0px] top-[30px] space-y-1">
+                  <div className="absolute z-10 bg-white p-1 border border-border-light min-w-[150px] rounded-[6px] left-[0px] top-[30px] space-y-1">
                     {SPEAKER_OPTIONS.map(option => (
                       <div
                         key={option?.value}
                         onClick={() => handleFieldChange("speaker", option.value)}
-                        className={`px-3 py-2 cursor-pointer rounded-[6px] flex items-center hover:bg-blue-100 ${formData.speaker === option.value ? "bg-gray-100" : ""}`}
+                        className={`px-3 py-2 cursor-pointer rounded-[6px] flex items-center hover:bg-primary-100 ${formData.speaker === option.value ? "bg-neutral-100" : ""}`}
                       >
                         <span className="truncate">{option?.label}</span>
                       </div>
@@ -163,7 +165,7 @@ export const EventSidePanel: React.FC<EventSidePanelProps> = ({
                 value={formData.description}
                 onChange={value => handleFieldChange("description", value)}
                 placeholder="Add description"
-                className="py-2 pt-[16px] px-0 border-none focus:outline-none text-sm w-full resize-none overflow-y-auto [&::-webkit-scrollbar]:w-[1px] [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-gray-400"
+                className="py-2 pt-[16px] px-0 border-none focus:outline-none text-sm w-full resize-none overflow-y-auto [&::-webkit-scrollbar]:w-[1px] [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-scrollbar-thumb"
               />
             </Field>
 
@@ -174,7 +176,7 @@ export const EventSidePanel: React.FC<EventSidePanelProps> = ({
                 value={formData.branchInstruction}
                 onChange={value => handleFieldChange("branchInstruction", value)}
                 placeholder="Add instruction"
-                className="py-2 pt-[16px] px-0 border-none focus:outline-none text-sm w-full resize-none overflow-y-auto [&::-webkit-scrollbar]:w-[1px] [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-gray-400"
+                className="py-2 pt-[16px] px-0 border-none focus:outline-none text-sm w-full resize-none overflow-y-auto [&::-webkit-scrollbar]:w-[1px] [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-scrollbar-thumb"
               />
             </Field>
 
@@ -192,7 +194,7 @@ export const EventSidePanel: React.FC<EventSidePanelProps> = ({
                 value={formData.message}
                 onChange={value => handleFieldChange("message", value)}
                 placeholder="Add message"
-                className="py-2 pt-[16px] px-0 border-none focus:outline-none text-sm w-full resize-none overflow-y-auto [&::-webkit-scrollbar]:w-[1px] [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-gray-400"
+                className="py-2 pt-[16px] px-0 border-none focus:outline-none text-sm w-full resize-none overflow-y-auto [&::-webkit-scrollbar]:w-[1px] [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-scrollbar-thumb"
               />
             </Field>
 

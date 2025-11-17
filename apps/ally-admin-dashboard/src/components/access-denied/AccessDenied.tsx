@@ -19,17 +19,17 @@ export const AccessDenied: React.FC<AccessDeniedProps> = ({
 }) => {
   return (
     <div
-      className={`flex flex-col font-['IBM_Plex_Sans'] items-center justify-center h-full min-h-[500px] px-4 ${className}`}
+      className={`flex flex-col font-primary items-center justify-center h-full min-h-[500px] px-4 ${className}`}
     >
-      <h1 className="text-2xl font-medium text-gray-800 mb-3 text-center">{title}</h1>
-      <p className="text-gray-600 text-center max-w-md mb-8 leading-relaxed">{message}</p>
+      <h1 className="text-2xl font-medium text-typography-800 mb-3 text-center">{title}</h1>
+      <p className="text-typography-800 text-center max-w-md mb-8 leading-relaxed">{message}</p>
 
       {/* Action Buttons */}
       {showBackButton && (
         <div className="flex gap-3">
           <button
             onClick={handleGoBack}
-            className="inline-flex items-center bg-[#1557D0] hover:bg-[#1557D0]/90 text-white text-[14px] font-medium px-6 py-3 rounded-lg shadow-sm transition-colors"
+            className="inline-flex items-center bg-primary-500 hover:bg-primary-600 text-white text-base font-medium px-6 py-3 rounded-lg shadow-sm transition-colors"
           >
             {en.common.goBack}
           </button>

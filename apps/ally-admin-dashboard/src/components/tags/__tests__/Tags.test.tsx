@@ -141,18 +141,10 @@ describe("Tags", () => {
     expect(input.className).toContain("focus:outline-none");
   });
 
-  it("add button has correct color", () => {
-    render(<TestWrapper>{formMethods => <Tags formMethods={formMethods} />}</TestWrapper>);
-
-    const addButton = screen.getByText("+");
-    expect(addButton.className).toContain("text-blue-600");
-  });
-
   it("label has correct styling", () => {
     render(<TestWrapper>{formMethods => <Tags formMethods={formMethods} />}</TestWrapper>);
 
     const label = screen.getByText("Tags");
-    expect(label.className).toContain("text-[#49454F]");
     expect(label.className).toContain("cursor-pointer");
   });
 

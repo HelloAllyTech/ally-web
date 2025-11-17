@@ -217,8 +217,8 @@ describe("createSimulation utils", () => {
 
       const result = formatSimulationResponseData(mockResponse);
 
-      // Check all fields are present (title, description, coverImageUrl + 18 metadata fields = 21 total)
-      expect(Object.keys(result)).toHaveLength(21);
+      // Check all fields are present (title, description, coverImageUrl, coverVideoUrl + 18 metadata fields = 22 total)
+      expect(Object.keys(result)).toHaveLength(22);
       expect(result.title).toBe("Test");
       expect(result.description).toBe("Test");
       expect(result.coverImageUrl).toBe("url");
@@ -229,141 +229,103 @@ describe("createSimulation utils", () => {
   });
 
   describe("extractValidData", () => {
-    it("should extract only valid data (non-empty and non-undefined)", () => {
+    it("should trim text fields", () => {
       const formData = {
-        name: "John",
+        title: "   Test Simulation   ",
+      };
+
+      const result = extractValidData(formData);
+
+      expect(result.title).toBe("Test Simulation");
+    });
+
+    it("should convert empty select field to null", () => {
+      const formData = {
+        gender: "",
+      };
+
+      const result = extractValidData(formData);
+      expect(result.gender).toBeNull();
+    });
+
+    it("should keep non-empty select field as is", () => {
+      const formData = {
+        gender: "female",
+      };
+
+      const result = extractValidData(formData);
+      expect(result.gender).toBe("female");
+    });
+
+    it("should parse number fields correctly", () => {
+      const formData = {
         age: "25",
-        email: "",
-        phone: undefined,
-        address: "123 Main St",
+      };
+
+      const result = extractValidData(formData);
+      expect(result.age).toBe(25);
+    });
+
+    it("should convert empty number fields to null", () => {
+      const formData = {
+        age: "",
+      };
+
+      const result = extractValidData(formData);
+      expect(result.age).toBeNull();
+    });
+
+    it("should handle image upload field with valid URL", () => {
+      const formData = {
+        coverImageUrl: "https://example.com/image.jpg",
+      };
+
+      const result = extractValidData(formData);
+      expect(result.coverImageUrl).toBe("https://example.com/image.jpg");
+    });
+
+    it("should convert empty image upload to null", () => {
+      const formData = {
+        coverImageUrl: "",
+      };
+
+      const result = extractValidData(formData);
+      expect(result.coverImageUrl).toBeNull();
+    });
+
+    it("should convert empty array in image upload to null", () => {
+      const formData = {
+        coverImageUrl: [],
+      };
+
+      const result = extractValidData(formData);
+      expect(result.coverImageUrl).toBeNull();
+    });
+
+    it("should leave non-schema fields unchanged", () => {
+      const formData = {
+        customField: "  Hello  ",
+      };
+
+      const result = extractValidData(formData);
+      expect(result.customField).toBe("Hello");
+    });
+
+    it("should handle multiple field types together", () => {
+      const formData = {
+        name: " John ",
+        age: "30",
+        gender: "",
+        coverImageUrl: "",
       };
 
       const result = extractValidData(formData);
 
       expect(result).toEqual({
-        name: "John",
-        age: "25",
-        address: "123 Main St",
-      });
-    });
-
-    it("should keep zero values", () => {
-      const formData = {
-        count: 0,
-        score: 0,
-        name: "Test",
-      };
-
-      const result = extractValidData(formData);
-
-      expect(result).toEqual({
-        count: 0,
-        score: 0,
-        name: "Test",
-      });
-    });
-
-    it("should keep false boolean values", () => {
-      const formData = {
-        isActive: false,
-        isEnabled: true,
-        name: "Test",
-      };
-
-      const result = extractValidData(formData);
-
-      expect(result).toEqual({
-        isActive: false,
-        isEnabled: true,
-        name: "Test",
-      });
-    });
-
-    it("should keep null values", () => {
-      const formData = {
-        name: "Test",
-        value: null,
-        description: "Description",
-      };
-
-      const result = extractValidData(formData);
-
-      expect(result).toEqual({
-        name: "Test",
-        value: null,
-        description: "Description",
-      });
-    });
-
-    it("should handle empty object", () => {
-      const result = extractValidData({});
-
-      expect(result).toEqual({});
-    });
-
-    it("should handle object with all empty values", () => {
-      const formData = {
-        field1: "",
-        field2: undefined,
-        field3: "",
-      };
-
-      const result = extractValidData(formData);
-
-      expect(result).toEqual({});
-    });
-
-    it("should handle object with nested objects", () => {
-      const formData = {
-        name: "Test",
-        nested: { key: "value" },
-        empty: "",
-      };
-
-      const result = extractValidData(formData);
-
-      expect(result).toEqual({
-        name: "Test",
-        nested: { key: "value" },
-      });
-    });
-
-    it("should handle object with arrays", () => {
-      const formData = {
-        name: "Test",
-        items: ["item1", "item2"],
-        emptyItems: [],
-        description: "",
-      };
-
-      const result = extractValidData(formData);
-
-      expect(result).toEqual({
-        name: "Test",
-        items: ["item1", "item2"],
-        emptyItems: [],
-      });
-    });
-
-    it("should remove only undefined and empty string values", () => {
-      const formData = {
-        a: "value",
-        b: 0,
-        c: false,
-        d: null,
-        e: "",
-        f: undefined,
-        g: "another value",
-      };
-
-      const result = extractValidData(formData);
-
-      expect(result).toEqual({
-        a: "value",
-        b: 0,
-        c: false,
-        d: null,
-        g: "another value",
+        name: "John", // trimmed
+        age: 30, // parsed
+        gender: null, // empty select
+        coverImageUrl: null, // empty upload
       });
     });
   });

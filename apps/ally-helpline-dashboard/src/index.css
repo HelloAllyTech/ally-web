@@ -1,6 +1,3 @@
-/* TODO: Phase 4 - Review for consolidation with globals.css */
-/* TODO: Consider moving custom styles to appropriate component modules */
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -35,11 +32,8 @@
     @apply border-border;
   }
   body {
-    @apply bg-background text-foreground antialiased;
+    @apply bg-background text-primary antialiased;
   }
-}
-body {
-  color: #484848;
 }
 
 /* ===== Changing colors in an SVG ===== */

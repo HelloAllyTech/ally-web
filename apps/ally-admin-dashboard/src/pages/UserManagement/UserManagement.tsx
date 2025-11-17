@@ -203,7 +203,7 @@ export const UserManagement: FC = () => {
         <button
           onClick={() => onLoadMore(true)}
           disabled={disabled}
-          className="inline-flex font-['Roboto'] items-center disabled:opacity-50 text-sm text-gray-600 font-medium py-1 px-1"
+          className="inline-flex font-tertiary items-center disabled:opacity-50 text-sm text-typography-600 font-medium py-1 px-1 hover:text-typography-900"
         >
           + {isUsersFetching ? en.common.loading : en.common.loadMore}
         </button>
@@ -313,8 +313,10 @@ export const UserManagement: FC = () => {
   };
 
   return (
-    <div className="space-y-6 font-['IBM_Plex_Serif'] h-[100vh] overflow-y-hidden">
-      <h1 className="text-[24px] font-normal text-gray-800">{en.userManagement.userManagement}</h1>
+    <div className="space-y-6 font-primary h-[100vh] overflow-y-hidden">
+      <h1 className="text-2xl font-normal text-typography-900">
+        {en.userManagement.userManagement}
+      </h1>
       <Tabs items={TABS} activeId={activeTab} onChange={id => handleTabChange(id as TabType)} />
       {renderBody()}
     </div>

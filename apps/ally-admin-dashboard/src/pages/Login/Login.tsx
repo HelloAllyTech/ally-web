@@ -155,13 +155,13 @@ export const Login: React.FC = () => {
           transition={{ duration: 0.4, ease: "easeInOut" }}
           className="flex flex-col gap-3 sm:gap-4"
         >
-          <div className="flex flex-col text-2xl sm:text-3xl lg:text-[32px] font-['Replay_Pro']">
-            <span>{`${en.auth.hey},`}</span>
-            <h1>
+          <div className="flex flex-col text-2xl font-secondary">
+            <span className="text-typography-900">{`${en.auth.hey},`}</span>
+            <h1 className="text-typography-900">
               <span>{`${en.auth.welcomeTo} `}</span>
               <span className="font-bold italic">ally</span>
             </h1>
-            <span className="text-lg sm:text-xl lg:text-[24px] mt-4 sm:mt-6 lg:mt-[24px]">
+            <span className="text-xl mt-6 text-typography-900">
               Enter your email address to continue
             </span>
           </div>
@@ -183,14 +183,11 @@ export const Login: React.FC = () => {
               <input
                 type="checkbox"
                 id="remember"
-                className="h-4 w-4 rounded border-2 border-[#E5E7EB] text-blue-600 focus:ring-blue-500 cursor-pointer"
+                className="h-4 w-4 rounded border-2 border-border-light text-primary-500 focus:ring-primary-500 cursor-pointer"
                 checked={rememberMe}
                 onChange={e => setRememberMe(e.target.checked)}
               />
-              <label
-                htmlFor="remember"
-                className="text-xs sm:text-sm text-[#49454F] cursor-pointer"
-              >
+              <label htmlFor="remember" className="text-sm text-typography-600 cursor-pointer">
                 {en.auth.rememberMe}
               </label>
             </div>
@@ -202,25 +199,25 @@ export const Login: React.FC = () => {
             onClick={handleNext}
           >
             {isLoading ? (
-              <div className="flex items-center justify-center text-sm sm:text-base">
-                <div className="w-4 h-4 sm:w-5 sm:h-5 border-2 border-white border-t-transparent rounded-[5px] animate-spin mr-2"></div>
+              <div className="flex items-center justify-center text-base">
+                <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-[5px] animate-spin mr-2"></div>
                 <span className="hidden sm:inline">{en.auth.generatingOTP}</span>
               </div>
             ) : (
               "Next"
             )}
           </Button>
-          <div className="text-xs sm:text-[12px] text-[#8C8C8C] mt-2 leading-relaxed">
+          <div className="text-xs text-typography-800 mt-2 leading-relaxed">
             By tapping next, you agree to Ally's{" "}
             <span
-              className="text-[#0473F2] cursor-pointer"
+              className="text-primary-500 cursor-pointer hover:text-primary-600"
               onClick={() => openLinkInNewTab(ALLY_TERMS_URL)}
             >
               {en.auth.termsAndConditions}
             </span>{" "}
             and acknowledge{" "}
             <span
-              className="text-[#0473F2] cursor-pointer"
+              className="text-primary-500 cursor-pointer hover:text-primary-600"
               onClick={() => openLinkInNewTab(ALLY_PRIVACY_POLICY_URL)}
             >
               {en.auth.privacyPolicy}
@@ -240,26 +237,22 @@ export const Login: React.FC = () => {
         className="flex flex-col justify-start gap-4 sm:gap-6"
       >
         <div
-          className="self-start cursor-pointer rotate-90 rounded-full border border-gray-300 p-2 hover:bg-gray-50 transition-colors"
+          className="self-start cursor-pointer rotate-90 rounded-full border border-border-light p-2 hover:bg-background-secondary transition-colors"
           onClick={handleBack}
         >
           <ArrowDown />
         </div>
-        <h1 className="text-2xl sm:text-3xl lg:text-[32px] font-['Replay_Pro']">
-          Verify your email address
-        </h1>
-        <div className="text-sm sm:text-base lg:text-base mb-2 font-['Replay_Pro'] flex flex-col">
-          <span className="text-lg sm:text-xl lg:text-[24px] mb-2">
-            Enter the security code sent to
-          </span>
-          <span className="font-semibold text-lg sm:text-xl lg:text-[24px] break-all">{email}</span>
+        <h1 className="text-2xl font-secondary text-typography-900">Verify your email address</h1>
+        <div className="text-base mb-2 font-secondary flex flex-col">
+          <span className="text-xl mb-2 text-typography-900">Enter the security code sent to</span>
+          <span className="font-semibold text-xl break-all text-typography-900">{email}</span>
         </div>
         <div className="flex flex-col gap-2">
           <OTP value={otp} onChange={setOtp as any} />
-          <div className="text-xs sm:text-[12px] text-[#49454F] mt-2">
+          <div className="text-xs text-typography-600 mt-2">
             {`${en.auth.didNotReceiveTheCode} `}
             <span
-              className={`${countdown > 0 ? "text-[#C4C4C4]" : "text-[#0473F2]"} cursor-pointer`}
+              className={`${countdown > 0 ? "text-typography-600" : "text-primary-500 hover:text-primary-600"} cursor-pointer`}
               onClick={handleResendCode}
             >
               Resend {countdown > 0 ? `(${countdown}s)` : ""}
@@ -273,8 +266,8 @@ export const Login: React.FC = () => {
           onClick={handleVerify}
         >
           {isLoading ? (
-            <div className="flex items-center justify-center text-sm sm:text-base">
-              <div className="w-4 h-4 sm:w-5 sm:h-5 border-2 border-white border-t-transparent rounded-[5px] animate-spin mr-2"></div>
+            <div className="flex items-center justify-center text-base">
+              <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-[5px] animate-spin mr-2"></div>
               <span className="hidden sm:inline">{en.auth.signingIn}</span>
             </div>
           ) : (
@@ -289,25 +282,25 @@ export const Login: React.FC = () => {
     loginSection === LoginSection.EMAIL ? !email || !!emailError : !otp || otp.length < 4;
 
   return (
-    <div className="flex flex-col lg:flex-row h-screen p-4 sm:p-6 lg:p-8">
+    <div className="flex flex-col lg:flex-row h-screen lg:p-8">
       <div className="hidden md:block lg:max-w-[50%] flex-1 h-full relative">
         <CustomImage
           src={LoginImage}
           alt="Login"
-          className="w-full h-full object-cover rounded-[16px]"
+          className="w-full h-full object-cover lg:rounded-[16px]"
         />
         <div
-          className="flex items-center gap-2 p-3 rounded-tl-2xl bg-white absolute bottom-0 right-0 cursor-pointer"
+          className="flex items-center gap-2 p-3 rounded-tl-2xl bg-background absolute bottom-0 right-0 cursor-pointer"
           onClick={() => openLinkInNewTab(ALLY_URL)}
         >
-          <div className="flex flex-col mr-4 font-['Replay_Pro']">
-            <span className="text-xl font-bold text-[#0F172A]">Ally</span>
-            <span className="text-sm font-medium text-[#858688]">helloally.ai</span>
+          <div className="flex flex-col mr-4 font-secondary">
+            <span className="text-xl font-bold text-typography-900">Ally</span>
+            <span className="text-sm font-medium text-typography-800">helloally.ai</span>
           </div>
         </div>
       </div>
 
-      <div className="flex-1 absolute min-h-[50vh] px-4 rounded-[10px] bottom-[8%] right-[20%] left-[20%] lg:static bg-white  flex flex-col items-center justify-center min-h-[100vh] md:min-h-auto">
+      <div className="flex-1 absolute min-h-[35vh] p-5 rounded-[10px] bottom-[10%] right-[25%] left-[25%] lg:static bg-background flex flex-col items-center justify-center md:min-h-auto">
         <div className="w-full max-w-md lg:max-w-lg xl:max-w-xl flex flex-col gap-4 sm:gap-6">
           <div className="flex flex-col">
             <AnimatePresence mode="wait">{getLoginSection()}</AnimatePresence>

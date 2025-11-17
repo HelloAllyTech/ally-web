@@ -322,8 +322,10 @@ describe("Scenario Component", () => {
       expect(motionDiv.className).toContain("flex");
       expect(motionDiv.className).toContain("flex-col");
       expect(motionDiv.className).toContain("gap-6");
-      expect(motionDiv.className).toContain("w-[60%]");
+      expect(motionDiv.className).toContain("w-full");
       expect(motionDiv.className).toContain("m-auto");
+      expect(motionDiv.className).toContain("justify-center");
+      expect(motionDiv.className).toContain("items-center");
     });
   });
 

@@ -1,9 +1,9 @@
-import { FC, useState } from "react";
+import { FC, useEffect, useState } from "react";
 
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import { useNavigate } from "react-router-dom";
 
-import { Ally, Close, LogoutIllustration } from "@assets";
+import { Ally, DockToRight, LogoutIllustration } from "@assets";
 import { Carousel, CarouselSize, CarouselVariant, ConfirmationDialog, UserInfo } from "@components";
 import { TabId, navBarOptions, CAROUSEL_SLIDES } from "@constants";
 import { useUser } from "@hooks";
@@ -12,23 +12,28 @@ import { openLinkInNewTab } from "@utils";
 import { ButtonVariant } from "../button";
 import { NavSideBarProps, TabProps } from "./types";
 
-const Tab: FC<TabProps> = ({ id, Icon, title, activeTab, onClick }) => (
+const EXPANDED_WIDTH = 1200;
+
+const Tab: FC<TabProps> = ({ id, Icon, title, activeTab, isExpanded, onClick }) => (
   <div
     className={`
-          w-full h-14 rounded-md p-4 flex items-center gap-3 cursor-pointer
+          w-full h-12 rounded-md p-4 flex items-center gap-3 my-1 cursor-pointer
           ${activeTab === id ? "bg-[#F3F3F3] rounded-[2px]" : "hover:bg-[#F5F5F5]"}
           transition-all duration-300 group
         `}
     onClick={onClick}
   >
-    <Icon className={`${activeTab === id ? "" : "opacity-60"}`} />
-    <div
-      className={`${
-        activeTab === id ? "text-[#000] font-[500]" : "text-[#6B7280] font-[400]"
-      } font-['IBM_Plex_Serif'] text-[16px]`}
-    >
-      {title}
-    </div>
+    <Icon className={`flex-shrink-0 ${activeTab === id ? "" : "opacity-60"} `} />
+
+    {isExpanded && (
+      <div
+        className={`${
+          activeTab === id ? "text-typography-900 font-[500]" : "text-typography-800 font-[400]"
+        } font-primary text-lg`}
+      >
+        {title}
+      </div>
+    )}
     {id === TabId.COMMUNITY && (
       <OpenInNewIcon className="ml-auto opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
     )}
@@ -46,6 +51,21 @@ const NavSideBar: FC<NavSideBarProps> = ({ activeTab, onTabChange, isOpen, onClo
 
   const navigate = useNavigate();
 
+  const [isExpanded, setIsExpanded] = useState(true);
+
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth < EXPANDED_WIDTH) {
+        setIsExpanded(false);
+      }
+    };
+
+    handleResize();
+
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
   const onTabClick = (id: TabId, path: string) => {
     if (id === TabId.COMMUNITY) {
       openLinkInNewTab(path);
@@ -53,6 +73,10 @@ const NavSideBar: FC<NavSideBarProps> = ({ activeTab, onTabChange, isOpen, onClo
       onTabChange(path);
     }
     onClose();
+  };
+
+  const handleToggleSidebar = () => {
+    setIsExpanded(!isExpanded);
   };
 
   const handleLogout = () => {
@@ -70,7 +94,7 @@ const NavSideBar: FC<NavSideBarProps> = ({ activeTab, onTabChange, isOpen, onClo
 
   const renderTabs = () => {
     return (
-      <div className="flex flex-col gap-1 m-3 border-t border-t-[#E5E7EB] pt-3">
+      <div className="flex-1 flex-col gap-1 m-2 border-t border-t-[#E5E7EB] pt-3">
         {permittedTabs?.map(({ id, Icon, title, path }) => (
           <Tab
             key={id}
@@ -78,6 +102,7 @@ const NavSideBar: FC<NavSideBarProps> = ({ activeTab, onTabChange, isOpen, onClo
             Icon={Icon}
             title={title}
             activeTab={activeTab}
+            isExpanded={isExpanded}
             onClick={() => onTabClick(id, path)}
           />
         ))}
@@ -88,26 +113,33 @@ const NavSideBar: FC<NavSideBarProps> = ({ activeTab, onTabChange, isOpen, onClo
   return (
     <>
       <div
-        className={`w-72 bg-white h-screen flex flex-col justify-between border-r border-r-[#E5E7EB]
-        transition-all duration-300 ${isOpen ? "z-20" : "max-md:hidden"}`}
+        className={`bg-white h-screen flex flex-col justify-between border-r border-r-[#E5E7EB] transition-all duration-300 relative ${
+          isExpanded ? "w-64" : "w-24"
+        } p-[12px] font-primary`}
       >
-        <button onClick={onClose} className="md:hidden absolute top-4 right-4">
-          <Close />
-        </button>
-
-        <div className="flex flex-col">
-          <Ally className="m-3 mt-7" />
-          {renderTabs()}
+        <div className="flex justify-between">
+          <Ally className="m-3 flex-shrink-0" />
+          <button
+            onClick={handleToggleSidebar}
+            className={`${isExpanded ? "px-5 mx-2" : "absolute z-10 top-0 bg-white mx-2 px-[24px] py-[15px] opacity-0 hover:opacity-100"} hover:bg-gray-50 hover:rounded-md my-2 p-3`}
+            title={isExpanded ? "Collapse sidebar" : "Expand sidebar"}
+          >
+            <DockToRight />
+          </button>
         </div>
 
+        {renderTabs()}
+
         <div className="flex flex-col items-start gap-3 m-3">
-          <Carousel
-            slides={CAROUSEL_SLIDES}
-            variant={CarouselVariant.DARK}
-            size={CarouselSize.SMALL}
-          />
+          {isExpanded && (
+            <Carousel
+              slides={CAROUSEL_SLIDES}
+              variant={CarouselVariant.DARK}
+              size={CarouselSize.SMALL}
+            />
+          )}
           <hr className="w-full border-t border-gray-200" />
-          <UserInfo user={user} onLogout={handleLogout} />
+          <UserInfo user={user} onLogout={handleLogout} isExpanded={isExpanded} />
         </div>
       </div>
       <ConfirmationDialog

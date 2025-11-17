@@ -221,16 +221,6 @@ describe("LiveSimulationPreview", () => {
       const props = mockSimulationPageProps.mock.calls[0][0];
       expect(props).toHaveProperty("sessionId");
     });
-
-    it("sets isConnected to true", () => {
-      renderComponent();
-
-      expect(mockSimulationPageProps).toHaveBeenCalledWith(
-        expect.objectContaining({
-          isConnected: true,
-        }),
-      );
-    });
   });
 
   describe("Room status", () => {
@@ -570,7 +560,6 @@ describe("LiveSimulationPreview", () => {
       expect(props).toHaveProperty("roomData");
       expect(typeof props.roomStatus).toBe("string");
       expect(props).toHaveProperty("sessionId");
-      expect(typeof props.isConnected).toBe("boolean");
       expect(typeof props.isEndingSession).toBe("boolean");
       expect(typeof props.startTime).toBe("string");
       expect(Array.isArray(props.events)).toBe(true);

@@ -1,17 +1,21 @@
+"use client";
+
 import { FC } from "react";
 
 import { CircularProgress } from "@mui/material";
 
-import { MicOn, MicOff, Stop } from "@ally-ui-mono/ui-shared/assets";
+import { MicOff, MicOn, Stop, Focus } from "@ally-ui-mono/ui-shared/assets";
 
 import { SimulationControlsProps } from "./types";
 import ButtonGroup from "../button-group";
 
 export const SimulationControls: FC<SimulationControlsProps> = ({
   isMuted,
+  isFocusMode,
   isEndingSession,
   onEndSessionClick,
   onMuteClick,
+  onFocusButtonClick,
 }) => {
   const buttonList = [
     {
@@ -21,6 +25,14 @@ export const SimulationControls: FC<SimulationControlsProps> = ({
       leftIcon: isMuted ? <MicOff /> : <MicOn />,
       show: true,
       text: isMuted ? "Unmute" : "Mute",
+    },
+    {
+      action: onFocusButtonClick,
+      isActive: isFocusMode,
+      isDisabled: isEndingSession,
+      leftIcon: <Focus className={isFocusMode ? "" : "[&_path]:fill-[#FFFFFF]"} />,
+      show: true,
+      text: isFocusMode ? "Focused" : "Focus",
     },
     {
       action: onEndSessionClick,

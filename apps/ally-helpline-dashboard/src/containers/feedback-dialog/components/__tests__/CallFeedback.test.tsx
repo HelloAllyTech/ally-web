@@ -43,6 +43,26 @@ vi.mock("@components", () => ({
       {...props}
     />
   ),
+  StarRating: ({
+    rating,
+    setRating,
+  }: {
+    rating: number | null;
+    setRating: (v: number) => void;
+  }) => (
+    <div data-testid="star-rating">
+      {[1, 2, 3, 4, 5].map(star => (
+        <button
+          key={star}
+          data-testid={`star-${star}`}
+          onClick={() => setRating(star)}
+          className={star <= (rating || 0) ? "filled" : "empty"}
+        >
+          ⭐
+        </button>
+      ))}
+    </div>
+  ),
 }));
 
 vi.mock("@containers/simulation-summary-state/components/StarRating", () => ({

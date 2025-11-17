@@ -73,7 +73,7 @@ export const SelectComponent = ({
               </div>
             ))}
             {showAdd && (
-              <div className="mr-2 mt-2 w-30 p-1 bg-gray-200 rounded">
+              <div className="mr-2 mt-2 w-30 p-1 bg-neutral-200 rounded">
                 <input
                   type="text"
                   className="w-full px-2 py-1 text-sm border-none outline-none bg-transparent"
@@ -84,7 +84,7 @@ export const SelectComponent = ({
               </div>
             )}
             <div className="cursor-pointer mr-2 mt-2" onClick={handleAddOption}>
-              <span className="text-sm text-gray-600">
+              <span className="text-sm text-typography-800">
                 <div>+</div>
               </span>
             </div>

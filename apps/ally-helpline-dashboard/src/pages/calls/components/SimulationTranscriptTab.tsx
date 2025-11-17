@@ -38,15 +38,9 @@ const SimulationTranscriptTab: FC<SimulationTranscriptTabProps> = ({ sessionId }
   }, [transcript]);
 
   const handleLoadMore = () => {
-    // TODO: Temporary hack and need to change to count logic
     if (transcriptOffset >= transcript?.length) return;
     setTranscriptOffset(prev => prev + TRANSCRIPT_PAGE_SIZE);
   };
-
-  // TODO: Removing as not used anymore
-  // window.handleCommentClick = (comment: string) => {
-  //   setSelectedComment(comment === selectedComment ? "" : comment);
-  // };
 
   return (
     <TranscriptTab

@@ -18,9 +18,11 @@ import {
   SimulationPreview,
   FilterList,
   EmptyState,
+  Button,
 } from "@components";
 import { en, ROUTES, SimulationStatus, SORT_BY, SORT_ORDER } from "@constants";
 import { Simulation } from "@types";
+import { isNonEmptyArray } from "@utils";
 
 const SIMULATIONS_PAGE_SIZE = 30;
 
@@ -50,8 +52,11 @@ export const SimulationStudio: React.FC = () => {
       selectedFilters.length > 0 ? selectedFilters?.map(filter => filter.id)?.join(",") : undefined,
   };
 
-  const { data: simulationsResponse, isFetching: isSimulationsFetching } =
-    useGetSimulationsQuery(simulationParams);
+  const {
+    data: simulationsResponse,
+    isFetching: isSimulationsFetching,
+    isLoading: isSimulationsLoading,
+  } = useGetSimulationsQuery(simulationParams);
 
   const [deleteSimulationById] = useDeleteSimulationByIdMutation();
   const [updateSimulationById] = useUpdateSimulationByIdMutation();
@@ -113,7 +118,7 @@ export const SimulationStudio: React.FC = () => {
       setIsDeletePopupOpen(false);
       setCurrentSimulation(null);
       toast.success("Simulation deleted successfully");
-    } catch (error) {
+    } catch {
       toast.error("Failed to delete simulation");
     }
   };
@@ -130,7 +135,7 @@ export const SimulationStudio: React.FC = () => {
       setIsUnarchivePopupOpen(false);
       setCurrentSimulation(null);
       toast.success("Updated simulation status to " + status);
-    } catch (error) {
+    } catch {
       toast.error("Failed to change simulation status");
     }
   };
@@ -176,16 +181,16 @@ export const SimulationStudio: React.FC = () => {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
         <div className="text-center max-w-md">
-          <h2 className="text-[24px] text-gray-900 mb-4">
+          <h2 className="text-2xl text-typography-900 mb-4">
             {en.simulation.createYourFirstSimulation}{" "}
             <span className="italic">{en.simulation.simulation}</span>
           </h2>
-          <p className="text-gray-600 text-[14px] mb-8 leading-relaxed font-['IBM_Plex_Serif']">
+          <p className="text-typography-600 text-base mb-8 leading-relaxed font-primary">
             {en.simulation.newSimulationDescription}
           </p>
           <button
             onClick={handleCreateSimulation}
-            className="bg-blue-600 text-[14px] hover:bg-blue-700 text-white px-6 py-3 rounded-[100px] flex items-center gap-2 mx-auto font-serif transition-colors"
+            className="bg-primary-500 hover:bg-primary-600 text-base text-white px-6 py-3 rounded-[100px] flex items-center gap-2 mx-auto font-primary transition-colors"
           >
             <Add />
             {en.simulation.createSimulation}
@@ -202,7 +207,7 @@ export const SimulationStudio: React.FC = () => {
         <button
           onClick={() => loadSimulations(true)}
           disabled={isSimulationsFetching}
-          className="inline-flex font-['Roboto'] items-center disabled:opacity-50 text-sm text-gray-600 font-medium py-1 px-1"
+          className="inline-flex font-tertiary items-center disabled:opacity-50 text-sm text-typography-600 font-medium py-1 px-1 hover:text-typography-900"
         >
           + {isSimulationsFetching ? en.common.loading : en.common.loadMore}
         </button>
@@ -211,18 +216,21 @@ export const SimulationStudio: React.FC = () => {
   };
 
   return (
-    <div className="min-h-full font-['Replay_Pro']">
-      <div className="flex justify-between items-center mb-4 border-b border-gray-200 pb-4">
-        <h1 className="text-[24px] text-gray-900">{en.simulation.simulationstudio}</h1>
-        <button
+    <div className="min-h-full font-secondary">
+      <div className="flex justify-between items-center mb-4 border-b border-border-light pb-4">
+        <h1 className="text-2xl text-typography-900 font-primary">
+          {en.simulation.simulationstudio}
+        </h1>
+        <Button
+          variant={ButtonVariant.PRIMARY}
           onClick={handleNewSimulation}
-          className="bg-[#0957D0] hover:bg-blue-700 text-white text-[14px] font-serif px-4 py-2 rounded-full flex items-center gap-2 transition-colors h-[40px]"
+          className="transition-colors h-[40px]"
         >
           <Add />
           {en.simulation.newSimulation}
-        </button>
+        </Button>
       </div>
-      <div className="flex flex-row items-center border-b border-gray-200 pb-4 pl-5 relative">
+      <div className="flex flex-row items-center border-b border-border-light pb-4 pl-5 relative">
         <button onClick={handleFilterClick}>
           <Filter />
         </button>
@@ -231,9 +239,9 @@ export const SimulationStudio: React.FC = () => {
             selectedFilters.map(filter => (
               <div
                 key={filter.id}
-                className="flex flex-row items-center gap-1 border border-gray-200 rounded-full px-2 py-1"
+                className="flex flex-row items-center gap-1 border border-border-light rounded-full px-2 py-1"
               >
-                <span className="text-[12px] text-gray-500">{filter.label}</span>
+                <span className="text-xs text-typography-800">{filter.label}</span>
 
                 <button onClick={() => handleFilterItemClose(filter)}>
                   <Close />
@@ -248,7 +256,11 @@ export const SimulationStudio: React.FC = () => {
           onApply={handleApplyFilters}
         />
       </div>
-      {isSimulationsFetching && simulations.length === 0 ? (
+      {isSimulationsLoading ||
+      (simulationsOffset === 0 &&
+        simulations.length === 0 &&
+        simulationsResponse &&
+        isNonEmptyArray(simulationsResponse.data)) ? (
         <SimulationListSkeleton />
       ) : simulations.length > 0 ? (
         <SimulationList

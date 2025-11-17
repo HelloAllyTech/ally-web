@@ -27,11 +27,11 @@ export const VerticalStepper: FC<VerticalStepperProps> = ({ steps, currentStep, 
 
     switch (status) {
       case stepStatusMap.completed:
-        return `${baseStyles} text-gray-500`;
+        return `${baseStyles} text-typography-800`;
       case stepStatusMap.active:
-        return `${baseStyles} text-black`;
+        return `${baseStyles} text-typography-900`;
       case stepStatusMap.pending:
-        return `${baseStyles} text-gray-500`;
+        return `${baseStyles} text-typography-800`;
       default:
         return baseStyles;
     }
@@ -44,11 +44,11 @@ export const VerticalStepper: FC<VerticalStepperProps> = ({ steps, currentStep, 
 
     switch (status) {
       case stepStatusMap.completed:
-        return `${baseStyles} border-gray-300`;
+        return `${baseStyles} border-border-light`;
       case stepStatusMap.active:
-        return `${baseStyles} border-blue-600 bg-blue-600`;
+        return `${baseStyles} border-primary-500 bg-primary-500`;
       case stepStatusMap.pending:
-        return `${baseStyles} border-gray-300`;
+        return `${baseStyles} border-border-light`;
       default:
         return baseStyles;
     }
@@ -63,7 +63,7 @@ export const VerticalStepper: FC<VerticalStepperProps> = ({ steps, currentStep, 
   };
 
   return (
-    <div className="min-w-[150px] lg:min-w-[200px] border-r border-gray-200 px-2 py-3">
+    <div className="min-w-[150px] lg:min-w-[200px] border-r border-border-light px-2 py-3">
       <nav>
         {steps.map((step, index) => {
           const status = getStepStatus(step, index);
@@ -73,10 +73,10 @@ export const VerticalStepper: FC<VerticalStepperProps> = ({ steps, currentStep, 
                 <div className={getCircleStyles(step, index)}>
                   {status === stepStatusMap.active && <div className={getDotStyles(step, index)} />}
                 </div>
-                <span className="text-[12px] lg:text-[14px] font-medium">{step.title}</span>
+                <span className="text-xs lg:text-base font-medium">{step.title}</span>
               </div>
               <div
-                className={`h-[24px] bg-gray-200 w-[2px] ml-[7px] lg:ml-[11px] ${index === steps.length - 1 && "hidden"}`}
+                className={`h-[24px] bg-neutral-200 w-[2px] ml-[7px] lg:ml-[11px] ${index === steps.length - 1 && "hidden"}`}
               />
             </div>
           );

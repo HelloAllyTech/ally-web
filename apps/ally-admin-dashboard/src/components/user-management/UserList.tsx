@@ -8,7 +8,7 @@ import { formatCapitalizedEnum, isNumber } from "@utils";
 const Avatar: React.FC<{ name: string }> = ({ name }) => {
   const initial = name?.[0]?.toUpperCase() ?? "?";
   return (
-    <div className="min-w-[40px] min-h-[40px] rounded-full border border-gray-200 text-gray-500 flex items-center justify-center mr-3">
+    <div className="min-w-[40px] min-h-[40px] rounded-full border border-border-light text-typography-800 flex items-center justify-center mr-3">
       {initial}
     </div>
   );
@@ -45,7 +45,7 @@ export const UserList: React.FC<UserListProps> = ({
   };
 
   const tableHeader = (
-    <div className="grid [grid-template-columns:repeat(48,minmax(0,1fr))] px-4 py-2 mr-[12px]  text-[14px] text-gray-500 border-b border-gray-200 ">
+    <div className="grid [grid-template-columns:repeat(48,minmax(0,1fr))] px-4 py-2 mr-[12px]  text-base text-typography-800 border-b border-border-light ">
       <div className="col-span-11">{en.userManagement.user}</div>
       <div className="col-span-6 pr-1">{en.userManagement.telephonyId}</div>
       <div className="col-span-8 pr-5">{en.userManagement.role}</div>
@@ -57,7 +57,7 @@ export const UserList: React.FC<UserListProps> = ({
   );
 
   return (
-    <div className="w-full overflow-x-auto text-[13px] text-gray-600">
+    <div className="w-full overflow-x-auto text-sm text-typography-800">
       <div className="min-w-[900px]">
         {tableHeader}
 
@@ -65,13 +65,13 @@ export const UserList: React.FC<UserListProps> = ({
           {users.map(user => (
             <div
               key={user.id}
-              className="grid [grid-template-columns:repeat(48,minmax(0,1fr))] items-center px-4 py-3 text-gray-700 border-b border-gray-200 hover:bg-gray-50 relative"
+              className="grid [grid-template-columns:repeat(48,minmax(0,1fr))] items-center px-4 py-3 text-typography-900 border-b border-border-light hover:bg-background-secondary relative"
             >
               <div className="col-span-11 justify-start flex items-center min-w-0 overflow-hidden ">
                 <Avatar name={user.name} />
                 <div className="min-w-0">
-                  <div className="truncate pr-5">{formatCapitalizedEnum(user.name)}</div>
-                  <div className="text-gray-500 truncate pr-5 ">{user.email}</div>
+                  <div className="truncate text-typography-900 pr-5">{user.name}</div>
+                  <div className="text-typography-800 truncate pr-5 ">{user.email}</div>
                 </div>
               </div>
               <div className="col-span-6 px-1">{user.externalId}</div>
@@ -83,7 +83,7 @@ export const UserList: React.FC<UserListProps> = ({
                     : "--"}
               </div>
               <div className="col-span-8 pr-5 whitespace-nowrap truncate">
-                {formatCapitalizedEnum(user.organization) ?? "--"}
+                {user.organization ?? "--"}
               </div>
               <div className="col-span-4 pr-1">
                 {isNumber(user.consumedCredits) &&
@@ -97,7 +97,7 @@ export const UserList: React.FC<UserListProps> = ({
               <div className="col-span-5 pr-1  flex items-center justify-between w-full min-w-[100px]">
                 <StatusBadge status={user.status} />
                 <button
-                  className="text-gray-500 hover:text-gray-700"
+                  className="text-typography-800 hover:text-typography-900"
                   onClick={e => toggleDropdown(user.id, e)}
                 >
                   ⋮

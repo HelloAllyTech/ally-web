@@ -111,3 +111,9 @@ export enum LoginSection {
   EMAIL = "Email",
   OTP = "OTP",
 }
+
+export const TAG_TYPES = {
+  CALL_SUMMARY: "CallSummary",
+  CALL_LOGS: "CallLogs",
+  SIMULATION_LOGS: "SimulationLogs",
+};
