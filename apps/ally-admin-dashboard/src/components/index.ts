@@ -47,3 +47,4 @@ export * from "./event-map-table-loader";
 export * from "./status-badge";
 export * from "./organization-access-details";
 export * from "./simulation-selection-modal";
+export * from "./popup-wrapper";

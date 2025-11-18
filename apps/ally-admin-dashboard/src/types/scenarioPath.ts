@@ -80,4 +80,6 @@ export interface SimulationCardItemProps {
   setOpenMessageIndex: (index: number | null) => void;
   handleMessageClick: (index: number) => void;
   renderMessage: (messageTitle: string, feedback: string, index: number) => JSX.Element;
+  addButtonRef?: (element: HTMLButtonElement | null) => void;
+  anchorElement?: HTMLButtonElement | null;
 }

@@ -1,5 +1,7 @@
-import { useRef } from "react";
+import { FC, useRef } from "react";
 
+import { useSortable } from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 import { Tooltip } from "@mui/material";
 
 import { CloseRed, DragIndicator, InfoIcon, Plus } from "@assets";
@@ -7,8 +9,9 @@ import { en, toolTipStyles } from "@constants";
 import { SimulationCardItemProps } from "@types";
 
 import { AddMessageModal } from "./AddMessageModal";
+import { CustomImage } from "../custom-image";
 
-export const SimulationCardItem: React.FC<SimulationCardItemProps> = ({
+export const SimulationCardItem: FC<SimulationCardItemProps> = ({
   simulation,
   index,
   isLast,
@@ -19,42 +22,21 @@ export const SimulationCardItem: React.FC<SimulationCardItemProps> = ({
   handleMessageClick,
   renderMessage,
 }) => {
-  const dragCard = useRef<number>(0);
-  const dragOverCard = useRef<number>(0);
+  const buttonRef = useRef<HTMLButtonElement>(null);
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+    id: simulation.scenarioId,
+  });
 
-  const handleSort = () => {
-    const from = dragCard.current!;
-    const to = dragOverCard.current!;
-
-    // If indices are same, no reordering needed
-    if (from === to) return;
-
-    // Create a shallow copy
-    const updated = [...selectedSimulations];
-
-    // Extract dragged item
-    const [draggedItem] = updated.splice(from, 1);
-
-    // Insert at new index
-    updated.splice(to, 0, draggedItem);
-
-    updated.forEach((item, index) => {
-      item.order = index + 1;
-    });
-
-    // Reset refs
-    dragCard.current = 0;
-    dragOverCard.current = 0;
-
-    // Update state
-    setSelectedSimulations(updated);
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
   };
 
   const handleRemoveCard = (index: number) => {
     const newSimulations = [...selectedSimulations];
     newSimulations.splice(index, 1);
 
-    // Reorder remaining items
     const reordered = newSimulations.map((item, idx) => ({
       ...item,
       order: idx + 1,
@@ -63,68 +45,69 @@ export const SimulationCardItem: React.FC<SimulationCardItemProps> = ({
     setSelectedSimulations(reordered);
   };
 
-  const handleCloseModal = () => {
-    setOpenMessageIndex(null);
-  };
+  const handleCloseModal = () => setOpenMessageIndex(null);
 
   const handleAddMessage = (data: any) => {
     if (openMessageIndex === null) return;
 
-    const updatedSimulations = [...selectedSimulations];
-    const targetIndex = openMessageIndex;
-
-    // Add message properties to the simulation at the target index
-    updatedSimulations[targetIndex] = {
-      ...updatedSimulations[targetIndex],
+    const updated = [...selectedSimulations];
+    updated[openMessageIndex] = {
+      ...updated[openMessageIndex],
       messageTitle: data.messageTitle || "",
       feedback: data.feedback || "",
     };
 
-    setSelectedSimulations(updatedSimulations);
+    setSelectedSimulations(updated);
     setOpenMessageIndex(null);
   };
 
   const handleMinimumScoreChange = (index: number, value: string) => {
-    const newSimulations = [...selectedSimulations];
-    newSimulations[index] = {
-      ...newSimulations[index],
+    const updated = [...selectedSimulations];
+    updated[index] = {
+      ...updated[index],
       minimumScore: Number(value) || 0,
     };
-    setSelectedSimulations(newSimulations);
+    setSelectedSimulations(updated);
   };
 
   return (
     <>
-      <div className="flex flex-col border p-5 relative group max-w-full rounded-md shadow-sm hover:shadow-lg overflow-auto">
-        <div className="flex flex-col items-center justify-between">
-          <button
-            onClick={() => {
-              handleRemoveCard(index);
-            }}
-            className="absolute right-3 top-10 opacity-0 group-hover:opacity-100 transition"
-          >
-            <CloseRed />
-          </button>
+      <div
+        ref={setNodeRef}
+        style={style}
+        className={`flex p-3 pr-12 relative group rounded-md shadow-sm hover:shadow-lg  min-w-[800px] w-full border items-center ${
+          isDragging ? "border-blue-500 border-2" : "border-gray-300"
+        }`}
+      >
+        {/* Remove Button */}
+        <button
+          onClick={() => handleRemoveCard(index)}
+          className="absolute right-3 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition z-10"
+          type="button"
+        >
+          <CloseRed />
+        </button>
+
+        {/* Drag Handle - Only this should trigger dragging */}
+        <div {...attributes} {...listeners} className="cursor-grab active:cursor-grabbing">
+          <DragIndicator className="w-5 h-5 text-gray-500 mr-5 mt-1" />
         </div>
-        <div className="flex items-center gap-5 justify-between">
-          <div
-            className="flex items-center gap-3"
-            draggable
-            onDragStart={() => (dragCard.current = index)}
-            onDragEnter={() => (dragOverCard.current = index)}
-            onDragEnd={handleSort}
-            onDragOver={e => e.preventDefault()}
-          >
-            <span>
-              <DragIndicator />
+
+        <div className="flex items-start justify-between w-full">
+          <div className="flex items-center gap-3">
+            <span className="w-6 h-6 flex items-center justify-center text-md text-typography-900">
+              {simulation.order}
             </span>
-            <span>{simulation.order}</span>
-            <img
-              src={simulation.coverImageUrl}
-              alt={simulation.title}
-              className="w-28 h-16 rounded-md object-cover shrink-0"
-            />
-            <div className="flex flex-col">
+
+            <div className="w-32 h-20 rounded-md overflow-hidden bg-gray-100 flex items-center justify-center">
+              <CustomImage
+                src={simulation.coverImageUrl}
+                alt={simulation.title}
+                className="w-full h-full object-cover"
+              />
+            </div>
+
+            <div className="flex flex-col max-w-xl">
               <span className="text-sm text-typography-900 font-primary">{simulation.title}</span>
               <span className="text-xs text-typography-800 font-primary truncate max-w-xl">
                 {simulation.description}
@@ -132,7 +115,8 @@ export const SimulationCardItem: React.FC<SimulationCardItemProps> = ({
             </div>
           </div>
 
-          <div className="flex items-center gap-3">
+          {/* Minimum score section */}
+          <div className="flex items-center gap-3 self-center">
             <Tooltip
               title={en.simulation.minScoreTooltip}
               placement="top"
@@ -147,9 +131,10 @@ export const SimulationCardItem: React.FC<SimulationCardItemProps> = ({
             <span className="text-sm text-typography-800 font-primary whitespace-nowrap">
               {en.simulation.minScore}
             </span>
+
             <input
               type="number"
-              className="border outline-none w-16 p-1 bg-secondary-50 mr-5"
+              className="border outline-none w-16 p-1 bg-secondary-50 rounded-sm"
               defaultValue={simulation.minimumScore}
               onBlur={e => handleMinimumScoreChange(index, e.target.value)}
               min="0"
@@ -158,15 +143,18 @@ export const SimulationCardItem: React.FC<SimulationCardItemProps> = ({
         </div>
       </div>
 
+      {/* Add Message / Render Message Below the Card */}
       {!isLast && (
         <>
           {!simulation.messageTitle ? (
             <div className="relative flex justify-center my-4">
               <button
-                className="p-2 border border-dashed rounded-md hover:bg-secondary-50 flex gap-2 text-typography-500 p-3"
+                className="border border-dashed rounded-md hover:bg-secondary-50 flex gap-2 text-typography-500 p-3"
+                ref={buttonRef}
                 onClick={() => handleMessageClick(index)}
+                type="button"
               >
-                <Plus className="mt-2" />
+                <Plus className="mt-1" />
                 {en.simulation.addMessage}
               </button>
             </div>
@@ -177,9 +165,8 @@ export const SimulationCardItem: React.FC<SimulationCardItemProps> = ({
           {openMessageIndex === index && (
             <div className="relative">
               <div className="fixed inset-0 bg-black/10 z-10" onClick={handleCloseModal} />
-
               <div
-                className="absolute left-1/2 -translate-x-1/2 z-20 "
+                className="absolute left-1/2 -translate-x-1/2 z-20"
                 onClick={e => e.stopPropagation()}
               >
                 <AddMessageModal
@@ -189,6 +176,8 @@ export const SimulationCardItem: React.FC<SimulationCardItemProps> = ({
                     feedback: simulation.feedback || "",
                   }}
                   handlePrimaryAction={handleAddMessage}
+                  isOpen={true}
+                  anchorElement={buttonRef.current}
                 />
               </div>
             </div>

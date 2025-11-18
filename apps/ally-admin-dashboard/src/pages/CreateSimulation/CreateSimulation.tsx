@@ -122,7 +122,7 @@ export const CreateSimulation: FC = () => {
     if (Object.keys(dirtyFields).length > 0) {
       setShowDiscardPopup(true);
     } else {
-      navigate("/");
+      navigate(-1);
     }
   };
 
@@ -213,14 +213,14 @@ export const CreateSimulation: FC = () => {
 
   const handleDiscardChanges = () => {
     setShowDiscardPopup(false);
-    navigate("/");
+    navigate(-1);
   };
 
   const handleSaveAndExit = async () => {
     const response = await saveSimulationChanges(SimulationStatus.DRAFT);
     if (response) {
       setShowDiscardPopup(false);
-      navigate("/");
+      navigate(-1);
       toast.success("Simulation changes saved successfully!");
     } else {
       toast.error("Failed to save simulation changes!");

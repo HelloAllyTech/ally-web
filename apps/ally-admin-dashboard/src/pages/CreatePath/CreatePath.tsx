@@ -62,6 +62,19 @@ export const CreatePath: FC = () => {
   const [createSimulationPathMutation] = useCreateSimulationPathMutation();
   const [updateSimulationPathByIdQuery] = useUpdateSimulationPathByIdMutation();
 
+  const formatScenarios = (scenarios?: GetScenarioType[]) => {
+    if (!scenarios || scenarios.length === 0) return [];
+
+    return scenarios.map((scenario, index) => ({
+      ...scenario,
+      order: index + 1,
+    }));
+  };
+
+  const [selectedSimulations, setSelectedSimulations] = useState<GetScenarioType[]>(
+    formatScenarios(individualPath?.scenarios) ?? [],
+  );
+
   const formMethods = useForm({
     mode: "onChange",
     reValidateMode: "onChange",
@@ -109,17 +122,8 @@ export const CreatePath: FC = () => {
     if (isNonEmptyObject(dirtyFields)) {
       setShowDiscardPopup(true);
     } else {
-      navigate("/");
+      navigate(-1);
     }
-  };
-
-  const formatScenarios = (scenarios?: GetScenarioType[]) => {
-    if (!scenarios || scenarios.length === 0) return [];
-
-    return scenarios.map((scenario, index) => ({
-      ...scenario,
-      order: index + 1,
-    }));
   };
 
   // Core function to save simulation changes
@@ -181,14 +185,14 @@ export const CreatePath: FC = () => {
 
   const handleDiscardChanges = () => {
     setShowDiscardPopup(false);
-    navigate("/");
+    navigate(-1);
   };
 
   const handleSaveAndExit = async () => {
     const response = await saveSimulationChanges(SimulationStatus.DRAFT);
     if (response) {
       setShowDiscardPopup(false);
-      navigate("/");
+      navigate(-1);
       toast.success(en.simulation.saveSimulation);
     } else {
       toast.error(en.errors.failedSimulationChange);
@@ -248,8 +252,9 @@ export const CreatePath: FC = () => {
           <SimulationSelectionModal
             toggleSimulationModal={toggleSimulationModal}
             showSimulation={showSimulationModal}
-            data={formatScenarios(individualPath?.scenarios)}
             formMethods={formMethods}
+            selectedSimulations={selectedSimulations}
+            setSelectedSimulations={setSelectedSimulations}
           />,
           true,
         );
