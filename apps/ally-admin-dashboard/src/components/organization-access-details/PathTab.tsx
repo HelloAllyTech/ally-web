@@ -143,7 +143,7 @@ export const PathTab: FC<PathTabProps> = ({
         <EmptyState title={en.simulation.noResultFound} subtitle={en.simulation.adjustFilter} />
       ) : (
         <div className="flex flex-col flex-1 overflow-y-auto pb-8">
-          <div className="grid grid-cols-12 text-base text-typography-800 border-b border-border-light sticky top-0 z-10 bg-white">
+          <div className="grid grid-cols-12 text-base text-typography-800 border-b border-border-light sticky top-0 z-10 bg-white pb-1">
             <div className="col-span-11 text-typography-600 text-sm">{en.userManagement.path}</div>
             <div className="col-span-1 text-sm text-typography-600 pr-8">
               {en.userManagement.access}

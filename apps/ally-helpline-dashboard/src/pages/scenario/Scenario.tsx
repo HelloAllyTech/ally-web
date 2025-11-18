@@ -55,6 +55,7 @@ export const Scenario: FC = () => {
   const renderBackButton = () => {
     return (
       <motion.button
+        data-testid="scenario-back-button"
         initial={{ opacity: 0, x: -20 }}
         animate={{ opacity: 1, x: 0 }}
         exit={{ opacity: 0, x: -20 }}
@@ -144,33 +145,53 @@ export const Scenario: FC = () => {
 
   return (
     <AnimatePresence mode="wait">
-      <div className="h-screen w-full flex justify-center items-center bg-white">
+      <div
+        className="h-screen w-full flex justify-center items-center bg-white"
+        data-testid="scenario-page"
+      >
         {scenario && isScenarioSuccess ? (
           <motion.div
+            data-testid="scenario-content"
             variants={learnPageExpandedVariants}
             initial="hidden"
             animate="visible"
             exit="exit"
             className="flex flex-col gap-6 w-full m-auto justify-center items-center"
           >
-            <div className="flex justify-between w-full max-w-[600px]">
-              <div className="flex items-center gap-2 font-secondary text-3xl">
+            <div
+              className="flex justify-between w-full max-w-[600px]"
+              data-testid="scenario-header"
+            >
+              <div
+                className="flex items-center gap-2 font-secondary text-3xl"
+                data-testid="scenario-title"
+              >
                 {renderBackButton()}
                 <span>Start</span>
                 <span className="font-bold italic"> Simulation</span>
               </div>
-              <div className="font-primary flex  items-center">
+              <div
+                className="font-primary flex  items-center"
+                data-testid="scenario-credits-display"
+              >
                 <div className="font-primary text-base text-typography-800">Credits used:</div>
-                <Bolt className="mb-2" />
+                <Bolt className="mb-2" data-testid="scenario-credits-icon" />
                 <span
+                  data-testid="scenario-credits-consumed"
                   className={`font-bold text-xl mb-1 ${limitReached ? "text-destructive-500" : "text-typography-900"}`}
                 >
                   {credits?.consumedCredits ?? 0}
                 </span>
-                <span className="text-base text-typography-800">/{credits?.creditLimit ?? 0}</span>
+                <span
+                  className="text-base text-typography-800"
+                  data-testid="scenario-credits-limit"
+                >
+                  /{credits?.creditLimit ?? 0}
+                </span>
               </div>
             </div>
             <ScenarioDetailsCard
+              data-testid="scenario-details-card"
               coverImage={scenario?.coverImageUrl || ""}
               coverVideo={scenario?.coverVideoUrl || ""}
               isStarting={isStartingSimulation}
@@ -182,6 +203,7 @@ export const Scenario: FC = () => {
           </motion.div>
         ) : (
           <FallbackUI
+            data-testid="scenario-not-found"
             icon={<PageNotFoundIllustration />}
             isLoading={isScenarioLoading}
             mainMessage="Scenario not found"
@@ -193,11 +215,13 @@ export const Scenario: FC = () => {
           />
         )}
         <LoginDialog
+          data-testid="scenario-login-dialog"
           isOpen={isLoginDialogOpen}
           onClose={() => setIsLoginDialogOpen(false)}
           onSuccess={handleStartSimulation}
         />
         <ConfirmationDialog
+          data-testid="scenario-existing-simulation-dialog"
           title={{ normal: "Active Simulation ", italic: "Detected" }}
           isOpen={isExistingSimulationConfirmOpen}
           onClose={() => setIsExistingSimulationConfirmOpen(false)}
@@ -210,6 +234,7 @@ export const Scenario: FC = () => {
           icon={ExistingCall}
         />
         <CreditInfo
+          data-testid="scenario-no-credits-dialog"
           open={noCreditsLeft}
           onClose={() => handleCreditClose("noCredits")}
           title="No Credits Left"
@@ -217,6 +242,7 @@ export const Scenario: FC = () => {
           autoCloseDuration={AUTO_CLOSE_DIALOG_DURATION}
         />
         <CreditInfo
+          data-testid="scenario-not-enough-credits-dialog"
           open={notEnoughCredits}
           onClose={() => handleCreditClose("notEnough")}
           title="Not Enough Credits"

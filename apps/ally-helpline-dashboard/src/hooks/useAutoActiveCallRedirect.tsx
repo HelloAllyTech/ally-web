@@ -4,7 +4,7 @@ import { ROUTES, SocketConnectionTypes } from "@constants";
 
 import { useSessionManager } from ".";
 
-export const useAutoActiveCallRedirect = () => {
+export const useAutoActiveCallRedirect = (isAuthenticated: boolean) => {
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -27,7 +27,7 @@ export const useAutoActiveCallRedirect = () => {
     }
   };
 
-  if (activeSession && !location.pathname.includes(ROUTES.AUDIO_CALL)) {
+  if (isAuthenticated && activeSession && !location.pathname.includes(ROUTES.AUDIO_CALL)) {
     navigateToSession();
   }
 };

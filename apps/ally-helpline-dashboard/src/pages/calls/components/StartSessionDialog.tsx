@@ -19,18 +19,24 @@ const StartSessionDialog: FC<StartSessionDialogProps> = ({ isOpen, onClose }) =>
 
   const StartSessionEmbed = () => (
     <motion.div
+      data-testid="start-session-embed"
       className="w-[90%] flex flex-col items-center border-y-[0.5px] border-border-light py-4 font-primary"
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.5, duration: 0.3 }}
     >
-      <span className="text-base text-typography-900">Listen Live</span>
-      <span className="text-xs text-typography-800">Ally will hear audio alongside you</span>
+      <span className="text-base text-typography-900" data-testid="start-session-embed-title">
+        Listen Live
+      </span>
+      <span className="text-xs text-typography-800" data-testid="start-session-embed-description">
+        Ally will hear audio alongside you
+      </span>
     </motion.div>
   );
 
   return (
     <ConfirmationDialog
+      data-testid="start-session-dialog"
       title={{ normal: "Start", italic: "Session" }}
       isOpen={isOpen}
       onClose={onClose}
