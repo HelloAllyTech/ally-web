@@ -105,9 +105,9 @@ export const OrganizationDetail: FC = () => {
 
   return (
     <div className="flex flex-col font-primary h-[100vh] overflow-hidden">
-      <div className="space-y-6 flex-shrink-0">
+      <div className="flex-shrink-0">
         {/* Breadcrumbs */}
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2 text-base">
             <button
               onClick={() => navigate(ROUTES.USER_MANAGEMENT)}
@@ -123,7 +123,7 @@ export const OrganizationDetail: FC = () => {
         </div>
 
         {/* Organization Header */}
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-3">
             <h1 className="text-2xl font-medium text-typography-900">{organization.name}</h1>
             <div className="flex items-center gap-2 text-sm text-typography-600">
