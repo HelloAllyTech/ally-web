@@ -79,6 +79,13 @@ export const convertEventToApiPayload = (event: UpdateEventDataParam): SessionEv
     ) {
       detectionData.sentences = event.triggerCondition.sentences;
     }
+    if (
+      event.triggerCondition &&
+      "speaker" in event.triggerCondition &&
+      typeof event.triggerCondition.speaker === "string"
+    ) {
+      detectionData.speaker = event.triggerCondition.speaker;
+    }
   }
 
   if (
@@ -129,9 +136,6 @@ export const convertEventToApiPayload = (event: UpdateEventDataParam): SessionEv
     detectionType: backendDetectionType,
     visibilityType: event.visibilityType || "",
   };
-
-  //TO-DO(pass speaker only for sentence and semantic similarity events)
-  payload.speaker = "CARE_GIVER";
 
   if (Object.keys(detectionData).length > 0) {
     payload.detectionData = detectionData;

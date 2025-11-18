@@ -159,6 +159,7 @@ export interface Pagination {
  * - TIME: only time and condition
  */
 export interface SessionEventDetectionData {
+  speaker?: string;
   sentences?: string[];
   score?: number;
   time?: number;
@@ -179,7 +180,6 @@ export interface SessionEvent {
   branchInstruction?: string;
   detectionType?: SessionEventDetectionType | string;
   visibilityType?: string;
-  speaker?: string;
   detectionData?: SessionEventDetectionData;
 }
 
