@@ -25,6 +25,7 @@ export const SimulationControls: FC<SimulationControlsProps> = ({
       leftIcon: isMuted ? <MicOff /> : <MicOn />,
       show: true,
       text: isMuted ? "Unmute" : "Mute",
+      testId: "simulation-controls-mute-button",
     },
     {
       action: onFocusButtonClick,
@@ -33,6 +34,7 @@ export const SimulationControls: FC<SimulationControlsProps> = ({
       leftIcon: <Focus className={isFocusMode ? "" : "[&_path]:fill-[#FFFFFF]"} />,
       show: true,
       text: isFocusMode ? "Focused" : "Focus",
+      testId: "simulation-controls-focus-button",
     },
     {
       action: onEndSessionClick,
@@ -41,7 +43,8 @@ export const SimulationControls: FC<SimulationControlsProps> = ({
       leftIcon: isEndingSession ? <CircularProgress size={16} /> : <Stop />,
       show: true,
       text: "End session",
+      testId: "simulation-controls-end-session-button",
     },
   ];
-  return <ButtonGroup buttonList={buttonList} />;
+  return <ButtonGroup data-testid="simulation-controls" buttonList={buttonList} />;
 };

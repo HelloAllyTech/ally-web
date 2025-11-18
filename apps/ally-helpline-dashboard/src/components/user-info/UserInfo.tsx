@@ -29,13 +29,15 @@ const UserInfo: FC<{ user?: User; isExpanded?: boolean; onLogout: () => void }> 
   }, []);
 
   return (
-    <div className="relative w-full" ref={containerRef}>
+    <div className="relative w-full" ref={containerRef} data-testid="user-info">
       <div
+        data-testid="user-info-trigger"
         onClick={() => setShowLogout(prev => !prev)}
         className="flex border-gray-200 items-center cursor-pointer justify-end"
       >
         <div className="flex gap-2 items-center w-full">
           <div
+            data-testid="user-info-avatar-ring"
             className={"w-[40px] h-[40px] rounded-full p-[2px]"}
             style={
               hasPercentage
@@ -45,20 +47,31 @@ const UserInfo: FC<{ user?: User; isExpanded?: boolean; onLogout: () => void }> 
                 : undefined
             }
           >
-            <div className="bg-white rounded-full flex items-center justify-center w-full h-full">
-              <AccountCircle className="text-typography-700 w-[28px] h-[28px]" />
+            <div
+              className="bg-white rounded-full flex items-center justify-center w-full h-full"
+              data-testid="user-info-avatar"
+            >
+              <AccountCircle
+                className="text-typography-700 w-[28px] h-[28px]"
+                data-testid="user-info-avatar-icon"
+              />
             </div>
           </div>
           {isExpanded && (
-            <div className="flex flex-col font-primary">
-              <div className="text-lg text-typography-800">{user?.name}</div>
-              <div className="text-xs text-typography-800">{user?.email}</div>
+            <div className="flex flex-col font-primary" data-testid="user-info-details">
+              <div className="text-lg text-typography-800" data-testid="user-info-name">
+                {user?.name}
+              </div>
+              <div className="text-xs text-typography-800" data-testid="user-info-email">
+                {user?.email}
+              </div>
             </div>
           )}
         </div>
         {isExpanded && (
           <div className="flex-shrink-0">
             <Arrow
+              data-testid="user-info-toggle-arrow"
               className={`w-5 h-2 text-typography-800 transition-transform duration-300 ${
                 showLogout ? "-rotate-90" : ""
               }`}
@@ -69,37 +82,55 @@ const UserInfo: FC<{ user?: User; isExpanded?: boolean; onLogout: () => void }> 
 
       {showLogout && (
         <div
+          data-testid="user-info-dropdown"
           className={`absolute z-10 bottom-3  bg-white border shadow-md rounded-md p-2 w-[240px] flex flex-col gap-3 font-primary ${isExpanded ? "left-[240px]" : "left-[80px]"}`}
         >
           <PermissionGuard requiredPermissions={[Permissions.VIEW_SIMULATION_CREDITS]}>
-            <div className="flex items-center gap-2">
-              <Bolt />
+            <div className="flex items-center gap-2" data-testid="user-info-credits-header">
+              <Bolt data-testid="user-info-credits-icon" />
               <div>Credit usage</div>
             </div>
 
-            <div className="flex justify-between items-center ">
+            <div
+              className="flex justify-between items-center "
+              data-testid="user-info-credits-stats"
+            >
               <div>
-                <span className="font-semibold text-xl ">{credits?.consumedCredits ?? 0}</span>
-                <span className="text-typography-800 text-base">/{credits?.creditLimit ?? 0}</span>
+                <span className="font-semibold text-xl " data-testid="user-info-credits-consumed">
+                  {credits?.consumedCredits ?? 0}
+                </span>
+                <span
+                  className="text-typography-800 text-base"
+                  data-testid="user-info-credits-limit"
+                >
+                  /{credits?.creditLimit ?? 0}
+                </span>
               </div>
-              <span>{credits?.creditLimit ? `${CreditPercentage}%` : "0%"}</span>
+              <span data-testid="user-info-credits-percentage">
+                {credits?.creditLimit ? `${CreditPercentage}%` : "0%"}
+              </span>
             </div>
 
-            <div className="w-full bg-gray-200 rounded-full h-2">
+            <div
+              className="w-full bg-gray-200 rounded-full h-2"
+              data-testid="user-info-credits-bar-container"
+            >
               <div
+                data-testid="user-info-credits-bar"
                 className={`h-2 rounded-full transition-all duration-300 ${
                   limitReached ? "bg-red-500" : "bg-blue-600"
                 }`}
                 style={{ width: `${CreditPercentage}%` }}
               />
             </div>
-            <div className="border-b" />
+            <div className="border-b" data-testid="user-info-divider" />
           </PermissionGuard>
           <button
+            data-testid="user-info-logout-button"
             onClick={onLogout}
             className="flex items-center gap-2 text-typography-700 hover:bg-gray-100 py-1 px-2 rounded justify-start w-full border-gray-200"
           >
-            <Logout className="w-4 h-4" />
+            <Logout className="w-4 h-4" data-testid="user-info-logout-icon" />
             Logout
           </button>
         </div>

@@ -36,10 +36,10 @@ vi.mock("@assets", async importOriginal => {
   const actual = (await importOriginal()) as Record<string, unknown>;
   return {
     ...actual,
-    AccountCircle: (props: any) => <div data-testid="account-icon" {...props}></div>,
-    Arrow: (props: any) => <div data-testid="arrow-icon" className={props.className}></div>,
-    Logout: (props: any) => <div data-testid="logout-icon" {...props}></div>,
-    Bolt: (props: any) => <div data-testid="bolt-icon" {...props}></div>,
+    AccountCircle: (props: any) => <div {...props}></div>,
+    Arrow: (props: any) => <div className={props.className} {...props}></div>,
+    Logout: (props: any) => <div {...props}></div>,
+    Bolt: (props: any) => <div {...props}></div>,
   };
 });
 
@@ -131,20 +131,20 @@ describe("UserInfo", () => {
       renderComponent(mockUser, true);
       expect(screen.getByText("Jane Doe")).toBeInTheDocument();
       expect(screen.getByText("jane.doe@example.com")).toBeInTheDocument();
-      expect(screen.getByTestId("account-icon")).toBeInTheDocument();
-      expect(screen.getByTestId("arrow-icon")).toBeInTheDocument();
+      expect(screen.getByTestId("user-info-avatar-icon")).toBeInTheDocument();
+      expect(screen.getByTestId("user-info-toggle-arrow")).toBeInTheDocument();
     });
 
     it("should not render user name and email when collapsed", () => {
       renderComponent(mockUser, false);
       expect(screen.queryByText("Jane Doe")).not.toBeInTheDocument();
       expect(screen.queryByText("jane.doe@example.com")).not.toBeInTheDocument();
-      expect(screen.getByTestId("account-icon")).toBeInTheDocument();
+      expect(screen.getByTestId("user-info-avatar-icon")).toBeInTheDocument();
     });
 
     it("should not render arrow icon when collapsed", () => {
       renderComponent(mockUser, false);
-      expect(screen.queryByTestId("arrow-icon")).not.toBeInTheDocument();
+      expect(screen.queryByTestId("user-info-toggle-arrow")).not.toBeInTheDocument();
     });
 
     it("should initially hide the logout menu", () => {
@@ -158,32 +158,32 @@ describe("UserInfo", () => {
       renderComponent(mockUser, true);
       expect(screen.getByText("Jane Doe")).toBeInTheDocument();
       expect(screen.getByText("jane.doe@example.com")).toBeInTheDocument();
-      expect(screen.getByTestId("arrow-icon")).toBeInTheDocument();
+      expect(screen.getByTestId("user-info-toggle-arrow")).toBeInTheDocument();
     });
 
     it("should hide user details when isExpanded is false", () => {
       renderComponent(mockUser, false);
       expect(screen.queryByText("Jane Doe")).not.toBeInTheDocument();
       expect(screen.queryByText("jane.doe@example.com")).not.toBeInTheDocument();
-      expect(screen.queryByTestId("arrow-icon")).not.toBeInTheDocument();
+      expect(screen.queryByTestId("user-info-toggle-arrow")).not.toBeInTheDocument();
     });
 
     it("should show account icon regardless of isExpanded state", () => {
       const { rerender } = renderComponent(mockUser, true);
-      expect(screen.getByTestId("account-icon")).toBeInTheDocument();
+      expect(screen.getByTestId("user-info-avatar-icon")).toBeInTheDocument();
 
       rerender(
         <TestWrapper>
           <UserInfo user={mockUser} isExpanded={false} onLogout={mockOnLogout} />
         </TestWrapper>,
       );
-      expect(screen.getByTestId("account-icon")).toBeInTheDocument();
+      expect(screen.getByTestId("user-info-avatar-icon")).toBeInTheDocument();
     });
 
     it("should allow menu toggle when collapsed", () => {
       renderComponent(mockUser, false);
 
-      const accountIcon = screen.getByTestId("account-icon");
+      const accountIcon = screen.getByTestId("user-info-avatar-icon");
       fireEvent.click(accountIcon.parentElement?.parentElement?.parentElement || accountIcon);
 
       expect(screen.getByText("Logout")).toBeInTheDocument();
@@ -213,7 +213,7 @@ describe("UserInfo", () => {
     it("should apply the rotation class to the arrow icon when the menu is open and expanded", () => {
       renderComponent(mockUser, true);
 
-      const arrowIcon = screen.getByTestId("arrow-icon");
+      const arrowIcon = screen.getByTestId("user-info-toggle-arrow");
 
       expect(arrowIcon).not.toHaveClass("-rotate-90");
 
@@ -277,7 +277,7 @@ describe("UserInfo", () => {
 
       fireEvent.click(screen.getByText("Jane Doe"));
 
-      expect(screen.getByTestId("bolt-icon")).toBeInTheDocument();
+      expect(screen.getByTestId("user-info-credits-icon")).toBeInTheDocument();
     });
 
     it("should show blue progress bar when limit not reached", () => {
@@ -355,7 +355,7 @@ describe("UserInfo", () => {
         </TestWrapper>,
       );
 
-      expect(screen.getByTestId("account-icon")).toBeInTheDocument();
+      expect(screen.getByTestId("user-info-avatar-icon")).toBeInTheDocument();
     });
 
     it("should toggle menu multiple times", () => {
@@ -383,7 +383,7 @@ describe("UserInfo", () => {
 
       // Should behave as if collapsed when undefined
       expect(screen.queryByText("Jane Doe")).not.toBeInTheDocument();
-      expect(screen.getByTestId("account-icon")).toBeInTheDocument();
+      expect(screen.getByTestId("user-info-avatar-icon")).toBeInTheDocument();
     });
   });
 
@@ -409,7 +409,7 @@ describe("UserInfo", () => {
     it("should apply transition classes to arrow icon when expanded", () => {
       renderComponent(mockUser, true);
 
-      const arrowIcon = screen.getByTestId("arrow-icon");
+      const arrowIcon = screen.getByTestId("user-info-toggle-arrow");
       expect(arrowIcon.className).toContain("transition-transform");
       expect(arrowIcon.className).toContain("duration-300");
     });

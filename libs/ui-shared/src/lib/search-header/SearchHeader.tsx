@@ -9,9 +9,13 @@ import allyIcon from "./ally.svg?url";
 
 const SearchHeader = ({ showDescriptionInMobile = true }) => {
   return (
-    <div className="w-full flex flex-col gap-2 items-center justify-center font-['IBM_Plex_Serif'] mb-4 mt-10">
-      <img src={allyIcon} alt="Ally Logo" className="w-24 h-16" />
+    <div
+      className="w-full flex flex-col gap-2 items-center justify-center font-['IBM_Plex_Serif'] mb-4 mt-10"
+      data-testid="search-header"
+    >
+      <img src={allyIcon} alt="Ally Logo" className="w-24 h-16" data-testid="search-header-logo" />
       <span
+        data-testid="search-header-description"
         className={`${
           showDescriptionInMobile ? "block" : "hidden"
         } sm:block text-[#000] text-center px-[10%]`}
