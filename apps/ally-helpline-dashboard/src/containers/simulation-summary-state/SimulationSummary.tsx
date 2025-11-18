@@ -9,12 +9,13 @@ import { Permissions } from "@constants";
 import { SessionType } from "@types";
 
 import { FeedbackDialog } from "..";
-import { FeedbackSection, LoaderSkeleton } from "./components";
+import { FeedbackSection, LoaderSkeleton, UpNextSimulationCard } from "./components";
 import { SimulationSummaryProps } from "./types";
 
 export const SimulationSummary: FC<SimulationSummaryProps> = ({
   className,
   isInSidebar = false,
+  isFromSimulationPathway = true,
   summaryId,
   onSummaryClose,
   onSummaryFetch,
@@ -69,6 +70,27 @@ export const SimulationSummary: FC<SimulationSummaryProps> = ({
     }
   };
 
+  const renderNextSimulationDetails = () => {
+    return (
+      <div className="px-4">
+        <div className="text-typography-900 text-base font-semibold mb-[8px]">
+          Keep building on your empathy and presence.
+        </div>
+        <div className="text-typography-900 text-base font-normal mb-[8px]">
+          This session reflected your growing ability to stay calm and connected even when the
+          client expressed hopelessness. Maintaining composure helped create a safe space for
+          reflection, but allowing a bit more silence could deepen trust further
+        </div>
+        <UpNextSimulationCard
+          simulationNumber={2}
+          title="Hopeless Male, 40"
+          scenario="A 40-year-old male is experiencing deep hopelessness.He feels overwhelmed by ongoing personal and professional failures, believes his situation won't improve, and is withdrawing socially. He's showing signs of resignation and low self-worth. Your goal is to explore his thoughts gently, offer validation, and begin rebuilding his sense of agency and hope."
+          coverImage="https://via.placeholder.com/120"
+        />
+      </div>
+    );
+  };
+
   return (
     <div
       className={`relative flex flex-col h-full w-full ${className}`}
@@ -78,6 +100,7 @@ export const SimulationSummary: FC<SimulationSummaryProps> = ({
         {retryMaxReached || summary?.details?.summary?.feedback ? (
           <>
             <FeedbackSection {...summary} />
+            {isFromSimulationPathway && renderNextSimulationDetails()}
             {!isInSidebar && (
               <PermissionGuard requiredPermissions={[Permissions.EDIT_SCENARIO_SESSION]}>
                 <motion.div
