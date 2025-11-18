@@ -67,13 +67,7 @@ export const useSimulationPathways = ({ selectedFilters }: UseSimulationPathways
     navigate(ROUTES.CREATE_PATH);
   };
 
-  const handleCreatePathway = () => {
-    // TODO: Navigate to pathway creation
-    toast.info("Pathway creation coming soon!");
-  };
-
   const onEditPathway = (pathway: ScenarioPath) => {
-    // TODO: Implement edit pathway logic
     navigate(ROUTES.EDIT_PATH(String(pathway.id)));
   };
 
@@ -118,7 +112,6 @@ export const useSimulationPathways = ({ selectedFilters }: UseSimulationPathways
     // Actions
     loadPathways,
     handleNewPathway,
-    handleCreatePathway,
     onEditPathway,
     handleDeletePathway,
     onDeletePathway,

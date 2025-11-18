@@ -44,14 +44,14 @@ export interface GetPathByIdResponse {
 }
 
 interface scenarioType {
-  scenarioId: number;
+  scenarioId: number | string;
   minimumScore: number;
   message: string;
   order: number;
 }
 
 export interface CreatePathInput {
-  title: string;
+  title?: string;
   description?: string;
   coverImageUrl?: string;
   isGlobal?: boolean;

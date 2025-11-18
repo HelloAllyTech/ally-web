@@ -4,6 +4,7 @@ import { useGetScenarioPathsQuery } from "@api";
 import { ListToolbar, EmptyState, ToggleSwitch, CustomImage } from "@components";
 import { en } from "@constants";
 import { ScenarioPath } from "@types";
+import { isNonEmptyArray } from "@utils";
 
 const PATHS_PAGE_SIZE = 30;
 
@@ -54,7 +55,7 @@ export const PathTab: FC<PathTabProps> = ({
 
   // Separate effect to notify parent of loaded paths
   useEffect(() => {
-    if (paths.length > 0 && onPathsLoaded) {
+    if (isNonEmptyArray(paths) && onPathsLoaded) {
       onPathsLoaded(paths.map(path => path.id.toString()));
     }
   }, [paths.length]);

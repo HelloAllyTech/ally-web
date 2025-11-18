@@ -129,6 +129,7 @@ vi.mock("@utils", () => ({
   formatSimulationUsage: (usage: number) => `${usage} times`,
   formatCapitalizedEnum: (value: string) =>
     value.charAt(0).toUpperCase() + value.slice(1).toLowerCase(),
+  isNonEmptyArray: (arr: unknown) => Array.isArray(arr) && arr.length > 0,
 }));
 
 describe("SimulationList", () => {

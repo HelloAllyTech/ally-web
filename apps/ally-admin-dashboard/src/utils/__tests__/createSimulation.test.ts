@@ -290,7 +290,7 @@ describe("createSimulation utils", () => {
       };
 
       const result = extractValidData(SIMULATION_CREATOR_FIELD_GROUPS, formData);
-      expect(result.coverImageUrl).toBe("");
+      expect(result.coverImageUrl).toBeNull();
     });
 
     it("should convert empty array in image upload to null", () => {
@@ -325,7 +325,7 @@ describe("createSimulation utils", () => {
         name: "John", // trimmed
         age: 30, // parsed
         gender: null, // empty select
-        coverImageUrl: "", // empty upload returns empty string
+        coverImageUrl: null, // empty string returns null
       });
     });
   });

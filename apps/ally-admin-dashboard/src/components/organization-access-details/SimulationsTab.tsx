@@ -4,6 +4,7 @@ import { useGetSimulationsQuery } from "@api";
 import { ListToolbar, EmptyState, SimulationAndPathToggleCard } from "@components";
 import { en, SORT_BY, SORT_ORDER } from "@constants";
 import { Simulation } from "@types";
+import { isNonEmptyArray } from "@utils";
 
 const SIMULATIONS_PAGE_SIZE = 30;
 
@@ -56,7 +57,7 @@ export const SimulationsTab: FC<SimulationsTabProps> = ({
 
   // Separate effect to notify parent of loaded simulations
   useEffect(() => {
-    if (simulations.length > 0 && onSimulationsLoaded) {
+    if (isNonEmptyArray(simulations) && onSimulationsLoaded) {
       onSimulationsLoaded(simulations.map(simulation => simulation.id.toString()));
     }
   }, [simulations.length]); // Only run when the count changes, not on every simulation change
@@ -96,7 +97,7 @@ export const SimulationsTab: FC<SimulationsTabProps> = ({
           placeholder={en.common.search}
         />
       </div>
-      {filteredSimulations.length === 0 ? (
+      {!isNonEmptyArray(filteredSimulations) ? (
         <EmptyState title={en.simulation.noResultFound} subtitle={en.simulation.adjustFilter} />
       ) : (
         <div className="flex flex-col flex-1 overflow-y-auto pb-8">

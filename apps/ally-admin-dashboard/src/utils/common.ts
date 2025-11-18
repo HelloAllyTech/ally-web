@@ -188,7 +188,7 @@ export const extractValidData = (
           return [key, value ? parseInt(value) : null];
 
         case FORM_FIELD_TYPES.IMAGE_UPLOAD: //image upload if empty returns object,so convert to null
-          return [key, value?.length > 0 ? value : ""];
+          return [key, value?.length > 0 ? value : null];
 
         case FORM_FIELD_TYPES.VIDEO_UPLOAD: //video upload if empty returns object,so convert to null
           return [key, value?.length > 0 ? value : null];
@@ -197,7 +197,7 @@ export const extractValidData = (
           return [key, Boolean(value)];
 
         default:
-          return [key, isNonEmptyString(value) ? value.trim() : value === "" ? null : value];
+          return [key, isNonEmptyString(value) ? value.trim() : value];
       }
     }),
   );

@@ -9,9 +9,6 @@ import {
 
 const simulationPathApi = baseAPI.injectEndpoints({
   endpoints: builder => ({
-    /**
-     * Get all scenario paths
-     */
     getScenarioPaths: builder.query<GetScenarioPathsResponse, GetScenarioPathsQueryParams>({
       query: (params: GetScenarioPathsQueryParams) => ({
         url: ApiEndpoints.SIMULATION_STUDIO.SCENARIO_PATHS,
@@ -49,9 +46,7 @@ const simulationPathApi = baseAPI.injectEndpoints({
         body: data,
       }),
     }),
-    /**
-     * Delete scenario path by Id
-     */
+
     deleteScenarioPathById: builder.mutation<void, number>({
       query: id => ({
         url: ApiEndpoints.SIMULATION_STUDIO.SCENARIO_PATH_BY_ID(id),

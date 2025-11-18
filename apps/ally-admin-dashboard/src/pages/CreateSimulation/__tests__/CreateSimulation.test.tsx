@@ -155,12 +155,13 @@ vi.mock("@utils", () => ({
     label: "Test Section",
     fields: [{ id: "field1", label: "Field 1" }],
   }),
-  extractValidData: (data: any) => data,
+  extractValidData: (_fields: any, data: any) => data,
   formatSimulationResponseData: (data: any) => data,
   isNonEmptyString: (str: string) => str && str.length > 0,
   isEmpty: (value: unknown) => {
     if (value === undefined || value === null) return true;
     if (typeof value === "string" && value.trim().length === 0) return true;
+    if (Array.isArray(value) && value.length === 0) return true;
     return false;
   },
 }));
