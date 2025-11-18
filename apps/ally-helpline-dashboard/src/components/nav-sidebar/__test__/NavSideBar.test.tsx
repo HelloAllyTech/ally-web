@@ -46,10 +46,8 @@ vi.mock("@assets", async importOriginal => {
   const original = (await importOriginal()) as Record<string, unknown>;
   return {
     ...original,
-    Ally: ({ className, ...props }: any) => (
-      <svg data-testid="ally-logo" className={className} {...props} />
-    ),
-    DockToRight: (props: any) => <svg data-testid="dock-to-right-icon" {...props} />,
+    Ally: ({ className, ...props }: any) => <svg className={className} {...props} />,
+    DockToRight: (props: any) => <svg {...props} />,
     LogoutIllustration: (props: any) => <svg data-testid="logout-illustration" {...props} />,
     Carousel1: (props: any) => <svg data-testid="carousel-1" {...props} />,
     Carousel2: (props: any) => <svg data-testid="carousel-2" {...props} />,
@@ -130,9 +128,7 @@ vi.mock("@constants", async importOriginal => {
     {
       id: TabId.CALLS,
       title: "Sessions",
-      Icon: ({ className, ...props }: any) => (
-        <svg data-testid="calls-icon" className={className} {...props} />
-      ),
+      Icon: ({ className, ...props }: any) => <svg className={className} {...props} />,
       path: "/calls",
       activePages: [],
       permissions: ["VIEW_CALL_LOGS"],
@@ -140,9 +136,7 @@ vi.mock("@constants", async importOriginal => {
     {
       id: TabId.ANALYTICS,
       title: "Statistics",
-      Icon: ({ className, ...props }: any) => (
-        <svg data-testid="analytics-icon" className={className} {...props} />
-      ),
+      Icon: ({ className, ...props }: any) => <svg className={className} {...props} />,
       path: "/analytics",
       activePages: [],
       permissions: ["VIEW_ANALYTICS_DASHBOARD"],
@@ -150,9 +144,7 @@ vi.mock("@constants", async importOriginal => {
     {
       id: TabId.COMMUNITY,
       title: "Community",
-      Icon: ({ className, ...props }: any) => (
-        <svg data-testid="community-icon" className={className} {...props} />
-      ),
+      Icon: ({ className, ...props }: any) => <svg className={className} {...props} />,
       path: "https://community.helloally.ai/",
       activePages: [],
       permissions: ["VIEW_COMMUNITY"],
@@ -241,28 +233,29 @@ describe("NavSideBar", () => {
 
   it("should render the sidebar container", () => {
     renderComponent();
-    const sidebar = screen.getByTestId("ally-logo").closest("div")?.parentElement?.parentElement;
+    const sidebar = screen.getByTestId("nav-sidebar-logo").closest("div")
+      ?.parentElement?.parentElement;
     expect(sidebar).toBeInTheDocument();
   });
 
   it("should render the Ally logo", () => {
     renderComponent();
-    expect(screen.getByTestId("ally-logo")).toBeInTheDocument();
-    expect(screen.getByTestId("ally-logo")).toHaveClass("m-3", "flex-shrink-0");
+    expect(screen.getByTestId("nav-sidebar-logo")).toBeInTheDocument();
+    expect(screen.getByTestId("nav-sidebar-logo")).toHaveClass("m-3", "flex-shrink-0");
   });
 
   it("should render the DockToRight toggle button", () => {
     renderComponent();
     const toggleButton = screen.getByTitle("Collapse sidebar");
     expect(toggleButton).toBeInTheDocument();
-    expect(screen.getByTestId("dock-to-right-icon")).toBeInTheDocument();
+    expect(screen.getByTestId("nav-sidebar-toggle")).toBeInTheDocument();
   });
 
   it("should render tabs based on permissions", () => {
     renderComponent();
-    expect(screen.getByTestId("calls-icon")).toBeInTheDocument();
-    expect(screen.getByTestId("analytics-icon")).toBeInTheDocument();
-    expect(screen.getByTestId("community-icon")).toBeInTheDocument();
+    expect(screen.getByTestId("nav-tab-icon-CALLS")).toBeInTheDocument();
+    expect(screen.getByTestId("nav-tab-icon-ANALYTICS")).toBeInTheDocument();
+    expect(screen.getByTestId("nav-tab-icon-COMMUNITY")).toBeInTheDocument();
     expect(screen.getByText("Sessions")).toBeInTheDocument();
     expect(screen.getByText("Statistics")).toBeInTheDocument();
     expect(screen.getByText("Community")).toBeInTheDocument();
@@ -309,7 +302,7 @@ describe("NavSideBar", () => {
     const toggleButton = screen.getByTitle("Collapse sidebar");
 
     // Initially expanded
-    const sidebar = screen.getByTestId("ally-logo").closest("div")?.parentElement;
+    const sidebar = screen.getByTestId("nav-sidebar-logo").closest("div")?.parentElement;
     expect(sidebar).toHaveClass("w-64");
 
     fireEvent.click(toggleButton);
@@ -399,7 +392,7 @@ describe("NavSideBar", () => {
 
   it("should apply correct classes when expanded", () => {
     renderComponent();
-    const sidebar = screen.getByTestId("ally-logo").closest("div")?.parentElement;
+    const sidebar = screen.getByTestId("nav-sidebar-logo").closest("div")?.parentElement;
     expect(sidebar).toHaveClass("w-64");
   });
 
@@ -409,7 +402,7 @@ describe("NavSideBar", () => {
     fireEvent.click(toggleButton);
 
     waitFor(() => {
-      const sidebar = screen.getByTestId("ally-logo").closest("div")?.parentElement;
+      const sidebar = screen.getByTestId("nav-sidebar-logo").closest("div")?.parentElement;
       expect(sidebar).toHaveClass("w-24");
     });
   });

@@ -56,6 +56,7 @@ export const useUser = () => {
    * - Clears RTK Query cache
    * - Resets user state in Redux store
    * - Removes authentication tokens from localStorage
+   * - Clears persisted Redux state
    * - Dispatches unauthenticate action
    */
   const logout = () => {
@@ -70,6 +71,9 @@ export const useUser = () => {
     // Clear tokens
     localStorage.removeItem(LOCAL_STORAGE_KEYS.ACCESS_TOKEN);
     localStorage.removeItem(LOCAL_STORAGE_KEYS.REFRESH_TOKEN);
+
+    // Clear persisted state
+    localStorage.removeItem("persist:user");
   };
 
   return {

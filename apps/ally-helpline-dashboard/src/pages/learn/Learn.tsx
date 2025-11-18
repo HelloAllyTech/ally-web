@@ -1,13 +1,12 @@
 import { FC, useEffect } from "react";
 
-import { AnimatePresence, motion } from "framer-motion";
-import { useNavigate, useSearchParams } from "react-router-dom";
-
 import { useGetScenariosQuery, useGetScenarioPathwaysQuery } from "@api";
 import { Bolt } from "@assets";
 import { ScenarioCard, TabGroup } from "@components";
 import { useSimulationCredits } from "@hooks";
 import { ScenarioStatus } from "@types";
+import { AnimatePresence, motion } from "framer-motion";
+import { useNavigate, useSearchParams } from "react-router-dom";
 
 import { learnPageContainerVariants, learnPageItemVariants } from "./constants";
 
@@ -92,13 +91,17 @@ export const Learn: FC = () => {
             <div className="font-primary text-base text-typography-700 whitespace-nowrap">
               Credits used:
             </div>
-            <Bolt />
+            <Bolt data-testid="learn-credits-icon" />
             <span
+              data-testid="learn-credits-consumed"
               className={`font-primary font-bold text-lg  ${limitReached ? "text-red-500" : "text-black"}`}
             >
               {credits?.consumedCredits ?? 0}
             </span>
-            <span className="font-primary text-base text-typography-700">
+            <span
+              className="font-primary text-base text-typography-700"
+              data-testid="learn-credits-limit"
+            >
               /{credits?.creditLimit ?? 0}
             </span>
           </div>

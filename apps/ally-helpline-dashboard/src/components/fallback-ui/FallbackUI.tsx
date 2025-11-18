@@ -17,7 +17,7 @@ const FallbackUI: FC<FallbackUIProps> = ({
   const isDarkTheme = theme === "dark";
   return (
     <div
-      className={`flex flex-col h-full w-full items-center justify-center gap-9 ${isDarkTheme ? "text-white bg-[#171A1A]" : "text-typography-700 bg-white"} ${className}`}
+      className={`flex flex-col h-full w-full items-center justify-center gap-9 ${isDarkTheme ? "text-white bg-typography-900" : "text-typography-700 bg-white"} ${className}`}
     >
       {isLoading ? (
         <CircularProgress />

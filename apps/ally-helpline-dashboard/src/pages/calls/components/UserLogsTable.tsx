@@ -220,7 +220,12 @@ const UserLogsTable: FC<LogsTableProps> = ({ refreshKey, sessionType, className 
       header: "Summary",
       style: { width: "6%" },
       render: (_value, row) => (
-        <Button onClick={() => setSummary(row.raw)} fullWidth={true} variant="icon">
+        <Button
+          onClick={() => setSummary(row.raw)}
+          fullWidth={true}
+          variant="icon"
+          data-testid={`user-logs-call-review-button-${row.id}`}
+        >
           <ReviewIcon />
         </Button>
       ),
@@ -283,7 +288,12 @@ const UserLogsTable: FC<LogsTableProps> = ({ refreshKey, sessionType, className 
       header: "Summary",
       style: { width: "10%" },
       render: (_value, row) => (
-        <Button onClick={() => setSummary(row.raw)} fullWidth={true} variant="icon">
+        <Button
+          onClick={() => setSummary(row.raw)}
+          fullWidth={true}
+          variant="icon"
+          data-testid={`user-logs-simulation-review-button-${row.id}`}
+        >
           <ReviewIcon />
         </Button>
       ),
@@ -348,7 +358,10 @@ const UserLogsTable: FC<LogsTableProps> = ({ refreshKey, sessionType, className 
 
   return (
     <>
-      <div className="rounded-xl w-full max-h-[calc(100vh-10px)] overflow-y-hidden">
+      <div
+        className="rounded-xl w-full max-h-[calc(100vh-10px)] overflow-y-hidden"
+        data-testid="user-logs-table-container"
+      >
         <GenericTable
           ref={tableRef}
           columns={isCall ? callColumns : simulationColumns}
@@ -357,6 +370,7 @@ const UserLogsTable: FC<LogsTableProps> = ({ refreshKey, sessionType, className 
           handleLoadMore={logs?.length > 0 && hasMore && handleLoadMore}
           fallbackUI={renderFallbackUI()}
           className={`min-w-full font-primary overflow-y-scroll text-sm text-typography-800 ${className}`}
+          data-testid="user-logs-table"
         />
       </div>
       {summary && summary.id && getSummarySideBar()}

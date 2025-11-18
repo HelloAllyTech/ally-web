@@ -272,13 +272,21 @@ const AdminLogsTable: FC<LogsTableProps> = ({ refreshKey, sessionType, className
       header: "Action(s)",
       style: { width: "10%" },
       render: (_value, row) => (
-        <div className="flex gap-2 items-center justify-start">
-          <Button onClick={() => setSummary(row.raw)} variant="icon">
+        <div
+          className="flex gap-2 items-center justify-start"
+          data-testid={`admin-logs-actions-${row.id}`}
+        >
+          <Button
+            onClick={() => setSummary(row.raw)}
+            variant="icon"
+            data-testid={`admin-logs-review-button-${row.id}`}
+          >
             <ReviewIcon />
           </Button>
           {row?.provider === CallProvider.AUDIO_UPLOAD && (
             <PermissionGuard requiredPermissions={[Permissions.DELETE_CHAT]}>
               <Button
+                data-testid={`admin-logs-delete-button-${row.id}`}
                 onClick={() => setDeleteLogChatId(row.raw.id)}
                 fullWidth={true}
                 variant="icon"
@@ -354,7 +362,12 @@ const AdminLogsTable: FC<LogsTableProps> = ({ refreshKey, sessionType, className
       header: "Summary",
       style: { width: "10%" },
       render: (_value, row) => (
-        <Button onClick={() => setSummary(row.raw)} fullWidth={true} variant="icon">
+        <Button
+          onClick={() => setSummary(row.raw)}
+          fullWidth={true}
+          variant="icon"
+          data-testid={`admin-logs-simulation-review-button-${row.id}`}
+        >
           <ReviewIcon />
         </Button>
       ),
@@ -482,7 +495,10 @@ const AdminLogsTable: FC<LogsTableProps> = ({ refreshKey, sessionType, className
 
   return (
     <>
-      <div className={"rounded-xl w-full max-h-[calc(100vh-10px)] overflow-y-hidden"}>
+      <div
+        className={"rounded-xl w-full max-h-[calc(100vh-10px)] overflow-y-hidden"}
+        data-testid="admin-logs-table-container"
+      >
         <GenericTable
           ref={tableRef}
           columns={isCall ? callColumns : simulationColumns}
@@ -493,10 +509,15 @@ const AdminLogsTable: FC<LogsTableProps> = ({ refreshKey, sessionType, className
           handleLoadMore={logs?.length > 0 && hasMore && handleLoadMore}
           fallbackUI={renderFallbackUI()}
           className={`min-w-full font-secondary overflow-y-scroll text-sm text-typography-800 ${className}`}
+          data-testid="admin-logs-table"
         />
       </div>
       {summary && summary.id && getSummarySideBar()}
-      <DeleteCallLogConfirmationDialog chatId={deleteLogChatId} closeDialog={onDeleteCallConfirm} />
+      <DeleteCallLogConfirmationDialog
+        chatId={deleteLogChatId}
+        closeDialog={onDeleteCallConfirm}
+        data-testid="admin-logs-delete-dialog"
+      />
     </>
   );
 };

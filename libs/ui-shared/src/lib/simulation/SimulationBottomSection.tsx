@@ -20,7 +20,10 @@ export const BottomSection: FC<BottomSectionProps> = ({
   onFocusButtonClick,
 }) => {
   return (
-    <div className="w-full flex justify-between items-center">
+    <div
+      data-testid="simulation-bottom-section"
+      className="w-full flex justify-between items-center"
+    >
       <SimulationTimer
         isWarning={isWarning}
         onWarning={onTimeLimitWarning}
@@ -35,7 +38,7 @@ export const BottomSection: FC<BottomSectionProps> = ({
         onMuteClick={onMuteSimulation}
         onFocusButtonClick={onFocusButtonClick}
       />
-      <div className="flex items-center gap-2">
+      <div data-testid="simulation-bottom-section-data-safe" className="flex items-center gap-2">
         <Warning />
         <span className="text-[12px] text-[#fff] font-['Roboto']">Your data is safe</span>
       </div>
