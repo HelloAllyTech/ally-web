@@ -95,7 +95,11 @@ export const PathTab: FC<PathTabProps> = ({
           placeholder={en.common.search}
         />
       </div>
-      {filteredPaths.length === 0 ? (
+      {!isNonEmptyArray(filteredPaths) && isPathsLoading ? (
+        <div className="flex items-center justify-center py-12">
+          <span className="text-typography-600">{en.common.loading}</span>
+        </div>
+      ) : !isNonEmptyArray(filteredPaths) ? (
         <EmptyState title={en.simulation.noResultFound} subtitle={en.simulation.adjustFilter} />
       ) : (
         <div className="flex flex-col flex-1 overflow-y-auto pb-8">

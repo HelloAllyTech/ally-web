@@ -97,7 +97,11 @@ export const SimulationsTab: FC<SimulationsTabProps> = ({
           placeholder={en.common.search}
         />
       </div>
-      {!isNonEmptyArray(filteredSimulations) ? (
+      {!isNonEmptyArray(filteredSimulations) && isSimulationsLoading ? (
+        <div className="flex items-center justify-center py-12">
+          <span className="text-typography-600">{en.common.loading}</span>
+        </div>
+      ) : !isNonEmptyArray(filteredSimulations) ? (
         <EmptyState title={en.simulation.noResultFound} subtitle={en.simulation.adjustFilter} />
       ) : (
         <div className="flex flex-col flex-1 overflow-y-auto pb-8">
