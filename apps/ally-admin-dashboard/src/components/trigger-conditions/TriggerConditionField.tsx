@@ -85,18 +85,19 @@ const TableSentenceInput: React.FC<{
         />
       ) : (
         // Expanded view - fully auto-expanding textarea without scrollbar
-        <AutoExpandableTextarea
-          value={localValue}
-          onChange={handleTextareaChange}
-          onBlur={handleTextareaBlur}
-          onKeyDown={handleTextareaKeyDown}
-          placeholder={placeholder}
-          disabled={false}
-          minHeight={24}
-          maxLines={100}
-          autoFocus={true}
-          className="px-3 mt-[-2px] text-sm focus:outline-none focus:border-blue-500 rounded-sm w-full leading-tight !overflow-y-hidden [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
-        />
+        <div className="px-3">
+          <AutoExpandableTextarea
+            value={localValue}
+            onChange={handleTextareaChange}
+            onBlur={handleTextareaBlur}
+            onKeyDown={handleTextareaKeyDown}
+            placeholder={placeholder}
+            disabled={false}
+            minHeight={16}
+            maxLines={20}
+            className="text-sm focus:outline-none rounded-sm w-full"
+          />
+        </div>
       )}
     </div>
   );
@@ -178,15 +179,18 @@ export const TriggerConditionField: React.FC<TriggerConditionFieldProps> = ({
         }
 
         return (
-          <div className="flex-1 max-w-[400px] mt-2">
-            <AutoExpandableTextarea
-              value={sentencesText}
-              onChange={handleSentencesChange}
-              placeholder={field.placeholder}
-              disabled={false}
-              minHeight={20}
-              className="px-3 py-1 text-sm border focus:outline-none w-full"
-            />
+          <div className="flex-1 max-w-[400px] border rounded">
+            <div className="px-2">
+              <AutoExpandableTextarea
+                value={sentencesText}
+                onChange={handleSentencesChange}
+                placeholder={field.placeholder}
+                disabled={false}
+                minHeight={20}
+                maxLines={20}
+                className="text-sm focus:outline-none w-full !mt-0"
+              />
+            </div>
           </div>
         );
       }
