@@ -1,16 +1,6 @@
 import { SocketDisconnectionReasons } from "@constants";
 import { Chat, FeedbackResponse, Transcription } from "@types";
 
-export interface CallTranscriptProps {
-  activeChat: Chat;
-  microphoneChatId: number;
-  endSession: (triggerApi: boolean, chatId: number) => void;
-  // TODO: Refactor isMicrophoneMode and isExotelMode props to use callMode prop
-  isMicrophoneMode: boolean;
-  isExotelMode: boolean;
-  setMicrophoneChatId: (chatId: number) => void;
-}
-
 export interface CallInterfaceProps {
   activeChat: Chat;
   isUserJoined: boolean;

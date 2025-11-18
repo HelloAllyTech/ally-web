@@ -1,11 +1,12 @@
 import { FC, useEffect, useState } from "react";
 
-import { Lock, WarningTriangle } from "@assets";
-import { CallProvider, TOOLTIP_LIGHT_PROPS } from "@constants";
 import { Tooltip } from "@mui/material";
 import { motion } from "framer-motion";
 import { X } from "lucide-react";
 import { LiveAudioVisualizer } from "react-audio-visualize";
+
+import { Lock, WarningTriangle } from "@assets";
+import { CallProvider, TOOLTIP_LIGHT_PROPS } from "@constants";
 
 import { ErrorScreen } from ".";
 import { CallInterfaceProps } from "../types";

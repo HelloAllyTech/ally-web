@@ -76,12 +76,14 @@ const mockUseEndCallMutation = vi.fn();
 vi.mock("@api", () => ({
   useLazyGetCounsellorChatQuery: () => [mockGetCounsellorChat, mockUseLazyGetCounsellorChatQuery()],
   useEndCallMutation: () => [mockEndCall, mockUseEndCallMutation()],
+  useGetNudgeStatusQuery: () => ({ data: null }),
 }));
 
 // Mock assets
 vi.mock("@assets", () => ({
   NoResults: () => <div data-testid="no-results">No Results</div>,
   MindfullnessVideo: () => <div data-testid="mindfulness-video">Mindfulness Video</div>,
+  EndSessionIllustration: () => <div data-testid="end-session-illustration">End Session</div>,
 }));
 
 // Mock components
@@ -94,19 +96,27 @@ vi.mock("@components", () => ({
       {children}
     </div>
   )),
-}));
-
-// Mock CallTranscript component
-vi.mock("../components", () => ({
-  CallTranscript: vi.fn(({ chat, onEndCall, isMicrophoneMode }) => (
-    <div data-testid="call-transcript">
-      <div data-testid="chat-id">{chat?.chatId}</div>
-      <div data-testid="microphone-mode">{isMicrophoneMode ? "true" : "false"}</div>
-      <button data-testid="end-call-btn" onClick={onEndCall}>
-        End Call
-      </button>
+  ButtonVariant: {
+    DESTRUCTIVE: "destructive",
+  },
+  ConfirmationDialog: vi.fn(({ title, isOpen, onClose, content, onButtonClick, buttonText }) => (
+    <div data-testid="confirmation-dialog">
+      <h2>
+        {title.normal}
+        {title.italic}
+      </h2>
+      <p>{content}</p>
+      <button onClick={onButtonClick}>{buttonText}</button>
+      <button onClick={onClose}>Close</button>
     </div>
   )),
+}));
+
+// Mock audio call components
+vi.mock("../components", () => ({
+  CallInterface: vi.fn(() => <div data-testid="call-interface">Call Interface</div>),
+  CallControls: vi.fn(() => <div data-testid="call-controls">Call Controls</div>),
+  CallSidebar: vi.fn(() => <div data-testid="call-sidebar">Call Sidebar</div>),
 }));
 
 // Mock constants
@@ -118,13 +128,31 @@ vi.mock("@constants", () => ({
   CallType: {
     INBOUND: "inbound",
     OUTBOUND: "outbound",
+    MICROPHONE_CHAT: "microphone_chat",
   },
   ROUTES: {
     DASHBOARD: "/dashboard",
     CALLS: "/calls",
+    STRESS_BUSTER: "/stress-buster",
   },
   SESSION_STORAGE_KEYS: {
     ACTIVE_CHAT: "activeChat",
+    TRANSCRIPTION_GENERATION_VIDEO_SEEN: "transcription_generation_video_seen",
+  },
+  SocketConnectionTypes: {
+    MICROPHONE_MODE: "microphone_mode",
+    CLOUD_TELEPHONY_CHAT: "cloud_telephony_chat",
+    WEBRTC_AUDIO_CALL: "webrtc_audio_call",
+  },
+  SocketDisconnectionReasons: {
+    NO_NETWORK: "no_network",
+    NO_NETWORK_IN_SHARED_SESSION: "no_network_in_shared_session",
+    SOMETHING_WENT_WRONG: "something_went_wrong",
+  },
+  MediaRecorderState: {
+    INACTIVE: "inactive",
+    RECORDING: "recording",
+    PAUSED: "paused",
   },
   TAG_TYPES: {
     CALL_SUMMARY: "CallSummary",
@@ -138,6 +166,30 @@ vi.mock("@utils", () => ({
   isProviderCloudTelephony: vi.fn(() => false),
 }));
 
+// Mock hooks
+vi.mock("@hooks", () => ({
+  useSocket: vi.fn(() => ({
+    connect: vi.fn(),
+    disconnect: vi.fn(),
+    emitSocketEvent: vi.fn(),
+  })),
+}));
+
+// Mock audio call utils and constants
+vi.mock("../constants", () => ({
+  AUDIO_FILE_SIZE: 1024,
+}));
+
+vi.mock("../utils", () => ({
+  reduceTranscriptions: vi.fn(transcriptions => transcriptions),
+}));
+
+vi.mock("../types", () => ({}));
+
+vi.mock("../components/constants", () => ({
+  NetworkIssuesList: ["network error", "connection lost"],
+}));
+
 // Mock navigator.wakeLock
 Object.defineProperty(navigator, "wakeLock", {
   value: {
@@ -147,6 +199,33 @@ Object.defineProperty(navigator, "wakeLock", {
   },
   writable: true,
 });
+
+// Mock navigator.mediaDevices
+const mockGetUserMedia = vi.fn().mockResolvedValue({
+  getTracks: vi.fn().mockReturnValue([
+    {
+      stop: vi.fn(),
+      enabled: true,
+    },
+  ]),
+  getAudioTracks: vi.fn().mockReturnValue([
+    {
+      stop: vi.fn(),
+      enabled: true,
+    },
+  ]),
+});
+
+// Mock MediaRecorder
+global.MediaRecorder = vi.fn().mockImplementation(() => ({
+  start: vi.fn(),
+  stop: vi.fn(),
+  pause: vi.fn(),
+  resume: vi.fn(),
+  state: "inactive",
+  ondataavailable: null,
+  onstop: null,
+})) as any;
 
 // Create a mock store for Redux Provider
 const createMockStore = (initialState: any) =>
@@ -201,6 +280,22 @@ describe("AudioCall Component", () => {
       isLoading: false,
       isError: false,
     });
+
+    // Reset mediaDevices mock to return a resolved promise
+    const mockTrack = {
+      stop: vi.fn(),
+      enabled: true,
+    };
+
+    mockGetUserMedia.mockResolvedValue({
+      getTracks: () => [mockTrack],
+      getAudioTracks: () => [mockTrack],
+    });
+
+    // Ensure navigator.mediaDevices.getUserMedia is properly mocked
+    if (navigator.mediaDevices) {
+      navigator.mediaDevices.getUserMedia = mockGetUserMedia;
+    }
   });
 
   afterEach(() => {
