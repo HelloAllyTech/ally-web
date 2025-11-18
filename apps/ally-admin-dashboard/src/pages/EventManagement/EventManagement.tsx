@@ -32,6 +32,7 @@ import { convertEventToApiPayload, convertApiResponseToEvent } from "@utils";
 
 export const EventManagement: React.FC = () => {
   const limit = 30;
+  const triggerConditionsColumnId = "triggerConditions";
 
   const [offset, setOffset] = useState<number>(0);
   const [events, setEvents] = useState<any[]>([]);
@@ -230,7 +231,7 @@ export const EventManagement: React.FC = () => {
       const updatedEvent: UpdateEventDataParam = { ...selectedEvent };
 
       // Handle fields that update triggerCondition
-      if (columnId === "triggerConditions") {
+      if (columnId === triggerConditionsColumnId) {
         // Update the triggerCondition object directly
         updatedEvent.triggerCondition = value;
       } else {

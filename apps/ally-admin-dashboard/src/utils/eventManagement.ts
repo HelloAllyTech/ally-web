@@ -1,11 +1,18 @@
+import { EVENT_DETECTION_TYPES } from "@constants";
 import {
   SessionEvent,
   SessionEventDetectionData,
   SessionEventDetectionType,
   SessionEventDetectionCondition,
+  UpdateEventDataParam,
 } from "@types";
-import { UpdateEventDataParam } from "@types";
-import { convertTimeToSeconds, convertSecondsToTimeString } from "@utils/common";
+import {
+  convertTimeToSeconds,
+  convertSecondsToTimeString,
+  isNonEmptyArray,
+  isNumber,
+  isNonEmptyString,
+} from "@utils";
 
 /**
  * Maps frontend operator to backend condition
@@ -13,9 +20,9 @@ import { convertTimeToSeconds, convertSecondsToTimeString } from "@utils/common"
  * @returns Backend condition (e.g., "LT", "GT")
  */
 export const mapOperatorToCondition = (
-  operator: string | undefined,
+  operator?: string | undefined,
 ): SessionEventDetectionCondition | undefined => {
-  if (!operator) return undefined;
+  if (!operator) return null;
 
   const mapping: Record<string, SessionEventDetectionCondition> = {
     LESS_THAN: SessionEventDetectionCondition.LT,
@@ -54,10 +61,7 @@ const mapDetectionTypeToBackend = (detectionType: string | undefined): string | 
  */
 export const convertEventToApiPayload = (event: UpdateEventDataParam): SessionEvent | null => {
   // Block API calls for COMBINATION events for now
-  if (
-    event.detectionType === "COMBINATION" ||
-    event.detectionType === SessionEventDetectionType.COMBINATION
-  ) {
+  if (event.detectionType === EVENT_DETECTION_TYPES.COMBINATION) {
     return null;
   }
 
@@ -66,36 +70,30 @@ export const convertEventToApiPayload = (event: UpdateEventDataParam): SessionEv
   const detectionData: SessionEventDetectionData = {};
 
   if (
-    event.detectionType === "SENTENCE_SIMILARITY" ||
-    event.detectionType === SessionEventDetectionType.SENTENCE_SIMILARITY ||
-    event.detectionType === "SEMANTIC_SIMILARITY" ||
-    event.detectionType === SessionEventDetectionType.SEMANTIC_SIMILARITY
+    event.detectionType === EVENT_DETECTION_TYPES.SENTENCE_SIMILARITY ||
+    event.detectionType === EVENT_DETECTION_TYPES.SEMANTIC_SIMILARITY
   ) {
     if (
       event.triggerCondition &&
       "sentences" in event.triggerCondition &&
-      Array.isArray(event.triggerCondition.sentences) &&
-      event.triggerCondition.sentences.length > 0
+      isNonEmptyArray(event.triggerCondition.sentences)
     ) {
       detectionData.sentences = event.triggerCondition.sentences;
     }
     if (
       event.triggerCondition &&
       "speaker" in event.triggerCondition &&
-      typeof event.triggerCondition.speaker === "string"
+      isNonEmptyString(event.triggerCondition.speaker)
     ) {
       detectionData.speaker = event.triggerCondition.speaker;
     }
   }
 
-  if (
-    event.detectionType === "SCORE_BASED" ||
-    event.detectionType === SessionEventDetectionType.SCORE
-  ) {
+  if (event.detectionType === EVENT_DETECTION_TYPES.SCORE_BASED) {
     if (
       event.triggerCondition &&
       "value" in event.triggerCondition &&
-      typeof event.triggerCondition.value === "number"
+      isNumber(event.triggerCondition.value)
     ) {
       detectionData.score = event.triggerCondition.value;
     }
@@ -107,14 +105,11 @@ export const convertEventToApiPayload = (event: UpdateEventDataParam): SessionEv
     }
   }
 
-  if (
-    event.detectionType === "TIME_BASED" ||
-    event.detectionType === SessionEventDetectionType.TIME
-  ) {
+  if (event.detectionType === EVENT_DETECTION_TYPES.TIME_BASED) {
     if (
       event.triggerCondition &&
       "value" in event.triggerCondition &&
-      typeof event.triggerCondition.value === "string"
+      isNonEmptyString(event.triggerCondition.value)
     ) {
       detectionData.time = convertTimeToSeconds(event.triggerCondition.value);
     }

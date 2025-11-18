@@ -70,7 +70,7 @@ export const decodeUint8ToJson = (payload: unknown): unknown => {
  * @returns Time in seconds (e.g., 1200)
  */
 export const convertTimeToSeconds = (timeString: string): number => {
-  if (!timeString || typeof timeString !== "string") return 0;
+  if (!isNonEmptyString(timeString)) return 0;
 
   const parts = timeString.split(":");
   if (parts.length !== 3) return 0;
@@ -177,7 +177,7 @@ export const isNonEmptyArray = <T>(value: unknown): value is T[] => {
  * @returns Time in HH:MM:SS format (string), defaults to "00:00:00" if invalid
  */
 export const convertSecondsToTimeString = (seconds: number | undefined): string => {
-  if (!seconds || typeof seconds !== "number" || seconds < 0) return "00:00:00";
+  if (!seconds || !isNumber(seconds) || seconds < 0) return "00:00:00";
 
   const hours = Math.floor(seconds / 3600);
   const minutes = Math.floor((seconds % 3600) / 60);

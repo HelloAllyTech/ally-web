@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 
 import { AutoExpandableTextarea, NumberInput } from "@components";
 import { TRIGGER_FIELD_TYPES } from "@constants";
@@ -13,7 +13,7 @@ interface TriggerConditionFieldProps {
     placeholder?: string;
     className?: string;
     defaultValue?: any;
-    labelAfter?: string; 
+    labelAfter?: string;
   };
   value: any;
   onChange: (fieldId: string, value: any) => void;
@@ -51,6 +51,21 @@ const TableSentenceInput: React.FC<{
     }
   }, [isFocused]);
 
+  const handleTextareaChange = useCallback((newValue: string) => {
+    setLocalValue(newValue);
+  }, []);
+
+  const handleTextareaBlur = useCallback(() => {
+    onChange(localValue ? [localValue] : []);
+  }, [localValue, onChange]);
+
+  const handleTextareaKeyDown = useCallback((e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
+      e.preventDefault();
+      e.currentTarget.blur();
+    }
+  }, []);
+
   return (
     <div ref={wrapperRef} className="flex-1 w-full flex items-center">
       {!isFocused ? (
@@ -72,18 +87,9 @@ const TableSentenceInput: React.FC<{
         // Expanded view - fully auto-expanding textarea without scrollbar
         <AutoExpandableTextarea
           value={localValue}
-          onChange={newValue => {
-            setLocalValue(newValue);
-          }}
-          onBlur={() => {
-            onChange(localValue ? [localValue] : []);
-          }}
-          onKeyDown={e => {
-            if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
-              e.preventDefault();
-              e.currentTarget.blur();
-            }
-          }}
+          onChange={handleTextareaChange}
+          onBlur={handleTextareaBlur}
+          onKeyDown={handleTextareaKeyDown}
           placeholder={placeholder}
           disabled={false}
           minHeight={24}
@@ -104,6 +110,14 @@ export const TriggerConditionField: React.FC<TriggerConditionFieldProps> = ({
   isFocused = false,
 }) => {
   const fieldValue = value ?? field.defaultValue;
+
+  const handleSentencesChange = useCallback(
+    (textareaValue: string) => {
+      const newSentencesArray = textareaValue.split("\n");
+      onChange(field.id, newSentencesArray);
+    },
+    [field.id, onChange],
+  );
 
   const renderField = () => {
     switch (field.type) {
@@ -167,10 +181,7 @@ export const TriggerConditionField: React.FC<TriggerConditionFieldProps> = ({
           <div className="flex-1 max-w-[400px] mt-2">
             <AutoExpandableTextarea
               value={sentencesText}
-              onChange={textareaValue => {
-                const newSentencesArray = textareaValue.split("\n");
-                onChange(field.id, newSentencesArray);
-              }}
+              onChange={handleSentencesChange}
               placeholder={field.placeholder}
               disabled={false}
               minHeight={20}

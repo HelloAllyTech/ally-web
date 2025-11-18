@@ -32,6 +32,7 @@ import User from "./user.svg?react";
 import Users from "./users.svg?react";
 import VideoCamera from "./videoCamera.svg?react";
 import WandStars from "./wandStars.svg?react";
+import Tick from "./tick.svg?react";
 
 export {
   AccountTree,
@@ -68,4 +69,5 @@ export {
   DoubleArrowRight,
   Unarchive,
   VideoCamera,
+  Tick,
 };

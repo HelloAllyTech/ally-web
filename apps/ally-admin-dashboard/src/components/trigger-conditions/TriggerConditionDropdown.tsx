@@ -1,6 +1,7 @@
 import React from "react";
 
 import { TextDropdown } from "@components/notion-table";
+import { en } from "@constants";
 
 interface TriggerConditionDropdownProps {
   value: string;
@@ -21,7 +22,7 @@ export const TriggerConditionDropdown: React.FC<TriggerConditionDropdownProps> =
   value,
   options,
   onChange,
-  placeholder = "Select",
+  placeholder = en.common.select,
   searchPlaceholder,
   isSearchable = false,
   disabled = false,

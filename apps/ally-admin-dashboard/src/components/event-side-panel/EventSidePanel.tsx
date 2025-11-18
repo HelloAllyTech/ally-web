@@ -65,6 +65,7 @@ export const EventSidePanel: React.FC<EventSidePanelProps> = ({
   onUpdate,
 }) => {
   const [formData, setFormData] = useState(selectedEvent);
+  const conditionsField = "conditions";
 
   useEffect(() => {
     setFormData(selectedEvent);
@@ -83,12 +84,10 @@ export const EventSidePanel: React.FC<EventSidePanelProps> = ({
       if (!selectedEvent) return;
 
       setFormData(previousData => {
-        const updatedData = {
+        return {
           ...previousData,
           [fieldName]: value,
         };
-
-        return updatedData;
       });
     },
     [selectedEvent],
@@ -102,7 +101,7 @@ export const EventSidePanel: React.FC<EventSidePanelProps> = ({
         const currentTrigger = previousData.triggerCondition || {};
 
         // Handle conditions array for combination events
-        if (field === "conditions") {
+        if (field === conditionsField) {
           return {
             ...previousData,
             triggerCondition: {

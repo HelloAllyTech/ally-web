@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect, useCallback } from "react";
 
 import { TriggerConditions, StandardTriggerConditions } from "@components";
 import { useClickOutside } from "@hooks";
+import { EVENT_DETECTION_TYPES } from "@src/constants/eventTypes";
 
 interface EditableTriggerConditionsPopupProps {
   eventType: string | undefined;
@@ -50,6 +51,13 @@ export const EditableTriggerConditionsPopup: React.FC<EditableTriggerConditionsP
     }
   }, [isOpen, handleSave]);
 
+  const handleFieldChange = useCallback((field: string, fieldValue: string | number | string[]) => {
+    setEditTriggerCondition(prev => ({
+      ...prev,
+      [field]: fieldValue,
+    }));
+  }, []);
+
   useClickOutside(popupRef, handleClickOutsideCallback);
 
   return (
@@ -71,9 +79,6 @@ export const EditableTriggerConditionsPopup: React.FC<EditableTriggerConditionsP
             eventType={eventType}
             triggerCondition={triggerCondition}
             isInTable={true}
-            onChange={() => {
-              // No-op for display mode - changes only happen in popup
-            }}
           />
         )}
       </div>
@@ -88,30 +93,18 @@ export const EditableTriggerConditionsPopup: React.FC<EditableTriggerConditionsP
             }}
           >
             <div className="max-w-full overflow-visible">
-              {eventType === "COMBINATION" ? (
+              {eventType === EVENT_DETECTION_TYPES.COMBINATION ? (
                 <TriggerConditions
                   eventType={eventType}
                   triggerCondition={editTriggerCondition}
                   isInTable={false}
-                  onChange={(field: string, fieldValue: string | number | string[]) => {
-                    const updatedTriggerCondition = {
-                      ...editTriggerCondition,
-                      [field]: fieldValue,
-                    };
-                    setEditTriggerCondition(updatedTriggerCondition);
-                  }}
+                  onChange={handleFieldChange}
                 />
               ) : (
                 <StandardTriggerConditions
                   eventType={eventType}
                   triggerCondition={editTriggerCondition}
-                  onChange={(field: string, fieldValue: string | number | string[]) => {
-                    const updatedTriggerCondition = {
-                      ...editTriggerCondition,
-                      [field]: fieldValue,
-                    };
-                    setEditTriggerCondition(updatedTriggerCondition);
-                  }}
+                  onChange={handleFieldChange}
                   isInTable={false}
                 />
               )}

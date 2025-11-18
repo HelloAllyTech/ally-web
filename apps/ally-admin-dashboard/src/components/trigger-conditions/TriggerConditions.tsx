@@ -9,7 +9,7 @@ import { TriggerCondition, isCombinationTriggerCondition } from "../../types/tri
 interface TriggerConditionsProps {
   eventType: EventType | string | undefined;
   triggerCondition: TriggerCondition | undefined;
-  onChange: (field: string, value: string | number | string[]) => void;
+  onChange?: (field: string, value: string | number | string[]) => void;
   isInTable?: boolean;
   isFocused?: boolean;
 }

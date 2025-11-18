@@ -1,7 +1,9 @@
 import { FC, useEffect, useRef, useState } from "react";
 
-import { AccountTree, AlarmOn, Chat, Close, DiamondShine } from "@assets";
+import { AccountTree, AlarmOn, Chat, Close, DiamondShine, Tick } from "@assets";
+import { Button } from "@components";
 import { ButtonVariant } from "@components/types";
+import { en } from "@constants";
 import { useClickOutside } from "@hooks";
 import { getButtonStyles } from "@utils";
 
@@ -96,12 +98,12 @@ export const EventTypeSelectionDialog: FC<EventTypeSelectionDialogProps> = ({
           </button>
 
           <div className="flex flex-col gap-4">
-            <div className="flex justify-center items-center relative text-2xl font-thin text-center w-full font-['Replay_Pro','headline'] text-typography-900">
-              Create New Event
+            <div className="flex justify-center items-center relative text-2xl font-thin text-center w-full font-secondary text-typography-900">
+              {en.simulation.createNewEvent}
             </div>
 
             <div className="text-center text-typography-600 mb-2">
-              Select the type of event you want to create.
+              {en.simulation.selectEventType}
             </div>
 
             <div className="grid grid-cols-1 gap-4">
@@ -128,19 +130,7 @@ export const EventTypeSelectionDialog: FC<EventTypeSelectionDialogProps> = ({
                       {isSelected && (
                         <div className="flex-shrink-0">
                           <div className="w-6 h-6 rounded-full bg-primary-500 flex items-center justify-center">
-                            <svg
-                              className="w-4 h-4 text-white"
-                              fill="none"
-                              stroke="currentColor"
-                              viewBox="0 0 24 24"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M5 13l4 4L19 7"
-                              />
-                            </svg>
+                            <Tick width={15} height={20} />
                           </div>
                         </div>
                       )}
@@ -151,13 +141,13 @@ export const EventTypeSelectionDialog: FC<EventTypeSelectionDialogProps> = ({
             </div>
 
             <div className="flex justify-center pt-4">
-              <button
+              <Button
                 onClick={handleConfirm}
                 disabled={!selectedType}
                 className={`${getButtonStyles(ButtonVariant.PRIMARY)} rounded-full px-8 py-2 font-['Roboto'] disabled:opacity-50 disabled:cursor-not-allowed`}
               >
-                Create event
-              </button>
+                {en.simulation.createEvent}
+              </Button>
             </div>
           </div>
         </div>

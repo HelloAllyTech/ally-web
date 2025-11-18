@@ -1,7 +1,7 @@
 import React from "react";
 
 import { EventType } from "@components";
-import { getTriggerConditionConfig, TRIGGER_FIELD_TYPES } from "@constants";
+import { EVENT_DETECTION_TYPES, getTriggerConditionConfig, TRIGGER_FIELD_TYPES } from "@constants";
 
 import { TriggerConditionField } from "./TriggerConditionField";
 
@@ -24,8 +24,8 @@ export const StandardTriggerConditions: React.FC<StandardTriggerConditionsProps>
   if (!config) return null;
 
   const fields = config.fields || [];
-  const isTimeBased = eventType === "TIME_BASED";
-  const isSentenceSimilarity = eventType === "SENTENCE_SIMILARITY";
+  const isTimeBased = eventType === EVENT_DETECTION_TYPES.TIME_BASED;
+  const isSentenceSimilarity = eventType === EVENT_DETECTION_TYPES.SENTENCE_SIMILARITY;
 
   return (
     <div
