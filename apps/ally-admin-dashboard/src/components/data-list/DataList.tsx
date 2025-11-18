@@ -44,6 +44,10 @@ export interface DataListProps<T extends DataListItem> {
   };
 }
 
+const COLUM_KEYS = {
+  ACTIONS: "actions",
+};
+
 export function DataList<T extends DataListItem>({
   items,
   columns,
@@ -95,7 +99,7 @@ export function DataList<T extends DataListItem>({
 
   const renderColumnContent = (column: ColumnConfig<T>, item: T) => {
     // Special handling for actions column
-    if (column.key === "actions") {
+    if (column.key === COLUM_KEYS.ACTIONS) {
       return renderActionButtons(item);
     }
     // Regular column render
@@ -114,9 +118,7 @@ export function DataList<T extends DataListItem>({
 
     const handleThumbnailClick = () => {
       const shouldShow = thumbnailConfig?.show ? thumbnailConfig.show(item) : true;
-      if (shouldShow && thumbnailConfig?.onClick) {
-        thumbnailConfig.onClick(item);
-      }
+      if (shouldShow && thumbnailConfig?.onClick) thumbnailConfig.onClick(item);
     };
 
     return (

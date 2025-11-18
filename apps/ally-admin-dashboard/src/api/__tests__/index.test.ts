@@ -68,93 +68,95 @@ vi.mock("../simulationStudio", () => ({
   useMapScenarioEventsMutation: vi.fn(),
   useDeleteScenarioEventsMutation: vi.fn(),
   useGetMappedScenarioEventsQuery: vi.fn(),
+  useGetScenarioPathsQuery: vi.fn(),
+  useDeleteScenarioPathByIdMutation: vi.fn(),
 }));
 
+vi.mock("../scenarioPath", () => ({
+  useGetScenarioPathByIdQuery: vi.fn(),
+  useLazyGetScenarioPathByIdQuery: vi.fn(),
+  useCreateScenarioPathMutation: vi.fn(),
+  useUpdateScenarioPathMutation: vi.fn(),
+}));
+
+// Import the module once at the top level to avoid repeated dynamic imports
+import * as apiIndex from "../index";
+
 describe("API Index Exports", () => {
-  it("should export baseAPI module", async () => {
-    const module = await import("../index");
-    expect(module).toHaveProperty("baseAPI");
+  it("should export baseAPI module", () => {
+    expect(apiIndex).toHaveProperty("baseAPI");
   });
 
-  it("should export baseQuery", async () => {
-    const module = await import("../index");
-    expect(module).toHaveProperty("baseQuery");
+  it("should export baseQuery", () => {
+    expect(apiIndex).toHaveProperty("baseQuery");
   });
 
-  it("should export baseQueryWithReauth", async () => {
-    const module = await import("../index");
-    expect(module).toHaveProperty("baseQueryWithReauth");
+  it("should export baseQueryWithReauth", () => {
+    expect(apiIndex).toHaveProperty("baseQueryWithReauth");
   });
 
-  it("should export auth hooks", async () => {
-    const module = await import("../index");
-    expect(module).toHaveProperty("useLoginMutation");
-    expect(module).toHaveProperty("useSignupMutation");
-    expect(module).toHaveProperty("useGetUserQuery");
-    expect(module).toHaveProperty("useLazyGetUserQuery");
-    expect(module).toHaveProperty("useGetPermissionsQuery");
-    expect(module).toHaveProperty("useLazyGetPermissionsQuery");
-    expect(module).toHaveProperty("useGenerateOTPMutation");
-    expect(module).toHaveProperty("useVerifyOTPMutation");
+  it("should export auth hooks", () => {
+    expect(apiIndex).toHaveProperty("useLoginMutation");
+    expect(apiIndex).toHaveProperty("useSignupMutation");
+    expect(apiIndex).toHaveProperty("useGetUserQuery");
+    expect(apiIndex).toHaveProperty("useLazyGetUserQuery");
+    expect(apiIndex).toHaveProperty("useGetPermissionsQuery");
+    expect(apiIndex).toHaveProperty("useLazyGetPermissionsQuery");
+    expect(apiIndex).toHaveProperty("useGenerateOTPMutation");
+    expect(apiIndex).toHaveProperty("useVerifyOTPMutation");
   });
 
-  it("should export user management hooks", async () => {
-    const module = await import("../index");
-    expect(module).toHaveProperty("useGetUsersQuery");
-    expect(module).toHaveProperty("useGetTenantsQuery");
-    expect(module).toHaveProperty("useLazyGetUsersQuery");
-    expect(module).toHaveProperty("useLazyGetTenantsQuery");
-    expect(module).toHaveProperty("useCreateTenantMutation");
-    expect(module).toHaveProperty("useUpdateTenantMutation");
-    expect(module).toHaveProperty("useDeleteUserMutation");
-    expect(module).toHaveProperty("useUpdateUserStatusMutation");
-    expect(module).toHaveProperty("useAddUserMutation");
-    expect(module).toHaveProperty("useEditUserMutation");
-    expect(module).toHaveProperty("useChangeRoleMutation");
-    expect(module).toHaveProperty("useGetRoleQuery");
-    expect(module).toHaveProperty("useGetSimulationCreditsQuery");
-    expect(module).toHaveProperty("useAddSimulationCreditLimitMutation");
+  it("should export user management hooks", () => {
+    expect(apiIndex).toHaveProperty("useGetUsersQuery");
+    expect(apiIndex).toHaveProperty("useGetTenantsQuery");
+    expect(apiIndex).toHaveProperty("useLazyGetUsersQuery");
+    expect(apiIndex).toHaveProperty("useLazyGetTenantsQuery");
+    expect(apiIndex).toHaveProperty("useCreateTenantMutation");
+    expect(apiIndex).toHaveProperty("useUpdateTenantMutation");
+    expect(apiIndex).toHaveProperty("useDeleteUserMutation");
+    expect(apiIndex).toHaveProperty("useUpdateUserStatusMutation");
+    expect(apiIndex).toHaveProperty("useAddUserMutation");
+    expect(apiIndex).toHaveProperty("useEditUserMutation");
+    expect(apiIndex).toHaveProperty("useChangeRoleMutation");
+    expect(apiIndex).toHaveProperty("useGetRoleQuery");
+    expect(apiIndex).toHaveProperty("useGetSimulationCreditsQuery");
+    expect(apiIndex).toHaveProperty("useAddSimulationCreditLimitMutation");
   });
 
-  it("should export simulation studio hooks", async () => {
-    const module = await import("../index");
-    expect(module).toHaveProperty("useGetSimulationsQuery");
-    expect(module).toHaveProperty("useLazyGetAdminSimulationByIdQuery");
-    expect(module).toHaveProperty("useCreateSimulationMutation");
-    expect(module).toHaveProperty("useUpdateSimulationByIdMutation");
-    expect(module).toHaveProperty("useDeleteSimulationByIdMutation");
-    expect(module).toHaveProperty("useGetSessionEventsQuery");
-    expect(module).toHaveProperty("useLazyGetSessionEventsQuery");
-    expect(module).toHaveProperty("useCreateSessionEventMutation");
-    expect(module).toHaveProperty("useCreateSessionEventsMutation");
-    expect(module).toHaveProperty("useUpdateSessionEventMutation");
-    expect(module).toHaveProperty("useDeleteSessionEventsMutation");
-    expect(module).toHaveProperty("useGetCoverImageUrlMutation");
-    expect(module).toHaveProperty("useGetScenarioVoicesQuery");
-    expect(module).toHaveProperty("useScenarioPreviewMutation");
-    expect(module).toHaveProperty("useEndScenarioPreviewMutation");
-    expect(module).toHaveProperty("useMapScenarioEventsMutation");
-    expect(module).toHaveProperty("useDeleteScenarioEventsMutation");
-    expect(module).toHaveProperty("useGetMappedScenarioEventsQuery");
+  it("should export simulation studio hooks", () => {
+    expect(apiIndex).toHaveProperty("useGetSimulationsQuery");
+    expect(apiIndex).toHaveProperty("useLazyGetAdminSimulationByIdQuery");
+    expect(apiIndex).toHaveProperty("useCreateSimulationMutation");
+    expect(apiIndex).toHaveProperty("useUpdateSimulationByIdMutation");
+    expect(apiIndex).toHaveProperty("useDeleteSimulationByIdMutation");
+    expect(apiIndex).toHaveProperty("useGetSessionEventsQuery");
+    expect(apiIndex).toHaveProperty("useLazyGetSessionEventsQuery");
+    expect(apiIndex).toHaveProperty("useCreateSessionEventMutation");
+    expect(apiIndex).toHaveProperty("useCreateSessionEventsMutation");
+    expect(apiIndex).toHaveProperty("useUpdateSessionEventMutation");
+    expect(apiIndex).toHaveProperty("useDeleteSessionEventsMutation");
+    expect(apiIndex).toHaveProperty("useGetCoverImageUrlMutation");
+    expect(apiIndex).toHaveProperty("useGetScenarioVoicesQuery");
+    expect(apiIndex).toHaveProperty("useScenarioPreviewMutation");
+    expect(apiIndex).toHaveProperty("useEndScenarioPreviewMutation");
+    expect(apiIndex).toHaveProperty("useMapScenarioEventsMutation");
+    expect(apiIndex).toHaveProperty("useDeleteScenarioEventsMutation");
+    expect(apiIndex).toHaveProperty("useGetMappedScenarioEventsQuery");
   });
 
-  it("should have all exports as functions or objects", async () => {
-    const module = await import("../index");
-
+  it("should have all exports as functions or objects", () => {
     // Check baseAPI
-    expect(typeof module.baseAPI).toBe("object");
-    expect(typeof module.baseQuery).toBe("function");
-    expect(typeof module.baseQueryWithReauth).toBe("function");
+    expect(typeof apiIndex.baseAPI).toBe("object");
+    expect(typeof apiIndex.baseQuery).toBe("function");
+    expect(typeof apiIndex.baseQueryWithReauth).toBe("function");
 
     // Check hooks are functions
-    expect(typeof module.useLoginMutation).toBe("function");
-    expect(typeof module.useGetUsersQuery).toBe("function");
-    expect(typeof module.useGetSimulationsQuery).toBe("function");
+    expect(typeof apiIndex.useLoginMutation).toBe("function");
+    expect(typeof apiIndex.useGetUsersQuery).toBe("function");
+    expect(typeof apiIndex.useGetSimulationsQuery).toBe("function");
   });
 
-  it("should not have undefined exports", async () => {
-    const module = await import("../index");
-
+  it("should not have undefined exports", () => {
     const exports = [
       "baseAPI",
       "baseQuery",
@@ -167,13 +169,11 @@ describe("API Index Exports", () => {
     ];
 
     exports.forEach(exportName => {
-      expect(module[exportName]).toBeDefined();
+      expect(apiIndex[exportName]).toBeDefined();
     });
   });
 
-  it("should export all authentication related hooks", async () => {
-    const module = await import("../index");
-
+  it("should export all authentication related hooks", () => {
     const authHooks = [
       "useLoginMutation",
       "useSignupMutation",
@@ -186,14 +186,12 @@ describe("API Index Exports", () => {
     ];
 
     authHooks.forEach(hook => {
-      expect(module).toHaveProperty(hook);
-      expect(typeof module[hook]).toBe("function");
+      expect(apiIndex).toHaveProperty(hook);
+      expect(typeof apiIndex[hook]).toBe("function");
     });
   });
 
-  it("should export all user management related hooks", async () => {
-    const module = await import("../index");
-
+  it("should export all user management related hooks", () => {
     const userManagementHooks = [
       "useGetUsersQuery",
       "useGetTenantsQuery",
@@ -212,14 +210,12 @@ describe("API Index Exports", () => {
     ];
 
     userManagementHooks.forEach(hook => {
-      expect(module).toHaveProperty(hook);
-      expect(typeof module[hook]).toBe("function");
+      expect(apiIndex).toHaveProperty(hook);
+      expect(typeof apiIndex[hook]).toBe("function");
     });
   });
 
-  it("should export all simulation studio related hooks", async () => {
-    const module = await import("../index");
-
+  it("should export all simulation studio related hooks", () => {
     const simulationStudioHooks = [
       "useGetSimulationsQuery",
       "useLazyGetAdminSimulationByIdQuery",
@@ -242,14 +238,12 @@ describe("API Index Exports", () => {
     ];
 
     simulationStudioHooks.forEach(hook => {
-      expect(module).toHaveProperty(hook);
-      expect(typeof module[hook]).toBe("function");
+      expect(apiIndex).toHaveProperty(hook);
+      expect(typeof apiIndex[hook]).toBe("function");
     });
   });
 
-  it("should have consistent naming conventions", async () => {
-    const module = await import("../index");
-
+  it("should have consistent naming conventions", () => {
     // Query hooks should start with "use" and end with "Query"
     const queryHooks = [
       "useGetUserQuery",
@@ -266,7 +260,7 @@ describe("API Index Exports", () => {
 
     queryHooks.forEach(hook => {
       expect(hook).toMatch(/^use.*Query$/);
-      expect(module).toHaveProperty(hook);
+      expect(apiIndex).toHaveProperty(hook);
     });
 
     // Mutation hooks should start with "use" and end with "Mutation"
@@ -299,7 +293,7 @@ describe("API Index Exports", () => {
 
     mutationHooks.forEach(hook => {
       expect(hook).toMatch(/^use.*Mutation$/);
-      expect(module).toHaveProperty(hook);
+      expect(apiIndex).toHaveProperty(hook);
     });
 
     // Lazy query hooks should start with "useLazy" and end with "Query"
@@ -314,28 +308,24 @@ describe("API Index Exports", () => {
 
     lazyQueryHooks.forEach(hook => {
       expect(hook).toMatch(/^useLazy.*Query$/);
-      expect(module).toHaveProperty(hook);
+      expect(apiIndex).toHaveProperty(hook);
     });
   });
 
-  it("should export base API with correct properties", async () => {
-    const module = await import("../index");
-
-    expect(module.baseAPI).toBeDefined();
-    expect(module.baseAPI).toHaveProperty("reducerPath");
-    expect(module.baseAPI).toHaveProperty("reducer");
-    expect(module.baseAPI).toHaveProperty("middleware");
-    expect(module.baseAPI).toHaveProperty("injectEndpoints");
+  it("should export base API with correct properties", () => {
+    expect(apiIndex.baseAPI).toBeDefined();
+    expect(apiIndex.baseAPI).toHaveProperty("reducerPath");
+    expect(apiIndex.baseAPI).toHaveProperty("reducer");
+    expect(apiIndex.baseAPI).toHaveProperty("middleware");
+    expect(apiIndex.baseAPI).toHaveProperty("injectEndpoints");
   });
 
-  it("should have all modules properly integrated", async () => {
-    const module = await import("../index");
-
+  it("should have all modules properly integrated", () => {
     // Verify that we have exports from all modules
-    const hasAuthExports = module.useLoginMutation !== undefined;
-    const hasUserManagementExports = module.useGetUsersQuery !== undefined;
-    const hasSimulationStudioExports = module.useGetSimulationsQuery !== undefined;
-    const hasBaseApiExports = module.baseAPI !== undefined;
+    const hasAuthExports = apiIndex.useLoginMutation !== undefined;
+    const hasUserManagementExports = apiIndex.useGetUsersQuery !== undefined;
+    const hasSimulationStudioExports = apiIndex.useGetSimulationsQuery !== undefined;
+    const hasBaseApiExports = apiIndex.baseAPI !== undefined;
 
     expect(hasAuthExports).toBe(true);
     expect(hasUserManagementExports).toBe(true);

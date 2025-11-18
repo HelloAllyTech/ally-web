@@ -9,10 +9,6 @@ import {
 
 const simulationPathApi = baseAPI.injectEndpoints({
   endpoints: builder => ({
-    /**
-     * Get all scenario paths
-     * TODO: Replace with actual API call when backend is ready
-     */
     getScenarioPaths: builder.query<GetScenarioPathsResponse, GetScenarioPathsQueryParams>({
       query: (params: GetScenarioPathsQueryParams) => ({
         url: ApiEndpoints.SIMULATION_STUDIO.SCENARIO_PATHS,
@@ -42,7 +38,7 @@ const simulationPathApi = baseAPI.injectEndpoints({
 
     updateSimulationPathById: builder.mutation<
       { success: boolean },
-      { id: string; data: Partial<CreatePathInput> }
+      { id: number | string; data: Partial<CreatePathInput> }
     >({
       query: ({ id, data }) => ({
         url: ApiEndpoints.SIMULATION_STUDIO.SCENARIO_PATH_BY_ID(id),
@@ -50,9 +46,7 @@ const simulationPathApi = baseAPI.injectEndpoints({
         body: data,
       }),
     }),
-    /**
-     * Delete scenario path by Id
-     */
+
     deleteScenarioPathById: builder.mutation<void, number>({
       query: id => ({
         url: ApiEndpoints.SIMULATION_STUDIO.SCENARIO_PATH_BY_ID(id),

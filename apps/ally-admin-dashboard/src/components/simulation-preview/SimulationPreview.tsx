@@ -1,14 +1,14 @@
 import { FC, useRef, useState } from "react";
 
+import { useNavigate } from "react-router-dom";
+
+import { CustomVideo } from "@ally-ui-mono/ui-shared";
 import { useEndScenarioPreviewMutation, useScenarioPreviewMutation } from "@api";
 import { Button, CustomImage } from "@components";
 import { en, LOCAL_STORAGE_KEYS, ROUTES } from "@constants";
 import { useClickOutside } from "@hooks";
 import { SimulationPreviewProps, StartSimulationResponse } from "@types";
 import { isNonEmptyString } from "@utils";
-import { useNavigate } from "react-router-dom";
-
-import { CustomVideo } from "@ally-ui-mono/ui-shared";
 
 import { ButtonVariant } from "../types";
 

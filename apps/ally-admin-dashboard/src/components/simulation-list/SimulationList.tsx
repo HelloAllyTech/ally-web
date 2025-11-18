@@ -15,6 +15,7 @@ import {
   getSimulationStatusColor,
   formatSimulationUsage,
   formatCapitalizedEnum,
+  isNonEmptyArray,
 } from "@utils";
 
 interface SimulationListProps {
@@ -45,17 +46,17 @@ export const SimulationList: React.FC<SimulationListProps> = ({
   onCreateSimulation,
 }) => {
   // Handle loading state
-  if (isLoading && simulations.length === 0) {
+  if (isLoading && !isNonEmptyArray(simulations)) {
     return <SimulationListSkeleton />;
   }
 
   // Handle empty state with filters
-  if (simulations.length === 0 && hasFilters) {
+  if (!isNonEmptyArray(simulations) && hasFilters) {
     return <EmptyState title={en.simulation.noResultFound} subtitle={en.simulation.adjustFilter} />;
   }
 
   // Handle empty state without data
-  if (simulations.length === 0) {
+  if (!isNonEmptyArray(simulations)) {
     return (
       <div className="flex font-primary items-center justify-center min-h-[60vh]">
         <div className="text-center max-w-md">
@@ -136,7 +137,7 @@ export const SimulationList: React.FC<SimulationListProps> = ({
       label: en.simulation.usage,
       width: "w-[10%]",
       hidden: true,
-      render: simulation => <span>{formatSimulationUsage(simulation.usage)}</span>,
+      render: simulation => <span>{formatSimulationUsage(Number(simulation.usage))}</span>,
     },
     {
       key: "preview",

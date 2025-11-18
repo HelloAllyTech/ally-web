@@ -155,8 +155,6 @@ export const CreatePath: FC = () => {
       status,
     };
     let response;
-    console.log(simulationPath);
-    console.log("formdata", formData);
     if (pathId) {
       response = await updateSimulationPathByIdQuery({
         id: pathId,
