@@ -317,7 +317,7 @@ describe("Scenario Component", () => {
         </TestWrapper>,
       );
 
-      const motionDiv = screen.getByTestId("motion-div");
+      const motionDiv = screen.getByTestId("scenario-content");
       expect(motionDiv).not.toBeNull();
       expect(motionDiv.className).toContain("flex");
       expect(motionDiv.className).toContain("flex-col");
@@ -396,7 +396,9 @@ describe("Scenario Component", () => {
       );
 
       expect(screen.getByTestId("scenario-details-card")).toBeInTheDocument();
-      expect(screen.getByTestId("scenario-title")).toHaveTextContent("Test Scenario");
+      // Note: scenario-title appears twice - once in header, once in card
+      const scenarioTitles = screen.getAllByTestId("scenario-title");
+      expect(scenarioTitles[1]).toHaveTextContent("Test Scenario");
       expect(screen.getByTestId("scenario-description")).toHaveTextContent(
         "This is a test scenario description",
       );
@@ -449,7 +451,7 @@ describe("Scenario Component", () => {
         </TestWrapper>,
       );
 
-      const backButton = screen.getByTestId("motion-button");
+      const backButton = screen.getByTestId("scenario-back-button");
       backButton.click();
 
       expect(mockNavigate).toHaveBeenCalledWith(ROUTES.LEARN);
@@ -727,7 +729,7 @@ describe("Scenario Component", () => {
         </TestWrapper>,
       );
 
-      const motionDiv = screen.getByTestId("motion-div");
+      const motionDiv = screen.getByTestId("scenario-content");
       expect(motionDiv).toHaveAttribute("data-initial", "hidden");
       expect(motionDiv).toHaveAttribute("data-animate", "visible");
       expect(motionDiv).toHaveAttribute("data-exit", "exit");
@@ -740,7 +742,7 @@ describe("Scenario Component", () => {
         </TestWrapper>,
       );
 
-      const motionButton = screen.getByTestId("motion-button");
+      const motionButton = screen.getByTestId("scenario-back-button");
       expect(motionButton).toHaveAttribute("aria-label", "Close scenario details");
     });
   });
@@ -770,7 +772,9 @@ describe("Scenario Component", () => {
         </TestWrapper>,
       );
 
-      expect(screen.getByTestId("scenario-title")).toHaveTextContent("Test Scenario");
+      // Note: scenario-title appears twice - once in header, once in card
+      const scenarioTitles = screen.getAllByTestId("scenario-title");
+      expect(scenarioTitles[1]).toHaveTextContent("Test Scenario");
       expect(screen.getByTestId("scenario-description")).toHaveTextContent(
         "This is a test scenario description",
       );

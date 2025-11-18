@@ -47,7 +47,7 @@ describe("Drawer", () => {
       </Drawer>,
     );
 
-    fireEvent.click(screen.getByTestId("chevrons"));
+    fireEvent.click(screen.getByTestId("drawer-close-button"));
     expect(onClose).toHaveBeenCalled();
   });
 
