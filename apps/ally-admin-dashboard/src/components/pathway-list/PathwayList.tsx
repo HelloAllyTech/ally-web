@@ -99,19 +99,21 @@ export const PathwayList: React.FC<PathwayListProps> = ({
     {
       key: "actions",
       label: "",
-      width: "w-[8%]",
+      width: "w-[8%] min-w-[150px]",
       render: () => null,
     },
     {
       key: "isGlobal",
       label: "Org visibility",
       width: "w-[15%]",
+      hidden: true,
       render: pathway => <span>{pathway.isGlobal ? "Enabled" : "Disabled"}</span>,
     },
     {
       key: "lastModified",
       label: en.simulation.lastModified,
       width: "w-[15%]",
+      hidden: true,
       render: pathway => <span>{formatDate(pathway.updatedAt)}</span>,
     },
     {

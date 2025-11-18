@@ -136,7 +136,7 @@ export const SimulationList: React.FC<SimulationListProps> = ({
       label: en.simulation.usage,
       width: "w-[10%]",
       hidden: true,
-      render: simulation => <span>{formatSimulationUsage(simulation.usage)}</span>,
+      render: simulation => <span>{formatSimulationUsage(Number(simulation.usage))}</span>,
     },
     {
       key: "preview",
