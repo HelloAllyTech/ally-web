@@ -50,6 +50,13 @@ describe("RouteLayout", () => {
     expect(screen.getByText("UserManagementPage")).toBeInTheDocument();
   });
 
+  it("renders Organization Detail route with id", () => {
+    const path = ROUTES.ORGANIZATION_DETAIL("123");
+    window.history.pushState({}, "", path);
+    render(<RouteLayout />);
+    expect(screen.getByText("OrganizationDetailPage")).toBeInTheDocument();
+  });
+
   it("renders Create Simulation route", () => {
     window.history.pushState({}, "", ROUTES.CREATE_SIMULATION);
     render(<RouteLayout />);

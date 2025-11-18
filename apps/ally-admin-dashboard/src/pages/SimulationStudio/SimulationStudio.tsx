@@ -1,5 +1,7 @@
 import React, { useRef, useState } from "react";
 
+import { useSearchParams } from "react-router-dom";
+
 import { Add, Close, Filter, Simulation as SimulationIcon, Pathway } from "@assets";
 import {
   ActionConfirmationPopup,
@@ -29,10 +31,13 @@ const TABS = [
 export const SimulationStudio: React.FC = () => {
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [selectedFilters, setSelectedFilters] = useState<Array<{ id: string; label: string }>>([]);
-  const [activeTab, setActiveTab] = useState(TABS[0].id);
   const [isCreatePopupOpen, setIsCreatePopupOpen] = useState(false);
 
   const createButtonRef = useRef<HTMLButtonElement>(null);
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  // Get active tab from URL params, default to SIMULATIONS
+  const activeTab = searchParams.get("tab") || TAB_KEYS.SIMULATIONS;
 
   // Use the custom hook for simulations
   const {
@@ -105,7 +110,7 @@ export const SimulationStudio: React.FC = () => {
   };
 
   const handleTabChange = (tabId: string) => {
-    setActiveTab(tabId);
+    setSearchParams({ tab: tabId });
     setSelectedFilters([]);
   };
 
@@ -239,6 +244,7 @@ export const SimulationStudio: React.FC = () => {
         items={TABS}
         className="mb-2 mt-6 border-b border-border-light font-primary"
         activeId={activeTab}
+        showCount={false}
         onChange={handleTabChange}
       />
       {renderFilterSection()}

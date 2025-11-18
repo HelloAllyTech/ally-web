@@ -1,0 +1,170 @@
+import React, { useEffect, useState, FC } from "react";
+
+import { useGetScenarioPathsQuery } from "@api";
+import { ListToolbar, EmptyState, ToggleSwitch, CustomImage } from "@components";
+import { en } from "@constants";
+import { ScenarioPath } from "@types";
+import { isNonEmptyArray } from "@utils";
+
+const PATHS_PAGE_SIZE = 30;
+
+interface PathTabProps {
+  organizationId?: string;
+  searchValue: string;
+  onSearchChange: (value: string) => void;
+  pathAccess: Record<string, boolean>;
+  onToggleAccess: (pathId: number, enabled: boolean) => void;
+  onPathsLoaded?: (pathIds: string[]) => void;
+}
+
+export const PathTab: FC<PathTabProps> = ({
+  searchValue,
+  onSearchChange,
+  pathAccess,
+  onToggleAccess,
+  onPathsLoaded,
+}) => {
+  const [pathsOffset, setPathsOffset] = useState(0);
+  const [paths, setPaths] = useState<ScenarioPath[]>([]);
+
+  const pathParams = {
+    limit: PATHS_PAGE_SIZE,
+    offset: pathsOffset,
+    search: searchValue,
+  };
+
+  const {
+    data: pathsResponse,
+    isFetching: isPathsFetching,
+    isLoading: isPathsLoading,
+  } = useGetScenarioPathsQuery(pathParams);
+
+  useEffect(() => {
+    if (!pathsResponse) return;
+    const nextData = pathsResponse.data ?? [];
+    if (pathsOffset === 0) {
+      setPaths(nextData);
+    } else {
+      setPaths(prev => {
+        const existingIds = new Set(prev.map(p => p.id));
+        const newItems = nextData.filter(p => !existingIds.has(p.id));
+        return [...prev, ...newItems];
+      });
+    }
+  }, [pathsResponse, pathsOffset]);
+
+  // Separate effect to notify parent of loaded paths
+  useEffect(() => {
+    if (isNonEmptyArray(paths) && onPathsLoaded) {
+      onPathsLoaded(paths.map(path => path.id.toString()));
+    }
+  }, [paths.length]);
+
+  useEffect(() => {
+    setPathsOffset(0);
+  }, [searchValue]);
+
+  const loadMore = () => {
+    setPathsOffset(prev => prev + PATHS_PAGE_SIZE);
+  };
+
+  const hasMore = pathsResponse?.data
+    ? paths.length < pathsResponse.data.length
+    : paths.length >= PATHS_PAGE_SIZE;
+
+  const filteredPaths = paths.filter(
+    path =>
+      path.title.toLowerCase().includes(searchValue.toLowerCase()) ||
+      path.description?.toLowerCase().includes(searchValue.toLowerCase()),
+  );
+
+  if (isPathsLoading) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <span className="text-typography-600">{en.common.loading}</span>
+      </div>
+    );
+  }
+
+  const renderPathCard = (path: ScenarioPath) => {
+    return (
+      <div
+        key={path.id}
+        className="flex items-center gap-4 py-4 pr-4 border-b border-border-light hover:bg-background-secondary transition-colors h-[80px]"
+      >
+        {/* Path Image */}
+        <div className="w-[18%] md:w-[10%] lg:w-[7%] h-[56px] cursor-pointer rounded-lg overflow-hidden flex-shrink-0 bg-neutral-100">
+          <CustomImage
+            src={path.coverImageUrl}
+            alt={path.title}
+            className="w-full h-full object-cover"
+          />
+        </div>
+
+        {/* Path Title and Description */}
+        <div className="flex-1 min-w-0 overflow-hidden">
+          <h3 className="text-sm font-medium text-typography-900 mb-1 truncate">{path.title}</h3>
+          <p className="text-sm text-typography-700 leading-relaxed line-clamp-2">
+            {path.description}
+          </p>
+        </div>
+
+        {/* Toggle and Status */}
+        <div className="flex items-center gap-3 flex-shrink-0 min-w-[140px] justify-end">
+          <ToggleSwitch
+            enabled={pathAccess[path.id] ?? false}
+            onChange={enabled => onToggleAccess(path.id, enabled)}
+            label={`Toggle access for ${path.title}`}
+          />
+          <span
+            className={`text-sm ${pathAccess[path.id] ? "text-typography-900" : "text-typography-600"}`}
+          >
+            {pathAccess[path.id] ? en.userManagement.enabled : en.userManagement.disabled}
+          </span>
+        </div>
+      </div>
+    );
+  };
+
+  return (
+    <div className="flex flex-col h-full">
+      <div className="sticky top-0 z-10 bg-white pb-2">
+        <ListToolbar
+          searchValue={searchValue}
+          onSearchChange={onSearchChange}
+          placeholder={en.common.search}
+        />
+      </div>
+      {!isNonEmptyArray(filteredPaths) && isPathsLoading ? (
+        <div className="flex items-center justify-center py-12">
+          <span className="text-typography-600">{en.common.loading}</span>
+        </div>
+      ) : !isNonEmptyArray(filteredPaths) ? (
+        <EmptyState title={en.simulation.noResultFound} subtitle={en.simulation.adjustFilter} />
+      ) : (
+        <div className="flex flex-col flex-1 overflow-y-auto pb-8">
+          <div className="grid grid-cols-12 text-base text-typography-800 border-b border-border-light sticky top-0 z-10 bg-white">
+            <div className="col-span-11 text-typography-600 text-sm">{en.userManagement.path}</div>
+            <div className="col-span-1 text-sm text-typography-600 pr-8">
+              {en.userManagement.access}
+            </div>
+          </div>
+          <div className="flex-1">
+            {filteredPaths?.map(path => renderPathCard(path))}
+            {hasMore && (
+              <div className="flex justify-start mt-2 pb-4 mb-4">
+                <button
+                  onClick={loadMore}
+                  disabled={isPathsFetching}
+                  className="inline-flex font-tertiary items-center disabled:opacity-50 text-sm text-typography-600 font-medium py-1 px-1 hover:text-typography-900"
+                >
+                  + {isPathsFetching ? en.common.loading : en.common.loadMore}
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};

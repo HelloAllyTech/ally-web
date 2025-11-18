@@ -46,5 +46,6 @@ export * from "./mapped-event-side-panel";
 export * from "./toggle-switch";
 export * from "./event-map-table-loader";
 export * from "./status-badge";
+export * from "./organization-access-details";
 export * from "./simulation-selection-modal";
 export * from "./add-message-modal";

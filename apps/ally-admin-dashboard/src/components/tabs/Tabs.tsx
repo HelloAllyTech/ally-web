@@ -2,7 +2,13 @@ import React from "react";
 
 import { TabsProps } from "@components/types";
 
-export const Tabs: React.FC<TabsProps> = ({ items, activeId, onChange, className }) => {
+export const Tabs: React.FC<TabsProps> = ({
+  items,
+  activeId,
+  onChange,
+  className,
+  showCount = true,
+}) => {
   return (
     <div className={`border-b border-border-light ${className ?? ""}`}>
       <nav className="-mb-px flex space-x-8" aria-label="Tabs">
@@ -16,7 +22,7 @@ export const Tabs: React.FC<TabsProps> = ({ items, activeId, onChange, className
                 isActive ? "text-primary-500" : "text-typography-900 hover:text-typography-900"
               }`}
             >
-              {item.label} {item.count !== undefined ? item.count : ""}
+              {item.label} {showCount ? item.count || "0" : ""}
               {isActive && (
                 <span
                   aria-hidden

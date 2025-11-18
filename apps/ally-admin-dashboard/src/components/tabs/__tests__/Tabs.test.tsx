@@ -153,10 +153,10 @@ describe("Tabs", () => {
     const itemsWithoutCount = [{ id: "tab1", label: "Tab 1" }];
     render(<Tabs items={itemsWithoutCount} activeId="tab1" onChange={onChange} />);
 
-    // When count is undefined, only the label should be displayed without any count
-    expect(screen.getByText("Tab 1")).toBeInTheDocument();
-    // Verify that no count is appended (the text should be exactly "Tab 1" with possible whitespace)
-    const tabButton = screen.getByText("Tab 1");
-    expect(tabButton.textContent?.trim()).toBe("Tab 1");
+    // When count is undefined, it defaults to "0"
+    expect(screen.getByText(/Tab 1/)).toBeInTheDocument();
+    // Verify that count defaults to "0" when undefined
+    const tabButton = screen.getByText(/Tab 1/);
+    expect(tabButton.textContent?.trim()).toBe("Tab 1 0");
   });
 });

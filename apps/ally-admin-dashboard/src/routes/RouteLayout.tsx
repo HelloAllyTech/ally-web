@@ -9,6 +9,7 @@ import {
   LiveSimulationPreview,
   SimulationStudio,
   UserManagement,
+  OrganizationDetail,
   EventManagement,
   CreatePath,
 } from "@pages";
@@ -44,6 +45,14 @@ export const RouteLayout: React.FC = () => {
           element={
             <PrivateLayout requiredPermissions={[Permissions.EDIT_USER]}>
               <UserManagement />
+            </PrivateLayout>
+          }
+        />
+        <Route
+          path={ROUTES.ORGANIZATION_DETAIL(":id")}
+          element={
+            <PrivateLayout requiredPermissions={[Permissions.EDIT_USER]}>
+              <OrganizationDetail />
             </PrivateLayout>
           }
         />

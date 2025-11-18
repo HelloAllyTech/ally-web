@@ -284,7 +284,7 @@ describe("createSimulation utils", () => {
       expect(result.coverImageUrl).toBe("https://example.com/image.jpg");
     });
 
-    it("should convert empty image upload to null", () => {
+    it("should convert empty image upload to empty string", () => {
       const formData = {
         coverImageUrl: "",
       };
@@ -325,7 +325,7 @@ describe("createSimulation utils", () => {
         name: "John", // trimmed
         age: 30, // parsed
         gender: null, // empty select
-        coverImageUrl: null, // empty upload
+        coverImageUrl: null, // empty string returns null
       });
     });
   });
