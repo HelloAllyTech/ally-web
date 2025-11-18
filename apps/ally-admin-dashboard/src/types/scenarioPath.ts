@@ -69,3 +69,15 @@ export interface MessageFields {
   placeholder?: string;
   multiline?: boolean;
 }
+
+export interface SimulationCardItemProps {
+  simulation: GetScenarioType;
+  index: number;
+  isLast: boolean;
+  selectedSimulations: GetScenarioType[];
+  setSelectedSimulations: (simulations: GetScenarioType[]) => void;
+  openMessageIndex: number | null;
+  setOpenMessageIndex: (index: number | null) => void;
+  handleMessageClick: (index: number) => void;
+  renderMessage: (messageTitle: string, feedback: string, index: number) => JSX.Element;
+}

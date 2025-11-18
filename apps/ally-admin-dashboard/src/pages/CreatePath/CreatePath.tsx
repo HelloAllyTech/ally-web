@@ -6,7 +6,7 @@ import { toast } from "sonner";
 
 import {
   useCreateSimulationPathMutation,
-  useGetScenarioPathByIdQuery,
+  useLazyGetScenarioPathByIdQuery,
   useUpdateSimulationPathByIdMutation,
 } from "@api";
 import { Plus } from "@assets";
@@ -14,7 +14,6 @@ import {
   Header,
   VerticalStepper,
   Footer,
-  MoreOptionsPopup,
   ActionConfirmationPopup,
   Button,
   SimulationSelectionModal,
@@ -53,15 +52,13 @@ export const CreatePath: FC = () => {
   const [pathId, setPathId] = useState<string | undefined>(id);
   const [currentStep, setCurrentStep] = useState(PATH_CREATOR_STEP_IDS.basicInfo);
   const [showDiscardPopup, setShowDiscardPopup] = useState(false);
-  const [showMoreOptions, setShowMoreOptions] = useState(false);
   const [showSimulationModal, setShowSimulationModal] = useState(false);
 
   const containerRef = useRef<HTMLDivElement>(null);
-  const moreOptionsRef = useRef<HTMLButtonElement>(null);
 
   const title = id ? en.simulation.editPath : en.simulation.createPath;
 
-  const { data: individualPath } = useGetScenarioPathByIdQuery(id);
+  const [getScenarioPathByIdQuery, { data: individualPath }] = useLazyGetScenarioPathByIdQuery();
   const [createSimulationPathMutation] = useCreateSimulationPathMutation();
   const [updateSimulationPathByIdQuery] = useUpdateSimulationPathByIdMutation();
 
@@ -75,6 +72,12 @@ export const CreatePath: FC = () => {
     formState: { dirtyFields },
     watch,
   } = formMethods;
+
+  useEffect(() => {
+    if (pathId) {
+      getScenarioPathByIdQuery(pathId);
+    }
+  }, [pathId, getScenarioPathByIdQuery]);
 
   useEffect(() => {
     if (individualPath) {
@@ -98,27 +101,8 @@ export const CreatePath: FC = () => {
     });
   }, [formValues]);
 
-  const handleDiscardSimulation = () => {
-    setShowMoreOptions(false);
-  };
-
-  const handleCloseMoreOptions = () => {
-    setShowMoreOptions(false);
-  };
-
   const toggleSimulationModal = () => {
     setShowSimulationModal(prev => !prev);
-  };
-
-  const getMoreOptionsPosition = () => {
-    if (moreOptionsRef.current) {
-      const rect = moreOptionsRef.current.getBoundingClientRect();
-      return {
-        top: rect.bottom + 8,
-        right: window.innerWidth - rect.right,
-      };
-    }
-    return { top: 0, right: 0 };
   };
 
   const handlePageBack = () => {
@@ -165,7 +149,6 @@ export const CreatePath: FC = () => {
   const saveSimulationChanges = useDebounce(saveSimulationChangesCore, 500);
 
   const handleSaveDraft = async () => {
-    // TODO: API and Handle any navigations here
     try {
       const response = await saveSimulationChanges(SimulationStatus.DRAFT);
       if (response && !response.error) {
@@ -192,7 +175,7 @@ export const CreatePath: FC = () => {
 
       if (response) navigate(ROUTES.SIMULATION_STUDIO);
     } catch {
-      toast.error("Failed to create simulation. Please try again.");
+      toast.error(en.errors.failedSimulationCreation);
     }
   };
 
@@ -206,9 +189,9 @@ export const CreatePath: FC = () => {
     if (response) {
       setShowDiscardPopup(false);
       navigate("/");
-      toast.success("Simulation changes saved successfully!");
+      toast.success(en.simulation.saveSimulation);
     } else {
-      toast.error("Failed to save simulation changes!");
+      toast.error(en.errors.failedSimulationChange);
     }
   };
 
@@ -275,8 +258,6 @@ export const CreatePath: FC = () => {
     }
   };
 
-  const moreOptionsPosition = useMemo(() => getMoreOptionsPosition(), []);
-
   const isLastStep = currentStep === PATH_CREATOR_STEP_IDS.simulations;
 
   const handleNext = async () => {
@@ -335,12 +316,6 @@ export const CreatePath: FC = () => {
           onClick: handleDiscardChanges,
           variant: ButtonVariant.SECONDARY,
         }}
-      />
-      <MoreOptionsPopup
-        isOpen={showMoreOptions}
-        onClose={handleCloseMoreOptions}
-        onDiscardSimulation={handleDiscardSimulation}
-        position={moreOptionsPosition}
       />
     </div>
   );

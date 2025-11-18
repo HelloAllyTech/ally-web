@@ -11,14 +11,6 @@ export interface PopupButtonProps {
   variant?: ButtonVariantType;
 }
 
-export interface HeaderProps {
-  onBack: () => void;
-  onSaveDraft: () => void;
-  onPublish: () => void;
-  onMoreOptions: () => void;
-  moreOptionsRef: React.RefObject<HTMLButtonElement>;
-}
-
 export const ButtonVariant = {
   PRIMARY: "primary",
   DESTRUCTIVE: "destructive",
@@ -164,13 +156,6 @@ export interface FieldGroupProps {
 export interface FormFieldProps {
   config: FormFieldConfig;
   formMethods: UseFormReturn<any>;
-}
-
-export interface MoreOptionsPopupProps {
-  isOpen: boolean;
-  onClose: () => void;
-  onDiscardSimulation: () => void;
-  position: { top: number; right: number };
 }
 
 export interface NavigationItem {

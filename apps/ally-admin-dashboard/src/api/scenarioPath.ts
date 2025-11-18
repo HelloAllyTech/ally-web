@@ -45,6 +45,7 @@ const simulationPathApi = baseAPI.injectEndpoints({
         method: HttpMethod.PUT,
         body: data,
       }),
+      invalidatesTags: [TAG_TYPES.SIMULATION_PATHS],
     }),
 
     deleteScenarioPathById: builder.mutation<void, number>({
@@ -60,7 +61,7 @@ const simulationPathApi = baseAPI.injectEndpoints({
 export const {
   useGetScenarioPathsQuery,
   useDeleteScenarioPathByIdMutation,
-  useGetScenarioPathByIdQuery,
+  useLazyGetScenarioPathByIdQuery,
   useCreateSimulationPathMutation,
   useUpdateSimulationPathByIdMutation,
 } = simulationPathApi;

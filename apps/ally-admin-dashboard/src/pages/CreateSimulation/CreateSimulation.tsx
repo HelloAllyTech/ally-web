@@ -14,7 +14,6 @@ import {
   Header,
   VerticalStepper,
   Footer,
-  MoreOptionsPopup,
   ActionConfirmationPopup,
   SimulationPreview,
 } from "@components";
@@ -58,11 +57,9 @@ export const CreateSimulation: FC = () => {
   const [simulationId, setSimulationId] = useState<string | undefined>(id);
   const [currentStep, setCurrentStep] = useState(stepIds.basicInfo);
   const [showDiscardPopup, setShowDiscardPopup] = useState(false);
-  const [showMoreOptions, setShowMoreOptions] = useState(false);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [previewSimulation, setPreviewSimulation] = useState<SimulationPreviewType | null>(null);
 
-  const moreOptionsRef = useRef<HTMLButtonElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
   // API mutation for creating simulation
@@ -120,25 +117,6 @@ export const CreateSimulation: FC = () => {
       return true;
     });
   }, [formValues]);
-
-  const handleDiscardSimulation = () => {
-    setShowMoreOptions(false);
-  };
-
-  const handleCloseMoreOptions = () => {
-    setShowMoreOptions(false);
-  };
-
-  const getMoreOptionsPosition = () => {
-    if (moreOptionsRef.current) {
-      const rect = moreOptionsRef.current.getBoundingClientRect();
-      return {
-        top: rect.bottom + 8,
-        right: window.innerWidth - rect.right,
-      };
-    }
-    return { top: 0, right: 0 };
-  };
 
   const handlePageBack = () => {
     if (Object.keys(dirtyFields).length > 0) {
@@ -209,10 +187,7 @@ export const CreateSimulation: FC = () => {
         // Reset form to clear dirtyFields after successful save
         const currentFormValues = formMethods.getValues();
         formMethods.reset(currentFormValues);
-        // Refetch to ensure form is in sync with saved data
-        if (simulationId) {
-          getAdminSimulationByIdQuery(simulationId);
-        }
+
         return response?.data;
       } else if (response?.error) {
         toast.error("Failed to save draft. Please try again.");
@@ -223,7 +198,6 @@ export const CreateSimulation: FC = () => {
       toast.error("Failed to save draft. Please try again.");
       return null;
     }
-    // TODO: Handle any navigations here
   };
 
   const handlePublish = async () => {
@@ -314,8 +288,6 @@ export const CreateSimulation: FC = () => {
     }
   };
 
-  const moreOptionsPosition = useMemo(() => getMoreOptionsPosition(), []);
-
   const isLastStep = currentStep === stepIds.eventConfiguration;
 
   const handleNext = async () => {
@@ -393,12 +365,7 @@ export const CreateSimulation: FC = () => {
           variant: ButtonVariant.SECONDARY,
         }}
       />
-      <MoreOptionsPopup
-        isOpen={showMoreOptions}
-        onClose={handleCloseMoreOptions}
-        onDiscardSimulation={handleDiscardSimulation}
-        position={moreOptionsPosition}
-      />
+
       {previewSimulation && (
         <SimulationPreview
           simulation={previewSimulation}

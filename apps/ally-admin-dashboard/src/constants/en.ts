@@ -25,6 +25,8 @@ export const en = {
     imageMustHave169AspectRatio: "Image must have a 16:9 aspect ratio.",
     fileDeleteFailed: "Failed to delete file. Please try again.",
     titleIsRequired: "Title should be filled to save as draft",
+    failedSimulationChange: "Failed to save simulation changes!",
+    failedSimulationCreation: "Failed to create simulation. Please try again.",
   },
   accessDenied: {
     title: "This page is not accessible",
@@ -166,6 +168,9 @@ export const en = {
     addMessage: "Add Message",
     add: "Add",
     editMessage: "Edit Message",
+    message: "Message",
+    saveSimulation: "Simulation changes saved successfully!",
+    noSimulationFound: "No simulations found",
   },
   userManagement: {
     addOrganization: "Add organization",
