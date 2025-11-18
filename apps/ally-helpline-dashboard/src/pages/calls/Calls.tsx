@@ -83,25 +83,34 @@ export const Calls: FC = () => {
   };
 
   return (
-    <div className="px-6 pb-6 h-full flex flex-col">
+    <div className="px-6 pb-6 h-full flex flex-col" data-testid="calls-page">
       <motion.div
+        data-testid="calls-header"
         layout="position"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.3, ease: "easeOut" }}
         className="relative mt-[10px] font-primary"
       >
-        <div className="sm:p-4 p-0 rounded-lg flex gap-4 sm:justify-between justify-start bg-transparent items-center">
-          <div className="z-10 text-typography-900 text-2xl font-[500] flex items-center gap-2">
+        <div
+          className="sm:p-4 p-0 rounded-lg flex gap-4 sm:justify-between justify-start bg-transparent items-center"
+          data-testid="calls-header-content"
+        >
+          <div
+            className="z-10 text-typography-900 text-2xl font-[500] flex items-center gap-2"
+            data-testid="calls-title"
+          >
             Session Logs
             <Refresh
+              data-testid="calls-refresh-button"
               className="w-6 h-6 cursor-pointer border-l-[0.5px] border-border pl-2"
               onClick={handleRefresh}
             />
           </div>
-          <div className="flex gap-2 items-center">
+          <div className="flex gap-2 items-center" data-testid="calls-action-buttons">
             <PermissionGuard requiredPermissions={[Permissions.VIEW_AUDIO_UPLOAD]}>
               <Button
+                data-testid="calls-upload-audio-button"
                 variant={
                   hasPermissions(permissions, Permissions.START_MICROPHONE_CHAT)
                     ? ButtonVariant.SECONDARY
@@ -110,6 +119,7 @@ export const Calls: FC = () => {
                 onClick={() => setIsAudioUploadDialogOpen(true)}
               >
                 <UploadIcon
+                  data-testid="calls-upload-icon"
                   className={
                     hasPermissions(permissions, Permissions.START_MICROPHONE_CHAT)
                       ? "text-neutral-500 path-fill-current"
@@ -120,8 +130,8 @@ export const Calls: FC = () => {
               </Button>
             </PermissionGuard>
             <PermissionGuard requiredPermissions={[Permissions.START_MICROPHONE_CHAT]}>
-              <Button onClick={handleStartSession}>
-                <StartSession />
+              <Button data-testid="calls-start-session-button" onClick={handleStartSession}>
+                <StartSession data-testid="calls-start-session-icon" />
                 Start Session
               </Button>
             </PermissionGuard>
@@ -129,6 +139,7 @@ export const Calls: FC = () => {
         </div>
         {userGroupList?.length > 1 && (
           <Tabs
+            data-testid="calls-user-group-tabs"
             value={sessionUserGroup}
             onChange={handleTabChange}
             className="w-full normal-case border-b border-border mb-4"
@@ -139,25 +150,34 @@ export const Calls: FC = () => {
             }}
           >
             {userGroupList?.map(tab => (
-              <Tab key={tab.id} label={tab.label} value={tab.id} sx={tabStyles} />
+              <Tab
+                key={tab.id}
+                label={tab.label}
+                value={tab.id}
+                sx={tabStyles}
+                data-testid={`calls-tab-${tab.id}`}
+              />
             ))}
           </Tabs>
         )}
         {sessionTypeList?.length > 1 && (
           <ToggleButtonGroup
+            data-testid="calls-session-type-toggle"
             value={sessionType}
             onValueChange={(value: SessionType) => setSessionType(value)}
             items={sessionTypeList}
           />
         )}
       </motion.div>
-      {getContent()}
+      <div data-testid="calls-content">{getContent()}</div>
       <StartSessionDialog
+        data-testid="calls-start-session-dialog"
         isOpen={isStartSessionDialogOpen}
         onClose={() => setIsStartSessionDialogOpen(false)}
       />
       <PermissionGuard requiredPermissions={[Permissions.VIEW_AUDIO_UPLOAD]}>
         <AudioUploadDialog
+          data-testid="calls-audio-upload-dialog"
           isOpen={isAudioUploadDialogOpen}
           onClose={() => setIsAudioUploadDialogOpen(false)}
         />

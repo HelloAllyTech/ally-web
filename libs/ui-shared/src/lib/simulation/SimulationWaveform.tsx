@@ -56,9 +56,13 @@ const CircleWaveVisualizer = ({
   const imageUrl = roomData ? roomData?.coverImageUrl : null;
 
   return (
-    <div className="relative w-full h-full flex items-center justify-center">
+    <div
+      data-testid="simulation-waveform-visualizer"
+      className="relative w-full h-full flex items-center justify-center"
+    >
       {imageUrl ? (
         <img
+          data-testid="simulation-waveform-avatar"
           src={imageUrl}
           alt="Speaker avatar"
           className="z-10 rounded-full object-cover w-[120px] h-[120px] sm:w-[100px] sm:h-[100px] md:w-[120px] md:h-[120px]"
@@ -80,7 +84,10 @@ export const SimulationWaveform = ({ roomData }: { roomData: any }) => {
     .find((pub: any) => pub.kind === Track.Kind.Audio);
 
   return (
-    <div className="flex justify-center items-center w-[90%] sm:w-[60%] lg:w-[60%] xl:w-[50%] 2xl:w-[40%] h-[70vh]">
+    <div
+      data-testid="simulation-waveform"
+      className="flex justify-center items-center w-[90%] sm:w-[60%] lg:w-[60%] xl:w-[50%] 2xl:w-[40%] h-[70vh]"
+    >
       <CircleWaveVisualizer
         trackRef={{
           participant: remoteParticipant,
