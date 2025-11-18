@@ -32,7 +32,7 @@ export const DropdownField: React.FC<DropdownFieldProps> = ({
     setIsOpen(false);
   };
 
-  // Debounced search handler with 300ms delay
+  // Debounced search handler
   const debouncedSearch = useDebounce((searchTerm: string) => {
     handleSearchTextChange?.(searchTerm);
   }, DEBOUNCE_DELAY);
