@@ -146,6 +146,7 @@ const AudioUploadDialog: FC<AudioUploadDialogProps> = ({ isOpen, onClose }) => {
     <Dialog
       open={isOpen}
       onClose={onClose}
+      data-testid="audio-upload-dialog"
       PaperProps={{
         style: {
           borderRadius: "8px",
@@ -154,6 +155,7 @@ const AudioUploadDialog: FC<AudioUploadDialogProps> = ({ isOpen, onClose }) => {
       }}
     >
       <motion.div
+        data-testid="audio-upload-dialog-content"
         className="max-w-[760px] min-w-[600px] w-full flex flex-col gap-6 p-6 sm:p-8 md:p-10"
         initial={{ opacity: 0, scale: 0.98, y: 10 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -166,7 +168,10 @@ const AudioUploadDialog: FC<AudioUploadDialogProps> = ({ isOpen, onClose }) => {
           transition={{ delay: 0.05, duration: 0.2 }}
           className="flex items-center justify-between"
         >
-          <span className="text-2xl font-secondary text-typography-900">
+          <span
+            className="text-2xl font-secondary text-typography-900"
+            data-testid="audio-upload-dialog-title"
+          >
             Upload audio recording
           </span>
         </motion.div>
@@ -176,6 +181,7 @@ const AudioUploadDialog: FC<AudioUploadDialogProps> = ({ isOpen, onClose }) => {
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1, duration: 0.2 }}
+          data-testid="audio-upload-dropzone-container"
         >
           <AudioUploadInterface
             duration={duration}
@@ -192,11 +198,13 @@ const AudioUploadDialog: FC<AudioUploadDialogProps> = ({ isOpen, onClose }) => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.15, duration: 0.2 }}
           className="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm font-primary text-typography-900"
+          data-testid="audio-upload-form"
         >
           {/* Counsellor */}
-          <div className="flex flex-col gap-2">
+          <div className="flex flex-col gap-2" data-testid="audio-upload-counsellor-field">
             <label>Counsellor name</label>
             <Dropdown
+              data-testid="audio-upload-counsellor-dropdown"
               value={formData.counsellorId}
               options={counsellors.map(({ id, name }) => ({
                 label: name,
@@ -208,9 +216,10 @@ const AudioUploadDialog: FC<AudioUploadDialogProps> = ({ isOpen, onClose }) => {
           </div>
 
           {/* Date */}
-          <div className="flex flex-col gap-2">
+          <div className="flex flex-col gap-2" data-testid="audio-upload-date-field">
             <label>Session date</label>
             <DatePicker
+              data-testid="audio-upload-date-picker"
               value={formData.date}
               onChange={value => setFormData({ ...formData, date: value })}
               maxDate={maxDateForTz}
@@ -218,9 +227,10 @@ const AudioUploadDialog: FC<AudioUploadDialogProps> = ({ isOpen, onClose }) => {
           </div>
 
           {/* Time zone */}
-          <div className="flex flex-col gap-2">
+          <div className="flex flex-col gap-2" data-testid="audio-upload-timezone-field">
             <label>Time zone</label>
             <Dropdown
+              data-testid="audio-upload-timezone-dropdown"
               value={formData.timeZone}
               options={timezoneOptions}
               onChange={value => setFormData({ ...formData, timeZone: value })}
@@ -229,9 +239,10 @@ const AudioUploadDialog: FC<AudioUploadDialogProps> = ({ isOpen, onClose }) => {
           </div>
 
           {/* Time */}
-          <div className="flex flex-col gap-2">
+          <div className="flex flex-col gap-2" data-testid="audio-upload-time-field">
             <label>Session time</label>
             <TimePicker
+              data-testid="audio-upload-time-picker"
               value={formData.time}
               onChange={value => setFormData({ ...formData, time: value })}
               maxTime={maxTimeForPicker}
@@ -246,11 +257,22 @@ const AudioUploadDialog: FC<AudioUploadDialogProps> = ({ isOpen, onClose }) => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2, duration: 0.2 }}
           className="flex items-center justify-between gap-4"
+          data-testid="audio-upload-actions"
         >
-          <Button fullWidth variant={ButtonVariant.SECONDARY} onClick={handleCancel}>
+          <Button
+            fullWidth
+            variant={ButtonVariant.SECONDARY}
+            onClick={handleCancel}
+            data-testid="audio-upload-cancel-button"
+          >
             Cancel
           </Button>
-          <Button fullWidth onClick={onUpload} disabled={isUploadButtonDisabled}>
+          <Button
+            fullWidth
+            onClick={onUpload}
+            disabled={isUploadButtonDisabled}
+            data-testid="audio-upload-submit-button"
+          >
             {isGetAudioUploadUrlLoading ? "Uploading..." : "Upload"}
           </Button>
         </motion.div>

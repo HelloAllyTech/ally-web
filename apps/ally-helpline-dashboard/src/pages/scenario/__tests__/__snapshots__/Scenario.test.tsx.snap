@@ -10,26 +10,29 @@ exports[`Scenario Component > Snapshot Testing > should match snapshot with scen
     >
       <div
         class="h-screen w-full flex justify-center items-center bg-white"
+        data-testid="scenario-page"
       >
         <div
           class="flex flex-col gap-6 w-full m-auto justify-center items-center"
           data-animate="visible"
           data-exit="exit"
           data-initial="hidden"
-          data-testid="motion-div"
+          data-testid="scenario-content"
           data-variants="{\\"hidden\\":{\\"opacity\\":0,\\"scale\\":0.95},\\"visible\\":{\\"opacity\\":1,\\"scale\\":1,\\"transition\\":{\\"duration\\":0.4,\\"ease\\":[0.4,0,0.2,1]}},\\"exit\\":{\\"opacity\\":0,\\"scale\\":0.95,\\"transition\\":{\\"duration\\":0.3}}}"
         >
           <div
             class="flex justify-between w-full max-w-[600px]"
+            data-testid="scenario-header"
           >
             <div
               class="flex items-center gap-2 font-secondary text-3xl"
+              data-testid="scenario-title"
             >
               <button
                 animate="[object Object]"
                 aria-label="Close scenario details"
                 class="hover:scale-105 transition-transform"
-                data-testid="motion-button"
+                data-testid="scenario-back-button"
                 exit="[object Object]"
                 initial="[object Object]"
                 transition="[object Object]"
@@ -51,6 +54,7 @@ exports[`Scenario Component > Snapshot Testing > should match snapshot with scen
             </div>
             <div
               class="font-primary flex  items-center"
+              data-testid="scenario-credits-display"
             >
               <div
                 class="font-primary text-base text-typography-800"
@@ -59,6 +63,7 @@ exports[`Scenario Component > Snapshot Testing > should match snapshot with scen
               </div>
               <svg
                 class="lucide lucide-bolt mb-2"
+                data-testid="scenario-credits-icon"
                 fill="none"
                 height="24"
                 stroke="currentColor"
@@ -80,11 +85,13 @@ exports[`Scenario Component > Snapshot Testing > should match snapshot with scen
               </svg>
               <span
                 class="font-bold text-xl mb-1 text-typography-900"
+                data-testid="scenario-credits-consumed"
               >
                 0
               </span>
               <span
                 class="text-base text-typography-800"
+                data-testid="scenario-credits-limit"
               >
                 /100
               </span>
@@ -184,6 +191,7 @@ exports[`Scenario Component > Snapshot Testing > should match snapshot with scen
     >
       <div
         class="h-screen w-full flex justify-center items-center bg-white"
+        data-testid="scenario-page"
       >
         <div
           data-testid="fallback-ui"

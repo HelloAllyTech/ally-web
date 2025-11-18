@@ -23,7 +23,10 @@ export const SimulationInterface: FC<SimulationInterfaceProps> = ({ roomStatus, 
     switch (roomStatus) {
       case RoomStatus.CONNECTING:
         return (
-          <div className="flex flex-col items-center text-center font-['IBM_Plex_Serif']">
+          <div
+            data-testid="simulation-interface-connecting"
+            className="flex flex-col items-center text-center font-['IBM_Plex_Serif']"
+          >
             <p className="text-[20px] text-white">
               Simulation
               <span className="font-medium italic"> starting...</span>
@@ -39,7 +42,10 @@ export const SimulationInterface: FC<SimulationInterfaceProps> = ({ roomStatus, 
           <>
             <RoomAudioRenderer />
             <SimulationWaveform roomData={roomData} />
-            <span className="absolute bottom-4 left-4 text-white font-['IBM_Plex_Serif']">
+            <span
+              data-testid="simulation-interface-room-name"
+              className="absolute bottom-4 left-4 text-white font-['IBM_Plex_Serif']"
+            >
               {roomData?.name}
             </span>
           </>
@@ -49,6 +55,7 @@ export const SimulationInterface: FC<SimulationInterfaceProps> = ({ roomStatus, 
 
   return (
     <motion.div
+      data-testid="simulation-interface"
       layout
       transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
       className="w-full flex justify-center items-center flex-1 bg-[#1D2020] rounded-lg relative"

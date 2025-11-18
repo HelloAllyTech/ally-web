@@ -24,6 +24,7 @@ export const Learn: FC = () => {
     const emphasisStyles = "font-bold text-primary-500";
     return (
       <motion.div
+        data-testid="learn-page-description"
         variants={learnPageItemVariants}
         initial="hidden"
         animate="visible"
@@ -39,9 +40,15 @@ export const Learn: FC = () => {
   };
 
   const renderEmptyGrid = () => (
-    <div className="flex flex-col items-center justify-center w-full py-8 min-h-[30vh]">
-      <div className="text-typography-700 text-lg mb-4">No scenarios available at the moment</div>
+    <div
+      className="flex flex-col items-center justify-center w-full py-8 min-h-[30vh]"
+      data-testid="learn-empty-state"
+    >
+      <div className="text-typography-700 text-lg mb-4" data-testid="learn-empty-message">
+        No scenarios available at the moment
+      </div>
       <button
+        data-testid="learn-refresh-button"
         onClick={() => refetchScenarios()}
         className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors"
       >
@@ -61,38 +68,53 @@ export const Learn: FC = () => {
   const renderScenarioGrid = () => (
     <>
       <motion.div
+        data-testid="learn-header-section"
         variants={learnPageItemVariants}
         initial="hidden"
         animate="visible"
         exit="exit"
         className="mb-[24px] sm:mb-[32px]"
       >
-        <h1 className="text-2xl sm:text-4xl text-typography-900 mb-6 sm:mb-[24px] font-secondary">
+        <h1
+          className="text-2xl sm:text-4xl text-typography-900 mb-6 sm:mb-[24px] font-secondary"
+          data-testid="learn-page-title"
+        >
           <span className="font-[350]">Choose your</span>
           <span className="font-[700] italic"> Scenario</span>
         </h1>
-        <div className="flex items-center gap-2">
-          <span className="font-tertiary text-xs text-typography-800 font-semibold tracking-[4px]">
+        <div className="flex items-center gap-2" data-testid="learn-scenarios-header">
+          <span
+            className="font-tertiary text-xs text-typography-800 font-semibold tracking-[4px]"
+            data-testid="learn-scenarios-label"
+          >
             SCENARIOS
           </span>
           <div className="border-b border-typography-300 w-full" />
-          <div className="flex flex-row items-center min-w-[130px] justify-end">
+          <div
+            className="flex flex-row items-center min-w-[130px] justify-end"
+            data-testid="learn-credits-display"
+          >
             <div className="font-primary text-base text-typography-700 whitespace-nowrap">
               Credits used:
             </div>
-            <Bolt />
+            <Bolt data-testid="learn-credits-icon" />
             <span
+              data-testid="learn-credits-consumed"
               className={`font-primary font-bold text-lg  ${limitReached ? "text-red-500" : "text-black"}`}
             >
               {credits?.consumedCredits ?? 0}
             </span>
-            <span className="font-primary text-base text-typography-700">
+            <span
+              className="font-primary text-base text-typography-700"
+              data-testid="learn-credits-limit"
+            >
               /{credits?.creditLimit ?? 0}
             </span>
           </div>
         </div>
       </motion.div>
       <motion.div
+        data-testid="learn-scenarios-container"
         variants={learnPageContainerVariants}
         initial="hidden"
         animate="visible"
@@ -100,16 +122,21 @@ export const Learn: FC = () => {
         className="max-h-[calc(100vh-200px)] overflow-y-scroll"
       >
         {isScenariosLoading ? (
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
+          <div
+            className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4"
+            data-testid="learn-loading-skeleton"
+          >
             {Array.from({ length: 6 }).map((_, index) => (
               <div
                 key={index}
+                data-testid={`learn-skeleton-card-${index}`}
                 className="h-[200px] sm:h-[250px] bg-gray-200 rounded-lg animate-pulse"
               />
             ))}
           </div>
         ) : scenarios?.length > 0 ? (
           <div
+            data-testid="learn-scenarios-grid"
             className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4  mx-auto pb-10"
             role="list"
             aria-label="Available scenarios"
@@ -117,6 +144,7 @@ export const Learn: FC = () => {
             {getSortedScenarios().map(scenario => (
               <motion.div
                 key={scenario.id}
+                data-testid={`learn-scenario-item-${scenario.id}`}
                 variants={learnPageItemVariants}
                 role="listitem"
                 className="h-full"
@@ -139,7 +167,10 @@ export const Learn: FC = () => {
   );
 
   return (
-    <div className="flex flex-col w-full bg-white max-h-screen overflow-y-hidden p-[10px] sm:p-[24px] justify-center font-tertiary">
+    <div
+      className="flex flex-col w-full bg-white max-h-screen overflow-y-hidden p-[10px] sm:p-[24px] justify-center font-tertiary"
+      data-testid="learn-page"
+    >
       {renderPageDescription()}
       <AnimatePresence mode="wait">{renderScenarioGrid()}</AnimatePresence>
     </div>

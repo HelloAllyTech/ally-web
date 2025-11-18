@@ -60,6 +60,7 @@ const ResourceCard: FC<ResourceCardProps> = ({
   const renderTags = () => {
     return (
       <div
+        data-testid="resource-card-badges"
         style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
         className="flex flex-row justify-between gap-2 overflow-x-hidden"
       >
@@ -67,14 +68,23 @@ const ResourceCard: FC<ResourceCardProps> = ({
           text={category}
           variant={mode}
           className={`capitalize flex-shrink-0 ${category?.trim().length > 0 ? "" : "bg-transparent"}`}
+          data-testid="resource-card-category-badge"
         />
-        <div className="flex justify-end w-full sm:max-w-[80%] relative">
+        <div
+          className="flex justify-end w-full sm:max-w-[80%] relative"
+          data-testid="resource-card-tags-container"
+        >
           <div
             style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
             className="flex gap-1 overflow-x-auto whitespace-nowrap ml-[20px] scrollbar-hide"
           >
             {tags.map(tag => (
-              <Badge key={tag} text={tag} variant="outlined" />
+              <Badge
+                key={tag}
+                text={tag}
+                variant="outlined"
+                data-testid={`resource-card-tag-${tag.toLowerCase().replace(/\s+/g, "-")}`}
+              />
             ))}
           </div>
         </div>
@@ -103,6 +113,7 @@ const ResourceCard: FC<ResourceCardProps> = ({
           className="mt-1"
         >
           <button
+            data-testid="resource-card-toggle-button"
             className={`text-sm transition-colors ${resourceCardStyles[mode].showMoreLess}`}
             onClick={e => {
               e.stopPropagation();
@@ -110,12 +121,12 @@ const ResourceCard: FC<ResourceCardProps> = ({
             }}
           >
             {isExpanded ? (
-              <div className="flex items-center">
+              <div className="flex items-center" data-testid="resource-card-view-less">
                 View less
                 <ArrowDropDownIcon className="rotate-180" />
               </div>
             ) : (
-              <div className="flex items-center">
+              <div className="flex items-center" data-testid="resource-card-view-more">
                 View more
                 <ArrowDropDownIcon />
               </div>
@@ -141,10 +152,11 @@ const ResourceCard: FC<ResourceCardProps> = ({
    */
   const renderDescription = () => {
     return (
-      <div>
+      <div data-testid="resource-card-description-container">
         <AnimatePresence mode="wait">
           <motion.div
             ref={contentRef}
+            data-testid="resource-card-description"
             className={`text-[15px] sm:text-[14px] md:text-[14px] lg:text-[16px] leading-6 ${!isExpanded ? "line-clamp-2" : ""} ${resourceCardStyles[mode].description}`}
             initial={false}
             animate={{
@@ -173,12 +185,14 @@ const ResourceCard: FC<ResourceCardProps> = ({
 
   return (
     <div
+      data-testid="resource-card"
       onClick={onExpandCard}
       className={`w-full flex flex-col gap-2 rounded-[8px] p-3 sm:p-4 md:p-3 lg:p-4 min-w-0 ${resourceCardStyles[mode].card}`}
     >
       {renderTags()}
-      <div className="flex flex-col font-['IBM_Plex_Serif']">
+      <div className="flex flex-col font-['IBM_Plex_Serif']" data-testid="resource-card-content">
         <span
+          data-testid="resource-card-title"
           className={`font-[500] text-[15px] sm:text-[14px] md:text-[14px] lg:text-[16px] ${resourceCardStyles[mode].title}`}
         >
           {title}
