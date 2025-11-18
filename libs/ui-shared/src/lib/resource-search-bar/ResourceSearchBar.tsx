@@ -74,10 +74,11 @@ const SearchBar: FC<SearchBarProps> = ({
       <li
         key={key}
         {...restProps}
+        data-testid={`search-bar-option-${option.toLowerCase().replace(/\s+/g, "-")}`}
         className={`flex items-center h-12 sm:text-[12px] text-[14px] md:text-[12px] lg:text-[16px] font-['IBM_Plex_Serif'] cursor-pointer pl-4 transition-colors 
           ${state.selected ? "bg-[#fafafa]" : searchBarStyles[mode].optionCard}`}
       >
-        <SearchIcon className="mr-2 text-[#888]" />
+        <SearchIcon className="mr-2 text-[#888]" data-testid="search-bar-option-icon" />
         {option}
       </li>
     );
@@ -90,6 +91,7 @@ const SearchBar: FC<SearchBarProps> = ({
     return (
       <TextField
         {...params}
+        data-testid="search-bar-input"
         variant="outlined"
         placeholder="Need guidance? Search here.."
         value={searchTerm}
@@ -129,7 +131,10 @@ const SearchBar: FC<SearchBarProps> = ({
           startAdornment: (
             <>
               <InputAdornment position="start">
-                <SearchIcon className={`ml-[6px] ${searchBarStyles[mode].searchIcon}`} />
+                <SearchIcon
+                  className={`ml-[6px] ${searchBarStyles[mode].searchIcon}`}
+                  data-testid="search-bar-search-icon"
+                />
               </InputAdornment>
               {params.InputProps.startAdornment}
             </>
@@ -141,13 +146,21 @@ const SearchBar: FC<SearchBarProps> = ({
   };
 
   return (
-    <form onSubmit={handleSubmit} className="w-full">
+    <form onSubmit={handleSubmit} className="w-full" data-testid="search-bar-form">
       <Autocomplete
         freeSolo
         id="free-solo-2-demo"
+        data-testid="search-bar-autocomplete"
         options={suggestions}
         className="w-full h-[36px] sm:h-[60px]"
-        clearIcon={<X width={16} height={16} stroke={searchBarStyles[mode].clearIcon} />}
+        clearIcon={
+          <X
+            width={16}
+            height={16}
+            stroke={searchBarStyles[mode].clearIcon}
+            data-testid="search-bar-clear-icon"
+          />
+        }
         value={searchTerm}
         onChange={(_, newValue) => {
           const limitedValue = newValue ? newValue.slice(0, MAX_CHARACTER_LIMIT) : "";

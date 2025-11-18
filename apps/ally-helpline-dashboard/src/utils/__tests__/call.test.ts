@@ -6,11 +6,6 @@ import { isProviderCloudTelephony } from "../call";
 
 describe("call utils", () => {
   describe("isProviderCloudTelephony", () => {
-    it("should return true for EXOTEL_CONFERENCE_CALL provider", () => {
-      const result = isProviderCloudTelephony(CallProvider.EXOTEL_CONFERENCE_CALL);
-      expect(result).toBe(true);
-    });
-
     it("should return true for OZONETEL provider", () => {
       const result = isProviderCloudTelephony(CallProvider.OZONETEL);
       expect(result).toBe(true);
@@ -18,6 +13,11 @@ describe("call utils", () => {
 
     it("should return false for MICROPHONE provider", () => {
       const result = isProviderCloudTelephony(CallProvider.MICROPHONE);
+      expect(result).toBe(false);
+    });
+
+    it("should return false for AUDIO_UPLOAD provider", () => {
+      const result = isProviderCloudTelephony(CallProvider.AUDIO_UPLOAD);
       expect(result).toBe(false);
     });
 
