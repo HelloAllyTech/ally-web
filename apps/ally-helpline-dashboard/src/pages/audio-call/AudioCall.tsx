@@ -111,6 +111,18 @@ export const AudioCall: FunctionComponent = () => {
     return null;
   };
 
+  const onPauseTranscriptionClick = () => {
+    if (isMicrophoneMode) {
+      setIsMuted(previousMuted => !previousMuted);
+    }
+  };
+
+  const onEndSessionClick = () => {
+    if (isMicrophoneMode) {
+      setIsEndCallDialogOpen(true);
+    }
+  };
+
   return (
     <div className="h-screen flex items-center justify-center bg-gray-50">
       <video src={MindfullnessVideo} preload="auto" className="hidden" />
@@ -133,11 +145,9 @@ export const AudioCall: FunctionComponent = () => {
               isEndSessionDisabled={isEndSessionDisabled}
               isFocusButtonDisabled={isFocusButtonDisabled}
               isPauseTranscriptionDisabled={isPauseTranscriptionDisabled}
-              onEndSessionClick={isMicrophoneMode ? () => setIsEndCallDialogOpen(true) : undefined}
+              onEndSessionClick={onEndSessionClick}
               onFocusButtonClick={(isFocused: boolean) => setIsFocusMode(isFocused)}
-              onPauseTranscriptionClick={
-                isMicrophoneMode ? () => setIsMuted(previousMuted => !previousMuted) : undefined
-              }
+              onPauseTranscriptionClick={onPauseTranscriptionClick}
               showEndSession={isMicrophoneMode}
               showFocusButton={true}
               showPauseTranscription={isMicrophoneMode}
