@@ -1,13 +1,9 @@
 import { useEffect, useState } from "react";
 
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
-import {
-  useGetScenarioPathsQuery,
-  useDeleteScenarioPathByIdMutation,
-  useGetScenarioPathByIdQuery,
-} from "@api";
+import { useGetScenarioPathsQuery, useDeleteScenarioPathByIdMutation } from "@api";
 import { ROUTES } from "@constants";
 import { ScenarioPath } from "@types";
 
@@ -71,13 +67,7 @@ export const useSimulationPathways = ({ selectedFilters }: UseSimulationPathways
     navigate(ROUTES.CREATE_PATH);
   };
 
-  const handleCreatePathway = () => {
-    // TODO: Navigate to pathway creation
-    toast.info("Pathway creation coming soon!");
-  };
-
   const onEditPathway = (pathway: ScenarioPath) => {
-    // TODO: Implement edit pathway logic
     navigate(ROUTES.EDIT_PATH(String(pathway.id)));
   };
 
@@ -122,7 +112,6 @@ export const useSimulationPathways = ({ selectedFilters }: UseSimulationPathways
     // Actions
     loadPathways,
     handleNewPathway,
-    handleCreatePathway,
     onEditPathway,
     handleDeletePathway,
     onDeletePathway,
