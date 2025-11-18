@@ -86,6 +86,46 @@ export const PathTab: FC<PathTabProps> = ({
     );
   }
 
+  const renderPathCard = (path: ScenarioPath) => {
+    return (
+      <div
+        key={path.id}
+        className="flex items-center gap-4 py-4 pr-4 border-b border-border-light hover:bg-background-secondary transition-colors h-[80px]"
+      >
+        {/* Path Image */}
+        <div className="w-[18%] md:w-[10%] lg:w-[7%] h-[56px] cursor-pointer rounded-lg overflow-hidden flex-shrink-0 bg-neutral-100">
+          <CustomImage
+            src={path.coverImageUrl}
+            alt={path.title}
+            className="w-full h-full object-cover"
+          />
+        </div>
+
+        {/* Path Title and Description */}
+        <div className="flex-1 min-w-0 overflow-hidden">
+          <h3 className="text-sm font-medium text-typography-900 mb-1 truncate">{path.title}</h3>
+          <p className="text-sm text-typography-700 leading-relaxed line-clamp-2">
+            {path.description}
+          </p>
+        </div>
+
+        {/* Toggle and Status */}
+        <div className="flex items-center gap-3 flex-shrink-0 min-w-[140px] justify-end">
+          <ToggleSwitch
+            enabled={pathAccess[path.id] ?? false}
+            onChange={enabled => onToggleAccess(path.id, enabled)}
+            label={`Toggle access for ${path.title}`}
+          />
+          <span
+            className={`text-sm ${pathAccess[path.id] ? "text-typography-900" : "text-typography-600"}`}
+          >
+            {pathAccess[path.id] ? en.userManagement.enabled : en.userManagement.disabled}
+          </span>
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div className="flex flex-col h-full">
       <div className="sticky top-0 z-10 bg-white pb-2">
@@ -110,45 +150,7 @@ export const PathTab: FC<PathTabProps> = ({
             </div>
           </div>
           <div className="flex-1">
-            {filteredPaths?.map(path => (
-              <div
-                key={path.id}
-                className="flex items-center gap-4 py-4 pr-4 border-b border-border-light hover:bg-background-secondary transition-colors h-[80px]"
-              >
-                {/* Path Image */}
-                <div className="w-[18%] md:w-[10%] lg:w-[7%] h-[56px] cursor-pointer rounded-lg overflow-hidden flex-shrink-0 bg-neutral-100">
-                  <CustomImage
-                    src={path.coverImageUrl}
-                    alt={path.title}
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-
-                {/* Path Title and Description */}
-                <div className="flex-1 min-w-0 overflow-hidden">
-                  <h3 className="text-sm font-medium text-typography-900 mb-1 truncate">
-                    {path.title}
-                  </h3>
-                  <p className="text-sm text-typography-700 leading-relaxed line-clamp-2">
-                    {path.description}
-                  </p>
-                </div>
-
-                {/* Toggle and Status */}
-                <div className="flex items-center gap-3 flex-shrink-0 min-w-[140px] justify-end">
-                  <ToggleSwitch
-                    enabled={pathAccess[path.id] ?? false}
-                    onChange={enabled => onToggleAccess(path.id, enabled)}
-                    label={`Toggle access for ${path.title}`}
-                  />
-                  <span
-                    className={`text-base ${pathAccess[path.id] ? "text-typography-900" : "text-typography-600"}`}
-                  >
-                    {pathAccess[path.id] ? en.userManagement.enabled : en.userManagement.disabled}
-                  </span>
-                </div>
-              </div>
-            ))}
+            {filteredPaths?.map(path => renderPathCard(path))}
             {hasMore && (
               <div className="flex justify-start mt-2 pb-4 mb-4">
                 <button
