@@ -176,7 +176,6 @@ export const SimulationCardItem: FC<SimulationCardItemProps> = ({
               className="absolute left-1/2 -translate-x-1/2 z-20"
               onClick={e => e.stopPropagation()}
             >
-              {" "}
               <AnimatePresence>
                 <motion.div
                   className="absolute left-1/2 -translate-x-1/2 z-20"

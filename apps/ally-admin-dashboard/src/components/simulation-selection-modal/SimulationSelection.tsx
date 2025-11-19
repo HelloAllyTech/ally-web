@@ -131,11 +131,11 @@ export const SimulationSelectionModal: FC<SimulationProps> = ({
   const renderMessage = (messageTitle: string, feedback: string, index: number) => (
     <div className="rounded-md flex flex-col justify-center border mx-auto my-3 w-[800px] group">
       <div className="w-full bg-secondary-50 px-2 py-2 rounded-t-md flex justify-between items-center">
-        <p className="text-sm text-typography-900 font-medium">{en.simulation.message}:</p>
+        <p className="text-base text-typography-900 font-medium">{en.simulation.message}</p>
 
         <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex cursor-pointer gap-2">
           <button
-            className="text-xs"
+            className="text-xs text-primary-500"
             onClick={() => handleMessageClick(index)}
             ref={element => (messageButtonRefs.current[index] = element)}
           >
@@ -147,9 +147,10 @@ export const SimulationSelectionModal: FC<SimulationProps> = ({
           </button>
         </div>
       </div>
-
-      <p className="text-sm font-semibold text-typography-900 px-2">{messageTitle}</p>
-      <p className="text-sm text-typography-800 px-2 pb-3 break-words">{feedback}</p>
+      <div className="flex flex-col p-3">
+        <p className="text-xs font-semibold text-typography-900 ">{messageTitle}</p>
+        <p className="text-xs text-typography-800  break-words">{feedback}</p>
+      </div>
     </div>
   );
   const handleDragEnd = event => {
