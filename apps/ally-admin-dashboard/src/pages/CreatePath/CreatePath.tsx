@@ -64,7 +64,7 @@ export const CreatePath: FC = () => {
   const [updateSimulationPathByIdQuery] = useUpdateSimulationPathByIdMutation();
 
   const formatScenarios = (scenarios?: GetScenarioType[]) => {
-    if (!scenarios || scenarios.length === 0) return [];
+    if (!isNonEmptyArray(scenarios)) return [];
 
     return scenarios.map((scenario, index) => ({
       ...scenario,
