@@ -117,15 +117,3 @@ export const TAG_TYPES = {
   SIMULATION_PATHS: "simulationPaths",
   SCENARIO_PATHS: "scenarioPaths",
 };
-
-export const FORM_FIELD_TYPES = {
-  TEXT: "text",
-  NUMBER: "number",
-  SELECT: "select",
-  IMAGE_UPLOAD: "image_upload",
-  VIDEO_UPLOAD: "video_upload",
-  CUSTOM: {
-    VOICE_DROPDOWN: "voice_dropdown",
-  },
-  TOGGLE_BUTTON: "toggle_button",
-};

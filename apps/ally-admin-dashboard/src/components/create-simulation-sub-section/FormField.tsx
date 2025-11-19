@@ -3,6 +3,7 @@ import { FC } from "react";
 import { FILE_TYPE, FORM_FIELD_TYPES, en } from "@constants";
 import { FormFieldProps } from "@types";
 
+import { AutoTerminationRuleField } from "../auto-termination-rule-field";
 import { DropdownField } from "../dropdown-field";
 import { FileUpload } from "../file-upload";
 import { InputField } from "../input-field";
@@ -97,6 +98,9 @@ export const FormField: FC<FormFieldProps> = ({ config, formMethods }) => {
             formMethods={formMethods}
           />
         );
+      case FORM_FIELD_TYPES.CUSTOM.AUTO_TERMINATION_RULE:
+        return <AutoTerminationRuleField label={label} formMethods={formMethods} />;
+
       case FORM_FIELD_TYPES.TOGGLE_BUTTON:
         return (
           <div className="w-full">

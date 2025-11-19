@@ -1,8 +1,6 @@
 import { cellTypes } from "@components";
 import { CreatorFieldGroups } from "@types";
 
-import { FORM_FIELD_TYPES } from "./common";
-
 export const minInputHeight = {
   narrativeContext: "250",
 };
@@ -63,6 +61,19 @@ export const StepperList = [
   { id: SIMULATION_CREATOR_STEP_IDS.conversationStyle, title: "Conversation Style" },
   { id: SIMULATION_CREATOR_STEP_IDS.eventConfiguration, title: "Event Configuration" },
 ];
+
+export const FORM_FIELD_TYPES = {
+  TEXT: "text",
+  NUMBER: "number",
+  SELECT: "select",
+  IMAGE_UPLOAD: "image_upload",
+  VIDEO_UPLOAD: "video_upload",
+  CUSTOM: {
+    VOICE_DROPDOWN: "voice_dropdown",
+    AUTO_TERMINATION_RULE: "auto_termination_rule",
+  },
+  TOGGLE_BUTTON: "toggle_button",
+};
 
 export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
   {
@@ -271,6 +282,12 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
         multiline: true,
         fullWidth: true,
         maxLength: 1000,
+      },
+      {
+        id: "autoTerminationStatus",
+        label: "Auto termination",
+        fullWidth: true,
+        type: FORM_FIELD_TYPES.CUSTOM.AUTO_TERMINATION_RULE,
       },
     ],
   },

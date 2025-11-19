@@ -1,6 +1,6 @@
 import { CreatorFieldGroups, messageFieldId } from "@types";
 
-import { FORM_FIELD_TYPES } from "./common";
+import { FORM_FIELD_TYPES } from "./SimulationCreator";
 
 export const PATH_CREATOR_STEP_IDS = {
   basicInfo: "basic-info",

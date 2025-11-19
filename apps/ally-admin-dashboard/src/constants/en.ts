@@ -15,6 +15,8 @@ export const en = {
     noResultsFound: "No results found for",
     selectOption: "Select option",
     uploading: "Uploading...",
+    enabled: "Enabled",
+    disabled: "Disabled",
     edit: "Edit",
   },
   errors: {
@@ -156,6 +158,12 @@ export const en = {
     editDescription:
       "Are you sure you want to edit this simulation? This will be moved to draft state.",
     startSession: "Start Session",
+    autoTermination: "Auto termination",
+    triggerEvent: "Trigger event",
+    triggerMessage: "Termination message",
+    terminationMessagePlaceholder:
+      "Enter the message the agent will say before ending the session...",
+    triggerEventPlaceholder: "Select an event",
     createPath: "Create Path",
     editPath: "Edit Path",
     addSimulationToPath: "Add simulations to path",

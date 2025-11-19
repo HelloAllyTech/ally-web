@@ -23,6 +23,9 @@ export type FormData = {
   openingStatements: string;
   voiceId: string;
   agentGoal: string;
+  autoTerminationStatus: boolean;
+  terminationEventId: string;
+  terminationMessage: string;
   isGlobal: boolean;
 };
 

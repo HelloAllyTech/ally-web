@@ -31,5 +31,8 @@ export const formatSimulationResponseData = (data: GetSimulationByIdResponse) =>
     voiceId: data?.metadata?.voiceId,
     coverImageUrl: data?.coverImageUrl,
     coverVideoUrl: data?.coverVideoUrl,
+    autoTerminationStatus: Boolean(data?.terminationEvent?.autoTerminationStatus),
+    terminationEventId: data?.terminationEvent?.eventId,
+    terminationMessage: data?.terminationEvent?.message,
   };
 };

@@ -1,9 +1,9 @@
 import { FunctionComponent } from "react";
 
-import { NoResults, MindfullnessVideo, EndSessionIllustration } from "@assets";
-import { FallbackUI, ButtonVariant, ConfirmationDialog } from "@components";
 import { useSearchParams } from "react-router-dom";
 
+import { NoResults, MindfullnessVideo, EndSessionIllustration } from "@assets";
+import { FallbackUI, ButtonVariant, ConfirmationDialog } from "@components";
 import { CallProvider, CallType } from "@constants";
 
 import { CallSidebar, CallControls, CallInterface } from "./components";

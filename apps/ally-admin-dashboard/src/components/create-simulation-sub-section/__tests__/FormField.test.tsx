@@ -43,6 +43,13 @@ vi.mock("@constants", () => ({
       VOICE_DROPDOWN: "voice_dropdown",
     },
   },
+  TAG_TYPES: {
+    USERS: "users",
+    TENANTS: "tenants",
+    SESSION_EVENTS: "sessionEvents",
+    SIMULATION: "simulation",
+    SIMULATION_EVENTS: "simulationEvents",
+  },
   en: {
     simulation: {
       coverImage: "Cover image",

@@ -285,7 +285,7 @@ describe("CreateSimulation", () => {
       const backButton = screen.getByText("Back");
       fireEvent.click(backButton);
 
-      expect(mockNavigate).toHaveBeenCalledWith("/");
+      expect(mockNavigate).toHaveBeenCalledWith(-1);
     });
 
     it("should show discard popup when there are unsaved changes", () => {
@@ -309,7 +309,7 @@ describe("CreateSimulation", () => {
       const discardButton = screen.getByText("Discard Changes");
       fireEvent.click(discardButton);
 
-      expect(mockNavigate).toHaveBeenCalledWith("/");
+      expect(mockNavigate).toHaveBeenCalledWith(-1);
     });
 
     it("should close discard popup when close is clicked", () => {

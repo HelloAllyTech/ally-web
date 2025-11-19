@@ -154,6 +154,18 @@ vi.mock("@constants/SimulationCreator", () => ({
   STEP4_FIELDS: [],
   STEP5_FIELDS: [],
   eventsTableColumns: [],
+  FORM_FIELD_TYPES: {
+    TEXT: "text",
+    NUMBER: "number",
+    SELECT: "select",
+    IMAGE_UPLOAD: "image_upload",
+    VIDEO_UPLOAD: "video_upload",
+    TOGGLE_BUTTON: "toggle_button",
+    CUSTOM: {
+      VOICE_DROPDOWN: "voice_dropdown",
+      AUTO_TERMINATION_RULE: "auto_termination_rule",
+    },
+  },
 }));
 
 // Mock constants

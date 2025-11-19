@@ -97,6 +97,11 @@ export interface GetSimulationByIdResponse {
     voiceId?: string;
     agentGoal?: string;
   };
+  terminationEvent: {
+    eventId: string;
+    message: string;
+    autoTerminationStatus: boolean;
+  };
 }
 
 export interface CreateSimulationInput {

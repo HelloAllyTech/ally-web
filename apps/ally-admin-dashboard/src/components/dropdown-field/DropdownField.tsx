@@ -5,12 +5,16 @@ import { Controller } from "react-hook-form";
 import { ArrowSolid } from "@assets";
 import { DropdownFieldProps } from "@components/types";
 import { en } from "@constants";
-import { useClickOutside } from "@hooks";
+import { useClickOutside, useDebounce } from "@hooks";
+
+const DEBOUNCE_DELAY = 500;
 
 export const DropdownField: React.FC<DropdownFieldProps> = ({
   label,
   id,
   formMethods,
+  isSearchable = false,
+  handleSearchTextChange = () => {},
   options,
   placeholder = en.common.selectOption,
   isMandatory = false,
@@ -28,6 +32,16 @@ export const DropdownField: React.FC<DropdownFieldProps> = ({
     setIsOpen(false);
   };
 
+  // Debounced search handler
+  const debouncedSearch = useDebounce((searchTerm: string) => {
+    handleSearchTextChange?.(searchTerm);
+  }, DEBOUNCE_DELAY);
+
+  const handleTextChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const searchTerm = event.target.value;
+    debouncedSearch(searchTerm);
+  };
+
   return (
     <div className="flex flex-col gap-2" ref={dropdownRef}>
       <div className="relative">
@@ -37,7 +51,7 @@ export const DropdownField: React.FC<DropdownFieldProps> = ({
           defaultValue={getValues?.(id) ?? ""}
           rules={{ required: isMandatory ? `${label} is required` : false }}
           render={({ field }) => {
-            const selected = options.find(o => o.value === field.value);
+            const selected = options.find(option => option.value === field.value);
             return (
               <>
                 <div
@@ -56,23 +70,31 @@ export const DropdownField: React.FC<DropdownFieldProps> = ({
 
                 {isOpen && (
                   <div className="absolute left-0 top-full mt-1 w-full bg-white border rounded-md shadow-lg max-h-[240px] overflow-auto z-10">
+                    {isSearchable && (
+                      <input
+                        type="text"
+                        placeholder={en.common.search}
+                        onChange={handleTextChange}
+                        className="w-full max-w-[calc(100%-16px)] m-2 rounded border border-border-light px-3 py-1 bg-white text-md cursor-pointer flex items-center justify-between focus-none"
+                      />
+                    )}
                     {options.length === 0 ? (
                       <div className="px-3 py-2 text-sm text-typography-800">
                         {en.common.noOptionsAvailable}
                       </div>
                     ) : (
-                      options.map(opt => (
+                      options.map(option => (
                         <div
-                          key={opt.value}
+                          key={option.value}
                           className={`px-3 py-2 text-sm cursor-pointer transition-colors ${
-                            opt.value === field.value
+                            option.value === field.value
                               ? "bg-primary-50 text-primary font-medium"
                               : "text-typography-900 hover:bg-background-secondary"
                           }`}
-                          onClick={() => handleSelect(field, opt.value)}
+                          onClick={() => handleSelect(field, option.value)}
                         >
                           <div className="flex items-center justify-between text-md">
-                            <span>{opt.label}</span>
+                            <span>{option.label}</span>
                           </div>
                         </div>
                       ))
