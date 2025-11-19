@@ -151,12 +151,23 @@ export interface Pagination {
 }
 
 /**
+ * Expression node for combination events
+ */
+export interface ExpressionNode {
+  type?: "AND" | "OR" | "NOT";
+  id?: string;
+  left?: ExpressionNode;
+  right?: ExpressionNode;
+}
+
+/**
  * Detection data structure for session events
  * Contains event-specific detection parameters
  * Note: Only relevant fields are included based on detectionType:
  * - SENTENCE_SIMILARITY/SEMANTIC_SIMILARITY: only sentences
  * - SCORE: only score and condition
  * - TIME: only time and condition
+ * - COMBINATION: only expression
  */
 export interface SessionEventDetectionData {
   speaker?: string;
@@ -164,6 +175,7 @@ export interface SessionEventDetectionData {
   score?: number;
   time?: number;
   condition?: SessionEventDetectionCondition;
+  expression?: ExpressionNode;
 }
 
 /**

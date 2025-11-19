@@ -65,7 +65,6 @@ export const EventSidePanel: React.FC<EventSidePanelProps> = ({
   onUpdate,
 }) => {
   const [formData, setFormData] = useState(selectedEvent);
-  const conditionsField = "conditions";
 
   useEffect(() => {
     setFormData(selectedEvent);
@@ -77,7 +76,7 @@ export const EventSidePanel: React.FC<EventSidePanelProps> = ({
 
   useEffect(() => {
     debouncedUpdate();
-  }, [formData, debouncedUpdate]);
+  }, [formData]);
 
   const handleFieldChange = useCallback(
     (fieldName: string, value: string | number | object) => {
@@ -94,23 +93,12 @@ export const EventSidePanel: React.FC<EventSidePanelProps> = ({
   );
 
   const handleTriggerConditionChange = useCallback(
-    (field: string, value: string | number | string[]) => {
+    (field: string, value: string | number | string[] | any) => {
       if (!selectedEvent) return;
 
       setFormData(previousData => {
         const currentTrigger = previousData.triggerCondition || {};
 
-        // Handle conditions array for combination events
-        if (field === conditionsField) {
-          return {
-            ...previousData,
-            triggerCondition: {
-              conditions: value as any[],
-            },
-          } as UpdateEventDataParam;
-        }
-
-        // Handle all other fields (operator, value, speaker, sentences)
         return {
           ...previousData,
           triggerCondition: {

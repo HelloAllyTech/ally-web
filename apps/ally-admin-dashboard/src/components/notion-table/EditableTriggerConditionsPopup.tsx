@@ -1,6 +1,10 @@
 import React, { useState, useRef, useEffect, useCallback } from "react";
 
-import { TriggerConditions, StandardTriggerConditions } from "@components";
+import {
+  TriggerConditions,
+  StandardTriggerConditions,
+  CombinationTriggerConditions,
+} from "@components";
 import { useClickOutside } from "@hooks";
 import { EVENT_DETECTION_TYPES } from "@src/constants/eventTypes";
 
@@ -51,12 +55,15 @@ export const EditableTriggerConditionsPopup: React.FC<EditableTriggerConditionsP
     }
   }, [isOpen, handleSave]);
 
-  const handleFieldChange = useCallback((field: string, fieldValue: string | number | string[]) => {
-    setEditTriggerCondition(prev => ({
-      ...prev,
-      [field]: fieldValue,
-    }));
-  }, []);
+  const handleFieldChange = useCallback(
+    (field: string, fieldValue: string | number | string[] | any) => {
+      setEditTriggerCondition(prev => ({
+        ...prev,
+        [field]: fieldValue,
+      }));
+    },
+    [],
+  );
 
   useClickOutside(popupRef, handleClickOutsideCallback);
 
@@ -94,8 +101,7 @@ export const EditableTriggerConditionsPopup: React.FC<EditableTriggerConditionsP
           >
             <div className="max-w-full overflow-visible">
               {eventType === EVENT_DETECTION_TYPES.COMBINATION ? (
-                <TriggerConditions
-                  eventType={eventType}
+                <CombinationTriggerConditions
                   triggerCondition={editTriggerCondition}
                   isInTable={false}
                   onChange={handleFieldChange}

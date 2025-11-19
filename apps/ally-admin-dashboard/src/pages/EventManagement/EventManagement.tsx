@@ -109,12 +109,9 @@ export const EventManagement: React.FC = () => {
     } else if (eventType === EVENT_DETECTION_TYPES.SENTENCE_SIMILARITY) {
       triggerCondition = { speaker: "CARE_GIVER", sentences: [] };
     } else if (eventType === EVENT_DETECTION_TYPES.COMBINATION) {
-      triggerCondition = {
-        conditions: [
-          { eventId: "", status: "OCCURRED" },
-          { eventId: "", status: "OCCURRED", operator: "AND" },
-        ],
-      };
+      // Set default expression structure for Combination events
+      // User will select events from dropdown after creation
+      triggerCondition = { expression: null };
     }
 
     const newEvent: UpdateEventDataParam = {
@@ -245,11 +242,6 @@ export const EventManagement: React.FC = () => {
 
   const onUpdateEvent = async (event: UpdateEventDataParam) => {
     if (event) {
-      // Block API calls for COMBINATION events
-      if (event.detectionType === "COMBINATION") {
-        return;
-      }
-
       // Convert to API payload format using utility function
       const payload = convertEventToApiPayload(event);
 

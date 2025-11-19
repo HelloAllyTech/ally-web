@@ -14,6 +14,8 @@ import {
   isNonEmptyString,
 } from "@utils";
 
+import type { CombinationExpressionNode } from "src/types/triggerConditions";
+
 /**
  * Maps frontend operator to backend condition
  * @param operator - Frontend operator (e.g., "LESS_THAN", "GREATER_THAN")
@@ -55,16 +57,33 @@ const mapDetectionTypeToBackend = (detectionType: string | undefined): string | 
 };
 
 /**
- * Converts UpdateEventDataParam to the expected API payload format (SessionEvent)
- * @param event - Event data from the frontend
- * @returns Formatted SessionEvent payload for the API, or null if COMBINATION event
+ * Checks if an expression is empty (has no valid event IDs)
+ * Used to determine if we should send detectionData to API
  */
-export const convertEventToApiPayload = (event: UpdateEventDataParam): SessionEvent | null => {
-  // Block API calls for COMBINATION events for now
-  if (event.detectionType === EVENT_DETECTION_TYPES.COMBINATION) {
-    return null;
+const isExpressionEmpty = (expression: CombinationExpressionNode | undefined): boolean => {
+  if (!expression) return true;
+
+  // Check if it's a leaf node with empty ID
+  if (expression.id !== undefined) {
+    return !expression.id || expression.id.trim() === "";
   }
 
+  // Check recursively for nodes with children
+  if (expression.left || expression.right) {
+    const leftEmpty = expression.left ? isExpressionEmpty(expression.left) : true;
+    const rightEmpty = expression.right ? isExpressionEmpty(expression.right) : true;
+    return leftEmpty && rightEmpty;
+  }
+
+  return true;
+};
+
+/**
+ * Converts UpdateEventDataParam to the expected API payload format (SessionEvent)
+ * @param event - Event data from the frontend
+ * @returns Formatted SessionEvent payload for the API
+ */
+export const convertEventToApiPayload = (event: UpdateEventDataParam): SessionEvent | null => {
   const backendDetectionType = mapDetectionTypeToBackend(event.detectionType);
 
   const detectionData: SessionEventDetectionData = {};
@@ -118,6 +137,17 @@ export const convertEventToApiPayload = (event: UpdateEventDataParam): SessionEv
       if (condition) {
         detectionData.condition = condition;
       }
+    }
+  }
+
+  if (event.detectionType === EVENT_DETECTION_TYPES.COMBINATION) {
+    if (
+      event.triggerCondition &&
+      "expression" in event.triggerCondition &&
+      !isExpressionEmpty(event.triggerCondition.expression)
+    ) {
+      // Expression format matches API directly - no conversion needed
+      detectionData.expression = event.triggerCondition.expression;
     }
   }
 
@@ -207,19 +237,24 @@ export const convertApiResponseToEvent = (apiEvent: SessionEvent): UpdateEventDa
       triggerCondition = {
         operator: operator || "GREATER_THAN",
         value: detectionData.score || 0,
-        speaker: apiEvent.speaker,
+        speaker: detectionData.speaker,
       };
     } else if (
       frontendDetectionType === "SENTENCE_SIMILARITY" ||
       frontendDetectionType === "SEMANTIC_SIMILARITY"
     ) {
       triggerCondition = {
-        speaker: apiEvent.speaker || "CARE_GIVER",
+        speaker: detectionData.speaker || "CARE_GIVER",
         sentences: detectionData.sentences || [],
       };
     } else if (frontendDetectionType === "COMBINATION") {
+      // Expression format matches API directly - no conversion needed
       triggerCondition = {
-        conditions: [],
+        expression: detectionData.expression || {
+          type: "AND",
+          left: { id: "" },
+          right: { id: "" },
+        },
       };
     }
   }

@@ -5,11 +5,14 @@ import { SESSION_EVENT_STATUS_OPTIONS, SORT_BY, SORT_ORDER } from "@constants";
 import { getTriggerConditionConfig } from "@constants";
 
 import { TriggerConditionDropdown } from "./TriggerConditionDropdown";
-import { CombinationTriggerCondition } from "../../types/triggerConditions";
+import {
+  CombinationTriggerCondition,
+  CombinationExpressionNode,
+} from "../../types/triggerConditions";
 
 interface CombinationTriggerConditionsProps {
   triggerCondition: CombinationTriggerCondition;
-  onChange: (field: string, value: string | number | string[]) => void;
+  onChange: (field: string, value: CombinationExpressionNode) => void;
   isInTable?: boolean;
 }
 
@@ -38,31 +41,86 @@ export const CombinationTriggerConditions: React.FC<CombinationTriggerConditions
   const config = getTriggerConditionConfig("COMBINATION");
   if (!config) return null;
 
-  const conditions = triggerCondition.conditions || [];
-  const displayConditions =
-    conditions.length >= 2
-      ? conditions.slice(0, 2)
-      : [
-          { eventId: "", status: "OCCURRED" as const },
-          { eventId: "", status: "OCCURRED" as const, operator: "AND" as const },
-        ];
-
-  const handleConditionChange = (index: number, field: string, value: string) => {
-    const updatedConditions = [...displayConditions];
-    updatedConditions[index] = {
-      ...updatedConditions[index],
-      [field]: value,
-    };
-    onChange("conditions", updatedConditions);
+  // Ensure we always have a valid expression structure to work with
+  const expression = triggerCondition.expression || {
+    type: "AND",
+    left: { id: "" },
+    right: { id: "" },
   };
 
-  const handleOperatorChange = (index: number, operator: "AND" | "OR") => {
-    const updatedConditions = [...displayConditions];
-    updatedConditions[index] = {
-      ...updatedConditions[index],
-      operator,
+  // Extract values from expression tree for display
+  const getLeftEventId = (): string => {
+    if (expression.left?.type === "NOT") {
+      return expression.left.left?.id || "";
+    }
+    return expression.left?.id || "";
+  };
+
+  const getLeftStatus = (): string => {
+    return expression.left?.type === "NOT" ? "NOT_OCCURRED" : "OCCURRED";
+  };
+
+  const getRightEventId = (): string => {
+    if (expression.right?.type === "NOT") {
+      return expression.right.left?.id || "";
+    }
+    return expression.right?.id || "";
+  };
+
+  const getRightStatus = (): string => {
+    return expression.right?.type === "NOT" ? "NOT_OCCURRED" : "OCCURRED";
+  };
+
+  const getOperator = (): string => {
+    return expression.type === "OR" ? "OR" : "AND";
+  };
+
+  const handleLeftEventChange = (eventId: string) => {
+    const newExpression: CombinationExpressionNode = {
+      ...expression,
+      left:
+        getLeftStatus() === "NOT_OCCURRED"
+          ? { type: "NOT", left: { id: eventId } }
+          : { id: eventId },
     };
-    onChange("conditions", updatedConditions);
+    onChange("expression", newExpression);
+  };
+
+  const handleLeftStatusChange = (status: string) => {
+    const eventId = getLeftEventId();
+    const newExpression: CombinationExpressionNode = {
+      ...expression,
+      left: status === "NOT_OCCURRED" ? { type: "NOT", left: { id: eventId } } : { id: eventId },
+    };
+    onChange("expression", newExpression);
+  };
+
+  const handleRightEventChange = (eventId: string) => {
+    const newExpression: CombinationExpressionNode = {
+      ...expression,
+      right:
+        getRightStatus() === "NOT_OCCURRED"
+          ? { type: "NOT", left: { id: eventId } }
+          : { id: eventId },
+    };
+    onChange("expression", newExpression);
+  };
+
+  const handleRightStatusChange = (status: string) => {
+    const eventId = getRightEventId();
+    const newExpression: CombinationExpressionNode = {
+      ...expression,
+      right: status === "NOT_OCCURRED" ? { type: "NOT", left: { id: eventId } } : { id: eventId },
+    };
+    onChange("expression", newExpression);
+  };
+
+  const handleOperatorChange = (operator: "AND" | "OR") => {
+    const newExpression: CombinationExpressionNode = {
+      ...expression,
+      type: operator,
+    };
+    onChange("expression", newExpression);
   };
 
   const statusField = config.fields.find(f => f.id === "status");
@@ -72,48 +130,70 @@ export const CombinationTriggerConditions: React.FC<CombinationTriggerConditions
     <div className="flex flex-col gap-2">
       <div className="relative flex flex-col gap-2">
         <div className="flex flex-col gap-2">
-          {displayConditions.map((condition, index) => (
-            <div key={index} className={`flex items-center gap-2 ${isInTable ? "" : "pl-3"}`}>
-              {index === 0 ? (
-                <span className="text-sm text-gray-500">if</span>
-              ) : (
-                <TriggerConditionDropdown
-                  value={condition.operator || operatorField?.defaultValue || ""}
-                  options={operatorField?.options || []}
-                  onChange={operator => handleOperatorChange(index, operator as "AND" | "OR")}
-                  placeholder="AND"
-                  disabled={false}
-                  isInTable={isInTable}
-                />
-              )}
-              <TriggerConditionDropdown
-                value={condition.eventId || ""}
-                options={availableEvents.map(event => ({
-                  value: event.id,
-                  label: event.name,
-                }))}
-                onChange={eventId => {
-                  handleConditionChange(index, "eventId", eventId);
-                }}
-                placeholder="Select an event"
-                searchPlaceholder="Search events..."
-                isSearchable={true}
-                disabled={false}
-                className="min-w-[200px]"
-                isInTable={isInTable}
-              />
-              <span className="text-sm text-gray-500">has</span>
-              <TriggerConditionDropdown
-                value={condition.status || statusField?.defaultValue || ""}
-                options={statusField?.options || []}
-                onChange={status => handleConditionChange(index, "status", status)}
-                placeholder={statusField?.placeholder || "Occurred"}
-                disabled={false}
-                className={(statusField as any)?.className || ""}
-                isInTable={isInTable}
-              />
-            </div>
-          ))}
+          {/* First condition */}
+          <div className={`flex items-center gap-2 ${isInTable ? "" : "pl-3"}`}>
+            <span className="text-sm text-gray-500">if</span>
+            <TriggerConditionDropdown
+              value={getLeftEventId()}
+              options={availableEvents.map(event => ({
+                value: event.id,
+                label: event.name,
+              }))}
+              onChange={handleLeftEventChange}
+              placeholder="Select an event"
+              searchPlaceholder="Search events..."
+              isSearchable={true}
+              disabled={false}
+              className="min-w-[200px]"
+              isInTable={isInTable}
+            />
+            <span className="text-sm text-gray-500">has</span>
+            <TriggerConditionDropdown
+              value={getLeftStatus()}
+              options={statusField?.options || []}
+              onChange={handleLeftStatusChange}
+              placeholder={statusField?.placeholder || "Occurred"}
+              disabled={false}
+              className={(statusField as any)?.className || ""}
+              isInTable={isInTable}
+            />
+          </div>
+
+          {/* Second condition */}
+          <div className={`flex items-center gap-2 ${isInTable ? "" : "pl-3"}`}>
+            <TriggerConditionDropdown
+              value={getOperator()}
+              options={operatorField?.options || []}
+              onChange={operator => handleOperatorChange(operator as "AND" | "OR")}
+              placeholder="AND"
+              disabled={false}
+              isInTable={isInTable}
+            />
+            <TriggerConditionDropdown
+              value={getRightEventId()}
+              options={availableEvents.map(event => ({
+                value: event.id,
+                label: event.name,
+              }))}
+              onChange={handleRightEventChange}
+              placeholder="Select an event"
+              searchPlaceholder="Search events..."
+              isSearchable={true}
+              disabled={false}
+              className="min-w-[200px]"
+              isInTable={isInTable}
+            />
+            <span className="text-sm text-gray-500">has</span>
+            <TriggerConditionDropdown
+              value={getRightStatus()}
+              options={statusField?.options || []}
+              onChange={handleRightStatusChange}
+              placeholder={statusField?.placeholder || "Occurred"}
+              disabled={false}
+              className={(statusField as any)?.className || ""}
+              isInTable={isInTable}
+            />
+          </div>
         </div>
       </div>
     </div>

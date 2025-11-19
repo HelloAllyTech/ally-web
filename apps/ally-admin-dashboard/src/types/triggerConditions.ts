@@ -59,20 +59,28 @@ export interface SentenceSimilarityTriggerCondition {
 }
 
 /**
- * Single condition in a combination event
+ * Expression node for combination events
+ * Matches the backend API structure directly for better readability and no conversion needed
+ *
+ * Examples:
+ * - Single event: { id: "event-1" }
+ * - NOT event: { type: "NOT", left: { id: "event-1" } }
+ * - Two events with AND: { type: "AND", left: { id: "event-1" }, right: { id: "event-2" } }
+ * - Complex: { type: "AND", left: { id: "event-1" }, right: { type: "NOT", left: { id: "event-2" } } }
  */
-export interface CombinationConditionItem {
-  eventId: string;
-  status: EventStatus;
-  operator?: CombinationOperator; // Present for 2nd+ conditions
+export interface CombinationExpressionNode {
+  type?: "AND" | "OR" | "NOT";
+  id?: string; // Event ID (present when this is a leaf node)
+  left?: CombinationExpressionNode;
+  right?: CombinationExpressionNode;
 }
 
 /**
  * Combination trigger condition
- * Contains: array of event conditions (max 2)
+ * Uses expression tree format to match backend API structure directly
  */
 export interface CombinationTriggerCondition {
-  conditions: CombinationConditionItem[];
+  expression: CombinationExpressionNode;
 }
 
 export type TriggerCondition =
@@ -105,7 +113,7 @@ export function isSentenceSimilarityTriggerCondition(
 export function isCombinationTriggerCondition(
   condition: any,
 ): condition is CombinationTriggerCondition {
-  return condition && "conditions" in condition && Array.isArray(condition.conditions);
+  return condition && "expression" in condition && typeof condition.expression === "object";
 }
 
 /**
@@ -132,12 +140,7 @@ export function createDefaultTriggerCondition(
         sentences: [],
       };
     case "COMBINATION":
-      return {
-        conditions: [
-          { eventId: "", status: "OCCURRED" },
-          { eventId: "", status: "OCCURRED", operator: "AND" },
-        ],
-      };
+      return { expression: null };
     default:
       return undefined;
   }
