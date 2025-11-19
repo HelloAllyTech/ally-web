@@ -1,164 +1,88 @@
-import React, { useEffect, useState } from "react";
+import React, { useRef, useState } from "react";
 
-import { ButtonVariant } from "@src/components/types";
-import { useNavigate } from "react-router-dom";
-import { toast } from "sonner";
+import { useSearchParams } from "react-router-dom";
 
-import {
-  useGetSimulationsQuery,
-  useDeleteSimulationByIdMutation,
-  useUpdateSimulationByIdMutation,
-} from "@api";
-import { Add, Close, Filter } from "@assets";
+import { Add, Close, Filter, Simulation as SimulationIcon, Pathway } from "@assets";
 import {
   ActionConfirmationPopup,
   DeleteSimulationPopup,
   SimulationList,
-  SimulationListSkeleton,
+  PathwayList,
   SimulationPreview,
   FilterList,
-  EmptyState,
   Button,
+  Tabs,
+  OptionsPopup,
 } from "@components";
-import { en, ROUTES, SimulationStatus, SORT_BY, SORT_ORDER } from "@constants";
-import { Simulation } from "@types";
-import { isNonEmptyArray } from "@utils";
+import { ButtonVariant } from "@components/types";
+import { en, SimulationStatus } from "@constants";
+import { useSimulations, useSimulationPathways } from "@hooks";
 
-const SIMULATIONS_PAGE_SIZE = 30;
+const TAB_KEYS = {
+  SIMULATIONS: "simulations",
+  PATHWAYS: "pathways",
+};
+
+const TABS = [
+  { id: "simulations", label: "Simulations" },
+  { id: "pathways", label: "Path ways" },
+];
 
 export const SimulationStudio: React.FC = () => {
-  const navigate = useNavigate();
-
-  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
-  const [isUnpublishPopupOpen, setIsUnpublishPopupOpen] = useState(false);
-  const [isArchivePopupOpen, setIsArchivePopupOpen] = useState(false);
-  const [isDeletePopupOpen, setIsDeletePopupOpen] = useState(false);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
-  const [currentSimulation, setCurrentSimulation] = useState<Simulation | null>(null);
   const [selectedFilters, setSelectedFilters] = useState<Array<{ id: string; label: string }>>([]);
-  const [isUnarchivePopupOpen, setIsUnarchivePopupOpen] = useState(false);
-  const [isEditPopupOpen, setIsEditPopupOpen] = useState(false);
+  const [isCreatePopupOpen, setIsCreatePopupOpen] = useState(false);
 
-  const [simulations, setSimulations] = useState<Simulation[]>([]);
-  const [simulationsOffset, setSimulationsOffset] = useState<number>(0);
-  const [hasMore, setHasMore] = useState(true);
+  const createButtonRef = useRef<HTMLButtonElement>(null);
+  const [searchParams, setSearchParams] = useSearchParams();
 
-  const simulationParams = {
-    limit: SIMULATIONS_PAGE_SIZE,
-    offset: simulationsOffset,
-    sortBy: SORT_BY.UPDATED_AT,
-    order: SORT_ORDER.DESC,
-    status:
-      selectedFilters.length > 0 ? selectedFilters?.map(filter => filter.id)?.join(",") : undefined,
-  };
+  // Get active tab from URL params, default to SIMULATIONS
+  const activeTab = searchParams.get("tab") || TAB_KEYS.SIMULATIONS;
 
+  // Use the custom hook for simulations
   const {
-    data: simulationsResponse,
-    isFetching: isSimulationsFetching,
-    isLoading: isSimulationsLoading,
-  } = useGetSimulationsQuery(simulationParams);
+    simulations,
+    currentSimulation,
+    hasMore,
+    isSimulationsLoading,
+    isSimulationsFetching,
+    isPreviewOpen,
+    setIsPreviewOpen,
+    isUnpublishPopupOpen,
+    setIsUnpublishPopupOpen,
+    isArchivePopupOpen,
+    setIsArchivePopupOpen,
+    isDeletePopupOpen,
+    setIsDeletePopupOpen,
+    isUnarchivePopupOpen,
+    setIsUnarchivePopupOpen,
+    isEditPopupOpen,
+    setIsEditPopupOpen,
+    loadSimulations,
+    handleNewSimulation,
+    handleCreateSimulation,
+    onEditIconClick,
+    handleEditSimulation,
+    handleDeleteSimulation,
+    onDeleteSimulation,
+    handleChangeSimulationStatus,
+    onArchiveSimulation,
+    onUnarchiveSimulation,
+    onPreviewSimulation,
+    onUnpublishSimulation,
+  } = useSimulations({ selectedFilters });
 
-  const [deleteSimulationById] = useDeleteSimulationByIdMutation();
-  const [updateSimulationById] = useUpdateSimulationByIdMutation();
-
-  useEffect(() => {
-    setSimulationsOffset(0);
-  }, [selectedFilters]);
-
-  useEffect(() => {
-    if (!simulationsResponse) return;
-    const nextData = simulationsResponse.data ?? [];
-    setHasMore(nextData.length >= SIMULATIONS_PAGE_SIZE);
-    if (simulationsOffset === 0) {
-      setSimulations(nextData);
-    } else {
-      setSimulations(previousSimulations => {
-        const existingIds = new Set(previousSimulations.map(simulation => simulation.id));
-        const newItems = nextData.filter(simulation => !existingIds.has(simulation.id));
-        return [...previousSimulations, ...newItems];
-      });
-    }
-  }, [simulationsResponse, simulationsOffset]);
-
-  const loadSimulations = (append = false) => {
-    setSimulationsOffset(previousOffset => (append ? previousOffset + SIMULATIONS_PAGE_SIZE : 0));
-  };
-
-  const handleNewSimulation = () => {
-    navigate(ROUTES.CREATE_SIMULATION);
-  };
-
-  const handleCreateSimulation = () => {
-    navigate(ROUTES.CREATE_SIMULATION);
-  };
-
-  const onEditIconClick = (simulation: Simulation) => {
-    if (simulation.status === SimulationStatus.DRAFT) {
-      handleEditSimulation(simulation);
-      return;
-    }
-    setCurrentSimulation(simulation);
-    setIsEditPopupOpen(true);
-  };
-
-  const handleEditSimulation = (simulation: Simulation) => {
-    navigate(ROUTES.EDIT_SIMULATION(simulation.id));
-  };
-
-  const handleDeleteSimulation = (simulation: Simulation) => {
-    setCurrentSimulation(simulation);
-    setIsDeletePopupOpen(true);
-  };
-
-  const onDeleteSimulation = async () => {
-    if (!currentSimulation) return;
-
-    try {
-      await deleteSimulationById(currentSimulation.id).unwrap();
-      setIsDeletePopupOpen(false);
-      setCurrentSimulation(null);
-      toast.success("Simulation deleted successfully");
-    } catch {
-      toast.error("Failed to delete simulation");
-    }
-  };
-
-  const handleChangeSimulationStatus = async (status: SimulationStatus) => {
-    if (!currentSimulation) return;
-    try {
-      await updateSimulationById({
-        id: currentSimulation.id,
-        simulation: { status, title: currentSimulation.title },
-      }).unwrap();
-      setIsArchivePopupOpen(false);
-      setIsUnpublishPopupOpen(false);
-      setIsUnarchivePopupOpen(false);
-      setCurrentSimulation(null);
-      toast.success("Updated simulation status to " + status);
-    } catch {
-      toast.error("Failed to change simulation status");
-    }
-  };
-
-  const onArchiveSimulation = (simulation: Simulation) => {
-    setCurrentSimulation(simulation);
-    setIsArchivePopupOpen(true);
-  };
-
-  const onUnarchiveSimulation = (simulation: Simulation) => {
-    setCurrentSimulation(simulation);
-    setIsUnarchivePopupOpen(true);
-  };
-
-  const onPreviewSimulation = (simulation: Simulation) => {
-    setCurrentSimulation(simulation);
-    setIsPreviewOpen(true);
-  };
-
-  const onUnpublishSimulation = (simulation: Simulation) => {
-    setCurrentSimulation(simulation);
-    setIsUnpublishPopupOpen(true);
-  };
+  // Use the custom hook for pathways
+  const {
+    pathways,
+    hasMore: hasMorePathways,
+    isPathwaysLoading,
+    isPathwaysFetching,
+    loadPathways,
+    handleNewPathway: handleNewPathwayFromHook,
+    onEditPathway,
+    handleDeletePathway,
+  } = useSimulationPathways({ selectedFilters });
 
   const handleFilterClick = () => {
     setIsFilterOpen(!isFilterOpen);
@@ -177,60 +101,76 @@ export const SimulationStudio: React.FC = () => {
     setIsFilterOpen(false);
   };
 
-  const renderSimulationEmptyState = () => {
-    return (
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <div className="text-center max-w-md">
-          <h2 className="text-2xl text-typography-900 mb-4">
-            {en.simulation.createYourFirstSimulation}{" "}
-            <span className="italic">{en.simulation.simulation}</span>
-          </h2>
-          <p className="text-typography-600 text-base mb-8 leading-relaxed font-primary">
-            {en.simulation.newSimulationDescription}
-          </p>
-          <button
-            onClick={handleCreateSimulation}
-            className="bg-primary-500 hover:bg-primary-600 text-base text-white px-6 py-3 rounded-[100px] flex items-center gap-2 mx-auto font-primary transition-colors"
-          >
-            <Add />
-            {en.simulation.createSimulation}
-          </button>
-        </div>
-      </div>
-    );
+  const openCreatePopup = () => {
+    setIsCreatePopupOpen(true);
   };
 
+  const handleNewPathway = () => {
+    handleNewPathwayFromHook();
+  };
+
+  const handleTabChange = (tabId: string) => {
+    setSearchParams({ tab: tabId });
+    setSelectedFilters([]);
+  };
+
+  const createOptions = [
+    {
+      id: en.simulation.newSimulation,
+      label: en.simulation.newSimulation,
+      icon: <SimulationIcon className="w-5 h-5" />,
+      onClick: handleNewSimulation,
+    },
+    {
+      id: en.simulation.newPathway,
+      label: en.simulation.newPathway,
+      icon: <Pathway className="w-5 h-5" />,
+      onClick: handleNewPathway,
+    },
+  ];
+
   const renderFooter = () => {
-    if (!hasMore) return null;
+    const isPathwaysTab = activeTab === TAB_KEYS.PATHWAYS;
+    const hasMoreItems = isPathwaysTab ? hasMorePathways : hasMore;
+    const isFetching = isPathwaysTab ? isPathwaysFetching : isSimulationsFetching;
+    const loadMore = isPathwaysTab ? loadPathways : loadSimulations;
+
+    if (!hasMoreItems) return null;
     return (
       <div className="flex justify-start mt-2 px-4">
         <button
-          onClick={() => loadSimulations(true)}
-          disabled={isSimulationsFetching}
+          onClick={() => loadMore(true)}
+          disabled={isFetching}
           className="inline-flex font-tertiary items-center disabled:opacity-50 text-sm text-typography-600 font-medium py-1 px-1 hover:text-typography-900"
         >
-          + {isSimulationsFetching ? en.common.loading : en.common.loadMore}
+          + {isFetching ? en.common.loading : en.common.loadMore}
         </button>
       </div>
     );
   };
 
-  return (
-    <div className="min-h-full font-secondary">
-      <div className="flex justify-between items-center mb-4 border-b border-border-light pb-4">
+  const renderHeader = () => {
+    return (
+      <div className="flex justify-between items-center">
         <h1 className="text-2xl text-typography-900 font-primary">
           {en.simulation.simulationstudio}
         </h1>
         <Button
           variant={ButtonVariant.PRIMARY}
-          onClick={handleNewSimulation}
-          className="transition-colors h-[40px]"
+          onClick={openCreatePopup}
+          ref={createButtonRef}
+          className="transition-colors h-[40px] pr-[20px]"
         >
           <Add />
-          {en.simulation.newSimulation}
+          {en.common.create}
         </Button>
       </div>
-      <div className="flex flex-row items-center border-b border-border-light pb-4 pl-5 relative">
+    );
+  };
+
+  const renderFilterSection = () => {
+    return (
+      <div className="flex flex-row items-center border-b border-border-light pb-2 pl-5 relative">
         <button onClick={handleFilterClick}>
           <Filter />
         </button>
@@ -256,28 +196,59 @@ export const SimulationStudio: React.FC = () => {
           onApply={handleApplyFilters}
         />
       </div>
-      {isSimulationsLoading ||
-      (simulationsOffset === 0 &&
-        simulations.length === 0 &&
-        simulationsResponse &&
-        isNonEmptyArray(simulationsResponse.data)) ? (
-        <SimulationListSkeleton />
-      ) : simulations.length > 0 ? (
-        <SimulationList
-          simulations={simulations}
-          onEdit={onEditIconClick}
-          onDelete={handleDeleteSimulation}
-          onPreview={onPreviewSimulation}
-          onArchive={onArchiveSimulation}
-          onUnpublish={onUnpublishSimulation}
-          onUnarchive={onUnarchiveSimulation}
+    );
+  };
+
+  const renderContent = () => {
+    if (activeTab === TAB_KEYS.PATHWAYS) {
+      // Pathways tab content
+      return (
+        <PathwayList
+          pathways={pathways}
+          isLoading={isPathwaysLoading}
+          hasFilters={selectedFilters.length > 0}
+          onEdit={onEditPathway}
+          onDelete={handleDeletePathway}
+          onDuplicate={() => {}}
+          onArchive={() => {}}
+          onUnarchive={() => {}}
+          onUnpublishPathway={() => {}}
+          onCreatePathway={handleNewPathway}
           footer={renderFooter()}
         />
-      ) : selectedFilters.length > 0 ? (
-        <EmptyState title={en.simulation.noResultFound} subtitle={en.simulation.adjustFilter} />
-      ) : (
-        renderSimulationEmptyState()
-      )}
+      );
+    }
+
+    // Simulations tab content
+    return (
+      <SimulationList
+        simulations={simulations}
+        isLoading={isSimulationsLoading}
+        hasFilters={selectedFilters.length > 0}
+        onEdit={onEditIconClick}
+        onDelete={handleDeleteSimulation}
+        onPreview={onPreviewSimulation}
+        onArchive={onArchiveSimulation}
+        onUnpublish={onUnpublishSimulation}
+        onUnarchive={onUnarchiveSimulation}
+        onCreateSimulation={handleCreateSimulation}
+        footer={renderFooter()}
+      />
+    );
+  };
+
+  return (
+    <div className="min-h-full font-secondary">
+      {renderHeader()}
+      <Tabs
+        items={TABS}
+        className="mb-2 mt-6 border-b border-border-light font-primary"
+        activeId={activeTab}
+        showCount={false}
+        onChange={handleTabChange}
+      />
+      {renderFilterSection()}
+      {renderContent()}
       <ActionConfirmationPopup
         isOpen={isUnpublishPopupOpen}
         onClose={() => setIsUnpublishPopupOpen(false)}
@@ -363,6 +334,13 @@ export const SimulationStudio: React.FC = () => {
           }}
         />
       )}
+      <OptionsPopup
+        isOpen={isCreatePopupOpen}
+        onClose={() => setIsCreatePopupOpen(false)}
+        options={createOptions}
+        anchorElement={createButtonRef.current}
+        className="min-w-[220px]"
+      />
     </div>
   );
 };

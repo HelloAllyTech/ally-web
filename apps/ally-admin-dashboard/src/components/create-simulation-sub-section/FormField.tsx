@@ -7,6 +7,7 @@ import { AutoTerminationRuleField } from "../auto-termination-rule-field";
 import { DropdownField } from "../dropdown-field";
 import { FileUpload } from "../file-upload";
 import { InputField } from "../input-field";
+import { ToggleSection } from "../toggle-section";
 import { VoiceDropdown } from "../voice-dropdown";
 
 export const FormField: FC<FormFieldProps> = ({ config, formMethods }) => {
@@ -99,6 +100,13 @@ export const FormField: FC<FormFieldProps> = ({ config, formMethods }) => {
         );
       case FORM_FIELD_TYPES.CUSTOM.AUTO_TERMINATION_RULE:
         return <AutoTerminationRuleField label={label} formMethods={formMethods} />;
+
+      case FORM_FIELD_TYPES.TOGGLE_BUTTON:
+        return (
+          <div className="w-full">
+            <ToggleSection label={label} name={id} formMethods={formMethods} />
+          </div>
+        );
       default:
         return null;
     }

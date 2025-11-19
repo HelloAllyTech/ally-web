@@ -1,5 +1,7 @@
 import { FC } from "react";
 
+import { useNavigate, useSearchParams } from "react-router-dom";
+
 import {
   Tabs,
   ListToolbar,
@@ -21,6 +23,7 @@ import {
   en,
   userEditModal,
   UserMenuOptions,
+  ROUTES,
 } from "@constants";
 import { TabType } from "@types";
 
@@ -35,6 +38,10 @@ const formatDate = (isoDate: string) =>
   });
 
 export const UserManagement: FC = () => {
+  const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const activeTab = (searchParams.get("tab") as TabType) || TabType.USERS;
+
   // Organization management hook
   const {
     tenantsCount,
@@ -55,7 +62,6 @@ export const UserManagement: FC = () => {
   // User management hook (depends on tenants)
   const {
     usersCount,
-    activeTab,
     search,
     setSearch,
     isFilterOpen,
@@ -69,7 +75,6 @@ export const UserManagement: FC = () => {
     filterChips,
     getField,
     addUsermodalOpen,
-    handleTabChange,
     selectedUser,
     selectedOption,
     addFilterCtaMemo,
@@ -301,6 +306,7 @@ export const UserManagement: FC = () => {
               <OrganizationList
                 organizations={tenants}
                 onEditPress={onEditTenant}
+                onRowClick={tenant => navigate(ROUTES.ORGANIZATION_DETAIL(tenant.id))}
                 formatDate={formatDate}
                 renderFooter={() =>
                   renderFooter(loadTenants, isTenantsFetching, tenantsCount > tenants.length)
@@ -317,7 +323,7 @@ export const UserManagement: FC = () => {
       <h1 className="text-2xl font-normal text-typography-900">
         {en.userManagement.userManagement}
       </h1>
-      <Tabs items={TABS} activeId={activeTab} onChange={id => handleTabChange(id as TabType)} />
+      <Tabs items={TABS} activeId={activeTab} onChange={id => setSearchParams({ tab: id })} />
       {renderBody()}
     </div>
   );

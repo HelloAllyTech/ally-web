@@ -1,5 +1,5 @@
 import { cellTypes } from "@components";
-import { SimulationCreatorFieldGroups } from "@types";
+import { CreatorFieldGroups } from "@types";
 
 export const minInputHeight = {
   narrativeContext: "250",
@@ -72,9 +72,10 @@ export const FORM_FIELD_TYPES = {
     VOICE_DROPDOWN: "voice_dropdown",
     AUTO_TERMINATION_RULE: "auto_termination_rule",
   },
+  TOGGLE_BUTTON: "toggle_button",
 };
 
-export const SIMULATION_CREATOR_FIELD_GROUPS: SimulationCreatorFieldGroups[] = [
+export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
   {
     id: SIMULATION_CREATOR_STEP_IDS.basicInfo,
     label: "Basic Information",

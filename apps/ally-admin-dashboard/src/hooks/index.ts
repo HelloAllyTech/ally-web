@@ -1,6 +1,15 @@
 import { useClickOutside } from "./useClickOutside";
 import { useDebounce } from "./useDebounce";
 import { useLiveKitRoom } from "./useLiveKitRoom";
+import { useSimulationPathways } from "./useSimulationPathways";
+import { useSimulations } from "./useSimulations";
 import { useUser } from "./useUser";
 
-export { useUser, useLiveKitRoom, useClickOutside, useDebounce };
+export {
+  useUser,
+  useLiveKitRoom,
+  useClickOutside,
+  useDebounce,
+  useSimulations,
+  useSimulationPathways,
+};

@@ -44,6 +44,9 @@ export default defineConfig(() => ({
       transformMixedEsModules: true,
     },
   },
+  optimizeDeps: {
+    include: ["@dnd-kit/core", "@dnd-kit/sortable", "@dnd-kit/utilities"],
+  },
   test: {
     watch: false,
     globals: true,
