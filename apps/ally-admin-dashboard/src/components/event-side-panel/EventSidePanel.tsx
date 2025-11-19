@@ -11,7 +11,7 @@ import { NumberInput } from "@components/notion-table";
 import { en, EVENT_DETECTION_TYPES } from "@constants";
 import { useDebounce } from "@hooks";
 import { UpdateEventDataParam } from "@types";
-import { areBothEventsSelected } from "@utils";
+import { isExactlyOneEventSelected } from "@utils";
 
 import { isCombinationTriggerCondition } from "../../types/triggerConditions";
 
@@ -76,7 +76,29 @@ export const EventSidePanel: React.FC<EventSidePanelProps> = ({
   const [showConfirmationModal, setShowConfirmationModal] = useState(false);
 
   useEffect(() => {
-    setFormData(selectedEvent);
+    if (selectedEvent) {
+      // Initialize default combination trigger condition if needed
+      if (
+        selectedEvent.detectionType === EVENT_DETECTION_TYPES.COMBINATION &&
+        (!selectedEvent.triggerCondition ||
+          (selectedEvent.triggerCondition as any)?.expression === null)
+      ) {
+        setFormData({
+          ...selectedEvent,
+          triggerCondition: {
+            expression: {
+              type: "AND",
+              left: { id: "" },
+              right: { id: "" },
+            },
+          },
+        });
+      } else {
+        setFormData(selectedEvent);
+      }
+    } else {
+      setFormData(selectedEvent);
+    }
   }, [selectedEvent]);
 
   const debouncedUpdate = useDebounce(() => {
@@ -129,14 +151,15 @@ export const EventSidePanel: React.FC<EventSidePanelProps> = ({
   }, [selectedEvent, onDelete]);
 
   const handleClose = useCallback(() => {
-    // Check if this is a combination event with incomplete trigger conditions
+    // Check if this is a combination event with exactly one event selected (incomplete state)
+    // Show modal only when exactly one event is selected, not when both are empty or both are selected
     if (
       formData?.detectionType === EVENT_DETECTION_TYPES.COMBINATION &&
       formData?.triggerCondition &&
       isCombinationTriggerCondition(formData.triggerCondition)
     ) {
       const expression = formData.triggerCondition.expression;
-      if (!areBothEventsSelected(expression)) {
+      if (isExactlyOneEventSelected(expression)) {
         setShowConfirmationModal(true);
         return; // Show modal instead of closing
       }

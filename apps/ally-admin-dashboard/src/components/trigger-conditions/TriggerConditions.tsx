@@ -62,21 +62,54 @@ export const TriggerConditions: React.FC<TriggerConditionsProps> = ({
     );
   };
 
+  // For combination events, always show trigger conditions even if undefined or has null expression
+  const isCombinationEvent = eventType === "COMBINATION";
+  const shouldRenderCombination =
+    isCombinationEvent &&
+    (isCombinationTriggerCondition(triggerCondition) ||
+      !triggerCondition ||
+      (triggerCondition as any)?.expression === null);
+
   if (isInTable) {
-    if (!triggerCondition) return null;
-    if (isCombinationTriggerCondition(triggerCondition)) {
-      return renderCombinationConditions(triggerCondition);
+    if (shouldRenderCombination) {
+      // Create a default combination trigger condition if it doesn't exist or has null expression
+      const defaultCombinationCondition: CombinationTriggerCondition =
+        triggerCondition && isCombinationTriggerCondition(triggerCondition)
+          ? triggerCondition
+          : {
+              expression: {
+                type: "AND",
+                left: { id: "" },
+                right: { id: "" },
+              },
+            };
+      return renderCombinationConditions(defaultCombinationCondition);
     }
+    if (!triggerCondition) return null;
     return renderStandardConditions();
+  }
+
+  // For side panel view
+  if (shouldRenderCombination) {
+    // Create a default combination trigger condition if it doesn't exist or has null expression
+    const defaultCombinationCondition: CombinationTriggerCondition =
+      triggerCondition && isCombinationTriggerCondition(triggerCondition)
+        ? triggerCondition
+        : {
+            expression: {
+              type: "AND",
+              left: { id: "" },
+              right: { id: "" },
+            },
+          };
+    return (
+      <SidePanelWrapper>
+        {renderCombinationConditions(defaultCombinationCondition)}
+      </SidePanelWrapper>
+    );
   }
 
   if (!triggerCondition) return null;
 
-  return (
-    <SidePanelWrapper>
-      {isCombinationTriggerCondition(triggerCondition)
-        ? renderCombinationConditions(triggerCondition)
-        : renderStandardConditions()}
-    </SidePanelWrapper>
-  );
+  return <SidePanelWrapper>{renderStandardConditions()}</SidePanelWrapper>;
 };

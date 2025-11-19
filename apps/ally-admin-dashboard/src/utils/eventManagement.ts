@@ -91,6 +91,26 @@ export const areBothEventsSelected = (
 };
 
 /**
+ * Checks if exactly one event is selected in a combination expression
+ * @param expression - The combination expression node
+ * @returns true if exactly one event (left or right) has a valid ID
+ */
+export const isExactlyOneEventSelected = (
+  expression: CombinationExpressionNode | undefined,
+): boolean => {
+  if (!expression) return false;
+
+  const leftEventId = extractEventId(expression.left);
+  const rightEventId = extractEventId(expression.right);
+
+  const leftSelected = isNonEmptyString(leftEventId) && leftEventId.trim() !== "";
+  const rightSelected = isNonEmptyString(rightEventId) && rightEventId.trim() !== "";
+
+  // Exactly one is selected (XOR logic)
+  return (leftSelected && !rightSelected) || (!leftSelected && rightSelected);
+};
+
+/**
  * Converts UpdateEventDataParam to the expected API payload format (SessionEvent)
  * @param event - Event data from the frontend
  * @returns Formatted SessionEvent payload for the API
