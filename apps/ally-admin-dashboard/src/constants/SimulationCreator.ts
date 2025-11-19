@@ -81,6 +81,12 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
     label: "Basic Information",
     fields: [
       {
+        id: "isGlobal",
+        label: "Default org-level visibility",
+        type: FORM_FIELD_TYPES.TOGGLE_BUTTON,
+        fullWidth: true,
+      },
+      {
         id: "title",
         label: "Title",
         placeholder: "Enter title",

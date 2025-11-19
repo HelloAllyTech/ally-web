@@ -3,7 +3,7 @@ import React, { useEffect, useState, FC } from "react";
 import { useGetScenarioPathsQuery } from "@api";
 import { ListToolbar, EmptyState, ToggleSwitch, CustomImage } from "@components";
 import { en } from "@constants";
-import { ScenarioPath } from "@types";
+import { ScenarioPath, SimulationStatus } from "@types";
 import { isNonEmptyArray } from "@utils";
 
 const PATHS_PAGE_SIZE = 30;
@@ -42,12 +42,13 @@ export const PathTab: FC<PathTabProps> = ({
   useEffect(() => {
     if (!pathsResponse) return;
     const nextData = pathsResponse.data ?? [];
+    const published = nextData.filter(simulation => simulation.status === SimulationStatus.ACTIVE);
     if (pathsOffset === 0) {
-      setPaths(nextData);
+      setPaths(published);
     } else {
       setPaths(prev => {
         const existingIds = new Set(prev.map(p => p.id));
-        const newItems = nextData.filter(p => !existingIds.has(p.id));
+        const newItems = published.filter(p => !existingIds.has(p.id));
         return [...prev, ...newItems];
       });
     }

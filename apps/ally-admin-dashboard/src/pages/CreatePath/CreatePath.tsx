@@ -6,6 +6,7 @@ import { toast } from "sonner";
 
 import {
   useCreateSimulationPathMutation,
+  useDeleteCoverImageMutation,
   useLazyGetScenarioPathByIdQuery,
   useUpdateSimulationPathByIdMutation,
 } from "@api";
@@ -31,7 +32,13 @@ import {
 } from "@constants";
 import { useDebounce } from "@hooks";
 import { GetScenarioType } from "@types";
-import { extractValidData, isEmpty, isNonEmptyArray, isNonEmptyObject } from "@utils";
+import {
+  extractValidData,
+  isEmpty,
+  isNonEmptyArray,
+  isNonEmptyObject,
+  isNonEmptyString,
+} from "@utils";
 
 // Get all mandatory field IDs from the configuration
 const getMandatoryFieldIds = () => {
@@ -62,6 +69,7 @@ export const CreatePath: FC = () => {
   const [getScenarioPathByIdQuery, { data: individualPath }] = useLazyGetScenarioPathByIdQuery();
   const [createSimulationPathMutation] = useCreateSimulationPathMutation();
   const [updateSimulationPathByIdQuery] = useUpdateSimulationPathByIdMutation();
+  const [deleteCoverImage] = useDeleteCoverImageMutation();
 
   const formatScenarios = (scenarios?: GetScenarioType[]) => {
     if (!isNonEmptyArray(scenarios)) return [];
@@ -132,6 +140,19 @@ export const CreatePath: FC = () => {
       toast.error(en.errors.titleIsRequired);
       return null;
     }
+
+    // Delete cover image from s3 if it is changed
+    if (
+      isNonEmptyString(individualPath?.coverImageUrl) &&
+      individualPath?.coverImageUrl !== formData.coverImageUrl
+    ) {
+      try {
+        await deleteCoverImage({ coverImageUrl: individualPath.coverImageUrl }).unwrap();
+      } catch {
+        toast.error("Failed to delete cover image. Please try again.");
+      }
+    }
+
     const simulationPath: any = {
       ...extractValidData(PATH_CREATOR_FIELD_GROUPS, formData),
       status,

@@ -1,11 +1,17 @@
 import { useState, useEffect, FC } from "react";
 
 import { useParams, useNavigate, useSearchParams } from "react-router-dom";
+import { toast } from "sonner";
 
-import { useGetTenantsQuery } from "@api";
+import {
+  useDisableSimulationMutation,
+  useEnableSimulationMutation,
+  useGetTenantsQuery,
+} from "@api";
 import { ArrowDown } from "@assets";
 import { Tabs, OrganizationDetailLoader, SimulationsTab, PathTab } from "@components";
 import { en, ROUTES } from "@constants";
+import { useDebounce } from "@hooks";
 import { Tenant } from "@types";
 import { isNonEmptyArray } from "@utils";
 
@@ -21,6 +27,8 @@ const tabs = [
   { id: TAB_IDS.SIMULATIONS, label: en.userManagement.simulations },
   { id: TAB_IDS.PATH, label: en.userManagement.path },
 ];
+
+const DEBOUNCE_DELAY = 500;
 
 export const OrganizationDetail: FC = () => {
   const [organization, setOrganization] = useState<Tenant | null>(null);
@@ -40,6 +48,10 @@ export const OrganizationDetail: FC = () => {
     limit: DEFAULT_LIMIT,
     offset: DEFAULT_OFFSET,
   });
+  const [enableSimulation] = useEnableSimulationMutation();
+  const [disableSimulation] = useDisableSimulationMutation();
+  const [enablePathAccess] = useEnableSimulationMutation();
+  const [disablePathAccess] = useDisableSimulationMutation();
 
   useEffect(() => {
     if (isNonEmptyArray(tenantsResponse?.data) && id) {
@@ -48,12 +60,32 @@ export const OrganizationDetail: FC = () => {
     }
   }, [tenantsResponse, id]);
 
-  const handleToggleAccess = (simulationId: number, enabled: boolean) => {
+  const debounceEnableSimulation = useDebounce(enableSimulation, DEBOUNCE_DELAY);
+  const debounceDisableSimulation = useDebounce(disableSimulation, DEBOUNCE_DELAY);
+  const debounceEnablePath = useDebounce(enablePathAccess, DEBOUNCE_DELAY);
+  const debounceDisablePath = useDebounce(disablePathAccess, DEBOUNCE_DELAY);
+
+  const handleToggleAccess = async (simulationId: number, enabled: boolean) => {
     setSimulationAccess(prev => ({
       ...prev,
       [simulationId]: enabled,
     }));
-    // TODO: Call API to update simulation access for this organization
+
+    try {
+      if (enabled) {
+        await debounceEnableSimulation({
+          tenantId: id ?? "",
+          scenarioIds: [simulationId],
+        });
+      } else {
+        await debounceDisableSimulation({
+          tenantId: id ?? "",
+          scenarioIds: [simulationId],
+        });
+      }
+    } catch {
+      toast.error("Failed to update access.");
+    }
   };
 
   const handleSimulationsLoaded = (simulationIds: string[]) => {
@@ -69,12 +101,27 @@ export const OrganizationDetail: FC = () => {
     });
   };
 
-  const handleTogglePathAccess = (pathId: number, enabled: boolean) => {
+  const handleTogglePathAccess = async (pathId: number, enabled: boolean) => {
     setPathAccess(prev => ({
       ...prev,
       [pathId]: enabled,
     }));
-    // TODO: Call API to update path access for this organization
+
+    try {
+      if (enabled) {
+        await debounceEnablePath({
+          tenantId: id ?? "",
+          scenarioIds: [pathId],
+        });
+      } else {
+        await debounceDisablePath({
+          tenantId: id ?? "",
+          scenarioIds: [pathId],
+        });
+      }
+    } catch {
+      toast.error("Failed to update path access.");
+    }
   };
 
   const handlePathsLoaded = (pathIds: string[]) => {

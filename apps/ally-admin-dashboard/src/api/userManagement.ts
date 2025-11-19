@@ -12,6 +12,7 @@ import {
   UserRoles,
   GetCreditResponse,
   AddCreditBody,
+  disableSuccessResponse,
 } from "@types";
 
 const userManagementAPI = baseAPI.injectEndpoints({
@@ -115,6 +116,51 @@ const userManagementAPI = baseAPI.injectEndpoints({
       }),
       invalidatesTags: [TAG_TYPES.USERS],
     }),
+
+    enableSimulation: builder.mutation<
+      { success: boolean },
+      { tenantId: string; scenarioIds: number[] }
+    >({
+      query: ({ tenantId, scenarioIds }) => ({
+        url: `${ApiEndpoints.SIMULATION_STUDIO.SIMULATION_TENANT_VISIBILITY(tenantId)}`,
+        method: HttpMethod.POST,
+        body: { scenarioIds },
+      }),
+      invalidatesTags: [TAG_TYPES.TENANTS],
+    }),
+
+    disableSimulation: builder.mutation<
+      disableSuccessResponse,
+      { tenantId: string; scenarioIds: number[] }
+    >({
+      query: ({ tenantId, scenarioIds }) => ({
+        url: `${ApiEndpoints.SIMULATION_STUDIO.SIMULATION_TENANT_VISIBILITY(tenantId)}`,
+        method: HttpMethod.DELETE,
+        body: { scenarioIds },
+      }),
+      invalidatesTags: [TAG_TYPES.TENANTS],
+    }),
+
+    enablePath: builder.mutation<{ success: boolean }, { id: string; scenarioPathIds: number[] }>({
+      query: ({ id, scenarioPathIds }) => ({
+        url: `${ApiEndpoints.SIMULATION_STUDIO.PATH_TENANT_VISIBILITY(id)}`,
+        method: HttpMethod.POST,
+        body: { scenarioPathIds },
+      }),
+      invalidatesTags: [TAG_TYPES.TENANTS],
+    }),
+
+    disablePath: builder.mutation<
+      disableSuccessResponse,
+      { id: string; scenarioPathIds: number[] }
+    >({
+      query: ({ id, scenarioPathIds }) => ({
+        url: `${ApiEndpoints.SIMULATION_STUDIO.PATH_TENANT_VISIBILITY(id)}`,
+        method: HttpMethod.DELETE,
+        body: { scenarioPathIds },
+      }),
+      invalidatesTags: [TAG_TYPES.TENANTS],
+    }),
   }),
 });
 
@@ -133,4 +179,8 @@ export const {
   useGetRoleQuery,
   useGetSimulationCreditsQuery,
   useAddSimulationCreditLimitMutation,
+  useDisableSimulationMutation,
+  useEnableSimulationMutation,
+  useEnablePathMutation,
+  useDisablePathMutation,
 } = userManagementAPI;

@@ -203,3 +203,8 @@ export interface AddCreditBody {
   userId: number;
   creditLimit: number;
 }
+
+export interface disableSuccessResponse {
+  success: boolean;
+  message: string;
+}

@@ -6,7 +6,7 @@ import { SortableContext, verticalListSortingStrategy, arrayMove } from "@dnd-ki
 import { Search } from "@assets";
 import { en } from "@constants";
 import { useSimulations } from "@hooks";
-import { GetScenarioType, Simulation } from "@types";
+import { GetScenarioType, Simulation, SimulationStatus } from "@types";
 
 import { Button } from "../button";
 import { EmptyState } from "../empty-state";
@@ -48,17 +48,22 @@ export const SimulationSelectionModal: FC<SimulationProps> = ({
     };
   };
 
+  const publishedSimulations = useMemo(() => {
+    return (simulationsResponse?.data ?? []).filter(
+      simulation => simulation.status === SimulationStatus.ACTIVE,
+    );
+  }, [simulationsResponse?.data]);
+
   const filteredSimulations = useMemo(() => {
-    if (!simulationsResponse?.data) return [];
-    if (!searchQuery.trim()) return simulationsResponse.data;
+    if (!searchQuery.trim()) return publishedSimulations;
 
     const query = searchQuery.toLowerCase();
-    return simulationsResponse.data.filter(
+    return publishedSimulations.filter(
       simulation =>
         simulation.title.toLowerCase().includes(query) ||
         simulation.description.toLowerCase().includes(query),
     );
-  }, [simulationsResponse?.data, searchQuery]);
+  }, [publishedSimulations, searchQuery]);
 
   const toggleSelection = () => {
     setSelectedSimulations(checkedSimulation);

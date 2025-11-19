@@ -3,7 +3,7 @@ import React, { useEffect, useState, FC } from "react";
 import { useGetSimulationsQuery } from "@api";
 import { ListToolbar, EmptyState, SimulationAndPathToggleCard } from "@components";
 import { en, SORT_BY, SORT_ORDER } from "@constants";
-import { Simulation } from "@types";
+import { Simulation, SimulationStatus } from "@types";
 import { isNonEmptyArray } from "@utils";
 
 const SIMULATIONS_PAGE_SIZE = 30;
@@ -44,12 +44,13 @@ export const SimulationsTab: FC<SimulationsTabProps> = ({
   useEffect(() => {
     if (!simulationsResponse) return;
     const nextData = simulationsResponse.data ?? [];
+    const published = nextData.filter(simulation => simulation.status === SimulationStatus.ACTIVE);
     if (simulationsOffset === 0) {
-      setSimulations(nextData);
+      setSimulations(published);
     } else {
       setSimulations(prev => {
-        const existingIds = new Set(prev.map(s => s.id));
-        const newItems = nextData.filter(s => !existingIds.has(s.id));
+        const existingIds = new Set(prev.map(simulation => simulation.id));
+        const newItems = published.filter(simulation => !existingIds.has(simulation.id));
         return [...prev, ...newItems];
       });
     }
