@@ -6,7 +6,7 @@ import { toast } from "sonner";
 
 import {
   useCreateSimulationPathMutation,
-  useGetScenarioPathByIdQuery,
+  useLazyGetScenarioPathByIdQuery,
   useUpdateSimulationPathByIdMutation,
 } from "@api";
 import { Plus } from "@assets";
@@ -14,7 +14,6 @@ import {
   Header,
   VerticalStepper,
   Footer,
-  MoreOptionsPopup,
   ActionConfirmationPopup,
   Button,
   SimulationSelectionModal,
@@ -53,17 +52,25 @@ export const CreatePath: FC = () => {
   const [pathId, setPathId] = useState<string | undefined>(id);
   const [currentStep, setCurrentStep] = useState(PATH_CREATOR_STEP_IDS.basicInfo);
   const [showDiscardPopup, setShowDiscardPopup] = useState(false);
-  const [showMoreOptions, setShowMoreOptions] = useState(false);
   const [showSimulationModal, setShowSimulationModal] = useState(false);
+  const [selectedSimulations, setSelectedSimulations] = useState<GetScenarioType[]>([]);
 
   const containerRef = useRef<HTMLDivElement>(null);
-  const moreOptionsRef = useRef<HTMLButtonElement>(null);
 
   const title = id ? en.simulation.editPath : en.simulation.createPath;
 
-  const { data: individualPath } = useGetScenarioPathByIdQuery(id);
+  const [getScenarioPathByIdQuery, { data: individualPath }] = useLazyGetScenarioPathByIdQuery();
   const [createSimulationPathMutation] = useCreateSimulationPathMutation();
   const [updateSimulationPathByIdQuery] = useUpdateSimulationPathByIdMutation();
+
+  const formatScenarios = (scenarios?: GetScenarioType[]) => {
+    if (!isNonEmptyArray(scenarios)) return [];
+
+    return scenarios.map((scenario, index) => ({
+      ...scenario,
+      order: index + 1,
+    }));
+  };
 
   const formMethods = useForm({
     mode: "onChange",
@@ -77,8 +84,16 @@ export const CreatePath: FC = () => {
   } = formMethods;
 
   useEffect(() => {
+    if (pathId) {
+      getScenarioPathByIdQuery(pathId);
+    }
+  }, [pathId, getScenarioPathByIdQuery]);
+  useEffect(() => {
     if (individualPath) {
       formMethods.reset(individualPath);
+    }
+    if (individualPath?.scenarios) {
+      setSelectedSimulations(formatScenarios(individualPath.scenarios));
     }
   }, [individualPath, formMethods]);
   // Watch all form values to check mandatory fields
@@ -98,44 +113,16 @@ export const CreatePath: FC = () => {
     });
   }, [formValues]);
 
-  const handleDiscardSimulation = () => {
-    setShowMoreOptions(false);
-  };
-
-  const handleCloseMoreOptions = () => {
-    setShowMoreOptions(false);
-  };
-
   const toggleSimulationModal = () => {
     setShowSimulationModal(prev => !prev);
-  };
-
-  const getMoreOptionsPosition = () => {
-    if (moreOptionsRef.current) {
-      const rect = moreOptionsRef.current.getBoundingClientRect();
-      return {
-        top: rect.bottom + 8,
-        right: window.innerWidth - rect.right,
-      };
-    }
-    return { top: 0, right: 0 };
   };
 
   const handlePageBack = () => {
     if (isNonEmptyObject(dirtyFields)) {
       setShowDiscardPopup(true);
     } else {
-      navigate("/");
+      navigate(-1);
     }
-  };
-
-  const formatScenarios = (scenarios?: GetScenarioType[]) => {
-    if (!scenarios || scenarios.length === 0) return [];
-
-    return scenarios.map((scenario, index) => ({
-      ...scenario,
-      order: index + 1,
-    }));
   };
 
   // Core function to save simulation changes
@@ -150,6 +137,7 @@ export const CreatePath: FC = () => {
       status,
     };
     let response;
+
     if (pathId) {
       response = await updateSimulationPathByIdQuery({
         id: pathId,
@@ -165,7 +153,6 @@ export const CreatePath: FC = () => {
   const saveSimulationChanges = useDebounce(saveSimulationChangesCore, 500);
 
   const handleSaveDraft = async () => {
-    // TODO: API and Handle any navigations here
     try {
       const response = await saveSimulationChanges(SimulationStatus.DRAFT);
       if (response && !response.error) {
@@ -192,23 +179,23 @@ export const CreatePath: FC = () => {
 
       if (response) navigate(ROUTES.SIMULATION_STUDIO);
     } catch {
-      toast.error("Failed to create simulation. Please try again.");
+      toast.error(en.errors.failedSimulationCreation);
     }
   };
 
   const handleDiscardChanges = () => {
     setShowDiscardPopup(false);
-    navigate("/");
+    navigate(-1);
   };
 
   const handleSaveAndExit = async () => {
     const response = await saveSimulationChanges(SimulationStatus.DRAFT);
     if (response) {
       setShowDiscardPopup(false);
-      navigate("/");
-      toast.success("Simulation changes saved successfully!");
+      navigate(-1);
+      toast.success(en.simulation.saveSimulation);
     } else {
-      toast.error("Failed to save simulation changes!");
+      toast.error(en.errors.failedSimulationChange);
     }
   };
 
@@ -265,8 +252,9 @@ export const CreatePath: FC = () => {
           <SimulationSelectionModal
             toggleSimulationModal={toggleSimulationModal}
             showSimulation={showSimulationModal}
-            data={formatScenarios(individualPath?.scenarios)}
             formMethods={formMethods}
+            selectedSimulations={selectedSimulations}
+            setSelectedSimulations={setSelectedSimulations}
           />,
           true,
         );
@@ -274,8 +262,6 @@ export const CreatePath: FC = () => {
         return null;
     }
   };
-
-  const moreOptionsPosition = useMemo(() => getMoreOptionsPosition(), []);
 
   const isLastStep = currentStep === PATH_CREATOR_STEP_IDS.simulations;
 
@@ -335,12 +321,6 @@ export const CreatePath: FC = () => {
           onClick: handleDiscardChanges,
           variant: ButtonVariant.SECONDARY,
         }}
-      />
-      <MoreOptionsPopup
-        isOpen={showMoreOptions}
-        onClose={handleCloseMoreOptions}
-        onDiscardSimulation={handleDiscardSimulation}
-        position={moreOptionsPosition}
       />
     </div>
   );

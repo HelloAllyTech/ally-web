@@ -16,7 +16,7 @@ const simulationPathApi = baseAPI.injectEndpoints({
         params,
       }),
 
-      providesTags: [TAG_TYPES.SIMULATION],
+      providesTags: [TAG_TYPES.SIMULATION_PATHS],
     }),
 
     getScenarioPathById: builder.query<GetPathByIdResponse, string>({
@@ -24,7 +24,6 @@ const simulationPathApi = baseAPI.injectEndpoints({
         url: ApiEndpoints.SIMULATION_STUDIO.SCENARIO_PATH_BY_ID(id),
         method: HttpMethod.GET,
       }),
-      providesTags: [TAG_TYPES.SIMULATION_PATHS],
     }),
 
     createSimulationPath: builder.mutation<{ success: boolean }, CreatePathInput>({
@@ -45,6 +44,7 @@ const simulationPathApi = baseAPI.injectEndpoints({
         method: HttpMethod.PUT,
         body: data,
       }),
+      invalidatesTags: [TAG_TYPES.SIMULATION_PATHS],
     }),
 
     deleteScenarioPathById: builder.mutation<void, number>({
@@ -60,7 +60,7 @@ const simulationPathApi = baseAPI.injectEndpoints({
 export const {
   useGetScenarioPathsQuery,
   useDeleteScenarioPathByIdMutation,
-  useGetScenarioPathByIdQuery,
+  useLazyGetScenarioPathByIdQuery,
   useCreateSimulationPathMutation,
   useUpdateSimulationPathByIdMutation,
 } = simulationPathApi;
