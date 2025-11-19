@@ -57,25 +57,37 @@ const mapDetectionTypeToBackend = (detectionType: string | undefined): string | 
 };
 
 /**
- * Checks if an expression is empty (has no valid event IDs)
- * Used to determine if we should send detectionData to API
+ * Extracts event ID from a combination expression node, handling NOT nodes
+ * @param node - The expression node to extract event ID from
+ * @returns The event ID or empty string
  */
-const isExpressionEmpty = (expression: CombinationExpressionNode | undefined): boolean => {
-  if (!expression) return true;
-
-  // Check if it's a leaf node with empty ID
-  if (expression.id !== undefined) {
-    return !expression.id || expression.id.trim() === "";
+const extractEventId = (node: CombinationExpressionNode | undefined): string => {
+  if (!node) return "";
+  if (node.type === "NOT") {
+    return node.left?.id || "";
   }
+  return node.id || "";
+};
 
-  // Check recursively for nodes with children
-  if (expression.left || expression.right) {
-    const leftEmpty = expression.left ? isExpressionEmpty(expression.left) : true;
-    const rightEmpty = expression.right ? isExpressionEmpty(expression.right) : true;
-    return leftEmpty && rightEmpty;
-  }
+/**
+ * Checks if both events are selected in a combination expression
+ * @param expression - The combination expression node
+ * @returns true if both left and right events have valid IDs
+ */
+export const areBothEventsSelected = (
+  expression: CombinationExpressionNode | undefined,
+): boolean => {
+  if (!expression) return false;
 
-  return true;
+  const leftEventId = extractEventId(expression.left);
+  const rightEventId = extractEventId(expression.right);
+
+  return (
+    isNonEmptyString(leftEventId) &&
+    isNonEmptyString(rightEventId) &&
+    leftEventId.trim() !== "" &&
+    rightEventId.trim() !== ""
+  );
 };
 
 /**
@@ -144,9 +156,10 @@ export const convertEventToApiPayload = (event: UpdateEventDataParam): SessionEv
     if (
       event.triggerCondition &&
       "expression" in event.triggerCondition &&
-      !isExpressionEmpty(event.triggerCondition.expression)
+      areBothEventsSelected(event.triggerCondition.expression)
     ) {
       // Expression format matches API directly - no conversion needed
+      // Only include expression if both events are selected
       detectionData.expression = event.triggerCondition.expression;
     }
   }

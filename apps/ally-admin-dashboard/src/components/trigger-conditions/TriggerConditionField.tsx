@@ -128,7 +128,7 @@ export const TriggerConditionField: React.FC<TriggerConditionFieldProps> = ({
             value={fieldValue || 0}
             onChange={numValue => onChange(field.id, numValue)}
             className={`px-2 py-1 text-sm border h-6 rounded-sm w-[60px] ${isInTable ? "bg-neutral-100" : "bg-neutral-50 border"}`}
-            inputClassName="w-auto min-w-0 pr-6 py-0 text-sm"
+            inputClassName="w-auto min-w-0 pr-6 !py-0 text-sm"
             spinnerClassName="!left-auto right-1 !gap-0 px-2 !items-center"
           />
         );

@@ -6,6 +6,9 @@ import { NumberInput } from "@components/notion-table";
 import { en, EVENT_DETECTION_TYPES } from "@constants";
 import { useDebounce } from "@hooks";
 import { UpdateEventDataParam } from "@types";
+import { areBothEventsSelected } from "@utils";
+
+import { isCombinationTriggerCondition } from "../../types/triggerConditions";
 
 interface EventSidePanelProps {
   selectedEvent: UpdateEventDataParam | null;
@@ -76,6 +79,7 @@ export const EventSidePanel: React.FC<EventSidePanelProps> = ({
 
   useEffect(() => {
     debouncedUpdate();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [formData]);
 
   const handleFieldChange = useCallback(
@@ -117,16 +121,36 @@ export const EventSidePanel: React.FC<EventSidePanelProps> = ({
     }
   }, [selectedEvent, onDelete]);
 
+  const handleClose = useCallback(() => {
+    // Check if this is a combination event with incomplete trigger conditions
+    if (
+      formData?.detectionType === EVENT_DETECTION_TYPES.COMBINATION &&
+      formData?.triggerCondition &&
+      isCombinationTriggerCondition(formData.triggerCondition)
+    ) {
+      const expression = formData.triggerCondition.expression;
+      if (!areBothEventsSelected(expression)) {
+        const shouldClose = window.confirm(
+          "Please select both event conditions for the combination event before closing for the event to be saved.Are you sure you want to close?",
+        );
+        if (!shouldClose) {
+          return; // Prevent closing if user cancels
+        }
+      }
+    }
+    onClose();
+  }, [formData, onClose]);
+
   if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 z-50 flex">
-      <div className="flex-1 bg-black bg-opacity-50" onClick={onClose} />
+      <div className="flex-1 bg-black bg-opacity-50" onClick={handleClose} />
 
       <div className="w-[50%] min-w-[700px] bg-white shadow-xl border-l-[1px] border-border-light">
         <PanelHeader
           eventId={selectedEvent?.id}
-          onClose={onClose}
+          onClose={handleClose}
           onDelete={handleDelete}
           hasEvent={!!selectedEvent}
         />

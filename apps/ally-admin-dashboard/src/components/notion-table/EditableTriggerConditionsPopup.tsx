@@ -1,10 +1,6 @@
 import React, { useState, useRef, useEffect, useCallback } from "react";
 
-import {
-  TriggerConditions,
-  StandardTriggerConditions,
-  CombinationTriggerConditions,
-} from "@components";
+import { StandardTriggerConditions, CombinationTriggerConditions } from "@components";
 import { useClickOutside } from "@hooks";
 import { EVENT_DETECTION_TYPES } from "@src/constants/eventTypes";
 
@@ -68,12 +64,12 @@ export const EditableTriggerConditionsPopup: React.FC<EditableTriggerConditionsP
   useClickOutside(popupRef, handleClickOutsideCallback);
 
   return (
-    <div className={`${className}`}>
+    <div className={`${className} flex flex-wrap items-start`}>
       {/* Always display trigger conditions inline */}
       <div
         onClick={handleTextClick}
         className={`
-          cursor-pointer overflow-hidden
+          cursor-pointer w-full overflow-x-hidden
           ${disabled ? "cursor-not-allowed opacity-50" : "hover:bg-background-secondary"}
         `}
       >
@@ -81,10 +77,17 @@ export const EditableTriggerConditionsPopup: React.FC<EditableTriggerConditionsP
           <div className="flex items-center justify-center w-full cursor-not-allowed">
             <span>--</span>
           </div>
+        ) : eventType === EVENT_DETECTION_TYPES.COMBINATION ? (
+          <CombinationTriggerConditions
+            triggerCondition={editTriggerCondition}
+            isInTable={true}
+            onChange={handleFieldChange}
+          />
         ) : (
-          <TriggerConditions
+          <StandardTriggerConditions
             eventType={eventType}
-            triggerCondition={triggerCondition}
+            triggerCondition={editTriggerCondition}
+            onChange={handleFieldChange}
             isInTable={true}
           />
         )}
