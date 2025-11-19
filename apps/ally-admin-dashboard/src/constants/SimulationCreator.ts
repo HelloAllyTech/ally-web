@@ -327,6 +327,13 @@ export const EVENT_MANAGEMENT_TABLE_COLUMNS = [
     minWidth: 180,
   },
   {
+    id: "eventCode",
+    label: "Event code",
+    accessor: "eventCode",
+    dataType: cellTypes.normalText,
+    minWidth: 120,
+  },
+  {
     id: "detectionType",
     label: "Event type",
     accessor: "detectionType",

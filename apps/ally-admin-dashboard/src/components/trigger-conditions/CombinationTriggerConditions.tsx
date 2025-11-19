@@ -132,7 +132,7 @@ export const CombinationTriggerConditions: React.FC<CombinationTriggerConditions
         <div className="flex flex-col gap-2">
           {/* First condition */}
           <div className={`flex items-center gap-2 ${isInTable ? "" : "pl-3"}`}>
-            <span className="text-sm text-gray-500">if</span>
+            <span className="text-sm text-typography-500">if</span>
             <TriggerConditionDropdown
               value={getLeftEventId()}
               options={availableEvents.map(event => ({
@@ -147,7 +147,7 @@ export const CombinationTriggerConditions: React.FC<CombinationTriggerConditions
               className="min-w-[150px] max-w-[170px]"
               isInTable={isInTable}
             />
-            <span className="text-sm text-gray-500">has</span>
+            <span className="text-sm text-typography-500">has</span>
             <TriggerConditionDropdown
               value={getLeftStatus()}
               options={statusField?.options || []}
@@ -183,7 +183,7 @@ export const CombinationTriggerConditions: React.FC<CombinationTriggerConditions
               className="min-w-[150px] max-w-[170px]"
               isInTable={isInTable}
             />
-            <span className="text-sm text-gray-500">has</span>
+            <span className="text-sm text-typography-500">has</span>
             <TriggerConditionDropdown
               value={getRightStatus()}
               options={statusField?.options || []}

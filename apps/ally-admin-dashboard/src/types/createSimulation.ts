@@ -131,6 +131,7 @@ import { TriggerCondition } from "./triggerConditions";
 export interface UpdateEventDataParam {
   id?: string;
   name?: string;
+  eventCode?: string;
   description?: string;
   branchInstruction?: string;
   score?: number;

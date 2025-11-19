@@ -185,6 +185,7 @@ export interface SessionEventDetectionData {
 export interface SessionEvent {
   id?: string;
   name?: string;
+  eventCode?: string;
   description?: string;
   score?: number;
   emoji?: string;

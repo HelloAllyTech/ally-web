@@ -295,6 +295,7 @@ export const convertApiResponseToEvent = (apiEvent: SessionEvent): UpdateEventDa
   return {
     id: apiEvent.id,
     name: apiEvent.name || "",
+    eventCode: apiEvent.eventCode || "",
     description: apiEvent.description || "",
     score: apiEvent.score ?? 0,
     emoji: apiEvent.emoji || "",

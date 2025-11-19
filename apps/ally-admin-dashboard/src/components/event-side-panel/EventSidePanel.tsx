@@ -202,9 +202,9 @@ export const EventSidePanel: React.FC<EventSidePanelProps> = ({
           </div>
 
           <div className="space-y-3">
-            {/* <Field label="Event code">
-              <div className="text-sm text-neutral-800">{eventCode || "—"}</div>
-            </Field> */}
+            <Field label="Event code">
+              <div className="text-sm text-neutral-800">{formData.eventCode || "—"}</div>
+            </Field>
 
             {/* Trigger Conditions Field */}
             {(formData?.detectionType === EVENT_DETECTION_TYPES.TIME_BASED ||

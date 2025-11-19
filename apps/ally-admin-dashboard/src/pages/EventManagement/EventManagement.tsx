@@ -168,6 +168,7 @@ export const EventManagement: React.FC = () => {
       id: { value: event.id || "", disabled: false, rowId: event.id },
       detectionType: { value: event.detectionType || "", disabled: true, rowId: event.id },
       name: { value: event.name || "", disabled: false, rowId: event.id },
+      eventCode: { value: event.eventCode || "", disabled: true, rowId: event.id },
       triggerConditions: { value: triggerCondition, disabled: false, rowId: event.id },
       branchInstruction: { value: event.branchInstruction || "", disabled: false, rowId: event.id },
       score: { value: event.score ?? 0, disabled: false, rowId: event.id },
@@ -184,6 +185,7 @@ export const EventManagement: React.FC = () => {
     return {
       id: selectedEvent.id || "",
       name: selectedEvent.name || "",
+      eventCode: selectedEvent.eventCode || "",
       detectionType: selectedEvent.detectionType || "",
       description: selectedEvent.description || "",
       branchInstruction: selectedEvent.branchInstruction || "",
