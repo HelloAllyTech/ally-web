@@ -115,6 +115,7 @@ module.exports = {
           700: "#616161",
           800: "#424242",
           900: "#333333",
+          950: "#17181A",
         },
         // Scrollbar Colors
         scrollbar: {

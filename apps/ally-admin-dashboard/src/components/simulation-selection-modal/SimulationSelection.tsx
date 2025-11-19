@@ -32,7 +32,7 @@ export const SimulationSelectionModal: FC<SimulationProps> = ({
   const [searchQuery, setSearchQuery] = useState("");
   const [openMessageIndex, setOpenMessageIndex] = useState<number | null>(null);
 
-  const addMessageButtonRefs = useRef<(HTMLButtonElement | null)[]>([]);
+  const messageButtonRefs = useRef<(HTMLButtonElement | null)[]>([]);
   const { simulationsResponse } = useSimulations({});
 
   const mapToGetScenarioType = (simulation: Simulation, order: number) => {
@@ -137,7 +137,7 @@ export const SimulationSelectionModal: FC<SimulationProps> = ({
           <button
             className="text-xs"
             onClick={() => handleMessageClick(index)}
-            ref={element => (addMessageButtonRefs.current[index] = element)}
+            ref={element => (messageButtonRefs.current[index] = element)}
           >
             {en.common.edit}
           </button>
@@ -152,29 +152,25 @@ export const SimulationSelectionModal: FC<SimulationProps> = ({
       <p className="text-sm text-typography-800 px-2 pb-3 break-words">{feedback}</p>
     </div>
   );
-
-  const handleDragEnd = (event: any) => {
+  const handleDragEnd = event => {
     const { active, over } = event;
-
     if (!over || active.id === over.id) return;
 
-    const oldIndex = selectedSimulations.findIndex(
-      simulation => simulation.scenarioId === active.id,
-    );
-    const newIndex = selectedSimulations.findIndex(simulation => simulation.scenarioId === over.id);
+    const oldIndex = selectedSimulations.findIndex(i => String(i.scenarioId) === active.id);
+    const newIndex = selectedSimulations.findIndex(i => String(i.scenarioId) === over.id);
 
-    const reordered = arrayMove(selectedSimulations, oldIndex, newIndex).map((item, idx) => ({
+    const newOrder = arrayMove(selectedSimulations, oldIndex, newIndex).map((item, index) => ({
       ...item,
-      order: idx + 1,
+      order: index + 1,
     }));
 
-    setSelectedSimulations(reordered);
+    setSelectedSimulations(newOrder);
   };
 
   const renderSimulationList = () => (
     <DndContext collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
       <SortableContext
-        items={selectedSimulations.map(s => s.scenarioId)}
+        items={selectedSimulations.map(s => String(s.scenarioId))}
         strategy={verticalListSortingStrategy}
       >
         {selectedSimulations.map((simulation, index) => (
@@ -182,15 +178,13 @@ export const SimulationSelectionModal: FC<SimulationProps> = ({
             key={simulation.scenarioId}
             simulation={simulation}
             index={index}
-            isLast={index === selectedSimulations.length - 1}
             selectedSimulations={selectedSimulations}
             setSelectedSimulations={setSelectedSimulations}
             openMessageIndex={openMessageIndex}
             setOpenMessageIndex={setOpenMessageIndex}
             handleMessageClick={handleMessageClick}
             renderMessage={renderMessage}
-            addButtonRef={element => (addMessageButtonRefs.current[index] = element)}
-            anchorElement={addMessageButtonRefs.current[index]}
+            addButtonRef={messageButtonRefs}
           />
         ))}
       </SortableContext>

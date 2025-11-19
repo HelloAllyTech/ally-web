@@ -53,6 +53,7 @@ export const CreatePath: FC = () => {
   const [currentStep, setCurrentStep] = useState(PATH_CREATOR_STEP_IDS.basicInfo);
   const [showDiscardPopup, setShowDiscardPopup] = useState(false);
   const [showSimulationModal, setShowSimulationModal] = useState(false);
+  const [selectedSimulations, setSelectedSimulations] = useState<GetScenarioType[]>([]);
 
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -71,10 +72,6 @@ export const CreatePath: FC = () => {
     }));
   };
 
-  const [selectedSimulations, setSelectedSimulations] = useState<GetScenarioType[]>(
-    formatScenarios(individualPath?.scenarios) ?? [],
-  );
-
   const formMethods = useForm({
     mode: "onChange",
     reValidateMode: "onChange",
@@ -91,10 +88,12 @@ export const CreatePath: FC = () => {
       getScenarioPathByIdQuery(pathId);
     }
   }, [pathId, getScenarioPathByIdQuery]);
-
   useEffect(() => {
     if (individualPath) {
       formMethods.reset(individualPath);
+    }
+    if (individualPath?.scenarios) {
+      setSelectedSimulations(formatScenarios(individualPath.scenarios));
     }
   }, [individualPath, formMethods]);
   // Watch all form values to check mandatory fields
@@ -138,6 +137,7 @@ export const CreatePath: FC = () => {
       status,
     };
     let response;
+
     if (pathId) {
       response = await updateSimulationPathByIdQuery({
         id: pathId,

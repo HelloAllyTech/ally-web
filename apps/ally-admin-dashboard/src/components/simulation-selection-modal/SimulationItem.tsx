@@ -1,8 +1,9 @@
-import { FC, useRef } from "react";
+import { FC } from "react";
 
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { Tooltip } from "@mui/material";
+import { motion, AnimatePresence } from "framer-motion";
 
 import { CloseRed, DragIndicator, InfoIcon, Plus } from "@assets";
 import { en, toolTipStyles } from "@constants";
@@ -14,17 +15,16 @@ import { CustomImage } from "../custom-image";
 export const SimulationCardItem: FC<SimulationCardItemProps> = ({
   simulation,
   index,
-  isLast,
   selectedSimulations,
   setSelectedSimulations,
   openMessageIndex,
   setOpenMessageIndex,
   handleMessageClick,
   renderMessage,
+  addButtonRef,
 }) => {
-  const buttonRef = useRef<HTMLButtonElement>(null);
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
-    id: simulation.scenarioId,
+    id: String(simulation.scenarioId),
   });
 
   const style = {
@@ -142,48 +142,66 @@ export const SimulationCardItem: FC<SimulationCardItemProps> = ({
           </div>
         </div>
       </div>
-
       {/* Add Message / Render Message Below the Card */}
-      {!isLast && (
-        <>
-          {!simulation.messageTitle ? (
-            <div className="relative flex justify-center my-4">
-              <button
-                className="border border-dashed rounded-md hover:bg-secondary-50 flex gap-2 text-typography-500 p-3"
-                ref={buttonRef}
-                onClick={() => handleMessageClick(index)}
-                type="button"
-              >
-                <Plus className="mt-1" />
-                {en.simulation.addMessage}
-              </button>
-            </div>
-          ) : (
-            renderMessage(simulation.messageTitle, simulation.feedback, index)
-          )}
+      <>
+        {!simulation.messageTitle ? (
+          <div className="relative flex justify-center my-4">
+            <button
+              className="border border-dashed rounded-md hover:bg-secondary-50 flex gap-2 text-typography-500 p-3"
+              ref={element => (addButtonRef.current[index] = element)}
+              onClick={() => handleMessageClick(index)}
+              type="button"
+            >
+              <Plus className="mt-1" />
+              {en.simulation.addMessage}
+            </button>
+          </div>
+        ) : (
+          <AnimatePresence>
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: -10 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: -10 }}
+              transition={{ duration: 0.25, ease: "easeOut" }}
+            >
+              {renderMessage(simulation.messageTitle, simulation.feedback, index)}
+            </motion.div>
+          </AnimatePresence>
+        )}
 
-          {openMessageIndex === index && (
-            <div className="relative">
-              <div className="fixed inset-0 bg-black/10 z-10" onClick={handleCloseModal} />
-              <div
-                className="absolute left-1/2 -translate-x-1/2 z-20"
-                onClick={e => e.stopPropagation()}
-              >
-                <AddMessageModal
-                  handleCancel={handleCloseModal}
-                  initialValues={{
-                    messageTitle: simulation.messageTitle || "",
-                    feedback: simulation.feedback || "",
-                  }}
-                  handlePrimaryAction={handleAddMessage}
-                  isOpen={true}
-                  anchorElement={buttonRef.current}
-                />
-              </div>
+        {openMessageIndex === index && (
+          <div className="relative">
+            <div className="fixed inset-0 bg-black/10 z-10" onClick={handleCloseModal} />
+            <div
+              className="absolute left-1/2 -translate-x-1/2 z-20"
+              onClick={e => e.stopPropagation()}
+            >
+              {" "}
+              <AnimatePresence>
+                <motion.div
+                  className="absolute left-1/2 -translate-x-1/2 z-20"
+                  initial={{ opacity: 0, scale: 0.8, y: -20 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.8, y: -20 }}
+                  transition={{ duration: 0.25, ease: "easeOut" }}
+                  onClick={e => e.stopPropagation()}
+                >
+                  <AddMessageModal
+                    handleCancel={handleCloseModal}
+                    initialValues={{
+                      messageTitle: simulation.messageTitle || "",
+                      feedback: simulation.feedback || "",
+                    }}
+                    handlePrimaryAction={handleAddMessage}
+                    isOpen={true}
+                    anchorElement={addButtonRef.current[index]}
+                  />
+                </motion.div>
+              </AnimatePresence>
             </div>
-          )}
-        </>
-      )}
+          </div>
+        )}
+      </>
     </>
   );
 };
