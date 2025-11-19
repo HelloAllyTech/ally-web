@@ -144,7 +144,7 @@ export const CombinationTriggerConditions: React.FC<CombinationTriggerConditions
               searchPlaceholder="Search events..."
               isSearchable={true}
               disabled={false}
-              className="min-w-[200px]"
+              className="min-w-[150px] max-w-[170px]"
               isInTable={isInTable}
             />
             <span className="text-sm text-gray-500">has</span>
@@ -180,7 +180,7 @@ export const CombinationTriggerConditions: React.FC<CombinationTriggerConditions
               searchPlaceholder="Search events..."
               isSearchable={true}
               disabled={false}
-              className="min-w-[200px]"
+              className="min-w-[150px] max-w-[170px]"
               isInTable={isInTable}
             />
             <span className="text-sm text-gray-500">has</span>
