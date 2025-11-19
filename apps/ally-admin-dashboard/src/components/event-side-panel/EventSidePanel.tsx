@@ -1,7 +1,12 @@
 import React, { useState, useCallback, useEffect } from "react";
 
 import { DoubleArrowRight, Trash } from "@assets";
-import { AutoExpandableTextarea, EmojiPickerComponent, TriggerConditions } from "@components";
+import {
+  ActionConfirmationPopup,
+  AutoExpandableTextarea,
+  EmojiPickerComponent,
+  TriggerConditions,
+} from "@components";
 import { NumberInput } from "@components/notion-table";
 import { en, EVENT_DETECTION_TYPES } from "@constants";
 import { useDebounce } from "@hooks";
@@ -68,6 +73,7 @@ export const EventSidePanel: React.FC<EventSidePanelProps> = ({
   onUpdate,
 }) => {
   const [formData, setFormData] = useState(selectedEvent);
+  const [showConfirmationModal, setShowConfirmationModal] = useState(false);
 
   useEffect(() => {
     setFormData(selectedEvent);
@@ -79,6 +85,7 @@ export const EventSidePanel: React.FC<EventSidePanelProps> = ({
 
   useEffect(() => {
     debouncedUpdate();
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [formData]);
 
@@ -130,16 +137,21 @@ export const EventSidePanel: React.FC<EventSidePanelProps> = ({
     ) {
       const expression = formData.triggerCondition.expression;
       if (!areBothEventsSelected(expression)) {
-        const shouldClose = window.confirm(
-          "Please select both event conditions for the combination event before closing for the event to be saved.Are you sure you want to close?",
-        );
-        if (!shouldClose) {
-          return; // Prevent closing if user cancels
-        }
+        setShowConfirmationModal(true);
+        return; // Show modal instead of closing
       }
     }
     onClose();
   }, [formData, onClose]);
+
+  const handleConfirmClose = useCallback(() => {
+    setShowConfirmationModal(false);
+    onClose();
+  }, [onClose]);
+
+  const handleCancelClose = useCallback(() => {
+    setShowConfirmationModal(false);
+  }, []);
 
   if (!isOpen) return null;
 
@@ -222,6 +234,21 @@ export const EventSidePanel: React.FC<EventSidePanelProps> = ({
           </div>
         </div>
       </div>
+
+      <ActionConfirmationPopup
+        isOpen={showConfirmationModal}
+        onClose={handleCancelClose}
+        title="Incomplete Combination Event"
+        description="Please select both event conditions for the combination event to be saved. Are you sure you want to close?"
+        primaryButton={{
+          label: "Close Anyway",
+          onClick: handleConfirmClose,
+        }}
+        secondaryButton={{
+          label: "Go Back",
+          onClick: handleCancelClose,
+        }}
+      />
     </div>
   );
 };
