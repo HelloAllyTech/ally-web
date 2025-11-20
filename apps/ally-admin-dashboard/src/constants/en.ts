@@ -249,5 +249,6 @@ export const en = {
     access: "Access",
     enabled: "Enabled",
     disabled: "Disabled",
+    toggleAccess: (title: string) => `Toggle access for ${title}`,
   },
 };

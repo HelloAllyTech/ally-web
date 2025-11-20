@@ -41,7 +41,7 @@ export const SimulationAndPathToggleCard: React.FC<SimulationAndPathToggleCardPr
         <ToggleSwitch
           enabled={hasAccess}
           onChange={onToggleAccess}
-          label={`Toggle access for ${simulation.title}`}
+          label={en.userManagement.toggleAccess(simulation.title)}
         />
         <span className={`text-sm ${hasAccess ? "text-typography-900" : "text-typography-600"}`}>
           {hasAccess ? en.userManagement.enabled : en.userManagement.disabled}

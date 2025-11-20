@@ -31,6 +31,7 @@ export const SimulationsTab: FC<SimulationsTabProps> = ({
     order: SORT_ORDER.DESC,
     search: searchValue,
     tenantId: organizationId,
+    status: SimulationStatus.ACTIVE,
   };
 
   const {
@@ -42,13 +43,12 @@ export const SimulationsTab: FC<SimulationsTabProps> = ({
   useEffect(() => {
     if (!simulationsResponse) return;
     const nextData = simulationsResponse.data ?? [];
-    const published = nextData.filter(simulation => simulation.status === SimulationStatus.ACTIVE);
     if (simulationsOffset === 0) {
-      setSimulations(published);
+      setSimulations(nextData);
     } else {
       setSimulations(prev => {
         const existingIds = new Set(prev.map(simulation => simulation.id));
-        const newItems = published.filter(simulation => !existingIds.has(simulation.id));
+        const newItems = nextData.filter(simulation => !existingIds.has(simulation.id));
         return [...prev, ...newItems];
       });
     }
@@ -56,7 +56,7 @@ export const SimulationsTab: FC<SimulationsTabProps> = ({
 
   // Separate effect to notify parent of loaded simulations
 
-  React.useEffect(() => {
+  useEffect(() => {
     setSimulationsOffset(0);
   }, [searchValue]);
 

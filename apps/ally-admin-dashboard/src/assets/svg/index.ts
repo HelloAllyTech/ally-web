@@ -34,6 +34,7 @@ import User from "./user.svg?react";
 import Users from "./users.svg?react";
 import VideoCamera from "./videoCamera.svg?react";
 import WandStars from "./wandStars.svg?react";
+import Dot from "../dot.svg?react";
 
 export {
   ArrowDown,
@@ -72,4 +73,5 @@ export {
   Pathway,
   Copy,
   BookWhite,
+  Dot,
 };

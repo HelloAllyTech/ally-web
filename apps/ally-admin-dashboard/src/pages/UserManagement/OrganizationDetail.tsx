@@ -8,7 +8,7 @@ import {
   useEnableSimulationMutation,
   useLazyGetTenantByIdQuery,
 } from "@api";
-import { ArrowDown } from "@assets";
+import { ArrowDown, Dot } from "@assets";
 import { Tabs, OrganizationDetailLoader, SimulationsTab, PathTab } from "@components";
 import { en, ROUTES } from "@constants";
 import { Tenant } from "@types";
@@ -128,7 +128,9 @@ export const OrganizationDetail: FC = () => {
               <span>
                 {en.userManagement.code}: {organization.code}
               </span>
-              <span>•</span>
+              <span>
+                <Dot />
+              </span>
               <span>
                 {organization.userCount} {en.userManagement.users.toLowerCase()}
               </span>
