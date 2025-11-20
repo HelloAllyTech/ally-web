@@ -22,6 +22,8 @@ import {
   GetSimulationTranscriptRequest,
   SubmitSimulationFeedbackRequest,
   SubmitSimulationFeedbackResponse,
+  GetScenarioPathwaysResponse,
+  ScenarioPathwayDetails,
 } from "@types";
 
 import { baseAPI } from "./baseAPI";
@@ -50,6 +52,33 @@ const learnAPI = baseAPI.injectEndpoints({
         url: ApiEndpoints.LEARN.GET_SCENARIO(params.scenarioId),
         method: HttpMethod.GET,
         params,
+      }),
+    }),
+
+    /**
+     * Get all scenario pathways (playlists of scenarios).
+     * @returns {Promise<GetScenarioPathwaysResponse>} List of scenario pathways
+     */
+    getScenarioPathways: builder.query<
+      GetScenarioPathwaysResponse,
+      { offset?: number; limit?: number }
+    >({
+      query: (params = {}) => ({
+        url: ApiEndpoints.LEARN.GET_SCENARIO_PATHWAYS,
+        method: HttpMethod.GET,
+        params,
+      }),
+    }),
+
+    /**
+     * Get details for a specific scenario pathway by id.
+     * @param {string} pathwayId - Pathway identifier
+     * @returns {Promise<ScenarioPathwayDetails>} Pathway details with scenarios
+     */
+    getScenarioPathwayDetails: builder.query<ScenarioPathwayDetails, string>({
+      query: pathwayId => ({
+        url: ApiEndpoints.LEARN.GET_SCENARIO_PATHWAY_DETAILS(pathwayId),
+        method: HttpMethod.GET,
       }),
     }),
 
@@ -169,6 +198,8 @@ export const {
   useEndSimulationMutation,
   useGetScenarioQuery,
   useGetScenariosQuery,
+  useGetScenarioPathwaysQuery,
+  useGetScenarioPathwayDetailsQuery,
   useStartSimulationMutation,
   useGetSimulationLogsQuery,
   useGetAdminSimulationLogsQuery,

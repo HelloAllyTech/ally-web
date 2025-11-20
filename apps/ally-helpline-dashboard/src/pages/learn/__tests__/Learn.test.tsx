@@ -20,10 +20,12 @@ import { describe, expect, it, vi, beforeEach } from "vitest";
 
 import { Learn } from "../Learn";
 
-// Mock the API hook
+// Mock the API hooks
 const mockUseGetScenariosQuery = vi.fn();
+const mockUseGetScenarioPathwaysQuery = vi.fn();
 vi.mock("@api", () => ({
   useGetScenariosQuery: () => mockUseGetScenariosQuery(),
+  useGetScenarioPathwaysQuery: () => mockUseGetScenarioPathwaysQuery(),
 }));
 
 // Mock the useSimulationCredits hook
@@ -32,7 +34,7 @@ vi.mock("@hooks", () => ({
   useSimulationCredits: () => mockUseSimulationCredits(),
 }));
 
-// Mock the ScenarioCard component
+// Mock the components
 vi.mock("@components", () => ({
   ScenarioCard: ({
     coverImage,
@@ -58,6 +60,19 @@ vi.mock("@components", () => ({
       {isComingSoon && <span>Coming Soon</span>}
     </div>
   ),
+  TabGroup: ({ tabs, value, onChange }: any) => (
+    <div data-testid="tab-group">
+      {tabs.map((tab: any) => (
+        <button
+          key={tab.value}
+          onClick={() => onChange({}, tab.value)}
+          className={value === tab.value ? "active" : ""}
+        >
+          {tab.label}
+        </button>
+      ))}
+    </div>
+  ),
 }));
 
 // Mock the Bolt asset
@@ -81,12 +96,20 @@ vi.mock("framer-motion", () => ({
 
 // Mock react-router-dom
 const mockNavigate = vi.fn();
-vi.mock("react-router-dom", () => ({
-  useNavigate: () => mockNavigate,
-  BrowserRouter: ({ children }: { children: React.ReactNode }) => (
-    <div data-testid="browser-router">{children}</div>
-  ),
-}));
+const mockSearchParams = new URLSearchParams();
+const mockSetSearchParams = vi.fn();
+
+vi.mock("react-router-dom", async () => {
+  const actual = await vi.importActual("react-router-dom");
+  return {
+    ...actual,
+    useNavigate: () => mockNavigate,
+    useSearchParams: () => [mockSearchParams, mockSetSearchParams],
+    BrowserRouter: ({ children }: { children: React.ReactNode }) => (
+      <div data-testid="browser-router">{children}</div>
+    ),
+  };
+});
 
 // Mock constants
 vi.mock("../constants", () => ({
@@ -139,8 +162,14 @@ const TestWrapper = ({
 describe("Learn Component", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockSearchParams.set("tab", "simulations");
     mockUseGetScenariosQuery.mockReturnValue({
       data: [],
+      isLoading: false,
+      refetch: vi.fn(),
+    });
+    mockUseGetScenarioPathwaysQuery.mockReturnValue({
+      data: { data: [] },
       isLoading: false,
       refetch: vi.fn(),
     });
@@ -833,17 +862,35 @@ describe("Learn Component", () => {
   });
 
   /**
-   * TEST GROUP: Scenarios Label
-   * Verifies the scenarios label is displayed
+   * TEST GROUP: Tab Navigation
+   * Verifies tab navigation functionality
    */
-  describe("Scenarios Label", () => {
-    it("should display SCENARIOS label", () => {
+  describe("Tab Navigation", () => {
+    it("should render tab group", () => {
       render(
         <TestWrapper>
           <Learn />
         </TestWrapper>,
       );
-      expect(screen.getByText("SCENARIOS")).not.toBeNull();
+      expect(screen.getByTestId("tab-group")).not.toBeNull();
+    });
+
+    it("should render Simulations tab", () => {
+      render(
+        <TestWrapper>
+          <Learn />
+        </TestWrapper>,
+      );
+      expect(screen.getByText("Simulations")).not.toBeNull();
+    });
+
+    it("should render Path way tab", () => {
+      render(
+        <TestWrapper>
+          <Learn />
+        </TestWrapper>,
+      );
+      expect(screen.getByText("Path way")).not.toBeNull();
     });
   });
 });
