@@ -18,6 +18,7 @@ interface SimulationsTabProps {
 }
 
 export const SimulationsTab: FC<SimulationsTabProps> = ({
+  organizationId,
   searchValue,
   onSearchChange,
   simulationAccess,
@@ -33,6 +34,7 @@ export const SimulationsTab: FC<SimulationsTabProps> = ({
     sortBy: SORT_BY.UPDATED_AT,
     order: SORT_ORDER.DESC,
     search: searchValue,
+    tenantId: organizationId,
   };
 
   const {

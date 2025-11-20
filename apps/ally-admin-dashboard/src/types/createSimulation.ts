@@ -87,6 +87,7 @@ export interface GetSimulationsQueryParams {
   sortBy?: string;
   order?: string;
   search?: string;
+  tenantId?: string;
 }
 export interface GetSimulationsResponse {
   data: Simulation[];

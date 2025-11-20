@@ -142,7 +142,7 @@ export const CreateSimulation: FC = () => {
       try {
         await deleteCoverImage({ coverImageUrl: adminSimulationByIdData.coverImageUrl }).unwrap();
       } catch {
-        toast.error("Failed to delete cover image. Please try again.");
+        toast.error(en.errors.fileUploadFailed);
       }
     }
 

@@ -18,6 +18,7 @@ interface PathTabProps {
 }
 
 export const PathTab: FC<PathTabProps> = ({
+  organizationId,
   searchValue,
   onSearchChange,
   pathAccess,
@@ -31,6 +32,7 @@ export const PathTab: FC<PathTabProps> = ({
     limit: PATHS_PAGE_SIZE,
     offset: pathsOffset,
     search: searchValue,
+    tenantId: organizationId,
   };
 
   const {

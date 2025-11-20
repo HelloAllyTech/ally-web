@@ -120,7 +120,7 @@ export const OrganizationDetail: FC = () => {
         });
       }
     } catch {
-      toast.error("Failed to update path access.");
+      toast.error(en.errors.pathUpdateFailed);
     }
   };
 

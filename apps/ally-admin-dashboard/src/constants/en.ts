@@ -29,6 +29,7 @@ export const en = {
     titleIsRequired: "Title should be filled to save as draft",
     failedSimulationChange: "Failed to save simulation changes!",
     failedSimulationCreation: "Failed to create simulation. Please try again.",
+    pathUpdateFailed: "Failed to update path access.",
   },
   accessDenied: {
     title: "This page is not accessible",

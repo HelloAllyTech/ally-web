@@ -149,7 +149,7 @@ export const CreatePath: FC = () => {
       try {
         await deleteCoverImage({ coverImageUrl: individualPath.coverImageUrl }).unwrap();
       } catch {
-        toast.error("Failed to delete cover image. Please try again.");
+        toast.error(en.errors.fileUploadFailed);
       }
     }
 

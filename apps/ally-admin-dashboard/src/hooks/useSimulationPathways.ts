@@ -34,7 +34,6 @@ export const useSimulationPathways = ({ selectedFilters }: UseSimulationPathways
     offset: pathwaysOffset,
     limit: PATHWAYS_PAGE_SIZE,
     search: "",
-    tenantId: "",
   });
 
   const [deletePathwayById] = useDeleteScenarioPathByIdMutation();
