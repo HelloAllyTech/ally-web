@@ -1,16 +1,17 @@
 import { useState, useEffect, FC } from "react";
 
 import { useParams, useNavigate, useSearchParams } from "react-router-dom";
+import { toast } from "sonner";
 
-import { useGetTenantsQuery } from "@api";
+import {
+  useDisableSimulationMutation,
+  useEnableSimulationMutation,
+  useLazyGetTenantByIdQuery,
+} from "@api";
 import { ArrowDown } from "@assets";
 import { Tabs, OrganizationDetailLoader, SimulationsTab, PathTab } from "@components";
 import { en, ROUTES } from "@constants";
 import { Tenant } from "@types";
-import { isNonEmptyArray } from "@utils";
-
-const DEFAULT_LIMIT = 1000;
-const DEFAULT_OFFSET = 0;
 
 enum TAB_IDS {
   SIMULATIONS = "simulations",
@@ -25,8 +26,6 @@ const tabs = [
 export const OrganizationDetail: FC = () => {
   const [organization, setOrganization] = useState<Tenant | null>(null);
   const [searchValue, setSearchValue] = useState("");
-  const [simulationAccess, setSimulationAccess] = useState<Record<string, boolean>>({});
-  const [pathAccess, setPathAccess] = useState<Record<string, boolean>>({});
 
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -36,58 +35,57 @@ export const OrganizationDetail: FC = () => {
   const activeTab = (searchParams.get("tab") as TAB_IDS) || TAB_IDS.SIMULATIONS;
 
   // Fetch organization data
-  const { data: tenantsResponse, isLoading: isTenantsLoading } = useGetTenantsQuery({
-    limit: DEFAULT_LIMIT,
-    offset: DEFAULT_OFFSET,
-  });
+  const [getTenantById, { data: tenantsResponse, isLoading: isTenantsLoading }] =
+    useLazyGetTenantByIdQuery();
+  const [enableSimulation] = useEnableSimulationMutation();
+  const [disableSimulation] = useDisableSimulationMutation();
+  const [enablePathAccess] = useEnableSimulationMutation();
+  const [disablePathAccess] = useDisableSimulationMutation();
 
   useEffect(() => {
-    if (isNonEmptyArray(tenantsResponse?.data) && id) {
-      const found = tenantsResponse.data.find(tenant => tenant.id === id);
-      if (found) setOrganization(found);
+    if (id) {
+      getTenantById(id);
     }
-  }, [tenantsResponse, id]);
+  }, [id, getTenantById]);
 
-  const handleToggleAccess = (simulationId: number, enabled: boolean) => {
-    setSimulationAccess(prev => ({
-      ...prev,
-      [simulationId]: enabled,
-    }));
-    // TODO: Call API to update simulation access for this organization
+  useEffect(() => {
+    setOrganization(tenantsResponse);
+  }, [tenantsResponse]);
+
+  const handleToggleAccess = async (simulationId: number, enabled: boolean) => {
+    try {
+      if (enabled) {
+        await enableSimulation({
+          tenantId: id ?? "",
+          scenarioIds: [simulationId],
+        });
+      } else {
+        await disableSimulation({
+          tenantId: id ?? "",
+          scenarioIds: [simulationId],
+        });
+      }
+    } catch {
+      toast.error("Failed to update access.");
+    }
   };
 
-  const handleSimulationsLoaded = (simulationIds: string[]) => {
-    setSimulationAccess(prev => {
-      const newAccess: Record<string, boolean> = {};
-      simulationIds.forEach(id => {
-        if (!(id in prev)) {
-          // TO-DO: fetch access state from API
-          newAccess[id] = false; // Default to false, can be fetched from API
-        }
-      });
-      return { ...prev, ...newAccess };
-    });
-  };
-
-  const handleTogglePathAccess = (pathId: number, enabled: boolean) => {
-    setPathAccess(prev => ({
-      ...prev,
-      [pathId]: enabled,
-    }));
-    // TODO: Call API to update path access for this organization
-  };
-
-  const handlePathsLoaded = (pathIds: string[]) => {
-    setPathAccess(prev => {
-      const newAccess: Record<string, boolean> = {};
-      pathIds.forEach(id => {
-        if (!(id in prev)) {
-          // TO-DO: fetch access state from API
-          newAccess[id] = false; // Default to false, can be fetched from API
-        }
-      });
-      return { ...prev, ...newAccess };
-    });
+  const handleTogglePathAccess = async (pathId: number, enabled: boolean) => {
+    try {
+      if (enabled) {
+        await enablePathAccess({
+          tenantId: id ?? "",
+          scenarioIds: [pathId],
+        });
+      } else {
+        await disablePathAccess({
+          tenantId: id ?? "",
+          scenarioIds: [pathId],
+        });
+      }
+    } catch {
+      toast.error(en.errors.pathUpdateFailed);
+    }
   };
 
   // Show skeleton loader while fetching organization data
@@ -98,7 +96,7 @@ export const OrganizationDetail: FC = () => {
     // Only show "not found" if query has finished but organization wasn't found
     return (
       <div className="flex items-center justify-center py-12">
-        <span className="text-typography-600">Organization not found</span>
+        <span className="text-typography-600">{en.errors.OrganizationNotFound}</span>
       </div>
     );
   }
@@ -154,18 +152,14 @@ export const OrganizationDetail: FC = () => {
             organizationId={id ?? ""}
             searchValue={searchValue}
             onSearchChange={setSearchValue}
-            simulationAccess={simulationAccess}
             onToggleAccess={handleToggleAccess}
-            onSimulationsLoaded={handleSimulationsLoaded}
           />
         ) : (
           <PathTab
             organizationId={id ?? ""}
             searchValue={searchValue}
             onSearchChange={setSearchValue}
-            pathAccess={pathAccess}
             onToggleAccess={handleTogglePathAccess}
-            onPathsLoaded={handlePathsLoaded}
           />
         )}
       </div>

@@ -3,7 +3,7 @@ import React, { useEffect, useState, FC } from "react";
 import { useGetScenarioPathsQuery } from "@api";
 import { ListToolbar, EmptyState, ToggleSwitch, CustomImage } from "@components";
 import { en } from "@constants";
-import { ScenarioPath } from "@types";
+import { ScenarioPath, SimulationStatus } from "@types";
 import { isNonEmptyArray } from "@utils";
 
 const PATHS_PAGE_SIZE = 30;
@@ -12,17 +12,14 @@ interface PathTabProps {
   organizationId?: string;
   searchValue: string;
   onSearchChange: (value: string) => void;
-  pathAccess: Record<string, boolean>;
   onToggleAccess: (pathId: number, enabled: boolean) => void;
-  onPathsLoaded?: (pathIds: string[]) => void;
 }
 
 export const PathTab: FC<PathTabProps> = ({
+  organizationId,
   searchValue,
   onSearchChange,
-  pathAccess,
   onToggleAccess,
-  onPathsLoaded,
 }) => {
   const [pathsOffset, setPathsOffset] = useState(0);
   const [paths, setPaths] = useState<ScenarioPath[]>([]);
@@ -31,6 +28,7 @@ export const PathTab: FC<PathTabProps> = ({
     limit: PATHS_PAGE_SIZE,
     offset: pathsOffset,
     search: searchValue,
+    tenantId: organizationId,
   };
 
   const {
@@ -42,23 +40,17 @@ export const PathTab: FC<PathTabProps> = ({
   useEffect(() => {
     if (!pathsResponse) return;
     const nextData = pathsResponse.data ?? [];
+    const published = nextData.filter(path => path.status === SimulationStatus.ACTIVE);
     if (pathsOffset === 0) {
-      setPaths(nextData);
+      setPaths(published);
     } else {
       setPaths(prev => {
         const existingIds = new Set(prev.map(p => p.id));
-        const newItems = nextData.filter(p => !existingIds.has(p.id));
+        const newItems = published.filter(p => !existingIds.has(p.id));
         return [...prev, ...newItems];
       });
     }
   }, [pathsResponse, pathsOffset]);
-
-  // Separate effect to notify parent of loaded paths
-  useEffect(() => {
-    if (isNonEmptyArray(paths) && onPathsLoaded) {
-      onPathsLoaded(paths.map(path => path.id.toString()));
-    }
-  }, [paths.length]);
 
   useEffect(() => {
     setPathsOffset(0);
@@ -112,14 +104,14 @@ export const PathTab: FC<PathTabProps> = ({
         {/* Toggle and Status */}
         <div className="flex items-center gap-3 flex-shrink-0 min-w-[140px] justify-end">
           <ToggleSwitch
-            enabled={pathAccess[path.id] ?? false}
+            enabled={path.isAssignedToTenant ?? false}
             onChange={enabled => onToggleAccess(path.id, enabled)}
             label={`Toggle access for ${path.title}`}
           />
           <span
-            className={`text-sm ${pathAccess[path.id] ? "text-typography-900" : "text-typography-600"}`}
+            className={`text-sm ${path.isAssignedToTenant ? "text-typography-900" : "text-typography-600"}`}
           >
-            {pathAccess[path.id] ? en.userManagement.enabled : en.userManagement.disabled}
+            {path.isAssignedToTenant ? en.userManagement.enabled : en.userManagement.disabled}
           </span>
         </div>
       </div>

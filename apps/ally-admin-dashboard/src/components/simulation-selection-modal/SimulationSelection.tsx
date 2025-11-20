@@ -1,17 +1,19 @@
-import { FC, useState, useEffect, useMemo, useRef } from "react";
+import { FC, useState, useEffect, useRef } from "react";
 
 import { DndContext, closestCenter } from "@dnd-kit/core";
 import { SortableContext, verticalListSortingStrategy, arrayMove } from "@dnd-kit/sortable";
 
+import { useGetSimulationsQuery } from "@api";
 import { Search } from "@assets";
 import { en } from "@constants";
-import { useSimulations } from "@hooks";
-import { GetScenarioType, Simulation } from "@types";
+import { GetScenarioType, Simulation, SimulationStatus } from "@types";
+import { isNonEmptyArray } from "@utils";
 
 import { Button } from "../button";
 import { EmptyState } from "../empty-state";
 import { SimulationCardItem } from "./SimulationItem";
 import { CustomImage } from "../custom-image";
+import { ButtonVariant } from "../types";
 
 interface SimulationProps {
   showSimulation: boolean;
@@ -20,6 +22,9 @@ interface SimulationProps {
   selectedSimulations: GetScenarioType[];
   setSelectedSimulations: (simulations: GetScenarioType[]) => void;
 }
+
+const SIMULATIONS_PAGE_SIZE = 1000;
+const OFFSET = 0;
 
 export const SimulationSelectionModal: FC<SimulationProps> = ({
   showSimulation,
@@ -33,7 +38,16 @@ export const SimulationSelectionModal: FC<SimulationProps> = ({
   const [openMessageIndex, setOpenMessageIndex] = useState<number | null>(null);
 
   const messageButtonRefs = useRef<(HTMLButtonElement | null)[]>([]);
-  const { simulationsResponse } = useSimulations({});
+
+  const simulationParams = {
+    limit: SIMULATIONS_PAGE_SIZE,
+    offset: OFFSET,
+    search: searchQuery,
+    status: SimulationStatus.ACTIVE,
+  };
+
+  const { data: simulationsResponse } = useGetSimulationsQuery(simulationParams);
+  const simulationList = simulationsResponse?.data ?? [];
 
   const mapToGetScenarioType = (simulation: Simulation, order: number) => {
     return {
@@ -47,18 +61,6 @@ export const SimulationSelectionModal: FC<SimulationProps> = ({
       feedback: "",
     };
   };
-
-  const filteredSimulations = useMemo(() => {
-    if (!simulationsResponse?.data) return [];
-    if (!searchQuery.trim()) return simulationsResponse.data;
-
-    const query = searchQuery.toLowerCase();
-    return simulationsResponse.data.filter(
-      simulation =>
-        simulation.title.toLowerCase().includes(query) ||
-        simulation.description.toLowerCase().includes(query),
-    );
-  }, [simulationsResponse?.data, searchQuery]);
 
   const toggleSelection = () => {
     setSelectedSimulations(checkedSimulation);
@@ -114,9 +116,7 @@ export const SimulationSelectionModal: FC<SimulationProps> = ({
   }, [selectedSimulations, formMethods]);
 
   useEffect(() => {
-    if (showSimulation) {
-      setCheckedSimulation(selectedSimulations);
-    }
+    if (showSimulation) setCheckedSimulation(selectedSimulations);
   }, [showSimulation, selectedSimulations]);
 
   const renderEmptyScreen = () => (
@@ -171,7 +171,7 @@ export const SimulationSelectionModal: FC<SimulationProps> = ({
   const renderSimulationList = () => (
     <DndContext collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
       <SortableContext
-        items={selectedSimulations.map(s => String(s.scenarioId))}
+        items={selectedSimulations.map(scenario => String(scenario.scenarioId))}
         strategy={verticalListSortingStrategy}
       >
         {selectedSimulations.map((simulation, index) => (
@@ -198,7 +198,7 @@ export const SimulationSelectionModal: FC<SimulationProps> = ({
       <div className="fixed inset-0 flex items-center justify-center px-4">
         <div
           className="relative bg-white rounded-lg shadow-xl max-w-xl w-full animate-in fade-in-0 zoom-in-95 duration-200 px-6 py-4"
-          onClick={e => e.stopPropagation()}
+          onClick={event => event.stopPropagation()}
         >
           <h1 className="text-lg font-semibold">{en.simulation.addSimulationToPath}</h1>
 
@@ -214,12 +214,12 @@ export const SimulationSelectionModal: FC<SimulationProps> = ({
           </div>
 
           <div className="mt-4 max-h-80 overflow-y-auto">
-            {filteredSimulations.length === 0 ? (
+            {!isNonEmptyArray(simulationList) ? (
               <p className="text-center text-typography-600 py-8">
                 {en.simulation.noSimulationFound}
               </p>
             ) : (
-              filteredSimulations.map(simulation => {
+              simulationList?.map(simulation => {
                 const isSelected = checkedSimulation.some(
                   item => item.scenarioId === simulation.id,
                 );
@@ -238,7 +238,7 @@ export const SimulationSelectionModal: FC<SimulationProps> = ({
                       onChange={() =>
                         handleCheckBoxClick(mapToGetScenarioType(simulation, nextOrder))
                       }
-                      onClick={e => e.stopPropagation()}
+                      onClick={event => event.stopPropagation()}
                       className="cursor-pointer"
                     />
                     <div className="w-20 h-16 rounded-md overflow-hidden flex-shrink-0">
@@ -259,7 +259,7 @@ export const SimulationSelectionModal: FC<SimulationProps> = ({
 
           <div className="mt-4 flex justify-end gap-3 border-t pt-3">
             <Button
-              variant="secondary"
+              variant={ButtonVariant.SECONDARY}
               className="w-1/3 !text-base"
               onClick={toggleSimulationModal}
             >

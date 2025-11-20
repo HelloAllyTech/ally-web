@@ -12,6 +12,7 @@ import {
   UserRoles,
   GetCreditResponse,
   AddCreditBody,
+  disableSuccessResponse,
 } from "@types";
 
 const userManagementAPI = baseAPI.injectEndpoints({
@@ -22,6 +23,12 @@ const userManagementAPI = baseAPI.injectEndpoints({
         params,
       }),
       providesTags: [TAG_TYPES.TENANTS],
+    }),
+
+    getTenantById: builder.query<Tenant, string>({
+      query: id => ({
+        url: `${ApiEndpoints.USER_MANAGEMENT.TENANTS_BY_ID(id)}`,
+      }),
     }),
 
     createTenant: builder.mutation<Tenant, CreateTenantBody>({
@@ -115,11 +122,57 @@ const userManagementAPI = baseAPI.injectEndpoints({
       }),
       invalidatesTags: [TAG_TYPES.USERS],
     }),
+
+    enableSimulation: builder.mutation<
+      { success: boolean },
+      { tenantId: string; scenarioIds: number[] }
+    >({
+      query: ({ tenantId, scenarioIds }) => ({
+        url: `${ApiEndpoints.SIMULATION_STUDIO.SIMULATION_TENANT_VISIBILITY(tenantId)}`,
+        method: HttpMethod.POST,
+        body: { scenarioIds },
+      }),
+      invalidatesTags: [TAG_TYPES.SIMULATION],
+    }),
+
+    disableSimulation: builder.mutation<
+      disableSuccessResponse,
+      { tenantId: string; scenarioIds: number[] }
+    >({
+      query: ({ tenantId, scenarioIds }) => ({
+        url: `${ApiEndpoints.SIMULATION_STUDIO.SIMULATION_TENANT_VISIBILITY(tenantId)}`,
+        method: HttpMethod.DELETE,
+        body: { scenarioIds },
+      }),
+      invalidatesTags: [TAG_TYPES.SIMULATION],
+    }),
+
+    enablePath: builder.mutation<{ success: boolean }, { id: string; scenarioPathIds: number[] }>({
+      query: ({ id, scenarioPathIds }) => ({
+        url: `${ApiEndpoints.SIMULATION_STUDIO.PATH_TENANT_VISIBILITY(id)}`,
+        method: HttpMethod.POST,
+        body: { scenarioPathIds },
+      }),
+      invalidatesTags: [TAG_TYPES.SIMULATION_PATHS],
+    }),
+
+    disablePath: builder.mutation<
+      disableSuccessResponse,
+      { id: string; scenarioPathIds: number[] }
+    >({
+      query: ({ id, scenarioPathIds }) => ({
+        url: `${ApiEndpoints.SIMULATION_STUDIO.PATH_TENANT_VISIBILITY(id)}`,
+        method: HttpMethod.DELETE,
+        body: { scenarioPathIds },
+      }),
+      invalidatesTags: [TAG_TYPES.SIMULATION_PATHS],
+    }),
   }),
 });
 
 export const {
   useGetUsersQuery,
+  useLazyGetTenantByIdQuery,
   useGetTenantsQuery,
   useLazyGetUsersQuery,
   useLazyGetTenantsQuery,
@@ -133,4 +186,8 @@ export const {
   useGetRoleQuery,
   useGetSimulationCreditsQuery,
   useAddSimulationCreditLimitMutation,
+  useDisableSimulationMutation,
+  useEnableSimulationMutation,
+  useEnablePathMutation,
+  useDisablePathMutation,
 } = userManagementAPI;

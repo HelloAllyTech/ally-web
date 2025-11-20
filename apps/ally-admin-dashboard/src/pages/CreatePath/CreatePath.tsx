@@ -6,6 +6,7 @@ import { toast } from "sonner";
 
 import {
   useCreateSimulationPathMutation,
+  useDeleteCoverImageMutation,
   useLazyGetScenarioPathByIdQuery,
   useUpdateSimulationPathByIdMutation,
 } from "@api";
@@ -17,8 +18,8 @@ import {
   ActionConfirmationPopup,
   Button,
   SimulationSelectionModal,
+  CreateSimulationSubSection,
 } from "@components";
-import { CreateSimulationSubSection } from "@components";
 import { ButtonVariant } from "@components/types";
 import {
   en,
@@ -31,7 +32,13 @@ import {
 } from "@constants";
 import { useDebounce } from "@hooks";
 import { GetScenarioType } from "@types";
-import { extractValidData, isEmpty, isNonEmptyArray, isNonEmptyObject } from "@utils";
+import {
+  extractValidData,
+  isEmpty,
+  isNonEmptyArray,
+  isNonEmptyObject,
+  isNonEmptyString,
+} from "@utils";
 
 // Get all mandatory field IDs from the configuration
 const getMandatoryFieldIds = () => {
@@ -46,10 +53,12 @@ const getMandatoryFieldIds = () => {
   return mandatoryFields;
 };
 
+const DEBOUNCE_TIME = 500;
+
 export const CreatePath: FC = () => {
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
-  const [pathId, setPathId] = useState<string | undefined>(id);
+  const [pathId, setPathId] = useState<string | null>(id);
   const [currentStep, setCurrentStep] = useState(PATH_CREATOR_STEP_IDS.basicInfo);
   const [showDiscardPopup, setShowDiscardPopup] = useState(false);
   const [showSimulationModal, setShowSimulationModal] = useState(false);
@@ -62,6 +71,7 @@ export const CreatePath: FC = () => {
   const [getScenarioPathByIdQuery, { data: individualPath }] = useLazyGetScenarioPathByIdQuery();
   const [createSimulationPathMutation] = useCreateSimulationPathMutation();
   const [updateSimulationPathByIdQuery] = useUpdateSimulationPathByIdMutation();
+  const [deleteCoverImage] = useDeleteCoverImageMutation();
 
   const formatScenarios = (scenarios?: GetScenarioType[]) => {
     if (!isNonEmptyArray(scenarios)) return [];
@@ -84,17 +94,12 @@ export const CreatePath: FC = () => {
   } = formMethods;
 
   useEffect(() => {
-    if (pathId) {
-      getScenarioPathByIdQuery(pathId);
-    }
+    if (pathId) getScenarioPathByIdQuery(pathId);
   }, [pathId, getScenarioPathByIdQuery]);
   useEffect(() => {
-    if (individualPath) {
-      formMethods.reset(individualPath);
-    }
-    if (individualPath?.scenarios) {
+    if (individualPath) formMethods.reset(individualPath);
+    if (individualPath?.scenarios)
       setSelectedSimulations(formatScenarios(individualPath.scenarios));
-    }
   }, [individualPath, formMethods]);
   // Watch all form values to check mandatory fields
   const formValues = watch();
@@ -118,11 +123,8 @@ export const CreatePath: FC = () => {
   };
 
   const handlePageBack = () => {
-    if (isNonEmptyObject(dirtyFields)) {
-      setShowDiscardPopup(true);
-    } else {
-      navigate(-1);
-    }
+    if (isNonEmptyObject(dirtyFields)) setShowDiscardPopup(true);
+    else navigate(-1);
   };
 
   // Core function to save simulation changes
@@ -132,6 +134,19 @@ export const CreatePath: FC = () => {
       toast.error(en.errors.titleIsRequired);
       return null;
     }
+
+    // Delete cover image from s3 if it is changed
+    if (
+      isNonEmptyString(individualPath?.coverImageUrl) &&
+      individualPath?.coverImageUrl !== formData.coverImageUrl
+    ) {
+      try {
+        await deleteCoverImage({ coverImageUrl: individualPath.coverImageUrl }).unwrap();
+      } catch {
+        toast.error(en.errors.fileUploadFailed);
+      }
+    }
+
     const simulationPath: any = {
       ...extractValidData(PATH_CREATOR_FIELD_GROUPS, formData),
       status,
@@ -149,26 +164,25 @@ export const CreatePath: FC = () => {
     return response;
   };
 
-  // Debounced version to prevent duplicate simulation creation (500ms delay)
-  const saveSimulationChanges = useDebounce(saveSimulationChangesCore, 500);
+  // Debounced version to prevent duplicate simulation creation with a delay
+  const saveSimulationChanges = useDebounce(saveSimulationChangesCore, DEBOUNCE_TIME);
 
   const handleSaveDraft = async () => {
     try {
       const response = await saveSimulationChanges(SimulationStatus.DRAFT);
-      if (response && !response.error) {
-        if (response?.data?.[0]?.id && !pathId) {
-          setPathId(response?.data?.[0]?.id);
-        }
+      const responseData = response?.data;
+      if (!response?.error) {
+        if (responseData?.[0]?.id && !pathId) setPathId(responseData?.[0]?.id);
         const currentFormValues = formMethods.getValues();
         formMethods.reset(currentFormValues);
         return response?.data;
       } else if (response?.error) {
-        toast.error("Failed to save draft. Please try again.");
+        toast.error(en.errors.failedSaveDraft);
         return null;
       }
-      return response?.data;
+      return responseData;
     } catch {
-      toast.error("Failed to save draft. Please try again.");
+      toast.error(en.errors.failedSaveDraft);
       return null;
     }
   };
@@ -222,7 +236,7 @@ export const CreatePath: FC = () => {
         <div className="sticky flex flex-row justify-between top-0 z-10 pt-3 mx-6 pb-4 border-b border-border-light">
           <h2 className="text-lg font-medium text-typography-900">{title}</h2>
           {addButton && (
-            <Button variant="secondary" onClick={toggleSimulationModal}>
+            <Button variant={ButtonVariant.SECONDARY} onClick={toggleSimulationModal}>
               <Plus />
               {en.simulation.addSimulation}
             </Button>
@@ -298,7 +312,7 @@ export const CreatePath: FC = () => {
             onPrevious={handlePrevious}
             onNext={handleNext}
             showPrevious={currentStep !== PATH_CREATOR_STEP_IDS.basicInfo}
-            showNext={true}
+            showNext
             isNextDisabled={false}
             isLastStep={isLastStep}
           />

@@ -9,6 +9,7 @@ export interface ScenarioPath {
   isGlobal: boolean;
   totalScenarios: number;
   updatedAt: string;
+  isAssignedToTenant: boolean;
 }
 
 export interface GetScenarioPathsQueryParams {

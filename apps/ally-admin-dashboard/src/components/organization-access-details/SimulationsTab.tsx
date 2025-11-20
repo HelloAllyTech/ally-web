@@ -3,7 +3,7 @@ import React, { useEffect, useState, FC } from "react";
 import { useGetSimulationsQuery } from "@api";
 import { ListToolbar, EmptyState, SimulationAndPathToggleCard } from "@components";
 import { en, SORT_BY, SORT_ORDER } from "@constants";
-import { Simulation } from "@types";
+import { Simulation, SimulationStatus } from "@types";
 import { isNonEmptyArray } from "@utils";
 
 const SIMULATIONS_PAGE_SIZE = 30;
@@ -12,17 +12,14 @@ interface SimulationsTabProps {
   organizationId: string;
   searchValue: string;
   onSearchChange: (value: string) => void;
-  simulationAccess: Record<string, boolean>;
   onToggleAccess: (simulationId: number, enabled: boolean) => void;
-  onSimulationsLoaded?: (simulationIds: string[]) => void;
 }
 
 export const SimulationsTab: FC<SimulationsTabProps> = ({
+  organizationId,
   searchValue,
   onSearchChange,
-  simulationAccess,
   onToggleAccess,
-  onSimulationsLoaded,
 }) => {
   const [simulationsOffset, setSimulationsOffset] = useState(0);
   const [simulations, setSimulations] = useState<Simulation[]>([]);
@@ -33,6 +30,7 @@ export const SimulationsTab: FC<SimulationsTabProps> = ({
     sortBy: SORT_BY.UPDATED_AT,
     order: SORT_ORDER.DESC,
     search: searchValue,
+    tenantId: organizationId,
   };
 
   const {
@@ -44,23 +42,19 @@ export const SimulationsTab: FC<SimulationsTabProps> = ({
   useEffect(() => {
     if (!simulationsResponse) return;
     const nextData = simulationsResponse.data ?? [];
+    const published = nextData.filter(simulation => simulation.status === SimulationStatus.ACTIVE);
     if (simulationsOffset === 0) {
-      setSimulations(nextData);
+      setSimulations(published);
     } else {
       setSimulations(prev => {
-        const existingIds = new Set(prev.map(s => s.id));
-        const newItems = nextData.filter(s => !existingIds.has(s.id));
+        const existingIds = new Set(prev.map(simulation => simulation.id));
+        const newItems = published.filter(simulation => !existingIds.has(simulation.id));
         return [...prev, ...newItems];
       });
     }
   }, [simulationsResponse, simulationsOffset]);
 
   // Separate effect to notify parent of loaded simulations
-  useEffect(() => {
-    if (isNonEmptyArray(simulations) && onSimulationsLoaded) {
-      onSimulationsLoaded(simulations.map(simulation => simulation.id.toString()));
-    }
-  }, [simulations.length]); // Only run when the count changes, not on every simulation change
 
   React.useEffect(() => {
     setSimulationsOffset(0);
@@ -118,7 +112,7 @@ export const SimulationsTab: FC<SimulationsTabProps> = ({
               <SimulationAndPathToggleCard
                 key={simulation.id}
                 simulation={simulation}
-                hasAccess={simulationAccess[simulation.id] ?? false}
+                hasAccess={simulation.isAssignedToTenant ?? false}
                 onToggleAccess={enabled => onToggleAccess(simulation.id, enabled)}
               />
             ))}

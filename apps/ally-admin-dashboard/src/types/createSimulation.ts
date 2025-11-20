@@ -78,6 +78,7 @@ export interface Simulation {
   updatedAt: string;
   status: SimulationStatus;
   isPreviewEnabled: boolean;
+  isAssignedToTenant: boolean;
   usage: string;
 }
 
@@ -87,6 +88,7 @@ export interface GetSimulationsQueryParams {
   sortBy?: string;
   order?: string;
   search?: string;
+  tenantId?: string;
 }
 export interface GetSimulationsResponse {
   data: Simulation[];

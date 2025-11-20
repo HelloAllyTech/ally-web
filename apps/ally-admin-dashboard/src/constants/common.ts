@@ -19,8 +19,8 @@ export const ApiEndpoints = {
     GET_SIMULATIONS: "/v1/learn/admin-scenarios",
     GET_ADMIN_SIMULATION_BY_ID: (id: string) => `/v1/learn/admin-scenarios/${id}`,
     CREATE_SIMULATION: "/v1/learn/scenarios",
-    UPDATE_SIMULATION_BY_ID: (id: string) => `/v1/learn/scenarios/${id}`,
-    SIMULATION_BY_ID: (id: string) => `/v1/learn/admin-scenarios/${id}`,
+    UPDATE_SIMULATION_BY_ID: (id: string | number) => `/v1/learn/scenarios/${id}`,
+    SIMULATION_BY_ID: (id: string | number) => `/v1/learn/admin-scenarios/${id}`,
     START_SIMULATION: "/v1/learn/scenario-session-start",
     END_SIMULATION: (sessionId: string) => `/v1/learn/scenario-session/${sessionId}/end`,
     SCENARIO_VOICES: "/v1/learn/scenario-voices",
@@ -37,14 +37,17 @@ export const ApiEndpoints = {
     SCENARIO_PREVIEW: "/v1/learn/scenarios/preview",
     END_SCENARIO_PREVIEW: (sessionId: number | string) =>
       `/v1/learn/scenarios/preview/${sessionId}/end`,
+    SIMULATION_TENANT_VISIBILITY: (tenantId: string) => `v1/learn/scenario/tenant/${tenantId}`,
     SCENARIO_PATHS: "v1/learn/admin/scenario-paths",
     SCENARIO_PATH_BY_ID: (id: string | number) => `/v1/learn/admin/scenario-paths/${id}`,
+    PATH_TENANT_VISIBILITY: (id: string) => `v1/learn/admin/scenario-path/tenant/${id}`,
   },
 
   USER_MANAGEMENT: {
     USERS: "/v1/users",
     TENANT: "/v1/tenant",
     TENANTS: "/v1/tenants",
+    TENANTS_BY_ID: (id: string) => `/v1/tenants/${id}`,
     ADD_USER: "/v1/users",
     SIMULATION_CREDITS: "/v1/simulation-credits",
   },
@@ -61,11 +64,11 @@ export const ROUTES = {
   USER_MANAGEMENT: "/user-management",
   MANAGE_EVENTS: "/manage-events",
   CREATE_SIMULATION: "/create-simulation",
-  SIMULATION_PREVIEW: (id: string) => `/simulation-preview/${id}`,
-  EDIT_SIMULATION: (id: string) => `/create-simulation/edit/${id}`,
-  ORGANIZATION_DETAIL: (id: string) => `/user-management/organization/${id}`,
+  SIMULATION_PREVIEW: (id: string | number) => `/simulation-preview/${id}`,
+  EDIT_SIMULATION: (id: string | number) => `/create-simulation/edit/${id}`,
+  ORGANIZATION_DETAIL: (id: string | number) => `/user-management/organization/${id}`,
   CREATE_PATH: "/create-path",
-  EDIT_PATH: (id: string) => `/create-path/edit/${id}`,
+  EDIT_PATH: (id: string | number) => `/create-path/edit/${id}`,
 };
 
 export const LOCAL_STORAGE_KEYS = {

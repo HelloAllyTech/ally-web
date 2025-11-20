@@ -75,7 +75,7 @@ const simulationStudioAPI = baseAPI.injectEndpoints({
     /**
      * Delete simulation by Id.
      */
-    deleteSimulationById: builder.mutation<void, string>({
+    deleteSimulationById: builder.mutation<void, string | number>({
       query: id => ({
         url: ApiEndpoints.SIMULATION_STUDIO.SIMULATION_BY_ID(id),
         method: HttpMethod.DELETE,
