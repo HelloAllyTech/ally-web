@@ -41,7 +41,7 @@ export const FilterList: FC<FilterListProps> = ({
   return (
     <div
       ref={containerRef}
-      className="absolute top-0 z-10 left-[40px] bg-white rounded-lg border w-56 animate-in fade-in-0 duration-200 px-[20px] py-[18px] font-primary"
+      className="absolute top-0 z-50 left-[40px] bg-white rounded-lg border w-56 animate-in fade-in-0 duration-200 px-[20px] py-[18px] font-primary"
       onClick={e => e.stopPropagation()}
     >
       <button onClick={onClose} className="absolute right-[16px]">

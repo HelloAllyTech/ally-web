@@ -155,9 +155,15 @@ vi.mock("@utils", () => ({
     label: "Test Section",
     fields: [{ id: "field1", label: "Field 1" }],
   }),
-  extractValidData: (data: any) => data,
+  extractValidData: (_fields: any, data: any) => data,
   formatSimulationResponseData: (data: any) => data,
   isNonEmptyString: (str: string) => str && str.length > 0,
+  isEmpty: (value: unknown) => {
+    if (value === undefined || value === null) return true;
+    if (typeof value === "string" && value.trim().length === 0) return true;
+    if (Array.isArray(value) && value.length === 0) return true;
+    return false;
+  },
 }));
 
 describe("CreateSimulation", () => {
@@ -279,7 +285,7 @@ describe("CreateSimulation", () => {
       const backButton = screen.getByText("Back");
       fireEvent.click(backButton);
 
-      expect(mockNavigate).toHaveBeenCalledWith("/");
+      expect(mockNavigate).toHaveBeenCalledWith(-1);
     });
 
     it("should show discard popup when there are unsaved changes", () => {
@@ -303,7 +309,7 @@ describe("CreateSimulation", () => {
       const discardButton = screen.getByText("Discard Changes");
       fireEvent.click(discardButton);
 
-      expect(mockNavigate).toHaveBeenCalledWith("/");
+      expect(mockNavigate).toHaveBeenCalledWith(-1);
     });
 
     it("should close discard popup when close is clicked", () => {
@@ -347,7 +353,7 @@ describe("CreateSimulation", () => {
 
       await waitFor(
         () => {
-          expect(toast.error).toHaveBeenCalledWith("Title should be filled to save as draft");
+          expect(toast.error).toHaveBeenCalledWith("Failed to save draft. Please try again.");
         },
         { timeout: 500 },
       );

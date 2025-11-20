@@ -11,14 +11,6 @@ export interface PopupButtonProps {
   variant?: ButtonVariantType;
 }
 
-export interface HeaderProps {
-  onBack: () => void;
-  onSaveDraft: () => void;
-  onPublish: () => void;
-  onMoreOptions: () => void;
-  moreOptionsRef: React.RefObject<HTMLButtonElement>;
-}
-
 export const ButtonVariant = {
   PRIMARY: "primary",
   DESTRUCTIVE: "destructive",
@@ -82,6 +74,8 @@ export interface DropdownFieldProps {
   options: Array<{ value: string; label: string }>;
   placeholder?: string;
   isMandatory?: boolean;
+  isSearchable?: boolean;
+  handleSearchTextChange?: (searchTerm: string) => void;
 }
 
 // NarrativeContext
@@ -166,13 +160,6 @@ export interface FormFieldProps {
   formMethods: UseFormReturn<any>;
 }
 
-export interface MoreOptionsPopupProps {
-  isOpen: boolean;
-  onClose: () => void;
-  onDiscardSimulation: () => void;
-  position: { top: number; right: number };
-}
-
 export interface NavigationItem {
   id: string;
   label: string;
@@ -206,6 +193,7 @@ export interface TabsProps {
   activeId: string;
   onChange: (id: string) => void;
   className?: string;
+  showCount?: boolean;
 }
 
 export interface FilterChipProps {

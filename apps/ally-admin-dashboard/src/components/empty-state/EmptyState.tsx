@@ -30,7 +30,7 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
       {actionLabel && !hideActionButton && (
         <button
           onClick={onAction}
-          className="inline-flex items-center hover:bg-primary-600 text-white text-base font-medium px-6 sm:px-8 py-3 rounded-full shadow-sm"
+          className="inline-flex items-center bg-primary-500 hover:bg-primary-700 text-white text-base font-medium px-6 sm:px-8 py-3 rounded-full shadow-sm"
         >
           <span className="mr-3">
             <Plus />
