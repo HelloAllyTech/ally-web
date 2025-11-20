@@ -78,6 +78,7 @@ export interface Simulation {
   updatedAt: string;
   status: SimulationStatus;
   isPreviewEnabled: boolean;
+  isAssignedToTenant: boolean;
   usage: string;
 }
 

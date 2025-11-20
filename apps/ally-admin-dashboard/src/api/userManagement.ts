@@ -25,6 +25,12 @@ const userManagementAPI = baseAPI.injectEndpoints({
       providesTags: [TAG_TYPES.TENANTS],
     }),
 
+    getTenantById: builder.query<Tenant, string>({
+      query: id => ({
+        url: `${ApiEndpoints.USER_MANAGEMENT.TENANTS_BY_ID(id)}`,
+      }),
+    }),
+
     createTenant: builder.mutation<Tenant, CreateTenantBody>({
       query: body => ({
         url: ApiEndpoints.USER_MANAGEMENT.TENANTS,
@@ -126,7 +132,7 @@ const userManagementAPI = baseAPI.injectEndpoints({
         method: HttpMethod.POST,
         body: { scenarioIds },
       }),
-      invalidatesTags: [TAG_TYPES.TENANTS],
+      invalidatesTags: [TAG_TYPES.SIMULATION],
     }),
 
     disableSimulation: builder.mutation<
@@ -138,7 +144,7 @@ const userManagementAPI = baseAPI.injectEndpoints({
         method: HttpMethod.DELETE,
         body: { scenarioIds },
       }),
-      invalidatesTags: [TAG_TYPES.TENANTS],
+      invalidatesTags: [TAG_TYPES.SIMULATION],
     }),
 
     enablePath: builder.mutation<{ success: boolean }, { id: string; scenarioPathIds: number[] }>({
@@ -147,7 +153,7 @@ const userManagementAPI = baseAPI.injectEndpoints({
         method: HttpMethod.POST,
         body: { scenarioPathIds },
       }),
-      invalidatesTags: [TAG_TYPES.TENANTS],
+      invalidatesTags: [TAG_TYPES.SIMULATION_PATHS],
     }),
 
     disablePath: builder.mutation<
@@ -159,13 +165,14 @@ const userManagementAPI = baseAPI.injectEndpoints({
         method: HttpMethod.DELETE,
         body: { scenarioPathIds },
       }),
-      invalidatesTags: [TAG_TYPES.TENANTS],
+      invalidatesTags: [TAG_TYPES.SIMULATION_PATHS],
     }),
   }),
 });
 
 export const {
   useGetUsersQuery,
+  useLazyGetTenantByIdQuery,
   useGetTenantsQuery,
   useLazyGetUsersQuery,
   useLazyGetTenantsQuery,

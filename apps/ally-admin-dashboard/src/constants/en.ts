@@ -30,6 +30,8 @@ export const en = {
     failedSimulationChange: "Failed to save simulation changes!",
     failedSimulationCreation: "Failed to create simulation. Please try again.",
     pathUpdateFailed: "Failed to update path access.",
+    failedUpdateAccess: "Failed to update access.",
+    OrganizationNotFound: "Organization not found",
   },
   accessDenied: {
     title: "This page is not accessible",

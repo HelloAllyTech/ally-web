@@ -155,6 +155,8 @@ export const CreatePath: FC = () => {
 
     const simulationPath: any = {
       ...extractValidData(PATH_CREATOR_FIELD_GROUPS, formData),
+      coverImageUrl:
+        "https://images.unsplash.com/photo-1580757468214-c73f7062a5cb?fm=jpg&q=60&w=3000&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
       status,
     };
     let response;

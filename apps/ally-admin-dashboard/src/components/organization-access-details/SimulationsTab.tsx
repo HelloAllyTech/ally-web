@@ -12,18 +12,14 @@ interface SimulationsTabProps {
   organizationId: string;
   searchValue: string;
   onSearchChange: (value: string) => void;
-  simulationAccess: Record<string, boolean>;
   onToggleAccess: (simulationId: number, enabled: boolean) => void;
-  onSimulationsLoaded?: (simulationIds: string[]) => void;
 }
 
 export const SimulationsTab: FC<SimulationsTabProps> = ({
   organizationId,
   searchValue,
   onSearchChange,
-  simulationAccess,
   onToggleAccess,
-  onSimulationsLoaded,
 }) => {
   const [simulationsOffset, setSimulationsOffset] = useState(0);
   const [simulations, setSimulations] = useState<Simulation[]>([]);
@@ -59,11 +55,6 @@ export const SimulationsTab: FC<SimulationsTabProps> = ({
   }, [simulationsResponse, simulationsOffset]);
 
   // Separate effect to notify parent of loaded simulations
-  useEffect(() => {
-    if (isNonEmptyArray(simulations) && onSimulationsLoaded) {
-      onSimulationsLoaded(simulations.map(simulation => simulation.id.toString()));
-    }
-  }, [simulations.length]); // Only run when the count changes, not on every simulation change
 
   React.useEffect(() => {
     setSimulationsOffset(0);
@@ -121,7 +112,7 @@ export const SimulationsTab: FC<SimulationsTabProps> = ({
               <SimulationAndPathToggleCard
                 key={simulation.id}
                 simulation={simulation}
-                hasAccess={simulationAccess[simulation.id] ?? false}
+                hasAccess={simulation.isAssignedToTenant ?? false}
                 onToggleAccess={enabled => onToggleAccess(simulation.id, enabled)}
               />
             ))}
