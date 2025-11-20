@@ -1,4 +1,4 @@
-import React, { useEffect, useState, FC } from "react";
+import { useEffect, useState, FC } from "react";
 
 import { useGetSimulationsQuery } from "@api";
 import { ListToolbar, EmptyState, SimulationAndPathToggleCard } from "@components";
@@ -42,7 +42,7 @@ export const SimulationsTab: FC<SimulationsTabProps> = ({
 
   useEffect(() => {
     if (!simulationsResponse) return;
-    const nextData = simulationsResponse.data ?? [];
+    const nextData = simulationsResponse?.data ?? [];
     if (simulationsOffset === 0) {
       setSimulations(nextData);
     } else {
@@ -64,17 +64,9 @@ export const SimulationsTab: FC<SimulationsTabProps> = ({
     setSimulationsOffset(prev => prev + SIMULATIONS_PAGE_SIZE);
   };
 
-  const hasMore = simulationsResponse?.count
-    ? simulations.length < simulationsResponse.count
-    : simulations.length >= SIMULATIONS_PAGE_SIZE;
+  const hasMore = simulationsResponse?.data?.length === SIMULATIONS_PAGE_SIZE;
 
-  const filteredSimulations = simulations.filter(
-    simulation =>
-      simulation.title.toLowerCase().includes(searchValue.toLowerCase()) ||
-      simulation.description?.toLowerCase().includes(searchValue.toLowerCase()),
-  );
-
-  if (isSimulationsLoading) {
+  if (isSimulationsLoading && simulationsOffset === 0) {
     return (
       <div className="flex items-center justify-center py-12">
         <span className="text-typography-600">{en.common.loading}</span>
@@ -91,11 +83,11 @@ export const SimulationsTab: FC<SimulationsTabProps> = ({
           placeholder={en.common.search}
         />
       </div>
-      {!isNonEmptyArray(filteredSimulations) && isSimulationsLoading ? (
+      {!isNonEmptyArray(simulations) && isSimulationsLoading ? (
         <div className="flex items-center justify-center py-12">
           <span className="text-typography-600">{en.common.loading}</span>
         </div>
-      ) : !isNonEmptyArray(filteredSimulations) ? (
+      ) : !isNonEmptyArray(simulations) ? (
         <EmptyState title={en.simulation.noResultFound} subtitle={en.simulation.adjustFilter} />
       ) : (
         <div className="flex flex-col flex-1 overflow-y-auto pb-8">
@@ -108,7 +100,7 @@ export const SimulationsTab: FC<SimulationsTabProps> = ({
             </div>
           </div>
           <div className="flex-1">
-            {filteredSimulations?.map(simulation => (
+            {simulations?.map(simulation => (
               <SimulationAndPathToggleCard
                 key={simulation.id}
                 simulation={simulation}

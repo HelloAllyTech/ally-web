@@ -13,6 +13,7 @@ import CloseRed from "./closeRed.svg?react";
 import Copy from "./copy.svg?react";
 import Delete from "./delete.svg?react";
 import DockToRight from "./dockToRight.svg?react";
+import Dot from "./dot.svg?react";
 import DoubleArrowRight from "./doubleArrowRight.svg?react";
 import DragIndicator from "./dragIndicator.svg?react";
 import DragUpload from "./dragUpload.svg?react";
@@ -34,7 +35,6 @@ import User from "./user.svg?react";
 import Users from "./users.svg?react";
 import VideoCamera from "./videoCamera.svg?react";
 import WandStars from "./wandStars.svg?react";
-import Dot from "../dot.svg?react";
 
 export {
   ArrowDown,

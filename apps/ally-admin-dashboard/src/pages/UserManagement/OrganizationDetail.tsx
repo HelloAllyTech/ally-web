@@ -27,7 +27,7 @@ export const OrganizationDetail: FC = () => {
   const [organization, setOrganization] = useState<Tenant | null>(null);
   const [searchValue, setSearchValue] = useState("");
 
-  const { id } = useParams<{ id: string }>();
+  const { id = "" } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
 
@@ -56,12 +56,12 @@ export const OrganizationDetail: FC = () => {
     try {
       if (enabled) {
         await enableSimulation({
-          tenantId: id ?? "",
+          tenantId: id,
           scenarioIds: [simulationId],
         });
       } else {
         await disableSimulation({
-          tenantId: id ?? "",
+          tenantId: id,
           scenarioIds: [simulationId],
         });
       }
@@ -74,12 +74,12 @@ export const OrganizationDetail: FC = () => {
     try {
       if (enabled) {
         await enablePathAccess({
-          tenantId: id ?? "",
+          tenantId: id,
           scenarioIds: [pathId],
         });
       } else {
         await disablePathAccess({
-          tenantId: id ?? "",
+          tenantId: id,
           scenarioIds: [pathId],
         });
       }
@@ -151,14 +151,14 @@ export const OrganizationDetail: FC = () => {
       <div className="flex-1 overflow-hidden min-h-0 mt-4">
         {activeTab === TAB_IDS.SIMULATIONS ? (
           <SimulationsTab
-            organizationId={id ?? ""}
+            organizationId={id}
             searchValue={searchValue}
             onSearchChange={setSearchValue}
             onToggleAccess={handleToggleAccess}
           />
         ) : (
           <PathTab
-            organizationId={id ?? ""}
+            organizationId={id}
             searchValue={searchValue}
             onSearchChange={setSearchValue}
             onToggleAccess={handleTogglePathAccess}

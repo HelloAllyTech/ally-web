@@ -1,4 +1,4 @@
-import React, { useEffect, useState, FC } from "react";
+import { useEffect, useState, FC } from "react";
 
 import { useGetScenarioPathsQuery } from "@api";
 import { ListToolbar, EmptyState, ToggleSwitch, CustomImage } from "@components";
@@ -29,6 +29,7 @@ export const PathTab: FC<PathTabProps> = ({
     offset: pathsOffset,
     search: searchValue,
     tenantId: organizationId,
+    status: SimulationStatus.ACTIVE,
   };
 
   const {
@@ -39,14 +40,12 @@ export const PathTab: FC<PathTabProps> = ({
 
   useEffect(() => {
     if (!pathsResponse) return;
-    const nextData = pathsResponse.data ?? [];
-    const published = nextData.filter(path => path.status === SimulationStatus.ACTIVE);
     if (pathsOffset === 0) {
-      setPaths(published);
+      setPaths(pathsResponse.data);
     } else {
       setPaths(prev => {
-        const existingIds = new Set(prev.map(p => p.id));
-        const newItems = published.filter(p => !existingIds.has(p.id));
+        const existingIds = new Set(prev.map(path => path.id));
+        const newItems = pathsResponse.data.filter(path => !existingIds.has(path.id));
         return [...prev, ...newItems];
       });
     }
@@ -60,17 +59,9 @@ export const PathTab: FC<PathTabProps> = ({
     setPathsOffset(prev => prev + PATHS_PAGE_SIZE);
   };
 
-  const hasMore = pathsResponse?.data
-    ? paths.length < pathsResponse.data.length
-    : paths.length >= PATHS_PAGE_SIZE;
+  const hasMore = pathsResponse?.data?.length === PATHS_PAGE_SIZE;
 
-  const filteredPaths = paths.filter(
-    path =>
-      path.title.toLowerCase().includes(searchValue.toLowerCase()) ||
-      path.description?.toLowerCase().includes(searchValue.toLowerCase()),
-  );
-
-  if (isPathsLoading) {
+  if (isPathsLoading && pathsOffset === 0) {
     return (
       <div className="flex items-center justify-center py-12">
         <span className="text-typography-600">{en.common.loading}</span>
@@ -127,11 +118,11 @@ export const PathTab: FC<PathTabProps> = ({
           placeholder={en.common.search}
         />
       </div>
-      {!isNonEmptyArray(filteredPaths) && isPathsLoading ? (
+      {!isNonEmptyArray(paths) && isPathsLoading ? (
         <div className="flex items-center justify-center py-12">
           <span className="text-typography-600">{en.common.loading}</span>
         </div>
-      ) : !isNonEmptyArray(filteredPaths) ? (
+      ) : !isNonEmptyArray(paths) ? (
         <EmptyState title={en.simulation.noResultFound} subtitle={en.simulation.adjustFilter} />
       ) : (
         <div className="flex flex-col flex-1 overflow-y-auto pb-8">
@@ -142,7 +133,7 @@ export const PathTab: FC<PathTabProps> = ({
             </div>
           </div>
           <div className="flex-1">
-            {filteredPaths?.map(path => renderPathCard(path))}
+            {paths?.map(path => renderPathCard(path))}
             {hasMore && (
               <div className="flex justify-start mt-2 pb-4 mb-4">
                 <button

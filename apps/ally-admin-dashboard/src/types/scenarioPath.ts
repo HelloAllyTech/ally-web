@@ -22,6 +22,7 @@ export interface GetScenarioPathsQueryParams {
 
 export interface GetScenarioPathsResponse {
   data: ScenarioPath[];
+  count?: number;
 }
 
 export interface GetScenarioType {
