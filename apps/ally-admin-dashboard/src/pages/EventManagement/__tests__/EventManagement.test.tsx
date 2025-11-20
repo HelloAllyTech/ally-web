@@ -1,5 +1,11 @@
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import { Provider } from "react-redux";
 import { vi, describe, it, expect, beforeEach } from "vitest";
+
+import { configureStore } from "@reduxjs/toolkit";
+import { baseAPI } from "@api";
+import eventsSlice from "@reducer/eventsReducer";
+import userSlice from "@reducer/userReducer";
 
 // Hoist mocks to avoid initialization errors
 const {
@@ -303,8 +309,29 @@ describe("EventManagement", () => {
     });
   });
 
+  const createTestStore = () => {
+    return configureStore({
+      reducer: {
+        [baseAPI.reducerPath]: baseAPI.reducer,
+        user: userSlice.reducer,
+        events: eventsSlice.reducer,
+      },
+      middleware: getDefaultMiddleware =>
+        getDefaultMiddleware({
+          serializableCheck: {
+            ignoredActions: ["persist/PERSIST", "persist/REHYDRATE"],
+          },
+        }).concat(baseAPI.middleware),
+    });
+  };
+
   const renderComponent = () => {
-    return render(<EventManagement />);
+    const store = createTestStore();
+    return render(
+      <Provider store={store}>
+        <EventManagement />
+      </Provider>,
+    );
   };
 
   describe("Initial rendering", () => {
@@ -863,6 +890,7 @@ describe("EventManagement", () => {
       });
 
       const { rerender } = renderComponent();
+      const store = createTestStore();
 
       await waitFor(() => {
         expect(screen.getByTestId("event-name-0")).toBeInTheDocument();
@@ -874,7 +902,11 @@ describe("EventManagement", () => {
         isFetching: false,
       });
 
-      rerender(<EventManagement />);
+      rerender(
+        <Provider store={store}>
+          <EventManagement />
+        </Provider>,
+      );
 
       // Events should be appended, not replaced
       await waitFor(() => {
@@ -1024,6 +1056,11 @@ describe("EventManagement", () => {
     });
 
     it("handles creation error gracefully", async () => {
+      // Mock API to return an error
+      mockCreateSessionEvents.mockReturnValue({
+        error: { message: "Failed to create event" },
+      });
+
       renderComponent();
 
       const createButton = screen.getByText("Create New Event");
@@ -1033,18 +1070,18 @@ describe("EventManagement", () => {
         expect(screen.getByTestId("event-type-selection-dialog")).toBeInTheDocument();
       });
 
-      // COMBINATION events return null from convertEventToApiPayload, so they are silently skipped
+      // Select COMBINATION event type
       const selectButton = screen.getByTestId("select-combination");
       fireEvent.click(selectButton);
 
-      // COMBINATION events cannot be created (convertEventToApiPayload returns null)
-      // The function returns early without showing an error toast
+      // COMBINATION events can be created (they just have expression: null initially)
+      // When API returns an error, it should show an error toast
       await waitFor(() => {
-        // Verify no API call was made
-        expect(mockCreateSessionEvents).not.toHaveBeenCalled();
+        expect(mockCreateSessionEvents).toHaveBeenCalled();
+        expect(mockToast.error).toHaveBeenCalledWith("Failed to create event");
       });
 
-      // Side panel should not open for COMBINATION events
+      // Side panel should not open when creation fails
       expect(screen.queryByTestId("event-side-panel")).not.toBeInTheDocument();
     });
   });

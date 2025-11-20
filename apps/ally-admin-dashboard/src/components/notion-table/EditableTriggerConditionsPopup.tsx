@@ -1,8 +1,8 @@
 import React, { useState, useRef, useEffect, useCallback } from "react";
 
 import { StandardTriggerConditions, CombinationTriggerConditions } from "@components";
+import { EVENT_DETECTION_TYPES } from "@constants";
 import { useClickOutside } from "@hooks";
-import { EVENT_DETECTION_TYPES } from "@src/constants/eventTypes";
 
 interface EditableTriggerConditionsPopupProps {
   eventType: string | undefined;

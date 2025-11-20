@@ -50,6 +50,26 @@ vi.mock("@components", () => ({
       {triggerCondition && <span>Trigger: {JSON.stringify(triggerCondition)}</span>}
     </div>
   ),
+  ActionConfirmationPopup: ({
+    isOpen,
+    onClose,
+    title,
+    description,
+    primaryButton,
+    secondaryButton,
+  }: any) =>
+    isOpen ? (
+      <div data-testid="action-confirmation-popup">
+        <h2>{title}</h2>
+        <p>{description}</p>
+        <button onClick={primaryButton?.onClick} data-testid="confirm-action">
+          {primaryButton?.label}
+        </button>
+        <button onClick={secondaryButton?.onClick} data-testid="cancel-action">
+          {secondaryButton?.label}
+        </button>
+      </div>
+    ) : null,
 }));
 
 vi.mock("@constants", () => ({

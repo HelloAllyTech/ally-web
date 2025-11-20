@@ -74,7 +74,9 @@ export const TriggerConditions: React.FC<TriggerConditionsProps> = ({
     if (shouldRenderCombination) {
       // Create a default combination trigger condition if it doesn't exist or has null expression
       const defaultCombinationCondition: CombinationTriggerCondition =
-        triggerCondition && isCombinationTriggerCondition(triggerCondition)
+        triggerCondition &&
+        isCombinationTriggerCondition(triggerCondition) &&
+        triggerCondition.expression !== null
           ? triggerCondition
           : {
               expression: {
@@ -93,7 +95,9 @@ export const TriggerConditions: React.FC<TriggerConditionsProps> = ({
   if (shouldRenderCombination) {
     // Create a default combination trigger condition if it doesn't exist or has null expression
     const defaultCombinationCondition: CombinationTriggerCondition =
-      triggerCondition && isCombinationTriggerCondition(triggerCondition)
+      triggerCondition &&
+      isCombinationTriggerCondition(triggerCondition) &&
+      triggerCondition.expression !== null
         ? triggerCondition
         : {
             expression: {

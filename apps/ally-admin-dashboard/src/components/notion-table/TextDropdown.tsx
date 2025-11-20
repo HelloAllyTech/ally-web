@@ -137,7 +137,6 @@ export const TextDropdown = ({
   useClickOutside(dropdownRef, handleClose);
 
   // Get current option display value
-  // Priority: 1. displayValue (if provided and not empty), 2. Find from options, 3. placeholder
   const currentOption = options.find(option => option.value === value);
   const finalDisplayValue =
     displayValue && displayValue.trim() !== ""

@@ -6,8 +6,8 @@ import {
   AutoExpandableTextarea,
   EmojiPickerComponent,
   TriggerConditions,
+  NumberInput,
 } from "@components";
-import { NumberInput } from "@components/notion-table";
 import { en, EVENT_DETECTION_TYPES } from "@constants";
 import { useDebounce } from "@hooks";
 import { UpdateEventDataParam } from "@types";
@@ -107,8 +107,6 @@ export const EventSidePanel: React.FC<EventSidePanelProps> = ({
 
   useEffect(() => {
     debouncedUpdate();
-
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [formData]);
 
   const handleFieldChange = useCallback(
@@ -129,17 +127,16 @@ export const EventSidePanel: React.FC<EventSidePanelProps> = ({
     (field: string, value: string | number | string[] | any) => {
       if (!selectedEvent) return;
 
-      setFormData(previousData => {
-        const currentTrigger = previousData.triggerCondition || {};
-
-        return {
-          ...previousData,
-          triggerCondition: {
-            ...currentTrigger,
-            [field]: value,
-          },
-        } as UpdateEventDataParam;
-      });
+      setFormData(
+        previousData =>
+          ({
+            ...previousData,
+            triggerCondition: {
+              ...(previousData.triggerCondition || {}),
+              [field]: value,
+            },
+          }) as UpdateEventDataParam,
+      );
     },
     [selectedEvent],
   );
@@ -207,16 +204,12 @@ export const EventSidePanel: React.FC<EventSidePanelProps> = ({
             </Field>
 
             {/* Trigger Conditions Field */}
-            {(formData?.detectionType === EVENT_DETECTION_TYPES.TIME_BASED ||
-              formData?.detectionType === EVENT_DETECTION_TYPES.SCORE_BASED ||
-              formData?.detectionType === EVENT_DETECTION_TYPES.SENTENCE_SIMILARITY ||
-              formData?.detectionType === EVENT_DETECTION_TYPES.COMBINATION) && (
-              <TriggerConditions
-                eventType={formData.detectionType}
-                triggerCondition={formData.triggerCondition}
-                onChange={handleTriggerConditionChange}
-              />
-            )}
+
+            <TriggerConditions
+              eventType={formData.detectionType}
+              triggerCondition={formData.triggerCondition}
+              onChange={handleTriggerConditionChange}
+            />
 
             <Field label="Branch description" multiline={true}>
               <AutoExpandableTextarea

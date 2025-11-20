@@ -257,12 +257,11 @@ export const NotionTable = ({
                 {row.cells.map(cell => {
                   const cellProps = cell.getCellProps();
                   const { key: cellKey, ...restCellProps } = cellProps;
-
                   return (
                     <div
                       key={cellKey}
                       {...restCellProps}
-                      className={`relative flex items-center w-full px-3 py-[7px] border-r border-border-light`}
+                      className="relative flex items-center w-full px-3 py-[7px] border-r border-border-light"
                       style={{
                         width: isSelectionColumn(cell.column.id)
                           ? SELECTION_COLUMN_WIDTH - 1

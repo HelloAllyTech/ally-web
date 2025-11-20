@@ -1,0 +1,470 @@
+import { render, screen, fireEvent } from "@testing-library/react";
+import { Provider } from "react-redux";
+import { configureStore } from "@reduxjs/toolkit";
+import { describe, it, expect, vi, beforeEach } from "vitest";
+
+const { mockGetTriggerConditionConfig } = vi.hoisted(() => ({
+  mockGetTriggerConditionConfig: vi.fn(() => ({
+    fields: [
+      {
+        id: "status",
+        type: "STATUS_DROPDOWN",
+        options: [
+          { value: "OCCURRED", label: "Occurred" },
+          { value: "NOT_OCCURRED", label: "Not Occurred" },
+        ],
+        placeholder: "Occurred",
+      },
+      {
+        id: "operator",
+        type: "OPERATOR_DROPDOWN",
+        options: [
+          { value: "AND", label: "AND" },
+          { value: "OR", label: "OR" },
+        ],
+      },
+    ],
+  })),
+}));
+
+vi.mock("@api", () => ({
+  baseAPI: {
+    reducerPath: "api",
+    reducer: vi.fn((state = {}) => state),
+    middleware: vi.fn(() => (next: any) => (action: any) => next(action)),
+  },
+  useGetSessionEventsQuery: vi.fn(() => ({
+    data: { data: [] },
+    isLoading: false,
+    isError: false,
+  })),
+}));
+
+vi.mock("@constants", async importOriginal => {
+  const actual = await importOriginal<typeof import("@constants")>();
+  return {
+    ...actual,
+    SESSION_EVENT_STATUS_OPTIONS: {
+      ACTIVE: "ACTIVE",
+    },
+    SORT_BY: {
+      CREATED_AT: "createdAt",
+    },
+    SORT_ORDER: {
+      DESC: "desc",
+    },
+    getTriggerConditionConfig: mockGetTriggerConditionConfig,
+  };
+});
+
+import { CombinationTriggerConditions } from "../CombinationTriggerConditions";
+import { useGetSessionEventsQuery } from "@api";
+import eventsSlice from "@reducer/eventsReducer";
+import { baseAPI } from "@api";
+
+vi.mock("../TriggerConditionDropdown", () => ({
+  TriggerConditionDropdown: ({
+    value,
+    displayValue,
+    options,
+    onChange,
+    placeholder,
+    isInTable,
+  }: any) => {
+    const handleChange = () => {
+      if (options && options.length > 0) {
+        // Select the next option that's different from current value, or first option
+        const currentIndex = options.findIndex((opt: any) => opt.value === value);
+        const nextIndex =
+          currentIndex >= 0 && currentIndex < options.length - 1 ? currentIndex + 1 : 0;
+        onChange(options[nextIndex].value);
+      } else {
+        onChange("new-value");
+      }
+    };
+
+    return (
+      <div data-testid={`dropdown-${value || placeholder}`}>
+        <span data-testid={`dropdown-value-${value || placeholder}`}>
+          {displayValue || value || placeholder}
+        </span>
+        <button data-testid={`dropdown-change-${value || placeholder}`} onClick={handleChange}>
+          Change
+        </button>
+        <span data-testid={`dropdown-in-table-${value || placeholder}`}>{String(isInTable)}</span>
+      </div>
+    );
+  },
+}));
+
+const createTestStore = (availableEvents: Array<{ id: string; name: string }> = []) => {
+  return configureStore({
+    reducer: {
+      [baseAPI.reducerPath]: baseAPI.reducer,
+      events: eventsSlice.reducer,
+    },
+    middleware: getDefaultMiddleware =>
+      getDefaultMiddleware({
+        serializableCheck: {
+          ignoredActions: ["persist/PERSIST", "persist/REHYDRATE"],
+        },
+      }).concat(baseAPI.middleware),
+    preloadedState: {
+      events: {
+        availableEvents,
+      },
+    },
+  });
+};
+
+describe("CombinationTriggerConditions", () => {
+  const mockAvailableEvents = [
+    { id: "event-1", name: "Event 1" },
+    { id: "event-2", name: "Event 2" },
+    { id: "event-3", name: "Event 3" },
+  ];
+
+  const defaultTriggerCondition = {
+    expression: {
+      type: "AND" as const,
+      left: { id: "event-1" },
+      right: { id: "event-2" },
+    },
+  };
+
+  const defaultOnChange = vi.fn();
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    // Reset mock to default return value
+    mockGetTriggerConditionConfig.mockReturnValue({
+      fields: [
+        {
+          id: "status",
+          type: "STATUS_DROPDOWN",
+          options: [
+            { value: "OCCURRED", label: "Occurred" },
+            { value: "NOT_OCCURRED", label: "Not Occurred" },
+          ],
+          placeholder: "Occurred",
+        },
+        {
+          id: "operator",
+          type: "OPERATOR_DROPDOWN",
+          options: [
+            { value: "AND", label: "AND" },
+            { value: "OR", label: "OR" },
+          ],
+        },
+      ],
+    });
+    // Mock useGetSessionEventsQuery to return default empty data
+    vi.mocked(useGetSessionEventsQuery).mockReturnValue({
+      data: { data: [] },
+      isLoading: false,
+      isError: false,
+    } as any);
+  });
+
+  describe("Rendering", () => {
+    it("returns null when config is not found", () => {
+      mockGetTriggerConditionConfig.mockReturnValueOnce(null);
+
+      const store = createTestStore();
+      const { container } = render(
+        <Provider store={store}>
+          <CombinationTriggerConditions
+            triggerCondition={defaultTriggerCondition}
+            onChange={defaultOnChange}
+          />
+        </Provider>,
+      );
+
+      expect(container.firstChild).toBeNull();
+    });
+
+    it("renders combination trigger conditions with default expression", () => {
+      const store = createTestStore(mockAvailableEvents);
+      render(
+        <Provider store={store}>
+          <CombinationTriggerConditions
+            triggerCondition={defaultTriggerCondition}
+            onChange={defaultOnChange}
+          />
+        </Provider>,
+      );
+
+      expect(screen.getByText("if")).toBeInTheDocument();
+      expect(screen.getAllByText("has")).toHaveLength(2);
+      expect(screen.getByTestId("dropdown-event-1")).toBeInTheDocument();
+      expect(screen.getByTestId("dropdown-event-2")).toBeInTheDocument();
+    });
+
+    it("renders with empty expression", () => {
+      const store = createTestStore(mockAvailableEvents);
+      render(
+        <Provider store={store}>
+          <CombinationTriggerConditions
+            triggerCondition={{ expression: { type: "AND", left: { id: "" }, right: { id: "" } } }}
+            onChange={defaultOnChange}
+          />
+        </Provider>,
+      );
+
+      expect(screen.getByText("if")).toBeInTheDocument();
+      expect(screen.getAllByText("has")).toHaveLength(2);
+    });
+
+    it("displays event names from available events", () => {
+      const store = createTestStore(mockAvailableEvents);
+      render(
+        <Provider store={store}>
+          <CombinationTriggerConditions
+            triggerCondition={defaultTriggerCondition}
+            onChange={defaultOnChange}
+          />
+        </Provider>,
+      );
+
+      expect(screen.getByTestId("dropdown-value-event-1")).toHaveTextContent("Event 1");
+      expect(screen.getByTestId("dropdown-value-event-2")).toHaveTextContent("Event 2");
+    });
+  });
+
+  describe("Event selection", () => {
+    it("calls onChange when left event changes", () => {
+      const onChange = vi.fn();
+      const store = createTestStore(mockAvailableEvents);
+      render(
+        <Provider store={store}>
+          <CombinationTriggerConditions
+            triggerCondition={defaultTriggerCondition}
+            onChange={onChange}
+          />
+        </Provider>,
+      );
+
+      fireEvent.click(screen.getByTestId("dropdown-change-event-1"));
+      expect(onChange).toHaveBeenCalledWith(
+        "expression",
+        expect.objectContaining({
+          type: "AND",
+          left: expect.objectContaining({ id: "event-2" }),
+          right: expect.objectContaining({ id: "event-2" }),
+        }),
+      );
+    });
+
+    it("calls onChange when right event changes", () => {
+      const onChange = vi.fn();
+      const store = createTestStore(mockAvailableEvents);
+      render(
+        <Provider store={store}>
+          <CombinationTriggerConditions
+            triggerCondition={defaultTriggerCondition}
+            onChange={onChange}
+          />
+        </Provider>,
+      );
+
+      fireEvent.click(screen.getByTestId("dropdown-change-event-2"));
+      expect(onChange).toHaveBeenCalledWith(
+        "expression",
+        expect.objectContaining({
+          type: "AND",
+          left: expect.objectContaining({ id: "event-1" }),
+          right: expect.objectContaining({ id: "event-3" }),
+        }),
+      );
+    });
+
+    it("calls onChange when operator changes", () => {
+      const onChange = vi.fn();
+      const store = createTestStore(mockAvailableEvents);
+      render(
+        <Provider store={store}>
+          <CombinationTriggerConditions
+            triggerCondition={defaultTriggerCondition}
+            onChange={onChange}
+          />
+        </Provider>,
+      );
+
+      fireEvent.click(screen.getByTestId("dropdown-change-AND"));
+      expect(onChange).toHaveBeenCalledWith(
+        "expression",
+        expect.objectContaining({
+          type: expect.any(String),
+        }),
+      );
+    });
+  });
+
+  describe("Status handling", () => {
+    it("handles NOT status for left condition", () => {
+      const triggerCondition = {
+        expression: {
+          type: "AND" as const,
+          left: { type: "NOT" as const, left: { id: "event-1" } },
+          right: { id: "event-2" },
+        },
+      };
+
+      const store = createTestStore(mockAvailableEvents);
+      render(
+        <Provider store={store}>
+          <CombinationTriggerConditions
+            triggerCondition={triggerCondition}
+            onChange={defaultOnChange}
+          />
+        </Provider>,
+      );
+
+      expect(screen.getByTestId("dropdown-value-event-1")).toBeInTheDocument();
+    });
+
+    it("handles NOT status for right condition", () => {
+      const triggerCondition = {
+        expression: {
+          type: "AND" as const,
+          left: { id: "event-1" },
+          right: { type: "NOT" as const, left: { id: "event-2" } },
+        },
+      };
+
+      const store = createTestStore(mockAvailableEvents);
+      render(
+        <Provider store={store}>
+          <CombinationTriggerConditions
+            triggerCondition={triggerCondition}
+            onChange={defaultOnChange}
+          />
+        </Provider>,
+      );
+
+      expect(screen.getByTestId("dropdown-value-event-2")).toBeInTheDocument();
+    });
+
+    it("calls onChange when left status changes to NOT_OCCURRED", () => {
+      const onChange = vi.fn();
+      const store = createTestStore(mockAvailableEvents);
+      render(
+        <Provider store={store}>
+          <CombinationTriggerConditions
+            triggerCondition={defaultTriggerCondition}
+            onChange={onChange}
+          />
+        </Provider>,
+      );
+
+      // Find the status dropdown for left condition
+      const statusDropdowns = screen.getAllByTestId(/dropdown-OCCURRED|dropdown-NOT_OCCURRED/);
+      if (statusDropdowns.length > 0) {
+        fireEvent.click(statusDropdowns[0].querySelector("button")!);
+        expect(onChange).toHaveBeenCalled();
+      }
+    });
+  });
+
+  describe("Available events priority", () => {
+    it("uses provided availableEvents prop over Redux store", () => {
+      const providedEvents = [{ id: "prop-event-1", name: "Prop Event 1" }];
+      const store = createTestStore(mockAvailableEvents);
+
+      render(
+        <Provider store={store}>
+          <CombinationTriggerConditions
+            triggerCondition={{
+              expression: {
+                type: "AND",
+                left: { id: "prop-event-1" },
+                right: { id: "" },
+              },
+            }}
+            onChange={defaultOnChange}
+            availableEvents={providedEvents}
+          />
+        </Provider>,
+      );
+
+      expect(screen.getByTestId("dropdown-value-prop-event-1")).toHaveTextContent("Prop Event 1");
+    });
+
+    it("uses Redux store events when prop is not provided", () => {
+      const store = createTestStore(mockAvailableEvents);
+
+      render(
+        <Provider store={store}>
+          <CombinationTriggerConditions
+            triggerCondition={defaultTriggerCondition}
+            onChange={defaultOnChange}
+          />
+        </Provider>,
+      );
+
+      expect(screen.getByTestId("dropdown-value-event-1")).toHaveTextContent("Event 1");
+    });
+  });
+
+  describe("isInTable prop", () => {
+    it("passes isInTable to dropdowns when true", () => {
+      const store = createTestStore(mockAvailableEvents);
+      render(
+        <Provider store={store}>
+          <CombinationTriggerConditions
+            triggerCondition={defaultTriggerCondition}
+            onChange={defaultOnChange}
+            isInTable={true}
+          />
+        </Provider>,
+      );
+
+      const dropdowns = screen.getAllByTestId(/dropdown-in-table-/);
+      dropdowns.forEach(dropdown => {
+        expect(dropdown).toHaveTextContent("true");
+      });
+    });
+
+    it("passes isInTable to dropdowns when false", () => {
+      const store = createTestStore(mockAvailableEvents);
+      render(
+        <Provider store={store}>
+          <CombinationTriggerConditions
+            triggerCondition={defaultTriggerCondition}
+            onChange={defaultOnChange}
+            isInTable={false}
+          />
+        </Provider>,
+      );
+
+      const dropdowns = screen.getAllByTestId(/dropdown-in-table-/);
+      dropdowns.forEach(dropdown => {
+        expect(dropdown).toHaveTextContent("false");
+      });
+    });
+  });
+
+  describe("OR operator", () => {
+    it("renders with OR operator", () => {
+      const triggerCondition = {
+        expression: {
+          type: "OR" as const,
+          left: { id: "event-1" },
+          right: { id: "event-2" },
+        },
+      };
+
+      const store = createTestStore(mockAvailableEvents);
+      render(
+        <Provider store={store}>
+          <CombinationTriggerConditions
+            triggerCondition={triggerCondition}
+            onChange={defaultOnChange}
+          />
+        </Provider>,
+      );
+
+      expect(screen.getByTestId("dropdown-OR")).toBeInTheDocument();
+    });
+  });
+});

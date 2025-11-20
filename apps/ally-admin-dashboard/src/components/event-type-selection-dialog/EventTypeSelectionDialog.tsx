@@ -144,7 +144,7 @@ export const EventTypeSelectionDialog: FC<EventTypeSelectionDialogProps> = ({
               <Button
                 onClick={handleConfirm}
                 disabled={!selectedType}
-                className={`${getButtonStyles(ButtonVariant.PRIMARY)} rounded-full px-8 py-2 font-['Roboto'] disabled:opacity-50 disabled:cursor-not-allowed`}
+                className={`${getButtonStyles(ButtonVariant.PRIMARY)} rounded-full px-8 py-2 font-tertiary disabled:opacity-50 disabled:cursor-not-allowed`}
               >
                 {en.simulation.createEvent}
               </Button>

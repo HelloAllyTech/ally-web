@@ -133,14 +133,10 @@ export const Cell = ({
       );
       break;
     case cellTypes.triggerConditions: {
-      // Extract event data from row
-      const eventType = row?.detectionType?.value;
-      const currentTriggerCondition = value.value || {};
-
       element = (
         <EditableTriggerConditionsPopup
-          eventType={eventType}
-          triggerCondition={currentTriggerCondition}
+          eventType={row?.detectionType?.value}
+          triggerCondition={value.value || {}}
           onChange={updateCellValue}
           width={width}
           minWidth={minWidth}
