@@ -1,4 +1,4 @@
-import { FC, useState, useEffect, useRef } from "react";
+import { FC, useState, useEffect, useRef, useCallback } from "react";
 
 import { DndContext, closestCenter } from "@dnd-kit/core";
 import { SortableContext, verticalListSortingStrategy, arrayMove } from "@dnd-kit/sortable";
@@ -23,8 +23,7 @@ interface SimulationProps {
   setSelectedSimulations: (simulations: GetScenarioType[]) => void;
 }
 
-const SIMULATIONS_PAGE_SIZE = 1000;
-const OFFSET = 0;
+const SIMULATIONS_PAGE_SIZE = 20;
 
 export const SimulationSelectionModal: FC<SimulationProps> = ({
   showSimulation,
@@ -36,18 +35,24 @@ export const SimulationSelectionModal: FC<SimulationProps> = ({
   const [checkedSimulation, setCheckedSimulation] = useState<GetScenarioType[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [openMessageIndex, setOpenMessageIndex] = useState<number | null>(null);
+  const [page, setPage] = useState(1);
+  const [allSimulations, setAllSimulations] = useState<Simulation[]>([]);
+  const [hasMore, setHasMore] = useState(true);
 
   const messageButtonRefs = useRef<(HTMLButtonElement | null)[]>([]);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const observerRef = useRef<IntersectionObserver | null>(null);
+  const loadingRef = useRef<HTMLDivElement>(null);
 
   const simulationParams = {
     limit: SIMULATIONS_PAGE_SIZE,
-    offset: OFFSET,
+    offset: (page - 1) * SIMULATIONS_PAGE_SIZE,
     search: searchQuery,
     status: SimulationStatus.ACTIVE,
   };
 
-  const { data: simulationsResponse } = useGetSimulationsQuery(simulationParams);
-  const simulationList = simulationsResponse?.data ?? [];
+  const { data: simulationsResponse, isFetching } = useGetSimulationsQuery(simulationParams);
+  const simulationList = allSimulations;
 
   const mapToGetScenarioType = (simulation: Simulation, order: number) => {
     return {
@@ -118,6 +123,63 @@ export const SimulationSelectionModal: FC<SimulationProps> = ({
   useEffect(() => {
     if (showSimulation) setCheckedSimulation(selectedSimulations);
   }, [showSimulation, selectedSimulations]);
+
+  // Reset pagination when search query changes
+  useEffect(() => {
+    setPage(1);
+    setAllSimulations([]);
+    setHasMore(true);
+  }, [searchQuery]);
+
+  // Load simulations data
+  useEffect(() => {
+    if (simulationsResponse?.data) {
+      const newSimulations = simulationsResponse.data;
+
+      if (page === 1) {
+        setAllSimulations(newSimulations);
+      } else {
+        setAllSimulations(prev => [...prev, ...newSimulations]);
+      }
+
+      // Check if there are more items to load
+      if (newSimulations.length < SIMULATIONS_PAGE_SIZE) {
+        setHasMore(false);
+      }
+    }
+  }, [simulationsResponse, page]);
+
+  // Intersection Observer for infinite scroll
+  const handleObserver = useCallback(
+    (entries: IntersectionObserverEntry[]) => {
+      const [target] = entries;
+      if (target.isIntersecting && hasMore && !isFetching) {
+        setPage(prev => prev + 1);
+      }
+    },
+    [hasMore, isFetching],
+  );
+
+  useEffect(() => {
+    const element = loadingRef.current;
+    const option = {
+      root: scrollContainerRef.current,
+      rootMargin: "20px",
+      threshold: 0,
+    };
+
+    observerRef.current = new IntersectionObserver(handleObserver, option);
+
+    if (element) {
+      observerRef.current.observe(element);
+    }
+
+    return () => {
+      if (observerRef.current && element) {
+        observerRef.current.unobserve(element);
+      }
+    };
+  }, [handleObserver]);
 
   const renderEmptyScreen = () => (
     <EmptyState
@@ -213,47 +275,68 @@ export const SimulationSelectionModal: FC<SimulationProps> = ({
             />
           </div>
 
-          <div className="mt-4 max-h-80 overflow-y-auto">
-            {!isNonEmptyArray(simulationList) ? (
+          <div ref={scrollContainerRef} className="mt-4 max-h-80 overflow-y-auto">
+            {!isNonEmptyArray(simulationList) && !isFetching ? (
               <p className="text-center text-typography-600 py-8">
                 {en.simulation.noSimulationFound}
               </p>
             ) : (
-              simulationList?.map(simulation => {
-                const isSelected = checkedSimulation.some(
-                  item => item.scenarioId === simulation.id,
-                );
+              <>
+                {simulationList?.map(simulation => {
+                  const isSelected = checkedSimulation.some(
+                    item => item.scenarioId === simulation.id,
+                  );
 
-                const nextOrder = checkedSimulation.length + 1;
+                  const nextOrder = checkedSimulation.length + 1;
 
-                return (
-                  <div
-                    key={simulation.id}
-                    className="flex items-center gap-5 py-2 hover:bg-secondary-50 rounded-md px-2 cursor-pointer"
-                    onClick={() => handleCheckBoxClick(mapToGetScenarioType(simulation, nextOrder))}
-                  >
-                    <input
-                      type="checkbox"
-                      checked={isSelected}
-                      onChange={() =>
+                  return (
+                    <div
+                      key={simulation.id}
+                      className="flex items-center gap-5 py-2 hover:bg-secondary-50 rounded-md px-2 cursor-pointer"
+                      onClick={() =>
                         handleCheckBoxClick(mapToGetScenarioType(simulation, nextOrder))
                       }
-                      onClick={event => event.stopPropagation()}
-                      className="cursor-pointer"
-                    />
-                    <div className="w-20 h-16 rounded-md overflow-hidden flex-shrink-0">
-                      <CustomImage
-                        src={simulation.coverImageUrl}
-                        alt={simulation.title}
-                        className="w-full h-full object-cover"
+                    >
+                      <input
+                        type="checkbox"
+                        checked={isSelected}
+                        onChange={() =>
+                          handleCheckBoxClick(mapToGetScenarioType(simulation, nextOrder))
+                        }
+                        onClick={event => event.stopPropagation()}
+                        className="cursor-pointer"
                       />
+                      <div className="w-20 h-16 rounded-md overflow-hidden flex-shrink-0">
+                        <CustomImage
+                          src={simulation.coverImageUrl}
+                          alt={simulation.title}
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                      <span className="text-sm text-typography-900 font-primary truncate max-w-[200px]">
+                        {simulation.title}
+                      </span>
                     </div>
-                    <span className="text-sm text-typography-900 font-primary truncate max-w-[200px]">
-                      {simulation.title}
-                    </span>
+                  );
+                })}
+
+                {/* Loading indicator and intersection observer target */}
+                {hasMore && (
+                  <div ref={loadingRef} className="py-4 text-center">
+                    {isFetching ? (
+                      <span className="text-sm text-typography-600">Loading more...</span>
+                    ) : (
+                      <span className="text-sm text-typography-400">Scroll for more</span>
+                    )}
                   </div>
-                );
-              })
+                )}
+
+                {!hasMore && isNonEmptyArray(simulationList) && (
+                  <div className="py-4 text-center">
+                    <span className="text-sm text-typography-400">No more simulations</span>
+                  </div>
+                )}
+              </>
             )}
           </div>
 

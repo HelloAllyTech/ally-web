@@ -40,7 +40,6 @@ export const useSimulationPathways = ({ selectedFilters }: UseSimulationPathways
 
   useEffect(() => {
     setPathwaysOffset(0);
-    setHasMore(true);
   }, [selectedFilters]);
 
   useEffect(() => {

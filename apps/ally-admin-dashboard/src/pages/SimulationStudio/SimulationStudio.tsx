@@ -170,7 +170,7 @@ export const SimulationStudio: React.FC = () => {
 
   const renderFilterSection = () => {
     return (
-      <div className="flex flex-row items-center border-b border-border-light pb-2 pl-5 relative">
+      <div className="flex flex-row items-center border-b border-border-light pt-[2px] pb-[10px] pl-5 relative">
         <button onClick={handleFilterClick}>
           <Filter />
         </button>
