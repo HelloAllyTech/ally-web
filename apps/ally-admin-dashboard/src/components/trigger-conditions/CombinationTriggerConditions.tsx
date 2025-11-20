@@ -1,8 +1,15 @@
 import React, { useMemo } from "react";
 
+import { useSelector } from "react-redux";
+
 import { useGetSessionEventsQuery } from "@api";
-import { SESSION_EVENT_STATUS_OPTIONS, SORT_BY, SORT_ORDER } from "@constants";
-import { getTriggerConditionConfig } from "@constants";
+import {
+  SESSION_EVENT_STATUS_OPTIONS,
+  SORT_BY,
+  SORT_ORDER,
+  getTriggerConditionConfig,
+} from "@constants";
+import { selectAvailableEvents } from "@reducer";
 
 import { TriggerConditionDropdown } from "./TriggerConditionDropdown";
 import {
@@ -14,29 +21,47 @@ interface CombinationTriggerConditionsProps {
   triggerCondition: CombinationTriggerCondition;
   onChange: (field: string, value: CombinationExpressionNode) => void;
   isInTable?: boolean;
+  availableEvents?: Array<{ id: string; name: string }>;
 }
 
 export const CombinationTriggerConditions: React.FC<CombinationTriggerConditionsProps> = ({
   triggerCondition,
   onChange,
   isInTable = false,
+  availableEvents: providedAvailableEvents,
 }) => {
-  // Fetch events for combination event dropdowns
-  const { data: eventsData } = useGetSessionEventsQuery({
-    visibilityType: SESSION_EVENT_STATUS_OPTIONS.ACTIVE,
-    limit: 100,
-    offset: 0,
-    sortBy: SORT_BY.CREATED_AT,
-    order: SORT_ORDER.DESC,
-    searchName: "",
-  });
+  // Get events from Redux store
+  const reduxAvailableEvents = useSelector(selectAvailableEvents);
+
+  // Fetch events for combination event dropdowns only if not provided via Redux or prop
+  const shouldFetch = !providedAvailableEvents && reduxAvailableEvents.length === 0;
+  const { data: eventsData } = useGetSessionEventsQuery(
+    {
+      visibilityType: SESSION_EVENT_STATUS_OPTIONS.ACTIVE,
+      limit: 100,
+      offset: 0,
+      sortBy: SORT_BY.CREATED_AT,
+      order: SORT_ORDER.DESC,
+      searchName: "",
+    },
+    {
+      skip: !shouldFetch, // Skip query if events are available from Redux or prop
+    },
+  );
 
   const availableEvents = useMemo(() => {
+    // Priority: prop > Redux store > API call
+    if (providedAvailableEvents) {
+      return providedAvailableEvents;
+    }
+    if (reduxAvailableEvents.length > 0) {
+      return reduxAvailableEvents;
+    }
     return (eventsData?.data || []).map(event => ({
       id: event.id,
       name: event.name || "",
     }));
-  }, [eventsData]);
+  }, [eventsData, providedAvailableEvents, reduxAvailableEvents]);
 
   const config = getTriggerConditionConfig("COMBINATION");
   if (!config) return null;

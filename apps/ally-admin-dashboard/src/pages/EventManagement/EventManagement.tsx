@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useMemo, useCallback } from "react";
 
+import { useDispatch } from "react-redux";
 import { toast } from "sonner";
 
 import {
@@ -27,12 +28,14 @@ import {
   EVENT_TYPE_OPTIONS,
   EVENT_DETECTION_TYPES,
 } from "@constants";
+import { setAvailableEvents } from "@reducer";
 import { UpdateEventDataParam } from "@types";
 import { convertEventToApiPayload, convertApiResponseToEvent } from "@utils";
 
 export const EventManagement: React.FC = () => {
   const limit = 30;
   const triggerConditionsColumnId = "triggerConditions";
+  const dispatch = useDispatch();
 
   const [offset, setOffset] = useState<number>(0);
   const [events, setEvents] = useState<any[]>([]);
@@ -196,6 +199,19 @@ export const EventManagement: React.FC = () => {
       triggerCondition: selectedEvent.triggerCondition,
     };
   }, [selectedEvent]);
+
+  // Extract available events for combination trigger conditions and dispatch to Redux
+  const availableEvents = useMemo(() => {
+    return (events || []).map(event => ({
+      id: event.id || "",
+      name: event.name || "",
+    }));
+  }, [events]);
+
+  // Dispatch available events to Redux store
+  useEffect(() => {
+    dispatch(setAvailableEvents(availableEvents));
+  }, [availableEvents, dispatch]);
 
   const tableData = useMemo(() => {
     return {
