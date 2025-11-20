@@ -32,7 +32,7 @@ export const OrganizationDetail: FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
 
   // Get active tab from URL params, default to SIMULATIONS
-  const activeTab = (searchParams.get("tab") as TAB_IDS) || TAB_IDS.SIMULATIONS;
+  const activeTab = searchParams.get("tab") || TAB_IDS.SIMULATIONS;
 
   // Fetch organization data
   const [getTenantById, { data: tenantsResponse, isLoading: isTenantsLoading }] =
@@ -66,7 +66,7 @@ export const OrganizationDetail: FC = () => {
         });
       }
     } catch {
-      toast.error("Failed to update access.");
+      toast.error(en.errors.failedUpdateAccess);
     }
   };
 

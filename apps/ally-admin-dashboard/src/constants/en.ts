@@ -20,6 +20,7 @@ export const en = {
     edit: "Edit",
   },
   errors: {
+    failedCreateOrganization: "Failed to create organization",
     fileMustBeJPEGOrPNG: "File must be JPEG or PNG.",
     fileMustBeVideo: "File must be a video.",
     fileUploadFailed: "Failed to upload file. Please try again.",
@@ -185,6 +186,9 @@ export const en = {
     noSimulationFound: "No simulations found",
   },
   userManagement: {
+    organizationCreated: "Organization created successfully",
+    organizationUpdated: "Organization updated successfully",
+    failedUpdateOrganization: "Failed to update organization",
     addOrganization: "Add organization",
     users: "Users",
     organizations: "Organizations",
