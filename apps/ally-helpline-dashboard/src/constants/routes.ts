@@ -23,6 +23,7 @@ export const ROUTES = {
   SEARCH: "/search",
   LEARN: "/learn",
   SCENARIO: "/scenario/:scenarioId",
+  PATHWAY: "/pathway/:pathwayId",
   SIMULATION: "/simulation/:id",
   SIMULATION_SUMMARY: "/simulation-summary",
   SIMULATION_SUMMARY_FULL: "/simulation-summary/:sessionId",
@@ -71,7 +72,7 @@ export const navBarOptions = [
     title: "Learn",
     Icon: LearnIcon,
     path: ROUTES.LEARN,
-    activePages: [ROUTES.SCENARIO],
+    activePages: [ROUTES.SCENARIO, ROUTES.PATHWAY],
     permissions: [Permissions.EDIT_SCENARIO_SESSION],
   },
   {

@@ -14,6 +14,7 @@
 import AccountCircle from "./account-circle.svg?react";
 import ActionsIcon from "./actions-icon.svg?react";
 import Ally from "./ally.svg?react";
+import ArrowRight from "./arrow-right.svg?react";
 import Arrow from "./arrow.svg?react";
 import Assessment from "./assessment.svg?react";
 import AudioFile from "./audio-file.svg?react";
@@ -241,5 +242,6 @@ export {
   Warning,
   Waveform,
   Arrow,
+  ArrowRight,
   NoAnalytics,
 };

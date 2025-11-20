@@ -34,10 +34,17 @@ const TabGroup: FC<TabGroupProps> = ({ value, onChange, tabs, className, childre
             key={tab.value}
             label={tab.label}
             value={tab.value}
+            disableRipple
             sx={{
               textTransform: "none",
               fontWeight: 500,
               color: "#49454F",
+              "&:focus": {
+                outline: "none",
+              },
+              "&:focus-visible": {
+                outline: "none",
+              },
             }}
           />
         ))}
