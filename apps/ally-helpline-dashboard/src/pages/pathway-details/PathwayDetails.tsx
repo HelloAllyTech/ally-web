@@ -224,7 +224,7 @@ export const PathwayDetails: FC = () => {
     return (
       <div className="relative w-full sticky top-0 z-10 bg-white pb-[10px] pt-4">
         {/* Breadcrumb */}
-        <div className="pt-6 pb-6 flex items-center justify-between">
+        <div className="pt-6 pb-3 flex items-center justify-between">
           <div className="flex items-center gap-2 text-sm text-typography-700">
             <button
               onClick={() => navigate(ROUTES.LEARN)}
