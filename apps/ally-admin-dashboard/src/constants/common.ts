@@ -40,7 +40,8 @@ export const ApiEndpoints = {
     SIMULATION_TENANT_VISIBILITY: (tenantId: string) => `v1/learn/scenario/tenant/${tenantId}`,
     SCENARIO_PATHS: "v1/learn/admin/scenario-paths",
     SCENARIO_PATH_BY_ID: (id: string | number) => `/v1/learn/admin/scenario-paths/${id}`,
-    PATH_TENANT_VISIBILITY: (id: string) => `v1/learn/admin/scenario-path/tenant/${id}`,
+    PATH_TENANT_VISIBILITY: (tenantId: string | number) =>
+      `v1/learn/admin/scenario-path/tenant/${tenantId}`,
   },
 
   USER_MANAGEMENT: {

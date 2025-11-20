@@ -147,9 +147,12 @@ const userManagementAPI = baseAPI.injectEndpoints({
       invalidatesTags: [TAG_TYPES.SIMULATION],
     }),
 
-    enablePath: builder.mutation<{ success: boolean }, { id: string; scenarioPathIds: number[] }>({
-      query: ({ id, scenarioPathIds }) => ({
-        url: `${ApiEndpoints.SIMULATION_STUDIO.PATH_TENANT_VISIBILITY(id)}`,
+    enablePath: builder.mutation<
+      { success: boolean },
+      { tenantId: string; scenarioPathIds: number[] }
+    >({
+      query: ({ tenantId, scenarioPathIds }) => ({
+        url: `${ApiEndpoints.SIMULATION_STUDIO.PATH_TENANT_VISIBILITY(tenantId)}`,
         method: HttpMethod.POST,
         body: { scenarioPathIds },
       }),
@@ -158,10 +161,10 @@ const userManagementAPI = baseAPI.injectEndpoints({
 
     disablePath: builder.mutation<
       disableSuccessResponse,
-      { id: string; scenarioPathIds: number[] }
+      { tenantId: string; scenarioPathIds: number[] }
     >({
-      query: ({ id, scenarioPathIds }) => ({
-        url: `${ApiEndpoints.SIMULATION_STUDIO.PATH_TENANT_VISIBILITY(id)}`,
+      query: ({ tenantId, scenarioPathIds }) => ({
+        url: `${ApiEndpoints.SIMULATION_STUDIO.PATH_TENANT_VISIBILITY(tenantId)}`,
         method: HttpMethod.DELETE,
         body: { scenarioPathIds },
       }),

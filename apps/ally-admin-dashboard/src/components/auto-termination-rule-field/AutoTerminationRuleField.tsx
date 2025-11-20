@@ -97,7 +97,7 @@ export const AutoTerminationRuleField: React.FC<AutoTerminationRuleFieldProps> =
             label={TERMINATION_FIELDS_MAP.triggerMessage.label}
             id={TERMINATION_FIELDS_MAP.triggerMessage.id}
             formMethods={formMethods}
-            multiline={true}
+            multiline
             placeholder={TERMINATION_FIELDS_MAP.triggerMessage.placeholder}
             maxLength={200}
             minHeight="120"

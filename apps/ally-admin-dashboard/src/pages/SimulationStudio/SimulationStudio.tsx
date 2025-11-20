@@ -175,19 +175,18 @@ export const SimulationStudio: React.FC = () => {
           <Filter />
         </button>
         <div className="flex flex-row items-center gap-2 ml-3 h-[18px]">
-          {selectedFilters.length > 0 &&
-            selectedFilters.map(filter => (
-              <div
-                key={filter.id}
-                className="flex flex-row items-center gap-1 border border-border-light rounded-full px-2 py-1"
-              >
-                <span className="text-xs text-typography-800">{filter.label}</span>
+          {selectedFilters?.map(filter => (
+            <div
+              key={filter.id}
+              className="flex flex-row items-center gap-1 border border-border-light rounded-full px-2 py-1"
+            >
+              <span className="text-xs text-typography-800">{filter.label}</span>
 
-                <button onClick={() => handleFilterItemClose(filter)}>
-                  <Close />
-                </button>
-              </div>
-            ))}
+              <button onClick={() => handleFilterItemClose(filter)}>
+                <Close />
+              </button>
+            </div>
+          ))}
         </div>
         <FilterList
           isOpen={isFilterOpen}

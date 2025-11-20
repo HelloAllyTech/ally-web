@@ -4,7 +4,9 @@ import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 
 import {
+  useDisablePathMutation,
   useDisableSimulationMutation,
+  useEnablePathMutation,
   useEnableSimulationMutation,
   useLazyGetTenantByIdQuery,
 } from "@api";
@@ -39,8 +41,8 @@ export const OrganizationDetail: FC = () => {
     useLazyGetTenantByIdQuery();
   const [enableSimulation] = useEnableSimulationMutation();
   const [disableSimulation] = useDisableSimulationMutation();
-  const [enablePathAccess] = useEnableSimulationMutation();
-  const [disablePathAccess] = useDisableSimulationMutation();
+  const [enablePathAccess] = useEnablePathMutation();
+  const [disablePathAccess] = useDisablePathMutation();
 
   useEffect(() => {
     if (id) {
@@ -75,12 +77,12 @@ export const OrganizationDetail: FC = () => {
       if (enabled) {
         await enablePathAccess({
           tenantId: id,
-          scenarioIds: [pathId],
+          scenarioPathIds: [pathId],
         });
       } else {
         await disablePathAccess({
           tenantId: id,
-          scenarioIds: [pathId],
+          scenarioPathIds: [pathId],
         });
       }
     } catch {
