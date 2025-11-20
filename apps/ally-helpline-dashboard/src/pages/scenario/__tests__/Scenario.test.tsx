@@ -129,6 +129,20 @@ vi.mock("@components", () => ({
       </button>
     </div>
   )),
+  CreditsDisplay: ({ className }: { className?: string }) => (
+    <div data-testid="credits-display" className={className}>
+      <div className="font-primary text-base text-typography-700 whitespace-nowrap">
+        Credits used:
+      </div>
+      <div data-testid="credits-icon">⚡</div>
+      <span data-testid="credits-consumed" className="font-primary font-bold text-lg">
+        0
+      </span>
+      <span className="font-primary text-base text-typography-700" data-testid="credits-limit">
+        /100
+      </span>
+    </div>
+  ),
   ConfirmationDialog: vi.fn(
     ({
       isOpen,

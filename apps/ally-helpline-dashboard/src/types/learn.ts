@@ -247,6 +247,7 @@ export interface GetScenarioPathwaysResponse {
 export enum PathwayScenarioStatus {
   COMPLETED = "COMPLETED",
   IN_PROGRESS = "IN_PROGRESS",
+  UNLOCKED = "UNLOCKED",
   LOCKED = "LOCKED",
 }
 
@@ -254,16 +255,16 @@ export interface PathwayScenario {
   sessionItemId: number;
   scenarioId: number;
   coverImageUrl: string;
-  coverVideoUrl: string;
-  description: string;
-  scenarioTitle: string;
+  coverVideoUrl?: string;
+  description?: string;
+  title?: string;
   order: number;
   status: PathwayScenarioStatus;
 }
 
 export interface ScenarioPathwayDetails {
   id: string;
-  name: string;
+  title: string;
   description?: string;
   coverImageUrl: string;
   userId: number;

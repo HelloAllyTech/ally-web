@@ -4,9 +4,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { useNavigate, useSearchParams } from "react-router-dom";
 
 import { useGetScenariosQuery, useGetScenarioPathwaysQuery } from "@api";
-import { Bolt } from "@assets";
-import { ScenarioCard, TabGroup } from "@components";
-import { useSimulationCredits } from "@hooks";
+import { CreditsDisplay, ScenarioCard, TabGroup } from "@components";
 import { ScenarioStatus } from "@types";
 
 import { learnPageContainerVariants, learnPageItemVariants } from "./constants";
@@ -25,7 +23,6 @@ type LearnTabId = (typeof LEARN_TABS)[number]["id"];
 
 export const Learn: FC = () => {
   const navigate = useNavigate();
-  const { credits, limitReached } = useSimulationCredits();
   const [searchParams, setSearchParams] = useSearchParams();
 
   const isValidTabId = (tab: string | null): tab is LearnTabId => {
@@ -86,24 +83,7 @@ export const Learn: FC = () => {
             className="border-none max-w-[200px]"
             onChange={(_, newValue) => handleTabChange(newValue as LearnTabId)}
           />
-          <div className="flex flex-row items-center min-w-[130px] justify-end">
-            <div className="font-primary text-base text-typography-700 whitespace-nowrap">
-              Credits used:
-            </div>
-            <Bolt data-testid="learn-credits-icon" />
-            <span
-              data-testid="learn-credits-consumed"
-              className={`font-primary font-bold text-lg  ${limitReached ? "text-red-500" : "text-black"}`}
-            >
-              {credits?.consumedCredits ?? 0}
-            </span>
-            <span
-              className="font-primary text-base text-typography-700"
-              data-testid="learn-credits-limit"
-            >
-              /{credits?.creditLimit ?? 0}
-            </span>
-          </div>
+          <CreditsDisplay />
         </div>
       </>
     );

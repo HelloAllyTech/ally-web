@@ -11,6 +11,7 @@ import {
   useStartSimulationMutation,
 } from "@api";
 import { ArrowRight, Lock, TickGreenBackground } from "@assets";
+import { CreditsDisplay } from "@components";
 import { LOCAL_STORAGE_KEYS, ROUTES } from "@constants";
 import { PathwayScenarioStatus, PathwayScenario } from "@types";
 
@@ -33,9 +34,9 @@ const ScenarioCard: FC<ScenarioCardProps> = ({ scenario, index, onScenarioClick 
             <TickGreenBackground className="w-4 h-4" />
           </div>
         );
-      case PathwayScenarioStatus.IN_PROGRESS:
+      case PathwayScenarioStatus.UNLOCKED:
         return (
-          <span className="ml-2 px-3 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-700">
+          <span className="ml-2 px-[8px] py-[2px] text-xs font-semibold rounded-full bg-blue-100 text-blue-700">
             Next
           </span>
         );
@@ -62,13 +63,13 @@ const ScenarioCard: FC<ScenarioCardProps> = ({ scenario, index, onScenarioClick 
         ${isLocked ? "cursor-not-allowed" : "cursor-pointer"}
       `}
     >
-      <div className="flex gap-6 p-4 items-center">
+      <div className="flex gap-6 py-4 px-[10px] items-center">
         {/* Scenario Image */}
         <div className="relative flex-shrink-0">
           <img
             src={scenario.coverImageUrl}
-            alt={scenario.scenarioTitle}
-            className="w-[120px] h-[60px] object-cover rounded-[8px]"
+            alt={scenario.title}
+            className="w-[120px] h-[60px] object-cover rounded-[8px] bg-background-secondary"
           />
           {isLocked && (
             <div className="absolute inset-0 bg-black/40 rounded-[8px] flex items-center justify-center">
@@ -86,7 +87,7 @@ const ScenarioCard: FC<ScenarioCardProps> = ({ scenario, index, onScenarioClick 
             {getStatusBadge(scenario.status)}
           </div>
           <h3 className="text-base font-semibold text-typography-900 leading-tight">
-            {scenario.scenarioTitle}
+            {scenario.title}
           </h3>
         </div>
 
@@ -179,7 +180,7 @@ export const PathwayDetails: FC = () => {
       LOCAL_STORAGE_KEYS.ROOM_DATA,
       JSON.stringify({
         roomId: scenarioSession.id,
-        name: selectedScenario?.scenarioTitle,
+        name: selectedScenario?.title,
         coverImageUrl: selectedScenario?.coverImageUrl,
         accessToken: accessToken.token,
         createdAt: scenarioSession.startedAt,
@@ -213,11 +214,17 @@ export const PathwayDetails: FC = () => {
     );
   }
 
+  // Calculate progress metrics after pathway validation
+  const totalScenarios = pathway.scenarios?.length || 0;
+  const hasProgress = (pathway.completedScenarios || 0) > 0;
+  const progressPercentage =
+    totalScenarios > 0 ? ((pathway.completedScenarios || 0) / totalScenarios) * 100 : 0;
+
   const renderHeaderSection = () => {
     return (
       <div className="relative w-full sticky top-0 z-10 bg-white pb-[10px] pt-4">
         {/* Breadcrumb */}
-        <div className="pt-6 pb-4">
+        <div className="pt-6 pb-6 flex items-center justify-between">
           <div className="flex items-center gap-2 text-sm text-typography-700">
             <button
               onClick={() => navigate(ROUTES.LEARN)}
@@ -226,7 +233,10 @@ export const PathwayDetails: FC = () => {
               Path way
             </button>
             <ArrowRight />
-            <span className="text-primary-500 font-medium">{pathway.name}</span>
+            <span className="text-primary-500 font-medium">{pathway.title}</span>
+          </div>
+          <div className="flex items-center gap-2 text-sm text-typography-700">
+            <CreditsDisplay />
           </div>
         </div>
 
@@ -234,15 +244,15 @@ export const PathwayDetails: FC = () => {
         <div className="relative h-[240px] w-full rounded-[8px] overflow-hidden">
           <img
             src={pathway.coverImageUrl}
-            alt={pathway.name}
-            className="w-full h-full object-cover"
+            alt={pathway.title}
+            className="w-full h-full object-cover bg-background-secondary"
           />
         </div>
 
         {/* Pathway Info */}
         <div className="pt-8 max-w-5xl mx-auto">
           <div className="flex items-center justify-between mb-4">
-            <h1 className="text-2xl font-bold text-typography-900">{pathway.name}</h1>
+            <h1 className="text-2xl font-bold text-typography-900">{pathway.title}</h1>
             {hasProgress && (
               <div className="flex items-center gap-3">
                 <div className="w-40 h-2 bg-gray-200 rounded-full overflow-hidden">
@@ -252,7 +262,7 @@ export const PathwayDetails: FC = () => {
                   />
                 </div>
                 <span className="text-sm text-typography-700 whitespace-nowrap">
-                  {pathway.completedScenarios} of {pathway.totalScenarios} completed
+                  {pathway.completedScenarios} of {totalScenarios} completed
                 </span>
               </div>
             )}
@@ -273,20 +283,17 @@ export const PathwayDetails: FC = () => {
     );
   };
 
-  const hasProgress = pathway.completedScenarios > 0;
-  const progressPercentage = (pathway.completedScenarios / pathway.totalScenarios) * 100;
-
   return (
     <>
       <div className="min-h-screen bg-white mx-[15%] font-primary">
         {renderHeaderSection()}
         {/* Scenarios List */}
         <div className="pb-6 pt-3">
-          <div className="max-w-5xl mx-auto">
+          <div className="max-w-5xl mx-auto ml-[-10px] w-[calc(100%+20px)]">
             <div>
               {pathway.scenarios.map((scenario, index) => (
                 <ScenarioCard
-                  key={scenario.sessionItemId}
+                  key={scenario.sessionItemId || `scenario-${scenario.scenarioId}-${index}`}
                   scenario={scenario}
                   index={index}
                   onScenarioClick={handleScenarioClick}
@@ -299,7 +306,7 @@ export const PathwayDetails: FC = () => {
       {selectedScenario && (
         <SimulationDetailsModal
           isOpen={isModalOpen}
-          title={selectedScenario.scenarioTitle}
+          title={selectedScenario.title}
           description={selectedScenario.description}
           coverImageUrl={selectedScenario.coverImageUrl}
           coverVideoUrl={selectedScenario.coverVideoUrl}

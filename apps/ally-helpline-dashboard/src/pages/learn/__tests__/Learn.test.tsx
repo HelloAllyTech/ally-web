@@ -34,6 +34,9 @@ vi.mock("@hooks", () => ({
   useSimulationCredits: () => mockUseSimulationCredits(),
 }));
 
+// Import the mocked hook for use in component mock
+const getMockCredits = () => mockUseSimulationCredits();
+
 // Mock the components
 vi.mock("@components", () => ({
   ScenarioCard: ({
@@ -73,6 +76,29 @@ vi.mock("@components", () => ({
       ))}
     </div>
   ),
+  CreditsDisplay: ({ className }: { className?: string }) => {
+    const mockData = getMockCredits();
+    const credits = mockData?.credits || { consumedCredits: 0, creditLimit: 0 };
+    const limitReached = mockData?.limitReached || false;
+
+    return (
+      <div data-testid="credits-display" className={className}>
+        <div className="font-primary text-base text-typography-700 whitespace-nowrap">
+          Credits used:
+        </div>
+        <div data-testid="bolt-icon">⚡</div>
+        <span
+          data-testid="credits-consumed"
+          className={`font-primary font-bold text-lg ${limitReached ? "text-red-500" : "text-black"}`}
+        >
+          {credits.consumedCredits}
+        </span>
+        <span className="font-primary text-base text-typography-700" data-testid="credits-limit">
+          /{credits.creditLimit}
+        </span>
+      </div>
+    );
+  },
 }));
 
 // Mock the Bolt asset

@@ -8,6 +8,7 @@ import Chip, { ChipConfig } from "./chip";
 import { CircularProgress } from "./circular-progress";
 import ConfirmationDialog from "./confirmation-dialog";
 import CreditInfo from "./credit-info-dialog";
+import { CreditsDisplay } from "./credits-display";
 import CustomCircularProgress from "./custom-circular-progress";
 import CustomMarkdown from "./custom-markdown";
 import { DatePicker, TimePicker } from "./date-time-pickers";
@@ -50,6 +51,7 @@ export {
   Chip,
   CircularProgress,
   ConfirmationDialog,
+  CreditsDisplay,
   CustomCircularProgress,
   CustomMarkdown,
   DatePicker,
