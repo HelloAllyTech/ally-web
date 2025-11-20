@@ -157,6 +157,17 @@ export interface SimulationSummary {
       };
     };
   };
+  // TODO: Change the type after the API is updated
+  upNextSimulation: {
+    number: number;
+    title?: string;
+    description?: string;
+    coverImageUrl?: string;
+    message?: {
+      title?: string;
+      description?: string;
+    };
+  };
   events: KeyEvent[];
   hasFeedback: boolean;
 }

@@ -1,5 +1,10 @@
 import { FC, useState } from "react";
 
+import { motion } from "framer-motion";
+import { useNavigate, useParams } from "react-router-dom";
+import { toast } from "sonner";
+
+import { logger, SimulationDetailsModal } from "@ally-ui-mono/ui-shared";
 import {
   useEndSimulationMutation,
   useGetScenarioPathwayDetailsQuery,
@@ -8,11 +13,6 @@ import {
 import { ArrowRight, Lock, TickGreenBackground } from "@assets";
 import { LOCAL_STORAGE_KEYS, ROUTES } from "@constants";
 import { PathwayScenarioStatus, PathwayScenario } from "@types";
-import { motion } from "framer-motion";
-import { useNavigate, useParams } from "react-router-dom";
-import { toast } from "sonner";
-
-import { logger, SimulationDetailsModal } from "@ally-ui-mono/ui-shared";
 
 interface ScenarioCardProps {
   scenario: PathwayScenario;
@@ -48,7 +48,6 @@ const ScenarioCard: FC<ScenarioCardProps> = ({ scenario, index, onScenarioClick 
     event.preventDefault();
     event.stopPropagation();
     navigate(`/simulation-summary/${scenarioId}`);
-    // TODO: Navigate to summary page
   };
 
   return (

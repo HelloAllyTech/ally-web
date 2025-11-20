@@ -1,12 +1,13 @@
 import { FC, useEffect } from "react";
 
+import { AnimatePresence, motion } from "framer-motion";
+import { useNavigate, useSearchParams } from "react-router-dom";
+
 import { useGetScenariosQuery, useGetScenarioPathwaysQuery } from "@api";
 import { Bolt } from "@assets";
 import { ScenarioCard, TabGroup } from "@components";
 import { useSimulationCredits } from "@hooks";
 import { ScenarioStatus } from "@types";
-import { AnimatePresence, motion } from "framer-motion";
-import { useNavigate, useSearchParams } from "react-router-dom";
 
 import { learnPageContainerVariants, learnPageItemVariants } from "./constants";
 
@@ -55,9 +56,7 @@ export const Learn: FC = () => {
   });
 
   const handleTabChange = (newValue: LearnTabId) => {
-    if (isValidTabId(newValue)) {
-      setSearchParams({ tab: newValue });
-    }
+    if (isValidTabId(newValue)) setSearchParams({ tab: newValue });
   };
 
   const onScenarioCardClick = (itemId: number, isPathway: boolean) => {

@@ -1,12 +1,12 @@
 import { FC, useState } from "react";
 
+import { useNavigate } from "react-router-dom";
+
+import { SimulationDetailsModal } from "@ally-ui-mono/ui-shared";
 import { useEndScenarioPreviewMutation, useScenarioPreviewMutation } from "@api";
 import { CustomImage } from "@components";
 import { en, LOCAL_STORAGE_KEYS, ROUTES } from "@constants";
 import { SimulationPreviewProps, StartSimulationResponse } from "@types";
-import { useNavigate } from "react-router-dom";
-
-import { SimulationDetailsModal } from "@ally-ui-mono/ui-shared";
 
 export const SimulationPreview: FC<SimulationPreviewProps> = ({ simulation, isOpen, onClose }) => {
   const navigate = useNavigate();
