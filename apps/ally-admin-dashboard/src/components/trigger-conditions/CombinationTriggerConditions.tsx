@@ -201,6 +201,7 @@ export const CombinationTriggerConditions: React.FC<CombinationTriggerConditions
               placeholder="AND"
               disabled={false}
               isInTable={isInTable}
+              className="bg-primary-50 border-[0.5px] border-primary-500"
             />
             <TriggerConditionDropdown
               value={getRightEventId()}
