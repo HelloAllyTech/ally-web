@@ -136,7 +136,7 @@ export const SimulationCardItem: FC<SimulationCardItemProps> = ({
               type="number"
               className="border outline-none w-16 p-1 bg-secondary-50 rounded-sm"
               defaultValue={simulation.minimumScore}
-              onBlur={e => handleMinimumScoreChange(index, e.target.value)}
+              onBlur={event => handleMinimumScoreChange(index, event.target.value)}
               min="0"
             />
           </div>
@@ -174,7 +174,7 @@ export const SimulationCardItem: FC<SimulationCardItemProps> = ({
             <div className="fixed inset-0 bg-black/10 z-10" onClick={handleCloseModal} />
             <div
               className="absolute left-1/2 -translate-x-1/2 z-20"
-              onClick={e => e.stopPropagation()}
+              onClick={event => event.stopPropagation()}
             >
               <AnimatePresence>
                 <motion.div
@@ -183,7 +183,7 @@ export const SimulationCardItem: FC<SimulationCardItemProps> = ({
                   animate={{ opacity: 1, scale: 1, y: 0 }}
                   exit={{ opacity: 0, scale: 0.8, y: -20 }}
                   transition={{ duration: 0.25, ease: "easeOut" }}
-                  onClick={e => e.stopPropagation()}
+                  onClick={event => event.stopPropagation()}
                 >
                   <AddMessageModal
                     handleCancel={handleCloseModal}
@@ -192,7 +192,7 @@ export const SimulationCardItem: FC<SimulationCardItemProps> = ({
                       feedback: simulation.feedback || "",
                     }}
                     handlePrimaryAction={handleAddMessage}
-                    isOpen={true}
+                    isOpen
                     anchorElement={addButtonRef.current[index]}
                   />
                 </motion.div>

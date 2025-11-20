@@ -18,8 +18,8 @@ import {
   ActionConfirmationPopup,
   Button,
   SimulationSelectionModal,
+  CreateSimulationSubSection,
 } from "@components";
-import { CreateSimulationSubSection } from "@components";
 import { ButtonVariant } from "@components/types";
 import {
   en,
@@ -53,10 +53,12 @@ const getMandatoryFieldIds = () => {
   return mandatoryFields;
 };
 
+const DEBOUNCE_TIME = 500;
+
 export const CreatePath: FC = () => {
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
-  const [pathId, setPathId] = useState<string | undefined>(id);
+  const [pathId, setPathId] = useState<string | null>(id);
   const [currentStep, setCurrentStep] = useState(PATH_CREATOR_STEP_IDS.basicInfo);
   const [showDiscardPopup, setShowDiscardPopup] = useState(false);
   const [showSimulationModal, setShowSimulationModal] = useState(false);
@@ -92,17 +94,12 @@ export const CreatePath: FC = () => {
   } = formMethods;
 
   useEffect(() => {
-    if (pathId) {
-      getScenarioPathByIdQuery(pathId);
-    }
+    if (pathId) getScenarioPathByIdQuery(pathId);
   }, [pathId, getScenarioPathByIdQuery]);
   useEffect(() => {
-    if (individualPath) {
-      formMethods.reset(individualPath);
-    }
-    if (individualPath?.scenarios) {
+    if (individualPath) formMethods.reset(individualPath);
+    if (individualPath?.scenarios)
       setSelectedSimulations(formatScenarios(individualPath.scenarios));
-    }
   }, [individualPath, formMethods]);
   // Watch all form values to check mandatory fields
   const formValues = watch();
@@ -126,11 +123,8 @@ export const CreatePath: FC = () => {
   };
 
   const handlePageBack = () => {
-    if (isNonEmptyObject(dirtyFields)) {
-      setShowDiscardPopup(true);
-    } else {
-      navigate(-1);
-    }
+    if (isNonEmptyObject(dirtyFields)) setShowDiscardPopup(true);
+    else navigate(-1);
   };
 
   // Core function to save simulation changes
@@ -155,8 +149,6 @@ export const CreatePath: FC = () => {
 
     const simulationPath: any = {
       ...extractValidData(PATH_CREATOR_FIELD_GROUPS, formData),
-      coverImageUrl:
-        "https://images.unsplash.com/photo-1580757468214-c73f7062a5cb?fm=jpg&q=60&w=3000&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
       status,
     };
     let response;
@@ -172,26 +164,25 @@ export const CreatePath: FC = () => {
     return response;
   };
 
-  // Debounced version to prevent duplicate simulation creation (500ms delay)
-  const saveSimulationChanges = useDebounce(saveSimulationChangesCore, 500);
+  // Debounced version to prevent duplicate simulation creation with a delay
+  const saveSimulationChanges = useDebounce(saveSimulationChangesCore, DEBOUNCE_TIME);
 
   const handleSaveDraft = async () => {
     try {
       const response = await saveSimulationChanges(SimulationStatus.DRAFT);
-      if (response && !response.error) {
-        if (response?.data?.[0]?.id && !pathId) {
-          setPathId(response?.data?.[0]?.id);
-        }
+      const responseData = response?.data;
+      if (!response?.error) {
+        if (responseData?.[0]?.id && !pathId) setPathId(responseData?.[0]?.id);
         const currentFormValues = formMethods.getValues();
         formMethods.reset(currentFormValues);
         return response?.data;
       } else if (response?.error) {
-        toast.error("Failed to save draft. Please try again.");
+        toast.error(en.errors.failedSaveDraft);
         return null;
       }
-      return response?.data;
+      return responseData;
     } catch {
-      toast.error("Failed to save draft. Please try again.");
+      toast.error(en.errors.failedSaveDraft);
       return null;
     }
   };
@@ -245,7 +236,7 @@ export const CreatePath: FC = () => {
         <div className="sticky flex flex-row justify-between top-0 z-10 pt-3 mx-6 pb-4 border-b border-border-light">
           <h2 className="text-lg font-medium text-typography-900">{title}</h2>
           {addButton && (
-            <Button variant="secondary" onClick={toggleSimulationModal}>
+            <Button variant={ButtonVariant.SECONDARY} onClick={toggleSimulationModal}>
               <Plus />
               {en.simulation.addSimulation}
             </Button>
@@ -321,7 +312,7 @@ export const CreatePath: FC = () => {
             onPrevious={handlePrevious}
             onNext={handleNext}
             showPrevious={currentStep !== PATH_CREATOR_STEP_IDS.basicInfo}
-            showNext={true}
+            showNext
             isNextDisabled={false}
             isLastStep={isLastStep}
           />

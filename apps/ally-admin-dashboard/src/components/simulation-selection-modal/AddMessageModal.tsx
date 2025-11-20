@@ -2,12 +2,10 @@ import { FC } from "react";
 
 import { useForm } from "react-hook-form";
 
+import { PopupWrapper, Button } from "@components";
+import { ButtonVariant } from "@components/types";
 import { addMessageModalFields, en } from "@constants";
 import { MessageFields } from "@types";
-
-import { Button } from "../button";
-import { PopupWrapper } from "../popup-wrapper/PopupWrapper";
-import { ButtonVariant } from "../types";
 
 interface AddMessageModalProps {
   isOpen: boolean;

@@ -56,7 +56,7 @@ export interface SimulationInput {
 }
 
 export interface UpdateSimulationByIdInput {
-  id: string;
+  id: string | number;
   simulation: SimulationInput;
 }
 
