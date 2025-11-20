@@ -75,6 +75,13 @@ export const CombinationTriggerConditions: React.FC<CombinationTriggerConditions
     return expression.type === "OR" ? "OR" : "AND";
   };
 
+  // Helper function to get event name from event ID
+  const getEventNameById = (eventId: string): string => {
+    if (!eventId) return "";
+    const event = availableEvents.find(e => e.id === eventId);
+    return event?.name || "";
+  };
+
   const handleLeftEventChange = (eventId: string) => {
     const newExpression: CombinationExpressionNode = {
       ...expression,
@@ -135,6 +142,7 @@ export const CombinationTriggerConditions: React.FC<CombinationTriggerConditions
             <span className="text-sm text-typography-500">if</span>
             <TriggerConditionDropdown
               value={getLeftEventId()}
+              displayValue={getEventNameById(getLeftEventId())}
               options={availableEvents.map(event => ({
                 value: event.id,
                 label: event.name,
@@ -171,6 +179,7 @@ export const CombinationTriggerConditions: React.FC<CombinationTriggerConditions
             />
             <TriggerConditionDropdown
               value={getRightEventId()}
+              displayValue={getEventNameById(getRightEventId())}
               options={availableEvents.map(event => ({
                 value: event.id,
                 label: event.name,

@@ -15,6 +15,7 @@ interface DropdownOption {
 
 interface TextDropdownProps {
   value: string;
+  displayValue?: string;
   options: DropdownOption[];
   onChange: (value: string) => void;
   placeholder?: string;
@@ -26,6 +27,7 @@ interface TextDropdownProps {
 
 export const TextDropdown = ({
   value,
+  displayValue,
   options,
   onChange,
   placeholder = "Select an option",
@@ -135,8 +137,14 @@ export const TextDropdown = ({
   useClickOutside(dropdownRef, handleClose);
 
   // Get current option display value
+  // Priority: 1. displayValue (if provided and not empty), 2. Find from options, 3. placeholder
   const currentOption = options.find(option => option.value === value);
-  const displayValue = currentOption ? currentOption.label : value || placeholder;
+  const finalDisplayValue =
+    displayValue && displayValue.trim() !== ""
+      ? displayValue
+      : currentOption
+        ? currentOption.label
+        : placeholder;
 
   return (
     <div ref={dropdownRef} className={clsx("relative w-full", className)}>
@@ -156,7 +164,7 @@ export const TextDropdown = ({
         )}
       >
         <span className={clsx("truncate mr-1", { "text-typography-800": !value })}>
-          {displayValue}
+          {finalDisplayValue}
         </span>
         {!disabled && <ArrowDownFilled width={8} height={8} />}
       </button>

@@ -5,6 +5,7 @@ import { en } from "@constants";
 
 interface TriggerConditionDropdownProps {
   value: string;
+  displayValue?: string;
   options: Array<{ value: string; label: string }>;
   onChange: (value: string) => void;
   placeholder?: string;
@@ -20,6 +21,7 @@ interface TriggerConditionDropdownProps {
  */
 export const TriggerConditionDropdown: React.FC<TriggerConditionDropdownProps> = ({
   value,
+  displayValue,
   options,
   onChange,
   placeholder = en.common.select,
@@ -35,6 +37,7 @@ export const TriggerConditionDropdown: React.FC<TriggerConditionDropdownProps> =
     >
       <TextDropdown
         value={value}
+        displayValue={displayValue}
         options={options}
         onChange={onChange}
         placeholder={placeholder}
