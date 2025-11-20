@@ -7,7 +7,7 @@ import { NumberInputProps } from "./types";
 import { keyCodes } from "./utils";
 
 export const NumberInput: React.FC<NumberInputProps> = ({
-  value = 0,
+  value,
   onChange,
   min = -Infinity,
   max = Infinity,
@@ -19,13 +19,18 @@ export const NumberInput: React.FC<NumberInputProps> = ({
   spinnerClassName = "",
 }) => {
   const normalizedValue = isNumber(value) ? value : 0;
-  const [inputValue, setInputValue] = useState(normalizedValue.toString());
+  const hasValue = value !== undefined && value !== null;
+  const [inputValue, setInputValue] = useState(hasValue ? normalizedValue.toString() : "");
   const [isFocused, setIsFocused] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    const next = isNumber(value) ? value : 0;
-    setInputValue(next.toString());
+    if (value !== undefined && value !== null) {
+      const next = isNumber(value) ? value : 0;
+      setInputValue(next.toString());
+    } else {
+      setInputValue("");
+    }
   }, [value]);
 
   const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -42,8 +47,15 @@ export const NumberInput: React.FC<NumberInputProps> = ({
   const handleInputBlur = () => {
     setIsFocused(false);
     const numValue = parseFloat(inputValue);
-    if (isNaN(numValue)) {
-      setInputValue(normalizedValue.toString());
+    if (isNaN(numValue) || inputValue === "") {
+      // If input is empty or invalid, keep it empty to show placeholder
+      if (inputValue === "") {
+        setInputValue("");
+      } else if (hasValue) {
+        setInputValue(normalizedValue.toString());
+      } else {
+        setInputValue("");
+      }
     } else {
       const clampedValue = Math.min(Math.max(numValue, min), max);
       setInputValue(clampedValue.toString());
@@ -94,6 +106,7 @@ export const NumberInput: React.FC<NumberInputProps> = ({
           disabled:disabled:text-typography-800 disabled:cursor-not-allowed
           hover:bg-transparent focus:outline-none
           text-left
+          placeholder:text-typography-500
           ${inputClassName}
         `}
       />

@@ -13,8 +13,6 @@ import { useDebounce } from "@hooks";
 import { UpdateEventDataParam, isCombinationTriggerCondition, COMBINATION_OPERATOR } from "@types";
 import { isExactlyOneEventSelected } from "@utils";
 
-
-
 interface EventSidePanelProps {
   selectedEvent: UpdateEventDataParam | null;
   isOpen: boolean;
@@ -77,7 +75,7 @@ export const EventSidePanel: React.FC<EventSidePanelProps> = ({
 
   useEffect(() => {
     if (selectedEvent) {
-      // Initialize default combination trigger condition if needed
+      // Initialize default structure for combination events for UI purposes only
       if (
         selectedEvent.detectionType === EVENT_DETECTION_TYPES.COMBINATION &&
         (!selectedEvent.triggerCondition ||

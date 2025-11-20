@@ -113,8 +113,8 @@ describe("TriggerConditions", () => {
       expect(screen.getByTestId("standard-event-type")).toHaveTextContent("TIME_BASED");
     });
 
-    it("returns null for standard events when triggerCondition is undefined", () => {
-      const { container } = render(
+    it("renders component for standard events when triggerCondition is undefined", () => {
+      render(
         <TriggerConditions
           eventType="TIME_BASED"
           triggerCondition={undefined}
@@ -122,7 +122,9 @@ describe("TriggerConditions", () => {
         />,
       );
 
-      expect(container.firstChild).toBeNull();
+      // Component now creates an empty structure to show placeholders, so it renders
+      expect(screen.getByTestId("standard-trigger-conditions")).toBeInTheDocument();
+      expect(screen.getByTestId("standard-event-type")).toHaveTextContent("TIME_BASED");
     });
 
     it("passes isInTable prop to StandardTriggerConditions", () => {

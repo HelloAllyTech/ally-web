@@ -2,9 +2,10 @@ import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 import { RootState } from "@store";
 
-interface AvailableEvent {
+export interface AvailableEvent {
   id: string;
   name: string;
+  eventCode?: string;
 }
 
 interface EventsState {
@@ -34,4 +35,3 @@ export const { setAvailableEvents, clearAvailableEvents } = eventsSlice.actions;
 export const selectAvailableEvents = (state: RootState) => state.events.availableEvents;
 
 export default eventsSlice;
-

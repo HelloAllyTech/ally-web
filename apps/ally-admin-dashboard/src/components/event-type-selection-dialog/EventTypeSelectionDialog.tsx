@@ -97,7 +97,7 @@ export const EventTypeSelectionDialog: FC<EventTypeSelectionDialogProps> = ({
             <Close width={15} height={20} />
           </button>
 
-          <div className="flex flex-col gap-4">
+          <div className="flex flex-col gap-2">
             <div className="flex justify-center items-center relative text-2xl font-thin text-center w-full font-secondary text-typography-900">
               {en.simulation.createNewEvent}
             </div>
@@ -106,7 +106,7 @@ export const EventTypeSelectionDialog: FC<EventTypeSelectionDialogProps> = ({
               {en.simulation.selectEventType}
             </div>
 
-            <div className="grid grid-cols-1 gap-4">
+            <div className="grid grid-cols-1 gap-2">
               {EVENT_TYPE_OPTIONS.map(option => {
                 const Icon = option.icon;
                 const isSelected = selectedType === option.value;

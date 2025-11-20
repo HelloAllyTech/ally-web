@@ -248,34 +248,6 @@ describe("StandardTriggerConditions", () => {
     });
   });
 
-  describe("isFocused prop", () => {
-    it("passes isFocused to fields when true", () => {
-      render(
-        <StandardTriggerConditions
-          eventType="SENTENCE_SIMILARITY"
-          triggerCondition={{ speaker: "CARE_GIVER", sentences: [] }}
-          onChange={defaultOnChange}
-          isFocused={true}
-        />,
-      );
-
-      expect(screen.getByTestId("field-focused-sentences")).toHaveTextContent("true");
-    });
-
-    it("passes isFocused to fields when false", () => {
-      render(
-        <StandardTriggerConditions
-          eventType="SENTENCE_SIMILARITY"
-          triggerCondition={{ speaker: "CARE_GIVER", sentences: [] }}
-          onChange={defaultOnChange}
-          isFocused={false}
-        />,
-      );
-
-      expect(screen.getByTestId("field-focused-sentences")).toHaveTextContent("false");
-    });
-  });
-
   describe("SENTENCE_SIMILARITY layout", () => {
     it("renders speaker field before sentences field", () => {
       const { container } = render(

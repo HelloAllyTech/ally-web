@@ -1,5 +1,12 @@
 import { EVENT_DETECTION_TYPES } from "@constants";
 import {
+  SessionEvent,
+  SessionEventDetectionData,
+  SessionEventDetectionType,
+  SessionEventDetectionCondition,
+  UpdateEventDataParam,
+} from "@types";
+import {
   convertTimeToSeconds,
   convertSecondsToTimeString,
   isNonEmptyArray,
@@ -8,15 +15,6 @@ import {
 } from "@utils";
 
 import type { CombinationExpressionNode } from "@types";
-
-import {
-  SessionEvent,
-  SessionEventDetectionData,
-  SessionEventDetectionType,
-  SessionEventDetectionCondition,
-  UpdateEventDataParam,
-  COMBINATION_OPERATOR,
-} from "@types";
 
 /**
  * Maps frontend operator to backend condition
@@ -126,50 +124,49 @@ export const convertEventToApiPayload = (event: UpdateEventDataParam): SessionEv
     event.detectionType === EVENT_DETECTION_TYPES.SENTENCE_SIMILARITY ||
     event.detectionType === EVENT_DETECTION_TYPES.SEMANTIC_SIMILARITY
   ) {
-    if (
-      event.triggerCondition &&
-      "sentences" in event.triggerCondition &&
-      isNonEmptyArray(event.triggerCondition.sentences)
-    ) {
-      detectionData.sentences = event.triggerCondition.sentences;
-    }
-    if (
-      event.triggerCondition &&
-      "speaker" in event.triggerCondition &&
-      isNonEmptyString(event.triggerCondition.speaker)
-    ) {
-      detectionData.speaker = event.triggerCondition.speaker;
+    if (event.triggerCondition) {
+      if (
+        "sentences" in event.triggerCondition &&
+        isNonEmptyArray(event.triggerCondition.sentences)
+      ) {
+        detectionData.sentences = event.triggerCondition.sentences;
+      }
+      if ("speaker" in event.triggerCondition && isNonEmptyString(event.triggerCondition.speaker)) {
+        detectionData.speaker = event.triggerCondition.speaker;
+      }
     }
   }
 
   if (event.detectionType === EVENT_DETECTION_TYPES.SCORE_BASED) {
-    if (
-      event.triggerCondition &&
-      "value" in event.triggerCondition &&
-      isNumber(event.triggerCondition.value)
-    ) {
-      detectionData.score = event.triggerCondition.value;
-    }
-    if (event.triggerCondition && "operator" in event.triggerCondition) {
-      const condition = mapOperatorToCondition(event.triggerCondition.operator);
-      if (condition) {
-        detectionData.condition = condition;
+    if (event.triggerCondition) {
+      if ("value" in event.triggerCondition && isNumber(event.triggerCondition.value)) {
+        detectionData.score = event.triggerCondition.value;
+      }
+      if (
+        "operator" in event.triggerCondition &&
+        isNonEmptyString(event.triggerCondition.operator)
+      ) {
+        const condition = mapOperatorToCondition(event.triggerCondition.operator);
+        if (condition) {
+          detectionData.condition = condition;
+        }
       }
     }
   }
 
   if (event.detectionType === EVENT_DETECTION_TYPES.TIME_BASED) {
-    if (
-      event.triggerCondition &&
-      "value" in event.triggerCondition &&
-      isNonEmptyString(event.triggerCondition.value)
-    ) {
-      detectionData.time = convertTimeToSeconds(event.triggerCondition.value);
-    }
-    if (event.triggerCondition && "operator" in event.triggerCondition) {
-      const condition = mapOperatorToCondition(event.triggerCondition.operator);
-      if (condition) {
-        detectionData.condition = condition;
+    if (event.triggerCondition) {
+      if ("value" in event.triggerCondition && isNonEmptyString(event.triggerCondition.value)) {
+        detectionData.time = convertTimeToSeconds(event.triggerCondition.value);
+      }
+      if (
+        "operator" in event.triggerCondition &&
+        isNonEmptyString(event.triggerCondition.operator)
+      ) {
+        const condition = mapOperatorToCondition(event.triggerCondition.operator);
+        if (condition) {
+          detectionData.condition = condition;
+        }
       }
     }
   }
@@ -254,42 +251,54 @@ export const convertApiResponseToEvent = (apiEvent: SessionEvent): UpdateEventDa
   const frontendDetectionType = mapDetectionTypeToFrontend(apiEvent.detectionType);
 
   // Convert detectionData to triggerCondition format
-  let triggerCondition: any;
+  let triggerCondition: any = undefined;
 
   const detectionData = apiEvent.detectionData;
 
   if (detectionData) {
     if (frontendDetectionType === "TIME_BASED") {
-      const timeString = convertSecondsToTimeString(detectionData.time);
-      const operator = mapConditionToOperator(detectionData.condition);
-      triggerCondition = {
-        operator: operator || "LESS_THAN",
-        value: timeString,
-      };
+      const hasTime = detectionData.time !== undefined && detectionData.time !== null;
+      const hasCondition =
+        detectionData.condition !== undefined && detectionData.condition !== null;
+
+      if (hasTime || hasCondition) {
+        const operator = mapConditionToOperator(detectionData.condition);
+        triggerCondition = {
+          operator: operator || undefined,
+          value: hasTime ? convertSecondsToTimeString(detectionData.time) : undefined,
+        };
+      }
     } else if (frontendDetectionType === "SCORE_BASED") {
-      const operator = mapConditionToOperator(detectionData.condition);
-      triggerCondition = {
-        operator: operator || "GREATER_THAN",
-        value: detectionData.score || 0,
-        speaker: detectionData.speaker,
-      };
+      const hasScore = detectionData.score !== undefined && detectionData.score !== null;
+      const hasCondition =
+        detectionData.condition !== undefined && detectionData.condition !== null;
+
+      if (hasScore || hasCondition) {
+        const operator = mapConditionToOperator(detectionData.condition);
+        triggerCondition = {
+          operator: operator || undefined,
+          value: hasScore ? detectionData.score : undefined,
+        };
+      }
     } else if (
       frontendDetectionType === "SENTENCE_SIMILARITY" ||
       frontendDetectionType === "SEMANTIC_SIMILARITY"
     ) {
-      triggerCondition = {
-        speaker: detectionData.speaker || "CARE_GIVER",
-        sentences: detectionData.sentences || [],
-      };
+      const hasSentences = detectionData.sentences && detectionData.sentences.length > 0;
+      const hasSpeaker = detectionData.speaker !== undefined && detectionData.speaker !== null;
+
+      if (hasSentences || hasSpeaker) {
+        triggerCondition = {
+          speaker: detectionData.speaker || undefined,
+          sentences: detectionData.sentences || undefined,
+        };
+      }
     } else if (frontendDetectionType === "COMBINATION") {
-      // Expression format matches API directly - no conversion needed
-      triggerCondition = {
-        expression: detectionData.expression || {
-          type: COMBINATION_OPERATOR.AND,
-          left: { id: "" },
-          right: { id: "" },
-        },
-      };
+      if (detectionData.expression) {
+        triggerCondition = {
+          expression: detectionData.expression,
+        };
+      }
     }
   }
 

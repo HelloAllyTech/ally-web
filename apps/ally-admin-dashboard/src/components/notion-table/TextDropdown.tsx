@@ -143,7 +143,7 @@ export const TextDropdown = ({
       ? displayValue
       : currentOption
         ? currentOption.label
-        : placeholder;
+        : value || placeholder;
 
   return (
     <div ref={dropdownRef} className={clsx("relative w-full", className)}>

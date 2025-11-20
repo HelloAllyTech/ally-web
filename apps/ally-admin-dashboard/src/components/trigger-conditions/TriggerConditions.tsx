@@ -52,11 +52,27 @@ export const TriggerConditions: React.FC<TriggerConditionsProps> = ({
   );
 
   const renderStandardConditions = () => {
-    if (!triggerCondition) return null;
+    // For standard event types, create an empty structure to display placeholders
+    // This allows the UI to show the fields without saving empty values to backend
+    let effectiveTriggerCondition: any = triggerCondition;
+
+    if (!triggerCondition) {
+      // Create empty structure so fields render with placeholders
+      if (eventType === "TIME_BASED") {
+        effectiveTriggerCondition = {} as TriggerCondition;
+      } else if (eventType === "SCORE_BASED") {
+        effectiveTriggerCondition = {} as TriggerCondition;
+      } else if (eventType === "SENTENCE_SIMILARITY") {
+        effectiveTriggerCondition = {} as TriggerCondition;
+      }
+    }
+
+    if (!effectiveTriggerCondition) return null;
+
     return (
       <StandardTriggerConditions
         eventType={eventType}
-        triggerCondition={triggerCondition}
+        triggerCondition={effectiveTriggerCondition}
         onChange={onChange}
         isInTable={isInTable}
       />
@@ -88,7 +104,7 @@ export const TriggerConditions: React.FC<TriggerConditionsProps> = ({
             };
       return renderCombinationConditions(defaultCombinationCondition);
     }
-    if (!triggerCondition) return null;
+    // For standard event types in table, render with default values if needed
     return renderStandardConditions();
   }
 
@@ -113,8 +129,6 @@ export const TriggerConditions: React.FC<TriggerConditionsProps> = ({
       </SidePanelWrapper>
     );
   }
-
-  if (!triggerCondition) return null;
 
   return <SidePanelWrapper>{renderStandardConditions()}</SidePanelWrapper>;
 };

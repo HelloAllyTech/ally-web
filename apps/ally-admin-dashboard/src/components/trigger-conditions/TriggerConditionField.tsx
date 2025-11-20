@@ -18,7 +18,6 @@ interface TriggerConditionFieldProps {
   value: any;
   onChange: (fieldId: string, value: any) => void;
   isInTable?: boolean;
-  isFocused?: boolean;
 }
 
 // This is just a read-only display since EditableTriggerConditionsPopup handles all editing
@@ -34,7 +33,7 @@ const TableSentenceInput: React.FC<{
         value={value}
         readOnly
         placeholder={placeholder}
-        className={`px-3 py-2 text-sm rounded-sm w-full min-w-[230px] resize-none overflow-hidden cursor-pointer focus:outline-none ${isInTable ? "bg-neutral-100" : "bg-neutral-50 border"}`}
+        className={`px-3 py-2 text-sm rounded-sm w-full min-w-[230px] resize-none overflow-hidden cursor-pointer focus:outline-none placeholder:text-typography-500 ${isInTable ? "bg-neutral-100" : "bg-neutral-50 border"}`}
         style={{
           height: "24px",
           lineHeight: "20px",
@@ -51,7 +50,6 @@ export const TriggerConditionField: React.FC<TriggerConditionFieldProps> = ({
   value,
   onChange,
   isInTable = false,
-  isFocused = false,
 }) => {
   const fieldValue = value ?? field.defaultValue;
 
@@ -68,9 +66,10 @@ export const TriggerConditionField: React.FC<TriggerConditionFieldProps> = ({
       case TRIGGER_FIELD_TYPES.NUMBER:
         return (
           <NumberInput
-            value={fieldValue || 0}
+            value={fieldValue !== undefined && fieldValue !== null ? fieldValue : undefined}
             onChange={numValue => onChange(field.id, numValue)}
-            className={`px-2 py-1 text-sm border h-6 rounded-sm w-[60px] ${isInTable ? "bg-neutral-100" : "bg-neutral-50 border"}`}
+            placeholder={field.placeholder || "0"}
+            className={`px-2 py-1 text-sm border h-6 rounded-sm w-[70px] ${isInTable ? "bg-neutral-100" : "bg-neutral-50 border"}`}
             inputClassName="w-auto min-w-0 pr-6 !py-0 text-sm"
             spinnerClassName="!left-auto right-1 !gap-0 px-2 !items-center"
           />
@@ -80,11 +79,11 @@ export const TriggerConditionField: React.FC<TriggerConditionFieldProps> = ({
         return (
           <input
             type="text"
-            value={fieldValue || field.placeholder || "00:20:00"}
+            value={fieldValue || ""}
             onChange={e => onChange(field.id, e.target.value)}
-            placeholder={field.placeholder || "00:20:00"}
+            placeholder={field.placeholder || "HH:MM:SS"}
             pattern="^([0-1][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]$"
-            className={`px-3 py-2 text-sm h-6 rounded-sm w-[80px] ${isInTable ? "bg-neutral-100" : "bg-neutral-50 border"}`}
+            className={`px-3 py-2 text-sm h-6 rounded-sm w-[90px] placeholder:text-typography-500 ${isInTable ? "bg-neutral-100" : "bg-neutral-50 border"}`}
           />
         );
 
@@ -130,7 +129,7 @@ export const TriggerConditionField: React.FC<TriggerConditionFieldProps> = ({
                 disabled={false}
                 minHeight={20}
                 maxLines={20}
-                className="text-sm focus:outline-none w-full !mt-0"
+                className="text-sm focus:outline-none w-full !mt-0 placeholder:text-typography-500"
               />
             </div>
           </div>

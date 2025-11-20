@@ -92,11 +92,6 @@ export const COMBINATION_OPERATOR_OPTIONS = [
 ];
 
 /**
- * Score type options
- */
-export const SCORE_TYPE_OPTIONS = [{ value: "SCORE", label: "Score" }];
-
-/**
  * Configuration for TIME_BASED event type
  * Renders: "if Time Less than/Greater than [time input]"
  */
@@ -110,14 +105,12 @@ const TIME_BASED_CONFIG = {
       type: TRIGGER_FIELD_TYPES.OPERATOR_DROPDOWN,
       options: OPERATOR_OPTIONS,
       placeholder: "Less than",
-      defaultValue: "LESS_THAN",
     },
     {
       id: "value",
       label: "Time",
       type: TRIGGER_FIELD_TYPES.TIME,
-      placeholder: "00:20:00",
-      defaultValue: "00:20:00",
+      placeholder: "HH:MM:SS",
     },
   ],
 };
@@ -131,25 +124,17 @@ const SCORE_BASED_CONFIG = {
   label: "Score Based",
   fields: [
     {
-      id: "score",
-      label: "Score Type",
-      type: TRIGGER_FIELD_TYPES.SELECT,
-      options: SCORE_TYPE_OPTIONS,
-      defaultValue: "SCORE",
-    },
-    {
       id: "operator",
       label: "Operator",
       type: TRIGGER_FIELD_TYPES.OPERATOR_DROPDOWN,
       options: OPERATOR_OPTIONS,
       placeholder: "Greater than",
-      defaultValue: "GREATER_THAN",
     },
     {
       id: "value",
       label: "Value",
       type: TRIGGER_FIELD_TYPES.NUMBER,
-      defaultValue: 0,
+      placeholder: "-",
     },
   ],
 };
@@ -169,7 +154,6 @@ const SENTENCE_SIMILARITY_CONFIG = {
       options: SPEAKER_OPTIONS,
       placeholder: "Care giver",
       className: "flex-shrink-0",
-      defaultValue: "CARE_GIVER",
       labelAfter: "Says", // Text to display after this field
     },
     {
@@ -177,7 +161,6 @@ const SENTENCE_SIMILARITY_CONFIG = {
       label: "Sentences",
       type: TRIGGER_FIELD_TYPES.MULTILINE_TEXT,
       placeholder: "Add description",
-      defaultValue: [],
     },
   ],
 };

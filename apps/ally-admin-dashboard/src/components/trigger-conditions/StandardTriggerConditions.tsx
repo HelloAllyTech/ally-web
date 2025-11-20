@@ -10,7 +10,6 @@ interface StandardTriggerConditionsProps {
   triggerCondition: any;
   onChange: (field: string, value: string | number | string[]) => void;
   isInTable?: boolean;
-  isFocused?: boolean;
 }
 
 export const StandardTriggerConditions: React.FC<StandardTriggerConditionsProps> = ({
@@ -18,7 +17,6 @@ export const StandardTriggerConditions: React.FC<StandardTriggerConditionsProps>
   triggerCondition,
   onChange,
   isInTable = false,
-  isFocused = false,
 }) => {
   const config = getTriggerConditionConfig(eventType);
   if (!config) return null;
@@ -26,6 +24,7 @@ export const StandardTriggerConditions: React.FC<StandardTriggerConditionsProps>
   const fields = config.fields || [];
   const isTimeBased = eventType === EVENT_DETECTION_TYPES.TIME_BASED;
   const isSentenceSimilarity = eventType === EVENT_DETECTION_TYPES.SENTENCE_SIMILARITY;
+  const isScoreBased = eventType === EVENT_DETECTION_TYPES.SCORE_BASED;
 
   return (
     <div
@@ -46,7 +45,6 @@ export const StandardTriggerConditions: React.FC<StandardTriggerConditionsProps>
                     value={fieldValue}
                     onChange={onChange}
                     isInTable={isInTable}
-                    isFocused={isFocused}
                   />
                 );
               })}
@@ -62,7 +60,6 @@ export const StandardTriggerConditions: React.FC<StandardTriggerConditionsProps>
                   value={fieldValue}
                   onChange={onChange}
                   isInTable={isInTable}
-                  isFocused={isFocused}
                 />
               );
             })}
@@ -73,6 +70,7 @@ export const StandardTriggerConditions: React.FC<StandardTriggerConditionsProps>
             if
           </span>
           {isTimeBased && <span className="text-sm">Time</span>}
+          {isScoreBased && <span className="text-sm">Score</span>}
           {fields.map(field => {
             const fieldValue = triggerCondition?.[field.id];
             return (

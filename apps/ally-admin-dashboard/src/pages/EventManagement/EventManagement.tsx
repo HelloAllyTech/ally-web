@@ -25,8 +25,6 @@ import {
   EVENT_MANAGEMENT_TABLE_COLUMNS,
   en,
   SESSION_EVENT_STATUS_OPTIONS,
-  EVENT_TYPE_OPTIONS,
-  EVENT_DETECTION_TYPES,
 } from "@constants";
 import { setAvailableEvents } from "@reducer";
 import { UpdateEventDataParam } from "@types";
@@ -92,32 +90,8 @@ export const EventManagement: React.FC = () => {
   };
 
   const handleEventTypeSelect = async (eventType: EventType) => {
-    const getEventTypeDisplayName = (detectionType: EventType): string => {
-      const typeOption = EVENT_TYPE_OPTIONS.find(opt => opt.value === detectionType);
-      if (!typeOption) return "";
-      return typeOption.label.toLowerCase();
-    };
-
-    // Generate event name in "Sample time based event" format
-    const eventTypeDisplayName = getEventTypeDisplayName(eventType);
-    const eventName = `Sample ${eventTypeDisplayName} event`;
-
-    let triggerCondition: any;
-
-    if (eventType === EVENT_DETECTION_TYPES.TIME_BASED) {
-      triggerCondition = { operator: "LESS_THAN", value: "00:20:00" };
-    } else if (eventType === EVENT_DETECTION_TYPES.SCORE_BASED) {
-      triggerCondition = { operator: "GREATER_THAN", value: 0, speaker: "CARE_GIVER" };
-    } else if (eventType === EVENT_DETECTION_TYPES.SENTENCE_SIMILARITY) {
-      triggerCondition = { speaker: "CARE_GIVER", sentences: [] };
-    } else if (eventType === EVENT_DETECTION_TYPES.COMBINATION) {
-      // Set default expression structure for Combination events
-      // User will select events from dropdown after creation
-      triggerCondition = { expression: null };
-    }
-
     const newEvent: UpdateEventDataParam = {
-      name: eventName,
+      name: "New Event",
       description: "",
       score: 0,
       emoji: "🫥",
@@ -125,7 +99,7 @@ export const EventManagement: React.FC = () => {
       branchInstruction: "",
       detectionType: eventType,
       visibilityType: "ACTIVE",
-      triggerCondition,
+      triggerCondition: null,
     };
 
     const eventPayload = convertEventToApiPayload(newEvent);
@@ -138,7 +112,10 @@ export const EventManagement: React.FC = () => {
         toast.error("Failed to create event");
       } else {
         toast.success("Event created successfully");
-        setSelectedEvent({ ...newEvent, id: response.data?.[0]?.id || "" });
+        const createdEvent = response.data?.[0]
+          ? convertApiResponseToEvent(response.data[0])
+          : { ...newEvent, id: response.data?.[0]?.id || "" };
+        setSelectedEvent(createdEvent);
         setIsSidePanelOpen(true);
       }
     } catch {
@@ -203,6 +180,7 @@ export const EventManagement: React.FC = () => {
     return (events || []).map(event => ({
       id: event.id || "",
       name: event.name || "",
+      eventCode: event.eventCode || "",
     }));
   }, [events]);
 

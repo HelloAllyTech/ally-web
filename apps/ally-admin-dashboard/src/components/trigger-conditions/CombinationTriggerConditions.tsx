@@ -62,6 +62,7 @@ export const CombinationTriggerConditions: React.FC<CombinationTriggerConditions
       eventsData?.data?.map(event => ({
         id: event.id,
         name: event.name || "",
+        eventCode: event.eventCode || "",
       })) || []
     );
   }, [eventsData, reduxAvailableEvents]);
@@ -117,11 +118,12 @@ export const CombinationTriggerConditions: React.FC<CombinationTriggerConditions
     onChange("expression", newExpression);
   };
 
-  // Helper function to get event name from event ID
-  const getEventNameById = (eventId: string): string => {
+  // Helper function to get event display name from event ID
+  const getEventDisplayNameById = (eventId: string): string => {
     if (!eventId) return "";
     const event = availableEvents.find(e => e.id === eventId);
-    return event?.name || "";
+    if (!event) return "";
+    return event.eventCode ? `${event.eventCode} - ${event.name}` : event.name;
   };
 
   const getOperator = (): CombinationOperator => {
@@ -150,10 +152,10 @@ export const CombinationTriggerConditions: React.FC<CombinationTriggerConditions
             <span className="text-sm text-typography-500">if</span>
             <TriggerConditionDropdown
               value={getEventId("left")}
-              displayValue={getEventNameById(getEventId("left"))}
+              displayValue={getEventDisplayNameById(getEventId("left"))}
               options={availableEvents.map(event => ({
                 value: event.id,
-                label: event.name,
+                label: event.eventCode ? `${event.eventCode} - ${event.name}` : event.name,
               }))}
               onChange={eventId => handleEventChange("left", eventId)}
               placeholder="Select an event"
@@ -188,10 +190,10 @@ export const CombinationTriggerConditions: React.FC<CombinationTriggerConditions
             />
             <TriggerConditionDropdown
               value={getEventId("right")}
-              displayValue={getEventNameById(getEventId("right"))}
+              displayValue={getEventDisplayNameById(getEventId("right"))}
               options={availableEvents.map(event => ({
                 value: event.id,
-                label: event.name,
+                label: event.eventCode ? `${event.eventCode} - ${event.name}` : event.name,
               }))}
               onChange={eventId => handleEventChange("right", eventId)}
               placeholder="Select an event"

@@ -50,11 +50,11 @@ describe("TextDropdown", () => {
       expect(screen.getByText("Select an option")).toBeInTheDocument();
     });
 
-    it("renders placeholder when value doesn't match any option", () => {
+    it("renders value when value doesn't match any option", () => {
       render(<TextDropdown {...defaultProps} value="unknown" />);
 
-      // When value doesn't match any option, component shows placeholder
-      expect(screen.getByText("Select an option")).toBeInTheDocument();
+      // When value doesn't match any option, component shows the value itself
+      expect(screen.getByText("unknown")).toBeInTheDocument();
     });
 
     it("renders arrow icon", () => {
