@@ -51,7 +51,7 @@ export const Learn: FC = () => {
     isLoading: isPathwaysLoading,
     refetch: refetchPathways,
   } = useGetScenarioPathwaysQuery({
-    offset: 1,
+    offset: 0,
     limit: 10,
   });
 
@@ -197,7 +197,7 @@ export const Learn: FC = () => {
           exit="exit"
           className="mb-[14px]"
         >
-          <h1 className="text-2xl sm:text-4xl text-typography-900 font-secondary pt-[30px]">
+          <h1 className="text-2xl sm:text-4xl text-typography-900 font-secondary pt-[30px] pl-[10px]">
             <span className="font-[350]">Choose your</span>
             <span className="font-[700] italic"> {title}</span>
           </h1>
@@ -207,7 +207,7 @@ export const Learn: FC = () => {
           initial="hidden"
           animate="visible"
           exit="exit"
-          className="max-h-[calc(100vh-200px)] pt-4 overflow-y-scroll"
+          className="max-h-[calc(100vh-200px)] pt-4 overflow-y-scroll pl-[10px]"
         >
           {renderContentGrid()}
         </motion.div>
@@ -216,7 +216,7 @@ export const Learn: FC = () => {
   };
 
   return (
-    <div className="flex flex-col w-full bg-white max-h-screen overflow-y-hidden p-[10px] sm:p-[24px] justify-center font-tertiary">
+    <div className="flex flex-col w-full bg-white max-h-screen overflow-y-hidden p-[10px] pl-0 sm:p-[24px] justify-center font-tertiary">
       {renderPageHeader()}
       <AnimatePresence mode="wait">{renderContent()}</AnimatePresence>
     </div>
