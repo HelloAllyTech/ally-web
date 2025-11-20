@@ -18,33 +18,6 @@ export const EVENT_TYPE_OPTIONS = [
   { value: "COMBINATION", label: "Combination" },
 ];
 
-export const TIME_CONDITION_OPTIONS = [
-  { value: "EXACT", label: "Exact" },
-  { value: "LESS_THAN", label: "Less than" },
-  { value: "LESS_THAN_OR_EQUAL", label: "Less than or equal to" },
-  { value: "GREATER_THAN", label: "Greater than" },
-  { value: "GREATER_THAN_OR_EQUAL", label: "Greater than or equal to" },
-  { value: "EQUAL", label: "Equal to" },
-];
-
-export const SCORE_CONDITION_OPTIONS = [
-  { value: "LESS_THAN", label: "Less than" },
-  { value: "LESS_THAN_OR_EQUAL", label: "Less than or equal to" },
-  { value: "GREATER_THAN", label: "Greater than" },
-  { value: "GREATER_THAN_OR_EQUAL", label: "Greater than or equal to" },
-  { value: "EQUAL", label: "Equal to" },
-];
-
-export const COMBINE_TIME_SCORE_OPTIONS = [
-  { value: "AND", label: "AND" },
-  { value: "OR", label: "OR" },
-];
-
-export const YES_NO_OPTIONS = [
-  { value: "Yes", label: "Yes" },
-  { value: "No", label: "No" },
-];
-
 export const GENDER_OPTIONS = [
   { value: "male", label: "Male" },
   { value: "female", label: "Female" },
@@ -342,9 +315,9 @@ export const EVENT_MANAGEMENT_TABLE_COLUMNS = [
     minWidth: 150,
   },
   {
-    id: "triggerConditions",
+    id: "triggerCondition",
     label: "Trigger conditions",
-    accessor: "triggerConditions",
+    accessor: "triggerCondition",
     dataType: cellTypes.triggerConditions,
     minWidth: 400,
   },

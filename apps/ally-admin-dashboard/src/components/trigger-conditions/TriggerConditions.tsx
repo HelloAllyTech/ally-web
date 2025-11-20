@@ -9,6 +9,7 @@ import {
   isCombinationTriggerCondition,
   CombinationExpressionNode,
   CombinationTriggerCondition,
+  COMBINATION_OPERATOR,
 } from "../../types/triggerConditions";
 
 interface TriggerConditionsProps {
@@ -80,7 +81,7 @@ export const TriggerConditions: React.FC<TriggerConditionsProps> = ({
           ? triggerCondition
           : {
               expression: {
-                type: "AND",
+                type: COMBINATION_OPERATOR.AND,
                 left: { id: "" },
                 right: { id: "" },
               },

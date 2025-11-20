@@ -1,44 +1,60 @@
 import { render, screen, fireEvent } from "@testing-library/react";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
-import { TriggerConditionField } from "../TriggerConditionField";
-
-vi.mock("@components", () => ({
-  AutoExpandableTextarea: ({ value, onChange, placeholder, className, onBlur, onKeyDown }: any) => (
-    <textarea
-      data-testid="auto-textarea"
-      value={value}
-      placeholder={placeholder}
-      className={className}
-      onChange={e => onChange?.(e.target.value)}
-      onBlur={onBlur}
-      onKeyDown={onKeyDown}
-    />
-  ),
-  NumberInput: ({ value, onChange, className }: any) => (
-    <div data-testid="number-input">
-      <input
-        type="number"
-        data-testid="number-input-field"
-        value={value}
-        onChange={e => onChange?.(Number(e.target.value))}
-        className={className}
-      />
-    </div>
-  ),
-}));
-
-vi.mock("@constants", () => ({
-  TRIGGER_FIELD_TYPES: {
-    NUMBER: "NUMBER",
-    TIME: "TIME",
-    SELECT: "SELECT",
-    OPERATOR_DROPDOWN: "OPERATOR_DROPDOWN",
-    SPEAKER_DROPDOWN: "SPEAKER_DROPDOWN",
-    STATUS_DROPDOWN: "STATUS_DROPDOWN",
-    MULTILINE_TEXT: "MULTILINE_TEXT",
+vi.mock("@api", () => ({
+  baseAPI: {
+    reducerPath: "api",
+    reducer: vi.fn((state = {}) => state),
+    middleware: vi.fn(() => (next: any) => (action: any) => next(action)),
   },
 }));
+
+vi.mock("@components", async importOriginal => {
+  const actual = await importOriginal<typeof import("@components")>();
+  return {
+    ...actual,
+    AutoExpandableTextarea: ({ value, onChange, placeholder, className, onBlur, onKeyDown }: any) => (
+      <textarea
+        data-testid="auto-textarea"
+        value={value}
+        placeholder={placeholder}
+        className={className}
+        onChange={e => onChange?.(e.target.value)}
+        onBlur={onBlur}
+        onKeyDown={onKeyDown}
+      />
+    ),
+    NumberInput: ({ value, onChange, className }: any) => (
+      <div data-testid="number-input">
+        <input
+          type="number"
+          data-testid="number-input-field"
+          value={value}
+          onChange={e => onChange?.(Number(e.target.value))}
+          className={className}
+        />
+      </div>
+    ),
+  };
+});
+
+vi.mock("@constants", async importOriginal => {
+  const actual = await importOriginal<typeof import("@constants")>();
+  return {
+    ...actual,
+    TRIGGER_FIELD_TYPES: {
+      NUMBER: "NUMBER",
+      TIME: "TIME",
+      SELECT: "SELECT",
+      OPERATOR_DROPDOWN: "OPERATOR_DROPDOWN",
+      SPEAKER_DROPDOWN: "SPEAKER_DROPDOWN",
+      STATUS_DROPDOWN: "STATUS_DROPDOWN",
+      MULTILINE_TEXT: "MULTILINE_TEXT",
+    },
+  };
+});
+
+import { TriggerConditionField } from "../TriggerConditionField";
 
 vi.mock("../TriggerConditionDropdown", () => ({
   TriggerConditionDropdown: ({ value, options, onChange, placeholder, isInTable }: any) => (
@@ -135,8 +151,9 @@ describe("TriggerConditionField", () => {
         />,
       );
 
-      expect(screen.getByTestId("auto-textarea")).toBeInTheDocument();
-      expect(screen.getByTestId("auto-textarea")).toHaveValue("Line 1\nLine 2");
+      const textarea = screen.getByDisplayValue("Line 1\nLine 2");
+      expect(textarea).toBeInTheDocument();
+      expect(textarea).toHaveAttribute("readOnly");
     });
   });
 
@@ -174,7 +191,9 @@ describe("TriggerConditionField", () => {
         />,
       );
 
-      expect(screen.getByTestId("auto-textarea")).toHaveValue("");
+      const textarea = screen.getByRole("textbox");
+      expect(textarea).toHaveValue("");
+      expect(textarea).toHaveAttribute("readOnly");
     });
 
     it("handles non-array value for MULTILINE_TEXT", () => {
@@ -186,7 +205,9 @@ describe("TriggerConditionField", () => {
         />,
       );
 
-      expect(screen.getByTestId("auto-textarea")).toHaveValue("");
+      const textarea = screen.getByRole("textbox");
+      expect(textarea).toHaveValue("");
+      expect(textarea).toHaveAttribute("readOnly");
     });
   });
 
@@ -228,19 +249,22 @@ describe("TriggerConditionField", () => {
       expect(onChange).toHaveBeenCalledWith("test-field", "00:30:00");
     });
 
-    it("calls onChange when MULTILINE_TEXT value changes", () => {
+    it("does not call onChange for MULTILINE_TEXT in table mode (readonly)", () => {
       const onChange = vi.fn();
       render(
         <TriggerConditionField
           field={{ ...defaultField, type: "MULTILINE_TEXT" }}
           value={["Line 1"]}
           onChange={onChange}
+          isInTable={true}
         />,
       );
 
-      const textarea = screen.getByTestId("auto-textarea");
+      const textarea = screen.getByDisplayValue("Line 1");
+      expect(textarea).toHaveAttribute("readOnly");
+      // Readonly textarea doesn't trigger onChange
       fireEvent.change(textarea, { target: { value: "Line 1\nLine 2" } });
-      expect(onChange).toHaveBeenCalledWith("test-field", ["Line 1", "Line 2"]);
+      expect(onChange).not.toHaveBeenCalled();
     });
   });
 
@@ -272,15 +296,14 @@ describe("TriggerConditionField", () => {
     });
   });
 
-  describe("isFocused prop", () => {
-    it("renders collapsed view when isFocused is false in table mode", () => {
+  describe("isInTable for MULTILINE_TEXT", () => {
+    it("renders readonly textarea when isInTable is true", () => {
       render(
         <TriggerConditionField
           field={{ ...defaultField, type: "MULTILINE_TEXT" }}
           value={["Line 1"]}
           onChange={defaultOnChange}
           isInTable={true}
-          isFocused={false}
         />,
       );
 
@@ -288,7 +311,7 @@ describe("TriggerConditionField", () => {
       expect(textarea).toHaveAttribute("readOnly");
     });
 
-    it("renders expanded view when isFocused is true in table mode", () => {
+    it("renders readonly textarea regardless of isFocused prop", () => {
       render(
         <TriggerConditionField
           field={{ ...defaultField, type: "MULTILINE_TEXT" }}
@@ -299,7 +322,8 @@ describe("TriggerConditionField", () => {
         />,
       );
 
-      expect(screen.getByTestId("auto-textarea")).toBeInTheDocument();
+      const textarea = screen.getByDisplayValue("Line 1");
+      expect(textarea).toHaveAttribute("readOnly");
     });
   });
 

@@ -10,10 +10,10 @@ import {
 } from "@components";
 import { en, EVENT_DETECTION_TYPES } from "@constants";
 import { useDebounce } from "@hooks";
-import { UpdateEventDataParam } from "@types";
+import { UpdateEventDataParam, isCombinationTriggerCondition, COMBINATION_OPERATOR } from "@types";
 import { isExactlyOneEventSelected } from "@utils";
 
-import { isCombinationTriggerCondition } from "../../types/triggerConditions";
+
 
 interface EventSidePanelProps {
   selectedEvent: UpdateEventDataParam | null;
@@ -87,7 +87,7 @@ export const EventSidePanel: React.FC<EventSidePanelProps> = ({
           ...selectedEvent,
           triggerCondition: {
             expression: {
-              type: "AND",
+              type: COMBINATION_OPERATOR.AND,
               left: { id: "" },
               right: { id: "" },
             },

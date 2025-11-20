@@ -1,7 +1,20 @@
 import { render, screen, fireEvent } from "@testing-library/react";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
-import { TriggerConditionDropdown } from "../TriggerConditionDropdown";
+vi.mock("@api", () => ({
+  baseAPI: {
+    reducerPath: "api",
+    reducer: vi.fn((state = {}) => state),
+    middleware: vi.fn(() => (next: any) => (action: any) => next(action)),
+  },
+}));
+
+vi.mock("@components", async importOriginal => {
+  const actual = await importOriginal<typeof import("@components")>();
+  return {
+    ...actual,
+  };
+});
 
 vi.mock("@components/notion-table", () => ({
   TextDropdown: ({
@@ -39,13 +52,19 @@ vi.mock("@components/notion-table", () => ({
   ),
 }));
 
-vi.mock("@constants", () => ({
-  en: {
-    common: {
-      select: "Select",
+vi.mock("@constants", async importOriginal => {
+  const actual = await importOriginal<typeof import("@constants")>();
+  return {
+    ...actual,
+    en: {
+      common: {
+        select: "Select",
+      },
     },
-  },
-}));
+  };
+});
+
+import { TriggerConditionDropdown } from "../TriggerConditionDropdown";
 
 describe("TriggerConditionDropdown", () => {
   const defaultProps = {

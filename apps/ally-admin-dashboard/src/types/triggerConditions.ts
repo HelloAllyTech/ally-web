@@ -27,9 +27,25 @@ export type Speaker = "CARE_GIVER";
 export type EventStatus = "OCCURRED" | "NOT_OCCURRED";
 
 /**
+ * Event status constants
+ */
+export const EVENT_STATUS = {
+  OCCURRED: "OCCURRED" as const,
+  NOT_OCCURRED: "NOT_OCCURRED" as const,
+} as const;
+
+/**
  * Combination operator
  */
 export type CombinationOperator = "AND" | "OR";
+
+/**
+ * Combination operator constants
+ */
+export const COMBINATION_OPERATOR = {
+  AND: "AND" as const,
+  OR: "OR" as const,
+} as const;
 
 /**
  * Time-based trigger condition
@@ -69,7 +85,7 @@ export interface SentenceSimilarityTriggerCondition {
  * - Complex: { type: "AND", left: { id: "event-1" }, right: { type: "NOT", left: { id: "event-2" } } }
  */
 export interface CombinationExpressionNode {
-  type?: "AND" | "OR" | "NOT";
+  type?: CombinationOperator | "NOT";
   id?: string; // Event ID (present when this is a leaf node)
   left?: CombinationExpressionNode;
   right?: CombinationExpressionNode;
@@ -90,82 +106,10 @@ export type TriggerCondition =
   | CombinationTriggerCondition;
 
 /**
- * Type guards to check trigger condition types
+ * Type guard to check if a condition is a combination trigger condition
  */
-export function isTimeBasedTriggerCondition(
-  condition: any,
-): condition is TimeBasedTriggerCondition {
-  return condition && "operator" in condition && typeof condition.value === "string";
-}
-
-export function isScoreBasedTriggerCondition(
-  condition: any,
-): condition is ScoreBasedTriggerCondition {
-  return condition && "operator" in condition && typeof condition.value === "number";
-}
-
-export function isSentenceSimilarityTriggerCondition(
-  condition: any,
-): condition is SentenceSimilarityTriggerCondition {
-  return condition && "sentences" in condition && "speaker" in condition;
-}
-
 export function isCombinationTriggerCondition(
   condition: any,
 ): condition is CombinationTriggerCondition {
   return condition && "expression" in condition && typeof condition.expression === "object";
-}
-
-/**
- * Helper to create default trigger condition based on event type
- */
-export function createDefaultTriggerCondition(
-  eventType: string | undefined,
-): TriggerCondition | undefined {
-  switch (eventType) {
-    case "TIME_BASED":
-      return {
-        operator: "LESS_THAN",
-        value: "00:20:00",
-      };
-    case "SCORE_BASED":
-      return {
-        operator: "GREATER_THAN",
-        value: 0,
-      };
-    case "SENTENCE_SIMILARITY":
-    case "SEMANTIC_SIMILARITY":
-      return {
-        speaker: "CARE_GIVER",
-        sentences: [],
-      };
-    case "COMBINATION":
-      return { expression: null };
-    default:
-      return undefined;
-  }
-}
-
-/**
- * Helper to validate trigger condition matches event type
- */
-export function validateTriggerCondition(
-  eventType: string,
-  condition: TriggerCondition | undefined,
-): boolean {
-  if (!condition) return false;
-
-  switch (eventType) {
-    case "TIME_BASED":
-      return isTimeBasedTriggerCondition(condition);
-    case "SCORE_BASED":
-      return isScoreBasedTriggerCondition(condition);
-    case "SENTENCE_SIMILARITY":
-    case "SEMANTIC_SIMILARITY":
-      return isSentenceSimilarityTriggerCondition(condition);
-    case "COMBINATION":
-      return isCombinationTriggerCondition(condition);
-    default:
-      return false;
-  }
 }

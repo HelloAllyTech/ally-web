@@ -1,5 +1,7 @@
 import { UseFormReturn } from "react-hook-form";
 
+import { TriggerCondition } from "./triggerConditions";
+
 export type FormData = {
   coverImageUrl: string;
   coverVideoUrl?: string;
@@ -125,8 +127,6 @@ export interface SimulationPreviewProps {
   isOpen: boolean;
   onClose: () => void;
 }
-
-import { TriggerCondition } from "./triggerConditions";
 
 export interface UpdateEventDataParam {
   id?: string;

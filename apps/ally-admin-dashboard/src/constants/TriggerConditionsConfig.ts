@@ -1,7 +1,7 @@
 /**
  * Trigger Conditions Configuration
  * This configuration file defines the structure and fields for each event type's trigger conditions.
- 
+ *
  * HOW TO ADD A NEW EVENT TYPE:
  * 1. Add the event type to the EventType union in the types file
  * 2. Create a new configuration object in TRIGGER_CONDITION_CONFIGS with:
@@ -11,21 +11,36 @@
  * 3. Each field should have:
  *    - id: Field identifier (maps to triggerCondition property)
  *    - label: Display label (optional)
- *    - type: Field type (maps to a renderer component)
+ *    - type: Field type (must match a value in TRIGGER_FIELD_TYPES)
  *    - options: Options for dropdown fields (if applicable)
  *    - placeholder: Placeholder text (if applicable)
  *    - defaultValue: Default value for the field
- * 4. Create or reuse a field renderer component if needed
- * 
+ *    - className: CSS classes for the field (optional)
+ *    - labelAfter: Text to display after the field (optional)
+ * 4. Ensure the field type is handled in TriggerConditionField component's switch statement
+ *
  * HOW THE DYNAMIC RENDERING SYSTEM WORKS:
- * - The TriggerConditions component receives an eventType prop
- * - It looks up the configuration for that event type
- * - For each field in the configuration, it maps the field.type to a renderer component
- * - The renderer component receives the field config, value, and onChange handler
- * - This eliminates the need for if(eventType === ...) blocks
+ * - The TriggerConditions component receives an eventType prop and routes to:
+ *   - StandardTriggerConditions: For TIME_BASED, SCORE_BASED, SENTENCE_SIMILARITY event types
+ *   - CombinationTriggerConditions: For COMBINATION event type (uses config partially)
+ *
+ * - StandardTriggerConditions:
+ *   - Uses getTriggerConditionConfig(eventType) to get the configuration
+ *   - Maps over config.fields and renders TriggerConditionField for each field
+ *   - TriggerConditionField maps field.type to renderer components via a switch statement
+ *
+ * - CombinationTriggerConditions:
+ *   - Uses getTriggerConditionConfig("COMBINATION") to get field options/placeholders
+ *   - Has custom rendering logic for the expression tree structure
+ *   - Does not use the full dynamic field rendering system
+ *
+ * - Field type to component mapping happens in TriggerConditionField component
+ * - This system reduces the need for if(eventType === ...) blocks in most cases
  */
 
 import { EventType } from "@components/event-type-selection-dialog";
+
+import { EVENT_STATUS, COMBINATION_OPERATOR } from "../types/triggerConditions";
 
 /**
  * Field types that can be used in trigger condition configurations
@@ -64,16 +79,16 @@ export const OPERATOR_OPTIONS = [
  * Status options for event status fields
  */
 export const STATUS_OPTIONS = [
-  { value: "OCCURRED", label: "Occurred" },
-  { value: "NOT_OCCURRED", label: "Not Occurred" },
+  { value: EVENT_STATUS.OCCURRED, label: "Occurred" },
+  { value: EVENT_STATUS.NOT_OCCURRED, label: "Not Occurred" },
 ];
 
 /**
  * Combination operator options (AND/OR)
  */
 export const COMBINATION_OPERATOR_OPTIONS = [
-  { value: "AND", label: "AND" },
-  { value: "OR", label: "OR" },
+  { value: COMBINATION_OPERATOR.AND, label: "AND" },
+  { value: COMBINATION_OPERATOR.OR, label: "OR" },
 ];
 
 /**
@@ -189,14 +204,14 @@ const COMBINATION_CONFIG = {
       type: TRIGGER_FIELD_TYPES.STATUS_DROPDOWN,
       options: STATUS_OPTIONS,
       placeholder: "Occurred",
-      defaultValue: "OCCURRED",
+      defaultValue: EVENT_STATUS.OCCURRED,
     },
     {
       id: "operator",
       label: "Combination Operator",
       type: TRIGGER_FIELD_TYPES.SELECT,
       options: COMBINATION_OPERATOR_OPTIONS,
-      defaultValue: "AND",
+      defaultValue: COMBINATION_OPERATOR.AND,
     },
   ],
 };

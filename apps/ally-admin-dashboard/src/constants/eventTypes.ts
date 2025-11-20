@@ -1,4 +1,4 @@
-import { EventType } from "@components/event-type-selection-dialog";
+import { EventType } from "@components";
 
 /**
  * Event detection type constants
@@ -10,4 +10,3 @@ export const EVENT_DETECTION_TYPES = {
   COMBINATION: "COMBINATION" as EventType,
   SEMANTIC_SIMILARITY: "SEMANTIC_SIMILARITY" as EventType,
 } as const;
-

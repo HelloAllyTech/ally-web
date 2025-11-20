@@ -366,10 +366,10 @@ describe("CombinationTriggerConditions", () => {
     });
   });
 
-  describe("Available events priority", () => {
-    it("uses provided availableEvents prop over Redux store", () => {
-      const providedEvents = [{ id: "prop-event-1", name: "Prop Event 1" }];
-      const store = createTestStore(mockAvailableEvents);
+  describe("Available events", () => {
+    it("uses Redux store events when available", () => {
+      const reduxEvents = [{ id: "redux-event-1", name: "Redux Event 1" }];
+      const store = createTestStore(reduxEvents);
 
       render(
         <Provider store={store}>
@@ -377,20 +377,19 @@ describe("CombinationTriggerConditions", () => {
             triggerCondition={{
               expression: {
                 type: "AND",
-                left: { id: "prop-event-1" },
+                left: { id: "redux-event-1" },
                 right: { id: "" },
               },
             }}
             onChange={defaultOnChange}
-            availableEvents={providedEvents}
           />
         </Provider>,
       );
 
-      expect(screen.getByTestId("dropdown-value-prop-event-1")).toHaveTextContent("Prop Event 1");
+      expect(screen.getByTestId("dropdown-value-redux-event-1")).toHaveTextContent("Redux Event 1");
     });
 
-    it("uses Redux store events when prop is not provided", () => {
+    it("displays event names from Redux store events", () => {
       const store = createTestStore(mockAvailableEvents);
 
       render(

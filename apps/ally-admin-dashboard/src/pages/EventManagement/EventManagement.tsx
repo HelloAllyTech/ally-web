@@ -34,7 +34,6 @@ import { convertEventToApiPayload, convertApiResponseToEvent } from "@utils";
 
 export const EventManagement: React.FC = () => {
   const limit = 30;
-  const triggerConditionsColumnId = "triggerConditions";
   const dispatch = useDispatch();
 
   const [offset, setOffset] = useState<number>(0);
@@ -65,16 +64,16 @@ export const EventManagement: React.FC = () => {
     if (incoming) {
       setHasMore(incoming.length === limit);
 
-      // Convert API response format to frontend format
-      const convertedEvents = incoming.map(apiEvent => convertApiResponseToEvent(apiEvent));
+      // Convert API response format to event
+      const eventsData = incoming.map(eventPayload => convertApiResponseToEvent(eventPayload));
 
       if (offset === 0) {
-        setEvents(convertedEvents);
+        setEvents(eventsData);
       } else {
         setEvents(prev => {
           const seen = new Set(prev.map(event => event.id));
           const merged = [...prev];
-          for (const item of convertedEvents) {
+          for (const item of eventsData) {
             if (!seen.has(item.id)) merged.push(item);
           }
           return merged;
@@ -129,12 +128,12 @@ export const EventManagement: React.FC = () => {
       triggerCondition,
     };
 
-    const apiEvent = convertEventToApiPayload(newEvent);
-    if (!apiEvent) {
+    const eventPayload = convertEventToApiPayload(newEvent);
+    if (!eventPayload) {
       return;
     }
     try {
-      const response = await createSessionEvents({ events: [apiEvent] });
+      const response = await createSessionEvents({ events: [eventPayload] });
       if (response.error) {
         toast.error("Failed to create event");
       } else {
@@ -172,13 +171,12 @@ export const EventManagement: React.FC = () => {
       detectionType: { value: event.detectionType || "", disabled: true, rowId: event.id },
       name: { value: event.name || "", disabled: false, rowId: event.id },
       eventCode: { value: event.eventCode || "", disabled: true, rowId: event.id },
-      triggerConditions: { value: triggerCondition, disabled: false, rowId: event.id },
+      triggerCondition: { value: triggerCondition, disabled: false, rowId: event.id },
       branchInstruction: { value: event.branchInstruction || "", disabled: false, rowId: event.id },
       score: { value: event.score ?? 0, disabled: false, rowId: event.id },
       message: { value: event.message || "", disabled: false, rowId: event.id },
       emoji: { value: event.emoji || "", disabled: false, rowId: event.id },
       visibilityType: { value: event.visibilityType || "", disabled: false, rowId: event.id },
-      triggerCondition: { value: triggerCondition, disabled: false, rowId: event.id },
     };
   }, []);
 
@@ -244,15 +242,7 @@ export const EventManagement: React.FC = () => {
     const selectedEvent = events.find(event => event.id === rowId);
     if (value !== undefined && selectedEvent) {
       const updatedEvent: UpdateEventDataParam = { ...selectedEvent };
-
-      // Handle fields that update triggerCondition
-      if (columnId === triggerConditionsColumnId) {
-        // Update the triggerCondition object directly
-        updatedEvent.triggerCondition = value;
-      } else {
-        // For other fields, update directly
-        (updatedEvent as any)[columnId] = value;
-      }
+      (updatedEvent as any)[columnId] = value;
 
       onUpdateEvent(updatedEvent);
     }
@@ -261,14 +251,14 @@ export const EventManagement: React.FC = () => {
   const onUpdateEvent = async (event: UpdateEventDataParam) => {
     if (event) {
       // Convert to API payload format using utility function
-      const payload = convertEventToApiPayload(event);
+      const eventPayload = convertEventToApiPayload(event);
 
-      if (!payload) {
+      if (!eventPayload) {
         return;
       }
 
       try {
-        const response = await updateSessionEvent({ id: event.id || "", event: payload });
+        const response = await updateSessionEvent({ id: event.id || "", event: eventPayload });
         if (response.error) toast.error("Error updating event");
       } catch {
         toast.error("Error updating event");

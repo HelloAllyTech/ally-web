@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from "react";
+import React, { useCallback } from "react";
 
 import { AutoExpandableTextarea, NumberInput } from "@components";
 import { TRIGGER_FIELD_TYPES } from "@constants";
@@ -21,84 +21,27 @@ interface TriggerConditionFieldProps {
   isFocused?: boolean;
 }
 
-// Separate component for table input to use hooks properly
-// Uses AutoExpandableTextarea - always rendered but collapsed when not focused
+// This is just a read-only display since EditableTriggerConditionsPopup handles all editing
 const TableSentenceInput: React.FC<{
   value: string;
   placeholder?: string;
   onChange: (value: string[]) => void;
-  isFocused?: boolean;
   isInTable?: boolean;
-}> = ({ value, placeholder, onChange, isFocused = false, isInTable = false }) => {
-  const [localValue, setLocalValue] = useState(value);
-  const wrapperRef = useRef<HTMLDivElement>(null);
-
-  // Sync local state when prop value changes (from external updates)
-  useEffect(() => {
-    setLocalValue(value);
-  }, [value]);
-
-  // Auto-focus when focused
-  useEffect(() => {
-    if (isFocused) {
-      const textarea = wrapperRef.current?.querySelector("textarea");
-      if (textarea && document.activeElement !== textarea) {
-        requestAnimationFrame(() => {
-          textarea.focus();
-          (textarea as HTMLTextAreaElement).select();
-        });
-      }
-    }
-  }, [isFocused]);
-
-  const handleTextareaChange = useCallback((newValue: string) => {
-    setLocalValue(newValue);
-  }, []);
-
-  const handleTextareaBlur = useCallback(() => {
-    onChange(localValue ? [localValue] : []);
-  }, [localValue, onChange]);
-
-  const handleTextareaKeyDown = useCallback((e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
-      e.preventDefault();
-      e.currentTarget.blur();
-    }
-  }, []);
-
+}> = ({ value, placeholder, isInTable = false }) => {
   return (
-    <div ref={wrapperRef} className="flex-1 w-full flex items-center">
-      {!isFocused ? (
-        // Collapsed view - single line with fixed height
-        <textarea
-          value={localValue}
-          readOnly
-          onClick={e => e.currentTarget.focus()}
-          placeholder={placeholder}
-          className={`px-3 py-2 text-sm rounded-sm w-full min-w-[240px] resize-none overflow-hidden cursor-pointer focus:outline-none ${isInTable ? "bg-neutral-100" : "bg-neutral-50 border"}`}
-          style={{
-            height: "24px",
-            lineHeight: "20px",
-            paddingTop: "2px",
-            paddingBottom: "2px",
-          }}
-        />
-      ) : (
-        // Expanded view - fully auto-expanding textarea without scrollbar
-        <div className="px-3">
-          <AutoExpandableTextarea
-            value={localValue}
-            onChange={handleTextareaChange}
-            onBlur={handleTextareaBlur}
-            onKeyDown={handleTextareaKeyDown}
-            placeholder={placeholder}
-            disabled={false}
-            minHeight={16}
-            maxLines={20}
-            className="text-sm focus:outline-none rounded-sm w-full"
-          />
-        </div>
-      )}
+    <div className="flex-1 w-full flex items-center">
+      <textarea
+        value={value}
+        readOnly
+        placeholder={placeholder}
+        className={`px-3 py-2 text-sm rounded-sm w-full min-w-[230px] resize-none overflow-hidden cursor-pointer focus:outline-none ${isInTable ? "bg-neutral-100" : "bg-neutral-50 border"}`}
+        style={{
+          height: "24px",
+          lineHeight: "20px",
+          paddingTop: "2px",
+          paddingBottom: "2px",
+        }}
+      />
     </div>
   );
 };
@@ -165,14 +108,13 @@ export const TriggerConditionField: React.FC<TriggerConditionFieldProps> = ({
         const sentencesArray = Array.isArray(fieldValue) ? fieldValue : [];
         const sentencesText = sentencesArray.join("\n");
 
-        // In table mode, use AutoExpandableTextarea with collapsed view when not focused
+        // In table mode, show read-only display (editing happens in popup)
         if (isInTable) {
           return (
             <TableSentenceInput
               value={sentencesText}
               placeholder={field.placeholder}
               onChange={newValue => onChange(field.id, newValue)}
-              isFocused={isFocused}
               isInTable={isInTable}
             />
           );

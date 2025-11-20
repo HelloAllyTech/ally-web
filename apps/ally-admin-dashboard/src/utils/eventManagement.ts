@@ -1,12 +1,5 @@
 import { EVENT_DETECTION_TYPES } from "@constants";
 import {
-  SessionEvent,
-  SessionEventDetectionData,
-  SessionEventDetectionType,
-  SessionEventDetectionCondition,
-  UpdateEventDataParam,
-} from "@types";
-import {
   convertTimeToSeconds,
   convertSecondsToTimeString,
   isNonEmptyArray,
@@ -14,7 +7,16 @@ import {
   isNonEmptyString,
 } from "@utils";
 
-import type { CombinationExpressionNode } from "src/types/triggerConditions";
+import type { CombinationExpressionNode } from "@types";
+
+import {
+  SessionEvent,
+  SessionEventDetectionData,
+  SessionEventDetectionType,
+  SessionEventDetectionCondition,
+  UpdateEventDataParam,
+  COMBINATION_OPERATOR,
+} from "@types";
 
 /**
  * Maps frontend operator to backend condition
@@ -178,7 +180,6 @@ export const convertEventToApiPayload = (event: UpdateEventDataParam): SessionEv
       "expression" in event.triggerCondition &&
       areBothEventsSelected(event.triggerCondition.expression)
     ) {
-      // Expression format matches API directly - no conversion needed
       // Only include expression if both events are selected
       detectionData.expression = event.triggerCondition.expression;
     }
@@ -284,7 +285,7 @@ export const convertApiResponseToEvent = (apiEvent: SessionEvent): UpdateEventDa
       // Expression format matches API directly - no conversion needed
       triggerCondition = {
         expression: detectionData.expression || {
-          type: "AND",
+          type: COMBINATION_OPERATOR.AND,
           left: { id: "" },
           right: { id: "" },
         },
