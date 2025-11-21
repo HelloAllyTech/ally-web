@@ -28,7 +28,6 @@ import {
   formatApiResponseToMappedEvent,
   createSessionEventsMap,
   MAPPED_EVENT_FIELDS,
-  isObject,
   isNonEmptyString,
 } from "@utils";
 
@@ -74,13 +73,7 @@ export const SimulationEventMapTable: FC<SimulationEventMapTableProps> = ({ simu
     const sessionEventIds = new Set(sessionEvents.map(event => event.id));
     const mappedEventIds = new Set(
       mappedEvents
-        .map(mappedEvent => {
-          const eventId =
-            isObject(mappedEvent.id) && "value" in mappedEvent.id
-              ? mappedEvent.id.value
-              : mappedEvent.id;
-          return eventId;
-        })
+        .map(mappedEvent => mappedEvent.id?.value)
         .filter(eventId => sessionEventIds.has(eventId as string)),
     );
     return sessionEvents

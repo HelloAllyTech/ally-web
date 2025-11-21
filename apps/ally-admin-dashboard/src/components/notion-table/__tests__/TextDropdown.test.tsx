@@ -50,9 +50,10 @@ describe("TextDropdown", () => {
       expect(screen.getByText("Select an option")).toBeInTheDocument();
     });
 
-    it("renders placeholder when value doesn't match any option", () => {
+    it("renders value when value doesn't match any option", () => {
       render(<TextDropdown {...defaultProps} value="unknown" />);
 
+      // When value doesn't match any option, component shows the value itself
       expect(screen.getByText("unknown")).toBeInTheDocument();
     });
 
@@ -190,9 +191,11 @@ describe("TextDropdown", () => {
 
       const options = screen.getAllByText(/Option/);
       // Click the first dropdown option (not the button text)
+      // Options now use whitespace-nowrap instead of truncate
       const dropdownOptions = options.filter(
-        opt => opt.className.includes("truncate") && !opt.className.includes("mr-1"),
+        opt => opt.className.includes("whitespace-nowrap") && !opt.className.includes("mr-1"),
       );
+      expect(dropdownOptions.length).toBeGreaterThan(0);
       fireEvent.click(dropdownOptions[0]);
 
       expect(screen.queryByText("Option 2")).not.toBeInTheDocument();

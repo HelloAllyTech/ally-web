@@ -1,5 +1,7 @@
 import { UseFormReturn } from "react-hook-form";
 
+import { TriggerCondition } from "./triggerConditions";
+
 export type FormData = {
   coverImageUrl: string;
   coverVideoUrl?: string;
@@ -123,15 +125,15 @@ export interface SimulationPreviewProps {
 export interface UpdateEventDataParam {
   id?: string;
   name?: string;
+  eventCode?: string;
   description?: string;
   branchInstruction?: string;
   score?: number;
   message?: string;
   detectionType?: string;
-  speaker?: string;
   emoji?: string;
-  sentences?: string[];
   visibilityType?: string;
+  triggerCondition?: TriggerCondition;
 }
 
 export interface UpdateScenarioEventDataParam {

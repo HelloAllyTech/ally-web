@@ -296,6 +296,15 @@ vi.mock("@assets", () => ({
   Copy: () => <svg data-testid="copy-icon">Copy</svg>,
   Play: () => <svg data-testid="play-icon">Play</svg>,
 }));
+vi.mock("@assets", async importOriginal => {
+  const actual = await importOriginal<typeof import("@assets")>();
+  return {
+    ...actual,
+    Add: () => <svg data-testid="add-icon">+</svg>,
+    Close: () => <svg data-testid="close-icon">×</svg>,
+    Filter: () => <svg data-testid="filter-icon">Filter</svg>,
+  };
+});
 
 import { SimulationStudio } from "../SimulationStudio";
 

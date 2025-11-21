@@ -234,10 +234,12 @@ export const NotionTable = ({
           })}
         </div>
         <div {...getTableBodyProps()} className="w-full text-typography-900">
-          {rows.map((row, rowIndex) => {
+          {rows.map(row => {
             prepareRow(row);
             const rowProps = row.getRowProps();
             const { key, ...restRowProps } = rowProps;
+            const rowIndex = row.index;
+
             return (
               <div
                 key={key}
@@ -253,7 +255,6 @@ export const NotionTable = ({
                   </button>
                 )}
                 {row.cells.map(cell => {
-                  const rowIndex = row.index;
                   const cellProps = cell.getCellProps();
                   const { key: cellKey, ...restCellProps } = cellProps;
                   return (

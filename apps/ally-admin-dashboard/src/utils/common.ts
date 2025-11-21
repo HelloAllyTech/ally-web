@@ -64,6 +64,24 @@ export const decodeUint8ToJson = (payload: unknown): unknown => {
   return null;
 };
 
+/**
+ * Converts time from HH:MM:SS format to seconds
+ * @param timeString - Time in HH:MM:SS format (e.g., "00:20:00")
+ * @returns Time in seconds (e.g., 1200)
+ */
+export const convertTimeToSeconds = (timeString: string): number => {
+  if (!isNonEmptyString(timeString)) return 0;
+
+  const parts = timeString.split(":");
+  if (parts.length !== 3) return 0;
+
+  const hours = parseInt(parts[0], 10) || 0;
+  const minutes = parseInt(parts[1], 10) || 0;
+  const seconds = parseInt(parts[2], 10) || 0;
+
+  return hours * 3600 + minutes * 60 + seconds;
+};
+
 export const formatDate = (dateString: string) => {
   const date = new Date(dateString);
   return date.toLocaleDateString("en-GB", {
@@ -201,4 +219,19 @@ export const extractValidData = (
       }
     }),
   );
+};
+
+/**
+ * Converts seconds to HH:MM:SS format for display
+ * @param seconds - Time in seconds (number)
+ * @returns Time in HH:MM:SS format (string), defaults to "00:00:00" if invalid
+ */
+export const convertSecondsToTimeString = (seconds: number | undefined): string => {
+  if (!seconds || !isNumber(seconds) || seconds < 0) return "00:00:00";
+
+  const hours = Math.floor(seconds / 3600);
+  const minutes = Math.floor((seconds % 3600) / 60);
+  const secs = seconds % 60;
+
+  return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}:${String(secs).padStart(2, "0")}`;
 };

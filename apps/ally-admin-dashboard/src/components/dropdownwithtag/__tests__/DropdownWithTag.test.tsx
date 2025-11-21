@@ -3,10 +3,14 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 
 import { DropdownwithTag } from "../DropdownWithTag";
 
-vi.mock("@assets", () => ({
-  ArrowSolid: () => <svg data-testid="arrow-solid" />,
-  Close: () => <svg data-testid="close-icon" />,
-}));
+vi.mock("@assets", async importOriginal => {
+  const actual = await importOriginal<typeof import("@assets")>();
+  return {
+    ...actual,
+    ArrowSolid: () => <svg data-testid="arrow-solid" />,
+    Close: () => <svg data-testid="close-icon" />,
+  };
+});
 
 describe("DropdownwithTag", () => {
   const options = [

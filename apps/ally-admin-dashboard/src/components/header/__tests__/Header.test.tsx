@@ -35,9 +35,13 @@ vi.mock("react-router-dom", () => ({
   useParams: vi.fn(() => ({})),
 }));
 
-vi.mock("@assets", () => ({
-  ArrowDown: () => <svg data-testid="arrow-down" />,
-}));
+vi.mock("@assets", async importOriginal => {
+  const actual = await importOriginal<typeof import("@assets")>();
+  return {
+    ...actual,
+    ArrowDown: () => <svg data-testid="arrow-down" />,
+  };
+});
 
 // Use real Button to avoid affecting other modules
 

@@ -66,11 +66,15 @@ vi.mock("@constants", () => ({
 
 import { FileUpload } from "../FileUpload";
 
-vi.mock("@assets", () => ({
-  DragUpload: () => <svg data-testid="drag-upload" />,
-  Trash: () => <svg data-testid="trash-icon" />,
-  VideoCamera: () => <svg data-testid="video-camera" />,
-}));
+vi.mock("@assets", async importOriginal => {
+  const actual = await importOriginal<typeof import("@assets")>();
+  return {
+    ...actual,
+    DragUpload: () => <svg data-testid="drag-upload" />,
+    Trash: () => <svg data-testid="trash-icon" />,
+    VideoCamera: () => <svg data-testid="video-camera" />,
+  };
+});
 
 // Do not mock @components to avoid breaking other exports used across the app
 

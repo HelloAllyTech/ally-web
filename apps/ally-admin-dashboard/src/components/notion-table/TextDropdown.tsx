@@ -15,6 +15,7 @@ interface DropdownOption {
 
 interface TextDropdownProps {
   value: string;
+  displayValue?: string;
   options: DropdownOption[];
   onChange: (value: string) => void;
   placeholder?: string;
@@ -26,6 +27,7 @@ interface TextDropdownProps {
 
 export const TextDropdown = ({
   value,
+  displayValue,
   options,
   onChange,
   placeholder = "Select an option",
@@ -136,7 +138,12 @@ export const TextDropdown = ({
 
   // Get current option display value
   const currentOption = options.find(option => option.value === value);
-  const displayValue = currentOption ? currentOption.label : value || placeholder;
+  const finalDisplayValue =
+    displayValue && displayValue.trim() !== ""
+      ? displayValue
+      : currentOption
+        ? currentOption.label
+        : value || placeholder;
 
   return (
     <div ref={dropdownRef} className={clsx("relative w-full", className)}>
@@ -156,14 +163,14 @@ export const TextDropdown = ({
         )}
       >
         <span className={clsx("truncate mr-1", { "text-typography-800": !value })}>
-          {displayValue}
+          {finalDisplayValue}
         </span>
         {!disabled && <ArrowDownFilled width={8} height={8} />}
       </button>
 
       {/* Dropdown Menu */}
       {isOpen && (
-        <div className="absolute z-50 w-[calc(100%+24px)] left-[-12px] mt-1 bg-white border border-border-light rounded-md shadow-lg max-h-60 overflow-hidden">
+        <div className="absolute z-50 w-max min-w-[calc(100%+24px)] left-[-12px] mt-1 bg-background border border-border-light rounded-md shadow-lg max-h-60 overflow-hidden">
           {/* Search Input */}
           {isSearchable && (
             <div className="p-2 border-b border-border-light">
@@ -202,7 +209,7 @@ export const TextDropdown = ({
                       style={{ backgroundColor: option.backgroundColor }}
                     />
                   )}
-                  <span className="truncate">{option?.label}</span>
+                  <span className="whitespace-nowrap">{option?.label}</span>
                 </div>
               ))
             )}

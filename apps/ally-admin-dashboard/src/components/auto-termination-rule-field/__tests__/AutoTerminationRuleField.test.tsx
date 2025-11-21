@@ -7,6 +7,12 @@ import { AutoTerminationRuleField } from "../AutoTerminationRuleField";
 // Mock assets
 vi.mock("@assets", () => ({
   ArrowSolid: () => <svg data-testid="arrow-solid">Arrow</svg>,
+  AccountTree: () => <svg data-testid="account-tree">AccountTree</svg>,
+  AlarmOn: () => <svg data-testid="alarm-on">AlarmOn</svg>,
+  Chat: () => <svg data-testid="chat">Chat</svg>,
+  Close: () => <svg data-testid="close">Close</svg>,
+  DiamondShine: () => <svg data-testid="diamond-shine">DiamondShine</svg>,
+  Tick: () => <svg data-testid="tick">Tick</svg>,
 }));
 
 // Mock hooks
