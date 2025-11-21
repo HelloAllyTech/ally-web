@@ -47,16 +47,16 @@ export const SimulationStudio: React.FC = () => {
     isSimulationsLoading,
     isSimulationsFetching,
     isPreviewOpen,
-    setIsPreviewOpen,
     isUnpublishPopupOpen,
-    setIsUnpublishPopupOpen,
     isArchivePopupOpen,
-    setIsArchivePopupOpen,
     isDeletePopupOpen,
-    setIsDeletePopupOpen,
     isUnarchivePopupOpen,
-    setIsUnarchivePopupOpen,
     isEditPopupOpen,
+    setIsPreviewOpen,
+    setIsUnpublishPopupOpen,
+    setIsArchivePopupOpen,
+    setIsDeletePopupOpen,
+    setIsUnarchivePopupOpen,
     setIsEditPopupOpen,
     loadSimulations,
     handleNewSimulation,
@@ -79,17 +79,21 @@ export const SimulationStudio: React.FC = () => {
     isPathwaysLoading,
     isPathwaysFetching,
     currentPathway,
+    isDuplicatePathwayPopupOpen,
+    isUnpublishPathwayPopupOpen,
+    isDeletePathwayPopupOpen,
+    setIsDuplicatePathwayPopupOpen,
+    setIsUnpublishPathwayPopupOpen,
+    setIsDeletePathwayPopupOpen,
     loadPathways,
-    handleNewPathway: handleNewPathwayFromHook,
+    handleNewPathway,
     onEditPathway,
     handleDeletePathway,
     onDeletePathway,
     handleUnpublishPathway,
     handleChangePathwayStatus,
-    isUnpublishPathwayPopupOpen,
-    setIsUnpublishPathwayPopupOpen,
-    isDeletePathwayPopupOpen,
-    setIsDeletePathwayPopupOpen,
+    handleDuplicatePathway,
+    onDuplicatePathway,
   } = useSimulationPathways({ selectedFilters });
 
   const handleFilterClick = () => {
@@ -111,10 +115,6 @@ export const SimulationStudio: React.FC = () => {
 
   const openCreatePopup = () => {
     setIsCreatePopupOpen(true);
-  };
-
-  const handleNewPathway = () => {
-    handleNewPathwayFromHook();
   };
 
   const handleTabChange = (tabId: string) => {
@@ -216,7 +216,7 @@ export const SimulationStudio: React.FC = () => {
           hasFilters={selectedFilters.length > 0}
           onEdit={onEditPathway}
           onDelete={handleDeletePathway}
-          onDuplicate={() => {}}
+          onDuplicate={handleDuplicatePathway}
           onUnpublishPathway={handleUnpublishPathway}
           onCreatePathway={handleNewPathway}
           footer={renderFooter()}
@@ -354,6 +354,23 @@ export const SimulationStudio: React.FC = () => {
         onConfirmDelete={onDeletePathway}
         title={renderDeletePathwayTitle()}
         description={en.simulation.deletePathwayDescription}
+      />
+      <ActionConfirmationPopup
+        isOpen={isDuplicatePathwayPopupOpen}
+        onClose={() => setIsDuplicatePathwayPopupOpen(false)}
+        title={en.simulation.duplicate}
+        titleItalic={en.simulation.pathway}
+        description={en.simulation.duplicatePathwayDescription}
+        primaryButton={{
+          label: en.simulation.duplicate,
+          onClick: () => onDuplicatePathway(currentPathway),
+          variant: ButtonVariant.PRIMARY,
+        }}
+        secondaryButton={{
+          label: en.simulation.cancel,
+          onClick: () => setIsDuplicatePathwayPopupOpen(false),
+          variant: ButtonVariant.SECONDARY,
+        }}
       />
       {currentSimulation && (
         <ActionConfirmationPopup

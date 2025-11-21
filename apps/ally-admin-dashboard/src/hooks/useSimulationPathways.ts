@@ -7,6 +7,7 @@ import {
   useGetScenarioPathsQuery,
   useDeleteScenarioPathByIdMutation,
   useUpdateSimulationPathByIdMutation,
+  useDuplicateScenarioPathMutation,
 } from "@api";
 import { ROUTES, en } from "@constants";
 import { ScenarioPath, SimulationStatus } from "@types";
@@ -27,6 +28,7 @@ export const useSimulationPathways = ({ selectedFilters }: UseSimulationPathways
   const [pathwaysOffset, setPathwaysOffset] = useState<number>(0);
   const [hasMore, setHasMore] = useState(true);
   const [isUnpublishPathwayPopupOpen, setIsUnpublishPathwayPopupOpen] = useState(false);
+  const [isDuplicatePathwayPopupOpen, setIsDuplicatePathwayPopupOpen] = useState(false);
 
   const [updateSimulationPathByIdQuery] = useUpdateSimulationPathByIdMutation();
 
@@ -44,6 +46,7 @@ export const useSimulationPathways = ({ selectedFilters }: UseSimulationPathways
   });
 
   const [deletePathwayById] = useDeleteScenarioPathByIdMutation();
+  const [duplicateScenarioPath] = useDuplicateScenarioPathMutation();
 
   useEffect(() => {
     setPathwaysOffset(0);
@@ -119,6 +122,22 @@ export const useSimulationPathways = ({ selectedFilters }: UseSimulationPathways
     }
   };
 
+  const onDuplicatePathway = async (pathway: ScenarioPath) => {
+    try {
+      await duplicateScenarioPath(pathway.id).unwrap();
+      setIsDuplicatePathwayPopupOpen(false);
+      setCurrentPathway(null);
+      toast.success(en.simulation.pathwayDuplicatedSuccessfully);
+    } catch {
+      toast.error(en.simulation.failedDuplicatePathway);
+    }
+  };
+
+  const handleDuplicatePathway = (pathway: ScenarioPath) => {
+    setCurrentPathway(pathway);
+    setIsDuplicatePathwayPopupOpen(true);
+  };
+
   return {
     // State
     pathways,
@@ -127,15 +146,16 @@ export const useSimulationPathways = ({ selectedFilters }: UseSimulationPathways
     isPathwaysLoading,
     isPathwaysFetching,
     pathwaysOffset,
-    isUnpublishPathwayPopupOpen,
-    setIsUnpublishPathwayPopupOpen,
 
     // Popup states
     isPreviewOpen,
-    setIsPreviewOpen,
+    isUnpublishPathwayPopupOpen,
+    isDuplicatePathwayPopupOpen,
     isDeletePathwayPopupOpen,
+    setIsPreviewOpen,
+    setIsDuplicatePathwayPopupOpen,
+    setIsUnpublishPathwayPopupOpen,
     setIsDeletePathwayPopupOpen,
-    handleChangePathwayStatus,
 
     // Actions
     loadPathways,
@@ -145,5 +165,8 @@ export const useSimulationPathways = ({ selectedFilters }: UseSimulationPathways
     onDeletePathway,
     onPreviewPathway,
     handleUnpublishPathway,
+    onDuplicatePathway,
+    handleDuplicatePathway,
+    handleChangePathwayStatus,
   };
 };

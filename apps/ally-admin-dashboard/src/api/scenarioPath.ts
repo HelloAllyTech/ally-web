@@ -54,6 +54,14 @@ const simulationPathApi = baseAPI.injectEndpoints({
       }),
       invalidatesTags: [TAG_TYPES.SIMULATION_PATHS],
     }),
+
+    duplicateScenarioPath: builder.mutation<{ success: boolean }, string | number>({
+      query: id => ({
+        url: ApiEndpoints.SIMULATION_STUDIO.DUPLICATE_SCENARIO_PATH(id),
+        method: HttpMethod.POST,
+      }),
+      invalidatesTags: [TAG_TYPES.SIMULATION_PATHS],
+    }),
   }),
 });
 
@@ -63,4 +71,5 @@ export const {
   useLazyGetScenarioPathByIdQuery,
   useCreateSimulationPathMutation,
   useUpdateSimulationPathByIdMutation,
+  useDuplicateScenarioPathMutation,
 } = simulationPathApi;
