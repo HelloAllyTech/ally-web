@@ -70,7 +70,7 @@ export const PathwayList: React.FC<PathwayListProps> = ({
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case SimulationStatus.PUBLISHED:
+      case SimulationStatus.ACTIVE:
         return "bg-success-100 text-success-700";
       case SimulationStatus.DRAFT:
         return "bg-neutral-200 text-typography-800";

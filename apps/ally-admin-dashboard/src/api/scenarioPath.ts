@@ -52,7 +52,7 @@ const simulationPathApi = baseAPI.injectEndpoints({
         url: ApiEndpoints.SIMULATION_STUDIO.SCENARIO_PATH_BY_ID(id),
         method: HttpMethod.DELETE,
       }),
-      invalidatesTags: [TAG_TYPES.SCENARIO_PATHS],
+      invalidatesTags: [TAG_TYPES.SIMULATION_PATHS],
     }),
   }),
 });
