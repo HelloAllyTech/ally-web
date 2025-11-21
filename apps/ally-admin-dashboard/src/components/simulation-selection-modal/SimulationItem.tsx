@@ -49,15 +49,16 @@ export const SimulationCardItem: FC<SimulationCardItemProps> = ({
 
   const handleAddMessage = (data: any) => {
     if (openMessageIndex === null) return;
+    if (data.messageTitle) {
+      const updated = [...selectedSimulations];
+      updated[openMessageIndex] = {
+        ...updated[openMessageIndex],
+        messageTitle: data.messageTitle || "",
+        feedback: data.feedback || "",
+      };
+      setSelectedSimulations(updated);
+    }
 
-    const updated = [...selectedSimulations];
-    updated[openMessageIndex] = {
-      ...updated[openMessageIndex],
-      messageTitle: data.messageTitle || "",
-      feedback: data.feedback || "",
-    };
-
-    setSelectedSimulations(updated);
     setOpenMessageIndex(null);
   };
 

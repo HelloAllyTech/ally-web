@@ -15,7 +15,12 @@ import {
   OptionsPopup,
 } from "@components";
 import { ButtonVariant } from "@components/types";
-import { en, SimulationStatus } from "@constants";
+import {
+  DEFAULT_SIMULATION_STATUS_OPTIONS,
+  en,
+  PATH_STATUS_OPTIONS,
+  SimulationStatus,
+} from "@constants";
 import { useSimulations, useSimulationPathways } from "@hooks";
 
 const TAB_KEYS = {
@@ -201,6 +206,11 @@ export const SimulationStudio: React.FC = () => {
           onClose={handleFilterClose}
           selectedFilters={selectedFilters}
           onApply={handleApplyFilters}
+          options={
+            activeTab === TAB_KEYS.PATHWAYS
+              ? PATH_STATUS_OPTIONS
+              : DEFAULT_SIMULATION_STATUS_OPTIONS
+          }
         />
       </div>
     );

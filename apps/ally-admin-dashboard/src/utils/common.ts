@@ -115,7 +115,7 @@ export const getButtonStyles = (variant: ButtonProps["variant"]) => {
   }
 };
 
-export const getSimulationStatusColor = (status: Simulation["status"]) => {
+export const getStatusColor = (status: Simulation["status"]) => {
   switch (status) {
     case SimulationStatus.ACTIVE:
       return "bg-success-100 text-success-900";

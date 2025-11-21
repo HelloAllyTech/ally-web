@@ -124,7 +124,7 @@ vi.mock("@constants", () => ({
 // Mock utils
 vi.mock("@utils", () => ({
   formatDate: (date: string) => new Date(date).toLocaleDateString(),
-  getSimulationStatusColor: (status: string) =>
+  getStatusColor: (status: string) =>
     status === "ACTIVE" ? "bg-green-100 text-green-800" : "bg-gray-100 text-typography-800",
   formatSimulationUsage: (usage: number) => `${usage} times`,
   formatCapitalizedEnum: (value: string) =>
@@ -135,37 +135,40 @@ vi.mock("@utils", () => ({
 describe("SimulationList", () => {
   const mockSimulations: Simulation[] = [
     {
-      id: "1",
+      id: 1,
       title: "Test Simulation 1",
       description: "Description for simulation 1",
       coverImageUrl: "https://example.com/image1.jpg",
       createdBy: "John Doe",
       updatedAt: "2024-01-15T10:00:00Z",
       status: SimulationStatus.ACTIVE,
-      usage: 10,
+      usage: "10",
       isPreviewEnabled: true,
+      isAssignedToTenant: true,
     },
     {
-      id: "2",
+      id: 2,
       title: "Test Simulation 2",
       description: "Description for simulation 2",
       coverImageUrl: "https://example.com/image2.jpg",
       createdBy: "Jane Smith",
       updatedAt: "2024-01-20T15:30:00Z",
       status: SimulationStatus.DRAFT,
-      usage: 0,
+      usage: "0",
       isPreviewEnabled: false,
+      isAssignedToTenant: false,
     },
     {
-      id: "3",
+      id: 3,
       title: "Test Simulation 3",
       description: "Description for simulation 3",
       coverImageUrl: "https://example.com/image3.jpg",
       createdBy: "Bob Johnson",
       updatedAt: "2024-02-01T08:45:00Z",
       status: SimulationStatus.ARCHIVED,
-      usage: 25,
+      usage: "25",
       isPreviewEnabled: false,
+      isAssignedToTenant: true,
     },
   ];
 
@@ -462,15 +465,16 @@ describe("SimulationList", () => {
   describe("Edge Cases", () => {
     it("handles simulations with missing optional data", () => {
       const simulationWithMissingData: Simulation = {
-        id: "4",
+        id: 4,
         title: "Minimal Simulation",
         description: "",
         coverImageUrl: "",
         createdBy: "",
         updatedAt: "2024-01-01T00:00:00Z",
         status: SimulationStatus.DRAFT,
-        usage: 0,
+        usage: "0",
         isPreviewEnabled: false,
+        isAssignedToTenant: false,
       };
 
       render(<SimulationList simulations={[simulationWithMissingData]} {...mockCallbacks} />);
@@ -496,7 +500,7 @@ describe("SimulationList", () => {
     it("renders correctly with many simulations", () => {
       const manySimulations = Array.from({ length: 20 }, (_, i) => ({
         ...mockSimulations[0],
-        id: `sim-${i}`,
+        id: i,
         title: `Simulation ${i}`,
       }));
 

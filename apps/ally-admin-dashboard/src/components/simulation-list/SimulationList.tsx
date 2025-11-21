@@ -12,7 +12,7 @@ import { en } from "@constants";
 import { Simulation, SimulationStatus } from "@types";
 import {
   formatDate,
-  getSimulationStatusColor,
+  getStatusColor,
   formatSimulationUsage,
   formatCapitalizedEnum,
   isNonEmptyArray,
@@ -123,7 +123,7 @@ export const SimulationList: React.FC<SimulationListProps> = ({
       render: simulation => (
         <div className="flex items-center">
           <div
-            className={`w-auto py-1 rounded-[4px] px-2 text-sm ${getSimulationStatusColor(simulation.status)}`}
+            className={`w-auto py-1 rounded-[4px] px-2 text-sm ${getStatusColor(simulation.status)}`}
           >
             {simulation.status === SimulationStatus.ACTIVE
               ? formatCapitalizedEnum(SimulationStatus.PUBLISHED)

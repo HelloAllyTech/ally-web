@@ -110,7 +110,7 @@ export const OrganizationDetail: FC = () => {
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2 text-base">
             <button
-              onClick={() => navigate(ROUTES.USER_MANAGEMENT)}
+              onClick={() => navigate(-1)}
               className="text-typography-600 hover:text-typography-900"
             >
               {en.userManagement.organization}
