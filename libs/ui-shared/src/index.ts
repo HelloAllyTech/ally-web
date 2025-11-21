@@ -1,5 +1,6 @@
 import Badge from "./lib/badge";
 import ButtonGroup from "./lib/button-group";
+import { CustomImage } from "./lib/custom-image";
 import { CustomVideo } from "./lib/custom-video";
 import { Dropdown, DropdownField } from "./lib/dropdown-field";
 import GenericTable from "./lib/generic-table";
@@ -26,6 +27,7 @@ export type { Resource, SearchVariant, SimulationDetailsModalProps } from "./typ
 export {
   Badge,
   ButtonGroup,
+  CustomImage,
   CustomVideo,
   Dropdown,
   DropdownField,

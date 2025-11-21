@@ -40,7 +40,6 @@ export * from "./auto-termination-rule-field";
 export * from "./create-simulation-sub-section";
 export * from "./voice-dropdown";
 export * from "./dropdown-field";
-export * from "./custom-image";
 export * from "./Simulation-event-map-table";
 export * from "./mapped-event-side-panel";
 export * from "./toggle-switch";

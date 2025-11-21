@@ -4,7 +4,7 @@ import axios from "axios";
 import { useDropzone } from "react-dropzone";
 import { toast } from "sonner";
 
-import { CustomVideo } from "@ally-ui-mono/ui-shared";
+import { CustomVideo, CustomImage } from "@ally-ui-mono/ui-shared";
 import {
   useGetCoverImageUrlMutation,
   useDeleteCoverImageMutation,
@@ -12,7 +12,6 @@ import {
   useDeleteCoverVideoMutation,
 } from "@api";
 import { DragUpload, Trash, VideoCamera } from "@assets";
-import { CustomImage } from "@components";
 import {
   en,
   imageTypes,

@@ -1,7 +1,7 @@
 import { FC, useState } from "react";
 
+import { CustomImage } from "@ally-ui-mono/ui-shared";
 import { Close } from "@assets";
-import { CustomImage } from "@components";
 import { DeleteSimulationPopupProps } from "@components/types";
 import { en } from "@constants";
 

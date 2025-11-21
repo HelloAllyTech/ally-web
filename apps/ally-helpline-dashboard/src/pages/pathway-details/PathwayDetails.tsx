@@ -116,6 +116,13 @@ export const PathwayDetails: FC = () => {
   const [startSimulation] = useStartSimulationMutation();
   const [endSimulation] = useEndSimulationMutation();
 
+  // Calculate progress metrics after pathway validation
+  const totalScenarios = pathway.scenarios?.length || 0;
+  const hasProgress = (pathway.completedScenarios || 0) > 0;
+  const progressPercentage =
+    totalScenarios > 0 ? ((pathway.completedScenarios || 0) / totalScenarios) * 100 : 0;
+  const sortedScenarios = pathway.scenarios?.sort((a, b) => a.order - b.order);
+
   const handleStartOrContinueSimulation = () => {
     const nextScenario = pathway?.scenarios.find(
       scenario => scenario.status !== PathwayScenarioStatus.COMPLETED,
@@ -214,12 +221,6 @@ export const PathwayDetails: FC = () => {
     );
   }
 
-  // Calculate progress metrics after pathway validation
-  const totalScenarios = pathway.scenarios?.length || 0;
-  const hasProgress = (pathway.completedScenarios || 0) > 0;
-  const progressPercentage =
-    totalScenarios > 0 ? ((pathway.completedScenarios || 0) / totalScenarios) * 100 : 0;
-
   const renderHeaderSection = () => {
     return (
       <div className="relative w-full sticky top-0 z-10 bg-white pb-[10px] pt-4">
@@ -291,7 +292,7 @@ export const PathwayDetails: FC = () => {
         <div className="pb-6 pt-3">
           <div className="max-w-5xl mx-auto ml-[-10px] w-[calc(100%+20px)]">
             <div>
-              {pathway.scenarios.map((scenario, index) => (
+              {sortedScenarios?.map((scenario, index) => (
                 <ScenarioCard
                   key={scenario.sessionItemId || `scenario-${scenario.scenarioId}-${index}`}
                   scenario={scenario}

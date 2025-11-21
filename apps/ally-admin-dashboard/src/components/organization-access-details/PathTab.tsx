@@ -1,7 +1,8 @@
 import { useEffect, useState, FC } from "react";
 
+import { CustomImage } from "@ally-ui-mono/ui-shared";
 import { useGetScenarioPathsQuery } from "@api";
-import { ListToolbar, EmptyState, ToggleSwitch, CustomImage } from "@components";
+import { ListToolbar, EmptyState, ToggleSwitch } from "@components";
 import { en } from "@constants";
 import { ScenarioPath, SimulationStatus } from "@types";
 import { isNonEmptyArray } from "@utils";

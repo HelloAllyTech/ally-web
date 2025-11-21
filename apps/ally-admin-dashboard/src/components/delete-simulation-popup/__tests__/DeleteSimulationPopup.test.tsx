@@ -15,7 +15,7 @@ vi.mock("@assets", () => ({
 }));
 
 // Mock CustomImage component
-vi.mock("@components", () => ({
+vi.mock("@ally-ui-mono/ui-shared", () => ({
   CustomImage: ({ src, alt, className }: any) => (
     <img src={src} alt={alt} className={className} data-testid="custom-image" />
   ),

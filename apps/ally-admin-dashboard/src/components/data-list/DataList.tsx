@@ -2,7 +2,7 @@ import React from "react";
 
 import { Tooltip } from "@mui/material";
 
-import { CustomImage } from "@components";
+import { CustomImage } from "@ally-ui-mono/ui-shared";
 import { toolTipStyles } from "@constants";
 import { Simulation, ScenarioPath } from "@types";
 

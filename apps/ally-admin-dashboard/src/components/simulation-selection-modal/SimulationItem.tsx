@@ -5,12 +5,12 @@ import { CSS } from "@dnd-kit/utilities";
 import { Tooltip } from "@mui/material";
 import { motion, AnimatePresence } from "framer-motion";
 
+import { CustomImage } from "@ally-ui-mono/ui-shared";
 import { CloseRed, DragIndicator, InfoIcon, Plus } from "@assets";
 import { en, toolTipStyles } from "@constants";
 import { SimulationCardItemProps } from "@types";
 
 import { AddMessageModal } from "./AddMessageModal";
-import { CustomImage } from "../custom-image";
 
 export const SimulationCardItem: FC<SimulationCardItemProps> = ({
   simulation,
