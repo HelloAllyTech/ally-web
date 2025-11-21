@@ -21,7 +21,10 @@ export const Sidebar: React.FC = () => {
   useClickOutside(containerRef, () => setIsUserMenuOpen(false));
 
   useEffect(() => {
-    if (location.pathname.includes(ROUTES.CREATE_SIMULATION)) {
+    if (
+      location.pathname.includes(ROUTES.CREATE_SIMULATION) ||
+      location.pathname.includes(ROUTES.CREATE_PATH)
+    ) {
       setIsExpanded(false);
     }
   }, [location.pathname]);

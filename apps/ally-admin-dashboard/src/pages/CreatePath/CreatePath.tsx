@@ -106,7 +106,7 @@ export const CreatePath: FC = () => {
   // Custom validation to check if all mandatory fields are filled
   const areAllMandatoryFieldsFilled = useMemo(() => {
     const mandatoryFieldIds = getMandatoryFieldIds();
-    return mandatoryFieldIds.every(fieldId => {
+    const allMandatoryFormFieldsFilled = mandatoryFieldIds.every(fieldId => {
       const value = formValues[fieldId];
       // Check if value exists and is not empty
       if (isEmpty(value)) return false;
@@ -115,6 +115,7 @@ export const CreatePath: FC = () => {
 
       return true;
     });
+    return allMandatoryFormFieldsFilled && formValues?.scenarios?.length > 1; // at least one simulation is required
   }, [formValues]);
 
   const toggleSimulationModal = () => {
