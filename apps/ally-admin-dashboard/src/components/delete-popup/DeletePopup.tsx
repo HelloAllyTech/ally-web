@@ -5,15 +5,17 @@ import { Close } from "@assets";
 import { DeleteSimulationPopupProps } from "@components/types";
 import { en } from "@constants";
 
-export const DeleteSimulationPopup: FC<DeleteSimulationPopupProps> = ({
+export const DeletePopup: FC<DeleteSimulationPopupProps> = ({
   isOpen,
   onClose,
-  simulation,
+  cardData,
+  title,
+  description,
   onConfirmDelete,
 }) => {
   const [isConfirmed, setIsConfirmed] = useState(false);
 
-  if (!isOpen || !simulation) return null;
+  if (!isOpen || !cardData) return null;
 
   const handleConfirmDelete = () => {
     if (isConfirmed) {
@@ -41,28 +43,30 @@ export const DeleteSimulationPopup: FC<DeleteSimulationPopupProps> = ({
 
         {/* Header */}
         <div className="text-center mb-2">
-          <h2 className="text-2xl font-medium font-primary">
-            {en.simulation.deleteDescription}
-            <span className="italic font-semibold ml-1">
-              {en.simulation.simulation.toLowerCase()}
-            </span>
-            ?
-          </h2>
+          {title || (
+            <h2 className="text-2xl font-medium font-primary">
+              {en.simulation.deleteDescription}
+              <span className="italic font-semibold ml-1">
+                {en.simulation.simulation.toLowerCase()}
+              </span>
+              ?
+            </h2>
+          )}
         </div>
 
         {/* Simulation details card */}
         <div className="rounded-lg p-2 mb-3 flex items-center gap-4 border border-border-light">
           <div className="w-24 h-16 rounded-lg flex-shrink-0 flex items-center justify-center">
             <CustomImage
-              src={simulation.coverImageUrl}
-              alt={simulation.title}
+              src={cardData.coverImageUrl}
+              alt={cardData.title}
               className="w-full h-full object-cover rounded-lg"
             />
           </div>
           <div className="flex-1 min-w-0">
-            <h3 className="text-lg truncate">{simulation.title}</h3>
+            <h3 className="text-lg truncate">{cardData.title}</h3>
             <p className="text-typography-800 text-base mt-1 line-clamp-2">
-              {simulation.description}
+              {cardData.description}
             </p>
           </div>
         </div>
@@ -77,7 +81,7 @@ export const DeleteSimulationPopup: FC<DeleteSimulationPopupProps> = ({
               className="mt-1 w-4 h-4 text-primary border-border-light rounded"
             />
             <span className="text-base leading-relaxed">
-              {en.simulation.deleteConfirmationText}
+              {description || en.simulation.deleteConfirmationText}
             </span>
           </label>
         </div>

@@ -5,7 +5,7 @@ import { useSearchParams } from "react-router-dom";
 import { Add, Close, Filter, Simulation as SimulationIcon, Pathway } from "@assets";
 import {
   ActionConfirmationPopup,
-  DeleteSimulationPopup,
+  DeletePopup,
   SimulationList,
   PathwayList,
   SimulationPreview,
@@ -78,10 +78,18 @@ export const SimulationStudio: React.FC = () => {
     hasMore: hasMorePathways,
     isPathwaysLoading,
     isPathwaysFetching,
+    currentPathway,
     loadPathways,
     handleNewPathway: handleNewPathwayFromHook,
     onEditPathway,
     handleDeletePathway,
+    onDeletePathway,
+    handleUnpublishPathway,
+    handleChangePathwayStatus,
+    isUnpublishPathwayPopupOpen,
+    setIsUnpublishPathwayPopupOpen,
+    isDeletePathwayPopupOpen,
+    setIsDeletePathwayPopupOpen,
   } = useSimulationPathways({ selectedFilters });
 
   const handleFilterClick = () => {
@@ -209,9 +217,7 @@ export const SimulationStudio: React.FC = () => {
           onEdit={onEditPathway}
           onDelete={handleDeletePathway}
           onDuplicate={() => {}}
-          onArchive={() => {}}
-          onUnarchive={() => {}}
-          onUnpublishPathway={() => {}}
+          onUnpublishPathway={handleUnpublishPathway}
           onCreatePathway={handleNewPathway}
           footer={renderFooter()}
         />
@@ -233,6 +239,15 @@ export const SimulationStudio: React.FC = () => {
         onCreateSimulation={handleCreateSimulation}
         footer={renderFooter()}
       />
+    );
+  };
+
+  const renderDeletePathwayTitle = () => {
+    return (
+      <h2 className="text-2xl font-medium font-primary">
+        {en.simulation.deleteDescription}
+        <span className="italic font-semibold ml-1">{en.simulation.pathway}?</span>
+      </h2>
     );
   };
 
@@ -262,6 +277,24 @@ export const SimulationStudio: React.FC = () => {
         secondaryButton={{
           label: en.simulation.cancel,
           onClick: () => setIsUnpublishPopupOpen(false),
+          variant: ButtonVariant.SECONDARY,
+        }}
+      />
+
+      <ActionConfirmationPopup
+        isOpen={isUnpublishPathwayPopupOpen}
+        onClose={() => setIsUnpublishPathwayPopupOpen(false)}
+        title={en.simulation.unpublish}
+        titleItalic={`${en.simulation.pathway}?`}
+        description={en.simulation.unpublishDescription}
+        primaryButton={{
+          label: en.simulation.unpublish,
+          onClick: () => handleChangePathwayStatus(SimulationStatus.DRAFT),
+          variant: ButtonVariant.PRIMARY,
+        }}
+        secondaryButton={{
+          label: en.simulation.cancel,
+          onClick: () => setIsUnpublishPathwayPopupOpen(false),
           variant: ButtonVariant.SECONDARY,
         }}
       />
@@ -308,11 +341,19 @@ export const SimulationStudio: React.FC = () => {
           onClose={() => setIsPreviewOpen(false)}
         />
       )}
-      <DeleteSimulationPopup
+      <DeletePopup
         isOpen={isDeletePopupOpen}
         onClose={() => setIsDeletePopupOpen(false)}
-        simulation={currentSimulation}
+        cardData={currentSimulation}
         onConfirmDelete={onDeleteSimulation}
+      />
+      <DeletePopup
+        isOpen={isDeletePathwayPopupOpen}
+        onClose={() => setIsDeletePathwayPopupOpen(false)}
+        cardData={currentPathway}
+        onConfirmDelete={onDeletePathway}
+        title={renderDeletePathwayTitle()}
+        description={en.simulation.deletePathwayDescription}
       />
       {currentSimulation && (
         <ActionConfirmationPopup

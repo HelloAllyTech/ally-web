@@ -8,7 +8,7 @@ import {
   useDeleteSimulationByIdMutation,
   useUpdateSimulationByIdMutation,
 } from "@api";
-import { ROUTES, SimulationStatus, SORT_BY, SORT_ORDER } from "@constants";
+import { en, ROUTES, SimulationStatus, SORT_BY, SORT_ORDER } from "@constants";
 import { Simulation } from "@types";
 
 const SIMULATIONS_PAGE_SIZE = 30;
@@ -107,9 +107,9 @@ export const useSimulations = ({ selectedFilters }: UseSimulationsProps) => {
       await deleteSimulationById(currentSimulation.id).unwrap();
       setIsDeletePopupOpen(false);
       setCurrentSimulation(null);
-      toast.success("Simulation deleted successfully");
+      toast.success(en.simulation.simulationDeletedSuccessfully);
     } catch {
-      toast.error("Failed to delete simulation");
+      toast.error(en.simulation.failedDeleteSimulation);
     }
   };
 
@@ -124,9 +124,9 @@ export const useSimulations = ({ selectedFilters }: UseSimulationsProps) => {
       setIsUnpublishPopupOpen(false);
       setIsUnarchivePopupOpen(false);
       setCurrentSimulation(null);
-      toast.success("Updated simulation status to " + status);
+      toast.success(en.simulation.simulationStatusUpdatedSuccessfully + status);
     } catch {
-      toast.error("Failed to change simulation status");
+      toast.error(en.simulation.failedChangeSimulationStatus);
     }
   };
 

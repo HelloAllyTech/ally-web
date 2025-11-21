@@ -13,7 +13,7 @@ export * from "./pathway-list";
 export * from "./simulation-skeleton";
 export * from "./simulation-preview";
 export * from "./action-confirmation-popup";
-export * from "./delete-simulation-popup";
+export * from "./delete-popup";
 export * from "./options-popup";
 export * from "./input-field";
 export * from "./tags";

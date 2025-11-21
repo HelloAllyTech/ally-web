@@ -66,6 +66,17 @@ export const en = {
     logout: "Logout",
   },
   simulation: {
+    simulationDeletedSuccessfully: "Simulation deleted successfully",
+    failedDeleteSimulation: "Failed to delete simulation",
+    failedChangeSimulationStatus: "Failed to change simulation status",
+    simulationStatusUpdatedSuccessfully: "Simulation status updated to ",
+    failedChangePathwayStatus: "Failed to change pathway status",
+    pathwayStatusUpdatedSuccessfully: "Pathway status updated to ",
+    pathwayDeletedSuccessfully: "Pathway deleted successfully",
+    failedDeletePathway: "Failed to delete pathway",
+    deletePathway: "Delete Pathway",
+    deletePathwayDescription:
+      "I understand that deleting this simulation pathway is permanent and that I will lose all access to users and simulation pathway analytics.",
     pathway: "Pathway",
     paths: "Paths",
     createPathway: "Create Pathway",

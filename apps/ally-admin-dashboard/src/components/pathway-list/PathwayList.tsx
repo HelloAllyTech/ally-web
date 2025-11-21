@@ -1,6 +1,6 @@
 import React from "react";
 
-import { Add, Edit, Archive, Delete, Unarchive, Unpublish, Copy, BookWhite } from "@assets";
+import { Add, Edit, Delete, Unpublish, Copy, BookWhite } from "@assets";
 import {
   DataList,
   ActionButton,
@@ -20,8 +20,6 @@ export interface PathwayListProps {
   onEdit?: (pathway: ScenarioPath) => void;
   onDelete?: (pathway: ScenarioPath) => void;
   onDuplicate?: (pathway: ScenarioPath) => void;
-  onArchive?: (pathway: ScenarioPath) => void;
-  onUnarchive?: (pathway: ScenarioPath) => void;
   onUnpublishPathway?: (pathway: ScenarioPath) => void;
   onCreatePathway?: () => void;
 }
@@ -34,8 +32,6 @@ export const PathwayList: React.FC<PathwayListProps> = ({
   onEdit,
   onDelete,
   onDuplicate,
-  onArchive,
-  onUnarchive,
   onUnpublishPathway,
   onCreatePathway,
 }) => {
@@ -72,15 +68,10 @@ export const PathwayList: React.FC<PathwayListProps> = ({
     );
   }
 
-  const handleArchive = (pathway: ScenarioPath) =>
-    pathway.status === SimulationStatus.DRAFT ? onArchive?.(pathway) : onUnarchive?.(pathway);
-
   const getStatusColor = (status: string) => {
     switch (status) {
       case SimulationStatus.PUBLISHED:
         return "bg-success-100 text-success-700";
-      case SimulationStatus.ARCHIVED:
-        return "bg-warning-100 text-warning-700";
       case SimulationStatus.DRAFT:
         return "bg-neutral-200 text-typography-800";
       default:
@@ -149,24 +140,14 @@ export const PathwayList: React.FC<PathwayListProps> = ({
       icon: <Unpublish />,
       tooltip: en.simulation.unpublish,
       onClick: pathway => onUnpublishPathway?.(pathway),
+      show: simulation =>
+        simulation.status !== SimulationStatus.DRAFT &&
+        simulation.status !== SimulationStatus.ARCHIVED,
     },
     {
       icon: <Copy />,
       tooltip: en.simulation.duplicate,
       onClick: pathway => onDuplicate?.(pathway),
-    },
-    {
-      icon: <Archive />,
-      tooltip: en.simulation.archive,
-      onClick: pathway => handleArchive(pathway),
-      show: pathway =>
-        pathway.status !== SimulationStatus.DRAFT && pathway.status !== SimulationStatus.ARCHIVED,
-    },
-    {
-      icon: <Unarchive />,
-      tooltip: en.simulation.unarchive,
-      onClick: pathway => handleArchive(pathway),
-      show: pathway => pathway.status === SimulationStatus.ARCHIVED,
     },
     {
       icon: <Delete />,

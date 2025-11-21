@@ -3,8 +3,6 @@ import { ButtonHTMLAttributes, ChangeEvent, CSSProperties, ReactNode } from "rea
 import { TextFieldProps as MuiTextFieldProps } from "@mui/material";
 import { UseFormRegister, UseFormReturn, FieldErrors } from "react-hook-form";
 
-import { Simulation } from "@types";
-
 export interface PopupButtonProps {
   label: string;
   onClick: () => void;
@@ -31,7 +29,14 @@ export interface ButtonProps extends Omit<ButtonHTMLAttributes<HTMLButtonElement
 export interface DeleteSimulationPopupProps {
   isOpen: boolean;
   onClose: () => void;
-  simulation: Simulation | null;
+  title?: string | ReactNode;
+  description?: string | ReactNode;
+  cardData: {
+    id: string | number;
+    title?: string;
+    description?: string;
+    coverImageUrl?: string;
+  };
   onConfirmDelete: () => void;
 }
 

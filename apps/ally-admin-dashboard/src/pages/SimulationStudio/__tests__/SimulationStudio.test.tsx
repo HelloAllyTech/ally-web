@@ -48,10 +48,10 @@ vi.mock("@components", async importOriginal => {
           </button>
         </div>
       ) : null,
-    DeleteSimulationPopup: ({ isOpen, onClose, onConfirmDelete, simulation }: any) =>
+    DeletePopup: ({ isOpen, onClose, onConfirmDelete, cardData }: any) =>
       isOpen ? (
         <div data-testid="delete-simulation-popup">
-          <h2>Delete {simulation?.title}?</h2>
+          <h2>Delete {cardData?.title}?</h2>
           <button onClick={onConfirmDelete} data-testid="confirm-delete">
             Confirm Delete
           </button>

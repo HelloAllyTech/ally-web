@@ -3,9 +3,13 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
-import { useGetScenarioPathsQuery, useDeleteScenarioPathByIdMutation } from "@api";
-import { ROUTES } from "@constants";
-import { ScenarioPath } from "@types";
+import {
+  useGetScenarioPathsQuery,
+  useDeleteScenarioPathByIdMutation,
+  useUpdateSimulationPathByIdMutation,
+} from "@api";
+import { ROUTES, en } from "@constants";
+import { ScenarioPath, SimulationStatus } from "@types";
 
 const PATHWAYS_PAGE_SIZE = 30;
 
@@ -17,11 +21,14 @@ export const useSimulationPathways = ({ selectedFilters }: UseSimulationPathways
   const navigate = useNavigate();
 
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
-  const [isDeletePopupOpen, setIsDeletePopupOpen] = useState(false);
+  const [isDeletePathwayPopupOpen, setIsDeletePathwayPopupOpen] = useState(false);
   const [currentPathway, setCurrentPathway] = useState<ScenarioPath | null>(null);
   const [pathways, setPathways] = useState<ScenarioPath[]>([]);
   const [pathwaysOffset, setPathwaysOffset] = useState<number>(0);
   const [hasMore, setHasMore] = useState(true);
+  const [isUnpublishPathwayPopupOpen, setIsUnpublishPathwayPopupOpen] = useState(false);
+
+  const [updateSimulationPathByIdQuery] = useUpdateSimulationPathByIdMutation();
 
   // API hooks
   const {
@@ -71,7 +78,7 @@ export const useSimulationPathways = ({ selectedFilters }: UseSimulationPathways
 
   const handleDeletePathway = (pathway: ScenarioPath) => {
     setCurrentPathway(pathway);
-    setIsDeletePopupOpen(true);
+    setIsDeletePathwayPopupOpen(true);
   };
 
   const onDeletePathway = async () => {
@@ -79,17 +86,37 @@ export const useSimulationPathways = ({ selectedFilters }: UseSimulationPathways
 
     try {
       await deletePathwayById(currentPathway.id).unwrap();
-      setIsDeletePopupOpen(false);
+      setIsDeletePathwayPopupOpen(false);
       setCurrentPathway(null);
-      toast.success("Pathway deleted successfully");
+      toast.success(en.simulation.pathwayDeletedSuccessfully);
     } catch {
-      toast.error("Failed to delete pathway");
+      toast.error(en.simulation.failedDeletePathway);
     }
   };
 
   const onPreviewPathway = (pathway: ScenarioPath) => {
     setCurrentPathway(pathway);
     setIsPreviewOpen(true);
+  };
+
+  const handleUnpublishPathway = (pathway: ScenarioPath) => {
+    setCurrentPathway(pathway);
+    setIsUnpublishPathwayPopupOpen(true);
+  };
+
+  const handleChangePathwayStatus = async (status: SimulationStatus) => {
+    if (!currentPathway) return;
+    try {
+      await updateSimulationPathByIdQuery({
+        id: currentPathway.id,
+        data: { status, title: currentPathway.title },
+      }).unwrap();
+      setIsUnpublishPathwayPopupOpen(false);
+      setCurrentPathway(null);
+      toast.success(en.simulation.pathwayStatusUpdatedSuccessfully + status);
+    } catch {
+      toast.error(en.simulation.failedChangePathwayStatus);
+    }
   };
 
   return {
@@ -100,12 +127,15 @@ export const useSimulationPathways = ({ selectedFilters }: UseSimulationPathways
     isPathwaysLoading,
     isPathwaysFetching,
     pathwaysOffset,
+    isUnpublishPathwayPopupOpen,
+    setIsUnpublishPathwayPopupOpen,
 
     // Popup states
     isPreviewOpen,
     setIsPreviewOpen,
-    isDeletePopupOpen,
-    setIsDeletePopupOpen,
+    isDeletePathwayPopupOpen,
+    setIsDeletePathwayPopupOpen,
+    handleChangePathwayStatus,
 
     // Actions
     loadPathways,
@@ -114,5 +144,6 @@ export const useSimulationPathways = ({ selectedFilters }: UseSimulationPathways
     handleDeletePathway,
     onDeletePathway,
     onPreviewPathway,
+    handleUnpublishPathway,
   };
 };

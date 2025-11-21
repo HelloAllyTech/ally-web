@@ -23,7 +23,6 @@ import {
 import { ButtonVariant } from "@components/types";
 import {
   en,
-  ROUTES,
   PATH_CREATOR_FIELD_GROUPS,
   PATH_CREATOR_STEP_IDS,
   SimulationStatus,
@@ -191,7 +190,7 @@ export const CreatePath: FC = () => {
     try {
       const response = await saveSimulationChanges(SimulationStatus.ACTIVE);
 
-      if (response) navigate(ROUTES.SIMULATION_STUDIO);
+      if (response) navigate(-1);
     } catch {
       toast.error(en.errors.failedSimulationCreation);
     }

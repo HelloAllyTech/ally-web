@@ -215,7 +215,7 @@ export const PathwayDetails: FC = () => {
   }
 
   // Calculate progress metrics after pathway validation
-  const totalScenarios = pathway.scenarios?.length || 0;
+  const totalScenarios = pathway.totalScenarios || pathway.scenarios?.length || 0;
   const hasProgress = (pathway.completedScenarios || 0) > 0;
   const progressPercentage =
     totalScenarios > 0 ? ((pathway.completedScenarios || 0) / totalScenarios) * 100 : 0;
