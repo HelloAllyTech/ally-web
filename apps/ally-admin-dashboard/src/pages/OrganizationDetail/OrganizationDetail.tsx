@@ -12,7 +12,7 @@ import {
 } from "@api";
 import { ArrowDown, Dot } from "@assets";
 import { Tabs, OrganizationDetailLoader, SimulationsTab, PathTab } from "@components";
-import { en, ROUTES } from "@constants";
+import { en } from "@constants";
 import { Tenant } from "@types";
 
 enum TAB_IDS {
