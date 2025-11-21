@@ -144,7 +144,10 @@ export const PathwayDetails: FC = () => {
     setIsStarting(true);
 
     try {
-      const { data, error } = await startSimulation({ scenarioId: selectedScenario.scenarioId });
+      const { data, error } = await startSimulation({
+        scenarioId: selectedScenario.scenarioId,
+        pathwayId,
+      });
       // Handle success
       if (data) {
         const { scenarioSession, accessToken } = data;
@@ -158,7 +161,10 @@ export const PathwayDetails: FC = () => {
         } else if (errorData.data?.statusCode === 400 && errorData?.data?.entityId) {
           await endSimulation({ sessionId: errorData?.data?.entityId });
           toast.success("Previous simulation ended. Starting new one...");
-          const retryResult = await startSimulation({ scenarioId: selectedScenario?.scenarioId });
+          const retryResult = await startSimulation({
+            scenarioId: selectedScenario?.scenarioId,
+            pathwayId,
+          });
           if (retryResult?.data) {
             const { scenarioSession, accessToken } = retryResult?.data || {};
             storeRoomDataAndNavigate(scenarioSession, accessToken);

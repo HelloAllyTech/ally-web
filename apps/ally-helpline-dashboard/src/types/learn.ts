@@ -86,6 +86,7 @@ export interface GetScenarioInput {
 
 export interface StartSimulationInput {
   scenarioId: number;
+  pathwayId?: string;
 }
 
 export interface StartSimulationResponse {
