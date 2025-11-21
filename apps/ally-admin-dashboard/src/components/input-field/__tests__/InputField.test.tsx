@@ -5,10 +5,14 @@ import { vi, describe, it, expect, beforeEach } from "vitest";
 import { InputField } from "../InputField";
 
 // Mock assets
-vi.mock("@assets", () => ({
-  InfoIcon: () => <svg data-testid="info-icon">Info</svg>,
-  WandStars: () => <svg data-testid="wand-stars">Wand</svg>,
-}));
+vi.mock("@assets", async importOriginal => {
+  const actual = await importOriginal<typeof import("@assets")>();
+  return {
+    ...actual,
+    InfoIcon: () => <svg data-testid="info-icon">Info</svg>,
+    WandStars: () => <svg data-testid="wand-stars">Wand</svg>,
+  };
+});
 
 // Wrapper component to provide form context
 const TestWrapper = ({ children, defaultValues = {} }) => {

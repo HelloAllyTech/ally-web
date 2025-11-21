@@ -11,7 +11,12 @@ export const DEFAULT_SIMULATION_STATUS_OPTIONS = [
   { id: "DRAFT", label: "Draft" },
 ];
 
-export const SPEAKER_OPTIONS = [{ value: "CARE_GIVER", label: "Care giver" }];
+export const EVENT_TYPE_OPTIONS = [
+  { value: "TIME_BASED", label: "Time Based" },
+  { value: "SCORE_BASED", label: "Score Based" },
+  { value: "SENTENCE_SIMILARITY", label: "Sentence Similarity" },
+  { value: "COMBINATION", label: "Combination" },
+];
 
 export const GENDER_OPTIONS = [
   { value: "male", label: "Male" },
@@ -295,28 +300,26 @@ export const EVENT_MANAGEMENT_TABLE_COLUMNS = [
     minWidth: 180,
   },
   {
-    id: "detectionType",
-    label: "Event Type",
-    accessor: "detectionType",
+    id: "eventCode",
+    label: "Event code",
+    accessor: "eventCode",
     dataType: cellTypes.normalText,
-    minWidth: 180,
+    minWidth: 120,
   },
   {
-    id: "speaker",
-    label: "Speaker",
-    accessor: "speaker",
+    id: "detectionType",
+    label: "Event type",
+    accessor: "detectionType",
     dataType: cellTypes.dropdown,
-    options: SPEAKER_OPTIONS,
+    options: EVENT_TYPE_OPTIONS,
     minWidth: 150,
   },
   {
-    id: "description",
-    label: "Event description",
-    accessor: "description",
-    placeholder: "Add Description",
-    dataType: cellTypes.editableText,
-    options: [],
-    minWidth: 240,
+    id: "triggerCondition",
+    label: "Trigger conditions",
+    accessor: "triggerCondition",
+    dataType: cellTypes.triggerConditions,
+    minWidth: 400,
   },
   {
     id: "branchInstruction",
@@ -333,7 +336,7 @@ export const EVENT_MANAGEMENT_TABLE_COLUMNS = [
     accessor: "score",
     dataType: cellTypes.number,
     options: [],
-    minWidth: 170,
+    minWidth: 200,
   },
   {
     id: "message",
@@ -350,7 +353,7 @@ export const EVENT_MANAGEMENT_TABLE_COLUMNS = [
     accessor: "emoji",
     dataType: cellTypes.emoji_select,
     options: [],
-    minWidth: 130,
+    minWidth: 200,
   },
 ];
 

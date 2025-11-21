@@ -104,7 +104,7 @@ export const EditableTextPopup: React.FC<EditableTextPopupProps> = ({
             onBlur={handleSave}
             placeholder={placeholder}
             disabled={disabled}
-            className="w-full py-1 px-2 border border-primary-500rounded focus:outline-none disabled:bg-neutral-100 disabled:text-typography-800 resize-none overflow-y-auto [&::-webkit-scrollbar]:w-[1px] [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-scrollbar-thumb"
+            className="w-full py-1 px-2 border-[0.5px] border-primary-500 rounded-sm focus:outline-none disabled:bg-neutral-100 disabled:text-typography-800 resize-none overflow-y-auto [&::-webkit-scrollbar]:w-[1px] [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-scrollbar-thumb"
           />
         </div>
       )}

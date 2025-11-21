@@ -1,4 +1,6 @@
+import AccountTree from "./account_tree.svg?react";
 import Add from "./add.svg?react";
+import AlarmOn from "./alarm_on.svg?react";
 import Ally from "./ally.svg?react";
 import Archive from "./archive.svg?react";
 import ArrowDown from "./arrowDown.svg?react";
@@ -7,8 +9,10 @@ import ArrowSolid from "./arrowSolid.svg?react";
 import BackIcon from "./backIcon.svg?react";
 import Bolt from "./bolt.svg?react";
 import Book from "./book.svg?react";
+import Chat from "./chat.svg?react";
 import Close from "./close.svg?react";
 import Delete from "./delete.svg?react";
+import DiamondShine from "./diamond_shine.svg?react";
 import DockToRight from "./dockToRight.svg?react";
 import DoubleArrowRight from "./doubleArrowRight.svg?react";
 import DragUpload from "./dragUpload.svg?react";
@@ -28,21 +32,26 @@ import User from "./user.svg?react";
 import Users from "./users.svg?react";
 import VideoCamera from "./videoCamera.svg?react";
 import WandStars from "./wandStars.svg?react";
+import Tick from "./tick.svg?react";
 
 export {
+  AccountTree,
   ArrowDown,
+  AlarmOn,
   Bolt,
   Book,
   User,
   Users,
   Add,
   BackIcon,
+  Chat,
   ThreeDot,
   InfoIcon,
   Play,
   Unpublish,
   Archive,
   Delete,
+  DiamondShine,
   WandStars,
   DragUpload,
   Filter,
@@ -60,4 +69,5 @@ export {
   DoubleArrowRight,
   Unarchive,
   VideoCamera,
+  Tick,
 };

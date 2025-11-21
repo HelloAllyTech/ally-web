@@ -15,6 +15,7 @@ export const en = {
     noResultsFound: "No results found for",
     selectOption: "Select option",
     uploading: "Uploading...",
+    select: "Select",
   },
   errors: {
     fileMustBeJPEGOrPNG: "File must be JPEG or PNG.",
@@ -65,6 +66,8 @@ export const en = {
     selectVoice: "Select voice",
     simulationEvents: "Simulation Events",
     createNewEvent: "Create new event",
+    selectEventType: "Select the type of event you want to create.",
+    createEvent: "Create event",
     editEvent: "Edit event",
     simulationStudio: "Simulation Studio",
     newSimulation: "New simulation",

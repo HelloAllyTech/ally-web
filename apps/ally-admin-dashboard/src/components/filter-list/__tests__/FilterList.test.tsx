@@ -3,9 +3,13 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 
 import { FilterList } from "../FilterList";
 
-vi.mock("@assets", () => ({
-  Close: () => <svg data-testid="close-icon" />,
-}));
+vi.mock("@assets", async importOriginal => {
+  const actual = await importOriginal<typeof import("@assets")>();
+  return {
+    ...actual,
+    Close: () => <svg data-testid="close-icon" />,
+  };
+});
 
 vi.mock("@hooks", () => ({
   useClickOutside: () => {},

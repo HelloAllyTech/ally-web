@@ -123,6 +123,22 @@ export enum VisibilityType {
   HIDDEN = "HIDDEN",
 }
 
+export enum SessionEventDetectionType {
+  SENTENCE_SIMILARITY = "SENTENCE_SIMILARITY",
+  SEMANTIC_SIMILARITY = "SEMANTIC_SIMILARITY",
+  TIME = "TIME",
+  SCORE = "SCORE",
+  COMBINATION = "COMBINATION",
+}
+
+export enum SessionEventDetectionCondition {
+  LT = "LT",
+  GT = "GT",
+  EQ = "EQ",
+  LTE = "LTE",
+  GTE = "GTE",
+}
+
 export interface SessionEventResponse {
   data: SessionEvent[];
   pagination: Pagination;
@@ -134,17 +150,50 @@ export interface Pagination {
   offset: number;
 }
 
+/**
+ * Expression node for combination events
+ */
+export interface ExpressionNode {
+  type?: "AND" | "OR" | "NOT";
+  id?: string;
+  left?: ExpressionNode;
+  right?: ExpressionNode;
+}
+
+/**
+ * Detection data structure for session events
+ * Contains event-specific detection parameters
+ * Note: Only relevant fields are included based on detectionType:
+ * - SENTENCE_SIMILARITY/SEMANTIC_SIMILARITY: only sentences
+ * - SCORE: only score and condition
+ * - TIME: only time and condition
+ * - COMBINATION: only expression
+ */
+export interface SessionEventDetectionData {
+  speaker?: string;
+  sentences?: string[];
+  score?: number;
+  time?: number;
+  condition?: SessionEventDetectionCondition;
+  expression?: ExpressionNode;
+}
+
+/**
+ * Session Event interface matching the API payload format
+ * Used for creating and updating session events
+ */
 export interface SessionEvent {
   id?: string;
   name?: string;
+  eventCode?: string;
   description?: string;
   score?: number;
   emoji?: string;
   message?: string;
   branchInstruction?: string;
-  detectionType?: string;
+  detectionType?: SessionEventDetectionType | string;
   visibilityType?: string;
-  sentences?: string[];
+  detectionData?: SessionEventDetectionData;
 }
 
 export interface GetSessionEventsQuery {

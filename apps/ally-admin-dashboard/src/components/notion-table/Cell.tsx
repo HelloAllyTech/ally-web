@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 
 import { EmojiPickerComponent } from "@components";
 import {
@@ -7,6 +7,7 @@ import {
   TextDropdown,
   Switch,
   SelectComponent,
+  EditableTriggerConditionsPopup,
 } from "@components/notion-table";
 import { formatCapitalizedEnum } from "@utils";
 
@@ -57,7 +58,7 @@ export const Cell = ({
     case cellTypes.normalText:
       element = (
         <span className="overflow-hidden text-ellipsis whitespace-nowrap">
-          {formatCapitalizedEnum(value.value)}
+          {id === "eventCode" ? value.value : formatCapitalizedEnum(value.value)}
         </span>
       );
       break;
@@ -131,6 +132,19 @@ export const Cell = ({
         />
       );
       break;
+    case cellTypes.triggerConditions: {
+      element = (
+        <EditableTriggerConditionsPopup
+          eventType={row?.detectionType?.value}
+          triggerCondition={value.value || {}}
+          onChange={updateCellValue}
+          width={width}
+          minWidth={minWidth}
+          disabled={isDisabled}
+        />
+      );
+      break;
+    }
     default:
       element = <span />;
       break;

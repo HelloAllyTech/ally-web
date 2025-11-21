@@ -125,7 +125,7 @@ export const formatApiResponseToMappedEvent = (event: {
 }): UpdateScenarioEventDataParam => {
   return {
     id: createCell(event.eventId, false, event.eventId),
-    name: createCell(event.name, false, event.name),
+    name: createCell(event.name, false, event.eventId),
     score: createCell(event.score, false, event.eventId),
     emoji: createCell(
       event.emoji,

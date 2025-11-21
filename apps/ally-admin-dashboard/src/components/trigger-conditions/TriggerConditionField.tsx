@@ -1,0 +1,156 @@
+import React, { useCallback } from "react";
+
+import { AutoExpandableTextarea, NumberInput } from "@components";
+import { TRIGGER_FIELD_TYPES } from "@constants";
+
+import { TriggerConditionDropdown } from "./TriggerConditionDropdown";
+
+interface TriggerConditionFieldProps {
+  field: {
+    id: string;
+    type: string;
+    options?: Array<{ value: string; label: string }>;
+    placeholder?: string;
+    className?: string;
+    defaultValue?: any;
+    labelAfter?: string;
+  };
+  value: any;
+  onChange: (fieldId: string, value: any) => void;
+  isInTable?: boolean;
+}
+
+// This is just a read-only display since EditableTriggerConditionsPopup handles all editing
+const TableSentenceInput: React.FC<{
+  value: string;
+  placeholder?: string;
+  onChange: (value: string[]) => void;
+  isInTable?: boolean;
+}> = ({ value, placeholder, isInTable = false }) => {
+  return (
+    <div className="flex-1 w-full flex items-center">
+      <textarea
+        value={value}
+        readOnly
+        placeholder={placeholder}
+        className={`px-3 py-2 text-sm rounded-sm w-full min-w-[230px] resize-none overflow-hidden cursor-pointer focus:outline-none placeholder:text-typography-500 ${isInTable ? "bg-neutral-100" : "bg-neutral-50 border"}`}
+        style={{
+          height: "24px",
+          lineHeight: "20px",
+          paddingTop: "2px",
+          paddingBottom: "2px",
+        }}
+      />
+    </div>
+  );
+};
+
+export const TriggerConditionField: React.FC<TriggerConditionFieldProps> = ({
+  field,
+  value,
+  onChange,
+  isInTable = false,
+}) => {
+  const fieldValue = value ?? field.defaultValue;
+
+  const handleSentencesChange = useCallback(
+    (textareaValue: string) => {
+      const newSentencesArray = textareaValue.split("\n");
+      onChange(field.id, newSentencesArray);
+    },
+    [field.id, onChange],
+  );
+
+  const renderField = () => {
+    switch (field.type) {
+      case TRIGGER_FIELD_TYPES.NUMBER:
+        return (
+          <NumberInput
+            value={fieldValue !== undefined && fieldValue !== null ? fieldValue : undefined}
+            onChange={numValue => onChange(field.id, numValue)}
+            placeholder={field.placeholder || "0"}
+            className={`px-2 py-1 text-sm border h-6 rounded-sm w-[70px] ${isInTable ? "bg-neutral-100" : "bg-neutral-50 border"}`}
+            inputClassName="w-auto min-w-0 pr-6 !py-0 text-sm"
+            spinnerClassName="!left-auto right-1 !gap-0 px-2 !items-center"
+          />
+        );
+
+      case TRIGGER_FIELD_TYPES.TIME:
+        return (
+          <input
+            type="text"
+            value={fieldValue || ""}
+            onChange={e => onChange(field.id, e.target.value)}
+            placeholder={field.placeholder || "HH:MM:SS"}
+            pattern="^([0-1][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]$"
+            className={`px-3 py-2 text-sm h-6 rounded-sm w-[90px] placeholder:text-typography-500 ${isInTable ? "bg-neutral-100" : "bg-neutral-50 border"}`}
+          />
+        );
+
+      case TRIGGER_FIELD_TYPES.SELECT:
+      case TRIGGER_FIELD_TYPES.OPERATOR_DROPDOWN:
+      case TRIGGER_FIELD_TYPES.SPEAKER_DROPDOWN:
+      case TRIGGER_FIELD_TYPES.STATUS_DROPDOWN:
+        return (
+          <TriggerConditionDropdown
+            value={fieldValue || ""}
+            options={field.options || []}
+            onChange={newValue => onChange(field.id, newValue)}
+            placeholder={field.placeholder || "Select"}
+            disabled={false}
+            className={field.className || ""}
+            isInTable={isInTable}
+          />
+        );
+
+      case TRIGGER_FIELD_TYPES.MULTILINE_TEXT: {
+        const sentencesArray = Array.isArray(fieldValue) ? fieldValue : [];
+        const sentencesText = sentencesArray.join("\n");
+
+        // In table mode, show read-only display (editing happens in popup)
+        if (isInTable) {
+          return (
+            <TableSentenceInput
+              value={sentencesText}
+              placeholder={field.placeholder}
+              onChange={newValue => onChange(field.id, newValue)}
+              isInTable={isInTable}
+            />
+          );
+        }
+
+        return (
+          <div className="flex-1 max-w-[400px] border rounded">
+            <div className="px-2">
+              <AutoExpandableTextarea
+                value={sentencesText}
+                onChange={handleSentencesChange}
+                placeholder={field.placeholder}
+                disabled={false}
+                minHeight={20}
+                maxLines={20}
+                className="text-sm focus:outline-none w-full !mt-0 placeholder:text-typography-500"
+              />
+            </div>
+          </div>
+        );
+      }
+
+      default:
+        return null;
+    }
+  };
+
+  const renderedField = renderField();
+
+  if (!renderedField) return null;
+
+  return (
+    <>
+      {renderedField}
+      {field.labelAfter && (
+        <span className="text-sm text-typography-500 flex-shrink-0">{field.labelAfter}</span>
+      )}
+    </>
+  );
+};
