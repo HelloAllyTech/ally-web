@@ -120,7 +120,7 @@ export const Sidebar: React.FC = () => {
   );
 
   const profileSection = (
-    <div className="border-t border-border-light py-4">
+    <div ref={containerRef} className="border-t border-border-light py-4">
       {isExpanded ? (
         <div
           onClick={handleUserMenuToggle}
@@ -154,7 +154,6 @@ export const Sidebar: React.FC = () => {
       {/* User Menu Dropdown */}
       {isUserMenuOpen && (
         <div
-          ref={containerRef}
           onBlur={handleUserMenuToggle}
           className={`absolute bottom-[10px] ${isExpanded ? "left-[230px]" : "left-[100px]"} min-w-[250px] z-[999] mb-2 bg-white border border-border-light rounded-lg shadow-lg`}
         >
