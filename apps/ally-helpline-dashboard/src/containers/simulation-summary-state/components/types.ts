@@ -6,3 +6,10 @@ export interface StarRatingProps {
 }
 
 export type FeedbackSectionProps = SimulationSummary;
+
+export interface UpNextSimulationCardProps {
+  simulationNumber: number;
+  title: string;
+  scenario: string;
+  coverImage: string;
+}

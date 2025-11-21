@@ -5,8 +5,10 @@ import { Button, ButtonVariant, ButtonVariantType } from "./button";
 import ButtonGroup from "./button-group";
 import { Carousel, CarouselSize, CarouselVariant, CarouselSlideType } from "./carousel";
 import Chip, { ChipConfig } from "./chip";
+import { CircularProgress } from "./circular-progress";
 import ConfirmationDialog from "./confirmation-dialog";
 import CreditInfo from "./credit-info-dialog";
+import { CreditsDisplay } from "./credits-display";
 import CustomCircularProgress from "./custom-circular-progress";
 import CustomMarkdown from "./custom-markdown";
 import { DatePicker, TimePicker } from "./date-time-pickers";
@@ -47,7 +49,9 @@ export {
   Button,
   ButtonGroup,
   Chip,
+  CircularProgress,
   ConfirmationDialog,
+  CreditsDisplay,
   CustomCircularProgress,
   CustomMarkdown,
   DatePicker,

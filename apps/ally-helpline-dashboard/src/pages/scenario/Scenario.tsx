@@ -5,7 +5,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
 
 import { useEndSimulationMutation, useGetScenarioQuery, useStartSimulationMutation } from "@api";
-import { BackCircle, Bolt, ExistingCall, PageNotFoundIllustration } from "@assets";
+import { BackCircle, ExistingCall, PageNotFoundIllustration } from "@assets";
 import {
   LoginDialog,
   ScenarioDetailsCard,
@@ -13,6 +13,7 @@ import {
   ButtonVariant,
   FallbackUI,
   CreditInfo,
+  CreditsDisplay,
 } from "@components";
 import { AUTO_CLOSE_DIALOG_DURATION, LOCAL_STORAGE_KEYS, ROUTES } from "@constants";
 import { useSimulationCredits } from "@hooks";
@@ -170,25 +171,7 @@ export const Scenario: FC = () => {
                 <span>Start</span>
                 <span className="font-bold italic"> Simulation</span>
               </div>
-              <div
-                className="font-primary flex  items-center"
-                data-testid="scenario-credits-display"
-              >
-                <div className="font-primary text-base text-typography-800">Credits used:</div>
-                <Bolt className="mb-2" data-testid="scenario-credits-icon" />
-                <span
-                  data-testid="scenario-credits-consumed"
-                  className={`font-bold text-xl mb-1 ${limitReached ? "text-destructive-500" : "text-typography-900"}`}
-                >
-                  {credits?.consumedCredits ?? 0}
-                </span>
-                <span
-                  className="text-base text-typography-800"
-                  data-testid="scenario-credits-limit"
-                >
-                  /{credits?.creditLimit ?? 0}
-                </span>
-              </div>
+              <CreditsDisplay />
             </div>
             <ScenarioDetailsCard
               data-testid="scenario-details-card"

@@ -3,10 +3,10 @@ import { describe, it, expect } from "vitest";
 import { SIMULATION_CREATOR_FIELD_GROUPS } from "@constants";
 import { GetSimulationByIdResponse } from "@types";
 
+import { extractValidData } from "../common";
 import {
   getCreateSimulationSubSectionById,
   formatSimulationResponseData,
-  extractValidData,
 } from "../createSimulation";
 
 describe("createSimulation utils", () => {
@@ -124,6 +124,10 @@ describe("createSimulation utils", () => {
         tone: "Casual",
         voiceId: "voice-123",
         coverImageUrl: "https://example.com/image.jpg",
+        coverVideoUrl: undefined,
+        autoTerminationStatus: false,
+        terminationEventId: undefined,
+        terminationMessage: undefined,
       });
     });
 
@@ -217,8 +221,8 @@ describe("createSimulation utils", () => {
 
       const result = formatSimulationResponseData(mockResponse);
 
-      // Check all fields are present (title, description, coverImageUrl, coverVideoUrl + 18 metadata fields = 22 total)
-      expect(Object.keys(result)).toHaveLength(22);
+      // Check all fields are present (title, description, coverImageUrl, coverVideoUrl, autoTerminationStatus, terminationEventId, terminationMessage + 18 metadata fields = 25 total)
+      expect(Object.keys(result)).toHaveLength(25);
       expect(result.title).toBe("Test");
       expect(result.description).toBe("Test");
       expect(result.coverImageUrl).toBe("url");
@@ -234,7 +238,7 @@ describe("createSimulation utils", () => {
         title: "   Test Simulation   ",
       };
 
-      const result = extractValidData(formData);
+      const result = extractValidData(SIMULATION_CREATOR_FIELD_GROUPS, formData);
 
       expect(result.title).toBe("Test Simulation");
     });
@@ -244,7 +248,7 @@ describe("createSimulation utils", () => {
         gender: "",
       };
 
-      const result = extractValidData(formData);
+      const result = extractValidData(SIMULATION_CREATOR_FIELD_GROUPS, formData);
       expect(result.gender).toBeNull();
     });
 
@@ -253,7 +257,7 @@ describe("createSimulation utils", () => {
         gender: "female",
       };
 
-      const result = extractValidData(formData);
+      const result = extractValidData(SIMULATION_CREATOR_FIELD_GROUPS, formData);
       expect(result.gender).toBe("female");
     });
 
@@ -262,7 +266,7 @@ describe("createSimulation utils", () => {
         age: "25",
       };
 
-      const result = extractValidData(formData);
+      const result = extractValidData(SIMULATION_CREATOR_FIELD_GROUPS, formData);
       expect(result.age).toBe(25);
     });
 
@@ -271,7 +275,7 @@ describe("createSimulation utils", () => {
         age: "",
       };
 
-      const result = extractValidData(formData);
+      const result = extractValidData(SIMULATION_CREATOR_FIELD_GROUPS, formData);
       expect(result.age).toBeNull();
     });
 
@@ -280,16 +284,16 @@ describe("createSimulation utils", () => {
         coverImageUrl: "https://example.com/image.jpg",
       };
 
-      const result = extractValidData(formData);
+      const result = extractValidData(SIMULATION_CREATOR_FIELD_GROUPS, formData);
       expect(result.coverImageUrl).toBe("https://example.com/image.jpg");
     });
 
-    it("should convert empty image upload to null", () => {
+    it("should convert empty image upload to empty string", () => {
       const formData = {
         coverImageUrl: "",
       };
 
-      const result = extractValidData(formData);
+      const result = extractValidData(SIMULATION_CREATOR_FIELD_GROUPS, formData);
       expect(result.coverImageUrl).toBeNull();
     });
 
@@ -298,7 +302,7 @@ describe("createSimulation utils", () => {
         coverImageUrl: [],
       };
 
-      const result = extractValidData(formData);
+      const result = extractValidData(SIMULATION_CREATOR_FIELD_GROUPS, formData);
       expect(result.coverImageUrl).toBeNull();
     });
 
@@ -307,7 +311,7 @@ describe("createSimulation utils", () => {
         customField: "  Hello  ",
       };
 
-      const result = extractValidData(formData);
+      const result = extractValidData(SIMULATION_CREATOR_FIELD_GROUPS, formData);
       expect(result.customField).toBe("Hello");
     });
 
@@ -319,13 +323,13 @@ describe("createSimulation utils", () => {
         coverImageUrl: "",
       };
 
-      const result = extractValidData(formData);
+      const result = extractValidData(SIMULATION_CREATOR_FIELD_GROUPS, formData);
 
       expect(result).toEqual({
         name: "John", // trimmed
         age: 30, // parsed
         gender: null, // empty select
-        coverImageUrl: null, // empty upload
+        coverImageUrl: null, // empty string returns null
       });
     });
   });

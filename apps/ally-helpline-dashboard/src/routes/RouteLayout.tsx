@@ -1,7 +1,7 @@
 import { Route, Routes, BrowserRouter } from "react-router-dom";
 
 import { ROUTES } from "@constants";
-import { Health, Login, Learn, Scenario, SuspendedUser } from "@pages";
+import { Health, Login, Learn, Scenario, PathwayDetails, SuspendedUser } from "@pages";
 
 import HybridRouteLayout from "./HybridRouteLayout";
 import PrivateRouteLayout from "./PrivateRouteLayout";
@@ -21,6 +21,7 @@ const RouteLayout = () => {
         <Route element={<HybridRouteLayout />}>
           <Route path={ROUTES.LEARN} element={<Learn />} />
           <Route path={ROUTES.SCENARIO} element={<Scenario />} />
+          <Route path={ROUTES.PATHWAY} element={<PathwayDetails />} />
         </Route>
 
         {/* Private Routes */}

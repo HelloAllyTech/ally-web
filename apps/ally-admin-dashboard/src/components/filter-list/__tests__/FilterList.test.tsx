@@ -71,7 +71,15 @@ describe("FilterList", () => {
 
   it("closes via close button", () => {
     const onClose = vi.fn();
-    render(<FilterList isOpen={true} onClose={onClose} onApply={vi.fn()} selectedFilters={[]} />);
+    render(
+      <FilterList
+        isOpen={true}
+        onClose={onClose}
+        onApply={vi.fn()}
+        selectedFilters={[]}
+        options={options}
+      />,
+    );
 
     const closeBtn = screen.getByTestId("close-icon").closest("button")!;
     fireEvent.click(closeBtn);

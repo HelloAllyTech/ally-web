@@ -3,6 +3,12 @@ export enum ScenarioStatus {
   COMING_SOON = "COMING_SOON",
 }
 
+export enum PathwayStatus {
+  DRAFT = "DRAFT",
+  ACTIVE = "ACTIVE",
+  ARCHIVED = "ARCHIVED",
+}
+
 export interface Scenario {
   id?: number;
   title?: string;
@@ -80,6 +86,7 @@ export interface GetScenarioInput {
 
 export interface StartSimulationInput {
   scenarioId: number;
+  pathwayId?: string;
 }
 
 export interface StartSimulationResponse {
@@ -151,6 +158,17 @@ export interface SimulationSummary {
       };
     };
   };
+  // TODO: Change the type after the API is updated
+  upNextSimulation: {
+    number: number;
+    title?: string;
+    description?: string;
+    coverImageUrl?: string;
+    message?: {
+      title?: string;
+      description?: string;
+    };
+  };
   events: KeyEvent[];
   hasFeedback: boolean;
 }
@@ -205,4 +223,54 @@ export interface SimulationTranscriptMessage {
   content: string;
   senderId: number;
   createdAt?: string;
+}
+
+export interface ScenarioPathway {
+  id: string;
+  title: string;
+  description: string;
+  coverImageUrl: string;
+  status: PathwayStatus;
+  isGlobal: boolean;
+  totalScenarios: number;
+  updatedAt: string;
+}
+
+export interface GetScenarioPathwaysInput {
+  offset?: number;
+  limit?: number;
+}
+
+export interface GetScenarioPathwaysResponse {
+  data: ScenarioPathway[];
+}
+
+export enum PathwayScenarioStatus {
+  COMPLETED = "COMPLETED",
+  IN_PROGRESS = "IN_PROGRESS",
+  UNLOCKED = "UNLOCKED",
+  LOCKED = "LOCKED",
+}
+
+export interface PathwayScenario {
+  sessionItemId: number;
+  scenarioId: number;
+  coverImageUrl: string;
+  coverVideoUrl?: string;
+  description?: string;
+  title?: string;
+  order: number;
+  status: PathwayScenarioStatus;
+}
+
+export interface ScenarioPathwayDetails {
+  id: string;
+  title: string;
+  description?: string;
+  coverImageUrl: string;
+  userId: number;
+  completedAt: string | null;
+  completedScenarios: number;
+  totalScenarios: number;
+  scenarios: PathwayScenario[];
 }

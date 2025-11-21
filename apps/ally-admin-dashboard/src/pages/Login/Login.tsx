@@ -5,9 +5,10 @@ import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
+import { CustomImage } from "@ally-ui-mono/ui-shared";
 import { useGenerateOTPMutation, useVerifyOTPMutation } from "@api";
 import { ArrowDown, LoginImage } from "@assets";
-import { Button, CustomImage, OTP, TextField } from "@components";
+import { Button, OTP, TextField } from "@components";
 import {
   LoginSection,
   LOCAL_STORAGE_KEYS,

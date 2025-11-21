@@ -10,6 +10,7 @@ vi.mock("@pages", () => ({
   Login: () => <div data-testid="login-page">Login Page</div>,
   Learn: () => <div data-testid="learn-page">Learn Page</div>,
   Scenario: () => <div data-testid="scenario-page">Scenario Page</div>,
+  PathwayDetails: () => <div data-testid="pathway-details-page">Pathway Details Page</div>,
   SuspendedUser: () => <div data-testid="suspended-user-page">Suspended User Page</div>,
 }));
 
@@ -39,6 +40,7 @@ vi.mock("@constants", () => ({
     HEALTH: "/health",
     LEARN: "/learn",
     SCENARIO: "/scenario/:scenarioId",
+    PATHWAY: "/pathway/:pathwayId",
   },
 }));
 

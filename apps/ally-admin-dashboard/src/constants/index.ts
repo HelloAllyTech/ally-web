@@ -6,5 +6,6 @@ export * from "./SimulationCreator";
 export * from "./simulation";
 export * from "./permissions";
 export * from "./file";
+export * from "./CreatePath";
 export * from "./eventTypes";
 export * from "./TriggerConditionsConfig";

@@ -1,55 +1,101 @@
-import { FC } from "react";
+import { FC, useEffect } from "react";
 
 import { AnimatePresence, motion } from "framer-motion";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 
-import { useGetScenariosQuery } from "@api";
-import { Bolt } from "@assets";
-import { ScenarioCard } from "@components";
-import { useSimulationCredits } from "@hooks";
+import { useGetScenariosQuery, useGetScenarioPathwaysQuery } from "@api";
+import { CreditsDisplay, ScenarioCard, TabGroup } from "@components";
 import { ScenarioStatus } from "@types";
 
 import { learnPageContainerVariants, learnPageItemVariants } from "./constants";
 
+enum TabId {
+  SIMULATIONS = "simulations",
+  PATHWAYS = "pathways",
+}
+
+const LEARN_TABS = [
+  { id: TabId.SIMULATIONS, label: "Simulations" },
+  { id: TabId.PATHWAYS, label: "Path way" },
+];
+
+type LearnTabId = (typeof LEARN_TABS)[number]["id"];
+
 export const Learn: FC = () => {
   const navigate = useNavigate();
-  const { credits, limitReached } = useSimulationCredits();
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  const isValidTabId = (tab: string | null): tab is LearnTabId => {
+    return LEARN_TABS.some(t => t.id === tab);
+  };
+  const tabFromUrl = searchParams.get("tab");
+  const activeTab: LearnTabId = isValidTabId(tabFromUrl) ? tabFromUrl : LEARN_TABS[0].id;
+
+  useEffect(() => {
+    if (!tabFromUrl || !isValidTabId(tabFromUrl)) {
+      setSearchParams({ tab: LEARN_TABS[0].id }, { replace: true });
+    }
+  }, [tabFromUrl, setSearchParams]);
+
   const {
     data: scenarios,
     isLoading: isScenariosLoading,
     refetch: refetchScenarios,
   } = useGetScenariosQuery();
 
-  const renderPageDescription = () => {
+  const {
+    data: pathwaysData,
+    isLoading: isPathwaysLoading,
+    refetch: refetchPathways,
+  } = useGetScenarioPathwaysQuery({
+    offset: 0,
+    limit: 10,
+  });
+
+  const handleTabChange = (newValue: LearnTabId) => {
+    if (isValidTabId(newValue)) setSearchParams({ tab: newValue });
+  };
+
+  const onScenarioCardClick = (itemId: number, isPathway: boolean) => {
+    navigate(isPathway ? `/pathway/${itemId}` : `/scenario/${itemId}`);
+  };
+
+  const renderPageHeader = () => {
     const emphasisStyles = "font-bold text-primary-500";
     return (
-      <motion.div
-        data-testid="learn-page-description"
-        variants={learnPageItemVariants}
-        initial="hidden"
-        animate="visible"
-        className="w-full font-secondary text-3xl text-typography-900 sm:mb-[30px] mb-[48px] sm:leading-[40px] leading-[28px] pt-[30px]"
-      >
-        <span>Use </span>
-        <span className={emphasisStyles}>AI-voice based </span>
-        hyper realistic training
-        <span className={emphasisStyles}> role plays </span>
-        to build mental healthcare skills.
-      </motion.div>
+      <>
+        <motion.div
+          variants={learnPageItemVariants}
+          initial="hidden"
+          animate="visible"
+          className="w-full font-secondary text-3xl text-typography-900 sm:mb-[30px] mb-[48px] sm:leading-[40px] leading-[28px] pt-[30px]"
+        >
+          <span>Use </span>
+          <span className={emphasisStyles}>AI-voice based </span>
+          hyper realistic training
+          <span className={emphasisStyles}> role plays </span>
+          to build mental healthcare skills.
+        </motion.div>
+        <div className="flex flex-row items-center justify-between gap-2 border-b border-typography-300">
+          <TabGroup
+            tabs={LEARN_TABS.map(tab => ({ label: tab.label, value: tab.id }))}
+            value={activeTab}
+            className="border-none max-w-[200px]"
+            onChange={(_, newValue) => handleTabChange(newValue as LearnTabId)}
+          />
+          <CreditsDisplay />
+        </div>
+      </>
     );
   };
 
-  const renderEmptyGrid = () => (
-    <div
-      className="flex flex-col items-center justify-center w-full py-8 min-h-[30vh]"
-      data-testid="learn-empty-state"
-    >
-      <div className="text-typography-700 text-lg mb-4" data-testid="learn-empty-message">
-        No scenarios available at the moment
+  const renderEmptyGrid = (isPathway = false) => (
+    <div className="flex flex-col items-center justify-center w-full py-8 min-h-[30vh]">
+      <div className="text-typography-700 text-lg mb-4">
+        No {isPathway ? "pathways" : "scenarios"} available at the moment
       </div>
       <button
-        data-testid="learn-refresh-button"
-        onClick={() => refetchScenarios()}
+        onClick={() => (isPathway ? refetchPathways() : refetchScenarios())}
         className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors"
       >
         Refresh Page
@@ -65,114 +111,94 @@ export const Learn: FC = () => {
       return aActive ? -1 : 1;
     });
 
-  const renderScenarioGrid = () => (
-    <>
-      <motion.div
-        data-testid="learn-header-section"
-        variants={learnPageItemVariants}
-        initial="hidden"
-        animate="visible"
-        exit="exit"
-        className="mb-[24px] sm:mb-[32px]"
-      >
-        <h1
-          className="text-2xl sm:text-4xl text-typography-900 mb-6 sm:mb-[24px] font-secondary"
-          data-testid="learn-page-title"
-        >
-          <span className="font-[350]">Choose your</span>
-          <span className="font-[700] italic"> Scenario</span>
-        </h1>
-        <div className="flex items-center gap-2" data-testid="learn-scenarios-header">
-          <span
-            className="font-tertiary text-xs text-typography-800 font-semibold tracking-[4px]"
-            data-testid="learn-scenarios-label"
-          >
-            SCENARIOS
-          </span>
-          <div className="border-b border-typography-300 w-full" />
-          <div
-            className="flex flex-row items-center min-w-[130px] justify-end"
-            data-testid="learn-credits-display"
-          >
-            <div className="font-primary text-base text-typography-700 whitespace-nowrap">
-              Credits used:
-            </div>
-            <Bolt data-testid="learn-credits-icon" />
-            <span
-              data-testid="learn-credits-consumed"
-              className={`font-primary font-bold text-lg  ${limitReached ? "text-red-500" : "text-black"}`}
-            >
-              {credits?.consumedCredits ?? 0}
-            </span>
-            <span
-              className="font-primary text-base text-typography-700"
-              data-testid="learn-credits-limit"
-            >
-              /{credits?.creditLimit ?? 0}
-            </span>
-          </div>
-        </div>
-      </motion.div>
-      <motion.div
-        data-testid="learn-scenarios-container"
-        variants={learnPageContainerVariants}
-        initial="hidden"
-        animate="visible"
-        exit="exit"
-        className="max-h-[calc(100vh-200px)] overflow-y-scroll"
-      >
-        {isScenariosLoading ? (
-          <div
-            className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4"
-            data-testid="learn-loading-skeleton"
-          >
-            {Array.from({ length: 6 }).map((_, index) => (
-              <div
-                key={index}
-                data-testid={`learn-skeleton-card-${index}`}
-                className="h-[200px] sm:h-[250px] bg-gray-200 rounded-lg animate-pulse"
-              />
-            ))}
-          </div>
-        ) : scenarios?.length > 0 ? (
-          <div
-            data-testid="learn-scenarios-grid"
-            className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4  mx-auto pb-10"
-            role="list"
-            aria-label="Available scenarios"
-          >
-            {getSortedScenarios().map(scenario => (
-              <motion.div
-                key={scenario.id}
-                data-testid={`learn-scenario-item-${scenario.id}`}
-                variants={learnPageItemVariants}
-                role="listitem"
-                className="h-full"
-              >
-                <ScenarioCard
-                  coverImage={scenario.coverImageUrl || ""}
-                  title={scenario.title || ""}
-                  description={scenario.description || ""}
-                  onClick={() => navigate(`/scenario/${scenario.id}`)}
-                  isComingSoon={scenario.status === ScenarioStatus.COMING_SOON}
-                />
-              </motion.div>
-            ))}
-          </div>
-        ) : (
-          renderEmptyGrid()
-        )}
-      </motion.div>
-    </>
+  const renderLoadingSkeleton = () => (
+    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
+      {Array.from({ length: 6 }).map((_, index) => (
+        <div key={index} className="h-[200px] sm:h-[250px] bg-gray-200 rounded-lg animate-pulse" />
+      ))}
+    </div>
   );
 
+  const renderContentGrid = () => {
+    const isPathwayTab = activeTab === TabId.PATHWAYS;
+    const isLoading = isPathwayTab ? isPathwaysLoading : isScenariosLoading;
+    const hasData = isPathwayTab ? pathwaysData?.data?.length > 0 : scenarios?.length > 0;
+    const ariaLabel = isPathwayTab ? "Available pathways" : "Available scenarios";
+
+    if (isLoading) return renderLoadingSkeleton();
+
+    if (!hasData) return renderEmptyGrid(isPathwayTab);
+
+    const items = isPathwayTab ? pathwaysData.data : getSortedScenarios();
+
+    return (
+      <div
+        className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 mx-auto pb-10"
+        role="list"
+        aria-label={ariaLabel}
+      >
+        {items.map(item => {
+          const isPathway = "totalScenarios" in item;
+          const itemId = isPathway ? item.id : item.id;
+
+          return (
+            <motion.div
+              key={itemId}
+              variants={learnPageItemVariants}
+              role="listitem"
+              className="h-full"
+            >
+              <ScenarioCard
+                coverImage={item.coverImageUrl || ""}
+                title={item.title || ""}
+                description={isPathway ? "" : item.description || ""}
+                onClick={() => onScenarioCardClick(itemId, isPathway)}
+                isComingSoon={!isPathway && item.status === ScenarioStatus.COMING_SOON}
+                totalScenarios={isPathway ? item.totalScenarios : undefined}
+                completedScenarios={isPathway ? item.completedScenarios : undefined}
+              />
+            </motion.div>
+          );
+        })}
+      </div>
+    );
+  };
+
+  const renderContent = () => {
+    const isPathwayTab = activeTab === TabId.PATHWAYS;
+    const title = isPathwayTab ? "Path" : "Scenario";
+
+    return (
+      <>
+        <motion.div
+          variants={learnPageItemVariants}
+          initial="hidden"
+          animate="visible"
+          exit="exit"
+          className="mb-[14px]"
+        >
+          <h1 className="text-2xl sm:text-4xl text-typography-900 font-secondary pt-[30px] pl-[10px]">
+            <span className="font-[350]">Choose your</span>
+            <span className="font-[700] italic"> {title}</span>
+          </h1>
+        </motion.div>
+        <motion.div
+          variants={learnPageContainerVariants}
+          initial="hidden"
+          animate="visible"
+          exit="exit"
+          className="max-h-[calc(100vh-200px)] pt-4 overflow-y-scroll pl-[10px]"
+        >
+          {renderContentGrid()}
+        </motion.div>
+      </>
+    );
+  };
+
   return (
-    <div
-      className="flex flex-col w-full bg-white max-h-screen overflow-y-hidden p-[10px] sm:p-[24px] justify-center font-tertiary"
-      data-testid="learn-page"
-    >
-      {renderPageDescription()}
-      <AnimatePresence mode="wait">{renderScenarioGrid()}</AnimatePresence>
+    <div className="flex flex-col w-full bg-white max-h-screen overflow-y-hidden p-[10px] pl-0 sm:p-[24px] justify-center font-tertiary">
+      {renderPageHeader()}
+      <AnimatePresence mode="wait">{renderContent()}</AnimatePresence>
     </div>
   );
 };

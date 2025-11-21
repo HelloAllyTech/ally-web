@@ -67,13 +67,17 @@ vi.mock("@hooks/useUser", () => ({
 }));
 
 // Mock components
+// Mock CustomImage from ui-shared
+vi.mock("@ally-ui-mono/ui-shared", () => ({
+  CustomImage: ({ src, alt }: any) => <img src={src} alt={alt} data-testid="custom-image" />,
+}));
+
 vi.mock("@components", () => ({
   Button: ({ children, onClick, disabled, ...props }: any) => (
     <button onClick={onClick} disabled={disabled} {...props}>
       {children}
     </button>
   ),
-  CustomImage: ({ src, alt }: any) => <img src={src} alt={alt} data-testid="custom-image" />,
   OTP: ({ value, onChange }: any) => (
     <input
       data-testid="otp-input"

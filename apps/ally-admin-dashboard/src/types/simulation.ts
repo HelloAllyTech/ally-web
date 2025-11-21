@@ -56,7 +56,7 @@ export interface SimulationInput {
 }
 
 export interface UpdateSimulationByIdInput {
-  id: string;
+  id: string | number;
   simulation: SimulationInput;
 }
 
@@ -96,6 +96,11 @@ export interface GetSimulationByIdResponse {
     tone?: string;
     voiceId?: string;
     agentGoal?: string;
+  };
+  terminationEvent: {
+    eventId: string;
+    message: string;
+    autoTerminationStatus: boolean;
   };
 }
 

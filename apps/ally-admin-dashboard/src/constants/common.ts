@@ -19,8 +19,8 @@ export const ApiEndpoints = {
     GET_SIMULATIONS: "/v1/learn/admin-scenarios",
     GET_ADMIN_SIMULATION_BY_ID: (id: string) => `/v1/learn/admin-scenarios/${id}`,
     CREATE_SIMULATION: "/v1/learn/scenarios",
-    UPDATE_SIMULATION_BY_ID: (id: string) => `/v1/learn/scenarios/${id}`,
-    SIMULATION_BY_ID: (id: string) => `/v1/learn/admin-scenarios/${id}`,
+    UPDATE_SIMULATION_BY_ID: (id: string | number) => `/v1/learn/scenarios/${id}`,
+    SIMULATION_BY_ID: (id: string | number) => `/v1/learn/admin-scenarios/${id}`,
     START_SIMULATION: "/v1/learn/scenario-session-start",
     END_SIMULATION: (sessionId: string) => `/v1/learn/scenario-session/${sessionId}/end`,
     SCENARIO_VOICES: "/v1/learn/scenario-voices",
@@ -32,15 +32,25 @@ export const ApiEndpoints = {
     GET_COVER_VIDEO_URL: "/v1/learn/scenarios/cover-video-url",
     DELETE_COVER_VIDEO: "/v1/learn/cover-video",
     MAP_SCENARIO_EVENTS: "/v1/learn/scenarios/map-events",
-    GET_MAPPED_SCENARIO_EVENTS: (id: string) => `/v1/learn/scenarios/${id}/events`,
+    GET_MAPPED_SCENARIO_EVENTS: (id: number | string) => `/v1/learn/scenarios/${id}/events`,
     SCENARIO_EVENTS: "/v1/learn/scenarios/events",
     SCENARIO_PREVIEW: "/v1/learn/scenarios/preview",
-    END_SCENARIO_PREVIEW: (sessionId: string) => `/v1/learn/scenarios/preview/${sessionId}/end`,
+    END_SCENARIO_PREVIEW: (sessionId: number | string) =>
+      `/v1/learn/scenarios/preview/${sessionId}/end`,
+    SIMULATION_TENANT_VISIBILITY: (tenantId: string) => `v1/learn/scenario/tenant/${tenantId}`,
+    SCENARIO_PATHS: "v1/learn/admin/scenario-paths",
+    SCENARIO_PATH_BY_ID: (id: string | number) => `/v1/learn/admin/scenario-paths/${id}`,
+    DUPLICATE_SCENARIO_PATH: (id: string | number) =>
+      `/v1/learn/admin/scenario-paths/${id}/duplicate`,
+    PATH_TENANT_VISIBILITY: (tenantId: string | number) =>
+      `v1/learn/admin/scenario-path/tenant/${tenantId}`,
   },
+
   USER_MANAGEMENT: {
     USERS: "/v1/users",
     TENANT: "/v1/tenant",
     TENANTS: "/v1/tenants",
+    TENANTS_BY_ID: (id: string) => `/v1/tenants/${id}`,
     ADD_USER: "/v1/users",
     SIMULATION_CREDITS: "/v1/simulation-credits",
   },
@@ -57,8 +67,11 @@ export const ROUTES = {
   USER_MANAGEMENT: "/user-management",
   MANAGE_EVENTS: "/manage-events",
   CREATE_SIMULATION: "/create-simulation",
-  SIMULATION_PREVIEW: (id: string) => `/simulation-preview/${id}`,
-  EDIT_SIMULATION: (id: string) => `/create-simulation/edit/${id}`,
+  SIMULATION_PREVIEW: (id: string | number) => `/simulation-preview/${id}`,
+  EDIT_SIMULATION: (id: string | number) => `/create-simulation/edit/${id}`,
+  ORGANIZATION_DETAIL: (id: string | number) => `/user-management/organization/${id}`,
+  CREATE_PATH: "/create-path",
+  EDIT_PATH: (id: string | number) => `/create-path/edit/${id}`,
 };
 
 export const LOCAL_STORAGE_KEYS = {
@@ -107,4 +120,6 @@ export const TAG_TYPES = {
   SESSION_EVENTS: "sessionEvents",
   SIMULATION: "simulation",
   SIMULATION_EVENTS: "simulationEvents",
+  SIMULATION_PATHS: "simulationPaths",
+  SCENARIO_PATHS: "scenarioPaths",
 };
