@@ -77,3 +77,8 @@ export const addMessageModalFields = [
     multiline: true,
   },
 ];
+
+export const PATH_STATUS_OPTIONS = [
+  { id: "ACTIVE", label: "Published" },
+  { id: "DRAFT", label: "Draft" },
+];

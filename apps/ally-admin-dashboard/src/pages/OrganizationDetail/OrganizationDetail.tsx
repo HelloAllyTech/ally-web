@@ -12,7 +12,7 @@ import {
 } from "@api";
 import { ArrowDown, Dot } from "@assets";
 import { Tabs, OrganizationDetailLoader, SimulationsTab, PathTab } from "@components";
-import { en, ROUTES } from "@constants";
+import { en } from "@constants";
 import { Tenant } from "@types";
 
 enum TAB_IDS {
@@ -110,7 +110,7 @@ export const OrganizationDetail: FC = () => {
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2 text-base">
             <button
-              onClick={() => navigate(ROUTES.USER_MANAGEMENT)}
+              onClick={() => navigate(-1)}
               className="text-typography-600 hover:text-typography-900"
             >
               {en.userManagement.organization}

@@ -10,7 +10,7 @@ import {
 } from "@components";
 import { SimulationStatus, en } from "@constants";
 import { ScenarioPath } from "@types";
-import { formatCapitalizedEnum, formatDate, isNonEmptyArray } from "@utils";
+import { formatCapitalizedEnum, formatDate, getStatusColor, isNonEmptyArray } from "@utils";
 
 export interface PathwayListProps {
   pathways: ScenarioPath[];
@@ -67,17 +67,6 @@ export const PathwayList: React.FC<PathwayListProps> = ({
       </div>
     );
   }
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case SimulationStatus.ACTIVE:
-        return "bg-success-100 text-success-700";
-      case SimulationStatus.DRAFT:
-        return "bg-neutral-200 text-typography-800";
-      default:
-        return "bg-neutral-200 text-typography-800";
-    }
-  };
 
   // Define columns configuration
   const columns: ColumnConfig<ScenarioPath>[] = [
