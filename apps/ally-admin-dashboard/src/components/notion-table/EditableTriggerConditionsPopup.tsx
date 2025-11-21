@@ -46,9 +46,7 @@ export const EditableTriggerConditionsPopup: React.FC<EditableTriggerConditionsP
   }, [editTriggerCondition, triggerCondition, onChange]);
 
   const handleClickOutsideCallback = useCallback(() => {
-    if (isOpen) {
-      handleSave();
-    }
+    if (isOpen) handleSave();
   }, [isOpen, handleSave]);
 
   const handleFieldChange = useCallback(

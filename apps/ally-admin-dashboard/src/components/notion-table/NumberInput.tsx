@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 
 import { ArrowDownFilled } from "@assets";
-import { isNumber } from "@utils";
+import { isNonEmptyString, isNumber } from "@utils";
 
 import { NumberInputProps } from "./types";
 import { keyCodes } from "./utils";
@@ -47,9 +47,9 @@ export const NumberInput: React.FC<NumberInputProps> = ({
   const handleInputBlur = () => {
     setIsFocused(false);
     const numValue = parseFloat(inputValue);
-    if (isNaN(numValue) || inputValue === "") {
+    if (isNaN(numValue) || !isNonEmptyString(inputValue)) {
       // If input is empty or invalid, keep it empty to show placeholder
-      if (inputValue === "") {
+      if (!isNonEmptyString(inputValue)) {
         setInputValue("");
       } else if (hasValue) {
         setInputValue(normalizedValue.toString());

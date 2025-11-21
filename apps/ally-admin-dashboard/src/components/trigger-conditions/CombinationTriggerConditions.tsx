@@ -4,6 +4,7 @@ import { useSelector } from "react-redux";
 
 import { useGetSessionEventsQuery } from "@api";
 import {
+  EVENT_DETECTION_TYPES,
   SESSION_EVENT_STATUS_OPTIONS,
   SORT_BY,
   SORT_ORDER,
@@ -27,14 +28,18 @@ interface CombinationTriggerConditionsProps {
   isInTable?: boolean;
 }
 
+const statusFieldName = "status";
+const operatorFieldName = "operator";
+enum directionMap {
+  LEFT = "left",
+  RIGHT = "right",
+}
+
 export const CombinationTriggerConditions: React.FC<CombinationTriggerConditionsProps> = ({
   triggerCondition,
   onChange,
   isInTable = false,
 }) => {
-  const statusFieldName = "status";
-  const operatorFieldName = "operator";
-
   // Get events from Redux store
   const reduxAvailableEvents = useSelector(selectAvailableEvents);
 
@@ -67,7 +72,7 @@ export const CombinationTriggerConditions: React.FC<CombinationTriggerConditions
     );
   }, [eventsData, reduxAvailableEvents]);
 
-  const config = getTriggerConditionConfig("COMBINATION");
+  const config = getTriggerConditionConfig(EVENT_DETECTION_TYPES.COMBINATION);
   if (!config) return null;
 
   // Ensure we always have a valid expression structure to work with
@@ -78,7 +83,7 @@ export const CombinationTriggerConditions: React.FC<CombinationTriggerConditions
   };
 
   // Generic helper to get event ID from a side (left or right)
-  const getEventId = (side: "left" | "right"): string => {
+  const getEventId = (side: directionMap): string => {
     const sideNode = expression[side];
     if (sideNode?.type === "NOT") {
       return sideNode.left?.id || "";
@@ -87,7 +92,7 @@ export const CombinationTriggerConditions: React.FC<CombinationTriggerConditions
   };
 
   // Generic helper to get status from a side (left or right)
-  const getStatus = (side: "left" | "right"): EventStatus => {
+  const getStatus = (side: directionMap): EventStatus => {
     return expression[side]?.type === "NOT" ? EVENT_STATUS.NOT_OCCURRED : EVENT_STATUS.OCCURRED;
   };
 
@@ -99,7 +104,7 @@ export const CombinationTriggerConditions: React.FC<CombinationTriggerConditions
   };
 
   // Generic handler for event changes
-  const handleEventChange = (side: "left" | "right", eventId: string) => {
+  const handleEventChange = (side: directionMap, eventId: string) => {
     const currentStatus = getStatus(side);
     const newExpression: CombinationExpressionNode = {
       ...expression,
@@ -109,7 +114,7 @@ export const CombinationTriggerConditions: React.FC<CombinationTriggerConditions
   };
 
   // Generic handler for status changes
-  const handleStatusChange = (side: "left" | "right", status: EventStatus) => {
+  const handleStatusChange = (side: directionMap, status: EventStatus) => {
     const currentEventId = getEventId(side);
     const newExpression: CombinationExpressionNode = {
       ...expression,
@@ -151,13 +156,13 @@ export const CombinationTriggerConditions: React.FC<CombinationTriggerConditions
           <div className={`flex items-center gap-2 ${isInTable ? "" : "pl-3"}`}>
             <span className="text-sm text-typography-500">if</span>
             <TriggerConditionDropdown
-              value={getEventId("left")}
-              displayValue={getEventDisplayNameById(getEventId("left"))}
+              value={getEventId(directionMap.LEFT)}
+              displayValue={getEventDisplayNameById(getEventId(directionMap.LEFT))}
               options={availableEvents.map(event => ({
                 value: event.id,
                 label: event.eventCode ? `${event.eventCode} - ${event.name}` : event.name,
               }))}
-              onChange={eventId => handleEventChange("left", eventId)}
+              onChange={eventId => handleEventChange(directionMap.LEFT, eventId)}
               placeholder="Select an event"
               searchPlaceholder="Search events..."
               isSearchable={true}
@@ -167,9 +172,9 @@ export const CombinationTriggerConditions: React.FC<CombinationTriggerConditions
             />
             <span className="text-sm text-typography-500">has</span>
             <TriggerConditionDropdown
-              value={getStatus("left")}
+              value={getStatus(directionMap.LEFT)}
               options={statusField?.options || []}
-              onChange={status => handleStatusChange("left", status as EventStatus)}
+              onChange={status => handleStatusChange(directionMap.LEFT, status as EventStatus)}
               placeholder={statusField?.placeholder || "Occurred"}
               disabled={false}
               className={(statusField as any)?.className || ""}
@@ -189,13 +194,13 @@ export const CombinationTriggerConditions: React.FC<CombinationTriggerConditions
               className="bg-primary-50 border-[0.5px] border-primary-500"
             />
             <TriggerConditionDropdown
-              value={getEventId("right")}
-              displayValue={getEventDisplayNameById(getEventId("right"))}
+              value={getEventId(directionMap.RIGHT)}
+              displayValue={getEventDisplayNameById(getEventId(directionMap.RIGHT))}
               options={availableEvents.map(event => ({
                 value: event.id,
                 label: event.eventCode ? `${event.eventCode} - ${event.name}` : event.name,
               }))}
-              onChange={eventId => handleEventChange("right", eventId)}
+              onChange={eventId => handleEventChange(directionMap.RIGHT, eventId)}
               placeholder="Select an event"
               searchPlaceholder="Search events..."
               isSearchable={true}
@@ -205,9 +210,9 @@ export const CombinationTriggerConditions: React.FC<CombinationTriggerConditions
             />
             <span className="text-sm text-typography-500">has</span>
             <TriggerConditionDropdown
-              value={getStatus("right")}
+              value={getStatus(directionMap.RIGHT)}
               options={statusField?.options || []}
-              onChange={status => handleStatusChange("right", status as EventStatus)}
+              onChange={status => handleStatusChange(directionMap.RIGHT, status as EventStatus)}
               placeholder={statusField?.placeholder || "Occurred"}
               disabled={false}
               className={(statusField as any)?.className || ""}

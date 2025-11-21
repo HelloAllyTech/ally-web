@@ -99,13 +99,9 @@ export const EventSidePanel: React.FC<EventSidePanelProps> = ({
     }
   }, [selectedEvent]);
 
-  const debouncedUpdate = useDebounce(() => {
-    onUpdate(formData);
-  }, 500);
+  const debouncedUpdate = useDebounce(() => onUpdate(formData), 500);
 
-  useEffect(() => {
-    debouncedUpdate();
-  }, [formData]);
+  useEffect(() => debouncedUpdate(), [formData]);
 
   const handleFieldChange = useCallback(
     (fieldName: string, value: string | number | object) => {

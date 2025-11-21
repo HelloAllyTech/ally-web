@@ -1,6 +1,7 @@
 import React from "react";
 
 import { EventType } from "@components";
+import { EVENT_DETECTION_TYPES } from "@constants";
 
 import { CombinationTriggerConditions } from "./CombinationTriggerConditions";
 import { StandardTriggerConditions } from "./StandardTriggerConditions";
@@ -58,11 +59,11 @@ export const TriggerConditions: React.FC<TriggerConditionsProps> = ({
 
     if (!triggerCondition) {
       // Create empty structure so fields render with placeholders
-      if (eventType === "TIME_BASED") {
+      if (eventType === EVENT_DETECTION_TYPES.TIME_BASED) {
         effectiveTriggerCondition = {} as TriggerCondition;
-      } else if (eventType === "SCORE_BASED") {
+      } else if (eventType === EVENT_DETECTION_TYPES.SCORE_BASED) {
         effectiveTriggerCondition = {} as TriggerCondition;
-      } else if (eventType === "SENTENCE_SIMILARITY") {
+      } else if (eventType === EVENT_DETECTION_TYPES.SENTENCE_SIMILARITY) {
         effectiveTriggerCondition = {} as TriggerCondition;
       }
     }
@@ -80,7 +81,7 @@ export const TriggerConditions: React.FC<TriggerConditionsProps> = ({
   };
 
   // For combination events, always show trigger conditions even if undefined or has null expression
-  const isCombinationEvent = eventType === "COMBINATION";
+  const isCombinationEvent = eventType === EVENT_DETECTION_TYPES.COMBINATION;
   const shouldRenderCombination =
     isCombinationEvent &&
     (isCombinationTriggerCondition(triggerCondition) ||

@@ -10,9 +10,10 @@ vi.mock("@assets", () => ({
   ),
 }));
 
-// Mock isNumber utility
+// Mock utilities
 vi.mock("@utils", () => ({
   isNumber: (value: any) => typeof value === "number" && !isNaN(value),
+  isNonEmptyString: (value: any) => typeof value === "string" && value.trim().length > 0,
 }));
 
 describe("NumberInput", () => {

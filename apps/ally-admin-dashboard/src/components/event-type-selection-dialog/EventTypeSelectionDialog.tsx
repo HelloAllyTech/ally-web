@@ -58,15 +58,11 @@ export const EventTypeSelectionDialog: FC<EventTypeSelectionDialogProps> = ({
   const dialogRef = useRef<HTMLDivElement>(null);
 
   useClickOutside(dialogRef, () => {
-    if (isOpen) {
-      onClose();
-    }
+    if (isOpen) onClose();
   });
 
   useEffect(() => {
-    if (!isOpen) {
-      setSelectedType(null);
-    }
+    if (!isOpen) setSelectedType(null);
   }, [isOpen]);
 
   const handleSelect = (eventType: EventType) => {
