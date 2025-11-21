@@ -1,14 +1,14 @@
 import { FC, useState, useEffect, useRef, useCallback } from "react";
 
-import { useGetSimulationsQuery } from "@api";
 import { DndContext, closestCenter } from "@dnd-kit/core";
 import { SortableContext, verticalListSortingStrategy, arrayMove } from "@dnd-kit/sortable";
-import { isNonEmptyArray } from "@utils";
 
 import { CustomImage } from "@ally-ui-mono/ui-shared";
+import { useGetSimulationsQuery } from "@api";
 import { Search } from "@assets";
 import { en } from "@constants";
 import { GetScenarioType, Simulation, SimulationStatus } from "@types";
+import { isNonEmptyArray } from "@utils";
 
 import { Button } from "../button";
 import { EmptyState } from "../empty-state";

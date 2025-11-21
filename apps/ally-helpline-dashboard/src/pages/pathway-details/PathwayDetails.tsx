@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
 
-import { logger, SimulationDetailsModal } from "@ally-ui-mono/ui-shared";
+import { logger, SimulationDetailsModal, CustomImage } from "@ally-ui-mono/ui-shared";
 import {
   useEndSimulationMutation,
   useGetScenarioPathwayDetailsQuery,
@@ -66,7 +66,7 @@ const ScenarioCard: FC<ScenarioCardProps> = ({ scenario, index, onScenarioClick 
       <div className="flex gap-6 py-4 px-[10px] items-center">
         {/* Scenario Image */}
         <div className="relative flex-shrink-0">
-          <img
+          <CustomImage
             src={scenario.coverImageUrl}
             alt={scenario.title}
             className="w-[120px] h-[60px] object-cover rounded-[8px] bg-background-secondary"
@@ -115,13 +115,6 @@ export const PathwayDetails: FC = () => {
 
   const [startSimulation] = useStartSimulationMutation();
   const [endSimulation] = useEndSimulationMutation();
-
-  // Calculate progress metrics after pathway validation
-  const totalScenarios = pathway.scenarios?.length || 0;
-  const hasProgress = (pathway.completedScenarios || 0) > 0;
-  const progressPercentage =
-    totalScenarios > 0 ? ((pathway.completedScenarios || 0) / totalScenarios) * 100 : 0;
-  const sortedScenarios = pathway.scenarios?.sort((a, b) => a.order - b.order);
 
   const handleStartOrContinueSimulation = () => {
     const nextScenario = pathway?.scenarios.find(
@@ -221,6 +214,15 @@ export const PathwayDetails: FC = () => {
     );
   }
 
+  // Calculate progress metrics after pathway validation
+  const totalScenarios = pathway.scenarios?.length || 0;
+  const hasProgress = (pathway.completedScenarios || 0) > 0;
+  const progressPercentage =
+    totalScenarios > 0 ? ((pathway.completedScenarios || 0) / totalScenarios) * 100 : 0;
+  const sortedScenarios = pathway.scenarios
+    ? [...pathway.scenarios].sort((a, b) => a.order - b.order)
+    : [];
+
   const renderHeaderSection = () => {
     return (
       <div className="relative w-full sticky top-0 z-10 bg-white pb-[10px] pt-4">
@@ -243,7 +245,7 @@ export const PathwayDetails: FC = () => {
 
         {/* Cover Image */}
         <div className="relative h-[240px] w-full rounded-[8px] overflow-hidden">
-          <img
+          <CustomImage
             src={pathway.coverImageUrl}
             alt={pathway.title}
             className="w-full h-full object-cover bg-background-secondary"
