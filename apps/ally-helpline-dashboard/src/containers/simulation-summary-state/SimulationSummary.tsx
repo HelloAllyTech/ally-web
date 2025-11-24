@@ -15,7 +15,6 @@ import { SimulationSummaryProps } from "./types";
 export const SimulationSummary: FC<SimulationSummaryProps> = ({
   className,
   isInSidebar = false,
-  isFromSimulationPathway = true,
   summaryId,
   onSummaryClose,
   onSummaryFetch,
@@ -70,26 +69,6 @@ export const SimulationSummary: FC<SimulationSummaryProps> = ({
     }
   };
 
-  const renderNextSimulationDetails = () => {
-    return (
-      <div className="px-4">
-        <div className="text-typography-900 text-base font-semibold mb-[8px]">
-          {summary?.upNextSimulation?.message.title}
-        </div>
-        <div className="text-typography-900 text-base font-normal mb-[8px]">
-          {summary?.upNextSimulation?.message?.description}
-        </div>
-        {/* TODO: Remove this after the API is updated */}
-        <UpNextSimulationCard
-          simulationNumber={summary?.upNextSimulation?.number}
-          title={summary?.upNextSimulation?.title}
-          scenario={summary?.upNextSimulation?.description}
-          coverImage={summary?.upNextSimulation?.coverImageUrl}
-        />
-      </div>
-    );
-  };
-
   return (
     <div
       className={`relative flex flex-col h-full w-full ${className}`}
@@ -99,9 +78,9 @@ export const SimulationSummary: FC<SimulationSummaryProps> = ({
         {retryMaxReached || summary?.details?.summary?.feedback ? (
           <>
             <FeedbackSection {...summary} />
-            {isFromSimulationPathway && renderNextSimulationDetails()}
             {!isInSidebar && (
               <PermissionGuard requiredPermissions={[Permissions.EDIT_SCENARIO_SESSION]}>
+                <UpNextSimulationCard chatId={summaryId} />
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}

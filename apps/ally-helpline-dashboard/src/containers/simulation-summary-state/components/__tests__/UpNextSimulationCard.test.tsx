@@ -1,24 +1,87 @@
 import { render, screen } from "@testing-library/react";
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi, beforeEach } from "vitest";
+import { Provider } from "react-redux";
+import { configureStore } from "@reduxjs/toolkit";
 
 import { UpNextSimulationCard } from "../UpNextSimulationCard";
-import { UpNextSimulationCardProps } from "../types";
+import { baseAPI } from "@api/baseAPI";
+
+// Mock data for the upcoming simulation
+const mockSimulationData = {
+  id: "sim-123",
+  simulationNumber: 2,
+  title: "Hopeless Male, 40",
+  description: "Test description",
+  scenario:
+    "A 40-year-old male is experiencing deep hopelessness. He feels overwhelmed by ongoing personal and professional failures, believes his situation won't improve, and is withdrawing socially. He's showing signs of resignation and low self-worth. Your goal is to explore his thoughts gently, offer validation, and begin rebuilding his sense of agency and hope.",
+  coverImageUrl: "https://via.placeholder.com/120",
+};
+
+// Create a mock store with the API slice
+const createMockStore = (mockData = mockSimulationData) => {
+  return configureStore({
+    reducer: {
+      [baseAPI.reducerPath]: baseAPI.reducer,
+    },
+    middleware: getDefaultMiddleware => getDefaultMiddleware().concat(baseAPI.middleware),
+    preloadedState: {
+      [baseAPI.reducerPath]: {
+        queries: {
+          'getUpComingSimulation("test-chat-id")': {
+            status: "fulfilled",
+            endpointName: "getUpComingSimulation",
+            requestId: "test-request-id",
+            data: mockData,
+            startedTimeStamp: Date.now(),
+            fulfilledTimeStamp: Date.now(),
+          },
+        },
+        mutations: {},
+        provided: {},
+        subscriptions: {},
+        config: {
+          online: true,
+          focused: true,
+          middlewareRegistered: true,
+          refetchOnFocus: false,
+          refetchOnReconnect: false,
+          refetchOnMountOrArgChange: false,
+          keepUnusedDataFor: 60,
+          reducerPath: baseAPI.reducerPath,
+        },
+      },
+    },
+  });
+};
+
+// Test wrapper component with Redux Provider
+const TestWrapper = ({
+  children,
+  store = createMockStore(),
+}: {
+  children: React.ReactNode;
+  store?: any;
+}) => <Provider store={store}>{children}</Provider>;
 
 describe("UpNextSimulationCard", () => {
-  const mockProps: UpNextSimulationCardProps = {
-    simulationNumber: 2,
-    title: "Hopeless Male, 40",
-    scenario:
-      "A 40-year-old male is experiencing deep hopelessness. He feels overwhelmed by ongoing personal and professional failures, believes his situation won't improve, and is withdrawing socially. He's showing signs of resignation and low self-worth. Your goal is to explore his thoughts gently, offer validation, and begin rebuilding his sense of agency and hope.",
-    coverImage: "https://via.placeholder.com/120",
-  };
+  const chatId = "test-chat-id";
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
 
   describe("Basic Rendering", () => {
     it("should render the simulation card with all elements", () => {
-      render(<UpNextSimulationCard {...mockProps} />);
+      const store = createMockStore();
+      render(
+        <TestWrapper store={store}>
+          <UpNextSimulationCard chatId={chatId} />
+        </TestWrapper>,
+      );
 
       expect(screen.getByText("Up next - Simulation 2")).toBeInTheDocument();
-      expect(screen.getByText("Hopeless Male, 40")).toBeInTheDocument();
+      const titleElements = screen.getAllByText("Hopeless Male, 40");
+      expect(titleElements).toHaveLength(2); // Title appears twice in the component
       expect(screen.getByText("Scenario:")).toBeInTheDocument();
       expect(
         screen.getByText(/A 40-year-old male is experiencing deep hopelessness/),
@@ -26,7 +89,12 @@ describe("UpNextSimulationCard", () => {
     });
 
     it("should render the cover image with correct attributes", () => {
-      render(<UpNextSimulationCard {...mockProps} />);
+      const store = createMockStore();
+      render(
+        <TestWrapper store={store}>
+          <UpNextSimulationCard chatId={chatId} />
+        </TestWrapper>,
+      );
 
       const image = screen.getByAltText("Hopeless Male, 40");
       expect(image).toBeInTheDocument();
@@ -36,36 +104,66 @@ describe("UpNextSimulationCard", () => {
 
   describe("Props Handling", () => {
     it("should display correct simulation number", () => {
-      render(<UpNextSimulationCard {...mockProps} simulationNumber={5} />);
+      const customData = { ...mockSimulationData, simulationNumber: 5 };
+      const store = createMockStore(customData);
+      render(
+        <TestWrapper store={store}>
+          <UpNextSimulationCard chatId={chatId} />
+        </TestWrapper>,
+      );
 
       expect(screen.getByText("Up next - Simulation 5")).toBeInTheDocument();
     });
 
     it("should display custom title", () => {
-      render(<UpNextSimulationCard {...mockProps} title="Custom Title" />);
+      const customData = { ...mockSimulationData, title: "Custom Title" };
+      const store = createMockStore(customData);
+      render(
+        <TestWrapper store={store}>
+          <UpNextSimulationCard chatId={chatId} />
+        </TestWrapper>,
+      );
 
-      expect(screen.getByText("Custom Title")).toBeInTheDocument();
+      const titleElements = screen.getAllByText("Custom Title");
+      expect(titleElements).toHaveLength(2); // Title appears twice in the component
     });
 
     it("should display custom scenario text", () => {
       const customScenario = "This is a custom scenario description.";
-      render(<UpNextSimulationCard {...mockProps} scenario={customScenario} />);
+      const customData = { ...mockSimulationData, scenario: customScenario };
+      const store = createMockStore(customData);
+      render(
+        <TestWrapper store={store}>
+          <UpNextSimulationCard chatId={chatId} />
+        </TestWrapper>,
+      );
 
       expect(screen.getByText(customScenario)).toBeInTheDocument();
     });
 
     it("should use custom cover image URL", () => {
       const customImageUrl = "https://example.com/custom-image.jpg";
-      render(<UpNextSimulationCard {...mockProps} coverImage={customImageUrl} />);
+      const customData = { ...mockSimulationData, coverImageUrl: customImageUrl };
+      const store = createMockStore(customData);
+      render(
+        <TestWrapper store={store}>
+          <UpNextSimulationCard chatId={chatId} />
+        </TestWrapper>,
+      );
 
-      const image = screen.getByAltText(mockProps.title);
+      const image = screen.getByAltText(customData.title);
       expect(image).toHaveAttribute("src", customImageUrl);
     });
   });
 
   describe("Styling", () => {
     it("should have correct container classes", () => {
-      const { container } = render(<UpNextSimulationCard {...mockProps} />);
+      const store = createMockStore();
+      const { container } = render(
+        <TestWrapper store={store}>
+          <UpNextSimulationCard chatId={chatId} />
+        </TestWrapper>,
+      );
 
       const card = container.querySelector(".rounded-\\[8px\\]");
       expect(card).toBeInTheDocument();
@@ -73,38 +171,68 @@ describe("UpNextSimulationCard", () => {
     });
 
     it("should have correct image dimensions", () => {
-      render(<UpNextSimulationCard {...mockProps} />);
+      const store = createMockStore();
+      render(
+        <TestWrapper store={store}>
+          <UpNextSimulationCard chatId={chatId} />
+        </TestWrapper>,
+      );
 
-      const image = screen.getByAltText(mockProps.title);
+      const image = screen.getByAltText(mockSimulationData.title);
       expect(image).toHaveClass("w-[120px]", "h-[60px]", "rounded-[8px]", "object-cover");
     });
   });
 
   describe("Edge Cases", () => {
     it("should handle empty scenario text", () => {
-      render(<UpNextSimulationCard {...mockProps} scenario="" />);
+      const customData = { ...mockSimulationData, scenario: "" };
+      const store = createMockStore(customData);
+      render(
+        <TestWrapper store={store}>
+          <UpNextSimulationCard chatId={chatId} />
+        </TestWrapper>,
+      );
 
       expect(screen.getByText("Scenario:")).toBeInTheDocument();
     });
 
     it("should handle simulation number 0", () => {
-      render(<UpNextSimulationCard {...mockProps} simulationNumber={0} />);
+      const customData = { ...mockSimulationData, simulationNumber: 0 };
+      const store = createMockStore(customData);
+      render(
+        <TestWrapper store={store}>
+          <UpNextSimulationCard chatId={chatId} />
+        </TestWrapper>,
+      );
 
       expect(screen.getByText("Up next - Simulation 0")).toBeInTheDocument();
     });
 
     it("should handle long scenario text", () => {
       const longScenario = "A".repeat(500);
-      render(<UpNextSimulationCard {...mockProps} scenario={longScenario} />);
+      const customData = { ...mockSimulationData, scenario: longScenario };
+      const store = createMockStore(customData);
+      render(
+        <TestWrapper store={store}>
+          <UpNextSimulationCard chatId={chatId} />
+        </TestWrapper>,
+      );
 
       expect(screen.getByText(longScenario)).toBeInTheDocument();
     });
 
     it("should handle special characters in title", () => {
       const specialTitle = "Test & Title <with> 'Special' \"Characters\"";
-      render(<UpNextSimulationCard {...mockProps} title={specialTitle} />);
+      const customData = { ...mockSimulationData, title: specialTitle };
+      const store = createMockStore(customData);
+      render(
+        <TestWrapper store={store}>
+          <UpNextSimulationCard chatId={chatId} />
+        </TestWrapper>,
+      );
 
-      expect(screen.getByText(specialTitle)).toBeInTheDocument();
+      const titleElements = screen.getAllByText(specialTitle);
+      expect(titleElements).toHaveLength(2); // Title appears twice in the component
     });
   });
 });

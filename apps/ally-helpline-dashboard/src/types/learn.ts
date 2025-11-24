@@ -86,7 +86,7 @@ export interface GetScenarioInput {
 
 export interface StartSimulationInput {
   scenarioId: number;
-  pathwayId?: string;
+  scenarioPathSessionItemId?: string;
 }
 
 export interface StartSimulationResponse {
@@ -158,17 +158,6 @@ export interface SimulationSummary {
       };
     };
   };
-  // TODO: Change the type after the API is updated
-  upNextSimulation: {
-    number: number;
-    title?: string;
-    description?: string;
-    coverImageUrl?: string;
-    message?: {
-      title?: string;
-      description?: string;
-    };
-  };
   events: KeyEvent[];
   hasFeedback: boolean;
 }
@@ -216,6 +205,16 @@ export interface GetSimulationTranscriptRequest {
 
 export interface GetSimulationTranscriptResponse {
   messages: SimulationTranscriptMessage[];
+}
+
+// TODO: Change the type after the API is updated
+export interface GetUpComingSimulationResponse {
+  id: string;
+  title: string;
+  description: string;
+  coverImageUrl: string;
+  scenario: string;
+  simulationNumber: number;
 }
 
 export interface SimulationTranscriptMessage {

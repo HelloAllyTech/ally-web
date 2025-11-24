@@ -5,6 +5,5 @@ export interface SimulationSummaryProps {
   isInSidebar?: boolean;
   onSummaryFetch?: (summary: SimulationSummary) => void;
   summaryId: string;
-  isFromSimulationPathway?: boolean;
   onSummaryClose: () => void;
 }
