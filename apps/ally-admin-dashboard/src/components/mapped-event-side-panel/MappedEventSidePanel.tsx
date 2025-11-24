@@ -85,18 +85,45 @@ const EventDropdown: React.FC<{
   isOpen: boolean;
   selectedEventName: string;
   availableOptions: Array<{ label: string; value: string }>;
+  sessionEvents: SessionEvent[];
   onToggle: () => void;
   onSelect: (eventId: string) => void;
   dropdownRef: React.RefObject<HTMLDivElement>;
-}> = ({ isOpen, selectedEventName, availableOptions, onToggle, onSelect, dropdownRef }) => {
+}> = ({
+  isOpen,
+  selectedEventName,
+  availableOptions,
+  sessionEvents,
+  onToggle,
+  onSelect,
+  dropdownRef,
+}) => {
   const [query, setQuery] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
 
+  // Helper function to format event display name with eventCode
+  const getEventDisplayName = useCallback(
+    (eventId: string): string => {
+      const event = sessionEvents.find(e => e.id === eventId);
+      if (!event) return "";
+      return event.eventCode ? `${event.eventCode} - ${event.name}` : event.name || "";
+    },
+    [sessionEvents],
+  );
+
+  // Format options with eventCode - eventName
+  const formattedOptions = useMemo(() => {
+    return availableOptions.map(option => ({
+      ...option,
+      label: getEventDisplayName(option.value) || option.label,
+    }));
+  }, [availableOptions, getEventDisplayName]);
+
   const filteredOptions = useMemo(() => {
     const normalizedQuery = query.trim().toLowerCase();
-    if (!normalizedQuery) return availableOptions;
-    return availableOptions.filter(option => option.label.toLowerCase().includes(normalizedQuery));
-  }, [availableOptions, query]);
+    if (!normalizedQuery) return formattedOptions;
+    return formattedOptions.filter(option => option.label.toLowerCase().includes(normalizedQuery));
+  }, [formattedOptions, query]);
 
   useEffect(() => {
     if (isOpen) {
@@ -324,6 +351,7 @@ export const MappedEventSidePanel: React.FC<MappedEventSidePanelProps> = ({
                 isOpen={isEventDropdownOpen}
                 selectedEventName={selectedEventName}
                 availableOptions={availableEventOptions}
+                sessionEvents={sessionEvents}
                 onToggle={toggleDropdown}
                 onSelect={handleEventSelection}
                 dropdownRef={dropdownRef}
