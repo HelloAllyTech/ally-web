@@ -3,7 +3,7 @@ import { FC, useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
 
-import { useLazyGetSimulationSummaryQuery } from "@api";
+import { useGetUpComingSimulationQuery, useLazyGetSimulationSummaryQuery } from "@api";
 import { Button, PermissionGuard } from "@components";
 import { Permissions } from "@constants";
 import { SessionType } from "@types";
@@ -23,6 +23,9 @@ export const SimulationSummary: FC<SimulationSummaryProps> = ({
   const [retryMaxReached, setRetryMaxReached] = useState<boolean>(false);
 
   const [getSimulationSummary, { data: summary }] = useLazyGetSimulationSummaryQuery();
+  const { data: upComingSimulation } = useGetUpComingSimulationQuery(summaryId, {
+    skip: !summaryId,
+  });
 
   useEffect(() => {
     let pollCount = 0;
@@ -80,16 +83,27 @@ export const SimulationSummary: FC<SimulationSummaryProps> = ({
             <FeedbackSection {...summary} />
             {!isInSidebar && (
               <PermissionGuard requiredPermissions={[Permissions.EDIT_SCENARIO_SESSION]}>
-                <UpNextSimulationCard chatId={summaryId} />
+                <UpNextSimulationCard data={upComingSimulation} />
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.5, delay: 0.8 }}
                   className="absolute bottom-0 left-4 right-4 z-10 max-w-full bg-white"
                 >
-                  <Button onClick={onSubmit} className="w-[80%] mx-auto">
-                    Try another Simulation
-                  </Button>
+                  {upComingSimulation ? (
+                    <div className="flex flex-col gap-4 w-[80%] mx-auto">
+                      <Button onClick={onSubmit} className="w-full">
+                        Back
+                      </Button>
+                      <Button onClick={onSubmit} className="w-full">
+                        Next
+                      </Button>
+                    </div>
+                  ) : (
+                    <Button onClick={onSubmit} className="w-[80%] mx-auto">
+                      Try another Simulation
+                    </Button>
+                  )}
                 </motion.div>
               </PermissionGuard>
             )}

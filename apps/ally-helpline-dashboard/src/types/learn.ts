@@ -210,11 +210,21 @@ export interface GetSimulationTranscriptResponse {
 // TODO: Change the type after the API is updated
 export interface GetUpComingSimulationResponse {
   id: string;
-  title: string;
-  description: string;
-  coverImageUrl: string;
-  scenario: string;
-  simulationNumber: number;
+  title?: string;
+  description?: string;
+  coverImageUrl?: string;
+  scenario?: string;
+  order?: number;
+  status?: string;
+  prompt: string;
+  metadata?: unknown;
+  createdBy?: number;
+  updatedBy?: number;
+  isGlobal?: boolean;
+  createdAt?: string;
+  updatedAt?: string;
+  transitionMessageTitle?: string;
+  transitionMessageContent?: string;
 }
 
 export interface SimulationTranscriptMessage {
