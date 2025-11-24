@@ -172,7 +172,7 @@ export const isNonEmptyArray = <T>(value: unknown): value is T[] => {
 };
 
 export const isEmpty = (value: unknown): boolean => {
-  if (value === undefined || value === null || !isNonEmptyString(value)) return true;
+  if (value === undefined || value === null || value === "") return true;
 
   return false;
 };
