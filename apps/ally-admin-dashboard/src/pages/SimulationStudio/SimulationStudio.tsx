@@ -99,6 +99,9 @@ export const SimulationStudio: React.FC = () => {
     handleChangePathwayStatus,
     handleDuplicatePathway,
     onDuplicatePathway,
+    isPathEditPopupOpen,
+    setIsPathEditPopupOpen,
+    handleEditPathway,
   } = useSimulationPathways({ selectedFilters });
 
   const handleFilterClick = () => {
@@ -408,6 +411,26 @@ export const SimulationStudio: React.FC = () => {
         anchorElement={createButtonRef.current}
         className="min-w-[220px]"
       />
+
+      {currentPathway && (
+        <ActionConfirmationPopup
+          isOpen={isPathEditPopupOpen}
+          onClose={() => setIsPathEditPopupOpen(false)}
+          title={en.simulation.edit}
+          titleItalic={en.simulation.pathway}
+          description={en.simulation.editPathwayDescription}
+          primaryButton={{
+            label: en.simulation.edit,
+            onClick: () => handleEditPathway(currentPathway),
+            variant: ButtonVariant.PRIMARY,
+          }}
+          secondaryButton={{
+            label: en.simulation.cancel,
+            onClick: () => setIsPathEditPopupOpen(false),
+            variant: ButtonVariant.SECONDARY,
+          }}
+        />
+      )}
     </div>
   );
 };

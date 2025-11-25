@@ -63,7 +63,7 @@ export const SimulationSelectionModal: FC<SimulationProps> = ({
       description: simulation.description,
       minimumScore: 0,
       messageTitle: "",
-      feedback: "",
+      messageContent: "",
     };
   };
 
@@ -95,7 +95,7 @@ export const SimulationSelectionModal: FC<SimulationProps> = ({
     updated[index] = {
       ...updated[index],
       messageTitle: "",
-      feedback: "",
+      messageContent: "",
     };
 
     setSelectedSimulations(updated);
@@ -110,7 +110,7 @@ export const SimulationSelectionModal: FC<SimulationProps> = ({
         order: simulation.order,
         minimumScore: simulation.minimumScore,
         messageTitle: simulation.messageTitle || "",
-        feedback: simulation.feedback || "",
+        messageContent: simulation.messageContent || "",
         coverImageUrl: simulation.coverImageUrl,
         title: simulation.title,
         description: simulation.description,
@@ -190,7 +190,7 @@ export const SimulationSelectionModal: FC<SimulationProps> = ({
     />
   );
 
-  const renderMessage = (messageTitle: string, feedback: string, index: number) => (
+  const renderMessage = (messageTitle: string, messageContent: string, index: number) => (
     <div className="rounded-md flex flex-col justify-center border mx-auto my-3 w-[800px] group">
       <div className="w-full bg-secondary-50 px-2 py-2 rounded-t-md flex justify-between items-center">
         <p className="text-base text-typography-900 font-medium">{en.simulation.message}</p>
@@ -211,7 +211,7 @@ export const SimulationSelectionModal: FC<SimulationProps> = ({
       </div>
       <div className="flex flex-col p-3">
         <p className="text-xs font-semibold text-typography-900 ">{messageTitle}</p>
-        <p className="text-xs text-typography-800  break-words">{feedback}</p>
+        <p className="text-xs text-typography-800  break-words">{messageContent}</p>
       </div>
     </div>
   );
@@ -328,12 +328,6 @@ export const SimulationSelectionModal: FC<SimulationProps> = ({
                     ) : (
                       <span className="text-sm text-typography-400">Scroll for more</span>
                     )}
-                  </div>
-                )}
-
-                {!hasMore && isNonEmptyArray(simulationList) && (
-                  <div className="py-4 text-center">
-                    <span className="text-sm text-typography-400">No more simulations</span>
                   </div>
                 )}
               </>

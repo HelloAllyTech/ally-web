@@ -29,7 +29,7 @@ export interface GetScenarioType {
   scenarioId: number;
   minimumScore: number;
   messageTitle: string;
-  feedback: string;
+  messageContent: string;
   order: number;
   coverImageUrl: string;
   title: string;
@@ -61,9 +61,17 @@ export interface CreatePathInput {
   scenarios?: scenarioType;
 }
 
+export interface CreatePathResponse {
+  id: string;
+  title: string;
+  description: string;
+  coverImageUrl: string;
+  status: SimulationStatus;
+}
+
 export enum messageFieldId {
   messageTitle = "messageTitle",
-  feedback = "feedback",
+  messageContent = "messageContent",
 }
 export interface MessageFields {
   id: messageFieldId;
@@ -80,6 +88,6 @@ export interface SimulationCardItemProps {
   openMessageIndex: number | null;
   setOpenMessageIndex: (index: number | null) => void;
   handleMessageClick: (index: number) => void;
-  renderMessage: (messageTitle: string, feedback: string, index: number) => JSX.Element;
+  renderMessage: (messageTitle: string, messageContent: string, index: number) => JSX.Element;
   addButtonRef?: React.RefObject<(HTMLButtonElement | null)[]>;
 }

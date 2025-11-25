@@ -174,7 +174,7 @@ export const CreatePath: FC = () => {
       const response = await saveSimulationChanges(SimulationStatus.DRAFT);
       const responseData = response?.data;
       if (!response?.error) {
-        if (responseData?.[0]?.id && !pathId) setPathId(responseData?.[0]?.id);
+        if (responseData?.id && !pathId) setPathId(responseData?.id);
         const currentFormValues = formMethods.getValues();
         formMethods.reset(currentFormValues);
         return response?.data;

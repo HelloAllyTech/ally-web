@@ -20,7 +20,7 @@ export const PATH_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
       },
       {
         id: "title",
-        label: "Title",
+        label: "Name",
         placeholder: "Enter title",
         type: FORM_FIELD_TYPES.TEXT,
         isMandatory: true,
@@ -71,7 +71,7 @@ export const addMessageModalFields = [
     required: true,
   },
   {
-    id: messageFieldId.feedback,
+    id: messageFieldId.messageContent,
     label: "Feedback message",
     placeholder: "Write the full message or guidance here",
     multiline: true,

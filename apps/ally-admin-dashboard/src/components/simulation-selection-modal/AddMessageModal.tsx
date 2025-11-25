@@ -14,7 +14,7 @@ interface AddMessageModalProps {
   handleCancel?: () => void;
   initialValues?: {
     messageTitle?: string;
-    feedback?: string;
+    messageContent?: string;
   };
 }
 
@@ -28,7 +28,7 @@ export const AddMessageModal: FC<AddMessageModalProps> = ({
   const { register, handleSubmit } = useForm({
     defaultValues: {
       messageTitle: initialValues?.messageTitle || "",
-      feedback: initialValues?.feedback || "",
+      messageContent: initialValues?.messageContent || "",
     },
   });
 

@@ -1,3 +1,5 @@
+"use client";
+
 import { FC, useRef } from "react";
 
 import { SimulationDetailsModalProps } from "../../types";
