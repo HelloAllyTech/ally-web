@@ -8,6 +8,7 @@ import { logger, SimulationDetailsModal, CustomImage } from "@ally-ui-mono/ui-sh
 import {
   useEndSimulationMutation,
   useGetScenarioPathwayDetailsQuery,
+  useStartPathwaySimulationMutation,
   useStartSimulationMutation,
 } from "@api";
 import { ArrowRight, Lock, TickGreenBackground } from "@assets";
@@ -115,11 +116,13 @@ export const PathwayDetails: FC = () => {
 
   const [startSimulation] = useStartSimulationMutation();
   const [endSimulation] = useEndSimulationMutation();
+  const [startPathwaySimulation] = useStartPathwaySimulationMutation();
 
   const handleStartOrContinueSimulation = () => {
     const nextScenario = pathway?.scenarios.find(
       scenario => scenario.status !== PathwayScenarioStatus.COMPLETED,
     );
+    if (!pathway?.scenarioPathSessionId) startPathwaySimulation({ pathwayId });
     setSelectedScenario(nextScenario);
     setIsModalOpen(true);
   };
@@ -127,6 +130,7 @@ export const PathwayDetails: FC = () => {
   const handleScenarioClick = (scenarioId: number, status: PathwayScenarioStatus) => {
     if (status !== PathwayScenarioStatus.LOCKED) {
       const scenario = pathway?.scenarios.find(scenario => scenario.scenarioId === scenarioId);
+      if (!pathway?.scenarioPathSessionId) startPathwaySimulation({ pathwayId });
       if (scenario) {
         setSelectedScenario(scenario);
         setIsModalOpen(true);
@@ -146,7 +150,7 @@ export const PathwayDetails: FC = () => {
     try {
       const { data, error } = await startSimulation({
         scenarioId: selectedScenario.scenarioId,
-        scenarioPathSessionItemId: pathwayId,
+        scenarioPathSessionItemId: selectedScenario?.sessionId || "",
       });
       // Handle success
       if (data) {
@@ -163,7 +167,7 @@ export const PathwayDetails: FC = () => {
           toast.success("Previous simulation ended. Starting new one...");
           const retryResult = await startSimulation({
             scenarioId: selectedScenario?.scenarioId,
-            scenarioPathSessionItemId: pathwayId,
+            scenarioPathSessionItemId: selectedScenario?.sessionId || "",
           });
           if (retryResult?.data) {
             const { scenarioSession, accessToken } = retryResult?.data || {};

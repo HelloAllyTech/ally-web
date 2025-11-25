@@ -236,6 +236,7 @@ export interface SimulationTranscriptMessage {
 
 export interface ScenarioPathway {
   id: string;
+  scenarioPathSessionId?: string;
   title: string;
   description: string;
   coverImageUrl: string;
@@ -262,7 +263,8 @@ export enum PathwayScenarioStatus {
 }
 
 export interface PathwayScenario {
-  sessionItemId: number;
+  sessionItemId?: number;
+  sessionId?: string;
   scenarioId: number;
   coverImageUrl: string;
   coverVideoUrl?: string;
@@ -281,5 +283,6 @@ export interface ScenarioPathwayDetails {
   completedAt: string | null;
   completedScenarios: number;
   totalScenarios: number;
+  scenarioPathSessionId?: string;
   scenarios: PathwayScenario[];
 }

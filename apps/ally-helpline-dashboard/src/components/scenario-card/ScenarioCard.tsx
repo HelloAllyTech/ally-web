@@ -25,7 +25,7 @@ const ScenarioCard: FC<ScenarioCardProps> = ({
         <img
           src={coverImage}
           alt={`${title} ${isPathway ? "pathway" : "scenario"} cover`}
-          className={`w-full h-full object-cover rounded-t-[4px] ${isComingSoon ? "blur-[2px] grayscale opacity-50" : ""}`}
+          className={`w-full h-full object-cover rounded-[12px] ${isComingSoon ? "blur-[2px] grayscale opacity-50" : ""}`}
           loading="lazy"
           onError={() => setImageError(true)}
         />
@@ -46,7 +46,7 @@ const ScenarioCard: FC<ScenarioCardProps> = ({
     <motion.div
       layout
       onClick={onClick}
-      className={`bg-white overflow-hidden transition-all duration-300 h-full rounded-[8px] shadow-[0_2px_8px_rgba(0,0,0,0.1)] hover:shadow-[0_8px_16px_rgba(0,0,0,0.15)] ${isComingSoon ? "pointer-events-none" : "cursor-pointer"}`}
+      className={`bg-white overflow-hidden transition-all duration-300 h-full rounded-[20px] border-[1px] border-border-light shadow-[0_2px_8px_rgba(0,0,0,0.1)] hover:shadow-[0_8px_16px_rgba(0,0,0,0.15)] ${isComingSoon ? "pointer-events-none" : "cursor-pointer"}`}
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
@@ -61,9 +61,9 @@ const ScenarioCard: FC<ScenarioCardProps> = ({
         }
       }}
     >
-      <div className="flex flex-col h-full gap-3">
+      <div className="flex flex-col h-full gap-3 p-[10px]">
         {renderImage()}
-        <div className="flex flex-row justify-between flex-grow font-primary px-3 pb-3 sm:px-[14px] sm:pb-[14px]">
+        <div className="flex flex-row justify-between flex-grow font-primary px-[6px] pb-[8px]">
           <div className="flex flex-col items-start gap-2">
             <div id="scenario-title" className="font-medium text-typography-900 text-base flex">
               {title}
