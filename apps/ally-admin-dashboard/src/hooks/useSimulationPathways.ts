@@ -102,8 +102,8 @@ export const useSimulationPathways = ({ selectedFilters }: UseSimulationPathways
       setIsDeletePathwayPopupOpen(false);
       setCurrentPathway(null);
       toast.success(en.simulation.pathwayDeletedSuccessfully);
-    } catch {
-      toast.error(en.simulation.failedDeletePathway);
+    } catch (error: any) {
+      toast.error(error?.data?.message || en.simulation.failedDeletePathway);
     }
   };
 
@@ -127,8 +127,8 @@ export const useSimulationPathways = ({ selectedFilters }: UseSimulationPathways
       setIsUnpublishPathwayPopupOpen(false);
       setCurrentPathway(null);
       toast.success(en.simulation.pathwayStatusUpdatedSuccessfully + status);
-    } catch {
-      toast.error(en.simulation.failedChangePathwayStatus);
+    } catch (error: any) {
+      toast.error(error?.data?.message || en.simulation.failedChangePathwayStatus);
     }
   };
 
@@ -138,8 +138,8 @@ export const useSimulationPathways = ({ selectedFilters }: UseSimulationPathways
       setIsDuplicatePathwayPopupOpen(false);
       setCurrentPathway(null);
       toast.success(en.simulation.pathwayDuplicatedSuccessfully);
-    } catch {
-      toast.error(en.simulation.failedDuplicatePathway);
+    } catch (error: any) {
+      toast.error(error?.data?.message || en.simulation.failedDuplicatePathway);
     }
   };
 
