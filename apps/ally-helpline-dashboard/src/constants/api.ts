@@ -71,6 +71,8 @@ export const ApiEndpoints = {
       `/v1/learn/scenario-session/${sessionId}/messages`,
     GET_UP_COMING_SIMULATION: (sessionId: string) =>
       `/v1/learn/scenario-paths/${sessionId}/upcoming-scenario`,
+    START_PATHWAY_SIMULATION: (pathwayId: string) =>
+      `/v1/learn/scenario-paths/${pathwayId}/create-session`,
   },
   SIMULATION: {
     SIMULATION_CREDITS: "/v1/simulation-credits",

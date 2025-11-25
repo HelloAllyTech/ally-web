@@ -1,4 +1,5 @@
 import { GetUpComingSimulationResponse } from "@types";
+import { isNonEmptyObject } from "@utils";
 
 export const UpNextSimulationCard = ({ data }: { data: GetUpComingSimulationResponse }) => {
   const {
@@ -11,7 +12,7 @@ export const UpNextSimulationCard = ({ data }: { data: GetUpComingSimulationResp
     description,
   } = data || {};
 
-  if (!data) return null;
+  if (!isNonEmptyObject(data)) return null;
 
   return (
     <div>

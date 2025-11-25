@@ -56,6 +56,10 @@ vi.mock("framer-motion", () => ({
 // Mock components
 vi.mock("@components", () => ({
   Button: ({ children, ...props }: any) => <button {...props}>{children}</button>,
+  ButtonVariant: {
+    PRIMARY: "primary",
+    SECONDARY: "secondary",
+  },
   PermissionGuard: ({ children }: any) => <div>{children}</div>,
 }));
 

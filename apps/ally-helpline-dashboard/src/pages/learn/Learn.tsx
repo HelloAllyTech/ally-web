@@ -114,7 +114,7 @@ export const Learn: FC = () => {
   const renderLoadingSkeleton = () => (
     <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
       {Array.from({ length: 6 }).map((_, index) => (
-        <div key={index} className="h-[200px] sm:h-[250px] bg-gray-200 rounded-lg animate-pulse" />
+        <div key={index} className="h-[150px] sm:h-[200px] bg-gray-200 rounded-lg animate-pulse" />
       ))}
     </div>
   );

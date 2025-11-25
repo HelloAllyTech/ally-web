@@ -5,9 +5,10 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
 import { useGetUpComingSimulationQuery, useLazyGetSimulationSummaryQuery } from "@api";
-import { Button, PermissionGuard } from "@components";
+import { Button, ButtonVariant, PermissionGuard } from "@components";
 import { Permissions, ROUTES } from "@constants";
 import { SessionType } from "@types";
+import { isNonEmptyObject } from "@utils";
 
 import { FeedbackDialog } from "..";
 import { FeedbackSection, LoaderSkeleton, UpNextSimulationCard } from "./components";
@@ -97,12 +98,20 @@ export const SimulationSummary: FC<SimulationSummaryProps> = ({
                   transition={{ duration: 0.5, delay: 0.8 }}
                   className="absolute bottom-0 left-4 right-4 z-10 max-w-full bg-white"
                 >
-                  {upComingSimulation ? (
-                    <div className="flex flex-col gap-4 w-[80%] mx-auto">
-                      <Button onClick={onBack} className="w-full">
+                  {isNonEmptyObject(upComingSimulation) ? (
+                    <div className="flex flex-row gap-4 w-full mx-auto">
+                      <Button
+                        variant={ButtonVariant.SECONDARY}
+                        onClick={onBack}
+                        className="w-[50%]"
+                      >
                         Back
                       </Button>
-                      <Button onClick={onSubmit} className="w-full">
+                      <Button
+                        variant={ButtonVariant.PRIMARY}
+                        onClick={onSubmit}
+                        className="w-[50%]"
+                      >
                         Next
                       </Button>
                     </div>

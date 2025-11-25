@@ -198,6 +198,12 @@ const learnAPI = baseAPI.injectEndpoints({
         method: HttpMethod.GET,
       }),
     }),
+    startPathwaySimulation: builder.mutation<void, { pathwayId: string }>({
+      query: ({ pathwayId }) => ({
+        url: ApiEndpoints.LEARN.START_PATHWAY_SIMULATION(pathwayId),
+        method: HttpMethod.POST,
+      }),
+    }),
   }),
 });
 
@@ -214,4 +220,5 @@ export const {
   useLazyGetSimulationSummaryQuery,
   useSubmitSimulationFeedbackMutation,
   useGetSimulationTranscriptQuery,
+  useStartPathwaySimulationMutation,
 } = learnAPI;
