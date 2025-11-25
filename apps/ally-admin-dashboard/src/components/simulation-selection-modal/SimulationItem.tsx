@@ -55,7 +55,7 @@ export const SimulationCardItem: FC<SimulationCardItemProps> = ({
       updated[openMessageIndex] = {
         ...updated[openMessageIndex],
         messageTitle: data.messageTitle || "",
-        feedback: data.feedback || "",
+        messageContent: data.messageContent || "",
       };
       setSelectedSimulations(updated);
     }
@@ -172,7 +172,7 @@ export const SimulationCardItem: FC<SimulationCardItemProps> = ({
               exit={{ opacity: 0, scale: 0.95, y: -10 }}
               transition={{ duration: 0.25, ease: "easeOut" }}
             >
-              {renderMessage(simulation.messageTitle, simulation.feedback, index)}
+              {renderMessage(simulation.messageTitle, simulation.messageContent, index)}
             </motion.div>
           </AnimatePresence>
         )}
@@ -197,7 +197,7 @@ export const SimulationCardItem: FC<SimulationCardItemProps> = ({
                     handleCancel={handleCloseModal}
                     initialValues={{
                       messageTitle: simulation.messageTitle || "",
-                      feedback: simulation.feedback || "",
+                      messageContent: simulation.messageContent || "",
                     }}
                     handlePrimaryAction={handleAddMessage}
                     isOpen

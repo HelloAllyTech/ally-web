@@ -71,7 +71,7 @@ export const addMessageModalFields = [
     required: true,
   },
   {
-    id: messageFieldId.feedback,
+    id: messageFieldId.messageContent,
     label: "Feedback message",
     placeholder: "Write the full message or guidance here",
     multiline: true,
