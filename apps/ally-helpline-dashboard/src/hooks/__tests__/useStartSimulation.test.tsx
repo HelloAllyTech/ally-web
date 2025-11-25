@@ -50,10 +50,10 @@ describe("useStartSimulation", () => {
       }),
     );
 
-    await result.current.startSimulation(
-      { scenarioId: 1, scenarioPathSessionItemId: "path-123" },
-      { title: "Test Scenario", coverImageUrl: "https://example.com/image.jpg" },
-    );
+    await result.current.startSimulation({
+      params: { scenarioId: 1, scenarioPathSessionItemId: "path-123" },
+      metadata: { title: "Test Scenario", coverImageUrl: "https://example.com/image.jpg" },
+    });
 
     await waitFor(() => {
       expect(mockStartSimulationMutation).toHaveBeenCalledWith({
@@ -79,7 +79,7 @@ describe("useStartSimulation", () => {
       }),
     );
 
-    await result.current.startSimulation({ scenarioId: 1 });
+    await result.current.startSimulation({ params: { scenarioId: 1 } });
 
     await waitFor(() => {
       expect(toast.error).toHaveBeenCalledWith("You are not authorized to start this simulation");
@@ -97,7 +97,7 @@ describe("useStartSimulation", () => {
 
     const { result } = renderHook(() => useStartSimulation());
 
-    await result.current.startSimulation({ scenarioId: 1 });
+    await result.current.startSimulation({ params: { scenarioId: 1 } });
 
     await waitFor(() => {
       expect(mockEndSimulation).toHaveBeenCalledWith({ sessionId: "old-session-123" });
@@ -114,7 +114,7 @@ describe("useStartSimulation", () => {
 
     const { result } = renderHook(() => useStartSimulation());
 
-    await result.current.startSimulation({ scenarioId: 1 });
+    await result.current.startSimulation({ params: { scenarioId: 1 } });
 
     await waitFor(() => {
       expect(toast.error).toHaveBeenCalledWith("Failed to start simulation");
@@ -130,7 +130,7 @@ describe("useStartSimulation", () => {
       }),
     );
 
-    await result.current.startSimulation({ scenarioId: 1 });
+    await result.current.startSimulation({ params: { scenarioId: 1 } });
 
     await waitFor(() => {
       expect(logger.error).toHaveBeenCalled();
@@ -162,7 +162,7 @@ describe("useStartSimulation", () => {
     const { result } = renderHook(() => useStartSimulation());
 
     // Start first simulation
-    result.current.startSimulation({ scenarioId: 1 });
+    result.current.startSimulation({ params: { scenarioId: 1 } });
 
     // Wait for state to update
     await waitFor(() => {
@@ -170,7 +170,7 @@ describe("useStartSimulation", () => {
     });
 
     // Try to start second simulation (should be blocked)
-    result.current.startSimulation({ scenarioId: 2 });
+    result.current.startSimulation({ params: { scenarioId: 2 } });
 
     // Resolve the first call
     resolveFirst!({ data: mockData, error: null });
@@ -182,7 +182,6 @@ describe("useStartSimulation", () => {
     expect(mockStartSimulationMutation).toHaveBeenCalledTimes(1);
     expect(mockStartSimulationMutation).toHaveBeenCalledWith({
       scenarioId: 1,
-      scenarioPathSessionItemId: "",
     });
   });
 
@@ -202,10 +201,10 @@ describe("useStartSimulation", () => {
 
     const { result } = renderHook(() => useStartSimulation());
 
-    await result.current.startSimulation(
-      { scenarioId: 1 },
-      { title: "Test Scenario", coverImageUrl: "https://example.com/image.jpg" },
-    );
+    await result.current.startSimulation({
+      params: { scenarioId: 1 },
+      metadata: { title: "Test Scenario", coverImageUrl: "https://example.com/image.jpg" },
+    });
 
     await waitFor(() => {
       const storedData = JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEYS.ROOM_DATA) || "{}");

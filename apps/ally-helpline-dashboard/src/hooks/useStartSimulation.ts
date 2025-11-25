@@ -23,7 +23,13 @@ interface UseStartSimulationOptions {
 }
 
 interface UseStartSimulationReturn {
-  startSimulation: (params: StartSimulationParams, metadata?: SimulationMetadata) => Promise<void>;
+  startSimulation: ({
+    params,
+    metadata,
+  }: {
+    params: StartSimulationParams;
+    metadata?: SimulationMetadata;
+  }) => Promise<void>;
   isStarting: boolean;
 }
 
@@ -38,15 +44,28 @@ export const useStartSimulation = (
   const [startSimulationMutation] = useStartSimulationMutation();
   const [endSimulation] = useEndSimulationMutation();
 
-  const startSimulation = async (params: StartSimulationParams, metadata?: SimulationMetadata) => {
+  const startSimulation = async ({
+    params,
+    metadata,
+  }: {
+    params: StartSimulationParams;
+    metadata?: SimulationMetadata;
+  }) => {
     if (isStarting) return;
     setIsStarting(true);
 
     try {
-      const { data, error } = await startSimulationMutation({
-        scenarioId: params.scenarioId,
-        scenarioPathSessionItemId: params.scenarioPathSessionItemId || "",
-      });
+      const { scenarioId, scenarioPathSessionItemId } = params;
+
+      const dataParams: { scenarioId: number; scenarioPathSessionItemId?: string } = {
+        scenarioId,
+      };
+
+      if (scenarioPathSessionItemId?.length > 0) {
+        dataParams.scenarioPathSessionItemId = scenarioPathSessionItemId;
+      }
+
+      const { data, error } = await startSimulationMutation(dataParams);
 
       // Handle success
       if (data) {
@@ -75,7 +94,9 @@ export const useStartSimulation = (
 
       // Handle error
       if (error) {
-        const errorData = error as { data?: { statusCode?: number; entityId?: string } };
+        const errorData = error as {
+          data?: { statusCode?: number; entityId?: string; message?: string };
+        };
 
         if (errorData.data?.statusCode === 403) {
           toast.error("You are not authorized to start this simulation");
@@ -84,7 +105,7 @@ export const useStartSimulation = (
           await endSimulation({ sessionId: errorData?.data?.entityId });
           toast.success("Previous simulation ended. Starting new one...");
         } else {
-          toast.error("Failed to start simulation");
+          toast.error(errorData?.data?.message || "Failed to start simulation");
         }
 
         // Call error callback if provided
