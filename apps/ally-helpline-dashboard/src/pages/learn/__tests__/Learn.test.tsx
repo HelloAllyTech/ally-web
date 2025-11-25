@@ -382,7 +382,7 @@ describe("Learn Component", () => {
           <Learn />
         </TestWrapper>,
       );
-      const skeletonCards = document.querySelectorAll("div.h-\\[200px\\]");
+      const skeletonCards = document.querySelectorAll("div.rounded-lg.animate-pulse");
       expect(skeletonCards.length).toBe(6);
     });
 

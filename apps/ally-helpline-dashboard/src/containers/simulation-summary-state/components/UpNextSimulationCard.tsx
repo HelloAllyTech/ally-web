@@ -1,4 +1,5 @@
 import { GetUpComingSimulationResponse } from "@types";
+import { isNonEmptyObject } from "@utils";
 
 export const UpNextSimulationCard = ({ data }: { data: GetUpComingSimulationResponse }) => {
   const {
@@ -11,14 +12,14 @@ export const UpNextSimulationCard = ({ data }: { data: GetUpComingSimulationResp
     description,
   } = data || {};
 
-  if (!data) return null;
+  if (!isNonEmptyObject(data)) return null;
 
   return (
-    <div>
+    <div className="font-primary">
       <div className="text-typography-900 text-base font-semibold mb-[8px]">
         {transitionMessageTitle}
       </div>
-      <div className="text-typography-900 text-base font-normal mb-[8px]">
+      <div className="text-typography-900 text-base font-normal mb-[20px]">
         {transitionMessageContent}
       </div>
       <div className="rounded-[8px] border border-border-light">

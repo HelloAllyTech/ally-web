@@ -5,7 +5,7 @@
  * - Scenarios catalog (list and detail)
  * - Simulation room lifecycle (list, create, delete)
  */
-import { ApiEndpoints, HttpMethod } from "@constants";
+import { ApiEndpoints, HttpMethod, TAG_TYPES } from "@constants";
 import {
   EndSimulationInput,
   EndSimulationResponse,
@@ -81,6 +81,7 @@ const learnAPI = baseAPI.injectEndpoints({
         url: ApiEndpoints.LEARN.GET_SCENARIO_PATHWAY_DETAILS(pathwayId),
         method: HttpMethod.GET,
       }),
+      providesTags: [TAG_TYPES.SCENARIO_PATHWAY_DETAILS],
     }),
 
     /**
@@ -148,7 +149,7 @@ const learnAPI = baseAPI.injectEndpoints({
         method: HttpMethod.GET,
         params,
       }),
-      providesTags: ["SimulationLogs"],
+      providesTags: [TAG_TYPES.SIMULATION_LOGS],
     }),
 
     /**
@@ -198,6 +199,13 @@ const learnAPI = baseAPI.injectEndpoints({
         method: HttpMethod.GET,
       }),
     }),
+    startPathwaySimulation: builder.mutation<void, { pathwayId: string }>({
+      query: ({ pathwayId }) => ({
+        url: ApiEndpoints.LEARN.START_PATHWAY_SIMULATION(pathwayId),
+        method: HttpMethod.POST,
+      }),
+      invalidatesTags: [TAG_TYPES.SCENARIO_PATHWAY_DETAILS],
+    }),
   }),
 });
 
@@ -214,4 +222,5 @@ export const {
   useLazyGetSimulationSummaryQuery,
   useSubmitSimulationFeedbackMutation,
   useGetSimulationTranscriptQuery,
+  useStartPathwaySimulationMutation,
 } = learnAPI;

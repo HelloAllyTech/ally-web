@@ -1,0 +1,107 @@
+import { useState } from "react";
+
+import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
+
+import { logger } from "@ally-ui-mono/ui-shared";
+import { useEndSimulationMutation, useStartSimulationMutation } from "@api";
+import { LOCAL_STORAGE_KEYS } from "@constants";
+
+interface StartSimulationParams {
+  scenarioId: number;
+  scenarioPathSessionItemId?: string;
+}
+
+interface SimulationMetadata {
+  title?: string;
+  coverImageUrl?: string;
+}
+
+interface UseStartSimulationOptions {
+  onSuccess?: () => void;
+  onError?: (error: unknown) => void;
+}
+
+interface UseStartSimulationReturn {
+  startSimulation: (params: StartSimulationParams, metadata?: SimulationMetadata) => Promise<void>;
+  isStarting: boolean;
+}
+
+/**
+ * Custom hook for starting simulations with error handling and navigation
+ */
+export const useStartSimulation = (
+  options?: UseStartSimulationOptions,
+): UseStartSimulationReturn => {
+  const navigate = useNavigate();
+  const [isStarting, setIsStarting] = useState(false);
+  const [startSimulationMutation] = useStartSimulationMutation();
+  const [endSimulation] = useEndSimulationMutation();
+
+  const startSimulation = async (params: StartSimulationParams, metadata?: SimulationMetadata) => {
+    if (isStarting) return;
+    setIsStarting(true);
+
+    try {
+      const { data, error } = await startSimulationMutation({
+        scenarioId: params.scenarioId,
+        scenarioPathSessionItemId: params.scenarioPathSessionItemId || "",
+      });
+
+      // Handle success
+      if (data) {
+        const { scenarioSession, accessToken } = data;
+
+        // Store room data in localStorage
+        localStorage.setItem(
+          LOCAL_STORAGE_KEYS.ROOM_DATA,
+          JSON.stringify({
+            roomId: scenarioSession.id,
+            name: metadata?.title,
+            coverImageUrl: metadata?.coverImageUrl,
+            accessToken: accessToken.token,
+            createdAt: scenarioSession.startedAt,
+            serverUrl: accessToken.serverUrl,
+          }),
+        );
+
+        // Call success callback if provided
+        options?.onSuccess?.();
+
+        // Navigate to simulation room
+        navigate(`/simulation/${scenarioSession.id}`);
+        return;
+      }
+
+      // Handle error
+      if (error) {
+        const errorData = error as { data?: { statusCode?: number; entityId?: string } };
+
+        if (errorData.data?.statusCode === 403) {
+          toast.error("You are not authorized to start this simulation");
+        } else if (errorData.data?.statusCode === 400 && errorData?.data?.entityId) {
+          // End previous simulation and retry
+          await endSimulation({ sessionId: errorData?.data?.entityId });
+          toast.success("Previous simulation ended. Starting new one...");
+        } else {
+          toast.error("Failed to start simulation");
+        }
+
+        // Call error callback if provided
+        options?.onError?.(error);
+        setIsStarting(false);
+        return;
+      }
+    } catch (error) {
+      logger.error("Failed to start simulation");
+      toast.error("An unexpected error occurred");
+      options?.onError?.(error);
+      setIsStarting(false);
+    }
+  };
+
+  return {
+    startSimulation,
+    isStarting,
+  };
+};

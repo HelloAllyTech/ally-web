@@ -23,7 +23,7 @@ interface TriggerConditionsProps {
 const SidePanelWrapper: React.FC<{ children: React.ReactNode }> = ({ children }) => (
   <div className="flex flex-col">
     <div className="flex items-center mb-2">
-      <span className="text-sm font-medium text-typography-800 mr-2">Trigger conditions</span>
+      <span className="text-base font-medium text-typography-800 mr-2">Trigger conditions</span>
       <div className="flex-1 border-t"></div>
     </div>
     <div className="flex items-start relative">

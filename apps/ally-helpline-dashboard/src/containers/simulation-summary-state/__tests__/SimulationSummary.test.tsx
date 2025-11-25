@@ -22,15 +22,20 @@ vi.mock("@api", () => ({
   useGetUpComingSimulationQuery: () => ({ data: mockUpComingSimulation }),
 }));
 
-// Mock the user hook
+// Mock the user hook and useStartSimulation
 const mockUser = {
   id: "user-123",
   role: UserRole.LEARNER,
   name: "Test User",
   email: "test@example.com",
 };
+const mockStartSimulation = vi.fn();
 vi.mock("@hooks", () => ({
   useUser: () => ({ user: mockUser }),
+  useStartSimulation: () => ({
+    startSimulation: mockStartSimulation,
+    isStarting: false,
+  }),
 }));
 
 // Mock the child components
@@ -56,6 +61,10 @@ vi.mock("framer-motion", () => ({
 // Mock components
 vi.mock("@components", () => ({
   Button: ({ children, ...props }: any) => <button {...props}>{children}</button>,
+  ButtonVariant: {
+    PRIMARY: "primary",
+    SECONDARY: "secondary",
+  },
   PermissionGuard: ({ children }: any) => <div>{children}</div>,
 }));
 
@@ -91,6 +100,12 @@ vi.mock("sonner", () => ({
   toast: {
     error: vi.fn(),
   },
+}));
+
+// Mock react-router-dom
+const mockNavigate = vi.fn();
+vi.mock("react-router-dom", () => ({
+  useNavigate: () => mockNavigate,
 }));
 
 // Remove the mock of the actual component since we want to test the real component
