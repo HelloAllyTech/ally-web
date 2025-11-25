@@ -29,6 +29,7 @@ export const useSimulationPathways = ({ selectedFilters }: UseSimulationPathways
   const [hasMore, setHasMore] = useState(true);
   const [isUnpublishPathwayPopupOpen, setIsUnpublishPathwayPopupOpen] = useState(false);
   const [isDuplicatePathwayPopupOpen, setIsDuplicatePathwayPopupOpen] = useState(false);
+  const [isPathEditPopupOpen, setIsPathEditPopupOpen] = useState<boolean>(false);
 
   const [updateSimulationPathByIdQuery] = useUpdateSimulationPathByIdMutation();
 
@@ -76,6 +77,15 @@ export const useSimulationPathways = ({ selectedFilters }: UseSimulationPathways
   };
 
   const onEditPathway = (pathway: ScenarioPath) => {
+    if (pathway.status === SimulationStatus.DRAFT) {
+      handleEditPathway(pathway);
+      return;
+    }
+    setCurrentPathway(pathway);
+    setIsPathEditPopupOpen(true);
+  };
+
+  const handleEditPathway = (pathway: ScenarioPath) => {
     navigate(ROUTES.EDIT_PATH(String(pathway.id)));
   };
 
@@ -152,10 +162,12 @@ export const useSimulationPathways = ({ selectedFilters }: UseSimulationPathways
     isUnpublishPathwayPopupOpen,
     isDuplicatePathwayPopupOpen,
     isDeletePathwayPopupOpen,
+    isPathEditPopupOpen,
     setIsPreviewOpen,
     setIsDuplicatePathwayPopupOpen,
     setIsUnpublishPathwayPopupOpen,
     setIsDeletePathwayPopupOpen,
+    setIsPathEditPopupOpen,
 
     // Actions
     loadPathways,
@@ -168,5 +180,6 @@ export const useSimulationPathways = ({ selectedFilters }: UseSimulationPathways
     onDuplicatePathway,
     handleDuplicatePathway,
     handleChangePathwayStatus,
+    handleEditPathway,
   };
 };

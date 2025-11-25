@@ -330,12 +330,6 @@ export const SimulationSelectionModal: FC<SimulationProps> = ({
                     )}
                   </div>
                 )}
-
-                {!hasMore && isNonEmptyArray(simulationList) && (
-                  <div className="py-4 text-center">
-                    <span className="text-sm text-typography-400">No more simulations</span>
-                  </div>
-                )}
               </>
             )}
           </div>

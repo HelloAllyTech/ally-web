@@ -14,13 +14,13 @@ export const PATH_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
     fields: [
       {
         id: "isGlobal",
-        label: "Organization Visibility",
+        label: "Default org-level visibility",
         type: FORM_FIELD_TYPES.TOGGLE_BUTTON,
         fullWidth: true,
       },
       {
         id: "title",
-        label: "Title",
+        label: "Name",
         placeholder: "Enter title",
         type: FORM_FIELD_TYPES.TEXT,
         isMandatory: true,

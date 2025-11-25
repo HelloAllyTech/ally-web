@@ -35,6 +35,7 @@ export const en = {
     pathUpdateFailed: "Failed to update path access.",
     failedUpdateAccess: "Failed to update access.",
     OrganizationNotFound: "Organization not found",
+    minimumScoreError: "Minimum score cannot be negative",
   },
   accessDenied: {
     title: "This page is not accessible",
@@ -202,6 +203,8 @@ export const en = {
     message: "Message",
     saveSimulation: "Simulation changes saved successfully!",
     noSimulationFound: "No simulations found",
+    editPathwayDescription:
+      "Are you sure you want to edit this pathway? This will be moved to draft state.",
   },
   userManagement: {
     organizationCreated: "Organization created successfully",

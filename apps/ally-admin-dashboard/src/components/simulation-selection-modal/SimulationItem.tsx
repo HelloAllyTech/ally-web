@@ -4,6 +4,7 @@ import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { Tooltip } from "@mui/material";
 import { motion, AnimatePresence } from "framer-motion";
+import { toast } from "sonner";
 
 import { CustomImage } from "@ally-ui-mono/ui-shared";
 import { CloseRed, DragIndicator, InfoIcon, Plus } from "@assets";
@@ -63,6 +64,12 @@ export const SimulationCardItem: FC<SimulationCardItemProps> = ({
   };
 
   const handleMinimumScoreChange = (index: number, value: string) => {
+    const updatedValue = Number(value);
+
+    if (updatedValue < 0) {
+      toast.error(en.errors.minimumScoreError);
+      return;
+    }
     const updated = [...selectedSimulations];
     updated[index] = {
       ...updated[index],
@@ -138,7 +145,7 @@ export const SimulationCardItem: FC<SimulationCardItemProps> = ({
               className="border outline-none w-16 p-1 bg-secondary-50 rounded-sm"
               defaultValue={simulation.minimumScore}
               onBlur={event => handleMinimumScoreChange(index, event.target.value)}
-              min="0"
+              min={0}
             />
           </div>
         </div>
