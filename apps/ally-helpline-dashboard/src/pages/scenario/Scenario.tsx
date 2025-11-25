@@ -83,13 +83,13 @@ export const Scenario: FC = () => {
   };
 
   const handleStartSimulation = async () => {
-    await startSimulation(
-      { scenarioId: id },
-      {
+    await startSimulation({
+      params: { scenarioId: id },
+      metadata: {
         title: scenario?.title,
         coverImageUrl: scenario?.coverImageUrl,
       },
-    );
+    });
   };
 
   const onStartSimulationClick = () => {

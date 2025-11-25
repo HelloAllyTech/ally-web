@@ -148,16 +148,16 @@ export const PathwayDetails: FC = () => {
     );
 
     const { scenarioId, sessionId, title, coverImageUrl } = updatedSelectedScenario;
-    await startSimulation(
-      {
+    await startSimulation({
+      params: {
         scenarioId,
-        scenarioPathSessionItemId: sessionId || "",
+        scenarioPathSessionItemId: sessionId,
       },
-      {
+      metadata: {
         title,
         coverImageUrl,
       },
-    );
+    });
   };
 
   if (isLoading) {

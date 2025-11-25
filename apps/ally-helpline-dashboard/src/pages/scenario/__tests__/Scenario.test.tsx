@@ -550,13 +550,13 @@ describe("Scenario Component", () => {
       startButton.click();
 
       await waitFor(() => {
-        expect(mockStartSimulation).toHaveBeenCalledWith(
-          { scenarioId: 123 },
-          {
+        expect(mockStartSimulation).toHaveBeenCalledWith({
+          params: { scenarioId: 123 },
+          metadata: {
             title: mockScenario.title,
             coverImageUrl: mockScenario.coverImageUrl,
           },
-        );
+        });
       });
     });
   });
@@ -579,13 +579,13 @@ describe("Scenario Component", () => {
       startButton.click();
 
       await waitFor(() => {
-        expect(mockStartSimulation).toHaveBeenCalledWith(
-          { scenarioId: 123 },
-          {
+        expect(mockStartSimulation).toHaveBeenCalledWith({
+          params: { scenarioId: 123 },
+          metadata: {
             title: mockScenario.title,
             coverImageUrl: mockScenario.coverImageUrl,
           },
-        );
+        });
       });
     });
 
@@ -602,13 +602,13 @@ describe("Scenario Component", () => {
       startButton.click();
 
       await waitFor(() => {
-        expect(mockStartSimulation).toHaveBeenCalledWith(
-          { scenarioId: 123 },
-          {
+        expect(mockStartSimulation).toHaveBeenCalledWith({
+          params: { scenarioId: 123 },
+          metadata: {
             title: mockScenario.title,
             coverImageUrl: mockScenario.coverImageUrl,
           },
-        );
+        });
       });
     });
 
@@ -625,13 +625,13 @@ describe("Scenario Component", () => {
       startButton.click();
 
       await waitFor(() => {
-        expect(mockStartSimulation).toHaveBeenCalledWith(
-          { scenarioId: 123 },
-          {
+        expect(mockStartSimulation).toHaveBeenCalledWith({
+          params: { scenarioId: 123 },
+          metadata: {
             title: mockScenario.title,
             coverImageUrl: mockScenario.coverImageUrl,
           },
-        );
+        });
       });
     });
   });
@@ -654,13 +654,13 @@ describe("Scenario Component", () => {
       startButton.click();
 
       await waitFor(() => {
-        expect(mockStartSimulation).toHaveBeenCalledWith(
-          { scenarioId: 123 },
-          {
+        expect(mockStartSimulation).toHaveBeenCalledWith({
+          params: { scenarioId: 123 },
+          metadata: {
             title: mockScenario.title,
             coverImageUrl: mockScenario.coverImageUrl,
           },
-        );
+        });
       });
     });
 
@@ -677,13 +677,13 @@ describe("Scenario Component", () => {
       startButton.click();
 
       await waitFor(() => {
-        expect(mockStartSimulation).toHaveBeenCalledWith(
-          { scenarioId: 123 },
-          {
+        expect(mockStartSimulation).toHaveBeenCalledWith({
+          params: { scenarioId: 123 },
+          metadata: {
             title: mockScenario.title,
             coverImageUrl: mockScenario.coverImageUrl,
           },
-        );
+        });
       });
     });
   });
@@ -848,13 +848,13 @@ describe("Scenario Component", () => {
       startButton.click();
 
       await waitFor(() => {
-        expect(mockStartSimulation).toHaveBeenCalledWith(
-          { scenarioId: 123 },
-          {
+        expect(mockStartSimulation).toHaveBeenCalledWith({
+          params: { scenarioId: 123 },
+          metadata: {
             title: mockScenario.title,
             coverImageUrl: mockScenario.coverImageUrl,
           },
-        );
+        });
       });
     });
 

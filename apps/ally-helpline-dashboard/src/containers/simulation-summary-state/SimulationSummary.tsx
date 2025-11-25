@@ -80,16 +80,16 @@ export const SimulationSummary: FC<SimulationSummaryProps> = ({
 
   const onNext = async () => {
     if (isNonEmptyObject(upComingSimulation)) {
-      await startSimulation(
-        {
+      await startSimulation({
+        params: {
           scenarioId: Number(upComingSimulation.id),
           scenarioPathSessionItemId: upComingSimulation.scenarioPathSessionItemId,
         },
-        {
+        metadata: {
           title: upComingSimulation.title,
           coverImageUrl: upComingSimulation.coverImageUrl,
         },
-      );
+      });
     } else {
       toast.error("No upcoming simulation found");
     }
