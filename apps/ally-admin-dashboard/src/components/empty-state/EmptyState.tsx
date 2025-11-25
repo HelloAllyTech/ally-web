@@ -25,7 +25,9 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
     >
       <h2 className="font-normal text-2xl text-typography-900 mb-2">{title}</h2>
       {subtitle && (
-        <p className="max-w-xl text-typography-800 text-base mb-4 w-[250px]">{subtitle}</p>
+        <p className="max-w-xl text-typography-800 text-base mb-4 w-full min-w-[250px]">
+          {subtitle}
+        </p>
       )}
       {actionLabel && !hideActionButton && (
         <button

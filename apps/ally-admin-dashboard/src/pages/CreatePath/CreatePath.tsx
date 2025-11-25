@@ -272,7 +272,7 @@ export const CreatePath: FC = () => {
             selectedSimulations={selectedSimulations}
             setSelectedSimulations={setSelectedSimulations}
           />,
-          true,
+          formValues.scenarios?.length > 0,
         );
       default:
         return null;

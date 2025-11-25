@@ -198,7 +198,7 @@ export const PathwayDetails: FC = () => {
         <div className="pt-6 pb-3 flex items-center justify-between">
           <div className="flex items-center gap-2 text-sm text-typography-700">
             <button
-              onClick={() => navigate(ROUTES.LEARN)}
+              onClick={() => navigate(-1)}
               className="hover:text-primary-500 transition-colors"
             >
               Path way

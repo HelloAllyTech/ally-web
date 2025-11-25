@@ -194,7 +194,6 @@ export const en = {
     addSelected: "Add selected",
     addSimulation: "Add Simulation",
     noSimulationsAddedYet: "No simulations added yet",
-    searchSelectSimulations: "Search and select simulations to include in this path",
     minScore: "Minimum score",
     minScoreTooltip: "Minimum score required to complete this simulation",
     addMessage: "Add Message",

@@ -184,7 +184,7 @@ export const SimulationSelectionModal: FC<SimulationProps> = ({
   const renderEmptyScreen = () => (
     <EmptyState
       title={en.simulation.noSimulationsAddedYet}
-      subtitle={en.simulation.searchSelectSimulations}
+      subtitle={en.simulation.newPathwayDescription}
       actionLabel={en.simulation.addSimulation}
       onAction={toggleSimulationModal}
     />
@@ -262,20 +262,20 @@ export const SimulationSelectionModal: FC<SimulationProps> = ({
           className="relative bg-white rounded-lg shadow-xl max-w-xl w-full animate-in fade-in-0 zoom-in-95 duration-200 px-6 py-4"
           onClick={event => event.stopPropagation()}
         >
-          <h1 className="text-lg font-semibold">{en.simulation.addSimulationToPath}</h1>
+          <h1 className="text-lg">{en.simulation.addSimulationToPath}</h1>
 
           <div className="relative w-full mt-4">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-typography-800" />
             <input
               type="text"
               placeholder="Search simulation"
-              className="pl-10 w-full !outline-none border rounded-md py-1"
+              className="w-full !outline-none border rounded-md py-1 px-8 text-base"
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
             />
           </div>
 
-          <div ref={scrollContainerRef} className="mt-4 max-h-80 overflow-y-auto">
+          <div ref={scrollContainerRef} className="mt-4 h-80 overflow-y-auto">
             {!isNonEmptyArray(simulationList) && !isFetching ? (
               <p className="text-center text-typography-600 py-8">
                 {en.simulation.noSimulationFound}
@@ -306,7 +306,7 @@ export const SimulationSelectionModal: FC<SimulationProps> = ({
                         onClick={event => event.stopPropagation()}
                         className="cursor-pointer"
                       />
-                      <div className="w-20 h-16 rounded-md overflow-hidden flex-shrink-0">
+                      <div className="w-20 h-10 rounded-md overflow-hidden flex-shrink-0">
                         <CustomImage
                           src={simulation.coverImageUrl}
                           alt={simulation.title}
@@ -322,11 +322,9 @@ export const SimulationSelectionModal: FC<SimulationProps> = ({
 
                 {/* Loading indicator and intersection observer target */}
                 {hasMore && (
-                  <div ref={loadingRef} className="py-4 text-center">
-                    {isFetching ? (
+                  <div ref={loadingRef} className="text-center py-2">
+                    {isFetching && (
                       <span className="text-sm text-typography-600">Loading more...</span>
-                    ) : (
-                      <span className="text-sm text-typography-400">Scroll for more</span>
                     )}
                   </div>
                 )}
@@ -334,7 +332,7 @@ export const SimulationSelectionModal: FC<SimulationProps> = ({
             )}
           </div>
 
-          <div className="mt-4 flex justify-end gap-3 border-t pt-3">
+          <div className="flex justify-end gap-3 border-t pt-3">
             <Button
               variant={ButtonVariant.SECONDARY}
               className="w-1/3 !text-base"
