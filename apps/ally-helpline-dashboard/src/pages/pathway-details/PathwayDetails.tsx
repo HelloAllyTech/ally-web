@@ -165,14 +165,6 @@ export const PathwayDetails: FC = () => {
         } else if (errorData.data?.statusCode === 400 && errorData?.data?.entityId) {
           await endSimulation({ sessionId: errorData?.data?.entityId });
           toast.success("Previous simulation ended. Starting new one...");
-          const retryResult = await startSimulation({
-            scenarioId: selectedScenario?.scenarioId,
-            scenarioPathSessionItemId: selectedScenario?.sessionId || "",
-          });
-          if (retryResult?.data) {
-            const { scenarioSession, accessToken } = retryResult?.data || {};
-            storeRoomDataAndNavigate(scenarioSession, accessToken);
-          }
         } else {
           toast.error("Failed to start simulation");
         }
