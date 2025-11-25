@@ -8,3 +8,4 @@ export * from "./useAutoActiveCallRedirect";
 export * from "./useAudioLevel";
 export * from "./useLiveKitRoom";
 export * from "./useSimulationCredits";
+export * from "./useStartSimulation";

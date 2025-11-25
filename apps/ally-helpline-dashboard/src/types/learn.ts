@@ -223,6 +223,7 @@ export interface GetUpComingSimulationResponse {
   isGlobal?: boolean;
   createdAt?: string;
   updatedAt?: string;
+  scenarioPathSessionItemId?: string;
   transitionMessageTitle?: string;
   transitionMessageContent?: string;
 }

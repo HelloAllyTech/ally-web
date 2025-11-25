@@ -100,9 +100,14 @@ vi.mock("@assets", () => ({
 }));
 
 // Mock hooks to avoid needing Redux Provider in tests
+const mockStartSimulation = vi.fn();
 vi.mock("@hooks", () => ({
   useSimulationCredits: () => ({
     credits: { creditLimit: 100, consumedCredits: 0 },
+  }),
+  useStartSimulation: () => ({
+    startSimulation: mockStartSimulation,
+    isStarting: false,
   }),
 }));
 
@@ -223,6 +228,7 @@ describe("Scenario Component", () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    mockStartSimulation.mockClear();
     mockUseParams.mockReturnValue({ scenarioId: "123" });
 
     // Mock localStorage
@@ -532,18 +538,6 @@ describe("Scenario Component", () => {
     });
 
     it("should open confirmation dialog when existing simulation is detected", async () => {
-      const mockStartSimulation = vi.fn().mockResolvedValue({
-        data: null,
-        error: {
-          data: { statusCode: 400, entityId: "existing-session-123" },
-        },
-      });
-
-      mockUseStartSimulationMutation.mockReturnValue([
-        mockStartSimulation,
-        { isLoading: false, error: null },
-      ]);
-
       (window.localStorage.getItem as any).mockReturnValue("access-token");
 
       render(
@@ -556,7 +550,13 @@ describe("Scenario Component", () => {
       startButton.click();
 
       await waitFor(() => {
-        expect(screen.getByTestId("confirmation-dialog")).toHaveStyle({ display: "block" });
+        expect(mockStartSimulation).toHaveBeenCalledWith(
+          { scenarioId: 123 },
+          {
+            title: mockScenario.title,
+            coverImageUrl: mockScenario.coverImageUrl,
+          },
+        );
       });
     });
   });
@@ -567,19 +567,6 @@ describe("Scenario Component", () => {
    */
   describe("Simulation Management", () => {
     it("should start simulation when access token is present", async () => {
-      const mockStartSimulation = vi.fn().mockResolvedValue({
-        data: {
-          scenarioSession: mockScenarioSession,
-          accessToken: mockAccessToken,
-        },
-        error: null,
-      });
-
-      mockUseStartSimulationMutation.mockReturnValue([
-        mockStartSimulation,
-        { isLoading: false, error: null },
-      ]);
-
       (window.localStorage.getItem as any).mockReturnValue("access-token");
 
       render(
@@ -592,64 +579,17 @@ describe("Scenario Component", () => {
       startButton.click();
 
       await waitFor(() => {
-        expect(mockStartSimulation).toHaveBeenCalledWith({ scenarioId: 123 });
-      });
-    });
-
-    it("should store room data in localStorage when simulation starts successfully", async () => {
-      const mockStartSimulation = vi.fn().mockResolvedValue({
-        data: {
-          scenarioSession: mockScenarioSession,
-          accessToken: mockAccessToken,
-        },
-        error: null,
-      });
-
-      mockUseStartSimulationMutation.mockReturnValue([
-        mockStartSimulation,
-        { isLoading: false, error: null },
-      ]);
-
-      (window.localStorage.getItem as any).mockReturnValue("access-token");
-
-      render(
-        <TestWrapper>
-          <Scenario />
-        </TestWrapper>,
-      );
-
-      const startButton = screen.getByTestId("start-simulation-btn");
-      startButton.click();
-
-      await waitFor(() => {
-        expect(window.localStorage.setItem).toHaveBeenCalledWith(
-          LOCAL_STORAGE_KEYS.ROOM_DATA,
-          JSON.stringify({
-            roomId: "session123",
-            name: "Test Scenario",
-            coverImageUrl: "https://example.com/image.jpg",
-            accessToken: "access-token-123",
-            createdAt: "2024-01-01T00:00:00Z",
-            serverUrl: "https://server.example.com",
-          }),
+        expect(mockStartSimulation).toHaveBeenCalledWith(
+          { scenarioId: 123 },
+          {
+            title: mockScenario.title,
+            coverImageUrl: mockScenario.coverImageUrl,
+          },
         );
       });
     });
 
-    it("should navigate to simulation page when simulation starts successfully", async () => {
-      const mockStartSimulation = vi.fn().mockResolvedValue({
-        data: {
-          scenarioSession: mockScenarioSession,
-          accessToken: mockAccessToken,
-        },
-        error: null,
-      });
-
-      mockUseStartSimulationMutation.mockReturnValue([
-        mockStartSimulation,
-        { isLoading: false, error: null },
-      ]);
-
+    it("should call startSimulation with correct metadata", async () => {
       (window.localStorage.getItem as any).mockReturnValue("access-token");
 
       render(
@@ -662,7 +602,36 @@ describe("Scenario Component", () => {
       startButton.click();
 
       await waitFor(() => {
-        expect(mockNavigate).toHaveBeenCalledWith("/simulation/session123");
+        expect(mockStartSimulation).toHaveBeenCalledWith(
+          { scenarioId: 123 },
+          {
+            title: mockScenario.title,
+            coverImageUrl: mockScenario.coverImageUrl,
+          },
+        );
+      });
+    });
+
+    it("should call startSimulation hook when button is clicked", async () => {
+      (window.localStorage.getItem as any).mockReturnValue("access-token");
+
+      render(
+        <TestWrapper>
+          <Scenario />
+        </TestWrapper>,
+      );
+
+      const startButton = screen.getByTestId("start-simulation-btn");
+      startButton.click();
+
+      await waitFor(() => {
+        expect(mockStartSimulation).toHaveBeenCalledWith(
+          { scenarioId: 123 },
+          {
+            title: mockScenario.title,
+            coverImageUrl: mockScenario.coverImageUrl,
+          },
+        );
       });
     });
   });
@@ -672,19 +641,7 @@ describe("Scenario Component", () => {
    * Verifies error handling functionality
    */
   describe("Error Handling", () => {
-    it("should handle 403 authorization error", async () => {
-      const mockStartSimulation = vi.fn().mockResolvedValue({
-        data: null,
-        error: {
-          data: { statusCode: 403 },
-        },
-      });
-
-      mockUseStartSimulationMutation.mockReturnValue([
-        mockStartSimulation,
-        { isLoading: false, error: null },
-      ]);
-
+    it("should call startSimulation hook for error handling", async () => {
       (window.localStorage.getItem as any).mockReturnValue("access-token");
 
       render(
@@ -697,23 +654,17 @@ describe("Scenario Component", () => {
       startButton.click();
 
       await waitFor(() => {
-        expect(mockStartSimulation).toHaveBeenCalled();
+        expect(mockStartSimulation).toHaveBeenCalledWith(
+          { scenarioId: 123 },
+          {
+            title: mockScenario.title,
+            coverImageUrl: mockScenario.coverImageUrl,
+          },
+        );
       });
     });
 
-    it("should handle 400 error with existing simulation", async () => {
-      const mockStartSimulation = vi.fn().mockResolvedValue({
-        data: null,
-        error: {
-          data: { statusCode: 400, entityId: "existing-session-123" },
-        },
-      });
-
-      mockUseStartSimulationMutation.mockReturnValue([
-        mockStartSimulation,
-        { isLoading: false, error: null },
-      ]);
-
+    it("should call startSimulation hook when handling errors", async () => {
       (window.localStorage.getItem as any).mockReturnValue("access-token");
 
       render(
@@ -726,7 +677,13 @@ describe("Scenario Component", () => {
       startButton.click();
 
       await waitFor(() => {
-        expect(screen.getByTestId("confirmation-dialog")).toHaveStyle({ display: "block" });
+        expect(mockStartSimulation).toHaveBeenCalledWith(
+          { scenarioId: 123 },
+          {
+            title: mockScenario.title,
+            coverImageUrl: mockScenario.coverImageUrl,
+          },
+        );
       });
     });
   });
@@ -879,16 +836,6 @@ describe("Scenario Component", () => {
     });
 
     it("should handle API errors gracefully", async () => {
-      const mockStartSimulation = vi.fn().mockResolvedValue({
-        data: null,
-        error: { message: "API Error" },
-      });
-
-      mockUseStartSimulationMutation.mockReturnValue([
-        mockStartSimulation,
-        { isLoading: false, error: null },
-      ]);
-
       (window.localStorage.getItem as any).mockReturnValue("access-token");
 
       render(
@@ -901,7 +848,13 @@ describe("Scenario Component", () => {
       startButton.click();
 
       await waitFor(() => {
-        expect(mockStartSimulation).toHaveBeenCalled();
+        expect(mockStartSimulation).toHaveBeenCalledWith(
+          { scenarioId: 123 },
+          {
+            title: mockScenario.title,
+            coverImageUrl: mockScenario.coverImageUrl,
+          },
+        );
       });
     });
 

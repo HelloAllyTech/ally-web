@@ -32,7 +32,7 @@ const Field: React.FC<FieldProps> = ({ label, children, multiline = false }) => 
     className={`flex flex-row min-h-[40px] ${multiline ? "items-start" : "items-center"} text-base justify-between`}
   >
     <div className={`w-[40%] ${multiline && "mt-[8px]"}`}>
-      <span className="text-sm font-medium text-typography-800">{label}</span>
+      <span className="text-base font-medium text-typography-800">{label}</span>
     </div>
     <div className="w-[60%] flex text-left justify-start text-neutral-800">{children}</div>
   </div>
@@ -55,7 +55,7 @@ const PanelHeader: React.FC<{
     {hasEvent && (
       <button onClick={() => onDelete(eventId)} className="flex items-center gap-2">
         <Trash width={14} height={14} />
-        <span className="text-sm font-tertiary font-medium text-typography-900">
+        <span className="text-base font-tertiary font-medium text-typography-900">
           {en.simulation.deleteEvent}
         </span>
       </button>
@@ -196,7 +196,7 @@ export const EventSidePanel: React.FC<EventSidePanelProps> = ({
 
           <div className="space-y-3">
             <Field label="Event code">
-              <div className="text-sm text-neutral-800">{formData.eventCode || "—"}</div>
+              <div className="text-base text-neutral-800">{formData.eventCode || "—"}</div>
             </Field>
 
             {/* Trigger Conditions Field */}
@@ -214,7 +214,7 @@ export const EventSidePanel: React.FC<EventSidePanelProps> = ({
                 value={formData.branchInstruction}
                 onChange={value => handleFieldChange("branchInstruction", value)}
                 placeholder="Add instruction"
-                className="py-2 pt-[16px] px-0 border-none focus:outline-none text-sm w-full resize-none overflow-y-auto [&::-webkit-scrollbar]:w-[1px] [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-scrollbar-thumb"
+                className="py-2 pt-[16px] px-0 border-none focus:outline-none text-base w-full resize-none overflow-y-auto [&::-webkit-scrollbar]:w-[1px] [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-scrollbar-thumb"
               />
             </Field>
 
@@ -232,7 +232,7 @@ export const EventSidePanel: React.FC<EventSidePanelProps> = ({
                 value={formData.message}
                 onChange={value => handleFieldChange("message", value)}
                 placeholder="Add message"
-                className="py-2 pt-[16px] px-0 border-none focus:outline-none text-sm w-full resize-none overflow-y-auto [&::-webkit-scrollbar]:w-[1px] [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-scrollbar-thumb"
+                className="py-2 pt-[16px] px-0 border-none focus:outline-none text-base w-full resize-none overflow-y-auto [&::-webkit-scrollbar]:w-[1px] [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-scrollbar-thumb"
               />
             </Field>
 

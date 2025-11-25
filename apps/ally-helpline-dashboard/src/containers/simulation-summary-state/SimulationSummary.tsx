@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { useGetUpComingSimulationQuery, useLazyGetSimulationSummaryQuery } from "@api";
 import { Button, ButtonVariant, PermissionGuard } from "@components";
 import { Permissions, ROUTES } from "@constants";
+import { useStartSimulation } from "@hooks";
 import { SessionType } from "@types";
 import { isNonEmptyObject } from "@utils";
 
@@ -26,10 +27,11 @@ export const SimulationSummary: FC<SimulationSummaryProps> = ({
 
   const [getSimulationSummary, { data: summary }] = useLazyGetSimulationSummaryQuery();
   const { data: upComingSimulation } = useGetUpComingSimulationQuery(summaryId, {
-    skip: !summaryId,
+    skip: !summaryId || isInSidebar,
   });
 
   const navigate = useNavigate();
+  const { startSimulation, isStarting } = useStartSimulation();
 
   useEffect(() => {
     let pollCount = 0;
@@ -76,6 +78,23 @@ export const SimulationSummary: FC<SimulationSummaryProps> = ({
     }
   };
 
+  const onNext = async () => {
+    if (isNonEmptyObject(upComingSimulation)) {
+      await startSimulation(
+        {
+          scenarioId: Number(upComingSimulation.id),
+          scenarioPathSessionItemId: upComingSimulation.scenarioPathSessionItemId,
+        },
+        {
+          title: upComingSimulation.title,
+          coverImageUrl: upComingSimulation.coverImageUrl,
+        },
+      );
+    } else {
+      toast.error("No upcoming simulation found");
+    }
+  };
+
   const onBack = () => {
     navigate(ROUTES.LEARN);
   };
@@ -104,15 +123,17 @@ export const SimulationSummary: FC<SimulationSummaryProps> = ({
                         variant={ButtonVariant.SECONDARY}
                         onClick={onBack}
                         className="w-[50%]"
+                        disabled={isStarting}
                       >
                         Back
                       </Button>
                       <Button
                         variant={ButtonVariant.PRIMARY}
-                        onClick={onSubmit}
+                        onClick={onNext}
                         className="w-[50%]"
+                        disabled={isStarting}
                       >
-                        Next
+                        {isStarting ? "Starting..." : "Next"}
                       </Button>
                     </div>
                   ) : (

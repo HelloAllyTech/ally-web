@@ -22,15 +22,20 @@ vi.mock("@api", () => ({
   useGetUpComingSimulationQuery: () => ({ data: mockUpComingSimulation }),
 }));
 
-// Mock the user hook
+// Mock the user hook and useStartSimulation
 const mockUser = {
   id: "user-123",
   role: UserRole.LEARNER,
   name: "Test User",
   email: "test@example.com",
 };
+const mockStartSimulation = vi.fn();
 vi.mock("@hooks", () => ({
   useUser: () => ({ user: mockUser }),
+  useStartSimulation: () => ({
+    startSimulation: mockStartSimulation,
+    isStarting: false,
+  }),
 }));
 
 // Mock the child components
