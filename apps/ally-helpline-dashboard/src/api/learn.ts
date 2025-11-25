@@ -24,6 +24,7 @@ import {
   SubmitSimulationFeedbackResponse,
   GetScenarioPathwaysResponse,
   ScenarioPathwayDetails,
+  GetUpComingSimulationResponse,
 } from "@types";
 
 import { baseAPI } from "./baseAPI";
@@ -191,10 +192,17 @@ const learnAPI = baseAPI.injectEndpoints({
         params: { offset, limit, sortOrder: "ASC", sortBy },
       }),
     }),
+    getUpComingSimulation: builder.query<GetUpComingSimulationResponse, string>({
+      query: sessionId => ({
+        url: ApiEndpoints.LEARN.GET_UP_COMING_SIMULATION(sessionId),
+        method: HttpMethod.GET,
+      }),
+    }),
   }),
 });
 
 export const {
+  useGetUpComingSimulationQuery,
   useEndSimulationMutation,
   useGetScenarioQuery,
   useGetScenariosQuery,

@@ -9,8 +9,17 @@ import { SimulationSummaryProps } from "../types";
 // Mock the API hook
 const mockLazyQuery = vi.fn();
 const mockGetSimulationSummary = vi.fn();
+const mockUpComingSimulation = {
+  id: "sim-123",
+  simulationNumber: 2,
+  title: "Test Simulation",
+  description: "Test description",
+  scenario: "Test scenario",
+  coverImageUrl: "https://via.placeholder.com/120",
+};
 vi.mock("@api", () => ({
   useLazyGetSimulationSummaryQuery: () => [mockLazyQuery, { data: mockGetSimulationSummary() }],
+  useGetUpComingSimulationQuery: () => ({ data: mockUpComingSimulation }),
 }));
 
 // Mock the user hook

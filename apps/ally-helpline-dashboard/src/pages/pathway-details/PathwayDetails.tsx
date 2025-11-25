@@ -146,7 +146,7 @@ export const PathwayDetails: FC = () => {
     try {
       const { data, error } = await startSimulation({
         scenarioId: selectedScenario.scenarioId,
-        pathwayId,
+        scenarioPathSessionItemId: pathwayId,
       });
       // Handle success
       if (data) {
@@ -163,7 +163,7 @@ export const PathwayDetails: FC = () => {
           toast.success("Previous simulation ended. Starting new one...");
           const retryResult = await startSimulation({
             scenarioId: selectedScenario?.scenarioId,
-            pathwayId,
+            scenarioPathSessionItemId: pathwayId,
           });
           if (retryResult?.data) {
             const { scenarioSession, accessToken } = retryResult?.data || {};

@@ -43,7 +43,7 @@ export const ApiEndpoints = {
     DUPLICATE_SCENARIO_PATH: (id: string | number) =>
       `/v1/learn/admin/scenario-paths/${id}/duplicate`,
     PATH_TENANT_VISIBILITY: (tenantId: string | number) =>
-      `v1/learn/admin/scenario-path/tenant/${tenantId}`,
+      `v1/learn/admin/scenario-paths/tenant/${tenantId}`,
   },
 
   USER_MANAGEMENT: {

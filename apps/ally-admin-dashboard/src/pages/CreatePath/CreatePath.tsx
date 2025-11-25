@@ -113,6 +113,8 @@ export const CreatePath: FC = () => {
 
       if (Array.isArray(value)) return !isNonEmptyArray(value);
 
+      if (value instanceof FileList && value.length === 0) return false;
+
       return true;
     });
     return allMandatoryFormFieldsFilled && formValues?.scenarios?.length > 1; // at least one simulation is required
