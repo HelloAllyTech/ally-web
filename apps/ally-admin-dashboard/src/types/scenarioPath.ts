@@ -61,6 +61,14 @@ export interface CreatePathInput {
   scenarios?: scenarioType;
 }
 
+export interface CreatePathResponse {
+  id: string;
+  title: string;
+  description: string;
+  coverImageUrl: string;
+  status: SimulationStatus;
+}
+
 export enum messageFieldId {
   messageTitle = "messageTitle",
   messageContent = "messageContent",

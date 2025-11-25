@@ -2,6 +2,7 @@ import { baseAPI } from "@api";
 import { ApiEndpoints, HttpMethod, TAG_TYPES } from "@constants";
 import {
   CreatePathInput,
+  CreatePathResponse,
   GetPathByIdResponse,
   GetScenarioPathsQueryParams,
   GetScenarioPathsResponse,
@@ -26,7 +27,7 @@ const simulationPathApi = baseAPI.injectEndpoints({
       }),
     }),
 
-    createSimulationPath: builder.mutation<{ success: boolean }, CreatePathInput>({
+    createSimulationPath: builder.mutation<CreatePathResponse, CreatePathInput>({
       query: body => ({
         url: ApiEndpoints.SIMULATION_STUDIO.SCENARIO_PATHS,
         method: HttpMethod.POST,
