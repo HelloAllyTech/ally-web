@@ -93,6 +93,12 @@ vi.mock("sonner", () => ({
   },
 }));
 
+// Mock react-router-dom
+const mockNavigate = vi.fn();
+vi.mock("react-router-dom", () => ({
+  useNavigate: () => mockNavigate,
+}));
+
 // Remove the mock of the actual component since we want to test the real component
 
 describe("SimulationSummary", () => {
