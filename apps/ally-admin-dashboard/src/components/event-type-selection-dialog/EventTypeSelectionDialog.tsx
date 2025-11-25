@@ -98,7 +98,7 @@ export const EventTypeSelectionDialog: FC<EventTypeSelectionDialogProps> = ({
               {en.simulation.createNewEvent}
             </div>
 
-            <div className="text-center text-typography-600 mb-2">
+            <div className="text-center text-base text-typography-800 mb-2">
               {en.simulation.selectEventType}
             </div>
 
@@ -120,8 +120,8 @@ export const EventTypeSelectionDialog: FC<EventTypeSelectionDialogProps> = ({
                         <Icon className="w-5 h-5" />
                       </div>
                       <div className="flex-1">
-                        <div className="font-medium text-typography-900 mb-1">{option.label}</div>
-                        <div className="text-sm text-typography-600">{option.description}</div>
+                        <div className="font-medium text-typography-900">{option.label}</div>
+                        <div className="text-base text-typography-800">{option.description}</div>
                       </div>
                       {isSelected && (
                         <div className="flex-shrink-0">

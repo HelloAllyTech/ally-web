@@ -1,19 +1,15 @@
 import { FC, useState } from "react";
 
-import { motion } from "framer-motion";
-import { useNavigate, useParams } from "react-router-dom";
-import { toast } from "sonner";
-
-import { logger, SimulationDetailsModal, CustomImage } from "@ally-ui-mono/ui-shared";
-import {
-  useEndSimulationMutation,
-  useGetScenarioPathwayDetailsQuery,
-  useStartSimulationMutation,
-} from "@api";
+import { useGetScenarioPathwayDetailsQuery, useStartPathwaySimulationMutation } from "@api";
 import { ArrowRight, Lock, TickGreenBackground } from "@assets";
 import { CreditsDisplay } from "@components";
-import { LOCAL_STORAGE_KEYS, ROUTES } from "@constants";
+import { ROUTES } from "@constants";
+import { useStartSimulation } from "@hooks";
 import { PathwayScenarioStatus, PathwayScenario } from "@types";
+import { motion } from "framer-motion";
+import { useNavigate, useParams } from "react-router-dom";
+
+import { SimulationDetailsModal, CustomImage } from "@ally-ui-mono/ui-shared";
 
 interface ScenarioCardProps {
   scenario: PathwayScenario;
@@ -111,15 +107,20 @@ export const PathwayDetails: FC = () => {
   const { data: pathway, isLoading } = useGetScenarioPathwayDetailsQuery(pathwayId || "");
   const [selectedScenario, setSelectedScenario] = useState<PathwayScenario | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isStarting, setIsStarting] = useState(false);
 
-  const [startSimulation] = useStartSimulationMutation();
-  const [endSimulation] = useEndSimulationMutation();
+  const [startPathwaySimulation] = useStartPathwaySimulationMutation();
+
+  const { startSimulation, isStarting } = useStartSimulation({
+    onSuccess: () => {
+      handleCloseModal();
+    },
+  });
 
   const handleStartOrContinueSimulation = () => {
     const nextScenario = pathway?.scenarios.find(
       scenario => scenario.status !== PathwayScenarioStatus.COMPLETED,
     );
+    if (!pathway?.scenarioPathSessionId) startPathwaySimulation({ pathwayId });
     setSelectedScenario(nextScenario);
     setIsModalOpen(true);
   };
@@ -127,6 +128,7 @@ export const PathwayDetails: FC = () => {
   const handleScenarioClick = (scenarioId: number, status: PathwayScenarioStatus) => {
     if (status !== PathwayScenarioStatus.LOCKED) {
       const scenario = pathway?.scenarios.find(scenario => scenario.scenarioId === scenarioId);
+      if (!pathway?.scenarioPathSessionId) startPathwaySimulation({ pathwayId });
       if (scenario) {
         setSelectedScenario(scenario);
         setIsModalOpen(true);
@@ -141,61 +143,17 @@ export const PathwayDetails: FC = () => {
 
   const handleStartSimulation = async () => {
     if (!selectedScenario || isStarting) return;
-    setIsStarting(true);
 
-    try {
-      const { data, error } = await startSimulation({
+    await startSimulation(
+      {
         scenarioId: selectedScenario.scenarioId,
-        scenarioPathSessionItemId: pathwayId,
-      });
-      // Handle success
-      if (data) {
-        const { scenarioSession, accessToken } = data;
-        storeRoomDataAndNavigate(scenarioSession, accessToken);
-      }
-      // Handle error
-      if (error) {
-        const errorData = error as { data?: { statusCode?: number; entityId?: string } };
-        if (errorData.data?.statusCode === 403) {
-          toast.error("You are not authorized to start this simulation");
-        } else if (errorData.data?.statusCode === 400 && errorData?.data?.entityId) {
-          await endSimulation({ sessionId: errorData?.data?.entityId });
-          toast.success("Previous simulation ended. Starting new one...");
-          const retryResult = await startSimulation({
-            scenarioId: selectedScenario?.scenarioId,
-            scenarioPathSessionItemId: pathwayId,
-          });
-          if (retryResult?.data) {
-            const { scenarioSession, accessToken } = retryResult?.data || {};
-            storeRoomDataAndNavigate(scenarioSession, accessToken);
-          }
-        } else {
-          toast.error("Failed to start simulation");
-        }
-        setIsStarting(false);
-        return;
-      }
-    } catch {
-      logger.error(`Failed to start simulation`);
-      setIsStarting(false);
-    }
-  };
-
-  const storeRoomDataAndNavigate = (scenarioSession: any, accessToken: any) => {
-    localStorage.setItem(
-      LOCAL_STORAGE_KEYS.ROOM_DATA,
-      JSON.stringify({
-        roomId: scenarioSession.id,
-        name: selectedScenario?.title,
-        coverImageUrl: selectedScenario?.coverImageUrl,
-        accessToken: accessToken.token,
-        createdAt: scenarioSession.startedAt,
-        serverUrl: accessToken.serverUrl,
-      }),
+        scenarioPathSessionItemId: selectedScenario?.sessionId || "",
+      },
+      {
+        title: selectedScenario.title,
+        coverImageUrl: selectedScenario.coverImageUrl,
+      },
     );
-
-    handleCloseModal();
-    navigate(`/simulation/${scenarioSession.id}`);
   };
 
   if (isLoading) {

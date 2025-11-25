@@ -1,12 +1,15 @@
 import { FC, useEffect, useState } from "react";
 
 import { motion } from "framer-motion";
+import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
 import { useGetUpComingSimulationQuery, useLazyGetSimulationSummaryQuery } from "@api";
-import { Button, PermissionGuard } from "@components";
-import { Permissions } from "@constants";
+import { Button, ButtonVariant, PermissionGuard } from "@components";
+import { Permissions, ROUTES } from "@constants";
+import { useStartSimulation } from "@hooks";
 import { SessionType } from "@types";
+import { isNonEmptyObject } from "@utils";
 
 import { FeedbackDialog } from "..";
 import { FeedbackSection, LoaderSkeleton, UpNextSimulationCard } from "./components";
@@ -24,8 +27,11 @@ export const SimulationSummary: FC<SimulationSummaryProps> = ({
 
   const [getSimulationSummary, { data: summary }] = useLazyGetSimulationSummaryQuery();
   const { data: upComingSimulation } = useGetUpComingSimulationQuery(summaryId, {
-    skip: !summaryId,
+    skip: !summaryId || isInSidebar,
   });
+
+  const navigate = useNavigate();
+  const { startSimulation, isStarting } = useStartSimulation();
 
   useEffect(() => {
     let pollCount = 0;
@@ -72,6 +78,27 @@ export const SimulationSummary: FC<SimulationSummaryProps> = ({
     }
   };
 
+  const onNext = async () => {
+    if (isNonEmptyObject(upComingSimulation)) {
+      await startSimulation(
+        {
+          scenarioId: Number(upComingSimulation.id),
+          scenarioPathSessionItemId: upComingSimulation.scenarioPathSessionItemId,
+        },
+        {
+          title: upComingSimulation.title,
+          coverImageUrl: upComingSimulation.coverImageUrl,
+        },
+      );
+    } else {
+      toast.error("No upcoming simulation found");
+    }
+  };
+
+  const onBack = () => {
+    navigate(ROUTES.LEARN);
+  };
+
   return (
     <div
       className={`relative flex flex-col h-full w-full ${className}`}
@@ -90,13 +117,23 @@ export const SimulationSummary: FC<SimulationSummaryProps> = ({
                   transition={{ duration: 0.5, delay: 0.8 }}
                   className="absolute bottom-0 left-4 right-4 z-10 max-w-full bg-white"
                 >
-                  {upComingSimulation ? (
-                    <div className="flex flex-col gap-4 w-[80%] mx-auto">
-                      <Button onClick={onSubmit} className="w-full">
+                  {isNonEmptyObject(upComingSimulation) ? (
+                    <div className="flex flex-row gap-4 w-full mx-auto">
+                      <Button
+                        variant={ButtonVariant.SECONDARY}
+                        onClick={onBack}
+                        className="w-[50%]"
+                        disabled={isStarting}
+                      >
                         Back
                       </Button>
-                      <Button onClick={onSubmit} className="w-full">
-                        Next
+                      <Button
+                        variant={ButtonVariant.PRIMARY}
+                        onClick={onNext}
+                        className="w-[50%]"
+                        disabled={isStarting}
+                      >
+                        {isStarting ? "Starting..." : "Next"}
                       </Button>
                     </div>
                   ) : (

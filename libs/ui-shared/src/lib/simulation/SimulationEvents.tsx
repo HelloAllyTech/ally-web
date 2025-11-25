@@ -67,7 +67,7 @@ export const SimulationEvents: FC<SimulationEventsProps> = ({ events = [] }) => 
             <motion.div
               key={`${timestamp}-${index}`}
               data-testid={`simulation-event-${index}`}
-              className="flex items-center gap-2 bg-[#282B31] px-4 py-1 rounded-full"
+              className="flex items-center gap-2 bg-[#282B31] px-4 py-1 rounded-[20px]"
               initial={{ opacity: 0, y: 6 }}
               animate={{ opacity: isLast ? 1 : 0.5, y: 0 }}
               transition={{ duration: 0.4 }}
