@@ -1,11 +1,12 @@
 import { FC, useEffect, useState } from "react";
 
 import { motion } from "framer-motion";
+import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
 import { useGetUpComingSimulationQuery, useLazyGetSimulationSummaryQuery } from "@api";
 import { Button, PermissionGuard } from "@components";
-import { Permissions } from "@constants";
+import { Permissions, ROUTES } from "@constants";
 import { SessionType } from "@types";
 
 import { FeedbackDialog } from "..";
@@ -26,6 +27,8 @@ export const SimulationSummary: FC<SimulationSummaryProps> = ({
   const { data: upComingSimulation } = useGetUpComingSimulationQuery(summaryId, {
     skip: !summaryId,
   });
+
+  const navigate = useNavigate();
 
   useEffect(() => {
     let pollCount = 0;
@@ -72,6 +75,10 @@ export const SimulationSummary: FC<SimulationSummaryProps> = ({
     }
   };
 
+  const onBack = () => {
+    navigate(ROUTES.LEARN);
+  };
+
   return (
     <div
       className={`relative flex flex-col h-full w-full ${className}`}
@@ -92,7 +99,7 @@ export const SimulationSummary: FC<SimulationSummaryProps> = ({
                 >
                   {upComingSimulation ? (
                     <div className="flex flex-col gap-4 w-[80%] mx-auto">
-                      <Button onClick={onSubmit} className="w-full">
+                      <Button onClick={onBack} className="w-full">
                         Back
                       </Button>
                       <Button onClick={onSubmit} className="w-full">
