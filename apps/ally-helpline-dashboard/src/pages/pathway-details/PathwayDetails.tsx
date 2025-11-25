@@ -116,23 +116,22 @@ export const PathwayDetails: FC = () => {
     },
   });
 
-  const handleStartOrContinueSimulation = () => {
+  const handleStartOrContinueSimulation = async () => {
+    if (!pathway?.scenarioPathSessionId) await startPathwaySimulation({ pathwayId });
     const nextScenario = pathway?.scenarios.find(
       scenario => scenario.status !== PathwayScenarioStatus.COMPLETED,
     );
-    if (!pathway?.scenarioPathSessionId) startPathwaySimulation({ pathwayId });
     setSelectedScenario(nextScenario);
     setIsModalOpen(true);
   };
 
-  const handleScenarioClick = (scenarioId: number, status: PathwayScenarioStatus) => {
-    if (status !== PathwayScenarioStatus.LOCKED) {
-      const scenario = pathway?.scenarios.find(scenario => scenario.scenarioId === scenarioId);
-      if (!pathway?.scenarioPathSessionId) startPathwaySimulation({ pathwayId });
-      if (scenario) {
-        setSelectedScenario(scenario);
-        setIsModalOpen(true);
-      }
+  const handleScenarioClick = async (scenarioId: number, status: PathwayScenarioStatus) => {
+    if (status === PathwayScenarioStatus.LOCKED) return;
+    if (!pathway?.scenarioPathSessionId) await startPathwaySimulation({ pathwayId });
+    const scenario = pathway?.scenarios.find(scenario => scenario.scenarioId === scenarioId);
+    if (scenario) {
+      setSelectedScenario(scenario);
+      setIsModalOpen(true);
     }
   };
 
@@ -144,14 +143,19 @@ export const PathwayDetails: FC = () => {
   const handleStartSimulation = async () => {
     if (!selectedScenario || isStarting) return;
 
+    const updatedSelectedScenario = pathway?.scenarios.find(
+      scenario => scenario.scenarioId === selectedScenario.scenarioId,
+    );
+
+    const { scenarioId, sessionId, title, coverImageUrl } = updatedSelectedScenario;
     await startSimulation(
       {
-        scenarioId: selectedScenario.scenarioId,
-        scenarioPathSessionItemId: selectedScenario?.sessionId || "",
+        scenarioId,
+        scenarioPathSessionItemId: sessionId || "",
       },
       {
-        title: selectedScenario.title,
-        coverImageUrl: selectedScenario.coverImageUrl,
+        title,
+        coverImageUrl,
       },
     );
   };
