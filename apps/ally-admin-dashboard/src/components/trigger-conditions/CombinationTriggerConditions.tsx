@@ -26,6 +26,7 @@ interface CombinationTriggerConditionsProps {
   triggerCondition: CombinationTriggerCondition;
   onChange: (field: string, value: CombinationExpressionNode) => void;
   isInTable?: boolean;
+  currentEventId?: string;
 }
 
 const statusFieldName = "status";
@@ -39,6 +40,7 @@ export const CombinationTriggerConditions: React.FC<CombinationTriggerConditions
   triggerCondition,
   onChange,
   isInTable = false,
+  currentEventId,
 }) => {
   // Get events from Redux store
   const reduxAvailableEvents = useSelector(selectAvailableEvents);
@@ -72,15 +74,56 @@ export const CombinationTriggerConditions: React.FC<CombinationTriggerConditions
     );
   }, [eventsData, reduxAvailableEvents]);
 
-  const config = getTriggerConditionConfig(EVENT_DETECTION_TYPES.COMBINATION);
-  if (!config) return null;
-
   // Ensure we always have a valid expression structure to work with
   const expression = triggerCondition.expression || {
     type: COMBINATION_OPERATOR.AND,
     left: { id: "" },
     right: { id: "" },
   };
+
+  // Helper to extract event ID from a node (handles NOT wrapper)
+  const getEventIdFromNode = (node: CombinationExpressionNode | undefined): string => {
+    if (!node) return "";
+    if (node.type === "NOT" && "left" in node) {
+      return node.left?.id || "";
+    }
+    return node.id || "";
+  };
+
+  // Get selected event IDs
+  const leftEventId = getEventIdFromNode(expression.left);
+  const rightEventId = getEventIdFromNode(expression.right);
+
+  // Helper to filter events for dropdowns (memoized to avoid recreating on every render)
+  const getFilteredEvents = React.useCallback(
+    (excludeEventId: string) => {
+      return availableEvents
+        .filter(event => {
+          if (currentEventId && event.id === currentEventId) return false;
+          if (excludeEventId && event.id === excludeEventId) return false;
+          return true;
+        })
+        .map(event => ({
+          value: event.id,
+          label: event.eventCode ? `${event.eventCode} - ${event.name}` : event.name,
+        }));
+    },
+    [availableEvents, currentEventId],
+  );
+
+  // Generate dropdown options (exclude the other side's selection)
+  const leftDropdownOptions = useMemo(
+    () => getFilteredEvents(rightEventId),
+    [getFilteredEvents, rightEventId],
+  );
+
+  const rightDropdownOptions = useMemo(
+    () => getFilteredEvents(leftEventId),
+    [getFilteredEvents, leftEventId],
+  );
+
+  const config = getTriggerConditionConfig(EVENT_DETECTION_TYPES.COMBINATION);
+  if (!config) return null;
 
   // Generic helper to get event ID from a side (left or right)
   const getEventId = (side: directionMap): string => {
@@ -158,10 +201,7 @@ export const CombinationTriggerConditions: React.FC<CombinationTriggerConditions
             <TriggerConditionDropdown
               value={getEventId(directionMap.LEFT)}
               displayValue={getEventDisplayNameById(getEventId(directionMap.LEFT))}
-              options={availableEvents.map(event => ({
-                value: event.id,
-                label: event.eventCode ? `${event.eventCode} - ${event.name}` : event.name,
-              }))}
+              options={leftDropdownOptions}
               onChange={eventId => handleEventChange(directionMap.LEFT, eventId)}
               placeholder="Select an event"
               searchPlaceholder="Search events..."
@@ -196,10 +236,7 @@ export const CombinationTriggerConditions: React.FC<CombinationTriggerConditions
             <TriggerConditionDropdown
               value={getEventId(directionMap.RIGHT)}
               displayValue={getEventDisplayNameById(getEventId(directionMap.RIGHT))}
-              options={availableEvents.map(event => ({
-                value: event.id,
-                label: event.eventCode ? `${event.eventCode} - ${event.name}` : event.name,
-              }))}
+              options={rightDropdownOptions}
               onChange={eventId => handleEventChange(directionMap.RIGHT, eventId)}
               placeholder="Select an event"
               searchPlaceholder="Search events..."
