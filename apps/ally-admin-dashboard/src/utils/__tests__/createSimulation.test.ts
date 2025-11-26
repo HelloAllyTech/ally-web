@@ -77,6 +77,7 @@ describe("createSimulation utils", () => {
         title: "Test Simulation",
         description: "Test Description",
         status: "ACTIVE",
+        isGlobal: false,
         coverImageUrl: "https://example.com/image.jpg",
         metadata: {
           age: "25",
@@ -109,6 +110,7 @@ describe("createSimulation utils", () => {
         name: "John Doe",
         context: "Test context",
         coreMemories: "Test memories",
+        isGlobal: false,
         agentGoal: "Test goal",
         currentLocation: "New York",
         emotionalNeeds: "Test needs",
@@ -197,6 +199,7 @@ describe("createSimulation utils", () => {
         description: "Test",
         status: "ACTIVE",
         coverImageUrl: "url",
+        isGlobal: true,
         metadata: {
           age: "30",
           name: "Jane",
@@ -222,7 +225,7 @@ describe("createSimulation utils", () => {
       const result = formatSimulationResponseData(mockResponse);
 
       // Check all fields are present (title, description, coverImageUrl, coverVideoUrl, autoTerminationStatus, terminationEventId, terminationMessage + 18 metadata fields = 25 total)
-      expect(Object.keys(result)).toHaveLength(25);
+      expect(Object.keys(result)).toHaveLength(26);
       expect(result.title).toBe("Test");
       expect(result.description).toBe("Test");
       expect(result.coverImageUrl).toBe("url");

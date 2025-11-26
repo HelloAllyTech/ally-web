@@ -47,10 +47,7 @@ export const Learn: FC = () => {
     data: pathwaysData,
     isLoading: isPathwaysLoading,
     refetch: refetchPathways,
-  } = useGetScenarioPathwaysQuery({
-    offset: 0,
-    limit: 10,
-  });
+  } = useGetScenarioPathwaysQuery({});
 
   const handleTabChange = (newValue: LearnTabId) => {
     if (isValidTabId(newValue)) setSearchParams({ tab: newValue });

@@ -25,8 +25,7 @@ export const UpNextSimulationCard = ({ data }: UpNextSimulationCardProps) => {
 
   const { upcomingScenario, currentSession } = data;
   const hasUpcomingScenario = isNonEmptyObject(upcomingScenario);
-  const isPathwayCompleted =
-    currentSession?.scenarioPathSessionStatus === PathwayScenarioStatus.COMPLETED;
+  const isPathwayCompleted = currentSession?.scenarioPathSessionStatus;
   const isCurrentScenarioCompleted =
     currentSession?.scenarioPathSessionItemStatus === PathwayScenarioStatus.COMPLETED;
 
