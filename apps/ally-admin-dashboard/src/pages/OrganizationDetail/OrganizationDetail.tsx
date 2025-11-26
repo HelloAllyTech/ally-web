@@ -111,7 +111,7 @@ export const OrganizationDetail: FC = () => {
           <div className="flex items-center gap-2 text-base">
             <button
               onClick={() => navigate(-1)}
-              className="text-typography-600 hover:text-typography-900"
+              className="text-typography-800 hover:text-typography-900"
             >
               {en.userManagement.organization}
             </button>
@@ -126,7 +126,7 @@ export const OrganizationDetail: FC = () => {
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-3">
             <h1 className="text-2xl font-medium text-typography-900">{organization.name}</h1>
-            <div className="flex items-center gap-2 text-sm text-typography-600">
+            <div className="flex items-center gap-2 text-sm text-typography-800">
               <span>
                 {en.userManagement.code}: {organization.code}
               </span>

@@ -2,6 +2,7 @@ import { useEffect, useState, FC } from "react";
 
 import { CustomImage } from "@ally-ui-mono/ui-shared";
 import { useGetScenarioPathsQuery } from "@api";
+import { BookWhite } from "@assets";
 import { ListToolbar, EmptyState, ToggleSwitch } from "@components";
 import { en } from "@constants";
 import { ScenarioPath, SimulationStatus } from "@types";
@@ -70,6 +71,19 @@ export const PathTab: FC<PathTabProps> = ({
     );
   }
 
+  const renderThumbnailOverlay = (pathway: ScenarioPath) => (
+    <div className="absolute top-0 right-0 bottom-0 w-[40%] z-10 bg-[rgba(0,0,0,0.5)] text-xs gap-1 text-white text-center flex items-center flex-col justify-center">
+      {pathway.totalScenarios}
+      <BookWhite width={14} height={14} />
+    </div>
+  );
+
+  const thumbnailConfig = {
+    width: "w-[100px]",
+    height: "h-[50px]",
+    renderExtraContent: renderThumbnailOverlay,
+  };
+
   const renderPathCard = (path: ScenarioPath) => {
     return (
       <div
@@ -77,12 +91,18 @@ export const PathTab: FC<PathTabProps> = ({
         className="flex items-center gap-4 py-4 pr-4 border-b border-border-light hover:bg-background-secondary transition-colors h-[80px]"
       >
         {/* Path Image */}
-        <div className="w-[18%] md:w-[10%] lg:w-[7%] h-[56px] cursor-pointer rounded-lg overflow-hidden flex-shrink-0 bg-neutral-100">
-          <CustomImage
-            src={path.coverImageUrl}
-            alt={path.title}
-            className="w-full h-full object-cover"
-          />
+        <div className="w-[64px] sm:w-[72px] md:w-[80px] lg:w-[96px] h-[56px] flex-shrink-0 rounded-lg overflow-hidden bg-neutral-100">
+          {thumbnailConfig && (
+            <div className="w-full h-full relative rounded-lg overflow-hidden">
+              <CustomImage
+                src={path.coverImageUrl}
+                alt={path.title}
+                className="w-full h-full object-cover"
+              />
+
+              {thumbnailConfig?.renderExtraContent?.(path)}
+            </div>
+          )}
         </div>
 
         {/* Path Title and Description */}
@@ -94,7 +114,7 @@ export const PathTab: FC<PathTabProps> = ({
         </div>
 
         {/* Toggle and Status */}
-        <div className="flex items-center gap-3 flex-shrink-0 min-w-[140px] justify-end">
+        <div className="flex items-center gap-3 flex-shrink-0 min-w-[140px] justify-end mr-5">
           <ToggleSwitch
             enabled={path.isAssignedToTenant ?? false}
             onChange={enabled => onToggleAccess(path.id, enabled)}

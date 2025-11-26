@@ -38,7 +38,7 @@ export const SimulationAndPathToggleCard: React.FC<SimulationAndPathToggleCardPr
       </div>
 
       {/* Toggle and Status */}
-      <div className="flex items-center gap-3 flex-shrink-0 min-w-[140px] justify-end">
+      <div className="flex items-center gap-3 flex-shrink-0 min-w-[140px] justify-end mr-5">
         <ToggleSwitch
           enabled={hasAccess}
           onChange={onToggleAccess}
