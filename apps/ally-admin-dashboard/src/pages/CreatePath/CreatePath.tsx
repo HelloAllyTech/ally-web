@@ -52,7 +52,7 @@ const getMandatoryFieldIds = () => {
   return mandatoryFields;
 };
 
-const DEBOUNCE_TIME = 500;
+const DEBOUNCE_TIME = 1000;
 
 export const CreatePath: FC = () => {
   const navigate = useNavigate();
