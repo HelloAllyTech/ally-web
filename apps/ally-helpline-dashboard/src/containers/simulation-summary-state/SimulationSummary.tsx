@@ -85,7 +85,7 @@ export const SimulationSummary: FC<SimulationSummaryProps> = ({
             {!isInSidebar && (
               <PermissionGuard requiredPermissions={[Permissions.EDIT_SCENARIO_SESSION]}>
                 <UpNextSimulationCard data={upComingSimulation} />
-                {!isNonEmptyObject(upComingSimulation) && (
+                {!isNonEmptyObject(upComingSimulation?.upcomingScenario) && (
                   <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
