@@ -1,6 +1,6 @@
 import React, { useCallback } from "react";
 
-import { AutoExpandableTextarea, NumberInput } from "@components";
+import { AutoExpandableTextarea, NumberInput, TimeInput } from "@components";
 import { TRIGGER_FIELD_TYPES } from "@constants";
 
 import { TriggerConditionDropdown } from "./TriggerConditionDropdown";
@@ -77,13 +77,10 @@ export const TriggerConditionField: React.FC<TriggerConditionFieldProps> = ({
 
       case TRIGGER_FIELD_TYPES.TIME:
         return (
-          <input
-            type="text"
+          <TimeInput
             value={fieldValue || ""}
-            onChange={e => onChange(field.id, e.target.value)}
+            onChange={value => onChange(field.id, value)}
             placeholder={field.placeholder || "HH:MM:SS"}
-            pattern="^([0-1][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]$"
-            className={`px-3 py-2 text-sm h-6 rounded-sm w-[90px] placeholder:text-typography-500 ${isInTable ? "bg-neutral-100" : "bg-neutral-50 border"}`}
           />
         );
 
