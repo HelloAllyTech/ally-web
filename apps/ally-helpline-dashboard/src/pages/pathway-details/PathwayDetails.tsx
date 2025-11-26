@@ -31,6 +31,7 @@ const ScenarioCard: FC<ScenarioCardProps> = ({ scenario, index, onScenarioClick 
           </div>
         );
       case PathwayScenarioStatus.UNLOCKED:
+        if (index === 0) return null;
         return (
           <span className="ml-2 px-[8px] py-[2px] text-xs font-semibold rounded-full bg-blue-100 text-blue-700">
             Next
@@ -82,9 +83,7 @@ const ScenarioCard: FC<ScenarioCardProps> = ({ scenario, index, onScenarioClick 
             <p className="text-sm text-typography-700 font-tertiary">Simulation {index + 1}</p>
             {getStatusBadge(scenario.status)}
           </div>
-          <h3 className="text-base font-semibold text-typography-900 leading-tight">
-            {scenario.title}
-          </h3>
+          <h3 className="text-lg text-typography-900 leading-tight">{scenario.title}</h3>
         </div>
 
         {/* View Summary Link */}
