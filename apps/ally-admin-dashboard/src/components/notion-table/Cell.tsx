@@ -141,6 +141,7 @@ export const Cell = ({
           width={width}
           minWidth={minWidth}
           disabled={isDisabled}
+          currentEventId={row?.id?.value}
         />
       );
       break;

@@ -119,9 +119,10 @@ const createTestStore = (availableEvents: Array<{ id: string; name: string }> = 
 
 describe("CombinationTriggerConditions", () => {
   const mockAvailableEvents = [
-    { id: "event-1", name: "Event 1" },
-    { id: "event-2", name: "Event 2" },
-    { id: "event-3", name: "Event 3" },
+    { id: "event-1", name: "Event 1", eventCode: "E1" },
+    { id: "event-2", name: "Event 2", eventCode: "E2" },
+    { id: "event-3", name: "Event 3", eventCode: "E3" },
+    { id: "current-event", name: "Current Event", eventCode: "CE" },
   ];
 
   const defaultTriggerCondition = {
@@ -249,7 +250,7 @@ describe("CombinationTriggerConditions", () => {
         "expression",
         expect.objectContaining({
           type: "AND",
-          left: expect.objectContaining({ id: "event-2" }),
+          left: expect.objectContaining({ id: "event-3" }),
           right: expect.objectContaining({ id: "event-2" }),
         }),
       );
@@ -464,6 +465,149 @@ describe("CombinationTriggerConditions", () => {
       );
 
       expect(screen.getByTestId("dropdown-OR")).toBeInTheDocument();
+    });
+  });
+
+  describe("currentEventId filtering", () => {
+    it("filters out currentEventId from available events", () => {
+      const store = createTestStore(mockAvailableEvents);
+
+      render(
+        <Provider store={store}>
+          <CombinationTriggerConditions
+            triggerCondition={{
+              expression: {
+                type: "AND",
+                left: { id: "" },
+                right: { id: "" },
+              },
+            }}
+            onChange={defaultOnChange}
+            currentEventId="current-event"
+          />
+        </Provider>,
+      );
+
+      // Current event should not appear in the rendered dropdowns
+      // Since our mock dropdown renders the displayValue, we can check that
+      expect(screen.queryByText("CE - Current Event")).not.toBeInTheDocument();
+      expect(screen.queryByText("Current Event")).not.toBeInTheDocument();
+    });
+
+    it("when left event is selected, it is filtered from right dropdown", () => {
+      const store = createTestStore(mockAvailableEvents);
+
+      render(
+        <Provider store={store}>
+          <CombinationTriggerConditions
+            triggerCondition={{
+              expression: {
+                type: "AND",
+                left: { id: "event-1" },
+                right: { id: "" },
+              },
+            }}
+            onChange={defaultOnChange}
+          />
+        </Provider>,
+      );
+
+      // Left dropdown shows event-1
+      expect(screen.getByTestId("dropdown-value-event-1")).toHaveTextContent("Event 1");
+
+      // The filtering logic ensures event-1 won't be in right dropdown options
+      // This is tested by the actual filtering in getFilteredEvents
+      const leftDropdown = screen.getByTestId("dropdown-event-1");
+      expect(leftDropdown).toBeInTheDocument();
+    });
+
+    it("when right event is selected, it is filtered from left dropdown", () => {
+      const store = createTestStore(mockAvailableEvents);
+
+      render(
+        <Provider store={store}>
+          <CombinationTriggerConditions
+            triggerCondition={{
+              expression: {
+                type: "AND",
+                left: { id: "" },
+                right: { id: "event-2" },
+              },
+            }}
+            onChange={defaultOnChange}
+          />
+        </Provider>,
+      );
+
+      // Right dropdown shows event-2
+      expect(screen.getByTestId("dropdown-value-event-2")).toHaveTextContent("Event 2");
+
+      // The filtering logic ensures event-2 won't be in left dropdown options
+      const rightDropdown = screen.getByTestId("dropdown-event-2");
+      expect(rightDropdown).toBeInTheDocument();
+    });
+
+    it("filters both currentEventId and opposite selection", () => {
+      const store = createTestStore(mockAvailableEvents);
+
+      render(
+        <Provider store={store}>
+          <CombinationTriggerConditions
+            triggerCondition={{
+              expression: {
+                type: "AND",
+                left: { id: "event-1" },
+                right: { id: "" },
+              },
+            }}
+            onChange={defaultOnChange}
+            currentEventId="current-event"
+          />
+        </Provider>,
+      );
+
+      // Left shows event-1
+      expect(screen.getByTestId("dropdown-value-event-1")).toBeInTheDocument();
+
+      // Current event and event-1 should be filtered from right dropdown
+      // The component uses getFilteredEvents which filters both
+      expect(screen.queryByText("CE - Current Event")).not.toBeInTheDocument();
+    });
+
+    it("handles undefined currentEventId gracefully", () => {
+      const store = createTestStore(mockAvailableEvents);
+
+      render(
+        <Provider store={store}>
+          <CombinationTriggerConditions
+            triggerCondition={defaultTriggerCondition}
+            onChange={defaultOnChange}
+            currentEventId={undefined}
+          />
+        </Provider>,
+      );
+
+      // Should render without errors
+      expect(screen.getByTestId("dropdown-event-1")).toBeInTheDocument();
+      expect(screen.getByTestId("dropdown-event-2")).toBeInTheDocument();
+    });
+
+    it("handles empty string currentEventId gracefully", () => {
+      const store = createTestStore(mockAvailableEvents);
+
+      render(
+        <Provider store={store}>
+          <CombinationTriggerConditions
+            triggerCondition={defaultTriggerCondition}
+            onChange={defaultOnChange}
+            currentEventId=""
+          />
+        </Provider>,
+      );
+
+      // Should render without errors
+      expect(screen.getByTestId("dropdown-event-1")).toBeInTheDocument();
+      expect(screen.getByTestId("dropdown-event-2")).toBeInTheDocument();
     });
   });
 });

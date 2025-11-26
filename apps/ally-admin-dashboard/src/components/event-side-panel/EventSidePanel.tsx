@@ -205,6 +205,7 @@ export const EventSidePanel: React.FC<EventSidePanelProps> = ({
               eventType={formData.detectionType}
               triggerCondition={formData.triggerCondition}
               onChange={handleTriggerConditionChange}
+              currentEventId={formData.id}
             />
 
             <Field label="Branch description" multiline={true}>
