@@ -1,10 +1,96 @@
+import React from "react";
 import { render, screen } from "@testing-library/react";
-import { describe, it, expect } from "vitest";
+import "@testing-library/jest-dom";
+import { describe, it, expect, vi, beforeEach } from "vitest";
 
 import { UpNextSimulationCard } from "../UpNextSimulationCard";
-import { GetUpComingSimulationResponse } from "@types";
+
+// Define the type inline to avoid import issues
+interface GetUpComingSimulationResponse {
+  id: string;
+  title?: string;
+  description?: string;
+  coverImageUrl?: string;
+  scenario?: string;
+  order?: number;
+  status?: string;
+  prompt?: string;
+  metadata?: unknown;
+  createdBy?: number;
+  updatedBy?: number;
+  isGlobal?: boolean;
+  createdAt?: string;
+  updatedAt?: string;
+  scenarioPathSessionItemId?: string;
+  transitionMessageTitle?: string;
+  transitionMessageContent?: string;
+}
+
+// Mock react-router-dom
+const mockNavigate = vi.fn();
+vi.mock("react-router-dom", () => ({
+  useNavigate: () => mockNavigate,
+}));
+
+// Mock useStartSimulation hook
+const mockStartSimulation = vi.fn();
+vi.mock("@hooks", () => ({
+  useStartSimulation: () => ({
+    startSimulation: mockStartSimulation,
+    isStarting: false,
+  }),
+}));
+
+// Mock framer-motion
+vi.mock("framer-motion", () => ({
+  motion: {
+    div: ({ children, ...props }: any) => <div {...props}>{children}</div>,
+  },
+}));
+
+// Mock Button component
+vi.mock("@components", () => ({
+  Button: ({ children, onClick, disabled, className, variant, ...props }: any) => (
+    <button
+      onClick={onClick}
+      disabled={disabled}
+      className={className}
+      data-variant={variant}
+      {...props}
+    >
+      {children}
+    </button>
+  ),
+  ButtonVariant: {
+    PRIMARY: "primary",
+    SECONDARY: "secondary",
+  },
+}));
+
+// Mock constants
+vi.mock("@constants", () => ({
+  ROUTES: {
+    LEARN: "/learn",
+  },
+}));
+
+// Mock utils
+vi.mock("@utils", () => ({
+  isNonEmptyObject: (obj: any) => obj && typeof obj === "object" && Object.keys(obj).length > 0,
+}));
+
+// Mock sonner
+vi.mock("sonner", () => ({
+  toast: {
+    error: vi.fn(),
+    success: vi.fn(),
+  },
+}));
 
 describe("UpNextSimulationCard", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
   const mockData: GetUpComingSimulationResponse = {
     id: "sim-123",
     order: 2,
@@ -68,7 +154,7 @@ describe("UpNextSimulationCard", () => {
       const customData = { ...mockData, coverImageUrl: customImageUrl };
       render(<UpNextSimulationCard data={customData} />);
 
-      const image = screen.getByAltText(mockData.title);
+      const image = screen.getByAltText(mockData.title!);
       expect(image).toHaveAttribute("src", customImageUrl);
     });
   });
@@ -85,7 +171,7 @@ describe("UpNextSimulationCard", () => {
     it("should have correct image dimensions", () => {
       render(<UpNextSimulationCard data={mockData} />);
 
-      const image = screen.getByAltText(mockData.title);
+      const image = screen.getByAltText(mockData.title!);
       expect(image).toHaveClass("w-[120px]", "h-[60px]", "rounded-[8px]", "object-cover");
     });
   });

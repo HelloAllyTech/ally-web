@@ -1,3 +1,10 @@
+import { motion } from "framer-motion";
+import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
+
+import { Button, ButtonVariant } from "@components";
+import { ROUTES } from "@constants";
+import { useStartSimulation } from "@hooks";
 import { GetUpComingSimulationResponse } from "@types";
 import { isNonEmptyObject } from "@utils";
 
@@ -12,7 +19,31 @@ export const UpNextSimulationCard = ({ data }: { data: GetUpComingSimulationResp
     description,
   } = data || {};
 
+  const navigate = useNavigate();
+  const { startSimulation, isStarting } = useStartSimulation();
+
   if (!isNonEmptyObject(data)) return null;
+
+  const onNext = async () => {
+    if (isNonEmptyObject(data)) {
+      await startSimulation({
+        params: {
+          scenarioId: Number(data.id),
+          scenarioPathSessionItemId: data.scenarioPathSessionItemId,
+        },
+        metadata: {
+          title: data.title,
+          coverImageUrl: data.coverImageUrl,
+        },
+      });
+    } else {
+      toast.error("No upcoming simulation found");
+    }
+  };
+
+  const onBack = () => {
+    navigate(ROUTES.LEARN);
+  };
 
   return (
     <div className="font-primary">
@@ -45,6 +76,31 @@ export const UpNextSimulationCard = ({ data }: { data: GetUpComingSimulationResp
           <div className="text-base text-typography-900 font-normal">{scenario || description}</div>
         </div>
       </div>
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.8 }}
+        className="absolute bottom-0 left-4 right-4 z-10 max-w-full bg-white"
+      >
+        <div className="flex flex-row gap-4 w-full mx-auto">
+          <Button
+            variant={ButtonVariant.SECONDARY}
+            onClick={onBack}
+            className="w-[50%]"
+            disabled={isStarting}
+          >
+            Back
+          </Button>
+          <Button
+            variant={ButtonVariant.PRIMARY}
+            onClick={onNext}
+            className="w-[50%]"
+            disabled={isStarting}
+          >
+            {isStarting ? "Starting..." : "Next"}
+          </Button>
+        </div>
+      </motion.div>
     </div>
   );
 };
