@@ -63,14 +63,14 @@ const ScenarioCard: FC<ScenarioCardProps> = ({
     >
       <div className="flex flex-col h-full gap-3 p-[10px]">
         {renderImage()}
-        <div className="flex flex-row justify-between flex-grow font-primary px-[6px] pb-[8px]">
-          <div className="flex flex-col items-start gap-2">
-            <div id="scenario-title" className="font-medium text-typography-900 text-base flex">
+        <div className="flex flex-row flex-grow font-primary px-[6px] pb-[8px]">
+          <div className="flex flex-col gap-2 min-w-0 flex-grow mr-2">
+            <div id="scenario-title" className="font-medium text-typography-900 text-base truncate">
               {title}
             </div>
 
             {description?.length > 0 && (
-              <div className="text-base text-sm text-typography-800">
+              <div className="text-sm text-typography-800">
                 <p style={scenarioDescriptionStyle}>{description}</p>
               </div>
             )}
@@ -81,16 +81,17 @@ const ScenarioCard: FC<ScenarioCardProps> = ({
               </div>
             )}
           </div>
-          <div>
-            {isPathway && (
+
+          {isPathway && (
+            <div className="flex-shrink-0">
               <CircularProgress
                 current={completedScenarios}
                 total={totalScenarios}
                 size={40}
                 strokeWidth={2}
               />
-            )}
-          </div>
+            </div>
+          )}
         </div>
       </div>
     </motion.div>
