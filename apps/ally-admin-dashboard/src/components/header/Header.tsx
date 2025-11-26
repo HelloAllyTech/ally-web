@@ -33,8 +33,6 @@ export const Header: FC<HeaderProps> = ({
     const response = await onSaveDraft();
     if (response) {
       toast.success("Simulation changes saved successfully!");
-    } else {
-      toast.error("Failed to save simulation changes!");
     }
   };
 

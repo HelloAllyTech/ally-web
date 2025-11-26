@@ -67,8 +67,8 @@ export const OrganizationDetail: FC = () => {
           scenarioIds: [simulationId],
         });
       }
-    } catch {
-      toast.error(en.errors.failedUpdateAccess);
+    } catch (error: any) {
+      toast.error(error?.data?.message || en.errors.failedUpdateAccess);
     }
   };
 
@@ -85,8 +85,8 @@ export const OrganizationDetail: FC = () => {
           scenarioPathIds: [pathId],
         });
       }
-    } catch {
-      toast.error(en.errors.pathUpdateFailed);
+    } catch (error: any) {
+      toast.error(error?.data?.message || en.errors.pathUpdateFailed);
     }
   };
 

@@ -19,7 +19,7 @@ const ANIMATION_CONFIG = {
 
 export const UpNextSimulationCard = ({ data }: UpNextSimulationCardProps) => {
   const navigate = useNavigate();
-  const { startSimulation, isStarting } = useStartSimulation();
+  const { startSimulation, isStarting } = useStartSimulation({ isReplaceScreen: true });
 
   if (!isNonEmptyObject(data)) return null;
 

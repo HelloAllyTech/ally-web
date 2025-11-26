@@ -248,12 +248,12 @@ export function useUserManagement(tenants: Tenant[]) {
       if (userId) {
         await deleteUser({ userId }).unwrap();
         handleDropdownClose();
-        toast.success("User removed successfully");
+        toast.success(en.userManagement.userRemoved);
       } else {
-        toast.error("User id not found");
+        toast.error(en.errors.userIdNotFound);
       }
     } catch (error: any) {
-      toast.error(error?.data?.message || "Failed to remove user");
+      toast.error(error?.data?.message || en.errors.failedToRemoveUser);
     }
   };
 

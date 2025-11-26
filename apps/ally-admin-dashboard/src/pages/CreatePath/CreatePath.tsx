@@ -179,7 +179,7 @@ export const CreatePath: FC = () => {
         formMethods.reset(currentFormValues);
         return response?.data;
       } else if (response?.error) {
-        toast.error(en.errors.failedSaveDraft);
+        toast.error(response?.error?.data?.message || en.errors.failedSaveDraft);
         return null;
       }
       return responseData;
@@ -194,8 +194,8 @@ export const CreatePath: FC = () => {
       const response = await saveSimulationChanges(SimulationStatus.ACTIVE);
 
       if (response) navigate(-1);
-    } catch {
-      toast.error(en.errors.failedSimulationCreation);
+    } catch (error: any) {
+      toast.error(error?.data?.message || en.errors.failedSimulationCreation);
     }
   };
 
