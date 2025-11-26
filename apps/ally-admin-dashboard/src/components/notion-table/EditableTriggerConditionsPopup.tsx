@@ -13,6 +13,7 @@ interface EditableTriggerConditionsPopupProps {
   width?: number | string;
   minWidth?: number;
   className?: string;
+  currentEventId?: string;
 }
 
 export const EditableTriggerConditionsPopup: React.FC<EditableTriggerConditionsPopupProps> = ({
@@ -23,6 +24,7 @@ export const EditableTriggerConditionsPopup: React.FC<EditableTriggerConditionsP
   width = 100,
   minWidth = 100,
   className = "",
+  currentEventId,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [editTriggerCondition, setEditTriggerCondition] = useState(triggerCondition || {});
@@ -80,6 +82,7 @@ export const EditableTriggerConditionsPopup: React.FC<EditableTriggerConditionsP
             triggerCondition={editTriggerCondition}
             isInTable={true}
             onChange={handleFieldChange}
+            currentEventId={currentEventId}
           />
         ) : (
           <StandardTriggerConditions
@@ -106,6 +109,7 @@ export const EditableTriggerConditionsPopup: React.FC<EditableTriggerConditionsP
                   triggerCondition={editTriggerCondition}
                   isInTable={false}
                   onChange={handleFieldChange}
+                  currentEventId={currentEventId}
                 />
               ) : (
                 <StandardTriggerConditions

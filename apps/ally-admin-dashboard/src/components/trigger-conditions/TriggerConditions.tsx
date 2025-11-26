@@ -18,6 +18,7 @@ interface TriggerConditionsProps {
   triggerCondition: TriggerCondition | undefined;
   onChange?: (field: string, value: string | number | string[] | CombinationExpressionNode) => void;
   isInTable?: boolean;
+  currentEventId?: string;
 }
 
 const SidePanelWrapper: React.FC<{ children: React.ReactNode }> = ({ children }) => (
@@ -41,6 +42,7 @@ export const TriggerConditions: React.FC<TriggerConditionsProps> = ({
   triggerCondition,
   onChange,
   isInTable = false,
+  currentEventId,
 }) => {
   if (!eventType) return null;
 
@@ -49,6 +51,7 @@ export const TriggerConditions: React.FC<TriggerConditionsProps> = ({
       triggerCondition={condition}
       onChange={onChange || (() => {})}
       isInTable={isInTable}
+      currentEventId={currentEventId}
     />
   );
 
