@@ -237,7 +237,7 @@ export const SimulationSelectionModal: FC<SimulationProps> = ({
   const renderSimulationList = () => (
     <DndContext collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
       <SortableContext
-        items={selectedSimulations.map(scenario => String(scenario.order))}
+        items={selectedSimulations.map(scenario => String(scenario.scenarioId))}
         strategy={verticalListSortingStrategy}
       >
         {selectedSimulations.map((simulation, index) => (
