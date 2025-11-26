@@ -207,25 +207,31 @@ export interface GetSimulationTranscriptResponse {
   messages: SimulationTranscriptMessage[];
 }
 
-// TODO: Change the type after the API is updated
-export interface GetUpComingSimulationResponse {
-  id: string;
+interface UpcomingScenario {
+  id?: string;
   title?: string;
   description?: string;
   coverImageUrl?: string;
-  scenario?: string;
+  coverVideoUrl?: string;
+  scenarioPathSessionItemStatus?: string;
   order?: number;
-  status?: string;
-  prompt: string;
-  metadata?: unknown;
-  createdBy?: number;
-  updatedBy?: number;
-  isGlobal?: boolean;
-  createdAt?: string;
-  updatedAt?: string;
+  scenarioPathSessionItemId?: string;
+}
+
+interface CurrentSession {
+  scenarioId?: string;
+  scenarioPathSessionItemStatus?: string;
+  coverImageUrl?: string;
+  title?: string;
   scenarioPathSessionItemId?: string;
   transitionMessageTitle?: string;
   transitionMessageContent?: string;
+  scenarioPathSessionStatus?: string;
+}
+
+export interface GetUpComingSimulationResponse {
+  upcomingScenario?: UpcomingScenario;
+  currentSession?: CurrentSession;
 }
 
 export interface SimulationTranscriptMessage {

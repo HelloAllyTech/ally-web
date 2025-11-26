@@ -5,25 +5,32 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 
 import { UpNextSimulationCard } from "../UpNextSimulationCard";
 
-// Define the type inline to avoid import issues
-interface GetUpComingSimulationResponse {
-  id: string;
+// Define the types inline to avoid import issues
+interface UpcomingScenario {
+  id?: string;
   title?: string;
   description?: string;
   coverImageUrl?: string;
-  scenario?: string;
+  coverVideoUrl?: string;
+  scenarioPathSessionItemStatus?: string;
   order?: number;
-  status?: string;
-  prompt?: string;
-  metadata?: unknown;
-  createdBy?: number;
-  updatedBy?: number;
-  isGlobal?: boolean;
-  createdAt?: string;
-  updatedAt?: string;
+  scenarioPathSessionItemId?: string;
+}
+
+interface CurrentSession {
+  scenarioId?: string;
+  scenarioPathSessionItemStatus?: string;
+  coverImageUrl?: string;
+  title?: string;
   scenarioPathSessionItemId?: string;
   transitionMessageTitle?: string;
   transitionMessageContent?: string;
+  scenarioPathSessionStatus?: string;
+}
+
+interface GetUpComingSimulationResponse {
+  upcomingScenario?: UpcomingScenario;
+  currentSession?: CurrentSession;
 }
 
 // Mock react-router-dom
@@ -74,6 +81,15 @@ vi.mock("@constants", () => ({
   },
 }));
 
+// Mock types
+vi.mock("@types", () => ({
+  PathwayScenarioStatus: {
+    COMPLETED: "COMPLETED",
+    IN_PROGRESS: "IN_PROGRESS",
+    NOT_STARTED: "NOT_STARTED",
+  },
+}));
+
 // Mock utils
 vi.mock("@utils", () => ({
   isNonEmptyObject: (obj: any) => obj && typeof obj === "object" && Object.keys(obj).length > 0,
@@ -92,15 +108,23 @@ describe("UpNextSimulationCard", () => {
     vi.clearAllMocks();
   });
   const mockData: GetUpComingSimulationResponse = {
-    id: "sim-123",
-    order: 2,
-    title: "Hopeless Male, 40",
-    description: "Test description",
-    transitionMessageTitle: "Great work!",
-    transitionMessageContent: "You've completed the previous simulation.",
-    scenario:
-      "A 40-year-old male is experiencing deep hopelessness. He feels overwhelmed by ongoing personal and professional failures, believes his situation won't improve, and is withdrawing socially. He's showing signs of resignation and low self-worth. Your goal is to explore his thoughts gently, offer validation, and begin rebuilding his sense of agency and hope.",
-    coverImageUrl: "https://via.placeholder.com/120",
+    upcomingScenario: {
+      id: "sim-123",
+      order: 2,
+      title: "Hopeless Male, 40",
+      description:
+        "A 40-year-old male is experiencing deep hopelessness. He feels overwhelmed by ongoing personal and professional failures, believes his situation won't improve, and is withdrawing socially. He's showing signs of resignation and low self-worth. Your goal is to explore his thoughts gently, offer validation, and begin rebuilding his sense of agency and hope.",
+      coverImageUrl: "https://via.placeholder.com/120",
+      scenarioPathSessionItemId: "path-item-123",
+    },
+    currentSession: {
+      scenarioId: "current-sim-123",
+      transitionMessageTitle: "Great work!",
+      transitionMessageContent: "You've completed the previous simulation.",
+      title: "Current Simulation",
+      coverImageUrl: "https://via.placeholder.com/100",
+      scenarioPathSessionItemId: "current-path-item-123",
+    },
   };
 
   describe("Basic Rendering", () => {
@@ -128,14 +152,20 @@ describe("UpNextSimulationCard", () => {
 
   describe("Props Handling", () => {
     it("should display correct simulation number", () => {
-      const customData = { ...mockData, order: 5 };
+      const customData = {
+        ...mockData,
+        upcomingScenario: { ...mockData.upcomingScenario, order: 5 },
+      };
       render(<UpNextSimulationCard data={customData} />);
 
       expect(screen.getByText("Up next - Simulation 5")).toBeInTheDocument();
     });
 
     it("should display custom title", () => {
-      const customData = { ...mockData, title: "Custom Title" };
+      const customData = {
+        ...mockData,
+        upcomingScenario: { ...mockData.upcomingScenario, title: "Custom Title" },
+      };
       render(<UpNextSimulationCard data={customData} />);
 
       expect(screen.getByText("Custom Title")).toBeInTheDocument();
@@ -143,7 +173,10 @@ describe("UpNextSimulationCard", () => {
 
     it("should display custom scenario text", () => {
       const customScenario = "This is a custom scenario description.";
-      const customData = { ...mockData, scenario: customScenario };
+      const customData = {
+        ...mockData,
+        upcomingScenario: { ...mockData.upcomingScenario, description: customScenario },
+      };
       render(<UpNextSimulationCard data={customData} />);
 
       expect(screen.getByText(customScenario)).toBeInTheDocument();
@@ -151,10 +184,13 @@ describe("UpNextSimulationCard", () => {
 
     it("should use custom cover image URL", () => {
       const customImageUrl = "https://example.com/custom-image.jpg";
-      const customData = { ...mockData, coverImageUrl: customImageUrl };
+      const customData = {
+        ...mockData,
+        upcomingScenario: { ...mockData.upcomingScenario, coverImageUrl: customImageUrl },
+      };
       render(<UpNextSimulationCard data={customData} />);
 
-      const image = screen.getByAltText(mockData.title!);
+      const image = screen.getByAltText(mockData.upcomingScenario!.title!);
       expect(image).toHaveAttribute("src", customImageUrl);
     });
   });
@@ -171,39 +207,49 @@ describe("UpNextSimulationCard", () => {
     it("should have correct image dimensions", () => {
       render(<UpNextSimulationCard data={mockData} />);
 
-      const image = screen.getByAltText(mockData.title!);
+      const image = screen.getByAltText(mockData.upcomingScenario!.title!);
       expect(image).toHaveClass("w-[120px]", "h-[60px]", "rounded-[8px]", "object-cover");
     });
   });
 
   describe("Edge Cases", () => {
-    it("should handle empty scenario text", () => {
-      const customData = { ...mockData, scenario: "" };
+    it("should handle empty description text", () => {
+      const customData = {
+        ...mockData,
+        upcomingScenario: { ...mockData.upcomingScenario, description: "" },
+      };
       render(<UpNextSimulationCard data={customData} />);
 
       expect(screen.getByText("Scenario:")).toBeInTheDocument();
-      // Should fall back to description when scenario is empty
-      expect(screen.getByText("Test description")).toBeInTheDocument();
     });
 
     it("should handle simulation number 0", () => {
-      const customData = { ...mockData, order: 0 };
+      const customData = {
+        ...mockData,
+        upcomingScenario: { ...mockData.upcomingScenario, order: 0 },
+      };
       render(<UpNextSimulationCard data={customData} />);
 
       expect(screen.getByText("Up next - Simulation 0")).toBeInTheDocument();
     });
 
-    it("should handle long scenario text", () => {
-      const longScenario = "A".repeat(500);
-      const customData = { ...mockData, scenario: longScenario };
+    it("should handle long description text", () => {
+      const longDescription = "A".repeat(500);
+      const customData = {
+        ...mockData,
+        upcomingScenario: { ...mockData.upcomingScenario, description: longDescription },
+      };
       render(<UpNextSimulationCard data={customData} />);
 
-      expect(screen.getByText(longScenario)).toBeInTheDocument();
+      expect(screen.getByText(longDescription)).toBeInTheDocument();
     });
 
     it("should handle special characters in title", () => {
       const specialTitle = "Test & Title <with> 'Special' \"Characters\"";
-      const customData = { ...mockData, title: specialTitle };
+      const customData = {
+        ...mockData,
+        upcomingScenario: { ...mockData.upcomingScenario, title: specialTitle },
+      };
       render(<UpNextSimulationCard data={customData} />);
 
       expect(screen.getByText(specialTitle)).toBeInTheDocument();

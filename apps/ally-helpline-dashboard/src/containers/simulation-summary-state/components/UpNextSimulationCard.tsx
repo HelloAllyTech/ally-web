@@ -3,37 +3,39 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
 import { Button, ButtonVariant } from "@components";
-import { ROUTES } from "@constants";
 import { useStartSimulation } from "@hooks";
-import { GetUpComingSimulationResponse } from "@types";
+import { GetUpComingSimulationResponse, PathwayScenarioStatus } from "@types";
 import { isNonEmptyObject } from "@utils";
 
 export const UpNextSimulationCard = ({ data }: { data: GetUpComingSimulationResponse }) => {
+  if (!isNonEmptyObject(data)) return null;
+
+  const { upcomingScenario, currentSession } = data || {};
+
+  const { coverImageUrl, title, order, description, scenarioPathSessionItemId, id } =
+    upcomingScenario || {};
   const {
     transitionMessageTitle,
     transitionMessageContent,
-    coverImageUrl,
-    title,
-    order,
-    scenario,
-    description,
-  } = data || {};
+    scenarioPathSessionItemId: currentScenarioPathSessionItemId,
+    scenarioId,
+    coverImageUrl: currentCoverImageUrl,
+    title: currentTitle,
+  } = currentSession || {};
 
   const navigate = useNavigate();
   const { startSimulation, isStarting } = useStartSimulation();
 
-  if (!isNonEmptyObject(data)) return null;
-
   const onNext = async () => {
-    if (isNonEmptyObject(data)) {
+    if (isNonEmptyObject(upcomingScenario)) {
       await startSimulation({
         params: {
-          scenarioId: Number(data.id),
-          scenarioPathSessionItemId: data.scenarioPathSessionItemId,
+          scenarioId: Number(id),
+          scenarioPathSessionItemId: scenarioPathSessionItemId,
         },
         metadata: {
-          title: data.title,
-          coverImageUrl: data.coverImageUrl,
+          title: title,
+          coverImageUrl: coverImageUrl,
         },
       });
     } else {
@@ -41,8 +43,23 @@ export const UpNextSimulationCard = ({ data }: { data: GetUpComingSimulationResp
     }
   };
 
+  const retrySimulation = async () => {
+    if (isNonEmptyObject(currentSession)) {
+      await startSimulation({
+        params: {
+          scenarioId: Number(scenarioId),
+          scenarioPathSessionItemId: currentScenarioPathSessionItemId,
+        },
+        metadata: {
+          title: currentTitle,
+          coverImageUrl: currentCoverImageUrl,
+        },
+      });
+    }
+  };
+
   const onBack = () => {
-    navigate(ROUTES.LEARN);
+    navigate(-1);
   };
 
   return (
@@ -73,7 +90,7 @@ export const UpNextSimulationCard = ({ data }: { data: GetUpComingSimulationResp
           <div className="text-base text-typography-800 font-semibold">Scenario:</div>
 
           {/* Scenario Description */}
-          <div className="text-base text-typography-900 font-normal">{scenario || description}</div>
+          <div className="text-base text-typography-900 font-normal">{description}</div>
         </div>
       </div>
       <motion.div
@@ -82,24 +99,35 @@ export const UpNextSimulationCard = ({ data }: { data: GetUpComingSimulationResp
         transition={{ duration: 0.5, delay: 0.8 }}
         className="absolute bottom-0 left-4 right-4 z-10 max-w-full bg-white"
       >
-        <div className="flex flex-row gap-4 w-full mx-auto">
-          <Button
-            variant={ButtonVariant.SECONDARY}
-            onClick={onBack}
-            className="w-[50%]"
-            disabled={isStarting}
-          >
-            Back
-          </Button>
+        {currentSession?.scenarioPathSessionStatus === PathwayScenarioStatus.COMPLETED ? (
           <Button
             variant={ButtonVariant.PRIMARY}
-            onClick={onNext}
-            className="w-[50%]"
+            onClick={onBack}
+            className="w-full"
             disabled={isStarting}
           >
-            {isStarting ? "Starting..." : "Next"}
+            Finish
           </Button>
-        </div>
+        ) : (
+          <div className="flex flex-row gap-4 w-full mx-auto">
+            <Button
+              variant={ButtonVariant.SECONDARY}
+              onClick={onBack}
+              className="w-[50%]"
+              disabled={isStarting}
+            >
+              Back
+            </Button>
+            <Button
+              variant={ButtonVariant.PRIMARY}
+              onClick={isNonEmptyObject(upcomingScenario) ? onNext : retrySimulation}
+              className="w-[50%]"
+              disabled={isStarting}
+            >
+              {isStarting ? "Starting..." : isNonEmptyObject(upcomingScenario) ? "Next" : "Retry"}
+            </Button>
+          </div>
+        )}
       </motion.div>
     </div>
   );
