@@ -109,17 +109,17 @@ export const EventManagement: React.FC = () => {
     try {
       const response = await createSessionEvents({ events: [eventPayload] });
       if (response.error) {
-        toast.error("Failed to create event");
+        toast.error(en.errors.failedToCreateEvent); //response.error
       } else {
-        toast.success("Event created successfully");
+        toast.success(en.simulation.eventCreatedSuccessfully);
         const createdEvent = response.data?.[0]
           ? convertApiResponseToEvent(response.data[0])
           : { ...newEvent, id: response.data?.[0]?.id || "" };
         setSelectedEvent(createdEvent);
         setIsSidePanelOpen(true);
       }
-    } catch {
-      toast.error("An error occurred while creating event");
+    } catch (error: any) {
+      toast.error(error?.data?.message || en.errors.failedToCreateEvent);
     }
   };
 
@@ -237,9 +237,9 @@ export const EventManagement: React.FC = () => {
 
       try {
         const response = await updateSessionEvent({ id: event.id || "", event: eventPayload });
-        if (response.error) toast.error("Error updating event");
+        if (response.error) toast.error(en.errors.errorUpdatingEvent);
       } catch {
-        toast.error("Error updating event");
+        toast.error(en.errors.errorUpdatingEvent);
       }
     }
   };
@@ -254,7 +254,7 @@ export const EventManagement: React.FC = () => {
     try {
       const response = await deleteSessionEvents({ eventIds });
       if (response.error) {
-        toast.error("Failed to delete events");
+        toast.error(en.errors.failedToDeleteEvent);
       } else {
         toast.success(
           `Successfully deleted ${selectedEvents.length} ${selectedEvents.length > 1 ? "events" : "event"}`,
@@ -265,7 +265,7 @@ export const EventManagement: React.FC = () => {
         setSelectedEvent(null);
       }
     } catch {
-      toast.error("An error occurred while deleting events");
+      toast.error(en.errors.failedToDeleteEvent);
     }
   };
 

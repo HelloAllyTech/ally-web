@@ -141,8 +141,8 @@ export const CreateSimulation: FC = () => {
     ) {
       try {
         await deleteCoverImage({ coverImageUrl: adminSimulationByIdData.coverImageUrl }).unwrap();
-      } catch {
-        toast.error(en.errors.fileUploadFailed);
+      } catch (error: any) {
+        toast.error(error?.data?.message || en.errors.fileUploadFailed);
       }
     }
 
@@ -190,12 +190,12 @@ export const CreateSimulation: FC = () => {
 
         return response?.data;
       } else if (response?.error) {
-        toast.error("Failed to save draft. Please try again.");
+        toast.error(response?.error?.data?.message || en.errors.failedSimulationChange);
         return null;
       }
       return response?.data;
     } catch {
-      toast.error("Failed to save draft. Please try again.");
+      toast.error(en.errors.failedSimulationChange);
       return null;
     }
   };
@@ -207,7 +207,7 @@ export const CreateSimulation: FC = () => {
       // Navigate to simulation studio or the created simulation
       if (response) navigate(ROUTES.SIMULATION_STUDIO);
     } catch {
-      toast.error("Failed to create simulation. Please try again.");
+      toast.error(en.errors.failedSimulationCreation);
     }
   };
 
@@ -222,8 +222,6 @@ export const CreateSimulation: FC = () => {
       setShowDiscardPopup(false);
       navigate(-1);
       toast.success("Simulation changes saved successfully!");
-    } else {
-      toast.error("Failed to save simulation changes!");
     }
   };
 
@@ -237,7 +235,7 @@ export const CreateSimulation: FC = () => {
       if (response) {
         setCurrentStep(stepId);
       } else {
-        toast.error("Fill atleast name field to proceed to Event Configuration!");
+        toast.error(en.errors.failedToProceed);
       }
     } else {
       setCurrentStep(stepId);

@@ -226,7 +226,7 @@ interface CurrentSession {
   scenarioPathSessionItemId?: string;
   transitionMessageTitle?: string;
   transitionMessageContent?: string;
-  scenarioPathSessionStatus?: string;
+  scenarioPathSessionStatus?: boolean;
 }
 
 export interface GetUpComingSimulationResponse {

@@ -36,6 +36,13 @@ export const en = {
     failedUpdateAccess: "Failed to update access.",
     OrganizationNotFound: "Organization not found",
     minimumScoreError: "Minimum score cannot be negative",
+    failedToCreateEvent: "Failed to create event",
+    failedToProceed: "Fill atleast title field to proceed to Event Configuration!",
+    failedToSaveEvents: "Failed to delete events. Please try again.",
+    failedToDeleteEvent: "Failed to delete event. Please try again.",
+    errorUpdatingEvent: "Error updating event",
+    userIdNotFound: "User id not found",
+    failedToRemoveUser: "Failed to remove user",
   },
   accessDenied: {
     title: "This page is not accessible",
@@ -204,6 +211,8 @@ export const en = {
     noSimulationFound: "No simulations found",
     editPathwayDescription:
       "Are you sure you want to edit this pathway? This will be moved to draft state.",
+    eventCreatedSuccessfully: "Event created successfully",
+    eventsDeletedSuccessfully: "Events deleted successfully",
   },
   userManagement: {
     organizationCreated: "Organization created successfully",
@@ -274,5 +283,6 @@ export const en = {
     enabled: "Enabled",
     disabled: "Disabled",
     toggleAccess: (title: string) => `Toggle access for ${title}`,
+    userRemoved: "User removed successfully",
   },
 };

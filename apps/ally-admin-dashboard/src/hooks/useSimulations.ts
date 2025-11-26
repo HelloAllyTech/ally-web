@@ -102,14 +102,13 @@ export const useSimulations = ({ selectedFilters }: UseSimulationsProps) => {
 
   const onDeleteSimulation = async () => {
     if (!currentSimulation) return;
-
     try {
       await deleteSimulationById(currentSimulation.id).unwrap();
       setIsDeletePopupOpen(false);
       setCurrentSimulation(null);
       toast.success(en.simulation.simulationDeletedSuccessfully);
-    } catch {
-      toast.error(en.simulation.failedDeleteSimulation);
+    } catch (error: any) {
+      toast.error(error?.data?.message || en.simulation.failedDeleteSimulation);
     }
   };
 
@@ -125,8 +124,8 @@ export const useSimulations = ({ selectedFilters }: UseSimulationsProps) => {
       setIsUnarchivePopupOpen(false);
       setCurrentSimulation(null);
       toast.success(en.simulation.simulationStatusUpdatedSuccessfully + status);
-    } catch {
-      toast.error(en.simulation.failedChangeSimulationStatus);
+    } catch (error: any) {
+      toast.error(error?.data?.message || en.simulation.failedChangeSimulationStatus);
     }
   };
 
