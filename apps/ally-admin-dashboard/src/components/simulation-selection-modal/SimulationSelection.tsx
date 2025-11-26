@@ -21,6 +21,7 @@ interface SimulationProps {
   formMethods?: any;
   selectedSimulations: GetScenarioType[];
   setSelectedSimulations: (simulations: GetScenarioType[]) => void;
+  isDragDisabled?: boolean;
 }
 
 const SIMULATIONS_PAGE_SIZE = 20;
@@ -31,6 +32,7 @@ export const SimulationSelectionModal: FC<SimulationProps> = ({
   formMethods,
   selectedSimulations,
   setSelectedSimulations,
+  isDragDisabled = false,
 }) => {
   const [checkedSimulation, setCheckedSimulation] = useState<GetScenarioType[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
@@ -216,6 +218,8 @@ export const SimulationSelectionModal: FC<SimulationProps> = ({
     </div>
   );
   const handleDragEnd = event => {
+    if (isDragDisabled) return;
+
     const { active, over } = event;
     if (!over || active.id === over.id) return;
 
@@ -233,7 +237,7 @@ export const SimulationSelectionModal: FC<SimulationProps> = ({
   const renderSimulationList = () => (
     <DndContext collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
       <SortableContext
-        items={selectedSimulations.map(scenario => String(scenario.scenarioId))}
+        items={selectedSimulations.map(scenario => String(scenario.order))}
         strategy={verticalListSortingStrategy}
       >
         {selectedSimulations.map((simulation, index) => (
@@ -248,6 +252,7 @@ export const SimulationSelectionModal: FC<SimulationProps> = ({
             handleMessageClick={handleMessageClick}
             renderMessage={renderMessage}
             addButtonRef={messageButtonRefs}
+            isDragDisabled={isDragDisabled}
           />
         ))}
       </SortableContext>
