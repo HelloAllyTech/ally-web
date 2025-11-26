@@ -78,12 +78,6 @@ export const PathTab: FC<PathTabProps> = ({
     </div>
   );
 
-  const thumbnailConfig = {
-    width: "w-[100px]",
-    height: "h-[50px]",
-    renderExtraContent: renderThumbnailOverlay,
-  };
-
   const renderPathCard = (path: ScenarioPath) => {
     return (
       <div
@@ -92,17 +86,14 @@ export const PathTab: FC<PathTabProps> = ({
       >
         {/* Path Image */}
         <div className="w-[64px] sm:w-[72px] md:w-[80px] lg:w-[96px] h-[56px] flex-shrink-0 rounded-lg overflow-hidden bg-neutral-100">
-          {thumbnailConfig && (
-            <div className="w-full h-full relative rounded-lg overflow-hidden">
-              <CustomImage
-                src={path.coverImageUrl}
-                alt={path.title}
-                className="w-full h-full object-cover"
-              />
-
-              {thumbnailConfig?.renderExtraContent?.(path)}
-            </div>
-          )}
+          <div className="w-full h-full relative rounded-lg overflow-hidden">
+            <CustomImage
+              src={path.coverImageUrl}
+              alt={path.title}
+              className="w-full h-full object-cover"
+            />
+            {renderThumbnailOverlay(path)}
+          </div>
         </div>
 
         {/* Path Title and Description */}

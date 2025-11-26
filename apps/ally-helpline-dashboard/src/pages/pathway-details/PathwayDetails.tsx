@@ -145,7 +145,7 @@ export const PathwayDetails: FC = () => {
     const updatedSelectedScenario = pathway?.scenarios.find(
       scenario => scenario.scenarioId === selectedScenario.scenarioId,
     );
-
+    if (!updatedSelectedScenario) return;
     const { scenarioId, sessionId, title, coverImageUrl } = updatedSelectedScenario;
     await startSimulation({
       params: {
