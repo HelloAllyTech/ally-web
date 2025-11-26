@@ -77,6 +77,7 @@ export interface GetSimulationByIdResponse {
   coverVideoUrl?: string;
   createdBy: string;
   lastModified: string;
+  isGlobal: boolean;
   metadata: {
     age?: number;
     name?: string;
