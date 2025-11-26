@@ -23,9 +23,11 @@ export const SimulationCardItem: FC<SimulationCardItemProps> = ({
   handleMessageClick,
   renderMessage,
   addButtonRef,
+  isDragDisabled = false,
 }) => {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: String(simulation.scenarioId),
+    disabled: isDragDisabled,
   });
 
   const style = {
@@ -97,8 +99,14 @@ export const SimulationCardItem: FC<SimulationCardItemProps> = ({
         </button>
 
         {/* Drag Handle - Only this should trigger dragging */}
-        <div {...attributes} {...listeners} className="cursor-grab active:cursor-grabbing">
-          <DragIndicator className="w-5 h-5 text-gray-500 mr-5 mt-1" />
+        <div
+          {...attributes}
+          {...(!isDragDisabled && listeners)}
+          className={isDragDisabled ? "cursor-not-allowed" : "cursor-grab active:cursor-grabbing"}
+        >
+          <DragIndicator
+            className={`w-5 h-5 mr-5 mt-1 ${isDragDisabled ? "text-gray-300" : "text-gray-500"}`}
+          />
         </div>
 
         <div className="flex items-start justify-between w-full">

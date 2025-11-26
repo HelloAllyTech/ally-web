@@ -271,6 +271,7 @@ export const CreatePath: FC = () => {
             formMethods={formMethods}
             selectedSimulations={selectedSimulations}
             setSelectedSimulations={setSelectedSimulations}
+            isDragDisabled={individualPath?.status === SimulationStatus.ACTIVE}
           />,
           formValues.scenarios?.length > 0,
         );
