@@ -24,6 +24,18 @@ vi.mock("@components", () => ({
       className={className}
     />
   ),
+  TimeInput: ({ value, onChange, placeholder, className, disabled }: any) => (
+    <input
+      data-testid="time-input"
+      type="text"
+      value={value || ""}
+      onChange={e => onChange(e.target.value)}
+      placeholder={placeholder}
+      className={className}
+      disabled={disabled}
+      pattern="^([0-1][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]$"
+    />
+  ),
 }));
 
 // Mock @constants
