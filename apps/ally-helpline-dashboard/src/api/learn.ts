@@ -206,6 +206,17 @@ const learnAPI = baseAPI.injectEndpoints({
       }),
       invalidatesTags: [TAG_TYPES.SCENARIO_PATHWAY_DETAILS],
     }),
+    getScenarioSessionByPathItem: builder.query<
+      {
+        id: string;
+      },
+      { pathSessionItemId: string }
+    >({
+      query: ({ pathSessionItemId }) => ({
+        url: ApiEndpoints.LEARN.SCENARIO_SESSION_BY_PATH_ITEM(pathSessionItemId),
+        method: HttpMethod.GET,
+      }),
+    }),
   }),
 });
 
@@ -223,4 +234,5 @@ export const {
   useSubmitSimulationFeedbackMutation,
   useGetSimulationTranscriptQuery,
   useStartPathwaySimulationMutation,
+  useLazyGetScenarioSessionByPathItemQuery,
 } = learnAPI;

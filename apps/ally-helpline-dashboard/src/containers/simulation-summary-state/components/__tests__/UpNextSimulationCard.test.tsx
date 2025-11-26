@@ -119,6 +119,7 @@ describe("UpNextSimulationCard", () => {
     },
     currentSession: {
       scenarioId: "current-sim-123",
+      scenarioPathSessionItemStatus: "COMPLETED",
       transitionMessageTitle: "Great work!",
       transitionMessageContent: "You've completed the previous simulation.",
       title: "Current Simulation",

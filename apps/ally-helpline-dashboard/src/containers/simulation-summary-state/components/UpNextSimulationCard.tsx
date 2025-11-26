@@ -27,6 +27,8 @@ export const UpNextSimulationCard = ({ data }: UpNextSimulationCardProps) => {
   const hasUpcomingScenario = isNonEmptyObject(upcomingScenario);
   const isPathwayCompleted =
     currentSession?.scenarioPathSessionStatus === PathwayScenarioStatus.COMPLETED;
+  const isCurrentScenarioCompleted =
+    currentSession?.scenarioPathSessionItemStatus === PathwayScenarioStatus.COMPLETED;
 
   const handleStartNextSimulation = async () => {
     if (!hasUpcomingScenario) {
@@ -74,42 +76,54 @@ export const UpNextSimulationCard = ({ data }: UpNextSimulationCardProps) => {
 
   return (
     <div className="font-primary">
-      {/* Transition Message */}
-      {currentSession?.transitionMessageTitle && (
-        <div className="text-typography-900 text-base font-semibold mb-[8px]">
-          {currentSession.transitionMessageTitle}
-        </div>
-      )}
-      {currentSession?.transitionMessageContent && (
-        <div className="text-typography-900 text-base font-normal mb-[20px]">
-          {currentSession.transitionMessageContent}
-        </div>
-      )}
-
-      {/* Simulation Card */}
-      <div className="rounded-[8px] border border-border-light">
-        <div className="flex p-4 gap-4 bg-background-secondary">
-          <img
-            src={upcomingScenario?.coverImageUrl}
-            alt={upcomingScenario?.title}
-            className="w-[120px] h-[60px] bg-secondary-100 object-cover rounded-[8px]"
-          />
-          <div className="flex flex-col justify-center">
-            <div className="text-typography-800 text-sm font-tertiary">
-              Up next - Simulation {upcomingScenario?.order}
+      {!isCurrentScenarioCompleted ? (
+        <>
+          <div className="text-typography-900 text-base font-semibold mb-[8px]">All most there</div>
+          <div className="text-typography-900 text-base font-normal mb-[20px]">
+            You didn’t meet the benchmark score or minimum time yet, but you’re improving. Try again
+            when you’re ready
+          </div>
+        </>
+      ) : (
+        <>
+          {currentSession?.transitionMessageTitle?.length > 0 && (
+            <div className="text-typography-900 text-base font-semibold mb-[8px]">
+              {currentSession?.transitionMessageTitle}
             </div>
-            <div className="text-typography-900 text-xl">{upcomingScenario?.title}</div>
-          </div>
-        </div>
+          )}
+          {currentSession?.transitionMessageContent?.length > 0 && (
+            <div className="text-typography-900 text-base font-normal mb-[20px]">
+              {currentSession?.transitionMessageContent}
+            </div>
+          )}
+        </>
+      )}
 
-        {/* Card Body */}
-        <div className="p-4">
-          <div className="text-base text-typography-800 font-semibold">Scenario:</div>
-          <div className="text-base text-typography-900 font-normal">
-            {upcomingScenario?.description}
+      {hasUpcomingScenario && (
+        <div className="rounded-[8px] border border-border-light">
+          <div className="flex p-4 gap-4 bg-background-secondary">
+            <img
+              src={upcomingScenario?.coverImageUrl}
+              alt={upcomingScenario?.title}
+              className="w-[120px] h-[60px] bg-secondary-100 object-cover rounded-[8px]"
+            />
+            <div className="flex flex-col justify-center">
+              <div className="text-typography-800 text-sm font-tertiary">
+                Up next - Simulation {upcomingScenario?.order}
+              </div>
+              <div className="text-typography-900 text-xl">{upcomingScenario?.title}</div>
+            </div>
+          </div>
+
+          {/* Card Body */}
+          <div className="p-4">
+            <div className="text-base text-typography-800 font-semibold">Scenario:</div>
+            <div className="text-base text-typography-900 font-normal">
+              {upcomingScenario?.description}
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
       {/* Action Buttons */}
       <motion.div
