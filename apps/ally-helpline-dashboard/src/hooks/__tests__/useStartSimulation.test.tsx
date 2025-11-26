@@ -1,4 +1,4 @@
-import { renderHook, waitFor } from "@testing-library/react";
+import { renderHook, waitFor, act } from "@testing-library/react";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import { logger } from "@ally-ui-mono/ui-shared";
@@ -50,20 +50,20 @@ describe("useStartSimulation", () => {
       }),
     );
 
-    await result.current.startSimulation({
-      params: { scenarioId: 1, scenarioPathSessionItemId: "path-123" },
-      metadata: { title: "Test Scenario", coverImageUrl: "https://example.com/image.jpg" },
+    await act(async () => {
+      await result.current.startSimulation({
+        params: { scenarioId: 1, scenarioPathSessionItemId: "path-123" },
+        metadata: { title: "Test Scenario", coverImageUrl: "https://example.com/image.jpg" },
+      });
     });
 
-    await waitFor(() => {
-      expect(mockStartSimulationMutation).toHaveBeenCalledWith({
-        scenarioId: 1,
-        scenarioPathSessionItemId: "path-123",
-      });
-      expect(mockOnSuccess).toHaveBeenCalled();
-      expect(mockNavigate).toHaveBeenCalledWith("/simulation/session-123");
-      expect(localStorage.getItem(LOCAL_STORAGE_KEYS.ROOM_DATA)).toBeTruthy();
+    expect(mockStartSimulationMutation).toHaveBeenCalledWith({
+      scenarioId: 1,
+      scenarioPathSessionItemId: "path-123",
     });
+    expect(mockOnSuccess).toHaveBeenCalled();
+    expect(mockNavigate).toHaveBeenCalledWith("/simulation/session-123", { replace: false });
+    expect(localStorage.getItem(LOCAL_STORAGE_KEYS.ROOM_DATA)).toBeTruthy();
   });
 
   it("should handle 403 error", async () => {
@@ -79,12 +79,12 @@ describe("useStartSimulation", () => {
       }),
     );
 
-    await result.current.startSimulation({ params: { scenarioId: 1 } });
-
-    await waitFor(() => {
-      expect(toast.error).toHaveBeenCalledWith("You are not authorized to start this simulation");
-      expect(mockOnError).toHaveBeenCalledWith(mockError);
+    await act(async () => {
+      await result.current.startSimulation({ params: { scenarioId: 1 } });
     });
+
+    expect(toast.error).toHaveBeenCalledWith("You are not authorized to start this simulation");
+    expect(mockOnError).toHaveBeenCalledWith(mockError);
   });
 
   it("should handle 400 error and end previous simulation", async () => {
@@ -97,12 +97,12 @@ describe("useStartSimulation", () => {
 
     const { result } = renderHook(() => useStartSimulation());
 
-    await result.current.startSimulation({ params: { scenarioId: 1 } });
-
-    await waitFor(() => {
-      expect(mockEndSimulation).toHaveBeenCalledWith({ sessionId: "old-session-123" });
-      expect(toast.success).toHaveBeenCalledWith("Previous simulation ended. Starting new one...");
+    await act(async () => {
+      await result.current.startSimulation({ params: { scenarioId: 1 } });
     });
+
+    expect(mockEndSimulation).toHaveBeenCalledWith({ sessionId: "old-session-123" });
+    expect(toast.success).toHaveBeenCalledWith("Previous simulation ended. Starting new one...");
   });
 
   it("should handle generic error", async () => {
@@ -114,11 +114,11 @@ describe("useStartSimulation", () => {
 
     const { result } = renderHook(() => useStartSimulation());
 
-    await result.current.startSimulation({ params: { scenarioId: 1 } });
-
-    await waitFor(() => {
-      expect(toast.error).toHaveBeenCalledWith("Failed to start simulation");
+    await act(async () => {
+      await result.current.startSimulation({ params: { scenarioId: 1 } });
     });
+
+    expect(toast.error).toHaveBeenCalledWith("Failed to start simulation");
   });
 
   it("should handle unexpected errors", async () => {
@@ -130,13 +130,13 @@ describe("useStartSimulation", () => {
       }),
     );
 
-    await result.current.startSimulation({ params: { scenarioId: 1 } });
-
-    await waitFor(() => {
-      expect(logger.error).toHaveBeenCalled();
-      expect(toast.error).toHaveBeenCalledWith("An unexpected error occurred");
-      expect(mockOnError).toHaveBeenCalled();
+    await act(async () => {
+      await result.current.startSimulation({ params: { scenarioId: 1 } });
     });
+
+    expect(logger.error).toHaveBeenCalled();
+    expect(toast.error).toHaveBeenCalledWith("An unexpected error occurred");
+    expect(mockOnError).toHaveBeenCalled();
   });
 
   it("should not start if already starting", async () => {
@@ -162,7 +162,9 @@ describe("useStartSimulation", () => {
     const { result } = renderHook(() => useStartSimulation());
 
     // Start first simulation
-    result.current.startSimulation({ params: { scenarioId: 1 } });
+    act(() => {
+      result.current.startSimulation({ params: { scenarioId: 1 } });
+    });
 
     // Wait for state to update
     await waitFor(() => {
@@ -170,13 +172,16 @@ describe("useStartSimulation", () => {
     });
 
     // Try to start second simulation (should be blocked)
-    result.current.startSimulation({ params: { scenarioId: 2 } });
+    act(() => {
+      result.current.startSimulation({ params: { scenarioId: 2 } });
+    });
 
     // Resolve the first call
-    resolveFirst!({ data: mockData, error: null });
-
-    // Wait a bit for the promise to resolve
-    await new Promise(resolve => setTimeout(resolve, 50));
+    await act(async () => {
+      resolveFirst!({ data: mockData, error: null });
+      // Wait a bit for the promise to resolve
+      await new Promise(resolve => setTimeout(resolve, 50));
+    });
 
     // Should only be called once because second call was blocked
     expect(mockStartSimulationMutation).toHaveBeenCalledTimes(1);
@@ -201,21 +206,21 @@ describe("useStartSimulation", () => {
 
     const { result } = renderHook(() => useStartSimulation());
 
-    await result.current.startSimulation({
-      params: { scenarioId: 1 },
-      metadata: { title: "Test Scenario", coverImageUrl: "https://example.com/image.jpg" },
+    await act(async () => {
+      await result.current.startSimulation({
+        params: { scenarioId: 1 },
+        metadata: { title: "Test Scenario", coverImageUrl: "https://example.com/image.jpg" },
+      });
     });
 
-    await waitFor(() => {
-      const storedData = JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEYS.ROOM_DATA) || "{}");
-      expect(storedData).toEqual({
-        roomId: "session-123",
-        name: "Test Scenario",
-        coverImageUrl: "https://example.com/image.jpg",
-        accessToken: "token-123",
-        createdAt: "2024-01-01T00:00:00Z",
-        serverUrl: "https://server.example.com",
-      });
+    const storedData = JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEYS.ROOM_DATA) || "{}");
+    expect(storedData).toEqual({
+      roomId: "session-123",
+      name: "Test Scenario",
+      coverImageUrl: "https://example.com/image.jpg",
+      accessToken: "token-123",
+      createdAt: "2024-01-01T00:00:00Z",
+      serverUrl: "https://server.example.com",
     });
   });
 });

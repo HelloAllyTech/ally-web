@@ -20,6 +20,7 @@ interface SimulationMetadata {
 interface UseStartSimulationOptions {
   onSuccess?: () => void;
   onError?: (error: unknown) => void;
+  isReplaceScreen?: boolean;
 }
 
 interface UseStartSimulationReturn {
@@ -43,6 +44,8 @@ export const useStartSimulation = (
   const [isStarting, setIsStarting] = useState(false);
   const [startSimulationMutation] = useStartSimulationMutation();
   const [endSimulation] = useEndSimulationMutation();
+
+  const { isReplaceScreen = false, onSuccess = () => {}, onError = () => {} } = options || {};
 
   const startSimulation = async ({
     params,
@@ -85,10 +88,11 @@ export const useStartSimulation = (
         );
 
         // Call success callback if provided
-        options?.onSuccess?.();
+        onSuccess?.();
 
         // Navigate to simulation room
-        navigate(`/simulation/${scenarioSession.id}`);
+        navigate(`/simulation/${scenarioSession.id}`, { replace: isReplaceScreen });
+        setIsStarting(false);
         return;
       }
 
@@ -109,14 +113,14 @@ export const useStartSimulation = (
         }
 
         // Call error callback if provided
-        options?.onError?.(error);
+        onError?.(error);
         setIsStarting(false);
         return;
       }
     } catch (error) {
       logger.error("Failed to start simulation");
       toast.error("An unexpected error occurred");
-      options?.onError?.(error);
+      onError?.(error);
       setIsStarting(false);
     }
   };

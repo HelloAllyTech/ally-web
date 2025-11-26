@@ -222,6 +222,8 @@ vi.mock("@constants", async importOriginal => {
       simulation: {
         simulationEvents: "Simulation Events",
         createNewEvent: "Create New Event",
+        eventCreatedSuccessfully: "Event created successfully",
+        eventsDeletedSuccessfully: "Events deleted successfully",
       },
       common: {
         delete: "Delete",
@@ -229,6 +231,11 @@ vi.mock("@constants", async importOriginal => {
         loading: "Loading...",
         loadMore: "Load more",
         noMoreData: "No more data",
+      },
+      errors: {
+        ...(actual.en?.errors || {}),
+        failedToDeleteEvent: "Failed to delete event. Please try again.",
+        failedToCreateEvent: "Failed to create event",
       },
     },
     SORT_BY: {
@@ -766,7 +773,7 @@ describe("EventManagement", () => {
       fireEvent.click(confirmButton);
 
       await waitFor(() => {
-        expect(mockToast.error).toHaveBeenCalledWith("Failed to delete events");
+        expect(mockToast.error).toHaveBeenCalledWith("Failed to delete event. Please try again.");
       });
     });
 
@@ -1063,7 +1070,7 @@ describe("EventManagement", () => {
       fireEvent.click(confirmButton);
 
       await waitFor(() => {
-        expect(mockToast.error).toHaveBeenCalledWith("An error occurred while deleting events");
+        expect(mockToast.error).toHaveBeenCalledWith("Failed to delete event. Please try again.");
       });
     });
 

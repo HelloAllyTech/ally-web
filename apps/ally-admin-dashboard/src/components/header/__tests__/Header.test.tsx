@@ -160,7 +160,7 @@ describe("Header", () => {
       expect(toast.success).toHaveBeenCalled();
     });
 
-    // Failure case
+    // Failure case - when onSaveDraft returns null, no toast is shown
     {
       const { toast } = await import("sonner");
       (toast.success as any).mockClear();
@@ -169,7 +169,9 @@ describe("Header", () => {
     fireEvent.click(screen.getByText("Save"));
     await waitFor(async () => {
       const { toast } = await import("sonner");
-      expect(toast.error).toHaveBeenCalled();
+      // When response is null/falsy, no toast is shown
+      expect(toast.error).not.toHaveBeenCalled();
+      expect(toast.success).not.toHaveBeenCalled();
     });
   });
 
