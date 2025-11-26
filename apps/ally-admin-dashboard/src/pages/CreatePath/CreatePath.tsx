@@ -52,7 +52,7 @@ const getMandatoryFieldIds = () => {
   return mandatoryFields;
 };
 
-const DEBOUNCE_TIME = 500;
+const DEBOUNCE_TIME = 1000;
 
 export const CreatePath: FC = () => {
   const navigate = useNavigate();
@@ -236,7 +236,7 @@ export const CreatePath: FC = () => {
     return (
       <div className="flex flex-col h-full w-100%">
         <div className="sticky flex flex-row justify-between top-0 z-10 pt-3 mx-6 pb-4 border-b border-border-light">
-          <h2 className="text-lg font-medium text-typography-900">{title}</h2>
+          <h2 className="text-lg text-typography-900 font-semibold">{title}</h2>
           {addButton && (
             <Button variant={ButtonVariant.SECONDARY} onClick={toggleSimulationModal}>
               <Plus />
@@ -271,8 +271,9 @@ export const CreatePath: FC = () => {
             formMethods={formMethods}
             selectedSimulations={selectedSimulations}
             setSelectedSimulations={setSelectedSimulations}
+            isDragDisabled={individualPath?.status === SimulationStatus.ACTIVE}
           />,
-          true,
+          isNonEmptyArray(formValues.scenarios),
         );
       default:
         return null;

@@ -21,6 +21,7 @@ import Input from "./input";
 import LoginDialog from "./login-dialog";
 import NavSideBar from "./nav-sidebar";
 import OTP from "./otp";
+import { PathwayScenarioCard } from "./pathway-scenario-card";
 import PermissionGuard from "./permission-guard";
 import ScenarioCard from "./scenario-card";
 import ScenarioDetailsCard from "./scenario-details-card";
@@ -66,6 +67,7 @@ export {
   LoginDialog,
   NavSideBar,
   OTP,
+  PathwayScenarioCard,
   ScenarioCard,
   ScenarioDetailsCard,
   SearchResources,

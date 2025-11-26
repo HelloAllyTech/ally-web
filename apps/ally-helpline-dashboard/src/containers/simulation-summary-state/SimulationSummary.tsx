@@ -1,13 +1,11 @@
 import { FC, useEffect, useState } from "react";
 
 import { motion } from "framer-motion";
-import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
 import { useGetUpComingSimulationQuery, useLazyGetSimulationSummaryQuery } from "@api";
-import { Button, ButtonVariant, PermissionGuard } from "@components";
-import { Permissions, ROUTES } from "@constants";
-import { useStartSimulation } from "@hooks";
+import { Button, PermissionGuard } from "@components";
+import { Permissions } from "@constants";
 import { SessionType } from "@types";
 import { isNonEmptyObject } from "@utils";
 
@@ -29,9 +27,6 @@ export const SimulationSummary: FC<SimulationSummaryProps> = ({
   const { data: upComingSimulation } = useGetUpComingSimulationQuery(summaryId, {
     skip: !summaryId || isInSidebar,
   });
-
-  const navigate = useNavigate();
-  const { startSimulation, isStarting } = useStartSimulation();
 
   useEffect(() => {
     let pollCount = 0;
@@ -78,27 +73,6 @@ export const SimulationSummary: FC<SimulationSummaryProps> = ({
     }
   };
 
-  const onNext = async () => {
-    if (isNonEmptyObject(upComingSimulation)) {
-      await startSimulation({
-        params: {
-          scenarioId: Number(upComingSimulation.id),
-          scenarioPathSessionItemId: upComingSimulation.scenarioPathSessionItemId,
-        },
-        metadata: {
-          title: upComingSimulation.title,
-          coverImageUrl: upComingSimulation.coverImageUrl,
-        },
-      });
-    } else {
-      toast.error("No upcoming simulation found");
-    }
-  };
-
-  const onBack = () => {
-    navigate(ROUTES.LEARN);
-  };
-
   return (
     <div
       className={`relative flex flex-col h-full w-full ${className}`}
@@ -111,37 +85,18 @@ export const SimulationSummary: FC<SimulationSummaryProps> = ({
             {!isInSidebar && (
               <PermissionGuard requiredPermissions={[Permissions.EDIT_SCENARIO_SESSION]}>
                 <UpNextSimulationCard data={upComingSimulation} />
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5, delay: 0.8 }}
-                  className="absolute bottom-0 left-4 right-4 z-10 max-w-full bg-white"
-                >
-                  {isNonEmptyObject(upComingSimulation) ? (
-                    <div className="flex flex-row gap-4 w-full mx-auto">
-                      <Button
-                        variant={ButtonVariant.SECONDARY}
-                        onClick={onBack}
-                        className="w-[50%]"
-                        disabled={isStarting}
-                      >
-                        Back
-                      </Button>
-                      <Button
-                        variant={ButtonVariant.PRIMARY}
-                        onClick={onNext}
-                        className="w-[50%]"
-                        disabled={isStarting}
-                      >
-                        {isStarting ? "Starting..." : "Next"}
-                      </Button>
-                    </div>
-                  ) : (
+                {!isNonEmptyObject(upComingSimulation?.upcomingScenario) && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5, delay: 0.8 }}
+                    className="absolute bottom-0 left-4 right-4 z-10 max-w-full bg-white"
+                  >
                     <Button onClick={onSubmit} className="w-[80%] mx-auto">
                       Try another Simulation
                     </Button>
-                  )}
-                </motion.div>
+                  </motion.div>
+                )}
               </PermissionGuard>
             )}
             <FeedbackDialog
