@@ -1,13 +1,18 @@
 import { FC, useEffect, useRef, useState } from "react";
 
-import { AccountTree, AlarmOn, Chat, Close, DiamondShine, Tick } from "@assets";
+import { AccountTree, AlarmOn, Chat, Close, DiamondShine, Tick, FocusLens } from "@assets";
 import { Button } from "@components";
 import { ButtonVariant } from "@components/types";
 import { en } from "@constants";
 import { useClickOutside } from "@hooks";
 import { getButtonStyles } from "@utils";
 
-export type EventType = "SENTENCE_SIMILARITY" | "TIME_BASED" | "SCORE_BASED" | "COMBINATION";
+export type EventType =
+  | "SENTENCE_SIMILARITY"
+  | "SEMANTIC_SIMILARITY"
+  | "TIME_BASED"
+  | "SCORE_BASED"
+  | "COMBINATION";
 
 export interface EventTypeOption {
   value: EventType;
@@ -22,6 +27,12 @@ export const EVENT_TYPE_OPTIONS: EventTypeOption[] = [
     label: "Sentence Similarity",
     description: "Trigger based on what the speaker says.",
     icon: Chat,
+  },
+  {
+    value: "SEMANTIC_SIMILARITY",
+    label: "Semantic Classification",
+    description: "Trigger based on zero shot classification.",
+    icon: FocusLens,
   },
   {
     value: "TIME_BASED",

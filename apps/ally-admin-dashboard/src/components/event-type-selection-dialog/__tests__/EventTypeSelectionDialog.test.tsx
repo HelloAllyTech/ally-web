@@ -52,6 +52,11 @@ vi.mock("@assets", () => ({
       DiamondShine
     </svg>
   ),
+  FocusLens: ({ className }: { className?: string }) => (
+    <svg data-testid="focus-lens-icon" className={className}>
+      FocusLens
+    </svg>
+  ),
 }));
 
 // Mock @constants
@@ -129,6 +134,7 @@ describe("EventTypeSelectionDialog", () => {
       render(<EventTypeSelectionDialog {...defaultProps} />);
 
       expect(screen.getByTestId("chat-icon")).toBeInTheDocument();
+      expect(screen.getByTestId("focus-lens-icon")).toBeInTheDocument();
       expect(screen.getByTestId("alarm-on-icon")).toBeInTheDocument();
       expect(screen.getByTestId("diamond-shine-icon")).toBeInTheDocument();
       expect(screen.getByTestId("account-tree-icon")).toBeInTheDocument();
@@ -263,6 +269,7 @@ describe("EventTypeSelectionDialog", () => {
     it("calls onSelect with correct event type for each option", () => {
       const eventTypes: EventType[] = [
         "SENTENCE_SIMILARITY",
+        "SEMANTIC_SIMILARITY",
         "TIME_BASED",
         "SCORE_BASED",
         "COMBINATION",
@@ -443,6 +450,14 @@ describe("EventTypeSelectionDialog", () => {
       expect(screen.getByTestId("chat-icon")).toBeInTheDocument();
     });
 
+    it("renders Semantic Classification option correctly", () => {
+      render(<EventTypeSelectionDialog {...defaultProps} />);
+
+      expect(screen.getByText("Semantic Classification")).toBeInTheDocument();
+      expect(screen.getByText("Trigger based on zero shot classification.")).toBeInTheDocument();
+      expect(screen.getByTestId("focus-lens-icon")).toBeInTheDocument();
+    });
+
     it("renders Time Based option correctly", () => {
       render(<EventTypeSelectionDialog {...defaultProps} />);
 
@@ -573,7 +588,7 @@ describe("EventTypeSelectionDialog", () => {
     it("exports EVENT_TYPE_OPTIONS with correct structure", () => {
       expect(EVENT_TYPE_OPTIONS).toBeDefined();
       expect(Array.isArray(EVENT_TYPE_OPTIONS)).toBe(true);
-      expect(EVENT_TYPE_OPTIONS.length).toBe(4);
+      expect(EVENT_TYPE_OPTIONS.length).toBe(5);
     });
 
     it("each option has required properties", () => {
@@ -588,6 +603,7 @@ describe("EventTypeSelectionDialog", () => {
     it("all event types are valid", () => {
       const validTypes: EventType[] = [
         "SENTENCE_SIMILARITY",
+        "SEMANTIC_SIMILARITY",
         "TIME_BASED",
         "SCORE_BASED",
         "COMBINATION",

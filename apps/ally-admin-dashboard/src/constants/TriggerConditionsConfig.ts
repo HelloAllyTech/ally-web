@@ -166,6 +166,32 @@ const SENTENCE_SIMILARITY_CONFIG = {
 };
 
 /**
+ * Configuration for SEMANTIC_SIMILARITY event type
+ * Renders: "if [speaker] said something [multiline textarea]"
+ */
+const SEMANTIC_SIMILARITY_CONFIG = {
+  id: "SEMANTIC_SIMILARITY" as EventType,
+  label: "Semantic Classification",
+  fields: [
+    {
+      id: "speaker",
+      label: "Speaker",
+      type: TRIGGER_FIELD_TYPES.SPEAKER_DROPDOWN,
+      options: SPEAKER_OPTIONS,
+      placeholder: "Care giver",
+      className: "flex-shrink-0",
+      labelAfter: "said something", // Text to display after this field
+    },
+    {
+      id: "sentences",
+      label: "Sentences",
+      type: TRIGGER_FIELD_TYPES.MULTILINE_TEXT,
+      placeholder: "Add description",
+    },
+  ],
+};
+
+/**
  * Configuration for COMBINATION event type
  * Renders: "if [event dropdown] has [status] AND/OR if [event dropdown] has [status]"
  * Maximum 2 conditions supported
@@ -206,6 +232,7 @@ export const TRIGGER_CONDITION_CONFIGS = {
   TIME_BASED: TIME_BASED_CONFIG,
   SCORE_BASED: SCORE_BASED_CONFIG,
   SENTENCE_SIMILARITY: SENTENCE_SIMILARITY_CONFIG,
+  SEMANTIC_SIMILARITY: SEMANTIC_SIMILARITY_CONFIG,
   COMBINATION: COMBINATION_CONFIG,
 } as const;
 

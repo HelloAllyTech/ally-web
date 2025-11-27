@@ -23,6 +23,7 @@ import DragIndicator from "./dragIndicator.svg?react";
 import DragUpload from "./dragUpload.svg?react";
 import Edit from "./edit.svg?react";
 import Filter from "./filter.svg?react";
+import FocusLens from "./focusLens.svg?react";
 import HappyEmoji from "./happyEmoji.svg?react";
 import InfoIcon from "./info.svg?react";
 import Logout from "./logout.svg?react";
@@ -84,4 +85,5 @@ export {
   BookWhite,
   Dot,
   Tick,
+  FocusLens,
 };
