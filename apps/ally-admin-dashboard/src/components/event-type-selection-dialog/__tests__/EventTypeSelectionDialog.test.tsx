@@ -450,10 +450,10 @@ describe("EventTypeSelectionDialog", () => {
       expect(screen.getByTestId("chat-icon")).toBeInTheDocument();
     });
 
-    it("renders Semantic Classification option correctly", () => {
+    it("renders Semantic Similarity option correctly", () => {
       render(<EventTypeSelectionDialog {...defaultProps} />);
 
-      expect(screen.getByText("Semantic Classification")).toBeInTheDocument();
+      expect(screen.getByText("Semantic Similarity")).toBeInTheDocument();
       expect(screen.getByText("Trigger based on zero shot classification.")).toBeInTheDocument();
       expect(screen.getByTestId("focus-lens-icon")).toBeInTheDocument();
     });

@@ -171,7 +171,7 @@ const SENTENCE_SIMILARITY_CONFIG = {
  */
 const SEMANTIC_SIMILARITY_CONFIG = {
   id: "SEMANTIC_SIMILARITY" as EventType,
-  label: "Semantic Classification",
+  label: "Semantic Similarity",
   fields: [
     {
       id: "speaker",

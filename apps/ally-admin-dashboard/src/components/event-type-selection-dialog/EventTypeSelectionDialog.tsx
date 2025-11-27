@@ -30,7 +30,7 @@ export const EVENT_TYPE_OPTIONS: EventTypeOption[] = [
   },
   {
     value: "SEMANTIC_SIMILARITY",
-    label: "Semantic Classification",
+    label: "Semantic Similarity",
     description: "Trigger based on zero shot classification.",
     icon: FocusLens,
   },
