@@ -19,6 +19,12 @@ const ScenarioCard: FC<ScenarioCardProps> = ({
   const [imageError, setImageError] = useState(false);
   const isPathway = totalScenarios !== undefined;
 
+  const onKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    if (e.key === "Enter" || e.key === " ") {
+      onClick();
+    }
+  };
+
   const renderImage = () => (
     <div className="w-full relative h-[100px] sm:h-[120px]">
       {!imageError ? (
@@ -46,7 +52,7 @@ const ScenarioCard: FC<ScenarioCardProps> = ({
     <motion.div
       layout
       onClick={onClick}
-      className={`bg-white overflow-hidden transition-all duration-300 h-full rounded-[20px] border-[1px] border-border-light shadow-[0_2px_8px_rgba(0,0,0,0.1)] hover:shadow-[0_8px_16px_rgba(0,0,0,0.15)] ${isComingSoon ? "pointer-events-none" : "cursor-pointer"}`}
+      className={`bg-white overflow-hidden transition-all duration-300 h-full rounded-[20px] border-[1px] border-border-light shadow-[0_1px_2px_rgba(0,0,0,0.05)] hover:shadow-[0_4px_8px_rgba(0,0,0,0.15)] ${isComingSoon ? "pointer-events-none" : "cursor-pointer"}`}
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
@@ -55,11 +61,7 @@ const ScenarioCard: FC<ScenarioCardProps> = ({
       role="button"
       aria-label={`Select ${title} scenario`}
       tabIndex={0}
-      onKeyPress={e => {
-        if (e.key === "Enter" || e.key === " ") {
-          onClick();
-        }
-      }}
+      onKeyDown={onKeyDown}
     >
       <div className="flex flex-col h-full gap-3 p-[10px]">
         {renderImage()}
@@ -82,13 +84,17 @@ const ScenarioCard: FC<ScenarioCardProps> = ({
             )}
           </div>
 
-          {isPathway && (
+          {isPathway && totalScenarios > 0 && completedScenarios > 0 && (
             <div className="flex-shrink-0">
               <CircularProgress
                 current={completedScenarios}
                 total={totalScenarios}
                 size={40}
                 strokeWidth={2}
+                progressColor={completedScenarios === totalScenarios ? "#81C784" : "#6366F1"}
+                textColor={
+                  completedScenarios === totalScenarios ? "text-[#50CC55]" : "text-[#6366F1]"
+                }
               />
             </div>
           )}

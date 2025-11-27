@@ -78,7 +78,7 @@ export const SimulationSummary: FC<SimulationSummaryProps> = ({
       className={`relative flex flex-col h-full w-full ${className}`}
       data-testid="simulation-summary"
     >
-      <div className="flex flex-col gap-6 overflow-y-auto pb-20 flex-1">
+      <div className="flex flex-col gap-6 overflow-y-auto pb-20 flex-1 custom-scrollbar px-[10px]">
         {retryMaxReached || summary?.details?.summary?.feedback ? (
           <>
             <FeedbackSection {...summary} />

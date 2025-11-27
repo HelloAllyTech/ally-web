@@ -38,7 +38,7 @@ export const en = {
     minimumScoreError: "Minimum score must be a positive integer",
     failedToCreateEvent: "Failed to create event",
     failedToProceed: "Fill atleast title field to proceed to Event Configuration!",
-    failedToSaveEvents: "Failed to delete events. Please try again.",
+    failedToSaveEvents: "Failed to save events. Please try again.",
     failedToDeleteEvent: "Failed to delete event. Please try again.",
     errorUpdatingEvent: "Error updating event",
     userIdNotFound: "User id not found",

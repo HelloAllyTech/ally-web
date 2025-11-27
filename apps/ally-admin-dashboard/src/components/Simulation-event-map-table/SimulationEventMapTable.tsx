@@ -158,10 +158,20 @@ export const SimulationEventMapTable: FC<SimulationEventMapTableProps> = ({ simu
 
   // Helper function to save events to API
   const saveEventsToApi = useCallback(
-    (events: UpdateScenarioEventDataParam[]) => {
+    async (events: UpdateScenarioEventDataParam[]) => {
       if (!simulationId) return;
       const apiEvents = convertToApiFormat(events);
-      mapScenarioEvents({ scenarioId: Number(simulationId), events: apiEvents });
+      try {
+        const response: any = await mapScenarioEvents({
+          scenarioId: Number(simulationId),
+          events: apiEvents,
+        });
+        if (response?.error?.data?.message) {
+          toast.error(response.error.data.message || en.errors.failedToSaveEvents);
+        }
+      } catch {
+        toast.error(en.errors.failedToSaveEvents);
+      }
     },
     [simulationId, mapScenarioEvents],
   );
