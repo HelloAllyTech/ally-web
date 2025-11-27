@@ -211,7 +211,7 @@ export const CreatePath: FC = () => {
       navigate(-1);
       toast.success(en.simulation.saveSimulation);
     } else {
-      toast.error(en.errors.failedSimulationChange);
+      toast.error(en.errors.failedPathwayChange);
     }
   };
 

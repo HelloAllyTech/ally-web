@@ -30,6 +30,7 @@ export const en = {
     fileDeleteFailed: "Failed to delete file. Please try again.",
     titleIsRequired: "Title should be filled to save as draft",
     failedSimulationChange: "Failed to save simulation changes!",
+    failedPathwayChange: "Failed to save pathway changes!",
     failedSaveDraft: "Failed to save draft. Please try again.",
     failedSimulationCreation: "Failed to create simulation. Please try again.",
     pathUpdateFailed: "Failed to update path access.",
