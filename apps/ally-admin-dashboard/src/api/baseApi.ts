@@ -67,6 +67,7 @@ const baseQueryWithReauth: BaseQueryFn<string | FetchArgs, unknown, FetchBaseQue
         );
 
         if (!refreshResult.data) {
+          handleLogout();
           throw new Error(en.error.noRefreshDataReceived);
         }
 

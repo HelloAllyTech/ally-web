@@ -84,7 +84,7 @@ export const FeedbackSection: FC<FeedbackSectionProps> = props => {
               className="bg-white"
             >
               <Accordion title={label} titleIcon={icon} defaultExpanded={true}>
-                <div className="max-h-[250px] overflow-y-scroll custom-scrollbar">
+                <div className="max-h-[250px] overflow-y-scroll custom-scrollbar border-b-[0.5px] border-b-border">
                   {formattedData[key] ? (
                     getFeedbackSectionByType({ type, columns, data: formattedData[key] })
                   ) : (

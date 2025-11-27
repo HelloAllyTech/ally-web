@@ -99,6 +99,7 @@ const baseQueryWithReauth: BaseQueryFn<string | FetchArgs, unknown, FetchBaseQue
         );
 
         if (!refreshResult.data) {
+          handleLogout();
           throw new Error("No refresh data received");
         }
 
@@ -117,6 +118,7 @@ const baseQueryWithReauth: BaseQueryFn<string | FetchArgs, unknown, FetchBaseQue
         }
       } catch (error) {
         // Handle refresh token failure (e.g., both tokens expired)
+        handleLogout();
         logger.info(`Token refresh failed:, ${error}`);
         return result;
       }

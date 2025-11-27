@@ -19,13 +19,14 @@ interface UpcomingScenario {
 
 interface CurrentSession {
   scenarioId?: string;
-  scenarioPathSessionItemStatus?: string;
+  isScenarioPathSessionCompleted?: string;
   coverImageUrl?: string;
   title?: string;
   scenarioPathSessionItemId?: string;
   transitionMessageTitle?: string;
   transitionMessageContent?: string;
-  scenarioPathSessionStatus?: string;
+  scenarioPathSessionStatus?: boolean;
+  scenarioPathSessionItemStatus?: string;
 }
 
 interface GetUpComingSimulationResponse {
@@ -107,7 +108,8 @@ describe("UpNextSimulationCard", () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
-  const mockData: GetUpComingSimulationResponse = {
+
+  const getMockData = (): GetUpComingSimulationResponse => ({
     upcomingScenario: {
       id: "sim-123",
       order: 2,
@@ -119,18 +121,19 @@ describe("UpNextSimulationCard", () => {
     },
     currentSession: {
       scenarioId: "current-sim-123",
-      scenarioPathSessionItemStatus: "COMPLETED",
+      isScenarioPathSessionCompleted: "", // Must be falsy to show Up Next card
+      scenarioPathSessionItemStatus: "COMPLETED", // Must be COMPLETED to show "Great work!"
       transitionMessageTitle: "Great work!",
       transitionMessageContent: "You've completed the previous simulation.",
       title: "Current Simulation",
       coverImageUrl: "https://via.placeholder.com/100",
       scenarioPathSessionItemId: "current-path-item-123",
     },
-  };
+  });
 
   describe("Basic Rendering", () => {
     it("should render the simulation card with all elements", () => {
-      render(<UpNextSimulationCard data={mockData} />);
+      render(<UpNextSimulationCard data={getMockData()} />);
 
       expect(screen.getByText("Up next - Simulation 2")).toBeInTheDocument();
       expect(screen.getByText("Hopeless Male, 40")).toBeInTheDocument();
@@ -143,7 +146,7 @@ describe("UpNextSimulationCard", () => {
     });
 
     it("should render the cover image with correct attributes", () => {
-      render(<UpNextSimulationCard data={mockData} />);
+      render(<UpNextSimulationCard data={getMockData()} />);
 
       const image = screen.getByAltText("Hopeless Male, 40");
       expect(image).toBeInTheDocument();
@@ -153,20 +156,20 @@ describe("UpNextSimulationCard", () => {
 
   describe("Props Handling", () => {
     it("should display correct simulation number", () => {
-      const customData = {
-        ...mockData,
-        upcomingScenario: { ...mockData.upcomingScenario, order: 5 },
-      };
+      const customData = getMockData();
+      if (customData.upcomingScenario) {
+        customData.upcomingScenario.order = 5;
+      }
       render(<UpNextSimulationCard data={customData} />);
 
       expect(screen.getByText("Up next - Simulation 5")).toBeInTheDocument();
     });
 
     it("should display custom title", () => {
-      const customData = {
-        ...mockData,
-        upcomingScenario: { ...mockData.upcomingScenario, title: "Custom Title" },
-      };
+      const customData = getMockData();
+      if (customData.upcomingScenario) {
+        customData.upcomingScenario.title = "Custom Title";
+      }
       render(<UpNextSimulationCard data={customData} />);
 
       expect(screen.getByText("Custom Title")).toBeInTheDocument();
@@ -174,10 +177,10 @@ describe("UpNextSimulationCard", () => {
 
     it("should display custom scenario text", () => {
       const customScenario = "This is a custom scenario description.";
-      const customData = {
-        ...mockData,
-        upcomingScenario: { ...mockData.upcomingScenario, description: customScenario },
-      };
+      const customData = getMockData();
+      if (customData.upcomingScenario) {
+        customData.upcomingScenario.description = customScenario;
+      }
       render(<UpNextSimulationCard data={customData} />);
 
       expect(screen.getByText(customScenario)).toBeInTheDocument();
@@ -185,20 +188,20 @@ describe("UpNextSimulationCard", () => {
 
     it("should use custom cover image URL", () => {
       const customImageUrl = "https://example.com/custom-image.jpg";
-      const customData = {
-        ...mockData,
-        upcomingScenario: { ...mockData.upcomingScenario, coverImageUrl: customImageUrl },
-      };
+      const customData = getMockData();
+      if (customData.upcomingScenario) {
+        customData.upcomingScenario.coverImageUrl = customImageUrl;
+      }
       render(<UpNextSimulationCard data={customData} />);
 
-      const image = screen.getByAltText(mockData.upcomingScenario!.title!);
+      const image = screen.getByAltText(getMockData().upcomingScenario!.title!);
       expect(image).toHaveAttribute("src", customImageUrl);
     });
   });
 
   describe("Styling", () => {
     it("should have correct container classes", () => {
-      const { container } = render(<UpNextSimulationCard data={mockData} />);
+      const { container } = render(<UpNextSimulationCard data={getMockData()} />);
 
       const card = container.querySelector(".rounded-\\[8px\\]");
       expect(card).toBeInTheDocument();
@@ -206,29 +209,29 @@ describe("UpNextSimulationCard", () => {
     });
 
     it("should have correct image dimensions", () => {
-      render(<UpNextSimulationCard data={mockData} />);
+      render(<UpNextSimulationCard data={getMockData()} />);
 
-      const image = screen.getByAltText(mockData.upcomingScenario!.title!);
+      const image = screen.getByAltText(getMockData().upcomingScenario!.title!);
       expect(image).toHaveClass("w-[120px]", "h-[60px]", "rounded-[8px]", "object-cover");
     });
   });
 
   describe("Edge Cases", () => {
     it("should handle empty description text", () => {
-      const customData = {
-        ...mockData,
-        upcomingScenario: { ...mockData.upcomingScenario, description: "" },
-      };
+      const customData = getMockData();
+      if (customData.upcomingScenario) {
+        customData.upcomingScenario.description = "";
+      }
       render(<UpNextSimulationCard data={customData} />);
 
       expect(screen.getByText("Scenario:")).toBeInTheDocument();
     });
 
     it("should handle simulation number 0", () => {
-      const customData = {
-        ...mockData,
-        upcomingScenario: { ...mockData.upcomingScenario, order: 0 },
-      };
+      const customData = getMockData();
+      if (customData.upcomingScenario) {
+        customData.upcomingScenario.order = 0;
+      }
       render(<UpNextSimulationCard data={customData} />);
 
       expect(screen.getByText("Up next - Simulation 0")).toBeInTheDocument();
@@ -236,10 +239,10 @@ describe("UpNextSimulationCard", () => {
 
     it("should handle long description text", () => {
       const longDescription = "A".repeat(500);
-      const customData = {
-        ...mockData,
-        upcomingScenario: { ...mockData.upcomingScenario, description: longDescription },
-      };
+      const customData = getMockData();
+      if (customData.upcomingScenario) {
+        customData.upcomingScenario.description = longDescription;
+      }
       render(<UpNextSimulationCard data={customData} />);
 
       expect(screen.getByText(longDescription)).toBeInTheDocument();
@@ -247,10 +250,10 @@ describe("UpNextSimulationCard", () => {
 
     it("should handle special characters in title", () => {
       const specialTitle = "Test & Title <with> 'Special' \"Characters\"";
-      const customData = {
-        ...mockData,
-        upcomingScenario: { ...mockData.upcomingScenario, title: specialTitle },
-      };
+      const customData = getMockData();
+      if (customData.upcomingScenario) {
+        customData.upcomingScenario.title = specialTitle;
+      }
       render(<UpNextSimulationCard data={customData} />);
 
       expect(screen.getByText(specialTitle)).toBeInTheDocument();
