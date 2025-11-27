@@ -35,7 +35,7 @@ export const en = {
     pathUpdateFailed: "Failed to update path access.",
     failedUpdateAccess: "Failed to update access.",
     OrganizationNotFound: "Organization not found",
-    minimumScoreError: "Minimum score cannot be negative",
+    minimumScoreError: "Minimum score must be a positive integer",
     failedToCreateEvent: "Failed to create event",
     failedToProceed: "Fill atleast title field to proceed to Event Configuration!",
     failedToSaveEvents: "Failed to delete events. Please try again.",

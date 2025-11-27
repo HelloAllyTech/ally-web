@@ -177,6 +177,11 @@ export const isEmpty = (value: unknown): boolean => {
   return false;
 };
 
+export const normalizeScore = (value: string | number): number => {
+  const newValue = Number(value);
+  return Math.round(Math.abs(newValue));
+};
+
 export const isNonEmptyObject = (value: any): boolean => {
   return (
     value !== null &&
