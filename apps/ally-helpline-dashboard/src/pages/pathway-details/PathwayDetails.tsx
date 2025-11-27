@@ -62,8 +62,12 @@ export const PathwayDetails: FC = () => {
   const handleStartOrContinueSimulation = async () => {
     await enrollPathwaySession();
     const nextScenario = pathway?.scenarios.find(
-      scenario => scenario.status !== PathwayScenarioStatus.COMPLETED,
+      scenario => scenario.status === PathwayScenarioStatus.UNLOCKED,
     );
+    if (!nextScenario) {
+      toast.error("Upcoming simulation is locked");
+      return;
+    }
     setSelectedScenario(nextScenario);
     setIsModalOpen(true);
   };
