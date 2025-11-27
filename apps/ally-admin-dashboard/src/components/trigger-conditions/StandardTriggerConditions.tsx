@@ -24,13 +24,17 @@ export const StandardTriggerConditions: React.FC<StandardTriggerConditionsProps>
   const fields = config.fields || [];
   const isTimeBased = eventType === EVENT_DETECTION_TYPES.TIME_BASED;
   const isSentenceSimilarity = eventType === EVENT_DETECTION_TYPES.SENTENCE_SIMILARITY;
+  const isSemanticSimilarity = eventType === EVENT_DETECTION_TYPES.SEMANTIC_SIMILARITY;
   const isScoreBased = eventType === EVENT_DETECTION_TYPES.SCORE_BASED;
+
+  // Both sentence similarity and semantic similarity use the same layout
+  const isMultilineLayout = isSentenceSimilarity || isSemanticSimilarity;
 
   return (
     <div
-      className={`relative ${isSentenceSimilarity ? "flex items-start" : "flex items-center"} gap-2`}
+      className={`relative ${isMultilineLayout ? "flex items-start" : "flex items-center"} gap-2`}
     >
-      {isSentenceSimilarity ? (
+      {isMultilineLayout ? (
         <>
           <div className={`flex items-center gap-2 ${isInTable ? "" : "pl-2"} flex-shrink-0`}>
             <span className={`text-sm text-typography-500 flex-shrink-0`}>if</span>

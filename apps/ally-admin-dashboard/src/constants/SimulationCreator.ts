@@ -15,6 +15,7 @@ export const EVENT_TYPE_OPTIONS = [
   { value: "TIME_BASED", label: "Time Based" },
   { value: "SCORE_BASED", label: "Score Based" },
   { value: "SENTENCE_SIMILARITY", label: "Sentence Similarity" },
+  { value: "SEMANTIC_SIMILARITY", label: "Semantic Similarity" },
   { value: "COMBINATION", label: "Combination" },
 ];
 

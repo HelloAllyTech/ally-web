@@ -12,6 +12,7 @@ vi.mock("@assets", () => ({
   Chat: () => <svg data-testid="chat">Chat</svg>,
   Close: () => <svg data-testid="close">Close</svg>,
   DiamondShine: () => <svg data-testid="diamond-shine">DiamondShine</svg>,
+  FocusLens: () => <svg data-testid="focus-lens">FocusLens</svg>,
   Tick: () => <svg data-testid="tick">Tick</svg>,
 }));
 

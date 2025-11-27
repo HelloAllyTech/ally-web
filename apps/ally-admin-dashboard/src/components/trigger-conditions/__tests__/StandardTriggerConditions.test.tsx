@@ -8,6 +8,7 @@ vi.mock("@components", () => ({
     TIME_BASED: "TIME_BASED",
     SCORE_BASED: "SCORE_BASED",
     SENTENCE_SIMILARITY: "SENTENCE_SIMILARITY",
+    SEMANTIC_SIMILARITY: "SEMANTIC_SIMILARITY",
   },
 }));
 
@@ -16,6 +17,7 @@ vi.mock("@constants", () => ({
     TIME_BASED: "TIME_BASED",
     SCORE_BASED: "SCORE_BASED",
     SENTENCE_SIMILARITY: "SENTENCE_SIMILARITY",
+    SEMANTIC_SIMILARITY: "SEMANTIC_SIMILARITY",
   },
   TRIGGER_FIELD_TYPES: {
     NUMBER: "NUMBER",
@@ -85,6 +87,26 @@ vi.mock("@constants", () => ({
             id: "sentences",
             type: "MULTILINE_TEXT",
             placeholder: "Enter sentences",
+          },
+        ],
+      };
+    }
+    if (eventType === "SEMANTIC_SIMILARITY") {
+      return {
+        fields: [
+          {
+            id: "speaker",
+            type: "SPEAKER_DROPDOWN",
+            options: [
+              { value: "CARE_GIVER", label: "Care Giver" },
+              { value: "CARE_SEEKER", label: "Care Seeker" },
+            ],
+            labelAfter: "said something",
+          },
+          {
+            id: "sentences",
+            type: "MULTILINE_TEXT",
+            placeholder: "Add description",
           },
         ],
       };
@@ -164,6 +186,20 @@ describe("StandardTriggerConditions", () => {
         <StandardTriggerConditions
           eventType="SENTENCE_SIMILARITY"
           triggerCondition={{ speaker: "CARE_GIVER", sentences: ["Sentence 1"] }}
+          onChange={defaultOnChange}
+        />,
+      );
+
+      expect(screen.getByTestId("field-speaker")).toBeInTheDocument();
+      expect(screen.getByTestId("field-sentences")).toBeInTheDocument();
+      expect(screen.getByText("if")).toBeInTheDocument();
+    });
+
+    it("renders SEMANTIC_SIMILARITY trigger conditions", () => {
+      render(
+        <StandardTriggerConditions
+          eventType="SEMANTIC_SIMILARITY"
+          triggerCondition={{ speaker: "CARE_GIVER", sentences: ["Description 1"] }}
           onChange={defaultOnChange}
         />,
       );
@@ -267,6 +303,41 @@ describe("StandardTriggerConditions", () => {
       );
 
       expect(speakerIndex).toBeLessThan(sentencesIndex);
+    });
+  });
+
+  describe("SEMANTIC_SIMILARITY layout", () => {
+    it("renders speaker field before sentences field", () => {
+      const { container } = render(
+        <StandardTriggerConditions
+          eventType="SEMANTIC_SIMILARITY"
+          triggerCondition={{ speaker: "CARE_GIVER", sentences: [] }}
+          onChange={defaultOnChange}
+        />,
+      );
+
+      const fields = container.querySelectorAll('[data-testid^="field-"]');
+      const speakerIndex = Array.from(fields).findIndex(
+        el => el.getAttribute("data-testid") === "field-speaker",
+      );
+      const sentencesIndex = Array.from(fields).findIndex(
+        el => el.getAttribute("data-testid") === "field-sentences",
+      );
+
+      expect(speakerIndex).toBeLessThan(sentencesIndex);
+    });
+
+    it("uses multiline layout for SEMANTIC_SIMILARITY", () => {
+      const { container } = render(
+        <StandardTriggerConditions
+          eventType="SEMANTIC_SIMILARITY"
+          triggerCondition={{ speaker: "CARE_GIVER", sentences: [] }}
+          onChange={defaultOnChange}
+        />,
+      );
+
+      const mainDiv = container.querySelector('[class*="items-start"]');
+      expect(mainDiv).toBeInTheDocument();
     });
   });
 });

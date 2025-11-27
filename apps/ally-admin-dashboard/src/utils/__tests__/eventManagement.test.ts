@@ -274,6 +274,72 @@ describe("eventManagement utils", () => {
       });
     });
 
+    describe("SEMANTIC_SIMILARITY events", () => {
+      it("should convert SEMANTIC_SIMILARITY event with sentences and speaker", () => {
+        const event: UpdateEventDataParam = {
+          name: "Test Event",
+          detectionType: EVENT_DETECTION_TYPES.SEMANTIC_SIMILARITY,
+          triggerCondition: {
+            sentences: ["Judgemental", "Empathetic"],
+            speaker: "CARE_GIVER",
+          },
+          score: 10,
+          emoji: "😊",
+          message: "Test message",
+          branchInstruction: "Branch instruction",
+        };
+
+        const result = convertEventToApiPayload(event);
+
+        expect(result).toEqual({
+          name: "Test Event",
+          description: "",
+          score: 10,
+          emoji: "😊",
+          message: "Test message",
+          branchInstruction: "Branch instruction",
+          detectionType: SessionEventDetectionType.SEMANTIC_SIMILARITY,
+          visibilityType: "",
+          detectionData: {
+            sentences: ["Judgemental", "Empathetic"],
+            speaker: "CARE_GIVER",
+          },
+        });
+      });
+
+      it("should convert SEMANTIC_SIMILARITY event with only sentences", () => {
+        const event: UpdateEventDataParam = {
+          name: "Test Event",
+          detectionType: EVENT_DETECTION_TYPES.SEMANTIC_SIMILARITY,
+          triggerCondition: {
+            sentences: ["Judgemental"],
+            speaker: "CARE_GIVER",
+          },
+        };
+
+        const result = convertEventToApiPayload(event);
+
+        expect(result?.detectionData?.sentences).toEqual(["Judgemental"]);
+        expect(result?.detectionData?.speaker).toBe("CARE_GIVER");
+      });
+
+      it("should not include empty sentences array", () => {
+        const event: UpdateEventDataParam = {
+          name: "Test Event",
+          detectionType: EVENT_DETECTION_TYPES.SEMANTIC_SIMILARITY,
+          triggerCondition: {
+            sentences: [],
+            speaker: "CARE_GIVER",
+          },
+        };
+
+        const result = convertEventToApiPayload(event);
+
+        expect(result?.detectionData?.sentences).toBeUndefined();
+        expect(result?.detectionData?.speaker).toBe("CARE_GIVER");
+      });
+    });
+
     describe("SCORE_BASED events", () => {
       it("should convert SCORE_BASED event with score and operator", () => {
         const event: UpdateEventDataParam = {
@@ -561,6 +627,58 @@ describe("eventManagement utils", () => {
 
         expect((result.triggerCondition as any)?.sentences).toEqual(["Hello"]);
         expect((result.triggerCondition as any)?.speaker).toBeUndefined();
+      });
+    });
+
+    describe("SEMANTIC_SIMILARITY events", () => {
+      it("should convert SEMANTIC_SIMILARITY event with sentences and speaker", () => {
+        const apiEvent: SessionEvent = {
+          id: "event-1",
+          name: "Test Event",
+          detectionType: SessionEventDetectionType.SEMANTIC_SIMILARITY,
+          detectionData: {
+            sentences: ["Judgemental", "Empathetic"],
+            speaker: "CARE_GIVER",
+          },
+        };
+
+        const result = convertApiResponseToEvent(apiEvent);
+
+        expect(result.detectionType).toBe("SEMANTIC_SIMILARITY");
+        expect((result.triggerCondition as any)?.sentences).toEqual(["Judgemental", "Empathetic"]);
+        expect((result.triggerCondition as any)?.speaker).toBe("CARE_GIVER");
+      });
+
+      it("should convert SEMANTIC_SIMILARITY event with only sentences", () => {
+        const apiEvent: SessionEvent = {
+          id: "event-1",
+          name: "Test Event",
+          detectionType: SessionEventDetectionType.SEMANTIC_SIMILARITY,
+          detectionData: {
+            sentences: ["Judgemental"],
+          },
+        };
+
+        const result = convertApiResponseToEvent(apiEvent);
+
+        expect((result.triggerCondition as any)?.sentences).toEqual(["Judgemental"]);
+        expect((result.triggerCondition as any)?.speaker).toBeUndefined();
+      });
+
+      it("should convert SEMANTIC_SIMILARITY event with only speaker", () => {
+        const apiEvent: SessionEvent = {
+          id: "event-1",
+          name: "Test Event",
+          detectionType: SessionEventDetectionType.SEMANTIC_SIMILARITY,
+          detectionData: {
+            speaker: "CARE_GIVER",
+          },
+        };
+
+        const result = convertApiResponseToEvent(apiEvent);
+
+        expect((result.triggerCondition as any)?.speaker).toBe("CARE_GIVER");
+        expect((result.triggerCondition as any)?.sentences).toBeUndefined();
       });
     });
 
