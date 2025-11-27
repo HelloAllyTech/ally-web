@@ -44,17 +44,19 @@ export const CircularProgress: FC<CircularProgressProps> = ({
           strokeWidth={strokeWidth}
         />
         {/* Progress circle */}
-        <circle
-          cx={center}
-          cy={center}
-          r={radius}
-          fill="none"
-          stroke={progressColor}
-          strokeWidth={strokeWidth}
-          strokeDasharray={`${progress} ${circumference}`}
-          strokeLinecap="round"
-          className="transition-all duration-300"
-        />
+        {current !== 0 && (
+          <circle
+            cx={center}
+            cy={center}
+            r={radius}
+            fill="none"
+            stroke={progressColor}
+            strokeWidth={strokeWidth}
+            strokeDasharray={`${progress} ${circumference}`}
+            strokeLinecap="round"
+            className="transition-all duration-300"
+          />
+        )}
       </svg>
       {showLabel && (
         <span className={`relative text-xs font-medium ${textColor} z-10`}>

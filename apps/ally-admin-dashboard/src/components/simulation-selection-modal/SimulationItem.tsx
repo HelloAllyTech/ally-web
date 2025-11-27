@@ -10,6 +10,7 @@ import { CustomImage } from "@ally-ui-mono/ui-shared";
 import { CloseRed, DragIndicator, InfoIcon, Plus } from "@assets";
 import { en, toolTipStyles } from "@constants";
 import { SimulationCardItemProps } from "@types";
+import { normalizeScore } from "@utils";
 
 import { AddMessageModal } from "./AddMessageModal";
 
@@ -65,17 +66,27 @@ export const SimulationCardItem: FC<SimulationCardItemProps> = ({
     setOpenMessageIndex(null);
   };
 
-  const handleMinimumScoreChange = (index: number, value: string) => {
-    const updatedValue = Number(value);
+  const handleMinimumScoreChange = (
+    index: number,
+    value: string,
+    event: React.ChangeEvent<HTMLInputElement>,
+  ) => {
+    let updatedValue = Number(value);
 
-    if (updatedValue < 0) {
+    if (updatedValue < 0 || !Number.isInteger(updatedValue)) {
+      updatedValue = normalizeScore(updatedValue);
+
       toast.error(en.errors.minimumScoreError);
-      return;
+
+      if (event) {
+        event.target.value = String(updatedValue);
+      }
     }
+
     const updated = [...selectedSimulations];
     updated[index] = {
       ...updated[index],
-      minimumScore: Number(value) || 0,
+      minimumScore: updatedValue || 0,
     };
     setSelectedSimulations(updated);
   };
@@ -152,7 +163,7 @@ export const SimulationCardItem: FC<SimulationCardItemProps> = ({
               type="number"
               className="border outline-none w-16 p-1 bg-secondary-50 rounded-sm"
               defaultValue={simulation.minimumScore}
-              onBlur={event => handleMinimumScoreChange(index, event.target.value)}
+              onBlur={event => handleMinimumScoreChange(index, event.target.value, event)}
               min={0}
             />
           </div>

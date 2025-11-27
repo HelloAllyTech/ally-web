@@ -103,6 +103,7 @@ export const PathwayDetails: FC = () => {
   const totalScenarios = pathway?.totalScenarios || pathway?.scenarios?.length || 0;
   const completedScenarios = pathway?.completedScenarios || 0;
   const hasProgress = completedScenarios > 0;
+  const isPathwayComplete = totalScenarios > 0 && completedScenarios === totalScenarios;
   const progressPercentage = totalScenarios > 0 ? (completedScenarios / totalScenarios) * 100 : 0;
   const sortedScenarios = pathway?.scenarios
     ? [...pathway.scenarios].sort((a, b) => a.order - b.order)
@@ -162,7 +163,7 @@ export const PathwayDetails: FC = () => {
       <div className="flex items-center gap-3">
         <div className="w-40 h-2 bg-gray-200 rounded-full overflow-hidden">
           <div
-            className="h-full bg-primary-500 rounded-full transition-all duration-300"
+            className={`h-full ${isPathwayComplete ? "bg-[#81C784]" : "bg-primary-500"} rounded-full transition-all duration-300`}
             style={{ width: `${progressPercentage}%` }}
           />
         </div>
@@ -182,12 +183,14 @@ export const PathwayDetails: FC = () => {
       {pathway.description && (
         <p className="text-base text-typography-800 mb-6 leading-relaxed">{pathway.description}</p>
       )}
-      <button
-        onClick={handleStartOrContinueSimulation}
-        className="px-6 py-2 bg-primary-500 text-white rounded-full font-tertiary text-base font-medium hover:bg-primary-600 transition-colors"
-      >
-        {hasProgress ? "Continue" : "Start"}
-      </button>
+      {!isPathwayComplete && (
+        <button
+          onClick={handleStartOrContinueSimulation}
+          className="px-6 py-2 bg-primary-500 text-white rounded-full font-tertiary text-base font-medium hover:bg-primary-600 transition-colors"
+        >
+          {hasProgress ? "Continue" : "Start"}
+        </button>
+      )}
     </div>
   );
 

@@ -184,7 +184,7 @@ export const Learn: FC = () => {
           initial="hidden"
           animate="visible"
           exit="exit"
-          className="max-h-[calc(100vh-200px)] pt-4 overflow-y-scroll pl-[10px]"
+          className="max-h-[calc(100vh-200px)] pt-4 overflow-y-scroll px-[10px] custom-scrollbar"
         >
           {renderContentGrid()}
         </motion.div>

@@ -98,7 +98,7 @@ export const UpNextSimulationCard = ({ data }: UpNextSimulationCardProps) => {
         </>
       )}
 
-      {hasUpcomingScenario && (
+      {hasUpcomingScenario && !isPathwayCompleted && (
         <div className="rounded-[8px] border border-border-light">
           <div className="flex p-4 gap-4 bg-background-secondary">
             <img
@@ -127,7 +127,7 @@ export const UpNextSimulationCard = ({ data }: UpNextSimulationCardProps) => {
       {/* Action Buttons */}
       <motion.div
         {...ANIMATION_CONFIG}
-        className="absolute bottom-0 left-4 right-4 z-10 max-w-full bg-white"
+        className="absolute bottom-0 left-0 right-0 z-10 max-w-full bg-white pt-[10px]"
       >
         {isPathwayCompleted ? (
           <Button
