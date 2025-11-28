@@ -5,7 +5,10 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 
 import { useGetScenariosQuery, useGetScenarioPathwaysQuery } from "@api";
 import { CreditsDisplay, ScenarioCard, TabGroup } from "@components";
+import { Permissions } from "@constants";
+import { useUser } from "@hooks";
 import { ScenarioStatus } from "@types";
+import { hasPermissions } from "@utils";
 
 import { learnPageContainerVariants, learnPageItemVariants } from "./constants";
 
@@ -23,6 +26,8 @@ type LearnTabId = (typeof LEARN_TABS)[number]["id"];
 
 export const Learn: FC = () => {
   const navigate = useNavigate();
+  const { permissions } = useUser();
+  const hasPathPermissions = hasPermissions(permissions, Permissions.VIEW_SCENARIO_PATHS);
   const [searchParams, setSearchParams] = useSearchParams();
 
   const isValidTabId = (tab: string | null): tab is LearnTabId => {
@@ -47,7 +52,7 @@ export const Learn: FC = () => {
     data: pathwaysData,
     isLoading: isPathwaysLoading,
     refetch: refetchPathways,
-  } = useGetScenarioPathwaysQuery({});
+  } = useGetScenarioPathwaysQuery({}, { skip: !hasPathPermissions });
 
   const handleTabChange = (newValue: LearnTabId) => {
     if (isValidTabId(newValue)) setSearchParams({ tab: newValue });
@@ -73,15 +78,18 @@ export const Learn: FC = () => {
           <span className={emphasisStyles}> role plays </span>
           to build mental healthcare skills.
         </motion.div>
-        <div className="flex flex-row items-center justify-between gap-2 border-b border-typography-300">
-          <TabGroup
-            tabs={LEARN_TABS.map(tab => ({ label: tab.label, value: tab.id }))}
-            value={activeTab}
-            className="border-none max-w-[200px]"
-            onChange={(_, newValue) => handleTabChange(newValue as LearnTabId)}
-          />
-          <CreditsDisplay />
-        </div>
+        {hasPathPermissions && (
+          <div className="flex flex-row items-center justify-between gap-2 border-b border-typography-300">
+            <TabGroup
+              tabs={LEARN_TABS.map(tab => ({ label: tab.label, value: tab.id }))}
+              value={activeTab}
+              className="border-none max-w-[200px]"
+              onChange={(_, newValue) => handleTabChange(newValue as LearnTabId)}
+            />
+
+            <CreditsDisplay />
+          </div>
+        )}
       </>
     );
   };

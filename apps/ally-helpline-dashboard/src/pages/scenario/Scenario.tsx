@@ -65,6 +65,8 @@ export const Scenario: FC = () => {
     if (limitReached) setNoEnoughCredits(true);
   }, [credits]);
 
+  const isAuthenticated = () => Boolean(localStorage.getItem(LOCAL_STORAGE_KEYS.ACCESS_TOKEN));
+
   const renderBackButton = () => {
     return (
       <motion.button
@@ -94,9 +96,7 @@ export const Scenario: FC = () => {
 
   const onStartSimulationClick = () => {
     // TODO: update authorization check
-    const accessToken = localStorage.getItem(LOCAL_STORAGE_KEYS.ACCESS_TOKEN);
-
-    if (!accessToken) {
+    if (!isAuthenticated()) {
       // TODO: Retest login through dialog
       setIsLoginDialogOpen(true);
       return;
@@ -153,20 +153,22 @@ export const Scenario: FC = () => {
             exit="exit"
             className="flex flex-col gap-6 w-full m-auto justify-center items-center"
           >
-            <div
-              className="flex justify-between w-full max-w-[600px]"
-              data-testid="scenario-header"
-            >
+            {isAuthenticated() && (
               <div
-                className="flex items-center gap-2 font-secondary text-3xl"
-                data-testid="scenario-title"
+                className="flex justify-between w-full max-w-[600px]"
+                data-testid="scenario-header"
               >
-                {renderBackButton()}
-                <span>Start</span>
-                <span className="font-bold italic"> Simulation</span>
+                <div
+                  className="flex items-center gap-2 font-secondary text-3xl"
+                  data-testid="scenario-title"
+                >
+                  {renderBackButton()}
+                  <span>Start</span>
+                  <span className="font-bold italic"> Simulation</span>
+                </div>
+                <CreditsDisplay />
               </div>
-              <CreditsDisplay />
-            </div>
+            )}
             <ScenarioDetailsCard
               data-testid="scenario-details-card"
               coverImage={scenario?.coverImageUrl || ""}

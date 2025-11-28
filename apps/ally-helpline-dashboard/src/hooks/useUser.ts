@@ -28,8 +28,11 @@ export const useUser = () => {
       const token = localStorage.getItem(LOCAL_STORAGE_KEYS.ACCESS_TOKEN);
       if (token) {
         try {
-          if (user) return user;
           const userData = await getUser();
+          if (userData?.data?.status === "SUSPENDED") {
+            logout();
+            return null;
+          }
           const permissionsData = await getPermissions();
           store.dispatch(setUser(userData?.data));
           store.dispatch(setPermissions(permissionsData?.data));
