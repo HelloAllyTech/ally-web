@@ -101,7 +101,7 @@ vi.mock("@constants", () => ({
               { value: "CARE_GIVER", label: "Care Giver" },
               { value: "CARE_SEEKER", label: "Care Seeker" },
             ],
-            labelAfter: "said something",
+            labelAfter: "Says",
           },
           {
             id: "sentences",

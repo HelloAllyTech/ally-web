@@ -80,7 +80,8 @@ export const TriggerConditionField: React.FC<TriggerConditionFieldProps> = ({
           <TimeInput
             value={fieldValue || ""}
             onChange={value => onChange(field.id, value)}
-            placeholder={field.placeholder || "HH:MM:SS"}
+            placeholder={field.placeholder || "hh:mm:ss"}
+            className={`w-[100px] ${isInTable ? "bg-neutral-100" : "bg-neutral-50"}`}
           />
         );
 
