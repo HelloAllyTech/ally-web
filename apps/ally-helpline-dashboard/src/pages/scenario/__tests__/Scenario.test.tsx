@@ -234,7 +234,10 @@ describe("Scenario Component", () => {
     // Mock localStorage
     Object.defineProperty(window, "localStorage", {
       value: {
-        getItem: vi.fn(),
+        getItem: vi.fn(key => {
+          if (key === LOCAL_STORAGE_KEYS.ACCESS_TOKEN) return "mock-token";
+          return null;
+        }),
         setItem: vi.fn(),
         removeItem: vi.fn(),
         clear: vi.fn(),

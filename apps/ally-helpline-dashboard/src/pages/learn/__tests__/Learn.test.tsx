@@ -28,10 +28,31 @@ vi.mock("@api", () => ({
   useGetScenarioPathwaysQuery: () => mockUseGetScenarioPathwaysQuery(),
 }));
 
+// Mock assets
+vi.mock("@assets", () => ({
+  Carousel1: "carousel-1.jpg",
+  Carousel2: "carousel-2.jpg",
+  Carousel3: "carousel-3.jpg",
+  Carousel4: "carousel-4.jpg",
+  Carousel5: "carousel-5.jpg",
+  Carousel6: "carousel-6.jpg",
+  SearchIcon: () => <svg data-testid="search-icon" />,
+  SortIcon: () => <svg data-testid="sort-icon" />,
+  FilterIcon: () => <svg data-testid="filter-icon" />,
+  CloseIcon: () => <svg data-testid="close-icon" />,
+  ArrowRight: () => <svg data-testid="arrow-right" />,
+  ArrowLeft: () => <svg data-testid="arrow-left" />,
+  ChevronDown: () => <svg data-testid="chevron-down" />,
+  Bolt: () => <div data-testid="bolt-icon">⚡</div>,
+}));
+
 // Mock the useSimulationCredits hook
 const mockUseSimulationCredits = vi.fn();
+const mockUseUser = vi.fn();
 vi.mock("@hooks", () => ({
   useSimulationCredits: () => mockUseSimulationCredits(),
+  useUser: () => mockUseUser(),
+  useDebounce: (val: any) => val,
 }));
 
 // Import the mocked hook for use in component mock
@@ -99,11 +120,6 @@ vi.mock("@components", () => ({
       </div>
     );
   },
-}));
-
-// Mock the Bolt asset
-vi.mock("@assets", () => ({
-  Bolt: () => <div data-testid="bolt-icon">⚡</div>,
 }));
 
 // Mock framer-motion
@@ -205,6 +221,10 @@ describe("Learn Component", () => {
         creditLimit: 10,
       },
       limitReached: false,
+    });
+    mockUseUser.mockReturnValue({
+      permissions: ["view:scenario-paths"],
+      user: { id: "1", name: "Test User" },
     });
   });
 
