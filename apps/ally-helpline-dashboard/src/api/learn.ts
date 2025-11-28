@@ -221,7 +221,7 @@ const learnAPI = baseAPI.injectEndpoints({
 });
 
 export const {
-  useGetUpComingSimulationQuery,
+  useLazyGetUpComingSimulationQuery,
   useEndSimulationMutation,
   useGetScenarioQuery,
   useGetScenariosQuery,
