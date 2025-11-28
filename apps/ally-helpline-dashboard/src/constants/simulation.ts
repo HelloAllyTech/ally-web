@@ -7,6 +7,7 @@ export const LIVEKIT_CONFIG: RoomOptions = {
     simulcast: true,
     videoSimulcastLayers: [],
   },
+  disconnectOnPageLeave: false,
 };
 
 export const audioLevelConfig = {
