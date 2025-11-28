@@ -208,12 +208,55 @@ export const CombinationTriggerConditions: React.FC<CombinationTriggerConditions
   const statusField = config.fields.find(field => field.id === statusFieldName);
   const operatorField = config.fields.find(field => field.id === operatorFieldName);
 
+  // In table view, show only first condition + operator
+  if (isInTable) {
+    return (
+      <div className="flex items-center gap-2">
+        <span className="text-sm text-typography-500">if</span>
+        <TriggerConditionDropdown
+          value={getEventId(directionMap.LEFT)}
+          displayValue={isLeftLoading ? "Loading..." : getEventDisplayName(leftEventData)}
+          options={leftDropdownOptions}
+          onChange={eventId => handleEventChange(directionMap.LEFT, eventId)}
+          onLoadMore={hasMore ? handleLoadMore : undefined}
+          onSearch={handleSearch}
+          placeholder="Select an event"
+          searchPlaceholder="Search events..."
+          isSearchable={true}
+          disabled={false}
+          className="min-w-[150px] max-w-[170px]"
+          isInTable={isInTable}
+        />
+        <span className="text-sm text-typography-500">has</span>
+        <TriggerConditionDropdown
+          value={getStatus(directionMap.LEFT)}
+          options={statusField?.options || []}
+          onChange={status => handleStatusChange(directionMap.LEFT, status as EventStatus)}
+          placeholder={statusField?.placeholder || "Occurred"}
+          disabled={false}
+          className={(statusField as any)?.className || ""}
+          isInTable={isInTable}
+        />
+        <TriggerConditionDropdown
+          value={getOperator()}
+          options={operatorField?.options || []}
+          onChange={operator => handleOperatorChange(operator as CombinationOperator)}
+          placeholder={COMBINATION_OPERATOR.AND}
+          disabled={false}
+          isInTable={isInTable}
+          className="bg-primary-50 border-[0.5px] border-primary-500"
+        />
+      </div>
+    );
+  }
+
+  // Full view for popup/side panel - show both conditions
   return (
     <div className="flex flex-col gap-2">
       <div className="relative flex flex-col gap-2">
         <div className="flex flex-col gap-2">
           {/* First condition */}
-          <div className={`flex items-center gap-2 ${isInTable ? "" : "pl-3"}`}>
+          <div className="flex items-center gap-2 pl-3">
             <span className="text-sm text-typography-500">if</span>
             <TriggerConditionDropdown
               value={getEventId(directionMap.LEFT)}
@@ -227,7 +270,7 @@ export const CombinationTriggerConditions: React.FC<CombinationTriggerConditions
               isSearchable={true}
               disabled={false}
               className="min-w-[150px] max-w-[170px]"
-              isInTable={isInTable}
+              isInTable={false}
             />
             <span className="text-sm text-typography-500">has</span>
             <TriggerConditionDropdown
@@ -237,19 +280,19 @@ export const CombinationTriggerConditions: React.FC<CombinationTriggerConditions
               placeholder={statusField?.placeholder || "Occurred"}
               disabled={false}
               className={(statusField as any)?.className || ""}
-              isInTable={isInTable}
+              isInTable={false}
             />
           </div>
 
           {/* Second condition */}
-          <div className={`flex items-center gap-2 ${isInTable ? "" : "pl-3"}`}>
+          <div className="flex items-center gap-2 pl-3">
             <TriggerConditionDropdown
               value={getOperator()}
               options={operatorField?.options || []}
               onChange={operator => handleOperatorChange(operator as CombinationOperator)}
               placeholder={COMBINATION_OPERATOR.AND}
               disabled={false}
-              isInTable={isInTable}
+              isInTable={false}
               className="bg-primary-50 border-[0.5px] border-primary-500"
             />
             <TriggerConditionDropdown
@@ -264,7 +307,7 @@ export const CombinationTriggerConditions: React.FC<CombinationTriggerConditions
               isSearchable={true}
               disabled={false}
               className="min-w-[150px] max-w-[170px]"
-              isInTable={isInTable}
+              isInTable={false}
             />
             <span className="text-sm text-typography-500">has</span>
             <TriggerConditionDropdown
@@ -274,7 +317,7 @@ export const CombinationTriggerConditions: React.FC<CombinationTriggerConditions
               placeholder={statusField?.placeholder || "Occurred"}
               disabled={false}
               className={(statusField as any)?.className || ""}
-              isInTable={isInTable}
+              isInTable={false}
             />
           </div>
         </div>

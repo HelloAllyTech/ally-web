@@ -11,7 +11,7 @@ export interface TimeInputProps {
 export const TimeInput: React.FC<TimeInputProps> = ({
   value = "",
   onChange,
-  placeholder = "HH:MM:SS",
+  placeholder = "hh:mm:ss",
   className = "",
   disabled = false,
 }) => {
@@ -149,7 +149,7 @@ export const TimeInput: React.FC<TimeInputProps> = ({
       disabled={disabled}
       maxLength={8}
       pattern="^([0-1][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]$"
-      className={`w-full rounded border border-border-light text-md placeholder:text-typography-600 focus:ring-1 focus:ring-primary focus:outline-none px-2 py-1 ${className}`}
+      className={`w-full rounded-sm text-sm placeholder:text-typography-600 focus:outline-none px-2 py-1 h-6 ${className}`}
     />
   );
 };

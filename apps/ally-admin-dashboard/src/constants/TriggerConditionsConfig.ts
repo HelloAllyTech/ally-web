@@ -110,7 +110,7 @@ const TIME_BASED_CONFIG = {
       id: "value",
       label: "Time",
       type: TRIGGER_FIELD_TYPES.TIME,
-      placeholder: "HH:MM:SS",
+      placeholder: "hh:mm:ss",
     },
   ],
 };
@@ -167,7 +167,7 @@ const SENTENCE_SIMILARITY_CONFIG = {
 
 /**
  * Configuration for SEMANTIC_SIMILARITY event type
- * Renders: "if [speaker] said something [multiline textarea]"
+ * Renders: "if [speaker] Says [multiline textarea]"
  */
 const SEMANTIC_SIMILARITY_CONFIG = {
   id: "SEMANTIC_SIMILARITY" as EventType,
@@ -180,7 +180,7 @@ const SEMANTIC_SIMILARITY_CONFIG = {
       options: SPEAKER_OPTIONS,
       placeholder: "Care giver",
       className: "flex-shrink-0",
-      labelAfter: "said something", // Text to display after this field
+      labelAfter: "Says", // Text to display after this field
     },
     {
       id: "sentences",

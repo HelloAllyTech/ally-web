@@ -8,7 +8,7 @@ describe("TimeInput", () => {
     const mockOnChange = vi.fn();
     render(<TimeInput value="" onChange={mockOnChange} />);
 
-    const input = screen.getByPlaceholderText("HH:MM:SS");
+    const input = screen.getByPlaceholderText("hh:mm:ss");
     expect(input).toBeInTheDocument();
   });
 
