@@ -1,3 +1,5 @@
+import { useEffect, useState } from "react";
+
 import { useNavigate, useParams } from "react-router-dom";
 
 import { getSimulationEvents, logger, SimulationPage } from "@ally-ui-mono/ui-shared";
@@ -11,6 +13,7 @@ import { RoomStatus } from "@types";
 export const Simulation = () => {
   const navigate = useNavigate();
   const { id } = useParams();
+  const [isBackConfirmOpen, setIsBackConfirmOpen] = useState(false);
 
   const [endSimulation] = useEndSimulationMutation();
 
@@ -32,6 +35,23 @@ export const Simulation = () => {
     }
   };
 
+  useEffect(() => {
+    // Push a state so that "back" just pops this state but stays on page
+    window.history.pushState(null, document.title, window.location.href);
+
+    const handlePopState = () => {
+      // Prevent default back behavior effectively by pushing state again
+      window.history.pushState(null, document.title, window.location.href);
+      setIsBackConfirmOpen(true);
+    };
+
+    window.addEventListener("popstate", handlePopState);
+
+    return () => {
+      window.removeEventListener("popstate", handlePopState);
+    };
+  }, []);
+
   const renderWarningDialog = ({ isOpen, onClose, onContinue, onEnd }) => (
     <ConfirmationDialog
       isOpen={isOpen}
@@ -48,17 +68,31 @@ export const Simulation = () => {
   );
 
   return (
-    <SimulationPage
-      room={room}
-      roomData={roomData}
-      roomStatus={roomStatus}
-      sessionId={id}
-      isEndingSession={roomStatus !== RoomStatus.CONNECTED}
-      startTime={startTime.toISOString()}
-      events={getSimulationEvents(events)}
-      score={score}
-      onEndSimulation={onEndSimulation}
-      renderWarningDialog={renderWarningDialog}
-    />
+    <>
+      <SimulationPage
+        room={room}
+        roomData={roomData}
+        roomStatus={roomStatus}
+        sessionId={id}
+        isEndingSession={roomStatus !== RoomStatus.CONNECTED}
+        startTime={startTime.toISOString()}
+        events={getSimulationEvents(events)}
+        score={score}
+        onEndSimulation={onEndSimulation}
+        renderWarningDialog={renderWarningDialog}
+      />
+      <ConfirmationDialog
+        isOpen={isBackConfirmOpen}
+        onClose={() => setIsBackConfirmOpen(false)}
+        title={{ normal: "End ", italic: "Session" }}
+        content="Are you sure you want to end the session?"
+        buttonText="End Session"
+        buttonVariant={ButtonVariant.PRIMARY}
+        icon={SimulationWarningIllustration}
+        onButtonClick={onEndSimulation}
+        secondaryButtonText="Cancel"
+        onSecondaryButtonClick={() => setIsBackConfirmOpen(false)}
+      />
+    </>
   );
 };
