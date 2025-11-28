@@ -109,7 +109,7 @@ const learnAPI = baseAPI.injectEndpoints({
         url: ApiEndpoints.LEARN.END_SIMULATION(params.sessionId),
         method: HttpMethod.POST,
       }),
-      invalidatesTags: ["SimulationLogs"],
+      invalidatesTags: [TAG_TYPES.SIMULATION_LOGS, TAG_TYPES.SIMULATION_CREDITS],
     }),
 
     /**

@@ -146,6 +146,19 @@ export const useLiveKitRoom = (handleDisconnect: () => void): UseLiveKitRoomRetu
     };
   }, [cleanupRoom]);
 
+  useEffect(() => {
+    const handleUnload = () => {
+      // Disconnect room on page unload since we disabled auto-disconnect in LIVEKIT_CONFIG
+      room.disconnect();
+    };
+
+    window.addEventListener("pagehide", handleUnload);
+
+    return () => {
+      window.removeEventListener("pagehide", handleUnload);
+    };
+  }, [room]);
+
   return {
     error,
     events,
