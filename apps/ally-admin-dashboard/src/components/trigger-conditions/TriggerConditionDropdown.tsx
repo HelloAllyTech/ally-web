@@ -14,6 +14,8 @@ interface TriggerConditionDropdownProps {
   disabled?: boolean;
   className?: string;
   isInTable?: boolean;
+  onLoadMore?: () => void;
+  onSearch?: (searchTerm: string) => void;
 }
 
 /**
@@ -30,6 +32,8 @@ export const TriggerConditionDropdown: React.FC<TriggerConditionDropdownProps> =
   disabled = false,
   className = "",
   isInTable = false,
+  onLoadMore,
+  onSearch,
 }) => {
   // Check if we're showing placeholder (no value and no displayValue)
   const isShowingPlaceholder =
@@ -46,6 +50,8 @@ export const TriggerConditionDropdown: React.FC<TriggerConditionDropdownProps> =
         displayValue={displayValue}
         options={options}
         onChange={onChange}
+        onLoadMore={onLoadMore}
+        onSearch={onSearch}
         placeholder={placeholder}
         searchPlaceholder={searchPlaceholder}
         isSearchable={isSearchable}

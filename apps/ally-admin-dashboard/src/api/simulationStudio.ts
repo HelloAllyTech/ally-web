@@ -96,6 +96,17 @@ const simulationStudioAPI = baseAPI.injectEndpoints({
     }),
 
     /**
+     * Get session event by ID
+     */
+    getSessionEventById: builder.query<SessionEvent, string>({
+      query: id => ({
+        url: ApiEndpoints.SIMULATION_STUDIO.GET_SESSION_EVENT_BY_ID(id),
+        method: HttpMethod.GET,
+      }),
+      providesTags: [TAG_TYPES.SESSION_EVENTS],
+    }),
+
+    /**
      * Create Session Event
      */
     createSessionEvent: builder.mutation<void, { event: SessionEvent }>({
@@ -265,6 +276,7 @@ export const {
   useDeleteSimulationByIdMutation,
   useGetSessionEventsQuery,
   useLazyGetSessionEventsQuery,
+  useGetSessionEventByIdQuery,
   useCreateSessionEventMutation,
   useCreateSessionEventsMutation,
   useUpdateSessionEventMutation,
