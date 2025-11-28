@@ -1,16 +1,14 @@
-import React, { useMemo } from "react";
+import React, { useState, useEffect } from "react";
 
-import { useSelector } from "react-redux";
-
-import { useGetSessionEventsQuery } from "@api";
+import { useGetSessionEventsQuery, useGetSessionEventByIdQuery } from "@api";
 import {
   EVENT_DETECTION_TYPES,
+  getTriggerConditionConfig,
   SESSION_EVENT_STATUS_OPTIONS,
   SORT_BY,
   SORT_ORDER,
-  getTriggerConditionConfig,
+  INITIAL_EVENTS_LIMIT,
 } from "@constants";
-import { selectAvailableEvents } from "@reducer";
 import {
   CombinationTriggerCondition,
   CombinationExpressionNode,
@@ -18,6 +16,7 @@ import {
   COMBINATION_OPERATOR,
   EventStatus,
   CombinationOperator,
+  SessionEvent,
 } from "@types";
 
 import { TriggerConditionDropdown } from "./TriggerConditionDropdown";
@@ -42,37 +41,52 @@ export const CombinationTriggerConditions: React.FC<CombinationTriggerConditions
   isInTable = false,
   currentEventId,
 }) => {
-  // Get events from Redux store
-  const reduxAvailableEvents = useSelector(selectAvailableEvents);
+  const [availableEvents, setAvailableEvents] = useState<
+    Array<{ id: string; name: string; eventCode: string }>
+  >([]);
+  const [offset, setOffset] = useState(0);
+  const [searchName, setSearchName] = useState("");
+  const [hasMore, setHasMore] = useState(true);
 
-  // Fetch events for combination event dropdowns only if not provided via Redux store
-  const shouldFetch = reduxAvailableEvents.length === 0;
-  const { data: eventsData } = useGetSessionEventsQuery(
-    {
-      visibilityType: SESSION_EVENT_STATUS_OPTIONS.ACTIVE,
-      limit: 100,
-      offset: 0,
-      sortBy: SORT_BY.CREATED_AT,
-      order: SORT_ORDER.DESC,
-      searchName: "",
-    },
-    {
-      skip: !shouldFetch,
-    },
-  );
+  const { data: eventsData } = useGetSessionEventsQuery({
+    visibilityType: SESSION_EVENT_STATUS_OPTIONS.ACTIVE,
+    limit: INITIAL_EVENTS_LIMIT,
+    offset: offset,
+    sortBy: SORT_BY.CREATED_AT,
+    order: SORT_ORDER.DESC,
+    searchName: searchName,
+  });
 
-  const availableEvents = useMemo(() => {
-    if (reduxAvailableEvents.length > 0) {
-      return reduxAvailableEvents;
-    }
-    return (
-      eventsData?.data?.map(event => ({
-        id: event.id,
+  useEffect(() => {
+    if (eventsData?.data) {
+      const formattedEvents = eventsData.data.map(event => ({
+        id: event.id || "",
         name: event.name || "",
         eventCode: event.eventCode || "",
-      })) || []
-    );
-  }, [eventsData, reduxAvailableEvents]);
+      }));
+
+      if (offset === 0) {
+        setAvailableEvents(formattedEvents);
+      } else {
+        setAvailableEvents(prev => [...prev, ...formattedEvents]);
+      }
+
+      // Check if there are more results to load
+      // If current fetch returned less than INITIAL_EVENTS_LIMIT, all data is fetched
+      const hasMoreResults = formattedEvents.length >= INITIAL_EVENTS_LIMIT;
+      setHasMore(hasMoreResults);
+    }
+  }, [eventsData, offset]);
+
+  const handleLoadMore = () => {
+    setOffset(prev => prev + INITIAL_EVENTS_LIMIT);
+  };
+
+  const handleSearch = (search: string) => {
+    setSearchName(search);
+    setOffset(0);
+    setHasMore(true);
+  };
 
   // Ensure we always have a valid expression structure to work with
   const expression = triggerCondition.expression || {
@@ -94,33 +108,36 @@ export const CombinationTriggerConditions: React.FC<CombinationTriggerConditions
   const leftEventId = getEventIdFromNode(expression.left);
   const rightEventId = getEventIdFromNode(expression.right);
 
-  // Helper to filter events for dropdowns (memoized to avoid recreating on every render)
-  const getFilteredEvents = React.useCallback(
-    (excludeEventId: string) => {
-      return availableEvents
-        .filter(event => {
-          if (currentEventId && event.id === currentEventId) return false;
-          if (excludeEventId && event.id === excludeEventId) return false;
-          return true;
-        })
-        .map(event => ({
-          value: event.id,
-          label: event.eventCode ? `${event.eventCode} - ${event.name}` : event.name,
-        }));
+  // Fetch event data for left and right dropdowns to get display names
+  const { data: leftEventData, isLoading: isLeftLoading } = useGetSessionEventByIdQuery(
+    leftEventId,
+    {
+      skip: !leftEventId,
     },
-    [availableEvents, currentEventId],
+  );
+  const { data: rightEventData, isLoading: isRightLoading } = useGetSessionEventByIdQuery(
+    rightEventId,
+    {
+      skip: !rightEventId,
+    },
   );
 
-  // Generate dropdown options (exclude the other side's selection)
-  const leftDropdownOptions = useMemo(
-    () => getFilteredEvents(rightEventId),
-    [getFilteredEvents, rightEventId],
-  );
+  // Helper to filter events for dropdowns
+  const getFilteredEvents = (excludeEventId: string) => {
+    return availableEvents
+      .filter(event => {
+        if (currentEventId && event.id === currentEventId) return false;
+        if (excludeEventId && event.id === excludeEventId) return false;
+        return true;
+      })
+      .map(event => ({
+        value: event.id,
+        label: event.eventCode ? `${event.eventCode} - ${event.name}` : event.name,
+      }));
+  };
 
-  const rightDropdownOptions = useMemo(
-    () => getFilteredEvents(leftEventId),
-    [getFilteredEvents, leftEventId],
-  );
+  const leftDropdownOptions = getFilteredEvents(rightEventId);
+  const rightDropdownOptions = getFilteredEvents(leftEventId);
 
   const config = getTriggerConditionConfig(EVENT_DETECTION_TYPES.COMBINATION);
   if (!config) return null;
@@ -166,12 +183,12 @@ export const CombinationTriggerConditions: React.FC<CombinationTriggerConditions
     onChange("expression", newExpression);
   };
 
-  // Helper function to get event display name from event ID
-  const getEventDisplayNameById = (eventId: string): string => {
-    if (!eventId) return "";
-    const event = availableEvents.find(e => e.id === eventId);
-    if (!event) return "";
-    return event.eventCode ? `${event.eventCode} - ${event.name}` : event.name;
+  // Helper function to get event display name from fetched event data
+  const getEventDisplayName = (eventData: SessionEvent | undefined): string => {
+    if (!eventData) return "";
+    return eventData.eventCode
+      ? `${eventData.eventCode} - ${eventData.name}`
+      : eventData.name || "";
   };
 
   const getOperator = (): CombinationOperator => {
@@ -200,9 +217,11 @@ export const CombinationTriggerConditions: React.FC<CombinationTriggerConditions
             <span className="text-sm text-typography-500">if</span>
             <TriggerConditionDropdown
               value={getEventId(directionMap.LEFT)}
-              displayValue={getEventDisplayNameById(getEventId(directionMap.LEFT))}
+              displayValue={isLeftLoading ? "Loading..." : getEventDisplayName(leftEventData)}
               options={leftDropdownOptions}
               onChange={eventId => handleEventChange(directionMap.LEFT, eventId)}
+              onLoadMore={hasMore ? handleLoadMore : undefined}
+              onSearch={handleSearch}
               placeholder="Select an event"
               searchPlaceholder="Search events..."
               isSearchable={true}
@@ -235,9 +254,11 @@ export const CombinationTriggerConditions: React.FC<CombinationTriggerConditions
             />
             <TriggerConditionDropdown
               value={getEventId(directionMap.RIGHT)}
-              displayValue={getEventDisplayNameById(getEventId(directionMap.RIGHT))}
+              displayValue={isRightLoading ? "Loading..." : getEventDisplayName(rightEventData)}
               options={rightDropdownOptions}
               onChange={eventId => handleEventChange(directionMap.RIGHT, eventId)}
+              onLoadMore={hasMore ? handleLoadMore : undefined}
+              onSearch={handleSearch}
               placeholder="Select an event"
               searchPlaceholder="Search events..."
               isSearchable={true}

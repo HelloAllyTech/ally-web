@@ -25,6 +25,7 @@ export const ApiEndpoints = {
     END_SIMULATION: (sessionId: string) => `/v1/learn/scenario-session/${sessionId}/end`,
     SCENARIO_VOICES: "/v1/learn/scenario-voices",
     SESSION_EVENTS: "/v1/session-events",
+    GET_SESSION_EVENT_BY_ID: (eventId: string) => `/v1/session-events/events/${eventId}`,
     UPDATE_SESSION_EVENT: (eventId: string) => `/v1/session-events/events/${eventId}`,
     DELETE_SESSION_EVENTS: "/v1/session-events/events",
     GET_COVER_IMAGE_URL: "/v1/learn/scenarios/cover-image-url",
@@ -113,6 +114,8 @@ export const SORT_ORDER = {
   ASC: "ASC",
   DESC: "DESC",
 };
+
+export const INITIAL_EVENTS_LIMIT = 30;
 
 export const TAG_TYPES = {
   USERS: "users",
