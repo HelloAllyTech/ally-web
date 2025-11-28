@@ -75,7 +75,9 @@ export const CreatePath: FC = () => {
   const formatScenarios = (scenarios?: GetScenarioType[]) => {
     if (!isNonEmptyArray(scenarios)) return [];
 
-    return scenarios.map((scenario, index) => ({
+    const sortedScenarios = [...scenarios].sort((a, b) => a.order - b.order);
+
+    return sortedScenarios?.map((scenario, index) => ({
       ...scenario,
       order: index + 1,
     }));
@@ -95,6 +97,7 @@ export const CreatePath: FC = () => {
   useEffect(() => {
     if (pathId) getScenarioPathByIdQuery(pathId);
   }, [pathId, getScenarioPathByIdQuery]);
+
   useEffect(() => {
     if (individualPath) formMethods.reset(individualPath);
     if (individualPath?.scenarios)

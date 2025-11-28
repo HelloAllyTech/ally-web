@@ -3,7 +3,8 @@ import { FC, useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
 
-import { useGetUpComingSimulationQuery, useLazyGetSimulationSummaryQuery } from "@api";
+import { logger } from "@ally-ui-mono/ui-shared/logger";
+import { useLazyGetUpComingSimulationQuery, useLazyGetSimulationSummaryQuery } from "@api";
 import { Button, PermissionGuard } from "@components";
 import { Permissions } from "@constants";
 import { SessionType } from "@types";
@@ -24,44 +25,55 @@ export const SimulationSummary: FC<SimulationSummaryProps> = ({
   const [retryMaxReached, setRetryMaxReached] = useState<boolean>(false);
 
   const [getSimulationSummary, { data: summary }] = useLazyGetSimulationSummaryQuery();
-  const { data: upComingSimulation } = useGetUpComingSimulationQuery(summaryId, {
-    skip: !summaryId || isInSidebar,
-  });
+  const [getUpComingSimulation, { data: upComingSimulation }] = useLazyGetUpComingSimulationQuery();
 
   useEffect(() => {
+    let isMounted = true;
+    let timeoutId: NodeJS.Timeout;
     let pollCount = 0;
     const maxPolls = 5;
-    let summaryPollingInterval;
 
-    const pollForSummary = async () => {
-      const { data: summaryData } = await getSimulationSummary(summaryId);
-      if (summaryData) {
-        onSummaryFetch?.(summaryData);
-      }
-      if (summaryId && !summaryData?.details?.summary) {
-        summaryPollingInterval = setInterval(async () => {
-          pollCount++;
-          const { data } = await getSimulationSummary(summaryId);
+    const poll = async () => {
+      try {
+        const { data } = await getSimulationSummary(summaryId);
 
-          if (data?.details?.summary?.feedback || pollCount >= maxPolls) {
-            clearInterval(summaryPollingInterval);
-            if (pollCount >= maxPolls) {
-              setRetryMaxReached(true);
-              if (!data?.details?.summary?.feedback) {
-                toast.error("Something went wrong. Please try again later.");
-              }
-            }
+        if (data && isMounted) onSummaryFetch?.(data);
+
+        const hasSummary = data?.details?.summary;
+        if (hasSummary) {
+          if (!isInSidebar && summaryId) getUpComingSimulation(summaryId);
+
+          if (data.details.summary.feedback) return;
+        }
+
+        if (pollCount >= maxPolls) {
+          if (isMounted) {
+            if (!isInSidebar && summaryId) getUpComingSimulation(summaryId);
+            setRetryMaxReached(true);
+            if (!data?.details?.summary?.feedback)
+              toast.error("Something went wrong. Please try again later.");
           }
-        }, 3500);
+          return;
+        }
+
+        if (isMounted && !data?.details?.summary?.feedback) {
+          pollCount++;
+          timeoutId = setTimeout(poll, 3500);
+        }
+      } catch {
+        logger.error("Polling error in simulation summary");
+        if (isMounted && pollCount < maxPolls) {
+          pollCount++;
+          timeoutId = setTimeout(poll, 3500);
+        }
       }
     };
 
-    pollForSummary();
+    if (summaryId) poll();
 
     return () => {
-      if (summaryPollingInterval) {
-        clearInterval(summaryPollingInterval);
-      }
+      isMounted = false;
+      clearTimeout(timeoutId);
     };
   }, [summaryId]);
 

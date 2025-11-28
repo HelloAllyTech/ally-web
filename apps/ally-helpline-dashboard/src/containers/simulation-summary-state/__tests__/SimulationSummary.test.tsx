@@ -20,6 +20,7 @@ const mockUpComingSimulation = {
 vi.mock("@api", () => ({
   useLazyGetSimulationSummaryQuery: () => [mockLazyQuery, { data: mockGetSimulationSummary() }],
   useGetUpComingSimulationQuery: () => ({ data: mockUpComingSimulation }),
+  useLazyGetUpComingSimulationQuery: () => [vi.fn(), { data: mockUpComingSimulation }],
 }));
 
 // Mock the user hook and useStartSimulation

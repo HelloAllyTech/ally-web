@@ -79,8 +79,8 @@ export const UpNextSimulationCard = ({ data }: UpNextSimulationCardProps) => {
         <>
           <div className="text-typography-900 text-base font-semibold mb-[8px]">All most there</div>
           <div className="text-typography-900 text-base font-normal mb-[20px]">
-            You didn’t meet the benchmark score or minimum time yet, but you’re improving. Try again
-            when you’re ready
+            You’re getting closer! You haven’t reached the required score or minimum time yet, but
+            keep going and try again when you’re ready
           </div>
         </>
       ) : (
