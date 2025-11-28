@@ -1,4 +1,4 @@
-import { ApiEndpoints, HttpMethod } from "@constants";
+import { ApiEndpoints, HttpMethod, TAG_TYPES } from "@constants";
 import { SimulationCredits } from "@types";
 
 import { baseAPI } from "./baseAPI";
@@ -10,6 +10,7 @@ const SimulationCreditsAPI = baseAPI.injectEndpoints({
         url: ApiEndpoints.SIMULATION.SIMULATION_CREDITS,
         method: HttpMethod.GET,
       }),
+      providesTags: [TAG_TYPES.SIMULATION_CREDITS],
     }),
   }),
 });
