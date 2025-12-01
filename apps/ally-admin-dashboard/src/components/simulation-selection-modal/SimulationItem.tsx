@@ -24,11 +24,11 @@ export const SimulationCardItem: FC<SimulationCardItemProps> = ({
   handleMessageClick,
   renderMessage,
   addButtonRef,
-  isDragDisabled = false,
+  isDisabled = false,
 }) => {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: String(simulation.scenarioId),
-    disabled: isDragDisabled,
+    disabled: isDisabled,
   });
 
   const style = {
@@ -101,22 +101,24 @@ export const SimulationCardItem: FC<SimulationCardItemProps> = ({
         }`}
       >
         {/* Remove Button */}
-        <button
-          onClick={() => handleRemoveCard(index)}
-          className="absolute right-3 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition z-10"
-          type="button"
-        >
-          <CloseRed />
-        </button>
+        {!isDisabled && (
+          <button
+            onClick={() => handleRemoveCard(index)}
+            className="absolute right-3 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition z-10"
+            type="button"
+          >
+            <CloseRed />
+          </button>
+        )}
 
         {/* Drag Handle - Only this should trigger dragging */}
         <div
           {...attributes}
-          {...(!isDragDisabled && listeners)}
-          className={isDragDisabled ? "cursor-not-allowed" : "cursor-grab active:cursor-grabbing"}
+          {...(!isDisabled && listeners)}
+          className={isDisabled ? "cursor-not-allowed" : "cursor-grab active:cursor-grabbing"}
         >
           <DragIndicator
-            className={`w-5 h-5 mr-5 mt-1 ${isDragDisabled ? "text-gray-300" : "text-gray-500"}`}
+            className={`w-5 h-5 mr-5 mt-1 ${isDisabled ? "text-gray-300" : "text-gray-500"}`}
           />
         </div>
 
@@ -165,6 +167,7 @@ export const SimulationCardItem: FC<SimulationCardItemProps> = ({
               defaultValue={simulation.minimumScore}
               onBlur={event => handleMinimumScoreChange(index, event.target.value, event)}
               min={0}
+              disabled={isDisabled}
             />
           </div>
         </div>
@@ -178,6 +181,7 @@ export const SimulationCardItem: FC<SimulationCardItemProps> = ({
               ref={element => (addButtonRef.current[index] = element)}
               onClick={() => handleMessageClick(index)}
               type="button"
+              disabled={isDisabled}
             >
               <Plus className="mt-1" />
               {en.simulation.addMessage}
