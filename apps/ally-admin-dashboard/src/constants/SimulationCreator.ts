@@ -334,7 +334,7 @@ export const EVENT_MANAGEMENT_TABLE_COLUMNS = [
     label: "Trigger conditions",
     accessor: "triggerCondition",
     dataType: cellTypes.triggerConditions,
-    minWidth: 400,
+    minWidth: 420,
   },
   {
     id: "branchInstruction",

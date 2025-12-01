@@ -64,7 +64,7 @@ export const EditableTriggerConditionsPopup: React.FC<EditableTriggerConditionsP
   useClickOutside(popupRef, handleClickOutsideCallback);
 
   return (
-    <div className={`${className} flex flex-wrap items-start`}>
+    <div className={`${className} flex flex-wrap items-start w-full`}>
       {/* Always display trigger conditions inline */}
       <div
         onClick={handleTextClick}
