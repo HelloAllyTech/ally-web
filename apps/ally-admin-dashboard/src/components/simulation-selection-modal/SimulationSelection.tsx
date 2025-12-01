@@ -1,4 +1,4 @@
-import { FC, useState, useEffect, useRef, useCallback } from "react";
+import { FC, useState, useEffect, useRef } from "react";
 
 import { DndContext, closestCenter } from "@dnd-kit/core";
 import { SortableContext, verticalListSortingStrategy, arrayMove } from "@dnd-kit/sortable";
@@ -152,15 +152,12 @@ export const SimulationSelectionModal: FC<SimulationProps> = ({
   }, [simulationsResponse, page]);
 
   // Intersection Observer for infinite scroll
-  const handleObserver = useCallback(
-    (entries: IntersectionObserverEntry[]) => {
-      const [target] = entries;
-      if (target.isIntersecting && hasMore && !isFetching) {
-        setPage(prev => prev + 1);
-      }
-    },
-    [hasMore, isFetching],
-  );
+  const handleObserver = (entries: IntersectionObserverEntry[]) => {
+    const [target] = entries;
+    if (target.isIntersecting && hasMore && !isFetching) {
+      setPage(prev => prev + 1);
+    }
+  };
 
   useEffect(() => {
     const element = loadingRef.current;

@@ -214,6 +214,8 @@ export const en = {
       "Are you sure you want to edit this pathway? This will be moved to draft state.",
     eventCreatedSuccessfully: "Event created successfully",
     eventsDeletedSuccessfully: "Events deleted successfully",
+    viewOnly: "View Only",
+    viewOnlyTooltip: "The simulation path is currently being used.",
   },
   userManagement: {
     organizationCreated: "Organization created successfully",
