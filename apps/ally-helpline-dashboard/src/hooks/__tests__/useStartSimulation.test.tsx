@@ -1,17 +1,58 @@
 import { renderHook, waitFor, act } from "@testing-library/react";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
+import { Provider } from "react-redux";
+import { configureStore } from "@reduxjs/toolkit";
 import { logger } from "@ally-ui-mono/ui-shared";
 import { useEndSimulationMutation, useStartSimulationMutation } from "@api";
 import { LOCAL_STORAGE_KEYS } from "@constants";
+import userSlice from "@reducer/userReducer";
 
 import { useStartSimulation } from "../useStartSimulation";
 
 // Mock dependencies
 vi.mock("sonner");
 vi.mock("react-router-dom");
-vi.mock("@ally-ui-mono/ui-shared");
-vi.mock("@api");
+vi.mock("@ally-ui-mono/ui-shared", () => ({
+  logger: {
+    error: vi.fn(),
+    info: vi.fn(),
+  },
+}));
+
+const mockGetUser = vi.fn();
+const mockGetPermissions = vi.fn();
+
+vi.mock("@api", () => ({
+  useStartSimulationMutation: vi.fn(),
+  useEndSimulationMutation: vi.fn(),
+  useLazyGetUserQuery: () => [mockGetUser, { isLoading: false }],
+  useLazyGetPermissionsQuery: () => [mockGetPermissions, { isLoading: false }],
+  baseAPI: {
+    reducerPath: "baseAPI",
+    reducer: (state = {}, action: any) => state,
+    middleware: (getDefaultMiddleware: any) => getDefaultMiddleware(),
+    util: {
+      resetApiState: vi.fn(),
+    },
+  },
+}));
+
+// Create a mock store for testing
+const createTestStore = () =>
+  configureStore({
+    reducer: {
+      user: userSlice.reducer,
+    },
+    preloadedState: {
+      user: {
+        isAuthenticated: true,
+        user: { name: "Test User", id: "user-123" },
+        permissions: [],
+        availableChatTypes: [],
+      },
+    },
+  });
 
 describe("useStartSimulation", () => {
   const mockNavigate = vi.fn();
@@ -30,6 +71,10 @@ describe("useStartSimulation", () => {
     localStorage.clear();
   });
 
+  const wrapper = ({ children }: { children: React.ReactNode }) => (
+    <Provider store={createTestStore()}>{children}</Provider>
+  );
+
   it("should start simulation successfully", async () => {
     const mockData = {
       scenarioSession: {
@@ -44,10 +89,12 @@ describe("useStartSimulation", () => {
 
     mockStartSimulationMutation.mockResolvedValue({ data: mockData, error: null });
 
-    const { result } = renderHook(() =>
-      useStartSimulation({
-        onSuccess: mockOnSuccess,
-      }),
+    const { result } = renderHook(
+      () =>
+        useStartSimulation({
+          onSuccess: mockOnSuccess,
+        }),
+      { wrapper },
     );
 
     await act(async () => {
@@ -73,10 +120,12 @@ describe("useStartSimulation", () => {
 
     mockStartSimulationMutation.mockResolvedValue({ data: null, error: mockError });
 
-    const { result } = renderHook(() =>
-      useStartSimulation({
-        onError: mockOnError,
-      }),
+    const { result } = renderHook(
+      () =>
+        useStartSimulation({
+          onError: mockOnError,
+        }),
+      { wrapper },
     );
 
     await act(async () => {
@@ -95,7 +144,7 @@ describe("useStartSimulation", () => {
     mockStartSimulationMutation.mockResolvedValue({ data: null, error: mockError });
     mockEndSimulation.mockResolvedValue({});
 
-    const { result } = renderHook(() => useStartSimulation());
+    const { result } = renderHook(() => useStartSimulation(), { wrapper });
 
     await act(async () => {
       await result.current.startSimulation({ params: { scenarioId: 1 } });
@@ -112,7 +161,7 @@ describe("useStartSimulation", () => {
 
     mockStartSimulationMutation.mockResolvedValue({ data: null, error: mockError });
 
-    const { result } = renderHook(() => useStartSimulation());
+    const { result } = renderHook(() => useStartSimulation(), { wrapper });
 
     await act(async () => {
       await result.current.startSimulation({ params: { scenarioId: 1 } });
@@ -124,10 +173,12 @@ describe("useStartSimulation", () => {
   it("should handle unexpected errors", async () => {
     mockStartSimulationMutation.mockRejectedValue(new Error("Network error"));
 
-    const { result } = renderHook(() =>
-      useStartSimulation({
-        onError: mockOnError,
-      }),
+    const { result } = renderHook(
+      () =>
+        useStartSimulation({
+          onError: mockOnError,
+        }),
+      { wrapper },
     );
 
     await act(async () => {
@@ -159,7 +210,7 @@ describe("useStartSimulation", () => {
 
     mockStartSimulationMutation.mockImplementation(() => firstPromise);
 
-    const { result } = renderHook(() => useStartSimulation());
+    const { result } = renderHook(() => useStartSimulation(), { wrapper });
 
     // Start first simulation
     act(() => {
@@ -204,7 +255,7 @@ describe("useStartSimulation", () => {
 
     mockStartSimulationMutation.mockResolvedValue({ data: mockData, error: null });
 
-    const { result } = renderHook(() => useStartSimulation());
+    const { result } = renderHook(() => useStartSimulation(), { wrapper });
 
     await act(async () => {
       await result.current.startSimulation({
@@ -214,10 +265,17 @@ describe("useStartSimulation", () => {
     });
 
     const storedData = JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEYS.ROOM_DATA) || "{}");
-    expect(storedData).toEqual({
+    // Update expectations to match what the hook actually writes (including localParticipant/remoteParticipant structure)
+    expect(storedData).toMatchObject({
       roomId: "session-123",
-      name: "Test Scenario",
-      coverImageUrl: "https://example.com/image.jpg",
+      title: "Test Scenario",
+      remoteParticipant: {
+        name: "Test Scenario",
+        coverImageUrl: "https://example.com/image.jpg",
+      },
+      localParticipant: {
+        name: "Test User",
+      },
       accessToken: "token-123",
       createdAt: "2024-01-01T00:00:00Z",
       serverUrl: "https://server.example.com",

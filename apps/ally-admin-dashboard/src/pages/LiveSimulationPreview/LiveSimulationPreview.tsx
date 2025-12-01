@@ -1,13 +1,13 @@
 import React from "react";
 
+import { ActionConfirmationPopup } from "@components";
+import { LOCAL_STORAGE_KEYS } from "@constants";
+import { useLiveKitRoom } from "@hooks/useLiveKitRoom";
+import { RoomStatus } from "@types";
 import { useNavigate, useParams } from "react-router-dom";
 
 import { SimulationPage, getSimulationEvents } from "@ally-ui-mono/ui-shared";
-import { ActionConfirmationPopup } from "@components";
 import { ButtonVariant } from "@components/types";
-import { en, LOCAL_STORAGE_KEYS } from "@constants";
-import { useLiveKitRoom } from "@hooks/useLiveKitRoom";
-import { RoomStatus } from "@types";
 
 export const LiveSimulationPreview: React.FC = () => {
   const navigate = useNavigate();
@@ -48,7 +48,7 @@ export const LiveSimulationPreview: React.FC = () => {
       startTime={startTime.toISOString()}
       events={getSimulationEvents(events)}
       score={score}
-      title={en.simulation.simulationPreview}
+      isPreview
       onEndSimulation={onEnd}
       renderWarningDialog={renderWarningDialog}
     />

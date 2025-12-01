@@ -12,13 +12,16 @@ export const SimulationScoreMeter: FC<SimulationScoreMeterProps> = ({ score = 0 
   const leftPercent = (clamped + 100) / 2;
 
   return (
-    <div data-testid="simulation-score-meter" className="flex gap-2">
-      <span
+    <div
+      data-testid="simulation-score-meter"
+      className="flex flex-col items-center justify-center gap-2"
+    >
+      <div
         data-testid="simulation-score-meter-label"
         className="text-[#9CA3AF] text-[12px] font-medium mr-1"
       >
-        Practice Session Score
-      </span>
+        Simulation Score
+      </div>
       <div
         data-testid="simulation-score-meter-bar"
         className="flex gap-1 items-center relative z-50"

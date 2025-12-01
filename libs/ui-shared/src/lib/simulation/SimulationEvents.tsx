@@ -48,17 +48,20 @@ export const SimulationEvents: FC<SimulationEventsProps> = ({ events = [] }) => 
       data-testid="simulation-events"
       layout
       initial={{ width: 0 }}
-      animate={{ width: hasEvents ? "30%" : 0 }}
+      animate={{ width: hasEvents ? "w-full" : 0 }}
       transition={{ duration: 0.5, ease: [0.4, 0, 0.2, 1] }}
-      className="overflow-hidden rounded-lg"
+      className="overflow-hidden rounded-sm h-full w-full bg-[#1D2020]"
       style={{ willChange: "width" }}
     >
+      <div className="text-white text-[14px] font-medium leading-[22px] tracking-[0.28px] bg-[#282B31] px-4 h-[48px] items-center flex">
+        AI Supervisor
+      </div>
       <motion.div
         data-testid="simulation-events-container"
         initial={{ x: "100%", opacity: 0 }}
         animate={{ x: hasEvents ? "0%" : "100%", opacity: hasEvents ? 1 : 0 }}
         transition={{ duration: 0.35, ease: [0.4, 0, 0.2, 1] }}
-        className="flex flex-col items-end gap-4 bg-[#1D2020] p-4 h-full overflow-y-auto"
+        className="flex flex-col items-start gap-4 bg-[#1D2020] p-4 h-full overflow-y-auto"
         ref={containerRef}
       >
         {filteredEvents.map(({ emoji, message, timestamp }, index) => {

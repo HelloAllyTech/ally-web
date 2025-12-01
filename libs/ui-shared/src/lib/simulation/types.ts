@@ -48,7 +48,7 @@ export interface SimulationPageProps {
   events: SimulationEventType[];
   score?: number;
   roomStatus: RoomStatus;
-  title?: string;
+  isPreview?: boolean;
   onEndSimulation: () => Promise<void> | void;
   renderWarningDialog: (params: RenderWarningDialogParams) => ReactNode;
   renderFooter?: () => ReactNode;
