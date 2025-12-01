@@ -6,7 +6,7 @@ import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
-import { useGenerateOTPMutation, useVerifyOTPMutation } from "@api";
+import { useCheckTermsAndAgreementQuery, useGenerateOTPMutation, useVerifyOTPMutation } from "@api";
 import { Ally, BackCircle, LoginImage, RedirectIcon } from "@assets";
 import { Button, Carousel, OTP, TermsAndAgreement, TextField } from "@components";
 import {
@@ -57,6 +57,8 @@ export const Login: FunctionComponent = () => {
   ] = useVerifyOTPMutation();
 
   const { isAuthenticated, checkAuth } = useUser();
+
+  const { data: checkTermsAndAgreement } = useCheckTermsAndAgreementQuery();
 
   const isLoading = isGeneratingOTP || isVerifyingOTP;
 
@@ -119,11 +121,14 @@ export const Login: FunctionComponent = () => {
         setRefreshToken(verifyOTPData.refreshToken);
         // localStorage.setItem(LOCAL_STORAGE_KEYS.ACCESS_TOKEN, verifyOTPData.accessToken);
         // localStorage.setItem(LOCAL_STORAGE_KEYS.REFRESH_TOKEN, verifyOTPData.refreshToken);
-        const userData = await checkAuth();
-        if (userData?.name) setTermsAndAgreement(true);
-        // if (userData) {
-        //   navigate("/");
-        // }
+        if (checkTermsAndAgreement.name) {
+          const userData = await checkAuth();
+          if (userData) {
+            navigate("/");
+          }
+        } else {
+          setTermsAndAgreement(true);
+        }
       }
     })();
   }, [isVerifyOTPSuccess, verifyOTPError, verifyOTPData]);
