@@ -28,8 +28,11 @@ export const useUser = () => {
       const token = localStorage.getItem(LOCAL_STORAGE_KEYS.ACCESS_TOKEN);
       if (token) {
         try {
-          if (user) return user;
           const userData = await getUser();
+          if (userData?.data?.status === "SUSPENDED") {
+            logout();
+            return null;
+          }
           const permissionsData = await getPermissions();
           store.dispatch(setUser(userData?.data));
           store.dispatch(setPermissions(permissionsData?.data));
@@ -56,6 +59,7 @@ export const useUser = () => {
    * - Clears RTK Query cache
    * - Resets user state in Redux store
    * - Removes authentication tokens from localStorage
+   * - Clears persisted Redux state
    * - Dispatches unauthenticate action
    */
   const logout = () => {
@@ -70,6 +74,9 @@ export const useUser = () => {
     // Clear tokens
     localStorage.removeItem(LOCAL_STORAGE_KEYS.ACCESS_TOKEN);
     localStorage.removeItem(LOCAL_STORAGE_KEYS.REFRESH_TOKEN);
+
+    // Clear persisted state
+    localStorage.removeItem("persist:user");
   };
 
   return {

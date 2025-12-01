@@ -28,7 +28,6 @@ import {
   formatApiResponseToMappedEvent,
   createSessionEventsMap,
   MAPPED_EVENT_FIELDS,
-  isObject,
   isNonEmptyString,
 } from "@utils";
 
@@ -74,13 +73,7 @@ export const SimulationEventMapTable: FC<SimulationEventMapTableProps> = ({ simu
     const sessionEventIds = new Set(sessionEvents.map(event => event.id));
     const mappedEventIds = new Set(
       mappedEvents
-        .map(mappedEvent => {
-          const eventId =
-            isObject(mappedEvent.id) && "value" in mappedEvent.id
-              ? mappedEvent.id.value
-              : mappedEvent.id;
-          return eventId;
-        })
+        .map(mappedEvent => mappedEvent.id?.value)
         .filter(eventId => sessionEventIds.has(eventId as string)),
     );
     return sessionEvents
@@ -165,10 +158,20 @@ export const SimulationEventMapTable: FC<SimulationEventMapTableProps> = ({ simu
 
   // Helper function to save events to API
   const saveEventsToApi = useCallback(
-    (events: UpdateScenarioEventDataParam[]) => {
+    async (events: UpdateScenarioEventDataParam[]) => {
       if (!simulationId) return;
       const apiEvents = convertToApiFormat(events);
-      mapScenarioEvents({ scenarioId: Number(simulationId), events: apiEvents });
+      try {
+        const response: any = await mapScenarioEvents({
+          scenarioId: Number(simulationId),
+          events: apiEvents,
+        });
+        if (response?.error?.data?.message) {
+          toast.error(response.error.data.message || en.errors.failedToSaveEvents);
+        }
+      } catch {
+        toast.error(en.errors.failedToSaveEvents);
+      }
     },
     [simulationId, mapScenarioEvents],
   );
@@ -225,9 +228,9 @@ export const SimulationEventMapTable: FC<SimulationEventMapTableProps> = ({ simu
         previousEvents.filter(event => !selectedEventRows.includes(event)),
       );
       setSelectedEventRows([]);
-      toast.success("Events deleted successfully");
+      toast.success(en.simulation.eventsDeletedSuccessfully);
     } catch {
-      toast.error("Failed to delete events. Please try again.");
+      toast.error(en.errors.failedToSaveEvents);
     }
   };
 
@@ -299,7 +302,7 @@ export const SimulationEventMapTable: FC<SimulationEventMapTableProps> = ({ simu
       );
       handleCloseSidePanel();
     } catch {
-      toast.error("Failed to delete event. Please try again.");
+      toast.error(en.errors.failedToDeleteEvent);
     }
   };
 

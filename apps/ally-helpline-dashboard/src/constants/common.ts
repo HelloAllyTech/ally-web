@@ -116,4 +116,6 @@ export const TAG_TYPES = {
   CALL_SUMMARY: "CallSummary",
   CALL_LOGS: "CallLogs",
   SIMULATION_LOGS: "SimulationLogs",
+  SCENARIO_PATHWAY_DETAILS: "ScenarioPathwayDetails",
+  SIMULATION_CREDITS: "SimulationCredits",
 };

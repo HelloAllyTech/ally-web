@@ -11,6 +11,7 @@ export const cellTypes = {
   switch: "switch",
   emoji_select: "emoji_select",
   normalText: "normalText",
+  triggerConditions: "triggerConditions",
 };
 
 export const keyCodes = {

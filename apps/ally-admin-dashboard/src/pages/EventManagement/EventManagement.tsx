@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useMemo, useCallback } from "react";
 
+import { useDispatch } from "react-redux";
 import { toast } from "sonner";
 
 import {
@@ -9,7 +10,14 @@ import {
   useDeleteSessionEventsMutation,
 } from "@api";
 import { Trash } from "@assets";
-import { NotionTable, EventSidePanel, ListToolbar, ActionConfirmationPopup } from "@components";
+import {
+  NotionTable,
+  EventSidePanel,
+  ListToolbar,
+  ActionConfirmationPopup,
+  EventTypeSelectionDialog,
+  EventType,
+} from "@components";
 import { ButtonVariant } from "@components/types";
 import {
   SORT_BY,
@@ -18,10 +26,13 @@ import {
   en,
   SESSION_EVENT_STATUS_OPTIONS,
 } from "@constants";
+import { setAvailableEvents } from "@reducer";
 import { UpdateEventDataParam } from "@types";
+import { convertEventToApiPayload, convertApiResponseToEvent } from "@utils";
 
 export const EventManagement: React.FC = () => {
   const limit = 30;
+  const dispatch = useDispatch();
 
   const [offset, setOffset] = useState<number>(0);
   const [events, setEvents] = useState<any[]>([]);
@@ -31,6 +42,7 @@ export const EventManagement: React.FC = () => {
   const [selectedEvents, setSelectedEvents] = useState<any[]>([]);
   const [selectedEvent, setSelectedEvent] = useState<UpdateEventDataParam | null>(null);
   const [showDeleteConfirmationPopup, setShowDeleteConfirmationPopup] = useState<boolean>(false);
+  const [showEventTypeDialog, setShowEventTypeDialog] = useState<boolean>(false);
 
   const { data: sessionEventsData, isFetching } = useGetSessionEventsQuery({
     visibilityType: SESSION_EVENT_STATUS_OPTIONS.ACTIVE,
@@ -50,13 +62,16 @@ export const EventManagement: React.FC = () => {
     if (incoming) {
       setHasMore(incoming.length === limit);
 
+      // Convert API response format to event
+      const eventsData = incoming.map(eventPayload => convertApiResponseToEvent(eventPayload));
+
       if (offset === 0) {
-        setEvents(incoming);
+        setEvents(eventsData);
       } else {
         setEvents(prev => {
           const seen = new Set(prev.map(event => event.id));
           const merged = [...prev];
-          for (const item of incoming) {
+          for (const item of eventsData) {
             if (!seen.has(item.id)) merged.push(item);
           }
           return merged;
@@ -70,30 +85,41 @@ export const EventManagement: React.FC = () => {
     setOffset(0);
   };
 
-  const handleNewEventClick = async () => {
-    const newEvent = {
+  const handleNewEventClick = () => {
+    setShowEventTypeDialog(true);
+  };
+
+  const handleEventTypeSelect = async (eventType: EventType) => {
+    const newEvent: UpdateEventDataParam = {
       name: "New Event",
       description: "",
       score: 0,
       emoji: "🫥",
       message: "",
       branchInstruction: "",
-      detectionType: "SENTENCE_SIMILARITY",
+      detectionType: eventType,
       visibilityType: "ACTIVE",
-      speaker: "CARE_GIVER",
-      sentences: [],
+      triggerCondition: null,
     };
+
+    const eventPayload = convertEventToApiPayload(newEvent);
+    if (!eventPayload) {
+      return;
+    }
     try {
-      const response = await createSessionEvents({ events: [newEvent] });
+      const response = await createSessionEvents({ events: [eventPayload] });
       if (response.error) {
-        toast.error("Failed to create event");
+        toast.error(en.errors.failedToCreateEvent); //response.error
       } else {
-        toast.success("Event created successfully");
-        setSelectedEvent({ ...newEvent, id: response.data?.[0]?.id || "" });
+        toast.success(en.simulation.eventCreatedSuccessfully);
+        const createdEvent = response.data?.[0]
+          ? convertApiResponseToEvent(response.data[0])
+          : { ...newEvent, id: response.data?.[0]?.id || "" };
+        setSelectedEvent(createdEvent);
         setIsSidePanelOpen(true);
       }
-    } catch {
-      toast.error("An error occurred while creating event");
+    } catch (error: any) {
+      toast.error(error?.data?.message || en.errors.failedToCreateEvent);
     }
   };
 
@@ -114,50 +140,61 @@ export const EventManagement: React.FC = () => {
     setSelectedEvent(null);
   };
 
-  const createEventObject = (event: UpdateEventDataParam) => {
+  const createEventObject = useCallback((event: UpdateEventDataParam) => {
+    const triggerCondition = event.triggerCondition || {};
+
     return {
       id: { value: event.id || "", disabled: false, rowId: event.id },
+      detectionType: { value: event.detectionType || "", disabled: true, rowId: event.id },
       name: { value: event.name || "", disabled: false, rowId: event.id },
-      detectionType: { value: event.detectionType || "", disabled: false, rowId: event.id },
-      speaker: { value: event.speaker || "", disabled: false, rowId: event.id },
-      description: { value: event.sentences?.join("\n") || "", disabled: false, rowId: event.id },
+      eventCode: { value: event.eventCode || "", disabled: true, rowId: event.id },
+      triggerCondition: { value: triggerCondition, disabled: false, rowId: event.id },
       branchInstruction: { value: event.branchInstruction || "", disabled: false, rowId: event.id },
-      score: {
-        value: Number.isInteger(event.score) ? event.score : 0,
-        disabled: false,
-        rowId: event.id,
-      },
+      score: { value: event.score ?? 0, disabled: false, rowId: event.id },
       message: { value: event.message || "", disabled: false, rowId: event.id },
       emoji: { value: event.emoji || "", disabled: false, rowId: event.id },
       visibilityType: { value: event.visibilityType || "", disabled: false, rowId: event.id },
-      sentences: { value: event.sentences || [], disabled: false, rowId: event.id },
     };
-  };
+  }, []);
 
   const sidePanelEvent = useMemo(() => {
     if (!selectedEvent) return null;
-    // Return the plain object for the side panel (it doesn't use the new structure)
+    // Return the plain object for the side panel
     return {
       id: selectedEvent.id || "",
       name: selectedEvent.name || "",
+      eventCode: selectedEvent.eventCode || "",
       detectionType: selectedEvent.detectionType || "",
-      speaker: selectedEvent.speaker || "",
       description: selectedEvent.description || "",
       branchInstruction: selectedEvent.branchInstruction || "",
       score: Number.isInteger(selectedEvent.score) ? selectedEvent.score : 0,
       message: selectedEvent.message || "",
       emoji: selectedEvent.emoji || "",
       visibilityType: selectedEvent.visibilityType || "",
-      sentences: selectedEvent.sentences || [],
+      triggerCondition: selectedEvent.triggerCondition,
     };
   }, [selectedEvent]);
+
+  // Extract available events for combination trigger conditions and dispatch to Redux
+  const availableEvents = useMemo(() => {
+    return (events || []).map(event => ({
+      id: event.id || "",
+      name: event.name || "",
+      eventCode: event.eventCode || "",
+    }));
+  }, [events]);
+
+  // Dispatch available events to Redux store
+  useEffect(() => {
+    dispatch(setAvailableEvents(availableEvents));
+  }, [availableEvents, dispatch]);
 
   const tableData = useMemo(() => {
     return {
       data: events?.map(event => createEventObject(event)),
       columns: EVENT_MANAGEMENT_TABLE_COLUMNS,
     };
-  }, [events]);
+  }, [events, createEventObject]);
 
   const tableFooter = (
     <button
@@ -182,31 +219,27 @@ export const EventManagement: React.FC = () => {
     const { columnId, value, rowId } = action;
     const selectedEvent = events.find(event => event.id === rowId);
     if (value !== undefined && selectedEvent) {
-      const currentEvent = { ...selectedEvent, [columnId]: value };
-      onUpdateEvent(currentEvent);
+      const updatedEvent: UpdateEventDataParam = { ...selectedEvent };
+      (updatedEvent as any)[columnId] = value;
+
+      onUpdateEvent(updatedEvent);
     }
   };
 
   const onUpdateEvent = async (event: UpdateEventDataParam) => {
     if (event) {
-      // Convert back to plain format for API
-      const payload = {
-        name: event.name || "",
-        detectionType: event.detectionType || "",
-        speaker: event.speaker || "",
-        description: event.description || "",
-        branchInstruction: event.branchInstruction || "",
-        score: Number.isInteger(event.score) ? event.score : 0,
-        message: event.message || "",
-        emoji: event.emoji || "",
-        visibilityType: event.visibilityType || "",
-        sentences: event.description?.length > 0 ? event.description?.split("\n") : [],
-      };
+      // Convert to API payload format using utility function
+      const eventPayload = convertEventToApiPayload(event);
+
+      if (!eventPayload) {
+        return;
+      }
+
       try {
-        const response = await updateSessionEvent({ id: event.id || "", event: payload });
-        if (response.error) toast.error("Error updating event");
+        const response = await updateSessionEvent({ id: event.id || "", event: eventPayload });
+        if (response.error) toast.error(en.errors.errorUpdatingEvent);
       } catch {
-        toast.error("Error updating event");
+        toast.error(en.errors.errorUpdatingEvent);
       }
     }
   };
@@ -221,7 +254,7 @@ export const EventManagement: React.FC = () => {
     try {
       const response = await deleteSessionEvents({ eventIds });
       if (response.error) {
-        toast.error("Failed to delete events");
+        toast.error(en.errors.failedToDeleteEvent);
       } else {
         toast.success(
           `Successfully deleted ${selectedEvents.length} ${selectedEvents.length > 1 ? "events" : "event"}`,
@@ -232,7 +265,7 @@ export const EventManagement: React.FC = () => {
         setSelectedEvent(null);
       }
     } catch {
-      toast.error("An error occurred while deleting events");
+      toast.error(en.errors.failedToDeleteEvent);
     }
   };
 
@@ -299,6 +332,11 @@ export const EventManagement: React.FC = () => {
             }}
           />
         )}
+        <EventTypeSelectionDialog
+          isOpen={showEventTypeDialog}
+          onClose={() => setShowEventTypeDialog(false)}
+          onSelect={handleEventTypeSelect}
+        />
       </div>
     </div>
   );

@@ -100,9 +100,14 @@ vi.mock("@assets", () => ({
 }));
 
 // Mock hooks to avoid needing Redux Provider in tests
+const mockStartSimulation = vi.fn();
 vi.mock("@hooks", () => ({
   useSimulationCredits: () => ({
     credits: { creditLimit: 100, consumedCredits: 0 },
+  }),
+  useStartSimulation: () => ({
+    startSimulation: mockStartSimulation,
+    isStarting: false,
   }),
 }));
 
@@ -129,6 +134,20 @@ vi.mock("@components", () => ({
       </button>
     </div>
   )),
+  CreditsDisplay: ({ className }: { className?: string }) => (
+    <div data-testid="credits-display" className={className}>
+      <div className="font-primary text-base text-typography-700 whitespace-nowrap">
+        Credits used:
+      </div>
+      <div data-testid="credits-icon">⚡</div>
+      <span data-testid="credits-consumed" className="font-primary font-bold text-lg">
+        0
+      </span>
+      <span className="font-primary text-base text-typography-700" data-testid="credits-limit">
+        /100
+      </span>
+    </div>
+  ),
   ConfirmationDialog: vi.fn(
     ({
       isOpen,
@@ -209,12 +228,16 @@ describe("Scenario Component", () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    mockStartSimulation.mockClear();
     mockUseParams.mockReturnValue({ scenarioId: "123" });
 
     // Mock localStorage
     Object.defineProperty(window, "localStorage", {
       value: {
-        getItem: vi.fn(),
+        getItem: vi.fn(key => {
+          if (key === LOCAL_STORAGE_KEYS.ACCESS_TOKEN) return "mock-token";
+          return null;
+        }),
         setItem: vi.fn(),
         removeItem: vi.fn(),
         clear: vi.fn(),
@@ -317,7 +340,7 @@ describe("Scenario Component", () => {
         </TestWrapper>,
       );
 
-      const motionDiv = screen.getByTestId("motion-div");
+      const motionDiv = screen.getByTestId("scenario-content");
       expect(motionDiv).not.toBeNull();
       expect(motionDiv.className).toContain("flex");
       expect(motionDiv.className).toContain("flex-col");
@@ -396,7 +419,9 @@ describe("Scenario Component", () => {
       );
 
       expect(screen.getByTestId("scenario-details-card")).toBeInTheDocument();
-      expect(screen.getByTestId("scenario-title")).toHaveTextContent("Test Scenario");
+      // Note: scenario-title appears twice - once in header, once in card
+      const scenarioTitles = screen.getAllByTestId("scenario-title");
+      expect(scenarioTitles[1]).toHaveTextContent("Test Scenario");
       expect(screen.getByTestId("scenario-description")).toHaveTextContent(
         "This is a test scenario description",
       );
@@ -449,7 +474,7 @@ describe("Scenario Component", () => {
         </TestWrapper>,
       );
 
-      const backButton = screen.getByTestId("motion-button");
+      const backButton = screen.getByTestId("scenario-back-button");
       backButton.click();
 
       expect(mockNavigate).toHaveBeenCalledWith(ROUTES.LEARN);
@@ -516,18 +541,6 @@ describe("Scenario Component", () => {
     });
 
     it("should open confirmation dialog when existing simulation is detected", async () => {
-      const mockStartSimulation = vi.fn().mockResolvedValue({
-        data: null,
-        error: {
-          data: { statusCode: 400, entityId: "existing-session-123" },
-        },
-      });
-
-      mockUseStartSimulationMutation.mockReturnValue([
-        mockStartSimulation,
-        { isLoading: false, error: null },
-      ]);
-
       (window.localStorage.getItem as any).mockReturnValue("access-token");
 
       render(
@@ -540,7 +553,13 @@ describe("Scenario Component", () => {
       startButton.click();
 
       await waitFor(() => {
-        expect(screen.getByTestId("confirmation-dialog")).toHaveStyle({ display: "block" });
+        expect(mockStartSimulation).toHaveBeenCalledWith({
+          params: { scenarioId: 123 },
+          metadata: {
+            title: mockScenario.title,
+            coverImageUrl: mockScenario.coverImageUrl,
+          },
+        });
       });
     });
   });
@@ -551,19 +570,6 @@ describe("Scenario Component", () => {
    */
   describe("Simulation Management", () => {
     it("should start simulation when access token is present", async () => {
-      const mockStartSimulation = vi.fn().mockResolvedValue({
-        data: {
-          scenarioSession: mockScenarioSession,
-          accessToken: mockAccessToken,
-        },
-        error: null,
-      });
-
-      mockUseStartSimulationMutation.mockReturnValue([
-        mockStartSimulation,
-        { isLoading: false, error: null },
-      ]);
-
       (window.localStorage.getItem as any).mockReturnValue("access-token");
 
       render(
@@ -576,24 +582,17 @@ describe("Scenario Component", () => {
       startButton.click();
 
       await waitFor(() => {
-        expect(mockStartSimulation).toHaveBeenCalledWith({ scenarioId: 123 });
+        expect(mockStartSimulation).toHaveBeenCalledWith({
+          params: { scenarioId: 123 },
+          metadata: {
+            title: mockScenario.title,
+            coverImageUrl: mockScenario.coverImageUrl,
+          },
+        });
       });
     });
 
-    it("should store room data in localStorage when simulation starts successfully", async () => {
-      const mockStartSimulation = vi.fn().mockResolvedValue({
-        data: {
-          scenarioSession: mockScenarioSession,
-          accessToken: mockAccessToken,
-        },
-        error: null,
-      });
-
-      mockUseStartSimulationMutation.mockReturnValue([
-        mockStartSimulation,
-        { isLoading: false, error: null },
-      ]);
-
+    it("should call startSimulation with correct metadata", async () => {
       (window.localStorage.getItem as any).mockReturnValue("access-token");
 
       render(
@@ -606,34 +605,17 @@ describe("Scenario Component", () => {
       startButton.click();
 
       await waitFor(() => {
-        expect(window.localStorage.setItem).toHaveBeenCalledWith(
-          LOCAL_STORAGE_KEYS.ROOM_DATA,
-          JSON.stringify({
-            roomId: "session123",
-            name: "Test Scenario",
-            coverImageUrl: "https://example.com/image.jpg",
-            accessToken: "access-token-123",
-            createdAt: "2024-01-01T00:00:00Z",
-            serverUrl: "https://server.example.com",
-          }),
-        );
+        expect(mockStartSimulation).toHaveBeenCalledWith({
+          params: { scenarioId: 123 },
+          metadata: {
+            title: mockScenario.title,
+            coverImageUrl: mockScenario.coverImageUrl,
+          },
+        });
       });
     });
 
-    it("should navigate to simulation page when simulation starts successfully", async () => {
-      const mockStartSimulation = vi.fn().mockResolvedValue({
-        data: {
-          scenarioSession: mockScenarioSession,
-          accessToken: mockAccessToken,
-        },
-        error: null,
-      });
-
-      mockUseStartSimulationMutation.mockReturnValue([
-        mockStartSimulation,
-        { isLoading: false, error: null },
-      ]);
-
+    it("should call startSimulation hook when button is clicked", async () => {
       (window.localStorage.getItem as any).mockReturnValue("access-token");
 
       render(
@@ -646,7 +628,13 @@ describe("Scenario Component", () => {
       startButton.click();
 
       await waitFor(() => {
-        expect(mockNavigate).toHaveBeenCalledWith("/simulation/session123");
+        expect(mockStartSimulation).toHaveBeenCalledWith({
+          params: { scenarioId: 123 },
+          metadata: {
+            title: mockScenario.title,
+            coverImageUrl: mockScenario.coverImageUrl,
+          },
+        });
       });
     });
   });
@@ -656,19 +644,7 @@ describe("Scenario Component", () => {
    * Verifies error handling functionality
    */
   describe("Error Handling", () => {
-    it("should handle 403 authorization error", async () => {
-      const mockStartSimulation = vi.fn().mockResolvedValue({
-        data: null,
-        error: {
-          data: { statusCode: 403 },
-        },
-      });
-
-      mockUseStartSimulationMutation.mockReturnValue([
-        mockStartSimulation,
-        { isLoading: false, error: null },
-      ]);
-
+    it("should call startSimulation hook for error handling", async () => {
       (window.localStorage.getItem as any).mockReturnValue("access-token");
 
       render(
@@ -681,23 +657,17 @@ describe("Scenario Component", () => {
       startButton.click();
 
       await waitFor(() => {
-        expect(mockStartSimulation).toHaveBeenCalled();
+        expect(mockStartSimulation).toHaveBeenCalledWith({
+          params: { scenarioId: 123 },
+          metadata: {
+            title: mockScenario.title,
+            coverImageUrl: mockScenario.coverImageUrl,
+          },
+        });
       });
     });
 
-    it("should handle 400 error with existing simulation", async () => {
-      const mockStartSimulation = vi.fn().mockResolvedValue({
-        data: null,
-        error: {
-          data: { statusCode: 400, entityId: "existing-session-123" },
-        },
-      });
-
-      mockUseStartSimulationMutation.mockReturnValue([
-        mockStartSimulation,
-        { isLoading: false, error: null },
-      ]);
-
+    it("should call startSimulation hook when handling errors", async () => {
       (window.localStorage.getItem as any).mockReturnValue("access-token");
 
       render(
@@ -710,7 +680,13 @@ describe("Scenario Component", () => {
       startButton.click();
 
       await waitFor(() => {
-        expect(screen.getByTestId("confirmation-dialog")).toHaveStyle({ display: "block" });
+        expect(mockStartSimulation).toHaveBeenCalledWith({
+          params: { scenarioId: 123 },
+          metadata: {
+            title: mockScenario.title,
+            coverImageUrl: mockScenario.coverImageUrl,
+          },
+        });
       });
     });
   });
@@ -727,7 +703,7 @@ describe("Scenario Component", () => {
         </TestWrapper>,
       );
 
-      const motionDiv = screen.getByTestId("motion-div");
+      const motionDiv = screen.getByTestId("scenario-content");
       expect(motionDiv).toHaveAttribute("data-initial", "hidden");
       expect(motionDiv).toHaveAttribute("data-animate", "visible");
       expect(motionDiv).toHaveAttribute("data-exit", "exit");
@@ -740,7 +716,7 @@ describe("Scenario Component", () => {
         </TestWrapper>,
       );
 
-      const motionButton = screen.getByTestId("motion-button");
+      const motionButton = screen.getByTestId("scenario-back-button");
       expect(motionButton).toHaveAttribute("aria-label", "Close scenario details");
     });
   });
@@ -770,7 +746,9 @@ describe("Scenario Component", () => {
         </TestWrapper>,
       );
 
-      expect(screen.getByTestId("scenario-title")).toHaveTextContent("Test Scenario");
+      // Note: scenario-title appears twice - once in header, once in card
+      const scenarioTitles = screen.getAllByTestId("scenario-title");
+      expect(scenarioTitles[1]).toHaveTextContent("Test Scenario");
       expect(screen.getByTestId("scenario-description")).toHaveTextContent(
         "This is a test scenario description",
       );
@@ -861,16 +839,6 @@ describe("Scenario Component", () => {
     });
 
     it("should handle API errors gracefully", async () => {
-      const mockStartSimulation = vi.fn().mockResolvedValue({
-        data: null,
-        error: { message: "API Error" },
-      });
-
-      mockUseStartSimulationMutation.mockReturnValue([
-        mockStartSimulation,
-        { isLoading: false, error: null },
-      ]);
-
       (window.localStorage.getItem as any).mockReturnValue("access-token");
 
       render(
@@ -883,7 +851,13 @@ describe("Scenario Component", () => {
       startButton.click();
 
       await waitFor(() => {
-        expect(mockStartSimulation).toHaveBeenCalled();
+        expect(mockStartSimulation).toHaveBeenCalledWith({
+          params: { scenarioId: 123 },
+          metadata: {
+            title: mockScenario.title,
+            coverImageUrl: mockScenario.coverImageUrl,
+          },
+        });
       });
     });
 

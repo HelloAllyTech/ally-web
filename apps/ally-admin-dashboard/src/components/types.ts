@@ -3,20 +3,10 @@ import { ButtonHTMLAttributes, ChangeEvent, CSSProperties, ReactNode } from "rea
 import { TextFieldProps as MuiTextFieldProps } from "@mui/material";
 import { UseFormRegister, UseFormReturn, FieldErrors } from "react-hook-form";
 
-import { Simulation } from "@types";
-
 export interface PopupButtonProps {
   label: string;
   onClick: () => void;
   variant?: ButtonVariantType;
-}
-
-export interface HeaderProps {
-  onBack: () => void;
-  onSaveDraft: () => void;
-  onPublish: () => void;
-  onMoreOptions: () => void;
-  moreOptionsRef: React.RefObject<HTMLButtonElement>;
 }
 
 export const ButtonVariant = {
@@ -39,7 +29,14 @@ export interface ButtonProps extends Omit<ButtonHTMLAttributes<HTMLButtonElement
 export interface DeleteSimulationPopupProps {
   isOpen: boolean;
   onClose: () => void;
-  simulation: Simulation | null;
+  title?: string | ReactNode;
+  description?: string | ReactNode;
+  cardData: {
+    id: string | number;
+    title?: string;
+    description?: string;
+    coverImageUrl?: string;
+  };
   onConfirmDelete: () => void;
 }
 
@@ -82,6 +79,8 @@ export interface DropdownFieldProps {
   options: Array<{ value: string; label: string }>;
   placeholder?: string;
   isMandatory?: boolean;
+  isSearchable?: boolean;
+  handleSearchTextChange?: (searchTerm: string) => void;
 }
 
 // NarrativeContext
@@ -166,13 +165,6 @@ export interface FormFieldProps {
   formMethods: UseFormReturn<any>;
 }
 
-export interface MoreOptionsPopupProps {
-  isOpen: boolean;
-  onClose: () => void;
-  onDiscardSimulation: () => void;
-  position: { top: number; right: number };
-}
-
 export interface NavigationItem {
   id: string;
   label: string;
@@ -206,6 +198,7 @@ export interface TabsProps {
   activeId: string;
   onChange: (id: string) => void;
   className?: string;
+  showCount?: boolean;
 }
 
 export interface FilterChipProps {

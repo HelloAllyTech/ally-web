@@ -6,6 +6,7 @@ export * from "./calls/Calls";
 export * from "./calendar/Calendar";
 export * from "./health-check/Health";
 export * from "./learn/Learn";
+export * from "./pathway-details";
 export * from "./post-call-summary/PostCallSummary";
 export * from "./scenario/Scenario";
 export * from "./search/Search";

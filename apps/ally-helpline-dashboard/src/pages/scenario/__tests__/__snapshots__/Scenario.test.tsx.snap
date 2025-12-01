@@ -10,26 +10,29 @@ exports[`Scenario Component > Snapshot Testing > should match snapshot with scen
     >
       <div
         class="h-screen w-full flex justify-center items-center bg-white"
+        data-testid="scenario-page"
       >
         <div
           class="flex flex-col gap-6 w-full m-auto justify-center items-center"
           data-animate="visible"
           data-exit="exit"
           data-initial="hidden"
-          data-testid="motion-div"
+          data-testid="scenario-content"
           data-variants="{\\"hidden\\":{\\"opacity\\":0,\\"scale\\":0.95},\\"visible\\":{\\"opacity\\":1,\\"scale\\":1,\\"transition\\":{\\"duration\\":0.4,\\"ease\\":[0.4,0,0.2,1]}},\\"exit\\":{\\"opacity\\":0,\\"scale\\":0.95,\\"transition\\":{\\"duration\\":0.3}}}"
         >
           <div
             class="flex justify-between w-full max-w-[600px]"
+            data-testid="scenario-header"
           >
             <div
               class="flex items-center gap-2 font-secondary text-3xl"
+              data-testid="scenario-title"
             >
               <button
                 animate="[object Object]"
                 aria-label="Close scenario details"
                 class="hover:scale-105 transition-transform"
-                data-testid="motion-button"
+                data-testid="scenario-back-button"
                 exit="[object Object]"
                 initial="[object Object]"
                 transition="[object Object]"
@@ -50,41 +53,27 @@ exports[`Scenario Component > Snapshot Testing > should match snapshot with scen
               </span>
             </div>
             <div
-              class="font-primary flex  items-center"
+              data-testid="credits-display"
             >
               <div
-                class="font-primary text-base text-typography-800"
+                class="font-primary text-base text-typography-700 whitespace-nowrap"
               >
                 Credits used:
               </div>
-              <svg
-                class="lucide lucide-bolt mb-2"
-                fill="none"
-                height="24"
-                stroke="currentColor"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                viewBox="0 0 24 24"
-                width="24"
-                xmlns="http://www.w3.org/2000/svg"
+              <div
+                data-testid="credits-icon"
               >
-                <path
-                  d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"
-                />
-                <circle
-                  cx="12"
-                  cy="12"
-                  r="4"
-                />
-              </svg>
+                ⚡
+              </div>
               <span
-                class="font-bold text-xl mb-1 text-typography-900"
+                class="font-primary font-bold text-lg"
+                data-testid="credits-consumed"
               >
                 0
               </span>
               <span
-                class="text-base text-typography-800"
+                class="font-primary text-base text-typography-700"
+                data-testid="credits-limit"
               >
                 /100
               </span>
@@ -184,6 +173,7 @@ exports[`Scenario Component > Snapshot Testing > should match snapshot with scen
     >
       <div
         class="h-screen w-full flex justify-center items-center bg-white"
+        data-testid="scenario-page"
       >
         <div
           data-testid="fallback-ui"

@@ -3,13 +3,15 @@ import { FC, useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
 
-import { useLazyGetSimulationSummaryQuery } from "@api";
+import { logger } from "@ally-ui-mono/ui-shared/logger";
+import { useLazyGetUpComingSimulationQuery, useLazyGetSimulationSummaryQuery } from "@api";
 import { Button, PermissionGuard } from "@components";
 import { Permissions } from "@constants";
 import { SessionType } from "@types";
+import { isNonEmptyObject } from "@utils";
 
 import { FeedbackDialog } from "..";
-import { FeedbackSection, LoaderSkeleton } from "./components";
+import { FeedbackSection, LoaderSkeleton, UpNextSimulationCard } from "./components";
 import { SimulationSummaryProps } from "./types";
 
 export const SimulationSummary: FC<SimulationSummaryProps> = ({
@@ -23,41 +25,55 @@ export const SimulationSummary: FC<SimulationSummaryProps> = ({
   const [retryMaxReached, setRetryMaxReached] = useState<boolean>(false);
 
   const [getSimulationSummary, { data: summary }] = useLazyGetSimulationSummaryQuery();
+  const [getUpComingSimulation, { data: upComingSimulation }] = useLazyGetUpComingSimulationQuery();
 
   useEffect(() => {
+    let isMounted = true;
+    let timeoutId: NodeJS.Timeout;
     let pollCount = 0;
     const maxPolls = 5;
-    let summaryPollingInterval;
 
-    const pollForSummary = async () => {
-      const { data: summaryData } = await getSimulationSummary(summaryId);
-      if (summaryData) {
-        onSummaryFetch?.(summaryData);
-      }
-      if (summaryId && !summaryData?.details?.summary) {
-        summaryPollingInterval = setInterval(async () => {
-          pollCount++;
-          const { data } = await getSimulationSummary(summaryId);
+    const poll = async () => {
+      try {
+        const { data } = await getSimulationSummary(summaryId);
 
-          if (data?.details?.summary?.feedback || pollCount >= maxPolls) {
-            clearInterval(summaryPollingInterval);
-            if (pollCount >= maxPolls) {
-              setRetryMaxReached(true);
-              if (!data?.details?.summary?.feedback) {
-                toast.error("Something went wrong. Please try again later.");
-              }
-            }
+        if (data && isMounted) onSummaryFetch?.(data);
+
+        const hasSummary = data?.details?.summary;
+        if (hasSummary) {
+          if (!isInSidebar && summaryId) getUpComingSimulation(summaryId);
+
+          if (data.details.summary.feedback) return;
+        }
+
+        if (pollCount >= maxPolls) {
+          if (isMounted) {
+            if (!isInSidebar && summaryId) getUpComingSimulation(summaryId);
+            setRetryMaxReached(true);
+            if (!data?.details?.summary?.feedback)
+              toast.error("Something went wrong. Please try again later.");
           }
-        }, 3500);
+          return;
+        }
+
+        if (isMounted && !data?.details?.summary?.feedback) {
+          pollCount++;
+          timeoutId = setTimeout(poll, 3500);
+        }
+      } catch {
+        logger.error("Polling error in simulation summary");
+        if (isMounted && pollCount < maxPolls) {
+          pollCount++;
+          timeoutId = setTimeout(poll, 3500);
+        }
       }
     };
 
-    pollForSummary();
+    if (summaryId) poll();
 
     return () => {
-      if (summaryPollingInterval) {
-        clearInterval(summaryPollingInterval);
-      }
+      isMounted = false;
+      clearTimeout(timeoutId);
     };
   }, [summaryId]);
 
@@ -74,22 +90,25 @@ export const SimulationSummary: FC<SimulationSummaryProps> = ({
       className={`relative flex flex-col h-full w-full ${className}`}
       data-testid="simulation-summary"
     >
-      <div className="flex flex-col gap-6 overflow-y-auto pb-20 flex-1">
+      <div className="flex flex-col gap-6 overflow-y-auto pb-20 flex-1 w-full custom-scrollbar px-[10px]">
         {retryMaxReached || summary?.details?.summary?.feedback ? (
           <>
             <FeedbackSection {...summary} />
             {!isInSidebar && (
               <PermissionGuard requiredPermissions={[Permissions.EDIT_SCENARIO_SESSION]}>
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5, delay: 0.8 }}
-                  className="absolute bottom-0 left-4 right-4 z-10 max-w-full bg-white"
-                >
-                  <Button onClick={onSubmit} className="w-[80%] mx-auto">
-                    Try another Simulation
-                  </Button>
-                </motion.div>
+                <UpNextSimulationCard data={upComingSimulation} />
+                {!isNonEmptyObject(upComingSimulation) && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5, delay: 0.8 }}
+                    className="absolute bottom-0 left-4 right-4 z-10 max-w-full bg-white"
+                  >
+                    <Button onClick={onSubmit} className="w-[80%] mx-auto">
+                      Try another Simulation
+                    </Button>
+                  </motion.div>
+                )}
               </PermissionGuard>
             )}
             <FeedbackDialog

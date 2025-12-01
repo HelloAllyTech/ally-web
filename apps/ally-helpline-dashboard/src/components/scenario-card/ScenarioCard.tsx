@@ -2,6 +2,8 @@ import { FC, useState } from "react";
 
 import { motion } from "framer-motion";
 
+import { CircularProgress } from "@components";
+
 import { scenarioDescriptionStyle } from "./constants";
 import { ScenarioCardProps } from "./types";
 
@@ -11,16 +13,25 @@ const ScenarioCard: FC<ScenarioCardProps> = ({
   isComingSoon,
   onClick,
   title,
+  totalScenarios,
+  completedScenarios = 0,
 }) => {
   const [imageError, setImageError] = useState(false);
+  const isPathway = totalScenarios !== undefined;
+
+  const onKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    if (e.key === "Enter" || e.key === " ") {
+      onClick();
+    }
+  };
 
   const renderImage = () => (
     <div className="w-full relative h-[100px] sm:h-[120px]">
       {!imageError ? (
         <img
           src={coverImage}
-          alt={`${title} scenario cover`}
-          className={`w-full h-full object-cover rounded-t-[4px] ${isComingSoon ? "blur-[2px] grayscale opacity-50" : ""}`}
+          alt={`${title} ${isPathway ? "pathway" : "scenario"} cover`}
+          className={`w-full h-full object-cover rounded-[12px] ${isComingSoon ? "blur-[2px] grayscale opacity-50" : ""}`}
           loading="lazy"
           onError={() => setImageError(true)}
         />
@@ -41,7 +52,7 @@ const ScenarioCard: FC<ScenarioCardProps> = ({
     <motion.div
       layout
       onClick={onClick}
-      className={`bg-white overflow-hidden transition-all duration-300 h-full rounded-[8px] shadow-[0_2px_8px_rgba(0,0,0,0.1)] hover:shadow-[0_8px_16px_rgba(0,0,0,0.15)] ${isComingSoon ? "pointer-events-none" : "cursor-pointer"}`}
+      className={`bg-white overflow-hidden transition-all duration-300 h-full rounded-[20px] border-[1px] border-border-light shadow-[0_1px_2px_rgba(0,0,0,0.05)] hover:shadow-[0_4px_8px_rgba(0,0,0,0.15)] ${isComingSoon ? "pointer-events-none" : "cursor-pointer"}`}
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
@@ -50,22 +61,41 @@ const ScenarioCard: FC<ScenarioCardProps> = ({
       role="button"
       aria-label={`Select ${title} scenario`}
       tabIndex={0}
-      onKeyPress={e => {
-        if (e.key === "Enter" || e.key === " ") {
-          onClick();
-        }
-      }}
+      onKeyDown={onKeyDown}
     >
-      <div className="flex flex-col h-full gap-3">
+      <div className="flex flex-col h-full gap-3 p-[10px]">
         {renderImage()}
-        <div className="flex flex-col flex-grow font-primary px-3 pb-3 sm:px-[14px] sm:pb-[14px] gap-1">
-          <div id="scenario-title" className="font-medium text-typography-900">
-            {title}
+        <div className="flex flex-row font-primary px-[6px] pb-[8px] justify-between">
+          <div className="flex flex-col gap-2 min-w-0 mr-2">
+            <div id="scenario-title" className="font-medium text-typography-900 text-base truncate">
+              {title}
+            </div>
+
+            {description?.length > 0 && (
+              <div className="text-sm text-typography-800">
+                <p style={scenarioDescriptionStyle}>{description}</p>
+              </div>
+            )}
+
+            {isPathway && (
+              <div className="text-sm text-typography-700">
+                {totalScenarios} Simulation{totalScenarios !== 1 ? "s" : ""}
+              </div>
+            )}
           </div>
 
-          <div className="text-base text-typography-800">
-            <p style={scenarioDescriptionStyle}>{description}</p>
-          </div>
+          {isPathway && totalScenarios > 0 && completedScenarios > 0 && (
+            <div className="flex-shrink-0 flex items-center">
+              <CircularProgress
+                current={completedScenarios}
+                total={totalScenarios}
+                size={40}
+                strokeWidth={2}
+                progressColor={completedScenarios === totalScenarios ? "#81C784" : "#6366F1"}
+                textColor="text-typography-800"
+              />
+            </div>
+          )}
         </div>
       </div>
     </motion.div>

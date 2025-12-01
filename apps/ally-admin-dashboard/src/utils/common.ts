@@ -1,8 +1,8 @@
 import { matchPath } from "react-router-dom";
 
 import { ButtonProps, ButtonVariant } from "@components/types";
-import { EMAIL_REGEX } from "@constants";
-import { Simulation, SimulationStatus, UserRoles } from "@types";
+import { EMAIL_REGEX, FORM_FIELD_TYPES } from "@constants";
+import { CreatorFieldGroups, Simulation, SimulationStatus, UserRoles } from "@types";
 
 export const validateEmail = (email: string): boolean => {
   return Boolean(email && EMAIL_REGEX.test(email));
@@ -64,6 +64,24 @@ export const decodeUint8ToJson = (payload: unknown): unknown => {
   return null;
 };
 
+/**
+ * Converts time from HH:MM:SS format to seconds
+ * @param timeString - Time in HH:MM:SS format (e.g., "00:20:00")
+ * @returns Time in seconds (e.g., 1200)
+ */
+export const convertTimeToSeconds = (timeString: string): number => {
+  if (!isNonEmptyString(timeString)) return 0;
+
+  const parts = timeString.split(":");
+  if (parts.length !== 3) return 0;
+
+  const hours = parseInt(parts[0], 10) || 0;
+  const minutes = parseInt(parts[1], 10) || 0;
+  const seconds = parseInt(parts[2], 10) || 0;
+
+  return hours * 3600 + minutes * 60 + seconds;
+};
+
 export const formatDate = (dateString: string) => {
   const date = new Date(dateString);
   return date.toLocaleDateString("en-GB", {
@@ -97,7 +115,7 @@ export const getButtonStyles = (variant: ButtonProps["variant"]) => {
   }
 };
 
-export const getSimulationStatusColor = (status: Simulation["status"]) => {
+export const getStatusColor = (status: Simulation["status"]) => {
   switch (status) {
     case SimulationStatus.ACTIVE:
       return "bg-success-100 text-success-900";
@@ -151,4 +169,76 @@ export const isArray = (value: unknown): value is unknown[] => {
 
 export const isNonEmptyArray = <T>(value: unknown): value is T[] => {
   return Array.isArray(value) && value?.length > 0;
+};
+
+export const isEmpty = (value: unknown): boolean => {
+  if (value === undefined || value === null || value === "") return true;
+
+  return false;
+};
+
+export const normalizeScore = (value: string | number): number => {
+  const newValue = Number(value);
+  if (newValue < 0) return 0;
+
+  return Math.round(newValue);
+};
+
+export const isNonEmptyObject = (value: any): boolean => {
+  return (
+    value !== null &&
+    typeof value === "object" &&
+    !Array.isArray(value) &&
+    Object.keys(value).length > 0
+  );
+};
+
+export const extractValidData = (
+  fields: CreatorFieldGroups[],
+  formData: Record<string, any>,
+): Record<string, any> => {
+  const allFields = fields.flatMap(group => group.fields);
+  return Object.fromEntries(
+    Object.entries(formData).map(([key, value]) => {
+      const field = allFields.find(field => field.id === key);
+      if (Array.isArray(value) && value.length === 0) {
+        return [key, null];
+      }
+      switch (field?.type) {
+        case FORM_FIELD_TYPES.SELECT:
+        case FORM_FIELD_TYPES.CUSTOM.VOICE_DROPDOWN: //handles dropdown case
+          return [key, isNonEmptyString(value) ? value : null];
+
+        case FORM_FIELD_TYPES.NUMBER: //convert string to number and empty val to null
+          return [key, value ? parseInt(value) : null];
+
+        case FORM_FIELD_TYPES.IMAGE_UPLOAD: //image upload if empty returns object,so convert to null
+          return [key, value?.length > 0 ? value : null];
+
+        case FORM_FIELD_TYPES.VIDEO_UPLOAD: //video upload if empty returns object,so convert to null
+          return [key, value?.length > 0 ? value : null];
+
+        case FORM_FIELD_TYPES.TOGGLE_BUTTON:
+          return [key, Boolean(value)];
+
+        default:
+          return [key, isNonEmptyString(value) ? value.trim() : value];
+      }
+    }),
+  );
+};
+
+/**
+ * Converts seconds to HH:MM:SS format for display
+ * @param seconds - Time in seconds (number)
+ * @returns Time in HH:MM:SS format (string), defaults to "00:00:00" if invalid
+ */
+export const convertSecondsToTimeString = (seconds: number | undefined): string => {
+  if (!seconds || !isNumber(seconds) || seconds < 0) return "00:00:00";
+
+  const hours = Math.floor(seconds / 3600);
+  const minutes = Math.floor((seconds % 3600) / 60);
+  const secs = seconds % 60;
+
+  return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}:${String(secs).padStart(2, "0")}`;
 };

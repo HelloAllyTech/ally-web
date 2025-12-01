@@ -60,6 +60,8 @@ export const ApiEndpoints = {
     START_SIMULATION: "/v1/learn/scenario-session-start",
     GET_SCENARIOS: "/v1/learn/scenarios",
     GET_SCENARIO: (scenarioId: number) => `/v1/learn/scenarios/${scenarioId}`,
+    GET_SCENARIO_PATHWAYS: "/v1/learn/scenario-paths",
+    GET_SCENARIO_PATHWAY_DETAILS: (pathwayId: string) => `/v1/learn/scenario-paths/${pathwayId}`,
     GET_SIMULATION_LOGS: "/v1/learn/scenario-sessions",
     GET_ADMIN_SIMULATION_LOGS: "/v1/learn/admin-scenario-sessions",
     GET_SIMULATION_SUMMARY: (sessionId: string) => `/v1/learn/scenario-session/${sessionId}`,
@@ -67,6 +69,12 @@ export const ApiEndpoints = {
       `/v1/learn/scenario-session/${sessionId}/feedback`,
     GET_SIMULATION_TRANSCRIPT: (sessionId: string) =>
       `/v1/learn/scenario-session/${sessionId}/messages`,
+    GET_UP_COMING_SIMULATION: (sessionId: string) =>
+      `/v1/learn/scenario-paths/${sessionId}/upcoming-scenario`,
+    START_PATHWAY_SIMULATION: (pathwayId: string) =>
+      `/v1/learn/scenario-paths/${pathwayId}/create-session`,
+    SCENARIO_SESSION_BY_PATH_ITEM: (pathSessionItemId: string) =>
+      `/v1/learn/scenario-session/scenario-path-session-item/${pathSessionItemId}`,
   },
   SIMULATION: {
     SIMULATION_CREDITS: "/v1/simulation-credits",

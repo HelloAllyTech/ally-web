@@ -4,8 +4,8 @@ import { AnimatePresence, motion } from "framer-motion";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
 
-import { useEndSimulationMutation, useGetScenarioQuery, useStartSimulationMutation } from "@api";
-import { BackCircle, Bolt, ExistingCall, PageNotFoundIllustration } from "@assets";
+import { useEndSimulationMutation, useGetScenarioQuery } from "@api";
+import { BackCircle, ExistingCall, PageNotFoundIllustration } from "@assets";
 import {
   LoginDialog,
   ScenarioDetailsCard,
@@ -13,9 +13,10 @@ import {
   ButtonVariant,
   FallbackUI,
   CreditInfo,
+  CreditsDisplay,
 } from "@components";
 import { AUTO_CLOSE_DIALOG_DURATION, LOCAL_STORAGE_KEYS, ROUTES } from "@constants";
-import { useSimulationCredits } from "@hooks";
+import { useSimulationCredits, useStartSimulation } from "@hooks";
 
 import { learnPageExpandedVariants } from "../learn/constants";
 
@@ -39,8 +40,20 @@ export const Scenario: FC = () => {
     isLoading: isScenarioLoading,
   } = useGetScenarioQuery({ scenarioId: id });
   const [endSimulation] = useEndSimulationMutation();
-  const [startSimulation, { isLoading: isStartingSimulation, error: startSimulationError }] =
-    useStartSimulationMutation();
+
+  const [startSimulationError, setStartSimulationError] = useState<unknown>(null);
+  const { startSimulation, isStarting: isStartingSimulation } = useStartSimulation({
+    onSuccess: () => {
+      setIsLoginDialogOpen(false);
+    },
+    onError: error => {
+      setStartSimulationError(error);
+      const errorData = error as { data?: { statusCode?: number; entityId?: string } };
+      if (errorData.data?.statusCode === 400 && errorData?.data?.entityId) {
+        setIsExistingSimulationConfirmOpen(true);
+      }
+    },
+  });
 
   useEffect(() => {
     if (!credits) return;
@@ -52,9 +65,12 @@ export const Scenario: FC = () => {
     if (limitReached) setNoEnoughCredits(true);
   }, [credits]);
 
+  const isAuthenticated = () => Boolean(localStorage.getItem(LOCAL_STORAGE_KEYS.ACCESS_TOKEN));
+
   const renderBackButton = () => {
     return (
       <motion.button
+        data-testid="scenario-back-button"
         initial={{ opacity: 0, x: -20 }}
         animate={{ opacity: 1, x: 0 }}
         exit={{ opacity: 0, x: -20 }}
@@ -69,42 +85,18 @@ export const Scenario: FC = () => {
   };
 
   const handleStartSimulation = async () => {
-    setIsLoginDialogOpen(false);
-
-    const { data, error } = await startSimulation({ scenarioId: id });
-    if (error) {
-      const errorData = error as { data?: { statusCode?: number; entityId?: string } };
-      if (errorData.data?.statusCode === 403) {
-        toast.error("You are not authorized to start this simulation");
-      } else if (errorData.data?.statusCode === 400 && errorData?.data?.entityId) {
-        setIsExistingSimulationConfirmOpen(true);
-      }
-      return;
-    }
-
-    if (data) {
-      const { scenarioSession, accessToken } = data;
-      // Store room data in localStorage
-      localStorage.setItem(
-        LOCAL_STORAGE_KEYS.ROOM_DATA,
-        JSON.stringify({
-          roomId: scenarioSession.id,
-          name: scenario?.title,
-          coverImageUrl: scenario?.coverImageUrl,
-          accessToken: accessToken.token,
-          createdAt: scenarioSession.startedAt,
-          serverUrl: accessToken.serverUrl,
-        }),
-      );
-      navigate(`/simulation/${scenarioSession.id}`);
-    }
+    await startSimulation({
+      params: { scenarioId: id },
+      metadata: {
+        title: scenario?.title,
+        coverImageUrl: scenario?.coverImageUrl,
+      },
+    });
   };
 
   const onStartSimulationClick = () => {
     // TODO: update authorization check
-    const accessToken = localStorage.getItem(LOCAL_STORAGE_KEYS.ACCESS_TOKEN);
-
-    if (!accessToken) {
+    if (!isAuthenticated()) {
       // TODO: Retest login through dialog
       setIsLoginDialogOpen(true);
       return;
@@ -114,7 +106,11 @@ export const Scenario: FC = () => {
   };
 
   const endExistingSimulation = async () => {
-    if (startSimulationError && "data" in startSimulationError) {
+    if (
+      startSimulationError &&
+      typeof startSimulationError === "object" &&
+      "data" in startSimulationError
+    ) {
       const errorData = startSimulationError.data as { entityId?: string };
       if (errorData.entityId) {
         await endSimulation({ sessionId: errorData.entityId });
@@ -144,33 +140,37 @@ export const Scenario: FC = () => {
 
   return (
     <AnimatePresence mode="wait">
-      <div className="h-screen w-full flex justify-center items-center bg-white">
+      <div
+        className="h-screen w-full flex justify-center items-center bg-white"
+        data-testid="scenario-page"
+      >
         {scenario && isScenarioSuccess ? (
           <motion.div
+            data-testid="scenario-content"
             variants={learnPageExpandedVariants}
             initial="hidden"
             animate="visible"
             exit="exit"
             className="flex flex-col gap-6 w-full m-auto justify-center items-center"
           >
-            <div className="flex justify-between w-full max-w-[600px]">
-              <div className="flex items-center gap-2 font-secondary text-3xl">
-                {renderBackButton()}
-                <span>Start</span>
-                <span className="font-bold italic"> Simulation</span>
-              </div>
-              <div className="font-primary flex  items-center">
-                <div className="font-primary text-base text-typography-800">Credits used:</div>
-                <Bolt className="mb-2" />
-                <span
-                  className={`font-bold text-xl mb-1 ${limitReached ? "text-destructive-500" : "text-typography-900"}`}
+            {isAuthenticated() && (
+              <div
+                className="flex justify-between w-full max-w-[600px]"
+                data-testid="scenario-header"
+              >
+                <div
+                  className="flex items-center gap-2 font-secondary text-3xl"
+                  data-testid="scenario-title"
                 >
-                  {credits?.consumedCredits ?? 0}
-                </span>
-                <span className="text-base text-typography-800">/{credits?.creditLimit ?? 0}</span>
+                  {renderBackButton()}
+                  <span>Start</span>
+                  <span className="font-bold italic"> Simulation</span>
+                </div>
+                <CreditsDisplay />
               </div>
-            </div>
+            )}
             <ScenarioDetailsCard
+              data-testid="scenario-details-card"
               coverImage={scenario?.coverImageUrl || ""}
               coverVideo={scenario?.coverVideoUrl || ""}
               isStarting={isStartingSimulation}
@@ -182,6 +182,7 @@ export const Scenario: FC = () => {
           </motion.div>
         ) : (
           <FallbackUI
+            data-testid="scenario-not-found"
             icon={<PageNotFoundIllustration />}
             isLoading={isScenarioLoading}
             mainMessage="Scenario not found"
@@ -193,11 +194,13 @@ export const Scenario: FC = () => {
           />
         )}
         <LoginDialog
+          data-testid="scenario-login-dialog"
           isOpen={isLoginDialogOpen}
           onClose={() => setIsLoginDialogOpen(false)}
           onSuccess={handleStartSimulation}
         />
         <ConfirmationDialog
+          data-testid="scenario-existing-simulation-dialog"
           title={{ normal: "Active Simulation ", italic: "Detected" }}
           isOpen={isExistingSimulationConfirmOpen}
           onClose={() => setIsExistingSimulationConfirmOpen(false)}
@@ -210,6 +213,7 @@ export const Scenario: FC = () => {
           icon={ExistingCall}
         />
         <CreditInfo
+          data-testid="scenario-no-credits-dialog"
           open={noCreditsLeft}
           onClose={() => handleCreditClose("noCredits")}
           title="No Credits Left"
@@ -217,6 +221,7 @@ export const Scenario: FC = () => {
           autoCloseDuration={AUTO_CLOSE_DIALOG_DURATION}
         />
         <CreditInfo
+          data-testid="scenario-not-enough-credits-dialog"
           open={notEnoughCredits}
           onClose={() => handleCreditClose("notEnough")}
           title="Not Enough Credits"

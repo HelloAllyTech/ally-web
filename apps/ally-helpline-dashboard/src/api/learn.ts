@@ -5,7 +5,7 @@
  * - Scenarios catalog (list and detail)
  * - Simulation room lifecycle (list, create, delete)
  */
-import { ApiEndpoints, HttpMethod } from "@constants";
+import { ApiEndpoints, HttpMethod, TAG_TYPES } from "@constants";
 import {
   EndSimulationInput,
   EndSimulationResponse,
@@ -22,6 +22,9 @@ import {
   GetSimulationTranscriptRequest,
   SubmitSimulationFeedbackRequest,
   SubmitSimulationFeedbackResponse,
+  GetScenarioPathwaysResponse,
+  ScenarioPathwayDetails,
+  GetUpComingSimulationResponse,
 } from "@types";
 
 import { baseAPI } from "./baseAPI";
@@ -54,6 +57,34 @@ const learnAPI = baseAPI.injectEndpoints({
     }),
 
     /**
+     * Get all scenario pathways (playlists of scenarios).
+     * @returns {Promise<GetScenarioPathwaysResponse>} List of scenario pathways
+     */
+    getScenarioPathways: builder.query<
+      GetScenarioPathwaysResponse,
+      { offset?: number; limit?: number }
+    >({
+      query: (params = {}) => ({
+        url: ApiEndpoints.LEARN.GET_SCENARIO_PATHWAYS,
+        method: HttpMethod.GET,
+        params,
+      }),
+    }),
+
+    /**
+     * Get details for a specific scenario pathway by id.
+     * @param {string} pathwayId - Pathway identifier
+     * @returns {Promise<ScenarioPathwayDetails>} Pathway details with scenarios
+     */
+    getScenarioPathwayDetails: builder.query<ScenarioPathwayDetails, string>({
+      query: pathwayId => ({
+        url: ApiEndpoints.LEARN.GET_SCENARIO_PATHWAY_DETAILS(pathwayId),
+        method: HttpMethod.GET,
+      }),
+      providesTags: [TAG_TYPES.SCENARIO_PATHWAY_DETAILS],
+    }),
+
+    /**
      * Start a new simulation.
      * @param {StartSimulationInput} params - Start simulation payload
      * @returns {Promise<StartSimulationResponse>} Started simulation info
@@ -78,7 +109,7 @@ const learnAPI = baseAPI.injectEndpoints({
         url: ApiEndpoints.LEARN.END_SIMULATION(params.sessionId),
         method: HttpMethod.POST,
       }),
-      invalidatesTags: ["SimulationLogs"],
+      invalidatesTags: [TAG_TYPES.SIMULATION_LOGS, TAG_TYPES.SIMULATION_CREDITS],
     }),
 
     /**
@@ -118,7 +149,7 @@ const learnAPI = baseAPI.injectEndpoints({
         method: HttpMethod.GET,
         params,
       }),
-      providesTags: ["SimulationLogs"],
+      providesTags: [TAG_TYPES.SIMULATION_LOGS],
     }),
 
     /**
@@ -162,17 +193,46 @@ const learnAPI = baseAPI.injectEndpoints({
         params: { offset, limit, sortOrder: "ASC", sortBy },
       }),
     }),
+    getUpComingSimulation: builder.query<GetUpComingSimulationResponse, string>({
+      query: sessionId => ({
+        url: ApiEndpoints.LEARN.GET_UP_COMING_SIMULATION(sessionId),
+        method: HttpMethod.GET,
+      }),
+    }),
+    startPathwaySimulation: builder.mutation<void, { pathwayId: string }>({
+      query: ({ pathwayId }) => ({
+        url: ApiEndpoints.LEARN.START_PATHWAY_SIMULATION(pathwayId),
+        method: HttpMethod.POST,
+      }),
+      invalidatesTags: [TAG_TYPES.SCENARIO_PATHWAY_DETAILS],
+    }),
+    getScenarioSessionByPathItem: builder.query<
+      {
+        id: string;
+      },
+      { pathSessionItemId: string }
+    >({
+      query: ({ pathSessionItemId }) => ({
+        url: ApiEndpoints.LEARN.SCENARIO_SESSION_BY_PATH_ITEM(pathSessionItemId),
+        method: HttpMethod.GET,
+      }),
+    }),
   }),
 });
 
 export const {
+  useLazyGetUpComingSimulationQuery,
   useEndSimulationMutation,
   useGetScenarioQuery,
   useGetScenariosQuery,
+  useGetScenarioPathwaysQuery,
+  useGetScenarioPathwayDetailsQuery,
   useStartSimulationMutation,
   useGetSimulationLogsQuery,
   useGetAdminSimulationLogsQuery,
   useLazyGetSimulationSummaryQuery,
   useSubmitSimulationFeedbackMutation,
   useGetSimulationTranscriptQuery,
+  useStartPathwaySimulationMutation,
+  useLazyGetScenarioSessionByPathItemQuery,
 } = learnAPI;

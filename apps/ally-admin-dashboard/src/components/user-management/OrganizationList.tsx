@@ -3,12 +3,13 @@ import React, { useState } from "react";
 import { Edit } from "@assets";
 import { ActionConfirmationPopup } from "@components";
 import { en } from "@constants";
-import { OrganizationListProps } from "@types";
+import { OrganizationListProps, Tenant } from "@types";
 
 export const OrganizationList: React.FC<OrganizationListProps> = ({
   organizations,
   formatDate,
   onEditPress,
+  onRowClick,
   renderFooter,
 }) => {
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
@@ -23,6 +24,18 @@ export const OrganizationList: React.FC<OrganizationListProps> = ({
     </div>
   );
 
+  const handleRowClick = (tenant: Tenant, e: React.MouseEvent) => {
+    // Don't trigger row click if clicking on the edit button
+    if ((e.target as HTMLElement).closest("button")) {
+      return;
+    }
+    onRowClick?.(tenant);
+  };
+
+  const handleEditPress = (tenant: Tenant, e: React.MouseEvent) => {
+    e.stopPropagation();
+    onEditPress?.(tenant);
+  };
   return (
     <div className="w-full text-sm overflow-x-auto">
       <div className="min-w-[900px]">
@@ -32,7 +45,8 @@ export const OrganizationList: React.FC<OrganizationListProps> = ({
           {organizations.map(tenant => (
             <div
               key={tenant.id}
-              className="grid grid-cols-12 items-center px-4 py-3 text-typography-900 border-b border-border-light hover:bg-background-secondary"
+              onClick={e => handleRowClick(tenant, e)}
+              className="grid grid-cols-12 items-center px-4 py-3 text-typography-900 border-b border-border-light hover:bg-background-secondary cursor-pointer"
             >
               <div className="col-span-3 text-typography-900">{tenant.name}</div>
               <div className="col-span-2 text-typography-900">{tenant.code}</div>
@@ -44,8 +58,8 @@ export const OrganizationList: React.FC<OrganizationListProps> = ({
                 <span>{tenant.userCount}</span>
                 <button
                   className="text-typography-600 hover:text-typography-900 px-2"
-                  title={en.userManagement.edit}
-                  onClick={() => onEditPress?.(tenant)}
+                  title={en.common.edit}
+                  onClick={e => handleEditPress(tenant, e)}
                 >
                   <Edit />
                 </button>

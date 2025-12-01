@@ -48,13 +48,21 @@ export const SimulationTimer: FC<SimulationTimerProps> = ({
   };
 
   const renderLoader = () => (
-    <div className="w-[30px] h-[30px] mt-[10px] border-t-2 border-b-2 border-[#9CA3AF] rounded-full animate-spin" />
+    <div
+      data-testid="simulation-timer-loader"
+      className="w-[30px] h-[30px] mt-[10px] border-t-2 border-b-2 border-[#9CA3AF] rounded-full animate-spin"
+    />
   );
 
   return (
-    <div className="flex items-center gap-2 font-['IBM_Plex_Serif'] text-[#fff]">
-      <span className="text-[14px]">Session Duration:</span>
-      {formatTime(timer) || renderLoader()}
+    <div
+      data-testid="simulation-timer"
+      className="flex items-center gap-2 font-['IBM_Plex_Serif'] text-[#fff]"
+    >
+      <span data-testid="simulation-timer-label" className="text-[14px]">
+        Session Duration:
+      </span>
+      <span data-testid="simulation-timer-value">{formatTime(timer) || renderLoader()}</span>
     </div>
   );
 };

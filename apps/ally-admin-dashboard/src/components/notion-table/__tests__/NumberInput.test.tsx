@@ -10,9 +10,10 @@ vi.mock("@assets", () => ({
   ),
 }));
 
-// Mock isNumber utility
+// Mock utilities
 vi.mock("@utils", () => ({
   isNumber: (value: any) => typeof value === "number" && !isNaN(value),
+  isNonEmptyString: (value: any) => typeof value === "string" && value.trim().length > 0,
 }));
 
 describe("NumberInput", () => {
@@ -66,7 +67,7 @@ describe("NumberInput", () => {
       render(<NumberInput {...defaultProps} value={undefined} />);
 
       const input = screen.getByPlaceholderText("Enter number");
-      expect(input).toHaveValue("0");
+      expect(input).toHaveValue(""); // Component shows empty string when value is undefined
     });
 
     it("renders increment and decrement buttons", () => {
@@ -415,7 +416,7 @@ describe("NumberInput", () => {
 
       await waitFor(() => {
         const input = screen.getByPlaceholderText("Enter number");
-        expect(input).toHaveValue("0");
+        expect(input).toHaveValue(""); // Component shows empty string when value is undefined
       });
     });
   });

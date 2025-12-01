@@ -14,7 +14,6 @@ import {
   Header,
   VerticalStepper,
   Footer,
-  MoreOptionsPopup,
   ActionConfirmationPopup,
   SimulationPreview,
 } from "@components";
@@ -28,6 +27,7 @@ import {
   formatSimulationResponseData,
   isNonEmptyString,
   extractValidData,
+  isEmpty,
 } from "@utils";
 
 const stepIds = {
@@ -57,11 +57,9 @@ export const CreateSimulation: FC = () => {
   const [simulationId, setSimulationId] = useState<string | undefined>(id);
   const [currentStep, setCurrentStep] = useState(stepIds.basicInfo);
   const [showDiscardPopup, setShowDiscardPopup] = useState(false);
-  const [showMoreOptions, setShowMoreOptions] = useState(false);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [previewSimulation, setPreviewSimulation] = useState<SimulationPreviewType | null>(null);
 
-  const moreOptionsRef = useRef<HTMLButtonElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
   // API mutation for creating simulation
@@ -105,7 +103,7 @@ export const CreateSimulation: FC = () => {
     return mandatoryFieldIds.every(fieldId => {
       const value = formValues[fieldId];
       // Check if value exists and is not empty
-      if (value === undefined || value === null || value === "") {
+      if (isEmpty(value)) {
         return false;
       }
       // For arrays, check if they have content
@@ -120,30 +118,11 @@ export const CreateSimulation: FC = () => {
     });
   }, [formValues]);
 
-  const handleDiscardSimulation = () => {
-    setShowMoreOptions(false);
-  };
-
-  const handleCloseMoreOptions = () => {
-    setShowMoreOptions(false);
-  };
-
-  const getMoreOptionsPosition = () => {
-    if (moreOptionsRef.current) {
-      const rect = moreOptionsRef.current.getBoundingClientRect();
-      return {
-        top: rect.bottom + 8,
-        right: window.innerWidth - rect.right,
-      };
-    }
-    return { top: 0, right: 0 };
-  };
-
   const handlePageBack = () => {
     if (Object.keys(dirtyFields).length > 0) {
       setShowDiscardPopup(true);
     } else {
-      navigate("/");
+      navigate(-1);
     }
   };
 
@@ -151,7 +130,7 @@ export const CreateSimulation: FC = () => {
   const saveSimulationChangesCore = async (status: SimulationStatus) => {
     const formData = formMethods.getValues();
     if (!formData.title) {
-      toast.error("Title should be filled to save as draft");
+      toast.error(en.errors.titleIsRequired);
       return null;
     }
 
@@ -162,8 +141,8 @@ export const CreateSimulation: FC = () => {
     ) {
       try {
         await deleteCoverImage({ coverImageUrl: adminSimulationByIdData.coverImageUrl }).unwrap();
-      } catch {
-        toast.error("Failed to delete cover image. Please try again.");
+      } catch (error: any) {
+        toast.error(error?.data?.message || en.errors.fileUploadFailed);
       }
     }
 
@@ -177,7 +156,7 @@ export const CreateSimulation: FC = () => {
       : null;
 
     const simulationData = {
-      ...extractValidData(restForm),
+      ...extractValidData(SIMULATION_CREATOR_FIELD_GROUPS, restForm),
       openingStatements: openingStatementsArray,
       status,
     };
@@ -208,21 +187,17 @@ export const CreateSimulation: FC = () => {
         // Reset form to clear dirtyFields after successful save
         const currentFormValues = formMethods.getValues();
         formMethods.reset(currentFormValues);
-        // Refetch to ensure form is in sync with saved data
-        if (simulationId) {
-          getAdminSimulationByIdQuery(simulationId);
-        }
+
         return response?.data;
       } else if (response?.error) {
-        toast.error("Failed to save draft. Please try again.");
+        toast.error(response?.error?.data?.message || en.errors.failedSimulationChange);
         return null;
       }
       return response?.data;
     } catch {
-      toast.error("Failed to save draft. Please try again.");
+      toast.error(en.errors.failedSimulationChange);
       return null;
     }
-    // TODO: Handle any navigations here
   };
 
   const handlePublish = async () => {
@@ -232,23 +207,21 @@ export const CreateSimulation: FC = () => {
       // Navigate to simulation studio or the created simulation
       if (response) navigate(ROUTES.SIMULATION_STUDIO);
     } catch {
-      toast.error("Failed to create simulation. Please try again.");
+      toast.error(en.errors.failedSimulationCreation);
     }
   };
 
   const handleDiscardChanges = () => {
     setShowDiscardPopup(false);
-    navigate("/");
+    navigate(-1);
   };
 
   const handleSaveAndExit = async () => {
     const response = await saveSimulationChanges(SimulationStatus.DRAFT);
     if (response) {
       setShowDiscardPopup(false);
-      navigate("/");
+      navigate(-1);
       toast.success("Simulation changes saved successfully!");
-    } else {
-      toast.error("Failed to save simulation changes!");
     }
   };
 
@@ -262,7 +235,7 @@ export const CreateSimulation: FC = () => {
       if (response) {
         setCurrentStep(stepId);
       } else {
-        toast.error("Fill atleast name field to proceed to Event Configuration!");
+        toast.error(en.errors.failedToProceed);
       }
     } else {
       setCurrentStep(stepId);
@@ -283,7 +256,7 @@ export const CreateSimulation: FC = () => {
     return (
       <div className="flex flex-col h-full w-100%">
         <div className="sticky flex flex-row justify-between top-0 z-10 pt-3 mx-6 pb-4 border-b border-border-light">
-          <h2 className="text-lg font-medium text-typography-900">{title}</h2>
+          <h2 className="text-lg font-semibold text-typography-900">{title}</h2>
         </div>
         <div ref={containerRef} className="p-6 pt-4 overflow-y-auto h-full">
           {component}
@@ -312,8 +285,6 @@ export const CreateSimulation: FC = () => {
         return null;
     }
   };
-
-  const moreOptionsPosition = useMemo(() => getMoreOptionsPosition(), []);
 
   const isLastStep = currentStep === stepIds.eventConfiguration;
 
@@ -344,7 +315,7 @@ export const CreateSimulation: FC = () => {
   };
 
   return (
-    <div className="h-[100vh] overflow-hidden font-primary ml-[-10px] lg:ml-0">
+    <div className="h-[100vh] font-primary ml-[-10px] lg:ml-0">
       <Header
         isValid={areAllMandatoryFieldsFilled}
         onBack={handlePageBack}
@@ -352,6 +323,7 @@ export const CreateSimulation: FC = () => {
         onPublish={handlePublish}
         onPreview={handlePreview}
         isPublishing={isCreatingSimulation}
+        title={simulationId ? en.simulation.editSimulation : en.simulation.createNewSimulation}
       />
 
       <div className="flex h-[calc(100vh-100px)]">
@@ -391,12 +363,7 @@ export const CreateSimulation: FC = () => {
           variant: ButtonVariant.SECONDARY,
         }}
       />
-      <MoreOptionsPopup
-        isOpen={showMoreOptions}
-        onClose={handleCloseMoreOptions}
-        onDiscardSimulation={handleDiscardSimulation}
-        position={moreOptionsPosition}
-      />
+
       {previewSimulation && (
         <SimulationPreview
           simulation={previewSimulation}

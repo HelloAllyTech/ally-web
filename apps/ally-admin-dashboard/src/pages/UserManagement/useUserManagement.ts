@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 
 import { useForm } from "react-hook-form";
-import { useLocation, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
 import {
@@ -16,7 +15,6 @@ import {
 } from "@api";
 import { FilterValues } from "@components/types";
 import {
-  ROUTES,
   SORT_BY,
   SORT_ORDER,
   en,
@@ -26,14 +24,12 @@ import {
   userStatus,
   UserRole,
 } from "@constants";
-import { AddUserFormData, FieldProps, TabType, Tenant, UserListUser, UserRoles } from "@types";
+import { AddUserFormData, FieldProps, Tenant, UserListUser, UserRoles } from "@types";
 import { getChipValue } from "@utils";
 
 export const USERS_PAGE_SIZE = 20;
 
 export function useUserManagement(tenants: Tenant[]) {
-  const location = useLocation();
-  const navigate = useNavigate();
   const [search, setSearch] = useState<string>("");
   const [isFilterOpen, setIsFilterOpen] = useState<boolean>(false);
   const [addUsermodalOpen, setAddUserModalOpen] = useState<boolean>(false);
@@ -81,11 +77,6 @@ export function useUserManagement(tenants: Tenant[]) {
 
   const addFilterBtnRef = useRef<HTMLButtonElement>(null);
 
-  const activeTab = useMemo<TabType>(() => {
-    const queryParam = (location.search || "").replace("?", "");
-    return queryParam === TabType.ORGANIZATIONS ? TabType.ORGANIZATIONS : TabType.USERS;
-  }, [location.search]);
-
   const userParams = {
     limit: USERS_PAGE_SIZE,
     offset: usersOffset,
@@ -118,14 +109,6 @@ export function useUserManagement(tenants: Tenant[]) {
     }
     setUsersCount(usersResponse.count || 0);
   }, [usersResponse, usersOffset]);
-
-  // Ensure default query param
-  useEffect(() => {
-    const queryParam = (location.search || "").replace("?", "");
-    if (queryParam !== TabType.USERS && queryParam !== TabType.ORGANIZATIONS) {
-      navigate(`${ROUTES.USER_MANAGEMENT}?${TabType.USERS}`, { replace: true });
-    }
-  }, [location.search, navigate]);
 
   useEffect(() => {
     if (!userRoles) return;
@@ -207,10 +190,6 @@ export function useUserManagement(tenants: Tenant[]) {
     });
   };
 
-  const handleTabChange = (tab: TabType) => {
-    navigate(`${ROUTES.USER_MANAGEMENT}?${tab}`);
-  };
-
   const addFilterCtaMemo = useMemo(
     () => ({
       label: en.userManagement.addFilter,
@@ -269,12 +248,12 @@ export function useUserManagement(tenants: Tenant[]) {
       if (userId) {
         await deleteUser({ userId }).unwrap();
         handleDropdownClose();
-        toast.success("User removed successfully");
+        toast.success(en.userManagement.userRemoved);
       } else {
-        toast.error("User id not found");
+        toast.error(en.errors.userIdNotFound);
       }
     } catch (error: any) {
-      toast.error(error?.data?.message || "Failed to remove user");
+      toast.error(error?.data?.message || en.errors.failedToRemoveUser);
     }
   };
 
@@ -372,7 +351,6 @@ export function useUserManagement(tenants: Tenant[]) {
 
   return {
     // state
-    activeTab,
     search,
     setSearch,
     isFilterOpen,
@@ -424,8 +402,5 @@ export function useUserManagement(tenants: Tenant[]) {
     deleteUser,
     editUser,
     changeRole,
-
-    // routing/tab
-    handleTabChange,
   };
 }

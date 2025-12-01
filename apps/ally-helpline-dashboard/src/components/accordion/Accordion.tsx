@@ -8,7 +8,7 @@ import { AccordionProps } from "./types";
 
 const Accordion: FC<AccordionProps> = ({ children, defaultExpanded, title, titleIcon }) => {
   return (
-    <MuiAccordion defaultExpanded={defaultExpanded} sx={accordionSx}>
+    <MuiAccordion className="border-none" defaultExpanded={defaultExpanded} sx={accordionSx}>
       <AccordionSummary
         expandIcon={
           <PlayArrowRounded className="rotate-90 text-typography-900" aria-label="expand icon" />

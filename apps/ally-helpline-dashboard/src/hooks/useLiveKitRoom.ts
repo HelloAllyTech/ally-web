@@ -10,7 +10,7 @@ import { decodeUint8ToJson } from "@utils";
 
 import { LiveKitEvent, UseLiveKitRoomReturn } from "./types";
 
-export const useLiveKitRoom = (): UseLiveKitRoomReturn => {
+export const useLiveKitRoom = (handleDisconnect: () => void): UseLiveKitRoomReturn => {
   const navigate = useNavigate();
 
   const [room] = useState(() => new Room(LIVEKIT_CONFIG));
@@ -45,6 +45,7 @@ export const useLiveKitRoom = (): UseLiveKitRoomReturn => {
 
   const onRoomDisconnect = useCallback(() => {
     logger.info("Disconnected from room");
+    handleDisconnect();
     setRoomStatus(RoomStatus.DISCONNECTED);
   }, []);
 
@@ -144,6 +145,19 @@ export const useLiveKitRoom = (): UseLiveKitRoomReturn => {
       cleanupRoom();
     };
   }, [cleanupRoom]);
+
+  useEffect(() => {
+    const handleUnload = () => {
+      // Disconnect room on page unload since we disabled auto-disconnect in LIVEKIT_CONFIG
+      room.disconnect();
+    };
+
+    window.addEventListener("pagehide", handleUnload);
+
+    return () => {
+      window.removeEventListener("pagehide", handleUnload);
+    };
+  }, [room]);
 
   return {
     error,

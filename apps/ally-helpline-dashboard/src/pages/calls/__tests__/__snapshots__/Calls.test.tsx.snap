@@ -4,19 +4,23 @@ exports[`Calls Component > Snapshot Testing > should match snapshot 1`] = `
 <DocumentFragment>
   <div
     class="px-6 pb-6 h-full flex flex-col"
+    data-testid="calls-page"
   >
     <div
       animate="[object Object]"
       class="relative mt-[10px] font-primary"
+      data-testid="calls-header"
       initial="[object Object]"
       layout="position"
       transition="[object Object]"
     >
       <div
         class="sm:p-4 p-0 rounded-lg flex gap-4 sm:justify-between justify-start bg-transparent items-center"
+        data-testid="calls-header-content"
       >
         <div
           class="z-10 text-typography-900 text-2xl font-[500] flex items-center gap-2"
+          data-testid="calls-title"
         >
           Session Logs
           <div
@@ -28,9 +32,10 @@ exports[`Calls Component > Snapshot Testing > should match snapshot 1`] = `
         </div>
         <div
           class="flex gap-2 items-center"
+          data-testid="calls-action-buttons"
         >
           <button
-            data-testid="mock-button"
+            data-testid="calls-upload-audio-button"
             variant="secondary"
           >
             <div
@@ -41,7 +46,7 @@ exports[`Calls Component > Snapshot Testing > should match snapshot 1`] = `
             Upload audio
           </button>
           <button
-            data-testid="mock-button"
+            data-testid="calls-start-session-button"
           >
             <div
               data-testid="start-session-icon"
@@ -54,10 +59,14 @@ exports[`Calls Component > Snapshot Testing > should match snapshot 1`] = `
       </div>
     </div>
     <div
-      data-refresh-key="0"
-      data-testid="user-logs-table"
+      data-testid="calls-content"
     >
-      User Logs Table
+      <div
+        data-refresh-key="0"
+        data-testid="user-logs-table"
+      >
+        User Logs Table
+      </div>
     </div>
     <div
       data-is-open="false"
@@ -87,19 +96,23 @@ exports[`Calls Component > Snapshot Testing > should match snapshot with admin r
 <DocumentFragment>
   <div
     class="px-6 pb-6 h-full flex flex-col"
+    data-testid="calls-page"
   >
     <div
       animate="[object Object]"
       class="relative mt-[10px] font-primary"
+      data-testid="calls-header"
       initial="[object Object]"
       layout="position"
       transition="[object Object]"
     >
       <div
         class="sm:p-4 p-0 rounded-lg flex gap-4 sm:justify-between justify-start bg-transparent items-center"
+        data-testid="calls-header-content"
       >
         <div
           class="z-10 text-typography-900 text-2xl font-[500] flex items-center gap-2"
+          data-testid="calls-title"
         >
           Session Logs
           <div
@@ -111,9 +124,10 @@ exports[`Calls Component > Snapshot Testing > should match snapshot with admin r
         </div>
         <div
           class="flex gap-2 items-center"
+          data-testid="calls-action-buttons"
         >
           <button
-            data-testid="mock-button"
+            data-testid="calls-upload-audio-button"
             variant="secondary"
           >
             <div
@@ -124,7 +138,7 @@ exports[`Calls Component > Snapshot Testing > should match snapshot with admin r
             Upload audio
           </button>
           <button
-            data-testid="mock-button"
+            data-testid="calls-start-session-button"
           >
             <div
               data-testid="start-session-icon"
@@ -137,10 +151,14 @@ exports[`Calls Component > Snapshot Testing > should match snapshot with admin r
       </div>
     </div>
     <div
-      data-refresh-key="0"
-      data-testid="user-logs-table"
+      data-testid="calls-content"
     >
-      User Logs Table
+      <div
+        data-refresh-key="0"
+        data-testid="user-logs-table"
+      >
+        User Logs Table
+      </div>
     </div>
     <div
       data-is-open="false"

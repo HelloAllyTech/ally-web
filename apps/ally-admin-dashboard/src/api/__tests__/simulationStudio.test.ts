@@ -89,6 +89,12 @@ describe("simulationStudio API", () => {
       expect(url).toBe("/v1/learn/admin-scenarios/sim-789");
     });
 
+    it("should generate correct get session event by ID URL", () => {
+      const eventId = "event-456";
+      const url = ApiEndpoints.SIMULATION_STUDIO.GET_SESSION_EVENT_BY_ID(eventId);
+      expect(url).toBe("/v1/session-events/events/event-456");
+    });
+
     it("should generate correct update session event URL", () => {
       const eventId = "event-123";
       const url = ApiEndpoints.SIMULATION_STUDIO.UPDATE_SESSION_EVENT(eventId);

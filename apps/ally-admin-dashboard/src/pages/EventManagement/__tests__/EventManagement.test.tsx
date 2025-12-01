@@ -1,5 +1,11 @@
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import { Provider } from "react-redux";
 import { vi, describe, it, expect, beforeEach } from "vitest";
+
+import { configureStore } from "@reduxjs/toolkit";
+import { baseAPI } from "@api";
+import eventsSlice from "@reducer/eventsReducer";
+import userSlice from "@reducer/userReducer";
 
 // Hoist mocks to avoid initialization errors
 const {
@@ -138,13 +144,41 @@ vi.mock("@components", async importOriginal => {
           </button>
         </div>
       ) : null,
+    EventTypeSelectionDialog: ({ isOpen, onClose, onSelect }: any) =>
+      isOpen ? (
+        <div data-testid="event-type-selection-dialog">
+          <button onClick={onClose} data-testid="close-dialog">
+            Close
+          </button>
+          <button
+            onClick={() => onSelect("SENTENCE_SIMILARITY")}
+            data-testid="select-sentence-similarity"
+          >
+            Sentence Similarity
+          </button>
+          <button onClick={() => onSelect("TIME_BASED")} data-testid="select-time-based">
+            Time Based
+          </button>
+          <button onClick={() => onSelect("SCORE_BASED")} data-testid="select-score-based">
+            Score Based
+          </button>
+          <button onClick={() => onSelect("COMBINATION")} data-testid="select-combination">
+            Combination
+          </button>
+        </div>
+      ) : null,
   };
 });
 
 // Mock assets
-vi.mock("@assets", () => ({
-  Trash: () => <svg data-testid="trash-icon">Delete</svg>,
-}));
+vi.mock("@assets", async importOriginal => {
+  const actual = await importOriginal<typeof import("@assets")>();
+  return {
+    ...actual,
+    Trash: () => <svg data-testid="trash-icon">Delete</svg>,
+    Close: () => <svg data-testid="close-icon">Close</svg>,
+  };
+});
 
 // Mock SimulationCreator constants
 vi.mock("@constants/SimulationCreator", () => ({
@@ -154,6 +188,18 @@ vi.mock("@constants/SimulationCreator", () => ({
   STEP4_FIELDS: [],
   STEP5_FIELDS: [],
   eventsTableColumns: [],
+  FORM_FIELD_TYPES: {
+    TEXT: "text",
+    NUMBER: "number",
+    SELECT: "select",
+    IMAGE_UPLOAD: "image_upload",
+    VIDEO_UPLOAD: "video_upload",
+    TOGGLE_BUTTON: "toggle_button",
+    CUSTOM: {
+      VOICE_DROPDOWN: "voice_dropdown",
+      AUTO_TERMINATION_RULE: "auto_termination_rule",
+    },
+  },
 }));
 
 // Mock constants
@@ -165,11 +211,19 @@ vi.mock("@constants", async importOriginal => {
       { id: "name", label: "Name", accessor: "name" },
       { id: "description", label: "Description", accessor: "description" },
     ],
+    EVENT_TYPE_OPTIONS: [
+      { value: "TIME_BASED", label: "Time Based" },
+      { value: "SCORE_BASED", label: "Score Based" },
+      { value: "SENTENCE_SIMILARITY", label: "Sentence Similarity" },
+      { value: "COMBINATION", label: "Combination" },
+    ],
     en: {
       ...(actual.en || {}),
       simulation: {
         simulationEvents: "Simulation Events",
         createNewEvent: "Create New Event",
+        eventCreatedSuccessfully: "Event created successfully",
+        eventsDeletedSuccessfully: "Events deleted successfully",
       },
       common: {
         delete: "Delete",
@@ -177,6 +231,11 @@ vi.mock("@constants", async importOriginal => {
         loading: "Loading...",
         loadMore: "Load more",
         noMoreData: "No more data",
+      },
+      errors: {
+        ...(actual.en?.errors || {}),
+        failedToDeleteEvent: "Failed to delete event. Please try again.",
+        failedToCreateEvent: "Failed to create event",
       },
     },
     SORT_BY: {
@@ -190,6 +249,21 @@ vi.mock("@constants", async importOriginal => {
     },
   };
 });
+
+// Mock utils
+vi.mock("@utils/eventNameGenerator", () => ({
+  generateSequentialEventName: (eventType: string, existingNames: string[]) => {
+    const prefixMap: Record<string, string> = {
+      SENTENCE_SIMILARITY: "SS",
+      TIME_BASED: "TB",
+      SCORE_BASED: "SB",
+      COMBINATION: "CE",
+    };
+    const prefix = prefixMap[eventType] || "EV";
+    const nextNumber = 1;
+    return `${prefix}${String(nextNumber).padStart(3, "0")}`;
+  },
+}));
 
 import { EventManagement } from "../EventManagement";
 
@@ -243,18 +317,40 @@ describe("EventManagement", () => {
       isFetching: false,
     });
     mockUpdateSessionEvent.mockReturnValue({
-      unwrap: vi.fn().mockResolvedValue({}),
+      error: null,
     });
     mockCreateSessionEvents.mockReturnValue({
-      unwrap: vi.fn().mockResolvedValue({}),
+      error: null,
+      data: [{ id: "new-event-id" }],
     });
     mockDeleteSessionEvents.mockReturnValue({
-      unwrap: vi.fn().mockResolvedValue({}),
+      error: null,
     });
   });
 
+  const createTestStore = () => {
+    return configureStore({
+      reducer: {
+        [baseAPI.reducerPath]: baseAPI.reducer,
+        user: userSlice.reducer,
+        events: eventsSlice.reducer,
+      },
+      middleware: getDefaultMiddleware =>
+        getDefaultMiddleware({
+          serializableCheck: {
+            ignoredActions: ["persist/PERSIST", "persist/REHYDRATE"],
+          },
+        }).concat(baseAPI.middleware),
+    });
+  };
+
   const renderComponent = () => {
-    return render(<EventManagement />);
+    const store = createTestStore();
+    return render(
+      <Provider store={store}>
+        <EventManagement />
+      </Provider>,
+    );
   };
 
   describe("Initial rendering", () => {
@@ -365,37 +461,41 @@ describe("EventManagement", () => {
 
   describe("Create new event", () => {
     it("creates new event when create button is clicked", async () => {
-      mockCreateSessionEvents.mockReturnValue({
-        error: null,
+      renderComponent();
+
+      const createButton = screen.getByText("Create New Event");
+      fireEvent.click(createButton);
+
+      // Dialog should open
+      await waitFor(() => {
+        expect(screen.getByTestId("event-type-selection-dialog")).toBeInTheDocument();
       });
 
+      // Select event type
+      const selectButton = screen.getByTestId("select-sentence-similarity");
+      fireEvent.click(selectButton);
+
+      // Sidebar should open after successful creation
+      await waitFor(() => {
+        expect(screen.getByTestId("event-side-panel")).toBeInTheDocument();
+      });
+
+      // Verify toast message for successful creation
+      expect(mockToast.success).toHaveBeenCalledWith("Event created successfully");
+    });
+
+    it("shows success toast when event is created successfully", async () => {
       renderComponent();
 
       const createButton = screen.getByText("Create New Event");
       fireEvent.click(createButton);
 
       await waitFor(() => {
-        expect(mockCreateSessionEvents).toHaveBeenCalledWith({
-          events: [
-            expect.objectContaining({
-              name: "New Event",
-              detectionType: "SENTENCE_SIMILARITY",
-              visibilityType: "ACTIVE",
-            }),
-          ],
-        });
-      });
-    });
-
-    it("shows success toast when event is created successfully", async () => {
-      mockCreateSessionEvents.mockReturnValue({
-        error: null,
+        expect(screen.getByTestId("event-type-selection-dialog")).toBeInTheDocument();
       });
 
-      renderComponent();
-
-      const createButton = screen.getByText("Create New Event");
-      fireEvent.click(createButton);
+      const selectButton = screen.getByTestId("select-sentence-similarity");
+      fireEvent.click(selectButton);
 
       await waitFor(() => {
         expect(mockToast.success).toHaveBeenCalledWith("Event created successfully");
@@ -403,8 +503,9 @@ describe("EventManagement", () => {
     });
 
     it("shows error toast when event creation fails", async () => {
+      // Mock API to return error
       mockCreateSessionEvents.mockReturnValue({
-        error: { message: "Failed to create" },
+        error: { message: "Creation failed" },
       });
 
       renderComponent();
@@ -413,19 +514,34 @@ describe("EventManagement", () => {
       fireEvent.click(createButton);
 
       await waitFor(() => {
+        expect(screen.getByTestId("event-type-selection-dialog")).toBeInTheDocument();
+      });
+
+      // Select event type
+      const selectButton = screen.getByTestId("select-time-based");
+      fireEvent.click(selectButton);
+
+      // Should show error toast
+      await waitFor(() => {
         expect(mockToast.error).toHaveBeenCalledWith("Failed to create event");
       });
+
+      // Side panel should not open on error
+      expect(screen.queryByTestId("event-side-panel")).not.toBeInTheDocument();
     });
 
     it("opens side panel after creating event successfully", async () => {
-      mockCreateSessionEvents.mockReturnValue({
-        error: null,
-      });
-
       renderComponent();
 
       const createButton = screen.getByText("Create New Event");
       fireEvent.click(createButton);
+
+      await waitFor(() => {
+        expect(screen.getByTestId("event-type-selection-dialog")).toBeInTheDocument();
+      });
+
+      const selectButton = screen.getByTestId("select-score-based");
+      fireEvent.click(selectButton);
 
       await waitFor(() => {
         expect(screen.getByTestId("event-side-panel")).toBeInTheDocument();
@@ -657,7 +773,7 @@ describe("EventManagement", () => {
       fireEvent.click(confirmButton);
 
       await waitFor(() => {
-        expect(mockToast.error).toHaveBeenCalledWith("Failed to delete events");
+        expect(mockToast.error).toHaveBeenCalledWith("Failed to delete event. Please try again.");
       });
     });
 
@@ -793,6 +909,7 @@ describe("EventManagement", () => {
       });
 
       const { rerender } = renderComponent();
+      const store = createTestStore();
 
       await waitFor(() => {
         expect(screen.getByTestId("event-name-0")).toBeInTheDocument();
@@ -804,7 +921,11 @@ describe("EventManagement", () => {
         isFetching: false,
       });
 
-      rerender(<EventManagement />);
+      rerender(
+        <Provider store={store}>
+          <EventManagement />
+        </Provider>,
+      );
 
       // Events should be appended, not replaced
       await waitFor(() => {
@@ -949,13 +1070,14 @@ describe("EventManagement", () => {
       fireEvent.click(confirmButton);
 
       await waitFor(() => {
-        expect(mockToast.error).toHaveBeenCalledWith("An error occurred while deleting events");
+        expect(mockToast.error).toHaveBeenCalledWith("Failed to delete event. Please try again.");
       });
     });
 
     it("handles creation error gracefully", async () => {
-      mockCreateSessionEvents.mockImplementation(() => {
-        throw new Error("Network error");
+      // Mock API to return an error
+      mockCreateSessionEvents.mockReturnValue({
+        error: { message: "Failed to create event" },
       });
 
       renderComponent();
@@ -964,8 +1086,22 @@ describe("EventManagement", () => {
       fireEvent.click(createButton);
 
       await waitFor(() => {
-        expect(mockToast.error).toHaveBeenCalledWith("An error occurred while creating event");
+        expect(screen.getByTestId("event-type-selection-dialog")).toBeInTheDocument();
       });
+
+      // Select COMBINATION event type
+      const selectButton = screen.getByTestId("select-combination");
+      fireEvent.click(selectButton);
+
+      // COMBINATION events can be created (they just have expression: null initially)
+      // When API returns an error, it should show an error toast
+      await waitFor(() => {
+        expect(mockCreateSessionEvents).toHaveBeenCalled();
+        expect(mockToast.error).toHaveBeenCalledWith("Failed to create event");
+      });
+
+      // Side panel should not open when creation fails
+      expect(screen.queryByTestId("event-side-panel")).not.toBeInTheDocument();
     });
   });
 

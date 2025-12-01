@@ -20,19 +20,45 @@ import { describe, expect, it, vi, beforeEach } from "vitest";
 
 import { Learn } from "../Learn";
 
-// Mock the API hook
+// Mock the API hooks
 const mockUseGetScenariosQuery = vi.fn();
+const mockUseGetScenarioPathwaysQuery = vi.fn();
 vi.mock("@api", () => ({
   useGetScenariosQuery: () => mockUseGetScenariosQuery(),
+  useGetScenarioPathwaysQuery: () => mockUseGetScenarioPathwaysQuery(),
+}));
+
+// Mock assets
+vi.mock("@assets", () => ({
+  Carousel1: "carousel-1.jpg",
+  Carousel2: "carousel-2.jpg",
+  Carousel3: "carousel-3.jpg",
+  Carousel4: "carousel-4.jpg",
+  Carousel5: "carousel-5.jpg",
+  Carousel6: "carousel-6.jpg",
+  SearchIcon: () => <svg data-testid="search-icon" />,
+  SortIcon: () => <svg data-testid="sort-icon" />,
+  FilterIcon: () => <svg data-testid="filter-icon" />,
+  CloseIcon: () => <svg data-testid="close-icon" />,
+  ArrowRight: () => <svg data-testid="arrow-right" />,
+  ArrowLeft: () => <svg data-testid="arrow-left" />,
+  ChevronDown: () => <svg data-testid="chevron-down" />,
+  Bolt: () => <div data-testid="bolt-icon">⚡</div>,
 }));
 
 // Mock the useSimulationCredits hook
 const mockUseSimulationCredits = vi.fn();
+const mockUseUser = vi.fn();
 vi.mock("@hooks", () => ({
   useSimulationCredits: () => mockUseSimulationCredits(),
+  useUser: () => mockUseUser(),
+  useDebounce: (val: any) => val,
 }));
 
-// Mock the ScenarioCard component
+// Import the mocked hook for use in component mock
+const getMockCredits = () => mockUseSimulationCredits();
+
+// Mock the components
 vi.mock("@components", () => ({
   ScenarioCard: ({
     coverImage,
@@ -58,11 +84,42 @@ vi.mock("@components", () => ({
       {isComingSoon && <span>Coming Soon</span>}
     </div>
   ),
-}));
+  TabGroup: ({ tabs, value, onChange }: any) => (
+    <div data-testid="tab-group">
+      {tabs.map((tab: any) => (
+        <button
+          key={tab.value}
+          onClick={() => onChange({}, tab.value)}
+          className={value === tab.value ? "active" : ""}
+        >
+          {tab.label}
+        </button>
+      ))}
+    </div>
+  ),
+  CreditsDisplay: ({ className }: { className?: string }) => {
+    const mockData = getMockCredits();
+    const credits = mockData?.credits || { consumedCredits: 0, creditLimit: 0 };
+    const limitReached = mockData?.limitReached || false;
 
-// Mock the Bolt asset
-vi.mock("@assets", () => ({
-  Bolt: () => <div data-testid="bolt-icon">⚡</div>,
+    return (
+      <div data-testid="credits-display" className={className}>
+        <div className="font-primary text-base text-typography-700 whitespace-nowrap">
+          Credits used:
+        </div>
+        <div data-testid="bolt-icon">⚡</div>
+        <span
+          data-testid="credits-consumed"
+          className={`font-primary font-bold text-lg ${limitReached ? "text-red-500" : "text-black"}`}
+        >
+          {credits.consumedCredits}
+        </span>
+        <span className="font-primary text-base text-typography-700" data-testid="credits-limit">
+          /{credits.creditLimit}
+        </span>
+      </div>
+    );
+  },
 }));
 
 // Mock framer-motion
@@ -81,12 +138,20 @@ vi.mock("framer-motion", () => ({
 
 // Mock react-router-dom
 const mockNavigate = vi.fn();
-vi.mock("react-router-dom", () => ({
-  useNavigate: () => mockNavigate,
-  BrowserRouter: ({ children }: { children: React.ReactNode }) => (
-    <div data-testid="browser-router">{children}</div>
-  ),
-}));
+const mockSearchParams = new URLSearchParams();
+const mockSetSearchParams = vi.fn();
+
+vi.mock("react-router-dom", async () => {
+  const actual = await vi.importActual("react-router-dom");
+  return {
+    ...actual,
+    useNavigate: () => mockNavigate,
+    useSearchParams: () => [mockSearchParams, mockSetSearchParams],
+    BrowserRouter: ({ children }: { children: React.ReactNode }) => (
+      <div data-testid="browser-router">{children}</div>
+    ),
+  };
+});
 
 // Mock constants
 vi.mock("../constants", () => ({
@@ -139,8 +204,14 @@ const TestWrapper = ({
 describe("Learn Component", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockSearchParams.set("tab", "simulations");
     mockUseGetScenariosQuery.mockReturnValue({
       data: [],
+      isLoading: false,
+      refetch: vi.fn(),
+    });
+    mockUseGetScenarioPathwaysQuery.mockReturnValue({
+      data: { data: [] },
       isLoading: false,
       refetch: vi.fn(),
     });
@@ -150,6 +221,10 @@ describe("Learn Component", () => {
         creditLimit: 10,
       },
       limitReached: false,
+    });
+    mockUseUser.mockReturnValue({
+      permissions: ["view:scenario-paths"],
+      user: { id: "1", name: "Test User" },
     });
   });
 
@@ -327,7 +402,7 @@ describe("Learn Component", () => {
           <Learn />
         </TestWrapper>,
       );
-      const skeletonCards = document.querySelectorAll("div.h-\\[200px\\]");
+      const skeletonCards = document.querySelectorAll("div.rounded-lg.animate-pulse");
       expect(skeletonCards.length).toBe(6);
     });
 
@@ -833,17 +908,35 @@ describe("Learn Component", () => {
   });
 
   /**
-   * TEST GROUP: Scenarios Label
-   * Verifies the scenarios label is displayed
+   * TEST GROUP: Tab Navigation
+   * Verifies tab navigation functionality
    */
-  describe("Scenarios Label", () => {
-    it("should display SCENARIOS label", () => {
+  describe("Tab Navigation", () => {
+    it("should render tab group", () => {
       render(
         <TestWrapper>
           <Learn />
         </TestWrapper>,
       );
-      expect(screen.getByText("SCENARIOS")).not.toBeNull();
+      expect(screen.getByTestId("tab-group")).not.toBeNull();
+    });
+
+    it("should render Simulations tab", () => {
+      render(
+        <TestWrapper>
+          <Learn />
+        </TestWrapper>,
+      );
+      expect(screen.getByText("Simulations")).not.toBeNull();
+    });
+
+    it("should render Path way tab", () => {
+      render(
+        <TestWrapper>
+          <Learn />
+        </TestWrapper>,
+      );
+      expect(screen.getByText("Path way")).not.toBeNull();
     });
   });
 });

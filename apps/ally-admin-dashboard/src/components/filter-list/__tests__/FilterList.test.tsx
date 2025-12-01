@@ -3,9 +3,13 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 
 import { FilterList } from "../FilterList";
 
-vi.mock("@assets", () => ({
-  Close: () => <svg data-testid="close-icon" />,
-}));
+vi.mock("@assets", async importOriginal => {
+  const actual = await importOriginal<typeof import("@assets")>();
+  return {
+    ...actual,
+    Close: () => <svg data-testid="close-icon" />,
+  };
+});
 
 vi.mock("@hooks", () => ({
   useClickOutside: () => {},
@@ -67,7 +71,15 @@ describe("FilterList", () => {
 
   it("closes via close button", () => {
     const onClose = vi.fn();
-    render(<FilterList isOpen={true} onClose={onClose} onApply={vi.fn()} selectedFilters={[]} />);
+    render(
+      <FilterList
+        isOpen={true}
+        onClose={onClose}
+        onApply={vi.fn()}
+        selectedFilters={[]}
+        options={options}
+      />,
+    );
 
     const closeBtn = screen.getByTestId("close-icon").closest("button")!;
     fireEvent.click(closeBtn);

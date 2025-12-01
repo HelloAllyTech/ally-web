@@ -3,6 +3,12 @@ export enum ScenarioStatus {
   COMING_SOON = "COMING_SOON",
 }
 
+export enum PathwayStatus {
+  DRAFT = "DRAFT",
+  ACTIVE = "ACTIVE",
+  ARCHIVED = "ARCHIVED",
+}
+
 export interface Scenario {
   id?: number;
   title?: string;
@@ -80,6 +86,7 @@ export interface GetScenarioInput {
 
 export interface StartSimulationInput {
   scenarioId: number;
+  scenarioPathSessionItemId?: string;
 }
 
 export interface StartSimulationResponse {
@@ -200,9 +207,89 @@ export interface GetSimulationTranscriptResponse {
   messages: SimulationTranscriptMessage[];
 }
 
+interface UpcomingScenario {
+  id?: string;
+  title?: string;
+  description?: string;
+  coverImageUrl?: string;
+  coverVideoUrl?: string;
+  scenarioPathSessionItemStatus?: string;
+  order?: number;
+  scenarioPathSessionItemId?: string;
+}
+
+interface CurrentSession {
+  scenarioId?: string;
+  scenarioPathSessionItemStatus?: string;
+  coverImageUrl?: string;
+  title?: string;
+  scenarioPathSessionItemId?: string;
+  transitionMessageTitle?: string;
+  transitionMessageContent?: string;
+  isScenarioPathSessionCompleted?: boolean;
+}
+
+export interface GetUpComingSimulationResponse {
+  upcomingScenario?: UpcomingScenario;
+  currentSession?: CurrentSession;
+}
+
 export interface SimulationTranscriptMessage {
   id: number;
   content: string;
   senderId: number;
   createdAt?: string;
+}
+
+export interface ScenarioPathway {
+  id: string;
+  scenarioPathSessionId?: string;
+  title: string;
+  description: string;
+  coverImageUrl: string;
+  status: PathwayStatus;
+  isGlobal: boolean;
+  totalScenarios: number;
+  updatedAt: string;
+}
+
+export interface GetScenarioPathwaysInput {
+  offset?: number;
+  limit?: number;
+}
+
+export interface GetScenarioPathwaysResponse {
+  data: ScenarioPathway[];
+}
+
+export enum PathwayScenarioStatus {
+  COMPLETED = "COMPLETED",
+  IN_PROGRESS = "IN_PROGRESS",
+  UNLOCKED = "UNLOCKED",
+  LOCKED = "LOCKED",
+}
+
+export interface PathwayScenario {
+  sessionItemId?: number;
+  sessionId?: string;
+  scenarioId: number;
+  coverImageUrl: string;
+  coverVideoUrl?: string;
+  description?: string;
+  title?: string;
+  order: number;
+  status: PathwayScenarioStatus;
+}
+
+export interface ScenarioPathwayDetails {
+  id: string;
+  title: string;
+  description?: string;
+  coverImageUrl: string;
+  userId: number;
+  completedAt: string | null;
+  completedScenarios: number;
+  totalScenarios: number;
+  scenarioPathSessionId?: string;
+  scenarios: PathwayScenario[];
 }
