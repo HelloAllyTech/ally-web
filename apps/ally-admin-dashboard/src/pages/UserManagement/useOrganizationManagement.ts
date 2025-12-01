@@ -4,7 +4,7 @@ import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 
 import { useCreateTenantMutation, useUpdateTenantMutation, useGetTenantsQuery } from "@api";
-import { SORT_BY, SORT_ORDER } from "@constants";
+import { SORT_BY, SORT_ORDER, en } from "@constants";
 import { Tenant } from "@types";
 
 export const TENANTS_PAGE_SIZE = 30;
@@ -51,13 +51,11 @@ export function useOrganizationManagement() {
 
   useEffect(() => {
     if (!tenantsResponse) return;
-    // TODO: remove this after backend is updated
     const nextData = tenantsResponse?.data || [];
     if (tenantsOffset === 0) {
       setTenants(nextData);
     } else {
       setTenants(prev => {
-        // Prevent duplicates by checking if items already exist
         const existingIds = new Set(prev.map(tenant => tenant.id));
         const newItems = nextData.filter((tenant: any) => !existingIds.has(tenant.id));
         return [...prev, ...newItems];
@@ -92,9 +90,9 @@ export function useOrganizationManagement() {
       await createTenant(payload).unwrap();
       setAddOrganizationModalOpen(false);
       tenantMethods.reset(defaultTenantValues);
-      toast.success("Organization created successfully");
+      toast.success(en.userManagement.organizationCreated);
     } catch (error: any) {
-      toast.error(error?.data?.message || "Failed to create organization");
+      toast.error(error?.data?.message || en.errors.failedCreateOrganization);
     }
   };
 
@@ -125,9 +123,9 @@ export function useOrganizationManagement() {
       setAddOrganizationModalOpen(false);
       setSelectedTenant(null);
       tenantMethods.reset(defaultTenantValues);
-      toast.success("Organization updated successfully");
+      toast.success(en.userManagement.organizationUpdated);
     } catch (error: any) {
-      toast.error(error?.data?.message || "Failed to update organization");
+      toast.error(error?.data?.message || en.userManagement.failedUpdateOrganization);
     }
   };
 

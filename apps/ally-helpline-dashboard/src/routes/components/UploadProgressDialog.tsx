@@ -1,5 +1,8 @@
 import { FC, useEffect, useMemo, useState } from "react";
 
+import { ChevronDown, ChevronUp, XCircle } from "lucide-react";
+import { useSelector } from "react-redux";
+
 import { useCancelAudioUploadMutation } from "@api";
 import { AudioFile, Close, CrossRedBackground, TickGreenBackground } from "@assets";
 import { Button, ButtonVariant, ConfirmationDialog } from "@components";
@@ -7,8 +10,6 @@ import { clearAudioUploads, updateAudioUploadStatus } from "@reducer";
 import { RootState, store } from "@store";
 import { UploadStatus } from "@types";
 import { getKeyFromIndex } from "@utils";
-import { ChevronDown, ChevronUp, XCircle } from "lucide-react";
-import { useSelector } from "react-redux";
 
 import { ProgressCircleProps, UploadProgressHeaderProps } from "./types";
 import { getUploadHeader } from "./utils";

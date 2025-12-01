@@ -1,5 +1,7 @@
 import { UseFormReturn } from "react-hook-form";
 
+import { TriggerCondition } from "./triggerConditions";
+
 export type FormData = {
   coverImageUrl: string;
   coverVideoUrl?: string;
@@ -23,6 +25,10 @@ export type FormData = {
   openingStatements: string;
   voiceId: string;
   agentGoal: string;
+  autoTerminationStatus: boolean;
+  terminationEventId: string;
+  terminationMessage: string;
+  isGlobal: boolean;
 };
 
 export interface DemographicsSectionProps {
@@ -58,14 +64,14 @@ export interface FieldGroupProps {
   formMethods: any;
 }
 
-export interface SimulationCreatorFieldGroups {
+export interface CreatorFieldGroups {
   id: string;
   label: string;
   fields: FormFieldConfig[];
 }
 
 export interface Simulation {
-  id: string;
+  id: number;
   title: string;
   description: string;
   coverImageUrl: string;
@@ -74,7 +80,8 @@ export interface Simulation {
   updatedAt: string;
   status: SimulationStatus;
   isPreviewEnabled: boolean;
-  usage: number;
+  isAssignedToTenant: boolean;
+  usage: string;
 }
 
 export interface GetSimulationsQueryParams {
@@ -83,6 +90,7 @@ export interface GetSimulationsQueryParams {
   sortBy?: string;
   order?: string;
   search?: string;
+  tenantId?: string;
 }
 export interface GetSimulationsResponse {
   data: Simulation[];
@@ -98,22 +106,10 @@ export enum SimulationStatus {
   DRAFT = "DRAFT",
   ARCHIVED = "ARCHIVED",
   PUBLISHED = "PUBLISHED",
-  COMMING_SOON = "COMMING_SOON",
-}
-
-export interface SimulationListProps {
-  simulations: Simulation[];
-  footer?: React.ReactNode;
-  onEdit?: (simulation: Simulation) => void;
-  onDelete?: (simulation: Simulation) => void;
-  onPreview?: (simulation: Simulation) => void;
-  onArchive?: (simulation: Simulation) => void;
-  onUnpublish?: (simulation: Simulation) => void;
-  onUnarchive?: (simulation: Simulation) => void;
 }
 
 export type SimulationPreviewType = {
-  id: string;
+  id: string | number;
   title: string;
   coverImageUrl: string;
   coverVideoUrl?: string;
@@ -129,15 +125,15 @@ export interface SimulationPreviewProps {
 export interface UpdateEventDataParam {
   id?: string;
   name?: string;
+  eventCode?: string;
   description?: string;
   branchInstruction?: string;
   score?: number;
   message?: string;
   detectionType?: string;
-  speaker?: string;
   emoji?: string;
-  sentences?: string[];
   visibilityType?: string;
+  triggerCondition?: TriggerCondition;
 }
 
 export interface UpdateScenarioEventDataParam {

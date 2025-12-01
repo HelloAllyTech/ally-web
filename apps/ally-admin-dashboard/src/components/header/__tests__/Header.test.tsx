@@ -35,9 +35,13 @@ vi.mock("react-router-dom", () => ({
   useParams: vi.fn(() => ({})),
 }));
 
-vi.mock("@assets", () => ({
-  ArrowDown: () => <svg data-testid="arrow-down" />,
-}));
+vi.mock("@assets", async importOriginal => {
+  const actual = await importOriginal<typeof import("@assets")>();
+  return {
+    ...actual,
+    ArrowDown: () => <svg data-testid="arrow-down" />,
+  };
+});
 
 // Use real Button to avoid affecting other modules
 
@@ -67,10 +71,11 @@ describe("Header", () => {
         onSaveDraft={onSaveDraft}
         onPublish={onPublish}
         onPreview={onPreview}
+        title="Create Simulation"
       />,
     );
 
-    expect(screen.getByText("Create Simulation")).toBeInTheDocument();
+    expect(screen.getAllByText("Create Simulation").length).toBeGreaterThan(0);
     fireEvent.click(screen.getByText("Simulation Studio"));
     expect(onBack).toHaveBeenCalled();
   });
@@ -86,6 +91,7 @@ describe("Header", () => {
         onSaveDraft={onSaveDraft}
         onPublish={onPublish}
         onPreview={onPreview}
+        title="Edit Simulation"
       />,
     );
 
@@ -100,6 +106,7 @@ describe("Header", () => {
         onSaveDraft={onSaveDraft}
         onPublish={onPublish}
         onPreview={onPreview}
+        title="Test Simulation"
       />,
     );
 
@@ -114,6 +121,7 @@ describe("Header", () => {
         onSaveDraft={onSaveDraft}
         onPublish={onPublish}
         onPreview={onPreview}
+        title="Test Simulation"
       />,
     );
     expect(screen.getByText("Preview")).not.toBeDisabled();
@@ -127,6 +135,7 @@ describe("Header", () => {
         onSaveDraft={onSaveDraft}
         onPublish={onPublish}
         onPreview={onPreview}
+        title="Test Simulation"
       />,
     );
     expect(screen.getByText("Publishing")).toBeInTheDocument();
@@ -141,6 +150,7 @@ describe("Header", () => {
         onSaveDraft={onSaveDraft}
         onPublish={onPublish}
         onPreview={onPreview}
+        title="Test Simulation"
       />,
     );
 
@@ -150,7 +160,7 @@ describe("Header", () => {
       expect(toast.success).toHaveBeenCalled();
     });
 
-    // Failure case
+    // Failure case - when onSaveDraft returns null, no toast is shown
     {
       const { toast } = await import("sonner");
       (toast.success as any).mockClear();
@@ -159,7 +169,9 @@ describe("Header", () => {
     fireEvent.click(screen.getByText("Save"));
     await waitFor(async () => {
       const { toast } = await import("sonner");
-      expect(toast.error).toHaveBeenCalled();
+      // When response is null/falsy, no toast is shown
+      expect(toast.error).not.toHaveBeenCalled();
+      expect(toast.success).not.toHaveBeenCalled();
     });
   });
 
@@ -171,6 +183,7 @@ describe("Header", () => {
         onSaveDraft={onSaveDraft}
         onPublish={onPublish}
         onPreview={onPreview}
+        title="Test Simulation"
       />,
     );
 

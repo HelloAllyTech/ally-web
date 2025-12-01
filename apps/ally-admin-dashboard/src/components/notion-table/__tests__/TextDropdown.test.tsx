@@ -50,9 +50,10 @@ describe("TextDropdown", () => {
       expect(screen.getByText("Select an option")).toBeInTheDocument();
     });
 
-    it("renders placeholder when value doesn't match any option", () => {
+    it("renders value when value doesn't match any option", () => {
       render(<TextDropdown {...defaultProps} value="unknown" />);
 
+      // When value doesn't match any option, component shows the value itself
       expect(screen.getByText("unknown")).toBeInTheDocument();
     });
 
@@ -190,9 +191,11 @@ describe("TextDropdown", () => {
 
       const options = screen.getAllByText(/Option/);
       // Click the first dropdown option (not the button text)
+      // Options now use whitespace-nowrap instead of truncate
       const dropdownOptions = options.filter(
-        opt => opt.className.includes("truncate") && !opt.className.includes("mr-1"),
+        opt => opt.className.includes("whitespace-nowrap") && !opt.className.includes("mr-1"),
       );
+      expect(dropdownOptions.length).toBeGreaterThan(0);
       fireEvent.click(dropdownOptions[0]);
 
       expect(screen.queryByText("Option 2")).not.toBeInTheDocument();
@@ -523,10 +526,14 @@ describe("TextDropdown", () => {
     });
 
     it("handles undefined options", () => {
-      // Component should handle undefined options gracefully or throw error
-      expect(() => {
-        render(<TextDropdown {...defaultProps} options={undefined as any} />);
-      }).toThrow();
+      // Component should handle undefined options gracefully
+      const { container } = render(<TextDropdown {...defaultProps} options={undefined as any} />);
+
+      const button = screen.getByRole("button");
+      expect(button).toBeInTheDocument();
+
+      // Should render without crashing
+      expect(container).toBeTruthy();
     });
 
     it("handles very long option labels", () => {
@@ -650,6 +657,212 @@ describe("TextDropdown", () => {
       fireEvent.keyDown(button, { key: "Enter" });
 
       expect(screen.queryByText("Option 2")).not.toBeInTheDocument();
+    });
+  });
+
+  describe("Load More Functionality", () => {
+    it("renders Load More button when onLoadMore is provided", () => {
+      const mockOnLoadMore = vi.fn();
+      render(<TextDropdown {...defaultProps} onLoadMore={mockOnLoadMore} />);
+
+      const button = screen.getByRole("button");
+      fireEvent.click(button);
+
+      expect(screen.getByText("Load More")).toBeInTheDocument();
+    });
+
+    it("does not render Load More button when onLoadMore is not provided", () => {
+      render(<TextDropdown {...defaultProps} />);
+
+      const button = screen.getByRole("button");
+      fireEvent.click(button);
+
+      expect(screen.queryByText("Load More")).not.toBeInTheDocument();
+    });
+
+    it("calls onLoadMore when Load More button is clicked", () => {
+      const mockOnLoadMore = vi.fn();
+      render(<TextDropdown {...defaultProps} onLoadMore={mockOnLoadMore} />);
+
+      const button = screen.getByRole("button");
+      fireEvent.click(button);
+
+      const loadMoreButton = screen.getByText("Load More");
+      fireEvent.click(loadMoreButton);
+
+      expect(mockOnLoadMore).toHaveBeenCalledTimes(1);
+    });
+
+    it("Load More button has correct styling", () => {
+      const mockOnLoadMore = vi.fn();
+      const { container } = render(<TextDropdown {...defaultProps} onLoadMore={mockOnLoadMore} />);
+
+      const button = screen.getByRole("button");
+      fireEvent.click(button);
+
+      const loadMoreButton = screen.getByText("Load More");
+      expect(loadMoreButton).toHaveClass("text-typography-500");
+      expect(loadMoreButton).toHaveClass("hover:text-typography-700");
+    });
+
+    it("Load More button is separated by border", () => {
+      const mockOnLoadMore = vi.fn();
+      const { container } = render(<TextDropdown {...defaultProps} onLoadMore={mockOnLoadMore} />);
+
+      const button = screen.getByRole("button");
+      fireEvent.click(button);
+
+      const borderDiv = container.querySelector(".border-t");
+      expect(borderDiv).toBeInTheDocument();
+    });
+
+    it("does not render Load More when onLoadMore is undefined", () => {
+      render(<TextDropdown {...defaultProps} onLoadMore={undefined} />);
+
+      const button = screen.getByRole("button");
+      fireEvent.click(button);
+
+      expect(screen.queryByText("Load More")).not.toBeInTheDocument();
+    });
+  });
+
+  describe("Global Search Functionality", () => {
+    it("calls onSearch when search input changes", () => {
+      const mockOnSearch = vi.fn();
+      render(<TextDropdown {...defaultProps} isSearchable={true} onSearch={mockOnSearch} />);
+
+      const button = screen.getByRole("button");
+      fireEvent.click(button);
+
+      const searchInput = screen.getByPlaceholderText("Search...");
+      fireEvent.change(searchInput, { target: { value: "test search" } });
+
+      expect(mockOnSearch).toHaveBeenCalledWith("test search");
+    });
+
+    it("does not filter locally when onSearch is provided", () => {
+      const mockOnSearch = vi.fn();
+      render(<TextDropdown {...defaultProps} isSearchable={true} onSearch={mockOnSearch} />);
+
+      const button = screen.getByRole("button");
+      fireEvent.click(button);
+
+      const searchInput = screen.getByPlaceholderText("Search...");
+      fireEvent.change(searchInput, { target: { value: "Option 2" } });
+
+      // All options should still be visible since filtering is done server-side
+      const allOptions = screen.getAllByText("Option 1");
+      expect(allOptions.length).toBeGreaterThan(0);
+      expect(screen.getAllByText("Option 2").length).toBeGreaterThan(0);
+      expect(screen.getAllByText("Option 3").length).toBeGreaterThan(0);
+    });
+
+    it("filters locally when onSearch is not provided", () => {
+      render(<TextDropdown {...defaultProps} isSearchable={true} />);
+
+      const button = screen.getByRole("button");
+      fireEvent.click(button);
+
+      const searchInput = screen.getByPlaceholderText("Search...");
+      fireEvent.change(searchInput, { target: { value: "Option 2" } });
+
+      // Only matching option should be visible in the dropdown list
+      const dropdownOptions = screen.getAllByText("Option 2");
+      expect(dropdownOptions.length).toBeGreaterThan(0);
+
+      // Option 1 appears in button text, so check specifically in dropdown area
+      // Count all instances - button + dropdown = should be 2 for Option 2, 1 for others
+      expect(screen.getAllByText("Option 2").length).toBeGreaterThanOrEqual(1);
+      expect(screen.queryAllByText("Option 3").length).toBe(0);
+    });
+
+    it("calls onSearch with empty string when search is cleared", () => {
+      const mockOnSearch = vi.fn();
+      render(<TextDropdown {...defaultProps} isSearchable={true} onSearch={mockOnSearch} />);
+
+      const button = screen.getByRole("button");
+      fireEvent.click(button);
+
+      const searchInput = screen.getByPlaceholderText("Search...");
+      fireEvent.change(searchInput, { target: { value: "test" } });
+      fireEvent.change(searchInput, { target: { value: "" } });
+
+      expect(mockOnSearch).toHaveBeenLastCalledWith("");
+    });
+
+    it("calls onSearch on every keystroke", () => {
+      const mockOnSearch = vi.fn();
+      render(<TextDropdown {...defaultProps} isSearchable={true} onSearch={mockOnSearch} />);
+
+      const button = screen.getByRole("button");
+      fireEvent.click(button);
+
+      const searchInput = screen.getByPlaceholderText("Search...");
+      fireEvent.change(searchInput, { target: { value: "a" } });
+      fireEvent.change(searchInput, { target: { value: "ab" } });
+      fireEvent.change(searchInput, { target: { value: "abc" } });
+
+      expect(mockOnSearch).toHaveBeenCalledTimes(3);
+      expect(mockOnSearch).toHaveBeenNthCalledWith(1, "a");
+      expect(mockOnSearch).toHaveBeenNthCalledWith(2, "ab");
+      expect(mockOnSearch).toHaveBeenNthCalledWith(3, "abc");
+    });
+
+    it("works with both onSearch and onLoadMore together", () => {
+      const mockOnSearch = vi.fn();
+      const mockOnLoadMore = vi.fn();
+      render(
+        <TextDropdown
+          {...defaultProps}
+          isSearchable={true}
+          onSearch={mockOnSearch}
+          onLoadMore={mockOnLoadMore}
+        />,
+      );
+
+      const button = screen.getByRole("button");
+      fireEvent.click(button);
+
+      // Both search input and Load More should be present
+      expect(screen.getByPlaceholderText("Search...")).toBeInTheDocument();
+      expect(screen.getByText("Load More")).toBeInTheDocument();
+
+      // Test both functionalities
+      const searchInput = screen.getByPlaceholderText("Search...");
+      fireEvent.change(searchInput, { target: { value: "test" } });
+      expect(mockOnSearch).toHaveBeenCalledWith("test");
+
+      const loadMoreButton = screen.getByText("Load More");
+      fireEvent.click(loadMoreButton);
+      expect(mockOnLoadMore).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  describe("displayValue prop", () => {
+    it("uses displayValue when provided", () => {
+      render(<TextDropdown {...defaultProps} value="opt1" displayValue="Custom Display" />);
+
+      expect(screen.getByText("Custom Display")).toBeInTheDocument();
+    });
+
+    it("falls back to option label when displayValue is not provided", () => {
+      render(<TextDropdown {...defaultProps} value="opt1" />);
+
+      expect(screen.getByText("Option 1")).toBeInTheDocument();
+    });
+
+    it("uses displayValue over option label when both exist", () => {
+      render(<TextDropdown {...defaultProps} value="opt1" displayValue="Override Label" />);
+
+      expect(screen.getByText("Override Label")).toBeInTheDocument();
+      expect(screen.queryByText("Option 1")).not.toBeInTheDocument();
+    });
+
+    it("handles empty displayValue", () => {
+      render(<TextDropdown {...defaultProps} value="opt1" displayValue="" />);
+
+      // Should fall back to option label or value
+      expect(screen.getByText("Option 1")).toBeInTheDocument();
     });
   });
 });

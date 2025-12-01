@@ -77,6 +77,7 @@ export interface OrganizationListProps {
   renderFooter?: () => ReactNode;
   formatDate: (iso: string) => string;
   onEditPress?: (tenant: Tenant) => void;
+  onRowClick?: (tenant: Tenant) => void;
 }
 
 export interface TenantParams {
@@ -201,4 +202,9 @@ export interface GetCreditResponse {
 export interface AddCreditBody {
   userId: number;
   creditLimit: number;
+}
+
+export interface disableSuccessResponse {
+  success: boolean;
+  message: string;
 }

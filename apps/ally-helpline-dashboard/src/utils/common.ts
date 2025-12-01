@@ -82,3 +82,12 @@ export const formatSizeByByteSize = (sizeInBytes: number) => {
   if (sizeInBytes < 1024 * 1024 * 1024) return `${sizeInBytes / (1024 * 1024)} MB`;
   return `${(sizeInBytes / (1024 * 1024 * 1024)).toFixed(2)} GB`;
 };
+
+export const isNonEmptyObject = (value: any): boolean => {
+  return (
+    value !== null &&
+    typeof value === "object" &&
+    !Array.isArray(value) &&
+    Object.keys(value).length > 0
+  );
+};

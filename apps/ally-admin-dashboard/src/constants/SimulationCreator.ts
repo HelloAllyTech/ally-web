@@ -1,5 +1,5 @@
 import { cellTypes } from "@components";
-import { SimulationCreatorFieldGroups } from "@types";
+import { CreatorFieldGroups } from "@types";
 
 export const minInputHeight = {
   narrativeContext: "250",
@@ -11,7 +11,13 @@ export const DEFAULT_SIMULATION_STATUS_OPTIONS = [
   { id: "DRAFT", label: "Draft" },
 ];
 
-export const SPEAKER_OPTIONS = [{ value: "CARE_GIVER", label: "Care giver" }];
+export const EVENT_TYPE_OPTIONS = [
+  { value: "TIME_BASED", label: "Time Based" },
+  { value: "SCORE_BASED", label: "Score Based" },
+  { value: "SENTENCE_SIMILARITY", label: "Sentence Similarity" },
+  { value: "SEMANTIC_SIMILARITY", label: "Semantic Similarity" },
+  { value: "COMBINATION", label: "Combination" },
+];
 
 export const GENDER_OPTIONS = [
   { value: "male", label: "Male" },
@@ -70,14 +76,22 @@ export const FORM_FIELD_TYPES = {
   VIDEO_UPLOAD: "video_upload",
   CUSTOM: {
     VOICE_DROPDOWN: "voice_dropdown",
+    AUTO_TERMINATION_RULE: "auto_termination_rule",
   },
+  TOGGLE_BUTTON: "toggle_button",
 };
 
-export const SIMULATION_CREATOR_FIELD_GROUPS: SimulationCreatorFieldGroups[] = [
+export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
   {
     id: SIMULATION_CREATOR_STEP_IDS.basicInfo,
     label: "Basic Information",
     fields: [
+      {
+        id: "isGlobal",
+        label: "Default org-level visibility",
+        type: FORM_FIELD_TYPES.TOGGLE_BUTTON,
+        fullWidth: true,
+      },
       {
         id: "title",
         label: "Title",
@@ -281,6 +295,12 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: SimulationCreatorFieldGroups[] = [
         fullWidth: true,
         maxLength: 1000,
       },
+      {
+        id: "autoTerminationStatus",
+        label: "Auto termination",
+        fullWidth: true,
+        type: FORM_FIELD_TYPES.CUSTOM.AUTO_TERMINATION_RULE,
+      },
     ],
   },
 ];
@@ -295,28 +315,26 @@ export const EVENT_MANAGEMENT_TABLE_COLUMNS = [
     minWidth: 180,
   },
   {
-    id: "detectionType",
-    label: "Event Type",
-    accessor: "detectionType",
+    id: "eventCode",
+    label: "Event code",
+    accessor: "eventCode",
     dataType: cellTypes.normalText,
-    minWidth: 180,
+    minWidth: 120,
   },
   {
-    id: "speaker",
-    label: "Speaker",
-    accessor: "speaker",
+    id: "detectionType",
+    label: "Event type",
+    accessor: "detectionType",
     dataType: cellTypes.dropdown,
-    options: SPEAKER_OPTIONS,
+    options: EVENT_TYPE_OPTIONS,
     minWidth: 150,
   },
   {
-    id: "description",
-    label: "Event description",
-    accessor: "description",
-    placeholder: "Add Description",
-    dataType: cellTypes.editableText,
-    options: [],
-    minWidth: 240,
+    id: "triggerCondition",
+    label: "Trigger conditions",
+    accessor: "triggerCondition",
+    dataType: cellTypes.triggerConditions,
+    minWidth: 420,
   },
   {
     id: "branchInstruction",
@@ -333,7 +351,7 @@ export const EVENT_MANAGEMENT_TABLE_COLUMNS = [
     accessor: "score",
     dataType: cellTypes.number,
     options: [],
-    minWidth: 170,
+    minWidth: 200,
   },
   {
     id: "message",
@@ -350,7 +368,7 @@ export const EVENT_MANAGEMENT_TABLE_COLUMNS = [
     accessor: "emoji",
     dataType: cellTypes.emoji_select,
     options: [],
-    minWidth: 130,
+    minWidth: 200,
   },
 ];
 

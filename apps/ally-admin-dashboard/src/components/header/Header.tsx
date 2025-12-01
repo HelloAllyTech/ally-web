@@ -1,7 +1,6 @@
 import { FC } from "react";
 
 import { Tooltip } from "@mui/material";
-import { useParams } from "react-router-dom";
 import { toast } from "sonner";
 
 import { ArrowDown } from "@assets";
@@ -12,10 +11,12 @@ import { en, toolTipStyles } from "@constants";
 interface HeaderProps {
   isValid: boolean;
   onBack: () => void;
-  onSaveDraft: () => Promise<any[]>;
-  onPublish: () => void;
-  onPreview: () => void;
+  onSaveDraft?: () => Promise<any[]>;
+  onPublish?: () => void;
+  onPreview?: () => void;
   isPublishing?: boolean;
+  title: string;
+  showPreview?: boolean;
 }
 
 export const Header: FC<HeaderProps> = ({
@@ -25,15 +26,13 @@ export const Header: FC<HeaderProps> = ({
   onPublish,
   onPreview,
   isPublishing = false,
+  title,
+  showPreview = true,
 }) => {
-  const id = useParams();
-
   const handleSaveDraft = async () => {
     const response = await onSaveDraft();
     if (response) {
       toast.success("Simulation changes saved successfully!");
-    } else {
-      toast.error("Failed to save simulation changes!");
     }
   };
 
@@ -67,14 +66,10 @@ export const Header: FC<HeaderProps> = ({
         <span className="-rotate-90">
           <ArrowDown />
         </span>
-        <span className="text-typography-900">
-          {id.id ? en.simulation.editSimulation : en.simulation.createSimulation}
-        </span>
+        <span className="text-typography-900">{title}</span>
       </div>
       <div className="flex items-center justify-between w-full px-2 pb-2 h-[80px] relative">
-        <h1 className="text-2xl text-typography-900 whitespace-nowrap">
-          {id.id ? en.simulation.editSimulation : en.simulation.createNewSimulation}
-        </h1>
+        <h1 className="text-2xl text-typography-900 whitespace-nowrap">{title}</h1>
         <div className="flex items-center gap-3">
           <Button
             variant={ButtonVariant.TEXT}
@@ -83,18 +78,19 @@ export const Header: FC<HeaderProps> = ({
           >
             {en.simulation.save}
           </Button>
-          {isValid ? (
-            previewButton
-          ) : (
-            <Tooltip
-              title={en.simulation.previewTooltipMessage}
-              placement="top"
-              arrow
-              slotProps={toolTipStyles}
-            >
-              {previewButton}
-            </Tooltip>
-          )}
+          {showPreview &&
+            (isValid ? (
+              previewButton
+            ) : (
+              <Tooltip
+                title={en.simulation.previewTooltipMessage}
+                placement="top"
+                arrow
+                slotProps={toolTipStyles}
+              >
+                {previewButton}
+              </Tooltip>
+            ))}
           {isValid ? (
             publishButton
           ) : (

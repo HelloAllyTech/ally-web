@@ -75,7 +75,7 @@ const simulationStudioAPI = baseAPI.injectEndpoints({
     /**
      * Delete simulation by Id.
      */
-    deleteSimulationById: builder.mutation<void, string>({
+    deleteSimulationById: builder.mutation<void, string | number>({
       query: id => ({
         url: ApiEndpoints.SIMULATION_STUDIO.SIMULATION_BY_ID(id),
         method: HttpMethod.DELETE,
@@ -91,6 +91,17 @@ const simulationStudioAPI = baseAPI.injectEndpoints({
         url: ApiEndpoints.SIMULATION_STUDIO.SESSION_EVENTS,
         method: HttpMethod.GET,
         params,
+      }),
+      providesTags: [TAG_TYPES.SESSION_EVENTS],
+    }),
+
+    /**
+     * Get session event by ID
+     */
+    getSessionEventById: builder.query<SessionEvent, string>({
+      query: id => ({
+        url: ApiEndpoints.SIMULATION_STUDIO.GET_SESSION_EVENT_BY_ID(id),
+        method: HttpMethod.GET,
       }),
       providesTags: [TAG_TYPES.SESSION_EVENTS],
     }),
@@ -265,6 +276,7 @@ export const {
   useDeleteSimulationByIdMutation,
   useGetSessionEventsQuery,
   useLazyGetSessionEventsQuery,
+  useGetSessionEventByIdQuery,
   useCreateSessionEventMutation,
   useCreateSessionEventsMutation,
   useUpdateSessionEventMutation,

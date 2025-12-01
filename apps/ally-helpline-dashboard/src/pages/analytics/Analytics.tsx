@@ -75,24 +75,35 @@ export const Analytics: FunctionComponent = () => {
   };
 
   return (
-    <div className={"flex flex-col justify-center m-6 overflow-hidden h-[calc(100vh-100px)]"}>
-      <div>
-        <div className="text-typography-900 font-primary text-2xl font-[500] flex items-center gap-2 mb-2">
+    <div
+      className={"flex flex-col justify-center m-6 overflow-hidden h-[calc(100vh-100px)]"}
+      data-testid="analytics-page"
+    >
+      <div data-testid="analytics-header">
+        <div
+          className="text-typography-900 font-primary text-2xl font-[500] flex items-center gap-2 mb-2"
+          data-testid="analytics-title"
+        >
           Session Analytics
         </div>
         {analyticsToggleOptions?.length > 1 && (
           <ToggleButtonGroup
+            data-testid="analytics-type-toggle"
             value={analyticsType}
             onValueChange={changeToggle}
             items={analyticsToggleOptions}
           />
         )}
       </div>
-      <div className="h-[90vh] w-full flex flex-col items-center justify-center">
+      <div
+        className="h-[90vh] w-full flex flex-col items-center justify-center"
+        data-testid="analytics-content"
+      >
         {hasValidDashboards &&
           Object.keys(dashboardUrls).map(id => (
             <iframe
               key={id}
+              data-testid={`analytics-dashboard-${id}`}
               title="Metabase dashboard"
               src={dashboardUrls[id]?.replace("bordered=true", "bordered=false")}
               width="100%"
@@ -101,8 +112,11 @@ export const Analytics: FunctionComponent = () => {
             />
           ))}
         {dashboards?.length === 0 && !hasValidDashboards && (
-          <div className="flex-1 w-full flex items-center justify-center">
-            <NoAnalytics />
+          <div
+            className="flex-1 w-full flex items-center justify-center"
+            data-testid="analytics-empty-state"
+          >
+            <NoAnalytics data-testid="analytics-no-data-icon" />
           </div>
         )}
       </div>

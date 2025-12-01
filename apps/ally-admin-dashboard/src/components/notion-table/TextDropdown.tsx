@@ -15,6 +15,7 @@ interface DropdownOption {
 
 interface TextDropdownProps {
   value: string;
+  displayValue?: string;
   options: DropdownOption[];
   onChange: (value: string) => void;
   placeholder?: string;
@@ -22,10 +23,13 @@ interface TextDropdownProps {
   isSearchable?: boolean;
   className?: string;
   disabled?: boolean;
+  onLoadMore?: () => void;
+  onSearch?: (searchTerm: string) => void;
 }
 
 export const TextDropdown = ({
   value,
+  displayValue,
   options,
   onChange,
   placeholder = "Select an option",
@@ -33,6 +37,8 @@ export const TextDropdown = ({
   className,
   isSearchable = false,
   disabled = false,
+  onLoadMore,
+  onSearch,
 }: TextDropdownProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
@@ -41,13 +47,10 @@ export const TextDropdown = ({
   const searchInputRef = useRef<HTMLInputElement>(null);
   const optionRefs = useRef<(HTMLDivElement | null)[]>([]);
 
-  // Filter options based on search term
-  const filteredOptions = options?.filter(option =>
-    option?.label?.toLowerCase().includes(searchTerm.toLowerCase()),
-  );
-
-  // Find the current value's index in filtered options
-  const currentValueIndex = filteredOptions.findIndex(option => option.value === value);
+  // Use options directly when onSearch is provided (global search), otherwise filter locally
+  const filteredOptions = onSearch
+    ? options
+    : options?.filter(option => option?.label?.toLowerCase().includes(searchTerm.toLowerCase()));
 
   // Handle opening/closing dropdown
   const toggleDropdown = () => {
@@ -55,7 +58,7 @@ export const TextDropdown = ({
     setIsOpen(!isOpen);
     if (!isOpen) {
       setSearchTerm("");
-      setHighlightedIndex(currentValueIndex);
+      setHighlightedIndex(-1);
     }
   };
 
@@ -74,7 +77,7 @@ export const TextDropdown = ({
         e.preventDefault();
         setIsOpen(true);
         setSearchTerm("");
-        setHighlightedIndex(currentValueIndex);
+        setHighlightedIndex(-1);
       }
       return;
     }
@@ -105,8 +108,12 @@ export const TextDropdown = ({
 
   // Handle search input change
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchTerm(e.target.value);
+    const newSearchTerm = e.target.value;
+    setSearchTerm(newSearchTerm);
     setHighlightedIndex(-1);
+    if (onSearch) {
+      onSearch(newSearchTerm);
+    }
   };
 
   // Scroll highlighted option into view
@@ -135,8 +142,13 @@ export const TextDropdown = ({
   useClickOutside(dropdownRef, handleClose);
 
   // Get current option display value
-  const currentOption = options.find(option => option.value === value);
-  const displayValue = currentOption ? currentOption.label : value || placeholder;
+  const currentOption = options?.find(option => option.value === value);
+  const finalDisplayValue =
+    displayValue && displayValue.trim() !== ""
+      ? displayValue
+      : currentOption
+        ? currentOption.label
+        : value || placeholder;
 
   return (
     <div ref={dropdownRef} className={clsx("relative w-full", className)}>
@@ -156,14 +168,14 @@ export const TextDropdown = ({
         )}
       >
         <span className={clsx("truncate mr-1", { "text-typography-800": !value })}>
-          {displayValue}
+          {finalDisplayValue}
         </span>
         {!disabled && <ArrowDownFilled width={8} height={8} />}
       </button>
 
       {/* Dropdown Menu */}
       {isOpen && (
-        <div className="absolute z-50 w-[calc(100%+24px)] left-[-12px] mt-1 bg-white border border-border-light rounded-md shadow-lg max-h-60 overflow-hidden">
+        <div className="absolute z-50 w-max min-w-[calc(100%+24px)] max-w-[400px] left-[-12px] mt-1 bg-background border border-border-light rounded-md shadow-lg max-h-60 overflow-hidden">
           {/* Search Input */}
           {isSearchable && (
             <div className="p-2 border-b border-border-light">
@@ -202,9 +214,21 @@ export const TextDropdown = ({
                       style={{ backgroundColor: option.backgroundColor }}
                     />
                   )}
-                  <span className="truncate">{option?.label}</span>
+                  <span className="whitespace-nowrap">{option?.label}</span>
                 </div>
               ))
+            )}
+            {/* Load More Button */}
+            {onLoadMore && (
+              <div className="px-3 py-2 border-t border-border-light">
+                <button
+                  type="button"
+                  onClick={onLoadMore}
+                  className="w-full text-sm text-center text-typography-500 hover:text-typography-700 font-medium"
+                >
+                  Load More
+                </button>
+              </div>
             )}
           </div>
         </div>

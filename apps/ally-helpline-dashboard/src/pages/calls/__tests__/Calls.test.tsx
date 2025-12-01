@@ -147,7 +147,6 @@ vi.mock("@hooks", () => ({
 // Mock constants
 vi.mock("@constants", () => ({
   CallType: {
-    WEBRTC_CHAT: "WEBRTC_CHAT",
     MICROPHONE_CHAT: "MICROPHONE_CHAT",
     EXOTEL_CONFERENCE_CHAT: "EXOTEL_CONFERENCE_CHAT",
   },
@@ -172,7 +171,7 @@ describe("Calls Component", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockUseUser.mockReturnValue({
-      availableChatTypes: ["WEBRTC_CHAT", "MICROPHONE_CHAT"],
+      availableChatTypes: ["MICROPHONE_CHAT"],
       user: mockUser,
       permissions: mockPermissions,
     });
@@ -250,7 +249,7 @@ describe("Calls Component", () => {
   describe("User Role and Permissions", () => {
     it("should render for counsellor role", () => {
       mockUseUser.mockReturnValue({
-        availableChatTypes: ["WEBRTC_CHAT", "MICROPHONE_CHAT"],
+        availableChatTypes: ["MICROPHONE_CHAT"],
         user: { ...mockUser, role: UserRole.COUNSELLOR },
         permissions: mockPermissions,
       });
@@ -266,7 +265,7 @@ describe("Calls Component", () => {
 
     it("should not show Start Session button for admin", () => {
       mockUseUser.mockReturnValue({
-        availableChatTypes: ["WEBRTC_CHAT", "MICROPHONE_CHAT"],
+        availableChatTypes: ["MICROPHONE_CHAT"],
         user: { ...mockUser, role: UserRole.ADMIN },
         permissions: [], // Admin users don't have START_MICROPHONE_CHAT permission
       });
@@ -426,7 +425,7 @@ describe("Calls Component", () => {
 
     it("should match snapshot with admin role", () => {
       mockUseUser.mockReturnValue({
-        availableChatTypes: ["WEBRTC_CHAT", "MICROPHONE_CHAT"],
+        availableChatTypes: ["MICROPHONE_CHAT"],
         user: { ...mockUser, role: UserRole.ADMIN },
         permissions: mockPermissions,
       });

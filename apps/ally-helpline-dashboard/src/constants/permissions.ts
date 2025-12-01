@@ -8,6 +8,9 @@ export enum Permissions {
   VIEW_REFERNCE_DOCUMENT = "view:reference-document",
   // Learn permission
   EDIT_SCENARIO_SESSION = "edit:scenario-session",
+  VIEW_SCENARIO_PATHS = "view:scenario-paths",
+  VIEW_SCENARIO_PATH = "view:scenario-path",
+  EDIT_SCENARIO_PATH = "edit:scenario-path",
 
   // Logs Permission
   VIEW_CALL_LOGS = "view:call:logs",

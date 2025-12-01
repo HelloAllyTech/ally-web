@@ -25,8 +25,8 @@ vi.mock("..", () => ({
   })),
 }));
 
-const TestComponent = () => {
-  useAutoActiveCallRedirect();
+const TestComponent = ({ isAuthenticated = true }: { isAuthenticated?: boolean }) => {
+  useAutoActiveCallRedirect(isAuthenticated);
   return null;
 };
 
@@ -125,6 +125,36 @@ describe("useAutoActiveCallRedirect", () => {
     } as any);
 
     render(<TestComponent />);
+
+    expect(navigateSpy).not.toHaveBeenCalled();
+  });
+
+  it("does not navigate if user is not authenticated", () => {
+    const navigateSpy = vi.fn();
+    useNavigateMock.mockReturnValue(navigateSpy);
+    useLocationMock.mockReturnValue({
+      pathname: "/home",
+      search: "",
+      hash: "",
+      state: null,
+      key: "k",
+    } as any);
+
+    useSessionManagerMock.mockReturnValue({
+      activeSession: { type: SocketConnectionTypes.MICROPHONE_MODE } as any,
+      setSession: vi.fn(),
+      clearSession: vi.fn(),
+      disconnectAll: vi.fn(),
+      getEventCallback: vi.fn(() => ({
+        SESSION_CREATED: vi.fn(),
+        USER_JOINED: vi.fn(),
+        AUDIO_MESSAGE: vi.fn(),
+        CHAT_ENDED: vi.fn(),
+        USER_DISCONNECTED: vi.fn(),
+      })),
+    } as any);
+
+    render(<TestComponent isAuthenticated={false} />);
 
     expect(navigateSpy).not.toHaveBeenCalled();
   });

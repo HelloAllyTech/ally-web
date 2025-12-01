@@ -5,8 +5,10 @@ import { Button, ButtonVariant, ButtonVariantType } from "./button";
 import ButtonGroup from "./button-group";
 import { Carousel, CarouselSize, CarouselVariant, CarouselSlideType } from "./carousel";
 import Chip, { ChipConfig } from "./chip";
+import { CircularProgress } from "./circular-progress";
 import ConfirmationDialog from "./confirmation-dialog";
 import CreditInfo from "./credit-info-dialog";
+import { CreditsDisplay } from "./credits-display";
 import CustomCircularProgress from "./custom-circular-progress";
 import CustomMarkdown from "./custom-markdown";
 import { DatePicker, TimePicker } from "./date-time-pickers";
@@ -19,6 +21,7 @@ import Input from "./input";
 import LoginDialog from "./login-dialog";
 import NavSideBar from "./nav-sidebar";
 import OTP from "./otp";
+import { PathwayScenarioCard } from "./pathway-scenario-card";
 import PermissionGuard from "./permission-guard";
 import ScenarioCard from "./scenario-card";
 import ScenarioDetailsCard from "./scenario-details-card";
@@ -47,7 +50,9 @@ export {
   Button,
   ButtonGroup,
   Chip,
+  CircularProgress,
   ConfirmationDialog,
+  CreditsDisplay,
   CustomCircularProgress,
   CustomMarkdown,
   DatePicker,
@@ -62,6 +67,7 @@ export {
   LoginDialog,
   NavSideBar,
   OTP,
+  PathwayScenarioCard,
   ScenarioCard,
   ScenarioDetailsCard,
   SearchResources,

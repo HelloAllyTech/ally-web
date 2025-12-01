@@ -1,11 +1,17 @@
 import React, { useState, useCallback, useEffect } from "react";
 
-import { ArrowDownFilled, DoubleArrowRight, Trash } from "@assets";
-import { AutoExpandableTextarea, EmojiPickerComponent, NumberInput } from "@components";
-import { SPEAKER_OPTIONS, en } from "@constants";
+import { DoubleArrowRight, Trash } from "@assets";
+import {
+  ActionConfirmationPopup,
+  AutoExpandableTextarea,
+  EmojiPickerComponent,
+  TriggerConditions,
+  NumberInput,
+} from "@components";
+import { en, EVENT_DETECTION_TYPES } from "@constants";
 import { useDebounce } from "@hooks";
-import { UpdateEventDataParam } from "@types";
-import { formatCapitalizedEnum } from "@utils";
+import { UpdateEventDataParam, isCombinationTriggerCondition, COMBINATION_OPERATOR } from "@types";
+import { isExactlyOneEventSelected } from "@utils";
 
 interface EventSidePanelProps {
   selectedEvent: UpdateEventDataParam | null;
@@ -26,7 +32,7 @@ const Field: React.FC<FieldProps> = ({ label, children, multiline = false }) => 
     className={`flex flex-row min-h-[40px] ${multiline ? "items-start" : "items-center"} text-base justify-between`}
   >
     <div className={`w-[40%] ${multiline && "mt-[8px]"}`}>
-      <span className="text-sm font-medium text-typography-800">{label}</span>
+      <span className="text-base font-medium text-typography-800">{label}</span>
     </div>
     <div className="w-[60%] flex text-left justify-start text-neutral-800">{children}</div>
   </div>
@@ -49,7 +55,7 @@ const PanelHeader: React.FC<{
     {hasEvent && (
       <button onClick={() => onDelete(eventId)} className="flex items-center gap-2">
         <Trash width={14} height={14} />
-        <span className="text-sm font-tertiary font-medium text-typography-900">
+        <span className="text-base font-tertiary font-medium text-typography-900">
           {en.simulation.deleteEvent}
         </span>
       </button>
@@ -64,30 +70,69 @@ export const EventSidePanel: React.FC<EventSidePanelProps> = ({
   onDelete,
   onUpdate,
 }) => {
-  const [isSpeakerDropdownOpen, setIsSpeakerDropdownOpen] = useState(false);
   const [formData, setFormData] = useState(selectedEvent);
+  const [showConfirmationModal, setShowConfirmationModal] = useState(false);
 
   useEffect(() => {
-    setFormData(selectedEvent);
-  }, []);
+    if (selectedEvent) {
+      // Initialize default structure for combination events for UI purposes only
+      if (
+        selectedEvent.detectionType === EVENT_DETECTION_TYPES.COMBINATION &&
+        (!selectedEvent.triggerCondition ||
+          (selectedEvent.triggerCondition as any)?.expression === null)
+      ) {
+        setFormData({
+          ...selectedEvent,
+          triggerCondition: {
+            expression: {
+              type: COMBINATION_OPERATOR.AND,
+              left: { id: "" },
+              right: { id: "" },
+            },
+          },
+        });
+      } else {
+        setFormData(selectedEvent);
+      }
+    } else {
+      setFormData(selectedEvent);
+    }
+  }, [selectedEvent]);
+
+  const debouncedUpdate = useDebounce(() => onUpdate(formData), 500);
 
   useEffect(() => {
     debouncedUpdate();
   }, [formData]);
 
-  const debouncedUpdate = useDebounce(() => {
-    onUpdate(formData);
-  }, 500);
-
   const handleFieldChange = useCallback(
-    (fieldName: string, value: string | number) => {
-      setIsSpeakerDropdownOpen(false);
+    (fieldName: string, value: string | number | object) => {
       if (!selectedEvent) return;
 
-      setFormData(previousData => ({
-        ...previousData,
-        [fieldName]: value,
-      }));
+      setFormData(previousData => {
+        return {
+          ...previousData,
+          [fieldName]: value,
+        };
+      });
+    },
+    [selectedEvent],
+  );
+
+  const handleTriggerConditionChange = useCallback(
+    (field: string, value: string | number | string[] | any) => {
+      if (!selectedEvent) return;
+
+      setFormData(
+        previousData =>
+          ({
+            ...previousData,
+            triggerCondition: {
+              ...(previousData.triggerCondition || {}),
+              [field]: value,
+            },
+          }) as UpdateEventDataParam,
+      );
     },
     [selectedEvent],
   );
@@ -98,16 +143,42 @@ export const EventSidePanel: React.FC<EventSidePanelProps> = ({
     }
   }, [selectedEvent, onDelete]);
 
+  const handleClose = useCallback(() => {
+    // Check if this is a combination event with exactly one event selected (incomplete state)
+    // Show modal only when exactly one event is selected, not when both are empty or both are selected
+    if (
+      formData?.detectionType === EVENT_DETECTION_TYPES.COMBINATION &&
+      formData?.triggerCondition &&
+      isCombinationTriggerCondition(formData.triggerCondition)
+    ) {
+      const expression = formData.triggerCondition.expression;
+      if (isExactlyOneEventSelected(expression)) {
+        setShowConfirmationModal(true);
+        return; // Show modal instead of closing
+      }
+    }
+    onClose();
+  }, [formData, onClose]);
+
+  const handleConfirmClose = useCallback(() => {
+    setShowConfirmationModal(false);
+    onClose();
+  }, [onClose]);
+
+  const handleCancelClose = useCallback(() => {
+    setShowConfirmationModal(false);
+  }, []);
+
   if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 z-50 flex">
-      <div className="flex-1 bg-black bg-opacity-50" onClick={onClose} />
+      <div className="flex-1 bg-black bg-opacity-50" onClick={handleClose} />
 
       <div className="w-[50%] min-w-[700px] bg-white shadow-xl border-l-[1px] border-border-light">
         <PanelHeader
           eventId={selectedEvent?.id}
-          onClose={onClose}
+          onClose={handleClose}
           onDelete={handleDelete}
           hasEvent={!!selectedEvent}
         />
@@ -124,59 +195,27 @@ export const EventSidePanel: React.FC<EventSidePanelProps> = ({
           </div>
 
           <div className="space-y-3">
-            <Field label="Event type">
-              <span className="text-sm">
-                {formatCapitalizedEnum(selectedEvent?.detectionType) || "—"}
-              </span>
+            <Field label="Event code">
+              <div className="text-base text-neutral-800">{formData.eventCode || "—"}</div>
             </Field>
 
-            <Field label="Speaker">
-              <div className="relative">
-                <button
-                  type="button"
-                  onClick={() => setIsSpeakerDropdownOpen(!isSpeakerDropdownOpen)}
-                  className="px-0 py-2 cursor-pointer text-sm flex items-center space-x-2"
-                >
-                  <span className="truncate">
-                    {formatCapitalizedEnum(formData.speaker) || "Add speaker"}
-                  </span>
-                  <ArrowDownFilled width={8} height={8} />
-                </button>
-                {isSpeakerDropdownOpen && (
-                  <div className="absolute z-10 bg-white p-1 border border-border-light min-w-[150px] rounded-[6px] left-[0px] top-[30px] space-y-1">
-                    {SPEAKER_OPTIONS.map(option => (
-                      <div
-                        key={option?.value}
-                        onClick={() => handleFieldChange("speaker", option.value)}
-                        className={`px-3 py-2 cursor-pointer rounded-[6px] flex items-center hover:bg-primary-100 ${formData.speaker === option.value ? "bg-neutral-100" : ""}`}
-                      >
-                        <span className="truncate">{option?.label}</span>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            </Field>
+            {/* Trigger Conditions Field */}
 
-            <Field label="Event description" multiline={true}>
-              <AutoExpandableTextarea
-                maxLines={20}
-                minHeight={20}
-                value={formData.description}
-                onChange={value => handleFieldChange("description", value)}
-                placeholder="Add description"
-                className="py-2 pt-[16px] px-0 border-none focus:outline-none text-sm w-full resize-none overflow-y-auto [&::-webkit-scrollbar]:w-[1px] [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-scrollbar-thumb"
-              />
-            </Field>
+            <TriggerConditions
+              eventType={formData.detectionType}
+              triggerCondition={formData.triggerCondition}
+              onChange={handleTriggerConditionChange}
+              currentEventId={formData.id}
+            />
 
-            <Field label="Default branch description" multiline={true}>
+            <Field label="Branch description" multiline={true}>
               <AutoExpandableTextarea
                 maxLines={20}
                 minHeight={20}
                 value={formData.branchInstruction}
                 onChange={value => handleFieldChange("branchInstruction", value)}
                 placeholder="Add instruction"
-                className="py-2 pt-[16px] px-0 border-none focus:outline-none text-sm w-full resize-none overflow-y-auto [&::-webkit-scrollbar]:w-[1px] [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-scrollbar-thumb"
+                className="py-2 pt-[16px] px-0 border-none focus:outline-none text-base w-full resize-none overflow-y-auto [&::-webkit-scrollbar]:w-[1px] [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-scrollbar-thumb"
               />
             </Field>
 
@@ -194,7 +233,7 @@ export const EventSidePanel: React.FC<EventSidePanelProps> = ({
                 value={formData.message}
                 onChange={value => handleFieldChange("message", value)}
                 placeholder="Add message"
-                className="py-2 pt-[16px] px-0 border-none focus:outline-none text-sm w-full resize-none overflow-y-auto [&::-webkit-scrollbar]:w-[1px] [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-scrollbar-thumb"
+                className="py-2 pt-[16px] px-0 border-none focus:outline-none text-base w-full resize-none overflow-y-auto [&::-webkit-scrollbar]:w-[1px] [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-scrollbar-thumb"
               />
             </Field>
 
@@ -208,6 +247,21 @@ export const EventSidePanel: React.FC<EventSidePanelProps> = ({
           </div>
         </div>
       </div>
+
+      <ActionConfirmationPopup
+        isOpen={showConfirmationModal}
+        onClose={handleCancelClose}
+        title="Incomplete Combination Event"
+        description="Please select both event conditions for the combination event to be saved. Are you sure you want to close?"
+        primaryButton={{
+          label: "Close Anyway",
+          onClick: handleConfirmClose,
+        }}
+        secondaryButton={{
+          label: "Go Back",
+          onClick: handleCancelClose,
+        }}
+      />
     </div>
   );
 };
