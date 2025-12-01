@@ -30,6 +30,7 @@ import ShinyText from "./shiny-text";
 import { StarRating } from "./star-rating";
 import TabGroup from "./tab-group";
 import TagGroup from "./tag-group";
+import TermsAndAgreement from "./terms-and-agreement";
 import TextField from "./text-field";
 import ToggleButtonGroup from "./toggle-button-group";
 import UserInfo from "./user-info";
@@ -80,4 +81,5 @@ export {
   ToggleButtonGroup,
   UserInfo,
   CreditInfo,
+  TermsAndAgreement,
 };

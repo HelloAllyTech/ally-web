@@ -8,7 +8,7 @@ import { toast } from "sonner";
 
 import { useGenerateOTPMutation, useVerifyOTPMutation } from "@api";
 import { Ally, BackCircle, LoginImage, RedirectIcon } from "@assets";
-import { Button, Carousel, OTP, TextField } from "@components";
+import { Button, Carousel, OTP, TermsAndAgreement, TextField } from "@components";
 import {
   ALLY_PRIVACY_POLICY_URL,
   ALLY_TERMS_URL,
@@ -33,6 +33,9 @@ export const Login: FunctionComponent = () => {
   const [otp, setOtp] = useState<string>("");
   const [countdown, setCountdown] = useState<number>(0);
   const [rememberMe, setRememberMe] = useState<boolean>(false);
+  const [termsAndAgreement, setTermsAndAgreement] = useState<boolean>(false);
+  const [accessToken, setAccessToken] = useState<string>("");
+  const [refreshToken, setRefreshToken] = useState<string>("");
 
   const [
     generateOTP,
@@ -112,12 +115,15 @@ export const Login: FunctionComponent = () => {
         const errorMessage = errorData?.message ?? "Failed to verify OTP. Please try again.";
         toast.error(errorMessage);
       } else if (isVerifyOTPSuccess && verifyOTPData) {
-        localStorage.setItem(LOCAL_STORAGE_KEYS.ACCESS_TOKEN, verifyOTPData.accessToken);
-        localStorage.setItem(LOCAL_STORAGE_KEYS.REFRESH_TOKEN, verifyOTPData.refreshToken);
+        setAccessToken(verifyOTPData.accessToken);
+        setRefreshToken(verifyOTPData.refreshToken);
+        // localStorage.setItem(LOCAL_STORAGE_KEYS.ACCESS_TOKEN, verifyOTPData.accessToken);
+        // localStorage.setItem(LOCAL_STORAGE_KEYS.REFRESH_TOKEN, verifyOTPData.refreshToken);
         const userData = await checkAuth();
-        if (userData) {
-          navigate("/");
-        }
+        if (userData?.name) setTermsAndAgreement(true);
+        // if (userData) {
+        //   navigate("/");
+        // }
       }
     })();
   }, [isVerifyOTPSuccess, verifyOTPError, verifyOTPData]);
@@ -154,6 +160,18 @@ export const Login: FunctionComponent = () => {
 
   const handleVerify = () => {
     verifyOTP({ email: email.trim(), otp });
+  };
+
+  const handleAgreementClose = () => {
+    setTermsAndAgreement(false);
+  };
+
+  const handleAgreeButtonClick = () => {
+    //TODO:api
+    localStorage.setItem(LOCAL_STORAGE_KEYS.ACCESS_TOKEN, accessToken);
+    localStorage.setItem(LOCAL_STORAGE_KEYS.REFRESH_TOKEN, refreshToken);
+    handleAgreementClose();
+    navigate("/");
   };
 
   const getLoginSection = () => {
@@ -321,6 +339,11 @@ export const Login: FunctionComponent = () => {
           </div>
         </div>
       </div>
+      <TermsAndAgreement
+        isOpen={termsAndAgreement}
+        handleClose={handleAgreementClose}
+        handleAgreeButtonClick={handleAgreeButtonClick}
+      />
     </div>
   );
 };
