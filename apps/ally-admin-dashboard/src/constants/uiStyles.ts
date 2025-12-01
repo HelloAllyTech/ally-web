@@ -17,3 +17,15 @@ export const toolTipStyles = {
     },
   },
 };
+
+export const viewOnlyToolTipStyles = {
+  tooltip: {
+    sx: {
+      backgroundColor: "#000",
+      color: "white",
+      borderRadius: "5px",
+      maxWidth: "200px",
+      whiteSpace: "normal",
+    },
+  },
+};

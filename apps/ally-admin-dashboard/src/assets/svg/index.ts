@@ -22,6 +22,7 @@ import DoubleArrowRight from "./doubleArrowRight.svg?react";
 import DragIndicator from "./dragIndicator.svg?react";
 import DragUpload from "./dragUpload.svg?react";
 import Edit from "./edit.svg?react";
+import Eye from "./eye.svg?react";
 import Filter from "./filter.svg?react";
 import FocusLens from "./focusLens.svg?react";
 import HappyEmoji from "./happyEmoji.svg?react";
@@ -86,4 +87,5 @@ export {
   Dot,
   Tick,
   FocusLens,
+  Eye,
 };
