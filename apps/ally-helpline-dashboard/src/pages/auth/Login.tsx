@@ -6,7 +6,12 @@ import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
-import { useCheckTermsAndAgreementQuery, useGenerateOTPMutation, useVerifyOTPMutation } from "@api";
+import {
+  useGenerateOTPMutation,
+  useLazyCheckTermsAndAgreementQuery,
+  usePutTermsAndAgreementMutation,
+  useVerifyOTPMutation,
+} from "@api";
 import { Ally, BackCircle, LoginImage, RedirectIcon } from "@assets";
 import { Button, Carousel, OTP, TermsAndAgreement, TextField } from "@components";
 import {
@@ -58,7 +63,8 @@ export const Login: FunctionComponent = () => {
 
   const { isAuthenticated, checkAuth } = useUser();
 
-  const { data: checkTermsAndAgreement } = useCheckTermsAndAgreementQuery();
+  const [checkTermsAndAgreement] = useLazyCheckTermsAndAgreementQuery();
+  const [putCheckTermsAndAgreement] = usePutTermsAndAgreementMutation();
 
   const isLoading = isGeneratingOTP || isVerifyingOTP;
 
@@ -119,9 +125,8 @@ export const Login: FunctionComponent = () => {
       } else if (isVerifyOTPSuccess && verifyOTPData) {
         setAccessToken(verifyOTPData.accessToken);
         setRefreshToken(verifyOTPData.refreshToken);
-        // localStorage.setItem(LOCAL_STORAGE_KEYS.ACCESS_TOKEN, verifyOTPData.accessToken);
-        // localStorage.setItem(LOCAL_STORAGE_KEYS.REFRESH_TOKEN, verifyOTPData.refreshToken);
-        if (checkTermsAndAgreement.name) {
+        const response = checkTermsAndAgreement();
+        if (response) {
           const userData = await checkAuth();
           if (userData) {
             navigate("/");
@@ -171,8 +176,8 @@ export const Login: FunctionComponent = () => {
     setTermsAndAgreement(false);
   };
 
-  const handleAgreeButtonClick = () => {
-    //TODO:api
+  const handleAgreeButtonClick = async () => {
+    await putCheckTermsAndAgreement();
     localStorage.setItem(LOCAL_STORAGE_KEYS.ACCESS_TOKEN, accessToken);
     localStorage.setItem(LOCAL_STORAGE_KEYS.REFRESH_TOKEN, refreshToken);
     handleAgreementClose();
