@@ -1,4 +1,4 @@
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import { render, screen, fireEvent, waitFor, act } from "@testing-library/react";
 import { useForm } from "react-hook-form";
 import { vi, describe, it, expect } from "vitest";
 
@@ -14,6 +14,7 @@ vi.mock("@assets", () => ({
   DiamondShine: () => <svg data-testid="diamond-shine">DiamondShine</svg>,
   FocusLens: () => <svg data-testid="focus-lens">FocusLens</svg>,
   Tick: () => <svg data-testid="tick">Tick</svg>,
+  SemanticSimilarity: () => <svg data-testid="semantic-similarity">SemanticSimilarity</svg>, // Added SemanticSimilarity
 }));
 
 // Mock hooks

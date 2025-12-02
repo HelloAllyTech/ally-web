@@ -21,7 +21,7 @@ interface SimulationProps {
   formMethods?: any;
   selectedSimulations: GetScenarioType[];
   setSelectedSimulations: (simulations: GetScenarioType[]) => void;
-  isDragDisabled?: boolean;
+  isDisabled?: boolean;
 }
 
 const SIMULATIONS_PAGE_SIZE = 20;
@@ -32,7 +32,7 @@ export const SimulationSelectionModal: FC<SimulationProps> = ({
   formMethods,
   selectedSimulations,
   setSelectedSimulations,
-  isDragDisabled = false,
+  isDisabled = false,
 }) => {
   const [checkedSimulation, setCheckedSimulation] = useState<GetScenarioType[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
@@ -69,9 +69,14 @@ export const SimulationSelectionModal: FC<SimulationProps> = ({
     };
   };
 
+  const clearAndToggle = () => {
+    setSearchQuery("");
+    toggleSimulationModal();
+  };
+
   const toggleSelection = () => {
     setSelectedSimulations(checkedSimulation);
-    toggleSimulationModal();
+    clearAndToggle();
   };
 
   const handleCheckBoxClick = (simulation: GetScenarioType) => {
@@ -194,19 +199,21 @@ export const SimulationSelectionModal: FC<SimulationProps> = ({
       <div className="w-full bg-secondary-50 px-2 py-2 rounded-t-md flex justify-between items-center">
         <p className="text-base text-typography-900 font-medium">{en.simulation.message}</p>
 
-        <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex cursor-pointer gap-2">
-          <button
-            className="text-xs text-primary-500"
-            onClick={() => handleMessageClick(index)}
-            ref={element => (messageButtonRefs.current[index] = element)}
-          >
-            {en.common.edit}
-          </button>
+        {!isDisabled && (
+          <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex cursor-pointer gap-2">
+            <button
+              className="text-xs text-primary-500"
+              onClick={() => handleMessageClick(index)}
+              ref={element => (messageButtonRefs.current[index] = element)}
+            >
+              {en.common.edit}
+            </button>
 
-          <button className="text-xs" onClick={() => handleDeleteMessage(index)}>
-            {en.common.delete}
-          </button>
-        </div>
+            <button className="text-xs" onClick={() => handleDeleteMessage(index)}>
+              {en.common.delete}
+            </button>
+          </div>
+        )}
       </div>
       <div className="flex flex-col p-3">
         <p className="text-xs font-semibold text-typography-900 ">{messageTitle}</p>
@@ -215,7 +222,7 @@ export const SimulationSelectionModal: FC<SimulationProps> = ({
     </div>
   );
   const handleDragEnd = event => {
-    if (isDragDisabled) return;
+    if (isDisabled) return;
 
     const { active, over } = event;
     if (!over || active.id === over.id) return;
@@ -249,7 +256,7 @@ export const SimulationSelectionModal: FC<SimulationProps> = ({
             handleMessageClick={handleMessageClick}
             renderMessage={renderMessage}
             addButtonRef={messageButtonRefs}
-            isDragDisabled={isDragDisabled}
+            isDisabled={isDisabled}
           />
         ))}
       </SortableContext>
@@ -338,7 +345,7 @@ export const SimulationSelectionModal: FC<SimulationProps> = ({
             <Button
               variant={ButtonVariant.SECONDARY}
               className="w-1/3 !text-base"
-              onClick={toggleSimulationModal}
+              onClick={clearAndToggle}
             >
               {en.common.cancel}
             </Button>

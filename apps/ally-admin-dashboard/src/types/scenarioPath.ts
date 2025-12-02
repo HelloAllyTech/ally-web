@@ -90,5 +90,5 @@ export interface SimulationCardItemProps {
   handleMessageClick: (index: number) => void;
   renderMessage: (messageTitle: string, messageContent: string, index: number) => JSX.Element;
   addButtonRef?: React.RefObject<(HTMLButtonElement | null)[]>;
-  isDragDisabled?: boolean;
+  isDisabled?: boolean;
 }

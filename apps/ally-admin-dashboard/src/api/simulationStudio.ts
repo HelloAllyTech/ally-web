@@ -133,7 +133,10 @@ const simulationStudioAPI = baseAPI.injectEndpoints({
     /**
      * Update Events
      */
-    updateSessionEvent: builder.mutation<void, { id: string; event: SessionEvent }>({
+    updateSessionEvent: builder.mutation<
+      { messages?: string[] },
+      { id: string; event: SessionEvent }
+    >({
       query: ({ id, event }) => ({
         url: ApiEndpoints.SIMULATION_STUDIO.UPDATE_SESSION_EVENT(id),
         method: HttpMethod.PUT,
