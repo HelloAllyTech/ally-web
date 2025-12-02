@@ -69,9 +69,14 @@ export const SimulationSelectionModal: FC<SimulationProps> = ({
     };
   };
 
+  const clearAndToggle = () => {
+    setSearchQuery("");
+    toggleSimulationModal();
+  };
+
   const toggleSelection = () => {
     setSelectedSimulations(checkedSimulation);
-    toggleSimulationModal();
+    clearAndToggle();
   };
 
   const handleCheckBoxClick = (simulation: GetScenarioType) => {
@@ -340,7 +345,7 @@ export const SimulationSelectionModal: FC<SimulationProps> = ({
             <Button
               variant={ButtonVariant.SECONDARY}
               className="w-1/3 !text-base"
-              onClick={toggleSimulationModal}
+              onClick={clearAndToggle}
             >
               {en.common.cancel}
             </Button>
