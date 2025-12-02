@@ -8,6 +8,7 @@ import { SimulationSummaryProps } from "../types";
 
 // Mock the API hook
 const mockLazyQuery = vi.fn();
+const mockLazyUpcomingQuery = vi.fn();
 const mockGetSimulationSummary = vi.fn();
 const mockUpComingSimulation = {
   id: "sim-123",
@@ -20,7 +21,10 @@ const mockUpComingSimulation = {
 vi.mock("@api", () => ({
   useLazyGetSimulationSummaryQuery: () => [mockLazyQuery, { data: mockGetSimulationSummary() }],
   useGetUpComingSimulationQuery: () => ({ data: mockUpComingSimulation }),
-  useLazyGetUpComingSimulationQuery: () => [vi.fn(), { data: mockUpComingSimulation }],
+  useLazyGetUpComingSimulationQuery: () => [
+    mockLazyUpcomingQuery,
+    { data: mockUpComingSimulation },
+  ],
 }));
 
 // Mock the user hook and useStartSimulation
@@ -122,6 +126,7 @@ describe("SimulationSummary", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockLazyQuery.mockResolvedValue({ data: null });
+    mockLazyUpcomingQuery.mockResolvedValue({ data: null });
     mockGetSimulationSummary.mockReturnValue(null);
   });
 

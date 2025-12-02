@@ -219,6 +219,7 @@ interface UpcomingScenario {
 }
 
 interface CurrentSession {
+  eventStatus?: string;
   scenarioId?: string;
   scenarioPathSessionItemStatus?: string;
   coverImageUrl?: string;
