@@ -210,9 +210,9 @@ export const NotionTable = ({
             return (
               <div key={key} {...restHeaderGroupProps} className="flex w-full">
                 {headerGroup.headers.map((column, headerIndex) => {
-                  const colKey = column.getHeaderProps?.().key ?? `${column.id}-${headerIndex}`;
                   const headerProps = column.getHeaderProps();
-                  const { ...restHeaderProps } = headerProps;
+                  const { key: headerKey, ...restHeaderProps } = headerProps;
+                  const colKey = headerKey ?? `${column.id}-${headerIndex}`;
 
                   return (
                     <div
