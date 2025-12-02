@@ -4,10 +4,11 @@ export const Header = ({
   column: { label, getResizerProps, getHeaderProps, headerIndex },
 }: HeaderProps) => {
   const headerProps = getHeaderProps();
-  const { ...restHeaderProps } = headerProps;
+  const { key, ...restHeaderProps } = headerProps;
 
   return (
     <div
+      key={key}
       {...restHeaderProps}
       className={`relative bg-white border-[1px] border-border-light select-none ${headerIndex === 0 ? "border-l-1" : "border-l-0"}`}
     >

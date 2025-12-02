@@ -1,0 +1,354 @@
+# Production Release Pipeline - Ally Admin Dashboard
+#
+# This workflow handles production releases for ally-admin-dashboard (CDN/CloudFront) with semantic versioning
+# 
+# Required GitHub Variables:
+# PRD_AWS_ROLE, PRD_AWS_REGION
+# PRD_ADMIN_DASHBOARD_DISTRIBUTION_ID, PRD_ADMIN_DASHBOARD_S3_BUCKET
+#
+# Usage:
+# - Manually trigger this workflow from GitHub Actions
+# - Specify the version tag in format: v{major}.{minor}.{patch} (e.g., v1.0.0, v1.2.3, v2.0.0)
+# - The workflow will create the tag, build, deploy to S3/CloudFront, and create a release draft
+
+name: Production Release - Admin Dashboard
+
+permissions:
+  id-token: write
+  contents: write  # Required for creating releases and tags
+
+on:
+  workflow_dispatch:
+    inputs:
+      version_tag:
+        required: true
+        type: string
+        description: 'Version tag (e.g., v1.0.0, v1.2.3, v2.0.0)'
+
+jobs:
+  validate-and-tag:
+    name: Validate Version and Create Tag
+    runs-on: ubuntu-22.04
+    timeout-minutes: 2
+    outputs:
+      VERSION: ${{ steps.parse-version.outputs.VERSION }}
+      MAJOR: ${{ steps.parse-version.outputs.MAJOR }}
+      MINOR: ${{ steps.parse-version.outputs.MINOR }}
+      PATCH: ${{ steps.parse-version.outputs.PATCH }}
+      TAG: ${{ steps.parse-version.outputs.TAG }}
+    
+    steps:
+      - name: Checkout master branch
+        uses: actions/checkout@v4
+        with:
+          ref: master
+          fetch-depth: 0
+      
+      - name: Parse and validate version
+        id: parse-version
+        run: |
+          TAG="${{ github.event.inputs.version_tag }}"
+          echo "Processing tag: $TAG"
+          
+          if [[ ! $TAG =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "❌ Error: Tag must be in format v{major}.{minor}.{patch} (e.g., v1.0.0)"
+            exit 1
+          fi
+          
+          if git rev-parse "$TAG" >/dev/null 2>&1; then
+            echo "❌ Error: Tag $TAG already exists"
+            exit 1
+          fi
+          
+          LATEST_TAG=$(git tag --sort=-v:refname | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | head -n 1)
+          
+          if [ -n "$LATEST_TAG" ]; then
+            echo "Latest existing tag: $LATEST_TAG"
+            echo "New tag: $TAG"
+            
+            HIGHER=$(printf "%s\n%s" "$LATEST_TAG" "$TAG" | sort -V | tail -n 1)
+            
+            if [ "$HIGHER" != "$TAG" ]; then
+              echo "❌ Error: Tag $TAG is not newer than the latest tag $LATEST_TAG"
+              echo "Please use a version higher than $LATEST_TAG"
+              exit 1
+            fi
+            
+            echo "✅ Version validation passed: $TAG is newer than $LATEST_TAG"
+          else
+            echo "ℹ️  No previous tags found. This will be the first release."
+          fi
+          
+          VERSION=${TAG#v}
+          MAJOR=$(echo $VERSION | cut -d. -f1)
+          MINOR=$(echo $VERSION | cut -d. -f2)
+          PATCH=$(echo $VERSION | cut -d. -f3)
+          
+          echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
+          echo "MAJOR=$MAJOR" >> $GITHUB_OUTPUT
+          echo "MINOR=$MINOR" >> $GITHUB_OUTPUT
+          echo "PATCH=$PATCH" >> $GITHUB_OUTPUT
+          echo "TAG=$TAG" >> $GITHUB_OUTPUT
+          
+          echo "## :rocket: Release Version - Admin Dashboard" >> $GITHUB_STEP_SUMMARY
+          echo "- **Tag**: $TAG" >> $GITHUB_STEP_SUMMARY
+          if [ -n "$LATEST_TAG" ]; then
+            echo "- **Previous Tag**: $LATEST_TAG" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "- **First Release**: Yes ✨" >> $GITHUB_STEP_SUMMARY
+          fi
+          echo "- **Full Version**: $VERSION" >> $GITHUB_STEP_SUMMARY
+          echo "- **Service**: ally-admin-dashboard (CDN)" >> $GITHUB_STEP_SUMMARY
+      
+      - name: Create and push tag
+        run: |
+          TAG="${{ steps.parse-version.outputs.TAG }}"
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git tag -a "$TAG" -m "Release ally-admin-dashboard version ${{ steps.parse-version.outputs.VERSION }}"
+          git push origin "$TAG"
+          echo "✅ Tag $TAG created and pushed" >> $GITHUB_STEP_SUMMARY
+
+  prepare-env:
+    name: Prepare Production Environment
+    needs: validate-and-tag
+    runs-on: ubuntu-22.04
+    timeout-minutes: 2
+    outputs:
+      aws_role: ${{ steps.env-vars.outputs.aws_role }}
+      aws_region: ${{ steps.env-vars.outputs.aws_region }}
+      project_prefix: ${{ steps.env-vars.outputs.project_prefix }}
+      project_region: ${{ steps.env-vars.outputs.project_region }}
+      s3_env_bucket: ${{ steps.cdn-vars.outputs.s3_env_bucket }}
+      service_path: ${{ steps.cdn-vars.outputs.service_path }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: master
+
+      - name: Set Environment Variables
+        id: env-vars
+        uses: ./.github/actions/aws/set-environment-vars
+        with:
+          environment: prd
+          prd_aws_role: ${{ vars.PRD_AWS_ROLE }}
+          prd_aws_region: ${{ vars.PRD_AWS_REGION }}
+
+      - name: Set CDN Variables
+        id: cdn-vars
+        uses: ./.github/actions/aws/set-cdn-vars
+        with:
+          service_name: "admin-dashboard"
+          project_prefix: ${{ steps.env-vars.outputs.project_prefix }}
+          project_region: ${{ steps.env-vars.outputs.project_region }}
+
+  test:
+    name: Run Tests
+    needs:
+      - validate-and-tag
+      - prepare-env
+    runs-on: ubuntu-22.04
+    env:
+      NX_NO_CLOUD: true
+      NX_SKIP_NX_CACHE: true
+      NX_CLOUD_ACCESS_TOKEN: ""
+      CI: true
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: master
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install Dependencies
+        run: npm ci --legacy-peer-deps
+
+      - name: Run Tests with Coverage
+        run: |
+          echo ":test_tube: Running tests with coverage..." >> $GITHUB_STEP_SUMMARY
+          npx nx test ally-admin-dashboard --coverage
+          echo ":white_check_mark: Tests completed successfully" >> $GITHUB_STEP_SUMMARY
+
+  build-and-deploy:
+    name: Build and Deploy to CDN
+    needs:
+      - validate-and-tag
+      - prepare-env
+      - test
+    runs-on: ubuntu-22.04
+    env:
+      NX_NO_CLOUD: true
+      NX_SKIP_NX_CACHE: true
+      NX_CLOUD_ACCESS_TOKEN: ""
+      CI: true
+    outputs:
+      s3_bucket: ${{ steps.cdn-config.outputs.s3_website_bucket }}
+      distribution_id: ${{ steps.cdn-config.outputs.cdn_distribution_id }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: master
+          fetch-depth: 0
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ needs.prepare-env.outputs.aws_role }}
+          aws-region: ${{ needs.prepare-env.outputs.aws_region }}
+
+      - name: Install Dependencies
+        run: npm ci --legacy-peer-deps
+
+      - name: Download Environment Variables
+        run: |
+          echo ":gear: Downloading build-time environment variables..." >> $GITHUB_STEP_SUMMARY
+          if aws s3 cp s3://${{ needs.prepare-env.outputs.s3_env_bucket }}/${{ needs.prepare-env.outputs.service_path }}/.env apps/ally-admin-dashboard/.env 2>/dev/null; then
+            echo ":white_check_mark: Environment variables downloaded successfully" >> $GITHUB_STEP_SUMMARY
+            cp apps/ally-admin-dashboard/.env .env
+          else
+            echo ":information_source: No build-time environment variables found" >> $GITHUB_STEP_SUMMARY
+          fi
+
+      - name: Build Application
+        env:
+          NODE_ENV: production
+        run: |
+          echo ":hammer: Building ally-admin-dashboard (v${{ needs.validate-and-tag.outputs.VERSION }})..." >> $GITHUB_STEP_SUMMARY
+          npx nx build ally-admin-dashboard
+          echo ":white_check_mark: Build completed successfully" >> $GITHUB_STEP_SUMMARY
+
+      - name: Set CDN Configuration
+        id: cdn-config
+        run: |
+          CDN_DISTRIBUTION_ID="${{ vars.PRD_ADMIN_DASHBOARD_DISTRIBUTION_ID }}"
+          S3_WEBSITE_BUCKET="${{ vars.PRD_ADMIN_DASHBOARD_S3_BUCKET }}"
+          
+          echo "cdn_distribution_id=$CDN_DISTRIBUTION_ID" >> $GITHUB_OUTPUT
+          echo "s3_website_bucket=$S3_WEBSITE_BUCKET" >> $GITHUB_OUTPUT
+          
+          echo ":gear: CDN Configuration" >> $GITHUB_STEP_SUMMARY
+          echo "- Distribution ID: $CDN_DISTRIBUTION_ID" >> $GITHUB_STEP_SUMMARY
+          echo "- S3 Bucket: $S3_WEBSITE_BUCKET" >> $GITHUB_STEP_SUMMARY
+
+      - name: Sync to S3
+        run: |
+          echo ":cloud: Syncing files to S3..." >> $GITHUB_STEP_SUMMARY
+          
+          aws s3 sync dist/apps/ally-admin-dashboard/ s3://${{ steps.cdn-config.outputs.s3_website_bucket }}/ \
+            --delete \
+            --cache-control "public, max-age=86400" \
+            --metadata-directive REPLACE
+          
+          if [ -f "dist/apps/ally-admin-dashboard/.well-known/apple-app-site-association" ]; then
+            aws s3 cp dist/apps/ally-admin-dashboard/.well-known/apple-app-site-association \
+              s3://${{ steps.cdn-config.outputs.s3_website_bucket }}/.well-known/apple-app-site-association \
+              --content-type "application/json" \
+              --cache-control "public, max-age=86400" \
+              --metadata-directive REPLACE
+          fi
+          
+          if [ -f "dist/apps/ally-admin-dashboard/.well-known/assetlinks.json" ]; then
+            aws s3 cp dist/apps/ally-admin-dashboard/.well-known/assetlinks.json \
+              s3://${{ steps.cdn-config.outputs.s3_website_bucket }}/.well-known/assetlinks.json \
+              --content-type "application/json" \
+              --cache-control "public, max-age=86400" \
+              --metadata-directive REPLACE
+          fi
+          
+          echo ":white_check_mark: Files synced to S3 successfully" >> $GITHUB_STEP_SUMMARY
+
+      - name: Invalidate CloudFront
+        run: |
+          echo ":arrows_counterclockwise: Creating CloudFront invalidation..." >> $GITHUB_STEP_SUMMARY
+          INVALIDATION_ID=$(aws cloudfront create-invalidation \
+            --distribution-id ${{ steps.cdn-config.outputs.cdn_distribution_id }} \
+            --paths "/*" \
+            --query 'Invalidation.Id' \
+            --output text)
+          echo ":white_check_mark: CloudFront invalidation created: $INVALIDATION_ID" >> $GITHUB_STEP_SUMMARY
+
+  create-release:
+    name: Create Release Draft
+    needs:
+      - validate-and-tag
+      - prepare-env
+      - build-and-deploy
+    runs-on: ubuntu-22.04
+    permissions:
+      contents: write
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: master
+          fetch-depth: 0
+
+      - name: Generate changelog
+        id: changelog
+        run: |
+          VERSION=${{ needs.validate-and-tag.outputs.VERSION }}
+          TAG=${{ needs.validate-and-tag.outputs.TAG }}
+          
+          git fetch origin tag "$TAG"
+          
+          PREVIOUS_TAG=$(git tag --sort=-v:refname | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | grep -v "^$TAG$" | head -n 1)
+          
+          if [ -z "$PREVIOUS_TAG" ]; then
+            PREVIOUS_TAG=$(git rev-list --max-parents=0 HEAD)
+          fi
+          
+          cat > CHANGELOG.md << 'EOF'
+          ## What's Changed
+          
+          EOF
+          
+          git log $PREVIOUS_TAG..master --pretty=format:"- %s (%h) @%an" --no-merges -- apps/ally-admin-dashboard libs >> CHANGELOG.md
+          
+          echo "CHANGELOG<<EOF" >> $GITHUB_OUTPUT
+          cat CHANGELOG.md >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: Create Release Draft
+        uses: softprops/action-gh-release@v1
+        with:
+          draft: true
+          name: Release Admin Dashboard v${{ needs.validate-and-tag.outputs.VERSION }}
+          tag_name: ${{ needs.validate-and-tag.outputs.TAG }}
+          body: |
+            ## Release Admin Dashboard v${{ needs.validate-and-tag.outputs.VERSION }}
+            
+            ### Version Information
+            - **Service**: ally-admin-dashboard
+            - **Version**: ${{ needs.validate-and-tag.outputs.VERSION }}
+            - **Major**: ${{ needs.validate-and-tag.outputs.MAJOR }}
+            - **Minor**: ${{ needs.validate-and-tag.outputs.MINOR }}
+            - **Patch**: ${{ needs.validate-and-tag.outputs.PATCH }}
+            
+            ### Deployment Information
+            - **Environment**: Production
+            - **Branch**: master
+            - **Deployment Type**: CloudFront CDN
+            - **S3 Bucket**: ${{ needs.build-and-deploy.outputs.s3_bucket }}
+            - **CloudFront Distribution**: ${{ needs.build-and-deploy.outputs.distribution_id }}
+            
+            ${{ steps.changelog.outputs.CHANGELOG }}
+            
+            ---
+            
+            **Note**: This is a draft release. Please review and publish when ready.
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+

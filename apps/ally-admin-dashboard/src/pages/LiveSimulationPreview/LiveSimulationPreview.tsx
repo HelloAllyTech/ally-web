@@ -12,9 +12,12 @@ import { RoomStatus } from "@types";
 export const LiveSimulationPreview: React.FC = () => {
   const navigate = useNavigate();
   const { id } = useParams();
+  const handleRoomDisconnected = () => {
+    navigate(-1);
+  };
 
   const { room, roomData, roomStatus, events, score, startTime, handleEndSession } =
-    useLiveKitRoom();
+    useLiveKitRoom(handleRoomDisconnected);
 
   const onEnd = async () => {
     handleEndSession();

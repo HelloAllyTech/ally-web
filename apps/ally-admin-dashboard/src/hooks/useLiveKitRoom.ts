@@ -9,7 +9,7 @@ import { LIVEKIT_CONFIG, LOCAL_STORAGE_KEYS, ROUTES } from "@constants";
 import { RoomStatus, UseLiveKitRoomReturn, LiveKitEvent } from "@types";
 import { decodeUint8ToJson } from "@utils";
 
-export const useLiveKitRoom = (): UseLiveKitRoomReturn => {
+export const useLiveKitRoom = (handleDisconnect: () => void): UseLiveKitRoomReturn => {
   const navigate = useNavigate();
   const { id } = useParams();
   const [endScenarioPreview] = useEndScenarioPreviewMutation();
@@ -56,6 +56,7 @@ export const useLiveKitRoom = (): UseLiveKitRoomReturn => {
   }, []);
 
   const onRoomDisconnect = useCallback(() => {
+    handleDisconnect();
     setRoomStatus(RoomStatus.DISCONNECTED);
   }, []);
 

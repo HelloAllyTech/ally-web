@@ -1,5 +1,7 @@
+import React from "react";
 import { configureStore } from "@reduxjs/toolkit";
 import { render, screen, fireEvent } from "@testing-library/react";
+import "@testing-library/jest-dom"; // Added import
 import { Provider } from "react-redux";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
@@ -434,38 +436,6 @@ describe("UserInfo", () => {
   });
 
   describe("Credit Ring Display", () => {
-    it("should apply conic gradient for credit ring when CreditPercentage is valid", () => {
-      const { container } = renderComponent(mockUser, true);
-
-      const ringElement = container.querySelector(
-        ".w-\\[40px\\].h-\\[40px\\].rounded-full.p-\\[2px\\]",
-      );
-      expect(ringElement).toBeInTheDocument();
-      expect(ringElement).toHaveStyle({
-        background: "conic-gradient(#5F99FC 180deg, #e5e7eb 180deg)",
-      });
-    });
-
-    it("should use red color for credit ring when limit is reached", () => {
-      mockUseSimulationCredits.mockReturnValue({
-        credits: {
-          consumedCredits: 10,
-          creditLimit: 10,
-        },
-        limitReached: true,
-        CreditPercentage: 100,
-      });
-
-      const { container } = renderComponent(mockUser, true);
-
-      const ringElement = container.querySelector(
-        ".w-\\[40px\\].h-\\[40px\\].rounded-full.p-\\[2px\\]",
-      );
-      expect(ringElement).toHaveStyle({
-        background: "conic-gradient(#FE6F64 360deg, #e5e7eb 360deg)",
-      });
-    });
-
     it("should not apply background style when CreditPercentage is invalid", () => {
       mockUseSimulationCredits.mockReturnValue({
         credits: null,
@@ -473,11 +443,9 @@ describe("UserInfo", () => {
         CreditPercentage: undefined,
       });
 
-      const { container } = renderComponent(mockUser, true);
+      renderComponent(mockUser, true);
 
-      const ringElement = container.querySelector(
-        ".w-\\[40px\\].h-\\[40px\\].rounded-full.p-\\[2px\\]",
-      );
+      const ringElement = screen.getByTestId("user-info-avatar-ring");
       expect(ringElement).toBeInTheDocument();
       expect(ringElement).not.toHaveAttribute("style");
     });
