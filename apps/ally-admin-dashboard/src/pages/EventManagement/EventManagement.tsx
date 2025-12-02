@@ -236,9 +236,9 @@ export const EventManagement: React.FC = () => {
       }
 
       try {
-        const response = await updateSessionEvent({ id: event.id || "", event: eventPayload });
+        const response: any = await updateSessionEvent({ id: event.id || "", event: eventPayload });
         if (response.error)
-          toast.error(response?.data?.messages?.[0] || en.errors.errorUpdatingEvent);
+          toast.error(response?.error?.data?.message?.[0] || en.errors.errorUpdatingEvent);
       } catch {
         toast.error(en.errors.errorUpdatingEvent);
       }
