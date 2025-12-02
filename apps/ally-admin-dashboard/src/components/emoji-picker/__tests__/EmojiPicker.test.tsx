@@ -1,4 +1,4 @@
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import { render, screen, fireEvent } from "@testing-library/react";
 import { vi, describe, it, expect, beforeEach } from "vitest";
 
 import { EmojiPickerComponent } from "../EmojiPicker";
@@ -37,18 +37,6 @@ vi.mock("emoji-picker-react", () => ({
 // Mock ArrowDownFilled asset
 vi.mock("@assets", () => ({
   ArrowDownFilled: () => <svg data-testid="arrow-down-icon">▼</svg>,
-}));
-
-// Mock useClickOutside hook
-const mockUseClickOutside = vi.fn();
-vi.mock("@hooks", () => ({
-  useClickOutside: (ref: any, callback: any) => {
-    mockUseClickOutside(ref, callback);
-    // Store callback for testing
-    if (ref.current) {
-      ref.current._closeCallback = callback;
-    }
-  },
 }));
 
 describe("EmojiPickerComponent", () => {
@@ -151,29 +139,18 @@ describe("EmojiPickerComponent", () => {
       expect(screen.getByTestId("emoji-picker")).toBeInTheDocument();
     });
 
-    it("registers click outside handler", () => {
-      render(<EmojiPickerComponent />);
-
-      expect(mockUseClickOutside).toHaveBeenCalled();
-    });
-
     it("closes picker when clicking outside", () => {
-      const { container } = render(<EmojiPickerComponent />);
+      render(<EmojiPickerComponent />);
 
       const button = screen.getByRole("button");
       fireEvent.click(button);
 
       expect(screen.getByTestId("emoji-picker")).toBeInTheDocument();
 
-      // Simulate click outside
-      const pickerRef = container.querySelector(".relative");
-      if (pickerRef && (pickerRef as any)._closeCallback) {
-        (pickerRef as any)._closeCallback();
-      }
+      // Simulate click outside on document body
+      fireEvent.mouseDown(document.body);
 
-      waitFor(() => {
-        expect(screen.queryByTestId("emoji-picker")).not.toBeInTheDocument();
-      });
+      expect(screen.queryByTestId("emoji-picker")).not.toBeInTheDocument();
     });
   });
 
@@ -295,107 +272,83 @@ describe("EmojiPickerComponent", () => {
         x: 0,
         y: 60,
         toJSON: () => {},
-      }));
+      })) as any;
 
-      // Mock window.innerHeight
+      // Mock window dimensions and scroll
       Object.defineProperty(window, "innerHeight", {
         writable: true,
         configurable: true,
         value: 800,
       });
+      Object.defineProperty(window, "innerWidth", {
+        writable: true,
+        configurable: true,
+        value: 1024,
+      });
+      Object.defineProperty(window, "scrollY", {
+        writable: true,
+        configurable: true,
+        value: 0,
+      });
+      Object.defineProperty(window, "scrollX", {
+        writable: true,
+        configurable: true,
+        value: 0,
+      });
     });
 
-    it("positions picker below button by default", () => {
-      const { container } = render(<EmojiPickerComponent />);
+    it("applies fixed positioning and inline styles", () => {
+      render(<EmojiPickerComponent />);
 
       const button = screen.getByRole("button");
       fireEvent.click(button);
 
-      const picker = container.querySelector(".top-full");
-      expect(picker).toBeInTheDocument();
-    });
-
-    it("positions picker above button when insufficient space below", () => {
-      // Mock insufficient space below
-      Element.prototype.getBoundingClientRect = vi.fn(() => ({
-        bottom: 750,
-        height: 40,
-        left: 0,
-        right: 100,
-        top: 710,
-        width: 100,
-        x: 0,
-        y: 710,
-        toJSON: () => {},
-      }));
-
-      const { container } = render(<EmojiPickerComponent height={450} />);
-
-      const button = screen.getByRole("button");
-      fireEvent.click(button);
-
-      const picker = container.querySelector(".bottom-full");
-      expect(picker).toBeInTheDocument();
+      const picker = screen.getByTestId("emoji-picker").parentElement;
+      expect(picker).toHaveClass("fixed");
+      // Based on mock: top = bottom (100) + scrollY (0) + 8 = 108
+      expect(picker).toHaveStyle({ top: "108px" });
+      expect(picker).toHaveStyle({ left: "0px" });
     });
 
     it("applies custom width", () => {
-      const { container } = render(<EmojiPickerComponent width={400} />);
+      render(<EmojiPickerComponent width={400} />);
 
       const button = screen.getByRole("button");
       fireEvent.click(button);
 
-      const picker = container.querySelector("[style*='width']");
+      const picker = screen.getByTestId("emoji-picker").parentElement;
       expect(picker).toHaveStyle({ width: "400px" });
     });
 
     it("applies custom height", () => {
-      const { container } = render(<EmojiPickerComponent height={500} />);
+      render(<EmojiPickerComponent height={500} />);
 
       const button = screen.getByRole("button");
       fireEvent.click(button);
 
-      const picker = container.querySelector("[style*='height']");
+      const picker = screen.getByTestId("emoji-picker").parentElement;
       expect(picker).toHaveStyle({ height: "500px" });
     });
 
     it("picker has correct z-index", () => {
-      const { container } = render(<EmojiPickerComponent />);
+      render(<EmojiPickerComponent />);
 
       const button = screen.getByRole("button");
       fireEvent.click(button);
 
-      const picker = container.querySelector(".z-50");
-      expect(picker).toBeInTheDocument();
+      const picker = screen.getByTestId("emoji-picker").parentElement;
+      expect(picker).toHaveClass("z-[9999]");
     });
 
     it("picker has shadow and rounded corners", () => {
-      const { container } = render(<EmojiPickerComponent />);
+      render(<EmojiPickerComponent />);
 
       const button = screen.getByRole("button");
       fireEvent.click(button);
 
-      const picker = container.querySelector(".shadow-lg.rounded-lg");
-      expect(picker).toBeInTheDocument();
-    });
-
-    it("picker is positioned absolutely", () => {
-      const { container } = render(<EmojiPickerComponent />);
-
-      const button = screen.getByRole("button");
-      fireEvent.click(button);
-
-      const picker = container.querySelector(".absolute");
-      expect(picker).toBeInTheDocument();
-    });
-
-    it("picker is aligned to the right", () => {
-      const { container } = render(<EmojiPickerComponent />);
-
-      const button = screen.getByRole("button");
-      fireEvent.click(button);
-
-      const picker = container.querySelector(".right-0");
-      expect(picker).toBeInTheDocument();
+      const picker = screen.getByTestId("emoji-picker").parentElement;
+      expect(picker).toHaveClass("shadow-lg");
+      expect(picker).toHaveClass("rounded-lg");
     });
   });
 
@@ -508,22 +461,22 @@ describe("EmojiPickerComponent", () => {
     });
 
     it("handles string width and height", () => {
-      const { container } = render(<EmojiPickerComponent width="400px" height="500px" />);
+      render(<EmojiPickerComponent width="400px" height="500px" />);
 
       const button = screen.getByRole("button");
       fireEvent.click(button);
 
-      const picker = container.querySelector("[style*='width']");
+      const picker = screen.getByTestId("emoji-picker").parentElement;
       expect(picker).toHaveStyle({ width: "400px" });
     });
 
     it("handles numeric width and height", () => {
-      const { container } = render(<EmojiPickerComponent width={400} height={500} />);
+      render(<EmojiPickerComponent width={400} height={500} />);
 
       const button = screen.getByRole("button");
       fireEvent.click(button);
 
-      const picker = container.querySelector("[style*='width']");
+      const picker = screen.getByTestId("emoji-picker").parentElement;
       expect(picker).toHaveStyle({ width: "400px" });
     });
 
@@ -557,55 +510,13 @@ describe("EmojiPickerComponent", () => {
     });
 
     it("picker has overflow hidden", () => {
-      const { container } = render(<EmojiPickerComponent />);
-
-      const button = screen.getByRole("button");
-      fireEvent.click(button);
-
-      const picker = container.querySelector(".overflow-hidden");
-      expect(picker).toBeInTheDocument();
-    });
-
-    it("picker below has margin top", () => {
-      const { container } = render(<EmojiPickerComponent />);
-
-      const button = screen.getByRole("button");
-      fireEvent.click(button);
-
-      const picker = container.querySelector(".mt-2");
-      expect(picker).toBeInTheDocument();
-    });
-  });
-
-  describe("Component Integration", () => {
-    it("integrates with useClickOutside hook", () => {
-      render(<EmojiPickerComponent />);
-
-      expect(mockUseClickOutside).toHaveBeenCalledTimes(1);
-      expect(mockUseClickOutside.mock.calls[0][0]).toBeDefined();
-      expect(typeof mockUseClickOutside.mock.calls[0][1]).toBe("function");
-    });
-
-    it("passes emoji data correctly", () => {
-      render(<EmojiPickerComponent onEmojiClick={mockOnEmojiClick} />);
-
-      const button = screen.getByRole("button");
-      fireEvent.click(button);
-
-      const emojiOption = screen.getByTestId("emoji-option-😊");
-      fireEvent.click(emojiOption);
-
-      expect(mockOnEmojiClick).toHaveBeenCalledWith("😊");
-      expect(mockOnEmojiClick).toHaveBeenCalledTimes(1);
-    });
-
-    it("handles emoji picker library integration", () => {
       render(<EmojiPickerComponent />);
 
       const button = screen.getByRole("button");
       fireEvent.click(button);
 
-      expect(screen.getByTestId("emoji-picker")).toBeInTheDocument();
+      const picker = screen.getByTestId("emoji-picker").parentElement;
+      expect(picker).toHaveClass("overflow-hidden");
     });
   });
 
