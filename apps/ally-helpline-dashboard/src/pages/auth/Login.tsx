@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback, FunctionComponent } from "react";
+import { useEffect, useState, useCallback, FunctionComponent, useRef } from "react";
 
 import { FetchBaseQueryError } from "@reduxjs/toolkit/query";
 import { motion, AnimatePresence } from "framer-motion";
@@ -39,8 +39,8 @@ export const Login: FunctionComponent = () => {
   const [countdown, setCountdown] = useState<number>(0);
   const [rememberMe, setRememberMe] = useState<boolean>(false);
   const [termsAndAgreement, setTermsAndAgreement] = useState<boolean>(false);
-  const [accessToken, setAccessToken] = useState<string>("");
-  const [refreshToken, setRefreshToken] = useState<string>("");
+  const accessTokenRef = useRef<string>("");
+  const refreshTokenRef = useRef<string>("");
 
   const [
     generateOTP,
@@ -123,20 +123,25 @@ export const Login: FunctionComponent = () => {
         const errorMessage = errorData?.message ?? "Failed to verify OTP. Please try again.";
         toast.error(errorMessage);
       } else if (isVerifyOTPSuccess && verifyOTPData) {
-        setAccessToken(verifyOTPData.accessToken);
-        setRefreshToken(verifyOTPData.refreshToken);
-        const response = checkTermsAndAgreement();
-        if (response) {
-          const userData = await checkAuth();
-          if (userData) {
-            navigate("/");
-          }
+        accessTokenRef.current = verifyOTPData.accessToken;
+        refreshTokenRef.current = verifyOTPData.refreshToken;
+        const response = await checkTermsAndAgreement({
+          token: verifyOTPData.accessToken,
+        });
+        if (response.data) {
+          updateLocalStorageAndNavigate();
         } else {
           setTermsAndAgreement(true);
         }
       }
     })();
   }, [isVerifyOTPSuccess, verifyOTPError, verifyOTPData]);
+
+  const updateLocalStorageAndNavigate = () => {
+    localStorage.setItem(LOCAL_STORAGE_KEYS.ACCESS_TOKEN, accessTokenRef.current);
+    localStorage.setItem(LOCAL_STORAGE_KEYS.REFRESH_TOKEN, refreshTokenRef.current);
+    navigate("/");
+  };
 
   const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newEmail = e.target.value;
@@ -177,11 +182,13 @@ export const Login: FunctionComponent = () => {
   };
 
   const handleAgreeButtonClick = async () => {
-    await putCheckTermsAndAgreement();
-    localStorage.setItem(LOCAL_STORAGE_KEYS.ACCESS_TOKEN, accessToken);
-    localStorage.setItem(LOCAL_STORAGE_KEYS.REFRESH_TOKEN, refreshToken);
-    handleAgreementClose();
-    navigate("/");
+    const response = await putCheckTermsAndAgreement();
+    if (response.data) {
+      handleAgreementClose();
+      updateLocalStorageAndNavigate();
+    } else {
+      toast.error("Failed to agree to terms and conditions");
+    }
   };
 
   const getLoginSection = () => {

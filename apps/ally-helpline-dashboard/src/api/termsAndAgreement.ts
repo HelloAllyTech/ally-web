@@ -4,8 +4,15 @@ import { baseAPI } from "./baseAPI";
 
 const TermsAndAgreementAPI = baseAPI.injectEndpoints({
   endpoints: builder => ({
-    checkTermsAndAgreement: builder.query<{ success: boolean }, void>({
-      query: () => ApiEndpoints.AUTH.GET_USER,
+    checkTermsAndAgreement: builder.query<{ success: boolean }, { token?: string } | void>({
+      query: args => ({
+        url: ApiEndpoints.AUTH.GET_USER,
+        method: HttpMethod.GET,
+        headers:
+          args && "token" in args && args.token
+            ? { authorization: `Bearer ${args.token}` }
+            : undefined,
+      }),
     }),
     putTermsAndAgreement: builder.mutation<{ success: boolean }, void>({
       query: () => ({
