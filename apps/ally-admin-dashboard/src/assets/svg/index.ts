@@ -32,6 +32,7 @@ import Pathway from "./pathway.svg?react";
 import Play from "./play.svg?react";
 import Plus from "./plus.svg?react";
 import Search from "./search.svg?react";
+import SemanticSimilarity from "./semanticSimilarity.svg?react";
 import Simulation from "./simulation.svg?react";
 import ThreeDot from "./threeDot.svg?react";
 import Tick from "./tick.svg?react";
@@ -88,4 +89,5 @@ export {
   Tick,
   FocusLens,
   Eye,
+  SemanticSimilarity,
 };

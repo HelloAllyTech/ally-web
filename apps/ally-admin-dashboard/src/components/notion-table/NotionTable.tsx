@@ -210,9 +210,9 @@ export const NotionTable = ({
             return (
               <div key={key} {...restHeaderGroupProps} className="flex w-full">
                 {headerGroup.headers.map((column, headerIndex) => {
-                  const colKey = column.getHeaderProps?.().key ?? `${column.id}-${headerIndex}`;
                   const headerProps = column.getHeaderProps();
-                  const { ...restHeaderProps } = headerProps;
+                  const { key: headerKey, ...restHeaderProps } = headerProps;
+                  const colKey = headerKey ?? `${column.id}-${headerIndex}`;
 
                   return (
                     <div
@@ -246,15 +246,7 @@ export const NotionTable = ({
                 {...restRowProps}
                 className="relative flex w-full border-b border-border-light hover:bg-background-secondary border-l"
               >
-                {onRowClick && (
-                  <button
-                    className="absolute p-1 bg-white border-[1px] border-border-light shadow-md rounded-[3px] z-10 top-[12px] left-[190px] opacity-0 hover:opacity-100"
-                    onClick={() => onRowClick(rowIndex)}
-                  >
-                    <DockToRight />
-                  </button>
-                )}
-                {row.cells.map(cell => {
+                {row.cells.map((cell, cellIndex) => {
                   const cellProps = cell.getCellProps();
                   const { key: cellKey, ...restCellProps } = cellProps;
                   return (
@@ -274,6 +266,14 @@ export const NotionTable = ({
                           : cell.column.maxWidth,
                       }}
                     >
+                      {onRowClick && cellIndex === 1 && (
+                        <button
+                          className="absolute p-1 bg-white border-[1px] border-border-light shadow-md rounded-[3px] z-10 top-[12px] right-[10px] opacity-0 hover:opacity-100"
+                          onClick={() => onRowClick(rowIndex)}
+                        >
+                          <DockToRight />
+                        </button>
+                      )}
                       {renderTableCell(cell, rowIndex, row?.original, onRowChange)}
                     </div>
                   );
