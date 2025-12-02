@@ -38,7 +38,7 @@ const UserInfo: FC<{ user?: User; isExpanded?: boolean; onLogout: () => void }> 
         <div className="flex gap-2 items-center w-full">
           <div
             data-testid="user-info-avatar-ring"
-            className={"w-[40px] h-[40px] rounded-full p-[2px]"}
+            className={"w-[32px] h-[32px] rounded-full p-[2px]"}
             style={
               hasPercentage
                 ? {
