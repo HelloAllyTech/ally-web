@@ -167,9 +167,11 @@ export const CreateSimulation: FC = () => {
         simulation: simulationData,
       });
     } else {
-      response = await createSimulationQuery({
-        scenarios: [simulationData],
-      });
+      if (!isCreatingSimulation) {
+        response = await createSimulationQuery({
+          scenarios: [simulationData],
+        });
+      }
     }
     return response;
   };

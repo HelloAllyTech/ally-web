@@ -1,10 +1,10 @@
-import React, { useState, useRef, useCallback, useEffect } from "react";
+import React, { useState, useRef, useCallback, useEffect, useLayoutEffect } from "react";
 
 import { Theme } from "emoji-picker-react";
 import EmojiPicker, { EmojiClickData } from "emoji-picker-react";
+import { createPortal } from "react-dom";
 
 import { ArrowDownFilled } from "@assets";
-import { useClickOutside } from "@hooks";
 
 interface EmojiPickerProps {
   onEmojiClick?: (emoji: string) => void;
@@ -34,27 +34,81 @@ export const EmojiPickerComponent: React.FC<EmojiPickerProps> = ({
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [selectedEmoji, setSelectedEmoji] = useState(buttonText);
-  const [showAbove, setShowAbove] = useState(false);
-  const [pickerHeight, setPickerHeight] = useState(0);
+  const [position, setPosition] = useState<{ top: number; left: number } | null>(null);
 
-  const pickerRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     setSelectedEmoji(buttonText);
   }, [buttonText]);
 
-  useEffect(() => {
-    if (isOpen && buttonRef.current) {
+  const updatePosition = useCallback(() => {
+    if (buttonRef.current && isOpen) {
       const buttonRect = buttonRef.current.getBoundingClientRect();
       const viewportHeight = window.innerHeight;
-      const spaceBelow = viewportHeight - buttonRect.bottom;
+      const viewportWidth = window.innerWidth;
+      const pickerHeight = typeof height === "number" ? height : 400;
+      const pickerWidth = typeof width === "number" ? width : 300;
 
-      const shouldShowAbove = spaceBelow < Number(height) + 20;
-      setShowAbove(shouldShowAbove);
-      setPickerHeight(Number(height));
+      const spaceBelow = viewportHeight - buttonRect.bottom;
+      const shouldShowAbove = spaceBelow < pickerHeight + 20;
+
+      let top;
+      if (shouldShowAbove) {
+        top = buttonRect.top + window.scrollY - pickerHeight - 8;
+      } else {
+        top = buttonRect.bottom + window.scrollY + 8;
+      }
+
+      // Calculate left position (align right edge with button right edge if possible, else left)
+      // Original behavior was right aligned (absolute right-0)
+      // let left = buttonRect.right + window.scrollX - pickerWidth;
+      // If going off screen to the left, align left
+      // if (left < 0) left = buttonRect.left + window.scrollX;
+
+      // Let's align left by default for predictability unless it overflows right
+      let left = buttonRect.left + window.scrollX;
+      if (left + pickerWidth > viewportWidth) {
+        left = buttonRect.right + window.scrollX - pickerWidth;
+      }
+
+      setPosition({ top, left });
     }
-  }, [isOpen, height]);
+  }, [height, width, isOpen]);
+
+  useLayoutEffect(() => {
+    if (isOpen) {
+      updatePosition();
+      window.addEventListener("scroll", updatePosition, true);
+      window.addEventListener("resize", updatePosition);
+    }
+
+    return () => {
+      window.removeEventListener("scroll", updatePosition, true);
+      window.removeEventListener("resize", updatePosition);
+    };
+  }, [isOpen, updatePosition]);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node) &&
+        buttonRef.current &&
+        !buttonRef.current.contains(event.target as Node)
+      ) {
+        setIsOpen(false);
+      }
+    };
+
+    if (isOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [isOpen]);
 
   const handleEmojiClick = (emojiData: EmojiClickData) => {
     setSelectedEmoji(emojiData.emoji);
@@ -68,14 +122,8 @@ export const EmojiPickerComponent: React.FC<EmojiPickerProps> = ({
     }
   };
 
-  const handleClose = useCallback(() => {
-    setIsOpen(false);
-  }, []);
-
-  useClickOutside(pickerRef, handleClose);
-
   return (
-    <div className={`relative w-full ${className}`} ref={pickerRef}>
+    <div className={`relative w-full ${className}`}>
       <button
         ref={buttonRef}
         onClick={handleButtonClick}
@@ -92,16 +140,24 @@ export const EmojiPickerComponent: React.FC<EmojiPickerProps> = ({
         </div>
       </button>
 
-      {isOpen && !disabled && (
-        <div
-          className={`absolute right-0 z-50 shadow-lg rounded-lg overflow-hidden ${
-            showAbove ? "bottom-full mb-2" : "top-full mt-2"
-          }`}
-          style={{ width, height: pickerHeight }}
-        >
-          <EmojiPicker width={width} height={height} onEmojiClick={handleEmojiClick} />
-        </div>
-      )}
+      {isOpen &&
+        !disabled &&
+        position &&
+        createPortal(
+          <div
+            ref={dropdownRef}
+            className="fixed z-[9999] shadow-lg rounded-lg overflow-hidden"
+            style={{
+              top: position.top,
+              left: position.left,
+              width,
+              height,
+            }}
+          >
+            <EmojiPicker width={width} height={height} onEmojiClick={handleEmojiClick} />
+          </div>,
+          document.body,
+        )}
     </div>
   );
 };

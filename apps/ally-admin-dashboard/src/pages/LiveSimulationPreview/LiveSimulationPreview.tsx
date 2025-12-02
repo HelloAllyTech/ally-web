@@ -1,20 +1,23 @@
 import React from "react";
 
-import { ActionConfirmationPopup } from "@components";
-import { LOCAL_STORAGE_KEYS } from "@constants";
-import { useLiveKitRoom } from "@hooks/useLiveKitRoom";
-import { RoomStatus } from "@types";
 import { useNavigate, useParams } from "react-router-dom";
 
 import { SimulationPage, getSimulationEvents } from "@ally-ui-mono/ui-shared";
+import { ActionConfirmationPopup } from "@components";
 import { ButtonVariant } from "@components/types";
+import { LOCAL_STORAGE_KEYS } from "@constants";
+import { useLiveKitRoom } from "@hooks/useLiveKitRoom";
+import { RoomStatus } from "@types";
 
 export const LiveSimulationPreview: React.FC = () => {
   const navigate = useNavigate();
   const { id } = useParams();
+  const handleRoomDisconnected = () => {
+    navigate(-1);
+  };
 
   const { room, roomData, roomStatus, events, score, startTime, handleEndSession } =
-    useLiveKitRoom();
+    useLiveKitRoom(handleRoomDisconnected);
 
   const onEnd = async () => {
     handleEndSession();

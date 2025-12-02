@@ -22,6 +22,7 @@ import DoubleArrowRight from "./doubleArrowRight.svg?react";
 import DragIndicator from "./dragIndicator.svg?react";
 import DragUpload from "./dragUpload.svg?react";
 import Edit from "./edit.svg?react";
+import Eye from "./eye.svg?react";
 import Filter from "./filter.svg?react";
 import FocusLens from "./focusLens.svg?react";
 import HappyEmoji from "./happyEmoji.svg?react";
@@ -31,6 +32,7 @@ import Pathway from "./pathway.svg?react";
 import Play from "./play.svg?react";
 import Plus from "./plus.svg?react";
 import Search from "./search.svg?react";
+import SemanticSimilarity from "./semanticSimilarity.svg?react";
 import Simulation from "./simulation.svg?react";
 import ThreeDot from "./threeDot.svg?react";
 import Tick from "./tick.svg?react";
@@ -86,4 +88,6 @@ export {
   Dot,
   Tick,
   FocusLens,
+  Eye,
+  SemanticSimilarity,
 };

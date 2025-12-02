@@ -208,7 +208,7 @@ export const PathwayDetails: FC = () => {
 
   const renderScenariosList = () => (
     <div className="pb-6 pt-3">
-      <div className="max-w-5xl mx-auto ml-[-10px] w-[calc(100%+20px)]">
+      <div className="mx-auto ml-[-10px] w-[calc(100%+20px)]">
         <div>
           {sortedScenarios.map((scenario, index) => (
             <PathwayScenarioCard
