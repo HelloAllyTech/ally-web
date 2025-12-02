@@ -57,6 +57,11 @@ vi.mock("@assets", () => ({
       FocusLens
     </svg>
   ),
+  SemanticSimilarity: ({ className }: { className?: string }) => (
+    <svg data-testid="semantic-similarity-icon" className={className}>
+      SemanticSimilarity
+    </svg>
+  ),
 }));
 
 // Mock @constants
@@ -134,7 +139,8 @@ describe("EventTypeSelectionDialog", () => {
       render(<EventTypeSelectionDialog {...defaultProps} />);
 
       expect(screen.getByTestId("chat-icon")).toBeInTheDocument();
-      expect(screen.getByTestId("focus-lens-icon")).toBeInTheDocument();
+      // Semantic Similarity uses SemanticSimilarity icon, not FocusLens
+      expect(screen.getByTestId("semantic-similarity-icon")).toBeInTheDocument();
       expect(screen.getByTestId("alarm-on-icon")).toBeInTheDocument();
       expect(screen.getByTestId("diamond-shine-icon")).toBeInTheDocument();
       expect(screen.getByTestId("account-tree-icon")).toBeInTheDocument();
@@ -454,8 +460,8 @@ describe("EventTypeSelectionDialog", () => {
       render(<EventTypeSelectionDialog {...defaultProps} />);
 
       expect(screen.getByText("Semantic Similarity")).toBeInTheDocument();
-      expect(screen.getByText("Trigger based on zero shot classification.")).toBeInTheDocument();
-      expect(screen.getByTestId("focus-lens-icon")).toBeInTheDocument();
+      expect(screen.getByText("Trigger based on similar meaning.")).toBeInTheDocument();
+      expect(screen.getByTestId("semantic-similarity-icon")).toBeInTheDocument();
     });
 
     it("renders Time Based option correctly", () => {
