@@ -77,7 +77,7 @@ const useWakeLock = (sessionId: string | undefined) => {
           wakeLockRef.current = await (navigator as any).wakeLock.request("screen");
         }
       } catch {
-        toast.error("Failed to request wake lock");
+        toast.warning("Failed to request wake lock");
       }
     };
 
@@ -116,6 +116,7 @@ export const SimulationPage: FC<SimulationPageProps> = ({
   startTime,
   events,
   score,
+  triggerWarnings = [],
   isPreview = false,
   onEndSimulation,
   renderWarningDialog,
@@ -163,8 +164,30 @@ export const SimulationPage: FC<SimulationPageProps> = ({
         data-testid="simulation-page-header"
         className="flex justify-between w-full border-l border-l-3 border-blue-500 pl-2"
       >
-        <div data-testid="simulation-page-title" className="text-white text-[20px] flex self-start">
-          {roomData?.title}
+        <div className="flex flex-col gap-1">
+          <div
+            data-testid="simulation-page-title"
+            className="text-white text-[20px] flex self-start"
+          >
+            {roomData?.title}
+          </div>
+          {triggerWarnings?.length > 0 && (
+            <div
+              data-testid="simulation-page-trigger-warnings"
+              className="flex flex-wrap justify-start items-center gap-2 opacity-75"
+            >
+              {triggerWarnings?.map((triggerWarning, index) => (
+                <>
+                  <div key={triggerWarning.id} className="text-white text-[12px] flex self-start">
+                    {triggerWarning.name}
+                  </div>
+                  {index < triggerWarnings?.length - 1 && (
+                    <div className="w-[5px] h-[5px] rounded-full bg-white" />
+                  )}
+                </>
+              ))}
+            </div>
+          )}
         </div>
         {isPreview && (
           <button
