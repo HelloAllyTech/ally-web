@@ -39,6 +39,14 @@ export const excludeNavBar = [
 
 export const navBarOptions = [
   {
+    id: TabId.LEARN,
+    title: "Learn",
+    Icon: LearnIcon,
+    path: ROUTES.LEARN,
+    activePages: [ROUTES.SCENARIO, ROUTES.PATHWAY],
+    permissions: [Permissions.EDIT_SCENARIO_SESSION],
+  },
+  {
     id: TabId.CALLS,
     title: "Sessions",
     Icon: ScribeIcon,
@@ -66,14 +74,6 @@ export const navBarOptions = [
     path: ROUTES.SEARCH,
     activePages: [],
     permissions: [Permissions.VIEW_REFERNCE_DOCUMENT],
-  },
-  {
-    id: TabId.LEARN,
-    title: "Learn",
-    Icon: LearnIcon,
-    path: ROUTES.LEARN,
-    activePages: [ROUTES.SCENARIO, ROUTES.PATHWAY],
-    permissions: [Permissions.EDIT_SCENARIO_SESSION],
   },
   {
     id: TabId.COMMUNITY,

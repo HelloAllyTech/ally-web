@@ -140,7 +140,7 @@ const Carousel: FC<CarouselProps> = ({
             >
               <activeSlide.imageSrc className={`w-full h-full object-cover`} />
             </div>
-            <div className="text-center h-16 flex items-center justify-center">
+            <div className="text-center min-h-20 flex items-center justify-center">
               <p className={`font-primary leading-tight ${getTextStyles()} ${textClassName}`}>
                 {activeSlide.text}
               </p>
