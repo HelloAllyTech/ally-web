@@ -1,17 +1,24 @@
 "use client";
 
-import React from "react";
+import { memo } from "react";
 
 import { motion, Variants } from "framer-motion";
 
+/** Number of animated bars in the indicator */
+const BAR_COUNT = 3;
+
+/** Animation delay between each bar (in seconds) */
+const STAGGER_DELAY = 0.1;
+
+/** Animation variants for the speaking indicator bars */
 const barVariants: Variants = {
-  speaking: (i: number) => ({
+  speaking: (index: number) => ({
     height: ["4px", "12px", "4px"],
     transition: {
       duration: 1,
       repeat: Infinity,
       repeatType: "reverse",
-      delay: i * 0.1,
+      delay: index * STAGGER_DELAY,
       ease: "easeInOut",
     },
   }),
@@ -24,14 +31,18 @@ const barVariants: Variants = {
   },
 };
 
-export const SpeakingIndicator: React.FC<{ isSpeaking: boolean }> = ({ isSpeaking }) => {
+interface SpeakingIndicatorProps {
+  isSpeaking: boolean;
+}
+
+export const SpeakingIndicator = memo<SpeakingIndicatorProps>(({ isSpeaking }) => {
   return (
     <div className="flex items-center justify-center gap-[3px] h-4 w-4">
-      {[0, 1, 2].map(i => (
+      {Array.from({ length: BAR_COUNT }, (_, index) => (
         <motion.div
-          key={i}
+          key={index}
           className="w-[3px] bg-white rounded-full"
-          custom={i}
+          custom={index}
           variants={barVariants}
           initial="muted"
           animate={isSpeaking ? "speaking" : "muted"}
@@ -39,4 +50,6 @@ export const SpeakingIndicator: React.FC<{ isSpeaking: boolean }> = ({ isSpeakin
       ))}
     </div>
   );
-};
+});
+
+SpeakingIndicator.displayName = "SpeakingIndicator";
