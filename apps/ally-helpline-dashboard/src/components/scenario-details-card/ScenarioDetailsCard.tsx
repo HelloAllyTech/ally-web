@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { CustomVideo } from "@ally-ui-mono/ui-shared";
 import { ShareIcon } from "@assets";
 import { Button, ChipGroup } from "@components";
+import { FEATURE_FLAGS_MAP } from "@src/constants/featureFlag";
 
 import { ScenarioDetailsCardProps } from "./types";
 
@@ -119,7 +120,7 @@ const ScenarioDetailsCard: FC<ScenarioDetailsCardProps> = ({
           </div>
         )}
 
-        {triggerWarnings?.length > 0 && (
+        {FEATURE_FLAGS_MAP.TRIGGER_WARNINGS_FLAG && triggerWarnings?.length > 0 && (
           <div className="flex flex-col">
             <div className="text-base font-semibold text-typography-900 mb-[4px]">
               Trigger warnings:

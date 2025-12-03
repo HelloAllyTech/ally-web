@@ -3,6 +3,7 @@ import { FC, useState } from "react";
 import { motion } from "framer-motion";
 
 import { ChipGroup, CircularProgress } from "@components";
+import { FEATURE_FLAGS_MAP } from "@src/constants/featureFlag";
 
 import { scenarioDescriptionStyle } from "./constants";
 import { ScenarioCardProps } from "./types";
@@ -72,7 +73,7 @@ const ScenarioCard: FC<ScenarioCardProps> = ({
               {title}
             </div>
 
-            {triggerWarnings?.length > 0 ? (
+            {FEATURE_FLAGS_MAP.TRIGGER_WARNINGS_FLAG && triggerWarnings?.length > 0 ? (
               <>
                 <div className="flex w-full h-[1px] my-[4px] bg-gray-200" />
                 <div className="flex flex-col justify-start items-start]">

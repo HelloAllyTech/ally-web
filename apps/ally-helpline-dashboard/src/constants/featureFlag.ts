@@ -1,3 +1,4 @@
 export const FEATURE_FLAGS_MAP = {
   TERMS_AND_CONDITION_FLAG: import.meta.env.VITE_TERMS_AND_CONDITION_FLAG === "true",
+  TRIGGER_WARNINGS_FLAG: import.meta.env.VITE_TRIGGER_WARNINGS_FLAG === "true",
 };

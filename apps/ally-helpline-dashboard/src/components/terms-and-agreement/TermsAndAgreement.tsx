@@ -2,25 +2,22 @@ import { useState } from "react";
 
 import { Dialog } from "@mui/material";
 
+import { Button } from "@components";
 import { TermsAndAgreementData } from "@constants";
-
-import { Button } from "../button";
 
 const TermsAndAgreement = ({ isOpen, handleClose, handleAgreeButtonClick }) => {
   const [agreeCheck, setAgreeCheck] = useState<boolean>(false);
-  const DialogStyle = {
-    borderRadius: "8px",
-    padding: "16px",
-    height: "566px",
+
+  const paperProps = {
+    style: {
+      borderRadius: "8px",
+      padding: "16px",
+      height: "566px",
+    },
   };
+
   return (
-    <Dialog
-      open={isOpen}
-      onClose={handleClose}
-      PaperProps={{
-        style: DialogStyle,
-      }}
-    >
+    <Dialog open={isOpen} onClose={handleClose} PaperProps={paperProps}>
       <div className="flex items-center justify-center font-medium text-2xl font-secondary">
         Terms and agreement
       </div>
