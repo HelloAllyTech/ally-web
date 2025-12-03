@@ -52,6 +52,11 @@ const ScenarioDetailsCard: FC<ScenarioDetailsCardProps> = ({
     toast.success("Scenario link copied to clipboard!");
   };
 
+  const handleStartSimulation = (event: MouseEvent<HTMLButtonElement>) => {
+    event.stopPropagation();
+    onStart?.();
+  };
+
   const renderMedia = () => (
     <div className="relative w-full rounded-lg overflow-hidden">
       {!imageError ? (
@@ -125,10 +130,7 @@ const ScenarioDetailsCard: FC<ScenarioDetailsCardProps> = ({
 
         <div className="flex justify-center mt-2 mb-2">
           <Button
-            onClick={e => {
-              e.stopPropagation();
-              onStart?.();
-            }}
+            onClick={handleStartSimulation}
             variant="primary"
             className={`!font-tertiary !text-base  !py-3 ${isDisabled && "!bg-gray-400"} w-[240px]`}
             disabled={isDisabled}
