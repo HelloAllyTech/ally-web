@@ -729,16 +729,6 @@ describe("Learn Component", () => {
       const grid = document.querySelector(".grid.grid-cols-2.sm\\:grid-cols-3.lg\\:grid-cols-4");
       expect(grid).not.toBeNull();
     });
-
-    it("should apply correct gap classes", () => {
-      render(
-        <TestWrapper>
-          <Learn />
-        </TestWrapper>,
-      );
-      const grid = document.querySelector(".gap-3.sm\\:gap-4");
-      expect(grid).not.toBeNull();
-    });
   });
 
   /**

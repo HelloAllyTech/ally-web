@@ -9,6 +9,11 @@ export enum PathwayStatus {
   ARCHIVED = "ARCHIVED",
 }
 
+export interface TriggerChipItemWarning {
+  id: number;
+  name: string;
+}
+
 export interface Scenario {
   id?: number;
   title?: string;
@@ -17,6 +22,7 @@ export interface Scenario {
   coverImageUrl?: string | null;
   coverVideoUrl?: string | null;
   status?: ScenarioStatus;
+  triggerWarnings?: TriggerChipItemWarning[];
 }
 
 export interface ScenarioSession {
@@ -219,6 +225,7 @@ interface UpcomingScenario {
 }
 
 interface CurrentSession {
+  eventStatus?: string;
   scenarioId?: string;
   scenarioPathSessionItemStatus?: string;
   coverImageUrl?: string;

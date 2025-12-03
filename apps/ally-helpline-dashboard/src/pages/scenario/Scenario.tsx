@@ -178,6 +178,7 @@ export const Scenario: FC = () => {
               longDescription={scenario?.description || ""}
               onStart={onStartSimulationClick}
               noCredits={buttonDisable}
+              triggerWarnings={scenario?.triggerWarnings}
             />
           </motion.div>
         ) : (
