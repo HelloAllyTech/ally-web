@@ -4,10 +4,9 @@ import { CircularProgress } from "@mui/material";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
 
-import { CustomVideo } from "@ally-ui-mono/ui-shared";
+import { CustomVideo, FEATURE_FLAGS_MAP } from "@ally-ui-mono/ui-shared";
 import { ShareIcon } from "@assets";
 import { Button, ChipGroup } from "@components";
-import { FEATURE_FLAGS_MAP } from "@src/constants/featureFlag";
 
 import { ScenarioDetailsCardProps } from "./types";
 

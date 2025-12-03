@@ -1,11 +1,5 @@
 import { useEffect, useState, useCallback, FunctionComponent, useRef } from "react";
 
-import { FetchBaseQueryError } from "@reduxjs/toolkit/query";
-import { motion, AnimatePresence } from "framer-motion";
-import { useSelector } from "react-redux";
-import { useNavigate } from "react-router-dom";
-import { toast } from "sonner";
-
 import {
   useGenerateOTPMutation,
   useLazyCheckTermsAndAgreementQuery,
@@ -23,11 +17,17 @@ import {
   LoginSection,
   ROUTES,
   User,
-  FEATURE_FLAGS_MAP,
 } from "@constants";
 import { useUser } from "@hooks";
+import { FetchBaseQueryError } from "@reduxjs/toolkit/query";
 import { RootState } from "@store";
 import { openLinkInNewTab, validateEmail } from "@utils";
+import { motion, AnimatePresence } from "framer-motion";
+import { useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
+
+import { FEATURE_FLAGS_MAP } from "@ally-ui-mono/ui-shared";
 
 export const Login: FunctionComponent = () => {
   const navigate = useNavigate();

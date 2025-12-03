@@ -2,8 +2,8 @@ import { FC, useState } from "react";
 
 import { motion } from "framer-motion";
 
+import { FEATURE_FLAGS_MAP } from "@ally-ui-mono/ui-shared";
 import { ChipGroup, CircularProgress } from "@components";
-import { FEATURE_FLAGS_MAP } from "@src/constants/featureFlag";
 
 import { scenarioDescriptionStyle } from "./constants";
 import { ScenarioCardProps } from "./types";
