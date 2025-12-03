@@ -7,6 +7,7 @@ import { AutoTerminationRuleField } from "../auto-termination-rule-field";
 import { DropdownField } from "../dropdown-field";
 import { FileUpload } from "../file-upload";
 import { InputField } from "../input-field";
+import { Tags } from "../tags";
 import { ToggleSection } from "../toggle-section";
 import { VoiceDropdown } from "../voice-dropdown";
 
@@ -105,6 +106,12 @@ export const FormField: FC<FormFieldProps> = ({ config, formMethods }) => {
         return (
           <div className="w-full">
             <ToggleSection label={label} name={id} formMethods={formMethods} />
+          </div>
+        );
+      case FORM_FIELD_TYPES.TAG_AND_DROPDOWN:
+        return (
+          <div className="w-full">
+            <Tags formMethods={formMethods} options={options} label={label} />
           </div>
         );
       default:

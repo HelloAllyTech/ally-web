@@ -5,28 +5,22 @@
 
 @layer base {
   /* Custom Scrollbar Styles */
-  * {
-    scrollbar-width: thin;
-    scrollbar-color: theme("colors.scrollbar.thumb") theme("colors.scrollbar.track");
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 4px;
   }
 
-  *::-webkit-scrollbar {
-    width: 2px !important;
-    height: 2px !important;
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: "transparent";
+    border-radius: 3px;
   }
 
-  *::-webkit-scrollbar-track {
-    background: theme("colors.scrollbar.track") !important;
-    border-radius: 0 !important;
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 3px;
   }
 
-  *::-webkit-scrollbar-thumb {
-    background: theme("colors.scrollbar.thumb") !important;
-    border-radius: 0 !important;
-  }
-
-  *::-webkit-scrollbar-thumb:hover {
-    background: theme("colors.scrollbar.thumbHover") !important;
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: #555;
   }
 
   /* Fix for Sonner toast rendering issues on M1 Macs */

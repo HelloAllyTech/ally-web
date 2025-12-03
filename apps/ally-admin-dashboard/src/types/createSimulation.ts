@@ -29,6 +29,7 @@ export type FormData = {
   terminationEventId: string;
   terminationMessage: string;
   isGlobal: boolean;
+  triggerWarnings: string[];
 };
 
 export interface DemographicsSectionProps {

@@ -274,6 +274,7 @@ export const CreateSimulation: FC = () => {
       case stepIds.characterIdentity:
       case stepIds.traitsNeeds:
       case stepIds.conversationStyle:
+        // console.log(simulationSubSectionData.fields);
         return renderStep(
           simulationSubSectionData.label,
           <CreateSimulationSubSection

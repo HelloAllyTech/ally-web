@@ -79,6 +79,7 @@ export const FORM_FIELD_TYPES = {
     AUTO_TERMINATION_RULE: "auto_termination_rule",
   },
   TOGGLE_BUTTON: "toggle_button",
+  TAG_AND_DROPDOWN: "tag_and_dropdown",
 };
 
 export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
@@ -115,6 +116,7 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
         isMandatory: false,
         fullWidth: true,
       },
+
       {
         id: "description",
         label: "Learning goal",
@@ -134,6 +136,13 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
         multiline: true,
         fullWidth: true,
         maxLength: 1000,
+      },
+      {
+        id: "triggerWarnings",
+        label: "Trigger Warnings",
+        type: FORM_FIELD_TYPES.TAG_AND_DROPDOWN,
+        options: SEXUAL_ORIENTATION_OPTIONS,
+        fullWidth: true,
       },
     ],
   },

@@ -1,40 +1,39 @@
 import { useState } from "react";
 
-import { useWatch } from "react-hook-form";
-
-import { Close } from "@assets";
+import { Close, Search } from "@assets";
 import { en } from "@constants";
 
-export const Tags = ({ formMethods }) => {
-  const { control, setValue } = formMethods;
-  const [inputValue, setInputValue] = useState("");
+interface TagsDropdown {
+  options: Array<{ value: string; label: string }>;
+  formMethods?: any;
+  label: string;
+}
+export const Tags: React.FC<TagsDropdown> = ({ options, label }) => {
+  const [inputValue, setInputValue] = useState<string>("");
+  const [openDropdown, setOpenDropdown] = useState<boolean>(false);
+  const [searchQuery, setSearchQuery] = useState<string>("");
+  const [tags, setTags] = useState<string[]>([]);
 
-  const tags = useWatch({
-    control,
-    name: "tags",
-    defaultValue: [],
-  });
-
-  const addTag = () => {
-    const newTag = inputValue.trim();
-    if (newTag && !tags.includes(newTag)) {
-      setValue("tags", [...tags, newTag], { shouldValidate: true });
-    }
-    setInputValue("");
+  const addTagButton = () => {
+    setOpenDropdown(prev => !prev);
   };
 
-  const removeTag = tagToRemove => {
-    setValue(
-      "tags",
-      tags.filter(tag => tag !== tagToRemove),
-      { shouldValidate: true },
-    );
+  const removeTag = (tagToRemove: string) => {
+    setTags(tags.filter(tag => tag !== tagToRemove));
+  };
+
+  const selectTag = (selectedTag: string) => {
+    const newTag = selectedTag.trim();
+    if (newTag && !tags.includes(newTag)) {
+      setTags([...tags, newTag]);
+    }
+    addTagButton();
   };
 
   return (
     <div className="flex flex-col gap-2">
-      <label htmlFor="tags" className="text-typography-800 cursor-pointer">
-        {en.simulation.tags}
+      <label htmlFor="tags" className="text-typography-900 cursor-pointer">
+        {label}
       </label>
 
       <div className="flex flex-wrap gap-2">
@@ -50,18 +49,54 @@ export const Tags = ({ formMethods }) => {
           </div>
         ))}
 
-        <div className="flex items-center border border-border-light rounded-full px-2">
-          <input
-            type="text"
-            value={inputValue}
-            onChange={e => setInputValue(e.target.value)}
-            onKeyDown={e => e.key === "Enter" && addTag()}
-            placeholder="Add tag"
-            className="w-[80px] focus:outline-none"
-          />
-          <button type="button" onClick={addTag} className="ml-2 text-primary text-sm">
-            +
-          </button>
+        <div className="relative">
+          <div className="flex items-center border border-border-light rounded-full px-2">
+            <input
+              type="text"
+              value={inputValue}
+              onChange={e => setInputValue(e.target.value)}
+              placeholder="Add"
+              className="focus:outline-none flex-1 bg-white"
+              disabled={true}
+            />
+            <button type="button" onClick={addTagButton} className="ml-2 text-primary text-sm">
+              +
+            </button>
+          </div>
+
+          {openDropdown && (
+            <div className="absolute left-0 top-full mt-1  bg-white border rounded-md shadow-lg z-50">
+              <div className="relative p-2">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-typography-800" />
+                <input
+                  type="text"
+                  placeholder="Search or create"
+                  className="w-full !outline-none border rounded-md py-1 px-5 text-base"
+                  value={searchQuery}
+                  onChange={e => setSearchQuery(e.target.value)}
+                />
+              </div>
+              <div className=" overflow-auto max-h-[240px] custom-scrollbar">
+                {options?.length === 0 ? (
+                  <div className="px-3 py-2 text-sm text-typography-800">
+                    {en.common.noOptionsAvailable}
+                  </div>
+                ) : (
+                  options.map(option => (
+                    <div
+                      key={option.value}
+                      className="px-3 py-2 text-sm cursor-pointer transition-colors hover:bg-gray-100"
+                      onClick={() => selectTag(option.value)}
+                    >
+                      <div className="flex items-center justify-between text-md">
+                        <span>{option.label}</span>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>
