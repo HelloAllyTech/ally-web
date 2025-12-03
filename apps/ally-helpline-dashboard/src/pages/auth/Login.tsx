@@ -23,6 +23,7 @@ import {
   LoginSection,
   ROUTES,
   User,
+  FEATURE_FLAGS_MAP,
 } from "@constants";
 import { useUser } from "@hooks";
 import { RootState } from "@store";
@@ -125,13 +126,17 @@ export const Login: FunctionComponent = () => {
       } else if (isVerifyOTPSuccess && verifyOTPData) {
         accessTokenRef.current = verifyOTPData.accessToken;
         refreshTokenRef.current = verifyOTPData.refreshToken;
-        const response = await checkTermsAndAgreement({
-          token: verifyOTPData.accessToken,
-        });
-        if (response.data) {
-          updateLocalStorageAndNavigate();
+        if (FEATURE_FLAGS_MAP.TERMS_AND_CONDITION_FLAG) {
+          const response = await checkTermsAndAgreement({
+            token: verifyOTPData.accessToken,
+          });
+          if (response.data?.success) {
+            updateLocalStorageAndNavigate();
+          } else {
+            setTermsAndAgreement(true);
+          }
         } else {
-          setTermsAndAgreement(true);
+          updateLocalStorageAndNavigate();
         }
       }
     })();
@@ -182,8 +187,8 @@ export const Login: FunctionComponent = () => {
   };
 
   const handleAgreeButtonClick = async () => {
-    const response = await putCheckTermsAndAgreement();
-    if (response.data) {
+    const response = await putCheckTermsAndAgreement({ token: accessTokenRef.current });
+    if (response.data?.success) {
       handleAgreementClose();
       updateLocalStorageAndNavigate();
     } else {

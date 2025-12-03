@@ -18,7 +18,6 @@ const TermsAndAgreement = ({ isOpen, handleClose, handleAgreeButtonClick }) => {
           borderRadius: "8px",
           padding: "16px",
           height: "566px",
-          backgroundColor: "white",
         },
       }}
     >

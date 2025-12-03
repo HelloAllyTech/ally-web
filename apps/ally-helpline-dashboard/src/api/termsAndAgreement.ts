@@ -6,7 +6,7 @@ const TermsAndAgreementAPI = baseAPI.injectEndpoints({
   endpoints: builder => ({
     checkTermsAndAgreement: builder.query<{ success: boolean }, { token?: string } | void>({
       query: args => ({
-        url: ApiEndpoints.AUTH.GET_USER,
+        url: ApiEndpoints.AUTH.TERMS_AND_AGREEMENT,
         method: HttpMethod.GET,
         headers:
           args && "token" in args && args.token
@@ -14,10 +14,14 @@ const TermsAndAgreementAPI = baseAPI.injectEndpoints({
             : undefined,
       }),
     }),
-    putTermsAndAgreement: builder.mutation<{ success: boolean }, void>({
-      query: () => ({
-        url: ApiEndpoints.AUTH.GET_USER,
+    putTermsAndAgreement: builder.mutation<{ success: boolean }, { token?: string } | void>({
+      query: args => ({
+        url: ApiEndpoints.AUTH.TERMS_AND_AGREEMENT,
         method: HttpMethod.PUT,
+        headers:
+          args && "token" in args && args.token
+            ? { authorization: `Bearer ${args.token}` }
+            : undefined,
       }),
     }),
   }),
