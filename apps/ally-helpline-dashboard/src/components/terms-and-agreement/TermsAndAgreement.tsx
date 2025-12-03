@@ -8,17 +8,17 @@ import { Button } from "../button";
 
 const TermsAndAgreement = ({ isOpen, handleClose, handleAgreeButtonClick }) => {
   const [agreeCheck, setAgreeCheck] = useState<boolean>(false);
-
+  const DialogStyle = {
+    borderRadius: "8px",
+    padding: "16px",
+    height: "566px",
+  };
   return (
     <Dialog
       open={isOpen}
       onClose={handleClose}
       PaperProps={{
-        style: {
-          borderRadius: "8px",
-          padding: "16px",
-          height: "566px",
-        },
+        style: DialogStyle,
       }}
     >
       <div className="flex items-center justify-center font-medium text-2xl font-secondary">
