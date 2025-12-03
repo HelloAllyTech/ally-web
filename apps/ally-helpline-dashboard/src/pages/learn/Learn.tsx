@@ -138,7 +138,7 @@ export const Learn: FC = () => {
 
     return (
       <div
-        className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 mx-auto pb-10"
+        className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-[6px] sm:gap-[12px] mx-auto pb-10"
         role="list"
         aria-label={ariaLabel}
       >
@@ -161,6 +161,7 @@ export const Learn: FC = () => {
                 isComingSoon={!isPathway && item.status === ScenarioStatus.COMING_SOON}
                 totalScenarios={isPathway ? item.totalScenarios : undefined}
                 completedScenarios={isPathway ? item.completedScenarios : undefined}
+                triggerWarnings={isPathway ? item.triggerWarnings : undefined}
               />
             </motion.div>
           );

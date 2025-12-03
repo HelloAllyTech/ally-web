@@ -5,9 +5,9 @@ import { motion } from "framer-motion";
 import { toast } from "sonner";
 
 import { CustomVideo } from "@ally-ui-mono/ui-shared";
-import { ShareIcon } from "@assets/icons";
+import { ShareIcon } from "@assets";
+import { Button, ChipGroup } from "@components";
 
-import { Button } from "..";
 import { ScenarioDetailsCardProps } from "./types";
 
 const ScenarioDetailsCard: FC<ScenarioDetailsCardProps> = ({
@@ -18,6 +18,7 @@ const ScenarioDetailsCard: FC<ScenarioDetailsCardProps> = ({
   onStart,
   title,
   noCredits = false,
+  triggerWarnings,
 }) => {
   const [imageError, setImageError] = useState(false);
   const isDisabled = isStarting || noCredits;
@@ -110,6 +111,15 @@ const ScenarioDetailsCard: FC<ScenarioDetailsCardProps> = ({
           <div className="flex flex-col">
             <div className="text-base font-semibold text-typography-900">Scenario:</div>
             <p className="text-base text-typography-800">{longDescription}</p>
+          </div>
+        )}
+
+        {triggerWarnings?.length > 0 && (
+          <div className="flex flex-col">
+            <div className="text-base font-semibold text-typography-900 mb-[4px]">
+              Trigger warnings:
+            </div>
+            <ChipGroup items={triggerWarnings} chipClassName="text-sm" maxVisible={20} />
           </div>
         )}
 
