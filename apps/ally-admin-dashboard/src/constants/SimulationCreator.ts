@@ -128,6 +128,13 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
         maxLength: 1000,
       },
       {
+        id: "triggerWarnings",
+        label: "Trigger Warnings",
+        type: FORM_FIELD_TYPES.TAG_AND_DROPDOWN,
+        options: SEXUAL_ORIENTATION_OPTIONS,
+        fullWidth: true,
+      },
+      {
         id: "agentGoal",
         label: "Agent goal",
         placeholder: "Describe the agent’s goal for this session.",
@@ -136,13 +143,6 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
         multiline: true,
         fullWidth: true,
         maxLength: 1000,
-      },
-      {
-        id: "triggerWarnings",
-        label: "Trigger Warnings",
-        type: FORM_FIELD_TYPES.TAG_AND_DROPDOWN,
-        options: SEXUAL_ORIENTATION_OPTIONS,
-        fullWidth: true,
       },
     ],
   },

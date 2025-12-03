@@ -260,7 +260,7 @@ export const CreateSimulation: FC = () => {
         <div className="sticky flex flex-row justify-between top-0 z-10 pt-3 mx-6 pb-4 border-b border-border-light">
           <h2 className="text-lg font-semibold text-typography-900">{title}</h2>
         </div>
-        <div ref={containerRef} className="p-6 pt-4 overflow-y-auto h-full">
+        <div ref={containerRef} className="p-6 pt-4 overflow-y-auto h-full custom-scrollbar">
           {component}
         </div>
       </div>

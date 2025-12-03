@@ -1,8 +1,7 @@
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { useForm } from "react-hook-form";
 import { vi, describe, it, expect } from "vitest";
-
-import { Tags } from "../Tags";
+import { TagSelector } from "../TagSelector";
 
 // Mock assets
 vi.mock("@assets", () => ({
@@ -13,7 +12,7 @@ vi.mock("@assets", () => ({
 vi.mock("@constants", () => ({
   en: {
     simulation: {
-      tags: "Tags",
+      tags: "TagSelector",
     },
   },
 }));
@@ -24,24 +23,48 @@ const TestWrapper = ({ children, defaultValues = {} }) => {
   return <>{typeof children === "function" ? children(formMethods) : children}</>;
 };
 
-describe("Tags", () => {
+describe("TagSelector", () => {
   it("renders with label", () => {
-    render(<TestWrapper>{formMethods => <Tags formMethods={formMethods} />}</TestWrapper>);
-    expect(screen.getByText("Tags")).toBeInTheDocument();
+    render(
+      <TestWrapper>
+        {
+          ({formMethods,
+          label,
+          options}) => (
+            <TagSelector formMethods={formMethods} options={options} label={label} />)
+        }
+      </TestWrapper>,
+    );
+    expect(screen.getByText("TagSelector")).toBeInTheDocument();
   });
 
   it("renders input field for adding tags", () => {
-    render(<TestWrapper>{formMethods => <Tags formMethods={formMethods} />}</TestWrapper>);
+    render(<TestWrapper> {
+          ({formMethods,
+          label,
+          options}) => (
+            <TagSelector formMethods={formMethods} options={options} label={label} />)
+        }</TestWrapper>);
     expect(screen.getByPlaceholderText("Add tag")).toBeInTheDocument();
   });
 
   it("renders add button", () => {
-    render(<TestWrapper>{formMethods => <Tags formMethods={formMethods} />}</TestWrapper>);
+    render(<TestWrapper> {
+          ({formMethods,
+          label,
+          options}) => (
+            <TagSelector formMethods={formMethods} options={options} label={label} />)
+        }</TestWrapper>);
     expect(screen.getByText("+")).toBeInTheDocument();
   });
 
   it("adds tag when add button is clicked", async () => {
-    render(<TestWrapper>{formMethods => <Tags formMethods={formMethods} />}</TestWrapper>);
+    render(<TestWrapper> {
+          ({formMethods,
+          label,
+          options}) => (
+            <TagSelector formMethods={formMethods} options={options} label={label} />)
+        }</TestWrapper>);
 
     const input = screen.getByPlaceholderText("Add tag");
     const addButton = screen.getByText("+");
@@ -55,7 +78,12 @@ describe("Tags", () => {
   });
 
   it("adds tag when Enter key is pressed", async () => {
-    render(<TestWrapper>{formMethods => <Tags formMethods={formMethods} />}</TestWrapper>);
+    render(<TestWrapper> {
+          ({formMethods,
+          label,
+          options}) => (
+            <TagSelector formMethods={formMethods} options={options} label={label} />)
+        }</TestWrapper>);
 
     const input = screen.getByPlaceholderText("Add tag");
 
@@ -68,7 +96,12 @@ describe("Tags", () => {
   });
 
   it("clears input after adding tag", async () => {
-    render(<TestWrapper>{formMethods => <Tags formMethods={formMethods} />}</TestWrapper>);
+    render(<TestWrapper> {
+          ({formMethods,
+          label,
+          options}) => (
+            <TagSelector formMethods={formMethods} options={options} label={label} />)
+        }</TestWrapper>);
 
     const input = screen.getByPlaceholderText("Add tag") as HTMLInputElement;
     const addButton = screen.getByText("+");
@@ -82,7 +115,12 @@ describe("Tags", () => {
   });
 
   it("trims whitespace from tag before adding", async () => {
-    render(<TestWrapper>{formMethods => <Tags formMethods={formMethods} />}</TestWrapper>);
+    render(<TestWrapper> {
+          ({formMethods,
+          label,
+          options}) => (
+            <TagSelector formMethods={formMethods} options={options} label={label} />)
+        }</TestWrapper>);
 
     const input = screen.getByPlaceholderText("Add tag");
     const addButton = screen.getByText("+");
@@ -96,7 +134,12 @@ describe("Tags", () => {
   });
 
   it("does not add empty tag", async () => {
-    render(<TestWrapper>{formMethods => <Tags formMethods={formMethods} />}</TestWrapper>);
+    render(<TestWrapper> {
+          ({formMethods,
+          label,
+          options}) => (
+            <TagSelector formMethods={formMethods} options={options} label={label} />)
+        }</TestWrapper>);
 
     const input = screen.getByPlaceholderText("Add tag");
     const addButton = screen.getByText("+");
@@ -112,7 +155,12 @@ describe("Tags", () => {
   it("does not add duplicate tag", async () => {
     render(
       <TestWrapper defaultValues={{ tags: ["React"] }}>
-        {formMethods => <Tags formMethods={formMethods} />}
+         {
+          ({formMethods,
+          label,
+          options}) => (
+            <TagSelector formMethods={formMethods} options={options} label={label} />)
+        }
       </TestWrapper>,
     );
 
@@ -128,29 +176,49 @@ describe("Tags", () => {
   });
 
   it("input has correct width", () => {
-    render(<TestWrapper>{formMethods => <Tags formMethods={formMethods} />}</TestWrapper>);
+    render(<TestWrapper> {
+          ({formMethods,
+          label,
+          options}) => (
+            <TagSelector formMethods={formMethods} options={options} label={label} />)
+        }</TestWrapper>);
 
     const input = screen.getByPlaceholderText("Add tag");
     expect(input.className).toContain("w-[80px]");
   });
 
   it("input has no outline on focus", () => {
-    render(<TestWrapper>{formMethods => <Tags formMethods={formMethods} />}</TestWrapper>);
+    render(<TestWrapper> {
+          ({formMethods,
+          label,
+          options}) => (
+            <TagSelector formMethods={formMethods} options={options} label={label} />)
+        }</TestWrapper>);
 
     const input = screen.getByPlaceholderText("Add tag");
     expect(input.className).toContain("focus:outline-none");
   });
 
   it("label has correct styling", () => {
-    render(<TestWrapper>{formMethods => <Tags formMethods={formMethods} />}</TestWrapper>);
+    render(<TestWrapper> {
+          ({formMethods,
+          label,
+          options}) => (
+            <TagSelector formMethods={formMethods} options={options} label={label} />)
+        }</TestWrapper>);
 
-    const label = screen.getByText("Tags");
+    const label = screen.getByText("TagSelector");
     expect(label.className).toContain("cursor-pointer");
   });
 
   it("wrapper has correct flex styling", () => {
     const { container } = render(
-      <TestWrapper>{formMethods => <Tags formMethods={formMethods} />}</TestWrapper>,
+      <TestWrapper> {
+          ({formMethods,
+          label,
+          options}) => (
+            <TagSelector formMethods={formMethods} options={options} label={label} />)
+        }</TestWrapper>,
     );
 
     const wrapper = container.firstChild;
@@ -162,7 +230,12 @@ describe("Tags", () => {
   it("tags container has flex wrap", () => {
     const { container } = render(
       <TestWrapper defaultValues={{ tags: ["React"] }}>
-        {formMethods => <Tags formMethods={formMethods} />}
+         {
+          ({formMethods,
+          label,
+          options}) => (
+            <TagSelector formMethods={formMethods} options={options} label={label} />)
+        }
       </TestWrapper>,
     );
 
@@ -173,7 +246,12 @@ describe("Tags", () => {
   it("tags container has gap", () => {
     const { container } = render(
       <TestWrapper defaultValues={{ tags: ["React"] }}>
-        {formMethods => <Tags formMethods={formMethods} />}
+         {
+          ({formMethods,
+          label,
+          options}) => (
+            <TagSelector formMethods={formMethods} options={options} label={label} />)
+        }
       </TestWrapper>,
     );
 
@@ -183,7 +261,12 @@ describe("Tags", () => {
 
   it("input container has rounded border", () => {
     const { container } = render(
-      <TestWrapper>{formMethods => <Tags formMethods={formMethods} />}</TestWrapper>,
+      <TestWrapper> {
+          ({formMethods,
+          label,
+          options}) => (
+            <TagSelector formMethods={formMethods} options={options} label={label} />)
+        }</TestWrapper>,
     );
 
     const inputContainer = screen.getByPlaceholderText("Add tag").parentElement;
@@ -193,7 +276,12 @@ describe("Tags", () => {
 
   it("input container has correct padding", () => {
     const { container } = render(
-      <TestWrapper>{formMethods => <Tags formMethods={formMethods} />}</TestWrapper>,
+      <TestWrapper> {
+          ({formMethods,
+          label,
+          options}) => (
+            <TagSelector formMethods={formMethods} options={options} label={label} />)
+        }</TestWrapper>,
     );
 
     const inputContainer = screen.getByPlaceholderText("Add tag").parentElement;
@@ -201,21 +289,36 @@ describe("Tags", () => {
   });
 
   it("add button has correct margin", () => {
-    render(<TestWrapper>{formMethods => <Tags formMethods={formMethods} />}</TestWrapper>);
+    render(<TestWrapper> {
+          ({formMethods,
+          label,
+          options}) => (
+            <TagSelector formMethods={formMethods} options={options} label={label} />)
+        }</TestWrapper>);
 
     const addButton = screen.getByText("+");
     expect(addButton.className).toContain("ml-2");
   });
 
   it("add button has correct font size", () => {
-    render(<TestWrapper>{formMethods => <Tags formMethods={formMethods} />}</TestWrapper>);
+    render(<TestWrapper> {
+          ({formMethods,
+          label,
+          options}) => (
+            <TagSelector formMethods={formMethods} options={options} label={label} />)
+        }</TestWrapper>);
 
     const addButton = screen.getByText("+");
     expect(addButton.className).toContain("text-sm");
   });
 
   it("handles multiple tag additions", async () => {
-    render(<TestWrapper>{formMethods => <Tags formMethods={formMethods} />}</TestWrapper>);
+    render(<TestWrapper> {
+          ({formMethods,
+          label,
+          options}) => (
+            <TagSelector formMethods={formMethods} options={options} label={label} />)
+        }</TestWrapper>);
 
     const input = screen.getByPlaceholderText("Add tag");
     const addButton = screen.getByText("+");

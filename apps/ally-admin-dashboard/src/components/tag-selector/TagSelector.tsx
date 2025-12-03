@@ -1,22 +1,37 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { Close, Search } from "@assets";
 import { en } from "@constants";
+import { useClickOutside } from "@hooks";
 
 interface TagsDropdown {
   options: Array<{ value: string; label: string }>;
   formMethods?: any;
   label: string;
 }
-export const Tags: React.FC<TagsDropdown> = ({ options, label }) => {
+export const TagSelector: React.FC<TagsDropdown> = ({ options, formMethods, label }) => {
   const [inputValue, setInputValue] = useState<string>("");
   const [openDropdown, setOpenDropdown] = useState<boolean>(false);
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [tags, setTags] = useState<string[]>([]);
 
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (formMethods) {
+      formMethods.setValue("tags", tags);
+    }
+  }, [tags, formMethods]);
+
   const addTagButton = () => {
     setOpenDropdown(prev => !prev);
   };
+
+  const closeDropdown = () => {
+    setOpenDropdown(false);
+  };
+
+  useClickOutside(dropdownRef, closeDropdown);
 
   const removeTag = (tagToRemove: string) => {
     setTags(tags.filter(tag => tag !== tagToRemove));
@@ -27,7 +42,6 @@ export const Tags: React.FC<TagsDropdown> = ({ options, label }) => {
     if (newTag && !tags.includes(newTag)) {
       setTags([...tags, newTag]);
     }
-    addTagButton();
   };
 
   return (
@@ -49,23 +63,23 @@ export const Tags: React.FC<TagsDropdown> = ({ options, label }) => {
           </div>
         ))}
 
-        <div className="relative">
-          <div className="flex items-center border border-border-light rounded-full px-2">
+        <div className="relative" onClick={addTagButton} ref={dropdownRef}>
+          <div className="flex items-center border border-border-light rounded-full px-2 w-[70px]">
             <input
               type="text"
               value={inputValue}
               onChange={e => setInputValue(e.target.value)}
               placeholder="Add"
-              className="focus:outline-none flex-1 bg-white"
-              disabled={true}
+              className="focus:outline-none flex-1 bg-white cursor-pointer max-w-[40px]"
+              readOnly
             />
-            <button type="button" onClick={addTagButton} className="ml-2 text-primary text-sm">
+            <button type="button" className="mr-2 text-primary text-sm">
               +
             </button>
           </div>
 
           {openDropdown && (
-            <div className="absolute left-0 top-full mt-1  bg-white border rounded-md shadow-lg z-50">
+            <div className="absolute left-0 top-full mt-1  bg-white border rounded-md shadow-lg z-50 w-[300px]">
               <div className="relative p-2">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-typography-800" />
                 <input

@@ -57,11 +57,11 @@ export const UserList: React.FC<UserListProps> = ({
   );
 
   return (
-    <div className="w-full overflow-x-auto text-sm text-typography-800">
+    <div className="w-full overflow-x-auto text-sm text-typography-800 custom-scrollbar">
       <div className="min-w-[900px]">
         {tableHeader}
 
-        <div className="h-[calc(100vh-270px)] overflow-y-auto">
+        <div className="h-[calc(100vh-270px)] overflow-y-auto custom-scrollbar">
           {users.map(user => (
             <div
               key={user.id}

@@ -284,7 +284,7 @@ export const SimulationSelectionModal: FC<SimulationProps> = ({
             />
           </div>
 
-          <div ref={scrollContainerRef} className="mt-4 h-80 overflow-y-auto">
+          <div ref={scrollContainerRef} className="mt-4 h-80 overflow-y-auto custom-scrollbar">
             {!isNonEmptyArray(simulationList) && !isFetching ? (
               <p className="text-center text-typography-600 py-8">
                 {en.simulation.noSimulationFound}

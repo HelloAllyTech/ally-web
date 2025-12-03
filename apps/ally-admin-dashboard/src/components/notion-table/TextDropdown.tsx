@@ -191,7 +191,7 @@ export const TextDropdown = ({
           )}
 
           {/* Options List */}
-          <div className="max-h-48 overflow-y-auto">
+          <div className="max-h-48 overflow-y-auto custom-scrollbar">
             {filteredOptions.length === 0 ? (
               <div className="px-3 py-2 text-sm text-typography-800 text-center">
                 No options found
