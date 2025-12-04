@@ -21,15 +21,13 @@ export const Simulation = () => {
     navigate(`${ROUTES.SIMULATION_SUMMARY}/${id}`, { replace: true });
   };
 
-  const { room, roomData, roomStatus, startTime, handleEndSession, events, score } =
+  const { room, roomData, roomStatus, startTime, events, score } =
     useLiveKitRoom(handleRoomDisconnected);
 
   const onEndSimulation = async () => {
-    handleEndSession();
     try {
       await endSimulation({ sessionId: id });
       logger.info(`Ended simulation for session: ${id}`);
-      handleRoomDisconnected();
     } catch (error) {
       logger.error(`Failed to end simulation: ${error}`);
     }

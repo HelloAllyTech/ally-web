@@ -13,17 +13,12 @@ export const LiveSimulationPreview: React.FC = () => {
   const navigate = useNavigate();
   const { id } = useParams();
   const handleRoomDisconnected = () => {
+    localStorage.removeItem(LOCAL_STORAGE_KEYS.PREVIEW_ROOM_DATA);
     navigate(-1);
   };
 
   const { room, roomData, roomStatus, events, score, startTime, handleEndSession } =
     useLiveKitRoom(handleRoomDisconnected);
-
-  const onEnd = async () => {
-    handleEndSession();
-    localStorage.removeItem(LOCAL_STORAGE_KEYS.PREVIEW_ROOM_DATA);
-    navigate(-1);
-  };
 
   const renderWarningDialog = ({ isOpen, onClose, onContinue, onEnd }) => (
     <ActionConfirmationPopup
@@ -52,7 +47,7 @@ export const LiveSimulationPreview: React.FC = () => {
       events={getSimulationEvents(events)}
       score={score}
       isPreview
-      onEndSimulation={onEnd}
+      onEndSimulation={handleEndSession}
       renderWarningDialog={renderWarningDialog}
     />
   );

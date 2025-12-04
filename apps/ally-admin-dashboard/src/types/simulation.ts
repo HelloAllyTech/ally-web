@@ -121,6 +121,13 @@ export interface CreateSimulationResponse {
 
 export interface StartSimulationResponse {
   accessToken: { token: string; serverUrl: string; roomName: string };
+  scenarioSession?: {
+    id?: string;
+    title?: string;
+    triggerWarnings?: { id: number; name: string }[];
+    remortparticipantName?: string;
+    remortparticipantCoverImageUrl?: string;
+  };
 }
 
 export enum VisibilityType {

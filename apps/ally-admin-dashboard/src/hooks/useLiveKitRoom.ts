@@ -126,9 +126,9 @@ export const useLiveKitRoom = (handleDisconnect: () => void): UseLiveKitRoomRetu
     if (room.localParticipant) {
       room.localParticipant.setMicrophoneEnabled(false);
     }
+    await endScenarioPreview({ roomName: id || "" });
     setRoomStatus(RoomStatus.DISCONNECTED);
     room.disconnect();
-    await endScenarioPreview({ roomName: id || "" });
   };
 
   useEffect(() => {

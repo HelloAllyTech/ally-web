@@ -3,9 +3,10 @@ import { MemoryRouter, Route, Routes } from "react-router-dom";
 import { vi, describe, it, expect, beforeEach } from "vitest";
 
 // Hoist mocks to avoid initialization errors
-const { mockNavigate, mockUseLiveKitRoom } = vi.hoisted(() => ({
+const { mockNavigate, mockUseLiveKitRoom, capturedHandleDisconnect } = vi.hoisted(() => ({
   mockNavigate: vi.fn(),
   mockUseLiveKitRoom: vi.fn(),
+  capturedHandleDisconnect: { current: null as (() => void) | null },
 }));
 
 // Mock react-router-dom
@@ -20,7 +21,11 @@ vi.mock("react-router-dom", async () => {
 
 // Mock useLiveKitRoom hook
 vi.mock("@hooks/useLiveKitRoom", () => ({
-  useLiveKitRoom: () => mockUseLiveKitRoom(),
+  useLiveKitRoom: (handleDisconnect: () => void) => {
+    // Capture the handleDisconnect callback so tests can invoke it
+    capturedHandleDisconnect.current = handleDisconnect;
+    return mockUseLiveKitRoom();
+  },
 }));
 
 // Mock SimulationPage from ui-shared
@@ -179,6 +184,7 @@ describe("LiveSimulationPreview", () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    capturedHandleDisconnect.current = null;
     mockUseLiveKitRoom.mockReturnValue(defaultMockHookReturn);
 
     // Mock localStorage
@@ -420,6 +426,11 @@ describe("LiveSimulationPreview", () => {
       const endButton = screen.getByTestId("end-simulation");
       fireEvent.click(endButton);
 
+      // Simulate the room disconnect callback being invoked (as would happen in the real hook)
+      if (capturedHandleDisconnect.current) {
+        capturedHandleDisconnect.current();
+      }
+
       await waitFor(() => {
         expect(window.localStorage.removeItem).toHaveBeenCalledWith("preview_room_data");
       });
@@ -430,6 +441,11 @@ describe("LiveSimulationPreview", () => {
 
       const endButton = screen.getByTestId("end-simulation");
       fireEvent.click(endButton);
+
+      // Simulate the room disconnect callback being invoked (as would happen in the real hook)
+      if (capturedHandleDisconnect.current) {
+        capturedHandleDisconnect.current();
+      }
 
       await waitFor(() => {
         expect(mockNavigate).toHaveBeenCalledWith(-1);
@@ -447,6 +463,11 @@ describe("LiveSimulationPreview", () => {
 
       const endButton = screen.getByTestId("end-simulation");
       fireEvent.click(endButton);
+
+      // Simulate the room disconnect callback being invoked (as would happen in the real hook)
+      if (capturedHandleDisconnect.current) {
+        capturedHandleDisconnect.current();
+      }
 
       await waitFor(() => {
         expect(mockHandleEndSession).toHaveBeenCalled();
@@ -619,6 +640,11 @@ describe("LiveSimulationPreview", () => {
       const endButton = screen.getByTestId("end-simulation");
       fireEvent.click(endButton);
 
+      // Simulate the room disconnect callback being invoked (as would happen in the real hook)
+      if (capturedHandleDisconnect.current) {
+        capturedHandleDisconnect.current();
+      }
+
       await waitFor(() => {
         expect(removeItemSpy).toHaveBeenCalledWith("preview_room_data");
       });
@@ -702,6 +728,11 @@ describe("LiveSimulationPreview", () => {
 
       const endButton = screen.getByTestId("end-simulation");
       fireEvent.click(endButton);
+
+      // Simulate the room disconnect callback being invoked (as would happen in the real hook)
+      if (capturedHandleDisconnect.current) {
+        capturedHandleDisconnect.current();
+      }
 
       await waitFor(() => {
         expect(mockNavigate).toHaveBeenCalledWith(-1);

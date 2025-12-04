@@ -38,6 +38,10 @@ export interface ScenarioSession {
   createdAt: string;
   updatedAt: string;
   status: string;
+  triggerWarnings?: TriggerChipItemWarning[];
+  remortparticipantName?: string;
+  remortparticipantCoverImageUrl?: string;
+  title?: string;
 }
 
 export interface SimulationLog {

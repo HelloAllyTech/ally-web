@@ -9,7 +9,7 @@ import { toast } from "sonner";
 import { BottomSection } from "./SimulationBottomSection";
 import { SimulationInterface } from "./SimulationInterface";
 import { SimulationScoreMeter } from "./SimulationScoreMeter";
-import { SimulationPageProps } from "./types";
+import { SimulationPageProps, TriggerWarning } from "./types";
 import { logger } from "../../logger";
 
 enum MeetingSoundType {
@@ -109,14 +109,13 @@ const useWakeLock = (sessionId: string | undefined) => {
 
 export const SimulationPage: FC<SimulationPageProps> = ({
   room,
-  roomData,
+  roomData = {},
   roomStatus,
   sessionId,
   isEndingSession,
   startTime,
   events,
   score,
-  triggerWarnings = [],
   isPreview = false,
   onEndSimulation,
   renderWarningDialog,
@@ -126,8 +125,12 @@ export const SimulationPage: FC<SimulationPageProps> = ({
   const [isWarning, setIsWarning] = useState(false);
   const [isFocusMode, setIsFocusMode] = useState(false);
 
+  if (!room) return null;
+
   useMeetingSound();
   useWakeLock(sessionId);
+
+  const { triggerWarnings = [], title } = roomData ?? {};
 
   const onTimeLimitWarning = () => {
     setIsWarning(true);
@@ -169,14 +172,14 @@ export const SimulationPage: FC<SimulationPageProps> = ({
             data-testid="simulation-page-title"
             className="text-white text-[20px] flex self-start"
           >
-            {roomData?.title}
+            {title}
           </div>
           {triggerWarnings?.length > 0 && (
             <div
               data-testid="simulation-page-trigger-warnings"
               className="flex flex-wrap justify-start items-center gap-2 opacity-75"
             >
-              {triggerWarnings?.map((triggerWarning, index) => (
+              {triggerWarnings?.map((triggerWarning: TriggerWarning, index: number) => (
                 <>
                   <div key={triggerWarning.id} className="text-white text-[12px] flex self-start">
                     {triggerWarning.name}

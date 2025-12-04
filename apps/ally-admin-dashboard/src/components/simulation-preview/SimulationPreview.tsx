@@ -16,18 +16,22 @@ export const SimulationPreview: FC<SimulationPreviewProps> = ({ simulation, isOp
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
   const onStartSimulationSuccess = (response: StartSimulationResponse) => {
-    const { accessToken } = response;
+    const { accessToken, scenarioSession } = response;
+
+    // TODO: Add trigger warnings to the room data
     localStorage.setItem(
       LOCAL_STORAGE_KEYS.PREVIEW_ROOM_DATA,
       JSON.stringify({
-        roomId: accessToken?.roomName,
-        title: simulation.title,
+        roomId: scenarioSession?.id || accessToken?.roomName,
+        title: scenarioSession?.title || simulation.title,
+        triggerWarnings: scenarioSession?.triggerWarnings || [],
         localParticipant: {
           name: user?.name,
         },
         remoteParticipant: {
-          name: simulation.title,
-          coverImageUrl: simulation.coverImageUrl,
+          name: scenarioSession?.remortparticipantName || simulation.title,
+          coverImageUrl:
+            scenarioSession?.remortparticipantCoverImageUrl || simulation.coverImageUrl,
         },
         accessToken: accessToken.token,
         createdAt: new Date(),
