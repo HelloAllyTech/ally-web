@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback, FunctionComponent } from "react";
+import { useEffect, useState, useCallback, FunctionComponent, useRef } from "react";
 
 import { FetchBaseQueryError } from "@reduxjs/toolkit/query";
 import { motion, AnimatePresence } from "framer-motion";
@@ -6,9 +6,15 @@ import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
-import { useGenerateOTPMutation, useVerifyOTPMutation } from "@api";
+import { FEATURE_FLAGS_MAP } from "@ally-ui-mono/ui-shared";
+import {
+  useGenerateOTPMutation,
+  useLazyCheckTermsAndAgreementQuery,
+  usePutTermsAndAgreementMutation,
+  useVerifyOTPMutation,
+} from "@api";
 import { Ally, BackCircle, LoginImage, RedirectIcon } from "@assets";
-import { Button, Carousel, OTP, TextField } from "@components";
+import { Button, Carousel, OTP, TermsAndAgreement, TextField } from "@components";
 import {
   ALLY_PRIVACY_POLICY_URL,
   ALLY_TERMS_URL,
@@ -33,6 +39,9 @@ export const Login: FunctionComponent = () => {
   const [otp, setOtp] = useState<string>("");
   const [countdown, setCountdown] = useState<number>(0);
   const [rememberMe, setRememberMe] = useState<boolean>(false);
+  const [termsAndAgreement, setTermsAndAgreement] = useState<boolean>(false);
+  const accessTokenRef = useRef<string>("");
+  const refreshTokenRef = useRef<string>("");
 
   const [
     generateOTP,
@@ -54,6 +63,9 @@ export const Login: FunctionComponent = () => {
   ] = useVerifyOTPMutation();
 
   const { isAuthenticated, checkAuth } = useUser();
+
+  const [checkTermsAndAgreement] = useLazyCheckTermsAndAgreementQuery();
+  const [putCheckTermsAndAgreement] = usePutTermsAndAgreementMutation();
 
   const isLoading = isGeneratingOTP || isVerifyingOTP;
 
@@ -112,15 +124,29 @@ export const Login: FunctionComponent = () => {
         const errorMessage = errorData?.message ?? "Failed to verify OTP. Please try again.";
         toast.error(errorMessage);
       } else if (isVerifyOTPSuccess && verifyOTPData) {
-        localStorage.setItem(LOCAL_STORAGE_KEYS.ACCESS_TOKEN, verifyOTPData.accessToken);
-        localStorage.setItem(LOCAL_STORAGE_KEYS.REFRESH_TOKEN, verifyOTPData.refreshToken);
-        const userData = await checkAuth();
-        if (userData) {
-          navigate("/");
+        accessTokenRef.current = verifyOTPData.accessToken;
+        refreshTokenRef.current = verifyOTPData.refreshToken;
+        if (FEATURE_FLAGS_MAP.TERMS_AND_CONDITION_FLAG) {
+          const response = await checkTermsAndAgreement({
+            token: verifyOTPData.accessToken,
+          });
+          if (response.data?.success) {
+            updateLocalStorageAndNavigate();
+          } else {
+            setTermsAndAgreement(true);
+          }
+        } else {
+          updateLocalStorageAndNavigate();
         }
       }
     })();
   }, [isVerifyOTPSuccess, verifyOTPError, verifyOTPData]);
+
+  const updateLocalStorageAndNavigate = () => {
+    localStorage.setItem(LOCAL_STORAGE_KEYS.ACCESS_TOKEN, accessTokenRef.current);
+    localStorage.setItem(LOCAL_STORAGE_KEYS.REFRESH_TOKEN, refreshTokenRef.current);
+    navigate("/");
+  };
 
   const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newEmail = e.target.value;
@@ -154,6 +180,20 @@ export const Login: FunctionComponent = () => {
 
   const handleVerify = () => {
     verifyOTP({ email: email.trim(), otp });
+  };
+
+  const handleAgreementClose = () => {
+    setTermsAndAgreement(false);
+  };
+
+  const handleAgreeButtonClick = async () => {
+    const response = await putCheckTermsAndAgreement({ token: accessTokenRef.current });
+    if (response.data?.success) {
+      handleAgreementClose();
+      updateLocalStorageAndNavigate();
+    } else {
+      toast.error("Failed to agree to terms and conditions");
+    }
   };
 
   const getLoginSection = () => {
@@ -321,6 +361,11 @@ export const Login: FunctionComponent = () => {
           </div>
         </div>
       </div>
+      <TermsAndAgreement
+        isOpen={termsAndAgreement}
+        handleClose={handleAgreementClose}
+        handleAgreeButtonClick={handleAgreeButtonClick}
+      />
     </div>
   );
 };

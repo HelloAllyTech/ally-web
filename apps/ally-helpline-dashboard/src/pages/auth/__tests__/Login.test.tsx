@@ -41,6 +41,24 @@ vi.mock("@api", () => ({
       error: null,
     },
   ],
+  useLazyCheckTermsAndAgreementQuery: () => [
+    vi.fn().mockResolvedValue({ data: { success: true } }),
+    {
+      isLoading: false,
+      isSuccess: false,
+      data: null,
+      error: null,
+    },
+  ],
+  usePutTermsAndAgreementMutation: () => [
+    vi.fn().mockResolvedValue({ data: { success: true } }),
+    {
+      isLoading: false,
+      isSuccess: false,
+      data: null,
+      error: null,
+    },
+  ],
 }));
 
 vi.mock("@assets", () => ({
@@ -96,6 +114,14 @@ vi.mock("@components", () => ({
       {error && <span data-testid="textfield-error">{error}</span>}
     </div>
   ),
+  TermsAndAgreement: ({ isOpen, handleClose, handleAgreeButtonClick }: any) =>
+    isOpen ? (
+      <div data-testid="terms-and-agreement">
+        Terms And Agreement
+        <button onClick={handleClose}>Close</button>
+        <button onClick={handleAgreeButtonClick}>Agree</button>
+      </div>
+    ) : null,
 }));
 
 vi.mock("@constants", () => ({
