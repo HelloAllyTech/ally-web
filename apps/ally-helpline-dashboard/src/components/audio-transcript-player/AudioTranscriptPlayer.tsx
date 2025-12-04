@@ -23,7 +23,7 @@ export interface AudioTranscriptPlayerProps {
 
 export const AudioTranscriptPlayer: React.FC<AudioTranscriptPlayerProps> = ({
   audioUrl,
-  transcript,
+  transcript = [],
   senderLabels = { [-1]: "User", [101]: "Agent" },
   onNearEnd,
   nearEndThreshold = 3,
