@@ -1,5 +1,6 @@
 import Accordion from "./accordion";
 import ActionDialog from "./action-dialog";
+import { AudioTranscriptPlayer } from "./audio-transcript-player";
 import BoxBreathing from "./box-breathing";
 import { Button, ButtonVariant, ButtonVariantType } from "./button";
 import ButtonGroup from "./button-group";
@@ -83,5 +84,6 @@ export {
   ToggleButtonGroup,
   UserInfo,
   CreditInfo,
+  AudioTranscriptPlayer,
   TermsAndAgreement,
 };
