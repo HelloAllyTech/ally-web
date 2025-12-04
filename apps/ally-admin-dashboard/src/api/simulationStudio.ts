@@ -17,6 +17,10 @@ import {
   GetCoverVideoUrlResponse,
   DeleteCoverVideoRequest,
   ScenarioVoice,
+  getTriggerWarningsQueryParams,
+  triggerWarningsRequest,
+  createTriggerResponse,
+  triggerWarnings,
 } from "@types";
 
 import { baseAPI } from "./baseApi";
@@ -268,6 +272,21 @@ const simulationStudioAPI = baseAPI.injectEndpoints({
       }),
       invalidatesTags: [TAG_TYPES.SIMULATION],
     }),
+
+    //Trigger warnings
+    getTriggerWarnings: builder.query<triggerWarnings[], getTriggerWarningsQueryParams>({
+      query: (params: GetSimulationsQueryParams) => ({
+        url: ApiEndpoints.SIMULATION_STUDIO.TRIGGER_WARNINGS,
+        params,
+      }),
+    }),
+    createTriggerWarning: builder.mutation<createTriggerResponse, triggerWarningsRequest>({
+      query: body => ({
+        url: ApiEndpoints.SIMULATION_STUDIO.TRIGGER_WARNINGS,
+        method: HttpMethod.POST,
+        body,
+      }),
+    }),
   }),
 });
 
@@ -294,4 +313,6 @@ export const {
   useMapScenarioEventsMutation,
   useDeleteScenarioEventsMutation,
   useGetMappedScenarioEventsQuery,
+  useGetTriggerWarningsQuery,
+  useCreateTriggerWarningMutation,
 } = simulationStudioAPI;

@@ -241,3 +241,29 @@ export interface GetCoverVideoUrlResponse {
 export interface DeleteCoverVideoRequest {
   coverVideoUrl: string;
 }
+
+export interface getTriggerWarningsQueryParams {
+  name?: string;
+  limit?: number;
+  offset?: number;
+  sortBy?: string;
+  order?: string;
+}
+
+export interface triggerWarnings {
+  id: string;
+  name: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface triggerWarningsRequest {
+  name: string;
+}
+
+export interface createTriggerResponse {
+  id: string;
+  name: string;
+  createdAt: string;
+  updatedAt: string;
+}

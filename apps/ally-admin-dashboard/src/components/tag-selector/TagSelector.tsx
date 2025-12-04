@@ -1,33 +1,45 @@
 import { useEffect, useRef, useState } from "react";
 
+import { useCreateTriggerWarningMutation, useGetTriggerWarningsQuery } from "@api";
 import { Close, Search } from "@assets";
-import { en } from "@constants";
 import { useClickOutside } from "@hooks";
 
 interface TagsDropdown {
-  options: Array<{ value: string; label: string }>;
   formMethods?: any;
   label: string;
+  id: string;
 }
-export const TagSelector: React.FC<TagsDropdown> = ({ options, formMethods, label }) => {
-  const [inputValue, setInputValue] = useState<string>("");
+
+const DEFAULT_LIMIT = 100;
+const DEFAULT_OFFSET = 0;
+
+export const TagSelector: React.FC<TagsDropdown> = ({ formMethods, label, id }) => {
   const [openDropdown, setOpenDropdown] = useState<boolean>(false);
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [tags, setTags] = useState<string[]>([]);
 
   const dropdownRef = useRef<HTMLDivElement>(null);
 
+  const { data: options } = useGetTriggerWarningsQuery({
+    name: searchQuery,
+    offset: DEFAULT_OFFSET,
+    limit: DEFAULT_LIMIT,
+  });
+
+  const [createTriggerWarning] = useCreateTriggerWarningMutation();
+
   useEffect(() => {
     if (formMethods) {
-      formMethods.setValue("tags", tags);
+      formMethods.setValue(id, tags);
     }
-  }, [tags, formMethods]);
+  }, [tags, formMethods, id]);
 
   const addTagButton = () => {
     setOpenDropdown(prev => !prev);
   };
 
   const closeDropdown = () => {
+    setSearchQuery("");
     setOpenDropdown(false);
   };
 
@@ -42,6 +54,13 @@ export const TagSelector: React.FC<TagsDropdown> = ({ options, formMethods, labe
     if (newTag && !tags.includes(newTag)) {
       setTags([...tags, newTag]);
     }
+    closeDropdown();
+  };
+
+  const createNewTag = async () => {
+    const newTag = searchQuery.trim();
+    await createTriggerWarning({ name: newTag });
+    selectTag(newTag);
   };
 
   return (
@@ -63,12 +82,13 @@ export const TagSelector: React.FC<TagsDropdown> = ({ options, formMethods, labe
           </div>
         ))}
 
-        <div className="relative" onClick={addTagButton} ref={dropdownRef}>
-          <div className="flex items-center border border-border-light rounded-full px-2 w-[70px]">
+        <div className="relative" ref={dropdownRef}>
+          <div
+            className="flex items-center border border-border-light rounded-full px-2 w-[70px]"
+            onClick={addTagButton}
+          >
             <input
               type="text"
-              value={inputValue}
-              onChange={e => setInputValue(e.target.value)}
               placeholder="Add"
               className="focus:outline-none flex-1 bg-white cursor-pointer max-w-[40px]"
               readOnly
@@ -77,7 +97,6 @@ export const TagSelector: React.FC<TagsDropdown> = ({ options, formMethods, labe
               +
             </button>
           </div>
-
           {openDropdown && (
             <div className="absolute left-0 top-full mt-1  bg-white border rounded-md shadow-lg z-50 w-[300px]">
               <div className="relative p-2">
@@ -91,23 +110,27 @@ export const TagSelector: React.FC<TagsDropdown> = ({ options, formMethods, labe
                 />
               </div>
               <div className=" overflow-auto max-h-[240px] custom-scrollbar">
-                {options?.length === 0 ? (
-                  <div className="px-3 py-2 text-sm text-typography-800">
-                    {en.common.noOptionsAvailable}
+                {options?.map(option => (
+                  <div
+                    key={option.id}
+                    className="px-3 py-2 text-sm cursor-pointer transition-colors hover:bg-gray-100 whitespace-nowrap overflow-auto custom-scrollbar flex"
+                    onClick={() => selectTag(option.name)}
+                  >
+                    <span>{option.name}</span>
                   </div>
-                ) : (
-                  options.map(option => (
+                ))}
+
+                {/* CREATE OPTION */}
+                {searchQuery.trim() !== "" &&
+                  !options?.some(option => option.name === searchQuery.trim()) && (
                     <div
-                      key={option.value}
-                      className="px-3 py-2 text-sm cursor-pointer transition-colors hover:bg-gray-100"
-                      onClick={() => selectTag(option.value)}
+                      className="px-3 py-2 text-sm cursor-pointer  hover:bg-gray-100"
+                      onClick={createNewTag}
                     >
-                      <div className="flex items-center justify-between text-md">
-                        <span>{option.label}</span>
-                      </div>
+                      <span className="font-bold pr-2">Create:</span>
+                      <span>"{searchQuery}"</span>
                     </div>
-                  ))
-                )}
+                  )}
               </div>
             </div>
           )}

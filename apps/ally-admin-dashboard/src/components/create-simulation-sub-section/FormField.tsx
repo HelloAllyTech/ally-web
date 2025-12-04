@@ -11,7 +11,6 @@ import { TagSelector } from "../tag-selector";
 import { ToggleSection } from "../toggle-section";
 import { VoiceDropdown } from "../voice-dropdown";
 
-const tags = true;
 export const FormField: FC<FormFieldProps> = ({ config, formMethods }) => {
   const { label, placeholder, type, options, id, maxLength, multiline, isMandatory } = config;
   const {
@@ -110,11 +109,9 @@ export const FormField: FC<FormFieldProps> = ({ config, formMethods }) => {
           </div>
         );
       case FORM_FIELD_TYPES.TAG_AND_DROPDOWN:
-        if (!tags) return null;
-
         return (
           <div className="w-full">
-            <TagSelector formMethods={formMethods} options={options} label={label} />
+            <TagSelector formMethods={formMethods} label={label} id={id} />
           </div>
         );
       default:
