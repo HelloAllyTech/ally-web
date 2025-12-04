@@ -73,7 +73,7 @@ export const SimulationInterface: FC<SimulationInterfaceProps> = ({
                 isSpeaking={localParticipant.isSpeaking}
                 isMuted={isMuted}
               />
-              {!isFocusMode && <SimulationEvents events={events} />}
+              {!isFocusMode && events?.length > 0 && <SimulationEvents events={events} />}
             </div>
           </>
         );
