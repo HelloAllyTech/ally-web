@@ -10,59 +10,22 @@ import { BottomSection } from "./SimulationBottomSection";
 import { SimulationInterface } from "./SimulationInterface";
 import { SimulationScoreMeter } from "./SimulationScoreMeter";
 import { SimulationPageProps, TriggerWarning } from "./types";
+import { StartSimulation, EndSimulation } from "../../assets/audios";
 import { logger } from "../../logger";
-
-enum MeetingSoundType {
-  JOIN = "join",
-  LEAVE = "leave",
-}
 
 const useMeetingSound = () => {
   useEffect(() => {
-    const playSound = (type: MeetingSoundType) => {
-      try {
-        const AudioContext = window.AudioContext || (window as any).webkitAudioContext;
-        if (!AudioContext) return;
+    const startAudio = new Audio(StartSimulation);
+    const endAudio = new Audio(EndSimulation);
 
-        const ctx = new AudioContext();
-        const oscillator = ctx.createOscillator();
-        const gainNode = ctx.createGain();
+    startAudio.play().catch(() => {
+      logger.error("Failed to play start simulation sound");
+    });
 
-        oscillator.connect(gainNode);
-        gainNode.connect(ctx.destination);
-
-        const now = ctx.currentTime;
-
-        gainNode.gain.setValueAtTime(0, now);
-        gainNode.gain.linearRampToValueAtTime(0.1, now + 0.05);
-
-        if (type === MeetingSoundType.JOIN) {
-          oscillator.type = "sine";
-          oscillator.frequency.setValueAtTime(500, now);
-          oscillator.frequency.setValueAtTime(800, now + 0.15);
-          gainNode.gain.setValueAtTime(0.1, now + 0.15);
-          gainNode.gain.exponentialRampToValueAtTime(0.001, now + 0.4);
-
-          oscillator.start(now);
-          oscillator.stop(now + 0.4);
-        } else {
-          oscillator.type = "sine";
-          oscillator.frequency.setValueAtTime(600, now);
-          oscillator.frequency.setValueAtTime(300, now + 0.15);
-          gainNode.gain.setValueAtTime(0.1, now + 0.15);
-          gainNode.gain.exponentialRampToValueAtTime(0.001, now + 0.4);
-
-          oscillator.start(now);
-          oscillator.stop(now + 0.4);
-        }
-      } catch {
-        logger.error("Failed to play meeting sound");
-      }
-    };
-
-    playSound(MeetingSoundType.JOIN);
     return () => {
-      playSound(MeetingSoundType.LEAVE);
+      endAudio.play().catch(() => {
+        logger.error("Failed to play end simulation sound");
+      });
     };
   }, []);
 };
