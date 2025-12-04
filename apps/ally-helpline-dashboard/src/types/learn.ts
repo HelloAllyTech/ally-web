@@ -249,6 +249,8 @@ export interface SimulationTranscriptMessage {
   id: number;
   content: string;
   senderId: number;
+  startSeconds?: number;
+  endSeconds?: number | null;
   createdAt?: string;
 }
 
