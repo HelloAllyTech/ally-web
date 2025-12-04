@@ -41,16 +41,16 @@ export const SimulationEvents: FC<SimulationEventsProps> = ({ events = [] }) => 
     return `${elapsedTime} min${elapsedTime === 1 ? "" : "s"}`;
   };
 
-  if (events?.length === 0) return null;
+  if (!hasEvents) return null;
 
   return (
     <motion.div
       data-testid="simulation-events"
       layout
       initial={{ width: 0 }}
-      animate={{ width: hasEvents ? "w-full" : 0 }}
+      animate={{ width: hasEvents ? "100%" : 0 }}
       transition={{ duration: 0.5, ease: [0.4, 0, 0.2, 1] }}
-      className="overflow-hidden rounded-sm h-full w-full bg-[#1D2020]"
+      className="overflow-hidden rounded-sm h-full bg-[#1D2020]"
       style={{ willChange: "width" }}
     >
       <div className="text-white text-[14px] font-medium leading-[22px] tracking-[0.28px] bg-[#282B31] px-4 h-[48px] items-center flex">
