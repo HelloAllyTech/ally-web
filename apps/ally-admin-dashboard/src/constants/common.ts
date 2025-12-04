@@ -127,4 +127,5 @@ export const TAG_TYPES = {
   SIMULATION_PATHS: "simulationPaths",
   SCENARIO_PATHS: "scenarioPaths",
   EACH_SESSION: "eachSession",
+  TRIGGER_WARNINGS: "triggerWarnings",
 };

@@ -2,7 +2,6 @@ import { FC, Fragment } from "react";
 
 import { UseFormReturn } from "react-hook-form";
 
-import { FEATURE_FLAGS_MAP } from "@ally-ui-mono/ui-shared";
 import { FormFieldConfig } from "@types";
 
 import { FormField } from "./FormField";
@@ -18,23 +17,16 @@ export const CreateSimulationSubSection: FC<CreateSimulationSubSectionProps> = (
 }) => {
   return (
     <div className="flex flex-row flex-wrap gap-5 w-[60%] min-w-[500px]">
-      {items?.map(item => {
-        if (item.id === "triggerWarnings" && !FEATURE_FLAGS_MAP.TRIGGER_WARNINGS_FLAG) {
-          return null;
-        }
-
-        return (
-          <Fragment key={item.id}>
-            {item.isDashedLineAbove && (
-              <div className="border-t border-dashed border-border-light w-full mb-6" />
-            )}
-
-            <div className={item.fullWidth ? "w-full" : "w-[48%]"}>
-              <FormField config={item} formMethods={formMethods} />
-            </div>
-          </Fragment>
-        );
-      })}
+      {items?.map(item => (
+        <Fragment key={item.id}>
+          {item.isDashedLineAbove && (
+            <div className="border-t border-dashed border-border-light w-full mb-6" />
+          )}
+          <div className={item.fullWidth ? "w-full" : "w-[48%]"}>
+            <FormField config={item} formMethods={formMethods} />
+          </div>
+        </Fragment>
+      ))}
     </div>
   );
 };

@@ -1,5 +1,6 @@
+import { FEATURE_FLAGS_MAP } from "@ally-ui-mono/ui-shared";
 import { cellTypes } from "@components";
-import { CreatorFieldGroups } from "@types";
+import { CreatorFieldGroups, FormFieldConfig } from "@types";
 
 export const minInputHeight = {
   narrativeContext: "250",
@@ -127,7 +128,7 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
         fullWidth: true,
         maxLength: 1000,
       },
-      {
+      FEATURE_FLAGS_MAP.TRIGGER_WARNINGS_FLAG && {
         id: "triggerWarnings",
         label: "Trigger Warnings",
         type: FORM_FIELD_TYPES.TAG_AND_DROPDOWN,
@@ -144,7 +145,7 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
         fullWidth: true,
         maxLength: 1000,
       },
-    ],
+    ].filter(Boolean) as FormFieldConfig[],
   },
   {
     id: SIMULATION_CREATOR_STEP_IDS.characterIdentity,

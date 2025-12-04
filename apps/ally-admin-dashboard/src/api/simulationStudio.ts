@@ -279,13 +279,16 @@ const simulationStudioAPI = baseAPI.injectEndpoints({
         url: ApiEndpoints.SIMULATION_STUDIO.TRIGGER_WARNINGS,
         params,
       }),
+      providesTags: [TAG_TYPES.TRIGGER_WARNINGS],
     }),
+
     createTriggerWarning: builder.mutation<createTriggerResponse, triggerWarningsRequest>({
       query: body => ({
         url: ApiEndpoints.SIMULATION_STUDIO.TRIGGER_WARNINGS,
         method: HttpMethod.POST,
         body,
       }),
+      invalidatesTags: [TAG_TYPES.TRIGGER_WARNINGS],
     }),
   }),
 });
