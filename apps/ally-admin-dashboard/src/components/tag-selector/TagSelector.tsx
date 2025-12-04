@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 
 import { useCreateTriggerWarningMutation, useGetTriggerWarningsQuery } from "@api";
-import { Close, Search } from "@assets";
+import { Close, Plus, Search } from "@assets";
+import { en } from "@constants";
 import { useClickOutside } from "@hooks";
 
 interface TagsDropdown {
@@ -10,7 +11,7 @@ interface TagsDropdown {
   id: string;
 }
 
-const DEFAULT_LIMIT = 2;
+const DEFAULT_LIMIT = 20;
 
 export const TagSelector: React.FC<TagsDropdown> = ({ formMethods, label, id }) => {
   const [openDropdown, setOpenDropdown] = useState<boolean>(false);
@@ -32,23 +33,27 @@ export const TagSelector: React.FC<TagsDropdown> = ({ formMethods, label, id }) 
   });
 
   const [createTriggerWarning] = useCreateTriggerWarningMutation();
-
   // Reset when search query changes
   useEffect(() => {
     setPage(1);
     setAllOptions([]);
     setHasMore(true);
   }, [searchQuery]);
+
   // Load options data
   useEffect(() => {
     if (options) {
       if (page === 1) {
         setAllOptions(options);
       } else {
-        setAllOptions(prev => [...prev, ...options]);
+        // Deduplicate based on ID before adding
+        setAllOptions(prev => {
+          const existingIds = new Set(prev.map(opt => opt.id));
+          const newOptions = options.filter(opt => !existingIds.has(opt.id));
+          return [...prev, ...newOptions];
+        });
       }
 
-      // Update hasMore based on whether we got a full page
       if (options.length < DEFAULT_LIMIT) setHasMore(false);
     }
   }, [options, page]);
@@ -98,13 +103,14 @@ export const TagSelector: React.FC<TagsDropdown> = ({ formMethods, label, id }) 
     setSearchQuery("");
     setOpenDropdown(false);
   };
+
   useClickOutside(dropdownRef, closeDropdown);
 
   const removeTag = (tagToRemove: string) => {
     setTags(tags.filter(tag => tag !== tagToRemove));
   };
 
-  const selectTag = selectedTag => {
+  const selectTag = (selectedTag: string) => {
     const newTag = selectedTag.trim();
     if (newTag && !tags.includes(newTag)) {
       setTags([...tags, newTag]);
@@ -145,13 +151,8 @@ export const TagSelector: React.FC<TagsDropdown> = ({ formMethods, label, id }) 
         {/* Loading indicator */}
         {hasMore && (
           <div ref={loadingRef} className="px-3 py-2 text-sm text-center">
-            {isFetching ? "Loading..." : ""}
+            {isFetching ? en.common.loading : ""}
           </div>
-        )}
-
-        {/* No results */}
-        {!isFetching && allOptions.length === 0 && searchQuery.trim() === "" && (
-          <div className="px-3 py-2 text-sm text-gray-500 text-center">No tags available</div>
         )}
 
         {/* CREATE OPTION */}
@@ -161,7 +162,7 @@ export const TagSelector: React.FC<TagsDropdown> = ({ formMethods, label, id }) 
               className="px-3 py-2 text-sm cursor-pointer hover:bg-gray-100"
               onClick={createNewTag}
             >
-              <span className="font-bold pr-2">Create:</span>
+              <span className="font-bold pr-2">{en.simulation.create}</span>
               <span>"{searchQuery}"</span>
             </div>
           )}
@@ -200,7 +201,7 @@ export const TagSelector: React.FC<TagsDropdown> = ({ formMethods, label, id }) 
               readOnly
             />
             <button type="button" className="mr-2 text-primary text-sm">
-              +
+              <Plus />
             </button>
           </div>
 

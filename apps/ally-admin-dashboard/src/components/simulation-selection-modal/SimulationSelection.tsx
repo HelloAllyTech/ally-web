@@ -146,7 +146,11 @@ export const SimulationSelectionModal: FC<SimulationProps> = ({
       if (page === 1) {
         setAllSimulations(newSimulations);
       } else {
-        setAllSimulations(prev => [...prev, ...newSimulations]);
+        setAllSimulations(prev => {
+          const existingIds = new Set(prev.map(opt => opt.id));
+          const addSimulation = newSimulations.filter(opt => !existingIds.has(opt.id));
+          return [...prev, ...addSimulation];
+        });
       }
 
       // Check if there are more items to load

@@ -53,6 +53,11 @@ export interface SimulationInput {
   openingStatements?: string[];
   voiceId?: string;
   agentGoal?: string;
+  autoTerminationStatus?: boolean;
+  terminationEventId?: string;
+  terminationMessage?: string;
+  isGlobal?: boolean;
+  triggerWarnings?: string[];
 }
 
 export interface UpdateSimulationByIdInput {
@@ -103,6 +108,7 @@ export interface GetSimulationByIdResponse {
     message: string;
     autoTerminationStatus: boolean;
   };
+  triggerWarnings: string[];
 }
 
 export interface CreateSimulationInput {
