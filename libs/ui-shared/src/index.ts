@@ -1,3 +1,4 @@
+import { FEATURE_FLAGS_MAP } from "./featureFlag";
 import Badge from "./lib/badge";
 import ButtonGroup from "./lib/button-group";
 import { CustomImage } from "./lib/custom-image";
@@ -47,4 +48,5 @@ export {
   SimulationScoreMeter,
   getSimulationEvents,
   SimulationDetailsModal,
+  FEATURE_FLAGS_MAP,
 };

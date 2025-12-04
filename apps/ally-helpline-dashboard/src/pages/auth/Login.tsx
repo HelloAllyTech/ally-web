@@ -6,6 +6,7 @@ import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
+import { FEATURE_FLAGS_MAP } from "@ally-ui-mono/ui-shared";
 import {
   useGenerateOTPMutation,
   useLazyCheckTermsAndAgreementQuery,
@@ -23,7 +24,6 @@ import {
   LoginSection,
   ROUTES,
   User,
-  FEATURE_FLAGS_MAP,
 } from "@constants";
 import { useUser } from "@hooks";
 import { RootState } from "@store";
