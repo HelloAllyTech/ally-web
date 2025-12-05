@@ -368,7 +368,6 @@ export const Login: FunctionComponent = () => {
       </div>
       <TermsAndAgreement
         isOpen={termsAndAgreement}
-        handleClose={handleAgreementClose}
         handleAgreeButtonClick={handleAgreeButtonClick}
       />
     </div>
