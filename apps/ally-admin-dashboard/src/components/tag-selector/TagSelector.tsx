@@ -119,6 +119,11 @@ export const TagSelector: React.FC<TagsDropdown> = ({
 
   const createNewTag = async () => {
     const newTag = searchQuery.trim();
+    const existingTag = triggerWarnings.map(tag => tag.name.toLowerCase());
+    if (existingTag.includes(newTag.toLowerCase())) {
+      closeDropdown();
+      return;
+    }
     const newTrigger = await createTriggerWarning({ name: newTag });
     selectTag(newTrigger?.data);
   };
@@ -133,6 +138,7 @@ export const TagSelector: React.FC<TagsDropdown> = ({
           className="w-full !outline-none border rounded-md py-1 px-5 text-base"
           value={searchQuery}
           onChange={e => setSearchQuery(e.target.value)}
+          maxLength={50}
         />
       </div>
 
@@ -189,21 +195,22 @@ export const TagSelector: React.FC<TagsDropdown> = ({
         ))}
 
         <div className="relative" ref={dropdownRef}>
-          <div
-            className="flex items-center border border-border-light rounded-full px-2 w-[70px]"
-            onClick={addTagButton}
-          >
-            <input
-              type="text"
-              placeholder="Add"
-              className="focus:outline-none flex-1 bg-white cursor-pointer max-w-[40px]"
-              readOnly
-            />
-            <button type="button" className="mr-2 text-primary text-sm">
-              <Plus />
-            </button>
-          </div>
-
+          {triggerWarnings?.length < 5 && (
+            <div
+              className="flex items-center border border-border-light rounded-full px-2 w-[70px]"
+              onClick={addTagButton}
+            >
+              <input
+                type="text"
+                placeholder="Add"
+                className="focus:outline-none flex-1 bg-white cursor-pointer max-w-[40px]"
+                readOnly
+              />
+              <button type="button" className="mr-2 text-primary text-sm">
+                <Plus />
+              </button>
+            </div>
+          )}
           {openDropdown && renderDropdown()}
         </div>
       </div>
