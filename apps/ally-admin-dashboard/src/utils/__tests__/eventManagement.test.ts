@@ -492,7 +492,7 @@ describe("eventManagement utils", () => {
         expect(result?.score).toBe(0);
       });
 
-      it("should not include detectionData when empty", () => {
+      it("should include default detectionData when triggerCondition is not provided for SCORE_BASED", () => {
         const event: UpdateEventDataParam = {
           name: "Test Event",
           detectionType: EVENT_DETECTION_TYPES.SCORE_BASED,
@@ -500,7 +500,11 @@ describe("eventManagement utils", () => {
 
         const result = convertEventToApiPayload(event);
 
-        expect(result?.detectionData).toBeUndefined();
+        // SCORE_BASED events get default values when triggerCondition is not provided
+        expect(result?.detectionData).toEqual({
+          score: 0,
+          condition: "GT",
+        });
       });
     });
   });
