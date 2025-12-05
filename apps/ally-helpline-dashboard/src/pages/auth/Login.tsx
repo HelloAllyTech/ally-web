@@ -29,6 +29,9 @@ import { useUser } from "@hooks";
 import { RootState } from "@store";
 import { openLinkInNewTab, validateEmail } from "@utils";
 
+const RESEND_CODE_COUNTDOWN = 60; // 2 minutes
+const DEFAULT_EXPIRES_IN = 10; // 10 minutes
+
 export const Login: FunctionComponent = () => {
   const navigate = useNavigate();
   const { user } = useSelector((state: RootState) => state.user);
@@ -94,7 +97,7 @@ export const Login: FunctionComponent = () => {
       toast.error(errorMessage);
     } else if (isGenerateOTPSuccess && generateOTPData) {
       setLoginSection(LoginSection.OTP);
-      setCountdown(10); // Start 10 second countdown when OTP is generated
+      setCountdown(RESEND_CODE_COUNTDOWN);
     }
   }, [isGenerateOTPSuccess, generateOTPError, generateOTPData]);
 
@@ -287,7 +290,7 @@ export const Login: FunctionComponent = () => {
         transition={{ duration: 0.4, ease: "easeInOut" }}
         className="flex flex-col justify-start gap-6"
       >
-        <BackCircle className="self-start cursor-pointer" onClick={handleBack} />
+        <BackCircle className="self-start cursor-pointer ml-[-10px]" onClick={handleBack} />
         <h1 className="text-4xl font-secondary">Verify your email address</h1>
         <div className="text-base mb-2 font-secondary flex flex-col">
           <span className="text-2xl">Enter the security code sent to</span>
@@ -295,10 +298,12 @@ export const Login: FunctionComponent = () => {
         </div>
         <div className="flex flex-col gap-2">
           <OTP value={otp} onChange={setOtp} />
-          <div className="text-xs text-typography-700">
-            Didn't receive the code?{" "}
+          <div className="text-xs text-typography-900">
+            This code will expire in{" "}
+            <span className="font-[700]">{`${generateOTPData?.expiresIn ? generateOTPData?.expiresIn / 60 : DEFAULT_EXPIRES_IN} minutes`}</span>
+            . Need a new code?
             <span
-              className={`${countdown > 0 ? "text-typography-800" : "text-primary-500"} cursor-pointer`}
+              className={`${countdown > 0 ? "text-typography-800" : "text-primary-500"} pl-2 cursor-pointer`}
               onClick={handleResendCode}
             >
               Resend {countdown > 0 ? `(${countdown}s)` : ""}
@@ -307,7 +312,7 @@ export const Login: FunctionComponent = () => {
         </div>
         <Button
           type="button"
-          className="w-full rounded-[5px] mt-6"
+          className="w-full rounded-[5px] mt-2  font-tertiary"
           disabled={isLoading || isSubmitDisabled}
           onClick={handleVerify}
         >
@@ -328,7 +333,7 @@ export const Login: FunctionComponent = () => {
     loginSection === LoginSection.EMAIL ? !email || !!emailError : !otp || otp.length < 4;
 
   return (
-    <div className="flex sm:flex-col md:flex-row h-screen lg:p-8">
+    <div className="flex font-primary sm:flex-col md:flex-row h-screen lg:p-8">
       <div className="sm:max-w-full lg:max-w-[50%] flex-1 h-full relative">
         <img
           src={LoginImage}

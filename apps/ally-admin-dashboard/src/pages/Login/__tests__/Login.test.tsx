@@ -103,6 +103,11 @@ vi.mock("@components", () => ({
 // Mock assets
 vi.mock("@assets", () => ({
   ArrowDown: () => <div data-testid="arrow-down">Arrow</div>,
+  BackCircle: ({ onClick, className }: any) => (
+    <div data-testid="back-circle" onClick={onClick} className={className}>
+      Back
+    </div>
+  ),
   LoginImage: "login-image.jpg",
 }));
 
@@ -124,12 +129,30 @@ vi.mock("@constants", () => ({
     auth: {
       hey: "Hey",
       welcomeTo: "Welcome to",
+      ally: "ally",
+      email: "Email",
       rememberMe: "Remember me",
       generatingOTP: "Generating OTP...",
       signingIn: "Signing in...",
       termsAndConditions: "Terms and Conditions",
       privacyPolicy: "Privacy Policy",
       didNotReceiveTheCode: "Didn't receive the code?",
+      enterEmailToContinue: "Enter your email address to continue",
+      enterEmailPlaceholder: "Enter your email address",
+      next: "Next",
+      byTappingNext: "By tapping next, you agree to Ally's",
+      andAcknowledge: "and acknowledge",
+      verifyYourEmail: "Verify your email address",
+      enterSecurityCode: "Enter the security code sent to",
+      codeWillExpire: "This code will expire in",
+      minutes: "minutes",
+      needNewCode: "Need a new code?",
+      resend: "Resend",
+      verify: "Verify",
+      helloAllyUrl: "helloally.ai",
+      failedToGenerateOTP: "Failed to generate OTP. Please try again.",
+      failedToVerifyOTP: "Failed to verify OTP. Please try again.",
+      invalidEmailError: "Please enter a valid email address",
     },
   },
 }));
@@ -419,7 +442,7 @@ describe("Login", () => {
       );
       expect(otpHeading).toBeInTheDocument();
       expect(screen.getByTestId("otp-input")).toBeInTheDocument();
-      expect(screen.getByTestId("arrow-down")).toBeInTheDocument();
+      expect(screen.getByTestId("back-circle")).toBeInTheDocument();
       expect(screen.getByText("Verify")).toBeInTheDocument();
     });
   });
