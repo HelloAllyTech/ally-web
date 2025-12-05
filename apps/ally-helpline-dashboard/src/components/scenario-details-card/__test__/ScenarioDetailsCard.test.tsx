@@ -76,11 +76,15 @@ vi.mock("@components", async importOriginal => {
   };
 });
 
-// Mock CustomVideo from ui-shared
+// Mock CustomVideo and FEATURE_FLAGS_MAP from ui-shared
 vi.mock("@ally-ui-mono/ui-shared", () => ({
   CustomVideo: ({ src, alt, className }: any) => (
     <video data-testid="custom-video" src={src} aria-label={alt} className={className} />
   ),
+  FEATURE_FLAGS_MAP: {
+    TERMS_AND_CONDITION_FLAG: false,
+    TRIGGER_WARNINGS_FLAG: false,
+  },
 }));
 
 // Mock Clipboard API - this will be set up in beforeEach
