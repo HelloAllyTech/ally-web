@@ -533,8 +533,9 @@ describe("CreateSimulation", () => {
   describe("Form Validation", () => {
     it("should disable publish button when mandatory fields are not filled", () => {
       mockFormMethods.watch.mockReturnValue({
-        title: "", description: "",
-        triggerWarningIds: []
+        title: "",
+        description: "",
+        triggerWarningIds: [],
       });
       renderCreateSimulation();
 
@@ -544,8 +545,9 @@ describe("CreateSimulation", () => {
 
     it("should enable publish button when all mandatory fields are filled", () => {
       mockFormMethods.watch.mockReturnValue({
-        title: "Test", description: "Test Description",
-        triggerWarningIds: []
+        title: "Test",
+        description: "Test Description",
+        triggerWarningIds: [],
       });
       renderCreateSimulation();
 
@@ -581,7 +583,6 @@ describe("CreateSimulation", () => {
         title: "Test",
         openingStatements: "Statement 1\nStatement 2\nStatement 3",
         triggerWarningIds: [],
-
       });
       mockCreateSimulation.mockResolvedValue({ data: [{ id: "new-id" }] });
 
