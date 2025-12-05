@@ -1,6 +1,6 @@
 import React from "react";
 
-import { Add, Edit, Unpublish, Archive, Delete, Play, Unarchive } from "@assets";
+import { Add, Edit, Unpublish, Archive, Delete, Play, Unarchive, Copy } from "@assets";
 import {
   DataList,
   ActionButton,
@@ -29,6 +29,7 @@ interface SimulationListProps {
   onArchive?: (simulation: Simulation) => void;
   onUnpublish?: (simulation: Simulation) => void;
   onUnarchive?: (simulation: Simulation) => void;
+  onDuplicate?: (simulation: Simulation) => void;
   onCreateSimulation?: () => void;
 }
 
@@ -44,6 +45,7 @@ export const SimulationList: React.FC<SimulationListProps> = ({
   onUnpublish,
   onUnarchive,
   onCreateSimulation,
+  onDuplicate,
 }) => {
   // Handle loading state
   if (isLoading && !isNonEmptyArray(simulations)) {
@@ -180,6 +182,12 @@ export const SimulationList: React.FC<SimulationListProps> = ({
       show: simulation =>
         simulation.status !== SimulationStatus.DRAFT &&
         simulation.status !== SimulationStatus.ARCHIVED,
+    },
+    {
+      //feature flag
+      icon: <Copy />,
+      tooltip: en.simulation.duplicate,
+      onClick: simulation => onDuplicate?.(simulation),
     },
     {
       icon: <Unarchive />,
