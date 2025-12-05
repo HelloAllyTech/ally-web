@@ -216,6 +216,7 @@ export const en = {
     eventsDeletedSuccessfully: "Events deleted successfully",
     viewOnly: "View Only",
     viewOnlyTooltip: "The simulation path is currently being used.",
+    create: "Create:",
   },
   userManagement: {
     organizationCreated: "Organization created successfully",

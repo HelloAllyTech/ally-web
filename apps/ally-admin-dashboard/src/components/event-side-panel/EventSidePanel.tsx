@@ -183,7 +183,7 @@ export const EventSidePanel: React.FC<EventSidePanelProps> = ({
           hasEvent={!!selectedEvent}
         />
 
-        <div className="h-[calc(100vh-100px)] px-10 pl-[46px] pt-2 overflow-y-auto [&::-webkit-scrollbar]:w-[1px] [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-scrollbar-thumb">
+        <div className="h-[calc(100vh-100px)] px-10 pl-[46px] pt-2 overflow-y-auto custom-scrollbar">
           <div className="mb-4">
             <input
               type="text"
@@ -215,7 +215,7 @@ export const EventSidePanel: React.FC<EventSidePanelProps> = ({
                 value={formData.branchInstruction}
                 onChange={value => handleFieldChange("branchInstruction", value)}
                 placeholder="Add instruction"
-                className="py-2 pt-[16px] px-0 border-none focus:outline-none text-base w-full resize-none overflow-y-auto [&::-webkit-scrollbar]:w-[1px] [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-scrollbar-thumb"
+                className="py-2 pt-[16px] px-0 border-none focus:outline-none text-base w-full resize-none overflow-y-auto custom-scrollbar"
               />
             </Field>
 
@@ -233,7 +233,7 @@ export const EventSidePanel: React.FC<EventSidePanelProps> = ({
                 value={formData.message}
                 onChange={value => handleFieldChange("message", value)}
                 placeholder="Add message"
-                className="py-2 pt-[16px] px-0 border-none focus:outline-none text-base w-full resize-none overflow-y-auto [&::-webkit-scrollbar]:w-[1px] [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-scrollbar-thumb"
+                className="py-2 pt-[16px] px-0 border-none focus:outline-none text-base w-full resize-none overflow-y-auto custom-scrollbar"
               />
             </Field>
 

@@ -148,7 +148,7 @@ const EventDropdown: React.FC<{
         </span>
       </button>
       {isOpen && (
-        <div className="absolute z-10 bg-white border border-border-light min-w-[300px] max-h-[300px] overflow-y-auto rounded-[6px] left-0 top-[40px] shadow-lg">
+        <div className="absolute z-10 bg-white border border-border-light min-w-[300px] max-h-[300px] overflow-y-auto rounded-[6px] left-0 top-[40px] shadow-lg custom-scrollbar">
           <div className="sticky top-0 bg-white p-2 border-b">
             <input
               ref={inputRef}
@@ -190,7 +190,7 @@ const FormTextarea: React.FC<{
     value={value}
     onChange={onChange}
     placeholder={placeholder}
-    className="py-2 pt-[16px] px-0 border-none disabled:bg-transparent focus:outline-none text-sm w-full resize-none overflow-y-auto [&::-webkit-scrollbar]:w-[1px] [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-scrollbar-thumb"
+    className="py-2 pt-[16px] px-0 border-none disabled:bg-transparent focus:outline-none text-sm w-full resize-none overflow-y-auto custom-scrollbar"
     disabled={disabled}
   />
 );
@@ -344,7 +344,7 @@ export const MappedEventSidePanel: React.FC<MappedEventSidePanelProps> = ({
           hasEvent={!!selectedEvent}
         />
 
-        <div className="h-[calc(100vh-100px)] px-10 pl-[46px] pt-2 overflow-y-auto [&::-webkit-scrollbar]:w-[1px] [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-scrollbar-thumb">
+        <div className="h-[calc(100vh-100px)] px-10 pl-[46px] pt-2 overflow-y-auto custom-scrollbar">
           <div className="mb-4">
             {isNewEvent ? (
               <EventDropdown

@@ -69,7 +69,7 @@ export const DropdownField: React.FC<DropdownFieldProps> = ({
                 </div>
 
                 {isOpen && (
-                  <div className="absolute left-0 top-full mt-1 w-full bg-white border rounded-md shadow-lg max-h-[240px] overflow-auto z-10">
+                  <div className="absolute left-0 top-full mt-1 w-full bg-white border rounded-md shadow-lg max-h-[240px] overflow-auto z-10 custom-scrollbar">
                     {isSearchable && (
                       <div className="sticky top-0 p-2 bg-white">
                         <input

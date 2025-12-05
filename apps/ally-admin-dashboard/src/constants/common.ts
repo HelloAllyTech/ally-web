@@ -45,6 +45,7 @@ export const ApiEndpoints = {
       `/v1/learn/admin/scenario-paths/${id}/duplicate`,
     PATH_TENANT_VISIBILITY: (tenantId: string | number) =>
       `v1/learn/admin/scenario-paths/tenant/${tenantId}`,
+    TRIGGER_WARNINGS: "/v1/learn/trigger-warnings",
   },
 
   USER_MANAGEMENT: {
@@ -125,4 +126,6 @@ export const TAG_TYPES = {
   SIMULATION_EVENTS: "simulationEvents",
   SIMULATION_PATHS: "simulationPaths",
   SCENARIO_PATHS: "scenarioPaths",
+  EACH_SESSION: "eachSession",
+  TRIGGER_WARNINGS: "triggerWarnings",
 };

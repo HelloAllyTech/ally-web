@@ -161,7 +161,7 @@ export const Learn: FC = () => {
                 isComingSoon={!isPathway && item.status === ScenarioStatus.COMING_SOON}
                 totalScenarios={isPathway ? item.totalScenarios : undefined}
                 completedScenarios={isPathway ? item.completedScenarios : undefined}
-                triggerWarnings={isPathway ? item.triggerWarnings : undefined}
+                triggerWarnings={isPathway ? undefined : item.triggerWarnings}
               />
             </motion.div>
           );

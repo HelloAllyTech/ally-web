@@ -1,6 +1,6 @@
 import { UseFormReturn } from "react-hook-form";
 
-import { SessionEventDetectionData } from "./simulation";
+import { SessionEventDetectionData, triggerWarnings } from "./simulation";
 import { TriggerCondition } from "./triggerConditions";
 
 export type FormData = {
@@ -30,6 +30,7 @@ export type FormData = {
   terminationEventId: string;
   terminationMessage: string;
   isGlobal: boolean;
+  triggerWarningIds: triggerWarnings[];
 };
 
 export interface DemographicsSectionProps {

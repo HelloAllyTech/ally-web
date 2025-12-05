@@ -146,7 +146,11 @@ export const SimulationSelectionModal: FC<SimulationProps> = ({
       if (page === 1) {
         setAllSimulations(newSimulations);
       } else {
-        setAllSimulations(prev => [...prev, ...newSimulations]);
+        setAllSimulations(prev => {
+          const existingIds = new Set(prev.map(opt => opt.id));
+          const addSimulation = newSimulations.filter(opt => !existingIds.has(opt.id));
+          return [...prev, ...addSimulation];
+        });
       }
 
       // Check if there are more items to load
@@ -284,7 +288,7 @@ export const SimulationSelectionModal: FC<SimulationProps> = ({
             />
           </div>
 
-          <div ref={scrollContainerRef} className="mt-4 h-80 overflow-y-auto">
+          <div ref={scrollContainerRef} className="mt-4 h-80 overflow-y-auto custom-scrollbar">
             {!isNonEmptyArray(simulationList) && !isFetching ? (
               <p className="text-center text-typography-600 py-8">
                 {en.simulation.noSimulationFound}

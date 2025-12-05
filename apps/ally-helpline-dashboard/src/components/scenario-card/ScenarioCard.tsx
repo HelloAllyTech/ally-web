@@ -2,6 +2,7 @@ import { FC, useState } from "react";
 
 import { motion } from "framer-motion";
 
+import { FEATURE_FLAGS_MAP } from "@ally-ui-mono/ui-shared";
 import { ChipGroup, CircularProgress } from "@components";
 
 import { scenarioDescriptionStyle } from "./constants";
@@ -64,27 +65,30 @@ const ScenarioCard: FC<ScenarioCardProps> = ({
       tabIndex={0}
       onKeyDown={onKeyDown}
     >
-      <div className="flex flex-col h-full gap-1 p-[8px]">
+      <div className="flex flex-col h-full gap-1 p-[8px] pb-[5px]">
         {renderImage()}
         <div className="flex flex-row gap-1 px-[6px] justify-between">
-          <div className="flex flex-col min-w-0 mr-2">
-            <div id="scenario-title" className="font-medium text-typography-900 text-base truncate">
+          <div className="flex flex-col w-full min-w-0 mr-2">
+            <div
+              id="scenario-title"
+              className="font-[500] leading-tight text-typography-900 text-base line-clamp-2 pt-[6px]"
+            >
               {title}
             </div>
 
-            {triggerWarnings?.length > 0 ? (
-              <>
-                <div className="flex w-full h-[1px] my-[4px] bg-gray-200" />
+            {FEATURE_FLAGS_MAP.TRIGGER_WARNINGS_FLAG && triggerWarnings?.length > 0 ? (
+              <div className="flex flex-col w-full">
+                <div className="flex w-full h-[1px] my-[8px] bg-gray-200" />
                 <div className="flex flex-col justify-start items-start]">
-                  <div className="text-sm text-typography-900 font-medium mb-[8px]">
+                  <div className="text-xs text-typography-900 font-medium mb-[8px]">
                     Trigger warnings
                   </div>
                   <ChipGroup items={triggerWarnings} chipClassName="max-w-[40%]" maxVisible={2} />
                 </div>
-              </>
+              </div>
             ) : (
               description?.length > 0 && (
-                <div className="text-sm text-typography-800">
+                <div className="text-sm text-typography-800  leading-tight pt-[6px]">
                   <p style={scenarioDescriptionStyle}>{description}</p>
                 </div>
               )
@@ -98,7 +102,7 @@ const ScenarioCard: FC<ScenarioCardProps> = ({
           </div>
 
           {isPathway && totalScenarios > 0 && completedScenarios > 0 && (
-            <div className="flex-shrink-0 flex items-center">
+            <div className="flex-shrink-0 flex items-center pt-[6px]">
               <CircularProgress
                 current={completedScenarios}
                 total={totalScenarios}

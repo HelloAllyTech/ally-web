@@ -181,8 +181,16 @@ describe("CreateSimulation", () => {
   const mockFormMethods = {
     handleSubmit: vi.fn(fn => () => fn()),
     formState: { dirtyFields: {} },
-    watch: vi.fn(() => ({ title: "Test Title", description: "Test Description" })),
-    getValues: vi.fn(() => ({ title: "Test Title", description: "Test Description" })) as any,
+    watch: vi.fn(() => ({
+      title: "Test Title",
+      description: "Test Description",
+      triggerWarningIds: [],
+    })),
+    getValues: vi.fn(() => ({
+      title: "Test Title",
+      description: "Test Description",
+      triggerWarningIds: [],
+    })) as any,
     reset: vi.fn(),
   };
 
@@ -375,7 +383,11 @@ describe("CreateSimulation", () => {
     it("should update simulation if id exists", async () => {
       mockParams.id = "existing-id";
       mockUpdateSimulation.mockResolvedValue({ data: [{ id: "existing-id" }] });
-      mockFormMethods.getValues.mockReturnValue({ title: "Test", description: "Test Description" });
+      mockFormMethods.getValues.mockReturnValue({
+        title: "Test",
+        description: "Test Description",
+        triggerWarningIds: [],
+      });
 
       renderCreateSimulation();
 
@@ -394,7 +406,11 @@ describe("CreateSimulation", () => {
   describe("Publish", () => {
     it("should publish simulation and navigate to studio", async () => {
       mockCreateSimulation.mockResolvedValue({ data: [{ id: "new-id" }] });
-      mockFormMethods.getValues.mockReturnValue({ title: "Test", description: "Test Description" });
+      mockFormMethods.getValues.mockReturnValue({
+        title: "Test",
+        description: "Test Description",
+        triggerWarningIds: [],
+      });
 
       renderCreateSimulation();
 
@@ -417,7 +433,11 @@ describe("CreateSimulation", () => {
     it("should show error message on publish failure", async () => {
       const { toast } = await import("sonner");
       mockCreateSimulation.mockRejectedValue(new Error("Failed"));
-      mockFormMethods.getValues.mockReturnValue({ title: "Test", description: "Test Description" });
+      mockFormMethods.getValues.mockReturnValue({
+        title: "Test",
+        description: "Test Description",
+        triggerWarningIds: [],
+      });
 
       renderCreateSimulation();
 
@@ -444,6 +464,8 @@ describe("CreateSimulation", () => {
         title: "Test",
         description: "Test Description",
         coverImageUrl: "test.jpg",
+        openingStatements: "",
+        triggerWarningIds: [],
       });
 
       renderCreateSimulation();
@@ -473,7 +495,11 @@ describe("CreateSimulation", () => {
   describe("Event Configuration", () => {
     it("should render event map table when on event configuration step", async () => {
       mockParams.id = "existing-id";
-      mockFormMethods.getValues.mockReturnValue({ title: "Test", description: "Test Description" });
+      mockFormMethods.getValues.mockReturnValue({
+        title: "Test",
+        description: "Test Description",
+        triggerWarningIds: [],
+      });
 
       renderCreateSimulation();
 
@@ -490,7 +516,11 @@ describe("CreateSimulation", () => {
 
     it("should save draft before navigating to event configuration if no simulation id", async () => {
       mockCreateSimulation.mockResolvedValue({ data: [{ id: "new-id" }] });
-      mockFormMethods.getValues.mockReturnValue({ title: "Test", description: "Test Description" });
+      mockFormMethods.getValues.mockReturnValue({
+        title: "Test",
+        description: "Test Description",
+        triggerWarningIds: [],
+      });
 
       renderCreateSimulation();
 
@@ -513,7 +543,11 @@ describe("CreateSimulation", () => {
 
   describe("Form Validation", () => {
     it("should disable publish button when mandatory fields are not filled", () => {
-      mockFormMethods.watch.mockReturnValue({ title: "", description: "" });
+      mockFormMethods.watch.mockReturnValue({
+        title: "",
+        description: "",
+        triggerWarningIds: [],
+      });
       renderCreateSimulation();
 
       const publishButton = screen.getByText("Publish");
@@ -521,7 +555,11 @@ describe("CreateSimulation", () => {
     });
 
     it("should enable publish button when all mandatory fields are filled", () => {
-      mockFormMethods.watch.mockReturnValue({ title: "Test", description: "Test Description" });
+      mockFormMethods.watch.mockReturnValue({
+        title: "Test",
+        description: "Test Description",
+        triggerWarningIds: [],
+      });
       renderCreateSimulation();
 
       const publishButton = screen.getByText("Publish");
@@ -555,8 +593,8 @@ describe("CreateSimulation", () => {
       mockFormMethods.getValues.mockReturnValue({
         title: "Test",
         openingStatements: "Statement 1\nStatement 2\nStatement 3",
+        triggerWarningIds: [],
       });
-
       mockCreateSimulation.mockResolvedValue({ data: [{ id: "new-id" }] });
 
       renderCreateSimulation();

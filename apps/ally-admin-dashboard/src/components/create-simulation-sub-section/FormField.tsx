@@ -7,6 +7,7 @@ import { AutoTerminationRuleField } from "../auto-termination-rule-field";
 import { DropdownField } from "../dropdown-field";
 import { FileUpload } from "../file-upload";
 import { InputField } from "../input-field";
+import { TagSelector } from "../tag-selector";
 import { ToggleSection } from "../toggle-section";
 import { VoiceDropdown } from "../voice-dropdown";
 
@@ -15,6 +16,10 @@ export const FormField: FC<FormFieldProps> = ({ config, formMethods }) => {
   const {
     formState: { errors },
   } = formMethods;
+
+  const updateTriggerWarnings = triggerWarning => {
+    formMethods.setValue("triggerWarningIds", triggerWarning);
+  };
 
   const getFieldElement = () => {
     switch (type) {
@@ -105,6 +110,16 @@ export const FormField: FC<FormFieldProps> = ({ config, formMethods }) => {
         return (
           <div className="w-full">
             <ToggleSection label={label} name={id} formMethods={formMethods} />
+          </div>
+        );
+      case FORM_FIELD_TYPES.TAG_AND_DROPDOWN:
+        return (
+          <div className="w-full">
+            <TagSelector
+              triggerWarnings={formMethods?.getValues()?.triggerWarningIds ?? []}
+              updateTriggerWarnings={updateTriggerWarnings}
+              label={label}
+            />
           </div>
         );
       default:
