@@ -53,6 +53,11 @@ export interface SimulationInput {
   openingStatements?: string[];
   voiceId?: string;
   agentGoal?: string;
+  autoTerminationStatus?: boolean;
+  terminationEventId?: string;
+  terminationMessage?: string;
+  isGlobal?: boolean;
+  triggerWarningIds?: string[];
 }
 
 export interface UpdateSimulationByIdInput {
@@ -103,6 +108,7 @@ export interface GetSimulationByIdResponse {
     message: string;
     autoTerminationStatus: boolean;
   };
+  triggerWarnings: triggerWarnings[];
 }
 
 export interface CreateSimulationInput {
@@ -247,4 +253,30 @@ export interface GetCoverVideoUrlResponse {
 
 export interface DeleteCoverVideoRequest {
   coverVideoUrl: string;
+}
+
+export interface getTriggerWarningsQueryParams {
+  name?: string;
+  limit?: number;
+  offset?: number;
+  sortBy?: string;
+  order?: string;
+}
+
+export interface triggerWarnings {
+  id: string;
+  name: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface triggerWarningsRequest {
+  name: string;
+}
+
+export interface createTriggerResponse {
+  id: string;
+  name: string;
+  createdAt: string;
+  updatedAt: string;
 }

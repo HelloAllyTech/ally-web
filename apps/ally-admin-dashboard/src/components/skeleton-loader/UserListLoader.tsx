@@ -20,7 +20,7 @@ export const UserListLoader: React.FC<UserListLoaderProps> = ({ rows = 15 }) => 
   );
 
   return (
-    <div className="w-full overflow-x-auto text-sm text-typography-800">
+    <div className="w-full overflow-x-auto text-sm text-typography-800 custom-scrollbar">
       <div className="min-w-[900px]">
         {renderHeader}
 

@@ -262,7 +262,7 @@ export const CreatePath: FC = () => {
               </Tooltip>
             ))}
         </div>
-        <div ref={containerRef} className="p-6 pt-4 overflow-y-auto h-full">
+        <div ref={containerRef} className="p-6 pt-4 overflow-y-auto h-full custom-scrollbar">
           {component}
         </div>
       </div>

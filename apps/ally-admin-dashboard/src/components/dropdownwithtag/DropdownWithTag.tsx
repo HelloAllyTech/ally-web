@@ -97,7 +97,7 @@ export const DropdownwithTag: React.FC<dropdownWithTagProps> = ({
           </div>
 
           {open && (
-            <div className="absolute left-0 top-full mt-1 w-full bg-white border rounded-md shadow-lg max-h-[180px] overflow-auto z-50">
+            <div className="absolute left-0 top-full mt-1 w-full bg-white border rounded-md shadow-lg max-h-[180px] overflow-auto z-50 custom-scrollbar">
               {options.map(role => {
                 const roleName = role.name || role.value;
                 const isSelected = value.includes(roleName);

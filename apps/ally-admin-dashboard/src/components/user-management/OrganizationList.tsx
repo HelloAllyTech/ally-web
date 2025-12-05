@@ -37,11 +37,11 @@ export const OrganizationList: React.FC<OrganizationListProps> = ({
     onEditPress?.(tenant);
   };
   return (
-    <div className="w-full text-sm overflow-x-auto">
+    <div className="w-full text-sm overflow-x-auto custom-scrollbar">
       <div className="min-w-[900px]">
         {renderHeader}
 
-        <div className="h-[calc(100vh-270px)] overflow-y-auto">
+        <div className="h-[calc(100vh-270px)] overflow-y-auto custom-scrollbar">
           {organizations.map(tenant => (
             <div
               key={tenant.id}

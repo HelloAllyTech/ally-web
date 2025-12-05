@@ -146,7 +146,7 @@ export const CreateSimulation: FC = () => {
       }
     }
 
-    const { openingStatements, ...restForm } = formData as any;
+    const { openingStatements, triggerWarningIds, ...restForm } = formData as any;
 
     const openingStatementsArray = isNonEmptyString(openingStatements)
       ? openingStatements
@@ -155,9 +155,12 @@ export const CreateSimulation: FC = () => {
           .filter((line: string) => line.length > 0)
       : null;
 
+    const triggerWarning = triggerWarningIds.map(trigger => trigger.id);
+
     const simulationData = {
       ...extractValidData(SIMULATION_CREATOR_FIELD_GROUPS, restForm),
       openingStatements: openingStatementsArray,
+      triggerWarningIds: triggerWarning,
       status,
     };
     let response;
@@ -261,7 +264,7 @@ export const CreateSimulation: FC = () => {
         <div className="sticky flex flex-row justify-between top-0 z-10 pt-3 mx-6 pb-4 border-b border-border-light">
           <h2 className="text-lg font-semibold text-typography-900">{title}</h2>
         </div>
-        <div ref={containerRef} className="p-6 pt-4 overflow-y-auto h-full">
+        <div ref={containerRef} className="p-6 pt-4 overflow-y-auto h-full custom-scrollbar">
           {component}
         </div>
       </div>

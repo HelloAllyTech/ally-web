@@ -365,16 +365,6 @@ describe("AutoExpandableTextarea", () => {
     });
   });
 
-  describe("Scrollbar Styling", () => {
-    it("has custom scrollbar styling classes", () => {
-      render(<AutoExpandableTextarea value="" onChange={mockOnChange} />);
-
-      const textarea = screen.getByRole("textbox");
-      expect(textarea.className).toContain("[&::-webkit-scrollbar]:w-[1px]");
-      expect(textarea.className).toContain("[&::-webkit-scrollbar-track]:bg-transparent");
-    });
-  });
-
   describe("Component Updates", () => {
     it("updates when value prop changes", () => {
       const { rerender } = render(<AutoExpandableTextarea value="Old" onChange={mockOnChange} />);

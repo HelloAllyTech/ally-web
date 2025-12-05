@@ -28,6 +28,7 @@ vi.mock("@ally-ui-mono/ui-shared", () => ({
     warn: vi.fn(),
     debug: vi.fn(),
   },
+  FEATURE_FLAGS_MAP: {},
 }));
 
 // Mock the baseAPI first
