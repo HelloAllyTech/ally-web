@@ -146,7 +146,7 @@ export const CreateSimulation: FC = () => {
       }
     }
 
-    const { openingStatements, ...restForm } = formData as any;
+    const { openingStatements, triggerWarningIds, ...restForm } = formData as any;
 
     const openingStatementsArray = isNonEmptyString(openingStatements)
       ? openingStatements
@@ -155,9 +155,12 @@ export const CreateSimulation: FC = () => {
           .filter((line: string) => line.length > 0)
       : null;
 
+    const triggerWarning = triggerWarningIds.map(trigger => trigger.id);
+
     const simulationData = {
       ...extractValidData(SIMULATION_CREATOR_FIELD_GROUPS, restForm),
       openingStatements: openingStatementsArray,
+      triggerWarningIds: triggerWarning,
       status,
     };
     let response;

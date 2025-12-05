@@ -35,6 +35,6 @@ export const formatSimulationResponseData = (data: GetSimulationByIdResponse) =>
     terminationEventId: data?.terminationEvent?.eventId,
     terminationMessage: data?.terminationEvent?.message,
     isGlobal: Boolean(data?.isGlobal),
-    triggerWarnings: data?.triggerWarnings,
+    triggerWarningIds: data?.triggerWarnings,
   };
 };

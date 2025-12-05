@@ -17,6 +17,10 @@ export const FormField: FC<FormFieldProps> = ({ config, formMethods }) => {
     formState: { errors },
   } = formMethods;
 
+  const updateTriggerWarnings = triggerWarning => {
+    formMethods.setValue("triggerWarningIds", triggerWarning);
+  };
+
   const getFieldElement = () => {
     switch (type) {
       case FORM_FIELD_TYPES.SELECT:
@@ -111,7 +115,11 @@ export const FormField: FC<FormFieldProps> = ({ config, formMethods }) => {
       case FORM_FIELD_TYPES.TAG_AND_DROPDOWN:
         return (
           <div className="w-full">
-            <TagSelector formMethods={formMethods} label={label} id={id} />
+            <TagSelector
+              triggerWarnings={formMethods?.getValues()?.triggerWarningIds ?? []}
+              updateTriggerWarnings={updateTriggerWarnings}
+              label={label}
+            />
           </div>
         );
       default:

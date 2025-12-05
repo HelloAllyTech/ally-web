@@ -57,7 +57,7 @@ export interface SimulationInput {
   terminationEventId?: string;
   terminationMessage?: string;
   isGlobal?: boolean;
-  triggerWarnings?: string[];
+  triggerWarningIds?: string[];
 }
 
 export interface UpdateSimulationByIdInput {
@@ -108,7 +108,7 @@ export interface GetSimulationByIdResponse {
     message: string;
     autoTerminationStatus: boolean;
   };
-  triggerWarnings: string[];
+  triggerWarnings: triggerWarnings[];
 }
 
 export interface CreateSimulationInput {

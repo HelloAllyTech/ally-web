@@ -129,7 +129,7 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
         maxLength: 1000,
       },
       FEATURE_FLAGS_MAP.TRIGGER_WARNINGS_FLAG && {
-        id: "triggerWarnings",
+        id: "triggerWarningIds",
         label: "Trigger Warnings",
         type: FORM_FIELD_TYPES.TAG_AND_DROPDOWN,
         options: SEXUAL_ORIENTATION_OPTIONS,

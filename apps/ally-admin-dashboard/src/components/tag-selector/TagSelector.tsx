@@ -4,23 +4,26 @@ import { useCreateTriggerWarningMutation, useGetTriggerWarningsQuery } from "@ap
 import { Close, Plus, Search } from "@assets";
 import { en } from "@constants";
 import { useClickOutside } from "@hooks";
+import { triggerWarnings } from "@src/types";
 
 interface TagsDropdown {
-  formMethods?: any;
+  updateTriggerWarnings: (tags: triggerWarnings[]) => void;
+  triggerWarnings: triggerWarnings[];
   label: string;
-  id: string;
 }
 
 const DEFAULT_LIMIT = 20;
 
-export const TagSelector: React.FC<TagsDropdown> = ({ formMethods, label, id }) => {
+export const TagSelector: React.FC<TagsDropdown> = ({
+  triggerWarnings = [],
+  updateTriggerWarnings,
+  label,
+}) => {
   const [openDropdown, setOpenDropdown] = useState<boolean>(false);
   const [searchQuery, setSearchQuery] = useState<string>("");
-  const [tags, setTags] = useState<string[]>([]);
   const [page, setPage] = useState(1);
   const [allOptions, setAllOptions] = useState([]);
   const [hasMore, setHasMore] = useState(true);
-
   const observerRef = useRef(null);
   const loadingRef = useRef(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -31,8 +34,8 @@ export const TagSelector: React.FC<TagsDropdown> = ({ formMethods, label, id }) 
     offset: (page - 1) * DEFAULT_LIMIT,
     limit: DEFAULT_LIMIT,
   });
-
   const [createTriggerWarning] = useCreateTriggerWarningMutation();
+
   // Reset when search query changes
   useEffect(() => {
     setPage(1);
@@ -43,20 +46,24 @@ export const TagSelector: React.FC<TagsDropdown> = ({ formMethods, label, id }) 
   // Load options data
   useEffect(() => {
     if (options) {
+      const selectedTagNames = triggerWarnings.map(tag => tag.name.toLowerCase());
+      const filtered = options.filter(
+        option => !selectedTagNames.includes(option.name.toLowerCase()),
+      );
+
       if (page === 1) {
-        setAllOptions(options);
+        setAllOptions(filtered);
       } else {
         // Deduplicate based on ID before adding
         setAllOptions(prev => {
-          const existingIds = new Set(prev.map(opt => opt.id));
-          const newOptions = options.filter(opt => !existingIds.has(opt.id));
+          const existingIds = new Set(prev.map(opt => opt?.id));
+          const newOptions = filtered.filter(opt => !existingIds.has(opt?.id));
           return [...prev, ...newOptions];
         });
       }
-
       if (options.length < DEFAULT_LIMIT) setHasMore(false);
     }
-  }, [options, page]);
+  }, [options, page, triggerWarnings]);
 
   // Intersection Observer callback
   const handleObserver = (entries: IntersectionObserverEntry[]) => {
@@ -88,13 +95,6 @@ export const TagSelector: React.FC<TagsDropdown> = ({ formMethods, label, id }) 
     };
   }, [handleObserver, openDropdown]);
 
-  // Sync with form methods
-  useEffect(() => {
-    if (formMethods) {
-      formMethods.setValue(id, tags);
-    }
-  }, [tags, formMethods, id]);
-
   const addTagButton = () => {
     setOpenDropdown(prev => !prev);
   };
@@ -106,22 +106,21 @@ export const TagSelector: React.FC<TagsDropdown> = ({ formMethods, label, id }) 
 
   useClickOutside(dropdownRef, closeDropdown);
 
-  const removeTag = (tagToRemove: string) => {
-    setTags(tags.filter(tag => tag !== tagToRemove));
+  const removeTag = (tagToRemove: triggerWarnings) => {
+    updateTriggerWarnings(triggerWarnings.filter(tag => tag !== tagToRemove));
   };
 
-  const selectTag = (selectedTag: string) => {
-    const newTag = selectedTag.trim();
-    if (newTag && !tags.includes(newTag)) {
-      setTags([...tags, newTag]);
+  const selectTag = (selectedTag: any) => {
+    if (selectedTag && !triggerWarnings.includes(selectedTag)) {
+      updateTriggerWarnings([...triggerWarnings, selectedTag]);
     }
     closeDropdown();
   };
 
   const createNewTag = async () => {
     const newTag = searchQuery.trim();
-    await createTriggerWarning({ name: newTag });
-    selectTag(newTag);
+    const newTrigger = await createTriggerWarning({ name: newTag });
+    selectTag(newTrigger?.data);
   };
 
   const renderDropdown = () => (
@@ -138,15 +137,16 @@ export const TagSelector: React.FC<TagsDropdown> = ({ formMethods, label, id }) 
       </div>
 
       <div className="overflow-auto max-h-[240px] custom-scrollbar" ref={scrollContainerRef}>
-        {allOptions.map(option => (
-          <div
-            key={option.id}
-            className="px-3 py-2 text-sm cursor-pointer transition-colors hover:bg-gray-100 whitespace-nowrap overflow-auto custom-scrollbar flex"
-            onClick={() => selectTag(option.name)}
-          >
-            <span>{option.name}</span>
-          </div>
-        ))}
+        {allOptions.length > 0 &&
+          allOptions.map(option => (
+            <div
+              key={option?.id}
+              className="px-3 py-2 text-sm cursor-pointer transition-colors hover:bg-gray-100 whitespace-nowrap overflow-auto custom-scrollbar flex"
+              onClick={() => selectTag(option)}
+            >
+              <span>{option?.name}</span>
+            </div>
+          ))}
 
         {/* Loading indicator */}
         {hasMore && (
@@ -157,7 +157,7 @@ export const TagSelector: React.FC<TagsDropdown> = ({ formMethods, label, id }) 
 
         {/* CREATE OPTION */}
         {searchQuery.trim() !== "" &&
-          !allOptions.some(option => option.name === searchQuery.trim()) && (
+          !allOptions.some(option => option?.name === searchQuery.trim()) && (
             <div
               className="px-3 py-2 text-sm cursor-pointer hover:bg-gray-100"
               onClick={createNewTag}
@@ -169,7 +169,6 @@ export const TagSelector: React.FC<TagsDropdown> = ({ formMethods, label, id }) 
       </div>
     </div>
   );
-
   return (
     <div className="flex flex-col gap-2">
       <label htmlFor="tags" className="text-typography-900 cursor-pointer">
@@ -177,12 +176,12 @@ export const TagSelector: React.FC<TagsDropdown> = ({ formMethods, label, id }) 
       </label>
 
       <div className="flex flex-wrap gap-2">
-        {tags?.map((tag, index) => (
+        {triggerWarnings?.map(tag => (
           <div
-            key={index}
+            key={tag?.id}
             className="flex items-center px-2 bg-white border border-border-light rounded-full text-typography-900"
           >
-            <span>{tag}</span>
+            <span>{tag?.name}</span>
             <button type="button" className="cursor-pointer ml-2" onClick={() => removeTag(tag)}>
               <Close />
             </button>
