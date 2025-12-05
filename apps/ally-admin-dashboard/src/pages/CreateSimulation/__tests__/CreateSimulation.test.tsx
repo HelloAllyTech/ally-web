@@ -140,6 +140,7 @@ vi.mock("@constants", () => ({
   en: mockEn,
   ROUTES: {
     SIMULATION_STUDIO: "/simulation-studio",
+    EDIT_SIMULATION: (id: string | number) => `/create-simulation/edit/${id}`,
   },
   StepperList: [
     { id: "basic-info", label: "Basic Info" },
@@ -419,6 +420,10 @@ describe("CreateSimulation", () => {
       await waitFor(
         () => {
           expect(mockCreateSimulation).toHaveBeenCalled();
+          // First navigates to edit page, then to simulation studio
+          expect(mockNavigate).toHaveBeenCalledWith("/create-simulation/edit/new-id", {
+            replace: true,
+          });
           expect(mockNavigate).toHaveBeenCalledWith("/simulation-studio");
         },
         { timeout: 500 },
@@ -452,7 +457,9 @@ describe("CreateSimulation", () => {
 
   describe("Preview", () => {
     it("should open and close preview", async () => {
-      mockCreateSimulation.mockResolvedValue({ data: [{ id: "new-id" }] });
+      // Set simulationId to skip the navigation to edit page during save
+      mockParams.id = "existing-id";
+      mockUpdateSimulation.mockResolvedValue({ data: [{ id: "existing-id" }] });
       mockFormMethods.getValues.mockReturnValue({
         title: "Test",
         description: "Test Description",
@@ -523,6 +530,10 @@ describe("CreateSimulation", () => {
       await waitFor(
         () => {
           expect(mockCreateSimulation).toHaveBeenCalled();
+          // Navigation to edit page happens after creating simulation
+          expect(mockNavigate).toHaveBeenCalledWith("/create-simulation/edit/new-id", {
+            replace: true,
+          });
           expect(screen.getByTestId("event-map-table")).toBeInTheDocument();
         },
         { timeout: 500 },

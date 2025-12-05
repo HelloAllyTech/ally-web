@@ -174,6 +174,7 @@ export const CreateSimulation: FC = () => {
         response = await createSimulationQuery({
           scenarios: [simulationData],
         });
+        navigate(ROUTES.EDIT_SIMULATION(response?.data?.[0]?.id), { replace: true });
       }
     }
     return response;

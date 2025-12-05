@@ -1,6 +1,6 @@
 import { UseFormReturn } from "react-hook-form";
 
-import { triggerWarnings } from "./simulation";
+import { SessionEventDetectionData, triggerWarnings } from "./simulation";
 import { TriggerCondition } from "./triggerConditions";
 
 export type FormData = {
@@ -136,6 +136,7 @@ export interface UpdateEventDataParam {
   emoji?: string;
   visibilityType?: string;
   triggerCondition?: TriggerCondition;
+  detectionData?: SessionEventDetectionData;
 }
 
 export interface UpdateScenarioEventDataParam {
