@@ -26,7 +26,7 @@ type LearnTabId = (typeof LEARN_TABS)[number]["id"];
 
 export const Learn: FC = () => {
   const navigate = useNavigate();
-  const { permissions } = useUser();
+  const { permissions, isAuthenticated } = useUser();
   const hasPathPermissions = hasPermissions(permissions, Permissions.VIEW_SCENARIO_PATHS);
   const [searchParams, setSearchParams] = useSearchParams();
 
@@ -43,10 +43,12 @@ export const Learn: FC = () => {
   }, [tabFromUrl, setSearchParams]);
 
   const {
-    data: scenarios,
+    data: scenariosData,
     isLoading: isScenariosLoading,
     refetch: refetchScenarios,
-  } = useGetScenariosQuery();
+  } = useGetScenariosQuery({ isPrivate: isAuthenticated });
+
+  const scenarios = scenariosData?.data || [];
 
   const {
     data: pathwaysData,

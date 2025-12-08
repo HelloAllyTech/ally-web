@@ -206,7 +206,7 @@ describe("Learn Component", () => {
     vi.clearAllMocks();
     mockSearchParams.set("tab", "simulations");
     mockUseGetScenariosQuery.mockReturnValue({
-      data: [],
+      data: { data: [] },
       isLoading: false,
       refetch: vi.fn(),
     });
@@ -225,6 +225,7 @@ describe("Learn Component", () => {
     mockUseUser.mockReturnValue({
       permissions: ["view:scenario-paths"],
       user: { id: "1", name: "Test User" },
+      isAuthenticated: true,
     });
   });
 
@@ -380,7 +381,7 @@ describe("Learn Component", () => {
   describe("Loading State", () => {
     beforeEach(() => {
       mockUseGetScenariosQuery.mockReturnValue({
-        data: undefined,
+        data: { data: undefined },
         isLoading: true,
         refetch: vi.fn(),
       });
@@ -424,7 +425,7 @@ describe("Learn Component", () => {
   describe("Empty State", () => {
     beforeEach(() => {
       mockUseGetScenariosQuery.mockReturnValue({
-        data: [],
+        data: { data: [] },
         isLoading: false,
         refetch: vi.fn(),
       });
@@ -494,7 +495,7 @@ describe("Learn Component", () => {
 
     beforeEach(() => {
       mockUseGetScenariosQuery.mockReturnValue({
-        data: mockScenarios,
+        data: { data: mockScenarios },
         isLoading: false,
         refetch: vi.fn(),
       });
@@ -575,7 +576,7 @@ describe("Learn Component", () => {
 
     beforeEach(() => {
       mockUseGetScenariosQuery.mockReturnValue({
-        data: mockScenarios,
+        data: { data: mockScenarios },
         isLoading: false,
         refetch: vi.fn(),
       });
@@ -610,7 +611,7 @@ describe("Learn Component", () => {
 
     beforeEach(() => {
       mockUseGetScenariosQuery.mockReturnValue({
-        data: mockScenarios,
+        data: { data: mockScenarios },
         isLoading: false,
         refetch: vi.fn(),
       });
@@ -646,7 +647,7 @@ describe("Learn Component", () => {
 
     beforeEach(() => {
       mockUseGetScenariosQuery.mockReturnValue({
-        data: mockScenarios,
+        data: { data: mockScenarios },
         isLoading: false,
         refetch: vi.fn(),
       });
@@ -714,7 +715,7 @@ describe("Learn Component", () => {
 
     beforeEach(() => {
       mockUseGetScenariosQuery.mockReturnValue({
-        data: mockScenarios,
+        data: { data: mockScenarios },
         isLoading: false,
         refetch: vi.fn(),
       });
@@ -764,7 +765,7 @@ describe("Learn Component", () => {
   describe("Edge Cases", () => {
     it("should handle undefined scenarios data", () => {
       mockUseGetScenariosQuery.mockReturnValue({
-        data: undefined,
+        data: { data: undefined },
         isLoading: false,
         refetch: vi.fn(),
       });
@@ -790,7 +791,7 @@ describe("Learn Component", () => {
       ];
 
       mockUseGetScenariosQuery.mockReturnValue({
-        data: mockScenarios,
+        data: { data: mockScenarios },
         isLoading: false,
         refetch: vi.fn(),
       });
