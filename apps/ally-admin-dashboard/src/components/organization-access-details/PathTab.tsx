@@ -46,9 +46,18 @@ export const PathTab: FC<PathTabProps> = ({
       setPaths(pathsResponse.data);
     } else {
       setPaths(prev => {
-        const existingIds = new Set(prev.map(path => path.id));
-        const newItems = pathsResponse.data.filter(path => !existingIds.has(path.id));
-        return [...prev, ...newItems];
+        const nextDataMap = new Map(pathsResponse.data.map(path => [path.id, path]));
+        const result = prev.map(path => {
+          const updated = nextDataMap.get(path.id);
+          if (updated) {
+            nextDataMap.delete(path.id);
+            return updated;
+          }
+          return path;
+        });
+
+        nextDataMap.forEach(path => result.push(path));
+        return result;
       });
     }
   }, [pathsResponse, pathsOffset]);

@@ -47,9 +47,18 @@ export const SimulationsTab: FC<SimulationsTabProps> = ({
       setSimulations(nextData);
     } else {
       setSimulations(prev => {
-        const existingIds = new Set(prev.map(simulation => simulation.id));
-        const newItems = nextData.filter(simulation => !existingIds.has(simulation.id));
-        return [...prev, ...newItems];
+        const nextDataMap = new Map(nextData.map(simulation => [simulation.id, simulation]));
+        const result = prev.map(simulation => {
+          const updated = nextDataMap.get(simulation.id);
+          if (updated) {
+            nextDataMap.delete(simulation.id);
+            return updated;
+          }
+          return simulation;
+        });
+
+        nextDataMap.forEach(simulation => result.push(simulation));
+        return result;
       });
     }
   }, [simulationsResponse, simulationsOffset]);
