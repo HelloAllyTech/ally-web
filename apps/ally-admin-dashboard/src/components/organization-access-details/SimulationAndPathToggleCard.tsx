@@ -19,7 +19,7 @@ export const SimulationAndPathToggleCard: React.FC<SimulationAndPathToggleCardPr
   return (
     <div className="flex items-center gap-4 py-4 pr-4 border-b border-border-light hover:bg-background-secondary transition-colors h-[80px]">
       {/* Simulation Image */}
-      <div className="w-[18%] md:w-[10%] lg:w-[7%] h-[56px] cursor-pointer rounded-lg overflow-hidden flex-shrink-0 bg-neutral-100">
+      <div className="w-[18%] md:w-[10%] lg:w-[7%] h-[56px] rounded-lg overflow-hidden flex-shrink-0 bg-neutral-100">
         <CustomImage
           src={simulation.coverImageUrl}
           alt={simulation.title}

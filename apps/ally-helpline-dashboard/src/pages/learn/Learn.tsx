@@ -1,14 +1,13 @@
 import { FC, useEffect } from "react";
 
-import { AnimatePresence, motion } from "framer-motion";
-import { useNavigate, useSearchParams } from "react-router-dom";
-
 import { useGetScenariosQuery, useGetScenarioPathwaysQuery } from "@api";
 import { CreditsDisplay, ScenarioCard, TabGroup } from "@components";
 import { Permissions } from "@constants";
 import { useUser } from "@hooks";
 import { ScenarioStatus } from "@types";
 import { hasPermissions } from "@utils";
+import { AnimatePresence, motion } from "framer-motion";
+import { useNavigate, useSearchParams } from "react-router-dom";
 
 import { learnPageContainerVariants, learnPageItemVariants } from "./constants";
 
@@ -26,7 +25,7 @@ type LearnTabId = (typeof LEARN_TABS)[number]["id"];
 
 export const Learn: FC = () => {
   const navigate = useNavigate();
-  const { permissions } = useUser();
+  const { permissions, isAuthenticated } = useUser();
   const hasPathPermissions = hasPermissions(permissions, Permissions.VIEW_SCENARIO_PATHS);
   const [searchParams, setSearchParams] = useSearchParams();
 
@@ -43,10 +42,12 @@ export const Learn: FC = () => {
   }, [tabFromUrl, setSearchParams]);
 
   const {
-    data: scenarios,
+    data: scenariosData,
     isLoading: isScenariosLoading,
     refetch: refetchScenarios,
-  } = useGetScenariosQuery();
+  } = useGetScenariosQuery({ isPrivate: isAuthenticated });
+
+  const scenarios = scenariosData?.data || [];
 
   const {
     data: pathwaysData,
@@ -138,7 +139,7 @@ export const Learn: FC = () => {
 
     return (
       <div
-        className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 mx-auto pb-10"
+        className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-[6px] sm:gap-[12px] mx-auto pb-10"
         role="list"
         aria-label={ariaLabel}
       >
@@ -161,6 +162,7 @@ export const Learn: FC = () => {
                 isComingSoon={!isPathway && item.status === ScenarioStatus.COMING_SOON}
                 totalScenarios={isPathway ? item.totalScenarios : undefined}
                 completedScenarios={isPathway ? item.completedScenarios : undefined}
+                triggerWarnings={isPathway ? undefined : item.triggerWarnings}
               />
             </motion.div>
           );

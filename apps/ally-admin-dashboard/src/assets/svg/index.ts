@@ -6,6 +6,7 @@ import Archive from "./archive.svg?react";
 import ArrowDown from "./arrowDown.svg?react";
 import ArrowDownFilled from "./arrowDownFilled.svg?react";
 import ArrowSolid from "./arrowSolid.svg?react";
+import BackCircle from "./back-circle.svg?react";
 import BackIcon from "./backIcon.svg?react";
 import Bolt from "./bolt.svg?react";
 import Book from "./book.svg?react";
@@ -90,4 +91,5 @@ export {
   FocusLens,
   Eye,
   SemanticSimilarity,
+  BackCircle,
 };

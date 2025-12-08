@@ -9,6 +9,11 @@ export enum PathwayStatus {
   ARCHIVED = "ARCHIVED",
 }
 
+export interface TriggerChipItemWarning {
+  id: number;
+  name: string;
+}
+
 export interface Scenario {
   id?: number;
   title?: string;
@@ -17,6 +22,10 @@ export interface Scenario {
   coverImageUrl?: string | null;
   coverVideoUrl?: string | null;
   status?: ScenarioStatus;
+  metadata?: {
+    name?: string;
+  };
+  triggerWarnings?: TriggerChipItemWarning[];
 }
 
 export interface ScenarioSession {
@@ -32,6 +41,10 @@ export interface ScenarioSession {
   createdAt: string;
   updatedAt: string;
   status: string;
+  triggerWarnings?: TriggerChipItemWarning[];
+  remortparticipantName?: string;
+  remortparticipantCoverImageUrl?: string;
+  title?: string;
 }
 
 export interface SimulationLog {
@@ -91,6 +104,7 @@ export interface StartSimulationInput {
 
 export interface StartSimulationResponse {
   scenarioSession: ScenarioSession;
+  scenario: Scenario;
   accessToken: {
     token: string;
     roomName: string;
@@ -219,6 +233,7 @@ interface UpcomingScenario {
 }
 
 interface CurrentSession {
+  eventStatus?: string;
   scenarioId?: string;
   scenarioPathSessionItemStatus?: string;
   coverImageUrl?: string;
@@ -238,6 +253,8 @@ export interface SimulationTranscriptMessage {
   id: number;
   content: string;
   senderId: number;
+  startSeconds?: number;
+  endSeconds?: number | null;
   createdAt?: string;
 }
 

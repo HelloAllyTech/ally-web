@@ -7,6 +7,7 @@ import {
   useGetSimulationsQuery,
   useDeleteSimulationByIdMutation,
   useUpdateSimulationByIdMutation,
+  useDuplicateSimulationMutation,
 } from "@api";
 import { en, ROUTES, SimulationStatus, SORT_BY, SORT_ORDER } from "@constants";
 import { Simulation } from "@types";
@@ -30,6 +31,7 @@ export const useSimulations = ({ selectedFilters }: UseSimulationsProps) => {
   const [simulations, setSimulations] = useState<Simulation[]>([]);
   const [simulationsOffset, setSimulationsOffset] = useState<number>(0);
   const [hasMore, setHasMore] = useState(true);
+  const [IsDuplicateSimulationPopupOpen, setIsDuplicateSimulationPopupOpen] = useState(false);
 
   const simulationParams = {
     limit: SIMULATIONS_PAGE_SIZE,
@@ -50,6 +52,7 @@ export const useSimulations = ({ selectedFilters }: UseSimulationsProps) => {
 
   const [deleteSimulationById] = useDeleteSimulationByIdMutation();
   const [updateSimulationById] = useUpdateSimulationByIdMutation();
+  const [duplicateSimulation] = useDuplicateSimulationMutation();
 
   useEffect(() => {
     setSimulationsOffset(0);
@@ -149,6 +152,22 @@ export const useSimulations = ({ selectedFilters }: UseSimulationsProps) => {
     setIsUnpublishPopupOpen(true);
   };
 
+  const handleDuplicateSimulation = async (simulation: Simulation) => {
+    try {
+      await duplicateSimulation(simulation.id).unwrap();
+      setIsDuplicateSimulationPopupOpen(false);
+      setCurrentSimulation(null);
+      toast.success(en.simulation.simulationDuplicatedSuccessfully);
+    } catch (error: any) {
+      toast.error(error?.data?.message || en.simulation.failedDuplicateSimulation);
+    }
+  };
+
+  const onDuplicateSimulation = (simulation: Simulation) => {
+    setCurrentSimulation(simulation);
+    setIsDuplicateSimulationPopupOpen(true);
+  };
+
   return {
     // State
     simulations,
@@ -172,6 +191,8 @@ export const useSimulations = ({ selectedFilters }: UseSimulationsProps) => {
     setIsUnarchivePopupOpen,
     isEditPopupOpen,
     setIsEditPopupOpen,
+    IsDuplicateSimulationPopupOpen,
+    setIsDuplicateSimulationPopupOpen,
 
     // Actions
     loadSimulations,
@@ -186,5 +207,7 @@ export const useSimulations = ({ selectedFilters }: UseSimulationsProps) => {
     onUnarchiveSimulation,
     onPreviewSimulation,
     onUnpublishSimulation,
+    onDuplicateSimulation,
+    handleDuplicateSimulation,
   };
 };

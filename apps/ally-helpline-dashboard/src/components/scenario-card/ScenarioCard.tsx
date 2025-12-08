@@ -2,7 +2,8 @@ import { FC, useState } from "react";
 
 import { motion } from "framer-motion";
 
-import { CircularProgress } from "@components";
+import { FEATURE_FLAGS_MAP } from "@ally-ui-mono/ui-shared";
+import { ChipGroup, CircularProgress } from "@components";
 
 import { scenarioDescriptionStyle } from "./constants";
 import { ScenarioCardProps } from "./types";
@@ -15,6 +16,7 @@ const ScenarioCard: FC<ScenarioCardProps> = ({
   title,
   totalScenarios,
   completedScenarios = 0,
+  triggerWarnings,
 }) => {
   const [imageError, setImageError] = useState(false);
   const isPathway = totalScenarios !== undefined;
@@ -52,7 +54,7 @@ const ScenarioCard: FC<ScenarioCardProps> = ({
     <motion.div
       layout
       onClick={onClick}
-      className={`bg-white overflow-hidden transition-all duration-300 h-full rounded-[20px] border-[1px] border-border-light shadow-[0_1px_2px_rgba(0,0,0,0.05)] hover:shadow-[0_4px_8px_rgba(0,0,0,0.15)] ${isComingSoon ? "pointer-events-none" : "cursor-pointer"}`}
+      className={`bg-white font-primary overflow-hidden transition-all duration-300 h-full rounded-[20px] border-[1px] pb-[8px] border-border-light shadow-[0_1px_2px_rgba(0,0,0,0.05)] hover:shadow-[0_4px_8px_rgba(0,0,0,0.15)] ${isComingSoon ? "pointer-events-none" : "cursor-pointer"}`}
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
@@ -63,18 +65,33 @@ const ScenarioCard: FC<ScenarioCardProps> = ({
       tabIndex={0}
       onKeyDown={onKeyDown}
     >
-      <div className="flex flex-col h-full gap-3 p-[10px]">
+      <div className="flex flex-col h-full gap-1 p-[8px] pb-[5px]">
         {renderImage()}
-        <div className="flex flex-row font-primary px-[6px] pb-[8px] justify-between">
-          <div className="flex flex-col gap-2 min-w-0 mr-2">
-            <div id="scenario-title" className="font-medium text-typography-900 text-base truncate">
+        <div className="flex flex-row gap-1 px-[6px] justify-between">
+          <div className="flex flex-col w-full min-w-0 mr-2">
+            <div
+              id="scenario-title"
+              className="font-[500] leading-tight text-typography-900 text-base line-clamp-2 pt-[6px]"
+            >
               {title}
             </div>
 
-            {description?.length > 0 && (
-              <div className="text-sm text-typography-800">
-                <p style={scenarioDescriptionStyle}>{description}</p>
+            {FEATURE_FLAGS_MAP.TRIGGER_WARNINGS_FLAG && triggerWarnings?.length > 0 ? (
+              <div className="flex flex-col w-full">
+                <div className="flex w-full h-[1px] my-[8px] bg-gray-200" />
+                <div className="flex flex-col justify-start items-start]">
+                  <div className="text-xs text-typography-900 font-medium mb-[8px]">
+                    Trigger warnings
+                  </div>
+                  <ChipGroup items={triggerWarnings} chipClassName="max-w-[40%]" maxVisible={2} />
+                </div>
               </div>
+            ) : (
+              description?.length > 0 && (
+                <div className="text-sm text-typography-800  leading-tight pt-[6px]">
+                  <p style={scenarioDescriptionStyle}>{description}</p>
+                </div>
+              )
             )}
 
             {isPathway && (
@@ -85,7 +102,7 @@ const ScenarioCard: FC<ScenarioCardProps> = ({
           </div>
 
           {isPathway && totalScenarios > 0 && completedScenarios > 0 && (
-            <div className="flex-shrink-0 flex items-center">
+            <div className="flex-shrink-0 flex items-center pt-[6px]">
               <CircularProgress
                 current={completedScenarios}
                 total={totalScenarios}

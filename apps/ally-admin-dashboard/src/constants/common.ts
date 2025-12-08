@@ -43,8 +43,10 @@ export const ApiEndpoints = {
     SCENARIO_PATH_BY_ID: (id: string | number) => `/v1/learn/admin/scenario-paths/${id}`,
     DUPLICATE_SCENARIO_PATH: (id: string | number) =>
       `/v1/learn/admin/scenario-paths/${id}/duplicate`,
+    DUPLICATE_SIMULATION: (id: string | number) => `/v1/learn/admin/scenarios/${id}/duplicate`,
     PATH_TENANT_VISIBILITY: (tenantId: string | number) =>
       `v1/learn/admin/scenario-paths/tenant/${tenantId}`,
+    TRIGGER_WARNINGS: "/v1/learn/trigger-warnings",
   },
 
   USER_MANAGEMENT: {
@@ -125,4 +127,6 @@ export const TAG_TYPES = {
   SIMULATION_EVENTS: "simulationEvents",
   SIMULATION_PATHS: "simulationPaths",
   SCENARIO_PATHS: "scenarioPaths",
+  EACH_SESSION: "eachSession",
+  TRIGGER_WARNINGS: "triggerWarnings",
 };

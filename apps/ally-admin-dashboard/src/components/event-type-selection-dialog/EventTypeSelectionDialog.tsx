@@ -113,7 +113,7 @@ export const EventTypeSelectionDialog: FC<EventTypeSelectionDialogProps> = ({
               {en.simulation.selectEventType}
             </div>
 
-            <div className="grid grid-cols-1 gap-2">
+            <div className="grid grid-cols-1 gap-2 custom-scrollbar">
               {EVENT_TYPE_OPTIONS.map(option => {
                 const Icon = option.icon;
                 const isSelected = selectedType === option.value;

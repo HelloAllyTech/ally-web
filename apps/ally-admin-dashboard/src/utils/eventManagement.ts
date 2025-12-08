@@ -151,6 +151,9 @@ export const convertEventToApiPayload = (event: UpdateEventDataParam): SessionEv
           detectionData.condition = condition;
         }
       }
+    } else {
+      detectionData.score = 0;
+      detectionData.condition = SessionEventDetectionCondition.GT;
     }
   }
 
@@ -168,6 +171,9 @@ export const convertEventToApiPayload = (event: UpdateEventDataParam): SessionEv
           detectionData.condition = condition;
         }
       }
+    } else {
+      detectionData.time = 0;
+      detectionData.condition = SessionEventDetectionCondition.LT;
     }
   }
 

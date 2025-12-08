@@ -6,4 +6,10 @@ export interface ScenarioDetailsCardProps {
   onStart: () => void;
   title: string;
   noCredits?: boolean;
+  triggerWarnings?: TriggerChipItemWarning[];
+}
+
+export interface TriggerChipItemWarning {
+  id: number;
+  name: string;
 }

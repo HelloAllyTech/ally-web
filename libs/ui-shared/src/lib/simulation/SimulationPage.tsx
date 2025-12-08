@@ -7,28 +7,30 @@ import { motion } from "framer-motion";
 import { toast } from "sonner";
 
 import { BottomSection } from "./SimulationBottomSection";
-import { SimulationEvents } from "./SimulationEvents";
 import { SimulationInterface } from "./SimulationInterface";
 import { SimulationScoreMeter } from "./SimulationScoreMeter";
-import { SimulationPageProps } from "./types";
+import { SimulationPageProps, TriggerWarning } from "./types";
+import { StartSimulation, EndSimulation } from "../../assets/audios";
+import { logger } from "../../logger";
 
-export const SimulationPage: FC<SimulationPageProps> = ({
-  room,
-  roomData,
-  roomStatus,
-  sessionId,
-  isEndingSession,
-  startTime,
-  events,
-  score,
-  title,
-  onEndSimulation,
-  renderWarningDialog,
-  renderFooter,
-}) => {
-  const [isMuted, setIsMuted] = useState(false);
-  const [isWarning, setIsWarning] = useState(false);
-  const [isFocusMode, setIsFocusMode] = useState(false);
+const useMeetingSound = () => {
+  useEffect(() => {
+    const startAudio = new Audio(StartSimulation);
+    const endAudio = new Audio(EndSimulation);
+
+    startAudio.play().catch(() => {
+      logger.error("Failed to play start simulation sound");
+    });
+
+    return () => {
+      endAudio.play().catch(() => {
+        logger.error("Failed to play end simulation sound");
+      });
+    };
+  }, []);
+};
+
+const useWakeLock = (sessionId: string | undefined) => {
   const wakeLockRef = useRef<WakeLockSentinel | null>(null);
 
   useEffect(() => {
@@ -38,7 +40,7 @@ export const SimulationPage: FC<SimulationPageProps> = ({
           wakeLockRef.current = await (navigator as any).wakeLock.request("screen");
         }
       } catch {
-        toast.error("Failed to request wake lock");
+        toast.warning("Failed to request wake lock");
       }
     };
 
@@ -48,13 +50,7 @@ export const SimulationPage: FC<SimulationPageProps> = ({
 
     const handleVisibilityChange = async () => {
       if (document.visibilityState === "visible" && sessionId) {
-        try {
-          if ("wakeLock" in navigator) {
-            wakeLockRef.current = await (navigator as any).wakeLock.request("screen");
-          }
-        } catch {
-          toast.error("Failed to request wake lock");
-        }
+        requestWakeLock();
       }
     };
 
@@ -72,6 +68,32 @@ export const SimulationPage: FC<SimulationPageProps> = ({
       }
     };
   }, [sessionId]);
+};
+
+export const SimulationPage: FC<SimulationPageProps> = ({
+  room,
+  roomData = {},
+  roomStatus,
+  sessionId,
+  isEndingSession,
+  startTime,
+  events,
+  score,
+  isPreview = false,
+  onEndSimulation,
+  renderWarningDialog,
+  renderFooter,
+}) => {
+  const [isMuted, setIsMuted] = useState(false);
+  const [isWarning, setIsWarning] = useState(false);
+  const [isFocusMode, setIsFocusMode] = useState(false);
+
+  useMeetingSound();
+  useWakeLock(sessionId);
+
+  if (!roomData) return null;
+
+  const { triggerWarnings = [], title } = roomData ?? {};
 
   const onTimeLimitWarning = () => {
     setIsWarning(true);
@@ -104,14 +126,36 @@ export const SimulationPage: FC<SimulationPageProps> = ({
       data-testid="simulation-page"
       className="min-h-screen p-6 flex flex-col gap-6 justify-between items-center font-['IBM_Plex_Serif'] bg-[#171A1A]"
     >
-      {title && (
-        <div data-testid="simulation-page-header" className="flex justify-between w-full">
+      <div
+        data-testid="simulation-page-header"
+        className="flex justify-between w-full border-l border-l-3 border-blue-500 pl-2"
+      >
+        <div className="flex flex-col gap-1">
           <div
             data-testid="simulation-page-title"
-            className="text-white text-[24px] flex self-start"
+            className="text-white text-[20px] flex self-start"
           >
             {title}
           </div>
+          {triggerWarnings?.length > 0 && (
+            <div
+              data-testid="simulation-page-trigger-warnings"
+              className="flex flex-wrap justify-start items-center gap-2 opacity-75"
+            >
+              {triggerWarnings?.map((triggerWarning: TriggerWarning, index: number) => (
+                <>
+                  <div key={triggerWarning.id} className="text-white text-[12px] flex self-start">
+                    {triggerWarning.name}
+                  </div>
+                  {index < triggerWarnings?.length - 1 && (
+                    <div className="w-[5px] h-[5px] rounded-full bg-white" />
+                  )}
+                </>
+              ))}
+            </div>
+          )}
+        </div>
+        {isPreview && (
           <button
             data-testid="simulation-page-close-preview-button"
             className="text-blue-300 font-['Roboto']"
@@ -119,11 +163,17 @@ export const SimulationPage: FC<SimulationPageProps> = ({
           >
             Close Preview
           </button>
-        </div>
-      )}
+        )}
+      </div>
+
       <motion.div layout className="max-h-[calc(100vh-170px)] w-full flex flex-1 gap-2">
-        <SimulationInterface roomStatus={roomStatus} roomData={roomData} />
-        {!isFocusMode && <SimulationEvents events={events} />}
+        <SimulationInterface
+          roomStatus={roomStatus}
+          roomData={roomData}
+          events={events}
+          isMuted={isMuted}
+          isFocusMode={isFocusMode}
+        />
       </motion.div>
       <SimulationScoreMeter score={score} />
 

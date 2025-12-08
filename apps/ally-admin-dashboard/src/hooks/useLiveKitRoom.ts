@@ -38,21 +38,8 @@ export const useLiveKitRoom = (handleDisconnect: () => void): UseLiveKitRoomRetu
 
   const onDataReceived = useCallback((payload: any) => {
     const eventObj = decodeUint8ToJson(payload) as LiveKitEvent;
-
-    const incomingMs = Date.parse(eventObj?.timestamp ?? "");
-    const lastMs = lastEventTimestampRef.current;
-
-    const incomingValid = !Number.isNaN(incomingMs);
-    const lastValid = typeof lastMs === "number" && !Number.isNaN(lastMs);
-    const shouldAppend = lastValid && incomingValid ? incomingMs - lastMs >= 10000 : true;
-
-    if (shouldAppend) {
-      setEvents(prev => [...prev, eventObj]);
-      setScore(prev => prev + (eventObj?.data?.score ?? 0));
-      if (incomingValid) {
-        lastEventTimestampRef.current = incomingMs;
-      }
-    }
+    setEvents(prev => [...prev, eventObj]);
+    setScore(prev => prev + (eventObj?.data?.score ?? 0));
   }, []);
 
   const onRoomDisconnect = useCallback(() => {
@@ -126,9 +113,9 @@ export const useLiveKitRoom = (handleDisconnect: () => void): UseLiveKitRoomRetu
     if (room.localParticipant) {
       room.localParticipant.setMicrophoneEnabled(false);
     }
+    await endScenarioPreview({ roomName: id || "" });
     setRoomStatus(RoomStatus.DISCONNECTED);
     room.disconnect();
-    await endScenarioPreview({ roomName: id || "" });
   };
 
   useEffect(() => {

@@ -21,40 +21,27 @@ export const Simulation = () => {
     navigate(`${ROUTES.SIMULATION_SUMMARY}/${id}`, { replace: true });
   };
 
-  const { room, roomData, roomStatus, startTime, handleEndSession, events, score } =
+  const { room, roomData, roomStatus, startTime, events, score } =
     useLiveKitRoom(handleRoomDisconnected);
 
   const onEndSimulation = async () => {
-    handleEndSession();
     try {
       await endSimulation({ sessionId: id });
       logger.info(`Ended simulation for session: ${id}`);
-      handleRoomDisconnected();
     } catch (error) {
       logger.error(`Failed to end simulation: ${error}`);
     }
   };
 
   useEffect(() => {
-    // Push a state so that "back" just pops this state but stays on page
-    window.history.pushState(null, document.title, window.location.href);
-
-    const handlePopState = () => {
-      // Prevent default back behavior effectively by pushing state again
-      window.history.pushState(null, document.title, window.location.href);
-      setIsBackConfirmOpen(true);
-    };
-
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
       e.preventDefault();
       e.returnValue = "";
     };
 
-    window.addEventListener("popstate", handlePopState);
     window.addEventListener("beforeunload", handleBeforeUnload);
 
     return () => {
-      window.removeEventListener("popstate", handlePopState);
       window.removeEventListener("beforeunload", handleBeforeUnload);
     };
   }, []);

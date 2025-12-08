@@ -6,3 +6,4 @@ export * from "./callSummary";
 export * from "./search";
 export * from "./learn";
 export * from "./simulationCredits";
+export * from "./termsAndAgreement";

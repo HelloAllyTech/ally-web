@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback, FunctionComponent } from "react";
+import { useEffect, useState, useCallback, FunctionComponent, useRef } from "react";
 
 import { FetchBaseQueryError } from "@reduxjs/toolkit/query";
 import { motion, AnimatePresence } from "framer-motion";
@@ -6,9 +6,15 @@ import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
-import { useGenerateOTPMutation, useVerifyOTPMutation } from "@api";
+import { FEATURE_FLAGS_MAP } from "@ally-ui-mono/ui-shared";
+import {
+  useGenerateOTPMutation,
+  useLazyCheckTermsAndAgreementQuery,
+  usePutTermsAndAgreementMutation,
+  useVerifyOTPMutation,
+} from "@api";
 import { Ally, BackCircle, LoginImage, RedirectIcon } from "@assets";
-import { Button, Carousel, OTP, TextField } from "@components";
+import { Button, Carousel, OTP, TermsAndAgreement, TextField } from "@components";
 import {
   ALLY_PRIVACY_POLICY_URL,
   ALLY_TERMS_URL,
@@ -23,6 +29,9 @@ import { useUser } from "@hooks";
 import { RootState } from "@store";
 import { openLinkInNewTab, validateEmail } from "@utils";
 
+const RESEND_CODE_COUNTDOWN = 60; // 2 minutes
+const DEFAULT_EXPIRES_IN = 10; // 10 minutes
+
 export const Login: FunctionComponent = () => {
   const navigate = useNavigate();
   const { user } = useSelector((state: RootState) => state.user);
@@ -33,6 +42,9 @@ export const Login: FunctionComponent = () => {
   const [otp, setOtp] = useState<string>("");
   const [countdown, setCountdown] = useState<number>(0);
   const [rememberMe, setRememberMe] = useState<boolean>(false);
+  const [termsAndAgreement, setTermsAndAgreement] = useState<boolean>(false);
+  const accessTokenRef = useRef<string>("");
+  const refreshTokenRef = useRef<string>("");
 
   const [
     generateOTP,
@@ -54,6 +66,9 @@ export const Login: FunctionComponent = () => {
   ] = useVerifyOTPMutation();
 
   const { isAuthenticated, checkAuth } = useUser();
+
+  const [checkTermsAndAgreement] = useLazyCheckTermsAndAgreementQuery();
+  const [putCheckTermsAndAgreement] = usePutTermsAndAgreementMutation();
 
   const isLoading = isGeneratingOTP || isVerifyingOTP;
 
@@ -82,7 +97,7 @@ export const Login: FunctionComponent = () => {
       toast.error(errorMessage);
     } else if (isGenerateOTPSuccess && generateOTPData) {
       setLoginSection(LoginSection.OTP);
-      setCountdown(10); // Start 10 second countdown when OTP is generated
+      setCountdown(RESEND_CODE_COUNTDOWN);
     }
   }, [isGenerateOTPSuccess, generateOTPError, generateOTPData]);
 
@@ -112,15 +127,29 @@ export const Login: FunctionComponent = () => {
         const errorMessage = errorData?.message ?? "Failed to verify OTP. Please try again.";
         toast.error(errorMessage);
       } else if (isVerifyOTPSuccess && verifyOTPData) {
-        localStorage.setItem(LOCAL_STORAGE_KEYS.ACCESS_TOKEN, verifyOTPData.accessToken);
-        localStorage.setItem(LOCAL_STORAGE_KEYS.REFRESH_TOKEN, verifyOTPData.refreshToken);
-        const userData = await checkAuth();
-        if (userData) {
-          navigate("/");
+        accessTokenRef.current = verifyOTPData.accessToken;
+        refreshTokenRef.current = verifyOTPData.refreshToken;
+        if (FEATURE_FLAGS_MAP.TERMS_AND_CONDITION_FLAG) {
+          const response = await checkTermsAndAgreement({
+            token: verifyOTPData.accessToken,
+          });
+          if (response.data?.success) {
+            updateLocalStorageAndNavigate();
+          } else {
+            setTermsAndAgreement(true);
+          }
+        } else {
+          updateLocalStorageAndNavigate();
         }
       }
     })();
   }, [isVerifyOTPSuccess, verifyOTPError, verifyOTPData]);
+
+  const updateLocalStorageAndNavigate = () => {
+    localStorage.setItem(LOCAL_STORAGE_KEYS.ACCESS_TOKEN, accessTokenRef.current);
+    localStorage.setItem(LOCAL_STORAGE_KEYS.REFRESH_TOKEN, refreshTokenRef.current);
+    navigate("/");
+  };
 
   const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newEmail = e.target.value;
@@ -154,6 +183,20 @@ export const Login: FunctionComponent = () => {
 
   const handleVerify = () => {
     verifyOTP({ email: email.trim(), otp });
+  };
+
+  const handleAgreementClose = () => {
+    setTermsAndAgreement(false);
+  };
+
+  const handleAgreeButtonClick = async () => {
+    const response = await putCheckTermsAndAgreement({ token: accessTokenRef.current });
+    if (response.data?.success) {
+      handleAgreementClose();
+      updateLocalStorageAndNavigate();
+    } else {
+      toast.error("Failed to agree to terms and conditions");
+    }
   };
 
   const getLoginSection = () => {
@@ -247,7 +290,7 @@ export const Login: FunctionComponent = () => {
         transition={{ duration: 0.4, ease: "easeInOut" }}
         className="flex flex-col justify-start gap-6"
       >
-        <BackCircle className="self-start cursor-pointer" onClick={handleBack} />
+        <BackCircle className="self-start cursor-pointer ml-[-10px]" onClick={handleBack} />
         <h1 className="text-4xl font-secondary">Verify your email address</h1>
         <div className="text-base mb-2 font-secondary flex flex-col">
           <span className="text-2xl">Enter the security code sent to</span>
@@ -255,10 +298,12 @@ export const Login: FunctionComponent = () => {
         </div>
         <div className="flex flex-col gap-2">
           <OTP value={otp} onChange={setOtp} />
-          <div className="text-xs text-typography-700">
-            Didn't receive the code?{" "}
+          <div className="text-xs text-typography-900">
+            This code will expire in{" "}
+            <span className="font-[700]">{`${generateOTPData?.expiresIn ? generateOTPData?.expiresIn / 60 : DEFAULT_EXPIRES_IN} minutes`}</span>
+            . Need a new code?
             <span
-              className={`${countdown > 0 ? "text-typography-800" : "text-primary-500"} cursor-pointer`}
+              className={`${countdown > 0 ? "text-typography-800" : "text-primary-500"} pl-2 cursor-pointer`}
               onClick={handleResendCode}
             >
               Resend {countdown > 0 ? `(${countdown}s)` : ""}
@@ -267,7 +312,7 @@ export const Login: FunctionComponent = () => {
         </div>
         <Button
           type="button"
-          className="w-full rounded-[5px] mt-6"
+          className="w-full rounded-[5px] mt-2  font-tertiary"
           disabled={isLoading || isSubmitDisabled}
           onClick={handleVerify}
         >
@@ -288,7 +333,7 @@ export const Login: FunctionComponent = () => {
     loginSection === LoginSection.EMAIL ? !email || !!emailError : !otp || otp.length < 4;
 
   return (
-    <div className="flex sm:flex-col md:flex-row h-screen lg:p-8">
+    <div className="flex font-primary sm:flex-col md:flex-row h-screen lg:p-8">
       <div className="sm:max-w-full lg:max-w-[50%] flex-1 h-full relative">
         <img
           src={LoginImage}
@@ -321,6 +366,10 @@ export const Login: FunctionComponent = () => {
           </div>
         </div>
       </div>
+      <TermsAndAgreement
+        isOpen={termsAndAgreement}
+        handleAgreeButtonClick={handleAgreeButtonClick}
+      />
     </div>
   );
 };

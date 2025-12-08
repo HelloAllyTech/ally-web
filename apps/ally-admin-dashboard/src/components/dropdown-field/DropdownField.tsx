@@ -18,6 +18,7 @@ export const DropdownField: React.FC<DropdownFieldProps> = ({
   options,
   placeholder = en.common.selectOption,
   isMandatory = false,
+  defaultOption,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -58,8 +59,12 @@ export const DropdownField: React.FC<DropdownFieldProps> = ({
                   className="w-full rounded border border-border-light px-3 py-1 bg-white text-md cursor-pointer flex items-center justify-between focus-within:ring-1 focus-within:ring-primary"
                   onClick={() => setIsOpen(prev => !prev)}
                 >
-                  <span className={selected ? "text-typography-900" : "text-typography-600"}>
-                    {selected ? selected.label : placeholder}
+                  <span
+                    className={
+                      selected || defaultOption ? "text-typography-900" : "text-typography-600"
+                    }
+                  >
+                    {selected ? selected.label : defaultOption || placeholder}
                   </span>
                   <span
                     className={`text-typography-600 transition-transform ${isOpen ? "rotate-180" : ""}`}
@@ -69,7 +74,7 @@ export const DropdownField: React.FC<DropdownFieldProps> = ({
                 </div>
 
                 {isOpen && (
-                  <div className="absolute left-0 top-full mt-1 w-full bg-white border rounded-md shadow-lg max-h-[240px] overflow-auto z-10">
+                  <div className="absolute left-0 top-full mt-1 w-full bg-white border rounded-md shadow-lg max-h-[240px] overflow-auto z-10 custom-scrollbar">
                     {isSearchable && (
                       <div className="sticky top-0 p-2 bg-white">
                         <input

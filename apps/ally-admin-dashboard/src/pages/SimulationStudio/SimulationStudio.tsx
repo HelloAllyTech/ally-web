@@ -57,12 +57,14 @@ export const SimulationStudio: React.FC = () => {
     isDeletePopupOpen,
     isUnarchivePopupOpen,
     isEditPopupOpen,
+    IsDuplicateSimulationPopupOpen,
     setIsPreviewOpen,
     setIsUnpublishPopupOpen,
     setIsArchivePopupOpen,
     setIsDeletePopupOpen,
     setIsUnarchivePopupOpen,
     setIsEditPopupOpen,
+    setIsDuplicateSimulationPopupOpen,
     loadSimulations,
     handleNewSimulation,
     handleCreateSimulation,
@@ -75,6 +77,8 @@ export const SimulationStudio: React.FC = () => {
     onUnarchiveSimulation,
     onPreviewSimulation,
     onUnpublishSimulation,
+    onDuplicateSimulation,
+    handleDuplicateSimulation,
   } = useSimulations({ selectedFilters });
 
   // Use the custom hook for pathways
@@ -250,6 +254,7 @@ export const SimulationStudio: React.FC = () => {
         onUnpublish={onUnpublishSimulation}
         onUnarchive={onUnarchiveSimulation}
         onCreateSimulation={handleCreateSimulation}
+        onDuplicate={onDuplicateSimulation}
         footer={renderFooter()}
       />
     );
@@ -431,6 +436,23 @@ export const SimulationStudio: React.FC = () => {
           }}
         />
       )}
+      <ActionConfirmationPopup
+        isOpen={IsDuplicateSimulationPopupOpen}
+        onClose={() => setIsDuplicateSimulationPopupOpen(false)}
+        title={en.simulation.duplicate}
+        titleItalic={en.simulation.simulation}
+        description={en.simulation.duplicateSimulationDescription}
+        primaryButton={{
+          label: en.simulation.duplicate,
+          onClick: () => handleDuplicateSimulation(currentSimulation),
+          variant: ButtonVariant.PRIMARY,
+        }}
+        secondaryButton={{
+          label: en.simulation.cancel,
+          onClick: () => setIsDuplicateSimulationPopupOpen(false),
+          variant: ButtonVariant.SECONDARY,
+        }}
+      />
     </div>
   );
 };

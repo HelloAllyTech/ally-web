@@ -13,6 +13,7 @@ export interface VerifyOTPRequest {
 
 export interface GenerateOTPResponse {
   success: boolean;
+  expiresIn: number;
 }
 
 export interface VerifyOTPResponse {

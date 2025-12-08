@@ -6,4 +6,10 @@ export interface ScenarioCardProps {
   isComingSoon?: boolean;
   totalScenarios?: number;
   completedScenarios?: number;
+  triggerWarnings?: TriggerChipItemWarning[];
+}
+
+export interface TriggerChipItemWarning {
+  id: number;
+  name: string;
 }
