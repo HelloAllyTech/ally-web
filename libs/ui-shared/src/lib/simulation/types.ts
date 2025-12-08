@@ -39,6 +39,11 @@ export interface RenderWarningDialogParams {
   onEnd: () => void;
 }
 
+export interface TriggerWarning {
+  id: number;
+  name: string;
+}
+
 export interface SimulationPageProps {
   room: any; // LiveKit Room instance; typed as any to avoid hard dependency for consumers
   roomData: any;
@@ -48,7 +53,7 @@ export interface SimulationPageProps {
   events: SimulationEventType[];
   score?: number;
   roomStatus: RoomStatus;
-  title?: string;
+  isPreview?: boolean;
   onEndSimulation: () => Promise<void> | void;
   renderWarningDialog: (params: RenderWarningDialogParams) => ReactNode;
   renderFooter?: () => ReactNode;
