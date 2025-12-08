@@ -35,9 +35,11 @@ const learnAPI = baseAPI.injectEndpoints({
      * Get all scenarios available in the Learn catalog.
      * @returns {Promise<GetScenariosResponse>} List of scenarios
      */
-    getScenarios: builder.query<Scenario[], void>({
-      query: () => ({
-        url: ApiEndpoints.LEARN.GET_SCENARIOS,
+    getScenarios: builder.query<{ data: Scenario[] }, { isPrivate: boolean }>({
+      query: ({ isPrivate }) => ({
+        url: isPrivate
+          ? ApiEndpoints.LEARN.GET_SCENARIOS_PRIVATE
+          : ApiEndpoints.LEARN.GET_SCENARIOS,
         method: HttpMethod.GET,
       }),
     }),
