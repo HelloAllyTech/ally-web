@@ -169,6 +169,9 @@ vi.mock("@utils", () => ({
   extractValidData: (_fields: any, data: any) => data,
   formatSimulationResponseData: (data: any) => data,
   isNonEmptyString: (str: string) => str && str.length > 0,
+  isNonEmptyArray: <T,>(value: unknown): value is T[] => {
+    return Array.isArray(value) && value?.length > 0;
+  },
   isEmpty: (value: unknown) => {
     if (value === undefined || value === null) return true;
     if (typeof value === "string" && value.trim().length === 0) return true;
