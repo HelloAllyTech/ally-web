@@ -14,7 +14,7 @@ interface PathTabProps {
   organizationId?: string;
   searchValue: string;
   onSearchChange: (value: string) => void;
-  onToggleAccess: (pathId: number, enabled: boolean) => void;
+  onToggleAccess: (pathId: number, enabled: boolean) => Promise<void>;
 }
 
 export const PathTab: FC<PathTabProps> = ({
@@ -25,6 +25,19 @@ export const PathTab: FC<PathTabProps> = ({
 }) => {
   const [pathsOffset, setPathsOffset] = useState(0);
   const [paths, setPaths] = useState<ScenarioPath[]>([]);
+
+  const handleToggleAccess = async (pathId: number, enabled: boolean) => {
+    setPaths(prev =>
+      prev.map(path => (path.id === pathId ? { ...path, isAssignedToTenant: enabled } : path)),
+    );
+    try {
+      await onToggleAccess(pathId, enabled);
+    } catch {
+      setPaths(prev =>
+        prev.map(path => (path.id === pathId ? { ...path, isAssignedToTenant: !enabled } : path)),
+      );
+    }
+  };
 
   const pathParams = {
     limit: PATHS_PAGE_SIZE,
@@ -46,18 +59,9 @@ export const PathTab: FC<PathTabProps> = ({
       setPaths(pathsResponse.data);
     } else {
       setPaths(prev => {
-        const nextDataMap = new Map(pathsResponse.data.map(path => [path.id, path]));
-        const result = prev.map(path => {
-          const updated = nextDataMap.get(path.id);
-          if (updated) {
-            nextDataMap.delete(path.id);
-            return updated;
-          }
-          return path;
-        });
-
-        nextDataMap.forEach(path => result.push(path));
-        return result;
+        const existingIds = new Set(prev.map(path => path.id));
+        const newItems = pathsResponse.data.filter(path => !existingIds.has(path.id));
+        return [...prev, ...newItems];
       });
     }
   }, [pathsResponse, pathsOffset]);
@@ -117,7 +121,7 @@ export const PathTab: FC<PathTabProps> = ({
         <div className="flex items-center gap-3 flex-shrink-0 min-w-[140px] justify-end mr-5">
           <ToggleSwitch
             enabled={path.isAssignedToTenant ?? false}
-            onChange={enabled => onToggleAccess(path.id, enabled)}
+            onChange={enabled => handleToggleAccess(path.id, enabled)}
             label={`Toggle access for ${path.title}`}
           />
           <span

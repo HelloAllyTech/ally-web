@@ -12,7 +12,7 @@ interface SimulationsTabProps {
   organizationId: string;
   searchValue: string;
   onSearchChange: (value: string) => void;
-  onToggleAccess: (simulationId: number, enabled: boolean) => void;
+  onToggleAccess: (simulationId: number, enabled: boolean) => Promise<void>;
 }
 
 export const SimulationsTab: FC<SimulationsTabProps> = ({
@@ -23,6 +23,27 @@ export const SimulationsTab: FC<SimulationsTabProps> = ({
 }) => {
   const [simulationsOffset, setSimulationsOffset] = useState(0);
   const [simulations, setSimulations] = useState<Simulation[]>([]);
+
+  const handleToggleAccess = async (simulationId: number, enabled: boolean) => {
+    setSimulations(prev =>
+      prev.map(simulation =>
+        simulation.id === simulationId
+          ? { ...simulation, isAssignedToTenant: enabled }
+          : simulation,
+      ),
+    );
+    try {
+      await onToggleAccess(simulationId, enabled);
+    } catch {
+      setSimulations(prev =>
+        prev.map(simulation =>
+          simulation.id === simulationId
+            ? { ...simulation, isAssignedToTenant: !enabled }
+            : simulation,
+        ),
+      );
+    }
+  };
 
   const simulationParams = {
     limit: SIMULATIONS_PAGE_SIZE,
@@ -47,18 +68,9 @@ export const SimulationsTab: FC<SimulationsTabProps> = ({
       setSimulations(nextData);
     } else {
       setSimulations(prev => {
-        const nextDataMap = new Map(nextData.map(simulation => [simulation.id, simulation]));
-        const result = prev.map(simulation => {
-          const updated = nextDataMap.get(simulation.id);
-          if (updated) {
-            nextDataMap.delete(simulation.id);
-            return updated;
-          }
-          return simulation;
-        });
-
-        nextDataMap.forEach(simulation => result.push(simulation));
-        return result;
+        const existingIds = new Set(prev.map(simulation => simulation.id));
+        const newItems = nextData.filter(simulation => !existingIds.has(simulation.id));
+        return [...prev, ...newItems];
       });
     }
   }, [simulationsResponse, simulationsOffset]);
@@ -114,7 +126,7 @@ export const SimulationsTab: FC<SimulationsTabProps> = ({
                 key={simulation.id}
                 simulation={simulation}
                 hasAccess={simulation.isAssignedToTenant ?? false}
-                onToggleAccess={enabled => onToggleAccess(simulation.id, enabled)}
+                onToggleAccess={enabled => handleToggleAccess(simulation.id, enabled)}
               />
             ))}
             {hasMore && (
