@@ -290,6 +290,14 @@ const simulationStudioAPI = baseAPI.injectEndpoints({
       }),
       invalidatesTags: [TAG_TYPES.TRIGGER_WARNINGS],
     }),
+
+    duplicateSimulation: builder.mutation<{ success: boolean }, string | number>({
+      query: id => ({
+        url: ApiEndpoints.SIMULATION_STUDIO.DUPLICATE_SIMULATION(id),
+        method: HttpMethod.POST,
+      }),
+      invalidatesTags: [TAG_TYPES.SIMULATION],
+    }),
   }),
 });
 
@@ -318,4 +326,5 @@ export const {
   useGetMappedScenarioEventsQuery,
   useGetTriggerWarningsQuery,
   useCreateTriggerWarningMutation,
+  useDuplicateSimulationMutation,
 } = simulationStudioAPI;
