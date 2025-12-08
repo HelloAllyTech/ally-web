@@ -5,9 +5,8 @@ import { Dialog } from "@mui/material";
 import { Button } from "@components";
 import { TermsAndAgreementData } from "@constants";
 
-const TermsAndAgreement = ({ isOpen, handleClose, handleAgreeButtonClick }) => {
+const TermsAndAgreement = ({ isOpen, handleAgreeButtonClick }) => {
   const [agreeCheck, setAgreeCheck] = useState<boolean>(false);
-
   const paperProps = {
     style: {
       borderRadius: "8px",
@@ -17,7 +16,7 @@ const TermsAndAgreement = ({ isOpen, handleClose, handleAgreeButtonClick }) => {
   };
 
   return (
-    <Dialog open={isOpen} onClose={handleClose} PaperProps={paperProps}>
+    <Dialog open={isOpen} disableEscapeKeyDown PaperProps={paperProps}>
       <div className="flex items-center justify-center font-medium text-2xl font-secondary">
         Terms and agreement
       </div>

@@ -94,8 +94,12 @@ export const en = {
   simulation: {
     duplicatePathwayDescription:
       "Are you sure you want to duplicate this pathway? This will create a new pathway with the same configurations.",
+    duplicateSimulationDescription:
+      "Are you sure you want to duplicate this simulation? This will create a new simulation with the same configurations",
     pathwayDuplicatedSuccessfully: "Pathway duplicated successfully",
+    simulationDuplicatedSuccessfully: "Simulation duplicated successfully",
     failedDuplicatePathway: "Failed to duplicate pathway",
+    failedDuplicateSimulation: "Failed to duplicate simulation",
     simulationDeletedSuccessfully: "Simulation deleted successfully",
     failedDeleteSimulation: "Failed to delete simulation",
     failedChangeSimulationStatus: "Failed to change simulation status",

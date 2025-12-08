@@ -28,6 +28,7 @@ export type FormData = {
   agentGoal: string;
   autoTerminationStatus: boolean;
   terminationEventId: string;
+  terminationName: string;
   terminationMessage: string;
   isGlobal: boolean;
   triggerWarningIds: triggerWarnings[];

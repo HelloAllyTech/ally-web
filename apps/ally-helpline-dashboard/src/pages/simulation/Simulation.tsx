@@ -34,25 +34,14 @@ export const Simulation = () => {
   };
 
   useEffect(() => {
-    // Push a state so that "back" just pops this state but stays on page
-    window.history.pushState(null, document.title, window.location.href);
-
-    const handlePopState = () => {
-      // Prevent default back behavior effectively by pushing state again
-      window.history.pushState(null, document.title, window.location.href);
-      setIsBackConfirmOpen(true);
-    };
-
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
       e.preventDefault();
       e.returnValue = "";
     };
 
-    window.addEventListener("popstate", handlePopState);
     window.addEventListener("beforeunload", handleBeforeUnload);
 
     return () => {
-      window.removeEventListener("popstate", handlePopState);
       window.removeEventListener("beforeunload", handleBeforeUnload);
     };
   }, []);

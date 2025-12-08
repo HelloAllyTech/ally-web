@@ -4,6 +4,7 @@ import { useForm } from "react-hook-form";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
 
+import { FEATURE_FLAGS_MAP } from "@ally-ui-mono/ui-shared";
 import {
   useCreateSimulationMutation,
   useDeleteCoverImageMutation,
@@ -21,13 +22,14 @@ import { CreateSimulationSubSection, SimulationEventMapTable } from "@components
 import { ButtonVariant } from "@components/types";
 import { en, ROUTES, StepperList, SIMULATION_CREATOR_FIELD_GROUPS } from "@constants";
 import { useDebounce } from "@hooks";
-import { SimulationStatus, SimulationPreviewType } from "@types";
+import { SimulationStatus, SimulationPreviewType, triggerWarnings } from "@types";
 import {
   getCreateSimulationSubSectionById,
   formatSimulationResponseData,
   isNonEmptyString,
   extractValidData,
   isEmpty,
+  isNonEmptyArray,
 } from "@utils";
 
 const stepIds = {
@@ -155,12 +157,17 @@ export const CreateSimulation: FC = () => {
           .filter((line: string) => line.length > 0)
       : null;
 
-    const triggerWarning = triggerWarningIds.map(trigger => trigger.id);
+    const triggerWarning =
+      FEATURE_FLAGS_MAP.TRIGGER_WARNINGS_FLAG && isNonEmptyArray(triggerWarningIds)
+        ? (triggerWarningIds as triggerWarnings[])
+            .filter(trigger => !isEmpty(trigger))
+            .map(trigger => trigger.id)
+        : [];
 
     const simulationData = {
       ...extractValidData(SIMULATION_CREATOR_FIELD_GROUPS, restForm),
       openingStatements: openingStatementsArray,
-      triggerWarningIds: triggerWarning,
+      ...(FEATURE_FLAGS_MAP.TRIGGER_WARNINGS_FLAG && { triggerWarningIds: triggerWarning }),
       status,
     };
     let response;
