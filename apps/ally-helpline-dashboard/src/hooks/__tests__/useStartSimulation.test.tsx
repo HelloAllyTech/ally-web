@@ -247,6 +247,15 @@ describe("useStartSimulation", () => {
         id: "session-123",
         startedAt: "2024-01-01T00:00:00Z",
       },
+      scenario: {
+        id: "scenario-123",
+        title: "Test Scenario",
+        coverImageUrl: "https://example.com/image.jpg",
+        triggerWarnings: [],
+        metadata: {
+          name: "Test Character",
+        },
+      },
       accessToken: {
         token: "token-123",
         serverUrl: "https://server.example.com",
@@ -267,10 +276,10 @@ describe("useStartSimulation", () => {
     const storedData = JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEYS.ROOM_DATA) || "{}");
     // Update expectations to match what the hook actually writes (including localParticipant/remoteParticipant structure)
     expect(storedData).toMatchObject({
-      roomId: "session-123",
+      roomId: "scenario-123",
       title: "Test Scenario",
       remoteParticipant: {
-        name: "Test Scenario",
+        name: "Test Character",
         coverImageUrl: "https://example.com/image.jpg",
       },
       localParticipant: {

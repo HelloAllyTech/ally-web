@@ -1,12 +1,12 @@
 import { FC, useState } from "react";
 
-import { useNavigate } from "react-router-dom";
-
-import { SimulationDetailsModal, CustomImage } from "@ally-ui-mono/ui-shared";
 import { useEndScenarioPreviewMutation, useScenarioPreviewMutation } from "@api";
 import { en, LOCAL_STORAGE_KEYS, ROUTES } from "@constants";
 import { useUser } from "@hooks";
 import { SimulationPreviewProps, StartSimulationResponse } from "@types";
+import { useNavigate } from "react-router-dom";
+
+import { SimulationDetailsModal, CustomImage } from "@ally-ui-mono/ui-shared";
 
 export const SimulationPreview: FC<SimulationPreviewProps> = ({ simulation, isOpen, onClose }) => {
   const navigate = useNavigate();
@@ -16,22 +16,21 @@ export const SimulationPreview: FC<SimulationPreviewProps> = ({ simulation, isOp
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
   const onStartSimulationSuccess = (response: StartSimulationResponse) => {
-    const { accessToken, scenarioSession } = response;
+    const { accessToken, scenario } = response;
 
     // TODO: Add trigger warnings to the room data
     localStorage.setItem(
       LOCAL_STORAGE_KEYS.PREVIEW_ROOM_DATA,
       JSON.stringify({
-        roomId: scenarioSession?.id || accessToken?.roomName,
-        title: scenarioSession?.title || simulation.title,
-        triggerWarnings: scenarioSession?.triggerWarnings || [],
+        roomId: scenario?.id || accessToken?.roomName,
+        title: scenario?.title || simulation.title,
+        triggerWarnings: scenario?.triggerWarnings || [],
         localParticipant: {
           name: user?.name,
         },
         remoteParticipant: {
-          name: scenarioSession?.remortparticipantName || simulation.title,
-          coverImageUrl:
-            scenarioSession?.remortparticipantCoverImageUrl || simulation.coverImageUrl,
+          name: scenario?.metadata?.name || simulation.title,
+          coverImageUrl: scenario?.coverImageUrl || simulation.coverImageUrl,
         },
         accessToken: accessToken.token,
         createdAt: new Date(),

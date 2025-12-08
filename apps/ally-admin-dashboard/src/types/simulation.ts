@@ -128,12 +128,15 @@ export interface CreateSimulationResponse {
 
 export interface StartSimulationResponse {
   accessToken: { token: string; serverUrl: string; roomName: string };
-  scenarioSession?: {
+  scenario?: {
     id?: string;
     title?: string;
+    description?: string;
+    coverImageUrl?: string;
     triggerWarnings?: { id: number; name: string }[];
-    remortparticipantName?: string;
-    remortparticipantCoverImageUrl?: string;
+    metadata?: {
+      name?: string;
+    };
   };
 }
 

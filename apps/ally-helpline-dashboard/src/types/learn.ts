@@ -22,6 +22,9 @@ export interface Scenario {
   coverImageUrl?: string | null;
   coverVideoUrl?: string | null;
   status?: ScenarioStatus;
+  metadata?: {
+    name?: string;
+  };
   triggerWarnings?: TriggerChipItemWarning[];
 }
 
@@ -101,6 +104,7 @@ export interface StartSimulationInput {
 
 export interface StartSimulationResponse {
   scenarioSession: ScenarioSession;
+  scenario: Scenario;
   accessToken: {
     token: string;
     roomName: string;

@@ -1,12 +1,12 @@
 import { useState } from "react";
 
 import { useEndSimulationMutation, useStartSimulationMutation } from "@api";
+import { LOCAL_STORAGE_KEYS } from "@constants";
 import { useUser } from "@hooks";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
 import { logger } from "@ally-ui-mono/ui-shared";
-import { LOCAL_STORAGE_KEYS } from "@constants";
 
 interface StartSimulationParams {
   scenarioId: number;
@@ -74,22 +74,21 @@ export const useStartSimulation = (
 
       // Handle success
       if (data) {
-        const { scenarioSession, accessToken } = data;
+        const { scenarioSession, scenario, accessToken } = data;
 
         // Store room data in localStorage
         localStorage.setItem(
           LOCAL_STORAGE_KEYS.ROOM_DATA,
           JSON.stringify({
-            roomId: scenarioSession.id,
-            title: scenarioSession?.title || metadata?.title,
-            triggerWarnings: scenarioSession?.triggerWarnings || [],
+            roomId: scenario?.id,
+            title: scenario?.title || metadata?.title,
+            triggerWarnings: scenario?.triggerWarnings || [],
             localParticipant: {
               name: user?.name,
             },
             remoteParticipant: {
-              name: scenarioSession?.remortparticipantName || metadata?.title,
-              coverImageUrl:
-                scenarioSession?.remortparticipantCoverImageUrl || metadata?.coverImageUrl,
+              name: scenario?.metadata?.name || metadata?.title,
+              coverImageUrl: scenario?.coverImageUrl || metadata?.coverImageUrl,
             },
             accessToken: accessToken.token,
             createdAt: scenarioSession.startedAt,

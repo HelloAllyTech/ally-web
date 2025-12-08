@@ -88,10 +88,10 @@ export const SimulationPage: FC<SimulationPageProps> = ({
   const [isWarning, setIsWarning] = useState(false);
   const [isFocusMode, setIsFocusMode] = useState(false);
 
-  if (!roomData) return null;
-
   useMeetingSound();
   useWakeLock(sessionId);
+
+  if (!roomData) return null;
 
   const { triggerWarnings = [], title } = roomData ?? {};
 
