@@ -81,6 +81,7 @@ export interface DropdownFieldProps {
   isMandatory?: boolean;
   isSearchable?: boolean;
   handleSearchTextChange?: (searchTerm: string) => void;
+  defaultOption?: string;
 }
 
 // NarrativeContext

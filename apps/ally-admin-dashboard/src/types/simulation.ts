@@ -107,6 +107,7 @@ export interface GetSimulationByIdResponse {
     eventId: string;
     message: string;
     autoTerminationStatus: boolean;
+    name: string;
   };
   triggerWarnings: triggerWarnings[];
 }

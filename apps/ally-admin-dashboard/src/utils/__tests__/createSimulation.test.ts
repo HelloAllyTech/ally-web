@@ -226,7 +226,7 @@ describe("createSimulation utils", () => {
       const result = formatSimulationResponseData(mockResponse);
 
       // Check all fields are present (title, description, coverImageUrl, coverVideoUrl, autoTerminationStatus, terminationEventId, terminationMessage + 18 metadata fields = 25 total)
-      expect(Object.keys(result)).toHaveLength(27);
+      expect(Object.keys(result)).toHaveLength(28);
       expect(result.title).toBe("Test");
       expect(result.description).toBe("Test");
       expect(result.coverImageUrl).toBe("url");
