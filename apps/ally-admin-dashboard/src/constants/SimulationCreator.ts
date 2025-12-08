@@ -53,20 +53,22 @@ export const SEXUAL_ORIENTATION_OPTIONS = [
   { value: "Questioning", label: "Questioning" },
 ];
 
+export const DIFFICULTY_LEVEL_OPTIONS = [
+  { value: "Easy", label: "Easy" },
+  { value: "Medium", label: "Medium" },
+  { value: "Hard", label: "Hard" },
+];
+
 export const SIMULATION_CREATOR_STEP_IDS = {
-  basicInfo: "basic-info",
-  characterIdentity: "character-identity",
-  traitsNeeds: "traits-and-needs",
-  conversationStyle: "conversation-style",
-  eventConfiguration: "event-configuration",
+  overview: "overview",
+  basicSettings: "basic-settings",
+  advancedSettings: "advanced-settings",
 };
 
 export const StepperList = [
-  { id: SIMULATION_CREATOR_STEP_IDS.basicInfo, title: "Basic Information" },
-  { id: SIMULATION_CREATOR_STEP_IDS.characterIdentity, title: "Character Identity" },
-  { id: SIMULATION_CREATOR_STEP_IDS.traitsNeeds, title: "Traits & Needs" },
-  { id: SIMULATION_CREATOR_STEP_IDS.conversationStyle, title: "Conversation Style" },
-  { id: SIMULATION_CREATOR_STEP_IDS.eventConfiguration, title: "Event Configuration" },
+  { id: SIMULATION_CREATOR_STEP_IDS.overview, title: "Overview" },
+  { id: SIMULATION_CREATOR_STEP_IDS.basicSettings, title: "Basic Settings" },
+  { id: SIMULATION_CREATOR_STEP_IDS.advancedSettings, title: "Advanced Settings" },
 ];
 
 export const FORM_FIELD_TYPES = {
@@ -85,8 +87,8 @@ export const FORM_FIELD_TYPES = {
 
 export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
   {
-    id: SIMULATION_CREATOR_STEP_IDS.basicInfo,
-    label: "Basic Information",
+    id: SIMULATION_CREATOR_STEP_IDS.overview,
+    label: "Overview",
     fields: [
       {
         id: "isGlobal",
@@ -119,14 +121,20 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
       },
 
       {
-        id: "description",
-        label: "Learning goal",
+        id: "challengeDescription",
+        label: "Challenge Description",
         placeholder: "What is the primary learning goal?",
         type: FORM_FIELD_TYPES.TEXT,
         isMandatory: true,
         multiline: true,
         fullWidth: true,
         maxLength: 1000,
+      },
+      {
+        id: "difficultyLevel",
+        label: "Difficulty level",
+        type: FORM_FIELD_TYPES.SELECT,
+        options: DIFFICULTY_LEVEL_OPTIONS,
       },
       FEATURE_FLAGS_MAP.TRIGGER_WARNINGS_FLAG && {
         id: "triggerWarningIds",
@@ -136,28 +144,13 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
         fullWidth: true,
       },
       {
-        id: "agentGoal",
-        label: "Agent goal",
-        placeholder: "Describe the agent’s goal for this session.",
-        type: FORM_FIELD_TYPES.TEXT,
-        isMandatory: true,
-        multiline: true,
-        fullWidth: true,
-        maxLength: 1000,
-      },
-    ].filter(Boolean) as FormFieldConfig[],
-  },
-  {
-    id: SIMULATION_CREATOR_STEP_IDS.characterIdentity,
-    label: "Character Identity",
-    fields: [
-      {
         id: "name",
         label: "Your name",
         placeholder: "Enter name",
         type: FORM_FIELD_TYPES.TEXT,
         isMandatory: true,
         maxLength: 100,
+        isDashedLineAbove: true,
       },
       {
         id: "age",
@@ -175,21 +168,6 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
         isMandatory: true,
       },
       {
-        id: "genderIdentity",
-        label: "Your gender identity",
-        type: FORM_FIELD_TYPES.SELECT,
-        options: GENDER_IDENTITY_OPTIONS,
-        maxLength: 100,
-      },
-      {
-        id: "sexualOrientation",
-        label: "Your sexual orientation",
-        placeholder: "Select sexual orientation",
-        type: FORM_FIELD_TYPES.SELECT,
-        options: SEXUAL_ORIENTATION_OPTIONS,
-        maxLength: 100,
-      },
-      {
         id: "profession",
         label: "Your profession",
         placeholder: "e.g. Software Engineer",
@@ -204,112 +182,85 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
         isMandatory: true,
         maxLength: 100,
       },
+    ].filter(Boolean) as FormFieldConfig[],
+  },
+  {
+    id: SIMULATION_CREATOR_STEP_IDS.basicSettings,
+    label: "Character Identity",
+    fields: [
+      {
+        id: "roleInstruction",
+        label: "Role instruction:",
+        type: FORM_FIELD_TYPES.TEXT,
+        multiline: true,
+        fullWidth: true,
+        maxLength: 1000,
+        isMandatory: true,
+      },
+      {
+        id: "responseLength",
+        label: "Length of your responses:",
+        type: FORM_FIELD_TYPES.SELECT,
+        isMandatory: true,
+      },
+      {
+        id: "genderIdentity",
+        label: "Your gender identity",
+        type: FORM_FIELD_TYPES.SELECT,
+        options: GENDER_IDENTITY_OPTIONS,
+        maxLength: 100,
+        isDashedLineAbove: true,
+        isMandatory: true,
+      },
+      {
+        id: "sexualOrientation",
+        label: "Your sexual orientation",
+        placeholder: "Select sexual orientation",
+        type: FORM_FIELD_TYPES.SELECT,
+        options: SEXUAL_ORIENTATION_OPTIONS,
+        maxLength: 100,
+      },
+
       {
         id: "context",
-        label: "Your current context",
+        label: "Your context",
         placeholder: "Describe the immediate situations",
         type: FORM_FIELD_TYPES.TEXT,
         isMandatory: true,
         multiline: true,
         fullWidth: true,
-        isDashedLineAbove: true,
         maxLength: 1000,
       },
       {
-        id: "lifeHistory",
-        label: "Summary of your life's history",
-        placeholder: "Describe the key life events",
+        id: "yourDialogues",
+        label: "Your dialogues:",
         type: FORM_FIELD_TYPES.TEXT,
+        multiline: true,
+        fullWidth: true,
+        maxLength: 1000,
         isMandatory: true,
-        multiline: true,
-        fullWidth: true,
-        maxLength: 1000,
       },
       {
-        id: "coreMemories",
-        label: "Your core memories influencing your beliefs & actions",
-        placeholder: "Describe core influencing memories",
+        id: "openingDialogues",
+        label: "Opening dialogues:",
         type: FORM_FIELD_TYPES.TEXT,
         multiline: true,
         fullWidth: true,
         maxLength: 1000,
+        isMandatory: true,
       },
-    ],
-  },
-  {
-    id: SIMULATION_CREATOR_STEP_IDS.traitsNeeds,
-    label: "Traits & Needs",
-    fields: [
-      {
-        id: "personality",
-        label: "Your personality",
-        placeholder: "Describe personality",
-        type: FORM_FIELD_TYPES.TEXT,
-        multiline: true,
-        fullWidth: true,
-        maxLength: 1000,
-      },
-      {
-        id: "startingState",
-        label: "Your current thoughts:",
-        placeholder: "Describe current thoughts",
-        type: FORM_FIELD_TYPES.TEXT,
-        multiline: true,
-        fullWidth: true,
-        maxLength: 1000,
-      },
-      {
-        id: "emotionalNeeds",
-        label: "Your emotional needs from this counselling session:",
-        placeholder: "Describe emotional needs",
-        type: FORM_FIELD_TYPES.TEXT,
-        multiline: true,
-        fullWidth: true,
-        maxLength: 1000,
-      },
-    ],
-  },
-  {
-    id: SIMULATION_CREATOR_STEP_IDS.conversationStyle,
-    label: "Conversation Style",
-    fields: [
       {
         id: "voiceId",
-        label: "Voice",
+        label: "Voices:",
         type: FORM_FIELD_TYPES.CUSTOM.VOICE_DROPDOWN,
         isMandatory: true,
       },
       {
-        id: "tone",
-        label: "Your tone",
+        id: "voiceInstruction",
+        label: "Voice instruction:",
         type: FORM_FIELD_TYPES.TEXT,
         placeholder: "e.g. Casual",
         maxLength: 100,
-      },
-      {
-        id: "openingStatements",
-        label: "Begin the conversation by saying:",
-        type: FORM_FIELD_TYPES.TEXT,
-        placeholder: "Add opening statements as new line",
-        isMandatory: true,
-        multiline: true,
-        fullWidth: true,
-        maxLength: 1000,
-      },
-      {
-        id: "sessionBehaviorGuidelines",
-        label: "How will you behave in this session:",
-        type: FORM_FIELD_TYPES.TEXT,
-        placeholder: "How should the character act during the session?",
-        multiline: true,
-        fullWidth: true,
-        maxLength: 1000,
-      },
-      {
-        id: "autoTerminationStatus",
-        label: "Auto termination",
-        fullWidth: true,
-        type: FORM_FIELD_TYPES.CUSTOM.AUTO_TERMINATION_RULE,
       },
     ],
   },

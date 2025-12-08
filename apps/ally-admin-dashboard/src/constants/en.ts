@@ -149,7 +149,7 @@ export const en = {
     basicInformation: "Basic Information",
     demographics: "Demographics & Background",
     narrativeContext: "Narrative Context",
-    eventConfiguration: "Event Configuration",
+    advancedSettings: "Advanced Settings",
     back: "Back",
     next: "Next",
     createdBy: "Created By",
