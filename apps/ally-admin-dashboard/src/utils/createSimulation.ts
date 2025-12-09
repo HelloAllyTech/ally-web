@@ -1,4 +1,4 @@
-import { SIMULATION_CREATOR_FIELD_GROUPS } from "@constants";
+import { FORM_FIELD_IDS, SIMULATION_CREATOR_FIELD_GROUPS } from "@constants";
 import { GetSimulationByIdResponse } from "@types";
 
 export const getCreateSimulationSubSectionById = (id: string) => {
@@ -37,6 +37,10 @@ export const formatSimulationResponseData = (data: GetSimulationByIdResponse) =>
     terminationName: data?.terminationEvent?.name,
     isGlobal: Boolean(data?.isGlobal),
     triggerWarningIds: data?.triggerWarnings,
-    customFieldGroup: data?.customFields,
+    customFieldGroup: data?.customFields?.map((field, index) => ({
+      id: `${FORM_FIELD_IDS.CUSTOM_FIELD_GROUP}${index + 1}}`,
+      name: field.name,
+      value: field.value,
+    })),
   };
 };
