@@ -1,6 +1,15 @@
 import { FC, useEffect, useRef, useState } from "react";
 
-import { AccountTree, AlarmOn, Chat, Close, DiamondShine, Tick, SemanticSimilarity } from "@assets";
+import {
+  AccountTree,
+  AlarmOn,
+  Chat,
+  Close,
+  DiamondShine,
+  Tick,
+  SemanticSimilarity,
+  BinaryClassification,
+} from "@assets";
 import { Button } from "@components";
 import { ButtonVariant } from "@components/types";
 import { en } from "@constants";
@@ -12,7 +21,8 @@ export type EventType =
   | "SEMANTIC_SIMILARITY"
   | "TIME_BASED"
   | "SCORE_BASED"
-  | "COMBINATION";
+  | "COMBINATION"
+  | "BINARY_CLASSIFICATION";
 
 export interface EventTypeOption {
   value: EventType;
@@ -21,7 +31,7 @@ export interface EventTypeOption {
   icon: React.ComponentType<{ className?: string }>;
 }
 
-export const EVENT_TYPE_OPTIONS: EventTypeOption[] = [
+export const EVENT_TYPE_POPUP_OPTIONS: EventTypeOption[] = [
   {
     value: "SENTENCE_SIMILARITY",
     label: "Sentence Similarity",
@@ -33,6 +43,12 @@ export const EVENT_TYPE_OPTIONS: EventTypeOption[] = [
     label: "Semantic Similarity",
     description: "Trigger based on similar meaning.",
     icon: SemanticSimilarity,
+  },
+  {
+    value: "BINARY_CLASSIFICATION",
+    label: "Binary Classification",
+    description: "Trigger based on binary classification.",
+    icon: BinaryClassification,
   },
   {
     value: "TIME_BASED",
@@ -114,7 +130,7 @@ export const EventTypeSelectionDialog: FC<EventTypeSelectionDialogProps> = ({
             </div>
 
             <div className="grid grid-cols-1 gap-2 custom-scrollbar">
-              {EVENT_TYPE_OPTIONS.map(option => {
+              {EVENT_TYPE_POPUP_OPTIONS.map(option => {
                 const Icon = option.icon;
                 const isSelected = selectedType === option.value;
                 return (
@@ -131,7 +147,7 @@ export const EventTypeSelectionDialog: FC<EventTypeSelectionDialogProps> = ({
                         <Icon className="w-5 h-5" />
                       </div>
                       <div className="flex-1">
-                        <div className="font-medium text-typography-900">{option.label}</div>
+                        <div className="font-semibold text-typography-900">{option.label}</div>
                         <div className="text-base text-typography-800">{option.description}</div>
                       </div>
                       {isSelected && (

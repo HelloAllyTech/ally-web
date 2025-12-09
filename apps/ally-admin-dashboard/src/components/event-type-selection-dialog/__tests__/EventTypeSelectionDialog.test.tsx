@@ -32,6 +32,11 @@ vi.mock("@assets", () => ({
       AlarmOn
     </svg>
   ),
+  BinaryClassification: ({ className }: { className?: string }) => (
+    <svg data-testid="binary-classification-icon" className={className}>
+      BinaryClassification
+    </svg>
+  ),
   Chat: ({ className }: { className?: string }) => (
     <svg data-testid="chat-icon" className={className}>
       Chat
@@ -94,7 +99,7 @@ vi.mock("@hooks", () => ({
 
 import {
   EventTypeSelectionDialog,
-  EVENT_TYPE_OPTIONS,
+  EVENT_TYPE_POPUP_OPTIONS,
   type EventType,
 } from "../EventTypeSelectionDialog";
 
@@ -129,7 +134,7 @@ describe("EventTypeSelectionDialog", () => {
     it("renders all event type options", () => {
       render(<EventTypeSelectionDialog {...defaultProps} />);
 
-      EVENT_TYPE_OPTIONS.forEach(option => {
+      EVENT_TYPE_POPUP_OPTIONS.forEach(option => {
         expect(screen.getByText(option.label)).toBeInTheDocument();
         expect(screen.getByText(option.description)).toBeInTheDocument();
       });
@@ -276,6 +281,7 @@ describe("EventTypeSelectionDialog", () => {
       const eventTypes: EventType[] = [
         "SENTENCE_SIMILARITY",
         "SEMANTIC_SIMILARITY",
+        "BINARY_CLASSIFICATION",
         "TIME_BASED",
         "SCORE_BASED",
         "COMBINATION",
@@ -284,7 +290,7 @@ describe("EventTypeSelectionDialog", () => {
       eventTypes.forEach(eventType => {
         const { unmount } = render(<EventTypeSelectionDialog {...defaultProps} />);
 
-        const option = EVENT_TYPE_OPTIONS.find(opt => opt.value === eventType);
+        const option = EVENT_TYPE_POPUP_OPTIONS.find(opt => opt.value === eventType);
         if (option) {
           const optionButton = screen.getByText(option.label);
           fireEvent.click(optionButton);
@@ -528,7 +534,7 @@ describe("EventTypeSelectionDialog", () => {
     it("all event type options are button elements", () => {
       render(<EventTypeSelectionDialog {...defaultProps} />);
 
-      EVENT_TYPE_OPTIONS.forEach(option => {
+      EVENT_TYPE_POPUP_OPTIONS.forEach(option => {
         const optionButton = screen.getByText(option.label);
         expect(optionButton.closest("button")).toBeInTheDocument();
       });
@@ -553,7 +559,7 @@ describe("EventTypeSelectionDialog", () => {
     it("handles rapid selection changes", () => {
       render(<EventTypeSelectionDialog {...defaultProps} />);
 
-      const options = EVENT_TYPE_OPTIONS.map(opt => screen.getByText(opt.label));
+      const options = EVENT_TYPE_POPUP_OPTIONS.map(opt => screen.getByText(opt.label));
 
       // Rapidly click different options
       fireEvent.click(options[0]);
@@ -590,15 +596,15 @@ describe("EventTypeSelectionDialog", () => {
     });
   });
 
-  describe("EVENT_TYPE_OPTIONS constant", () => {
-    it("exports EVENT_TYPE_OPTIONS with correct structure", () => {
-      expect(EVENT_TYPE_OPTIONS).toBeDefined();
-      expect(Array.isArray(EVENT_TYPE_OPTIONS)).toBe(true);
-      expect(EVENT_TYPE_OPTIONS.length).toBe(5);
+  describe("EVENT_TYPE_POPUP_OPTIONS constant", () => {
+    it("exports EVENT_TYPE_POPUP_OPTIONS with correct structure", () => {
+      expect(EVENT_TYPE_POPUP_OPTIONS).toBeDefined();
+      expect(Array.isArray(EVENT_TYPE_POPUP_OPTIONS)).toBe(true);
+      expect(EVENT_TYPE_POPUP_OPTIONS.length).toBe(6);
     });
 
     it("each option has required properties", () => {
-      EVENT_TYPE_OPTIONS.forEach(option => {
+      EVENT_TYPE_POPUP_OPTIONS.forEach(option => {
         expect(option).toHaveProperty("value");
         expect(option).toHaveProperty("label");
         expect(option).toHaveProperty("description");
@@ -610,12 +616,13 @@ describe("EventTypeSelectionDialog", () => {
       const validTypes: EventType[] = [
         "SENTENCE_SIMILARITY",
         "SEMANTIC_SIMILARITY",
+        "BINARY_CLASSIFICATION",
         "TIME_BASED",
         "SCORE_BASED",
         "COMBINATION",
       ];
 
-      EVENT_TYPE_OPTIONS.forEach(option => {
+      EVENT_TYPE_POPUP_OPTIONS.forEach(option => {
         expect(validTypes).toContain(option.value);
       });
     });
