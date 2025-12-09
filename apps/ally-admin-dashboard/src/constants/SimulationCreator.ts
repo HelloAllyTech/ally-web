@@ -83,6 +83,44 @@ export const FORM_FIELD_TYPES = {
   },
   TOGGLE_BUTTON: "toggle_button",
   TAG_AND_DROPDOWN: "tag_and_dropdown",
+  CUSTOM_FIELD_GROUP: "custom_field_group",
+};
+
+export const FORM_FIELD_IDS = {
+  BASIC_INFO: "basicInfo",
+  CHARACTER_IDENTITY: "characterIdentity",
+  TRAITS_NEEDS: "traitsNeeds",
+  CONVERSATION_STYLE: "conversationStyle",
+  EVENT_CONFIGURATION: "eventConfiguration",
+  IS_GLOBAL: "isGlobal",
+  TITLE: "title",
+  DESCRIPTION: "description",
+  AGE: "age",
+  NAME: "name",
+  CONTEXT: "context",
+  CORE_MEMORIES: "coreMemories",
+  AGENT_GOAL: "agentGoal",
+  CURRENT_LOCATION: "currentLocation",
+  EMOTIONAL_NEEDS: "emotionalNeeds",
+  GENDER: "gender",
+  GENDER_IDENTITY: "genderIdentity",
+  COVER_IMAGE_URL: "coverImageUrl",
+  COVER_VIDEO_URL: "coverVideoUrl",
+  TRIGGER_WARNING_IDS: "triggerWarningIds",
+  CUSTOM_FIELD_GROUP: "customFieldGroup",
+  LIFE_HISTORY: "lifeHistory",
+  OPENING_STATEMENTS: "openingStatements",
+  PERSONALITY: "personality",
+  PROFESSION: "profession",
+  SESSION_BEHAVIOR_GUIDELINES: "sessionBehaviorGuidelines",
+  SEXUAL_ORIENTATION: "sexualOrientation",
+  STARTING_STATE: "startingState",
+  TONE: "tone",
+  VOICE_ID: "voiceId",
+  AUTO_TERMINATION_STATUS: "autoTerminationStatus",
+  TERMINATION_EVENT_ID: "terminationEventId",
+  TERMINATION_MESSAGE: "terminationMessage",
+  TERMINATION_NAME: "terminationName",
 };
 
 export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
@@ -90,6 +128,12 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
     id: SIMULATION_CREATOR_STEP_IDS.overview,
     label: "Overview",
     fields: [
+      FEATURE_FLAGS_MAP.CUSTOM_FIELD_FLAG && {
+        id: "customFieldGroup",
+        label: "Custom field group",
+        type: FORM_FIELD_TYPES.CUSTOM_FIELD_GROUP,
+        fullWidth: true,
+      },
       {
         id: "isGlobal",
         label: "Default org-level visibility",

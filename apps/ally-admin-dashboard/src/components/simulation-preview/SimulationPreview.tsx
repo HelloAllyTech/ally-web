@@ -5,22 +5,33 @@ import { useNavigate } from "react-router-dom";
 import { SimulationDetailsModal, CustomImage } from "@ally-ui-mono/ui-shared";
 import { useEndScenarioPreviewMutation, useScenarioPreviewMutation } from "@api";
 import { en, LOCAL_STORAGE_KEYS, ROUTES } from "@constants";
+import { useUser } from "@hooks";
 import { SimulationPreviewProps, StartSimulationResponse } from "@types";
 
 export const SimulationPreview: FC<SimulationPreviewProps> = ({ simulation, isOpen, onClose }) => {
   const navigate = useNavigate();
+  const { user } = useUser();
   const [scenarioPreview] = useScenarioPreviewMutation();
   const [endScenarioPreview] = useEndScenarioPreviewMutation();
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
   const onStartSimulationSuccess = (response: StartSimulationResponse) => {
-    const { accessToken } = response;
+    const { accessToken, scenario } = response;
+
+    // TODO: Add trigger warnings to the room data
     localStorage.setItem(
       LOCAL_STORAGE_KEYS.PREVIEW_ROOM_DATA,
       JSON.stringify({
-        roomId: accessToken?.roomName,
-        name: simulation.title,
-        coverImageUrl: simulation.coverImageUrl,
+        roomId: scenario?.id || accessToken?.roomName,
+        title: scenario?.title || simulation.title,
+        triggerWarnings: scenario?.triggerWarnings || [],
+        localParticipant: {
+          name: user?.name,
+        },
+        remoteParticipant: {
+          name: scenario?.metadata?.name || simulation.title,
+          coverImageUrl: scenario?.coverImageUrl || simulation.coverImageUrl,
+        },
         accessToken: accessToken.token,
         createdAt: new Date(),
         serverUrl: accessToken.serverUrl,

@@ -146,7 +146,7 @@ export const CreateSimulation: FC = () => {
       }
     }
 
-    const { openingStatements, triggerWarningIds, ...restForm } = formData as any;
+    const { openingStatements, triggerWarningIds, ...restForm } = formData;
 
     const openingStatementsArray = isNonEmptyString(openingStatements)
       ? openingStatements
@@ -165,9 +165,11 @@ export const CreateSimulation: FC = () => {
     const simulationData = {
       ...extractValidData(SIMULATION_CREATOR_FIELD_GROUPS, restForm),
       openingStatements: openingStatementsArray,
+      ...(FEATURE_FLAGS_MAP.CUSTOM_FIELD_FLAG && { customFieldGroup: restForm.customFieldGroup }),
       ...(FEATURE_FLAGS_MAP.TRIGGER_WARNINGS_FLAG && { triggerWarningIds: triggerWarning }),
       status,
     };
+
     let response;
     if (simulationId) {
       response = await updateSimulationByIdQuery({

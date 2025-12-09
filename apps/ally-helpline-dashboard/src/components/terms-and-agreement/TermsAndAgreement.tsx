@@ -14,6 +14,7 @@ const TermsAndAgreement = ({ isOpen, handleAgreeButtonClick }) => {
       height: "566px",
     },
   };
+
   return (
     <Dialog open={isOpen} disableEscapeKeyDown PaperProps={paperProps}>
       <div className="flex items-center justify-center font-medium text-2xl font-secondary">

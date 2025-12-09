@@ -10,6 +10,15 @@ const navigateMock = vi.fn();
 const scenarioPreviewTrigger = vi.fn();
 const endScenarioPreviewTrigger = vi.fn();
 
+// Mock useUser
+const mockUseUser = {
+  user: { id: "test-user-id", name: "Test User" },
+};
+
+vi.mock("@hooks/useUser", () => ({
+  useUser: () => mockUseUser,
+}));
+
 vi.mock("react-router-dom", async () => {
   const actual = await vi.importActual<any>("react-router-dom");
   return {
@@ -48,6 +57,7 @@ vi.mock("@components", () => ({
 
 vi.mock("@hooks", () => ({
   useClickOutside: () => {},
+  useUser: () => ({ user: { id: "test-user-id", name: "Test User" } }),
 }));
 
 // Provide a minimal but sufficient constants mock to avoid loading the barrel
@@ -153,7 +163,7 @@ describe("SimulationPreview", () => {
     const [, storedJson] = setItemSpy.mock.calls[0] as [string, string];
     const stored = JSON.parse(storedJson);
     expect(stored.roomId).toBe("room-123");
-    expect(stored.name).toBe("Test Simulation");
+    expect(stored.title).toBe("Test Simulation");
     expect(stored.accessToken).toBe("token-abc");
   });
 

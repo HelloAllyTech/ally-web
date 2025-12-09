@@ -2,10 +2,16 @@
 
 import { FC } from "react";
 
-import { RoomAudioRenderer } from "@livekit/components-react";
+import {
+  RoomAudioRenderer,
+  useLocalParticipant,
+  useRemoteParticipants,
+} from "@livekit/components-react";
 import { motion } from "framer-motion";
 
-import { SimulationWaveform } from "./SimulationWaveform";
+import { SimulationEvents } from "./SimulationEvents";
+import { SimulationEventType } from "./types";
+import { UserCallCard } from "./UserCallCard";
 
 export enum RoomStatus {
   CONNECTED = "connected",
@@ -16,15 +22,24 @@ export enum RoomStatus {
 export interface SimulationInterfaceProps {
   roomStatus: RoomStatus;
   roomData: any;
+  events: SimulationEventType[];
+  isFocusMode: boolean;
+  isMuted: boolean;
 }
 
-export const SimulationInterface: FC<SimulationInterfaceProps> = ({ roomStatus, roomData }) => {
+export const SimulationInterface: FC<SimulationInterfaceProps> = ({
+  roomStatus,
+  roomData,
+  events,
+  isFocusMode,
+  isMuted,
+}) => {
   const renderContent = () => {
     switch (roomStatus) {
       case RoomStatus.CONNECTING:
         return (
           <div
-            data-testid="simulation-interface-connecting"
+            data-testid="simulation-interface-connecting bg-[#1D2020] rounded-lg"
             className="flex flex-col items-center text-center font-['IBM_Plex_Serif']"
           >
             <p className="text-[20px] text-white">
@@ -37,19 +52,32 @@ export const SimulationInterface: FC<SimulationInterfaceProps> = ({ roomStatus, 
           </div>
         );
       case RoomStatus.CONNECTED:
-      default:
+      default: {
+        const { localParticipant } = useLocalParticipant();
+        const remoteParticipants = useRemoteParticipants();
+        const remoteParticipant = remoteParticipants?.[0];
+
         return (
           <>
             <RoomAudioRenderer />
-            <SimulationWaveform roomData={roomData} />
-            <span
-              data-testid="simulation-interface-room-name"
-              className="absolute bottom-4 left-4 text-white font-['IBM_Plex_Serif']"
-            >
-              {roomData?.name}
-            </span>
+            <div className="flex md:flex-row flex-col justify-between gap-4 w-full h-full">
+              <UserCallCard
+                userData={{
+                  name: roomData?.remoteParticipant?.name,
+                  coverImageUrl: roomData?.remoteParticipant?.coverImageUrl,
+                }}
+                isSpeaking={remoteParticipant?.isSpeaking}
+              />
+              <UserCallCard
+                userData={{ name: roomData?.localParticipant?.name || "You" }}
+                isSpeaking={localParticipant.isSpeaking}
+                isMuted={isMuted}
+              />
+              {!isFocusMode && events?.length > 0 && <SimulationEvents events={events} />}
+            </div>
           </>
         );
+      }
     }
   };
 
@@ -58,7 +86,7 @@ export const SimulationInterface: FC<SimulationInterfaceProps> = ({ roomStatus, 
       data-testid="simulation-interface"
       layout
       transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
-      className="w-full flex justify-center items-center flex-1 bg-[#1D2020] rounded-lg relative"
+      className="w-full flex justify-center items-center flex-1 relative"
     >
       {renderContent()}
     </motion.div>

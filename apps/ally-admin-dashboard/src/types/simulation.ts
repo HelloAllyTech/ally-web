@@ -74,6 +74,12 @@ export interface UpdateSimulationByIdResponse {
   lastModified: string;
 }
 
+export interface CustomFieldType {
+  id?: string;
+  name?: string;
+  value?: string;
+}
+
 export interface GetSimulationByIdResponse {
   id: string;
   title: string;
@@ -83,6 +89,7 @@ export interface GetSimulationByIdResponse {
   createdBy: string;
   lastModified: string;
   isGlobal: boolean;
+  customFields: CustomFieldType[];
   metadata: {
     age?: number;
     name?: string;
@@ -128,6 +135,16 @@ export interface CreateSimulationResponse {
 
 export interface StartSimulationResponse {
   accessToken: { token: string; serverUrl: string; roomName: string };
+  scenario?: {
+    id?: string;
+    title?: string;
+    description?: string;
+    coverImageUrl?: string;
+    triggerWarnings?: { id: number; name: string }[];
+    metadata?: {
+      name?: string;
+    };
+  };
 }
 
 export enum VisibilityType {
