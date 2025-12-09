@@ -198,7 +198,7 @@ export const NotionTable = ({
   }
 
   return (
-    <div style={tableStyle} className="overflow-auto flex h-[calc(100vh-160px)]">
+    <div style={tableStyle} className="overflow-auto flex h-[calc(100vh-160px)] custom-scrollbar">
       <div
         {...getTableProps()}
         className={clsx("w-full font-primary text-sm", isTableResizing() && "select-none")}
