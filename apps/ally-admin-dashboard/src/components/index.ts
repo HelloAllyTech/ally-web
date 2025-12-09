@@ -32,6 +32,7 @@ export * from "./skeleton-loader";
 export * from "./user-option-dropdown";
 export * from "./access-denied";
 export * from "./credit-field";
+export * from "./custom-field-group";
 export * from "./profile-card";
 export * from "./event-side-panel";
 export * from "./emoji-picker";

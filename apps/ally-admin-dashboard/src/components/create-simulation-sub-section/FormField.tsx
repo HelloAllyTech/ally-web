@@ -4,6 +4,7 @@ import { FILE_TYPE, FORM_FIELD_TYPES, en } from "@constants";
 import { FormFieldProps } from "@types";
 
 import { AutoTerminationRuleField } from "../auto-termination-rule-field";
+import { CustomFieldGroup } from "../custom-field-group";
 import { DropdownField } from "../dropdown-field";
 import { FileUpload } from "../file-upload";
 import { InputField } from "../input-field";
@@ -122,6 +123,8 @@ export const FormField: FC<FormFieldProps> = ({ config, formMethods }) => {
             />
           </div>
         );
+      case FORM_FIELD_TYPES.CUSTOM_FIELD_GROUP:
+        return <CustomFieldGroup formMethods={formMethods} />;
       default:
         return null;
     }

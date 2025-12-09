@@ -1,12 +1,12 @@
 import { useState } from "react";
 
-import { useEndSimulationMutation, useStartSimulationMutation } from "@api";
-import { LOCAL_STORAGE_KEYS } from "@constants";
-import { useUser } from "@hooks";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
 import { logger } from "@ally-ui-mono/ui-shared";
+import { useEndSimulationMutation, useStartSimulationMutation } from "@api";
+import { LOCAL_STORAGE_KEYS } from "@constants";
+import { useUser } from "@hooks";
 
 interface StartSimulationParams {
   scenarioId: number;

@@ -74,6 +74,12 @@ export interface UpdateSimulationByIdResponse {
   lastModified: string;
 }
 
+export interface CustomFieldType {
+  id?: string;
+  name?: string;
+  value?: string;
+}
+
 export interface GetSimulationByIdResponse {
   id: string;
   title: string;
@@ -83,6 +89,7 @@ export interface GetSimulationByIdResponse {
   createdBy: string;
   lastModified: string;
   isGlobal: boolean;
+  customFields: CustomFieldType[];
   metadata: {
     age?: number;
     name?: string;
