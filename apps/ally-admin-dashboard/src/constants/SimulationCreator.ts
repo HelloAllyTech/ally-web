@@ -128,12 +128,6 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
     id: SIMULATION_CREATOR_STEP_IDS.overview,
     label: "Overview",
     fields: [
-      FEATURE_FLAGS_MAP.CUSTOM_FIELD_FLAG && {
-        id: "customFieldGroup",
-        label: "Custom field group",
-        type: FORM_FIELD_TYPES.CUSTOM_FIELD_GROUP,
-        fullWidth: true,
-      },
       {
         id: "isGlobal",
         label: "Default org-level visibility",
@@ -182,7 +176,7 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
       },
       FEATURE_FLAGS_MAP.TRIGGER_WARNINGS_FLAG && {
         id: "triggerWarningIds",
-        label: "Trigger Warnings",
+        label: "Trigger warnings",
         type: FORM_FIELD_TYPES.TAG_AND_DROPDOWN,
         options: SEXUAL_ORIENTATION_OPTIONS,
         fullWidth: true,
@@ -234,7 +228,7 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
     fields: [
       {
         id: "roleInstruction",
-        label: "Role instruction:",
+        label: "Role instruction",
         type: FORM_FIELD_TYPES.TEXT,
         multiline: true,
         fullWidth: true,
@@ -243,7 +237,7 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
       },
       {
         id: "responseLength",
-        label: "Length of your responses:",
+        label: "Length of your responses",
         type: FORM_FIELD_TYPES.SELECT,
         isMandatory: true,
       },
@@ -275,9 +269,15 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
         fullWidth: true,
         maxLength: 1000,
       },
+      FEATURE_FLAGS_MAP.CUSTOM_FIELD_FLAG && {
+        id: "customFieldGroup",
+        label: "Custom field group",
+        type: FORM_FIELD_TYPES.CUSTOM_FIELD_GROUP,
+        fullWidth: true,
+      },
       {
         id: "yourDialogues",
-        label: "Your dialogues:",
+        label: "Your dialogues",
         type: FORM_FIELD_TYPES.TEXT,
         multiline: true,
         fullWidth: true,
@@ -286,7 +286,7 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
       },
       {
         id: "openingDialogues",
-        label: "Opening dialogues:",
+        label: "Opening dialogues",
         type: FORM_FIELD_TYPES.TEXT,
         multiline: true,
         fullWidth: true,
@@ -295,18 +295,24 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
       },
       {
         id: "voiceId",
-        label: "Voices:",
+        label: "Voices",
         type: FORM_FIELD_TYPES.CUSTOM.VOICE_DROPDOWN,
         isMandatory: true,
       },
       {
         id: "voiceInstruction",
-        label: "Voice instruction:",
+        label: "Voice instruction",
         type: FORM_FIELD_TYPES.TEXT,
         placeholder: "e.g. Casual",
         maxLength: 100,
       },
-    ],
+      {
+        id: "autoTerminationStatus",
+        label: "Auto termination",
+        fullWidth: true,
+        type: FORM_FIELD_TYPES.CUSTOM.AUTO_TERMINATION_RULE,
+      },
+    ] as FormFieldConfig[],
   },
 ];
 

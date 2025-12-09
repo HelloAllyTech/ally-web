@@ -38,6 +38,7 @@ import Simulation from "./simulation.svg?react";
 import ThreeDot from "./threeDot.svg?react";
 import Tick from "./tick.svg?react";
 import Trash from "./trash.svg?react";
+import TrashRed from "./trashRed.svg?react";
 import Unarchive from "./unArchiveIcon.svg?react";
 import Unpublish from "./unpublish.svg?react";
 import User from "./user.svg?react";
@@ -92,4 +93,5 @@ export {
   Eye,
   SemanticSimilarity,
   BackCircle,
+  TrashRed,
 };

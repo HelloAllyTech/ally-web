@@ -1,6 +1,6 @@
 import { FC } from "react";
 
-import { Trash } from "@assets";
+import { Plus, TrashRed } from "@assets";
 import { en, FORM_FIELD_IDS } from "@constants";
 import { CustomFieldType } from "@types";
 
@@ -58,7 +58,7 @@ export const CustomFieldGroup: FC<CustomFieldGroupProps> = ({ formMethods }) => 
               className="p-1 hover:bg-surface-100 rounded transition-colors"
               aria-label={`${en.common.delete} ${field.name}`}
             >
-              <Trash className="w-5 h-5 text-destructive-500" />
+              <TrashRed className="w-5 h-5 text-destructive-500" />
             </button>
           </div>
           <textarea
@@ -69,10 +69,17 @@ export const CustomFieldGroup: FC<CustomFieldGroupProps> = ({ formMethods }) => 
         </div>
       ))}
 
-      {customFields.length < 3 && (
-        <button type="button" onClick={() => handleAddField()} className="text-primary-500 w-fit">
-          + Add custom field
+      {customFields.length < 3 ? (
+        <button
+          type="button"
+          onClick={() => handleAddField()}
+          className="w-fit border border-dashed px-4 py-2 flex text-typography-700 gap-3 items-center text-xs"
+        >
+          <Plus />
+          {en.simulation.newField}
         </button>
+      ) : (
+        <span className="text-destructive-500 text-xs">* {en.simulation.customFieldLimit}</span>
       )}
     </div>
   );
