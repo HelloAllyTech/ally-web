@@ -45,24 +45,24 @@ export const TagSelector: React.FC<TagsDropdown> = ({
 
   // Load options data
   useEffect(() => {
-    if (options) {
-      const selectedTagNames = triggerWarnings.map(tag => tag.name.toLowerCase());
-      const filtered = options.filter(
-        option => !selectedTagNames.includes(option.name.toLowerCase()),
-      );
+    if (!options) return;
 
-      if (page === 1) {
-        setAllOptions(filtered);
-      } else {
-        // Deduplicate based on ID before adding
-        setAllOptions(prev => {
-          const existingIds = new Set(prev.map(opt => opt?.id));
-          const newOptions = filtered.filter(opt => !existingIds.has(opt?.id));
-          return [...prev, ...newOptions];
-        });
-      }
-      if (options.length < DEFAULT_LIMIT) setHasMore(false);
+    const selectedIds = new Set(triggerWarnings.map(tag => tag.id));
+
+    if (page === 1) {
+      const filtered = options.filter(option => !selectedIds.has(option.id));
+
+      setAllOptions(filtered);
+    } else {
+      setAllOptions(prev => {
+        const existingIds = new Set(prev.map(opt => opt?.id));
+        const newOptions = options.filter(option => !existingIds.has(option.id));
+        const updatedList = [...prev, ...newOptions]?.filter(option => !selectedIds.has(option.id));
+        return updatedList;
+      });
     }
+
+    if (options.length < DEFAULT_LIMIT) setHasMore(false);
   }, [options, page, triggerWarnings]);
 
   // Intersection Observer callback
