@@ -147,10 +147,10 @@ export const TagSelector: React.FC<TagsDropdown> = ({
           allOptions.map(option => (
             <div
               key={option?.id}
-              className="px-3 py-2 text-sm cursor-pointer transition-colors hover:bg-gray-100 whitespace-nowrap overflow-auto custom-scrollbar flex"
+              className="px-3 py-2 text-sm cursor-pointer transition-colors hover:bg-gray-100 whitespace-nowrap  flex"
               onClick={() => selectTag(option)}
             >
-              <span>{option?.name}</span>
+              <span className="truncate">{option?.name}</span>
             </div>
           ))}
 

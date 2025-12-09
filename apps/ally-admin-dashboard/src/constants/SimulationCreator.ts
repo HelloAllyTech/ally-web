@@ -177,7 +177,6 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
         id: "triggerWarningIds",
         label: "Trigger Warnings",
         type: FORM_FIELD_TYPES.TAG_AND_DROPDOWN,
-        options: SEXUAL_ORIENTATION_OPTIONS,
         fullWidth: true,
       },
       {
