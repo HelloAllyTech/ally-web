@@ -1,7 +1,7 @@
 # Production Release Pipeline - Ally Admin Dashboard
 #
 # This workflow handles production releases for ally-admin-dashboard (CDN/CloudFront) with semantic versioning
-# 
+#
 # Required GitHub Variables:
 # PRD_AWS_ROLE, PRD_AWS_REGION
 # PRD_ADMIN_DASHBOARD_DISTRIBUTION_ID, PRD_ADMIN_DASHBOARD_S3_BUCKET
@@ -15,7 +15,7 @@ name: Production Release - Admin Dashboard
 
 permissions:
   id-token: write
-  contents: write  # Required for creating releases and tags
+  contents: write # Required for creating releases and tags
 
 on:
   workflow_dispatch:
@@ -23,7 +23,7 @@ on:
       version_tag:
         required: true
         type: string
-        description: 'Version tag (e.g., v1.0.0, v1.2.3, v2.0.0)'
+        description: "Version tag (e.g., v1.0.0, v1.2.3, v2.0.0)"
 
 jobs:
   validate-and-tag:
@@ -36,32 +36,32 @@ jobs:
       MINOR: ${{ steps.parse-version.outputs.MINOR }}
       PATCH: ${{ steps.parse-version.outputs.PATCH }}
       TAG: ${{ steps.parse-version.outputs.TAG }}
-    
+
     steps:
       - name: Checkout master branch
         uses: actions/checkout@v4
         with:
           ref: master
           fetch-depth: 0
-      
+
       - name: Parse and validate version
         id: parse-version
         run: |
           TAG="${{ github.event.inputs.version_tag }}"
           echo "Processing tag: $TAG"
-          
+
           if [[ ! $TAG =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
             echo "❌ Error: Tag must be in format v{major}.{minor}.{patch} (e.g., v1.0.0)"
             exit 1
           fi
-          
+
           if git rev-parse "$TAG" >/dev/null 2>&1; then
             echo "❌ Error: Tag $TAG already exists"
             exit 1
           fi
-          
+
           LATEST_TAG=$(git tag --sort=-v:refname | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | head -n 1)
-          
+
           if [ -n "$LATEST_TAG" ]; then
             echo "Latest existing tag: $LATEST_TAG"
             echo "New tag: $TAG"
@@ -78,18 +78,18 @@ jobs:
           else
             echo "ℹ️  No previous tags found. This will be the first release."
           fi
-          
+
           VERSION=${TAG#v}
           MAJOR=$(echo $VERSION | cut -d. -f1)
           MINOR=$(echo $VERSION | cut -d. -f2)
           PATCH=$(echo $VERSION | cut -d. -f3)
-          
+
           echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
           echo "MAJOR=$MAJOR" >> $GITHUB_OUTPUT
           echo "MINOR=$MINOR" >> $GITHUB_OUTPUT
           echo "PATCH=$PATCH" >> $GITHUB_OUTPUT
           echo "TAG=$TAG" >> $GITHUB_OUTPUT
-          
+
           echo "## :rocket: Release Version - Admin Dashboard" >> $GITHUB_STEP_SUMMARY
           echo "- **Tag**: $TAG" >> $GITHUB_STEP_SUMMARY
           if [ -n "$LATEST_TAG" ]; then
@@ -99,7 +99,7 @@ jobs:
           fi
           echo "- **Full Version**: $VERSION" >> $GITHUB_STEP_SUMMARY
           echo "- **Service**: ally-admin-dashboard (CDN)" >> $GITHUB_STEP_SUMMARY
-      
+
       - name: Create and push tag
         run: |
           TAG="${{ steps.parse-version.outputs.TAG }}"
@@ -233,10 +233,10 @@ jobs:
         run: |
           CDN_DISTRIBUTION_ID="${{ vars.PRD_ADMIN_DASHBOARD_DISTRIBUTION_ID }}"
           S3_WEBSITE_BUCKET="${{ vars.PRD_ADMIN_DASHBOARD_S3_BUCKET }}"
-          
+
           echo "cdn_distribution_id=$CDN_DISTRIBUTION_ID" >> $GITHUB_OUTPUT
           echo "s3_website_bucket=$S3_WEBSITE_BUCKET" >> $GITHUB_OUTPUT
-          
+
           echo ":gear: CDN Configuration" >> $GITHUB_STEP_SUMMARY
           echo "- Distribution ID: $CDN_DISTRIBUTION_ID" >> $GITHUB_STEP_SUMMARY
           echo "- S3 Bucket: $S3_WEBSITE_BUCKET" >> $GITHUB_STEP_SUMMARY
@@ -244,12 +244,12 @@ jobs:
       - name: Sync to S3
         run: |
           echo ":cloud: Syncing files to S3..." >> $GITHUB_STEP_SUMMARY
-          
+
           aws s3 sync dist/apps/ally-admin-dashboard/ s3://${{ steps.cdn-config.outputs.s3_website_bucket }}/ \
             --delete \
             --cache-control "public, max-age=86400" \
             --metadata-directive REPLACE
-          
+
           if [ -f "dist/apps/ally-admin-dashboard/.well-known/apple-app-site-association" ]; then
             aws s3 cp dist/apps/ally-admin-dashboard/.well-known/apple-app-site-association \
               s3://${{ steps.cdn-config.outputs.s3_website_bucket }}/.well-known/apple-app-site-association \
@@ -257,7 +257,7 @@ jobs:
               --cache-control "public, max-age=86400" \
               --metadata-directive REPLACE
           fi
-          
+
           if [ -f "dist/apps/ally-admin-dashboard/.well-known/assetlinks.json" ]; then
             aws s3 cp dist/apps/ally-admin-dashboard/.well-known/assetlinks.json \
               s3://${{ steps.cdn-config.outputs.s3_website_bucket }}/.well-known/assetlinks.json \
@@ -265,7 +265,7 @@ jobs:
               --cache-control "public, max-age=86400" \
               --metadata-directive REPLACE
           fi
-          
+
           echo ":white_check_mark: Files synced to S3 successfully" >> $GITHUB_STEP_SUMMARY
 
       - name: Invalidate CloudFront
@@ -287,7 +287,7 @@ jobs:
     runs-on: ubuntu-22.04
     permissions:
       contents: write
-    
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -300,22 +300,22 @@ jobs:
         run: |
           VERSION=${{ needs.validate-and-tag.outputs.VERSION }}
           TAG=${{ needs.validate-and-tag.outputs.TAG }}
-          
+
           git fetch origin tag "$TAG"
-          
+
           PREVIOUS_TAG=$(git tag --sort=-v:refname | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | grep -v "^$TAG$" | head -n 1)
-          
+
           if [ -z "$PREVIOUS_TAG" ]; then
             PREVIOUS_TAG=$(git rev-list --max-parents=0 HEAD)
           fi
-          
+
           cat > CHANGELOG.md << 'EOF'
           ## What's Changed
-          
+
           EOF
-          
+
           git log $PREVIOUS_TAG..master --pretty=format:"- %s (%h) @%an" --no-merges -- apps/ally-admin-dashboard libs >> CHANGELOG.md
-          
+
           echo "CHANGELOG<<EOF" >> $GITHUB_OUTPUT
           cat CHANGELOG.md >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
@@ -328,27 +328,26 @@ jobs:
           tag_name: ${{ needs.validate-and-tag.outputs.TAG }}
           body: |
             ## Release Admin Dashboard v${{ needs.validate-and-tag.outputs.VERSION }}
-            
+
             ### Version Information
             - **Service**: ally-admin-dashboard
             - **Version**: ${{ needs.validate-and-tag.outputs.VERSION }}
             - **Major**: ${{ needs.validate-and-tag.outputs.MAJOR }}
             - **Minor**: ${{ needs.validate-and-tag.outputs.MINOR }}
             - **Patch**: ${{ needs.validate-and-tag.outputs.PATCH }}
-            
+
             ### Deployment Information
             - **Environment**: Production
             - **Branch**: master
             - **Deployment Type**: CloudFront CDN
             - **S3 Bucket**: ${{ needs.build-and-deploy.outputs.s3_bucket }}
             - **CloudFront Distribution**: ${{ needs.build-and-deploy.outputs.distribution_id }}
-            
+
             ${{ steps.changelog.outputs.CHANGELOG }}
-            
+
             ---
-            
+
             **Note**: This is a draft release. Please review and publish when ready.
           generate_release_notes: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-

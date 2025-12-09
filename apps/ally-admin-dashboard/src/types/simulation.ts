@@ -156,6 +156,7 @@ export enum VisibilityType {
 export enum SessionEventDetectionType {
   SENTENCE_SIMILARITY = "SENTENCE_SIMILARITY",
   SEMANTIC_SIMILARITY = "SEMANTIC_SIMILARITY",
+  BINARY_CLASSIFIER = "BINARY_CLASSIFIER",
   TIME = "TIME",
   SCORE = "SCORE",
   COMBINATION = "COMBINATION",
@@ -202,6 +203,7 @@ export interface ExpressionNode {
 export interface SessionEventDetectionData {
   speaker?: string;
   sentences?: string[];
+  className?: string;
   score?: number;
   time?: number;
   condition?: SessionEventDetectionCondition;

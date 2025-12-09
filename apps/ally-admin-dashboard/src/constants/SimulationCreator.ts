@@ -18,6 +18,7 @@ export const EVENT_TYPE_OPTIONS = [
   { value: "SENTENCE_SIMILARITY", label: "Sentence Similarity" },
   { value: "SEMANTIC_SIMILARITY", label: "Semantic Similarity" },
   { value: "COMBINATION", label: "Combination" },
+  { value: "BINARY_CLASSIFICATION", label: "Binary Classification" },
 ];
 
 export const GENDER_OPTIONS = [

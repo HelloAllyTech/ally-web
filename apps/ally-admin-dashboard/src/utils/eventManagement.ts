@@ -50,6 +50,7 @@ const mapDetectionTypeToBackend = (detectionType: string | undefined): string | 
     SCORE_BASED: SessionEventDetectionType.SCORE,
     SENTENCE_SIMILARITY: SessionEventDetectionType.SENTENCE_SIMILARITY,
     SEMANTIC_SIMILARITY: SessionEventDetectionType.SEMANTIC_SIMILARITY,
+    BINARY_CLASSIFICATION: SessionEventDetectionType.BINARY_CLASSIFIER,
     COMBINATION: SessionEventDetectionType.COMBINATION,
   };
 
@@ -136,7 +137,20 @@ export const convertEventToApiPayload = (event: UpdateEventDataParam): SessionEv
       }
     }
   }
-
+  if (event.detectionType === EVENT_DETECTION_TYPES.BINARY_CLASSIFICATION) {
+    detectionData.className = "hsfd";
+    if (event.triggerCondition) {
+      if (
+        "className" in event.triggerCondition &&
+        isNonEmptyArray(event.triggerCondition.className)
+      ) {
+        detectionData.className = event.triggerCondition.className?.join(" ");
+      }
+      if ("speaker" in event.triggerCondition && isNonEmptyString(event.triggerCondition.speaker)) {
+        detectionData.speaker = event.triggerCondition.speaker;
+      }
+    }
+  }
   if (event.detectionType === EVENT_DETECTION_TYPES.SCORE_BASED) {
     if (event.triggerCondition) {
       if ("value" in event.triggerCondition && isNumber(event.triggerCondition.value)) {
@@ -243,6 +257,7 @@ const mapDetectionTypeToFrontend = (detectionType: string | undefined): string |
     [SessionEventDetectionType.SENTENCE_SIMILARITY]: "SENTENCE_SIMILARITY",
     [SessionEventDetectionType.SEMANTIC_SIMILARITY]: "SEMANTIC_SIMILARITY",
     [SessionEventDetectionType.COMBINATION]: "COMBINATION",
+    [SessionEventDetectionType.BINARY_CLASSIFIER]: "BINARY_CLASSIFICATION",
   };
 
   return mapping[detectionType] || detectionType;

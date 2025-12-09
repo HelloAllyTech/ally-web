@@ -114,7 +114,7 @@ export const EventManagement: React.FC = () => {
         toast.success(en.simulation.eventCreatedSuccessfully);
         const createdEvent = response.data?.[0]
           ? convertApiResponseToEvent(response.data[0])
-          : { ...newEvent, id: response.data?.[0]?.id || "" };
+          : { ...newEvent, id: "" };
         setSelectedEvent(createdEvent);
         setIsSidePanelOpen(true);
       }

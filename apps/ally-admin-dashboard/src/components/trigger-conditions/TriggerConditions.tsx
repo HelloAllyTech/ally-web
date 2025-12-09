@@ -70,6 +70,8 @@ export const TriggerConditions: React.FC<TriggerConditionsProps> = ({
         effectiveTriggerCondition = {} as TriggerCondition;
       } else if (eventType === EVENT_DETECTION_TYPES.SEMANTIC_SIMILARITY) {
         effectiveTriggerCondition = {} as TriggerCondition;
+      } else if (eventType === EVENT_DETECTION_TYPES.BINARY_CLASSIFICATION) {
+        effectiveTriggerCondition = {} as TriggerCondition;
       }
     }
 
