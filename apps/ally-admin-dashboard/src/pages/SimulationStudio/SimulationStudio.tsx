@@ -25,12 +25,12 @@ import { useSimulations, useSimulationPathways } from "@hooks";
 
 const TAB_KEYS = {
   SIMULATIONS: "simulations",
-  PATHWAYS: "pathways",
+  TRACKWAYS: "trackways",
 };
 
 const TABS = [
   { id: "simulations", label: "Simulations" },
-  { id: "pathways", label: "Path ways" },
+  { id: "trackways", label: "Track ways" },
 ];
 
 export const SimulationStudio: React.FC = () => {
@@ -142,15 +142,15 @@ export const SimulationStudio: React.FC = () => {
       onClick: handleNewSimulation,
     },
     {
-      id: en.simulation.newPathway,
-      label: en.simulation.newPathway,
+      id: en.simulation.newTrackway,
+      label: en.simulation.newTrackway,
       icon: <Pathway className="w-5 h-5" />,
       onClick: handleNewPathway,
     },
   ];
 
   const renderFooter = () => {
-    const isPathwaysTab = activeTab === TAB_KEYS.PATHWAYS;
+    const isPathwaysTab = activeTab === TAB_KEYS.TRACKWAYS;
     const hasMoreItems = isPathwaysTab ? hasMorePathways : hasMore;
     const isFetching = isPathwaysTab ? isPathwaysFetching : isSimulationsFetching;
     const loadMore = isPathwaysTab ? loadPathways : loadSimulations;
@@ -214,7 +214,7 @@ export const SimulationStudio: React.FC = () => {
           selectedFilters={selectedFilters}
           onApply={handleApplyFilters}
           options={
-            activeTab === TAB_KEYS.PATHWAYS
+            activeTab === TAB_KEYS.TRACKWAYS
               ? PATH_STATUS_OPTIONS
               : DEFAULT_SIMULATION_STATUS_OPTIONS
           }
@@ -224,7 +224,7 @@ export const SimulationStudio: React.FC = () => {
   };
 
   const renderContent = () => {
-    if (activeTab === TAB_KEYS.PATHWAYS) {
+    if (activeTab === TAB_KEYS.TRACKWAYS) {
       // Pathways tab content
       return (
         <PathwayList
