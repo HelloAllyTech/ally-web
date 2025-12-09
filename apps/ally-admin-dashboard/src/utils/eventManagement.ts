@@ -138,7 +138,6 @@ export const convertEventToApiPayload = (event: UpdateEventDataParam): SessionEv
     }
   }
   if (event.detectionType === EVENT_DETECTION_TYPES.BINARY_CLASSIFICATION) {
-    detectionData.className = "hsfd";
     if (event.triggerCondition) {
       if (
         "className" in event.triggerCondition &&
@@ -149,6 +148,8 @@ export const convertEventToApiPayload = (event: UpdateEventDataParam): SessionEv
       if ("speaker" in event.triggerCondition && isNonEmptyString(event.triggerCondition.speaker)) {
         detectionData.speaker = event.triggerCondition.speaker;
       }
+    } else {
+      detectionData.className = "";
     }
   }
   if (event.detectionType === EVENT_DETECTION_TYPES.SCORE_BASED) {
@@ -312,6 +313,12 @@ export const convertApiResponseToEvent = (apiEvent: SessionEvent): UpdateEventDa
         triggerCondition = {
           speaker: detectionData.speaker || undefined,
           sentences: detectionData.sentences || undefined,
+        };
+      }
+    } else if (frontendDetectionType === "BINARY_CLASSIFICATION") {
+      if (detectionData.className) {
+        triggerCondition = {
+          className: [detectionData.className],
         };
       }
     } else if (frontendDetectionType === "COMBINATION") {
