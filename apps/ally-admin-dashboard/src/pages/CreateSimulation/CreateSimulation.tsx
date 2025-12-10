@@ -22,7 +22,7 @@ import { CreateSimulationSubSection, SimulationEventMapTable } from "@components
 import { ButtonVariant } from "@components/types";
 import { en, ROUTES, StepperList, SIMULATION_CREATOR_FIELD_GROUPS } from "@constants";
 import { useDebounce } from "@hooks";
-import { SimulationStatus, SimulationPreviewType, triggerWarnings } from "@types";
+import { SimulationStatus, SimulationPreviewType, triggerWarning } from "@types";
 import {
   getCreateSimulationSubSectionById,
   formatSimulationResponseData,
@@ -159,7 +159,7 @@ export const CreateSimulation: FC = () => {
 
     const triggerWarning =
       FEATURE_FLAGS_MAP.TRIGGER_WARNINGS_FLAG && isNonEmptyArray(triggerWarningIds)
-        ? (triggerWarningIds as triggerWarnings[])
+        ? (triggerWarningIds as triggerWarning[])
             .filter(trigger => !isEmpty(trigger))
             .map(trigger => trigger.id)
         : [];
@@ -276,7 +276,7 @@ export const CreateSimulation: FC = () => {
     return (
       <div className="flex flex-col h-full w-100%">
         <div className="sticky flex flex-row justify-between top-0 z-10 pt-3 mx-6 pb-4 border-b border-border-light">
-          <h2 className="text-lg font-semibold text-typography-900">{title}</h2>
+          <h2 className="text-lg font-medium text-typography-900">{title}</h2>
         </div>
         <div ref={containerRef} className="p-6 pt-4 overflow-y-auto h-full custom-scrollbar">
           {component}
@@ -327,6 +327,7 @@ export const CreateSimulation: FC = () => {
         title: formData.title,
         description: formData.description,
         coverImageUrl: formData.coverImageUrl,
+        triggerWarnings: formData.triggerWarningIds,
       };
 
       setPreviewSimulation(simulation);

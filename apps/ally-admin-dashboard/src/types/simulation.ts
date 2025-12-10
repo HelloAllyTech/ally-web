@@ -116,7 +116,7 @@ export interface GetSimulationByIdResponse {
     autoTerminationStatus: boolean;
     name: string;
   };
-  triggerWarnings: triggerWarnings[];
+  triggerWarnings: triggerWarning[];
 }
 
 export interface CreateSimulationInput {
@@ -276,11 +276,11 @@ export interface getTriggerWarningsQueryParams {
   order?: string;
 }
 
-export interface triggerWarnings {
+export interface triggerWarning {
   id: string;
   name: string;
-  createdAt: string;
-  updatedAt: string;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface triggerWarningsRequest {

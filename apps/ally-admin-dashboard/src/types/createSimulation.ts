@@ -1,6 +1,6 @@
 import { UseFormReturn } from "react-hook-form";
 
-import { SessionEventDetectionData, triggerWarnings } from "./simulation";
+import { SessionEventDetectionData, triggerWarning } from "./simulation";
 import { TriggerCondition } from "./triggerConditions";
 
 export type FormData = {
@@ -31,7 +31,7 @@ export type FormData = {
   terminationName: string;
   terminationMessage: string;
   isGlobal: boolean;
-  triggerWarningIds: triggerWarnings[];
+  triggerWarningIds: triggerWarning[];
 };
 
 export interface DemographicsSectionProps {
@@ -85,6 +85,7 @@ export interface Simulation {
   isPreviewEnabled: boolean;
   isAssignedToTenant: boolean;
   usage: string;
+  triggerWarnings?: triggerWarning[];
 }
 
 export interface GetSimulationsQueryParams {
@@ -117,6 +118,7 @@ export type SimulationPreviewType = {
   coverImageUrl: string;
   coverVideoUrl?: string;
   description: string;
+  triggerWarnings?: triggerWarning[];
 };
 
 export interface SimulationPreviewProps {

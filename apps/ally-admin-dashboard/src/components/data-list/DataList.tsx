@@ -145,7 +145,7 @@ export function DataList<T extends DataListItem>({
             onClick={handleTitleClick}
             className={`flex flex-col justify-center max-w-[300px] min-w-0 ${titleConfig?.onClick ? "cursor-pointer" : ""}`}
           >
-            <h3 className="text-sm font-medium text-typography-900 truncate">{item.title}</h3>
+            <h3 className="text-sm font-regular text-typography-900 truncate">{item.title}</h3>
             <div className="text-xs text-typography-800 line-clamp-2 mt-1">{item.description}</div>
           </div>
         </div>

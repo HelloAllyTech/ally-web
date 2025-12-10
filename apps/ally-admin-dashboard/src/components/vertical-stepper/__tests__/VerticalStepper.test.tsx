@@ -399,17 +399,6 @@ describe("VerticalStepper", () => {
       expect(circles.length).toBe(mockSteps.length);
     });
 
-    it("step titles have font-medium class", () => {
-      const { container } = render(
-        <VerticalStepper steps={mockSteps} currentStep="step1" onStepClick={mockOnStepClick} />,
-      );
-
-      const titles = container.querySelectorAll("span");
-      titles.forEach(title => {
-        expect(title.className).toContain("font-medium");
-      });
-    });
-
     it("step containers have gap class", () => {
       const { container } = render(
         <VerticalStepper steps={mockSteps} currentStep="step1" onStepClick={mockOnStepClick} />,

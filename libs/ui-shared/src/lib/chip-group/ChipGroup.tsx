@@ -28,7 +28,7 @@ export const ChipGroup: FC<ChipGroupProps> = ({
       {visibleItems.map(item => (
         <div
           key={item.id}
-          className={`text-[11px] bg-gray-100 text-typography-700 border-[0.5px] min-h-[22px] border-gray-200 rounded-full px-[6px] overflow-hidden text-ellipsis whitespace-nowrap  pt-[2px] pb-[1px] ${chipClassName}`}
+          className={`text-[11px] bg-gray-100 text-typography-700 border-[0.5px] min-h-[22px] border-gray-200 rounded-full px-[6px] overflow-hidden text-ellipsis whitespace-nowrap pt-[2px] pb-[1px] ${chipClassName}`}
         >
           {item.name}
         </div>

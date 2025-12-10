@@ -12,6 +12,8 @@ export enum PathwayStatus {
 export interface TriggerChipItemWarning {
   id: number;
   name: string;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface Scenario {
@@ -295,6 +297,7 @@ export interface PathwayScenario {
   description?: string;
   title?: string;
   order: number;
+  triggerWarnings?: TriggerChipItemWarning[];
   status: PathwayScenarioStatus;
 }
 

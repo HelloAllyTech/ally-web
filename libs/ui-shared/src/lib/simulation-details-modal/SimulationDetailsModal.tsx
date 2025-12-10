@@ -3,6 +3,7 @@
 import { FC, useRef } from "react";
 
 import { SimulationDetailsModalProps } from "../../types";
+import { ChipGroup } from "../chip-group";
 import { CustomVideo } from "../custom-video";
 
 export const SimulationDetailsModal: FC<SimulationDetailsModalProps> = ({
@@ -26,6 +27,7 @@ export const SimulationDetailsModal: FC<SimulationDetailsModalProps> = ({
   headerClassName = "",
   contentClassName = "",
   imageContainerClassName = "",
+  triggerWarnings = [],
   renderCustomImage,
 }) => {
   const previewRef = useRef<HTMLDivElement>(null);
@@ -54,9 +56,9 @@ export const SimulationDetailsModal: FC<SimulationDetailsModalProps> = ({
       >
         {/* Header */}
         <div className={`p-6 pb-4 ${headerClassName}`}>
-          <h2 className="text-4xl text-typography-900 mb-4 font-thin font-primary">
+          <h2 className="text-4xl text-typography-900 mb-4 font-thin font-secondary">
             <span>{headerTitle}</span>
-            {headerSubtitle && ` ${headerSubtitle}`}
+            <span className="font-secondary">{headerSubtitle && ` ${headerSubtitle}`}</span>
           </h2>
 
           <div
@@ -89,12 +91,18 @@ export const SimulationDetailsModal: FC<SimulationDetailsModalProps> = ({
             <div className="space-y-3 w-full">
               <h3 className="text-lg text-typography-900">{title}</h3>
               <div>
-                <h4 className="text-base font-semibold text-typography-800 mb-1">
-                  {scenarioLabel}
-                </h4>
+                <h4 className="text-base font-semibold text-typography-800">{scenarioLabel}</h4>
                 <p className="text-base text-typography-800 leading-relaxed max-h-[300px] overflow-y-auto">
                   {description}
                 </p>
+                {triggerWarnings?.length > 0 && (
+                  <div className="flex flex-col pt-2">
+                    <div className="text-base font-semibold text-typography-800 mb-1">
+                      Trigger warnings:
+                    </div>
+                    <ChipGroup items={triggerWarnings} chipClassName="text-sm" maxVisible={20} />
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -104,14 +112,14 @@ export const SimulationDetailsModal: FC<SimulationDetailsModalProps> = ({
         <div className="px-6 pb-6 pt-3 flex flex-row items-center justify-between">
           <button
             onClick={onSecondaryClick}
-            className={`w-[49%] px-6 py-2 border border-border-light rounded-[40px] text-typography-900 font-medium hover:bg-background-secondary transition-colors ${secondaryButtonClassName}`}
+            className={`w-[49%] font-tertiary px-6 py-2 border border-border-light rounded-[40px] text-typography-900 font-medium hover:bg-background-secondary transition-colors ${secondaryButtonClassName}`}
           >
             {secondaryButtonText}
           </button>
           <button
             onClick={onPrimaryClick}
             disabled={isPrimaryLoading}
-            className={`w-[49%] px-6 py-2 bg-primary-500 text-white rounded-[40px] font-medium hover:bg-primary-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${primaryButtonClassName}`}
+            className={`w-[49%] font-tertiary px-6 py-2 bg-primary-500 text-white rounded-[40px] font-medium hover:bg-primary-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${primaryButtonClassName}`}
           >
             {primaryButtonText}
           </button>

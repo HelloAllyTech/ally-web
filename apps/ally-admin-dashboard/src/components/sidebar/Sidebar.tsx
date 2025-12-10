@@ -99,7 +99,7 @@ export const Sidebar: React.FC = () => {
                 onClick={() => handleNavigation(item.path)}
                 className={`w-full flex items-center px-3 py-3 mb-3 rounded-lg text-left transition-colors ${
                   isActive
-                    ? "bg-neutral-100 text-typography-900"
+                    ? "bg-neutral-100 text-typography-900 font-medium "
                     : "text-typography-800 hover:bg-background-secondary hover:text-typography-900"
                 }`}
                 title={!isExpanded ? item.label : ""}
@@ -110,7 +110,7 @@ export const Sidebar: React.FC = () => {
                   {renderIcon(item.id)}
                 </span>
                 {isExpanded && (
-                  <span className="font-medium text-base text-ellipsis overflow-hidden whitespace-nowrap">
+                  <span className="text-base text-ellipsis overflow-hidden whitespace-nowrap">
                     {item.label}
                   </span>
                 )}
@@ -133,7 +133,7 @@ export const Sidebar: React.FC = () => {
             <User />
           </div>
           <div className="flex-1 text-left min-w-[100px]">
-            <div className="text-lg font-medium text-typography-900 text-ellipsis overflow-hidden whitespace-nowrap">
+            <div className="text-lg text-typography-900 text-ellipsis overflow-hidden whitespace-nowrap">
               {user?.name}
             </div>
             <div className="text-xs mb-1 text-typography-800 text-ellipsis overflow-hidden whitespace-nowrap">

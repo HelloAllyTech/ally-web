@@ -29,9 +29,7 @@ export const SimulationAndPathToggleCard: React.FC<SimulationAndPathToggleCardPr
 
       {/* Simulation Title and Description */}
       <div className="flex-1 min-w-0 overflow-hidden">
-        <h3 className="text-sm font-medium text-typography-900 mb-1 truncate">
-          {simulation.title}
-        </h3>
+        <h3 className="text-sm text-typography-900 mb-1 truncate">{simulation.title}</h3>
         <p className="text-sm text-typography-700 leading-relaxed line-clamp-2">
           {simulation.description}
         </p>

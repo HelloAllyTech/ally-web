@@ -111,7 +111,10 @@ export const useMicrophoneMode = (): UseMicrophoneModeReturn => {
         return;
       }
     }
-    navigate(ROUTES.STRESS_BUSTER, { state: { chatId: activeChat?.chatId || microphoneChatId } });
+    navigate(ROUTES.STRESS_BUSTER, {
+      state: { chatId: chatId || activeChat?.chatId || microphoneChatId },
+      replace: true,
+    });
   };
 
   const updateLastTranscription = (
