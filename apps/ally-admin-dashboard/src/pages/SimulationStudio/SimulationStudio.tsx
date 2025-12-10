@@ -172,7 +172,7 @@ export const SimulationStudio: React.FC = () => {
   const renderHeader = () => {
     return (
       <div className="flex justify-between items-center">
-        <h1 className="text-2xl text-typography-900 font-primary">
+        <h1 className="text-2xl text-typography-900 font-secondary">
           {en.simulation.simulationstudio}
         </h1>
         <Button

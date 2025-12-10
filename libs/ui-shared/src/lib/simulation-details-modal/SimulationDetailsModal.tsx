@@ -56,9 +56,9 @@ export const SimulationDetailsModal: FC<SimulationDetailsModalProps> = ({
       >
         {/* Header */}
         <div className={`p-6 pb-4 ${headerClassName}`}>
-          <h2 className="text-4xl text-typography-900 mb-4 font-thin font-primary">
+          <h2 className="text-4xl text-typography-900 mb-4 font-thin font-secondary">
             <span>{headerTitle}</span>
-            {headerSubtitle && ` ${headerSubtitle}`}
+            <span className="font-secondary">{headerSubtitle && ` ${headerSubtitle}`}</span>
           </h2>
 
           <div
@@ -112,14 +112,14 @@ export const SimulationDetailsModal: FC<SimulationDetailsModalProps> = ({
         <div className="px-6 pb-6 pt-3 flex flex-row items-center justify-between">
           <button
             onClick={onSecondaryClick}
-            className={`w-[49%] px-6 py-2 border border-border-light rounded-[40px] text-typography-900 font-medium hover:bg-background-secondary transition-colors ${secondaryButtonClassName}`}
+            className={`w-[49%] font-tertiary px-6 py-2 border border-border-light rounded-[40px] text-typography-900 font-medium hover:bg-background-secondary transition-colors ${secondaryButtonClassName}`}
           >
             {secondaryButtonText}
           </button>
           <button
             onClick={onPrimaryClick}
             disabled={isPrimaryLoading}
-            className={`w-[49%] px-6 py-2 bg-primary-500 text-white rounded-[40px] font-medium hover:bg-primary-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${primaryButtonClassName}`}
+            className={`w-[49%] font-tertiary px-6 py-2 bg-primary-500 text-white rounded-[40px] font-medium hover:bg-primary-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${primaryButtonClassName}`}
           >
             {primaryButtonText}
           </button>

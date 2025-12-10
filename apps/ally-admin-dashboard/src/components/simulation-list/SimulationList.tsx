@@ -150,7 +150,7 @@ export const SimulationList: React.FC<SimulationListProps> = ({
         showPreview(simulation) ? (
           <button
             onClick={() => onPreview?.(simulation)}
-            className="flex flex-row items-center space-x-1 text-sm font-medium transition-colors"
+            className="flex flex-row items-center space-x-1 text-sm transition-colors"
           >
             <Play />
             <span>{en.simulation.preview}</span>

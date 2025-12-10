@@ -29,7 +29,7 @@ export const VerticalStepper: FC<VerticalStepperProps> = ({ steps, currentStep, 
       case stepStatusMap.completed:
         return `${baseStyles} text-typography-800`;
       case stepStatusMap.active:
-        return `${baseStyles} text-typography-900`;
+        return `${baseStyles} text-typography-900 font-medium`;
       case stepStatusMap.pending:
         return `${baseStyles} text-typography-800`;
       default:
@@ -73,7 +73,7 @@ export const VerticalStepper: FC<VerticalStepperProps> = ({ steps, currentStep, 
                 <div className={getCircleStyles(step, index)}>
                   {status === stepStatusMap.active && <div className={getDotStyles(step, index)} />}
                 </div>
-                <span className="text-xs lg:text-base font-medium">{step.title}</span>
+                <span className="text-xs lg:text-base">{step.title}</span>
               </div>
               <div
                 className={`h-[24px] bg-neutral-200 w-[2px] ml-[7px] lg:ml-[11px] ${index === steps.length - 1 && "hidden"}`}

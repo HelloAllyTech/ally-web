@@ -3,6 +3,80 @@
 @tailwind utilities;
 /* You can add global styles to this file, and also import other style files */
 
+/* IBM Plex Serif - Local Font Faces */
+@font-face {
+  font-family: "IBM Plex Serif";
+  src: url("./assets/fonts/IBMPlexSerif-Light.ttf") format("truetype");
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "IBM Plex Serif";
+  src: url("./assets/fonts/IBMPlexSerif-Regular.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "IBM Plex Serif";
+  src: url("./assets/fonts/IBMPlexSerif-Italic.ttf") format("truetype");
+  font-weight: 400;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "IBM Plex Serif";
+  src: url("./assets/fonts/IBMPlexSerif-Medium.ttf") format("truetype");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "IBM Plex Serif";
+  src: url("./assets/fonts/IBMPlexSerif-SemiBold.ttf") format("truetype");
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "IBM Plex Serif";
+  src: url("./assets/fonts/IBMPlexSerif-Bold.ttf") format("truetype");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Replay Pro - Local Font Faces */
+@font-face {
+  font-family: "Replay Pro";
+  src: url("./assets/fonts/ReplayPro-Regular.otf") format("opentype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Replay Pro";
+  src: url("./assets/fonts/ReplayPro-Bold.otf") format("opentype");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Replay Pro";
+  src: url("./assets/fonts/ReplayPro-BoldItalic.ttf") format("truetype");
+  font-weight: 700;
+  font-style: italic;
+  font-display: swap;
+}
+
 @layer base {
   /* Custom Scrollbar Styles */
   .custom-scrollbar::-webkit-scrollbar {

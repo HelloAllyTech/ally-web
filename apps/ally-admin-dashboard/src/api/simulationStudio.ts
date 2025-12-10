@@ -20,7 +20,7 @@ import {
   getTriggerWarningsQueryParams,
   triggerWarningsRequest,
   createTriggerResponse,
-  triggerWarnings,
+  triggerWarning,
 } from "@types";
 
 import { baseAPI } from "./baseApi";
@@ -274,7 +274,7 @@ const simulationStudioAPI = baseAPI.injectEndpoints({
     }),
 
     //Trigger warnings
-    getTriggerWarnings: builder.query<triggerWarnings[], getTriggerWarningsQueryParams>({
+    getTriggerWarnings: builder.query<triggerWarning[], getTriggerWarningsQueryParams>({
       query: (params: GetSimulationsQueryParams) => ({
         url: ApiEndpoints.SIMULATION_STUDIO.TRIGGER_WARNINGS,
         params,
