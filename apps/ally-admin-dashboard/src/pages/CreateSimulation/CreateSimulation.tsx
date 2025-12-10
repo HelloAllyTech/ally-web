@@ -22,7 +22,7 @@ import { CreateSimulationSubSection, SimulationEventMapTable } from "@components
 import { ButtonVariant } from "@components/types";
 import { en, ROUTES, StepperList, SIMULATION_CREATOR_FIELD_GROUPS } from "@constants";
 import { useDebounce } from "@hooks";
-import { SimulationStatus, SimulationPreviewType, triggerWarnings } from "@types";
+import { SimulationStatus, SimulationPreviewType, triggerWarning } from "@types";
 import {
   getCreateSimulationSubSectionById,
   formatSimulationResponseData,
@@ -159,7 +159,7 @@ export const CreateSimulation: FC = () => {
 
     const triggerWarning =
       FEATURE_FLAGS_MAP.TRIGGER_WARNINGS_FLAG && isNonEmptyArray(triggerWarningIds)
-        ? (triggerWarningIds as triggerWarnings[])
+        ? (triggerWarningIds as triggerWarning[])
             .filter(trigger => !isEmpty(trigger))
             .map(trigger => trigger.id)
         : [];
@@ -327,6 +327,7 @@ export const CreateSimulation: FC = () => {
         title: formData.title,
         description: formData.description,
         coverImageUrl: formData.coverImageUrl,
+        triggerWarnings: formData.triggerWarningIds,
       };
 
       setPreviewSimulation(simulation);

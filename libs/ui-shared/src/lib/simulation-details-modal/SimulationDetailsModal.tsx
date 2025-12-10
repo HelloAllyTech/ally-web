@@ -3,6 +3,7 @@
 import { FC, useRef } from "react";
 
 import { SimulationDetailsModalProps } from "../../types";
+import { ChipGroup } from "../chip-group";
 import { CustomVideo } from "../custom-video";
 
 export const SimulationDetailsModal: FC<SimulationDetailsModalProps> = ({
@@ -26,6 +27,7 @@ export const SimulationDetailsModal: FC<SimulationDetailsModalProps> = ({
   headerClassName = "",
   contentClassName = "",
   imageContainerClassName = "",
+  triggerWarnings = [],
   renderCustomImage,
 }) => {
   const previewRef = useRef<HTMLDivElement>(null);
@@ -89,12 +91,18 @@ export const SimulationDetailsModal: FC<SimulationDetailsModalProps> = ({
             <div className="space-y-3 w-full">
               <h3 className="text-lg text-typography-900">{title}</h3>
               <div>
-                <h4 className="text-base font-semibold text-typography-800 mb-1">
-                  {scenarioLabel}
-                </h4>
+                <h4 className="text-base font-semibold text-typography-800">{scenarioLabel}</h4>
                 <p className="text-base text-typography-800 leading-relaxed max-h-[300px] overflow-y-auto">
                   {description}
                 </p>
+                {triggerWarnings?.length > 0 && (
+                  <div className="flex flex-col pt-2">
+                    <div className="text-base font-semibold text-typography-800 mb-1">
+                      Trigger warnings:
+                    </div>
+                    <ChipGroup items={triggerWarnings} chipClassName="text-sm" maxVisible={20} />
+                  </div>
+                )}
               </div>
             </div>
           </div>

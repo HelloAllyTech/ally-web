@@ -74,6 +74,7 @@ export const SimulationPreview: FC<SimulationPreviewProps> = ({ simulation, isOp
       onSecondaryClick={onClose}
       onClickOutside={onClose}
       isPrimaryLoading={isLoading}
+      triggerWarnings={simulation.triggerWarnings}
       renderCustomImage={({ src, alt, className }) => (
         <CustomImage src={src} alt={alt} className={className} />
       )}
