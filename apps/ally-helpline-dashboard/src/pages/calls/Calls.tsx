@@ -90,7 +90,7 @@ export const Calls: FC = () => {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.3, ease: "easeOut" }}
-        className="relative mt-[10px] font-primary"
+        className="relative mt-[10px] font-secondary"
       >
         <div
           className="sm:p-4 p-0 rounded-lg flex gap-4 sm:justify-between justify-start bg-transparent items-center"

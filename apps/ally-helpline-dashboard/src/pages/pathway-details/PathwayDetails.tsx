@@ -179,7 +179,7 @@ export const PathwayDetails: FC = () => {
   };
 
   const renderPathwayInfo = () => (
-    <div className="pt-8 max-w-5xl">
+    <div className="pt-8">
       <div className="flex items-center justify-between mb-4">
         <h1 className="text-2xl font-bold text-typography-900">{pathway.title}</h1>
         {renderProgressBar()}

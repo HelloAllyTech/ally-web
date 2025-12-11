@@ -81,7 +81,7 @@ export const Analytics: FunctionComponent = () => {
     >
       <div data-testid="analytics-header">
         <div
-          className="text-typography-900 font-primary text-2xl font-[500] flex items-center gap-2 mb-2"
+          className="text-typography-900 font-secondary text-2xl font-[500] flex items-center gap-2 mb-2"
           data-testid="analytics-title"
         >
           Session Analytics

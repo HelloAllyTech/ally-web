@@ -29,6 +29,7 @@ import {
   hasCallPermission,
   hasLearnPermission,
   hasPermissions,
+  hasSessionLogsPermission,
 } from "@utils";
 
 import { NavbarWrapper, PermissionGuardedRoute } from "./components";
@@ -90,7 +91,8 @@ const PrivateRouteLayout: FC = () => {
 
   const getLandingPageByRole = () => {
     if (hasLearnPermission(permissions)) return ROUTES.LEARN;
-    if (hasCallPermission(permissions)) return ROUTES.CALLS;
+    if (hasCallPermission(permissions) || hasSessionLogsPermission(permissions))
+      return ROUTES.CALLS;
     if (hasAnalyticsPermission(permissions)) return ROUTES.ANALYTICS;
     return ROUTES.HOME;
   };

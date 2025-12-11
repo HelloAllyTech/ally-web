@@ -7,13 +7,13 @@ import { TranscriptTabProps } from "./types";
 const TranscriptTab: FC<TranscriptTabProps> = ({ transcriptList, handleLoadMore, isLoading }) => {
   return (
     <div className="flex-1 overflow-y-scroll p-4">
-      <h3 className="font-semibold text-sm mb-4">Transcript</h3>
+      <h3 className="font-semibold text-base mb-4">Transcript</h3>
       {transcriptList?.length > 0 ? (
         <div className="space-y-4 flex-1 mb-[12px] h-[calc(100vh-250px)] overflow-y-auto">
           <InfiniteScroll onInfiniteScroll={handleLoadMore} isLoading={isLoading}>
             {transcriptList.map(({ speaker, content }, index: number) => (
               <div key={`${speaker}-${index}`} className="flex">
-                <div className="flex-1 text-sm">
+                <div className="flex-1 text-base">
                   <span className="font-semibold">{speaker}: </span>
                   <span className="font-primary">{content}</span>
                 </div>
