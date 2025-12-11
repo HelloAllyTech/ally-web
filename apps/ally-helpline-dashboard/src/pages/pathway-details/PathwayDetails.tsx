@@ -1,5 +1,9 @@
 import { FC, useState, useCallback } from "react";
 
+import { useNavigate, useParams } from "react-router-dom";
+import { toast } from "sonner";
+
+import { SimulationDetailsModal, CustomImage } from "@ally-ui-mono/ui-shared";
 import {
   useGetScenarioPathwayDetailsQuery,
   useLazyGetScenarioSessionByPathItemQuery,
@@ -10,10 +14,6 @@ import { CreditsDisplay, PathwayScenarioCard } from "@components";
 import { ROUTES } from "@constants";
 import { useStartSimulation } from "@hooks";
 import { PathwayScenarioStatus, PathwayScenario } from "@types";
-import { useNavigate, useParams } from "react-router-dom";
-import { toast } from "sonner";
-
-import { SimulationDetailsModal, CustomImage } from "@ally-ui-mono/ui-shared";
 
 export const PathwayDetails: FC = () => {
   const { pathwayId } = useParams<{ pathwayId: string }>();
