@@ -127,17 +127,19 @@ export const Sidebar: React.FC = () => {
       {isExpanded ? (
         <div
           onClick={handleUserMenuToggle}
-          className="flex flex-row items-center p-3 h-8 py-0 cursor-pointer"
+          className="flex flex-row justify-between items-center h-8 py-0 cursor-pointer"
         >
-          <div className="w-8 h-8 rounded-full flex items-center justify-center mr-3">
-            <User />
-          </div>
-          <div className="flex-1 text-left min-w-[100px]">
-            <div className="text-lg text-typography-900 text-ellipsis overflow-hidden whitespace-nowrap">
-              {user?.name}
+          <div className="flex flex-row items-center">
+            <div className="w-8 h-8 rounded-full flex items-center justify-center mr-2">
+              <User />
             </div>
-            <div className="text-xs mb-1 text-typography-800 text-ellipsis overflow-hidden whitespace-nowrap">
-              {user?.email}
+            <div className="flex-1 text-left w-full min-w-[100px]">
+              <div className="text-lg text-typography-900 text-ellipsis overflow-hidden whitespace-nowrap">
+                {user?.name}
+              </div>
+              <div className="text-xs mb-1 text-typography-800 text-ellipsis overflow-hidden whitespace-nowrap">
+                {user?.email}
+              </div>
             </div>
           </div>
           <div

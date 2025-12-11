@@ -32,7 +32,7 @@ const Field: React.FC<FieldProps> = ({ label, children, multiline = false }) => 
     className={`flex flex-row min-h-[40px] ${multiline ? "items-start" : "items-center"} text-base justify-between`}
   >
     <div className={`w-[40%] ${multiline && "mt-[8px]"}`}>
-      <span className="text-base font-medium text-typography-800">{label}</span>
+      <span className="text-base font-regular text-typography-800">{label}</span>
     </div>
     <div className="w-[60%] flex text-left justify-start text-neutral-800">{children}</div>
   </div>

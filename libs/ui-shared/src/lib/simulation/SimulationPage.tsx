@@ -124,7 +124,7 @@ export const SimulationPage: FC<SimulationPageProps> = ({
   const content = (
     <div
       data-testid="simulation-page"
-      className="min-h-screen p-6 flex flex-col gap-6 justify-between items-center font-['IBM_Plex_Serif'] bg-[#171A1A]"
+      className="h-[100%] p-6 flex flex-col gap-6 justify-between items-center font-['IBM_Plex_Serif'] bg-[#171A1A]"
     >
       <div
         data-testid="simulation-page-header"
@@ -201,7 +201,11 @@ export const SimulationPage: FC<SimulationPageProps> = ({
   );
 
   if (room) {
-    return <RoomContext.Provider value={room}>{content}</RoomContext.Provider>;
+    return (
+      <div className="h-[100vh] w-full bg-black">
+        <RoomContext.Provider value={room}>{content}</RoomContext.Provider>
+      </div>
+    );
   }
 
   return content;

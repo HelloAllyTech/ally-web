@@ -46,7 +46,7 @@ export const EVENT_TYPE_POPUP_OPTIONS: EventTypeOption[] = [
   },
   {
     value: "BINARY_CLASSIFICATION",
-    label: "Binary Classification",
+    label: "Binary Classification (Zero-shot)",
     description: "Trigger based on binary classification.",
     icon: BinaryClassification,
   },
@@ -110,7 +110,7 @@ export const EventTypeSelectionDialog: FC<EventTypeSelectionDialogProps> = ({
       <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-[1px]" />
       <div className="fixed inset-0 flex items-center justify-center px-4 shadow-2xl animate-fadeIn">
         <div
-          className="relative bg-background rounded-lg shadow-xl max-w-[480px] w-full animate-in fade-in-0 zoom-in-95 duration-200 p-8"
+          className="relative bg-background rounded-lg shadow-xl max-w-[540px] w-full animate-in fade-in-0 zoom-in-95 duration-200 p-8"
           ref={dialogRef}
         >
           <button
@@ -142,16 +142,16 @@ export const EventTypeSelectionDialog: FC<EventTypeSelectionDialogProps> = ({
                       isSelected && "border-primary-500"
                     }`}
                   >
-                    <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-4 relative">
                       <div className="flex-shrink-0 mt-1">
                         <Icon className="w-5 h-5" />
                       </div>
                       <div className="flex-1">
-                        <div className="font-semibold text-typography-900">{option.label}</div>
+                        <div className="font-regular text-typography-900">{option.label}</div>
                         <div className="text-base text-typography-800">{option.description}</div>
                       </div>
                       {isSelected && (
-                        <div className="flex-shrink-0">
+                        <div className="flex-shrink-0 absolute right-0">
                           <div className="w-6 h-6 rounded-full bg-primary-500 flex items-center justify-center">
                             <Tick width={15} height={20} />
                           </div>

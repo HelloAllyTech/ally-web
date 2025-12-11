@@ -378,7 +378,7 @@ describe("EventTypeSelectionDialog", () => {
     it("dialog has correct max width", () => {
       const { container } = render(<EventTypeSelectionDialog {...defaultProps} />);
 
-      const dialog = container.querySelector(".max-w-\\[480px\\]");
+      const dialog = container.querySelector(".max-w-\\[540px\\]");
       expect(dialog).toBeInTheDocument();
     });
 

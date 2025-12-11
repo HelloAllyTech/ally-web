@@ -4,11 +4,11 @@ import { useCreateTriggerWarningMutation, useGetTriggerWarningsQuery } from "@ap
 import { Close, Plus, Search } from "@assets";
 import { en } from "@constants";
 import { useClickOutside } from "@hooks";
-import { triggerWarnings } from "@src/types";
+import { triggerWarning } from "@types";
 
 interface TagsDropdown {
-  updateTriggerWarnings: (tags: triggerWarnings[]) => void;
-  triggerWarnings: triggerWarnings[];
+  updateTriggerWarnings: (tags: triggerWarning[]) => void;
+  triggerWarnings: triggerWarning[];
   label: string;
 }
 
@@ -61,8 +61,7 @@ export const TagSelector: React.FC<TagsDropdown> = ({
         return updatedList;
       });
     }
-
-    if (options.length < DEFAULT_LIMIT) setHasMore(false);
+    setHasMore(options.length === DEFAULT_LIMIT);
   }, [options, page, triggerWarnings]);
 
   // Intersection Observer callback
@@ -106,7 +105,7 @@ export const TagSelector: React.FC<TagsDropdown> = ({
 
   useClickOutside(dropdownRef, closeDropdown);
 
-  const removeTag = (tagToRemove: triggerWarnings) => {
+  const removeTag = (tagToRemove: triggerWarning) => {
     updateTriggerWarnings(triggerWarnings.filter(tag => tag !== tagToRemove));
   };
 
@@ -177,7 +176,7 @@ export const TagSelector: React.FC<TagsDropdown> = ({
   );
   return (
     <div className="flex flex-col gap-2">
-      <label htmlFor="tags" className="text-typography-900 cursor-pointer">
+      <label htmlFor="tags" className="text-typography-900 text-base cursor-pointer">
         {label}
       </label>
 
