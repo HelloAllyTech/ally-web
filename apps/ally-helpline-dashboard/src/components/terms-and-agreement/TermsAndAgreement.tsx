@@ -11,7 +11,7 @@ const TermsAndAgreement = ({ isOpen, handleAgreeButtonClick }) => {
     style: {
       borderRadius: "8px",
       padding: "16px",
-      height: "600px",
+      height: "620px",
     },
   };
 
