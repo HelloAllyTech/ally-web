@@ -200,7 +200,7 @@ export const SimulationStudio: React.FC = () => {
               key={filter.id}
               className="flex flex-row items-center gap-1 border border-border-light rounded-full px-2 py-1"
             >
-              <span className="text-xs text-typography-800">{filter.label}</span>
+              <span className="text-xs text-typography-800 font-regular">{filter.label}</span>
 
               <button onClick={() => handleFilterItemClose(filter)}>
                 <Close />

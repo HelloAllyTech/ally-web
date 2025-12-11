@@ -75,7 +75,7 @@ export const InputField: React.FC<InputFieldProps> = ({
       <div className="flex justify-between">
         <label
           htmlFor="title"
-          className="text-typography-900 cursor-pointer flex items-center gap-1"
+          className="text-typography-900 text-base cursor-pointer flex items-center gap-1"
         >
           {label}
           {isMandatory && <span className="text-destructive-500">*</span>}
@@ -89,7 +89,7 @@ export const InputField: React.FC<InputFieldProps> = ({
             id={id}
             maxLength={maxLength}
             placeholder={placeholder}
-            style={{ minHeight: `${minHeight}px` }}
+            style={{ minHeight: `${minHeight}px`, fontSize: "14px" }}
             className={`w-full rounded border border-border-light text-md placeholder:text-typography-600 focus:ring-1 focus:ring-primary focus:outline-none px-2 py-1 pr-16`}
           />
         ) : (
@@ -109,6 +109,7 @@ export const InputField: React.FC<InputFieldProps> = ({
                   onInput: handleAgeInput,
                 }
               : {})}
+            style={{ fontSize: "14px" }}
             onChange={handleFieldChange}
             className={`w-full rounded border text-md border-border-light focus:ring-1 placeholder:text-typography-600 focus:ring-primary focus:outline-none px-2 py-1 ${type === FORM_FIELD_TYPES.NUMBER ? "pr-[8px]" : "pr-[50px]"}`}
           />

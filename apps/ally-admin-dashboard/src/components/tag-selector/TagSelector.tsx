@@ -176,7 +176,7 @@ export const TagSelector: React.FC<TagsDropdown> = ({
   );
   return (
     <div className="flex flex-col gap-2">
-      <label htmlFor="tags" className="text-typography-900 cursor-pointer">
+      <label htmlFor="tags" className="text-typography-900 text-base cursor-pointer">
         {label}
       </label>
 
