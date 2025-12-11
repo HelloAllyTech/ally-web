@@ -90,8 +90,8 @@ const PrivateRouteLayout: FC = () => {
 
   const getLandingPageByRole = () => {
     if (hasLearnPermission(permissions)) return ROUTES.LEARN;
-    if (hasAnalyticsPermission(permissions)) return ROUTES.ANALYTICS;
     if (hasCallPermission(permissions)) return ROUTES.CALLS;
+    if (hasAnalyticsPermission(permissions)) return ROUTES.ANALYTICS;
     return ROUTES.HOME;
   };
 
