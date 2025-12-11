@@ -61,7 +61,7 @@ export const SimulationEvents: FC<SimulationEventsProps> = ({ events = [] }) => 
         initial={{ x: "100%", opacity: 0 }}
         animate={{ x: hasEvents ? "0%" : "100%", opacity: hasEvents ? 1 : 0 }}
         transition={{ duration: 0.35, ease: [0.4, 0, 0.2, 1] }}
-        className="flex flex-col items-start gap-4 bg-[#1D2020] p-4 h-full overflow-y-auto"
+        className="flex flex-col items-start gap-4 bg-[#1D2020] p-4 h-[calc(100vh-300px)] overflow-y-auto"
         ref={containerRef}
       >
         {filteredEvents.map(({ emoji, message, timestamp }, index) => {
@@ -78,7 +78,7 @@ export const SimulationEvents: FC<SimulationEventsProps> = ({ events = [] }) => 
             >
               <span
                 data-testid={`simulation-event-message-${index}`}
-                className="text-[14px] text-white italic font-['IBM_Plex_Serif']"
+                className="text-[14px] text-white font-['IBM_Plex_Serif']"
               >
                 {`${emoji}  ${message}`}
               </span>
