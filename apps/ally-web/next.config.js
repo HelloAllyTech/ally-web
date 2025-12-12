@@ -29,6 +29,12 @@ const nextConfig = {
       type: "asset/resource",
     });
 
+    // Handle audio file imports (mp3, wav, etc.)
+    config.module.rules.push({
+      test: /\.(mp3|wav|ogg)$/i,
+      type: "asset/resource",
+    });
+
     return config;
   },
 };
