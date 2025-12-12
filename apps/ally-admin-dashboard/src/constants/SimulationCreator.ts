@@ -174,6 +174,7 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
         label: "Difficulty level",
         type: FORM_FIELD_TYPES.SELECT,
         options: DIFFICULTY_LEVEL_OPTIONS,
+        isMandatory: true,
       },
       FEATURE_FLAGS_MAP.TRIGGER_WARNINGS_FLAG && {
         id: "triggerWarningIds",
@@ -248,7 +249,6 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
         options: GENDER_IDENTITY_OPTIONS,
         maxLength: 100,
         isDashedLineAbove: true,
-        isMandatory: true,
       },
       {
         id: "sexualOrientation",

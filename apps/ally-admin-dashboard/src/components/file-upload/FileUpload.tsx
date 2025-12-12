@@ -368,11 +368,9 @@ export const FileUpload = ({
       <div>
         <div
           {...getRootProps()}
-          className={`border-2 border-dashed rounded-lg text-base text-center transition-colors h-64 relative overflow-hidden ${
-            isDragActive
-              ? "border-primary-500bg-primary-50"
-              : "border-border-light hover:border-primary"
-          }`}
+          className={`text-center transition-colors h-64 relative overflow-hidden rounded-lg 
+          ${!isNonEmptyString(uploadedFileUrl) && "border-2 border-dashed border-border-light hover:border-primary"}
+          ${isDragActive && "border-primary-500 bg-primary-50"}`}
         >
           <input
             {...register(id, { required: requiredErrorMessage })}
