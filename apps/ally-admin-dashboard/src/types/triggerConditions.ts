@@ -90,7 +90,9 @@ export interface CombinationExpressionNode {
   left?: CombinationExpressionNode;
   right?: CombinationExpressionNode;
 }
-
+export interface BinaryClassificationTriggerCondition {
+  className: string;
+}
 /**
  * Combination trigger condition
  * Uses expression tree format to match backend API structure directly
@@ -99,11 +101,11 @@ export interface CombinationTriggerCondition {
   expression: CombinationExpressionNode;
 }
 
-export type TriggerCondition =
-  | TimeBasedTriggerCondition
-  | ScoreBasedTriggerCondition
-  | SentenceSimilarityTriggerCondition
-  | CombinationTriggerCondition;
+export type TriggerCondition = TimeBasedTriggerCondition &
+  ScoreBasedTriggerCondition &
+  SentenceSimilarityTriggerCondition &
+  CombinationTriggerCondition &
+  BinaryClassificationTriggerCondition;
 
 /**
  * Type guard to check if a condition is a combination trigger condition

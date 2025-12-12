@@ -1,5 +1,5 @@
-import { BulbIcon, KeyEvents, ThumbUp } from "@assets/icons";
-import { FeedbackSectioonType } from "@types";
+import { Alarm, BulbIcon, DiamondShine, KeyEvents, ThumbUp } from "@assets/icons";
+import { FeedbackSectionType } from "@types";
 import { convertSecondsToHMS, getSimulationScoreDisplay } from "@utils";
 
 import { FeedbackSectionProps } from "./types";
@@ -8,6 +8,7 @@ export const feedbackDemographics = [
   {
     key: "duration",
     label: "Session Duration",
+    icon: Alarm,
     getValue: (summary: FeedbackSectionProps) => {
       const createdAt = summary?.createdAt;
       const endedAt = summary?.endedAt;
@@ -24,6 +25,7 @@ export const feedbackDemographics = [
   {
     key: "score",
     label: "Total Score",
+    icon: DiamondShine,
     getValue: (summary: FeedbackSectionProps) => getSimulationScoreDisplay(summary?.score, true),
   },
 ];
@@ -36,11 +38,23 @@ export const feedbackSections = [
     },
     key: "keyEvents",
     label: "Key Events",
-    type: FeedbackSectioonType.TABLE,
+    type: FeedbackSectionType.TABLE,
     columns: [
-      { key: "time", header: "Time", style: { width: "15%", border: "1px solid #D2D2D2" } },
-      { key: "event", header: "Event", style: { width: "75%", border: "1px solid #D2D2D2" } },
-      { key: "score", header: "Score", style: { width: "10%", border: "1px solid #D2D2D2" } },
+      {
+        key: "time",
+        header: "Time",
+        style: { width: "15%", border: "1px solid #D2D2D2", height: "50px" },
+      },
+      {
+        key: "event",
+        header: "Event",
+        style: { width: "75%", border: "1px solid #D2D2D2", height: "50px" },
+      },
+      {
+        key: "score",
+        header: "Score",
+        style: { width: "10%", border: "1px solid #D2D2D2", height: "50px" },
+      },
     ],
   },
   {
@@ -50,7 +64,7 @@ export const feedbackSections = [
     },
     key: "positives",
     label: "What Went Well",
-    type: FeedbackSectioonType.BULLET_TEXT,
+    type: FeedbackSectionType.BULLET_TEXT,
   },
   {
     icon: {
@@ -59,6 +73,6 @@ export const feedbackSections = [
     },
     key: "improvements",
     label: "Improvement Tips",
-    type: FeedbackSectioonType.BULLET_TEXT,
+    type: FeedbackSectionType.BULLET_TEXT,
   },
 ];

@@ -114,7 +114,7 @@ export const EventManagement: React.FC = () => {
         toast.success(en.simulation.eventCreatedSuccessfully);
         const createdEvent = response.data?.[0]
           ? convertApiResponseToEvent(response.data[0])
-          : { ...newEvent, id: response.data?.[0]?.id || "" };
+          : { ...newEvent, id: "" };
         setSelectedEvent(createdEvent);
         setIsSidePanelOpen(true);
       }
@@ -292,7 +292,9 @@ export const EventManagement: React.FC = () => {
   return (
     <div className="py-[2px] font-primary overflow-hidden relative">
       <div>
-        <h1 className="text-2xl text-typography-900 pb-6">{en.simulation.simulationEvents}</h1>
+        <h1 className="text-2xl text-typography-900 pb-6 font-secondary">
+          {en.simulation.simulationEvents}
+        </h1>
         <ListToolbar
           searchValue={eventSearch}
           onSearchChange={onSearchChange}

@@ -29,6 +29,7 @@ export interface DeleteCallLogDialogDataProps {
 export interface Transcript {
   content: string;
   speaker: string;
+  startSeconds?: number;
 }
 
 export interface LogsTableProps {
@@ -88,7 +89,11 @@ export interface CallSummarySidebarProps {
 }
 
 export interface TranscriptTabProps {
-  transcriptList: { speaker: string; content: string }[];
+  transcriptList: {
+    speaker: string;
+    content: string;
+    startSeconds?: number;
+  }[];
   handleLoadMore: () => void;
   isLoading: boolean;
 }

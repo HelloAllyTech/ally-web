@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 
 import { GenericTable } from "@ally-ui-mono/ui-shared";
 import { Accordion } from "@components";
-import { FeedbackSectioonType } from "@types";
+import { FeedbackSectionType } from "@types";
 
 import { feedbackDemographics, feedbackSections } from "./constants";
 import { FeedbackSectionProps } from "./types";
@@ -15,20 +15,20 @@ const getFeedbackSectionByType = ({
   data,
   columns,
 }: {
-  type: FeedbackSectioonType;
+  type: FeedbackSectionType;
   data: any;
   columns: any[];
 }) => {
   switch (type) {
-    case FeedbackSectioonType.TABLE:
+    case FeedbackSectionType.TABLE:
       return (
         <GenericTable
           columns={columns}
           data={data}
-          className="min-w-full text-sm font-primary overflow-y-scroll mb-4"
+          className="min-w-full text-md font-primary overflow-y-scroll mb-4"
         />
       );
-    case FeedbackSectioonType.BULLET_TEXT:
+    case FeedbackSectionType.BULLET_TEXT:
       return (
         <ul className="pb-4 space-y-2 text-lg">
           {Array.isArray(data) ? (
@@ -60,8 +60,9 @@ export const FeedbackSection: FC<FeedbackSectionProps> = props => {
         {feedbackDemographics.map(feedback => (
           <div
             key={feedback.key}
-            className="flex flex-col gap-2 flex-1 min-w-[120px] sm:min-w-[145px] font-primary border-[0.5px] border-secondary-700 rounded-[4px] p-[10px]"
+            className="flex gap-2 flex-1 min-w-[120px] sm:min-w-[140px] font-primary border-[0.5px] border-secondary-200 rounded-3xl p-[10px] items-center"
           >
+            <feedback.icon />
             <span className="text-xs text-typography-800">{feedback.label}</span>
             <span className="text-base text-typography-900 font-medium">
               {feedback.getValue(props)}

@@ -1,4 +1,4 @@
-import { EVENT_DETECTION_TYPES } from "@constants";
+import { EVENT_DETECTION_TYPES, EVENT_CONDITION_MAP } from "@constants";
 import {
   SessionEvent,
   SessionEventDetectionData,
@@ -12,6 +12,7 @@ import {
   isNonEmptyArray,
   isNumber,
   isNonEmptyString,
+  isNonEmptyObject,
 } from "@utils";
 
 import type { CombinationExpressionNode } from "@types";
@@ -50,6 +51,7 @@ const mapDetectionTypeToBackend = (detectionType: string | undefined): string | 
     SCORE_BASED: SessionEventDetectionType.SCORE,
     SENTENCE_SIMILARITY: SessionEventDetectionType.SENTENCE_SIMILARITY,
     SEMANTIC_SIMILARITY: SessionEventDetectionType.SEMANTIC_SIMILARITY,
+    BINARY_CLASSIFICATION: SessionEventDetectionType.BINARY_CLASSIFIER,
     COMBINATION: SessionEventDetectionType.COMBINATION,
   };
 
@@ -119,33 +121,32 @@ export const convertEventToApiPayload = (event: UpdateEventDataParam): SessionEv
   const backendDetectionType = mapDetectionTypeToBackend(event.detectionType);
 
   const detectionData: SessionEventDetectionData = {};
+  const { sentences, speaker, className, value, operator, expression } =
+    event?.triggerCondition || {};
 
   if (
     event.detectionType === EVENT_DETECTION_TYPES.SENTENCE_SIMILARITY ||
     event.detectionType === EVENT_DETECTION_TYPES.SEMANTIC_SIMILARITY
   ) {
-    if (event.triggerCondition) {
-      if (
-        "sentences" in event.triggerCondition &&
-        isNonEmptyArray(event.triggerCondition.sentences)
-      ) {
-        detectionData.sentences = event.triggerCondition.sentences;
-      }
-      if ("speaker" in event.triggerCondition && isNonEmptyString(event.triggerCondition.speaker)) {
-        detectionData.speaker = event.triggerCondition.speaker;
-      }
+    if (isNonEmptyObject(event.triggerCondition)) {
+      if (isNonEmptyArray(sentences)) detectionData.sentences = sentences;
+      if (isNonEmptyString(speaker)) detectionData.speaker = speaker;
     }
   }
-
+  if (event.detectionType === EVENT_DETECTION_TYPES.BINARY_CLASSIFICATION) {
+    if (isNonEmptyObject(event.triggerCondition)) {
+      if (isNonEmptyArray(className)) detectionData.className = className?.join(" ");
+      if (isNonEmptyString(speaker)) detectionData.speaker = speaker;
+    } else {
+      detectionData.className = "";
+    }
+  }
   if (event.detectionType === EVENT_DETECTION_TYPES.SCORE_BASED) {
-    if (event.triggerCondition) {
-      if ("value" in event.triggerCondition && isNumber(event.triggerCondition.value)) {
+    if (isNonEmptyObject(event.triggerCondition)) {
+      if (isNumber(value)) {
         detectionData.score = event.triggerCondition.value;
       }
-      if (
-        "operator" in event.triggerCondition &&
-        isNonEmptyString(event.triggerCondition.operator)
-      ) {
+      if (isNonEmptyString(operator)) {
         const condition = mapOperatorToCondition(event.triggerCondition.operator);
         if (condition) {
           detectionData.condition = condition;
@@ -158,14 +159,11 @@ export const convertEventToApiPayload = (event: UpdateEventDataParam): SessionEv
   }
 
   if (event.detectionType === EVENT_DETECTION_TYPES.TIME_BASED) {
-    if (event.triggerCondition) {
-      if ("value" in event.triggerCondition && isNonEmptyString(event.triggerCondition.value)) {
+    if (isNonEmptyObject(event.triggerCondition)) {
+      if (isNonEmptyString(value)) {
         detectionData.time = convertTimeToSeconds(event.triggerCondition.value);
       }
-      if (
-        "operator" in event.triggerCondition &&
-        isNonEmptyString(event.triggerCondition.operator)
-      ) {
+      if (isNonEmptyString(operator)) {
         const condition = mapOperatorToCondition(event.triggerCondition.operator);
         if (condition) {
           detectionData.condition = condition;
@@ -178,11 +176,7 @@ export const convertEventToApiPayload = (event: UpdateEventDataParam): SessionEv
   }
 
   if (event.detectionType === EVENT_DETECTION_TYPES.COMBINATION) {
-    if (
-      event.triggerCondition &&
-      "expression" in event.triggerCondition &&
-      areBothEventsSelected(event.triggerCondition.expression)
-    ) {
+    if (isNonEmptyObject(expression) && areBothEventsSelected(expression)) {
       // Only include expression if both events are selected
       detectionData.expression = event.triggerCondition.expression;
     }
@@ -219,11 +213,11 @@ const mapConditionToOperator = (condition: string | undefined): string | undefin
   if (!condition) return undefined;
 
   const mapping: Record<string, string> = {
-    [SessionEventDetectionCondition.LT]: "LESS_THAN",
-    [SessionEventDetectionCondition.GT]: "GREATER_THAN",
-    [SessionEventDetectionCondition.EQ]: "EQUAL",
-    [SessionEventDetectionCondition.LTE]: "LESS_THAN_OR_EQUAL",
-    [SessionEventDetectionCondition.GTE]: "GREATER_THAN_OR_EQUAL",
+    [SessionEventDetectionCondition.LT]: EVENT_CONDITION_MAP.LESS_THAN,
+    [SessionEventDetectionCondition.GT]: EVENT_CONDITION_MAP.GREATER_THAN,
+    [SessionEventDetectionCondition.EQ]: EVENT_CONDITION_MAP.EQUAL,
+    [SessionEventDetectionCondition.LTE]: EVENT_CONDITION_MAP.LESS_THAN_OR_EQUAL,
+    [SessionEventDetectionCondition.GTE]: EVENT_CONDITION_MAP.GREATER_THAN_OR_EQUAL,
   };
 
   return mapping[condition];
@@ -238,11 +232,12 @@ const mapDetectionTypeToFrontend = (detectionType: string | undefined): string |
   if (!detectionType) return undefined;
 
   const mapping: Record<string, string> = {
-    [SessionEventDetectionType.TIME]: "TIME_BASED",
-    [SessionEventDetectionType.SCORE]: "SCORE_BASED",
-    [SessionEventDetectionType.SENTENCE_SIMILARITY]: "SENTENCE_SIMILARITY",
-    [SessionEventDetectionType.SEMANTIC_SIMILARITY]: "SEMANTIC_SIMILARITY",
-    [SessionEventDetectionType.COMBINATION]: "COMBINATION",
+    [SessionEventDetectionType.TIME]: EVENT_DETECTION_TYPES.TIME_BASED,
+    [SessionEventDetectionType.SCORE]: EVENT_DETECTION_TYPES.SCORE_BASED,
+    [SessionEventDetectionType.SENTENCE_SIMILARITY]: EVENT_DETECTION_TYPES.SENTENCE_SIMILARITY,
+    [SessionEventDetectionType.SEMANTIC_SIMILARITY]: EVENT_DETECTION_TYPES.SEMANTIC_SIMILARITY,
+    [SessionEventDetectionType.COMBINATION]: EVENT_DETECTION_TYPES.COMBINATION,
+    [SessionEventDetectionType.BINARY_CLASSIFIER]: EVENT_DETECTION_TYPES.BINARY_CLASSIFICATION,
   };
 
   return mapping[detectionType] || detectionType;
@@ -262,7 +257,7 @@ export const convertApiResponseToEvent = (apiEvent: SessionEvent): UpdateEventDa
   const detectionData = apiEvent.detectionData;
 
   if (detectionData) {
-    if (frontendDetectionType === "TIME_BASED") {
+    if (frontendDetectionType === EVENT_DETECTION_TYPES.TIME_BASED) {
       const hasTime = detectionData.time !== undefined && detectionData.time !== null;
       const hasCondition =
         detectionData.condition !== undefined && detectionData.condition !== null;
@@ -274,7 +269,7 @@ export const convertApiResponseToEvent = (apiEvent: SessionEvent): UpdateEventDa
           value: hasTime ? convertSecondsToTimeString(detectionData.time) : undefined,
         };
       }
-    } else if (frontendDetectionType === "SCORE_BASED") {
+    } else if (frontendDetectionType === EVENT_DETECTION_TYPES.SCORE_BASED) {
       const hasScore = detectionData.score !== undefined && detectionData.score !== null;
       const hasCondition =
         detectionData.condition !== undefined && detectionData.condition !== null;
@@ -287,8 +282,8 @@ export const convertApiResponseToEvent = (apiEvent: SessionEvent): UpdateEventDa
         };
       }
     } else if (
-      frontendDetectionType === "SENTENCE_SIMILARITY" ||
-      frontendDetectionType === "SEMANTIC_SIMILARITY"
+      frontendDetectionType === EVENT_DETECTION_TYPES.SENTENCE_SIMILARITY ||
+      frontendDetectionType === EVENT_DETECTION_TYPES.SEMANTIC_SIMILARITY
     ) {
       const hasSentences = detectionData.sentences && detectionData.sentences.length > 0;
       const hasSpeaker = detectionData.speaker !== undefined && detectionData.speaker !== null;
@@ -299,7 +294,13 @@ export const convertApiResponseToEvent = (apiEvent: SessionEvent): UpdateEventDa
           sentences: detectionData.sentences || undefined,
         };
       }
-    } else if (frontendDetectionType === "COMBINATION") {
+    } else if (frontendDetectionType === EVENT_DETECTION_TYPES.BINARY_CLASSIFICATION) {
+      if (detectionData.className) {
+        triggerCondition = {
+          className: [detectionData.className],
+        };
+      }
+    } else if (frontendDetectionType === EVENT_DETECTION_TYPES.COMBINATION) {
       if (detectionData.expression) {
         triggerCondition = {
           expression: detectionData.expression,

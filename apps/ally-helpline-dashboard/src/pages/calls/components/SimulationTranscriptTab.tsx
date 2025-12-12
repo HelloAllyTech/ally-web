@@ -22,6 +22,7 @@ const SimulationTranscriptTab: FC<SimulationTranscriptTabProps> = ({ sessionId }
     return transcriptData?.messages?.map(item => ({
       speaker: item.senderId === -1 ? "Client" : "Counsellor",
       content: item.content,
+      startSeconds: item.startSeconds,
     }));
   }, [transcriptData]);
 

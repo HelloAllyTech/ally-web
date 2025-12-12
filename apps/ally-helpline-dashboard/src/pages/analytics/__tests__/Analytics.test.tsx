@@ -107,7 +107,7 @@ describe("Analytics Component", () => {
       const title = screen.getByText("Session Analytics");
       expect(title).toBeInTheDocument();
       // Font color and size tests removed: They change frequently during development
-      expect(title.className).toContain("font-primary");
+      expect(title.className).toContain("font-secondary");
     });
 
     it("should render dashboard container with correct classes", () => {

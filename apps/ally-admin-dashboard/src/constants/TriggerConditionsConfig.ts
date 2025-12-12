@@ -190,7 +190,29 @@ const SEMANTIC_SIMILARITY_CONFIG = {
     },
   ],
 };
-
+/**
+ * Configuration for BINARY_CLASSIFICATION event type**/
+const BINARY_CLASSIFICATION_CONFIG = {
+  id: "BINARY_CLASSIFICATION" as EventType,
+  label: "Binary Classification",
+  fields: [
+    {
+      id: "speaker",
+      label: "Speaker",
+      type: TRIGGER_FIELD_TYPES.SPEAKER_DROPDOWN,
+      options: SPEAKER_OPTIONS,
+      placeholder: "Care giver",
+      className: "flex-shrink-0",
+      labelAfter: "Said something", // Text to display after this field
+    },
+    {
+      id: "className",
+      label: "className",
+      type: TRIGGER_FIELD_TYPES.MULTILINE_TEXT,
+      placeholder: "Add classification",
+    },
+  ],
+};
 /**
  * Configuration for COMBINATION event type
  * Renders: "if [event dropdown] has [status] AND/OR if [event dropdown] has [status]"
@@ -233,6 +255,7 @@ export const TRIGGER_CONDITION_CONFIGS = {
   SCORE_BASED: SCORE_BASED_CONFIG,
   SENTENCE_SIMILARITY: SENTENCE_SIMILARITY_CONFIG,
   SEMANTIC_SIMILARITY: SEMANTIC_SIMILARITY_CONFIG,
+  BINARY_CLASSIFICATION: BINARY_CLASSIFICATION_CONFIG,
   COMBINATION: COMBINATION_CONFIG,
 } as const;
 

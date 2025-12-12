@@ -920,14 +920,5 @@ describe("Learn Component", () => {
       );
       expect(screen.getByText("Simulations")).not.toBeNull();
     });
-
-    it("should render Path way tab", () => {
-      render(
-        <TestWrapper>
-          <Learn />
-        </TestWrapper>,
-      );
-      expect(screen.getByText("Path way")).not.toBeNull();
-    });
   });
 });

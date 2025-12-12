@@ -14,12 +14,12 @@ import { learnPageContainerVariants, learnPageItemVariants } from "./constants";
 
 enum TabId {
   SIMULATIONS = "simulations",
-  PATHWAYS = "pathways",
+  TRACKWAYS = "trackways",
 }
 
 const LEARN_TABS = [
   { id: TabId.SIMULATIONS, label: "Simulations" },
-  { id: TabId.PATHWAYS, label: "Path way" },
+  { id: TabId.TRACKWAYS, label: "Track ways" },
 ];
 
 type LearnTabId = (typeof LEARN_TABS)[number]["id"];
@@ -85,7 +85,7 @@ export const Learn: FC = () => {
             <TabGroup
               tabs={LEARN_TABS.map(tab => ({ label: tab.label, value: tab.id }))}
               value={activeTab}
-              className="border-none max-w-[200px]"
+              className="border-none max-w-[220px]"
               onChange={(_, newValue) => handleTabChange(newValue as LearnTabId)}
             />
 
@@ -127,7 +127,7 @@ export const Learn: FC = () => {
   );
 
   const renderContentGrid = () => {
-    const isPathwayTab = activeTab === TabId.PATHWAYS;
+    const isPathwayTab = activeTab === TabId.TRACKWAYS;
     const isLoading = isPathwayTab ? isPathwaysLoading : isScenariosLoading;
     const hasData = isPathwayTab ? pathwaysData?.data?.length > 0 : scenarios?.length > 0;
     const ariaLabel = isPathwayTab ? "Available pathways" : "Available scenarios";
@@ -173,8 +173,8 @@ export const Learn: FC = () => {
   };
 
   const renderContent = () => {
-    const isPathwayTab = activeTab === TabId.PATHWAYS;
-    const title = isPathwayTab ? "Path" : "Scenario";
+    const isPathwayTab = activeTab === TabId.TRACKWAYS;
+    const title = isPathwayTab ? "Track" : "Scenario";
 
     return (
       <>

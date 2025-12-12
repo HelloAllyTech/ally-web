@@ -1,3 +1,5 @@
+import { triggerWarning } from "@ally-ui-mono/ui-shared/types";
+
 export enum ScenarioStatus {
   ACTIVE = "ACTIVE",
   COMING_SOON = "COMING_SOON",
@@ -12,6 +14,8 @@ export enum PathwayStatus {
 export interface TriggerChipItemWarning {
   id: number;
   name: string;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface Scenario {
@@ -295,6 +299,7 @@ export interface PathwayScenario {
   description?: string;
   title?: string;
   order: number;
+  triggerWarnings?: triggerWarning[];
   status: PathwayScenarioStatus;
 }
 

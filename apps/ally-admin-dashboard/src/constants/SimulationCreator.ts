@@ -18,6 +18,7 @@ export const EVENT_TYPE_OPTIONS = [
   { value: "SENTENCE_SIMILARITY", label: "Sentence Similarity" },
   { value: "SEMANTIC_SIMILARITY", label: "Semantic Similarity" },
   { value: "COMBINATION", label: "Combination" },
+  { value: "BINARY_CLASSIFICATION", label: "Binary Classification" },
 ];
 
 export const GENDER_OPTIONS = [
@@ -178,7 +179,6 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
         id: "triggerWarningIds",
         label: "Trigger warnings",
         type: FORM_FIELD_TYPES.TAG_AND_DROPDOWN,
-        options: SEXUAL_ORIENTATION_OPTIONS,
         fullWidth: true,
       },
       {

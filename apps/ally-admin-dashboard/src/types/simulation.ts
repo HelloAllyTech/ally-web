@@ -116,7 +116,7 @@ export interface GetSimulationByIdResponse {
     autoTerminationStatus: boolean;
     name: string;
   };
-  triggerWarnings: triggerWarnings[];
+  triggerWarnings: triggerWarning[];
 }
 
 export interface CreateSimulationInput {
@@ -156,6 +156,7 @@ export enum VisibilityType {
 export enum SessionEventDetectionType {
   SENTENCE_SIMILARITY = "SENTENCE_SIMILARITY",
   SEMANTIC_SIMILARITY = "SEMANTIC_SIMILARITY",
+  BINARY_CLASSIFIER = "BINARY_CLASSIFIER",
   TIME = "TIME",
   SCORE = "SCORE",
   COMBINATION = "COMBINATION",
@@ -202,6 +203,7 @@ export interface ExpressionNode {
 export interface SessionEventDetectionData {
   speaker?: string;
   sentences?: string[];
+  className?: string;
   score?: number;
   time?: number;
   condition?: SessionEventDetectionCondition;
@@ -274,11 +276,11 @@ export interface getTriggerWarningsQueryParams {
   order?: string;
 }
 
-export interface triggerWarnings {
+export interface triggerWarning {
   id: string;
   name: string;
-  createdAt: string;
-  updatedAt: string;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface triggerWarningsRequest {

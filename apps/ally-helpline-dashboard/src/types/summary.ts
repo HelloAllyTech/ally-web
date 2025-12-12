@@ -78,6 +78,7 @@ export interface TranscriptMessage {
   content: string;
   senderId: number;
   createdAt?: string;
+  startSeconds?: number;
 }
 
 export interface GetTranscriptResponse {

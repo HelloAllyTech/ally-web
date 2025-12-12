@@ -1,10 +1,14 @@
 import { render, screen } from "@testing-library/react";
 import { vi, describe, it, expect, beforeEach } from "vitest";
 
-import { FeedbackSectioonType } from "@types";
-
 import { FeedbackSection } from "../FeedbackSection";
 import { FeedbackSectionProps } from "../types";
+import { Clock, Diamond } from "lucide-react";
+
+enum FeedbackSectionType {
+  BULLET_TEXT = "BULLET_TEXT",
+  TABLE = "TABLE",
+}
 
 // Mock the child components
 vi.mock("@ally-ui-mono/ui-shared", () => ({
@@ -39,11 +43,21 @@ vi.mock("../constants", () => ({
     {
       key: "duration",
       label: "Session Duration",
+      icon: () => (
+        <span data-testid="duration-icon">
+          <Clock />
+        </span>
+      ),
       getValue: (summary: any) => summary?.duration || "--",
     },
     {
       key: "score",
       label: "Total Score",
+      icon: () => (
+        <span data-testid="score-icon">
+          <Diamond />
+        </span>
+      ),
       getValue: (summary: any) => summary?.score || "--",
     },
   ],
@@ -52,7 +66,7 @@ vi.mock("../constants", () => ({
       icon: { icon: "KeyEvents", alt: "key-events" },
       key: "keyEvents",
       label: "Key Events",
-      type: FeedbackSectioonType.TABLE,
+      type: FeedbackSectionType.TABLE,
       columns: [
         { key: "time", header: "Time" },
         { key: "event", header: "Event" },
@@ -63,13 +77,13 @@ vi.mock("../constants", () => ({
       icon: { icon: "ThumbUp", alt: "what-went-well" },
       key: "positives",
       label: "What Went Well",
-      type: FeedbackSectioonType.BULLET_TEXT,
+      type: FeedbackSectionType.BULLET_TEXT,
     },
     {
       icon: { icon: "BulbIcon", alt: "improvement-tips" },
       key: "improvements",
       label: "Improvement Tips",
-      type: FeedbackSectioonType.BULLET_TEXT,
+      type: FeedbackSectionType.BULLET_TEXT,
     },
   ],
 }));

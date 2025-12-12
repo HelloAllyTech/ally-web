@@ -60,7 +60,7 @@ export const SimulationInterface: FC<SimulationInterfaceProps> = ({
         return (
           <>
             <RoomAudioRenderer />
-            <div className="flex md:flex-row flex-col justify-between gap-4 w-full h-full">
+            <div className="flex md:flex-row flex-col justify-between max-h-[calc(100vh-300px)] gap-4 w-full h-full">
               <UserCallCard
                 userData={{
                   name: roomData?.remoteParticipant?.name,

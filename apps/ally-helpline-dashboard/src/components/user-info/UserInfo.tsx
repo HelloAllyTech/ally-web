@@ -58,11 +58,14 @@ const UserInfo: FC<{ user?: User; isExpanded?: boolean; onLogout: () => void }> 
             </div>
           </div>
           {isExpanded && (
-            <div className="flex flex-col font-primary" data-testid="user-info-details">
-              <div className="text-lg text-typography-800" data-testid="user-info-name">
+            <div
+              className="flex flex-col font-primary max-w-[150px] overflow-hidden"
+              data-testid="user-info-details"
+            >
+              <div className="text-lg text-typography-800 truncate" data-testid="user-info-name">
                 {user?.name}
               </div>
-              <div className="text-xs text-typography-800" data-testid="user-info-email">
+              <div className="text-xs text-typography-800 truncate" data-testid="user-info-email">
                 {user?.email}
               </div>
             </div>
