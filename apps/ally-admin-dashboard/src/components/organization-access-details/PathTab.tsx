@@ -14,7 +14,7 @@ interface PathTabProps {
   organizationId?: string;
   searchValue: string;
   onSearchChange: (value: string) => void;
-  onToggleAccess: (pathId: number, enabled: boolean) => void;
+  onToggleAccess: (pathId: number, enabled: boolean) => Promise<void>;
 }
 
 export const PathTab: FC<PathTabProps> = ({
@@ -25,6 +25,19 @@ export const PathTab: FC<PathTabProps> = ({
 }) => {
   const [pathsOffset, setPathsOffset] = useState(0);
   const [paths, setPaths] = useState<ScenarioPath[]>([]);
+
+  const handleToggleAccess = async (pathId: number, enabled: boolean) => {
+    setPaths(prev =>
+      prev.map(path => (path.id === pathId ? { ...path, isAssignedToTenant: enabled } : path)),
+    );
+    try {
+      await onToggleAccess(pathId, enabled);
+    } catch {
+      setPaths(prev =>
+        prev.map(path => (path.id === pathId ? { ...path, isAssignedToTenant: !enabled } : path)),
+      );
+    }
+  };
 
   const pathParams = {
     limit: PATHS_PAGE_SIZE,
@@ -108,7 +121,7 @@ export const PathTab: FC<PathTabProps> = ({
         <div className="flex items-center gap-3 flex-shrink-0 min-w-[140px] justify-end mr-5">
           <ToggleSwitch
             enabled={path.isAssignedToTenant ?? false}
-            onChange={enabled => onToggleAccess(path.id, enabled)}
+            onChange={enabled => handleToggleAccess(path.id, enabled)}
             label={`Toggle access for ${path.title}`}
           />
           <span
@@ -137,7 +150,7 @@ export const PathTab: FC<PathTabProps> = ({
       ) : !isNonEmptyArray(paths) ? (
         <EmptyState title={en.simulation.noResultFound} subtitle={en.simulation.adjustFilter} />
       ) : (
-        <div className="flex flex-col flex-1 overflow-y-auto pb-8">
+        <div className="flex flex-col flex-1 overflow-y-auto pb-8 custom-scrollbar">
           <div className="grid grid-cols-12 text-base text-typography-800 border-b border-border-light sticky top-0 z-50 bg-white pb-1">
             <div className="col-span-11 text-typography-600 text-sm">{en.userManagement.path}</div>
             <div className="col-span-1 text-sm text-typography-600 pr-8">

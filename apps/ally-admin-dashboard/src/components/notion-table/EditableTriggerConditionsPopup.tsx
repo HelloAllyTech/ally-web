@@ -64,12 +64,12 @@ export const EditableTriggerConditionsPopup: React.FC<EditableTriggerConditionsP
   useClickOutside(popupRef, handleClickOutsideCallback);
 
   return (
-    <div className={`${className} flex flex-wrap items-start`}>
+    <div className={`${className} flex flex-wrap items-start w-full`}>
       {/* Always display trigger conditions inline */}
       <div
         onClick={handleTextClick}
         className={`
-          cursor-pointer w-full overflow-x-hidden
+          cursor-pointer w-full overflow-x-hidden custom-scrollbar
           ${disabled ? "cursor-not-allowed opacity-50" : "hover:bg-background-secondary"}
         `}
       >

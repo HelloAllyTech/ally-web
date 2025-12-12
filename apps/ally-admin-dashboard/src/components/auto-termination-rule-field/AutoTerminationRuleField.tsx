@@ -90,6 +90,7 @@ export const AutoTerminationRuleField: React.FC<AutoTerminationRuleFieldProps> =
               handleSearchTextChange={handleSearchTextChange}
               placeholder={TERMINATION_FIELDS_MAP.triggerEvent.placeholder}
               isMandatory={autoTerminationStatus}
+              defaultOption={formMethods.getValues().terminationName}
             />
           </div>
 

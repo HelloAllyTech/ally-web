@@ -60,15 +60,16 @@ export const OrganizationDetail: FC = () => {
         await enableSimulation({
           tenantId: id,
           scenarioIds: [simulationId],
-        });
+        }).unwrap();
       } else {
         await disableSimulation({
           tenantId: id,
           scenarioIds: [simulationId],
-        });
+        }).unwrap();
       }
     } catch (error: any) {
       toast.error(error?.data?.message || en.errors.failedUpdateAccess);
+      throw error;
     }
   };
 
@@ -78,15 +79,16 @@ export const OrganizationDetail: FC = () => {
         await enablePathAccess({
           tenantId: id,
           scenarioPathIds: [pathId],
-        });
+        }).unwrap();
       } else {
         await disablePathAccess({
           tenantId: id,
           scenarioPathIds: [pathId],
-        });
+        }).unwrap();
       }
     } catch (error: any) {
       toast.error(error?.data?.message || en.errors.pathUpdateFailed);
+      throw error;
     }
   };
 

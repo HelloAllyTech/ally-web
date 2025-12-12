@@ -488,4 +488,3 @@ For issues with the release pipeline:
    - Create issue in repository
    - Include error logs and steps to reproduce
    - Tag with service name
-

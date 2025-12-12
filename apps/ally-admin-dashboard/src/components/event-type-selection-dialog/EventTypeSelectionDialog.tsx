@@ -1,6 +1,6 @@
 import { FC, useEffect, useRef, useState } from "react";
 
-import { AccountTree, AlarmOn, Chat, Close, DiamondShine, Tick, FocusLens } from "@assets";
+import { AccountTree, AlarmOn, Chat, Close, DiamondShine, Tick, SemanticSimilarity } from "@assets";
 import { Button } from "@components";
 import { ButtonVariant } from "@components/types";
 import { en } from "@constants";
@@ -31,8 +31,8 @@ export const EVENT_TYPE_OPTIONS: EventTypeOption[] = [
   {
     value: "SEMANTIC_SIMILARITY",
     label: "Semantic Similarity",
-    description: "Trigger based on zero shot classification.",
-    icon: FocusLens,
+    description: "Trigger based on similar meaning.",
+    icon: SemanticSimilarity,
   },
   {
     value: "TIME_BASED",
@@ -113,7 +113,7 @@ export const EventTypeSelectionDialog: FC<EventTypeSelectionDialogProps> = ({
               {en.simulation.selectEventType}
             </div>
 
-            <div className="grid grid-cols-1 gap-2">
+            <div className="grid grid-cols-1 gap-2 custom-scrollbar">
               {EVENT_TYPE_OPTIONS.map(option => {
                 const Icon = option.icon;
                 const isSelected = selectedType === option.value;

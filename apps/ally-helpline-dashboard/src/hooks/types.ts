@@ -15,7 +15,6 @@ export interface LiveKitEvent {
 export interface UseLiveKitRoomReturn {
   error: string | null;
   events: LiveKitEvent[];
-  handleEndSession: () => void;
   handleRetryConnection: () => void;
   room: Room;
   roomStatus: RoomStatus;

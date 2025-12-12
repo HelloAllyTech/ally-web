@@ -14,6 +14,11 @@ import { FeedbackDialog } from "..";
 import { FeedbackSection, LoaderSkeleton, UpNextSimulationCard } from "./components";
 import { SimulationSummaryProps } from "./types";
 
+const EVENT_STATUS = {
+  COMPLETED: "COMPLETED",
+  IN_PROGRESS: "IN_PROGRESS",
+};
+
 export const SimulationSummary: FC<SimulationSummaryProps> = ({
   className,
   isInSidebar = false,
@@ -30,25 +35,20 @@ export const SimulationSummary: FC<SimulationSummaryProps> = ({
   useEffect(() => {
     let isMounted = true;
     let timeoutId: NodeJS.Timeout;
-    let pollCount = 0;
+    let summaryPollCount = 0;
+    let upcomingPollCount = 0;
     const maxPolls = 5;
 
-    const poll = async () => {
+    const pollSimulationSummary = async () => {
       try {
         const { data } = await getSimulationSummary(summaryId);
 
         if (data && isMounted) onSummaryFetch?.(data);
 
-        const hasSummary = data?.details?.summary;
-        if (hasSummary) {
-          if (!isInSidebar && summaryId) getUpComingSimulation(summaryId);
+        if (data?.details?.summary?.feedback) return;
 
-          if (data.details.summary.feedback) return;
-        }
-
-        if (pollCount >= maxPolls) {
+        if (summaryPollCount >= maxPolls) {
           if (isMounted) {
-            if (!isInSidebar && summaryId) getUpComingSimulation(summaryId);
             setRetryMaxReached(true);
             if (!data?.details?.summary?.feedback)
               toast.error("Something went wrong. Please try again later.");
@@ -57,19 +57,40 @@ export const SimulationSummary: FC<SimulationSummaryProps> = ({
         }
 
         if (isMounted && !data?.details?.summary?.feedback) {
-          pollCount++;
-          timeoutId = setTimeout(poll, 3500);
+          summaryPollCount++;
+          timeoutId = setTimeout(pollSimulationSummary, 3500);
         }
       } catch {
         logger.error("Polling error in simulation summary");
-        if (isMounted && pollCount < maxPolls) {
-          pollCount++;
-          timeoutId = setTimeout(poll, 3500);
+        if (isMounted && summaryPollCount < maxPolls) {
+          summaryPollCount++;
+          timeoutId = setTimeout(pollSimulationSummary, 3500);
         }
       }
     };
 
-    if (summaryId) poll();
+    const pollUpComingSimulation = async () => {
+      try {
+        const { data } = await getUpComingSimulation(summaryId);
+        if (
+          data?.currentSession?.eventStatus !== EVENT_STATUS.COMPLETED &&
+          upcomingPollCount < maxPolls &&
+          isMounted
+        ) {
+          upcomingPollCount++;
+          timeoutId = setTimeout(pollUpComingSimulation, 3500);
+        }
+      } catch {
+        logger.error("Polling error in upcoming simulation");
+        if (isMounted && upcomingPollCount < maxPolls) {
+          upcomingPollCount++;
+          timeoutId = setTimeout(pollUpComingSimulation, 3500);
+        }
+      }
+    };
+
+    if (summaryId) pollSimulationSummary();
+    if (summaryId && !isInSidebar) pollUpComingSimulation();
 
     return () => {
       isMounted = false;

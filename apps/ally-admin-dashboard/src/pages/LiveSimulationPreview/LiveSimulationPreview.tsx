@@ -5,22 +5,20 @@ import { useNavigate, useParams } from "react-router-dom";
 import { SimulationPage, getSimulationEvents } from "@ally-ui-mono/ui-shared";
 import { ActionConfirmationPopup } from "@components";
 import { ButtonVariant } from "@components/types";
-import { en, LOCAL_STORAGE_KEYS } from "@constants";
+import { LOCAL_STORAGE_KEYS } from "@constants";
 import { useLiveKitRoom } from "@hooks/useLiveKitRoom";
 import { RoomStatus } from "@types";
 
 export const LiveSimulationPreview: React.FC = () => {
   const navigate = useNavigate();
   const { id } = useParams();
-
-  const { room, roomData, roomStatus, events, score, startTime, handleEndSession } =
-    useLiveKitRoom();
-
-  const onEnd = async () => {
-    handleEndSession();
+  const handleRoomDisconnected = () => {
     localStorage.removeItem(LOCAL_STORAGE_KEYS.PREVIEW_ROOM_DATA);
     navigate(-1);
   };
+
+  const { room, roomData, roomStatus, events, score, startTime, handleEndSession } =
+    useLiveKitRoom(handleRoomDisconnected);
 
   const renderWarningDialog = ({ isOpen, onClose, onContinue, onEnd }) => (
     <ActionConfirmationPopup
@@ -48,8 +46,8 @@ export const LiveSimulationPreview: React.FC = () => {
       startTime={startTime.toISOString()}
       events={getSimulationEvents(events)}
       score={score}
-      title={en.simulation.simulationPreview}
-      onEndSimulation={onEnd}
+      isPreview
+      onEndSimulation={handleEndSession}
       renderWarningDialog={renderWarningDialog}
     />
   );

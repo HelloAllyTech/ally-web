@@ -1,5 +1,6 @@
+import { FEATURE_FLAGS_MAP } from "@ally-ui-mono/ui-shared";
 import { cellTypes } from "@components";
-import { CreatorFieldGroups } from "@types";
+import { CreatorFieldGroups, FormFieldConfig } from "@types";
 
 export const minInputHeight = {
   narrativeContext: "250",
@@ -79,6 +80,7 @@ export const FORM_FIELD_TYPES = {
     AUTO_TERMINATION_RULE: "auto_termination_rule",
   },
   TOGGLE_BUTTON: "toggle_button",
+  TAG_AND_DROPDOWN: "tag_and_dropdown",
 };
 
 export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
@@ -115,6 +117,7 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
         isMandatory: false,
         fullWidth: true,
       },
+
       {
         id: "description",
         label: "Learning goal",
@@ -124,6 +127,13 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
         multiline: true,
         fullWidth: true,
         maxLength: 1000,
+      },
+      FEATURE_FLAGS_MAP.TRIGGER_WARNINGS_FLAG && {
+        id: "triggerWarningIds",
+        label: "Trigger Warnings",
+        type: FORM_FIELD_TYPES.TAG_AND_DROPDOWN,
+        options: SEXUAL_ORIENTATION_OPTIONS,
+        fullWidth: true,
       },
       {
         id: "agentGoal",
@@ -135,7 +145,7 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
         fullWidth: true,
         maxLength: 1000,
       },
-    ],
+    ].filter(Boolean) as FormFieldConfig[],
   },
   {
     id: SIMULATION_CREATOR_STEP_IDS.characterIdentity,
@@ -334,7 +344,7 @@ export const EVENT_MANAGEMENT_TABLE_COLUMNS = [
     label: "Trigger conditions",
     accessor: "triggerCondition",
     dataType: cellTypes.triggerConditions,
-    minWidth: 400,
+    minWidth: 420,
   },
   {
     id: "branchInstruction",

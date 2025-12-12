@@ -7,7 +7,7 @@ import { toast } from "sonner";
 
 import { CustomImage } from "@ally-ui-mono/ui-shared";
 import { useGenerateOTPMutation, useVerifyOTPMutation } from "@api";
-import { ArrowDown, LoginImage } from "@assets";
+import { BackCircle, LoginImage } from "@assets";
 import { Button, OTP, TextField } from "@components";
 import {
   LoginSection,
@@ -20,6 +20,9 @@ import {
 import { useUser } from "@hooks/useUser";
 import { RootState } from "@store";
 import { validateEmail, openLinkInNewTab } from "@utils";
+
+const RESEND_CODE_COUNTDOWN = 60; // 60 seconds
+const DEFAULT_EXPIRES_IN = 10; // 10 minutes
 
 export const Login: React.FC = () => {
   const navigate = useNavigate();
@@ -72,11 +75,11 @@ export const Login: React.FC = () => {
     if (generateOTPError) {
       const error = generateOTPError as any;
       const errorData = error.data as { message: string } | undefined;
-      const errorMessage = errorData?.message ?? "Failed to generate OTP. Please try again.";
+      const errorMessage = errorData?.message ?? en.auth.failedToGenerateOTP;
       toast.error(errorMessage);
     } else if (isGenerateOTPSuccess && generateOTPData) {
       setLoginSection(LoginSection.OTP);
-      setCountdown(10); // Start 10 second countdown when OTP is generated
+      setCountdown(RESEND_CODE_COUNTDOWN);
     }
   }, [isGenerateOTPSuccess, generateOTPError, generateOTPData]);
 
@@ -97,7 +100,7 @@ export const Login: React.FC = () => {
       if (verifyOTPError) {
         const error = verifyOTPError as any;
         const errorData = error.data as { message: string } | undefined;
-        const errorMessage = errorData?.message ?? "Failed to verify OTP. Please try again.";
+        const errorMessage = errorData?.message ?? en.auth.failedToVerifyOTP;
         toast.error(errorMessage);
       } else if (isVerifyOTPSuccess && verifyOTPData) {
         localStorage.setItem(LOCAL_STORAGE_KEYS.ADMIN_ACCESS_TOKEN, verifyOTPData.accessToken);
@@ -132,7 +135,7 @@ export const Login: React.FC = () => {
 
   const handleNext = () => {
     if (!validateEmail(email)) {
-      setEmailError("Please enter a valid email address");
+      setEmailError(en.auth.invalidEmailError);
       return;
     }
     if (rememberMe) {
@@ -154,16 +157,16 @@ export const Login: React.FC = () => {
           animate={{ opacity: 1, x: 0 }}
           exit={{ opacity: 0, x: 50 }}
           transition={{ duration: 0.4, ease: "easeInOut" }}
-          className="flex flex-col gap-3 sm:gap-4"
+          className="flex flex-col gap-4"
         >
-          <div className="flex flex-col text-2xl font-secondary">
+          <div className="flex flex-col text-4xl font-secondary">
             <span className="text-typography-900">{`${en.auth.hey},`}</span>
             <h1 className="text-typography-900">
               <span>{`${en.auth.welcomeTo} `}</span>
-              <span className="font-bold italic">ally</span>
+              <span className="font-bold italic">{en.auth.ally}</span>
             </h1>
-            <span className="text-xl mt-6 text-typography-900">
-              Enter your email address to continue
+            <span className="text-2xl mt-[24px] text-typography-900">
+              {en.auth.enterEmailToContinue}
             </span>
           </div>
           <div className="flex flex-col gap-1">
@@ -171,12 +174,12 @@ export const Login: React.FC = () => {
               fieldSize="medium"
               type="email"
               inputMode="email"
-              label="Email"
+              label={en.auth.email}
               value={email}
               onChange={handleEmailChange as any}
               errorMessage={emailError}
               hideError={false}
-              placeholder="Enter your email address"
+              placeholder={en.auth.enterEmailPlaceholder}
               className="w-full rounded-xs text-base sm:text-base"
             />
 
@@ -195,28 +198,28 @@ export const Login: React.FC = () => {
           </div>
           <Button
             type="button"
-            className="w-full rounded-[5px] mt-4 sm:mt-6"
+            className="w-full rounded-[5px] mt-6"
             disabled={isLoading || isSubmitDisabled}
             onClick={handleNext}
           >
             {isLoading ? (
-              <div className="flex items-center justify-center text-base">
+              <div className="flex items-center justify-center">
                 <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-[5px] animate-spin mr-2"></div>
-                <span className="hidden sm:inline">{en.auth.generatingOTP}</span>
+                {en.auth.generatingOTP}
               </div>
             ) : (
-              "Next"
+              en.auth.next
             )}
           </Button>
           <div className="text-xs text-typography-800 mt-2 leading-relaxed">
-            By tapping next, you agree to Ally's{" "}
+            {en.auth.byTappingNext}{" "}
             <span
               className="text-primary-500 cursor-pointer hover:text-primary-600"
               onClick={() => openLinkInNewTab(ALLY_TERMS_URL)}
             >
               {en.auth.termsAndConditions}
             </span>{" "}
-            and acknowledge{" "}
+            {en.auth.andAcknowledge}{" "}
             <span
               className="text-primary-500 cursor-pointer hover:text-primary-600"
               onClick={() => openLinkInNewTab(ALLY_PRIVACY_POLICY_URL)}
@@ -235,44 +238,41 @@ export const Login: React.FC = () => {
         animate={{ opacity: 1, x: 0 }}
         exit={{ opacity: 0, x: -50 }}
         transition={{ duration: 0.4, ease: "easeInOut" }}
-        className="flex flex-col justify-start gap-4 sm:gap-6"
+        className="flex flex-col justify-start gap-6"
       >
-        <div
-          className="self-start cursor-pointer rotate-90 rounded-full border border-border-light p-2 hover:bg-background-secondary transition-colors"
-          onClick={handleBack}
-        >
-          <ArrowDown />
-        </div>
-        <h1 className="text-2xl font-secondary text-typography-900">Verify your email address</h1>
+        <BackCircle className="self-start cursor-pointer ml-[-10px]" onClick={handleBack} />
+        <h1 className="text-4xl font-secondary text-typography-900">{en.auth.verifyYourEmail}</h1>
         <div className="text-base mb-2 font-secondary flex flex-col">
-          <span className="text-xl mb-2 text-typography-900">Enter the security code sent to</span>
-          <span className="font-semibold text-xl break-all text-typography-900">{email}</span>
+          <span className="text-2xl text-typography-900">{en.auth.enterSecurityCode}</span>
+          <span className="font-semibold text-2xl text-typography-900">{email}</span>
         </div>
         <div className="flex flex-col gap-2">
-          <OTP value={otp} onChange={setOtp as any} />
-          <div className="text-xs text-typography-600 mt-2">
-            {`${en.auth.didNotReceiveTheCode} `}
+          <OTP value={otp} onChange={setOtp} />
+          <div className="text-xs text-typography-900">
+            {en.auth.codeWillExpire}{" "}
+            <span className="font-[700]">{`${generateOTPData?.expiresIn ? generateOTPData?.expiresIn / 60 : DEFAULT_EXPIRES_IN} ${en.auth.minutes}`}</span>
+            . {en.auth.needNewCode}
             <span
-              className={`${countdown > 0 ? "text-typography-600" : "text-primary-500 hover:text-primary-600"} cursor-pointer`}
+              className={`${countdown > 0 ? "text-typography-800" : "text-primary-500"} pl-2 cursor-pointer`}
               onClick={handleResendCode}
             >
-              Resend {countdown > 0 ? `(${countdown}s)` : ""}
+              {en.auth.resend} {countdown > 0 ? `(${countdown}s)` : ""}
             </span>
           </div>
         </div>
         <Button
           type="button"
-          className="w-full rounded-[5px] mt-4 sm:mt-6"
+          className="w-full rounded-[5px] mt-2 font-tertiary"
           disabled={isLoading || isSubmitDisabled}
           onClick={handleVerify}
         >
           {isLoading ? (
-            <div className="flex items-center justify-center text-base">
+            <div className="flex items-center justify-center">
               <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-[5px] animate-spin mr-2"></div>
-              <span className="hidden sm:inline">{en.auth.signingIn}</span>
+              {en.auth.signingIn}
             </div>
           ) : (
-            "Verify"
+            en.auth.verify
           )}
         </Button>
       </motion.div>
@@ -283,7 +283,7 @@ export const Login: React.FC = () => {
     loginSection === LoginSection.EMAIL ? !email || !!emailError : !otp || otp.length < 4;
 
   return (
-    <div className="flex flex-col lg:flex-row h-screen lg:p-8">
+    <div className="flex font-primary flex-col lg:flex-row h-screen lg:p-8">
       <div className="hidden md:block lg:max-w-[50%] flex-1 h-full relative">
         <CustomImage
           src={LoginImage}
@@ -295,17 +295,15 @@ export const Login: React.FC = () => {
           onClick={() => openLinkInNewTab(ALLY_URL)}
         >
           <div className="flex flex-col mr-4 font-secondary">
-            <span className="text-xl font-bold text-typography-900">Ally</span>
-            <span className="text-sm font-medium text-typography-800">helloally.ai</span>
+            <span className="text-xl font-bold text-typography-900">{en.auth.ally}</span>
+            <span className="text-sm font-medium text-typography-800">{en.auth.helloAllyUrl}</span>
           </div>
         </div>
       </div>
 
       <div className="flex-1 absolute min-h-[35vh] p-5 rounded-[10px] bottom-[10%] right-[25%] left-[25%] lg:static bg-background flex flex-col items-center justify-center md:min-h-auto">
-        <div className="w-full max-w-md lg:max-w-lg xl:max-w-xl flex flex-col gap-4 sm:gap-6">
-          <div className="flex flex-col">
-            <AnimatePresence mode="wait">{getLoginSection()}</AnimatePresence>
-          </div>
+        <div className="w-full max-w-md flex flex-col gap-4 sm:gap-6">
+          <AnimatePresence mode="wait">{getLoginSection()}</AnimatePresence>
         </div>
       </div>
     </div>

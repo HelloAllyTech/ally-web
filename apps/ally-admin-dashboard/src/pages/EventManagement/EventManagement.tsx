@@ -236,8 +236,9 @@ export const EventManagement: React.FC = () => {
       }
 
       try {
-        const response = await updateSessionEvent({ id: event.id || "", event: eventPayload });
-        if (response.error) toast.error(en.errors.errorUpdatingEvent);
+        const response: any = await updateSessionEvent({ id: event.id || "", event: eventPayload });
+        if (response.error)
+          toast.error(response?.error?.data?.message?.[0] || en.errors.errorUpdatingEvent);
       } catch {
         toast.error(en.errors.errorUpdatingEvent);
       }
@@ -269,6 +270,25 @@ export const EventManagement: React.FC = () => {
     }
   };
 
+  const listToolbarAction = useMemo(() => {
+    return selectedEvents.length > 0
+      ? {
+          label: en.common.delete,
+          variant: ButtonVariant.SECONDARY,
+          icon: (
+            <div className="w-3 h-3">
+              <Trash />
+            </div>
+          ),
+          onClick: () => setShowDeleteConfirmationPopup(true),
+        }
+      : {
+          label: en.simulation.createNewEvent,
+          variant: ButtonVariant.PRIMARY,
+          onClick: handleNewEventClick,
+        };
+  }, [selectedEvents, handleNewEventClick]);
+
   return (
     <div className="py-[2px] font-primary overflow-hidden relative">
       <div>
@@ -276,24 +296,7 @@ export const EventManagement: React.FC = () => {
         <ListToolbar
           searchValue={eventSearch}
           onSearchChange={onSearchChange}
-          action={
-            selectedEvents.length > 0
-              ? {
-                  label: en.common.delete,
-                  variant: ButtonVariant.SECONDARY,
-                  icon: (
-                    <div className="w-3 h-3">
-                      <Trash />
-                    </div>
-                  ),
-                  onClick: () => setShowDeleteConfirmationPopup(true),
-                }
-              : {
-                  label: en.simulation.createNewEvent,
-                  variant: ButtonVariant.PRIMARY,
-                  onClick: handleNewEventClick,
-                }
-          }
+          action={listToolbarAction}
         />
         <div className="flex flex-col gap-4 h-[calc(100vh-100px)] relative mt-[20px]">
           <NotionTable

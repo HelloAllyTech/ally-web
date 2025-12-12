@@ -1,5 +1,6 @@
 import { FC, useEffect, useMemo, useRef, useState } from "react";
 
+import { Tooltip } from "@mui/material";
 import { useForm } from "react-hook-form";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
@@ -10,7 +11,7 @@ import {
   useLazyGetScenarioPathByIdQuery,
   useUpdateSimulationPathByIdMutation,
 } from "@api";
-import { Plus } from "@assets";
+import { Plus, Eye } from "@assets";
 import {
   Header,
   VerticalStepper,
@@ -28,6 +29,7 @@ import {
   SimulationStatus,
   PathStepperList,
   getCreatePathSubSectionById,
+  viewOnlyToolTipStyles,
 } from "@constants";
 import { useDebounce } from "@hooks";
 import { GetScenarioType } from "@types";
@@ -240,14 +242,27 @@ export const CreatePath: FC = () => {
       <div className="flex flex-col h-full w-100%">
         <div className="sticky flex flex-row justify-between top-0 z-10 pt-3 mx-6 pb-4 border-b border-border-light">
           <h2 className="text-lg text-typography-900 font-semibold">{title}</h2>
-          {addButton && (
-            <Button variant={ButtonVariant.SECONDARY} onClick={toggleSimulationModal}>
-              <Plus />
-              {en.simulation.addSimulation}
-            </Button>
-          )}
+          {addButton &&
+            (!(individualPath?.status === SimulationStatus.ACTIVE) ? (
+              <Button variant={ButtonVariant.SECONDARY} onClick={toggleSimulationModal}>
+                <Plus />
+                {en.simulation.addSimulation}
+              </Button>
+            ) : (
+              <Tooltip
+                title={en.simulation.viewOnlyTooltip}
+                placement="left"
+                arrow
+                slotProps={viewOnlyToolTipStyles}
+              >
+                <Button variant={ButtonVariant.SECONDARY}>
+                  <Eye />
+                  {en.simulation.viewOnly}
+                </Button>
+              </Tooltip>
+            ))}
         </div>
-        <div ref={containerRef} className="p-6 pt-4 overflow-y-auto h-full">
+        <div ref={containerRef} className="p-6 pt-4 overflow-y-auto h-full custom-scrollbar">
           {component}
         </div>
       </div>
@@ -274,7 +289,7 @@ export const CreatePath: FC = () => {
             formMethods={formMethods}
             selectedSimulations={selectedSimulations}
             setSelectedSimulations={setSelectedSimulations}
-            isDragDisabled={individualPath?.status === SimulationStatus.ACTIVE}
+            isDisabled={individualPath?.status === SimulationStatus.ACTIVE}
           />,
           isNonEmptyArray(formValues.scenarios),
         );

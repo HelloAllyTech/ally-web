@@ -49,8 +49,14 @@ vi.mock("@utils", () => ({
   decodeUint8ToJson: vi.fn(() => ({ timestamp: new Date().toISOString(), data: { score: 5 } })),
 }));
 
-const Harness = ({ onReady }: { onReady: (api: ReturnType<typeof useLiveKitRoom>) => void }) => {
-  const api = useLiveKitRoom();
+const Harness = ({
+  onReady,
+  handleDisconnect,
+}: {
+  onReady: (api: ReturnType<typeof useLiveKitRoom>) => void;
+  handleDisconnect: () => void;
+}) => {
+  const api = useLiveKitRoom(handleDisconnect);
   React.useEffect(() => {
     onReady(api);
     return () => {};
@@ -66,11 +72,15 @@ describe("useLiveKitRoom", () => {
 
   it("connects, sets status connected, wires events, and handles end session", async () => {
     let api!: ReturnType<typeof useLiveKitRoom>;
+    const handleDisconnect = vi.fn();
 
     render(
       <MemoryRouter initialEntries={["/learn/room1"]}>
         <Routes>
-          <Route path="/learn/:id" element={<Harness onReady={a => (api = a)} />} />
+          <Route
+            path="/learn/:id"
+            element={<Harness onReady={a => (api = a)} handleDisconnect={handleDisconnect} />}
+          />
         </Routes>
       </MemoryRouter>,
     );
@@ -94,9 +104,9 @@ describe("useLiveKitRoom", () => {
     expect(api.score).toBeGreaterThan(0);
     expect(api.events.length).toBe(1);
 
-    // end session triggers disconnect
+    // end session triggers disconnect via room.disconnect()
     await act(async () => {
-      await api.handleEndSession();
+      api.room.disconnect();
     });
     expect(roomDisconnect).toHaveBeenCalled();
   });

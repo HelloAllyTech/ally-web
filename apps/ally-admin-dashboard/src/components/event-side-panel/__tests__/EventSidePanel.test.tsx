@@ -196,27 +196,6 @@ describe("EventSidePanel", () => {
     expect(onClose).toHaveBeenCalled();
   });
 
-  // it("initializes inputs from selectedEvent and updates name", () => {
-  //   const onUpdate = vi.fn();
-  //   render(
-  //     <EventSidePanel
-  //       selectedEvent={baseEvent}
-  //       isOpen={true}
-  //       onClose={vi.fn()}
-  //       onDelete={vi.fn()}
-  //       onUpdate={onUpdate}
-  //     />,
-  //   );
-
-  //   const nameInput = screen.getByPlaceholderText("New Event") as HTMLInputElement;
-  //   // Name should include "- Test Event" suffix
-  //   expect(nameInput.value).toBe("Test Event - Test Event");
-
-  //   fireEvent.change(nameInput, { target: { value: "Updated Event - Test Event" } });
-  //   const lastCall = onUpdate.mock.calls.at(-1)?.[0];
-  //   expect(lastCall?.name).toBe("Updated Event - Test Event");
-  // });
-
   it("renders trigger conditions component for event types", () => {
     const eventWithTrigger = {
       ...baseEvent,
@@ -238,31 +217,6 @@ describe("EventSidePanel", () => {
     expect(screen.getByTestId("trigger-conditions")).toBeInTheDocument();
     expect(screen.getByText(/Event Type: SENTENCE_SIMILARITY/)).toBeInTheDocument();
   });
-
-  // it("changes number input and emoji, calling onUpdate with new values", () => {
-  //   const onUpdate = vi.fn();
-  //   render(
-  //     <EventSidePanel
-  //       selectedEvent={baseEvent}
-  //       isOpen={true}
-  //       onClose={vi.fn()}
-  //       onDelete={vi.fn()}
-  //       onUpdate={onUpdate}
-  //     />,
-  //   );
-
-  // Number input
-  //   const num = screen.getByLabelText("number-input");
-  //   fireEvent.change(num, { target: { value: "9" } });
-
-  //   // Emoji click via mock
-  //   const emojiButton = screen.getByTestId("emoji-picker-mock");
-  //   fireEvent.click(emojiButton);
-
-  //   const lastCall = onUpdate.mock.calls.at(-1)?.[0];
-  //   expect(lastCall?.score).toBe(9);
-  //   expect(lastCall?.emoji).toBe("😊");
-  // });
 
   it("calls onDelete with event id when delete is clicked", () => {
     const onDelete = vi.fn();

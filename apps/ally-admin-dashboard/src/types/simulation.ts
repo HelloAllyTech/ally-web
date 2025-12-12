@@ -53,6 +53,11 @@ export interface SimulationInput {
   openingStatements?: string[];
   voiceId?: string;
   agentGoal?: string;
+  autoTerminationStatus?: boolean;
+  terminationEventId?: string;
+  terminationMessage?: string;
+  isGlobal?: boolean;
+  triggerWarningIds?: string[];
 }
 
 export interface UpdateSimulationByIdInput {
@@ -102,7 +107,9 @@ export interface GetSimulationByIdResponse {
     eventId: string;
     message: string;
     autoTerminationStatus: boolean;
+    name: string;
   };
+  triggerWarnings: triggerWarnings[];
 }
 
 export interface CreateSimulationInput {
@@ -121,6 +128,16 @@ export interface CreateSimulationResponse {
 
 export interface StartSimulationResponse {
   accessToken: { token: string; serverUrl: string; roomName: string };
+  scenario?: {
+    id?: string;
+    title?: string;
+    description?: string;
+    coverImageUrl?: string;
+    triggerWarnings?: { id: number; name: string }[];
+    metadata?: {
+      name?: string;
+    };
+  };
 }
 
 export enum VisibilityType {
@@ -240,4 +257,30 @@ export interface GetCoverVideoUrlResponse {
 
 export interface DeleteCoverVideoRequest {
   coverVideoUrl: string;
+}
+
+export interface getTriggerWarningsQueryParams {
+  name?: string;
+  limit?: number;
+  offset?: number;
+  sortBy?: string;
+  order?: string;
+}
+
+export interface triggerWarnings {
+  id: string;
+  name: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface triggerWarningsRequest {
+  name: string;
+}
+
+export interface createTriggerResponse {
+  id: string;
+  name: string;
+  createdAt: string;
+  updatedAt: string;
 }

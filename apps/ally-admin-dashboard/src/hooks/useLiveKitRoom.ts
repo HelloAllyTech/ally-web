@@ -9,7 +9,7 @@ import { LIVEKIT_CONFIG, LOCAL_STORAGE_KEYS, ROUTES } from "@constants";
 import { RoomStatus, UseLiveKitRoomReturn, LiveKitEvent } from "@types";
 import { decodeUint8ToJson } from "@utils";
 
-export const useLiveKitRoom = (): UseLiveKitRoomReturn => {
+export const useLiveKitRoom = (handleDisconnect: () => void): UseLiveKitRoomReturn => {
   const navigate = useNavigate();
   const { id } = useParams();
   const [endScenarioPreview] = useEndScenarioPreviewMutation();
@@ -38,24 +38,12 @@ export const useLiveKitRoom = (): UseLiveKitRoomReturn => {
 
   const onDataReceived = useCallback((payload: any) => {
     const eventObj = decodeUint8ToJson(payload) as LiveKitEvent;
-
-    const incomingMs = Date.parse(eventObj?.timestamp ?? "");
-    const lastMs = lastEventTimestampRef.current;
-
-    const incomingValid = !Number.isNaN(incomingMs);
-    const lastValid = typeof lastMs === "number" && !Number.isNaN(lastMs);
-    const shouldAppend = lastValid && incomingValid ? incomingMs - lastMs >= 10000 : true;
-
-    if (shouldAppend) {
-      setEvents(prev => [...prev, eventObj]);
-      setScore(prev => prev + (eventObj?.data?.score ?? 0));
-      if (incomingValid) {
-        lastEventTimestampRef.current = incomingMs;
-      }
-    }
+    setEvents(prev => [...prev, eventObj]);
+    setScore(prev => prev + (eventObj?.data?.score ?? 0));
   }, []);
 
   const onRoomDisconnect = useCallback(() => {
+    handleDisconnect();
     setRoomStatus(RoomStatus.DISCONNECTED);
   }, []);
 
@@ -125,9 +113,9 @@ export const useLiveKitRoom = (): UseLiveKitRoomReturn => {
     if (room.localParticipant) {
       room.localParticipant.setMicrophoneEnabled(false);
     }
+    await endScenarioPreview({ roomName: id || "" });
     setRoomStatus(RoomStatus.DISCONNECTED);
     room.disconnect();
-    await endScenarioPreview({ roomName: id || "" });
   };
 
   useEffect(() => {

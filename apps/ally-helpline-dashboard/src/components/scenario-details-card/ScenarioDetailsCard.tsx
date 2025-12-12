@@ -4,10 +4,10 @@ import { CircularProgress } from "@mui/material";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
 
-import { CustomVideo } from "@ally-ui-mono/ui-shared";
-import { ShareIcon } from "@assets/icons";
+import { CustomVideo, FEATURE_FLAGS_MAP } from "@ally-ui-mono/ui-shared";
+import { ShareIcon } from "@assets";
+import { Button, ChipGroup } from "@components";
 
-import { Button } from "..";
 import { ScenarioDetailsCardProps } from "./types";
 
 const ScenarioDetailsCard: FC<ScenarioDetailsCardProps> = ({
@@ -18,6 +18,7 @@ const ScenarioDetailsCard: FC<ScenarioDetailsCardProps> = ({
   onStart,
   title,
   noCredits = false,
+  triggerWarnings,
 }) => {
   const [imageError, setImageError] = useState(false);
   const isDisabled = isStarting || noCredits;
@@ -49,6 +50,11 @@ const ScenarioDetailsCard: FC<ScenarioDetailsCardProps> = ({
       document.body.removeChild(textArea);
     }
     toast.success("Scenario link copied to clipboard!");
+  };
+
+  const handleStartSimulation = (event: MouseEvent<HTMLButtonElement>) => {
+    event.stopPropagation();
+    onStart?.();
   };
 
   const renderMedia = () => (
@@ -113,12 +119,18 @@ const ScenarioDetailsCard: FC<ScenarioDetailsCardProps> = ({
           </div>
         )}
 
+        {FEATURE_FLAGS_MAP.TRIGGER_WARNINGS_FLAG && triggerWarnings?.length > 0 && (
+          <div className="flex flex-col">
+            <div className="text-base font-semibold text-typography-900 mb-[4px]">
+              Trigger warnings:
+            </div>
+            <ChipGroup items={triggerWarnings} chipClassName="text-sm" maxVisible={20} />
+          </div>
+        )}
+
         <div className="flex justify-center mt-2 mb-2">
           <Button
-            onClick={e => {
-              e.stopPropagation();
-              onStart?.();
-            }}
+            onClick={handleStartSimulation}
             variant="primary"
             className={`!font-tertiary !text-base  !py-3 ${isDisabled && "!bg-gray-400"} w-[240px]`}
             disabled={isDisabled}

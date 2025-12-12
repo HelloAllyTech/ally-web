@@ -164,7 +164,7 @@ export function DataList<T extends DataListItem>({
   };
 
   return (
-    <div className="flex flex-col w-full overflow-x-auto font-primary overflow-y-scroll h-[calc(100vh-180px)]">
+    <div className="flex flex-col w-full overflow-x-auto font-primary overflow-y-scroll h-[calc(100vh-180px)] custom-scrollbar">
       {tableHeader}
       {items?.map(item => renderCard(item))}
       {footer}

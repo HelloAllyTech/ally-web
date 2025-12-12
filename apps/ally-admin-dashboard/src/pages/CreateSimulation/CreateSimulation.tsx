@@ -4,6 +4,7 @@ import { useForm } from "react-hook-form";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
 
+import { FEATURE_FLAGS_MAP } from "@ally-ui-mono/ui-shared";
 import {
   useCreateSimulationMutation,
   useDeleteCoverImageMutation,
@@ -21,13 +22,14 @@ import { CreateSimulationSubSection, SimulationEventMapTable } from "@components
 import { ButtonVariant } from "@components/types";
 import { en, ROUTES, StepperList, SIMULATION_CREATOR_FIELD_GROUPS } from "@constants";
 import { useDebounce } from "@hooks";
-import { SimulationStatus, SimulationPreviewType } from "@types";
+import { SimulationStatus, SimulationPreviewType, triggerWarnings } from "@types";
 import {
   getCreateSimulationSubSectionById,
   formatSimulationResponseData,
   isNonEmptyString,
   extractValidData,
   isEmpty,
+  isNonEmptyArray,
 } from "@utils";
 
 const stepIds = {
@@ -146,7 +148,7 @@ export const CreateSimulation: FC = () => {
       }
     }
 
-    const { openingStatements, ...restForm } = formData as any;
+    const { openingStatements, triggerWarningIds, ...restForm } = formData as any;
 
     const openingStatementsArray = isNonEmptyString(openingStatements)
       ? openingStatements
@@ -155,9 +157,17 @@ export const CreateSimulation: FC = () => {
           .filter((line: string) => line.length > 0)
       : null;
 
+    const triggerWarning =
+      FEATURE_FLAGS_MAP.TRIGGER_WARNINGS_FLAG && isNonEmptyArray(triggerWarningIds)
+        ? (triggerWarningIds as triggerWarnings[])
+            .filter(trigger => !isEmpty(trigger))
+            .map(trigger => trigger.id)
+        : [];
+
     const simulationData = {
       ...extractValidData(SIMULATION_CREATOR_FIELD_GROUPS, restForm),
       openingStatements: openingStatementsArray,
+      ...(FEATURE_FLAGS_MAP.TRIGGER_WARNINGS_FLAG && { triggerWarningIds: triggerWarning }),
       status,
     };
     let response;
@@ -167,9 +177,12 @@ export const CreateSimulation: FC = () => {
         simulation: simulationData,
       });
     } else {
-      response = await createSimulationQuery({
-        scenarios: [simulationData],
-      });
+      if (!isCreatingSimulation) {
+        response = await createSimulationQuery({
+          scenarios: [simulationData],
+        });
+        navigate(ROUTES.EDIT_SIMULATION(response?.data?.[0]?.id), { replace: true });
+      }
     }
     return response;
   };
@@ -258,7 +271,7 @@ export const CreateSimulation: FC = () => {
         <div className="sticky flex flex-row justify-between top-0 z-10 pt-3 mx-6 pb-4 border-b border-border-light">
           <h2 className="text-lg font-semibold text-typography-900">{title}</h2>
         </div>
-        <div ref={containerRef} className="p-6 pt-4 overflow-y-auto h-full">
+        <div ref={containerRef} className="p-6 pt-4 overflow-y-auto h-full custom-scrollbar">
           {component}
         </div>
       </div>

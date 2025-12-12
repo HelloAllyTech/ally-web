@@ -45,8 +45,11 @@ export const useLiveKitRoom = (handleDisconnect: () => void): UseLiveKitRoomRetu
 
   const onRoomDisconnect = useCallback(() => {
     logger.info("Disconnected from room");
-    handleDisconnect();
+    if (room.localParticipant) {
+      room.localParticipant.setMicrophoneEnabled(false);
+    }
     setRoomStatus(RoomStatus.DISCONNECTED);
+    handleDisconnect();
   }, []);
 
   const cleanupRoom = useCallback(() => {
@@ -118,14 +121,6 @@ export const useLiveKitRoom = (handleDisconnect: () => void): UseLiveKitRoomRetu
     connectToRoom();
   };
 
-  const handleEndSession = async () => {
-    if (room.localParticipant) {
-      room.localParticipant.setMicrophoneEnabled(false);
-    }
-    setRoomStatus(RoomStatus.DISCONNECTED);
-    room.disconnect();
-  };
-
   useEffect(() => {
     // Add a small delay before connecting to avoid race conditions in StrictMode
     const connectionTimeout = setTimeout(() => {
@@ -162,7 +157,6 @@ export const useLiveKitRoom = (handleDisconnect: () => void): UseLiveKitRoomRetu
   return {
     error,
     events,
-    handleEndSession,
     handleRetryConnection,
     room,
     roomStatus,

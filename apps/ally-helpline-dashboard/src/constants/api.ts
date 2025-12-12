@@ -6,6 +6,7 @@ export const ApiEndpoints = {
     GENERATE_OTP: "/v2/auth/generate-otp",
     VERIFY_OTP: "/v2/auth/verify-otp",
     REFRESH: "/v1/auth/refresh",
+    TERMS_AND_AGREEMENT: "/v1/users/terms-and-agreement-status",
   },
   AUTHORIZATION: {
     GET_PERMISSIONS: "/v1/authorization/permissions",
@@ -58,7 +59,8 @@ export const ApiEndpoints = {
   LEARN: {
     END_SIMULATION: (sessionId: string) => `/v1/learn/scenario-session/${sessionId}/end`,
     START_SIMULATION: "/v1/learn/scenario-session-start",
-    GET_SCENARIOS: "/v1/learn/scenarios",
+    GET_SCENARIOS: "/v1/learn/scenarios/public",
+    GET_SCENARIOS_PRIVATE: "/v2/learn/scenarios",
     GET_SCENARIO: (scenarioId: number) => `/v1/learn/scenarios/${scenarioId}`,
     GET_SCENARIO_PATHWAYS: "/v1/learn/scenario-paths",
     GET_SCENARIO_PATHWAY_DETAILS: (pathwayId: string) => `/v1/learn/scenario-paths/${pathwayId}`,
