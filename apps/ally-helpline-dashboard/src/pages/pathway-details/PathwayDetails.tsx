@@ -139,7 +139,7 @@ export const PathwayDetails: FC = () => {
     <div className="pt-6 pb-3 flex items-center justify-between">
       <div className="flex items-center gap-2 text-sm text-typography-700">
         <button onClick={() => navigate(-1)} className="hover:text-primary-500 transition-colors">
-          Track way
+          Tracks
         </button>
         <ArrowRight />
         <span className="text-primary-500 font-medium">{pathway.title}</span>

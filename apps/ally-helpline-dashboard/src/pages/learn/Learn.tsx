@@ -14,12 +14,12 @@ import { learnPageContainerVariants, learnPageItemVariants } from "./constants";
 
 enum TabId {
   SIMULATIONS = "simulations",
-  TRACKWAYS = "trackways",
+  TRACKS = "tracks",
 }
 
 const LEARN_TABS = [
   { id: TabId.SIMULATIONS, label: "Simulations" },
-  { id: TabId.TRACKWAYS, label: "Track ways" },
+  { id: TabId.TRACKS, label: "Tracks" },
 ];
 
 type LearnTabId = (typeof LEARN_TABS)[number]["id"];
@@ -127,7 +127,7 @@ export const Learn: FC = () => {
   );
 
   const renderContentGrid = () => {
-    const isPathwayTab = activeTab === TabId.TRACKWAYS;
+    const isPathwayTab = activeTab === TabId.TRACKS;
     const isLoading = isPathwayTab ? isPathwaysLoading : isScenariosLoading;
     const hasData = isPathwayTab ? pathwaysData?.data?.length > 0 : scenarios?.length > 0;
     const ariaLabel = isPathwayTab ? "Available pathways" : "Available scenarios";
@@ -173,7 +173,7 @@ export const Learn: FC = () => {
   };
 
   const renderContent = () => {
-    const isPathwayTab = activeTab === TabId.TRACKWAYS;
+    const isPathwayTab = activeTab === TabId.TRACKS;
     const title = isPathwayTab ? "Track" : "Scenario";
 
     return (

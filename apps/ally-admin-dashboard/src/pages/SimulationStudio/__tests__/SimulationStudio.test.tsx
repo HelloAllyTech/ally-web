@@ -417,7 +417,7 @@ describe("SimulationStudio", () => {
     it("renders tabs for Simulations and Pathways", () => {
       renderComponent();
       expect(screen.getByTestId("tab-simulations")).toBeInTheDocument();
-      expect(screen.getByTestId("tab-trackways")).toBeInTheDocument();
+      expect(screen.getByTestId("tab-tracks")).toBeInTheDocument();
     });
 
     it("renders filter button", () => {
@@ -465,7 +465,7 @@ describe("SimulationStudio", () => {
       renderComponent();
 
       // Switch to pathways tab
-      fireEvent.click(screen.getByTestId("tab-trackways"));
+      fireEvent.click(screen.getByTestId("tab-tracks"));
 
       expect(screen.getByTestId("simulation-skeleton")).toBeInTheDocument();
     });
@@ -522,7 +522,7 @@ describe("SimulationStudio", () => {
       renderComponent();
 
       // Switch to pathways tab
-      fireEvent.click(screen.getByTestId("tab-trackways"));
+      fireEvent.click(screen.getByTestId("tab-tracks"));
 
       expect(screen.getByText("Create your first")).toBeInTheDocument();
       expect(screen.getByText("Pathway")).toBeInTheDocument();
@@ -533,9 +533,9 @@ describe("SimulationStudio", () => {
     it("switches to pathways tab when clicked", () => {
       renderComponent();
 
-      fireEvent.click(screen.getByTestId("tab-trackways"));
+      fireEvent.click(screen.getByTestId("tab-tracks"));
 
-      const pathwaysTab = screen.getByTestId("tab-trackways");
+      const pathwaysTab = screen.getByTestId("tab-tracks");
       expect(pathwaysTab).toHaveClass("active");
     });
 
@@ -551,7 +551,7 @@ describe("SimulationStudio", () => {
       expect(screen.getByText("Active")).toBeInTheDocument();
 
       // Switch to pathways tab
-      fireEvent.click(screen.getByTestId("tab-trackways"));
+      fireEvent.click(screen.getByTestId("tab-tracks"));
 
       // Filter should be cleared
       expect(screen.queryByText("Active")).not.toBeInTheDocument();
@@ -566,7 +566,7 @@ describe("SimulationStudio", () => {
       renderComponent();
 
       // Switch to pathways tab
-      fireEvent.click(screen.getByTestId("tab-trackways"));
+      fireEvent.click(screen.getByTestId("tab-tracks"));
 
       expect(screen.getByText("Test Pathway 1")).toBeInTheDocument();
     });
@@ -808,7 +808,7 @@ describe("SimulationStudio", () => {
       renderComponent();
 
       // Switch to pathways tab
-      fireEvent.click(screen.getByTestId("tab-trackways"));
+      fireEvent.click(screen.getByTestId("tab-tracks"));
 
       expect(screen.getByText(/Load more/i)).toBeInTheDocument();
     });
@@ -823,7 +823,7 @@ describe("SimulationStudio", () => {
       renderComponent();
 
       // Switch to pathways tab
-      fireEvent.click(screen.getByTestId("tab-trackways"));
+      fireEvent.click(screen.getByTestId("tab-tracks"));
 
       fireEvent.click(screen.getByText(/Load more/i));
 
@@ -1047,7 +1047,7 @@ describe("SimulationStudio", () => {
       renderComponent();
 
       // Switch to pathways tab
-      fireEvent.click(screen.getByTestId("tab-trackways"));
+      fireEvent.click(screen.getByTestId("tab-tracks"));
 
       const createButton = screen.getByTestId("create-pathway-button");
       fireEvent.click(createButton);
@@ -1066,7 +1066,7 @@ describe("SimulationStudio", () => {
       renderComponent();
 
       // Switch to pathways tab
-      fireEvent.click(screen.getByTestId("tab-trackways"));
+      fireEvent.click(screen.getByTestId("tab-tracks"));
 
       // Click the edit icon (first icon in the action buttons)
       const editIcons = screen.getAllByTestId("edit-icon");
@@ -1084,7 +1084,7 @@ describe("SimulationStudio", () => {
       renderComponent();
 
       // Switch to pathways tab
-      fireEvent.click(screen.getByTestId("tab-trackways"));
+      fireEvent.click(screen.getByTestId("tab-tracks"));
 
       // Click the delete icon
       const deleteIcons = screen.getAllByTestId("delete-icon");
@@ -1104,7 +1104,7 @@ describe("SimulationStudio", () => {
       renderComponent();
 
       // Switch to pathways tab
-      fireEvent.click(screen.getByTestId("tab-trackways"));
+      fireEvent.click(screen.getByTestId("tab-tracks"));
 
       // Pathways don't have preview, test that the pathway list is rendered
       expect(screen.getByText("Test Pathway 1")).toBeInTheDocument();
