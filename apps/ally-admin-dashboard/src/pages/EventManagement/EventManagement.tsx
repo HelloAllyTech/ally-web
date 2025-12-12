@@ -200,11 +200,11 @@ export const EventManagement: React.FC = () => {
     <button
       type="button"
       onClick={handleLoadMore}
-      className="flex justify-start items-center py-4 text-typography-800 hover:text-typography-600 disabled:opacity-50 w-[200px]"
+      className="flex justify-start items-center py-4 text-typography-700 hover:text-typography-900 disabled:opacity-50 w-[200px]"
       disabled={isFetching || !hasMore}
     >
       <span>+</span>
-      <span className="text-base ml-[5px]">
+      <span className="text-base ml-[5px] font-primary">
         {isFetching ? en.common.loading : hasMore ? en.common.loadMore : en.common.noMoreData}
       </span>
     </button>

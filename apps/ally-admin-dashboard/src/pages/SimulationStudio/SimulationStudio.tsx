@@ -157,11 +157,11 @@ export const SimulationStudio: React.FC = () => {
 
     if (!hasMoreItems) return null;
     return (
-      <div className="flex justify-start mt-2 px-4">
+      <div className="flex justify-start mt-2">
         <button
           onClick={() => loadMore(true)}
           disabled={isFetching}
-          className="inline-flex font-tertiary items-center disabled:opacity-50 text-sm text-typography-600 font-medium py-1 px-1 hover:text-typography-900"
+          className="inline-flex font-primary items-center disabled:opacity-50 text-sm text-typography-700 font-medium py-1 hover:text-typography-900"
         >
           + {isFetching ? en.common.loading : en.common.loadMore}
         </button>

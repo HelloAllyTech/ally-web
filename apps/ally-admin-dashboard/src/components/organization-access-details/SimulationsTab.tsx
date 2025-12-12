@@ -134,7 +134,7 @@ export const SimulationsTab: FC<SimulationsTabProps> = ({
                 <button
                   onClick={loadMore}
                   disabled={isSimulationsFetching}
-                  className="inline-flex font-tertiary items-center disabled:opacity-50 text-sm text-typography-600 font-medium py-1 px-1 hover:text-typography-900"
+                  className="inline-flex font-primary items-center disabled:opacity-50 text-sm text-typography-700 font-medium py-1 px-1 hover:text-typography-900"
                 >
                   + {isSimulationsFetching ? en.common.loading : en.common.loadMore}
                 </button>

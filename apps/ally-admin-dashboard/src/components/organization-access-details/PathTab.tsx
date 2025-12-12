@@ -164,7 +164,7 @@ export const PathTab: FC<PathTabProps> = ({
                 <button
                   onClick={loadMore}
                   disabled={isPathsFetching}
-                  className="inline-flex font-tertiary items-center disabled:opacity-50 text-sm text-typography-600 font-medium py-1 px-1 hover:text-typography-900"
+                  className="inline-flex font-primary items-center disabled:opacity-50 text-sm text-typography-700 font-medium py-1 px-1 hover:text-typography-900"
                 >
                   + {isPathsFetching ? en.common.loading : en.common.loadMore}
                 </button>
