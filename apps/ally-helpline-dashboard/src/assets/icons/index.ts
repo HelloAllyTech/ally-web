@@ -13,6 +13,7 @@
 
 import AccountCircle from "./account-circle.svg?react";
 import ActionsIcon from "./actions-icon.svg?react";
+import Alarm from "./alarm.svg?react";
 import Ally from "./ally.svg?react";
 import ArrowRight from "./arrow-right.svg?react";
 import Arrow from "./arrow.svg?react";
@@ -42,6 +43,7 @@ import CutCall from "./cut-call.svg?react";
 import DataPolicy from "./data-policy.svg?react";
 import DateIcon from "./date-icon.svg?react";
 import Delete from "./delete.svg?react";
+import DiamondShine from "./diamond-shine.svg?react";
 import DockToRight from "./dockToRight.svg?react";
 import DominantFeelings from "./dominant-feelings.svg?react";
 import Download from "./download.svg?react";
@@ -134,6 +136,7 @@ import Waveform from "./waveform.svg?react";
 export {
   AccountCircle,
   ActionsIcon,
+  Alarm,
   Ally,
   Assessment,
   AudioFile,
@@ -163,6 +166,7 @@ export {
   DataPolicy,
   DateIcon,
   Delete,
+  DiamondShine,
   DockToRight,
   DominantFeelings,
   Download,
