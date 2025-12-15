@@ -17,6 +17,7 @@ export enum RoomStatus {
   CONNECTED = "connected",
   CONNECTING = "connecting",
   DISCONNECTED = "disconnected",
+  DISCONNECTING = "disconnecting",
 }
 
 export interface SimulationInterfaceProps {
@@ -36,23 +37,7 @@ export const SimulationInterface: FC<SimulationInterfaceProps> = ({
 }) => {
   const renderContent = () => {
     switch (roomStatus) {
-      case RoomStatus.CONNECTING:
-        return (
-          <div
-            data-testid="simulation-interface-connecting bg-[#1D2020] rounded-lg"
-            className="flex flex-col items-center text-center font-['IBM_Plex_Serif']"
-          >
-            <p className="text-[20px] text-white">
-              Simulation
-              <span className="font-medium italic"> starting...</span>
-            </p>
-            <p className="text-[12px] text-[#B6B5B9]">
-              To start the simulation, please allow us to use your microphone.
-            </p>
-          </div>
-        );
-      case RoomStatus.CONNECTED:
-      default: {
+      case RoomStatus.CONNECTED: {
         const { localParticipant } = useLocalParticipant();
         const remoteParticipants = useRemoteParticipants();
         const remoteParticipant = remoteParticipants?.[0];
@@ -78,6 +63,27 @@ export const SimulationInterface: FC<SimulationInterfaceProps> = ({
           </>
         );
       }
+      case RoomStatus.CONNECTING:
+      case RoomStatus.DISCONNECTING:
+      case RoomStatus.DISCONNECTED:
+      default:
+        return (
+          <div
+            data-testid="simulation-interface-connecting bg-[#1D2020] rounded-lg"
+            className="flex flex-col items-center text-center font-['IBM_Plex_Serif']"
+          >
+            <p className="text-[20px] text-white">
+              Simulation
+              <span className="font-medium italic">
+                {" "}
+                {roomStatus === RoomStatus.CONNECTING ? "starting..." : "disconnecting..."}
+              </span>
+            </p>
+            <p className="text-[12px] text-[#B6B5B9]">
+              To start the simulation, please allow us to use your microphone.
+            </p>
+          </div>
+        );
     }
   };
 
