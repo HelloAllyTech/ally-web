@@ -7,7 +7,7 @@ export type FormData = {
   coverImageUrl: string;
   coverVideoUrl?: string;
   title: string;
-  description: string;
+  challengeDescription: string;
   name: string;
   age: number;
   gender: string;
@@ -17,12 +17,16 @@ export type FormData = {
   profession: string;
   context: string;
   sessionBehaviorGuidelines: string;
+  roleInstruction: string;
+  responseLength: string;
+  yourDialogues: string;
+  openingDialogues: string;
   lifeHistory: string;
   coreMemories: string;
   personality: string;
   startingState: string;
   emotionalNeeds: string;
-  tone: string;
+  voiceInstruction: string;
   openingStatements: string;
   voiceId: string;
   agentGoal: string;

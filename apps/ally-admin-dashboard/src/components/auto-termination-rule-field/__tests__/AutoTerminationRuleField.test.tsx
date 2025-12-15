@@ -152,7 +152,7 @@ describe("AutoTerminationRuleField", () => {
     expect(asterisk).toBeInTheDocument();
   });
 
-  it("shows required asterisk for termination message", () => {
+  it("shows termination message field when enabled", () => {
     render(
       <TestWrapper>
         {formMethods => (
@@ -163,9 +163,8 @@ describe("AutoTerminationRuleField", () => {
     const toggle = screen.getByRole("button", { name: /toggle/i });
     fireEvent.click(toggle);
 
-    const terminationMessageLabel = screen.getByText("Termination message");
-    const asterisk = terminationMessageLabel.parentElement?.querySelector(".text-destructive-500");
-    expect(asterisk).toBeInTheDocument();
+    // Termination message field should be visible when auto termination is enabled
+    expect(screen.getByText("Termination message")).toBeInTheDocument();
   });
 
   it("displays character count for termination message", () => {

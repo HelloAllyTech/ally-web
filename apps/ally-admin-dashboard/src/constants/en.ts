@@ -149,7 +149,7 @@ export const en = {
     basicInformation: "Basic Information",
     demographics: "Demographics & Background",
     narrativeContext: "Narrative Context",
-    eventConfiguration: "Event Configuration",
+    advancedSettings: "Advanced Settings",
     back: "Back",
     next: "Next",
     createdBy: "Created By",
@@ -213,7 +213,7 @@ export const en = {
     startSession: "Start Session",
     autoTermination: "Auto termination",
     triggerEvent: "Trigger event",
-    triggerMessage: "Termination message",
+    triggerMessage: "Termination dialogue",
     terminationMessagePlaceholder:
       "Enter the message the agent will say before ending the session...",
     triggerEventPlaceholder: "Select an event",
@@ -238,6 +238,8 @@ export const en = {
     viewOnly: "View Only",
     viewOnlyTooltip: "The simulation track is currently being used.",
     create: "Create:",
+    customFieldLimit: "You can only have 3 custom fields. Remove one to add another.",
+    newField: "New field",
   },
   userManagement: {
     organizationCreated: "Organization created successfully",

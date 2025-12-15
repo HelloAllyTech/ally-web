@@ -59,8 +59,17 @@ vi.mock("@components", () => ({
 
 vi.mock("@constants", () => ({
   en: {
-    simulation: { addEvent: "Add Event", eventConfiguration: "Event Configuration" },
+    simulation: {
+      addEvent: "Add Event",
+      eventConfiguration: "Event Configuration",
+      advancedSettings: "Event Configuration",
+      eventsDeletedSuccessfully: "Events deleted successfully",
+    },
     common: { delete: "Delete" },
+    errors: {
+      failedToSaveEvents: "Failed to save events",
+      failedToDeleteEvent: "Failed to delete event",
+    },
   },
   TAG_TYPES: {
     USERS: "users",

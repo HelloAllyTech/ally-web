@@ -23,7 +23,7 @@ const TERMINATION_FIELDS_MAP = {
     placeholder: en.simulation.triggerEventPlaceholder,
   },
   triggerMessage: {
-    id: "terminationMessage",
+    id: "terminationDialogue",
     label: en.simulation.triggerMessage,
     placeholder: en.simulation.terminationMessagePlaceholder,
   },
@@ -102,7 +102,6 @@ export const AutoTerminationRuleField: React.FC<AutoTerminationRuleFieldProps> =
             placeholder={TERMINATION_FIELDS_MAP.triggerMessage.placeholder}
             maxLength={200}
             minHeight="120"
-            isMandatory={autoTerminationStatus}
           />
         </div>
       )}

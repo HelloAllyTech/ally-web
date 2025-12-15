@@ -54,7 +54,20 @@ export const SEXUAL_ORIENTATION_OPTIONS = [
   { value: "Questioning", label: "Questioning" },
 ];
 
+export const DIFFICULTY_LEVEL_OPTIONS = [
+  { value: "Easy", label: "Easy" },
+  { value: "Medium", label: "Medium" },
+  { value: "Hard", label: "Hard" },
+];
+
 export const SIMULATION_CREATOR_STEP_IDS = {
+  overview: "overview",
+  basicSettings: "basic-settings",
+  advancedSettings: "advanced-settings",
+};
+
+// TODO: remove when NEW_CREATE_SIMULATION_FLAG is removed
+export const SIMULATION_CREATOR_STEP_IDS_OLD = {
   basicInfo: "basic-info",
   characterIdentity: "character-identity",
   traitsNeeds: "traits-and-needs",
@@ -63,11 +76,18 @@ export const SIMULATION_CREATOR_STEP_IDS = {
 };
 
 export const StepperList = [
-  { id: SIMULATION_CREATOR_STEP_IDS.basicInfo, title: "Basic Information" },
-  { id: SIMULATION_CREATOR_STEP_IDS.characterIdentity, title: "Character Identity" },
-  { id: SIMULATION_CREATOR_STEP_IDS.traitsNeeds, title: "Traits & Needs" },
-  { id: SIMULATION_CREATOR_STEP_IDS.conversationStyle, title: "Conversation Style" },
-  { id: SIMULATION_CREATOR_STEP_IDS.eventConfiguration, title: "Event Configuration" },
+  { id: SIMULATION_CREATOR_STEP_IDS.overview, title: "Overview" },
+  { id: SIMULATION_CREATOR_STEP_IDS.basicSettings, title: "Basic Settings" },
+  { id: SIMULATION_CREATOR_STEP_IDS.advancedSettings, title: "Advanced Settings" },
+];
+
+// TODO: remove when NEW_CREATE_SIMULATION_FLAG is removed
+export const StepperListOld = [
+  { id: SIMULATION_CREATOR_STEP_IDS_OLD.basicInfo, title: "Basic Information" },
+  { id: SIMULATION_CREATOR_STEP_IDS_OLD.characterIdentity, title: "Character Identity" },
+  { id: SIMULATION_CREATOR_STEP_IDS_OLD.traitsNeeds, title: "Traits & Needs" },
+  { id: SIMULATION_CREATOR_STEP_IDS_OLD.conversationStyle, title: "Conversation Style" },
+  { id: SIMULATION_CREATOR_STEP_IDS_OLD.eventConfiguration, title: "Event Configuration" },
 ];
 
 export const FORM_FIELD_TYPES = {
@@ -124,7 +144,200 @@ export const FORM_FIELD_IDS = {
 
 export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
   {
-    id: SIMULATION_CREATOR_STEP_IDS.basicInfo,
+    id: SIMULATION_CREATOR_STEP_IDS.overview,
+    label: "Overview",
+    fields: [
+      {
+        id: "isGlobal",
+        label: "Default org-level visibility",
+        type: FORM_FIELD_TYPES.TOGGLE_BUTTON,
+        fullWidth: true,
+      },
+      {
+        id: "title",
+        label: "Title",
+        placeholder: "Enter title",
+        type: FORM_FIELD_TYPES.TEXT,
+        isMandatory: true,
+        fullWidth: true,
+        maxLength: 100,
+      },
+      {
+        id: "coverImageUrl",
+        label: "Cover Image",
+        type: FORM_FIELD_TYPES.IMAGE_UPLOAD,
+        isMandatory: true,
+        fullWidth: true,
+      },
+      {
+        id: "coverVideoUrl",
+        label: "Cover Video",
+        type: FORM_FIELD_TYPES.VIDEO_UPLOAD,
+        isMandatory: false,
+        fullWidth: true,
+      },
+
+      {
+        id: "challengeDescription",
+        label: "Challenge Description",
+        placeholder: "What is the primary learning goal?",
+        type: FORM_FIELD_TYPES.TEXT,
+        isMandatory: true,
+        multiline: true,
+        fullWidth: true,
+        maxLength: 1000,
+      },
+      {
+        id: "difficultyLevel",
+        label: "Difficulty level",
+        type: FORM_FIELD_TYPES.SELECT,
+        options: DIFFICULTY_LEVEL_OPTIONS,
+        isMandatory: true,
+      },
+      FEATURE_FLAGS_MAP.TRIGGER_WARNINGS_FLAG && {
+        id: "triggerWarningIds",
+        label: "Trigger warnings",
+        type: FORM_FIELD_TYPES.TAG_AND_DROPDOWN,
+        fullWidth: true,
+      },
+      {
+        id: "name",
+        label: "Your name",
+        placeholder: "Enter name",
+        type: FORM_FIELD_TYPES.TEXT,
+        isMandatory: true,
+        maxLength: 100,
+        isDashedLineAbove: true,
+      },
+      {
+        id: "age",
+        label: "Your age",
+        placeholder: "e.g. 25",
+        type: FORM_FIELD_TYPES.NUMBER,
+        isMandatory: true,
+        maxLength: 100,
+      },
+      {
+        id: "gender",
+        label: "Your gender",
+        type: FORM_FIELD_TYPES.SELECT,
+        options: GENDER_OPTIONS,
+        isMandatory: true,
+      },
+      {
+        id: "profession",
+        label: "Your profession",
+        placeholder: "e.g. Software Engineer",
+        type: FORM_FIELD_TYPES.TEXT,
+        maxLength: 100,
+      },
+      {
+        id: "currentLocation",
+        label: "Current location",
+        placeholder: "e.g. Kolkata, India",
+        type: FORM_FIELD_TYPES.TEXT,
+        isMandatory: true,
+        maxLength: 100,
+      },
+    ].filter(Boolean) as FormFieldConfig[],
+  },
+  {
+    id: SIMULATION_CREATOR_STEP_IDS.basicSettings,
+    label: "Character Identity",
+    fields: [
+      {
+        id: "roleInstruction",
+        label: "Role instruction",
+        type: FORM_FIELD_TYPES.TEXT,
+        multiline: true,
+        fullWidth: true,
+        maxLength: 1000,
+        isMandatory: true,
+      },
+      {
+        id: "responseLength",
+        label: "Length of your responses",
+        type: FORM_FIELD_TYPES.SELECT,
+        isMandatory: true,
+      },
+      {
+        id: "genderIdentity",
+        label: "Your gender identity",
+        type: FORM_FIELD_TYPES.SELECT,
+        options: GENDER_IDENTITY_OPTIONS,
+        maxLength: 100,
+        isDashedLineAbove: true,
+      },
+      {
+        id: "sexualOrientation",
+        label: "Your sexual orientation",
+        placeholder: "Select sexual orientation",
+        type: FORM_FIELD_TYPES.SELECT,
+        options: SEXUAL_ORIENTATION_OPTIONS,
+        maxLength: 100,
+      },
+
+      {
+        id: "context",
+        label: "Your context",
+        placeholder: "Describe the immediate situations",
+        type: FORM_FIELD_TYPES.TEXT,
+        isMandatory: true,
+        multiline: true,
+        fullWidth: true,
+        maxLength: 1000,
+      },
+      FEATURE_FLAGS_MAP.CUSTOM_FIELD_FLAG && {
+        id: "customFieldGroup",
+        label: "Custom field group",
+        type: FORM_FIELD_TYPES.CUSTOM_FIELD_GROUP,
+        fullWidth: true,
+      },
+      {
+        id: "yourDialogues",
+        label: "Your dialogues",
+        type: FORM_FIELD_TYPES.TEXT,
+        multiline: true,
+        fullWidth: true,
+        maxLength: 1000,
+        isMandatory: true,
+      },
+      {
+        id: "openingDialogues",
+        label: "Opening dialogues",
+        type: FORM_FIELD_TYPES.TEXT,
+        multiline: true,
+        fullWidth: true,
+        maxLength: 1000,
+        isMandatory: true,
+      },
+      {
+        id: "voiceId",
+        label: "Voices",
+        type: FORM_FIELD_TYPES.CUSTOM.VOICE_DROPDOWN,
+        isMandatory: true,
+      },
+      {
+        id: "voiceInstruction",
+        label: "Voice instruction",
+        type: FORM_FIELD_TYPES.TEXT,
+        placeholder: "e.g. Casual",
+        maxLength: 100,
+      },
+      {
+        id: "autoTerminationStatus",
+        label: "Auto termination",
+        fullWidth: true,
+        type: FORM_FIELD_TYPES.CUSTOM.AUTO_TERMINATION_RULE,
+      },
+    ] as FormFieldConfig[],
+  },
+];
+
+// TODO: remove when NEW_CREATE_SIMULATION_FLAG is removed
+export const SIMULATION_CREATOR_FIELD_GROUPS_OLD: CreatorFieldGroups[] = [
+  {
+    id: SIMULATION_CREATOR_STEP_IDS_OLD.basicInfo,
     label: "Basic Information",
     fields: [
       FEATURE_FLAGS_MAP.CUSTOM_FIELD_FLAG && {
@@ -192,7 +405,7 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
     ].filter(Boolean) as FormFieldConfig[],
   },
   {
-    id: SIMULATION_CREATOR_STEP_IDS.characterIdentity,
+    id: SIMULATION_CREATOR_STEP_IDS_OLD.characterIdentity,
     label: "Character Identity",
     fields: [
       {
@@ -281,7 +494,7 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
     ],
   },
   {
-    id: SIMULATION_CREATOR_STEP_IDS.traitsNeeds,
+    id: SIMULATION_CREATOR_STEP_IDS_OLD.traitsNeeds,
     label: "Traits & Needs",
     fields: [
       {
@@ -314,7 +527,7 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
     ],
   },
   {
-    id: SIMULATION_CREATOR_STEP_IDS.conversationStyle,
+    id: SIMULATION_CREATOR_STEP_IDS_OLD.conversationStyle,
     label: "Conversation Style",
     fields: [
       {
@@ -324,7 +537,7 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
         isMandatory: true,
       },
       {
-        id: "tone",
+        id: "voiceInstruction",
         label: "Your tone",
         type: FORM_FIELD_TYPES.TEXT,
         placeholder: "e.g. Casual",

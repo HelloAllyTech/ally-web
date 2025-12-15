@@ -12,35 +12,19 @@ import {
 describe("createSimulation utils", () => {
   describe("getCreateSimulationSubSectionById", () => {
     it("should return the correct section for valid id", () => {
-      const section = getCreateSimulationSubSectionById("basic-info");
+      const section = getCreateSimulationSubSectionById("overview");
 
       expect(section).toBeDefined();
-      expect(section?.id).toBe("basic-info");
-      expect(section?.label).toBe("Basic Information");
+      expect(section?.id).toBe("overview");
+      expect(section?.label).toBe("Overview");
     });
 
-    it("should return the character identity section", () => {
-      const section = getCreateSimulationSubSectionById("character-identity");
+    it("should return the basic settings section", () => {
+      const section = getCreateSimulationSubSectionById("basic-settings");
 
       expect(section).toBeDefined();
-      expect(section?.id).toBe("character-identity");
+      expect(section?.id).toBe("basic-settings");
       expect(section?.label).toBe("Character Identity");
-    });
-
-    it("should return the traits and needs section", () => {
-      const section = getCreateSimulationSubSectionById("traits-and-needs");
-
-      expect(section).toBeDefined();
-      expect(section?.id).toBe("traits-and-needs");
-      expect(section?.label).toBe("Traits & Needs");
-    });
-
-    it("should return the conversation style section", () => {
-      const section = getCreateSimulationSubSectionById("conversation-style");
-
-      expect(section).toBeDefined();
-      expect(section?.id).toBe("conversation-style");
-      expect(section?.label).toBe("Conversation Style");
     });
 
     it("should return undefined for non-existent id", () => {
@@ -56,13 +40,13 @@ describe("createSimulation utils", () => {
     });
 
     it("should be case-sensitive", () => {
-      const section = getCreateSimulationSubSectionById("BASIC-INFO");
+      const section = getCreateSimulationSubSectionById("OVERVIEW");
 
       expect(section).toBeUndefined();
     });
 
     it("should return section with all fields", () => {
-      const section = getCreateSimulationSubSectionById("basic-info");
+      const section = getCreateSimulationSubSectionById("overview");
 
       expect(section?.fields).toBeDefined();
       expect(Array.isArray(section?.fields)).toBe(true);
