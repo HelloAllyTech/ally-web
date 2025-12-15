@@ -97,7 +97,10 @@ describe("createSimulation utils", () => {
           sexualOrientation: "Heterosexual",
           startingState: "Calm",
           tone: "Casual",
-          voiceId: "voice-123",
+          languageVoices: {
+            1: "voice-123",
+          },
+          // voiceId: "voice-123",
         },
       } as GetSimulationByIdResponse;
 
@@ -124,12 +127,15 @@ describe("createSimulation utils", () => {
         sexualOrientation: "Heterosexual",
         startingState: "Calm",
         tone: "Casual",
-        voiceId: "voice-123",
+        // voiceId: "voice-123",
         coverImageUrl: "https://example.com/image.jpg",
         coverVideoUrl: undefined,
         autoTerminationStatus: false,
         terminationEventId: undefined,
         terminationMessage: undefined,
+        languageVoices: {
+          1: "voice-123",
+        },
       });
     });
 
@@ -219,7 +225,9 @@ describe("createSimulation utils", () => {
           sexualOrientation: "orientation",
           startingState: "state",
           tone: "tone",
-          voiceId: "voice",
+          languageVoices: {
+            1: "voice-123",
+          },
         },
       } as GetSimulationByIdResponse;
 
@@ -232,7 +240,7 @@ describe("createSimulation utils", () => {
       expect(result.coverImageUrl).toBe("url");
       expect(result.age).toBe("30");
       expect(result.name).toBe("Jane");
-      expect(result.voiceId).toBe("voice");
+      // expect(result.voiceId).toBe("voice");
     });
   });
 

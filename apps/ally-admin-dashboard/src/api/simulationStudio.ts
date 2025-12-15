@@ -21,6 +21,7 @@ import {
   triggerWarningsRequest,
   createTriggerResponse,
   triggerWarnings,
+  ScenarioLanguage,
 } from "@types";
 
 import { baseAPI } from "./baseApi";
@@ -216,6 +217,17 @@ const simulationStudioAPI = baseAPI.injectEndpoints({
     }),
 
     /**
+     * Get all available scenario languages
+     */
+    getAvailableLanguageVoices: builder.query<ScenarioLanguage[], { active?: boolean }>({
+      query: (params = {}) => ({
+        url: ApiEndpoints.SIMULATION_STUDIO.SCENARIO_LANGUAGES,
+        method: HttpMethod.GET,
+        params: params, // This will pass through any params you provide
+      }),
+    }),
+
+    /**
      * Map scenario events
      */
     mapScenarioEvents: builder.mutation<void, { scenarioId: number; events: any[] }>({
@@ -319,6 +331,7 @@ export const {
   useGetCoverVideoUrlMutation,
   useDeleteCoverVideoMutation,
   useGetScenarioVoicesQuery,
+  useGetAvailableLanguageVoicesQuery,
   useScenarioPreviewMutation,
   useEndScenarioPreviewMutation,
   useMapScenarioEventsMutation,

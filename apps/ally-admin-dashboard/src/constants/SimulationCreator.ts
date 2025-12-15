@@ -78,6 +78,7 @@ export const FORM_FIELD_TYPES = {
   CUSTOM: {
     VOICE_DROPDOWN: "voice_dropdown",
     AUTO_TERMINATION_RULE: "auto_termination_rule",
+    LANGUAGE_VOICE_MAPPING: "language_voice_mapping",
   },
   TOGGLE_BUTTON: "toggle_button",
   TAG_AND_DROPDOWN: "tag_and_dropdown",
@@ -273,11 +274,19 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
     id: SIMULATION_CREATOR_STEP_IDS.conversationStyle,
     label: "Conversation Style",
     fields: [
+      // {
+      //   id: "voiceId",
+      //   label: "Voice",
+      //   type: FORM_FIELD_TYPES.CUSTOM.VOICE_DROPDOWN,
+      //   isMandatory: true,
+      //   fullWidth: true,
+      // },
       {
-        id: "voiceId",
-        label: "Voice",
-        type: FORM_FIELD_TYPES.CUSTOM.VOICE_DROPDOWN,
+        id: "languageVoices",
+        label: "Language-Voice",
+        type: FORM_FIELD_TYPES.CUSTOM.LANGUAGE_VOICE_MAPPING,
         isMandatory: true,
+        fullWidth: true,
       },
       {
         id: "tone",

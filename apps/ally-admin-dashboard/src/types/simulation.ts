@@ -51,13 +51,14 @@ export interface SimulationInput {
   emotionalNeeds?: string;
   tone?: string;
   openingStatements?: string[];
-  voiceId?: string;
+  // voiceId?: string;
   agentGoal?: string;
   autoTerminationStatus?: boolean;
   terminationEventId?: string;
   terminationMessage?: string;
   isGlobal?: boolean;
   triggerWarningIds?: string[];
+  languageVoices?: Record<string, string>;
 }
 
 export interface UpdateSimulationByIdInput {
@@ -100,8 +101,9 @@ export interface GetSimulationByIdResponse {
     sexualOrientation?: string;
     startingState?: string;
     tone?: string;
-    voiceId?: string;
+    // voiceId?: string;
     agentGoal?: string;
+    languageVoices?: Record<string, string>;
   };
   terminationEvent: {
     eventId: string;

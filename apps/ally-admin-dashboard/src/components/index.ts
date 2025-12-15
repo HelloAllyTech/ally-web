@@ -39,6 +39,7 @@ export * from "./auto-expandable-textarea";
 export * from "./auto-termination-rule-field";
 export * from "./create-simulation-sub-section";
 export * from "./voice-dropdown";
+export * from "./language-voice-mapping";
 export * from "./dropdown-field";
 export * from "./Simulation-event-map-table";
 export * from "./mapped-event-side-panel";

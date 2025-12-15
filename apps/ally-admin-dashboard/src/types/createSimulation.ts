@@ -24,7 +24,7 @@ export type FormData = {
   emotionalNeeds: string;
   tone: string;
   openingStatements: string;
-  voiceId: string;
+  // voiceId: string;
   agentGoal: string;
   autoTerminationStatus: boolean;
   terminationEventId: string;
@@ -32,6 +32,7 @@ export type FormData = {
   terminationMessage: string;
   isGlobal: boolean;
   triggerWarningIds: triggerWarnings[];
+  languageVoices?: Record<string, string>;
 };
 
 export interface DemographicsSectionProps {
@@ -161,5 +162,13 @@ export interface ScenarioVoice {
   id: string;
   name: string;
   provider: string;
+  language?: string;
   config: ScenarioVoiceConfig;
+}
+
+export interface ScenarioLanguage {
+  code: string;
+  name: string;
+  language_id?: number;
+  label?: string;
 }

@@ -164,12 +164,22 @@ export const CreateSimulation: FC = () => {
             .map(trigger => trigger.id)
         : [];
 
+    // filter out empty values from languageVoiceMapping
+    if (restForm.languageVoices) {
+      restForm.languageVoices = Object.fromEntries(
+        Object.entries(restForm.languageVoices || {}).filter(([, v]) => v !== ""),
+      );
+    } else {
+      restForm.languageVoices = {};
+    }
+
     const simulationData = {
       ...extractValidData(SIMULATION_CREATOR_FIELD_GROUPS, restForm),
       openingStatements: openingStatementsArray,
       ...(FEATURE_FLAGS_MAP.TRIGGER_WARNINGS_FLAG && { triggerWarningIds: triggerWarning }),
       status,
     };
+
     let response;
     if (simulationId) {
       response = await updateSimulationByIdQuery({
