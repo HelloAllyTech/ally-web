@@ -90,6 +90,7 @@ export interface GetSimulationByIdResponse {
   lastModified: string;
   isGlobal: boolean;
   customFields: CustomFieldType[];
+  status: SimulationStatus;
   metadata: {
     age?: number;
     name?: string;
