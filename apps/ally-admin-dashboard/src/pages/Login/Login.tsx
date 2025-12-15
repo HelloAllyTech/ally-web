@@ -211,7 +211,7 @@ export const Login: React.FC = () => {
               en.auth.next
             )}
           </Button>
-          <div className="text-xs text-typography-800 mt-2 leading-relaxed">
+          <div className="text-sm text-typography-800 mt-2 leading-relaxed">
             {en.auth.byTappingNext}{" "}
             <span
               className="text-primary-500 cursor-pointer hover:text-primary-600"

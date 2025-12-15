@@ -110,6 +110,9 @@ export const useSimulations = ({ selectedFilters }: UseSimulationsProps) => {
       setIsDeletePopupOpen(false);
       setCurrentSimulation(null);
       toast.success(en.simulation.simulationDeletedSuccessfully);
+      setSimulations(previousSimulations =>
+        previousSimulations.filter(simulation => simulation.id !== currentSimulation?.id),
+      );
     } catch (error: any) {
       toast.error(error?.data?.message || en.simulation.failedDeleteSimulation);
     }
@@ -126,6 +129,14 @@ export const useSimulations = ({ selectedFilters }: UseSimulationsProps) => {
       setIsUnpublishPopupOpen(false);
       setIsUnarchivePopupOpen(false);
       setCurrentSimulation(null);
+      setSimulations(previousSimulations =>
+        previousSimulations.map(simulation => {
+          if (simulation.id === currentSimulation?.id) {
+            return { ...simulation, status };
+          }
+          return simulation;
+        }),
+      );
       toast.success(en.simulation.simulationStatusUpdatedSuccessfully + status);
     } catch (error: any) {
       toast.error(error?.data?.message || en.simulation.failedChangeSimulationStatus);

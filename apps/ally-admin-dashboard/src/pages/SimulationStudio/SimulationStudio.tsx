@@ -25,12 +25,12 @@ import { useSimulations, useSimulationPathways } from "@hooks";
 
 const TAB_KEYS = {
   SIMULATIONS: "simulations",
-  PATHWAYS: "pathways",
+  TRACKS: "tracks",
 };
 
 const TABS = [
   { id: "simulations", label: "Simulations" },
-  { id: "pathways", label: "Path ways" },
+  { id: "tracks", label: "Tracks" },
 ];
 
 export const SimulationStudio: React.FC = () => {
@@ -142,26 +142,26 @@ export const SimulationStudio: React.FC = () => {
       onClick: handleNewSimulation,
     },
     {
-      id: en.simulation.newPathway,
-      label: en.simulation.newPathway,
+      id: en.simulation.newTrackway,
+      label: en.simulation.newTrackway,
       icon: <Pathway className="w-5 h-5" />,
       onClick: handleNewPathway,
     },
   ];
 
   const renderFooter = () => {
-    const isPathwaysTab = activeTab === TAB_KEYS.PATHWAYS;
+    const isPathwaysTab = activeTab === TAB_KEYS.TRACKS;
     const hasMoreItems = isPathwaysTab ? hasMorePathways : hasMore;
     const isFetching = isPathwaysTab ? isPathwaysFetching : isSimulationsFetching;
     const loadMore = isPathwaysTab ? loadPathways : loadSimulations;
 
     if (!hasMoreItems) return null;
     return (
-      <div className="flex justify-start mt-2 px-4">
+      <div className="flex justify-start mt-2">
         <button
           onClick={() => loadMore(true)}
           disabled={isFetching}
-          className="inline-flex font-tertiary items-center disabled:opacity-50 text-sm text-typography-600 font-medium py-1 px-1 hover:text-typography-900"
+          className="inline-flex font-primary items-center disabled:opacity-50 text-sm text-typography-700 font-medium py-1 hover:text-typography-900"
         >
           + {isFetching ? en.common.loading : en.common.loadMore}
         </button>
@@ -172,7 +172,7 @@ export const SimulationStudio: React.FC = () => {
   const renderHeader = () => {
     return (
       <div className="flex justify-between items-center">
-        <h1 className="text-2xl text-typography-900 font-primary">
+        <h1 className="text-2xl text-typography-900 font-secondary">
           {en.simulation.simulationstudio}
         </h1>
         <Button
@@ -200,7 +200,7 @@ export const SimulationStudio: React.FC = () => {
               key={filter.id}
               className="flex flex-row items-center gap-1 border border-border-light rounded-full px-2 py-1"
             >
-              <span className="text-xs text-typography-800">{filter.label}</span>
+              <span className="text-xs text-typography-800 font-regular">{filter.label}</span>
 
               <button onClick={() => handleFilterItemClose(filter)}>
                 <Close />
@@ -214,9 +214,7 @@ export const SimulationStudio: React.FC = () => {
           selectedFilters={selectedFilters}
           onApply={handleApplyFilters}
           options={
-            activeTab === TAB_KEYS.PATHWAYS
-              ? PATH_STATUS_OPTIONS
-              : DEFAULT_SIMULATION_STATUS_OPTIONS
+            activeTab === TAB_KEYS.TRACKS ? PATH_STATUS_OPTIONS : DEFAULT_SIMULATION_STATUS_OPTIONS
           }
         />
       </div>
@@ -224,7 +222,7 @@ export const SimulationStudio: React.FC = () => {
   };
 
   const renderContent = () => {
-    if (activeTab === TAB_KEYS.PATHWAYS) {
+    if (activeTab === TAB_KEYS.TRACKS) {
       // Pathways tab content
       return (
         <PathwayList

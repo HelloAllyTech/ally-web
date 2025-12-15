@@ -10,6 +10,7 @@ export default [
   // 1️⃣ Ignore patterns
   {
     ignores: [
+      ".github/**",
       ".next/**",
       "node_modules/**",
       "dist/**",

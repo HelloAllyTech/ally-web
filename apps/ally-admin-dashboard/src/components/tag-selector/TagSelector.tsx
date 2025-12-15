@@ -4,11 +4,11 @@ import { useCreateTriggerWarningMutation, useGetTriggerWarningsQuery } from "@ap
 import { Close, Plus, Search } from "@assets";
 import { en } from "@constants";
 import { useClickOutside } from "@hooks";
-import { triggerWarnings } from "@src/types";
+import { triggerWarning } from "@types";
 
 interface TagsDropdown {
-  updateTriggerWarnings: (tags: triggerWarnings[]) => void;
-  triggerWarnings: triggerWarnings[];
+  updateTriggerWarnings: (tags: triggerWarning[]) => void;
+  triggerWarnings: triggerWarning[];
   label: string;
 }
 
@@ -45,24 +45,23 @@ export const TagSelector: React.FC<TagsDropdown> = ({
 
   // Load options data
   useEffect(() => {
-    if (options) {
-      const selectedTagNames = triggerWarnings.map(tag => tag.name.toLowerCase());
-      const filtered = options.filter(
-        option => !selectedTagNames.includes(option.name.toLowerCase()),
-      );
+    if (!options) return;
 
-      if (page === 1) {
-        setAllOptions(filtered);
-      } else {
-        // Deduplicate based on ID before adding
-        setAllOptions(prev => {
-          const existingIds = new Set(prev.map(opt => opt?.id));
-          const newOptions = filtered.filter(opt => !existingIds.has(opt?.id));
-          return [...prev, ...newOptions];
-        });
-      }
-      if (options.length < DEFAULT_LIMIT) setHasMore(false);
+    const selectedIds = new Set(triggerWarnings.map(tag => tag.id));
+
+    if (page === 1) {
+      const filtered = options.filter(option => !selectedIds.has(option.id));
+
+      setAllOptions(filtered);
+    } else {
+      setAllOptions(prev => {
+        const existingIds = new Set(prev.map(opt => opt?.id));
+        const newOptions = options.filter(option => !existingIds.has(option.id));
+        const updatedList = [...prev, ...newOptions]?.filter(option => !selectedIds.has(option.id));
+        return updatedList;
+      });
     }
+    setHasMore(options.length === DEFAULT_LIMIT);
   }, [options, page, triggerWarnings]);
 
   // Intersection Observer callback
@@ -106,7 +105,7 @@ export const TagSelector: React.FC<TagsDropdown> = ({
 
   useClickOutside(dropdownRef, closeDropdown);
 
-  const removeTag = (tagToRemove: triggerWarnings) => {
+  const removeTag = (tagToRemove: triggerWarning) => {
     updateTriggerWarnings(triggerWarnings.filter(tag => tag !== tagToRemove));
   };
 
@@ -147,10 +146,10 @@ export const TagSelector: React.FC<TagsDropdown> = ({
           allOptions.map(option => (
             <div
               key={option?.id}
-              className="px-3 py-2 text-sm cursor-pointer transition-colors hover:bg-gray-100 whitespace-nowrap overflow-auto custom-scrollbar flex"
+              className="px-3 py-2 text-sm cursor-pointer transition-colors hover:bg-gray-100 whitespace-nowrap  flex"
               onClick={() => selectTag(option)}
             >
-              <span>{option?.name}</span>
+              <span className="truncate">{option?.name}</span>
             </div>
           ))}
 
@@ -177,7 +176,7 @@ export const TagSelector: React.FC<TagsDropdown> = ({
   );
   return (
     <div className="flex flex-col gap-2">
-      <label htmlFor="tags" className="text-typography-900 cursor-pointer">
+      <label htmlFor="tags" className="text-typography-900 text-base cursor-pointer">
         {label}
       </label>
 

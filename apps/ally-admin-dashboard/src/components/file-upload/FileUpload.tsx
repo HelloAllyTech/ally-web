@@ -357,7 +357,10 @@ export const FileUpload = ({
 
   return (
     <div className="flex flex-col gap-2">
-      <label htmlFor={id} className="text-typography-900 cursor-pointer flex items-center">
+      <label
+        htmlFor={id}
+        className="text-typography-900 text-base cursor-pointer flex items-center"
+      >
         {header || en.simulation.file}
         {isMandatory && <span className="text-destructive-500">*</span>}
       </label>
@@ -365,11 +368,9 @@ export const FileUpload = ({
       <div>
         <div
           {...getRootProps()}
-          className={`border-2 border-dashed rounded-lg text-center transition-colors h-64 relative overflow-hidden ${
-            isDragActive
-              ? "border-primary-500bg-primary-50"
-              : "border-border-light hover:border-primary"
-          }`}
+          className={`text-center transition-colors h-64 relative overflow-hidden rounded-lg 
+          ${!isNonEmptyString(uploadedFileUrl) && "border-2 border-dashed border-border-light hover:border-primary"}
+          ${isDragActive && "border-primary-500 bg-primary-50"}`}
         >
           <input
             {...register(id, { required: requiredErrorMessage })}

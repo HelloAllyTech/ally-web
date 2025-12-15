@@ -101,9 +101,7 @@ export const PathwayList: React.FC<PathwayListProps> = ({
       label: en.simulation.status,
       width: "w-[12%]",
       render: pathway => (
-        <div
-          className={`w-fit py-1 px-2 rounded text-xs font-medium ${getStatusColor(pathway.status)}`}
-        >
+        <div className={`w-fit py-1 px-2 rounded ${getStatusColor(pathway.status)}`}>
           {pathway.status === SimulationStatus.ACTIVE
             ? formatCapitalizedEnum(SimulationStatus.PUBLISHED)
             : formatCapitalizedEnum(pathway.status) || "--"}

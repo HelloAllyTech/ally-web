@@ -8,6 +8,7 @@ import ArrowDownFilled from "./arrowDownFilled.svg?react";
 import ArrowSolid from "./arrowSolid.svg?react";
 import BackCircle from "./back-circle.svg?react";
 import BackIcon from "./backIcon.svg?react";
+import BinaryClassification from "./binaryClassification.svg?react";
 import Bolt from "./bolt.svg?react";
 import Book from "./book.svg?react";
 import BookWhite from "./bookWhite.svg?react";
@@ -38,6 +39,7 @@ import Simulation from "./simulation.svg?react";
 import ThreeDot from "./threeDot.svg?react";
 import Tick from "./tick.svg?react";
 import Trash from "./trash.svg?react";
+import TrashRed from "./trashRed.svg?react";
 import Unarchive from "./unArchiveIcon.svg?react";
 import Unpublish from "./unpublish.svg?react";
 import User from "./user.svg?react";
@@ -92,4 +94,6 @@ export {
   Eye,
   SemanticSimilarity,
   BackCircle,
+  TrashRed,
+  BinaryClassification,
 };

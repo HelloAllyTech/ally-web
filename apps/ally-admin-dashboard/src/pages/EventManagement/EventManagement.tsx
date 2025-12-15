@@ -114,7 +114,7 @@ export const EventManagement: React.FC = () => {
         toast.success(en.simulation.eventCreatedSuccessfully);
         const createdEvent = response.data?.[0]
           ? convertApiResponseToEvent(response.data[0])
-          : { ...newEvent, id: response.data?.[0]?.id || "" };
+          : { ...newEvent, id: "" };
         setSelectedEvent(createdEvent);
         setIsSidePanelOpen(true);
       }
@@ -200,11 +200,11 @@ export const EventManagement: React.FC = () => {
     <button
       type="button"
       onClick={handleLoadMore}
-      className="flex justify-start items-center py-4 text-typography-800 hover:text-typography-600 disabled:opacity-50 w-[200px]"
+      className="flex justify-start items-center py-4 text-typography-700 hover:text-typography-900 disabled:opacity-50 w-[200px]"
       disabled={isFetching || !hasMore}
     >
       <span>+</span>
-      <span className="text-base ml-[5px]">
+      <span className="text-base ml-[5px] font-primary">
         {isFetching ? en.common.loading : hasMore ? en.common.loadMore : en.common.noMoreData}
       </span>
     </button>
@@ -292,7 +292,9 @@ export const EventManagement: React.FC = () => {
   return (
     <div className="py-[2px] font-primary overflow-hidden relative">
       <div>
-        <h1 className="text-2xl text-typography-900 pb-6">{en.simulation.simulationEvents}</h1>
+        <h1 className="text-2xl text-typography-900 pb-6 font-secondary">
+          {en.simulation.simulationEvents}
+        </h1>
         <ListToolbar
           searchValue={eventSearch}
           onSearchChange={onSearchChange}

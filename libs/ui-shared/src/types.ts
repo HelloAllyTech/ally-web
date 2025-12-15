@@ -15,6 +15,13 @@ export enum SearchVariant {
   LIGHT = "light",
 }
 
+export interface triggerWarning {
+  id: string;
+  name: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
 export interface SimulationDetailsModalProps {
   isOpen: boolean;
   title: string;
@@ -36,5 +43,6 @@ export interface SimulationDetailsModalProps {
   headerClassName?: string;
   contentClassName?: string;
   imageContainerClassName?: string;
+  triggerWarnings?: triggerWarning[];
   renderCustomImage?: (props: { src?: string; alt: string; className?: string }) => ReactNode;
 }

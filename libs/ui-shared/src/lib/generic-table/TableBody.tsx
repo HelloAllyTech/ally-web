@@ -67,7 +67,7 @@ const TableBody = <T extends Record<string, any>>({
           {columns.map((col, columnIndex) => (
             <td
               key={col.key as string}
-              className={`px-4 min-h-[36px] border-b border-gray-300 ${
+              className={`px-4 min-h-[36px] border-b border-gray-300 font-primary ${
                 columnIndex === columns.length - 1 ? "border-r-0" : "border-r"
               } ${col.className || ""}`}
               style={col.style}

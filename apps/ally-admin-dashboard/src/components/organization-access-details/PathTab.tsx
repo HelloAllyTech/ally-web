@@ -111,7 +111,7 @@ export const PathTab: FC<PathTabProps> = ({
 
         {/* Path Title and Description */}
         <div className="flex-1 min-w-0 overflow-hidden">
-          <h3 className="text-sm font-medium text-typography-900 mb-1 truncate">{path.title}</h3>
+          <h3 className="text-sm text-typography-900 mb-1 truncate">{path.title}</h3>
           <p className="text-sm text-typography-700 leading-relaxed line-clamp-2">
             {path.description}
           </p>
@@ -164,7 +164,7 @@ export const PathTab: FC<PathTabProps> = ({
                 <button
                   onClick={loadMore}
                   disabled={isPathsFetching}
-                  className="inline-flex font-tertiary items-center disabled:opacity-50 text-sm text-typography-600 font-medium py-1 px-1 hover:text-typography-900"
+                  className="inline-flex font-primary items-center disabled:opacity-50 text-sm text-typography-700 font-medium py-1 px-1 hover:text-typography-900"
                 >
                   + {isPathsFetching ? en.common.loading : en.common.loadMore}
                 </button>

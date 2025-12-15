@@ -119,7 +119,7 @@ export const TriggerConditionField: React.FC<TriggerConditionFieldProps> = ({
 
         return (
           <div className="flex-1 max-w-[400px] border rounded">
-            <div className="px-2">
+            <div className="px-2 mt-[4px]">
               <AutoExpandableTextarea
                 value={sentencesText}
                 onChange={handleSentencesChange}

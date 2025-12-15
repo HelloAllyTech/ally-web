@@ -306,19 +306,24 @@ jobs:
           PREVIOUS_TAG=$(git tag --sort=-v:refname | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | grep -v "^$TAG$" | head -n 1)
           
           if [ -z "$PREVIOUS_TAG" ]; then
+            echo "No previous tag found, using first commit"
             PREVIOUS_TAG=$(git rev-list --max-parents=0 HEAD)
           fi
           
-          cat > CHANGELOG.md << 'EOF'
-          ## What's Changed
+          echo "Generating changelog from $PREVIOUS_TAG to $TAG"
           
-          EOF
+          # Generate changelog with proper formatting
+          echo "## What's Changed" > CHANGELOG.md
+          echo "" >> CHANGELOG.md
           
-          git log $PREVIOUS_TAG..master --pretty=format:"- %s (%h) @%an" --no-merges -- apps/ally-admin-dashboard libs >> CHANGELOG.md
+          # Get commits since last tag (limit to 100 to avoid issues)
+          git log $PREVIOUS_TAG..master --pretty=format:"- %s (%h) @%an" --no-merges -- apps/ally-admin-dashboard libs | head -100 >> CHANGELOG.md
           
-          echo "CHANGELOG<<EOF" >> $GITHUB_OUTPUT
+          # Use a unique delimiter that won't appear in commit messages
+          DELIMITER="CHANGELOG_END_$(date +%s)"
+          echo "CHANGELOG<<${DELIMITER}" >> $GITHUB_OUTPUT
           cat CHANGELOG.md >> $GITHUB_OUTPUT
-          echo "EOF" >> $GITHUB_OUTPUT
+          echo "${DELIMITER}" >> $GITHUB_OUTPUT
 
       - name: Create Release Draft
         uses: softprops/action-gh-release@v1

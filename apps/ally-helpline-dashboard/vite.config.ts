@@ -17,6 +17,10 @@ export default defineConfig({
     assetsDir: "assets",
     rollupOptions: {
       output: {
+        // Add content hashes to filenames for cache busting
+        entryFileNames: "assets/[name]-[hash].js",
+        chunkFileNames: "assets/[name]-[hash].js",
+        assetFileNames: "assets/[name]-[hash].[ext]",
         manualChunks: {
           vendor: ["react", "react-dom"],
           ui: ["@mui/material", "@mui/icons-material"],

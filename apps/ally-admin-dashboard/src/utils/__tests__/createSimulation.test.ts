@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 
 import { SIMULATION_CREATOR_FIELD_GROUPS } from "@constants";
 import { GetSimulationByIdResponse } from "@types";
@@ -9,38 +9,31 @@ import {
   formatSimulationResponseData,
 } from "../createSimulation";
 
+// Mock feature flags to enable NEW_CREATE_SIMULATION_FLAG
+vi.mock("@ally-ui-mono/ui-shared", () => ({
+  FEATURE_FLAGS_MAP: {
+    NEW_CREATE_SIMULATION_FLAG: true,
+    TRIGGER_WARNINGS_FLAG: false,
+    CUSTOM_FIELD_FLAG: false,
+  },
+}));
+
 describe("createSimulation utils", () => {
   describe("getCreateSimulationSubSectionById", () => {
     it("should return the correct section for valid id", () => {
-      const section = getCreateSimulationSubSectionById("basic-info");
+      const section = getCreateSimulationSubSectionById("overview");
 
       expect(section).toBeDefined();
-      expect(section?.id).toBe("basic-info");
-      expect(section?.label).toBe("Basic Information");
+      expect(section?.id).toBe("overview");
+      expect(section?.label).toBe("Overview");
     });
 
-    it("should return the character identity section", () => {
-      const section = getCreateSimulationSubSectionById("character-identity");
+    it("should return the basic settings section", () => {
+      const section = getCreateSimulationSubSectionById("basic-settings");
 
       expect(section).toBeDefined();
-      expect(section?.id).toBe("character-identity");
+      expect(section?.id).toBe("basic-settings");
       expect(section?.label).toBe("Character Identity");
-    });
-
-    it("should return the traits and needs section", () => {
-      const section = getCreateSimulationSubSectionById("traits-and-needs");
-
-      expect(section).toBeDefined();
-      expect(section?.id).toBe("traits-and-needs");
-      expect(section?.label).toBe("Traits & Needs");
-    });
-
-    it("should return the conversation style section", () => {
-      const section = getCreateSimulationSubSectionById("conversation-style");
-
-      expect(section).toBeDefined();
-      expect(section?.id).toBe("conversation-style");
-      expect(section?.label).toBe("Conversation Style");
     });
 
     it("should return undefined for non-existent id", () => {
@@ -56,13 +49,13 @@ describe("createSimulation utils", () => {
     });
 
     it("should be case-sensitive", () => {
-      const section = getCreateSimulationSubSectionById("BASIC-INFO");
+      const section = getCreateSimulationSubSectionById("OVERVIEW");
 
       expect(section).toBeUndefined();
     });
 
     it("should return section with all fields", () => {
-      const section = getCreateSimulationSubSectionById("basic-info");
+      const section = getCreateSimulationSubSectionById("overview");
 
       expect(section?.fields).toBeDefined();
       expect(Array.isArray(section?.fields)).toBe(true);
@@ -233,8 +226,8 @@ describe("createSimulation utils", () => {
 
       const result = formatSimulationResponseData(mockResponse);
 
-      // Check all fields are present (title, description, coverImageUrl, coverVideoUrl, autoTerminationStatus, terminationEventId, terminationMessage + 18 metadata fields = 25 total)
-      expect(Object.keys(result)).toHaveLength(28);
+      // Check all fields are present (title, description, coverImageUrl, coverVideoUrl, autoTerminationStatus, terminationEventId, terminationMessage, customFieldGroup + 18 metadata fields = 29 total)
+      expect(Object.keys(result)).toHaveLength(29);
       expect(result.title).toBe("Test");
       expect(result.description).toBe("Test");
       expect(result.coverImageUrl).toBe("url");

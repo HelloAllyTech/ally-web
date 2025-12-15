@@ -261,7 +261,7 @@ export const Login: FunctionComponent = () => {
               "Next"
             )}
           </Button>
-          <div className="text-xs text-typography-800 mt-2">
+          <div className="text-sm text-typography-800 mt-2">
             By tapping next, you agree to Ally's{" "}
             <span
               className="text-primary-500 cursor-pointer"
@@ -296,7 +296,7 @@ export const Login: FunctionComponent = () => {
           <span className="text-2xl">Enter the security code sent to</span>
           <span className="font-semibold text-2xl">{email}</span>
         </div>
-        <div className="flex flex-col gap-2">
+        <div className="flex flex-col gap-3">
           <OTP value={otp} onChange={setOtp} />
           <div className="text-xs text-typography-900">
             This code will expire in{" "}

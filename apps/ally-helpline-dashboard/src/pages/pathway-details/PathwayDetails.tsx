@@ -139,7 +139,7 @@ export const PathwayDetails: FC = () => {
     <div className="pt-6 pb-3 flex items-center justify-between">
       <div className="flex items-center gap-2 text-sm text-typography-700">
         <button onClick={() => navigate(-1)} className="hover:text-primary-500 transition-colors">
-          Path way
+          Tracks
         </button>
         <ArrowRight />
         <span className="text-primary-500 font-medium">{pathway.title}</span>
@@ -179,7 +179,7 @@ export const PathwayDetails: FC = () => {
   };
 
   const renderPathwayInfo = () => (
-    <div className="pt-8 max-w-5xl">
+    <div className="pt-8">
       <div className="flex items-center justify-between mb-4">
         <h1 className="text-2xl font-bold text-typography-900">{pathway.title}</h1>
         {renderProgressBar()}
@@ -243,6 +243,7 @@ export const PathwayDetails: FC = () => {
         onSecondaryClick={handleCloseModal}
         onClickOutside={handleCloseModal}
         isPrimaryLoading={isStarting}
+        triggerWarnings={selectedScenario.triggerWarnings}
       />
     );
   };

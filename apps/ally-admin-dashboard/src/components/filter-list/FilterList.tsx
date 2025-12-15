@@ -48,7 +48,7 @@ export const FilterList: FC<FilterListProps> = ({
         <Close />
       </button>
       <div className="space-y-3">
-        <h3 className="text-typography-600 font-medium">{en.simulation.status}</h3>
+        <div className="text-typography-600 font-regular text-base">{en.simulation.status}</div>
         <div className="space-y-3 border-b pb-2">
           {options.map(option => (
             <label key={option.id} className="flex items-center gap-3 cursor-pointer">

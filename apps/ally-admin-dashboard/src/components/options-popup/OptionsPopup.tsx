@@ -24,7 +24,7 @@ const OptionButton: FC<{
 }> = ({ option, isLastOption, onClick }) => (
   <button
     onClick={() => onClick(option)}
-    className={`w-full flex items-center gap-3 px-4 py-3 hover:bg-background-secondary transition-colors text-left ${
+    className={`w-full font-primary flex items-center gap-3 px-4 py-3 hover:bg-background-secondary transition-colors text-left ${
       !isLastOption ? "border-b border-border-light" : ""
     }`}
   >

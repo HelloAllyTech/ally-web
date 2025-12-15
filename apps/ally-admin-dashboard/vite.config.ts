@@ -43,6 +43,14 @@ export default defineConfig(() => ({
     commonjsOptions: {
       transformMixedEsModules: true,
     },
+    rollupOptions: {
+      output: {
+        // Add content hashes to filenames for cache busting
+        entryFileNames: "assets/[name]-[hash].js",
+        chunkFileNames: "assets/[name]-[hash].js",
+        assetFileNames: "assets/[name]-[hash].[ext]",
+      },
+    },
   },
   optimizeDeps: {
     include: ["@dnd-kit/core", "@dnd-kit/sortable", "@dnd-kit/utilities"],

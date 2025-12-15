@@ -1,8 +1,17 @@
-import { SIMULATION_CREATOR_FIELD_GROUPS } from "@constants";
+import { FEATURE_FLAGS_MAP } from "@ally-ui-mono/ui-shared";
+import {
+  FORM_FIELD_IDS,
+  SIMULATION_CREATOR_FIELD_GROUPS,
+  SIMULATION_CREATOR_FIELD_GROUPS_OLD,
+} from "@constants";
 import { GetSimulationByIdResponse } from "@types";
 
+// TODO: remove when NEW_CREATE_SIMULATION_FLAG is removed
 export const getCreateSimulationSubSectionById = (id: string) => {
-  return SIMULATION_CREATOR_FIELD_GROUPS.find(section => section.id === id);
+  const fieldGroups = FEATURE_FLAGS_MAP.NEW_CREATE_SIMULATION_FLAG
+    ? SIMULATION_CREATOR_FIELD_GROUPS
+    : SIMULATION_CREATOR_FIELD_GROUPS_OLD;
+  return fieldGroups.find(section => section.id === id);
 };
 
 export const formatSimulationResponseData = (data: GetSimulationByIdResponse) => {
@@ -37,5 +46,10 @@ export const formatSimulationResponseData = (data: GetSimulationByIdResponse) =>
     terminationName: data?.terminationEvent?.name,
     isGlobal: Boolean(data?.isGlobal),
     triggerWarningIds: data?.triggerWarnings,
+    customFieldGroup: data?.customFields?.map((field, index) => ({
+      id: `${FORM_FIELD_IDS.CUSTOM_FIELD_GROUP}${index + 1}}`,
+      name: field.name,
+      value: field.value,
+    })),
   };
 };

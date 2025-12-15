@@ -1,13 +1,13 @@
 import { UseFormReturn } from "react-hook-form";
 
-import { SessionEventDetectionData, triggerWarnings } from "./simulation";
+import { SessionEventDetectionData, triggerWarning } from "./simulation";
 import { TriggerCondition } from "./triggerConditions";
 
 export type FormData = {
   coverImageUrl: string;
   coverVideoUrl?: string;
   title: string;
-  description: string;
+  challengeDescription: string;
   name: string;
   age: number;
   gender: string;
@@ -17,12 +17,16 @@ export type FormData = {
   profession: string;
   context: string;
   sessionBehaviorGuidelines: string;
+  roleInstruction: string;
+  responseLength: string;
+  yourDialogues: string;
+  openingDialogues: string;
   lifeHistory: string;
   coreMemories: string;
   personality: string;
   startingState: string;
   emotionalNeeds: string;
-  tone: string;
+  voiceInstruction: string;
   openingStatements: string;
   // voiceId: string;
   agentGoal: string;
@@ -31,8 +35,8 @@ export type FormData = {
   terminationName: string;
   terminationMessage: string;
   isGlobal: boolean;
-  triggerWarningIds: triggerWarnings[];
   languageVoices?: Record<string, string>;
+  triggerWarningIds: triggerWarning[];
 };
 
 export interface DemographicsSectionProps {
@@ -86,6 +90,7 @@ export interface Simulation {
   isPreviewEnabled: boolean;
   isAssignedToTenant: boolean;
   usage: string;
+  triggerWarnings?: triggerWarning[];
 }
 
 export interface GetSimulationsQueryParams {
@@ -118,6 +123,7 @@ export type SimulationPreviewType = {
   coverImageUrl: string;
   coverVideoUrl?: string;
   description: string;
+  triggerWarnings?: triggerWarning[];
 };
 
 export interface SimulationPreviewProps {

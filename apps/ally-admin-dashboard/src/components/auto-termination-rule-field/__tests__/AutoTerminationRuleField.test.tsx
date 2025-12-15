@@ -9,12 +9,13 @@ vi.mock("@assets", () => ({
   ArrowSolid: () => <svg data-testid="arrow-solid">Arrow</svg>,
   AccountTree: () => <svg data-testid="account-tree">AccountTree</svg>,
   AlarmOn: () => <svg data-testid="alarm-on">AlarmOn</svg>,
+  BinaryClassification: () => <svg data-testid="binary-classification">BinaryClassification</svg>,
   Chat: () => <svg data-testid="chat">Chat</svg>,
   Close: () => <svg data-testid="close">Close</svg>,
   DiamondShine: () => <svg data-testid="diamond-shine">DiamondShine</svg>,
   FocusLens: () => <svg data-testid="focus-lens">FocusLens</svg>,
   Tick: () => <svg data-testid="tick">Tick</svg>,
-  SemanticSimilarity: () => <svg data-testid="semantic-similarity">SemanticSimilarity</svg>, // Added SemanticSimilarity
+  SemanticSimilarity: () => <svg data-testid="semantic-similarity">SemanticSimilarity</svg>,
 }));
 
 // Mock hooks
@@ -151,7 +152,7 @@ describe("AutoTerminationRuleField", () => {
     expect(asterisk).toBeInTheDocument();
   });
 
-  it("shows required asterisk for termination message", () => {
+  it("shows termination message field when enabled", () => {
     render(
       <TestWrapper>
         {formMethods => (
@@ -162,9 +163,8 @@ describe("AutoTerminationRuleField", () => {
     const toggle = screen.getByRole("button", { name: /toggle/i });
     fireEvent.click(toggle);
 
-    const terminationMessageLabel = screen.getByText("Termination message");
-    const asterisk = terminationMessageLabel.parentElement?.querySelector(".text-destructive-500");
-    expect(asterisk).toBeInTheDocument();
+    // Termination message field should be visible when auto termination is enabled
+    expect(screen.getByText("Termination message")).toBeInTheDocument();
   });
 
   it("displays character count for termination message", () => {

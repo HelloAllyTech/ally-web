@@ -4,6 +4,7 @@ import { FILE_TYPE, FORM_FIELD_TYPES, en } from "@constants";
 import { FormFieldProps } from "@types";
 
 import { AutoTerminationRuleField } from "../auto-termination-rule-field";
+import { CustomFieldGroup } from "../custom-field-group";
 import { DropdownField } from "../dropdown-field";
 import { FileUpload } from "../file-upload";
 import { InputField } from "../input-field";
@@ -27,7 +28,7 @@ export const FormField: FC<FormFieldProps> = ({ config, formMethods }) => {
       case FORM_FIELD_TYPES.SELECT:
         return (
           <div className="flex flex-col gap-2">
-            <label className="text-typography-900 cursor-pointer flex items-center gap-1">
+            <label className="text-typography-900 text-base cursor-pointer flex items-center gap-1">
               {label} {isMandatory && <span className="text-destructive-500">*</span>}
             </label>
             <DropdownField
@@ -132,6 +133,8 @@ export const FormField: FC<FormFieldProps> = ({ config, formMethods }) => {
             isMandatory={isMandatory}
           />
         );
+      case FORM_FIELD_TYPES.CUSTOM_FIELD_GROUP:
+        return <CustomFieldGroup formMethods={formMethods} />;
       default:
         return null;
     }
