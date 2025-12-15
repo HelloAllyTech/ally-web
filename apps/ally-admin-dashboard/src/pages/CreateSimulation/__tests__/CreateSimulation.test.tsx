@@ -147,6 +147,18 @@ vi.mock("@constants", () => ({
     { id: "basic-settings", label: "Character Identity" },
     { id: "advanced-settings", label: "Event Configuration" },
   ],
+  SIMULATION_CREATOR_STEP_IDS: {
+    overview: "overview",
+    basicSettings: "basic-settings",
+    advancedSettings: "advanced-settings",
+  },
+  SIMULATION_CREATOR_STEP_IDS_OLD: {
+    basicInfo: "basic-info",
+    characterIdentity: "character-identity",
+    traitsNeeds: "traits-and-needs",
+    conversationStyle: "conversation-style",
+    eventConfiguration: "event-configuration",
+  },
   SIMULATION_CREATOR_FIELD_GROUPS: [
     {
       id: "overview",
@@ -155,6 +167,16 @@ vi.mock("@constants", () => ({
         { id: "title", isMandatory: true },
         { id: "description", isMandatory: true },
         { id: "age", isMandatory: false },
+      ],
+    },
+  ],
+  SIMULATION_CREATOR_FIELD_GROUPS_OLD: [
+    {
+      id: "basic-info",
+      label: "Basic Information",
+      fields: [
+        { id: "title", isMandatory: true },
+        { id: "description", isMandatory: true },
       ],
     },
   ],

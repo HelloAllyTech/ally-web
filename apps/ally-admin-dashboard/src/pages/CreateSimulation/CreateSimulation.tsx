@@ -20,7 +20,16 @@ import {
 } from "@components";
 import { CreateSimulationSubSection, SimulationEventMapTable } from "@components";
 import { ButtonVariant } from "@components/types";
-import { en, ROUTES, StepperList, SIMULATION_CREATOR_FIELD_GROUPS } from "@constants";
+import {
+  en,
+  ROUTES,
+  StepperList,
+  StepperListOld,
+  SIMULATION_CREATOR_FIELD_GROUPS,
+  SIMULATION_CREATOR_STEP_IDS,
+  SIMULATION_CREATOR_STEP_IDS_OLD,
+  SIMULATION_CREATOR_FIELD_GROUPS_OLD,
+} from "@constants";
 import { useDebounce } from "@hooks";
 import { SimulationStatus, SimulationPreviewType, triggerWarning } from "@types";
 import {
@@ -32,16 +41,19 @@ import {
   isNonEmptyArray,
 } from "@utils";
 
-const stepIds = {
-  overview: "overview",
-  basicSettings: "basic-settings",
-  advancedSettings: "advanced-settings",
-};
+// TODO: remove when NEW_CREATE_SIMULATION_FLAG is removed
+const stepIds: any = FEATURE_FLAGS_MAP.NEW_CREATE_SIMULATION_FLAG
+  ? SIMULATION_CREATOR_STEP_IDS
+  : SIMULATION_CREATOR_STEP_IDS_OLD;
 
 // Get all mandatory field IDs from the configuration
 const getMandatoryFieldIds = () => {
   const mandatoryFields: string[] = [];
-  SIMULATION_CREATOR_FIELD_GROUPS.forEach(group => {
+  // TODO: remove when NEW_CREATE_SIMULATION_FLAG is removed
+  (FEATURE_FLAGS_MAP.NEW_CREATE_SIMULATION_FLAG
+    ? SIMULATION_CREATOR_FIELD_GROUPS
+    : SIMULATION_CREATOR_FIELD_GROUPS_OLD
+  ).forEach(group => {
     group.fields.forEach(field => {
       if (field.isMandatory) {
         mandatoryFields.push(field.id);
@@ -55,7 +67,10 @@ export const CreateSimulation: FC = () => {
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
   const [simulationId, setSimulationId] = useState<string | undefined>(id);
-  const [currentStep, setCurrentStep] = useState(stepIds.overview);
+  // TODO: remove when NEW_CREATE_SIMULATION_FLAG is removed
+  const [currentStep, setCurrentStep] = useState(
+    FEATURE_FLAGS_MAP.NEW_CREATE_SIMULATION_FLAG ? stepIds.overview : stepIds.basicInfo,
+  );
   const [showDiscardPopup, setShowDiscardPopup] = useState(false);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [previewSimulation, setPreviewSimulation] = useState<SimulationPreviewType | null>(null);
@@ -168,7 +183,13 @@ export const CreateSimulation: FC = () => {
     }));
 
     const simulationData = {
-      ...extractValidData(SIMULATION_CREATOR_FIELD_GROUPS, restForm),
+      // TODO: remove when NEW_CREATE_SIMULATION_FLAG is removed
+      ...extractValidData(
+        FEATURE_FLAGS_MAP.NEW_CREATE_SIMULATION_FLAG
+          ? SIMULATION_CREATOR_FIELD_GROUPS
+          : SIMULATION_CREATOR_FIELD_GROUPS_OLD,
+        restForm,
+      ),
       openingStatements: openingStatementsArray,
       ...(FEATURE_FLAGS_MAP.CUSTOM_FIELD_FLAG && { customFieldGroup: customFieldGroupList }),
       ...(FEATURE_FLAGS_MAP.TRIGGER_WARNINGS_FLAG && { triggerWarningIds: triggerWarning }),
@@ -248,7 +269,14 @@ export const CreateSimulation: FC = () => {
   };
 
   const handleStepClick = async (stepId: string) => {
-    if (stepId === stepIds.advancedSettings && !simulationId) {
+    // TODO: remove when NEW_CREATE_SIMULATION_FLAG is removed
+    if (
+      stepId ===
+        (FEATURE_FLAGS_MAP.NEW_CREATE_SIMULATION_FLAG
+          ? stepIds.advancedSettings
+          : stepIds.eventConfiguration) &&
+      !simulationId
+    ) {
       const response = await handleSaveDraft();
       if (response) {
         setCurrentStep(stepId);
@@ -263,9 +291,14 @@ export const CreateSimulation: FC = () => {
   };
 
   const handlePrevious = () => {
-    const currentIndex = StepperList.findIndex(step => step.id === currentStep);
+    // TODO: remove when NEW_CREATE_SIMULATION_FLAG is removed
+    const currentIndex = (
+      FEATURE_FLAGS_MAP.NEW_CREATE_SIMULATION_FLAG ? StepperList : StepperListOld
+    ).findIndex(step => step.id === currentStep);
     if (currentIndex > 0) {
-      const previousStep = StepperList[currentIndex - 1];
+      const previousStep = (
+        FEATURE_FLAGS_MAP.NEW_CREATE_SIMULATION_FLAG ? StepperList : StepperListOld
+      )[currentIndex - 1];
       handleStepClick(previousStep.id);
     }
   };
@@ -286,6 +319,11 @@ export const CreateSimulation: FC = () => {
   const renderCurrentStep = () => {
     const simulationSubSectionData = getCreateSimulationSubSectionById(currentStep);
     switch (currentStep) {
+      // TODO: remove when NEW_CREATE_SIMULATION_FLAG is removed (basicInfo, characterIdentity, traitsNeeds, conversationStyle)
+      case stepIds.basicInfo:
+      case stepIds.characterIdentity:
+      case stepIds.traitsNeeds:
+      case stepIds.conversationStyle:
       case stepIds.overview:
       case stepIds.basicSettings:
         return renderStep(
@@ -295,6 +333,8 @@ export const CreateSimulation: FC = () => {
             formMethods={formMethods}
           />,
         );
+      // TODO: remove when NEW_CREATE_SIMULATION_FLAG is removed (eventConfiguration)
+      case stepIds.eventConfiguration:
       case stepIds.advancedSettings:
         return <SimulationEventMapTable simulationId={simulationId} />;
       default:
@@ -302,14 +342,25 @@ export const CreateSimulation: FC = () => {
     }
   };
 
-  const isLastStep = currentStep === stepIds.advancedSettings;
+  // TODO: remove when NEW_CREATE_SIMULATION_FLAG is removed
+  const isLastStep =
+    currentStep ===
+    (FEATURE_FLAGS_MAP.NEW_CREATE_SIMULATION_FLAG
+      ? stepIds.advancedSettings
+      : stepIds.eventConfiguration);
 
   const handleNext = async () => {
     if (isLastStep) {
       handleSubmit(handlePublish)();
     } else {
-      const nextStep = StepperList.findIndex(step => step.id === currentStep) + 1;
-      handleStepClick(StepperList[nextStep].id);
+      // TODO: remove when NEW_CREATE_SIMULATION_FLAG is removed
+      const nextStep =
+        (FEATURE_FLAGS_MAP.NEW_CREATE_SIMULATION_FLAG ? StepperList : StepperListOld).findIndex(
+          step => step.id === currentStep,
+        ) + 1;
+      handleStepClick(
+        (FEATURE_FLAGS_MAP.NEW_CREATE_SIMULATION_FLAG ? StepperList : StepperListOld)[nextStep].id,
+      );
     }
   };
 
@@ -345,7 +396,8 @@ export const CreateSimulation: FC = () => {
 
       <div className="flex h-[calc(100vh-100px)]">
         <VerticalStepper
-          steps={StepperList}
+          // TODO: remove when NEW_CREATE_SIMULATION_FLAG is removed
+          steps={FEATURE_FLAGS_MAP.NEW_CREATE_SIMULATION_FLAG ? StepperList : StepperListOld}
           currentStep={currentStep}
           onStepClick={handleStepClick}
         />
@@ -355,7 +407,8 @@ export const CreateSimulation: FC = () => {
           <Footer
             onPrevious={handlePrevious}
             onNext={handleNext}
-            showPrevious={currentStep !== stepIds.overview}
+            // TODO: remove when NEW_CREATE_SIMULATION_FLAG is removed
+            showPrevious={currentStep !== stepIds.overview && currentStep !== stepIds.basicInfo}
             showNext={true}
             isNextDisabled={false}
             isLastStep={isLastStep}
