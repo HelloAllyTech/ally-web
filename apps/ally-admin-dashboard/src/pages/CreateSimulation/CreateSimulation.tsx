@@ -374,7 +374,9 @@ export const CreateSimulation: FC = () => {
   };
 
   const handlePreview = async () => {
-    const response = await saveSimulationChanges(SimulationStatus.DRAFT);
+    const response = await saveSimulationChanges(
+      adminSimulationByIdData?.status || SimulationStatus.DRAFT,
+    );
     const id = simulationId || (response && response?.data?.[0]?.id);
     if (id) {
       const formData = formMethods.getValues();
