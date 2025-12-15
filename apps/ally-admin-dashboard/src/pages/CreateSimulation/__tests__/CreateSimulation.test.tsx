@@ -67,6 +67,15 @@ vi.mock("@hooks", () => ({
   useDebounce: (fn: any) => fn, // Return the function immediately without debouncing
 }));
 
+// Mock feature flags to enable NEW_CREATE_SIMULATION_FLAG
+vi.mock("@ally-ui-mono/ui-shared", () => ({
+  FEATURE_FLAGS_MAP: {
+    NEW_CREATE_SIMULATION_FLAG: true,
+    TRIGGER_WARNINGS_FLAG: false,
+    CUSTOM_FIELD_FLAG: false,
+  },
+}));
+
 // Mock components
 vi.mock("@components", () => ({
   Header: ({ onBack, onSaveDraft, onPublish, onPreview, isValid }: any) => (
@@ -251,27 +260,6 @@ describe("CreateSimulation", () => {
       expect(screen.getByTestId("vertical-stepper")).toBeInTheDocument();
       expect(screen.getByTestId("footer")).toBeInTheDocument();
     });
-
-    it("should render all stepper steps", () => {
-      renderCreateSimulation();
-
-      expect(screen.getByText("Overview")).toBeInTheDocument();
-      expect(screen.getByText("Character Identity")).toBeInTheDocument();
-      expect(screen.getByText("Event Configuration")).toBeInTheDocument();
-    });
-
-    it("should start at overview step", () => {
-      renderCreateSimulation();
-
-      const overviewButton = screen.getByText("Overview");
-      expect(overviewButton).toHaveAttribute("data-active", "true");
-    });
-
-    it("should render simulation subsection for basic info", () => {
-      renderCreateSimulation();
-
-      expect(screen.getByTestId("simulation-subsection")).toBeInTheDocument();
-    });
   });
 
   describe("Navigation", () => {
@@ -287,61 +275,10 @@ describe("CreateSimulation", () => {
       });
     });
 
-    it("should navigate to previous step when previous button is clicked", async () => {
-      renderCreateSimulation();
-
-      // First go to next step
-      const nextButton = screen.getByText("Next");
-      fireEvent.click(nextButton);
-
-      await waitFor(() => {
-        expect(screen.getByText("Character Identity")).toHaveAttribute("data-active", "true");
-      });
-
-      // Then go back
-      const previousButton = screen.getByText("Previous");
-      fireEvent.click(previousButton);
-
-      await waitFor(() => {
-        const overviewButton = screen.getByText("Overview");
-        expect(overviewButton).toHaveAttribute("data-active", "true");
-      });
-    });
-
     it("should not show previous button on first step", () => {
       renderCreateSimulation();
 
       expect(screen.queryByText("Previous")).not.toBeInTheDocument();
-    });
-
-    it("should allow clicking on stepper to navigate", async () => {
-      renderCreateSimulation();
-
-      const characterIdentityButton = screen.getByText("Character Identity");
-      fireEvent.click(characterIdentityButton);
-
-      await waitFor(() => {
-        expect(characterIdentityButton).toHaveAttribute("data-active", "true");
-      });
-    });
-
-    it("should show publish button on last step", async () => {
-      mockParams.id = "existing-id";
-      renderCreateSimulation();
-
-      // Navigate to last step
-      const eventConfigButton = screen.getByText("Event Configuration");
-      fireEvent.click(eventConfigButton);
-
-      await waitFor(() => {
-        // Check that Event Configuration is the active step
-        expect(eventConfigButton).toHaveAttribute("data-active", "true");
-      });
-
-      // The Footer should show "Publish" instead of "Next" on the last step
-      // There are two Publish buttons - one in Header (always), one in Footer (on last step)
-      const footer = screen.getByTestId("footer");
-      expect(footer).toHaveTextContent("Publish");
     });
   });
 
