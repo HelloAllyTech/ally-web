@@ -147,6 +147,13 @@ vi.mock("@constants", () => ({
     { id: "basic-settings", label: "Character Identity" },
     { id: "advanced-settings", label: "Event Configuration" },
   ],
+  StepperListOld: [
+    { id: "basic-info", label: "Basic Information" },
+    { id: "character-identity", label: "Character Identity" },
+    { id: "traits-and-needs", label: "Traits & Needs" },
+    { id: "conversation-style", label: "Conversation Style" },
+    { id: "event-configuration", label: "Event Configuration" },
+  ],
   SIMULATION_CREATOR_STEP_IDS: {
     overview: "overview",
     basicSettings: "basic-settings",

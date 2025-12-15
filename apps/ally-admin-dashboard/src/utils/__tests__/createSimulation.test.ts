@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 
 import { SIMULATION_CREATOR_FIELD_GROUPS } from "@constants";
 import { GetSimulationByIdResponse } from "@types";
@@ -8,6 +8,15 @@ import {
   getCreateSimulationSubSectionById,
   formatSimulationResponseData,
 } from "../createSimulation";
+
+// Mock feature flags to enable NEW_CREATE_SIMULATION_FLAG
+vi.mock("@ally-ui-mono/ui-shared", () => ({
+  FEATURE_FLAGS_MAP: {
+    NEW_CREATE_SIMULATION_FLAG: true,
+    TRIGGER_WARNINGS_FLAG: false,
+    CUSTOM_FIELD_FLAG: false,
+  },
+}));
 
 describe("createSimulation utils", () => {
   describe("getCreateSimulationSubSectionById", () => {
