@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import type { MutableRefObject, ReactNode } from "react";
 
 import { RoomStatus } from "./SimulationInterface";
 
@@ -57,6 +57,7 @@ export interface SimulationPageProps {
   onEndSimulation: () => Promise<void> | void;
   renderWarningDialog: (params: RenderWarningDialogParams) => ReactNode;
   renderFooter?: () => ReactNode;
+  endSessionButtonRef: MutableRefObject<boolean>;
 }
 
 export interface SimulationControlsProps {

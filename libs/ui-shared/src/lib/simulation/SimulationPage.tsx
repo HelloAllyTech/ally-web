@@ -65,6 +65,7 @@ export const SimulationPage: FC<SimulationPageProps> = ({
   onEndSimulation,
   renderWarningDialog,
   renderFooter,
+  endSessionButtonRef,
 }) => {
   const [isMuted, setIsMuted] = useState(false);
   const [isWarning, setIsWarning] = useState(false);
@@ -110,6 +111,7 @@ export const SimulationPage: FC<SimulationPageProps> = ({
   };
 
   const handleEndSimulation = async () => {
+    endSessionButtonRef.current = true;
     endAudio.current?.play();
     setTimeout(async () => {
       await onEndSimulation?.();
