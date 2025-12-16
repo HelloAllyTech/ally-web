@@ -4,13 +4,17 @@ import { Room, RoomEvent } from "livekit-client";
 import { useParams, useNavigate } from "react-router-dom";
 
 import { logger } from "@ally-ui-mono/ui-shared";
+import { AutoTermination } from "@ally-ui-mono/ui-shared/assets";
 import { LIVEKIT_CONFIG, LOCAL_STORAGE_KEYS, ROUTES } from "@constants";
 import { RoomStatus } from "@types";
 import { decodeUint8ToJson } from "@utils";
 
 import { LiveKitEvent, UseLiveKitRoomReturn } from "./types";
 
-export const useLiveKitRoom = (handleDisconnect: () => void): UseLiveKitRoomReturn => {
+export const useLiveKitRoom = (
+  handleDisconnect: () => void,
+  endSessionButtonRef: any,
+): UseLiveKitRoomReturn => {
   const navigate = useNavigate();
 
   const [room] = useState(() => new Room(LIVEKIT_CONFIG));
@@ -20,6 +24,7 @@ export const useLiveKitRoom = (handleDisconnect: () => void): UseLiveKitRoomRetu
   const [score, setScore] = useState<number>(0);
 
   const lastEventTimestampRef = useRef<number | null>(null);
+  const autoTerminationAudio = useRef<HTMLAudioElement | null>(new Audio(AutoTermination));
 
   const { id } = useParams();
 
@@ -44,12 +49,15 @@ export const useLiveKitRoom = (handleDisconnect: () => void): UseLiveKitRoomRetu
   }, []);
 
   const onRoomDisconnect = useCallback(() => {
+    if (!endSessionButtonRef.current) autoTerminationAudio.current?.play();
     logger.info("Disconnected from room");
     if (room.localParticipant) {
       room.localParticipant.setMicrophoneEnabled(false);
     }
     setRoomStatus(RoomStatus.DISCONNECTED);
-    handleDisconnect();
+    setTimeout(() => {
+      handleDisconnect();
+    }, 4000);
   }, []);
 
   const cleanupRoom = useCallback(() => {
