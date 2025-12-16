@@ -12,3 +12,7 @@ export enum UserRole {
   ADMIN = "ADMIN",
   LEARNER = "LEARNER",
 }
+
+export interface UserPreferences {
+  [key: string]: any;
+}

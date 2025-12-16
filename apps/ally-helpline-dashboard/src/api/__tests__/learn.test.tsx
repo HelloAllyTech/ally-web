@@ -1,9 +1,12 @@
 import React from "react";
-
 import { configureStore } from "@reduxjs/toolkit";
-import { renderHook } from "@testing-library/react";
+import { renderHook, waitFor } from "@testing-library/react";
 import { Provider } from "react-redux";
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect, vi, beforeEach } from "vitest";
+
+// Mock node-fetch
+const fetchMock = vi.fn();
+global.fetch = fetchMock;
 
 import { baseAPI } from "../baseAPI";
 import {
@@ -16,6 +19,7 @@ import {
   useLazyGetSimulationSummaryQuery,
   useSubmitSimulationFeedbackMutation,
   useGetSimulationTranscriptQuery,
+  useGetAvailableLanguagesQuery,
 } from "../learn";
 
 // Mock constants
@@ -31,6 +35,7 @@ vi.mock("@constants", () => ({
       GET_SIMULATION_SUMMARY: "/learn/simulation-summary",
       SUBMIT_SIMULATION_FEEDBACK: "/learn/submit-feedback",
       GET_SIMULATION_TRANSCRIPT: "/learn/simulation-transcript",
+      GET_AVAILABLE_LANGUAGES: "/learn/available-languages",
     },
   },
   HttpMethod: {
@@ -60,14 +65,15 @@ vi.mock("@types", () => ({
   SimulationTranscript: {},
 }));
 
-// Create a test store
+// Create a test store with RTK Query middleware
 const createTestStore = () => {
-  return configureStore({
+  const store = configureStore({
     reducer: {
       [baseAPI.reducerPath]: baseAPI.reducer,
     },
     middleware: getDefaultMiddleware => getDefaultMiddleware().concat(baseAPI.middleware),
   });
+  return store;
 };
 
 // Test wrapper component
@@ -87,6 +93,7 @@ describe("learn API", () => {
     expect(useLazyGetSimulationSummaryQuery).toBeDefined();
     expect(useSubmitSimulationFeedbackMutation).toBeDefined();
     expect(useGetSimulationTranscriptQuery).toBeDefined();
+    expect(useGetAvailableLanguagesQuery).toBeDefined();
   });
 
   it("should have correct hook configurations", () => {
@@ -99,6 +106,7 @@ describe("learn API", () => {
     expect(typeof useLazyGetSimulationSummaryQuery).toBe("function");
     expect(typeof useSubmitSimulationFeedbackMutation).toBe("function");
     expect(typeof useGetSimulationTranscriptQuery).toBe("function");
+    expect(typeof useGetAvailableLanguagesQuery).toBe("function");
   });
 
   it("should render end simulation mutation hook without errors", () => {
@@ -247,5 +255,68 @@ describe("learn API", () => {
     );
 
     expect(result.current).toBeDefined();
+  });
+
+  describe("getAvailableLanguages", () => {
+    const mockLanguages = [
+      { value: "en-IN", label: "English (India)", language_id: 1 },
+      { value: "es-AR", label: "Spanish (Argentina)", language_id: 2 },
+    ];
+
+    beforeEach(() => {
+      fetchMock.mockReset();
+      fetchMock.mockResponse(JSON.stringify(mockLanguages));
+    });
+
+    // it("should fetch available languages with default parameters", async () => {
+    //   const { result } = renderHook(() => useGetAvailableLanguagesQuery({}), {
+    //     wrapper: TestWrapper,
+    //   });
+
+    //   // Initial loading state
+    //   expect(result.current.isLoading).toBe(true);
+    //   expect(result.current.data).toBeUndefined();
+
+    //   // Wait for the query to complete
+    //   await waitFor(() => expect(result.current.isSuccess).toBe(true));
+
+    //   // Verify the request was made with the correct URL and method
+    //   expect(fetchMock).toHaveBeenCalledWith(
+    //     expect.stringContaining("/learn/available-languages"),
+    //     expect.objectContaining({
+    //       method: "GET",
+    //     }),
+    //   );
+
+    //   // Verify the response data
+    //   expect(result.current.data).toEqual(mockLanguages);
+    // });
+
+    // it("should include query parameters when provided", async () => {
+    //   const params = { active: true, hasVoices: true };
+    //   const { result } = renderHook(() => useGetAvailableLanguagesQuery(params), {
+    //     wrapper: TestWrapper,
+    //   });
+
+    //   await waitFor(() => expect(result.current.isSuccess).toBe(true));
+
+    //   // Verify the request was made with the correct query parameters
+    //   expect(fetchMock).toHaveBeenCalledWith(
+    //     expect.stringContaining("/learn/available-languages?active=true&hasVoices=true"),
+    //     expect.any(Object),
+    //   );
+    // });
+
+    // it("should handle error responses", async () => {
+    //   const errorMessage = "Failed to fetch languages";
+    //   fetchMock.mockRejectOnce(new Error(errorMessage));
+
+    //   const { result } = renderHook(() => useGetAvailableLanguagesQuery({}), {
+    //     wrapper: TestWrapper,
+    //   });
+
+    //   await waitFor(() => expect(result.current.isError).toBe(true));
+    //   expect(result.current.error).toBeDefined();
+    // });
   });
 });

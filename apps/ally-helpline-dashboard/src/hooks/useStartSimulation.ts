@@ -11,6 +11,8 @@ import { useUser } from "@hooks";
 interface StartSimulationParams {
   scenarioId: number;
   scenarioPathSessionItemId?: string;
+  language?: string;
+  languageId?: number;
 }
 
 interface SimulationMetadata {
@@ -58,12 +60,17 @@ export const useStartSimulation = (
   }) => {
     if (isStarting) return;
     setIsStarting(true);
-
     try {
-      const { scenarioId, scenarioPathSessionItemId } = params;
-
-      const dataParams: { scenarioId: number; scenarioPathSessionItemId?: string } = {
+      const { scenarioId, scenarioPathSessionItemId, language, languageId } = params;
+      const dataParams: {
+        scenarioId: number;
+        scenarioPathSessionItemId?: string;
+        language?: string;
+        languageId?: number;
+      } = {
         scenarioId,
+        language,
+        languageId,
       };
 
       if (scenarioPathSessionItemId?.length > 0) {

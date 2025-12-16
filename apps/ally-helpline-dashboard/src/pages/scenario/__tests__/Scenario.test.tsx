@@ -14,6 +14,7 @@
  */
 
 import { render, screen, waitFor, fireEvent } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { Bolt } from "lucide-react";
 import { BrowserRouter } from "react-router-dom";
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
@@ -24,10 +25,20 @@ import { Scenario } from "../Scenario";
 
 // Mock react-router-dom
 const mockNavigate = vi.fn();
-const mockUseParams = vi.fn(() => ({ scenarioId: "123" }));
+const mockUseParams = vi.fn(() => ({
+  scenarioId: "123",
+}));
+const mockUseLocation = vi.fn(() => ({
+  state: null,
+  key: "",
+  pathname: "",
+  search: "",
+  hash: "",
+}));
 
 vi.mock("react-router-dom", () => ({
   useNavigate: () => mockNavigate,
+  useLocation: mockUseLocation,
   useParams: () => mockUseParams(),
   BrowserRouter: ({ children }: { children: React.ReactNode }) => (
     <div data-testid="browser-router">{children}</div>
@@ -111,6 +122,17 @@ vi.mock("@hooks", () => ({
   }),
 }));
 
+// Mock DropdownField component
+const mockDropdownField = vi.fn(({ options, value, onChange }) => (
+  <select data-testid="language-dropdown" value={value} onChange={e => onChange(e.target.value)}>
+    {options.map((option: string) => (
+      <option key={option} value={option}>
+        {option}
+      </option>
+    ))}
+  </select>
+));
+
 // Mock components
 vi.mock("@components", () => ({
   LoginDialog: vi.fn(({ isOpen, onClose, onSuccess }) => (
@@ -148,6 +170,7 @@ vi.mock("@components", () => ({
       </span>
     </div>
   ),
+  DropdownField: mockDropdownField,
   ConfirmationDialog: vi.fn(
     ({
       isOpen,
@@ -264,6 +287,104 @@ describe("Scenario Component", () => {
 
   afterEach(() => {
     vi.restoreAllMocks();
+  });
+
+  describe("Language Dropdown", () => {
+    const mockLanguages = [
+      { language_id: 1, value: "en-US", label: "English (US)" },
+      { language_id: 2, value: "hi-IN", label: "Hindi (India)" },
+    ];
+
+    beforeEach(() => {
+      mockUseLocation.mockReturnValue({
+        state: {
+          languages: mockLanguages,
+          selectedLanguage: mockLanguages[0],
+        },
+        key: "",
+        pathname: "",
+        search: "",
+        hash: "",
+      });
+    });
+
+    it("should render the language dropdown with options", () => {
+      render(
+        <TestWrapper>
+          <Scenario />
+        </TestWrapper>,
+      );
+
+      const dropdown = screen.getByTestId("language-dropdown");
+      expect(dropdown).toBeInTheDocument();
+
+      const options = screen.getAllByRole("option");
+      expect(options).toHaveLength(mockLanguages.length);
+      expect(options[0]).toHaveTextContent("English (US)");
+      expect(options[1]).toHaveTextContent("Hindi (India)");
+    });
+
+    it("should set initial selected language from props", () => {
+      const selectedLanguage = mockLanguages[1];
+      mockUseLocation.mockReturnValue({
+        state: {
+          languages: mockLanguages,
+          selectedLanguage,
+        },
+        key: "",
+        pathname: "",
+        search: "",
+        hash: "",
+      });
+
+      render(
+        <TestWrapper>
+          <Scenario />
+        </TestWrapper>,
+      );
+
+      const dropdown = screen.getByTestId("language-dropdown") as HTMLSelectElement;
+      expect(dropdown.value).toBe(selectedLanguage.label);
+    });
+
+    it("should update selected language when changed", async () => {
+      const user = userEvent.setup();
+      render(
+        <TestWrapper>
+          <Scenario />
+        </TestWrapper>,
+      );
+
+      const dropdown = screen.getByTestId("language-dropdown");
+      await user.selectOptions(dropdown, ["Hindi (India)"]);
+
+      // Verify the mock was called with the correct language
+      expect(mockDropdownField).toHaveBeenLastCalledWith(
+        expect.objectContaining({
+          value: "English (US)",
+          options: ["English (US)", "Hindi (India)"],
+        }),
+        {},
+      );
+    });
+
+    it("should handle missing languages prop gracefully", () => {
+      mockUseLocation.mockReturnValue({
+        state: {},
+        key: "",
+        pathname: "",
+        search: "",
+        hash: "",
+      });
+
+      expect(() => {
+        render(
+          <TestWrapper>
+            <Scenario />
+          </TestWrapper>,
+        );
+      }).not.toThrow();
+    });
   });
 
   /**
@@ -875,6 +996,104 @@ describe("Scenario Component", () => {
       );
 
       expect(container1.innerHTML).toBe(container2.innerHTML);
+    });
+  });
+
+  describe("Language Dropdown", () => {
+    const mockLanguages = [
+      { language_id: 1, value: "en-US", label: "English (US)" },
+      { language_id: 2, value: "hi-IN", label: "Hindi (India)" },
+    ];
+
+    beforeEach(() => {
+      mockUseLocation.mockReturnValue({
+        state: {
+          languages: mockLanguages,
+          selectedLanguage: mockLanguages[0],
+        },
+        key: "",
+        pathname: "",
+        search: "",
+        hash: "",
+      });
+    });
+
+    it("should render the language dropdown with options", () => {
+      render(
+        <TestWrapper>
+          <Scenario />
+        </TestWrapper>,
+      );
+
+      const dropdown = screen.getByTestId("language-dropdown");
+      expect(dropdown).toBeInTheDocument();
+
+      const options = screen.getAllByRole("option");
+      expect(options).toHaveLength(mockLanguages.length);
+      expect(options[0]).toHaveTextContent("English (US)");
+      expect(options[1]).toHaveTextContent("Hindi (India)");
+    });
+
+    it("should set initial selected language from props", () => {
+      const selectedLanguage = mockLanguages[1];
+      mockUseLocation.mockReturnValue({
+        state: {
+          languages: mockLanguages,
+          selectedLanguage,
+        },
+        key: "",
+        pathname: "",
+        search: "",
+        hash: "",
+      });
+
+      render(
+        <TestWrapper>
+          <Scenario />
+        </TestWrapper>,
+      );
+
+      const dropdown = screen.getByTestId("language-dropdown") as HTMLSelectElement;
+      expect(dropdown.value).toBe(selectedLanguage.label);
+    });
+
+    it("should update selected language when changed", async () => {
+      const user = userEvent.setup();
+      render(
+        <TestWrapper>
+          <Scenario />
+        </TestWrapper>,
+      );
+
+      const dropdown = screen.getByTestId("language-dropdown");
+      await user.selectOptions(dropdown, ["Hindi (India)"]);
+
+      // Verify the mock was called with the correct language
+      expect(mockDropdownField).toHaveBeenLastCalledWith(
+        expect.objectContaining({
+          value: "English (US)",
+          options: ["English (US)", "Hindi (India)"],
+        }),
+        {},
+      );
+    });
+
+    it("should handle missing languages prop gracefully", () => {
+      mockUseLocation.mockReturnValue({
+        state: {},
+        key: "",
+        pathname: "",
+        search: "",
+        hash: "",
+      });
+
+      expect(() => {
+        render(
+          <TestWrapper>
+            <Scenario />
+          </TestWrapper>,
+        );
+      }).not.toThrow();
     });
   });
 });

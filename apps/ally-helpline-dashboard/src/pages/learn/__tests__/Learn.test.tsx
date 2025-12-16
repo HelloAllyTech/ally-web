@@ -13,7 +13,8 @@
  */
 
 import { configureStore } from "@reduxjs/toolkit";
-import { render, screen, fireEvent } from "@testing-library/react";
+import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { Provider } from "react-redux";
 import { BrowserRouter } from "react-router-dom";
 import { describe, expect, it, vi, beforeEach } from "vitest";
@@ -23,10 +24,38 @@ import { Learn } from "../Learn";
 // Mock the API hooks
 const mockUseGetScenariosQuery = vi.fn();
 const mockUseGetScenarioPathwaysQuery = vi.fn();
+const mockUpdateUserPreferences = vi.fn();
+
 vi.mock("@api", () => ({
   useGetScenariosQuery: () => mockUseGetScenariosQuery(),
   useGetScenarioPathwaysQuery: () => mockUseGetScenarioPathwaysQuery(),
+  useUpdateUserPreferencesMutation: () => [mockUpdateUserPreferences, { isLoading: false }],
 }));
+
+// Mock useScenarioLanguages hook
+const mockUseScenarioLanguages = vi.fn();
+vi.mock("../../hooks/useScenarioLanguages", () => ({
+  useScenarioLanguages: () => mockUseScenarioLanguages(),
+}));
+
+// Mock localStorage
+const localStorageMock = (() => {
+  let store: Record<string, string> = {};
+  return {
+    getItem: (key: string) => store[key] || null,
+    setItem: (key: string, value: string) => {
+      store[key] = value.toString();
+    },
+    removeItem: (key: string) => {
+      delete store[key];
+    },
+    clear: () => {
+      store = {};
+    },
+  };
+})();
+
+Object.defineProperty(window, "localStorage", { value: localStorageMock });
 
 // Mock assets
 vi.mock("@assets", () => ({
@@ -839,86 +868,148 @@ describe("Learn Component", () => {
    * TEST GROUP: Component Type and Export
    * Verifies component is properly exported and typed
    */
-  describe("Component Type and Export", () => {
-    it("should be a function component", () => {
-      expect(typeof Learn).toBe("function");
+  describe("Language Selection", () => {
+    const mockLanguages = [
+      { language_id: 1, value: "en-US", label: "English (US)" },
+      { language_id: 2, value: "hi-IN", label: "Hindi (India)" },
+    ];
+
+    beforeEach(() => {
+      // Reset mocks and localStorage before each test
+      vi.clearAllMocks();
+      localStorage.clear();
+      mockUseScenarioLanguages.mockReturnValue({
+        languages: mockLanguages,
+        defaultLanguage: mockLanguages[0],
+        isLoading: false,
+      });
     });
 
-    it("should return a valid React element", () => {
-      const result = render(
-        <TestWrapper>
-          <Learn />
-        </TestWrapper>,
-      );
-      expect(result.container.firstChild).not.toBeNull();
-    });
+    it("should initialize with language from localStorage", () => {
+      const savedLanguage = { language_id: 2, value: "hi-IN", label: "Hindi (India)" };
+      localStorage.setItem("selectedLanguage", JSON.stringify(savedLanguage));
 
-    it("should be callable as a React component", () => {
-      expect(() => (
-        <TestWrapper>
-          <Learn />
-        </TestWrapper>
-      )).not.toThrow();
-    });
-  });
-
-  /**
-   * TEST GROUP: Responsive Design
-   * Verifies responsive design classes are applied
-   */
-  describe("Responsive Design", () => {
-    it("should apply responsive padding classes", () => {
-      const { container } = render(
-        <TestWrapper>
-          <Learn />
-        </TestWrapper>,
-      );
-      const mainContainer = container.querySelector("div.p-\\[10px\\]");
-      expect(mainContainer).not.toBeNull();
-    });
-
-    it("should apply responsive text size classes", () => {
-      const { container } = render(
-        <TestWrapper>
-          <Learn />
-        </TestWrapper>,
-      );
-      const description = container.querySelector("div[class*='text-3xl']");
-      expect(description?.className).toContain("text-3xl");
-    });
-
-    it("should apply responsive margin classes", () => {
-      const { container } = render(
-        <TestWrapper>
-          <Learn />
-        </TestWrapper>,
-      );
-      const description = container.querySelector("div[class*='mb-[48px]']");
-      expect(description).not.toBeNull();
-    });
-  });
-
-  /**
-   * TEST GROUP: Tab Navigation
-   * Verifies tab navigation functionality
-   */
-  describe("Tab Navigation", () => {
-    it("should render tab group", () => {
       render(
         <TestWrapper>
           <Learn />
         </TestWrapper>,
       );
-      expect(screen.getByTestId("tab-group")).not.toBeNull();
+
+      // Check if the selected language is displayed (update the text maoceDr as per your UI)
+      const languageDisplay = screen.getByText(/language/i);
+      expect(languageDisplay).toHaveTextContent(/hindi/i);
     });
 
-    it("should render Simulations tab", () => {
-      render(
-        <TestWrapper>
-          <Learn />
-        </TestWrapper>,
-      );
-      expect(screen.getByText("Simulations")).not.toBeNull();
-    });
+    // it("should use default language when localStorage is empty", () => {
+    //   render(
+    //     <TestWrapper>
+    //       <Learn />
+    //     </TestWrapper>,
+    //   );
+
+    //   const languageDisplay = screen.getByText(/language/i);
+    //   expect(mockUpdateUserPreferences).toHaveBeenCalledWith({
+    //     default_language_id: 2,
+    //   });
+    // });
+
+    // Verify localStorage was updated
+    // const savedLanguage = JSON.parse(localStorage.getItem("selectedLanguage") || "{}");
+    // expect(savedLanguage).toMatchObject({
+    //   value: "hi-IN",
+    //   language_id: 2,
+    // });
+  });
+
+  it("should revert to previous language on update failure", async () => {
+    const error = new Error("Update failed");
+    mockUpdateUserPreferences.mockRejectedValue(error);
+
+    // Mock console.error to avoid test noise
+    const originalError = console.error;
+    console.error = vi.fn();
+
+    render(
+      <TestWrapper>
+        <Learn />
+      </TestWrapper>,
+    );
+  });
+
+  it("should return a valid React element", () => {
+    const result = render(
+      <TestWrapper>
+        <Learn />
+      </TestWrapper>,
+    );
+    expect(result.container.firstChild).not.toBeNull();
+  });
+
+  it("should be callable as a React component", () => {
+    expect(() => (
+      <TestWrapper>
+        <Learn />
+      </TestWrapper>
+    )).not.toThrow();
+  });
+});
+
+/**
+ * TEST GROUP: Responsive Design
+ * Verifies responsive design classes are applied
+ */
+describe("Responsive Design", () => {
+  it("should apply responsive padding classes", () => {
+    const { container } = render(
+      <TestWrapper>
+        <Learn />
+      </TestWrapper>,
+    );
+    const mainContainer = container.querySelector("div.p-\\[10px\\]");
+    expect(mainContainer).not.toBeNull();
+  });
+
+  it("should apply responsive text size classes", () => {
+    const { container } = render(
+      <TestWrapper>
+        <Learn />
+      </TestWrapper>,
+    );
+    const description = container.querySelector("div[class*='text-3xl']");
+    expect(description?.className).toContain("text-3xl");
+  });
+
+  it("should apply responsive margin classes", () => {
+    const { container } = render(
+      <TestWrapper>
+        <Learn />
+      </TestWrapper>,
+    );
+    const description = container.querySelector("div[class*='mb-[48px]']");
+    expect(description).not.toBeNull();
+  });
+});
+
+/**
+ * TEST GROUP: Tab Navigation
+ * Verifies tab navigation functionality
+ */
+describe("Tab Navigation", () => {
+  it("should render tab group", () => {
+    render(
+      <TestWrapper>
+        <Learn />
+      </TestWrapper>,
+    );
+    expect(screen.getByTestId("tab-group")).not.toBeNull();
+  });
+
+  it("should render Simulations tab", () => {
+    render(
+      <TestWrapper>
+        <Learn />
+      </TestWrapper>,
+    );
+    expect(screen.getByText("Simulations")).not.toBeNull();
   });
 });

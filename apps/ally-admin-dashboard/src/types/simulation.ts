@@ -51,7 +51,6 @@ export interface SimulationInput {
   emotionalNeeds?: string;
   tone?: string;
   openingStatements?: string[];
-  // voiceId?: string;
   agentGoal?: string;
   autoTerminationStatus?: boolean;
   terminationEventId?: string;
@@ -109,7 +108,6 @@ export interface GetSimulationByIdResponse {
     sexualOrientation?: string;
     startingState?: string;
     tone?: string;
-    // voiceId?: string;
     agentGoal?: string;
     languageVoices?: Record<string, string>;
   };
