@@ -23,18 +23,6 @@ const audioCallAPI = baseAPI.injectEndpoints({
     }),
 
     /**
-     * Initiates a call request to connect with a counsellor.
-     * Used by clients to start the call process.
-     * @returns {Promise<any>} Call request response
-     */
-    requestCall: builder.mutation<any, void>({
-      query: () => ({
-        url: ApiEndpoints.AUDIO_CALL.REQUEST_CALL,
-        method: HttpMethod.POST,
-      }),
-    }),
-
-    /**
      * Cancels an active call request before it is accepted.
      * Used by clients to withdraw their call request.
      * @param {Object} data - Cancel request parameters
@@ -44,20 +32,6 @@ const audioCallAPI = baseAPI.injectEndpoints({
     cancelRequest: builder.mutation<any, { chatId: number }>({
       query: ({ chatId }) => ({
         url: ApiEndpoints.AUDIO_CALL.CANCEL_CHAT(chatId),
-        method: HttpMethod.POST,
-      }),
-    }),
-
-    /**
-     * Accepts an incoming call request from a client.
-     * Used by counsellors to start a call session.
-     * @param {Object} data - Accept call parameters
-     * @param {number} data.chatId - Unique identifier for the chat session
-     * @returns {Promise<any>} Accept call response
-     */
-    acceptCall: builder.mutation<any, { chatId: number }>({
-      query: ({ chatId }) => ({
-        url: ApiEndpoints.AUDIO_CALL.ACCEPT_CHAT(chatId),
         method: HttpMethod.POST,
       }),
     }),
@@ -133,8 +107,6 @@ const audioCallAPI = baseAPI.injectEndpoints({
 
 export const {
   useGetWaitingClientsQuery,
-  useRequestCallMutation,
-  useAcceptCallMutation,
   useLazyGetCounsellorChatQuery,
   useEndCallMutation,
   useCancelRequestMutation,

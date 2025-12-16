@@ -7,8 +7,6 @@ import { describe, it, expect, vi } from "vitest";
 
 import {
   useGetWaitingClientsQuery,
-  useRequestCallMutation,
-  useAcceptCallMutation,
   useLazyGetCounsellorChatQuery,
   useEndCallMutation,
   useCancelRequestMutation,
@@ -23,8 +21,6 @@ vi.mock("@constants", () => ({
   ApiEndpoints: {
     AUDIO_CALL: {
       GET_WAITING_CLIENTS: "/audio-call/waiting-clients",
-      REQUEST_CALL: "/audio-call/request-call",
-      ACCEPT_CALL: "/audio-call/accept-call",
       GET_COUNSELLOR_CHAT: "/audio-call/counsellor-chat",
       END_CALL: "/audio-call/end-call",
       CANCEL_REQUEST: "/audio-call/cancel-request",
@@ -83,8 +79,6 @@ const TestWrapper = ({ children }: { children: React.ReactNode }) => {
 describe("audioCall API", () => {
   it("should export correct hooks", () => {
     expect(useGetWaitingClientsQuery).toBeDefined();
-    expect(useRequestCallMutation).toBeDefined();
-    expect(useAcceptCallMutation).toBeDefined();
     expect(useLazyGetCounsellorChatQuery).toBeDefined();
     expect(useEndCallMutation).toBeDefined();
     expect(useCancelRequestMutation).toBeDefined();
@@ -95,8 +89,6 @@ describe("audioCall API", () => {
 
   it("should have correct hook configurations", () => {
     expect(typeof useGetWaitingClientsQuery).toBe("function");
-    expect(typeof useRequestCallMutation).toBe("function");
-    expect(typeof useAcceptCallMutation).toBe("function");
     expect(typeof useLazyGetCounsellorChatQuery).toBe("function");
     expect(typeof useEndCallMutation).toBe("function");
     expect(typeof useCancelRequestMutation).toBe("function");
@@ -111,22 +103,6 @@ describe("audioCall API", () => {
     });
 
     expect(result.current).toBeDefined();
-  });
-
-  it("should render request call mutation hook without errors", () => {
-    const { result } = renderHook(() => useRequestCallMutation(), {
-      wrapper: TestWrapper,
-    });
-
-    expect(result.current).toHaveLength(2); // [trigger, result]
-  });
-
-  it("should render accept call mutation hook without errors", () => {
-    const { result } = renderHook(() => useAcceptCallMutation(), {
-      wrapper: TestWrapper,
-    });
-
-    expect(result.current).toHaveLength(2); // [trigger, result]
   });
 
   it("should render counsellor chat query hook without errors", () => {
@@ -177,26 +153,6 @@ describe("audioCall API", () => {
     expect(result.current).toBeDefined();
   });
 
-  it("should handle request call trigger", () => {
-    const { result } = renderHook(() => useRequestCallMutation(), {
-      wrapper: TestWrapper,
-    });
-
-    const [trigger] = result.current;
-    expect(typeof trigger).toBe("function");
-    expect(() => trigger({ clientId: "client123" })).not.toThrow();
-  });
-
-  it("should handle accept call trigger", () => {
-    const { result } = renderHook(() => useAcceptCallMutation(), {
-      wrapper: TestWrapper,
-    });
-
-    const [trigger] = result.current;
-    expect(typeof trigger).toBe("function");
-    expect(() => trigger({ callId: "call123" })).not.toThrow();
-  });
-
   it("should handle counsellor chat query trigger", () => {
     const { result } = renderHook(() => useLazyGetCounsellorChatQuery(), {
       wrapper: TestWrapper,
@@ -204,7 +160,7 @@ describe("audioCall API", () => {
 
     const [trigger] = result.current;
     expect(typeof trigger).toBe("function");
-    expect(() => trigger({ callId: "call123" })).not.toThrow();
+    expect(() => trigger()).not.toThrow();
   });
 
   it("should handle end call trigger", () => {
@@ -214,7 +170,7 @@ describe("audioCall API", () => {
 
     const [trigger] = result.current;
     expect(typeof trigger).toBe("function");
-    expect(() => trigger({ callId: "call123" })).not.toThrow();
+    expect(() => trigger({ chatId: 1 })).not.toThrow();
   });
 
   it("should handle cancel request trigger", () => {
@@ -224,7 +180,7 @@ describe("audioCall API", () => {
 
     const [trigger] = result.current;
     expect(typeof trigger).toBe("function");
-    expect(() => trigger({ requestId: "request123" })).not.toThrow();
+    expect(() => trigger({ chatId: 1 })).not.toThrow();
   });
 
   it("should handle add feedback trigger", () => {
@@ -236,9 +192,11 @@ describe("audioCall API", () => {
     expect(typeof trigger).toBe("function");
     expect(() =>
       trigger({
-        callId: "call123",
-        rating: 5,
-        feedback: "Great call!",
+        id: 1,
+        feedback: {
+          rating: 5,
+          comment: "Great call!",
+        },
       }),
     ).not.toThrow();
   });
@@ -252,9 +210,11 @@ describe("audioCall API", () => {
     expect(typeof trigger).toBe("function");
     expect(() =>
       trigger({
-        feedbackId: "feedback123",
-        rating: 4,
-        feedback: "Updated feedback",
+        feedbackId: 1,
+        feedback: {
+          rating: 4,
+          comment: "Updated feedback",
+        },
       }),
     ).not.toThrow();
   });
