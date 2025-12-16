@@ -54,7 +54,7 @@ export const SimulationEvents: FC<SimulationEventsProps> = ({ events = [] }) => 
       style={{ willChange: "width" }}
     >
       <div className="text-white text-[14px] font-medium leading-[22px] tracking-[0.28px] bg-[#282B31] px-4 h-[48px] items-center flex">
-        AI Supervisor
+        AI Feedback
       </div>
       <motion.div
         data-testid="simulation-events-container"
