@@ -1,13 +1,18 @@
-import { FC, useEffect } from "react";
+import { FC, useEffect, useState } from "react";
 
 import { AnimatePresence, motion } from "framer-motion";
 import { useNavigate, useSearchParams } from "react-router-dom";
 
-import { useGetScenariosQuery, useGetScenarioPathwaysQuery } from "@api";
+import { DropdownField } from "@ally-ui-mono/ui-shared";
+import {
+  useGetScenariosQuery,
+  useGetScenarioPathwaysQuery,
+  useUpdateUserPreferencesMutation,
+} from "@api";
 import { CreditsDisplay, ScenarioCard, TabGroup } from "@components";
 import { Permissions } from "@constants";
-import { useUser } from "@hooks";
-import { ScenarioStatus } from "@types";
+import { useUser, useScenarioLanguages } from "@hooks";
+import { LanguageOption, ScenarioStatus } from "@types";
 import { hasPermissions } from "@utils";
 
 import { learnPageContainerVariants, learnPageItemVariants } from "./constants";
@@ -16,7 +21,6 @@ enum TabId {
   SIMULATIONS = "simulations",
   TRACKS = "tracks",
 }
-
 const LEARN_TABS = [
   { id: TabId.SIMULATIONS, label: "Simulations" },
   { id: TabId.TRACKS, label: "Tracks" },
@@ -60,8 +64,54 @@ export const Learn: FC = () => {
     if (isValidTabId(newValue)) setSearchParams({ tab: newValue });
   };
 
+  const {
+    languages: LANGUAGE_OPTIONS,
+    defaultLanguage,
+    isLoading: isLanguagesLoading,
+  } = useScenarioLanguages();
+  const [selectedLanguage, setSelectedLanguage] = useState<LanguageOption | null>(null);
+  const [updateUserPreferences, { isLoading: isUpdatingPreferences }] =
+    useUpdateUserPreferencesMutation();
+
+  // Set initial language when defaultLanguage is loaded
+  useEffect(() => {
+    const savedLanguage = localStorage.getItem("selectedLanguage");
+    if (savedLanguage) {
+      const parsedLanguage = JSON.parse(savedLanguage);
+      setSelectedLanguage(parsedLanguage);
+    } else if (defaultLanguage) {
+      setSelectedLanguage(defaultLanguage);
+    }
+  }, [defaultLanguage]);
+
+  const handleLanguageChange = async (value: string) => {
+    const selectedOption = LANGUAGE_OPTIONS.find(option => option.value === value) || null;
+    if (!selectedOption?.language_id) return;
+
+    const previousLanguage = selectedLanguage;
+    setSelectedLanguage(selectedOption);
+
+    // Save to localStorage
+    localStorage.setItem("selectedLanguage", JSON.stringify(selectedOption));
+
+    try {
+      await updateUserPreferences({
+        default_language_id: Number(selectedOption.language_id),
+      }).unwrap();
+    } catch {
+      setSelectedLanguage(previousLanguage);
+      // Remove from localStorage if update fails
+      localStorage.removeItem("selectedLanguage");
+    }
+  };
+
   const onScenarioCardClick = (itemId: number, isPathway: boolean) => {
-    navigate(isPathway ? `/pathway/${itemId}` : `/scenario/${itemId}`);
+    navigate(isPathway ? `/pathway/${itemId}` : `/scenario/${itemId}`, {
+      state: {
+        languages: LANGUAGE_OPTIONS,
+        selectedLanguage: selectedLanguage,
+      },
+    });
   };
 
   const renderPageHeader = () => {
@@ -89,6 +139,27 @@ export const Learn: FC = () => {
               onChange={(_, newValue) => handleTabChange(newValue as LearnTabId)}
             />
 
+            <div className="w-full flex justify-end">
+              <div className="flex flex-col">
+                {LANGUAGE_OPTIONS.length > 0 && (
+                  <div className="relative w-48">
+                    <DropdownField
+                      options={LANGUAGE_OPTIONS.map(option => option.label)}
+                      value={selectedLanguage?.label || ""}
+                      onChange={async label => {
+                        const option = LANGUAGE_OPTIONS.find(opt => opt.label === label);
+                        if (option) {
+                          await handleLanguageChange(option.value);
+                        }
+                      }}
+                      disabled={isUpdatingPreferences || isLanguagesLoading}
+                      label=""
+                      valueClassName="font-primary text-base text-typography-700"
+                    />
+                  </div>
+                )}
+              </div>
+            </div>
             <CreditsDisplay />
           </div>
         )}

@@ -53,6 +53,11 @@ export interface UserState {
   permissions: Permissions[];
   availableChatTypes: CallType[];
 }
+export interface LanguageOption {
+  value: string;
+  label: string;
+  language_id?: number; // Make this optional with ?
+}
 
 export enum SessionType {
   CALL = "call",

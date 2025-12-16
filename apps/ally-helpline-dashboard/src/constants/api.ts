@@ -75,8 +75,13 @@ export const ApiEndpoints = {
       `/v1/learn/scenario-paths/${pathwayId}/create-session`,
     SCENARIO_SESSION_BY_PATH_ITEM: (pathSessionItemId: string) =>
       `/v1/learn/scenario-session/scenario-path-session-item/${pathSessionItemId}`,
+    GET_AVAILABLE_LANGUAGES: "/v1/learn/languages",
   },
   SIMULATION: {
     SIMULATION_CREDITS: "/v1/simulation-credits",
+  },
+  USER: {
+    UPDATE_USER_PREFERENCES: "/v1/users/preferences",
+    GET_USER_PREFERENCES: "/v1/users/me/preferences",
   },
 };

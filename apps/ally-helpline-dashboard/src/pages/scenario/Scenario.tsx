@@ -1,5 +1,11 @@
 import { FC, useEffect, useState } from "react";
 
+import { AnimatePresence, motion } from "framer-motion";
+import { useLocation } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
+import { toast } from "sonner";
+
+import { DropdownField } from "@ally-ui-mono/ui-shared";
 import { useEndSimulationMutation, useGetScenarioQuery } from "@api";
 import { BackCircle, ExistingCall, PageNotFoundIllustration } from "@assets";
 import {
@@ -13,15 +19,19 @@ import {
 } from "@components";
 import { AUTO_CLOSE_DIALOG_DURATION, LOCAL_STORAGE_KEYS, ROUTES } from "@constants";
 import { useSimulationCredits, useStartSimulation } from "@hooks";
-import { AnimatePresence, motion } from "framer-motion";
-import { useNavigate, useParams } from "react-router-dom";
-import { toast } from "sonner";
+import { LanguageOption } from "@types";
 
 import { learnPageExpandedVariants } from "../learn/constants";
 
 export const Scenario: FC = () => {
   const { scenarioId } = useParams();
   const navigate = useNavigate();
+  const { state } = useLocation();
+  // Use languages from location state or fallback to empty array
+  const [selectedLanguage, setSelectedLanguage] = useState<LanguageOption | null>(
+    state?.selectedLanguage || null,
+  );
+
   const { credits, limitReached, refetchCredits } = useSimulationCredits();
 
   const id = Number(scenarioId);
@@ -85,7 +95,11 @@ export const Scenario: FC = () => {
 
   const handleStartSimulation = async () => {
     await startSimulation({
-      params: { scenarioId: id },
+      params: {
+        scenarioId: id,
+        language: selectedLanguage?.value,
+        languageId: selectedLanguage?.language_id,
+      },
       metadata: {
         title: scenario?.title,
         coverImageUrl: scenario?.coverImageUrl,
@@ -150,7 +164,7 @@ export const Scenario: FC = () => {
             initial="hidden"
             animate="visible"
             exit="exit"
-            className="flex flex-col gap-6 w-full m-auto justify-center items-center"
+            className="flex flex-col gap-6 w-full max-w-[600px] m-auto px-4"
           >
             {isAuthenticated() && (
               <div
@@ -168,6 +182,19 @@ export const Scenario: FC = () => {
                 <CreditsDisplay />
               </div>
             )}
+            <div className="w-full sm:w-48 self-start">
+              <div className="relative w-48">
+                <DropdownField
+                  options={state?.languages?.map(option => option.label)}
+                  value={selectedLanguage?.label || ""}
+                  onChange={value => {
+                    const selected = state?.languages?.find(lang => lang.label === value) || null;
+                    setSelectedLanguage(selected);
+                  }}
+                  valueClassName="text-typography-900 font-primary"
+                />
+              </div>
+            </div>
             <ScenarioDetailsCard
               data-testid="scenario-details-card"
               coverImage={scenario?.coverImageUrl || ""}
@@ -179,6 +206,41 @@ export const Scenario: FC = () => {
               noCredits={buttonDisable}
               triggerWarnings={scenario?.triggerWarnings}
             />
+            <LoginDialog
+              data-testid="scenario-login-dialog"
+              isOpen={isLoginDialogOpen}
+              onClose={() => setIsLoginDialogOpen(false)}
+              onSuccess={handleStartSimulation}
+            />
+            <ConfirmationDialog
+              data-testid="scenario-existing-simulation-dialog"
+              title={{ normal: "Active Simulation ", italic: "Detected" }}
+              isOpen={isExistingSimulationConfirmOpen}
+              onClose={() => setIsExistingSimulationConfirmOpen(false)}
+              content="You have a running simulation. End the existing session to start a new one."
+              buttonVariant={ButtonVariant.PRIMARY}
+              onButtonClick={endExistingSimulation}
+              buttonText="End session"
+              secondaryButtonText="Cancel"
+              onSecondaryButtonClick={onSecondaryButtonClick}
+              icon={ExistingCall}
+            />
+            <CreditInfo
+              data-testid="scenario-no-credits-dialog"
+              open={noCreditsLeft}
+              onClose={() => handleCreditClose("noCredits")}
+              title="No Credits Left"
+              description="Looks like you have run out of simulation credits"
+              autoCloseDuration={AUTO_CLOSE_DIALOG_DURATION}
+            />
+            <CreditInfo
+              data-testid="scenario-not-enough-credits-dialog"
+              open={notEnoughCredits}
+              onClose={() => handleCreditClose("notEnough")}
+              title="Not Enough Credits"
+              description="You don't have enough simulation credits to start this session"
+              autoCloseDuration={AUTO_CLOSE_DIALOG_DURATION}
+            />
           </motion.div>
         ) : (
           <FallbackUI
@@ -187,47 +249,8 @@ export const Scenario: FC = () => {
             isLoading={isScenarioLoading}
             mainMessage="Scenario not found"
             description="The scenario you are looking for does not exist."
-            button={{
-              text: "Go back",
-              onClick: () => navigate(ROUTES.LEARN),
-            }}
           />
         )}
-        <LoginDialog
-          data-testid="scenario-login-dialog"
-          isOpen={isLoginDialogOpen}
-          onClose={() => setIsLoginDialogOpen(false)}
-          onSuccess={handleStartSimulation}
-        />
-        <ConfirmationDialog
-          data-testid="scenario-existing-simulation-dialog"
-          title={{ normal: "Active Simulation ", italic: "Detected" }}
-          isOpen={isExistingSimulationConfirmOpen}
-          onClose={() => setIsExistingSimulationConfirmOpen(false)}
-          content="You have a running simulation. End the existing session to start a new one."
-          buttonVariant={ButtonVariant.PRIMARY}
-          onButtonClick={endExistingSimulation}
-          buttonText="End session"
-          secondaryButtonText="Cancel"
-          onSecondaryButtonClick={onSecondaryButtonClick}
-          icon={ExistingCall}
-        />
-        <CreditInfo
-          data-testid="scenario-no-credits-dialog"
-          open={noCreditsLeft}
-          onClose={() => handleCreditClose("noCredits")}
-          title="No Credits Left"
-          description="Looks like you have run out of simulation credits"
-          autoCloseDuration={AUTO_CLOSE_DIALOG_DURATION}
-        />
-        <CreditInfo
-          data-testid="scenario-not-enough-credits-dialog"
-          open={notEnoughCredits}
-          onClose={() => handleCreditClose("notEnough")}
-          title="Not Enough Credits"
-          description="You don't have enough simulation credits to start this session"
-          autoCloseDuration={AUTO_CLOSE_DIALOG_DURATION}
-        />
       </div>
     </AnimatePresence>
   );

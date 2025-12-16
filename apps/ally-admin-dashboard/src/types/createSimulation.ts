@@ -28,7 +28,6 @@ export type FormData = {
   emotionalNeeds: string;
   voiceInstruction: string;
   openingStatements: string;
-  // voiceId: string;
   agentGoal: string;
   autoTerminationStatus: boolean;
   terminationEventId: string;

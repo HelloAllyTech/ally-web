@@ -125,19 +125,6 @@ export const LanguageVoiceMapping: FC<LanguageVoiceMappingProps> = ({
             >
               <div className="w-1/3 text-sm text-typography-800 font-medium">{language.label}</div>
               <div className="w-2/3">
-                {/* <select
-                  className="w-full rounded border border-border-light px-3 py-1 bg-white text-md cursor-pointer focus:outline-none focus:ring-1 focus:ring-primary"
-                  value={selectedVoiceId}
-                  onChange={e => handleVoiceChange(languageId, e.target.value)}
-                >
-                  <option value="">{en.simulation.selectVoice}</option>
-                  {options.map(option => (
-                    <option key={option.value} value={option.value}>
-                      {option.label}
-                    </option>
-                  ))}
-                </select> */}
-
                 <DropdownField
                   id={`${id}.${languageId}`}
                   label=""

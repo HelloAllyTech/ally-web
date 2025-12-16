@@ -93,7 +93,6 @@ describe("createSimulation utils", () => {
           languageVoices: {
             1: "voice-123",
           },
-          // voiceId: "voice-123",
         },
       } as GetSimulationByIdResponse;
 
@@ -120,7 +119,6 @@ describe("createSimulation utils", () => {
         sexualOrientation: "Heterosexual",
         startingState: "Calm",
         tone: "Casual",
-        // voiceId: "voice-123",
         coverImageUrl: "https://example.com/image.jpg",
         coverVideoUrl: undefined,
         autoTerminationStatus: false,

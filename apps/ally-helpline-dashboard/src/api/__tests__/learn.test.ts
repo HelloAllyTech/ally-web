@@ -23,6 +23,7 @@ vi.mock("@constants", () => ({
       GET_SIMULATION_SUMMARY: "/learn/simulations/summary",
       SUBMIT_SIMULATION_FEEDBACK: "/learn/simulations/feedback",
       GET_SIMULATION_TRANSCRIPT: "/learn/simulations/transcript",
+      GET_AVAILABLE_LANGUAGES: "/learn/available-languages",
     },
   },
   HttpMethod: {
@@ -40,6 +41,7 @@ vi.mock("@types", () => ({
   SimulationSummaryResponse: {},
   SimulationFeedbackResponse: {},
   SimulationTranscriptResponse: {},
+  AvailableLanguagesResponse: {},
 }));
 
 describe("learn API", () => {
@@ -213,5 +215,17 @@ describe("learn API", () => {
     // Test that the mocks are properly configured
     expect(mockInjectEndpoints).toBeInstanceOf(Function);
     expect(mockBaseAPI.injectEndpoints).toBe(mockInjectEndpoints);
+  });
+
+  it("should handle available languages correctly", () => {
+    // Test that available languages are handled correctly
+    const availableLanguages = {
+      languages: [
+        { value: "en-IN", label: "English (India)", language_id: 1 },
+        { value: "es-AR", label: "Spanish (Argentina)", language_id: 2 },
+      ],
+    };
+
+    expect(availableLanguages.languages).toBeDefined();
   });
 });

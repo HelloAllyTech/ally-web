@@ -99,7 +99,12 @@ describe("useStartSimulation", () => {
 
     await act(async () => {
       await result.current.startSimulation({
-        params: { scenarioId: 1, scenarioPathSessionItemId: "path-123" },
+        params: {
+          scenarioId: 1,
+          scenarioPathSessionItemId: "path-123",
+          language: "en-IN",
+          languageId: 1,
+        },
         metadata: { title: "Test Scenario", coverImageUrl: "https://example.com/image.jpg" },
       });
     });
@@ -107,6 +112,8 @@ describe("useStartSimulation", () => {
     expect(mockStartSimulationMutation).toHaveBeenCalledWith({
       scenarioId: 1,
       scenarioPathSessionItemId: "path-123",
+      language: "en-IN",
+      languageId: 1,
     });
     expect(mockOnSuccess).toHaveBeenCalled();
     expect(mockNavigate).toHaveBeenCalledWith("/simulation/session-123", { replace: false });
@@ -129,7 +136,14 @@ describe("useStartSimulation", () => {
     );
 
     await act(async () => {
-      await result.current.startSimulation({ params: { scenarioId: 1 } });
+      await result.current.startSimulation({
+        params: {
+          scenarioId: 1,
+          scenarioPathSessionItemId: "path-123",
+          language: "en-IN",
+          languageId: 1,
+        },
+      });
     });
 
     expect(toast.error).toHaveBeenCalledWith("You are not authorized to start this simulation");
@@ -147,7 +161,14 @@ describe("useStartSimulation", () => {
     const { result } = renderHook(() => useStartSimulation(), { wrapper });
 
     await act(async () => {
-      await result.current.startSimulation({ params: { scenarioId: 1 } });
+      await result.current.startSimulation({
+        params: {
+          scenarioId: 1,
+          scenarioPathSessionItemId: "path-123",
+          language: "en-IN",
+          languageId: 1,
+        },
+      });
     });
 
     expect(mockEndSimulation).toHaveBeenCalledWith({ sessionId: "old-session-123" });
@@ -164,7 +185,14 @@ describe("useStartSimulation", () => {
     const { result } = renderHook(() => useStartSimulation(), { wrapper });
 
     await act(async () => {
-      await result.current.startSimulation({ params: { scenarioId: 1 } });
+      await result.current.startSimulation({
+        params: {
+          scenarioId: 1,
+          scenarioPathSessionItemId: "path-123",
+          language: "en-IN",
+          languageId: 1,
+        },
+      });
     });
 
     expect(toast.error).toHaveBeenCalledWith("Failed to start simulation");
@@ -182,7 +210,14 @@ describe("useStartSimulation", () => {
     );
 
     await act(async () => {
-      await result.current.startSimulation({ params: { scenarioId: 1 } });
+      await result.current.startSimulation({
+        params: {
+          scenarioId: 1,
+          scenarioPathSessionItemId: "path-123",
+          language: "en-IN",
+          languageId: 1,
+        },
+      });
     });
 
     expect(logger.error).toHaveBeenCalled();
@@ -214,7 +249,14 @@ describe("useStartSimulation", () => {
 
     // Start first simulation
     act(() => {
-      result.current.startSimulation({ params: { scenarioId: 1 } });
+      result.current.startSimulation({
+        params: {
+          scenarioId: 1,
+          scenarioPathSessionItemId: "path-123",
+          language: "en-IN",
+          languageId: 1,
+        },
+      });
     });
 
     // Wait for state to update
@@ -224,7 +266,14 @@ describe("useStartSimulation", () => {
 
     // Try to start second simulation (should be blocked)
     act(() => {
-      result.current.startSimulation({ params: { scenarioId: 2 } });
+      result.current.startSimulation({
+        params: {
+          scenarioId: 2,
+          scenarioPathSessionItemId: "path-123",
+          language: "en-IN",
+          languageId: 1,
+        },
+      });
     });
 
     // Resolve the first call
@@ -238,6 +287,9 @@ describe("useStartSimulation", () => {
     expect(mockStartSimulationMutation).toHaveBeenCalledTimes(1);
     expect(mockStartSimulationMutation).toHaveBeenCalledWith({
       scenarioId: 1,
+      scenarioPathSessionItemId: "path-123",
+      language: "en-IN",
+      languageId: 1,
     });
   });
 
@@ -268,7 +320,7 @@ describe("useStartSimulation", () => {
 
     await act(async () => {
       await result.current.startSimulation({
-        params: { scenarioId: 1 },
+        params: { scenarioId: 1, language: "en-IN", languageId: 1 },
         metadata: { title: "Test Scenario", coverImageUrl: "https://example.com/image.jpg" },
       });
     });
