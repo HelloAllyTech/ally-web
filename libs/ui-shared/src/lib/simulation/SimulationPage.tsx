@@ -65,19 +65,16 @@ export const SimulationPage: FC<SimulationPageProps> = ({
   onEndSimulation,
   renderWarningDialog,
   renderFooter,
+  endSessionButtonRef,
 }) => {
   const [isMuted, setIsMuted] = useState(false);
   const [isWarning, setIsWarning] = useState(false);
   const [isFocusMode, setIsFocusMode] = useState(false);
 
-  useWakeLock(sessionId);
-
-  if (!roomData) return null;
-
-  const { triggerWarnings = [], title } = roomData ?? {};
-
   const endAudio = useRef<HTMLAudioElement | null>(new Audio(EndSimulation));
   const startAudio = useRef<HTMLAudioElement | null>(new Audio(StartSimulation));
+
+  useWakeLock(sessionId);
 
   useEffect(() => {
     if (roomStatus === RoomStatus.CONNECTING) startAudio.current?.play();
@@ -86,6 +83,10 @@ export const SimulationPage: FC<SimulationPageProps> = ({
       endAudio.current?.pause();
     };
   }, [roomStatus]);
+
+  if (!roomData) return null;
+
+  const { triggerWarnings = [], title } = roomData ?? {};
 
   const onTimeLimitWarning = () => {
     setIsWarning(true);
@@ -110,6 +111,7 @@ export const SimulationPage: FC<SimulationPageProps> = ({
   };
 
   const handleEndSimulation = async () => {
+    endSessionButtonRef.current = true;
     endAudio.current?.play();
     setTimeout(async () => {
       await onEndSimulation?.();
@@ -138,14 +140,14 @@ export const SimulationPage: FC<SimulationPageProps> = ({
               className="flex flex-wrap justify-start items-center gap-2 opacity-75"
             >
               {triggerWarnings?.map((triggerWarning: TriggerWarning, index: number) => (
-                <>
-                  <div key={triggerWarning.id} className="text-white text-[12px] flex self-start">
+                <span key={triggerWarning.id} className="flex items-center gap-2">
+                  <span className="text-white text-[12px] flex self-start">
                     {triggerWarning.name}
-                  </div>
+                  </span>
                   {index < triggerWarnings?.length - 1 && (
-                    <div className="w-[5px] h-[5px] rounded-full bg-white" />
+                    <span className="w-[5px] h-[5px] rounded-full bg-white" />
                   )}
-                </>
+                </span>
               ))}
             </div>
           )}

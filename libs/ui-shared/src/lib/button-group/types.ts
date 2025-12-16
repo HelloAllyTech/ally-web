@@ -8,5 +8,6 @@ export type ButtonGroupProps = {
     leftIcon?: ReactNode;
     show: boolean;
     text: string;
+    className?: string;
   }[];
 };

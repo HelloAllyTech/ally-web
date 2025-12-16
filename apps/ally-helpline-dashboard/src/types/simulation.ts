@@ -2,6 +2,7 @@ export enum RoomStatus {
   CONNECTED = "connected",
   CONNECTING = "connecting",
   DISCONNECTED = "disconnected",
+  DISCONNECTING = "disconnecting",
 }
 
 export enum FeedbackSectionType {
