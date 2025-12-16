@@ -35,55 +35,58 @@ export const SimulationInterface: FC<SimulationInterfaceProps> = ({
   isFocusMode,
   isMuted,
 }) => {
+  const { localParticipant } = useLocalParticipant();
+  const remoteParticipants = useRemoteParticipants();
+  const remoteParticipant = remoteParticipants?.[0];
+
+  const renderConnectedContent = () => (
+    <>
+      <RoomAudioRenderer />
+      <div className="flex md:flex-row flex-col justify-between max-h-[calc(100vh-300px)] gap-4 w-full h-full">
+        <UserCallCard
+          userData={{
+            name: roomData?.remoteParticipant?.name,
+            coverImageUrl: roomData?.remoteParticipant?.coverImageUrl,
+          }}
+          isSpeaking={remoteParticipant?.isSpeaking}
+        />
+        <UserCallCard
+          userData={{ name: roomData?.localParticipant?.name || "You" }}
+          isSpeaking={localParticipant.isSpeaking}
+          isMuted={isMuted}
+        />
+        {!isFocusMode && events?.length > 0 && <SimulationEvents events={events} />}
+      </div>
+    </>
+  );
+
+  const renderLoadingContent = () => (
+    <div
+      data-testid="simulation-interface-connecting bg-[#1D2020] rounded-lg"
+      className="flex flex-col items-center text-center font-['IBM_Plex_Serif']"
+    >
+      <p className="text-[20px] text-white">
+        Simulation
+        <span className="font-medium italic">
+          {" "}
+          {roomStatus === RoomStatus.CONNECTING ? "starting..." : "disconnecting..."}
+        </span>
+      </p>
+      <p className="text-[12px] text-[#B6B5B9]">
+        To start the simulation, please allow us to use your microphone.
+      </p>
+    </div>
+  );
+
   const renderContent = () => {
     switch (roomStatus) {
-      case RoomStatus.CONNECTED: {
-        const { localParticipant } = useLocalParticipant();
-        const remoteParticipants = useRemoteParticipants();
-        const remoteParticipant = remoteParticipants?.[0];
-
-        return (
-          <>
-            <RoomAudioRenderer />
-            <div className="flex md:flex-row flex-col justify-between max-h-[calc(100vh-300px)] gap-4 w-full h-full">
-              <UserCallCard
-                userData={{
-                  name: roomData?.remoteParticipant?.name,
-                  coverImageUrl: roomData?.remoteParticipant?.coverImageUrl,
-                }}
-                isSpeaking={remoteParticipant?.isSpeaking}
-              />
-              <UserCallCard
-                userData={{ name: roomData?.localParticipant?.name || "You" }}
-                isSpeaking={localParticipant.isSpeaking}
-                isMuted={isMuted}
-              />
-              {!isFocusMode && events?.length > 0 && <SimulationEvents events={events} />}
-            </div>
-          </>
-        );
-      }
+      case RoomStatus.CONNECTED:
+        return renderConnectedContent();
       case RoomStatus.CONNECTING:
       case RoomStatus.DISCONNECTING:
       case RoomStatus.DISCONNECTED:
       default:
-        return (
-          <div
-            data-testid="simulation-interface-connecting bg-[#1D2020] rounded-lg"
-            className="flex flex-col items-center text-center font-['IBM_Plex_Serif']"
-          >
-            <p className="text-[20px] text-white">
-              Simulation
-              <span className="font-medium italic">
-                {" "}
-                {roomStatus === RoomStatus.CONNECTING ? "starting..." : "disconnecting..."}
-              </span>
-            </p>
-            <p className="text-[12px] text-[#B6B5B9]">
-              To start the simulation, please allow us to use your microphone.
-            </p>
-          </div>
-        );
+        return renderLoadingContent();
     }
   };
 

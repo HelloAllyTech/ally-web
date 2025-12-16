@@ -4,12 +4,16 @@ import { Room, RoomEvent } from "livekit-client";
 import { useParams, useNavigate } from "react-router-dom";
 
 import { logger } from "@ally-ui-mono/ui-shared";
+import { AutoTermination } from "@ally-ui-mono/ui-shared/assets";
 import { useEndScenarioPreviewMutation } from "@api";
 import { LIVEKIT_CONFIG, LOCAL_STORAGE_KEYS, ROUTES } from "@constants";
 import { RoomStatus, UseLiveKitRoomReturn, LiveKitEvent } from "@types";
 import { decodeUint8ToJson } from "@utils";
 
-export const useLiveKitRoom = (handleDisconnect: () => void): UseLiveKitRoomReturn => {
+export const useLiveKitRoom = (
+  handleDisconnect: () => void,
+  endSessionButtonRef: any,
+): UseLiveKitRoomReturn => {
   const navigate = useNavigate();
   const { id } = useParams();
   const [endScenarioPreview] = useEndScenarioPreviewMutation();
@@ -21,12 +25,17 @@ export const useLiveKitRoom = (handleDisconnect: () => void): UseLiveKitRoomRetu
   const [score, setScore] = useState<number>(0);
 
   const lastEventTimestampRef = useRef<number | null>(null);
+  const autoTerminationAudio = useRef<HTMLAudioElement | null>(new Audio(AutoTermination));
 
   const roomDataString = localStorage.getItem(LOCAL_STORAGE_KEYS.PREVIEW_ROOM_DATA);
   const roomData = roomDataString ? JSON.parse(roomDataString) : null;
   const startTime = roomData?.createdAt ? new Date(roomData?.createdAt) : new Date();
   const isConnected = roomStatus === RoomStatus.CONNECTED;
   const isConnecting = roomStatus === RoomStatus.CONNECTING;
+
+  useEffect(() => {
+    return () => autoTerminationAudio.current?.pause();
+  }, []);
 
   const getLiveKitUrl = (): string => {
     const url = roomData?.serverUrl || import.meta.env.VITE_LIVEKIT_URL;
@@ -43,8 +52,12 @@ export const useLiveKitRoom = (handleDisconnect: () => void): UseLiveKitRoomRetu
   }, []);
 
   const onRoomDisconnect = useCallback(() => {
-    handleDisconnect();
-    setRoomStatus(RoomStatus.DISCONNECTED);
+    if (!endSessionButtonRef.current) autoTerminationAudio.current?.play();
+
+    setTimeout(() => {
+      handleDisconnect();
+      setRoomStatus(RoomStatus.DISCONNECTED);
+    }, 1000);
   }, []);
 
   const cleanupRoom = useCallback(() => {

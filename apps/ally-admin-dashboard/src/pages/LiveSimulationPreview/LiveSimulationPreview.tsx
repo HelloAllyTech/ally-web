@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useRef } from "react";
 
 import { useNavigate, useParams } from "react-router-dom";
 
@@ -17,8 +17,12 @@ export const LiveSimulationPreview: React.FC = () => {
     navigate(-1);
   };
 
-  const { room, roomData, roomStatus, events, score, startTime, handleEndSession } =
-    useLiveKitRoom(handleRoomDisconnected);
+  const endSessionButtonRef = useRef<boolean>(false);
+
+  const { room, roomData, roomStatus, events, score, startTime, handleEndSession } = useLiveKitRoom(
+    handleRoomDisconnected,
+    endSessionButtonRef,
+  );
 
   const renderWarningDialog = ({ isOpen, onClose, onContinue, onEnd }) => (
     <ActionConfirmationPopup
@@ -49,6 +53,7 @@ export const LiveSimulationPreview: React.FC = () => {
       isPreview
       onEndSimulation={handleEndSession}
       renderWarningDialog={renderWarningDialog}
+      endSessionButtonRef={endSessionButtonRef}
     />
   );
 };

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { useNavigate, useParams } from "react-router-dom";
 
@@ -21,8 +21,12 @@ export const Simulation = () => {
     navigate(`${ROUTES.SIMULATION_SUMMARY}/${id}`, { replace: true });
   };
 
-  const { room, roomData, roomStatus, startTime, events, score } =
-    useLiveKitRoom(handleRoomDisconnected);
+  const endSessionButtonRef = useRef<boolean>(false);
+
+  const { room, roomData, roomStatus, startTime, events, score } = useLiveKitRoom(
+    handleRoomDisconnected,
+    endSessionButtonRef,
+  );
 
   const onEndSimulation = async () => {
     try {
@@ -74,6 +78,7 @@ export const Simulation = () => {
         score={score}
         onEndSimulation={onEndSimulation}
         renderWarningDialog={renderWarningDialog}
+        endSessionButtonRef={endSessionButtonRef}
       />
       <ConfirmationDialog
         isOpen={isBackConfirmOpen}
