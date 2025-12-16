@@ -15,9 +15,7 @@ vi.mock("@constants", () => ({
   ApiEndpoints: {
     AUDIO_CALL: {
       GET_WAITING_CLIENTS: "/audio-call/waiting-clients",
-      REQUEST_CALL: "/audio-call/request",
       CANCEL_CHAT: (chatId: number) => `/audio-call/cancel/${chatId}`,
-      ACCEPT_CHAT: (chatId: number) => `/audio-call/accept/${chatId}`,
       GET_COUNSELLOR_CHAT: "/audio-call/counsellor-chat",
       END_CHAT: (chatId: number) => `/audio-call/end/${chatId}`,
       MESSAGE_FEEDBACK: (id: number) => `/audio-call/feedback/${id}`,

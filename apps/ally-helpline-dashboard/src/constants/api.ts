@@ -17,13 +17,11 @@ export const ApiEndpoints = {
   },
   AUDIO_CALL: {
     GET_WAITING_CLIENTS: "/v1/users/waiting-list",
-    REQUEST_CALL: "/v1/chats/request",
     GET_CLIENT_CHAT: "/v1/chats/my-chat",
     GET_COUNSELLOR_CHAT: "/v1/chats/counsellor-chat",
     GET_NUDGE_STATUS: "/v1/settings/nudge-status",
     // Template functions for dynamic endpoints
     CANCEL_CHAT: (chatId: number) => `/v1/chats/${chatId}/cancel`,
-    ACCEPT_CHAT: (chatId: number) => `/v1/chats/${chatId}/accept`,
     END_CHAT: (chatId: number) => `/v1/chats/${chatId}/end`,
     MESSAGE_FEEDBACK: (messageId: number) => `/v1/chats/messages/${messageId}/feedback`,
     UPDATE_FEEDBACK: (feedbackId: number) => `/v1/chats/messages/feedback/${feedbackId}`,
