@@ -98,7 +98,7 @@ export const Learn: FC = () => {
       await updateUserPreferences({
         default_language_id: Number(selectedOption.language_id),
       }).unwrap();
-    } catch (error) {
+    } catch {
       setSelectedLanguage(previousLanguage);
       // Remove from localStorage if update fails
       localStorage.removeItem("selectedLanguage");

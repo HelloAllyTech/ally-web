@@ -7,9 +7,17 @@ import { toast } from "sonner";
 
 import { DropdownField } from "@ally-ui-mono/ui-shared";
 import { useEndSimulationMutation, useGetScenarioQuery } from "@api";
-import { BackCircle, PageNotFoundIllustration } from "@assets";
-import { ScenarioDetailsCard, FallbackUI, CreditsDisplay } from "@components";
-import { LOCAL_STORAGE_KEYS, ROUTES } from "@constants";
+import { BackCircle, ExistingCall, PageNotFoundIllustration } from "@assets";
+import {
+  LoginDialog,
+  ScenarioDetailsCard,
+  ConfirmationDialog,
+  ButtonVariant,
+  FallbackUI,
+  CreditInfo,
+  CreditsDisplay,
+} from "@components";
+import { AUTO_CLOSE_DIALOG_DURATION, LOCAL_STORAGE_KEYS, ROUTES } from "@constants";
 import { useSimulationCredits, useStartSimulation } from "@hooks";
 import { LanguageOption } from "@types";
 
@@ -197,6 +205,41 @@ export const Scenario: FC = () => {
               onStart={onStartSimulationClick}
               noCredits={buttonDisable}
               triggerWarnings={scenario?.triggerWarnings}
+            />
+            <LoginDialog
+              data-testid="scenario-login-dialog"
+              isOpen={isLoginDialogOpen}
+              onClose={() => setIsLoginDialogOpen(false)}
+              onSuccess={handleStartSimulation}
+            />
+            <ConfirmationDialog
+              data-testid="scenario-existing-simulation-dialog"
+              title={{ normal: "Active Simulation ", italic: "Detected" }}
+              isOpen={isExistingSimulationConfirmOpen}
+              onClose={() => setIsExistingSimulationConfirmOpen(false)}
+              content="You have a running simulation. End the existing session to start a new one."
+              buttonVariant={ButtonVariant.PRIMARY}
+              onButtonClick={endExistingSimulation}
+              buttonText="End session"
+              secondaryButtonText="Cancel"
+              onSecondaryButtonClick={onSecondaryButtonClick}
+              icon={ExistingCall}
+            />
+            <CreditInfo
+              data-testid="scenario-no-credits-dialog"
+              open={noCreditsLeft}
+              onClose={() => handleCreditClose("noCredits")}
+              title="No Credits Left"
+              description="Looks like you have run out of simulation credits"
+              autoCloseDuration={AUTO_CLOSE_DIALOG_DURATION}
+            />
+            <CreditInfo
+              data-testid="scenario-not-enough-credits-dialog"
+              open={notEnoughCredits}
+              onClose={() => handleCreditClose("notEnough")}
+              title="Not Enough Credits"
+              description="You don't have enough simulation credits to start this session"
+              autoCloseDuration={AUTO_CLOSE_DIALOG_DURATION}
             />
           </motion.div>
         ) : (

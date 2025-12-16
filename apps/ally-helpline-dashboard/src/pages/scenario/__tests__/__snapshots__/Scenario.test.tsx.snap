@@ -119,6 +119,54 @@ exports[`Scenario Component > Snapshot Testing > should match snapshot with scen
               Start Simulation
             </button>
           </div>
+          <div
+            data-testid="login-dialog"
+            style="display: none;"
+          >
+            <button
+              data-testid="login-close"
+            >
+              Close Login
+            </button>
+            <button
+              data-testid="login-success"
+            >
+              Login Success
+            </button>
+          </div>
+          <div
+            data-testid="confirmation-dialog"
+            style="display: none;"
+          >
+            <div
+              data-testid="dialog-title"
+            >
+              {"normal":"Active Simulation ","italic":"Detected"}
+            </div>
+            <div
+              data-testid="dialog-content"
+            >
+              You have a running simulation. End the existing session to start a new one.
+            </div>
+            <div
+              data-testid="dialog-icon"
+            />
+            <button
+              data-testid="dialog-primary-btn"
+            >
+              End session
+            </button>
+            <button
+              data-testid="dialog-secondary-btn"
+            >
+              Cancel
+            </button>
+            <button
+              data-testid="dialog-close"
+            >
+              Close Dialog
+            </button>
+          </div>
         </div>
       </div>
     </div>
