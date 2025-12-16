@@ -1,14 +1,14 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 
+import { useEndScenarioPreviewMutation } from "@api";
+import { LIVEKIT_CONFIG, LOCAL_STORAGE_KEYS, ROUTES } from "@constants";
+import { RoomStatus, UseLiveKitRoomReturn, LiveKitEvent } from "@types";
+import { decodeUint8ToJson } from "@utils";
 import { Room, RoomEvent } from "livekit-client";
 import { useParams, useNavigate } from "react-router-dom";
 
 import { logger } from "@ally-ui-mono/ui-shared";
 import { AutoTermination } from "@ally-ui-mono/ui-shared/assets";
-import { useEndScenarioPreviewMutation } from "@api";
-import { LIVEKIT_CONFIG, LOCAL_STORAGE_KEYS, ROUTES } from "@constants";
-import { RoomStatus, UseLiveKitRoomReturn, LiveKitEvent } from "@types";
-import { decodeUint8ToJson } from "@utils";
 
 export const useLiveKitRoom = (
   handleDisconnect: () => void,
@@ -34,9 +34,7 @@ export const useLiveKitRoom = (
   const isConnecting = roomStatus === RoomStatus.CONNECTING;
 
   useEffect(() => {
-    return () => {
-      autoTerminationAudio.current?.pause();
-    };
+    return () => autoTerminationAudio.current?.pause();
   }, []);
 
   const getLiveKitUrl = (): string => {

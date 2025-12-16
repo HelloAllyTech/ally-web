@@ -41,6 +41,7 @@ export const SimulationControls: FC<SimulationControlsProps> = ({
       isActive: false,
       isDisabled: isEndingSession,
       leftIcon: isEndingSession ? <CircularProgress size={16} /> : <Stop />,
+      className: "hover:!bg-[#7e7e7e]",
       show: true,
       text: "End session",
       testId: "simulation-controls-end-session-button",
