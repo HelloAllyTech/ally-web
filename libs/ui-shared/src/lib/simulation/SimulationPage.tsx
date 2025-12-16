@@ -7,28 +7,10 @@ import { motion } from "framer-motion";
 import { toast } from "sonner";
 
 import { BottomSection } from "./SimulationBottomSection";
-import { SimulationInterface } from "./SimulationInterface";
+import { RoomStatus, SimulationInterface } from "./SimulationInterface";
 import { SimulationScoreMeter } from "./SimulationScoreMeter";
 import { SimulationPageProps, TriggerWarning } from "./types";
 import { StartSimulation, EndSimulation } from "../../assets/audios";
-import { logger } from "../../logger";
-
-const useMeetingSound = () => {
-  useEffect(() => {
-    const startAudio = new Audio(StartSimulation);
-    const endAudio = new Audio(EndSimulation);
-
-    startAudio.play().catch(() => {
-      logger.error("Failed to play start simulation sound");
-    });
-
-    return () => {
-      endAudio.play().catch(() => {
-        logger.error("Failed to play end simulation sound");
-      });
-    };
-  }, []);
-};
 
 const useWakeLock = (sessionId: string | undefined) => {
   const wakeLockRef = useRef<WakeLockSentinel | null>(null);
@@ -88,12 +70,22 @@ export const SimulationPage: FC<SimulationPageProps> = ({
   const [isWarning, setIsWarning] = useState(false);
   const [isFocusMode, setIsFocusMode] = useState(false);
 
-  useMeetingSound();
   useWakeLock(sessionId);
 
   if (!roomData) return null;
 
   const { triggerWarnings = [], title } = roomData ?? {};
+
+  const endAudio = useRef<HTMLAudioElement | null>(new Audio(EndSimulation));
+  const startAudio = useRef<HTMLAudioElement | null>(new Audio(StartSimulation));
+
+  useEffect(() => {
+    if (roomStatus === RoomStatus.CONNECTING) startAudio.current?.play();
+
+    return () => {
+      endAudio.current?.pause();
+    };
+  }, [roomStatus]);
 
   const onTimeLimitWarning = () => {
     setIsWarning(true);
@@ -118,7 +110,10 @@ export const SimulationPage: FC<SimulationPageProps> = ({
   };
 
   const handleEndSimulation = async () => {
-    await onEndSimulation?.();
+    endAudio.current?.play();
+    setTimeout(async () => {
+      await onEndSimulation?.();
+    }, 1000);
   };
 
   const content = (
