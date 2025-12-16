@@ -1,18 +1,20 @@
 import { FC, useEffect, useState } from "react";
+
+import { AnimatePresence, motion } from "framer-motion";
+import { useNavigate, useSearchParams } from "react-router-dom";
+
+import { DropdownField } from "@ally-ui-mono/ui-shared";
 import {
   useGetScenariosQuery,
   useGetScenarioPathwaysQuery,
   useUpdateUserPreferencesMutation,
 } from "@api";
-import { AnimatePresence, motion } from "framer-motion";
-import { useNavigate, useSearchParams } from "react-router-dom";
 import { CreditsDisplay, ScenarioCard, TabGroup } from "@components";
 import { Permissions } from "@constants";
-import { useUser } from "@hooks";
+import { useUser, useScenarioLanguages } from "@hooks";
+import { LanguageOption, ScenarioStatus } from "@types";
 import { hasPermissions } from "@utils";
-import { DropdownField } from "@ally-ui-mono/ui-shared";
-import { LanguageOption, ScenarioStatus } from "@src/types";
-import { useScenarioLanguages } from "../../hooks/useScenarioLanguages";
+
 import { learnPageContainerVariants, learnPageItemVariants } from "./constants";
 
 enum TabId {
@@ -97,7 +99,6 @@ export const Learn: FC = () => {
         default_language_id: Number(selectedOption.language_id),
       }).unwrap();
     } catch (error) {
-      console.error("Failed to update language preference:", error);
       setSelectedLanguage(previousLanguage);
       // Remove from localStorage if update fails
       localStorage.removeItem("selectedLanguage");

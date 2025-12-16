@@ -56,7 +56,7 @@ export interface UserState {
 export interface LanguageOption {
   value: string;
   label: string;
-  language_id?: number;  // Make this optional with ?
+  language_id?: number; // Make this optional with ?
 }
 
 export enum SessionType {

@@ -287,6 +287,7 @@ describe("useStartSimulation", () => {
     expect(mockStartSimulationMutation).toHaveBeenCalledTimes(1);
     expect(mockStartSimulationMutation).toHaveBeenCalledWith({
       scenarioId: 1,
+      scenarioPathSessionItemId: "path-123",
       language: "en-IN",
       languageId: 1,
     });

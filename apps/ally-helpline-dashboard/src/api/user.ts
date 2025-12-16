@@ -6,8 +6,9 @@
  * - Simulation room lifecycle (list, create, delete)
  */
 import { ApiEndpoints, HttpMethod } from "@constants";
+import { UserPreferences } from "@types";
+
 import { baseAPI } from "./baseAPI";
-import { UserPreferences } from "@src/types";
 
 const learnAPI = baseAPI.injectEndpoints({
   endpoints: builder => ({

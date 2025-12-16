@@ -1,5 +1,6 @@
 // In useScenarioLanguages.ts
 import { useMemo } from "react";
+
 import { useGetAvailableLanguagesQuery } from "../api/learn";
 import { useGetUserPreferencesQuery } from "../api/user";
 import { LanguageOption } from "../types";
@@ -30,7 +31,6 @@ export const useScenarioLanguages = () => {
 
     // Handle error state
     if (languagesError || preferencesError) {
-      console.error("Error fetching languages or preferences:", languagesError || preferencesError);
       return {
         languages: [],
         defaultLanguage: null,

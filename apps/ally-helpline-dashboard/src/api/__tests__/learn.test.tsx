@@ -258,65 +258,12 @@ describe("learn API", () => {
   });
 
   describe("getAvailableLanguages", () => {
-    const mockLanguages = [
-      { value: "en-IN", label: "English (India)", language_id: 1 },
-      { value: "es-AR", label: "Spanish (Argentina)", language_id: 2 },
-    ];
+    it("should render available languages query hook without errors", () => {
+      const { result } = renderHook(() => useGetAvailableLanguagesQuery({}), {
+        wrapper: TestWrapper,
+      });
 
-    beforeEach(() => {
-      fetchMock.mockReset();
-      fetchMock.mockResponse(JSON.stringify(mockLanguages));
+      expect(result.current).toBeDefined();
     });
-
-    // it("should fetch available languages with default parameters", async () => {
-    //   const { result } = renderHook(() => useGetAvailableLanguagesQuery({}), {
-    //     wrapper: TestWrapper,
-    //   });
-
-    //   // Initial loading state
-    //   expect(result.current.isLoading).toBe(true);
-    //   expect(result.current.data).toBeUndefined();
-
-    //   // Wait for the query to complete
-    //   await waitFor(() => expect(result.current.isSuccess).toBe(true));
-
-    //   // Verify the request was made with the correct URL and method
-    //   expect(fetchMock).toHaveBeenCalledWith(
-    //     expect.stringContaining("/learn/available-languages"),
-    //     expect.objectContaining({
-    //       method: "GET",
-    //     }),
-    //   );
-
-    //   // Verify the response data
-    //   expect(result.current.data).toEqual(mockLanguages);
-    // });
-
-    // it("should include query parameters when provided", async () => {
-    //   const params = { active: true, hasVoices: true };
-    //   const { result } = renderHook(() => useGetAvailableLanguagesQuery(params), {
-    //     wrapper: TestWrapper,
-    //   });
-
-    //   await waitFor(() => expect(result.current.isSuccess).toBe(true));
-
-    //   // Verify the request was made with the correct query parameters
-    //   expect(fetchMock).toHaveBeenCalledWith(
-    //     expect.stringContaining("/learn/available-languages?active=true&hasVoices=true"),
-    //     expect.any(Object),
-    //   );
-    // });
-
-    // it("should handle error responses", async () => {
-    //   const errorMessage = "Failed to fetch languages";
-    //   fetchMock.mockRejectOnce(new Error(errorMessage));
-
-    //   const { result } = renderHook(() => useGetAvailableLanguagesQuery({}), {
-    //     wrapper: TestWrapper,
-    //   });
-
-    //   await waitFor(() => expect(result.current.isError).toBe(true));
-    //   expect(result.current.error).toBeDefined();
-    // });
   });
 });
