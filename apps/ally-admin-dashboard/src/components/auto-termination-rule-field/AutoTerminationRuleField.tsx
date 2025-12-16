@@ -23,7 +23,7 @@ const TERMINATION_FIELDS_MAP = {
     placeholder: en.simulation.triggerEventPlaceholder,
   },
   triggerMessage: {
-    id: "terminationDialogue",
+    id: "terminationMessage",
     label: en.simulation.triggerMessage,
     placeholder: en.simulation.terminationMessagePlaceholder,
   },
