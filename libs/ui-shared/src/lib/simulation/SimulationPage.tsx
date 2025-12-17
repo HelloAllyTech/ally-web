@@ -113,9 +113,7 @@ export const SimulationPage: FC<SimulationPageProps> = ({
   const handleEndSimulation = async () => {
     endSessionButtonRef.current = true;
     endAudio.current?.play();
-    setTimeout(async () => {
-      await onEndSimulation?.();
-    }, 1000);
+    await onEndSimulation?.();
   };
 
   const content = (

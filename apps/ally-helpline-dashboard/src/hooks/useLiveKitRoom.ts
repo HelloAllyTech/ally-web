@@ -55,12 +55,12 @@ export const useLiveKitRoom = (
     if (room.localParticipant) {
       room.localParticipant.setMicrophoneEnabled(false);
     }
+    setRoomStatus(RoomStatus.DISCONNECTED);
     setTimeout(
       () => {
-        setRoomStatus(RoomStatus.DISCONNECTED);
         handleDisconnect();
       },
-      endSessionButtonRef.current ? 0 : 4000,
+      endSessionButtonRef.current ? 0 : 1000,
     );
   }, []);
 
@@ -165,6 +165,10 @@ export const useLiveKitRoom = (
       window.removeEventListener("pagehide", handleUnload);
     };
   }, [room]);
+
+  useEffect(() => {
+    return () => autoTerminationAudio.current?.pause();
+  }, []);
 
   return {
     error,
