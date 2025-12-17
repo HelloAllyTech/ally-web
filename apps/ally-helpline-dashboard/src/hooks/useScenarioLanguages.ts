@@ -1,8 +1,9 @@
 // In useScenarioLanguages.ts
 import { useMemo } from "react";
 
-import { useGetAvailableLanguagesQuery } from "../api/learn";
-import { useGetUserPreferencesQuery } from "../api/user";
+import { useGetUserPreferencesQuery, useGetAvailableLanguagesQuery } from "@api";
+import { LOCAL_STORAGE_KEYS } from "@constants";
+
 import { LanguageOption } from "../types";
 
 export const useScenarioLanguages = () => {
@@ -16,7 +17,9 @@ export const useScenarioLanguages = () => {
     data: preferencesResponse,
     isLoading: isPreferencesLoading,
     error: preferencesError,
-  } = useGetUserPreferencesQuery();
+  } = useGetUserPreferencesQuery(undefined, {
+    skip: !localStorage.getItem(LOCAL_STORAGE_KEYS.ACCESS_TOKEN),
+  });
 
   return useMemo(() => {
     // Handle loading state
