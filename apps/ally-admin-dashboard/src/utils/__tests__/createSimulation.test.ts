@@ -91,6 +91,7 @@ describe("createSimulation utils", () => {
           startingState: "Calm",
           tone: "Casual",
           voiceId: "voice-123",
+          agentDialoguesArray: "Sample dialogues",
         },
       } as GetSimulationByIdResponse;
 
@@ -123,6 +124,8 @@ describe("createSimulation utils", () => {
         autoTerminationStatus: false,
         terminationEventId: undefined,
         terminationMessage: undefined,
+        agentDialoguesArray: "Sample dialogues",
+        customFieldGroup: undefined,
       });
     });
 
@@ -219,7 +222,7 @@ describe("createSimulation utils", () => {
       const result = formatSimulationResponseData(mockResponse);
 
       // Check all fields are present (title, description, coverImageUrl, coverVideoUrl, autoTerminationStatus, terminationEventId, terminationMessage, customFieldGroup + 18 metadata fields = 29 total)
-      expect(Object.keys(result)).toHaveLength(29);
+      expect(Object.keys(result)).toHaveLength(30);
       expect(result.title).toBe("Test");
       expect(result.description).toBe("Test");
       expect(result.coverImageUrl).toBe("url");

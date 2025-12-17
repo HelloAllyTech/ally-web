@@ -136,7 +136,7 @@ describe("VoiceDropdown", () => {
         </TestWrapper>,
       );
 
-      expect(screen.getByText("Select voice")).toBeInTheDocument();
+      expect(screen.getByText("Select")).toBeInTheDocument();
     });
   });
 
@@ -154,7 +154,7 @@ describe("VoiceDropdown", () => {
         </TestWrapper>,
       );
 
-      expect(screen.getByText("Select voice")).toBeInTheDocument();
+      expect(screen.getByText("Select")).toBeInTheDocument();
     });
 
     it("handles undefined voice data", () => {
@@ -170,7 +170,7 @@ describe("VoiceDropdown", () => {
         </TestWrapper>,
       );
 
-      expect(screen.getByText("Select voice")).toBeInTheDocument();
+      expect(screen.getByText("Select")).toBeInTheDocument();
     });
   });
 
@@ -311,7 +311,7 @@ describe("VoiceDropdown", () => {
       );
 
       // Component should still render with placeholder
-      expect(screen.getByText("Select voice")).toBeInTheDocument();
+      expect(screen.getByText("Select")).toBeInTheDocument();
     });
 
     it("handles error state from API", () => {
@@ -328,7 +328,7 @@ describe("VoiceDropdown", () => {
       );
 
       // Component should still render with placeholder
-      expect(screen.getByText("Select voice")).toBeInTheDocument();
+      expect(screen.getByText("Select")).toBeInTheDocument();
     });
   });
 

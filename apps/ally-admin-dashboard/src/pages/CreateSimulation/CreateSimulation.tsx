@@ -161,7 +161,7 @@ export const CreateSimulation: FC = () => {
       }
     }
 
-    const { openingStatements, triggerWarningIds, customFieldGroup, sampleDialogues, ...restForm } =
+    const { openingStatements, triggerWarningIds, customFieldGroup, agentDialogues, ...restForm } =
       formData;
 
     const openingStatementsArray = isNonEmptyString(openingStatements)
@@ -171,8 +171,8 @@ export const CreateSimulation: FC = () => {
           .filter((line: string) => line.length > 0)
       : null;
 
-    const sampleDialogueArray = isNonEmptyString(sampleDialogues)
-      ? sampleDialogues
+    const agentDialoguesArray = isNonEmptyString(agentDialogues)
+      ? agentDialogues
           .split("\n")
           .map((line: string) => line.trim())
           .filter((line: string) => line.length > 0)
@@ -199,7 +199,7 @@ export const CreateSimulation: FC = () => {
         restForm,
       ),
       openingStatements: openingStatementsArray,
-      sampleDialogues: sampleDialogueArray,
+      agentDialogues: agentDialoguesArray,
       ...(FEATURE_FLAGS_MAP.CUSTOM_FIELD_FLAG && { customFieldGroup: customFieldGroupList }),
       ...(FEATURE_FLAGS_MAP.TRIGGER_WARNINGS_FLAG && { triggerWarningIds: triggerWarning }),
       status,

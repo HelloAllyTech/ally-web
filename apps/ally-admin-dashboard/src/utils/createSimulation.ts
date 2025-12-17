@@ -51,8 +51,8 @@ export const formatSimulationResponseData = (data: GetSimulationByIdResponse) =>
       name: field.name,
       value: field.value,
     })),
-    sampleDialogues: Array.isArray(data?.metadata?.sampleDialogues)
-      ? data?.metadata?.sampleDialogues.join("\n")
-      : (data?.metadata?.sampleDialogues ?? ""),
+    agentDialoguesArray: Array.isArray(data?.metadata?.agentDialoguesArray)
+      ? data?.metadata?.agentDialoguesArray.join("\n")
+      : (data?.metadata?.agentDialoguesArray ?? ""),
   };
 };

@@ -37,7 +37,7 @@ export type FormData = {
   triggerWarningIds: triggerWarning[];
   prompt: string;
   difficultyLevel: string;
-  sampleDialogues: string;
+  agentDialoguesArray: string;
 };
 
 export interface DemographicsSectionProps {

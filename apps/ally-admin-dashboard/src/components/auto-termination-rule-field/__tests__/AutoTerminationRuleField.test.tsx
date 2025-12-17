@@ -73,6 +73,7 @@ vi.mock("@constants", () => ({
     common: {
       enabled: "Enabled",
       disabled: "Disabled",
+      select: "Select",
     },
   },
 }));
@@ -209,7 +210,7 @@ describe("AutoTerminationRuleField", () => {
     const toggle = screen.getByRole("button", { name: /toggle/i });
     fireEvent.click(toggle);
 
-    expect(screen.getByText("Select an event")).toBeInTheDocument();
+    expect(screen.getByText("Select")).toBeInTheDocument();
   });
 
   it("has correct placeholder for termination message", () => {

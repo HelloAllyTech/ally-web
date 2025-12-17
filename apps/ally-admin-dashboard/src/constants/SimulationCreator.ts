@@ -301,7 +301,7 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
         fullWidth: true,
       },
       {
-        id: "sampleDialogues",
+        id: "agentDialogues",
         label: "Your dialogues",
         type: FORM_FIELD_TYPES.TEXT,
         multiline: true,
