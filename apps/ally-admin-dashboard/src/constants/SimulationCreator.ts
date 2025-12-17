@@ -177,7 +177,6 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
         isMandatory: false,
         fullWidth: true,
       },
-
       {
         id: "challengeDescription",
         label: "Challenge Description",
@@ -277,7 +276,6 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
         options: SEXUAL_ORIENTATION_OPTIONS,
         maxLength: 100,
       },
-
       {
         id: "context",
         label: "Your context",
@@ -313,10 +311,11 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
         isMandatory: true,
       },
       {
-        id: "voiceId",
-        label: "Voices",
-        type: FORM_FIELD_TYPES.CUSTOM.VOICE_DROPDOWN,
+        id: "languageVoices",
+        label: "Language-Voice",
+        type: FORM_FIELD_TYPES.CUSTOM.LANGUAGE_VOICE_MAPPING,
         isMandatory: true,
+        fullWidth: true,
       },
       {
         id: "voiceInstruction",
