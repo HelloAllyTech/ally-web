@@ -60,6 +60,12 @@ export const DIFFICULTY_LEVEL_OPTIONS = [
   { value: "Hard", label: "Hard" },
 ];
 
+export const RESPONSE_LENGTH_OPTIONS = [
+  { value: "VERY_BRIEF", label: "Very Brief" },
+  { value: "BRIEF", label: "Brief" },
+  { value: "MEDIUM", label: "Medium" },
+  { value: "ELABORATE", label: "Elaborate" },
+];
 export const SIMULATION_CREATOR_STEP_IDS = {
   overview: "overview",
   basicSettings: "basic-settings",
@@ -246,7 +252,7 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
     label: "Character Identity",
     fields: [
       {
-        id: "roleInstruction",
+        id: "prompt",
         label: "Role instruction",
         type: FORM_FIELD_TYPES.TEXT,
         multiline: true,
@@ -259,6 +265,7 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
         label: "Length of your responses",
         type: FORM_FIELD_TYPES.SELECT,
         isMandatory: true,
+        options: RESPONSE_LENGTH_OPTIONS,
       },
       {
         id: "genderIdentity",
@@ -294,7 +301,7 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
         fullWidth: true,
       },
       {
-        id: "yourDialogues",
+        id: "sampleDialogues",
         label: "Your dialogues",
         type: FORM_FIELD_TYPES.TEXT,
         multiline: true,
@@ -340,12 +347,6 @@ export const SIMULATION_CREATOR_FIELD_GROUPS_OLD: CreatorFieldGroups[] = [
     id: SIMULATION_CREATOR_STEP_IDS_OLD.basicInfo,
     label: "Basic Information",
     fields: [
-      FEATURE_FLAGS_MAP.CUSTOM_FIELD_FLAG && {
-        id: "customFieldGroup",
-        label: "Custom field group",
-        type: FORM_FIELD_TYPES.CUSTOM_FIELD_GROUP,
-        fullWidth: true,
-      },
       {
         id: "isGlobal",
         label: "Default org-level visibility",

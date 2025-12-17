@@ -20,7 +20,6 @@ const TERMINATION_FIELDS_MAP = {
   triggerEvent: {
     id: "terminationEventId",
     label: en.simulation.triggerEvent,
-    placeholder: en.simulation.triggerEventPlaceholder,
   },
   triggerMessage: {
     id: "terminationMessage",
@@ -88,7 +87,6 @@ export const AutoTerminationRuleField: React.FC<AutoTerminationRuleFieldProps> =
               options={eventOptions}
               isSearchable
               handleSearchTextChange={handleSearchTextChange}
-              placeholder={TERMINATION_FIELDS_MAP.triggerEvent.placeholder}
               isMandatory={autoTerminationStatus}
               defaultOption={formMethods.getValues().terminationName}
             />

@@ -110,6 +110,7 @@ export interface GetSimulationByIdResponse {
     tone?: string;
     voiceId?: string;
     agentGoal?: string;
+    sampleDialogues?: string[];
   };
   terminationEvent: {
     eventId: string;

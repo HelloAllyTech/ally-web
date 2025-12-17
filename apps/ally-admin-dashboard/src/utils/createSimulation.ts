@@ -30,7 +30,7 @@ export const formatSimulationResponseData = (data: GetSimulationByIdResponse) =>
     lifeHistory: data?.metadata?.lifeHistory,
     openingStatements: Array.isArray(data?.metadata?.openingStatements)
       ? data.metadata.openingStatements.join("\n")
-      : ((data?.metadata as any)?.openingStatements ?? ""),
+      : (data?.metadata?.openingStatements ?? ""),
     personality: data?.metadata?.personality,
     profession: data?.metadata?.profession,
     sessionBehaviorGuidelines: data?.metadata?.sessionBehaviorGuidelines,
@@ -51,5 +51,8 @@ export const formatSimulationResponseData = (data: GetSimulationByIdResponse) =>
       name: field.name,
       value: field.value,
     })),
+    sampleDialogues: Array.isArray(data?.metadata?.sampleDialogues)
+      ? data?.metadata?.sampleDialogues.join("\n")
+      : (data?.metadata?.sampleDialogues ?? ""),
   };
 };

@@ -142,8 +142,8 @@ export const SimulationStudio: React.FC = () => {
       onClick: handleNewSimulation,
     },
     {
-      id: en.simulation.newTrackway,
-      label: en.simulation.newTrackway,
+      id: en.simulation.newTrack,
+      label: en.simulation.newTrack,
       icon: <Pathway className="w-5 h-5" />,
       onClick: handleNewPathway,
     },

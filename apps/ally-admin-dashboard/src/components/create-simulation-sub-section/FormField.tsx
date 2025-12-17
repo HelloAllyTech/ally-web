@@ -35,7 +35,6 @@ export const FormField: FC<FormFieldProps> = ({ config, formMethods }) => {
               label={label}
               formMethods={formMethods}
               options={options ?? []}
-              placeholder={`Select ${label.toLowerCase()}`}
               isMandatory={isMandatory}
             />
             {errors && (
