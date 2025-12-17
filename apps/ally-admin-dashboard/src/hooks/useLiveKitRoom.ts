@@ -53,11 +53,13 @@ export const useLiveKitRoom = (
 
   const onRoomDisconnect = useCallback(() => {
     if (!endSessionButtonRef.current) autoTerminationAudio.current?.play();
-
-    setTimeout(() => {
-      handleDisconnect();
-      setRoomStatus(RoomStatus.DISCONNECTED);
-    }, 1000);
+    setRoomStatus(RoomStatus.DISCONNECTED);
+    setTimeout(
+      () => {
+        handleDisconnect();
+      },
+      endSessionButtonRef.current ? 0 : 1000,
+    );
   }, []);
 
   const cleanupRoom = useCallback(() => {
