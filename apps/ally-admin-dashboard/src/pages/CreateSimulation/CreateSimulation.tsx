@@ -208,7 +208,7 @@ export const CreateSimulation: FC = () => {
       ),
       openingStatements: openingStatementsArray,
       agentDialogues: agentDialoguesArray,
-      customFieldGroup: customFieldGroupList,
+      customFields: customFieldGroupList,
       triggerWarningIds: triggerWarning,
       status,
     };

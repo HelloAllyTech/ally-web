@@ -54,9 +54,9 @@ export const SEXUAL_ORIENTATION_OPTIONS = [
 ];
 
 export const DIFFICULTY_LEVEL_OPTIONS = [
-  { value: "Easy", label: "Easy" },
-  { value: "Medium", label: "Medium" },
-  { value: "Hard", label: "Hard" },
+  { value: "EASY", label: "Easy" },
+  { value: "MEDIUM", label: "Medium" },
+  { value: "HARD", label: "Hard" },
 ];
 
 export const RESPONSE_LENGTH_OPTIONS = [
@@ -108,7 +108,7 @@ export const FORM_FIELD_TYPES = {
   },
   TOGGLE_BUTTON: "toggle_button",
   TAG_AND_DROPDOWN: "tag_and_dropdown",
-  CUSTOM_FIELD_GROUP: "custom_field_group",
+  CUSTOM_FIELDS: "custom_fields",
 };
 
 export const FORM_FIELD_IDS = {
@@ -132,7 +132,7 @@ export const FORM_FIELD_IDS = {
   COVER_IMAGE_URL: "coverImageUrl",
   COVER_VIDEO_URL: "coverVideoUrl",
   TRIGGER_WARNING_IDS: "triggerWarningIds",
-  CUSTOM_FIELD_GROUP: "customFieldGroup",
+  CUSTOM_FIELDS: "customFields",
   LIFE_HISTORY: "lifeHistory",
   OPENING_STATEMENTS: "openingStatements",
   PERSONALITY: "personality",
@@ -183,7 +183,7 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
         fullWidth: true,
       },
       {
-        id: "challengeDescription",
+        id: "description",
         label: "Challenge Description",
         placeholder: "What is the primary learning goal?",
         type: FORM_FIELD_TYPES.TEXT,
@@ -293,9 +293,9 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
         maxLength: 1000,
       },
       {
-        id: "customFieldGroup",
-        label: "Custom field group",
-        type: FORM_FIELD_TYPES.CUSTOM_FIELD_GROUP,
+        id: "customFields",
+        label: "Custom fields",
+        type: FORM_FIELD_TYPES.CUSTOM_FIELDS,
         fullWidth: true,
       },
       {
@@ -308,7 +308,7 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
         isMandatory: true,
       },
       {
-        id: "openingDialogues",
+        id: "openingStatements",
         label: "Opening dialogues",
         type: FORM_FIELD_TYPES.TEXT,
         multiline: true,
@@ -324,7 +324,7 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
         fullWidth: true,
       },
       {
-        id: "voiceInstruction",
+        id: "tone",
         label: "Voice instruction",
         type: FORM_FIELD_TYPES.TEXT,
         placeholder: "e.g. Casual",
@@ -545,7 +545,7 @@ export const SIMULATION_CREATOR_FIELD_GROUPS_OLD: CreatorFieldGroups[] = [
         fullWidth: true,
       },
       {
-        id: "voiceInstruction",
+        id: "tone",
         label: "Your tone",
         type: FORM_FIELD_TYPES.TEXT,
         placeholder: "e.g. Casual",

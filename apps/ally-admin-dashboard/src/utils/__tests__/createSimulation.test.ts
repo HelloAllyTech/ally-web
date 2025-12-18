@@ -91,7 +91,8 @@ describe("createSimulation utils", () => {
           languageVoices: {
             1: "voice-123",
           },
-          agentDialoguesArray: "Sample dialogues",
+          voiceId: "voice-123",
+          agentDialogues: "Sample dialogues",
         },
       } as GetSimulationByIdResponse;
 
@@ -126,8 +127,13 @@ describe("createSimulation utils", () => {
         languageVoices: {
           1: "voice-123",
         },
-        agentDialoguesArray: "Sample dialogues",
-        customFieldGroup: undefined,
+        terminationName: undefined,
+        difficultyLevel: undefined,
+        responseLength: undefined,
+        prompt: undefined,
+        triggerWarningIds: undefined,
+        agentDialogues: "Sample dialogues",
+        customFields: undefined,
       });
     });
 
@@ -225,8 +231,8 @@ describe("createSimulation utils", () => {
 
       const result = formatSimulationResponseData(mockResponse);
 
-      // Check all fields are present (title, description, coverImageUrl, coverVideoUrl, autoTerminationStatus, terminationEventId, terminationMessage, customFieldGroup + 18 metadata fields = 29 total)
-      expect(Object.keys(result)).toHaveLength(30);
+      // Check all fields are present (title, description, coverImageUrl, coverVideoUrl, autoTerminationStatus, terminationEventId, terminationMessage, terminationName, difficultyLevel, responseLength, prompt, isGlobal, triggerWarningIds, customFieldGroup, agentDialoguesArray + 18 metadata fields = 33 total)
+      expect(Object.keys(result)).toHaveLength(33);
       expect(result.title).toBe("Test");
       expect(result.description).toBe("Test");
       expect(result.coverImageUrl).toBe("url");
