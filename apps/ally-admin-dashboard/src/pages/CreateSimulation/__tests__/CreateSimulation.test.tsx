@@ -71,7 +71,6 @@ vi.mock("@hooks", () => ({
 vi.mock("@ally-ui-mono/ui-shared", () => ({
   FEATURE_FLAGS_MAP: {
     NEW_CREATE_SIMULATION_FLAG: true,
-    TRIGGER_WARNINGS_FLAG: false,
     CUSTOM_FIELD_FLAG: false,
   },
 }));

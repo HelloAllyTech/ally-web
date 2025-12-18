@@ -2,7 +2,7 @@ import { FC, useState } from "react";
 
 import { motion } from "framer-motion";
 
-import { ChipGroup, FEATURE_FLAGS_MAP } from "@ally-ui-mono/ui-shared";
+import { ChipGroup } from "@ally-ui-mono/ui-shared";
 import { CircularProgress } from "@components";
 
 import { scenarioDescriptionStyle } from "./constants";
@@ -76,7 +76,7 @@ const ScenarioCard: FC<ScenarioCardProps> = ({
               {title}
             </div>
 
-            {FEATURE_FLAGS_MAP.TRIGGER_WARNINGS_FLAG && triggerWarnings?.length > 0 ? (
+            {triggerWarnings?.length > 0 ? (
               <div className="flex flex-col w-full">
                 <div className="flex w-full h-[1px] my-[8px] bg-gray-200" />
                 <div className="flex flex-col justify-start items-start]">

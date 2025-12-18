@@ -6,7 +6,6 @@ import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
-import { FEATURE_FLAGS_MAP } from "@ally-ui-mono/ui-shared";
 import {
   useGenerateOTPMutation,
   useLazyCheckTermsAndAgreementQuery,
@@ -129,17 +128,13 @@ export const Login: FunctionComponent = () => {
       } else if (isVerifyOTPSuccess && verifyOTPData) {
         accessTokenRef.current = verifyOTPData.accessToken;
         refreshTokenRef.current = verifyOTPData.refreshToken;
-        if (FEATURE_FLAGS_MAP.TERMS_AND_CONDITION_FLAG) {
-          const response = await checkTermsAndAgreement({
-            token: verifyOTPData.accessToken,
-          });
-          if (response.data?.success) {
-            updateLocalStorageAndNavigate();
-          } else {
-            setTermsAndAgreement(true);
-          }
-        } else {
+        const response = await checkTermsAndAgreement({
+          token: verifyOTPData.accessToken,
+        });
+        if (response.data?.success) {
           updateLocalStorageAndNavigate();
+        } else {
+          setTermsAndAgreement(true);
         }
       }
     })();

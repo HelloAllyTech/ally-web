@@ -200,7 +200,7 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
         options: DIFFICULTY_LEVEL_OPTIONS,
         isMandatory: true,
       },
-      FEATURE_FLAGS_MAP.TRIGGER_WARNINGS_FLAG && {
+      {
         id: "triggerWarningIds",
         label: "Trigger warnings",
         type: FORM_FIELD_TYPES.TAG_AND_DROPDOWN,
@@ -387,7 +387,7 @@ export const SIMULATION_CREATOR_FIELD_GROUPS_OLD: CreatorFieldGroups[] = [
         fullWidth: true,
         maxLength: 1000,
       },
-      FEATURE_FLAGS_MAP.TRIGGER_WARNINGS_FLAG && {
+      {
         id: "triggerWarningIds",
         label: "Trigger Warnings",
         type: FORM_FIELD_TYPES.TAG_AND_DROPDOWN,

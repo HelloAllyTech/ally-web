@@ -4,7 +4,7 @@ import { CircularProgress } from "@mui/material";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
 
-import { ChipGroup, CustomVideo, FEATURE_FLAGS_MAP } from "@ally-ui-mono/ui-shared";
+import { ChipGroup, CustomVideo } from "@ally-ui-mono/ui-shared";
 import { ShareIcon } from "@assets";
 import { Button } from "@components";
 
@@ -119,7 +119,7 @@ const ScenarioDetailsCard: FC<ScenarioDetailsCardProps> = ({
           </div>
         )}
 
-        {FEATURE_FLAGS_MAP.TRIGGER_WARNINGS_FLAG && triggerWarnings?.length > 0 && (
+        {triggerWarnings?.length > 0 && (
           <div className="flex flex-col">
             <div className="text-base font-semibold text-typography-900 mb-[4px]">
               Trigger warnings:
