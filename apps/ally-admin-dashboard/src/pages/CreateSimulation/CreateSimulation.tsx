@@ -260,8 +260,11 @@ export const CreateSimulation: FC = () => {
     try {
       const response = await saveSimulationChanges(SimulationStatus.ACTIVE);
 
-      // Navigate to simulation studio or the created simulation
-      if (response) navigate(ROUTES.SIMULATION_STUDIO);
+      if (response.error) {
+        toast.error(response?.error?.data?.message || en.errors.failedSimulationCreation);
+      } else {
+        navigate(ROUTES.SIMULATION_STUDIO);
+      }
     } catch {
       toast.error(en.errors.failedSimulationCreation);
     }

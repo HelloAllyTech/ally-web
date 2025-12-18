@@ -31,10 +31,11 @@ export const useSimulations = ({ selectedFilters }: UseSimulationsProps) => {
   const [simulations, setSimulations] = useState<Simulation[]>([]);
   const [simulationsOffset, setSimulationsOffset] = useState<number>(0);
   const [hasMore, setHasMore] = useState(true);
+  const [simulationLimit, setSimulationLimit] = useState(SIMULATIONS_PAGE_SIZE);
   const [IsDuplicateSimulationPopupOpen, setIsDuplicateSimulationPopupOpen] = useState(false);
 
   const simulationParams = {
-    limit: SIMULATIONS_PAGE_SIZE,
+    limit: simulationLimit,
     offset: simulationsOffset,
     sortBy: SORT_BY.UPDATED_AT,
     order: SORT_ORDER.DESC,
@@ -61,9 +62,10 @@ export const useSimulations = ({ selectedFilters }: UseSimulationsProps) => {
   useEffect(() => {
     if (!simulationsResponse) return;
     const nextData = simulationsResponse.data ?? [];
-    setHasMore(nextData.length >= SIMULATIONS_PAGE_SIZE);
+    setHasMore(nextData.length >= simulationLimit);
     if (simulationsOffset === 0) {
       setSimulations(nextData);
+      setSimulationLimit(SIMULATIONS_PAGE_SIZE);
     } else {
       setSimulations(previousSimulations => {
         const existingIds = new Set(previousSimulations.map(simulation => simulation.id));
@@ -74,7 +76,12 @@ export const useSimulations = ({ selectedFilters }: UseSimulationsProps) => {
   }, [simulationsResponse, simulationsOffset]);
 
   const loadSimulations = (append = false) => {
-    setSimulationsOffset(previousOffset => (append ? previousOffset + SIMULATIONS_PAGE_SIZE : 0));
+    setSimulationsOffset(previousOffset => (append ? previousOffset + simulationLimit : 0));
+  };
+
+  const reLoadCurrentSimulations = () => {
+    setSimulationsOffset(0);
+    setSimulationLimit(simulationsOffset + SIMULATIONS_PAGE_SIZE);
   };
 
   const handleNewSimulation = () => {
@@ -168,6 +175,7 @@ export const useSimulations = ({ selectedFilters }: UseSimulationsProps) => {
       await duplicateSimulation(simulation.id).unwrap();
       setIsDuplicateSimulationPopupOpen(false);
       setCurrentSimulation(null);
+      reLoadCurrentSimulations();
       toast.success(en.simulation.simulationDuplicatedSuccessfully);
     } catch (error: any) {
       toast.error(error?.data?.message || en.simulation.failedDuplicateSimulation);

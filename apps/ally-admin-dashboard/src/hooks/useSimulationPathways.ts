@@ -26,6 +26,7 @@ export const useSimulationPathways = ({ selectedFilters }: UseSimulationPathways
   const [currentPathway, setCurrentPathway] = useState<ScenarioPath | null>(null);
   const [pathways, setPathways] = useState<ScenarioPath[]>([]);
   const [pathwaysOffset, setPathwaysOffset] = useState<number>(0);
+  const [pathwaysLimit, setPathwaysLimit] = useState(PATHWAYS_PAGE_SIZE);
   const [hasMore, setHasMore] = useState(true);
   const [isUnpublishPathwayPopupOpen, setIsUnpublishPathwayPopupOpen] = useState(false);
   const [isDuplicatePathwayPopupOpen, setIsDuplicatePathwayPopupOpen] = useState(false);
@@ -42,7 +43,7 @@ export const useSimulationPathways = ({ selectedFilters }: UseSimulationPathways
     status:
       selectedFilters.length > 0 ? selectedFilters?.map(filter => filter.id)?.join(",") : undefined,
     offset: pathwaysOffset,
-    limit: PATHWAYS_PAGE_SIZE,
+    limit: pathwaysLimit,
     search: "",
   });
 
@@ -56,9 +57,10 @@ export const useSimulationPathways = ({ selectedFilters }: UseSimulationPathways
   useEffect(() => {
     if (!pathwaysResponse) return;
     const nextData = pathwaysResponse.data ?? [];
-    setHasMore(nextData.length >= PATHWAYS_PAGE_SIZE);
+    setHasMore(nextData.length >= pathwaysLimit);
     if (pathwaysOffset === 0) {
       setPathways(nextData);
+      setPathwaysLimit(PATHWAYS_PAGE_SIZE);
     } else {
       setPathways(previousPathways => {
         const existingIds = new Set(previousPathways.map(pathway => pathway.id));
@@ -69,7 +71,12 @@ export const useSimulationPathways = ({ selectedFilters }: UseSimulationPathways
   }, [pathwaysResponse, pathwaysOffset]);
 
   const loadPathways = (append = false) => {
-    setPathwaysOffset(previousOffset => (append ? previousOffset + PATHWAYS_PAGE_SIZE : 0));
+    setPathwaysOffset(previousOffset => (append ? previousOffset + pathwaysLimit : 0));
+  };
+
+  const reLoadCurrentPathways = () => {
+    setPathwaysOffset(0);
+    setPathwaysLimit(pathwaysOffset + PATHWAYS_PAGE_SIZE);
   };
 
   const handleNewPathway = () => {
@@ -137,6 +144,7 @@ export const useSimulationPathways = ({ selectedFilters }: UseSimulationPathways
       await duplicateScenarioPath(pathway.id).unwrap();
       setIsDuplicatePathwayPopupOpen(false);
       setCurrentPathway(null);
+      reLoadCurrentPathways();
       toast.success(en.simulation.pathwayDuplicatedSuccessfully);
     } catch (error: any) {
       toast.error(error?.data?.message || en.simulation.failedDuplicatePathway);
