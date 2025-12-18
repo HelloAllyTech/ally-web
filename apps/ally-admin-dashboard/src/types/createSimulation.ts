@@ -7,7 +7,7 @@ export type FormData = {
   coverImageUrl: string;
   coverVideoUrl?: string;
   title: string;
-  challengeDescription: string;
+  description: string;
   name: string;
   age: number;
   gender: string;

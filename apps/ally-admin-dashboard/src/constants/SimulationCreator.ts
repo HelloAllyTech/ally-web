@@ -54,9 +54,9 @@ export const SEXUAL_ORIENTATION_OPTIONS = [
 ];
 
 export const DIFFICULTY_LEVEL_OPTIONS = [
-  { value: "Easy", label: "Easy" },
-  { value: "Medium", label: "Medium" },
-  { value: "Hard", label: "Hard" },
+  { value: "EASY", label: "Easy" },
+  { value: "MEDIUM", label: "Medium" },
+  { value: "HARD", label: "Hard" },
 ];
 
 export const RESPONSE_LENGTH_OPTIONS = [
@@ -183,7 +183,7 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
       },
 
       {
-        id: "challengeDescription",
+        id: "description",
         label: "Challenge Description",
         placeholder: "What is the primary learning goal?",
         type: FORM_FIELD_TYPES.TEXT,

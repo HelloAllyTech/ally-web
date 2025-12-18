@@ -44,6 +44,9 @@ export const formatSimulationResponseData = (data: GetSimulationByIdResponse) =>
     terminationEventId: data?.terminationEvent?.eventId,
     terminationMessage: data?.terminationEvent?.message,
     terminationName: data?.terminationEvent?.name,
+    difficultyLevel: data?.difficultyLevel,
+    responseLength: data?.metadata?.responseLength,
+    prompt: data?.prompt,
     isGlobal: Boolean(data?.isGlobal),
     triggerWarningIds: data?.triggerWarnings,
     customFieldGroup: data?.customFields?.map((field, index) => ({

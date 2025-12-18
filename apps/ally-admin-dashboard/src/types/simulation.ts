@@ -91,6 +91,7 @@ export interface GetSimulationByIdResponse {
   isGlobal: boolean;
   customFields: CustomFieldType[];
   status: SimulationStatus;
+  prompt?: string;
   metadata: {
     age?: number;
     name?: string;
@@ -101,6 +102,7 @@ export interface GetSimulationByIdResponse {
     gender?: string;
     genderIdentity?: string;
     lifeHistory?: string;
+    responseLength?: string;
     openingStatements?: string[];
     personality?: string;
     profession?: string;
@@ -119,6 +121,7 @@ export interface GetSimulationByIdResponse {
     name: string;
   };
   triggerWarnings: triggerWarning[];
+  difficultyLevel: string;
 }
 
 export interface CreateSimulationInput {
