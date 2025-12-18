@@ -199,8 +199,8 @@ export const CreateSimulation: FC = () => {
       ),
       openingStatements: openingStatementsArray,
       agentDialogues: agentDialoguesArray,
-      ...(FEATURE_FLAGS_MAP.CUSTOM_FIELD_FLAG && { customFieldGroup: customFieldGroupList }),
-      ...{ triggerWarningIds: triggerWarning },
+      customFieldGroup: customFieldGroupList,
+      triggerWarningIds: triggerWarning,
       status,
     };
 

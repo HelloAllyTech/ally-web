@@ -1,4 +1,3 @@
-import { FEATURE_FLAGS_MAP } from "@ally-ui-mono/ui-shared";
 import { cellTypes } from "@components";
 import { CreatorFieldGroups, FormFieldConfig } from "@types";
 
@@ -294,7 +293,7 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
         fullWidth: true,
         maxLength: 1000,
       },
-      FEATURE_FLAGS_MAP.CUSTOM_FIELD_FLAG && {
+      {
         id: "customFieldGroup",
         label: "Custom field group",
         type: FORM_FIELD_TYPES.CUSTOM_FIELD_GROUP,
