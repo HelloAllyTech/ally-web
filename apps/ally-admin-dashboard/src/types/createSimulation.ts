@@ -25,7 +25,7 @@ export type FormData = {
   personality: string;
   startingState: string;
   emotionalNeeds: string;
-  voiceInstruction: string;
+  tone: string;
   openingStatements: string;
   voiceId: string;
   agentGoal: string;

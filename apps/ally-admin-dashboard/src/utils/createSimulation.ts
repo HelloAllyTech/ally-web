@@ -49,13 +49,13 @@ export const formatSimulationResponseData = (data: GetSimulationByIdResponse) =>
     prompt: data?.prompt,
     isGlobal: Boolean(data?.isGlobal),
     triggerWarningIds: data?.triggerWarnings,
-    customFieldGroup: data?.customFields?.map((field, index) => ({
-      id: `${FORM_FIELD_IDS.CUSTOM_FIELD_GROUP}${index + 1}}`,
+    customFields: data?.metadata?.customFields?.map((field, index) => ({
+      id: `${FORM_FIELD_IDS.CUSTOM_FIELDS}${index + 1}}`,
       name: field.name,
       value: field.value,
     })),
-    agentDialoguesArray: Array.isArray(data?.metadata?.agentDialoguesArray)
-      ? data?.metadata?.agentDialoguesArray.join("\n")
-      : (data?.metadata?.agentDialoguesArray ?? ""),
+    agentDialogues: Array.isArray(data?.metadata?.agentDialogues)
+      ? data?.metadata?.agentDialogues.join("\n")
+      : (data?.metadata?.agentDialogues ?? ""),
   };
 };

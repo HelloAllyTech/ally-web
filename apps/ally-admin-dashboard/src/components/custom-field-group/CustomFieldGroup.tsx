@@ -14,31 +14,31 @@ interface CustomFieldWithValue extends CustomFieldType {
 
 export const CustomFieldGroup: FC<CustomFieldGroupProps> = ({ formMethods }) => {
   const { watch, setValue } = formMethods;
-  const customFields: CustomFieldWithValue[] = watch(FORM_FIELD_IDS.CUSTOM_FIELD_GROUP) || [];
+  const customFields: CustomFieldWithValue[] = watch(FORM_FIELD_IDS.CUSTOM_FIELDS) || [];
 
   const handleFieldChange = (id: string, value: string) => {
     const updatedFields = customFields.map(field =>
       field.id === id ? { ...field, value } : field,
     );
-    setValue(FORM_FIELD_IDS.CUSTOM_FIELD_GROUP, updatedFields, { shouldDirty: true });
+    setValue(FORM_FIELD_IDS.CUSTOM_FIELDS, updatedFields, { shouldDirty: true });
   };
 
   const handleNameChange = (id: string, name: string) => {
     const updatedFields = customFields.map(field => (field.id === id ? { ...field, name } : field));
-    setValue(FORM_FIELD_IDS.CUSTOM_FIELD_GROUP, updatedFields, { shouldDirty: true });
+    setValue(FORM_FIELD_IDS.CUSTOM_FIELDS, updatedFields, { shouldDirty: true });
   };
 
   const handleDeleteField = (id: string) => {
     const updatedFields = customFields.filter(field => field.id !== id);
-    setValue(FORM_FIELD_IDS.CUSTOM_FIELD_GROUP, updatedFields, { shouldDirty: true });
+    setValue(FORM_FIELD_IDS.CUSTOM_FIELDS, updatedFields, { shouldDirty: true });
   };
 
   const handleAddField = () => {
     const newField = {
-      id: `${FORM_FIELD_IDS.CUSTOM_FIELD_GROUP}${customFields.length + 1}`,
+      id: `${FORM_FIELD_IDS.CUSTOM_FIELDS}${customFields.length + 1}`,
       name: `Custom field ${customFields.length + 1}`,
     };
-    setValue(FORM_FIELD_IDS.CUSTOM_FIELD_GROUP, [...customFields, newField], { shouldDirty: true });
+    setValue(FORM_FIELD_IDS.CUSTOM_FIELDS, [...customFields, newField], { shouldDirty: true });
   };
 
   return (

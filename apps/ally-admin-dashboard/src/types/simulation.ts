@@ -89,7 +89,6 @@ export interface GetSimulationByIdResponse {
   createdBy: string;
   lastModified: string;
   isGlobal: boolean;
-  customFields: CustomFieldType[];
   status: SimulationStatus;
   prompt?: string;
   metadata: {
@@ -112,7 +111,8 @@ export interface GetSimulationByIdResponse {
     tone?: string;
     voiceId?: string;
     agentGoal?: string;
-    agentDialoguesArray?: string[];
+    agentDialogues?: string[];
+    customFields: CustomFieldType[];
   };
   terminationEvent: {
     eventId: string;

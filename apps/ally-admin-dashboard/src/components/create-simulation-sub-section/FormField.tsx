@@ -122,7 +122,7 @@ export const FormField: FC<FormFieldProps> = ({ config, formMethods }) => {
             />
           </div>
         );
-      case FORM_FIELD_TYPES.CUSTOM_FIELD_GROUP:
+      case FORM_FIELD_TYPES.CUSTOM_FIELDS:
         return <CustomFieldGroup formMethods={formMethods} />;
       default:
         return null;
