@@ -13,7 +13,7 @@ vi.mock("@assets", () => ({
 vi.mock("@constants", () => ({
   en: {
     common: {
-      selectOption: "Select an option",
+      select: "Select",
       noOptionsAvailable: "No options available",
     },
   },
@@ -60,7 +60,7 @@ describe("DropdownField", () => {
       </TestWrapper>,
     );
     // Label is not directly rendered in this component, but it's used for validation
-    expect(screen.getByText("Select an option")).toBeInTheDocument();
+    expect(screen.getByText("Select")).toBeInTheDocument();
   });
 
   it("renders with default placeholder", () => {
@@ -76,7 +76,7 @@ describe("DropdownField", () => {
         )}
       </TestWrapper>,
     );
-    expect(screen.getByText("Select an option")).toBeInTheDocument();
+    expect(screen.getByText("Select")).toBeInTheDocument();
   });
 
   it("renders with custom placeholder", () => {
@@ -110,7 +110,7 @@ describe("DropdownField", () => {
       </TestWrapper>,
     );
 
-    const trigger = screen.getByText("Select an option");
+    const trigger = screen.getByText("Select");
     fireEvent.click(trigger);
 
     expect(screen.getByText("Option 1")).toBeInTheDocument();
@@ -132,7 +132,7 @@ describe("DropdownField", () => {
       </TestWrapper>,
     );
 
-    const trigger = screen.getByText("Select an option");
+    const trigger = screen.getByText("Select");
     fireEvent.click(trigger);
 
     const option1 = screen.getByText("Option 1");
@@ -173,7 +173,7 @@ describe("DropdownField", () => {
       </TestWrapper>,
     );
 
-    const trigger = screen.getByText("Select an option");
+    const trigger = screen.getByText("Select");
     fireEvent.click(trigger);
 
     const option1 = screen.getByText("Option 1");
@@ -193,7 +193,7 @@ describe("DropdownField", () => {
       </TestWrapper>,
     );
 
-    const trigger = screen.getByText("Select an option");
+    const trigger = screen.getByText("Select");
     fireEvent.click(trigger);
 
     expect(screen.getByText("No options available")).toBeInTheDocument();
@@ -230,7 +230,7 @@ describe("DropdownField", () => {
       </TestWrapper>,
     );
 
-    const trigger = screen.getByText("Select an option");
+    const trigger = screen.getByText("Select");
     const arrowContainer = container.querySelector(".transition-transform");
 
     // Initially not rotated
@@ -350,7 +350,7 @@ describe("DropdownField", () => {
       </TestWrapper>,
     );
 
-    const trigger = screen.getByText("Select an option");
+    const trigger = screen.getByText("Select");
     fireEvent.click(trigger);
 
     const menu = container.querySelector(".absolute");
@@ -374,7 +374,7 @@ describe("DropdownField", () => {
       </TestWrapper>,
     );
 
-    const trigger = screen.getByText("Select an option");
+    const trigger = screen.getByText("Select");
     fireEvent.click(trigger);
 
     const menu = container.querySelector(".absolute");
@@ -397,7 +397,7 @@ describe("DropdownField", () => {
       </TestWrapper>,
     );
 
-    const trigger = screen.getByText("Select an option");
+    const trigger = screen.getByText("Select");
     fireEvent.click(trigger);
 
     const menu = container.querySelector(".z-10");
@@ -418,7 +418,7 @@ describe("DropdownField", () => {
       </TestWrapper>,
     );
 
-    const trigger = screen.getByText("Select an option");
+    const trigger = screen.getByText("Select");
     fireEvent.click(trigger);
 
     // Check that options are rendered
@@ -440,7 +440,7 @@ describe("DropdownField", () => {
       </TestWrapper>,
     );
 
-    const trigger = screen.getByText("Select an option");
+    const trigger = screen.getByText("Select");
 
     // Open
     fireEvent.click(trigger);
@@ -487,7 +487,7 @@ describe("DropdownField", () => {
       </TestWrapper>,
     );
 
-    const placeholder = screen.getByText("Select an option");
+    const placeholder = screen.getByText("Select");
     expect(placeholder).toBeInTheDocument();
   });
 

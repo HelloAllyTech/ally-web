@@ -34,7 +34,6 @@ export const VoiceDropdown: React.FC<VoiceDropdownProps> = ({
         label={label}
         formMethods={formMethods}
         options={getSimulationVoiceOptions(data ?? [])}
-        placeholder={en.simulation.selectVoice}
         isMandatory={isMandatory}
       />
       {errors[id]?.message.length && (

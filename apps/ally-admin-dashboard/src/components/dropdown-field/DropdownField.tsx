@@ -16,7 +16,7 @@ export const DropdownField: React.FC<DropdownFieldProps> = ({
   isSearchable = false,
   handleSearchTextChange = () => {},
   options,
-  placeholder = en.common.selectOption,
+  placeholder = en.common.select,
   isMandatory = false,
   defaultOption,
 }) => {
@@ -56,7 +56,7 @@ export const DropdownField: React.FC<DropdownFieldProps> = ({
             return (
               <>
                 <div
-                  className="w-full rounded border border-border-light px-3 py-1 bg-white text-md cursor-pointer flex items-center justify-between focus-within:ring-1 focus-within:ring-primary"
+                  className="w-full rounded border border-border-light px-3 py-1 bg-white text-base cursor-pointer flex items-center justify-between focus-within:ring-1 focus-within:ring-primary"
                   onClick={() => setIsOpen(prev => !prev)}
                 >
                   <span
@@ -100,7 +100,7 @@ export const DropdownField: React.FC<DropdownFieldProps> = ({
                           }`}
                           onClick={() => handleSelect(field, option.value)}
                         >
-                          <div className="flex items-center justify-between text-md">
+                          <div className="flex items-center justify-between text-base">
                             <span>{option.label}</span>
                           </div>
                         </div>

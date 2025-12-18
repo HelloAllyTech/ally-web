@@ -653,7 +653,7 @@ describe("SimulationStudio", () => {
       fireEvent.click(createButton);
 
       expect(screen.getByText("New simulation")).toBeInTheDocument();
-      expect(screen.getByText("New track way")).toBeInTheDocument();
+      expect(screen.getByText("New track")).toBeInTheDocument();
     });
 
     it("calls handleNewSimulation when New Simulation option is clicked", () => {
@@ -673,7 +673,7 @@ describe("SimulationStudio", () => {
       const createButton = screen.getByText("Create");
       fireEvent.click(createButton);
 
-      fireEvent.click(screen.getByTestId("option-New track way"));
+      fireEvent.click(screen.getByTestId("option-New track"));
 
       expect(defaultPathwaysHookReturn.handleNewPathway).toHaveBeenCalled();
     });

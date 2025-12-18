@@ -19,7 +19,6 @@ export type FormData = {
   sessionBehaviorGuidelines: string;
   roleInstruction: string;
   responseLength: string;
-  yourDialogues: string;
   openingDialogues: string;
   lifeHistory: string;
   coreMemories: string;
@@ -36,6 +35,9 @@ export type FormData = {
   isGlobal: boolean;
   languageVoices?: Record<string, string>;
   triggerWarningIds: triggerWarning[];
+  prompt: string;
+  difficultyLevel: string;
+  agentDialoguesArray: string;
 };
 
 export interface DemographicsSectionProps {
