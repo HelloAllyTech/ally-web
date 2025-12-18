@@ -1,4 +1,3 @@
-import { FEATURE_FLAGS_MAP } from "@ally-ui-mono/ui-shared";
 import { cellTypes } from "@components";
 import { CreatorFieldGroups, FormFieldConfig } from "@types";
 
@@ -200,7 +199,7 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
         options: DIFFICULTY_LEVEL_OPTIONS,
         isMandatory: true,
       },
-      FEATURE_FLAGS_MAP.TRIGGER_WARNINGS_FLAG && {
+      {
         id: "triggerWarningIds",
         label: "Trigger warnings",
         type: FORM_FIELD_TYPES.TAG_AND_DROPDOWN,
@@ -293,7 +292,7 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
         fullWidth: true,
         maxLength: 1000,
       },
-      FEATURE_FLAGS_MAP.CUSTOM_FIELD_FLAG && {
+      {
         id: "customFieldGroup",
         label: "Custom field group",
         type: FORM_FIELD_TYPES.CUSTOM_FIELD_GROUP,
@@ -387,7 +386,7 @@ export const SIMULATION_CREATOR_FIELD_GROUPS_OLD: CreatorFieldGroups[] = [
         fullWidth: true,
         maxLength: 1000,
       },
-      FEATURE_FLAGS_MAP.TRIGGER_WARNINGS_FLAG && {
+      {
         id: "triggerWarningIds",
         label: "Trigger Warnings",
         type: FORM_FIELD_TYPES.TAG_AND_DROPDOWN,

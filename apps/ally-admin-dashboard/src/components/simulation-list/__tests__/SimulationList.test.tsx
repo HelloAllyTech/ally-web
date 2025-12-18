@@ -14,6 +14,7 @@ vi.mock("@assets", () => ({
   Delete: () => <div data-testid="delete-icon">Delete</div>,
   Play: () => <div data-testid="play-icon">Play</div>,
   Unarchive: () => <div data-testid="unarchive-icon">Unarchive</div>,
+  Copy: () => <div data-testid="copy-icon">Copy</div>,
 }));
 
 // Mock components
@@ -93,6 +94,7 @@ vi.mock("@constants", () => ({
       unarchive: "Unarchive",
       delete: "Delete",
       preview: "Preview",
+      duplicate: "Duplicate",
       createYourFirst: "Create your first",
       createSimulation: "Create simulation",
       newSimulationDescription: "Create a new simulation to get started",

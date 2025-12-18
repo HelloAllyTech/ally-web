@@ -178,12 +178,11 @@ export const CreateSimulation: FC = () => {
           .filter((line: string) => line.length > 0)
       : null;
 
-    const triggerWarning =
-      FEATURE_FLAGS_MAP.TRIGGER_WARNINGS_FLAG && isNonEmptyArray(triggerWarningIds)
-        ? (triggerWarningIds as triggerWarning[])
-            .filter(trigger => !isEmpty(trigger))
-            .map(trigger => trigger.id)
-        : [];
+    const triggerWarning = isNonEmptyArray(triggerWarningIds)
+      ? (triggerWarningIds as triggerWarning[])
+          .filter(trigger => !isEmpty(trigger))
+          .map(trigger => trigger.id)
+      : [];
 
     // filter out empty values from languageVoiceMapping
     if (restForm.languageVoices) {
@@ -209,8 +208,8 @@ export const CreateSimulation: FC = () => {
       ),
       openingStatements: openingStatementsArray,
       agentDialogues: agentDialoguesArray,
-      ...(FEATURE_FLAGS_MAP.CUSTOM_FIELD_FLAG && { customFieldGroup: customFieldGroupList }),
-      ...(FEATURE_FLAGS_MAP.TRIGGER_WARNINGS_FLAG && { triggerWarningIds: triggerWarning }),
+      customFieldGroup: customFieldGroupList,
+      triggerWarningIds: triggerWarning,
       status,
     };
 
