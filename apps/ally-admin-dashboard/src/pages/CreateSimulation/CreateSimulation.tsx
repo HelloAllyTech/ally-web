@@ -161,7 +161,7 @@ export const CreateSimulation: FC = () => {
       }
     }
 
-    const { openingStatements, triggerWarningIds, customFieldGroup, agentDialogues, ...restForm } =
+    const { openingStatements, triggerWarningIds, customFields, agentDialogues, ...restForm } =
       formData;
 
     const openingStatementsArray = isNonEmptyString(openingStatements)
@@ -184,7 +184,7 @@ export const CreateSimulation: FC = () => {
           .map(trigger => trigger.id)
       : [];
 
-    const customFieldGroupList = customFieldGroup?.map((field: any) => ({
+    const customFieldGroupList = customFields?.map((field: any) => ({
       name: field.name,
       value: field.value,
     }));
