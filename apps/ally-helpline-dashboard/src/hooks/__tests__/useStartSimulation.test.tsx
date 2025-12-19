@@ -102,7 +102,6 @@ describe("useStartSimulation", () => {
         params: {
           scenarioId: 1,
           scenarioPathSessionItemId: "path-123",
-          language: "en-IN",
           languageId: 1,
         },
         metadata: { title: "Test Scenario", coverImageUrl: "https://example.com/image.jpg" },
@@ -112,7 +111,6 @@ describe("useStartSimulation", () => {
     expect(mockStartSimulationMutation).toHaveBeenCalledWith({
       scenarioId: 1,
       scenarioPathSessionItemId: "path-123",
-      language: "en-IN",
       languageId: 1,
     });
     expect(mockOnSuccess).toHaveBeenCalled();
@@ -140,7 +138,6 @@ describe("useStartSimulation", () => {
         params: {
           scenarioId: 1,
           scenarioPathSessionItemId: "path-123",
-          language: "en-IN",
           languageId: 1,
         },
       });
@@ -165,7 +162,6 @@ describe("useStartSimulation", () => {
         params: {
           scenarioId: 1,
           scenarioPathSessionItemId: "path-123",
-          language: "en-IN",
           languageId: 1,
         },
       });
@@ -189,7 +185,6 @@ describe("useStartSimulation", () => {
         params: {
           scenarioId: 1,
           scenarioPathSessionItemId: "path-123",
-          language: "en-IN",
           languageId: 1,
         },
       });
@@ -214,7 +209,6 @@ describe("useStartSimulation", () => {
         params: {
           scenarioId: 1,
           scenarioPathSessionItemId: "path-123",
-          language: "en-IN",
           languageId: 1,
         },
       });
@@ -253,7 +247,6 @@ describe("useStartSimulation", () => {
         params: {
           scenarioId: 1,
           scenarioPathSessionItemId: "path-123",
-          language: "en-IN",
           languageId: 1,
         },
       });
@@ -270,7 +263,6 @@ describe("useStartSimulation", () => {
         params: {
           scenarioId: 2,
           scenarioPathSessionItemId: "path-123",
-          language: "en-IN",
           languageId: 1,
         },
       });
@@ -288,7 +280,6 @@ describe("useStartSimulation", () => {
     expect(mockStartSimulationMutation).toHaveBeenCalledWith({
       scenarioId: 1,
       scenarioPathSessionItemId: "path-123",
-      language: "en-IN",
       languageId: 1,
     });
   });
@@ -320,7 +311,7 @@ describe("useStartSimulation", () => {
 
     await act(async () => {
       await result.current.startSimulation({
-        params: { scenarioId: 1, language: "en-IN", languageId: 1 },
+        params: { scenarioId: 1, languageId: 1 },
         metadata: { title: "Test Scenario", coverImageUrl: "https://example.com/image.jpg" },
       });
     });

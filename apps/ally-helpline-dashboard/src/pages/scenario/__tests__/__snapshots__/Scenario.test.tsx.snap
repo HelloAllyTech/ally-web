@@ -80,17 +80,6 @@ exports[`Scenario Component > Snapshot Testing > should match snapshot with scen
             </div>
           </div>
           <div
-            class="w-full sm:w-48 self-start"
-          >
-            <div
-              class="relative w-48"
-            >
-              <select
-                data-testid="language-dropdown"
-              />
-            </div>
-          </div>
-          <div
             data-testid="scenario-details-card"
           >
             <div

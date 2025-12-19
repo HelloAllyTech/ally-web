@@ -995,4 +995,35 @@ describe("Scenario Component", () => {
       expect(container1.innerHTML).toBe(container2.innerHTML);
     });
   });
+
+  describe("Scenario language dropdown", () => {
+    beforeEach(() => {
+      vi.clearAllMocks();
+    });
+
+    it("does NOT render DropdownField when state.languages is empty", () => {
+      (mockUseLocation as any).mockReturnValue({
+        state: { languages: [] },
+      });
+
+      render(<Scenario />);
+
+      expect(screen.queryByTestId("language-dropdown")).not.toBeInTheDocument();
+    });
+
+    it("renders DropdownField when state.languages exists", () => {
+      (mockUseLocation as any).mockReturnValue({
+        state: {
+          languages: [
+            { label: "English (India)", language_id: 1, value: "en-IN" },
+            { label: "Spanish (Spain)", language_id: 2, value: "es-ES" },
+          ],
+        },
+      });
+
+      render(<Scenario />);
+
+      expect(screen.getByTestId("language-dropdown")).toBeInTheDocument();
+    });
+  });
 });
