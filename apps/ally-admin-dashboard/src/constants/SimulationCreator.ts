@@ -273,6 +273,7 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
         options: GENDER_IDENTITY_OPTIONS,
         maxLength: 100,
         isDashedLineAbove: true,
+        isMandatory: true,
       },
       {
         id: "sexualOrientation",
@@ -281,6 +282,7 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
         type: FORM_FIELD_TYPES.SELECT,
         options: SEXUAL_ORIENTATION_OPTIONS,
         maxLength: 100,
+        isMandatory: true,
       },
       {
         id: "context",
