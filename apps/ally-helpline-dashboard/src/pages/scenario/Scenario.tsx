@@ -32,6 +32,11 @@ export const Scenario: FC = () => {
     state?.selectedLanguage || null,
   );
 
+  const handleLanguageChange = (value: string) => {
+    const selected = state?.languages?.find(lang => lang.label === value) || null;
+    setSelectedLanguage(selected);
+  };
+
   const { credits, limitReached, refetchCredits } = useSimulationCredits();
 
   const id = Number(scenarioId);
@@ -189,10 +194,7 @@ export const Scenario: FC = () => {
                     data-testid="language-dropdown"
                     options={state?.languages?.map(option => option.label) || []}
                     value={selectedLanguage?.label || ""}
-                    onChange={value => {
-                      const selected = state?.languages?.find(lang => lang.label === value) || null;
-                      setSelectedLanguage(selected);
-                    }}
+                    onChange={handleLanguageChange}
                     valueClassName="text-typography-900 font-primary"
                   />
                 </div>
