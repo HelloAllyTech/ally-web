@@ -11,7 +11,6 @@ import { useUser } from "@hooks";
 interface StartSimulationParams {
   scenarioId: number;
   scenarioPathSessionItemId?: string;
-  language?: string;
   languageId?: number;
 }
 
@@ -61,15 +60,13 @@ export const useStartSimulation = (
     if (isStarting) return;
     setIsStarting(true);
     try {
-      const { scenarioId, scenarioPathSessionItemId, language, languageId } = params;
+      const { scenarioId, scenarioPathSessionItemId, languageId } = params;
       const dataParams: {
         scenarioId: number;
         scenarioPathSessionItemId?: string;
-        language?: string;
         languageId?: number;
       } = {
         scenarioId,
-        language,
         languageId,
       };
 

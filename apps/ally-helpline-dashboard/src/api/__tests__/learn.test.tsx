@@ -35,7 +35,7 @@ vi.mock("@constants", () => ({
       GET_SIMULATION_SUMMARY: "/learn/simulation-summary",
       SUBMIT_SIMULATION_FEEDBACK: "/learn/submit-feedback",
       GET_SIMULATION_TRANSCRIPT: "/learn/simulation-transcript",
-      GET_AVAILABLE_LANGUAGES: "/learn/available-languages",
+      GET_AVAILABLE_LANGUAGES: "/learn/scenario-languages",
     },
   },
   HttpMethod: {

@@ -32,6 +32,11 @@ export const Scenario: FC = () => {
     state?.selectedLanguage || null,
   );
 
+  const handleLanguageChange = (value: string) => {
+    const selected = state?.languages?.find(lang => lang.label === value) || null;
+    setSelectedLanguage(selected);
+  };
+
   const { credits, limitReached, refetchCredits } = useSimulationCredits();
 
   const id = Number(scenarioId);
@@ -97,7 +102,6 @@ export const Scenario: FC = () => {
     await startSimulation({
       params: {
         scenarioId: id,
-        language: selectedLanguage?.value,
         languageId: selectedLanguage?.language_id,
       },
       metadata: {
@@ -182,19 +186,20 @@ export const Scenario: FC = () => {
                 <CreditsDisplay />
               </div>
             )}
-            <div className="w-full sm:w-48 self-start">
-              <div className="relative w-48">
-                <DropdownField
-                  options={state?.languages?.map(option => option.label)}
-                  value={selectedLanguage?.label || ""}
-                  onChange={value => {
-                    const selected = state?.languages?.find(lang => lang.label === value) || null;
-                    setSelectedLanguage(selected);
-                  }}
-                  valueClassName="text-typography-900 font-primary"
-                />
+            {/* Only show this DropdownField when state.languages has languages */}
+            {state?.languages?.length > 0 && (
+              <div className="w-full sm:w-48 self-start">
+                <div className="relative w-48">
+                  <DropdownField
+                    data-testid="language-dropdown"
+                    options={state?.languages?.map(option => option.label) || []}
+                    value={selectedLanguage?.label || ""}
+                    onChange={handleLanguageChange}
+                    valueClassName="text-typography-900 font-primary"
+                  />
+                </div>
               </div>
-            </div>
+            )}
             <ScenarioDetailsCard
               data-testid="scenario-details-card"
               coverImage={scenario?.coverImageUrl || ""}
