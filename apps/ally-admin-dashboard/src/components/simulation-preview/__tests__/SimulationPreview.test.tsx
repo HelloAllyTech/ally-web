@@ -30,6 +30,16 @@ vi.mock("react-router-dom", async () => {
 vi.mock("@api", () => ({
   useScenarioPreviewMutation: () => [scenarioPreviewTrigger],
   useEndScenarioPreviewMutation: () => [endScenarioPreviewTrigger],
+  useGetScenarioLanguagesQuery: () => ({
+    data: [
+      {
+        language_id: 1,
+        label: "English (India)",
+        value: "English",
+        translationCode: "en",
+      },
+    ],
+  }),
 }));
 
 vi.mock("@components", () => ({
@@ -206,5 +216,43 @@ describe("SimulationPreview", () => {
     expect(scenarioPreviewTrigger).toHaveBeenCalledTimes(1);
 
     resolveFn(createSuccessResponse());
+  });
+
+  it("Language Dropdown handles language change", () => {
+    const selectedLanguageId = 1;
+    const languageOptions = [
+      {
+        language_id: 1,
+        label: "English (India)",
+        value: "English",
+        translationCode: "en",
+      },
+    ];
+    render(<SimulationPreview simulation={simulation} isOpen onClose={vi.fn()} />);
+    const [, startButton] = screen.getAllByRole("button");
+    fireEvent.click(startButton);
+    expect(scenarioPreviewTrigger).toHaveBeenCalledWith({
+      scenarioId: Number(simulation.id),
+      languageId: selectedLanguageId || languageOptions[0]?.language_id,
+    });
+  });
+
+  it("Language Dropdown - it only renders when there are languages", () => {
+    const selectedLanguageId = 1;
+    const languageOptions = [
+      {
+        language_id: 1,
+        label: "English (India)",
+        value: "English",
+        translationCode: "en",
+      },
+    ];
+    render(<SimulationPreview simulation={simulation} isOpen onClose={vi.fn()} />);
+    const [, startButton] = screen.getAllByRole("button");
+    fireEvent.click(startButton);
+    expect(scenarioPreviewTrigger).toHaveBeenCalledWith({
+      scenarioId: Number(simulation.id),
+      languageId: selectedLanguageId || languageOptions[0]?.language_id,
+    });
   });
 });

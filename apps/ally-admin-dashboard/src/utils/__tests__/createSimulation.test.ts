@@ -127,6 +127,7 @@ describe("createSimulation utils", () => {
         languageVoices: {
           1: "voice-123",
         },
+        voiceId: "voice-123",
         terminationName: undefined,
         difficultyLevel: undefined,
         responseLength: undefined,
@@ -226,19 +227,20 @@ describe("createSimulation utils", () => {
           languageVoices: {
             1: "voice-123",
           },
+          voiceId: "voice-123",
         },
       } as GetSimulationByIdResponse;
 
       const result = formatSimulationResponseData(mockResponse);
 
       // Check all fields are present (title, description, coverImageUrl, coverVideoUrl, autoTerminationStatus, terminationEventId, terminationMessage, terminationName, difficultyLevel, responseLength, prompt, isGlobal, triggerWarningIds, customFieldGroup, agentDialoguesArray + 18 metadata fields = 33 total)
-      expect(Object.keys(result)).toHaveLength(33);
+      expect(Object.keys(result)).toHaveLength(34);
       expect(result.title).toBe("Test");
       expect(result.description).toBe("Test");
       expect(result.coverImageUrl).toBe("url");
       expect(result.age).toBe("30");
       expect(result.name).toBe("Jane");
-      // expect(result.voiceId).toBe("voice");
+      expect(result.voiceId).toBe("voice-123");
     });
   });
 

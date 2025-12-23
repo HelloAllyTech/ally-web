@@ -29,6 +29,7 @@ export const SimulationDetailsModal: FC<SimulationDetailsModalProps> = ({
   imageContainerClassName = "",
   triggerWarnings = [],
   renderCustomImage,
+  renderAdditionalContent,
 }) => {
   const previewRef = useRef<HTMLDivElement>(null);
 
@@ -60,6 +61,10 @@ export const SimulationDetailsModal: FC<SimulationDetailsModalProps> = ({
             <span>{headerTitle}</span>
             <span className="font-secondary">{headerSubtitle && ` ${headerSubtitle}`}</span>
           </h2>
+
+          {renderAdditionalContent && (
+            <div className="mb-4 w-full">{renderAdditionalContent()}</div>
+          )}
 
           <div
             className={`flex flex-col items-center border border-border-light rounded-lg p-3 ${contentClassName}`}

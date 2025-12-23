@@ -30,7 +30,12 @@ export const LanguageVoiceMapping: FC<LanguageVoiceMappingProps> = ({
   formMethods,
   isMandatory,
 }) => {
-  const { data: availableLanguages = [] } = useGetAvailableLanguageVoicesQuery({ active: true });
+  const { data: availableLanguages = [] } = useGetAvailableLanguageVoicesQuery({
+    active: true,
+  }) as {
+    data: LanguageOption[];
+  };
+
   const {
     getValues,
     setError,
@@ -49,20 +54,7 @@ export const LanguageVoiceMapping: FC<LanguageVoiceMappingProps> = ({
     return {};
   });
 
-  const languages = useMemo<LanguageOption[]>(() => {
-    if (availableLanguages && availableLanguages.length > 0) {
-      return availableLanguages.map((lang: any) => ({
-        language_id: lang.language_id,
-        value: lang.value,
-        label: lang.label,
-        voices: lang.voices.map(voice => ({
-          id: voice.id,
-          name: voice.name,
-        })),
-      }));
-    }
-    return [];
-  }, [availableLanguages]);
+  const languages: LanguageOption[] = availableLanguages ?? [];
 
   const [showAll, setShowAll] = useState(false);
 

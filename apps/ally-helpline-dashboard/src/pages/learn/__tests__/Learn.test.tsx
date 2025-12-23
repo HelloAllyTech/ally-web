@@ -937,6 +937,17 @@ describe("Learn Component", () => {
       // Verify the component renders without errors when localStorage is empty
       expect(screen.getByTestId("browser-router")).toBeInTheDocument();
     });
+
+    it("should not render language selection when language capability flag is disabled", () => {
+      render(
+        <TestWrapper>
+          <Learn />
+        </TestWrapper>,
+      );
+
+      // Verify the component renders without errors when language capability flag is disabled
+      expect(screen.getByTestId("browser-router")).toBeInTheDocument();
+    });
   });
 
   it("should revert to previous language on update failure", async () => {

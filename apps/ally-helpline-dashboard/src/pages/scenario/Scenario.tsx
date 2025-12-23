@@ -5,7 +5,7 @@ import { useLocation } from "react-router-dom";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
 
-import { DropdownField } from "@ally-ui-mono/ui-shared";
+import { DropdownField, FEATURE_FLAGS_MAP } from "@ally-ui-mono/ui-shared";
 import { useEndSimulationMutation, useGetScenarioQuery } from "@api";
 import { BackCircle, ExistingCall, PageNotFoundIllustration } from "@assets";
 import {
@@ -186,8 +186,8 @@ export const Scenario: FC = () => {
                 <CreditsDisplay />
               </div>
             )}
-            {/* Only show this DropdownField when state.languages has languages */}
-            {state?.languages?.length > 0 && (
+            {/* Only show this DropdownField when state.languages has languages and language capability flag is enabled */}
+            {state?.languages?.length > 0 && FEATURE_FLAGS_MAP.LANGUAGE_CAPABILITY_FLAG && (
               <div className="w-full sm:w-48 self-start">
                 <div className="relative w-48">
                   <DropdownField

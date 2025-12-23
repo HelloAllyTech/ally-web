@@ -27,6 +27,7 @@ export type FormData = {
   emotionalNeeds: string;
   tone: string;
   openingStatements: string;
+  voiceId: string;
   agentGoal: string;
   autoTerminationStatus: boolean;
   terminationEventId: string;
@@ -131,6 +132,9 @@ export interface SimulationPreviewProps {
   simulation: SimulationPreviewType;
   isOpen: boolean;
   onClose: () => void;
+  languages?: ScenarioLanguage[];
+  selectedLanguageId?: number;
+  onLanguageChange?: (languageId: number | null) => void;
 }
 
 export interface UpdateEventDataParam {
@@ -174,8 +178,8 @@ export interface ScenarioVoice {
 }
 
 export interface ScenarioLanguage {
-  code: string;
-  name: string;
+  label: string;
+  value: string;
   language_id?: number;
-  label?: string;
+  translationCode?: string;
 }

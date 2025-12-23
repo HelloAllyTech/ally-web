@@ -3,7 +3,7 @@ import { FC, useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useNavigate, useSearchParams } from "react-router-dom";
 
-import { DropdownField } from "@ally-ui-mono/ui-shared";
+import { DropdownField, FEATURE_FLAGS_MAP } from "@ally-ui-mono/ui-shared";
 import {
   useGetScenariosQuery,
   useGetScenarioPathwaysQuery,
@@ -141,7 +141,7 @@ export const Learn: FC = () => {
 
             <div className="w-full flex justify-end">
               <div className="flex flex-col">
-                {LANGUAGE_OPTIONS.length > 0 && (
+                {LANGUAGE_OPTIONS.length > 0 && FEATURE_FLAGS_MAP.LANGUAGE_CAPABILITY_FLAG && (
                   <div className="relative w-48">
                     <DropdownField
                       options={LANGUAGE_OPTIONS.map(option => option.label)}

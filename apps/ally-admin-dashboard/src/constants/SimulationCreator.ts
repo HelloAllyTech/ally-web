@@ -319,6 +319,13 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
         isMandatory: true,
       },
       {
+        id: "voiceId",
+        label: "Voice",
+        type: FORM_FIELD_TYPES.CUSTOM.VOICE_DROPDOWN,
+        isMandatory: true,
+        fullWidth: true,
+      },
+      {
         id: "languageVoices",
         label: "Language-Voice",
         type: FORM_FIELD_TYPES.CUSTOM.LANGUAGE_VOICE_MAPPING,
@@ -532,13 +539,13 @@ export const SIMULATION_CREATOR_FIELD_GROUPS_OLD: CreatorFieldGroups[] = [
     id: SIMULATION_CREATOR_STEP_IDS_OLD.conversationStyle,
     label: "Conversation Style",
     fields: [
-      // {
-      //   id: "voiceId",
-      //   label: "Voice",
-      //   type: FORM_FIELD_TYPES.CUSTOM.VOICE_DROPDOWN,
-      //   isMandatory: true,
-      //   fullWidth: true,
-      // },
+      {
+        id: "voiceId",
+        label: "Voice",
+        type: FORM_FIELD_TYPES.CUSTOM.VOICE_DROPDOWN,
+        isMandatory: true,
+        fullWidth: true,
+      },
       {
         id: "languageVoices",
         label: "Language-Voice",
