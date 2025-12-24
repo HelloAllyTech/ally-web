@@ -1,5 +1,8 @@
 import { FC, useEffect, useMemo, useState } from "react";
 
+import { useNavigate } from "react-router-dom";
+
+import { SimulationDetailsModal, CustomImage, DropdownField } from "@ally-ui-mono/ui-shared";
 import {
   useEndScenarioPreviewMutation,
   useScenarioPreviewMutation,
@@ -8,9 +11,6 @@ import {
 import { en, LOCAL_STORAGE_KEYS, ROUTES } from "@constants";
 import { useUser } from "@hooks";
 import { ScenarioLanguage, SimulationPreviewProps, StartSimulationResponse } from "@types";
-import { useNavigate } from "react-router-dom";
-
-import { SimulationDetailsModal, CustomImage, DropdownField } from "@ally-ui-mono/ui-shared";
 
 export const SimulationPreview: FC<SimulationPreviewProps> = ({ simulation, isOpen, onClose }) => {
   const navigate = useNavigate();
@@ -18,14 +18,12 @@ export const SimulationPreview: FC<SimulationPreviewProps> = ({ simulation, isOp
   const [scenarioPreview] = useScenarioPreviewMutation();
   const [endScenarioPreview] = useEndScenarioPreviewMutation();
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const { data: scenarioLanguages = [] } = useGetScenarioLanguagesQuery({
+  const { data: languageOptions = [] } = useGetScenarioLanguagesQuery({
     active: true,
     hasVoices: true,
   }) as {
     data: ScenarioLanguage[];
   };
-
-  const languageOptions: ScenarioLanguage[] = scenarioLanguages ?? [];
 
   const [selectedLanguageLabel, setSelectedLanguageLabel] = useState<string>("");
 
