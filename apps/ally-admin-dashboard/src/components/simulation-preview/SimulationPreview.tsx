@@ -10,7 +10,12 @@ import {
 } from "@api";
 import { en, LOCAL_STORAGE_KEYS, ROUTES } from "@constants";
 import { useUser } from "@hooks";
-import { ScenarioLanguage, SimulationPreviewProps, StartSimulationResponse } from "@types";
+import {
+  ScenarioLanguage,
+  SimulationPreviewProps,
+  StartSimulationResponse,
+  SimulationStatus,
+} from "@types";
 
 export const SimulationPreview: FC<SimulationPreviewProps> = ({ simulation, isOpen, onClose }) => {
   const navigate = useNavigate();
@@ -18,10 +23,14 @@ export const SimulationPreview: FC<SimulationPreviewProps> = ({ simulation, isOp
   const [scenarioPreview] = useScenarioPreviewMutation();
   const [endScenarioPreview] = useEndScenarioPreviewMutation();
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const { data: languageOptions = [] } = useGetScenarioLanguagesQuery({
-    active: true,
-    hasVoices: true,
-  }) as {
+  const shouldLoadLanguages = simulation.status === SimulationStatus.ACTIVE;
+  const { data: languageOptions = [] } = useGetScenarioLanguagesQuery(
+    {
+      active: true,
+      hasVoices: true,
+    },
+    { skip: !shouldLoadLanguages },
+  ) as {
     data: ScenarioLanguage[];
   };
 
@@ -81,7 +90,9 @@ export const SimulationPreview: FC<SimulationPreviewProps> = ({ simulation, isOp
     try {
       const response = await scenarioPreview({
         scenarioId: Number(simulation.id),
-        languageId: selectedLanguageId || languageOptions[0]?.language_id,
+        ...(shouldLoadLanguages && {
+          languageId: selectedLanguageId || languageOptions[0]?.language_id,
+        }),
       }).unwrap();
       if (response) onStartSimulationSuccess(response);
     } catch (error: any) {
@@ -90,7 +101,9 @@ export const SimulationPreview: FC<SimulationPreviewProps> = ({ simulation, isOp
         await endScenarioPreview({ roomName: entityId }).unwrap();
         const retry = await scenarioPreview({
           scenarioId: Number(simulation.id),
-          languageId: selectedLanguageId || languageOptions[0]?.language_id,
+          ...(shouldLoadLanguages && {
+            languageId: selectedLanguageId || languageOptions[0]?.language_id,
+          }),
         }).unwrap();
         onStartSimulationSuccess(retry);
       }
@@ -120,7 +133,7 @@ export const SimulationPreview: FC<SimulationPreviewProps> = ({ simulation, isOp
         <CustomImage src={src} alt={alt} className={className} />
       )}
       renderAdditionalContent={() =>
-        languageOptions.length > 0 ? (
+        shouldLoadLanguages && languageOptions.length > 0 ? (
           <div className="w-full flex justify-start">
             <div className="flex flex-col">
               <div className="relative w-48">

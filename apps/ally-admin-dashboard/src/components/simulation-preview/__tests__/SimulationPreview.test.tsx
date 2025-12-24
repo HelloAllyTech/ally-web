@@ -4,6 +4,7 @@ import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
 import { SimulationPreview } from "../SimulationPreview";
+import { SimulationStatus } from "@types";
 
 // Mocks
 const navigateMock = vi.fn();
@@ -125,6 +126,7 @@ const simulation = {
   title: "Test Simulation",
   description: "Test description",
   coverImageUrl: "https://example.com/cover.jpg",
+  status: SimulationStatus.ACTIVE,
 } as any;
 
 describe("SimulationPreview", () => {
@@ -218,41 +220,33 @@ describe("SimulationPreview", () => {
     resolveFn(createSuccessResponse());
   });
 
-  it("Language Dropdown handles language change", () => {
+  it("passes a languageId when the simulation is active", () => {
     const selectedLanguageId = 1;
-    const languageOptions = [
-      {
-        language_id: 1,
-        label: "English (India)",
-        value: "English",
-        translationCode: "en",
-      },
-    ];
+
     render(<SimulationPreview simulation={simulation} isOpen onClose={vi.fn()} />);
+
     const [, startButton] = screen.getAllByRole("button");
     fireEvent.click(startButton);
+
     expect(scenarioPreviewTrigger).toHaveBeenCalledWith({
       scenarioId: Number(simulation.id),
-      languageId: selectedLanguageId || languageOptions[0]?.language_id,
+      languageId: selectedLanguageId,
     });
   });
 
-  it("Language Dropdown - it only renders when there are languages", () => {
-    const selectedLanguageId = 1;
-    const languageOptions = [
-      {
-        language_id: 1,
-        label: "English (India)",
-        value: "English",
-        translationCode: "en",
-      },
-    ];
-    render(<SimulationPreview simulation={simulation} isOpen onClose={vi.fn()} />);
+  it("omits languageId and hides dropdown for non-active simulations", () => {
+    const inactiveSimulation = { ...simulation, status: SimulationStatus.DRAFT };
+
+    render(<SimulationPreview simulation={inactiveSimulation} isOpen onClose={vi.fn()} />);
+
+    // Dropdown should not render because languages are skipped entirely
+    expect(screen.queryByText("English (India)")).not.toBeInTheDocument();
+
     const [, startButton] = screen.getAllByRole("button");
     fireEvent.click(startButton);
+
     expect(scenarioPreviewTrigger).toHaveBeenCalledWith({
-      scenarioId: Number(simulation.id),
-      languageId: selectedLanguageId || languageOptions[0]?.language_id,
+      scenarioId: Number(inactiveSimulation.id),
     });
   });
 });

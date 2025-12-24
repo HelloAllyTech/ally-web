@@ -126,6 +126,7 @@ export type SimulationPreviewType = {
   coverVideoUrl?: string;
   description: string;
   triggerWarnings?: triggerWarning[];
+  status: SimulationStatus;
 };
 
 export interface SimulationPreviewProps {
