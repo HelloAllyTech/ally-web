@@ -1,9 +1,9 @@
 import { FC, useState, useCallback } from "react";
 
-import { useNavigate, useParams } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
 
-import { SimulationDetailsModal, CustomImage } from "@ally-ui-mono/ui-shared";
+import { SimulationDetailsModal, CustomImage, DropdownField } from "@ally-ui-mono/ui-shared";
 import {
   useGetScenarioPathwayDetailsQuery,
   useLazyGetScenarioSessionByPathItemQuery,
@@ -13,11 +13,22 @@ import { ArrowRight } from "@assets";
 import { CreditsDisplay, PathwayScenarioCard } from "@components";
 import { ROUTES } from "@constants";
 import { useStartSimulation } from "@hooks";
-import { PathwayScenarioStatus, PathwayScenario } from "@types";
+import { PathwayScenarioStatus, PathwayScenario, LanguageOption } from "@types";
 
 export const PathwayDetails: FC = () => {
   const { pathwayId } = useParams<{ pathwayId: string }>();
   const navigate = useNavigate();
+  const { state } = useLocation();
+
+  // Use languages from location state or fallback to empty array
+  const [selectedLanguage, setSelectedLanguage] = useState<LanguageOption | null>(
+    state?.selectedLanguage || null,
+  );
+
+  const handleLanguageChange = (value: string) => {
+    const selected = state?.languages?.find(lang => lang.label === value) || null;
+    setSelectedLanguage(selected);
+  };
   const { data: pathway, isLoading } = useGetScenarioPathwayDetailsQuery(pathwayId || "");
   const [selectedScenario, setSelectedScenario] = useState<PathwayScenario | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -95,6 +106,9 @@ export const PathwayDetails: FC = () => {
       params: {
         scenarioId,
         scenarioPathSessionItemId: sessionId,
+        ...(state?.languages?.length > 0 && {
+          languageId: selectedLanguage?.language_id || state?.defaultLanguage,
+        }),
       },
       metadata: {
         title,
@@ -244,6 +258,23 @@ export const PathwayDetails: FC = () => {
         onClickOutside={handleCloseModal}
         isPrimaryLoading={isStarting}
         triggerWarnings={selectedScenario.triggerWarnings}
+        renderAdditionalContent={() =>
+          state?.languages?.length > 0 ? (
+            <div className="w-full flex justify-start">
+              <div className="flex flex-col">
+                <div className="relative w-48">
+                  <DropdownField
+                    options={state?.languages?.map(option => option.label) || []}
+                    value={selectedLanguage?.label || state?.languages?.[0]?.label || ""}
+                    onChange={handleLanguageChange}
+                    label=""
+                    valueClassName="font-primary text-base text-typography-700"
+                  />
+                </div>
+              </div>
+            </div>
+          ) : null
+        }
       />
     );
   };

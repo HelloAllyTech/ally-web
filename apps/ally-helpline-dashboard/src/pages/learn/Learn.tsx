@@ -64,11 +64,14 @@ export const Learn: FC = () => {
     if (isValidTabId(newValue)) setSearchParams({ tab: newValue });
   };
 
+  const shouldLoadLanguages = FEATURE_FLAGS_MAP.LANGUAGE_CAPABILITY_FLAG;
   const {
     languages: LANGUAGE_OPTIONS,
     defaultLanguage,
     isLoading: isLanguagesLoading,
-  } = useScenarioLanguages();
+  } = shouldLoadLanguages
+    ? useScenarioLanguages()
+    : { languages: [], defaultLanguage: null, isLoading: false };
   const [selectedLanguage, setSelectedLanguage] = useState<LanguageOption | null>(null);
   const [updateUserPreferences, { isLoading: isUpdatingPreferences }] =
     useUpdateUserPreferencesMutation();
@@ -76,13 +79,22 @@ export const Learn: FC = () => {
   // Set initial language when defaultLanguage is loaded
   useEffect(() => {
     const savedLanguage = localStorage.getItem("selectedLanguage");
+
+    if (!shouldLoadLanguages) {
+      if (savedLanguage) {
+        localStorage.removeItem("selectedLanguage");
+      }
+      setSelectedLanguage(null);
+      return;
+    }
+
     if (savedLanguage) {
       const parsedLanguage = JSON.parse(savedLanguage);
       setSelectedLanguage(parsedLanguage);
     } else if (defaultLanguage) {
       setSelectedLanguage(defaultLanguage);
     }
-  }, [defaultLanguage]);
+  }, [defaultLanguage, shouldLoadLanguages]);
 
   const handleLanguageChange = async (value: string) => {
     const selectedOption = LANGUAGE_OPTIONS.find(option => option.value === value) || null;
@@ -109,6 +121,7 @@ export const Learn: FC = () => {
     navigate(isPathway ? `/pathway/${itemId}` : `/scenario/${itemId}`, {
       state: {
         languages: LANGUAGE_OPTIONS,
+        defaultLanguage: defaultLanguage,
         selectedLanguage: selectedLanguage,
       },
     });
