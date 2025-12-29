@@ -37,7 +37,6 @@ import CloseIcon from "./close-icon.svg?react";
 import Close from "./close.svg?react";
 import Cloud from "./cloud.svg?react";
 import ComingSoon from "./coming-soon.svg?react";
-import CommunityIcon from "./community.svg?react";
 import CrossRedBackground from "./cross-red-background.svg?react";
 import CutCall from "./cut-call.svg?react";
 import DataPolicy from "./data-policy.svg?react";
@@ -159,7 +158,6 @@ export {
   CloseIcon,
   Close,
   Cloud,
-  CommunityIcon,
   ComingSoon,
   CrossRedBackground,
   CutCall,

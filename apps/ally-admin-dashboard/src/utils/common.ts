@@ -202,7 +202,13 @@ export const extractValidData = (
     Object.entries(formData).map(([key, value]) => {
       const field = allFields.find(field => field.id === key);
       if (Array.isArray(value) && value.length === 0) {
-        return [key, null];
+        return [
+          key,
+          field?.type !== FORM_FIELD_TYPES.IMAGE_UPLOAD &&
+          field?.type !== FORM_FIELD_TYPES.VIDEO_UPLOAD
+            ? []
+            : null,
+        ];
       }
       switch (field?.type) {
         case FORM_FIELD_TYPES.SELECT:

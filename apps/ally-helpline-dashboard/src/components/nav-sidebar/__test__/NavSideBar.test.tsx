@@ -16,7 +16,7 @@ const mockUser = {
   userId: 123,
 };
 
-const mockPermissions = ["VIEW_CALL_LOGS", "VIEW_ANALYTICS_DASHBOARD", "VIEW_COMMUNITY"];
+const mockPermissions = ["VIEW_CALL_LOGS", "VIEW_ANALYTICS_DASHBOARD"];
 const mockLogout = vi.fn();
 
 const mockUseUser = vi.fn(() => ({
@@ -141,14 +141,6 @@ vi.mock("@constants", async importOriginal => {
       activePages: [],
       permissions: ["VIEW_ANALYTICS_DASHBOARD"],
     },
-    {
-      id: TabId.COMMUNITY,
-      title: "Community",
-      Icon: ({ className, ...props }: any) => <svg className={className} {...props} />,
-      path: "https://community.helloally.ai/",
-      activePages: [],
-      permissions: ["VIEW_COMMUNITY"],
-    },
   ];
 
   const mockCarouselSlides = [
@@ -185,7 +177,6 @@ enum TabId {
   ANALYTICS = "ANALYTICS",
   CALENDER = "CALENDER",
   CALLS = "CALLS",
-  COMMUNITY = "COMMUNITY",
   LEARN = "LEARN",
   SEARCH = "SEARCH",
   SETTINGS = "SETTINGS",
@@ -255,10 +246,8 @@ describe("NavSideBar", () => {
     renderComponent();
     expect(screen.getByTestId("nav-tab-icon-CALLS")).toBeInTheDocument();
     expect(screen.getByTestId("nav-tab-icon-ANALYTICS")).toBeInTheDocument();
-    expect(screen.getByTestId("nav-tab-icon-COMMUNITY")).toBeInTheDocument();
     expect(screen.getByText("Sessions")).toBeInTheDocument();
     expect(screen.getByText("Statistics")).toBeInTheDocument();
-    expect(screen.getByText("Community")).toBeInTheDocument();
   });
 
   it("should render UserInfo component", () => {

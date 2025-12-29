@@ -1,13 +1,11 @@
 import { FC, useEffect, useState } from "react";
 
-import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import { useNavigate } from "react-router-dom";
 
 import { Ally, DockToRight, LogoutIllustration } from "@assets";
 import { Carousel, CarouselSize, CarouselVariant, ConfirmationDialog, UserInfo } from "@components";
-import { TabId, navBarOptions, CAROUSEL_SLIDES } from "@constants";
+import { navBarOptions, CAROUSEL_SLIDES } from "@constants";
 import { useUser } from "@hooks";
-import { openLinkInNewTab } from "@utils";
 
 import { ButtonVariant } from "../button";
 import { NavSideBarProps, TabProps } from "./types";
@@ -39,12 +37,6 @@ const Tab: FC<TabProps> = ({ id, Icon, title, activeTab, isExpanded, onClick }) 
         {title}
       </div>
     )}
-    {id === TabId.COMMUNITY && (
-      <OpenInNewIcon
-        className="ml-auto opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-        data-testid="nav-tab-external-icon"
-      />
-    )}
   </div>
 );
 
@@ -74,12 +66,8 @@ const NavSideBar: FC<NavSideBarProps> = ({ activeTab, onTabChange, isOpen, onClo
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  const onTabClick = (id: TabId, path: string) => {
-    if (id === TabId.COMMUNITY) {
-      openLinkInNewTab(path);
-    } else {
-      onTabChange(path);
-    }
+  const onTabClick = (path: string) => {
+    onTabChange(path);
     onClose();
   };
 
@@ -114,7 +102,7 @@ const NavSideBar: FC<NavSideBarProps> = ({ activeTab, onTabChange, isOpen, onClo
             title={title}
             activeTab={activeTab}
             isExpanded={isExpanded}
-            onClick={() => onTabClick(id, path)}
+            onClick={() => onTabClick(path)}
           />
         ))}
       </div>

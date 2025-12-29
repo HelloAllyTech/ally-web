@@ -25,7 +25,6 @@ export enum Permissions {
   EDIT_CALL_INFO = "edit:call:info",
   EDIT_CALL_DETAILS = "edit:call:details",
   VIEW_SIMULATION_CREDITS = "view:simulation-credits",
-  VIEW_COMMUNITY = "view:community",
   VIEW_CHAT_DETAILS = "view:chat:details",
   VIEW_TRANSCRIPTION = "view:messages",
   VIEW_CHAT_TYPES = "view:settings:chat-types",
