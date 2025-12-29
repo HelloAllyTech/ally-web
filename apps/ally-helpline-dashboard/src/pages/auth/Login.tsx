@@ -1,5 +1,6 @@
 import { useEffect, useState, useCallback, FunctionComponent, useRef } from "react";
 
+import { GoogleLogin } from "@react-oauth/google";
 import { FetchBaseQueryError } from "@reduxjs/toolkit/query";
 import { motion, AnimatePresence } from "framer-motion";
 import { useSelector } from "react-redux";
@@ -194,6 +195,16 @@ export const Login: FunctionComponent = () => {
     }
   };
 
+  const handleSuccess = credentialResponse => {
+    console.log("Login Success:", credentialResponse);
+    // credentialResponse.credential contains the JWT token
+    // You can send it to your backend for verification
+    // navigate("/dashboard");
+  };
+
+  const handleError = () => {
+    console.log("Login Failed");
+  };
   const getLoginSection = () => {
     if (loginSection === LoginSection.EMAIL) {
       return (
@@ -269,9 +280,21 @@ export const Login: FunctionComponent = () => {
               className="text-primary-500 cursor-pointer"
               onClick={() => openLinkInNewTab(ALLY_PRIVACY_POLICY_URL)}
             >
-              Privacy Policy
+              Privacy Policy.
             </span>
-            .
+            <div className="flex items-center my-4">
+              <div className="flex-grow border-t border-gray-300"></div>
+              <span className="mx-3 text-sm text-gray-500">OR</span>
+              <div className="flex-grow border-t border-gray-300"></div>
+            </div>
+            <div className="font-bold text-typography-800 font-primary">
+              <GoogleLogin
+                onSuccess={handleSuccess}
+                onError={handleError}
+                text="continue_with"
+                logo_alignment="center"
+              />
+            </div>
           </div>
         </motion.div>
       );

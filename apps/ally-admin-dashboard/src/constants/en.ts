@@ -18,6 +18,7 @@ export const en = {
     enabled: "Enabled",
     disabled: "Disabled",
     edit: "Edit",
+    or: "OR",
   },
   errors: {
     failedCreateOrganization: "Failed to create organization",
