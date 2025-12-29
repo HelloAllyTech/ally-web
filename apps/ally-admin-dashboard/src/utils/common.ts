@@ -202,7 +202,7 @@ export const extractValidData = (
     Object.entries(formData).map(([key, value]) => {
       const field = allFields.find(field => field.id === key);
       if (Array.isArray(value) && value.length === 0) {
-        return [key, null];
+        return [key, []];
       }
       switch (field?.type) {
         case FORM_FIELD_TYPES.SELECT:
