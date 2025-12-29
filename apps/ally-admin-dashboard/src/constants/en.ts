@@ -121,6 +121,7 @@ export const en = {
     unarchiveDescription:
       "Are you sure you want to unarchive this simulation? This will make it visible to active simulations.",
     voice: "Voice",
+    selectVoice: "Select voice",
     simulationEvents: "Simulation Events",
     createNewEvent: "Create new event",
     selectEventType: "Select the type of event you want to create.",

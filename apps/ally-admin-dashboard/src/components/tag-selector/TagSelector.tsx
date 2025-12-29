@@ -176,7 +176,7 @@ export const TagSelector: React.FC<TagsDropdown> = ({
   );
   return (
     <div className="flex flex-col gap-2">
-      <label htmlFor="tags" className="text-typography-900 text-base cursor-pointer">
+      <label htmlFor="tags" className="text-typography-900 text-base text-base cursor-pointer">
         {label}
       </label>
 
@@ -184,7 +184,7 @@ export const TagSelector: React.FC<TagsDropdown> = ({
         {triggerWarnings?.map(tag => (
           <div
             key={tag?.id}
-            className="flex items-center px-2 bg-white border border-border-light rounded-full text-typography-900"
+            className="flex items-center px-2 bg-white text-base border border-border-light rounded-full text-typography-900"
           >
             <span>{tag?.name}</span>
             <button type="button" className="cursor-pointer ml-2" onClick={() => removeTag(tag)}>

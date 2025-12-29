@@ -1,4 +1,4 @@
-import { SearchIcon, StatsIcon, CommunityIcon, ScribeIcon, LearnIcon } from "@assets/icons";
+import { SearchIcon, StatsIcon, ScribeIcon, LearnIcon } from "@assets/icons";
 
 import { Permissions } from "./permissions";
 import { TabId } from "./tabs";
@@ -74,13 +74,5 @@ export const navBarOptions = [
     path: ROUTES.SEARCH,
     activePages: [],
     permissions: [Permissions.VIEW_REFERNCE_DOCUMENT],
-  },
-  {
-    id: TabId.COMMUNITY,
-    title: "Community",
-    Icon: CommunityIcon,
-    path: "https://community.helloally.ai/",
-    activePages: [],
-    permissions: [Permissions.VIEW_COMMUNITY],
   },
 ];
