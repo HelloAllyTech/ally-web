@@ -50,7 +50,7 @@ export const CustomFieldGroup: FC<CustomFieldGroupProps> = ({ formMethods }) => 
               type="text"
               value={field.name}
               onChange={e => handleNameChange(field.id, e.target.value)}
-              className="text-typography-900 bg-transparent border-none outline-none focus:ring-0 p-0 cursor-text"
+              className="text-typography-900 text-base bg-transparent border-none outline-none focus:ring-0 p-0 cursor-text"
             />
             <button
               type="button"
@@ -58,7 +58,7 @@ export const CustomFieldGroup: FC<CustomFieldGroupProps> = ({ formMethods }) => 
               className="p-1 hover:bg-surface-100 rounded transition-colors"
               aria-label={`${en.common.delete} ${field.name}`}
             >
-              <TrashRed className="w-5 h-5 text-destructive-500" />
+              <TrashRed className="w-4 h-4 text-destructive-500" />
             </button>
           </div>
           <textarea
