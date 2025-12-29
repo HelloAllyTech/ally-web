@@ -1,0 +1,89 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`PostSimulationSummary Component > Snapshot Testing > should match snapshot 1`] = `
+<DocumentFragment>
+  <div
+    data-testid="browser-router"
+  >
+    <div
+      class="bg-white w-full h-[100vh] overflow-y-auto flex flex-col items-center "
+    >
+      <div
+        class="flex flex-col gap-6 max-w-3xl w-full h-full pb-8 sm:pb-16 px-4 sm:px-6 items-center"
+        data-animate="visible"
+        data-initial="hidden"
+        data-testid="motion-div"
+        data-variants="{\\"hidden\\":{\\"opacity\\":0},\\"visible\\":{\\"opacity\\":1,\\"transition\\":{\\"staggerChildren\\":0.2,\\"delayChildren\\":0.3}}}"
+      >
+        <div
+          class="w-full text-black text-2xl sm:text-4xl font-normal text-left font-secondary mt-8 px-4"
+        >
+          Simulation 
+          <em>
+            Summary
+          </em>
+        </div>
+        <div
+          class="max-h-[calc(100vh-120px)]"
+          data-testid="simulation-summary"
+        >
+          <div
+            data-testid="summary-id"
+          >
+            123
+          </div>
+          <button
+            data-testid="close-summary-btn"
+          >
+            Close Summary
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</DocumentFragment>
+`;
+
+exports[`PostSimulationSummary Component > Snapshot Testing > should match snapshot with different sessionId 1`] = `
+<DocumentFragment>
+  <div
+    data-testid="browser-router"
+  >
+    <div
+      class="bg-white w-full h-[100vh] overflow-y-auto flex flex-col items-center "
+    >
+      <div
+        class="flex flex-col gap-6 max-w-3xl w-full h-full pb-8 sm:pb-16 px-4 sm:px-6 items-center"
+        data-animate="visible"
+        data-initial="hidden"
+        data-testid="motion-div"
+        data-variants="{\\"hidden\\":{\\"opacity\\":0},\\"visible\\":{\\"opacity\\":1,\\"transition\\":{\\"staggerChildren\\":0.2,\\"delayChildren\\":0.3}}}"
+      >
+        <div
+          class="w-full text-black text-2xl sm:text-4xl font-normal text-left font-secondary mt-8 px-4"
+        >
+          Simulation 
+          <em>
+            Summary
+          </em>
+        </div>
+        <div
+          class="max-h-[calc(100vh-120px)]"
+          data-testid="simulation-summary"
+        >
+          <div
+            data-testid="summary-id"
+          >
+            789
+          </div>
+          <button
+            data-testid="close-summary-btn"
+          >
+            Close Summary
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</DocumentFragment>
+`;

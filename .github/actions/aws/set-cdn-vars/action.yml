@@ -1,0 +1,41 @@
+name: "Set CDN Variables"
+description: "Generates CDN-specific configurations for static hosting deployments"
+
+inputs:
+  service_name:
+    description: "Service name"
+    required: true
+  project_prefix:
+    description: "Project prefix"
+    required: true
+  project_region:
+    description: "Project region"
+    required: true
+
+outputs:
+  s3_env_bucket:
+    description: "S3 environment bucket name"
+    value: ${{ steps.set-vars.outputs.s3_env_bucket }}
+  service_path:
+    description: "Service path for environment variables"
+    value: ${{ steps.set-vars.outputs.service_path }}
+
+runs:
+  using: "composite"
+  steps:
+    - name: Set CDN Variables
+      id: set-vars
+      shell: bash
+      run: |
+        # Generate CDN-specific names
+        S3_ENV_BUCKET="${{ inputs.project_prefix }}-s3-environment"
+        SERVICE_PATH="${{ inputs.service_name }}"
+
+        # Output variables
+        echo "s3_env_bucket=$S3_ENV_BUCKET" >> $GITHUB_OUTPUT
+        echo "service_path=$SERVICE_PATH" >> $GITHUB_OUTPUT
+
+        # Add to step summary
+        echo ":gear: CDN Configuration" >> $GITHUB_STEP_SUMMARY
+        echo "- S3 Environment Bucket: $S3_ENV_BUCKET" >> $GITHUB_STEP_SUMMARY
+        echo "- Service Path: $SERVICE_PATH" >> $GITHUB_STEP_SUMMARY

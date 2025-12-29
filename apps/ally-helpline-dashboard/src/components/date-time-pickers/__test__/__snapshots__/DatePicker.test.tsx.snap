@@ -1,0 +1,48 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`DatePicker > should match snapshot when fully rendered 1`] = `
+<DocumentFragment>
+  <div
+    data-testid="mui-date-picker"
+  >
+    <input
+      data-testid="date-input"
+      placeholder="DD/MM/YYYY"
+      type="text"
+      value=""
+    />
+  </div>
+</DocumentFragment>
+`;
+
+exports[`DatePicker > should match snapshot with disableFuture 1`] = `
+<DocumentFragment>
+  <div
+    data-disable-future="true"
+    data-testid="mui-date-picker"
+  >
+    <input
+      data-testid="date-input"
+      placeholder="DD/MM/YYYY"
+      readonly=""
+      type="text"
+      value=""
+    />
+  </div>
+</DocumentFragment>
+`;
+
+exports[`DatePicker > should match snapshot with value 1`] = `
+<DocumentFragment>
+  <div
+    data-testid="mui-date-picker"
+  >
+    <input
+      data-testid="date-input"
+      placeholder="DD/MM/YYYY"
+      type="text"
+      value="15/01/2024"
+    />
+  </div>
+</DocumentFragment>
+`;

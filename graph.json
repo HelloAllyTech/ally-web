@@ -1,0 +1,735 @@
+{
+  "graph": {
+    "nodes": {
+      "ally-helpline-dashboard": {
+        "name": "ally-helpline-dashboard",
+        "type": "app",
+        "data": {
+          "root": "apps/ally-helpline-dashboard",
+          "projectType": "application",
+          "targets": {
+            "typecheck": {
+              "cache": true,
+              "inputs": [
+                "production",
+                "^production",
+                {
+                  "externalDependencies": ["typescript"]
+                }
+              ],
+              "options": {
+                "cwd": "apps/ally-helpline-dashboard",
+                "command": "tsc --noEmit -p tsconfig.app.json"
+              },
+              "metadata": {
+                "technologies": ["typescript", "typescript"],
+                "description": "Runs type-checking for the project.",
+                "help": {
+                  "command": "npx tsc -p tsconfig.app.json --help",
+                  "example": {
+                    "options": {
+                      "noEmit": true
+                    }
+                  }
+                }
+              },
+              "executor": "nx:run-commands",
+              "configurations": {},
+              "parallelism": true
+            },
+            "build": {
+              "executor": "@nx/vite:build",
+              "outputs": ["{options.outputPath}"],
+              "defaultConfiguration": "production",
+              "options": {
+                "outputPath": "dist/apps/ally-helpline-dashboard",
+                "configFile": "apps/ally-helpline-dashboard/vite.config.ts",
+                "postcssConfig": "apps/ally-helpline-dashboard/postcss.config.cjs"
+              },
+              "configurations": {
+                "development": {
+                  "mode": "development"
+                },
+                "production": {
+                  "mode": "production"
+                }
+              },
+              "parallelism": true
+            },
+            "serve": {
+              "executor": "@nx/vite:dev-server",
+              "defaultConfiguration": "development",
+              "options": {
+                "buildTarget": "ally-helpline-dashboard:build",
+                "port": 8080,
+                "host": true,
+                "postcssConfig": "apps/ally-helpline-dashboard/postcss.config.cjs"
+              },
+              "configurations": {
+                "development": {
+                  "buildTarget": "ally-helpline-dashboard:build:development",
+                  "hmr": true
+                },
+                "production": {
+                  "buildTarget": "ally-helpline-dashboard:build:production",
+                  "hmr": false
+                }
+              },
+              "parallelism": true,
+              "continuous": true
+            },
+            "dev": {
+              "executor": "nx:run-script",
+              "options": {
+                "script": "dev"
+              },
+              "metadata": {
+                "technologies": ["vite"],
+                "description": "Starts Vite dev server",
+                "help": {
+                  "command": "npx vite --help",
+                  "example": {
+                    "options": {
+                      "port": 3000
+                    }
+                  }
+                },
+                "scriptContent": "vite",
+                "runCommand": "npm run dev"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "preview": {
+              "executor": "@nx/vite:preview-server",
+              "defaultConfiguration": "development",
+              "options": {
+                "buildTarget": "ally-helpline-dashboard:build"
+              },
+              "configurations": {},
+              "parallelism": true,
+              "continuous": true
+            },
+            "serve-static": {
+              "continuous": true,
+              "executor": "@nx/web:file-server",
+              "options": {
+                "buildTarget": "build",
+                "spa": true
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "build-deps": {
+              "dependsOn": ["^build"],
+              "configurations": {},
+              "options": {},
+              "parallelism": true,
+              "executor": "nx:noop"
+            },
+            "watch-deps": {
+              "continuous": true,
+              "dependsOn": ["build-deps"],
+              "executor": "nx:run-commands",
+              "options": {
+                "command": "npx nx watch --projects ally-helpline-dashboard --includeDependentProjects -- npx nx build-deps ally-helpline-dashboard"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "eslint:lint": {
+              "cache": true,
+              "options": {
+                "cwd": "apps/ally-helpline-dashboard",
+                "command": "eslint ."
+              },
+              "inputs": [
+                "default",
+                "^default",
+                "{workspaceRoot}/eslint.config.mjs",
+                "{workspaceRoot}/tools/eslint-rules/**/*",
+                {
+                  "externalDependencies": ["eslint"]
+                }
+              ],
+              "outputs": ["{options.outputFile}"],
+              "metadata": {
+                "technologies": ["eslint"],
+                "description": "Runs ESLint on project",
+                "help": {
+                  "command": "npx eslint --help",
+                  "example": {
+                    "options": {
+                      "max-warnings": 0
+                    }
+                  }
+                }
+              },
+              "executor": "nx:run-commands",
+              "configurations": {},
+              "parallelism": true
+            },
+            "build:dev": {
+              "executor": "nx:run-script",
+              "options": {
+                "script": "build:dev"
+              },
+              "metadata": {
+                "scriptContent": "vite build --mode development",
+                "runCommand": "npm run build:dev"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "test": {
+              "executor": "@nx/vite:test",
+              "outputs": ["{options.reportsDirectory}"],
+              "options": {
+                "reportsDirectory": "../../coverage/apps/ally-helpline-dashboard"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "lint": {
+              "executor": "@nx/eslint:lint",
+              "outputs": ["{options.outputFile}"],
+              "options": {
+                "lintFilePatterns": ["apps/ally-helpline-dashboard/**/*.{ts,tsx,js,jsx}"]
+              },
+              "configurations": {},
+              "parallelism": true
+            }
+          },
+          "metadata": {
+            "targetGroups": {
+              "NPM Scripts": ["dev", "build:dev"]
+            },
+            "js": {
+              "packageName": "vite_react_shadcn_ts",
+              "isInPackageManagerWorkspaces": true
+            }
+          },
+          "name": "ally-helpline-dashboard",
+          "tags": ["npm:private"],
+          "$schema": "../../node_modules/nx/schemas/project-schema.json",
+          "sourceRoot": "apps/ally-helpline-dashboard/src",
+          "implicitDependencies": []
+        }
+      },
+      "ally-admin-dashboard": {
+        "name": "ally-admin-dashboard",
+        "type": "app",
+        "data": {
+          "root": "apps/ally-admin-dashboard",
+          "projectType": "application",
+          "targets": {
+            "typecheck": {
+              "cache": true,
+              "inputs": [
+                "production",
+                "^production",
+                {
+                  "externalDependencies": ["typescript"]
+                }
+              ],
+              "options": {
+                "cwd": "apps/ally-admin-dashboard",
+                "command": "tsc --noEmit -p tsconfig.app.json"
+              },
+              "metadata": {
+                "technologies": ["typescript", "typescript"],
+                "description": "Runs type-checking for the project.",
+                "help": {
+                  "command": "npx tsc -p tsconfig.app.json --help",
+                  "example": {
+                    "options": {
+                      "noEmit": true
+                    }
+                  }
+                }
+              },
+              "executor": "nx:run-commands",
+              "configurations": {},
+              "parallelism": true
+            },
+            "test": {
+              "options": {
+                "cwd": "apps/ally-admin-dashboard",
+                "command": "vitest"
+              },
+              "cache": true,
+              "inputs": [
+                "default",
+                "^production",
+                {
+                  "externalDependencies": ["vitest"]
+                },
+                {
+                  "env": "CI"
+                }
+              ],
+              "outputs": ["{workspaceRoot}/coverage/apps/ally-admin-dashboard"],
+              "metadata": {
+                "technologies": ["vite"],
+                "description": "Run Vite tests",
+                "help": {
+                  "command": "npx vitest --help",
+                  "example": {
+                    "options": {
+                      "bail": 1,
+                      "coverage": true
+                    }
+                  }
+                }
+              },
+              "executor": "nx:run-commands",
+              "configurations": {},
+              "parallelism": true
+            },
+            "build": {
+              "options": {
+                "cwd": "apps/ally-admin-dashboard",
+                "command": "vite build"
+              },
+              "cache": true,
+              "dependsOn": ["^build"],
+              "inputs": [
+                "production",
+                "^production",
+                {
+                  "externalDependencies": ["vite"]
+                }
+              ],
+              "outputs": ["{workspaceRoot}/dist/apps/ally-admin-dashboard"],
+              "metadata": {
+                "technologies": ["vite"],
+                "description": "Run Vite build",
+                "help": {
+                  "command": "npx vite build --help",
+                  "example": {
+                    "options": {
+                      "sourcemap": true,
+                      "manifest": "manifest.json"
+                    }
+                  }
+                }
+              },
+              "executor": "nx:run-commands",
+              "configurations": {},
+              "parallelism": true
+            },
+            "serve": {
+              "continuous": true,
+              "options": {
+                "cwd": "apps/ally-admin-dashboard",
+                "command": "vite"
+              },
+              "metadata": {
+                "technologies": ["vite"],
+                "description": "Starts Vite dev server",
+                "help": {
+                  "command": "npx vite --help",
+                  "example": {
+                    "options": {
+                      "port": 3000
+                    }
+                  }
+                },
+                "deprecated": "Use devTargetName instead. This option will be removed in Nx 22."
+              },
+              "executor": "nx:run-commands",
+              "configurations": {},
+              "parallelism": true
+            },
+            "dev": {
+              "continuous": true,
+              "options": {
+                "cwd": "apps/ally-admin-dashboard",
+                "command": "vite"
+              },
+              "metadata": {
+                "technologies": ["vite"],
+                "description": "Starts Vite dev server",
+                "help": {
+                  "command": "npx vite --help",
+                  "example": {
+                    "options": {
+                      "port": 3000
+                    }
+                  }
+                }
+              },
+              "executor": "nx:run-commands",
+              "configurations": {},
+              "parallelism": true
+            },
+            "preview": {
+              "continuous": true,
+              "dependsOn": ["build"],
+              "options": {
+                "cwd": "apps/ally-admin-dashboard",
+                "command": "vite preview"
+              },
+              "metadata": {
+                "technologies": ["vite"],
+                "description": "Locally preview Vite production build",
+                "help": {
+                  "command": "npx vite preview --help",
+                  "example": {
+                    "options": {
+                      "port": 3000
+                    }
+                  }
+                }
+              },
+              "executor": "nx:run-commands",
+              "configurations": {},
+              "parallelism": true
+            },
+            "serve-static": {
+              "continuous": true,
+              "executor": "@nx/web:file-server",
+              "options": {
+                "buildTarget": "build",
+                "spa": true
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "build-deps": {
+              "dependsOn": ["^build"],
+              "configurations": {},
+              "options": {},
+              "parallelism": true,
+              "executor": "nx:noop"
+            },
+            "watch-deps": {
+              "continuous": true,
+              "dependsOn": ["build-deps"],
+              "executor": "nx:run-commands",
+              "options": {
+                "command": "npx nx watch --projects ally-admin-dashboard --includeDependentProjects -- npx nx build-deps ally-admin-dashboard"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "eslint:lint": {
+              "cache": true,
+              "options": {
+                "cwd": "apps/ally-admin-dashboard",
+                "command": "eslint ."
+              },
+              "inputs": [
+                "default",
+                "^default",
+                "{workspaceRoot}/eslint.config.mjs",
+                "{projectRoot}/eslint.config.mjs",
+                "{workspaceRoot}/tools/eslint-rules/**/*",
+                {
+                  "externalDependencies": ["eslint"]
+                }
+              ],
+              "outputs": ["{options.outputFile}"],
+              "metadata": {
+                "technologies": ["eslint"],
+                "description": "Runs ESLint on project",
+                "help": {
+                  "command": "npx eslint --help",
+                  "example": {
+                    "options": {
+                      "max-warnings": 0
+                    }
+                  }
+                }
+              },
+              "executor": "nx:run-commands",
+              "configurations": {},
+              "parallelism": true
+            }
+          },
+          "metadata": {},
+          "name": "ally-admin-dashboard",
+          "$schema": "../../node_modules/nx/schemas/project-schema.json",
+          "sourceRoot": "apps/ally-admin-dashboard/src",
+          "tags": [],
+          "implicitDependencies": []
+        }
+      },
+      "ui-shared": {
+        "name": "ui-shared",
+        "type": "lib",
+        "data": {
+          "root": "libs/ui-shared",
+          "projectType": "library",
+          "targets": {
+            "typecheck": {
+              "dependsOn": ["^typecheck"],
+              "options": {
+                "cwd": "libs/ui-shared",
+                "command": "tsc --build --emitDeclarationOnly"
+              },
+              "cache": true,
+              "inputs": [
+                "{projectRoot}/package.json",
+                "{workspaceRoot}/tsconfig.base.json",
+                "{projectRoot}/tsconfig.json",
+                "{projectRoot}/tsconfig.lib.json",
+                "{projectRoot}/src/**/*.js",
+                "{projectRoot}/src/**/*.jsx",
+                "{projectRoot}/src/**/*.ts",
+                "{projectRoot}/src/**/*.tsx",
+                "!{projectRoot}/out-tsc",
+                "!{projectRoot}/dist",
+                "!{projectRoot}/jest.config.ts",
+                "!{projectRoot}/src/**/*.spec.ts",
+                "!{projectRoot}/src/**/*.test.ts",
+                "!{projectRoot}/src/**/*.spec.tsx",
+                "!{projectRoot}/src/**/*.test.tsx",
+                "!{projectRoot}/src/**/*.spec.js",
+                "!{projectRoot}/src/**/*.test.js",
+                "!{projectRoot}/src/**/*.spec.jsx",
+                "!{projectRoot}/src/**/*.test.jsx",
+                "!{projectRoot}/eslint.config.js",
+                "!{projectRoot}/eslint.config.cjs",
+                "!{projectRoot}/eslint.config.mjs",
+                "^production",
+                {
+                  "externalDependencies": ["typescript"]
+                }
+              ],
+              "outputs": [
+                "{projectRoot}/dist/**/*.d.ts",
+                "{projectRoot}/dist/**/*.d.ts.map",
+                "{projectRoot}/dist/tsconfig.lib.tsbuildinfo"
+              ],
+              "syncGenerators": ["@nx/js:typescript-sync"],
+              "metadata": {
+                "technologies": ["typescript"],
+                "description": "Runs type-checking for the project.",
+                "help": {
+                  "command": "npx tsc --build --help",
+                  "example": {
+                    "args": ["--force"]
+                  }
+                }
+              },
+              "executor": "nx:run-commands",
+              "configurations": {},
+              "parallelism": true
+            },
+            "eslint:lint": {
+              "cache": true,
+              "options": {
+                "cwd": "libs/ui-shared",
+                "command": "eslint ."
+              },
+              "inputs": [
+                "default",
+                "^default",
+                "{workspaceRoot}/eslint.config.mjs",
+                "{workspaceRoot}/tools/eslint-rules/**/*",
+                {
+                  "externalDependencies": ["eslint"]
+                }
+              ],
+              "outputs": ["{options.outputFile}"],
+              "metadata": {
+                "technologies": ["eslint"],
+                "description": "Runs ESLint on project",
+                "help": {
+                  "command": "npx eslint --help",
+                  "example": {
+                    "options": {
+                      "max-warnings": 0
+                    }
+                  }
+                }
+              },
+              "executor": "nx:run-commands",
+              "configurations": {},
+              "parallelism": true
+            },
+            "nx-release-publish": {
+              "executor": "@nx/js:release-publish",
+              "dependsOn": ["^nx-release-publish"],
+              "options": {},
+              "configurations": {},
+              "parallelism": true
+            },
+            "lint": {
+              "executor": "@nx/eslint:lint",
+              "outputs": ["{options.outputFile}"],
+              "options": {
+                "lintFilePatterns": ["libs/ui-shared/**/*.{ts,tsx,js,jsx}"]
+              },
+              "configurations": {},
+              "parallelism": true
+            }
+          },
+          "name": "ui-shared",
+          "tags": ["npm:public"],
+          "metadata": {
+            "targetGroups": {},
+            "js": {
+              "packageName": "@ally-ui-mono/ui-shared",
+              "packageExports": {
+                ".": {
+                  "types": "./src/index.ts",
+                  "import": "./src/index.ts",
+                  "default": "./src/index.ts"
+                },
+                "./package.json": "./package.json"
+              },
+              "packageMain": "./src/index.ts",
+              "isInPackageManagerWorkspaces": true
+            }
+          },
+          "$schema": "../../node_modules/nx/schemas/project-schema.json",
+          "sourceRoot": "libs/ui-shared/src",
+          "implicitDependencies": []
+        }
+      },
+      "@ally-ui-mono/ally-web": {
+        "name": "@ally-ui-mono/ally-web",
+        "type": "lib",
+        "data": {
+          "root": "apps/ally-web",
+          "targets": {
+            "build": {
+              "executor": "nx:run-script",
+              "options": {
+                "script": "build"
+              },
+              "metadata": {
+                "scriptContent": "next build",
+                "runCommand": "npm run build"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "dev": {
+              "executor": "nx:run-script",
+              "options": {
+                "script": "dev"
+              },
+              "metadata": {
+                "scriptContent": "next dev",
+                "runCommand": "npm run dev"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "start": {
+              "executor": "nx:run-script",
+              "options": {
+                "script": "start"
+              },
+              "metadata": {
+                "scriptContent": "next start",
+                "runCommand": "npm run start"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "serve-static": {
+              "continuous": true,
+              "options": {
+                "cwd": "apps/ally-web",
+                "command": "next start"
+              },
+              "dependsOn": ["build"],
+              "executor": "nx:run-commands",
+              "configurations": {},
+              "parallelism": true
+            },
+            "build-deps": {
+              "dependsOn": ["^build"],
+              "configurations": {},
+              "options": {},
+              "parallelism": true,
+              "executor": "nx:noop"
+            },
+            "watch-deps": {
+              "continuous": true,
+              "dependsOn": ["build-deps"],
+              "executor": "nx:run-commands",
+              "options": {
+                "command": "npx nx watch --projects @ally-ui-mono/ally-web --includeDependentProjects -- npx nx build-deps @ally-ui-mono/ally-web"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "eslint:lint": {
+              "cache": true,
+              "options": {
+                "cwd": "apps/ally-web",
+                "command": "eslint ."
+              },
+              "inputs": [
+                "default",
+                "^default",
+                "{workspaceRoot}/eslint.config.mjs",
+                "{workspaceRoot}/tools/eslint-rules/**/*",
+                {
+                  "externalDependencies": ["eslint"]
+                }
+              ],
+              "outputs": ["{options.outputFile}"],
+              "metadata": {
+                "technologies": ["eslint"],
+                "description": "Runs ESLint on project",
+                "help": {
+                  "command": "npx eslint --help",
+                  "example": {
+                    "options": {
+                      "max-warnings": 0
+                    }
+                  }
+                }
+              },
+              "executor": "nx:run-commands",
+              "configurations": {},
+              "parallelism": true
+            }
+          },
+          "name": "@ally-ui-mono/ally-web",
+          "tags": ["npm:private"],
+          "metadata": {
+            "targetGroups": {
+              "NPM Scripts": ["dev", "build", "start"]
+            },
+            "js": {
+              "packageName": "@ally-ui-mono/ally-web",
+              "isInPackageManagerWorkspaces": true
+            }
+          },
+          "implicitDependencies": []
+        }
+      }
+    },
+    "dependencies": {
+      "ally-helpline-dashboard": [
+        {
+          "source": "ally-helpline-dashboard",
+          "target": "ui-shared",
+          "type": "static"
+        }
+      ],
+      "ally-admin-dashboard": [
+        {
+          "source": "ally-admin-dashboard",
+          "target": "ui-shared",
+          "type": "static"
+        }
+      ],
+      "ui-shared": [],
+      "@ally-ui-mono/ally-web": [
+        {
+          "source": "@ally-ui-mono/ally-web",
+          "target": "ui-shared",
+          "type": "static"
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,48 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`TimePicker > should match snapshot when disabled 1`] = `
+<DocumentFragment>
+  <div
+    data-disabled="true"
+    data-testid="mui-time-picker"
+  >
+    <input
+      data-testid="time-input"
+      disabled=""
+      placeholder="HH:mm"
+      type="text"
+      value=""
+    />
+  </div>
+</DocumentFragment>
+`;
+
+exports[`TimePicker > should match snapshot when fully rendered 1`] = `
+<DocumentFragment>
+  <div
+    data-testid="mui-time-picker"
+  >
+    <input
+      data-testid="time-input"
+      placeholder="HH:mm"
+      type="text"
+      value=""
+    />
+  </div>
+</DocumentFragment>
+`;
+
+exports[`TimePicker > should match snapshot with value 1`] = `
+<DocumentFragment>
+  <div
+    data-testid="mui-time-picker"
+  >
+    <input
+      data-testid="time-input"
+      placeholder="HH:mm"
+      type="text"
+      value="Invalid Date"
+    />
+  </div>
+</DocumentFragment>
+`;
