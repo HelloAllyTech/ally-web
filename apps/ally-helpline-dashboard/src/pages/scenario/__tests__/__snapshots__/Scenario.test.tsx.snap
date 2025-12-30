@@ -1,0 +1,213 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`Scenario Component > Snapshot Testing > should match snapshot with scenario loaded 1`] = `
+<DocumentFragment>
+  <div
+    data-testid="browser-router"
+  >
+    <div
+      data-testid="animate-presence"
+    >
+      <div
+        class="h-screen w-full flex justify-center items-center bg-white"
+        data-testid="scenario-page"
+      >
+        <div
+          class="flex flex-col gap-6 w-full max-w-[600px] m-auto px-4"
+          data-animate="visible"
+          data-exit="exit"
+          data-initial="hidden"
+          data-testid="scenario-content"
+          data-variants="{\\"hidden\\":{\\"opacity\\":0,\\"scale\\":0.95},\\"visible\\":{\\"opacity\\":1,\\"scale\\":1,\\"transition\\":{\\"duration\\":0.4,\\"ease\\":[0.4,0,0.2,1]}},\\"exit\\":{\\"opacity\\":0,\\"scale\\":0.95,\\"transition\\":{\\"duration\\":0.3}}}"
+        >
+          <div
+            class="flex justify-between w-full max-w-[600px]"
+            data-testid="scenario-header"
+          >
+            <div
+              class="flex items-center gap-2 font-secondary text-3xl"
+              data-testid="scenario-title"
+            >
+              <button
+                animate="[object Object]"
+                aria-label="Close scenario details"
+                class="hover:scale-105 transition-transform"
+                data-testid="scenario-back-button"
+                exit="[object Object]"
+                initial="[object Object]"
+                transition="[object Object]"
+              >
+                <div
+                  data-testid="back-circle"
+                >
+                  BackCircle
+                </div>
+              </button>
+              <span>
+                Start
+              </span>
+              <span
+                class="font-bold italic"
+              >
+                 Simulation
+              </span>
+            </div>
+            <div
+              data-testid="credits-display"
+            >
+              <div
+                class="font-primary text-base text-typography-700 whitespace-nowrap"
+              >
+                Credits used:
+              </div>
+              <div
+                data-testid="credits-icon"
+              >
+                ⚡
+              </div>
+              <span
+                class="font-primary font-bold text-lg"
+                data-testid="credits-consumed"
+              >
+                0
+              </span>
+              <span
+                class="font-primary text-base text-typography-700"
+                data-testid="credits-limit"
+              >
+                /100
+              </span>
+            </div>
+          </div>
+          <div
+            data-testid="scenario-details-card"
+          >
+            <div
+              data-testid="cover-image"
+            >
+              https://example.com/image.jpg
+            </div>
+            <div
+              data-testid="scenario-title"
+            >
+              Test Scenario
+            </div>
+            <div
+              data-testid="scenario-description"
+            >
+              This is a test scenario description
+            </div>
+            <div
+              data-testid="is-starting"
+            >
+              false
+            </div>
+            <button
+              data-testid="start-simulation-btn"
+            >
+              Start Simulation
+            </button>
+          </div>
+          <div
+            data-testid="login-dialog"
+            style="display: none;"
+          >
+            <button
+              data-testid="login-close"
+            >
+              Close Login
+            </button>
+            <button
+              data-testid="login-success"
+            >
+              Login Success
+            </button>
+          </div>
+          <div
+            data-testid="confirmation-dialog"
+            style="display: none;"
+          >
+            <div
+              data-testid="dialog-title"
+            >
+              {"normal":"Active Simulation ","italic":"Detected"}
+            </div>
+            <div
+              data-testid="dialog-content"
+            >
+              You have a running simulation. End the existing session to start a new one.
+            </div>
+            <div
+              data-testid="dialog-icon"
+            />
+            <button
+              data-testid="dialog-primary-btn"
+            >
+              End session
+            </button>
+            <button
+              data-testid="dialog-secondary-btn"
+            >
+              Cancel
+            </button>
+            <button
+              data-testid="dialog-close"
+            >
+              Close Dialog
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</DocumentFragment>
+`;
+
+exports[`Scenario Component > Snapshot Testing > should match snapshot with scenario not found 1`] = `
+<DocumentFragment>
+  <div
+    data-testid="browser-router"
+  >
+    <div
+      data-testid="animate-presence"
+    >
+      <div
+        class="h-screen w-full flex justify-center items-center bg-white"
+        data-testid="scenario-page"
+      >
+        <div
+          data-testid="fallback-ui"
+        >
+          <div
+            data-testid="fallback-image"
+          >
+            <div
+              data-testid="page-not-found"
+            >
+              PageNotFound
+            </div>
+          </div>
+          <div
+            data-testid="fallback-loading"
+          >
+            false
+          </div>
+          <div
+            data-testid="fallback-message"
+          >
+            Scenario not found
+          </div>
+          <div
+            data-testid="fallback-description"
+          >
+            The scenario you are looking for does not exist.
+          </div>
+          <button
+            data-testid="fallback-button"
+          />
+        </div>
+      </div>
+    </div>
+  </div>
+</DocumentFragment>
+`;
