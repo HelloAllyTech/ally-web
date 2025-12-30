@@ -1,6 +1,9 @@
+import { useEffect } from "react";
+
 import { InfoIcon } from "@assets";
 import { InputFieldProps } from "@components/types";
 import { FORM_FIELD_TYPES } from "@constants";
+import { isNonEmptyString } from "@src/utils";
 
 export const InputField: React.FC<InputFieldProps> = ({
   label,
@@ -13,6 +16,7 @@ export const InputField: React.FC<InputFieldProps> = ({
   infoIconContent,
   isMandatory = false,
   maxLength,
+  defaultValue = "",
 }) => {
   const isAgeField = id === "age";
   const MAX_AGE = 150;
@@ -62,6 +66,12 @@ export const InputField: React.FC<InputFieldProps> = ({
       inputElement.value = sanitizedValue;
     }
   };
+
+  useEffect(() => {
+    if (!isNonEmptyString(formMethods.getValues(id)) && isNonEmptyString(defaultValue)) {
+      formMethods.setValue(id, defaultValue);
+    }
+  }, [formMethods, id, defaultValue]);
 
   const inputTrack = formMethods.watch(id, "") || "";
   const {
