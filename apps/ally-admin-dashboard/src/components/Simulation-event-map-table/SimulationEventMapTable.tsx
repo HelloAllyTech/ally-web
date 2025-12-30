@@ -1,6 +1,6 @@
 // This component is used to display the event map table for the simulation
 
-import { FC, useCallback, useEffect, useMemo, useState } from "react";
+import { FC, useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { toast } from "sonner";
 
@@ -34,6 +34,8 @@ import {
 interface SimulationEventMapTableProps {
   simulationId: string | undefined;
 }
+
+const DEBOUNCE_DELAY = 500;
 
 export const SimulationEventMapTable: FC<SimulationEventMapTableProps> = ({ simulationId }) => {
   const [mappedEvents, setMappedEvents] = useState<UpdateScenarioEventDataParam[]>([
@@ -176,6 +178,20 @@ export const SimulationEventMapTable: FC<SimulationEventMapTableProps> = ({ simu
     [simulationId, mapScenarioEvents],
   );
 
+  // Debounced save for cell updates (to prevent multiple saves when typing quickly in number input)
+  const debouncedSaveTimeoutRef = useRef<NodeJS.Timeout>();
+  const debouncedSaveEventsToApi = useCallback(
+    (events: UpdateScenarioEventDataParam[]) => {
+      if (debouncedSaveTimeoutRef.current) {
+        clearTimeout(debouncedSaveTimeoutRef.current);
+      }
+      debouncedSaveTimeoutRef.current = setTimeout(() => {
+        saveEventsToApi(events);
+      }, DEBOUNCE_DELAY);
+    },
+    [saveEventsToApi],
+  );
+
   // Helper function to update an event by ID
   const updateEventById = useCallback(
     (
@@ -186,9 +202,9 @@ export const SimulationEventMapTable: FC<SimulationEventMapTableProps> = ({ simu
         event.id?.value === eventId ? updater(event) : event,
       );
       setMappedEvents(updatedEvents);
-      saveEventsToApi(updatedEvents);
+      debouncedSaveEventsToApi(updatedEvents);
     },
-    [mappedEvents, saveEventsToApi],
+    [mappedEvents, debouncedSaveEventsToApi],
   );
 
   // Add a new event row
