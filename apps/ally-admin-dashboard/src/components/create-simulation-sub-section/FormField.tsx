@@ -8,6 +8,7 @@ import { CustomFieldGroup } from "../custom-field-group";
 import { DropdownField } from "../dropdown-field";
 import { FileUpload } from "../file-upload";
 import { InputField } from "../input-field";
+import { LanguageVoiceMapping } from "../language-voice-mapping";
 import { TagSelector } from "../tag-selector";
 import { ToggleSection } from "../toggle-section";
 import { VoiceDropdown } from "../voice-dropdown";
@@ -121,6 +122,15 @@ export const FormField: FC<FormFieldProps> = ({ config, formMethods }) => {
               label={label}
             />
           </div>
+        );
+      case FORM_FIELD_TYPES.CUSTOM.LANGUAGE_VOICE_MAPPING:
+        return (
+          <LanguageVoiceMapping
+            id={id}
+            label={label}
+            formMethods={formMethods}
+            isMandatory={isMandatory}
+          />
         );
       case FORM_FIELD_TYPES.CUSTOM_FIELDS:
         return <CustomFieldGroup formMethods={formMethods} />;

@@ -4,6 +4,7 @@ import { FC, useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { toast } from "sonner";
 
+import { FEATURE_FLAGS_MAP } from "@ally-ui-mono/ui-shared";
 import {
   useGetSessionEventsQuery,
   useMapScenarioEventsMutation,
@@ -29,6 +30,7 @@ import {
   createSessionEventsMap,
   MAPPED_EVENT_FIELDS,
   isNonEmptyString,
+  addScoreColors,
 } from "@utils";
 
 interface SimulationEventMapTableProps {
@@ -157,6 +159,10 @@ export const SimulationEventMapTable: FC<SimulationEventMapTableProps> = ({ simu
       },
     ];
   }, [sessionEventsOptions]);
+
+  const mappedEventsWithColors = FEATURE_FLAGS_MAP.SCORE_COLOR_FLAG
+    ? useMemo(() => addScoreColors(mappedEvents), [mappedEvents])
+    : mappedEvents;
 
   // Helper function to save events to API
   const saveEventsToApi = useCallback(
@@ -377,7 +383,7 @@ export const SimulationEventMapTable: FC<SimulationEventMapTableProps> = ({ simu
         ) : (
           <NotionTable
             tableData={{
-              data: mappedEvents,
+              data: mappedEventsWithColors,
               columns: tableColumns,
             }}
             onRowChange={handleUpdateEventTable}

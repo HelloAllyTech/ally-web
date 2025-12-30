@@ -24,6 +24,8 @@ export const ApiEndpoints = {
     START_SIMULATION: "/v1/learn/scenario-session-start",
     END_SIMULATION: (sessionId: string) => `/v1/learn/scenario-session/${sessionId}/end`,
     SCENARIO_VOICES: "/v1/learn/scenario-voices",
+    SCENARIO_VOICE_LANGUAGES: "/v1/learn/scenario-voice-languages",
+    SCENARIO_LANGUAGES: "/v1/learn/scenario-languages",
     SESSION_EVENTS: "/v1/session-events",
     GET_SESSION_EVENT_BY_ID: (eventId: string) => `/v1/session-events/events/${eventId}`,
     UPDATE_SESSION_EVENT: (eventId: string) => `/v1/session-events/events/${eventId}`,

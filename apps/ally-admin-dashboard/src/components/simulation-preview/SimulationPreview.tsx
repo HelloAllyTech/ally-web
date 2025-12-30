@@ -1,12 +1,21 @@
-import { FC, useState } from "react";
+import { FC, useEffect, useMemo, useState } from "react";
 
 import { useNavigate } from "react-router-dom";
 
-import { SimulationDetailsModal, CustomImage } from "@ally-ui-mono/ui-shared";
-import { useEndScenarioPreviewMutation, useScenarioPreviewMutation } from "@api";
+import { SimulationDetailsModal, CustomImage, DropdownField } from "@ally-ui-mono/ui-shared";
+import {
+  useEndScenarioPreviewMutation,
+  useScenarioPreviewMutation,
+  useGetScenarioLanguagesQuery,
+} from "@api";
 import { en, LOCAL_STORAGE_KEYS, ROUTES } from "@constants";
 import { useUser } from "@hooks";
-import { SimulationPreviewProps, StartSimulationResponse } from "@types";
+import {
+  ScenarioLanguage,
+  SimulationPreviewProps,
+  StartSimulationResponse,
+  SimulationStatus,
+} from "@types";
 
 export const SimulationPreview: FC<SimulationPreviewProps> = ({ simulation, isOpen, onClose }) => {
   const navigate = useNavigate();
@@ -14,6 +23,41 @@ export const SimulationPreview: FC<SimulationPreviewProps> = ({ simulation, isOp
   const [scenarioPreview] = useScenarioPreviewMutation();
   const [endScenarioPreview] = useEndScenarioPreviewMutation();
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const shouldLoadLanguages = simulation.status === SimulationStatus.ACTIVE;
+  const { data: languageOptions = [] } = useGetScenarioLanguagesQuery(
+    {
+      active: true,
+      hasVoices: true,
+    },
+    { skip: !shouldLoadLanguages },
+  ) as {
+    data: ScenarioLanguage[];
+  };
+
+  const [selectedLanguageLabel, setSelectedLanguageLabel] = useState<string>("");
+
+  useEffect(() => {
+    if (!languageOptions.length) {
+      setSelectedLanguageLabel("");
+      return;
+    }
+
+    const currentExists = languageOptions.some(option => option.label === selectedLanguageLabel);
+    if (!currentExists) {
+      setSelectedLanguageLabel(languageOptions[0].label);
+    }
+  }, [languageOptions, selectedLanguageLabel]);
+
+  const selectedLanguageId = useMemo(() => {
+    const option = languageOptions.find(lang => lang.label === selectedLanguageLabel);
+    return option?.language_id;
+  }, [languageOptions, selectedLanguageLabel]);
+
+  const handleLanguageChange = async (label: string) => {
+    const option = languageOptions.find(opt => opt.label === label);
+    if (!option) return;
+    setSelectedLanguageLabel(option.label);
+  };
 
   const onStartSimulationSuccess = (response: StartSimulationResponse) => {
     const { accessToken, scenario } = response;
@@ -44,13 +88,23 @@ export const SimulationPreview: FC<SimulationPreviewProps> = ({ simulation, isOp
     if (isLoading) return;
     setIsLoading(true);
     try {
-      const response = await scenarioPreview({ scenarioId: Number(simulation.id) }).unwrap();
+      const response = await scenarioPreview({
+        scenarioId: Number(simulation.id),
+        ...(shouldLoadLanguages && {
+          languageId: selectedLanguageId || languageOptions[0]?.language_id,
+        }),
+      }).unwrap();
       if (response) onStartSimulationSuccess(response);
     } catch (error: any) {
       const entityId = error?.data?.entityId;
       if (entityId) {
         await endScenarioPreview({ roomName: entityId }).unwrap();
-        const retry = await scenarioPreview({ scenarioId: Number(simulation.id) }).unwrap();
+        const retry = await scenarioPreview({
+          scenarioId: Number(simulation.id),
+          ...(shouldLoadLanguages && {
+            languageId: selectedLanguageId || languageOptions[0]?.language_id,
+          }),
+        }).unwrap();
         onStartSimulationSuccess(retry);
       }
     } finally {
@@ -78,6 +132,23 @@ export const SimulationPreview: FC<SimulationPreviewProps> = ({ simulation, isOp
       renderCustomImage={({ src, alt, className }) => (
         <CustomImage src={src} alt={alt} className={className} />
       )}
+      renderAdditionalContent={() =>
+        shouldLoadLanguages && languageOptions.length > 0 ? (
+          <div className="w-full flex justify-start">
+            <div className="flex flex-col">
+              <div className="relative w-48">
+                <DropdownField
+                  options={languageOptions.map(option => option.label)}
+                  value={selectedLanguageLabel || languageOptions[0]?.label || ""}
+                  onChange={handleLanguageChange}
+                  label=""
+                  valueClassName="font-primary text-base text-typography-700"
+                />
+              </div>
+            </div>
+          </div>
+        ) : null
+      }
     />
   );
 };

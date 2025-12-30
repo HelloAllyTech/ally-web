@@ -25,6 +25,7 @@ import {
   GetScenarioPathwaysResponse,
   ScenarioPathwayDetails,
   GetUpComingSimulationResponse,
+  LanguageOption,
 } from "@types";
 
 import { baseAPI } from "./baseAPI";
@@ -200,6 +201,20 @@ const learnAPI = baseAPI.injectEndpoints({
         url: ApiEndpoints.LEARN.GET_UP_COMING_SIMULATION(sessionId),
         method: HttpMethod.GET,
       }),
+      keepUnusedDataFor: 60 * 60,
+    }),
+
+    /**
+     * Get all available languages for scenarios
+     * @param {Record<string, any>} [params] - Optional query parameters (e.g., { active: true, hasVoices: true })
+     * @returns {Promise<LanguageOption[]>} List of available languages with their codes and labels
+     */
+    getAvailableLanguages: builder.query<LanguageOption[], Record<string, any>>({
+      query: (params = {}) => ({
+        url: ApiEndpoints.LEARN.GET_AVAILABLE_LANGUAGES,
+        method: HttpMethod.GET,
+        params,
+      }),
     }),
     startPathwaySimulation: builder.mutation<void, { pathwayId: string }>({
       query: ({ pathwayId }) => ({
@@ -237,4 +252,5 @@ export const {
   useGetSimulationTranscriptQuery,
   useStartPathwaySimulationMutation,
   useLazyGetScenarioSessionByPathItemQuery,
+  useGetAvailableLanguagesQuery,
 } = learnAPI;

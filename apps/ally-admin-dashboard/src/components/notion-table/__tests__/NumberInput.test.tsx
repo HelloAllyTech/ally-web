@@ -95,12 +95,13 @@ describe("NumberInput", () => {
       expect(input).toHaveValue("25");
     });
 
-    it("calls onChange when valid number is entered", () => {
+    it("calls onChange when valid number is entered and blurred", () => {
       const mockOnChange = vi.fn();
       render(<NumberInput {...defaultProps} onChange={mockOnChange} />);
 
       const input = screen.getByPlaceholderText("Enter number");
       fireEvent.change(input, { target: { value: "25" } });
+      fireEvent.blur(input);
 
       expect(mockOnChange).toHaveBeenCalledWith(25);
     });
@@ -118,22 +119,24 @@ describe("NumberInput", () => {
       expect(mockOnChange).not.toHaveBeenCalled();
     });
 
-    it("clamps value to max on input", () => {
+    it("clamps value to max on blur", () => {
       const mockOnChange = vi.fn();
       render(<NumberInput {...defaultProps} max={50} onChange={mockOnChange} />);
 
       const input = screen.getByPlaceholderText("Enter number");
       fireEvent.change(input, { target: { value: "100" } });
+      fireEvent.blur(input);
 
       expect(mockOnChange).toHaveBeenCalledWith(50);
     });
 
-    it("clamps value to min on input", () => {
+    it("clamps value to min on blur", () => {
       const mockOnChange = vi.fn();
       render(<NumberInput {...defaultProps} min={20} onChange={mockOnChange} />);
 
       const input = screen.getByPlaceholderText("Enter number");
       fireEvent.change(input, { target: { value: "5" } });
+      fireEvent.blur(input);
 
       expect(mockOnChange).toHaveBeenCalledWith(20);
     });

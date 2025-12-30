@@ -20,6 +20,7 @@ import {
   getTriggerWarningsQueryParams,
   triggerWarningsRequest,
   createTriggerResponse,
+  ScenarioLanguage,
   triggerWarning,
 } from "@types";
 
@@ -216,6 +217,17 @@ const simulationStudioAPI = baseAPI.injectEndpoints({
     }),
 
     /**
+     * Get all available scenario languages
+     */
+    getAvailableLanguageVoices: builder.query<ScenarioLanguage[], { active?: boolean }>({
+      query: (params = {}) => ({
+        url: ApiEndpoints.SIMULATION_STUDIO.SCENARIO_VOICE_LANGUAGES,
+        method: HttpMethod.GET,
+        params: params, // This will pass through any params you provide
+      }),
+    }),
+
+    /**
      * Map scenario events
      */
     mapScenarioEvents: builder.mutation<void, { scenarioId: number; events: any[] }>({
@@ -253,13 +265,30 @@ const simulationStudioAPI = baseAPI.injectEndpoints({
     /**
      * Get scenario preview
      */
-    scenarioPreview: builder.mutation<any, { scenarioId: number }>({
-      query: ({ scenarioId }) => ({
+    scenarioPreview: builder.mutation<any, { scenarioId: number; languageId?: number }>({
+      query: ({ scenarioId, languageId }) => ({
         url: ApiEndpoints.SIMULATION_STUDIO.SCENARIO_PREVIEW,
         method: HttpMethod.POST,
-        body: { scenarioId },
+        body: {
+          scenarioId,
+          languageId,
+        },
       }),
       invalidatesTags: [TAG_TYPES.SIMULATION],
+    }),
+
+    /**
+     * Get scenario languages
+     */
+    getScenarioLanguages: builder.query<
+      ScenarioLanguage[],
+      { active?: boolean; hasVoices?: boolean }
+    >({
+      query: (params = {}) => ({
+        url: ApiEndpoints.SIMULATION_STUDIO.SCENARIO_LANGUAGES,
+        method: HttpMethod.GET,
+        params: params, // This will pass through any params you provide
+      }),
     }),
 
     /**
@@ -319,6 +348,8 @@ export const {
   useGetCoverVideoUrlMutation,
   useDeleteCoverVideoMutation,
   useGetScenarioVoicesQuery,
+  useGetAvailableLanguageVoicesQuery,
+  useGetScenarioLanguagesQuery,
   useScenarioPreviewMutation,
   useEndScenarioPreviewMutation,
   useMapScenarioEventsMutation,
