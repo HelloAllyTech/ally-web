@@ -255,6 +255,7 @@ export const NotionTable = ({
                       {...restCellProps}
                       className="relative flex items-center w-full px-3 py-[7px] border-r border-border-light"
                       style={{
+                        backgroundColor: cell.column.id === "score" && cell.value.color,
                         width: isSelectionColumn(cell.column.id)
                           ? SELECTION_COLUMN_WIDTH - 1
                           : cell.column.width,
