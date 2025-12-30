@@ -397,6 +397,7 @@ export const CreateSimulation: FC = () => {
         description: formData.description,
         coverImageUrl: formData.coverImageUrl,
         triggerWarnings: formData.triggerWarningIds,
+        status: adminSimulationByIdData?.status || SimulationStatus.DRAFT,
       };
 
       setPreviewSimulation(simulation);
