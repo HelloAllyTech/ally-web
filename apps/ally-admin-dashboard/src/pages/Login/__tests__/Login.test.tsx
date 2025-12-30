@@ -9,6 +9,15 @@ import { Login } from "../Login";
 // Mock react-router-dom hooks
 const mockNavigate = vi.fn();
 
+vi.mock("@react-oauth/google", () => ({
+  GoogleLogin: ({ onSuccess, onError }: any) => (
+    <button data-testid="google-login" onClick={() => onSuccess({ credential: "mock-credential" })}>
+      Continue with Google
+    </button>
+  ),
+  GoogleOAuthProvider: ({ children }: any) => <div>{children}</div>,
+}));
+
 vi.mock("react-router-dom", async () => {
   const actual = await vi.importActual("react-router-dom");
   return {
@@ -70,6 +79,9 @@ vi.mock("@hooks/useUser", () => ({
 // Mock CustomImage from ui-shared
 vi.mock("@ally-ui-mono/ui-shared", () => ({
   CustomImage: ({ src, alt }: any) => <img src={src} alt={alt} data-testid="custom-image" />,
+  FEATURE_FLAGS_MAP: {
+    GOOGLE_SIGN_IN_FLAG: false,
+  },
 }));
 
 vi.mock("@components", () => ({
@@ -235,7 +247,7 @@ describe("Login", () => {
       renderLogin();
 
       expect(screen.getByText("Terms and Conditions")).toBeInTheDocument();
-      expect(screen.getByText("Privacy Policy")).toBeInTheDocument();
+      expect(screen.getByText("Privacy Policy.")).toBeInTheDocument();
     });
 
     it("should render login image", () => {
@@ -579,7 +591,7 @@ describe("Login", () => {
 
       renderLogin();
 
-      const privacyLink = screen.getByText("Privacy Policy");
+      const privacyLink = screen.getByText("Privacy Policy.");
       fireEvent.click(privacyLink);
 
       expect(openLinkInNewTab).toHaveBeenCalledWith("https://ally.com/privacy");

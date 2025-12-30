@@ -195,15 +195,14 @@ export const Login: FunctionComponent = () => {
     }
   };
 
-  const handleSuccess = credentialResponse => {
-    console.log("Login Success:", credentialResponse);
+  const handleSuccess = () => {
     // credentialResponse.credential contains the JWT token
     // You can send it to your backend for verification
     // navigate("/dashboard");
   };
 
   const handleError = () => {
-    console.log("Login Failed");
+    toast.error("Login failed");
   };
   const getLoginSection = () => {
     if (loginSection === LoginSection.EMAIL) {
