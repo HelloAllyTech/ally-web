@@ -73,13 +73,13 @@ export const PathwayList: React.FC<PathwayListProps> = ({
     {
       key: "pathways",
       label: en.simulation.paths,
-      width: "w-[38%]",
+      width: "w-[37%]",
       render: () => null,
     },
     {
       key: "actions",
       label: "",
-      width: "w-[8%] min-w-[150px]",
+      width: "w-[9%] min-w-[160px]",
       render: () => null,
     },
     {
