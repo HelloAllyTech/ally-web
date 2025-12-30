@@ -100,7 +100,7 @@ export const InputField: React.FC<InputFieldProps> = ({
             maxLength={maxLength}
             placeholder={placeholder}
             style={{ minHeight: `${minHeight}px`, fontSize: "14px" }}
-            className={`w-full rounded border border-border-light text-md placeholder:text-typography-600 focus:ring-1 focus:ring-primary focus:outline-none px-2 py-1 pr-16`}
+            className={`w-full rounded custom-scrollbar border border-border-light text-md placeholder:text-typography-600 focus:ring-1 focus:ring-primary focus:primary-500 px-2 py-1 pr-16`}
           />
         ) : (
           <input
