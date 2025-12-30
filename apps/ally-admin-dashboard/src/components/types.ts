@@ -69,6 +69,7 @@ export interface InputFieldProps {
   minHeight?: string;
   infoIconContent?: string;
   isMandatory?: boolean;
+  defaultValue?: string;
 }
 
 // DropdownField
