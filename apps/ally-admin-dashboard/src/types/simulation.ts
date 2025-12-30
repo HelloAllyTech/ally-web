@@ -58,6 +58,7 @@ export interface SimulationInput {
   terminationMessage?: string;
   isGlobal?: boolean;
   triggerWarningIds?: string[];
+  languageVoices?: Record<string, string>;
 }
 
 export interface UpdateSimulationByIdInput {
@@ -108,9 +109,11 @@ export interface GetSimulationByIdResponse {
     sessionBehaviorGuidelines?: string;
     sexualOrientation?: string;
     startingState?: string;
-    tone?: string;
     voiceId?: string;
+    tone?: string;
     agentGoal?: string;
+    languageVoices?: Record<string, string>;
+    agentDialoguesArray?: string[];
     agentDialogues?: string[];
     customFields: CustomFieldType[];
   };

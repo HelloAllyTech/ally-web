@@ -34,6 +34,7 @@ export type FormData = {
   terminationName: string;
   terminationMessage: string;
   isGlobal: boolean;
+  languageVoices?: Record<string, string>;
   triggerWarningIds: triggerWarning[];
   prompt: string;
   difficultyLevel: string;
@@ -125,12 +126,16 @@ export type SimulationPreviewType = {
   coverVideoUrl?: string;
   description: string;
   triggerWarnings?: triggerWarning[];
+  status: SimulationStatus;
 };
 
 export interface SimulationPreviewProps {
   simulation: SimulationPreviewType;
   isOpen: boolean;
   onClose: () => void;
+  languages?: ScenarioLanguage[];
+  selectedLanguageId?: number;
+  onLanguageChange?: (languageId: number | null) => void;
 }
 
 export interface UpdateEventDataParam {
@@ -169,5 +174,13 @@ export interface ScenarioVoice {
   id: string;
   name: string;
   provider: string;
+  language?: string;
   config: ScenarioVoiceConfig;
+}
+
+export interface ScenarioLanguage {
+  label: string;
+  value: string;
+  language_id?: number;
+  translationCode?: string;
 }

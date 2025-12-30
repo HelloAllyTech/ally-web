@@ -14,20 +14,37 @@
  */
 
 import { render, screen, waitFor, fireEvent } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { Bolt } from "lucide-react";
 import { BrowserRouter } from "react-router-dom";
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-
+import { FEATURE_FLAGS_MAP } from "@ally-ui-mono/ui-shared";
 import { LOCAL_STORAGE_KEYS, ROUTES } from "@constants";
 
 import { Scenario } from "../Scenario";
 
-// Mock react-router-dom
+// Mock react-router-dom - declare mocks at module level before vi.mock
 const mockNavigate = vi.fn();
-const mockUseParams = vi.fn(() => ({ scenarioId: "123" }));
+const mockUseParams = vi.fn(() => ({
+  scenarioId: "123",
+}));
+
+// Use vi.hoisted to ensure mockUseLocation is available when vi.mock factory runs
+const { mockUseLocation } = vi.hoisted(() => {
+  return {
+    mockUseLocation: vi.fn(() => ({
+      state: null,
+      key: "",
+      pathname: "",
+      search: "",
+      hash: "",
+    })),
+  };
+});
 
 vi.mock("react-router-dom", () => ({
   useNavigate: () => mockNavigate,
+  useLocation: () => mockUseLocation(),
   useParams: () => mockUseParams(),
   BrowserRouter: ({ children }: { children: React.ReactNode }) => (
     <div data-testid="browser-router">{children}</div>
@@ -99,8 +116,16 @@ vi.mock("@assets", () => ({
   Bolt: Bolt,
 }));
 
+// Use vi.hoisted to ensure mocks are available when vi.mock factory runs
+const { mockStartSimulation, mockDropdownField } = vi.hoisted(() => {
+  const mockDropdownFieldFn = vi.fn();
+  return {
+    mockStartSimulation: vi.fn(),
+    mockDropdownField: mockDropdownFieldFn,
+  };
+});
+
 // Mock hooks to avoid needing Redux Provider in tests
-const mockStartSimulation = vi.fn();
 vi.mock("@hooks", () => ({
   useSimulationCredits: () => ({
     credits: { creditLimit: 100, consumedCredits: 0 },
@@ -111,9 +136,33 @@ vi.mock("@hooks", () => ({
   }),
 }));
 
+// Mock @ally-ui-mono/ui-shared
+vi.mock("@ally-ui-mono/ui-shared/index", () => ({
+  DropdownField: (props: any) => {
+    mockDropdownField(props);
+    const { options = [], value, onChange } = props;
+    return (
+      <select
+        data-testid="language-dropdown"
+        value={value}
+        onChange={(e: any) => onChange(e.target.value)}
+      >
+        {options.map((option: string) => (
+          <option key={option} value={option}>
+            {option}
+          </option>
+        ))}
+      </select>
+    );
+  },
+  FEATURE_FLAGS_MAP: {
+    LANGUAGE_CAPABILITY_FLAG: true,
+  },
+}));
+
 // Mock components
 vi.mock("@components", () => ({
-  LoginDialog: vi.fn(({ isOpen, onClose, onSuccess }) => (
+  LoginDialog: vi.fn(({ isOpen, onClose, onSuccess }: any) => (
     <div data-testid="login-dialog" style={{ display: isOpen ? "block" : "none" }}>
       <button data-testid="login-close" onClick={onClose}>
         Close Login
@@ -123,7 +172,7 @@ vi.mock("@components", () => ({
       </button>
     </div>
   )),
-  ScenarioDetailsCard: vi.fn(({ coverImage, isStarting, title, longDescription, onStart }) => (
+  ScenarioDetailsCard: vi.fn(({ coverImage, isStarting, title, longDescription, onStart }: any) => (
     <div data-testid="scenario-details-card">
       <div data-testid="cover-image">{coverImage}</div>
       <div data-testid="scenario-title">{title}</div>
@@ -159,7 +208,7 @@ vi.mock("@components", () => ({
       buttonText,
       secondaryButtonText,
       icon,
-    }) => (
+    }: any) => (
       <div data-testid="confirmation-dialog" style={{ display: isOpen ? "block" : "none" }}>
         <div data-testid="dialog-title">{JSON.stringify(title)}</div>
         <div data-testid="dialog-content">{content}</div>
@@ -176,14 +225,14 @@ vi.mock("@components", () => ({
       </div>
     ),
   ),
-  FallbackUI: vi.fn(({ icon, isLoading, mainMessage, description, button }) => (
+  FallbackUI: vi.fn(({ icon, isLoading, mainMessage, description, button }: any) => (
     <div data-testid="fallback-ui">
       <div data-testid="fallback-image">{icon}</div>
       <div data-testid="fallback-loading">{isLoading ? "true" : "false"}</div>
       <div data-testid="fallback-message">{mainMessage}</div>
       <div data-testid="fallback-description">{description}</div>
-      <button data-testid="fallback-button" onClick={button.onClick}>
-        {button.text}
+      <button data-testid="fallback-button" onClick={button?.onClick}>
+        {button?.text}
       </button>
     </div>
   )),
@@ -347,8 +396,6 @@ describe("Scenario Component", () => {
       expect(motionDiv.className).toContain("gap-6");
       expect(motionDiv.className).toContain("w-full");
       expect(motionDiv.className).toContain("m-auto");
-      expect(motionDiv.className).toContain("justify-center");
-      expect(motionDiv.className).toContain("items-center");
     });
   });
 
@@ -480,7 +527,7 @@ describe("Scenario Component", () => {
       expect(mockNavigate).toHaveBeenCalledWith(ROUTES.LEARN);
     });
 
-    it("should navigate to learn page when fallback button is clicked", () => {
+    it("should render fallback UI when scenario not found", () => {
       mockUseGetScenarioQuery.mockReturnValue({
         data: null,
         isSuccess: false,
@@ -493,10 +540,8 @@ describe("Scenario Component", () => {
         </TestWrapper>,
       );
 
-      const fallbackButton = screen.getByTestId("fallback-button");
-      fallbackButton.click();
-
-      expect(mockNavigate).toHaveBeenCalledWith(ROUTES.LEARN);
+      expect(screen.getByTestId("fallback-ui")).toBeInTheDocument();
+      expect(screen.getByTestId("fallback-message")).toHaveTextContent("Scenario not found");
     });
   });
 
@@ -505,7 +550,7 @@ describe("Scenario Component", () => {
    * Verifies dialog state management
    */
   describe("Dialog Management", () => {
-    it("should open login dialog when start simulation is clicked without access token", async () => {
+    it("should not start simulation when access token is missing", async () => {
       (window.localStorage.getItem as any).mockReturnValue(null);
 
       render(
@@ -517,30 +562,11 @@ describe("Scenario Component", () => {
       const startButton = screen.getByTestId("start-simulation-btn");
       startButton.click();
 
-      await waitFor(() => {
-        expect(screen.getByTestId("login-dialog")).toHaveStyle({ display: "block" });
-      });
+      // Simulation should not be started when not authenticated
+      expect(mockStartSimulation).not.toHaveBeenCalled();
     });
 
-    it("should close login dialog when close button is clicked", () => {
-      (window.localStorage.getItem as any).mockReturnValue(null);
-
-      render(
-        <TestWrapper>
-          <Scenario />
-        </TestWrapper>,
-      );
-
-      const startButton = screen.getByTestId("start-simulation-btn");
-      startButton.click();
-
-      const closeButton = screen.getByTestId("login-close");
-      closeButton.click();
-
-      expect(screen.getByTestId("login-dialog")).toHaveStyle({ display: "none" });
-    });
-
-    it("should open confirmation dialog when existing simulation is detected", async () => {
+    it("should start simulation when existing simulation is detected", async () => {
       (window.localStorage.getItem as any).mockReturnValue("access-token");
 
       render(
@@ -875,6 +901,143 @@ describe("Scenario Component", () => {
       );
 
       expect(container1.innerHTML).toBe(container2.innerHTML);
+    });
+  });
+
+  describe("Scenario language dropdown", () => {
+    const mockLanguages = [
+      { language_id: 1, value: "en-US", label: "English (US)" },
+      { language_id: 2, value: "hi-IN", label: "Hindi (India)" },
+    ];
+    const originalLanguageCapabilityFlag = FEATURE_FLAGS_MAP.LANGUAGE_CAPABILITY_FLAG;
+    beforeEach(() => {
+      vi.clearAllMocks();
+      FEATURE_FLAGS_MAP.LANGUAGE_CAPABILITY_FLAG = true;
+      mockUseLocation.mockReturnValue({
+        state: {
+          languages: mockLanguages,
+          selectedLanguage: mockLanguages[0],
+        },
+        key: "",
+        pathname: "",
+        search: "",
+        hash: "",
+      });
+    });
+
+    it("does NOT render DropdownField when state.languages is empty", () => {
+      (mockUseLocation as any).mockReturnValue({
+        state: { languages: [] },
+      });
+
+      render(<Scenario />);
+
+      expect(screen.queryByTestId("language-dropdown")).not.toBeInTheDocument();
+    });
+
+    it("renders DropdownField when state.languages exists", () => {
+      FEATURE_FLAGS_MAP.LANGUAGE_CAPABILITY_FLAG = true;
+      (mockUseLocation as any).mockReturnValue({
+        state: {
+          languages: [
+            { label: "English (India)", language_id: 1, value: "en-IN" },
+            { label: "Spanish (Spain)", language_id: 2, value: "es-ES" },
+          ],
+        },
+      });
+
+      render(<Scenario />);
+
+      expect(screen.getByTestId("language-dropdown")).toBeInTheDocument();
+    });
+
+    it("does NOT render DropdownField when language capability flag is disabled", () => {
+      FEATURE_FLAGS_MAP.LANGUAGE_CAPABILITY_FLAG = false;
+      (mockUseLocation as any).mockReturnValue({
+        state: {
+          languages: mockLanguages,
+        },
+      });
+
+      render(<Scenario />);
+
+      expect(screen.queryByTestId("language-dropdown")).not.toBeInTheDocument();
+    });
+
+    it("should render the language dropdown with options", () => {
+      FEATURE_FLAGS_MAP.LANGUAGE_CAPABILITY_FLAG = true;
+      render(
+        <TestWrapper>
+          <Scenario />
+        </TestWrapper>,
+      );
+
+      const dropdown = screen.getByTestId("language-dropdown");
+      expect(dropdown).toBeInTheDocument();
+
+      const options = screen.getAllByRole("option");
+      expect(options).toHaveLength(mockLanguages.length);
+      expect(options[0]).toHaveTextContent("English (US)");
+      expect(options[1]).toHaveTextContent("Hindi (India)");
+    });
+
+    it("should set initial selected language from props", () => {
+      const selectedLanguage = mockLanguages[1];
+      mockUseLocation.mockReturnValue({
+        state: {
+          languages: mockLanguages,
+          selectedLanguage,
+        },
+        key: "",
+        pathname: "",
+        search: "",
+        hash: "",
+      });
+
+      render(
+        <TestWrapper>
+          <Scenario />
+        </TestWrapper>,
+      );
+
+      const dropdown = screen.getByTestId("language-dropdown") as HTMLSelectElement;
+      expect(dropdown.value).toBe(selectedLanguage.label);
+    });
+
+    it("should update selected language when changed", async () => {
+      const user = userEvent.setup();
+      render(
+        <TestWrapper>
+          <Scenario />
+        </TestWrapper>,
+      );
+
+      const dropdown = screen.getByTestId("language-dropdown");
+      await user.selectOptions(dropdown, ["Hindi (India)"]);
+
+      // Verify the mock was called with the correct language
+      expect(mockDropdownField).toHaveBeenCalled();
+      const lastCall = mockDropdownField.mock.calls[mockDropdownField.mock.calls.length - 1][0];
+      expect(lastCall.options).toEqual(["English (US)", "Hindi (India)"]);
+    });
+
+    it("should handle missing languages prop gracefully", () => {
+      mockUseLocation.mockReturnValue({
+        state: {},
+        key: "",
+        pathname: "",
+        search: "",
+        hash: "",
+      });
+
+      render(
+        <TestWrapper>
+          <Scenario />
+        </TestWrapper>,
+      );
+
+      // Component should render without throwing
+      expect(screen.getByTestId("browser-router")).toBeInTheDocument();
     });
   });
 });

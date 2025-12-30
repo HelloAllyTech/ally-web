@@ -104,6 +104,7 @@ export const FORM_FIELD_TYPES = {
   CUSTOM: {
     VOICE_DROPDOWN: "voice_dropdown",
     AUTO_TERMINATION_RULE: "auto_termination_rule",
+    LANGUAGE_VOICE_MAPPING: "language_voice_mapping",
   },
   TOGGLE_BUTTON: "toggle_button",
   TAG_AND_DROPDOWN: "tag_and_dropdown",
@@ -181,7 +182,6 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
         isMandatory: false,
         fullWidth: true,
       },
-
       {
         id: "description",
         label: "Challenge Description",
@@ -284,7 +284,6 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
         maxLength: 100,
         isMandatory: true,
       },
-
       {
         id: "context",
         label: "Your context",
@@ -321,9 +320,17 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
       },
       {
         id: "voiceId",
-        label: "Voices",
+        label: "Voice",
         type: FORM_FIELD_TYPES.CUSTOM.VOICE_DROPDOWN,
         isMandatory: true,
+        fullWidth: true,
+      },
+      {
+        id: "languageVoices",
+        label: "Language-Voice",
+        type: FORM_FIELD_TYPES.CUSTOM.LANGUAGE_VOICE_MAPPING,
+        isMandatory: true,
+        fullWidth: true,
       },
       {
         id: "tone",
@@ -537,6 +544,14 @@ export const SIMULATION_CREATOR_FIELD_GROUPS_OLD: CreatorFieldGroups[] = [
         label: "Voice",
         type: FORM_FIELD_TYPES.CUSTOM.VOICE_DROPDOWN,
         isMandatory: true,
+        fullWidth: true,
+      },
+      {
+        id: "languageVoices",
+        label: "Language-Voice",
+        type: FORM_FIELD_TYPES.CUSTOM.LANGUAGE_VOICE_MAPPING,
+        isMandatory: true,
+        fullWidth: true,
       },
       {
         id: "tone",

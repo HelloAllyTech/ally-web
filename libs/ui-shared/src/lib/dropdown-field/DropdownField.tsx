@@ -64,7 +64,7 @@ const DropdownField: FC<DropdownFieldProps> = ({
           options={options}
           handleChange={handleChange}
           onHandleSearch={onHandleSearch}
-          className="top-5 left-0"
+          className="top-5 left-0 font-secondary"
         />
       )}
     </div>

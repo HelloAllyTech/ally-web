@@ -184,6 +184,15 @@ export const CreateSimulation: FC = () => {
           .map(trigger => trigger.id)
       : [];
 
+    // filter out empty values from languageVoiceMapping
+    if (restForm.languageVoices) {
+      restForm.languageVoices = Object.fromEntries(
+        Object.entries(restForm.languageVoices || {}).filter(([, v]) => v !== ""),
+      );
+    } else {
+      restForm.languageVoices = {};
+    }
+
     const customFieldGroupList = customFields?.map((field: any) => ({
       name: field.name,
       value: field.value,
@@ -388,6 +397,7 @@ export const CreateSimulation: FC = () => {
         description: formData.description,
         coverImageUrl: formData.coverImageUrl,
         triggerWarnings: formData.triggerWarningIds,
+        status: adminSimulationByIdData?.status || SimulationStatus.DRAFT,
       };
 
       setPreviewSimulation(simulation);

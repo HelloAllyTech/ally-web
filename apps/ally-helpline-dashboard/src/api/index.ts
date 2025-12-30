@@ -7,3 +7,4 @@ export * from "./search";
 export * from "./learn";
 export * from "./simulationCredits";
 export * from "./termsAndAgreement";
+export * from "./user";

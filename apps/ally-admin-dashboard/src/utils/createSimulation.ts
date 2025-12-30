@@ -38,6 +38,7 @@ export const formatSimulationResponseData = (data: GetSimulationByIdResponse) =>
     startingState: data?.metadata?.startingState,
     tone: data?.metadata?.tone,
     voiceId: data?.metadata?.voiceId,
+    languageVoices: (data?.metadata as any)?.languageVoices,
     coverImageUrl: data?.coverImageUrl,
     coverVideoUrl: data?.coverVideoUrl,
     autoTerminationStatus: Boolean(data?.terminationEvent?.autoTerminationStatus),

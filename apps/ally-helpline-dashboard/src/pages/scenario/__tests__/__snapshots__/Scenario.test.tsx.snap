@@ -13,7 +13,7 @@ exports[`Scenario Component > Snapshot Testing > should match snapshot with scen
         data-testid="scenario-page"
       >
         <div
-          class="flex flex-col gap-6 w-full m-auto justify-center items-center"
+          class="flex flex-col gap-6 w-full max-w-[600px] m-auto px-4"
           data-animate="visible"
           data-exit="exit"
           data-initial="hidden"
@@ -108,54 +108,54 @@ exports[`Scenario Component > Snapshot Testing > should match snapshot with scen
               Start Simulation
             </button>
           </div>
-        </div>
-        <div
-          data-testid="login-dialog"
-          style="display: none;"
-        >
-          <button
-            data-testid="login-close"
-          >
-            Close Login
-          </button>
-          <button
-            data-testid="login-success"
-          >
-            Login Success
-          </button>
-        </div>
-        <div
-          data-testid="confirmation-dialog"
-          style="display: none;"
-        >
           <div
-            data-testid="dialog-title"
+            data-testid="login-dialog"
+            style="display: none;"
           >
-            {"normal":"Active Simulation ","italic":"Detected"}
+            <button
+              data-testid="login-close"
+            >
+              Close Login
+            </button>
+            <button
+              data-testid="login-success"
+            >
+              Login Success
+            </button>
           </div>
           <div
-            data-testid="dialog-content"
+            data-testid="confirmation-dialog"
+            style="display: none;"
           >
-            You have a running simulation. End the existing session to start a new one.
+            <div
+              data-testid="dialog-title"
+            >
+              {"normal":"Active Simulation ","italic":"Detected"}
+            </div>
+            <div
+              data-testid="dialog-content"
+            >
+              You have a running simulation. End the existing session to start a new one.
+            </div>
+            <div
+              data-testid="dialog-icon"
+            />
+            <button
+              data-testid="dialog-primary-btn"
+            >
+              End session
+            </button>
+            <button
+              data-testid="dialog-secondary-btn"
+            >
+              Cancel
+            </button>
+            <button
+              data-testid="dialog-close"
+            >
+              Close Dialog
+            </button>
           </div>
-          <div
-            data-testid="dialog-icon"
-          />
-          <button
-            data-testid="dialog-primary-btn"
-          >
-            End session
-          </button>
-          <button
-            data-testid="dialog-secondary-btn"
-          >
-            Cancel
-          </button>
-          <button
-            data-testid="dialog-close"
-          >
-            Close Dialog
-          </button>
         </div>
       </div>
     </div>
@@ -204,57 +204,7 @@ exports[`Scenario Component > Snapshot Testing > should match snapshot with scen
           </div>
           <button
             data-testid="fallback-button"
-          >
-            Go back
-          </button>
-        </div>
-        <div
-          data-testid="login-dialog"
-          style="display: none;"
-        >
-          <button
-            data-testid="login-close"
-          >
-            Close Login
-          </button>
-          <button
-            data-testid="login-success"
-          >
-            Login Success
-          </button>
-        </div>
-        <div
-          data-testid="confirmation-dialog"
-          style="display: none;"
-        >
-          <div
-            data-testid="dialog-title"
-          >
-            {"normal":"Active Simulation ","italic":"Detected"}
-          </div>
-          <div
-            data-testid="dialog-content"
-          >
-            You have a running simulation. End the existing session to start a new one.
-          </div>
-          <div
-            data-testid="dialog-icon"
           />
-          <button
-            data-testid="dialog-primary-btn"
-          >
-            End session
-          </button>
-          <button
-            data-testid="dialog-secondary-btn"
-          >
-            Cancel
-          </button>
-          <button
-            data-testid="dialog-close"
-          >
-            Close Dialog
-          </button>
         </div>
       </div>
     </div>

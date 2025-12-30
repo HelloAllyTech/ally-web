@@ -4,6 +4,7 @@ import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
 import { SimulationPreview } from "../SimulationPreview";
+import { SimulationStatus } from "@types";
 
 // Mocks
 const navigateMock = vi.fn();
@@ -30,6 +31,16 @@ vi.mock("react-router-dom", async () => {
 vi.mock("@api", () => ({
   useScenarioPreviewMutation: () => [scenarioPreviewTrigger],
   useEndScenarioPreviewMutation: () => [endScenarioPreviewTrigger],
+  useGetScenarioLanguagesQuery: () => ({
+    data: [
+      {
+        language_id: 1,
+        label: "English (India)",
+        value: "English",
+        translationCode: "en",
+      },
+    ],
+  }),
 }));
 
 vi.mock("@components", () => ({
@@ -115,6 +126,7 @@ const simulation = {
   title: "Test Simulation",
   description: "Test description",
   coverImageUrl: "https://example.com/cover.jpg",
+  status: SimulationStatus.ACTIVE,
 } as any;
 
 describe("SimulationPreview", () => {
@@ -206,5 +218,35 @@ describe("SimulationPreview", () => {
     expect(scenarioPreviewTrigger).toHaveBeenCalledTimes(1);
 
     resolveFn(createSuccessResponse());
+  });
+
+  it("passes a languageId when the simulation is active", () => {
+    const selectedLanguageId = 1;
+
+    render(<SimulationPreview simulation={simulation} isOpen onClose={vi.fn()} />);
+
+    const [, startButton] = screen.getAllByRole("button");
+    fireEvent.click(startButton);
+
+    expect(scenarioPreviewTrigger).toHaveBeenCalledWith({
+      scenarioId: Number(simulation.id),
+      languageId: selectedLanguageId,
+    });
+  });
+
+  it("omits languageId and hides dropdown for non-active simulations", () => {
+    const inactiveSimulation = { ...simulation, status: SimulationStatus.DRAFT };
+
+    render(<SimulationPreview simulation={inactiveSimulation} isOpen onClose={vi.fn()} />);
+
+    // Dropdown should not render because languages are skipped entirely
+    expect(screen.queryByText("English (India)")).not.toBeInTheDocument();
+
+    const [, startButton] = screen.getAllByRole("button");
+    fireEvent.click(startButton);
+
+    expect(scenarioPreviewTrigger).toHaveBeenCalledWith({
+      scenarioId: Number(inactiveSimulation.id),
+    });
   });
 });
