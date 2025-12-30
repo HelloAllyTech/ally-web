@@ -7,6 +7,7 @@ import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
+import { FEATURE_FLAGS_MAP } from "@ally-ui-mono/ui-shared";
 import {
   useGenerateOTPMutation,
   useLazyCheckTermsAndAgreementQuery,
@@ -281,19 +282,16 @@ export const Login: FunctionComponent = () => {
             >
               Privacy Policy.
             </span>
-            <div className="flex items-center my-4">
-              <div className="flex-grow border-t border-gray-300"></div>
-              <span className="mx-3 text-sm text-gray-500">OR</span>
-              <div className="flex-grow border-t border-gray-300"></div>
-            </div>
-            <div className="font-bold text-typography-800 font-primary">
-              <GoogleLogin
-                onSuccess={handleSuccess}
-                onError={handleError}
-                text="continue_with"
-                logo_alignment="center"
-              />
-            </div>
+            {FEATURE_FLAGS_MAP.GOOGLE_SIGN_IN_FLAG && (
+              <div>
+                <div className="flex items-center my-4">
+                  <div className="flex-grow border-t border-gray-300" />
+                  <span className="mx-3 text-xs text-gray-500">{en.common.or}</span>
+                  <div className="flex-grow border-t border-gray-300" />
+                </div>
+                <GoogleLogin onSuccess={handleSuccess} onError={handleError} text="continue_with" />
+              </div>
+            )}
           </div>
         </motion.div>
       );
