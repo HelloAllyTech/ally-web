@@ -16,7 +16,8 @@ import { ToggleSection } from "../toggle-section";
 import { VoiceDropdown } from "../voice-dropdown";
 
 export const FormField: FC<FormFieldProps> = ({ config, formMethods }) => {
-  const { label, placeholder, type, options, id, maxLength, multiline, isMandatory } = config;
+  const { label, placeholder, type, options, id, maxLength, multiline, isMandatory, defaultValue } =
+    config;
   const {
     formState: { errors },
   } = formMethods;
@@ -55,6 +56,7 @@ export const FormField: FC<FormFieldProps> = ({ config, formMethods }) => {
             placeholder={placeholder}
             multiline={multiline}
             isMandatory={isMandatory}
+            defaultValue={defaultValue}
           />
         );
       case FORM_FIELD_TYPES.NUMBER:
