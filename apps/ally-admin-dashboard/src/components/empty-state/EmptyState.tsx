@@ -1,0 +1,45 @@
+import React from "react";
+
+import { Plus } from "@assets";
+
+export interface EmptyStateProps {
+  title: string;
+  subtitle?: string;
+  actionLabel?: string;
+  onAction?: () => void;
+  className?: string;
+  hideActionButton?: boolean;
+}
+
+export const EmptyState: React.FC<EmptyStateProps> = ({
+  title,
+  subtitle,
+  actionLabel,
+  onAction,
+  className,
+  hideActionButton = false,
+}) => {
+  return (
+    <div
+      className={`w-full py-[15%] flex flex-col items-center justify-center text-center ${className ?? ""}`}
+    >
+      <h2 className="font-normal text-2xl text-typography-900 mb-2">{title}</h2>
+      {subtitle && (
+        <p className="max-w-xl text-typography-800 text-base mb-4 w-full min-w-[250px]">
+          {subtitle}
+        </p>
+      )}
+      {actionLabel && !hideActionButton && (
+        <button
+          onClick={onAction}
+          className="inline-flex items-center bg-primary-500 hover:bg-primary-700 text-white text-base font-medium px-6 sm:px-8 py-3 rounded-full shadow-sm"
+        >
+          <span className="mr-3">
+            <Plus />
+          </span>
+          {actionLabel}
+        </button>
+      )}
+    </div>
+  );
+};

@@ -1,0 +1,68 @@
+/// <reference types="vite/client" />
+
+export enum LogLevel {
+  INFO = "info",
+  ERROR = "error",
+  WARN = "warn",
+  DEBUG = "debug",
+}
+
+const logger = {
+  /**
+   * Logs a message with the specified log level.
+   * @param level - The log level (INFO, ERROR, WARN)
+   * @param message - The log message
+   */
+  log: (level: LogLevel, message: string) => {
+    // Check for development mode in both Vite and Next.js environments
+    const isVite = typeof import.meta !== "undefined" && import.meta.env;
+    const isNext = typeof process !== "undefined" && process.env;
+
+    const logger_enabled = isVite
+      ? import.meta.env.MODE === "development"
+      : isNext
+        ? process.env.NODE_ENV === "development"
+        : false;
+
+    if (!logger_enabled) return;
+
+    const timestamp = new Date().toISOString();
+    const levelString = level.toUpperCase();
+
+    console.log(`[${timestamp}] [${levelString}] ${message}`);
+  },
+
+  /**
+   * Logs an error message.
+   * @param error - The error message
+   */
+  error(error: string) {
+    this.log(LogLevel.ERROR, error);
+  },
+
+  /**
+   * Logs an informational message.
+   * @param message - The info message
+   */
+  info(message: string) {
+    this.log(LogLevel.INFO, message);
+  },
+
+  /**
+   * Logs a warning message.
+   * @param warning - The warning message
+   */
+  warn(warning: string) {
+    this.log(LogLevel.WARN, warning);
+  },
+
+  /**
+   * Logs a debug message.
+   * @param debug - The debug message
+   */
+  debug(message: string) {
+    this.log(LogLevel.DEBUG, message);
+  },
+};
+
+export { logger };

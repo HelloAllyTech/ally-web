@@ -1,0 +1,104 @@
+import { FC } from "react";
+
+import { motion } from "framer-motion";
+
+import { GenericTable } from "@ally-ui-mono/ui-shared";
+import { Accordion } from "@components";
+import { FeedbackSectionType } from "@types";
+
+import { feedbackDemographics, feedbackSections } from "./constants";
+import { FeedbackSectionProps } from "./types";
+import { getFormattedFeedbackSection } from "./utils";
+
+const getFeedbackSectionByType = ({
+  type,
+  data,
+  columns,
+}: {
+  type: FeedbackSectionType;
+  data: any;
+  columns: any[];
+}) => {
+  switch (type) {
+    case FeedbackSectionType.TABLE:
+      return (
+        <GenericTable
+          columns={columns}
+          data={data}
+          className="min-w-full text-md font-primary overflow-y-scroll mb-4"
+        />
+      );
+    case FeedbackSectionType.BULLET_TEXT:
+      return (
+        <ul className="pb-4 space-y-2 text-lg">
+          {Array.isArray(data) ? (
+            data.map((item, index) => (
+              <li key={index} className="flex items-start">
+                <span className="text-typography-900 mr-2">•</span>
+                <span className="text-typography-900">{item}</span>
+              </li>
+            ))
+          ) : (
+            <li className="flex items-start">
+              <span className="text-typography-900 mr-2">•</span>
+              <span className="text-typography-900">{data}</span>
+            </li>
+          )}
+        </ul>
+      );
+    default:
+      return null;
+  }
+};
+
+export const FeedbackSection: FC<FeedbackSectionProps> = props => {
+  const formattedData = getFormattedFeedbackSection(props);
+
+  return (
+    <motion.div className="flex flex-col gap-6 w-full">
+      <motion.div className="flex items-center gap-1 sm:gap-2 px-4">
+        {feedbackDemographics.map(feedback => (
+          <div
+            key={feedback.key}
+            className="flex gap-2 flex-1 min-w-[120px] sm:min-w-[140px] font-primary border-[0.5px] border-secondary-200 rounded-3xl p-[10px] items-center"
+          >
+            <feedback.icon />
+            <span className="text-xs text-typography-800">{feedback.label}</span>
+            <span className="text-base text-typography-900 font-medium">
+              {feedback.getValue(props)}
+            </span>
+          </div>
+        ))}
+      </motion.div>
+      <motion.div className="overflow-y-auto font-primary">
+        {feedbackSections.map(({ label, icon, key, type, columns }, index) => {
+          return (
+            <motion.div
+              key={key}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{
+                duration: 0.4,
+                delay: index * 0.1,
+                ease: "easeOut",
+              }}
+              className="bg-white"
+            >
+              <Accordion title={label} titleIcon={icon} defaultExpanded={true}>
+                <div className="max-h-[250px] overflow-y-scroll custom-scrollbar border-b-[0.5px] border-b-border">
+                  {formattedData[key] ? (
+                    getFeedbackSectionByType({ type, columns, data: formattedData[key] })
+                  ) : (
+                    <div className="text-typography-700 font-primary text-center mb-2">
+                      No data found
+                    </div>
+                  )}
+                </div>
+              </Accordion>
+            </motion.div>
+          );
+        })}
+      </motion.div>
+    </motion.div>
+  );
+};

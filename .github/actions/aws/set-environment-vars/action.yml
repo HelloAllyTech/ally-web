@@ -1,0 +1,86 @@
+name: "Set Environment Variables"
+description: "Sets AWS and project variables based on environment"
+
+inputs:
+  environment:
+    description: "Target environment (dev, stg, prd)"
+    required: true
+  dev_aws_role:
+    description: "DEV AWS IAM role ARN"
+    required: false
+  dev_aws_region:
+    description: "DEV AWS region"
+    required: false
+  dev_ecr_repository:
+    description: "DEV ECR repository URL"
+    required: false
+  stg_aws_role:
+    description: "STG AWS IAM role ARN"
+    required: false
+  stg_aws_region:
+    description: "STG AWS region"
+    required: false
+  stg_ecr_repository:
+    description: "STG ECR repository URL"
+    required: false
+  prd_aws_role:
+    description: "PRD AWS IAM role ARN"
+    required: false
+  prd_aws_region:
+    description: "PRD AWS region"
+    required: false
+  prd_ecr_repository:
+    description: "PRD ECR repository URL"
+    required: false
+
+outputs:
+  aws_role:
+    description: "AWS IAM role ARN"
+    value: ${{ steps.set-vars.outputs.aws_role }}
+  aws_region:
+    description: "AWS region"
+    value: ${{ steps.set-vars.outputs.aws_region }}
+  ecr_repository:
+    description: "ECR repository URL"
+    value: ${{ steps.set-vars.outputs.ecr_repository }}
+  project_prefix:
+    description: "Project prefix for resource naming"
+    value: ${{ steps.set-vars.outputs.project_prefix }}
+  project_region:
+    description: "Project region code"
+    value: ${{ steps.set-vars.outputs.project_region }}
+
+runs:
+  using: "composite"
+  steps:
+    - name: Set Environment Variables
+      id: set-vars
+      shell: bash
+      run: |
+        case "${{ inputs.environment }}" in
+          "dev")
+            echo "aws_role=${{ inputs.dev_aws_role }}" >> $GITHUB_OUTPUT
+            echo "aws_region=${{ inputs.dev_aws_region }}" >> $GITHUB_OUTPUT
+            echo "ecr_repository=${{ inputs.dev_ecr_repository }}" >> $GITHUB_OUTPUT
+            echo "project_prefix=ally-dev" >> $GITHUB_OUTPUT
+            echo "project_region=sg" >> $GITHUB_OUTPUT
+            ;;
+          "stg")
+            echo "aws_role=${{ inputs.stg_aws_role }}" >> $GITHUB_OUTPUT
+            echo "aws_region=${{ inputs.stg_aws_region }}" >> $GITHUB_OUTPUT
+            echo "ecr_repository=${{ inputs.stg_ecr_repository }}" >> $GITHUB_OUTPUT
+            echo "project_prefix=ally-stg" >> $GITHUB_OUTPUT
+            echo "project_region=mb" >> $GITHUB_OUTPUT
+            ;;
+          "prd")
+            echo "aws_role=${{ inputs.prd_aws_role }}" >> $GITHUB_OUTPUT
+            echo "aws_region=${{ inputs.prd_aws_region }}" >> $GITHUB_OUTPUT
+            echo "ecr_repository=${{ inputs.prd_ecr_repository }}" >> $GITHUB_OUTPUT
+            echo "project_prefix=ally-prd" >> $GITHUB_OUTPUT
+            echo "project_region=mb" >> $GITHUB_OUTPUT
+            ;;
+          *)
+            echo "Invalid environment: ${{ inputs.environment }}"
+            exit 1
+            ;;
+        esac

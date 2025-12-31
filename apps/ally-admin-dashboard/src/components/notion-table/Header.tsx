@@ -1,0 +1,24 @@
+import { HeaderProps } from "./types";
+
+export const Header = ({
+  column: { label, getResizerProps, getHeaderProps, headerIndex },
+}: HeaderProps) => {
+  const headerProps = getHeaderProps();
+  const { key, ...restHeaderProps } = headerProps;
+
+  return (
+    <div
+      key={key}
+      {...restHeaderProps}
+      className={`relative bg-white border-[1px] border-border-light select-none ${headerIndex === 0 ? "border-l-1" : "border-l-0"}`}
+    >
+      <div className="flex items-center p-3 cursor-pointer hover:bg-neutral-100 w-full">
+        <span className="font-medium text-typography-800 truncate">{label}</span>
+      </div>
+      <div
+        {...getResizerProps()}
+        className="absolute right-0 top-0 w-1 h-full cursor-col-resize hover:bg-primary-300"
+      />
+    </div>
+  );
+};
