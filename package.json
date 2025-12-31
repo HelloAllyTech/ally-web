@@ -45,6 +45,7 @@
     "@emotion/styled": "^11.14.0",
     "@mui/icons-material": "^7.1.1",
     "@mui/material": "^7.1.1",
+    "@react-oauth/google": "^0.13.4",
     "@react-router/node": "^7.2.0",
     "@react-router/serve": "^7.2.0",
     "@reduxjs/toolkit": "^2.9.0",

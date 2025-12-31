@@ -1,11 +1,12 @@
 import React, { useState, useEffect, useCallback } from "react";
 
+import { GoogleLogin } from "@react-oauth/google";
 import { AnimatePresence, motion } from "framer-motion";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
-import { CustomImage } from "@ally-ui-mono/ui-shared";
+import { CustomImage, FEATURE_FLAGS_MAP } from "@ally-ui-mono/ui-shared";
 import { useGenerateOTPMutation, useVerifyOTPMutation } from "@api";
 import { BackCircle, LoginImage } from "@assets";
 import { Button, OTP, TextField } from "@components";
@@ -148,6 +149,16 @@ export const Login: React.FC = () => {
     verifyOTP({ email: email.trim(), otp });
   };
 
+  const handleSuccess = () => {
+    // credentialResponse.credential contains the JWT token
+    // You can send it to your backend for verification
+    navigate("/dashboard");
+  };
+
+  const handleError = () => {
+    toast.error("Login failed");
+  };
+
   const getLoginSection = () => {
     if (loginSection === LoginSection.EMAIL) {
       return (
@@ -224,9 +235,18 @@ export const Login: React.FC = () => {
               className="text-primary-500 cursor-pointer hover:text-primary-600"
               onClick={() => openLinkInNewTab(ALLY_PRIVACY_POLICY_URL)}
             >
-              {en.auth.privacyPolicy}
+              {en.auth.privacyPolicy}.
             </span>
-            .
+            {FEATURE_FLAGS_MAP.GOOGLE_SIGN_IN_FLAG && (
+              <div>
+                <div className="flex items-center my-4">
+                  <div className="flex-grow border-t border-gray-300" />
+                  <span className="mx-3 text-xs text-gray-500">{en.common.or}</span>
+                  <div className="flex-grow border-t border-gray-300" />
+                </div>
+                <GoogleLogin onSuccess={handleSuccess} onError={handleError} text="continue_with" />
+              </div>
+            )}
           </div>
         </motion.div>
       );
