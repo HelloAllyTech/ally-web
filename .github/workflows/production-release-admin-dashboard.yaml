@@ -8,8 +8,9 @@
 #
 # Usage:
 # - Manually trigger this workflow from GitHub Actions
-# - Specify the version tag in format: v{major}.{minor}.{patch} (e.g., v1.0.0, v1.2.3, v2.0.0)
+# - Specify the version tag in format: admin-v{major}.{minor}.{patch} (e.g., admin-v1.0.0, admin-v1.2.3)
 # - The workflow will create the tag, build, deploy to S3/CloudFront, and create a release draft
+# - Note: This is a monorepo, so each service has its own tag prefix (admin-, helpline-, web-)
 
 name: Production Release - Admin Dashboard
 
@@ -23,7 +24,7 @@ on:
       version_tag:
         required: true
         type: string
-        description: 'Version tag (e.g., v1.0.0, v1.2.3, v2.0.0)'
+        description: 'Version tag (e.g., admin-v1.0.0, admin-v1.2.3, admin-v2.0.0)'
 
 jobs:
   validate-and-tag:
@@ -50,8 +51,8 @@ jobs:
           TAG="${{ github.event.inputs.version_tag }}"
           echo "Processing tag: $TAG"
           
-          if [[ ! $TAG =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-            echo "❌ Error: Tag must be in format v{major}.{minor}.{patch} (e.g., v1.0.0)"
+          if [[ ! $TAG =~ ^admin-v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "❌ Error: Tag must be in format admin-v{major}.{minor}.{patch} (e.g., admin-v1.0.0)"
             exit 1
           fi
           
@@ -60,7 +61,7 @@ jobs:
             exit 1
           fi
           
-          LATEST_TAG=$(git tag --sort=-v:refname | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | head -n 1)
+          LATEST_TAG=$(git tag --sort=-v:refname | grep -E '^admin-v[0-9]+\.[0-9]+\.[0-9]+$' | head -n 1)
           
           if [ -n "$LATEST_TAG" ]; then
             echo "Latest existing tag: $LATEST_TAG"
@@ -79,7 +80,7 @@ jobs:
             echo "ℹ️  No previous tags found. This will be the first release."
           fi
           
-          VERSION=${TAG#v}
+          VERSION=${TAG#admin-v}
           MAJOR=$(echo $VERSION | cut -d. -f1)
           MINOR=$(echo $VERSION | cut -d. -f2)
           PATCH=$(echo $VERSION | cut -d. -f3)
@@ -303,7 +304,7 @@ jobs:
           
           git fetch origin tag "$TAG"
           
-          PREVIOUS_TAG=$(git tag --sort=-v:refname | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | grep -v "^$TAG$" | head -n 1)
+          PREVIOUS_TAG=$(git tag --sort=-v:refname | grep -E '^admin-v[0-9]+\.[0-9]+\.[0-9]+$' | grep -v "^$TAG$" | head -n 1)
           
           if [ -z "$PREVIOUS_TAG" ]; then
             echo "No previous tag found, using first commit"
@@ -323,6 +324,7 @@ jobs:
           DELIMITER="CHANGELOG_END_$(date +%s)"
           echo "CHANGELOG<<${DELIMITER}" >> $GITHUB_OUTPUT
           cat CHANGELOG.md >> $GITHUB_OUTPUT
+          echo "" >> $GITHUB_OUTPUT
           echo "${DELIMITER}" >> $GITHUB_OUTPUT
 
       - name: Create Release Draft
@@ -353,7 +355,6 @@ jobs:
             ---
             
             **Note**: This is a draft release. Please review and publish when ready.
-          generate_release_notes: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
