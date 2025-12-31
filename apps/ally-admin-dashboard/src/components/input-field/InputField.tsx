@@ -3,7 +3,7 @@ import { useEffect } from "react";
 import { InfoIcon } from "@assets";
 import { InputFieldProps } from "@components/types";
 import { FORM_FIELD_TYPES } from "@constants";
-import { isNonEmptyString } from "@src/utils";
+import { isNonEmptyString } from "@utils";
 
 export const InputField: React.FC<InputFieldProps> = ({
   label,
