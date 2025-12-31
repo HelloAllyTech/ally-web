@@ -155,3 +155,40 @@ export const formatApiResponseToMappedEvent = (event: {
 export const createSessionEventsMap = (events: SessionEvent[]): Map<string, SessionEvent> => {
   return new Map(events.map(event => [event.id, event]));
 };
+
+export const addScoreColors = (data: UpdateScenarioEventDataParam[]) => {
+  // Extract score values
+  const values = data.map(d => d.score.value);
+
+  const min = Math.min(...values);
+  const max = Math.max(...values);
+
+  // Color anchors
+  const RED = { r: 220, g: 80, b: 80 };
+  const WHITE = { r: 245, g: 245, b: 245 };
+  const GREEN = { r: 80, g: 180, b: 120 };
+
+  const lerp = (a, b, t) => Math.round(a + (b - a) * t);
+
+  const mix = (c1, c2, t) =>
+    `rgb(${lerp(c1.r, c2.r, t)}, ${lerp(c1.g, c2.g, t)}, ${lerp(c1.b, c2.b, t)})`;
+
+  const getColor = value => {
+    if (value <= 0) {
+      // Red → White
+      const t = (value - min) / (0 - min || 1);
+      return mix(RED, WHITE, Math.max(0, Math.min(1, t)));
+    }
+    // White → Green
+    const t = value / (max || 1);
+    return mix(WHITE, GREEN, Math.max(0, Math.min(1, t)));
+  };
+
+  return data.map(item => ({
+    ...item,
+    score: {
+      ...item.score,
+      color: getColor(item.score.value),
+    },
+  }));
+};
