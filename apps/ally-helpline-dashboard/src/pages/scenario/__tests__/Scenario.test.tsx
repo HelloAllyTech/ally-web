@@ -114,6 +114,13 @@ vi.mock("@assets", () => ({
   Carousel9: "carousel9.jpg",
   Carousel10: "carousel10.jpg",
   Bolt: Bolt,
+  LearnIcon: () => <svg data-testid="learn-icon" />,
+  Leaderboard: () => <svg data-testid="leaderboard-icon" />,
+  ScribeIcon: () => <svg data-testid="scribe-icon" />,
+  StatsIcon: () => <svg data-testid="stats-icon" />,
+  SearchIcon: () => <svg data-testid="search-icon" />,
+  NoBadges: () => <div data-testid="no-badges" />,
+  Badge: () => <svg data-testid="badge-icon" />,
 }));
 
 // Use vi.hoisted to ensure mocks are available when vi.mock factory runs
