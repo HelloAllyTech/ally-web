@@ -10,12 +10,14 @@ import "./index.css";
 import App from "./App.tsx";
 import { store, persistor } from "./store";
 
+const GOOGLE_AUTH_CLIENT_ID = import.meta.env.VITE_GOOGLE_AUTH_CLIENT_ID || "";
+
 createRoot(document.getElementById("root")!).render(
   <StyledEngineProvider injectFirst>
     <Provider store={store}>
       <PersistGate loading={null} persistor={persistor}>
         <LocalizationProvider dateAdapter={AdapterDayjs}>
-          <GoogleOAuthProvider clientId="418445548587-tc8jcusrsglolrurqbvbgji30avmvgph.apps.googleusercontent.com">
+          <GoogleOAuthProvider clientId={GOOGLE_AUTH_CLIENT_ID}>
             <App />
           </GoogleOAuthProvider>
         </LocalizationProvider>
