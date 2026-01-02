@@ -11,7 +11,6 @@ import { FEATURE_FLAGS_MAP } from "@ally-ui-mono/ui-shared";
 import {
   useGenerateOTPMutation,
   useGoogleSignInMutation,
-  useLazyCheckTermsAndAgreementQuery,
   usePutTermsAndAgreementMutation,
   useVerifyOTPMutation,
 } from "@api";
@@ -44,7 +43,7 @@ export const Login: FunctionComponent = () => {
   const [otp, setOtp] = useState<string>("");
   const [countdown, setCountdown] = useState<number>(0);
   const [rememberMe, setRememberMe] = useState<boolean>(false);
-  const [termsAndAgreement, setTermsAndAgreement] = useState<boolean>(false);
+  const [termsAndAgreement, setTermsAndAgreement] = useState<boolean>(true);
   const accessTokenRef = useRef<string>("");
   const refreshTokenRef = useRef<string>("");
 
@@ -72,7 +71,6 @@ export const Login: FunctionComponent = () => {
 
   const { isAuthenticated, checkAuth } = useUser();
 
-  const [checkTermsAndAgreement] = useLazyCheckTermsAndAgreementQuery();
   const [putCheckTermsAndAgreement] = usePutTermsAndAgreementMutation();
 
   const isLoading = isGeneratingOTP || isVerifyingOTP;
@@ -134,14 +132,7 @@ export const Login: FunctionComponent = () => {
       } else if (isVerifyOTPSuccess && verifyOTPData) {
         accessTokenRef.current = verifyOTPData.accessToken;
         refreshTokenRef.current = verifyOTPData.refreshToken;
-        const response = await checkTermsAndAgreement({
-          token: verifyOTPData.accessToken,
-        });
-        if (response.data?.success) {
-          updateLocalStorageAndNavigate();
-        } else {
-          setTermsAndAgreement(true);
-        }
+        setTermsAndAgreement(true);
       }
     })();
   }, [isVerifyOTPSuccess, verifyOTPError, verifyOTPData]);
