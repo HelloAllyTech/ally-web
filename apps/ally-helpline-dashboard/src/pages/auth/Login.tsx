@@ -198,15 +198,15 @@ export const Login: FunctionComponent = () => {
         refreshTokenRef.current = response?.data.refreshToken;
         setIsOpenTermsAndAgreement(true);
       } else {
-        toast.error("Google sign in failed");
+        toast.error("Failed to sign in with Google. Please try again.");
       }
     } catch {
-      toast.error("Google sign in failed");
+      toast.error("Failed to sign in with Google. Please try again.");
     }
   };
 
   const handleError = () => {
-    toast.error("Google sign in failed");
+    toast.error("Failed to sign in with Google. Please try again.");
   };
 
   const getLoginSection = () => {
