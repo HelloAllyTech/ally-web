@@ -10,6 +10,7 @@ import { toast } from "sonner";
 import { FEATURE_FLAGS_MAP } from "@ally-ui-mono/ui-shared";
 import {
   useGenerateOTPMutation,
+  useGoogleSignInMutation,
   useLazyCheckTermsAndAgreementQuery,
   usePutTermsAndAgreementMutation,
   useVerifyOTPMutation,
@@ -65,6 +66,9 @@ export const Login: FunctionComponent = () => {
       error: verifyOTPError,
     },
   ] = useVerifyOTPMutation();
+
+  const [googleSignIn, { data: googleSignInData, error: googleSignInError }] =
+    useGoogleSignInMutation();
 
   const { isAuthenticated, checkAuth } = useUser();
 
@@ -196,14 +200,25 @@ export const Login: FunctionComponent = () => {
     }
   };
 
-  const handleSuccess = () => {
-    // credentialResponse.credential contains the JWT token
-    // You can send it to your backend for verification
-    // navigate("/dashboard");
+  const handleSuccess = async (credentialResponse: any) => {
+    try {
+      googleSignIn({ idToken: credentialResponse?.credential });
+      if (googleSignInError) {
+        //TODO: Implement BE error msg
+
+        toast.error("Google sign in failed");
+      } else {
+        localStorage.setItem(LOCAL_STORAGE_KEYS.ACCESS_TOKEN, googleSignInData.accessToken);
+        localStorage.setItem(LOCAL_STORAGE_KEYS.REFRESH_TOKEN, googleSignInData.refreshToken);
+        navigate("/");
+      }
+    } catch {
+      toast.error("Google sign in failed");
+    }
   };
 
   const handleError = () => {
-    toast.error("Login failed");
+    toast.error("Google sign in failed");
   };
   const getLoginSection = () => {
     if (loginSection === LoginSection.EMAIL) {
