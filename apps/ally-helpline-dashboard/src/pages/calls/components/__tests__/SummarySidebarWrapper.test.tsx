@@ -52,6 +52,13 @@ vi.mock("@assets", () => ({
   ScenarioIcon: () => <div data-testid="scenario-icon">Scenario</div>,
   SessionScoreIcon: () => <div data-testid="session-score-icon">Score</div>,
   InDoubt: () => <div data-testid="in-doubt-icon">In Doubt</div>,
+  LearnIcon: () => <svg data-testid="learn-icon" />,
+  Leaderboard: () => <svg data-testid="leaderboard-icon" />,
+  ScribeIcon: () => <svg data-testid="scribe-icon" />,
+  StatsIcon: () => <svg data-testid="stats-icon" />,
+  SearchIcon: () => <svg data-testid="search-icon" />,
+  NoBadges: () => <div data-testid="no-badges" />,
+  Badge: () => <svg data-testid="badge-icon" />,
 }));
 
 describe("SummarySidebarWrapper", () => {
