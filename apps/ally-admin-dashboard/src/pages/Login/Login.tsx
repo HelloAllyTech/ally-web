@@ -55,8 +55,7 @@ export const Login: React.FC = () => {
     },
   ] = useVerifyOTPMutation();
 
-  const [googleSignIn, { data: googleSignInData, error: googleSignInError }] =
-    useGoogleSignInMutation();
+  const [googleSignIn] = useGoogleSignInMutation();
 
   const { isAuthenticated, checkAuth } = useUser();
 
@@ -154,19 +153,17 @@ export const Login: React.FC = () => {
 
   const handleSuccess = async (credentialResponse: any) => {
     try {
-      googleSignIn({ idToken: credentialResponse?.credential });
-
-      if (googleSignInError) {
-        //TODO: Implement BE error msg
-        toast.error("Google sign in failed");
-      } else {
-        localStorage.setItem(LOCAL_STORAGE_KEYS.ADMIN_ACCESS_TOKEN, googleSignInData.accessToken);
-        localStorage.setItem(LOCAL_STORAGE_KEYS.ADMIN_REFRESH_TOKEN, googleSignInData.refreshToken);
+      const response = await googleSignIn({ idToken: credentialResponse?.credential });
+      if (response?.data) {
+        localStorage.setItem(LOCAL_STORAGE_KEYS.ADMIN_ACCESS_TOKEN, response.data.accessToken);
+        localStorage.setItem(LOCAL_STORAGE_KEYS.ADMIN_REFRESH_TOKEN, response.data.refreshToken);
         localStorage.setItem(LOCAL_STORAGE_KEYS.ADMIN_IS_AUTHENTICATED, "true");
         const userData = await checkAuth();
         if (userData) {
           navigate("/");
         }
+      } else {
+        toast.error("Google sign in failed");
       }
     } catch {
       toast.error("Google sign in failed");
