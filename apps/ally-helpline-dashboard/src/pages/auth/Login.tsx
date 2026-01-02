@@ -66,8 +66,7 @@ export const Login: FunctionComponent = () => {
     },
   ] = useVerifyOTPMutation();
 
-  const [googleSignIn, { data: googleSignInData, error: googleSignInError }] =
-    useGoogleSignInMutation();
+  const [googleSignIn] = useGoogleSignInMutation();
 
   const { isAuthenticated, checkAuth } = useUser();
 
@@ -193,15 +192,13 @@ export const Login: FunctionComponent = () => {
 
   const handleSuccess = async (credentialResponse: any) => {
     try {
-      googleSignIn({ idToken: credentialResponse?.credential });
-      if (googleSignInError) {
-        //TODO: Implement BE error msg
-
-        toast.error("Google sign in failed");
-      } else {
-        localStorage.setItem(LOCAL_STORAGE_KEYS.ACCESS_TOKEN, googleSignInData.accessToken);
-        localStorage.setItem(LOCAL_STORAGE_KEYS.REFRESH_TOKEN, googleSignInData.refreshToken);
+      const response = await googleSignIn({ idToken: credentialResponse?.credential });
+      if (response?.data) {
+        localStorage.setItem(LOCAL_STORAGE_KEYS.ACCESS_TOKEN, response.data.accessToken);
+        localStorage.setItem(LOCAL_STORAGE_KEYS.REFRESH_TOKEN, response.data.refreshToken);
         navigate("/");
+      } else {
+        toast.error("Google sign in failed");
       }
     } catch {
       toast.error("Google sign in failed");
@@ -211,6 +208,7 @@ export const Login: FunctionComponent = () => {
   const handleError = () => {
     toast.error("Google sign in failed");
   };
+
   const getLoginSection = () => {
     if (loginSection === LoginSection.EMAIL) {
       return (
