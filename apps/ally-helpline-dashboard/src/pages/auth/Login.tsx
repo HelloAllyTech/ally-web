@@ -194,8 +194,8 @@ export const Login: FunctionComponent = () => {
     try {
       const response = await googleSignIn({ idToken: credentialResponse?.credential });
       if (response?.data) {
-        accessTokenRef.current = verifyOTPData.accessToken;
-        refreshTokenRef.current = verifyOTPData.refreshToken;
+        accessTokenRef.current = response?.data.accessToken;
+        refreshTokenRef.current = response?.data.refreshToken;
         setIsOpenTermsAndAgreement(true);
       } else {
         toast.error("Google sign in failed");
