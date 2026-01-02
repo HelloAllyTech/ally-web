@@ -57,10 +57,17 @@ const mockUseVerifyOTPMutation = vi.fn(() => [
     error: null,
   },
 ]);
-
+const mockGoogleSignInMutation = vi.fn(() => [
+  mockGoogleSignInMutation,
+  {
+    data: null,
+    error: null,
+  },
+]);
 vi.mock("@api", () => ({
   useGenerateOTPMutation: () => mockUseGenerateOTPMutation(),
   useVerifyOTPMutation: () => mockUseVerifyOTPMutation(),
+  useGoogleSignInMutation: () => mockGoogleSignInMutation(),
 }));
 
 // Mock useUser hook
