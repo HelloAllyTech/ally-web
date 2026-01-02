@@ -10,10 +10,12 @@ import "./styles.css";
 
 const root = ReactDOM.createRoot(document.getElementById("root") as HTMLElement);
 
+const GOOGLE_AUTH_CLIENT_ID = import.meta.env.VITE_GOOGLE_AUTH_CLIENT_ID || "";
+
 root.render(
   <StrictMode>
     <Provider store={store}>
-      <GoogleOAuthProvider clientId="418445548587-tc8jcusrsglolrurqbvbgji30avmvgph.apps.googleusercontent.com">
+      <GoogleOAuthProvider clientId={GOOGLE_AUTH_CLIENT_ID}>
         <App />
       </GoogleOAuthProvider>
     </Provider>
