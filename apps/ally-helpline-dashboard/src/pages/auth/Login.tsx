@@ -43,7 +43,7 @@ export const Login: FunctionComponent = () => {
   const [otp, setOtp] = useState<string>("");
   const [countdown, setCountdown] = useState<number>(0);
   const [rememberMe, setRememberMe] = useState<boolean>(false);
-  const [termsAndAgreement, setTermsAndAgreement] = useState<boolean>(true);
+  const [isOpenTermsAndAgreement, setIsOpenTermsAndAgreement] = useState<boolean>(false);
   const accessTokenRef = useRef<string>("");
   const refreshTokenRef = useRef<string>("");
 
@@ -132,7 +132,7 @@ export const Login: FunctionComponent = () => {
       } else if (isVerifyOTPSuccess && verifyOTPData) {
         accessTokenRef.current = verifyOTPData.accessToken;
         refreshTokenRef.current = verifyOTPData.refreshToken;
-        setTermsAndAgreement(true);
+        setIsOpenTermsAndAgreement(true);
       }
     })();
   }, [isVerifyOTPSuccess, verifyOTPError, verifyOTPData]);
@@ -178,7 +178,7 @@ export const Login: FunctionComponent = () => {
   };
 
   const handleAgreementClose = () => {
-    setTermsAndAgreement(false);
+    setIsOpenTermsAndAgreement(false);
   };
 
   const handleAgreeButtonClick = async () => {
@@ -388,7 +388,7 @@ export const Login: FunctionComponent = () => {
         </div>
       </div>
       <TermsAndAgreement
-        isOpen={termsAndAgreement}
+        isOpen={isOpenTermsAndAgreement}
         handleAgreeButtonClick={handleAgreeButtonClick}
       />
     </div>
