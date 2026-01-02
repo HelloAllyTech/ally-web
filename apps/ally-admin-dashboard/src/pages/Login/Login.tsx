@@ -7,7 +7,7 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
 import { CustomImage, FEATURE_FLAGS_MAP } from "@ally-ui-mono/ui-shared";
-import { useGenerateOTPMutation, useVerifyOTPMutation } from "@api";
+import { useGenerateOTPMutation, useVerifyOTPMutation, useGoogleSignInMutation } from "@api";
 import { BackCircle, LoginImage } from "@assets";
 import { Button, OTP, TextField } from "@components";
 import {
@@ -54,6 +54,9 @@ export const Login: React.FC = () => {
       error: verifyOTPError,
     },
   ] = useVerifyOTPMutation();
+
+  const [googleSignIn, { data: googleSignInData, error: googleSignInError }] =
+    useGoogleSignInMutation();
 
   const { isAuthenticated, checkAuth } = useUser();
 
@@ -149,14 +152,29 @@ export const Login: React.FC = () => {
     verifyOTP({ email: email.trim(), otp });
   };
 
-  const handleSuccess = () => {
-    // credentialResponse.credential contains the JWT token
-    // You can send it to your backend for verification
-    navigate("/dashboard");
+  const handleSuccess = async (credentialResponse: any) => {
+    try {
+      googleSignIn({ idToken: credentialResponse?.credential });
+
+      if (googleSignInError) {
+        //TODO: Implement BE error msg
+        toast.error("Google sign in failed");
+      } else {
+        localStorage.setItem(LOCAL_STORAGE_KEYS.ADMIN_ACCESS_TOKEN, googleSignInData.accessToken);
+        localStorage.setItem(LOCAL_STORAGE_KEYS.ADMIN_REFRESH_TOKEN, googleSignInData.refreshToken);
+        localStorage.setItem(LOCAL_STORAGE_KEYS.ADMIN_IS_AUTHENTICATED, "true");
+        const userData = await checkAuth();
+        if (userData) {
+          navigate("/");
+        }
+      }
+    } catch {
+      toast.error("Google sign in failed");
+    }
   };
 
   const handleError = () => {
-    toast.error("Login failed");
+    toast.error("Google sign in failed");
   };
 
   const getLoginSection = () => {

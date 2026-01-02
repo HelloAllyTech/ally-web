@@ -69,6 +69,13 @@ vi.mock("@api", () => ({
       error: null,
     },
   ],
+  useGoogleSignInMutation: () => [
+    vi.fn(),
+    {
+      data: null,
+      error: null,
+    },
+  ],
 }));
 
 vi.mock("@assets", () => ({
