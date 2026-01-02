@@ -194,9 +194,9 @@ export const Login: FunctionComponent = () => {
     try {
       const response = await googleSignIn({ idToken: credentialResponse?.credential });
       if (response?.data) {
-        localStorage.setItem(LOCAL_STORAGE_KEYS.ACCESS_TOKEN, response.data.accessToken);
-        localStorage.setItem(LOCAL_STORAGE_KEYS.REFRESH_TOKEN, response.data.refreshToken);
-        navigate("/");
+        accessTokenRef.current = verifyOTPData.accessToken;
+        refreshTokenRef.current = verifyOTPData.refreshToken;
+        setIsOpenTermsAndAgreement(true);
       } else {
         toast.error("Google sign in failed");
       }
