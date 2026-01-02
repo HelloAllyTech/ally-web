@@ -163,15 +163,15 @@ export const Login: React.FC = () => {
           navigate("/");
         }
       } else {
-        toast.error("Google sign in failed");
+        toast.error(en.errors.failedToGoogleSignIn);
       }
     } catch {
-      toast.error("Google sign in failed");
+      toast.error(en.errors.failedToGoogleSignIn);
     }
   };
 
   const handleError = () => {
-    toast.error("Google sign in failed");
+    toast.error(en.errors.failedToGoogleSignIn);
   };
 
   const getLoginSection = () => {

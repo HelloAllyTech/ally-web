@@ -44,6 +44,7 @@ export const en = {
     errorUpdatingEvent: "Error updating event",
     userIdNotFound: "User id not found",
     failedToRemoveUser: "Failed to remove user",
+    failedToGoogleSignIn: "Failed to sign in with Google. Please try again.",
   },
   accessDenied: {
     title: "This page is not accessible",
