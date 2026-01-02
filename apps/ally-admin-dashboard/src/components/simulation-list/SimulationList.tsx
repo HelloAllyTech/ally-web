@@ -1,6 +1,5 @@
 import React from "react";
 
-import { FEATURE_FLAGS_MAP } from "@ally-ui-mono/ui-shared";
 import { Add, Edit, Unpublish, Archive, Delete, Play, Unarchive, Copy } from "@assets";
 import {
   DataList,
@@ -184,15 +183,11 @@ export const SimulationList: React.FC<SimulationListProps> = ({
         simulation.status !== SimulationStatus.DRAFT &&
         simulation.status !== SimulationStatus.ARCHIVED,
     },
-    ...(FEATURE_FLAGS_MAP.DUPLICATE_SIMULATION_FLAG
-      ? [
-          {
-            icon: <Copy />,
-            tooltip: en.simulation.duplicate,
-            onClick: simulation => onDuplicate?.(simulation),
-          },
-        ]
-      : []),
+    {
+      icon: <Copy />,
+      tooltip: en.simulation.duplicate,
+      onClick: simulation => onDuplicate?.(simulation),
+    },
     {
       icon: <Unarchive />,
       tooltip: en.simulation.unarchive,
