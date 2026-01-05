@@ -1,12 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
 
-import { GoogleLogin } from "@react-oauth/google";
-import { AnimatePresence, motion } from "framer-motion";
-import { useSelector } from "react-redux";
-import { useNavigate } from "react-router-dom";
-import { toast } from "sonner";
-
-import { CustomImage, FEATURE_FLAGS_MAP, GoogleSignInButton } from "@ally-ui-mono/ui-shared";
 import { useGenerateOTPMutation, useVerifyOTPMutation, useGoogleSignInMutation } from "@api";
 import { BackCircle, LoginImage } from "@assets";
 import { Button, OTP, TextField } from "@components";
@@ -21,9 +14,16 @@ import {
 import { useUser } from "@hooks/useUser";
 import { RootState } from "@store";
 import { validateEmail, openLinkInNewTab } from "@utils";
+import { AnimatePresence, motion } from "framer-motion";
+import { useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
+
+import { CustomImage, FEATURE_FLAGS_MAP, GoogleSignInButton } from "@ally-ui-mono/ui-shared";
 
 const RESEND_CODE_COUNTDOWN = 60; // 60 seconds
 const DEFAULT_EXPIRES_IN = 10; // 10 minutes
+const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_AUTH_CLIENT_ID || "";
 
 export const Login: React.FC = () => {
   const navigate = useNavigate();
@@ -151,9 +151,9 @@ export const Login: React.FC = () => {
     verifyOTP({ email: email.trim(), otp });
   };
 
-  const handleSuccess = async (credentialResponse: any) => {
+  const handleGoogleSuccess = async (credential: string) => {
     try {
-      const response = await googleSignIn({ idToken: credentialResponse?.credential });
+      const response = await googleSignIn({ idToken: credential });
       if (response?.data) {
         localStorage.setItem(LOCAL_STORAGE_KEYS.ADMIN_ACCESS_TOKEN, response.data.accessToken);
         localStorage.setItem(LOCAL_STORAGE_KEYS.ADMIN_REFRESH_TOKEN, response.data.refreshToken);
@@ -170,7 +170,7 @@ export const Login: React.FC = () => {
     }
   };
 
-  const handleError = () => {
+  const handleGoogleError = () => {
     toast.error(en.errors.failedToGoogleSignIn);
   };
 
@@ -252,25 +252,18 @@ export const Login: React.FC = () => {
             >
               {en.auth.privacyPolicy}.
             </span>
-            {FEATURE_FLAGS_MAP.GOOGLE_SIGN_IN_FLAG && (
+            {FEATURE_FLAGS_MAP.GOOGLE_SIGN_IN_FLAG && GOOGLE_CLIENT_ID && (
               <div>
                 <div className="flex items-center my-4">
                   <div className="flex-grow border-t border-gray-300" />
                   <span className="mx-3 text-xs text-gray-500">{en.common.or}</span>
                   <div className="flex-grow border-t border-gray-300" />
                 </div>
-                <div className="relative">
-                  {/* Hidden Google Login for ID token */}
-                  <div className="absolute top-0 left-0 w-full h-full opacity-0" aria-hidden="true">
-                    <GoogleLogin
-                      onSuccess={handleSuccess}
-                      onError={handleError}
-                      useOneTap={false}
-                      width="100%"
-                    />
-                  </div>
-                  <GoogleSignInButton />
-                </div>
+                <GoogleSignInButton
+                  clientId={GOOGLE_CLIENT_ID}
+                  onSuccess={handleGoogleSuccess}
+                  onError={handleGoogleError}
+                />
               </div>
             )}
           </div>
