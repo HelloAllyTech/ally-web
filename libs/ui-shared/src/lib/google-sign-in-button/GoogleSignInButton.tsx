@@ -58,7 +58,7 @@ const GoogleSignInButton: FC<GoogleSignInButtonProps> = ({
       ) : (
         <Google />
       )}
-      <span className="text-[#3c4043] font-semibold text-base text-red-500 tracking-[0.25px] font-tertiary">
+      <span className="text-[#3c4043] font-semibold text-base tracking-[0.25px] font-tertiary">
         {isLoading ? loadingText : text}
       </span>
     </button>
