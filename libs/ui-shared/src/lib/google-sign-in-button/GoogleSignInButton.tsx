@@ -32,7 +32,7 @@ const GoogleSignInButton: FC<GoogleSignInButtonProps> = ({
         items-center
         justify-center
         gap-1
-        h-[40px]
+        h-[42px]
         px-4
         bg-white
         border
