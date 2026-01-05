@@ -1,11 +1,32 @@
 import { useEffect, useRef, useState } from "react";
 
+import { UseFormReturn } from "react-hook-form";
 import { toast } from "sonner";
 
-import { Trash, Upload } from "@assets";
-import { ASPECT_RATIO_TOLERANCE, en, imageTypes, PROFILE_ASPECT_RATIO } from "@constants";
+import { Trash, Upload } from "../../assets";
 
-export const ImageUpload = ({ formMethods, uploadId, uploadButtonName, uploadTitle, details }) => {
+interface ImageUploadProps {
+  formMethods?: UseFormReturn<any>;
+  uploadId: string;
+  uploadButtonName?: string;
+  uploadTitle?: string;
+  details?: any;
+}
+
+const ASPECT_RATIO_TOLERANCE = 0.01;
+const PROFILE_ASPECT_RATIO = 1 / 1;
+
+const imageTypes = {
+  JPEG: "image/jpeg",
+  PNG: "image/png",
+};
+const ImageUpload: React.FC<ImageUploadProps> = ({
+  formMethods,
+  uploadId,
+  uploadButtonName,
+  uploadTitle,
+  details,
+}) => {
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -38,7 +59,7 @@ export const ImageUpload = ({ formMethods, uploadId, uploadButtonName, uploadTit
 
     // Validate file type
     if (![imageTypes.JPEG, imageTypes.PNG].includes(file.type)) {
-      toast.error(en.errors.fileMustBeJPEGOrPNG);
+      toast.error("File must be JPEG or PNG.");
       return;
     }
 
@@ -51,7 +72,7 @@ export const ImageUpload = ({ formMethods, uploadId, uploadButtonName, uploadTit
 
       if (!isValidRatio) {
         URL.revokeObjectURL(objectUrl);
-        toast.error(en.errors.imageMustHave1AspectRatio);
+        toast.error("Please upload an image with the correct aspect ratio");
         if (fileInputRef.current) fileInputRef.current.value = "";
         return;
       }
@@ -64,14 +85,14 @@ export const ImageUpload = ({ formMethods, uploadId, uploadButtonName, uploadTit
         formMethods?.setValue(uploadId, objectUrl, { shouldDirty: true });
       } catch {
         URL.revokeObjectURL(objectUrl);
-        toast.error(en.errors.failedToUploadImage);
+        toast.error("Failed to upload image");
         if (fileInputRef.current) fileInputRef.current.value = "";
       }
     };
 
     img.onerror = () => {
       URL.revokeObjectURL(objectUrl);
-      toast.error(en.errors.failedToLoadImage);
+      toast.error("Failed to load image");
       if (fileInputRef.current) fileInputRef.current.value = "";
     };
 
@@ -80,14 +101,14 @@ export const ImageUpload = ({ formMethods, uploadId, uploadButtonName, uploadTit
   return (
     <div className="flex gap-5">
       <div
-        className="relative flex border-2 border-dashed border-border-light hover:border-primary w-[100px] h-[100px] justify-center items-center cursor-pointer group rounded-md"
+        className="relative flex border-2  border-border-light  w-[150px] h-[150px] justify-center items-center cursor-pointer group rounded-full"
         onClick={handleUploadClick}
       >
         <input ref={fileInputRef} type="file" className="hidden" onChange={handleFileChange} />
         {previewUrl ? (
           <>
-            <img src={previewUrl} alt="Preview" className="w-full h-full object-cover rounded-md" />
-            <div className="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity rounded-md">
+            <img src={previewUrl} alt="Preview" className="w-full h-full rounded-full" />
+            <div className="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity rounded-full">
               <button
                 type="button"
                 className="p-1.5 bg-white rounded-full"
@@ -102,18 +123,20 @@ export const ImageUpload = ({ formMethods, uploadId, uploadButtonName, uploadTit
         )}
       </div>
       <div className="flex flex-col gap-2">
-        <span className="text-base">{uploadTitle || en.userManagement.logo}</span>
+        <span className="text-base">{uploadTitle || "Image"}</span>
         <span className="w-40 text-typography-500 text-xs">
-          {en.userManagement.logoDescription}
+          {"PNG or JPG files only (240x240 preferred)"}
         </span>
         <button
           type="button"
           className="border rounded-full text-base font-tertiary py-1 px-4 text-typography-900"
           onClick={handleUploadClick}
         >
-          {uploadButtonName || en.userManagement.uploadLogo}
+          {uploadButtonName || "Upload"}
         </button>
       </div>
     </div>
   );
 };
+
+export default ImageUpload;

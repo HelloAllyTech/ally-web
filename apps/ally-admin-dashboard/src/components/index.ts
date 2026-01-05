@@ -54,4 +54,3 @@ export * from "./popup-wrapper";
 export * from "./event-type-selection-dialog";
 export * from "./trigger-conditions";
 export * from "./time-input";
-export * from "./image-upload";
