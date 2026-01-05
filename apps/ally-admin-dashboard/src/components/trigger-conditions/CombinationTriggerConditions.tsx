@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 
 import { useGetSessionEventsQuery, useGetSessionEventByIdQuery } from "@api";
 import {
@@ -48,6 +48,10 @@ export const CombinationTriggerConditions: React.FC<CombinationTriggerConditions
   const [searchName, setSearchName] = useState("");
   const [hasMore, setHasMore] = useState(true);
 
+  // Track the last search term that was used for the current data fetch
+  // This helps us determine if we should replace or append data
+  const lastSearchRef = useRef(searchName);
+
   const { data: eventsData } = useGetSessionEventsQuery({
     visibilityType: SESSION_EVENT_STATUS_OPTIONS.ACTIVE,
     limit: INITIAL_EVENTS_LIMIT,
@@ -65,10 +69,20 @@ export const CombinationTriggerConditions: React.FC<CombinationTriggerConditions
         eventCode: event.eventCode || "",
       }));
 
-      if (offset === 0) {
+      // Determine if this is a fresh search (search term changed) or pagination
+      const isNewSearch = lastSearchRef.current !== searchName;
+      lastSearchRef.current = searchName;
+
+      if (offset === 0 || isNewSearch) {
+        // Fresh search or initial load - replace the events
         setAvailableEvents(formattedEvents);
       } else {
-        setAvailableEvents(prev => [...prev, ...formattedEvents]);
+        // Pagination - append events, but deduplicate by id
+        setAvailableEvents(prev => {
+          const existingIds = new Set(prev.map(e => e.id));
+          const newEvents = formattedEvents.filter(e => !existingIds.has(e.id));
+          return [...prev, ...newEvents];
+        });
       }
 
       // Check if there are more results to load
@@ -76,7 +90,7 @@ export const CombinationTriggerConditions: React.FC<CombinationTriggerConditions
       const hasMoreResults = formattedEvents.length >= INITIAL_EVENTS_LIMIT;
       setHasMore(hasMoreResults);
     }
-  }, [eventsData, offset]);
+  }, [eventsData, offset, searchName]);
 
   const handleLoadMore = () => {
     setOffset(prev => prev + INITIAL_EVENTS_LIMIT);
