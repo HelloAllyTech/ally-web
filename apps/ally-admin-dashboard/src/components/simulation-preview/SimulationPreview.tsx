@@ -1,4 +1,4 @@
-import { FC, useEffect, useMemo, useState } from "react";
+import { FC, useCallback, useEffect, useMemo, useState } from "react";
 
 import { useNavigate } from "react-router-dom";
 
@@ -53,11 +53,14 @@ export const SimulationPreview: FC<SimulationPreviewProps> = ({ simulation, isOp
     return option?.language_id;
   }, [languageOptions, selectedLanguageLabel]);
 
-  const handleLanguageChange = async (label: string) => {
-    const option = languageOptions.find(opt => opt.label === label);
-    if (!option) return;
-    setSelectedLanguageLabel(option.label);
-  };
+  const handleLanguageChange = useCallback(
+    async (label: string) => {
+      const option = languageOptions.find(opt => opt.label === label);
+      if (!option) return;
+      setSelectedLanguageLabel(option.label);
+    },
+    [languageOptions],
+  );
 
   const onStartSimulationSuccess = (response: StartSimulationResponse) => {
     const { accessToken, scenario } = response;
@@ -112,6 +115,26 @@ export const SimulationPreview: FC<SimulationPreviewProps> = ({ simulation, isOp
     }
   };
 
+  const renderAdditionalContent = useCallback(() => {
+    if (!(shouldLoadLanguages && languageOptions.length > 0)) return null;
+
+    return (
+      <div className="w-full flex justify-start">
+        <div className="flex flex-col">
+          <div className="relative w-48">
+            <DropdownField
+              options={languageOptions.map(option => option.label)}
+              value={selectedLanguageLabel || languageOptions[0]?.label || ""}
+              onChange={handleLanguageChange}
+              label=""
+              valueClassName="font-primary text-base text-typography-700"
+            />
+          </div>
+        </div>
+      </div>
+    );
+  }, [handleLanguageChange, languageOptions, selectedLanguageLabel, shouldLoadLanguages]);
+
   return (
     <SimulationDetailsModal
       isOpen={isOpen}
@@ -132,23 +155,7 @@ export const SimulationPreview: FC<SimulationPreviewProps> = ({ simulation, isOp
       renderCustomImage={({ src, alt, className }) => (
         <CustomImage src={src} alt={alt} className={className} />
       )}
-      renderAdditionalContent={() =>
-        shouldLoadLanguages && languageOptions.length > 0 ? (
-          <div className="w-full flex justify-start">
-            <div className="flex flex-col">
-              <div className="relative w-48">
-                <DropdownField
-                  options={languageOptions.map(option => option.label)}
-                  value={selectedLanguageLabel || languageOptions[0]?.label || ""}
-                  onChange={handleLanguageChange}
-                  label=""
-                  valueClassName="font-primary text-base text-typography-700"
-                />
-              </div>
-            </div>
-          </div>
-        ) : null
-      }
+      renderAdditionalContent={renderAdditionalContent}
     />
   );
 };
