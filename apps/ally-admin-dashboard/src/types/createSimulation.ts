@@ -56,6 +56,7 @@ export interface FormFieldConfig {
   fullWidth?: boolean;
   maxLength?: number;
   multiline?: boolean;
+  defaultValue?: string;
   component?: React.ReactNode;
 }
 

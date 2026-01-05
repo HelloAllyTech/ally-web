@@ -1,9 +1,11 @@
 import { FC } from "react";
 
+import { FEATURE_FLAGS_MAP } from "@ally-ui-mono/ui-shared";
 import { FILE_TYPE, FORM_FIELD_TYPES, en } from "@constants";
 import { FormFieldProps } from "@types";
 
 import { AutoTerminationRuleField } from "../auto-termination-rule-field";
+import { AutoTerminationRuleFieldOld } from "../auto-termination-rule-field-old";
 import { CustomFieldGroup } from "../custom-field-group";
 import { DropdownField } from "../dropdown-field";
 import { FileUpload } from "../file-upload";
@@ -14,7 +16,8 @@ import { ToggleSection } from "../toggle-section";
 import { VoiceDropdown } from "../voice-dropdown";
 
 export const FormField: FC<FormFieldProps> = ({ config, formMethods }) => {
-  const { label, placeholder, type, options, id, maxLength, multiline, isMandatory } = config;
+  const { label, placeholder, type, options, id, maxLength, multiline, isMandatory, defaultValue } =
+    config;
   const {
     formState: { errors },
   } = formMethods;
@@ -53,6 +56,7 @@ export const FormField: FC<FormFieldProps> = ({ config, formMethods }) => {
             placeholder={placeholder}
             multiline={multiline}
             isMandatory={isMandatory}
+            defaultValue={defaultValue}
           />
         );
       case FORM_FIELD_TYPES.NUMBER:
@@ -105,7 +109,11 @@ export const FormField: FC<FormFieldProps> = ({ config, formMethods }) => {
           />
         );
       case FORM_FIELD_TYPES.CUSTOM.AUTO_TERMINATION_RULE:
-        return <AutoTerminationRuleField label={label} formMethods={formMethods} />;
+        return FEATURE_FLAGS_MAP.AUTO_TERMINATION_FIELD_FLAG ? (
+          <AutoTerminationRuleField label={label} formMethods={formMethods} />
+        ) : (
+          <AutoTerminationRuleFieldOld label={label} formMethods={formMethods} />
+        );
 
       case FORM_FIELD_TYPES.TOGGLE_BUTTON:
         return (

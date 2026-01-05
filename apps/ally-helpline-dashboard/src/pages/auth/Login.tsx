@@ -1,11 +1,13 @@
 import { useEffect, useState, useCallback, FunctionComponent, useRef } from "react";
 
+import { GoogleLogin } from "@react-oauth/google";
 import { FetchBaseQueryError } from "@reduxjs/toolkit/query";
 import { motion, AnimatePresence } from "framer-motion";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
+import { FEATURE_FLAGS_MAP } from "@ally-ui-mono/ui-shared";
 import {
   useGenerateOTPMutation,
   useLazyCheckTermsAndAgreementQuery,
@@ -194,6 +196,15 @@ export const Login: FunctionComponent = () => {
     }
   };
 
+  const handleSuccess = () => {
+    // credentialResponse.credential contains the JWT token
+    // You can send it to your backend for verification
+    // navigate("/dashboard");
+  };
+
+  const handleError = () => {
+    toast.error("Login failed");
+  };
   const getLoginSection = () => {
     if (loginSection === LoginSection.EMAIL) {
       return (
@@ -269,9 +280,18 @@ export const Login: FunctionComponent = () => {
               className="text-primary-500 cursor-pointer"
               onClick={() => openLinkInNewTab(ALLY_PRIVACY_POLICY_URL)}
             >
-              Privacy Policy
+              Privacy Policy.
             </span>
-            .
+            {FEATURE_FLAGS_MAP.GOOGLE_SIGN_IN_FLAG && (
+              <div>
+                <div className="flex items-center my-4">
+                  <div className="flex-grow border-t border-gray-300" />
+                  <span className="mx-3 text-xs text-gray-500">OR</span>
+                  <div className="flex-grow border-t border-gray-300" />
+                </div>
+                <GoogleLogin onSuccess={handleSuccess} onError={handleError} text="continue_with" />
+              </div>
+            )}
           </div>
         </motion.div>
       );

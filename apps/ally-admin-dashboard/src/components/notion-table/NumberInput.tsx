@@ -36,12 +36,6 @@ export const NumberInput: React.FC<NumberInputProps> = ({
   const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const newValue = event.target.value;
     setInputValue(newValue);
-
-    const numValue = parseFloat(newValue);
-    if (!isNaN(numValue)) {
-      const clampedValue = Math.min(Math.max(numValue, min), max);
-      onChange?.(clampedValue);
-    }
   };
 
   const handleInputBlur = () => {

@@ -1,6 +1,7 @@
 import { useState } from "react";
 
 import { useGetSessionEventsQuery } from "@api";
+import { BlueAdd, TrashRed } from "@assets";
 import { ToggleSwitch } from "@components";
 import { en } from "@constants";
 
@@ -12,11 +13,10 @@ interface AutoTerminationRuleFieldProps {
   formMethods: any;
 }
 
+const AUTO_TERMINATION_TOGGLE_FIELD = "autoTerminationStatus";
+const TERMINATION_RULES_FIELD = "terminationRules";
+
 const TERMINATION_FIELDS_MAP = {
-  toggle: {
-    id: "autoTerminationStatus",
-    label: en.simulation.autoTermination,
-  },
   triggerEvent: {
     id: "terminationEventId",
     label: en.simulation.triggerEvent,
@@ -30,6 +30,7 @@ const TERMINATION_FIELDS_MAP = {
 
 const DEFAULT_LIMIT = 100;
 const DEFAULT_OFFSET = 0;
+const RULE_LIMIT = 10;
 
 export const AutoTerminationRuleField: React.FC<AutoTerminationRuleFieldProps> = ({
   label,
@@ -38,7 +39,8 @@ export const AutoTerminationRuleField: React.FC<AutoTerminationRuleFieldProps> =
   const [searchTerm, setSearchTerm] = useState("");
 
   const { setValue, watch } = formMethods;
-  const autoTerminationStatus = watch(TERMINATION_FIELDS_MAP.toggle.id);
+  const autoTerminationStatus = watch(AUTO_TERMINATION_TOGGLE_FIELD) || false;
+  const terminationRules = watch(TERMINATION_RULES_FIELD) || [];
 
   const { data: sessionEventsData } = useGetSessionEventsQuery({
     offset: DEFAULT_OFFSET,
@@ -54,16 +56,39 @@ export const AutoTerminationRuleField: React.FC<AutoTerminationRuleFieldProps> =
 
   const mandatoryIcon = <span className="text-destructive-500">*</span>;
 
+  const createEmptyRule = () => ({
+    id: terminationRules.length + 1,
+    terminationEventId: "",
+    terminationMessage: "",
+  });
+
   const handleSearchTextChange = (searchTerm: string) => {
     setSearchTerm(searchTerm);
   };
 
   const handleToggle = () => {
-    setValue(TERMINATION_FIELDS_MAP.toggle.id, !autoTerminationStatus);
+    const newStatus = !autoTerminationStatus;
+    setValue(AUTO_TERMINATION_TOGGLE_FIELD, newStatus);
+
+    if (newStatus) {
+      setValue(TERMINATION_RULES_FIELD, [createEmptyRule()]);
+    } else {
+      setValue(TERMINATION_RULES_FIELD, []);
+    }
+  };
+  const handleAddTermination = () => {
+    setValue(TERMINATION_RULES_FIELD, [...terminationRules, createEmptyRule()]);
+  };
+
+  const handleRemoveTermination = (ruleId: number) => {
+    const updatedRules = terminationRules.filter((rule: any) => rule.id !== ruleId);
+    setValue(TERMINATION_RULES_FIELD, updatedRules);
   };
 
   return (
-    <div className="flex flex-col gap-6 w-full border border-border-light rounded-md p-4 mi">
+    <div
+      className={`flex flex-col gap-6 w-full border border-border-light rounded-md p-4  ${autoTerminationStatus ? "bg-secondary-50" : "bg-white"}`}
+    >
       <div className="flex items-center justify-between">
         <span className="text-base text-typography-900">{label}</span>
         <div className="flex items-center gap-2">
@@ -76,31 +101,57 @@ export const AutoTerminationRuleField: React.FC<AutoTerminationRuleFieldProps> =
 
       {autoTerminationStatus && (
         <div className="flex flex-col gap-6">
-          <div className="flex flex-col gap-2">
-            <label className="text-base text-typography-900 flex items-center gap-1">
-              {TERMINATION_FIELDS_MAP.triggerEvent.label} {autoTerminationStatus && mandatoryIcon}
-            </label>
-            <DropdownField
-              id={TERMINATION_FIELDS_MAP.triggerEvent.id}
-              label={TERMINATION_FIELDS_MAP.triggerEvent.label}
-              formMethods={formMethods}
-              options={eventOptions}
-              isSearchable
-              handleSearchTextChange={handleSearchTextChange}
-              isMandatory={autoTerminationStatus}
-              defaultOption={formMethods.getValues().terminationName}
-            />
-          </div>
+          {terminationRules.map((rule: any, index: number) => (
+            <div
+              key={rule.id}
+              className="flex flex-col gap-4 border border-border-light rounded-md p-4 bg-white relative"
+            >
+              <button
+                type="button"
+                onClick={() => handleRemoveTermination(rule.id)}
+                disabled={terminationRules.length === 1}
+                className="absolute top-2 right-2 disabled:opacity-40"
+              >
+                <TrashRed />
+              </button>
 
-          <InputField
-            label={TERMINATION_FIELDS_MAP.triggerMessage.label}
-            id={TERMINATION_FIELDS_MAP.triggerMessage.id}
-            formMethods={formMethods}
-            multiline
-            placeholder={TERMINATION_FIELDS_MAP.triggerMessage.placeholder}
-            maxLength={200}
-            minHeight="120"
-          />
+              <div className="flex flex-col gap-2">
+                <label className="text-base text-typography-900 flex items-center gap-1">
+                  {TERMINATION_FIELDS_MAP.triggerEvent.label} {mandatoryIcon}
+                </label>
+                <DropdownField
+                  id={`${TERMINATION_RULES_FIELD}.${index}.${TERMINATION_FIELDS_MAP.triggerEvent.id}`}
+                  label={TERMINATION_FIELDS_MAP.triggerEvent.label}
+                  formMethods={formMethods}
+                  options={eventOptions}
+                  isSearchable
+                  handleSearchTextChange={handleSearchTextChange}
+                  isMandatory={autoTerminationStatus}
+                  defaultOption={rule.terminationEventId || ""}
+                />
+              </div>
+
+              <InputField
+                label={TERMINATION_FIELDS_MAP.triggerMessage.label}
+                id={`${TERMINATION_RULES_FIELD}.${index}.${TERMINATION_FIELDS_MAP.triggerMessage.id}`}
+                formMethods={formMethods}
+                multiline
+                placeholder={TERMINATION_FIELDS_MAP.triggerMessage.placeholder}
+                maxLength={200}
+                minHeight="120"
+              />
+            </div>
+          ))}
+
+          <button
+            type="button"
+            onClick={handleAddTermination}
+            className="text-primary-500 flex gap-3 items-center font-semibold font-tertiary text-base disabled:opacity-40"
+            disabled={terminationRules.length >= RULE_LIMIT}
+          >
+            <BlueAdd />
+            {en.simulation.add}
+          </button>
         </div>
       )}
     </div>

@@ -9,6 +9,7 @@ import ArrowSolid from "./arrowSolid.svg?react";
 import BackCircle from "./back-circle.svg?react";
 import BackIcon from "./backIcon.svg?react";
 import BinaryClassification from "./binaryClassification.svg?react";
+import BlueAdd from "./blueAdd.svg?react";
 import Bolt from "./bolt.svg?react";
 import Book from "./book.svg?react";
 import BookWhite from "./bookWhite.svg?react";
@@ -96,4 +97,5 @@ export {
   BackCircle,
   TrashRed,
   BinaryClassification,
+  BlueAdd,
 };

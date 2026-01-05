@@ -130,7 +130,7 @@ export const LanguageVoiceMapping: FC<LanguageVoiceMappingProps> = ({
 
   return (
     <div className="flex flex-col gap-3" data-testid="language-voice-mapping">
-      <label className="ttext-typography-900 text-base cursor-pointer flex items-center gap-1">
+      <label className="text-typography-900 cursor-pointer text-base flex items-center gap-1">
         {label}
         {isMandatory && <span className="text-destructive-500">*</span>}
       </label>

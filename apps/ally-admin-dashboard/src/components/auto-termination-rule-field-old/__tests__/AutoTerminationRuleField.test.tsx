@@ -2,7 +2,7 @@ import { render, screen, fireEvent, waitFor, act } from "@testing-library/react"
 import { useForm } from "react-hook-form";
 import { vi, describe, it, expect } from "vitest";
 
-import { AutoTerminationRuleField } from "../AutoTerminationRuleField";
+import { AutoTerminationRuleFieldOld } from "../AutoTerminationRuleFieldOld";
 
 // Mock assets
 vi.mock("@assets", () => ({
@@ -84,12 +84,12 @@ const TestWrapper = ({ children, defaultValues = {} }) => {
   return <>{typeof children === "function" ? children(formMethods) : children}</>;
 };
 
-describe("AutoTerminationRuleField", () => {
+describe("AutoTerminationRuleFieldOld", () => {
   it("renders toggle switch with label", () => {
     render(
       <TestWrapper>
         {formMethods => (
-          <AutoTerminationRuleField label="Auto termination" formMethods={formMethods} />
+          <AutoTerminationRuleFieldOld label="Auto termination" formMethods={formMethods} />
         )}
       </TestWrapper>,
     );
@@ -101,7 +101,7 @@ describe("AutoTerminationRuleField", () => {
     render(
       <TestWrapper>
         {formMethods => (
-          <AutoTerminationRuleField label="Auto termination" formMethods={formMethods} />
+          <AutoTerminationRuleFieldOld label="Auto termination" formMethods={formMethods} />
         )}
       </TestWrapper>,
     );
@@ -114,7 +114,7 @@ describe("AutoTerminationRuleField", () => {
     render(
       <TestWrapper>
         {formMethods => (
-          <AutoTerminationRuleField label="Auto termination" formMethods={formMethods} />
+          <AutoTerminationRuleFieldOld label="Auto termination" formMethods={formMethods} />
         )}
       </TestWrapper>,
     );
@@ -126,7 +126,7 @@ describe("AutoTerminationRuleField", () => {
     render(
       <TestWrapper>
         {formMethods => (
-          <AutoTerminationRuleField label="Auto termination" formMethods={formMethods} />
+          <AutoTerminationRuleFieldOld label="Auto termination" formMethods={formMethods} />
         )}
       </TestWrapper>,
     );
@@ -141,7 +141,7 @@ describe("AutoTerminationRuleField", () => {
     render(
       <TestWrapper>
         {formMethods => (
-          <AutoTerminationRuleField label="Auto termination" formMethods={formMethods} />
+          <AutoTerminationRuleFieldOld label="Auto termination" formMethods={formMethods} />
         )}
       </TestWrapper>,
     );
@@ -157,7 +157,7 @@ describe("AutoTerminationRuleField", () => {
     render(
       <TestWrapper>
         {formMethods => (
-          <AutoTerminationRuleField label="Auto termination" formMethods={formMethods} />
+          <AutoTerminationRuleFieldOld label="Auto termination" formMethods={formMethods} />
         )}
       </TestWrapper>,
     );
@@ -172,7 +172,7 @@ describe("AutoTerminationRuleField", () => {
     render(
       <TestWrapper>
         {formMethods => (
-          <AutoTerminationRuleField label="Auto termination" formMethods={formMethods} />
+          <AutoTerminationRuleFieldOld label="Auto termination" formMethods={formMethods} />
         )}
       </TestWrapper>,
     );
@@ -186,7 +186,7 @@ describe("AutoTerminationRuleField", () => {
     render(
       <TestWrapper>
         {formMethods => (
-          <AutoTerminationRuleField label="Auto termination" formMethods={formMethods} />
+          <AutoTerminationRuleFieldOld label="Auto termination" formMethods={formMethods} />
         )}
       </TestWrapper>,
     );
@@ -203,7 +203,7 @@ describe("AutoTerminationRuleField", () => {
     render(
       <TestWrapper>
         {formMethods => (
-          <AutoTerminationRuleField label="Auto termination" formMethods={formMethods} />
+          <AutoTerminationRuleFieldOld label="Auto termination" formMethods={formMethods} />
         )}
       </TestWrapper>,
     );
@@ -217,7 +217,7 @@ describe("AutoTerminationRuleField", () => {
     render(
       <TestWrapper>
         {formMethods => (
-          <AutoTerminationRuleField label="Auto termination" formMethods={formMethods} />
+          <AutoTerminationRuleFieldOld label="Auto termination" formMethods={formMethods} />
         )}
       </TestWrapper>,
     );
@@ -235,7 +235,7 @@ describe("AutoTerminationRuleField", () => {
     render(
       <TestWrapper>
         {formMethods => (
-          <AutoTerminationRuleField label="Auto termination" formMethods={formMethods} />
+          <AutoTerminationRuleFieldOld label="Auto termination" formMethods={formMethods} />
         )}
       </TestWrapper>,
     );
@@ -250,7 +250,7 @@ describe("AutoTerminationRuleField", () => {
     render(
       <TestWrapper>
         {formMethods => (
-          <AutoTerminationRuleField label="Auto termination" formMethods={formMethods} />
+          <AutoTerminationRuleFieldOld label="Auto termination" formMethods={formMethods} />
         )}
       </TestWrapper>,
     );
@@ -262,7 +262,7 @@ describe("AutoTerminationRuleField", () => {
     render(
       <TestWrapper>
         {formMethods => (
-          <AutoTerminationRuleField label="Auto termination" formMethods={formMethods} />
+          <AutoTerminationRuleFieldOld label="Auto termination" formMethods={formMethods} />
         )}
       </TestWrapper>,
     );
@@ -275,7 +275,7 @@ describe("AutoTerminationRuleField", () => {
     const { container } = render(
       <TestWrapper>
         {formMethods => (
-          <AutoTerminationRuleField label="Auto termination" formMethods={formMethods} />
+          <AutoTerminationRuleFieldOld label="Auto termination" formMethods={formMethods} />
         )}
       </TestWrapper>,
     );

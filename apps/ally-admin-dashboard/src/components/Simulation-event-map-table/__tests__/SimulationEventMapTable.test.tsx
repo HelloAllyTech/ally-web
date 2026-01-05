@@ -104,6 +104,7 @@ vi.mock("@utils", () => ({
     branchingStatus: { value: false, disabled: false, rowId: "" },
     branchInstruction: { value: "", disabled: true, rowId: "" },
   })),
+  addScoreColors: vi.fn((data: any) => data),
   formatToMappedEvent: vi.fn((ev: any) => ({
     id: { value: ev.id, disabled: false, rowId: ev.id },
     name: { value: ev.name || ev.id, disabled: false, rowId: ev.id },
