@@ -1,4 +1,5 @@
 import Focus from "./focus.svg?react";
+import Google from "./google.svg?react";
 import MicOff from "./micOff.svg?react";
 import MicOffWhite from "./micOffWhite.svg?react";
 import MicOn from "./micOn.svg?react";
@@ -24,4 +25,5 @@ export {
   VolumeMute,
   VolumeUp,
   Warning,
+  Google,
 };
