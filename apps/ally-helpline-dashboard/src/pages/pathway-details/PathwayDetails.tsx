@@ -25,10 +25,13 @@ export const PathwayDetails: FC = () => {
     state?.selectedLanguage || null,
   );
 
-  const handleLanguageChange = (value: string) => {
-    const selected = state?.languages?.find(lang => lang.label === value) || null;
-    setSelectedLanguage(selected);
-  };
+  const handleLanguageChange = useCallback(
+    (value: string) => {
+      const selected = state?.languages?.find(lang => lang.label === value) || null;
+      setSelectedLanguage(selected);
+    },
+    [state?.languages],
+  );
   const { data: pathway, isLoading } = useGetScenarioPathwayDetailsQuery(pathwayId || "");
   const [selectedScenario, setSelectedScenario] = useState<PathwayScenario | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -116,6 +119,26 @@ export const PathwayDetails: FC = () => {
       },
     });
   };
+
+  const renderLanguageDropdown = useCallback(() => {
+    if (!state?.languages?.length) return null;
+
+    return (
+      <div className="w-full flex justify-start">
+        <div className="flex flex-col">
+          <div className="relative w-48">
+            <DropdownField
+              options={state.languages.map(option => option.label)}
+              value={selectedLanguage?.label || state.languages[0]?.label || ""}
+              onChange={handleLanguageChange}
+              label=""
+              valueClassName="font-primary text-base text-typography-700"
+            />
+          </div>
+        </div>
+      </div>
+    );
+  }, [handleLanguageChange, selectedLanguage, state?.languages]);
 
   // Calculate progress metrics
   const totalScenarios = pathway?.totalScenarios || pathway?.scenarios?.length || 0;
@@ -258,23 +281,7 @@ export const PathwayDetails: FC = () => {
         onClickOutside={handleCloseModal}
         isPrimaryLoading={isStarting}
         triggerWarnings={selectedScenario.triggerWarnings}
-        renderAdditionalContent={() =>
-          state?.languages?.length > 0 ? (
-            <div className="w-full flex justify-start">
-              <div className="flex flex-col">
-                <div className="relative w-48">
-                  <DropdownField
-                    options={state?.languages?.map(option => option.label) || []}
-                    value={selectedLanguage?.label || state?.languages?.[0]?.label || ""}
-                    onChange={handleLanguageChange}
-                    label=""
-                    valueClassName="font-primary text-base text-typography-700"
-                  />
-                </div>
-              </div>
-            </div>
-          ) : null
-        }
+        renderAdditionalContent={renderLanguageDropdown}
       />
     );
   };
