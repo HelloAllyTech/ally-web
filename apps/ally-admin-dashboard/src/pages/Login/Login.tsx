@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 
 import { useGenerateOTPMutation, useVerifyOTPMutation, useGoogleSignInMutation } from "@api";
 import { BackCircle, LoginImage } from "@assets";
@@ -58,7 +58,6 @@ export const Login: React.FC = () => {
   const [googleSignIn] = useGoogleSignInMutation();
 
   const { isAuthenticated, checkAuth } = useUser();
-  const googleButtonRef = useRef<HTMLDivElement>(null);
 
   const isLoading = isGeneratingOTP || isVerifyingOTP;
 
@@ -150,11 +149,6 @@ export const Login: React.FC = () => {
 
   const handleVerify = () => {
     verifyOTP({ email: email.trim(), otp });
-  };
-
-  const hangleGooglelogin = () => {
-    const btn = googleButtonRef.current?.querySelector('div[role="button"]') as HTMLElement;
-    btn?.click();
   };
 
   const handleSuccess = async (credentialResponse: any) => {
@@ -267,17 +261,14 @@ export const Login: React.FC = () => {
                 </div>
                 <div className="relative">
                   {/* Hidden Google Login for ID token */}
-                  <div
-                    ref={googleButtonRef}
-                    className="absolute opacity-0 pointer-events-none h-0 overflow-hidden"
-                  >
+                  <div className="absolute top-0 left-0 w-full h-full opacity-0" aria-hidden="true">
                     <GoogleLogin
                       onSuccess={handleSuccess}
                       onError={handleError}
                       useOneTap={false}
                     />
                   </div>
-                  <GoogleSignInButton onClick={hangleGooglelogin} />
+                  <GoogleSignInButton />
                 </div>
               </div>
             )}
