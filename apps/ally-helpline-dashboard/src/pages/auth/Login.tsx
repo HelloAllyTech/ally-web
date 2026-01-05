@@ -1,13 +1,5 @@
 import { useEffect, useState, useCallback, FunctionComponent, useRef } from "react";
 
-import { GoogleLogin } from "@react-oauth/google";
-import { FetchBaseQueryError } from "@reduxjs/toolkit/query";
-import { motion, AnimatePresence } from "framer-motion";
-import { useSelector } from "react-redux";
-import { useNavigate } from "react-router-dom";
-import { toast } from "sonner";
-
-import { FEATURE_FLAGS_MAP } from "@ally-ui-mono/ui-shared";
 import {
   useGenerateOTPMutation,
   useGoogleSignInMutation,
@@ -27,8 +19,16 @@ import {
   User,
 } from "@constants";
 import { useUser } from "@hooks";
+import { GoogleLogin } from "@react-oauth/google";
+import { FetchBaseQueryError } from "@reduxjs/toolkit/query";
 import { RootState } from "@store";
 import { openLinkInNewTab, validateEmail } from "@utils";
+import { motion, AnimatePresence } from "framer-motion";
+import { useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
+
+import { FEATURE_FLAGS_MAP, GoogleSignInButton } from "@ally-ui-mono/ui-shared";
 
 const RESEND_CODE_COUNTDOWN = 60; // 2 minutes
 const DEFAULT_EXPIRES_IN = 10; // 10 minutes
@@ -46,6 +46,7 @@ export const Login: FunctionComponent = () => {
   const [isOpenTermsAndAgreement, setIsOpenTermsAndAgreement] = useState<boolean>(false);
   const accessTokenRef = useRef<string>("");
   const refreshTokenRef = useRef<string>("");
+  const googleButtonRef = useRef<HTMLDivElement>(null);
 
   const [
     generateOTP,
@@ -190,6 +191,11 @@ export const Login: FunctionComponent = () => {
     }
   };
 
+  const hangleGooglelogin = () => {
+    const btn = googleButtonRef.current?.querySelector('div[role="button"]') as HTMLElement;
+    btn?.click();
+  };
+
   const handleSuccess = async (credentialResponse: any) => {
     try {
       const response = await googleSignIn({ idToken: credentialResponse?.credential });
@@ -293,7 +299,20 @@ export const Login: FunctionComponent = () => {
                   <span className="mx-3 text-xs text-gray-500">OR</span>
                   <div className="flex-grow border-t border-gray-300" />
                 </div>
-                <GoogleLogin onSuccess={handleSuccess} onError={handleError} text="continue_with" />
+                <div className="relative">
+                  {/* Hidden Google Login for ID token */}
+                  <div
+                    ref={googleButtonRef}
+                    className="absolute opacity-0 pointer-events-none h-0 overflow-hidden"
+                  >
+                    <GoogleLogin
+                      onSuccess={handleSuccess}
+                      onError={handleError}
+                      useOneTap={false}
+                    />
+                  </div>
+                  <GoogleSignInButton onClick={hangleGooglelogin} />
+                </div>
               </div>
             )}
           </div>
