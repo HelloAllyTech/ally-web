@@ -17,6 +17,7 @@ export const InputField: React.FC<InputFieldProps> = ({
   isMandatory = false,
   maxLength,
   defaultValue = "",
+  disabled = false,
 }) => {
   const isAgeField = id === "age";
   const MAX_AGE = 150;
@@ -102,6 +103,7 @@ export const InputField: React.FC<InputFieldProps> = ({
             id={id}
             maxLength={maxLength}
             placeholder={placeholder}
+            disabled={disabled}
             style={{ minHeight: `${minHeight}px`, fontSize: "14px" }}
             className={`w-full rounded custom-scrollbar border border-border-light text-md placeholder:text-typography-600 focus:ring-1 focus:ring-primary focus:primary-500 px-2 py-1 pr-16`}
           />
@@ -112,6 +114,7 @@ export const InputField: React.FC<InputFieldProps> = ({
             type={type}
             {...(maxLength && { maxLength })}
             placeholder={placeholder}
+            disabled={disabled}
             {...(isAgeField
               ? {
                   inputMode: "numeric",
