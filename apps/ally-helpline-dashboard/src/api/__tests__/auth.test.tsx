@@ -47,6 +47,11 @@ vi.mock("@types", () => ({
   VerifyOTPResponse: {},
   GenerateOTPRequest: {},
   GenerateOTPResponse: {},
+  UserRole: {
+    COUNSELLOR: "COUNSELOR",
+    ADMIN: "ADMIN",
+    LEARNER: "LEARNER",
+  },
 }));
 
 // Create a test store
