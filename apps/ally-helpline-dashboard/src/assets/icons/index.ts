@@ -21,6 +21,7 @@ import Assessment from "./assessment.svg?react";
 import AudioFile from "./audio-file.svg?react";
 import BackCircle from "./back-circle.svg?react";
 import BackgroundGradientBlue from "./background-gradient-blue.svg?react";
+import Badge from "./badge.svg?react";
 import Bolt from "./bolt.svg?react";
 import BoxBreathingBottomGradient from "./box-breathing-bottom-gradient.svg?react";
 import BoxBreathingTopGradient from "./box-breathing-top-gradient.svg?react";
@@ -59,6 +60,7 @@ import InDoubt from "./in-doubt.svg?react";
 import IssuesWorkedOn from "./issues-worked-on.svg?react";
 import KeyConcerns from "./key-concerns.svg?react";
 import KeyEvents from "./key-events.svg?react";
+import Leaderboard from "./leaderboard.svg?react";
 import LearnIcon from "./learn-icon.svg?react";
 import LifelineLogo from "./lifeline-logo.svg?react";
 import ListIcon from "./list-icon.svg?react";
@@ -70,6 +72,7 @@ import Metrics from "./metrics.svg?react";
 import MicIcon from "./mic-icon.svg?react";
 import MicOffIcon from "./mic-off-icon.svg?react";
 import NoAnalytics from "./no-analytics.svg?react";
+import NoBadges from "./no-badges.svg?react";
 import NoCreditLeft from "./no-credit-left.svg?react";
 import NoNetwork from "./no-network.svg?react";
 import NoResults from "./no-results.svg?react";
@@ -246,4 +249,7 @@ export {
   Arrow,
   ArrowRight,
   NoAnalytics,
+  Leaderboard,
+  Badge,
+  NoBadges,
 };

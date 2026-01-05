@@ -96,6 +96,13 @@ const authAPI = baseAPI.injectEndpoints({
         },
       }),
     }),
+    googleSignIn: builder.mutation<VerifyOTPResponse, any>({
+      query: data => ({
+        url: ApiEndpoints.AUTH.GOOGLE_SIGN_IN,
+        method: HttpMethod.POST,
+        body: data,
+      }),
+    }),
   }),
 });
 
@@ -106,4 +113,5 @@ export const {
   useLazyGetPermissionsQuery,
   useGenerateOTPMutation,
   useVerifyOTPMutation,
+  useGoogleSignInMutation,
 } = authAPI;

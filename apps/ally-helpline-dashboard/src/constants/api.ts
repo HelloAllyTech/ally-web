@@ -7,6 +7,7 @@ export const ApiEndpoints = {
     VERIFY_OTP: "/v2/auth/verify-otp",
     REFRESH: "/v1/auth/refresh",
     TERMS_AND_AGREEMENT: "/v1/users/terms-and-agreement-status",
+    GOOGLE_SIGN_IN: "/v1/auth/google",
   },
   AUTHORIZATION: {
     GET_PERMISSIONS: "/v1/authorization/permissions",

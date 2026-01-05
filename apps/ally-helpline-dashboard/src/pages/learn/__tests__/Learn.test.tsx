@@ -85,6 +85,11 @@ vi.mock("@assets", () => ({
   ArrowLeft: () => <svg data-testid="arrow-left" />,
   ChevronDown: () => <svg data-testid="chevron-down" />,
   Bolt: () => <div data-testid="bolt-icon">⚡</div>,
+  LearnIcon: () => <svg data-testid="learn-icon" />,
+  Leaderboard: () => <svg data-testid="leaderboard-icon" />,
+  ScribeIcon: () => <svg data-testid="scribe-icon" />,
+  StatsIcon: () => <svg data-testid="stats-icon" />,
+  NoBadges: () => <div data-testid="no-badges" />,
 }));
 
 // Mock the useSimulationCredits hook

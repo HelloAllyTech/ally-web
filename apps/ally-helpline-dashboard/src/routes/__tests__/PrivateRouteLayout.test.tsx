@@ -19,6 +19,21 @@ vi.mock("@api", () => ({
   useGetChatTypesQuery: () => mockUseGetChatTypesQuery(),
 }));
 
+// Mock assets
+vi.mock("@assets", () => ({
+  Carousel1: "Carousel1",
+  Carousel2: "Carousel2",
+  Carousel3: "Carousel3",
+  Carousel4: "Carousel4",
+  LearnIcon: () => <svg data-testid="learn-icon" />,
+  Leaderboard: () => <svg data-testid="leaderboard-icon" />,
+  ScribeIcon: () => <svg data-testid="scribe-icon" />,
+  StatsIcon: () => <svg data-testid="stats-icon" />,
+  SearchIcon: () => <svg data-testid="search-icon" />,
+  NoBadges: () => <div data-testid="no-badges" />,
+  Badge: () => <svg data-testid="badge-icon" />,
+}));
+
 // Mock the pages
 vi.mock("@pages", () => ({
   Calls: () => <div data-testid="calls-page">Calls Page</div>,
@@ -31,6 +46,7 @@ vi.mock("@pages", () => ({
   PostSimulationSummary: () => (
     <div data-testid="post-simulation-summary-page">Post Simulation Summary Page</div>
   ),
+  Leaderboard: () => <div data-testid="leaderboard-page">Leaderboard Page</div>,
 }));
 
 // Mock the reducer actions

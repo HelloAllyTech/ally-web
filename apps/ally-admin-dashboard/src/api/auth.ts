@@ -85,6 +85,18 @@ const authAPI = baseAPI.injectEndpoints({
         body: { phone, otp, email, allowedRoles: [UserRole.SUPER_ADMIN] },
       }),
     }),
+    // /**
+    //  * Authenticates user credentials and returns access/refresh tokens.
+    //  * @param {any} data - idToken
+    //  * @returns {Promise<any>} googleSignIn response with tokens
+    //  */
+    googleSignIn: builder.mutation<VerifyOTPResponse, any>({
+      query: data => ({
+        url: ApiEndpoints.AUTH.GOOGLE_SIGN_IN,
+        method: HttpMethod.POST,
+        body: data,
+      }),
+    }),
   }),
 });
 
@@ -97,4 +109,5 @@ export const {
   useLazyGetPermissionsQuery,
   useGenerateOTPMutation,
   useVerifyOTPMutation,
+  useGoogleSignInMutation,
 } = authAPI;

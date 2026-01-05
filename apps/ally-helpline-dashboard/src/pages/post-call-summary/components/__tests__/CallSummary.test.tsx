@@ -62,6 +62,13 @@ vi.mock("@assets", () => ({
   Carousel2: "Carousel2",
   Carousel3: "Carousel3",
   Carousel4: "Carousel4",
+  LearnIcon: () => <svg data-testid="learn-icon" />,
+  Leaderboard: () => <svg data-testid="leaderboard-icon" />,
+  ScribeIcon: () => <svg data-testid="scribe-icon" />,
+  StatsIcon: () => <svg data-testid="stats-icon" />,
+  SearchIcon: () => <svg data-testid="search-icon" />,
+  NoBadges: () => <div data-testid="no-badges" />,
+  Badge: () => <svg data-testid="badge-icon" />,
 }));
 vi.mock("@utils", () => ({
   getFormattedDateTime: (date: string, format: string) => `formatted-${date}`,

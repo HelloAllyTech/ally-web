@@ -10,6 +10,7 @@ export const ApiEndpoints = {
   AUTH: {
     SIGNUP: "/v1/auth/signup",
     LOGIN: "/v1/auth/login",
+    GOOGLE_SIGN_IN: "/v1/auth/google",
     GET_USER: "/v1/users/me",
     GENERATE_OTP: "/v2/auth/generate-otp",
     VERIFY_OTP: "/v2/auth/verify-otp",
