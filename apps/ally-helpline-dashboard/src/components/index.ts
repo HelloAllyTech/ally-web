@@ -1,4 +1,5 @@
 import Accordion from "./accordion";
+import AchievementsCard from "./achievements-card";
 import ActionDialog from "./action-dialog";
 import { AudioTranscriptPlayer } from "./audio-transcript-player";
 import BoxBreathing from "./box-breathing";
@@ -19,6 +20,7 @@ import Dropdown from "./dropdown";
 import FallbackUI from "./fallback-ui";
 import InfoBanner from "./info-banner";
 import Input from "./input";
+import LeaderboardList from "./leaderboard-list";
 import LoginDialog from "./login-dialog";
 import NavSideBar from "./nav-sidebar";
 import OTP from "./otp";
@@ -47,6 +49,7 @@ export {
 
 export {
   Accordion,
+  AchievementsCard,
   ActionDialog,
   BoxBreathing,
   Button,
@@ -84,4 +87,5 @@ export {
   CreditInfo,
   AudioTranscriptPlayer,
   TermsAndAgreement,
+  LeaderboardList,
 };

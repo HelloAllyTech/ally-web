@@ -67,13 +67,6 @@ vi.mock("@hooks", () => ({
   useDebounce: (fn: any) => fn, // Return the function immediately without debouncing
 }));
 
-// Mock feature flags to enable NEW_CREATE_SIMULATION_FLAG
-vi.mock("@ally-ui-mono/ui-shared", () => ({
-  FEATURE_FLAGS_MAP: {
-    NEW_CREATE_SIMULATION_FLAG: true,
-  },
-}));
-
 // Mock components
 vi.mock("@components", () => ({
   Header: ({ onBack, onSaveDraft, onPublish, onPreview, isValid }: any) => (

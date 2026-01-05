@@ -1,4 +1,4 @@
-import { SearchIcon, StatsIcon, ScribeIcon, LearnIcon } from "@assets/icons";
+import { SearchIcon, StatsIcon, ScribeIcon, LearnIcon, Leaderboard } from "@assets";
 
 import { Permissions } from "./permissions";
 import { TabId } from "./tabs";
@@ -27,6 +27,7 @@ export const ROUTES = {
   SIMULATION: "/simulation/:id",
   SIMULATION_SUMMARY: "/simulation-summary",
   SIMULATION_SUMMARY_FULL: "/simulation-summary/:sessionId",
+  LEADERBOARD: "/leaderboard",
 } as const;
 
 export const excludeNavBar = [
@@ -45,6 +46,14 @@ export const navBarOptions = [
     path: ROUTES.LEARN,
     activePages: [ROUTES.SCENARIO, ROUTES.PATHWAY],
     permissions: [Permissions.EDIT_SCENARIO_SESSION],
+  },
+  {
+    id: TabId.LEADERBOARD,
+    title: "Leaderboard",
+    Icon: Leaderboard,
+    path: ROUTES.LEADERBOARD,
+    activePages: [],
+    permissions: [Permissions.VIEW_LEADERBOARD],
   },
   {
     id: TabId.CALLS,
