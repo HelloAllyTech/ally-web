@@ -1,4 +1,4 @@
-import { FC, useEffect, useState } from "react";
+import { FC, useCallback, useEffect, useState } from "react";
 
 import { AnimatePresence, motion } from "framer-motion";
 import { useNavigate, useSearchParams } from "react-router-dom";
@@ -96,26 +96,39 @@ export const Learn: FC = () => {
     }
   }, [defaultLanguage, shouldLoadLanguages]);
 
-  const handleLanguageChange = async (value: string) => {
-    const selectedOption = LANGUAGE_OPTIONS.find(option => option.value === value) || null;
-    if (!selectedOption?.language_id) return;
+  const handleLanguageChange = useCallback(
+    async (value: string) => {
+      const selectedOption = LANGUAGE_OPTIONS.find(option => option.value === value) || null;
+      if (!selectedOption?.language_id) return;
 
-    const previousLanguage = selectedLanguage;
-    setSelectedLanguage(selectedOption);
+      const previousLanguage = selectedLanguage;
+      setSelectedLanguage(selectedOption);
 
-    // Save to localStorage
-    localStorage.setItem("selectedLanguage", JSON.stringify(selectedOption));
+      // Save to localStorage
+      localStorage.setItem("selectedLanguage", JSON.stringify(selectedOption));
 
-    try {
-      await updateUserPreferences({
-        default_language_id: Number(selectedOption.language_id),
-      }).unwrap();
-    } catch {
-      setSelectedLanguage(previousLanguage);
-      // Remove from localStorage if update fails
-      localStorage.removeItem("selectedLanguage");
-    }
-  };
+      try {
+        await updateUserPreferences({
+          default_language_id: Number(selectedOption.language_id),
+        }).unwrap();
+      } catch {
+        setSelectedLanguage(previousLanguage);
+        // Remove from localStorage if update fails
+        localStorage.removeItem("selectedLanguage");
+      }
+    },
+    [LANGUAGE_OPTIONS, selectedLanguage, updateUserPreferences],
+  );
+
+  const handleLanguageDropdownChange = useCallback(
+    async (label: string) => {
+      const option = LANGUAGE_OPTIONS.find(opt => opt.label === label);
+      if (option) {
+        await handleLanguageChange(option.value);
+      }
+    },
+    [LANGUAGE_OPTIONS, handleLanguageChange],
+  );
 
   const onScenarioCardClick = (itemId: number, isPathway: boolean) => {
     navigate(isPathway ? `/pathway/${itemId}` : `/scenario/${itemId}`, {
@@ -159,12 +172,7 @@ export const Learn: FC = () => {
                     <DropdownField
                       options={LANGUAGE_OPTIONS.map(option => option.label)}
                       value={selectedLanguage?.label || ""}
-                      onChange={async label => {
-                        const option = LANGUAGE_OPTIONS.find(opt => opt.label === label);
-                        if (option) {
-                          await handleLanguageChange(option.value);
-                        }
-                      }}
+                      onChange={handleLanguageDropdownChange}
                       disabled={isUpdatingPreferences || isLanguagesLoading}
                       label=""
                       valueClassName="font-primary text-base text-typography-700"
