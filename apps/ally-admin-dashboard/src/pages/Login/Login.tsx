@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 
 import { GoogleLogin } from "@react-oauth/google";
 import { AnimatePresence, motion } from "framer-motion";
@@ -6,7 +6,7 @@ import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
-import { CustomImage, FEATURE_FLAGS_MAP } from "@ally-ui-mono/ui-shared";
+import { CustomImage, FEATURE_FLAGS_MAP, GoogleSignInButton } from "@ally-ui-mono/ui-shared";
 import { useGenerateOTPMutation, useVerifyOTPMutation, useGoogleSignInMutation } from "@api";
 import { BackCircle, LoginImage } from "@assets";
 import { Button, OTP, TextField } from "@components";
@@ -58,6 +58,7 @@ export const Login: React.FC = () => {
   const [googleSignIn] = useGoogleSignInMutation();
 
   const { isAuthenticated, checkAuth } = useUser();
+  const googleButtonRef = useRef<HTMLDivElement>(null);
 
   const isLoading = isGeneratingOTP || isVerifyingOTP;
 
@@ -149,6 +150,11 @@ export const Login: React.FC = () => {
 
   const handleVerify = () => {
     verifyOTP({ email: email.trim(), otp });
+  };
+
+  const hangleGooglelogin = () => {
+    const btn = googleButtonRef.current?.querySelector('div[role="button"]') as HTMLElement;
+    btn?.click();
   };
 
   const handleSuccess = async (credentialResponse: any) => {
@@ -259,7 +265,20 @@ export const Login: React.FC = () => {
                   <span className="mx-3 text-xs text-gray-500">{en.common.or}</span>
                   <div className="flex-grow border-t border-gray-300" />
                 </div>
-                <GoogleLogin onSuccess={handleSuccess} onError={handleError} text="continue_with" />
+                <div className="relative">
+                  {/* Hidden Google Login for ID token */}
+                  <div
+                    ref={googleButtonRef}
+                    className="absolute opacity-0 pointer-events-none h-0 overflow-hidden"
+                  >
+                    <GoogleLogin
+                      onSuccess={handleSuccess}
+                      onError={handleError}
+                      useOneTap={false}
+                    />
+                  </div>
+                  <GoogleSignInButton onClick={hangleGooglelogin} />
+                </div>
               </div>
             )}
           </div>
