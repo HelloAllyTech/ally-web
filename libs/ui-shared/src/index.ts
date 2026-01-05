@@ -7,6 +7,7 @@ import { CustomVideo } from "./lib/custom-video";
 import { Dropdown, DropdownField } from "./lib/dropdown-field";
 import GenericTable from "./lib/generic-table";
 import { GoogleSignInButton } from "./lib/google-sign-in-button";
+import { ImageUpload } from "./lib/image-upload";
 import InfiniteScroll from "./lib/infinite-scroll";
 import Pagination from "./lib/pagination";
 import ResourceCard from "./lib/resource-card";
@@ -55,4 +56,5 @@ export {
   getSimulationEvents,
   SimulationDetailsModal,
   FEATURE_FLAGS_MAP,
+  ImageUpload,
 };
