@@ -54,6 +54,9 @@ const GoogleSignInButton: FC<GoogleSignInButtonProps> = ({
         onError={handleError}
         useOneTap={false}
         width="100%"
+        containerProps={{
+          className: "w-full mx-auto",
+        }}
         logo_alignment="center"
       />
     </div>
