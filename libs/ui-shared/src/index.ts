@@ -6,6 +6,7 @@ import { CustomImage } from "./lib/custom-image";
 import { CustomVideo } from "./lib/custom-video";
 import { Dropdown, DropdownField } from "./lib/dropdown-field";
 import GenericTable from "./lib/generic-table";
+import { GoogleSignInButton } from "./lib/google-sign-in-button";
 import InfiniteScroll from "./lib/infinite-scroll";
 import Pagination from "./lib/pagination";
 import ResourceCard from "./lib/resource-card";
@@ -26,6 +27,7 @@ import { logger } from "./logger";
 
 export type { Resource, SearchVariant, SimulationDetailsModalProps } from "./types";
 export type { ChipItem, ChipGroupProps } from "./lib/chip-group";
+export type { GoogleSignInButtonProps } from "./lib/google-sign-in-button";
 
 export {
   Badge,
@@ -36,6 +38,7 @@ export {
   Dropdown,
   DropdownField,
   GenericTable,
+  GoogleSignInButton,
   InfiniteScroll,
   Pagination,
   ResourceCard,
