@@ -31,6 +31,7 @@ import FocusLens from "./focusLens.svg?react";
 import HappyEmoji from "./happyEmoji.svg?react";
 import InfoIcon from "./info.svg?react";
 import Logout from "./logout.svg?react";
+import ManageAccounts from "./manageAccounts.svg?react";
 import Pathway from "./pathway.svg?react";
 import Play from "./play.svg?react";
 import Plus from "./plus.svg?react";
@@ -43,6 +44,7 @@ import Trash from "./trash.svg?react";
 import TrashRed from "./trashRed.svg?react";
 import Unarchive from "./unArchiveIcon.svg?react";
 import Unpublish from "./unpublish.svg?react";
+import Upload from "./upload.svg?react";
 import User from "./user.svg?react";
 import Users from "./users.svg?react";
 import VideoCamera from "./videoCamera.svg?react";
@@ -98,4 +100,6 @@ export {
   TrashRed,
   BinaryClassification,
   BlueAdd,
+  Upload,
+  ManageAccounts,
 };

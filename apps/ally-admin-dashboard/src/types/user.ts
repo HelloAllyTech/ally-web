@@ -27,6 +27,7 @@ export interface Tenant {
   code: string;
   description: string;
   status: string;
+  logo: string;
   metadata: Record<string, unknown>;
   settings: Record<string, unknown>;
   createdAt: string;
@@ -147,6 +148,10 @@ export interface UserModalProps {
   details?: any;
   handleClick?: any;
   formMethods?: any;
+  imageUpload?: boolean;
+  uploadButtonName?: string;
+  uploadTitle?: string;
+  uploadId?: string;
 }
 
 export type Option = {
