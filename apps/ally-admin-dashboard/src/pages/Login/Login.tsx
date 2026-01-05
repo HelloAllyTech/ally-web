@@ -1,5 +1,12 @@
 import React, { useState, useEffect, useCallback } from "react";
 
+import { GoogleLogin } from "@react-oauth/google";
+import { AnimatePresence, motion } from "framer-motion";
+import { useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
+
+import { CustomImage, FEATURE_FLAGS_MAP, GoogleSignInButton } from "@ally-ui-mono/ui-shared";
 import { useGenerateOTPMutation, useVerifyOTPMutation, useGoogleSignInMutation } from "@api";
 import { BackCircle, LoginImage } from "@assets";
 import { Button, OTP, TextField } from "@components";
@@ -12,15 +19,8 @@ import {
   en,
 } from "@constants";
 import { useUser } from "@hooks/useUser";
-import { GoogleLogin } from "@react-oauth/google";
 import { RootState } from "@store";
 import { validateEmail, openLinkInNewTab } from "@utils";
-import { AnimatePresence, motion } from "framer-motion";
-import { useSelector } from "react-redux";
-import { useNavigate } from "react-router-dom";
-import { toast } from "sonner";
-
-import { CustomImage, FEATURE_FLAGS_MAP, GoogleSignInButton } from "@ally-ui-mono/ui-shared";
 
 const RESEND_CODE_COUNTDOWN = 60; // 60 seconds
 const DEFAULT_EXPIRES_IN = 10; // 10 minutes
@@ -266,6 +266,7 @@ export const Login: React.FC = () => {
                       onSuccess={handleSuccess}
                       onError={handleError}
                       useOneTap={false}
+                      width="100%"
                     />
                   </div>
                   <GoogleSignInButton />
