@@ -5,7 +5,7 @@ import { FC } from "react";
 import { Google } from "../../assets";
 
 export interface GoogleSignInButtonProps {
-  onClick: () => void;
+  onClick?: () => void;
   text?: string;
   disabled?: boolean;
   isLoading?: boolean;
@@ -32,7 +32,7 @@ const GoogleSignInButton: FC<GoogleSignInButtonProps> = ({
         items-center
         justify-center
         gap-1
-        h-[48px]
+        h-[40px]
         px-4
         bg-white
         border

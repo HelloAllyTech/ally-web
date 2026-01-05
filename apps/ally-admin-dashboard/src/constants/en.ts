@@ -21,6 +21,7 @@ export const en = {
     or: "OR",
   },
   errors: {
+    failedToGoogleSignIn: "Failed to sign in with Google. Please try again.",
     failedCreateOrganization: "Failed to create organization",
     fileMustBeJPEGOrPNG: "File must be JPEG or PNG.",
     fileMustBeVideo: "File must be a video.",
