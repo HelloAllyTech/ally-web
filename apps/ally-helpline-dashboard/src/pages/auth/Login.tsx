@@ -293,7 +293,17 @@ export const Login: FunctionComponent = () => {
                   <span className="mx-3 text-xs text-gray-500">OR</span>
                   <div className="flex-grow border-t border-gray-300" />
                 </div>
-                <GoogleLogin onSuccess={handleSuccess} onError={handleError} text="continue_with" />
+                <GoogleLogin
+                  onSuccess={handleSuccess}
+                  onError={handleError}
+                  logo_alignment="center"
+                  text="continue_with"
+                  type="standard"
+                  theme="outline"
+                  size="large"
+                  width="full"
+                  useOneTap={false}
+                />
               </div>
             )}
           </div>
