@@ -11,16 +11,20 @@ vi.mock("react-router-dom", () => ({
   useNavigate: vi.fn(() => navigateMock),
 }));
 
-vi.mock("@assets", () => ({
-  ArrowDown: () => <svg data-testid="arrow-down" />,
-  Book: () => <svg data-testid="icon-book" />,
-  User: () => <svg data-testid="icon-user" />,
-  Users: () => <svg data-testid="icon-users" />,
-  Ally: () => <svg data-testid="logo-ally" />,
-  DockToRight: () => <svg data-testid="dock" />,
-  Logout: () => <svg data-testid="logout" />,
-  HappyEmoji: () => <svg data-testid="happy" />,
-}));
+vi.mock("@assets", async importOriginal => {
+  const actual = await importOriginal<typeof import("@assets")>();
+  return {
+    ...actual,
+    ArrowDown: () => <svg data-testid="arrow-down" />,
+    Book: () => <svg data-testid="icon-book" />,
+    User: () => <svg data-testid="icon-user" />,
+    Users: () => <svg data-testid="icon-users" />,
+    Ally: () => <svg data-testid="logo-ally" />,
+    DockToRight: () => <svg data-testid="dock" />,
+    Logout: () => <svg data-testid="logout" />,
+    HappyEmoji: () => <svg data-testid="happy" />,
+  };
+});
 
 vi.mock("@hooks", () => ({
   useClickOutside: (_ref: any, _handler: any) => {},
@@ -48,7 +52,14 @@ vi.mock("@constants", () => ({
     MANAGE_EVENTS: "/events",
     LOGIN: "/login",
   },
-  en: { auth: { logout: "Logout" } },
+  en: {
+    auth: { logout: "Logout" },
+    simulation: {
+      triggerEvent: "Trigger Event",
+      triggerMessage: "Trigger Message",
+      terminationMessagePlaceholder: "Enter termination message",
+    },
+  },
   TAG_TYPES: {
     USERS: "users",
     TENANTS: "tenants",

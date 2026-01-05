@@ -13,6 +13,7 @@ export enum FieldOptions {
   DROPDOWN_WITH_TAG = "dropdownWithTag",
   TEXTAREA = "textarea",
   CREDITS = "credits",
+  DISABLED_FIELD = "disabledField",
 }
 
 export enum UserMenuOptions {
@@ -34,6 +35,8 @@ export const USER_MODAL_FIELDS_IDS = {
   ORGNAME: "orgname",
   ORGCODE: "orgcode",
   DESCRIPTION: "description",
+  ORGLOGO: "orglogo",
+  PROFILE: "profileImageUrl",
 };
 
 export const userEditMenu = [
