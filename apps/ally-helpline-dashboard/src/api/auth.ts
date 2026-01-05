@@ -17,6 +17,8 @@ import {
 
 import { baseAPI } from "./baseAPI";
 
+const ALLOWED_ROLES = [UserRole.COUNSELLOR, UserRole.ADMIN, UserRole.LEARNER];
+
 const authAPI = baseAPI.injectEndpoints({
   endpoints: builder => ({
     /**
@@ -74,7 +76,7 @@ const authAPI = baseAPI.injectEndpoints({
         body: {
           phone,
           email,
-          allowedRoles: [UserRole.COUNSELLOR, UserRole.ADMIN, UserRole.LEARNER],
+          allowedRoles: ALLOWED_ROLES,
         },
       }),
     }),
@@ -92,15 +94,18 @@ const authAPI = baseAPI.injectEndpoints({
           phone,
           otp,
           email,
-          allowedRoles: [UserRole.COUNSELLOR, UserRole.ADMIN, UserRole.LEARNER],
+          allowedRoles: ALLOWED_ROLES,
         },
       }),
     }),
     googleSignIn: builder.mutation<VerifyOTPResponse, any>({
-      query: data => ({
+      query: (data = {}) => ({
         url: ApiEndpoints.AUTH.GOOGLE_SIGN_IN,
         method: HttpMethod.POST,
-        body: data,
+        body: {
+          ...data,
+          allowedRoles: ALLOWED_ROLES,
+        },
       }),
     }),
   }),
