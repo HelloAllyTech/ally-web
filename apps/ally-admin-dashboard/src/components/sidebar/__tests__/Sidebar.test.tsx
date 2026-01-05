@@ -48,12 +48,18 @@ vi.mock("@constants", () => ({
   ROUTES: {
     SIMULATION_STUDIO: "/simulation-studio",
     CREATE_SIMULATION: "/simulation-studio/create",
+    CREATE_PATH: "/create-path",
     USER_MANAGEMENT: "/users",
     MANAGE_EVENTS: "/events",
     LOGIN: "/login",
   },
   en: {
-    auth: { logout: "Logout" },
+    auth: {
+      logout: "Logout",
+      profileSettings: "Profile Settings",
+      uploadImage: "Upload Image",
+      profileImage: "Profile Image",
+    },
     simulation: {
       triggerEvent: "Trigger Event",
       triggerMessage: "Trigger Message",
@@ -66,6 +72,17 @@ vi.mock("@constants", () => ({
     SESSION_EVENTS: "sessionEvents",
     SIMULATION: "simulation",
     SIMULATION_EVENTS: "simulationEvents",
+  },
+  profileSettings: [
+    { name: "name", label: "Name", type: "text" },
+    { name: "email", label: "Email", type: "email" },
+  ],
+  USER_MODAL_FIELDS_IDS: {
+    PROFILE: "profile",
+  },
+  KeyboardKeys: {
+    KEYDOWN: "keydown",
+    ESCAPE: "Escape",
   },
 }));
 
