@@ -21,6 +21,7 @@ import {
   StressBuster,
   Simulation,
   PostSimulationSummary,
+  Leaderboard,
 } from "@pages";
 import { setAvailableChatTypes, unauthenticate } from "@reducer";
 import { store } from "@store";
@@ -168,6 +169,15 @@ const PrivateRouteLayout: FC = () => {
             <PermissionGuardedRoute
               permission={[Permissions.VIEW_SCENARIO_SESSION_SUMMARY]}
               element={<PostSimulationSummary />}
+            />
+          }
+        />
+        <Route
+          path={ROUTES.LEADERBOARD}
+          element={
+            <PermissionGuardedRoute
+              permission={[Permissions.VIEW_LEADERBOARD]}
+              element={<Leaderboard />}
             />
           }
         />

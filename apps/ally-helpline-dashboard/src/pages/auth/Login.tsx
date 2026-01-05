@@ -10,7 +10,7 @@ import { toast } from "sonner";
 import { FEATURE_FLAGS_MAP } from "@ally-ui-mono/ui-shared";
 import {
   useGenerateOTPMutation,
-  useLazyCheckTermsAndAgreementQuery,
+  useGoogleSignInMutation,
   usePutTermsAndAgreementMutation,
   useVerifyOTPMutation,
 } from "@api";
@@ -43,7 +43,7 @@ export const Login: FunctionComponent = () => {
   const [otp, setOtp] = useState<string>("");
   const [countdown, setCountdown] = useState<number>(0);
   const [rememberMe, setRememberMe] = useState<boolean>(false);
-  const [termsAndAgreement, setTermsAndAgreement] = useState<boolean>(false);
+  const [isOpenTermsAndAgreement, setIsOpenTermsAndAgreement] = useState<boolean>(false);
   const accessTokenRef = useRef<string>("");
   const refreshTokenRef = useRef<string>("");
 
@@ -66,9 +66,10 @@ export const Login: FunctionComponent = () => {
     },
   ] = useVerifyOTPMutation();
 
+  const [googleSignIn] = useGoogleSignInMutation();
+
   const { isAuthenticated, checkAuth } = useUser();
 
-  const [checkTermsAndAgreement] = useLazyCheckTermsAndAgreementQuery();
   const [putCheckTermsAndAgreement] = usePutTermsAndAgreementMutation();
 
   const isLoading = isGeneratingOTP || isVerifyingOTP;
@@ -130,14 +131,7 @@ export const Login: FunctionComponent = () => {
       } else if (isVerifyOTPSuccess && verifyOTPData) {
         accessTokenRef.current = verifyOTPData.accessToken;
         refreshTokenRef.current = verifyOTPData.refreshToken;
-        const response = await checkTermsAndAgreement({
-          token: verifyOTPData.accessToken,
-        });
-        if (response.data?.success) {
-          updateLocalStorageAndNavigate();
-        } else {
-          setTermsAndAgreement(true);
-        }
+        setIsOpenTermsAndAgreement(true);
       }
     })();
   }, [isVerifyOTPSuccess, verifyOTPError, verifyOTPData]);
@@ -183,7 +177,7 @@ export const Login: FunctionComponent = () => {
   };
 
   const handleAgreementClose = () => {
-    setTermsAndAgreement(false);
+    setIsOpenTermsAndAgreement(false);
   };
 
   const handleAgreeButtonClick = async () => {
@@ -196,15 +190,25 @@ export const Login: FunctionComponent = () => {
     }
   };
 
-  const handleSuccess = () => {
-    // credentialResponse.credential contains the JWT token
-    // You can send it to your backend for verification
-    // navigate("/dashboard");
+  const handleSuccess = async (credentialResponse: any) => {
+    try {
+      const response = await googleSignIn({ idToken: credentialResponse?.credential });
+      if (response?.data) {
+        accessTokenRef.current = response?.data.accessToken;
+        refreshTokenRef.current = response?.data.refreshToken;
+        setIsOpenTermsAndAgreement(true);
+      } else {
+        toast.error("Failed to sign in with Google. Please try again.");
+      }
+    } catch {
+      toast.error("Failed to sign in with Google. Please try again.");
+    }
   };
 
   const handleError = () => {
-    toast.error("Login failed");
+    toast.error("Failed to sign in with Google. Please try again.");
   };
+
   const getLoginSection = () => {
     if (loginSection === LoginSection.EMAIL) {
       return (
@@ -382,7 +386,7 @@ export const Login: FunctionComponent = () => {
         </div>
       </div>
       <TermsAndAgreement
-        isOpen={termsAndAgreement}
+        isOpen={isOpenTermsAndAgreement}
         handleAgreeButtonClick={handleAgreeButtonClick}
       />
     </div>

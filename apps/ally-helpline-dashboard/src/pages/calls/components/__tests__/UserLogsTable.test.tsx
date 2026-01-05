@@ -70,6 +70,13 @@ vi.mock("@assets", () => ({
   Carousel2: () => <div data-testid="carousel-2-icon">Carousel 2</div>,
   Carousel3: () => <div data-testid="carousel-3-icon">Carousel 3</div>, // ADDED
   Carousel4: () => <div data-testid="carousel-4-icon">Carousel 4</div>, // ADDED
+  LearnIcon: () => <svg data-testid="learn-icon" />,
+  Leaderboard: () => <svg data-testid="leaderboard-icon" />,
+  ScribeIcon: () => <svg data-testid="scribe-icon" />,
+  StatsIcon: () => <svg data-testid="stats-icon" />,
+  SearchIcon: () => <svg data-testid="search-icon" />,
+  NoBadges: () => <div data-testid="no-badges" />,
+  Badge: () => <svg data-testid="badge-icon" />,
 }));
 
 // Mock components

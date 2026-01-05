@@ -15,3 +15,4 @@ export * from "./simulation/Simulation";
 export * from "./suspended-user/SuspendedUser";
 export * from "./post-simulation-summary";
 export * from "./stress-buster/StressBuster";
+export * from "./leaderboard/Leaderboard";
