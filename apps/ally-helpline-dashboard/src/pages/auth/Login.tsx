@@ -1,6 +1,5 @@
 import { useEffect, useState, useCallback, FunctionComponent, useRef } from "react";
 
-import { GoogleLogin } from "@react-oauth/google";
 import { FetchBaseQueryError } from "@reduxjs/toolkit/query";
 import { motion, AnimatePresence } from "framer-motion";
 import { useSelector } from "react-redux";
@@ -32,6 +31,7 @@ import { openLinkInNewTab, validateEmail } from "@utils";
 
 const RESEND_CODE_COUNTDOWN = 60; // 2 minutes
 const DEFAULT_EXPIRES_IN = 10; // 10 minutes
+const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_AUTH_CLIENT_ID || "";
 
 export const Login: FunctionComponent = () => {
   const navigate = useNavigate();
@@ -190,9 +190,9 @@ export const Login: FunctionComponent = () => {
     }
   };
 
-  const handleSuccess = async (credentialResponse: any) => {
+  const handleGoogleSuccess = async (credential: string) => {
     try {
-      const response = await googleSignIn({ idToken: credentialResponse?.credential });
+      const response = await googleSignIn({ idToken: credential });
       if (response?.data) {
         accessTokenRef.current = response?.data.accessToken;
         refreshTokenRef.current = response?.data.refreshToken;
@@ -205,7 +205,7 @@ export const Login: FunctionComponent = () => {
     }
   };
 
-  const handleError = () => {
+  const handleGoogleError = () => {
     toast.error("Failed to sign in with Google. Please try again.");
   };
 
@@ -286,24 +286,18 @@ export const Login: FunctionComponent = () => {
             >
               Privacy Policy.
             </span>
-            {FEATURE_FLAGS_MAP.GOOGLE_SIGN_IN_FLAG && (
+            {FEATURE_FLAGS_MAP.GOOGLE_SIGN_IN_FLAG && GOOGLE_CLIENT_ID && (
               <div>
                 <div className="flex items-center my-4">
                   <div className="flex-grow border-t border-gray-300" />
                   <span className="mx-3 text-xs text-gray-500">OR</span>
                   <div className="flex-grow border-t border-gray-300" />
                 </div>
-                <div className="relative">
-                  {/* Hidden Google Login for ID token */}
-                  <div className="absolute top-0 left-0 w-full h-full opacity-0" aria-hidden="true">
-                    <GoogleLogin
-                      onSuccess={handleSuccess}
-                      onError={handleError}
-                      useOneTap={false}
-                    />
-                  </div>
-                  <GoogleSignInButton />
-                </div>
+                <GoogleSignInButton
+                  clientId={GOOGLE_CLIENT_ID}
+                  onSuccess={handleGoogleSuccess}
+                  onError={handleGoogleError}
+                />
               </div>
             )}
           </div>
