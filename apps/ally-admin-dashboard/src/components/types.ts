@@ -70,6 +70,7 @@ export interface InputFieldProps {
   infoIconContent?: string;
   isMandatory?: boolean;
   defaultValue?: string;
+  disabled?: boolean;
 }
 
 // DropdownField
