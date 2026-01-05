@@ -1,8 +1,6 @@
 // In useScenarioLanguages.ts
 import { useMemo } from "react";
 
-import { skipToken } from "@reduxjs/toolkit/query";
-
 import { useGetUserPreferencesQuery, useGetAvailableLanguagesQuery } from "@api";
 import { LOCAL_STORAGE_KEYS } from "@constants";
 
@@ -20,7 +18,9 @@ export const useScenarioLanguages = () => {
     data: preferencesResponse,
     isLoading: isPreferencesLoading,
     error: preferencesError,
-  } = useGetUserPreferencesQuery(hasAccessToken ? undefined : skipToken);
+  } = useGetUserPreferencesQuery(undefined, {
+    skip: !hasAccessToken,
+  });
 
   return useMemo(() => {
     // Handle loading state
