@@ -2,7 +2,14 @@ import { useEffect, useRef } from "react";
 
 import { Controller } from "react-hook-form";
 
-import { Button, DropdownwithTag, CustomDropdown, CreditField, ProfileCard } from "@components";
+import {
+  Button,
+  DropdownwithTag,
+  CustomDropdown,
+  CreditField,
+  ProfileCard,
+  ImageUpload,
+} from "@components";
 import { en, FieldOptions, KeyboardKeys, USER_MODAL_FIELDS_IDS, UserRole } from "@constants";
 import { UserModalProps, FieldProps } from "@types";
 
@@ -17,6 +24,10 @@ export const UserModal: React.FC<UserModalProps> = ({
   details,
   handleClick,
   formMethods,
+  imageUpload = false,
+  uploadButtonName,
+  uploadTitle,
+  uploadId,
 }) => {
   // Handle ESC key to close modal
 
@@ -250,6 +261,27 @@ export const UserModal: React.FC<UserModalProps> = ({
     );
   };
 
+  const renderDisabledField = (field: FieldProps) => {
+    return (
+      <div className="flex flex-col gap-2">
+        <label
+          htmlFor={field.id}
+          className="text-sm text-typography-900 cursor-pointer font-primary"
+        >
+          {field.label}
+        </label>
+
+        <input
+          id={field.id}
+          type={field.inputType}
+          value={details?.[field.id] ?? ""}
+          disabled
+          className="border rounded-md px-2 py-2 outline-none text-base font-primary placeholder:text-typography-600"
+        />
+      </div>
+    );
+  };
+
   const renderField = (field: FieldProps, index: number) => {
     if (!shouldShowField(field)) {
       return null;
@@ -265,6 +297,8 @@ export const UserModal: React.FC<UserModalProps> = ({
         return renderTextareaField(field, index);
       case FieldOptions.CREDITS:
         return renderCreditField(field, index);
+      case FieldOptions.DISABLED_FIELD:
+        return renderDisabledField(field);
       default:
         return null;
     }
@@ -295,7 +329,15 @@ export const UserModal: React.FC<UserModalProps> = ({
         <div className="text-typography-900 flex justify-center w-full text-2xl font-primary relative">
           {title}
         </div>
-
+        {imageUpload && (
+          <ImageUpload
+            formMethods={formMethods}
+            uploadId={uploadId}
+            uploadButtonName={uploadButtonName}
+            uploadTitle={uploadTitle}
+            details={details}
+          />
+        )}
         {/* Dynamic Form Fields */}
         {fields.map((field, index) => renderField(field, index))}
 

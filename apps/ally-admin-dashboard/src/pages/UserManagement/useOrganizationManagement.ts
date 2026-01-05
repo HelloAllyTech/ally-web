@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 
+import { FEATURE_FLAGS_MAP } from "@ally-ui-mono/ui-shared";
 import { useCreateTenantMutation, useUpdateTenantMutation, useGetTenantsQuery } from "@api";
 import { SORT_BY, SORT_ORDER, en } from "@constants";
 import { Tenant } from "@types";
@@ -19,7 +20,14 @@ export function useOrganizationManagement() {
   const [tenantsOffset, setTenantsOffset] = useState<number>(0);
 
   // Form default values (match field ids used in modal configuration)
-  const defaultTenantValues: { orgname: string; orgcode: string; description: string } = {
+
+  const defaultTenantValues: {
+    orgname: string;
+    orgcode: string;
+    description: string;
+    logo?: string;
+  } = {
+    logo: "",
     orgname: "",
     orgcode: "",
     description: "",
@@ -76,17 +84,26 @@ export function useOrganizationManagement() {
   };
 
   const handleCreateTenant = async (data: {
+    logo?: string;
     orgname: string;
     orgcode: string;
     description?: string;
   }) => {
     try {
-      const payload = {
+      const payload: {
+        name: string;
+        code: string;
+        description: string;
+        logo?: string;
+      } = {
         name: data.orgname,
         code: data.orgcode,
-        description: data.description || "",
+        description: data.description ?? "",
       };
-
+      // T
+      if (FEATURE_FLAGS_MAP.LOGO_UPLOAD_FLAG && data.logo) {
+        payload.logo = data.logo;
+      }
       await createTenant(payload).unwrap();
       setAddOrganizationModalOpen(false);
       tenantMethods.reset(defaultTenantValues);
@@ -99,6 +116,7 @@ export function useOrganizationManagement() {
   const onEditTenant = (tenant: Tenant) => {
     setSelectedTenant(tenant);
     tenantMethods.reset({
+      logo: tenant.logo ?? "",
       orgname: tenant.name ?? "",
       orgcode: tenant.code ?? "",
       description: tenant.description ?? "",
@@ -107,17 +125,27 @@ export function useOrganizationManagement() {
   };
 
   const handleEditTenant = async (data: {
+    logo?: string;
     orgname: string;
     orgcode: string;
     description?: string;
   }) => {
     if (!selectedTenant) return;
     try {
-      const payload = {
+      const payload: {
+        name: string;
+        code: string;
+        description: string;
+        logo?: string;
+      } = {
         name: data.orgname,
         code: data.orgcode,
         description: data.description || "",
       };
+
+      if (FEATURE_FLAGS_MAP.LOGO_UPLOAD_FLAG && data.logo) {
+        payload.logo = data.logo;
+      }
 
       await updateTenant({ id: selectedTenant.id, data: payload }).unwrap();
       setAddOrganizationModalOpen(false);
@@ -130,14 +158,22 @@ export function useOrganizationManagement() {
   };
 
   const handleTenantFormSubmit = async (data: {
-    orgname: string;
-    orgcode: string;
-    description?: string;
+    orgName: string;
+    orgCode: string;
+    description: string;
+    logo?: string;
   }) => {
+    const payload = {
+      orgname: data.orgName,
+      orgcode: data.orgCode,
+      description: data.description,
+      ...(FEATURE_FLAGS_MAP.LOGO_UPLOAD_FLAG && data.logo ? { logo: data.logo } : {}),
+    };
+
     if (selectedTenant) {
-      await handleEditTenant(data);
+      await handleEditTenant(payload);
     } else {
-      await handleCreateTenant(data);
+      await handleCreateTenant(payload);
     }
   };
 

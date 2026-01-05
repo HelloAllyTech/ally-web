@@ -9,3 +9,4 @@ export * from "./file";
 export * from "./CreatePath";
 export * from "./eventTypes";
 export * from "./TriggerConditionsConfig";
+export * from "./profileSettings";
