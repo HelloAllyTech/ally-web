@@ -158,14 +158,14 @@ export function useOrganizationManagement() {
   };
 
   const handleTenantFormSubmit = async (data: {
-    orgName: string;
-    orgCode: string;
+    orgname: string;
+    orgcode: string;
     description: string;
     logo?: string;
   }) => {
     const payload = {
-      orgname: data.orgName,
-      orgcode: data.orgCode,
+      orgname: data.orgname,
+      orgcode: data.orgcode,
       description: data.description,
       ...(FEATURE_FLAGS_MAP.LOGO_UPLOAD_FLAG && data.logo ? { logo: data.logo } : {}),
     };

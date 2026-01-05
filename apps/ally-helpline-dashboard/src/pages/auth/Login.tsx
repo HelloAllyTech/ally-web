@@ -46,7 +46,6 @@ export const Login: FunctionComponent = () => {
   const [isOpenTermsAndAgreement, setIsOpenTermsAndAgreement] = useState<boolean>(false);
   const accessTokenRef = useRef<string>("");
   const refreshTokenRef = useRef<string>("");
-  const googleButtonRef = useRef<HTMLDivElement>(null);
 
   const [
     generateOTP,
@@ -191,11 +190,6 @@ export const Login: FunctionComponent = () => {
     }
   };
 
-  const hangleGooglelogin = () => {
-    const btn = googleButtonRef.current?.querySelector('div[role="button"]') as HTMLElement;
-    btn?.click();
-  };
-
   const handleSuccess = async (credentialResponse: any) => {
     try {
       const response = await googleSignIn({ idToken: credentialResponse?.credential });
@@ -301,17 +295,14 @@ export const Login: FunctionComponent = () => {
                 </div>
                 <div className="relative">
                   {/* Hidden Google Login for ID token */}
-                  <div
-                    ref={googleButtonRef}
-                    className="absolute opacity-0 pointer-events-none h-0 overflow-hidden"
-                  >
+                  <div className="absolute top-0 left-0 w-full h-full opacity-0" aria-hidden="true">
                     <GoogleLogin
                       onSuccess={handleSuccess}
                       onError={handleError}
                       useOneTap={false}
                     />
                   </div>
-                  <GoogleSignInButton onClick={hangleGooglelogin} />
+                  <GoogleSignInButton />
                 </div>
               </div>
             )}
