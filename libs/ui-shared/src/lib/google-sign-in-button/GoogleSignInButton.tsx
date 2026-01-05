@@ -48,7 +48,7 @@ const GoogleSignInButton: FC<GoogleSignInButtonProps> = ({
 
   // TODO: Remove this once the GoogleLogin component is working properly
   return (
-    <div className="relative flex w-full justify-center items-center">
+    <div className="relative w-full mx-auto">
       <GoogleLogin
         onSuccess={handleSuccess}
         onError={handleError}
