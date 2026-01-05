@@ -21,12 +21,14 @@ export const en = {
     or: "OR",
   },
   errors: {
+    failedToGoogleSignIn: "Failed to sign in with Google. Please try again.",
     failedCreateOrganization: "Failed to create organization",
     fileMustBeJPEGOrPNG: "File must be JPEG or PNG.",
     fileMustBeVideo: "File must be a video.",
     fileUploadFailed: "Failed to upload file. Please try again.",
     fileMetadataLoadFailed: "Failed to load video metadata",
     imageMustHave169AspectRatio: "Image must have a 16:9 aspect ratio.",
+    imageMustHave1AspectRatio: "Please upload an image with the correct aspect ratio",
     fileDeleteFailed: "Failed to delete file. Please try again.",
     titleIsRequired: "Title should be filled to save as draft",
     failedSimulationChange: "Failed to save simulation changes!",
@@ -44,7 +46,8 @@ export const en = {
     errorUpdatingEvent: "Error updating event",
     userIdNotFound: "User id not found",
     failedToRemoveUser: "Failed to remove user",
-    failedToGoogleSignIn: "Failed to sign in with Google. Please try again.",
+    failedToUploadImage: "Failed to upload image",
+    failedToLoadImage: "Failed to load image",
   },
   accessDenied: {
     title: "This page is not accessible",
@@ -91,6 +94,9 @@ export const en = {
     failedToGenerateOTP: "Failed to generate OTP. Please try again.",
     failedToVerifyOTP: "Failed to verify OTP. Please try again.",
     invalidEmailError: "Please enter a valid email address",
+    profileSettings: "Profile settings",
+    uploadImage: "Upload image",
+    profileImage: "Profile image",
   },
   simulation: {
     duplicatePathwayDescription:
@@ -312,5 +318,8 @@ export const en = {
     disabled: "Disabled",
     toggleAccess: (title: string) => `Toggle access for ${title}`,
     userRemoved: "User removed successfully",
+    logo: "Logo",
+    logoDescription: " PNG or JPG files only (240x240 preferred)",
+    uploadLogo: "Upload logo",
   },
 };

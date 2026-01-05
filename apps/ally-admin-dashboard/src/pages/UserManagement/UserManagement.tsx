@@ -2,6 +2,7 @@ import { FC } from "react";
 
 import { useNavigate, useSearchParams } from "react-router-dom";
 
+import { FEATURE_FLAGS_MAP } from "@ally-ui-mono/ui-shared";
 import {
   Tabs,
   ListToolbar,
@@ -281,20 +282,39 @@ export const UserManagement: FC = () => {
               onSearchChange={setOrgSearch}
               action={{ label: en.userManagement.addOrganization, onClick: handleNewgroupClick }}
             />
-            <UserModal
-              isOpen={addOrganizationModalOpen}
-              onClose={onCloseOrganizationEditModal}
-              title={
-                selectedTenant
-                  ? en.userManagement.editOrganization
-                  : en.userManagement.noOrganizationActionLabel
-              }
-              buttonName={selectedTenant ? en.common.save : en.userManagement.addOrganization}
-              fields={addNewOrganizationModal}
-              formMethods={tenantMethods}
-              details={selectedTenant}
-              handleClick={handleTenantFormSubmit}
-            />
+            {FEATURE_FLAGS_MAP.LOGO_UPLOAD_FLAG ? (
+              <UserModal
+                isOpen={addOrganizationModalOpen}
+                onClose={onCloseOrganizationEditModal}
+                title={
+                  selectedTenant
+                    ? en.userManagement.editOrganization
+                    : en.userManagement.noOrganizationActionLabel
+                }
+                buttonName={selectedTenant ? en.common.save : en.userManagement.addOrganization}
+                fields={addNewOrganizationModal}
+                formMethods={tenantMethods}
+                details={selectedTenant}
+                handleClick={handleTenantFormSubmit}
+                imageUpload
+                uploadId="logo"
+              />
+            ) : (
+              <UserModal
+                isOpen={addOrganizationModalOpen}
+                onClose={onCloseOrganizationEditModal}
+                title={
+                  selectedTenant
+                    ? en.userManagement.editOrganization
+                    : en.userManagement.noOrganizationActionLabel
+                }
+                buttonName={selectedTenant ? en.common.save : en.userManagement.addOrganization}
+                fields={addNewOrganizationModal}
+                formMethods={tenantMethods}
+                details={selectedTenant}
+                handleClick={handleTenantFormSubmit}
+              />
+            )}
             {isTenantsFetching ? (
               <OrganizationListLoader />
             ) : tenants.length === 0 ? (
