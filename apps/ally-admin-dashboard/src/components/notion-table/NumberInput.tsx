@@ -50,6 +50,7 @@ export const NumberInput: React.FC<NumberInputProps> = ({
       } else {
         setInputValue("");
       }
+      onChange?.(null);
     } else {
       const clampedValue = Math.min(Math.max(numValue, min), max);
       setInputValue(clampedValue.toString());
