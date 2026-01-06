@@ -393,7 +393,7 @@ export const MappedEventSidePanel: React.FC<MappedEventSidePanelProps> = ({
             <Field label="Session quality score">
               <NumberInput
                 value={Number(formData.score?.value || 0)}
-                onChange={value => handleFieldChange(MAPPED_EVENT_FIELDS.SCORE, value)}
+                onChange={value => handleFieldChange(MAPPED_EVENT_FIELDS.SCORE, value || 0)}
                 disabled={formData.score?.disabled}
               />
             </Field>

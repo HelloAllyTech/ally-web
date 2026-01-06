@@ -1,3 +1,7 @@
-import { TimeWindowSection, OccurrenceControlSection } from "./EventSettingsSection";
+import {
+  TimeWindowSection,
+  OccurrenceControlSection,
+  ScoreWindowSection,
+} from "./EventSettingsSection";
 
-export { TimeWindowSection, OccurrenceControlSection };
+export { TimeWindowSection, OccurrenceControlSection, ScoreWindowSection };
