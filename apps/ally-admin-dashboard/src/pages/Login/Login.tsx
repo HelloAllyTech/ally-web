@@ -17,13 +17,12 @@ import {
   ALLY_URL,
   en,
 } from "@constants";
-import { useUser } from "@hooks/useUser";
+import { useUser } from "@hooks";
 import { RootState } from "@store";
 import { validateEmail, openLinkInNewTab } from "@utils";
 
 const RESEND_CODE_COUNTDOWN = 60; // 60 seconds
 const DEFAULT_EXPIRES_IN = 10; // 10 minutes
-const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_AUTH_CLIENT_ID || "";
 
 export const Login: React.FC = () => {
   const navigate = useNavigate();
@@ -151,9 +150,13 @@ export const Login: React.FC = () => {
     verifyOTP({ email: email.trim(), otp });
   };
 
-  const handleGoogleSuccess = async (credential: string) => {
+  const handleGoogleSuccess = async (tokenData: { accessToken?: string; credential?: string }) => {
     try {
-      const response = await googleSignIn({ idToken: credential });
+      const params = tokenData.credential
+        ? { idToken: tokenData.credential }
+        : { accessToken: tokenData.accessToken };
+
+      const response = await googleSignIn(params);
       if (response?.data) {
         localStorage.setItem(LOCAL_STORAGE_KEYS.ADMIN_ACCESS_TOKEN, response.data.accessToken);
         localStorage.setItem(LOCAL_STORAGE_KEYS.ADMIN_REFRESH_TOKEN, response.data.refreshToken);
@@ -252,18 +255,14 @@ export const Login: React.FC = () => {
             >
               {en.auth.privacyPolicy}.
             </span>
-            {FEATURE_FLAGS_MAP.GOOGLE_SIGN_IN_FLAG && GOOGLE_CLIENT_ID && (
+            {FEATURE_FLAGS_MAP.GOOGLE_SIGN_IN_FLAG && (
               <div>
                 <div className="flex items-center my-4">
                   <div className="flex-grow border-t border-gray-300" />
                   <span className="mx-3 text-xs text-gray-500">{en.common.or}</span>
                   <div className="flex-grow border-t border-gray-300" />
                 </div>
-                <GoogleSignInButton
-                  clientId={GOOGLE_CLIENT_ID}
-                  onSuccess={handleGoogleSuccess}
-                  onError={handleGoogleError}
-                />
+                <GoogleSignInButton onSuccess={handleGoogleSuccess} onError={handleGoogleError} />
               </div>
             )}
           </div>

@@ -1,16 +1,18 @@
 import { FC, useEffect, useRef, useState } from "react";
 
-import { AccountCircle, Arrow, Bolt, Logout } from "@assets";
+import { FEATURE_FLAGS_MAP } from "@ally-ui-mono/ui-shared/featureFlag";
+import { AccountCircle, Arrow, Bolt, Logout, ManageAccount } from "@assets";
 import { PermissionGuard } from "@components";
 import { Permissions } from "@constants";
 import { useSimulationCredits } from "@hooks";
 import { User } from "@types";
 
-const UserInfo: FC<{ user?: User; isExpanded?: boolean; onLogout: () => void }> = ({
-  user,
-  isExpanded,
-  onLogout,
-}) => {
+const UserInfo: FC<{
+  user?: User;
+  isExpanded?: boolean;
+  onLogout: () => void;
+  onProfileSettings: () => void;
+}> = ({ user, isExpanded, onLogout, onProfileSettings }) => {
   const [showLogout, setShowLogout] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const { credits, limitReached, CreditPercentage } = useSimulationCredits();
@@ -128,14 +130,25 @@ const UserInfo: FC<{ user?: User; isExpanded?: boolean; onLogout: () => void }> 
             </div>
             <div className="border-b" data-testid="user-info-divider" />
           </PermissionGuard>
-          <button
-            data-testid="user-info-logout-button"
-            onClick={onLogout}
-            className="flex items-center gap-2 text-typography-700 hover:bg-gray-100 py-1 px-2 rounded justify-start w-full border-gray-200"
-          >
-            <Logout className="w-4 h-4" data-testid="user-info-logout-icon" />
-            Logout
-          </button>
+          <div className="flex flex-col items-center justify-center">
+            {FEATURE_FLAGS_MAP.PROFILE_UPLOAD_FLAG && (
+              <button
+                onClick={onProfileSettings}
+                className="flex items-center gap-2 text-typography-700 hover:bg-gray-100 py-1 px-2 rounded justify-start w-full border-gray-200"
+              >
+                <ManageAccount />
+                Profile settings
+              </button>
+            )}
+            <button
+              data-testid="user-info-logout-button"
+              onClick={onLogout}
+              className="flex items-center gap-2 text-typography-700 hover:bg-gray-100 py-1 px-2 rounded justify-start w-full border-gray-200"
+            >
+              <Logout className="w-4 h-4" data-testid="user-info-logout-icon" />
+              Logout
+            </button>
+          </div>
         </div>
       )}
     </div>

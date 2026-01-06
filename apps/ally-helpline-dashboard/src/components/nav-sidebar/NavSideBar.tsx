@@ -1,16 +1,30 @@
 import { FC, useEffect, useState } from "react";
 
+import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 
 import { Ally, DockToRight, LogoutIllustration } from "@assets";
-import { Carousel, CarouselSize, CarouselVariant, ConfirmationDialog, UserInfo } from "@components";
+import {
+  Carousel,
+  CarouselSize,
+  CarouselVariant,
+  ConfirmationDialog,
+  ProfileSettings,
+  UserInfo,
+} from "@components";
 import { navBarOptions, CAROUSEL_SLIDES } from "@constants";
 import { useUser } from "@hooks";
 
-import { ButtonVariant } from "../button";
 import { NavSideBarProps, TabProps } from "./types";
+import { ButtonVariant } from "../button";
 
 const EXPANDED_WIDTH = 1200;
+
+const defaultProfileUploadValues: {
+  profileImageUrl: string;
+} = {
+  profileImageUrl: "",
+};
 
 const Tab: FC<TabProps> = ({ id, Icon, title, activeTab, isExpanded, onClick }) => (
   <div
@@ -52,6 +66,12 @@ const NavSideBar: FC<NavSideBarProps> = ({ activeTab, onTabChange, isOpen, onClo
   const navigate = useNavigate();
 
   const [isExpanded, setIsExpanded] = useState(true);
+  const [openSettings, setOpenSettings] = useState(false);
+
+  const profileSettingsForm = useForm({
+    defaultValues: defaultProfileUploadValues,
+    mode: "onChange",
+  });
 
   useEffect(() => {
     const handleResize = () => {
@@ -88,6 +108,10 @@ const NavSideBar: FC<NavSideBarProps> = ({ activeTab, onTabChange, isOpen, onClo
     navigate("/login");
   };
 
+  const handleSettingsClose = () => {
+    setOpenSettings(false);
+  };
+
   const renderTabs = () => {
     return (
       <div
@@ -107,6 +131,15 @@ const NavSideBar: FC<NavSideBarProps> = ({ activeTab, onTabChange, isOpen, onClo
         ))}
       </div>
     );
+  };
+
+  const handleSettingsClick = () => {
+    setOpenSettings(true);
+  };
+
+  const handleProfileUpload = () => {
+    //TODO
+    setOpenSettings(false);
   };
 
   return (
@@ -140,7 +173,13 @@ const NavSideBar: FC<NavSideBarProps> = ({ activeTab, onTabChange, isOpen, onClo
             />
           )}
           <hr className="w-full border-t border-gray-200" data-testid="nav-sidebar-divider" />
-          <UserInfo user={user} onLogout={handleLogout} isExpanded={isExpanded} />
+
+          <UserInfo
+            user={user}
+            onLogout={handleLogout}
+            isExpanded={isExpanded}
+            onProfileSettings={handleSettingsClick}
+          />
         </div>
       </div>
       <ConfirmationDialog
@@ -160,6 +199,13 @@ const NavSideBar: FC<NavSideBarProps> = ({ activeTab, onTabChange, isOpen, onClo
           data-testid="nav-sidebar-overlay"
         ></div>
       )}
+      <ProfileSettings
+        isOpen={openSettings}
+        onClose={handleSettingsClose}
+        userData={user}
+        formMethods={profileSettingsForm}
+        onButtonClick={handleProfileUpload}
+      />
     </>
   );
 };

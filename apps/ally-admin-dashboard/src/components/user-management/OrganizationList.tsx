@@ -48,7 +48,18 @@ export const OrganizationList: React.FC<OrganizationListProps> = ({
               onClick={e => handleRowClick(tenant, e)}
               className="grid grid-cols-12 items-center px-4 py-3 text-typography-900 border-b border-border-light hover:bg-background-secondary cursor-pointer"
             >
-              <div className="col-span-3 text-typography-900">{tenant.name}</div>
+              <div className="col-span-3 text-typography-900">
+                <span className="flex items-center">
+                  {tenant.logo ? (
+                    <img src={tenant.logo} alt="org-logo" />
+                  ) : (
+                    <div className="min-w-[40px] min-h-[40px] rounded-full border border-border-light text-typography-800 flex items-center justify-center mr-3 capitalize">
+                      {tenant.name[0]}
+                    </div>
+                  )}
+                  {tenant.name}
+                </span>
+              </div>
               <div className="col-span-2 text-typography-900">{tenant.code}</div>
               <div className="col-span-3 text-typography-900 overflow-hidden whitespace-nowrap truncate w-[200px]">
                 {tenant.description}

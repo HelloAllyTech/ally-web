@@ -29,6 +29,11 @@ vi.mock("@react-oauth/google", () => ({
     </button>
   ),
   GoogleOAuthProvider: ({ children }: any) => <div>{children}</div>,
+  useGoogleLogin: ({ onSuccess, onError }: any) => {
+    return () => {
+      onSuccess({ access_token: "mock-access-token" });
+    };
+  },
 }));
 
 // Mock all external dependencies
