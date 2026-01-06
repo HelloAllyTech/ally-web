@@ -7,6 +7,8 @@ import Pause from "./pause.svg?react";
 import Play from "./play.svg?react";
 import PrivacyTip from "./privacyTip.svg?react";
 import Stop from "./stop.svg?react";
+import Trash from "./trash.svg?react";
+import Upload from "./upload.svg?react";
 import UserIcon from "./user.svg?react";
 import VolumeMute from "./volumeMute.svg?react";
 import VolumeUp from "./volumeUp.svg?react";
@@ -26,4 +28,6 @@ export {
   VolumeUp,
   Warning,
   Google,
+  Trash,
+  Upload,
 };
