@@ -51,7 +51,10 @@ export const SimulationInterface: FC<SimulationInterfaceProps> = ({
           isSpeaking={remoteParticipant?.isSpeaking}
         />
         <UserCallCard
-          userData={{ name: roomData?.localParticipant?.name || "You" }}
+          userData={{
+            name: roomData?.localParticipant?.name || "You",
+            coverImageUrl: roomData?.localParticipant?.coverImageUrl || null,
+          }}
           isSpeaking={localParticipant.isSpeaking}
           isMuted={isMuted}
         />
