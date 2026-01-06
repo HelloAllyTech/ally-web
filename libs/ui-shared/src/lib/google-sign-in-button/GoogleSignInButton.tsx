@@ -6,18 +6,25 @@ import { useGoogleLogin, GoogleLogin } from "@react-oauth/google";
 
 import { Google } from "../../assets";
 
+enum AUTHENTICATION_TYPE {
+  GOOGLE_CREDENTIAL = "credential",
+  GOOGLE_ACCESS_TOKEN = "accessToken",
+}
+
 export interface GoogleSignInButtonProps {
   onSuccess: (credential: string) => void;
   onError?: () => void;
   text?: string;
   disabled?: boolean;
   className?: string;
+  authenticationType?: AUTHENTICATION_TYPE;
 }
 
 const GoogleSignInButton: FC<GoogleSignInButtonProps> = ({
   onSuccess,
   onError,
   text = "Continue with Google",
+  authenticationType = AUTHENTICATION_TYPE.GOOGLE_ACCESS_TOKEN,
   disabled = false,
   className = "",
 }) => {
@@ -44,21 +51,22 @@ const GoogleSignInButton: FC<GoogleSignInButtonProps> = ({
     if (!disabled) login();
   };
 
-  // TODO: Remove this once the GoogleLogin component is working properly
-  return (
-    <div className="relative w-full mx-auto">
-      <GoogleLogin
-        onSuccess={handleSuccess}
-        onError={handleError}
-        useOneTap={false}
-        width="100%"
-        containerProps={{
-          className: "w-full mx-auto",
-        }}
-        logo_alignment="center"
-      />
-    </div>
-  );
+  if (authenticationType === AUTHENTICATION_TYPE.GOOGLE_CREDENTIAL) {
+    return (
+      <div className="relative w-full mx-auto">
+        <GoogleLogin
+          onSuccess={handleSuccess}
+          onError={handleError}
+          useOneTap={false}
+          width="100%"
+          containerProps={{
+            className: "w-full mx-auto",
+          }}
+          logo_alignment="center"
+        />
+      </div>
+    );
+  }
 
   return (
     <button
