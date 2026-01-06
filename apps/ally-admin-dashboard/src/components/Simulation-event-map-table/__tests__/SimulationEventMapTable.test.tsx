@@ -16,6 +16,7 @@ import { SimulationEventMapTable } from "../SimulationEventMapTable";
 vi.mock("@assets", () => ({
   Trash: () => <svg data-testid="trash-icon" />,
   Add: () => <svg data-testid="add-icon">+</svg>,
+  Refresh: () => <svg data-testid="refresh-icon" />,
 }));
 
 vi.mock("@components", () => ({
