@@ -26,6 +26,7 @@ import NavSideBar from "./nav-sidebar";
 import OTP from "./otp";
 import { PathwayScenarioCard } from "./pathway-scenario-card";
 import PermissionGuard from "./permission-guard";
+import ProfileSettings from "./profile-settings";
 import ScenarioCard from "./scenario-card";
 import ScenarioDetailsCard from "./scenario-details-card";
 import SearchResources from "./search-resources";
@@ -88,4 +89,5 @@ export {
   AudioTranscriptPlayer,
   TermsAndAgreement,
   LeaderboardList,
+  ProfileSettings,
 };

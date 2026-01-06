@@ -33,7 +33,6 @@ const SidePanelWrapper: React.FC<{ children: React.ReactNode }> = ({ children })
         {children}
       </div>
     </div>
-    <div className="border-t mt-4"></div>
   </div>
 );
 
