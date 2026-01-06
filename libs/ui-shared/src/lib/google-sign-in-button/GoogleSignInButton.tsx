@@ -46,6 +46,22 @@ const GoogleSignInButton: FC<GoogleSignInButtonProps> = ({
     }
   };
 
+  // TODO: Remove this once the GoogleLogin component is working properly
+  return (
+    <div className="relative w-full mx-auto">
+      <GoogleLogin
+        onSuccess={handleSuccess}
+        onError={handleError}
+        useOneTap={false}
+        width="100%"
+        containerProps={{
+          className: "w-full mx-auto",
+        }}
+        logo_alignment="center"
+      />
+    </div>
+  );
+
   return (
     <div className="relative w-full">
       {/* Hidden GoogleLogin component */}
