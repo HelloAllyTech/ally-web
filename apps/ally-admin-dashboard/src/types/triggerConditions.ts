@@ -101,11 +101,12 @@ export interface CombinationTriggerCondition {
   expression: CombinationExpressionNode;
 }
 
-export type TriggerCondition = TimeBasedTriggerCondition &
-  ScoreBasedTriggerCondition &
-  SentenceSimilarityTriggerCondition &
-  CombinationTriggerCondition &
-  BinaryClassificationTriggerCondition;
+export type TriggerCondition =
+  | TimeBasedTriggerCondition
+  | ScoreBasedTriggerCondition
+  | SentenceSimilarityTriggerCondition
+  | CombinationTriggerCondition
+  | BinaryClassificationTriggerCondition;
 
 /**
  * Type guard to check if a condition is a combination trigger condition

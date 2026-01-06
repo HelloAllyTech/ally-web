@@ -39,11 +39,15 @@ export const TimeInput: React.FC<TimeInputProps> = ({
   };
 
   const validateTime = (timeString: string): string => {
-    if (!timeString || timeString.length < 5) {
+    if (!timeString) {
       return timeString;
     }
 
-    const parts = timeString.split(":");
+    // Extract digits and pad to 6 digits with trailing zeros
+    const digits = timeString.replace(/\D/g, "").padEnd(6, "0").slice(0, 6);
+    const paddedTime = `${digits.slice(0, 2)}:${digits.slice(2, 4)}:${digits.slice(4, 6)}`;
+
+    const parts = paddedTime.split(":");
     if (parts.length !== 3) {
       return timeString;
     }
