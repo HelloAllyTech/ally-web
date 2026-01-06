@@ -81,7 +81,7 @@ export const en = {
     enterEmailToContinue: "Enter your email address to continue",
     enterEmailPlaceholder: "Enter your email address",
     next: "Next",
-    byTappingNext: "By tapping next, you agree to Ally's",
+    byTappingNext: "By proceeding, i agree to Ally's",
     andAcknowledge: "and acknowledge",
     verifyYourEmail: "Verify your email address",
     enterSecurityCode: "Enter the security code sent to",
