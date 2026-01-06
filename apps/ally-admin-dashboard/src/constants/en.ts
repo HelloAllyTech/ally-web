@@ -321,5 +321,8 @@ export const en = {
     logo: "Logo",
     logoDescription: " PNG or JPG files only (240x240 preferred)",
     uploadLogo: "Upload logo",
+    changeLogo: "Change logo",
+    uploadImage: "Upload image",
+    changeImage: "Change image",
   },
 };

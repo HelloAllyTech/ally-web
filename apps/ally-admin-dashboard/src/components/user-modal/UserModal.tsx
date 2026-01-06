@@ -268,9 +268,9 @@ export const UserModal: React.FC<UserModalProps> = ({
         <input
           id={field.id}
           type={field.inputType}
-          value={details?.[field.id] ?? ""}
+          placeholder={details?.[field.id] ?? ""}
           disabled
-          className="border rounded-md px-2 py-2 outline-none text-base font-primary placeholder:text-typography-600"
+          className="border rounded-md px-2 py-2 outline-none text-base font-primary"
         />
       </div>
     );

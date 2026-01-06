@@ -1,3 +1,4 @@
+import { FEATURE_FLAGS_MAP } from "@ally-ui-mono/ui-shared/featureFlag";
 import { FORM_FIELD_IDS, SIMULATION_CREATOR_FIELD_GROUPS } from "@constants";
 import { GetSimulationByIdResponse } from "@types";
 
@@ -32,11 +33,18 @@ export const formatSimulationResponseData = (data: GetSimulationByIdResponse) =>
     languageVoices: (data?.metadata as any)?.languageVoices,
     coverImageUrl: data?.coverImageUrl,
     coverVideoUrl: data?.coverVideoUrl,
-    autoTerminationStatus: Boolean(data?.terminationEvent?.autoTerminationStatus),
-    terminationEventId: data?.terminationEvent?.eventId,
-    terminationMessage: data?.terminationEvent?.message,
-    terminationName: data?.terminationEvent?.name,
+    terminationEvents: data?.terminationEvents,
     difficultyLevel: data?.difficultyLevel,
+    ...(FEATURE_FLAGS_MAP.AUTO_TERMINATION_FIELD_FLAG
+      ? {
+          terminationEvents: data?.terminationEvents,
+        }
+      : {
+          autoTerminationStatus: Boolean(data?.terminationEvent?.autoTerminationStatus),
+          terminationEventId: data?.terminationEvent?.eventId,
+          terminationMessage: data?.terminationEvent?.message,
+          terminationName: data?.terminationEvent?.name,
+        }),
     responseLength: data?.metadata?.responseLength,
     prompt: data?.prompt,
     isGlobal: Boolean(data?.isGlobal),

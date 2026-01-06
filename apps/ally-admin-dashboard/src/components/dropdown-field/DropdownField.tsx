@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import { Controller } from "react-hook-form";
 
@@ -27,6 +27,12 @@ export const DropdownField: React.FC<DropdownFieldProps> = ({
   useClickOutside(dropdownRef, handleClose);
 
   const { control, getValues } = formMethods;
+
+  useEffect(() => {
+    if (isOpen) {
+      handleSearchTextChange?.("");
+    }
+  }, [isOpen]);
 
   const handleSelect = (field: any, value: string) => {
     field.onChange(value);
