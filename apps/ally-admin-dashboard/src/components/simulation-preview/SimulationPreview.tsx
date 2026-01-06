@@ -74,6 +74,7 @@ export const SimulationPreview: FC<SimulationPreviewProps> = ({ simulation, isOp
         triggerWarnings: scenario?.triggerWarnings || [],
         localParticipant: {
           name: user?.name,
+          coverImageUrl: user?.profileImageUrl,
         },
         remoteParticipant: {
           name: scenario?.metadata?.name || simulation.title,
