@@ -1,8 +1,8 @@
 "use client";
 
-import { FC, useRef } from "react";
+import { FC } from "react";
 
-import { GoogleLogin } from "@react-oauth/google";
+import { useGoogleLogin, GoogleLogin } from "@react-oauth/google";
 
 import { Google } from "../../assets";
 
@@ -21,7 +21,14 @@ const GoogleSignInButton: FC<GoogleSignInButtonProps> = ({
   disabled = false,
   className = "",
 }) => {
-  const hiddenButtonRef = useRef<HTMLDivElement>(null);
+  const login = useGoogleLogin({
+    onSuccess: tokenResponse => {
+      onSuccess(tokenResponse.access_token);
+    },
+    onError: () => {
+      onError?.();
+    },
+  });
 
   const handleSuccess = (credentialResponse: { credential?: string }) => {
     if (credentialResponse.credential) {
@@ -34,16 +41,7 @@ const GoogleSignInButton: FC<GoogleSignInButtonProps> = ({
   };
 
   const handleClick = () => {
-    if (disabled) return;
-    // Click the hidden Google button
-    const googleButton = hiddenButtonRef.current?.querySelector(
-      'div[role="button"]',
-    ) as HTMLElement;
-    if (googleButton) {
-      googleButton.click();
-    } else {
-      onError?.();
-    }
+    if (!disabled) login();
   };
 
   // TODO: Remove this once the GoogleLogin component is working properly
@@ -63,33 +61,11 @@ const GoogleSignInButton: FC<GoogleSignInButtonProps> = ({
   );
 
   return (
-    <div className="relative w-full">
-      {/* Hidden GoogleLogin component */}
-      <div
-        ref={hiddenButtonRef}
-        style={{
-          position: "absolute",
-          left: "-9999px",
-          top: "0",
-          width: "400px",
-          height: "50px",
-          opacity: 0,
-        }}
-        aria-hidden="true"
-      >
-        <GoogleLogin
-          onSuccess={handleSuccess}
-          onError={handleError}
-          useOneTap={false}
-          width={400}
-        />
-      </div>
-      {/* Visible custom button */}
-      <button
-        type="button"
-        onClick={handleClick}
-        disabled={disabled}
-        className={`
+    <button
+      type="button"
+      onClick={handleClick}
+      disabled={disabled}
+      className={`
           w-full
           flex
           items-center
@@ -112,14 +88,13 @@ const GoogleSignInButton: FC<GoogleSignInButtonProps> = ({
           disabled:hover:border-[#dadce0]
           ${className}
         `}
-      >
-        <Google />
+    >
+      <Google />
 
-        <span className="text-[#3c4043] font-semibold text-base tracking-[0.25px] font-tertiary">
-          {text}
-        </span>
-      </button>
-    </div>
+      <span className="text-[#3c4043] font-semibold text-base tracking-[0.25px] font-tertiary">
+        {text}
+      </span>
+    </button>
   );
 };
 
