@@ -150,9 +150,13 @@ export const Login: React.FC = () => {
     verifyOTP({ email: email.trim(), otp });
   };
 
-  const handleGoogleSuccess = async (credential: string) => {
+  const handleGoogleSuccess = async (tokenData: { accessToken?: string; credential?: string }) => {
     try {
-      const response = await googleSignIn({ idToken: credential });
+      const params = tokenData.credential
+        ? { idToken: tokenData.credential }
+        : { accessToken: tokenData.accessToken };
+
+      const response = await googleSignIn(params);
       if (response?.data) {
         localStorage.setItem(LOCAL_STORAGE_KEYS.ADMIN_ACCESS_TOKEN, response.data.accessToken);
         localStorage.setItem(LOCAL_STORAGE_KEYS.ADMIN_REFRESH_TOKEN, response.data.refreshToken);
@@ -236,7 +240,17 @@ export const Login: React.FC = () => {
               en.auth.next
             )}
           </Button>
-          <div className="text-sm text-typography-800 mt-2 leading-relaxed">
+          <div className="text-sm text-typography-800 leading-relaxed">
+            {FEATURE_FLAGS_MAP.GOOGLE_SIGN_IN_FLAG && (
+              <div className="mb-3">
+                <div className="flex items-center mb-3">
+                  <div className="flex-grow border-t border-gray-300" />
+                  <span className="mx-3 text-xs text-gray-500">{en.common.or}</span>
+                  <div className="flex-grow border-t border-gray-300" />
+                </div>
+                <GoogleSignInButton onSuccess={handleGoogleSuccess} onError={handleGoogleError} />
+              </div>
+            )}
             {en.auth.byTappingNext}{" "}
             <span
               className="text-primary-500 cursor-pointer hover:text-primary-600"
@@ -251,16 +265,6 @@ export const Login: React.FC = () => {
             >
               {en.auth.privacyPolicy}.
             </span>
-            {FEATURE_FLAGS_MAP.GOOGLE_SIGN_IN_FLAG && (
-              <div>
-                <div className="flex items-center my-4">
-                  <div className="flex-grow border-t border-gray-300" />
-                  <span className="mx-3 text-xs text-gray-500">{en.common.or}</span>
-                  <div className="flex-grow border-t border-gray-300" />
-                </div>
-                <GoogleSignInButton onSuccess={handleGoogleSuccess} onError={handleGoogleError} />
-              </div>
-            )}
           </div>
         </motion.div>
       );

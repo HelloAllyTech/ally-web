@@ -89,6 +89,7 @@ export const useStartSimulation = (
             triggerWarnings: scenario?.triggerWarnings || [],
             localParticipant: {
               name: user?.name,
+              coverImageUrl: user?.profileImageUrl,
             },
             remoteParticipant: {
               name: scenario?.metadata?.name || metadata?.title,

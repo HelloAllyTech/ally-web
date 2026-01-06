@@ -1,31 +1,45 @@
 "use client";
 
-import { FC, useRef } from "react";
+import { FC } from "react";
 
-import { GoogleLogin } from "@react-oauth/google";
+import { useGoogleLogin, GoogleLogin } from "@react-oauth/google";
 
 import { Google } from "../../assets";
 
+enum AUTHENTICATION_TYPE {
+  GOOGLE_CREDENTIAL = "credential",
+  GOOGLE_ACCESS_TOKEN = "accessToken",
+}
+
 export interface GoogleSignInButtonProps {
-  onSuccess: (credential: string) => void;
+  onSuccess: (params: { accessToken?: string; credential?: string }) => void;
   onError?: () => void;
   text?: string;
   disabled?: boolean;
   className?: string;
+  authenticationType?: AUTHENTICATION_TYPE;
 }
 
 const GoogleSignInButton: FC<GoogleSignInButtonProps> = ({
   onSuccess,
   onError,
   text = "Continue with Google",
+  authenticationType = AUTHENTICATION_TYPE.GOOGLE_ACCESS_TOKEN,
   disabled = false,
   className = "",
 }) => {
-  const hiddenButtonRef = useRef<HTMLDivElement>(null);
+  const login = useGoogleLogin({
+    onSuccess: tokenResponse => {
+      onSuccess({ accessToken: tokenResponse.access_token });
+    },
+    onError: () => {
+      onError?.();
+    },
+  });
 
   const handleSuccess = (credentialResponse: { credential?: string }) => {
     if (credentialResponse.credential) {
-      onSuccess(credentialResponse.credential);
+      onSuccess({ credential: credentialResponse.credential });
     }
   };
 
@@ -34,62 +48,32 @@ const GoogleSignInButton: FC<GoogleSignInButtonProps> = ({
   };
 
   const handleClick = () => {
-    if (disabled) return;
-    // Click the hidden Google button
-    const googleButton = hiddenButtonRef.current?.querySelector(
-      'div[role="button"]',
-    ) as HTMLElement;
-    if (googleButton) {
-      googleButton.click();
-    } else {
-      onError?.();
-    }
+    if (!disabled) login();
   };
 
-  // TODO: Remove this once the GoogleLogin component is working properly
-  return (
-    <div className="relative w-full mx-auto">
-      <GoogleLogin
-        onSuccess={handleSuccess}
-        onError={handleError}
-        useOneTap={false}
-        width="100%"
-        containerProps={{
-          className: "w-full mx-auto",
-        }}
-        logo_alignment="center"
-      />
-    </div>
-  );
-
-  return (
-    <div className="relative w-full">
-      {/* Hidden GoogleLogin component */}
-      <div
-        ref={hiddenButtonRef}
-        style={{
-          position: "absolute",
-          left: "-9999px",
-          top: "0",
-          width: "400px",
-          height: "50px",
-          opacity: 0,
-        }}
-        aria-hidden="true"
-      >
+  if (authenticationType === AUTHENTICATION_TYPE.GOOGLE_CREDENTIAL) {
+    return (
+      <div className="relative w-full mx-auto">
         <GoogleLogin
           onSuccess={handleSuccess}
           onError={handleError}
           useOneTap={false}
-          width={400}
+          width="100%"
+          containerProps={{
+            className: "w-full mx-auto",
+          }}
+          logo_alignment="center"
         />
       </div>
-      {/* Visible custom button */}
-      <button
-        type="button"
-        onClick={handleClick}
-        disabled={disabled}
-        className={`
+    );
+  }
+
+  return (
+    <button
+      type="button"
+      onClick={handleClick}
+      disabled={disabled}
+      className={`
           w-full
           flex
           items-center
@@ -112,14 +96,13 @@ const GoogleSignInButton: FC<GoogleSignInButtonProps> = ({
           disabled:hover:border-[#dadce0]
           ${className}
         `}
-      >
-        <Google />
+    >
+      <Google />
 
-        <span className="text-[#3c4043] font-semibold text-base tracking-[0.25px] font-tertiary">
-          {text}
-        </span>
-      </button>
-    </div>
+      <span className="text-[#3c4043] font-semibold text-base tracking-[0.25px] font-tertiary">
+        {text}
+      </span>
+    </button>
   );
 };
 
