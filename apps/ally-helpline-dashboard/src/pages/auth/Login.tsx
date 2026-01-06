@@ -1,5 +1,12 @@
 import { useEffect, useState, useCallback, FunctionComponent, useRef } from "react";
 
+import { FetchBaseQueryError } from "@reduxjs/toolkit/query";
+import { motion, AnimatePresence } from "framer-motion";
+import { useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
+
+import { FEATURE_FLAGS_MAP, GoogleSignInButton } from "@ally-ui-mono/ui-shared";
 import {
   useGenerateOTPMutation,
   useGoogleSignInMutation,
@@ -19,15 +26,8 @@ import {
   User,
 } from "@constants";
 import { useUser } from "@hooks";
-import { FetchBaseQueryError } from "@reduxjs/toolkit/query";
 import { RootState } from "@store";
 import { openLinkInNewTab, validateEmail } from "@utils";
-import { motion, AnimatePresence } from "framer-motion";
-import { useSelector } from "react-redux";
-import { useNavigate } from "react-router-dom";
-import { toast } from "sonner";
-
-import { FEATURE_FLAGS_MAP, GoogleSignInButton } from "@ally-ui-mono/ui-shared";
 
 const RESEND_CODE_COUNTDOWN = 60; // 2 minutes
 const DEFAULT_EXPIRES_IN = 10; // 10 minutes
@@ -274,8 +274,18 @@ export const Login: FunctionComponent = () => {
               "Next"
             )}
           </Button>
-          <div className="text-sm text-typography-800 mt-2">
-            By tapping next, you agree to Ally's{" "}
+          <div className="text-sm text-typography-800">
+            {FEATURE_FLAGS_MAP.GOOGLE_SIGN_IN_FLAG && (
+              <div className="mb-3">
+                <div className="flex items-center mb-3">
+                  <div className="flex-grow border-t border-gray-300" />
+                  <span className="mx-3 text-xs text-gray-500">OR</span>
+                  <div className="flex-grow border-t border-gray-300" />
+                </div>
+                <GoogleSignInButton onSuccess={handleGoogleSuccess} onError={handleGoogleError} />
+              </div>
+            )}
+            By proceeding, i agree to Ally's{" "}
             <span
               className="text-primary-500 cursor-pointer"
               onClick={() => openLinkInNewTab(ALLY_TERMS_URL)}
@@ -289,16 +299,6 @@ export const Login: FunctionComponent = () => {
             >
               Privacy Policy.
             </span>
-            {FEATURE_FLAGS_MAP.GOOGLE_SIGN_IN_FLAG && (
-              <div>
-                <div className="flex items-center my-4">
-                  <div className="flex-grow border-t border-gray-300" />
-                  <span className="mx-3 text-xs text-gray-500">OR</span>
-                  <div className="flex-grow border-t border-gray-300" />
-                </div>
-                <GoogleSignInButton onSuccess={handleGoogleSuccess} onError={handleGoogleError} />
-              </div>
-            )}
           </div>
         </motion.div>
       );
