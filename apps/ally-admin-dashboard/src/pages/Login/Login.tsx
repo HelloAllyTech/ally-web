@@ -1,11 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
 
-import { AnimatePresence, motion } from "framer-motion";
-import { useSelector } from "react-redux";
-import { useNavigate } from "react-router-dom";
-import { toast } from "sonner";
-
-import { CustomImage, FEATURE_FLAGS_MAP, GoogleSignInButton } from "@ally-ui-mono/ui-shared";
 import { useGenerateOTPMutation, useVerifyOTPMutation, useGoogleSignInMutation } from "@api";
 import { BackCircle, LoginImage } from "@assets";
 import { Button, OTP, TextField } from "@components";
@@ -20,6 +14,12 @@ import {
 import { useUser } from "@hooks";
 import { RootState } from "@store";
 import { validateEmail, openLinkInNewTab } from "@utils";
+import { AnimatePresence, motion } from "framer-motion";
+import { useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
+
+import { CustomImage, FEATURE_FLAGS_MAP, GoogleSignInButton } from "@ally-ui-mono/ui-shared";
 
 const RESEND_CODE_COUNTDOWN = 60; // 60 seconds
 const DEFAULT_EXPIRES_IN = 10; // 10 minutes
@@ -150,9 +150,13 @@ export const Login: React.FC = () => {
     verifyOTP({ email: email.trim(), otp });
   };
 
-  const handleGoogleSuccess = async (credential: string) => {
+  const handleGoogleSuccess = async (tokenData: { accessToken?: string; credential?: string }) => {
     try {
-      const response = await googleSignIn({ idToken: credential });
+      const params = tokenData.credential
+        ? { idToken: tokenData.credential }
+        : { accessToken: tokenData.accessToken };
+
+      const response = await googleSignIn(params);
       if (response?.data) {
         localStorage.setItem(LOCAL_STORAGE_KEYS.ADMIN_ACCESS_TOKEN, response.data.accessToken);
         localStorage.setItem(LOCAL_STORAGE_KEYS.ADMIN_REFRESH_TOKEN, response.data.refreshToken);

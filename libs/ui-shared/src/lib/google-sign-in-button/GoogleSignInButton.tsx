@@ -12,7 +12,7 @@ enum AUTHENTICATION_TYPE {
 }
 
 export interface GoogleSignInButtonProps {
-  onSuccess: (credential: string) => void;
+  onSuccess: (params: { accessToken?: string; credential?: string }) => void;
   onError?: () => void;
   text?: string;
   disabled?: boolean;
@@ -30,7 +30,7 @@ const GoogleSignInButton: FC<GoogleSignInButtonProps> = ({
 }) => {
   const login = useGoogleLogin({
     onSuccess: tokenResponse => {
-      onSuccess(tokenResponse.access_token);
+      onSuccess({ accessToken: tokenResponse.access_token });
     },
     onError: () => {
       onError?.();
@@ -39,7 +39,7 @@ const GoogleSignInButton: FC<GoogleSignInButtonProps> = ({
 
   const handleSuccess = (credentialResponse: { credential?: string }) => {
     if (credentialResponse.credential) {
-      onSuccess(credentialResponse.credential);
+      onSuccess({ credential: credentialResponse.credential });
     }
   };
 
