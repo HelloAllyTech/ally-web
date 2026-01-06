@@ -85,16 +85,14 @@ export const SimulationEventMapTable: FC<SimulationEventMapTableProps> = ({ simu
       .map(event => ({ label: event.name, value: event.id }));
   }, [sessionEvents, mappedEvents]);
 
-  useEffect(() => {
-    setMappedEvents(
-      sortEventsByScore(mappedScenarioEventsData?.data?.map(formatApiResponseToMappedEvent)),
-    );
-  }, []);
-
   // Initialize mapped events from API response
   useEffect(() => {
     if (mappedScenarioEventsData?.data?.length > 0) {
-      setMappedEvents(mappedScenarioEventsData.data.map(formatApiResponseToMappedEvent));
+      setMappedEvents(previousEvents =>
+        previousEvents?.length > 1
+          ? mappedScenarioEventsData.data.map(formatApiResponseToMappedEvent)
+          : sortEventsByScore(mappedScenarioEventsData.data.map(formatApiResponseToMappedEvent)),
+      );
     } else {
       setMappedEvents([createNewEvent()]);
     }
