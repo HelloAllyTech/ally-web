@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 
-import { EmojiPickerComponent } from "@components";
+import { EmojiPickerComponent, TimeInput } from "@components";
 import {
   EditableTextPopup,
   NumberInput,
@@ -146,6 +146,9 @@ export const Cell = ({
       );
       break;
     }
+    case cellTypes.timeInput:
+      element = <TimeInput value={value.value} onChange={updateCellValue} disabled={isDisabled} />;
+      break;
     default:
       element = <span />;
       break;
