@@ -11,7 +11,7 @@ import {
   useDeleteScenarioEventsMutation,
   useGetMappedScenarioEventsQuery,
 } from "@api";
-import { Add, Trash } from "@assets";
+import { Add, Refresh, Trash } from "@assets";
 import {
   NotionTable,
   cellTypes,
@@ -84,6 +84,12 @@ export const SimulationEventMapTable: FC<SimulationEventMapTableProps> = ({ simu
       .filter(event => !mappedEventIds.has(event.id))
       .map(event => ({ label: event.name, value: event.id }));
   }, [sessionEvents, mappedEvents]);
+
+  useEffect(() => {
+    setMappedEvents(
+      sortEventsByScore(mappedScenarioEventsData?.data?.map(formatApiResponseToMappedEvent)),
+    );
+  }, []);
 
   // Initialize mapped events from API response
   useEffect(() => {
@@ -163,6 +169,14 @@ export const SimulationEventMapTable: FC<SimulationEventMapTableProps> = ({ simu
   const mappedEventsWithColors = FEATURE_FLAGS_MAP.SCORE_COLOR_FLAG
     ? useMemo(() => addScoreColors(mappedEvents), [mappedEvents])
     : mappedEvents;
+
+  const sortEventsByScore = (events: UpdateScenarioEventDataParam[]) => {
+    return events?.sort((a, b) => a.score?.value - b.score?.value);
+  };
+
+  const onReloadMappedEvents = () => {
+    setMappedEvents(sortEventsByScore(mappedEventsWithColors));
+  };
 
   // Helper function to save events to API
   const saveEventsToApi = useCallback(
@@ -372,9 +386,17 @@ export const SimulationEventMapTable: FC<SimulationEventMapTableProps> = ({ simu
   return (
     <div className="flex flex-col h-full w-100%">
       <div className="sticky flex flex-row justify-between top-0 z-10 pt-3 mx-6 pb-4 border-b border-border-light">
-        <h2 className="text-lg font-semibold text-typography-900 font-primary">
-          {en.simulation.advancedSettings}
-        </h2>
+        <div className="flex flex-row items-center gap-2 text-lg font-semibold text-typography-900 font-primary">
+          <span>{en.simulation.advancedSettings}</span>
+          {FEATURE_FLAGS_MAP.SCORE_COLOR_FLAG && (
+            <>
+              <div className="w-[1px] h-[16px] bg-border-light" />
+              <div className="cursor-pointer" onClick={onReloadMappedEvents}>
+                <Refresh className="w-4 h-4" />
+              </div>
+            </>
+          )}
+        </div>
         {!isLoading && renderActionButtons()}
       </div>
       <div className="p-6 pt-4 pr-0 overflow-y-hidden overflow-x-scroll w-[calc(100vw-270px)] lg:w-[calc(100vw-320px)] max-w-full custom-scrollbar">
