@@ -122,14 +122,14 @@ export const convertEventToApiPayload = (event: UpdateEventDataParam): SessionEv
 
   const detectionData: SessionEventDetectionData = {};
   const { sentences, speaker, className, value, operator, expression } =
-    event?.triggerCondition || {};
+    (event?.triggerCondition as any) || {};
 
   if (
     event.detectionType === EVENT_DETECTION_TYPES.SENTENCE_SIMILARITY ||
     event.detectionType === EVENT_DETECTION_TYPES.SEMANTIC_SIMILARITY
   ) {
     if (isNonEmptyObject(event.triggerCondition)) {
-      if (isNonEmptyArray(sentences)) detectionData.sentences = sentences;
+      if (isNonEmptyArray(sentences)) detectionData.sentences = sentences as string[];
       if (isNonEmptyString(speaker)) detectionData.speaker = speaker;
     }
   }
@@ -144,10 +144,10 @@ export const convertEventToApiPayload = (event: UpdateEventDataParam): SessionEv
   if (event.detectionType === EVENT_DETECTION_TYPES.SCORE_BASED) {
     if (isNonEmptyObject(event.triggerCondition)) {
       if (isNumber(value)) {
-        detectionData.score = event.triggerCondition.value;
+        detectionData.score = value;
       }
       if (isNonEmptyString(operator)) {
-        const condition = mapOperatorToCondition(event.triggerCondition.operator);
+        const condition = mapOperatorToCondition(operator);
         if (condition) {
           detectionData.condition = condition;
         }
@@ -161,10 +161,10 @@ export const convertEventToApiPayload = (event: UpdateEventDataParam): SessionEv
   if (event.detectionType === EVENT_DETECTION_TYPES.TIME_BASED) {
     if (isNonEmptyObject(event.triggerCondition)) {
       if (isNonEmptyString(value)) {
-        detectionData.time = convertTimeToSeconds(event.triggerCondition.value);
+        detectionData.time = convertTimeToSeconds(value);
       }
       if (isNonEmptyString(operator)) {
-        const condition = mapOperatorToCondition(event.triggerCondition.operator);
+        const condition = mapOperatorToCondition(operator);
         if (condition) {
           detectionData.condition = condition;
         }
@@ -178,7 +178,7 @@ export const convertEventToApiPayload = (event: UpdateEventDataParam): SessionEv
   if (event.detectionType === EVENT_DETECTION_TYPES.COMBINATION) {
     if (isNonEmptyObject(expression) && areBothEventsSelected(expression)) {
       // Only include expression if both events are selected
-      detectionData.expression = event.triggerCondition.expression;
+      detectionData.expression = expression;
     }
   }
 
@@ -191,6 +191,7 @@ export const convertEventToApiPayload = (event: UpdateEventDataParam): SessionEv
     branchInstruction: event.branchInstruction || "",
     detectionType: backendDetectionType,
     visibilityType: event.visibilityType || "",
+    detectionConfig: event.detectionConfig,
   };
 
   if (Object.keys(detectionData).length > 0) {
@@ -321,5 +322,6 @@ export const convertApiResponseToEvent = (apiEvent: SessionEvent): UpdateEventDa
     detectionType: frontendDetectionType,
     visibilityType: apiEvent.visibilityType || "",
     triggerCondition,
+    detectionConfig: apiEvent.detectionConfig,
   };
 };

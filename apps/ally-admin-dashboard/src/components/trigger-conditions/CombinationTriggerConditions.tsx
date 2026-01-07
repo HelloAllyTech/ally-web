@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 
-import { useGetSessionEventsQuery, useGetSessionEventByIdQuery } from "@api";
+import { useGetSessionEventsQuery } from "@api";
 import {
   EVENT_DETECTION_TYPES,
   getTriggerConditionConfig,
@@ -16,7 +16,6 @@ import {
   COMBINATION_OPERATOR,
   EventStatus,
   CombinationOperator,
-  SessionEvent,
 } from "@types";
 
 import { TriggerConditionDropdown } from "./TriggerConditionDropdown";
@@ -122,20 +121,6 @@ export const CombinationTriggerConditions: React.FC<CombinationTriggerConditions
   const leftEventId = getEventIdFromNode(expression.left);
   const rightEventId = getEventIdFromNode(expression.right);
 
-  // Fetch event data for left and right dropdowns to get display names
-  const { data: leftEventData, isLoading: isLeftLoading } = useGetSessionEventByIdQuery(
-    leftEventId,
-    {
-      skip: !leftEventId,
-    },
-  );
-  const { data: rightEventData, isLoading: isRightLoading } = useGetSessionEventByIdQuery(
-    rightEventId,
-    {
-      skip: !rightEventId,
-    },
-  );
-
   // Helper to filter events for dropdowns
   const getFilteredEvents = (excludeEventId: string) => {
     return availableEvents
@@ -197,14 +182,6 @@ export const CombinationTriggerConditions: React.FC<CombinationTriggerConditions
     onChange("expression", newExpression);
   };
 
-  // Helper function to get event display name from fetched event data
-  const getEventDisplayName = (eventData: SessionEvent | undefined): string => {
-    if (!eventData) return "";
-    return eventData.eventCode
-      ? `${eventData.eventCode} - ${eventData.name}`
-      : eventData.name || "";
-  };
-
   const getOperator = (): CombinationOperator => {
     return expression.type === COMBINATION_OPERATOR.OR
       ? COMBINATION_OPERATOR.OR
@@ -229,7 +206,7 @@ export const CombinationTriggerConditions: React.FC<CombinationTriggerConditions
         <span className="text-sm text-typography-500">if</span>
         <TriggerConditionDropdown
           value={getEventId(directionMap.LEFT)}
-          displayValue={isLeftLoading ? "Loading..." : getEventDisplayName(leftEventData)}
+          displayValue={triggerCondition?.expression?.left?.name}
           options={leftDropdownOptions}
           onChange={eventId => handleEventChange(directionMap.LEFT, eventId)}
           onLoadMore={hasMore ? handleLoadMore : undefined}
@@ -274,7 +251,7 @@ export const CombinationTriggerConditions: React.FC<CombinationTriggerConditions
             <span className="text-sm text-typography-500">if</span>
             <TriggerConditionDropdown
               value={getEventId(directionMap.LEFT)}
-              displayValue={isLeftLoading ? "Loading..." : getEventDisplayName(leftEventData)}
+              displayValue={triggerCondition?.expression?.left?.name}
               options={leftDropdownOptions}
               onChange={eventId => handleEventChange(directionMap.LEFT, eventId)}
               onLoadMore={hasMore ? handleLoadMore : undefined}
@@ -311,7 +288,7 @@ export const CombinationTriggerConditions: React.FC<CombinationTriggerConditions
             />
             <TriggerConditionDropdown
               value={getEventId(directionMap.RIGHT)}
-              displayValue={isRightLoading ? "Loading..." : getEventDisplayName(rightEventData)}
+              displayValue={triggerCondition?.expression?.right?.name}
               options={rightDropdownOptions}
               onChange={eventId => handleEventChange(directionMap.RIGHT, eventId)}
               onLoadMore={hasMore ? handleLoadMore : undefined}
