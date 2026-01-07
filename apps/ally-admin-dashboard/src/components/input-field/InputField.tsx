@@ -70,7 +70,7 @@ export const InputField: React.FC<InputFieldProps> = ({
 
   useEffect(() => {
     // if the url contains edit, don't set the default value (Edit flow)
-    if (window.location.pathname.includes("edit")) return;
+    if (window.location.pathname.includes("edit") && id === "prompt") return;
 
     if (!isNonEmptyString(formMethods.getValues(id)) && isNonEmptyString(defaultValue)) {
       formMethods.setValue(id, defaultValue);
