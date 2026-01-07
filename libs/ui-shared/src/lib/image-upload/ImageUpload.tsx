@@ -1,18 +1,25 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
+import axios from "axios";
 import { UseFormReturn } from "react-hook-form";
 import { toast } from "sonner";
 
 import { Trash, Upload } from "../../assets";
-
+interface imageUploadType {
+  fileName: string;
+  fileSize: number;
+  contentType: string;
+}
 interface ImageUploadProps {
   formMethods?: UseFormReturn<any>;
   uploadId: string;
   uploadButtonName?: string;
   uploadTitle?: string;
-  details?: any;
+  onUpload: (payload: imageUploadType) => Promise<any>;
+  onDelete: (profileImageUrl: any) => Promise<any>;
+  details: any;
 }
 
 const ASPECT_RATIO_TOLERANCE = 0.01;
@@ -22,37 +29,85 @@ const imageTypes = {
   JPEG: "image/jpeg",
   PNG: "image/png",
 };
+
+const isNonEmptyString = (value: unknown): value is string => {
+  return typeof value === "string" && value?.trim() !== "";
+};
+
 const ImageUpload: React.FC<ImageUploadProps> = ({
   formMethods,
   uploadId,
   uploadButtonName,
   uploadTitle,
+  onUpload,
+  onDelete,
   details,
 }) => {
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
-
   const fileInputRef = useRef<HTMLInputElement>(null);
-
+  const initialFileUrlRef = useRef("");
+  const [previewUrl, setPreviewUrl] = useState<string>("");
+  // Set the initial file URL only once
   useEffect(() => {
-    if (details?.logo || details?.profile) {
-      setPreviewUrl(details.logo || details.profile);
-    } else {
-      setPreviewUrl(null);
-    }
-
-    if (fileInputRef.current) fileInputRef.current.value = "";
+    setPreviewUrl(details?.[uploadId]);
   }, [details]);
 
-  const handleUploadClick = () => {
+  useEffect(() => {
+    if (!initialFileUrlRef.current && isNonEmptyString(details?.[uploadId])) {
+      initialFileUrlRef.current = details?.[uploadId];
+    }
+  }, [uploadId]);
+
+  const uploadToS3 = useCallback(async (file: File, uploadUrl: string) => {
+    try {
+      const response = await axios.put(uploadUrl, file, {
+        headers: { "Content-Type": file.type },
+      });
+
+      if (response.status !== 200) {
+        throw new Error("fileUploadFailed");
+      }
+
+      return true;
+    } catch (error) {
+      toast.error("fileUploadFailed");
+      throw error;
+    }
+  }, []);
+
+  const handleUploadClick = async () => {
     fileInputRef.current?.click();
   };
 
-  const handleRemoveFile = (e: React.MouseEvent) => {
+  const handleRemoveFile = async (e: React.MouseEvent) => {
     e.stopPropagation();
-    setPreviewUrl(null);
+    if (!isNonEmptyString(previewUrl)) return;
 
+    try {
+      await onDelete({ [uploadId]: previewUrl });
+      setPreviewUrl("");
+    } catch {
+      toast.error("Failed to delete image");
+    }
     if (fileInputRef.current) fileInputRef.current.value = "";
-    formMethods?.setValue(uploadId, "", { shouldDirty: true });
+    formMethods?.setValue(uploadId, null, { shouldDirty: true });
+  };
+
+  const uploadFileToS3 = async (file: File) => {
+    const response = await onUpload({
+      fileName: file.name,
+      fileSize: file.size,
+      contentType: file.type,
+    });
+    await uploadToS3(file, response.data.presignedUrl);
+    if (uploadId === "profileImageUrl")
+      formMethods?.setValue(uploadId, response.data.profileImageUrl, {
+        shouldDirty: true,
+      });
+    else
+      formMethods?.setValue(uploadId, response.data.logoUrl, {
+        shouldDirty: true,
+      });
+    setPreviewUrl(response.data[uploadId]);
   };
 
   const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -78,13 +133,16 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
         if (fileInputRef.current) fileInputRef.current.value = "";
         return;
       }
-
       try {
-        // TODO: Upload using presigned URL logic
-        // await uploadFile(file);
+        if (
+          previewUrl !== initialFileUrlRef.current &&
+          isNonEmptyString(initialFileUrlRef.current)
+        ) {
+          await onDelete({ [uploadId]: initialFileUrlRef.current });
+          setPreviewUrl("");
+        }
 
-        setPreviewUrl(objectUrl);
-        formMethods?.setValue(uploadId, objectUrl, { shouldDirty: true });
+        await uploadFileToS3(file);
       } catch {
         URL.revokeObjectURL(objectUrl);
         toast.error("Failed to upload image");

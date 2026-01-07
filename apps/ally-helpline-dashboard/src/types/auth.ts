@@ -23,3 +23,20 @@ export interface RefreshResponse {
   accessToken: string;
   refreshToken: string;
 }
+export interface GetProfileUrlRequest {
+  fileName: string;
+  fileSize: number;
+  contentType: string;
+}
+export interface GetProfileUrlResponse {
+  presignedUrl: string;
+  profileImageUrl: string;
+}
+
+export interface profileUrlRequest {
+  profileImageUrl: string;
+}
+export interface logoUrlResponse {
+  name: string;
+  logoUrl: string;
+}
