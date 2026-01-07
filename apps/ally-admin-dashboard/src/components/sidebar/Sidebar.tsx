@@ -45,6 +45,8 @@ export const Sidebar: React.FC = () => {
     mode: "onChange",
   });
 
+  const imageUploaded = profileSettingsForm.watch("profileImageUrl");
+
   useEffect(() => {
     if (
       location.pathname.includes(ROUTES.CREATE_SIMULATION) ||
@@ -225,11 +227,11 @@ export const Sidebar: React.FC = () => {
           imageUpload
           fields={profileSettings}
           details={user}
-          uploadButtonName={en.auth.uploadImage}
           uploadTitle={en.auth.profileImage}
           handleClick={uploadProfile}
           formMethods={profileSettingsForm}
           uploadId={USER_MODAL_FIELDS_IDS.PROFILE}
+          uploadButtonName={imageUploaded ? en.userManagement.changeImage : en.auth.uploadImage}
         />
       ) : null}
     </>

@@ -1,12 +1,5 @@
 import { useEffect, useState, useCallback, FunctionComponent, useRef } from "react";
 
-import { FetchBaseQueryError } from "@reduxjs/toolkit/query";
-import { motion, AnimatePresence } from "framer-motion";
-import { useSelector } from "react-redux";
-import { useNavigate } from "react-router-dom";
-import { toast } from "sonner";
-
-import { FEATURE_FLAGS_MAP, GoogleSignInButton } from "@ally-ui-mono/ui-shared";
 import {
   useGenerateOTPMutation,
   useGoogleSignInMutation,
@@ -26,8 +19,15 @@ import {
   User,
 } from "@constants";
 import { useUser } from "@hooks";
+import { FetchBaseQueryError } from "@reduxjs/toolkit/query";
 import { RootState } from "@store";
 import { openLinkInNewTab, validateEmail } from "@utils";
+import { motion, AnimatePresence } from "framer-motion";
+import { useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
+
+import { FEATURE_FLAGS_MAP, GoogleSignInButton } from "@ally-ui-mono/ui-shared";
 
 const RESEND_CODE_COUNTDOWN = 60; // 2 minutes
 const DEFAULT_EXPIRES_IN = 10; // 10 minutes
