@@ -146,8 +146,16 @@ export const Cell = ({
       );
       break;
     }
+    // TODO: Upadte logic for editing time input
     case cellTypes.timeInput:
-      element = <TimeInput value={value.value} onChange={updateCellValue} disabled={isDisabled} />;
+      element =
+        value.value === 0 ? (
+          <div>--</div>
+        ) : (
+          <div className="flex items-center gap-2">
+            <TimeInput value={value.value} onChange={updateCellValue} disabled={isDisabled} />
+          </div>
+        );
       break;
     default:
       element = <span />;

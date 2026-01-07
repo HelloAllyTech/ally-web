@@ -3,13 +3,13 @@ import React, { useCallback } from "react";
 import { NumberInput, TimeInput } from "@components";
 
 interface TimeWindowValues {
-  startTime?: string;
-  endTime?: string | null;
+  startTime?: string | null | undefined;
+  endTime?: string | null | undefined;
 }
 
 interface OccurrenceControlValues {
   maxOccurrences?: number;
-  minGapTime?: string;
+  minGapTime?: string | null | undefined;
 }
 
 interface ScoreWindowValues {
