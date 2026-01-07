@@ -2,7 +2,8 @@ import { FC } from "react";
 
 import { Dialog } from "@mui/material";
 
-import { ImageUpload } from "@ally-ui-mono/ui-shared/index";
+import { ImageUpload } from "@ally-ui-mono/ui-shared";
+import { useDeleteProfileImageMutation, useGetProfileImageUrlMutation } from "@api";
 import { CloseIcon } from "@assets";
 
 import { profileSettingsProps } from "./types";
@@ -15,6 +16,9 @@ export const ProfileSettings: FC<profileSettingsProps> = ({
   formMethods,
   onButtonClick,
 }) => {
+  const [getProfileUrl] = useGetProfileImageUrlMutation();
+  const [deleteProfile] = useDeleteProfileImageMutation();
+
   return (
     <Dialog
       open={isOpen}
@@ -25,7 +29,7 @@ export const ProfileSettings: FC<profileSettingsProps> = ({
         },
       }}
     >
-      <div className="h-[480px] w-[400px] flex flex-col p-5">
+      <div className="h-[440px] w-[400px] flex flex-col p-5">
         <CloseIcon className="cursor-pointer absolute right-0 top-0" onClick={onClose} />
         <div className="flex flex-col gap-3">
           <div className="flex item-center justify-center text-2xl font-secondary">
@@ -36,6 +40,8 @@ export const ProfileSettings: FC<profileSettingsProps> = ({
             uploadId="profileImageUrl"
             uploadButtonName="Upload Image"
             uploadTitle="Profile image"
+            onUpload={getProfileUrl}
+            onDelete={deleteProfile}
             details={userData}
           />
           <div className="flex flex-col gap-5">

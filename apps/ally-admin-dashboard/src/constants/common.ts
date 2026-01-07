@@ -50,6 +50,8 @@ export const ApiEndpoints = {
     PATH_TENANT_VISIBILITY: (tenantId: string | number) =>
       `v1/learn/admin/scenario-paths/tenant/${tenantId}`,
     TRIGGER_WARNINGS: "/v1/learn/trigger-warnings",
+    POST_LOGO_URL: "v1/tenants/logo-url",
+    DELETE_LOGO: "v1/tenants/logo",
   },
 
   USER_MANAGEMENT: {

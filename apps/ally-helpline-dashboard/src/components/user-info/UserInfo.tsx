@@ -12,7 +12,8 @@ const UserInfo: FC<{
   isExpanded?: boolean;
   onLogout: () => void;
   onProfileSettings: () => void;
-}> = ({ user, isExpanded, onLogout, onProfileSettings }) => {
+  profileUrl?: string;
+}> = ({ user, isExpanded, onLogout, onProfileSettings, profileUrl }) => {
   const [showLogout, setShowLogout] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const { credits, limitReached, CreditPercentage } = useSimulationCredits();
@@ -53,10 +54,18 @@ const UserInfo: FC<{
               className="bg-white rounded-full flex items-center justify-center w-full h-full"
               data-testid="user-info-avatar"
             >
-              <AccountCircle
-                className="text-typography-700 w-[28px] h-[28px]"
-                data-testid="user-info-avatar-icon"
-              />
+              {profileUrl ? (
+                <img
+                  className="w-[28px] h-[28px] rounded-full object-cover"
+                  src={profileUrl}
+                  alt="Profile"
+                />
+              ) : (
+                <AccountCircle
+                  className="text-typography-700 w-[28px] h-[28px]"
+                  data-testid="user-info-avatar-icon"
+                />
+              )}
             </div>
           </div>
           {isExpanded && (

@@ -122,14 +122,14 @@ export const convertEventToApiPayload = (event: UpdateEventDataParam): SessionEv
 
   const detectionData: SessionEventDetectionData = {};
   const { sentences, speaker, className, value, operator, expression } =
-    event?.triggerCondition || {};
+    (event?.triggerCondition as any) || {};
 
   if (
     event.detectionType === EVENT_DETECTION_TYPES.SENTENCE_SIMILARITY ||
     event.detectionType === EVENT_DETECTION_TYPES.SEMANTIC_SIMILARITY
   ) {
     if (isNonEmptyObject(event.triggerCondition)) {
-      if (isNonEmptyArray(sentences)) detectionData.sentences = sentences;
+      if (isNonEmptyArray(sentences)) detectionData.sentences = sentences as string[];
       if (isNonEmptyString(speaker)) detectionData.speaker = speaker;
     }
   }
@@ -144,10 +144,10 @@ export const convertEventToApiPayload = (event: UpdateEventDataParam): SessionEv
   if (event.detectionType === EVENT_DETECTION_TYPES.SCORE_BASED) {
     if (isNonEmptyObject(event.triggerCondition)) {
       if (isNumber(value)) {
-        detectionData.score = event.triggerCondition.value;
+        detectionData.score = value;
       }
       if (isNonEmptyString(operator)) {
-        const condition = mapOperatorToCondition(event.triggerCondition.operator);
+        const condition = mapOperatorToCondition(operator);
         if (condition) {
           detectionData.condition = condition;
         }
@@ -161,10 +161,10 @@ export const convertEventToApiPayload = (event: UpdateEventDataParam): SessionEv
   if (event.detectionType === EVENT_DETECTION_TYPES.TIME_BASED) {
     if (isNonEmptyObject(event.triggerCondition)) {
       if (isNonEmptyString(value)) {
-        detectionData.time = convertTimeToSeconds(event.triggerCondition.value);
+        detectionData.time = convertTimeToSeconds(value);
       }
       if (isNonEmptyString(operator)) {
-        const condition = mapOperatorToCondition(event.triggerCondition.operator);
+        const condition = mapOperatorToCondition(operator);
         if (condition) {
           detectionData.condition = condition;
         }
@@ -178,9 +178,21 @@ export const convertEventToApiPayload = (event: UpdateEventDataParam): SessionEv
   if (event.detectionType === EVENT_DETECTION_TYPES.COMBINATION) {
     if (isNonEmptyObject(expression) && areBothEventsSelected(expression)) {
       // Only include expression if both events are selected
-      detectionData.expression = event.triggerCondition.expression;
+      detectionData.expression = expression;
     }
   }
+
+  const { maxOccurrences, minGapTime, startTime, endTime, minScore, maxScore } =
+    event?.detectionConfig || {};
+
+  const updatedDetectionConfig = {
+    maxOccurrences,
+    minGapTime: minGapTime && convertTimeToSeconds(String(minGapTime)),
+    startTime: startTime && convertTimeToSeconds(String(startTime)),
+    endTime: endTime && convertTimeToSeconds(String(endTime)),
+    minScore,
+    maxScore,
+  };
 
   const payload: SessionEvent = {
     name: event.name || "",
@@ -191,6 +203,7 @@ export const convertEventToApiPayload = (event: UpdateEventDataParam): SessionEv
     branchInstruction: event.branchInstruction || "",
     detectionType: backendDetectionType,
     visibilityType: event.visibilityType || "",
+    detectionConfig: updatedDetectionConfig,
   };
 
   if (Object.keys(detectionData).length > 0) {
@@ -309,6 +322,17 @@ export const convertApiResponseToEvent = (apiEvent: SessionEvent): UpdateEventDa
     }
   }
 
+  const { maxOccurrences, minGapTime, startTime, endTime, minScore, maxScore } =
+    apiEvent?.detectionConfig || {};
+  const updatedDetectionConfig = {
+    maxOccurrences,
+    minGapTime: minGapTime && convertSecondsToTimeString(Number(minGapTime)),
+    startTime: startTime && convertSecondsToTimeString(Number(startTime)),
+    endTime: endTime && convertSecondsToTimeString(Number(endTime)),
+    minScore,
+    maxScore,
+  };
+
   return {
     id: apiEvent.id,
     name: apiEvent.name || "",
@@ -321,5 +345,6 @@ export const convertApiResponseToEvent = (apiEvent: SessionEvent): UpdateEventDa
     detectionType: frontendDetectionType,
     visibilityType: apiEvent.visibilityType || "",
     triggerCondition,
+    detectionConfig: updatedDetectionConfig,
   };
 };

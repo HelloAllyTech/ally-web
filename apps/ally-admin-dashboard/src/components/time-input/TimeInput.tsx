@@ -1,5 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 
+import { validateTime } from "@utils";
+
 export interface TimeInputProps {
   value?: string;
   onChange?: (value: string) => void;
@@ -36,38 +38,6 @@ export const TimeInput: React.FC<TimeInputProps> = ({
     }
 
     return formatted;
-  };
-
-  const validateTime = (timeString: string): string => {
-    if (!timeString) {
-      return timeString;
-    }
-
-    // Extract digits and pad to 6 digits with trailing zeros
-    const digits = timeString.replace(/\D/g, "").padEnd(6, "0").slice(0, 6);
-    const paddedTime = `${digits.slice(0, 2)}:${digits.slice(2, 4)}:${digits.slice(4, 6)}`;
-
-    const parts = paddedTime.split(":");
-    if (parts.length !== 3) {
-      return timeString;
-    }
-
-    let hours = parseInt(parts[0], 10);
-    let minutes = parseInt(parts[1], 10);
-    let seconds = parseInt(parts[2], 10);
-
-    // Clamp values to valid ranges
-    if (!isNaN(hours)) {
-      hours = Math.max(0, Math.min(23, hours));
-    }
-    if (!isNaN(minutes)) {
-      minutes = Math.max(0, Math.min(59, minutes));
-    }
-    if (!isNaN(seconds)) {
-      seconds = Math.max(0, Math.min(59, seconds));
-    }
-
-    return `${hours.toString().padStart(2, "0")}:${minutes.toString().padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`;
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
