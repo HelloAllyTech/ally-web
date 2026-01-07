@@ -87,6 +87,7 @@ export interface SentenceSimilarityTriggerCondition {
 export interface CombinationExpressionNode {
   type?: CombinationOperator | "NOT";
   id?: string; // Event ID (present when this is a leaf node)
+  name?: string;
   left?: CombinationExpressionNode;
   right?: CombinationExpressionNode;
 }

@@ -8,6 +8,9 @@ export const ApiEndpoints = {
     REFRESH: "/v1/auth/refresh",
     TERMS_AND_AGREEMENT: "/v1/users/terms-and-agreement-status",
     GOOGLE_SIGN_IN: "/v1/auth/google",
+    PROFILE_IMAGE_URL: "/v1/users/profile-image-url",
+    PROFILE_IMAGE: "/v1/users/profile-image",
+    LOGO_URL: "/v1/users/tenant",
   },
   AUTHORIZATION: {
     GET_PERMISSIONS: "/v1/authorization/permissions",

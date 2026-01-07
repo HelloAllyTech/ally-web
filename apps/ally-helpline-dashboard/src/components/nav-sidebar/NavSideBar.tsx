@@ -3,6 +3,7 @@ import { FC, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 
+import { useGetLogoUrlQuery, useUploadProfileImageMutation } from "@api";
 import { Ally, DockToRight, LogoutIllustration } from "@assets";
 import {
   Carousel,
@@ -56,6 +57,8 @@ const Tab: FC<TabProps> = ({ id, Icon, title, activeTab, isExpanded, onClick }) 
 
 const NavSideBar: FC<NavSideBarProps> = ({ activeTab, onTabChange, isOpen, onClose }) => {
   const { permissions, user, logout } = useUser();
+  const [uploadProfile] = useUploadProfileImageMutation();
+  const { data: tenantData } = useGetLogoUrlQuery();
 
   const [isLogoutDialogOpen, setIsLogoutDialogOpen] = useState<boolean>(false);
   const permittedTabs = navBarOptions.filter(
@@ -72,6 +75,8 @@ const NavSideBar: FC<NavSideBarProps> = ({ activeTab, onTabChange, isOpen, onClo
     defaultValues: defaultProfileUploadValues,
     mode: "onChange",
   });
+
+  const profileUrl = profileSettingsForm.watch("profileImageUrl");
 
   useEffect(() => {
     const handleResize = () => {
@@ -137,8 +142,8 @@ const NavSideBar: FC<NavSideBarProps> = ({ activeTab, onTabChange, isOpen, onClo
     setOpenSettings(true);
   };
 
-  const handleProfileUpload = () => {
-    //TODO
+  const handleProfileUpload = async () => {
+    await uploadProfile({ profileImageUrl: profileUrl });
     setOpenSettings(false);
   };
 
@@ -151,11 +156,29 @@ const NavSideBar: FC<NavSideBarProps> = ({ activeTab, onTabChange, isOpen, onClo
         } p-[12px] font-primary`}
       >
         <div className="flex justify-between" data-testid="nav-sidebar-header">
-          <Ally className="m-3 flex-shrink-0" data-testid="nav-sidebar-logo" />
+          <div className="flex items-center gap-1">
+            {/* Show logo image when it exists  */}
+            {tenantData?.logoUrl && (
+              <img
+                src={tenantData.logoUrl}
+                alt="org-logo"
+                className="flex-shrink-0 mb-2 object-cover h-10 w-20"
+              />
+            )}
+            {/* Show Ally when expanded OR when no logo exists */}
+            {(isExpanded || !tenantData?.logoUrl) && (
+              <Ally className="flex-shrink-0" data-testid="nav-sidebar-logo " />
+            )}
+          </div>
+
           <button
             data-testid="nav-sidebar-toggle"
             onClick={handleToggleSidebar}
-            className={`${isExpanded ? "px-5 mx-2" : "absolute z-10 top-0 bg-white mx-2 px-[24px] py-[15px] opacity-0 hover:opacity-100"} hover:bg-gray-50 hover:rounded-md my-2 p-3`}
+            className={`${
+              isExpanded
+                ? "px-5 mx-2"
+                : "absolute z-10 top-0 bg-white mx-2 px-[24px] py-[15px] opacity-0 hover:opacity-100"
+            } hover:bg-gray-50 hover:rounded-md my-2 p-3`}
             title={isExpanded ? "Collapse sidebar" : "Expand sidebar"}
           >
             <DockToRight />
@@ -179,6 +202,7 @@ const NavSideBar: FC<NavSideBarProps> = ({ activeTab, onTabChange, isOpen, onClo
             onLogout={handleLogout}
             isExpanded={isExpanded}
             onProfileSettings={handleSettingsClick}
+            profileUrl={user.profileImageUrl}
           />
         </div>
       </div>

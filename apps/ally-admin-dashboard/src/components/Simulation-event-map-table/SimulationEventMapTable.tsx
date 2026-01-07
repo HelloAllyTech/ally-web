@@ -69,6 +69,8 @@ export const SimulationEventMapTable: FC<SimulationEventMapTableProps> = ({ simu
   const sessionEvents = sessionEventsData?.data || [];
   const isLoading = isSessionEventsLoading || isMappedEventsLoading;
 
+  const tableRef = useRef<HTMLDivElement>(null);
+
   // Create a memoized map for quick event lookup
   const sessionEventsMap = useMemo(() => createSessionEventsMap(sessionEvents), [sessionEvents]);
 
@@ -173,7 +175,12 @@ export const SimulationEventMapTable: FC<SimulationEventMapTableProps> = ({ simu
   };
 
   const onReloadMappedEvents = () => {
-    setMappedEvents(sortEventsByScore(mappedEventsWithColors));
+    setTimeout(() => {
+      setMappedEvents(sortEventsByScore(mappedEventsWithColors));
+      // Target the NotionTable's scrollable container (has overflow-auto class)
+      const scrollableElement = tableRef.current?.querySelector(".overflow-auto");
+      scrollableElement?.scrollTo({ top: 0, behavior: "smooth" });
+    }, 1000);
   };
 
   // Helper function to save events to API
@@ -397,7 +404,10 @@ export const SimulationEventMapTable: FC<SimulationEventMapTableProps> = ({ simu
         </div>
         {!isLoading && renderActionButtons()}
       </div>
-      <div className="p-6 pt-4 pr-0 overflow-y-hidden overflow-x-scroll w-[calc(100vw-270px)] lg:w-[calc(100vw-320px)] max-w-full custom-scrollbar">
+      <div
+        ref={tableRef}
+        className="p-6 pt-4 pr-0 overflow-y-hidden overflow-x-scroll w-[calc(100vw-270px)] lg:w-[calc(100vw-320px)] max-w-full custom-scrollbar"
+      >
         {isLoading ? (
           <EventMapTableLoader />
         ) : (

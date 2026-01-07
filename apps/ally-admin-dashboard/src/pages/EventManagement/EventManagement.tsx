@@ -154,6 +154,20 @@ export const EventManagement: React.FC = () => {
       message: { value: event.message || "", disabled: false, rowId: event.id },
       emoji: { value: event.emoji || "", disabled: false, rowId: event.id },
       visibilityType: { value: event.visibilityType || "", disabled: false, rowId: event.id },
+      maxOccurrences: {
+        value: event.detectionConfig?.maxOccurrences ?? 0,
+        disabled: false,
+        rowId: event.id,
+      },
+      minGapTime: {
+        value: event.detectionConfig?.minGapTime ?? 0,
+        disabled: false,
+        rowId: event.id,
+      },
+      startTime: { value: event.detectionConfig?.startTime ?? 0, disabled: false, rowId: event.id },
+      endTime: { value: event.detectionConfig?.endTime ?? 0, disabled: false, rowId: event.id },
+      minScore: { value: event.detectionConfig?.minScore ?? 0, disabled: false, rowId: event.id },
+      maxScore: { value: event.detectionConfig?.maxScore ?? 0, disabled: false, rowId: event.id },
     };
   }, []);
 
@@ -172,6 +186,7 @@ export const EventManagement: React.FC = () => {
       emoji: selectedEvent.emoji || "",
       visibilityType: selectedEvent.visibilityType || "",
       triggerCondition: selectedEvent.triggerCondition,
+      detectionConfig: selectedEvent.detectionConfig,
     };
   }, [selectedEvent]);
 
