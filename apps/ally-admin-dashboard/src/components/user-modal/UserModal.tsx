@@ -3,6 +3,7 @@ import { useEffect, useRef } from "react";
 import { Controller } from "react-hook-form";
 
 import { ImageUpload } from "@ally-ui-mono/ui-shared";
+import { useDeleteLogoMutation, usePostLogoUrlMutation } from "@api";
 import { Button, DropdownwithTag, CustomDropdown, CreditField, ProfileCard } from "@components";
 import { en, FieldOptions, KeyboardKeys, USER_MODAL_FIELDS_IDS, UserRole } from "@constants";
 import { UserModalProps, FieldProps } from "@types";
@@ -47,6 +48,9 @@ export const UserModal: React.FC<UserModalProps> = ({
   const { isValid, isDirty } = formMethods?.formState || {};
 
   const backdropMouseDownRef = useRef(false);
+
+  const [logoUpload] = usePostLogoUrlMutation();
+  const [deleteLogo] = useDeleteLogoMutation();
 
   const handlePrimaryAction = formMethods
     ? formMethods.handleSubmit((data: any) => {
@@ -329,6 +333,8 @@ export const UserModal: React.FC<UserModalProps> = ({
             uploadId={uploadId}
             uploadButtonName={uploadButtonName}
             uploadTitle={uploadTitle}
+            onUpload={logoUpload}
+            onDelete={deleteLogo}
             details={details}
           />
         )}

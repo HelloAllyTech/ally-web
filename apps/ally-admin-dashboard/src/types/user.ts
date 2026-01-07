@@ -27,7 +27,7 @@ export interface Tenant {
   code: string;
   description: string;
   status: string;
-  logo: string;
+  logoUrl: string;
   metadata: Record<string, unknown>;
   settings: Record<string, unknown>;
   createdAt: string;
@@ -113,6 +113,7 @@ export interface CreateTenantBody {
   name: string;
   code: string;
   description?: string;
+  logoUrl?: string;
 }
 
 export interface GetUsersResponse {
@@ -212,4 +213,18 @@ export interface AddCreditBody {
 export interface disableSuccessResponse {
   success: boolean;
   message: string;
+}
+export interface GetLogoUrlRequest {
+  fileName: string;
+  fileSize: number;
+  contentType: string;
+}
+
+export interface GetLogoUrlResponse {
+  presignedUrl: string;
+  logoUrl: string;
+}
+
+export interface DeleteLogoRequest {
+  LogoUrl: string;
 }
