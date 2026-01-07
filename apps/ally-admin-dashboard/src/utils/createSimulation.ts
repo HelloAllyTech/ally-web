@@ -1,6 +1,5 @@
-import { FORM_FIELD_IDS, SIMULATION_CREATOR_FIELD_GROUPS } from "@constants";
-
 import { FEATURE_FLAGS_MAP } from "@ally-ui-mono/ui-shared/featureFlag";
+import { FORM_FIELD_IDS, SIMULATION_CREATOR_FIELD_GROUPS } from "@constants";
 import { GetSimulationByIdResponse } from "@types";
 
 export const getCreateSimulationSubSectionById = (id: string) => {
@@ -38,7 +37,11 @@ export const formatSimulationResponseData = (data: GetSimulationByIdResponse) =>
     difficultyLevel: data?.difficultyLevel,
     ...(FEATURE_FLAGS_MAP.AUTO_TERMINATION_FIELD_FLAG
       ? {
-          terminationEvents: data?.terminationEvents,
+          terminationEvents: data?.terminationEvents?.map(event => ({
+            id: event.eventId,
+            name: event.name,
+            message: event.message,
+          })),
         }
       : {
           autoTerminationStatus: Boolean(data?.terminationEvent?.autoTerminationStatus),
