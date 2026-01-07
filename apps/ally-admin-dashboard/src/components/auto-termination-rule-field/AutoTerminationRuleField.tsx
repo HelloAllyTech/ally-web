@@ -1,10 +1,10 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useMemo } from "react";
 
 import { useGetSessionEventsQuery } from "@api";
 import { BlueAdd, TrashRed } from "@assets";
 import { en } from "@constants";
 
-import { DropdownField } from "../dropdown-field";
+import { CustomDropdownField } from "../custom-dropdown-field";
 import { InputField } from "../input-field";
 
 interface AutoTerminationRuleFieldProps {
@@ -42,8 +42,8 @@ export const AutoTerminationRuleField: React.FC<AutoTerminationRuleFieldProps> =
   const [searchTerm, setSearchTerm] = useState("");
 
   const { setValue, watch } = formMethods;
-  const watchedRules = watch(TERMINATION_RULES_FIELD);
-  const terminationRules = watchedRules?.length > 0 ? watchedRules : [createEmptyRule()];
+
+  const watchedRules = watch(TERMINATION_RULES_FIELD) || [createEmptyRule()];
 
   const { data: sessionEventsData } = useGetSessionEventsQuery({
     offset: DEFAULT_OFFSET,
@@ -57,41 +57,38 @@ export const AutoTerminationRuleField: React.FC<AutoTerminationRuleFieldProps> =
       label: event.name || "",
     })) || [];
 
-  const optionLabelMapRef = useRef<Record<string, string>>({});
-
-  useEffect(() => {
-    eventOptions.forEach(opt => {
-      if (opt.value) optionLabelMapRef.current[opt.value] = opt.label;
-    });
-  }, [eventOptions]);
+  const filteredEventOptions = useMemo(() => {
+    return eventOptions.filter(
+      (option: { value: string; label: string }) =>
+        !watchedRules.some((rule: any) => rule.id === option.value),
+    );
+  }, [eventOptions, watchedRules]);
 
   const handleSearchTextChange = (searchTerm: string) => {
     setSearchTerm(searchTerm);
   };
 
   const handleAddTermination = () => {
-    setValue(TERMINATION_RULES_FIELD, [...terminationRules, createEmptyRule()]);
+    setValue(TERMINATION_RULES_FIELD, [...watchedRules, createEmptyRule()]);
   };
 
   const handleRemoveTermination = (ruleId: number) => {
-    const updatedRules = terminationRules.filter((rule: any) => rule.id !== ruleId);
+    const updatedRules = watchedRules.filter((rule: any) => rule.id !== ruleId);
     setValue(TERMINATION_RULES_FIELD, updatedRules);
   };
 
-  const getFilteredOptions = (currentRuleId?: string) => {
-    const selectedEventIds = terminationRules
-      .map(rule => rule.id)
-      .filter(id => id && id !== currentRuleId);
-
-    return eventOptions.filter(
-      option => !selectedEventIds.includes(option.value) || option.value === currentRuleId,
+  const onHandleSelect = (option: { value: string; label: string }, itemIndex: number) => {
+    const updatedRules = watchedRules.map(
+      (rule: { id: string; message: string; name: string }, index: number) => {
+        if (index === itemIndex) {
+          return { id: option.value, message: rule.message, name: option.label };
+        }
+        return rule;
+      },
     );
+    setValue(TERMINATION_RULES_FIELD, updatedRules);
   };
 
-  const getDefaultOption = (currentRuleId?: string) => {
-    if (!currentRuleId) return "";
-    return optionLabelMapRef.current[currentRuleId] ?? "";
-  };
   return (
     <div
       className={`flex flex-col gap-6 w-full border border-border-light rounded-md p-4 bg-neutral-50 `}
@@ -101,7 +98,7 @@ export const AutoTerminationRuleField: React.FC<AutoTerminationRuleFieldProps> =
       </div>
 
       <div className="flex flex-col gap-6">
-        {terminationRules.map((rule: any, index: number) => (
+        {watchedRules.map((rule: any, index: number) => (
           <div
             key={rule.id}
             className="flex flex-col gap-4 border border-border-light rounded-md p-4 bg-white relative"
@@ -109,33 +106,30 @@ export const AutoTerminationRuleField: React.FC<AutoTerminationRuleFieldProps> =
             <button
               type="button"
               onClick={() => handleRemoveTermination(rule.id)}
-              disabled={terminationRules.length === 1}
               className="absolute top-2 right-2 disabled:opacity-40"
             >
               <TrashRed />
             </button>
-
             <div className="flex flex-col gap-2">
               <label className="text-base text-typography-900 flex items-center gap-1">
                 {TERMINATION_FIELDS_MAP.triggerEvent.label}
               </label>
 
-              <DropdownField
-                id={`${TERMINATION_RULES_FIELD}.${index}.${TERMINATION_FIELDS_MAP.triggerEvent.id}`}
-                label={TERMINATION_FIELDS_MAP.triggerEvent.label}
-                formMethods={formMethods}
-                options={getFilteredOptions(rule.id)}
+              <CustomDropdownField
+                options={filteredEventOptions}
                 isSearchable
                 handleSearchTextChange={handleSearchTextChange}
-                defaultOption={getDefaultOption(rule.id)}
+                onHandleSelect={option => onHandleSelect(option, index)}
+                defaultOption={{ label: rule?.name, value: rule?.id }}
               />
             </div>
-
             <InputField
               label={TERMINATION_FIELDS_MAP.triggerMessage.label}
               id={`${TERMINATION_RULES_FIELD}.${index}.${TERMINATION_FIELDS_MAP.triggerMessage.id}`}
               formMethods={formMethods}
               multiline
+              isMandatory={Boolean(rule.id)}
+              defaultValue={rule?.message}
               placeholder={TERMINATION_FIELDS_MAP.triggerMessage.placeholder}
               maxLength={200}
               minHeight="120"
@@ -149,8 +143,8 @@ export const AutoTerminationRuleField: React.FC<AutoTerminationRuleFieldProps> =
           onClick={handleAddTermination}
           className="text-primary-500 flex gap-3 items-center font-medium font-tertiary text-base disabled:opacity-40"
           disabled={
-            terminationRules.length >= RULE_LIMIT ||
-            !terminationRules[terminationRules.length - 1]?.id
+            watchedRules.length >= RULE_LIMIT ||
+            (watchedRules.length > 0 && !watchedRules[watchedRules.length - 1]?.id)
           }
         >
           <BlueAdd />
