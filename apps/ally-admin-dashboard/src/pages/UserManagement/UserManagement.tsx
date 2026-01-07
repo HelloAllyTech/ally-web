@@ -98,6 +98,8 @@ export const UserManagement: FC = () => {
     { id: TabType.ORGANIZATIONS, label: en.userManagement.organizations, count: tenantsCount },
   ];
 
+  const logoValue = tenantMethods.watch("logo");
+
   const renderEditModal = () => {
     switch (selectedOption) {
       case UserMenuOptions.EDIT_DETAILS:
@@ -298,6 +300,12 @@ export const UserManagement: FC = () => {
                 handleClick={handleTenantFormSubmit}
                 imageUpload
                 uploadId="logo"
+                uploadButtonName={
+                  logoValue || selectedTenant?.logo
+                    ? en.userManagement.changeLogo
+                    : en.userManagement.uploadLogo
+                }
+                uploadTitle="Logo"
               />
             ) : (
               <UserModal
