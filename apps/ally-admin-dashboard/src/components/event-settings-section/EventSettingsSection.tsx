@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useCallback } from "react";
 
 import { NumberInput, TimeInput } from "@components";
 
@@ -12,6 +12,11 @@ interface OccurrenceControlValues {
   minGapTime?: string;
 }
 
+interface ScoreWindowValues {
+  minScore?: number | null;
+  maxScore?: number | null;
+}
+
 interface TimeWindowCallbacks {
   onApplicableFromChange?: (value: string) => void;
   onApplicableTillChange?: (value: string | null) => void;
@@ -22,10 +27,24 @@ interface OccurrenceControlCallbacks {
   onMinGapTimeChange?: (value: string) => void;
 }
 
+interface ScoreWindowCallbacks {
+  onMinScoreChange?: (value: number | null) => void;
+  onMaxScoreChange?: (value: number | null) => void;
+}
+
 interface FieldRowProps {
   label: string;
   children: React.ReactNode;
 }
+
+const InfinityButton: React.FC<{ onClick: () => void; magnitude?: string }> = ({
+  onClick,
+  magnitude = null,
+}) => (
+  <span className="text-base cursor-pointer hover:text-typography-600" onClick={onClick}>
+    {magnitude}∞
+  </span>
+);
 
 const FieldRow: React.FC<FieldRowProps> = ({ label, children }) => (
   <div className="flex flex-row min-h-[40px] items-center text-base justify-between">
@@ -76,14 +95,11 @@ export const TimeWindowSection: React.FC<TimeWindowValues & TimeWindowCallbacks>
 
       <FieldRow label="Applicable till">
         {applicableTill === null || applicableTill === "00:00:00" ? (
-          <span
-            className="text-base cursor-pointer hover:text-typography-600"
+          <InfinityButton
             onClick={() =>
               onApplicableTillChange?.(applicableTill === null ? "00:01:00" : applicableTill)
             }
-          >
-            ∞
-          </span>
+          />
         ) : (
           <div className="flex items-center gap-2">
             <TimeInput
@@ -137,6 +153,70 @@ export const OccurrenceControlSection: React.FC<
           placeholder="00:00:00"
           className="ml-[-10px]"
         />
+      </FieldRow>
+    </>
+  );
+};
+
+export const ScoreWindowSection: React.FC<ScoreWindowValues & ScoreWindowCallbacks> = ({
+  minScore = null,
+  maxScore = null,
+  onMinScoreChange,
+  onMaxScoreChange,
+}) => {
+  const handleMinScoreChange = useCallback(
+    (value: number) => onMinScoreChange?.(value),
+    [onMinScoreChange],
+  );
+
+  const handleMaxScoreChange = useCallback(
+    (value: number) => onMaxScoreChange?.(value),
+    [onMaxScoreChange],
+  );
+
+  const handleMinInfinityToggle = useCallback(() => {
+    if (minScore === null) onMinScoreChange?.(0);
+    else onMinScoreChange?.(null);
+  }, [minScore, onMinScoreChange]);
+
+  const handleMaxInfinityToggle = useCallback(() => {
+    if (maxScore === null) onMaxScoreChange?.(0);
+    else onMaxScoreChange?.(null);
+  }, [maxScore, onMaxScoreChange]);
+
+  return (
+    <>
+      <SectionHeader title="Score Window" />
+      <FieldRow label="Minimum score">
+        {minScore === null ? (
+          <InfinityButton onClick={handleMinInfinityToggle} magnitude="-" />
+        ) : (
+          <div className="flex items-center gap-2">
+            <NumberInput
+              value={minScore}
+              onChange={handleMinScoreChange}
+              placeholder="0"
+              className="w-[80px]"
+              inputClassName="!py-0 text-base"
+            />
+          </div>
+        )}
+      </FieldRow>
+
+      <FieldRow label="Maximum score">
+        {maxScore === null ? (
+          <InfinityButton onClick={handleMaxInfinityToggle} magnitude="+" />
+        ) : (
+          <div className="flex items-center gap-2">
+            <NumberInput
+              value={maxScore}
+              onChange={handleMaxScoreChange}
+              placeholder="100"
+              className="w-[80px]"
+              inputClassName="!py-0 text-base"
+            />
+          </div>
+        )}
       </FieldRow>
     </>
   );

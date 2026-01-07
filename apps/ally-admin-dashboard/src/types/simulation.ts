@@ -56,6 +56,7 @@ export interface SimulationInput {
   autoTerminationStatus?: boolean;
   terminationEventId?: string;
   terminationMessage?: string;
+  terminationEvents?: terminationEvent[];
   isGlobal?: boolean;
   triggerWarningIds?: string[];
   languageVoices?: Record<string, string>;
@@ -79,6 +80,12 @@ export interface CustomFieldType {
   id?: string;
   name?: string;
   value?: string;
+}
+export interface terminationEvent {
+  eventId: string;
+  message: string;
+  autoTerminationStatus: boolean;
+  name: string;
 }
 
 export interface GetSimulationByIdResponse {
@@ -117,7 +124,8 @@ export interface GetSimulationByIdResponse {
     agentDialogues?: string[];
     customFields: CustomFieldType[];
   };
-  terminationEvent: {
+  terminationEvents?: terminationEvent[];
+  terminationEvent?: {
     eventId: string;
     message: string;
     autoTerminationStatus: boolean;

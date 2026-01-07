@@ -165,7 +165,7 @@ export const addScoreColors = (data: UpdateScenarioEventDataParam[]) => {
 
   // Color anchors
   const RED = { r: 220, g: 80, b: 80 };
-  const WHITE = { r: 245, g: 245, b: 245 };
+  const YELLOW = { r: 253, g: 249, b: 232 };
   const GREEN = { r: 80, g: 180, b: 120 };
 
   const lerp = (a, b, t) => Math.round(a + (b - a) * t);
@@ -175,13 +175,13 @@ export const addScoreColors = (data: UpdateScenarioEventDataParam[]) => {
 
   const getColor = value => {
     if (value <= 0) {
-      // Red → White
+      // Red → Yellow
       const t = (value - min) / (0 - min || 1);
-      return mix(RED, WHITE, Math.max(0, Math.min(1, t)));
+      return mix(RED, YELLOW, Math.max(0, Math.min(1, t)));
     }
-    // White → Green
+    // Yellow → Green
     const t = value / (max || 1);
-    return mix(WHITE, GREEN, Math.max(0, Math.min(1, t)));
+    return mix(YELLOW, GREEN, Math.max(0, Math.min(1, t)));
   };
 
   return data.map(item => ({
