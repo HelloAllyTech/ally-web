@@ -35,7 +35,7 @@ import ManageAccounts from "./manageAccounts.svg?react";
 import Pathway from "./pathway.svg?react";
 import Play from "./play.svg?react";
 import Plus from "./plus.svg?react";
-import Refresh from "./Refresh.svg?react";
+import Refresh from "./refresh.svg?react";
 import Search from "./search.svg?react";
 import SemanticSimilarity from "./semanticSimilarity.svg?react";
 import Simulation from "./simulation.svg?react";
