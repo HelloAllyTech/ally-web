@@ -25,9 +25,9 @@ export function useOrganizationManagement() {
     orgname: string;
     orgcode: string;
     description: string;
-    logo?: string;
+    logoUrl?: string;
   } = {
-    logo: "",
+    logoUrl: "",
     orgname: "",
     orgcode: "",
     description: "",
@@ -84,7 +84,7 @@ export function useOrganizationManagement() {
   };
 
   const handleCreateTenant = async (data: {
-    logo?: string;
+    logoUrl?: string;
     orgname: string;
     orgcode: string;
     description?: string;
@@ -94,15 +94,15 @@ export function useOrganizationManagement() {
         name: string;
         code: string;
         description: string;
-        logo?: string;
+        logoUrl?: string;
       } = {
         name: data.orgname,
         code: data.orgcode,
         description: data.description ?? "",
       };
       // T
-      if (FEATURE_FLAGS_MAP.LOGO_UPLOAD_FLAG && data.logo) {
-        payload.logo = data.logo;
+      if (FEATURE_FLAGS_MAP.LOGO_UPLOAD_FLAG) {
+        payload.logoUrl = data.logoUrl;
       }
       await createTenant(payload).unwrap();
       setAddOrganizationModalOpen(false);
@@ -116,7 +116,7 @@ export function useOrganizationManagement() {
   const onEditTenant = (tenant: Tenant) => {
     setSelectedTenant(tenant);
     tenantMethods.reset({
-      logo: tenant.logo ?? "",
+      logoUrl: tenant.logoUrl ?? "",
       orgname: tenant.name ?? "",
       orgcode: tenant.code ?? "",
       description: tenant.description ?? "",
@@ -125,7 +125,7 @@ export function useOrganizationManagement() {
   };
 
   const handleEditTenant = async (data: {
-    logo?: string;
+    logoUrl?: string;
     orgname: string;
     orgcode: string;
     description?: string;
@@ -136,15 +136,15 @@ export function useOrganizationManagement() {
         name: string;
         code: string;
         description: string;
-        logo?: string;
+        logoUrl?: string;
       } = {
         name: data.orgname,
         code: data.orgcode,
         description: data.description || "",
       };
 
-      if (FEATURE_FLAGS_MAP.LOGO_UPLOAD_FLAG && data.logo) {
-        payload.logo = data.logo;
+      if (FEATURE_FLAGS_MAP.LOGO_UPLOAD_FLAG) {
+        payload.logoUrl = data.logoUrl;
       }
 
       await updateTenant({ id: selectedTenant.id, data: payload }).unwrap();
@@ -161,15 +161,14 @@ export function useOrganizationManagement() {
     orgname: string;
     orgcode: string;
     description: string;
-    logo?: string;
+    logoUrl?: string;
   }) => {
     const payload = {
       orgname: data.orgname,
       orgcode: data.orgcode,
       description: data.description,
-      ...(FEATURE_FLAGS_MAP.LOGO_UPLOAD_FLAG && data.logo ? { logo: data.logo } : {}),
+      ...(FEATURE_FLAGS_MAP.LOGO_UPLOAD_FLAG ? { logoUrl: data.logoUrl } : {}),
     };
-
     if (selectedTenant) {
       await handleEditTenant(payload);
     } else {

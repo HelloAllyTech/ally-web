@@ -13,6 +13,9 @@ import {
   GetCreditResponse,
   AddCreditBody,
   disableSuccessResponse,
+  GetLogoUrlRequest,
+  GetLogoUrlResponse,
+  DeleteLogoRequest,
 } from "@types";
 
 const userManagementAPI = baseAPI.injectEndpoints({
@@ -170,6 +173,25 @@ const userManagementAPI = baseAPI.injectEndpoints({
       }),
       invalidatesTags: [TAG_TYPES.SIMULATION_PATHS],
     }),
+
+    postLogoUrl: builder.mutation<GetLogoUrlResponse, GetLogoUrlRequest>({
+      query: body => ({
+        url: ApiEndpoints.SIMULATION_STUDIO.POST_LOGO_URL,
+        method: HttpMethod.POST,
+        body,
+      }),
+    }),
+
+    /**
+     * Delete cover image from S3
+     */
+    deleteLogo: builder.mutation<boolean, DeleteLogoRequest>({
+      query: body => ({
+        url: ApiEndpoints.SIMULATION_STUDIO.DELETE_LOGO,
+        method: HttpMethod.DELETE,
+        body,
+      }),
+    }),
   }),
 });
 
@@ -193,4 +215,6 @@ export const {
   useEnableSimulationMutation,
   useEnablePathMutation,
   useDisablePathMutation,
+  usePostLogoUrlMutation,
+  useDeleteLogoMutation,
 } = userManagementAPI;
