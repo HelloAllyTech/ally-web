@@ -226,6 +226,15 @@ export interface SessionEventDetectionData {
   expression?: ExpressionNode;
 }
 
+export interface EventDetectionConfig {
+  startTime: string | number | null | undefined;
+  endTime: string | number | null | undefined;
+  maxOccurrences: number;
+  minGapTime: string | number | null | undefined;
+  minScore: number;
+  maxScore: number | null | undefined;
+}
+
 /**
  * Session Event interface matching the API payload format
  * Used for creating and updating session events
@@ -242,6 +251,7 @@ export interface SessionEvent {
   detectionType?: SessionEventDetectionType | string;
   visibilityType?: string;
   detectionData?: SessionEventDetectionData;
+  detectionConfig?: EventDetectionConfig;
 }
 
 export interface GetSessionEventsQuery {

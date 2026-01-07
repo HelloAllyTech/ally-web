@@ -37,6 +37,9 @@ vi.mock("@constants", () => ({
     CALL_SUMMARY: "CallSummary",
     CALL_LOGS: "CallLogs",
     SIMULATION_LOGS: "SimulationLogs",
+    SIMULATION_CREDITS: "SimulationCredits",
+    USER: "User",
+    SCENARIO_PATHWAY_DETAILS: "ScenarioPathwayDetails",
   },
 }));
 

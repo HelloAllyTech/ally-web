@@ -70,6 +70,24 @@ vi.mock("@components", () => ({
         </button>
       </div>
     ) : null,
+  OccurrenceControlSection: ({ maxOccurrences, minGapTime }: any) => (
+    <div data-testid="occurrence-control-section">
+      <span>Max Occurrences: {maxOccurrences}</span>
+      <span>Min Gap Time: {minGapTime}</span>
+    </div>
+  ),
+  TimeWindowSection: ({ startTime, endTime }: any) => (
+    <div data-testid="time-window-section">
+      <span>Start Time: {startTime}</span>
+      <span>End Time: {endTime}</span>
+    </div>
+  ),
+  ScoreWindowSection: ({ minScore, maxScore }: any) => (
+    <div data-testid="score-window-section">
+      <span>Min Score: {minScore}</span>
+      <span>Max Score: {maxScore}</span>
+    </div>
+  ),
 }));
 
 vi.mock("@constants", () => ({
@@ -129,6 +147,12 @@ vi.mock("@utils/eventNameGenerator", () => ({
     };
     const prefix = prefixMap[eventType] || "EV";
     return `${prefix}001`;
+  },
+}));
+
+vi.mock("@ally-ui-mono/ui-shared/featureFlag", () => ({
+  FEATURE_FLAGS_MAP: {
+    EVENT_DETECTION_CONFIG_FLAG: false,
   },
 }));
 
