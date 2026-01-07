@@ -1,6 +1,6 @@
 import { UseFormReturn } from "react-hook-form";
 
-import { SessionEventDetectionData, triggerWarning } from "./simulation";
+import { SessionEventDetectionData, triggerWarning, EventDetectionConfig } from "./simulation";
 import { TriggerCondition } from "./triggerConditions";
 
 export type FormData = {
@@ -152,6 +152,7 @@ export interface UpdateEventDataParam {
   visibilityType?: string;
   triggerCondition?: TriggerCondition;
   detectionData?: SessionEventDetectionData;
+  detectionConfig?: EventDetectionConfig;
 }
 
 export interface UpdateScenarioEventDataParam {

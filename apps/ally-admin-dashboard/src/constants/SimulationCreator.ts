@@ -1,3 +1,4 @@
+import { FEATURE_FLAGS_MAP } from "@ally-ui-mono/ui-shared/featureFlag";
 import { cellTypes } from "@components";
 import { CreatorFieldGroups, FormFieldConfig } from "@types";
 
@@ -382,39 +383,58 @@ export const EVENT_MANAGEMENT_TABLE_COLUMNS = [
     options: [],
     minWidth: 200,
   },
-  // TODO: Uncomment this once the time input is implemented
-  // {
-  //   id: "applicableFrom",
-  //   label: "Applicable from",
-  //   accessor: "applicableFrom",
-  //   dataType: cellTypes.timeInput,
-  //   options: [],
-  //   minWidth: 120,
-  // },
-  // {
-  //   id: "applicableTill",
-  //   label: "Applicable till",
-  //   accessor: "applicableTill",
-  //   dataType: cellTypes.timeInput,
-  //   options: [],
-  //   minWidth: 120,
-  // },
-  // {
-  //   id: "maxOccurrences",
-  //   label: "Max occurrences",
-  //   accessor: "maxOccurrences",
-  //   dataType: cellTypes.number,
-  //   options: [],
-  //   minWidth: 120,
-  // },
-  // {
-  //   id: "minGapTime",
-  //   label: "Min gap time",
-  //   accessor: "minGapTime",
-  //   dataType: cellTypes.timeInput,
-  //   options: [],
-  //   minWidth: 120,
-  // },
+  ...(FEATURE_FLAGS_MAP.EVENT_DETECTION_CONFIG_FLAG
+    ? [
+        {
+          id: "startTime",
+          label: "Applicable from",
+          accessor: "startTime",
+          dataType: cellTypes.timeInput,
+          options: [],
+          minWidth: 120,
+        },
+        {
+          id: "endTime",
+          label: "Applicable till",
+          accessor: "endTime",
+          dataType: cellTypes.timeInput,
+          options: [],
+          minWidth: 120,
+        },
+        {
+          id: "maxOccurrences",
+          label: "Max occurrences",
+          accessor: "maxOccurrences",
+          dataType: cellTypes.number,
+          options: [],
+          minWidth: 120,
+        },
+        {
+          id: "minGapTime",
+          label: "Min gap time",
+          accessor: "minGapTime",
+          dataType: cellTypes.timeInput,
+          options: [],
+          minWidth: 120,
+        },
+        {
+          id: "minScore",
+          label: "Min score",
+          accessor: "minScore",
+          dataType: cellTypes.number,
+          options: [],
+          minWidth: 120,
+        },
+        {
+          id: "maxScore",
+          label: "Max score",
+          accessor: "maxScore",
+          dataType: cellTypes.number,
+          options: [],
+          minWidth: 120,
+        },
+      ]
+    : []),
   {
     id: "message",
     label: "Default real time feedback message",

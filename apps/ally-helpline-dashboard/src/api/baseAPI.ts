@@ -139,6 +139,8 @@ export const baseAPI = createApi({
     TAG_TYPES.CALL_LOGS,
     TAG_TYPES.SIMULATION_LOGS,
     TAG_TYPES.SIMULATION_CREDITS,
+    TAG_TYPES.USER,
+    TAG_TYPES.SCENARIO_PATHWAY_DETAILS,
   ],
   endpoints: () => ({}),
 });

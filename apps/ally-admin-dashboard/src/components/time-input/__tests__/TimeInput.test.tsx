@@ -1,6 +1,10 @@
 import { render, screen, fireEvent } from "@testing-library/react";
 import { describe, it, expect, vi } from "vitest";
 
+vi.mock("@components/mapped-event-side-panel", () => ({
+  MappedEventSidePanel: () => null,
+}));
+
 import { TimeInput } from "../TimeInput";
 
 describe("TimeInput", () => {

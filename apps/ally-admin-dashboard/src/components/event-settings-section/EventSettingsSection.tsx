@@ -3,13 +3,13 @@ import React, { useCallback } from "react";
 import { NumberInput, TimeInput } from "@components";
 
 interface TimeWindowValues {
-  applicableFrom?: string;
-  applicableTill?: string | null;
+  startTime?: string | null | undefined;
+  endTime?: string | null | undefined;
 }
 
 interface OccurrenceControlValues {
   maxOccurrences?: number;
-  minGapTime?: string;
+  minGapTime?: string | null | undefined;
 }
 
 interface ScoreWindowValues {
@@ -18,8 +18,8 @@ interface ScoreWindowValues {
 }
 
 interface TimeWindowCallbacks {
-  onApplicableFromChange?: (value: string) => void;
-  onApplicableTillChange?: (value: string | null) => void;
+  onStartTimeChange?: (value: string) => void;
+  onEndTimeChange?: (value: string | null) => void;
 }
 
 interface OccurrenceControlCallbacks {
@@ -63,20 +63,20 @@ const SectionHeader: React.FC<{ title: string }> = ({ title }) => (
 );
 
 export const TimeWindowSection: React.FC<TimeWindowValues & TimeWindowCallbacks> = ({
-  applicableFrom = "00:00:00",
-  applicableTill = null,
-  onApplicableFromChange,
-  onApplicableTillChange,
+  startTime = "00:00:00",
+  endTime = null,
+  onStartTimeChange,
+  onEndTimeChange,
 }) => {
-  const handleApplicableFromChange = (value: string) => {
-    onApplicableFromChange?.(value);
+  const handleStartTimeChange = (value: string) => {
+    onStartTimeChange?.(value);
   };
 
-  const handleApplicableTillChange = (value: string) => {
+  const handleEndTimeChange = (value: string) => {
     if (value === "" || value === "∞") {
-      onApplicableTillChange?.(null);
+      onEndTimeChange?.(null);
     } else {
-      onApplicableTillChange?.(value);
+      onEndTimeChange?.(value);
     }
   };
 
@@ -86,25 +86,23 @@ export const TimeWindowSection: React.FC<TimeWindowValues & TimeWindowCallbacks>
 
       <FieldRow label="Applicable from">
         <TimeInput
-          value={applicableFrom}
-          onChange={handleApplicableFromChange}
+          value={startTime}
+          onChange={handleStartTimeChange}
           placeholder="00:00:00"
           className="ml-[-10px]"
         />
       </FieldRow>
 
       <FieldRow label="Applicable till">
-        {applicableTill === null || applicableTill === "00:00:00" ? (
+        {endTime === null || endTime === "00:00:00" ? (
           <InfinityButton
-            onClick={() =>
-              onApplicableTillChange?.(applicableTill === null ? "00:01:00" : applicableTill)
-            }
+            onClick={() => onEndTimeChange?.(endTime === null ? "00:01:00" : endTime)}
           />
         ) : (
           <div className="flex items-center gap-2">
             <TimeInput
-              value={applicableTill}
-              onChange={handleApplicableTillChange}
+              value={endTime}
+              onChange={handleEndTimeChange}
               placeholder="00:00:00"
               className="ml-[-10px]"
             />

@@ -1,5 +1,6 @@
 import React, { useState, useCallback, useEffect } from "react";
 
+import { FEATURE_FLAGS_MAP } from "@ally-ui-mono/ui-shared";
 import { DoubleArrowRight, Trash } from "@assets";
 import {
   ActionConfirmationPopup,
@@ -7,6 +8,9 @@ import {
   EmojiPickerComponent,
   TriggerConditions,
   NumberInput,
+  OccurrenceControlSection,
+  ScoreWindowSection,
+  TimeWindowSection,
 } from "@components";
 import { en, EVENT_DETECTION_TYPES } from "@constants";
 import { useDebounce } from "@hooks";
@@ -225,6 +229,65 @@ export const EventSidePanel: React.FC<EventSidePanelProps> = ({
                 onChange={value => handleFieldChange("score", value)}
               />
             </Field>
+
+            {FEATURE_FLAGS_MAP.EVENT_DETECTION_CONFIG_FLAG && (
+              <>
+                <OccurrenceControlSection
+                  maxOccurrences={formData?.detectionConfig?.maxOccurrences}
+                  minGapTime={formData?.detectionConfig?.minGapTime as string}
+                  onMaxOccurrencesChange={value =>
+                    handleFieldChange("detectionConfig", {
+                      ...formData?.detectionConfig,
+                      maxOccurrences: value,
+                    })
+                  }
+                  onMinGapTimeChange={value =>
+                    handleFieldChange("detectionConfig", {
+                      ...formData?.detectionConfig,
+                      minGapTime: value,
+                    })
+                  }
+                />
+
+                {formData?.detectionType !== EVENT_DETECTION_TYPES.TIME_BASED && (
+                  <TimeWindowSection
+                    startTime={formData?.detectionConfig?.startTime as string}
+                    endTime={formData?.detectionConfig?.endTime as string}
+                    onStartTimeChange={value =>
+                      handleFieldChange("detectionConfig", {
+                        ...formData?.detectionConfig,
+                        startTime: value,
+                      })
+                    }
+                    onEndTimeChange={value =>
+                      handleFieldChange("detectionConfig", {
+                        ...formData?.detectionConfig,
+                        endTime: value,
+                      })
+                    }
+                  />
+                )}
+
+                {formData?.detectionType !== EVENT_DETECTION_TYPES.SCORE_BASED && (
+                  <ScoreWindowSection
+                    minScore={formData?.detectionConfig?.minScore}
+                    maxScore={formData?.detectionConfig?.maxScore}
+                    onMinScoreChange={value =>
+                      handleFieldChange("detectionConfig", {
+                        ...formData?.detectionConfig,
+                        minScore: value,
+                      })
+                    }
+                    onMaxScoreChange={value =>
+                      handleFieldChange("detectionConfig", {
+                        ...formData?.detectionConfig,
+                        maxScore: value,
+                      })
+                    }
+                  />
+                )}
+              </>
+            )}
 
             <Field label="Default real time feedback message" multiline={true}>
               <AutoExpandableTextarea
