@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useMemo } from "react";
 
 import { useGetSessionEventsQuery } from "@api";
 import { BlueAdd, TrashRed } from "@assets";
@@ -57,13 +57,12 @@ export const AutoTerminationRuleField: React.FC<AutoTerminationRuleFieldProps> =
       label: event.name || "",
     })) || [];
 
-  const optionLabelMapRef = useRef<Record<string, string>>({});
-
-  useEffect(() => {
-    eventOptions.forEach(opt => {
-      if (opt.value) optionLabelMapRef.current[opt.value] = opt.label;
-    });
-  }, [eventOptions]);
+  const filteredEventOptions = useMemo(() => {
+    return eventOptions.filter(
+      (option: { value: string; label: string }) =>
+        !watchedRules.some((rule: any) => rule.id === option.value),
+    );
+  }, [eventOptions, watchedRules]);
 
   const handleSearchTextChange = (searchTerm: string) => {
     setSearchTerm(searchTerm);
@@ -78,13 +77,15 @@ export const AutoTerminationRuleField: React.FC<AutoTerminationRuleFieldProps> =
     setValue(TERMINATION_RULES_FIELD, updatedRules);
   };
 
-  const onHandleSelect = (option: { value: string; label: string }) => {
-    const updatedRules = watchedRules.map((rule: any) => {
-      if (rule.id === option.value || rule.id === "") {
-        return { id: option.value, message: rule.message, name: option.label };
-      }
-      return rule;
-    });
+  const onHandleSelect = (option: { value: string; label: string }, itemIndex: number) => {
+    const updatedRules = watchedRules.map(
+      (rule: { id: string; message: string; name: string }, index: number) => {
+        if (index === itemIndex) {
+          return { id: option.value, message: rule.message, name: option.label };
+        }
+        return rule;
+      },
+    );
     setValue(TERMINATION_RULES_FIELD, updatedRules);
   };
 
@@ -102,14 +103,16 @@ export const AutoTerminationRuleField: React.FC<AutoTerminationRuleFieldProps> =
             key={rule.id}
             className="flex flex-col gap-4 border border-border-light rounded-md p-4 bg-white relative"
           >
-            <button
-              type="button"
-              onClick={() => handleRemoveTermination(rule.id)}
-              disabled={watchedRules.length === 1}
-              className="absolute top-2 right-2 disabled:opacity-40"
-            >
-              <TrashRed />
-            </button>
+            {watchedRules.length > 1 && (
+              <button
+                type="button"
+                onClick={() => handleRemoveTermination(rule.id)}
+                disabled={watchedRules.length === 1}
+                className="absolute top-2 right-2 disabled:opacity-40"
+              >
+                <TrashRed />
+              </button>
+            )}
 
             <div className="flex flex-col gap-2">
               <label className="text-base text-typography-900 flex items-center gap-1">
@@ -117,10 +120,10 @@ export const AutoTerminationRuleField: React.FC<AutoTerminationRuleFieldProps> =
               </label>
 
               <CustomDropdownField
-                options={eventOptions}
+                options={filteredEventOptions}
                 isSearchable
                 handleSearchTextChange={handleSearchTextChange}
-                onHandleSelect={option => onHandleSelect(option)}
+                onHandleSelect={option => onHandleSelect(option, index)}
                 defaultOption={{ label: rule?.name, value: rule?.id }}
               />
             </div>
