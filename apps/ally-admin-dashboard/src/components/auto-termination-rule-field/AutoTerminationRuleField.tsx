@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 
 import { useGetSessionEventsQuery } from "@api";
 import { BlueAdd, TrashRed } from "@assets";
@@ -16,11 +16,11 @@ const TERMINATION_RULES_FIELD = "terminationEvents";
 
 const TERMINATION_FIELDS_MAP = {
   triggerEvent: {
-    id: "terminationEventId",
+    id: "id",
     label: en.simulation.triggerEvent,
   },
   triggerMessage: {
-    id: "terminationMessage",
+    id: "message",
     label: en.simulation.triggerMessage,
     placeholder: en.simulation.terminationMessagePlaceholder,
   },
@@ -42,7 +42,8 @@ export const AutoTerminationRuleField: React.FC<AutoTerminationRuleFieldProps> =
   const [searchTerm, setSearchTerm] = useState("");
 
   const { setValue, watch } = formMethods;
-  const terminationRules = watch(TERMINATION_RULES_FIELD) || [createEmptyRule()];
+  const watchedRules = watch(TERMINATION_RULES_FIELD);
+  const terminationRules = watchedRules?.length > 0 ? watchedRules : [createEmptyRule()];
 
   const { data: sessionEventsData } = useGetSessionEventsQuery({
     offset: DEFAULT_OFFSET,
@@ -56,7 +57,13 @@ export const AutoTerminationRuleField: React.FC<AutoTerminationRuleFieldProps> =
       label: event.name || "",
     })) || [];
 
-  const mandatoryIcon = <span className="text-destructive-500">*</span>;
+  const optionLabelMapRef = useRef<Record<string, string>>({});
+
+  useEffect(() => {
+    eventOptions.forEach(opt => {
+      if (opt.value) optionLabelMapRef.current[opt.value] = opt.label;
+    });
+  }, [eventOptions]);
 
   const handleSearchTextChange = (searchTerm: string) => {
     setSearchTerm(searchTerm);
@@ -71,8 +78,24 @@ export const AutoTerminationRuleField: React.FC<AutoTerminationRuleFieldProps> =
     setValue(TERMINATION_RULES_FIELD, updatedRules);
   };
 
+  const getFilteredOptions = (currentRuleId?: string) => {
+    const selectedEventIds = terminationRules
+      .map(rule => rule.id)
+      .filter(id => id && id !== currentRuleId);
+
+    return eventOptions.filter(
+      option => !selectedEventIds.includes(option.value) || option.value === currentRuleId,
+    );
+  };
+
+  const getDefaultOption = (currentRuleId?: string) => {
+    if (!currentRuleId) return "";
+    return optionLabelMapRef.current[currentRuleId] ?? "";
+  };
   return (
-    <div className={`flex flex-col gap-6 w-full border border-border-light rounded-md p-4 `}>
+    <div
+      className={`flex flex-col gap-6 w-full border border-border-light rounded-md p-4 bg-neutral-50 `}
+    >
       <div className="flex items-center justify-between">
         <span className="text-base text-typography-900">{label}</span>
       </div>
@@ -94,16 +117,17 @@ export const AutoTerminationRuleField: React.FC<AutoTerminationRuleFieldProps> =
 
             <div className="flex flex-col gap-2">
               <label className="text-base text-typography-900 flex items-center gap-1">
-                {TERMINATION_FIELDS_MAP.triggerEvent.label} {mandatoryIcon}
+                {TERMINATION_FIELDS_MAP.triggerEvent.label}
               </label>
+
               <DropdownField
                 id={`${TERMINATION_RULES_FIELD}.${index}.${TERMINATION_FIELDS_MAP.triggerEvent.id}`}
                 label={TERMINATION_FIELDS_MAP.triggerEvent.label}
                 formMethods={formMethods}
-                options={eventOptions}
+                options={getFilteredOptions(rule.id)}
                 isSearchable
                 handleSearchTextChange={handleSearchTextChange}
-                defaultOption={rule.terminationEventId || ""}
+                defaultOption={getDefaultOption(rule.id)}
               />
             </div>
 
@@ -115,6 +139,7 @@ export const AutoTerminationRuleField: React.FC<AutoTerminationRuleFieldProps> =
               placeholder={TERMINATION_FIELDS_MAP.triggerMessage.placeholder}
               maxLength={200}
               minHeight="120"
+              disabled={!rule.id}
             />
           </div>
         ))}
@@ -122,8 +147,11 @@ export const AutoTerminationRuleField: React.FC<AutoTerminationRuleFieldProps> =
         <button
           type="button"
           onClick={handleAddTermination}
-          className="text-primary-500 flex gap-3 items-center font-semibold font-tertiary text-base disabled:opacity-40"
-          disabled={terminationRules.length >= RULE_LIMIT}
+          className="text-primary-500 flex gap-3 items-center font-medium font-tertiary text-base disabled:opacity-40"
+          disabled={
+            terminationRules.length >= RULE_LIMIT ||
+            !terminationRules[terminationRules.length - 1]?.id
+          }
         >
           <BlueAdd />
           {en.simulation.add}
