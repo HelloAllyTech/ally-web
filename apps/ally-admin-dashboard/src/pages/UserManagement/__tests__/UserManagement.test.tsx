@@ -121,19 +121,30 @@ describe("UserManagement", () => {
     isFilterOpen: false,
     setIsFilterOpen: vi.fn(),
     addFilterBtnRef: { current: null },
-    filters: {},
+    filters: { organizations: [], roles: [], statuses: [] },
     handleApplyFilters: vi.fn(),
-    users: mockUsers,
+    users: mockUsers as any,
     loadUsers: vi.fn(),
     isUsersFetching: false,
     filterChips: null,
     getField: vi.fn(),
     addUsermodalOpen: false,
+    setAddUserModalOpen: vi.fn(),
     handleTabChange: vi.fn(),
     selectedUser: null,
+    setSelectedUser: vi.fn(),
     selectedOption: null,
+    setSelectedOption: vi.fn(),
     addFilterCtaMemo: null,
-    userMethods: {} as any,
+    userMethods: {
+      watch: vi.fn(),
+      register: vi.fn(),
+      handleSubmit: vi.fn(),
+      setValue: vi.fn(),
+      getValues: vi.fn(),
+      reset: vi.fn(),
+      formState: { errors: {} },
+    } as any,
     handleOptionSelect: vi.fn(),
     handleDropdownClose: vi.fn(),
     handleAddUser: vi.fn(),
@@ -145,6 +156,15 @@ describe("UserManagement", () => {
     handleAddUserClose: vi.fn(),
     handleUserAddClick: vi.fn(),
     handleAddCredit: vi.fn(),
+    roles: [],
+    setRoles: vi.fn(),
+    usersOffset: 0,
+    addUser: vi.fn(),
+    editUser: vi.fn(),
+    deleteUser: vi.fn(),
+    updateUserStatus: vi.fn(),
+    changeRole: vi.fn(),
+    addUserdata: vi.fn(),
   };
 
   const mockOrganizationManagementHook = {
@@ -152,21 +172,38 @@ describe("UserManagement", () => {
     orgSearch: "",
     setOrgSearch: vi.fn(),
     addOrganizationModalOpen: false,
+    setAddOrganizationModalOpen: vi.fn(),
     selectedTenant: null,
-    tenants: mockOrganizations,
+    setSelectedTenant: vi.fn(),
+    tenants: mockOrganizations as any,
     loadTenants: vi.fn(),
     isTenantsFetching: false,
-    tenantMethods: {} as any,
+    tenantsOffset: 0,
+    tenantMethods: {
+      watch: vi.fn().mockReturnValue(undefined),
+      register: vi.fn(),
+      handleSubmit: vi.fn(),
+      setValue: vi.fn(),
+      getValues: vi.fn(),
+      reset: vi.fn(),
+      formState: { errors: {} },
+    } as any,
     handleNewgroupClick: vi.fn(),
     onEditTenant: vi.fn(),
     handleTenantFormSubmit: vi.fn(),
     onCloseOrganizationEditModal: vi.fn(),
+    handleCreateTenant: vi.fn(),
+    handleEditTenant: vi.fn(),
+    createTenant: vi.fn(),
+    updateTenant: vi.fn(),
   };
 
   beforeEach(() => {
-    vi.mocked(useUserManagementHook.useUserManagement).mockReturnValue(mockUserManagementHook);
+    vi.mocked(useUserManagementHook.useUserManagement).mockReturnValue(
+      mockUserManagementHook as any,
+    );
     vi.mocked(useOrganizationManagementHook.useOrganizationManagement).mockReturnValue(
-      mockOrganizationManagementHook,
+      mockOrganizationManagementHook as any,
     );
   });
 
@@ -244,7 +281,7 @@ describe("UserManagement", () => {
         ...mockUserManagementHook,
         users: [],
         usersCount: 0,
-      });
+      } as any);
 
       renderUserManagement();
 
@@ -256,7 +293,7 @@ describe("UserManagement", () => {
         ...mockUserManagementHook,
         users: [],
         isUsersFetching: true,
-      });
+      } as any);
 
       renderUserManagement();
 
@@ -306,7 +343,7 @@ describe("UserManagement", () => {
         ...mockUserManagementHook,
         selectedOption: "Edit details",
         selectedUser: mockUsers[0],
-      });
+      } as any);
 
       renderUserManagement();
 
@@ -319,7 +356,7 @@ describe("UserManagement", () => {
         ...mockUserManagementHook,
         selectedOption: "Suspend user",
         selectedUser: mockUsers[0],
-      });
+      } as any);
 
       renderUserManagement();
 
@@ -332,7 +369,7 @@ describe("UserManagement", () => {
         ...mockUserManagementHook,
         selectedOption: "Remove user",
         selectedUser: mockUsers[0],
-      });
+      } as any);
 
       renderUserManagement();
 
@@ -346,7 +383,7 @@ describe("UserManagement", () => {
       vi.mocked(useUserManagementHook.useUserManagement).mockReturnValue({
         ...mockUserManagementHook,
         activeTab: TabType.ORGANIZATIONS,
-      });
+      } as any);
     });
 
     it("should switch to organizations tab", () => {
@@ -399,7 +436,7 @@ describe("UserManagement", () => {
         ...mockOrganizationManagementHook,
         tenants: [],
         tenantsCount: 0,
-      });
+      } as any);
 
       renderUserManagement(["/?tab=organizations"]);
 
@@ -411,7 +448,7 @@ describe("UserManagement", () => {
         ...mockOrganizationManagementHook,
         tenants: [],
         isTenantsFetching: true,
-      });
+      } as any);
 
       renderUserManagement(["/?tab=organizations"]);
 
@@ -433,7 +470,7 @@ describe("UserManagement", () => {
       vi.mocked(useUserManagementHook.useUserManagement).mockReturnValue({
         ...mockUserManagementHook,
         isFilterOpen: true,
-      });
+      } as any);
 
       renderUserManagement();
 
@@ -460,7 +497,7 @@ describe("UserManagement", () => {
       vi.mocked(useUserManagementHook.useUserManagement).mockReturnValue({
         ...mockUserManagementHook,
         activeTab: TabType.ORGANIZATIONS,
-      });
+      } as any);
 
       renderUserManagement();
 
@@ -473,7 +510,7 @@ describe("UserManagement", () => {
       vi.mocked(useUserManagementHook.useUserManagement).mockReturnValue({
         ...mockUserManagementHook,
         addUsermodalOpen: true,
-      });
+      } as any);
 
       renderUserManagement();
 
@@ -484,7 +521,7 @@ describe("UserManagement", () => {
       vi.mocked(useUserManagementHook.useUserManagement).mockReturnValue({
         ...mockUserManagementHook,
         addUsermodalOpen: true,
-      });
+      } as any);
 
       renderUserManagement();
 
@@ -498,12 +535,12 @@ describe("UserManagement", () => {
       vi.mocked(useUserManagementHook.useUserManagement).mockReturnValue({
         ...mockUserManagementHook,
         activeTab: TabType.ORGANIZATIONS,
-      });
+      } as any);
 
       vi.mocked(useOrganizationManagementHook.useOrganizationManagement).mockReturnValue({
         ...mockOrganizationManagementHook,
         addOrganizationModalOpen: true,
-      });
+      } as any);
 
       renderUserManagement(["/?tab=organizations"]);
 
@@ -514,12 +551,12 @@ describe("UserManagement", () => {
       vi.mocked(useUserManagementHook.useUserManagement).mockReturnValue({
         ...mockUserManagementHook,
         activeTab: TabType.ORGANIZATIONS,
-      });
+      } as any);
 
       vi.mocked(useOrganizationManagementHook.useOrganizationManagement).mockReturnValue({
         ...mockOrganizationManagementHook,
         addOrganizationModalOpen: true,
-      });
+      } as any);
 
       renderUserManagement(["/?tab=organizations"]);
 
@@ -537,7 +574,7 @@ describe("UserManagement", () => {
         selectedOption: "Change role",
         selectedUser: mockUsers[0],
         activeTab: TabType.USERS,
-      });
+      } as any);
 
       renderUserManagement();
 
@@ -551,7 +588,7 @@ describe("UserManagement", () => {
         selectedOption: "Manage credits",
         selectedUser: mockUsers[0],
         activeTab: TabType.USERS,
-      });
+      } as any);
 
       renderUserManagement();
 
@@ -565,7 +602,7 @@ describe("UserManagement", () => {
         selectedOption: "Grant access",
         selectedUser: mockUsers[0],
         activeTab: TabType.USERS,
-      });
+      } as any);
 
       renderUserManagement();
 
