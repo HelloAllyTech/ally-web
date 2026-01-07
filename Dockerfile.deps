@@ -10,8 +10,11 @@ COPY tsconfig.base.json ./
 # Include libs manifests (extend if new libs are added)
 COPY libs/ui-shared/package*.json ./libs/ui-shared/
 
-# Install all workspace deps once
-RUN npm ci --legacy-peer-deps
+# Install all workspace deps once, skip prepare script (husky)
+RUN npm ci --legacy-peer-deps --ignore-scripts
+
+# Update browserslist database to ensure browser compatibility data is current
+RUN npx update-browserslist-db@latest
 
 # Final minimal base that contains node_modules
 FROM node:20-alpine
