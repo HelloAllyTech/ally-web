@@ -238,6 +238,14 @@ describe("eventManagement utils", () => {
             sentences: ["Hello", "World"],
             speaker: "CARE_GIVER",
           },
+          detectionConfig: {
+            maxOccurrences: undefined,
+            minGapTime: undefined,
+            startTime: undefined,
+            endTime: undefined,
+            minScore: undefined,
+            maxScore: undefined,
+          },
         });
       });
 
@@ -303,6 +311,14 @@ describe("eventManagement utils", () => {
           detectionData: {
             sentences: ["Judgemental", "Empathetic"],
             speaker: "CARE_GIVER",
+          },
+          detectionConfig: {
+            maxOccurrences: undefined,
+            minGapTime: undefined,
+            startTime: undefined,
+            endTime: undefined,
+            minScore: undefined,
+            maxScore: undefined,
           },
         });
       });

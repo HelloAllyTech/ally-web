@@ -182,6 +182,18 @@ export const convertEventToApiPayload = (event: UpdateEventDataParam): SessionEv
     }
   }
 
+  const { maxOccurrences, minGapTime, startTime, endTime, minScore, maxScore } =
+    event?.detectionConfig || {};
+
+  const updatedDetectionConfig = {
+    maxOccurrences,
+    minGapTime: minGapTime && convertTimeToSeconds(String(minGapTime)),
+    startTime: startTime && convertTimeToSeconds(String(startTime)),
+    endTime: endTime && convertTimeToSeconds(String(endTime)),
+    minScore,
+    maxScore,
+  };
+
   const payload: SessionEvent = {
     name: event.name || "",
     description: event.description || "",
@@ -191,7 +203,7 @@ export const convertEventToApiPayload = (event: UpdateEventDataParam): SessionEv
     branchInstruction: event.branchInstruction || "",
     detectionType: backendDetectionType,
     visibilityType: event.visibilityType || "",
-    detectionConfig: event.detectionConfig,
+    detectionConfig: updatedDetectionConfig,
   };
 
   if (Object.keys(detectionData).length > 0) {
@@ -310,6 +322,17 @@ export const convertApiResponseToEvent = (apiEvent: SessionEvent): UpdateEventDa
     }
   }
 
+  const { maxOccurrences, minGapTime, startTime, endTime, minScore, maxScore } =
+    apiEvent?.detectionConfig || {};
+  const updatedDetectionConfig = {
+    maxOccurrences,
+    minGapTime: minGapTime && convertSecondsToTimeString(Number(minGapTime)),
+    startTime: startTime && convertSecondsToTimeString(Number(startTime)),
+    endTime: endTime && convertSecondsToTimeString(Number(endTime)),
+    minScore,
+    maxScore,
+  };
+
   return {
     id: apiEvent.id,
     name: apiEvent.name || "",
@@ -322,6 +345,6 @@ export const convertApiResponseToEvent = (apiEvent: SessionEvent): UpdateEventDa
     detectionType: frontendDetectionType,
     visibilityType: apiEvent.visibilityType || "",
     triggerCondition,
-    detectionConfig: apiEvent.detectionConfig,
+    detectionConfig: updatedDetectionConfig,
   };
 };
