@@ -103,17 +103,13 @@ export const AutoTerminationRuleField: React.FC<AutoTerminationRuleFieldProps> =
             key={rule.id}
             className="flex flex-col gap-4 border border-border-light rounded-md p-4 bg-white relative"
           >
-            {watchedRules.length > 1 && (
-              <button
-                type="button"
-                onClick={() => handleRemoveTermination(rule.id)}
-                disabled={watchedRules.length === 1}
-                className="absolute top-2 right-2 disabled:opacity-40"
-              >
-                <TrashRed />
-              </button>
-            )}
-
+            <button
+              type="button"
+              onClick={() => handleRemoveTermination(rule.id)}
+              className="absolute top-2 right-2 disabled:opacity-40"
+            >
+              <TrashRed />
+            </button>
             <div className="flex flex-col gap-2">
               <label className="text-base text-typography-900 flex items-center gap-1">
                 {TERMINATION_FIELDS_MAP.triggerEvent.label}
@@ -132,6 +128,7 @@ export const AutoTerminationRuleField: React.FC<AutoTerminationRuleFieldProps> =
               id={`${TERMINATION_RULES_FIELD}.${index}.${TERMINATION_FIELDS_MAP.triggerMessage.id}`}
               formMethods={formMethods}
               multiline
+              isMandatory={Boolean(rule.id)}
               defaultValue={rule?.message}
               placeholder={TERMINATION_FIELDS_MAP.triggerMessage.placeholder}
               maxLength={200}
@@ -145,7 +142,10 @@ export const AutoTerminationRuleField: React.FC<AutoTerminationRuleFieldProps> =
           type="button"
           onClick={handleAddTermination}
           className="text-primary-500 flex gap-3 items-center font-medium font-tertiary text-base disabled:opacity-40"
-          disabled={watchedRules.length >= RULE_LIMIT || !watchedRules[watchedRules.length - 1]?.id}
+          disabled={
+            watchedRules.length >= RULE_LIMIT ||
+            (watchedRules.length > 0 && !watchedRules[watchedRules.length - 1]?.id)
+          }
         >
           <BlueAdd />
           {en.simulation.add}
