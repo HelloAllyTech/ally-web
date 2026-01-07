@@ -234,7 +234,7 @@ export const EventSidePanel: React.FC<EventSidePanelProps> = ({
               <>
                 <OccurrenceControlSection
                   maxOccurrences={formData?.detectionConfig?.maxOccurrences}
-                  minGapTime={String(formData?.detectionConfig?.minGapTime ?? "")}
+                  minGapTime={formData?.detectionConfig?.minGapTime as string}
                   onMaxOccurrencesChange={value =>
                     handleFieldChange("detectionConfig", {
                       ...formData?.detectionConfig,
@@ -249,39 +249,43 @@ export const EventSidePanel: React.FC<EventSidePanelProps> = ({
                   }
                 />
 
-                <TimeWindowSection
-                  startTime={String(formData?.detectionConfig?.startTime ?? "")}
-                  endTime={String(formData?.detectionConfig?.endTime ?? "")}
-                  onStartTimeChange={value =>
-                    handleFieldChange("detectionConfig", {
-                      ...formData?.detectionConfig,
-                      startTime: value,
-                    })
-                  }
-                  onEndTimeChange={value =>
-                    handleFieldChange("detectionConfig", {
-                      ...formData?.detectionConfig,
-                      endTime: value,
-                    })
-                  }
-                />
+                {formData?.detectionType !== EVENT_DETECTION_TYPES.TIME_BASED && (
+                  <TimeWindowSection
+                    startTime={formData?.detectionConfig?.startTime as string}
+                    endTime={formData?.detectionConfig?.endTime as string}
+                    onStartTimeChange={value =>
+                      handleFieldChange("detectionConfig", {
+                        ...formData?.detectionConfig,
+                        startTime: value,
+                      })
+                    }
+                    onEndTimeChange={value =>
+                      handleFieldChange("detectionConfig", {
+                        ...formData?.detectionConfig,
+                        endTime: value,
+                      })
+                    }
+                  />
+                )}
 
-                <ScoreWindowSection
-                  minScore={formData?.detectionConfig?.minScore}
-                  maxScore={formData?.detectionConfig?.maxScore}
-                  onMinScoreChange={value =>
-                    handleFieldChange("detectionConfig", {
-                      ...formData?.detectionConfig,
-                      minScore: value,
-                    })
-                  }
-                  onMaxScoreChange={value =>
-                    handleFieldChange("detectionConfig", {
-                      ...formData?.detectionConfig,
-                      maxScore: value,
-                    })
-                  }
-                />
+                {formData?.detectionType !== EVENT_DETECTION_TYPES.SCORE_BASED && (
+                  <ScoreWindowSection
+                    minScore={formData?.detectionConfig?.minScore}
+                    maxScore={formData?.detectionConfig?.maxScore}
+                    onMinScoreChange={value =>
+                      handleFieldChange("detectionConfig", {
+                        ...formData?.detectionConfig,
+                        minScore: value,
+                      })
+                    }
+                    onMaxScoreChange={value =>
+                      handleFieldChange("detectionConfig", {
+                        ...formData?.detectionConfig,
+                        maxScore: value,
+                      })
+                    }
+                  />
+                )}
               </>
             )}
 

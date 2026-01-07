@@ -227,12 +227,12 @@ export interface SessionEventDetectionData {
 }
 
 export interface EventDetectionConfig {
-  startTime: number;
-  endTime: number;
+  startTime: string | number | null | undefined;
+  endTime: string | number | null | undefined;
   maxOccurrences: number;
-  minGapTime: number;
+  minGapTime: string | number | null | undefined;
   minScore: number;
-  maxScore: number | null;
+  maxScore: number | null | undefined;
 }
 
 /**
