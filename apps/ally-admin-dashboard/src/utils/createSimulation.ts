@@ -37,7 +37,11 @@ export const formatSimulationResponseData = (data: GetSimulationByIdResponse) =>
     difficultyLevel: data?.difficultyLevel,
     ...(FEATURE_FLAGS_MAP.AUTO_TERMINATION_FIELD_FLAG
       ? {
-          terminationEvents: data?.terminationEvents,
+          terminationEvents: data?.terminationEvents?.map(event => ({
+            id: event.eventId,
+            name: event.name,
+            message: event.message,
+          })),
         }
       : {
           autoTerminationStatus: Boolean(data?.terminationEvent?.autoTerminationStatus),

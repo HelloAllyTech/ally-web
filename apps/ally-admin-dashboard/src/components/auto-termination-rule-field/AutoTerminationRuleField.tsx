@@ -4,7 +4,7 @@ import { useGetSessionEventsQuery } from "@api";
 import { BlueAdd, TrashRed } from "@assets";
 import { en } from "@constants";
 
-import { DropdownField } from "../dropdown-field";
+import { CustomDropdownField } from "../custom-dropdown-field";
 import { InputField } from "../input-field";
 
 interface AutoTerminationRuleFieldProps {
@@ -42,8 +42,8 @@ export const AutoTerminationRuleField: React.FC<AutoTerminationRuleFieldProps> =
   const [searchTerm, setSearchTerm] = useState("");
 
   const { setValue, watch } = formMethods;
-  const watchedRules = watch(TERMINATION_RULES_FIELD);
-  const terminationRules = watchedRules?.length > 0 ? watchedRules : [createEmptyRule()];
+
+  const watchedRules = watch(TERMINATION_RULES_FIELD) || [createEmptyRule()];
 
   const { data: sessionEventsData } = useGetSessionEventsQuery({
     offset: DEFAULT_OFFSET,
@@ -70,28 +70,24 @@ export const AutoTerminationRuleField: React.FC<AutoTerminationRuleFieldProps> =
   };
 
   const handleAddTermination = () => {
-    setValue(TERMINATION_RULES_FIELD, [...terminationRules, createEmptyRule()]);
+    setValue(TERMINATION_RULES_FIELD, [...watchedRules, createEmptyRule()]);
   };
 
   const handleRemoveTermination = (ruleId: number) => {
-    const updatedRules = terminationRules.filter((rule: any) => rule.id !== ruleId);
+    const updatedRules = watchedRules.filter((rule: any) => rule.id !== ruleId);
     setValue(TERMINATION_RULES_FIELD, updatedRules);
   };
 
-  const getFilteredOptions = (currentRuleId?: string) => {
-    const selectedEventIds = terminationRules
-      .map(rule => rule.id)
-      .filter(id => id && id !== currentRuleId);
-
-    return eventOptions.filter(
-      option => !selectedEventIds.includes(option.value) || option.value === currentRuleId,
-    );
+  const onHandleSelect = (option: { value: string; label: string }) => {
+    const updatedRules = watchedRules.map((rule: any) => {
+      if (rule.id === option.value || rule.id === "") {
+        return { id: option.value, message: rule.message, name: option.label };
+      }
+      return rule;
+    });
+    setValue(TERMINATION_RULES_FIELD, updatedRules);
   };
 
-  const getDefaultOption = (currentRuleId?: string) => {
-    if (!currentRuleId) return "";
-    return optionLabelMapRef.current[currentRuleId] ?? "";
-  };
   return (
     <div
       className={`flex flex-col gap-6 w-full border border-border-light rounded-md p-4 bg-neutral-50 `}
@@ -101,7 +97,7 @@ export const AutoTerminationRuleField: React.FC<AutoTerminationRuleFieldProps> =
       </div>
 
       <div className="flex flex-col gap-6">
-        {terminationRules.map((rule: any, index: number) => (
+        {watchedRules.map((rule: any, index: number) => (
           <div
             key={rule.id}
             className="flex flex-col gap-4 border border-border-light rounded-md p-4 bg-white relative"
@@ -109,7 +105,7 @@ export const AutoTerminationRuleField: React.FC<AutoTerminationRuleFieldProps> =
             <button
               type="button"
               onClick={() => handleRemoveTermination(rule.id)}
-              disabled={terminationRules.length === 1}
+              disabled={watchedRules.length === 1}
               className="absolute top-2 right-2 disabled:opacity-40"
             >
               <TrashRed />
@@ -120,22 +116,20 @@ export const AutoTerminationRuleField: React.FC<AutoTerminationRuleFieldProps> =
                 {TERMINATION_FIELDS_MAP.triggerEvent.label}
               </label>
 
-              <DropdownField
-                id={`${TERMINATION_RULES_FIELD}.${index}.${TERMINATION_FIELDS_MAP.triggerEvent.id}`}
-                label={TERMINATION_FIELDS_MAP.triggerEvent.label}
-                formMethods={formMethods}
-                options={getFilteredOptions(rule.id)}
+              <CustomDropdownField
+                options={eventOptions}
                 isSearchable
                 handleSearchTextChange={handleSearchTextChange}
-                defaultOption={getDefaultOption(rule.id)}
+                onHandleSelect={option => onHandleSelect(option)}
+                defaultOption={{ label: rule?.name, value: rule?.id }}
               />
             </div>
-
             <InputField
               label={TERMINATION_FIELDS_MAP.triggerMessage.label}
               id={`${TERMINATION_RULES_FIELD}.${index}.${TERMINATION_FIELDS_MAP.triggerMessage.id}`}
               formMethods={formMethods}
               multiline
+              defaultValue={rule?.message}
               placeholder={TERMINATION_FIELDS_MAP.triggerMessage.placeholder}
               maxLength={200}
               minHeight="120"
@@ -148,10 +142,7 @@ export const AutoTerminationRuleField: React.FC<AutoTerminationRuleFieldProps> =
           type="button"
           onClick={handleAddTermination}
           className="text-primary-500 flex gap-3 items-center font-medium font-tertiary text-base disabled:opacity-40"
-          disabled={
-            terminationRules.length >= RULE_LIMIT ||
-            !terminationRules[terminationRules.length - 1]?.id
-          }
+          disabled={watchedRules.length >= RULE_LIMIT || !watchedRules[watchedRules.length - 1]?.id}
         >
           <BlueAdd />
           {en.simulation.add}
