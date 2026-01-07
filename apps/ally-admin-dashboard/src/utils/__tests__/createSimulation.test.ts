@@ -10,7 +10,7 @@ import {
 } from "../createSimulation";
 
 // Mock feature flags
-vi.mock("@ally-ui-mono/ui-shared", () => ({
+vi.mock("@ally-ui-mono/ui-shared/featureFlag", () => ({
   FEATURE_FLAGS_MAP: {
     NEW_CREATE_SIMULATION_FLAG: true,
     AUTO_TERMINATION_FIELD_FLAG: true,
