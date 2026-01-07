@@ -9,10 +9,11 @@ import {
   formatSimulationResponseData,
 } from "../createSimulation";
 
-// Mock feature flags to enable NEW_CREATE_SIMULATION_FLAG
+// Mock feature flags
 vi.mock("@ally-ui-mono/ui-shared", () => ({
   FEATURE_FLAGS_MAP: {
     NEW_CREATE_SIMULATION_FLAG: true,
+    AUTO_TERMINATION_FIELD_FLAG: true,
   },
 }));
 
@@ -70,8 +71,12 @@ describe("createSimulation utils", () => {
         status: "ACTIVE",
         isGlobal: false,
         coverImageUrl: "https://example.com/image.jpg",
+        createdBy: "user-1",
+        lastModified: "2024-01-01T00:00:00Z",
+        triggerWarnings: [],
+        difficultyLevel: "medium",
         metadata: {
-          age: "25",
+          age: 25,
           name: "John Doe",
           context: "Test context",
           coreMemories: "Test memories",
@@ -81,7 +86,7 @@ describe("createSimulation utils", () => {
           gender: "male",
           genderIdentity: "Male/Man",
           lifeHistory: "Test history",
-          openingStatements: "Hello, how are you?",
+          openingStatements: ["Hello, how are you?"],
           personality: "Friendly",
           profession: "Engineer",
           sessionBehaviorGuidelines: "Be supportive",
@@ -92,7 +97,8 @@ describe("createSimulation utils", () => {
             1: "voice-123",
           },
           voiceId: "voice-123",
-          agentDialogues: "Sample dialogues",
+          agentDialogues: ["Sample dialogues"],
+          customFields: [],
         },
       } as GetSimulationByIdResponse;
 
@@ -101,7 +107,7 @@ describe("createSimulation utils", () => {
       expect(result).toEqual({
         title: "Test Simulation",
         description: "Test Description",
-        age: "25",
+        age: 25,
         name: "John Doe",
         context: "Test context",
         coreMemories: "Test memories",
@@ -121,20 +127,17 @@ describe("createSimulation utils", () => {
         tone: "Casual",
         coverImageUrl: "https://example.com/image.jpg",
         coverVideoUrl: undefined,
-        autoTerminationStatus: false,
-        terminationEventId: undefined,
-        terminationMessage: undefined,
+        terminationEvents: undefined,
         languageVoices: {
           1: "voice-123",
         },
         voiceId: "voice-123",
-        terminationName: undefined,
-        difficultyLevel: undefined,
+        difficultyLevel: "medium",
         responseLength: undefined,
         prompt: undefined,
-        triggerWarningIds: undefined,
+        triggerWarningIds: [],
         agentDialogues: "Sample dialogues",
-        customFields: undefined,
+        customFields: [],
       });
     });
 
@@ -144,10 +147,16 @@ describe("createSimulation utils", () => {
         title: "Test Simulation",
         description: "Test Description",
         status: "DRAFT",
+        isGlobal: false,
         coverImageUrl: "https://example.com/image.jpg",
+        createdBy: "user-1",
+        lastModified: "2024-01-01T00:00:00Z",
+        triggerWarnings: [],
+        difficultyLevel: "medium",
         metadata: {
           name: "John Doe",
-          age: "25",
+          age: 25,
+          customFields: [],
         },
       } as GetSimulationByIdResponse;
 
@@ -156,7 +165,7 @@ describe("createSimulation utils", () => {
       expect(result.title).toBe("Test Simulation");
       expect(result.description).toBe("Test Description");
       expect(result.name).toBe("John Doe");
-      expect(result.age).toBe("25");
+      expect(result.age).toBe(25);
       expect(result.context).toBeUndefined();
       expect(result.coreMemories).toBeUndefined();
       expect(result.agentGoal).toBeUndefined();
@@ -205,9 +214,12 @@ describe("createSimulation utils", () => {
         status: "ACTIVE",
         coverImageUrl: "url",
         isGlobal: true,
+        createdBy: "user-1",
+        lastModified: "2024-01-01T00:00:00Z",
         triggerWarnings: [],
+        difficultyLevel: "medium",
         metadata: {
-          age: "30",
+          age: 30,
           name: "Jane",
           context: "context",
           coreMemories: "memories",
@@ -217,7 +229,7 @@ describe("createSimulation utils", () => {
           gender: "female",
           genderIdentity: "identity",
           lifeHistory: "history",
-          openingStatements: "statements",
+          openingStatements: ["statements"],
           personality: "personality",
           profession: "profession",
           sessionBehaviorGuidelines: "guidelines",
@@ -228,17 +240,18 @@ describe("createSimulation utils", () => {
             1: "voice-123",
           },
           voiceId: "voice-123",
+          customFields: [],
         },
       } as GetSimulationByIdResponse;
 
       const result = formatSimulationResponseData(mockResponse);
 
-      // Check all fields are present (title, description, coverImageUrl, coverVideoUrl, autoTerminationStatus, terminationEventId, terminationMessage, terminationName, difficultyLevel, responseLength, prompt, isGlobal, triggerWarningIds, customFieldGroup, agentDialoguesArray + 18 metadata fields = 33 total)
-      expect(Object.keys(result)).toHaveLength(34);
+      // Check all fields are present (title, description, coverImageUrl, coverVideoUrl, terminationEvents, difficultyLevel, responseLength, prompt, isGlobal, triggerWarningIds, customFields, agentDialogues + 18 metadata fields = 31 total)
+      expect(Object.keys(result)).toHaveLength(31);
       expect(result.title).toBe("Test");
       expect(result.description).toBe("Test");
       expect(result.coverImageUrl).toBe("url");
-      expect(result.age).toBe("30");
+      expect(result.age).toBe(30);
       expect(result.name).toBe("Jane");
       expect(result.voiceId).toBe("voice-123");
     });
