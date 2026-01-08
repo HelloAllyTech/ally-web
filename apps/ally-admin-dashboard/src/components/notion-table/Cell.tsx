@@ -9,7 +9,14 @@ import {
   SelectComponent,
   EditableTriggerConditionsPopup,
 } from "@components/notion-table";
-import { formatCapitalizedEnum, isObject } from "@utils";
+import { DETECTION_CONFIG_FIELDS } from "@constants";
+import {
+  formatCapitalizedEnum,
+  isInfinityValue,
+  normalizeDetectionConfigValue,
+  getInfinityDisplay,
+  toggleInfinityValue,
+} from "@utils";
 
 import { cellTypes } from "./utils";
 
@@ -54,24 +61,42 @@ export const Cell = ({
 
   let element: React.ReactNode;
 
-  // TODO: Need refactoring for time input
+  /**
+   * Renders time input with infinity toggle support
+   * Used for startTime, endTime, and minGapTime fields
+   */
   const CustomTimeInput = () => {
-    const infinityText = id === "startTime" ? "00:00:00" : "∞";
-    if (
-      (isObject(value.value) && (value.value.value === null || value.value.value === undefined)) ||
-      value.value === null ||
-      value.value === undefined
-    )
+    const normalizedValue = normalizeDetectionConfigValue(value.value, id);
+    const isInfinity = isInfinityValue(normalizedValue);
+
+    // For startTime, always show input (no infinity state)
+    if (id === DETECTION_CONFIG_FIELDS.START_TIME) {
       return (
-        <div onClick={() => updateCellValue("00:00:00")} className="cursor-pointer px-1">
-          {infinityText}
+        <div className="flex items-center gap-2 cursor-pointer hover:bg-neutral-100 rounded-md p-1">
+          <TimeInput
+            className="px-[0px]"
+            value={normalizedValue || "00:00:00"}
+            onBlur={updateCellValue}
+            disabled={isDisabled}
+          />
         </div>
       );
+    }
+
+    // For other time fields, support infinity toggle
+    if (isInfinity) {
+      return (
+        <div onClick={() => updateCellValue("00:00:00")} className="cursor-pointer px-1">
+          {getInfinityDisplay(id)}
+        </div>
+      );
+    }
+
     return (
-      <div className="flex items-center gap-2 cursor-pointer hover:bg-neutral-100 rounded-md p-1            ">
+      <div className="flex items-center gap-2 cursor-pointer hover:bg-neutral-100 rounded-md p-1">
         <TimeInput
           className="px-[0px]"
-          value={value.value}
+          value={normalizedValue}
           onBlur={updateCellValue}
           disabled={isDisabled}
         />
@@ -79,22 +104,30 @@ export const Cell = ({
     );
   };
 
-  // TODO: Need refactoring for time input
+  /**
+   * Renders score input with infinity toggle support
+   * Used for minScore and maxScore fields
+   */
   const CustomScoreInput = () => {
-    const ifinityText = id === "minScore" ? "-∞" : "+∞";
-    if (
-      (isObject(value.value) && (value.value.value === null || value.value.value === undefined)) ||
-      value.value === null ||
-      value.value === undefined
-    )
+    const normalizedValue = normalizeDetectionConfigValue(value.value, id);
+    const isInfinity = isInfinityValue(normalizedValue);
+
+    if (isInfinity) {
       return (
-        <div onClick={() => updateCellValue(0)} className="cursor-pointer">
-          {ifinityText}
+        <div
+          onClick={() =>
+            updateCellValue(toggleInfinityValue(normalizedValue, DETECTION_CONFIG_FIELDS.MAX_SCORE))
+          }
+          className="cursor-pointer"
+        >
+          {getInfinityDisplay(id)}
         </div>
       );
+    }
+
     return (
-      <div className="flex items-center gap-2 cursor-pointer hover:bg-neutral-100 rounded-md p-1            ">
-        <NumberInput value={value.value} onChange={updateCellValue} disabled={isDisabled} />
+      <div className="flex items-center gap-2 cursor-pointer hover:bg-neutral-100 rounded-md p-1">
+        <NumberInput value={normalizedValue} onChange={updateCellValue} disabled={isDisabled} />
       </div>
     );
   };

@@ -1,4 +1,4 @@
-import { FEATURE_FLAGS_MAP } from "@ally-ui-mono/ui-shared/featureFlag";
+import { FEATURE_FLAGS_MAP } from "@ally-ui-mono/ui-shared";
 import { cellTypes } from "@components";
 import { CreatorFieldGroups, FormFieldConfig } from "@types";
 
@@ -405,7 +405,7 @@ export const EVENT_MANAGEMENT_TABLE_COLUMNS = [
           id: "maxOccurrences",
           label: "Max occurrences",
           accessor: "maxOccurrences",
-          dataType: cellTypes.number,
+          dataType: cellTypes.score,
           options: [],
           minWidth: 120,
         },
