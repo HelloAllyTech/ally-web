@@ -13,6 +13,7 @@ export const cellTypes = {
   normalText: "normalText",
   triggerConditions: "triggerConditions",
   timeInput: "timeInput",
+  score: "score",
 };
 
 export const keyCodes = {

@@ -1,8 +1,5 @@
 import React, { useEffect, useState, useMemo, useCallback } from "react";
 
-import { useDispatch } from "react-redux";
-import { toast } from "sonner";
-
 import {
   useGetSessionEventsQuery,
   useUpdateSessionEventMutation,
@@ -18,7 +15,6 @@ import {
   EventTypeSelectionDialog,
   EventType,
 } from "@components";
-import { ButtonVariant } from "@components/types";
 import {
   SORT_BY,
   SORT_ORDER,
@@ -29,6 +25,10 @@ import {
 import { setAvailableEvents } from "@reducer";
 import { UpdateEventDataParam } from "@types";
 import { convertEventToApiPayload, convertApiResponseToEvent } from "@utils";
+import { useDispatch } from "react-redux";
+import { toast } from "sonner";
+
+import { ButtonVariant } from "@components/types";
 
 export const EventManagement: React.FC = () => {
   const limit = 30;
@@ -155,19 +155,19 @@ export const EventManagement: React.FC = () => {
       emoji: { value: event.emoji || "", disabled: false, rowId: event.id },
       visibilityType: { value: event.visibilityType || "", disabled: false, rowId: event.id },
       maxOccurrences: {
-        value: event.detectionConfig?.maxOccurrences ?? 0,
+        value: event.detectionConfig?.maxOccurrences,
         disabled: false,
         rowId: event.id,
       },
       minGapTime: {
-        value: event.detectionConfig?.minGapTime ?? 0,
+        value: event.detectionConfig?.minGapTime,
         disabled: false,
         rowId: event.id,
       },
-      startTime: { value: event.detectionConfig?.startTime ?? 0, disabled: false, rowId: event.id },
-      endTime: { value: event.detectionConfig?.endTime ?? 0, disabled: false, rowId: event.id },
-      minScore: { value: event.detectionConfig?.minScore ?? 0, disabled: false, rowId: event.id },
-      maxScore: { value: event.detectionConfig?.maxScore ?? 0, disabled: false, rowId: event.id },
+      startTime: { value: event.detectionConfig?.startTime, disabled: false, rowId: event.id },
+      endTime: { value: event.detectionConfig?.endTime, disabled: false, rowId: event.id },
+      minScore: { value: event.detectionConfig?.minScore, disabled: false, rowId: event.id },
+      maxScore: { value: event.detectionConfig?.maxScore, disabled: false, rowId: event.id },
     };
   }, []);
 
@@ -225,6 +225,18 @@ export const EventManagement: React.FC = () => {
     </button>
   );
 
+  // TODO: Need refactoring (Move column ids to constants)
+  const isEventDetectionConfigColumn = (columnId: string) => {
+    return (
+      columnId === "maxOccurrences" ||
+      columnId === "minGapTime" ||
+      columnId === "startTime" ||
+      columnId === "endTime" ||
+      columnId === "minScore" ||
+      columnId === "maxScore"
+    );
+  };
+
   const handleUpdateEventTable = async (action: {
     columnId?: string;
     value?: any;
@@ -235,7 +247,12 @@ export const EventManagement: React.FC = () => {
     const selectedEvent = events.find(event => event.id === rowId);
     if (value !== undefined && selectedEvent) {
       const updatedEvent: UpdateEventDataParam = { ...selectedEvent };
-      (updatedEvent as any)[columnId] = value;
+      if (isEventDetectionConfigColumn(columnId)) {
+        const undatedEventDetectionConfig = { ...selectedEvent.detectionConfig, [columnId]: value };
+        updatedEvent.detectionConfig = undatedEventDetectionConfig;
+      } else {
+        (updatedEvent as any)[columnId] = value;
+      }
 
       onUpdateEvent(updatedEvent);
     }

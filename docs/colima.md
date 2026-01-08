@@ -14,6 +14,7 @@ Colima is a lightweight, open-source container runtime for macOS that provides a
 ## Installation
 
 1. **Install Colima:**
+
    ```bash
    brew install colima
    ```
@@ -26,6 +27,7 @@ Colima is a lightweight, open-source container runtime for macOS that provides a
 ## Initial Setup
 
 1. **Start Colima:**
+
    ```bash
    colima start
    ```
@@ -33,6 +35,7 @@ Colima is a lightweight, open-source container runtime for macOS that provides a
 2. **Fix Docker Configuration:**
 
    Run the switch script to configure Docker for Colima:
+
    ```bash
    ./scripts/docker-switch.sh colima
    ```
@@ -47,6 +50,7 @@ Colima is a lightweight, open-source container runtime for macOS that provides a
 If you prefer to configure manually:
 
 1. **Remove Docker Desktop credential helper:**
+
    ```bash
    # Edit ~/.docker/config.json and remove the "credsStore": "desktop" line
    # Or use sed:
@@ -54,12 +58,14 @@ If you prefer to configure manually:
    ```
 
 2. **Fix docker-compose plugin:**
+
    ```bash
    rm ~/.docker/cli-plugins/docker-compose
    ln -sfn /opt/homebrew/bin/docker-compose ~/.docker/cli-plugins/docker-compose
    ```
 
 3. **Switch Docker context:**
+
    ```bash
    docker context use colima
    ```
@@ -102,6 +108,7 @@ Use the provided switch script:
 ### "docker-credential-desktop: executable file not found"
 
 This means Docker is still configured to use Docker Desktop's credential helper. Run:
+
 ```bash
 ./scripts/docker-switch.sh colima
 ```
@@ -109,6 +116,7 @@ This means Docker is still configured to use Docker Desktop's credential helper.
 ### "docker: unknown command: docker compose"
 
 The docker-compose plugin isn't properly linked. Run:
+
 ```bash
 rm ~/.docker/cli-plugins/docker-compose
 ln -sfn /opt/homebrew/bin/docker-compose ~/.docker/cli-plugins/docker-compose
@@ -117,12 +125,14 @@ ln -sfn /opt/homebrew/bin/docker-compose ~/.docker/cli-plugins/docker-compose
 ### Colima won't start
 
 Try stopping and restarting:
+
 ```bash
 colima stop
 colima start
 ```
 
 Or delete and recreate:
+
 ```bash
 colima delete
 colima start

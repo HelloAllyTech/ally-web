@@ -7,6 +7,7 @@ import { UseFormReturn } from "react-hook-form";
 import { toast } from "sonner";
 
 import { Trash, Upload } from "../../assets";
+import { CustomImage } from "../custom-image";
 interface imageUploadType {
   fileName: string;
   fileSize: number;
@@ -44,18 +45,12 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
   details,
 }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const initialFileUrlRef = useRef("");
   const [previewUrl, setPreviewUrl] = useState<string>("");
   // Set the initial file URL only once
+
   useEffect(() => {
     setPreviewUrl(details?.[uploadId]);
   }, [details]);
-
-  useEffect(() => {
-    if (!initialFileUrlRef.current && isNonEmptyString(details?.[uploadId])) {
-      initialFileUrlRef.current = details?.[uploadId];
-    }
-  }, [uploadId]);
 
   const uploadToS3 = useCallback(async (file: File, uploadUrl: string) => {
     try {
@@ -134,14 +129,6 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
         return;
       }
       try {
-        if (
-          previewUrl !== initialFileUrlRef.current &&
-          isNonEmptyString(initialFileUrlRef.current)
-        ) {
-          await onDelete({ [uploadId]: initialFileUrlRef.current });
-          setPreviewUrl("");
-        }
-
         await uploadFileToS3(file);
       } catch {
         URL.revokeObjectURL(objectUrl);
@@ -169,10 +156,12 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
         <input ref={fileInputRef} type="file" className="hidden" onChange={handleFileChange} />
         {previewUrl ? (
           <>
-            <img
+            <CustomImage
               src={previewUrl}
               alt="Preview"
-              className={`w-full h-full ${
+              className="w-full h-full object-cover "
+              fallbackClassName={`w-full h-full flex justify-center items-center object-cover ${uploadId === "profileImageUrl" ? "rounded-full" : "rounded-md"}`}
+              containerClassName={`w-full h-full bg-gray-200  overflow-hidden object-cover ${
                 uploadId === "profileImageUrl" ? "rounded-full" : "border-dashed"
               }`}
             />
@@ -195,8 +184,8 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
       </div>
       <div className="flex flex-col gap-2">
         <span className="text-base">{uploadTitle || "Image"}</span>
-        <span className="w-40 text-typography-700 text-xs">
-          {"PNG or JPG files only (240x240 preferred)"}
+        <span className="w-32 text-typography-700 text-xs">
+          {"PNG or JPG files only 1:1 ratio (max 2mb)"}
         </span>
         <button
           type="button"
