@@ -1,6 +1,8 @@
 import React, { useCallback } from "react";
 
 import { NumberInput, TimeInput } from "@components";
+import { DETECTION_CONFIG_FIELDS } from "@constants";
+import { isInfinityValue, toggleInfinityValue, getInfinityDisplay } from "@utils";
 
 interface TimeWindowValues {
   startTime?: string | null | undefined;
@@ -37,12 +39,12 @@ interface FieldRowProps {
   children: React.ReactNode;
 }
 
-const InfinityButton: React.FC<{ onClick: () => void; magnitude?: string }> = ({
+const InfinityButton: React.FC<{ onClick: () => void; displayText: string }> = ({
   onClick,
-  magnitude = null,
+  displayText,
 }) => (
   <span className="text-base cursor-pointer hover:text-typography-600" onClick={onClick}>
-    {magnitude}∞
+    {displayText}
   </span>
 );
 
@@ -73,12 +75,17 @@ export const TimeWindowSection: React.FC<TimeWindowValues & TimeWindowCallbacks>
   };
 
   const handleEndTimeChange = (value: string) => {
-    if (value === "" || value === "∞") {
+    if (value === "" || value === getInfinityDisplay(DETECTION_CONFIG_FIELDS.END_TIME)) {
       onEndTimeChange?.(null);
     } else {
       onEndTimeChange?.(value);
     }
   };
+
+  const handleEndTimeInfinityToggle = useCallback(() => {
+    const newValue = toggleInfinityValue(endTime, DETECTION_CONFIG_FIELDS.END_TIME);
+    onEndTimeChange?.(newValue);
+  }, [endTime, onEndTimeChange]);
 
   return (
     <>
@@ -94,9 +101,10 @@ export const TimeWindowSection: React.FC<TimeWindowValues & TimeWindowCallbacks>
       </FieldRow>
 
       <FieldRow label="Applicable till">
-        {endTime === null || endTime === "00:00:00" ? (
+        {isInfinityValue(endTime) ? (
           <InfinityButton
-            onClick={() => onEndTimeChange?.(endTime === null ? "00:01:00" : endTime)}
+            onClick={handleEndTimeInfinityToggle}
+            displayText={getInfinityDisplay(DETECTION_CONFIG_FIELDS.END_TIME)}
           />
         ) : (
           <div className="flex items-center gap-2">
@@ -116,7 +124,7 @@ export const TimeWindowSection: React.FC<TimeWindowValues & TimeWindowCallbacks>
 export const OccurrenceControlSection: React.FC<
   OccurrenceControlValues & OccurrenceControlCallbacks
 > = ({
-  maxOccurrences = 1,
+  maxOccurrences = 0,
   minGapTime = "00:00:00",
   onMaxOccurrencesChange,
   onMinGapTimeChange,
@@ -173,21 +181,24 @@ export const ScoreWindowSection: React.FC<ScoreWindowValues & ScoreWindowCallbac
   );
 
   const handleMinInfinityToggle = useCallback(() => {
-    if (minScore === null) onMinScoreChange?.(0);
-    else onMinScoreChange?.(null);
+    const newValue = toggleInfinityValue(minScore, DETECTION_CONFIG_FIELDS.MIN_SCORE);
+    onMinScoreChange?.(newValue);
   }, [minScore, onMinScoreChange]);
 
   const handleMaxInfinityToggle = useCallback(() => {
-    if (maxScore === null) onMaxScoreChange?.(0);
-    else onMaxScoreChange?.(null);
+    const newValue = toggleInfinityValue(maxScore, DETECTION_CONFIG_FIELDS.MAX_SCORE);
+    onMaxScoreChange?.(newValue);
   }, [maxScore, onMaxScoreChange]);
 
   return (
     <>
       <SectionHeader title="Score Window" />
       <FieldRow label="Minimum score">
-        {minScore === null ? (
-          <InfinityButton onClick={handleMinInfinityToggle} magnitude="-" />
+        {isInfinityValue(minScore) ? (
+          <InfinityButton
+            onClick={handleMinInfinityToggle}
+            displayText={getInfinityDisplay(DETECTION_CONFIG_FIELDS.MIN_SCORE)}
+          />
         ) : (
           <div className="flex items-center gap-2">
             <NumberInput
@@ -202,8 +213,11 @@ export const ScoreWindowSection: React.FC<ScoreWindowValues & ScoreWindowCallbac
       </FieldRow>
 
       <FieldRow label="Maximum score">
-        {maxScore === null ? (
-          <InfinityButton onClick={handleMaxInfinityToggle} magnitude="+" />
+        {isInfinityValue(maxScore) ? (
+          <InfinityButton
+            onClick={handleMaxInfinityToggle}
+            displayText={getInfinityDisplay(DETECTION_CONFIG_FIELDS.MAX_SCORE)}
+          />
         ) : (
           <div className="flex items-center gap-2">
             <NumberInput
