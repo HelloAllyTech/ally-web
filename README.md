@@ -15,15 +15,18 @@ Welcome to the Ally platform monorepo! This repository contains all frontend app
 We support two Docker environments. Choose the one that works for you:
 
 #### Option A: Docker Desktop (Recommended for most users)
+
 - Install [Docker Desktop](https://www.docker.com/products/docker-desktop/)
 - No additional setup needed!
 
 #### Option B: Colima (Lightweight alternative)
+
 - Free and open-source alternative to Docker Desktop
 - See [docs/colima.md](docs/colima.md) for setup instructions
 - Use `./scripts/docker-switch.sh colima` to configure
 
 **Switching between environments:**
+
 ```bash
 # Switch to Docker Desktop
 ./scripts/docker-switch.sh desktop
@@ -35,22 +38,26 @@ We support two Docker environments. Choose the one that works for you:
 ### Step 2: Get Started
 
 1. **Clone the repository:**
+
    ```bash
    git clone <repository-url>
    cd ally-web
    ```
 
 2. **Build the base dependencies image:**
+
    ```bash
    docker build -f Dockerfile.deps -t ally-web/deps:dev .
    ```
 
 3. **Start all services:**
+
    ```bash
    docker compose up
    ```
 
    Or start individual services:
+
    ```bash
    docker compose up web        # Ally Web (port 3000)
    docker compose up helpline   # Helpline Dashboard (port 8080)
@@ -73,6 +80,7 @@ If you prefer to run without Docker:
    - npm
 
 2. **Install dependencies:**
+
    ```bash
    npm install
    ```
@@ -87,6 +95,7 @@ If you prefer to run without Docker:
 ## Testing
 
 Run tests for all applications:
+
 ```bash
 npm test                           # Run all tests
 npm run test:watch                 # Watch mode for all tests
@@ -94,6 +103,7 @@ npm run test:coverage              # Generate coverage report
 ```
 
 Run tests for specific applications:
+
 ```bash
 npm run test:web                   # Ally Web tests
 npm run test:helpline              # Helpline Dashboard tests
@@ -101,6 +111,7 @@ npm run test:admin                 # Admin Dashboard tests
 ```
 
 Update snapshots:
+
 ```bash
 npm run test:update-snapshots      # Update all snapshots
 npm run test:web:update-snapshots  # Update web snapshots only
@@ -144,11 +155,11 @@ ally-web/
 
 ## Tech Stack
 
-| Application | Framework | Styling | Port |
-|------------|-----------|---------|------|
-| Ally Web | Next.js 15 | CSS Modules | 3000 |
+| Application        | Framework    | Styling      | Port |
+| ------------------ | ------------ | ------------ | ---- |
+| Ally Web           | Next.js 15   | CSS Modules  | 3000 |
 | Helpline Dashboard | Vite + React | Tailwind CSS | 8080 |
-| Admin Dashboard | Vite + React | Tailwind CSS | 8081 |
+| Admin Dashboard    | Vite + React | Tailwind CSS | 8081 |
 
 ## Docker Commands Reference
 
@@ -181,20 +192,24 @@ docker compose down -v
 ## Development Guidelines
 
 ### Code Style
+
 - Follow ESLint and Prettier configurations
 - Run `npm run lint:fix` before committing
 - Use `npm run format` to format code
 
 ### Styling
+
 - **Ally Web**: CSS Modules with custom properties
 - **Dashboards**: Tailwind CSS utility classes
 
 ### TypeScript
+
 - Maintain strict type checking
 - Avoid `any` types
 - Create interfaces for component props
 
 ### Components
+
 - Create reusable components in `libs/ui-shared/` for shared code
 - Keep app-specific components in their respective `apps/` directory
 - Use meaningful component and variable names
@@ -204,17 +219,21 @@ docker compose down -v
 ### Docker Issues
 
 **"docker-credential-desktop: executable file not found"**
+
 ```bash
 ./scripts/docker-switch.sh colima
 ```
 
 **"the attribute `version` is obsolete"**
+
 - Already fixed in `compose.yaml`
 
 **Husky git warnings in Docker**
+
 - Already handled with `--ignore-scripts` flag
 
 **Port already in use**
+
 ```bash
 # Find and kill the process using the port
 lsof -ti:3000 | xargs kill -9
@@ -223,6 +242,7 @@ lsof -ti:3000 | xargs kill -9
 ### Build Issues
 
 **Dependencies out of sync**
+
 ```bash
 # Local development
 npm install
@@ -232,6 +252,7 @@ docker build -f Dockerfile.deps -t ally-web/deps:dev . --no-cache
 ```
 
 **Stale node_modules**
+
 ```bash
 # Remove and reinstall
 rm -rf node_modules package-lock.json
@@ -241,6 +262,7 @@ npm install
 ## Contributing
 
 1. **Create a branch** for your feature/fix
+
    ```bash
    git checkout -b feature/your-feature-name
    ```
@@ -248,6 +270,7 @@ npm install
 2. **Make your changes** following our guidelines
 
 3. **Test your changes**
+
    ```bash
    npm run lint
    npm test
@@ -255,6 +278,7 @@ npm install
    ```
 
 4. **Commit with a descriptive message**
+
    ```bash
    git commit -m "feat: add user profile component"
    ```
