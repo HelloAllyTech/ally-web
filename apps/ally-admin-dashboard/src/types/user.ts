@@ -64,6 +64,7 @@ export interface UserListUser {
   creditLimit: number | null;
   consumedCredits: number | null;
   secondsAllowedPerCredit: number;
+  profileImageUrl: string;
 }
 
 export interface UserListProps {
@@ -153,6 +154,8 @@ export interface UserModalProps {
   uploadButtonName?: string;
   uploadTitle?: string;
   uploadId?: string;
+  uploadImageUrl?: (payload: GetLogoUrlRequest) => Promise<any>;
+  deleteImageUrl?: (profileImageUrl: any) => Promise<any>;
 }
 
 export type Option = {
@@ -226,5 +229,5 @@ export interface GetLogoUrlResponse {
 }
 
 export interface DeleteLogoRequest {
-  LogoUrl: string;
+  logoUrl: string;
 }

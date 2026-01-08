@@ -15,6 +15,8 @@ export const ApiEndpoints = {
     GENERATE_OTP: "/v2/auth/generate-otp",
     VERIFY_OTP: "/v2/auth/verify-otp",
     REFRESH: "/v1/auth/refresh",
+    PROFILE_IMAGE_URL: "/v1/users/profile-image-url",
+    PROFILE_IMAGE: "/v1/users/profile-image",
   },
   SIMULATION_STUDIO: {
     GET_SIMULATIONS: "/v1/learn/admin-scenarios",

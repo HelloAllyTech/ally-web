@@ -1,24 +1,59 @@
 import React, { useEffect, useRef, useState } from "react";
 
+import { useForm } from "react-hook-form";
 import { useLocation, useNavigate } from "react-router-dom";
 
-import { ArrowDown, Book, User, Users, Ally, DockToRight, Logout, HappyEmoji } from "@assets";
-import { SIDEBAR_ITEMS, ROUTES, en } from "@constants";
+import { FEATURE_FLAGS_MAP, CustomImage } from "@ally-ui-mono/ui-shared";
+import {
+  ArrowDown,
+  Book,
+  User,
+  Users,
+  Ally,
+  DockToRight,
+  Logout,
+  HappyEmoji,
+  ManageAccounts,
+} from "@assets";
+import { UserModal } from "@components";
+import { SIDEBAR_ITEMS, ROUTES, en, profileSettings, USER_MODAL_FIELDS_IDS } from "@constants";
 import { useClickOutside, useUser } from "@hooks";
 
 const EXPANDED_WIDTH = 1200;
 
+const defaultProfileUploadValues: {
+  profileImageUrl: string;
+} = {
+  profileImageUrl: "",
+};
+
 export const Sidebar: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { user, logout, filteredNavigationItems } = useUser();
+  const {
+    user,
+    logout,
+    filteredNavigationItems,
+    getProfileUrl,
+    deleteProfile,
+    uploadProfileImage,
+    refetchUser,
+  } = useUser();
 
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [isExpanded, setIsExpanded] = useState(true);
+  const [openSettings, setOpenSettings] = useState(false);
 
   const containerRef = useRef<HTMLDivElement>(null);
 
   useClickOutside(containerRef, () => setIsUserMenuOpen(false));
+
+  const profileSettingsForm = useForm({
+    defaultValues: defaultProfileUploadValues,
+    mode: "onChange",
+  });
+
+  const imageUploaded = profileSettingsForm.watch("profileImageUrl");
 
   useEffect(() => {
     if (
@@ -57,6 +92,20 @@ export const Sidebar: React.FC = () => {
 
   const handleToggleSidebar = () => {
     setIsExpanded(!isExpanded);
+  };
+  const handleProfileSettingClick = () => {
+    setIsUserMenuOpen(false);
+    setOpenSettings(true);
+  };
+
+  const uploadProfile = async () => {
+    const existingProfileUrl = user.profileImageUrl;
+    await uploadProfileImage({ profileImageUrl: imageUploaded });
+
+    if (existingProfileUrl) await deleteProfile({ profileImageUrl: existingProfileUrl });
+    await refetchUser();
+
+    setOpenSettings(false);
   };
 
   const renderIcon = (id: string): React.ReactNode | undefined => {
@@ -123,57 +172,88 @@ export const Sidebar: React.FC = () => {
   );
 
   const profileSection = (
-    <div ref={containerRef} className="border-t border-border-light py-4">
-      {isExpanded ? (
+    <>
+      <div ref={containerRef} className="border-t border-border-light py-4">
         <div
           onClick={handleUserMenuToggle}
           className="flex flex-row justify-between items-center h-8 py-0 cursor-pointer"
         >
-          <div className="flex flex-row items-center">
-            <div className="w-8 h-8 rounded-full flex items-center justify-center mr-2">
-              <User />
+          <div className="flex gap-2 items-center w-full justify-center object-cover">
+            <div className="w-[40px] h-[40px] rounded-full overflow-hidden flex items-center justify-center">
+              {user?.profileImageUrl ? (
+                <CustomImage
+                  src={user?.profileImageUrl}
+                  alt="profile"
+                  containerClassName="w-full h-full"
+                  fallbackClassName="flex items-center justify-center text-typography-600 bg-neutral-100 rounded-full object-cover w-full h-full"
+                  fallbackText="NA"
+                />
+              ) : (
+                <User />
+              )}
             </div>
-            <div className="flex-1 text-left w-full min-w-[100px]">
-              <div className="text-lg text-typography-900 text-ellipsis overflow-hidden whitespace-nowrap">
-                {user?.name}
-              </div>
-              <div className="text-xs mb-1 text-typography-800 text-ellipsis overflow-hidden whitespace-nowrap">
-                {user?.email}
-              </div>
-            </div>
-          </div>
-          <div
-            className={`w-8 h-8 rounded-full flex items-center justify-center ml-3 ${isUserMenuOpen ? "rotate-[-90deg]" : ""}`}
-          >
-            <ArrowDown />
-          </div>
-        </div>
-      ) : (
-        <div onClick={handleUserMenuToggle} className="flex justify-center">
-          <div className="w-8 flex items-center justify-center">
-            <User />
-          </div>
-        </div>
-      )}
 
-      {/* User Menu Dropdown */}
-      {isUserMenuOpen && (
-        <div
-          onBlur={handleUserMenuToggle}
-          className={`absolute bottom-[10px] ${isExpanded ? "left-[230px]" : "left-[100px]"} min-w-[250px] z-[999] mb-2 bg-white border border-border-light rounded-lg shadow-lg`}
-        >
-          <div className="py-1">
-            <button
-              onClick={handleLogout}
-              className="flex flex-row items-center w-full px-4 py-2 gap-2 text-left text-sm text-typography-900 hover:bg-background-secondary transition-colors"
-            >
-              <Logout />
-              <span>{en.auth.logout}</span>
-            </button>
+            {isExpanded && (
+              <div className="flex-1 min-w-0 text-left">
+                <div className="text-lg text-typography-900 truncate">{user?.name}</div>
+                <div className="text-xs mb-1 text-typography-800 truncate">{user?.email}</div>
+              </div>
+            )}
           </div>
+          {isExpanded && (
+            <div
+              className={`w-8 h-8 rounded-full flex items-center justify-center ${isUserMenuOpen ? "rotate-[-90deg]" : ""}`}
+            >
+              <ArrowDown />
+            </div>
+          )}
         </div>
-      )}
-    </div>
+
+        {/* User Menu Dropdown */}
+        {isUserMenuOpen && (
+          <div
+            onBlur={handleUserMenuToggle}
+            className={`absolute bottom-[10px] ${isExpanded ? "left-[230px]" : "left-[100px]"} min-w-[250px] z-[999] mb-2 bg-white border border-border-light rounded-lg shadow-lg`}
+          >
+            <div className="py-1">
+              {FEATURE_FLAGS_MAP.PROFILE_UPLOAD_FLAG && (
+                <button
+                  onClick={handleProfileSettingClick}
+                  className="flex flex-row items-center w-full px-4 py-2 gap-2 text-left text-sm text-typography-900 hover:bg-background-secondary"
+                >
+                  <ManageAccounts />
+                  <span>{en.auth.profileSettings}</span>
+                </button>
+              )}
+              <button
+                onClick={handleLogout}
+                className="flex flex-row items-center w-full px-4 py-2 gap-2 text-left text-sm text-typography-900 hover:bg-background-secondary transition-colors"
+              >
+                <Logout />
+                <span>{en.auth.logout}</span>
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+      {FEATURE_FLAGS_MAP.PROFILE_UPLOAD_FLAG ? (
+        <UserModal
+          isOpen={openSettings}
+          onClose={() => setOpenSettings(false)}
+          title={en.auth.profileSettings}
+          imageUpload
+          fields={profileSettings}
+          details={user}
+          uploadTitle={en.auth.profileImage}
+          handleClick={uploadProfile}
+          formMethods={profileSettingsForm}
+          uploadId={USER_MODAL_FIELDS_IDS.PROFILE}
+          uploadButtonName={imageUploaded ? en.userManagement.changeImage : en.auth.uploadImage}
+          uploadImageUrl={getProfileUrl}
+          deleteImageUrl={deleteProfile}
+        />
+      ) : null}
+    </>
   );
 
   return (
