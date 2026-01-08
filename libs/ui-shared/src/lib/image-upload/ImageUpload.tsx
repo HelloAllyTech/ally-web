@@ -25,6 +25,7 @@ interface ImageUploadProps {
 
 const ASPECT_RATIO_TOLERANCE = 0.01;
 const PROFILE_ASPECT_RATIO = 1 / 1;
+const maxFileSize = 2 * 1024 * 1024; // 2MB
 
 const imageTypes = {
   JPEG: "image/jpeg",
@@ -105,6 +106,24 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
     setPreviewUrl(response.data[uploadId]);
   };
 
+  const validateImage = (objectUrl: string, img: HTMLImageElement, file: File) => {
+    const aspectRatio = img.width / img.height;
+    const isValidRatio = Math.abs(aspectRatio - PROFILE_ASPECT_RATIO) <= ASPECT_RATIO_TOLERANCE;
+
+    if (!isValidRatio) {
+      URL.revokeObjectURL(objectUrl);
+      toast.error("Please upload an image with the correct aspect ratio");
+      if (fileInputRef.current) fileInputRef.current.value = "";
+      return;
+    }
+    if (file.size > maxFileSize) {
+      URL.revokeObjectURL(objectUrl);
+      toast.error("File must be under 2MB.");
+      if (fileInputRef.current) fileInputRef.current.value = "";
+      return;
+    }
+  };
+
   const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
@@ -119,15 +138,7 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
     const img = new Image();
 
     img.onload = async () => {
-      const aspectRatio = img.width / img.height;
-      const isValidRatio = Math.abs(aspectRatio - PROFILE_ASPECT_RATIO) <= ASPECT_RATIO_TOLERANCE;
-
-      if (!isValidRatio) {
-        URL.revokeObjectURL(objectUrl);
-        toast.error("Please upload an image with the correct aspect ratio");
-        if (fileInputRef.current) fileInputRef.current.value = "";
-        return;
-      }
+      validateImage(objectUrl, img, file);
       try {
         await uploadFileToS3(file);
       } catch {

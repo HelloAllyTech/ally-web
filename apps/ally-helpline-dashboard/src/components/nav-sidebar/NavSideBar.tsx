@@ -3,6 +3,7 @@ import { FC, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 
+import { useGetLogoUrlQuery } from "@api";
 import { Ally, DockToRight, LogoutIllustration } from "@assets";
 import {
   Carousel,
@@ -55,16 +56,8 @@ const Tab: FC<TabProps> = ({ id, Icon, title, activeTab, isExpanded, onClick }) 
 );
 
 const NavSideBar: FC<NavSideBarProps> = ({ activeTab, onTabChange, isOpen, onClose }) => {
-  const {
-    permissions,
-    user,
-    logout,
-    getProfileUrl,
-    deleteProfile,
-    uploadProfile,
-    refetchUser,
-    tenantData,
-  } = useUser();
+  const { permissions, user, logout, getProfileUrl, deleteProfile, uploadProfile, refetchUser } =
+    useUser();
 
   const [isLogoutDialogOpen, setIsLogoutDialogOpen] = useState<boolean>(false);
   const permittedTabs = navBarOptions.filter(
@@ -73,6 +66,7 @@ const NavSideBar: FC<NavSideBarProps> = ({ activeTab, onTabChange, isOpen, onClo
   );
 
   const navigate = useNavigate();
+  const { data: tenantData } = useGetLogoUrlQuery();
 
   const [isExpanded, setIsExpanded] = useState(true);
   const [openSettings, setOpenSettings] = useState(false);
