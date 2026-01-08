@@ -68,7 +68,17 @@ export const UserList: React.FC<UserListProps> = ({
               className="grid [grid-template-columns:repeat(48,minmax(0,1fr))] items-center px-4 py-3 text-typography-900 border-b border-border-light hover:bg-background-secondary relative"
             >
               <div className="col-span-11 justify-start flex items-center min-w-0 overflow-hidden ">
-                <Avatar name={user.name} />
+                {user.profileImageUrl ? (
+                  <img
+                    src={user.profileImageUrl}
+                    alt="user"
+                    width={45}
+                    height={45}
+                    className="rounded-full mr-3"
+                  />
+                ) : (
+                  <Avatar name={user.name} />
+                )}
                 <div className="min-w-0">
                   <div className="truncate text-typography-900 pr-5">{user.name}</div>
                   <div className="text-typography-800 truncate pr-5 ">{user.email}</div>

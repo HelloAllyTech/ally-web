@@ -3,7 +3,14 @@ import { useCallback, useMemo } from "react";
 import { useSelector } from "react-redux";
 
 import { logger } from "@ally-ui-mono/ui-shared";
-import { useLazyGetUserQuery, useLazyGetPermissionsQuery, baseAPI } from "@api";
+import {
+  useLazyGetUserQuery,
+  useLazyGetPermissionsQuery,
+  baseAPI,
+  useGetProfileImageUrlMutation,
+  useDeleteProfileImageMutation,
+  useUploadProfileImageMutation,
+} from "@api";
 import { NavigationItem } from "@components/types";
 import { LOCAL_STORAGE_KEYS, ROUTES, en, SIDEBAR_ITEMS, Permissions } from "@constants";
 import { setUser, authenticate, unauthenticate, setPermissions } from "@reducer";
@@ -16,6 +23,9 @@ export const useUser = () => {
 
   const [getUser, { isLoading: isUserLoading }] = useLazyGetUserQuery();
   const [getPermissions, { isLoading: isPermissionsLoading }] = useLazyGetPermissionsQuery();
+  const [getProfileUrl] = useGetProfileImageUrlMutation();
+  const [deleteProfile] = useDeleteProfileImageMutation();
+  const [uploadProfileImage] = useUploadProfileImageMutation();
 
   const navigationItems: NavigationItem[] = [
     {
@@ -123,5 +133,8 @@ export const useUser = () => {
     user,
     userStatus,
     filteredNavigationItems,
+    getProfileUrl,
+    deleteProfile,
+    uploadProfileImage,
   };
 };

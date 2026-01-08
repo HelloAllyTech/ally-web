@@ -1,7 +1,14 @@
 import { useSelector } from "react-redux";
 
 import { logger } from "@ally-ui-mono/ui-shared";
-import { useLazyGetUserQuery, useLazyGetPermissionsQuery } from "@api";
+import {
+  useLazyGetUserQuery,
+  useLazyGetPermissionsQuery,
+  useGetProfileImageUrlMutation,
+  useDeleteProfileImageMutation,
+  useUploadProfileImageMutation,
+  useGetLogoUrlQuery,
+} from "@api";
 import { baseAPI } from "@api/baseAPI";
 import { LOCAL_STORAGE_KEYS } from "@constants";
 import { setUser, authenticate, unauthenticate, setPermissions } from "@reducer";
@@ -14,6 +21,10 @@ export const useUser = () => {
 
   const [getUser, { isLoading: isUserLoading }] = useLazyGetUserQuery();
   const [getPermissions, { isLoading: isPermissionsLoading }] = useLazyGetPermissionsQuery();
+  const [getProfileUrl] = useGetProfileImageUrlMutation();
+  const [deleteProfile] = useDeleteProfileImageMutation();
+  const [uploadProfile] = useUploadProfileImageMutation();
+  const { data: tenantData } = useGetLogoUrlQuery();
 
   /**
    * Checks user authentication status and fetches user data if authenticated.
@@ -88,5 +99,9 @@ export const useUser = () => {
     permissions,
     setUser,
     user,
+    getProfileUrl,
+    deleteProfile,
+    uploadProfile,
+    tenantData,
   };
 };
