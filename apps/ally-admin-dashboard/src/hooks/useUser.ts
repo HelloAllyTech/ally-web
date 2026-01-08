@@ -27,6 +27,23 @@ export const useUser = () => {
   const [deleteProfile] = useDeleteProfileImageMutation();
   const [uploadProfileImage] = useUploadProfileImageMutation();
 
+  /**
+   * Refetches user data and updates Redux store
+   * Used when profile is updated to reflect changes immediately
+   */
+  const refetchUser = async () => {
+    try {
+      const userData = await getUser();
+      if (userData?.data) {
+        store.dispatch(setUser(userData.data));
+      }
+      return userData?.data;
+    } catch (error) {
+      logger.info(`Error refetching user: ${error}`);
+      return null;
+    }
+  };
+
   const navigationItems: NavigationItem[] = [
     {
       id: SIDEBAR_ITEMS.SIMULATION_STUDIO,
@@ -125,6 +142,7 @@ export const useUser = () => {
   return {
     availableChatTypes,
     checkAuth,
+    refetchUser,
     isAuthLoading: isUserLoading || isPermissionsLoading,
     isAuthenticated,
     logout,

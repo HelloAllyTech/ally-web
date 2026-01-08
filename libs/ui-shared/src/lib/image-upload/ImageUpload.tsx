@@ -159,9 +159,9 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
             <CustomImage
               src={previewUrl}
               alt="Preview"
-              className="w-full h-full object-cover rounded-full"
-              fallbackClassName="w-full h-full flex justify-center items-center object-cover rounded-full"
-              containerClassName={`w-full h-full bg-gray-200 rounded-full overflow-hidden object-cover ${
+              className="w-full h-full object-cover "
+              fallbackClassName={`w-full h-full flex justify-center items-center object-cover ${uploadId === "profileImageUrl" ? "rounded-full" : "rounded-md"}`}
+              containerClassName={`w-full h-full bg-gray-200  overflow-hidden object-cover ${
                 uploadId === "profileImageUrl" ? "rounded-full" : "border-dashed"
               }`}
             />
