@@ -7,7 +7,6 @@ import {
   useGetProfileImageUrlMutation,
   useDeleteProfileImageMutation,
   useUploadProfileImageMutation,
-  useGetLogoUrlQuery,
 } from "@api";
 import { baseAPI } from "@api/baseAPI";
 import { LOCAL_STORAGE_KEYS } from "@constants";
@@ -24,7 +23,6 @@ export const useUser = () => {
   const [getProfileUrl] = useGetProfileImageUrlMutation();
   const [deleteProfile] = useDeleteProfileImageMutation();
   const [uploadProfile] = useUploadProfileImageMutation();
-  const { data: tenantData } = useGetLogoUrlQuery();
 
   /**
    * Refetches user data and updates Redux store
@@ -120,6 +118,5 @@ export const useUser = () => {
     getProfileUrl,
     deleteProfile,
     uploadProfile,
-    tenantData,
   };
 };
