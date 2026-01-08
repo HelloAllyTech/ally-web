@@ -1,6 +1,6 @@
 import { FC, useEffect, useRef, useState } from "react";
 
-import { FEATURE_FLAGS_MAP } from "@ally-ui-mono/ui-shared";
+import { CustomImage, FEATURE_FLAGS_MAP } from "@ally-ui-mono/ui-shared";
 import { AccountCircle, Arrow, Bolt, Logout, ManageAccount } from "@assets";
 import { PermissionGuard } from "@components";
 import { Permissions } from "@constants";
@@ -41,7 +41,7 @@ const UserInfo: FC<{
         <div className="flex gap-2 items-center w-full">
           <div
             data-testid="user-info-avatar-ring"
-            className={"w-[32px] h-[32px] rounded-full p-[2px]"}
+            className={"w-[40px] h-[40px] rounded-full p-[2px]"}
             style={
               hasPercentage
                 ? {
@@ -51,12 +51,14 @@ const UserInfo: FC<{
             }
           >
             <div
-              className="bg-white rounded-full flex items-center justify-center w-full h-full"
+              className="bg-white rounded-full flex items-center justify-center w-full h-full overflow-hidden"
               data-testid="user-info-avatar"
             >
               {profileUrl ? (
-                <img
-                  className="w-[28px] h-[28px] rounded-full object-cover"
+                <CustomImage
+                  className="rounded-full object-cover"
+                  fallbackClassName="flex items-center justify-center text-typography-600 bg-neutral-100 rounded-full object-cover w-full h-full"
+                  fallbackText="NA"
                   src={profileUrl}
                   alt="Profile"
                 />

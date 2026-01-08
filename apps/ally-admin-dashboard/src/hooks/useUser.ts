@@ -3,7 +3,14 @@ import { useCallback, useMemo } from "react";
 import { useSelector } from "react-redux";
 
 import { logger } from "@ally-ui-mono/ui-shared";
-import { useLazyGetUserQuery, useLazyGetPermissionsQuery, baseAPI } from "@api";
+import {
+  useLazyGetUserQuery,
+  useLazyGetPermissionsQuery,
+  baseAPI,
+  useGetProfileImageUrlMutation,
+  useDeleteProfileImageMutation,
+  useUploadProfileImageMutation,
+} from "@api";
 import { NavigationItem } from "@components/types";
 import { LOCAL_STORAGE_KEYS, ROUTES, en, SIDEBAR_ITEMS, Permissions } from "@constants";
 import { setUser, authenticate, unauthenticate, setPermissions } from "@reducer";
@@ -16,6 +23,26 @@ export const useUser = () => {
 
   const [getUser, { isLoading: isUserLoading }] = useLazyGetUserQuery();
   const [getPermissions, { isLoading: isPermissionsLoading }] = useLazyGetPermissionsQuery();
+  const [getProfileUrl] = useGetProfileImageUrlMutation();
+  const [deleteProfile] = useDeleteProfileImageMutation();
+  const [uploadProfileImage] = useUploadProfileImageMutation();
+
+  /**
+   * Refetches user data and updates Redux store
+   * Used when profile is updated to reflect changes immediately
+   */
+  const refetchUser = async () => {
+    try {
+      const userData = await getUser();
+      if (userData?.data) {
+        store.dispatch(setUser(userData.data));
+      }
+      return userData?.data;
+    } catch (error) {
+      logger.info(`Error refetching user: ${error}`);
+      return null;
+    }
+  };
 
   const navigationItems: NavigationItem[] = [
     {
@@ -115,6 +142,7 @@ export const useUser = () => {
   return {
     availableChatTypes,
     checkAuth,
+    refetchUser,
     isAuthLoading: isUserLoading || isPermissionsLoading,
     isAuthenticated,
     logout,
@@ -123,5 +151,8 @@ export const useUser = () => {
     user,
     userStatus,
     filteredNavigationItems,
+    getProfileUrl,
+    deleteProfile,
+    uploadProfileImage,
   };
 };

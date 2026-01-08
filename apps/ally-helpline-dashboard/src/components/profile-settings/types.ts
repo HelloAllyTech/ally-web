@@ -1,4 +1,4 @@
-import { User } from "@src/types";
+import { GetProfileUrlRequest, User } from "@types";
 
 export interface profileSettingsProps {
   isOpen: boolean;
@@ -6,4 +6,6 @@ export interface profileSettingsProps {
   userData: User;
   formMethods?: any;
   onButtonClick: () => void;
+  getProfileUrl?: (payload: GetProfileUrlRequest) => Promise<any>;
+  deleteProfile?: (profileImageUrl: any) => Promise<any>;
 }
