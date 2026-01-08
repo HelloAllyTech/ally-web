@@ -5,15 +5,8 @@ import { useNavigate } from "react-router-dom";
 
 import { useGetLogoUrlQuery } from "@api";
 import { Ally, DockToRight, LogoutIllustration } from "@assets";
-import {
-  Carousel,
-  CarouselSize,
-  CarouselVariant,
-  ConfirmationDialog,
-  ProfileSettings,
-  UserInfo,
-} from "@components";
-import { navBarOptions, CAROUSEL_SLIDES } from "@constants";
+import { ConfirmationDialog, ProfileSettings, UserInfo } from "@components";
+import { navBarOptions } from "@constants";
 import { useUser } from "@hooks";
 
 import { NavSideBarProps, TabProps } from "./types";
@@ -189,13 +182,6 @@ const NavSideBar: FC<NavSideBarProps> = ({ activeTab, onTabChange, isOpen, onClo
         {renderTabs()}
 
         <div className="flex flex-col items-start gap-3 m-3" data-testid="nav-sidebar-footer">
-          {isExpanded && (
-            <Carousel
-              slides={CAROUSEL_SLIDES}
-              variant={CarouselVariant.DARK}
-              size={CarouselSize.SMALL}
-            />
-          )}
           <hr className="w-full border-t border-gray-200" data-testid="nav-sidebar-divider" />
 
           <UserInfo
