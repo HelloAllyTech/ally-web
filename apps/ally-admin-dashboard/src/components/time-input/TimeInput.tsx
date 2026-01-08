@@ -3,7 +3,7 @@ import React, { useState, useRef, useEffect } from "react";
 import { validateTime } from "@utils";
 
 export interface TimeInputProps {
-  value?: string;
+  value?: string | number;
   onChange?: (value: string) => void;
   onBlur?: (value: string) => void;
   placeholder?: string;
@@ -19,11 +19,16 @@ export const TimeInput: React.FC<TimeInputProps> = ({
   className = "",
   disabled = false,
 }) => {
-  const [displayValue, setDisplayValue] = useState(value);
+  const normalizeValue = (val: string | number): string => {
+    if (val === 0 || val === "0") return "00:00:00";
+    return String(val || "");
+  };
+
+  const [displayValue, setDisplayValue] = useState(normalizeValue(value));
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    setDisplayValue(value);
+    setDisplayValue(normalizeValue(value));
   }, [value]);
 
   const formatTime = (input: string): string => {
