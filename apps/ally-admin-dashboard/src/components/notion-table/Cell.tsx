@@ -9,7 +9,7 @@ import {
   SelectComponent,
   EditableTriggerConditionsPopup,
 } from "@components/notion-table";
-import { formatCapitalizedEnum } from "@utils";
+import { formatCapitalizedEnum, isObject } from "@utils";
 
 import { cellTypes } from "./utils";
 
@@ -53,6 +53,45 @@ export const Cell = ({
   };
 
   let element: React.ReactNode;
+
+  // TODO: Need refactoring for time input
+  const CustomTimeInput = () => {
+    if (isObject(value.value) && (value.value.value === null || value.value.value === undefined))
+      return (
+        <div onClick={() => updateCellValue("00:00:00")} className="cursor-pointer">
+          ∞
+        </div>
+      );
+    return (
+      <div className="flex items-center gap-2 cursor-pointer hover:bg-neutral-100 rounded-md p-1            ">
+        <TimeInput
+          value={value.value || "00:00:00"}
+          onBlur={updateCellValue}
+          disabled={isDisabled}
+        />
+      </div>
+    );
+  };
+
+  // TODO: Need refactoring for time input
+  const CustomScoreInput = () => {
+    const ifinityText = id === "minScore" ? "-∞" : "+∞";
+    if (
+      (isObject(value.value) && (value.value.value === null || value.value.value === undefined)) ||
+      value.value === null ||
+      value.value === undefined
+    )
+      return (
+        <div onClick={() => updateCellValue(10)} className="cursor-pointer">
+          {ifinityText}
+        </div>
+      );
+    return (
+      <div className="flex items-center gap-2 cursor-pointer hover:bg-neutral-100 rounded-md p-1            ">
+        <NumberInput value={value.value} onChange={updateCellValue} disabled={isDisabled} />
+      </div>
+    );
+  };
 
   switch (dataType) {
     case cellTypes.normalText:
@@ -146,16 +185,11 @@ export const Cell = ({
       );
       break;
     }
-    // TODO: Upadte logic for editing time input
     case cellTypes.timeInput:
-      element =
-        value.value === 0 ? (
-          <div>--</div>
-        ) : (
-          <div className="flex items-center gap-2">
-            <TimeInput value={value.value} onChange={updateCellValue} disabled={isDisabled} />
-          </div>
-        );
+      element = <CustomTimeInput />;
+      break;
+    case cellTypes.score:
+      element = <CustomScoreInput />;
       break;
     default:
       element = <span />;
