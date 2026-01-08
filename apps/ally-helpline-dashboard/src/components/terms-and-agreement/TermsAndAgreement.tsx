@@ -29,7 +29,7 @@ const TermsAndAgreement = ({ isOpen, handleAgreeButtonClick }) => {
                 <span>{item.heading}</span>
               </div>
 
-              <p className="text-gray-700">
+              <div className="text-gray-700">
                 {item.content.map((content, index) => (
                   <div key={index} className="flex flex-row w-full">
                     <div className="w-[6px] h-[6px] bg-typography-900 rounded-full mr-2 ml-3 mt-[9px]" />
@@ -38,7 +38,7 @@ const TermsAndAgreement = ({ isOpen, handleAgreeButtonClick }) => {
                     </div>
                   </div>
                 ))}
-              </p>
+              </div>
             </div>
           ))}
         </div>

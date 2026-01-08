@@ -56,16 +56,22 @@ export const Cell = ({
 
   // TODO: Need refactoring for time input
   const CustomTimeInput = () => {
-    if (isObject(value.value) && (value.value.value === null || value.value.value === undefined))
+    const infinityText = id === "startTime" ? "00:00:00" : "∞";
+    if (
+      (isObject(value.value) && (value.value.value === null || value.value.value === undefined)) ||
+      value.value === null ||
+      value.value === undefined
+    )
       return (
-        <div onClick={() => updateCellValue("00:00:00")} className="cursor-pointer">
-          ∞
+        <div onClick={() => updateCellValue("00:00:00")} className="cursor-pointer px-1">
+          {infinityText}
         </div>
       );
     return (
       <div className="flex items-center gap-2 cursor-pointer hover:bg-neutral-100 rounded-md p-1            ">
         <TimeInput
-          value={value.value || "00:00:00"}
+          className="px-[0px]"
+          value={value.value}
           onBlur={updateCellValue}
           disabled={isDisabled}
         />
@@ -82,7 +88,7 @@ export const Cell = ({
       value.value === undefined
     )
       return (
-        <div onClick={() => updateCellValue(10)} className="cursor-pointer">
+        <div onClick={() => updateCellValue(0)} className="cursor-pointer">
           {ifinityText}
         </div>
       );

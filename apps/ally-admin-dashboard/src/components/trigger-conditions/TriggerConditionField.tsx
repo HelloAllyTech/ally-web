@@ -81,7 +81,7 @@ export const TriggerConditionField: React.FC<TriggerConditionFieldProps> = ({
             value={fieldValue || ""}
             onChange={value => onChange(field.id, value)}
             placeholder={field.placeholder || "hh:mm:ss"}
-            className={`w-[100px] ${isInTable ? "bg-neutral-100" : "bg-neutral-50"}`}
+            className={`w-[100px] bg-[#F5F5F5] ${isInTable ? "bg-neutral-100" : "bg-neutral-50"}`}
           />
         );
 
