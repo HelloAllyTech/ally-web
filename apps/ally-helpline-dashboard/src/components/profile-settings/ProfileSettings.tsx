@@ -3,7 +3,6 @@ import { FC } from "react";
 import { Dialog } from "@mui/material";
 
 import { ImageUpload } from "@ally-ui-mono/ui-shared";
-import { useDeleteProfileImageMutation, useGetProfileImageUrlMutation } from "@api";
 import { CloseIcon } from "@assets";
 
 import { profileSettingsProps } from "./types";
@@ -15,10 +14,9 @@ export const ProfileSettings: FC<profileSettingsProps> = ({
   userData,
   formMethods,
   onButtonClick,
+  getProfileUrl,
+  deleteProfile,
 }) => {
-  const [getProfileUrl] = useGetProfileImageUrlMutation();
-  const [deleteProfile] = useDeleteProfileImageMutation();
-
   return (
     <Dialog
       open={isOpen}
@@ -51,9 +49,9 @@ export const ProfileSettings: FC<profileSettingsProps> = ({
               </label>
 
               <input
-                value={userData?.name ?? ""}
+                placeholder={userData?.name ?? ""}
                 disabled
-                className="border rounded-md px-2 py-2 outline-none text-base font-primary placeholder:text-typography-600"
+                className="border rounded-md px-2 py-2 outline-none text-base font-primary"
               />
             </div>
             <div className="flex flex-col">
@@ -61,9 +59,9 @@ export const ProfileSettings: FC<profileSettingsProps> = ({
                 Email
               </label>
               <input
-                value={userData?.email ?? ""}
+                placeholder={userData?.email ?? ""}
                 disabled
-                className="border rounded-md px-2 py-2 outline-none text-base font-primary placeholder:text-typography-600"
+                className="border rounded-md px-2 py-2 outline-none text-base font-primary"
               />
             </div>
           </div>

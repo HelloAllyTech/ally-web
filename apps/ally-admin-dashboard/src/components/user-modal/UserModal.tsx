@@ -3,7 +3,6 @@ import { useEffect, useRef } from "react";
 import { Controller } from "react-hook-form";
 
 import { ImageUpload } from "@ally-ui-mono/ui-shared";
-import { useDeleteLogoMutation, usePostLogoUrlMutation } from "@api";
 import { Button, DropdownwithTag, CustomDropdown, CreditField, ProfileCard } from "@components";
 import { en, FieldOptions, KeyboardKeys, USER_MODAL_FIELDS_IDS, UserRole } from "@constants";
 import { UserModalProps, FieldProps } from "@types";
@@ -23,9 +22,10 @@ export const UserModal: React.FC<UserModalProps> = ({
   uploadButtonName,
   uploadTitle,
   uploadId,
+  uploadImageUrl,
+  deleteImageUrl,
 }) => {
   // Handle ESC key to close modal
-
   useEffect(() => {
     const handleEscKey = (event: KeyboardEvent) => {
       if (event.key === KeyboardKeys.ESCAPE && isOpen) return onClose();
@@ -48,9 +48,6 @@ export const UserModal: React.FC<UserModalProps> = ({
   const { isValid, isDirty } = formMethods?.formState || {};
 
   const backdropMouseDownRef = useRef(false);
-
-  const [logoUpload] = usePostLogoUrlMutation();
-  const [deleteLogo] = useDeleteLogoMutation();
 
   const handlePrimaryAction = formMethods
     ? formMethods.handleSubmit((data: any) => {
@@ -261,7 +258,7 @@ export const UserModal: React.FC<UserModalProps> = ({
 
   const renderDisabledField = (field: FieldProps) => {
     return (
-      <div className="flex flex-col gap-2">
+      <div key={field.id} className="flex flex-col gap-2">
         <label
           htmlFor={field.id}
           className="text-sm text-typography-900 cursor-pointer font-primary"
@@ -333,8 +330,8 @@ export const UserModal: React.FC<UserModalProps> = ({
             uploadId={uploadId}
             uploadButtonName={uploadButtonName}
             uploadTitle={uploadTitle}
-            onUpload={logoUpload}
-            onDelete={deleteLogo}
+            onUpload={uploadImageUrl}
+            onDelete={deleteImageUrl}
             details={details}
           />
         )}

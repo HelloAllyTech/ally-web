@@ -5,6 +5,7 @@ import { validateTime } from "@utils";
 export interface TimeInputProps {
   value?: string;
   onChange?: (value: string) => void;
+  onBlur?: (value: string) => void;
   placeholder?: string;
   className?: string;
   disabled?: boolean;
@@ -13,6 +14,7 @@ export interface TimeInputProps {
 export const TimeInput: React.FC<TimeInputProps> = ({
   value = "",
   onChange,
+  onBlur,
   placeholder = "hh:mm:ss",
   className = "",
   disabled = false,
@@ -86,10 +88,13 @@ export const TimeInput: React.FC<TimeInputProps> = ({
     // Validate and format on blur
     if (displayValue) {
       const validated = validateTime(displayValue);
+      onBlur?.(validated);
       setDisplayValue(validated);
       if (onChange && validated !== displayValue) {
         onChange(validated);
       }
+    } else {
+      onBlur?.(displayValue || null);
     }
   };
 
