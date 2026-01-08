@@ -19,6 +19,10 @@ vi.mock("@api", async () => {
   return {
     useLazyGetUserQuery: () => [apiMocks.getUser, { isLoading: false }],
     useLazyGetPermissionsQuery: () => [apiMocks.getPermissions, { isLoading: false }],
+    useGetProfileImageUrlMutation: () => [vi.fn()],
+    useDeleteProfileImageMutation: () => [vi.fn()],
+    useUploadProfileImageMutation: () => [vi.fn()],
+    useGetLogoUrlQuery: () => ({ data: null }),
   } as any;
 });
 

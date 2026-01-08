@@ -11,14 +11,25 @@ import { UserAvailabilityStatus } from "@types";
 import { useUser } from "../useUser";
 
 // Hoist mocks to avoid initialization errors
-const { mockGetUser, mockGetPermissions, mockResetApiState, mockDispatch, mockGetState } =
-  vi.hoisted(() => ({
-    mockGetUser: vi.fn(),
-    mockGetPermissions: vi.fn(),
-    mockResetApiState: vi.fn(),
-    mockDispatch: vi.fn(),
-    mockGetState: vi.fn(),
-  }));
+const {
+  mockGetUser,
+  mockGetPermissions,
+  mockResetApiState,
+  mockDispatch,
+  mockGetState,
+  mockGetProfileUrl,
+  mockDeleteProfile,
+  mockUploadProfile,
+} = vi.hoisted(() => ({
+  mockGetUser: vi.fn(),
+  mockGetPermissions: vi.fn(),
+  mockResetApiState: vi.fn(),
+  mockDispatch: vi.fn(),
+  mockGetState: vi.fn(),
+  mockGetProfileUrl: vi.fn(),
+  mockDeleteProfile: vi.fn(),
+  mockUploadProfile: vi.fn(),
+}));
 
 // Mock the logger
 vi.mock("@ally-ui-mono/ui-shared", () => ({
@@ -48,6 +59,9 @@ vi.mock("@api/baseApi", () => ({
 vi.mock("@api", () => ({
   useLazyGetUserQuery: () => [mockGetUser, { isLoading: false }],
   useLazyGetPermissionsQuery: () => [mockGetPermissions, { isLoading: false }],
+  useGetProfileImageUrlMutation: () => [mockGetProfileUrl],
+  useDeleteProfileImageMutation: () => [mockDeleteProfile],
+  useUploadProfileImageMutation: () => [mockUploadProfile],
   baseAPI: {
     injectEndpoints: vi.fn(() => ({})),
     reducerPath: "api",
