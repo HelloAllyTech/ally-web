@@ -27,6 +27,23 @@ export const useUser = () => {
   const { data: tenantData } = useGetLogoUrlQuery();
 
   /**
+   * Refetches user data and updates Redux store
+   * Used when profile is updated to reflect changes immediately
+   */
+  const refetchUser = async () => {
+    try {
+      const userData = await getUser();
+      if (userData?.data) {
+        store.dispatch(setUser(userData.data));
+      }
+      return userData?.data;
+    } catch (error) {
+      logger.info(`Error refetching user: ${error}`);
+      return null;
+    }
+  };
+
+  /**
    * Checks user authentication status and fetches user data if authenticated.
    * - Checks for access token in localStorage
    * - Fetches user data and permissions if token exists
@@ -97,6 +114,7 @@ export const useUser = () => {
     isAuthenticated,
     logout,
     permissions,
+    refetchUser,
     setUser,
     user,
     getProfileUrl,

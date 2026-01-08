@@ -3,7 +3,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useLocation, useNavigate } from "react-router-dom";
 
-import { FEATURE_FLAGS_MAP } from "@ally-ui-mono/ui-shared/featureFlag";
+import { FEATURE_FLAGS_MAP, CustomImage } from "@ally-ui-mono/ui-shared";
 import {
   ArrowDown,
   Book,
@@ -37,6 +37,7 @@ export const Sidebar: React.FC = () => {
     getProfileUrl,
     deleteProfile,
     uploadProfileImage,
+    refetchUser,
   } = useUser();
 
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
@@ -102,6 +103,7 @@ export const Sidebar: React.FC = () => {
     await uploadProfileImage({ profileImageUrl: imageUploaded });
 
     if (existingProfileUrl) await deleteProfile({ profileImageUrl: existingProfileUrl });
+    await refetchUser();
 
     setOpenSettings(false);
   };
@@ -176,32 +178,31 @@ export const Sidebar: React.FC = () => {
           onClick={handleUserMenuToggle}
           className="flex flex-row justify-between items-center h-8 py-0 cursor-pointer"
         >
-          <div className="flex gap-2 items-center w-full justify-center">
-            <div className="w-8 h-8 rounded-full flex items-center justify-center">
+          <div className="flex gap-2 items-center w-full justify-center object-cover">
+            <div className="w-[40px] h-[40px] rounded-full overflow-hidden flex items-center justify-center">
               {user?.profileImageUrl ? (
-                <img
-                  src={user.profileImageUrl}
+                <CustomImage
+                  src={user?.profileImageUrl}
                   alt="profile"
-                  className="rounded-full object-cover"
+                  containerClassName="w-full h-full"
+                  fallbackClassName="flex items-center justify-center text-typography-600 bg-neutral-100 rounded-full object-cover w-full h-full"
+                  fallbackText="NA"
                 />
               ) : (
                 <User />
               )}
             </div>
+
             {isExpanded && (
-              <div className="flex-1 text-left w-full min-w-[100px]">
-                <div className="text-lg text-typography-900 text-ellipsis overflow-hidden whitespace-nowrap">
-                  {user?.name}
-                </div>
-                <div className="text-xs mb-1 text-typography-800 text-ellipsis overflow-hidden whitespace-nowrap">
-                  {user?.email}
-                </div>
+              <div className="flex-1 min-w-0 text-left">
+                <div className="text-lg text-typography-900 truncate">{user?.name}</div>
+                <div className="text-xs mb-1 text-typography-800 truncate">{user?.email}</div>
               </div>
             )}
           </div>
           {isExpanded && (
             <div
-              className={`w-8 h-8 rounded-full flex items-center justify-center ml-3 ${isUserMenuOpen ? "rotate-[-90deg]" : ""}`}
+              className={`w-8 h-8 rounded-full flex items-center justify-center ${isUserMenuOpen ? "rotate-[-90deg]" : ""}`}
             >
               <ArrowDown />
             </div>
