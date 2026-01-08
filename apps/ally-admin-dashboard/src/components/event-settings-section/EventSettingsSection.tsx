@@ -86,7 +86,7 @@ export const TimeWindowSection: React.FC<TimeWindowValues & TimeWindowCallbacks>
 
       <FieldRow label="Applicable from">
         <TimeInput
-          value={startTime}
+          value={startTime || "00:00:00"}
           onChange={handleStartTimeChange}
           placeholder="00:00:00"
           className="ml-[-10px]"
