@@ -141,6 +141,25 @@ export const EventSidePanel: React.FC<EventSidePanelProps> = ({
     [selectedEvent],
   );
 
+  /**
+   * Helper to update detection config fields
+   * Reduces repetitive code for updating nested detectionConfig properties
+   */
+  const handleDetectionConfigChange = useCallback(
+    (field: string, value: any) => {
+      if (!selectedEvent) return;
+
+      setFormData(previousData => ({
+        ...previousData,
+        detectionConfig: {
+          ...previousData.detectionConfig,
+          [field]: value,
+        },
+      }));
+    },
+    [selectedEvent],
+  );
+
   const handleDelete = useCallback(() => {
     if (selectedEvent?.id) {
       onDelete(selectedEvent.id);
@@ -236,35 +255,17 @@ export const EventSidePanel: React.FC<EventSidePanelProps> = ({
                   maxOccurrences={formData?.detectionConfig?.maxOccurrences}
                   minGapTime={formData?.detectionConfig?.minGapTime as string}
                   onMaxOccurrencesChange={value =>
-                    handleFieldChange("detectionConfig", {
-                      ...formData?.detectionConfig,
-                      maxOccurrences: value,
-                    })
+                    handleDetectionConfigChange("maxOccurrences", value)
                   }
-                  onMinGapTimeChange={value =>
-                    handleFieldChange("detectionConfig", {
-                      ...formData?.detectionConfig,
-                      minGapTime: value,
-                    })
-                  }
+                  onMinGapTimeChange={value => handleDetectionConfigChange("minGapTime", value)}
                 />
 
                 {formData?.detectionType !== EVENT_DETECTION_TYPES.TIME_BASED && (
                   <TimeWindowSection
                     startTime={formData?.detectionConfig?.startTime as string}
                     endTime={formData?.detectionConfig?.endTime as string}
-                    onStartTimeChange={value =>
-                      handleFieldChange("detectionConfig", {
-                        ...formData?.detectionConfig,
-                        startTime: value,
-                      })
-                    }
-                    onEndTimeChange={value =>
-                      handleFieldChange("detectionConfig", {
-                        ...formData?.detectionConfig,
-                        endTime: value,
-                      })
-                    }
+                    onStartTimeChange={value => handleDetectionConfigChange("startTime", value)}
+                    onEndTimeChange={value => handleDetectionConfigChange("endTime", value)}
                   />
                 )}
 
@@ -272,18 +273,8 @@ export const EventSidePanel: React.FC<EventSidePanelProps> = ({
                   <ScoreWindowSection
                     minScore={formData?.detectionConfig?.minScore}
                     maxScore={formData?.detectionConfig?.maxScore}
-                    onMinScoreChange={value =>
-                      handleFieldChange("detectionConfig", {
-                        ...formData?.detectionConfig,
-                        minScore: value,
-                      })
-                    }
-                    onMaxScoreChange={value =>
-                      handleFieldChange("detectionConfig", {
-                        ...formData?.detectionConfig,
-                        maxScore: value,
-                      })
-                    }
+                    onMinScoreChange={value => handleDetectionConfigChange("minScore", value)}
+                    onMaxScoreChange={value => handleDetectionConfigChange("maxScore", value)}
                   />
                 )}
               </>

@@ -7,6 +7,7 @@ export * from "./simulation";
 export * from "./permissions";
 export * from "./file";
 export * from "./CreatePath";
+export * from "./detectionConfig";
 export * from "./eventTypes";
 export * from "./TriggerConditionsConfig";
 export * from "./profileSettings";

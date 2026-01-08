@@ -15,6 +15,30 @@ vi.mock("@components", () => ({
       {buttonText || "Pick emoji"}
     </button>
   ),
+  TimeInput: ({ value, onBlur, disabled, className }: any) => (
+    <input
+      data-testid="time-input"
+      type="text"
+      value={value || ""}
+      onBlur={e => onBlur?.(e.target.value)}
+      disabled={disabled}
+      className={className}
+    />
+  ),
+  // Export cellTypes to prevent other tests from failing
+  cellTypes: {
+    editableText: "editableText",
+    dropdown: "dropdown",
+    dropdownSearchable: "dropdownSearchable",
+    number: "number",
+    select: "select",
+    multiSelect: "multiSelect",
+    switch: "switch",
+    emoji: "emoji",
+    time: "time",
+    triggerConditions: "triggerConditions",
+    detectionConfig: "detectionConfig",
+  },
 }));
 
 vi.mock("@components/notion-table", () => ({
@@ -87,8 +111,44 @@ vi.mock("@components/notion-table", () => ({
   ),
 }));
 
+vi.mock("@constants", async () => {
+  const actual = await vi.importActual("@constants");
+  return {
+    ...actual,
+    DETECTION_CONFIG_FIELDS: {
+      MAX_OCCURRENCES: "maxOccurrences",
+      MIN_GAP_TIME: "minGapTime",
+      START_TIME: "startTime",
+      END_TIME: "endTime",
+      MIN_SCORE: "minScore",
+      MAX_SCORE: "maxScore",
+    },
+  };
+});
+
 vi.mock("@utils", () => ({
   formatCapitalizedEnum: (text: string) => text,
+  isInfinityValue: (value: any) => value === null || value === undefined,
+  normalizeDetectionConfigValue: (value: any, fieldId: string) => {
+    if (value === null || value === undefined) return null;
+    if (typeof value === "object" && value !== null && "value" in value) {
+      return value.value;
+    }
+    return value;
+  },
+  getInfinityDisplay: (fieldId: string) => {
+    if (fieldId === "minScore") return "-∞";
+    if (fieldId === "maxScore") return "+∞";
+    return "∞";
+  },
+  toggleInfinityValue: (currentValue: any, fieldId: string) => {
+    if (currentValue === null || currentValue === undefined) {
+      if (fieldId === "endTime") return "00:01:00";
+      if (fieldId === "minScore" || fieldId === "maxScore") return 0;
+      return "00:00:00";
+    }
+    return null;
+  },
 }));
 
 describe("Cell", () => {

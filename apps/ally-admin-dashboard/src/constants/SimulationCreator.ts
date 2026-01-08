@@ -1,7 +1,6 @@
+import { FEATURE_FLAGS_MAP } from "@ally-ui-mono/ui-shared";
 import { cellTypes } from "@components";
 import { CreatorFieldGroups, FormFieldConfig } from "@types";
-
-import { FEATURE_FLAGS_MAP } from "@ally-ui-mono/ui-shared/featureFlag";
 
 export const minInputHeight = {
   narrativeContext: "250",
@@ -406,7 +405,7 @@ export const EVENT_MANAGEMENT_TABLE_COLUMNS = [
           id: "maxOccurrences",
           label: "Max occurrences",
           accessor: "maxOccurrences",
-          dataType: cellTypes.number,
+          dataType: cellTypes.score,
           options: [],
           minWidth: 120,
         },
