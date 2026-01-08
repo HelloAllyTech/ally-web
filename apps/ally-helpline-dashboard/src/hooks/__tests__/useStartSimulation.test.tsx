@@ -28,6 +28,10 @@ vi.mock("@api", () => ({
   useEndSimulationMutation: vi.fn(),
   useLazyGetUserQuery: () => [mockGetUser, { isLoading: false }],
   useLazyGetPermissionsQuery: () => [mockGetPermissions, { isLoading: false }],
+  useGetProfileImageUrlMutation: () => [vi.fn()],
+  useDeleteProfileImageMutation: () => [vi.fn()],
+  useUploadProfileImageMutation: () => [vi.fn()],
+  useGetLogoUrlQuery: () => ({ data: null }),
   baseAPI: {
     reducerPath: "baseAPI",
     reducer: (state = {}, action: any) => state,

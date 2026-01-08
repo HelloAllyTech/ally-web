@@ -4,7 +4,13 @@ import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 
 import { FEATURE_FLAGS_MAP } from "@ally-ui-mono/ui-shared";
-import { useCreateTenantMutation, useUpdateTenantMutation, useGetTenantsQuery } from "@api";
+import {
+  useCreateTenantMutation,
+  useUpdateTenantMutation,
+  useGetTenantsQuery,
+  usePostLogoUrlMutation,
+  useDeleteLogoMutation,
+} from "@api";
 import { SORT_BY, SORT_ORDER, en } from "@constants";
 import { Tenant } from "@types";
 
@@ -42,6 +48,8 @@ export function useOrganizationManagement() {
   // Mutations
   const [createTenant] = useCreateTenantMutation();
   const [updateTenant] = useUpdateTenantMutation();
+  const [logoUpload] = usePostLogoUrlMutation();
+  const [deleteLogo] = useDeleteLogoMutation();
 
   const tenantParams = {
     limit: TENANTS_PAGE_SIZE,
@@ -169,6 +177,10 @@ export function useOrganizationManagement() {
       description: data.description,
       ...(FEATURE_FLAGS_MAP.LOGO_UPLOAD_FLAG ? { logoUrl: data.logoUrl } : {}),
     };
+
+    if (FEATURE_FLAGS_MAP.LOGO_UPLOAD_FLAG && selectedTenant && selectedTenant.logoUrl)
+      deleteLogo({ logoUrl: selectedTenant.logoUrl });
+
     if (selectedTenant) {
       await handleEditTenant(payload);
     } else {
@@ -212,5 +224,7 @@ export function useOrganizationManagement() {
     // mutations
     createTenant,
     updateTenant,
+    logoUpload,
+    deleteLogo,
   };
 }

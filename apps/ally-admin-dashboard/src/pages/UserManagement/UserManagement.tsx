@@ -58,6 +58,8 @@ export const UserManagement: FC = () => {
     onEditTenant,
     handleTenantFormSubmit,
     onCloseOrganizationEditModal,
+    logoUpload,
+    deleteLogo,
   } = useOrganizationManagement();
 
   // User management hook (depends on tenants)
@@ -306,6 +308,8 @@ export const UserManagement: FC = () => {
                     : en.userManagement.uploadLogo
                 }
                 uploadTitle="Logo"
+                uploadImageUrl={logoUpload}
+                deleteImageUrl={deleteLogo}
               />
             ) : (
               <UserModal
