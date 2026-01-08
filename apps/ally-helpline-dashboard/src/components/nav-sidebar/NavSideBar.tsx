@@ -55,8 +55,16 @@ const Tab: FC<TabProps> = ({ id, Icon, title, activeTab, isExpanded, onClick }) 
 );
 
 const NavSideBar: FC<NavSideBarProps> = ({ activeTab, onTabChange, isOpen, onClose }) => {
-  const { permissions, user, logout, getProfileUrl, deleteProfile, uploadProfile, tenantData } =
-    useUser();
+  const {
+    permissions,
+    user,
+    logout,
+    getProfileUrl,
+    deleteProfile,
+    uploadProfile,
+    refetchUser,
+    tenantData,
+  } = useUser();
 
   const [isLogoutDialogOpen, setIsLogoutDialogOpen] = useState<boolean>(false);
   const permittedTabs = navBarOptions.filter(
@@ -142,6 +150,7 @@ const NavSideBar: FC<NavSideBarProps> = ({ activeTab, onTabChange, isOpen, onClo
 
   const handleProfileUpload = async () => {
     await uploadProfile({ profileImageUrl: profileUrl });
+    await refetchUser();
     setOpenSettings(false);
   };
 
