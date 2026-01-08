@@ -14,12 +14,11 @@ import {
   useVerifyOTPMutation,
 } from "@api";
 import { Ally, BackCircle, LoginImage, RedirectIcon } from "@assets";
-import { Button, Carousel, OTP, TermsAndAgreement, TextField } from "@components";
+import { Button, OTP, TermsAndAgreement, TextField } from "@components";
 import {
   ALLY_PRIVACY_POLICY_URL,
   ALLY_TERMS_URL,
   ALLY_URL,
-  CAROUSEL_SLIDES,
   LOCAL_STORAGE_KEYS,
   LoginSection,
   ROUTES,
@@ -361,10 +360,6 @@ export const Login: FunctionComponent = () => {
           src={LoginImage}
           alt="Login"
           className="w-full h-full object-cover hidden sm:block lg:rounded-[16px]"
-        />
-        <Carousel
-          slides={CAROUSEL_SLIDES}
-          className="absolute top-[50%] left-[50%] translate-x-[-50%] translate-y-[-50%] max-h-[470px] max-w-[380px] hidden lg:block"
         />
         <div
           className="flex items-center gap-2 p-3 rounded-tl-2xl bg-white pl-5 absolute bottom-0 right-0 cursor-pointer"

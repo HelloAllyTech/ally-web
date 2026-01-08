@@ -64,10 +64,6 @@ vi.mock("@assets", async importOriginal => {
     ),
     DockToRight: (props: any) => <svg {...props} data-testid="dock-to-right" />,
     LogoutIllustration: (props: any) => <svg data-testid="logout-illustration" {...props} />,
-    Carousel1: (props: any) => <svg data-testid="carousel-1" {...props} />,
-    Carousel2: (props: any) => <svg data-testid="carousel-2" {...props} />,
-    Carousel3: (props: any) => <svg data-testid="carousel-3" {...props} />,
-    Carousel4: (props: any) => <svg data-testid="carousel-4" {...props} />,
   };
 });
 
@@ -82,12 +78,6 @@ vi.mock("@mui/icons-material/OpenInNew", () => ({
 // Mock @components
 vi.mock("@components", async importOriginal => {
   const original = (await importOriginal()) as Record<string, unknown>;
-
-  const MockCarousel = vi.fn(({ slides, variant, size }: any) => (
-    <div data-testid="mock-carousel" data-variant={variant} data-size={size}>
-      Carousel
-    </div>
-  ));
 
   const MockConfirmationDialog = vi.fn(
     ({ isOpen, onClose, onButtonClick, title, content, buttonText, icon, ...props }: any) => {
@@ -129,7 +119,6 @@ vi.mock("@components", async importOriginal => {
 
   return {
     ...original,
-    Carousel: MockCarousel,
     ConfirmationDialog: MockConfirmationDialog,
     UserInfo: MockUserInfo,
     ProfileSettings: MockProfileSettings,
@@ -296,11 +285,6 @@ describe("NavSideBar", () => {
     expect(screen.getByTestId("user-name")).toHaveTextContent("Test User");
   });
 
-  it("should render Carousel when sidebar is expanded", () => {
-    renderComponent();
-    expect(screen.getByTestId("mock-carousel")).toBeInTheDocument();
-  });
-
   it("should render overlay when isOpen is true", () => {
     renderComponent({ isOpen: true });
     const overlay = screen.getByTestId("nav-sidebar-overlay");
@@ -461,15 +445,6 @@ describe("NavSideBar", () => {
 
     renderComponent();
     expect(screen.getByTestId("mock-user-info")).toBeInTheDocument();
-  });
-
-  // --- Carousel Props Tests ---
-
-  it("should pass correct props to Carousel component", () => {
-    renderComponent();
-    const carousel = screen.getByTestId("mock-carousel");
-    expect(carousel).toHaveAttribute("data-variant", "DARK");
-    expect(carousel).toHaveAttribute("data-size", "SMALL");
   });
 
   // --- ConfirmationDialog Props Tests ---
