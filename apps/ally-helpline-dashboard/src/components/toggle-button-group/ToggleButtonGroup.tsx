@@ -13,6 +13,7 @@ const ToggleButtonGroup: FC<ToggleButtonGroupProps> = ({
   items,
   className,
   successValue,
+  equalWidth,
 }) => {
   const handleChange = (_: React.MouseEvent<HTMLElement>, newValue: string) => {
     if (newValue !== null) {
@@ -59,6 +60,10 @@ const ToggleButtonGroup: FC<ToggleButtonGroupProps> = ({
             "&.Mui-disabled": {
               border: "none",
             },
+            ...(equalWidth && {
+              flex: 1,
+              minWidth: 0,
+            }),
           }}
         >
           {label}
