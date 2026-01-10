@@ -164,6 +164,13 @@ export interface UpdateScenarioEventDataParam {
   feedbackStatus?: { value: boolean; disabled: boolean; rowId?: string };
   branchingStatus?: { value: boolean; disabled: boolean; rowId?: string };
   branchInstruction?: { value: string; disabled: boolean; rowId?: string };
+  // Detection config fields
+  maxOccurrences?: { value: number | null; disabled: boolean; rowId?: string };
+  minGapTime?: { value: string | null; disabled: boolean; rowId?: string };
+  startTime?: { value: string | null; disabled: boolean; rowId?: string };
+  endTime?: { value: string | null; disabled: boolean; rowId?: string };
+  minScore?: { value: number | null; disabled: boolean; rowId?: string };
+  maxScore?: { value: number | null; disabled: boolean; rowId?: string };
 }
 
 export interface ScenarioVoiceConfig {
