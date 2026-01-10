@@ -43,6 +43,7 @@ vi.mock("@assets", () => ({
   StatsIcon: () => <svg data-testid="stats-icon" />,
   SearchIcon: () => <svg data-testid="search-icon" />,
   NoBadges: () => <div data-testid="no-badges" />,
+  ReviewNavIcon: () => <svg data-testid="review-nav-icon" />,
 }));
 
 // Mock the ToggleButtonGroup component
