@@ -30,6 +30,7 @@ vi.mock("@assets", () => ({
   ScribeIcon: () => <svg data-testid="scribe-icon" />,
   StatsIcon: () => <svg data-testid="stats-icon" />,
   SearchIcon: () => <svg data-testid="search-icon" />,
+  ReviewNavIcon: () => <svg data-testid="review-nav-icon" />,
   NoBadges: () => <div data-testid="no-badges" />,
   Badge: () => <svg data-testid="badge-icon" />,
 }));
@@ -47,6 +48,7 @@ vi.mock("@pages", () => ({
     <div data-testid="post-simulation-summary-page">Post Simulation Summary Page</div>
   ),
   Leaderboard: () => <div data-testid="leaderboard-page">Leaderboard Page</div>,
+  Review: () => <div data-testid="review-page">Review Page</div>,
 }));
 
 // Mock the reducer actions
@@ -101,6 +103,7 @@ vi.mock("@constants", () => ({
     SEARCH: "/search",
     SIMULATION: "/simulation/:id",
     SIMULATION_SUMMARY_FULL: "/simulation-summary/:sessionId",
+    REVIEW: "/review",
   },
 }));
 
