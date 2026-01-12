@@ -46,6 +46,59 @@ vi.mock("@components", () => ({
       onChange={e => onChange(Number(e.target.value))}
     />
   ),
+  OccurrenceControlSection: ({
+    maxOccurrences,
+    minGapTime,
+    onMaxOccurrencesChange,
+    onMinGapTimeChange,
+  }: any) => (
+    <div data-testid="occurrence-control-section">
+      <input
+        type="number"
+        aria-label="maxOccurrences"
+        value={maxOccurrences ?? ""}
+        onChange={e => onMaxOccurrencesChange?.(Number(e.target.value))}
+      />
+      <input
+        type="text"
+        aria-label="minGapTime"
+        value={minGapTime ?? ""}
+        onChange={e => onMinGapTimeChange?.(e.target.value)}
+      />
+    </div>
+  ),
+  TimeWindowSection: ({ startTime, endTime, onStartTimeChange, onEndTimeChange }: any) => (
+    <div data-testid="time-window-section">
+      <input
+        type="text"
+        aria-label="startTime"
+        value={startTime ?? ""}
+        onChange={e => onStartTimeChange?.(e.target.value)}
+      />
+      <input
+        type="text"
+        aria-label="endTime"
+        value={endTime ?? ""}
+        onChange={e => onEndTimeChange?.(e.target.value)}
+      />
+    </div>
+  ),
+  ScoreWindowSection: ({ minScore, maxScore, onMinScoreChange, onMaxScoreChange }: any) => (
+    <div data-testid="score-window-section">
+      <input
+        type="number"
+        aria-label="minScore"
+        value={minScore ?? ""}
+        onChange={e => onMinScoreChange?.(Number(e.target.value))}
+      />
+      <input
+        type="number"
+        aria-label="maxScore"
+        value={maxScore ?? ""}
+        onChange={e => onMaxScoreChange?.(Number(e.target.value))}
+      />
+    </div>
+  ),
   AutoExpandableTextarea: ({ value, onChange, placeholder, disabled }: any) => (
     <textarea
       aria-label={placeholder}
@@ -54,6 +107,13 @@ vi.mock("@components", () => ({
       onChange={e => onChange(e.target.value)}
     />
   ),
+}));
+
+// Mock feature flags
+vi.mock("@ally-ui-mono/ui-shared", () => ({
+  FEATURE_FLAGS_MAP: {
+    EVENT_DETECTION_CONFIG_FLAG: true,
+  },
 }));
 
 // Use real hooks; they are simple and already tested
@@ -74,6 +134,12 @@ describe("MappedEventSidePanel", () => {
     message: { value: "", disabled: false },
     score: { value: 0, disabled: false },
     branchingStatus: { value: false },
+    maxOccurrences: { value: null, disabled: false },
+    minGapTime: { value: null, disabled: false },
+    startTime: { value: null, disabled: false },
+    endTime: { value: null, disabled: false },
+    minScore: { value: null, disabled: false },
+    maxScore: { value: null, disabled: false },
     branchInstruction: { value: "", disabled: false },
   } as any;
 
