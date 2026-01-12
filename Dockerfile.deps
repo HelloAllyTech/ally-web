@@ -3,6 +3,9 @@
 FROM node:20-alpine AS deps
 WORKDIR /app
 
+# Install git for husky
+RUN apk add --no-cache git
+
 # Seed cache with workspace manifests
 COPY package*.json ./
 COPY nx.json ./
@@ -18,6 +21,8 @@ RUN npx update-browserslist-db@latest
 
 # Final minimal base that contains node_modules
 FROM node:20-alpine
+# Install git for husky
+RUN apk add --no-cache git
 # Set working directory for final runtime image
 WORKDIR /app
 # Copy cached node_modules from deps stage to final image
