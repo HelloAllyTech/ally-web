@@ -30,6 +30,12 @@ describe("eventMapping utils", () => {
       expect(MAPPED_EVENT_FIELDS.FEEDBACK_STATUS).toBe("feedbackStatus");
       expect(MAPPED_EVENT_FIELDS.BRANCHING_STATUS).toBe("branchingStatus");
       expect(MAPPED_EVENT_FIELDS.BRANCH_INSTRUCTION).toBe("branchInstruction");
+      expect(MAPPED_EVENT_FIELDS.MAX_OCCURRENCES).toBe("maxOccurrences");
+      expect(MAPPED_EVENT_FIELDS.MIN_GAP_TIME).toBe("minGapTime");
+      expect(MAPPED_EVENT_FIELDS.START_TIME).toBe("startTime");
+      expect(MAPPED_EVENT_FIELDS.END_TIME).toBe("endTime");
+      expect(MAPPED_EVENT_FIELDS.MIN_SCORE).toBe("minScore");
+      expect(MAPPED_EVENT_FIELDS.MAX_SCORE).toBe("maxScore");
     });
   });
 
@@ -41,6 +47,12 @@ describe("eventMapping utils", () => {
       expect(DEFAULT_EVENT_VALUES.BRANCH_INSTRUCTION).toBe("");
       expect(DEFAULT_EVENT_VALUES.FEEDBACK_STATUS).toBe(false);
       expect(DEFAULT_EVENT_VALUES.BRANCHING_STATUS).toBe(false);
+      expect(DEFAULT_EVENT_VALUES.MAX_OCCURRENCES).toBe(null);
+      expect(DEFAULT_EVENT_VALUES.MIN_GAP_TIME).toBe(null);
+      expect(DEFAULT_EVENT_VALUES.START_TIME).toBe(null);
+      expect(DEFAULT_EVENT_VALUES.END_TIME).toBe(null);
+      expect(DEFAULT_EVENT_VALUES.MIN_SCORE).toBe(null);
+      expect(DEFAULT_EVENT_VALUES.MAX_SCORE).toBe(null);
     });
   });
 
@@ -98,6 +110,12 @@ describe("eventMapping utils", () => {
       expect(event.feedbackStatus.value).toBe(false);
       expect(event.branchingStatus.value).toBe(false);
       expect(event.branchInstruction.value).toBe("");
+      expect(event.maxOccurrences.value).toBe(null);
+      expect(event.minGapTime.value).toBe(null);
+      expect(event.startTime.value).toBe(null);
+      expect(event.endTime.value).toBe(null);
+      expect(event.minScore.value).toBe(null);
+      expect(event.maxScore.value).toBe(null);
     });
 
     it("should create cells with correct disabled states", () => {
@@ -281,6 +299,14 @@ describe("eventMapping utils", () => {
           feedbackStatus: true,
           branchingStatus: true,
           branchInstruction: "Next step",
+          detectionConfig: {
+            maxOccurrences: undefined,
+            minGapTime: null,
+            startTime: null,
+            endTime: null,
+            minScore: undefined,
+            maxScore: undefined,
+          },
         },
       ]);
     });
@@ -347,6 +373,14 @@ describe("eventMapping utils", () => {
         feedbackStatus: false,
         branchingStatus: false,
         branchInstruction: "",
+        detectionConfig: {
+          maxOccurrences: undefined,
+          minGapTime: null,
+          startTime: null,
+          endTime: null,
+          minScore: undefined,
+          maxScore: undefined,
+        },
       });
     });
   });
