@@ -1,12 +1,13 @@
 import { FC, useEffect, useState } from "react";
 
+import { Tooltip } from "@mui/material";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 
 import { useGetLogoUrlQuery } from "@api";
 import { DockToRight, LogoutIllustration } from "@assets";
 import { ConfirmationDialog, ProfileSettings, UserInfo } from "@components";
-import { navBarOptions } from "@constants";
+import { navBarOptions, TOOLTIP_LIGHT_PROPS } from "@constants";
 import { useUser } from "@hooks";
 
 import { NavSideBarProps, TabProps } from "./types";
@@ -141,6 +142,15 @@ const NavSideBar: FC<NavSideBarProps> = ({ activeTab, onTabChange, isOpen, onClo
     setOpenSettings(false);
   };
 
+  const Avatar: React.FC<{ name: string }> = ({ name }) => {
+    const initial = name?.[0]?.toUpperCase() ?? "?";
+    return (
+      <div className="min-w-14 min-h-14 border-border-light text-typography-800 flex items-center justify-center mr-3">
+        {initial}
+      </div>
+    );
+  };
+
   return (
     <>
       <div
@@ -155,18 +165,29 @@ const NavSideBar: FC<NavSideBarProps> = ({ activeTab, onTabChange, isOpen, onClo
           data-testid="nav-sidebar-header"
         >
           {/* Logo */}
-          <div className="relative w-14 h-14 border-[0.5px] group ml-2 rounded-md">
-            {tenantData?.logoUrl && (
-              <img
-                src={tenantData.logoUrl}
-                alt="org-logo"
-                className={`object-cover w-14 h-14 transition-opacity duration-200 rounded-md ${
-                  !isExpanded ? "group-hover:opacity-20" : ""
-                }`}
-              />
-            )}
 
+          <div className="relative w-14 h-14 border-[0.5px] group ml-2 rounded-md">
             {/* Toggle button - covers logo when collapsed */}
+            <Tooltip
+              title={tenantData?.name}
+              placement="right"
+              arrow
+              slotProps={TOOLTIP_LIGHT_PROPS}
+            >
+              <div>
+                {tenantData?.logoUrl ? (
+                  <img
+                    src={tenantData.logoUrl}
+                    alt="org-logo"
+                    className={`object-cover w-14 h-14 transition-opacity duration-200 rounded-md ${
+                      !isExpanded ? "group-hover:opacity-20" : ""
+                    }`}
+                  />
+                ) : (
+                  <Avatar name={tenantData?.name} />
+                )}
+              </div>
+            </Tooltip>
             {!isExpanded && (
               <button
                 data-testid="nav-sidebar-toggle"
