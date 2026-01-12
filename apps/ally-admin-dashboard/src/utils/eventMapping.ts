@@ -88,6 +88,48 @@ export const getDisabledState = (
   return false;
 };
 
+/**
+ * Convert time string (HH:MM:SS) to seconds
+ * @param timeString - Time in format "HH:MM:SS" or "00:00:00"
+ * @returns Number of seconds or null if invalid
+ */
+const timeStringToSeconds = (timeString: string | number | null | undefined): number | null => {
+  if (timeString === null || timeString === undefined || timeString === "") return null;
+
+  if (typeof timeString === "number") {
+    return timeString;
+  }
+
+  const parts = timeString.split(":");
+  if (parts.length !== 3) return null;
+
+  const hours = parseInt(parts[0], 10);
+  const minutes = parseInt(parts[1], 10);
+  const seconds = parseInt(parts[2], 10);
+
+  if (isNaN(hours) || isNaN(minutes) || isNaN(seconds)) return null;
+
+  return hours * 3600 + minutes * 60 + seconds;
+};
+
+/**
+ * Convert seconds to time string (HH:MM:SS)
+ * @param seconds - Number of seconds
+ * @returns Time string in format "HH:MM:SS" or null if invalid
+ */
+const secondsToTimeString = (seconds: number | string | null | undefined): string | null => {
+  if (seconds == null) return null;
+
+  const totalSeconds = typeof seconds === "string" ? parseInt(seconds, 10) : seconds;
+  if (isNaN(totalSeconds)) return null;
+
+  const hours = Math.floor(totalSeconds / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const secs = totalSeconds % 60;
+
+  return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}:${String(secs).padStart(2, "0")}`;
+};
+
 // Format a SessionEvent to UpdateScenarioEventDataParam
 export const formatToMappedEvent = (event: SessionEvent): UpdateScenarioEventDataParam => {
   const feedbackStatus = true;
@@ -121,17 +163,17 @@ export const formatToMappedEvent = (event: SessionEvent): UpdateScenarioEventDat
       event.id,
     ),
     minGapTime: createCell(
-      event.detectionConfig?.minGapTime ?? DEFAULT_EVENT_VALUES.MIN_GAP_TIME,
+      secondsToTimeString(event.detectionConfig?.minGapTime) ?? DEFAULT_EVENT_VALUES.MIN_GAP_TIME,
       false,
       event.id,
     ),
     startTime: createCell(
-      event.detectionConfig?.startTime ?? DEFAULT_EVENT_VALUES.START_TIME,
+      secondsToTimeString(event.detectionConfig?.startTime) ?? DEFAULT_EVENT_VALUES.START_TIME,
       false,
       event.id,
     ),
     endTime: createCell(
-      event.detectionConfig?.endTime ?? DEFAULT_EVENT_VALUES.END_TIME,
+      secondsToTimeString(event.detectionConfig?.endTime) ?? DEFAULT_EVENT_VALUES.END_TIME,
       false,
       event.id,
     ),
@@ -146,44 +188,6 @@ export const formatToMappedEvent = (event: SessionEvent): UpdateScenarioEventDat
       event.id,
     ),
   };
-};
-
-/**
- * Convert time string (HH:MM:SS) to seconds
- * @param timeString - Time in format "HH:MM:SS" or "00:00:00"
- * @returns Number of seconds or null if invalid
- */
-const timeStringToSeconds = (timeString: string | null | undefined): number | null => {
-  if (!timeString || timeString === "") return null;
-
-  const parts = timeString.split(":");
-  if (parts.length !== 3) return null;
-
-  const hours = parseInt(parts[0], 10);
-  const minutes = parseInt(parts[1], 10);
-  const seconds = parseInt(parts[2], 10);
-
-  if (isNaN(hours) || isNaN(minutes) || isNaN(seconds)) return null;
-
-  return hours * 3600 + minutes * 60 + seconds;
-};
-
-/**
- * Convert seconds to time string (HH:MM:SS)
- * @param seconds - Number of seconds
- * @returns Time string in format "HH:MM:SS" or null if invalid
- */
-const secondsToTimeString = (seconds: number | string | null | undefined): string | null => {
-  if (seconds == null) return null;
-
-  const totalSeconds = typeof seconds === "string" ? parseInt(seconds, 10) : seconds;
-  if (isNaN(totalSeconds)) return null;
-
-  const hours = Math.floor(totalSeconds / 3600);
-  const minutes = Math.floor((totalSeconds % 3600) / 60);
-  const secs = totalSeconds % 60;
-
-  return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}:${String(secs).padStart(2, "0")}`;
 };
 
 // Convert UpdateScenarioEventDataParam array to API format
