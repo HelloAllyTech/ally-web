@@ -225,12 +225,14 @@ export const SimulationEventMapTable: FC<SimulationEventMapTableProps> = ({ simu
     : mappedEvents;
 
   const sortEventsByScore = (events: UpdateScenarioEventDataParam[]) => {
-    return events?.sort((a, b) => a.score?.value - b.score?.value);
+    return [...events].sort((a, b) => (a.score?.value ?? 0) - (b.score?.value ?? 0));
   };
 
   const onReloadMappedEvents = () => {
     setTimeout(() => {
-      setMappedEvents(sortEventsByScore(mappedEventsWithColors));
+      const sortedEvents = sortEventsByScore(mappedEvents);
+      setMappedEvents(sortedEvents);
+      saveEventsToApi(sortedEvents);
       // Target the NotionTable's scrollable container (has overflow-auto class)
       const scrollableElement = tableRef.current?.querySelector(".overflow-auto");
       scrollableElement?.scrollTo({ top: 0, behavior: "smooth" });
