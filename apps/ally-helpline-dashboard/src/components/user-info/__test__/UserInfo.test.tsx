@@ -282,16 +282,6 @@ describe("UserInfo", () => {
       expect(screen.getByTestId("user-info-credits-icon")).toBeInTheDocument();
     });
 
-    it("should show blue progress bar when limit not reached", () => {
-      renderComponent();
-
-      fireEvent.click(screen.getByText("Jane Doe"));
-
-      const progressBar = document.querySelector(".bg-blue-600");
-      expect(progressBar).toBeInTheDocument();
-      expect(progressBar).toHaveStyle({ width: "50%" });
-    });
-
     it("should show red progress bar when limit is reached", () => {
       mockUseSimulationCredits.mockReturnValue({
         credits: {

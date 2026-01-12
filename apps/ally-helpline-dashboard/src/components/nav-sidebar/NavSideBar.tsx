@@ -4,7 +4,7 @@ import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 
 import { useGetLogoUrlQuery } from "@api";
-import { Ally, DockToRight, LogoutIllustration } from "@assets";
+import { DockToRight, LogoutIllustration } from "@assets";
 import { ConfirmationDialog, ProfileSettings, UserInfo } from "@components";
 import { navBarOptions } from "@constants";
 import { useUser } from "@hooks";
@@ -149,39 +149,50 @@ const NavSideBar: FC<NavSideBarProps> = ({ activeTab, onTabChange, isOpen, onClo
           isExpanded ? "w-64" : "w-24"
         } p-[12px] font-primary`}
       >
-        <div className="flex justify-between" data-testid="nav-sidebar-header">
-          <div className="flex items-center gap-1">
-            {/* Show logo image when it exists  */}
+        {/* Logo container */}
+        <div
+          className="relative flex items-center justify-between h-[72px]"
+          data-testid="nav-sidebar-header"
+        >
+          {/* Logo */}
+          <div className="relative w-14 h-14 border-[0.5px] group ml-2 rounded-md">
             {tenantData?.logoUrl && (
               <img
                 src={tenantData.logoUrl}
                 alt="org-logo"
-                className="flex-shrink-0 mb-2 object-cover h-10 w-20"
+                className={`object-cover w-14 h-14 transition-opacity duration-200 rounded-md ${
+                  !isExpanded ? "group-hover:opacity-20" : ""
+                }`}
               />
             )}
-            {/* Show Ally when expanded OR when no logo exists */}
-            {(isExpanded || !tenantData?.logoUrl) && (
-              <Ally className="flex-shrink-0" data-testid="nav-sidebar-logo " />
+
+            {/* Toggle button - covers logo when collapsed */}
+            {!isExpanded && (
+              <button
+                data-testid="nav-sidebar-toggle"
+                onClick={handleToggleSidebar}
+                className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-200 hover:bg-gray-50 hover:rounded-md"
+                title="Expand sidebar"
+              >
+                <DockToRight />
+              </button>
             )}
           </div>
 
-          <button
-            data-testid="nav-sidebar-toggle"
-            onClick={handleToggleSidebar}
-            className={`${
-              isExpanded
-                ? "px-5 mx-2"
-                : "absolute z-10 top-0 bg-white mx-2 px-[24px] py-[15px] opacity-0 hover:opacity-100"
-            } hover:bg-gray-50 hover:rounded-md my-2 p-3`}
-            title={isExpanded ? "Collapse sidebar" : "Expand sidebar"}
-          >
-            <DockToRight />
-          </button>
+          {isExpanded && (
+            <button
+              data-testid="nav-sidebar-toggle"
+              onClick={handleToggleSidebar}
+              className="p-3 transition-all duration-200 hover:bg-gray-50 hover:rounded-md"
+              title="Collapse sidebar"
+            >
+              <DockToRight />
+            </button>
+          )}
         </div>
-
         {renderTabs()}
 
-        <div className="flex flex-col items-start gap-3 m-3" data-testid="nav-sidebar-footer">
+        <div className="flex flex-col items-start gap-3 mx-4 my-3" data-testid="nav-sidebar-footer">
           <hr className="w-full border-t border-gray-200" data-testid="nav-sidebar-divider" />
 
           <UserInfo
