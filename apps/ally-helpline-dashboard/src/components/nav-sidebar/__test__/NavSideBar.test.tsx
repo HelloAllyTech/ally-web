@@ -142,6 +142,7 @@ vi.mock("@constants", () => {
     ANALYTICS: "ANALYTICS",
     SEARCH: "SEARCH",
   };
+  const TOOLTIP_LIGHT_PROPS = { test: "light-props" };
 
   const mockNavBarOptions = [
     {
@@ -175,6 +176,7 @@ vi.mock("@constants", () => {
     TabId,
     navBarOptions: mockNavBarOptions,
     CAROUSEL_SLIDES: mockCarouselSlides,
+    TOOLTIP_LIGHT_PROPS,
   };
 });
 
@@ -192,6 +194,19 @@ vi.mock("../button", () => ({
   },
 }));
 
+vi.mock("@mui/material", () => ({
+  Tooltip: ({ children, title, placement, arrow, slotProps }: any) => (
+    <div
+      data-testid="tooltip"
+      data-placement={placement}
+      data-arrow={arrow}
+      data-slot-props={JSON.stringify(slotProps)}
+    >
+      {children}
+      <div data-testid="tooltip-content">{title}</div>
+    </div>
+  ),
+}));
 // --- Test Setup ---
 
 // Define TabId enum locally to match the real one
