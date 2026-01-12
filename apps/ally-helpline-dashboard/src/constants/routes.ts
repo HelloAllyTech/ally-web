@@ -1,4 +1,4 @@
-import { SearchIcon, StatsIcon, ScribeIcon, LearnIcon, Leaderboard } from "@assets";
+import { SearchIcon, StatsIcon, ScribeIcon, LearnIcon, Leaderboard, ReviewNavIcon } from "@assets";
 
 import { Permissions } from "./permissions";
 import { TabId } from "./tabs";
@@ -28,6 +28,7 @@ export const ROUTES = {
   SIMULATION_SUMMARY: "/simulation-summary",
   SIMULATION_SUMMARY_FULL: "/simulation-summary/:sessionId",
   LEADERBOARD: "/leaderboard",
+  REVIEW: "/review",
 } as const;
 
 export const excludeNavBar = [
@@ -46,6 +47,14 @@ export const navBarOptions = [
     path: ROUTES.LEARN,
     activePages: [ROUTES.SCENARIO, ROUTES.PATHWAY],
     permissions: [Permissions.EDIT_SCENARIO_SESSION],
+  },
+  {
+    id: TabId.REVIEW,
+    title: "Review",
+    Icon: ReviewNavIcon,
+    path: ROUTES.REVIEW,
+    activePages: [],
+    //TODO: Add permission for review
   },
   {
     id: TabId.LEADERBOARD,

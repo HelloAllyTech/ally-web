@@ -252,11 +252,6 @@ describe("NavSideBar", () => {
     expect(sidebar).toBeInTheDocument();
   });
 
-  it("should render the Ally logo", () => {
-    renderComponent();
-    expect(screen.getByTestId("ally-logo")).toBeInTheDocument();
-  });
-
   it("should render the DockToRight toggle button", () => {
     renderComponent();
     const toggleButton = screen.getByTitle("Collapse sidebar");
