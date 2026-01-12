@@ -56,6 +56,11 @@ export const useUser = () => {
       path: ROUTES.MANAGE_EVENTS,
     },
     {
+      id: SIDEBAR_ITEMS.SCENARIO_VOICES,
+      label: en.simulation.voicesManagement,
+      path: ROUTES.MANAGE_SCENARIO_VOICES,
+    },
+    {
       id: SIDEBAR_ITEMS.USER_MANAGEMENT,
       label: en.userManagement.userManagement,
       path: ROUTES.USER_MANAGEMENT,
@@ -131,6 +136,8 @@ export const useUser = () => {
           return permissions.includes(Permissions.EDIT_SCENARIO);
         case SIDEBAR_ITEMS.EVENT_MANAGEMENT:
           return permissions.includes(Permissions.EDIT_EVENT);
+        case SIDEBAR_ITEMS.SCENARIO_VOICES:
+          return permissions.includes(Permissions.EDIT_SCENARIO);
         case SIDEBAR_ITEMS.USER_MANAGEMENT:
           return permissions.includes(Permissions.EDIT_USER);
         default:

@@ -17,6 +17,7 @@ import {
   GetCoverVideoUrlResponse,
   DeleteCoverVideoRequest,
   ScenarioVoice,
+  GetScenarioVoicesQuery,
   getTriggerWarningsQueryParams,
   triggerWarningsRequest,
   createTriggerResponse,
@@ -209,18 +210,51 @@ const simulationStudioAPI = baseAPI.injectEndpoints({
     /**
      * Get all scenario voices
      */
-    getScenarioVoices: builder.query<ScenarioVoice[], void>({
-      query: () => ({
+    getScenarioVoices: builder.query<ScenarioVoice[], GetScenarioVoicesQuery>({
+      query: params => ({
         url: ApiEndpoints.SIMULATION_STUDIO.SCENARIO_VOICES,
         method: HttpMethod.GET,
+        params,
       }),
+      providesTags: [TAG_TYPES.SCENARIO_VOICES],
+    }),
+
+    /**
+     * Create a new scenario voice
+     */
+
+    createScenarioVoice: builder.mutation<ScenarioVoice[], { voices: ScenarioVoice[] }>({
+      query: ({ voices }) => ({
+        url: ApiEndpoints.SIMULATION_STUDIO.CREATE_SCENARIO_VOICE,
+        method: HttpMethod.POST,
+        body: { voices },
+      }),
+      invalidatesTags: [TAG_TYPES.SCENARIO_VOICES],
+    }),
+
+    /**
+     * Update a scenario voice
+     */
+    updateScenarioVoice: builder.mutation<
+      ScenarioVoice,
+      { id: string; voice: Omit<ScenarioVoice, "id" | "createdAt" | "updatedAt"> }
+    >({
+      query: ({ id, voice: body }) => ({
+        url: `${ApiEndpoints.SIMULATION_STUDIO.UPDATE_SCENARIO_VOICE(id)}`,
+        method: HttpMethod.PUT,
+        body,
+      }),
+      invalidatesTags: [TAG_TYPES.SCENARIO_VOICES],
     }),
 
     /**
      * Get all available scenario languages
      */
-    getAvailableLanguageVoices: builder.query<ScenarioLanguage[], { active?: boolean }>({
-      query: (params = {}) => ({
+    getAvailableLanguageVoices: builder.query<
+      ScenarioLanguage[],
+      { active?: boolean; voicesNeeded: boolean }
+    >({
+      query: (params = { active: true, voicesNeeded: true }) => ({
         url: ApiEndpoints.SIMULATION_STUDIO.SCENARIO_VOICE_LANGUAGES,
         method: HttpMethod.GET,
         params: params, // This will pass through any params you provide
@@ -348,6 +382,8 @@ export const {
   useGetCoverVideoUrlMutation,
   useDeleteCoverVideoMutation,
   useGetScenarioVoicesQuery,
+  useCreateScenarioVoiceMutation,
+  useUpdateScenarioVoiceMutation,
   useGetAvailableLanguageVoicesQuery,
   useGetScenarioLanguagesQuery,
   useScenarioPreviewMutation,

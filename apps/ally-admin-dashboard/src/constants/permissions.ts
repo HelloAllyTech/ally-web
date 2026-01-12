@@ -10,4 +10,5 @@ export const SIDEBAR_ITEMS = {
   SIMULATION_STUDIO: "simulation-studio",
   EVENT_MANAGEMENT: "event-management",
   USER_MANAGEMENT: "user-management",
+  SCENARIO_VOICES: "scenario-voices",
 };

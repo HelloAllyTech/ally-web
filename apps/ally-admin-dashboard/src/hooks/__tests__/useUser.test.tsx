@@ -343,8 +343,9 @@ describe("useUser", () => {
         wrapper: ({ children }: any) => <Provider store={store}>{children}</Provider>,
       });
 
-      expect(result.current.filteredNavigationItems).toHaveLength(1);
+      expect(result.current.filteredNavigationItems).toHaveLength(2);
       expect(result.current.filteredNavigationItems[0].id).toBe(SIDEBAR_ITEMS.SIMULATION_STUDIO);
+      expect(result.current.filteredNavigationItems[1].id).toBe(SIDEBAR_ITEMS.SCENARIO_VOICES);
     });
 
     it("should filter navigation items based on EDIT_EVENT permission", () => {
@@ -382,10 +383,11 @@ describe("useUser", () => {
         wrapper: ({ children }: any) => <Provider store={store}>{children}</Provider>,
       });
 
-      expect(result.current.filteredNavigationItems).toHaveLength(3);
+      expect(result.current.filteredNavigationItems).toHaveLength(4);
       expect(result.current.filteredNavigationItems.map(item => item.id)).toEqual([
         SIDEBAR_ITEMS.SIMULATION_STUDIO,
         SIDEBAR_ITEMS.EVENT_MANAGEMENT,
+        SIDEBAR_ITEMS.SCENARIO_VOICES,
         SIDEBAR_ITEMS.USER_MANAGEMENT,
       ]);
     });
@@ -399,9 +401,10 @@ describe("useUser", () => {
         wrapper: ({ children }: any) => <Provider store={store}>{children}</Provider>,
       });
 
-      expect(result.current.filteredNavigationItems).toHaveLength(2);
+      expect(result.current.filteredNavigationItems).toHaveLength(3);
       expect(result.current.filteredNavigationItems.map(item => item.id)).toEqual([
         SIDEBAR_ITEMS.SIMULATION_STUDIO,
+        SIDEBAR_ITEMS.SCENARIO_VOICES,
         SIDEBAR_ITEMS.USER_MANAGEMENT,
       ]);
     });
@@ -423,24 +426,31 @@ describe("useUser", () => {
         permissions: [Permissions.EDIT_SCENARIO],
       });
 
-      const { result, rerender } = renderHook(() => useUser(), {
+      const { result } = renderHook(() => useUser(), {
         wrapper: ({ children }: any) => <Provider store={store}>{children}</Provider>,
       });
 
-      expect(result.current.filteredNavigationItems).toHaveLength(1);
+      expect(result.current.filteredNavigationItems).toHaveLength(2);
+      expect(result.current.filteredNavigationItems.map(item => item.id)).toEqual([
+        SIDEBAR_ITEMS.SIMULATION_STUDIO,
+        SIDEBAR_ITEMS.SCENARIO_VOICES,
+      ]);
 
-      // Update store with new permissions
-      store = createMockStore({
+      // Create new store with updated permissions and render new hook
+      const updatedStore = createMockStore({
         permissions: [Permissions.EDIT_SCENARIO, Permissions.EDIT_EVENT],
       });
 
-      rerender();
-
       const { result: newResult } = renderHook(() => useUser(), {
-        wrapper: ({ children }: any) => <Provider store={store}>{children}</Provider>,
+        wrapper: ({ children }: any) => <Provider store={updatedStore}>{children}</Provider>,
       });
 
-      expect(newResult.current.filteredNavigationItems).toHaveLength(2);
+      expect(newResult.current.filteredNavigationItems).toHaveLength(3);
+      expect(newResult.current.filteredNavigationItems.map(item => item.id)).toEqual([
+        SIDEBAR_ITEMS.SIMULATION_STUDIO,
+        SIDEBAR_ITEMS.EVENT_MANAGEMENT,
+        SIDEBAR_ITEMS.SCENARIO_VOICES,
+      ]);
     });
   });
 

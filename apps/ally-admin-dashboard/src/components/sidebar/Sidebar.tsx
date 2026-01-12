@@ -14,6 +14,7 @@ import {
   Logout,
   HappyEmoji,
   ManageAccounts,
+  Play,
 } from "@assets";
 import { UserModal } from "@components";
 import { SIDEBAR_ITEMS, ROUTES, en, profileSettings, USER_MODAL_FIELDS_IDS } from "@constants";
@@ -116,6 +117,8 @@ export const Sidebar: React.FC = () => {
         return <Users />;
       case SIDEBAR_ITEMS.EVENT_MANAGEMENT:
         return <HappyEmoji />;
+      case SIDEBAR_ITEMS.SCENARIO_VOICES:
+        return <Play />;
       default:
         return null;
     }
@@ -132,6 +135,8 @@ export const Sidebar: React.FC = () => {
         return location.pathname.includes(ROUTES.USER_MANAGEMENT);
       case ROUTES.MANAGE_EVENTS:
         return location.pathname.includes(ROUTES.MANAGE_EVENTS);
+      case ROUTES.MANAGE_SCENARIO_VOICES:
+        return location.pathname.includes(ROUTES.MANAGE_SCENARIO_VOICES);
       default:
         return false;
     }

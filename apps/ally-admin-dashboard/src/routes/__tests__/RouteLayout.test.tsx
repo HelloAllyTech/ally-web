@@ -25,6 +25,7 @@ vi.mock("@pages", () => ({
   UserManagement: () => <div>UserManagementPage</div>,
   OrganizationDetail: () => <div>OrganizationDetailPage</div>,
   EventManagement: () => <div>EventManagementPage</div>,
+  ScenarioVoices: () => <div>ScenarioVoicesPage</div>,
 }));
 
 describe("RouteLayout", () => {
@@ -75,6 +76,18 @@ describe("RouteLayout", () => {
     window.history.pushState({}, "", path);
     render(<RouteLayout />);
     expect(screen.getByText("CreateSimulationPage")).toBeInTheDocument();
+  });
+
+  it("renders Event Management route", () => {
+    window.history.pushState({}, "", ROUTES.MANAGE_EVENTS);
+    render(<RouteLayout />);
+    expect(screen.getByText("EventManagementPage")).toBeInTheDocument();
+  });
+
+  it("renders Scenario Voices route", () => {
+    window.history.pushState({}, "", ROUTES.MANAGE_SCENARIO_VOICES);
+    render(<RouteLayout />);
+    expect(screen.getByText("ScenarioVoicesPage")).toBeInTheDocument();
   });
 
   it("redirects unknown route to Simulation Studio", () => {
