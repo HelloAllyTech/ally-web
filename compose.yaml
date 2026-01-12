@@ -10,6 +10,8 @@ services:
       - NODE_ENV=development
       - WATCHPACK_POLLING=true
       - HOST=0.0.0.0
+      - NEXT_PUBLIC_API_BASE_URL=${NEXT_PUBLIC_API_BASE_URL:-http://host.docker.internal:8001}
+      - NEXT_PUBLIC_API_VERSION=${NEXT_PUBLIC_API_VERSION:-v1}
     volumes:
       - .:/app
       - /app/node_modules

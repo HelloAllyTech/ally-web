@@ -1,17 +1,9 @@
 # Dev image for ally-web (Next.js)
-# Use prebuilt deps image to leverage cached node_modules
+# Use prebuilt deps image which already has all dependencies and workspace setup
 FROM ally-web/deps:dev
 
 # Set working directory for subsequent commands
 WORKDIR /app
-
-# Install dependencies at image build using workspace manifests for better caching
-COPY package*.json ./
-COPY nx.json ./
-COPY tsconfig.base.json ./
-COPY apps/ally-web/package*.json ./apps/ally-web/
-
-RUN npm ci --legacy-peer-deps
 
 # Configure development environment variables
 ENV NODE_ENV=development
