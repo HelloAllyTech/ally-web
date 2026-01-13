@@ -1,6 +1,7 @@
 import { FC } from "react";
 
 import { Dialog } from "@mui/material";
+import { toast } from "sonner";
 
 import { ImageUpload } from "@ally-ui-mono/ui-shared";
 import { CloseIcon } from "@assets";
@@ -15,8 +16,11 @@ export const ProfileSettings: FC<profileSettingsProps> = ({
   formMethods,
   onButtonClick,
   getProfileUrl,
-  deleteProfile,
 }) => {
+  const handleUploadFailure = () => {
+    toast.error("Image must be under 2MB and have the correct aspect ratio.");
+  };
+
   return (
     <Dialog
       open={isOpen}
@@ -39,8 +43,8 @@ export const ProfileSettings: FC<profileSettingsProps> = ({
             uploadButtonName="Upload Image"
             uploadTitle="Profile image"
             onUpload={getProfileUrl}
-            onDelete={deleteProfile}
             details={userData}
+            onFailed={handleUploadFailure}
           />
           <div className="flex flex-col gap-5">
             <div className="flex flex-col">

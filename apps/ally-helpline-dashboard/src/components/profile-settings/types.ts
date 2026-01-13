@@ -7,5 +7,4 @@ export interface profileSettingsProps {
   formMethods?: any;
   onButtonClick: () => void;
   getProfileUrl?: (payload: GetProfileUrlRequest) => Promise<any>;
-  deleteProfile?: (profileImageUrl: any) => Promise<any>;
 }
