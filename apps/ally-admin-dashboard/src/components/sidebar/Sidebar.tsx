@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 
+import { Mic } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { useLocation, useNavigate } from "react-router-dom";
 
@@ -14,7 +15,6 @@ import {
   Logout,
   HappyEmoji,
   ManageAccounts,
-  Play,
 } from "@assets";
 import { UserModal } from "@components";
 import { SIDEBAR_ITEMS, ROUTES, en, profileSettings, USER_MODAL_FIELDS_IDS } from "@constants";
@@ -118,7 +118,7 @@ export const Sidebar: React.FC = () => {
       case SIDEBAR_ITEMS.EVENT_MANAGEMENT:
         return <HappyEmoji />;
       case SIDEBAR_ITEMS.SCENARIO_VOICES:
-        return <Play />;
+        return <Mic width={20} height={20} strokeWidth={1.5} />;
       default:
         return null;
     }

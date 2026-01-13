@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 
 import { toast } from "sonner";
 
@@ -22,9 +22,11 @@ export const ScenarioVoices: React.FC = () => {
   const [isSidePanelOpen, setIsSidePanelOpen] = useState<boolean>(false);
   const [selectedVoice, setSelectedVoice] = useState<ScenarioVoice | null>(null);
   const [isFetching, setIsFetching] = useState<boolean>(false);
+  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState<string>("");
+  const searchDebounceTimer = useRef<NodeJS.Timeout | null>(null);
 
   const { data: voicesResponse, isFetching: isQueryFetching } = useGetScenarioVoicesQuery({
-    searchName: searchQuery,
+    searchName: debouncedSearchQuery,
     limit,
     offset,
     sortBy: SORT_BY.CREATED_AT,
@@ -41,6 +43,24 @@ export const ScenarioVoices: React.FC = () => {
   }) as {
     data: ScenarioLanguage[];
   };
+
+  // Debounce search query - only update API query after 500ms of no typing
+  useEffect(() => {
+    if (searchDebounceTimer.current) {
+      clearTimeout(searchDebounceTimer.current);
+    }
+
+    searchDebounceTimer.current = setTimeout(() => {
+      setDebouncedSearchQuery(searchQuery);
+      setOffset(0); // Reset offset when search changes
+    }, 500); // 500ms debounce delay
+
+    return () => {
+      if (searchDebounceTimer.current) {
+        clearTimeout(searchDebounceTimer.current);
+      }
+    };
+  }, [searchQuery]);
 
   const [createScenarioVoice] = useCreateScenarioVoiceMutation();
   const [updateScenarioVoice] = useUpdateScenarioVoiceMutation();
