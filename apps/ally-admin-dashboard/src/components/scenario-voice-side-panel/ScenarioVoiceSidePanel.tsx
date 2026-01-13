@@ -161,11 +161,23 @@ export const ScenarioVoiceSidePanel: React.FC<ScenarioVoiceSidePanelProps> = ({
       return;
     }
 
+    // Parse the latest configText to ensure we're sending the updated config
+    let finalConfig = formData.config || emptyVoiceConfig;
+
+    try {
+      if (configText.trim()) {
+        finalConfig = JSON.parse(configText);
+      }
+    } catch {
+      toast.error("Invalid configuration JSON");
+      return;
+    }
+
     const updatedVoice: ScenarioVoice = {
       name: formData.name || "",
       provider: formData.provider || "",
       languageId: formData.languageId,
-      config: formData.config || emptyVoiceConfig,
+      config: finalConfig,
       ...(selectedVoice?.id && {
         id: selectedVoice?.id,
         createdAt: selectedVoice.createdAt || new Date().toISOString(),
@@ -173,7 +185,7 @@ export const ScenarioVoiceSidePanel: React.FC<ScenarioVoiceSidePanelProps> = ({
       }),
     };
     onUpdate(updatedVoice);
-  }, [formData, selectedVoice, onUpdate, emptyVoiceConfig, configError]);
+  }, [formData, selectedVoice, onUpdate, emptyVoiceConfig, configError, configText]);
 
   const handleClose = useCallback(() => {
     // Check if there are unsaved changes

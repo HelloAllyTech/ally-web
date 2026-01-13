@@ -470,8 +470,9 @@ export const SCENARIO_VOICE_COLUMNS = [
     id: "provider",
     label: "Provider",
     accessor: "provider",
-    dataType: cellTypes.editableText,
+    dataType: cellTypes.dropdown,
     minWidth: 200,
+    options: [], // Will be populated dynamically from API/existing voices
   },
   {
     id: "config",

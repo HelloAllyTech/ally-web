@@ -136,10 +136,99 @@ export const ScenarioVoices: React.FC = () => {
     setOffset(prev => prev + limit);
   };
 
+  /**
+   * Handles inline table cell changes and auto-saves to API
+   * Called when user edits any cell in the table
+   */
+  const handleTableRowChange = async (action: any) => {
+    const { columnId, rowIndex, value } = action;
+
+    // Find the original voice from state to preserve proper object types
+    const originalVoice = voices[rowIndex];
+    if (!originalVoice) return;
+
+    // Update local state immediately for UI feedback
+    setVoices(prev => {
+      const updated = [...prev];
+      if (updated[rowIndex]) {
+        // Map column id to actual field name (e.g., "language" -> "languageId")
+        const fieldName = columnId === "language" ? "languageId" : columnId;
+        updated[rowIndex] = {
+          ...updated[rowIndex],
+          [fieldName]: value,
+        };
+      }
+      return updated;
+    });
+
+    try {
+      let configValue = originalVoice.config;
+      let parsedValue = value;
+
+      if (columnId === "language") {
+        // Language field comes as language_id from API, convert to number
+        parsedValue = typeof value === "string" ? parseInt(value, 10) : value;
+      }
+
+      // Parse config if it was edited (it will be a string from table)
+      if (columnId === "config") {
+        try {
+          configValue = typeof value === "string" ? JSON.parse(value) : value;
+          parsedValue = configValue;
+        } catch {
+          toast.error("Invalid JSON in configuration");
+          // Revert on parse error
+          setVoices(prev => {
+            const updated = [...prev];
+            if (updated[rowIndex]) {
+              updated[rowIndex] = originalVoice;
+            }
+            return updated;
+          });
+          return;
+        }
+      }
+
+      const response = await updateScenarioVoice({
+        id: originalVoice.id,
+        voice: {
+          name: columnId === "name" ? parsedValue : originalVoice.name,
+          provider: columnId === "provider" ? parsedValue : originalVoice.provider,
+          languageId: columnId === "language" ? parsedValue : originalVoice.languageId,
+          config: columnId === "config" ? configValue : originalVoice.config,
+        },
+      });
+
+      if (response.error) {
+        toast.error(en.errors.failedToCreateEvent);
+        // Revert the local change on error
+        setVoices(prev => {
+          const updated = [...prev];
+          if (updated[rowIndex]) {
+            updated[rowIndex] = originalVoice;
+          }
+          return updated;
+        });
+      } else {
+        toast.success(en.simulation.voiceUpdatedSuccessfully);
+      }
+    } catch {
+      toast.error(en.errors.failedToCreateEvent);
+      // Revert on error
+      setVoices(prev => {
+        const updated = [...prev];
+        if (updated[rowIndex]) {
+          updated[rowIndex] = originalVoice;
+        }
+        return updated;
+      });
+    }
+  };
+
   // Extract unique providers from voices
   const uniqueProviders = Array.from(new Set(voices.map(voice => voice.provider).filter(Boolean)));
 
-  // Create dynamic columns with language options
+  // Create dynamic columns with language and provider options
   const tableColumns = SCENARIO_VOICE_COLUMNS.map(column => {
     if (column.id === "language") {
       return {
@@ -147,6 +236,15 @@ export const ScenarioVoices: React.FC = () => {
         options: languageOptions.map((lang: any) => ({
           value: lang.language_id,
           label: lang.label, // Same as side panel
+        })),
+      };
+    }
+    if (column.id === "provider") {
+      return {
+        ...column,
+        options: uniqueProviders.map((provider: string) => ({
+          value: provider,
+          label: provider,
         })),
       };
     }
@@ -201,7 +299,7 @@ export const ScenarioVoices: React.FC = () => {
               data: formatTableData,
               columns: tableColumns,
             }}
-            onRowChange={() => {}}
+            onRowChange={handleTableRowChange}
             onRowClick={handleVoiceSelect}
             onSelectionChange={() => {}}
             tableFooter={tableFooter}
