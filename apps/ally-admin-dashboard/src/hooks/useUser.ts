@@ -137,7 +137,7 @@ export const useUser = () => {
         case SIDEBAR_ITEMS.EVENT_MANAGEMENT:
           return permissions.includes(Permissions.EDIT_EVENT);
         case SIDEBAR_ITEMS.SCENARIO_VOICES:
-          return permissions.includes(Permissions.EDIT_SCENARIO);
+          return permissions.includes(Permissions.EDIT_SCENARIO_VOICE);
         case SIDEBAR_ITEMS.USER_MANAGEMENT:
           return permissions.includes(Permissions.EDIT_USER);
         default:

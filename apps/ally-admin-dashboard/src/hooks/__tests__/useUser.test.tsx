@@ -336,7 +336,7 @@ describe("useUser", () => {
 
     it("should filter navigation items based on EDIT_SCENARIO permission", () => {
       store = createMockStore({
-        permissions: [Permissions.EDIT_SCENARIO],
+        permissions: [Permissions.EDIT_SCENARIO, Permissions.EDIT_SCENARIO_VOICE],
       });
 
       const { result } = renderHook(() => useUser(), {
@@ -376,7 +376,12 @@ describe("useUser", () => {
 
     it("should show all navigation items when user has all permissions", () => {
       store = createMockStore({
-        permissions: [Permissions.EDIT_SCENARIO, Permissions.EDIT_EVENT, Permissions.EDIT_USER],
+        permissions: [
+          Permissions.EDIT_SCENARIO,
+          Permissions.EDIT_EVENT,
+          Permissions.EDIT_USER,
+          Permissions.EDIT_SCENARIO_VOICE,
+        ],
       });
 
       const { result } = renderHook(() => useUser(), {
@@ -394,7 +399,11 @@ describe("useUser", () => {
 
     it("should show multiple navigation items for multiple permissions", () => {
       store = createMockStore({
-        permissions: [Permissions.EDIT_SCENARIO, Permissions.EDIT_USER],
+        permissions: [
+          Permissions.EDIT_SCENARIO,
+          Permissions.EDIT_USER,
+          Permissions.EDIT_SCENARIO_VOICE,
+        ],
       });
 
       const { result } = renderHook(() => useUser(), {
@@ -423,7 +432,7 @@ describe("useUser", () => {
 
     it("should update filtered items when permissions change", () => {
       store = createMockStore({
-        permissions: [Permissions.EDIT_SCENARIO],
+        permissions: [Permissions.EDIT_SCENARIO, Permissions.EDIT_SCENARIO_VOICE],
       });
 
       const { result } = renderHook(() => useUser(), {
@@ -438,7 +447,11 @@ describe("useUser", () => {
 
       // Create new store with updated permissions and render new hook
       const updatedStore = createMockStore({
-        permissions: [Permissions.EDIT_SCENARIO, Permissions.EDIT_EVENT],
+        permissions: [
+          Permissions.EDIT_SCENARIO,
+          Permissions.EDIT_EVENT,
+          Permissions.EDIT_SCENARIO_VOICE,
+        ],
       });
 
       const { result: newResult } = renderHook(() => useUser(), {
