@@ -43,6 +43,7 @@ export const SimulationEventMapTable: FC<SimulationEventMapTableProps> = ({ simu
   const [mappedEvents, setMappedEvents] = useState<UpdateScenarioEventDataParam[]>([
     createNewEvent(),
   ]);
+  const [eventOrderMapping, setEventOrderMapping] = useState<Record<string, number>>({});
   const [selectedEventRows, setSelectedEventRows] = useState<UpdateScenarioEventDataParam[]>([]);
   const [isSidePanelOpen, setIsSidePanelOpen] = useState(false);
   const [selectedEventForEdit, setSelectedEventForEdit] =
@@ -90,11 +91,9 @@ export const SimulationEventMapTable: FC<SimulationEventMapTableProps> = ({ simu
   // Initialize mapped events from API response
   useEffect(() => {
     if (mappedScenarioEventsData?.data?.length > 0) {
-      setMappedEvents(previousEvents =>
-        previousEvents?.length > 1
-          ? mappedScenarioEventsData.data.map(formatApiResponseToMappedEvent)
-          : sortEventsByScore(mappedScenarioEventsData.data.map(formatApiResponseToMappedEvent)),
-      );
+      const formattedEvents = mappedScenarioEventsData.data.map(formatApiResponseToMappedEvent);
+      if (mappedEvents.length <= 1) updateEventOrderMapping(formattedEvents);
+      setMappedEvents(formattedEvents);
     } else {
       setMappedEvents([createNewEvent()]);
     }
@@ -220,24 +219,35 @@ export const SimulationEventMapTable: FC<SimulationEventMapTableProps> = ({ simu
     ];
   }, [sessionEventsOptions]);
 
-  const mappedEventsWithColors = FEATURE_FLAGS_MAP.SCORE_COLOR_FLAG
-    ? useMemo(() => addScoreColors(mappedEvents), [mappedEvents])
-    : mappedEvents;
-
-  const sortEventsByScore = (events: UpdateScenarioEventDataParam[]) => {
-    return [...events].sort((a, b) => (a.score?.value ?? 0) - (b.score?.value ?? 0));
+  const updateEventOrderMapping = (events: UpdateScenarioEventDataParam[]) => {
+    const sortedEvents = [...events].sort((a, b) => (a.score?.value ?? 0) - (b.score?.value ?? 0));
+    const orderMapping = sortedEvents.reduce(
+      (acc, event, index) => {
+        acc[event.id?.value || ""] = index + 1;
+        return acc;
+      },
+      {} as Record<string, number>,
+    );
+    setEventOrderMapping(orderMapping);
   };
 
   const onReloadMappedEvents = () => {
     setTimeout(() => {
-      const sortedEvents = sortEventsByScore(mappedEvents);
-      setMappedEvents(sortedEvents);
-      saveEventsToApi(sortedEvents);
+      updateEventOrderMapping(mappedEvents);
       // Target the NotionTable's scrollable container (has overflow-auto class)
       const scrollableElement = tableRef.current?.querySelector(".overflow-auto");
       scrollableElement?.scrollTo({ top: 0, behavior: "smooth" });
-    }, 1000);
+    }, 100);
   };
+
+  const sortMappedEvents = useMemo(() => {
+    return [...mappedEvents].sort((a, b) => {
+      const orderA = eventOrderMapping[a.id.value] ?? Number.MAX_SAFE_INTEGER;
+      const orderB = eventOrderMapping[b.id.value] ?? Number.MAX_SAFE_INTEGER;
+
+      return orderA - orderB;
+    });
+  }, [mappedEvents, eventOrderMapping]);
 
   // Helper function to save events to API
   const saveEventsToApi = useCallback(
@@ -469,7 +479,7 @@ export const SimulationEventMapTable: FC<SimulationEventMapTableProps> = ({ simu
         ) : (
           <NotionTable
             tableData={{
-              data: mappedEventsWithColors,
+              data: addScoreColors(sortMappedEvents),
               columns: tableColumns,
             }}
             onRowChange={handleUpdateEventTable}
