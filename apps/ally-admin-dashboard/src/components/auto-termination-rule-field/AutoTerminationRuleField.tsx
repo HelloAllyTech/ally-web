@@ -43,7 +43,7 @@ export const AutoTerminationRuleField: React.FC<AutoTerminationRuleFieldProps> =
 
   const { setValue, watch } = formMethods;
 
-  const watchedRules = watch(TERMINATION_RULES_FIELD) || [createEmptyRule()];
+  const watchedRules = watch(TERMINATION_RULES_FIELD) || [];
 
   const { data: sessionEventsData } = useGetSessionEventsQuery({
     offset: DEFAULT_OFFSET,

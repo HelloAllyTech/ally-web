@@ -1,0 +1,62 @@
+services:
+  web:
+    build:
+      context: .
+      dockerfile: apps/ally-web/Dockerfile.dev
+    working_dir: /app
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=development
+      - WATCHPACK_POLLING=true
+      - HOST=0.0.0.0
+      - NEXT_PUBLIC_API_BASE_URL=${NEXT_PUBLIC_API_BASE_URL:-http://host.docker.internal:8001}
+      - NEXT_PUBLIC_API_VERSION=${NEXT_PUBLIC_API_VERSION:-v1}
+    volumes:
+      - .:/app
+      - /app/node_modules
+    restart: unless-stopped
+
+  helpline:
+    build:
+      context: .
+      dockerfile: apps/ally-helpline-dashboard/Dockerfile.dev
+    working_dir: /app
+    ports:
+      - "8080:8080"
+    environment:
+      - NODE_ENV=development
+      - CHOKIDAR_USEPOLLING=true
+      - HOST=0.0.0.0
+    volumes:
+      - .:/app
+      - /app/node_modules
+    restart: unless-stopped
+
+  admin:
+    build:
+      context: .
+      dockerfile: apps/ally-admin-dashboard/Dockerfile.dev
+    working_dir: /app
+    ports:
+      - "8081:8081"
+    environment:
+      - NODE_ENV=development
+      - CHOKIDAR_USEPOLLING=true
+      - HOST=0.0.0.0
+    volumes:
+      - .:/app
+      - /app/node_modules
+    restart: unless-stopped
+
+# Note: Removed node_modules volumes - using node_modules from Docker images instead
+# This simplifies the setup and ensures dependencies from the image are used
+# Notes:
+# - This file is intended for local development. It mounts your project into each container so
+#   code changes are visible immediately (hot-reload).
+# - Each service uses its own named volume for node_modules to avoid conflicts between host
+#   and container-installed packages.
+# - If any Dockerfile.dev does not set the container start command, you may need to add a
+#   `command:` line per service (e.g. `command: ["npm", "run", "dev"]`).
+# - Keep an eye on the Dockerfile.dev files: they should expose the same ports as mapped
+#   here (3000, 8080, 8081) and listen on 0.0.0.0 for the HOST variable to work.
