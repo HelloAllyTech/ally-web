@@ -199,6 +199,13 @@ export const Login: FunctionComponent = () => {
         accessTokenRef.current = response?.data.accessToken;
         refreshTokenRef.current = response?.data.refreshToken;
         setIsOpenTermsAndAgreement(true);
+      } else if (response?.error) {
+        const error = response.error as FetchBaseQueryError;
+        const errorData = error.data as { message: string } | undefined;
+        if (errorData?.message?.toLowerCase() === User.USER_SUSPENDED) {
+          navigate(ROUTES.SUSPENDED_USER);
+          return;
+        }
       } else {
         // Avoid showing error because of security reasons
       }
