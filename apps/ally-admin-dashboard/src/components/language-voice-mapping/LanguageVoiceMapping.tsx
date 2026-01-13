@@ -1,4 +1,4 @@
-import { FC, useEffect, useMemo, useState } from "react";
+import { FC, useCallback, useEffect, useMemo, useState } from "react";
 
 import { useGetAvailableLanguageVoicesQuery } from "@api";
 import { DropdownField } from "@components";
@@ -8,6 +8,7 @@ import { isObject } from "@utils";
 interface VoiceOption {
   id: string;
   name: string;
+  provider?: string;
 }
 
 interface LanguageOption {
@@ -63,15 +64,48 @@ export const LanguageVoiceMapping: FC<LanguageVoiceMappingProps> = ({
     return languages.slice(0, 5);
   }, [languages, showAll]);
 
-  const getOptionsForLanguage = (languageId: string) => {
-    const language = languages.find(lang => String(lang.language_id) === languageId);
-    if (!language) return [];
+  const getOptionsForLanguage = useCallback(
+    (languageId: string) => {
+      const language = languages.find(lang => String(lang.language_id) === languageId);
+      if (!language) return [];
 
-    return language.voices.map(voice => ({
-      value: voice.id,
-      label: voice.name,
-    }));
-  };
+      return language.voices.map(voice => ({
+        value: voice.id,
+        label: voice.provider ? `${voice.name}  (${voice.provider})` : voice.name,
+      }));
+    },
+    [languages],
+  );
+
+  const renderDropdownFields = useCallback(() => {
+    return visibleLanguages.map(language => {
+      const languageId = String(language.language_id);
+      const options = getOptionsForLanguage(languageId);
+      const selectedVoiceId = languageVoices?.[languageId] ?? "";
+
+      return (
+        <div
+          key={languageId}
+          className="flex flex-row items-center gap-4 border border-border-light rounded-md px-3 py-2 bg-white"
+        >
+          <div className="w-1/3 text-sm text-typography-800 font-medium">{language.label}</div>
+          <div className="w-2/3">
+            <DropdownField
+              id={`${id}.${languageId}`}
+              label=""
+              formMethods={formMethods}
+              options={options}
+              defaultOption={
+                selectedVoiceId
+                  ? options.find(opt => opt.value === selectedVoiceId)?.label
+                  : en.simulation.selectVoice
+              }
+            />
+          </div>
+        </div>
+      );
+    });
+  }, [formMethods, getOptionsForLanguage, id, languageVoices, visibleLanguages]);
 
   useEffect(() => {
     if (languages.length === 0) {
@@ -104,35 +138,7 @@ export const LanguageVoiceMapping: FC<LanguageVoiceMappingProps> = ({
       {errors?.[id]?.message && (
         <p className="text-destructive-500 text-sm mt-1">{errors[id].message}</p>
       )}
-      <div className="flex flex-col gap-3">
-        {visibleLanguages.map(language => {
-          const languageId = String(language.language_id);
-          const options = getOptionsForLanguage(languageId);
-          const selectedVoiceId = languageVoices?.[languageId] ?? "";
-
-          return (
-            <div
-              key={languageId}
-              className="flex flex-row items-center gap-4 border border-border-light rounded-md px-3 py-2 bg-white"
-            >
-              <div className="w-1/3 text-sm text-typography-800 font-medium">{language.label}</div>
-              <div className="w-2/3">
-                <DropdownField
-                  id={`${id}.${languageId}`}
-                  label=""
-                  formMethods={formMethods}
-                  options={options}
-                  defaultOption={
-                    selectedVoiceId
-                      ? options.find(opt => opt.value === selectedVoiceId)?.label
-                      : en.simulation.selectVoice
-                  }
-                />
-              </div>
-            </div>
-          );
-        })}
-      </div>
+      <div className="flex flex-col gap-3">{renderDropdownFields()}</div>
       {languages.length > visibleLanguages.length && (
         <button
           type="button"
