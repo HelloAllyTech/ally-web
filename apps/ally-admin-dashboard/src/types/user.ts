@@ -155,7 +155,6 @@ export interface UserModalProps {
   uploadTitle?: string;
   uploadId?: string;
   uploadImageUrl?: (payload: GetLogoUrlRequest) => Promise<any>;
-  deleteImageUrl?: (profileImageUrl: any) => Promise<any>;
 }
 
 export type Option = {

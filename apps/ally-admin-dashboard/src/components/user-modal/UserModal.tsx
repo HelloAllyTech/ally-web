@@ -23,7 +23,6 @@ export const UserModal: React.FC<UserModalProps> = ({
   uploadTitle,
   uploadId,
   uploadImageUrl,
-  deleteImageUrl,
 }) => {
   // Handle ESC key to close modal
   useEffect(() => {
@@ -331,7 +330,6 @@ export const UserModal: React.FC<UserModalProps> = ({
             uploadButtonName={uploadButtonName}
             uploadTitle={uploadTitle}
             onUpload={uploadImageUrl}
-            onDelete={deleteImageUrl}
             details={details}
           />
         )}

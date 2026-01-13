@@ -137,7 +137,10 @@ const NavSideBar: FC<NavSideBarProps> = ({ activeTab, onTabChange, isOpen, onClo
   };
 
   const handleProfileUpload = async () => {
+    const existingProfileUrl = user.profileImageUrl;
+
     await uploadProfile({ profileImageUrl: profileUrl });
+    if (existingProfileUrl) await deleteProfile({ profileImageUrl: existingProfileUrl });
     await refetchUser();
     setOpenSettings(false);
   };
@@ -249,7 +252,6 @@ const NavSideBar: FC<NavSideBarProps> = ({ activeTab, onTabChange, isOpen, onClo
         formMethods={profileSettingsForm}
         onButtonClick={handleProfileUpload}
         getProfileUrl={getProfileUrl}
-        deleteProfile={deleteProfile}
       />
     </>
   );
