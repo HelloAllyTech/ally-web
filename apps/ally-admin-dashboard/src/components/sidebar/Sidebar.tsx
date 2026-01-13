@@ -250,7 +250,6 @@ export const Sidebar: React.FC = () => {
           uploadId={USER_MODAL_FIELDS_IDS.PROFILE}
           uploadButtonName={imageUploaded ? en.userManagement.changeImage : en.auth.uploadImage}
           uploadImageUrl={getProfileUrl}
-          deleteImageUrl={deleteProfile}
         />
       ) : null}
     </>

@@ -19,8 +19,8 @@ interface ImageUploadProps {
   uploadButtonName?: string;
   uploadTitle?: string;
   onUpload: (payload: imageUploadType) => Promise<any>;
-  onDelete: (profileImageUrl: any) => Promise<any>;
   details: any;
+  onFailed?: () => void;
 }
 
 const ASPECT_RATIO_TOLERANCE = 0.01;
@@ -41,8 +41,8 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
   uploadId,
   uploadButtonName,
   uploadTitle,
+  onFailed,
   onUpload,
-  onDelete,
   details,
 }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -79,7 +79,6 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
     if (!isNonEmptyString(previewUrl)) return;
 
     try {
-      await onDelete({ [uploadId]: previewUrl });
       setPreviewUrl("");
     } catch {
       toast.error("Failed to delete image");
@@ -125,6 +124,7 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
 
       if (!isValidRatio) {
         URL.revokeObjectURL(objectUrl);
+        onFailed?.();
         toast.error("Please upload an image with the correct aspect ratio");
         if (fileInputRef.current) fileInputRef.current.value = "";
         return;
@@ -132,6 +132,7 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
 
       if (file.size > maxFileSize) {
         URL.revokeObjectURL(objectUrl);
+        onFailed?.();
         toast.error("File must be under 2MB.");
         if (fileInputRef.current) fileInputRef.current.value = "";
         return;
