@@ -223,4 +223,5 @@ export enum UserRole {
   LEARNER = "LEARNER",
   SUPER_ADMIN = "SUPER_ADMIN",
   CLIENT = "CLIENT",
+  REVIEWER = "REVIEWER",
 }
