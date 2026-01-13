@@ -3,12 +3,12 @@
 exports[`ToggleButtonGroup > should match snapshot when disabled 1`] = `
 <DocumentFragment>
   <div
-    class="MuiToggleButtonGroup-root MuiToggleButtonGroup-horizontal h-9 !rounded-[4px] bg-neutral-100 border-[0.5px] border-border css-10wsuro-MuiToggleButtonGroup-root"
+    class="MuiToggleButtonGroup-root h-9 !rounded-[4px] bg-neutral-100 border-[0.5px] border-border css-1908ofk-MuiToggleButtonGroup-root"
     role="group"
   >
     <button
       aria-pressed="false"
-      class="MuiButtonBase-root Mui-disabled MuiToggleButtonGroup-grouped MuiToggleButtonGroup-groupedHorizontal Mui-disabled MuiToggleButton-root Mui-disabled MuiToggleButton-sizeMedium MuiToggleButton-standard MuiToggleButtonGroup-grouped MuiToggleButtonGroup-groupedHorizontal Mui-disabled MuiToggleButtonGroup-firstButton css-1n3mat1-MuiButtonBase-root-MuiToggleButton-root"
+      class="MuiButtonBase-root Mui-disabled MuiToggleButtonGroup-grouped MuiToggleButtonGroup-groupedHorizontal Mui-disabled MuiToggleButton-root Mui-disabled MuiToggleButton-sizeMedium MuiToggleButton-standard MuiToggleButtonGroup-grouped MuiToggleButtonGroup-groupedHorizontal Mui-disabled MuiToggleButtonGroup-firstButton css-mswh2k-MuiButtonBase-root-MuiToggleButton-root"
       disabled=""
       tabindex="-1"
       type="button"
@@ -18,7 +18,7 @@ exports[`ToggleButtonGroup > should match snapshot when disabled 1`] = `
     </button>
     <button
       aria-pressed="true"
-      class="MuiButtonBase-root Mui-disabled MuiToggleButtonGroup-grouped MuiToggleButtonGroup-groupedHorizontal Mui-disabled MuiToggleButton-root Mui-selected Mui-disabled MuiToggleButton-sizeMedium MuiToggleButton-standard MuiToggleButtonGroup-grouped MuiToggleButtonGroup-groupedHorizontal Mui-disabled MuiToggleButtonGroup-middleButton css-1n3mat1-MuiButtonBase-root-MuiToggleButton-root"
+      class="MuiButtonBase-root Mui-disabled MuiToggleButtonGroup-grouped MuiToggleButtonGroup-groupedHorizontal Mui-disabled MuiToggleButton-root Mui-selected Mui-disabled MuiToggleButton-sizeMedium MuiToggleButton-standard MuiToggleButtonGroup-grouped MuiToggleButtonGroup-groupedHorizontal Mui-disabled MuiToggleButtonGroup-middleButton css-mswh2k-MuiButtonBase-root-MuiToggleButton-root"
       disabled=""
       tabindex="-1"
       type="button"
@@ -28,7 +28,7 @@ exports[`ToggleButtonGroup > should match snapshot when disabled 1`] = `
     </button>
     <button
       aria-pressed="false"
-      class="MuiButtonBase-root Mui-disabled MuiToggleButtonGroup-grouped MuiToggleButtonGroup-groupedHorizontal Mui-disabled MuiToggleButton-root Mui-disabled MuiToggleButton-sizeMedium MuiToggleButton-standard MuiToggleButtonGroup-grouped MuiToggleButtonGroup-groupedHorizontal Mui-disabled MuiToggleButtonGroup-lastButton css-1n3mat1-MuiButtonBase-root-MuiToggleButton-root"
+      class="MuiButtonBase-root Mui-disabled MuiToggleButtonGroup-grouped MuiToggleButtonGroup-groupedHorizontal Mui-disabled MuiToggleButton-root Mui-disabled MuiToggleButton-sizeMedium MuiToggleButton-standard MuiToggleButtonGroup-grouped MuiToggleButtonGroup-groupedHorizontal Mui-disabled MuiToggleButtonGroup-lastButton css-mswh2k-MuiButtonBase-root-MuiToggleButton-root"
       disabled=""
       tabindex="-1"
       type="button"
@@ -43,35 +43,44 @@ exports[`ToggleButtonGroup > should match snapshot when disabled 1`] = `
 exports[`ToggleButtonGroup > should match snapshot when rendered with default props 1`] = `
 <DocumentFragment>
   <div
-    class="MuiToggleButtonGroup-root MuiToggleButtonGroup-horizontal h-9 !rounded-[4px] bg-neutral-100 border-[0.5px] border-border css-10wsuro-MuiToggleButtonGroup-root"
+    class="MuiToggleButtonGroup-root h-9 !rounded-[4px] bg-neutral-100 border-[0.5px] border-border css-1908ofk-MuiToggleButtonGroup-root"
     role="group"
   >
     <button
       aria-pressed="true"
-      class="MuiButtonBase-root MuiToggleButtonGroup-grouped MuiToggleButtonGroup-groupedHorizontal MuiToggleButton-root Mui-selected MuiToggleButton-sizeMedium MuiToggleButton-standard MuiToggleButtonGroup-grouped MuiToggleButtonGroup-groupedHorizontal MuiToggleButtonGroup-firstButton css-1n3mat1-MuiButtonBase-root-MuiToggleButton-root"
+      class="MuiButtonBase-root MuiToggleButtonGroup-grouped MuiToggleButtonGroup-groupedHorizontal MuiToggleButton-root Mui-selected MuiToggleButton-sizeMedium MuiToggleButton-standard MuiToggleButtonGroup-grouped MuiToggleButtonGroup-groupedHorizontal MuiToggleButtonGroup-firstButton css-mswh2k-MuiButtonBase-root-MuiToggleButton-root"
       tabindex="0"
       type="button"
       value="optionA"
     >
       Option A
+      <span
+        class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
+      />
     </button>
     <button
       aria-pressed="false"
-      class="MuiButtonBase-root MuiToggleButtonGroup-grouped MuiToggleButtonGroup-groupedHorizontal MuiToggleButton-root MuiToggleButton-sizeMedium MuiToggleButton-standard MuiToggleButtonGroup-grouped MuiToggleButtonGroup-groupedHorizontal MuiToggleButtonGroup-middleButton css-1n3mat1-MuiButtonBase-root-MuiToggleButton-root"
+      class="MuiButtonBase-root MuiToggleButtonGroup-grouped MuiToggleButtonGroup-groupedHorizontal MuiToggleButton-root MuiToggleButton-sizeMedium MuiToggleButton-standard MuiToggleButtonGroup-grouped MuiToggleButtonGroup-groupedHorizontal MuiToggleButtonGroup-middleButton css-mswh2k-MuiButtonBase-root-MuiToggleButton-root"
       tabindex="0"
       type="button"
       value="optionB"
     >
       Option B
+      <span
+        class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
+      />
     </button>
     <button
       aria-pressed="false"
-      class="MuiButtonBase-root MuiToggleButtonGroup-grouped MuiToggleButtonGroup-groupedHorizontal MuiToggleButton-root MuiToggleButton-sizeMedium MuiToggleButton-standard MuiToggleButtonGroup-grouped MuiToggleButtonGroup-groupedHorizontal MuiToggleButtonGroup-lastButton css-1n3mat1-MuiButtonBase-root-MuiToggleButton-root"
+      class="MuiButtonBase-root MuiToggleButtonGroup-grouped MuiToggleButtonGroup-groupedHorizontal MuiToggleButton-root MuiToggleButton-sizeMedium MuiToggleButton-standard MuiToggleButtonGroup-grouped MuiToggleButtonGroup-groupedHorizontal MuiToggleButtonGroup-lastButton css-mswh2k-MuiButtonBase-root-MuiToggleButton-root"
       tabindex="0"
       type="button"
       value="optionC"
     >
       Option C
+      <span
+        class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
+      />
     </button>
   </div>
 </DocumentFragment>
