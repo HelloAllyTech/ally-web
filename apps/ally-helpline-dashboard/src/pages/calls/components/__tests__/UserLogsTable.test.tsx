@@ -41,6 +41,9 @@ vi.mock("@ally-ui-mono/ui-shared", () => ({
       </div>
     ),
   ),
+  FEATURE_FLAGS_MAP: {
+    PEER_REVIEW_FLAG: false,
+  },
 }));
 
 // Mock API hooks

@@ -18,6 +18,9 @@ vi.mock("@ally-ui-mono/ui-shared", () => ({
     error: vi.fn(),
     info: vi.fn(),
   },
+  FEATURE_FLAGS_MAP: {
+    PEER_REVIEW_FLAG: false,
+  },
 }));
 
 const mockGetUser = vi.fn();
