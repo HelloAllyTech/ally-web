@@ -1,3 +1,4 @@
+import { FEATURE_FLAGS_MAP } from "@ally-ui-mono/ui-shared";
 import { AchievementsCard, LeaderboardList } from "@components";
 
 // TODO: Replace with actual data
@@ -187,6 +188,12 @@ const DUMMY_ACHIEVEMENTS = [
 ];
 
 export const Leaderboard = () => {
+  if (!FEATURE_FLAGS_MAP.LEADERBOARD_FLAG) {
+    return (
+      <div className="flex items-center justify-center h-full">Leaderboard is not enabled</div>
+    );
+  }
+
   const handleViewAllBadges = () => {
     // TODO: Navigate to badges page or open modal
   };
