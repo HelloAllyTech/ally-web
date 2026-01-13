@@ -107,3 +107,4 @@ vitest.config.*.timestamp*
 .cursor
 
 test-output
+.claude
