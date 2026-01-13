@@ -4,12 +4,22 @@
 
 set -e
 
-# Colors for output
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-BLUE='\033[0;34m'
-RED='\033[0;31m'
-NC='\033[0m' # No Color
+# Detect if colors are supported
+if [ -t 1 ]; then
+    # Colors for output (only if stdout is a terminal)
+    GREEN='\033[0;32m'
+    YELLOW='\033[1;33m'
+    BLUE='\033[0;34m'
+    RED='\033[0;31m'
+    NC='\033[0m' # No Color
+else
+    # No colors if output is not a terminal
+    GREEN=''
+    YELLOW=''
+    BLUE=''
+    RED=''
+    NC=''
+fi
 
 # Show usage
 show_usage() {
@@ -18,14 +28,14 @@ show_usage() {
     echo "Usage: ./test-docker.sh [command] [options]"
     echo ""
     echo "Commands:"
-    echo "  ${GREEN}all${NC}           Run all tests in parallel"
-    echo "  ${GREEN}web${NC}           Run ally-web tests"
-    echo "  ${GREEN}helpline${NC}      Run ally-helpline-dashboard tests"
-    echo "  ${GREEN}admin${NC}         Run ally-admin-dashboard tests"
-    echo "  ${GREEN}ui-shared${NC}     Run ui-shared library tests"
-    echo "  ${GREEN}watch${NC}         Run tests in watch mode (in running dev containers)"
-    echo "  ${GREEN}coverage${NC}      Run all tests with coverage report"
-    echo "  ${GREEN}clean${NC}         Clean up test containers and volumes"
+    echo -e "  ${GREEN}all${NC}           Run all tests in parallel"
+    echo -e "  ${GREEN}web${NC}           Run ally-web tests"
+    echo -e "  ${GREEN}helpline${NC}      Run ally-helpline-dashboard tests"
+    echo -e "  ${GREEN}admin${NC}         Run ally-admin-dashboard tests"
+    echo -e "  ${GREEN}ui-shared${NC}     Run ui-shared library tests"
+    echo -e "  ${GREEN}watch${NC}         Run tests in watch mode (in running dev containers)"
+    echo -e "  ${GREEN}coverage${NC}      Run all tests with coverage report"
+    echo -e "  ${GREEN}clean${NC}         Clean up test containers and volumes"
     echo ""
     echo "Examples:"
     echo "  ./test-docker.sh all         # Run all tests"
