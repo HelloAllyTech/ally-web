@@ -61,14 +61,18 @@ export const navBarOptions = [
         },
       ]
     : []),
-  {
-    id: TabId.LEADERBOARD,
-    title: "Leaderboard",
-    Icon: Leaderboard,
-    path: ROUTES.LEADERBOARD,
-    activePages: [],
-    permissions: [Permissions.VIEW_LEADERBOARD],
-  },
+  ...(FEATURE_FLAGS_MAP.LEADERBOARD_FLAG
+    ? [
+        {
+          id: TabId.LEADERBOARD,
+          title: "Leaderboard",
+          Icon: Leaderboard,
+          path: ROUTES.LEADERBOARD,
+          activePages: [],
+          permissions: [Permissions.VIEW_LEADERBOARD],
+        },
+      ]
+    : []),
   {
     id: TabId.CALLS,
     title: "Sessions",
