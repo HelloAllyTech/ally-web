@@ -302,39 +302,26 @@ export const createSessionEventsMap = (events: SessionEvent[]): Map<string, Sess
 };
 
 export const addScoreColors = (data: UpdateScenarioEventDataParam[]) => {
-  // Extract score values
-  const values = data.map(d => d.score.value);
-
-  const min = Math.min(...values);
-  const max = Math.max(...values);
-
-  // Color anchors
-  const RED = { r: 220, g: 80, b: 80 };
-  const YELLOW = { r: 255, g: 255, b: 179 };
-  const GREEN = { r: 80, g: 180, b: 120 };
-
-  const lerp = (a, b, t) => Math.round(a + (b - a) * t);
-
-  const mix = (c1, c2, t) =>
-    `rgb(${lerp(c1.r, c2.r, t)}, ${lerp(c1.g, c2.g, t)}, ${lerp(c1.b, c2.b, t)})`;
-
-  const getColor = value => {
-    if (value === 0) return mix(RED, YELLOW, 1);
-    if (value <= 0) {
-      // Red → Yellow
-      const t = (value - min) / (0 - min || 1);
-      return mix(RED, YELLOW, Math.max(0, Math.min(1, t)));
+  const getScoreColor = (value: number): string => {
+    switch (true) {
+      case value < -10:
+        return "#FF635C"; // Dark red
+      case value < 0:
+        return "#FFC9C1"; // Light red
+      case value === 0:
+        return "#FFEBAD"; // Yellow
+      case value <= 10:
+        return "#A5D6A7"; // Light green
+      default:
+        return "#66BB6A"; // Dark green (value > 10)
     }
-    // Yellow → Green
-    const t = value / (max || 1);
-    return mix(YELLOW, GREEN, Math.max(0, Math.min(1, t)));
   };
 
   return data.map(item => ({
     ...item,
     score: {
       ...item.score,
-      color: getColor(item.score.value),
+      color: getScoreColor(item.score.value),
     },
   }));
 };
