@@ -1,3 +1,4 @@
+import { FEATURE_FLAGS_MAP } from "@ally-ui-mono/ui-shared";
 import { SearchIcon, StatsIcon, ScribeIcon, LearnIcon, Leaderboard, ReviewNavIcon } from "@assets";
 
 import { Permissions } from "./permissions";
@@ -48,14 +49,18 @@ export const navBarOptions = [
     activePages: [ROUTES.SCENARIO, ROUTES.PATHWAY],
     permissions: [Permissions.EDIT_SCENARIO_SESSION],
   },
-  {
-    id: TabId.REVIEW,
-    title: "Review",
-    Icon: ReviewNavIcon,
-    path: ROUTES.REVIEW,
-    activePages: [],
-    //TODO: Add permission for review
-  },
+  ...(FEATURE_FLAGS_MAP.PEER_REVIEW_FLAG
+    ? [
+        {
+          id: TabId.REVIEW,
+          title: "Review",
+          Icon: ReviewNavIcon,
+          path: ROUTES.REVIEW,
+          activePages: [],
+          //TODO: Add permission for review
+        },
+      ]
+    : []),
   {
     id: TabId.LEADERBOARD,
     title: "Leaderboard",

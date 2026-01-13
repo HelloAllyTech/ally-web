@@ -1,5 +1,6 @@
 import { FC, useState, useEffect, useCallback, useRef } from "react";
 
+import { FEATURE_FLAGS_MAP } from "@ally-ui-mono/ui-shared";
 import FeedCard from "@src/components/feed-card";
 import ToggleButtonGroup from "@src/components/toggle-button-group/ToggleButtonGroup";
 
@@ -170,6 +171,12 @@ export const Review: FC = () => {
 
     return () => observer.unobserve(sentinel);
   }, [hasMore, isLoading, loadMore]);
+
+  if (!FEATURE_FLAGS_MAP.PEER_REVIEW_FLAG) {
+    return (
+      <div className="flex items-center justify-center h-full">Peer review is not enabled</div>
+    );
+  }
 
   return (
     <div className="flex h-full w-full flex-col bg-[#FAFAFA]">
