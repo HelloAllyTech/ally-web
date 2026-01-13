@@ -13,12 +13,13 @@ export const useScenarioLanguages = () => {
     error: languagesError,
   } = useGetAvailableLanguagesQuery({ active: true, hasVoices: true });
 
+  const hasAccessToken = Boolean(localStorage.getItem(LOCAL_STORAGE_KEYS.ACCESS_TOKEN));
   const {
     data: preferencesResponse,
     isLoading: isPreferencesLoading,
     error: preferencesError,
   } = useGetUserPreferencesQuery(undefined, {
-    skip: !localStorage.getItem(LOCAL_STORAGE_KEYS.ACCESS_TOKEN),
+    skip: !hasAccessToken,
   });
 
   return useMemo(() => {
