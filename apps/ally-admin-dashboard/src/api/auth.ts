@@ -98,6 +98,7 @@ const authAPI = baseAPI.injectEndpoints({
         url: ApiEndpoints.AUTH.GOOGLE_SIGN_IN,
         method: HttpMethod.POST,
         body: data,
+        allowedRoles: [UserRole.SUPER_ADMIN],
       }),
     }),
     getProfileImageUrl: builder.mutation<GetProfileUrlResponse, GetProfileUrlRequest>({

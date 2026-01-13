@@ -11,6 +11,9 @@ import { useLiveKitRoom } from "../useLiveKitRoom";
 
 vi.mock("@ally-ui-mono/ui-shared", () => ({
   logger: { info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() },
+  FEATURE_FLAGS_MAP: {
+    PEER_REVIEW_FLAG: false,
+  },
 }));
 
 const roomOn = vi.fn();

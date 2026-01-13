@@ -19,6 +19,9 @@ vi.mock("@ally-ui-mono/ui-shared", () => ({
   logger: {
     info: vi.fn(),
   },
+  FEATURE_FLAGS_MAP: {
+    PEER_REVIEW_FLAG: false,
+  },
 }));
 
 // Mock CSS modules and font loading
