@@ -177,7 +177,7 @@ describe("AutoTerminationRuleField", () => {
       expect(screen.queryByText("Auto Termination Rules")).not.toBeInTheDocument();
     });
 
-    it("displays one rule card by default", () => {
+    it("displays no rule cards by default when terminationEvents is empty", () => {
       mockUseGetSessionEventsQuery.mockReturnValue({
         data: { data: [] },
       });
@@ -190,8 +190,9 @@ describe("AutoTerminationRuleField", () => {
         </TestWrapper>,
       );
 
-      const dropdowns = screen.getAllByTestId("custom-dropdown");
-      expect(dropdowns).toHaveLength(1);
+      const dropdowns = screen.queryAllByTestId("custom-dropdown");
+      expect(dropdowns).toHaveLength(0);
+      expect(screen.getByText("Add Rule")).toBeInTheDocument();
     });
   });
 
@@ -214,7 +215,7 @@ describe("AutoTerminationRuleField", () => {
       });
     });
 
-    it("displays event options from API response", () => {
+    it("displays event options from API response when a rule exists", () => {
       const mockEvents = [
         { id: "event-1", name: "Event One" },
         { id: "event-2", name: "Event Two" },
@@ -225,8 +226,12 @@ describe("AutoTerminationRuleField", () => {
         data: { data: mockEvents },
       });
 
+      const defaultValues = {
+        terminationEvents: [{ id: "", message: "", name: "" }],
+      };
+
       render(
-        <TestWrapper>
+        <TestWrapper defaultValues={defaultValues}>
           {(formMethods: any) => <AutoTerminationRuleField formMethods={formMethods} />}
         </TestWrapper>,
       );
@@ -238,13 +243,17 @@ describe("AutoTerminationRuleField", () => {
       expect(screen.getByText("Event Three")).toBeInTheDocument();
     });
 
-    it("handles empty API response", () => {
+    it("handles empty API response when a rule exists", () => {
       mockUseGetSessionEventsQuery.mockReturnValue({
         data: { data: [] },
       });
 
+      const defaultValues = {
+        terminationEvents: [{ id: "", message: "", name: "" }],
+      };
+
       render(
-        <TestWrapper>
+        <TestWrapper defaultValues={defaultValues}>
           {(formMethods: any) => <AutoTerminationRuleField formMethods={formMethods} />}
         </TestWrapper>,
       );
@@ -253,13 +262,17 @@ describe("AutoTerminationRuleField", () => {
       expect(select).toBeInTheDocument();
     });
 
-    it("handles undefined API response", () => {
+    it("handles undefined API response when a rule exists", () => {
       mockUseGetSessionEventsQuery.mockReturnValue({
         data: undefined,
       });
 
+      const defaultValues = {
+        terminationEvents: [{ id: "", message: "", name: "" }],
+      };
+
       render(
-        <TestWrapper>
+        <TestWrapper defaultValues={defaultValues}>
           {(formMethods: any) => <AutoTerminationRuleField formMethods={formMethods} />}
         </TestWrapper>,
       );
@@ -275,8 +288,12 @@ describe("AutoTerminationRuleField", () => {
         data: { data: [] },
       });
 
+      const defaultValues = {
+        terminationEvents: [{ id: "", message: "", name: "" }],
+      };
+
       render(
-        <TestWrapper>
+        <TestWrapper defaultValues={defaultValues}>
           {(formMethods: any) => <AutoTerminationRuleField formMethods={formMethods} />}
         </TestWrapper>,
       );
@@ -298,8 +315,12 @@ describe("AutoTerminationRuleField", () => {
         data: { data: [] },
       });
 
+      const defaultValues = {
+        terminationEvents: [{ id: "", message: "", name: "" }],
+      };
+
       render(
-        <TestWrapper>
+        <TestWrapper defaultValues={defaultValues}>
           {(formMethods: any) => <AutoTerminationRuleField formMethods={formMethods} />}
         </TestWrapper>,
       );
@@ -452,8 +473,12 @@ describe("AutoTerminationRuleField", () => {
         data: { data: mockEvents },
       });
 
+      const defaultValues = {
+        terminationEvents: [{ id: "", message: "", name: "" }],
+      };
+
       render(
-        <TestWrapper>
+        <TestWrapper defaultValues={defaultValues}>
           {(formMethods: any) => <AutoTerminationRuleField formMethods={formMethods} />}
         </TestWrapper>,
       );
@@ -584,8 +609,12 @@ describe("AutoTerminationRuleField", () => {
         data: { data: [] },
       });
 
+      const defaultValues = {
+        terminationEvents: [{ id: "", message: "", name: "" }],
+      };
+
       render(
-        <TestWrapper>
+        <TestWrapper defaultValues={defaultValues}>
           {(formMethods: any) => <AutoTerminationRuleField formMethods={formMethods} />}
         </TestWrapper>,
       );
@@ -599,8 +628,12 @@ describe("AutoTerminationRuleField", () => {
         data: { data: [] },
       });
 
+      const defaultValues = {
+        terminationEvents: [{ id: "", message: "", name: "" }],
+      };
+
       render(
-        <TestWrapper>
+        <TestWrapper defaultValues={defaultValues}>
           {(formMethods: any) => <AutoTerminationRuleField formMethods={formMethods} />}
         </TestWrapper>,
       );
@@ -685,8 +718,9 @@ describe("AutoTerminationRuleField", () => {
         </TestWrapper>,
       );
 
-      // Should render with default empty rule
-      expect(screen.getByTestId("custom-dropdown")).toBeInTheDocument();
+      // Should render with no rules, only the add button
+      expect(screen.queryByTestId("custom-dropdown")).not.toBeInTheDocument();
+      expect(screen.getByText("Add Rule")).toBeInTheDocument();
     });
 
     it("handles events with missing id or name fields", () => {
@@ -700,8 +734,12 @@ describe("AutoTerminationRuleField", () => {
         data: { data: mockEvents },
       });
 
+      const defaultValues = {
+        terminationEvents: [{ id: "", message: "", name: "" }],
+      };
+
       render(
-        <TestWrapper>
+        <TestWrapper defaultValues={defaultValues}>
           {(formMethods: any) => <AutoTerminationRuleField formMethods={formMethods} />}
         </TestWrapper>,
       );
