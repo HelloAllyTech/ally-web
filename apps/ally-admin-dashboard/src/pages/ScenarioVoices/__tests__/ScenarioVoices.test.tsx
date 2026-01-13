@@ -1,41 +1,36 @@
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
-import { ScenarioVoices } from "../ScenarioVoices";
-
-// Create mock functions first
-const useGetScenarioVoicesQueryMock = vi.fn();
-const useGetAvailableLanguageVoicesQueryMock = vi.fn();
-const useCreateScenarioVoiceMutationMock = vi.fn();
-const useUpdateScenarioVoiceMutationMock = vi.fn();
-
 // Mock API hooks
 vi.mock("@api", () => ({
-  useGetScenarioVoicesQuery: useGetScenarioVoicesQueryMock,
-  useGetAvailableLanguageVoicesQuery: useGetAvailableLanguageVoicesQueryMock,
-  useCreateScenarioVoiceMutation: useCreateScenarioVoiceMutationMock,
-  useUpdateScenarioVoiceMutation: useUpdateScenarioVoiceMutationMock,
+  useGetScenarioVoicesQuery: vi.fn(),
+  useGetAvailableLanguageVoicesQuery: vi.fn(),
+  useCreateScenarioVoiceMutation: vi.fn(),
+  useUpdateScenarioVoiceMutation: vi.fn(),
 }));
+
+import * as api from "@api";
+import { ScenarioVoices } from "../ScenarioVoices";
 
 // Mock components
 vi.mock("@components", () => ({
-  NotionTable: ({ data, columns, onRowClick }: any) => (
+  NotionTable: ({ tableData, onRowClick }: any) => (
     <div data-testid="notion-table">
-      {data?.map((row: any, idx: number) => (
+      {tableData?.data?.map((row: any, idx: number) => (
         <div key={idx} onClick={() => onRowClick?.(idx)} data-testid={`table-row-${idx}`}>
           {row.name}
         </div>
       ))}
     </div>
   ),
-  ListToolbar: ({ onSearch, onActionClick }: any) => (
+  ListToolbar: ({ onSearchChange, action }: any) => (
     <div data-testid="list-toolbar">
       <input
         data-testid="search-input"
-        onChange={e => onSearch?.(e.target.value)}
+        onChange={e => onSearchChange?.(e.target.value)}
         placeholder="Search voices..."
       />
-      <button data-testid="create-button" onClick={onActionClick}>
+      <button data-testid="create-button" onClick={action?.onClick}>
         Create
       </button>
     </div>
@@ -69,11 +64,21 @@ vi.mock("@components", () => ({
 // Mock constants
 vi.mock("@constants", () => ({
   en: {
-    voiceCreatedSuccessfully: "Voice created successfully",
-    voiceUpdatedSuccessfully: "Voice updated successfully",
-    scenarioVoices: "Scenario Voices",
-    searchVoices: "Search voices...",
-    createVoice: "Create new voice",
+    simulation: {
+      voiceCreatedSuccessfully: "Voice created successfully",
+      voiceUpdatedSuccessfully: "Voice updated successfully",
+      scenarioVoices: "Scenario Voices",
+      searchVoices: "Search voices...",
+      createVoice: "Create new voice",
+    },
+    common: {
+      loading: "Loading...",
+      loadMore: "Load More",
+      noMoreData: "No more data",
+    },
+    errors: {
+      failedToCreateEvent: "Failed to create event",
+    },
   },
   SCENARIO_VOICE_COLUMNS: [],
   SORT_BY: { CREATED_AT: "createdAt" },
@@ -87,6 +92,8 @@ vi.mock("sonner", () => ({
     error: vi.fn(),
   },
 }));
+
+import { toast } from "sonner";
 
 describe("ScenarioVoices Page", () => {
   const mockVoices = [
@@ -118,24 +125,24 @@ describe("ScenarioVoices Page", () => {
   beforeEach(() => {
     vi.clearAllMocks();
 
-    useGetScenarioVoicesQueryMock.mockReturnValue({
-      data: { voices: mockVoices },
+    (api.useGetScenarioVoicesQuery as any).mockReturnValue({
+      data: mockVoices, // Return array directly, not wrapped in object
       isFetching: false,
       error: null,
     });
 
-    useGetAvailableLanguageVoicesQueryMock.mockReturnValue({
+    (api.useGetAvailableLanguageVoicesQuery as any).mockReturnValue({
       data: mockLanguages,
       isFetching: false,
       error: null,
     });
 
-    useCreateScenarioVoiceMutationMock.mockReturnValue([
-      vi.fn().mockResolvedValue({ data: { voices: [mockVoices[0]] } }),
+    (api.useCreateScenarioVoiceMutation as any).mockReturnValue([
+      vi.fn().mockResolvedValue({ data: mockVoices[0] }),
       { isLoading: false },
     ]);
 
-    useUpdateScenarioVoiceMutationMock.mockReturnValue([
+    (api.useUpdateScenarioVoiceMutation as any).mockReturnValue([
       vi.fn().mockResolvedValue({ data: mockVoices[0] }),
       { isLoading: false },
     ]);
@@ -202,7 +209,7 @@ describe("ScenarioVoices Page", () => {
     fireEvent.change(searchInput, { target: { value: "Voice One" } });
 
     await waitFor(() => {
-      expect(useGetScenarioVoicesQueryMock).toHaveBeenCalledWith(
+      expect(api.useGetScenarioVoicesQuery).toHaveBeenCalledWith(
         expect.objectContaining({
           searchName: "Voice One",
         }),
@@ -211,8 +218,6 @@ describe("ScenarioVoices Page", () => {
   });
 
   it("creates new voice and shows success toast", async () => {
-    const { toast } = require("sonner");
-
     render(<ScenarioVoices />);
 
     const createButton = screen.getByTestId("create-button");
@@ -238,7 +243,7 @@ describe("ScenarioVoices Page", () => {
 
     await waitFor(() => {
       // Verify API called with offset 0 after search
-      expect(useGetScenarioVoicesQueryMock).toHaveBeenCalledWith(
+      expect(api.useGetScenarioVoicesQuery).toHaveBeenCalledWith(
         expect.objectContaining({
           offset: 0,
         }),

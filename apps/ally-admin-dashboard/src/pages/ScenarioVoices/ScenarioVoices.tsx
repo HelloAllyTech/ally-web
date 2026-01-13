@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+
 import { toast } from "sonner";
 
 import {
@@ -7,7 +8,6 @@ import {
   useCreateScenarioVoiceMutation,
   useUpdateScenarioVoiceMutation,
 } from "@api";
-
 import { NotionTable, ListToolbar, ScenarioVoiceSidePanel } from "@components";
 import { ButtonVariant } from "@components/types";
 import { en, SCENARIO_VOICE_COLUMNS, SORT_BY, SORT_ORDER } from "@constants";

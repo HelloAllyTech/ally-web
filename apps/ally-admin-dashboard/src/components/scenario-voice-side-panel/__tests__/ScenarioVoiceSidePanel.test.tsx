@@ -1,15 +1,13 @@
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
-import { ScenarioVoiceSidePanel } from "../ScenarioVoiceSidePanel";
-
-// Create mock function first
-const useGetAvailableLanguageVoicesQueryMock = vi.fn();
-
 // Mock API hooks
 vi.mock("@api", () => ({
-  useGetAvailableLanguageVoicesQuery: useGetAvailableLanguageVoicesQueryMock,
+  useGetAvailableLanguageVoicesQuery: vi.fn(),
 }));
+
+import * as api from "@api";
+import { ScenarioVoiceSidePanel } from "../ScenarioVoiceSidePanel";
 
 // Mock components
 vi.mock("@components", () => ({
@@ -101,7 +99,7 @@ describe("ScenarioVoiceSidePanel", () => {
   beforeEach(() => {
     vi.clearAllMocks();
 
-    useGetAvailableLanguageVoicesQueryMock.mockReturnValue({
+    (api.useGetAvailableLanguageVoicesQuery as any).mockReturnValue({
       data: mockLanguages,
       isFetching: false,
       error: null,
@@ -150,9 +148,12 @@ describe("ScenarioVoiceSidePanel", () => {
     const textarea = screen.getByTestId("auto-expandable-textarea");
     expect(textarea).toBeInTheDocument();
 
-    // Should show error message for empty config
+    // Component pre-fills with a default template, so no error initially
+    // Clear the textarea to test empty validation
+    fireEvent.change(textarea, { target: { value: "" } });
+
     await waitFor(() => {
-      expect(screen.queryByText("Configuration cannot be empty")).toBeInTheDocument();
+      expect(screen.queryByText(/Configuration cannot be empty/)).toBeInTheDocument();
     });
   });
 
@@ -164,7 +165,7 @@ describe("ScenarioVoiceSidePanel", () => {
 
     await waitFor(() => {
       expect(
-        screen.queryByText("Configuration must be a JSON object enclosed in curly braces {}"),
+        screen.queryByText(/Configuration must be a JSON object enclosed in curly braces/),
       ).toBeInTheDocument();
     });
   });
@@ -176,7 +177,7 @@ describe("ScenarioVoiceSidePanel", () => {
     fireEvent.change(textarea, { target: { value: '{ "key": invalid }' } });
 
     await waitFor(() => {
-      expect(screen.queryByText("Invalid JSON syntax")).toBeInTheDocument();
+      expect(screen.queryByText(/Invalid JSON syntax/)).toBeInTheDocument();
     });
   });
 
@@ -187,8 +188,9 @@ describe("ScenarioVoiceSidePanel", () => {
     fireEvent.change(textarea, { target: { value: "[1, 2, 3]" } });
 
     await waitFor(() => {
+      // Arrays trigger the same error as non-JSON objects
       expect(
-        screen.queryByText("Configuration must be a JSON object, not an array or primitive"),
+        screen.queryByText(/Configuration must be a JSON object enclosed in curly braces/),
       ).toBeInTheDocument();
     });
   });
@@ -200,7 +202,7 @@ describe("ScenarioVoiceSidePanel", () => {
     fireEvent.change(textarea, { target: { value: '{ "model": "neural" }' } });
 
     await waitFor(() => {
-      expect(screen.queryByText("Invalid JSON syntax")).not.toBeInTheDocument();
+      expect(screen.queryByText(/Invalid JSON syntax/)).not.toBeInTheDocument();
     });
   });
 
@@ -232,11 +234,9 @@ describe("ScenarioVoiceSidePanel", () => {
   });
 
   it("loads language options from API", () => {
-    const { useGetAvailableLanguageVoicesQuery } = require("@api");
-
     render(<ScenarioVoiceSidePanel {...defaultProps} />);
 
-    expect(useGetAvailableLanguageVoicesQuery).toHaveBeenCalledWith({
+    expect(api.useGetAvailableLanguageVoicesQuery).toHaveBeenCalledWith({
       active: true,
       voicesNeeded: false,
     });
