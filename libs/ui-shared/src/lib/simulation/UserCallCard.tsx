@@ -5,6 +5,7 @@ import React from "react";
 import { MicOffWhite, UserIcon } from "../../assets";
 import { CustomImage } from "../custom-image";
 import { SpeakingIndicator } from "./SpeakingIndicator";
+import { TurnTakingIndicator, TurnState } from "./TurnTakingIndicator";
 
 interface UserCallCardProps {
   userData: {
@@ -13,12 +14,14 @@ interface UserCallCardProps {
   };
   isSpeaking?: boolean;
   isMuted?: boolean;
+  turnState?: TurnState;
 }
 
 export const UserCallCard: React.FC<UserCallCardProps> = ({
   userData,
   isSpeaking = false,
   isMuted = false,
+  turnState,
 }) => {
   const { name, coverImageUrl = "" } = userData;
 
@@ -45,13 +48,18 @@ export const UserCallCard: React.FC<UserCallCardProps> = ({
       <div
         className={`absolute bottom-0 left-0 right-0 top-0 p-2 rounded-xl flex flex-col justify-end border-4 ${isSpeaking ? "border-blue-500" : "border-transparent"}`}
       >
-        <div className="w-fit flex items-center gap-2 p-2 rounded-md bg-[rgba(0,0,0,0.40)]">
-          {isMuted ? (
-            <MicOffWhite className="w-4 h-4" />
-          ) : (
-            <SpeakingIndicator isSpeaking={isSpeaking} />
+        <div className="flex flex-col gap-2">
+          {turnState && turnState !== TurnState.IDLE && (
+            <TurnTakingIndicator turnState={turnState} />
           )}
-          <span className="text-white text-[14px] font-medium leading-[22px]">{name}</span>
+          <div className="w-fit flex items-center gap-2 p-2 rounded-md bg-[rgba(0,0,0,0.40)]">
+            {isMuted ? (
+              <MicOffWhite className="w-4 h-4" />
+            ) : (
+              <SpeakingIndicator isSpeaking={isSpeaking} />
+            )}
+            <span className="text-white text-[14px] font-medium leading-[22px]">{name}</span>
+          </div>
         </div>
       </div>
     );

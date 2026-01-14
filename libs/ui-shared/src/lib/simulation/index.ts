@@ -6,6 +6,7 @@ export { SimulationInterface } from "./SimulationInterface";
 export { SimulationWaveform } from "./SimulationWaveform";
 export { SimulationControls } from "./SimulationControls";
 export { BottomSection } from "./SimulationBottomSection";
+export { TurnTakingIndicator, TurnState } from "./TurnTakingIndicator";
 export * from "./utils";
 export * from "./types";
 export * from "./waveformConstants";

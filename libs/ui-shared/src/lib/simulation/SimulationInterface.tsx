@@ -1,6 +1,6 @@
 "use client";
 
-import { FC } from "react";
+import { FC, useMemo } from "react";
 
 import {
   RoomAudioRenderer,
@@ -10,6 +10,7 @@ import {
 import { motion } from "framer-motion";
 
 import { SimulationEvents } from "./SimulationEvents";
+import { TurnState } from "./TurnTakingIndicator";
 import { SimulationEventType } from "./types";
 import { UserCallCard } from "./UserCallCard";
 
@@ -39,6 +40,31 @@ export const SimulationInterface: FC<SimulationInterfaceProps> = ({
   const remoteParticipants = useRemoteParticipants();
   const remoteParticipant = remoteParticipants?.[0];
 
+  // Calculate turn states based on speaking status
+  const { remoteTurnState, localTurnState } = useMemo(() => {
+    const isRemoteSpeaking = remoteParticipant?.isSpeaking || false;
+    const isLocalSpeaking = localParticipant?.isSpeaking || false;
+
+    let remoteTurnState: TurnState = TurnState.IDLE;
+    let localTurnState: TurnState = TurnState.IDLE;
+
+    if (isRemoteSpeaking) {
+      // Remote (AI) is speaking
+      remoteTurnState = TurnState.AI_SPEAKING; // Show "Speaking..." on AI card
+      localTurnState = TurnState.USER_TURN_TO_LISTEN; // Show "Your turn to listen" on user card
+    } else if (isLocalSpeaking) {
+      // Local (user) is speaking
+      remoteTurnState = TurnState.AI_LISTENING; // Show "Listening..." on AI card
+      localTurnState = TurnState.IDLE; // No indicator while user is speaking
+    } else {
+      // Neither speaking - it's the user's turn
+      remoteTurnState = TurnState.AI_LISTENING; // Show "Listening..." on AI card
+      localTurnState = TurnState.USER_TURN_TO_SPEAK; // Show "Your turn to speak" on user card
+    }
+
+    return { remoteTurnState, localTurnState };
+  }, [remoteParticipant?.isSpeaking, localParticipant?.isSpeaking]);
+
   const renderConnectedContent = () => (
     <>
       <RoomAudioRenderer />
@@ -49,6 +75,7 @@ export const SimulationInterface: FC<SimulationInterfaceProps> = ({
             coverImageUrl: roomData?.remoteParticipant?.coverImageUrl,
           }}
           isSpeaking={remoteParticipant?.isSpeaking}
+          turnState={remoteTurnState}
         />
         <UserCallCard
           userData={{
@@ -57,6 +84,7 @@ export const SimulationInterface: FC<SimulationInterfaceProps> = ({
           }}
           isSpeaking={localParticipant.isSpeaking}
           isMuted={isMuted}
+          turnState={localTurnState}
         />
         {!isFocusMode && events?.length > 0 && <SimulationEvents events={events} />}
       </div>
