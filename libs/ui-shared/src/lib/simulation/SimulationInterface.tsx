@@ -1,6 +1,6 @@
 "use client";
 
-import { FC, useMemo } from "react";
+import { FC, useMemo, useState, useEffect, useRef } from "react";
 
 import {
   RoomAudioRenderer,
@@ -40,15 +40,44 @@ export const SimulationInterface: FC<SimulationInterfaceProps> = ({
   const remoteParticipants = useRemoteParticipants();
   const remoteParticipant = remoteParticipants?.[0];
 
+  // Track if remote was recently speaking to add debounce
+  const [debouncedRemoteSpeaking, setDebouncedRemoteSpeaking] = useState(false);
+  const remoteSpeakingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Debounce remote speaking state to prevent flickering during pauses
+  useEffect(() => {
+    const isRemoteSpeaking = remoteParticipant?.isSpeaking || false;
+
+    if (isRemoteSpeaking) {
+      // Immediately set to speaking
+      setDebouncedRemoteSpeaking(true);
+      // Clear any pending timeout
+      if (remoteSpeakingTimeoutRef.current) {
+        clearTimeout(remoteSpeakingTimeoutRef.current);
+        remoteSpeakingTimeoutRef.current = null;
+      }
+    } else {
+      // Add delay before marking as not speaking (to handle pauses)
+      remoteSpeakingTimeoutRef.current = setTimeout(() => {
+        setDebouncedRemoteSpeaking(false);
+      }, 1500); // 1.5 second delay to handle natural pauses
+    }
+
+    return () => {
+      if (remoteSpeakingTimeoutRef.current) {
+        clearTimeout(remoteSpeakingTimeoutRef.current);
+      }
+    };
+  }, [remoteParticipant?.isSpeaking]);
+
   // Calculate turn states based on speaking status
   const { remoteTurnState, localTurnState } = useMemo(() => {
-    const isRemoteSpeaking = remoteParticipant?.isSpeaking || false;
     const isLocalSpeaking = localParticipant?.isSpeaking || false;
 
     let remoteTurnState: TurnState = TurnState.IDLE;
     let localTurnState: TurnState = TurnState.IDLE;
 
-    if (isRemoteSpeaking) {
+    if (debouncedRemoteSpeaking) {
       // Remote (AI) is speaking
       remoteTurnState = TurnState.AI_SPEAKING; // Show "Speaking..." on AI card
       localTurnState = TurnState.USER_TURN_TO_LISTEN; // Show "Your turn to listen" on user card
@@ -63,7 +92,7 @@ export const SimulationInterface: FC<SimulationInterfaceProps> = ({
     }
 
     return { remoteTurnState, localTurnState };
-  }, [remoteParticipant?.isSpeaking, localParticipant?.isSpeaking]);
+  }, [debouncedRemoteSpeaking, localParticipant?.isSpeaking]);
 
   const renderConnectedContent = () => (
     <>
