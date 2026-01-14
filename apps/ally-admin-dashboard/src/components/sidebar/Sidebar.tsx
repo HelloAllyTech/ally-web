@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 
+import { Mic } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { useLocation, useNavigate } from "react-router-dom";
 
@@ -116,6 +117,8 @@ export const Sidebar: React.FC = () => {
         return <Users />;
       case SIDEBAR_ITEMS.EVENT_MANAGEMENT:
         return <HappyEmoji />;
+      case SIDEBAR_ITEMS.SCENARIO_VOICES:
+        return <Mic width={20} height={20} strokeWidth={1.5} />;
       default:
         return null;
     }
@@ -132,6 +135,8 @@ export const Sidebar: React.FC = () => {
         return location.pathname.includes(ROUTES.USER_MANAGEMENT);
       case ROUTES.MANAGE_EVENTS:
         return location.pathname.includes(ROUTES.MANAGE_EVENTS);
+      case ROUTES.MANAGE_SCENARIO_VOICES:
+        return location.pathname.includes(ROUTES.MANAGE_SCENARIO_VOICES);
       default:
         return false;
     }

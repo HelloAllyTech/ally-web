@@ -27,6 +27,8 @@ export const ApiEndpoints = {
     START_SIMULATION: "/v1/learn/scenario-session-start",
     END_SIMULATION: (sessionId: string) => `/v1/learn/scenario-session/${sessionId}/end`,
     SCENARIO_VOICES: "/v1/learn/scenario-voices",
+    CREATE_SCENARIO_VOICE: "/v1/learn/scenarios/voices",
+    UPDATE_SCENARIO_VOICE: (id: string | number) => `/v1/learn/scenarios/voices/${id}`,
     SCENARIO_VOICE_LANGUAGES: "/v1/learn/scenario-voice-languages",
     SCENARIO_LANGUAGES: "/v1/learn/scenario-languages",
     SESSION_EVENTS: "/v1/session-events",
@@ -76,6 +78,7 @@ export const ROUTES = {
   SIMULATION_STUDIO: "/simulation-studio",
   USER_MANAGEMENT: "/user-management",
   MANAGE_EVENTS: "/manage-events",
+  MANAGE_SCENARIO_VOICES: "/manage-scenario-voices",
   CREATE_SIMULATION: "/create-simulation",
   SIMULATION_PREVIEW: (id: string | number) => `/simulation-preview/${id}`,
   EDIT_SIMULATION: (id: string | number) => `/create-simulation/edit/${id}`,
@@ -136,4 +139,5 @@ export const TAG_TYPES = {
   SCENARIO_PATHS: "scenarioPaths",
   EACH_SESSION: "eachSession",
   TRIGGER_WARNINGS: "triggerWarnings",
+  SCENARIO_VOICES: "scenarioVoices",
 };

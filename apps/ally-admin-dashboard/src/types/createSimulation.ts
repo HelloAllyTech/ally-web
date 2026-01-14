@@ -175,16 +175,16 @@ export interface UpdateScenarioEventDataParam {
 }
 
 export interface ScenarioVoiceConfig {
-  model: string;
+  [key: string]: any;
 }
 
 export interface ScenarioVoice {
-  createdAt: string;
-  updatedAt: string;
-  id: string;
+  createdAt?: string;
+  updatedAt?: string;
+  id?: string;
   name: string;
   provider: string;
-  language?: string;
+  languageId?: number;
   config: ScenarioVoiceConfig;
 }
 

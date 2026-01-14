@@ -55,3 +55,4 @@ export * from "./event-type-selection-dialog";
 export * from "./trigger-conditions";
 export * from "./time-input";
 export * from "./event-settings-section";
+export * from "./scenario-voice-side-panel";
