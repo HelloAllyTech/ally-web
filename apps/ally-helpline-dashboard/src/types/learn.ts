@@ -99,6 +99,7 @@ export interface AdminSimulationLog extends SimulationLog {
 
 export interface GetScenarioInput {
   scenarioId: number;
+  isPrivate: boolean;
 }
 
 export interface StartSimulationInput {

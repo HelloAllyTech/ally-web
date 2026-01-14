@@ -34,6 +34,7 @@ export type FormData = {
   terminationName: string;
   terminationMessage: string;
   isGlobal: boolean;
+  isPublic: boolean;
   languageVoices?: Record<string, string>;
   triggerWarningIds: triggerWarning[];
   prompt: string;
