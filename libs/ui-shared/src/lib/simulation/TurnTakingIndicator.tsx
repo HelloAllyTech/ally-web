@@ -37,15 +37,13 @@ const getTurnMessage = (turnState: TurnState): string => {
 
 const getBackgroundColor = (turnState: TurnState): string => {
   switch (turnState) {
-    case TurnState.AI_SPEAKING:
-    case TurnState.THINKING:
-      return "bg-blue-600"; // Blue for AI speaking/thinking
-    case TurnState.AI_LISTENING:
-      return "bg-blue-600"; // Blue for AI listening
     case TurnState.USER_TURN_TO_SPEAK:
       return "bg-blue-500"; // Lighter blue for user's turn to speak
+    case TurnState.AI_SPEAKING:
+    case TurnState.THINKING:
+    case TurnState.AI_LISTENING:
     case TurnState.USER_TURN_TO_LISTEN:
-      return "bg-blue-600"; // Blue for user's turn to listen
+      return "bg-blue-600"; // Blue for AI states and user listening
     case TurnState.IDLE:
     default:
       return "bg-transparent";
