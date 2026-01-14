@@ -12,10 +12,12 @@
  */
 
 import AccountCircle from "./account-circle.svg?react";
+import AchievementLocked from "./achievement-locked.svg?react";
 import ActionsIcon from "./actions-icon.svg?react";
 import Alarm from "./alarm.svg?react";
 import Ally from "./ally.svg?react";
 import ArrowDownFilled from "./arrow-down-filled.svg?react";
+import ArrowLeft from "./arrow-left.svg?react";
 import ArrowRight from "./arrow-right.svg?react";
 import ArrowUp from "./arrow-up.svg?react";
 import Arrow from "./arrow.svg?react";
@@ -262,4 +264,6 @@ export {
   ReviewTranscript,
   ArrowDownFilled,
   ArrowUp,
+  ArrowLeft,
+  AchievementLocked,
 };
