@@ -6,7 +6,9 @@ import { useGetAvailableLanguageVoicesQuery } from "@api";
 import { DoubleArrowRight } from "@assets";
 import { ActionConfirmationPopup, AutoExpandableTextarea, TextDropdown, Button } from "@components";
 import { ButtonVariant } from "@components/types";
+import { en } from "@constants";
 import { ScenarioVoice, ScenarioLanguage } from "@types";
+import { isObject } from "@utils/common";
 
 interface ScenarioVoiceSidePanelProps {
   selectedVoice: ScenarioVoice | null;
@@ -118,23 +120,23 @@ export const ScenarioVoiceSidePanel: React.FC<ScenarioVoiceSidePanelProps> = ({
 
     // Check if text is empty
     if (!text.trim()) {
-      setConfigError("Configuration cannot be empty");
+      setConfigError(en.simulation.configurationCannotBeEmpty);
       return;
     }
 
     // Check if text starts with { and ends with }
     const trimmedText = text.trim();
     if (!trimmedText.startsWith("{") || !trimmedText.endsWith("}")) {
-      setConfigError("Configuration must be a JSON object enclosed in curly braces {}");
+      setConfigError(en.simulation.configurationMustBeJsonObject);
       return;
     }
 
     try {
       const parsedConfig = JSON.parse(text);
 
-      // Verify it's an object (not array or other JSON type)
-      if (typeof parsedConfig !== "object" || Array.isArray(parsedConfig)) {
-        setConfigError("Configuration must be a JSON object, not an array or primitive");
+      // Verify it's an object (not array or other JSON type) using isObject utility
+      if (!isObject(parsedConfig)) {
+        setConfigError(en.simulation.configurationMustNotBeArray);
         return;
       }
 
@@ -144,15 +146,16 @@ export const ScenarioVoiceSidePanel: React.FC<ScenarioVoiceSidePanelProps> = ({
         config: parsedConfig,
       }));
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Invalid JSON syntax");
+      const errorMessage = error instanceof Error ? error.message : en.simulation.invalidJsonSyntax;
+      toast.error(errorMessage);
       // Invalid JSON syntax
-      setConfigError("Invalid JSON syntax");
+      setConfigError(en.simulation.invalidJsonSyntax);
     }
   }, []);
 
   const handleSave = useCallback(() => {
     if (!formData.name || !formData.provider) {
-      toast.error("Name and provider are required");
+      toast.error(en.simulation.nameAndProviderRequired);
       return;
     }
 
@@ -169,7 +172,7 @@ export const ScenarioVoiceSidePanel: React.FC<ScenarioVoiceSidePanelProps> = ({
         finalConfig = JSON.parse(configText);
       }
     } catch {
-      toast.error("Invalid configuration JSON");
+      toast.error(en.simulation.invalidConfigurationJson);
       return;
     }
 
@@ -204,6 +207,44 @@ export const ScenarioVoiceSidePanel: React.FC<ScenarioVoiceSidePanelProps> = ({
   const handleCancelClose = useCallback(() => {
     setShowConfirmationModal(false);
   }, []);
+
+  // Memoized function to get the current language value
+  const getCurrentLanguageValue = useCallback(() => {
+    // Find the language option that matches the current languageId
+    const currentLang = languageOptions.find(lang => lang.language_id === formData.languageId);
+    return currentLang?.label?.toString() || "";
+  }, [languageOptions, formData.languageId]);
+
+  // Memoized function to handle language change
+  const handleLanguageChange = useCallback(
+    (value: string | number) => {
+      handleFieldChange("languageId", typeof value === "string" ? parseInt(value) : value);
+    },
+    [handleFieldChange],
+  );
+
+  // Memoized function to handle provider change
+  const handleProviderChange = useCallback(
+    (value: string) => {
+      if (value === "__custom__") {
+        setShowCustomProvider(true);
+        handleFieldChange("provider", "");
+      } else {
+        handleFieldChange("provider", value);
+      }
+    },
+    [handleFieldChange],
+  );
+
+  // Memoized language options for dropdown
+  const languageDropdownOptions = useMemo(
+    () =>
+      languageOptions.map(lang => ({
+        value: lang.language_id?.toString() || "",
+        label: lang.label,
+      })),
+    [languageOptions],
+  );
 
   // Check if form is valid for saving
   const isFormValid = useMemo(() => {
@@ -258,14 +299,7 @@ export const ScenarioVoiceSidePanel: React.FC<ScenarioVoiceSidePanelProps> = ({
                   <TextDropdown
                     value={formData.provider || ""}
                     options={providerOptions}
-                    onChange={value => {
-                      if (value === "__custom__") {
-                        setShowCustomProvider(true);
-                        handleFieldChange("provider", "");
-                      } else {
-                        handleFieldChange("provider", value);
-                      }
-                    }}
+                    onChange={handleProviderChange}
                     placeholder="Select or add provider"
                   />
                 </div>
@@ -274,23 +308,9 @@ export const ScenarioVoiceSidePanel: React.FC<ScenarioVoiceSidePanelProps> = ({
 
             <Field label="Language">
               <TextDropdown
-                value={(() => {
-                  // Find the language option that matches the current languageId
-                  const currentLang = languageOptions.find(
-                    lang => lang.language_id === formData.languageId,
-                  );
-                  return currentLang?.label?.toString() || "";
-                })()}
-                options={languageOptions.map(lang => ({
-                  value: lang.language_id?.toString() || "",
-                  label: lang.label,
-                }))}
-                onChange={value =>
-                  handleFieldChange(
-                    "languageId",
-                    typeof value === "string" ? parseInt(value) : value,
-                  )
-                }
+                value={getCurrentLanguageValue()}
+                options={languageDropdownOptions}
+                onChange={handleLanguageChange}
                 placeholder="Select language"
               />
             </Field>
@@ -317,7 +337,7 @@ export const ScenarioVoiceSidePanel: React.FC<ScenarioVoiceSidePanelProps> = ({
               variant={ButtonVariant.PRIMARY}
               onClick={handleSave}
               disabled={!isFormValid}
-              title={!isFormValid ? "Name, provider, and valid configuration are required" : ""}
+              title={!isFormValid ? en.simulation.nameProviderConfigRequired : ""}
             >
               Save
             </Button>

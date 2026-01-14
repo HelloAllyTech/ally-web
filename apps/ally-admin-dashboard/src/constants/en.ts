@@ -158,6 +158,14 @@ export const en = {
     voiceUpdatedSuccessfully: "Voice updated successfully",
     noVoicesFound: "No voices found",
     createFirstVoice: "Create your first scenario voice to get started",
+    configurationCannotBeEmpty: "Configuration cannot be empty",
+    configurationMustBeJsonObject:
+      "Configuration must be a JSON object enclosed in curly braces {}",
+    configurationMustNotBeArray: "Configuration must be a JSON object, not an array or primitive",
+    invalidJsonSyntax: "Invalid JSON syntax",
+    nameAndProviderRequired: "Name and provider are required",
+    invalidConfigurationJson: "Invalid configuration JSON",
+    nameProviderConfigRequired: "Name, provider, and valid configuration are required",
     deleteVoices: "Delete Voices",
     deleteVoicesConfirmation:
       "Are you sure you want to delete selected voices? This action cannot be undone.",

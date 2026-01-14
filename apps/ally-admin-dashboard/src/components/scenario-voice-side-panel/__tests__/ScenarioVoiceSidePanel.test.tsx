@@ -54,12 +54,29 @@ vi.mock("@assets", () => ({
   DoubleArrowRight: () => <svg data-testid="double-arrow" />,
 }));
 
+// Mock utils
+vi.mock("@utils/common", () => ({
+  isObject: (value: unknown) => {
+    return typeof value === "object" && value !== null && !Array.isArray(value);
+  },
+}));
+
 // Mock constants
 vi.mock("@constants", () => ({
   en: {
-    voiceCreatedSuccessfully: "Voice created successfully",
-    voiceUpdatedSuccessfully: "Voice updated successfully",
-    enterProvider: "Enter provider name",
+    simulation: {
+      voiceCreatedSuccessfully: "Voice created successfully",
+      voiceUpdatedSuccessfully: "Voice updated successfully",
+      enterProvider: "Enter provider name",
+      configurationCannotBeEmpty: "Configuration cannot be empty",
+      configurationMustBeJsonObject:
+        "Configuration must be a JSON object enclosed in curly braces {}",
+      configurationMustNotBeArray: "Configuration must be a JSON object, not an array or primitive",
+      invalidJsonSyntax: "Invalid JSON syntax",
+      nameAndProviderRequired: "Name and provider are required",
+      invalidConfigurationJson: "Invalid configuration JSON",
+      nameProviderConfigRequired: "Name, provider, and valid configuration are required",
+    },
   },
 }));
 
