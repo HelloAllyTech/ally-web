@@ -249,6 +249,10 @@ export const SimulationEventMapTable: FC<SimulationEventMapTableProps> = ({ simu
     });
   }, [mappedEvents, eventOrderMapping]);
 
+  const tableData = useMemo(() => {
+    return addScoreColors(sortMappedEvents);
+  }, [sortMappedEvents]);
+
   // Helper function to save events to API
   const saveEventsToApi = useCallback(
     async (events: UpdateScenarioEventDataParam[]) => {
@@ -479,7 +483,7 @@ export const SimulationEventMapTable: FC<SimulationEventMapTableProps> = ({ simu
         ) : (
           <NotionTable
             tableData={{
-              data: addScoreColors(sortMappedEvents),
+              data: tableData,
               columns: tableColumns,
             }}
             onRowChange={handleUpdateEventTable}
