@@ -188,9 +188,35 @@ export interface ScenarioVoice {
   config: ScenarioVoiceConfig;
 }
 
-export interface ScenarioLanguage {
+export interface ScenarioLanguageConfig {
+  [key: string]: any;
+}
+
+interface BaseLanguage {
   label: string;
   value: string;
-  language_id?: number;
   translationCode?: string;
+  active?: boolean;
+  llmProviderConfig?: ScenarioLanguageConfig;
+  sttProviderConfig?: ScenarioLanguageConfig;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface ScenarioLanguage extends BaseLanguage {
+  id?: number;
+  language_id?: number;
+}
+
+export interface Language extends BaseLanguage {
+  id?: number;
+}
+
+export interface GetLanguagesQuery {
+  searchName?: string;
+  limit?: number;
+  offset?: number;
+  sortBy?: string;
+  order?: string;
+  active?: boolean;
 }

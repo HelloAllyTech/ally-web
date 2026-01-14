@@ -498,3 +498,55 @@ export const SCENARIO_VOICE_COLUMNS = [
     minWidth: 200,
   },
 ];
+
+export const SCENARIO_LANGUAGE_COLUMNS = [
+  {
+    id: "label",
+    label: "Language Name",
+    accessor: "label",
+    dataType: cellTypes.editableText,
+    minWidth: 150,
+  },
+  {
+    id: "value",
+    label: "Language Code",
+    accessor: "value",
+    dataType: cellTypes.editableText,
+    minWidth: 150,
+  },
+  {
+    id: "translationCode",
+    label: "Translation Code",
+    accessor: "translationCode",
+    dataType: cellTypes.editableText,
+    minWidth: 200,
+  },
+  {
+    id: "llmProviderConfig",
+    label: "LLM Provider Config",
+    accessor: "llmProviderConfig",
+    dataType: cellTypes.normalText,
+    minWidth: 200,
+  },
+  {
+    id: "sttProviderConfig",
+    label: "STT Provider Config",
+    accessor: "sttProviderConfig",
+    dataType: cellTypes.normalText,
+    minWidth: 200,
+  },
+  {
+    id: "active",
+    label: "Status",
+    accessor: "active",
+    dataType: cellTypes.switch,
+    minWidth: 120,
+  },
+  {
+    id: "createdAt",
+    label: "Created Date",
+    accessor: "createdAt",
+    dataType: cellTypes.normalText,
+    minWidth: 120,
+  },
+];

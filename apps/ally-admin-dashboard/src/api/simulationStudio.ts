@@ -23,6 +23,8 @@ import {
   createTriggerResponse,
   ScenarioLanguage,
   triggerWarning,
+  GetLanguagesQuery,
+  Language,
 } from "@types";
 
 import { baseAPI } from "./baseApi";
@@ -361,6 +363,45 @@ const simulationStudioAPI = baseAPI.injectEndpoints({
       }),
       invalidatesTags: [TAG_TYPES.SIMULATION],
     }),
+
+    /**
+     * Get all scenario languages with pagination and search
+     */
+    getLanguages: builder.query<Language[], GetLanguagesQuery>({
+      query: params => ({
+        url: ApiEndpoints.SIMULATION_STUDIO.GET_LANGUAGES,
+        method: HttpMethod.GET,
+        params,
+      }),
+      providesTags: [TAG_TYPES.SCENARIO_LANGUAGES],
+    }),
+
+    /**
+     * Create a new scenario language
+     */
+    createLanguage: builder.mutation<Language[], { languages: Language[] }>({
+      query: ({ languages }) => ({
+        url: ApiEndpoints.SIMULATION_STUDIO.CREATE_LANGUAGE,
+        method: HttpMethod.POST,
+        body: { languages },
+      }),
+      invalidatesTags: [TAG_TYPES.SCENARIO_LANGUAGES],
+    }),
+
+    /**
+     * Update a scenario language
+     */
+    updateLanguage: builder.mutation<
+      Language,
+      { id: number; language: Omit<Language, "id" | "createdAt" | "updatedAt"> }
+    >({
+      query: ({ id, language: body }) => ({
+        url: ApiEndpoints.SIMULATION_STUDIO.UPDATE_LANGUAGE(id),
+        method: HttpMethod.PUT,
+        body,
+      }),
+      invalidatesTags: [TAG_TYPES.SCENARIO_LANGUAGES],
+    }),
   }),
 });
 
@@ -394,4 +435,7 @@ export const {
   useGetTriggerWarningsQuery,
   useCreateTriggerWarningMutation,
   useDuplicateSimulationMutation,
+  useGetLanguagesQuery,
+  useCreateLanguageMutation,
+  useUpdateLanguageMutation,
 } = simulationStudioAPI;

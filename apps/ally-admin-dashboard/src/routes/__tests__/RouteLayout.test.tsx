@@ -26,6 +26,7 @@ vi.mock("@pages", () => ({
   OrganizationDetail: () => <div>OrganizationDetailPage</div>,
   EventManagement: () => <div>EventManagementPage</div>,
   ScenarioVoices: () => <div>ScenarioVoicesPage</div>,
+  ScenarioLanguages: () => <div>ScenarioLanguagesPage</div>,
 }));
 
 describe("RouteLayout", () => {

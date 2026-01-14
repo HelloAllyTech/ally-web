@@ -381,6 +381,7 @@ describe("useUser", () => {
           Permissions.EDIT_EVENT,
           Permissions.EDIT_USER,
           Permissions.EDIT_SCENARIO_VOICE,
+          Permissions.EDIT_SCENARIO_LANGUAGE,
         ],
       });
 
@@ -388,11 +389,12 @@ describe("useUser", () => {
         wrapper: ({ children }: any) => <Provider store={store}>{children}</Provider>,
       });
 
-      expect(result.current.filteredNavigationItems).toHaveLength(4);
+      expect(result.current.filteredNavigationItems).toHaveLength(5);
       expect(result.current.filteredNavigationItems.map(item => item.id)).toEqual([
         SIDEBAR_ITEMS.SIMULATION_STUDIO,
         SIDEBAR_ITEMS.EVENT_MANAGEMENT,
         SIDEBAR_ITEMS.SCENARIO_VOICES,
+        SIDEBAR_ITEMS.SCENARIO_LANGUAGES,
         SIDEBAR_ITEMS.USER_MANAGEMENT,
       ]);
     });
