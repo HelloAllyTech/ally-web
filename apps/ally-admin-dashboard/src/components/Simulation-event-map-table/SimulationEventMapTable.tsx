@@ -374,7 +374,7 @@ export const SimulationEventMapTable: FC<SimulationEventMapTableProps> = ({ simu
 
   // Open side panel for event editing
   const handleOpenMappedEventSidePanel = (rowIndex: number) => {
-    const selectedEvent = mappedEvents[rowIndex];
+    const selectedEvent = tableData[rowIndex];
     if (selectedEvent && selectedEvent.id?.value) {
       setSelectedEventForEdit(selectedEvent);
     } else {
