@@ -8,6 +8,7 @@ import {
   getCreateSimulationSubSectionById,
   formatSimulationResponseData,
 } from "../createSimulation";
+import { FEATURE_FLAGS_MAP } from "@ally-ui-mono/ui-shared/featureFlag";
 
 // Mock feature flags
 vi.mock("@ally-ui-mono/ui-shared/featureFlag", () => ({
@@ -70,6 +71,7 @@ describe("createSimulation utils", () => {
         description: "Test Description",
         status: "ACTIVE",
         isGlobal: false,
+        ...(FEATURE_FLAGS_MAP.PRIVATE_PUBLIC__SIMULATION_FLAG ? { isPublic: false } : {}),
         coverImageUrl: "https://example.com/image.jpg",
         createdBy: "user-1",
         lastModified: "2024-01-01T00:00:00Z",
@@ -112,6 +114,7 @@ describe("createSimulation utils", () => {
         context: "Test context",
         coreMemories: "Test memories",
         isGlobal: false,
+        ...(FEATURE_FLAGS_MAP.PRIVATE_PUBLIC__SIMULATION_FLAG ? { isPublic: false } : {}),
         agentGoal: "Test goal",
         currentLocation: "New York",
         emotionalNeeds: "Test needs",
@@ -148,6 +151,7 @@ describe("createSimulation utils", () => {
         description: "Test Description",
         status: "DRAFT",
         isGlobal: false,
+        ...(FEATURE_FLAGS_MAP.PRIVATE_PUBLIC__SIMULATION_FLAG ? { isPublic: false } : {}),
         coverImageUrl: "https://example.com/image.jpg",
         createdBy: "user-1",
         lastModified: "2024-01-01T00:00:00Z",
@@ -214,6 +218,7 @@ describe("createSimulation utils", () => {
         status: "ACTIVE",
         coverImageUrl: "url",
         isGlobal: true,
+        ...(FEATURE_FLAGS_MAP.PRIVATE_PUBLIC__SIMULATION_FLAG ? { isPublic: true } : {}),
         createdBy: "user-1",
         lastModified: "2024-01-01T00:00:00Z",
         triggerWarnings: [],
@@ -247,7 +252,9 @@ describe("createSimulation utils", () => {
       const result = formatSimulationResponseData(mockResponse);
 
       // Check all fields are present (title, description, coverImageUrl, coverVideoUrl, terminationEvents, difficultyLevel, responseLength, prompt, isGlobal, triggerWarningIds, customFields, agentDialogues + 18 metadata fields = 31 total)
-      expect(Object.keys(result)).toHaveLength(31);
+      expect(Object.keys(result)).toHaveLength(
+        FEATURE_FLAGS_MAP.PRIVATE_PUBLIC__SIMULATION_FLAG ? 32 : 31,
+      );
       expect(result.title).toBe("Test");
       expect(result.description).toBe("Test");
       expect(result.coverImageUrl).toBe("url");

@@ -64,6 +64,7 @@ export const ApiEndpoints = {
     GET_SCENARIOS: "/v1/learn/scenarios/public",
     GET_SCENARIOS_PRIVATE: "/v2/learn/scenarios",
     GET_SCENARIO: (scenarioId: number) => `/v1/learn/scenarios/${scenarioId}`,
+    GET_SCENARIO_PUBLIC: (scenarioId: number) => `/v1/learn/scenarios/${scenarioId}/public`,
     GET_SCENARIO_PATHWAYS: "/v1/learn/scenario-paths",
     GET_SCENARIO_PATHWAY_DETAILS: (pathwayId: string) => `/v1/learn/scenario-paths/${pathwayId}`,
     GET_SIMULATION_LOGS: "/v1/learn/scenario-sessions",

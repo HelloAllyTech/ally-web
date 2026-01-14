@@ -58,6 +58,7 @@ export interface SimulationInput {
   terminationMessage?: string;
   terminationEvents?: terminationEvent[];
   isGlobal?: boolean;
+  isPublic?: boolean;
   triggerWarningIds?: string[];
   languageVoices?: Record<string, string>;
 }
@@ -97,6 +98,7 @@ export interface GetSimulationByIdResponse {
   createdBy: string;
   lastModified: string;
   isGlobal: boolean;
+  isPublic?: boolean;
   status: SimulationStatus;
   prompt?: string;
   metadata: {
