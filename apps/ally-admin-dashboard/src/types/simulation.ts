@@ -252,6 +252,7 @@ export interface SessionEvent {
   visibilityType?: string;
   detectionData?: SessionEventDetectionData;
   detectionConfig?: EventDetectionConfig;
+  isEditable?: boolean;
 }
 
 export interface GetSessionEventsQuery {

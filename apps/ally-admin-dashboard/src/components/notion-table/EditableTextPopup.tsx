@@ -74,23 +74,17 @@ export const EditableTextPopup: React.FC<EditableTextPopupProps> = ({
       <div
         onClick={handleTextClick}
         className={`
-          cursor-pointer max-h-[36px] overflow-hidden max-w-[calc(100%-20px)]
-          ${disabled ? "cursor-not-allowed opacity-50" : "hover:bg-background-secondary"}
+          max-h-[36px] overflow-hidden max-w-[calc(100%-20px)]
+          ${disabled ? "cursor-not-allowed" : "cursor-pointer hover:bg-background-secondary"}
           ${isPlaceholder ? "text-typography-600" : ""}
         `}
       >
-        {disabled ? (
-          <span className="flex items-center justify-center overflow-hidden text-ellipsis whitespace-nowrap w-full cursor-not-allowed">
-            --
+        {displayText?.split("\n").map((line, index) => (
+          <span className="overflow-hidden text-ellipsis whitespace-nowrap" key={index}>
+            {line}
+            <br />
           </span>
-        ) : (
-          displayText?.split("\n").map((line, index) => (
-            <span className="overflow-hidden text-ellipsis whitespace-nowrap" key={index}>
-              {line}
-              <br />
-            </span>
-          ))
-        )}
+        ))}
       </div>
       {isOpen && (
         <div ref={popupRef} className="absolute z-50 top-[8px] left-[0px]">
