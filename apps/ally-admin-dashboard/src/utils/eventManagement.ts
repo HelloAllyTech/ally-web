@@ -346,5 +346,6 @@ export const convertApiResponseToEvent = (apiEvent: SessionEvent): UpdateEventDa
     visibilityType: apiEvent.visibilityType || "",
     triggerCondition,
     detectionConfig: updatedDetectionConfig,
+    isEditable: apiEvent.isEditable ?? true,
   };
 };

@@ -1,17 +1,11 @@
 import { FC } from "react";
 
 import { Badge, NoBadges } from "@assets";
+import { AchievementItem, AchievementItemData } from "@components";
 import { cn } from "@utils";
 
-export interface Achievement {
-  id: string;
-  title: string;
-  description: string;
-  imageUrl?: string;
-}
-
 export interface AchievementsCardProps {
-  achievements?: Achievement[];
+  achievements?: AchievementItemData[];
   totalBadges?: number;
   isLoading?: boolean;
   emptyMessage?: string;
@@ -26,28 +20,6 @@ const SkeletonCard: FC = () => {
       <div className="flex flex-col gap-2 flex-1">
         <div className="h-5 w-32 bg-neutral-200 rounded" />
         <div className="h-4 w-48 bg-neutral-200 rounded" />
-      </div>
-    </div>
-  );
-};
-
-const AchievementItem: FC<{ achievement: Achievement }> = ({ achievement }) => {
-  return (
-    <div className="flex items-center gap-4 p-4 border border-border-light rounded-xl">
-      {achievement.imageUrl ? (
-        <img
-          src={achievement.imageUrl}
-          alt={achievement.title}
-          className="w-20 h-20 rounded-lg object-cover flex-shrink-0"
-        />
-      ) : (
-        <div className="w-20 h-20 rounded-lg bg-neutral-100 flex items-center justify-center flex-shrink-0">
-          <Badge className="w-8 h-8 text-neutral-400" />
-        </div>
-      )}
-      <div className="flex flex-col">
-        <h4 className="text-typography-900 text-base font-semibold">{achievement.title}</h4>
-        <p className="text-typography-800 text-sm">{achievement.description}</p>
       </div>
     </div>
   );
@@ -95,7 +67,7 @@ export const AchievementsCard: FC<AchievementsCardProps> = ({
         <EmptyState message={emptyMessage} />
       ) : (
         achievements.map(achievement => (
-          <AchievementItem key={achievement.id} achievement={achievement} />
+          <AchievementItem key={achievement.id} achievement={achievement} imageSize={80} />
         ))
       )}
     </div>

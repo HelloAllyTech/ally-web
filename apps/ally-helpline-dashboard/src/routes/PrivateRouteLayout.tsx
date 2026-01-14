@@ -23,6 +23,7 @@ import {
   PostSimulationSummary,
   Leaderboard,
   Review,
+  AchievementsViewAll,
 } from "@pages";
 import { setAvailableChatTypes, unauthenticate } from "@reducer";
 import { store } from "@store";
@@ -187,6 +188,15 @@ const PrivateRouteLayout: FC = () => {
           path={ROUTES.REVIEW}
           element={
             <PermissionGuardedRoute permission={[Permissions.VIEW_REVIEW]} element={<Review />} />
+          }
+        />
+        <Route
+          path={ROUTES.ACHIEVEMENTS_VIEW_ALL}
+          element={
+            <PermissionGuardedRoute
+              permission={[Permissions.VIEW_LEADERBOARD]}
+              element={<AchievementsViewAll />}
+            />
           }
         />
         <Route path="*" element={<Navigate to="/" replace />} />

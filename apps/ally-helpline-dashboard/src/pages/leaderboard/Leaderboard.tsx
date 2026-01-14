@@ -1,5 +1,10 @@
+import { useEffect, useState } from "react";
+
+import { useNavigate } from "react-router-dom";
+
 import { FEATURE_FLAGS_MAP } from "@ally-ui-mono/ui-shared";
-import { AchievementsCard, LeaderboardList } from "@components";
+import { AchievementBadgeModal, AchievementsCard, LeaderboardList } from "@components";
+import { ROUTES } from "@constants";
 
 // TODO: Replace with actual data
 export const DUMMY_LEADERBOARD_DATA = [
@@ -187,16 +192,59 @@ const DUMMY_ACHIEVEMENTS = [
   },
 ];
 
+const BADGE_MODAL_DATA = [
+  {
+    id: "1",
+    title: "First Step",
+    description: "Practice for at least 15 minutes at account level",
+    imageUrl:
+      "https://images.unsplash.com/photo-1526304640581-d334cdbbf45e?w=100&h=100&fit=crop&crop=center",
+  },
+  {
+    id: "2",
+    title: "Consistent Start",
+    description: "Maintain a 3-day practice streak (minimum 10 mins/day)",
+    imageUrl:
+      "https://images.unsplash.com/photo-1567427017947-545c5f8d16ad?w=100&h=100&fit=crop&crop=center",
+  },
+  {
+    id: "3",
+    title: "Milestone Hunter",
+    description: "Successfully complete 10 simulation sessions",
+    imageUrl:
+      "https://images.unsplash.com/photo-1533227268428-f9ed0900fb3b?w=100&h=100&fit=crop&crop=center",
+  },
+];
+
 export const Leaderboard = () => {
+  const navigate = useNavigate();
+  const [currentBadgeIndex, setCurrentBadgeIndex] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (BADGE_MODAL_DATA.length > 0) {
+      setCurrentBadgeIndex(0);
+    }
+  }, []);
+
+  const handleViewAllBadges = () => {
+    navigate(ROUTES.ACHIEVEMENTS_VIEW_ALL);
+  };
+
+  const handleCloseModal = () => {
+    setCurrentBadgeIndex(prevIndex => {
+      if (prevIndex === null) return null;
+      const nextIndex = prevIndex + 1;
+      return nextIndex < BADGE_MODAL_DATA.length ? nextIndex : null;
+    });
+  };
+
+  const currentBadge = currentBadgeIndex !== null ? BADGE_MODAL_DATA[currentBadgeIndex] : null;
+
   if (!FEATURE_FLAGS_MAP.LEADERBOARD_FLAG) {
     return (
       <div className="flex items-center justify-center h-full">Leaderboard is not enabled</div>
     );
   }
-
-  const handleViewAllBadges = () => {
-    // TODO: Navigate to badges page or open modal
-  };
 
   return (
     <div className={"p-6 overflow-hidden w-full h-full"} data-testid="leaderboard-page">
@@ -218,6 +266,16 @@ export const Leaderboard = () => {
           />
         </div>
       </div>
+
+      {currentBadge && (
+        <AchievementBadgeModal
+          isOpen={true}
+          onClose={handleCloseModal}
+          title={currentBadge.title}
+          description={currentBadge.description}
+          badgeImageUrl={currentBadge.imageUrl}
+        />
+      )}
     </div>
   );
 };

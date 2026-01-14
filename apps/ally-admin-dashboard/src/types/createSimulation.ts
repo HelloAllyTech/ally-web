@@ -153,6 +153,7 @@ export interface UpdateEventDataParam {
   triggerCondition?: TriggerCondition;
   detectionData?: SessionEventDetectionData;
   detectionConfig?: EventDetectionConfig;
+  isEditable?: boolean;
 }
 
 export interface UpdateScenarioEventDataParam {

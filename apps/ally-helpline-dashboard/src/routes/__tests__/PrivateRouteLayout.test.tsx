@@ -49,6 +49,9 @@ vi.mock("@pages", () => ({
   ),
   Leaderboard: () => <div data-testid="leaderboard-page">Leaderboard Page</div>,
   Review: () => <div data-testid="review-page">Review Page</div>,
+  AchievementsViewAll: () => (
+    <div data-testid="achievements-view-all-page">Achievements View All Page</div>
+  ),
 }));
 
 // Mock the reducer actions
