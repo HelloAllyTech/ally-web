@@ -68,7 +68,7 @@ export const TurnTakingIndicator = memo<TurnTakingIndicatorProps>(({ turnState }
       aria-live="polite"
       aria-atomic="true"
     >
-      <span className="text-white text-[12px] font-medium leading-[18px]">{message}</span>
+      <span className="text-white text-[14px] font-medium leading-[18px] italic">{message}</span>
     </motion.div>
   );
 });

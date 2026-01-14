@@ -70,11 +70,38 @@ export const SimulationPage: FC<SimulationPageProps> = ({
   const [isMuted, setIsMuted] = useState(false);
   const [isWarning, setIsWarning] = useState(false);
   const [isFocusMode, setIsFocusMode] = useState(false);
+  const [isAIThinking, setIsAIThinking] = useState(false);
 
   const endAudio = useRef<HTMLAudioElement | null>(new Audio(EndSimulation));
   const startAudio = useRef<HTMLAudioElement | null>(new Audio(StartSimulation));
+  const thinkingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   useWakeLock(sessionId);
+
+  // Detect AI thinking state: when events have recently been added
+  // This indicates the AI is processing user input
+  useEffect(() => {
+    if (events && events.length > 0) {
+      setIsAIThinking(true);
+
+      // Clear any existing timeout
+      if (thinkingTimeoutRef.current) {
+        clearTimeout(thinkingTimeoutRef.current);
+      }
+
+      // After a short delay, stop showing thinking state
+      // (AI should be responding or waiting for user)
+      thinkingTimeoutRef.current = setTimeout(() => {
+        setIsAIThinking(false);
+      }, 2000); // 2 second thinking duration
+    }
+
+    return () => {
+      if (thinkingTimeoutRef.current) {
+        clearTimeout(thinkingTimeoutRef.current);
+      }
+    };
+  }, [events?.length]);
 
   useEffect(() => {
     if (roomStatus === RoomStatus.CONNECTING) startAudio.current?.play();
@@ -168,6 +195,7 @@ export const SimulationPage: FC<SimulationPageProps> = ({
           events={events}
           isMuted={isMuted}
           isFocusMode={isFocusMode}
+          isAIThinking={isAIThinking}
         />
       </motion.div>
       <SimulationScoreMeter score={score} />

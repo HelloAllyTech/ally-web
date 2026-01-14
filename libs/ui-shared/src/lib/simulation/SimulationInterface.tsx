@@ -27,6 +27,7 @@ export interface SimulationInterfaceProps {
   events: SimulationEventType[];
   isFocusMode: boolean;
   isMuted: boolean;
+  isAIThinking?: boolean;
 }
 
 export const SimulationInterface: FC<SimulationInterfaceProps> = ({
@@ -35,6 +36,7 @@ export const SimulationInterface: FC<SimulationInterfaceProps> = ({
   events,
   isFocusMode,
   isMuted,
+  isAIThinking = false,
 }) => {
   const { localParticipant } = useLocalParticipant();
   const remoteParticipants = useRemoteParticipants();
@@ -77,7 +79,11 @@ export const SimulationInterface: FC<SimulationInterfaceProps> = ({
     let remoteTurnState: TurnState = TurnState.IDLE;
     let localTurnState: TurnState = TurnState.IDLE;
 
-    if (debouncedRemoteSpeaking) {
+    // If AI is explicitly thinking, show thinking state
+    if (isAIThinking) {
+      remoteTurnState = TurnState.THINKING; // Show "Thinking..." on AI card
+      // localTurnState = TurnState.IDLE; // No indicator on user card while AI is thinking
+    } else if (debouncedRemoteSpeaking) {
       // Remote (AI) is speaking
       remoteTurnState = TurnState.AI_SPEAKING; // Show "Speaking..." on AI card
       localTurnState = TurnState.USER_TURN_TO_LISTEN; // Show "Your turn to listen" on user card
@@ -92,7 +98,7 @@ export const SimulationInterface: FC<SimulationInterfaceProps> = ({
     }
 
     return { remoteTurnState, localTurnState };
-  }, [debouncedRemoteSpeaking, localParticipant?.isSpeaking]);
+  }, [debouncedRemoteSpeaking, localParticipant?.isSpeaking, isAIThinking]);
 
   const renderConnectedContent = () => (
     <>

@@ -48,7 +48,7 @@ export const UserCallCard: React.FC<UserCallCardProps> = ({
       <div
         className={`absolute bottom-0 left-0 right-0 top-0 p-2 rounded-xl flex flex-col justify-end border-4 ${isSpeaking ? "border-blue-500" : "border-transparent"}`}
       >
-        <div className="flex flex-row gap-2 items-end flex-wrap">
+        <div className="flex flex-row gap-2 items-center">
           <div className="w-fit flex items-center gap-2 p-2 rounded-md bg-[rgba(0,0,0,0.40)]">
             {isMuted ? (
               <MicOffWhite className="w-4 h-4" />
