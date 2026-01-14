@@ -30,7 +30,7 @@
     "date-fns": "^3.6.0",
     "dayjs": "^1.11.18",
     "framer-motion": "^11.15.0",
-    "jspdf": "^3.0.1",
+    "jspdf": "^4.0.0",
     "livekit-client": "^2.15.2",
     "lucide-react": "^0.462.0",
     "next-themes": "^0.3.0",
