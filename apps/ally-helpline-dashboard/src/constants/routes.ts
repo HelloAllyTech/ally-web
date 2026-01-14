@@ -30,6 +30,7 @@ export const ROUTES = {
   SIMULATION_SUMMARY_FULL: "/simulation-summary/:sessionId",
   LEADERBOARD: "/leaderboard",
   REVIEW: "/review",
+  ACHIEVEMENTS_VIEW_ALL: "/achievements-view-all",
 } as const;
 
 export const excludeNavBar = [
@@ -68,7 +69,7 @@ export const navBarOptions = [
           title: "Leaderboard",
           Icon: Leaderboard,
           path: ROUTES.LEADERBOARD,
-          activePages: [],
+          activePages: [ROUTES.ACHIEVEMENTS_VIEW_ALL],
           permissions: [Permissions.VIEW_LEADERBOARD],
         },
       ]
