@@ -23,8 +23,8 @@ const defaultColumn = {
 
 const IndeterminateCheckbox = React.forwardRef<
   HTMLInputElement,
-  { indeterminate?: boolean } & React.InputHTMLAttributes<HTMLInputElement>
->(({ indeterminate, ...rest }, ref) => {
+  { indeterminate?: boolean; disabled?: boolean } & React.InputHTMLAttributes<HTMLInputElement>
+>(({ indeterminate, disabled, ...rest }, ref) => {
   const defaultRef = React.useRef<HTMLInputElement>(null);
   const resolvedRef = (ref || defaultRef) as React.MutableRefObject<HTMLInputElement>;
 
@@ -35,6 +35,7 @@ const IndeterminateCheckbox = React.forwardRef<
   return (
     <input
       type="checkbox"
+      disabled={disabled}
       ref={resolvedRef}
       {...rest}
       className="w-4 h-4 text-black border-border-light rounded focus:ring-black cursor-pointer"
@@ -50,11 +51,14 @@ const SelectionHeaderCell = ({ getToggleAllRowsSelectedProps }) => (
   </div>
 );
 
-const SelectionRowCell = ({ row }) => (
-  <div className="flex items-center justify-center w-[30px]">
-    <IndeterminateCheckbox {...row.getToggleRowSelectedProps()} />
-  </div>
-);
+const SelectionRowCell = ({ row }) => {
+  const isEditable = row.original?.isEditable?.value ?? true;
+  return (
+    <div className="flex items-center justify-center w-[30px]">
+      <IndeterminateCheckbox {...row.getToggleRowSelectedProps()} disabled={!isEditable} />
+    </div>
+  );
+};
 
 const isSelectionColumn = (columnId: string) => columnId === SELECTION_COLUMN_ID;
 
@@ -239,12 +243,18 @@ export const NotionTable = ({
             const rowProps = row.getRowProps();
             const { key, ...restRowProps } = rowProps;
             const rowIndex = row.index;
+            const isEditable = row.original?.isEditable?.value ?? true;
 
             return (
               <div
                 key={key}
                 {...restRowProps}
-                className="relative flex w-full border-b border-border-light hover:bg-background-secondary border-l"
+                className={clsx(
+                  "relative flex w-full border-b border-border-light border-l",
+                  isEditable
+                    ? "hover:bg-background-secondary"
+                    : "opacity-80 cursor-not-allowed bg-gray-50",
+                )}
               >
                 {row.cells.map((cell, cellIndex) => {
                   const cellProps = cell.getCellProps();
@@ -267,7 +277,7 @@ export const NotionTable = ({
                           : cell.column.maxWidth,
                       }}
                     >
-                      {onRowClick && cellIndex === 1 && (
+                      {onRowClick && cellIndex === 1 && isEditable && (
                         <button
                           className="absolute p-1 bg-white border-[1px] border-border-light shadow-md rounded-[3px] z-10 top-[12px] right-[10px] opacity-0 hover:opacity-100"
                           onClick={() => onRowClick(rowIndex)}
