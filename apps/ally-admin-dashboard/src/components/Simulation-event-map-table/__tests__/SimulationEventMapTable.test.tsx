@@ -104,6 +104,7 @@ vi.mock("@utils", () => ({
     feedbackStatus: { value: false, disabled: false, rowId: "" },
     branchingStatus: { value: false, disabled: false, rowId: "" },
     branchInstruction: { value: "", disabled: true, rowId: "" },
+    checklistVisibilityStatus: { value: false, disabled: false, rowId: "" },
   })),
   addScoreColors: vi.fn((data: any) => data),
   formatToMappedEvent: vi.fn((ev: any) => ({
@@ -115,6 +116,11 @@ vi.mock("@utils", () => ({
     feedbackStatus: { value: true, disabled: false, rowId: ev.id },
     branchingStatus: { value: true, disabled: false, rowId: ev.id },
     branchInstruction: { value: ev.branchInstruction || "", disabled: false, rowId: ev.id },
+    checklistVisibilityStatus: {
+      value: ev.checklistVisibilityStatus ?? false,
+      disabled: false,
+      rowId: ev.id,
+    },
   })),
   convertToApiFormat: vi.fn((events: any[]) =>
     events
@@ -127,6 +133,7 @@ vi.mock("@utils", () => ({
         feedbackStatus: e.feedbackStatus?.value,
         branchingStatus: e.branchingStatus?.value,
         branchInstruction: e.branchInstruction?.value,
+        checklistVisibilityStatus: e.checklistVisibilityStatus?.value ?? false,
       }))
       .filter((ev: any) => typeof ev?.id === "string" && ev.id.trim().length > 0),
   ),
@@ -139,6 +146,11 @@ vi.mock("@utils", () => ({
     feedbackStatus: { value: ev.feedbackStatus, disabled: false, rowId: ev.eventId },
     branchingStatus: { value: ev.branchingStatus, disabled: false, rowId: ev.eventId },
     branchInstruction: { value: ev.branchInstruction, disabled: false, rowId: ev.eventId },
+    checklistVisibilityStatus: {
+      value: ev.checklistVisibilityStatus ?? false,
+      disabled: false,
+      rowId: ev.eventId,
+    },
   })),
   createSessionEventsMap: vi.fn((events: any[]) => new Map(events.map((e: any) => [e.id, e]))),
   MAPPED_EVENT_FIELDS: {
@@ -149,6 +161,7 @@ vi.mock("@utils", () => ({
     SCORE: "score",
     BRANCHING_STATUS: "branchingStatus",
     BRANCH_INSTRUCTION: "branchInstruction",
+    CHECKLIST_VISIBILITY_STATUS: "checklistVisibilityStatus",
   },
   isObject: vi.fn((v: any) => typeof v === "object" && v !== null),
   isNonEmptyString: vi.fn((v: any) => typeof v === "string" && v.trim().length > 0),
@@ -220,6 +233,7 @@ describe("SimulationEventMapTable", () => {
             feedbackStatus: false,
             branchingStatus: false,
             branchInstruction: "",
+            checklistVisibilityStatus: false,
           },
         ],
       },
@@ -257,6 +271,7 @@ describe("SimulationEventMapTable", () => {
             feedbackStatus: false,
             branchingStatus: false,
             branchInstruction: "",
+            checklistVisibilityStatus: false,
           },
         ],
       },
