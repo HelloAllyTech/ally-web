@@ -216,6 +216,14 @@ export const SimulationEventMapTable: FC<SimulationEventMapTableProps> = ({ simu
         options: [],
         minWidth: 180,
       },
+      {
+        id: MAPPED_EVENT_FIELDS.CHECKLIST_VISIBILITY_STATUS,
+        label: "Checklist visibility",
+        accessor: MAPPED_EVENT_FIELDS.CHECKLIST_VISIBILITY_STATUS,
+        dataType: cellTypes.switch,
+        options: [],
+        minWidth: 120,
+      },
     ];
   }, [sessionEventsOptions]);
 
