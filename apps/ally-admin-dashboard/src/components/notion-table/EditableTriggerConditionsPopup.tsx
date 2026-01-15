@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect, useCallback } from "react";
 
-import { StandardTriggerConditions, CombinationTriggerConditions } from "@components";
+import { StandardTriggerConditions, MultiLevelCombinationTriggerConditions } from "@components";
 import { EVENT_DETECTION_TYPES } from "@constants";
 import { useClickOutside } from "@hooks";
 
@@ -78,7 +78,7 @@ export const EditableTriggerConditionsPopup: React.FC<EditableTriggerConditionsP
             <span>--</span>
           </div>
         ) : eventType === EVENT_DETECTION_TYPES.COMBINATION ? (
-          <CombinationTriggerConditions
+          <MultiLevelCombinationTriggerConditions
             triggerCondition={editTriggerCondition}
             isInTable={true}
             onChange={handleFieldChange}
@@ -103,9 +103,9 @@ export const EditableTriggerConditionsPopup: React.FC<EditableTriggerConditionsP
               width: width,
             }}
           >
-            <div className="max-w-full overflow-visible">
+            <div className="max-w-full overflow-scroll custom-scrollbar pb-1">
               {eventType === EVENT_DETECTION_TYPES.COMBINATION ? (
-                <CombinationTriggerConditions
+                <MultiLevelCombinationTriggerConditions
                   triggerCondition={editTriggerCondition}
                   isInTable={false}
                   onChange={handleFieldChange}

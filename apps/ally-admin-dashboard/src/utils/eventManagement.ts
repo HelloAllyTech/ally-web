@@ -113,6 +113,82 @@ export const isExactlyOneEventSelected = (
 };
 
 /**
+ * Helper function to recursively validate node IDs
+ * @param node - The expression node to validate
+ * @returns true if the node and all its children have valid non-empty string IDs
+ */
+const validateNodeIds = (node: CombinationExpressionNode | undefined): boolean => {
+  if (!node) return false;
+
+  // Check if current node has a valid ID (for leaf nodes)
+  if (node.id !== undefined) {
+    if (!isNonEmptyString(node.id) || node.id.trim() === "") {
+      return false;
+    }
+  }
+
+  // For operator nodes (AND, OR, NOT), recursively check children
+  if (node.type === "AND" || node.type === "OR") {
+    const leftValid = node.left ? validateNodeIds(node.left) : false;
+    const rightValid = node.right ? validateNodeIds(node.right) : false;
+    return leftValid && rightValid;
+  }
+
+  if (node.type === "NOT") {
+    return node.left ? validateNodeIds(node.left) : false;
+  }
+
+  // For leaf nodes, we've already checked the ID above
+  return true;
+};
+
+/**
+ * Helper function to check if expression has at least one operator node with both left and right children
+ * @param node - The expression node to check
+ * @returns true if there's at least one operator node (AND/OR) with both children
+ */
+const hasOperatorWithBothChildren = (node: CombinationExpressionNode | undefined): boolean => {
+  if (!node) return false;
+
+  // Check if current node is an operator with both children
+  if ((node.type === "AND" || node.type === "OR") && node.left && node.right) {
+    return true;
+  }
+
+  // Recursively check children
+  if (node.left && hasOperatorWithBothChildren(node.left)) {
+    return true;
+  }
+
+  if (node.right && hasOperatorWithBothChildren(node.right)) {
+    return true;
+  }
+
+  return false;
+};
+
+/**
+ * Validates that a combination expression:
+ * 1. Has at least one operator node (AND/OR) with both left and right children
+ * 2. All nodes have valid non-empty string IDs
+ * @param node - The expression node to validate
+ * @returns true if expression is valid
+ */
+export const isValidCombinationExpression = (
+  node: CombinationExpressionNode | undefined,
+): boolean => {
+  if (!node) return false;
+
+  // Must have at least one operator with both left and right children
+  if (!hasOperatorWithBothChildren(node)) {
+    return false;
+  }
+
+  // All node IDs must be valid
+  return validateNodeIds(node);
+};
+
+/**
  * Converts UpdateEventDataParam to the expected API payload format (SessionEvent)
  * @param event - Event data from the frontend
  * @returns Formatted SessionEvent payload for the API
@@ -176,8 +252,8 @@ export const convertEventToApiPayload = (event: UpdateEventDataParam): SessionEv
   }
 
   if (event.detectionType === EVENT_DETECTION_TYPES.COMBINATION) {
-    if (isNonEmptyObject(expression) && areBothEventsSelected(expression)) {
-      // Only include expression if both events are selected
+    if (isNonEmptyObject(expression) && isValidCombinationExpression(expression)) {
+      // Only include expression if all nodes have valid IDs
       detectionData.expression = expression;
     }
   }

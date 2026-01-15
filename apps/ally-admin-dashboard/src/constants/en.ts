@@ -378,4 +378,13 @@ export const en = {
     uploadImage: "Upload image",
     changeImage: "Change image",
   },
+  eventConfiguration: {
+    selectEvent: "Select an event",
+    searchEvents: "Search events...",
+    occurred: "Occurred",
+    if: "if",
+    has: "has",
+    more: "+more",
+    addBase: "Add Branch",
+  },
 };

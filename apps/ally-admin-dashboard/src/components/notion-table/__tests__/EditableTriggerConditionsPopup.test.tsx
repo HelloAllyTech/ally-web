@@ -35,6 +35,24 @@ vi.mock("@components", () => ({
       <div data-testid="trigger-condition-value">{JSON.stringify(triggerCondition)}</div>
     </div>
   ),
+  MultiLevelCombinationTriggerConditions: ({ triggerCondition, onChange, isInTable }: any) => (
+    <div data-testid="combination-trigger-conditions">
+      <div data-testid="is-in-table">{String(isInTable)}</div>
+      <button
+        data-testid="change-expression"
+        onClick={() =>
+          onChange("expression", {
+            type: "AND",
+            left: { id: "event-1" },
+            right: { id: "event-2" },
+          })
+        }
+      >
+        Change Expression
+      </button>
+      <div data-testid="trigger-condition-value">{JSON.stringify(triggerCondition)}</div>
+    </div>
+  ),
 }));
 
 // Mock @constants
