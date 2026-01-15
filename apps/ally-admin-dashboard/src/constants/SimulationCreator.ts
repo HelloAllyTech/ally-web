@@ -1,4 +1,4 @@
-import { FEATURE_FLAGS_MAP } from "@ally-ui-mono/ui-shared";
+import { FEATURE_FLAGS_MAP } from "@ally-ui-mono/ui-shared/featureFlag";
 import { cellTypes } from "@components";
 import { CreatorFieldGroups, FormFieldConfig } from "@types";
 
@@ -468,3 +468,96 @@ export const EVENT_MANAGEMENT_TABLE_COLUMNS = [
 export const SESSION_EVENT_STATUS_OPTIONS = {
   ACTIVE: "ACTIVE",
 };
+
+export const SCENARIO_VOICE_COLUMNS = [
+  {
+    id: "name",
+    label: "Voice Name",
+    accessor: "name",
+    dataType: cellTypes.editableText,
+    minWidth: 200,
+  },
+  {
+    id: "provider",
+    label: "Provider",
+    accessor: "provider",
+    dataType: cellTypes.dropdown,
+    minWidth: 200,
+    options: [], // Will be populated dynamically from API/existing voices
+  },
+  {
+    id: "config",
+    label: "Configuration",
+    accessor: "config",
+    dataType: cellTypes.normalText,
+    minWidth: 300,
+  },
+  {
+    id: "language",
+    label: "Language",
+    accessor: "languageId",
+    dataType: cellTypes.dropdown,
+    minWidth: 200,
+    options: [], // Will be populated dynamically from API
+  },
+
+  {
+    id: "createdAt",
+    label: "Created Date",
+    accessor: "createdAt",
+    dataType: cellTypes.normalText,
+    minWidth: 200,
+  },
+];
+
+export const SCENARIO_LANGUAGE_COLUMNS = [
+  {
+    id: "label",
+    label: "Language Name",
+    accessor: "label",
+    dataType: cellTypes.editableText,
+    minWidth: 150,
+  },
+  {
+    id: "value",
+    label: "Language Code",
+    accessor: "value",
+    dataType: cellTypes.editableText,
+    minWidth: 150,
+  },
+  {
+    id: "translationCode",
+    label: "Translation Code",
+    accessor: "translationCode",
+    dataType: cellTypes.editableText,
+    minWidth: 200,
+  },
+  {
+    id: "llmProviderConfig",
+    label: "LLM Provider Config",
+    accessor: "llmProviderConfig",
+    dataType: cellTypes.normalText,
+    minWidth: 200,
+  },
+  {
+    id: "sttProviderConfig",
+    label: "STT Provider Config",
+    accessor: "sttProviderConfig",
+    dataType: cellTypes.normalText,
+    minWidth: 200,
+  },
+  {
+    id: "active",
+    label: "Status",
+    accessor: "active",
+    dataType: cellTypes.switch,
+    minWidth: 120,
+  },
+  {
+    id: "createdAt",
+    label: "Created Date",
+    accessor: "createdAt",
+    dataType: cellTypes.normalText,
+    minWidth: 120,
+  },
+];
