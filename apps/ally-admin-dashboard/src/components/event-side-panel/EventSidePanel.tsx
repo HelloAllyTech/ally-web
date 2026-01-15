@@ -15,7 +15,7 @@ import {
 import { en, EVENT_DETECTION_TYPES } from "@constants";
 import { useDebounce } from "@hooks";
 import { UpdateEventDataParam, isCombinationTriggerCondition, COMBINATION_OPERATOR } from "@types";
-import { isExactlyOneEventSelected } from "@utils";
+import { isValidCombinationExpression } from "@utils";
 
 interface EventSidePanelProps {
   selectedEvent: UpdateEventDataParam | null;
@@ -175,7 +175,7 @@ export const EventSidePanel: React.FC<EventSidePanelProps> = ({
       isCombinationTriggerCondition(formData.triggerCondition)
     ) {
       const expression = formData.triggerCondition.expression;
-      if (isExactlyOneEventSelected(expression)) {
+      if (!isValidCombinationExpression(expression)) {
         setShowConfirmationModal(true);
         return; // Show modal instead of closing
       }

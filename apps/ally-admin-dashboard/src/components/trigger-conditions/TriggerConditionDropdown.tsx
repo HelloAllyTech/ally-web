@@ -7,7 +7,7 @@ interface TriggerConditionDropdownProps {
   value: string;
   displayValue?: string;
   options: Array<{ value: string; label: string }>;
-  onChange: (value: string) => void;
+  onChange: (value: string, label?: string) => void;
   placeholder?: string;
   searchPlaceholder?: string;
   isSearchable?: boolean;

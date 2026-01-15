@@ -1,5 +1,6 @@
 import AccountTree from "./account_tree.svg?react";
 import Add from "./add.svg?react";
+import AddBlue from "./addBlue.svg?react";
 import AlarmOn from "./alarm_on.svg?react";
 import Ally from "./ally.svg?react";
 import Archive from "./archive.svg?react";
@@ -29,6 +30,7 @@ import Eye from "./eye.svg?react";
 import Filter from "./filter.svg?react";
 import FocusLens from "./focusLens.svg?react";
 import Globe from "./globe.svg?react";
+import GroupBranch from "./groupBranch.svg?react";
 import HappyEmoji from "./happyEmoji.svg?react";
 import InfoIcon from "./info.svg?react";
 import Logout from "./logout.svg?react";
@@ -108,4 +110,6 @@ export {
   Refresh,
   Globe,
   Mic,
+  GroupBranch,
+  AddBlue,
 };
