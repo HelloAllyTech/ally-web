@@ -150,6 +150,7 @@ describe("MappedEventSidePanel", () => {
     minScore: { value: null, disabled: false },
     maxScore: { value: null, disabled: false },
     branchInstruction: { value: "", disabled: false },
+    checklistVisibilityStatus: { value: false, disabled: false },
   } as any;
 
   const sessionEvents = [{ id: "e1", name: "Event One" }];

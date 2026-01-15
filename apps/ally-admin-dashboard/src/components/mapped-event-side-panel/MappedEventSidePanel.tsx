@@ -465,6 +465,16 @@ export const MappedEventSidePanel: React.FC<MappedEventSidePanelProps> = ({
                 alwaysOpen
               />
             </Field>
+
+            <Field label="Checklist visibility">
+              <ToggleSwitch
+                enabled={formData.checklistVisibilityStatus?.value || false}
+                onChange={enabled =>
+                  handleToggleChange(MAPPED_EVENT_FIELDS.CHECKLIST_VISIBILITY_STATUS, enabled)
+                }
+                label="Checklist visibility"
+              />
+            </Field>
           </div>
         </div>
       </div>
