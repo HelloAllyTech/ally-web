@@ -1,4 +1,4 @@
-import { SimulationStatus } from "./createSimulation";
+import { SimulationStatus, ScenarioVoice } from "./createSimulation";
 
 export enum RoomStatus {
   CONNECTED = "connected",
@@ -193,6 +193,11 @@ export interface SessionEventResponse {
   pagination: Pagination;
 }
 
+export interface ScenarioVoiceResponse {
+  data: ScenarioVoice[];
+  pagination?: Pagination;
+}
+
 export interface Pagination {
   total: number;
   limit: number;
@@ -260,6 +265,14 @@ export interface SessionEvent {
 export interface GetSessionEventsQuery {
   searchName?: string;
   visibilityType?: string;
+  limit?: number;
+  offset?: number;
+  sortBy?: string;
+  order?: string; // e.g. "asc" | "desc"
+}
+
+export interface GetScenarioVoicesQuery {
+  searchName?: string;
   limit?: number;
   offset?: number;
   sortBy?: string;

@@ -28,10 +28,12 @@ import Edit from "./edit.svg?react";
 import Eye from "./eye.svg?react";
 import Filter from "./filter.svg?react";
 import FocusLens from "./focusLens.svg?react";
+import Globe from "./globe.svg?react";
 import HappyEmoji from "./happyEmoji.svg?react";
 import InfoIcon from "./info.svg?react";
 import Logout from "./logout.svg?react";
 import ManageAccounts from "./manageAccounts.svg?react";
+import Mic from "./mic.svg?react";
 import Pathway from "./pathway.svg?react";
 import Play from "./play.svg?react";
 import Plus from "./plus.svg?react";
@@ -104,4 +106,6 @@ export {
   Upload,
   ManageAccounts,
   Refresh,
+  Globe,
+  Mic,
 };
