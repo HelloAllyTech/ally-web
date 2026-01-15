@@ -8,6 +8,7 @@ import {
   Switch,
   SelectComponent,
   EditableTriggerConditionsPopup,
+  TextareaWithTriggerDropdown,
 } from "@components/notion-table";
 import { DETECTION_CONFIG_FIELDS } from "@constants";
 import {
@@ -229,6 +230,15 @@ export const Cell = ({
       break;
     case cellTypes.score:
       element = <CustomScoreInput />;
+      break;
+    case cellTypes.textAreaWithDropdown:
+      element = (
+        <TextareaWithTriggerDropdown
+          value={value.value}
+          onChange={updateCellValue}
+          placeholder="Add Instruction"
+        />
+      );
       break;
     default:
       element = <span />;

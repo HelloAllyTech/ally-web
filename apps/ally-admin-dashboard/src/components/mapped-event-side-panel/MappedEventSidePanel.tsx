@@ -10,6 +10,7 @@ import {
   OccurrenceControlSection,
   ScoreWindowSection,
   TimeWindowSection,
+  TextareaWithTriggerDropdown,
 } from "@components";
 import { en } from "@constants";
 import { useDebounce, useClickOutside } from "@hooks";
@@ -456,11 +457,12 @@ export const MappedEventSidePanel: React.FC<MappedEventSidePanelProps> = ({
             </Field>
 
             <Field label="Branch to state" multiline={true}>
-              <FormTextarea
+              <TextareaWithTriggerDropdown
                 value={formData.branchInstruction?.value || ""}
                 onChange={value => handleFieldChange(MAPPED_EVENT_FIELDS.BRANCH_INSTRUCTION, value)}
                 placeholder="Add branch to state"
                 disabled={formData.branchInstruction?.disabled}
+                alwaysOpen
               />
             </Field>
           </div>
