@@ -33,6 +33,7 @@ export const LanguageVoiceMapping: FC<LanguageVoiceMappingProps> = ({
 }) => {
   const { data: availableLanguages = [] } = useGetAvailableLanguageVoicesQuery({
     active: true,
+    voicesNeeded: true,
   }) as {
     data: LanguageOption[];
   };
