@@ -59,6 +59,7 @@ export const ApiEndpoints = {
     TRIGGER_WARNINGS: "/v1/learn/trigger-warnings",
     POST_LOGO_URL: "v1/tenants/logo-url",
     DELETE_LOGO: "v1/tenants/logo",
+    DYNAMIC_BRANCHING_INSTRUCTIONS: "/v1/learn/branching-instruction-dynamic-shortcuts",
   },
 
   USER_MANAGEMENT: {
