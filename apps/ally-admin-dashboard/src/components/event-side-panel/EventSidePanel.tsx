@@ -1,7 +1,9 @@
 import React, { useState, useCallback, useEffect } from "react";
 
+import { Tooltip } from "@mui/material";
+
 import { FEATURE_FLAGS_MAP } from "@ally-ui-mono/ui-shared";
-import { DoubleArrowRight, Trash } from "@assets";
+import { DoubleArrowRight, InfoIcon, Trash } from "@assets";
 import {
   ActionConfirmationPopup,
   AutoExpandableTextarea,
@@ -11,8 +13,10 @@ import {
   OccurrenceControlSection,
   ScoreWindowSection,
   TimeWindowSection,
+  EVENT_TYPE_POPUP_OPTIONS,
+  TextareaWithTriggerDropdown,
 } from "@components";
-import { en, EVENT_DETECTION_TYPES } from "@constants";
+import { en, EVENT_DETECTION_TYPES, toolTipStyles } from "@constants";
 import { useDebounce } from "@hooks";
 import { UpdateEventDataParam, isCombinationTriggerCondition, COMBINATION_OPERATOR } from "@types";
 import { isValidCombinationExpression } from "@utils";
@@ -29,14 +33,29 @@ interface FieldProps {
   label: string;
   children: React.ReactNode;
   multiline?: boolean;
+  tooltip?: boolean;
+  tooltipTitle?: string;
 }
 
-const Field: React.FC<FieldProps> = ({ label, children, multiline = false }) => (
+const Field: React.FC<FieldProps> = ({
+  label,
+  children,
+  multiline = false,
+  tooltip,
+  tooltipTitle,
+}) => (
   <div
     className={`flex flex-row min-h-[40px] ${multiline ? "items-start" : "items-center"} text-base justify-between`}
   >
-    <div className={`w-[40%] ${multiline && "mt-[8px]"}`}>
+    <div className={`w-[40%] flex items-center gap-2 ${multiline && "mt-[8px]"}`}>
       <span className="text-base font-regular text-typography-800">{label}</span>
+      {tooltip && (
+        <Tooltip title={tooltipTitle || label} placement="top" arrow slotProps={toolTipStyles}>
+          <span className="cursor-pointer items-center ">
+            <InfoIcon />
+          </span>
+        </Tooltip>
+      )}
     </div>
     <div className="w-[60%] flex text-left justify-start text-neutral-800">{children}</div>
   </div>
@@ -183,6 +202,10 @@ export const EventSidePanel: React.FC<EventSidePanelProps> = ({
     onClose();
   }, [formData, onClose]);
 
+  const convertEventTypeFormat = (eventType: string) => {
+    return EVENT_TYPE_POPUP_OPTIONS.find(option => option.value === eventType)?.label || eventType;
+  };
+
   const handleConfirmClose = useCallback(() => {
     setShowConfirmationModal(false);
     onClose();
@@ -218,10 +241,14 @@ export const EventSidePanel: React.FC<EventSidePanelProps> = ({
           </div>
 
           <div className="space-y-3">
-            <Field label="Event code">
-              <div className="text-base text-neutral-800">{formData.eventCode || "—"}</div>
-            </Field>
-
+            <div>
+              <Field label="Event code">
+                <div className="text-base text-neutral-800">{formData.eventCode || "—"}</div>
+              </Field>
+              <Field label="Event type">
+                <div>{convertEventTypeFormat(formData.detectionType || "-")}</div>
+              </Field>
+            </div>
             {/* Trigger Conditions Field */}
 
             <TriggerConditions
@@ -230,24 +257,6 @@ export const EventSidePanel: React.FC<EventSidePanelProps> = ({
               onChange={handleTriggerConditionChange}
               currentEventId={formData.id}
             />
-
-            <Field label="Branch description" multiline={true}>
-              <AutoExpandableTextarea
-                maxLines={20}
-                minHeight={20}
-                value={formData.branchInstruction}
-                onChange={value => handleFieldChange("branchInstruction", value)}
-                placeholder="Add instruction"
-                className="py-2 pt-[16px] px-0 border-none focus:outline-none text-base w-full resize-none overflow-y-auto custom-scrollbar"
-              />
-            </Field>
-
-            <Field label="Default session quality score">
-              <NumberInput
-                value={Number(formData.score)}
-                onChange={value => handleFieldChange("score", value)}
-              />
-            </Field>
 
             {FEATURE_FLAGS_MAP.EVENT_DETECTION_CONFIG_FLAG && (
               <>
@@ -279,7 +288,27 @@ export const EventSidePanel: React.FC<EventSidePanelProps> = ({
                 )}
               </>
             )}
+            <div className="flex-1 h-[1px] bg-border-light" />
+            <Field
+              label="Branch description"
+              multiline
+              tooltip
+              tooltipTitle='Use "<" to access dynamic content for branching in simulations.'
+            >
+              <TextareaWithTriggerDropdown
+                value={formData.branchInstruction}
+                onChange={value => handleFieldChange("branchInstruction", value)}
+                placeholder="Add instruction"
+                alwaysOpen
+              />
+            </Field>
 
+            <Field label="Default session quality score">
+              <NumberInput
+                value={Number(formData.score)}
+                onChange={value => handleFieldChange("score", value)}
+              />
+            </Field>
             <Field label="Default real time feedback message" multiline={true}>
               <AutoExpandableTextarea
                 maxLines={20}

@@ -402,6 +402,14 @@ const simulationStudioAPI = baseAPI.injectEndpoints({
       }),
       invalidatesTags: [TAG_TYPES.SCENARIO_LANGUAGES],
     }),
+
+    getDynamicBranchingInstruction: builder.query<string[], number | void>({
+      query: id => ({
+        url: ApiEndpoints.SIMULATION_STUDIO.DYNAMIC_BRANCHING_INSTRUCTIONS,
+        method: HttpMethod.GET,
+        params: id ? { scenarioId: id } : undefined,
+      }),
+    }),
   }),
 });
 
@@ -438,4 +446,5 @@ export const {
   useGetLanguagesQuery,
   useCreateLanguageMutation,
   useUpdateLanguageMutation,
+  useGetDynamicBranchingInstructionQuery,
 } = simulationStudioAPI;

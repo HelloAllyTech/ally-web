@@ -107,6 +107,14 @@ vi.mock("@components", () => ({
       onChange={e => onChange(e.target.value)}
     />
   ),
+  TextareaWithTriggerDropdown: ({ value, onChange, placeholder, disabled }: any) => (
+    <textarea
+      aria-label={placeholder}
+      defaultValue={value}
+      disabled={disabled}
+      onChange={e => onChange(e.target.value)}
+    />
+  ),
 }));
 
 // Mock feature flags
@@ -121,6 +129,7 @@ vi.mock("@ally-ui-mono/ui-shared", () => ({
 import { MAPPED_EVENT_FIELDS } from "@utils";
 
 import { MappedEventSidePanel } from "../MappedEventSidePanel";
+import { TextareaWithTriggerDropdown } from "@src/components/notion-table";
 
 describe("MappedEventSidePanel", () => {
   beforeEach(() => {
