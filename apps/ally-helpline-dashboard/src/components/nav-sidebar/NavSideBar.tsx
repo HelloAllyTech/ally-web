@@ -4,6 +4,7 @@ import { Tooltip } from "@mui/material";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 
+import { CustomImage } from "@ally-ui-mono/ui-shared";
 import { useGetLogoUrlQuery } from "@api";
 import { DockToRight, LogoutIllustration } from "@assets";
 import { ConfirmationDialog, ProfileSettings, UserInfo } from "@components";
@@ -169,7 +170,7 @@ const NavSideBar: FC<NavSideBarProps> = ({ activeTab, onTabChange, isOpen, onClo
         >
           {/* Logo */}
 
-          <div className="relative w-14 h-14 border-[0.5px] group ml-2 rounded-md">
+          <div className="relative w-14 h-14 border-[0.5px] group ml-2 rounded-md box-border overflow-hidden flex items-center justify-center">
             {/* Toggle button - covers logo when collapsed */}
             <Tooltip
               title={tenantData?.name}
@@ -179,10 +180,10 @@ const NavSideBar: FC<NavSideBarProps> = ({ activeTab, onTabChange, isOpen, onClo
             >
               <div>
                 {tenantData?.logoUrl ? (
-                  <img
-                    src={tenantData.logoUrl}
+                  <CustomImage
+                    src={tenantData?.logoUrl}
                     alt="org-logo"
-                    className={`object-cover w-14 h-14 transition-opacity duration-200 rounded-md ${
+                    className={`object-cover w-full h-full transition-opacity duration-200 rounded-md ${
                       !isExpanded ? "group-hover:opacity-20" : ""
                     }`}
                   />

@@ -382,7 +382,7 @@ export const EVENT_MANAGEMENT_TABLE_COLUMNS = [
     label: "Default branch description",
     accessor: "branchInstruction",
     placeholder: "Add Instruction",
-    dataType: cellTypes.editableText,
+    dataType: cellTypes.textAreaWithDropdown,
     options: [],
     minWidth: 240,
   },
