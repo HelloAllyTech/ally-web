@@ -3,7 +3,7 @@ import React from "react";
 import { EventType } from "@components";
 import { EVENT_DETECTION_TYPES } from "@constants";
 
-import { CombinationTriggerConditions } from "./CombinationTriggerConditions";
+import { MultiLevelCombinationTriggerConditions } from "./MultiLevelCombinationTriggerConditions";
 import { StandardTriggerConditions } from "./StandardTriggerConditions";
 import {
   TriggerCondition,
@@ -46,7 +46,7 @@ export const TriggerConditions: React.FC<TriggerConditionsProps> = ({
   if (!eventType) return null;
 
   const renderCombinationConditions = (condition: CombinationTriggerCondition) => (
-    <CombinationTriggerConditions
+    <MultiLevelCombinationTriggerConditions
       triggerCondition={condition}
       onChange={onChange || (() => {})}
       isInTable={isInTable}
