@@ -300,6 +300,7 @@ export const en = {
     create: "Create:",
     customFieldLimit: "You can only have 3 custom fields. Remove one to add another.",
     newField: "New field",
+    triggerCondition: "Trigger conditions",
   },
   userManagement: {
     organizationCreated: "Organization created successfully",
