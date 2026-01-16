@@ -1,6 +1,7 @@
 import React, { useCallback } from "react";
 
-import { AutoExpandableTextarea, NumberInput, TimeInput } from "@components";
+import { AutoExpandableTextarea } from "@ally-ui-mono/ui-shared";
+import { NumberInput, TimeInput } from "@components";
 import { TRIGGER_FIELD_TYPES } from "@constants";
 
 import { TriggerConditionDropdown } from "./TriggerConditionDropdown";

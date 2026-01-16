@@ -1,5 +1,6 @@
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { vi, describe, it, expect, beforeEach } from "vitest";
+import React from "react";
 
 import { AutoExpandableTextarea } from "../AutoExpandableTextarea";
 

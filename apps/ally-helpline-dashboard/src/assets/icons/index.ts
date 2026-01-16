@@ -38,6 +38,7 @@ import Carousel1 from "./carousel-1.svg?react";
 import Carousel2 from "./carousel-2.svg?react";
 import Carousel3 from "./carousel-3.svg?react";
 import Carousel4 from "./carousel-4.svg?react";
+import ChatBubble from "./chat-bubble.svg?react";
 import CloseIcon from "./close-icon.svg?react";
 import Close from "./close.svg?react";
 import Cloud from "./cloud.svg?react";
@@ -66,6 +67,7 @@ import KeyConcerns from "./key-concerns.svg?react";
 import KeyEvents from "./key-events.svg?react";
 import Leaderboard from "./leaderboard.svg?react";
 import LearnIcon from "./learn-icon.svg?react";
+import LeftArrow from "./left-arrow.svg?react";
 import LifelineLogo from "./lifeline-logo.svg?react";
 import ListIcon from "./list-icon.svg?react";
 import Lock from "./lock.svg?react";
@@ -103,6 +105,7 @@ import SessionSummary from "./session-summary.svg?react";
 import Session from "./session.svg?react";
 import ShareIcon from "./share-icon.svg?react";
 import SimulationWarningIllustration from "./simulation-warning-illustration.svg?react";
+import Smiley from "./smiley.svg?react";
 import SourceIcon from "./source-icon.svg?react";
 import Spinner from "./spinner.svg?react";
 import StarYellowIcon from "./star-yellow-icon.svg?react";
@@ -134,7 +137,6 @@ import VolumeUpIcon from "./volume-up-icon.svg?react";
 import WarningTriangle from "./warning-triangle.svg?react";
 import Warning from "./warning.svg?react";
 import Waveform from "./waveform.svg?react";
-
 /**
  * Icon Exports
  *
@@ -192,6 +194,7 @@ export {
   KeyConcerns,
   KeyEvents,
   LearnIcon,
+  LeftArrow,
   LifelineLogo,
   ListIcon,
   Lock,
@@ -227,6 +230,7 @@ export {
   SimulationWarningIllustration,
   SourceIcon,
   Spinner,
+  Smiley,
   StarIcon,
   StarYellowIcon,
   StartSession,
@@ -266,4 +270,5 @@ export {
   ArrowUp,
   ArrowLeft,
   AchievementLocked,
+  ChatBubble,
 };

@@ -6,4 +6,5 @@ export interface SimulationSummaryProps {
   onSummaryFetch?: (summary: SimulationSummary) => void;
   summaryId: string;
   onSummaryClose: () => void;
+  hideSection?: boolean;
 }

@@ -2,9 +2,10 @@ import React, { useState, useCallback, useEffect, useMemo } from "react";
 
 import { toast } from "sonner";
 
+import { AutoExpandableTextarea } from "@ally-ui-mono/ui-shared";
 import { useGetAvailableLanguageVoicesQuery } from "@api";
 import { DoubleArrowRight } from "@assets";
-import { ActionConfirmationPopup, AutoExpandableTextarea, TextDropdown, Button } from "@components";
+import { ActionConfirmationPopup, TextDropdown, Button } from "@components";
 import { ButtonVariant } from "@components/types";
 import { en } from "@constants";
 import { ScenarioVoice, ScenarioLanguage } from "@types";

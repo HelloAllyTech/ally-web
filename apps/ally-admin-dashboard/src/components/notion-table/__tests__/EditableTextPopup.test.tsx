@@ -4,7 +4,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { EditableTextPopup } from "../EditableTextPopup";
 
 // Mock AutoExpandableTextarea component
-vi.mock("@components", () => ({
+vi.mock("@ally-ui-mono/ui-shared", () => ({
   AutoExpandableTextarea: ({
     value,
     onChange,
