@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useRef, useMemo } from "react";
 
+import { Tooltip } from "@mui/material";
+
 import { useGetSessionEventsQuery } from "@api";
 import { Delete, GroupBranch, AddBlue } from "@assets";
 import { TriggerConditionDropdown, GeneratedExpressionView } from "@components";
@@ -281,22 +283,24 @@ export const MultiLevelCombinationTriggerConditions: React.FC<
           isInTable={false}
         />
 
-        <button
-          onClick={() => handleDeleteCondition(path)}
-          title="Remove this event"
-          className="p-[2px] h-[25px] w-[25px] flex items-center justify-center hover:bg-neutral-100 border border-border-light rounded-[2px] transition-colors"
-        >
-          <Delete className="w-[12px] h-[12px]" />
-        </button>
-        {canAddBranch && (
+        <Tooltip title="Remove this event" placement="top" arrow>
           <button
-            onClick={() => handleAddCondition(path)}
-            title="Create a group and include a new condition"
-            className="p-[5px] flex flex-row gap-1 items-center hover:bg-neutral-50 rounded-[2px] transition-colors text-primary-500 h-[25px] border-[0.5px] border-primary-500"
+            onClick={() => handleDeleteCondition(path)}
+            className="p-[2px] h-[25px] w-[25px] flex items-center justify-center hover:bg-neutral-100 border border-border-light rounded-[2px] transition-colors"
           >
-            <AddBlue className="w-[12px] h-[12px]" />
-            <span className="text-xs text-primary-500 pr-[4px]">Add Leaf</span>
+            <Delete className="w-[12px] h-[12px]" />
           </button>
+        </Tooltip>
+        {canAddBranch && (
+          <Tooltip title="Create a group and include a new condition" placement="top" arrow>
+            <button
+              onClick={() => handleAddCondition(path)}
+              className="p-[5px] flex flex-row gap-1 min-w-[82px] items-center hover:bg-neutral-50 rounded-[2px] transition-colors text-primary-500 h-[25px] border-[0.5px] border-primary-500"
+            >
+              <AddBlue className="w-[12px] h-[12px]" />
+              <span className="text-xs text-primary-500 pr-[4px]">Add Leaf</span>
+            </button>
+          </Tooltip>
         )}
       </div>
     );
@@ -400,14 +404,15 @@ export const MultiLevelCombinationTriggerConditions: React.FC<
         <div className="flex flex-col gap-1 pl-3">
           <div className="flex flex-col gap-1">{renderExpressionTree(expression)}</div>
           {getTreeDepth(expression) < 5 && (
-            <button
-              onClick={() => handleAddCondition()}
-              title="add new condition branch to this expression"
-              className="flex items-center gap-1 text-primary-500 hover:text-primary-600 text-sm font-normal self-start border-[0.5px] border-primary-500 rounded-[2px] p-[5px]"
-            >
-              <GroupBranch className="w-[12px] h-[12px]" />
-              <span className="text-xs pl-[4px]">{en.eventConfiguration.addBase}</span>
-            </button>
+            <Tooltip title="add new condition branch to this expression" placement="top" arrow>
+              <button
+                onClick={() => handleAddCondition()}
+                className="flex items-center gap-1 text-primary-500 hover:text-primary-600 text-sm font-normal self-start border-[0.5px] border-primary-500 rounded-[2px] p-[5px]"
+              >
+                <GroupBranch className="w-[12px] h-[12px]" />
+                <span className="text-xs pl-[4px]">{en.eventConfiguration.addBase}</span>
+              </button>
+            </Tooltip>
           )}
           <GeneratedExpressionView node={expression} leafNodePaths={leafNodePaths} />
         </div>

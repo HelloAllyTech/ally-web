@@ -4,16 +4,6 @@ import React from "react";
 
 // Mock @components
 vi.mock("@components", () => ({
-  AutoExpandableTextarea: ({ value, onChange, placeholder, disabled, className }: any) => (
-    <textarea
-      data-testid="auto-expandable-textarea"
-      value={value}
-      onChange={e => onChange(e.target.value)}
-      placeholder={placeholder}
-      disabled={disabled}
-      className={className}
-    />
-  ),
   NumberInput: ({ value, onChange, placeholder, className }: any) => (
     <input
       data-testid="number-input"
@@ -76,6 +66,20 @@ vi.mock("../TriggerConditionDropdown", () => ({
         {value || placeholder}
       </button>
     </div>
+  ),
+}));
+
+vi.mock(import("@ally-ui-mono/ui-shared"), async importOriginal => ({
+  ...(await importOriginal()),
+  AutoExpandableTextarea: ({ value, onChange, placeholder, disabled, className }: any) => (
+    <textarea
+      data-testid="auto-expandable-textarea"
+      value={value}
+      onChange={e => onChange(e.target.value)}
+      placeholder={placeholder}
+      disabled={disabled}
+      className={className}
+    />
   ),
 }));
 

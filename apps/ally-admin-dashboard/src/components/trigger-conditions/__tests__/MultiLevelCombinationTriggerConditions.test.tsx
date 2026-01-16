@@ -631,7 +631,7 @@ describe("MultiLevelCombinationTriggerConditions - Core Logic Tests", () => {
       );
 
       // Click "Add Base" button
-      const addButton = screen.getByTitle(/add new condition branch/);
+      const addButton = screen.getByLabelText(/add new condition branch/);
       fireEvent.click(addButton);
 
       // Should create new root-level condition
@@ -704,7 +704,7 @@ describe("MultiLevelCombinationTriggerConditions - Core Logic Tests", () => {
       );
 
       // Click "Add Base" button (adds at root)
-      const addButton = screen.getByTitle(/add new condition branch/);
+      const addButton = screen.getByLabelText(/add new condition branch/i);
       fireEvent.click(addButton);
 
       // Should wrap entire expression in new AND with empty right node

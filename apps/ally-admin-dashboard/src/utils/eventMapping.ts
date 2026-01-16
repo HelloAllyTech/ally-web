@@ -19,6 +19,8 @@ export const MAPPED_EVENT_FIELDS = {
   END_TIME: "endTime",
   MIN_SCORE: "minScore",
   MAX_SCORE: "maxScore",
+  // Checklist visibility field
+  CHECKLIST_VISIBILITY_STATUS: "checklistVisibilityStatus",
 } as const;
 
 // Default values for new events
@@ -36,6 +38,8 @@ export const DEFAULT_EVENT_VALUES = {
   END_TIME: null,
   MIN_SCORE: null,
   MAX_SCORE: null,
+  // Checklist visibility default
+  CHECKLIST_VISIBILITY_STATUS: false,
 } as const;
 
 // Helper to create a cell structure
@@ -64,6 +68,12 @@ export const createNewEvent = (): UpdateScenarioEventDataParam => {
     endTime: createCell(DEFAULT_EVENT_VALUES.END_TIME, true, eventId),
     minScore: createCell(DEFAULT_EVENT_VALUES.MIN_SCORE, true, eventId),
     maxScore: createCell(DEFAULT_EVENT_VALUES.MAX_SCORE, true, eventId),
+    // Checklist visibility field
+    checklistVisibilityStatus: createCell(
+      DEFAULT_EVENT_VALUES.CHECKLIST_VISIBILITY_STATUS,
+      false,
+      eventId,
+    ),
   };
 };
 
@@ -187,6 +197,11 @@ export const formatToMappedEvent = (event: SessionEvent): UpdateScenarioEventDat
       false,
       event.id,
     ),
+    checklistVisibilityStatus: createCell(
+      event.checklistVisibilityStatus ?? DEFAULT_EVENT_VALUES.CHECKLIST_VISIBILITY_STATUS,
+      false,
+      event.id,
+    ),
   };
 };
 
@@ -202,6 +217,8 @@ export const convertToApiFormat = (events: UpdateScenarioEventDataParam[]) => {
       feedbackStatus: event.feedbackStatus?.value,
       branchingStatus: event.branchingStatus?.value,
       branchInstruction: event.branchInstruction?.value,
+      checklistVisibilityStatus:
+        event.checklistVisibilityStatus?.value ?? DEFAULT_EVENT_VALUES.CHECKLIST_VISIBILITY_STATUS,
       detectionConfig: {
         maxOccurrences: event.maxOccurrences?.value,
         minGapTime: timeStringToSeconds(event.minGapTime?.value),
@@ -225,6 +242,7 @@ export const formatApiResponseToMappedEvent = (event: {
   feedbackStatus: boolean;
   branchingStatus: boolean;
   branchInstruction?: string;
+  checklistVisibilityStatus?: boolean;
   detectionConfig?: {
     maxOccurrences?: number;
     minGapTime?: string | number;
@@ -290,6 +308,12 @@ export const formatApiResponseToMappedEvent = (event: {
     ),
     maxScore: createCell(
       event.detectionConfig?.maxScore ?? DEFAULT_EVENT_VALUES.MAX_SCORE,
+      false,
+      eventId,
+    ),
+    // Checklist visibility field
+    checklistVisibilityStatus: createCell(
+      event.checklistVisibilityStatus ?? DEFAULT_EVENT_VALUES.CHECKLIST_VISIBILITY_STATUS,
       false,
       eventId,
     ),

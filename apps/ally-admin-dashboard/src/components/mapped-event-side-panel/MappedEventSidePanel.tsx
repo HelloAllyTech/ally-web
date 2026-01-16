@@ -1,9 +1,9 @@
 import React, { useState, useCallback, useEffect, useRef, useMemo } from "react";
 
 import { FEATURE_FLAGS_MAP } from "@ally-ui-mono/ui-shared";
+import { AutoExpandableTextarea } from "@ally-ui-mono/ui-shared";
 import { ArrowDownFilled, DoubleArrowRight, Trash } from "@assets";
 import {
-  AutoExpandableTextarea,
   EmojiPickerComponent,
   NumberInput,
   ToggleSwitch,
@@ -463,6 +463,16 @@ export const MappedEventSidePanel: React.FC<MappedEventSidePanelProps> = ({
                 placeholder="Add branch to state"
                 disabled={formData.branchInstruction?.disabled}
                 alwaysOpen
+              />
+            </Field>
+
+            <Field label="Checklist visibility">
+              <ToggleSwitch
+                enabled={formData.checklistVisibilityStatus?.value || false}
+                onChange={enabled =>
+                  handleToggleChange(MAPPED_EVENT_FIELDS.CHECKLIST_VISIBILITY_STATUS, enabled)
+                }
+                label="Checklist visibility"
               />
             </Field>
           </div>

@@ -260,6 +260,7 @@ export interface SessionEvent {
   detectionData?: SessionEventDetectionData;
   detectionConfig?: EventDetectionConfig;
   isEditable?: boolean;
+  checklistVisibilityStatus?: boolean;
 }
 
 export interface GetSessionEventsQuery {

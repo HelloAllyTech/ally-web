@@ -36,6 +36,7 @@ describe("eventMapping utils", () => {
       expect(MAPPED_EVENT_FIELDS.END_TIME).toBe("endTime");
       expect(MAPPED_EVENT_FIELDS.MIN_SCORE).toBe("minScore");
       expect(MAPPED_EVENT_FIELDS.MAX_SCORE).toBe("maxScore");
+      expect(MAPPED_EVENT_FIELDS.CHECKLIST_VISIBILITY_STATUS).toBe("checklistVisibilityStatus");
     });
   });
 
@@ -53,6 +54,7 @@ describe("eventMapping utils", () => {
       expect(DEFAULT_EVENT_VALUES.END_TIME).toBe(null);
       expect(DEFAULT_EVENT_VALUES.MIN_SCORE).toBe(null);
       expect(DEFAULT_EVENT_VALUES.MAX_SCORE).toBe(null);
+      expect(DEFAULT_EVENT_VALUES.CHECKLIST_VISIBILITY_STATUS).toBe(false);
     });
   });
 
@@ -116,6 +118,7 @@ describe("eventMapping utils", () => {
       expect(event.endTime.value).toBe(null);
       expect(event.minScore.value).toBe(null);
       expect(event.maxScore.value).toBe(null);
+      expect(event.checklistVisibilityStatus.value).toBe(false);
     });
 
     it("should create cells with correct disabled states", () => {
@@ -284,6 +287,7 @@ describe("eventMapping utils", () => {
           feedbackStatus: createCell(true, false, "event-1"),
           branchingStatus: createCell(true, false, "event-1"),
           branchInstruction: createCell("Next step", false, "event-1"),
+          checklistVisibilityStatus: createCell(false, false, "event-1"),
         },
       ];
 
@@ -307,6 +311,7 @@ describe("eventMapping utils", () => {
             minScore: undefined,
             maxScore: undefined,
           },
+          checklistVisibilityStatus: false,
         },
       ]);
     });
@@ -322,6 +327,7 @@ describe("eventMapping utils", () => {
           feedbackStatus: createCell(true, false, "event-1"),
           branchingStatus: createCell(false, false, "event-1"),
           branchInstruction: createCell("", false, "event-1"),
+          checklistVisibilityStatus: createCell(false, false, "event-1"),
         },
         {
           id: createCell("event-2", false, "event-2"),
@@ -332,6 +338,7 @@ describe("eventMapping utils", () => {
           feedbackStatus: createCell(false, false, "event-2"),
           branchingStatus: createCell(true, false, "event-2"),
           branchInstruction: createCell("Branch 2", false, "event-2"),
+          checklistVisibilityStatus: createCell(false, false, "event-1"),
         },
       ];
 
@@ -359,6 +366,7 @@ describe("eventMapping utils", () => {
           feedbackStatus: createCell(false, false, "row-1"),
           branchingStatus: createCell(false, false, "row-1"),
           branchInstruction: createCell("", true, "row-1"),
+          checklistVisibilityStatus: createCell(false, false, "row-1"),
         },
       ];
 
@@ -381,6 +389,7 @@ describe("eventMapping utils", () => {
           minScore: undefined,
           maxScore: undefined,
         },
+        checklistVisibilityStatus: false,
       });
     });
   });
@@ -396,6 +405,7 @@ describe("eventMapping utils", () => {
         feedbackStatus: true,
         branchingStatus: true,
         branchInstruction: "Continue",
+        checklistVisibilityStatus: false,
       };
 
       const result = formatApiResponseToMappedEvent(apiResponse);
@@ -408,6 +418,7 @@ describe("eventMapping utils", () => {
       expect(result.feedbackStatus.value).toBe(true);
       expect(result.branchingStatus.value).toBe(true);
       expect(result.branchInstruction.value).toBe("Continue");
+      expect(result.checklistVisibilityStatus.value).toBe(false);
     });
 
     it("should set correct disabled states based on status flags", () => {
@@ -420,6 +431,7 @@ describe("eventMapping utils", () => {
         feedbackStatus: true,
         branchingStatus: true,
         branchInstruction: "Instruction",
+        checklistVisibilityStatus: false,
       };
 
       const result = formatApiResponseToMappedEvent(apiResponse);
@@ -428,6 +440,7 @@ describe("eventMapping utils", () => {
       expect(result.emoji.disabled).toBe(false);
       expect(result.message.disabled).toBe(false);
       expect(result.branchInstruction.disabled).toBe(false);
+      expect(result.checklistVisibilityStatus.disabled).toBe(false);
     });
 
     it("should disable feedback fields when feedbackStatus is false", () => {
@@ -440,6 +453,7 @@ describe("eventMapping utils", () => {
         feedbackStatus: false,
         branchingStatus: true,
         branchInstruction: "Instruction",
+        checklistVisibilityStatus: false,
       };
 
       const result = formatApiResponseToMappedEvent(apiResponse);
@@ -460,6 +474,7 @@ describe("eventMapping utils", () => {
         feedbackStatus: true,
         branchingStatus: false,
         branchInstruction: "",
+        checklistVisibilityStatus: false,
       };
 
       const result = formatApiResponseToMappedEvent(apiResponse);
@@ -480,6 +495,7 @@ describe("eventMapping utils", () => {
         feedbackStatus: false,
         branchingStatus: false,
         branchInstruction: "",
+        checklistVisibilityStatus: false,
       };
 
       const result = formatApiResponseToMappedEvent(apiResponse);
@@ -492,6 +508,7 @@ describe("eventMapping utils", () => {
       expect(result.feedbackStatus.rowId).toBe("event-123");
       expect(result.branchingStatus.rowId).toBe("event-123");
       expect(result.branchInstruction.rowId).toBe("event-123");
+      expect(result.checklistVisibilityStatus.rowId).toBe("event-123");
     });
   });
 
