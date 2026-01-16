@@ -64,7 +64,7 @@ export const TextareaWithTriggerDropdown: React.FC<TextareaWithTriggerDropdownPr
   onChange,
   placeholder,
   className,
-  disabled,
+  disabled = false,
   alwaysOpen = false,
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
