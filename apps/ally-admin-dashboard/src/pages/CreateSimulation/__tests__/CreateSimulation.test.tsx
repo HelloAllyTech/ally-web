@@ -138,6 +138,14 @@ vi.mock("@components", () => ({
 // Mock constants
 vi.mock("@constants", () => ({
   en: mockEn,
+  ExperienceMode: {
+    FEEDBACK: "FEEDBACK",
+    CHECKLIST: "CHECKLIST",
+  },
+  ChecklistType: {
+    GUIDED: "GUIDED",
+    UNGUIDED: "UNGUIDED",
+  },
   ROUTES: {
     SIMULATION_STUDIO: "/simulation-studio",
     EDIT_SIMULATION: (id: string | number) => `/create-simulation/edit/${id}`,

@@ -25,6 +25,7 @@ import {
   StepperList,
   SIMULATION_CREATOR_FIELD_GROUPS,
   SIMULATION_CREATOR_STEP_IDS,
+  ExperienceMode,
 } from "@constants";
 import { useDebounce } from "@hooks";
 import { SimulationStatus, SimulationPreviewType, triggerWarning } from "@types";
@@ -192,6 +193,11 @@ export const CreateSimulation: FC = () => {
       triggerWarningIds: triggerWarning,
       status,
     };
+
+    // Remove checklistType if experienceMode is not "CHECKLIST"
+    if (simulationData["experienceMode"] !== ExperienceMode.CHECKLIST) {
+      delete simulationData["checklistType"];
+    }
 
     let response;
     if (simulationId) {

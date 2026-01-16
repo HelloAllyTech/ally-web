@@ -61,6 +61,8 @@ export interface SimulationInput {
   isPublic?: boolean;
   triggerWarningIds?: string[];
   languageVoices?: Record<string, string>;
+  experienceMode?: string;
+  checklistType?: string;
 }
 
 export interface UpdateSimulationByIdInput {
@@ -125,6 +127,8 @@ export interface GetSimulationByIdResponse {
     agentDialoguesArray?: string[];
     agentDialogues?: string[];
     customFields: CustomFieldType[];
+    experienceMode?: string;
+    checklistType?: string;
   };
   terminationEvents?: terminationEvent[];
   terminationEvent?: {

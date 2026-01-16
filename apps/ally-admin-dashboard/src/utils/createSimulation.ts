@@ -66,5 +66,7 @@ export const formatSimulationResponseData = (data: GetSimulationByIdResponse) =>
     agentDialogues: Array.isArray(data?.metadata?.agentDialogues)
       ? data?.metadata?.agentDialogues.join("\n")
       : (data?.metadata?.agentDialogues ?? ""),
+    experienceMode: data?.metadata?.experienceMode,
+    checklistType: data?.metadata?.checklistType,
   };
 };

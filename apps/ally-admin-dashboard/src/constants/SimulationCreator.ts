@@ -66,6 +66,17 @@ export const RESPONSE_LENGTH_OPTIONS = [
   { value: "MEDIUM", label: "Medium" },
   { value: "ELABORATE", label: "Elaborate" },
 ];
+
+export const EXPERIENCE_MODE_OPTIONS = [
+  { value: "FEEDBACK", label: "Feedback Mode" },
+  { value: "CHECKLIST", label: "Checklist Mode" },
+];
+
+export const CHECKLIST_TYPE_OPTIONS = [
+  { value: "GUIDED", label: "Guided" },
+  { value: "UNGUIDED", label: "Unguided" },
+];
+
 export const SIMULATION_CREATOR_STEP_IDS = {
   overview: "overview",
   basicSettings: "basic-settings",
@@ -88,6 +99,7 @@ export const FORM_FIELD_TYPES = {
     VOICE_DROPDOWN: "voice_dropdown",
     AUTO_TERMINATION_RULE: "auto_termination_rule",
     LANGUAGE_VOICE_MAPPING: "language_voice_mapping",
+    RADIO_BUTTONS: "radio_buttons",
   },
   TOGGLE_BUTTON: "toggle_button",
   TAG_AND_DROPDOWN: "tag_and_dropdown",
@@ -130,6 +142,8 @@ export const FORM_FIELD_IDS = {
   TERMINATION_MESSAGE: "terminationMessage",
   TERMINATION_NAME: "terminationName",
   IS_PUBLIC: "isPublic",
+  EXPERIENCE_MODE: "experienceMode",
+  CHECKLIST_TYPE: "checklistType",
 };
 
 const DEFAULT_ROLE_INSTRUCTION = `You are an AI roleplay assistant for counselor training. In this simulation, you must act ONLY as the client in a therapy session. Stay fully in character, provide realistic dialogue, and do not switch roles unless explicitly instructed.\n\nImportant Instructions:\n - Prefer first-person phrasing (e.g., "I feel…", "I've been struggling with…").\n - Allow the counselor to guide the conversation.\n - If the counselor is silent or open-ended, share one thought, feeling, or small story, then stop.\n - Maintain consistency with your life history but allow natural variation in tone and detail.\n - Respond naturally, as a real client would.\n - Keep answers concise (2–6 sentences), unless a longer response is natural.\n - Reveal information gradually, not all at once.\n - Start with few details and open up more as the counsellor asks questions.\n - Show authentic emotions and natural hesitations.\n - Do not give therapy advice or act as the counselor.\n - If sensitive topics arise, respond realistically but without graphic detail.\n - Keep each reply under ~120 words.`;
@@ -341,6 +355,21 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
         label: "Auto termination",
         fullWidth: true,
         type: FORM_FIELD_TYPES.CUSTOM.AUTO_TERMINATION_RULE,
+      },
+      {
+        id: "experienceMode",
+        label: "Experience Mode",
+        type: FORM_FIELD_TYPES.CUSTOM.RADIO_BUTTONS,
+        options: EXPERIENCE_MODE_OPTIONS,
+        fullWidth: true,
+        isMandatory: true,
+      },
+      {
+        id: "checklistType",
+        label: "Checklist Type",
+        type: FORM_FIELD_TYPES.CUSTOM.RADIO_BUTTONS,
+        options: CHECKLIST_TYPE_OPTIONS,
+        fullWidth: true,
       },
     ] as FormFieldConfig[],
   },
