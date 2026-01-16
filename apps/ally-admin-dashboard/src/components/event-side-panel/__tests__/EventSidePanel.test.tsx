@@ -8,6 +8,7 @@ vi.mock("@assets", () => ({
   DoubleArrowRight: () => <svg data-testid="double-arrow-right" />,
   Trash: () => <svg data-testid="trash-icon" />,
   Close: () => <svg data-testid="close-icon" />,
+  InfoIcon: () => <svg data-testid="info-icon" />,
 }));
 
 vi.mock("@components", () => ({
@@ -70,6 +71,38 @@ vi.mock("@components", () => ({
         </button>
       </div>
     ) : null,
+  OccurrenceControlSection: ({ maxOccurrences, minGapTime }: any) => (
+    <div data-testid="occurrence-control-section">
+      <span>Max Occurrences: {maxOccurrences}</span>
+      <span>Min Gap Time: {minGapTime}</span>
+    </div>
+  ),
+  TimeWindowSection: ({ startTime, endTime }: any) => (
+    <div data-testid="time-window-section">
+      <span>Start Time: {startTime}</span>
+      <span>End Time: {endTime}</span>
+    </div>
+  ),
+  ScoreWindowSection: ({ minScore, maxScore }: any) => (
+    <div data-testid="score-window-section">
+      <span>Min Score: {minScore}</span>
+      <span>Max Score: {maxScore}</span>
+    </div>
+  ),
+  EVENT_TYPE_POPUP_OPTIONS: [
+    { value: "SENTENCE_SIMILARITY", label: "Sentence Similarity" },
+    { value: "TIME_BASED", label: "Time Based" },
+    { value: "SCORE_BASED", label: "Score Based" },
+    { value: "COMBINATION", label: "Combination Event" },
+  ],
+  TextareaWithTriggerDropdown: ({ value, onChange, placeholder }: any) => (
+    <textarea
+      data-testid="textarea-trigger-dropdown"
+      value={value}
+      onChange={e => onChange(e.target.value)}
+      placeholder={placeholder}
+    />
+  ),
 }));
 
 vi.mock("@constants", () => ({
@@ -86,6 +119,16 @@ vi.mock("@constants", () => ({
     SCORE_BASED: "SCORE_BASED",
     SENTENCE_SIMILARITY: "SENTENCE_SIMILARITY",
     COMBINATION: "COMBINATION",
+  },
+  toolTipStyles: {
+    tooltip: {
+      sx: {
+        bgcolor: "common.black",
+        "& .MuiTooltip-arrow": {
+          color: "common.black",
+        },
+      },
+    },
   },
 }));
 
@@ -129,6 +172,12 @@ vi.mock("@utils/eventNameGenerator", () => ({
     };
     const prefix = prefixMap[eventType] || "EV";
     return `${prefix}001`;
+  },
+}));
+
+vi.mock("@ally-ui-mono/ui-shared/featureFlag", () => ({
+  FEATURE_FLAGS_MAP: {
+    EVENT_DETECTION_CONFIG_FLAG: false,
   },
 }));
 

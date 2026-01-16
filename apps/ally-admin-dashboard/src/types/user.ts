@@ -27,7 +27,7 @@ export interface Tenant {
   code: string;
   description: string;
   status: string;
-  logo: string;
+  logoUrl: string;
   metadata: Record<string, unknown>;
   settings: Record<string, unknown>;
   createdAt: string;
@@ -64,6 +64,7 @@ export interface UserListUser {
   creditLimit: number | null;
   consumedCredits: number | null;
   secondsAllowedPerCredit: number;
+  profileImageUrl: string;
 }
 
 export interface UserListProps {
@@ -113,6 +114,7 @@ export interface CreateTenantBody {
   name: string;
   code: string;
   description?: string;
+  logoUrl?: string;
 }
 
 export interface GetUsersResponse {
@@ -152,6 +154,7 @@ export interface UserModalProps {
   uploadButtonName?: string;
   uploadTitle?: string;
   uploadId?: string;
+  uploadImageUrl?: (payload: GetLogoUrlRequest) => Promise<any>;
 }
 
 export type Option = {
@@ -212,4 +215,18 @@ export interface AddCreditBody {
 export interface disableSuccessResponse {
   success: boolean;
   message: string;
+}
+export interface GetLogoUrlRequest {
+  fileName: string;
+  fileSize: number;
+  contentType: string;
+}
+
+export interface GetLogoUrlResponse {
+  presignedUrl: string;
+  logoUrl: string;
+}
+
+export interface DeleteLogoRequest {
+  logoUrl: string;
 }

@@ -19,6 +19,9 @@ vi.mock("@ally-ui-mono/ui-shared", () => ({
   logger: {
     info: vi.fn(),
   },
+  FEATURE_FLAGS_MAP: {
+    PEER_REVIEW_FLAG: false,
+  },
 }));
 
 // Mock CSS modules and font loading
@@ -78,6 +81,7 @@ vi.mock("@assets", () => ({
   SearchIcon: () => <svg data-testid="search-icon" />,
   NoBadges: () => <div data-testid="no-badges" />,
   Badge: () => <svg data-testid="badge-icon" />,
+  ReviewNavIcon: () => <svg data-testid="review-nav-icon" />,
 }));
 
 // Mock components

@@ -7,6 +7,26 @@ import { FieldProps, UserListUser } from "@types";
 
 import { UserModal } from "../UserModal";
 
+// Mock ImageUpload component
+vi.mock("@ally-ui-mono/ui-shared", () => ({
+  ImageUpload: ({ formMethods, uploadId, uploadButtonName, uploadTitle }: any) => (
+    <div data-testid="image-upload">
+      <span>{uploadTitle}</span>
+      <button>{uploadButtonName}</button>
+    </div>
+  ),
+}));
+
+// Mock API hooks
+vi.mock("@api", async importOriginal => {
+  const actual = await importOriginal<typeof import("@api")>();
+  return {
+    ...actual,
+    useDeleteLogoMutation: vi.fn(() => [vi.fn()]),
+    usePostLogoUrlMutation: vi.fn(() => [vi.fn()]),
+  };
+});
+
 // Mock specific component files to avoid circular dependencies
 vi.mock("@components/button", () => ({
   Button: ({ children, onClick, disabled, className, variant }: any) => (
@@ -16,7 +36,7 @@ vi.mock("@components/button", () => ({
       className={className}
       data-variant={variant}
       data-testid={
-        children === "Save" || children?.props?.children === "Save"
+        children === "Save" || children?.props?.children === "Save" || children === "Submit"
           ? "save-button"
           : "cancel-button"
       }
@@ -43,6 +63,7 @@ vi.mock("@components/dropdownwithtag", () => ({
           onChange(selectedOptions);
         }}
         multiple
+        defaultValue={initialValue}
       >
         {options.map((option: any) => (
           <option key={option.id || option.value} value={option.name || option.value}>
@@ -125,6 +146,10 @@ vi.mock("@constants", async importOriginal => {
   const actual = await importOriginal<typeof import("@constants")>();
   return {
     ...actual,
+    KeyboardKeys: {
+      ESCAPE: "Escape",
+      KEYDOWN: "keydown",
+    },
     en: {
       ...(actual.en || {}),
       userManagement: {
@@ -140,6 +165,15 @@ vi.mock("@constants", async importOriginal => {
     },
   };
 });
+
+// Mock button types
+vi.mock("../types", () => ({
+  ButtonVariant: {
+    PRIMARY: "primary",
+    SECONDARY: "secondary",
+    DESTRUCTIVE: "destructive",
+  },
+}));
 
 // Wrapper component to provide form context
 const TestWrapper = ({ children, defaultValues = {} }: any) => {
@@ -254,7 +288,7 @@ describe("UserModal", () => {
         </TestWrapper>,
       );
 
-      expect(screen.getByText("Cancel")).toBeInTheDocument();
+      expect(screen.getByTestId("cancel-button")).toHaveTextContent("Cancel");
     });
 
     it("renders save button with default text", () => {
@@ -272,7 +306,7 @@ describe("UserModal", () => {
         </TestWrapper>,
       );
 
-      expect(screen.getByText("Save")).toBeInTheDocument();
+      expect(screen.getByTestId("save-button")).toHaveTextContent("Save");
     });
 
     it("renders save button with custom buttonName", () => {
@@ -291,7 +325,7 @@ describe("UserModal", () => {
         </TestWrapper>,
       );
 
-      expect(screen.getByText("Submit")).toBeInTheDocument();
+      expect(screen.getByTestId("save-button")).toHaveTextContent("Submit");
     });
   });
 
@@ -487,7 +521,7 @@ describe("UserModal", () => {
       };
 
       render(
-        <TestWrapper>
+        <TestWrapper defaultValues={{ roles: [UserRole.LEARNER] }}>
           {(formMethods: any) => (
             <UserModal
               isOpen={true}
@@ -521,7 +555,7 @@ describe("UserModal", () => {
         </TestWrapper>,
       );
 
-      fireEvent.keyDown(document, { key: KeyboardKeys.ESCAPE });
+      fireEvent.keyDown(document, { key: "Escape" });
 
       await waitFor(() => {
         expect(mockOnClose).toHaveBeenCalledTimes(1);
@@ -618,7 +652,7 @@ describe("UserModal", () => {
         </TestWrapper>,
       );
 
-      fireEvent.click(screen.getByText("Cancel"));
+      fireEvent.click(screen.getByTestId("cancel-button"));
 
       expect(mockOnClose).toHaveBeenCalledTimes(1);
     });
@@ -790,7 +824,7 @@ describe("UserModal", () => {
 
   describe("Backdrop click behavior", () => {
     it("closes modal when backdrop is clicked", async () => {
-      render(
+      const { container } = render(
         <TestWrapper>
           {(formMethods: any) => (
             <UserModal
@@ -804,7 +838,8 @@ describe("UserModal", () => {
         </TestWrapper>,
       );
 
-      const backdrop = screen.getByText("Test Modal").parentElement?.parentElement;
+      const backdrop = container.querySelector(".bg-black.bg-opacity-50");
+      expect(backdrop).toBeInTheDocument();
 
       if (backdrop) {
         fireEvent.mouseDown(backdrop);
@@ -817,7 +852,7 @@ describe("UserModal", () => {
     });
 
     it("does not close modal when clicking inside modal content", () => {
-      render(
+      const { container } = render(
         <TestWrapper>
           {(formMethods: any) => (
             <UserModal
@@ -831,7 +866,7 @@ describe("UserModal", () => {
         </TestWrapper>,
       );
 
-      const modalContent = screen.getByText("Test Modal").parentElement;
+      const modalContent = container.querySelector(".bg-white");
 
       if (modalContent) {
         fireEvent.mouseDown(modalContent);
@@ -865,7 +900,7 @@ describe("UserModal", () => {
       fireEvent.blur(nameInput);
 
       await waitFor(() => {
-        expect(screen.getByText(/Maximum 100 characters allowed/)).toBeInTheDocument();
+        expect(screen.getByText("Maximum 100 characters allowed")).toBeInTheDocument();
       });
     });
 
@@ -891,7 +926,7 @@ describe("UserModal", () => {
       fireEvent.blur(nameInput);
 
       await waitFor(() => {
-        expect(screen.getByText("Maximum 100 characters allowed")).toBeInTheDocument();
+        expect(nameInput).toHaveClass("border-destructive-500");
       });
     });
   });

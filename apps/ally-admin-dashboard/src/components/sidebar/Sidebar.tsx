@@ -3,7 +3,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useLocation, useNavigate } from "react-router-dom";
 
-import { FEATURE_FLAGS_MAP } from "@ally-ui-mono/ui-shared/featureFlag";
+import { FEATURE_FLAGS_MAP, CustomImage } from "@ally-ui-mono/ui-shared";
 import {
   ArrowDown,
   Book,
@@ -14,6 +14,8 @@ import {
   Logout,
   HappyEmoji,
   ManageAccounts,
+  Globe,
+  Mic,
 } from "@assets";
 import { UserModal } from "@components";
 import { SIDEBAR_ITEMS, ROUTES, en, profileSettings, USER_MODAL_FIELDS_IDS } from "@constants";
@@ -30,7 +32,15 @@ const defaultProfileUploadValues: {
 export const Sidebar: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { user, logout, filteredNavigationItems } = useUser();
+  const {
+    user,
+    logout,
+    filteredNavigationItems,
+    getProfileUrl,
+    deleteProfile,
+    uploadProfileImage,
+    refetchUser,
+  } = useUser();
 
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [isExpanded, setIsExpanded] = useState(true);
@@ -91,6 +101,12 @@ export const Sidebar: React.FC = () => {
   };
 
   const uploadProfile = async () => {
+    const existingProfileUrl = user.profileImageUrl;
+    await uploadProfileImage({ profileImageUrl: imageUploaded });
+
+    if (existingProfileUrl) await deleteProfile({ profileImageUrl: existingProfileUrl });
+    await refetchUser();
+
     setOpenSettings(false);
   };
 
@@ -102,6 +118,10 @@ export const Sidebar: React.FC = () => {
         return <Users />;
       case SIDEBAR_ITEMS.EVENT_MANAGEMENT:
         return <HappyEmoji />;
+      case SIDEBAR_ITEMS.SCENARIO_VOICES:
+        return <Mic />;
+      case SIDEBAR_ITEMS.SCENARIO_LANGUAGES:
+        return <Globe />;
       default:
         return null;
     }
@@ -118,6 +138,8 @@ export const Sidebar: React.FC = () => {
         return location.pathname.includes(ROUTES.USER_MANAGEMENT);
       case ROUTES.MANAGE_EVENTS:
         return location.pathname.includes(ROUTES.MANAGE_EVENTS);
+      case ROUTES.MANAGE_SCENARIO_VOICES:
+        return location.pathname.includes(ROUTES.MANAGE_SCENARIO_VOICES);
       default:
         return false;
     }
@@ -160,37 +182,40 @@ export const Sidebar: React.FC = () => {
   const profileSection = (
     <>
       <div ref={containerRef} className="border-t border-border-light py-4">
-        {isExpanded ? (
-          <div
-            onClick={handleUserMenuToggle}
-            className="flex flex-row justify-between items-center h-8 py-0 cursor-pointer"
-          >
-            <div className="flex flex-row items-center">
-              <div className="w-8 h-8 rounded-full flex items-center justify-center mr-2">
+        <div
+          onClick={handleUserMenuToggle}
+          className="flex flex-row justify-between items-center h-8 py-0 cursor-pointer"
+        >
+          <div className="flex gap-2 items-center w-full justify-center object-cover">
+            <div className="w-[40px] h-[40px] rounded-full overflow-hidden flex items-center justify-center">
+              {user?.profileImageUrl ? (
+                <CustomImage
+                  src={user?.profileImageUrl}
+                  alt="profile"
+                  containerClassName="w-full h-full"
+                  fallbackClassName="flex items-center justify-center text-typography-600 bg-neutral-100 rounded-full object-cover w-full h-full"
+                  fallbackText="NA"
+                />
+              ) : (
                 <User />
-              </div>
-              <div className="flex-1 text-left w-full min-w-[100px]">
-                <div className="text-lg text-typography-900 text-ellipsis overflow-hidden whitespace-nowrap">
-                  {user?.name}
-                </div>
-                <div className="text-xs mb-1 text-typography-800 text-ellipsis overflow-hidden whitespace-nowrap">
-                  {user?.email}
-                </div>
-              </div>
+              )}
             </div>
+
+            {isExpanded && (
+              <div className="flex-1 min-w-0 text-left">
+                <div className="text-lg text-typography-900 truncate">{user?.name}</div>
+                <div className="text-xs mb-1 text-typography-800 truncate">{user?.email}</div>
+              </div>
+            )}
+          </div>
+          {isExpanded && (
             <div
-              className={`w-8 h-8 rounded-full flex items-center justify-center ml-3 ${isUserMenuOpen ? "rotate-[-90deg]" : ""}`}
+              className={`w-8 h-8 rounded-full flex items-center justify-center ${isUserMenuOpen ? "rotate-[-90deg]" : ""}`}
             >
               <ArrowDown />
             </div>
-          </div>
-        ) : (
-          <div onClick={handleUserMenuToggle} className="flex justify-center">
-            <div className="w-8 flex items-center justify-center">
-              <User />
-            </div>
-          </div>
-        )}
+          )}
+        </div>
 
         {/* User Menu Dropdown */}
         {isUserMenuOpen && (
@@ -232,6 +257,7 @@ export const Sidebar: React.FC = () => {
           formMethods={profileSettingsForm}
           uploadId={USER_MODAL_FIELDS_IDS.PROFILE}
           uploadButtonName={imageUploaded ? en.userManagement.changeImage : en.auth.uploadImage}
+          uploadImageUrl={getProfileUrl}
         />
       ) : null}
     </>

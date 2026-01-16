@@ -112,15 +112,7 @@ vi.mock("@components", () => ({
       {children}
     </button>
   ),
-  Carousel: ({ slides }: { slides: any[] }) => (
-    <div data-testid="carousel">
-      {slides.map((slide, index) => (
-        <div key={index} data-testid={`carousel-slide-${index}`}>
-          {slide.title}
-        </div>
-      ))}
-    </div>
-  ),
+
   OTP: ({ value, onChange, onComplete }: any) => (
     <input
       data-testid="otp-input"
@@ -434,37 +426,6 @@ describe("Login Component", () => {
 
       const buttons = screen.getAllByTestId("button");
       expect(buttons.length).toBeGreaterThan(0);
-    });
-  });
-
-  /**
-   * TEST GROUP: Carousel
-   * Verifies carousel functionality
-   */
-  describe("Carousel", () => {
-    it("should render carousel with slides", () => {
-      render(
-        <TestWrapper store={mockStore}>
-          <Login />
-        </TestWrapper>,
-      );
-
-      const carousel = screen.getByTestId("carousel");
-      expect(carousel).not.toBeNull();
-    });
-
-    it("should display all carousel slides", () => {
-      render(
-        <TestWrapper store={mockStore}>
-          <Login />
-        </TestWrapper>,
-      );
-
-      const slide1 = screen.getByTestId("carousel-slide-0");
-      const slide2 = screen.getByTestId("carousel-slide-1");
-
-      expect(slide1).not.toBeNull();
-      expect(slide2).not.toBeNull();
     });
   });
 

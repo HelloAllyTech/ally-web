@@ -28,7 +28,11 @@ import {
 } from "@constants";
 import { setAvailableEvents } from "@reducer";
 import { UpdateEventDataParam } from "@types";
-import { convertEventToApiPayload, convertApiResponseToEvent } from "@utils";
+import {
+  convertEventToApiPayload,
+  convertApiResponseToEvent,
+  isDetectionConfigField,
+} from "@utils";
 
 export const EventManagement: React.FC = () => {
   const limit = 30;
@@ -142,18 +146,39 @@ export const EventManagement: React.FC = () => {
 
   const createEventObject = useCallback((event: UpdateEventDataParam) => {
     const triggerCondition = event.triggerCondition || {};
+    const isEditable = event.isEditable ?? true;
+    const isDisabled = !isEditable;
 
     return {
       id: { value: event.id || "", disabled: false, rowId: event.id },
       detectionType: { value: event.detectionType || "", disabled: true, rowId: event.id },
-      name: { value: event.name || "", disabled: false, rowId: event.id },
+      name: { value: event.name || "", disabled: isDisabled, rowId: event.id },
       eventCode: { value: event.eventCode || "", disabled: true, rowId: event.id },
-      triggerCondition: { value: triggerCondition, disabled: false, rowId: event.id },
-      branchInstruction: { value: event.branchInstruction || "", disabled: false, rowId: event.id },
-      score: { value: event.score ?? 0, disabled: false, rowId: event.id },
-      message: { value: event.message || "", disabled: false, rowId: event.id },
-      emoji: { value: event.emoji || "", disabled: false, rowId: event.id },
-      visibilityType: { value: event.visibilityType || "", disabled: false, rowId: event.id },
+      triggerCondition: { value: triggerCondition, disabled: isDisabled, rowId: event.id },
+      branchInstruction: {
+        value: event.branchInstruction || "",
+        disabled: isDisabled,
+        rowId: event.id,
+      },
+      score: { value: event.score ?? 0, disabled: isDisabled, rowId: event.id },
+      message: { value: event.message || "", disabled: isDisabled, rowId: event.id },
+      emoji: { value: event.emoji || "", disabled: isDisabled, rowId: event.id },
+      visibilityType: { value: event.visibilityType || "", disabled: isDisabled, rowId: event.id },
+      maxOccurrences: {
+        value: event.detectionConfig?.maxOccurrences,
+        disabled: isDisabled,
+        rowId: event.id,
+      },
+      minGapTime: {
+        value: event.detectionConfig?.minGapTime,
+        disabled: isDisabled,
+        rowId: event.id,
+      },
+      startTime: { value: event.detectionConfig?.startTime, disabled: isDisabled, rowId: event.id },
+      endTime: { value: event.detectionConfig?.endTime, disabled: isDisabled, rowId: event.id },
+      minScore: { value: event.detectionConfig?.minScore, disabled: isDisabled, rowId: event.id },
+      maxScore: { value: event.detectionConfig?.maxScore, disabled: isDisabled, rowId: event.id },
+      isEditable: { value: isEditable, disabled: false, rowId: event.id },
     };
   }, []);
 
@@ -172,6 +197,8 @@ export const EventManagement: React.FC = () => {
       emoji: selectedEvent.emoji || "",
       visibilityType: selectedEvent.visibilityType || "",
       triggerCondition: selectedEvent.triggerCondition,
+      detectionConfig: selectedEvent.detectionConfig,
+      isEditable: selectedEvent.isEditable ?? true,
     };
   }, [selectedEvent]);
 
@@ -220,7 +247,12 @@ export const EventManagement: React.FC = () => {
     const selectedEvent = events.find(event => event.id === rowId);
     if (value !== undefined && selectedEvent) {
       const updatedEvent: UpdateEventDataParam = { ...selectedEvent };
-      (updatedEvent as any)[columnId] = value;
+      if (isDetectionConfigField(columnId)) {
+        const updatedEventDetectionConfig = { ...selectedEvent.detectionConfig, [columnId]: value };
+        updatedEvent.detectionConfig = updatedEventDetectionConfig;
+      } else {
+        (updatedEvent as any)[columnId] = value;
+      }
 
       onUpdateEvent(updatedEvent);
     }

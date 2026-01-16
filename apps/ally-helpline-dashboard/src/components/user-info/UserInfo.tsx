@@ -1,7 +1,7 @@
 import { FC, useEffect, useRef, useState } from "react";
 
-import { FEATURE_FLAGS_MAP } from "@ally-ui-mono/ui-shared";
-import { AccountCircle, Arrow, Bolt, Logout, ManageAccount } from "@assets";
+import { CustomImage, FEATURE_FLAGS_MAP } from "@ally-ui-mono/ui-shared";
+import { AccountCircle, Ally, Arrow, Bolt, Logout, ManageAccount } from "@assets";
 import { PermissionGuard } from "@components";
 import { Permissions } from "@constants";
 import { useSimulationCredits } from "@hooks";
@@ -12,13 +12,14 @@ const UserInfo: FC<{
   isExpanded?: boolean;
   onLogout: () => void;
   onProfileSettings: () => void;
-}> = ({ user, isExpanded, onLogout, onProfileSettings }) => {
+  profileUrl?: string;
+}> = ({ user, isExpanded, onLogout, onProfileSettings, profileUrl }) => {
   const [showLogout, setShowLogout] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const { credits, limitReached, CreditPercentage } = useSimulationCredits();
 
   const hasPercentage = typeof CreditPercentage === "number" && CreditPercentage >= 0;
-  const ringColor = limitReached ? "#FE6F64" : "#5F99FC";
+  const ringColor = limitReached ? "#FE6F64" : "#264D8E";
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -32,59 +33,75 @@ const UserInfo: FC<{
 
   return (
     <div className="relative w-full" ref={containerRef} data-testid="user-info">
-      <div
-        data-testid="user-info-trigger"
-        onClick={() => setShowLogout(prev => !prev)}
-        className="flex border-gray-200 items-center cursor-pointer justify-end"
-      >
-        <div className="flex gap-2 items-center w-full">
-          <div
-            data-testid="user-info-avatar-ring"
-            className={"w-[32px] h-[32px] rounded-full p-[2px]"}
-            style={
-              hasPercentage
-                ? {
-                    background: `conic-gradient(${ringColor} ${CreditPercentage * 3.6}deg, #e5e7eb ${CreditPercentage * 3.6}deg)`,
-                  }
-                : undefined
-            }
-          >
+      <div className="flex flex-col gap-3 w-full">
+        <div
+          data-testid="user-info-trigger"
+          onClick={() => setShowLogout(prev => !prev)}
+          className="flex border-gray-200 items-center cursor-pointer "
+        >
+          <div className="flex gap-2 items-center w-full">
             <div
-              className="bg-white rounded-full flex items-center justify-center w-full h-full"
-              data-testid="user-info-avatar"
+              data-testid="user-info-avatar-ring"
+              className={"w-[40px] h-[40px] rounded-full p-[2px]"}
+              style={
+                hasPercentage
+                  ? {
+                      background: `conic-gradient(${ringColor} ${CreditPercentage * 3.6}deg, #e5e7eb ${CreditPercentage * 3.6}deg)`,
+                    }
+                  : undefined
+              }
             >
-              <AccountCircle
-                className="text-typography-700 w-[28px] h-[28px]"
-                data-testid="user-info-avatar-icon"
-              />
+              <div
+                className="bg-white rounded-full flex items-center justify-center w-full h-full overflow-hidden"
+                data-testid="user-info-avatar"
+              >
+                {profileUrl ? (
+                  <CustomImage
+                    className="rounded-full object-cover"
+                    fallbackClassName="flex items-center justify-center text-typography-600 bg-neutral-100 rounded-full object-cover w-full h-full"
+                    fallbackText="NA"
+                    src={profileUrl}
+                    alt="Profile"
+                  />
+                ) : (
+                  <AccountCircle
+                    className="text-typography-700 w-[28px] h-[28px]"
+                    data-testid="user-info-avatar-icon"
+                  />
+                )}
+              </div>
             </div>
+            {isExpanded && (
+              <div
+                className="flex flex-col font-primary max-w-[150px] overflow-hidden"
+                data-testid="user-info-details"
+              >
+                <div className="text-lg text-typography-800 truncate" data-testid="user-info-name">
+                  {user?.name}
+                </div>
+                <div className="text-xs text-typography-800 truncate" data-testid="user-info-email">
+                  {user?.email}
+                </div>
+              </div>
+            )}
           </div>
           {isExpanded && (
-            <div
-              className="flex flex-col font-primary max-w-[150px] overflow-hidden"
-              data-testid="user-info-details"
-            >
-              <div className="text-lg text-typography-800 truncate" data-testid="user-info-name">
-                {user?.name}
-              </div>
-              <div className="text-xs text-typography-800 truncate" data-testid="user-info-email">
-                {user?.email}
-              </div>
+            <div className="flex-shrink-0">
+              <Arrow
+                data-testid="user-info-toggle-arrow"
+                className={`w-5 h-2 text-typography-800 transition-transform duration-300 ${
+                  showLogout ? "-rotate-90" : ""
+                }`}
+              />
             </div>
           )}
         </div>
-        {isExpanded && (
-          <div className="flex-shrink-0">
-            <Arrow
-              data-testid="user-info-toggle-arrow"
-              className={`w-5 h-2 text-typography-800 transition-transform duration-300 ${
-                showLogout ? "-rotate-90" : ""
-              }`}
-            />
-          </div>
-        )}
+        <div
+          className={`border-[0.5px] flex items-center justify-center py-2  transition-all duration-200  rounded-md ${!isExpanded ? "h-10 w-10 p-1" : ""}`}
+        >
+          <Ally />
+        </div>
       </div>
-
       {showLogout && (
         <div
           data-testid="user-info-dropdown"
@@ -123,7 +140,7 @@ const UserInfo: FC<{
               <div
                 data-testid="user-info-credits-bar"
                 className={`h-2 rounded-full transition-all duration-300 ${
-                  limitReached ? "bg-red-500" : "bg-blue-600"
+                  limitReached ? "bg-red-500" : "bg-[#264D8E]"
                 }`}
                 style={{ width: `${CreditPercentage}%` }}
               />

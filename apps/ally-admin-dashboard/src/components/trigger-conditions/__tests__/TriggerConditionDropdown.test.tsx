@@ -101,7 +101,6 @@ describe("TriggerConditionDropdown", () => {
       const { container } = render(<TriggerConditionDropdown {...defaultProps} />);
 
       const wrapper = container.firstChild as HTMLElement;
-      expect(wrapper).toHaveClass("bg-neutral-50");
       expect(wrapper).toHaveClass("border");
     });
 

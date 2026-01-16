@@ -8,6 +8,7 @@ import { isObject } from "@utils";
 interface VoiceOption {
   id: string;
   name: string;
+  provider?: string;
 }
 
 interface LanguageOption {
@@ -32,6 +33,7 @@ export const LanguageVoiceMapping: FC<LanguageVoiceMappingProps> = ({
 }) => {
   const { data: availableLanguages = [] } = useGetAvailableLanguageVoicesQuery({
     active: true,
+    voicesNeeded: true,
   }) as {
     data: LanguageOption[];
   };
@@ -70,7 +72,7 @@ export const LanguageVoiceMapping: FC<LanguageVoiceMappingProps> = ({
 
       return language.voices.map(voice => ({
         value: voice.id,
-        label: voice.name,
+        label: voice.provider ? `${voice.name}  (${voice.provider})` : voice.name,
       }));
     },
     [languages],

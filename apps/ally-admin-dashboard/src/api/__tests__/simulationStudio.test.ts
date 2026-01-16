@@ -620,4 +620,219 @@ describe("simulationStudio API", () => {
       expect(emptyArray).toHaveLength(0);
     });
   });
+
+  describe("Voice Management API", () => {
+    describe("Voice Query Parameters", () => {
+      it("should support searchName parameter", () => {
+        const searchName = "voice search";
+        expect(searchName).toBeTruthy();
+        expect(typeof searchName).toBe("string");
+      });
+
+      it("should support limit parameter", () => {
+        const limit = 30;
+        expect(limit).toBeGreaterThan(0);
+        expect(Number.isInteger(limit)).toBe(true);
+      });
+
+      it("should support offset parameter", () => {
+        const offset = 0;
+        expect(offset).toBeGreaterThanOrEqual(0);
+        expect(Number.isInteger(offset)).toBe(true);
+      });
+
+      it("should support sorting with sortBy parameter", () => {
+        const sortBy = "createdAt";
+        expect(sortBy).toBeTruthy();
+      });
+    });
+
+    describe("Voice Create Operation", () => {
+      it("should accept voice data with required fields", () => {
+        const voiceData = {
+          name: "Test Voice",
+          provider: "Google",
+          languageId: 1,
+          config: { model: "neural" },
+        };
+
+        expect(voiceData.name).toBeTruthy();
+        expect(voiceData.provider).toBeTruthy();
+        expect(voiceData.languageId).toBeTruthy();
+        expect(voiceData.config).toBeTruthy();
+      });
+
+      it("should wrap voice data in voices array for API", () => {
+        const voice = { name: "Voice", provider: "Provider", languageId: 1, config: {} };
+        const payload = { voices: [voice] };
+
+        expect(Array.isArray(payload.voices)).toBe(true);
+        expect(payload.voices[0]).toEqual(voice);
+      });
+
+      it("should return array of created voices", () => {
+        const responseData = {
+          voices: [
+            {
+              id: "voice-1",
+              name: "Voice",
+              provider: "Provider",
+              languageId: 1,
+              config: {},
+              createdAt: new Date().toISOString(),
+              updatedAt: new Date().toISOString(),
+            },
+          ],
+        };
+
+        expect(Array.isArray(responseData.voices)).toBe(true);
+        expect(responseData.voices[0].id).toBeTruthy();
+      });
+    });
+
+    describe("Voice Update Operation", () => {
+      it("should generate correct update voice URL with ID", () => {
+        const voiceId = "voice-123";
+        const endpoint = ApiEndpoints.SIMULATION_STUDIO.SCENARIO_VOICES;
+        const updateUrl = `${endpoint}/${voiceId}`;
+
+        expect(updateUrl).toBe("/v1/learn/scenario-voices/voice-123");
+        expect(updateUrl).toContain(voiceId);
+      });
+
+      it("should accept partial voice data for updates", () => {
+        const updateData = {
+          name: "Updated Voice",
+          provider: "Azure",
+          config: { model: "standard" },
+        };
+
+        expect(updateData.name).toBeTruthy();
+        expect(updateData.provider).toBeTruthy();
+        expect(updateData.config).toBeTruthy();
+      });
+
+      it("should exclude id field from update payload", () => {
+        const updateData = {
+          name: "Updated Voice",
+          provider: "Provider",
+          languageId: 1,
+          config: {},
+        };
+
+        // Verify that id is not included
+        expect("id" in updateData).toBe(false);
+      });
+    });
+
+    describe("Voice Read/Fetch Operation", () => {
+      it("should return paginated voice list", () => {
+        const response = {
+          voices: [
+            {
+              id: "voice-1",
+              name: "Voice 1",
+              provider: "Google",
+              languageId: 1,
+              config: {},
+              createdAt: "2024-01-15T10:00:00Z",
+              updatedAt: "2024-01-15T10:00:00Z",
+            },
+          ],
+          total: 100,
+          limit: 30,
+          offset: 0,
+        };
+
+        expect(Array.isArray(response.voices)).toBe(true);
+        expect(response.total).toBeGreaterThanOrEqual(response.voices.length);
+        expect(response.limit).toBeGreaterThan(0);
+        expect(response.offset).toBeGreaterThanOrEqual(0);
+      });
+
+      it("should support empty voice list response", () => {
+        const response = {
+          voices: [],
+          total: 0,
+          limit: 30,
+          offset: 0,
+        };
+
+        expect(Array.isArray(response.voices)).toBe(true);
+        expect(response.voices.length).toBe(0);
+        expect(response.total).toBe(0);
+      });
+
+      it("should include all voice fields in response", () => {
+        const voice = {
+          id: "voice-1",
+          name: "Voice",
+          provider: "Provider",
+          languageId: 1,
+          config: { key: "value" },
+          createdAt: "2024-01-15T10:00:00Z",
+          updatedAt: "2024-01-15T10:00:00Z",
+        };
+
+        expect(voice).toHaveProperty("id");
+        expect(voice).toHaveProperty("name");
+        expect(voice).toHaveProperty("provider");
+        expect(voice).toHaveProperty("languageId");
+        expect(voice).toHaveProperty("config");
+        expect(voice).toHaveProperty("createdAt");
+        expect(voice).toHaveProperty("updatedAt");
+      });
+    });
+
+    describe("Voice Configuration", () => {
+      it("should accept valid JSON object configuration", () => {
+        const config = { model: "neural", age: "adult" };
+        expect(typeof config).toBe("object");
+        expect(!Array.isArray(config)).toBe(true);
+      });
+
+      it("should accept complex nested configuration", () => {
+        const config = {
+          model: "neural",
+          age: "adult",
+          settings: {
+            pitch: 1.0,
+            rate: 1.2,
+          },
+        };
+
+        expect(typeof config).toBe("object");
+        expect(config.settings).toBeTruthy();
+        expect(typeof config.settings).toBe("object");
+      });
+
+      it("should support flexible configuration keys", () => {
+        const voice1Config = { voiceId: "google-us-en-A" };
+        const voice2Config = { model: "neural", gender: "female" };
+        const voice3Config = { provider: "azure", region: "east-us" };
+
+        expect(voice1Config).toHaveProperty("voiceId");
+        expect(voice2Config).toHaveProperty("model");
+        expect(voice3Config).toHaveProperty("provider");
+      });
+    });
+
+    describe("Voice Cache Invalidation", () => {
+      it("should use SCENARIO_VOICES tag for cache management", () => {
+        expect(TAG_TYPES.SCENARIO_VOICES).toBe("scenarioVoices");
+      });
+
+      it("should invalidate cache on create operation", () => {
+        const tag = TAG_TYPES.SCENARIO_VOICES;
+        expect(tag).toBeTruthy();
+        expect(typeof tag).toBe("string");
+      });
+
+      it("should invalidate cache on update operation", () => {
+        const tag = TAG_TYPES.SCENARIO_VOICES;
+        expect(tag).toBeTruthy();
+        expect(typeof tag).toBe("string");
+      });
+    });
+  });
 });

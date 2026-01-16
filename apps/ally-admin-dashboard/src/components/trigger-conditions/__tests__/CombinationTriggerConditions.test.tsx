@@ -148,8 +148,8 @@ describe("CombinationTriggerConditions", () => {
   const defaultTriggerCondition = {
     expression: {
       type: "AND" as const,
-      left: { id: "event-1" },
-      right: { id: "event-2" },
+      left: { id: "event-1", name: "Event 1" },
+      right: { id: "event-2", name: "Event 2" },
     },
   };
 
@@ -437,7 +437,7 @@ describe("CombinationTriggerConditions", () => {
             triggerCondition={{
               expression: {
                 type: "AND",
-                left: { id: "redux-event-1" },
+                left: { id: "redux-event-1", name: "Redux Event 1" },
                 right: { id: "" },
               },
             }}
@@ -580,7 +580,7 @@ describe("CombinationTriggerConditions", () => {
             triggerCondition={{
               expression: {
                 type: "AND",
-                left: { id: "event-1" },
+                left: { id: "event-1", name: "Event 1" },
                 right: { id: "" },
               },
             }}
@@ -617,7 +617,7 @@ describe("CombinationTriggerConditions", () => {
               expression: {
                 type: "AND",
                 left: { id: "" },
-                right: { id: "event-2" },
+                right: { id: "event-2", name: "Event 2" },
               },
             }}
             onChange={defaultOnChange}
@@ -850,13 +850,7 @@ describe("CombinationTriggerConditions", () => {
   });
 
   describe("Display Values from API", () => {
-    it("displays Loading... while fetching event details", () => {
-      vi.mocked(useGetSessionEventByIdQuery).mockReturnValue({
-        data: null,
-        isLoading: true,
-        isError: false,
-      } as any);
-
+    it("displays event names from triggerCondition expression", () => {
       const store = createTestStore();
       render(
         <Provider store={store}>
@@ -867,38 +861,25 @@ describe("CombinationTriggerConditions", () => {
         </Provider>,
       );
 
-      const loadingTexts = screen.getAllByText("Loading...");
-      expect(loadingTexts.length).toBeGreaterThan(0);
+      // Component uses displayValue from triggerCondition.expression.left/right.name
+      expect(screen.getByTestId("dropdown-value-event-1")).toHaveTextContent("Event 1");
+      expect(screen.getByTestId("dropdown-value-event-2")).toHaveTextContent("Event 2");
     });
 
-    it("displays event name with eventCode from API", () => {
-      vi.mocked(useGetSessionEventByIdQuery).mockImplementation((id: any) => {
-        if (id === "event-1") {
-          return {
-            data: { id: "event-1", name: "Event 1", eventCode: "E1" },
-            isLoading: false,
-            isError: false,
-          } as any;
-        }
-        if (id === "event-2") {
-          return {
-            data: { id: "event-2", name: "Event 2", eventCode: "E2" },
-            isLoading: false,
-            isError: false,
-          } as any;
-        }
-        return {
-          data: null,
-          isLoading: false,
-          isError: false,
-        } as any;
-      });
+    it("displays event names from expression with eventCode format", () => {
+      const triggerConditionWithEventCode = {
+        expression: {
+          type: "AND" as const,
+          left: { id: "event-1", name: "E1 - Event 1" },
+          right: { id: "event-2", name: "E2 - Event 2" },
+        },
+      };
 
       const store = createTestStore();
       render(
         <Provider store={store}>
           <CombinationTriggerConditions
-            triggerCondition={defaultTriggerCondition}
+            triggerCondition={triggerConditionWithEventCode}
             onChange={defaultOnChange}
           />
         </Provider>,

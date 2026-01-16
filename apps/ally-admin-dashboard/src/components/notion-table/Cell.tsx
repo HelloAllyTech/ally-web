@@ -8,8 +8,16 @@ import {
   Switch,
   SelectComponent,
   EditableTriggerConditionsPopup,
+  TextareaWithTriggerDropdown,
 } from "@components/notion-table";
-import { formatCapitalizedEnum } from "@utils";
+import { DETECTION_CONFIG_FIELDS } from "@constants";
+import {
+  formatCapitalizedEnum,
+  isInfinityValue,
+  normalizeDetectionConfigValue,
+  getInfinityDisplay,
+  toggleInfinityValue,
+} from "@utils";
 
 import { cellTypes } from "./utils";
 
@@ -53,6 +61,77 @@ export const Cell = ({
   };
 
   let element: React.ReactNode;
+
+  /**
+   * Renders time input with infinity toggle support
+   * Used for startTime, endTime, and minGapTime fields
+   */
+  const CustomTimeInput = () => {
+    const normalizedValue = normalizeDetectionConfigValue(value.value, id);
+    const isInfinity = isInfinityValue(normalizedValue);
+
+    // For startTime, always show input (no infinity state)
+    if (id === DETECTION_CONFIG_FIELDS.START_TIME) {
+      return (
+        <div className="flex items-center gap-2 cursor-pointer hover:bg-neutral-100 rounded-md p-1">
+          <TimeInput
+            className="px-[0px]"
+            value={normalizedValue || "00:00:00"}
+            onBlur={updateCellValue}
+            disabled={isDisabled}
+          />
+        </div>
+      );
+    }
+
+    // For other time fields, support infinity toggle
+    if (isInfinity) {
+      return (
+        <div onClick={() => updateCellValue("00:00:00")} className="cursor-pointer px-1">
+          {getInfinityDisplay(id)}
+        </div>
+      );
+    }
+
+    return (
+      <div className="flex items-center gap-2 cursor-pointer hover:bg-neutral-100 rounded-md p-1">
+        <TimeInput
+          className="px-[0px]"
+          value={normalizedValue}
+          onBlur={updateCellValue}
+          disabled={isDisabled}
+        />
+      </div>
+    );
+  };
+
+  /**
+   * Renders score input with infinity toggle support
+   * Used for minScore and maxScore fields
+   */
+  const CustomScoreInput = () => {
+    const normalizedValue = normalizeDetectionConfigValue(value.value, id);
+    const isInfinity = isInfinityValue(normalizedValue);
+
+    if (isInfinity) {
+      return (
+        <div
+          onClick={() =>
+            updateCellValue(toggleInfinityValue(normalizedValue, DETECTION_CONFIG_FIELDS.MAX_SCORE))
+          }
+          className="cursor-pointer"
+        >
+          {getInfinityDisplay(id)}
+        </div>
+      );
+    }
+
+    return (
+      <div className="flex items-center gap-2 cursor-pointer hover:bg-neutral-100 rounded-md p-1">
+        <NumberInput value={normalizedValue} onChange={updateCellValue} disabled={isDisabled} />
+      </div>
+    );
+  };
 
   switch (dataType) {
     case cellTypes.normalText:
@@ -147,7 +226,19 @@ export const Cell = ({
       break;
     }
     case cellTypes.timeInput:
-      element = <TimeInput value={value.value} onChange={updateCellValue} disabled={isDisabled} />;
+      element = <CustomTimeInput />;
+      break;
+    case cellTypes.score:
+      element = <CustomScoreInput />;
+      break;
+    case cellTypes.textAreaWithDropdown:
+      element = (
+        <TextareaWithTriggerDropdown
+          value={value.value}
+          onChange={updateCellValue}
+          placeholder="Add Instruction"
+        />
+      );
       break;
     default:
       element = <span />;
