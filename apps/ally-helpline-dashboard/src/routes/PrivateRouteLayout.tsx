@@ -26,6 +26,7 @@ import {
   AchievementsViewAll,
 } from "@pages";
 import { setAvailableChatTypes, unauthenticate } from "@reducer";
+import { ReviewDetails } from "@src/pages/review-details/ReviewDetails";
 import { store } from "@store";
 import {
   hasAnalyticsPermission,
@@ -136,6 +137,22 @@ const PrivateRouteLayout: FC = () => {
           path={ROUTES.STRESS_BUSTER}
           element={
             <PermissionGuardedRoute permission={CALL_PERMISSIONS} element={<StressBuster />} />
+          }
+        />
+
+        <Route
+          path={ROUTES.REVIEW}
+          element={
+            <PermissionGuardedRoute permission={[Permissions.VIEW_REVIEW]} element={<Review />} />
+          }
+        />
+        <Route
+          path={ROUTES.REVIEW_DETAILS}
+          element={
+            <PermissionGuardedRoute
+              permission={[Permissions.VIEW_REVIEW]}
+              element={<ReviewDetails />}
+            />
           }
         />
         <Route

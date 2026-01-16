@@ -3,10 +3,10 @@ import React, { useState, useCallback, useEffect } from "react";
 import { Tooltip } from "@mui/material";
 
 import { FEATURE_FLAGS_MAP } from "@ally-ui-mono/ui-shared";
+import { AutoExpandableTextarea } from "@ally-ui-mono/ui-shared/index";
 import { DoubleArrowRight, InfoIcon, Trash } from "@assets";
 import {
   ActionConfirmationPopup,
-  AutoExpandableTextarea,
   EmojiPickerComponent,
   TriggerConditions,
   NumberInput,
