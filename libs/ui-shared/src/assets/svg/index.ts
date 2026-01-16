@@ -1,3 +1,4 @@
+import AddComment from "./addComment.svg?react";
 import Focus from "./focus.svg?react";
 import Google from "./google.svg?react";
 import MicOff from "./micOff.svg?react";
@@ -30,4 +31,5 @@ export {
   Google,
   Trash,
   Upload,
+  AddComment,
 };
