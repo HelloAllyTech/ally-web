@@ -31,6 +31,7 @@ export const ROUTES = {
   LEADERBOARD: "/leaderboard",
   REVIEW: "/review",
   ACHIEVEMENTS_VIEW_ALL: "/achievements-view-all",
+  REVIEW_DETAILS: "/review/:reivewId",
 } as const;
 
 export const excludeNavBar = [
@@ -74,6 +75,14 @@ export const navBarOptions = [
         },
       ]
     : []),
+  {
+    id: TabId.REVIEW,
+    title: "Review",
+    Icon: ScribeIcon,
+    path: ROUTES.REVIEW,
+    activePages: [ROUTES.REVIEW_DETAILS],
+    permissions: [Permissions.VIEW_REVIEW],
+  },
   {
     id: TabId.CALLS,
     title: "Sessions",
