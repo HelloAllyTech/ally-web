@@ -1,0 +1,3 @@
+.selected-text::selection {
+  background-color: #e1f1fe;
+}

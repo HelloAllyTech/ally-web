@@ -9,6 +9,17 @@ vi.mock("@api", () => ({
 import * as api from "@api";
 import { ScenarioVoiceSidePanel } from "../ScenarioVoiceSidePanel";
 
+vi.mock("@ally-ui-mono/ui-shared", () => ({
+  AutoExpandableTextarea: ({ value, onChange, placeholder }: any) => (
+    <textarea
+      data-testid="auto-expandable-textarea"
+      value={value}
+      onChange={e => onChange(e.target.value)}
+      placeholder={placeholder}
+    />
+  ),
+}));
+
 // Mock components
 vi.mock("@components", () => ({
   Button: ({ children, onClick, disabled }: any) => (
@@ -27,14 +38,6 @@ vi.mock("@components", () => ({
         ))}
       </select>
     </div>
-  ),
-  AutoExpandableTextarea: ({ value, onChange, placeholder }: any) => (
-    <textarea
-      data-testid="auto-expandable-textarea"
-      value={value}
-      onChange={e => onChange(e.target.value)}
-      placeholder={placeholder}
-    />
   ),
   ActionConfirmationPopup: ({ isOpen, onConfirm, onCancel }: any) =>
     isOpen ? (

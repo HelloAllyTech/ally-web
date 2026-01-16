@@ -8,6 +8,17 @@ vi.mock("sonner", () => ({
   },
 }));
 
+vi.mock("@ally-ui-mono/ui-shared", () => ({
+  AutoExpandableTextarea: ({ value, onChange, placeholder }: any) => (
+    <textarea
+      value={value}
+      onChange={e => onChange?.(e.target.value)}
+      placeholder={placeholder}
+      data-testid="textarea"
+    />
+  ),
+}));
+
 vi.mock("@components", () => ({
   ActionConfirmationPopup: ({ isOpen, onClose }: any) =>
     isOpen ? (
@@ -17,14 +28,6 @@ vi.mock("@components", () => ({
         </button>
       </div>
     ) : null,
-  AutoExpandableTextarea: ({ value, onChange, placeholder }: any) => (
-    <textarea
-      value={value}
-      onChange={e => onChange?.(e.target.value)}
-      placeholder={placeholder}
-      data-testid="textarea"
-    />
-  ),
   Button: ({ children, onClick, disabled, variant }: any) => (
     <button onClick={onClick} disabled={disabled} data-testid={`button-${children?.toLowerCase()}`}>
       {children}
