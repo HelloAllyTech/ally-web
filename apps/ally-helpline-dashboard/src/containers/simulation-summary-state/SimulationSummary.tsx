@@ -25,6 +25,7 @@ export const SimulationSummary: FC<SimulationSummaryProps> = ({
   summaryId,
   onSummaryClose,
   onSummaryFetch,
+  hideSection = false,
 }) => {
   const [showFeedbackDialog, setShowFeedbackDialog] = useState<boolean>(false);
   const [retryMaxReached, setRetryMaxReached] = useState<boolean>(false);
@@ -106,6 +107,7 @@ export const SimulationSummary: FC<SimulationSummaryProps> = ({
     }
   };
 
+  if (hideSection) return null;
   return (
     <div
       className={`relative flex flex-col h-full w-full ${className}`}

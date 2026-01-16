@@ -1,3 +1,4 @@
+export * from "./useClickOutside";
 export * from "./useSocket";
 export * from "./useUser";
 export * from "./useEnhance";

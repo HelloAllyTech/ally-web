@@ -36,7 +36,6 @@ export * from "./custom-field-group";
 export * from "./profile-card";
 export * from "./event-side-panel";
 export * from "./emoji-picker";
-export * from "./auto-expandable-textarea";
 export * from "./auto-termination-rule-field";
 export * from "./auto-termination-rule-field-old";
 export * from "./create-simulation-sub-section";

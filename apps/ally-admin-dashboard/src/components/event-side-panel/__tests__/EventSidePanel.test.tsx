@@ -11,21 +11,21 @@ vi.mock("@assets", () => ({
   InfoIcon: () => <svg data-testid="info-icon" />,
 }));
 
-vi.mock("@components", () => ({
-  AutoExpandableTextarea: ({
-    value = "",
-    onChange = () => {},
-    placeholder = "",
-    className = "",
-  }: any) => (
+vi.mock("@ally-ui-mono/ui-shared", () => ({
+  AutoExpandableTextarea: ({ value, onChange, placeholder, disabled, className }: any) => (
     <textarea
-      data-testid="auto-textarea"
+      data-testid="auto-expandable-textarea"
       value={value}
-      placeholder={placeholder}
-      className={className}
       onChange={e => onChange(e.target.value)}
+      placeholder={placeholder}
+      disabled={disabled}
+      className={className}
     />
   ),
+  FEATURE_FLAGS_MAP: {},
+}));
+
+vi.mock("@components", () => ({
   EmojiPickerComponent: ({ onEmojiClick = () => {}, buttonText = "😀", className = "" }: any) => (
     <button
       type="button"

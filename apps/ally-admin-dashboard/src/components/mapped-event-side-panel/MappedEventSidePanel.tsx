@@ -1,9 +1,9 @@
 import React, { useState, useCallback, useEffect, useRef, useMemo } from "react";
 
 import { FEATURE_FLAGS_MAP } from "@ally-ui-mono/ui-shared";
+import { AutoExpandableTextarea } from "@ally-ui-mono/ui-shared";
 import { ArrowDownFilled, DoubleArrowRight, Trash } from "@assets";
 import {
-  AutoExpandableTextarea,
   EmojiPickerComponent,
   NumberInput,
   ToggleSwitch,
