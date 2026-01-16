@@ -87,7 +87,10 @@ export const Cell = ({
     // For other time fields, support infinity toggle
     if (isInfinity) {
       return (
-        <div onClick={() => updateCellValue("00:00:00")} className="cursor-pointer px-1">
+        <div
+          onClick={isDisabled ? undefined : () => updateCellValue("00:00:00")}
+          className="cursor-pointer px-1"
+        >
           {getInfinityDisplay(id)}
         </div>
       );
@@ -112,14 +115,18 @@ export const Cell = ({
   const CustomScoreInput = () => {
     const normalizedValue = normalizeDetectionConfigValue(value.value, id);
     const isInfinity = isInfinityValue(normalizedValue);
-
     if (isInfinity) {
       return (
         <div
-          onClick={() =>
-            updateCellValue(toggleInfinityValue(normalizedValue, DETECTION_CONFIG_FIELDS.MAX_SCORE))
+          className={isDisabled ? "" : "cursor-pointer"}
+          onClick={
+            isDisabled
+              ? undefined
+              : () =>
+                  updateCellValue(
+                    toggleInfinityValue(normalizedValue, DETECTION_CONFIG_FIELDS.MAX_SCORE),
+                  )
           }
-          className="cursor-pointer"
         >
           {getInfinityDisplay(id)}
         </div>
@@ -237,6 +244,7 @@ export const Cell = ({
           value={value.value}
           onChange={updateCellValue}
           placeholder="Add Instruction"
+          disabled={isDisabled}
         />
       );
       break;
