@@ -11,3 +11,4 @@ export * from "./detectionConfig";
 export * from "./eventTypes";
 export * from "./TriggerConditionsConfig";
 export * from "./profileSettings";
+export * from "./ExperienceModeEnum";

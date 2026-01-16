@@ -40,6 +40,8 @@ export type FormData = {
   prompt: string;
   difficultyLevel: string;
   agentDialoguesArray: string;
+  experienceMode?: string;
+  checklistType?: string;
 };
 
 export interface DemographicsSectionProps {
