@@ -1,10 +1,20 @@
 import { render, screen, fireEvent } from "@testing-library/react";
 import { describe, it, expect, vi, beforeEach } from "vitest";
-
-import { Sidebar } from "../Sidebar";
+import { Provider } from "react-redux";
 
 const navigateMock = vi.fn();
 const logoutMock = vi.fn();
+
+// Mock API first to prevent store initialization errors
+vi.mock("@api", async importOriginal => {
+  const actual = await importOriginal<typeof import("@api")>();
+  return {
+    ...actual,
+  };
+});
+
+import { store } from "../../../store";
+import { Sidebar } from "../Sidebar";
 
 vi.mock("react-router-dom", () => ({
   useLocation: vi.fn(() => ({ pathname: "/simulation-studio" })),
@@ -33,8 +43,10 @@ vi.mock("@hooks", () => ({
     logout: logoutMock,
     filteredNavigationItems: [
       { id: "SIMULATION_STUDIO", label: "Simulation Studio", path: "/simulation-studio" },
-      { id: "USER_MANAGEMENT", label: "User Management", path: "/users" },
       { id: "EVENT_MANAGEMENT", label: "Event Management", path: "/events" },
+      { id: "SCENARIO_LANGUAGES", label: "Scenario Languages", path: "/manage-scenario-languages" },
+      { id: "SCENARIO_VOICES", label: "Scenario Voices", path: "/manage-scenario-voices" },
+      { id: "USER_MANAGEMENT", label: "User Management", path: "/users" },
     ],
   }),
 }));
@@ -44,6 +56,8 @@ vi.mock("@constants", () => ({
     SIMULATION_STUDIO: "SIMULATION_STUDIO",
     USER_MANAGEMENT: "USER_MANAGEMENT",
     EVENT_MANAGEMENT: "EVENT_MANAGEMENT",
+    SCENARIO_VOICES: "SCENARIO_VOICES",
+    SCENARIO_LANGUAGES: "SCENARIO_LANGUAGES",
   },
   ROUTES: {
     SIMULATION_STUDIO: "/simulation-studio",
@@ -51,6 +65,8 @@ vi.mock("@constants", () => ({
     CREATE_PATH: "/create-path",
     USER_MANAGEMENT: "/users",
     MANAGE_EVENTS: "/events",
+    MANAGE_SCENARIO_VOICES: "/manage-scenario-voices",
+    MANAGE_SCENARIO_LANGUAGES: "/manage-scenario-languages",
     LOGIN: "/login",
   },
   en: {
@@ -86,6 +102,10 @@ vi.mock("@constants", () => ({
   },
 }));
 
+const renderWithProvider = (component: React.ReactElement) => {
+  return render(<Provider store={store}>{component}</Provider>);
+};
+
 describe("Sidebar", () => {
   beforeEach(() => {
     navigateMock.mockReset();
@@ -101,7 +121,7 @@ describe("Sidebar", () => {
   it("renders navigation items by title when collapsed", () => {
     // Mock narrow window to force collapsed state
     Object.defineProperty(window, "innerWidth", { writable: true, configurable: true, value: 800 });
-    render(<Sidebar />);
+    renderWithProvider(<Sidebar />);
 
     const simItem = screen.getByTitle("Simulation Studio");
     expect(simItem).toBeInTheDocument();
@@ -111,7 +131,7 @@ describe("Sidebar", () => {
   });
 
   it("toggles expand/collapse via the toggle button", () => {
-    render(<Sidebar />);
+    renderWithProvider(<Sidebar />);
 
     // Sidebar starts expanded when window is wide
     const simItem = screen.getByText("Simulation Studio");
@@ -126,7 +146,7 @@ describe("Sidebar", () => {
   });
 
   it("opens user menu and logs out when expanded", () => {
-    render(<Sidebar />);
+    renderWithProvider(<Sidebar />);
 
     // Click profile section (name/email present when expanded)
     fireEvent.click(screen.getByText("Alice"));
@@ -139,7 +159,41 @@ describe("Sidebar", () => {
   });
 
   it("marks the active tab based on location", () => {
-    render(<Sidebar />);
+    renderWithProvider(<Sidebar />);
     expect(screen.getByText("Simulation Studio")).toBeInTheDocument();
+  });
+
+  it("renders Scenario Voices navigation item", () => {
+    renderWithProvider(<Sidebar />);
+
+    const voicesItem = screen.getByText("Scenario Voices");
+    expect(voicesItem).toBeInTheDocument();
+  });
+
+  it("navigates to Scenario Voices when clicked", () => {
+    renderWithProvider(<Sidebar />);
+
+    const voicesItem = screen.getByText("Scenario Voices");
+    fireEvent.click(voicesItem);
+
+    expect(navigateMock).toHaveBeenCalledWith("/manage-scenario-voices");
+  });
+
+  it("displays Scenario Voices with correct title when collapsed", () => {
+    Object.defineProperty(window, "innerWidth", { writable: true, configurable: true, value: 800 });
+    renderWithProvider(<Sidebar />);
+
+    const voicesItem = screen.getByTitle("Scenario Voices");
+    expect(voicesItem).toBeInTheDocument();
+  });
+
+  it("includes all navigation items in order", () => {
+    renderWithProvider(<Sidebar />);
+
+    expect(screen.getByText("Simulation Studio")).toBeInTheDocument();
+    expect(screen.getByText("Event Management")).toBeInTheDocument();
+    expect(screen.getByText("Scenario Voices")).toBeInTheDocument();
+    expect(screen.getByText("Scenario Languages")).toBeInTheDocument();
+    expect(screen.getByText("User Management")).toBeInTheDocument();
   });
 });

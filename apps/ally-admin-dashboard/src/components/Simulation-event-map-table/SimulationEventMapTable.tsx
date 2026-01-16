@@ -43,6 +43,7 @@ export const SimulationEventMapTable: FC<SimulationEventMapTableProps> = ({ simu
   const [mappedEvents, setMappedEvents] = useState<UpdateScenarioEventDataParam[]>([
     createNewEvent(),
   ]);
+  const [eventOrderMapping, setEventOrderMapping] = useState<Record<string, number>>({});
   const [selectedEventRows, setSelectedEventRows] = useState<UpdateScenarioEventDataParam[]>([]);
   const [isSidePanelOpen, setIsSidePanelOpen] = useState(false);
   const [selectedEventForEdit, setSelectedEventForEdit] =
@@ -69,6 +70,8 @@ export const SimulationEventMapTable: FC<SimulationEventMapTableProps> = ({ simu
   const sessionEvents = sessionEventsData?.data || [];
   const isLoading = isSessionEventsLoading || isMappedEventsLoading;
 
+  const tableRef = useRef<HTMLDivElement>(null);
+
   // Create a memoized map for quick event lookup
   const sessionEventsMap = useMemo(() => createSessionEventsMap(sessionEvents), [sessionEvents]);
 
@@ -88,11 +91,9 @@ export const SimulationEventMapTable: FC<SimulationEventMapTableProps> = ({ simu
   // Initialize mapped events from API response
   useEffect(() => {
     if (mappedScenarioEventsData?.data?.length > 0) {
-      setMappedEvents(previousEvents =>
-        previousEvents?.length > 1
-          ? mappedScenarioEventsData.data.map(formatApiResponseToMappedEvent)
-          : sortEventsByScore(mappedScenarioEventsData.data.map(formatApiResponseToMappedEvent)),
-      );
+      const formattedEvents = mappedScenarioEventsData.data.map(formatApiResponseToMappedEvent);
+      if (mappedEvents.length <= 1) updateEventOrderMapping(formattedEvents);
+      setMappedEvents(formattedEvents);
     } else {
       setMappedEvents([createNewEvent()]);
     }
@@ -144,6 +145,60 @@ export const SimulationEventMapTable: FC<SimulationEventMapTableProps> = ({ simu
         options: [],
         minWidth: 120,
       },
+      // TODO: Remov feature flag and this once the detection config is implemented
+      // Detection config columns (conditionally included)
+      ...(FEATURE_FLAGS_MAP.EVENT_DETECTION_CONFIG_FLAG
+        ? [
+            {
+              id: MAPPED_EVENT_FIELDS.START_TIME,
+              label: "Applicable from",
+              accessor: MAPPED_EVENT_FIELDS.START_TIME,
+              dataType: cellTypes.timeInput,
+              options: [],
+              minWidth: 120,
+            },
+            {
+              id: MAPPED_EVENT_FIELDS.END_TIME,
+              label: "Applicable till",
+              accessor: MAPPED_EVENT_FIELDS.END_TIME,
+              dataType: cellTypes.timeInput,
+              options: [],
+              minWidth: 120,
+            },
+            {
+              id: MAPPED_EVENT_FIELDS.MAX_OCCURRENCES,
+              label: "Max occurrences",
+              accessor: MAPPED_EVENT_FIELDS.MAX_OCCURRENCES,
+              dataType: cellTypes.score,
+              options: [],
+              minWidth: 120,
+            },
+            {
+              id: MAPPED_EVENT_FIELDS.MIN_GAP_TIME,
+              label: "Min gap time",
+              accessor: MAPPED_EVENT_FIELDS.MIN_GAP_TIME,
+              dataType: cellTypes.timeInput,
+              options: [],
+              minWidth: 120,
+            },
+            {
+              id: MAPPED_EVENT_FIELDS.MIN_SCORE,
+              label: "Min score",
+              accessor: MAPPED_EVENT_FIELDS.MIN_SCORE,
+              dataType: cellTypes.score,
+              options: [],
+              minWidth: 120,
+            },
+            {
+              id: MAPPED_EVENT_FIELDS.MAX_SCORE,
+              label: "Max score",
+              accessor: MAPPED_EVENT_FIELDS.MAX_SCORE,
+              dataType: cellTypes.score,
+              options: [],
+              minWidth: 120,
+            },
+          ]
+        : []),
       {
         id: MAPPED_EVENT_FIELDS.BRANCHING_STATUS,
         label: "Branching status",
@@ -157,24 +212,54 @@ export const SimulationEventMapTable: FC<SimulationEventMapTableProps> = ({ simu
         label: "Branch to state",
         accessor: MAPPED_EVENT_FIELDS.BRANCH_INSTRUCTION,
         placeholder: "Add branch to state",
-        dataType: cellTypes.editableText,
+        dataType: cellTypes.textAreaWithDropdown,
         options: [],
         minWidth: 180,
+      },
+      {
+        id: MAPPED_EVENT_FIELDS.CHECKLIST_VISIBILITY_STATUS,
+        label: "Checklist visibility",
+        accessor: MAPPED_EVENT_FIELDS.CHECKLIST_VISIBILITY_STATUS,
+        dataType: cellTypes.switch,
+        options: [],
+        minWidth: 120,
       },
     ];
   }, [sessionEventsOptions]);
 
-  const mappedEventsWithColors = FEATURE_FLAGS_MAP.SCORE_COLOR_FLAG
-    ? useMemo(() => addScoreColors(mappedEvents), [mappedEvents])
-    : mappedEvents;
-
-  const sortEventsByScore = (events: UpdateScenarioEventDataParam[]) => {
-    return events?.sort((a, b) => a.score?.value - b.score?.value);
+  const updateEventOrderMapping = (events: UpdateScenarioEventDataParam[]) => {
+    const sortedEvents = [...events].sort((a, b) => (a.score?.value ?? 0) - (b.score?.value ?? 0));
+    const orderMapping = sortedEvents.reduce(
+      (acc, event, index) => {
+        acc[event.id?.value || ""] = index + 1;
+        return acc;
+      },
+      {} as Record<string, number>,
+    );
+    setEventOrderMapping(orderMapping);
   };
 
   const onReloadMappedEvents = () => {
-    setMappedEvents(sortEventsByScore(mappedEventsWithColors));
+    setTimeout(() => {
+      updateEventOrderMapping(mappedEvents);
+      // Target the NotionTable's scrollable container (has overflow-auto class)
+      const scrollableElement = tableRef.current?.querySelector(".overflow-auto");
+      scrollableElement?.scrollTo({ top: 0, behavior: "smooth" });
+    }, 100);
   };
+
+  const sortMappedEvents = useMemo(() => {
+    return [...mappedEvents].sort((a, b) => {
+      const orderA = eventOrderMapping[a.id.value] ?? Number.MAX_SAFE_INTEGER;
+      const orderB = eventOrderMapping[b.id.value] ?? Number.MAX_SAFE_INTEGER;
+
+      return orderA - orderB;
+    });
+  }, [mappedEvents, eventOrderMapping]);
+
+  const tableData = useMemo(() => {
+    return addScoreColors(sortMappedEvents);
+  }, [sortMappedEvents]);
 
   // Helper function to save events to API
   const saveEventsToApi = useCallback(
@@ -297,7 +382,7 @@ export const SimulationEventMapTable: FC<SimulationEventMapTableProps> = ({ simu
 
   // Open side panel for event editing
   const handleOpenMappedEventSidePanel = (rowIndex: number) => {
-    const selectedEvent = mappedEvents[rowIndex];
+    const selectedEvent = tableData[rowIndex];
     if (selectedEvent && selectedEvent.id?.value) {
       setSelectedEventForEdit(selectedEvent);
     } else {
@@ -397,13 +482,16 @@ export const SimulationEventMapTable: FC<SimulationEventMapTableProps> = ({ simu
         </div>
         {!isLoading && renderActionButtons()}
       </div>
-      <div className="p-6 pt-4 pr-0 overflow-y-hidden overflow-x-scroll w-[calc(100vw-270px)] lg:w-[calc(100vw-320px)] max-w-full custom-scrollbar">
+      <div
+        ref={tableRef}
+        className="p-6 pt-4 pr-0 overflow-y-hidden overflow-x-scroll w-[calc(100vw-270px)] lg:w-[calc(100vw-320px)] max-w-full custom-scrollbar"
+      >
         {isLoading ? (
           <EventMapTableLoader />
         ) : (
           <NotionTable
             tableData={{
-              data: mappedEventsWithColors,
+              data: tableData,
               columns: tableColumns,
             }}
             onRowChange={handleUpdateEventTable}

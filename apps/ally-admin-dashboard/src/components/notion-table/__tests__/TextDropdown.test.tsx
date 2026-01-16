@@ -148,7 +148,7 @@ describe("TextDropdown", () => {
       const option2 = screen.getByText("Option 2");
       fireEvent.click(option2);
 
-      expect(mockOnChange).toHaveBeenCalledWith("opt2");
+      expect(mockOnChange).toHaveBeenCalledWith("opt2", "Option 2");
     });
 
     it("closes dropdown after selection", () => {

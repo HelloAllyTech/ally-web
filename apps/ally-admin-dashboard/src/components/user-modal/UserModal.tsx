@@ -22,9 +22,9 @@ export const UserModal: React.FC<UserModalProps> = ({
   uploadButtonName,
   uploadTitle,
   uploadId,
+  uploadImageUrl,
 }) => {
   // Handle ESC key to close modal
-
   useEffect(() => {
     const handleEscKey = (event: KeyboardEvent) => {
       if (event.key === KeyboardKeys.ESCAPE && isOpen) return onClose();
@@ -257,7 +257,7 @@ export const UserModal: React.FC<UserModalProps> = ({
 
   const renderDisabledField = (field: FieldProps) => {
     return (
-      <div className="flex flex-col gap-2">
+      <div key={field.id} className="flex flex-col gap-2">
         <label
           htmlFor={field.id}
           className="text-sm text-typography-900 cursor-pointer font-primary"
@@ -329,6 +329,7 @@ export const UserModal: React.FC<UserModalProps> = ({
             uploadId={uploadId}
             uploadButtonName={uploadButtonName}
             uploadTitle={uploadTitle}
+            onUpload={uploadImageUrl}
             details={details}
           />
         )}

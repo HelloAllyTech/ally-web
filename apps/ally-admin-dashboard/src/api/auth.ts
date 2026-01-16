@@ -6,13 +6,16 @@
  */
 
 import { baseAPI } from "@api";
-import { ApiEndpoints, HttpMethod, Permissions, UserRole } from "@constants";
+import { ApiEndpoints, HttpMethod, Permissions, TAG_TYPES, UserRole } from "@constants";
 import {
   VerifyOTPRequest,
   VerifyOTPResponse,
   GenerateOTPRequest,
   GenerateOTPResponse,
   User,
+  GetProfileUrlResponse,
+  GetProfileUrlRequest,
+  profileUrlRequest,
 } from "@types";
 
 const authAPI = baseAPI.injectEndpoints({
@@ -94,8 +97,36 @@ const authAPI = baseAPI.injectEndpoints({
       query: data => ({
         url: ApiEndpoints.AUTH.GOOGLE_SIGN_IN,
         method: HttpMethod.POST,
-        body: data,
+        body: { ...data, allowedRoles: [UserRole.SUPER_ADMIN] },
       }),
+    }),
+    getProfileImageUrl: builder.mutation<GetProfileUrlResponse, GetProfileUrlRequest>({
+      query: body => ({
+        url: ApiEndpoints.AUTH.PROFILE_IMAGE_URL,
+        method: HttpMethod.POST,
+        body,
+      }),
+    }),
+
+    /**
+     * Delete cover image from S3
+     */
+    deleteProfileImage: builder.mutation<boolean, profileUrlRequest>({
+      query: body => ({
+        url: ApiEndpoints.AUTH.PROFILE_IMAGE,
+        method: HttpMethod.DELETE,
+        body,
+      }),
+      invalidatesTags: [TAG_TYPES.USERS],
+    }),
+
+    uploadProfileImage: builder.mutation<boolean, profileUrlRequest>({
+      query: body => ({
+        url: ApiEndpoints.AUTH.PROFILE_IMAGE,
+        method: HttpMethod.PATCH,
+        body,
+      }),
+      invalidatesTags: [TAG_TYPES.USERS],
     }),
   }),
 });
@@ -110,4 +141,7 @@ export const {
   useGenerateOTPMutation,
   useVerifyOTPMutation,
   useGoogleSignInMutation,
+  useUploadProfileImageMutation,
+  useDeleteProfileImageMutation,
+  useGetProfileImageUrlMutation,
 } = authAPI;

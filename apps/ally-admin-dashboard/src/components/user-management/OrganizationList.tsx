@@ -50,8 +50,14 @@ export const OrganizationList: React.FC<OrganizationListProps> = ({
             >
               <div className="col-span-3 text-typography-900">
                 <span className="flex items-center">
-                  {tenant.logo ? (
-                    <img src={tenant.logo} alt="org-logo" />
+                  {tenant.logoUrl ? (
+                    <img
+                      src={tenant.logoUrl}
+                      alt="org-logo"
+                      width={45}
+                      height={45}
+                      className="rounded-full mr-3"
+                    />
                   ) : (
                     <div className="min-w-[40px] min-h-[40px] rounded-full border border-border-light text-typography-800 flex items-center justify-center mr-3 capitalize">
                       {tenant.name[0]}

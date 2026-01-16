@@ -41,6 +41,9 @@ vi.mock("@ally-ui-mono/ui-shared", () => ({
       </div>
     ),
   ),
+  FEATURE_FLAGS_MAP: {
+    PEER_REVIEW_FLAG: false,
+  },
 }));
 
 // Mock API hooks
@@ -64,6 +67,7 @@ vi.mock("@assets", () => ({
   ScenarioIcon: () => <div data-testid="scenario-icon">Scenario</div>,
   SessionScoreIcon: () => <div data-testid="session-score-icon">Score</div>,
   SourceIcon: () => <div data-testid="source-icon">Source</div>,
+  ReviewNavIcon: () => <svg data-testid="review-nav-icon" />,
 
   // FIX: Add all missing 'Carousel' exports
   Carousel1: () => <div data-testid="carousel-1-icon">Carousel 1</div>,

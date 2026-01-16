@@ -1,4 +1,5 @@
-import { SearchIcon, StatsIcon, ScribeIcon, LearnIcon, Leaderboard } from "@assets";
+import { FEATURE_FLAGS_MAP } from "@ally-ui-mono/ui-shared";
+import { SearchIcon, StatsIcon, ScribeIcon, LearnIcon, Leaderboard, ReviewNavIcon } from "@assets";
 
 import { Permissions } from "./permissions";
 import { TabId } from "./tabs";
@@ -28,6 +29,8 @@ export const ROUTES = {
   SIMULATION_SUMMARY: "/simulation-summary",
   SIMULATION_SUMMARY_FULL: "/simulation-summary/:sessionId",
   LEADERBOARD: "/leaderboard",
+  REVIEW: "/review",
+  ACHIEVEMENTS_VIEW_ALL: "/achievements-view-all",
 } as const;
 
 export const excludeNavBar = [
@@ -47,14 +50,30 @@ export const navBarOptions = [
     activePages: [ROUTES.SCENARIO, ROUTES.PATHWAY],
     permissions: [Permissions.EDIT_SCENARIO_SESSION],
   },
-  {
-    id: TabId.LEADERBOARD,
-    title: "Leaderboard",
-    Icon: Leaderboard,
-    path: ROUTES.LEADERBOARD,
-    activePages: [],
-    permissions: [Permissions.VIEW_LEADERBOARD],
-  },
+  ...(FEATURE_FLAGS_MAP.PEER_REVIEW_FLAG
+    ? [
+        {
+          id: TabId.REVIEW,
+          title: "Review",
+          Icon: ReviewNavIcon,
+          path: ROUTES.REVIEW,
+          activePages: [],
+          //TODO: Add permission for review
+        },
+      ]
+    : []),
+  ...(FEATURE_FLAGS_MAP.LEADERBOARD_FLAG
+    ? [
+        {
+          id: TabId.LEADERBOARD,
+          title: "Leaderboard",
+          Icon: Leaderboard,
+          path: ROUTES.LEADERBOARD,
+          activePages: [ROUTES.ACHIEVEMENTS_VIEW_ALL],
+          permissions: [Permissions.VIEW_LEADERBOARD],
+        },
+      ]
+    : []),
   {
     id: TabId.CALLS,
     title: "Sessions",

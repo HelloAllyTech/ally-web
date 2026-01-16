@@ -1,18 +1,14 @@
 import { FC, useEffect, useState } from "react";
 
+import { Tooltip } from "@mui/material";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 
-import { Ally, DockToRight, LogoutIllustration } from "@assets";
-import {
-  Carousel,
-  CarouselSize,
-  CarouselVariant,
-  ConfirmationDialog,
-  ProfileSettings,
-  UserInfo,
-} from "@components";
-import { navBarOptions, CAROUSEL_SLIDES } from "@constants";
+import { CustomImage } from "@ally-ui-mono/ui-shared";
+import { useGetLogoUrlQuery } from "@api";
+import { DockToRight, LogoutIllustration } from "@assets";
+import { ConfirmationDialog, ProfileSettings, UserInfo } from "@components";
+import { navBarOptions, TOOLTIP_LIGHT_PROPS } from "@constants";
 import { useUser } from "@hooks";
 
 import { NavSideBarProps, TabProps } from "./types";
@@ -55,7 +51,8 @@ const Tab: FC<TabProps> = ({ id, Icon, title, activeTab, isExpanded, onClick }) 
 );
 
 const NavSideBar: FC<NavSideBarProps> = ({ activeTab, onTabChange, isOpen, onClose }) => {
-  const { permissions, user, logout } = useUser();
+  const { permissions, user, logout, getProfileUrl, deleteProfile, uploadProfile, refetchUser } =
+    useUser();
 
   const [isLogoutDialogOpen, setIsLogoutDialogOpen] = useState<boolean>(false);
   const permittedTabs = navBarOptions.filter(
@@ -64,6 +61,7 @@ const NavSideBar: FC<NavSideBarProps> = ({ activeTab, onTabChange, isOpen, onClo
   );
 
   const navigate = useNavigate();
+  const { data: tenantData } = useGetLogoUrlQuery();
 
   const [isExpanded, setIsExpanded] = useState(true);
   const [openSettings, setOpenSettings] = useState(false);
@@ -72,6 +70,8 @@ const NavSideBar: FC<NavSideBarProps> = ({ activeTab, onTabChange, isOpen, onClo
     defaultValues: defaultProfileUploadValues,
     mode: "onChange",
   });
+
+  const profileUrl = profileSettingsForm.watch("profileImageUrl");
 
   useEffect(() => {
     const handleResize = () => {
@@ -137,9 +137,22 @@ const NavSideBar: FC<NavSideBarProps> = ({ activeTab, onTabChange, isOpen, onClo
     setOpenSettings(true);
   };
 
-  const handleProfileUpload = () => {
-    //TODO
+  const handleProfileUpload = async () => {
+    const existingProfileUrl = user.profileImageUrl;
+
+    await uploadProfile({ profileImageUrl: profileUrl });
+    if (existingProfileUrl) await deleteProfile({ profileImageUrl: existingProfileUrl });
+    await refetchUser();
     setOpenSettings(false);
+  };
+
+  const Avatar: React.FC<{ name: string }> = ({ name }) => {
+    const initial = name?.[0]?.toUpperCase() ?? "?";
+    return (
+      <div className="min-w-14 min-h-14 border-border-light text-typography-800 flex items-center justify-center mr-3">
+        {initial}
+      </div>
+    );
   };
 
   return (
@@ -150,28 +163,61 @@ const NavSideBar: FC<NavSideBarProps> = ({ activeTab, onTabChange, isOpen, onClo
           isExpanded ? "w-64" : "w-24"
         } p-[12px] font-primary`}
       >
-        <div className="flex justify-between" data-testid="nav-sidebar-header">
-          <Ally className="m-3 flex-shrink-0" data-testid="nav-sidebar-logo" />
-          <button
-            data-testid="nav-sidebar-toggle"
-            onClick={handleToggleSidebar}
-            className={`${isExpanded ? "px-5 mx-2" : "absolute z-10 top-0 bg-white mx-2 px-[24px] py-[15px] opacity-0 hover:opacity-100"} hover:bg-gray-50 hover:rounded-md my-2 p-3`}
-            title={isExpanded ? "Collapse sidebar" : "Expand sidebar"}
-          >
-            <DockToRight />
-          </button>
-        </div>
+        {/* Logo container */}
+        <div
+          className="relative flex items-center justify-between h-[72px]"
+          data-testid="nav-sidebar-header"
+        >
+          {/* Logo */}
 
+          <div className="relative w-14 h-14 border-[0.5px] group ml-2 rounded-md box-border overflow-hidden flex items-center justify-center">
+            {/* Toggle button - covers logo when collapsed */}
+            <Tooltip
+              title={tenantData?.name}
+              placement="right"
+              arrow
+              slotProps={TOOLTIP_LIGHT_PROPS}
+            >
+              <div>
+                {tenantData?.logoUrl ? (
+                  <CustomImage
+                    src={tenantData?.logoUrl}
+                    alt="org-logo"
+                    className={`object-cover w-full h-full transition-opacity duration-200 rounded-md ${
+                      !isExpanded ? "group-hover:opacity-20" : ""
+                    }`}
+                  />
+                ) : (
+                  <Avatar name={tenantData?.name} />
+                )}
+              </div>
+            </Tooltip>
+            {!isExpanded && (
+              <button
+                data-testid="nav-sidebar-toggle"
+                onClick={handleToggleSidebar}
+                className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-200 hover:bg-gray-50 hover:rounded-md"
+                title="Expand sidebar"
+              >
+                <DockToRight />
+              </button>
+            )}
+          </div>
+
+          {isExpanded && (
+            <button
+              data-testid="nav-sidebar-toggle"
+              onClick={handleToggleSidebar}
+              className="p-3 transition-all duration-200 hover:bg-gray-50 hover:rounded-md"
+              title="Collapse sidebar"
+            >
+              <DockToRight />
+            </button>
+          )}
+        </div>
         {renderTabs()}
 
-        <div className="flex flex-col items-start gap-3 m-3" data-testid="nav-sidebar-footer">
-          {isExpanded && (
-            <Carousel
-              slides={CAROUSEL_SLIDES}
-              variant={CarouselVariant.DARK}
-              size={CarouselSize.SMALL}
-            />
-          )}
+        <div className="flex flex-col items-start gap-3 mx-4 my-3" data-testid="nav-sidebar-footer">
           <hr className="w-full border-t border-gray-200" data-testid="nav-sidebar-divider" />
 
           <UserInfo
@@ -179,6 +225,7 @@ const NavSideBar: FC<NavSideBarProps> = ({ activeTab, onTabChange, isOpen, onClo
             onLogout={handleLogout}
             isExpanded={isExpanded}
             onProfileSettings={handleSettingsClick}
+            profileUrl={user.profileImageUrl}
           />
         </div>
       </div>
@@ -205,6 +252,7 @@ const NavSideBar: FC<NavSideBarProps> = ({ activeTab, onTabChange, isOpen, onClo
         userData={user}
         formMethods={profileSettingsForm}
         onButtonClick={handleProfileUpload}
+        getProfileUrl={getProfileUrl}
       />
     </>
   );

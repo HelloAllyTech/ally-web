@@ -11,14 +11,25 @@ import { UserAvailabilityStatus } from "@types";
 import { useUser } from "../useUser";
 
 // Hoist mocks to avoid initialization errors
-const { mockGetUser, mockGetPermissions, mockResetApiState, mockDispatch, mockGetState } =
-  vi.hoisted(() => ({
-    mockGetUser: vi.fn(),
-    mockGetPermissions: vi.fn(),
-    mockResetApiState: vi.fn(),
-    mockDispatch: vi.fn(),
-    mockGetState: vi.fn(),
-  }));
+const {
+  mockGetUser,
+  mockGetPermissions,
+  mockResetApiState,
+  mockDispatch,
+  mockGetState,
+  mockGetProfileUrl,
+  mockDeleteProfile,
+  mockUploadProfile,
+} = vi.hoisted(() => ({
+  mockGetUser: vi.fn(),
+  mockGetPermissions: vi.fn(),
+  mockResetApiState: vi.fn(),
+  mockDispatch: vi.fn(),
+  mockGetState: vi.fn(),
+  mockGetProfileUrl: vi.fn(),
+  mockDeleteProfile: vi.fn(),
+  mockUploadProfile: vi.fn(),
+}));
 
 // Mock the logger
 vi.mock("@ally-ui-mono/ui-shared", () => ({
@@ -48,6 +59,9 @@ vi.mock("@api/baseApi", () => ({
 vi.mock("@api", () => ({
   useLazyGetUserQuery: () => [mockGetUser, { isLoading: false }],
   useLazyGetPermissionsQuery: () => [mockGetPermissions, { isLoading: false }],
+  useGetProfileImageUrlMutation: () => [mockGetProfileUrl],
+  useDeleteProfileImageMutation: () => [mockDeleteProfile],
+  useUploadProfileImageMutation: () => [mockUploadProfile],
   baseAPI: {
     injectEndpoints: vi.fn(() => ({})),
     reducerPath: "api",
@@ -322,15 +336,16 @@ describe("useUser", () => {
 
     it("should filter navigation items based on EDIT_SCENARIO permission", () => {
       store = createMockStore({
-        permissions: [Permissions.EDIT_SCENARIO],
+        permissions: [Permissions.EDIT_SCENARIO, Permissions.EDIT_SCENARIO_VOICE],
       });
 
       const { result } = renderHook(() => useUser(), {
         wrapper: ({ children }: any) => <Provider store={store}>{children}</Provider>,
       });
 
-      expect(result.current.filteredNavigationItems).toHaveLength(1);
+      expect(result.current.filteredNavigationItems).toHaveLength(2);
       expect(result.current.filteredNavigationItems[0].id).toBe(SIDEBAR_ITEMS.SIMULATION_STUDIO);
+      expect(result.current.filteredNavigationItems[1].id).toBe(SIDEBAR_ITEMS.SCENARIO_VOICES);
     });
 
     it("should filter navigation items based on EDIT_EVENT permission", () => {
@@ -361,7 +376,36 @@ describe("useUser", () => {
 
     it("should show all navigation items when user has all permissions", () => {
       store = createMockStore({
-        permissions: [Permissions.EDIT_SCENARIO, Permissions.EDIT_EVENT, Permissions.EDIT_USER],
+        permissions: [
+          Permissions.EDIT_SCENARIO,
+          Permissions.EDIT_EVENT,
+          Permissions.EDIT_USER,
+          Permissions.EDIT_SCENARIO_VOICE,
+          Permissions.EDIT_SCENARIO_LANGUAGE,
+        ],
+      });
+
+      const { result } = renderHook(() => useUser(), {
+        wrapper: ({ children }: any) => <Provider store={store}>{children}</Provider>,
+      });
+
+      expect(result.current.filteredNavigationItems).toHaveLength(5);
+      expect(result.current.filteredNavigationItems.map(item => item.id)).toEqual([
+        SIDEBAR_ITEMS.SIMULATION_STUDIO,
+        SIDEBAR_ITEMS.EVENT_MANAGEMENT,
+        SIDEBAR_ITEMS.SCENARIO_VOICES,
+        SIDEBAR_ITEMS.SCENARIO_LANGUAGES,
+        SIDEBAR_ITEMS.USER_MANAGEMENT,
+      ]);
+    });
+
+    it("should show multiple navigation items for multiple permissions", () => {
+      store = createMockStore({
+        permissions: [
+          Permissions.EDIT_SCENARIO,
+          Permissions.EDIT_USER,
+          Permissions.EDIT_SCENARIO_VOICE,
+        ],
       });
 
       const { result } = renderHook(() => useUser(), {
@@ -371,23 +415,7 @@ describe("useUser", () => {
       expect(result.current.filteredNavigationItems).toHaveLength(3);
       expect(result.current.filteredNavigationItems.map(item => item.id)).toEqual([
         SIDEBAR_ITEMS.SIMULATION_STUDIO,
-        SIDEBAR_ITEMS.EVENT_MANAGEMENT,
-        SIDEBAR_ITEMS.USER_MANAGEMENT,
-      ]);
-    });
-
-    it("should show multiple navigation items for multiple permissions", () => {
-      store = createMockStore({
-        permissions: [Permissions.EDIT_SCENARIO, Permissions.EDIT_USER],
-      });
-
-      const { result } = renderHook(() => useUser(), {
-        wrapper: ({ children }: any) => <Provider store={store}>{children}</Provider>,
-      });
-
-      expect(result.current.filteredNavigationItems).toHaveLength(2);
-      expect(result.current.filteredNavigationItems.map(item => item.id)).toEqual([
-        SIDEBAR_ITEMS.SIMULATION_STUDIO,
+        SIDEBAR_ITEMS.SCENARIO_VOICES,
         SIDEBAR_ITEMS.USER_MANAGEMENT,
       ]);
     });
@@ -406,27 +434,38 @@ describe("useUser", () => {
 
     it("should update filtered items when permissions change", () => {
       store = createMockStore({
-        permissions: [Permissions.EDIT_SCENARIO],
+        permissions: [Permissions.EDIT_SCENARIO, Permissions.EDIT_SCENARIO_VOICE],
       });
 
-      const { result, rerender } = renderHook(() => useUser(), {
+      const { result } = renderHook(() => useUser(), {
         wrapper: ({ children }: any) => <Provider store={store}>{children}</Provider>,
       });
 
-      expect(result.current.filteredNavigationItems).toHaveLength(1);
+      expect(result.current.filteredNavigationItems).toHaveLength(2);
+      expect(result.current.filteredNavigationItems.map(item => item.id)).toEqual([
+        SIDEBAR_ITEMS.SIMULATION_STUDIO,
+        SIDEBAR_ITEMS.SCENARIO_VOICES,
+      ]);
 
-      // Update store with new permissions
-      store = createMockStore({
-        permissions: [Permissions.EDIT_SCENARIO, Permissions.EDIT_EVENT],
+      // Create new store with updated permissions and render new hook
+      const updatedStore = createMockStore({
+        permissions: [
+          Permissions.EDIT_SCENARIO,
+          Permissions.EDIT_EVENT,
+          Permissions.EDIT_SCENARIO_VOICE,
+        ],
       });
-
-      rerender();
 
       const { result: newResult } = renderHook(() => useUser(), {
-        wrapper: ({ children }: any) => <Provider store={store}>{children}</Provider>,
+        wrapper: ({ children }: any) => <Provider store={updatedStore}>{children}</Provider>,
       });
 
-      expect(newResult.current.filteredNavigationItems).toHaveLength(2);
+      expect(newResult.current.filteredNavigationItems).toHaveLength(3);
+      expect(newResult.current.filteredNavigationItems.map(item => item.id)).toEqual([
+        SIDEBAR_ITEMS.SIMULATION_STUDIO,
+        SIDEBAR_ITEMS.EVENT_MANAGEMENT,
+        SIDEBAR_ITEMS.SCENARIO_VOICES,
+      ]);
     });
   });
 

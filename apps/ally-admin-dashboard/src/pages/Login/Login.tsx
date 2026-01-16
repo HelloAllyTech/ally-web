@@ -166,15 +166,15 @@ export const Login: React.FC = () => {
           navigate("/");
         }
       } else {
-        toast.error(en.errors.failedToGoogleSignIn);
+        // Avoid showing error because of security reasons
       }
     } catch {
-      toast.error(en.errors.failedToGoogleSignIn);
+      // Avoid showing error because of security reasons
     }
   };
 
   const handleGoogleError = () => {
-    toast.error(en.errors.failedToGoogleSignIn);
+    // Avoid showing error because of security reasons
   };
 
   const getLoginSection = () => {

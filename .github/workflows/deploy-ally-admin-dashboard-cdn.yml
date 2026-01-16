@@ -17,7 +17,7 @@ on:
         default: false
   push:
     branches:
-      - dev
+      - master
     paths:
       - "apps/ally-admin-dashboard/**"
       - "libs/**"
@@ -57,11 +57,8 @@ jobs:
             TARGET_ENV="$MANUAL_ENV"
           else
             case $BRANCH in
-              "dev")
+              "master")
                 TARGET_ENV="dev"
-                ;;
-              "prd")
-                TARGET_ENV="prd"
                 ;;
               *)
                 echo "No deployment configured for branch: $BRANCH"

@@ -22,6 +22,8 @@ import {
   Simulation,
   PostSimulationSummary,
   Leaderboard,
+  Review,
+  AchievementsViewAll,
 } from "@pages";
 import { setAvailableChatTypes, unauthenticate } from "@reducer";
 import { store } from "@store";
@@ -178,6 +180,22 @@ const PrivateRouteLayout: FC = () => {
             <PermissionGuardedRoute
               permission={[Permissions.VIEW_LEADERBOARD]}
               element={<Leaderboard />}
+            />
+          }
+        />
+        {/* TODO: Add permission for review */}
+        <Route
+          path={ROUTES.REVIEW}
+          element={
+            <PermissionGuardedRoute permission={[Permissions.VIEW_REVIEW]} element={<Review />} />
+          }
+        />
+        <Route
+          path={ROUTES.ACHIEVEMENTS_VIEW_ALL}
+          element={
+            <PermissionGuardedRoute
+              permission={[Permissions.VIEW_LEADERBOARD]}
+              element={<AchievementsViewAll />}
             />
           }
         />

@@ -3,7 +3,6 @@ export { SimulationEvents } from "./SimulationEvents";
 export { SimulationTimer } from "./SimulationTimer";
 export { SimulationScoreMeter } from "./SimulationScoreMeter";
 export { SimulationInterface } from "./SimulationInterface";
-export { SimulationWaveform } from "./SimulationWaveform";
 export { SimulationControls } from "./SimulationControls";
 export { BottomSection } from "./SimulationBottomSection";
 export * from "./utils";

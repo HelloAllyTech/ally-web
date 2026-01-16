@@ -4,7 +4,13 @@ import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 
 import { FEATURE_FLAGS_MAP } from "@ally-ui-mono/ui-shared";
-import { useCreateTenantMutation, useUpdateTenantMutation, useGetTenantsQuery } from "@api";
+import {
+  useCreateTenantMutation,
+  useUpdateTenantMutation,
+  useGetTenantsQuery,
+  usePostLogoUrlMutation,
+  useDeleteLogoMutation,
+} from "@api";
 import { SORT_BY, SORT_ORDER, en } from "@constants";
 import { Tenant } from "@types";
 
@@ -25,9 +31,9 @@ export function useOrganizationManagement() {
     orgname: string;
     orgcode: string;
     description: string;
-    logo?: string;
+    logoUrl?: string;
   } = {
-    logo: "",
+    logoUrl: "",
     orgname: "",
     orgcode: "",
     description: "",
@@ -42,6 +48,8 @@ export function useOrganizationManagement() {
   // Mutations
   const [createTenant] = useCreateTenantMutation();
   const [updateTenant] = useUpdateTenantMutation();
+  const [logoUpload] = usePostLogoUrlMutation();
+  const [deleteLogo] = useDeleteLogoMutation();
 
   const tenantParams = {
     limit: TENANTS_PAGE_SIZE,
@@ -84,7 +92,7 @@ export function useOrganizationManagement() {
   };
 
   const handleCreateTenant = async (data: {
-    logo?: string;
+    logoUrl?: string;
     orgname: string;
     orgcode: string;
     description?: string;
@@ -94,15 +102,15 @@ export function useOrganizationManagement() {
         name: string;
         code: string;
         description: string;
-        logo?: string;
+        logoUrl?: string;
       } = {
         name: data.orgname,
         code: data.orgcode,
         description: data.description ?? "",
       };
       // T
-      if (FEATURE_FLAGS_MAP.LOGO_UPLOAD_FLAG && data.logo) {
-        payload.logo = data.logo;
+      if (FEATURE_FLAGS_MAP.LOGO_UPLOAD_FLAG) {
+        payload.logoUrl = data.logoUrl;
       }
       await createTenant(payload).unwrap();
       setAddOrganizationModalOpen(false);
@@ -116,7 +124,7 @@ export function useOrganizationManagement() {
   const onEditTenant = (tenant: Tenant) => {
     setSelectedTenant(tenant);
     tenantMethods.reset({
-      logo: tenant.logo ?? "",
+      logoUrl: tenant.logoUrl ?? "",
       orgname: tenant.name ?? "",
       orgcode: tenant.code ?? "",
       description: tenant.description ?? "",
@@ -125,7 +133,7 @@ export function useOrganizationManagement() {
   };
 
   const handleEditTenant = async (data: {
-    logo?: string;
+    logoUrl?: string;
     orgname: string;
     orgcode: string;
     description?: string;
@@ -136,15 +144,15 @@ export function useOrganizationManagement() {
         name: string;
         code: string;
         description: string;
-        logo?: string;
+        logoUrl?: string;
       } = {
         name: data.orgname,
         code: data.orgcode,
         description: data.description || "",
       };
 
-      if (FEATURE_FLAGS_MAP.LOGO_UPLOAD_FLAG && data.logo) {
-        payload.logo = data.logo;
+      if (FEATURE_FLAGS_MAP.LOGO_UPLOAD_FLAG) {
+        payload.logoUrl = data.logoUrl;
       }
 
       await updateTenant({ id: selectedTenant.id, data: payload }).unwrap();
@@ -161,14 +169,17 @@ export function useOrganizationManagement() {
     orgname: string;
     orgcode: string;
     description: string;
-    logo?: string;
+    logoUrl?: string;
   }) => {
     const payload = {
       orgname: data.orgname,
       orgcode: data.orgcode,
       description: data.description,
-      ...(FEATURE_FLAGS_MAP.LOGO_UPLOAD_FLAG && data.logo ? { logo: data.logo } : {}),
+      ...(FEATURE_FLAGS_MAP.LOGO_UPLOAD_FLAG ? { logoUrl: data.logoUrl } : {}),
     };
+
+    if (FEATURE_FLAGS_MAP.LOGO_UPLOAD_FLAG && selectedTenant && selectedTenant.logoUrl)
+      deleteLogo({ logoUrl: selectedTenant.logoUrl });
 
     if (selectedTenant) {
       await handleEditTenant(payload);
@@ -213,5 +224,7 @@ export function useOrganizationManagement() {
     // mutations
     createTenant,
     updateTenant,
+    logoUpload,
+    deleteLogo,
   };
 }

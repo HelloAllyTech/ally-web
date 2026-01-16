@@ -1,11 +1,16 @@
 import React, { useState, useCallback, useEffect, useRef, useMemo } from "react";
 
+import { FEATURE_FLAGS_MAP } from "@ally-ui-mono/ui-shared";
 import { ArrowDownFilled, DoubleArrowRight, Trash } from "@assets";
 import {
   AutoExpandableTextarea,
   EmojiPickerComponent,
   NumberInput,
   ToggleSwitch,
+  OccurrenceControlSection,
+  ScoreWindowSection,
+  TimeWindowSection,
+  TextareaWithTriggerDropdown,
 } from "@components";
 import { en } from "@constants";
 import { useDebounce, useClickOutside } from "@hooks";
@@ -24,6 +29,14 @@ const FIELD_DEPENDENCIES: Record<string, readonly string[]> = {
     MAPPED_EVENT_FIELDS.MESSAGE,
   ],
   branchingStatus: [MAPPED_EVENT_FIELDS.BRANCH_INSTRUCTION],
+  detectionConfigStatus: [
+    MAPPED_EVENT_FIELDS.MAX_OCCURRENCES,
+    MAPPED_EVENT_FIELDS.MIN_GAP_TIME,
+    MAPPED_EVENT_FIELDS.START_TIME,
+    MAPPED_EVENT_FIELDS.END_TIME,
+    MAPPED_EVENT_FIELDS.MIN_SCORE,
+    MAPPED_EVENT_FIELDS.MAX_SCORE,
+  ],
 };
 
 interface MappedEventSidePanelProps {
@@ -398,6 +411,41 @@ export const MappedEventSidePanel: React.FC<MappedEventSidePanelProps> = ({
               />
             </Field>
 
+            {FEATURE_FLAGS_MAP.EVENT_DETECTION_CONFIG_FLAG && (
+              <>
+                <OccurrenceControlSection
+                  maxOccurrences={formData?.maxOccurrences?.value}
+                  minGapTime={formData?.minGapTime?.value as string}
+                  onMaxOccurrencesChange={value =>
+                    handleFieldChange(MAPPED_EVENT_FIELDS.MAX_OCCURRENCES, value)
+                  }
+                  onMinGapTimeChange={value =>
+                    handleFieldChange(MAPPED_EVENT_FIELDS.MIN_GAP_TIME, value)
+                  }
+                />
+
+                <TimeWindowSection
+                  startTime={formData?.startTime?.value as string}
+                  endTime={formData?.endTime?.value as string}
+                  onStartTimeChange={value =>
+                    handleFieldChange(MAPPED_EVENT_FIELDS.START_TIME, value)
+                  }
+                  onEndTimeChange={value => handleFieldChange(MAPPED_EVENT_FIELDS.END_TIME, value)}
+                />
+
+                <ScoreWindowSection
+                  minScore={formData?.minScore?.value}
+                  maxScore={formData?.maxScore?.value}
+                  onMinScoreChange={value =>
+                    handleFieldChange(MAPPED_EVENT_FIELDS.MIN_SCORE, value)
+                  }
+                  onMaxScoreChange={value =>
+                    handleFieldChange(MAPPED_EVENT_FIELDS.MAX_SCORE, value)
+                  }
+                />
+              </>
+            )}
+
             <Field label="Branching status">
               <ToggleSwitch
                 enabled={formData.branchingStatus?.value || false}
@@ -409,11 +457,22 @@ export const MappedEventSidePanel: React.FC<MappedEventSidePanelProps> = ({
             </Field>
 
             <Field label="Branch to state" multiline={true}>
-              <FormTextarea
+              <TextareaWithTriggerDropdown
                 value={formData.branchInstruction?.value || ""}
                 onChange={value => handleFieldChange(MAPPED_EVENT_FIELDS.BRANCH_INSTRUCTION, value)}
                 placeholder="Add branch to state"
                 disabled={formData.branchInstruction?.disabled}
+                alwaysOpen
+              />
+            </Field>
+
+            <Field label="Checklist visibility">
+              <ToggleSwitch
+                enabled={formData.checklistVisibilityStatus?.value || false}
+                onChange={enabled =>
+                  handleToggleChange(MAPPED_EVENT_FIELDS.CHECKLIST_VISIBILITY_STATUS, enabled)
+                }
+                label="Checklist visibility"
               />
             </Field>
           </div>

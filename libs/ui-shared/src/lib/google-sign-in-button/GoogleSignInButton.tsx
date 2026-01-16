@@ -6,7 +6,7 @@ import { useGoogleLogin, GoogleLogin } from "@react-oauth/google";
 
 import { Google } from "../../assets";
 
-enum AUTHENTICATION_TYPE {
+export enum AUTHENTICATION_TYPE {
   GOOGLE_CREDENTIAL = "credential",
   GOOGLE_ACCESS_TOKEN = "accessToken",
 }

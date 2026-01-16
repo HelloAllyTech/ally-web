@@ -113,6 +113,82 @@ export const isExactlyOneEventSelected = (
 };
 
 /**
+ * Helper function to recursively validate node IDs
+ * @param node - The expression node to validate
+ * @returns true if the node and all its children have valid non-empty string IDs
+ */
+const validateNodeIds = (node: CombinationExpressionNode | undefined): boolean => {
+  if (!node) return false;
+
+  // Check if current node has a valid ID (for leaf nodes)
+  if (node.id !== undefined) {
+    if (!isNonEmptyString(node.id) || node.id.trim() === "") {
+      return false;
+    }
+  }
+
+  // For operator nodes (AND, OR, NOT), recursively check children
+  if (node.type === "AND" || node.type === "OR") {
+    const leftValid = node.left ? validateNodeIds(node.left) : false;
+    const rightValid = node.right ? validateNodeIds(node.right) : false;
+    return leftValid && rightValid;
+  }
+
+  if (node.type === "NOT") {
+    return node.left ? validateNodeIds(node.left) : false;
+  }
+
+  // For leaf nodes, we've already checked the ID above
+  return true;
+};
+
+/**
+ * Helper function to check if expression has at least one operator node with both left and right children
+ * @param node - The expression node to check
+ * @returns true if there's at least one operator node (AND/OR) with both children
+ */
+const hasOperatorWithBothChildren = (node: CombinationExpressionNode | undefined): boolean => {
+  if (!node) return false;
+
+  // Check if current node is an operator with both children
+  if ((node.type === "AND" || node.type === "OR") && node.left && node.right) {
+    return true;
+  }
+
+  // Recursively check children
+  if (node.left && hasOperatorWithBothChildren(node.left)) {
+    return true;
+  }
+
+  if (node.right && hasOperatorWithBothChildren(node.right)) {
+    return true;
+  }
+
+  return false;
+};
+
+/**
+ * Validates that a combination expression:
+ * 1. Has at least one operator node (AND/OR) with both left and right children
+ * 2. All nodes have valid non-empty string IDs
+ * @param node - The expression node to validate
+ * @returns true if expression is valid
+ */
+export const isValidCombinationExpression = (
+  node: CombinationExpressionNode | undefined,
+): boolean => {
+  if (!node) return false;
+
+  // Must have at least one operator with both left and right children
+  if (!hasOperatorWithBothChildren(node)) {
+    return false;
+  }
+
+  // All node IDs must be valid
+  return validateNodeIds(node);
+};
+
+/**
  * Converts UpdateEventDataParam to the expected API payload format (SessionEvent)
  * @param event - Event data from the frontend
  * @returns Formatted SessionEvent payload for the API
@@ -122,14 +198,14 @@ export const convertEventToApiPayload = (event: UpdateEventDataParam): SessionEv
 
   const detectionData: SessionEventDetectionData = {};
   const { sentences, speaker, className, value, operator, expression } =
-    event?.triggerCondition || {};
+    (event?.triggerCondition as any) || {};
 
   if (
     event.detectionType === EVENT_DETECTION_TYPES.SENTENCE_SIMILARITY ||
     event.detectionType === EVENT_DETECTION_TYPES.SEMANTIC_SIMILARITY
   ) {
     if (isNonEmptyObject(event.triggerCondition)) {
-      if (isNonEmptyArray(sentences)) detectionData.sentences = sentences;
+      if (isNonEmptyArray(sentences)) detectionData.sentences = sentences as string[];
       if (isNonEmptyString(speaker)) detectionData.speaker = speaker;
     }
   }
@@ -144,10 +220,10 @@ export const convertEventToApiPayload = (event: UpdateEventDataParam): SessionEv
   if (event.detectionType === EVENT_DETECTION_TYPES.SCORE_BASED) {
     if (isNonEmptyObject(event.triggerCondition)) {
       if (isNumber(value)) {
-        detectionData.score = event.triggerCondition.value;
+        detectionData.score = value;
       }
       if (isNonEmptyString(operator)) {
-        const condition = mapOperatorToCondition(event.triggerCondition.operator);
+        const condition = mapOperatorToCondition(operator);
         if (condition) {
           detectionData.condition = condition;
         }
@@ -161,10 +237,10 @@ export const convertEventToApiPayload = (event: UpdateEventDataParam): SessionEv
   if (event.detectionType === EVENT_DETECTION_TYPES.TIME_BASED) {
     if (isNonEmptyObject(event.triggerCondition)) {
       if (isNonEmptyString(value)) {
-        detectionData.time = convertTimeToSeconds(event.triggerCondition.value);
+        detectionData.time = convertTimeToSeconds(value);
       }
       if (isNonEmptyString(operator)) {
-        const condition = mapOperatorToCondition(event.triggerCondition.operator);
+        const condition = mapOperatorToCondition(operator);
         if (condition) {
           detectionData.condition = condition;
         }
@@ -176,11 +252,23 @@ export const convertEventToApiPayload = (event: UpdateEventDataParam): SessionEv
   }
 
   if (event.detectionType === EVENT_DETECTION_TYPES.COMBINATION) {
-    if (isNonEmptyObject(expression) && areBothEventsSelected(expression)) {
-      // Only include expression if both events are selected
-      detectionData.expression = event.triggerCondition.expression;
+    if (isNonEmptyObject(expression) && isValidCombinationExpression(expression)) {
+      // Only include expression if all nodes have valid IDs
+      detectionData.expression = expression;
     }
   }
+
+  const { maxOccurrences, minGapTime, startTime, endTime, minScore, maxScore } =
+    event?.detectionConfig || {};
+
+  const updatedDetectionConfig = {
+    maxOccurrences,
+    minGapTime: minGapTime && convertTimeToSeconds(String(minGapTime)),
+    startTime: startTime && convertTimeToSeconds(String(startTime)),
+    endTime: endTime && convertTimeToSeconds(String(endTime)),
+    minScore,
+    maxScore,
+  };
 
   const payload: SessionEvent = {
     name: event.name || "",
@@ -191,6 +279,7 @@ export const convertEventToApiPayload = (event: UpdateEventDataParam): SessionEv
     branchInstruction: event.branchInstruction || "",
     detectionType: backendDetectionType,
     visibilityType: event.visibilityType || "",
+    detectionConfig: updatedDetectionConfig,
   };
 
   if (Object.keys(detectionData).length > 0) {
@@ -309,6 +398,17 @@ export const convertApiResponseToEvent = (apiEvent: SessionEvent): UpdateEventDa
     }
   }
 
+  const { maxOccurrences, minGapTime, startTime, endTime, minScore, maxScore } =
+    apiEvent?.detectionConfig || {};
+  const updatedDetectionConfig = {
+    maxOccurrences,
+    minGapTime: minGapTime && convertSecondsToTimeString(Number(minGapTime)),
+    startTime: startTime && convertSecondsToTimeString(Number(startTime)),
+    endTime: endTime && convertSecondsToTimeString(Number(endTime)),
+    minScore,
+    maxScore,
+  };
+
   return {
     id: apiEvent.id,
     name: apiEvent.name || "",
@@ -321,5 +421,7 @@ export const convertApiResponseToEvent = (apiEvent: SessionEvent): UpdateEventDa
     detectionType: frontendDetectionType,
     visibilityType: apiEvent.visibilityType || "",
     triggerCondition,
+    detectionConfig: updatedDetectionConfig,
+    isEditable: apiEvent.isEditable ?? true,
   };
 };

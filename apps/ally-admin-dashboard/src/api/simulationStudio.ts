@@ -17,11 +17,14 @@ import {
   GetCoverVideoUrlResponse,
   DeleteCoverVideoRequest,
   ScenarioVoice,
+  GetScenarioVoicesQuery,
   getTriggerWarningsQueryParams,
   triggerWarningsRequest,
   createTriggerResponse,
   ScenarioLanguage,
   triggerWarning,
+  GetLanguagesQuery,
+  Language,
 } from "@types";
 
 import { baseAPI } from "./baseApi";
@@ -209,18 +212,51 @@ const simulationStudioAPI = baseAPI.injectEndpoints({
     /**
      * Get all scenario voices
      */
-    getScenarioVoices: builder.query<ScenarioVoice[], void>({
-      query: () => ({
+    getScenarioVoices: builder.query<ScenarioVoice[], GetScenarioVoicesQuery>({
+      query: params => ({
         url: ApiEndpoints.SIMULATION_STUDIO.SCENARIO_VOICES,
         method: HttpMethod.GET,
+        params,
       }),
+      providesTags: [TAG_TYPES.SCENARIO_VOICES],
+    }),
+
+    /**
+     * Create a new scenario voice
+     */
+
+    createScenarioVoice: builder.mutation<ScenarioVoice[], { voices: ScenarioVoice[] }>({
+      query: ({ voices }) => ({
+        url: ApiEndpoints.SIMULATION_STUDIO.CREATE_SCENARIO_VOICE,
+        method: HttpMethod.POST,
+        body: { voices },
+      }),
+      invalidatesTags: [TAG_TYPES.SCENARIO_VOICES],
+    }),
+
+    /**
+     * Update a scenario voice
+     */
+    updateScenarioVoice: builder.mutation<
+      ScenarioVoice,
+      { id: string; voice: Omit<ScenarioVoice, "id" | "createdAt" | "updatedAt"> }
+    >({
+      query: ({ id, voice: body }) => ({
+        url: `${ApiEndpoints.SIMULATION_STUDIO.UPDATE_SCENARIO_VOICE(id)}`,
+        method: HttpMethod.PUT,
+        body,
+      }),
+      invalidatesTags: [TAG_TYPES.SCENARIO_VOICES],
     }),
 
     /**
      * Get all available scenario languages
      */
-    getAvailableLanguageVoices: builder.query<ScenarioLanguage[], { active?: boolean }>({
-      query: (params = {}) => ({
+    getAvailableLanguageVoices: builder.query<
+      ScenarioLanguage[],
+      { active?: boolean; voicesNeeded: boolean }
+    >({
+      query: (params = { active: true, voicesNeeded: true }) => ({
         url: ApiEndpoints.SIMULATION_STUDIO.SCENARIO_VOICE_LANGUAGES,
         method: HttpMethod.GET,
         params: params, // This will pass through any params you provide
@@ -327,6 +363,53 @@ const simulationStudioAPI = baseAPI.injectEndpoints({
       }),
       invalidatesTags: [TAG_TYPES.SIMULATION],
     }),
+
+    /**
+     * Get all scenario languages with pagination and search
+     */
+    getLanguages: builder.query<Language[], GetLanguagesQuery>({
+      query: params => ({
+        url: ApiEndpoints.SIMULATION_STUDIO.GET_LANGUAGES,
+        method: HttpMethod.GET,
+        params,
+      }),
+      providesTags: [TAG_TYPES.SCENARIO_LANGUAGES],
+    }),
+
+    /**
+     * Create a new scenario language
+     */
+    createLanguage: builder.mutation<Language[], { languages: Language[] }>({
+      query: ({ languages }) => ({
+        url: ApiEndpoints.SIMULATION_STUDIO.CREATE_LANGUAGE,
+        method: HttpMethod.POST,
+        body: { languages },
+      }),
+      invalidatesTags: [TAG_TYPES.SCENARIO_LANGUAGES],
+    }),
+
+    /**
+     * Update a scenario language
+     */
+    updateLanguage: builder.mutation<
+      Language,
+      { id: number; language: Omit<Language, "id" | "createdAt" | "updatedAt"> }
+    >({
+      query: ({ id, language: body }) => ({
+        url: ApiEndpoints.SIMULATION_STUDIO.UPDATE_LANGUAGE(id),
+        method: HttpMethod.PUT,
+        body,
+      }),
+      invalidatesTags: [TAG_TYPES.SCENARIO_LANGUAGES],
+    }),
+
+    getDynamicBranchingInstruction: builder.query<string[], number | void>({
+      query: id => ({
+        url: ApiEndpoints.SIMULATION_STUDIO.DYNAMIC_BRANCHING_INSTRUCTIONS,
+        method: HttpMethod.GET,
+        params: id ? { scenarioId: id } : undefined,
+      }),
+    }),
   }),
 });
 
@@ -348,6 +431,8 @@ export const {
   useGetCoverVideoUrlMutation,
   useDeleteCoverVideoMutation,
   useGetScenarioVoicesQuery,
+  useCreateScenarioVoiceMutation,
+  useUpdateScenarioVoiceMutation,
   useGetAvailableLanguageVoicesQuery,
   useGetScenarioLanguagesQuery,
   useScenarioPreviewMutation,
@@ -358,4 +443,8 @@ export const {
   useGetTriggerWarningsQuery,
   useCreateTriggerWarningMutation,
   useDuplicateSimulationMutation,
+  useGetLanguagesQuery,
+  useCreateLanguageMutation,
+  useUpdateLanguageMutation,
+  useGetDynamicBranchingInstructionQuery,
 } = simulationStudioAPI;

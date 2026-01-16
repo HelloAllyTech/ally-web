@@ -1,3 +1,4 @@
+import { FEATURE_FLAGS_MAP } from "@ally-ui-mono/ui-shared/featureFlag";
 import { cellTypes } from "@components";
 import { CreatorFieldGroups, FormFieldConfig } from "@types";
 
@@ -128,6 +129,7 @@ export const FORM_FIELD_IDS = {
   TERMINATION_EVENT_ID: "terminationEventId",
   TERMINATION_MESSAGE: "terminationMessage",
   TERMINATION_NAME: "terminationName",
+  IS_PUBLIC: "isPublic",
 };
 
 const DEFAULT_ROLE_INSTRUCTION = `You are an AI roleplay assistant for counselor training. In this simulation, you must act ONLY as the client in a therapy session. Stay fully in character, provide realistic dialogue, and do not switch roles unless explicitly instructed.\n\nImportant Instructions:\n - Prefer first-person phrasing (e.g., "I feel…", "I've been struggling with…").\n - Allow the counselor to guide the conversation.\n - If the counselor is silent or open-ended, share one thought, feeling, or small story, then stop.\n - Maintain consistency with your life history but allow natural variation in tone and detail.\n - Respond naturally, as a real client would.\n - Keep answers concise (2–6 sentences), unless a longer response is natural.\n - Reveal information gradually, not all at once.\n - Start with few details and open up more as the counsellor asks questions.\n - Show authentic emotions and natural hesitations.\n - Do not give therapy advice or act as the counselor.\n - If sensitive topics arise, respond realistically but without graphic detail.\n - Keep each reply under ~120 words.`;
@@ -143,6 +145,16 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
         type: FORM_FIELD_TYPES.TOGGLE_BUTTON,
         fullWidth: true,
       },
+      ...(FEATURE_FLAGS_MAP.PRIVATE_PUBLIC__SIMULATION_FLAG
+        ? [
+            {
+              id: "isPublic",
+              label: "Public visibility",
+              type: FORM_FIELD_TYPES.TOGGLE_BUTTON,
+              fullWidth: true,
+            },
+          ]
+        : []),
       {
         id: "title",
         label: "Title",
@@ -370,7 +382,7 @@ export const EVENT_MANAGEMENT_TABLE_COLUMNS = [
     label: "Default branch description",
     accessor: "branchInstruction",
     placeholder: "Add Instruction",
-    dataType: cellTypes.editableText,
+    dataType: cellTypes.textAreaWithDropdown,
     options: [],
     minWidth: 240,
   },
@@ -382,39 +394,58 @@ export const EVENT_MANAGEMENT_TABLE_COLUMNS = [
     options: [],
     minWidth: 200,
   },
-  // TODO: Uncomment this once the time input is implemented
-  // {
-  //   id: "applicableFrom",
-  //   label: "Applicable from",
-  //   accessor: "applicableFrom",
-  //   dataType: cellTypes.timeInput,
-  //   options: [],
-  //   minWidth: 120,
-  // },
-  // {
-  //   id: "applicableTill",
-  //   label: "Applicable till",
-  //   accessor: "applicableTill",
-  //   dataType: cellTypes.timeInput,
-  //   options: [],
-  //   minWidth: 120,
-  // },
-  // {
-  //   id: "maxOccurrences",
-  //   label: "Max occurrences",
-  //   accessor: "maxOccurrences",
-  //   dataType: cellTypes.number,
-  //   options: [],
-  //   minWidth: 120,
-  // },
-  // {
-  //   id: "minGapTime",
-  //   label: "Min gap time",
-  //   accessor: "minGapTime",
-  //   dataType: cellTypes.timeInput,
-  //   options: [],
-  //   minWidth: 120,
-  // },
+  ...(FEATURE_FLAGS_MAP.EVENT_DETECTION_CONFIG_FLAG
+    ? [
+        {
+          id: "startTime",
+          label: "Applicable from",
+          accessor: "startTime",
+          dataType: cellTypes.timeInput,
+          options: [],
+          minWidth: 120,
+        },
+        {
+          id: "endTime",
+          label: "Applicable till",
+          accessor: "endTime",
+          dataType: cellTypes.timeInput,
+          options: [],
+          minWidth: 120,
+        },
+        {
+          id: "maxOccurrences",
+          label: "Max occurrences",
+          accessor: "maxOccurrences",
+          dataType: cellTypes.score,
+          options: [],
+          minWidth: 120,
+        },
+        {
+          id: "minGapTime",
+          label: "Min gap time",
+          accessor: "minGapTime",
+          dataType: cellTypes.timeInput,
+          options: [],
+          minWidth: 120,
+        },
+        {
+          id: "minScore",
+          label: "Min score",
+          accessor: "minScore",
+          dataType: cellTypes.score,
+          options: [],
+          minWidth: 120,
+        },
+        {
+          id: "maxScore",
+          label: "Max score",
+          accessor: "maxScore",
+          dataType: cellTypes.score,
+          options: [],
+          minWidth: 120,
+        },
+      ]
+    : []),
   {
     id: "message",
     label: "Default real time feedback message",
@@ -437,3 +468,96 @@ export const EVENT_MANAGEMENT_TABLE_COLUMNS = [
 export const SESSION_EVENT_STATUS_OPTIONS = {
   ACTIVE: "ACTIVE",
 };
+
+export const SCENARIO_VOICE_COLUMNS = [
+  {
+    id: "name",
+    label: "Voice Name",
+    accessor: "name",
+    dataType: cellTypes.editableText,
+    minWidth: 200,
+  },
+  {
+    id: "provider",
+    label: "Provider",
+    accessor: "provider",
+    dataType: cellTypes.dropdown,
+    minWidth: 200,
+    options: [], // Will be populated dynamically from API/existing voices
+  },
+  {
+    id: "config",
+    label: "Configuration",
+    accessor: "config",
+    dataType: cellTypes.normalText,
+    minWidth: 300,
+  },
+  {
+    id: "language",
+    label: "Language",
+    accessor: "languageId",
+    dataType: cellTypes.dropdown,
+    minWidth: 200,
+    options: [], // Will be populated dynamically from API
+  },
+
+  {
+    id: "createdAt",
+    label: "Created Date",
+    accessor: "createdAt",
+    dataType: cellTypes.normalText,
+    minWidth: 200,
+  },
+];
+
+export const SCENARIO_LANGUAGE_COLUMNS = [
+  {
+    id: "label",
+    label: "Language Name",
+    accessor: "label",
+    dataType: cellTypes.editableText,
+    minWidth: 150,
+  },
+  {
+    id: "value",
+    label: "Language Code",
+    accessor: "value",
+    dataType: cellTypes.editableText,
+    minWidth: 150,
+  },
+  {
+    id: "translationCode",
+    label: "Translation Code",
+    accessor: "translationCode",
+    dataType: cellTypes.editableText,
+    minWidth: 200,
+  },
+  {
+    id: "llmProviderConfig",
+    label: "LLM Provider Config",
+    accessor: "llmProviderConfig",
+    dataType: cellTypes.normalText,
+    minWidth: 200,
+  },
+  {
+    id: "sttProviderConfig",
+    label: "STT Provider Config",
+    accessor: "sttProviderConfig",
+    dataType: cellTypes.normalText,
+    minWidth: 200,
+  },
+  {
+    id: "active",
+    label: "Status",
+    accessor: "active",
+    dataType: cellTypes.switch,
+    minWidth: 120,
+  },
+  {
+    id: "createdAt",
+    label: "Created Date",
+    accessor: "createdAt",
+    dataType: cellTypes.normalText,
+    minWidth: 120,
+  },
+];

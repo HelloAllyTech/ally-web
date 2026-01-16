@@ -17,7 +17,7 @@ interface TextDropdownProps {
   value: string;
   displayValue?: string;
   options: DropdownOption[];
-  onChange: (value: string) => void;
+  onChange: (value: string, label?: string) => void;
   placeholder?: string;
   searchPlaceholder?: string;
   isSearchable?: boolean;
@@ -64,7 +64,7 @@ export const TextDropdown = ({
 
   // Handle option selection
   const selectOption = (option: DropdownOption) => {
-    onChange(option.value);
+    onChange(option.value, option.label);
     setIsOpen(false);
     setSearchTerm("");
     setHighlightedIndex(-1);
@@ -167,9 +167,9 @@ export const TextDropdown = ({
           },
         )}
       >
-        <span className={clsx("truncate mr-1", { "text-typography-800": !value })}>
+        <div className={clsx("truncate mr-1", { "text-typography-500": !value })}>
           {finalDisplayValue}
-        </span>
+        </div>
         {!disabled && <ArrowDownFilled width={8} height={8} />}
       </button>
 

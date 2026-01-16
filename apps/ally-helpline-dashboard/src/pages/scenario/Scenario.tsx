@@ -41,6 +41,8 @@ export const Scenario: FC = () => {
 
   const id = Number(scenarioId);
 
+  const isAuthenticated = () => Boolean(localStorage.getItem(LOCAL_STORAGE_KEYS.ACCESS_TOKEN));
+
   const [isLoginDialogOpen, setIsLoginDialogOpen] = useState<boolean>(false);
   const [isExistingSimulationConfirmOpen, setIsExistingSimulationConfirmOpen] =
     useState<boolean>(false);
@@ -52,7 +54,10 @@ export const Scenario: FC = () => {
     data: scenario,
     isSuccess: isScenarioSuccess,
     isLoading: isScenarioLoading,
-  } = useGetScenarioQuery({ scenarioId: id });
+  } = useGetScenarioQuery({
+    scenarioId: id,
+    isPrivate: isAuthenticated(),
+  });
   const [endSimulation] = useEndSimulationMutation();
 
   const [startSimulationError, setStartSimulationError] = useState<unknown>(null);
@@ -78,8 +83,6 @@ export const Scenario: FC = () => {
     }
     if (limitReached) setNoEnoughCredits(true);
   }, [credits]);
-
-  const isAuthenticated = () => Boolean(localStorage.getItem(LOCAL_STORAGE_KEYS.ACCESS_TOKEN));
 
   const renderBackButton = () => {
     return (

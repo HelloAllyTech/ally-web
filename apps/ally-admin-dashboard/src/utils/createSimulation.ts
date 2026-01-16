@@ -1,6 +1,5 @@
-import { FORM_FIELD_IDS, SIMULATION_CREATOR_FIELD_GROUPS } from "@constants";
-
 import { FEATURE_FLAGS_MAP } from "@ally-ui-mono/ui-shared/featureFlag";
+import { FORM_FIELD_IDS, SIMULATION_CREATOR_FIELD_GROUPS } from "@constants";
 import { GetSimulationByIdResponse } from "@types";
 
 export const getCreateSimulationSubSectionById = (id: string) => {
@@ -53,6 +52,11 @@ export const formatSimulationResponseData = (data: GetSimulationByIdResponse) =>
     responseLength: data?.metadata?.responseLength,
     prompt: data?.prompt,
     isGlobal: Boolean(data?.isGlobal),
+    ...(FEATURE_FLAGS_MAP.PRIVATE_PUBLIC__SIMULATION_FLAG
+      ? {
+          isPublic: Boolean(data?.isPublic),
+        }
+      : {}),
     triggerWarningIds: data?.triggerWarnings,
     customFields: data?.metadata?.customFields?.map((field, index) => ({
       id: `${FORM_FIELD_IDS.CUSTOM_FIELDS}${index + 1}}`,

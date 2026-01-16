@@ -118,4 +118,5 @@ export const TAG_TYPES = {
   SIMULATION_LOGS: "SimulationLogs",
   SCENARIO_PATHWAY_DETAILS: "ScenarioPathwayDetails",
   SIMULATION_CREDITS: "SimulationCredits",
+  USER: "User",
 };
