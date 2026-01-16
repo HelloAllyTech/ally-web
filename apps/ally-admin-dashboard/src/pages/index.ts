@@ -6,3 +6,5 @@ export * from "./CreateSimulation/CreateSimulation";
 export * from "./LiveSimulationPreview/LiveSimulationPreview";
 export * from "./EventManagement/EventManagement";
 export * from "./CreatePath/CreatePath";
+export * from "./ScenarioVoices/ScenarioVoices";
+export * from "./LanguageManagement/LanguageManagement";

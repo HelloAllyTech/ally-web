@@ -58,6 +58,8 @@ export const UserManagement: FC = () => {
     onEditTenant,
     handleTenantFormSubmit,
     onCloseOrganizationEditModal,
+    logoUpload,
+    deleteLogo,
   } = useOrganizationManagement();
 
   // User management hook (depends on tenants)
@@ -98,7 +100,7 @@ export const UserManagement: FC = () => {
     { id: TabType.ORGANIZATIONS, label: en.userManagement.organizations, count: tenantsCount },
   ];
 
-  const logoValue = tenantMethods.watch("logo");
+  const logoValue = tenantMethods.watch("logoUrl");
 
   const renderEditModal = () => {
     switch (selectedOption) {
@@ -299,13 +301,15 @@ export const UserManagement: FC = () => {
                 details={selectedTenant}
                 handleClick={handleTenantFormSubmit}
                 imageUpload
-                uploadId="logo"
+                uploadId="logoUrl"
                 uploadButtonName={
-                  logoValue || selectedTenant?.logo
+                  logoValue || selectedTenant?.logoUrl
                     ? en.userManagement.changeLogo
                     : en.userManagement.uploadLogo
                 }
                 uploadTitle="Logo"
+                uploadImageUrl={logoUpload}
+                deleteImageUrl={deleteLogo}
               />
             ) : (
               <UserModal

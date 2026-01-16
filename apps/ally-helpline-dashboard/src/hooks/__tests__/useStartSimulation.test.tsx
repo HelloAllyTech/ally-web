@@ -18,6 +18,9 @@ vi.mock("@ally-ui-mono/ui-shared", () => ({
     error: vi.fn(),
     info: vi.fn(),
   },
+  FEATURE_FLAGS_MAP: {
+    PEER_REVIEW_FLAG: false,
+  },
 }));
 
 const mockGetUser = vi.fn();
@@ -28,6 +31,10 @@ vi.mock("@api", () => ({
   useEndSimulationMutation: vi.fn(),
   useLazyGetUserQuery: () => [mockGetUser, { isLoading: false }],
   useLazyGetPermissionsQuery: () => [mockGetPermissions, { isLoading: false }],
+  useGetProfileImageUrlMutation: () => [vi.fn()],
+  useDeleteProfileImageMutation: () => [vi.fn()],
+  useUploadProfileImageMutation: () => [vi.fn()],
+  useGetLogoUrlQuery: () => ({ data: null }),
   baseAPI: {
     reducerPath: "baseAPI",
     reducer: (state = {}, action: any) => state,

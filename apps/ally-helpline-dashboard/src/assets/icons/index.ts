@@ -12,10 +12,14 @@
  */
 
 import AccountCircle from "./account-circle.svg?react";
+import AchievementLocked from "./achievement-locked.svg?react";
 import ActionsIcon from "./actions-icon.svg?react";
 import Alarm from "./alarm.svg?react";
 import Ally from "./ally.svg?react";
+import ArrowDownFilled from "./arrow-down-filled.svg?react";
+import ArrowLeft from "./arrow-left.svg?react";
 import ArrowRight from "./arrow-right.svg?react";
+import ArrowUp from "./arrow-up.svg?react";
 import Arrow from "./arrow.svg?react";
 import Assessment from "./assessment.svg?react";
 import AudioFile from "./audio-file.svg?react";
@@ -88,6 +92,8 @@ import ReferralsProvided from "./referrals-provided.svg?react";
 import Refresh from "./refresh.svg?react";
 import ResumeIcon from "./resume-icon.svg?react";
 import ReviewIcon from "./review-icon.svg?react";
+import ReviewNavIcon from "./review-nav-icon.svg?react";
+import ReviewTranscript from "./review-transcript.svg?react";
 import RoundCheckmark from "./round-checkmark.svg?react";
 import ScenarioIcon from "./scenario-icon.svg?react";
 import ScribeIcon from "./scribe.svg?react";
@@ -209,6 +215,7 @@ export {
   Refresh,
   ResumeIcon,
   ReviewIcon,
+  ReviewNavIcon,
   RoundCheckmark,
   ScenarioIcon,
   ScribeIcon,
@@ -254,4 +261,9 @@ export {
   Badge,
   NoBadges,
   ManageAccount,
+  ReviewTranscript,
+  ArrowDownFilled,
+  ArrowUp,
+  ArrowLeft,
+  AchievementLocked,
 };

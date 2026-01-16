@@ -3,7 +3,14 @@ import { useCallback, useMemo } from "react";
 import { useSelector } from "react-redux";
 
 import { logger } from "@ally-ui-mono/ui-shared";
-import { useLazyGetUserQuery, useLazyGetPermissionsQuery, baseAPI } from "@api";
+import {
+  useLazyGetUserQuery,
+  useLazyGetPermissionsQuery,
+  baseAPI,
+  useGetProfileImageUrlMutation,
+  useDeleteProfileImageMutation,
+  useUploadProfileImageMutation,
+} from "@api";
 import { NavigationItem } from "@components/types";
 import { LOCAL_STORAGE_KEYS, ROUTES, en, SIDEBAR_ITEMS, Permissions } from "@constants";
 import { setUser, authenticate, unauthenticate, setPermissions } from "@reducer";
@@ -16,6 +23,26 @@ export const useUser = () => {
 
   const [getUser, { isLoading: isUserLoading }] = useLazyGetUserQuery();
   const [getPermissions, { isLoading: isPermissionsLoading }] = useLazyGetPermissionsQuery();
+  const [getProfileUrl] = useGetProfileImageUrlMutation();
+  const [deleteProfile] = useDeleteProfileImageMutation();
+  const [uploadProfileImage] = useUploadProfileImageMutation();
+
+  /**
+   * Refetches user data and updates Redux store
+   * Used when profile is updated to reflect changes immediately
+   */
+  const refetchUser = async () => {
+    try {
+      const userData = await getUser();
+      if (userData?.data) {
+        store.dispatch(setUser(userData.data));
+      }
+      return userData?.data;
+    } catch (error) {
+      logger.info(`Error refetching user: ${error}`);
+      return null;
+    }
+  };
 
   const navigationItems: NavigationItem[] = [
     {
@@ -27,6 +54,16 @@ export const useUser = () => {
       id: SIDEBAR_ITEMS.EVENT_MANAGEMENT,
       label: en.simulation.eventManagement,
       path: ROUTES.MANAGE_EVENTS,
+    },
+    {
+      id: SIDEBAR_ITEMS.SCENARIO_VOICES,
+      label: en.simulation.voicesManagement,
+      path: ROUTES.MANAGE_SCENARIO_VOICES,
+    },
+    {
+      id: SIDEBAR_ITEMS.SCENARIO_LANGUAGES,
+      label: en.simulation.languagesManagement,
+      path: ROUTES.MANAGE_SCENARIO_LANGUAGES,
     },
     {
       id: SIDEBAR_ITEMS.USER_MANAGEMENT,
@@ -104,6 +141,10 @@ export const useUser = () => {
           return permissions.includes(Permissions.EDIT_SCENARIO);
         case SIDEBAR_ITEMS.EVENT_MANAGEMENT:
           return permissions.includes(Permissions.EDIT_EVENT);
+        case SIDEBAR_ITEMS.SCENARIO_VOICES:
+          return permissions.includes(Permissions.EDIT_SCENARIO_VOICE);
+        case SIDEBAR_ITEMS.SCENARIO_LANGUAGES:
+          return permissions.includes(Permissions.EDIT_SCENARIO_LANGUAGE);
         case SIDEBAR_ITEMS.USER_MANAGEMENT:
           return permissions.includes(Permissions.EDIT_USER);
         default:
@@ -115,6 +156,7 @@ export const useUser = () => {
   return {
     availableChatTypes,
     checkAuth,
+    refetchUser,
     isAuthLoading: isUserLoading || isPermissionsLoading,
     isAuthenticated,
     logout,
@@ -123,5 +165,8 @@ export const useUser = () => {
     user,
     userStatus,
     filteredNavigationItems,
+    getProfileUrl,
+    deleteProfile,
+    uploadProfileImage,
   };
 };

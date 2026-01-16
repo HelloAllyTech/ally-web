@@ -12,6 +12,8 @@ import {
   OrganizationDetail,
   EventManagement,
   CreatePath,
+  ScenarioVoices,
+  ScenarioLanguages,
 } from "@pages";
 
 import { PrivateLayout } from "./PrivateLayout";
@@ -86,6 +88,22 @@ export const RouteLayout: React.FC = () => {
           element={
             <PrivateLayout requiredPermissions={[Permissions.EDIT_EVENT]}>
               <EventManagement />
+            </PrivateLayout>
+          }
+        />
+        <Route
+          path={ROUTES.MANAGE_SCENARIO_VOICES}
+          element={
+            <PrivateLayout requiredPermissions={[Permissions.EDIT_SCENARIO]}>
+              <ScenarioVoices />
+            </PrivateLayout>
+          }
+        />
+        <Route
+          path={ROUTES.MANAGE_SCENARIO_LANGUAGES}
+          element={
+            <PrivateLayout requiredPermissions={[Permissions.EDIT_SCENARIO]}>
+              <ScenarioLanguages />
             </PrivateLayout>
           }
         />

@@ -77,7 +77,7 @@ const Carousel: FC<CarouselProps> = ({
   const getContainerStyles = () => {
     switch (variant) {
       case CarouselVariant.LIGHT:
-        return "bg-[#F3F3F3]/[0.21] shadow";
+        return "bg-white";
       case CarouselVariant.DARK:
         return "!bg-[#F3F3F3] border-[0.5px] border-[#D3D3D3] !p-2";
     }
@@ -106,7 +106,7 @@ const Carousel: FC<CarouselProps> = ({
   const getSliderStyles = (isActive: boolean) => {
     switch (variant) {
       case CarouselVariant.LIGHT:
-        return isActive ? "bg-white" : "bg-[#D2D2D242] hover:bg-slate-400";
+        return isActive ? "bg-black" : "bg-[#D2D2D2] hover:bg-slate-400";
       case CarouselVariant.DARK:
         return isActive ? "bg-black" : "bg-[#D2D2D2] hover:bg-slate-400";
     }
@@ -149,7 +149,7 @@ const Carousel: FC<CarouselProps> = ({
         </AnimatePresence>
       </div>
 
-      <div className="mt-3 flex items-center justify-center gap-2">
+      <div className="flex items-center justify-center gap-2">
         {slides.map((_, slideIndex) => {
           const isActive = slideIndex === activeIndex;
           return (
@@ -158,10 +158,10 @@ const Carousel: FC<CarouselProps> = ({
               aria-label={`Go to slide ${slideIndex + 1}`}
               aria-current={isActive}
               key={getKeyFromIndex(slideIndex, "slide-indicator")}
-              className="h-1 w-4 p-2 cursor-pointer"
+              className="w-4 p-2 cursor-pointer"
               onClick={() => onSelectSlide(slideIndex)}
             >
-              <div className={`h-[2px] w-[8px] transition-colors ${getSliderStyles(isActive)}`} />
+              <div className={`h-[2.5px] w-[8px] transition-colors ${getSliderStyles(isActive)}`} />
             </div>
           );
         })}

@@ -24,6 +24,17 @@ vi.mock("@components", () => ({
       {children}{" "}
     </div>
   ),
+  Carousel: ({ slides }: any) => (
+    <div data-testid="carousel">
+      {slides?.map((slide: any, index: number) => (
+        <div key={index} data-testid={`carousel-slide-${index}`}>
+          {slide.text}
+        </div>
+      ))}
+    </div>
+  ),
+  CarouselVariant: { LIGHT: "LIGHT", DARK: "DARK" },
+  CarouselSize: { SMALL: "SMALL", LARGE: "LARGE" },
   ButtonVariant: { PRIMARY: "primary" },
 }));
 vi.mock("@assets/icons", () => ({

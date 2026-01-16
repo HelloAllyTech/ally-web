@@ -1,8 +1,9 @@
 import { FC } from "react";
 
 import { Dialog } from "@mui/material";
+import { toast } from "sonner";
 
-import { ImageUpload } from "@ally-ui-mono/ui-shared/index";
+import { ImageUpload } from "@ally-ui-mono/ui-shared";
 import { CloseIcon } from "@assets";
 
 import { profileSettingsProps } from "./types";
@@ -14,7 +15,12 @@ export const ProfileSettings: FC<profileSettingsProps> = ({
   userData,
   formMethods,
   onButtonClick,
+  getProfileUrl,
 }) => {
+  const handleUploadFailure = () => {
+    toast.error("Image must be under 2MB and have the correct aspect ratio.");
+  };
+
   return (
     <Dialog
       open={isOpen}
@@ -25,7 +31,7 @@ export const ProfileSettings: FC<profileSettingsProps> = ({
         },
       }}
     >
-      <div className="h-[480px] w-[400px] flex flex-col p-5">
+      <div className="h-[440px] w-[400px] flex flex-col p-5">
         <CloseIcon className="cursor-pointer absolute right-0 top-0" onClick={onClose} />
         <div className="flex flex-col gap-3">
           <div className="flex item-center justify-center text-2xl font-secondary">
@@ -36,7 +42,9 @@ export const ProfileSettings: FC<profileSettingsProps> = ({
             uploadId="profileImageUrl"
             uploadButtonName="Upload Image"
             uploadTitle="Profile image"
+            onUpload={getProfileUrl}
             details={userData}
+            onFailed={handleUploadFailure}
           />
           <div className="flex flex-col gap-5">
             <div className="flex flex-col">
@@ -45,9 +53,9 @@ export const ProfileSettings: FC<profileSettingsProps> = ({
               </label>
 
               <input
-                value={userData?.name ?? ""}
+                placeholder={userData?.name ?? ""}
                 disabled
-                className="border rounded-md px-2 py-2 outline-none text-base font-primary placeholder:text-typography-600"
+                className="border rounded-md px-2 py-2 outline-none text-base font-primary"
               />
             </div>
             <div className="flex flex-col">
@@ -55,9 +63,9 @@ export const ProfileSettings: FC<profileSettingsProps> = ({
                 Email
               </label>
               <input
-                value={userData?.email ?? ""}
+                placeholder={userData?.email ?? ""}
                 disabled
-                className="border rounded-md px-2 py-2 outline-none text-base font-primary placeholder:text-typography-600"
+                className="border rounded-md px-2 py-2 outline-none text-base font-primary"
               />
             </div>
           </div>

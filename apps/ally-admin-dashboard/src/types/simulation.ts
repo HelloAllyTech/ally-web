@@ -1,4 +1,4 @@
-import { SimulationStatus } from "./createSimulation";
+import { SimulationStatus, ScenarioVoice } from "./createSimulation";
 
 export enum RoomStatus {
   CONNECTED = "connected",
@@ -58,6 +58,7 @@ export interface SimulationInput {
   terminationMessage?: string;
   terminationEvents?: terminationEvent[];
   isGlobal?: boolean;
+  isPublic?: boolean;
   triggerWarningIds?: string[];
   languageVoices?: Record<string, string>;
 }
@@ -97,6 +98,7 @@ export interface GetSimulationByIdResponse {
   createdBy: string;
   lastModified: string;
   isGlobal: boolean;
+  isPublic?: boolean;
   status: SimulationStatus;
   prompt?: string;
   metadata: {
@@ -191,6 +193,11 @@ export interface SessionEventResponse {
   pagination: Pagination;
 }
 
+export interface ScenarioVoiceResponse {
+  data: ScenarioVoice[];
+  pagination?: Pagination;
+}
+
 export interface Pagination {
   total: number;
   limit: number;
@@ -226,6 +233,15 @@ export interface SessionEventDetectionData {
   expression?: ExpressionNode;
 }
 
+export interface EventDetectionConfig {
+  startTime: string | number | null | undefined;
+  endTime: string | number | null | undefined;
+  maxOccurrences: number;
+  minGapTime: string | number | null | undefined;
+  minScore: number;
+  maxScore: number | null | undefined;
+}
+
 /**
  * Session Event interface matching the API payload format
  * Used for creating and updating session events
@@ -242,11 +258,22 @@ export interface SessionEvent {
   detectionType?: SessionEventDetectionType | string;
   visibilityType?: string;
   detectionData?: SessionEventDetectionData;
+  detectionConfig?: EventDetectionConfig;
+  isEditable?: boolean;
+  checklistVisibilityStatus?: boolean;
 }
 
 export interface GetSessionEventsQuery {
   searchName?: string;
   visibilityType?: string;
+  limit?: number;
+  offset?: number;
+  sortBy?: string;
+  order?: string; // e.g. "asc" | "desc"
+}
+
+export interface GetScenarioVoicesQuery {
+  searchName?: string;
   limit?: number;
   offset?: number;
   sortBy?: string;

@@ -3,10 +3,9 @@ import { FC } from "react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 
-import { Session } from "@assets/icons";
-import { ConfirmationDialog } from "@components";
+import { Carousel, CarouselSize, CarouselVariant, ConfirmationDialog } from "@components";
 import { ButtonVariant } from "@components";
-import { ROUTES } from "@constants";
+import { CAROUSEL_SLIDES, ROUTES } from "@constants";
 
 import { StartSessionDialogProps } from "./types";
 
@@ -40,13 +39,22 @@ const StartSessionDialog: FC<StartSessionDialogProps> = ({ isOpen, onClose }) =>
       title={{ normal: "Start", italic: "Session" }}
       isOpen={isOpen}
       onClose={onClose}
-      content="Ally's mental health AI scribe safely listens, transcribes and writes session notes for you."
       buttonVariant={ButtonVariant.PRIMARY}
       onButtonClick={onStartSession}
       buttonText="Start Session now"
-      icon={Session}
       footerText="By starting, you confirm everyone being transcribed has given consent."
     >
+      <Carousel
+        slides={CAROUSEL_SLIDES}
+        variant={CarouselVariant.LIGHT}
+        size={CarouselSize.SMALL}
+        className="max-h-[254px] max-w-[236px]"
+      />
+      <div className="flex flex-col justify-center font-primary">
+        <span>Ally’s mental health AI scribe safely listens, transcribes </span>
+        <span className="flex justify-center">and writes session notes for you.</span>
+      </div>
+
       <StartSessionEmbed />
     </ConfirmationDialog>
   );

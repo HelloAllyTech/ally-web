@@ -16,3 +16,5 @@ export * from "./suspended-user/SuspendedUser";
 export * from "./post-simulation-summary";
 export * from "./stress-buster/StressBuster";
 export * from "./leaderboard/Leaderboard";
+export * from "./review/Review";
+export * from "./achievements-view-all/AchievementsViewAll";

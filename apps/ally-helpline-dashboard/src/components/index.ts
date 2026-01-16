@@ -1,4 +1,6 @@
 import Accordion from "./accordion";
+import { AchievementBadgeModal } from "./achievement-badge-modal";
+import { AchievementItem, AchievementItemData } from "./achievement-item";
 import AchievementsCard from "./achievements-card";
 import ActionDialog from "./action-dialog";
 import { AudioTranscriptPlayer } from "./audio-transcript-player";
@@ -46,10 +48,12 @@ export {
   ButtonVariant,
   type ButtonVariantType,
   type ChipConfig,
+  type AchievementItemData,
 };
 
 export {
   Accordion,
+  AchievementBadgeModal,
   AchievementsCard,
   ActionDialog,
   BoxBreathing,
@@ -90,4 +94,5 @@ export {
   TermsAndAgreement,
   LeaderboardList,
   ProfileSettings,
+  AchievementItem,
 };
