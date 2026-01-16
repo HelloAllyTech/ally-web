@@ -11,6 +11,7 @@ import { DropdownField } from "../dropdown-field";
 import { FileUpload } from "../file-upload";
 import { InputField } from "../input-field";
 import { LanguageVoiceMapping } from "../language-voice-mapping";
+import { RadioButtonGroup } from "../radio-button-group";
 import { TagSelector } from "../tag-selector";
 import { ToggleSection } from "../toggle-section";
 import { VoiceDropdown } from "../voice-dropdown";
@@ -142,6 +143,16 @@ export const FormField: FC<FormFieldProps> = ({ config, formMethods }) => {
         );
       case FORM_FIELD_TYPES.CUSTOM_FIELDS:
         return <CustomFieldGroup formMethods={formMethods} />;
+      case FORM_FIELD_TYPES.CUSTOM.RADIO_BUTTONS:
+        return (
+          <RadioButtonGroup
+            label={label}
+            id={id}
+            options={options ?? []}
+            formMethods={formMethods}
+            isMandatory={isMandatory}
+          />
+        );
       default:
         return null;
     }

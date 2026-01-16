@@ -227,6 +227,9 @@ export const extractValidData = (
         case FORM_FIELD_TYPES.TOGGLE_BUTTON:
           return [key, Boolean(value)];
 
+        case FORM_FIELD_TYPES.CUSTOM.RADIO_BUTTONS:
+          return [key, isNonEmptyString(value) ? value : null];
+
         default:
           return [key, isNonEmptyString(value) ? value.trim() : value];
       }

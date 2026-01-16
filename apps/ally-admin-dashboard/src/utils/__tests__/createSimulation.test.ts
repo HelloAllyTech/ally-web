@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from "vitest";
 
-import { SIMULATION_CREATOR_FIELD_GROUPS } from "@constants";
+import { ExperienceMode, ChecklistType, SIMULATION_CREATOR_FIELD_GROUPS } from "@constants";
 import { GetSimulationByIdResponse } from "@types";
 
 import { extractValidData } from "../common";
@@ -15,6 +15,7 @@ vi.mock("@ally-ui-mono/ui-shared/featureFlag", () => ({
   FEATURE_FLAGS_MAP: {
     NEW_CREATE_SIMULATION_FLAG: true,
     AUTO_TERMINATION_FIELD_FLAG: true,
+    PRIVATE_PUBLIC__SIMULATION_FLAG: true,
   },
 }));
 
@@ -246,14 +247,16 @@ describe("createSimulation utils", () => {
           },
           voiceId: "voice-123",
           customFields: [],
+          experienceMode: ExperienceMode.CHECKLIST,
+          checklistType: ChecklistType.GUIDED,
         },
       } as GetSimulationByIdResponse;
 
       const result = formatSimulationResponseData(mockResponse);
 
-      // Check all fields are present (title, description, coverImageUrl, coverVideoUrl, terminationEvents, difficultyLevel, responseLength, prompt, isGlobal, triggerWarningIds, customFields, agentDialogues + 18 metadata fields = 31 total)
+      // Check all fields are present (title, description, coverImageUrl, coverVideoUrl, terminationEvents, difficultyLevel, responseLength, prompt, isGlobal, triggerWarningIds, customFields, agentDialogues + 18 metadata fields + experienceMode + checklistType = 33 total, +1 for isPublic when flag is true = 34)
       expect(Object.keys(result)).toHaveLength(
-        FEATURE_FLAGS_MAP.PRIVATE_PUBLIC__SIMULATION_FLAG ? 32 : 31,
+        FEATURE_FLAGS_MAP.PRIVATE_PUBLIC__SIMULATION_FLAG ? 34 : 33,
       );
       expect(result.title).toBe("Test");
       expect(result.description).toBe("Test");
