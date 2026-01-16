@@ -58,7 +58,7 @@ export const GeneratedExpressionView = ({ node, leafNodePaths }: GeneratedExpres
   };
 
   return (
-    <div className="mt-[14px] rounded-[2px] min-h-[20px] flex items-center  bg-white border-[0.5px] border-border  font-mono">
+    <div className="mt-[14px] overflow-hidden rounded-[2px] min-h-[20px] flex items-center  bg-white border-[0.5px] border-border  font-mono">
       <span className="text-xs px-2 h-full align-middle vertical-align-middle py-2 mr-1 text-typography-900 bg-neutral-100 border-r-[0.5px] border-border">
         Expression
       </span>

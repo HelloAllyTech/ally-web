@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect, useCallback } from "react";
 
-import { AutoExpandableTextarea } from "@components";
+import { AutoExpandableTextarea } from "@ally-ui-mono/ui-shared";
 import { useClickOutside } from "@hooks";
 
 import { EditableTextPopupProps } from "./types";

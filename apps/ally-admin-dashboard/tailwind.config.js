@@ -129,12 +129,18 @@ module.exports = {
           secondary: "#F9FAFB",
           tertiary: "#F3F4F6",
         },
+        amber: {
+          50: "#FFF8E1",
+          200: "#FFE082",
+        },
         // Border Colors
         border: {
           DEFAULT: "#D2D2D2",
           light: "#E5E7EB",
           medium: "#D1D5DB",
           dark: "#9CA3AF",
+          blue: "#0957D0",
+          amber400: "#FFCA28",
         },
         // Text Colors
         typography: {
