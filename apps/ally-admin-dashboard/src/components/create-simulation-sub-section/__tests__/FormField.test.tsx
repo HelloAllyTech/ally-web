@@ -33,6 +33,23 @@ vi.mock("../../voice-dropdown", () => ({
   VoiceDropdown: ({ id, label }: any) => <div data-testid={`voice-dropdown-${id}`}>{label}</div>,
 }));
 
+vi.mock("../../radio-button-group", () => ({
+  RadioButtonGroup: ({ id, label, options, isMandatory }: any) => (
+    <div data-testid={`radio-button-group-${id}`}>
+      <label>
+        {label}
+        {isMandatory && <span>*</span>}
+      </label>
+      {options.map((option: any) => (
+        <div key={option.value}>
+          <input type="radio" name={id} value={option.value} />
+          <label>{option.label}</label>
+        </div>
+      ))}
+    </div>
+  ),
+}));
+
 // Mock constants
 vi.mock("@constants", () => ({
   FORM_FIELD_TYPES: {
@@ -41,6 +58,7 @@ vi.mock("@constants", () => ({
     IMAGE_UPLOAD: "image_upload",
     CUSTOM: {
       VOICE_DROPDOWN: "voice_dropdown",
+      RADIO_BUTTONS: "radio_buttons",
     },
   },
   TAG_TYPES: {
@@ -281,6 +299,103 @@ describe("FormField", () => {
       );
 
       expect(screen.getByText("Voice")).toBeInTheDocument();
+    });
+  });
+
+  describe("RADIO_BUTTONS Field Type", () => {
+    const radioButtonsConfig: FormFieldConfig = {
+      id: "experienceMode",
+      label: "Experience Mode",
+      type: "radio_buttons",
+      options: [
+        { value: "FEEDBACK", label: "Feedback" },
+        { value: "CHECKLIST", label: "Checklist" },
+      ],
+      isMandatory: true,
+    };
+
+    it("renders RadioButtonGroup for radio_buttons type", () => {
+      render(
+        <TestWrapper>
+          {(formMethods: any) => (
+            <FormField config={radioButtonsConfig} formMethods={formMethods} />
+          )}
+        </TestWrapper>,
+      );
+
+      expect(screen.getByTestId("radio-button-group-experienceMode")).toBeInTheDocument();
+    });
+
+    it("renders label for radio button group", () => {
+      render(
+        <TestWrapper>
+          {(formMethods: any) => (
+            <FormField config={radioButtonsConfig} formMethods={formMethods} />
+          )}
+        </TestWrapper>,
+      );
+
+      expect(screen.getByText("Experience Mode")).toBeInTheDocument();
+    });
+
+    it("renders mandatory indicator for radio button group", () => {
+      render(
+        <TestWrapper>
+          {(formMethods: any) => (
+            <FormField config={radioButtonsConfig} formMethods={formMethods} />
+          )}
+        </TestWrapper>,
+      );
+
+      const asterisk = screen.getByText("*");
+      expect(asterisk).toBeInTheDocument();
+    });
+
+    it("renders all radio button options", () => {
+      render(
+        <TestWrapper>
+          {(formMethods: any) => (
+            <FormField config={radioButtonsConfig} formMethods={formMethods} />
+          )}
+        </TestWrapper>,
+      );
+
+      expect(screen.getByText("Feedback")).toBeInTheDocument();
+      expect(screen.getByText("Checklist")).toBeInTheDocument();
+    });
+
+    it("does not render mandatory indicator when not required", () => {
+      const nonMandatoryConfig = { ...radioButtonsConfig, isMandatory: false };
+
+      render(
+        <TestWrapper>
+          {(formMethods: any) => (
+            <FormField config={nonMandatoryConfig} formMethods={formMethods} />
+          )}
+        </TestWrapper>,
+      );
+
+      // Should only have one asterisk from the label text itself, not from mandatory indicator
+      const asterisks = screen.queryAllByText("*");
+      expect(asterisks.length).toBe(0);
+    });
+
+    it("renders with empty options array", () => {
+      const configWithNoOptions = {
+        ...radioButtonsConfig,
+        options: [],
+      };
+
+      render(
+        <TestWrapper>
+          {(formMethods: any) => (
+            <FormField config={configWithNoOptions} formMethods={formMethods} />
+          )}
+        </TestWrapper>,
+      );
+
+      expect(screen.getByTestId("radio-button-group-experienceMode")).toBeInTheDocument();
+      expect(screen.getByText("Experience Mode")).toBeInTheDocument();
     });
   });
 
