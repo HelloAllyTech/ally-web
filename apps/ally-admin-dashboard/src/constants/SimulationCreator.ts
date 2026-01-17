@@ -294,7 +294,6 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
         defaultValue: DEFAULT_ROLE_INSTRUCTION,
         isMandatory: true,
       },
-
       {
         id: "context",
         label: "Your context",
