@@ -62,6 +62,75 @@ describe("createSimulation utils", () => {
       expect(Array.isArray(section?.fields)).toBe(true);
       expect(section?.fields.length).toBeGreaterThan(0);
     });
+
+    it("should have genderIdentity field in overview section", () => {
+      const section = getCreateSimulationSubSectionById("overview");
+      const genderIdentityField = section?.fields.find(field => field.id === "genderIdentity");
+
+      expect(genderIdentityField).toBeDefined();
+      expect(genderIdentityField?.label).toBe("Your gender identity");
+      expect(genderIdentityField?.type).toBe("select");
+    });
+
+    it("should have sexualOrientation field in overview section", () => {
+      const section = getCreateSimulationSubSectionById("overview");
+      const sexualOrientationField = section?.fields.find(field => field.id === "sexualOrientation");
+
+      expect(sexualOrientationField).toBeDefined();
+      expect(sexualOrientationField?.label).toBe("Your sexual orientation");
+      expect(sexualOrientationField?.type).toBe("select");
+    });
+
+    it("should have responseLength field in overview section", () => {
+      const section = getCreateSimulationSubSectionById("overview");
+      const responseLengthField = section?.fields.find(field => field.id === "responseLength");
+
+      expect(responseLengthField).toBeDefined();
+      expect(responseLengthField?.label).toBe("Length of your responses");
+      expect(responseLengthField?.type).toBe("select");
+    });
+
+    it("should have genderIdentity field as non-mandatory", () => {
+      const section = getCreateSimulationSubSectionById("overview");
+      const genderIdentityField = section?.fields.find(field => field.id === "genderIdentity");
+
+      expect(genderIdentityField?.isMandatory).toBe(false);
+    });
+
+    it("should have sexualOrientation field as non-mandatory", () => {
+      const section = getCreateSimulationSubSectionById("overview");
+      const sexualOrientationField = section?.fields.find(field => field.id === "sexualOrientation");
+
+      expect(sexualOrientationField?.isMandatory).toBe(false);
+    });
+
+    it("should have responseLength field as non-mandatory", () => {
+      const section = getCreateSimulationSubSectionById("overview");
+      const responseLengthField = section?.fields.find(field => field.id === "responseLength");
+
+      expect(responseLengthField?.isMandatory).toBe(false);
+    });
+
+    it("should NOT have genderIdentity field in basic-settings section", () => {
+      const section = getCreateSimulationSubSectionById("basic-settings");
+      const genderIdentityField = section?.fields.find(field => field.id === "genderIdentity");
+
+      expect(genderIdentityField).toBeUndefined();
+    });
+
+    it("should NOT have sexualOrientation field in basic-settings section", () => {
+      const section = getCreateSimulationSubSectionById("basic-settings");
+      const sexualOrientationField = section?.fields.find(field => field.id === "sexualOrientation");
+
+      expect(sexualOrientationField).toBeUndefined();
+    });
+
+    it("should NOT have responseLength field in basic-settings section", () => {
+      const section = getCreateSimulationSubSectionById("basic-settings");
+      const responseLengthField = section?.fields.find(field => field.id === "responseLength");
+
+      expect(responseLengthField).toBeUndefined();
+    });
   });
 
   describe("formatSimulationResponseData", () => {
