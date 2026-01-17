@@ -62,6 +62,47 @@ describe("createSimulation utils", () => {
       expect(Array.isArray(section?.fields)).toBe(true);
       expect(section?.fields.length).toBeGreaterThan(0);
     });
+    describe("overview section fields", () => {
+      const getOverviewSection = () => getCreateSimulationSubSectionById("overview");
+      const getBasicSettingsSection = () => getCreateSimulationSubSectionById("basic-settings");
+      const overviewFields = [
+        {
+          id: "genderIdentity",
+          label: "Your gender identity",
+          type: "select",
+        },
+        {
+          id: "sexualOrientation",
+          label: "Your sexual orientation",
+          type: "select",
+        },
+        {
+          id: "responseLength",
+          label: "Length of your responses",
+          type: "select",
+        },
+      ];
+      describe("presence and configuration", () => {
+        it.each(overviewFields)(
+          "should have $id field correctly configured in overview section",
+          ({ id, label, type }) => {
+            const section = getOverviewSection();
+            const field = section?.fields.find(f => f.id === id);
+            expect(field).toBeDefined();
+            expect(field?.label).toBe(label);
+            expect(field?.type).toBe(type);
+            expect(field?.isMandatory).toBe(false);
+          },
+        );
+      });
+      describe("absence from basic-settings section", () => {
+        it.each(overviewFields)("should NOT have $id field in basic-settings section", ({ id }) => {
+          const section = getBasicSettingsSection();
+          const field = section?.fields.find(f => f.id === id);
+          expect(field).toBeUndefined();
+        });
+      });
+    });
   });
 
   describe("formatSimulationResponseData", () => {
