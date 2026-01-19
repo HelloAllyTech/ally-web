@@ -290,6 +290,8 @@ describe("createSimulation utils", () => {
           customFields: [],
           experienceMode: ExperienceMode.CHECKLIST,
           checklistType: ChecklistType.GUIDED,
+          timerMode: true,
+          maxTimeValue: "01:29:00",
         },
       } as GetSimulationByIdResponse;
 
@@ -297,7 +299,7 @@ describe("createSimulation utils", () => {
 
       // Check all fields are present (title, description, coverImageUrl, coverVideoUrl, terminationEvents, difficultyLevel, responseLength, prompt, isGlobal, triggerWarningIds, customFields, agentDialogues + 18 metadata fields + experienceMode + checklistType = 33 total, +1 for isPublic when flag is true = 34)
       expect(Object.keys(result)).toHaveLength(
-        FEATURE_FLAGS_MAP.PRIVATE_PUBLIC__SIMULATION_FLAG ? 34 : 33,
+        FEATURE_FLAGS_MAP.PRIVATE_PUBLIC__SIMULATION_FLAG ? 36 : 35,
       );
       expect(result.title).toBe("Test");
       expect(result.description).toBe("Test");

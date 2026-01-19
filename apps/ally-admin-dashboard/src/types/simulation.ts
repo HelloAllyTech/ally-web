@@ -63,6 +63,8 @@ export interface SimulationInput {
   languageVoices?: Record<string, string>;
   experienceMode?: string;
   checklistType?: string;
+  timerMode?: boolean;
+  maxTimeValue?: string;
 }
 
 export interface UpdateSimulationByIdInput {
@@ -129,6 +131,8 @@ export interface GetSimulationByIdResponse {
     customFields: CustomFieldType[];
     experienceMode?: string;
     checklistType?: string;
+    timerMode?: boolean;
+    maxTimeValue?: string;
   };
   terminationEvents?: terminationEvent[];
   terminationEvent?: {
