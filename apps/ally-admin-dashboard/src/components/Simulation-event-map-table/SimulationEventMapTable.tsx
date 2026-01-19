@@ -21,7 +21,7 @@ import {
 } from "@components";
 import { ButtonVariant } from "@components/types";
 import { SESSION_EVENT_STATUS_OPTIONS, SORT_BY, SORT_ORDER, en } from "@constants";
-import { UpdateScenarioEventDataParam, SessionEventDetectionType } from "@types";
+import { UpdateScenarioEventDataParam } from "@types";
 import {
   createNewEvent,
   formatToMappedEvent,
@@ -67,7 +67,7 @@ export const SimulationEventMapTable: FC<SimulationEventMapTableProps> = ({ simu
   const [mapScenarioEvents] = useMapScenarioEventsMutation();
   const [deleteScenarioEvents] = useDeleteScenarioEventsMutation();
 
-  const sessionEvents = sessionEventsData?.data || [];
+  const sessionEvents = useMemo(() => sessionEventsData?.data || [], [sessionEventsData]);
   const isLoading = isSessionEventsLoading || isMappedEventsLoading;
 
   const tableRef = useRef<HTMLDivElement>(null);
@@ -91,13 +91,16 @@ export const SimulationEventMapTable: FC<SimulationEventMapTableProps> = ({ simu
   // Initialize mapped events from API response
   useEffect(() => {
     if (mappedScenarioEventsData?.data?.length > 0) {
-      const formattedEvents = mappedScenarioEventsData.data.map(formatApiResponseToMappedEvent);
+      const formattedEvents = mappedScenarioEventsData.data.map(event =>
+        formatApiResponseToMappedEvent(event, sessionEventsMap.get(event.eventId)?.detectionType),
+      );
+
       if (mappedEvents.length <= 1) updateEventOrderMapping(formattedEvents);
       setMappedEvents(formattedEvents);
     } else {
       setMappedEvents([createNewEvent()]);
     }
-  }, [mappedScenarioEventsData]);
+  }, [mappedScenarioEventsData, sessionEventsMap]);
 
   // Table columns configuration
   const tableColumns = useMemo(() => {
@@ -258,33 +261,8 @@ export const SimulationEventMapTable: FC<SimulationEventMapTableProps> = ({ simu
   }, [mappedEvents, eventOrderMapping]);
 
   const tableData = useMemo(() => {
-    const data = addScoreColors(sortMappedEvents);
-
-    return data.map(row => {
-      const sessionEvent = sessionEventsMap.get(row.id?.value);
-
-      if (!sessionEvent) return row;
-
-      const isTimeBased = sessionEvent.detectionType === SessionEventDetectionType.TIME;
-      const isScoreBased = sessionEvent.detectionType === SessionEventDetectionType.SCORE;
-
-      if (isScoreBased) {
-        return {
-          ...row,
-          minScore: { ...row.minScore, disabled: true },
-          maxScore: { ...row.maxScore, disabled: true },
-        };
-      }
-      if (isTimeBased) {
-        return {
-          ...row,
-          startTime: { ...row.startTime, disabled: true },
-          endTime: { ...row.endTime, disabled: true },
-        };
-      }
-      return row;
-    });
-  }, [sortMappedEvents, sessionEventsMap]);
+    return addScoreColors(sortMappedEvents);
+  }, [sortMappedEvents]);
 
   // Helper function to save events to API
   const saveEventsToApi = useCallback(

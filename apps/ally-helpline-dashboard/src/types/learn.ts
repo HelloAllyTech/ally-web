@@ -30,6 +30,10 @@ export interface Scenario {
     name?: string;
   };
   triggerWarnings?: TriggerChipItemWarning[];
+  checklistEvents?: any[];
+  experienceMode?: string;
+  maxTimeValue?: string;
+  timerMode?: boolean;
 }
 
 export interface ScenarioSession {
