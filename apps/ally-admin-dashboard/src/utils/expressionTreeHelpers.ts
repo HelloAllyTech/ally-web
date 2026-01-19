@@ -28,9 +28,11 @@ export const getEventIdFromNode = (node: CombinationExpressionNode | undefined):
 export const getEventNameFromNode = (node: CombinationExpressionNode | undefined): string => {
   if (!node) return "";
   if (node.type === "NOT" && node.left) {
-    return node.left.name || "";
+    return node.left.eventCode
+      ? `${node.left.eventCode} - ${node.left.name}`
+      : node.left.name || "";
   }
-  return node.name || "";
+  return node.eventCode ? `${node.eventCode} - ${node.name}` : node.name || "";
 };
 
 /**
