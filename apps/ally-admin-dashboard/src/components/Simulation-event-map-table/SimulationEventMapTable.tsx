@@ -21,7 +21,7 @@ import {
 } from "@components";
 import { ButtonVariant } from "@components/types";
 import { SESSION_EVENT_STATUS_OPTIONS, SORT_BY, SORT_ORDER, en } from "@constants";
-import { UpdateScenarioEventDataParam } from "@types";
+import { UpdateScenarioEventDataParam, SessionEventDetectionType } from "@types";
 import {
   createNewEvent,
   formatToMappedEvent,
@@ -258,8 +258,33 @@ export const SimulationEventMapTable: FC<SimulationEventMapTableProps> = ({ simu
   }, [mappedEvents, eventOrderMapping]);
 
   const tableData = useMemo(() => {
-    return addScoreColors(sortMappedEvents);
-  }, [sortMappedEvents]);
+    const data = addScoreColors(sortMappedEvents);
+
+    return data.map(row => {
+      const sessionEvent = sessionEventsMap.get(row.id?.value);
+
+      if (!sessionEvent) return row;
+
+      const isTimeBased = sessionEvent.detectionType === SessionEventDetectionType.TIME;
+      const isScoreBased = sessionEvent.detectionType === SessionEventDetectionType.SCORE;
+
+      if (isScoreBased) {
+        return {
+          ...row,
+          minScore: { ...row.minScore, disabled: true },
+          maxScore: { ...row.maxScore, disabled: true },
+        };
+      }
+      if (isTimeBased) {
+        return {
+          ...row,
+          startTime: { ...row.startTime, disabled: true },
+          endTime: { ...row.endTime, disabled: true },
+        };
+      }
+      return row;
+    });
+  }, [sortMappedEvents, sessionEventsMap]);
 
   // Helper function to save events to API
   const saveEventsToApi = useCallback(
