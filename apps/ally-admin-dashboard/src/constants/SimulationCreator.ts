@@ -399,7 +399,7 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
         dependsOn: "timerMode",
         visibleWhen: (formValues: any) => formValues.timerMode === true,
         defaultValue: "00:10:00",
-        note: "Range 00:00:01 - 01:30:00 (1 second to 90 minutes)",
+        note: "Range 00:00:01 - 01:30:00",
       },
     ] as FormFieldConfig[],
   },
