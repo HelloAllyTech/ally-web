@@ -1,4 +1,4 @@
-import { SessionEvent, UpdateScenarioEventDataParam } from "@types";
+import { SessionEvent, SessionEventDetectionType, UpdateScenarioEventDataParam } from "@types";
 
 import { isNonEmptyString } from "./common";
 
@@ -32,12 +32,12 @@ export const DEFAULT_EVENT_VALUES = {
   FEEDBACK_STATUS: false,
   BRANCHING_STATUS: false,
   // Detection config defaults
-  MAX_OCCURRENCES: 0,
+  MAX_OCCURRENCES: null,
   MIN_GAP_TIME: "00:00:00",
   START_TIME: "00:00:00",
-  END_TIME: "00:00:00",
-  MIN_SCORE: 0,
-  MAX_SCORE: 0,
+  END_TIME: null,
+  MIN_SCORE: null,
+  MAX_SCORE: null,
   // Checklist visibility default
   CHECKLIST_VISIBILITY_STATUS: false,
 } as const;
@@ -143,6 +143,8 @@ const secondsToTimeString = (seconds: number | string | null | undefined): strin
 export const formatToMappedEvent = (event: SessionEvent): UpdateScenarioEventDataParam => {
   const feedbackStatus = true;
   const branchingStatus = true;
+  const scoreBased = event.detectionType === SessionEventDetectionType.SCORE;
+  const timeBased = event.detectionType === SessionEventDetectionType.TIME;
 
   return {
     id: createCell(event.id, false, event.id),
@@ -178,22 +180,22 @@ export const formatToMappedEvent = (event: SessionEvent): UpdateScenarioEventDat
     ),
     startTime: createCell(
       secondsToTimeString(event.detectionConfig?.startTime) ?? DEFAULT_EVENT_VALUES.START_TIME,
-      false,
+      timeBased,
       event.id,
     ),
     endTime: createCell(
       secondsToTimeString(event.detectionConfig?.endTime) ?? DEFAULT_EVENT_VALUES.END_TIME,
-      false,
+      timeBased,
       event.id,
     ),
     minScore: createCell(
       event.detectionConfig?.minScore ?? DEFAULT_EVENT_VALUES.MIN_SCORE,
-      false,
+      scoreBased,
       event.id,
     ),
     maxScore: createCell(
       event.detectionConfig?.maxScore ?? DEFAULT_EVENT_VALUES.MAX_SCORE,
-      false,
+      scoreBased,
       event.id,
     ),
     checklistVisibilityStatus: createCell(
@@ -231,29 +233,33 @@ export const convertToApiFormat = (events: UpdateScenarioEventDataParam[]) => {
 };
 
 // Format API response to UpdateScenarioEventDataParam
-export const formatApiResponseToMappedEvent = (event: {
-  id?: string;
-  eventId?: string;
-  name?: string;
-  score?: number;
-  emoji?: string;
-  message?: string;
-  feedbackStatus: boolean;
-  branchingStatus: boolean;
-  branchInstruction?: string;
-  checklistVisibilityStatus?: boolean;
-  detectionConfig?: {
-    maxOccurrences?: number;
-    minGapTime?: string | number;
-    startTime?: string | number;
-    endTime?: string | number;
-    minScore?: number;
-    maxScore?: number;
-  };
-}): UpdateScenarioEventDataParam => {
+export const formatApiResponseToMappedEvent = (
+  event: {
+    id?: string;
+    eventId?: string;
+    name?: string;
+    score?: number;
+    emoji?: string;
+    message?: string;
+    feedbackStatus: boolean;
+    branchingStatus: boolean;
+    branchInstruction?: string;
+    checklistVisibilityStatus?: boolean;
+    detectionConfig?: {
+      maxOccurrences?: number;
+      minGapTime?: string | number;
+      startTime?: string | number;
+      endTime?: string | number;
+      minScore?: number;
+      maxScore?: number;
+    };
+  },
+  detectionType?: string,
+): UpdateScenarioEventDataParam => {
   // Support both 'id' and 'eventId' for backward compatibility
   const eventId = event.id || event.eventId || "";
-
+  const scoreBased = detectionType === SessionEventDetectionType.SCORE;
+  const timeBased = detectionType === SessionEventDetectionType.TIME;
   return {
     id: createCell(eventId, false, eventId),
     name: createCell(event.name || eventId, false, eventId),
@@ -292,22 +298,22 @@ export const formatApiResponseToMappedEvent = (event: {
     ),
     startTime: createCell(
       secondsToTimeString(event.detectionConfig?.startTime) ?? DEFAULT_EVENT_VALUES.START_TIME,
-      false,
+      timeBased,
       eventId,
     ),
     endTime: createCell(
       secondsToTimeString(event.detectionConfig?.endTime) ?? DEFAULT_EVENT_VALUES.END_TIME,
-      false,
+      timeBased,
       eventId,
     ),
     minScore: createCell(
       event.detectionConfig?.minScore ?? DEFAULT_EVENT_VALUES.MIN_SCORE,
-      false,
+      scoreBased,
       eventId,
     ),
     maxScore: createCell(
       event.detectionConfig?.maxScore ?? DEFAULT_EVENT_VALUES.MAX_SCORE,
-      false,
+      scoreBased,
       eventId,
     ),
     // Checklist visibility field
