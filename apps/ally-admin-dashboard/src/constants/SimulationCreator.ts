@@ -6,6 +6,12 @@ export const minInputHeight = {
   narrativeContext: "250",
 };
 
+export const SESSION_TIMER_CONFIG = {
+  DEFAULT_MAX_TIME: "00:10:00",
+  MAX_TIME: "01:30:00", // 90 minutes (5400 seconds)
+  MIN_TIME: "00:00:01", // 1 second
+};
+
 export const DEFAULT_SIMULATION_STATUS_OPTIONS = [
   { id: "ACTIVE", label: "Published" },
   { id: "ARCHIVED", label: "Archived" },
@@ -104,6 +110,7 @@ export const FORM_FIELD_TYPES = {
   TOGGLE_BUTTON: "toggle_button",
   TAG_AND_DROPDOWN: "tag_and_dropdown",
   CUSTOM_FIELDS: "custom_fields",
+  TIME_INPUT: "time_input",
 };
 
 export const FORM_FIELD_IDS = {
@@ -144,6 +151,8 @@ export const FORM_FIELD_IDS = {
   IS_PUBLIC: "isPublic",
   EXPERIENCE_MODE: "experienceMode",
   CHECKLIST_TYPE: "checklistType",
+  TIMER_MODE: "timerMode",
+  MAX_TIME_VALUE: "maxTimeValue",
 };
 
 const DEFAULT_ROLE_INSTRUCTION = `You are an AI roleplay assistant for counselor training. In this simulation, you must act ONLY as the client in a therapy session. Stay fully in character, provide realistic dialogue, and do not switch roles unless explicitly instructed.\n\nImportant Instructions:\n - Prefer first-person phrasing (e.g., "I feel…", "I've been struggling with…").\n - Allow the counselor to guide the conversation.\n - If the counselor is silent or open-ended, share one thought, feeling, or small story, then stop.\n - Maintain consistency with your life history but allow natural variation in tone and detail.\n - Respond naturally, as a real client would.\n - Keep answers concise (2–6 sentences), unless a longer response is natural.\n - Reveal information gradually, not all at once.\n - Start with few details and open up more as the counsellor asks questions.\n - Show authentic emotions and natural hesitations.\n - Do not give therapy advice or act as the counselor.\n - If sensitive topics arise, respond realistically but without graphic detail.\n - Keep each reply under ~120 words.`;
@@ -254,6 +263,30 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
         isMandatory: true,
         maxLength: 100,
       },
+      {
+        id: "genderIdentity",
+        label: "Your gender identity",
+        type: FORM_FIELD_TYPES.SELECT,
+        options: GENDER_IDENTITY_OPTIONS,
+        maxLength: 100,
+        isMandatory: false,
+      },
+      {
+        id: "sexualOrientation",
+        label: "Your sexual orientation",
+        placeholder: "Select sexual orientation",
+        type: FORM_FIELD_TYPES.SELECT,
+        options: SEXUAL_ORIENTATION_OPTIONS,
+        maxLength: 100,
+        isMandatory: false,
+      },
+      {
+        id: "responseLength",
+        label: "Length of your responses",
+        type: FORM_FIELD_TYPES.SELECT,
+        options: RESPONSE_LENGTH_OPTIONS,
+        isMandatory: false,
+      },
     ].filter(Boolean) as FormFieldConfig[],
   },
   {
@@ -268,31 +301,6 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
         fullWidth: true,
         maxLength: 1500,
         defaultValue: DEFAULT_ROLE_INSTRUCTION,
-        isMandatory: true,
-      },
-      {
-        id: "responseLength",
-        label: "Length of your responses",
-        type: FORM_FIELD_TYPES.SELECT,
-        isMandatory: true,
-        options: RESPONSE_LENGTH_OPTIONS,
-      },
-      {
-        id: "genderIdentity",
-        label: "Your gender identity",
-        type: FORM_FIELD_TYPES.SELECT,
-        options: GENDER_IDENTITY_OPTIONS,
-        maxLength: 100,
-        isDashedLineAbove: true,
-        isMandatory: true,
-      },
-      {
-        id: "sexualOrientation",
-        label: "Your sexual orientation",
-        placeholder: "Select sexual orientation",
-        type: FORM_FIELD_TYPES.SELECT,
-        options: SEXUAL_ORIENTATION_OPTIONS,
-        maxLength: 100,
         isMandatory: true,
       },
       {
@@ -361,15 +369,37 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
         label: "Experience Mode",
         type: FORM_FIELD_TYPES.CUSTOM.RADIO_BUTTONS,
         options: EXPERIENCE_MODE_OPTIONS,
-        fullWidth: true,
+        fullWidth: false,
         isMandatory: true,
+        isDashedLineAbove: true,
       },
       {
         id: "checklistType",
         label: "Checklist Type",
         type: FORM_FIELD_TYPES.CUSTOM.RADIO_BUTTONS,
         options: CHECKLIST_TYPE_OPTIONS,
+        fullWidth: false,
+        dependsOn: "experienceMode",
+        visibleWhen: (formValues: any) => formValues.experienceMode === "CHECKLIST",
+      },
+      {
+        id: "timerMode",
+        isMandatory: true,
+        label: "Session Timer",
+        type: FORM_FIELD_TYPES.TOGGLE_BUTTON,
+        fullWidth: false,
+        isDashedLineAbove: true,
+      },
+      {
+        id: "maxTimeValue",
+        label: "Maximum time",
+        placeholder: "00:00:01 - 01:30:00",
+        type: FORM_FIELD_TYPES.TIME_INPUT,
         fullWidth: true,
+        dependsOn: "timerMode",
+        visibleWhen: (formValues: any) => formValues.timerMode === true,
+        defaultValue: "00:10:00",
+        note: "Range 00:00:01 - 01:30:00 (1 second to 90 minutes)",
       },
     ] as FormFieldConfig[],
   },
