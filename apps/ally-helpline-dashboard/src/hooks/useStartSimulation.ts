@@ -100,6 +100,7 @@ export const useStartSimulation = (
             serverUrl: accessToken.serverUrl,
             checklistEvents: scenario?.checklistEvents || [],
             experienceMode: scenario?.experienceMode,
+            checklistType: scenario?.checklistType,
             maxTimeValue: scenario?.maxTimeValue,
             timerMode: scenario?.timerMode,
           }),
