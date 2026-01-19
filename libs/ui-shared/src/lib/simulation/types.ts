@@ -25,6 +25,11 @@ export interface SimulationTimerProps {
   timeLimit?: number;
 }
 
+export interface SessionGoalTimerProps {
+  startTime: string;
+  maxTimeValue: string;
+}
+
 export interface RenderControlsParams {
   isMuted: boolean;
   isEndingSession: boolean;
