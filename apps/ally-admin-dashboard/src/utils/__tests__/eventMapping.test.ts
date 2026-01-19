@@ -48,12 +48,12 @@ describe("eventMapping utils", () => {
       expect(DEFAULT_EVENT_VALUES.BRANCH_INSTRUCTION).toBe("");
       expect(DEFAULT_EVENT_VALUES.FEEDBACK_STATUS).toBe(false);
       expect(DEFAULT_EVENT_VALUES.BRANCHING_STATUS).toBe(false);
-      expect(DEFAULT_EVENT_VALUES.MAX_OCCURRENCES).toBe(null);
-      expect(DEFAULT_EVENT_VALUES.MIN_GAP_TIME).toBe(null);
-      expect(DEFAULT_EVENT_VALUES.START_TIME).toBe(null);
-      expect(DEFAULT_EVENT_VALUES.END_TIME).toBe(null);
-      expect(DEFAULT_EVENT_VALUES.MIN_SCORE).toBe(null);
-      expect(DEFAULT_EVENT_VALUES.MAX_SCORE).toBe(null);
+      expect(DEFAULT_EVENT_VALUES.MAX_OCCURRENCES).toBe(0);
+      expect(DEFAULT_EVENT_VALUES.MIN_GAP_TIME).toBe("00:00:00");
+      expect(DEFAULT_EVENT_VALUES.START_TIME).toBe("00:00:00");
+      expect(DEFAULT_EVENT_VALUES.END_TIME).toBe("00:00:00");
+      expect(DEFAULT_EVENT_VALUES.MIN_SCORE).toBe(0);
+      expect(DEFAULT_EVENT_VALUES.MAX_SCORE).toBe(0);
       expect(DEFAULT_EVENT_VALUES.CHECKLIST_VISIBILITY_STATUS).toBe(false);
     });
   });
@@ -112,12 +112,12 @@ describe("eventMapping utils", () => {
       expect(event.feedbackStatus.value).toBe(false);
       expect(event.branchingStatus.value).toBe(false);
       expect(event.branchInstruction.value).toBe("");
-      expect(event.maxOccurrences.value).toBe(null);
-      expect(event.minGapTime.value).toBe(null);
-      expect(event.startTime.value).toBe(null);
-      expect(event.endTime.value).toBe(null);
-      expect(event.minScore.value).toBe(null);
-      expect(event.maxScore.value).toBe(null);
+      expect(event.maxOccurrences.value).toBe(0);
+      expect(event.minGapTime.value).toBe("00:00:00");
+      expect(event.startTime.value).toBe("00:00:00");
+      expect(event.endTime.value).toBe("00:00:00");
+      expect(event.minScore.value).toBe(0);
+      expect(event.maxScore.value).toBe(0);
       expect(event.checklistVisibilityStatus.value).toBe(false);
     });
 
