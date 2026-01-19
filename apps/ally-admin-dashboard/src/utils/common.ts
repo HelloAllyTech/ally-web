@@ -8,6 +8,49 @@ export const validateEmail = (email: string): boolean => {
   return Boolean(email && EMAIL_REGEX.test(email));
 };
 
+/**
+ * Validates if a time string is in the format HH:MM:SS and within the specified range
+ * @param timeStr - Time string in HH:MM:SS format
+ * @param maxTimeStr - Maximum allowed time in HH:MM:SS format
+ * @returns true if valid, false otherwise
+ */
+export const validateMaxTimeValue = (timeStr: string, maxTimeStr: string): boolean => {
+  if (!timeStr) return false;
+
+  // Check format HH:MM:SS
+  const timeRegex = /^(\d{2}):(\d{2}):(\d{2})$/;
+  const match = timeStr.match(timeRegex);
+
+  if (!match) return false;
+
+  const hours = parseInt(match[1], 10);
+  const minutes = parseInt(match[2], 10);
+  const seconds = parseInt(match[3], 10);
+
+  // Validate ranges for individual components
+  if (hours < 0 || hours > 23) return false;
+  if (minutes < 0 || minutes > 59) return false;
+  if (seconds < 0 || seconds > 59) return false;
+
+  // Convert to total seconds
+  const totalSeconds = hours * 3600 + minutes * 60 + seconds;
+
+  // Parse max time string
+  const maxMatch = maxTimeStr.match(timeRegex);
+  if (!maxMatch) return false;
+
+  const maxHours = parseInt(maxMatch[1], 10);
+  const maxMinutes = parseInt(maxMatch[2], 10);
+  const maxSeconds = parseInt(maxMatch[3], 10);
+
+  const maxTotalSeconds = maxHours * 3600 + maxMinutes * 60 + maxSeconds;
+
+  // Check range: must be at least 1 second and not exceed maxTotalSeconds
+  if (totalSeconds < 1 || totalSeconds > maxTotalSeconds) return false;
+
+  return true;
+};
+
 export const getKeyFromIndex = (index: number, prefix: string = "key") => `${prefix}-${index}`;
 
 export const updateQueryParamListWithoutReload = (

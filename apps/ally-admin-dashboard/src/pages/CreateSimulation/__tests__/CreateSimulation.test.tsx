@@ -2,8 +2,11 @@ import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { useForm } from "react-hook-form";
 import { BrowserRouter } from "react-router-dom";
 import { describe, it, expect, vi, beforeEach } from "vitest";
+import userEvent from "@testing-library/user-event";
+import { toast } from "sonner";
 
 import { CreateSimulation } from "../CreateSimulation";
+import { ChecklistType, ExperienceMode } from "@src/constants";
 
 // Hoist constants mock
 const mockEn = vi.hoisted(() => ({
@@ -598,6 +601,162 @@ describe("CreateSimulation", () => {
               scenarios: expect.arrayContaining([
                 expect.objectContaining({
                   openingStatements: ["Statement 1", "Statement 2", "Statement 3"],
+                }),
+              ]),
+            }),
+          );
+        },
+        { timeout: 500 },
+      );
+    });
+  });
+
+  describe("Timer Mode Validation", () => {
+    it("should validate maxTimeValue when timerMode is enabled", async () => {
+      mockFormMethods.getValues.mockReturnValue({
+        title: "Test Title",
+        description: "Test Description",
+        timerMode: true,
+        maxTimeValue: "00:05:00",
+        triggerWarningIds: [],
+      });
+
+      renderCreateSimulation();
+
+      const saveDraftButton = screen.getByText("Save Draft");
+      fireEvent.click(saveDraftButton);
+
+      await waitFor(
+        () => {
+          // Valid time should not show error
+          expect(screen.queryByText(/maxTimeError/)).not.toBeInTheDocument();
+        },
+        { timeout: 500 },
+      );
+    });
+
+    it("should show error when maxTimeValue exceeds max time", async () => {
+      mockFormMethods.getValues.mockReturnValue({
+        title: "Test Title",
+        description: "Test Description",
+        timerMode: true,
+        maxTimeValue: "01:31:00", // Exceeds 01:30:00
+        triggerWarningIds: [],
+      });
+
+      renderCreateSimulation();
+
+      const saveDraftButton = screen.getByText("Save Draft");
+      fireEvent.click(saveDraftButton);
+
+      await waitFor(() => {
+        // Should call toast.error for invalid time
+        expect(toast.error).toHaveBeenCalled();
+      });
+    });
+
+    it("should skip maxTimeValue validation when timerMode is disabled", async () => {
+      mockFormMethods.getValues.mockReturnValue({
+        title: "Test Title",
+        description: "Test Description",
+        timerMode: false,
+        maxTimeValue: undefined,
+        triggerWarningIds: [],
+      });
+      mockCreateSimulation.mockResolvedValue({ data: [{ id: "new-id" }] });
+
+      renderCreateSimulation();
+
+      const saveDraftButton = screen.getByText("Save Draft");
+      fireEvent.click(saveDraftButton);
+
+      await waitFor(
+        () => {
+          expect(mockCreateSimulation).toHaveBeenCalled();
+        },
+        { timeout: 500 },
+      );
+    });
+
+    it("should skip validation when timerMode is true but maxTimeValue is not provided", async () => {
+      mockFormMethods.getValues.mockReturnValue({
+        title: "Test Title",
+        description: "Test Description",
+        timerMode: true,
+        maxTimeValue: undefined,
+        triggerWarningIds: [],
+      });
+
+      renderCreateSimulation();
+
+      const saveDraftButton = screen.getByText("Save Draft");
+      fireEvent.click(saveDraftButton);
+
+      // Should not validate if maxTimeValue is not provided
+      await waitFor(
+        () => {
+          expect(screen.queryByText(/titleIsRequired/)).not.toBeInTheDocument();
+        },
+        { timeout: 500 },
+      );
+    });
+  });
+
+  describe("Experience Mode and Checklist Type", () => {
+    it("should remove checklistType when experienceMode is not CHECKLIST", async () => {
+      mockFormMethods.getValues.mockReturnValue({
+        title: "Test Title",
+        description: "Test Description",
+        experienceMode: ExperienceMode.FEEDBACK,
+        checklistType: ChecklistType.GUIDED,
+        triggerWarningIds: [],
+      });
+      mockCreateSimulation.mockResolvedValue({ data: [{ id: "new-id" }] });
+
+      renderCreateSimulation();
+
+      const saveDraftButton = screen.getByText("Save Draft");
+      fireEvent.click(saveDraftButton);
+
+      await waitFor(
+        () => {
+          expect(mockCreateSimulation).toHaveBeenCalledWith(
+            expect.objectContaining({
+              scenarios: expect.arrayContaining([
+                expect.not.objectContaining({
+                  checklistType: ChecklistType.GUIDED,
+                }),
+              ]),
+            }),
+          );
+        },
+        { timeout: 500 },
+      );
+    });
+
+    it("should keep checklistType when experienceMode is CHECKLIST", async () => {
+      mockFormMethods.getValues.mockReturnValue({
+        title: "Test Title",
+        description: "Test Description",
+        experienceMode: ExperienceMode.CHECKLIST,
+        checklistType: ChecklistType.GUIDED,
+        triggerWarningIds: [],
+      });
+      mockCreateSimulation.mockResolvedValue({ data: [{ id: "new-id" }] });
+
+      renderCreateSimulation();
+
+      const saveDraftButton = screen.getByText("Save Draft");
+      fireEvent.click(saveDraftButton);
+
+      await waitFor(
+        () => {
+          expect(mockCreateSimulation).toHaveBeenCalledWith(
+            expect.objectContaining({
+              scenarios: expect.arrayContaining([
+                expect.objectContaining({
+                  experienceMode: ExperienceMode.CHECKLIST,
+                  checklistType: ChecklistType.GUIDED,
                 }),
               ]),
             }),
