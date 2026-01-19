@@ -645,7 +645,7 @@ describe("FormField", () => {
         id: "maxTimeValue" as any,
         label: "Maximum Time",
         type: "time_input",
-        placeholder: "HH:MM:SS",
+        placeholder: "00:00:01 - 01:30:00",
       };
 
       render(
@@ -700,7 +700,7 @@ describe("FormField", () => {
         id: "maxTimeValue" as any,
         label: "Maximum Time",
         type: "time_input",
-        placeholder: "HH:MM:SS",
+        placeholder: "00:00:01 - 01:30:00",
       };
 
       render(
@@ -717,7 +717,7 @@ describe("FormField", () => {
         id: "maxTimeValue" as any,
         label: "Maximum Time",
         type: "time_input",
-        note: "Range: 00:00:01 - 01:30:00 (1 second to 90 minutes)",
+        note: "Range 00:00:01 - 01:30:00",
       };
 
       render(
@@ -726,9 +726,7 @@ describe("FormField", () => {
         </TestWrapper>,
       );
 
-      expect(
-        screen.getByText("Range: 00:00:01 - 01:30:00 (1 second to 90 minutes)"),
-      ).toBeInTheDocument();
+      expect(screen.getByText("Range 00:00:01 - 01:30:00")).toBeInTheDocument();
     });
 
     it("does not render note text when not provided", () => {
@@ -744,8 +742,9 @@ describe("FormField", () => {
         </TestWrapper>,
       );
 
-      const notes = container.querySelectorAll(".text-typography-700");
-      expect(notes.length).toBe(0);
+      const notes = container.querySelectorAll(".text-typography-500");
+      // Should not have any note elements (besides potentially other elements with same class)
+      expect(notes.length).toBeLessThanOrEqual(0);
     });
 
     it("renders label only when label is provided", () => {
@@ -804,7 +803,7 @@ describe("FormField", () => {
         id: "maxTimeValue" as any,
         label: "Maximum Time",
         type: "time_input",
-        placeholder: "HH:MM:SS",
+        placeholder: "00:00:01 - 01:30:00",
       };
 
       render(
@@ -874,7 +873,7 @@ describe("FormField", () => {
       );
 
       const noteElement = screen.getByText("Range: 00:00:01 - 01:30:00");
-      expect(noteElement).toHaveClass("text-typography-700");
+      expect(noteElement).toHaveClass("text-typography-500");
       expect(noteElement).toHaveClass("text-sm");
     });
 
@@ -901,9 +900,14 @@ describe("FormField", () => {
       const flexContainer = wrapper?.querySelector(".flex-col");
       expect(flexContainer).toBeInTheDocument();
 
-      // Verify label exists in flex container
-      const label = flexContainer?.querySelector("label");
-      expect(label).toBeInTheDocument();
+      // Verify label wrapper with gap-2 exists
+      const labelWrapper = flexContainer?.querySelector(".flex.items-center.gap-2");
+      expect(labelWrapper).toBeInTheDocument();
+
+      // Verify note is displayed inside the wrapper
+      const noteElement = screen.getByText("Test note");
+      expect(noteElement).toBeInTheDocument();
+      expect(noteElement).toHaveClass("text-typography-500");
     });
   });
 });

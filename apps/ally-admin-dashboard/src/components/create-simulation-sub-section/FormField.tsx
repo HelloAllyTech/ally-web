@@ -169,9 +169,12 @@ export const FormField: FC<FormFieldProps> = ({ config, formMethods }) => {
           <div>
             <div className="flex flex-col gap-4">
               {label && (
-                <label className="text-typography-900 text-base cursor-pointer flex items-center gap-1">
-                  {label} {isMandatory && <span className="text-destructive-500">*</span>}
-                </label>
+                <div className="flex items-center gap-2">
+                  <label className="text-typography-900 text-base cursor-pointer flex items-center gap-1">
+                    {label} {isMandatory && <span className="text-destructive-500">*</span>}
+                  </label>
+                  {note && <span className="text-typography-500 text-sm">{note}</span>}
+                </div>
               )}
               <TimeInput
                 value={formMethods.watch(id) || defaultValue}
@@ -180,7 +183,6 @@ export const FormField: FC<FormFieldProps> = ({ config, formMethods }) => {
                 disabled={false}
               />
             </div>
-            {note && <p className="text-typography-700 text-sm mt-1">{note}</p>}
           </div>
         );
       default:

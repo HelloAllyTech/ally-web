@@ -98,6 +98,10 @@ export const useStartSimulation = (
             accessToken: accessToken.token,
             createdAt: scenarioSession.startedAt,
             serverUrl: accessToken.serverUrl,
+            checklistEvents: scenario?.checklistEvents || [],
+            experienceMode: scenario?.experienceMode,
+            maxTimeValue: scenario?.maxTimeValue,
+            timerMode: scenario?.timerMode,
           }),
         );
 
