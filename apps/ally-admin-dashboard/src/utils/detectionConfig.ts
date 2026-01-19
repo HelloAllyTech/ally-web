@@ -71,6 +71,8 @@ export const getInfinityDisplay = (fieldId: string): string => {
       return "-∞";
     case DETECTION_CONFIG_FIELDS.MAX_SCORE:
       return "+∞";
+    case DETECTION_CONFIG_FIELDS.MIN_GAP_TIME:
+      return "00:00:00";
     default:
       return "∞";
   }
