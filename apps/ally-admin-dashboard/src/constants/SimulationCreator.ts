@@ -384,7 +384,6 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
       },
       {
         id: "timerMode",
-        isMandatory: true,
         label: "Session Timer",
         type: FORM_FIELD_TYPES.TOGGLE_BUTTON,
         fullWidth: false,
