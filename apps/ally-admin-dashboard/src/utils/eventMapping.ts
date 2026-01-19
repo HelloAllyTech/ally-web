@@ -32,12 +32,12 @@ export const DEFAULT_EVENT_VALUES = {
   FEEDBACK_STATUS: false,
   BRANCHING_STATUS: false,
   // Detection config defaults
-  MAX_OCCURRENCES: null,
-  MIN_GAP_TIME: null,
-  START_TIME: null,
-  END_TIME: null,
-  MIN_SCORE: null,
-  MAX_SCORE: null,
+  MAX_OCCURRENCES: 0,
+  MIN_GAP_TIME: "00:00:00",
+  START_TIME: "00:00:00",
+  END_TIME: "00:00:00",
+  MIN_SCORE: 0,
+  MAX_SCORE: 0,
   // Checklist visibility default
   CHECKLIST_VISIBILITY_STATUS: false,
 } as const;
@@ -118,7 +118,6 @@ const timeStringToSeconds = (timeString: string | number | null | undefined): nu
   const seconds = parseInt(parts[2], 10);
 
   if (isNaN(hours) || isNaN(minutes) || isNaN(seconds)) return null;
-
   return hours * 3600 + minutes * 60 + seconds;
 };
 

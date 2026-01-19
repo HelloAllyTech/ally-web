@@ -89,7 +89,7 @@ export const Cell = ({
       return (
         <div
           onClick={isDisabled ? undefined : () => updateCellValue("00:00:00")}
-          className="cursor-pointer px-1"
+          className={`px-1  ${isDisabled ? "cursor-not-allowed text-typography-500" : "cursor-pointer"}`}
         >
           {getInfinityDisplay(id)}
         </div>
@@ -118,7 +118,7 @@ export const Cell = ({
     if (isInfinity) {
       return (
         <div
-          className={isDisabled ? "" : "cursor-pointer"}
+          className={isDisabled ? "cursor-not-allowed text-typography-500" : "cursor-pointer"}
           onClick={
             isDisabled
               ? undefined
