@@ -2,7 +2,7 @@ import { FC, Fragment, useEffect, useRef } from "react";
 
 import { UseFormReturn } from "react-hook-form";
 
-import { ExperienceMode, ChecklistType, FORM_FIELD_IDS } from "@constants";
+import { ExperienceMode, ChecklistType, FORM_FIELD_IDS, SESSION_TIMER_CONFIG } from "@constants";
 import { FormFieldConfig } from "@types";
 
 import { FormField } from "./FormField";
@@ -18,6 +18,7 @@ export const CreateSimulationSubSection: FC<CreateSimulationSubSectionProps> = (
 }) => {
   const experienceMode = formMethods.watch(FORM_FIELD_IDS.EXPERIENCE_MODE);
   const checklistType = formMethods.watch(FORM_FIELD_IDS.CHECKLIST_TYPE);
+  const timerMode = formMethods.watch(FORM_FIELD_IDS.TIMER_MODE);
   const checklistTypeRef = useRef<HTMLDivElement>(null);
 
   // Auto-scroll and set default checklistType when experienceMode changes to CHECKLIST
@@ -27,20 +28,27 @@ export const CreateSimulationSubSection: FC<CreateSimulationSubSectionProps> = (
       if (!checklistType) {
         formMethods.setValue(FORM_FIELD_IDS.CHECKLIST_TYPE, ChecklistType.GUIDED);
       }
-      // Scroll to checklistType field
-      if (checklistTypeRef.current) {
-        setTimeout(() => {
-          checklistTypeRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
-        }, 0);
-      }
     }
   }, [experienceMode, checklistType, formMethods]);
 
+  // Auto-set default maxTimeValue when timerMode is enabled
+  useEffect(() => {
+    if (timerMode) {
+      // Get current maxTimeValue
+      const currentMaxTime = formMethods.getValues(FORM_FIELD_IDS.MAX_TIME_VALUE);
+      // Only set if not already set
+      if (!currentMaxTime) {
+        formMethods.setValue(FORM_FIELD_IDS.MAX_TIME_VALUE, SESSION_TIMER_CONFIG.DEFAULT_MAX_TIME);
+      }
+    }
+  }, [timerMode, formMethods]);
+
   // Filter fields based on conditions
   const shouldRenderField = (field: FormFieldConfig) => {
-    // Only render checklistType when experienceMode is "CHECKLIST"
-    if (field.id === FORM_FIELD_IDS.CHECKLIST_TYPE && experienceMode !== ExperienceMode.CHECKLIST) {
-      return false;
+    // Check custom visibility condition
+    if (field.visibleWhen) {
+      const formValues = formMethods.getValues();
+      return field.visibleWhen(formValues);
     }
     return true;
   };

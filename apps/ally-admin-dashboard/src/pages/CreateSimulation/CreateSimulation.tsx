@@ -26,6 +26,7 @@ import {
   SIMULATION_CREATOR_FIELD_GROUPS,
   SIMULATION_CREATOR_STEP_IDS,
   ExperienceMode,
+  SESSION_TIMER_CONFIG,
 } from "@constants";
 import { useDebounce } from "@hooks";
 import { SimulationStatus, SimulationPreviewType, triggerWarning } from "@types";
@@ -36,6 +37,7 @@ import {
   extractValidData,
   isEmpty,
   isNonEmptyArray,
+  validateMaxTimeValue,
 } from "@utils";
 
 const stepIds: any = SIMULATION_CREATOR_STEP_IDS;
@@ -134,6 +136,15 @@ export const CreateSimulation: FC = () => {
     if (!formData.title) {
       toast.error(en.errors.titleIsRequired);
       return null;
+    }
+
+    if (formData.timerMode && formData.maxTimeValue) {
+      if (!validateMaxTimeValue(formData.maxTimeValue, SESSION_TIMER_CONFIG.MAX_TIME)) {
+        toast.error(
+          en.simulation.maxTimeError(SESSION_TIMER_CONFIG.MIN_TIME, SESSION_TIMER_CONFIG.MAX_TIME),
+        );
+        return null;
+      }
     }
 
     // Delete cover image from s3 if it is changed

@@ -13,12 +13,23 @@ import { InputField } from "../input-field";
 import { LanguageVoiceMapping } from "../language-voice-mapping";
 import { RadioButtonGroup } from "../radio-button-group";
 import { TagSelector } from "../tag-selector";
+import { TimeInput } from "../time-input";
 import { ToggleSection } from "../toggle-section";
 import { VoiceDropdown } from "../voice-dropdown";
 
 export const FormField: FC<FormFieldProps> = ({ config, formMethods }) => {
-  const { label, placeholder, type, options, id, maxLength, multiline, isMandatory, defaultValue } =
-    config;
+  const {
+    label,
+    placeholder,
+    type,
+    options,
+    id,
+    maxLength,
+    multiline,
+    isMandatory,
+    defaultValue,
+    note,
+  } = config;
   const {
     formState: { errors },
   } = formMethods;
@@ -152,6 +163,25 @@ export const FormField: FC<FormFieldProps> = ({ config, formMethods }) => {
             formMethods={formMethods}
             isMandatory={isMandatory}
           />
+        );
+      case FORM_FIELD_TYPES.TIME_INPUT:
+        return (
+          <div>
+            <div className="flex flex-col gap-4">
+              {label && (
+                <label className="text-typography-900 text-base cursor-pointer flex items-center gap-1">
+                  {label} {isMandatory && <span className="text-destructive-500">*</span>}
+                </label>
+              )}
+              <TimeInput
+                value={formMethods.watch(id) || defaultValue}
+                onChange={value => formMethods.setValue(id, value)}
+                placeholder={placeholder}
+                disabled={false}
+              />
+            </div>
+            {note && <p className="text-typography-700 text-sm mt-1">{note}</p>}
+          </div>
         );
       default:
         return null;
