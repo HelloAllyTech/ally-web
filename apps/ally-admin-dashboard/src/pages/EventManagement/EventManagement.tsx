@@ -25,6 +25,7 @@ import {
   EVENT_MANAGEMENT_TABLE_COLUMNS,
   en,
   SESSION_EVENT_STATUS_OPTIONS,
+  EVENT_DETECTION_TYPES,
 } from "@constants";
 import { setAvailableEvents } from "@reducer";
 import { UpdateEventDataParam } from "@types";
@@ -148,6 +149,8 @@ export const EventManagement: React.FC = () => {
     const triggerCondition = event.triggerCondition || {};
     const isEditable = event.isEditable ?? true;
     const isDisabled = !isEditable;
+    const isTimeBased = event.detectionType === EVENT_DETECTION_TYPES.TIME_BASED;
+    const isScoreBased = event.detectionType === EVENT_DETECTION_TYPES.SCORE_BASED;
 
     return {
       id: { value: event.id || "", disabled: false, rowId: event.id },
@@ -174,10 +177,26 @@ export const EventManagement: React.FC = () => {
         disabled: isDisabled,
         rowId: event.id,
       },
-      startTime: { value: event.detectionConfig?.startTime, disabled: isDisabled, rowId: event.id },
-      endTime: { value: event.detectionConfig?.endTime, disabled: isDisabled, rowId: event.id },
-      minScore: { value: event.detectionConfig?.minScore, disabled: isDisabled, rowId: event.id },
-      maxScore: { value: event.detectionConfig?.maxScore, disabled: isDisabled, rowId: event.id },
+      startTime: {
+        value: event.detectionConfig?.startTime,
+        disabled: isDisabled || isTimeBased,
+        rowId: event.id,
+      },
+      endTime: {
+        value: event.detectionConfig?.endTime,
+        disabled: isDisabled || isTimeBased,
+        rowId: event.id,
+      },
+      minScore: {
+        value: event.detectionConfig?.minScore,
+        disabled: isDisabled || isScoreBased,
+        rowId: event.id,
+      },
+      maxScore: {
+        value: event.detectionConfig?.maxScore,
+        disabled: isDisabled || isScoreBased,
+        rowId: event.id,
+      },
       isEditable: { value: isEditable, disabled: false, rowId: event.id },
     };
   }, []);

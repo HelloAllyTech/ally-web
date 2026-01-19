@@ -14,7 +14,7 @@ import {
 } from "@components";
 import { en } from "@constants";
 import { useDebounce, useClickOutside } from "@hooks";
-import { UpdateScenarioEventDataParam, SessionEvent } from "@types";
+import { UpdateScenarioEventDataParam, SessionEvent, SessionEventDetectionType } from "@types";
 import { isObject, MAPPED_EVENT_FIELDS } from "@utils";
 
 // Constants
@@ -233,6 +233,11 @@ export const MappedEventSidePanel: React.FC<MappedEventSidePanelProps> = ({
     [sessionEvents, selectedEvent?.id?.value],
   );
 
+  const selectedEventDetectionType = useMemo(
+    () => sessionEvents.find(event => event.id === selectedEvent?.id?.value)?.detectionType,
+    [sessionEvents, selectedEvent?.id?.value],
+  );
+
   // Sync form data with selected event
   useEffect(() => {
     setFormData(selectedEvent);
@@ -424,28 +429,34 @@ export const MappedEventSidePanel: React.FC<MappedEventSidePanelProps> = ({
                   }
                 />
 
-                <TimeWindowSection
-                  startTime={formData?.startTime?.value as string}
-                  endTime={formData?.endTime?.value as string}
-                  onStartTimeChange={value =>
-                    handleFieldChange(MAPPED_EVENT_FIELDS.START_TIME, value)
-                  }
-                  onEndTimeChange={value => handleFieldChange(MAPPED_EVENT_FIELDS.END_TIME, value)}
-                />
+                {selectedEventDetectionType !== SessionEventDetectionType.TIME && (
+                  <TimeWindowSection
+                    startTime={formData?.startTime?.value as string}
+                    endTime={formData?.endTime?.value as string}
+                    onStartTimeChange={value =>
+                      handleFieldChange(MAPPED_EVENT_FIELDS.START_TIME, value)
+                    }
+                    onEndTimeChange={value =>
+                      handleFieldChange(MAPPED_EVENT_FIELDS.END_TIME, value)
+                    }
+                  />
+                )}
 
-                <ScoreWindowSection
-                  minScore={formData?.minScore?.value}
-                  maxScore={formData?.maxScore?.value}
-                  onMinScoreChange={value =>
-                    handleFieldChange(MAPPED_EVENT_FIELDS.MIN_SCORE, value)
-                  }
-                  onMaxScoreChange={value =>
-                    handleFieldChange(MAPPED_EVENT_FIELDS.MAX_SCORE, value)
-                  }
-                />
+                {selectedEventDetectionType !== SessionEventDetectionType.SCORE && (
+                  <ScoreWindowSection
+                    minScore={formData?.minScore?.value}
+                    maxScore={formData?.maxScore?.value}
+                    onMinScoreChange={value =>
+                      handleFieldChange(MAPPED_EVENT_FIELDS.MIN_SCORE, value)
+                    }
+                    onMaxScoreChange={value =>
+                      handleFieldChange(MAPPED_EVENT_FIELDS.MAX_SCORE, value)
+                    }
+                  />
+                )}
               </>
             )}
-
+            <div className="border-t" />
             <Field label="Branching status">
               <ToggleSwitch
                 enabled={formData.branchingStatus?.value || false}
