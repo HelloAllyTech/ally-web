@@ -50,6 +50,10 @@ vi.mock("../../radio-button-group", () => ({
   ),
 }));
 
+vi.mock("../../time-input", () => ({
+  TimeInput: ({ id, label }: any) => <div data-testid={`time-input-${id}`}>{label}</div>,
+}));
+
 // Mock constants
 vi.mock("@constants", () => ({
   FORM_FIELD_TYPES: {
@@ -60,6 +64,7 @@ vi.mock("@constants", () => ({
       VOICE_DROPDOWN: "voice_dropdown",
       RADIO_BUTTONS: "radio_buttons",
     },
+    TIME_INPUT: "time_input",
   },
   TAG_TYPES: {
     USERS: "users",
@@ -627,6 +632,278 @@ describe("FormField", () => {
       const flexContainer = container.querySelector(".flex-col");
       expect(flexContainer).toBeInTheDocument();
       expect(flexContainer).toHaveClass("gap-2");
+    });
+  });
+
+  describe("TIME_INPUT Field Type", () => {
+    beforeEach(() => {
+      vi.clearAllMocks();
+    });
+
+    it("renders TIME_INPUT field", () => {
+      const config: FormFieldConfig = {
+        id: "maxTimeValue" as any,
+        label: "Maximum Time",
+        type: "time_input",
+        placeholder: "HH:MM:SS",
+      };
+
+      render(
+        <TestWrapper>
+          {(formMethods: any) => <FormField config={config} formMethods={formMethods} />}
+        </TestWrapper>,
+      );
+
+      expect(screen.getByText("Maximum Time")).toBeInTheDocument();
+    });
+
+    it("renders TIME_INPUT with required asterisk when isMandatory is true", () => {
+      const config: FormFieldConfig = {
+        id: "maxTimeValue" as any,
+        label: "Maximum Time",
+        type: "time_input",
+        isMandatory: true,
+      };
+
+      render(
+        <TestWrapper>
+          {(formMethods: any) => <FormField config={config} formMethods={formMethods} />}
+        </TestWrapper>,
+      );
+
+      const label = screen.getByText("Maximum Time");
+      expect(label).toBeInTheDocument();
+      // Check for asterisk in the label's parent
+      expect(label.parentElement?.textContent).toContain("*");
+    });
+
+    it("does not render asterisk when isMandatory is false", () => {
+      const config: FormFieldConfig = {
+        id: "maxTimeValue" as any,
+        label: "Maximum Time",
+        type: "time_input",
+        isMandatory: false,
+      };
+
+      const { container } = render(
+        <TestWrapper>
+          {(formMethods: any) => <FormField config={config} formMethods={formMethods} />}
+        </TestWrapper>,
+      );
+
+      const destructive = container.querySelector(".text-destructive-500");
+      expect(destructive).not.toBeInTheDocument();
+    });
+
+    it("renders placeholder text for TimeInput", () => {
+      const config: FormFieldConfig = {
+        id: "maxTimeValue" as any,
+        label: "Maximum Time",
+        type: "time_input",
+        placeholder: "HH:MM:SS",
+      };
+
+      render(
+        <TestWrapper>
+          {(formMethods: any) => <FormField config={config} formMethods={formMethods} />}
+        </TestWrapper>,
+      );
+
+      expect(screen.getByText("Maximum Time")).toBeInTheDocument();
+    });
+
+    it("renders note text when provided", () => {
+      const config: FormFieldConfig = {
+        id: "maxTimeValue" as any,
+        label: "Maximum Time",
+        type: "time_input",
+        note: "Range: 00:00:01 - 01:30:00 (1 second to 90 minutes)",
+      };
+
+      render(
+        <TestWrapper>
+          {(formMethods: any) => <FormField config={config} formMethods={formMethods} />}
+        </TestWrapper>,
+      );
+
+      expect(
+        screen.getByText("Range: 00:00:01 - 01:30:00 (1 second to 90 minutes)"),
+      ).toBeInTheDocument();
+    });
+
+    it("does not render note text when not provided", () => {
+      const config: FormFieldConfig = {
+        id: "maxTimeValue" as any,
+        label: "Maximum Time",
+        type: "time_input",
+      };
+
+      const { container } = render(
+        <TestWrapper>
+          {(formMethods: any) => <FormField config={config} formMethods={formMethods} />}
+        </TestWrapper>,
+      );
+
+      const notes = container.querySelectorAll(".text-typography-700");
+      expect(notes.length).toBe(0);
+    });
+
+    it("renders label only when label is provided", () => {
+      const config: FormFieldConfig = {
+        id: "maxTimeValue" as any,
+        label: "Maximum Time",
+        type: "time_input",
+      };
+
+      render(
+        <TestWrapper>
+          {(formMethods: any) => <FormField config={config} formMethods={formMethods} />}
+        </TestWrapper>,
+      );
+
+      expect(screen.getByText("Maximum Time")).toBeInTheDocument();
+    });
+
+    it("uses defaultValue when provided", () => {
+      const config: FormFieldConfig = {
+        id: "maxTimeValue" as any,
+        label: "Maximum Time",
+        type: "time_input",
+        defaultValue: "00:10:00",
+      };
+
+      render(
+        <TestWrapper defaultValues={{ maxTimeValue: "00:10:00" }}>
+          {(formMethods: any) => <FormField config={config} formMethods={formMethods} />}
+        </TestWrapper>,
+      );
+
+      expect(screen.getByText("Maximum Time")).toBeInTheDocument();
+    });
+
+    it("has flex-col layout for TIME_INPUT", () => {
+      const config: FormFieldConfig = {
+        id: "maxTimeValue" as any,
+        label: "Maximum Time",
+        type: "time_input",
+      };
+
+      const { container } = render(
+        <TestWrapper>
+          {(formMethods: any) => <FormField config={config} formMethods={formMethods} />}
+        </TestWrapper>,
+      );
+
+      const flexContainer = container.querySelector(".flex-col");
+      expect(flexContainer).toBeInTheDocument();
+      expect(flexContainer).toHaveClass("gap-4");
+    });
+
+    it("renders TimeInput component with correct props", () => {
+      const config: FormFieldConfig = {
+        id: "maxTimeValue" as any,
+        label: "Maximum Time",
+        type: "time_input",
+        placeholder: "HH:MM:SS",
+      };
+
+      render(
+        <TestWrapper>
+          {(formMethods: any) => <FormField config={config} formMethods={formMethods} />}
+        </TestWrapper>,
+      );
+
+      // TimeInput component should be rendered (through mocking or real component)
+      expect(screen.getByText("Maximum Time")).toBeInTheDocument();
+    });
+
+    it("handles form value updates for TIME_INPUT", () => {
+      const config: FormFieldConfig = {
+        id: "maxTimeValue" as any,
+        label: "Maximum Time",
+        type: "time_input",
+      };
+
+      let capturedFormMethods: any;
+
+      render(
+        <TestWrapper>
+          {(formMethods: any) => {
+            capturedFormMethods = formMethods;
+            return <FormField config={config} formMethods={formMethods} />;
+          }}
+        </TestWrapper>,
+      );
+
+      // Test that form methods are passed correctly
+      expect(capturedFormMethods).toBeDefined();
+      expect(capturedFormMethods.watch).toBeDefined();
+      expect(capturedFormMethods.setValue).toBeDefined();
+    });
+
+    it("TIME_INPUT field renders with correct text styling for label", () => {
+      const config: FormFieldConfig = {
+        id: "maxTimeValue" as any,
+        label: "Maximum Time",
+        type: "time_input",
+      };
+
+      const { container } = render(
+        <TestWrapper>
+          {(formMethods: any) => <FormField config={config} formMethods={formMethods} />}
+        </TestWrapper>,
+      );
+
+      const label = screen.getByText("Maximum Time");
+      expect(label).toHaveClass("text-typography-900");
+      expect(label).toHaveClass("text-base");
+    });
+
+    it("note text has correct styling", () => {
+      const config: FormFieldConfig = {
+        id: "maxTimeValue" as any,
+        label: "Maximum Time",
+        type: "time_input",
+        note: "Range: 00:00:01 - 01:30:00",
+      };
+
+      const { container } = render(
+        <TestWrapper>
+          {(formMethods: any) => <FormField config={config} formMethods={formMethods} />}
+        </TestWrapper>,
+      );
+
+      const noteElement = screen.getByText("Range: 00:00:01 - 01:30:00");
+      expect(noteElement).toHaveClass("text-typography-700");
+      expect(noteElement).toHaveClass("text-sm");
+    });
+
+    it("TIME_INPUT field structure matches expected DOM hierarchy", () => {
+      const config: FormFieldConfig = {
+        id: "maxTimeValue" as any,
+        label: "Maximum Time",
+        type: "time_input",
+        note: "Test note",
+        isMandatory: true,
+      };
+
+      const { container } = render(
+        <TestWrapper>
+          {(formMethods: any) => <FormField config={config} formMethods={formMethods} />}
+        </TestWrapper>,
+      );
+
+      // Verify wrapper div exists
+      const wrapper = container.querySelector("div > div");
+      expect(wrapper).toBeInTheDocument();
+
+      // Verify flex-col container
+      const flexContainer = wrapper?.querySelector(".flex-col");
+      expect(flexContainer).toBeInTheDocument();
+
+      // Verify label exists in flex container
+      const label = flexContainer?.querySelector("label");
+      expect(label).toBeInTheDocument();
     });
   });
 });

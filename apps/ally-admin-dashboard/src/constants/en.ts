@@ -301,6 +301,9 @@ export const en = {
     customFieldLimit: "You can only have 3 custom fields. Remove one to add another.",
     newField: "New field",
     triggerCondition: "Trigger conditions",
+    maxTimeError(minTime: string, maxTime: string) {
+      return `Maximum time must be in HH:MM:SS format between ${minTime} and ${maxTime}.`;
+    },
   },
   userManagement: {
     organizationCreated: "Organization created successfully",

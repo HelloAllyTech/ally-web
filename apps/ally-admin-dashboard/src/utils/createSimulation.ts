@@ -68,5 +68,7 @@ export const formatSimulationResponseData = (data: GetSimulationByIdResponse) =>
       : (data?.metadata?.agentDialogues ?? ""),
     experienceMode: data?.metadata?.experienceMode,
     checklistType: data?.metadata?.checklistType,
+    timerMode: data?.metadata?.timerMode,
+    maxTimeValue: data?.metadata?.maxTimeValue,
   };
 };

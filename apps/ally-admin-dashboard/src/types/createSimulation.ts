@@ -42,6 +42,8 @@ export type FormData = {
   agentDialoguesArray: string;
   experienceMode?: string;
   checklistType?: string;
+  timerMode?: boolean;
+  maxTimeValue?: string;
 };
 
 export interface DemographicsSectionProps {
@@ -61,6 +63,9 @@ export interface FormFieldConfig {
   multiline?: boolean;
   defaultValue?: string;
   component?: React.ReactNode;
+  dependsOn?: keyof FormData;
+  note?: string;
+  visibleWhen?: (formValues: Partial<FormData>) => boolean;
 }
 
 export interface FieldGroupType {
