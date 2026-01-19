@@ -170,6 +170,10 @@ export interface StartSimulationResponse {
     metadata?: {
       name?: string;
     };
+    checklistEvents?: any[];
+    experienceMode?: string;
+    maxTimeValue?: string;
+    timerMode?: boolean;
   };
 }
 
