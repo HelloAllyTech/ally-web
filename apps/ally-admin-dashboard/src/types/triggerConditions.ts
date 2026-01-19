@@ -88,6 +88,7 @@ export interface CombinationExpressionNode {
   type?: CombinationOperator | "NOT";
   id?: string; // Event ID (present when this is a leaf node)
   name?: string;
+  eventCode?: string;
   left?: CombinationExpressionNode;
   right?: CombinationExpressionNode;
 }
