@@ -138,6 +138,8 @@ export const Sidebar: React.FC = () => {
         return location.pathname.includes(ROUTES.USER_MANAGEMENT);
       case ROUTES.MANAGE_EVENTS:
         return location.pathname.includes(ROUTES.MANAGE_EVENTS);
+      case ROUTES.MANAGE_SCENARIO_LANGUAGES:
+        return location.pathname.includes(ROUTES.MANAGE_SCENARIO_LANGUAGES);
       case ROUTES.MANAGE_SCENARIO_VOICES:
         return location.pathname.includes(ROUTES.MANAGE_SCENARIO_VOICES);
       default:
