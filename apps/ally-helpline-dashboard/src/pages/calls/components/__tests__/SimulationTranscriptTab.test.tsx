@@ -1,7 +1,15 @@
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import React from "react";
+import { Provider } from "react-redux";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
-import { useGetSimulationTranscriptQuery } from "@api";
+import {
+  useCreateReviewMutation,
+  useGetSimulationSummaryQuery,
+  useGetSimulationTranscriptQuery,
+  useUpdateReviewMutation,
+} from "@api";
+import { store } from "@store";
 
 import SimulationTranscriptTab from "../SimulationTranscriptTab";
 
@@ -16,10 +24,13 @@ const mockTranscriptData = {
 
 vi.mock("@api", () => ({
   useGetSimulationTranscriptQuery: vi.fn(),
+  useGetSimulationSummaryQuery: vi.fn(),
+  useCreateReviewMutation: vi.fn(),
+  useUpdateReviewMutation: vi.fn(),
 }));
 
-// Mock TranscriptTab component
-vi.mock("../TranscriptTab", () => ({
+// Mock Transcription component
+vi.mock("@src/components/transcription", () => ({
   default: ({ transcriptList, handleLoadMore, isLoading }: any) => (
     <div data-testid="transcript-tab">
       {isLoading && <div data-testid="loading">Loading...</div>}
@@ -40,6 +51,10 @@ vi.mock("../TranscriptTab", () => ({
   ),
 }));
 
+const renderWithProvider = (ui: React.ReactElement) => {
+  return render(<Provider store={store}>{ui}</Provider>);
+};
+
 describe("SimulationTranscriptTab", () => {
   const mockSessionId = "session-123";
 
@@ -50,24 +65,32 @@ describe("SimulationTranscriptTab", () => {
       isLoading: false,
       refetch: vi.fn(),
     } as any);
+    vi.mocked(useGetSimulationSummaryQuery).mockReturnValue({
+      data: { reviewId: null },
+      isLoading: false,
+    } as any);
+    vi.mocked(useCreateReviewMutation).mockReturnValue([vi.fn(), { isLoading: false }] as any);
+    vi.mocked(useUpdateReviewMutation).mockReturnValue([vi.fn(), { isLoading: false }] as any);
   });
 
   // --- Snapshot Tests ---
 
   it("should match snapshot when rendered", () => {
-    const { asFragment } = render(<SimulationTranscriptTab sessionId={mockSessionId} />);
+    const { asFragment } = renderWithProvider(
+      <SimulationTranscriptTab sessionId={mockSessionId} />,
+    );
     expect(asFragment()).toMatchSnapshot();
   });
 
   // --- Rendering Tests ---
 
   it("should render TranscriptTab component", () => {
-    render(<SimulationTranscriptTab sessionId={mockSessionId} />);
+    renderWithProvider(<SimulationTranscriptTab sessionId={mockSessionId} />);
     expect(screen.getByTestId("transcript-tab")).toBeInTheDocument();
   });
 
   it("should map transcript data correctly", () => {
-    render(<SimulationTranscriptTab sessionId={mockSessionId} />);
+    renderWithProvider(<SimulationTranscriptTab sessionId={mockSessionId} />);
 
     waitFor(() => {
       expect(screen.getByTestId("transcript-item-0")).toBeInTheDocument();
@@ -77,7 +100,7 @@ describe("SimulationTranscriptTab", () => {
   });
 
   it("should map senderId to correct speaker name", () => {
-    render(<SimulationTranscriptTab sessionId={mockSessionId} />);
+    renderWithProvider(<SimulationTranscriptTab sessionId={mockSessionId} />);
 
     waitFor(() => {
       // senderId === -1 should be "Client"
@@ -94,14 +117,14 @@ describe("SimulationTranscriptTab", () => {
       refetch: vi.fn(),
     } as any);
 
-    render(<SimulationTranscriptTab sessionId={mockSessionId} />);
+    renderWithProvider(<SimulationTranscriptTab sessionId={mockSessionId} />);
     expect(screen.getByTestId("loading")).toBeInTheDocument();
   });
 
   // --- Pagination Tests ---
 
   it("should start with offset 0", () => {
-    render(<SimulationTranscriptTab sessionId={mockSessionId} />);
+    renderWithProvider(<SimulationTranscriptTab sessionId={mockSessionId} />);
 
     expect(useGetSimulationTranscriptQuery).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -112,9 +135,13 @@ describe("SimulationTranscriptTab", () => {
   });
 
   it("should reset transcript list when sessionId changes", () => {
-    const { rerender } = render(<SimulationTranscriptTab sessionId={mockSessionId} />);
+    const { rerender } = renderWithProvider(<SimulationTranscriptTab sessionId={mockSessionId} />);
 
-    rerender(<SimulationTranscriptTab sessionId="session-456" />);
+    rerender(
+      <Provider store={store}>
+        <SimulationTranscriptTab sessionId="session-456" />
+      </Provider>,
+    );
 
     expect(useGetSimulationTranscriptQuery).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -125,7 +152,7 @@ describe("SimulationTranscriptTab", () => {
   });
 
   it("should load more transcripts when load more button is clicked", () => {
-    render(<SimulationTranscriptTab sessionId={mockSessionId} />);
+    renderWithProvider(<SimulationTranscriptTab sessionId={mockSessionId} />);
 
     waitFor(() => {
       const loadMoreButton = screen.getByTestId("load-more-button");
@@ -150,7 +177,7 @@ describe("SimulationTranscriptTab", () => {
       refetch: vi.fn(),
     } as any);
 
-    render(<SimulationTranscriptTab sessionId={mockSessionId} />);
+    renderWithProvider(<SimulationTranscriptTab sessionId={mockSessionId} />);
 
     waitFor(() => {
       // Should not show load more button if we've loaded all data
@@ -182,7 +209,7 @@ describe("SimulationTranscriptTab", () => {
         refetch: vi.fn(),
       } as any);
 
-    render(<SimulationTranscriptTab sessionId={mockSessionId} />);
+    renderWithProvider(<SimulationTranscriptTab sessionId={mockSessionId} />);
 
     waitFor(() => {
       expect(screen.getByText("Message 1")).toBeInTheDocument();
@@ -197,7 +224,7 @@ describe("SimulationTranscriptTab", () => {
       refetch: vi.fn(),
     } as any);
 
-    render(<SimulationTranscriptTab sessionId={mockSessionId} />);
+    renderWithProvider(<SimulationTranscriptTab sessionId={mockSessionId} />);
 
     expect(screen.getByTestId("transcript-tab")).toBeInTheDocument();
     expect(screen.queryByTestId("transcript-item-0")).not.toBeInTheDocument();
@@ -212,7 +239,7 @@ describe("SimulationTranscriptTab", () => {
       refetch: vi.fn(),
     } as any);
 
-    render(<SimulationTranscriptTab sessionId={mockSessionId} />);
+    renderWithProvider(<SimulationTranscriptTab sessionId={mockSessionId} />);
     expect(screen.getByTestId("transcript-tab")).toBeInTheDocument();
   });
 
@@ -231,7 +258,7 @@ describe("SimulationTranscriptTab", () => {
       refetch: vi.fn(),
     } as any);
 
-    render(<SimulationTranscriptTab sessionId={mockSessionId} />);
+    renderWithProvider(<SimulationTranscriptTab sessionId={mockSessionId} />);
 
     waitFor(() => {
       expect(screen.getByTestId("speaker-0")).toHaveTextContent("Client");

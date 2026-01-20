@@ -1,12 +1,14 @@
 import { FC, useState, useEffect, useCallback, useRef } from "react";
 
 import { motion } from "framer-motion";
+import { useNavigate } from "react-router-dom";
 
 import { FEATURE_FLAGS_MAP } from "@ally-ui-mono/ui-shared";
 import { ReviewsEmptyState } from "@assets";
 import { useGetReviewsQuery } from "@src/api";
 import FeedCard from "@src/components/feed-card";
 import ToggleButtonGroup from "@src/components/toggle-button-group/ToggleButtonGroup";
+import { ROUTES } from "@src/constants";
 import { ReviewItem } from "@types";
 
 const FILTER_OPTIONS = [
@@ -128,6 +130,7 @@ const EmptyState = ({ refetchReviews }: { refetchReviews: () => void }) => (
 );
 
 export const Review: FC = () => {
+  const navigate = useNavigate();
   const [activeFilter, setActiveFilter] = useState("ALL");
   const [filterStates, setFilterStates] =
     useState<Record<string, FilterState>>(createInitialFilterStates);
@@ -228,7 +231,9 @@ export const Review: FC = () => {
               reactions={item.reactions}
               commentsCount={item.commentsCount}
               comments={item.comments}
-              onReviewTranscript={() => {}}
+              onReviewTranscript={() => {
+                navigate(ROUTES.REVIEW_DETAILS.replace(":reviewId", item.id));
+              }}
             />
           </motion.div>
         ))}

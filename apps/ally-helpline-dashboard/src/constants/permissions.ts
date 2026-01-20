@@ -24,6 +24,7 @@ export enum Permissions {
   EXPORT_SUMMARY = "export:summary",
   EDIT_CALL_INFO = "edit:call:info",
   EDIT_CALL_DETAILS = "edit:call:details",
+  EDIT_REVIEW = "edit:review",
   VIEW_SIMULATION_CREDITS = "view:simulation-credits",
   VIEW_CHAT_DETAILS = "view:chat:details",
   VIEW_TRANSCRIPTION = "view:messages",

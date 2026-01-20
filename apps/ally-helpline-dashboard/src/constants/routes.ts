@@ -31,7 +31,7 @@ export const ROUTES = {
   LEADERBOARD: "/leaderboard",
   REVIEW: "/review",
   ACHIEVEMENTS_VIEW_ALL: "/achievements-view-all",
-  REVIEW_DETAILS: "/review/:reivewId",
+  REVIEW_DETAILS: "/review/:reviewId",
 } as const;
 
 export const excludeNavBar = [
