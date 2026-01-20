@@ -83,6 +83,8 @@ export const SimulationPreview: FC<SimulationPreviewProps> = ({ simulation, isOp
         accessToken: accessToken.token,
         createdAt: new Date(),
         serverUrl: accessToken.serverUrl,
+        maxTimeValue: scenario?.metadata?.maxTimeValue,
+        timerMode: scenario?.metadata?.timerMode,
       }),
     );
     navigate(ROUTES.SIMULATION_PREVIEW(accessToken?.roomName));
