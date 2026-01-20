@@ -39,7 +39,7 @@ vi.mock("@api", () => ({
 }));
 
 // Mock useScenarioLanguages hook - path relative to the Learn component
-vi.mock("@src/hooks/useScenarioLanguages", () => ({
+vi.mock("@hooks/useScenarioLanguages", () => ({
   useScenarioLanguages: () => mockUseScenarioLanguages(),
 }));
 

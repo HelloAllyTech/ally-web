@@ -10,7 +10,6 @@ import {
   useUpdateReviewMutation,
 } from "@api";
 import { store } from "@store";
-
 import SimulationTranscriptTab from "../SimulationTranscriptTab";
 
 // Mock @api
@@ -30,7 +29,7 @@ vi.mock("@api", () => ({
 }));
 
 // Mock Transcription component
-vi.mock("@src/components/transcription", () => ({
+vi.mock("@components/transcription", () => ({
   default: ({ transcriptList, handleLoadMore, isLoading }: any) => (
     <div data-testid="transcript-tab">
       {isLoading && <div data-testid="loading">Loading...</div>}
