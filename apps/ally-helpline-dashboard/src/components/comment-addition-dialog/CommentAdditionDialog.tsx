@@ -1,9 +1,9 @@
-import { FC, useMemo } from "react";
+import { FC, useMemo, useState } from "react";
 
 import { useSelector } from "react-redux";
 
 import { AutoExpandableTextarea } from "@ally-ui-mono/ui-shared/index";
-import { RootState } from "@src/store";
+import { RootState } from "@store";
 
 import { Button } from "../button";
 
@@ -11,6 +11,7 @@ interface CommentAdditionDialogProps {
   onCancel: () => void;
 }
 const CommentAdditionDialog: FC<CommentAdditionDialogProps> = ({ onCancel }) => {
+  const [comment, setComment] = useState("");
   const user = useSelector((state: RootState) => state.user.user);
   const initials = useMemo(() => {
     return user?.name[0];
@@ -25,8 +26,8 @@ const CommentAdditionDialog: FC<CommentAdditionDialogProps> = ({ onCancel }) => 
           <div className=" text-sm font-medium">{user?.name}</div>
         </div>
         <AutoExpandableTextarea
-          value=""
-          onChange={() => {}}
+          value={comment}
+          onChange={setComment}
           placeholder="Add comment"
           className="w-full border rounded-sm text-sm !px-2 !py-2 min-h-20"
         />

@@ -4,11 +4,11 @@ import { useNavigate } from "react-router-dom";
 
 import { FEATURE_FLAGS_MAP } from "@ally-ui-mono/ui-shared";
 import { useGetCurrentUserQuery, useGetLeaderBoardListQuery } from "@api";
-import { AchievementBadgeModal, AchievementsCard, LeaderboardList } from "@components";
-import { ROUTES } from "@constants";
-import { LeaderboardUser } from "@src/components/leaderboard-list/LeaderboardList";
 import { useGetMyBadgesQuery } from "@api";
-import { AchievementItemData, LockedStatus, UserBadge, ViewedStatus } from "@src/types";
+import { AchievementBadgeModal, AchievementsCard, LeaderboardList } from "@components";
+import { LeaderboardUser } from "@components/leaderboard-list/LeaderboardList";
+import { ROUTES } from "@constants";
+import { AchievementItemData, LockedStatus, UserBadge, ViewedStatus } from "@types";
 
 // Map UserBadge (earned badges) to AchievementItemData format
 const mapUserBadgeToAchievementItem = (badge: UserBadge): AchievementItemData => ({

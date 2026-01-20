@@ -4,14 +4,14 @@ import { Emoji, EmojiStyle } from "emoji-picker-react";
 import { useSelector } from "react-redux";
 import { useParams } from "react-router-dom";
 
+import { useGetReviewDetailsWithMessagesQuery } from "@api";
 import { ChatBubble, LeftArrow, Smiley } from "@assets";
-import { useGetReviewDetailsWithMessagesQuery } from "@src/api";
-import ReviewCommentsSidepanel from "@src/components/review-comments-sidepanel/ReviewCommentsSidepanel";
-import Transcription from "@src/components/transcription";
-import { PLATFORM_EMOJIS } from "@src/constants";
-import { RootState } from "@src/store";
-import { SimulationTranscriptMessage } from "@src/types";
-import { getFormattedDateTime, getFormattedTimeFromDuration } from "@src/utils";
+import ReviewCommentsSidepanel from "@components/review-comments-sidepanel/ReviewCommentsSidepanel";
+import Transcription from "@components/transcription";
+import { PLATFORM_EMOJIS } from "@constants";
+import { RootState } from "@store";
+import { SimulationTranscriptMessage } from "@types";
+import { getFormattedDateTime, getFormattedTimeFromDuration } from "@utils";
 
 import { THREAD_LIST, HEADING } from "./dummy";
 import { Thread } from "./types";
@@ -39,6 +39,7 @@ export const ReviewDetails = () => {
   useEffect(() => {
     setTranscriptList([]);
   }, [reviewId]);
+
   useEffect(() => {
     if (simulationTranscript?.messages?.length > 0) {
       setTranscriptList(prev => [...prev, ...simulationTranscript.messages]);
