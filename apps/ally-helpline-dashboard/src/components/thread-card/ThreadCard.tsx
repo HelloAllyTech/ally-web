@@ -1,7 +1,7 @@
 import { useState } from "react";
 
-import { Arrow } from "@src/assets";
-import { Thread } from "@src/pages/review-details/types";
+import { Arrow } from "@assets";
+import { Thread } from "@pages/review-details/types";
 
 import CommentCard from "../comment-card/CommentCard";
 

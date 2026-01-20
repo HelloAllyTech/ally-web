@@ -16,7 +16,7 @@ import {
 } from "@api";
 import { Dropdown, DatePicker, TimePicker, Button, ButtonVariant } from "@components";
 import { addAudioUpload, updateUploadProgress, updateUploadError } from "@reducer";
-import { store } from "@src/store";
+import { store } from "@store";
 import { UploadStatus } from "@types";
 
 import AudioUploadInterface from "./AudioUploadInterface";

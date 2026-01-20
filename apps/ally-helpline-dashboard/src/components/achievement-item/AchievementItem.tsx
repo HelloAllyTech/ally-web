@@ -2,7 +2,7 @@ import { FC } from "react";
 
 import { CustomImage } from "@ally-ui-mono/ui-shared";
 import { AchievementLocked, Badge } from "@assets";
-import { AchievementItemData, LockedStatus } from "@src/types";
+import { AchievementItemData, LockedStatus } from "@types";
 
 export const AchievementItem: FC<{
   achievement: AchievementItemData;

@@ -25,8 +25,8 @@ import {
   Review,
   AchievementsViewAll,
 } from "@pages";
+import { ReviewDetails } from "@pages/review-details/ReviewDetails";
 import { setAvailableChatTypes, unauthenticate } from "@reducer";
-import { ReviewDetails } from "@src/pages/review-details/ReviewDetails";
 import { store } from "@store";
 import {
   hasAnalyticsPermission,

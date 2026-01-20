@@ -58,7 +58,7 @@ export const navBarOptions = [
           title: "Review",
           Icon: ReviewNavIcon,
           path: ROUTES.REVIEW,
-          activePages: [],
+          activePages: [ROUTES.REVIEW_DETAILS],
           permissions: [Permissions.VIEW_REVIEW],
         },
       ]
