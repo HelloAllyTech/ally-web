@@ -57,9 +57,9 @@ const FeedCard: FC<FeedCardProps> = ({
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2 sm:gap-3">
           <div
-            className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full overflow-hidden ${!user.profileImage ? "border border-border-light" : ""} flex items-center justify-center flex-shrink-0`}
+            className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full overflow-hidden ${!user?.profileImage ? "border border-border-light" : ""} flex items-center justify-center flex-shrink-0`}
           >
-            {user.profileImage ? (
+            {user?.profileImage ? (
               <img
                 src={user.profileImage}
                 alt={user?.name ?? ""}
@@ -97,7 +97,7 @@ const FeedCard: FC<FeedCardProps> = ({
           </span>
           <span className="font-tertiary text-lg text-border-medium hidden sm:block">•</span>
           <span className="font-primary text-xs sm:text-[13px] leading-4 text-black/60">
-            Duration: {scenario.duration}
+            Duration: {scenario?.duration} Min{parseInt(scenario?.duration ?? "0") !== 1 ? "s" : ""}
           </span>
         </div>
 
@@ -105,18 +105,18 @@ const FeedCard: FC<FeedCardProps> = ({
           <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 p-3 sm:p-4">
             <div className="flex-shrink-0 w-full sm:w-[200px] h-[120px] sm:h-[100px] rounded-[4px] overflow-hidden">
               <CustomImage
-                src={scenario.coverImageUrl}
-                alt={scenario.title}
+                src={scenario?.coverImageUrl}
+                alt={scenario?.title}
                 className="w-full h-full object-cover"
               />
             </div>
 
             <div className="flex flex-col justify-start gap-1 sm:gap-2 flex-1 min-w-0">
               <h4 className="font-primary text-sm sm:text-base leading-[1.3] text-[#1A1A1A]">
-                {scenario.title}
+                {scenario?.title}
               </h4>
               <p className="font-primary text-xs sm:text-sm leading-[1.3] text-black/60 line-clamp-3 sm:line-clamp-none">
-                {scenario.description}
+                {scenario?.description}
               </p>
             </div>
           </div>
