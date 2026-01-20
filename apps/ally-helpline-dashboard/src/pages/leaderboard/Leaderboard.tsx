@@ -1,171 +1,14 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import { useNavigate } from "react-router-dom";
 
 import { FEATURE_FLAGS_MAP } from "@ally-ui-mono/ui-shared";
+import { useGetCurrentUserQuery, useGetLeaderBoardListQuery } from "@api";
 import { AchievementBadgeModal, AchievementsCard, LeaderboardList } from "@components";
 import { ROUTES } from "@constants";
+import { LeaderboardUser } from "@src/components/leaderboard-list/LeaderboardList";
 
-// TODO: Replace with actual data
-export const DUMMY_LEADERBOARD_DATA = [
-  {
-    id: "1",
-    rank: 1,
-    name: "Sarah Johnson",
-    avatarUrl:
-      "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop&crop=face",
-    totalDuration: "14 h 32 min",
-    badges: 12,
-  },
-  {
-    id: "2",
-    rank: 2,
-    name: "Emily Rodriguez",
-    avatarUrl:
-      "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&h=100&fit=crop&crop=face",
-    totalDuration: "12 h 15 min",
-    badges: 10,
-  },
-  {
-    id: "3",
-    rank: 3,
-    name: "Emily Rodriguez",
-    avatarUrl:
-      "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=100&h=100&fit=crop&crop=face",
-    totalDuration: "11 h 58 min",
-    badges: 9,
-  },
-  {
-    id: "4",
-    rank: 4,
-    name: "Emily Rodriguez",
-    avatarUrl:
-      "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=100&h=100&fit=crop&crop=face",
-    totalDuration: "10 h 22 min",
-    badges: 8,
-  },
-  {
-    id: "5",
-    rank: 5,
-    name: "Anderson",
-    avatarUrl:
-      "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&h=100&fit=crop&crop=face",
-    totalDuration: "9 h 47 min",
-    badges: 7,
-  },
-  {
-    id: "6",
-    rank: 6,
-    name: "James Anderson",
-    avatarUrl:
-      "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop&crop=face",
-    totalDuration: "8 h 01 min",
-    badges: 7,
-  },
-  {
-    id: "7",
-    rank: 7,
-    name: "Maria Garcia",
-    avatarUrl:
-      "https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?w=100&h=100&fit=crop&crop=face",
-    totalDuration: "7 h 19 min",
-    badges: 6,
-  },
-  {
-    id: "8",
-    rank: 8,
-    name: "Robert Taylor",
-    avatarUrl:
-      "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=face",
-    totalDuration: "6 h 55 min",
-    badges: 6,
-  },
-  {
-    id: "9",
-    rank: 9,
-    name: "Maria Garcia",
-    avatarUrl:
-      "https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?w=100&h=100&fit=crop&crop=face",
-    totalDuration: "5 h 45 min",
-    badges: 5,
-  },
-  {
-    id: "Abhay Balan",
-    rank: 10,
-    name: "Yedhu Krishnan",
-    avatarUrl:
-      "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&h=100&fit=crop&crop=face",
-    totalDuration: "6 h 12 min",
-    badges: 5,
-    isCurrentUser: true,
-  },
-  {
-    id: "11",
-    rank: 11,
-    name: "John Doe",
-    avatarUrl:
-      "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&h=100&fit=crop&crop=face",
-    totalDuration: "5 h 45 min",
-    badges: 5,
-  },
-  {
-    id: "12",
-    rank: 12,
-    name: "John Doe",
-    avatarUrl:
-      "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&h=100&fit=crop&crop=face",
-    totalDuration: "5 h 45 min",
-    badges: 5,
-  },
-  {
-    id: "13",
-    rank: 13,
-    name: "John Doe",
-    avatarUrl:
-      "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&h=100&fit=crop&crop=face",
-    totalDuration: "5 h 45 min",
-    badges: 5,
-  },
-  {
-    id: "14",
-    rank: 14,
-    name: "John Doe",
-    avatarUrl:
-      "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&h=100&fit=crop&crop=face",
-    totalDuration: "5 h 45 min",
-    badges: 5,
-  },
-  {
-    id: "15",
-    rank: 15,
-    name: "John Doe",
-    avatarUrl:
-      "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&h=100&fit=crop&crop=face",
-    totalDuration: "5 h 45 min",
-    badges: 5,
-  },
-  {
-    id: "16",
-    rank: 16,
-    name: "John Doe",
-    avatarUrl:
-      "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&h=100&fit=crop&crop=face",
-    totalDuration: "5 h 45 min",
-    badges: 5,
-  },
-];
-
-// TODO: Replace with actual data
-const CURRENT_USER = {
-  id: "Abhay Balan",
-  rank: 10,
-  name: "Yedhu Krishnan",
-  avatarUrl:
-    "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&h=100&fit=crop&crop=face",
-  totalDuration: "6 h 12 min",
-  badges: 5,
-  isCurrentUser: true,
-};
+const PATHS_PAGE_SIZE = 30;
 
 // TODO: Replace with actual data from API
 const DUMMY_ACHIEVEMENTS = [
@@ -219,12 +62,56 @@ const BADGE_MODAL_DATA = [
 export const Leaderboard = () => {
   const navigate = useNavigate();
   const [currentBadgeIndex, setCurrentBadgeIndex] = useState<number | null>(null);
+  const [pathsOffset, setPathsOffset] = useState(0);
+  const [window, setWindow] = useState("LAST_WEEK");
+  const [leaderboardData, setLeaderboardData] = useState<LeaderboardUser[]>([]);
+
+  const pathParams = {
+    limit: PATHS_PAGE_SIZE,
+    offset: pathsOffset,
+    window: window,
+    sortBy: "score",
+    order: "DESC" as const,
+  };
+  const { data: leaderBoardList, isFetching } = useGetLeaderBoardListQuery(pathParams);
+  const { data: currentUser } = useGetCurrentUserQuery({ window: window });
+
+  useEffect(() => {
+    if (!leaderBoardList?.data?.length) return;
+
+    setLeaderboardData(prevData => {
+      if (pathsOffset === 0) {
+        return leaderBoardList.data;
+      }
+
+      const existingIds = new Set(prevData.map(u => u.userId));
+      const newData = leaderBoardList.data.filter(u => !existingIds.has(u.userId));
+
+      return [...prevData, ...newData];
+    });
+  }, [leaderBoardList?.data, pathsOffset]);
+
+  const loadMore = () => {
+    if (isFetching) return;
+    setPathsOffset(prev => prev + PATHS_PAGE_SIZE);
+  };
+
+  const handleWindowChange = (filter: string) => {
+    setWindow(filter);
+    setPathsOffset(0);
+    setLeaderboardData([]);
+  };
 
   useEffect(() => {
     if (BADGE_MODAL_DATA.length > 0) {
       setCurrentBadgeIndex(0);
     }
   }, []);
+
+  const hasMore = useMemo(() => {
+    if (!leaderBoardList) return false;
+    return leaderboardData.length < (leaderBoardList.totalCount || 0);
+  }, [leaderboardData.length, leaderBoardList]);
 
   const handleViewAllBadges = () => {
     navigate(ROUTES.ACHIEVEMENTS_VIEW_ALL);
@@ -255,7 +142,13 @@ export const Leaderboard = () => {
         Leaderboard
       </div>
       <div className="flex flex-row gap-2 pb-4 h-full">
-        <LeaderboardList currentUser={CURRENT_USER} data={DUMMY_LEADERBOARD_DATA} />
+        <LeaderboardList
+          currentUser={currentUser}
+          onTimeFilterChange={handleWindowChange}
+          onLoadMore={loadMore}
+          hasMore={hasMore}
+          isLoading={isFetching}
+        />
 
         {/* achievements card */}
         <div className="w-1/2 h-[490px] ml-4 mt-4">
