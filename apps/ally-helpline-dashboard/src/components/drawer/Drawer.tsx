@@ -6,7 +6,16 @@ import { ChevronsRight } from "lucide-react";
 import { DrawerProps } from "./types";
 import { Button, ButtonVariant } from "../button";
 
-const Drawer: FC<DrawerProps> = ({ open, onClose, children, title, headerButtons, className }) => {
+const Drawer: FC<DrawerProps> = ({
+  open,
+  onClose,
+  children,
+  title,
+  headerButtons,
+  className,
+  drawerClassName,
+  bodyClassName,
+}) => {
   return (
     <MuiDrawer
       anchor="right"
@@ -20,7 +29,10 @@ const Drawer: FC<DrawerProps> = ({ open, onClose, children, title, headerButtons
         },
       }}
     >
-      <div className="flex flex-col gap-4 h-full py-4 px-6" data-testid="drawer-content">
+      <div
+        className={`flex flex-col gap-4 h-full py-4 px-6 ${drawerClassName}`}
+        data-testid="drawer-content"
+      >
         <div className="flex items-center gap-4" data-testid="drawer-header">
           <ChevronsRight
             className="cursor-pointer"
@@ -52,7 +64,7 @@ const Drawer: FC<DrawerProps> = ({ open, onClose, children, title, headerButtons
             </div>
           </div>
         </div>
-        <div className="flex-1" data-testid="drawer-body">
+        <div className={`flex-1 ${bodyClassName}`} data-testid="drawer-body">
           {children}
         </div>
       </div>

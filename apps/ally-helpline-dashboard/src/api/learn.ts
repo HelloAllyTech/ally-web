@@ -168,6 +168,7 @@ const learnAPI = baseAPI.injectEndpoints({
         url: ApiEndpoints.LEARN.GET_SIMULATION_SUMMARY(sessionId),
         method: HttpMethod.GET,
       }),
+      providesTags: [TAG_TYPES.SIMULATION_SUMMARY],
     }),
 
     /**
@@ -251,6 +252,7 @@ export const {
   useStartSimulationMutation,
   useGetSimulationLogsQuery,
   useGetAdminSimulationLogsQuery,
+  useGetSimulationSummaryQuery,
   useLazyGetSimulationSummaryQuery,
   useSubmitSimulationFeedbackMutation,
   useGetSimulationTranscriptQuery,

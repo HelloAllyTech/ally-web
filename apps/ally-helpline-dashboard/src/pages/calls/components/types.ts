@@ -100,6 +100,7 @@ export interface TranscriptTabProps {
 
 export interface SimulationTranscriptTabProps {
   sessionId: string;
+  className?: string;
 }
 
 export interface AudioUploadDialogProps {

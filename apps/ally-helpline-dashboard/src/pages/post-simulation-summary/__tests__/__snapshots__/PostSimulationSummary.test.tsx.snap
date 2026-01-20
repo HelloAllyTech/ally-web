@@ -24,7 +24,31 @@ exports[`PostSimulationSummary Component > Snapshot Testing > should match snaps
           </em>
         </div>
         <div
-          class="max-h-[calc(100vh-120px)]"
+          class="w-full normal-case border-b border-[#DBDBDB] mb-4"
+          data-testid="mui-tabs"
+          data-value="1"
+          role="tablist"
+        >
+          <button
+            aria-selected="false"
+            data-testid="tab-1"
+            data-value="1"
+            role="tab"
+          >
+            Summary
+          </button>
+          <button
+            aria-selected="false"
+            data-testid="tab-2"
+            data-value="2"
+            role="tab"
+          >
+            Transcription
+          </button>
+        </div>
+        <div
+          class="max-h-[calc(100vh-212px)]"
+          data-in-sidebar="false"
           data-testid="simulation-summary"
         >
           <div
@@ -68,7 +92,31 @@ exports[`PostSimulationSummary Component > Snapshot Testing > should match snaps
           </em>
         </div>
         <div
-          class="max-h-[calc(100vh-120px)]"
+          class="w-full normal-case border-b border-[#DBDBDB] mb-4"
+          data-testid="mui-tabs"
+          data-value="1"
+          role="tablist"
+        >
+          <button
+            aria-selected="false"
+            data-testid="tab-1"
+            data-value="1"
+            role="tab"
+          >
+            Summary
+          </button>
+          <button
+            aria-selected="false"
+            data-testid="tab-2"
+            data-value="2"
+            role="tab"
+          >
+            Transcription
+          </button>
+        </div>
+        <div
+          class="max-h-[calc(100vh-212px)]"
+          data-in-sidebar="false"
           data-testid="simulation-summary"
         >
           <div
