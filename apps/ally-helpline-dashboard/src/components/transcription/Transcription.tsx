@@ -2,6 +2,7 @@ import { FC, useEffect, useRef, useState, useLayoutEffect, useCallback, useMemo 
 
 import "./styles.css";
 import { AddComment } from "@ally-ui-mono/ui-shared/assets";
+import { InfiniteScroll } from "@ally-ui-mono/ui-shared/index";
 import { useClickOutside } from "@src/hooks";
 import { THREAD_LIST } from "@src/pages/review-details/dummy";
 import { CommentItem } from "@src/pages/review-details/types";
@@ -29,6 +30,9 @@ interface TranscriptionProps {
   selectedStartIndex?: number;
   selectedEndIndex?: number;
   onCloseSelectedComment?: () => void;
+  className?: string;
+  handleLoadMore?: () => void;
+  isLoading?: boolean;
 }
 const DIALOG_WIDTH = 360;
 
@@ -40,6 +44,9 @@ const Transcription: FC<TranscriptionProps> = ({
   selectedStartIndex,
   selectedEndIndex,
   onCloseSelectedComment,
+  className,
+  handleLoadMore,
+  isLoading,
 }) => {
   const contentRefs = useRef<(HTMLSpanElement | null)[]>([]);
   const addCommentDialogRef = useRef<HTMLDivElement | null>(null);
@@ -186,92 +193,120 @@ const Transcription: FC<TranscriptionProps> = ({
   useClickOutside(selectedCommentCalloutRef, handleCloseSelectedComment);
   useClickOutside(addCommentDialogRef, handleCancelComment);
 
-  return (
-    <div className="flex flex-col pt-10 -mt-10 gap-4 font-primary">
-      {transcriptions.map((transcript, index) => (
-        <div
-          key={transcript.id}
-          className={`flex gap-4 ${!canSelect ? "pointer-events-none select-none" : ""}`}
-        >
-          <div className="text-neutral-500">
-            {convertSecondsToTime(transcript.startSeconds ?? 0)}
-          </div>
-          <div className="text-justify">
-            <span className="font-medium pr-1">
-              {transcript.senderId === userId ? (
-                <span className="text-primary-600">You:</span>
-              ) : (
-                <span className="text-black">Agent:</span>
-              )}
-            </span>
-            <span
-              ref={el => (contentRefs.current[index] = el)}
-              onMouseUp={() => handleSelection(index)}
-              className={`text-black selected-text ${canSelect ? "cursor-text" : "cursor-default"}`}
-            >
-              {splitTextByComments(transcript.content, transcript.comments).map(
-                (segment, segIdx) => {
-                  const isSelectedComment =
-                    selectedMessageId &&
-                    transcript.id === parseInt(selectedMessageId) &&
-                    segment.isComment &&
-                    segment.comments?.length !== 0;
-
-                  return (
-                    <span
-                      key={segIdx}
-                      ref={isSelectedComment ? selectedCommentRef : undefined}
-                      className={`relative ${
-                        segment.isComment
-                          ? segment.comments?.length !== 0
-                            ? `${selectedMessageId ? "bg-amber-200" : "bg-amber-50"} border-b border-amber-400`
-                            : "bg-[#E1F1FE]"
-                          : ""
-                      }`}
-                    >
-                      {segment.content}
-                      {segment.isComment &&
-                        segment.comments?.length === 0 &&
-                        addCommentDialogOpen !== segIdx && (
-                          <div
-                            ref={addCommentDialogRef}
-                            onClick={() => setAddCommentDialogOpen(segIdx)}
-                            className="absolute hover:bg-[#F3F3F3] z-10 flex gap-2 cursor-pointer items-center -top-[50px] px-4 py-2 w-[160px] right-0 shadow-lg border h-[40px] rounded-[100px] bg-white"
-                          >
-                            <AddComment className="w-6 h-6 pt-1" />
-                            <span className="text-sm font-medium whitespace-nowrap">
-                              Add comment
-                            </span>
-                          </div>
-                        )}
-                      {addCommentDialogOpen === segIdx && (
-                        <div
-                          ref={dialogRef}
-                          className="fixed z-50"
-                          style={{
-                            top: dialogPosition.top,
-                            left: dialogPosition.left,
-                          }}
-                        >
-                          <CommentAdditionDialog onCancel={handleCancelComment} />
-                        </div>
-                      )}
-                      {isSelectedComment && commentsList && (
-                        <div
-                          ref={selectedCommentCalloutRef}
-                          className="absolute top-full left-0 z-50 mt-1"
-                        >
-                          <CommentThread comments={commentsList as CommentItem[]} />
-                        </div>
-                      )}
-                    </span>
-                  );
-                },
-              )}
-            </span>
+  const TranscriptSkeleton = () => (
+    <div className="flex flex-col gap-6 h-full w-full">
+      {[...Array(8)].map((_, index) => (
+        <div key={index} className="flex gap-4 animate-pulse">
+          <div className="h-6 w-14 bg-gray-200 rounded shrink-0" />
+          <div className="flex-1 space-y-3">
+            <div className="flex gap-2">
+              <div className="h-6 w-14 bg-gray-200 rounded shrink-0" />
+              <div className="h-6 flex-1 bg-gray-200 rounded" />
+            </div>
+            {index % 2 === 0 && <div className="h-6 w-4/5 bg-gray-200 rounded" />}
+            {index % 3 === 0 && <div className="h-6 w-2/3 bg-gray-200 rounded" />}
           </div>
         </div>
       ))}
+    </div>
+  );
+
+  if (isLoading && transcriptions.length === 0) {
+    return (
+      <div className={`flex flex-col pt-10 -mt-10 gap-4 font-primary h-full w-full !overflow-clip`}>
+        <TranscriptSkeleton />
+      </div>
+    );
+  }
+
+  return (
+    <div className={`flex flex-col pt-10 -mt-10 gap-4 font-primary ${className}`}>
+      <InfiniteScroll onInfiniteScroll={handleLoadMore} isLoading={isLoading}>
+        {transcriptions.map((transcript, index) => (
+          <div
+            key={transcript.id}
+            className={`flex gap-4 ${!canSelect ? "pointer-events-none select-none" : ""}`}
+          >
+            <div className="text-neutral-500">
+              {convertSecondsToTime(transcript.startSeconds ?? 0)}
+            </div>
+            <div className="text-justify">
+              <span className="font-medium pr-1">
+                {transcript.senderId === userId ? (
+                  <span className="text-primary-600">You:</span>
+                ) : (
+                  <span className="text-black">Agent:</span>
+                )}
+              </span>
+              <span
+                ref={el => (contentRefs.current[index] = el)}
+                onMouseUp={() => handleSelection(index)}
+                className={`text-black selected-text ${canSelect ? "cursor-text" : "cursor-default"}`}
+              >
+                {splitTextByComments(transcript.content, transcript.comments).map(
+                  (segment, segIdx) => {
+                    const isSelectedComment =
+                      selectedMessageId &&
+                      transcript.id === parseInt(selectedMessageId) &&
+                      segment.isComment &&
+                      segment.comments?.length !== 0;
+
+                    return (
+                      <span
+                        key={segIdx}
+                        ref={isSelectedComment ? selectedCommentRef : undefined}
+                        className={`relative ${
+                          segment.isComment
+                            ? segment.comments?.length !== 0
+                              ? `${selectedMessageId ? "bg-amber-200" : "bg-amber-50"} border-b border-amber-400`
+                              : "bg-[#E1F1FE]"
+                            : ""
+                        }`}
+                      >
+                        {segment.content}
+                        {segment.isComment &&
+                          segment.comments?.length === 0 &&
+                          addCommentDialogOpen !== segIdx && (
+                            <div
+                              ref={addCommentDialogRef}
+                              onClick={() => setAddCommentDialogOpen(segIdx)}
+                              className="absolute hover:bg-[#F3F3F3] z-10 flex gap-2 cursor-pointer items-center -top-[50px] px-4 py-2 w-[160px] right-0 shadow-lg border h-[40px] rounded-[100px] bg-white"
+                            >
+                              <AddComment className="w-6 h-6 pt-1" />
+                              <span className="text-sm font-medium whitespace-nowrap">
+                                Add comment
+                              </span>
+                            </div>
+                          )}
+                        {addCommentDialogOpen === segIdx && (
+                          <div
+                            ref={dialogRef}
+                            className="fixed z-50"
+                            style={{
+                              top: dialogPosition.top,
+                              left: dialogPosition.left,
+                            }}
+                          >
+                            <CommentAdditionDialog onCancel={handleCancelComment} />
+                          </div>
+                        )}
+                        {isSelectedComment && commentsList && (
+                          <div
+                            ref={selectedCommentCalloutRef}
+                            className="absolute top-full left-0 z-50 mt-1"
+                          >
+                            <CommentThread comments={commentsList as CommentItem[]} />
+                          </div>
+                        )}
+                      </span>
+                    );
+                  },
+                )}
+              </span>
+            </div>
+          </div>
+        ))}
+      </InfiniteScroll>
     </div>
   );
 };

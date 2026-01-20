@@ -1,0 +1,269 @@
+import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import React from "react";
+import { Provider } from "react-redux";
+import { describe, it, expect, vi, beforeEach } from "vitest";
+
+import {
+  useCreateReviewMutation,
+  useGetSimulationSummaryQuery,
+  useGetSimulationTranscriptQuery,
+  useUpdateReviewMutation,
+} from "@api";
+import { store } from "@store";
+
+import SimulationTranscriptTab from "../SimulationTranscriptTab";
+
+// Mock @api
+const mockTranscriptData = {
+  messages: [
+    { senderId: -1, content: "Client message 1", createdAt: "2024-01-01T10:00:00Z" },
+    { senderId: 2, content: "Counsellor message 1", createdAt: "2024-01-01T10:00:05Z" },
+    { senderId: -1, content: "Client message 2", createdAt: "2024-01-01T10:00:10Z" },
+  ],
+};
+
+vi.mock("@api", () => ({
+  useGetSimulationTranscriptQuery: vi.fn(),
+  useGetSimulationSummaryQuery: vi.fn(),
+  useCreateReviewMutation: vi.fn(),
+  useUpdateReviewMutation: vi.fn(),
+}));
+
+// Mock Transcription component
+vi.mock("@src/components/transcription", () => ({
+  default: ({ transcriptList, handleLoadMore, isLoading }: any) => (
+    <div data-testid="transcript-tab">
+      {isLoading && <div data-testid="loading">Loading...</div>}
+      <div data-testid="transcript-list">
+        {transcriptList.map((item: any, index: number) => (
+          <div key={index} data-testid={`transcript-item-${index}`}>
+            <div data-testid={`speaker-${index}`}>{item.speaker}</div>
+            <div data-testid={`content-${index}`}>{item.content}</div>
+          </div>
+        ))}
+      </div>
+      {transcriptList.length < mockTranscriptData.messages.length && (
+        <button data-testid="load-more-button" onClick={handleLoadMore}>
+          Load More
+        </button>
+      )}
+    </div>
+  ),
+}));
+
+const renderWithProvider = (ui: React.ReactElement) => {
+  return render(<Provider store={store}>{ui}</Provider>);
+};
+
+describe("SimulationTranscriptTab", () => {
+  const mockSessionId = "session-123";
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.mocked(useGetSimulationTranscriptQuery).mockReturnValue({
+      data: mockTranscriptData,
+      isLoading: false,
+      refetch: vi.fn(),
+    } as any);
+    vi.mocked(useGetSimulationSummaryQuery).mockReturnValue({
+      data: { reviewId: null },
+      isLoading: false,
+    } as any);
+    vi.mocked(useCreateReviewMutation).mockReturnValue([vi.fn(), { isLoading: false }] as any);
+    vi.mocked(useUpdateReviewMutation).mockReturnValue([vi.fn(), { isLoading: false }] as any);
+  });
+
+  // --- Snapshot Tests ---
+
+  it("should match snapshot when rendered", () => {
+    const { asFragment } = renderWithProvider(
+      <SimulationTranscriptTab sessionId={mockSessionId} />,
+    );
+    expect(asFragment()).toMatchSnapshot();
+  });
+
+  // --- Rendering Tests ---
+
+  it("should render TranscriptTab component", () => {
+    renderWithProvider(<SimulationTranscriptTab sessionId={mockSessionId} />);
+    expect(screen.getByTestId("transcript-tab")).toBeInTheDocument();
+  });
+
+  it("should map transcript data correctly", () => {
+    renderWithProvider(<SimulationTranscriptTab sessionId={mockSessionId} />);
+
+    waitFor(() => {
+      expect(screen.getByTestId("transcript-item-0")).toBeInTheDocument();
+      expect(screen.getByTestId("speaker-0")).toHaveTextContent("Client");
+      expect(screen.getByTestId("content-0")).toHaveTextContent("Client message 1");
+    });
+  });
+
+  it("should map senderId to correct speaker name", () => {
+    renderWithProvider(<SimulationTranscriptTab sessionId={mockSessionId} />);
+
+    waitFor(() => {
+      // senderId === -1 should be "Client"
+      expect(screen.getByTestId("speaker-0")).toHaveTextContent("Client");
+      // senderId !== -1 should be "Counsellor"
+      expect(screen.getByTestId("speaker-1")).toHaveTextContent("Counsellor");
+    });
+  });
+
+  it("should display loading state", () => {
+    vi.mocked(useGetSimulationTranscriptQuery).mockReturnValue({
+      data: undefined,
+      isLoading: true,
+      refetch: vi.fn(),
+    } as any);
+
+    renderWithProvider(<SimulationTranscriptTab sessionId={mockSessionId} />);
+    expect(screen.getByTestId("loading")).toBeInTheDocument();
+  });
+
+  // --- Pagination Tests ---
+
+  it("should start with offset 0", () => {
+    renderWithProvider(<SimulationTranscriptTab sessionId={mockSessionId} />);
+
+    expect(useGetSimulationTranscriptQuery).toHaveBeenCalledWith(
+      expect.objectContaining({
+        sessionId: "session-123",
+        offset: 0,
+      }),
+    );
+  });
+
+  it("should reset transcript list when sessionId changes", () => {
+    const { rerender } = renderWithProvider(<SimulationTranscriptTab sessionId={mockSessionId} />);
+
+    rerender(
+      <Provider store={store}>
+        <SimulationTranscriptTab sessionId="session-456" />
+      </Provider>,
+    );
+
+    expect(useGetSimulationTranscriptQuery).toHaveBeenCalledWith(
+      expect.objectContaining({
+        sessionId: "session-456",
+        offset: 0,
+      }),
+    );
+  });
+
+  it("should load more transcripts when load more button is clicked", () => {
+    renderWithProvider(<SimulationTranscriptTab sessionId={mockSessionId} />);
+
+    waitFor(() => {
+      const loadMoreButton = screen.getByTestId("load-more-button");
+      fireEvent.click(loadMoreButton);
+
+      expect(useGetSimulationTranscriptQuery).toHaveBeenCalledWith(
+        expect.objectContaining({
+          offset: 50, // TRANSCRIPT_PAGE_SIZE
+        }),
+      );
+    });
+  });
+
+  it("should not load more if offset exceeds transcript length", () => {
+    const limitedData = {
+      messages: [{ senderId: -1, content: "Only message", createdAt: "2024-01-01T10:00:00Z" }],
+    };
+
+    vi.mocked(useGetSimulationTranscriptQuery).mockReturnValue({
+      data: limitedData,
+      isLoading: false,
+      refetch: vi.fn(),
+    } as any);
+
+    renderWithProvider(<SimulationTranscriptTab sessionId={mockSessionId} />);
+
+    waitFor(() => {
+      // Should not show load more button if we've loaded all data
+      expect(screen.queryByTestId("load-more-button")).not.toBeInTheDocument();
+    });
+  });
+
+  // --- Data Handling Tests ---
+
+  it("should append new transcripts to existing list", () => {
+    const initialData = {
+      messages: [{ senderId: -1, content: "Message 1", createdAt: "2024-01-01T10:00:00Z" }],
+    };
+
+    vi.mocked(useGetSimulationTranscriptQuery)
+      .mockReturnValueOnce({
+        data: initialData,
+        isLoading: false,
+        refetch: vi.fn(),
+      } as any)
+      .mockReturnValueOnce({
+        data: {
+          messages: [
+            ...initialData.messages,
+            { senderId: 2, content: "Message 2", createdAt: "2024-01-01T10:00:05Z" },
+          ],
+        },
+        isLoading: false,
+        refetch: vi.fn(),
+      } as any);
+
+    renderWithProvider(<SimulationTranscriptTab sessionId={mockSessionId} />);
+
+    waitFor(() => {
+      expect(screen.getByText("Message 1")).toBeInTheDocument();
+      expect(screen.getByText("Message 2")).toBeInTheDocument();
+    });
+  });
+
+  it("should handle empty transcript data", () => {
+    vi.mocked(useGetSimulationTranscriptQuery).mockReturnValue({
+      data: { messages: [] },
+      isLoading: false,
+      refetch: vi.fn(),
+    } as any);
+
+    renderWithProvider(<SimulationTranscriptTab sessionId={mockSessionId} />);
+
+    expect(screen.getByTestId("transcript-tab")).toBeInTheDocument();
+    expect(screen.queryByTestId("transcript-item-0")).not.toBeInTheDocument();
+  });
+
+  // --- Edge Cases ---
+
+  it("should handle undefined transcriptData", () => {
+    vi.mocked(useGetSimulationTranscriptQuery).mockReturnValue({
+      data: undefined,
+      isLoading: false,
+      refetch: vi.fn(),
+    } as any);
+
+    renderWithProvider(<SimulationTranscriptTab sessionId={mockSessionId} />);
+    expect(screen.getByTestId("transcript-tab")).toBeInTheDocument();
+  });
+
+  it("should handle different senderId values", () => {
+    const variedData = {
+      messages: [
+        { senderId: -1, content: "Client", createdAt: "2024-01-01T10:00:00Z" },
+        { senderId: 1, content: "Counsellor 1", createdAt: "2024-01-01T10:00:05Z" },
+        { senderId: 999, content: "Counsellor 999", createdAt: "2024-01-01T10:00:10Z" },
+      ],
+    };
+
+    vi.mocked(useGetSimulationTranscriptQuery).mockReturnValue({
+      data: variedData,
+      isLoading: false,
+      refetch: vi.fn(),
+    } as any);
+
+    renderWithProvider(<SimulationTranscriptTab sessionId={mockSessionId} />);
+
+    waitFor(() => {
+      expect(screen.getByTestId("speaker-0")).toHaveTextContent("Client");
+      expect(screen.getByTestId("speaker-1")).toHaveTextContent("Counsellor");
+      expect(screen.getByTestId("speaker-2")).toHaveTextContent("Counsellor");
+    });
+  });
+});

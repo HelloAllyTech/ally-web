@@ -1,0 +1,90 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`SimulationTranscriptTab > should match snapshot when rendered 1`] = `
+<DocumentFragment>
+  <div
+    class="h-full undefined"
+  >
+    <div
+      class="relative h-[calc(100%-170px)]"
+    >
+      <div
+        data-testid="transcript-tab"
+      >
+        <div
+          data-testid="transcript-list"
+        >
+          <div
+            data-testid="transcript-item-0"
+          >
+            <div
+              data-testid="speaker-0"
+            />
+            <div
+              data-testid="content-0"
+            >
+              Client message 1
+            </div>
+          </div>
+          <div
+            data-testid="transcript-item-1"
+          >
+            <div
+              data-testid="speaker-1"
+            />
+            <div
+              data-testid="content-1"
+            >
+              Counsellor message 1
+            </div>
+          </div>
+          <div
+            data-testid="transcript-item-2"
+          >
+            <div
+              data-testid="speaker-2"
+            />
+            <div
+              data-testid="content-2"
+            >
+              Client message 2
+            </div>
+          </div>
+        </div>
+      </div>
+      <div
+        class="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-white to-transparent pointer-events-none"
+      />
+    </div>
+    <div
+      class="flex justify-center my-5"
+      style="opacity: 1;"
+    >
+      <div
+        class="flex flex-col gap-2 rounded-full border-[0.5px] p-2 w-fit shadow-[2.13px_2.84px_7.81px_0px_#A09E9E1A]"
+      >
+        <div
+          class="flex gap-2 rounded-full border-[0.5px] bg-[#F3F3F3] relative"
+        >
+          <div
+            class="transition-all duration-200 absolute top-0 w-1/2 h-full rounded-full bg-[#FFFFFF]"
+            style="left: 0px; box-shadow: 3px 0px 9px 0px #00000012;"
+          />
+          <div
+            class="rounded-full py-2 px-4 cursor-pointer z-10 transition-all duration-200 font-primary"
+            style="color: rgb(0, 0, 0);"
+          >
+            Keep it private
+          </div>
+          <div
+            class="rounded-full py-2 px-4 cursor-pointer z-10 transition-all duration-200 font-primary"
+            style="color: rgba(0, 0, 0, 0.376);"
+          >
+            Share for review
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</DocumentFragment>
+`;

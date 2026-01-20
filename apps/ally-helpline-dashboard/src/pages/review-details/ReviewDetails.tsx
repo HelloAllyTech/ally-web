@@ -5,7 +5,7 @@ import { useSelector } from "react-redux";
 import { useParams } from "react-router-dom";
 
 import { ChatBubble, LeftArrow, Smiley } from "@assets";
-import { useGetSimulationTranscriptQuery } from "@src/api";
+import { useGetReviewDetailsWithMessagesQuery } from "@src/api";
 import ReviewCommentsSidepanel from "@src/components/review-comments-sidepanel/ReviewCommentsSidepanel";
 import Transcription from "@src/components/transcription";
 import { PLATFORM_EMOJIS } from "@src/constants";
@@ -15,9 +15,10 @@ import { getFormattedDateTime, getFormattedTimeFromDuration } from "@src/utils";
 
 import { THREAD_LIST, HEADING } from "./dummy";
 import { Thread } from "./types";
+import { TRANSCRIPT_PAGE_SIZE } from "../calls/components/constants";
 
 export const ReviewDetails = () => {
-  const { sessionId } = useParams<{ sessionId: string }>();
+  const { reviewId } = useParams<{ reviewId: string }>();
   const { user } = useSelector((state: RootState) => state.user);
   const [transcriptOffset, setTranscriptOffset] = useState(0);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
@@ -27,17 +28,17 @@ export const ReviewDetails = () => {
   const [selectedStartIndex, setSelectedStartIndex] = useState<number>(0);
   const [selectedEndIndex, setSelectedEndIndex] = useState<number>(0);
   const [transcriptList, setTranscriptList] = useState<SimulationTranscriptMessage[]>([]);
-  const { data: simulationTranscript } = useGetSimulationTranscriptQuery({
-    sessionId,
-    offset: transcriptOffset,
-    limit: 30,
-    sortBy: "createdAt",
-  });
+  const { data: simulationTranscript, isLoading: isGetTranscriptLoading } =
+    useGetReviewDetailsWithMessagesQuery({
+      id: reviewId || "",
+      offset: transcriptOffset,
+      limit: TRANSCRIPT_PAGE_SIZE,
+      sortBy: "startSeconds",
+    });
 
   useEffect(() => {
-    setTranscriptOffset(0);
     setTranscriptList([]);
-  }, [sessionId]);
+  }, [reviewId]);
   useEffect(() => {
     if (simulationTranscript?.messages?.length > 0) {
       setTranscriptList(prev => [...prev, ...simulationTranscript.messages]);
@@ -78,6 +79,11 @@ export const ReviewDetails = () => {
     setSelectedEndIndex(0);
   };
 
+  const handleLoadMore = () => {
+    if (transcriptOffset >= simulationTranscript?.messages?.length) return;
+    setTranscriptOffset(prev => prev + TRANSCRIPT_PAGE_SIZE);
+  };
+
   return (
     <div className="h-full overflow-y-hidden">
       <div className="flex px-6 items-center gap-4 py-5 border-b-[0.5px]">
@@ -102,6 +108,8 @@ export const ReviewDetails = () => {
             transcriptList={transcriptList}
             userId={user?.id}
             canSelect={true}
+            handleLoadMore={handleLoadMore}
+            isLoading={isGetTranscriptLoading}
             selectedMessageId={selectedMessageId}
             selectedStartIndex={selectedStartIndex}
             selectedEndIndex={selectedEndIndex}
