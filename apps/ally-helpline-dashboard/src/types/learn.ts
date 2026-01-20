@@ -154,6 +154,8 @@ export type GetAdminSimulationLogsResponse = {
 };
 export interface SimulationSummary {
   id: string;
+  reviewId: string;
+  reviewStatus: string;
   createdAt: string;
   updatedAt: string;
   tenantId: string;

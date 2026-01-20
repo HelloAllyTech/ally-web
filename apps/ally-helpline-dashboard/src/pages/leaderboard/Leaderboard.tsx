@@ -7,57 +7,22 @@ import { useGetCurrentUserQuery, useGetLeaderBoardListQuery } from "@api";
 import { AchievementBadgeModal, AchievementsCard, LeaderboardList } from "@components";
 import { ROUTES } from "@constants";
 import { LeaderboardUser } from "@src/components/leaderboard-list/LeaderboardList";
+import { useGetMyBadgesQuery } from "@api";
+import { AchievementItemData, LockedStatus, UserBadge, ViewedStatus } from "@src/types";
+
+// Map UserBadge (earned badges) to AchievementItemData format
+const mapUserBadgeToAchievementItem = (badge: UserBadge): AchievementItemData => ({
+  id: badge.id,
+  code: badge.code,
+  name: badge.name,
+  description: badge.description,
+  imageUrl: badge.imageUrl,
+  viewedStatus: badge.viewStatus,
+  lockStatus: LockedStatus.UNLOCKED, // Earned badges are always unlocked
+  category: "",
+});
 
 const PATHS_PAGE_SIZE = 30;
-
-// TODO: Replace with actual data from API
-const DUMMY_ACHIEVEMENTS = [
-  {
-    id: "1",
-    title: "First Steps",
-    description: "Practice for at least 15 minutes at account level",
-    imageUrl:
-      "https://images.unsplash.com/photo-1526304640581-d334cdbbf45e?w=100&h=100&fit=crop&crop=center",
-  },
-  {
-    id: "2",
-    title: "Consistent Start",
-    description: "Maintain a 3-day practice streak (minimum 10 mins/day)",
-    imageUrl:
-      "https://images.unsplash.com/photo-1567427017947-545c5f8d16ad?w=100&h=100&fit=crop&crop=center",
-  },
-  {
-    id: "3",
-    title: "Milestone Hunter",
-    description: "Successfully complete 10 simulation sessions",
-    imageUrl:
-      "https://images.unsplash.com/photo-1533227268428-f9ed0900fb3b?w=100&h=100&fit=crop&crop=center",
-  },
-];
-
-const BADGE_MODAL_DATA = [
-  {
-    id: "1",
-    title: "First Step",
-    description: "Practice for at least 15 minutes at account level",
-    imageUrl:
-      "https://images.unsplash.com/photo-1526304640581-d334cdbbf45e?w=100&h=100&fit=crop&crop=center",
-  },
-  {
-    id: "2",
-    title: "Consistent Start",
-    description: "Maintain a 3-day practice streak (minimum 10 mins/day)",
-    imageUrl:
-      "https://images.unsplash.com/photo-1567427017947-545c5f8d16ad?w=100&h=100&fit=crop&crop=center",
-  },
-  {
-    id: "3",
-    title: "Milestone Hunter",
-    description: "Successfully complete 10 simulation sessions",
-    imageUrl:
-      "https://images.unsplash.com/photo-1533227268428-f9ed0900fb3b?w=100&h=100&fit=crop&crop=center",
-  },
-];
 
 export const Leaderboard = () => {
   const navigate = useNavigate();
@@ -102,11 +67,17 @@ export const Leaderboard = () => {
     setLeaderboardData([]);
   };
 
+  const { data: badgesResponse, isLoading: isBadgesLoading } = useGetMyBadgesQuery({
+    viewedStatus: ViewedStatus.VIEWED,
+  });
+
+  const myBadges = badgesResponse?.data ?? [];
+
   useEffect(() => {
-    if (BADGE_MODAL_DATA.length > 0) {
+    if (myBadges.length > 0) {
       setCurrentBadgeIndex(0);
     }
-  }, []);
+  }, [myBadges]);
 
   const hasMore = useMemo(() => {
     if (!leaderBoardList) return false;
@@ -121,11 +92,11 @@ export const Leaderboard = () => {
     setCurrentBadgeIndex(prevIndex => {
       if (prevIndex === null) return null;
       const nextIndex = prevIndex + 1;
-      return nextIndex < BADGE_MODAL_DATA.length ? nextIndex : null;
+      return nextIndex < myBadges.length ? nextIndex : null;
     });
   };
 
-  const currentBadge = currentBadgeIndex !== null ? BADGE_MODAL_DATA[currentBadgeIndex] : null;
+  const currentBadge = currentBadgeIndex !== null ? myBadges[currentBadgeIndex] : null;
 
   if (!FEATURE_FLAGS_MAP.LEADERBOARD_FLAG) {
     return (
@@ -153,8 +124,9 @@ export const Leaderboard = () => {
         {/* achievements card */}
         <div className="w-1/2 h-[490px] ml-4 mt-4">
           <AchievementsCard
-            achievements={DUMMY_ACHIEVEMENTS}
-            totalBadges={3}
+            achievements={myBadges.map(mapUserBadgeToAchievementItem)}
+            totalBadges={myBadges.length}
+            isLoading={isBadgesLoading}
             onViewAll={handleViewAllBadges}
           />
         </div>
@@ -164,7 +136,7 @@ export const Leaderboard = () => {
         <AchievementBadgeModal
           isOpen={true}
           onClose={handleCloseModal}
-          title={currentBadge.title}
+          title={currentBadge.name}
           description={currentBadge.description}
           badgeImageUrl={currentBadge.imageUrl}
         />

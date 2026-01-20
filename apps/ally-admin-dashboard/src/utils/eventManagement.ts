@@ -6,6 +6,7 @@ import {
   SessionEventDetectionCondition,
   UpdateEventDataParam,
 } from "@types";
+import type { CombinationExpressionNode } from "@types";
 import {
   convertTimeToSeconds,
   convertSecondsToTimeString,
@@ -14,8 +15,6 @@ import {
   isNonEmptyString,
   isNonEmptyObject,
 } from "@utils";
-
-import type { CombinationExpressionNode } from "@types";
 
 /**
  * Maps frontend operator to backend condition

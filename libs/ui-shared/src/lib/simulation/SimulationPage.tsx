@@ -166,7 +166,7 @@ export const SimulationPage: FC<SimulationPageProps> = ({
         <SessionGoalTimer startTime={startTime} maxTimeValue={roomData?.maxTimeValue} />
       )}
 
-      <motion.div layout className="max-h-[calc(100vh-170px)] w-full flex flex-1 gap-2">
+      <motion.div layout className="w-full flex flex-1 gap-2 min-h-0 overflow-hidden">
         <SimulationInterface
           roomStatus={roomStatus}
           roomData={roomData}
