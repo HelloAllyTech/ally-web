@@ -215,7 +215,9 @@ export const SimulationEventMapTable: FC<SimulationEventMapTableProps> = ({ simu
         label: "Branch to state",
         accessor: MAPPED_EVENT_FIELDS.BRANCH_INSTRUCTION,
         placeholder: "Add branch to state",
-        dataType: cellTypes.textAreaWithDropdown,
+        dataType: FEATURE_FLAGS_MAP.DYNAMIC_BRANCHING_FLAG
+          ? cellTypes.textAreaWithDropdown
+          : cellTypes.editableText,
         options: [],
         minWidth: 180,
       },

@@ -440,7 +440,9 @@ export const EVENT_MANAGEMENT_TABLE_COLUMNS = [
     label: "Default branch description",
     accessor: "branchInstruction",
     placeholder: "Add Instruction",
-    dataType: cellTypes.textAreaWithDropdown,
+    dataType: FEATURE_FLAGS_MAP.DYNAMIC_BRANCHING_FLAG
+      ? cellTypes.textAreaWithDropdown
+      : cellTypes.editableText,
     options: [],
     minWidth: 240,
   },
