@@ -3,9 +3,9 @@ import { FC, useEffect, useRef, useState, useLayoutEffect, useCallback, useMemo 
 import "./styles.css";
 import { AddComment } from "@ally-ui-mono/ui-shared/assets";
 import { InfiniteScroll } from "@ally-ui-mono/ui-shared/index";
-import { useClickOutside } from "@src/hooks";
-import { THREAD_LIST } from "@src/pages/review-details/dummy";
-import { CommentItem } from "@src/pages/review-details/types";
+import { useClickOutside } from "@hooks";
+import { THREAD_LIST } from "@pages/review-details/dummy";
+import { CommentItem } from "@pages/review-details/types";
 
 import { Thread } from "./types";
 import { getFreshUserRange, splitTextByComments } from "./utils";
@@ -83,6 +83,20 @@ const Transcription: FC<TranscriptionProps> = ({
     setDialogPosition({ top, left });
   }, [addCommentDialogOpen]);
 
+  const setPositionRef = useCallback((element: HTMLDivElement | null) => {
+    addCommentDialogRef.current = element;
+    if (element) {
+      const parentRect = element.parentElement?.getBoundingClientRect();
+      if (parentRect && parentRect.top < 150) {
+        element.style.top = "auto";
+        element.style.bottom = "-50px";
+      } else {
+        element.style.top = "-50px";
+        element.style.bottom = "auto";
+      }
+    }
+  }, []);
+
   useLayoutEffect(() => {
     calculateDialogPosition();
   }, [addCommentDialogOpen, calculateDialogPosition]);
@@ -139,7 +153,30 @@ const Transcription: FC<TranscriptionProps> = ({
 
     if (!container.contains(range.startContainer)) return;
 
-    const startIndex = range.startOffset;
+    let startIndex = 0;
+    let found = false;
+    const walker = document.createTreeWalker(container, NodeFilter.SHOW_TEXT, {
+      acceptNode: node => {
+        if (node.parentNode && node.parentNode.parentNode === container) {
+          return NodeFilter.FILTER_ACCEPT;
+        }
+        return NodeFilter.FILTER_REJECT;
+      },
+    });
+    let node = walker.nextNode();
+
+    while (node) {
+      if (node === range.startContainer) {
+        startIndex += range.startOffset;
+        found = true;
+        break;
+      }
+      startIndex += node.textContent?.length || 0;
+      node = walker.nextNode();
+    }
+
+    if (!found) return;
+
     const selectedText = range.toString();
     const endIndex = startIndex + selectedText.length;
 
@@ -268,7 +305,7 @@ const Transcription: FC<TranscriptionProps> = ({
                           segment.comments?.length === 0 &&
                           addCommentDialogOpen !== segIdx && (
                             <div
-                              ref={addCommentDialogRef}
+                              ref={setPositionRef}
                               onClick={() => setAddCommentDialogOpen(segIdx)}
                               className="absolute hover:bg-[#F3F3F3] z-10 flex gap-2 cursor-pointer items-center -top-[50px] px-4 py-2 w-[160px] right-0 shadow-lg border h-[40px] rounded-[100px] bg-white"
                             >
