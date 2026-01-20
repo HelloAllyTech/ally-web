@@ -96,6 +96,7 @@ import ResumeIcon from "./resume-icon.svg?react";
 import ReviewIcon from "./review-icon.svg?react";
 import ReviewNavIcon from "./review-nav-icon.svg?react";
 import ReviewTranscript from "./review-transcript.svg?react";
+import ReviewsEmptyState from "./reviews_empty_state.svg?react";
 import RoundCheckmark from "./round-checkmark.svg?react";
 import ScenarioIcon from "./scenario-icon.svg?react";
 import ScribeIcon from "./scribe.svg?react";
@@ -219,6 +220,7 @@ export {
   ResumeIcon,
   ReviewIcon,
   ReviewNavIcon,
+  ReviewsEmptyState,
   RoundCheckmark,
   ScenarioIcon,
   ScribeIcon,
