@@ -89,4 +89,8 @@ export const ApiEndpoints = {
     UPDATE_USER_PREFERENCES: "/v1/users/preferences",
     GET_USER_PREFERENCES: "/v1/users/me/preferences",
   },
+  LEADERBOARD: {
+    GET_LEADERBOARD: "/v1/community/leaderboard",
+    GET_CURRENT_USER: "/v1/community/leaderboard/my-rank",
+  },
 };

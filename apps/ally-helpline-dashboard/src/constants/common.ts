@@ -122,3 +122,8 @@ export const TAG_TYPES = {
   SIMULATION_CREDITS: "SimulationCredits",
   USER: "User",
 };
+
+export const SORT_ORDER = {
+  ASC: "ASC",
+  DESC: "DESC",
+};
