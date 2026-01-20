@@ -32,6 +32,7 @@ export interface Scenario {
   triggerWarnings?: TriggerChipItemWarning[];
   checklistEvents?: any[];
   experienceMode?: string;
+  checklistType?: string;
   maxTimeValue?: string;
   timerMode?: boolean;
 }
