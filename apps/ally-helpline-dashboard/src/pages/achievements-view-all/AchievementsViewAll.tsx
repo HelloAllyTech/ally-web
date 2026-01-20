@@ -1,130 +1,23 @@
-import { FC } from "react";
+import { FC, useState } from "react";
 
 import { useNavigate } from "react-router-dom";
 
-import { FEATURE_FLAGS_MAP } from "@ally-ui-mono/ui-shared/featureFlag";
+import { useGetAvailableBadgesQuery } from "@api";
 import { ArrowLeft } from "@assets";
-import { AchievementItem, AchievementItemData } from "@components";
+import { AchievementItem, ToggleButtonGroup } from "@components";
+import { AchievementItemData, BadgeCategory, LockedStatus } from "@src/types";
 
-// TODO: Replace with actual API data
-const UNLOCKED_BADGES: AchievementItemData[] = [
-  {
-    id: "1",
-    title: "First Steps",
-    description: "Complete first roleplay of 2+ minutes",
-    imageUrl:
-      "https://images.unsplash.com/photo-1526304640581-d334cdbbf45e?w=100&h=100&fit=crop&crop=center",
-    isUnlocked: true,
-  },
-  {
-    id: "2",
-    title: "Warm Up",
-    description: "Accumulate 10 minutes of roleplay",
-    imageUrl:
-      "https://images.unsplash.com/photo-1526304640581-d334cdbbf45e?w=100&h=100&fit=crop&crop=center",
-    isUnlocked: true,
-  },
-  {
-    id: "3",
-    title: "Getting Serious",
-    description: "Accumulate 50 minutes of roleplay",
-    imageUrl:
-      "https://images.unsplash.com/photo-1526304640581-d334cdbbf45e?w=100&h=100&fit=crop&crop=center",
-    isUnlocked: true,
-  },
-];
+// Badge type display labels
+const BADGE_TYPE_LABELS: Record<BadgeCategory, string> = {
+  [BadgeCategory.SIMULATION_MINUTES]: "Simulation Minutes",
+  [BadgeCategory.ACTIVE_DAY_STREAK]: "Active Day Streak",
+  [BadgeCategory.COMMENTS_REACTIONS_GIVEN]: "Comments & Reactions Given",
+  [BadgeCategory.COMMENTS_REACTIONS_RECEIVED]: "Comments & Reactions Received",
+};
 
-const LOCKED_BADGES: AchievementItemData[] = [
-  {
-    id: "4",
-    title: "In the Zone",
-    description: "Accumulate 100 minutes of roleplay",
-    isUnlocked: false,
-  },
-  {
-    id: "5",
-    title: "Committed",
-    description: "Accumulate 500 minutes of roleplay",
-    isUnlocked: false,
-  },
-  {
-    id: "6",
-    title: "Deep Practice",
-    description: "Accumulate 1,000 minutes of roleplay",
-    isUnlocked: false,
-  },
-  {
-    id: "7",
-    title: "Mastery Path",
-    description: "Accumulate 5,000 minutes of roleplay",
-    isUnlocked: false,
-  },
-  {
-    id: "8",
-    title: "Consistent Start",
-    description: "First 3-day active streak",
-    isUnlocked: false,
-  },
-  {
-    id: "9",
-    title: "Habit Builder",
-    description: "First 10-day active streak",
-    isUnlocked: false,
-  },
-  {
-    id: "10",
-    title: "Locked In",
-    description: "First 30-day active streak",
-    isUnlocked: false,
-  },
-  {
-    id: "11",
-    title: "First Voice",
-    description: "Give 3 comments or reactions",
-    isUnlocked: false,
-  },
-  {
-    id: "12",
-    title: "Active Contributor",
-    description: "Give 10 comments or reactions",
-    isUnlocked: false,
-  },
-  {
-    id: "13",
-    title: "Community Regular",
-    description: "Give 100 comments or reactions",
-    isUnlocked: false,
-  },
-  {
-    id: "14",
-    title: "Community Pillar",
-    description: "Give 500 comments or reactions",
-    isUnlocked: false,
-  },
-  {
-    id: "15",
-    title: "Noticed",
-    description: "Receive 3 comments or reactions",
-    isUnlocked: false,
-  },
-  {
-    id: "16",
-    title: "Engaging",
-    description: "Receive 10 comments or reactions",
-    isUnlocked: false,
-  },
-  {
-    id: "17",
-    title: "Resonating",
-    description: "Receive 100 comments or reactions",
-    isUnlocked: false,
-  },
-  {
-    id: "18",
-    title: "Highly Valued",
-    description: "Receive 500 comments or reactions",
-    isUnlocked: false,
-  },
+const FILTER_OPTIONS = [
+  { value: "ALL", label: "All" },
+  { value: "UNLOCKED", label: "Unlocked" },
 ];
 
 const BadgeCardSkeleton: FC = () => {
@@ -141,43 +34,75 @@ const BadgeCardSkeleton: FC = () => {
 
 export const AchievementsViewAll: FC = () => {
   const navigate = useNavigate();
+  const [activeFilter, setActiveFilter] = useState("ALL");
 
-  // TODO: Replace with actual API call
-  const unlockedBadges = UNLOCKED_BADGES;
-  const lockedBadges = LOCKED_BADGES;
-  const isLoading = false;
+  const { data: badgesData = [], isLoading } = useGetAvailableBadgesQuery();
+
+  // Filter badges based on active filter and group by category
+  const getFilteredBadgesByCategory = (): Array<{
+    category: BadgeCategory;
+    badges: AchievementItemData[];
+  }> => {
+    return badgesData
+      .map(categoryData => {
+        const filteredBadges =
+          activeFilter === "UNLOCKED"
+            ? categoryData.data.filter(badge => badge.lockStatus === LockedStatus.UNLOCKED)
+            : categoryData.data;
+
+        return {
+          category: categoryData.categories,
+          badges: filteredBadges,
+        };
+      })
+      .filter(group => group.badges.length > 0);
+  };
+
+  const groupedBadges = getFilteredBadgesByCategory();
 
   const renderHeader = () => {
     return (
-      <div className="flex flex-row items-center gap-3 sm:gap-[18px]">
-        <button
-          onClick={() => navigate(-1)}
-          className="p-2 -m-2 hover:bg-gray-100 rounded-full transition-colors"
-          aria-label="Go back"
-        >
-          <ArrowLeft className="w-[5px] h-2.5" />
-        </button>
-        <h1
-          className="text-[#0D0D0D] font-secondary text-xl sm:text-2xl font-[350] leading-[0.83]"
-          data-testid="achievements-view-all-title"
-        >
-          Achievements
-        </h1>
+      <div className="flex flex-col gap-3 w-full">
+        <div className="flex flex-row items-center gap-3 sm:gap-[18px]">
+          <button
+            onClick={() => navigate(-1)}
+            className="p-2 -m-2 hover:bg-gray-100 rounded-full transition-colors"
+            aria-label="Go back"
+          >
+            <ArrowLeft className="w-[5px] h-2.5" />
+          </button>
+          <h1
+            className="text-[#0D0D0D] font-secondary text-xl sm:text-2xl font-[350] leading-[0.83]"
+            data-testid="achievements-view-all-title"
+          >
+            Achievements
+          </h1>
+        </div>
+        <div className="flex flex-row justify-between gap-3 sm:gap-[18px] w-full">
+          <div className="text-typography-900 text-lg font-medium mt-2 font-primary">Badges</div>
+          <ToggleButtonGroup
+            className="font-primary text-xs sm:text-sm leading-[1.5]"
+            value={activeFilter}
+            onValueChange={setActiveFilter}
+            items={FILTER_OPTIONS}
+            equalWidth
+          />
+        </div>
       </div>
     );
   };
 
   const renderSectionLabel = (label: string) => {
     return (
-      <div className="font-primary text-base font-medium leading-[1.69] text-black/87">{label}</div>
+      <div className="font-primary text-xs leading-5 font-normal text-typography-600">{label}</div>
     );
   };
 
-  const renderUnlockedSection = () => {
+  const renderBadgeSection = (badgesList: AchievementItemData[]) => {
     if (isLoading) {
       return (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-          {Array.from({ length: 3 }).map((_, index) => (
+          {Array.from({ length: 2 }).map((_, index) => (
             <BadgeCardSkeleton key={index} />
           ))}
         </div>
@@ -186,33 +111,7 @@ export const AchievementsViewAll: FC = () => {
 
     return (
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-        {unlockedBadges.map(badge => (
-          <AchievementItem key={badge.id} achievement={badge} imageSize={60} />
-        ))}
-      </div>
-    );
-  };
-
-  const renderLockedSection = () => {
-    if (isLoading) {
-      return (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
-          {Array.from({ length: 6 }).map((_, index) => (
-            <BadgeCardSkeleton key={index} />
-          ))}
-        </div>
-      );
-    }
-
-    if (!FEATURE_FLAGS_MAP.LEADERBOARD_FLAG) {
-      return (
-        <div className="flex items-center justify-center h-full">Leaderboard is not enabled</div>
-      );
-    }
-
-    return (
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
-        {lockedBadges.map(badge => (
+        {badgesList.map(badge => (
           <AchievementItem key={badge.id} achievement={badge} imageSize={60} />
         ))}
       </div>
@@ -224,17 +123,12 @@ export const AchievementsViewAll: FC = () => {
       <div className="p-4 sm:p-6 pb-4 sm:pb-6">{renderHeader()}</div>
 
       <div className="flex-1 overflow-auto px-4 sm:px-6 pb-4 sm:pb-6 flex flex-col gap-4 sm:gap-6">
-        {/* Unlocked Section */}
-        <div className="flex flex-col gap-3 sm:gap-4">
-          {renderSectionLabel("Unlocked")}
-          {renderUnlockedSection()}
-        </div>
-
-        {/* Locked Section */}
-        <div className="flex flex-col gap-3 sm:gap-4">
-          {renderSectionLabel("Locked")}
-          {renderLockedSection()}
-        </div>
+        {groupedBadges.map(({ category, badges }) => (
+          <div key={category} className="flex flex-col gap-3 sm:gap-4">
+            {renderSectionLabel(BADGE_TYPE_LABELS[category])}
+            {renderBadgeSection(badges)}
+          </div>
+        ))}
       </div>
     </div>
   );

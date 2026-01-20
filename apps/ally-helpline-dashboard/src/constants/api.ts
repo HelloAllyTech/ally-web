@@ -93,4 +93,11 @@ export const ApiEndpoints = {
     GET_LEADERBOARD: "/v1/community/leaderboard",
     GET_CURRENT_USER: "/v1/community/leaderboard/my-rank",
   },
+  REVIEWS: {
+    GET_REVIEWS: "/v1/reviews",
+  },
+  BADGES: {
+    GET_AVAILABLE_BADGES: "/v1/badges/available",
+    GET_MY_BADGES: "/v1/badges/me",
+  },
 };

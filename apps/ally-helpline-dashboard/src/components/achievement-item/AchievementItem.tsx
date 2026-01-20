@@ -2,16 +2,14 @@ import { FC } from "react";
 
 import { CustomImage } from "@ally-ui-mono/ui-shared";
 import { AchievementLocked, Badge } from "@assets";
+import { AchievementItemData, LockedStatus } from "@src/types";
 
-import { AchievementItemData } from "./types";
-
-export const AchievementItem: FC<{ achievement: AchievementItemData; imageSize?: number }> = ({
-  achievement,
-  imageSize = 80,
-}) => {
-  const isUnlocked = achievement.isUnlocked ?? true;
+export const AchievementItem: FC<{
+  achievement: AchievementItemData;
+  imageSize?: number;
+}> = ({ achievement, imageSize = 80 }) => {
+  const isUnlocked = achievement.lockStatus === LockedStatus.UNLOCKED;
   const renderBadgeImage = () => {
-    // Locked badges show the locked placeholder image
     if (!isUnlocked) {
       return (
         <AchievementLocked
@@ -21,13 +19,12 @@ export const AchievementItem: FC<{ achievement: AchievementItemData; imageSize?:
       );
     }
 
-    // Unlocked badges with custom image
     if (achievement.imageUrl) {
       return (
         <div className="flex-shrink-0" style={{ width: imageSize, height: imageSize }}>
           <CustomImage
-            src={achievement.imageUrl}
-            alt={achievement.title}
+            src={achievement?.imageUrl}
+            alt={achievement?.name}
             className="rounded-lg object-cover w-full h-full"
             fallbackClassName="rounded-lg bg-neutral-100 flex items-center justify-center w-full h-full"
             fallbackText="Image not available"
@@ -51,12 +48,12 @@ export const AchievementItem: FC<{ achievement: AchievementItemData; imageSize?:
       {renderBadgeImage()}
       <div className="flex flex-col min-w-0 flex-1">
         <h4
-          className={`${isUnlocked ? "text-typography-900" : "text-typography-600"} text-base font-semibold truncate`}
+          className={`${isUnlocked ? "text-typography-900" : "text-typography-600"} font-primary text-base font-semibold truncate`}
         >
-          {achievement.title}
+          {achievement.name}
         </h4>
         <p
-          className={`${isUnlocked ? "text-typography-800" : "text-typography-600"} text-sm line-clamp-2`}
+          className={`${isUnlocked ? "text-typography-800" : "text-typography-600"} font-primary text-sm line-clamp-2`}
         >
           {achievement.description}
         </p>
