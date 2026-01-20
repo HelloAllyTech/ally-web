@@ -169,11 +169,9 @@ export interface StartSimulationResponse {
     triggerWarnings?: { id: number; name: string }[];
     metadata?: {
       name?: string;
+      maxTimeValue?: string;
+      timerMode?: boolean;
     };
-    checklistEvents?: any[];
-    experienceMode?: string;
-    maxTimeValue?: string;
-    timerMode?: boolean;
   };
 }
 
