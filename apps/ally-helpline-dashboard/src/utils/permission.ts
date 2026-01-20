@@ -1,4 +1,4 @@
-import { CALL_PERMISSIONS, Permissions, SESSION_LOGS_PERMISSIONS } from "@src/constants";
+import { CALL_PERMISSIONS, Permissions, SESSION_LOGS_PERMISSIONS } from "@constants";
 
 export const hasCallPermission = (permissions: Permissions[]) =>
   permissions?.some(permission => CALL_PERMISSIONS.includes(permission));

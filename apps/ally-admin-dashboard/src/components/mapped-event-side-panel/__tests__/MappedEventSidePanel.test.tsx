@@ -129,7 +129,7 @@ vi.mock("@ally-ui-mono/ui-shared", () => ({
 import { MAPPED_EVENT_FIELDS } from "@utils";
 
 import { MappedEventSidePanel } from "../MappedEventSidePanel";
-import { TextareaWithTriggerDropdown } from "@src/components/notion-table";
+import { TextareaWithTriggerDropdown } from "@components/notion-table";
 
 describe("MappedEventSidePanel", () => {
   beforeEach(() => {

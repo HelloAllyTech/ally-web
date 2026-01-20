@@ -2,7 +2,7 @@ import { FC } from "react";
 
 import { Badge, NoBadges } from "@assets";
 import { AchievementItem } from "@components";
-import { AchievementItemData } from "@src/types";
+import { AchievementItemData } from "@types";
 import { cn } from "@utils";
 
 export interface AchievementsCardProps {

@@ -1,6 +1,6 @@
 import { FC } from "react";
 
-import { ArrowUp } from "@src/assets";
+import { ArrowUp } from "@assets";
 
 import CommentItem from "./CommentItem";
 import { Comment } from "./types";

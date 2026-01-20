@@ -4,11 +4,11 @@ import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 
 import { FEATURE_FLAGS_MAP } from "@ally-ui-mono/ui-shared";
+import { useGetReviewsQuery } from "@api";
 import { ReviewsEmptyState } from "@assets";
-import { useGetReviewsQuery } from "@src/api";
-import FeedCard from "@src/components/feed-card";
-import ToggleButtonGroup from "@src/components/toggle-button-group/ToggleButtonGroup";
-import { ROUTES } from "@src/constants";
+import FeedCard from "@components/feed-card";
+import ToggleButtonGroup from "@components/toggle-button-group/ToggleButtonGroup";
+import { ROUTES } from "@constants";
 import { ReviewItem } from "@types";
 
 const FILTER_OPTIONS = [
