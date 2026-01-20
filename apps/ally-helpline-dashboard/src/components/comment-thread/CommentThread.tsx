@@ -1,5 +1,5 @@
-import { AccountCircle } from "@src/assets";
-import { CommentItem } from "@src/pages/review-details/types";
+import { AccountCircle } from "@assets";
+import { CommentItem } from "@pages/review-details/types";
 
 import CommentCard from "../comment-card/CommentCard";
 import Input from "../input";

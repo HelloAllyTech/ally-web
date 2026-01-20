@@ -5,7 +5,7 @@ import { useNavigate } from "react-router-dom";
 import { useGetAvailableBadgesQuery } from "@api";
 import { ArrowLeft } from "@assets";
 import { AchievementItem, ToggleButtonGroup } from "@components";
-import { AchievementItemData, BadgeCategory, LockedStatus } from "@src/types";
+import { AchievementItemData, BadgeCategory, LockedStatus } from "@types";
 
 // Badge type display labels
 const BADGE_TYPE_LABELS: Record<BadgeCategory, string> = {

@@ -6,7 +6,7 @@ import userEvent from "@testing-library/user-event";
 import { toast } from "sonner";
 
 import { CreateSimulation } from "../CreateSimulation";
-import { ChecklistType, ExperienceMode } from "@src/constants";
+import { ChecklistType, ExperienceMode } from "@constants";
 
 // Hoist constants mock
 const mockEn = vi.hoisted(() => ({

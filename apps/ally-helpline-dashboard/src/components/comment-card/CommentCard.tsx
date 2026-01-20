@@ -1,7 +1,7 @@
 import { Emoji, EmojiStyle } from "emoji-picker-react";
 
-import { CommentItem } from "@src/pages/review-details/types";
-import { formatRelativeTime } from "@src/utils";
+import { CommentItem } from "@pages/review-details/types";
+import { formatRelativeTime } from "@utils";
 
 interface CommentCardProps {
   comment: CommentItem;

@@ -2,17 +2,17 @@ import { FC, useEffect, useMemo, useState } from "react";
 
 import { useSelector } from "react-redux";
 
-import { Toggle } from "@ally-ui-mono/ui-shared/index";
+import { FEATURE_FLAGS_MAP, Toggle } from "@ally-ui-mono/ui-shared/index";
 import {
   useCreateReviewMutation,
   useGetSimulationSummaryQuery,
   useGetSimulationTranscriptQuery,
   useUpdateReviewMutation,
 } from "@api";
-import Transcription from "@src/components/transcription";
-import { PRIVACY_OPTIONS } from "@src/containers/simulation-transcription-state/constant";
-import { RootState } from "@src/store";
-import { SimulationTranscriptMessage } from "@src/types";
+import Transcription from "@components/transcription";
+import { REVIEW_PRIVACY_OPTIONS } from "@src/constants";
+import { RootState } from "@store";
+import { SimulationTranscriptMessage } from "@types";
 
 import { TRANSCRIPT_PAGE_SIZE } from "./constants";
 import { SimulationTranscriptTabProps } from "./types";
@@ -85,14 +85,16 @@ const SimulationTranscriptTab: FC<SimulationTranscriptTabProps> = ({ sessionId, 
         />
         <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-white to-transparent pointer-events-none" />
       </div>
-      <div
-        className="flex justify-center my-5"
-        style={{
-          opacity: isCreateReviewLoading || isUpdateReviewLoading ? 0.5 : 1,
-        }}
-      >
-        <Toggle items={PRIVACY_OPTIONS} onChange={handleCreateReview} />
-      </div>
+      {FEATURE_FLAGS_MAP.PEER_REVIEW_FLAG && (
+        <div
+          className="flex justify-center my-5"
+          style={{
+            opacity: isCreateReviewLoading || isUpdateReviewLoading ? 0.5 : 1,
+          }}
+        >
+          <Toggle items={REVIEW_PRIVACY_OPTIONS} onChange={handleCreateReview} />
+        </div>
+      )}
     </div>
   );
 };

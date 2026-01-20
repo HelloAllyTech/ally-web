@@ -1,6 +1,6 @@
-const PRIVACY_OPTIONS = [
+const REVIEW_PRIVACY_OPTIONS = [
   { label: "Keep it private", value: "HIDDEN" },
   { label: "Share for review", value: "IN_REVIEW" },
 ];
 
-export { PRIVACY_OPTIONS };
+export { REVIEW_PRIVACY_OPTIONS };
