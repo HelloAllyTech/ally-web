@@ -1,15 +1,14 @@
-import { FC, useState, useRef, useEffect } from "react";
+import { FC, useState, useRef, useEffect, useCallback } from "react";
 
 import { cn } from "@utils";
 
 export interface LeaderboardUser {
-  id: string;
+  userId: number;
   rank: number;
   name: string;
-  avatarUrl?: string;
-  totalDuration: string;
-  badges: number;
-  isCurrentUser?: boolean;
+  profileImageUrl?: string;
+  minutesPlayed: number;
+  badgeCount: number;
 }
 
 export type LeaderboardTimeFilter = "last_week" | "last_month" | "last_year" | "all_time";
@@ -23,6 +22,8 @@ export interface LeaderboardListProps {
   isLoading?: boolean;
   currentUser?: LeaderboardUser;
   emptyMessage?: string;
+  onLoadMore?: () => void;
+  hasMore?: boolean;
 }
 
 export const TIME_FILTER_OPTIONS: { label: string; value: LeaderboardTimeFilter }[] = [
@@ -48,10 +49,10 @@ const getRankBadgeStyle = (rank: number): string => {
 const UserAvatar: FC<{ user: LeaderboardUser; size?: "sm" | "md" }> = ({ user, size = "md" }) => {
   const sizeClasses = size === "sm" ? "w-10 h-10" : "w-12 h-12";
 
-  if (user.avatarUrl) {
+  if (user.profileImageUrl) {
     return (
       <img
-        src={user.avatarUrl}
+        src={user.profileImageUrl}
         alt={user.name}
         className={cn(sizeClasses, "rounded-full object-cover")}
       />
@@ -82,9 +83,10 @@ interface LeaderboardRowProps {
   user: LeaderboardUser;
   isLast?: boolean;
   rowRef?: React.RefObject<HTMLDivElement>;
+  isCurrentUser?: boolean;
 }
 
-const LeaderboardRow: FC<LeaderboardRowProps> = ({ user, isLast, rowRef }) => {
+const LeaderboardRow: FC<LeaderboardRowProps> = ({ user, isLast, rowRef, isCurrentUser }) => {
   const isTopThree = user.rank <= 3;
 
   return (
@@ -93,7 +95,7 @@ const LeaderboardRow: FC<LeaderboardRowProps> = ({ user, isLast, rowRef }) => {
       className={cn(
         "flex items-center py-3 px-4",
         !isLast && "border-b border-border-light",
-        user.isCurrentUser && "bg-primary-50 rounded-lg border border-primary-200",
+        isCurrentUser && "bg-primary-50 rounded-lg border border-primary-200",
       )}
     >
       {/* Rank */}
@@ -117,7 +119,7 @@ const LeaderboardRow: FC<LeaderboardRowProps> = ({ user, isLast, rowRef }) => {
         <UserAvatar user={user} />
         <div className="flex items-center gap-2">
           <span className="text-typography-900 text-base font-medium">{user.name}</span>
-          {user.isCurrentUser && (
+          {isCurrentUser && (
             <span className="px-2 py-0.5 bg-primary-500 text-white text-xs font-medium rounded-full">
               You
             </span>
@@ -127,12 +129,12 @@ const LeaderboardRow: FC<LeaderboardRowProps> = ({ user, isLast, rowRef }) => {
 
       {/* Total Duration */}
       <div className="w-40 text-right">
-        <span className="text-typography-800 text-base">{user.totalDuration}</span>
+        <span className="text-typography-800 text-base">{user.minutesPlayed}</span>
       </div>
 
       {/* Badges */}
       <div className="w-24 text-center">
-        <span className="text-typography-800 text-base">{user.badges}</span>
+        <span className="text-typography-800 text-base">{user.badgeCount}</span>
       </div>
     </div>
   );
@@ -187,11 +189,14 @@ export const LeaderboardList: FC<LeaderboardListProps> = ({
   onTimeFilterChange,
   isLoading = false,
   emptyMessage = "No leaderboard data available",
+  onLoadMore,
+  hasMore,
 }) => {
   const [internalFilter, setInternalFilter] = useState<LeaderboardTimeFilter>("last_week");
   const [isCurrentUserVisible, setIsCurrentUserVisible] = useState(false);
   const currentUserRowRef = useRef<HTMLDivElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const loadingRef = useRef<HTMLDivElement>(null);
 
   const activeFilter = externalFilter ?? internalFilter;
   const isEmpty = !isLoading && (!data || data.length === 0);
@@ -219,6 +224,29 @@ export const LeaderboardList: FC<LeaderboardListProps> = ({
       observer.disconnect();
     };
   }, [data]);
+
+  const handleLoadMore = useCallback(
+    ([entry]: IntersectionObserverEntry[]) => {
+      if (entry.isIntersecting && hasMore) {
+        onLoadMore?.();
+      }
+    },
+    [hasMore, onLoadMore],
+  );
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(handleLoadMore, {
+      root: scrollContainerRef.current,
+      rootMargin: "20px",
+    });
+
+    const element = loadingRef.current;
+    if (element) {
+      observer.observe(element);
+    }
+
+    return () => observer.disconnect();
+  }, [handleLoadMore]);
 
   const handleFilterChange = (filter: LeaderboardTimeFilter) => {
     if (onTimeFilterChange) {
@@ -261,7 +289,7 @@ export const LeaderboardList: FC<LeaderboardListProps> = ({
   };
 
   const renderContent = () => {
-    if (isLoading) {
+    if (isLoading && data.length === 0) {
       return (
         <>
           {Array.from({ length: SKELETON_ROWS_COUNT }).map((_, index) => (
@@ -277,14 +305,24 @@ export const LeaderboardList: FC<LeaderboardListProps> = ({
 
     return (
       <>
-        {data.map((user, index) => (
-          <LeaderboardRow
-            key={user.id}
-            user={user}
-            isLast={index === data.length - 1}
-            rowRef={user.isCurrentUser && currentUserRowRef}
-          />
-        ))}
+        {data.map((user, index) => {
+          const isCurrentUser = index + 1 === currentUser.rank;
+
+          return (
+            <LeaderboardRow
+              key={user.userId}
+              user={user}
+              isLast={index === data.length - 1}
+              isCurrentUser={isCurrentUser}
+              rowRef={isCurrentUser ? currentUserRowRef : undefined}
+            />
+          );
+        })}
+        {hasMore && (
+          <div ref={loadingRef} className="text-center py-2">
+            {isLoading && <span className="text-sm text-typography-600">Loading more...</span>}
+          </div>
+        )}
       </>
     );
   };
