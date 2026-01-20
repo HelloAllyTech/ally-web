@@ -6,6 +6,8 @@ export interface DrawerProps {
   children: ReactNode;
   className?: string;
   title?: string | ReactNode;
+  drawerClassName?: string;
+  bodyClassName?: string;
   headerButtons?: {
     alt: string;
     icon: ReactNode;

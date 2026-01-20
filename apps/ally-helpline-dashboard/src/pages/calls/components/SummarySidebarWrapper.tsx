@@ -36,6 +36,8 @@ const SummarySidebarWrapper: FC<SummarySidebarWrapperProps> = ({
       open={true}
       onClose={onSidebarClose}
       className="font-primary"
+      drawerClassName="h-screen"
+      bodyClassName="h-[calc(100%-64px)]"
       title={title}
       headerButtons={[
         {

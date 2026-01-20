@@ -1,11 +1,14 @@
-import { FC } from "react";
+import { FC, useState } from "react";
 
+import { Tab, Tabs } from "@mui/material";
 import { motion } from "framer-motion";
 import { useNavigate, useParams } from "react-router-dom";
 
 import { ROUTES } from "@constants";
 import { SimulationSummary } from "@containers";
 
+import { SimulationTranscriptTab } from "../calls/components";
+import { tabStyles } from "../calls/constants";
 import { containerVariants } from "../learn/constants";
 
 export const PostSimulationSummary: FC = () => {
@@ -15,6 +18,39 @@ export const PostSimulationSummary: FC = () => {
   const closeSummarySidebar = () => {
     navigate(ROUTES.LEARN);
   };
+
+  const tabList = [
+    {
+      id: 1,
+      label: "Summary",
+      content: (
+        <SimulationSummary
+          summaryId={sessionId}
+          isInSidebar={false}
+          className="max-h-[calc(100vh-212px)]"
+          onSummaryClose={closeSummarySidebar}
+        />
+      ),
+    },
+    {
+      id: 2,
+      label: "Transcription",
+      content: (
+        <SimulationTranscriptTab
+          sessionId={sessionId}
+          className="w-full max-h-[calc(100vh-120px)]"
+        />
+      ),
+    },
+  ];
+
+  const [selectedTab, setSelectedTab] = useState<number>(tabList?.[0].id);
+
+  const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
+    setSelectedTab(newValue);
+  };
+
+  const getTabContent = () => tabList.find(tab => tab.id === selectedTab)?.content;
 
   return (
     <div className="bg-white w-full h-[100vh] overflow-y-auto flex flex-col items-center ">
@@ -27,11 +63,21 @@ export const PostSimulationSummary: FC = () => {
         <div className="w-full text-black text-2xl sm:text-4xl font-normal text-left font-secondary mt-8 px-4">
           Simulation <em>Summary</em>
         </div>
-        <SimulationSummary
-          summaryId={sessionId}
-          className="max-h-[calc(100vh-120px)]"
-          onSummaryClose={closeSummarySidebar}
-        />
+        <Tabs
+          value={selectedTab}
+          onChange={handleTabChange}
+          className="w-full normal-case border-b border-[#DBDBDB] mb-4"
+          sx={{
+            "& .MuiButtonBase-root": {
+              fontFamily: "IBM_Plex_Serif",
+            },
+          }}
+        >
+          {tabList?.map(tab => (
+            <Tab key={tab.id} label={tab.label} value={tab.id} sx={tabStyles} />
+          ))}
+        </Tabs>
+        {getTabContent()}
       </motion.div>
     </div>
   );
