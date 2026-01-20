@@ -3,10 +3,13 @@ import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import { FEATURE_FLAGS_MAP } from "@ally-ui-mono/ui-shared";
-import { useGetCurrentUserQuery, useGetLeaderBoardListQuery } from "@api";
-import { useGetMyBadgesQuery } from "@api";
-import { AchievementBadgeModal, AchievementsCard, LeaderboardList } from "@components";
-import { LeaderboardUser } from "@components/leaderboard-list/LeaderboardList";
+import { useGetCurrentUserQuery, useGetLeaderBoardListQuery, useGetMyBadgesQuery } from "@api";
+import {
+  AchievementBadgeModal,
+  AchievementsCard,
+  LeaderboardList,
+  LeaderboardUser,
+} from "@components";
 import { ROUTES } from "@constants";
 import { AchievementItemData, LockedStatus, UserBadge, ViewedStatus } from "@types";
 

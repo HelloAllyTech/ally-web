@@ -22,7 +22,7 @@ import Dropdown from "./dropdown";
 import FallbackUI from "./fallback-ui";
 import InfoBanner from "./info-banner";
 import Input from "./input";
-import LeaderboardList from "./leaderboard-list";
+import { LeaderboardList, type LeaderboardUser } from "./leaderboard-list";
 import LoginDialog from "./login-dialog";
 import NavSideBar from "./nav-sidebar";
 import OTP from "./otp";
@@ -95,4 +95,5 @@ export {
   LeaderboardList,
   ProfileSettings,
   AchievementItem,
+  LeaderboardUser,
 };

@@ -1,6 +1,11 @@
 import React, { useState, useRef, useEffect, useCallback } from "react";
 
-import { StandardTriggerConditions, MultiLevelCombinationTriggerConditions } from "@components";
+import { FEATURE_FLAGS_MAP } from "@ally-ui-mono/ui-shared";
+import {
+  StandardTriggerConditions,
+  MultiLevelCombinationTriggerConditions,
+  CombinationTriggerConditions,
+} from "@components";
 import { EVENT_DETECTION_TYPES } from "@constants";
 import { useClickOutside } from "@hooks";
 
@@ -78,12 +83,21 @@ export const EditableTriggerConditionsPopup: React.FC<EditableTriggerConditionsP
             <span>--</span>
           </div>
         ) : eventType === EVENT_DETECTION_TYPES.COMBINATION ? (
-          <MultiLevelCombinationTriggerConditions
-            triggerCondition={editTriggerCondition}
-            isInTable={true}
-            onChange={handleFieldChange}
-            currentEventId={currentEventId}
-          />
+          FEATURE_FLAGS_MAP.MULTI_LEVEL_COMBINATION_TRIGGER_CONDITIONS_FLAG ? (
+            <MultiLevelCombinationTriggerConditions
+              triggerCondition={editTriggerCondition}
+              isInTable={true}
+              onChange={handleFieldChange}
+              currentEventId={currentEventId}
+            />
+          ) : (
+            <CombinationTriggerConditions
+              triggerCondition={editTriggerCondition}
+              isInTable={true}
+              onChange={handleFieldChange}
+              currentEventId={currentEventId}
+            />
+          )
         ) : (
           <StandardTriggerConditions
             eventType={eventType}
@@ -105,12 +119,21 @@ export const EditableTriggerConditionsPopup: React.FC<EditableTriggerConditionsP
           >
             <div className="max-w-full overflow-scroll custom-scrollbar pb-1">
               {eventType === EVENT_DETECTION_TYPES.COMBINATION ? (
-                <MultiLevelCombinationTriggerConditions
-                  triggerCondition={editTriggerCondition}
-                  isInTable={false}
-                  onChange={handleFieldChange}
-                  currentEventId={currentEventId}
-                />
+                FEATURE_FLAGS_MAP.MULTI_LEVEL_COMBINATION_TRIGGER_CONDITIONS_FLAG ? (
+                  <MultiLevelCombinationTriggerConditions
+                    triggerCondition={editTriggerCondition}
+                    isInTable={false}
+                    onChange={handleFieldChange}
+                    currentEventId={currentEventId}
+                  />
+                ) : (
+                  <CombinationTriggerConditions
+                    triggerCondition={editTriggerCondition}
+                    isInTable={false}
+                    onChange={handleFieldChange}
+                    currentEventId={currentEventId}
+                  />
+                )
               ) : (
                 <StandardTriggerConditions
                   eventType={eventType}

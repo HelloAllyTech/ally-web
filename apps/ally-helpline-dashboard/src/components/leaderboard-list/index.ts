@@ -1,3 +1,3 @@
-import { LeaderboardList } from "./LeaderboardList";
+import { LeaderboardList, LeaderboardUser } from "./LeaderboardList";
 
-export default LeaderboardList;
+export { LeaderboardList, type LeaderboardUser };
