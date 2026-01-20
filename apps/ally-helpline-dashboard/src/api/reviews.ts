@@ -16,6 +16,26 @@ const reviewsAPI = baseAPI.injectEndpoints({
         params,
       }),
     }),
+    /**
+     * Retrieves a review by its ID.
+     * @param {string} id - The ID of the review
+     * @returns {Promise<Review>} Review data
+     */
+    getReviewById: builder.query({
+      query: (id: string) => ({
+        url: ApiEndpoints.REVIEWS.GET_REVIEW_BY_ID(id),
+        method: HttpMethod.GET,
+      }),
+      providesTags: [TAG_TYPES.REVIEW],
+    }),
+    /**
+     * Retrieves the details and messages of a review.
+     * @param {string} id - The ID of the review
+     * @param {number} offset - The offset of the messages
+     * @param {number} limit - The limit of the messages
+     * @param {string} sortBy - The field to sort the messages by
+     * @returns {Promise<ReviewDetailsWithMessages>} Review details and messages data
+     */
     getReviewDetailsWithMessages: builder.query({
       query: ({ id, offset, limit, sortBy }) => ({
         url: ApiEndpoints.REVIEWS.GET_REVIEW_DETAILS_AND_MESSAGES(id),
@@ -25,6 +45,11 @@ const reviewsAPI = baseAPI.injectEndpoints({
       providesTags: [TAG_TYPES.REVIEW],
       transformResponse: (response: any) => response.data,
     }),
+    /**
+     * Creates a new review.
+     * @param {string} scenarioSessionId - The ID of the scenario session
+     * @returns {Promise<Review>} Review data
+     */
     createReview: builder.mutation({
       query: ({ scenarioSessionId }) => ({
         url: ApiEndpoints.REVIEWS.CREATE_REVIEW,
@@ -33,6 +58,12 @@ const reviewsAPI = baseAPI.injectEndpoints({
       }),
       invalidatesTags: [TAG_TYPES.SIMULATION_SUMMARY],
     }),
+    /**
+     * Updates a review.
+     * @param {string} id - The ID of the review
+     * @param {string} status - The status of the review
+     * @returns {Promise<Review>} Review data
+     */
     updateReview: builder.mutation({
       query: ({ id, status }) => ({
         url: ApiEndpoints.REVIEWS.UPDATE_REVIEW(id),
@@ -46,6 +77,7 @@ const reviewsAPI = baseAPI.injectEndpoints({
 
 export const {
   useGetReviewsQuery,
+  useGetReviewByIdQuery,
   useGetReviewDetailsWithMessagesQuery,
   useCreateReviewMutation,
   useUpdateReviewMutation,

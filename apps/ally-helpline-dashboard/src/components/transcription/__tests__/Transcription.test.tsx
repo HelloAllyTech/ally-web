@@ -32,12 +32,12 @@ vi.mock("@ally-ui-mono/ui-shared/index", () => ({
 
 // Mock useClickOutside
 const mockUseClickOutside = vi.fn();
-vi.mock("@src/hooks", () => ({
+vi.mock("@hooks", () => ({
   useClickOutside: (ref: any, callback: any) => mockUseClickOutside(ref, callback),
 }));
 
 // Mock THREAD_LIST
-vi.mock("@src/pages/review-details/dummy", () => ({
+vi.mock("@pages/review-details/dummy", () => ({
   THREAD_LIST: [
     {
       selection: { messageId: "1" },
