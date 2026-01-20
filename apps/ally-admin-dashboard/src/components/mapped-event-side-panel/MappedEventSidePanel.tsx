@@ -466,15 +466,27 @@ export const MappedEventSidePanel: React.FC<MappedEventSidePanelProps> = ({
                 label="Branching status"
               />
             </Field>
-
             <Field label="Branch to state" multiline={true}>
-              <TextareaWithTriggerDropdown
-                value={formData.branchInstruction?.value || ""}
-                onChange={value => handleFieldChange(MAPPED_EVENT_FIELDS.BRANCH_INSTRUCTION, value)}
-                placeholder="Add branch to state"
-                disabled={formData.branchInstruction?.disabled}
-                alwaysOpen
-              />
+              {FEATURE_FLAGS_MAP.DYNAMIC_BRANCHING_FLAG ? (
+                <TextareaWithTriggerDropdown
+                  value={formData.branchInstruction?.value || ""}
+                  onChange={value =>
+                    handleFieldChange(MAPPED_EVENT_FIELDS.BRANCH_INSTRUCTION, value)
+                  }
+                  placeholder="Add branch to state"
+                  disabled={formData.branchInstruction?.disabled}
+                  alwaysOpen
+                />
+              ) : (
+                <FormTextarea
+                  value={formData.branchInstruction?.value || ""}
+                  onChange={value =>
+                    handleFieldChange(MAPPED_EVENT_FIELDS.BRANCH_INSTRUCTION, value)
+                  }
+                  placeholder="Add branch to state"
+                  disabled={formData.branchInstruction?.disabled}
+                />
+              )}
             </Field>
 
             <Field label="Checklist visibility">
