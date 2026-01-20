@@ -118,9 +118,11 @@ export const TAG_TYPES = {
   CALL_SUMMARY: "CallSummary",
   CALL_LOGS: "CallLogs",
   SIMULATION_LOGS: "SimulationLogs",
+  SIMULATION_SUMMARY: "SimulationSummary",
   SCENARIO_PATHWAY_DETAILS: "ScenarioPathwayDetails",
   SIMULATION_CREDITS: "SimulationCredits",
   USER: "User",
+  REVIEW: "Review",
 };
 
 export const SORT_ORDER = {

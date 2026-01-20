@@ -4,12 +4,11 @@ import { FC, useState, useEffect } from "react";
 
 import SearchIcon from "@mui/icons-material/Search";
 import { Autocomplete, TextField, InputAdornment } from "@mui/material";
+import type { AutocompleteRenderOptionState } from "@mui/material";
 import { X } from "lucide-react";
 
 import { searchBarStyles } from "./constants";
 import { SearchVariant } from "../../types";
-
-import type { AutocompleteRenderOptionState } from "@mui/material";
 
 /**
  * Props for SearchBar component.
