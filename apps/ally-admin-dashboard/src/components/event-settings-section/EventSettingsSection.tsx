@@ -124,7 +124,7 @@ export const TimeWindowSection: React.FC<TimeWindowValues & TimeWindowCallbacks>
 export const OccurrenceControlSection: React.FC<
   OccurrenceControlValues & OccurrenceControlCallbacks
 > = ({
-  maxOccurrences = 0,
+  maxOccurrences = "∞",
   minGapTime = "00:00:00",
   onMaxOccurrencesChange,
   onMinGapTimeChange,
