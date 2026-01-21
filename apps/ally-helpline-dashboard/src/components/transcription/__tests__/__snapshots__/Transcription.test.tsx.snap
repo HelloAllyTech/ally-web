@@ -29,7 +29,7 @@ exports[`Transcription Component > should match snapshot when rendered 1`] = `
             </span>
           </span>
           <span
-            class="text-black selected-text cursor-default"
+            class="text-black selected-text relative w-full cursor-default"
           >
             <span
               class="relative "
@@ -60,7 +60,7 @@ exports[`Transcription Component > should match snapshot when rendered 1`] = `
             </span>
           </span>
           <span
-            class="text-black selected-text cursor-default"
+            class="text-black selected-text relative w-full cursor-default"
           >
             <span
               class="relative "
@@ -91,7 +91,7 @@ exports[`Transcription Component > should match snapshot when rendered 1`] = `
             </span>
           </span>
           <span
-            class="text-black selected-text cursor-default"
+            class="text-black selected-text relative w-full cursor-default"
           >
             <span
               class="relative "

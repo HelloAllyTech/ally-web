@@ -72,6 +72,20 @@ const reviewsAPI = baseAPI.injectEndpoints({
       }),
       invalidatesTags: [TAG_TYPES.SIMULATION_SUMMARY],
     }),
+    /**
+     * Creates a new comment for a review.
+     * @param {string} reviewId - The ID of the review
+     * @param {object} body - The body of the comment containing threadId, parentCommentId, messageId, content, and selection
+     * @returns {Promise<ReviewComment>} Comment data
+     */
+    createComment: builder.mutation({
+      query: ({ reviewId, body }) => ({
+        url: ApiEndpoints.REVIEWS.CREATE_COMMENT(reviewId),
+        method: HttpMethod.POST,
+        body,
+      }),
+      invalidatesTags: [TAG_TYPES.REVIEW],
+    }),
   }),
 });
 
@@ -81,4 +95,5 @@ export const {
   useGetReviewDetailsWithMessagesQuery,
   useCreateReviewMutation,
   useUpdateReviewMutation,
+  useCreateCommentMutation,
 } = reviewsAPI;

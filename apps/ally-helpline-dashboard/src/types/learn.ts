@@ -1,4 +1,5 @@
 import { triggerWarning } from "@ally-ui-mono/ui-shared/types";
+import { Thread } from "@src/pages/review-details/types";
 
 export enum ScenarioStatus {
   ACTIVE = "ACTIVE",
@@ -268,6 +269,7 @@ export interface SimulationTranscriptMessage {
   startSeconds?: number;
   endSeconds?: number | null;
   createdAt?: string;
+  threads?: Thread[];
 }
 
 export interface ScenarioPathway {
