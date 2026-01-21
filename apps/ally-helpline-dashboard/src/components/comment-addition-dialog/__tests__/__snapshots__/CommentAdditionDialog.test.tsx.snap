@@ -1,0 +1,51 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`CommentAdditionDialog Component > should match snapshot when rendered 1`] = `
+<DocumentFragment>
+  <div
+    class="bg-white rounded-lg p-4 shadow-lg border w-[360px]"
+  >
+    <div
+      class="flex flex-col gap-4"
+    >
+      <div
+        class="flex items-center gap-2 font-primary"
+      >
+        <div
+          class="w-8 h-8 rounded-full border flex items-center justify-center text-[#757575] text-sm font-medium"
+        >
+          J
+        </div>
+        <div
+          class=" text-sm font-medium"
+        >
+          John Doe
+        </div>
+      </div>
+      <textarea
+        class="w-full border rounded-sm text-sm !px-2 !py-2 min-h-20"
+        data-testid="comment-textarea"
+        placeholder="Add comment"
+      />
+      <div
+        class="grid grid-cols-2 gap-2"
+      >
+        <button
+          class="col-span-1"
+          data-testid="button-secondary"
+          data-variant="secondary"
+        >
+          Cancel
+        </button>
+        <button
+          class="col-span-1"
+          data-testid="button-primary"
+          data-variant="primary"
+        >
+          Comment
+        </button>
+      </div>
+    </div>
+  </div>
+</DocumentFragment>
+`;
