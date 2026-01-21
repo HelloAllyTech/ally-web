@@ -1,0 +1,110 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`CommentCard Component > should match snapshot when rendered with basic props 1`] = `
+<DocumentFragment>
+  <div
+    class="flex gap-2.5"
+  >
+    <div
+      class="min-w-6 h-6 rounded-full"
+    >
+      <img
+        alt="John Doe"
+        class="w-full h-full rounded-full"
+        data-testid="custom-image"
+        src="https://example.com/profile.jpg"
+      />
+    </div>
+    <div
+      class="flex flex-col gap-1"
+    >
+      <div
+        class="flex gap-2 items-center"
+      >
+        <div
+          class="text-[14px] font-medium"
+        >
+          John Doe
+        </div>
+        <div
+          class="text-[12px] text-gray-500"
+        >
+          2 hours ago
+        </div>
+      </div>
+      <div
+        class="line-clamp-2 text-[14px] text-typography-800"
+      >
+        This is a test comment
+      </div>
+      <div
+        class="flex gap-2 items-center"
+      />
+    </div>
+  </div>
+</DocumentFragment>
+`;
+
+exports[`CommentCard Component > should match snapshot with all props enabled 1`] = `
+<DocumentFragment>
+  <div
+    class="flex gap-2.5"
+  >
+    <div
+      class="min-w-6 h-6 rounded-full"
+    >
+      <img
+        alt="John Doe"
+        class="w-full h-full rounded-full"
+        data-testid="custom-image"
+        src="https://example.com/profile.jpg"
+      />
+    </div>
+    <div
+      class="flex flex-col gap-1"
+    >
+      <div
+        class="flex gap-2 items-center"
+      >
+        <div
+          class="text-[14px] font-medium"
+        >
+          John Doe
+        </div>
+        <div
+          class="text-[12px] text-gray-500"
+        >
+          2 hours ago
+        </div>
+      </div>
+      <div
+        class="line-clamp-2 text-[14px] text-typography-800"
+      >
+        This is a test comment
+      </div>
+      <div
+        class="flex gap-2 items-center"
+      >
+        <div
+          class="cursor-pointer text-typography-800 text-[12px] font-medium"
+        >
+          Like
+        </div>
+        <div
+          class="w-1 h-1 bg-[#D9D9D9] rounded-full"
+        />
+        <div
+          class="text-typography-800 text-[12px] cursor-pointer font-medium"
+        >
+          Reply
+        </div>
+        <div
+          class="text-typography-800 text-[12px]"
+        >
+          3 replies
+        </div>
+      </div>
+    </div>
+  </div>
+</DocumentFragment>
+`;
