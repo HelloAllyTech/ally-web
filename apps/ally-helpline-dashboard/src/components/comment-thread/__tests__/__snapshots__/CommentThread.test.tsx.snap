@@ -1,0 +1,120 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`CommentThread Component > should match snapshot when rendered 1`] = `
+<DocumentFragment>
+  <div
+    class="bg-white rounded-lg p-4 shadow-lg border w-[400px]"
+  >
+    <div
+      class="text-sm font-medium border-b-[0.5px] pb-2"
+    >
+      Comment Thread
+    </div>
+    <div
+      class="flex flex-col gap-4 pt-4"
+    >
+      <div
+        class="flex gap-2.5"
+      >
+        <div
+          class="min-w-8 h-8 rounded-full"
+          data-testid="account-circle"
+        />
+        <input
+          class="w-full h-8 rounded-sm focus-visible:ring-0"
+          data-testid="comment-input"
+          placeholder="Add comment"
+          value=""
+        />
+      </div>
+      <div
+        class="flex flex-col gap-2 overflow-y-auto max-h-80 -mr-4 pr-4"
+      >
+        <div
+          data-show-like="true"
+          data-show-reply="true"
+          data-testid="comment-card-1"
+        >
+          <span
+            data-testid="comment-content"
+          >
+            First comment
+          </span>
+          <span
+            data-testid="comment-author"
+          >
+            John Doe
+          </span>
+        </div>
+        <div
+          data-show-like="true"
+          data-show-reply="true"
+          data-testid="comment-card-2"
+        >
+          <span
+            data-testid="comment-content"
+          >
+            Second comment
+          </span>
+          <span
+            data-testid="comment-author"
+          >
+            Jane Smith
+          </span>
+        </div>
+        <div
+          data-show-like="true"
+          data-show-reply="true"
+          data-testid="comment-card-3"
+        >
+          <span
+            data-testid="comment-content"
+          >
+            Third comment
+          </span>
+          <span
+            data-testid="comment-author"
+          >
+            Bob Wilson
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+</DocumentFragment>
+`;
+
+exports[`CommentThread Component > should match snapshot with empty comments 1`] = `
+<DocumentFragment>
+  <div
+    class="bg-white rounded-lg p-4 shadow-lg border w-[400px]"
+  >
+    <div
+      class="text-sm font-medium border-b-[0.5px] pb-2"
+    >
+      Comment Thread
+    </div>
+    <div
+      class="flex flex-col gap-4 pt-4"
+    >
+      <div
+        class="flex gap-2.5"
+      >
+        <div
+          class="min-w-8 h-8 rounded-full"
+          data-testid="account-circle"
+        />
+        <input
+          class="w-full h-8 rounded-sm focus-visible:ring-0"
+          data-testid="comment-input"
+          placeholder="Add comment"
+          value=""
+        />
+      </div>
+      <div
+        class="flex flex-col gap-2 overflow-y-auto max-h-80 -mr-4 pr-4"
+      />
+    </div>
+  </div>
+</DocumentFragment>
+`;
