@@ -1,26 +1,18 @@
-import { FC, useEffect, useRef, useState, useLayoutEffect, useCallback, useMemo } from "react";
+import { FC, useEffect, useRef, useState, useLayoutEffect, useCallback } from "react";
 
 import "./styles.css";
+import { useParams } from "react-router-dom";
+import { toast } from "sonner";
+
 import { AddComment } from "@ally-ui-mono/ui-shared/assets";
 import { InfiniteScroll } from "@ally-ui-mono/ui-shared/index";
 import { useClickOutside } from "@hooks";
-import { THREAD_LIST } from "@pages/review-details/dummy";
-import { CommentItem } from "@pages/review-details/types";
+import { CommentItem, Thread } from "@pages/review-details/types";
+import { SimulationTranscriptMessage } from "@src/types";
 
-import { Thread } from "./types";
 import { getFreshUserRange, splitTextByComments } from "./utils";
 import CommentAdditionDialog from "../comment-addition-dialog/CommentAdditionDialog";
 import CommentThread from "../comment-thread/CommentThread";
-
-interface SimulationTranscriptMessage {
-  id: number;
-  content: string;
-  senderId: number;
-  startSeconds?: number;
-  endSeconds?: number | null;
-  createdAt?: string;
-  comments?: Thread[];
-}
 
 interface TranscriptionProps {
   transcriptList: SimulationTranscriptMessage[];
@@ -29,10 +21,24 @@ interface TranscriptionProps {
   selectedMessageId?: string;
   selectedStartIndex?: number;
   selectedEndIndex?: number;
+  commentsList?: CommentItem[];
+  selectedThreadId?: number;
   onCloseSelectedComment?: () => void;
   className?: string;
   handleLoadMore?: () => void;
   isLoading?: boolean;
+  createComment?: (
+    reviewId: string,
+    body: {
+      threadId: number | null;
+      parentCommentId: number | null;
+      messageId: number;
+      content: string;
+      selection: { startIndex: number; endIndex: number };
+    },
+  ) => Promise<void>;
+  isCreateCommentLoading?: boolean;
+  isCreateCommentSuccess?: boolean;
 }
 const DIALOG_WIDTH = 360;
 
@@ -44,11 +50,17 @@ const Transcription: FC<TranscriptionProps> = ({
   selectedStartIndex,
   selectedEndIndex,
   onCloseSelectedComment,
+  commentsList,
+  selectedThreadId,
   className,
   handleLoadMore,
   isLoading,
+  createComment,
+  isCreateCommentLoading,
+  isCreateCommentSuccess,
 }) => {
   const contentRefs = useRef<(HTMLSpanElement | null)[]>([]);
+  const { reviewId } = useParams<{ reviewId: string }>();
   const addCommentDialogRef = useRef<HTMLDivElement | null>(null);
   const dialogRef = useRef<HTMLDivElement | null>(null);
   const selectedCommentRef = useRef<HTMLSpanElement | null>(null);
@@ -104,6 +116,13 @@ const Transcription: FC<TranscriptionProps> = ({
   useEffect(() => {
     setTranscriptions(transcriptList);
   }, [transcriptList]);
+
+  useEffect(() => {
+    if (isCreateCommentSuccess) {
+      toast.success("Comment created successfully");
+      setAddCommentDialogOpen(null);
+    }
+  }, [isCreateCommentSuccess]);
 
   useEffect(() => {
     if (selectedMessageId && String(selectedStartIndex) && String(selectedEndIndex)) {
@@ -182,13 +201,15 @@ const Transcription: FC<TranscriptionProps> = ({
 
     const currentTranscription = transcriptions[index];
     const existingComments =
-      currentTranscription.comments?.filter(comment => comment.comments?.length !== 0) || [];
+      currentTranscription.threads?.filter(comment => comment.comments?.length !== 0) || [];
 
     const newComments = [
       ...existingComments,
       {
-        startIndex,
-        endIndex,
+        selection: {
+          startIndex,
+          endIndex,
+        },
         selectedText,
         comments: [],
       },
@@ -197,11 +218,10 @@ const Transcription: FC<TranscriptionProps> = ({
     setTranscriptions(prev =>
       prev.map((transcript, i) =>
         i === index
-          ? { ...transcript, comments: newComments }
+          ? { ...transcript, threads: newComments as Thread[] }
           : {
               ...transcript,
-              comments:
-                transcript.comments?.filter(comment => comment.comments?.length !== 0) || [],
+              threads: transcript.threads?.filter(comment => comment.comments?.length !== 0) || [],
             },
       ),
     );
@@ -211,7 +231,7 @@ const Transcription: FC<TranscriptionProps> = ({
     setTranscriptions(prev =>
       prev.map(transcript => ({
         ...transcript,
-        comments: transcript.comments?.filter(comment => comment.comments?.length !== 0) || [],
+        comments: transcript.threads?.filter(comment => comment.comments?.length !== 0) || [],
       })),
     );
     setAddCommentDialogOpen(null);
@@ -221,10 +241,20 @@ const Transcription: FC<TranscriptionProps> = ({
     onCloseSelectedComment?.();
   }, [onCloseSelectedComment]);
 
-  const commentsList = useMemo(() => {
-    return THREAD_LIST.find(thread => thread.selection.messageId === selectedMessageId)?.comments;
-  }, [THREAD_LIST, selectedMessageId]);
-
+  const handleCreateComment = async (
+    comment: string,
+    selection: { startIndex: number; endIndex: number },
+    transcriptId: number,
+    threadId: number | null,
+  ) => {
+    await createComment?.(reviewId, {
+      threadId: threadId,
+      parentCommentId: null,
+      messageId: transcriptId,
+      content: comment,
+      selection: selection,
+    });
+  };
   // Close dialogs on outside click
   useClickOutside(dialogRef, handleCancelComment);
   useClickOutside(selectedCommentCalloutRef, handleCloseSelectedComment);
@@ -278,9 +308,9 @@ const Transcription: FC<TranscriptionProps> = ({
               <span
                 ref={el => (contentRefs.current[index] = el)}
                 onMouseUp={() => handleSelection(index)}
-                className={`text-black selected-text ${canSelect ? "cursor-text" : "cursor-default"}`}
+                className={`text-black selected-text relative w-full ${canSelect ? "cursor-text" : "cursor-default"}`}
               >
-                {splitTextByComments(transcript.content, transcript.comments).map(
+                {splitTextByComments(transcript.content, transcript.threads).map(
                   (segment, segIdx) => {
                     const isSelectedComment =
                       selectedMessageId &&
@@ -295,7 +325,7 @@ const Transcription: FC<TranscriptionProps> = ({
                         className={`relative ${
                           segment.isComment
                             ? segment.comments?.length !== 0
-                              ? `${selectedMessageId ? "bg-amber-200" : "bg-amber-50"} border-b border-amber-400`
+                              ? `${String(selectedMessageId) === String(transcript.id) && selectedThreadId === segment.threadId ? "bg-amber-200" : "bg-amber-50"} border-b border-amber-400`
                               : "bg-[#E1F1FE]"
                             : ""
                         }`}
@@ -322,9 +352,15 @@ const Transcription: FC<TranscriptionProps> = ({
                             style={{
                               top: dialogPosition.top,
                               left: dialogPosition.left,
+                              opacity: isCreateCommentLoading ? 0.5 : 1,
                             }}
                           >
-                            <CommentAdditionDialog onCancel={handleCancelComment} />
+                            <CommentAdditionDialog
+                              onCancel={handleCancelComment}
+                              onComment={comment =>
+                                handleCreateComment(comment, segment.selection, transcript.id, null)
+                              }
+                            />
                           </div>
                         )}
                         {isSelectedComment && commentsList && (
@@ -332,7 +368,17 @@ const Transcription: FC<TranscriptionProps> = ({
                             ref={selectedCommentCalloutRef}
                             className="absolute top-full left-0 z-50 mt-1"
                           >
-                            <CommentThread comments={commentsList as CommentItem[]} />
+                            <CommentThread
+                              comments={commentsList as CommentItem[]}
+                              onCommentAddition={comment =>
+                                handleCreateComment(
+                                  comment,
+                                  segment.selection,
+                                  transcript.id,
+                                  selectedThreadId,
+                                )
+                              }
+                            />
                           </div>
                         )}
                       </span>

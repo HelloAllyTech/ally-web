@@ -11,7 +11,12 @@ interface ReviewCommentsSidepanelProps {
   totalComments: number;
   className?: string;
   isOpen?: boolean;
-  onCommentClick?: (props: { messageId: string; startIndex: number; endIndex: number }) => void;
+  onCommentClick?: (props: {
+    messageId: string;
+    startIndex: number;
+    endIndex: number;
+    threadId: number;
+  }) => void;
 }
 const ReviewCommentsSidepanel = ({
   threads,
@@ -46,13 +51,14 @@ const ReviewCommentsSidepanel = ({
           <div className="flex flex-col gap-4 overflow-auto h-[calc(100%-40px)] -mr-4 pr-4 py-4">
             {threads?.map(
               (thread, index) =>
-                thread.comments[0] && (
+                thread?.comments[0] && (
                   <div
                     key={thread.id}
                     className="transition-all cursor-pointer duration-300 ease-out"
                     onClick={() =>
                       onCommentClick({
-                        messageId: thread.selection.messageId,
+                        threadId: thread.id,
+                        messageId: thread.selection.messageId.toString(),
                         startIndex: thread.selection.startIndex,
                         endIndex: thread.selection.endIndex,
                       })
