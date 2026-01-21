@@ -19,7 +19,7 @@ export interface EmojiPickerState {
 }
 
 export interface NumberInputProps {
-  value?: number;
+  value?: number | string;
   onChange?: (value: number) => void;
   min?: number;
   max?: number;

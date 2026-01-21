@@ -25,12 +25,11 @@ export const NumberInput: React.FC<NumberInputProps> = ({
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    if (value !== undefined && value !== null) {
+    if (value === "∞") setInputValue("∞");
+    else if (value !== undefined && value !== null) {
       const next = isNumber(value) ? value : 0;
       setInputValue(next.toString());
-    } else {
-      setInputValue("");
-    }
+    } else setInputValue("");
   }, [value]);
 
   const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
