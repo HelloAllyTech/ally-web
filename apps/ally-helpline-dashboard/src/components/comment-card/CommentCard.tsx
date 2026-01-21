@@ -1,6 +1,8 @@
 import { Emoji, EmojiStyle } from "emoji-picker-react";
 
+import { CustomImage } from "@ally-ui-mono/ui-shared/index";
 import { CommentItem } from "@pages/review-details/types";
+import { AccountCircle } from "@src/assets";
 import { formatRelativeTime } from "@utils";
 
 interface CommentCardProps {
@@ -17,13 +19,23 @@ const CommentCard = ({
 }: CommentCardProps) => {
   return (
     <div className="flex gap-2.5">
-      <div className="min-w-8 h-8 rounded-full bg-neutral-500" />
+      <div className="min-w-6 h-6 rounded-full">
+        {comment.createdBy.profileUrl ? (
+          <CustomImage
+            src={comment.createdBy.profileUrl}
+            alt={comment.createdBy.name}
+            className="w-full h-full rounded-full"
+          />
+        ) : (
+          <AccountCircle className="w-full h-full rounded-full" />
+        )}
+      </div>
       <div className="flex flex-col gap-1">
         <div className="flex gap-2 items-center">
-          <div className="text-[14px] font-medium">{comment.user.name}</div>
+          <div className="text-[14px] font-medium">{comment.createdBy.name}</div>
           <div className="text-[12px] text-gray-500">{formatRelativeTime(comment.createdAt)}</div>
         </div>
-        <div className="line-clamp-2 text-[14px] text-typography-800">{comment.comment}</div>
+        <div className="line-clamp-2 text-[14px] text-typography-800">{comment.content}</div>
         <div className="flex gap-2 items-center">
           {showLike && (
             <div className="cursor-pointer text-typography-800 text-[12px] font-medium">Like</div>

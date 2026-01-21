@@ -1,11 +1,12 @@
 interface CommentItem {
   id: number;
-  user: {
+  createdBy: {
     id: number;
     name: string;
+    profileUrl: string | null;
   };
   createdAt: string;
-  comment: string;
+  content: string;
   reactions: {
     [key: string]: number;
   };
@@ -17,7 +18,7 @@ interface Thread {
     text: string;
     startIndex: number;
     endIndex: number;
-    messageId: string;
+    messageId: number;
   };
   comments: CommentItem[];
 }

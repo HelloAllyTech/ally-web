@@ -98,8 +98,8 @@ const SECONDS_IN = {
   w: 604800,
   d: 86400,
   hour: 3600,
-  minute: 60,
-  second: 1,
+  min: 60,
+  sec: 1,
 } as const;
 
 const TIME_THRESHOLDS: [keyof typeof SECONDS_IN, number][] = [
@@ -107,8 +107,8 @@ const TIME_THRESHOLDS: [keyof typeof SECONDS_IN, number][] = [
   ["w", SECONDS_IN.w],
   ["d", SECONDS_IN.d],
   ["hour", SECONDS_IN.hour],
-  ["minute", SECONDS_IN.minute],
-  ["second", SECONDS_IN.second],
+  ["min", SECONDS_IN.min],
+  ["sec", SECONDS_IN.sec],
 ];
 
 const pluralize = (value: number, unit: string) => `${value}${unit}${value === 1 ? "" : "s"}`;

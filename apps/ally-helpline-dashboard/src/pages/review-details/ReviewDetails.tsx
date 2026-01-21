@@ -1,11 +1,15 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import { Emoji, EmojiStyle } from "emoji-picker-react";
 import { useSelector } from "react-redux";
 import { useNavigate, useParams } from "react-router-dom";
 
 import { CustomImage } from "@ally-ui-mono/ui-shared/index";
-import { useGetReviewByIdQuery, useGetReviewDetailsWithMessagesQuery } from "@api";
+import {
+  useCreateCommentMutation,
+  useGetReviewByIdQuery,
+  useGetReviewDetailsWithMessagesQuery,
+} from "@api";
 import { AccountCircle, ChatBubble, LeftArrow, Smiley } from "@assets";
 import ReviewCommentsSidepanel from "@components/review-comments-sidepanel/ReviewCommentsSidepanel";
 import Transcription from "@components/transcription";
@@ -14,7 +18,7 @@ import { RootState } from "@store";
 import { SimulationTranscriptMessage } from "@types";
 import { getFormattedDateTime, getFormattedTimeFromDuration } from "@utils";
 
-import { THREAD_LIST, HEADING } from "./dummy";
+import { HEADING } from "./dummy";
 import { Thread } from "./types";
 import { TRANSCRIPT_PAGE_SIZE } from "../calls/components/constants";
 
@@ -29,10 +33,14 @@ export const ReviewDetails = () => {
   const [selectedMessageId, setSelectedMessageId] = useState<string>("");
   const [selectedStartIndex, setSelectedStartIndex] = useState<number>(0);
   const [selectedEndIndex, setSelectedEndIndex] = useState<number>(0);
+  const [selectedThreadId, setSelectedThreadId] = useState<number>(null);
   const [transcriptList, setTranscriptList] = useState<SimulationTranscriptMessage[]>([]);
   const { data: reviewDetails, isLoading: isGetReviewDetailsLoading } = useGetReviewByIdQuery(
     reviewId || "",
   );
+
+  const [createComment, { isLoading: isCreateCommentLoading, isSuccess: isCreateCommentSuccess }] =
+    useCreateCommentMutation();
   const { data: simulationTranscript, isLoading: isGetTranscriptLoading } =
     useGetReviewDetailsWithMessagesQuery({
       id: reviewId || "",
@@ -63,6 +71,22 @@ export const ReviewDetails = () => {
     return reactionsCount;
   };
 
+  const threads = useMemo(() => {
+    return transcriptList
+      .map(transcript =>
+        transcript.threads?.map(thread => ({
+          ...thread,
+          selection: {
+            text: transcript.content.slice(thread.selection.startIndex, thread.selection.endIndex),
+            startIndex: thread.selection.startIndex,
+            endIndex: thread.selection.endIndex,
+            messageId: transcript.id,
+          },
+        })),
+      )
+      .flat();
+  }, [transcriptList]);
+
   const handleEmojiClick = (emoji: string) => {
     if (selectedEmoji === emoji) {
       setSelectedEmoji("");
@@ -76,10 +100,12 @@ export const ReviewDetails = () => {
     messageId: string;
     startIndex: number;
     endIndex: number;
+    threadId: number;
   }) => {
     setSelectedMessageId(props.messageId);
     setSelectedStartIndex(props.startIndex);
     setSelectedEndIndex(props.endIndex);
+    setSelectedThreadId(props.threadId);
   };
 
   const handleCloseSelectedComment = () => {
@@ -91,6 +117,18 @@ export const ReviewDetails = () => {
   const handleLoadMore = () => {
     if (transcriptOffset >= simulationTranscript?.messages?.length) return;
     setTranscriptOffset(prev => prev + TRANSCRIPT_PAGE_SIZE);
+  };
+  const onCreateComment = async (
+    reviewId: string,
+    body: {
+      threadId: number;
+      parentCommentId: number;
+      messageId: number;
+      content: string;
+      selection: { startIndex: number; endIndex: number };
+    },
+  ) => {
+    createComment({ reviewId, body });
   };
 
   return (
@@ -149,6 +187,14 @@ export const ReviewDetails = () => {
       <div className="flex w-full h-[calc(100%-103px)]">
         <div className="pt-5 mx-auto px-10 h-full w-[calc(100%-384px)] overflow-y-auto pb-20 transition-all duration-400">
           <Transcription
+            commentsList={
+              threads.find(thread => thread.selection.messageId === parseInt(selectedMessageId))
+                ?.comments
+            }
+            createComment={onCreateComment}
+            isCreateCommentLoading={isCreateCommentLoading}
+            isCreateCommentSuccess={isCreateCommentSuccess}
+            selectedThreadId={selectedThreadId}
             transcriptList={transcriptList}
             userId={user?.id}
             canSelect={true}
@@ -161,8 +207,8 @@ export const ReviewDetails = () => {
           />
         </div>
         <ReviewCommentsSidepanel
-          threads={THREAD_LIST as Thread[]}
-          totalComments={THREAD_LIST.reduce((acc, thread) => acc + thread.comments.length, 0)}
+          threads={threads as Thread[]}
+          totalComments={reviewDetails?.commentsCount || 0}
           isOpen={showCommentsSidepanel}
           onCommentClick={handleCommentClick}
           className={showCommentsSidepanel ? "w-96" : "w-0 border-none"}

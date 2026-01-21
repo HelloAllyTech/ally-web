@@ -28,31 +28,15 @@ vi.mock("@ally-ui-mono/ui-shared/index", () => ({
       </button>
     </div>
   ),
+  FEATURE_FLAGS_MAP: {
+    PEER_REVIEW_FLAG: true,
+  },
 }));
 
 // Mock useClickOutside
 const mockUseClickOutside = vi.fn();
 vi.mock("@hooks", () => ({
   useClickOutside: (ref: any, callback: any) => mockUseClickOutside(ref, callback),
-}));
-
-// Mock THREAD_LIST
-vi.mock("@pages/review-details/dummy", () => ({
-  THREAD_LIST: [
-    {
-      selection: { messageId: "1" },
-      comments: [
-        {
-          id: 1,
-          user: { id: 1, name: "Test User" },
-          createdAt: "2026-01-01",
-          comment: "Test comment",
-          reactions: {},
-          replyCount: 0,
-        },
-      ],
-    },
-  ],
 }));
 
 // Mock CommentAdditionDialog
@@ -81,6 +65,7 @@ vi.mock("../../comment-thread/CommentThread", () => ({
 
 describe("Transcription Component", () => {
   const mockUserId = 1;
+  const mockCreateComment = vi.fn();
 
   const mockTranscriptList = [
     {
@@ -106,10 +91,15 @@ describe("Transcription Component", () => {
   const defaultProps = {
     transcriptList: mockTranscriptList,
     userId: mockUserId,
+    createComment: mockCreateComment,
+    isCreateCommentLoading: false,
+    isCreateCommentSuccess: false,
   };
 
   beforeEach(() => {
     vi.clearAllMocks();
+    mockCreateComment.mockReset();
+    mockCreateComment.mockResolvedValue(undefined);
     // Reset window.getSelection mock
     Object.defineProperty(window, "getSelection", {
       value: vi.fn(() => null),
@@ -362,59 +352,54 @@ describe("Transcription Component", () => {
 
   // --- Comments Display Tests ---
   describe("Comments Display", () => {
-    it("should render transcript with existing comments", () => {
-      const transcriptWithComments = [
+    it("should render transcript with existing threads", () => {
+      const transcriptWithThreads = [
         {
           id: 1,
           content: "Hello, this is a message with comments",
           senderId: -1,
           startSeconds: 0,
-          comments: [
+          threads: [
             {
-              startIndex: 0,
-              endIndex: 5,
-              selectedText: "Hello",
-              comments: [{ text: "Test comment" }],
+              id: 1,
+              selection: { startIndex: 0, endIndex: 5, text: "Hello", messageId: 1 },
+              comments: [{ id: 1, content: "Test comment" }],
             },
           ],
         },
-      ];
+      ] as any;
 
       render(
-        <Transcription
-          transcriptList={transcriptWithComments}
-          userId={mockUserId}
-          canSelect={true}
-        />,
+        <Transcription {...defaultProps} transcriptList={transcriptWithThreads} canSelect={true} />,
       );
 
       expect(screen.getByText(/Hello/)).toBeInTheDocument();
     });
 
     it("should highlight commented text with amber background when selected", () => {
-      const transcriptWithComments = [
+      const transcriptWithThreads = [
         {
           id: 1,
           content: "Hello, this is a message",
           senderId: -1,
           startSeconds: 0,
-          comments: [
+          threads: [
             {
-              startIndex: 0,
-              endIndex: 5,
-              selectedText: "Hello",
-              comments: [{ text: "Test comment" }],
+              id: 1,
+              selection: { startIndex: 0, endIndex: 5, text: "Hello", messageId: 1 },
+              comments: [{ id: 1, content: "Test comment" }],
             },
           ],
         },
-      ];
+      ] as any;
 
       const { container } = render(
         <Transcription
-          transcriptList={transcriptWithComments}
-          userId={mockUserId}
+          {...defaultProps}
+          transcriptList={transcriptWithThreads}
           canSelect={true}
           selectedMessageId="1"
+          selectedThreadId={1}
         />,
       );
 
@@ -423,27 +408,26 @@ describe("Transcription Component", () => {
     });
 
     it("should show blue background for new comment selection without saved comments", () => {
-      const transcriptWithEmptyComments = [
+      const transcriptWithEmptyThreads = [
         {
           id: 1,
           content: "Hello, this is a message",
           senderId: -1,
           startSeconds: 0,
-          comments: [
+          threads: [
             {
-              startIndex: 0,
-              endIndex: 5,
-              selectedText: "Hello",
+              id: 1,
+              selection: { startIndex: 0, endIndex: 5, text: "Hello", messageId: 1 },
               comments: [],
             },
           ],
         },
-      ];
+      ] as any;
 
       const { container } = render(
         <Transcription
-          transcriptList={transcriptWithEmptyComments}
-          userId={mockUserId}
+          {...defaultProps}
+          transcriptList={transcriptWithEmptyThreads}
           canSelect={true}
         />,
       );
@@ -456,27 +440,26 @@ describe("Transcription Component", () => {
   // --- Add Comment Dialog Tests ---
   describe("Add Comment Dialog", () => {
     it("should show add comment button for empty comment selection", () => {
-      const transcriptWithEmptyComments = [
+      const transcriptWithEmptyThreads = [
         {
           id: 1,
           content: "Hello, this is a message",
           senderId: -1,
           startSeconds: 0,
-          comments: [
+          threads: [
             {
-              startIndex: 0,
-              endIndex: 5,
-              selectedText: "Hello",
+              id: 1,
+              selection: { startIndex: 0, endIndex: 5, text: "Hello", messageId: 1 },
               comments: [],
             },
           ],
         },
-      ];
+      ] as any;
 
       render(
         <Transcription
-          transcriptList={transcriptWithEmptyComments}
-          userId={mockUserId}
+          {...defaultProps}
+          transcriptList={transcriptWithEmptyThreads}
           canSelect={true}
         />,
       );
@@ -486,27 +469,26 @@ describe("Transcription Component", () => {
     });
 
     it("should open comment dialog when add comment button is clicked", async () => {
-      const transcriptWithEmptyComments = [
+      const transcriptWithEmptyThreads = [
         {
           id: 1,
           content: "Hello, this is a message",
           senderId: -1,
           startSeconds: 0,
-          comments: [
+          threads: [
             {
-              startIndex: 0,
-              endIndex: 5,
-              selectedText: "Hello",
+              id: 1,
+              selection: { startIndex: 0, endIndex: 5, text: "Hello", messageId: 1 },
               comments: [],
             },
           ],
         },
-      ];
+      ] as any;
 
       render(
         <Transcription
-          transcriptList={transcriptWithEmptyComments}
-          userId={mockUserId}
+          {...defaultProps}
+          transcriptList={transcriptWithEmptyThreads}
           canSelect={true}
         />,
       );
@@ -520,27 +502,26 @@ describe("Transcription Component", () => {
     });
 
     it("should close dialog when cancel is clicked", async () => {
-      const transcriptWithEmptyComments = [
+      const transcriptWithEmptyThreads = [
         {
           id: 1,
           content: "Hello, this is a message",
           senderId: -1,
           startSeconds: 0,
-          comments: [
+          threads: [
             {
-              startIndex: 0,
-              endIndex: 5,
-              selectedText: "Hello",
+              id: 1,
+              selection: { startIndex: 0, endIndex: 5, text: "Hello", messageId: 1 },
               comments: [],
             },
           ],
         },
-      ];
+      ] as any;
 
       render(
         <Transcription
-          transcriptList={transcriptWithEmptyComments}
-          userId={mockUserId}
+          {...defaultProps}
+          transcriptList={transcriptWithEmptyThreads}
           canSelect={true}
         />,
       );
@@ -570,6 +551,99 @@ describe("Transcription Component", () => {
 
       // useClickOutside should be called for dialog, selectedComment, and addCommentDialog refs
       expect(mockUseClickOutside).toHaveBeenCalled();
+    });
+  });
+
+  // --- createComment Prop Tests ---
+  describe("createComment Prop", () => {
+    it("should render without createComment prop", () => {
+      render(<Transcription transcriptList={mockTranscriptList} userId={mockUserId} />);
+
+      expect(screen.getByText("Hello, how can I help you today?")).toBeInTheDocument();
+    });
+
+    it("should pass isCreateCommentLoading to CommentAdditionDialog", async () => {
+      const transcriptWithEmptyThreads = [
+        {
+          id: 1,
+          content: "Hello, this is a message",
+          senderId: -1,
+          startSeconds: 0,
+          threads: [
+            {
+              id: 1,
+              selection: { startIndex: 0, endIndex: 5, text: "Hello", messageId: 1 },
+              comments: [],
+            },
+          ],
+        },
+      ] as any;
+
+      render(
+        <Transcription
+          {...defaultProps}
+          transcriptList={transcriptWithEmptyThreads}
+          canSelect={true}
+          isCreateCommentLoading={true}
+        />,
+      );
+
+      const addCommentButton = screen.getByText("Add comment").closest("div");
+      fireEvent.click(addCommentButton!);
+
+      await waitFor(() => {
+        expect(screen.getByTestId("comment-addition-dialog")).toBeInTheDocument();
+      });
+    });
+
+    it("should handle isCreateCommentSuccess state change", async () => {
+      const transcriptWithEmptyThreads = [
+        {
+          id: 1,
+          content: "Hello, this is a message",
+          senderId: -1,
+          startSeconds: 0,
+          threads: [
+            {
+              id: 1,
+              selection: { startIndex: 0, endIndex: 5, text: "Hello", messageId: 1 },
+              comments: [],
+            },
+          ],
+        },
+      ] as any;
+
+      const { rerender } = render(
+        <Transcription
+          {...defaultProps}
+          transcriptList={transcriptWithEmptyThreads}
+          canSelect={true}
+          isCreateCommentSuccess={false}
+        />,
+      );
+
+      // Open dialog
+      const addCommentButton = screen.getByText("Add comment").closest("div");
+      fireEvent.click(addCommentButton!);
+
+      await waitFor(() => {
+        expect(screen.getByTestId("comment-addition-dialog")).toBeInTheDocument();
+      });
+
+      // Rerender with success
+      rerender(
+        <Transcription
+          {...defaultProps}
+          transcriptList={transcriptWithEmptyThreads}
+          canSelect={true}
+          isCreateCommentSuccess={true}
+        />,
+      );
+
+      // Dialog should close on success
+      await waitFor(() => {
+        expect(screen.queryByTestId("comment-addition-dialog")).not.toBeInTheDocument();
+      });
     });
   });
 
@@ -606,34 +680,32 @@ describe("Transcription Component", () => {
       expect(screen.getByText(longContent)).toBeInTheDocument();
     });
 
-    it("should handle multiple comments on same transcript", () => {
-      const transcriptWithMultipleComments = [
+    it("should handle multiple threads on same transcript", () => {
+      const transcriptWithMultipleThreads = [
         {
           id: 1,
           content: "Hello world, this is a test message",
           senderId: -1,
           startSeconds: 0,
-          comments: [
+          threads: [
             {
-              startIndex: 0,
-              endIndex: 5,
-              selectedText: "Hello",
-              comments: [{ text: "Comment 1" }],
+              id: 1,
+              selection: { startIndex: 0, endIndex: 5, text: "Hello", messageId: 1 },
+              comments: [{ id: 1, content: "Comment 1" }],
             },
             {
-              startIndex: 13,
-              endIndex: 17,
-              selectedText: "this",
-              comments: [{ text: "Comment 2" }],
+              id: 2,
+              selection: { startIndex: 13, endIndex: 17, text: "this", messageId: 1 },
+              comments: [{ id: 2, content: "Comment 2" }],
             },
           ],
         },
-      ];
+      ] as any;
 
       render(
         <Transcription
-          transcriptList={transcriptWithMultipleComments}
-          userId={mockUserId}
+          {...defaultProps}
+          transcriptList={transcriptWithMultipleThreads}
           canSelect={true}
         />,
       );

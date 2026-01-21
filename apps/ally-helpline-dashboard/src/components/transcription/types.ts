@@ -1,10 +1,12 @@
+import { CommentItem } from "@src/pages/review-details/types";
+
 interface Thread {
-  startIndex: number;
-  endIndex: number;
-  selectedText: string;
-  comments: {
-    text: string;
-  }[];
+  id?: number;
+  selection: {
+    startIndex: number;
+    endIndex: number;
+  };
+  comments: CommentItem[];
 }
 
 interface TextSegment {
@@ -12,9 +14,12 @@ interface TextSegment {
   content: string;
   isComment: boolean;
   commentIndex?: number;
-  comments?: {
-    text: string;
-  }[];
+  threadId?: number;
+  selection?: {
+    startIndex: number;
+    endIndex: number;
+  };
+  comments?: CommentItem[];
   overlappingThreads?: Thread[];
 }
 

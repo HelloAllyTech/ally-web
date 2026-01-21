@@ -8,7 +8,9 @@ const splitTextByComments = (text: string, comments?: Thread[]): TextSegment[] =
   }
 
   // Sort comments by startIndex to process them in order
-  const sortedComments = [...comments].sort((a, b) => a.startIndex - b.startIndex);
+  const sortedComments = [...comments].sort(
+    (a, b) => a.selection.startIndex - b.selection.startIndex,
+  );
 
   const segments: TextSegment[] = [];
   let currentIndex = 0;
@@ -21,11 +23,15 @@ const splitTextByComments = (text: string, comments?: Thread[]): TextSegment[] =
     const comment = sortedComments[i];
 
     // Add text before this comment (if any)
-    if (comment.startIndex > currentIndex) {
+    if (comment.selection.startIndex > currentIndex) {
       segments.push({
         id: uuidv4(),
-        content: text.slice(currentIndex, comment.startIndex),
+        content: text.slice(currentIndex, comment.selection.startIndex),
         isComment: false,
+        selection: {
+          startIndex: currentIndex,
+          endIndex: comment.selection.startIndex,
+        },
       });
     }
 
@@ -37,8 +43,8 @@ const splitTextByComments = (text: string, comments?: Thread[]): TextSegment[] =
       if (
         i !== j &&
         !processedIndices.has(j) &&
-        comment.startIndex < other.endIndex &&
-        comment.endIndex > other.startIndex
+        comment.selection.startIndex < other.selection.endIndex &&
+        comment.selection.endIndex > other.selection.startIndex
       ) {
         overlappingThreads.push(other);
         overlappingIndices.push(j);
@@ -50,12 +56,12 @@ const splitTextByComments = (text: string, comments?: Thread[]): TextSegment[] =
 
     // Calculate merged content if there's overlap
     let mergedContent: string | undefined;
-    let mergedEndIndex = comment.endIndex;
+    let mergedEndIndex = comment.selection.endIndex;
 
     if (overlappingThreads.length > 0) {
       const allOverlapping = [comment, ...overlappingThreads];
-      const minStart = Math.min(...allOverlapping.map(c => c.startIndex));
-      const maxEnd = Math.max(...allOverlapping.map(c => c.endIndex));
+      const minStart = Math.min(...allOverlapping.map(c => c.selection.startIndex));
+      const maxEnd = Math.max(...allOverlapping.map(c => c.selection.endIndex));
       mergedContent = text.slice(minStart, maxEnd);
       mergedEndIndex = maxEnd;
     }
@@ -63,10 +69,16 @@ const splitTextByComments = (text: string, comments?: Thread[]): TextSegment[] =
     // Add the commented text
     segments.push({
       id: uuidv4(),
-      content: mergedContent || text.slice(comment.startIndex, comment.endIndex),
+      content:
+        mergedContent || text.slice(comment.selection.startIndex, comment.selection.endIndex),
       isComment: true,
       commentIndex: i,
+      threadId: comment.id,
       comments: comment.comments,
+      selection: {
+        startIndex: comment.selection.startIndex,
+        endIndex: comment.selection.endIndex,
+      },
       overlappingThreads: overlappingThreads.length > 0 ? overlappingThreads : undefined,
     });
 
@@ -79,6 +91,10 @@ const splitTextByComments = (text: string, comments?: Thread[]): TextSegment[] =
       id: uuidv4(),
       content: text.slice(currentIndex),
       isComment: false,
+      selection: {
+        startIndex: currentIndex,
+        endIndex: currentIndex + text.length,
+      },
     });
   }
 

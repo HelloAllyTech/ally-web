@@ -9,8 +9,9 @@ import { Button } from "../button";
 
 interface CommentAdditionDialogProps {
   onCancel: () => void;
+  onComment: (comment: string) => void;
 }
-const CommentAdditionDialog: FC<CommentAdditionDialogProps> = ({ onCancel }) => {
+const CommentAdditionDialog: FC<CommentAdditionDialogProps> = ({ onCancel, onComment }) => {
   const [comment, setComment] = useState("");
   const user = useSelector((state: RootState) => state.user.user);
   const initials = useMemo(() => {
@@ -35,7 +36,7 @@ const CommentAdditionDialog: FC<CommentAdditionDialogProps> = ({ onCancel }) => 
           <Button className="col-span-1" variant="secondary" onClick={onCancel}>
             Cancel
           </Button>
-          <Button className="col-span-1" variant="primary" onClick={() => {}}>
+          <Button className="col-span-1" variant="primary" onClick={() => onComment(comment)}>
             Comment
           </Button>
         </div>
