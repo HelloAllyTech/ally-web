@@ -38,6 +38,8 @@ const SimulationTranscriptTab: FC<SimulationTranscriptTabProps> = ({ sessionId, 
       speaker: item.senderId === -1 ? "Client" : "Counsellor",
       content: item.content,
       startSeconds: item.startSeconds,
+      id: item.id || null,
+      senderId: item.senderId || null,
     }));
   }, [transcriptData]);
 
@@ -52,9 +54,10 @@ const SimulationTranscriptTab: FC<SimulationTranscriptTabProps> = ({ sessionId, 
       setTranscriptList(prev => [
         ...prev,
         ...transcript.map(item => ({
-          id: item.speaker === "Client" ? user?.id : -1,
+          id: item?.id !== null ? item?.id : item.speaker === "Client" ? user?.id : -1,
           content: item.content,
-          senderId: item.speaker === "Client" ? user?.id : -1,
+          senderId:
+            item?.senderId !== null ? item?.senderId : item.speaker === "Client" ? user?.id : -1,
           startSeconds: item.startSeconds,
         })),
       ]);
