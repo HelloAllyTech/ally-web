@@ -261,7 +261,7 @@ const Transcription: FC<TranscriptionProps> = ({
       <InfiniteScroll onInfiniteScroll={handleLoadMore} isLoading={isLoading}>
         {transcriptions.map((transcript, index) => (
           <div
-            key={transcript.id}
+            key={transcript.startSeconds}
             className={`flex gap-4 ${!canSelect ? "pointer-events-none select-none" : ""}`}
           >
             <div className="text-neutral-500">
