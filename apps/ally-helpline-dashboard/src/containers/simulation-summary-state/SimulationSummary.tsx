@@ -53,8 +53,7 @@ export const SimulationSummary: FC<SimulationSummaryProps> = ({
             setRetryMaxReached(true);
             if (data?.details?.summary?.errorMessage?.length > 0) {
               toast.error(data?.details?.summary?.errorMessage);
-            }
-            if (!data?.details?.summary?.feedback) {
+            } else if (!data?.details?.summary?.feedback) {
               toast.error("Summary generation in progress. Please try again later.");
             }
           }
