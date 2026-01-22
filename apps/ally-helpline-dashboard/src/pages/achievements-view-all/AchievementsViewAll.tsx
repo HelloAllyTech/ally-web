@@ -2,9 +2,10 @@ import { FC, useState } from "react";
 
 import { useNavigate } from "react-router-dom";
 
+import { FEATURE_FLAGS_MAP } from "@ally-ui-mono/ui-shared/featureFlag";
 import { useGetAvailableBadgesQuery } from "@api";
-import { ArrowLeft } from "@assets";
-import { AchievementItem, ToggleButtonGroup } from "@components";
+import { ArrowLeft, NoResults } from "@assets";
+import { AchievementItem, FallbackUI, ToggleButtonGroup } from "@components";
 import { AchievementItemData, BadgeCategory, LockedStatus } from "@types";
 
 // Badge type display labels
@@ -36,7 +37,12 @@ export const AchievementsViewAll: FC = () => {
   const navigate = useNavigate();
   const [activeFilter, setActiveFilter] = useState("ALL");
 
-  const { data: badgesData = [], isLoading } = useGetAvailableBadgesQuery();
+  const {
+    data: badgesData = [],
+    isLoading: isBadgesLoading,
+    isError: isBadgesError,
+    refetch: refetchBadges,
+  } = useGetAvailableBadgesQuery();
 
   // Filter badges based on active filter and group by category
   const getFilteredBadgesByCategory = (): Array<{
@@ -46,7 +52,7 @@ export const AchievementsViewAll: FC = () => {
     return badgesData
       .map(categoryData => {
         const filteredBadges =
-          activeFilter === "UNLOCKED"
+          activeFilter === LockedStatus.UNLOCKED
             ? categoryData.data.filter(badge => badge.lockStatus === LockedStatus.UNLOCKED)
             : categoryData.data;
 
@@ -59,6 +65,28 @@ export const AchievementsViewAll: FC = () => {
   };
 
   const groupedBadges = getFilteredBadgesByCategory();
+
+  if (!FEATURE_FLAGS_MAP.LEADERBOARD_FLAG) {
+    return (
+      <div className="flex items-center justify-center h-full">Achievements is not enabled</div>
+    );
+  }
+
+  if (isBadgesError) {
+    return (
+      <div className="flex h-[90vh] items-center justify-center">
+        <FallbackUI
+          icon={<NoResults />}
+          mainMessage="Unable to Load Achievements"
+          description="Something went wrong while loading achievements. Please try again."
+          button={{
+            text: "Retry",
+            onClick: () => refetchBadges(),
+          }}
+        />
+      </div>
+    );
+  }
 
   const renderHeader = () => {
     return (
@@ -99,7 +127,7 @@ export const AchievementsViewAll: FC = () => {
   };
 
   const renderBadgeSection = (badgesList: AchievementItemData[]) => {
-    if (isLoading) {
+    if (isBadgesLoading) {
       return (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
           {Array.from({ length: 2 }).map((_, index) => (

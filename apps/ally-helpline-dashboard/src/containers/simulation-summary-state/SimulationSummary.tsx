@@ -51,8 +51,11 @@ export const SimulationSummary: FC<SimulationSummaryProps> = ({
         if (summaryPollCount >= maxPolls) {
           if (isMounted) {
             setRetryMaxReached(true);
-            if (!data?.details?.summary?.feedback)
-              toast.error("Something went wrong. Please try again later.");
+            if (data?.details?.summary?.errorMessage?.length > 0) {
+              toast.error(data?.details?.summary?.errorMessage);
+            } else if (!data?.details?.summary?.feedback) {
+              toast.error("Summary generation in progress. Please try again later.");
+            }
           }
           return;
         }

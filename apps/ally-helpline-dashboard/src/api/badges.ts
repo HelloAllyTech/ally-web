@@ -1,9 +1,17 @@
-import { ApiEndpoints } from "@constants";
+import { ApiEndpoints, HttpMethod } from "@constants";
 import { AchievementItemDataResponse, GetMyBadgesResponse, ViewedStatus } from "@types";
 
 import { baseAPI } from "./baseAPI";
 
 export interface GetMyBadgesParams {
+  viewedStatus?: ViewedStatus;
+}
+
+export interface GetBadgesCountResponse {
+  count: number;
+}
+
+export interface GetBadgesCountParams {
   viewedStatus?: ViewedStatus;
 }
 
@@ -30,7 +38,35 @@ const badgesAPI = baseAPI.injectEndpoints({
         params,
       }),
     }),
+
+    /**
+     * Retrieves the count of badges for the current user.
+     * @returns {Promise<number>} The count of badges
+     */
+    getBadgesCount: builder.query<GetBadgesCountResponse, GetBadgesCountParams>({
+      query: params => ({
+        url: ApiEndpoints.BADGES.GET_BADGES_COUNT,
+        params,
+      }),
+    }),
+
+    /**
+     * Updates the view status of a badge for the current user.
+     * @param {string} badgeId - The ID of the badge to update
+     * @returns {Promise<void>} The updated badge
+     */
+    updateBadgeViewStatus: builder.mutation<void, string>({
+      query: badgeId => ({
+        url: ApiEndpoints.BADGES.UPDATE_BADGE_VIEW_STATUS(badgeId),
+        method: HttpMethod.PATCH,
+      }),
+    }),
   }),
 });
 
-export const { useGetAvailableBadgesQuery, useGetMyBadgesQuery } = badgesAPI;
+export const {
+  useGetAvailableBadgesQuery,
+  useGetMyBadgesQuery,
+  useGetBadgesCountQuery,
+  useUpdateBadgeViewStatusMutation,
+} = badgesAPI;

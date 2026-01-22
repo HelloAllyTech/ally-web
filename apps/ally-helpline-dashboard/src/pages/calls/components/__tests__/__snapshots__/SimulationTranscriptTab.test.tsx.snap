@@ -61,28 +61,14 @@ exports[`SimulationTranscriptTab > should match snapshot when rendered 1`] = `
       style="opacity: 1;"
     >
       <div
-        class="flex flex-col gap-2 rounded-full border-[0.5px] p-2 w-fit shadow-[2.13px_2.84px_7.81px_0px_#A09E9E1A]"
+        data-testid="toggle-component"
       >
-        <div
-          class="flex gap-2 rounded-full border-[0.5px] bg-[#F3F3F3] relative"
-        >
-          <div
-            class="transition-all duration-200 absolute top-0 w-1/2 h-full rounded-full bg-[#FFFFFF]"
-            style="left: 0px; box-shadow: 3px 0px 9px 0px #00000012;"
-          />
-          <div
-            class="rounded-full py-2 px-4 cursor-pointer z-10 transition-all duration-200 font-primary"
-            style="color: rgb(0, 0, 0);"
-          >
-            Keep it private
-          </div>
-          <div
-            class="rounded-full py-2 px-4 cursor-pointer z-10 transition-all duration-200 font-primary"
-            style="color: rgba(0, 0, 0, 0.376);"
-          >
-            Share for review
-          </div>
-        </div>
+        <button>
+          Keep it private
+        </button>
+        <button>
+          Share for review
+        </button>
       </div>
     </div>
   </div>

@@ -7,15 +7,17 @@ import { useNavigate, useParams } from "react-router-dom";
 import { CustomImage } from "@ally-ui-mono/ui-shared/index";
 import {
   useCreateCommentMutation,
+  useAddReactionMutation,
   useGetReviewByIdQuery,
   useGetReviewDetailsWithMessagesQuery,
 } from "@api";
 import { AccountCircle, ChatBubble, LeftArrow, Smiley } from "@assets";
+import ReactionsModal from "@components/reaction-modal/ReactionModal";
 import ReviewCommentsSidepanel from "@components/review-comments-sidepanel/ReviewCommentsSidepanel";
 import Transcription from "@components/transcription";
 import { PLATFORM_EMOJIS } from "@constants";
 import { RootState } from "@store";
-import { SimulationTranscriptMessage } from "@types";
+import { ReactionsType, SimulationTranscriptMessage } from "@types";
 import { getFormattedDateTime, getFormattedTimeFromDuration } from "@utils";
 
 import { HEADING } from "./dummy";
@@ -35,6 +37,7 @@ export const ReviewDetails = () => {
   const [selectedEndIndex, setSelectedEndIndex] = useState<number>(0);
   const [selectedThreadId, setSelectedThreadId] = useState<number>(null);
   const [transcriptList, setTranscriptList] = useState<SimulationTranscriptMessage[]>([]);
+  const [showReactionsModal, setShowReactionsModal] = useState(false);
   const { data: reviewDetails, isLoading: isGetReviewDetailsLoading } = useGetReviewByIdQuery(
     reviewId || "",
   );
@@ -48,6 +51,7 @@ export const ReviewDetails = () => {
       limit: TRANSCRIPT_PAGE_SIZE,
       sortBy: "startSeconds",
     });
+  const [addReactions] = useAddReactionMutation();
 
   useEffect(() => {
     setTranscriptList([]);
@@ -100,8 +104,22 @@ export const ReviewDetails = () => {
   const handleEmojiClick = (emoji: string) => {
     if (selectedEmoji === emoji) {
       setSelectedEmoji("");
+      addReactions({
+        id: reviewId,
+        reaction: {
+          reaction: emoji,
+          action: ReactionsType.REMOVE,
+        },
+      });
     } else {
       setSelectedEmoji(emoji);
+      addReactions({
+        id: reviewId,
+        reaction: {
+          reaction: emoji,
+          action: ReactionsType.ADD,
+        },
+      });
     }
     setShowEmojiPicker(false);
   };
@@ -283,12 +301,21 @@ export const ReviewDetails = () => {
                 </div>
               ))}
             </div>
-            <div className="text-typography-900 text-[12px] font-primary whitespace-nowrap">
+            <button
+              onClick={() => setShowReactionsModal(true)}
+              className="text-typography-900 text-[12px] font-primary whitespace-nowrap"
+            >
               {getTotalReactions()} reactions
-            </div>
+            </button>
           </div>
         </div>
       </div>
+
+      <ReactionsModal
+        isOpen={showReactionsModal}
+        onClose={() => setShowReactionsModal(false)}
+        reviewId={reviewId || ""}
+      />
     </div>
   );
 };
