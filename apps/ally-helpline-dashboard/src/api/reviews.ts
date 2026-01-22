@@ -1,5 +1,5 @@
 import { ApiEndpoints, HttpMethod, TAG_TYPES } from "@constants";
-import { GetReviewsInput, GetReviewsResponse } from "@types";
+import { GetReviewsInput, GetReviewsResponse, GetReviewThreadsResponse } from "@types";
 
 import { baseAPI } from "./baseAPI";
 
@@ -15,6 +15,7 @@ const reviewsAPI = baseAPI.injectEndpoints({
         url: ApiEndpoints.REVIEWS.GET_REVIEWS,
         params,
       }),
+      providesTags: [TAG_TYPES.REVIEW],
     }),
     /**
      * Retrieves a review by its ID.
@@ -56,7 +57,7 @@ const reviewsAPI = baseAPI.injectEndpoints({
         method: HttpMethod.POST,
         body: { scenarioSessionId },
       }),
-      invalidatesTags: [TAG_TYPES.SIMULATION_SUMMARY],
+      invalidatesTags: [TAG_TYPES.SIMULATION_SUMMARY, TAG_TYPES.REVIEW],
     }),
     /**
      * Updates a review.
@@ -86,6 +87,13 @@ const reviewsAPI = baseAPI.injectEndpoints({
       }),
       invalidatesTags: [TAG_TYPES.REVIEW],
     }),
+    getReviewThreads: builder.query<GetReviewThreadsResponse, { id: string }>({
+      query: ({ id }) => ({
+        url: ApiEndpoints.REVIEWS.GET_REVIEW_THREADS(id),
+        method: HttpMethod.GET,
+      }),
+      providesTags: [TAG_TYPES.REVIEW],
+    }),
   }),
 });
 
@@ -96,4 +104,5 @@ export const {
   useCreateReviewMutation,
   useUpdateReviewMutation,
   useCreateCommentMutation,
+  useGetReviewThreadsQuery,
 } = reviewsAPI;

@@ -1,0 +1,748 @@
+/**
+ * Comprehensive Unit Tests for AchievementsViewAll Component
+ *
+ * Test Coverage:
+ * - Component rendering with different states
+ * - Feature flag handling
+ * - Loading states and skeleton rendering
+ * - Error handling and retry functionality
+ * - Badge filtering (ALL vs UNLOCKED)
+ * - Navigation functionality
+ * - Badge categories and grouping
+ * - Empty states
+ */
+
+import { render, screen, fireEvent } from "@testing-library/react";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+
+// Use vi.hoisted to ensure mocks are available when vi.mock factory runs
+const { mockUseGetAvailableBadgesQuery, mockNavigate, mockFeatureFlags } = vi.hoisted(() => ({
+  mockUseGetAvailableBadgesQuery: vi.fn(),
+  mockNavigate: vi.fn(),
+  mockFeatureFlags: {
+    LEADERBOARD_FLAG: true,
+  },
+}));
+
+// Mock API
+vi.mock("@api", () => ({
+  useGetAvailableBadgesQuery: () => mockUseGetAvailableBadgesQuery(),
+}));
+
+// Mock feature flags
+vi.mock("@ally-ui-mono/ui-shared/featureFlag", () => ({
+  FEATURE_FLAGS_MAP: mockFeatureFlags,
+}));
+
+// Mock react-router-dom
+vi.mock("react-router-dom", async () => {
+  const actual = await vi.importActual("react-router-dom");
+  return {
+    ...actual,
+    useNavigate: () => mockNavigate,
+  };
+});
+
+// Mock assets
+vi.mock("@assets", () => ({
+  ArrowLeft: ({ className }: { className?: string }) => (
+    <svg data-testid="arrow-left-icon" className={className} />
+  ),
+  NoResults: () => <div data-testid="no-results-icon">No Results</div>,
+}));
+
+// Mock components
+vi.mock("@components", () => ({
+  AchievementItem: ({ achievement, imageSize }: any) => (
+    <div data-testid={`achievement-item-${achievement.id}`} data-image-size={imageSize}>
+      <span data-testid="achievement-title">{achievement.title}</span>
+      <span data-testid="achievement-status">{achievement.lockStatus}</span>
+    </div>
+  ),
+  FallbackUI: ({ icon, mainMessage, description, button }: any) => (
+    <div data-testid="fallback-ui">
+      {icon}
+      <h2 data-testid="fallback-main-message">{mainMessage}</h2>
+      <p data-testid="fallback-description">{description}</p>
+      {button && (
+        <button data-testid="fallback-retry-button" onClick={button.onClick}>
+          {button.text}
+        </button>
+      )}
+    </div>
+  ),
+  ToggleButtonGroup: ({ value, onValueChange, items, className }: any) => (
+    <div data-testid="toggle-button-group" className={className}>
+      {items.map((item: any) => (
+        <button
+          key={item.value}
+          data-testid={`filter-${item.value}`}
+          onClick={() => onValueChange(item.value)}
+          className={value === item.value ? "active" : ""}
+        >
+          {item.label}
+        </button>
+      ))}
+    </div>
+  ),
+}));
+
+// Mock types
+vi.mock("@types", () => ({
+  BadgeCategory: {
+    SIMULATION_MINUTES: "SIMULATION_MINUTES",
+    ACTIVE_DAY_STREAK: "ACTIVE_DAY_STREAK",
+    COMMENTS_REACTIONS_GIVEN: "COMMENTS_REACTIONS_GIVEN",
+    COMMENTS_REACTIONS_RECEIVED: "COMMENTS_REACTIONS_RECEIVED",
+  },
+  LockedStatus: {
+    UNLOCKED: "UNLOCKED",
+    LOCKED: "LOCKED",
+  },
+}));
+
+import { BrowserRouter } from "react-router-dom";
+
+import { AchievementsViewAll } from "../AchievementsViewAll";
+
+// --------------------- Mock Data --------------------- //
+
+const mockBadgesData = [
+  {
+    categories: "SIMULATION_MINUTES",
+    data: [
+      {
+        id: "badge-1",
+        title: "First Steps",
+        description: "Complete 5 minutes of simulation",
+        lockStatus: "UNLOCKED",
+        imageUrl: "https://example.com/badge1.png",
+      },
+      {
+        id: "badge-2",
+        title: "Getting Started",
+        description: "Complete 30 minutes of simulation",
+        lockStatus: "LOCKED",
+        imageUrl: "https://example.com/badge2.png",
+      },
+    ],
+  },
+  {
+    categories: "ACTIVE_DAY_STREAK",
+    data: [
+      {
+        id: "badge-3",
+        title: "Consistent Learner",
+        description: "7-day streak",
+        lockStatus: "UNLOCKED",
+        imageUrl: "https://example.com/badge3.png",
+      },
+    ],
+  },
+  {
+    categories: "COMMENTS_REACTIONS_GIVEN",
+    data: [
+      {
+        id: "badge-4",
+        title: "Community Member",
+        description: "Give 10 reactions",
+        lockStatus: "LOCKED",
+        imageUrl: "https://example.com/badge4.png",
+      },
+    ],
+  },
+];
+
+const defaultQueryReturn = {
+  data: mockBadgesData,
+  isLoading: false,
+  isError: false,
+  refetch: vi.fn(),
+};
+
+// Test wrapper component
+const TestWrapper = ({ children }: { children: React.ReactNode }) => (
+  <BrowserRouter>{children}</BrowserRouter>
+);
+
+// --------------------- Tests --------------------- //
+
+describe("AchievementsViewAll Component", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockUseGetAvailableBadgesQuery.mockReturnValue(defaultQueryReturn);
+    mockFeatureFlags.LEADERBOARD_FLAG = true;
+  });
+
+  afterEach(() => {
+    vi.resetAllMocks();
+  });
+
+  /**
+   * TEST GROUP: Basic Rendering
+   */
+  describe("Basic Rendering", () => {
+    it("renders the component successfully", () => {
+      const { container } = render(
+        <TestWrapper>
+          <AchievementsViewAll />
+        </TestWrapper>,
+      );
+      expect(container).not.toBeNull();
+    });
+
+    it("renders the page title", () => {
+      render(
+        <TestWrapper>
+          <AchievementsViewAll />
+        </TestWrapper>,
+      );
+      expect(screen.getByTestId("achievements-view-all-title")).toBeInTheDocument();
+      expect(screen.getByText("Achievements")).toBeInTheDocument();
+    });
+
+    it("renders the Badges subtitle", () => {
+      render(
+        <TestWrapper>
+          <AchievementsViewAll />
+        </TestWrapper>,
+      );
+      expect(screen.getByText("Badges")).toBeInTheDocument();
+    });
+
+    it("renders the back button", () => {
+      render(
+        <TestWrapper>
+          <AchievementsViewAll />
+        </TestWrapper>,
+      );
+      expect(screen.getByLabelText("Go back")).toBeInTheDocument();
+      expect(screen.getByTestId("arrow-left-icon")).toBeInTheDocument();
+    });
+
+    it("renders the toggle button group", () => {
+      render(
+        <TestWrapper>
+          <AchievementsViewAll />
+        </TestWrapper>,
+      );
+      expect(screen.getByTestId("toggle-button-group")).toBeInTheDocument();
+      expect(screen.getByTestId("filter-ALL")).toBeInTheDocument();
+      expect(screen.getByTestId("filter-UNLOCKED")).toBeInTheDocument();
+    });
+
+    it("renders the page container with correct test id", () => {
+      render(
+        <TestWrapper>
+          <AchievementsViewAll />
+        </TestWrapper>,
+      );
+      expect(screen.getByTestId("achievements-view-all-page")).toBeInTheDocument();
+    });
+  });
+
+  /**
+   * TEST GROUP: Feature Flag
+   */
+  describe("Feature Flag", () => {
+    it("shows disabled message when LEADERBOARD_FLAG is false", () => {
+      mockFeatureFlags.LEADERBOARD_FLAG = false;
+
+      render(
+        <TestWrapper>
+          <AchievementsViewAll />
+        </TestWrapper>,
+      );
+
+      expect(screen.getByText("Achievements is not enabled")).toBeInTheDocument();
+    });
+
+    it("does not show badges when feature flag is disabled", () => {
+      mockFeatureFlags.LEADERBOARD_FLAG = false;
+
+      render(
+        <TestWrapper>
+          <AchievementsViewAll />
+        </TestWrapper>,
+      );
+
+      expect(screen.queryByTestId("achievement-item-badge-1")).not.toBeInTheDocument();
+    });
+  });
+
+  /**
+   * TEST GROUP: Loading State
+   */
+  describe("Loading State", () => {
+    it("shows skeleton loaders when loading", () => {
+      // Need to provide category data so the component iterates and shows skeletons
+      mockUseGetAvailableBadgesQuery.mockReturnValue({
+        data: [
+          {
+            categories: "SIMULATION_MINUTES",
+            data: [{ id: "badge-1", name: "Test Badge", lockStatus: "UNLOCKED" }],
+          },
+        ],
+        isLoading: true,
+        isError: false,
+        refetch: vi.fn(),
+      });
+
+      render(
+        <TestWrapper>
+          <AchievementsViewAll />
+        </TestWrapper>,
+      );
+
+      const skeletons = document.querySelectorAll(".animate-pulse");
+      expect(skeletons.length).toBeGreaterThan(0);
+    });
+
+    it("does not show achievement items when loading", () => {
+      mockUseGetAvailableBadgesQuery.mockReturnValue({
+        data: [
+          {
+            categories: "SIMULATION_MINUTES",
+            data: [{ id: "badge-1", name: "Test Badge", lockStatus: "UNLOCKED" }],
+          },
+        ],
+        isLoading: true,
+        isError: false,
+        refetch: vi.fn(),
+      });
+
+      render(
+        <TestWrapper>
+          <AchievementsViewAll />
+        </TestWrapper>,
+      );
+
+      expect(screen.queryByTestId("achievement-item-badge-1")).not.toBeInTheDocument();
+    });
+  });
+
+  /**
+   * TEST GROUP: Error State
+   */
+  describe("Error State", () => {
+    it("shows fallback UI when there is an error", () => {
+      mockUseGetAvailableBadgesQuery.mockReturnValue({
+        data: [],
+        isLoading: false,
+        isError: true,
+        refetch: vi.fn(),
+      });
+
+      render(
+        <TestWrapper>
+          <AchievementsViewAll />
+        </TestWrapper>,
+      );
+
+      expect(screen.getByTestId("fallback-ui")).toBeInTheDocument();
+    });
+
+    it("shows correct error message", () => {
+      mockUseGetAvailableBadgesQuery.mockReturnValue({
+        data: [],
+        isLoading: false,
+        isError: true,
+        refetch: vi.fn(),
+      });
+
+      render(
+        <TestWrapper>
+          <AchievementsViewAll />
+        </TestWrapper>,
+      );
+
+      expect(screen.getByTestId("fallback-main-message")).toHaveTextContent(
+        "Unable to Load Achievements",
+      );
+      expect(screen.getByTestId("fallback-description")).toHaveTextContent(
+        "Something went wrong while loading achievements. Please try again.",
+      );
+    });
+
+    it("shows retry button in error state", () => {
+      mockUseGetAvailableBadgesQuery.mockReturnValue({
+        data: [],
+        isLoading: false,
+        isError: true,
+        refetch: vi.fn(),
+      });
+
+      render(
+        <TestWrapper>
+          <AchievementsViewAll />
+        </TestWrapper>,
+      );
+
+      expect(screen.getByTestId("fallback-retry-button")).toBeInTheDocument();
+      expect(screen.getByText("Retry")).toBeInTheDocument();
+    });
+
+    it("calls refetch when retry button is clicked", () => {
+      const mockRefetch = vi.fn();
+      mockUseGetAvailableBadgesQuery.mockReturnValue({
+        data: [],
+        isLoading: false,
+        isError: true,
+        refetch: mockRefetch,
+      });
+
+      render(
+        <TestWrapper>
+          <AchievementsViewAll />
+        </TestWrapper>,
+      );
+
+      fireEvent.click(screen.getByTestId("fallback-retry-button"));
+      expect(mockRefetch).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  /**
+   * TEST GROUP: Badges Display
+   */
+  describe("Badges Display", () => {
+    it("renders all badges when filter is ALL", () => {
+      render(
+        <TestWrapper>
+          <AchievementsViewAll />
+        </TestWrapper>,
+      );
+
+      expect(screen.getByTestId("achievement-item-badge-1")).toBeInTheDocument();
+      expect(screen.getByTestId("achievement-item-badge-2")).toBeInTheDocument();
+      expect(screen.getByTestId("achievement-item-badge-3")).toBeInTheDocument();
+      expect(screen.getByTestId("achievement-item-badge-4")).toBeInTheDocument();
+    });
+
+    it("renders badge category labels", () => {
+      render(
+        <TestWrapper>
+          <AchievementsViewAll />
+        </TestWrapper>,
+      );
+
+      expect(screen.getByText("Simulation Minutes")).toBeInTheDocument();
+      expect(screen.getByText("Active Day Streak")).toBeInTheDocument();
+      expect(screen.getByText("Comments & Reactions Given")).toBeInTheDocument();
+    });
+
+    it("passes correct imageSize to AchievementItem", () => {
+      render(
+        <TestWrapper>
+          <AchievementsViewAll />
+        </TestWrapper>,
+      );
+
+      const achievementItem = screen.getByTestId("achievement-item-badge-1");
+      expect(achievementItem).toHaveAttribute("data-image-size", "60");
+    });
+  });
+
+  /**
+   * TEST GROUP: Filter Functionality
+   */
+  describe("Filter Functionality", () => {
+    it("defaults to ALL filter", () => {
+      render(
+        <TestWrapper>
+          <AchievementsViewAll />
+        </TestWrapper>,
+      );
+
+      const allButton = screen.getByTestId("filter-ALL");
+      expect(allButton).toHaveClass("active");
+    });
+
+    it("shows only unlocked badges when UNLOCKED filter is selected", () => {
+      render(
+        <TestWrapper>
+          <AchievementsViewAll />
+        </TestWrapper>,
+      );
+
+      // Click UNLOCKED filter
+      fireEvent.click(screen.getByTestId("filter-UNLOCKED"));
+
+      // Should show unlocked badges
+      expect(screen.getByTestId("achievement-item-badge-1")).toBeInTheDocument();
+      expect(screen.getByTestId("achievement-item-badge-3")).toBeInTheDocument();
+
+      // Should NOT show locked badges
+      expect(screen.queryByTestId("achievement-item-badge-2")).not.toBeInTheDocument();
+      expect(screen.queryByTestId("achievement-item-badge-4")).not.toBeInTheDocument();
+    });
+
+    it("hides category section when no badges match filter", () => {
+      render(
+        <TestWrapper>
+          <AchievementsViewAll />
+        </TestWrapper>,
+      );
+
+      // Click UNLOCKED filter
+      fireEvent.click(screen.getByTestId("filter-UNLOCKED"));
+
+      // Comments & Reactions Given category has no unlocked badges, so it should not be visible
+      expect(screen.queryByText("Comments & Reactions Given")).not.toBeInTheDocument();
+    });
+
+    it("changes active state when filter is changed", () => {
+      render(
+        <TestWrapper>
+          <AchievementsViewAll />
+        </TestWrapper>,
+      );
+
+      const unlockedButton = screen.getByTestId("filter-UNLOCKED");
+      fireEvent.click(unlockedButton);
+
+      expect(unlockedButton).toHaveClass("active");
+    });
+
+    it("shows all badges again when switching back to ALL filter", () => {
+      render(
+        <TestWrapper>
+          <AchievementsViewAll />
+        </TestWrapper>,
+      );
+
+      // Switch to UNLOCKED
+      fireEvent.click(screen.getByTestId("filter-UNLOCKED"));
+
+      // Switch back to ALL
+      fireEvent.click(screen.getByTestId("filter-ALL"));
+
+      // All badges should be visible again
+      expect(screen.getByTestId("achievement-item-badge-1")).toBeInTheDocument();
+      expect(screen.getByTestId("achievement-item-badge-2")).toBeInTheDocument();
+      expect(screen.getByTestId("achievement-item-badge-3")).toBeInTheDocument();
+      expect(screen.getByTestId("achievement-item-badge-4")).toBeInTheDocument();
+    });
+  });
+
+  /**
+   * TEST GROUP: Navigation
+   */
+  describe("Navigation", () => {
+    it("navigates back when back button is clicked", () => {
+      render(
+        <TestWrapper>
+          <AchievementsViewAll />
+        </TestWrapper>,
+      );
+
+      const backButton = screen.getByLabelText("Go back");
+      fireEvent.click(backButton);
+
+      expect(mockNavigate).toHaveBeenCalledWith(-1);
+    });
+  });
+
+  /**
+   * TEST GROUP: Empty State
+   */
+  describe("Empty State", () => {
+    it("does not render category sections when no badges available", () => {
+      mockUseGetAvailableBadgesQuery.mockReturnValue({
+        data: [],
+        isLoading: false,
+        isError: false,
+        refetch: vi.fn(),
+      });
+
+      render(
+        <TestWrapper>
+          <AchievementsViewAll />
+        </TestWrapper>,
+      );
+
+      expect(screen.queryByText("Simulation Minutes")).not.toBeInTheDocument();
+      expect(screen.queryByText("Active Day Streak")).not.toBeInTheDocument();
+    });
+
+    it("renders header even when no badges", () => {
+      mockUseGetAvailableBadgesQuery.mockReturnValue({
+        data: [],
+        isLoading: false,
+        isError: false,
+        refetch: vi.fn(),
+      });
+
+      render(
+        <TestWrapper>
+          <AchievementsViewAll />
+        </TestWrapper>,
+      );
+
+      expect(screen.getByText("Achievements")).toBeInTheDocument();
+      expect(screen.getByText("Badges")).toBeInTheDocument();
+    });
+  });
+
+  /**
+   * TEST GROUP: Badge Categories
+   */
+  describe("Badge Categories", () => {
+    it("groups badges by category correctly", () => {
+      render(
+        <TestWrapper>
+          <AchievementsViewAll />
+        </TestWrapper>,
+      );
+
+      // Check that each category section exists
+      const simulationMinutesSection = screen.getByText("Simulation Minutes");
+      const activeDayStreakSection = screen.getByText("Active Day Streak");
+      const commentsReactionsGivenSection = screen.getByText("Comments & Reactions Given");
+
+      expect(simulationMinutesSection).toBeInTheDocument();
+      expect(activeDayStreakSection).toBeInTheDocument();
+      expect(commentsReactionsGivenSection).toBeInTheDocument();
+    });
+
+    it("does not render empty category when all badges in category are filtered out", () => {
+      mockUseGetAvailableBadgesQuery.mockReturnValue({
+        data: [
+          {
+            categories: "SIMULATION_MINUTES",
+            data: [
+              {
+                id: "badge-1",
+                title: "Locked Badge",
+                lockStatus: "LOCKED",
+              },
+            ],
+          },
+        ],
+        isLoading: false,
+        isError: false,
+        refetch: vi.fn(),
+      });
+
+      render(
+        <TestWrapper>
+          <AchievementsViewAll />
+        </TestWrapper>,
+      );
+
+      // Select UNLOCKED filter
+      fireEvent.click(screen.getByTestId("filter-UNLOCKED"));
+
+      // Category should not be visible since all badges are locked
+      expect(screen.queryByText("Simulation Minutes")).not.toBeInTheDocument();
+    });
+  });
+
+  /**
+   * TEST GROUP: Grid Layout
+   */
+  describe("Grid Layout", () => {
+    it("applies responsive grid classes to badge sections", () => {
+      render(
+        <TestWrapper>
+          <AchievementsViewAll />
+        </TestWrapper>,
+      );
+
+      const grids = document.querySelectorAll(".grid");
+      expect(grids.length).toBeGreaterThan(0);
+    });
+  });
+
+  /**
+   * TEST GROUP: Edge Cases
+   */
+  describe("Edge Cases", () => {
+    it("handles undefined badges data gracefully", () => {
+      mockUseGetAvailableBadgesQuery.mockReturnValue({
+        data: undefined,
+        isLoading: false,
+        isError: false,
+        refetch: vi.fn(),
+      });
+
+      expect(() =>
+        render(
+          <TestWrapper>
+            <AchievementsViewAll />
+          </TestWrapper>,
+        ),
+      ).not.toThrow();
+    });
+
+    it("handles badges with missing properties", () => {
+      mockUseGetAvailableBadgesQuery.mockReturnValue({
+        data: [
+          {
+            categories: "SIMULATION_MINUTES",
+            data: [
+              {
+                id: "badge-incomplete",
+                title: undefined,
+                lockStatus: undefined,
+              },
+            ],
+          },
+        ],
+        isLoading: false,
+        isError: false,
+        refetch: vi.fn(),
+      });
+
+      expect(() =>
+        render(
+          <TestWrapper>
+            <AchievementsViewAll />
+          </TestWrapper>,
+        ),
+      ).not.toThrow();
+    });
+
+    it("renders consistently on multiple renders", () => {
+      const { container: container1 } = render(
+        <TestWrapper>
+          <AchievementsViewAll />
+        </TestWrapper>,
+      );
+      const { container: container2 } = render(
+        <TestWrapper>
+          <AchievementsViewAll />
+        </TestWrapper>,
+      );
+
+      expect(container1.innerHTML).toBe(container2.innerHTML);
+    });
+  });
+
+  /**
+   * TEST GROUP: Accessibility
+   */
+  describe("Accessibility", () => {
+    it("has accessible back button with aria-label", () => {
+      render(
+        <TestWrapper>
+          <AchievementsViewAll />
+        </TestWrapper>,
+      );
+
+      const backButton = screen.getByRole("button", { name: "Go back" });
+      expect(backButton).toBeInTheDocument();
+    });
+
+    it("has proper heading structure", () => {
+      render(
+        <TestWrapper>
+          <AchievementsViewAll />
+        </TestWrapper>,
+      );
+
+      const heading = screen.getByRole("heading", { level: 1 });
+      expect(heading).toHaveTextContent("Achievements");
+    });
+  });
+});
