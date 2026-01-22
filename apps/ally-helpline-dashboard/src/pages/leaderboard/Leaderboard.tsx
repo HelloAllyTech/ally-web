@@ -26,11 +26,12 @@ const mapUserBadgeToAchievementItem = (badge: UserBadge): AchievementItemData =>
 });
 
 const PATHS_PAGE_SIZE = 30;
+const INITIAL_WINDOW = "LAST_WEEK";
 
 export const Leaderboard = () => {
   const navigate = useNavigate();
   const [pathsOffset, setPathsOffset] = useState(0);
-  const [window, setWindow] = useState("LAST_WEEK");
+  const [window, setWindow] = useState(INITIAL_WINDOW);
   const [leaderboardData, setLeaderboardData] = useState<LeaderboardUser[]>([]);
 
   const pathParams = {
@@ -41,7 +42,7 @@ export const Leaderboard = () => {
     order: "DESC" as const,
   };
   const { data: leaderBoardList, isFetching } = useGetLeaderBoardListQuery(pathParams);
-  const { data: currentUser } = useGetCurrentUserQuery({ window: window });
+  const { data: currentUser } = useGetCurrentUserQuery({ window: window.toUpperCase() });
 
   useEffect(() => {
     if (!leaderBoardList?.data?.length) return;
@@ -109,6 +110,8 @@ export const Leaderboard = () => {
           onLoadMore={loadMore}
           hasMore={hasMore}
           isLoading={isFetching}
+          selectedTimeFilter={window}
+          // data={leaderboardData}
         />
 
         {/* achievements card */}
