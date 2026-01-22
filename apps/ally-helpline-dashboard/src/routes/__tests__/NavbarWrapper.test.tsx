@@ -14,6 +14,13 @@ import NavbarWrapper from "../components/NavbarWrapper";
 const mockUseUser = vi.fn();
 vi.mock("@hooks", () => ({
   useUser: () => mockUseUser(),
+  useAchievementBadgeModal: () => ({
+    currentBadge: null,
+    closeModal: vi.fn(),
+    resetModal: vi.fn(),
+    BadgeModal: null,
+    isLoading: false,
+  }),
 }));
 
 // Mock the NavSideBar component
