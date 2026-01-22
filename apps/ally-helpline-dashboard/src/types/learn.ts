@@ -183,6 +183,7 @@ export interface SimulationSummary {
         improvements: string[];
         positives: string[];
       };
+      errorMessage?: string;
     };
   };
   events: KeyEvent[];
