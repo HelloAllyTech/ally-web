@@ -9,8 +9,9 @@ import Input from "../input";
 interface CommentThreadProps {
   comments: CommentItem[];
   onCommentAddition: (comment: string) => void;
+  onReplyComment: (comment: string, parentCommentId: number | null) => void;
 }
-const CommentThread = ({ comments, onCommentAddition }: CommentThreadProps) => {
+const CommentThread = ({ comments, onCommentAddition, onReplyComment }: CommentThreadProps) => {
   const [comment, setComment] = useState("");
   const handleCommentAddition = () => {
     onCommentAddition(comment);
@@ -38,7 +39,13 @@ const CommentThread = ({ comments, onCommentAddition }: CommentThreadProps) => {
         </div>
         <div className="flex flex-col gap-2 overflow-y-auto max-h-80 -mr-4 pr-4">
           {comments.map(comment => (
-            <CommentCard key={comment.id} comment={comment} showLike showReply />
+            <CommentCard
+              key={comment.id}
+              comment={comment}
+              showLike
+              showReply
+              onReply={text => onReplyComment(text, comment.id)}
+            />
           ))}
         </div>
       </div>

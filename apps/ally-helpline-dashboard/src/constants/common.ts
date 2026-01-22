@@ -123,6 +123,7 @@ export const TAG_TYPES = {
   SIMULATION_CREDITS: "SimulationCredits",
   USER: "User",
   REVIEW: "Review",
+  REVIEWS: "Reviews",
 };
 
 export const SORT_ORDER = {

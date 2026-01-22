@@ -15,6 +15,7 @@ const reviewsAPI = baseAPI.injectEndpoints({
         url: ApiEndpoints.REVIEWS.GET_REVIEWS,
         params,
       }),
+      providesTags: [TAG_TYPES.REVIEWS],
     }),
     /**
      * Retrieves a review by its ID.
@@ -70,7 +71,7 @@ const reviewsAPI = baseAPI.injectEndpoints({
         method: HttpMethod.PATCH,
         body: { status },
       }),
-      invalidatesTags: [TAG_TYPES.SIMULATION_SUMMARY],
+      invalidatesTags: [TAG_TYPES.SIMULATION_SUMMARY, TAG_TYPES.REVIEWS, TAG_TYPES.REVIEW],
     }),
     /**
      * Creates a new comment for a review.
@@ -84,7 +85,7 @@ const reviewsAPI = baseAPI.injectEndpoints({
         method: HttpMethod.POST,
         body,
       }),
-      invalidatesTags: [TAG_TYPES.REVIEW],
+      invalidatesTags: [TAG_TYPES.REVIEW, TAG_TYPES.REVIEWS],
     }),
   }),
 });

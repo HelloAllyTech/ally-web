@@ -9,10 +9,13 @@ interface ToggleProps {
     value: string;
   }[];
   onChange: (value: string) => void;
+  initialValue?: string;
 }
 
-const Toggle: FC<ToggleProps> = ({ label, items, onChange }) => {
-  const [selectedValue, setSelectedValueIndex] = useState(0);
+const Toggle: FC<ToggleProps> = ({ label, items, initialValue, onChange }) => {
+  const [selectedValue, setSelectedValueIndex] = useState(
+    initialValue ? items.findIndex(item => item.value === initialValue) : 0,
+  );
   const handleChange = (index: number) => {
     setSelectedValueIndex(index);
     onChange(items[index].value);

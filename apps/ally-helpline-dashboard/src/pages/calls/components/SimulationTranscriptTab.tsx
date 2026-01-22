@@ -45,24 +45,31 @@ const SimulationTranscriptTab: FC<SimulationTranscriptTabProps> = ({ sessionId, 
 
   // Reset transcript list when sessionId changes
   useEffect(() => {
+    setTranscriptList([]);
     setTranscriptOffset(0);
   }, [sessionId]);
 
   // Append new results when transcriptData changes
   useEffect(() => {
     if (transcript?.length > 0) {
-      setTranscriptList(prev => [
-        ...prev,
-        ...transcript.map(item => ({
-          id: item?.id !== null ? item?.id : item.speaker === "Client" ? user?.id : -1,
-          content: item.content,
-          senderId:
-            item?.senderId !== null ? item?.senderId : item.speaker === "Client" ? user?.id : -1,
-          startSeconds: item.startSeconds,
-        })),
-      ]);
+      const mappedTranscript = transcript.map(item => ({
+        id: item?.id !== null ? item?.id : item.speaker === "Client" ? user?.id : -1,
+        content: item.content,
+        senderId:
+          item?.senderId !== null ? item?.senderId : item.speaker === "Client" ? user?.id : -1,
+        startSeconds: item.startSeconds,
+      }));
+
+      setTranscriptList(prev => {
+        // If offset is 0, replace the list (fresh fetch)
+        if (transcriptOffset === 0) {
+          return mappedTranscript;
+        }
+        // Otherwise append for pagination
+        return [...prev, ...mappedTranscript];
+      });
     }
-  }, [transcript]);
+  }, [transcript, transcriptOffset]);
 
   const handleCreateReview = async (status: string) => {
     if (summary.reviewId) {
@@ -95,7 +102,11 @@ const SimulationTranscriptTab: FC<SimulationTranscriptTabProps> = ({ sessionId, 
             opacity: isCreateReviewLoading || isUpdateReviewLoading ? 0.5 : 1,
           }}
         >
-          <Toggle items={REVIEW_PRIVACY_OPTIONS} onChange={handleCreateReview} />
+          <Toggle
+            items={REVIEW_PRIVACY_OPTIONS}
+            initialValue={summary.reviewStatus}
+            onChange={handleCreateReview}
+          />
         </div>
       )}
     </div>
