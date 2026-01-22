@@ -53,3 +53,11 @@ export interface ReviewThread {
   comments: Comment[];
   commentCount: number;
 }
+export enum ReactionsType {
+  ADD = "ADD",
+  REMOVE = "REMOVE",
+}
+export interface ReactionInput {
+  reaction: string;
+  action: ReactionsType;
+}
