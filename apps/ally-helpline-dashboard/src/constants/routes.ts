@@ -71,7 +71,7 @@ export const navBarOptions = [
           Icon: Leaderboard,
           path: ROUTES.LEADERBOARD,
           activePages: [ROUTES.ACHIEVEMENTS_VIEW_ALL],
-          permissions: [Permissions.VIEW_LEADERBOARD],
+          //permissions: [Permissions.VIEW_LEADERBOARD],
         },
       ]
     : []),
