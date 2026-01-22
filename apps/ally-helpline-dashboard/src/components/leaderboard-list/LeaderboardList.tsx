@@ -16,7 +16,7 @@ export type LeaderboardTimeFilter = "last_week" | "last_month" | "last_year" | "
 export interface LeaderboardListProps {
   data?: LeaderboardUser[];
   currentUserId?: string;
-  selectedTimeFilter?: LeaderboardTimeFilter;
+  selectedTimeFilter?: string;
   onTimeFilterChange?: (filter: LeaderboardTimeFilter) => void;
   className?: string;
   isLoading?: boolean;
@@ -27,9 +27,9 @@ export interface LeaderboardListProps {
 }
 
 export const TIME_FILTER_OPTIONS: { label: string; value: LeaderboardTimeFilter }[] = [
-  { label: "Last week", value: "last_week" },
-  { label: "Last month", value: "last_month" },
-  { label: "Last year", value: "last_year" },
+  { label: "Last 7 days", value: "last_week" },
+  { label: "Last 28 days", value: "last_month" },
+  { label: "Last 364 days", value: "last_year" },
   { label: "All time", value: "all_time" },
 ];
 
@@ -258,7 +258,7 @@ export const LeaderboardList: FC<LeaderboardListProps> = ({
 
   const renderTabs = () => {
     return (
-      <div className="flex w-full mb-4 border border-border rounded-lg overflow-hidden w-fit">
+      <div className="flex w-full mb-4 border border-border rounded-lg overflow-hidden">
         {TIME_FILTER_OPTIONS.map(option => (
           <button
             key={option.value}

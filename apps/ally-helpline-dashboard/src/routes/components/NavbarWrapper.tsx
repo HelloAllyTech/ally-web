@@ -5,7 +5,7 @@ import { matchPath, useLocation, useNavigate } from "react-router-dom";
 
 import { NavSideBar } from "@components";
 import { excludeNavBar, navBarOptions, TabId, LOCAL_STORAGE_KEYS } from "@constants";
-import { useUser } from "@hooks";
+import { useAchievementBadgeModal, useUser } from "@hooks";
 import { isPathExcluded } from "@utils";
 
 import UploadProgressDialog from "./UploadProgressDialog";
@@ -17,6 +17,8 @@ const NavbarWrapper: FC<{ children: React.ReactNode }> = ({ children }) => {
   const navigate = useNavigate();
 
   const [isSidebarOpen, setSidebarOpen] = useState<boolean>(false);
+
+  const { BadgeModal } = useAchievementBadgeModal();
 
   useEffect(() => {
     // checkAuth only for logged in users
@@ -63,6 +65,7 @@ const NavbarWrapper: FC<{ children: React.ReactNode }> = ({ children }) => {
           <UploadProgressDialog />
         </div>
       </div>
+      {BadgeModal}
     </div>
   );
 };

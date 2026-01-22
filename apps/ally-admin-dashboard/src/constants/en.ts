@@ -305,6 +305,12 @@ export const en = {
       return `Maximum time must be in HH:MM:SS format between ${minTime} and ${maxTime}.`;
     },
   },
+  notification: {
+    beforeYouGetStarted: "Before you get started",
+    botDelayMessage:
+      "At times, the bot may be unresponsive, or have unusual lag times. We are always working to improve the experience!",
+    startSession: "Start Session",
+  },
   userManagement: {
     organizationCreated: "Organization created successfully",
     organizationUpdated: "Organization updated successfully",

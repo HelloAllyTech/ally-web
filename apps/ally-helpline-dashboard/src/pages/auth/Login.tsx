@@ -6,7 +6,7 @@ import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
-import { FEATURE_FLAGS_MAP, GoogleSignInButton } from "@ally-ui-mono/ui-shared";
+import { GoogleSignInButton } from "@ally-ui-mono/ui-shared";
 import {
   useGenerateOTPMutation,
   useGoogleSignInMutation,
@@ -281,16 +281,14 @@ export const Login: FunctionComponent = () => {
             )}
           </Button>
           <div className="text-sm text-typography-800">
-            {FEATURE_FLAGS_MAP.GOOGLE_SIGN_IN_FLAG && (
-              <div className="mb-3">
-                <div className="flex items-center mb-3">
-                  <div className="flex-grow border-t border-gray-300" />
-                  <span className="mx-3 text-xs text-gray-500">OR</span>
-                  <div className="flex-grow border-t border-gray-300" />
-                </div>
-                <GoogleSignInButton onSuccess={handleGoogleSuccess} onError={handleGoogleError} />
+            <div className="mb-3">
+              <div className="flex items-center mb-3">
+                <div className="flex-grow border-t border-gray-300" />
+                <span className="mx-3 text-xs text-gray-500">OR</span>
+                <div className="flex-grow border-t border-gray-300" />
               </div>
-            )}
+              <GoogleSignInButton onSuccess={handleGoogleSuccess} onError={handleGoogleError} />
+            </div>
             By proceeding, i agree to Ally's{" "}
             <span
               className="text-primary-500 cursor-pointer"

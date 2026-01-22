@@ -1,5 +1,12 @@
 import { ApiEndpoints, HttpMethod, TAG_TYPES } from "@constants";
-import { GetReviewsInput, GetReviewsResponse } from "@types";
+import {
+  GetReviewsInput,
+  GetReviewsResponse,
+  GetReviewThreadsResponse,
+  ReactionInput,
+  GetReviewReactionsResponse,
+  GetReviewsReactionsInput,
+} from "@types";
 
 import { baseAPI } from "./baseAPI";
 
@@ -15,7 +22,7 @@ const reviewsAPI = baseAPI.injectEndpoints({
         url: ApiEndpoints.REVIEWS.GET_REVIEWS,
         params,
       }),
-      providesTags: [TAG_TYPES.REVIEWS],
+      providesTags: [TAG_TYPES.REVIEW],
     }),
     /**
      * Retrieves a review by its ID.
@@ -57,7 +64,7 @@ const reviewsAPI = baseAPI.injectEndpoints({
         method: HttpMethod.POST,
         body: { scenarioSessionId },
       }),
-      invalidatesTags: [TAG_TYPES.SIMULATION_SUMMARY],
+      invalidatesTags: [TAG_TYPES.SIMULATION_SUMMARY, TAG_TYPES.REVIEW],
     }),
     /**
      * Updates a review.
@@ -87,6 +94,35 @@ const reviewsAPI = baseAPI.injectEndpoints({
       }),
       invalidatesTags: [TAG_TYPES.REVIEW, TAG_TYPES.REVIEWS],
     }),
+    getReviewThreads: builder.query<GetReviewThreadsResponse, { id: string }>({
+      query: ({ id }) => ({
+        url: ApiEndpoints.REVIEWS.GET_REVIEW_THREADS(id),
+        method: HttpMethod.GET,
+      }),
+      providesTags: [TAG_TYPES.REVIEW],
+    }),
+
+    addReaction: builder.mutation<boolean, { id: string; reaction: ReactionInput }>({
+      query: ({ id, reaction }) => ({
+        url: ApiEndpoints.REVIEWS.ADD_REACTION(id),
+        method: HttpMethod.POST,
+        body: reaction,
+      }),
+    }),
+    getReviewReactions: builder.query<GetReviewReactionsResponse, GetReviewsReactionsInput>({
+      query: ({ reviewId, limit, offset, reaction }) => ({
+        url: ApiEndpoints.REVIEWS.GET_REVIEW_REACTIONS(reviewId),
+        method: HttpMethod.GET,
+        params: { limit, offset, reaction },
+      }),
+    }),
+    getReviewReactionsCount: builder.query<Record<string, number>, { reviewId: string }>({
+      query: ({ reviewId }) => ({
+        url: ApiEndpoints.REVIEWS.GET_REVIEW_REACTIONS_COUNT(reviewId),
+        method: HttpMethod.GET,
+      }),
+      transformResponse: (response: { reactions: Record<string, number> }) => response.reactions,
+    }),
   }),
 });
 
@@ -97,4 +133,9 @@ export const {
   useCreateReviewMutation,
   useUpdateReviewMutation,
   useCreateCommentMutation,
+  useGetReviewThreadsQuery,
+  useAddReactionMutation,
+  useGetReviewReactionsQuery,
+  useLazyGetReviewReactionsQuery,
+  useGetReviewReactionsCountQuery,
 } = reviewsAPI;
