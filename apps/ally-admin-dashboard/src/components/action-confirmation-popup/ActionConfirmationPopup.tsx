@@ -89,7 +89,9 @@ export const ActionConfirmationPopup: FC<ActionConfirmationPopupProps> = ({
       <Button
         onClick={primaryButton.onClick}
         variant={ButtonVariant.PRIMARY}
-        className="text-white text-base rounded-full w-full p-2 font-tertiary"
+        className={`text-white text-base rounded-full p-2 font-tertiary ${
+          secondaryButton ? "w-full" : "w-1/3"
+        }`}
       >
         {primaryButton.label}
       </Button>
