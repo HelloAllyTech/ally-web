@@ -99,6 +99,7 @@ export const ApiEndpoints = {
     GET_REVIEW_DETAILS_AND_MESSAGES: (reviewId: string) => `/v1/reviews/${reviewId}/messages`,
     CREATE_REVIEW: `/v1/reviews`,
     UPDATE_REVIEW: (reviewId: string) => `/v1/reviews/${reviewId}`,
+    ADD_REACTION: (reviewId: string) => `/v1/reviews/${reviewId}/reactions`,
   },
   BADGES: {
     GET_AVAILABLE_BADGES: "/v1/badges/available",

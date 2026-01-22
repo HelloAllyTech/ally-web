@@ -42,3 +42,12 @@ export interface GetReviewsResponse {
   count: number;
   data: ReviewItem[];
 }
+
+export enum ReactionsType {
+  ADD = "ADD",
+  REMOVE = "REMOVE",
+}
+export interface ReactionInput {
+  reaction: string;
+  action: ReactionsType;
+}

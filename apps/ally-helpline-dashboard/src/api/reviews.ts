@@ -1,5 +1,5 @@
 import { ApiEndpoints, HttpMethod, TAG_TYPES } from "@constants";
-import { GetReviewsInput, GetReviewsResponse } from "@types";
+import { GetReviewsInput, GetReviewsResponse, ReactionInput } from "@types";
 
 import { baseAPI } from "./baseAPI";
 
@@ -72,6 +72,14 @@ const reviewsAPI = baseAPI.injectEndpoints({
       }),
       invalidatesTags: [TAG_TYPES.SIMULATION_SUMMARY],
     }),
+
+    addReaction: builder.mutation<boolean, { id: string; reaction: ReactionInput }>({
+      query: ({ id, reaction }) => ({
+        url: ApiEndpoints.REVIEWS.ADD_REACTION(id),
+        method: HttpMethod.POST,
+        body: reaction,
+      }),
+    }),
   }),
 });
 
@@ -81,4 +89,5 @@ export const {
   useGetReviewDetailsWithMessagesQuery,
   useCreateReviewMutation,
   useUpdateReviewMutation,
+  useAddReactionMutation,
 } = reviewsAPI;
