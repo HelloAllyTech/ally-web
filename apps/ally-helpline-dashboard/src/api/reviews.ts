@@ -78,7 +78,7 @@ const reviewsAPI = baseAPI.injectEndpoints({
         method: HttpMethod.PATCH,
         body: { status },
       }),
-      invalidatesTags: [TAG_TYPES.SIMULATION_SUMMARY, TAG_TYPES.REVIEWS, TAG_TYPES.REVIEW],
+      invalidatesTags: [TAG_TYPES.SIMULATION_SUMMARY, TAG_TYPES.REVIEW],
     }),
     /**
      * Creates a new comment for a review.
@@ -92,7 +92,7 @@ const reviewsAPI = baseAPI.injectEndpoints({
         method: HttpMethod.POST,
         body,
       }),
-      invalidatesTags: [TAG_TYPES.REVIEW, TAG_TYPES.REVIEWS],
+      invalidatesTags: [TAG_TYPES.REVIEW],
     }),
     getReviewThreads: builder.query<GetReviewThreadsResponse, { id: string }>({
       query: ({ id }) => ({
