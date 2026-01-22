@@ -8,6 +8,7 @@ import {
   useScenarioPreviewMutation,
   useGetScenarioLanguagesQuery,
 } from "@api";
+import { ActionConfirmationPopup } from "@components";
 import { en, LOCAL_STORAGE_KEYS, ROUTES } from "@constants";
 import { useUser } from "@hooks";
 import {
@@ -16,7 +17,6 @@ import {
   StartSimulationResponse,
   SimulationStatus,
 } from "@types";
-import { ActionConfirmationPopup } from "@components";
 
 export const SimulationPreview: FC<SimulationPreviewProps> = ({ simulation, isOpen, onClose }) => {
   const navigate = useNavigate();

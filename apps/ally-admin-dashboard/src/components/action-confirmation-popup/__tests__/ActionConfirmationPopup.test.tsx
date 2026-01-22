@@ -246,8 +246,8 @@ describe("ActionConfirmationPopup", () => {
 
     it("primary button has w-1/3 width when secondary button is missing", () => {
       const propsWithoutSecondary = {
-         ...defaultProps,
-         secondaryButton: undefined,
+        ...defaultProps,
+        secondaryButton: undefined,
       };
       // @ts-ignore - bypassing strict type check for test case
       render(<ActionConfirmationPopup {...propsWithoutSecondary} />);

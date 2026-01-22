@@ -4,6 +4,8 @@ import {
   GetReviewsResponse,
   GetReviewThreadsResponse,
   ReactionInput,
+  GetReviewReactionsResponse,
+  GetReviewsReactionsInput,
 } from "@types";
 
 import { baseAPI } from "./baseAPI";
@@ -107,6 +109,20 @@ const reviewsAPI = baseAPI.injectEndpoints({
         body: reaction,
       }),
     }),
+    getReviewReactions: builder.query<GetReviewReactionsResponse, GetReviewsReactionsInput>({
+      query: ({ reviewId, limit, offset, reaction }) => ({
+        url: ApiEndpoints.REVIEWS.GET_REVIEW_REACTIONS(reviewId),
+        method: HttpMethod.GET,
+        params: { limit, offset, reaction },
+      }),
+    }),
+    getReviewReactionsCount: builder.query<Record<string, number>, { reviewId: string }>({
+      query: ({ reviewId }) => ({
+        url: ApiEndpoints.REVIEWS.GET_REVIEW_REACTIONS_COUNT(reviewId),
+        method: HttpMethod.GET,
+      }),
+      transformResponse: (response: { reactions: Record<string, number> }) => response.reactions,
+    }),
   }),
 });
 
@@ -119,4 +135,7 @@ export const {
   useCreateCommentMutation,
   useGetReviewThreadsQuery,
   useAddReactionMutation,
+  useGetReviewReactionsQuery,
+  useLazyGetReviewReactionsQuery,
+  useGetReviewReactionsCountQuery,
 } = reviewsAPI;
