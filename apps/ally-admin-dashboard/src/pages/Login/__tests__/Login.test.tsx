@@ -16,6 +16,11 @@ vi.mock("@react-oauth/google", () => ({
     </button>
   ),
   GoogleOAuthProvider: ({ children }: any) => <div>{children}</div>,
+  useGoogleLogin: ({ onSuccess, onError }: any) => {
+    return () => {
+      onSuccess({ access_token: "mock-access-token" });
+    };
+  },
 }));
 
 vi.mock("react-router-dom", async () => {
@@ -82,15 +87,6 @@ vi.mock("@hooks/useUser", () => ({
   useUser: () => mockUseUser(),
 }));
 
-// Mock components
-// Mock CustomImage from ui-shared
-vi.mock("@ally-ui-mono/ui-shared", () => ({
-  CustomImage: ({ src, alt }: any) => <img src={src} alt={alt} data-testid="custom-image" />,
-  FEATURE_FLAGS_MAP: {
-    GOOGLE_SIGN_IN_FLAG: false,
-  },
-}));
-
 vi.mock("@components", () => ({
   Button: ({ children, onClick, disabled, ...props }: any) => (
     <button onClick={onClick} disabled={disabled} {...props}>
@@ -145,6 +141,9 @@ vi.mock("@constants", () => ({
   ALLY_PRIVACY_POLICY_URL: "https://ally.com/privacy",
   ALLY_URL: "https://ally.com",
   en: {
+    common: {
+      or: "OR",
+    },
     auth: {
       hey: "Hey",
       welcomeTo: "Welcome to",
@@ -191,6 +190,21 @@ vi.mock("framer-motion", () => ({
   motion: {
     div: ({ children, ...props }: any) => <div {...props}>{children}</div>,
   },
+}));
+
+// Mock @ally-ui-mono/ui-shared
+vi.mock("@ally-ui-mono/ui-shared", () => ({
+  CustomImage: ({ src, alt, ...props }: any) => (
+    <img data-testid="custom-image" src={src} alt={alt} {...props} />
+  ),
+  GoogleSignInButton: ({ onSuccess, onError, text = "Continue with Google" }: any) => (
+    <button
+      data-testid="google-sign-in-button"
+      onClick={() => onSuccess({ accessToken: "mock-token" })}
+    >
+      {text}
+    </button>
+  ),
 }));
 
 describe("Login", () => {

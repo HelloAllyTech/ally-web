@@ -2,7 +2,6 @@ import { FC } from "react";
 
 import { useNavigate, useSearchParams } from "react-router-dom";
 
-import { FEATURE_FLAGS_MAP } from "@ally-ui-mono/ui-shared";
 import {
   Tabs,
   ListToolbar,
@@ -59,7 +58,6 @@ export const UserManagement: FC = () => {
     handleTenantFormSubmit,
     onCloseOrganizationEditModal,
     logoUpload,
-    deleteLogo,
   } = useOrganizationManagement();
 
   // User management hook (depends on tenants)
@@ -286,47 +284,29 @@ export const UserManagement: FC = () => {
               onSearchChange={setOrgSearch}
               action={{ label: en.userManagement.addOrganization, onClick: handleNewgroupClick }}
             />
-            {FEATURE_FLAGS_MAP.LOGO_UPLOAD_FLAG ? (
-              <UserModal
-                isOpen={addOrganizationModalOpen}
-                onClose={onCloseOrganizationEditModal}
-                title={
-                  selectedTenant
-                    ? en.userManagement.editOrganization
-                    : en.userManagement.noOrganizationActionLabel
-                }
-                buttonName={selectedTenant ? en.common.save : en.userManagement.addOrganization}
-                fields={addNewOrganizationModal}
-                formMethods={tenantMethods}
-                details={selectedTenant}
-                handleClick={handleTenantFormSubmit}
-                imageUpload
-                uploadId="logoUrl"
-                uploadButtonName={
-                  logoValue || selectedTenant?.logoUrl
-                    ? en.userManagement.changeLogo
-                    : en.userManagement.uploadLogo
-                }
-                uploadTitle="Logo"
-                uploadImageUrl={logoUpload}
-                deleteImageUrl={deleteLogo}
-              />
-            ) : (
-              <UserModal
-                isOpen={addOrganizationModalOpen}
-                onClose={onCloseOrganizationEditModal}
-                title={
-                  selectedTenant
-                    ? en.userManagement.editOrganization
-                    : en.userManagement.noOrganizationActionLabel
-                }
-                buttonName={selectedTenant ? en.common.save : en.userManagement.addOrganization}
-                fields={addNewOrganizationModal}
-                formMethods={tenantMethods}
-                details={selectedTenant}
-                handleClick={handleTenantFormSubmit}
-              />
-            )}
+            <UserModal
+              isOpen={addOrganizationModalOpen}
+              onClose={onCloseOrganizationEditModal}
+              title={
+                selectedTenant
+                  ? en.userManagement.editOrganization
+                  : en.userManagement.noOrganizationActionLabel
+              }
+              buttonName={selectedTenant ? en.common.save : en.userManagement.addOrganization}
+              fields={addNewOrganizationModal}
+              formMethods={tenantMethods}
+              details={selectedTenant}
+              handleClick={handleTenantFormSubmit}
+              imageUpload
+              uploadId="logoUrl"
+              uploadButtonName={
+                logoValue || selectedTenant?.logoUrl
+                  ? en.userManagement.changeLogo
+                  : en.userManagement.uploadLogo
+              }
+              uploadTitle="Logo"
+              uploadImageUrl={logoUpload}
+            />
             {isTenantsFetching ? (
               <OrganizationListLoader />
             ) : tenants.length === 0 ? (
