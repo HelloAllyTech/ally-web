@@ -57,7 +57,27 @@ export enum ReactionsType {
   ADD = "ADD",
   REMOVE = "REMOVE",
 }
+
 export interface ReactionInput {
   reaction: string;
   action: ReactionsType;
+}
+
+export interface GetReviewReactionsResponse {
+  data: ReviewReaction[];
+  count: number;
+}
+
+export interface ReviewReaction {
+  id: string;
+  createdBy: ReviewUser;
+  reaction: string;
+  count: number;
+}
+
+export interface GetReviewsReactionsInput {
+  limit?: number;
+  offset?: number;
+  reaction?: string;
+  reviewId: string;
 }

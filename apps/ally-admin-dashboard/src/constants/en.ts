@@ -307,7 +307,8 @@ export const en = {
   },
   notification: {
     beforeYouGetStarted: "Before you get started",
-    botDelayMessage: "At times, the bot may be unresponsive, or have unusual lag times. We are always working to improve the experience!",
+    botDelayMessage:
+      "At times, the bot may be unresponsive, or have unusual lag times. We are always working to improve the experience!",
     startSession: "Start Session",
   },
   userManagement: {

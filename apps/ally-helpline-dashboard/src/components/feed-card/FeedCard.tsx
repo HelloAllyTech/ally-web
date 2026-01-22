@@ -10,6 +10,7 @@ import { formatDateTime, formatRelativeTime } from "./utils";
 import ReactionsModal from "../reaction-modal/ReactionModal";
 
 const FeedCard: FC<FeedCardProps> = ({
+  id,
   createdAt,
   user,
   scenario,
@@ -197,7 +198,7 @@ const FeedCard: FC<FeedCardProps> = ({
       <ReactionsModal
         isOpen={isReactionsModalOpen}
         onClose={handleCloseReactionsModal}
-        reactions={reactions}
+        reviewId={id}
       />
     </>
   );

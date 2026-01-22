@@ -169,4 +169,3 @@ const ScenarioDetailsCard: FC<ScenarioDetailsCardProps> = ({
 };
 
 export default ScenarioDetailsCard;
-
