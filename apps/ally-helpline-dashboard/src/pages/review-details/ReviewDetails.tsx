@@ -5,13 +5,17 @@ import { useSelector } from "react-redux";
 import { useNavigate, useParams } from "react-router-dom";
 
 import { CustomImage } from "@ally-ui-mono/ui-shared/index";
-import { useGetReviewByIdQuery, useGetReviewDetailsWithMessagesQuery } from "@api";
+import {
+  useAddReactionMutation,
+  useGetReviewByIdQuery,
+  useGetReviewDetailsWithMessagesQuery,
+} from "@api";
 import { AccountCircle, ChatBubble, LeftArrow, Smiley } from "@assets";
 import ReviewCommentsSidepanel from "@components/review-comments-sidepanel/ReviewCommentsSidepanel";
 import Transcription from "@components/transcription";
 import { PLATFORM_EMOJIS } from "@constants";
 import { RootState } from "@store";
-import { SimulationTranscriptMessage } from "@types";
+import { ReactionsType, SimulationTranscriptMessage } from "@types";
 import { getFormattedDateTime, getFormattedTimeFromDuration } from "@utils";
 
 import { THREAD_LIST, HEADING } from "./dummy";
@@ -40,6 +44,7 @@ export const ReviewDetails = () => {
       limit: TRANSCRIPT_PAGE_SIZE,
       sortBy: "startSeconds",
     });
+  const [addReactions] = useAddReactionMutation();
 
   useEffect(() => {
     setTranscriptList([]);
@@ -66,8 +71,22 @@ export const ReviewDetails = () => {
   const handleEmojiClick = (emoji: string) => {
     if (selectedEmoji === emoji) {
       setSelectedEmoji("");
+      addReactions({
+        id: reviewId,
+        reaction: {
+          reaction: emoji,
+          action: ReactionsType.REMOVE,
+        },
+      });
     } else {
       setSelectedEmoji(emoji);
+      addReactions({
+        id: reviewId,
+        reaction: {
+          reaction: emoji,
+          action: ReactionsType.ADD,
+        },
+      });
     }
     setShowEmojiPicker(false);
   };
