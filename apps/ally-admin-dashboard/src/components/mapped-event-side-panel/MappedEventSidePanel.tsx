@@ -416,45 +416,35 @@ export const MappedEventSidePanel: React.FC<MappedEventSidePanelProps> = ({
               />
             </Field>
 
-            {FEATURE_FLAGS_MAP.EVENT_DETECTION_CONFIG_FLAG && (
-              <>
-                <OccurrenceControlSection
-                  maxOccurrences={formData?.maxOccurrences?.value}
-                  minGapTime={formData?.minGapTime?.value as string}
-                  onMaxOccurrencesChange={value =>
-                    handleFieldChange(MAPPED_EVENT_FIELDS.MAX_OCCURRENCES, value)
-                  }
-                  onMinGapTimeChange={value =>
-                    handleFieldChange(MAPPED_EVENT_FIELDS.MIN_GAP_TIME, value)
-                  }
-                />
+            <OccurrenceControlSection
+              maxOccurrences={formData?.maxOccurrences?.value}
+              minGapTime={formData?.minGapTime?.value as string}
+              onMaxOccurrencesChange={value =>
+                handleFieldChange(MAPPED_EVENT_FIELDS.MAX_OCCURRENCES, value)
+              }
+              onMinGapTimeChange={value =>
+                handleFieldChange(MAPPED_EVENT_FIELDS.MIN_GAP_TIME, value)
+              }
+            />
 
-                {selectedEventDetectionType !== SessionEventDetectionType.TIME && (
-                  <TimeWindowSection
-                    startTime={formData?.startTime?.value as string}
-                    endTime={formData?.endTime?.value as string}
-                    onStartTimeChange={value =>
-                      handleFieldChange(MAPPED_EVENT_FIELDS.START_TIME, value)
-                    }
-                    onEndTimeChange={value =>
-                      handleFieldChange(MAPPED_EVENT_FIELDS.END_TIME, value)
-                    }
-                  />
-                )}
+            {selectedEventDetectionType !== SessionEventDetectionType.TIME && (
+              <TimeWindowSection
+                startTime={formData?.startTime?.value as string}
+                endTime={formData?.endTime?.value as string}
+                onStartTimeChange={value =>
+                  handleFieldChange(MAPPED_EVENT_FIELDS.START_TIME, value)
+                }
+                onEndTimeChange={value => handleFieldChange(MAPPED_EVENT_FIELDS.END_TIME, value)}
+              />
+            )}
 
-                {selectedEventDetectionType !== SessionEventDetectionType.SCORE && (
-                  <ScoreWindowSection
-                    minScore={formData?.minScore?.value}
-                    maxScore={formData?.maxScore?.value}
-                    onMinScoreChange={value =>
-                      handleFieldChange(MAPPED_EVENT_FIELDS.MIN_SCORE, value)
-                    }
-                    onMaxScoreChange={value =>
-                      handleFieldChange(MAPPED_EVENT_FIELDS.MAX_SCORE, value)
-                    }
-                  />
-                )}
-              </>
+            {selectedEventDetectionType !== SessionEventDetectionType.SCORE && (
+              <ScoreWindowSection
+                minScore={formData?.minScore?.value}
+                maxScore={formData?.maxScore?.value}
+                onMinScoreChange={value => handleFieldChange(MAPPED_EVENT_FIELDS.MIN_SCORE, value)}
+                onMaxScoreChange={value => handleFieldChange(MAPPED_EVENT_FIELDS.MAX_SCORE, value)}
+              />
             )}
             <div className="border-t" />
             <Field label="Branching status">

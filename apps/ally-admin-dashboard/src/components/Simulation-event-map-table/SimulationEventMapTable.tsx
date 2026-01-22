@@ -148,60 +148,55 @@ export const SimulationEventMapTable: FC<SimulationEventMapTableProps> = ({ simu
         options: [],
         minWidth: 120,
       },
-      // TODO: Remov feature flag and this once the detection config is implemented
-      // Detection config columns (conditionally included)
-      ...(FEATURE_FLAGS_MAP.EVENT_DETECTION_CONFIG_FLAG
-        ? [
-            {
-              id: MAPPED_EVENT_FIELDS.START_TIME,
-              label: "Applicable from",
-              accessor: MAPPED_EVENT_FIELDS.START_TIME,
-              dataType: cellTypes.timeInput,
-              options: [],
-              minWidth: 120,
-            },
-            {
-              id: MAPPED_EVENT_FIELDS.END_TIME,
-              label: "Applicable till",
-              accessor: MAPPED_EVENT_FIELDS.END_TIME,
-              dataType: cellTypes.timeInput,
-              options: [],
-              minWidth: 120,
-            },
-            {
-              id: MAPPED_EVENT_FIELDS.MAX_OCCURRENCES,
-              label: "Max occurrences",
-              accessor: MAPPED_EVENT_FIELDS.MAX_OCCURRENCES,
-              dataType: cellTypes.score,
-              options: [],
-              minWidth: 120,
-            },
-            {
-              id: MAPPED_EVENT_FIELDS.MIN_GAP_TIME,
-              label: "Min gap time",
-              accessor: MAPPED_EVENT_FIELDS.MIN_GAP_TIME,
-              dataType: cellTypes.timeInput,
-              options: [],
-              minWidth: 120,
-            },
-            {
-              id: MAPPED_EVENT_FIELDS.MIN_SCORE,
-              label: "Min score",
-              accessor: MAPPED_EVENT_FIELDS.MIN_SCORE,
-              dataType: cellTypes.score,
-              options: [],
-              minWidth: 120,
-            },
-            {
-              id: MAPPED_EVENT_FIELDS.MAX_SCORE,
-              label: "Max score",
-              accessor: MAPPED_EVENT_FIELDS.MAX_SCORE,
-              dataType: cellTypes.score,
-              options: [],
-              minWidth: 120,
-            },
-          ]
-        : []),
+
+      {
+        id: MAPPED_EVENT_FIELDS.START_TIME,
+        label: "Applicable from",
+        accessor: MAPPED_EVENT_FIELDS.START_TIME,
+        dataType: cellTypes.timeInput,
+        options: [],
+        minWidth: 120,
+      },
+      {
+        id: MAPPED_EVENT_FIELDS.END_TIME,
+        label: "Applicable till",
+        accessor: MAPPED_EVENT_FIELDS.END_TIME,
+        dataType: cellTypes.timeInput,
+        options: [],
+        minWidth: 120,
+      },
+      {
+        id: MAPPED_EVENT_FIELDS.MAX_OCCURRENCES,
+        label: "Max occurrences",
+        accessor: MAPPED_EVENT_FIELDS.MAX_OCCURRENCES,
+        dataType: cellTypes.score,
+        options: [],
+        minWidth: 120,
+      },
+      {
+        id: MAPPED_EVENT_FIELDS.MIN_GAP_TIME,
+        label: "Min gap time",
+        accessor: MAPPED_EVENT_FIELDS.MIN_GAP_TIME,
+        dataType: cellTypes.timeInput,
+        options: [],
+        minWidth: 120,
+      },
+      {
+        id: MAPPED_EVENT_FIELDS.MIN_SCORE,
+        label: "Min score",
+        accessor: MAPPED_EVENT_FIELDS.MIN_SCORE,
+        dataType: cellTypes.score,
+        options: [],
+        minWidth: 120,
+      },
+      {
+        id: MAPPED_EVENT_FIELDS.MAX_SCORE,
+        label: "Max score",
+        accessor: MAPPED_EVENT_FIELDS.MAX_SCORE,
+        dataType: cellTypes.score,
+        options: [],
+        minWidth: 120,
+      },
       {
         id: MAPPED_EVENT_FIELDS.BRANCHING_STATUS,
         label: "Branching status",
@@ -476,14 +471,10 @@ export const SimulationEventMapTable: FC<SimulationEventMapTableProps> = ({ simu
       <div className="sticky flex flex-row justify-between top-0 z-10 pt-3 mx-6 pb-4 border-b border-border-light">
         <div className="flex flex-row items-center gap-2 text-lg font-semibold text-typography-900 font-primary">
           <span>{en.simulation.advancedSettings}</span>
-          {FEATURE_FLAGS_MAP.SCORE_COLOR_FLAG && (
-            <>
-              <div className="w-[1px] h-[16px] bg-border-light" />
-              <div className="cursor-pointer" onClick={onReloadMappedEvents}>
-                <Refresh className="w-4 h-4" />
-              </div>
-            </>
-          )}
+          <div className="w-[1px] h-[16px] bg-border-light" />
+          <div className="cursor-pointer" onClick={onReloadMappedEvents}>
+            <Refresh className="w-4 h-4" />
+          </div>
         </div>
         {!isLoading && renderActionButtons()}
       </div>

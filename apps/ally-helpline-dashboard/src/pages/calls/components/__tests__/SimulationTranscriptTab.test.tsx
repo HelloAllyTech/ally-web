@@ -50,6 +50,34 @@ vi.mock("@components/transcription", () => ({
   ),
 }));
 
+// Mock @ally-ui-mono/ui-shared
+vi.mock("@ally-ui-mono/ui-shared/index", () => ({
+  FEATURE_FLAGS_MAP: {
+    PEER_REVIEW_FLAG: true,
+  },
+  Toggle: ({ items, onChange }: any) => (
+    <div data-testid="toggle-component">
+      {items.map((item: any, index: number) => (
+        <button key={index} onClick={() => onChange(item.value)}>
+          {item.label}
+        </button>
+      ))}
+    </div>
+  ),
+}));
+
+// Mock constants - partially mock to keep other exports
+vi.mock("@src/constants", async importOriginal => {
+  const actual = await importOriginal<typeof import("@src/constants")>();
+  return {
+    ...actual,
+    REVIEW_PRIVACY_OPTIONS: [
+      { label: "Keep it private", value: "HIDDEN" },
+      { label: "Share for review", value: "IN_REVIEW" },
+    ],
+  };
+});
+
 const renderWithProvider = (ui: React.ReactElement) => {
   return render(<Provider store={store}>{ui}</Provider>);
 };
