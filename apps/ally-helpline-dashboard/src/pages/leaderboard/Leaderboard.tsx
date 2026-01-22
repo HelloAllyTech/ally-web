@@ -3,13 +3,13 @@ import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import { FEATURE_FLAGS_MAP } from "@ally-ui-mono/ui-shared";
-import { useGetCurrentUserQuery, useGetLeaderBoardListQuery, useGetMyBadgesQuery } from "@api";
 import {
-  AchievementBadgeModal,
-  AchievementsCard,
-  LeaderboardList,
-  LeaderboardUser,
-} from "@components";
+  useGetMyBadgesQuery,
+  useGetBadgesCountQuery,
+  useGetCurrentUserQuery,
+  useGetLeaderBoardListQuery,
+} from "@api";
+import { AchievementsCard, LeaderboardList, LeaderboardUser } from "@components";
 import { ROUTES } from "@constants";
 import { AchievementItemData, LockedStatus, UserBadge, ViewedStatus } from "@types";
 
@@ -26,12 +26,12 @@ const mapUserBadgeToAchievementItem = (badge: UserBadge): AchievementItemData =>
 });
 
 const PATHS_PAGE_SIZE = 30;
+const INITIAL_WINDOW = "LAST_WEEK";
 
 export const Leaderboard = () => {
   const navigate = useNavigate();
-  const [currentBadgeIndex, setCurrentBadgeIndex] = useState<number | null>(null);
   const [pathsOffset, setPathsOffset] = useState(0);
-  const [window, setWindow] = useState("LAST_WEEK");
+  const [window, setWindow] = useState(INITIAL_WINDOW);
   const [leaderboardData, setLeaderboardData] = useState<LeaderboardUser[]>([]);
 
   const pathParams = {
@@ -42,7 +42,7 @@ export const Leaderboard = () => {
     order: "DESC" as const,
   };
   const { data: leaderBoardList, isFetching } = useGetLeaderBoardListQuery(pathParams);
-  const { data: currentUser } = useGetCurrentUserQuery({ window: window });
+  const { data: currentUser } = useGetCurrentUserQuery({ window: window.toUpperCase() });
 
   useEffect(() => {
     if (!leaderBoardList?.data?.length) return;
@@ -73,14 +73,12 @@ export const Leaderboard = () => {
   const { data: badgesResponse, isLoading: isBadgesLoading } = useGetMyBadgesQuery({
     viewedStatus: ViewedStatus.VIEWED,
   });
+  const { data: badgesCountResponse, isLoading: isBadgesCountLoading } = useGetBadgesCountQuery({
+    viewedStatus: ViewedStatus.VIEWED,
+  });
 
   const myBadges = badgesResponse?.data ?? [];
-
-  useEffect(() => {
-    if (myBadges.length > 0) {
-      setCurrentBadgeIndex(0);
-    }
-  }, [myBadges]);
+  const viewedBadgesCount = badgesCountResponse?.count ?? 0;
 
   const hasMore = useMemo(() => {
     if (!leaderBoardList) return false;
@@ -90,16 +88,6 @@ export const Leaderboard = () => {
   const handleViewAllBadges = () => {
     navigate(ROUTES.ACHIEVEMENTS_VIEW_ALL);
   };
-
-  const handleCloseModal = () => {
-    setCurrentBadgeIndex(prevIndex => {
-      if (prevIndex === null) return null;
-      const nextIndex = prevIndex + 1;
-      return nextIndex < myBadges.length ? nextIndex : null;
-    });
-  };
-
-  const currentBadge = currentBadgeIndex !== null ? myBadges[currentBadgeIndex] : null;
 
   if (!FEATURE_FLAGS_MAP.LEADERBOARD_FLAG) {
     return (
@@ -122,28 +110,20 @@ export const Leaderboard = () => {
           onLoadMore={loadMore}
           hasMore={hasMore}
           isLoading={isFetching}
+          selectedTimeFilter={window}
+          // data={leaderboardData}
         />
 
         {/* achievements card */}
         <div className="w-1/2 h-[490px] ml-4 mt-4">
           <AchievementsCard
             achievements={myBadges.map(mapUserBadgeToAchievementItem)}
-            totalBadges={myBadges.length}
-            isLoading={isBadgesLoading}
+            viewedBadgesCount={viewedBadgesCount}
+            isLoading={isBadgesLoading || isBadgesCountLoading}
             onViewAll={handleViewAllBadges}
           />
         </div>
       </div>
-
-      {currentBadge && (
-        <AchievementBadgeModal
-          isOpen={true}
-          onClose={handleCloseModal}
-          title={currentBadge.name}
-          description={currentBadge.description}
-          badgeImageUrl={currentBadge.imageUrl}
-        />
-      )}
     </div>
   );
 };

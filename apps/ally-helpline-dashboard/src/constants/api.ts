@@ -100,9 +100,15 @@ export const ApiEndpoints = {
     CREATE_REVIEW: `/v1/reviews`,
     UPDATE_REVIEW: (reviewId: string) => `/v1/reviews/${reviewId}`,
     CREATE_COMMENT: (reviewId: string) => `/v1/reviews/${reviewId}/comments`,
+    GET_REVIEW_THREADS: (reviewId: string) => `/v1/reviews/${reviewId}/threads`,
+    ADD_REACTION: (reviewId: string) => `/v1/reviews/${reviewId}/reactions`,
+    GET_REVIEW_REACTIONS: (reviewId: string) => `/v1/reviews/${reviewId}/reactions`,
+    GET_REVIEW_REACTIONS_COUNT: (reviewId: string) => `/v1/reviews/${reviewId}/reactions/count`,
   },
   BADGES: {
-    GET_AVAILABLE_BADGES: "/v1/badges/available",
+    GET_AVAILABLE_BADGES: "/v1/badges/me/available",
     GET_MY_BADGES: "/v1/badges/me",
+    GET_BADGES_COUNT: "/v1/badges/me/count",
+    UPDATE_BADGE_VIEW_STATUS: (badgeId: string) => `/v1/badges/me/${badgeId}/`,
   },
 };

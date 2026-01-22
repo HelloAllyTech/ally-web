@@ -211,7 +211,7 @@ const ResourceSearch: FC<ResourceSearchProps> = ({
       <div
         className={`${
           fullWidth ? "w-full" : "w-full"
-        } min-w-0 md:min-w-0 lg:min-w-[300px] flex flex-col items-center overflow-hidden`}
+        } min-w-0 md:min-w-0 lg:min-w-[300px] flex flex-col items-center mb-32`}
       >
         <div className="w-full flex flex-col gap-2 items-center justify-center px-4 mb-2 md:px-4 lg:px-0">
           {showHeader && <SearchHeader showDescriptionInMobile={showHeaderDescriptionInMobile} />}

@@ -14,6 +14,7 @@ const ToggleButtonGroup: FC<ToggleButtonGroupProps> = ({
   className,
   successValue,
   equalWidth,
+  inheritFontSize = false,
 }) => {
   const handleChange = (_: React.MouseEvent<HTMLElement>, newValue: string) => {
     if (newValue !== null) {
@@ -34,7 +35,7 @@ const ToggleButtonGroup: FC<ToggleButtonGroupProps> = ({
           borderRadius: "4px",
           padding: "16px 24px",
           textTransform: "none",
-          fontSize: "14px",
+          fontSize: inheritFontSize ? "inherit" : "14px",
           fontWeight: 500,
           "&.Mui-selected": {
             backgroundColor: value === successValue ? "#33BA60" : "#FFFFFF",

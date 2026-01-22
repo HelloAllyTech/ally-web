@@ -10,12 +10,14 @@ import { formatDateTime, formatRelativeTime } from "./utils";
 import ReactionsModal from "../reaction-modal/ReactionModal";
 
 const FeedCard: FC<FeedCardProps> = ({
+  id,
   createdAt,
   user,
   scenario,
   reactions,
   commentsCount,
   comments = [],
+  isCommentsLoading = false,
   onReviewTranscript,
   onCommentsClick,
 }) => {
@@ -181,16 +183,22 @@ const FeedCard: FC<FeedCardProps> = ({
 
           {(totalReactionCount > 0 || commentsCount > 0) && reactionsAndCommentsCountSection()}
 
-          {isCommentsExpanded && commentsCount > 0 && (
-            <CommentsSection comments={comments} collapseComments={collapseComments} />
-          )}
+          {isCommentsExpanded &&
+            commentsCount > 0 &&
+            (isCommentsLoading ? (
+              <div className="flex items-center justify-center py-4">
+                <div className="w-5 h-5 border-2 border-gray-300 border-t-primary-500 rounded-full animate-spin" />
+              </div>
+            ) : (
+              <CommentsSection comments={comments} collapseComments={collapseComments} />
+            ))}
         </div>
       </div>
 
       <ReactionsModal
         isOpen={isReactionsModalOpen}
         onClose={handleCloseReactionsModal}
-        reactions={reactions}
+        reviewId={id}
       />
     </>
   );

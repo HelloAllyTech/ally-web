@@ -7,7 +7,7 @@ import { cn } from "@utils";
 
 export interface AchievementsCardProps {
   achievements?: AchievementItemData[];
-  totalBadges?: number;
+  viewedBadgesCount?: number;
   isLoading?: boolean;
   emptyMessage?: string;
   onViewAll?: () => void;
@@ -29,7 +29,7 @@ const SkeletonCard: FC = () => {
 const EmptyState: FC<{ message: string }> = ({ message }) => {
   return (
     <div className="flex flex-col items-center justify-center py-8 pb-4 px-4 flex-1">
-      <p className="text-typography-900 text-lg font-medium text-center mb-4">{message}</p>
+      <p className="text-black text-base leading-4.5 font-normal text-center mb-4">{message}</p>
       <NoBadges className="w-64 h-64" />
     </div>
   );
@@ -37,14 +37,15 @@ const EmptyState: FC<{ message: string }> = ({ message }) => {
 
 export const AchievementsCard: FC<AchievementsCardProps> = ({
   achievements = [],
-  totalBadges,
+  viewedBadgesCount,
   isLoading = false,
   emptyMessage = "You don't have any badges yet",
   onViewAll,
   className,
 }) => {
   const isEmpty = !isLoading && achievements.length === 0;
-  const showBadgeCount = !isLoading && !isEmpty && totalBadges !== undefined && totalBadges > 0;
+  const showBadgeCount =
+    !isLoading && !isEmpty && viewedBadgesCount !== undefined && viewedBadgesCount > 0;
 
   const renderHeader = (
     <div className="flex items-center justify-between p-4 border-b border-border-light">
@@ -54,7 +55,7 @@ export const AchievementsCard: FC<AchievementsCardProps> = ({
       </div>
       {showBadgeCount && (
         <span className="px-3 py-1 bg-primary-50 text-primary-600 text-sm font-medium rounded-lg">
-          {totalBadges} Badges
+          {viewedBadgesCount} Badges
         </span>
       )}
     </div>
@@ -63,7 +64,7 @@ export const AchievementsCard: FC<AchievementsCardProps> = ({
   const renderContent = (
     <div className="flex flex-col gap-3 p-4 pb-0 flex-1 custom-scrollbar">
       {isLoading ? (
-        Array.from({ length: totalBadges }).map((_, index) => <SkeletonCard key={index} />)
+        Array.from({ length: 3 }).map((_, index) => <SkeletonCard key={index} />)
       ) : isEmpty ? (
         <EmptyState message={emptyMessage} />
       ) : (

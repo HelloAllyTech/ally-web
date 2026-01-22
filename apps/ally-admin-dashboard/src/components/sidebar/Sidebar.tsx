@@ -3,7 +3,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useLocation, useNavigate } from "react-router-dom";
 
-import { FEATURE_FLAGS_MAP, CustomImage } from "@ally-ui-mono/ui-shared";
+import { CustomImage } from "@ally-ui-mono/ui-shared";
 import {
   ArrowDown,
   Book,
@@ -226,15 +226,13 @@ export const Sidebar: React.FC = () => {
             className={`absolute bottom-[10px] ${isExpanded ? "left-[230px]" : "left-[100px]"} min-w-[250px] z-[999] mb-2 bg-white border border-border-light rounded-lg shadow-lg`}
           >
             <div className="py-1">
-              {FEATURE_FLAGS_MAP.PROFILE_UPLOAD_FLAG && (
-                <button
-                  onClick={handleProfileSettingClick}
-                  className="flex flex-row items-center w-full px-4 py-2 gap-2 text-left text-sm text-typography-900 hover:bg-background-secondary"
-                >
-                  <ManageAccounts />
-                  <span>{en.auth.profileSettings}</span>
-                </button>
-              )}
+              <button
+                onClick={handleProfileSettingClick}
+                className="flex flex-row items-center w-full px-4 py-2 gap-2 text-left text-sm text-typography-900 hover:bg-background-secondary"
+              >
+                <ManageAccounts />
+                <span>{en.auth.profileSettings}</span>
+              </button>
               <button
                 onClick={handleLogout}
                 className="flex flex-row items-center w-full px-4 py-2 gap-2 text-left text-sm text-typography-900 hover:bg-background-secondary transition-colors"
@@ -246,22 +244,20 @@ export const Sidebar: React.FC = () => {
           </div>
         )}
       </div>
-      {FEATURE_FLAGS_MAP.PROFILE_UPLOAD_FLAG ? (
-        <UserModal
-          isOpen={openSettings}
-          onClose={() => setOpenSettings(false)}
-          title={en.auth.profileSettings}
-          imageUpload
-          fields={profileSettings}
-          details={user}
-          uploadTitle={en.auth.profileImage}
-          handleClick={uploadProfile}
-          formMethods={profileSettingsForm}
-          uploadId={USER_MODAL_FIELDS_IDS.PROFILE}
-          uploadButtonName={imageUploaded ? en.userManagement.changeImage : en.auth.uploadImage}
-          uploadImageUrl={getProfileUrl}
-        />
-      ) : null}
+      <UserModal
+        isOpen={openSettings}
+        onClose={() => setOpenSettings(false)}
+        title={en.auth.profileSettings}
+        imageUpload
+        fields={profileSettings}
+        details={user}
+        uploadTitle={en.auth.profileImage}
+        handleClick={uploadProfile}
+        formMethods={profileSettingsForm}
+        uploadId={USER_MODAL_FIELDS_IDS.PROFILE}
+        uploadButtonName={imageUploaded ? en.userManagement.changeImage : en.auth.uploadImage}
+        uploadImageUrl={getProfileUrl}
+      />
     </>
   );
 

@@ -258,36 +258,31 @@ export const EventSidePanel: React.FC<EventSidePanelProps> = ({
               currentEventId={formData.id}
             />
 
-            {FEATURE_FLAGS_MAP.EVENT_DETECTION_CONFIG_FLAG && (
-              <>
-                <OccurrenceControlSection
-                  maxOccurrences={formData?.detectionConfig?.maxOccurrences}
-                  minGapTime={formData?.detectionConfig?.minGapTime as string}
-                  onMaxOccurrencesChange={value =>
-                    handleDetectionConfigChange("maxOccurrences", value)
-                  }
-                  onMinGapTimeChange={value => handleDetectionConfigChange("minGapTime", value)}
-                />
+            <OccurrenceControlSection
+              maxOccurrences={formData?.detectionConfig?.maxOccurrences}
+              minGapTime={formData?.detectionConfig?.minGapTime as string}
+              onMaxOccurrencesChange={value => handleDetectionConfigChange("maxOccurrences", value)}
+              onMinGapTimeChange={value => handleDetectionConfigChange("minGapTime", value)}
+            />
 
-                {formData?.detectionType !== EVENT_DETECTION_TYPES.TIME_BASED && (
-                  <TimeWindowSection
-                    startTime={formData?.detectionConfig?.startTime as string}
-                    endTime={formData?.detectionConfig?.endTime as string}
-                    onStartTimeChange={value => handleDetectionConfigChange("startTime", value)}
-                    onEndTimeChange={value => handleDetectionConfigChange("endTime", value)}
-                  />
-                )}
-
-                {formData?.detectionType !== EVENT_DETECTION_TYPES.SCORE_BASED && (
-                  <ScoreWindowSection
-                    minScore={formData?.detectionConfig?.minScore}
-                    maxScore={formData?.detectionConfig?.maxScore}
-                    onMinScoreChange={value => handleDetectionConfigChange("minScore", value)}
-                    onMaxScoreChange={value => handleDetectionConfigChange("maxScore", value)}
-                  />
-                )}
-              </>
+            {formData?.detectionType !== EVENT_DETECTION_TYPES.TIME_BASED && (
+              <TimeWindowSection
+                startTime={formData?.detectionConfig?.startTime as string}
+                endTime={formData?.detectionConfig?.endTime as string}
+                onStartTimeChange={value => handleDetectionConfigChange("startTime", value)}
+                onEndTimeChange={value => handleDetectionConfigChange("endTime", value)}
+              />
             )}
+
+            {formData?.detectionType !== EVENT_DETECTION_TYPES.SCORE_BASED && (
+              <ScoreWindowSection
+                minScore={formData?.detectionConfig?.minScore}
+                maxScore={formData?.detectionConfig?.maxScore}
+                onMinScoreChange={value => handleDetectionConfigChange("minScore", value)}
+                onMaxScoreChange={value => handleDetectionConfigChange("maxScore", value)}
+              />
+            )}
+
             <div className="flex-1 h-[1px] bg-border-light" />
             {FEATURE_FLAGS_MAP.DYNAMIC_BRANCHING_FLAG ? (
               <Field

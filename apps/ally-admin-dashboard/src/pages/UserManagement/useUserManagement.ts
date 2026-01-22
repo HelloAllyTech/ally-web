@@ -3,7 +3,6 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 
-import { FEATURE_FLAGS_MAP } from "@ally-ui-mono/ui-shared";
 import {
   useAddUserMutation,
   useDeleteUserMutation,
@@ -115,12 +114,7 @@ export function useUserManagement(tenants: Tenant[]) {
     if (!userRoles) return;
 
     const filteredRoles = userRoles.filter(
-      role =>
-        role.name !== UserRole.SUPER_ADMIN &&
-        role.name !== UserRole.CLIENT &&
-        // TODO: Remove this once we have completed the peer review feature
-        !FEATURE_FLAGS_MAP.PEER_REVIEW_FLAG &&
-        role.name !== UserRole.REVIEWER,
+      role => role.name !== UserRole.SUPER_ADMIN && role.name !== UserRole.CLIENT,
     );
     setRoles(filteredRoles);
   }, [userRoles]);
