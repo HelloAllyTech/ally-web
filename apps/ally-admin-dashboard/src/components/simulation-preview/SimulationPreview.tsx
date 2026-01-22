@@ -16,6 +16,7 @@ import {
   StartSimulationResponse,
   SimulationStatus,
 } from "@types";
+import { ActionConfirmationPopup } from "@components";
 
 export const SimulationPreview: FC<SimulationPreviewProps> = ({ simulation, isOpen, onClose }) => {
   const navigate = useNavigate();
@@ -23,6 +24,7 @@ export const SimulationPreview: FC<SimulationPreviewProps> = ({ simulation, isOp
   const [scenarioPreview] = useScenarioPreviewMutation();
   const [endScenarioPreview] = useEndScenarioPreviewMutation();
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [showNotification, setShowNotification] = useState<boolean>(false);
   const shouldLoadLanguages = simulation.status === SimulationStatus.ACTIVE;
   const { data: languageOptions = [] } = useGetScenarioLanguagesQuery(
     {
@@ -65,7 +67,6 @@ export const SimulationPreview: FC<SimulationPreviewProps> = ({ simulation, isOp
   const onStartSimulationSuccess = (response: StartSimulationResponse) => {
     const { accessToken, scenario } = response;
 
-    // TODO: Add trigger warnings to the room data
     localStorage.setItem(
       LOCAL_STORAGE_KEYS.PREVIEW_ROOM_DATA,
       JSON.stringify({
@@ -90,7 +91,16 @@ export const SimulationPreview: FC<SimulationPreviewProps> = ({ simulation, isOp
     navigate(ROUTES.SIMULATION_PREVIEW(accessToken?.roomName));
   };
 
+  const handleStartSessionClick = () => {
+    setShowNotification(true);
+  };
+
+  const handleNotificationClose = () => {
+    setShowNotification(false);
+  };
+
   const onPreview = async () => {
+    setShowNotification(false);
     if (isLoading) return;
     setIsLoading(true);
     try {
@@ -139,26 +149,44 @@ export const SimulationPreview: FC<SimulationPreviewProps> = ({ simulation, isOp
   }, [handleLanguageChange, languageOptions, selectedLanguageLabel, shouldLoadLanguages]);
 
   return (
-    <SimulationDetailsModal
-      isOpen={isOpen}
-      title={simulation.title}
-      description={simulation.description}
-      coverImageUrl={simulation.coverImageUrl}
-      coverVideoUrl={simulation.coverVideoUrl}
-      headerTitle={en.simulation.simulation}
-      headerSubtitle={en.simulation.preview}
-      scenarioLabel={`${en.simulation.scenario}:`}
-      primaryButtonText={isLoading ? en.simulation.starting : en.simulation.startSession}
-      secondaryButtonText={en.simulation.close}
-      onPrimaryClick={onPreview}
-      onSecondaryClick={onClose}
-      onClickOutside={onClose}
-      isPrimaryLoading={isLoading}
-      triggerWarnings={simulation.triggerWarnings}
-      renderCustomImage={({ src, alt, className }) => (
-        <CustomImage src={src} alt={alt} className={className} />
-      )}
-      renderAdditionalContent={renderAdditionalContent}
-    />
+    <>
+      <SimulationDetailsModal
+        isOpen={isOpen}
+        title={simulation.title}
+        description={simulation.description}
+        coverImageUrl={simulation.coverImageUrl}
+        coverVideoUrl={simulation.coverVideoUrl}
+        headerTitle={en.simulation.simulation}
+        headerSubtitle={en.simulation.preview}
+        scenarioLabel={`${en.simulation.scenario}:`}
+        primaryButtonText={isLoading ? en.simulation.starting : en.simulation.startSession}
+        secondaryButtonText={en.simulation.close}
+        onPrimaryClick={handleStartSessionClick}
+        onSecondaryClick={onClose}
+        onClickOutside={onClose}
+        isPrimaryLoading={isLoading}
+        triggerWarnings={simulation.triggerWarnings}
+        renderCustomImage={({ src, alt, className }) => (
+          <CustomImage src={src} alt={alt} className={className} />
+        )}
+        renderAdditionalContent={renderAdditionalContent}
+      />
+      <ActionConfirmationPopup
+        isOpen={showNotification}
+        onClose={handleNotificationClose}
+        title="Before you get started"
+        titleItalic=""
+        description="At times, the bot may be unresponsive, or have unusual lag times. We are always working to improve the experience!"
+        primaryButton={{
+          label: "Start Session",
+          onClick: onPreview,
+        }}
+        secondaryButton={{
+          label: "Cancel",
+          onClick: handleNotificationClose,
+        }}
+      />
+    </>
   );
 };
+

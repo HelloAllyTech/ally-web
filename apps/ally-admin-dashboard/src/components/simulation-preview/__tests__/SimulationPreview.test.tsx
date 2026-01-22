@@ -1,6 +1,6 @@
 import React from "react";
 
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import { render, screen, fireEvent, waitFor, within } from "@testing-library/react";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
 import { SimulationPreview } from "../SimulationPreview";
@@ -64,6 +64,15 @@ vi.mock("@components", () => ({
     number: "number",
     emoji_select: "emoji_select",
   },
+  ActionConfirmationPopup: ({ isOpen, title, titleItalic, description, primaryButton, secondaryButton }: any) =>
+    isOpen ? (
+      <div data-testid="notification-popup">
+        <span>{title} {titleItalic}</span>
+        <p>{description}</p>
+        <button onClick={primaryButton.onClick}>{primaryButton.label}</button>
+        <button onClick={secondaryButton.onClick}>{secondaryButton.label}</button>
+      </div>
+    ) : null,
 }));
 
 vi.mock("@hooks", () => ({
@@ -155,7 +164,25 @@ describe("SimulationPreview", () => {
     expect(onClose).toHaveBeenCalledTimes(1);
   });
 
-  it("starts preview successfully and navigates, storing room data", async () => {
+  it("shows notification popup when start button is clicked", async () => {
+    render(<SimulationPreview simulation={simulation} isOpen onClose={vi.fn()} />);
+
+    const [, startButton] = screen.getAllByRole("button");
+    fireEvent.click(startButton);
+
+    await waitFor(() => {
+      expect(screen.getByTestId("notification-popup")).toBeInTheDocument();
+    });
+    const notificationPopup = screen.getByTestId("notification-popup");
+    expect(within(notificationPopup).getByText("Start Session")).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        "At times, the bot may be unresponsive, or have unusual lag times. We are always working to improve the experience!"
+      )
+    ).toBeInTheDocument();
+  });
+
+  it("starts preview successfully after clicking Start Session in notification", async () => {
     scenarioPreviewTrigger.mockImplementation(() => ({
       unwrap: () => Promise.resolve(createSuccessResponse()),
     }));
@@ -167,10 +194,16 @@ describe("SimulationPreview", () => {
     fireEvent.click(startButton);
 
     await waitFor(() => {
+      expect(screen.getByTestId("notification-popup")).toBeInTheDocument();
+    });
+
+    const notificationPopup = screen.getByTestId("notification-popup");
+    fireEvent.click(within(notificationPopup).getByText("Start Session"));
+
+    await waitFor(() => {
       expect(navigateMock).toHaveBeenCalledTimes(1);
     });
 
-    // Room data written to localStorage
     expect(setItemSpy).toHaveBeenCalled();
     const [, storedJson] = setItemSpy.mock.calls[0] as [string, string];
     const stored = JSON.parse(storedJson);
@@ -193,6 +226,13 @@ describe("SimulationPreview", () => {
     const [, startButton] = screen.getAllByRole("button");
     fireEvent.click(startButton);
 
+    await waitFor(() => {
+      expect(screen.getByTestId("notification-popup")).toBeInTheDocument();
+    });
+
+    const notificationPopup = screen.getByTestId("notification-popup");
+    fireEvent.click(within(notificationPopup).getByText("Start Session"));
+
     await waitFor(() =>
       expect(endScenarioPreviewTrigger).toHaveBeenCalledWith({ roomName: "room-old" }),
     );
@@ -212,15 +252,20 @@ describe("SimulationPreview", () => {
     const [, startButton] = screen.getAllByRole("button");
 
     fireEvent.click(startButton);
-    fireEvent.click(startButton);
 
-    // Only one trigger call should be made due to isLoading guard
+    await waitFor(() => {
+      expect(screen.getByTestId("notification-popup")).toBeInTheDocument();
+    });
+
+    const notificationPopup = screen.getByTestId("notification-popup");
+    fireEvent.click(within(notificationPopup).getByText("Start Session"));
+
     expect(scenarioPreviewTrigger).toHaveBeenCalledTimes(1);
 
     resolveFn(createSuccessResponse());
   });
 
-  it("passes a languageId when the simulation is active", () => {
+  it("passes a languageId when the simulation is active", async () => {
     const selectedLanguageId = 1;
 
     render(<SimulationPreview simulation={simulation} isOpen onClose={vi.fn()} />);
@@ -228,25 +273,57 @@ describe("SimulationPreview", () => {
     const [, startButton] = screen.getAllByRole("button");
     fireEvent.click(startButton);
 
+    await waitFor(() => {
+      expect(screen.getByTestId("notification-popup")).toBeInTheDocument();
+    });
+
+    const notificationPopup = screen.getByTestId("notification-popup");
+    fireEvent.click(within(notificationPopup).getByText("Start Session"));
+
     expect(scenarioPreviewTrigger).toHaveBeenCalledWith({
       scenarioId: Number(simulation.id),
       languageId: selectedLanguageId,
     });
   });
 
-  it("omits languageId and hides dropdown for non-active simulations", () => {
+  it("omits languageId and hides dropdown for non-active simulations", async () => {
     const inactiveSimulation = { ...simulation, status: SimulationStatus.DRAFT };
 
     render(<SimulationPreview simulation={inactiveSimulation} isOpen onClose={vi.fn()} />);
 
-    // Dropdown should not render because languages are skipped entirely
     expect(screen.queryByText("English (India)")).not.toBeInTheDocument();
 
     const [, startButton] = screen.getAllByRole("button");
     fireEvent.click(startButton);
 
+    await waitFor(() => {
+      expect(screen.getByTestId("notification-popup")).toBeInTheDocument();
+    });
+
+    const notificationPopup = screen.getByTestId("notification-popup");
+    fireEvent.click(within(notificationPopup).getByText("Start Session"));
+
     expect(scenarioPreviewTrigger).toHaveBeenCalledWith({
       scenarioId: Number(inactiveSimulation.id),
     });
+  });
+
+  it("closes notification popup when Cancel is clicked", async () => {
+    render(<SimulationPreview simulation={simulation} isOpen onClose={vi.fn()} />);
+
+    const [, startButton] = screen.getAllByRole("button");
+    fireEvent.click(startButton);
+
+    await waitFor(() => {
+      expect(screen.getByTestId("notification-popup")).toBeInTheDocument();
+    });
+
+    const notificationPopup = screen.getByTestId("notification-popup");
+    fireEvent.click(within(notificationPopup).getByText("Cancel"));
+
+    await waitFor(() => {
+      expect(screen.queryByTestId("notification-popup")).not.toBeInTheDocument();
+    });
+    expect(scenarioPreviewTrigger).not.toHaveBeenCalled();
   });
 });
