@@ -1,3 +1,5 @@
+import { Comment } from "@src/components/feed-card";
+
 export interface ReviewUser {
   id: string;
   name: string;
@@ -28,7 +30,6 @@ export interface ReviewItem {
   scenario: ReviewScenario;
   reactions: Record<string, number>;
   commentsCount: number;
-  comments: ReviewComment[];
 }
 
 export interface GetReviewsInput {
@@ -41,4 +42,14 @@ export interface GetReviewsInput {
 export interface GetReviewsResponse {
   count: number;
   data: ReviewItem[];
+}
+
+export interface GetReviewThreadsResponse {
+  data: ReviewThread[];
+}
+
+export interface ReviewThread {
+  id: string;
+  comments: Comment[];
+  commentCount: number;
 }
