@@ -32,15 +32,15 @@ export interface FeedApiResponse {
 
 export interface Comment {
   id: string;
-  user: {
+  createdBy: {
+    id: string;
     name: string;
     profileImage?: string;
   };
-  date: string;
-  text: string;
+  createdAt: string;
+  content: string;
   reactions: Reactions;
-  repliesCount?: number;
-  replies?: Comment[];
+  replyCount?: number;
 }
 
 export interface FeedCardProps {
@@ -51,6 +51,7 @@ export interface FeedCardProps {
   reactions: Reactions;
   commentsCount: number;
   comments?: Comment[];
+  isCommentsLoading?: boolean;
   onReviewTranscript?: () => void;
   onCardClick?: () => void;
   onCommentsClick?: () => void;

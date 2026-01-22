@@ -10,3 +10,4 @@ export * from "./useLiveKitRoom";
 export * from "./useSimulationCredits";
 export * from "./useStartSimulation";
 export * from "./useScenarioLanguages";
+export * from "./useAchievementBadgeModal";
