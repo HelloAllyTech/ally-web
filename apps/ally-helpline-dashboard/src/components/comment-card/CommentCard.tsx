@@ -1,3 +1,5 @@
+import { useState } from "react";
+
 import { Emoji, EmojiStyle } from "emoji-picker-react";
 
 import { CustomImage } from "@ally-ui-mono/ui-shared/index";
@@ -5,32 +7,61 @@ import { CommentItem } from "@pages/review-details/types";
 import { AccountCircle } from "@src/assets";
 import { formatRelativeTime } from "@utils";
 
+import Input from "../input";
+
 interface CommentCardProps {
   comment: CommentItem;
   showLike?: boolean;
   showReply?: boolean;
   onReplyClick?: () => void;
+  onReply?: (reply: string) => void;
 }
 const CommentCard = ({
   comment,
   showLike = false,
   showReply = false,
   onReplyClick,
+  onReply,
 }: CommentCardProps) => {
+  const [showReplyInput, setShowReplyInput] = useState(false);
+  const [replyText, setReplyText] = useState("");
+
+  const handleReplyClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setShowReplyInput(true);
+  };
+
+  const handleReplySubmit = () => {
+    if (replyText.trim()) {
+      onReply?.(replyText);
+      setReplyText("");
+      setShowReplyInput(false);
+    }
+  };
+
+  const handleReplyKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      handleReplySubmit();
+    } else if (e.key === "Escape") {
+      setShowReplyInput(false);
+      setReplyText("");
+    }
+  };
   return (
     <div className="flex gap-2.5">
       <div className="min-w-6 h-6 rounded-full">
-        {comment.createdBy.profileUrl ? (
+        {comment.createdBy.profileImage ? (
           <CustomImage
-            src={comment.createdBy.profileUrl}
+            src={comment.createdBy.profileImage}
             alt={comment.createdBy.name}
+            data-testid="custom-image"
             className="w-full h-full rounded-full"
           />
         ) : (
-          <AccountCircle className="w-full h-full rounded-full" />
+          <AccountCircle className="w-full h-full rounded-full" data-testid="account-circle" />
         )}
       </div>
-      <div className="flex flex-col gap-1">
+      <div className="flex flex-col gap-1 w-full">
         <div className="flex gap-2 items-center">
           <div className="text-[14px] font-medium">{comment.createdBy.name}</div>
           <div className="text-[12px] text-gray-500">{formatRelativeTime(comment.createdAt)}</div>
@@ -66,7 +97,10 @@ const CommentCard = ({
           {showReply && (
             <>
               <div className="w-1 h-1 bg-[#D9D9D9] rounded-full" />
-              <div className="text-typography-800 text-[12px] cursor-pointer font-medium">
+              <div
+                className="text-typography-800 text-[12px] cursor-pointer font-medium"
+                onClick={handleReplyClick}
+              >
                 Reply
               </div>
             </>
@@ -80,6 +114,19 @@ const CommentCard = ({
             </div>
           )}
         </div>
+        {showReplyInput && (
+          <div className="flex gap-2 items-center mt-2 w-full">
+            <AccountCircle className="min-w-6 h-6 rounded-full" />
+            <Input
+              placeholder="Write a reply..."
+              className="flex-1 h-8 w-full rounded-sm text-sm focus-visible:ring-0"
+              value={replyText}
+              onChange={e => setReplyText(e.target.value)}
+              onKeyDown={handleReplyKeyDown}
+              autoFocus
+            />
+          </div>
+        )}
       </div>
     </div>
   );

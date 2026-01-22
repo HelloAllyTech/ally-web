@@ -32,13 +32,28 @@ vi.mock("@utils", () => ({
   formatRelativeTime: (date: string) => "2 hours ago",
 }));
 
+// Mock Input component
+vi.mock("../../input", () => ({
+  default: ({ placeholder, className, value, onChange, onKeyDown, autoFocus }: any) => (
+    <input
+      data-testid="reply-input"
+      placeholder={placeholder}
+      className={className}
+      value={value}
+      onChange={onChange}
+      onKeyDown={onKeyDown}
+      autoFocus={autoFocus}
+    />
+  ),
+}));
+
 describe("CommentCard Component", () => {
   const mockComment = {
     id: 1,
     createdBy: {
       id: 1,
       name: "John Doe",
-      profileUrl: "https://example.com/profile.jpg",
+      profileImage: "https://example.com/profile.jpg",
     },
     createdAt: "2024-01-15T10:00:00Z",
     content: "This is a test comment",
@@ -85,7 +100,7 @@ describe("CommentCard Component", () => {
       expect(screen.getByText("2 hours ago")).toBeInTheDocument();
     });
 
-    it("should render profile image when profileUrl is provided", () => {
+    it("should render profile image when profileImage is provided", () => {
       render(<CommentCard comment={mockComment} />);
       expect(screen.getByTestId("custom-image")).toBeInTheDocument();
       expect(screen.getByTestId("custom-image")).toHaveAttribute(
@@ -94,12 +109,12 @@ describe("CommentCard Component", () => {
       );
     });
 
-    it("should render AccountCircle when no profileUrl", () => {
+    it("should render AccountCircle when no profileImage", () => {
       const commentWithoutProfile = {
         ...mockComment,
         createdBy: {
           ...mockComment.createdBy,
-          profileUrl: null,
+          profileImage: null,
         },
       };
       render(<CommentCard comment={commentWithoutProfile} />);
@@ -322,6 +337,188 @@ describe("CommentCard Component", () => {
       const { container } = render(<CommentCard comment={mockComment} showReply />);
       const dividers = container.querySelectorAll(".bg-\\[\\#D9D9D9\\]");
       expect(dividers.length).toBeGreaterThan(0);
+    });
+  });
+
+  // --- Reply Input Tests ---
+  describe("Reply Input", () => {
+    it("should not show reply input by default", () => {
+      render(<CommentCard comment={mockComment} showReply />);
+      expect(screen.queryByTestId("reply-input")).not.toBeInTheDocument();
+    });
+
+    it("should show reply input when Reply button is clicked", () => {
+      render(<CommentCard comment={mockComment} showReply />);
+      const replyButton = screen.getByText("Reply");
+      fireEvent.click(replyButton);
+      expect(screen.getByTestId("reply-input")).toBeInTheDocument();
+    });
+
+    it("should stop event propagation when Reply is clicked", () => {
+      const parentClickHandler = vi.fn();
+      render(
+        <div onClick={parentClickHandler}>
+          <CommentCard comment={mockComment} showReply />
+        </div>,
+      );
+
+      const replyButton = screen.getByText("Reply");
+      fireEvent.click(replyButton);
+
+      expect(parentClickHandler).not.toHaveBeenCalled();
+    });
+
+    it("should have correct placeholder on reply input", () => {
+      render(<CommentCard comment={mockComment} showReply />);
+      const replyButton = screen.getByText("Reply");
+      fireEvent.click(replyButton);
+      expect(screen.getByTestId("reply-input")).toHaveAttribute("placeholder", "Write a reply...");
+    });
+
+    it("should update reply input value when typing", () => {
+      render(<CommentCard comment={mockComment} showReply />);
+      const replyButton = screen.getByText("Reply");
+      fireEvent.click(replyButton);
+
+      const input = screen.getByTestId("reply-input");
+      fireEvent.change(input, { target: { value: "My reply" } });
+      expect(input).toHaveValue("My reply");
+    });
+
+    it("should call onReply when Enter is pressed with text", () => {
+      const onReply = vi.fn();
+      render(<CommentCard comment={mockComment} showReply onReply={onReply} />);
+
+      const replyButton = screen.getByText("Reply");
+      fireEvent.click(replyButton);
+
+      const input = screen.getByTestId("reply-input");
+      fireEvent.change(input, { target: { value: "My reply" } });
+      fireEvent.keyDown(input, { key: "Enter" });
+
+      expect(onReply).toHaveBeenCalledWith("My reply");
+    });
+
+    it("should not call onReply when Enter is pressed with empty text", () => {
+      const onReply = vi.fn();
+      render(<CommentCard comment={mockComment} showReply onReply={onReply} />);
+
+      const replyButton = screen.getByText("Reply");
+      fireEvent.click(replyButton);
+
+      const input = screen.getByTestId("reply-input");
+      fireEvent.keyDown(input, { key: "Enter" });
+
+      expect(onReply).not.toHaveBeenCalled();
+    });
+
+    it("should not call onReply when Enter is pressed with whitespace only", () => {
+      const onReply = vi.fn();
+      render(<CommentCard comment={mockComment} showReply onReply={onReply} />);
+
+      const replyButton = screen.getByText("Reply");
+      fireEvent.click(replyButton);
+
+      const input = screen.getByTestId("reply-input");
+      fireEvent.change(input, { target: { value: "   " } });
+      fireEvent.keyDown(input, { key: "Enter" });
+
+      expect(onReply).not.toHaveBeenCalled();
+    });
+
+    it("should hide reply input after successful submission", () => {
+      const onReply = vi.fn();
+      render(<CommentCard comment={mockComment} showReply onReply={onReply} />);
+
+      const replyButton = screen.getByText("Reply");
+      fireEvent.click(replyButton);
+
+      const input = screen.getByTestId("reply-input");
+      fireEvent.change(input, { target: { value: "My reply" } });
+      fireEvent.keyDown(input, { key: "Enter" });
+
+      expect(screen.queryByTestId("reply-input")).not.toBeInTheDocument();
+    });
+
+    it("should clear input value after successful submission", () => {
+      const onReply = vi.fn();
+      render(<CommentCard comment={mockComment} showReply onReply={onReply} />);
+
+      // First submission
+      const replyButton = screen.getByText("Reply");
+      fireEvent.click(replyButton);
+
+      let input = screen.getByTestId("reply-input");
+      fireEvent.change(input, { target: { value: "My reply" } });
+      fireEvent.keyDown(input, { key: "Enter" });
+
+      // Re-open input
+      fireEvent.click(replyButton);
+      input = screen.getByTestId("reply-input");
+      expect(input).toHaveValue("");
+    });
+
+    it("should hide reply input when Escape is pressed", () => {
+      render(<CommentCard comment={mockComment} showReply />);
+
+      const replyButton = screen.getByText("Reply");
+      fireEvent.click(replyButton);
+
+      const input = screen.getByTestId("reply-input");
+      fireEvent.keyDown(input, { key: "Escape" });
+
+      expect(screen.queryByTestId("reply-input")).not.toBeInTheDocument();
+    });
+
+    it("should clear input value when Escape is pressed", () => {
+      render(<CommentCard comment={mockComment} showReply />);
+
+      const replyButton = screen.getByText("Reply");
+      fireEvent.click(replyButton);
+
+      let input = screen.getByTestId("reply-input");
+      fireEvent.change(input, { target: { value: "Draft reply" } });
+      fireEvent.keyDown(input, { key: "Escape" });
+
+      // Re-open input
+      fireEvent.click(replyButton);
+      input = screen.getByTestId("reply-input");
+      expect(input).toHaveValue("");
+    });
+
+    it("should not show reply input without showReply prop", () => {
+      render(<CommentCard comment={mockComment} />);
+      // Reply button should not exist, so input cannot be shown
+      expect(screen.queryByText("Reply")).not.toBeInTheDocument();
+      expect(screen.queryByTestId("reply-input")).not.toBeInTheDocument();
+    });
+
+    it("should handle special characters in reply", () => {
+      const onReply = vi.fn();
+      render(<CommentCard comment={mockComment} showReply onReply={onReply} />);
+
+      const replyButton = screen.getByText("Reply");
+      fireEvent.click(replyButton);
+
+      const input = screen.getByTestId("reply-input");
+      fireEvent.change(input, { target: { value: "<script>alert('xss')</script>" } });
+      fireEvent.keyDown(input, { key: "Enter" });
+
+      expect(onReply).toHaveBeenCalledWith("<script>alert('xss')</script>");
+    });
+
+    it("should handle emojis in reply", () => {
+      const onReply = vi.fn();
+      render(<CommentCard comment={mockComment} showReply onReply={onReply} />);
+
+      const replyButton = screen.getByText("Reply");
+      fireEvent.click(replyButton);
+
+      const input = screen.getByTestId("reply-input");
+      fireEvent.change(input, { target: { value: "Great work! 👍🎉" } });
+      fireEvent.keyDown(input, { key: "Enter" });
+
+      expect(onReply).toHaveBeenCalledWith("Great work! 👍🎉");
     });
   });
 });

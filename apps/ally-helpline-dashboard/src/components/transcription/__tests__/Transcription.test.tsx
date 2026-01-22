@@ -796,12 +796,6 @@ describe("Transcription Component", () => {
       expect(container.firstChild).toHaveClass("flex", "flex-col", "gap-4");
     });
 
-    it("should apply text-justify to content", () => {
-      const { container } = render(<Transcription {...defaultProps} />);
-      const justifiedElements = container.querySelectorAll(".text-justify");
-      expect(justifiedElements.length).toBe(3);
-    });
-
     it("should apply neutral-500 color to timestamps", () => {
       const { container } = render(<Transcription {...defaultProps} />);
       const timestampElements = container.querySelectorAll(".text-neutral-500");

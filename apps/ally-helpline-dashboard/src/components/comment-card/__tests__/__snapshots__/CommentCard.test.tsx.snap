@@ -16,7 +16,7 @@ exports[`CommentCard Component > should match snapshot when rendered with basic 
       />
     </div>
     <div
-      class="flex flex-col gap-1"
+      class="flex flex-col gap-1 w-full"
     >
       <div
         class="flex gap-2 items-center"
@@ -61,7 +61,7 @@ exports[`CommentCard Component > should match snapshot with all props enabled 1`
       />
     </div>
     <div
-      class="flex flex-col gap-1"
+      class="flex flex-col gap-1 w-full"
     >
       <div
         class="flex gap-2 items-center"

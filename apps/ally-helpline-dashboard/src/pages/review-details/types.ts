@@ -3,7 +3,7 @@ interface CommentItem {
   createdBy: {
     id: number;
     name: string;
-    profileUrl: string | null;
+    profileImage: string | null;
   };
   createdAt: string;
   content: string;
