@@ -51,13 +51,23 @@ export const ReviewDetails = () => {
 
   useEffect(() => {
     setTranscriptList([]);
+    setTranscriptOffset(0);
   }, [reviewId]);
 
   useEffect(() => {
     if (simulationTranscript?.length > 0) {
-      setTranscriptList(prev => [...prev, ...simulationTranscript]);
+      setTranscriptList(prev => {
+        return [...prev, ...simulationTranscript];
+      });
     }
   }, [simulationTranscript]);
+
+  // Reset transcript list when comment is successfully created to reflect new data
+  useEffect(() => {
+    if (isCreateCommentSuccess) {
+      setTranscriptOffset(0);
+    }
+  }, [isCreateCommentSuccess]);
 
   const handleGoBack = () => {
     navigate(-1);
@@ -109,6 +119,7 @@ export const ReviewDetails = () => {
   };
 
   const handleCloseSelectedComment = () => {
+    setSelectedThreadId(null);
     setSelectedMessageId("");
     setSelectedStartIndex(0);
     setSelectedEndIndex(0);
@@ -188,9 +199,13 @@ export const ReviewDetails = () => {
         <div className="pt-5 mx-auto px-10 h-full w-[calc(100%-384px)] overflow-y-auto pb-20 transition-all duration-400">
           <Transcription
             commentsList={
-              threads.find(thread => thread.selection.messageId === parseInt(selectedMessageId))
-                ?.comments
+              threads.find(
+                thread =>
+                  thread.selection.messageId === parseInt(selectedMessageId) &&
+                  thread.id === selectedThreadId,
+              )?.comments
             }
+            handleCommentClick={handleCommentClick}
             createComment={onCreateComment}
             isCreateCommentLoading={isCreateCommentLoading}
             isCreateCommentSuccess={isCreateCommentSuccess}

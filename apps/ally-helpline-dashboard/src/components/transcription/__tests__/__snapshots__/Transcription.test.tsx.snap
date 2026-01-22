@@ -16,9 +16,7 @@ exports[`Transcription Component > should match snapshot when rendered 1`] = `
         >
           00:00
         </div>
-        <div
-          class="text-justify"
-        >
+        <div>
           <span
             class="font-medium pr-1"
           >
@@ -32,7 +30,7 @@ exports[`Transcription Component > should match snapshot when rendered 1`] = `
             class="text-black selected-text relative w-full cursor-default"
           >
             <span
-              class="relative "
+              class="relative  "
             >
               Hello, how can I help you today?
             </span>
@@ -47,9 +45,7 @@ exports[`Transcription Component > should match snapshot when rendered 1`] = `
         >
           01:05
         </div>
-        <div
-          class="text-justify"
-        >
+        <div>
           <span
             class="font-medium pr-1"
           >
@@ -63,7 +59,7 @@ exports[`Transcription Component > should match snapshot when rendered 1`] = `
             class="text-black selected-text relative w-full cursor-default"
           >
             <span
-              class="relative "
+              class="relative  "
             >
               I need some assistance with my account.
             </span>
@@ -78,9 +74,7 @@ exports[`Transcription Component > should match snapshot when rendered 1`] = `
         >
           02:10
         </div>
-        <div
-          class="text-justify"
-        >
+        <div>
           <span
             class="font-medium pr-1"
           >
@@ -94,7 +88,7 @@ exports[`Transcription Component > should match snapshot when rendered 1`] = `
             class="text-black selected-text relative w-full cursor-default"
           >
             <span
-              class="relative "
+              class="relative  "
             >
               Sure, I can help you with that.
             </span>
