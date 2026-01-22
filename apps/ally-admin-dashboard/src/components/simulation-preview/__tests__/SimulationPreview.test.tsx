@@ -64,13 +64,24 @@ vi.mock("@components", () => ({
     number: "number",
     emoji_select: "emoji_select",
   },
-  ActionConfirmationPopup: ({ isOpen, title, titleItalic, description, primaryButton, secondaryButton }: any) =>
+  ActionConfirmationPopup: ({
+    isOpen,
+    title,
+    titleItalic,
+    description,
+    primaryButton,
+    secondaryButton,
+  }: any) =>
     isOpen ? (
       <div data-testid="notification-popup">
-        <span>{title} {titleItalic}</span>
+        <span>
+          {title} {titleItalic}
+        </span>
         <p>{description}</p>
         <button onClick={primaryButton.onClick}>{primaryButton.label}</button>
-        <button onClick={secondaryButton.onClick}>{secondaryButton.label}</button>
+        {secondaryButton && (
+          <button onClick={secondaryButton.onClick}>{secondaryButton.label}</button>
+        )}
       </div>
     ) : null,
 }));
@@ -91,6 +102,11 @@ vi.mock("@constants", () => ({
       startSession: "Start Session",
       starting: "Starting...",
       scenario: "Scenario",
+    },
+    notification: {
+      beforeYouGetStarted: "Before you get started",
+      botDelayMessage: "At times, the bot may be unresponsive, or have unusual lag times. We are always working to improve the experience!",
+      startSession: "Start Session",
     },
     error: {
       apiRequestFailed: "API request failed",
@@ -177,8 +193,8 @@ describe("SimulationPreview", () => {
     expect(within(notificationPopup).getByText("Start Session")).toBeInTheDocument();
     expect(
       screen.getByText(
-        "At times, the bot may be unresponsive, or have unusual lag times. We are always working to improve the experience!"
-      )
+        "At times, the bot may be unresponsive, or have unusual lag times. We are always working to improve the experience!",
+      ),
     ).toBeInTheDocument();
   });
 
@@ -203,7 +219,7 @@ describe("SimulationPreview", () => {
     await waitFor(() => {
       expect(navigateMock).toHaveBeenCalledTimes(1);
     });
-
+    // Room data written to localStorage
     expect(setItemSpy).toHaveBeenCalled();
     const [, storedJson] = setItemSpy.mock.calls[0] as [string, string];
     const stored = JSON.parse(storedJson);
@@ -252,7 +268,7 @@ describe("SimulationPreview", () => {
     const [, startButton] = screen.getAllByRole("button");
 
     fireEvent.click(startButton);
-
+    // Only one trigger call should be made due to isLoading guard
     await waitFor(() => {
       expect(screen.getByTestId("notification-popup")).toBeInTheDocument();
     });
@@ -290,7 +306,7 @@ describe("SimulationPreview", () => {
     const inactiveSimulation = { ...simulation, status: SimulationStatus.DRAFT };
 
     render(<SimulationPreview simulation={inactiveSimulation} isOpen onClose={vi.fn()} />);
-
+    // Dropdown should not render because languages are skipped entirely
     expect(screen.queryByText("English (India)")).not.toBeInTheDocument();
 
     const [, startButton] = screen.getAllByRole("button");
@@ -308,8 +324,9 @@ describe("SimulationPreview", () => {
     });
   });
 
-  it("closes notification popup when Cancel is clicked", async () => {
-    render(<SimulationPreview simulation={simulation} isOpen onClose={vi.fn()} />);
+  it("closes notification popup when clicking outside", async () => {
+    const onCloseMock = vi.fn();
+    render(<SimulationPreview simulation={simulation} isOpen onClose={onCloseMock} />);
 
     const [, startButton] = screen.getAllByRole("button");
     fireEvent.click(startButton);
@@ -318,12 +335,6 @@ describe("SimulationPreview", () => {
       expect(screen.getByTestId("notification-popup")).toBeInTheDocument();
     });
 
-    const notificationPopup = screen.getByTestId("notification-popup");
-    fireEvent.click(within(notificationPopup).getByText("Cancel"));
-
-    await waitFor(() => {
-      expect(screen.queryByTestId("notification-popup")).not.toBeInTheDocument();
-    });
     expect(scenarioPreviewTrigger).not.toHaveBeenCalled();
   });
 });

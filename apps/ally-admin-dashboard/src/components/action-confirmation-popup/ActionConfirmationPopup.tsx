@@ -11,7 +11,7 @@ interface ActionConfirmationPopupProps {
   titleItalic?: string;
   description: string;
   primaryButton: PopupButtonProps;
-  secondaryButton: PopupButtonProps;
+  secondaryButton?: PopupButtonProps;
 }
 
 export const ActionConfirmationPopup: FC<ActionConfirmationPopupProps> = ({
@@ -77,13 +77,15 @@ export const ActionConfirmationPopup: FC<ActionConfirmationPopupProps> = ({
 
   const popupButtons = (
     <div className="flex gap-2 pb-[16px] justify-center">
-      <Button
-        onClick={secondaryButton.onClick}
-        variant={ButtonVariant.SECONDARY}
-        className="text-typography-900 text-base border w-full border-border-dark rounded-full p-2 font-tertiary"
-      >
-        {secondaryButton.label}
-      </Button>
+      {secondaryButton && (
+        <Button
+          onClick={secondaryButton.onClick}
+          variant={ButtonVariant.SECONDARY}
+          className="text-typography-900 text-base border w-full border-border-dark rounded-full p-2 font-tertiary"
+        >
+          {secondaryButton.label}
+        </Button>
+      )}
       <Button
         onClick={primaryButton.onClick}
         variant={ButtonVariant.PRIMARY}

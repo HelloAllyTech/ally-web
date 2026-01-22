@@ -66,7 +66,7 @@ export const SimulationPreview: FC<SimulationPreviewProps> = ({ simulation, isOp
 
   const onStartSimulationSuccess = (response: StartSimulationResponse) => {
     const { accessToken, scenario } = response;
-
+    // TODO: Add trigger warnings to the room data
     localStorage.setItem(
       LOCAL_STORAGE_KEYS.PREVIEW_ROOM_DATA,
       JSON.stringify({
@@ -174,19 +174,14 @@ export const SimulationPreview: FC<SimulationPreviewProps> = ({ simulation, isOp
       <ActionConfirmationPopup
         isOpen={showNotification}
         onClose={handleNotificationClose}
-        title="Before you get started"
+        title={en.notification.beforeYouGetStarted}
         titleItalic=""
-        description="At times, the bot may be unresponsive, or have unusual lag times. We are always working to improve the experience!"
+        description={en.notification.botDelayMessage}
         primaryButton={{
-          label: "Start Session",
+          label: en.notification.startSession,
           onClick: onPreview,
-        }}
-        secondaryButton={{
-          label: "Cancel",
-          onClick: handleNotificationClose,
         }}
       />
     </>
   );
 };
-
