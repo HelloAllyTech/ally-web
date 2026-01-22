@@ -100,7 +100,6 @@ const SearchBar: FC<SearchBarProps> = ({
         sx={{
           borderRadius: "8px",
           overflow: "hidden",
-          border: searchBarStyles[mode].border,
           "& .MuiOutlinedInput-root": {
             height: searchBarStyles[mode].rootHeight,
             fontFamily: "IBM_Plex_Serif",
