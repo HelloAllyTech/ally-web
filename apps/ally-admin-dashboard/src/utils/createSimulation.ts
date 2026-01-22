@@ -33,22 +33,12 @@ export const formatSimulationResponseData = (data: GetSimulationByIdResponse) =>
     languageVoices: (data?.metadata as any)?.languageVoices,
     coverImageUrl: data?.coverImageUrl,
     coverVideoUrl: data?.coverVideoUrl,
-    terminationEvents: data?.terminationEvents,
     difficultyLevel: data?.difficultyLevel,
-    ...(FEATURE_FLAGS_MAP.AUTO_TERMINATION_FIELD_FLAG
-      ? {
-          terminationEvents: data?.terminationEvents?.map(event => ({
-            id: event.eventId,
-            name: event.name,
-            message: event.message,
-          })),
-        }
-      : {
-          autoTerminationStatus: Boolean(data?.terminationEvent?.autoTerminationStatus),
-          terminationEventId: data?.terminationEvent?.eventId,
-          terminationMessage: data?.terminationEvent?.message,
-          terminationName: data?.terminationEvent?.name,
-        }),
+    terminationEvents: data?.terminationEvents?.map(event => ({
+      id: event.eventId,
+      name: event.name,
+      message: event.message,
+    })),
     responseLength: data?.metadata?.responseLength,
     prompt: data?.prompt,
     isGlobal: Boolean(data?.isGlobal),

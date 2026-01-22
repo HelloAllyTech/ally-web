@@ -109,21 +109,6 @@ vi.mock("@components", () => ({
   ),
 }));
 
-// Mock feature flags
-vi.mock("@ally-ui-mono/ui-shared", () => ({
-  FEATURE_FLAGS_MAP: {
-    EVENT_DETECTION_CONFIG_FLAG: true,
-  },
-  AutoExpandableTextarea: ({ value, onChange, placeholder, disabled }: any) => (
-    <textarea
-      aria-label={placeholder}
-      defaultValue={value}
-      disabled={disabled}
-      onChange={e => onChange(e.target.value)}
-    />
-  ),
-}));
-
 // Use real hooks; they are simple and already tested
 
 import { MAPPED_EVENT_FIELDS } from "@utils";

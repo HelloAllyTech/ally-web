@@ -175,12 +175,6 @@ vi.mock("@utils/eventNameGenerator", () => ({
   },
 }));
 
-vi.mock("@ally-ui-mono/ui-shared/featureFlag", () => ({
-  FEATURE_FLAGS_MAP: {
-    EVENT_DETECTION_CONFIG_FLAG: false,
-  },
-}));
-
 describe("EventSidePanel", () => {
   const baseEvent = {
     id: "evt-1",

@@ -5,7 +5,7 @@ import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
-import { CustomImage, FEATURE_FLAGS_MAP, GoogleSignInButton } from "@ally-ui-mono/ui-shared";
+import { CustomImage, GoogleSignInButton } from "@ally-ui-mono/ui-shared";
 import { useGenerateOTPMutation, useVerifyOTPMutation, useGoogleSignInMutation } from "@api";
 import { BackCircle, LoginImage } from "@assets";
 import { Button, OTP, TextField } from "@components";
@@ -241,16 +241,14 @@ export const Login: React.FC = () => {
             )}
           </Button>
           <div className="text-sm text-typography-800 leading-relaxed">
-            {FEATURE_FLAGS_MAP.GOOGLE_SIGN_IN_FLAG && (
-              <div className="mb-3">
-                <div className="flex items-center mb-3">
-                  <div className="flex-grow border-t border-gray-300" />
-                  <span className="mx-3 text-xs text-gray-500">{en.common.or}</span>
-                  <div className="flex-grow border-t border-gray-300" />
-                </div>
-                <GoogleSignInButton onSuccess={handleGoogleSuccess} onError={handleGoogleError} />
+            <div className="mb-3">
+              <div className="flex items-center mb-3">
+                <div className="flex-grow border-t border-gray-300" />
+                <span className="mx-3 text-xs text-gray-500">{en.common.or}</span>
+                <div className="flex-grow border-t border-gray-300" />
               </div>
-            )}
+              <GoogleSignInButton onSuccess={handleGoogleSuccess} onError={handleGoogleError} />
+            </div>
             {en.auth.byTappingNext}{" "}
             <span
               className="text-primary-500 cursor-pointer hover:text-primary-600"

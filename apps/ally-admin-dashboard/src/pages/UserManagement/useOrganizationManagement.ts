@@ -3,7 +3,6 @@ import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 
-import { FEATURE_FLAGS_MAP } from "@ally-ui-mono/ui-shared";
 import {
   useCreateTenantMutation,
   useUpdateTenantMutation,
@@ -109,9 +108,7 @@ export function useOrganizationManagement() {
         description: data.description ?? "",
       };
       // T
-      if (FEATURE_FLAGS_MAP.LOGO_UPLOAD_FLAG) {
-        payload.logoUrl = data.logoUrl;
-      }
+      payload.logoUrl = data.logoUrl;
       await createTenant(payload).unwrap();
       setAddOrganizationModalOpen(false);
       tenantMethods.reset(defaultTenantValues);
@@ -151,10 +148,7 @@ export function useOrganizationManagement() {
         description: data.description || "",
       };
 
-      if (FEATURE_FLAGS_MAP.LOGO_UPLOAD_FLAG) {
-        payload.logoUrl = data.logoUrl;
-      }
-
+      payload.logoUrl = data.logoUrl;
       await updateTenant({ id: selectedTenant.id, data: payload }).unwrap();
       setAddOrganizationModalOpen(false);
       setSelectedTenant(null);
@@ -175,11 +169,10 @@ export function useOrganizationManagement() {
       orgname: data.orgname,
       orgcode: data.orgcode,
       description: data.description,
-      ...(FEATURE_FLAGS_MAP.LOGO_UPLOAD_FLAG ? { logoUrl: data.logoUrl } : {}),
+      logoUrl: data.logoUrl,
     };
 
-    if (FEATURE_FLAGS_MAP.LOGO_UPLOAD_FLAG && selectedTenant && selectedTenant.logoUrl)
-      deleteLogo({ logoUrl: selectedTenant.logoUrl });
+    if (selectedTenant && selectedTenant.logoUrl) deleteLogo({ logoUrl: selectedTenant.logoUrl });
 
     if (selectedTenant) {
       await handleEditTenant(payload);
@@ -225,6 +218,5 @@ export function useOrganizationManagement() {
     createTenant,
     updateTenant,
     logoUpload,
-    deleteLogo,
   };
 }

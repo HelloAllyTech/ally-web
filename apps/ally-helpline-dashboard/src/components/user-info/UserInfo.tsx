@@ -1,6 +1,6 @@
 import { FC, useEffect, useRef, useState } from "react";
 
-import { CustomImage, FEATURE_FLAGS_MAP } from "@ally-ui-mono/ui-shared";
+import { CustomImage } from "@ally-ui-mono/ui-shared";
 import { AccountCircle, Ally, Arrow, Bolt, Logout, ManageAccount } from "@assets";
 import { PermissionGuard } from "@components";
 import { Permissions } from "@constants";
@@ -148,15 +148,13 @@ const UserInfo: FC<{
             <div className="border-b" data-testid="user-info-divider" />
           </PermissionGuard>
           <div className="flex flex-col items-center justify-center">
-            {FEATURE_FLAGS_MAP.PROFILE_UPLOAD_FLAG && (
-              <button
-                onClick={onProfileSettings}
-                className="flex items-center gap-2 text-typography-700 hover:bg-gray-100 py-1 px-2 rounded justify-start w-full border-gray-200"
-              >
-                <ManageAccount />
-                Profile settings
-              </button>
-            )}
+            <button
+              onClick={onProfileSettings}
+              className="flex items-center gap-2 text-typography-700 hover:bg-gray-100 py-1 px-2 rounded justify-start w-full border-gray-200"
+            >
+              <ManageAccount />
+              Profile settings
+            </button>
             <button
               data-testid="user-info-logout-button"
               onClick={onLogout}
