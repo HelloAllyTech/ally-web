@@ -279,6 +279,7 @@ export const convertEventToApiPayload = (event: UpdateEventDataParam): SessionEv
     detectionType: backendDetectionType,
     visibilityType: event.visibilityType || "",
     detectionConfig: updatedDetectionConfig,
+    tags: event.tags || [],
   };
 
   if (Object.keys(detectionData).length > 0) {
@@ -422,5 +423,6 @@ export const convertApiResponseToEvent = (apiEvent: SessionEvent): UpdateEventDa
     triggerCondition,
     detectionConfig: updatedDetectionConfig,
     isEditable: apiEvent.isEditable ?? true,
+    tags: apiEvent.tags || [],
   };
 };

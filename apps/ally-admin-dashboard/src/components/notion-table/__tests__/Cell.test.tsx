@@ -25,6 +25,15 @@ vi.mock("@components", () => ({
       className={className}
     />
   ),
+  TagList: ({ tags, emptyText }: any) => (
+    <div data-testid="tag-list">
+      {Array.isArray(tags) && tags.length > 0 ? (
+        tags.map((tag: string, i: number) => <span key={i}>{tag}</span>)
+      ) : (
+        <span>{emptyText || "-"}</span>
+      )}
+    </div>
+  ),
   // Export cellTypes to prevent other tests from failing
   cellTypes: {
     editableText: "editableText",
@@ -156,6 +165,7 @@ describe("Cell", () => {
     dataType: cellTypes.normalText,
     id: "test-column",
     minWidth: 100,
+    width: 200,
     placeholder: "Enter text",
     options: [],
   };
@@ -605,7 +615,14 @@ describe("Cell", () => {
     });
 
     it("handles missing column properties", () => {
-      const minimalColumn = { dataType: cellTypes.normalText, id: "minimal" };
+      const minimalColumn = {
+        dataType: cellTypes.normalText,
+        id: "minimal",
+        options: [],
+        minWidth: 0,
+        width: 0,
+        placeholder: "",
+      };
       render(<Cell {...defaultProps} column={minimalColumn} />);
 
       expect(screen.getByText("Test value")).toBeInTheDocument();
