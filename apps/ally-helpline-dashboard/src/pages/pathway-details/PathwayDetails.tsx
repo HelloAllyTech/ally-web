@@ -10,7 +10,12 @@ import {
   useStartPathwaySimulationMutation,
 } from "@api";
 import { ArrowRight } from "@assets";
-import { CreditsDisplay, PathwayScenarioCard } from "@components";
+import {
+  CreditsDisplay,
+  PathwayScenarioCard,
+  ConfirmationDialog,
+  ButtonVariant,
+} from "@components";
 import { ROUTES } from "@constants";
 import { useStartSimulation } from "@hooks";
 import { PathwayScenarioStatus, PathwayScenario, LanguageOption } from "@types";
@@ -35,6 +40,7 @@ export const PathwayDetails: FC = () => {
   const { data: pathway, isLoading } = useGetScenarioPathwayDetailsQuery(pathwayId || "");
   const [selectedScenario, setSelectedScenario] = useState<PathwayScenario | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [showNotification, setShowNotification] = useState(false);
 
   const [startPathwaySimulation] = useStartPathwaySimulationMutation();
   const [getScenarioSessionByPathItem] = useLazyGetScenarioSessionByPathItemQuery();
@@ -97,7 +103,13 @@ export const PathwayDetails: FC = () => {
     }
   };
 
-  const handleStartSimulation = async () => {
+  const handleStartSimulation = () => {
+    if (!selectedScenario || isStarting) return;
+    setShowNotification(true);
+  };
+
+  const handleProceedWithSimulation = async () => {
+    setShowNotification(false);
     if (!selectedScenario || isStarting) return;
 
     const updatedSelectedScenario = pathway?.scenarios.find(
@@ -293,6 +305,15 @@ export const PathwayDetails: FC = () => {
         {renderScenariosList()}
       </div>
       {renderModal()}
+      <ConfirmationDialog
+        isOpen={showNotification}
+        title={{ normal: "Before you get started", italic: "" }}
+        content="At times, the bot may be unresponsive, or have unusual lag times. We are always working to improve the experience!"
+        buttonText="Start Session"
+        onButtonClick={handleProceedWithSimulation}
+        buttonVariant={ButtonVariant.PRIMARY}
+        onClose={() => setShowNotification(false)}
+      />
     </>
   );
 };
