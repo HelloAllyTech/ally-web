@@ -22,6 +22,7 @@ export const useLiveKitRoom = (
   const [roomStatus, setRoomStatus] = useState<RoomStatus>(RoomStatus.DISCONNECTED);
   const [error, setError] = useState<string | null>(null);
   const [events, setEvents] = useState<LiveKitEvent[]>([]);
+  const [detectedEventIds, setDetectedEventIds] = useState<string[]>([]);
   const [score, setScore] = useState<number>(0);
 
   const lastEventTimestampRef = useRef<number | null>(null);
@@ -49,6 +50,9 @@ export const useLiveKitRoom = (
     const eventObj = decodeUint8ToJson(payload) as LiveKitEvent;
     setEvents(prev => [...prev, eventObj]);
     setScore(prev => prev + (eventObj?.data?.score ?? 0));
+    setDetectedEventIds(prevIds => {
+      return [...new Set([...prevIds, ...(eventObj?.data?.detected_event_ids || [])])];
+    });
   }, []);
 
   const onRoomDisconnect = useCallback(() => {
@@ -162,5 +166,6 @@ export const useLiveKitRoom = (
     score,
     startTime,
     roomData,
+    detectedEventIds,
   };
 };

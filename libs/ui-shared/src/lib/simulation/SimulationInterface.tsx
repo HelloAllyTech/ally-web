@@ -9,8 +9,9 @@ import {
 } from "@livekit/components-react";
 import { motion } from "framer-motion";
 
+import { SessionChecklist } from "./SessionChecklist";
 import { SimulationEvents } from "./SimulationEvents";
-import { SimulationEventType } from "./types";
+import { SimulationEventType, ChecklistItem, ChecklistMode } from "./types";
 import { UserCallCard } from "./UserCallCard";
 
 export enum RoomStatus {
@@ -24,16 +25,22 @@ export interface SimulationInterfaceProps {
   roomStatus: RoomStatus;
   roomData: any;
   events: SimulationEventType[];
+  detectedEventIds?: string[];
   isFocusMode: boolean;
   isMuted: boolean;
+  checklistMode?: ChecklistMode;
+  checklistItems?: ChecklistItem[];
 }
 
 export const SimulationInterface: FC<SimulationInterfaceProps> = ({
   roomStatus,
   roomData,
   events,
+  detectedEventIds,
   isFocusMode,
   isMuted,
+  checklistMode = ChecklistMode.OFF,
+  checklistItems = [],
 }) => {
   const { localParticipant } = useLocalParticipant();
   const remoteParticipants = useRemoteParticipants();
@@ -58,7 +65,16 @@ export const SimulationInterface: FC<SimulationInterfaceProps> = ({
           isSpeaking={localParticipant.isSpeaking}
           isMuted={isMuted}
         />
-        {!isFocusMode && events?.length > 0 && <SimulationEvents events={events} />}
+        {!isFocusMode && checklistMode !== ChecklistMode.OFF && checklistItems.length > 0 && (
+          <SessionChecklist
+            mode={checklistMode}
+            items={checklistItems}
+            triggeredEvents={detectedEventIds || []}
+          />
+        )}
+        {!isFocusMode && checklistMode === ChecklistMode.OFF && events?.length > 0 && (
+          <SimulationEvents events={events} />
+        )}
       </div>
     </>
   );

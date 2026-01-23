@@ -1,6 +1,6 @@
 "use client";
 
-import { FC, useEffect, useRef, useState } from "react";
+import { FC, useEffect, useRef, useState, useMemo } from "react";
 
 import { RoomContext } from "@livekit/components-react";
 import { motion } from "framer-motion";
@@ -10,7 +10,7 @@ import { SessionGoalTimer } from "./SessionGoalTimer";
 import { BottomSection } from "./SimulationBottomSection";
 import { RoomStatus, SimulationInterface } from "./SimulationInterface";
 import { SimulationScoreMeter } from "./SimulationScoreMeter";
-import { SimulationPageProps, TriggerWarning } from "./types";
+import { SimulationPageProps, TriggerWarning, ChecklistMode } from "./types";
 import { StartSimulation, EndSimulation } from "../../assets/audios";
 
 const useWakeLock = (sessionId: string | undefined) => {
@@ -61,6 +61,7 @@ export const SimulationPage: FC<SimulationPageProps> = ({
   isEndingSession,
   startTime,
   events,
+  detectedEventIds,
   score,
   isPreview = false,
   onEndSimulation,
@@ -87,7 +88,23 @@ export const SimulationPage: FC<SimulationPageProps> = ({
 
   if (!roomData) return null;
 
-  const { triggerWarnings = [], title } = roomData ?? {};
+  const {
+    triggerWarnings = [],
+    title,
+    experienceMode,
+    checklistType,
+    checklistEvents,
+  } = roomData ?? {};
+
+  const checklistMode: ChecklistMode = useMemo(() => {
+    if (experienceMode !== "CHECKLIST") return ChecklistMode.OFF;
+    return checklistType;
+  }, [experienceMode, checklistType]);
+
+  const checklistItems = useMemo(() => {
+    if (checklistMode === ChecklistMode.OFF || !checklistEvents) return [];
+    return checklistEvents;
+  }, [checklistMode, checklistEvents]);
 
   const onTimeLimitWarning = () => {
     setIsWarning(true);
@@ -171,11 +188,14 @@ export const SimulationPage: FC<SimulationPageProps> = ({
           roomStatus={roomStatus}
           roomData={roomData}
           events={events}
+          detectedEventIds={detectedEventIds}
           isMuted={isMuted}
           isFocusMode={isFocusMode}
+          checklistMode={checklistMode}
+          checklistItems={checklistItems}
         />
       </motion.div>
-      <SimulationScoreMeter score={score} />
+      {checklistMode === ChecklistMode.OFF && <SimulationScoreMeter score={score} />}
 
       <BottomSection
         isWarning={isWarning}

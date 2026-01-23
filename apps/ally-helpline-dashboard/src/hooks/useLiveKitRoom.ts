@@ -22,6 +22,7 @@ export const useLiveKitRoom = (
   const [error, setError] = useState<string | null>(null);
   const [events, setEvents] = useState<LiveKitEvent[]>([]);
   const [score, setScore] = useState<number>(0);
+  const [detectedEventIds, setDetectedEventIds] = useState<string[]>([]);
 
   const lastEventTimestampRef = useRef<number | null>(null);
   const autoTerminationAudio = useRef<HTMLAudioElement | null>(new Audio(AutoTermination));
@@ -46,6 +47,9 @@ export const useLiveKitRoom = (
     const eventObj = decodeUint8ToJson(payload) as LiveKitEvent;
     setEvents(prev => [...prev, eventObj]);
     setScore(prev => prev + (eventObj?.data?.score ?? 0));
+    setDetectedEventIds(prevIds => {
+      return [...new Set([...prevIds, ...(eventObj?.data?.detected_event_ids || [])])];
+    });
   }, []);
 
   const onRoomDisconnect = useCallback(() => {
@@ -179,5 +183,6 @@ export const useLiveKitRoom = (
     score,
     startTime,
     roomData,
+    detectedEventIds,
   };
 };
