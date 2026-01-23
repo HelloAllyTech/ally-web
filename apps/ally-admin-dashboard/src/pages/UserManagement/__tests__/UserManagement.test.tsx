@@ -1,4 +1,4 @@
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import { render, screen, fireEvent } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
@@ -46,8 +46,18 @@ vi.mock("@components", () => ({
       {addFilterCta}
     </div>
   ),
-  FilterDropdown: ({ isOpen }: any) =>
-    isOpen ? <div data-testid="filter-dropdown">Filter Dropdown</div> : null,
+  FilterDropdown: ({ isOpen, onApplyFilters }: any) =>
+    isOpen ? (
+      <div data-testid="filter-dropdown">
+        Filter Dropdown
+        <button
+          data-testid="apply-filters-test"
+          onClick={() => onApplyFilters({ roles: ["admin"], organizations: [], statuses: [] })}
+        >
+          Apply Filters
+        </button>
+      </div>
+    ) : null,
   UserList: ({ users, onOptionSelect, renderFooter }: any) => (
     <div data-testid="user-list">
       {users.map((user: any) => (
@@ -478,10 +488,21 @@ describe("UserManagement", () => {
     });
 
     it("should apply filters", () => {
+      vi.mocked(useUserManagementHook.useUserManagement).mockReturnValue({
+        ...mockUserManagementHook,
+        isFilterOpen: true,
+      } as any);
+
       renderUserManagement();
 
-      // Filter application would be tested through the hook
-      expect(mockUserManagementHook.handleApplyFilters).toBeDefined();
+      const applyButton = screen.getByTestId("apply-filters-test");
+      fireEvent.click(applyButton);
+
+      expect(mockUserManagementHook.handleApplyFilters).toHaveBeenCalledWith({
+        roles: ["admin"],
+        organizations: [],
+        statuses: [],
+      });
     });
   });
 

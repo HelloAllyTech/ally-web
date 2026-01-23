@@ -13,8 +13,9 @@ import {
   OrganizationListLoader,
   UserModal,
   ActionConfirmationPopup,
+  StatusBadge,
 } from "@components";
-import { ButtonVariant } from "@components/types";
+import { ButtonVariant, FilterValues } from "@components/types";
 import {
   addCredit,
   addNewOrganizationModal,
@@ -24,8 +25,13 @@ import {
   userEditModal,
   UserMenuOptions,
   ROUTES,
+  userRoleItems,
+  userStatusItems,
+  FilterDropdownOptions,
+  userStatus,
 } from "@constants";
 import { TabType } from "@types";
+import { formatCapitalizedEnum } from "@utils";
 
 import { useOrganizationManagement } from "./useOrganizationManagement";
 import { useUserManagement } from "./useUserManagement";
@@ -246,13 +252,36 @@ export const UserManagement: FC = () => {
               handleClick={handleAddUser}
             />
 
-            <FilterDropdown
+            <FilterDropdown<FilterValues>
               isOpen={isFilterOpen}
               onClose={() => setIsFilterOpen(false)}
-              organizations={tenants.map(org => org.name)}
+              currentFilters={filters}
               onApplyFilters={handleApplyFilters}
               anchorRect={addFilterBtnRef.current?.getBoundingClientRect() ?? null}
-              currentFilters={filters}
+              sections={[
+                {
+                  id: "roles",
+                  label: FilterDropdownOptions.ROLE,
+                  options: userRoleItems.map(role => ({ label: role, value: role })),
+                  renderOption: option => formatCapitalizedEnum(option.value),
+                },
+                {
+                  id: "organizations",
+                  label: FilterDropdownOptions.ORGANIZATION,
+                  options: tenants.map(org => ({ label: org.name, value: org.name })),
+                },
+                {
+                  id: "statuses",
+                  label: FilterDropdownOptions.STATUS,
+                  options: userStatusItems.map(status => ({ label: status, value: status })),
+                  renderOption: option =>
+                    option.value === userStatus.SUSPENDED || option.value === userStatus.ACTIVE ? (
+                      <StatusBadge status={option.value} />
+                    ) : (
+                      formatCapitalizedEnum(option.value)
+                    ),
+                },
+              ]}
             />
 
             {users.length === 0 && isUsersFetching ? (

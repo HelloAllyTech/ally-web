@@ -13,6 +13,25 @@ import * as api from "@api";
 import { ScenarioVoices } from "../ScenarioVoices";
 
 // Mock components
+vi.mock("@components/filters/FilterDropdown", () => ({
+  FilterDropdown: ({ onApplyFilters, isOpen }: any) =>
+    isOpen ? (
+      <div data-testid="filter-dropdown">
+        <button
+          data-testid="apply-filters-btn"
+          onClick={() =>
+            onApplyFilters({
+              providers: ["Google"],
+              languages: ["1"],
+            })
+          }
+        >
+          Apply Filters
+        </button>
+      </div>
+    ) : null,
+}));
+
 vi.mock("@components", () => ({
   NotionTable: ({ tableData, onRowClick }: any) => (
     <div data-testid="notion-table">
@@ -23,7 +42,7 @@ vi.mock("@components", () => ({
       ))}
     </div>
   ),
-  ListToolbar: ({ onSearchChange, action }: any) => (
+  ListToolbar: ({ onSearchChange, action, addFilterCta }: any) => (
     <div data-testid="list-toolbar">
       <input
         data-testid="search-input"
@@ -32,6 +51,9 @@ vi.mock("@components", () => ({
       />
       <button data-testid="create-button" onClick={action?.onClick}>
         Create
+      </button>
+      <button data-testid="open-filter-btn" onClick={addFilterCta?.onClick}>
+        Filter
       </button>
     </div>
   ),
@@ -259,6 +281,31 @@ describe("ScenarioVoices Page", () => {
 
     await waitFor(() => {
       expect(screen.getByTestId("side-panel")).toBeInTheDocument();
+    });
+  });
+
+  it("opens filter dropdown and applies filters", async () => {
+    (api.useGetAvailableLanguageVoicesQuery as any).mockReturnValue({
+      data: [{ language_id: 1, label: "English" }],
+    });
+
+    render(<ScenarioVoices />);
+
+    // Open filter dropdown
+    fireEvent.click(screen.getByTestId("open-filter-btn"));
+    expect(screen.getByTestId("filter-dropdown")).toBeInTheDocument();
+
+    // Apply filters
+    fireEvent.click(screen.getByTestId("apply-filters-btn"));
+
+    await waitFor(() => {
+      expect(api.useGetScenarioVoicesQuery).toHaveBeenCalledWith(
+        expect.objectContaining({
+          providers: ["Google"],
+          languageIds: [1],
+          offset: 0,
+        }),
+      );
     });
   });
 });
