@@ -56,6 +56,7 @@ export interface ReviewThread {
 export enum ReactionsType {
   ADD = "ADD",
   REMOVE = "REMOVE",
+  UPDATE = "UPDATE",
 }
 
 export interface ReactionInput {
