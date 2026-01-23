@@ -103,6 +103,22 @@ vi.mock("@components", () => ({
       placeholder={placeholder}
     />
   ),
+  EditableTagList: ({ tags, onRemove, emptyText = "No tags" }: any) => (
+    <div data-testid="editable-tag-list">
+      {Array.isArray(tags) && tags.length > 0 ? (
+        tags.map((tag: string, index: number) => (
+          <span key={index}>
+            {tag}
+            <button onClick={() => onRemove(index)} data-testid={`remove-tag-${index}`}>
+              ×
+            </button>
+          </span>
+        ))
+      ) : (
+        <span>{emptyText}</span>
+      )}
+    </div>
+  ),
 }));
 
 vi.mock("@constants", () => ({
