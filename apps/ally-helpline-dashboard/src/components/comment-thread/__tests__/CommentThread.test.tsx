@@ -248,7 +248,8 @@ describe("CommentThread Component", () => {
         .find(btn => btn.textContent === "Comment");
       fireEvent.click(commentButton!);
 
-      expect(textarea).toHaveValue("");
+      // After submitting, the comment box is hidden, so textarea should not be in the document
+      expect(screen.queryByTestId("comment-textarea")).not.toBeInTheDocument();
     });
 
     it("should hide comment box when Cancel is clicked", () => {
