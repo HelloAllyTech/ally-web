@@ -62,6 +62,7 @@ import Flow from "./flow.svg?react";
 import Focus from "./focus.svg?react";
 import HomeworkRecommended from "./homework-recommended.svg?react";
 import InDoubt from "./in-doubt.svg?react";
+import InfoIcon from "./info-icon.svg?react";
 import IssuesWorkedOn from "./issues-worked-on.svg?react";
 import KeyConcerns from "./key-concerns.svg?react";
 import KeyEvents from "./key-events.svg?react";
@@ -273,4 +274,5 @@ export {
   ArrowLeft,
   AchievementLocked,
   ChatBubble,
+  InfoIcon,
 };

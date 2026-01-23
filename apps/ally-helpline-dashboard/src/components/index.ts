@@ -21,6 +21,7 @@ import DraggableArea from "./draggable-area";
 import Drawer from "./drawer";
 import Dropdown from "./dropdown";
 import FallbackUI from "./fallback-ui";
+import EmojiStack from "./feed-card/EmojiStack";
 import InfoBanner from "./info-banner";
 import Input from "./input";
 import { LeaderboardList, type LeaderboardUser } from "./leaderboard-list";
@@ -30,7 +31,9 @@ import OTP from "./otp";
 import { PathwayScenarioCard } from "./pathway-scenario-card";
 import PermissionGuard from "./permission-guard";
 import ProfileSettings from "./profile-settings";
+import ReactionsModal from "./reaction-modal/ReactionModal";
 import ReactionSelector from "./reaction-selector";
+import ReviewCommentsSidepanel from "./review-comments-sidepanel/ReviewCommentsSidepanel";
 import ScenarioCard from "./scenario-card";
 import ScenarioDetailsCard from "./scenario-details-card";
 import SearchResources from "./search-resources";
@@ -42,6 +45,7 @@ import TermsAndAgreement from "./terms-and-agreement";
 import TextField from "./text-field";
 import ThreadCard from "./thread-card/ThreadCard";
 import ToggleButtonGroup from "./toggle-button-group";
+import Transcription from "./transcription";
 import UserInfo from "./user-info";
 
 export {
@@ -102,4 +106,8 @@ export {
   ReactionSelector,
   ThreadCard,
   CommentCard,
+  EmojiStack,
+  ReactionsModal,
+  ReviewCommentsSidepanel,
+  Transcription,
 };

@@ -84,17 +84,14 @@ const CommentCard = ({
 
   return (
     <div className="flex gap-2.5">
-      <div className="min-w-6 h-6 rounded-full">
-        {comment.createdBy.profileImage ? (
-          <CustomImage
-            src={comment.createdBy.profileImage}
-            alt={comment.createdBy.name}
-            data-testid="custom-image"
-            className="w-full h-full rounded-full"
-          />
-        ) : (
-          <AccountCircle className="w-full h-full rounded-full" data-testid="account-circle" />
-        )}
+      <div className="min-w-6 h-6 rounded-full overflow-hidden">
+        <CustomImage
+          src={comment.createdBy.profileImage}
+          alt={comment.createdBy.name}
+          fallbackText={comment.createdBy.name?.slice(0, 1)?.toUpperCase() ?? "NA"}
+          data-testid="custom-image"
+          className="w-full h-full rounded-full"
+        />
       </div>
       <div className="flex flex-col gap-1 w-full">
         <div className="flex gap-2 items-center">
@@ -133,9 +130,15 @@ const CommentCard = ({
                       style={{ zIndex: 10 - index }}
                       className="w-4 overflow-visible relative"
                     >
-                      <div className="w-[26px] bg-white h-[26px] pr-0.5 pb-1.5 flex items-center justify-center rounded-full border-[0.5px]">
-                        <Emoji unified={reaction} size={12} emojiStyle={EmojiStyle.NATIVE} />
-                      </div>
+                      {reaction !== "" && (
+                        <div className="w-[26px] bg-white h-[26px] pr-0.5 pb-1.5 flex items-center justify-center rounded-full border-[0.5px]">
+                          <Emoji
+                            unified={reaction ?? "1f44d"}
+                            size={12}
+                            emojiStyle={EmojiStyle.NATIVE}
+                          />
+                        </div>
+                      )}
                     </div>
                   ))}
               </div>

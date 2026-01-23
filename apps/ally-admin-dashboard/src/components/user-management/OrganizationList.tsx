@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 
+import { CustomImage } from "@ally-ui-mono/ui-shared";
 import { Edit } from "@assets";
 import { ActionConfirmationPopup } from "@components";
 import { en } from "@constants";
@@ -50,19 +51,15 @@ export const OrganizationList: React.FC<OrganizationListProps> = ({
             >
               <div className="col-span-3 text-typography-900">
                 <span className="flex items-center">
-                  {tenant.logoUrl ? (
-                    <img
+                  <div className="w-10 h-10 rounded-full mr-3">
+                    <CustomImage
                       src={tenant.logoUrl}
                       alt="org-logo"
-                      width={45}
-                      height={45}
+                      fallbackClassName="w-10 h-10 rounded-full bg-neutral-100 flex items-center justify-center text-typography-600"
+                      fallbackText={tenant.name?.slice(0, 1)?.toUpperCase() ?? "NA"}
                       className="rounded-full mr-3"
                     />
-                  ) : (
-                    <div className="min-w-[40px] min-h-[40px] rounded-full border border-border-light text-typography-800 flex items-center justify-center mr-3 capitalize">
-                      {tenant.name[0]}
-                    </div>
-                  )}
+                  </div>
                   {tenant.name}
                 </span>
               </div>
