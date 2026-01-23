@@ -56,6 +56,7 @@ export interface SimulationPageProps {
   isEndingSession: boolean;
   startTime: string;
   events: SimulationEventType[];
+  detectedEventIds?: string[];
   score?: number;
   roomStatus: RoomStatus;
   isPreview?: boolean;
@@ -89,4 +90,18 @@ export interface BottomSectionProps {
   startTime: string;
   isFocusMode: boolean;
   onFocusButtonClick: () => void;
+}
+
+export enum ChecklistMode {
+  GUIDED = "GUIDED",
+  UNGUIDED = "UNGUIDED",
+  OFF = "OFF",
+}
+
+export interface ChecklistItem {
+  id: string;
+  name?: string;
+  rank?: number;
+  score?: number;
+  message?: string;
 }
