@@ -1,5 +1,5 @@
 import { triggerWarning } from "@ally-ui-mono/ui-shared/types";
-import { Thread } from "@src/pages/review-details/types";
+import { Thread } from "@types";
 
 export enum ScenarioStatus {
   ACTIVE = "ACTIVE",

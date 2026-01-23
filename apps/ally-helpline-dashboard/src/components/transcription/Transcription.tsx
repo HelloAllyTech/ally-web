@@ -7,8 +7,7 @@ import { toast } from "sonner";
 import { AddComment } from "@ally-ui-mono/ui-shared/assets";
 import { InfiniteScroll } from "@ally-ui-mono/ui-shared/index";
 import { useClickOutside } from "@hooks";
-import { CommentItem, Thread } from "@pages/review-details/types";
-import { SimulationTranscriptMessage } from "@src/types";
+import { CommentItem, SimulationTranscriptMessage, Thread } from "@types";
 
 import { getFreshUserRange, splitTextByComments } from "./utils";
 import CommentAdditionDialog from "../comment-addition-dialog/CommentAdditionDialog";
@@ -16,7 +15,7 @@ import CommentThread from "../comment-thread/CommentThread";
 
 interface TranscriptionProps {
   transcriptList: SimulationTranscriptMessage[];
-  userId: number;
+  userId?: number;
   canSelect?: boolean;
   selectedMessageId?: string;
   selectedStartIndex?: number;
@@ -50,7 +49,6 @@ const DIALOG_WIDTH = 360;
 
 const Transcription: FC<TranscriptionProps> = ({
   transcriptList,
-  userId,
   canSelect = false,
   selectedMessageId,
   selectedStartIndex,
@@ -347,10 +345,10 @@ const Transcription: FC<TranscriptionProps> = ({
             </div>
             <div>
               <span className="font-medium pr-1">
-                {transcript.senderId === userId ? (
-                  <span className="text-primary-600">You:</span>
+                {transcript.senderId === -1 ? (
+                  <span className="text-black ">Agent:</span>
                 ) : (
-                  <span className="text-black">Agent:</span>
+                  <span className="text-primary-600">You:</span>
                 )}
               </span>
               <span

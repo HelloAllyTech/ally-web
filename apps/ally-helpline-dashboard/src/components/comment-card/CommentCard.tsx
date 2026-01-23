@@ -1,10 +1,13 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 
 import { Emoji, EmojiStyle } from "emoji-picker-react";
+import { toast } from "sonner";
 
 import { CustomImage } from "@ally-ui-mono/ui-shared/index";
-import { CommentItem } from "@pages/review-details/types";
-import { AccountCircle } from "@src/assets";
+import { useAddCommentReactionMutation } from "@api";
+import { AccountCircle } from "@assets";
+import { ReactionSelector } from "@components";
+import { ReactionsType, CommentItem } from "@types";
 import { formatRelativeTime } from "@utils";
 
 import Input from "../input";
@@ -25,6 +28,12 @@ const CommentCard = ({
 }: CommentCardProps) => {
   const [showReplyInput, setShowReplyInput] = useState(false);
   const [replyText, setReplyText] = useState("");
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const [selectedEmoji, setSelectedEmoji] = useState<string>("");
+
+  const [addCommentReactions] = useAddCommentReactionMutation();
+
+  const likeRef = useRef<HTMLDivElement>(null);
 
   const handleReplyClick = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -47,6 +56,32 @@ const CommentCard = ({
       setReplyText("");
     }
   };
+
+  const sendReaction = (reaction: string, action: ReactionsType) =>
+    addCommentReactions({
+      commentId: comment.id,
+      reaction: { reaction, action },
+    }).unwrap();
+
+  const handleEmojiClick = async (emoji: string) => {
+    try {
+      if (selectedEmoji === emoji) {
+        await sendReaction(emoji, ReactionsType.REMOVE);
+        setSelectedEmoji("");
+      } else {
+        if (selectedEmoji) {
+          await sendReaction(selectedEmoji, ReactionsType.REMOVE);
+        }
+        await sendReaction(emoji, ReactionsType.ADD);
+        setSelectedEmoji(emoji);
+      }
+
+      setShowEmojiPicker(false);
+    } catch (error) {
+      toast.error(error?.data?.message || "Reaction update failed");
+    }
+  };
+
   return (
     <div className="flex gap-2.5">
       <div className="min-w-6 h-6 rounded-full">
@@ -69,7 +104,23 @@ const CommentCard = ({
         <div className="line-clamp-2 text-[14px] text-typography-800">{comment.content}</div>
         <div className="flex gap-2 items-center">
           {showLike && (
-            <div className="cursor-pointer text-typography-800 text-[12px] font-medium">Like</div>
+            <div className="relative">
+              <div
+                ref={likeRef}
+                className="cursor-pointer text-typography-800 text-[12px] font-medium"
+                onClick={() => setShowEmojiPicker(prev => !prev)}
+              >
+                Like
+              </div>
+
+              {showEmojiPicker && (
+                <ReactionSelector
+                  anchorElement={likeRef.current}
+                  selectedEmoji={selectedEmoji}
+                  handleEmojiClick={handleEmojiClick}
+                />
+              )}
+            </div>
           )}
           {!showLike && comment.reactions && Object.keys(comment.reactions).length > 0 && (
             <>
