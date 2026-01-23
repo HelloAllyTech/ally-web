@@ -28,7 +28,7 @@ export const SimulationDetailsModal: FC<SimulationDetailsModalProps> = ({
   contentClassName = "",
   imageContainerClassName = "",
   triggerWarnings = [],
-  showActionButtons,
+  showActionButtons = true,
   renderCustomImage,
   renderAdditionalContent,
 }) => {
