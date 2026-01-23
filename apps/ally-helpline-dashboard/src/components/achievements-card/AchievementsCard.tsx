@@ -69,7 +69,7 @@ export const AchievementsCard: FC<AchievementsCardProps> = ({
         <EmptyState message={emptyMessage} />
       ) : (
         achievements.map(achievement => (
-          <AchievementItem key={achievement.id} achievement={achievement} imageSize={80} />
+          <AchievementItem key={achievement.id} achievement={achievement} imageSize={50} />
         ))
       )}
     </div>
