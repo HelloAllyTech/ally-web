@@ -124,17 +124,22 @@ export const ReviewDetails = () => {
 
   const handleEmojiClick = async (emoji: string) => {
     try {
+      let action: ReactionsType;
+      let nextEmoji = selectedEmoji;
+
       if (selectedEmoji === emoji) {
-        await sendReaction(emoji, ReactionsType.REMOVE);
-        setSelectedEmoji("");
+        action = ReactionsType.REMOVE;
+        nextEmoji = "";
+      } else if (selectedEmoji) {
+        action = ReactionsType.UPDATE;
+        nextEmoji = emoji;
       } else {
-        if (selectedEmoji) {
-          await sendReaction(selectedEmoji, ReactionsType.REMOVE);
-        }
-        await sendReaction(emoji, ReactionsType.ADD);
-        setSelectedEmoji(emoji);
+        action = ReactionsType.ADD;
+        nextEmoji = emoji;
       }
 
+      await sendReaction(emoji, action);
+      setSelectedEmoji(nextEmoji);
       setShowEmojiPicker(false);
     } catch (error) {
       toast.error(error?.data?.message || "Reaction update failed");
