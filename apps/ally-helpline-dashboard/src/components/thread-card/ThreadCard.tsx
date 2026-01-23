@@ -19,7 +19,7 @@ const ThreadCard = ({ thread }: ThreadCardProps) => {
       className="w-full min-w-[350px] font-primary border-[0.5px] rounded-lg px-4 py-2 flex flex-col gap-2"
       key={thread.id}
     >
-      <div className="text-[14px] font-primary h-9 flex items-center font-medium border-b-[0.5px]">
+      <div className="text-[14px] font-primary min-h-9 flex items-center font-medium border-b-[0.5px] pb-2">
         Selected text: "{thread.selection.text}"
       </div>
       <CommentCard comment={thread.comments[0]} />
