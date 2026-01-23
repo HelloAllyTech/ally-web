@@ -1,16 +1,16 @@
 import { useRef, useState } from "react";
 
 import { Emoji, EmojiStyle } from "emoji-picker-react";
+import { useSelector } from "react-redux";
 import { toast } from "sonner";
 
-import { CustomImage } from "@ally-ui-mono/ui-shared/index";
+import { AutoExpandableTextarea, CustomImage } from "@ally-ui-mono/ui-shared";
 import { useAddCommentReactionMutation } from "@api";
-import { AccountCircle, Smiley } from "@assets";
-import { ReactionSelector } from "@components";
+import { Smiley } from "@assets";
+import { Button, ReactionSelector } from "@components";
+import { RootState } from "@store";
 import { ReactionsType, CommentItem } from "@types";
 import { formatRelativeTime } from "@utils";
-
-import Input from "../input";
 
 interface CommentCardProps {
   comment: CommentItem;
@@ -26,6 +26,8 @@ const CommentCard = ({
   onReplyClick,
   onReply,
 }: CommentCardProps) => {
+  const user = useSelector((state: RootState) => state.user.user);
+
   const [showReplyInput, setShowReplyInput] = useState(false);
   const [replyText, setReplyText] = useState("");
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
@@ -45,15 +47,6 @@ const CommentCard = ({
       onReply?.(replyText);
       setReplyText("");
       setShowReplyInput(false);
-    }
-  };
-
-  const handleReplyKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter") {
-      handleReplySubmit();
-    } else if (e.key === "Escape") {
-      setShowReplyInput(false);
-      setReplyText("");
     }
   };
 
@@ -87,9 +80,50 @@ const CommentCard = ({
     }
   };
 
+  const handleCancelReply = () => {
+    setShowReplyInput(false);
+    setReplyText("");
+  };
+
+  const renderReplyBox = () => {
+    if (showReplyInput) {
+      return (
+        <div className="flex gap-2.5 flex-row w-full mt-1">
+          <div className="w-8 h-8 rounded-full">
+            <CustomImage
+              src={user?.profileImageUrl}
+              alt="user"
+              className="w-full h-full rounded-full"
+              fallbackClassName="w-full h-full rounded-full bg-neutral-100 flex items-center justify-center text-typography-600"
+              fallbackText={user?.name?.slice(0, 1)?.toUpperCase() ?? "NA"}
+            />
+          </div>
+          <div className="flex-1 mt-2">
+            <AutoExpandableTextarea
+              value={replyText}
+              onChange={setReplyText}
+              placeholder="Add comment"
+              className="w-full border rounded-sm text-sm !px-2 !py-2 mt-2 min-h-20"
+            />
+            <div className="flex gap-2 flex-row my-2 justify-end">
+              <Button variant="secondary" className="py-0 h-8" onClick={handleCancelReply}>
+                Cancel
+              </Button>
+              <Button variant="primary" className="py-0 h-8" onClick={handleReplySubmit}>
+                Comment
+              </Button>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    return null;
+  };
+
   return (
     <div className="flex gap-2.5">
-      <div className="min-w-6 h-6 rounded-full overflow-hidden">
+      <div className="min-w-8 h-8 rounded-full overflow-hidden">
         <CustomImage
           src={comment.createdBy.profileImage}
           alt={comment.createdBy.name}
@@ -179,19 +213,7 @@ const CommentCard = ({
             </div>
           )}
         </div>
-        {showReplyInput && (
-          <div className="flex gap-2 items-center mt-2 w-full">
-            <AccountCircle className="min-w-6 h-6 rounded-full" />
-            <Input
-              placeholder="Write a reply..."
-              className="flex-1 h-8 w-full rounded-sm text-sm focus-visible:ring-0"
-              value={replyText}
-              onChange={e => setReplyText(e.target.value)}
-              onKeyDown={handleReplyKeyDown}
-              autoFocus
-            />
-          </div>
-        )}
+        {renderReplyBox()}
       </div>
     </div>
   );

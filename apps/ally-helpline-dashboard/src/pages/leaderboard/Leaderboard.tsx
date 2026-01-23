@@ -111,7 +111,7 @@ export const Leaderboard = () => {
           hasMore={hasMore}
           isLoading={isFetching}
           selectedTimeFilter={window}
-          // data={leaderboardData}
+          data={leaderboardData}
         />
 
         {/* achievements card */}
