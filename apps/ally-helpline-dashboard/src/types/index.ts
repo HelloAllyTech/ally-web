@@ -14,3 +14,4 @@ export * from "./user";
 export * from "./leaderBoard";
 export * from "./reviews";
 export * from "./badge";
+export * from "./reviews";

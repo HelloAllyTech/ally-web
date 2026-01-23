@@ -1,6 +1,6 @@
 import { v4 as uuidv4 } from "uuid";
 
-import { Thread, TextSegment } from "./types";
+import { Thread, TextSegment } from "@types";
 
 const splitTextByComments = (text: string, comments?: Thread[]): TextSegment[] => {
   if (!comments || comments.length === 0) {

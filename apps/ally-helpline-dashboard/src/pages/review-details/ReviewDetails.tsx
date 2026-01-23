@@ -1,8 +1,9 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 import { Emoji, EmojiStyle } from "emoji-picker-react";
 import { useSelector } from "react-redux";
 import { useNavigate, useParams } from "react-router-dom";
+import { toast } from "sonner";
 
 import { CustomImage } from "@ally-ui-mono/ui-shared/index";
 import {
@@ -12,16 +13,15 @@ import {
   useGetReviewDetailsWithMessagesQuery,
 } from "@api";
 import { AccountCircle, ChatBubble, LeftArrow, Smiley } from "@assets";
+import { ReactionSelector } from "@components";
 import ReactionsModal from "@components/reaction-modal/ReactionModal";
 import ReviewCommentsSidepanel from "@components/review-comments-sidepanel/ReviewCommentsSidepanel";
 import Transcription from "@components/transcription";
-import { PLATFORM_EMOJIS } from "@constants";
 import { RootState } from "@store";
-import { ReactionsType, SimulationTranscriptMessage } from "@types";
+import { ReactionsType, SimulationTranscriptMessage, Thread } from "@types";
 import { getFormattedDateTime, getFormattedTimeFromDuration } from "@utils";
 
 import { HEADING } from "./dummy";
-import { Thread } from "./types";
 import { TRANSCRIPT_PAGE_SIZE } from "../calls/components/constants";
 
 export const ReviewDetails = () => {
@@ -41,6 +41,8 @@ export const ReviewDetails = () => {
   const { data: reviewDetails, isLoading: isGetReviewDetailsLoading } = useGetReviewByIdQuery(
     reviewId || "",
   );
+
+  const selectEmojiRef = useRef<HTMLDivElement>(null);
 
   const [createComment, { isLoading: isCreateCommentLoading, isSuccess: isCreateCommentSuccess }] =
     useCreateCommentMutation();
@@ -101,27 +103,29 @@ export const ReviewDetails = () => {
       .flat();
   }, [transcriptList]);
 
-  const handleEmojiClick = (emoji: string) => {
-    if (selectedEmoji === emoji) {
-      setSelectedEmoji("");
-      addReactions({
-        id: reviewId,
-        reaction: {
-          reaction: emoji,
-          action: ReactionsType.REMOVE,
-        },
-      });
-    } else {
-      setSelectedEmoji(emoji);
-      addReactions({
-        id: reviewId,
-        reaction: {
-          reaction: emoji,
-          action: ReactionsType.ADD,
-        },
-      });
+  const sendReaction = (reaction: string, action: ReactionsType) =>
+    addReactions({
+      id: reviewId,
+      reaction: { reaction, action },
+    }).unwrap();
+
+  const handleEmojiClick = async (emoji: string) => {
+    try {
+      if (selectedEmoji === emoji) {
+        await sendReaction(emoji, ReactionsType.REMOVE);
+        setSelectedEmoji("");
+      } else {
+        if (selectedEmoji) {
+          await sendReaction(selectedEmoji, ReactionsType.REMOVE);
+        }
+        await sendReaction(emoji, ReactionsType.ADD);
+        setSelectedEmoji(emoji);
+      }
+
+      setShowEmojiPicker(false);
+    } catch (error) {
+      toast.error(error?.data?.message || "Reaction update failed");
     }
-    setShowEmojiPicker(false);
   };
 
   const handleCommentClick = (props: {
@@ -206,7 +210,8 @@ export const ReviewDetails = () => {
               </div>
               <div className="w-1 h-1 bg-neutral-500 rounded-full mx-1" />
               <div>
-                Duration: {getFormattedTimeFromDuration(reviewDetails?.scenario?.duration, "mm:ss")}{" "}
+                Duration:{" "}
+                {getFormattedTimeFromDuration(reviewDetails?.scenarioSession?.duration, "mm:ss")}{" "}
                 Min
               </div>
             </div>
@@ -264,6 +269,7 @@ export const ReviewDetails = () => {
             <div
               onClick={() => setShowEmojiPicker(!showEmojiPicker)}
               className="flex relative items-center h-9 min-w-9 rounded-full border cursor-pointer hover:border-[#0957D0] justify-center"
+              ref={selectEmojiRef}
             >
               {selectedEmoji ? (
                 <div className="pb-0.5">
@@ -274,18 +280,11 @@ export const ReviewDetails = () => {
               )}
             </div>
             {showEmojiPicker && (
-              <div className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 rounded-full w-fit p-2 border-[0.5px] bg-white flex gap-1 items-center shadow-lg">
-                {PLATFORM_EMOJIS.map((emoji, index) => (
-                  <div
-                    key={index}
-                    onClick={() => handleEmojiClick(emoji)}
-                    style={{ borderColor: selectedEmoji === emoji ? "#0957D0" : "" }}
-                    className="hover:scale-[2] bg-white transition-all origin-bottom duration-400 w-[26px] h-[26px] pb-1.5 flex items-center justify-center overflow-visible cursor-pointer rounded-full border-[0.5px] border-neutral-300"
-                  >
-                    <Emoji unified={emoji} size={13} emojiStyle={EmojiStyle.NATIVE} />
-                  </div>
-                ))}
-              </div>
+              <ReactionSelector
+                anchorElement={selectEmojiRef.current}
+                selectedEmoji={selectedEmoji}
+                handleEmojiClick={handleEmojiClick}
+              />
             )}
           </div>
           <div className="flex items-center gap-3 justify-between w-full">

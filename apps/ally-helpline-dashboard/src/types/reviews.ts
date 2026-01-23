@@ -81,3 +81,42 @@ export interface GetReviewsReactionsInput {
   reaction?: string;
   reviewId: string;
 }
+
+export interface CommentItem {
+  id: string;
+  createdBy: {
+    id: number;
+    name: string;
+    profileImage: string | null;
+  };
+  createdAt: string;
+  content: string;
+  reactions: {
+    [key: string]: number;
+  };
+  replyCount: number;
+}
+export interface Thread {
+  id: number;
+  selection: {
+    text: string;
+    startIndex: number;
+    endIndex: number;
+    messageId: number;
+  };
+  comments: CommentItem[];
+}
+
+export interface TextSegment {
+  id: number;
+  content: string;
+  isComment: boolean;
+  commentIndex?: number;
+  threadId?: number;
+  selection?: {
+    startIndex: number;
+    endIndex: number;
+  };
+  comments?: CommentItem[];
+  overlappingThreads?: Thread[];
+}
