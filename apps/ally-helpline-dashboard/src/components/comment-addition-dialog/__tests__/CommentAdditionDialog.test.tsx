@@ -20,7 +20,7 @@ vi.mock("react-redux", () => ({
   ),
 }));
 
-// Mock AutoExpandableTextarea
+// Mock AutoExpandableTextarea and CustomImage
 vi.mock("@ally-ui-mono/ui-shared/index", () => ({
   AutoExpandableTextarea: ({ value, onChange, placeholder, className }: any) => (
     <textarea
@@ -30,6 +30,11 @@ vi.mock("@ally-ui-mono/ui-shared/index", () => ({
       placeholder={placeholder}
       className={className}
     />
+  ),
+  CustomImage: ({ src, alt, className, fallbackText, fallbackClassName }: any) => (
+    <div className={fallbackClassName} data-testid="custom-image">
+      {fallbackText}
+    </div>
   ),
 }));
 
@@ -111,9 +116,10 @@ describe("CommentAdditionDialog Component", () => {
     });
 
     it("should have correct styling on initials container", () => {
-      render(<CommentAdditionDialog {...defaultProps} />);
-      const initialsContainer = screen.getByText("J");
-      expect(initialsContainer).toHaveClass("w-8", "h-8", "border");
+      const { container } = render(<CommentAdditionDialog {...defaultProps} />);
+      const initialsContainer = container.querySelector(".w-8.h-8.rounded-full.border");
+      expect(initialsContainer).toBeInTheDocument();
+      expect(initialsContainer).toHaveClass("w-8", "h-8", "border", "rounded-full");
     });
   });
 

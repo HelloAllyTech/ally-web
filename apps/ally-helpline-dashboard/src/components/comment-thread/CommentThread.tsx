@@ -19,6 +19,7 @@ const CommentThread = ({ comments, onCommentAddition, onReplyComment }: CommentT
 
   const handleCommentAddition = () => {
     onCommentAddition(comment);
+    setShowCommentBox(false);
     setComment("");
   };
 

@@ -14,7 +14,12 @@ exports[`CommentAdditionDialog Component > should match snapshot when rendered 1
         <div
           class="w-8 h-8 rounded-full border flex items-center justify-center text-[#757575] text-sm font-medium"
         >
-          J
+          <div
+            class="w-full h-full rounded-full bg-neutral-100 flex items-center justify-center text-typography-600"
+            data-testid="custom-image"
+          >
+            J
+          </div>
         </div>
         <div
           class=" text-sm font-medium"
