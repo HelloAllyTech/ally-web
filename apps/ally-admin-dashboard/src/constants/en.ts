@@ -138,6 +138,7 @@ export const en = {
     addSelectedEvents: "Add selected events",
     noEventsMatchTags: "No events match selected tags",
     bulkAddSuccess: (count: number) => `${count} event${count !== 1 ? "s" : ""} added successfully`,
+    addSelectedEventsCount: (count: number) => `Add ${count} events`,
     unarchive: "Unarchive",
     unarchiveDescription:
       "Are you sure you want to unarchive this simulation? This will make it visible to active simulations.",

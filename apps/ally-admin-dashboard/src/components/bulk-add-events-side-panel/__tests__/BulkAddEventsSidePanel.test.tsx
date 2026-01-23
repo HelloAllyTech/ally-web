@@ -14,6 +14,7 @@ vi.mock("@constants", () => ({
       filteredEventsCount: (count: number) => `${count} event(s) will be added`,
       noEventsMatchTags: "No events match the selected tags",
       addSelectedEvents: "Add Selected Events",
+      addSelectedEventsCount: (count: number) => `Add ${count} selected events`,
     },
   },
 }));
@@ -377,7 +378,8 @@ describe("BulkAddEventsSidePanel", () => {
       fireEvent.click(dropdownButton.closest("button")!);
       fireEvent.click(screen.getByText("bug"));
 
-      expect(screen.getByText("2 event(s) will be added")).toBeInTheDocument();
+      const addButton = screen.getByTestId("bulk-add-button");
+      expect(addButton).toHaveTextContent("Add 2 selected events");
     });
 
     it("should filter events based on selected tags", () => {
@@ -414,7 +416,8 @@ describe("BulkAddEventsSidePanel", () => {
       fireEvent.click(dropdownButton.closest("button")!);
       fireEvent.click(screen.getByText("urgent"));
 
-      expect(screen.getByText("1 event(s) will be added")).toBeInTheDocument();
+      const addButton = screen.getByTestId("bulk-add-button");
+      expect(addButton).toHaveTextContent("Add 1 selected events");
       expect(screen.queryByText("Event 1")).not.toBeInTheDocument();
       expect(screen.getByText("Event 3")).toBeInTheDocument();
     });

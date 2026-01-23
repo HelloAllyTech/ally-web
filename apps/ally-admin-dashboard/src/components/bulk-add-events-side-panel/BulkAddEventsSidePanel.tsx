@@ -224,9 +224,6 @@ export const BulkAddEventsSidePanel: React.FC<BulkAddEventsSidePanelProps> = ({
               </div>
             ) : newEvents.length > 0 ? (
               <div className="space-y-3">
-                <div className="text-sm text-typography-800 bg-primary-50 p-4 rounded-md">
-                  {en.simulation.filteredEventsCount(newEvents.length)}
-                </div>
                 {/* Event list */}
                 <div className="border border-border-light rounded-md max-h-[300px] overflow-y-auto custom-scrollbar">
                   {newEvents.map((event, index) => (
@@ -268,13 +265,13 @@ export const BulkAddEventsSidePanel: React.FC<BulkAddEventsSidePanelProps> = ({
 
           {/* Add Button */}
           {newEvents.length > 0 && (
-            <div className="mt-6">
+            <div className="mt-6 flex justify-center">
               <Button
                 variant={ButtonVariant.PRIMARY}
                 onClick={handleAddEvents}
                 className="h-12 w-fit px-8"
               >
-                {en.simulation.addSelectedEvents}
+                {en.simulation.addSelectedEventsCount(newEvents.length)}
               </Button>
             </div>
           )}
