@@ -15,6 +15,7 @@ export const cellTypes = {
   timeInput: "timeInput",
   score: "score",
   textAreaWithDropdown: "textAreaWithDropdown",
+  tags: "tags",
 };
 
 export const keyCodes = {

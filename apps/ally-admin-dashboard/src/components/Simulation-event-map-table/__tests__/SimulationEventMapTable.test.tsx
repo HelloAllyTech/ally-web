@@ -48,6 +48,8 @@ vi.mock("@components", () => ({
   Button: ({ children, ...props }: any) => <button {...props}>{children}</button>,
   MappedEventSidePanel: ({ isOpen }: any) =>
     isOpen ? <div data-testid="side-panel-open" /> : null,
+  BulkAddEventsSidePanel: ({ isOpen }: any) =>
+    isOpen ? <div data-testid="bulk-add-panel-open" /> : null,
   EventMapTableLoader: () => <div data-testid="loader" />,
   cellTypes: {
     dropdownSearchable: "dropdownSearchable",

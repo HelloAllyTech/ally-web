@@ -18,6 +18,7 @@ import {
   Button,
   MappedEventSidePanel,
   EventMapTableLoader,
+  BulkAddEventsSidePanel,
 } from "@components";
 import { ButtonVariant } from "@components/types";
 import { SESSION_EVENT_STATUS_OPTIONS, SORT_BY, SORT_ORDER, en } from "@constants";
@@ -48,6 +49,7 @@ export const SimulationEventMapTable: FC<SimulationEventMapTableProps> = ({ simu
   const [isSidePanelOpen, setIsSidePanelOpen] = useState(false);
   const [selectedEventForEdit, setSelectedEventForEdit] =
     useState<UpdateScenarioEventDataParam | null>(null);
+  const [isBulkAddPanelOpen, setIsBulkAddPanelOpen] = useState(false);
 
   const { data: sessionEventsData, isLoading: isSessionEventsLoading } = useGetSessionEventsQuery({
     visibilityType: SESSION_EVENT_STATUS_OPTIONS.ACTIVE,
@@ -443,6 +445,39 @@ export const SimulationEventMapTable: FC<SimulationEventMapTableProps> = ({ simu
     [sessionEventsMap, mappedEvents, saveEventsToApi],
   );
 
+  // Handle bulk add events
+  const handleBulkAddEvents = useCallback(
+    async (events: UpdateScenarioEventDataParam[]) => {
+      if (events.length === 0) {
+        setIsBulkAddPanelOpen(false);
+        return;
+      }
+
+      // Add events to the beginning of mappedEvents array
+      const updatedEvents = [...events, ...mappedEvents];
+      setMappedEvents(updatedEvents);
+
+      // Save to API
+      await saveEventsToApi(updatedEvents);
+
+      // Close panel
+      setIsBulkAddPanelOpen(false);
+
+      // Show success message
+      toast.success(en.simulation.bulkAddSuccess(events.length));
+    },
+    [mappedEvents, saveEventsToApi],
+  );
+
+  const renderBulkAddButton = () => {
+    return (
+      <Button variant={ButtonVariant.PRIMARY} onClick={() => setIsBulkAddPanelOpen(true)}>
+        <Add />
+        {en.simulation.bulkAddEvents}
+      </Button>
+    );
+  };
+
   // Render action buttons (Add or Delete)
   const renderActionButtons = () => {
     const disabled = Boolean(mappedEvents?.find(event => event?.id?.value === ""));
@@ -454,12 +489,7 @@ export const SimulationEventMapTable: FC<SimulationEventMapTableProps> = ({ simu
       );
     }
     return (
-      <Button
-        disabled={disabled}
-        className={`${disabled ? "bg-neutral-300 cursor-not-allowed" : "bg-primary-500 hover:bg-primary-500"}`}
-        variant={ButtonVariant.PRIMARY}
-        onClick={handleAddEventInternal}
-      >
+      <Button disabled={disabled} variant={ButtonVariant.PRIMARY} onClick={handleAddEventInternal}>
         <Add />
         {`${en.simulation.addEvent}`}
       </Button>
@@ -476,7 +506,14 @@ export const SimulationEventMapTable: FC<SimulationEventMapTableProps> = ({ simu
             <Refresh className="w-4 h-4" />
           </div>
         </div>
-        {!isLoading && renderActionButtons()}
+        <div className="flex gap-2">
+          {!isLoading && (
+            <>
+              {renderBulkAddButton()}
+              {renderActionButtons()}
+            </>
+          )}
+        </div>
       </div>
       <div
         ref={tableRef}
@@ -506,6 +543,13 @@ export const SimulationEventMapTable: FC<SimulationEventMapTableProps> = ({ simu
         sessionEvents={sessionEvents}
         availableEventOptions={sessionEventsOptions}
         onEventSelect={handleEventSelect}
+      />
+      <BulkAddEventsSidePanel
+        isOpen={isBulkAddPanelOpen}
+        onClose={() => setIsBulkAddPanelOpen(false)}
+        sessionEvents={sessionEvents}
+        mappedEvents={mappedEvents}
+        onBulkAdd={handleBulkAddEvents}
       />
     </div>
   );
