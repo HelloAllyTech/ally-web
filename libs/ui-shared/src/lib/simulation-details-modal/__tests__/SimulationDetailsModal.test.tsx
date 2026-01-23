@@ -13,6 +13,7 @@ describe("SimulationDetailsModal", () => {
     secondaryButtonText: "Close",
     onPrimaryClick: vi.fn(),
     onSecondaryClick: vi.fn(),
+    showActionButtons: true,
   };
 
   it("should not render when isOpen is false", () => {

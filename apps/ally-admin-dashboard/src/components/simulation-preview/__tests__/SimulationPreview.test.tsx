@@ -43,6 +43,76 @@ vi.mock("@api", () => ({
   }),
 }));
 
+vi.mock("@ally-ui-mono/ui-shared", () => ({
+  SimulationDetailsModal: ({
+    isOpen,
+    title,
+    description,
+    coverImageUrl,
+    headerTitle,
+    headerSubtitle,
+    scenarioLabel,
+    primaryButtonText,
+    secondaryButtonText,
+    onPrimaryClick,
+    onSecondaryClick,
+    isPrimaryLoading,
+    renderCustomImage,
+    renderAdditionalContent,
+  }: any) =>
+    isOpen ? (
+      <div>
+        <h2 className="text-4xl text-typography-900 mb-4 font-thin font-secondary">
+          <span>{headerTitle}</span>
+          <span className="font-secondary">{headerSubtitle && ` ${headerSubtitle}`}</span>
+        </h2>
+        {renderAdditionalContent && <div className="mb-4 w-full">{renderAdditionalContent()}</div>}
+        <div className="flex flex-col items-center border border-border-light rounded-lg p-3 ">
+          <div className="mb-6 w-full">
+            <div className="w-full h-64 rounded-lg flex items-center justify-center relative overflow-hidden bg-background-secondary ">
+              {renderCustomImage &&
+                renderCustomImage({
+                  src: coverImageUrl,
+                  alt: title,
+                  className: "w-full h-full object-cover",
+                })}
+            </div>
+          </div>
+          <div className="space-y-3 w-full">
+            <h3 className="text-lg text-typography-900">{title}</h3>
+            <div>
+              <h4 className="text-base font-semibold text-typography-800">{scenarioLabel}</h4>
+              <p className="text-base text-typography-800 leading-relaxed max-h-[300px] overflow-y-auto">
+                {description}
+              </p>
+            </div>
+          </div>
+        </div>
+        <button onClick={onSecondaryClick}>{secondaryButtonText}</button>
+        <button onClick={onPrimaryClick} disabled={isPrimaryLoading}>
+          {primaryButtonText}
+        </button>
+      </div>
+    ) : null,
+  CustomImage: (props: any) => <img data-testid="custom-image" {...props} />,
+  DropdownField: ({ options, value, onChange, valueClassName }: any) => (
+    <div className="w-full relative">
+      <div className="w-full flex gap-2 items-center">
+        <span className={valueClassName}>{value}</span>
+        <svg
+          aria-hidden="true"
+          className="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium w-4 h-4 cursor-pointer rotate-90 css-1umw9bq-MuiSvgIcon-root"
+          data-testid="PlayArrowIcon"
+          focusable="false"
+          viewBox="0 0 24 24"
+        >
+          <path d="M8 5v14l11-7z" />
+        </svg>
+      </div>
+    </div>
+  ),
+}));
+
 vi.mock("@components", () => ({
   CustomImage: (props: any) => <img data-testid="custom-image" {...props} />,
   Button: React.forwardRef<HTMLButtonElement, any>(({ children, onClick, className }, ref) => (
