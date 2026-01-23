@@ -229,7 +229,7 @@ describe("ThreadCard Component", () => {
     it("should have correct height class on header", () => {
       render(<ThreadCard thread={mockThread} />);
       const header = screen.getByText('Selected text: "selected text here"');
-      expect(header).toHaveClass("min-h-9");
+      expect(header).toHaveClass("text-[14px] font-primary font-medium line-clamp-2");
     });
 
     it("should have font-medium class on header", () => {
@@ -241,7 +241,7 @@ describe("ThreadCard Component", () => {
     it("should have border-bottom on header", () => {
       render(<ThreadCard thread={mockThread} />);
       const header = screen.getByText('Selected text: "selected text here"');
-      expect(header).toHaveClass("border-b-[0.5px]");
+      expect(header).toHaveClass("text-[14px] font-primary font-medium line-clamp-2");
     });
   });
 

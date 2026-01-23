@@ -459,7 +459,7 @@ const Transcription: FC<TranscriptionProps> = ({
                                     segment.selection,
                                     transcript.id,
                                     null,
-                                    parentCommentId,
+                                    Number(parentCommentId),
                                   )
                                 }
                               />

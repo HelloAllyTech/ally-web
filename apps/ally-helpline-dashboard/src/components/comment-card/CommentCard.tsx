@@ -5,7 +5,7 @@ import { toast } from "sonner";
 
 import { CustomImage } from "@ally-ui-mono/ui-shared/index";
 import { useAddCommentReactionMutation } from "@api";
-import { AccountCircle } from "@assets";
+import { AccountCircle, Smiley } from "@assets";
 import { ReactionSelector } from "@components";
 import { ReactionsType, CommentItem } from "@types";
 import { formatRelativeTime } from "@utils";
@@ -98,16 +98,22 @@ const CommentCard = ({
           <div className="text-[14px] font-medium">{comment.createdBy.name}</div>
           <div className="text-[12px] text-gray-500">{formatRelativeTime(comment.createdAt)}</div>
         </div>
-        <div className="line-clamp-2 text-[14px] text-typography-800">{comment.content}</div>
+        <div className="text-[14px] text-typography-800">{comment.content}</div>
         <div className="flex gap-2 items-center">
           {showLike && (
             <div className="relative">
               <div
                 ref={likeRef}
-                className="cursor-pointer text-typography-800 text-[12px] font-medium"
+                className="cursor-pointer"
                 onClick={() => setShowEmojiPicker(prev => !prev)}
               >
-                Like
+                {selectedEmoji ? (
+                  <div className="pb-0.5">
+                    <Emoji unified={selectedEmoji} size={14} emojiStyle={EmojiStyle.NATIVE} />
+                  </div>
+                ) : (
+                  <Smiley className="w-5 h-5 text-neutral-600 hover:text-[#0957D0]" />
+                )}
               </div>
 
               {showEmojiPicker && (
