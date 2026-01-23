@@ -51,17 +51,18 @@ export const AchievementsViewAll: FC = () => {
   }> => {
     return badgesData
       .map(categoryData => {
+        const badgesArray = categoryData.badges || [];
         const filteredBadges =
           activeFilter === LockedStatus.UNLOCKED
-            ? categoryData.data.filter(badge => badge.lockStatus === LockedStatus.UNLOCKED)
-            : categoryData.data;
+            ? badgesArray.filter(badge => badge.lockStatus === LockedStatus.UNLOCKED)
+            : badgesArray;
 
         return {
-          category: categoryData.categories,
+          category: categoryData.category,
           badges: filteredBadges,
         };
       })
-      .filter(group => group.badges.length > 0);
+      .filter(group => group.badges && group.badges.length > 0);
   };
 
   const groupedBadges = getFilteredBadgesByCategory();

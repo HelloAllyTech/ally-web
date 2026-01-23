@@ -110,6 +110,6 @@ export const ApiEndpoints = {
     GET_AVAILABLE_BADGES: "/v1/badges/me/available",
     GET_MY_BADGES: "/v1/badges/me",
     GET_BADGES_COUNT: "/v1/badges/me/count",
-    UPDATE_BADGE_VIEW_STATUS: (badgeId: string) => `/v1/badges/me/${badgeId}/`,
+    UPDATE_BADGE_VIEW_STATUS: (badgeId: string) => `/v1/badges/me/${badgeId}/viewed`,
   },
 };

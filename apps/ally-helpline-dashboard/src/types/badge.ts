@@ -26,8 +26,8 @@ export interface AchievementItemData {
 }
 
 export interface AchievementItemDataResponse {
-  data: AchievementItemData[];
-  categories: BadgeCategory;
+  badges: AchievementItemData[];
+  category: BadgeCategory;
 }
 
 export enum ViewedStatus {
