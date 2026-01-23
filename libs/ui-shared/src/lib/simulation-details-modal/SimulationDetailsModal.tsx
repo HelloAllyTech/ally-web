@@ -28,6 +28,7 @@ export const SimulationDetailsModal: FC<SimulationDetailsModalProps> = ({
   contentClassName = "",
   imageContainerClassName = "",
   triggerWarnings = [],
+  showActionButtons,
   renderCustomImage,
   renderAdditionalContent,
 }) => {
@@ -114,21 +115,27 @@ export const SimulationDetailsModal: FC<SimulationDetailsModalProps> = ({
         </div>
 
         {/* Action Buttons */}
-        <div className="px-6 pb-6 pt-3 flex flex-row items-center justify-between">
-          <button
-            onClick={onSecondaryClick}
-            className={`w-[49%] font-tertiary px-6 py-2 border border-border-light rounded-[40px] text-typography-900 font-medium hover:bg-background-secondary transition-colors ${secondaryButtonClassName}`}
-          >
-            {secondaryButtonText}
-          </button>
-          <button
-            onClick={onPrimaryClick}
-            disabled={isPrimaryLoading}
-            className={`w-[49%] font-tertiary px-6 py-2 bg-primary-500 text-white rounded-[40px] font-medium hover:bg-primary-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${primaryButtonClassName}`}
-          >
-            {primaryButtonText}
-          </button>
-        </div>
+        {showActionButtons && (
+          <div className="px-6 pb-6 pt-3 flex flex-row items-center justify-between">
+            {onSecondaryClick && (
+              <button
+                onClick={onSecondaryClick}
+                className={`w-[49%] font-tertiary px-6 py-2 border border-border-light rounded-[40px] text-typography-900 font-medium hover:bg-background-secondary transition-colors ${secondaryButtonClassName}`}
+              >
+                {secondaryButtonText}
+              </button>
+            )}
+            {onPrimaryClick && (
+              <button
+                onClick={onPrimaryClick}
+                disabled={isPrimaryLoading}
+                className={`w-[49%] font-tertiary px-6 py-2 bg-primary-500 text-white rounded-[40px] font-medium hover:bg-primary-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${primaryButtonClassName}`}
+              >
+                {primaryButtonText}
+              </button>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );

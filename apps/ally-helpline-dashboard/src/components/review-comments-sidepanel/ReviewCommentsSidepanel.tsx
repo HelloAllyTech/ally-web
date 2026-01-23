@@ -74,6 +74,11 @@ const ReviewCommentsSidepanel = ({
                   </div>
                 ),
             )}
+            {threads?.length === 0 && (
+              <div className="w-full h-full flex pt-4 justify-center">
+                <div className="text-typography-800 text-center">No comments yet</div>
+              </div>
+            )}
           </div>
         )}
         {isLoading && (
