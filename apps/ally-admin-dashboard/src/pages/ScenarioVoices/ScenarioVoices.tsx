@@ -9,9 +9,10 @@ import {
   useUpdateScenarioVoiceMutation,
 } from "@api";
 import { NotionTable, ListToolbar, ScenarioVoiceSidePanel } from "@components";
+import { FilterDropdown } from "@components/filters/FilterDropdown";
 import { ButtonVariant } from "@components/types";
 import { en, SCENARIO_VOICE_COLUMNS, SORT_BY, SORT_ORDER } from "@constants";
-import { ScenarioVoice, ScenarioLanguage } from "@types";
+import { ScenarioVoice, ScenarioLanguage, ScenarioVoiceFilters } from "@types";
 
 export const ScenarioVoices: React.FC = () => {
   const limit = 30;
@@ -25,12 +26,21 @@ export const ScenarioVoices: React.FC = () => {
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState<string>("");
   const searchDebounceTimer = useRef<NodeJS.Timeout | null>(null);
 
+  const [filters, setFilters] = useState<ScenarioVoiceFilters>({
+    providers: [],
+    languages: [],
+  });
+  const [isFilterOpen, setIsFilterOpen] = useState<boolean>(false);
+  const addFilterBtnRef = useRef<HTMLButtonElement>(null);
+
   const { data: voicesResponse, isFetching: isQueryFetching } = useGetScenarioVoicesQuery({
     searchName: debouncedSearchQuery,
     limit,
     offset,
     sortBy: SORT_BY.CREATED_AT,
     order: SORT_ORDER.DESC,
+    providers: filters.providers.length > 0 ? filters.providers : undefined,
+    languageIds: filters.languages.length > 0 ? filters.languages.map(Number) : undefined,
   });
 
   useEffect(() => {
@@ -86,6 +96,59 @@ export const ScenarioVoices: React.FC = () => {
       }
     }
   }, [voicesResponse, offset]);
+
+  const handleApplyFilters = (newFilters: ScenarioVoiceFilters) => {
+    setFilters(newFilters);
+    setOffset(0);
+    setIsFilterOpen(false);
+    setVoices([]);
+  };
+
+  const filterChips = React.useMemo(() => {
+    const chips: any[] = [];
+
+    if (filters.providers.length > 0) {
+      chips.push({
+        label: "Provider",
+        value: filters.providers.join(", "),
+        allValue: filters.providers,
+        onClear: () => {
+          setFilters(prev => ({ ...prev, providers: [] }));
+          setOffset(0);
+          setVoices([]);
+        },
+      });
+    }
+
+    if (filters.languages.length > 0) {
+      const labels = filters.languages.map(id => {
+        const found = languageOptions.find((l: any) => String(l.language_id) === id);
+        return found ? found.label : id;
+      });
+
+      chips.push({
+        label: "Language",
+        value: labels.join(", "),
+        allValue: filters.languages,
+        onClear: () => {
+          setFilters(prev => ({ ...prev, languages: [] }));
+          setOffset(0);
+          setVoices([]);
+        },
+      });
+    }
+
+    return chips;
+  }, [filters, languageOptions]);
+
+  const addFilterCta = React.useMemo(
+    () => ({
+      label: "Filter",
+      onClick: () => setIsFilterOpen(prev => !prev),
+      active: isFilterOpen,
+    }),
+    [isFilterOpen],
+  );
 
   const handleSearchChange = (value: string) => {
     setSearchQuery(value);
@@ -312,6 +375,31 @@ export const ScenarioVoices: React.FC = () => {
             variant: ButtonVariant.PRIMARY,
             onClick: handleNewVoiceClick,
           }}
+          filterChips={filterChips}
+          addFilterCta={addFilterCta}
+          addFilterButtonRef={addFilterBtnRef}
+        />
+        <FilterDropdown<ScenarioVoiceFilters>
+          isOpen={isFilterOpen}
+          onClose={() => setIsFilterOpen(false)}
+          currentFilters={filters}
+          onApplyFilters={handleApplyFilters}
+          anchorRect={addFilterBtnRef.current?.getBoundingClientRect() ?? null}
+          sections={[
+            {
+              id: "providers",
+              label: "Provider",
+              options: uniqueProviders.map(p => ({ label: p, value: p })),
+            },
+            {
+              id: "languages",
+              label: "Language",
+              options: languageOptions.map((l: any) => ({
+                label: l.label,
+                value: String(l.language_id),
+              })),
+            },
+          ]}
         />
         <div className="flex flex-col gap-4 h-[calc(100vh-100px)] relative mt-[20px]">
           <NotionTable

@@ -233,3 +233,24 @@ export interface ListToolbarProps {
   className?: string;
   addFilterButtonRef?: React.RefObject<HTMLButtonElement>;
 }
+
+export interface RequestFilterOption {
+  label: string;
+  value: string;
+}
+
+export interface FilterSectionConfig<T> {
+  id: keyof T;
+  label: string;
+  options: RequestFilterOption[];
+  renderOption?: (option: RequestFilterOption) => React.ReactNode;
+}
+
+export interface GenericFilterDropdownProps<T> {
+  isOpen: boolean;
+  onClose: () => void;
+  sections: FilterSectionConfig<T>[];
+  onApplyFilters: (filters: T) => void;
+  anchorRect?: DOMRect | null;
+  currentFilters: T;
+}

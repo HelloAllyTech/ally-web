@@ -289,6 +289,8 @@ export interface GetScenarioVoicesQuery {
   offset?: number;
   sortBy?: string;
   order?: string; // e.g. "asc" | "desc"
+  providers?: string[];
+  languageIds?: number[];
 }
 
 export interface GetCoverImageUrlRequest {
@@ -346,4 +348,9 @@ export interface createTriggerResponse {
   name: string;
   createdAt: string;
   updatedAt: string;
+}
+
+export interface ScenarioVoiceFilters {
+  providers: string[];
+  languages: string[];
 }
