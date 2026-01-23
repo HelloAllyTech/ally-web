@@ -61,17 +61,12 @@ const FeedCard: FC<FeedCardProps> = ({
           <div
             className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full overflow-hidden ${!user?.profileImage ? "border border-border-light" : ""} flex items-center justify-center flex-shrink-0`}
           >
-            {user?.profileImage ? (
-              <img
-                src={user.profileImage}
-                alt={user?.name ?? ""}
-                className="w-full h-full object-cover"
-              />
-            ) : (
-              <div className="font-primary leading-[1.67] text-typography-800">
-                {user?.name?.charAt(0).toUpperCase() ?? ""}
-              </div>
-            )}
+            <CustomImage
+              src={user.profileImage}
+              alt={user?.name ?? ""}
+              fallbackText={user?.name?.slice(0, 1)?.toUpperCase() ?? "NA"}
+              className="w-full h-full object-cover"
+            />
           </div>
           <div className="flex flex-col">
             <span className="font-primary font-medium text-sm sm:text-base leading-[1.4] text-[#1A1A1A]">

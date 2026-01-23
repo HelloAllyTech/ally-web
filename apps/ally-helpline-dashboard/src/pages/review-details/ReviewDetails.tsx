@@ -5,23 +5,25 @@ import { useSelector } from "react-redux";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
 
-import { CustomImage } from "@ally-ui-mono/ui-shared/index";
+import { CustomImage, SimulationDetailsModal } from "@ally-ui-mono/ui-shared";
 import {
   useCreateCommentMutation,
   useAddReactionMutation,
   useGetReviewByIdQuery,
   useGetReviewDetailsWithMessagesQuery,
 } from "@api";
-import { AccountCircle, ChatBubble, LeftArrow, Smiley } from "@assets";
-import { ReactionSelector } from "@components";
-import ReactionsModal from "@components/reaction-modal/ReactionModal";
-import ReviewCommentsSidepanel from "@components/review-comments-sidepanel/ReviewCommentsSidepanel";
-import Transcription from "@components/transcription";
+import { ChatBubble, LeftArrow, Smiley, InfoIcon } from "@assets";
+import {
+  ReactionSelector,
+  EmojiStack,
+  ReactionsModal,
+  ReviewCommentsSidepanel,
+  Transcription,
+} from "@components";
 import { RootState } from "@store";
 import { ReactionsType, SimulationTranscriptMessage, Thread } from "@types";
 import { getFormattedDateTime, getFormattedTimeFromDuration } from "@utils";
 
-import { HEADING } from "./dummy";
 import { TRANSCRIPT_PAGE_SIZE } from "../calls/components/constants";
 
 export const ReviewDetails = () => {
@@ -38,6 +40,7 @@ export const ReviewDetails = () => {
   const [selectedThreadId, setSelectedThreadId] = useState<number>(null);
   const [transcriptList, setTranscriptList] = useState<SimulationTranscriptMessage[]>([]);
   const [showReactionsModal, setShowReactionsModal] = useState(false);
+  const [showSimulationDetailsModal, setShowSimulationDetailsModal] = useState(false);
   const { data: reviewDetails, isLoading: isGetReviewDetailsLoading } = useGetReviewByIdQuery(
     reviewId || "",
   );
@@ -68,6 +71,24 @@ export const ReviewDetails = () => {
     }
   }, [simulationTranscript]);
 
+  const reviewReactions = useMemo(() => {
+    if (!reviewDetails?.reactions) return [];
+    return Object.keys(reviewDetails?.reactions);
+  }, [reviewDetails?.reactions]);
+
+  const totalReactionCount = useMemo(() => {
+    if (!reviewReactions) return 0;
+    const reactionsCount = reviewReactions.reduce(
+      (acc: number, curr: string) => acc + reviewReactions[curr],
+      0,
+    );
+    if (reactionsCount > 999) {
+      const count = Number((reactionsCount / 1000).toFixed(1));
+      return `${count}k`;
+    }
+    return reactionsCount;
+  }, [reviewReactions]);
+
   // Reset transcript list when comment is successfully created to reflect new data
   useEffect(() => {
     if (isCreateCommentSuccess) {
@@ -77,14 +98,6 @@ export const ReviewDetails = () => {
 
   const handleGoBack = () => {
     navigate(-1);
-  };
-  const getTotalReactions = () => {
-    const reactionsCount = Object.values(HEADING.reactions).reduce((acc, curr) => acc + curr, 0);
-    if (reactionsCount > 999) {
-      const count = Number((reactionsCount / 1000).toFixed(1));
-      return `${count}k`;
-    }
-    return reactionsCount;
   };
 
   const threads = useMemo(() => {
@@ -164,6 +177,64 @@ export const ReviewDetails = () => {
     createComment({ reviewId, body });
   };
 
+  const handleReactionsClick = () => {
+    setShowReactionsModal(true);
+  };
+
+  const renderBottomSection = () => {
+    return (
+      <div className="absolute flex justify-center bottom-9 left-0 right-0 w-full">
+        <div className="p-2 h-14 rounded-full border flex items-center gap-2 bg-white shadow-2xl">
+          <div
+            onClick={() => setShowCommentsSidepanel(!showCommentsSidepanel)}
+            className="group flex items-center h-full w-fit cursor-pointer hover:border-[#0957D0] gap-2.5 rounded-full border justify-center px-3"
+          >
+            <ChatBubble className="w-6 h-6 text-neutral-600 group-hover:text-[#0957D0]" />
+            <div className="text-typography-900 font-primary group-hover:text-[#0957D0]">
+              Comments
+            </div>
+          </div>
+
+          <div className="relative w-fit">
+            <div
+              onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+              className="flex relative items-center h-9 min-w-9 rounded-full border cursor-pointer hover:border-[#0957D0] justify-center"
+              ref={selectEmojiRef}
+            >
+              {selectedEmoji ? (
+                <div className="pb-0.5">
+                  <Emoji unified={selectedEmoji} size={16} emojiStyle={EmojiStyle.NATIVE} />
+                </div>
+              ) : (
+                <Smiley className="w-6 h-6 text-neutral-600 hover:text-[#0957D0]" />
+              )}
+            </div>
+            {showEmojiPicker && (
+              <ReactionSelector
+                anchorElement={selectEmojiRef.current}
+                selectedEmoji={selectedEmoji}
+                handleEmojiClick={handleEmojiClick}
+              />
+            )}
+          </div>
+          {totalReactionCount > 0 && (
+            <div className="flex items-center gap-3 justify-between w-full">
+              <button
+                onClick={handleReactionsClick}
+                className="flex items-center gap-2 text-black/60 min-w-0 hover:opacity-80 transition-opacity"
+              >
+                <EmojiStack unicodeCodes={reviewReactions} />
+                <span className="font-primary text-xs sm:text-sm leading-[1.5] text-typography-800 truncate">
+                  {totalReactionCount} reaction{totalReactionCount !== 1 ? "s" : ""}
+                </span>
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div className="h-full overflow-y-hidden">
       <div className="flex px-6 items-center gap-4 py-5 border-b-[0.5px]">
@@ -187,20 +258,23 @@ export const ReviewDetails = () => {
           </div>
         ) : (
           <div className="flex flex-col justify-center gap-1.5 font-primary">
-            <div className="text-xl font-medium text-typography-900">
-              {reviewDetails?.scenario?.title}
+            <div className="text-xl font-medium text-typography-900 flex flex-row items-center">
+              <span className="line-clamp-1">{reviewDetails?.scenario?.title}</span>
+              <div
+                onClick={() => setShowSimulationDetailsModal(true)}
+                className="text-xs cursor-pointer text-neutral-500 ml-[4px]"
+              >
+                <InfoIcon />
+              </div>
             </div>
             <div className="flex gap-2 items-center text-gray-500">
-              <div className="w-4 h-4 rounded-full">
-                {reviewDetails?.createdBy?.profileUrl ? (
-                  <CustomImage
-                    src={reviewDetails?.createdBy?.profileUrl}
-                    alt="Profile"
-                    className="w-4 h-4 rounded-full"
-                  />
-                ) : (
-                  <AccountCircle className="w-4 h-4 text-neutral-500" />
-                )}
+              <div className="w-[18px] h-[18px] rounded-full">
+                <CustomImage
+                  src={reviewDetails?.createdBy?.profileImage}
+                  alt="Profile"
+                  className="w-full h-full rounded-full"
+                  fallbackText={reviewDetails?.createdBy?.name?.slice(0, 1)?.toUpperCase() ?? "NA"}
+                />
               </div>
               <div>By {reviewDetails?.createdBy?.name}</div>
               <div className="w-1 h-1 bg-neutral-500 rounded-full mx-1" />
@@ -252,68 +326,25 @@ export const ReviewDetails = () => {
           className={showCommentsSidepanel ? "w-96" : "w-0 border-none"}
         />
       </div>
-      <div className="absolute flex justify-center bottom-9 left-0 right-0 w-full">
-        <div className="p-2 pr-3 h-14 rounded-full border flex items-center gap-2 bg-white shadow-2xl">
-          {reviewDetails?.commentsCount > 0 && (
-            <div
-              onClick={() => setShowCommentsSidepanel(!showCommentsSidepanel)}
-              className="group flex items-center h-full w-fit cursor-pointer hover:border-[#0957D0] gap-2.5 rounded-full border justify-center px-3"
-            >
-              <ChatBubble className="w-6 h-6 text-neutral-600 group-hover:text-[#0957D0]" />
-              <div className="text-typography-900 font-primary group-hover:text-[#0957D0]">
-                Comments
-              </div>
-            </div>
-          )}
-          <div className="relative w-fit">
-            <div
-              onClick={() => setShowEmojiPicker(!showEmojiPicker)}
-              className="flex relative items-center h-9 min-w-9 rounded-full border cursor-pointer hover:border-[#0957D0] justify-center"
-              ref={selectEmojiRef}
-            >
-              {selectedEmoji ? (
-                <div className="pb-0.5">
-                  <Emoji unified={selectedEmoji} size={16} emojiStyle={EmojiStyle.NATIVE} />
-                </div>
-              ) : (
-                <Smiley className="w-6 h-6 text-neutral-600 hover:text-[#0957D0]" />
-              )}
-            </div>
-            {showEmojiPicker && (
-              <ReactionSelector
-                anchorElement={selectEmojiRef.current}
-                selectedEmoji={selectedEmoji}
-                handleEmojiClick={handleEmojiClick}
-              />
-            )}
-          </div>
-          <div className="flex items-center gap-3 justify-between w-full">
-            <div className="flex">
-              {Object.keys(HEADING.reactions).map((reaction, index) => (
-                <div key={index} className="w-[18px] overflow-visible">
-                  <div
-                    className="relative pb-1.5 left-0 w-[26px] bg-white rounded-full border-[0.5px] h-[26px] flex items-center justify-center text-[14px]"
-                    style={{ zIndex: 10 - index }}
-                  >
-                    <Emoji unified={reaction} size={13} emojiStyle={EmojiStyle.NATIVE} />
-                  </div>
-                </div>
-              ))}
-            </div>
-            <button
-              onClick={() => setShowReactionsModal(true)}
-              className="text-typography-900 text-[12px] font-primary whitespace-nowrap"
-            >
-              {getTotalReactions()} reactions
-            </button>
-          </div>
-        </div>
-      </div>
+      {renderBottomSection()}
 
       <ReactionsModal
         isOpen={showReactionsModal}
         onClose={() => setShowReactionsModal(false)}
         reviewId={reviewId || ""}
+      />
+
+      <SimulationDetailsModal
+        isOpen={showSimulationDetailsModal}
+        title={reviewDetails?.scenario?.title}
+        description={reviewDetails?.scenario?.description}
+        coverImageUrl={reviewDetails?.scenario?.coverImageUrl}
+        coverVideoUrl={reviewDetails?.scenario?.coverVideoUrl}
+        headerTitle="Simulation"
+        headerSubtitle="Details"
+        scenarioLabel="Scenario:"
+        showActionButtons={false}
+        onClickOutside={() => setShowSimulationDetailsModal(false)}
       />
     </div>
   );

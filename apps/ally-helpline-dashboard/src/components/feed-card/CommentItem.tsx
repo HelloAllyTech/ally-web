@@ -66,7 +66,6 @@ const CommentItem: FC<CommentItemProps> = ({ comment }) => {
           <div className="flex items-center gap-1 sm:gap-2 flex-wrap">
             {totalReactionCount > 0 && (
               <>
-                <div className="font-primary text-xs sm:text-sm text-primary-500">Like</div>
                 <EmojiStack
                   unicodeCodes={displayUnicodeCodes}
                   emojiSize={11}
