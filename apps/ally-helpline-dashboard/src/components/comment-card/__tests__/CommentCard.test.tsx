@@ -20,12 +20,21 @@ vi.mock("@ally-ui-mono/ui-shared/index", () => ({
   CustomImage: ({ src, alt, className }: any) => (
     <img src={src} alt={alt} className={className} data-testid="custom-image" />
   ),
+  FEATURE_FLAGS_MAP: {
+    PEER_REVIEW_FLAG: true,
+  },
 }));
 
-// Mock AccountCircle
-vi.mock("@src/assets", () => ({
-  AccountCircle: ({ className }: any) => <div data-testid="account-circle" className={className} />,
-}));
+// Mock AccountCircle - partially mock to keep other exports
+vi.mock("@src/assets", async importOriginal => {
+  const actual = await importOriginal<typeof import("@src/assets")>();
+  return {
+    ...actual,
+    AccountCircle: ({ className }: any) => (
+      <div data-testid="account-circle" className={className} />
+    ),
+  };
+});
 
 // Mock formatRelativeTime
 vi.mock("@utils", () => ({
@@ -45,6 +54,11 @@ vi.mock("../../input", () => ({
       autoFocus={autoFocus}
     />
   ),
+}));
+
+// Mock API
+vi.mock("@api", () => ({
+  useAddCommentReactionMutation: () => [vi.fn(), { isLoading: false }],
 }));
 
 describe("CommentCard Component", () => {
