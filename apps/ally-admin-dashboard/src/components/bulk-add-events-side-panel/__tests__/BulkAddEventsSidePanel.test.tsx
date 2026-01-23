@@ -21,6 +21,7 @@ vi.mock("@constants", () => ({
 // Mock assets
 vi.mock("@assets", () => ({
   DoubleArrowRight: () => <svg data-testid="double-arrow-right" />,
+  ArrowDownFilled: () => <svg data-testid="arrow-down-filled" />,
 }));
 
 // Mock components
@@ -139,7 +140,7 @@ describe("BulkAddEventsSidePanel", () => {
         />,
       );
 
-      expect(screen.getByRole("heading", { name: "Select Tags" })).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: "Select Tags" })).toBeInTheDocument();
     });
 
     it("should display 'no tags available' message when session events have no tags", () => {

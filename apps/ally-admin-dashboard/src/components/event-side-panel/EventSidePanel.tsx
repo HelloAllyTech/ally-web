@@ -337,7 +337,22 @@ export const EventSidePanel: React.FC<EventSidePanelProps> = ({
 
             <Field label="Tags">
               <div className="w-full">
-                <div className="flex flex-wrap gap-2 mb-2">
+                <input
+                  type="text"
+                  placeholder="Type and press Enter to add tags"
+                  className="w-full border border-border-light rounded-md px-3 py-1 text-sm focus:outline-none"
+                  onKeyDown={e => {
+                    if (e.key === "Enter" || e.key === ",") {
+                      e.preventDefault();
+                      const value = e.currentTarget.value.trim();
+                      if (value && !formData.tags?.includes(value)) {
+                        handleFieldChange("tags", [...(formData.tags || []), value]);
+                        e.currentTarget.value = "";
+                      }
+                    }
+                  }}
+                />
+                <div className="flex flex-wrap gap-2 mt-2">
                   {formData.tags?.map((tag, index) => (
                     <div
                       key={index}
@@ -357,21 +372,6 @@ export const EventSidePanel: React.FC<EventSidePanelProps> = ({
                     </div>
                   ))}
                 </div>
-                <input
-                  type="text"
-                  placeholder="Type and press Enter to add tags"
-                  className="w-full border border-border-light rounded-md px-3 py-1 text-sm focus:outline-none focus:border-primary"
-                  onKeyDown={e => {
-                    if (e.key === "Enter" || e.key === ",") {
-                      e.preventDefault();
-                      const value = e.currentTarget.value.trim();
-                      if (value && !formData.tags?.includes(value)) {
-                        handleFieldChange("tags", [...(formData.tags || []), value]);
-                        e.currentTarget.value = "";
-                      }
-                    }
-                  }}
-                />
               </div>
             </Field>
           </div>

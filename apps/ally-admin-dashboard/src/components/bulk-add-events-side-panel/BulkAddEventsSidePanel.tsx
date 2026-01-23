@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useRef, useCallback } from "react";
 
-import { DoubleArrowRight } from "@assets";
+import { ArrowDownFilled, DoubleArrowRight } from "@assets";
 import { Button } from "@components";
 import { ButtonVariant } from "@components/types";
 import { en } from "@constants";
@@ -67,12 +67,15 @@ const TagMultiSelect: React.FC<{
       <button
         type="button"
         onClick={handleToggleDropdown}
-        className="w-full px-4 py-2 text-left border border-border-light rounded-md hover:border-primary-300 focus:outline-none focus:ring-2 focus:ring-primary-100 transition-colors"
+        className="text-2xl font-light w-full text-left flex items-center justify-start hover:text-typography-800 transition-colors"
       >
-        <span className="text-sm text-typography-800">
+        <span className={selectedTags.length === 0 ? "text-typography-600" : "text-typography-800"}>
           {selectedTags.length > 0
             ? `${selectedTags.length} tag${selectedTags.length !== 1 ? "s" : ""} selected`
             : en.simulation.selectTags}
+        </span>
+        <span className="ml-2 inline-flex w-[12px] h-[12px]">
+          <ArrowDownFilled />
         </span>
       </button>
 
@@ -201,9 +204,6 @@ export const BulkAddEventsSidePanel: React.FC<BulkAddEventsSidePanelProps> = ({
         <div className="h-[calc(100vh-100px)] px-10 pt-6 overflow-y-auto custom-scrollbar">
           {/* Tag Selection Section */}
           <div className="mb-6">
-            <h3 className="text-lg font-semibold text-typography-900 mb-3">
-              {en.simulation.selectTags}
-            </h3>
             {availableTags.length > 0 ? (
               <TagMultiSelect
                 availableTags={availableTags}
@@ -217,7 +217,7 @@ export const BulkAddEventsSidePanel: React.FC<BulkAddEventsSidePanelProps> = ({
 
           {/* Filtered Events Info */}
           <div className="mb-6">
-            <h3 className="text-lg font-semibold text-typography-900 mb-3">Filtered Events</h3>
+            <h3 className="text-typography-600 mb-3">Filtered Events</h3>
             {selectedTags.length === 0 ? (
               <div className="text-sm text-typography-600 bg-neutral-50 p-4 rounded-md">
                 {en.simulation.noTagsSelected}
