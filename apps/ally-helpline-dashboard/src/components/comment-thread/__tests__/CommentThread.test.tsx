@@ -1,26 +1,26 @@
 import React from "react";
 
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import { Provider } from "react-redux";
+import { configureStore } from "@reduxjs/toolkit";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
 import CommentThread from "../CommentThread";
 
-// Mock AccountCircle
+// Mock all icons used in constants
 vi.mock("@assets", () => ({
   AccountCircle: ({ className }: any) => <div data-testid="account-circle" className={className} />,
-}));
-
-// Mock CommentCard
-vi.mock("../../comment-card/CommentCard", () => ({
-  default: ({ comment, showLike, showReply }: any) => (
-    <div
-      data-testid={`comment-card-${comment.id}`}
-      data-show-like={showLike}
-      data-show-reply={showReply}
-    >
-      <span data-testid="comment-content">{comment.content}</span>
-      <span data-testid="comment-author">{comment.createdBy.name}</span>
-    </div>
+  Carousel1: ({ className }: any) => <div data-testid="carousel-1" className={className} />,
+  Carousel2: ({ className }: any) => <div data-testid="carousel-2" className={className} />,
+  Carousel3: ({ className }: any) => <div data-testid="carousel-3" className={className} />,
+  Carousel4: ({ className }: any) => <div data-testid="carousel-4" className={className} />,
+  SearchIcon: ({ className }: any) => <div data-testid="search-icon" className={className} />,
+  StatsIcon: ({ className }: any) => <div data-testid="stats-icon" className={className} />,
+  ScribeIcon: ({ className }: any) => <div data-testid="scribe-icon" className={className} />,
+  LearnIcon: ({ className }: any) => <div data-testid="learn-icon" className={className} />,
+  Leaderboard: ({ className }: any) => <div data-testid="leaderboard" className={className} />,
+  ReviewNavIcon: ({ className }: any) => (
+    <div data-testid="review-nav-icon" className={className} />
   ),
 }));
 
@@ -38,7 +38,58 @@ vi.mock("../../input", () => ({
   ),
 }));
 
+// Mock Button component
+vi.mock("@components", () => ({
+  Button: ({ children, onClick, className }: any) => (
+    <button onClick={onClick} className={className} data-testid="button">
+      {children}
+    </button>
+  ),
+  CommentCard: ({ comment, showLike, showReply }: any) => (
+    <div
+      data-testid={`comment-card-${comment.id}`}
+      data-show-like={showLike}
+      data-show-reply={showReply}
+    >
+      <span data-testid="comment-content">{comment.content}</span>
+      <span data-testid="comment-author">{comment.createdBy.name}</span>
+    </div>
+  ),
+}));
+
+// Mock ui-shared
+vi.mock("@ally-ui-mono/ui-shared", () => ({
+  AutoExpandableTextarea: ({ value, onChange, placeholder, className }: any) => (
+    <textarea
+      data-testid="comment-textarea"
+      value={value}
+      onChange={e => onChange(e.target.value)}
+      placeholder={placeholder}
+      className={className}
+    />
+  ),
+  CustomImage: ({ src, alt, className }: any) => (
+    <img src={src} alt={alt} className={className} data-testid="custom-image" />
+  ),
+}));
+
+// Create a mock Redux store
+const createMockStore = () => {
+  return configureStore({
+    reducer: {
+      user: () => ({
+        user: {
+          id: 1,
+          name: "Test User",
+          profileImageUrl: "https://example.com/test-user.jpg",
+        },
+      }),
+    },
+  });
+};
+
 describe("CommentThread Component", () => {
+  let mockStore: ReturnType<typeof createMockStore>;
   const mockComments = [
     {
       id: 1,
@@ -79,25 +130,36 @@ describe("CommentThread Component", () => {
   ];
 
   const mockOnCommentAddition = vi.fn();
+  const mockOnReplyComment = vi.fn();
 
   const defaultProps = {
     comments: mockComments,
     onCommentAddition: mockOnCommentAddition,
+    onReplyComment: mockOnReplyComment,
   };
 
   beforeEach(() => {
     vi.clearAllMocks();
+    mockStore = createMockStore();
   });
+
+  const renderWithProvider = (component: React.ReactElement) => {
+    return render(<Provider store={mockStore}>{component}</Provider>);
+  };
 
   // --- Snapshot Test ---
   it("should match snapshot when rendered", () => {
-    const { asFragment } = render(<CommentThread {...defaultProps} />);
+    const { asFragment } = renderWithProvider(<CommentThread {...defaultProps} />);
     expect(asFragment()).toMatchSnapshot();
   });
 
   it("should match snapshot with empty comments", () => {
-    const { asFragment } = render(
-      <CommentThread comments={[]} onCommentAddition={mockOnCommentAddition} />,
+    const { asFragment } = renderWithProvider(
+      <CommentThread
+        comments={[]}
+        onCommentAddition={mockOnCommentAddition}
+        onReplyComment={vi.fn()}
+      />,
     );
     expect(asFragment()).toMatchSnapshot();
   });
@@ -105,91 +167,110 @@ describe("CommentThread Component", () => {
   // --- Basic Rendering Tests ---
   describe("Basic Rendering", () => {
     it("should render Comment Thread header", () => {
-      render(<CommentThread {...defaultProps} />);
+      renderWithProvider(<CommentThread {...defaultProps} />);
       expect(screen.getByText("Comment Thread")).toBeInTheDocument();
     });
 
-    it("should render AccountCircle for input section", () => {
-      render(<CommentThread {...defaultProps} />);
-      expect(screen.getByTestId("account-circle")).toBeInTheDocument();
+    it("should render user avatar for comment section", () => {
+      renderWithProvider(<CommentThread {...defaultProps} />);
+      expect(screen.getByTestId("custom-image")).toBeInTheDocument();
     });
 
-    it("should render comment input with placeholder", () => {
-      render(<CommentThread {...defaultProps} />);
-      const input = screen.getByTestId("comment-input");
-      expect(input).toBeInTheDocument();
-      expect(input).toHaveAttribute("placeholder", "Add comment");
+    it("should render add comment button initially", () => {
+      renderWithProvider(<CommentThread {...defaultProps} />);
+      expect(screen.getByText("Add Comment")).toBeInTheDocument();
     });
 
     it("should render all comments", () => {
-      render(<CommentThread {...defaultProps} />);
+      renderWithProvider(<CommentThread {...defaultProps} />);
       expect(screen.getByTestId("comment-card-1")).toBeInTheDocument();
       expect(screen.getByTestId("comment-card-2")).toBeInTheDocument();
       expect(screen.getByTestId("comment-card-3")).toBeInTheDocument();
     });
 
     it("should render empty state when no comments", () => {
-      render(<CommentThread comments={[]} onCommentAddition={mockOnCommentAddition} />);
+      renderWithProvider(
+        <CommentThread
+          comments={[]}
+          onCommentAddition={mockOnCommentAddition}
+          onReplyComment={mockOnReplyComment}
+        />,
+      );
       expect(screen.queryByTestId(/comment-card-/)).not.toBeInTheDocument();
     });
   });
 
   // --- Comment Input Tests ---
   describe("Comment Input", () => {
-    it("should update input value when typing", () => {
-      render(<CommentThread {...defaultProps} />);
-      const input = screen.getByTestId("comment-input");
+    it("should show comment box when Add Comment is clicked", () => {
+      renderWithProvider(<CommentThread {...defaultProps} />);
+      const addButton = screen.getByText("Add Comment");
 
-      fireEvent.change(input, { target: { value: "New comment" } });
-      expect(input).toHaveValue("New comment");
+      fireEvent.click(addButton);
+
+      expect(screen.getByTestId("comment-textarea")).toBeInTheDocument();
     });
 
-    it("should call onCommentAddition when Enter is pressed", () => {
-      render(<CommentThread {...defaultProps} />);
-      const input = screen.getByTestId("comment-input");
+    it("should update textarea value when typing", () => {
+      renderWithProvider(<CommentThread {...defaultProps} />);
+      fireEvent.click(screen.getByText("Add Comment"));
 
-      fireEvent.change(input, { target: { value: "New comment" } });
-      fireEvent.keyDown(input, { key: "Enter" });
+      const textarea = screen.getByTestId("comment-textarea");
+      fireEvent.change(textarea, { target: { value: "New comment" } });
+
+      expect(textarea).toHaveValue("New comment");
+    });
+
+    it("should call onCommentAddition when Comment button is clicked", () => {
+      renderWithProvider(<CommentThread {...defaultProps} />);
+      fireEvent.click(screen.getByText("Add Comment"));
+
+      const textarea = screen.getByTestId("comment-textarea");
+      fireEvent.change(textarea, { target: { value: "New comment" } });
+
+      const commentButton = screen
+        .getAllByTestId("button")
+        .find(btn => btn.textContent === "Comment");
+      fireEvent.click(commentButton!);
 
       expect(mockOnCommentAddition).toHaveBeenCalledWith("New comment");
     });
 
-    it("should clear input after submitting comment", async () => {
-      render(<CommentThread {...defaultProps} />);
-      const input = screen.getByTestId("comment-input");
+    it("should clear textarea after submitting comment", () => {
+      renderWithProvider(<CommentThread {...defaultProps} />);
+      fireEvent.click(screen.getByText("Add Comment"));
 
-      fireEvent.change(input, { target: { value: "New comment" } });
-      fireEvent.keyDown(input, { key: "Enter" });
+      const textarea = screen.getByTestId("comment-textarea");
+      fireEvent.change(textarea, { target: { value: "New comment" } });
 
-      await waitFor(() => {
-        expect(input).toHaveValue("");
-      });
+      const commentButton = screen
+        .getAllByTestId("button")
+        .find(btn => btn.textContent === "Comment");
+      fireEvent.click(commentButton!);
+
+      expect(textarea).toHaveValue("");
     });
 
-    it("should not submit on other key presses", () => {
-      render(<CommentThread {...defaultProps} />);
-      const input = screen.getByTestId("comment-input");
+    it("should hide comment box when Cancel is clicked", () => {
+      renderWithProvider(<CommentThread {...defaultProps} />);
+      fireEvent.click(screen.getByText("Add Comment"));
 
-      fireEvent.change(input, { target: { value: "New comment" } });
-      fireEvent.keyDown(input, { key: "Escape" });
+      const textarea = screen.getByTestId("comment-textarea");
+      fireEvent.change(textarea, { target: { value: "New comment" } });
 
-      expect(mockOnCommentAddition).not.toHaveBeenCalled();
-    });
+      const cancelButton = screen
+        .getAllByTestId("button")
+        .find(btn => btn.textContent === "Cancel");
+      fireEvent.click(cancelButton!);
 
-    it("should submit empty string if input is empty", () => {
-      render(<CommentThread {...defaultProps} />);
-      const input = screen.getByTestId("comment-input");
-
-      fireEvent.keyDown(input, { key: "Enter" });
-
-      expect(mockOnCommentAddition).toHaveBeenCalledWith("");
+      expect(screen.queryByTestId("comment-textarea")).not.toBeInTheDocument();
     });
   });
 
   // --- CommentCard Props Tests ---
   describe("CommentCard Props", () => {
     it("should pass showLike prop to CommentCard", () => {
-      render(<CommentThread {...defaultProps} />);
+      renderWithProvider(<CommentThread {...defaultProps} />);
       const commentCards = screen.getAllByTestId(/comment-card-/);
       commentCards.forEach(card => {
         expect(card).toHaveAttribute("data-show-like", "true");
@@ -197,7 +278,7 @@ describe("CommentThread Component", () => {
     });
 
     it("should pass showReply prop to CommentCard", () => {
-      render(<CommentThread {...defaultProps} />);
+      renderWithProvider(<CommentThread {...defaultProps} />);
       const commentCards = screen.getAllByTestId(/comment-card-/);
       commentCards.forEach(card => {
         expect(card).toHaveAttribute("data-show-reply", "true");
@@ -205,7 +286,7 @@ describe("CommentThread Component", () => {
     });
 
     it("should pass correct comment data to each CommentCard", () => {
-      render(<CommentThread {...defaultProps} />);
+      renderWithProvider(<CommentThread {...defaultProps} />);
 
       expect(screen.getByText("First comment")).toBeInTheDocument();
       expect(screen.getByText("Second comment")).toBeInTheDocument();
@@ -216,31 +297,31 @@ describe("CommentThread Component", () => {
   // --- Styling Tests ---
   describe("Styling", () => {
     it("should have white background", () => {
-      const { container } = render(<CommentThread {...defaultProps} />);
+      const { container } = renderWithProvider(<CommentThread {...defaultProps} />);
       const mainContainer = container.firstChild as HTMLElement;
       expect(mainContainer).toHaveClass("bg-white");
     });
 
     it("should have rounded corners", () => {
-      const { container } = render(<CommentThread {...defaultProps} />);
+      const { container } = renderWithProvider(<CommentThread {...defaultProps} />);
       const mainContainer = container.firstChild as HTMLElement;
       expect(mainContainer).toHaveClass("rounded-lg");
     });
 
     it("should have shadow", () => {
-      const { container } = render(<CommentThread {...defaultProps} />);
+      const { container } = renderWithProvider(<CommentThread {...defaultProps} />);
       const mainContainer = container.firstChild as HTMLElement;
       expect(mainContainer).toHaveClass("shadow-lg");
     });
 
     it("should have fixed width of 400px", () => {
-      const { container } = render(<CommentThread {...defaultProps} />);
+      const { container } = renderWithProvider(<CommentThread {...defaultProps} />);
       const mainContainer = container.firstChild as HTMLElement;
       expect(mainContainer).toHaveClass("w-[400px]");
     });
 
     it("should have border on header", () => {
-      render(<CommentThread {...defaultProps} />);
+      renderWithProvider(<CommentThread {...defaultProps} />);
       const header = screen.getByText("Comment Thread");
       expect(header).toHaveClass("border-b-[0.5px]");
     });
@@ -249,13 +330,13 @@ describe("CommentThread Component", () => {
   // --- Scrollable Area Tests ---
   describe("Scrollable Area", () => {
     it("should have max height on comments container", () => {
-      const { container } = render(<CommentThread {...defaultProps} />);
+      const { container } = renderWithProvider(<CommentThread {...defaultProps} />);
       const commentsContainer = container.querySelector(".max-h-80");
       expect(commentsContainer).toBeInTheDocument();
     });
 
     it("should have overflow-y-auto on comments container", () => {
-      const { container } = render(<CommentThread {...defaultProps} />);
+      const { container } = renderWithProvider(<CommentThread {...defaultProps} />);
       const commentsContainer = container.querySelector(".overflow-y-auto");
       expect(commentsContainer).toBeInTheDocument();
     });
@@ -265,7 +346,13 @@ describe("CommentThread Component", () => {
   describe("Edge Cases", () => {
     it("should handle single comment", () => {
       const singleComment = [mockComments[0]];
-      render(<CommentThread comments={singleComment} onCommentAddition={mockOnCommentAddition} />);
+      renderWithProvider(
+        <CommentThread
+          comments={singleComment}
+          onCommentAddition={mockOnCommentAddition}
+          onReplyComment={mockOnReplyComment}
+        />,
+      );
       expect(screen.getByTestId("comment-card-1")).toBeInTheDocument();
       expect(screen.queryByTestId("comment-card-2")).not.toBeInTheDocument();
     });
@@ -276,61 +363,86 @@ describe("CommentThread Component", () => {
         id: i + 1,
         content: `Comment ${i + 1}`,
       }));
-      render(<CommentThread comments={manyComments} onCommentAddition={mockOnCommentAddition} />);
+      renderWithProvider(
+        <CommentThread
+          comments={manyComments}
+          onCommentAddition={mockOnCommentAddition}
+          onReplyComment={mockOnReplyComment}
+        />,
+      );
       expect(screen.getAllByTestId(/comment-card-/).length).toBe(20);
     });
 
-    it("should handle special characters in input", () => {
-      render(<CommentThread {...defaultProps} />);
-      const input = screen.getByTestId("comment-input");
+    it("should handle special characters in textarea", () => {
+      renderWithProvider(<CommentThread {...defaultProps} />);
+      fireEvent.click(screen.getByText("Add Comment"));
 
-      fireEvent.change(input, { target: { value: "<script>alert('xss')</script>" } });
-      fireEvent.keyDown(input, { key: "Enter" });
+      const textarea = screen.getByTestId("comment-textarea");
+      fireEvent.change(textarea, { target: { value: "<script>alert('xss')</script>" } });
+
+      const commentButton = screen
+        .getAllByTestId("button")
+        .find(btn => btn.textContent === "Comment");
+      fireEvent.click(commentButton!);
 
       expect(mockOnCommentAddition).toHaveBeenCalledWith("<script>alert('xss')</script>");
     });
 
-    it("should handle emoji in input", () => {
-      render(<CommentThread {...defaultProps} />);
-      const input = screen.getByTestId("comment-input");
+    it("should handle emoji in textarea", () => {
+      renderWithProvider(<CommentThread {...defaultProps} />);
+      fireEvent.click(screen.getByText("Add Comment"));
 
-      fireEvent.change(input, { target: { value: "Hello 👋 World 🌍" } });
-      fireEvent.keyDown(input, { key: "Enter" });
+      const textarea = screen.getByTestId("comment-textarea");
+      fireEvent.change(textarea, { target: { value: "Hello 👋 World 🌍" } });
+
+      const commentButton = screen
+        .getAllByTestId("button")
+        .find(btn => btn.textContent === "Comment");
+      fireEvent.click(commentButton!);
 
       expect(mockOnCommentAddition).toHaveBeenCalledWith("Hello 👋 World 🌍");
     });
 
-    it("should handle whitespace-only input", () => {
-      render(<CommentThread {...defaultProps} />);
-      const input = screen.getByTestId("comment-input");
+    it("should handle whitespace-only textarea", () => {
+      renderWithProvider(<CommentThread {...defaultProps} />);
+      fireEvent.click(screen.getByText("Add Comment"));
 
-      fireEvent.change(input, { target: { value: "   " } });
-      fireEvent.keyDown(input, { key: "Enter" });
+      const textarea = screen.getByTestId("comment-textarea");
+      fireEvent.change(textarea, { target: { value: "   " } });
+
+      const commentButton = screen
+        .getAllByTestId("button")
+        .find(btn => btn.textContent === "Comment");
+      fireEvent.click(commentButton!);
 
       expect(mockOnCommentAddition).toHaveBeenCalledWith("   ");
     });
   });
 
-  // --- Input Focus State ---
-  describe("Input State", () => {
-    it("should have empty initial value", () => {
-      render(<CommentThread {...defaultProps} />);
-      const input = screen.getByTestId("comment-input");
-      expect(input).toHaveValue("");
+  // --- Textarea State ---
+  describe("Textarea State", () => {
+    it("should have empty initial value when opened", () => {
+      renderWithProvider(<CommentThread {...defaultProps} />);
+      fireEvent.click(screen.getByText("Add Comment"));
+
+      const textarea = screen.getByTestId("comment-textarea");
+      expect(textarea).toHaveValue("");
     });
 
     it("should maintain value during typing", () => {
-      render(<CommentThread {...defaultProps} />);
-      const input = screen.getByTestId("comment-input");
+      renderWithProvider(<CommentThread {...defaultProps} />);
+      fireEvent.click(screen.getByText("Add Comment"));
 
-      fireEvent.change(input, { target: { value: "H" } });
-      expect(input).toHaveValue("H");
+      const textarea = screen.getByTestId("comment-textarea");
 
-      fireEvent.change(input, { target: { value: "He" } });
-      expect(input).toHaveValue("He");
+      fireEvent.change(textarea, { target: { value: "H" } });
+      expect(textarea).toHaveValue("H");
 
-      fireEvent.change(input, { target: { value: "Hello" } });
-      expect(input).toHaveValue("Hello");
+      fireEvent.change(textarea, { target: { value: "He" } });
+      expect(textarea).toHaveValue("He");
+
+      fireEvent.change(textarea, { target: { value: "Hello" } });
+      expect(textarea).toHaveValue("Hello");
     });
   });
 });

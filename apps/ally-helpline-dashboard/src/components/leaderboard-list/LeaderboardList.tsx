@@ -1,5 +1,6 @@
 import { FC, useState, useRef, useEffect, useCallback } from "react";
 
+import { CustomImage } from "@ally-ui-mono/ui-shared";
 import { cn } from "@utils";
 
 export interface LeaderboardUser {
@@ -11,7 +12,7 @@ export interface LeaderboardUser {
   badgeCount: number;
 }
 
-export type LeaderboardTimeFilter = "last_week" | "last_month" | "last_year" | "all_time";
+export type LeaderboardTimeFilter = "LAST_WEEK" | "LAST_MONTH" | "LAST_YEAR" | "ALL_TIME";
 
 export interface LeaderboardListProps {
   data?: LeaderboardUser[];
@@ -27,10 +28,10 @@ export interface LeaderboardListProps {
 }
 
 export const TIME_FILTER_OPTIONS: { label: string; value: LeaderboardTimeFilter }[] = [
-  { label: "Last 7 days", value: "last_week" },
-  { label: "Last 28 days", value: "last_month" },
-  { label: "Last 364 days", value: "last_year" },
-  { label: "All time", value: "all_time" },
+  { label: "Last 7 days", value: "LAST_WEEK" },
+  { label: "Last 28 days", value: "LAST_MONTH" },
+  { label: "Last 364 days", value: "LAST_YEAR" },
+  { label: "All time", value: "ALL_TIME" },
 ];
 
 const getRankBadgeStyle = (rank: number): string => {
@@ -51,11 +52,14 @@ const UserAvatar: FC<{ user: LeaderboardUser; size?: "sm" | "md" }> = ({ user, s
 
   if (user.profileImageUrl) {
     return (
-      <img
-        src={user.profileImageUrl}
-        alt={user.name}
-        className={cn(sizeClasses, "rounded-full object-cover")}
-      />
+      <div className="w-[50px] h-[50px] flex items-center justify-center overflow-hidden rounded-full">
+        <CustomImage
+          src={user.profileImageUrl}
+          alt={user.name}
+          className={cn(sizeClasses, "rounded-full object-cover")}
+          fallbackText={user.name?.slice(0, 1)?.toUpperCase() ?? "NA"}
+        />
+      </div>
     );
   }
 
@@ -192,7 +196,7 @@ export const LeaderboardList: FC<LeaderboardListProps> = ({
   onLoadMore,
   hasMore,
 }) => {
-  const [internalFilter, setInternalFilter] = useState<LeaderboardTimeFilter>("last_week");
+  const [internalFilter, setInternalFilter] = useState<LeaderboardTimeFilter>("LAST_WEEK");
   const [isCurrentUserVisible, setIsCurrentUserVisible] = useState(false);
   const currentUserRowRef = useRef<HTMLDivElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -306,7 +310,7 @@ export const LeaderboardList: FC<LeaderboardListProps> = ({
     return (
       <>
         {data.map((user, index) => {
-          const isCurrentUser = index + 1 === currentUser.rank;
+          const isCurrentUser = currentUser ? index + 1 === currentUser.rank : false;
 
           return (
             <LeaderboardRow
@@ -342,7 +346,7 @@ export const LeaderboardList: FC<LeaderboardListProps> = ({
       {/* Sticky current user row - hidden when visible in the list */}
       {currentUser && !isCurrentUserVisible && !isLoading && !isEmpty && (
         <div className="mt-2 absolute bottom-0 left-0 right-0 bg-white">
-          <LeaderboardRow user={currentUser} isLast />
+          <LeaderboardRow user={currentUser} isLast isCurrentUser={true} />
         </div>
       )}
     </div>

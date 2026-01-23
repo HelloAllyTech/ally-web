@@ -6,7 +6,7 @@ exports[`CommentCard Component > should match snapshot when rendered with basic 
     class="flex gap-2.5"
   >
     <div
-      class="min-w-6 h-6 rounded-full overflow-hidden"
+      class="min-w-8 h-8 rounded-full overflow-hidden"
     >
       <img
         alt="John Doe"
@@ -51,7 +51,7 @@ exports[`CommentCard Component > should match snapshot with all props enabled 1`
     class="flex gap-2.5"
   >
     <div
-      class="min-w-6 h-6 rounded-full overflow-hidden"
+      class="min-w-8 h-8 rounded-full overflow-hidden"
     >
       <img
         alt="John Doe"
