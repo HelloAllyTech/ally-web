@@ -4,7 +4,7 @@ import { Tooltip } from "@mui/material";
 
 import { FEATURE_FLAGS_MAP } from "@ally-ui-mono/ui-shared";
 import { AutoExpandableTextarea } from "@ally-ui-mono/ui-shared/index";
-import { DoubleArrowRight, InfoIcon, Trash, Close } from "@assets";
+import { DoubleArrowRight, InfoIcon, Trash } from "@assets";
 import {
   ActionConfirmationPopup,
   EmojiPickerComponent,
@@ -15,6 +15,7 @@ import {
   TimeWindowSection,
   EVENT_TYPE_POPUP_OPTIONS,
   TextareaWithTriggerDropdown,
+  EditableTagList,
 } from "@components";
 import { en, EVENT_DETECTION_TYPES, toolTipStyles } from "@constants";
 import { useDebounce } from "@hooks";
@@ -352,26 +353,15 @@ export const EventSidePanel: React.FC<EventSidePanelProps> = ({
                     }
                   }}
                 />
-                <div className="flex flex-wrap gap-2 mt-2">
-                  {formData.tags?.map((tag, index) => (
-                    <div
-                      key={index}
-                      className="flex items-center px-2 py-1 bg-neutral-100 text-sm rounded-full text-typography-900"
-                    >
-                      <span>{tag}</span>
-                      <button
-                        type="button"
-                        className="ml-2 cursor-pointer"
-                        onClick={() => {
-                          const newTags = formData.tags?.filter((_, i) => i !== index) || [];
-                          handleFieldChange("tags", newTags);
-                        }}
-                      >
-                        <Close width={12} height={12} />
-                      </button>
-                    </div>
-                  ))}
-                </div>
+                <EditableTagList
+                  tags={formData.tags}
+                  onRemove={index => {
+                    const newTags = formData.tags?.filter((_, i) => i !== index) || [];
+                    handleFieldChange("tags", newTags);
+                  }}
+                  className="mt-2"
+                  tagClassName="text-sm py-1"
+                />
               </div>
             </Field>
           </div>

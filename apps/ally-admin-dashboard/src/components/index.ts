@@ -17,6 +17,7 @@ export * from "./delete-popup";
 export * from "./options-popup";
 export * from "./input-field";
 export * from "./tag-selector";
+export * from "./tag-list";
 export * from "./file-upload";
 export * from "./narrative-context";
 export * from "./filter-list";

@@ -32,6 +32,30 @@ vi.mock("@components", () => ({
       {children}
     </button>
   ),
+  Tag: ({ children, onRemove, className }: any) => (
+    <span className={className} data-testid="tag">
+      {children}
+      {onRemove && (
+        <button onClick={onRemove} data-testid="tag-remove">
+          ×
+        </button>
+      )}
+    </span>
+  ),
+  TagList: ({ tags, tagClassName }: any) => (
+    <div data-testid="tag-list">
+      {Array.isArray(tags) && tags.length > 0
+        ? tags.map((tag: string, i: number) => {
+            const className = typeof tagClassName === "function" ? tagClassName(tag) : tagClassName;
+            return (
+              <span key={i} className={className} data-testid="tag-item">
+                {tag}
+              </span>
+            );
+          })
+        : null}
+    </div>
+  ),
 }));
 
 // Mock hooks

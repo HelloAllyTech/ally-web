@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 
-import { EmojiPickerComponent, TimeInput } from "@components";
+import { EmojiPickerComponent, TimeInput, TagList } from "@components";
 import {
   EditableTextPopup,
   NumberInput,
@@ -249,22 +249,7 @@ export const Cell = ({
       );
       break;
     case cellTypes.tags:
-      element = (
-        <div className="flex flex-wrap gap-1">
-          {Array.isArray(value.value) && value.value.length > 0 ? (
-            value.value.map((tag: string, index: number) => (
-              <span
-                key={index}
-                className="px-2 py-0.5 rounded-full bg-gray-100 text-typography-900 text-xs border border-border-light whitespace-nowrap"
-              >
-                {tag}
-              </span>
-            ))
-          ) : (
-            <span className="text-typography-400">-</span>
-          )}
-        </div>
-      );
+      element = <TagList tags={value.value} />;
       break;
     default:
       element = <span />;

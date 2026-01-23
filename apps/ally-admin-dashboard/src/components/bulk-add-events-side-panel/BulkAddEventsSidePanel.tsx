@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useRef, useCallback } from "react";
 
 import { ArrowDownFilled, DoubleArrowRight } from "@assets";
-import { Button } from "@components";
+import { Button, Tag, TagList } from "@components";
 import { ButtonVariant } from "@components/types";
 import { en } from "@constants";
 import { useClickOutside } from "@hooks";
@@ -83,15 +83,13 @@ const TagMultiSelect: React.FC<{
       {selectedTags.length > 0 && (
         <div className="flex flex-wrap gap-2 mt-2">
           {selectedTags.map(tag => (
-            <div
+            <Tag
               key={tag}
-              className="flex items-center gap-1 px-3 py-1 bg-primary-100 text-primary-700 rounded-full text-sm"
+              className="bg-primary-100 text-primary-700 px-3 py-1 text-sm"
+              onRemove={() => handleTagToggle(tag)}
             >
-              <span>{tag}</span>
-              <button onClick={() => handleTagToggle(tag)} className="hover:text-primary-900 ml-1">
-                ×
-              </button>
-            </div>
+              {tag}
+            </Tag>
           ))}
         </div>
       )}
@@ -235,20 +233,15 @@ export const BulkAddEventsSidePanel: React.FC<BulkAddEventsSidePanelProps> = ({
                         {event.eventCode ? `${event.eventCode} - ${event.name}` : event.name}
                       </div>
                       {event.tags && event.tags.length > 0 && (
-                        <div className="flex flex-wrap gap-1 mt-1">
-                          {event.tags.map(tag => (
-                            <span
-                              key={tag}
-                              className={`text-xs px-2 py-0.5 rounded ${
-                                selectedTags.includes(tag)
-                                  ? "bg-primary-100 text-primary-700"
-                                  : "bg-neutral-100 text-neutral-700"
-                              }`}
-                            >
-                              {tag}
-                            </span>
-                          ))}
-                        </div>
+                        <TagList
+                          tags={event.tags}
+                          className="mt-1"
+                          tagClassName={tag =>
+                            selectedTags.includes(tag)
+                              ? "bg-primary-100 text-primary-700"
+                              : "bg-neutral-100 text-neutral-700"
+                          }
+                        />
                       )}
                     </div>
                   ))}
