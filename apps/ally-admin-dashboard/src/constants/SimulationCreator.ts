@@ -519,6 +519,14 @@ export const EVENT_MANAGEMENT_TABLE_COLUMNS = [
     options: [],
     minWidth: 200,
   },
+  {
+    id: "tags",
+    label: "Tags",
+    accessor: "tags",
+    dataType: cellTypes.tags,
+    options: [],
+    minWidth: 200,
+  },
 ];
 
 export const SESSION_EVENT_STATUS_OPTIONS = {
