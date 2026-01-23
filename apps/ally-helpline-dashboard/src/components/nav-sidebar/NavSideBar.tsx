@@ -146,15 +146,6 @@ const NavSideBar: FC<NavSideBarProps> = ({ activeTab, onTabChange, isOpen, onClo
     setOpenSettings(false);
   };
 
-  const Avatar: React.FC<{ name: string }> = ({ name }) => {
-    const initial = name?.[0]?.toUpperCase() ?? "?";
-    return (
-      <div className="min-w-14 min-h-14 border-border-light text-typography-800 flex items-center justify-center mr-3">
-        {initial}
-      </div>
-    );
-  };
-
   return (
     <>
       <div
@@ -178,18 +169,16 @@ const NavSideBar: FC<NavSideBarProps> = ({ activeTab, onTabChange, isOpen, onClo
               arrow
               slotProps={TOOLTIP_LIGHT_PROPS}
             >
-              <div>
-                {tenantData?.logoUrl ? (
-                  <CustomImage
-                    src={tenantData?.logoUrl}
-                    alt="org-logo"
-                    className={`object-cover w-full h-full transition-opacity duration-200 rounded-md ${
-                      !isExpanded ? "group-hover:opacity-20" : ""
-                    }`}
-                  />
-                ) : (
-                  <Avatar name={tenantData?.name} />
-                )}
+              <div className="w-14 h-14 border-[0.5px] group rounded-md box-border overflow-hidden flex items-center justify-center">
+                <CustomImage
+                  src={tenantData?.logoUrl}
+                  alt="org-logo"
+                  className={`object-cover w-full h-full transition-opacity duration-200 rounded-md ${
+                    !isExpanded ? "group-hover:opacity-20" : ""
+                  }`}
+                  fallbackClassName="w-14 h-14 border-[0.5px] group rounded-md box-border overflow-hidden flex items-center justify-center bg-neutral-100"
+                  fallbackText={tenantData?.name?.slice(0, 1)?.toUpperCase() ?? "NA"}
+                />
               </div>
             </Tooltip>
             {!isExpanded && (

@@ -123,7 +123,7 @@ describe("CommentCard Component", () => {
       );
     });
 
-    it("should render AccountCircle when no profileImage", () => {
+    it("should render CustomImage with fallback when no profileImage", () => {
       const commentWithoutProfile = {
         ...mockComment,
         createdBy: {
@@ -132,7 +132,8 @@ describe("CommentCard Component", () => {
         },
       };
       render(<CommentCard comment={commentWithoutProfile} />);
-      expect(screen.getByTestId("account-circle")).toBeInTheDocument();
+      // CustomImage component handles the fallback internally
+      expect(screen.getByTestId("custom-image")).toBeInTheDocument();
     });
   });
 
