@@ -8,6 +8,7 @@ export interface LiveKitEvent {
     score: number | null;
     emoji: string;
     message: string;
+    detected_event_ids: string[];
   };
   timestamp: string;
 }
@@ -21,4 +22,5 @@ export interface UseLiveKitRoomReturn {
   score: number;
   startTime: Date;
   roomData: any;
+  detectedEventIds: string[];
 }
