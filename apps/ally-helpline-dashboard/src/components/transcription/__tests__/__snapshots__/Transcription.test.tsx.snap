@@ -21,7 +21,7 @@ exports[`Transcription Component > should match snapshot when rendered 1`] = `
             class="font-medium pr-1"
           >
             <span
-              class="text-black"
+              class="text-black "
             >
               Agent:
             </span>
@@ -79,7 +79,7 @@ exports[`Transcription Component > should match snapshot when rendered 1`] = `
             class="font-medium pr-1"
           >
             <span
-              class="text-black"
+              class="text-black "
             >
               Agent:
             </span>
