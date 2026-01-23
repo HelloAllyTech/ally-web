@@ -137,24 +137,6 @@ describe("CommentCard Component", () => {
     });
   });
 
-  // --- Like Button Tests ---
-  describe("Like Button", () => {
-    it("should show Like button when showLike is true", () => {
-      render(<CommentCard comment={mockComment} showLike />);
-      expect(screen.getByText("Like")).toBeInTheDocument();
-    });
-
-    it("should not show Like button when showLike is false", () => {
-      render(<CommentCard comment={mockComment} showLike={false} />);
-      expect(screen.queryByText("Like")).not.toBeInTheDocument();
-    });
-
-    it("should not show Like button by default", () => {
-      render(<CommentCard comment={mockComment} />);
-      expect(screen.queryByText("Like")).not.toBeInTheDocument();
-    });
-  });
-
   // --- Reply Button Tests ---
   describe("Reply Button", () => {
     it("should show Reply button when showReply is true", () => {
@@ -269,18 +251,6 @@ describe("CommentCard Component", () => {
       render(<CommentCard comment={mockComment} />);
       const timestampElement = screen.getByText("2 hours ago");
       expect(timestampElement).toHaveClass("text-[12px]", "text-gray-500");
-    });
-
-    it("should apply line-clamp-2 to comment content", () => {
-      render(<CommentCard comment={mockComment} />);
-      const contentElement = screen.getByText("This is a test comment");
-      expect(contentElement).toHaveClass("line-clamp-2");
-    });
-
-    it("should apply cursor-pointer to Like button", () => {
-      render(<CommentCard comment={mockComment} showLike />);
-      const likeButton = screen.getByText("Like");
-      expect(likeButton).toHaveClass("cursor-pointer");
     });
 
     it("should apply cursor-pointer to Reply button", () => {

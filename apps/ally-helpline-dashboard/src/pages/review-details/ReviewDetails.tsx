@@ -323,7 +323,7 @@ export const ReviewDetails = () => {
           totalComments={reviewDetails?.commentsCount || 0}
           isOpen={showCommentsSidepanel}
           onCommentClick={handleCommentClick}
-          className={showCommentsSidepanel ? "w-96" : "w-0 border-none"}
+          className={showCommentsSidepanel ? "min-w-[300px] w-[30%]" : "w-0 border-none"}
         />
       </div>
       {renderBottomSection()}
