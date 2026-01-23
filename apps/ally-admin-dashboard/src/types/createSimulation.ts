@@ -162,6 +162,7 @@ export interface UpdateEventDataParam {
   detectionData?: SessionEventDetectionData;
   detectionConfig?: EventDetectionConfig;
   isEditable?: boolean;
+  tags?: string[];
 }
 
 export interface UpdateScenarioEventDataParam {

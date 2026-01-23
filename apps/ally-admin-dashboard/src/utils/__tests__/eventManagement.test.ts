@@ -246,6 +246,7 @@ describe("eventManagement utils", () => {
             minScore: undefined,
             maxScore: undefined,
           },
+          tags: [],
         });
       });
 
@@ -320,6 +321,7 @@ describe("eventManagement utils", () => {
             minScore: undefined,
             maxScore: undefined,
           },
+          tags: [],
         });
       });
 
@@ -521,6 +523,18 @@ describe("eventManagement utils", () => {
           score: 0,
           condition: "GT",
         });
+      });
+
+      it("should include tags when provided", () => {
+        const event: UpdateEventDataParam = {
+          name: "Test Event",
+          detectionType: EVENT_DETECTION_TYPES.SCORE_BASED,
+          tags: ["tag1", "tag2"],
+        };
+
+        const result = convertEventToApiPayload(event);
+
+        expect(result?.tags).toEqual(["tag1", "tag2"]);
       });
     });
   });
@@ -793,6 +807,19 @@ describe("eventManagement utils", () => {
         const result = convertApiResponseToEvent(apiEvent);
 
         expect(result.triggerCondition).toBeUndefined();
+      });
+
+      it("should include tags when provided", () => {
+        const apiEvent: SessionEvent = {
+          id: "event-1",
+          name: "Test Event",
+          detectionType: SessionEventDetectionType.SCORE,
+          tags: ["tag1", "tag2"],
+        };
+
+        const result = convertApiResponseToEvent(apiEvent);
+
+        expect(result.tags).toEqual(["tag1", "tag2"]);
       });
     });
 

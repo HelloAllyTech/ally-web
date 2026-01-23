@@ -5,3 +5,4 @@ export * from "./eventManagement";
 export * from "./createSimulation";
 export * from "./eventMapping";
 export * from "./expressionTreeHelpers";
+export * from "./tagUtils";

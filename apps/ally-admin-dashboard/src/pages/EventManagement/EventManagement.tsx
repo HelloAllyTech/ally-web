@@ -105,6 +105,7 @@ export const EventManagement: React.FC = () => {
       detectionType: eventType,
       visibilityType: "ACTIVE",
       triggerCondition: null,
+      tags: [],
     };
 
     const eventPayload = convertEventToApiPayload(newEvent);
@@ -198,6 +199,7 @@ export const EventManagement: React.FC = () => {
         rowId: event.id,
       },
       isEditable: { value: isEditable, disabled: false, rowId: event.id },
+      tags: { value: event.tags || [], disabled: true, rowId: event.id },
     };
   }, []);
 
@@ -218,6 +220,7 @@ export const EventManagement: React.FC = () => {
       triggerCondition: selectedEvent.triggerCondition,
       detectionConfig: selectedEvent.detectionConfig,
       isEditable: selectedEvent.isEditable ?? true,
+      tags: selectedEvent.tags || [],
     };
   }, [selectedEvent]);
 

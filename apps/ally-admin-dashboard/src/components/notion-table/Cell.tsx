@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 
-import { EmojiPickerComponent, TimeInput } from "@components";
+import { EmojiPickerComponent, TimeInput, TagList } from "@components";
 import {
   EditableTextPopup,
   NumberInput,
@@ -247,6 +247,9 @@ export const Cell = ({
           disabled={isDisabled}
         />
       );
+      break;
+    case cellTypes.tags:
+      element = <TagList tags={value.value} />;
       break;
     default:
       element = <span />;
