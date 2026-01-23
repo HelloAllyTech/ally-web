@@ -6,9 +6,13 @@ exports[`ThreadCard Component > should match snapshot when comments are expanded
     class="w-full min-w-[350px] font-primary border-[0.5px] rounded-lg px-4 py-2 flex flex-col gap-2"
   >
     <div
-      class="text-[14px] font-primary min-h-9 flex items-center font-medium border-b-[0.5px] pb-2"
+      class="flex items-center min-h-9 border-b-[0.5px] pb-2"
     >
-      Selected text: "selected text here"
+      <div
+        class="text-[14px] font-primary font-medium line-clamp-2"
+      >
+        Selected text: "selected text here"
+      </div>
     </div>
     <div
       data-testid="comment-card-1"
@@ -89,9 +93,13 @@ exports[`ThreadCard Component > should match snapshot when rendered with multipl
     class="w-full min-w-[350px] font-primary border-[0.5px] rounded-lg px-4 py-2 flex flex-col gap-2"
   >
     <div
-      class="text-[14px] font-primary min-h-9 flex items-center font-medium border-b-[0.5px] pb-2"
+      class="flex items-center min-h-9 border-b-[0.5px] pb-2"
     >
-      Selected text: "selected text here"
+      <div
+        class="text-[14px] font-primary font-medium line-clamp-2"
+      >
+        Selected text: "selected text here"
+      </div>
     </div>
     <div
       data-testid="comment-card-1"
@@ -172,9 +180,13 @@ exports[`ThreadCard Component > should match snapshot when rendered with single 
     class="w-full min-w-[350px] font-primary border-[0.5px] rounded-lg px-4 py-2 flex flex-col gap-2"
   >
     <div
-      class="text-[14px] font-primary min-h-9 flex items-center font-medium border-b-[0.5px] pb-2"
+      class="flex items-center min-h-9 border-b-[0.5px] pb-2"
     >
-      Selected text: "selected text here"
+      <div
+        class="text-[14px] font-primary font-medium line-clamp-2"
+      >
+        Selected text: "selected text here"
+      </div>
     </div>
     <div
       data-testid="comment-card-1"

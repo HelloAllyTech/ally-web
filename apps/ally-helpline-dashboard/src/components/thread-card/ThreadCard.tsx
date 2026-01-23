@@ -19,9 +19,12 @@ const ThreadCard = ({ thread }: ThreadCardProps) => {
       className="w-full min-w-[350px] font-primary border-[0.5px] rounded-lg px-4 py-2 flex flex-col gap-2"
       key={thread.id}
     >
-      <div className="text-[14px] font-primary min-h-9 flex items-center font-medium border-b-[0.5px] pb-2">
-        Selected text: "{thread.selection.text}"
+      <div className="flex items-center min-h-9 border-b-[0.5px] pb-2">
+        <div className="text-[14px] font-primary font-medium line-clamp-2">
+          Selected text: "{thread.selection.text}"
+        </div>
       </div>
+
       <CommentCard comment={thread.comments[0]} />
       <div
         className={`grid transition-[grid-template-rows] duration-500 ease-out ${showComments ? "grid-rows-[1fr]" : "grid-rows-[0fr]"}`}
