@@ -109,8 +109,8 @@ import { AchievementsViewAll } from "../AchievementsViewAll";
 
 const mockBadgesData = [
   {
-    categories: "SIMULATION_MINUTES",
-    data: [
+    category: "SIMULATION_MINUTES",
+    badges: [
       {
         id: "badge-1",
         title: "First Steps",
@@ -128,8 +128,8 @@ const mockBadgesData = [
     ],
   },
   {
-    categories: "ACTIVE_DAY_STREAK",
-    data: [
+    category: "ACTIVE_DAY_STREAK",
+    badges: [
       {
         id: "badge-3",
         title: "Consistent Learner",
@@ -140,8 +140,8 @@ const mockBadgesData = [
     ],
   },
   {
-    categories: "COMMENTS_REACTIONS_GIVEN",
-    data: [
+    category: "COMMENTS_REACTIONS_GIVEN",
+    badges: [
       {
         id: "badge-4",
         title: "Community Member",
@@ -279,8 +279,8 @@ describe("AchievementsViewAll Component", () => {
       mockUseGetAvailableBadgesQuery.mockReturnValue({
         data: [
           {
-            categories: "SIMULATION_MINUTES",
-            data: [{ id: "badge-1", name: "Test Badge", lockStatus: "UNLOCKED" }],
+            category: "SIMULATION_MINUTES",
+            badges: [{ id: "badge-1", name: "Test Badge", lockStatus: "UNLOCKED" }],
           },
         ],
         isLoading: true,
@@ -302,8 +302,8 @@ describe("AchievementsViewAll Component", () => {
       mockUseGetAvailableBadgesQuery.mockReturnValue({
         data: [
           {
-            categories: "SIMULATION_MINUTES",
-            data: [{ id: "badge-1", name: "Test Badge", lockStatus: "UNLOCKED" }],
+            category: "SIMULATION_MINUTES",
+            badges: [{ id: "badge-1", name: "Test Badge", lockStatus: "UNLOCKED" }],
           },
         ],
         isLoading: true,
@@ -609,8 +609,8 @@ describe("AchievementsViewAll Component", () => {
       mockUseGetAvailableBadgesQuery.mockReturnValue({
         data: [
           {
-            categories: "SIMULATION_MINUTES",
-            data: [
+            category: "SIMULATION_MINUTES",
+            badges: [
               {
                 id: "badge-1",
                 title: "Locked Badge",
@@ -679,8 +679,8 @@ describe("AchievementsViewAll Component", () => {
       mockUseGetAvailableBadgesQuery.mockReturnValue({
         data: [
           {
-            categories: "SIMULATION_MINUTES",
-            data: [
+            category: "SIMULATION_MINUTES",
+            badges: [
               {
                 id: "badge-incomplete",
                 title: undefined,
