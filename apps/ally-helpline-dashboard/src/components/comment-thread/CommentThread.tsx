@@ -1,7 +1,7 @@
 import { useState } from "react";
 
 import { AccountCircle } from "@assets";
-import { CommentItem } from "@pages/review-details/types";
+import { CommentItem } from "@types";
 
 import CommentCard from "../comment-card/CommentCard";
 import Input from "../input";
@@ -9,7 +9,7 @@ import Input from "../input";
 interface CommentThreadProps {
   comments: CommentItem[];
   onCommentAddition: (comment: string) => void;
-  onReplyComment: (comment: string, parentCommentId: number | null) => void;
+  onReplyComment: (comment: string, parentCommentId: string | null) => void;
 }
 const CommentThread = ({ comments, onCommentAddition, onReplyComment }: CommentThreadProps) => {
   const [comment, setComment] = useState("");

@@ -1,15 +1,19 @@
 import { useState } from "react";
 
 import { Arrow } from "@assets";
-import { Thread } from "@pages/review-details/types";
-
-import CommentCard from "../comment-card/CommentCard";
+import { CommentCard } from "@components";
+import { Thread } from "@types";
 
 interface ThreadCardProps {
   thread: Thread;
 }
 const ThreadCard = ({ thread }: ThreadCardProps) => {
   const [showComments, setShowComments] = useState(false);
+
+  const updateShowComments = event => {
+    event.stopPropagation();
+    setShowComments(!showComments);
+  };
   return (
     <div
       className="w-full min-w-[350px] font-primary border-[0.5px] rounded-lg px-4 py-2 flex flex-col gap-2"
@@ -42,10 +46,7 @@ const ThreadCard = ({ thread }: ThreadCardProps) => {
       </div>
       {thread.comments.length > 1 && (
         <div
-          onClick={e => {
-            e.stopPropagation();
-            setShowComments(!showComments);
-          }}
+          onClick={event => updateShowComments(event)}
           className="border-t-[0.5px] transition-all duration-300 cursor-pointer py-2 text-typography-800 text-[14px] flex items-center justify-center gap-2"
         >
           {showComments ? "Collapse" : `${thread.comments.length - 1} more comments`}{" "}

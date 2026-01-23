@@ -2,9 +2,8 @@ import { useEffect, useState } from "react";
 
 import { Skeleton } from "@mui/material";
 
-import { Thread } from "@pages/review-details/types";
-
-import ThreadCard from "../thread-card/ThreadCard";
+import { ThreadCard } from "@components";
+import { Thread } from "@types";
 
 interface ReviewCommentsSidepanelProps {
   threads: Thread[] | null;

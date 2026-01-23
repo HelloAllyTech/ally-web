@@ -86,9 +86,13 @@ exports[`CommentCard Component > should match snapshot with all props enabled 1`
         class="flex gap-2 items-center"
       >
         <div
-          class="cursor-pointer text-typography-800 text-[12px] font-medium"
+          class="relative"
         >
-          Like
+          <div
+            class="cursor-pointer text-typography-800 text-[12px] font-medium"
+          >
+            Like
+          </div>
         </div>
         <div
           class="w-1 h-1 bg-[#D9D9D9] rounded-full"

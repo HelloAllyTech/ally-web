@@ -10,6 +10,7 @@ import ButtonGroup from "./button-group";
 import { Carousel, CarouselSize, CarouselVariant, CarouselSlideType } from "./carousel";
 import Chip, { ChipConfig } from "./chip";
 import { CircularProgress } from "./circular-progress";
+import CommentCard from "./comment-card/CommentCard";
 import ConfirmationDialog from "./confirmation-dialog";
 import CreditInfo from "./credit-info-dialog";
 import { CreditsDisplay } from "./credits-display";
@@ -29,6 +30,7 @@ import OTP from "./otp";
 import { PathwayScenarioCard } from "./pathway-scenario-card";
 import PermissionGuard from "./permission-guard";
 import ProfileSettings from "./profile-settings";
+import ReactionSelector from "./reaction-selector";
 import ScenarioCard from "./scenario-card";
 import ScenarioDetailsCard from "./scenario-details-card";
 import SearchResources from "./search-resources";
@@ -38,6 +40,7 @@ import TabGroup from "./tab-group";
 import TagGroup from "./tag-group";
 import TermsAndAgreement from "./terms-and-agreement";
 import TextField from "./text-field";
+import ThreadCard from "./thread-card/ThreadCard";
 import ToggleButtonGroup from "./toggle-button-group";
 import UserInfo from "./user-info";
 
@@ -96,4 +99,7 @@ export {
   ProfileSettings,
   AchievementItem,
   LeaderboardUser,
+  ReactionSelector,
+  ThreadCard,
+  CommentCard,
 };

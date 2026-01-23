@@ -123,6 +123,13 @@ const reviewsAPI = baseAPI.injectEndpoints({
       }),
       transformResponse: (response: { reactions: Record<string, number> }) => response.reactions,
     }),
+    addCommentReaction: builder.mutation<boolean, { commentId: string; reaction: ReactionInput }>({
+      query: ({ commentId, reaction }) => ({
+        url: ApiEndpoints.REVIEWS.ADD_COMMENT_REACTION(commentId),
+        method: HttpMethod.POST,
+        body: reaction,
+      }),
+    }),
   }),
 });
 
@@ -138,4 +145,5 @@ export const {
   useGetReviewReactionsQuery,
   useLazyGetReviewReactionsQuery,
   useGetReviewReactionsCountQuery,
+  useAddCommentReactionMutation,
 } = reviewsAPI;
