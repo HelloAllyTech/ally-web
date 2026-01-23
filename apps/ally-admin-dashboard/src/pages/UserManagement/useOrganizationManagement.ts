@@ -13,7 +13,7 @@ import {
 import { SORT_BY, SORT_ORDER, en } from "@constants";
 import { Tenant } from "@types";
 
-export const TENANTS_PAGE_SIZE = 30;
+export const TENANTS_PAGE_SIZE = 100;
 
 export function useOrganizationManagement() {
   const [orgSearch, setOrgSearch] = useState<string>("");
