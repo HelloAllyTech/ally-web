@@ -1,5 +1,6 @@
 import { FC } from "react";
 
+import { CustomImage } from "@ally-ui-mono/ui-shared";
 import { Badge, CloseIcon } from "@assets";
 import { cn } from "@utils";
 
@@ -25,11 +26,13 @@ export const AchievementBadgeModal: FC<AchievementBadgeModalProps> = ({
   const renderBadgeImage = () => {
     if (badgeImageUrl) {
       return (
-        <img
-          src={badgeImageUrl}
-          alt={title}
-          className="w-20 h-20 sm:w-[100px] sm:h-[100px] md:w-[120px] md:h-[120px] object-contain rounded-lg"
-        />
+        <div className="w-20 h-20 sm:w-[100px] sm:h-[100px] md:w-[120px] md:h-[120px] rounded-full bg-primary-50 flex items-center justify-center">
+          <CustomImage
+            src={badgeImageUrl}
+            alt={title}
+            className="w-full h-full object-contain rounded-lg"
+          />
+        </div>
       );
     }
 

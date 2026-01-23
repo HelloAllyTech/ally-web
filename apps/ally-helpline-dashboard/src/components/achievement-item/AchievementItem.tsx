@@ -25,7 +25,7 @@ export const AchievementItem: FC<{
           <CustomImage
             src={achievement?.imageUrl}
             alt={achievement?.name}
-            className="rounded-lg object-cover w-full h-full"
+            className="rounded-lg object-cover w-full h-full bg-neutral-100"
             fallbackClassName="rounded-lg bg-neutral-100 flex items-center justify-center w-full h-full"
             fallbackText="Image not available"
           />

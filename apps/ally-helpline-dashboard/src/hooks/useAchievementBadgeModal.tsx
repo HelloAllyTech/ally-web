@@ -37,8 +37,8 @@ export const useAchievementBadgeModal = (): UseAchievementBadgeModalReturn => {
 
       // Mark the current badge as viewed
       const currentBadge = badges[prevIndex];
-      if (currentBadge?.id) {
-        updateBadgeViewStatus(currentBadge.id);
+      if (currentBadge?.badgeId) {
+        updateBadgeViewStatus(currentBadge.badgeId);
       }
 
       const nextIndex = prevIndex + 1;
