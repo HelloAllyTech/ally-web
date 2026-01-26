@@ -65,7 +65,7 @@ export const SimulationPreview: FC<SimulationPreviewProps> = ({ simulation, isOp
   );
 
   const onStartSimulationSuccess = (response: StartSimulationResponse) => {
-    const { accessToken, scenario } = response;
+    const { accessToken, scenario, checklistEvents } = response;
     // TODO: Add trigger warnings to the room data
     localStorage.setItem(
       LOCAL_STORAGE_KEYS.PREVIEW_ROOM_DATA,
@@ -86,6 +86,9 @@ export const SimulationPreview: FC<SimulationPreviewProps> = ({ simulation, isOp
         serverUrl: accessToken.serverUrl,
         maxTimeValue: scenario?.metadata?.maxTimeValue,
         timerMode: scenario?.metadata?.timerMode,
+        checklistEvents: checklistEvents || [],
+        experienceMode: scenario?.metadata?.experienceMode,
+        checklistType: scenario?.metadata?.checklistType,
       }),
     );
     navigate(ROUTES.SIMULATION_PREVIEW(accessToken?.roomName));
