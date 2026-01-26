@@ -173,8 +173,11 @@ export interface StartSimulationResponse {
       name?: string;
       maxTimeValue?: string;
       timerMode?: boolean;
+      experienceMode?: string;
+      checklistType?: string;
     };
   };
+  checklistEvents?: any[];
 }
 
 export enum VisibilityType {
