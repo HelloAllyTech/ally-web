@@ -205,6 +205,11 @@ export const CreateSimulation: FC = () => {
       status,
     };
 
+    // Default experienceMode to FEEDBACK if not selected
+    if (!simulationData["experienceMode"]) {
+      simulationData["experienceMode"] = ExperienceMode.FEEDBACK;
+    }
+
     // Remove checklistType if experienceMode is not "CHECKLIST"
     if (simulationData["experienceMode"] !== ExperienceMode.CHECKLIST) {
       delete simulationData["checklistType"];
