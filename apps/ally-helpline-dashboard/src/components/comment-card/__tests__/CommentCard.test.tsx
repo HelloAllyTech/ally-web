@@ -60,20 +60,23 @@ vi.mock("@components", () => ({
     </button>
   ),
   ReactionSelector: () => <div data-testid="reaction-selector" />,
+  CustomMenu: () => null,
 }));
 
 // Mock API
 vi.mock("@api", () => ({
   useAddCommentReactionMutation: () => [vi.fn(), { isLoading: false }],
+  useToggleCommentVisibilityMutation: () => [vi.fn(), { isLoading: false }],
+  useDeleteCommentMutation: () => [vi.fn(), { isLoading: false }],
 }));
 
 // Create a mock Redux store
-const createMockStore = () => {
+const createMockStore = (userId = 999) => {
   return configureStore({
     reducer: {
       user: () => ({
         user: {
-          id: 1,
+          id: userId,
           name: "Test User",
           profileImageUrl: "https://example.com/test-user.jpg",
         },
@@ -85,7 +88,7 @@ const createMockStore = () => {
 describe("CommentCard Component", () => {
   let mockStore: ReturnType<typeof createMockStore>;
   const mockComment = {
-    id: 1,
+    id: "1",
     createdBy: {
       id: 1,
       name: "John Doe",
