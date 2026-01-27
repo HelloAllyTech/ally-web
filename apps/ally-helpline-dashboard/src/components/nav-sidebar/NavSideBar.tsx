@@ -8,7 +8,7 @@ import { CustomImage } from "@ally-ui-mono/ui-shared";
 import { useGetLogoUrlQuery } from "@api";
 import { DockToRight, LogoutIllustration } from "@assets";
 import { ConfirmationDialog, ProfileSettings, UserInfo } from "@components";
-import { navBarOptions, TOOLTIP_LIGHT_PROPS } from "@constants";
+import { navBarOptions, TOOLTIP_LIGHT_PROPS, TabId } from "@constants";
 import { useUser } from "@hooks";
 
 import { NavSideBarProps, TabProps } from "./types";
@@ -55,10 +55,24 @@ const NavSideBar: FC<NavSideBarProps> = ({ activeTab, onTabChange, isOpen, onClo
     useUser();
 
   const [isLogoutDialogOpen, setIsLogoutDialogOpen] = useState<boolean>(false);
-  const permittedTabs = navBarOptions.filter(
-    tab =>
-      !tab.permissions || permissions?.some(permission => tab.permissions.includes(permission)),
-  );
+  const permittedTabs = navBarOptions.filter(tab => {
+    // Check if user has permission for this tab
+    const hasPermission =
+      !tab.permissions || permissions?.some(permission => tab.permissions.includes(permission));
+    if (!hasPermission) return false;
+
+    // If this is the Badges tab, check if Leaderboard is also permitted
+    if (tab.id === TabId.BADGES) {
+      const hasLeaderboardPermission = navBarOptions.some(
+        t =>
+          t.id === TabId.LEADERBOARD &&
+          (!t.permissions || permissions?.some(permission => t.permissions.includes(permission))),
+      );
+      return !hasLeaderboardPermission;
+    }
+
+    return true;
+  });
 
   const navigate = useNavigate();
   const { data: tenantData } = useGetLogoUrlQuery();

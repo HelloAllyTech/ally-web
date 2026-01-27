@@ -107,6 +107,7 @@ export const ApiEndpoints = {
     ADD_COMMENT_REACTION: (commentId: string) => `/v1/reviews/comments/${commentId}/reactions`,
     TOGGLE_COMMENT_VISIBILITY: (commentId: string) =>
       `/v1/reviews/comments/${commentId}/visibility`,
+    EDIT_COMMENT: (commentId: string) => `/v1/reviews/comments/${commentId}`,
     DELETE_COMMENT: (commentId: string) => `/v1/reviews/comments/${commentId}`,
     GET_COMMENT_REPLIES: (commentId: string) => `/v1/reviews/comments/${commentId}/replies`,
   },

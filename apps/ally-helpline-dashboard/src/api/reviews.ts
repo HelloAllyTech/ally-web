@@ -158,6 +158,21 @@ const reviewsAPI = baseAPI.injectEndpoints({
       invalidatesTags: [TAG_TYPES.REVIEW],
     }),
 
+    /**
+     * Edits a comment.
+     * @param {string} commentId - The ID of the comment to edit
+     * @param {string} content - The updated content of the comment
+     * @returns {Promise<void>} Success response
+     */
+    editComment: builder.mutation<void, { commentId: string; content: string }>({
+      query: ({ commentId, content }) => ({
+        url: ApiEndpoints.REVIEWS.EDIT_COMMENT(commentId),
+        method: HttpMethod.PATCH,
+        body: { content },
+      }),
+      invalidatesTags: [TAG_TYPES.REVIEW],
+    }),
+
     getCommentReplies: builder.query({
       query: (commentId: string) => ({
         url: ApiEndpoints.REVIEWS.GET_COMMENT_REPLIES(commentId),
@@ -182,6 +197,7 @@ export const {
   useGetReviewReactionsCountQuery,
   useAddCommentReactionMutation,
   useToggleCommentVisibilityMutation,
+  useEditCommentMutation,
   useDeleteCommentMutation,
   useLazyGetCommentRepliesQuery,
 } = reviewsAPI;
