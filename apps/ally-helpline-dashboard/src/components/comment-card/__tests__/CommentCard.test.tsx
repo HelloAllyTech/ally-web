@@ -1,6 +1,6 @@
 import React from "react";
 
-import { render, screen, fireEvent } from "@testing-library/react";
+import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { Provider } from "react-redux";
 import { configureStore } from "@reduxjs/toolkit";
 import { describe, it, expect, vi, beforeEach } from "vitest";
@@ -44,6 +44,11 @@ vi.mock("@src/assets", async importOriginal => {
     AccountCircle: ({ className }: any) => (
       <div data-testid="account-circle" className={className} />
     ),
+    Smiley: ({ className }: any) => <div data-testid="smiley-icon" className={className} />,
+    MoreVertIcon: ({ className }: any) => (
+      <div data-testid="more-vert-icon" className={className} />
+    ),
+    ArrowUp: ({ className }: any) => <div data-testid="arrow-up-icon" className={className} />,
   };
 });
 
@@ -62,12 +67,69 @@ vi.mock("@components", () => ({
   ReactionSelector: () => <div data-testid="reaction-selector" />,
   CustomMenu: () => null,
 }));
+vi.mock("@components", async importOriginal => {
+  const actual = await importOriginal<typeof import("@components")>();
+  return {
+    ...actual,
+    Button: ({ children, onClick, className, variant }: any) => (
+      <button onClick={onClick} className={className} data-testid={`button-${variant}`}>
+        {children}
+      </button>
+    ),
+    ReactionSelector: ({ handleEmojiClick }: { handleEmojiClick: (emoji: string) => void }) => (
+      <div data-testid="reaction-selector">
+        <button data-testid="emoji-thumb-up" onClick={() => handleEmojiClick("1f44d")}>
+          👍
+        </button>
+      </div>
+    ),
+    CustomMenu: ({
+      anchorElement,
+      items,
+      onClose,
+    }: {
+      anchorElement: any;
+      items: any[];
+      onClose: () => void;
+    }) => {
+      if (!anchorElement) return null;
+      return (
+        <div data-testid="custom-menu">
+          {items.map((item: any) => (
+            <button
+              key={item.label}
+              onClick={() => {
+                item.onClick();
+                onClose();
+              }}
+            >
+              {item.label}
+            </button>
+          ))}
+        </div>
+      );
+    },
+  };
+});
 
 // Mock API
+const addCommentReactionUnwrap = vi.fn();
+const toggleCommentVisibilityUnwrap = vi.fn();
+const deleteCommentUnwrap = vi.fn();
+const getRepliesUnwrap = vi.fn();
+
+const addCommentReactionMock = vi.fn().mockReturnValue({ unwrap: addCommentReactionUnwrap });
+const toggleCommentVisibilityMock = vi
+  .fn()
+  .mockReturnValue({ unwrap: toggleCommentVisibilityUnwrap });
+const deleteCommentMock = vi.fn().mockReturnValue({ unwrap: deleteCommentUnwrap });
+const getRepliesMock = vi.fn().mockReturnValue({ unwrap: getRepliesUnwrap });
+
 vi.mock("@api", () => ({
-  useAddCommentReactionMutation: () => [vi.fn(), { isLoading: false }],
-  useToggleCommentVisibilityMutation: () => [vi.fn(), { isLoading: false }],
-  useDeleteCommentMutation: () => [vi.fn(), { isLoading: false }],
+  useAddCommentReactionMutation: () => [addCommentReactionMock, { isLoading: false }],
+  useToggleCommentVisibilityMutation: () => [toggleCommentVisibilityMock, { isLoading: false }],
+  useDeleteCommentMutation: () => [deleteCommentMock, { isLoading: false }],
+  useLazyGetCommentRepliesQuery: () => [getRepliesMock, { isLoading: false }],
 }));
 
 // Create a mock Redux store
@@ -102,6 +164,10 @@ describe("CommentCard Component", () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    addCommentReactionUnwrap.mockResolvedValue({});
+    toggleCommentVisibilityUnwrap.mockResolvedValue({});
+    deleteCommentUnwrap.mockResolvedValue({});
+    getRepliesUnwrap.mockResolvedValue({ data: [] });
     mockStore = createMockStore();
   });
 
@@ -122,7 +188,7 @@ describe("CommentCard Component", () => {
       replyCount: 3,
     };
     const { asFragment } = renderWithProvider(
-      <CommentCard comment={commentWithReactions} showLike showReply onReplyClick={vi.fn()} />,
+      <CommentCard comment={commentWithReactions} showLike showReply onReply={vi.fn()} />,
     );
     expect(asFragment()).toMatchSnapshot();
   });
@@ -228,6 +294,23 @@ describe("CommentCard Component", () => {
       expect(screen.queryByTestId("emoji-1f60a")).not.toBeInTheDocument();
     });
   });
+  it("should call addCommentReaction when an emoji is selected", async () => {
+    renderWithProvider(<CommentCard comment={mockComment} showLike />);
+
+    // The smiley icon is inside the clickable div
+    const smileyContainer = screen.getByTestId("smiley-icon").parentElement;
+    fireEvent.click(smileyContainer!);
+
+    // Now the reaction selector should be visible
+    const emojiButton = await screen.findByTestId("emoji-thumb-up");
+    fireEvent.click(emojiButton);
+
+    expect(addCommentReactionMock).toHaveBeenCalledWith({
+      commentId: mockComment.id,
+      reaction: { reaction: "1f44d", action: "ADD" },
+    });
+    expect(addCommentReactionUnwrap).toHaveBeenCalledTimes(1);
+  });
 
   // --- Reply Count Tests ---
   describe("Reply Count", () => {
@@ -254,18 +337,20 @@ describe("CommentCard Component", () => {
       expect(screen.queryByText(/repl/)).not.toBeInTheDocument();
     });
 
-    it("should call onReplyClick when reply count is clicked", () => {
-      const onReplyClick = vi.fn();
+    it("should fetch replies when reply count is clicked and onReplyClick is not provided", async () => {
       const commentWithReplies = {
         ...mockComment,
         replyCount: 3,
       };
-      renderWithProvider(<CommentCard comment={commentWithReplies} onReplyClick={onReplyClick} />);
+      renderWithProvider(<CommentCard comment={commentWithReplies} />);
 
       const replyCountElement = screen.getByText("3 replies");
       fireEvent.click(replyCountElement);
 
-      expect(onReplyClick).toHaveBeenCalledTimes(1);
+      expect(getRepliesMock).toHaveBeenCalledWith(commentWithReplies.id);
+      await waitFor(() => {
+        expect(getRepliesUnwrap).toHaveBeenCalledTimes(1);
+      });
     });
   });
 
@@ -548,6 +633,57 @@ describe("CommentCard Component", () => {
       fireEvent.click(commentButton);
 
       expect(onReply).toHaveBeenCalledWith("Great work! 👍🎉");
+    });
+  });
+
+  describe("Menu Options", () => {
+    it("should call deleteComment when delete is clicked for own comment within 10 mins", async () => {
+      const myComment = {
+        ...mockComment,
+        createdBy: { ...mockComment.createdBy, id: 999 }, // current user id from mockStore
+        createdAt: new Date().toISOString(), // not expired
+      };
+      renderWithProvider(<CommentCard comment={myComment} />);
+
+      const menuButton = screen.getByLabelText("Comment options");
+      fireEvent.click(menuButton);
+
+      const deleteButton = await screen.findByText("Delete");
+      fireEvent.click(deleteButton);
+
+      expect(deleteCommentMock).toHaveBeenCalledWith({ commentId: myComment.id });
+      expect(deleteCommentUnwrap).toHaveBeenCalledTimes(1);
+    });
+
+    it("should not show delete option for own comment after 10 mins", async () => {
+      const myComment = {
+        ...mockComment,
+        createdBy: { ...mockComment.createdBy, id: 999 },
+        createdAt: new Date(Date.now() - 11 * 60 * 1000).toISOString(), // 11 mins ago
+      };
+      renderWithProvider(<CommentCard comment={myComment} />);
+      expect(screen.queryByLabelText("Comment options")).not.toBeInTheDocument();
+      expect(screen.queryByText("Delete")).not.toBeInTheDocument();
+    });
+
+    it("should call toggleCommentVisibility when hide is clicked by feed owner", async () => {
+      const commentToHide = { ...mockComment, hidden: false };
+      // Render with a different user ID in store to ensure isMyComment is false
+      const otherUserStore = createMockStore(123);
+      render(
+        <Provider store={otherUserStore}>
+          <CommentCard comment={commentToHide} isFeedOwner={true} />
+        </Provider>,
+      );
+      const menuButton = screen.getByLabelText("Comment options");
+      fireEvent.click(menuButton);
+      const hideButton = await screen.findByText("Hide");
+      fireEvent.click(hideButton);
+      expect(toggleCommentVisibilityMock).toHaveBeenCalledWith({
+        commentId: commentToHide.id,
+        hidden: true,
+      });
+      expect(toggleCommentVisibilityUnwrap).toHaveBeenCalledTimes(1);
     });
   });
 });
