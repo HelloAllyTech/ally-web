@@ -288,19 +288,19 @@ const Transcription: FC<TranscriptionProps> = ({
     onCloseSelectedComment?.();
   }, [onCloseSelectedComment]);
 
-  const handleCreateComment = async (
-    comment: string,
-    selection: { startIndex: number; endIndex: number },
-    transcriptId: number,
-    threadId: string | null,
-    parentCommentId: string | null,
-  ) => {
+  const handleCreateComment = async (payload: {
+    comment: string;
+    selection: { startIndex: number; endIndex: number };
+    transcriptId: number;
+    threadId: string | null;
+    parentCommentId: string | null;
+  }) => {
     return await createComment?.(reviewId, {
-      threadId: threadId,
-      parentCommentId: parentCommentId,
-      messageId: transcriptId,
-      content: comment,
-      selection: selection,
+      threadId: payload.threadId,
+      parentCommentId: payload.parentCommentId,
+      messageId: payload.transcriptId,
+      content: payload.comment,
+      selection: payload.selection,
     });
   };
   // Close dialogs on outside click
@@ -422,13 +422,13 @@ const Transcription: FC<TranscriptionProps> = ({
                             <CommentAdditionDialog
                               onCancel={handleCancelComment}
                               onComment={comment =>
-                                handleCreateComment(
-                                  comment,
-                                  segment.selection,
-                                  transcript.id,
-                                  null,
-                                  null,
-                                )
+                                handleCreateComment({
+                                  comment: comment,
+                                  selection: segment.selection,
+                                  transcriptId: transcript.id,
+                                  threadId: null,
+                                  parentCommentId: null,
+                                })
                               }
                             />
                           </div>
@@ -448,22 +448,22 @@ const Transcription: FC<TranscriptionProps> = ({
                                 isFeedOwner={isFeedOwner}
                                 comments={commentsList as CommentItem[]}
                                 onCommentAddition={comment =>
-                                  handleCreateComment(
-                                    comment,
-                                    segment.selection,
-                                    transcript.id,
-                                    selectedThreadId,
-                                    null,
-                                  )
+                                  handleCreateComment({
+                                    comment: comment,
+                                    selection: segment.selection,
+                                    transcriptId: transcript.id,
+                                    threadId: selectedThreadId,
+                                    parentCommentId: null,
+                                  })
                                 }
                                 onReplyComment={(replyComment, parentCommentId) =>
-                                  handleCreateComment(
-                                    replyComment,
-                                    segment.selection,
-                                    transcript.id,
-                                    selectedThreadId,
-                                    parentCommentId,
-                                  )
+                                  handleCreateComment({
+                                    comment: replyComment,
+                                    selection: segment.selection,
+                                    transcriptId: transcript.id,
+                                    threadId: selectedThreadId,
+                                    parentCommentId: parentCommentId,
+                                  })
                                 }
                               />
                             </div>

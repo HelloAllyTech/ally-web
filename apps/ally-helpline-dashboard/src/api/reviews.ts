@@ -157,6 +157,14 @@ const reviewsAPI = baseAPI.injectEndpoints({
       }),
       invalidatesTags: [TAG_TYPES.REVIEW],
     }),
+
+    getCommentReplies: builder.query({
+      query: (commentId: string) => ({
+        url: ApiEndpoints.REVIEWS.GET_COMMENT_REPLIES(commentId),
+        method: HttpMethod.GET,
+      }),
+      providesTags: [TAG_TYPES.REVIEW],
+    }),
   }),
 });
 
@@ -175,4 +183,5 @@ export const {
   useAddCommentReactionMutation,
   useToggleCommentVisibilityMutation,
   useDeleteCommentMutation,
+  useLazyGetCommentRepliesQuery,
 } = reviewsAPI;
