@@ -116,6 +116,7 @@ vi.mock("@components", async importOriginal => {
 const addCommentReactionUnwrap = vi.fn();
 const toggleCommentVisibilityUnwrap = vi.fn();
 const deleteCommentUnwrap = vi.fn();
+const editCommentUnwrap = vi.fn();
 const getRepliesUnwrap = vi.fn();
 
 const addCommentReactionMock = vi.fn().mockReturnValue({ unwrap: addCommentReactionUnwrap });
@@ -123,12 +124,14 @@ const toggleCommentVisibilityMock = vi
   .fn()
   .mockReturnValue({ unwrap: toggleCommentVisibilityUnwrap });
 const deleteCommentMock = vi.fn().mockReturnValue({ unwrap: deleteCommentUnwrap });
+const editCommentMock = vi.fn().mockReturnValue({ unwrap: editCommentUnwrap });
 const getRepliesMock = vi.fn().mockReturnValue({ unwrap: getRepliesUnwrap });
 
 vi.mock("@api", () => ({
   useAddCommentReactionMutation: () => [addCommentReactionMock, { isLoading: false }],
   useToggleCommentVisibilityMutation: () => [toggleCommentVisibilityMock, { isLoading: false }],
   useDeleteCommentMutation: () => [deleteCommentMock, { isLoading: false }],
+  useEditCommentMutation: () => [editCommentMock, { isLoading: false }],
   useLazyGetCommentRepliesQuery: () => [getRepliesMock, { isLoading: false }],
 }));
 
@@ -167,6 +170,7 @@ describe("CommentCard Component", () => {
     addCommentReactionUnwrap.mockResolvedValue({});
     toggleCommentVisibilityUnwrap.mockResolvedValue({});
     deleteCommentUnwrap.mockResolvedValue({});
+    editCommentUnwrap.mockResolvedValue({});
     getRepliesUnwrap.mockResolvedValue({ data: [] });
     mockStore = createMockStore();
   });
@@ -578,7 +582,7 @@ describe("CommentCard Component", () => {
       expect(screen.queryByTestId("reply-textarea")).not.toBeInTheDocument();
     });
 
-    it("should clear textarea value when Cancel button is clicked", () => {
+    it("should preserve textarea value when Cancel button is clicked", () => {
       renderWithProvider(<CommentCard comment={mockComment} showReply />);
 
       const replyButton = screen.getByText("Reply");
@@ -593,7 +597,7 @@ describe("CommentCard Component", () => {
       // Re-open textarea
       fireEvent.click(replyButton);
       textarea = screen.getByTestId("reply-textarea");
-      expect(textarea).toHaveValue("");
+      expect(textarea).toHaveValue("Draft reply");
     });
 
     it("should not show reply textarea without showReply prop", () => {
