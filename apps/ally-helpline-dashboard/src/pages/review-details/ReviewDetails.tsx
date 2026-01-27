@@ -66,7 +66,9 @@ export const ReviewDetails = () => {
   useEffect(() => {
     if (simulationTranscript?.length > 0) {
       setTranscriptList(prev => {
-        return [...prev, ...simulationTranscript];
+        return transcriptOffset > 0
+          ? [...prev, ...simulationTranscript]
+          : [...simulationTranscript];
       });
     }
   }, [simulationTranscript]);
@@ -166,7 +168,7 @@ export const ReviewDetails = () => {
   };
 
   const handleLoadMore = () => {
-    if (transcriptOffset >= simulationTranscript?.messages?.length) return;
+    if (simulationTranscript?.messages?.length > 0) return;
     setTranscriptOffset(prev => prev + TRANSCRIPT_PAGE_SIZE);
   };
   const onCreateComment = async (
