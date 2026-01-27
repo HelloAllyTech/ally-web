@@ -361,9 +361,9 @@ describe("Transcription Component", () => {
           startSeconds: 0,
           threads: [
             {
-              id: 1,
+              id: "1",
               selection: { startIndex: 0, endIndex: 5, text: "Hello", messageId: 1 },
-              comments: [{ id: 1, content: "Test comment" }],
+              comments: [{ id: "1", content: "Test comment" }],
             },
           ],
         },
@@ -385,9 +385,9 @@ describe("Transcription Component", () => {
           startSeconds: 0,
           threads: [
             {
-              id: 1,
+              id: "1",
               selection: { startIndex: 0, endIndex: 5, text: "Hello", messageId: 1 },
-              comments: [{ id: 1, content: "Test comment" }],
+              comments: [{ id: "1", content: "Test comment" }],
             },
           ],
         },
@@ -399,7 +399,7 @@ describe("Transcription Component", () => {
           transcriptList={transcriptWithThreads}
           canSelect={true}
           selectedMessageId="1"
-          selectedThreadId={1}
+          selectedThreadId="1"
         />,
       );
 
@@ -416,7 +416,7 @@ describe("Transcription Component", () => {
           startSeconds: 0,
           threads: [
             {
-              id: 1,
+              id: "1",
               selection: { startIndex: 0, endIndex: 5, text: "Hello", messageId: 1 },
               comments: [],
             },
@@ -448,7 +448,7 @@ describe("Transcription Component", () => {
           startSeconds: 0,
           threads: [
             {
-              id: 1,
+              id: "1",
               selection: { startIndex: 0, endIndex: 5, text: "Hello", messageId: 1 },
               comments: [],
             },
@@ -477,7 +477,7 @@ describe("Transcription Component", () => {
           startSeconds: 0,
           threads: [
             {
-              id: 1,
+              id: "1",
               selection: { startIndex: 0, endIndex: 5, text: "Hello", messageId: 1 },
               comments: [],
             },
@@ -510,7 +510,7 @@ describe("Transcription Component", () => {
           startSeconds: 0,
           threads: [
             {
-              id: 1,
+              id: "1",
               selection: { startIndex: 0, endIndex: 5, text: "Hello", messageId: 1 },
               comments: [],
             },
@@ -571,7 +571,7 @@ describe("Transcription Component", () => {
           startSeconds: 0,
           threads: [
             {
-              id: 1,
+              id: "1",
               selection: { startIndex: 0, endIndex: 5, text: "Hello", messageId: 1 },
               comments: [],
             },
@@ -605,7 +605,7 @@ describe("Transcription Component", () => {
           startSeconds: 0,
           threads: [
             {
-              id: 1,
+              id: "1",
               selection: { startIndex: 0, endIndex: 5, text: "Hello", messageId: 1 },
               comments: [],
             },
@@ -689,14 +689,14 @@ describe("Transcription Component", () => {
           startSeconds: 0,
           threads: [
             {
-              id: 1,
+              id: "1",
               selection: { startIndex: 0, endIndex: 5, text: "Hello", messageId: 1 },
-              comments: [{ id: 1, content: "Comment 1" }],
+              comments: [{ id: "1", content: "Comment 1" }],
             },
             {
-              id: 2,
+              id: "2",
               selection: { startIndex: 13, endIndex: 17, text: "this", messageId: 1 },
-              comments: [{ id: 2, content: "Comment 2" }],
+              comments: [{ id: "2", content: "Comment 2" }],
             },
           ],
         },
