@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 import { Emoji, EmojiStyle } from "emoji-picker-react";
 import { useSelector } from "react-redux";
@@ -46,6 +46,10 @@ const CommentCard = ({
   const [toggleCommentVisibility] = useToggleCommentVisibilityMutation();
   const [deleteComment] = useDeleteCommentMutation();
   const likeRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (comment?.myReaction) setSelectedEmoji(comment.myReaction);
+  }, [comment?.myReaction]);
 
   const handleReplyClick = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -228,7 +232,7 @@ const CommentCard = ({
                 onClick={() => setShowEmojiPicker(prev => !prev)}
               >
                 {selectedEmoji ? (
-                  <div className="pb-0.5">
+                  <div className="pb-0.5  w-[26px] bg-white h-[26px] flex items-center justify-center rounded-full border-[0.5px]">
                     <Emoji unified={selectedEmoji} size={14} emojiStyle={EmojiStyle.NATIVE} />
                   </div>
                 ) : (
@@ -245,7 +249,7 @@ const CommentCard = ({
               )}
             </div>
           )}
-          {!showLike && comment.reactions && Object.keys(comment.reactions).length > 0 && (
+          {comment?.reactions && Object.keys(comment?.reactions).length > 0 && (
             <>
               <div className="flex pr-2 items-center">
                 {Object.keys(comment.reactions)
@@ -271,7 +275,6 @@ const CommentCard = ({
               <div className="text-typography-800 text-[14px]">
                 {Object.keys(comment.reactions).length}
               </div>
-              {comment.replyCount > 0 && <div className="w-1 h-1 bg-[#D9D9D9] rounded-full" />}
             </>
           )}
           {showReply && (
