@@ -98,7 +98,7 @@ export interface CommentItem {
   replyCount: number;
 }
 export interface Thread {
-  id: number;
+  id: string;
   selection: {
     text: string;
     startIndex: number;
@@ -113,7 +113,7 @@ export interface TextSegment {
   content: string;
   isComment: boolean;
   commentIndex?: number;
-  threadId?: number;
+  threadId?: string;
   selection?: {
     startIndex: number;
     endIndex: number;

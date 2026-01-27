@@ -37,15 +37,17 @@ export const ReviewDetails = () => {
   const [selectedMessageId, setSelectedMessageId] = useState<string>("");
   const [selectedStartIndex, setSelectedStartIndex] = useState<number>(0);
   const [selectedEndIndex, setSelectedEndIndex] = useState<number>(0);
-  const [selectedThreadId, setSelectedThreadId] = useState<number>(null);
+  const [selectedThreadId, setSelectedThreadId] = useState<string>(null);
   const [transcriptList, setTranscriptList] = useState<SimulationTranscriptMessage[]>([]);
   const [showReactionsModal, setShowReactionsModal] = useState(false);
   const [showSimulationDetailsModal, setShowSimulationDetailsModal] = useState(false);
+  const [hasMoreTranscripts, setHasMoreTranscripts] = useState(true);
+
+  const selectEmojiRef = useRef<HTMLDivElement>(null);
+
   const { data: reviewDetails, isLoading: isGetReviewDetailsLoading } = useGetReviewByIdQuery(
     reviewId || "",
   );
-
-  const selectEmojiRef = useRef<HTMLDivElement>(null);
 
   const [createComment, { isLoading: isCreateCommentLoading, isSuccess: isCreateCommentSuccess }] =
     useCreateCommentMutation();
@@ -57,7 +59,6 @@ export const ReviewDetails = () => {
       sortBy: "startSeconds",
     });
   const [addReactions] = useAddReactionMutation();
-
   useEffect(() => {
     setTranscriptList([]);
     setTranscriptOffset(0);
@@ -70,6 +71,8 @@ export const ReviewDetails = () => {
           ? [...prev, ...simulationTranscript]
           : [...simulationTranscript];
       });
+    } else {
+      setHasMoreTranscripts(false);
     }
   }, [simulationTranscript]);
 
@@ -152,7 +155,7 @@ export const ReviewDetails = () => {
     messageId: string;
     startIndex: number;
     endIndex: number;
-    threadId: number;
+    threadId: string;
   }) => {
     setSelectedMessageId(props.messageId);
     setSelectedStartIndex(props.startIndex);
@@ -168,14 +171,14 @@ export const ReviewDetails = () => {
   };
 
   const handleLoadMore = () => {
-    if (simulationTranscript?.messages?.length > 0) return;
+    if (!hasMoreTranscripts || isGetTranscriptLoading) return;
     setTranscriptOffset(prev => prev + TRANSCRIPT_PAGE_SIZE);
   };
   const onCreateComment = async (
     reviewId: string,
     body: {
-      threadId: number;
-      parentCommentId: number;
+      threadId: string;
+      parentCommentId: string;
       messageId: number;
       content: string;
       selection: { startIndex: number; endIndex: number };
