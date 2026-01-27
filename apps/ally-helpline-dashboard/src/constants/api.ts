@@ -105,6 +105,9 @@ export const ApiEndpoints = {
     GET_REVIEW_REACTIONS: (reviewId: string) => `/v1/reviews/${reviewId}/reactions`,
     GET_REVIEW_REACTIONS_COUNT: (reviewId: string) => `/v1/reviews/${reviewId}/reactions/count`,
     ADD_COMMENT_REACTION: (commentId: string) => `/v1/reviews/comments/${commentId}/reactions`,
+    TOGGLE_COMMENT_VISIBILITY: (commentId: string) =>
+      `/v1/reviews/comments/${commentId}/visibility`,
+    DELETE_COMMENT: (commentId: string) => `/v1/reviews/comments/${commentId}`,
   },
   BADGES: {
     GET_AVAILABLE_BADGES: "/v1/badges/me/available",

@@ -7,6 +7,7 @@ import { Thread } from "@types";
 
 interface ReviewCommentsSidepanelProps {
   threads: Thread[] | null;
+  isFeedOwner?: boolean;
   totalComments: number;
   className?: string;
   isOpen?: boolean;
@@ -20,6 +21,7 @@ interface ReviewCommentsSidepanelProps {
 const ReviewCommentsSidepanel = ({
   threads,
   totalComments,
+  isFeedOwner,
   className,
   isOpen = true,
   onCommentClick = () => {},
@@ -70,7 +72,7 @@ const ReviewCommentsSidepanel = ({
                         : `${(threads.length - index) * 30}ms`,
                     }}
                   >
-                    <ThreadCard thread={thread} />
+                    <ThreadCard thread={thread} isFeedOwner={isFeedOwner} />
                   </div>
                 ),
             )}

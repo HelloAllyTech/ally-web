@@ -20,6 +20,7 @@ interface TranscriptionProps {
   selectedMessageId?: string;
   selectedStartIndex?: number;
   selectedEndIndex?: number;
+  isFeedOwner?: boolean;
   handleCommentClick?: (props: {
     messageId: string;
     startIndex: number;
@@ -48,6 +49,7 @@ interface TranscriptionProps {
 const DIALOG_WIDTH = 360;
 
 const Transcription: FC<TranscriptionProps> = ({
+  isFeedOwner,
   transcriptList,
   canSelect = false,
   selectedMessageId,
@@ -443,6 +445,7 @@ const Transcription: FC<TranscriptionProps> = ({
                               }}
                             >
                               <CommentThread
+                                isFeedOwner={isFeedOwner}
                                 comments={commentsList as CommentItem[]}
                                 onCommentAddition={comment =>
                                   handleCreateComment(

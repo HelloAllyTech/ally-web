@@ -3,7 +3,7 @@
 exports[`CommentCard Component > should match snapshot when rendered with basic props 1`] = `
 <DocumentFragment>
   <div
-    class="flex gap-2.5"
+    class="flex gap-2.5 "
   >
     <div
       class="min-w-8 h-8 rounded-full overflow-hidden"
@@ -19,17 +19,21 @@ exports[`CommentCard Component > should match snapshot when rendered with basic 
       class="flex flex-col gap-1 w-full"
     >
       <div
-        class="flex gap-2 items-center"
+        class="flex flex-row justify-between items-center gap-2 w-full"
       >
         <div
-          class="text-[14px] font-medium"
+          class="flex flex-row gap-2 items-center w-full"
         >
-          John Doe
-        </div>
-        <div
-          class="text-[12px] text-gray-500"
-        >
-          2 hours ago
+          <div
+            class="text-[14px] font-medium"
+          >
+            John Doe
+          </div>
+          <div
+            class="text-[12px] text-gray-500"
+          >
+            2 hours ago
+          </div>
         </div>
       </div>
       <div
@@ -48,7 +52,7 @@ exports[`CommentCard Component > should match snapshot when rendered with basic 
 exports[`CommentCard Component > should match snapshot with all props enabled 1`] = `
 <DocumentFragment>
   <div
-    class="flex gap-2.5"
+    class="flex gap-2.5 "
   >
     <div
       class="min-w-8 h-8 rounded-full overflow-hidden"
@@ -64,17 +68,21 @@ exports[`CommentCard Component > should match snapshot with all props enabled 1`
       class="flex flex-col gap-1 w-full"
     >
       <div
-        class="flex gap-2 items-center"
+        class="flex flex-row justify-between items-center gap-2 w-full"
       >
         <div
-          class="text-[14px] font-medium"
+          class="flex flex-row gap-2 items-center w-full"
         >
-          John Doe
-        </div>
-        <div
-          class="text-[12px] text-gray-500"
-        >
-          2 hours ago
+          <div
+            class="text-[14px] font-medium"
+          >
+            John Doe
+          </div>
+          <div
+            class="text-[12px] text-gray-500"
+          >
+            2 hours ago
+          </div>
         </div>
       </div>
       <div

@@ -6,8 +6,9 @@ import { Thread } from "@types";
 
 interface ThreadCardProps {
   thread: Thread;
+  isFeedOwner?: boolean;
 }
-const ThreadCard = ({ thread }: ThreadCardProps) => {
+const ThreadCard = ({ thread, isFeedOwner }: ThreadCardProps) => {
   const [showComments, setShowComments] = useState(false);
 
   const updateShowComments = event => {
@@ -25,7 +26,7 @@ const ThreadCard = ({ thread }: ThreadCardProps) => {
         </div>
       </div>
 
-      <CommentCard comment={thread.comments[0]} />
+      <CommentCard isFeedOwner={isFeedOwner} comment={thread.comments[0]} />
       <div
         className={`grid transition-[grid-template-rows] duration-500 ease-out ${showComments ? "grid-rows-[1fr]" : "grid-rows-[0fr]"}`}
       >
@@ -42,7 +43,7 @@ const ThreadCard = ({ thread }: ThreadCardProps) => {
                   : `${(thread.comments.length - 1 - index) * 30}ms`,
               }}
             >
-              <CommentCard comment={comment} />
+              <CommentCard isFeedOwner={isFeedOwner} comment={comment} />
             </div>
           ))}
         </div>
