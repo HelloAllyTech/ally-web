@@ -21,6 +21,8 @@ export const MAPPED_EVENT_FIELDS = {
   MAX_SCORE: "maxScore",
   // Checklist visibility field
   CHECKLIST_VISIBILITY_STATUS: "checklistVisibilityStatus",
+  // Tags field
+  TAGS: "tags",
 } as const;
 
 // Default values for new events
@@ -245,6 +247,7 @@ export const formatApiResponseToMappedEvent = (
     branchingStatus: boolean;
     branchInstruction?: string;
     checklistVisibilityStatus?: boolean;
+    tags?: string[];
     detectionConfig?: {
       maxOccurrences?: number;
       minGapTime?: string | number;
@@ -322,6 +325,8 @@ export const formatApiResponseToMappedEvent = (
       false,
       eventId,
     ),
+    // Tags field (non-editable)
+    tags: createCell(event.tags ?? [], true, eventId),
   };
 };
 

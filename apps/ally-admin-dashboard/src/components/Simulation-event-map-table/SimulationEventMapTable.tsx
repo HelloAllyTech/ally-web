@@ -226,6 +226,14 @@ export const SimulationEventMapTable: FC<SimulationEventMapTableProps> = ({ simu
         options: [],
         minWidth: 120,
       },
+      {
+        id: MAPPED_EVENT_FIELDS.TAGS,
+        label: "Tags",
+        accessor: MAPPED_EVENT_FIELDS.TAGS,
+        dataType: cellTypes.tags,
+        options: [],
+        minWidth: 150,
+      },
     ];
   }, [sessionEventsOptions]);
 
