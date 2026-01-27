@@ -98,7 +98,7 @@ const FeedCard: FC<FeedCardProps> = ({
           </span>
         </div>
 
-        <div className="border rounded-[12px] overflow-hidden">
+        <div className="border-[0.5px] rounded-[12px] overflow-hidden">
           <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 p-3 sm:p-4">
             <div className="flex-shrink-0 w-full sm:w-[200px] h-[120px] sm:h-[100px] rounded-[4px] overflow-hidden">
               <CustomImage
@@ -174,9 +174,12 @@ const FeedCard: FC<FeedCardProps> = ({
 
           {reviewTranscriptSection()}
 
-          {divider()}
-
-          {(totalReactionCount > 0 || commentsCount > 0) && reactionsAndCommentsCountSection()}
+          {(totalReactionCount > 0 || commentsCount > 0) && (
+            <>
+              {divider()}
+              {reactionsAndCommentsCountSection()}
+            </>
+          )}
 
           {isCommentsExpanded &&
             commentsCount > 0 &&
