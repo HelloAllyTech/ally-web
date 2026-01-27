@@ -183,6 +183,8 @@ export interface UpdateScenarioEventDataParam {
   maxScore?: { value: number | null; disabled: boolean; rowId?: string };
   // Checklist visibility field
   checklistVisibilityStatus?: { value: boolean; disabled: boolean; rowId?: string };
+  // Tags field
+  tags?: { value: string[]; disabled: boolean; rowId?: string };
 }
 
 export interface ScenarioVoiceConfig {
