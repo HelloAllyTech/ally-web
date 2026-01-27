@@ -14,7 +14,7 @@ interface ReviewCommentsSidepanelProps {
     messageId: string;
     startIndex: number;
     endIndex: number;
-    threadId: number;
+    threadId: string;
   }) => void;
 }
 const ReviewCommentsSidepanel = ({

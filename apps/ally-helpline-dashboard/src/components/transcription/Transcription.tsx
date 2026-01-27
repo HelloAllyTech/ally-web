@@ -24,10 +24,10 @@ interface TranscriptionProps {
     messageId: string;
     startIndex: number;
     endIndex: number;
-    threadId: number;
+    threadId: string;
   }) => void;
   commentsList?: CommentItem[];
-  selectedThreadId?: number;
+  selectedThreadId?: string | null;
   onCloseSelectedComment?: () => void;
   className?: string;
   handleLoadMore?: () => void;
@@ -35,8 +35,8 @@ interface TranscriptionProps {
   createComment?: (
     reviewId: string,
     body: {
-      threadId: number | null;
-      parentCommentId: number | null;
+      threadId: string | null;
+      parentCommentId: string | null;
       messageId: number;
       content: string;
       selection: { startIndex: number; endIndex: number };
@@ -290,10 +290,10 @@ const Transcription: FC<TranscriptionProps> = ({
     comment: string,
     selection: { startIndex: number; endIndex: number },
     transcriptId: number,
-    threadId: number | null,
-    parentCommentId: number | null,
+    threadId: string | null,
+    parentCommentId: string | null,
   ) => {
-    await createComment?.(reviewId, {
+    return await createComment?.(reviewId, {
       threadId: threadId,
       parentCommentId: parentCommentId,
       messageId: transcriptId,
@@ -458,8 +458,8 @@ const Transcription: FC<TranscriptionProps> = ({
                                     replyComment,
                                     segment.selection,
                                     transcript.id,
-                                    null,
-                                    Number(parentCommentId),
+                                    selectedThreadId,
+                                    parentCommentId,
                                   )
                                 }
                               />
