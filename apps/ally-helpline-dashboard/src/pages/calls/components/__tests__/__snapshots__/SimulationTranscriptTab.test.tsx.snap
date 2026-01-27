@@ -6,7 +6,7 @@ exports[`SimulationTranscriptTab > should match snapshot when rendered 1`] = `
     class="h-full undefined"
   >
     <div
-      class="relative h-[calc(100%-170px)]"
+      class="relative h-[calc(100%-140px)] "
     >
       <div
         data-testid="transcript-tab"
@@ -57,18 +57,22 @@ exports[`SimulationTranscriptTab > should match snapshot when rendered 1`] = `
       />
     </div>
     <div
-      class="flex flex-row justify-center gap-2 align-center rounded-full border-[0.5px] p-2 shadow-[2.13px_2.84px_7.81px_0px_#A09E9E1A]"
-      style="opacity: 1;"
+      class="flex justify-center"
     >
       <div
-        data-testid="toggle-component"
+        class="flex justify-center gap-2 rounded-full border p-2 shadow-lg"
+        style="opacity: 1;"
       >
-        <button>
-          Keep it private
-        </button>
-        <button>
-          Share for review
-        </button>
+        <div
+          data-testid="toggle-component"
+        >
+          <button>
+            Keep it private
+          </button>
+          <button>
+            Share for review
+          </button>
+        </div>
       </div>
     </div>
   </div>

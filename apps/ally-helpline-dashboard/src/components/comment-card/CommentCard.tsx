@@ -234,8 +234,8 @@ const CommentCard = ({
                 onClick={() => enableLikeUpdate && setShowEmojiPicker(prev => !prev)}
               >
                 {selectedEmoji ? (
-                  <div className="w-[26px] h-[26px] pb-[5px] bg-white flex items-center justify-center rounded-full border-primary-500 border-[0.5px]">
-                    <Emoji unified={selectedEmoji} size={14} emojiStyle={EmojiStyle.NATIVE} />
+                  <div className="pb-0.5  w-[26px] bg-white h-[26px] flex items-center justify-center rounded-full border-[0.5px]">
+                    <Emoji unified={selectedEmoji} size={14} emojiStyle={EmojiStyle.APPLE} />
                   </div>
                 ) : (
                   <Smiley className="w-5 h-5 text-neutral-600 hover:text-[#0957D0]" />
@@ -263,11 +263,11 @@ const CommentCard = ({
                       className="w-4 overflow-visible relative"
                     >
                       {reaction !== "" && (
-                        <div className="w-[26px] bg-white h-[26px] pb-[4px] flex items-center justify-center rounded-full border-[0.5px]">
+                        <div className="w-[26px] bg-white h-[26px] flex items-center justify-center rounded-full border-[0.5px]">
                           <Emoji
                             unified={reaction ?? "1f44d"}
                             size={12}
-                            emojiStyle={EmojiStyle.NATIVE}
+                            emojiStyle={EmojiStyle.APPLE}
                           />
                         </div>
                       )}
@@ -277,13 +277,13 @@ const CommentCard = ({
               <div className="text-typography-800 text-[14px]">
                 {Object.keys(comment.reactions).length}
               </div>
+              {comment.replyCount > 0 && <div className="w-1 h-1 bg-[#D9D9D9] rounded-full" />}
             </>
           )}
           {showReply && (
             <>
-              <div className="w-1 h-1 bg-[#D9D9D9] rounded-full" />
               <div
-                className="text-typography-800 text-[12px] cursor-pointer font-medium"
+                className="text-typography-800 text-xs cursor-pointer font-medium"
                 onClick={handleReplyClick}
               >
                 Reply
@@ -291,10 +291,7 @@ const CommentCard = ({
             </>
           )}
           {comment.replyCount > 0 && (
-            <div
-              className={`text-typography-800 text-[${showReply ? "12px" : "14px"}] cursor-pointer`}
-              onClick={onReplyClick}
-            >
+            <div className={`text-typography-800 text-xs cursor-pointer`} onClick={onReplyClick}>
               {comment.replyCount} repl{comment.replyCount > 1 ? "ies" : "y"}
             </div>
           )}

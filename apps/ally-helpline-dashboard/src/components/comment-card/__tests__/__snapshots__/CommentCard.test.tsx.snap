@@ -113,7 +113,7 @@ exports[`CommentCard Component > should match snapshot with all props enabled 1`
             style="z-index: 10;"
           >
             <div
-              class="w-[26px] bg-white h-[26px] pb-[4px] flex items-center justify-center rounded-full border-[0.5px]"
+              class="w-[26px] bg-white h-[26px] flex items-center justify-center rounded-full border-[0.5px]"
             >
               <span
                 data-testid="emoji-2764"
@@ -127,7 +127,7 @@ exports[`CommentCard Component > should match snapshot with all props enabled 1`
             style="z-index: 9;"
           >
             <div
-              class="w-[26px] bg-white h-[26px] pb-[4px] flex items-center justify-center rounded-full border-[0.5px]"
+              class="w-[26px] bg-white h-[26px] flex items-center justify-center rounded-full border-[0.5px]"
             >
               <span
                 data-testid="emoji-1f44d"
@@ -141,7 +141,7 @@ exports[`CommentCard Component > should match snapshot with all props enabled 1`
             style="z-index: 8;"
           >
             <div
-              class="w-[26px] bg-white h-[26px] pb-[4px] flex items-center justify-center rounded-full border-[0.5px]"
+              class="w-[26px] bg-white h-[26px] flex items-center justify-center rounded-full border-[0.5px]"
             >
               <span
                 data-testid="emoji-1f389"
@@ -160,12 +160,12 @@ exports[`CommentCard Component > should match snapshot with all props enabled 1`
           class="w-1 h-1 bg-[#D9D9D9] rounded-full"
         />
         <div
-          class="text-typography-800 text-[12px] cursor-pointer font-medium"
+          class="text-typography-800 text-xs cursor-pointer font-medium"
         >
           Reply
         </div>
         <div
-          class="text-typography-800 text-[12px] cursor-pointer"
+          class="text-typography-800 text-xs cursor-pointer"
         >
           3 replies
         </div>

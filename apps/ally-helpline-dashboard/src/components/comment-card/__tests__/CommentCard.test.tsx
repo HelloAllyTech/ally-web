@@ -424,7 +424,7 @@ describe("CommentCard Component", () => {
 
   // --- Divider Tests ---
   describe("Dividers", () => {
-    it("should not show divider when only reactions and reply count are present", () => {
+    it("should show divider when only reactions and reply count are present", () => {
       const commentWithReactionsAndReplies = {
         ...mockComment,
         reactions: { "1f44d": 5 },
@@ -434,13 +434,7 @@ describe("CommentCard Component", () => {
         <CommentCard comment={commentWithReactionsAndReplies} showLike={false} />,
       );
       const dividers = container.querySelectorAll(".bg-\\[\\#D9D9D9\\]");
-      expect(dividers.length).toBe(0);
-    });
-
-    it("should show divider before Reply button when showReply is true", () => {
-      const { container } = renderWithProvider(<CommentCard comment={mockComment} showReply />);
-      const dividers = container.querySelectorAll(".bg-\\[\\#D9D9D9\\]");
-      expect(dividers.length).toBeGreaterThan(0);
+      expect(dividers.length).toBe(1);
     });
   });
 

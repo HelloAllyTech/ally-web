@@ -231,10 +231,10 @@ export const UserModal: React.FC<UserModalProps> = ({
         name={field.id}
         control={control}
         rules={{
-          validate: (value: { consumedCredits: number; newCredits: number }) => {
+          validate: value => {
             if (!value) return en.userManagement.creditRequiredError;
-            if (value.newCredits < 0) return en.userManagement.creditNotNegativeError;
-            if (value.newCredits > field.maxLength) return en.userManagement.creditLimitError;
+            if (value < 0) return en.userManagement.creditNotNegativeError;
+            if (value > field.maxLength) return en.userManagement.creditLimitError;
             return true;
           },
         }}
