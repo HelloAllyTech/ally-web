@@ -16,6 +16,7 @@ import CreditInfo from "./credit-info-dialog";
 import { CreditsDisplay } from "./credits-display";
 import CustomCircularProgress from "./custom-circular-progress";
 import CustomMarkdown from "./custom-markdown";
+import CustomMenu, { MenuItem } from "./custom-menu";
 import { DatePicker, TimePicker } from "./date-time-pickers";
 import DraggableArea from "./draggable-area";
 import Drawer from "./drawer";
@@ -56,6 +57,7 @@ export {
   type ButtonVariantType,
   type ChipConfig,
   type AchievementItemData,
+  type MenuItem,
 };
 
 export {
@@ -72,6 +74,7 @@ export {
   CreditsDisplay,
   CustomCircularProgress,
   CustomMarkdown,
+  CustomMenu,
   DatePicker,
   DraggableArea,
   Drawer,

@@ -8,11 +8,17 @@ import { RootState } from "@store";
 import { CommentItem } from "@types";
 
 interface CommentThreadProps {
+  isFeedOwner?: boolean;
   comments: CommentItem[];
   onCommentAddition: (comment: string) => void;
   onReplyComment: (comment: string, parentCommentId: string | null) => void;
 }
-const CommentThread = ({ comments, onCommentAddition, onReplyComment }: CommentThreadProps) => {
+const CommentThread = ({
+  comments,
+  onCommentAddition,
+  onReplyComment,
+  isFeedOwner,
+}: CommentThreadProps) => {
   const user = useSelector((state: RootState) => state.user.user);
   const [comment, setComment] = useState("");
   const [showCommentBox, setShowCommentBox] = useState(false);
@@ -91,6 +97,7 @@ const CommentThread = ({ comments, onCommentAddition, onReplyComment }: CommentT
             <CommentCard
               key={comment.id}
               comment={comment}
+              isFeedOwner={isFeedOwner}
               showLike
               showReply
               onReply={text => onReplyComment(text, comment.id)}

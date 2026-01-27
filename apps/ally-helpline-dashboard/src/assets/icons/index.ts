@@ -79,6 +79,7 @@ import MenuIcon from "./menu-icon.svg?react";
 import Metrics from "./metrics.svg?react";
 import MicIcon from "./mic-icon.svg?react";
 import MicOffIcon from "./mic-off-icon.svg?react";
+import MoreVertIcon from "./more-vert-icon.svg?react";
 import NoAnalytics from "./no-analytics.svg?react";
 import NoBadges from "./no-badges.svg?react";
 import NoCreditLeft from "./no-credit-left.svg?react";
@@ -206,6 +207,7 @@ export {
   Metrics,
   MicIcon,
   MicOffIcon,
+  MoreVertIcon,
   NoCreditLeft,
   NoNetwork,
   NoResults,

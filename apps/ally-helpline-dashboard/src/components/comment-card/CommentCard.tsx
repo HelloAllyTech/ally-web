@@ -1,19 +1,24 @@
-import { useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 
 import { Emoji, EmojiStyle } from "emoji-picker-react";
 import { useSelector } from "react-redux";
 import { toast } from "sonner";
 
 import { AutoExpandableTextarea, CustomImage } from "@ally-ui-mono/ui-shared";
-import { useAddCommentReactionMutation } from "@api";
-import { Smiley } from "@assets";
-import { Button, ReactionSelector } from "@components";
+import {
+  useAddCommentReactionMutation,
+  useToggleCommentVisibilityMutation,
+  useDeleteCommentMutation,
+} from "@api";
+import { MoreVertIcon, Smiley } from "@assets";
+import { Button, CustomMenu, ReactionSelector, MenuItem } from "@components";
 import { RootState } from "@store";
 import { ReactionsType, CommentItem } from "@types";
 import { formatRelativeTime } from "@utils";
 
 interface CommentCardProps {
   comment: CommentItem;
+  isFeedOwner?: boolean;
   showLike?: boolean;
   showReply?: boolean;
   onReplyClick?: () => void;
@@ -21,6 +26,7 @@ interface CommentCardProps {
 }
 const CommentCard = ({
   comment,
+  isFeedOwner = false,
   showLike = false,
   showReply = false,
   onReplyClick,
@@ -28,13 +34,17 @@ const CommentCard = ({
 }: CommentCardProps) => {
   const user = useSelector((state: RootState) => state.user.user);
 
+  const isMyComment = user?.id === comment.createdBy.id;
+
   const [showReplyInput, setShowReplyInput] = useState(false);
   const [replyText, setReplyText] = useState("");
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [selectedEmoji, setSelectedEmoji] = useState<string>("");
+  const [menuAnchorEl, setMenuAnchorEl] = useState<HTMLElement | null>(null);
 
   const [addCommentReactions] = useAddCommentReactionMutation();
-
+  const [toggleCommentVisibility] = useToggleCommentVisibilityMutation();
+  const [deleteComment] = useDeleteCommentMutation();
   const likeRef = useRef<HTMLDivElement>(null);
 
   const handleReplyClick = (e: React.MouseEvent) => {
@@ -85,6 +95,38 @@ const CommentCard = ({
     setReplyText("");
   };
 
+  const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
+    event.stopPropagation();
+    setMenuAnchorEl(event.currentTarget);
+  };
+
+  const handleMenuClose = () => {
+    setMenuAnchorEl(null);
+  };
+
+  const handleToggleVisibility = async (hidden: boolean) => {
+    try {
+      await toggleCommentVisibility({
+        commentId: comment.id,
+        hidden,
+      }).unwrap();
+      toast.success(hidden ? "Comment hidden successfully" : "Comment unhidden successfully");
+      handleMenuClose();
+    } catch (error) {
+      toast.error(error?.data?.message || "Failed to update comment visibility");
+    }
+  };
+
+  const handleDeleteComment = async () => {
+    try {
+      await deleteComment({ commentId: comment.id }).unwrap();
+      toast.success("Comment deleted successfully");
+      handleMenuClose();
+    } catch (error) {
+      toast.error(error?.data?.message || "Failed to delete comment");
+    }
+  };
+
   const renderReplyBox = () => {
     if (showReplyInput) {
       return (
@@ -121,8 +163,29 @@ const CommentCard = ({
     return null;
   };
 
+  const menuItems = useMemo(() => {
+    const items: MenuItem[] = [];
+    if (isFeedOwner) {
+      items.push({
+        label: comment?.hidden ? "Unhide" : "Hide",
+        onClick: () => handleToggleVisibility(!comment?.hidden),
+      });
+    }
+
+    const isDeleteExpired = new Date(comment.createdAt).getTime() < Date.now() - 10 * 60 * 1000; // 10 minutes
+
+    if (isMyComment && !isDeleteExpired) {
+      items.push({
+        label: "Delete",
+        onClick: () => handleDeleteComment(),
+      });
+    }
+
+    return items;
+  }, [isFeedOwner, isMyComment, comment.hidden]);
+
   return (
-    <div className="flex gap-2.5">
+    <div className={`flex gap-2.5 ${comment?.hidden ? "opacity-50" : ""}`}>
       <div className="min-w-8 h-8 rounded-full overflow-hidden">
         <CustomImage
           src={comment.createdBy.profileImage}
@@ -133,9 +196,27 @@ const CommentCard = ({
         />
       </div>
       <div className="flex flex-col gap-1 w-full">
-        <div className="flex gap-2 items-center">
-          <div className="text-[14px] font-medium">{comment.createdBy.name}</div>
-          <div className="text-[12px] text-gray-500">{formatRelativeTime(comment.createdAt)}</div>
+        <div className="flex flex-row justify-between items-center gap-2 w-full">
+          <div className="flex flex-row gap-2 items-center w-full">
+            <div className="text-[14px] font-medium">{comment.createdBy.name}</div>
+            <div className="text-[12px] text-gray-500">{formatRelativeTime(comment.createdAt)}</div>
+          </div>
+          {menuItems.length > 0 && (
+            <div className="flex flex-row justify-between items-center">
+              <button
+                onClick={handleMenuOpen}
+                className="p-1 hover:bg-gray-100 rounded-full transition-colors"
+                aria-label="Comment options"
+              >
+                <MoreVertIcon className="w-5 h-5 text-gray-600" />
+              </button>
+              <CustomMenu
+                anchorElement={menuAnchorEl}
+                items={menuItems}
+                onClose={handleMenuClose}
+              />
+            </div>
+          )}
         </div>
         <div className="text-[14px] text-typography-800">{comment.content}</div>
         <div className="flex gap-2 items-center">

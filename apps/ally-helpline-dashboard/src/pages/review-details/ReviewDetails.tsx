@@ -65,6 +65,16 @@ export const ReviewDetails = () => {
   }, [reviewId]);
 
   useEffect(() => {
+    if (reviewDetails?.myReaction?.length > 0) {
+      setSelectedEmoji(reviewDetails?.myReaction);
+    }
+  }, [reviewDetails]);
+
+  const isFeedOwner = useMemo(() => {
+    return user?.id === reviewDetails?.createdBy?.id;
+  }, [user?.id, reviewDetails?.createdBy?.id]);
+
+  useEffect(() => {
     if (simulationTranscript?.length > 0) {
       setTranscriptList(prev => {
         return transcriptOffset > 0
@@ -81,12 +91,9 @@ export const ReviewDetails = () => {
     return Object.keys(reviewDetails?.reactions);
   }, [reviewDetails?.reactions]);
 
-  const totalReactionCount = useMemo(() => {
+  const displayTotalReactionCount: string | number = useMemo(() => {
     if (!reviewReactions) return 0;
-    const reactionsCount = reviewReactions.reduce(
-      (acc: number, curr: string) => acc + reviewReactions[curr],
-      0,
-    );
+    const reactionsCount = reviewReactions.length;
     if (reactionsCount > 999) {
       const count = Number((reactionsCount / 1000).toFixed(1));
       return `${count}k`;
@@ -227,7 +234,7 @@ export const ReviewDetails = () => {
               />
             )}
           </div>
-          {totalReactionCount > 0 && (
+          {reviewReactions?.length > 0 && (
             <div className="flex items-center gap-3 justify-between w-full">
               <button
                 onClick={handleReactionsClick}
@@ -235,7 +242,7 @@ export const ReviewDetails = () => {
               >
                 <EmojiStack unicodeCodes={reviewReactions} />
                 <span className="font-primary text-xs sm:text-sm leading-[1.5] text-typography-800 truncate">
-                  {totalReactionCount} reaction{totalReactionCount !== 1 ? "s" : ""}
+                  {displayTotalReactionCount} reaction{reviewReactions?.length !== 1 ? "s" : ""}
                 </span>
               </button>
             </div>
@@ -312,6 +319,7 @@ export const ReviewDetails = () => {
                   thread.id === selectedThreadId,
               )?.comments
             }
+            isFeedOwner={isFeedOwner}
             handleCommentClick={handleCommentClick}
             createComment={onCreateComment}
             isCreateCommentLoading={isCreateCommentLoading}
@@ -329,6 +337,7 @@ export const ReviewDetails = () => {
           />
         </div>
         <ReviewCommentsSidepanel
+          isFeedOwner={isFeedOwner}
           threads={threads as Thread[]}
           totalComments={reviewDetails?.commentsCount || 0}
           isOpen={showCommentsSidepanel}
@@ -336,7 +345,7 @@ export const ReviewDetails = () => {
           className={showCommentsSidepanel ? "min-w-[300px] w-[30%]" : "w-0 border-none"}
         />
       </div>
-      {renderBottomSection()}
+      {reviewDetails && renderBottomSection()}
 
       <ReactionsModal
         isOpen={showReactionsModal}

@@ -130,6 +130,33 @@ const reviewsAPI = baseAPI.injectEndpoints({
         body: reaction,
       }),
     }),
+    /**
+     * Toggles the visibility of a comment (hide/unhide).
+     * @param {string} commentId - The ID of the comment
+     * @param {boolean} hidden - Whether the comment should be hidden
+     * @returns {Promise<void>} Success response
+     */
+    toggleCommentVisibility: builder.mutation<void, { commentId: string; hidden: boolean }>({
+      query: ({ commentId, hidden }) => ({
+        url: ApiEndpoints.REVIEWS.TOGGLE_COMMENT_VISIBILITY(commentId),
+        method: HttpMethod.PATCH,
+        body: { hidden },
+      }),
+      invalidatesTags: [TAG_TYPES.REVIEW],
+    }),
+
+    /**
+     * Deletes a comment.
+     * @param {string} commentId - The ID of the comment to delete
+     * @returns {Promise<void>} Success response
+     */
+    deleteComment: builder.mutation<void, { commentId: string }>({
+      query: ({ commentId }) => ({
+        url: ApiEndpoints.REVIEWS.DELETE_COMMENT(commentId),
+        method: HttpMethod.DELETE,
+      }),
+      invalidatesTags: [TAG_TYPES.REVIEW],
+    }),
   }),
 });
 
@@ -146,4 +173,6 @@ export const {
   useLazyGetReviewReactionsQuery,
   useGetReviewReactionsCountQuery,
   useAddCommentReactionMutation,
+  useToggleCommentVisibilityMutation,
+  useDeleteCommentMutation,
 } = reviewsAPI;
