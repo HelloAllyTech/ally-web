@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 
+import { toast } from "sonner";
+
 import { useGetMyBadgesQuery, useUpdateBadgeViewStatusMutation } from "@api";
 import { AchievementBadgeModal } from "@components";
 import { UserBadge, ViewedStatus } from "@src/types";
@@ -16,35 +18,70 @@ export const useAchievementBadgeModal = (): UseAchievementBadgeModalReturn => {
   const [currentBadgeIndex, setCurrentBadgeIndex] = useState<number | null>(null);
   const hasInitialized = useRef(false);
 
-  const { data: badgesResponse, isLoading } = useGetMyBadgesQuery({
-    viewedStatus: ViewedStatus.UNVIEWED,
-  });
+  const {
+    data: badgesResponse,
+    isLoading,
+    refetch,
+  } = useGetMyBadgesQuery(
+    {
+      viewedStatus: ViewedStatus.UNVIEWED,
+    },
+    {
+      refetchOnMountOrArgChange: true,
+    },
+  );
 
   const [updateBadgeViewStatus] = useUpdateBadgeViewStatusMutation();
 
   const badges = badgesResponse?.data ?? [];
 
+  // Handle invalid index when badges array changes
   useEffect(() => {
-    if (!hasInitialized.current && badges.length > 0) {
+    setCurrentBadgeIndex(prevIndex => {
+      if (prevIndex !== null && prevIndex >= badges.length) {
+        return null;
+      }
+      return prevIndex;
+    });
+  }, [badges.length]);
+
+  // Initialize first badge and handle empty state
+  useEffect(() => {
+    if (badges.length === 0) {
+      setCurrentBadgeIndex(null);
+      hasInitialized.current = false;
+    } else if (!hasInitialized.current) {
       setCurrentBadgeIndex(0);
       hasInitialized.current = true;
     }
-  }, [badges]);
+  }, [badges.length]);
 
-  const closeModal = useCallback(() => {
-    setCurrentBadgeIndex(prevIndex => {
-      if (prevIndex === null) return null;
+  const closeModal = useCallback(async () => {
+    const currentIndex = currentBadgeIndex;
+    if (currentIndex === null) return;
 
-      // Mark the current badge as viewed
-      const currentBadge = badges[prevIndex];
-      if (currentBadge?.badgeId) {
-        updateBadgeViewStatus(currentBadge.badgeId);
+    // Mark the current badge as viewed
+    const currentBadge = badges[currentIndex];
+    if (currentBadge?.badgeId) {
+      try {
+        await updateBadgeViewStatus(currentBadge.badgeId).unwrap();
+      } catch (error) {
+        toast.error(error instanceof Error ? error.message : "Failed to update badge view status");
       }
+    }
 
-      const nextIndex = prevIndex + 1;
-      return nextIndex < badges.length ? nextIndex : null;
-    });
-  }, [badges, updateBadgeViewStatus]);
+    // Move to next badge
+    const nextIndex = currentIndex + 1;
+    // If this was the last badge, close modal and refetch
+    if (nextIndex >= badges.length) {
+      setCurrentBadgeIndex(null);
+      // Refetch only after all badges are closed
+      refetch();
+    } else {
+      // Move to next badge without refetching
+      setCurrentBadgeIndex(nextIndex);
+    }
+  }, [badges, currentBadgeIndex, updateBadgeViewStatus, refetch]);
 
   const resetModal = useCallback(() => {
     if (badges.length > 0) {
