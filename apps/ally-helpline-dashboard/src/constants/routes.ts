@@ -1,5 +1,13 @@
 import { FEATURE_FLAGS_MAP } from "@ally-ui-mono/ui-shared";
-import { SearchIcon, StatsIcon, ScribeIcon, LearnIcon, Leaderboard, ReviewNavIcon } from "@assets";
+import {
+  SearchIcon,
+  StatsIcon,
+  ScribeIcon,
+  LearnIcon,
+  Leaderboard,
+  ReviewNavIcon,
+  Badge,
+} from "@assets";
 
 import { Permissions } from "./permissions";
 import { TabId } from "./tabs";
@@ -59,7 +67,7 @@ export const navBarOptions = [
           Icon: ReviewNavIcon,
           path: ROUTES.REVIEW,
           activePages: [ROUTES.REVIEW_DETAILS],
-          permissions: [Permissions.VIEW_REVIEW],
+          permissions: [Permissions.REVIEWER_ACCESS],
         },
       ]
     : []),
@@ -70,8 +78,16 @@ export const navBarOptions = [
           title: "Leaderboard",
           Icon: Leaderboard,
           path: ROUTES.LEADERBOARD,
-          activePages: [ROUTES.ACHIEVEMENTS_VIEW_ALL],
-          //permissions: [Permissions.VIEW_LEADERBOARD],
+          activePages: [],
+          permissions: [Permissions.VIEW_LEADERBOARD],
+        },
+        {
+          id: TabId.BADGES,
+          title: "Badges",
+          Icon: Badge,
+          path: ROUTES.ACHIEVEMENTS_VIEW_ALL,
+          activePages: [],
+          permissions: [Permissions.VIEW_BADGES],
         },
       ]
     : []),

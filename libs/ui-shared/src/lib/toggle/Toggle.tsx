@@ -21,7 +21,7 @@ const Toggle: FC<ToggleProps> = ({ label, items, initialValue, onChange }) => {
     onChange(items[index].value);
   };
   return (
-    <div className="flex flex-col gap-2 rounded-full border-[0.5px] p-2 w-fit shadow-[2.13px_2.84px_7.81px_0px_#A09E9E1A]">
+    <div className="flex flex-col gap-2 w-fit">
       {label && <div>{label}</div>}
       <div className="flex gap-2 rounded-full border-[0.5px] bg-[#F3F3F3] relative">
         <div
