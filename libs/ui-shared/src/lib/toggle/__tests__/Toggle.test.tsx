@@ -167,8 +167,6 @@ describe("Toggle Component", () => {
       expect(outerContainer).toHaveClass("flex");
       expect(outerContainer).toHaveClass("flex-col");
       expect(outerContainer).toHaveClass("gap-2");
-      expect(outerContainer).toHaveClass("rounded-full");
-      expect(outerContainer).toHaveClass("p-2");
       expect(outerContainer).toHaveClass("w-fit");
     });
 

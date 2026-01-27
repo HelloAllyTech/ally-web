@@ -1,6 +1,7 @@
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import React from "react";
 import { Provider } from "react-redux";
+import { BrowserRouter } from "react-router-dom";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
 import {
@@ -79,7 +80,11 @@ vi.mock("@src/constants", async importOriginal => {
 });
 
 const renderWithProvider = (ui: React.ReactElement) => {
-  return render(<Provider store={store}>{ui}</Provider>);
+  return render(
+    <BrowserRouter>
+      <Provider store={store}>{ui}</Provider>
+    </BrowserRouter>,
+  );
 };
 
 describe("SimulationTranscriptTab", () => {
@@ -165,9 +170,11 @@ describe("SimulationTranscriptTab", () => {
     const { rerender } = renderWithProvider(<SimulationTranscriptTab sessionId={mockSessionId} />);
 
     rerender(
-      <Provider store={store}>
-        <SimulationTranscriptTab sessionId="session-456" />
-      </Provider>,
+      <BrowserRouter>
+        <Provider store={store}>
+          <SimulationTranscriptTab sessionId="session-456" />
+        </Provider>
+      </BrowserRouter>,
     );
 
     expect(useGetSimulationTranscriptQuery).toHaveBeenCalledWith(

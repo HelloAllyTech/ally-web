@@ -21,6 +21,7 @@ interface CommentCardProps {
   comment: CommentItem;
   isFeedOwner?: boolean;
   showLike?: boolean;
+  enableLikeUpdate?: boolean;
   showReply?: boolean;
   onReply?: (reply: string) => void;
 }
@@ -28,6 +29,7 @@ const CommentCard = ({
   comment,
   isFeedOwner = false,
   showLike = false,
+  enableLikeUpdate = true,
   showReply = false,
   onReply,
 }: CommentCardProps) => {
@@ -170,7 +172,7 @@ const CommentCard = ({
                 Cancel
               </Button>
               <Button variant="primary" className="py-0 h-8" onClick={handleReplySubmit}>
-                Comment
+                Reply
               </Button>
             </div>
           </div>
@@ -251,10 +253,10 @@ const CommentCard = ({
               <div
                 ref={likeRef}
                 className="cursor-pointer"
-                onClick={() => setShowEmojiPicker(prev => !prev)}
+                onClick={() => enableLikeUpdate && setShowEmojiPicker(prev => !prev)}
               >
                 {selectedEmoji ? (
-                  <div className="pb-0.5  w-[26px] bg-white h-[26px] flex items-center justify-center rounded-full border-[0.5px]">
+                  <div className="w-[26px] h-[26px] pb-[5px] bg-white flex items-center justify-center rounded-full border-primary-500 border-[0.5px]">
                     <Emoji unified={selectedEmoji} size={14} emojiStyle={EmojiStyle.NATIVE} />
                   </div>
                 ) : (
@@ -283,7 +285,7 @@ const CommentCard = ({
                       className="w-4 overflow-visible relative"
                     >
                       {reaction !== "" && (
-                        <div className="w-[26px] bg-white h-[26px] pr-0.5 pb-1.5 flex items-center justify-center rounded-full border-[0.5px]">
+                        <div className="w-[26px] bg-white h-[26px] pb-[4px] flex items-center justify-center rounded-full border-[0.5px]">
                           <Emoji
                             unified={reaction ?? "1f44d"}
                             size={12}
@@ -329,6 +331,7 @@ const CommentCard = ({
                 comment={reply}
                 isFeedOwner={isFeedOwner}
                 showLike
+                enableLikeUpdate={enableLikeUpdate}
                 showReply={false}
               />
             ))}

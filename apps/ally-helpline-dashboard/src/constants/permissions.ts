@@ -31,7 +31,9 @@ export enum Permissions {
   VIEW_CHAT_TYPES = "view:settings:chat-types",
   VIEW_SUMMARY_FIELDS = "view:settings:summary-fields",
   VIEW_LEADERBOARD = "view:community:leaderboard",
-  VIEW_REVIEW = "reviewer:access",
+  VIEW_REVIEW = "view:review",
+  REVIEWER_ACCESS = "reviewer:access",
+  VIEW_BADGES = "view:user:badges",
 }
 
 export const CALL_PERMISSIONS = [
