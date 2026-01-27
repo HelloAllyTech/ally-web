@@ -108,6 +108,7 @@ export const ApiEndpoints = {
     TOGGLE_COMMENT_VISIBILITY: (commentId: string) =>
       `/v1/reviews/comments/${commentId}/visibility`,
     DELETE_COMMENT: (commentId: string) => `/v1/reviews/comments/${commentId}`,
+    GET_COMMENT_REPLIES: (commentId: string) => `/v1/reviews/comments/${commentId}/replies`,
   },
   BADGES: {
     GET_AVAILABLE_BADGES: "/v1/badges/me/available",

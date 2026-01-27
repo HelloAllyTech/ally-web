@@ -9,8 +9,9 @@ import {
   useAddCommentReactionMutation,
   useToggleCommentVisibilityMutation,
   useDeleteCommentMutation,
+  useLazyGetCommentRepliesQuery,
 } from "@api";
-import { MoreVertIcon, Smiley } from "@assets";
+import { ArrowUp, MoreVertIcon, Smiley } from "@assets";
 import { Button, CustomMenu, ReactionSelector, MenuItem } from "@components";
 import { RootState } from "@store";
 import { ReactionsType, CommentItem } from "@types";
@@ -21,7 +22,6 @@ interface CommentCardProps {
   isFeedOwner?: boolean;
   showLike?: boolean;
   showReply?: boolean;
-  onReplyClick?: () => void;
   onReply?: (reply: string) => void;
 }
 const CommentCard = ({
@@ -29,7 +29,6 @@ const CommentCard = ({
   isFeedOwner = false,
   showLike = false,
   showReply = false,
-  onReplyClick,
   onReply,
 }: CommentCardProps) => {
   const user = useSelector((state: RootState) => state.user.user);
@@ -37,6 +36,8 @@ const CommentCard = ({
   const isMyComment = user?.id === comment.createdBy.id;
 
   const [showReplyInput, setShowReplyInput] = useState(false);
+  const [showReplies, setShowReplies] = useState(false);
+  const [replies, setReplies] = useState<CommentItem[]>([]);
   const [replyText, setReplyText] = useState("");
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [selectedEmoji, setSelectedEmoji] = useState<string>("");
@@ -45,6 +46,7 @@ const CommentCard = ({
   const [addCommentReactions] = useAddCommentReactionMutation();
   const [toggleCommentVisibility] = useToggleCommentVisibilityMutation();
   const [deleteComment] = useDeleteCommentMutation();
+  const [getReplies, { isLoading: areRepliesLoading }] = useLazyGetCommentRepliesQuery();
   const likeRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -56,6 +58,18 @@ const CommentCard = ({
     setShowReplyInput(true);
   };
 
+  const onReplyClick = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!showReplies && comment.replyCount > 0 && replies.length === 0) {
+      try {
+        const data = await getReplies(comment.id).unwrap();
+        setReplies(data?.data || []);
+      } catch {
+        toast.error("Failed to load replies.");
+      }
+    }
+    setShowReplies(!showReplies);
+  };
   const handleReplySubmit = () => {
     if (replyText.trim()) {
       onReply?.(replyText);
@@ -188,6 +202,12 @@ const CommentCard = ({
     return items;
   }, [isFeedOwner, isMyComment, comment.hidden]);
 
+  const hideReplies = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setReplies([]);
+    setShowReplies(false);
+  };
+
   return (
     <div className={`flex gap-2.5 ${comment?.hidden ? "opacity-50" : ""}`}>
       <div className="min-w-8 h-8 rounded-full overflow-hidden">
@@ -222,7 +242,9 @@ const CommentCard = ({
             </div>
           )}
         </div>
-        <div className="text-[14px] text-typography-800">{comment.content}</div>
+        <div className="text-[14px] text-typography-800 font-primary text-sm">
+          {comment.content}
+        </div>
         <div className="flex gap-2 items-center">
           {showLike && (
             <div className="relative">
@@ -290,7 +312,7 @@ const CommentCard = ({
           )}
           {comment.replyCount > 0 && (
             <div
-              className={`text-typography-800 text-[${showReply ? "12px" : "14px"}]`}
+              className={`text-typography-800 text-[${showReply ? "12px" : "14px"}] cursor-pointer`}
               onClick={onReplyClick}
             >
               {comment.replyCount} repl{comment.replyCount > 1 ? "ies" : "y"}
@@ -298,6 +320,27 @@ const CommentCard = ({
           )}
         </div>
         {renderReplyBox()}
+        {showReplies && (
+          <div className="flex flex-col gap-4 mt-4">
+            {areRepliesLoading && <div className="text-sm text-gray-500">Loading...</div>}
+            {replies.map(reply => (
+              <CommentCard
+                key={reply.id}
+                comment={reply}
+                isFeedOwner={isFeedOwner}
+                showLike
+                showReply={false}
+              />
+            ))}
+            <div
+              className="text-xs font-primary flex items-center gap-2 text-primary-600"
+              onClick={hideReplies}
+            >
+              Hide Repl{comment.replyCount > 1 ? "ies" : "y"}
+              <ArrowUp />
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
