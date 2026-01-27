@@ -75,7 +75,7 @@ export const navBarOptions = [
     ? [
         {
           id: TabId.LEADERBOARD,
-          title: "Leaderboard",
+          title: "Community",
           Icon: Leaderboard,
           path: ROUTES.LEADERBOARD,
           activePages: [],

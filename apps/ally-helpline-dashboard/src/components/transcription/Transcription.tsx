@@ -334,10 +334,18 @@ const Transcription: FC<TranscriptionProps> = ({
     );
   }
 
+  if (transcriptions.length === 0) {
+    return (
+      <div className={`flex flex-col justify-center items-center h-full w-full`}>
+        <div className="text-xxl font-primary text-typography-700">No transcript available</div>
+      </div>
+    );
+  }
+
   return (
     <div className={`flex flex-col pt-10 -mt-10 gap-4 font-primary ${className}`}>
       <InfiniteScroll onInfiniteScroll={handleLoadMore} isLoading={isLoading}>
-        {transcriptions.map((transcript, index) => (
+        {transcriptions?.map((transcript, index) => (
           <div
             key={transcript.startSeconds}
             className={`flex gap-4 ${!canSelect ? "pointer-events-none select-none" : ""}`}
