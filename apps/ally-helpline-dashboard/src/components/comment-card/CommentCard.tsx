@@ -10,6 +10,7 @@ import {
   useToggleCommentVisibilityMutation,
   useDeleteCommentMutation,
   useLazyGetCommentRepliesQuery,
+  useEditCommentMutation,
 } from "@api";
 import { ArrowUp, MoreVertIcon, Smiley } from "@assets";
 import { Button, CustomMenu, ReactionSelector, MenuItem } from "@components";
@@ -44,10 +45,13 @@ const CommentCard = ({
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [selectedEmoji, setSelectedEmoji] = useState<string>("");
   const [menuAnchorEl, setMenuAnchorEl] = useState<HTMLElement | null>(null);
+  const [showCommentEditView, setShowCommentEditView] = useState(false);
+  const [commentContent, setCommentContent] = useState(comment.content);
 
   const [addCommentReactions] = useAddCommentReactionMutation();
   const [toggleCommentVisibility] = useToggleCommentVisibilityMutation();
   const [deleteComment] = useDeleteCommentMutation();
+  const [editComment] = useEditCommentMutation();
   const [getReplies, { isLoading: areRepliesLoading }] = useLazyGetCommentRepliesQuery();
   const likeRef = useRef<HTMLDivElement>(null);
 
@@ -112,7 +116,6 @@ const CommentCard = ({
 
   const handleCancelReply = () => {
     setShowReplyInput(false);
-    setReplyText("");
   };
 
   const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
@@ -144,6 +147,17 @@ const CommentCard = ({
       handleMenuClose();
     } catch (error) {
       toast.error(error?.data?.message || "Failed to delete comment");
+    }
+  };
+
+  const handleEditComment = async () => {
+    try {
+      await editComment({ commentId: comment.id, content: comment.content }).unwrap();
+      toast.success("Comment updated successfully");
+      handleMenuClose();
+      setShowCommentEditView(false);
+    } catch (error) {
+      toast.error(error?.data?.message || "Failed to update comment");
     }
   };
 
@@ -183,67 +197,31 @@ const CommentCard = ({
     return null;
   };
 
-  const menuItems = useMemo(() => {
-    const items: MenuItem[] = [];
-    if (isFeedOwner) {
-      items.push({
-        label: comment?.hidden ? "Unhide" : "Hide",
-        onClick: () => handleToggleVisibility(!comment?.hidden),
-      });
-    }
-
-    const isDeleteExpired = new Date(comment.createdAt).getTime() < Date.now() - 10 * 60 * 1000; // 10 minutes
-
-    if (isMyComment && !isDeleteExpired) {
-      items.push({
-        label: "Delete",
-        onClick: () => handleDeleteComment(),
-      });
-    }
-
-    return items;
-  }, [isFeedOwner, isMyComment, comment.hidden]);
-
-  const hideReplies = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    setReplies([]);
-    setShowReplies(false);
+  const renderCommentEditView = () => {
+    return (
+      <div className="flex flex-col gap-2">
+        <div className="text-[14px] text-typography-800 font-primary text-sm border rounded-sm p-2 py-3">
+          <AutoExpandableTextarea
+            value={commentContent}
+            onChange={(content: string) => setCommentContent(content)}
+            placeholder="Edit comment"
+          />
+        </div>
+        <div className="flex gap-2 flex-row my-2 justify-end">
+          <Button variant="secondary" className="py-0 h-8" onClick={handleCancelReply}>
+            Cancel
+          </Button>
+          <Button variant="primary" className="py-0 h-8" onClick={handleEditComment}>
+            Done
+          </Button>
+        </div>
+      </div>
+    );
   };
 
-  return (
-    <div className={`flex gap-2.5 ${comment?.hidden ? "opacity-50" : ""}`}>
-      <div className="min-w-8 h-8 rounded-full overflow-hidden">
-        <CustomImage
-          src={comment.createdBy.profileImage}
-          alt={comment.createdBy.name}
-          fallbackText={comment.createdBy.name?.slice(0, 1)?.toUpperCase() ?? "NA"}
-          data-testid="custom-image"
-          className="w-full h-full rounded-full"
-        />
-      </div>
-      <div className="flex flex-col gap-1 w-full">
-        <div className="flex flex-row justify-between items-center gap-2 w-full">
-          <div className="flex flex-row gap-2 items-center w-full">
-            <div className="text-[14px] font-medium">{comment.createdBy.name}</div>
-            <div className="text-[12px] text-gray-500">{formatRelativeTime(comment.createdAt)}</div>
-          </div>
-          {menuItems.length > 0 && (
-            <div className="flex flex-row justify-between items-center">
-              <button
-                onClick={handleMenuOpen}
-                className="p-1 hover:bg-gray-100 rounded-full transition-colors"
-                aria-label="Comment options"
-              >
-                <MoreVertIcon className="w-5 h-5 text-gray-600" />
-              </button>
-              <CustomMenu
-                anchorElement={menuAnchorEl}
-                items={menuItems}
-                onClose={handleMenuClose}
-              />
-            </div>
-          )}
-        </div>
+  const renderCommentContent = () => {
+    return (
+      <>
         <div className="text-[14px] text-typography-800 font-primary text-sm">
           {comment.content}
         </div>
@@ -321,6 +299,79 @@ const CommentCard = ({
             </div>
           )}
         </div>
+      </>
+    );
+  };
+
+  const menuItems = useMemo(() => {
+    const items: MenuItem[] = [];
+    if (isFeedOwner) {
+      items.push({
+        label: comment?.hidden ? "Unhide" : "Hide",
+        onClick: () => handleToggleVisibility(!comment?.hidden),
+      });
+    }
+
+    const isUpdateExpired = new Date(comment.createdAt).getTime() < Date.now() - 10 * 60 * 1000; // 10 minutes
+
+    if (isMyComment && !isUpdateExpired) {
+      items.push({
+        label: "Delete",
+        onClick: () => handleDeleteComment(),
+      });
+    }
+
+    if (isMyComment && !isUpdateExpired) {
+      items.push({
+        label: "Edit",
+        onClick: () => setShowCommentEditView(true),
+      });
+    }
+
+    return items;
+  }, [isFeedOwner, isMyComment, comment.hidden]);
+
+  const hideReplies = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setReplies([]);
+    setShowReplies(false);
+  };
+
+  return (
+    <div className={`flex gap-2.5 ${comment?.hidden ? "opacity-50" : ""}`}>
+      <div className="min-w-8 h-8 rounded-full overflow-hidden">
+        <CustomImage
+          src={comment.createdBy.profileImage}
+          alt={comment.createdBy.name}
+          fallbackText={comment.createdBy.name?.slice(0, 1)?.toUpperCase() ?? "NA"}
+          data-testid="custom-image"
+          className="w-full h-full rounded-full"
+        />
+      </div>
+      <div className="flex flex-col gap-1 w-full">
+        <div className="flex flex-row justify-between items-center gap-2 w-full">
+          <div className="flex flex-row gap-2 items-center w-full">
+            <div className="text-[14px] font-medium">{comment.createdBy.name}</div>
+            <div className="text-[12px] text-gray-500">{formatRelativeTime(comment.createdAt)}</div>
+          </div>
+          {menuItems.length > 0 && (
+            <div className="flex flex-row justify-between items-center">
+              <button
+                onClick={handleMenuOpen}
+                className="p-1 hover:bg-gray-100 rounded-full transition-colors"
+                aria-label="Comment options"
+              >
+                <MoreVertIcon className="w-5 h-5 text-gray-600" />
+              </button>
+              <CustomMenu
+                anchorElement={menuAnchorEl}
+                items={menuItems}
+                onClose={handleMenuClose}
+              />
+            </div>
+          )}
+        </div>
+        {showCommentEditView ? renderCommentEditView() : renderCommentContent()}
         {renderReplyBox()}
         {showReplies && (
           <div className="flex flex-col gap-4 mt-4">
