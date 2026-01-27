@@ -97,6 +97,7 @@ export interface CommentItem {
   };
   replyCount: number;
   hidden?: boolean;
+  myReaction?: string;
 }
 export interface Thread {
   id: string;

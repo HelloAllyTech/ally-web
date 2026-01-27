@@ -93,7 +93,11 @@ export const ReviewDetails = () => {
 
   const displayTotalReactionCount: string | number = useMemo(() => {
     if (!reviewReactions) return 0;
-    const reactionsCount = reviewReactions.length;
+    const reactionsCount: number =
+      (Object.values(reviewDetails?.reactions || {}) as number[])?.reduce(
+        (acc: number, curr: number) => acc + curr,
+        0,
+      ) || 0;
     if (reactionsCount > 999) {
       const count = Number((reactionsCount / 1000).toFixed(1));
       return `${count}k`;

@@ -375,7 +375,7 @@ const Transcription: FC<TranscriptionProps> = ({
                             segment.isComment &&
                             selectedThreadId !== segment.threadId &&
                             selectedMessageId !== String(transcript.id) &&
-                            selectedStartIndex !== segment.selection?.startIndex &&
+                            // selectedStartIndex !== segment.selection?.startIndex && //TODO: Uncomment this when the bug is fixed
                             selectedEndIndex !== segment.selection?.endIndex
                           ) {
                             handleCommentClick?.({
