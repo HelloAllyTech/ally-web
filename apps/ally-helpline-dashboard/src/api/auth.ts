@@ -21,7 +21,7 @@ import {
 
 import { baseAPI } from "./baseAPI";
 
-const ALLOWED_ROLES = [UserRole.COUNSELLOR, UserRole.ADMIN, UserRole.LEARNER];
+const ALLOWED_ROLES = [UserRole.COUNSELLOR, UserRole.ADMIN, UserRole.LEARNER, UserRole.LEARNER];
 
 const authAPI = baseAPI.injectEndpoints({
   endpoints: builder => ({

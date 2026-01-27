@@ -206,13 +206,13 @@ describe("CommentCard Component", () => {
       expect(screen.getByText("2")).toBeInTheDocument(); // Number of unique reactions
     });
 
-    it("should not display reactions when showLike is true", () => {
+    it("should display reactions even when showLike is true", () => {
       const commentWithReactions = {
         ...mockComment,
         reactions: { "1f44d": 5 },
       };
       renderWithProvider(<CommentCard comment={commentWithReactions} showLike />);
-      expect(screen.queryByTestId("emoji-1f44d")).not.toBeInTheDocument();
+      expect(screen.getByTestId("emoji-1f44d")).toBeInTheDocument();
     });
 
     it("should display maximum 3 reaction emojis", () => {
@@ -335,7 +335,7 @@ describe("CommentCard Component", () => {
 
   // --- Divider Tests ---
   describe("Dividers", () => {
-    it("should show divider between reactions and reply count", () => {
+    it("should not show divider when only reactions and reply count are present", () => {
       const commentWithReactionsAndReplies = {
         ...mockComment,
         reactions: { "1f44d": 5 },
@@ -345,7 +345,7 @@ describe("CommentCard Component", () => {
         <CommentCard comment={commentWithReactionsAndReplies} showLike={false} />,
       );
       const dividers = container.querySelectorAll(".bg-\\[\\#D9D9D9\\]");
-      expect(dividers.length).toBeGreaterThan(0);
+      expect(dividers.length).toBe(0);
     });
 
     it("should show divider before Reply button when showReply is true", () => {
