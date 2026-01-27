@@ -78,7 +78,7 @@ export const navBarOptions = [
           title: "Community",
           Icon: Leaderboard,
           path: ROUTES.LEADERBOARD,
-          activePages: [],
+          activePages: [ROUTES.ACHIEVEMENTS_VIEW_ALL],
           permissions: [Permissions.VIEW_LEADERBOARD],
         },
         {
@@ -87,7 +87,7 @@ export const navBarOptions = [
           Icon: Badge,
           path: ROUTES.ACHIEVEMENTS_VIEW_ALL,
           activePages: [],
-          permissions: [Permissions.VIEW_BADGES],
+          permissions: [Permissions.VIEW_BADGES],         
         },
       ]
     : []),

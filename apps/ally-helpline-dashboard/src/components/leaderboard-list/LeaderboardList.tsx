@@ -47,6 +47,21 @@ const getRankBadgeStyle = (rank: number): string => {
   }
 };
 
+const formatMinutesToHoursAndMinutes = (minutes: number): string => {
+  if (minutes < 60) {
+    return `${minutes} min${minutes !== 1 ? "s" : ""}`;
+  }
+
+  const hours = Math.floor(minutes / 60);
+  const remainingMinutes = minutes % 60;
+
+  if (remainingMinutes === 0) {
+    return `${hours} h`;
+  }
+
+  return `${hours} h ${remainingMinutes} min${remainingMinutes !== 1 ? "s" : ""}`;
+};
+
 const UserAvatar: FC<{ user: LeaderboardUser; size?: "sm" | "md" }> = ({ user, size = "md" }) => {
   const sizeClasses = size === "sm" ? "w-10 h-10" : "w-12 h-12";
 
@@ -133,7 +148,9 @@ const LeaderboardRow: FC<LeaderboardRowProps> = ({ user, isLast, rowRef, isCurre
 
       {/* Total Duration */}
       <div className="w-40 text-right">
-        <span className="text-typography-800 text-base">{user.minutesPlayed}</span>
+        <span className="text-typography-800 text-base">
+          {formatMinutesToHoursAndMinutes(user.minutesPlayed)}
+        </span>
       </div>
 
       {/* Badges */}
@@ -331,24 +348,31 @@ export const LeaderboardList: FC<LeaderboardListProps> = ({
     );
   };
 
+  const showStickyRow = currentUser && !isCurrentUserVisible && !isLoading && !isEmpty;
+
   return (
-    <div className="w-full bg-white h-full relative pt-4 font-primary">
+    <div className="w-full bg-white h-full relative pt-4 font-primary flex flex-col">
       {renderTabs()}
       {renderTableHeader()}
 
-      <div
-        ref={scrollContainerRef}
-        className="overflow-scroll h-[calc(100%-10px)] custom-scrollbar"
-      >
-        {renderContent()}
-      </div>
-
-      {/* Sticky current user row - hidden when visible in the list */}
-      {currentUser && !isCurrentUserVisible && !isLoading && !isEmpty && (
-        <div className="mt-2 absolute bottom-0 left-0 right-0 bg-white">
-          <LeaderboardRow user={currentUser} isLast isCurrentUser={true} />
+      <div className="flex-1 relative overflow-hidden">
+        <div
+          ref={scrollContainerRef}
+          className="overflow-y-auto h-full custom-scrollbar"
+          style={{
+            paddingBottom: showStickyRow ? "80px" : "0",
+          }}
+        >
+          {renderContent()}
         </div>
-      )}
+
+        {/* Sticky current user row - hidden when visible in the list */}
+        {showStickyRow && (
+          <div className="absolute bottom-0 left-0 right-0 bg-white border-t border-border-light shadow-lg z-10">
+            <LeaderboardRow user={currentUser} isLast isCurrentUser={true} />
+          </div>
+        )}
+      </div>
     </div>
   );
 };
