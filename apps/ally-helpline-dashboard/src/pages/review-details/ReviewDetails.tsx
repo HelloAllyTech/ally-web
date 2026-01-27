@@ -223,8 +223,8 @@ export const ReviewDetails = () => {
               ref={selectEmojiRef}
             >
               {selectedEmoji ? (
-                <div className="pb-0.5 border-primary-500">
-                  <Emoji unified={selectedEmoji} size={16} emojiStyle={EmojiStyle.NATIVE} />
+                <div className="pb-0.5">
+                  <Emoji unified={selectedEmoji} size={16} emojiStyle={EmojiStyle.APPLE} />
                 </div>
               ) : (
                 <Smiley className="w-6 h-6 text-neutral-600 hover:text-[#0957D0]" />

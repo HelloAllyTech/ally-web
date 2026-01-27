@@ -87,7 +87,7 @@ const SimulationTranscriptTab: FC<SimulationTranscriptTabProps> = ({ sessionId, 
 
   return (
     <div className={`h-full ${className}`}>
-      <div className="relative h-[calc(100%-170px)]">
+      <div className="relative h-[calc(100%-140px)] ">
         <Transcription
           transcriptList={transcriptList}
           userId={user?.id}
@@ -98,9 +98,9 @@ const SimulationTranscriptTab: FC<SimulationTranscriptTabProps> = ({ sessionId, 
         <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-white to-transparent pointer-events-none" />
       </div>
       {FEATURE_FLAGS_MAP.PEER_REVIEW_FLAG && (
-        <>
+        <div className="flex justify-center">
           <div
-            className="flex flex-row justify-center gap-2 align-center rounded-full border-[0.5px] p-2 shadow-[2.13px_2.84px_7.81px_0px_#A09E9E1A]"
+            className="flex justify-center gap-2 rounded-full border p-2 shadow-lg"
             style={{
               opacity: isCreateReviewLoading || isUpdateReviewLoading ? 0.5 : 1,
             }}
@@ -122,7 +122,7 @@ const SimulationTranscriptTab: FC<SimulationTranscriptTabProps> = ({ sessionId, 
               </Button>
             )}
           </div>
-        </>
+        </div>
       )}
     </div>
   );
