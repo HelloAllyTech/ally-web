@@ -55,4 +55,5 @@ export interface FeedCardProps {
   onReviewTranscript?: () => void;
   onCardClick?: () => void;
   onCommentsClick?: () => void;
+  duration?: number;
 }

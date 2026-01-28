@@ -53,7 +53,7 @@ exports[`SimulationTranscriptTab > should match snapshot when rendered 1`] = `
         </div>
       </div>
       <div
-        class="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-white to-transparent pointer-events-none"
+        class="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t  to-transparent pointer-events-none"
       />
     </div>
     <div

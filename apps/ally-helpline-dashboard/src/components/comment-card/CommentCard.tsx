@@ -152,7 +152,7 @@ const CommentCard = ({
 
   const handleEditComment = async () => {
     try {
-      await editComment({ commentId: comment.id, content: comment.content }).unwrap();
+      await editComment({ commentId: comment.id, content: commentContent?.trim() }).unwrap();
       toast.success("Comment updated successfully");
       handleMenuClose();
       setShowCommentEditView(false);
@@ -234,7 +234,7 @@ const CommentCard = ({
                 onClick={() => enableLikeUpdate && setShowEmojiPicker(prev => !prev)}
               >
                 {selectedEmoji ? (
-                  <div className="pb-0.5  w-[26px] bg-white h-[26px] flex items-center justify-center rounded-full border-[0.5px]">
+                  <div className="pb-0.5  w-[26px] bg-white h-[26px] flex items-center justify-center rounded-full border-[0.5px] border-primary-500">
                     <Emoji unified={selectedEmoji} size={14} emojiStyle={EmojiStyle.APPLE} />
                   </div>
                 ) : (
@@ -283,9 +283,10 @@ const CommentCard = ({
           {showReply && (
             <>
               <div
-                className="text-typography-800 text-xs cursor-pointer font-medium"
+                className="text-typography-800 text-xs cursor-pointer font-medium flex items-center gap-2"
                 onClick={handleReplyClick}
               >
+                <div className="w-1 h-1 bg-[#D9D9D9] rounded-full" />
                 Reply
               </div>
             </>
@@ -347,8 +348,8 @@ const CommentCard = ({
       </div>
       <div className="flex flex-col gap-1 w-full">
         <div className="flex flex-row justify-between items-center gap-2 w-full">
-          <div className="flex flex-row gap-2 items-center w-full">
-            <div className="text-[14px] font-medium">{comment.createdBy.name}</div>
+          <div className="flex flex-row gap-1.5 items-center w-full">
+            <div className="text-[14px] font-medium">{comment?.createdBy?.name || "Unknown"}</div>
             <div className="text-[12px] text-gray-500">{formatRelativeTime(comment.createdAt)}</div>
           </div>
           {menuItems.length > 0 && (
