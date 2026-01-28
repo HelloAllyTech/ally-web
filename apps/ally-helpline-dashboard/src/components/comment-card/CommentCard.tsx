@@ -12,7 +12,7 @@ import {
   useLazyGetCommentRepliesQuery,
   useEditCommentMutation,
 } from "@api";
-import { ArrowUp, MoreVertIcon, Smiley } from "@assets";
+import { ArrowUp, MoreVertIcon, Smiley, Delete, Edit } from "@assets";
 import { Button, CustomMenu, ReactionSelector, MenuItem } from "@components";
 import ReplySkeleton from "@src/components/comment-card/ReplySkeleton";
 import { RootState } from "@store";
@@ -143,6 +143,11 @@ const CommentCard = ({
     }
   };
 
+  const handleCancelCommentEdit = () => {
+    setShowCommentEditView(false);
+    setCommentContent(comment.content);
+  };
+
   const handleDeleteComment = async () => {
     try {
       await deleteComment({ commentId: comment.id }).unwrap();
@@ -156,7 +161,7 @@ const CommentCard = ({
 
   const handleEditComment = async () => {
     try {
-      await editComment({ commentId: comment.id, content: comment.content }).unwrap();
+      await editComment({ commentId: comment.id, content: commentContent?.trim() }).unwrap();
       toast.success("Comment updated successfully");
       handleMenuClose();
       setShowCommentEditView(false);
@@ -227,10 +232,14 @@ const CommentCard = ({
           />
         </div>
         <div className="flex gap-2 flex-row my-2 justify-end">
-          <Button variant="secondary" className="py-0 h-8" onClick={handleCancelReply}>
+          <Button
+            variant="secondary"
+            className="py-0 h-8 z-10 z-50"
+            onClick={handleCancelCommentEdit}
+          >
             Cancel
           </Button>
-          <Button variant="primary" className="py-0 h-8" onClick={handleEditComment}>
+          <Button variant="primary" className="py-0 h-8 z-10 z-50" onClick={handleEditComment}>
             Done
           </Button>
         </div>
@@ -253,7 +262,7 @@ const CommentCard = ({
                 onClick={() => enableLikeUpdate && setShowEmojiPicker(prev => !prev)}
               >
                 {selectedEmoji ? (
-                  <div className="pb-0.5  w-[26px] bg-white h-[26px] flex items-center justify-center rounded-full border-[0.5px]">
+                  <div className="pb-0.5  w-[26px] bg-white h-[26px] flex items-center justify-center rounded-full border-[0.5px] border-primary-500">
                     <Emoji unified={selectedEmoji} size={14} emojiStyle={EmojiStyle.APPLE} />
                   </div>
                 ) : (
@@ -304,9 +313,10 @@ const CommentCard = ({
             <>
               <div className="w-1 h-1 bg-[#D9D9D9] rounded-full" />
               <div
-                className="text-typography-800 text-xs cursor-pointer font-medium"
+                className="text-typography-800 text-xs cursor-pointer font-medium flex items-center gap-2"
                 onClick={handleReplyClick}
               >
+                <div className="w-1 h-1 bg-[#D9D9D9] rounded-full" />
                 Reply
               </div>
             </>
@@ -326,6 +336,8 @@ const CommentCard = ({
     if (isFeedOwner) {
       items.push({
         label: comment?.hidden ? "Unhide" : "Hide",
+        className: "text-typography-800",
+        icon: <Edit width={16} height={16} />,
         onClick: () => handleToggleVisibility(!comment?.hidden),
       });
     }
@@ -334,15 +346,19 @@ const CommentCard = ({
 
     if (isMyComment && !isUpdateExpired) {
       items.push({
-        label: "Delete",
-        onClick: () => handleDeleteComment(),
+        label: "Edit",
+        className: "text-typography-800",
+        icon: <Edit width={16} height={16} />,
+        onClick: () => setShowCommentEditView(true),
       });
     }
 
     if (isMyComment && !isUpdateExpired) {
       items.push({
-        label: "Edit",
-        onClick: () => setShowCommentEditView(true),
+        label: "Delete",
+        className: "text-red-500",
+        icon: <Delete width={16} height={16} />,
+        onClick: () => handleDeleteComment(),
       });
     }
 
@@ -368,11 +384,11 @@ const CommentCard = ({
       </div>
       <div className="flex flex-col gap-1 w-full">
         <div className="flex flex-row justify-between items-center gap-2 w-full">
-          <div className="flex flex-row gap-2 items-center w-full">
-            <div className="text-[14px] font-medium">{comment.createdBy.name}</div>
+          <div className="flex flex-row gap-1.5 items-center w-full">
+            <div className="text-[14px] font-medium">{comment?.createdBy?.name || "Unknown"}</div>
             <div className="text-[12px] text-gray-500">{formatRelativeTime(comment.createdAt)}</div>
           </div>
-          {menuItems.length > 0 && (
+          {menuItems.length > 0 && enableLikeUpdate && (
             <div className="flex flex-row justify-between items-center">
               <button
                 onClick={handleMenuOpen}

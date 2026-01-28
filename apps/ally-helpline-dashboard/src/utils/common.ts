@@ -111,7 +111,7 @@ const TIME_THRESHOLDS: [keyof typeof SECONDS_IN, number][] = [
   ["sec", SECONDS_IN.sec],
 ];
 
-const pluralize = (value: number, unit: string) => `${value}${unit}${value === 1 ? "" : "s"}`;
+const pluralize = (value: number, unit: string) => `${value} ${unit}${value === 1 ? "" : "s"}`;
 
 export const formatDateTime = (dateString: string): string => {
   const date = new Date(dateString);

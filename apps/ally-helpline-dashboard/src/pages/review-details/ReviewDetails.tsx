@@ -225,7 +225,7 @@ export const ReviewDetails = () => {
           <div className="relative w-fit">
             <div
               onClick={() => setShowEmojiPicker(!showEmojiPicker)}
-              className="flex relative items-center h-9 min-w-9 rounded-full border cursor-pointer hover:border-[#0957D0] justify-center"
+              className="flex relative items-center h-9 min-w-9 rounded-full border cursor-pointer border-primary-400 justify-center"
               ref={selectEmojiRef}
             >
               {selectedEmoji ? (
