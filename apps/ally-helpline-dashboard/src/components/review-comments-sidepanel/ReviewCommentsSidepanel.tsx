@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import { Skeleton } from "@mui/material";
 
@@ -33,7 +33,17 @@ const ReviewCommentsSidepanel = ({
     }
   }, [threads]);
 
-  const commentsCount = threads?.length || 0;
+  const commentsCount = useMemo(() => {
+    return (
+      threads?.reduce(
+        (acc, thread) =>
+          acc +
+          thread.comments.length +
+          thread.comments.reduce((acc, comment) => acc + comment.replyCount, 0),
+        0,
+      ) || 0
+    );
+  }, [threads]);
 
   return (
     <div

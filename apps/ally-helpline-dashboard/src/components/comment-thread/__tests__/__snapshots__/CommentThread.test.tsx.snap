@@ -6,7 +6,7 @@ exports[`CommentThread Component > should match snapshot when rendered 1`] = `
     class="bg-white rounded-lg p-4 shadow-lg border w-[400px]"
   >
     <div
-      class="text-sm font-medium border-b-[0.5px] pb-2"
+      class="text-base font-medium border-b-[0.5px] pb-2"
     >
       Comment Thread
     </div>
@@ -14,7 +14,7 @@ exports[`CommentThread Component > should match snapshot when rendered 1`] = `
       class="flex flex-col gap-4 pt-4"
     >
       <div
-        class="flex flex-row gap-2 items-center"
+        class="flex flex-row gap-2"
       >
         <div
           class="w-8 h-8 rounded-full"
@@ -99,7 +99,7 @@ exports[`CommentThread Component > should match snapshot with empty comments 1`]
     class="bg-white rounded-lg p-4 shadow-lg border w-[400px]"
   >
     <div
-      class="text-sm font-medium border-b-[0.5px] pb-2"
+      class="text-base font-medium border-b-[0.5px] pb-2"
     >
       Comment Thread
     </div>
@@ -107,7 +107,7 @@ exports[`CommentThread Component > should match snapshot with empty comments 1`]
       class="flex flex-col gap-4 pt-4"
     >
       <div
-        class="flex flex-row gap-2 items-center"
+        class="flex flex-row gap-2"
       >
         <div
           class="w-8 h-8 rounded-full"

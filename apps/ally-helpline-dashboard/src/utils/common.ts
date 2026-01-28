@@ -96,7 +96,7 @@ const SECONDS_IN = {
   year: 31536000,
   month: 2592000,
   w: 604800,
-  d: 86400,
+  D: 86400,
   hour: 3600,
   min: 60,
   sec: 1,
@@ -105,7 +105,7 @@ const SECONDS_IN = {
 const TIME_THRESHOLDS: [keyof typeof SECONDS_IN, number][] = [
   ["month", SECONDS_IN.month],
   ["w", SECONDS_IN.w],
-  ["d", SECONDS_IN.d],
+  ["D", SECONDS_IN.D],
   ["hour", SECONDS_IN.hour],
   ["min", SECONDS_IN.min],
   ["sec", SECONDS_IN.sec],
@@ -143,7 +143,8 @@ export const formatRelativeTime = (dateString: string): string => {
 
   for (const [unit, seconds] of TIME_THRESHOLDS) {
     const value = Math.floor(diffSeconds / seconds);
-    if (value >= 1) return pluralize(value, unit);
+    if (value >= 1 && unit !== "D") return pluralize(value, unit);
+    if (value >= 1 && unit === "D") return `${value} D`;
   }
 
   return "Just now";
