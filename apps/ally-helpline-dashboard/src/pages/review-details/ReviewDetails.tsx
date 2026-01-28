@@ -355,7 +355,7 @@ export const ReviewDetails = () => {
           className={showCommentsSidepanel ? "min-w-[300px] w-[30%]" : "w-0 border-none"}
         />
       </div>
-      {renderBottomSection()}
+      {transcriptList.length > 0 && renderBottomSection()}
 
       <ReactionsModal
         isOpen={showReactionsModal}
