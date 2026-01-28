@@ -19,11 +19,11 @@ const FeedCard: FC<FeedCardProps> = ({
   commentsCount,
   comments = [],
   isCommentsLoading = false,
+  isCommentsExpanded = false,
   onReviewTranscript,
   onCommentsClick,
   duration,
 }) => {
-  const [isCommentsExpanded, setIsCommentsExpanded] = useState(false);
   const [isReactionsModalOpen, setIsReactionsModalOpen] = useState(false);
 
   const formattedDateTime = formatDateTime(scenario.createdAt);
@@ -35,7 +35,6 @@ const FeedCard: FC<FeedCardProps> = ({
 
   const handleCommentsClick = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.stopPropagation();
-    setIsCommentsExpanded(!isCommentsExpanded);
     onCommentsClick?.();
   };
 
@@ -49,7 +48,20 @@ const FeedCard: FC<FeedCardProps> = ({
   };
 
   const collapseComments = () => {
-    setIsCommentsExpanded(false);
+    // Since this is a controlled component, notify parent to collapse
+    if (isCommentsExpanded) {
+      onCommentsClick?.();
+    }
+  };
+
+  const fallbackText = () => {
+    if (user?.name?.length > 1) {
+      return user?.name?.slice(0, 1)?.toUpperCase();
+    }
+    if (user?.name?.length === 1) {
+      return user?.name?.toUpperCase();
+    }
+    return "NA";
   };
 
   const divider = () => {
@@ -58,7 +70,7 @@ const FeedCard: FC<FeedCardProps> = ({
 
   const headerSection = () => {
     return (
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between cursor-default">
         <div className="flex items-center gap-2 sm:gap-3">
           <div
             className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full overflow-hidden ${!user?.profileImage ? "border border-border-light" : ""} flex items-center justify-center flex-shrink-0`}
@@ -66,7 +78,7 @@ const FeedCard: FC<FeedCardProps> = ({
             <CustomImage
               src={user.profileImage}
               alt={user?.name ?? ""}
-              fallbackText={user?.name?.slice(0, 1)?.toUpperCase() ?? "NA"}
+              fallbackText={fallbackText()}
               className="w-full h-full object-cover"
             />
           </div>
@@ -85,7 +97,7 @@ const FeedCard: FC<FeedCardProps> = ({
 
   const scenarioSection = () => {
     return (
-      <div className="flex flex-col gap-2">
+      <div className="flex flex-col gap-2 cursor-default">
         <div className="font-primary text-sm sm:text-base leading-5 text-[#1A1A1A]">
           Shared simulation for review
         </div>
