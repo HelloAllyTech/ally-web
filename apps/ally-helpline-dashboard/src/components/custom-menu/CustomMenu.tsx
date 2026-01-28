@@ -76,6 +76,7 @@ const CustomMenu = ({
           onClick={() => {
             if (!item.disabled) {
               item.onClick();
+              onClose?.();
             }
           }}
           disabled={item.disabled}
@@ -84,7 +85,7 @@ const CustomMenu = ({
           } ${item.className || ""}`}
         >
           {item.icon && <span className="flex-shrink-0">{item.icon}</span>}
-          <span>{item.label}</span>
+          <span className={`${item.className || ""} font-primary`}>{item.label}</span>
         </button>
       ))}
     </div>,
