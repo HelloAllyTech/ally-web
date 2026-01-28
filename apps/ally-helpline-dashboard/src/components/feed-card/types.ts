@@ -53,6 +53,7 @@ export interface FeedCardProps {
   commentsCount: number;
   comments?: Comment[];
   isCommentsLoading?: boolean;
+  isCommentsExpanded?: boolean;
   onReviewTranscript?: () => void;
   onCardClick?: () => void;
   onCommentsClick?: () => void;

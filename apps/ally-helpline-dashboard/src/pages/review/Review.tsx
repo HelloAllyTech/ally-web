@@ -203,11 +203,12 @@ export const Review: FC = () => {
               commentsCount={item.commentsCount}
               comments={selectedReviewId === item.id ? getCommentsList() : []}
               isCommentsLoading={selectedReviewId === item.id && isReviewThreadsLoading}
+              isCommentsExpanded={selectedReviewId === item.id}
               onReviewTranscript={() => {
                 navigate(ROUTES.REVIEW_DETAILS.replace(":reviewId", item.id));
               }}
               onCommentsClick={() => {
-                setSelectedReviewId(item.id);
+                setSelectedReviewId(prev => (prev === item.id ? null : item.id));
               }}
               duration={item.scenarioSession?.duration}
             />
@@ -253,7 +254,9 @@ export const Review: FC = () => {
           transition={{ duration: 0.3 }}
           className="flex items-center self-stretch gap-4 sm:gap-8 px-4 sm:px-6 lg:px-8 py-3 sm:py-5 bg-white"
         >
-          <h1 className="font-secondary text-xl sm:text-2xl text-[#0D0D0D]">Review</h1>
+          <h1 className="font-secondary text-xl sm:text-2xl text-[#0D0D0D] cursor-default">
+            Review
+          </h1>
         </motion.div>
         <motion.div
           initial={{ opacity: 0, y: 10 }}

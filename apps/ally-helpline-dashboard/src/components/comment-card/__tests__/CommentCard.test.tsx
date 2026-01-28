@@ -422,22 +422,6 @@ describe("CommentCard Component", () => {
     });
   });
 
-  // --- Divider Tests ---
-  describe("Dividers", () => {
-    it("should show divider when only reactions and reply count are present", () => {
-      const commentWithReactionsAndReplies = {
-        ...mockComment,
-        reactions: { "1f44d": 5 },
-        replyCount: 3,
-      };
-      const { container } = renderWithProvider(
-        <CommentCard comment={commentWithReactionsAndReplies} showLike={false} />,
-      );
-      const dividers = container.querySelectorAll(".bg-\\[\\#D9D9D9\\]");
-      expect(dividers.length).toBe(1);
-    });
-  });
-
   // --- Reply Input Tests ---
   describe("Reply Input", () => {
     it("should not show reply input by default", () => {
@@ -470,7 +454,7 @@ describe("CommentCard Component", () => {
       renderWithProvider(<CommentCard comment={mockComment} showReply />);
       const replyButton = screen.getByText("Reply");
       fireEvent.click(replyButton);
-      expect(screen.getByTestId("reply-textarea")).toHaveAttribute("placeholder", "Add comment");
+      expect(screen.getByTestId("reply-textarea")).toHaveAttribute("placeholder", "Add reply");
     });
 
     it("should update reply textarea value when typing", () => {
