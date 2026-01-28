@@ -65,6 +65,12 @@ export const AchievementsViewAll: FC = () => {
       .filter(group => group.badges && group.badges.length > 0);
   };
 
+  // Check if there are any unlocked badges
+  const hasUnlockedBadges = badgesData.some(categoryData => {
+    const badgesArray = categoryData.badges || [];
+    return badgesArray.some(badge => badge.lockStatus === LockedStatus.UNLOCKED);
+  });
+
   const groupedBadges = getFilteredBadgesByCategory();
 
   if (!FEATURE_FLAGS_MAP.LEADERBOARD_FLAG) {
@@ -89,6 +95,10 @@ export const AchievementsViewAll: FC = () => {
     );
   }
 
+  const handleFilterChange = (value: string) => {
+    setActiveFilter(value);
+  };
+
   const renderHeader = () => {
     return (
       <div className="flex flex-col gap-3 w-full">
@@ -112,9 +122,10 @@ export const AchievementsViewAll: FC = () => {
           <ToggleButtonGroup
             className="font-primary text-xs sm:text-sm leading-[1.5]"
             value={activeFilter}
-            onValueChange={setActiveFilter}
+            onValueChange={handleFilterChange}
             items={FILTER_OPTIONS}
             equalWidth
+            disabled={!hasUnlockedBadges}
           />
         </div>
       </div>
