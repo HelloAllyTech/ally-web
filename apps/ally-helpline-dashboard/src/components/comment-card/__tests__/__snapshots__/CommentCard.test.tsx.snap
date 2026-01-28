@@ -22,7 +22,7 @@ exports[`CommentCard Component > should match snapshot when rendered with basic 
         class="flex flex-row justify-between items-center gap-2 w-full"
       >
         <div
-          class="flex flex-row gap-2 items-center w-full"
+          class="flex flex-row gap-1.5 items-center w-full"
         >
           <div
             class="text-[14px] font-medium"
@@ -71,7 +71,7 @@ exports[`CommentCard Component > should match snapshot with all props enabled 1`
         class="flex flex-row justify-between items-center gap-2 w-full"
       >
         <div
-          class="flex flex-row gap-2 items-center w-full"
+          class="flex flex-row gap-1.5 items-center w-full"
         >
           <div
             class="text-[14px] font-medium"
@@ -160,8 +160,11 @@ exports[`CommentCard Component > should match snapshot with all props enabled 1`
           class="w-1 h-1 bg-[#D9D9D9] rounded-full"
         />
         <div
-          class="text-typography-800 text-xs cursor-pointer font-medium"
+          class="text-typography-800 text-xs cursor-pointer font-medium flex items-center gap-2"
         >
+          <div
+            class="w-1 h-1 bg-[#D9D9D9] rounded-full"
+          />
           Reply
         </div>
         <div
