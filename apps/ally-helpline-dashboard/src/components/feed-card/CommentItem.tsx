@@ -1,5 +1,7 @@
 import { FC } from "react";
 
+import { CustomImage } from "@ally-ui-mono/ui-shared/index";
+
 import EmojiStack from "./EmojiStack";
 import { Comment } from "./types";
 import { formatRelativeTime } from "./utils";
@@ -11,8 +13,6 @@ interface CommentItemProps {
 const CommentItem: FC<CommentItemProps> = ({ comment }) => {
   const { createdBy, createdAt, content, replyCount } = comment;
 
-  const userInitial = createdBy?.name?.charAt(0).toUpperCase();
-
   const entries = comment.reactions ? Object.entries(comment.reactions) : [];
   const unicodeCodes = entries?.map(([code]) => code) ?? [];
   const displayUnicodeCodes = unicodeCodes.length > 3 ? unicodeCodes.slice(0, 3) : unicodeCodes;
@@ -20,20 +20,28 @@ const CommentItem: FC<CommentItemProps> = ({ comment }) => {
 
   const relativeTime = formatRelativeTime(createdAt);
 
+  const fallbackText = () => {
+    if (createdBy?.name?.length > 1) {
+      return createdBy?.name?.slice(0, 1)?.toUpperCase();
+    }
+    if (createdBy?.name?.length === 1) {
+      return createdBy?.name?.toUpperCase();
+    }
+    return "NA";
+  };
+
   const userAvatar = () => {
     return (
-      <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-white border-[0.4px] border-border flex items-center justify-center relative z-10">
-        {createdBy?.profileImage ? (
-          <img
-            src={createdBy.profileImage}
-            alt={createdBy?.name}
-            className="w-full h-full rounded-full object-cover"
-          />
-        ) : (
-          <span className="font-primary text-[8px] sm:text-[9.6px] leading-[1.67] text-[#757575]">
-            {userInitial}
-          </span>
-        )}
+      <div
+        className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-white ${!createdBy?.profileImage ? "border border-border-light" : ""} border-[0.4px] border-border flex items-center justify-center relative z-10`}
+      >
+        <CustomImage
+          src={createdBy.profileImage}
+          alt={createdBy?.name}
+          fallbackText={fallbackText()}
+          className="w-full h-full object-cover rounded-full"
+          fallbackClassName="w-full h-full rounded-full bg-neutral-100 flex items-center justify-center text-typography-600"
+        />
       </div>
     );
   };
