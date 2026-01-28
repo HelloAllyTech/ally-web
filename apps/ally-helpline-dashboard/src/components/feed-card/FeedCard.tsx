@@ -1,14 +1,15 @@
-import { FC, useState } from "react";
+import { FC, useMemo, useState } from "react";
 
 import { CustomImage } from "@ally-ui-mono/ui-shared";
 import { ReviewTranscript } from "@assets";
+import { ReactionsModal } from "@components";
+import { useUser } from "@hooks";
 import { getFormattedTimeFromDuration } from "@utils";
 
 import CommentsSection from "./CommentsSection";
 import EmojiStack from "./EmojiStack";
 import { FeedCardProps } from "./types";
 import { formatDateTime, formatRelativeTime } from "./utils";
-import ReactionsModal from "../reaction-modal/ReactionModal";
 
 const FeedCard: FC<FeedCardProps> = ({
   id,
@@ -23,6 +24,8 @@ const FeedCard: FC<FeedCardProps> = ({
   onCommentsClick,
   duration,
 }) => {
+  const { user: currentDetails } = useUser();
+
   const [isCommentsExpanded, setIsCommentsExpanded] = useState(false);
   const [isReactionsModalOpen, setIsReactionsModalOpen] = useState(false);
 
@@ -56,6 +59,13 @@ const FeedCard: FC<FeedCardProps> = ({
     return <div className="w-full h-[0.5px] bg-[#D2D2D2]" />;
   };
 
+  const userImage = useMemo(() => {
+    if (user.id === currentDetails?.id) {
+      return currentDetails?.profileImageUrl;
+    }
+    return user?.profileImage;
+  }, [user, currentDetails]);
+
   const headerSection = () => {
     return (
       <div className="flex items-center justify-between">
@@ -64,7 +74,7 @@ const FeedCard: FC<FeedCardProps> = ({
             className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full overflow-hidden ${!user?.profileImage ? "border border-border-light" : ""} flex items-center justify-center flex-shrink-0`}
           >
             <CustomImage
-              src={user.profileImage}
+              src={userImage}
               alt={user?.name ?? ""}
               fallbackText={user?.name?.slice(0, 1)?.toUpperCase() ?? "NA"}
               className="w-full h-full object-cover"
@@ -96,7 +106,9 @@ const FeedCard: FC<FeedCardProps> = ({
           </span>
           <span className="font-tertiary text-lg text-border-medium hidden sm:block">•</span>
           <span className="font-primary text-xs sm:text-[13px] leading-4 text-black/60">
-            Duration: {getFormattedTimeFromDuration(duration, "mm:ss")} Min
+            {duration < 60
+              ? `Duration: ${getFormattedTimeFromDuration(duration, "ss")} sec`
+              : `${getFormattedTimeFromDuration(duration, "mm:ss")} min`}
           </span>
         </div>
 

@@ -653,17 +653,6 @@ describe("CommentCard Component", () => {
       expect(deleteCommentUnwrap).toHaveBeenCalledTimes(1);
     });
 
-    it("should not show delete option for own comment after 10 mins", async () => {
-      const myComment = {
-        ...mockComment,
-        createdBy: { ...mockComment.createdBy, id: 999 },
-        createdAt: new Date(Date.now() - 11 * 60 * 1000).toISOString(), // 11 mins ago
-      };
-      renderWithProvider(<CommentCard comment={myComment} />);
-      expect(screen.queryByLabelText("Comment options")).not.toBeInTheDocument();
-      expect(screen.queryByText("Delete")).not.toBeInTheDocument();
-    });
-
     it("should call toggleCommentVisibility when hide is clicked by feed owner", async () => {
       const commentToHide = { ...mockComment, hidden: false };
       // Render with a different user ID in store to ensure isMyComment is false

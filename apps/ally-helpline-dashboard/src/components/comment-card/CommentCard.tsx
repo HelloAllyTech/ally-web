@@ -12,7 +12,7 @@ import {
   useLazyGetCommentRepliesQuery,
   useEditCommentMutation,
 } from "@api";
-import { ArrowUp, MoreVertIcon, Smiley, Delete, Edit } from "@assets";
+import { ArrowUp, MoreVertIcon, Smiley, Delete, Edit, Hide, Eye } from "@assets";
 import { Button, CustomMenu, ReactionSelector, MenuItem } from "@components";
 import { RootState } from "@store";
 import { ReactionsType, CommentItem } from "@types";
@@ -316,7 +316,7 @@ const CommentCard = ({
       items.push({
         label: comment?.hidden ? "Unhide" : "Hide",
         className: "text-typography-800",
-        icon: <Edit width={16} height={16} />,
+        icon: comment?.hidden ? <Eye width={16} height={16} /> : <Hide width={16} height={16} />,
         onClick: () => handleToggleVisibility(!comment?.hidden),
       });
     }
@@ -332,7 +332,7 @@ const CommentCard = ({
       });
     }
 
-    if (isMyComment && !isUpdateExpired) {
+    if (isMyComment) {
       items.push({
         label: "Delete",
         className: "text-red-500",
