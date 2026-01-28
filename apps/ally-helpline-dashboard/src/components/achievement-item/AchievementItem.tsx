@@ -26,8 +26,7 @@ export const AchievementItem: FC<{
             src={achievement?.imageUrl}
             alt={achievement?.name}
             className="rounded-lg object-cover w-full h-full bg-neutral-100"
-            fallbackClassName="rounded-lg bg-neutral-100 flex items-center justify-center w-full h-full"
-            fallbackText="Image not available"
+            fallbackClassName="rounded-lg text-typography-600 bg-neutral-100 flex items-center justify-center w-full h-full"
           />
         </div>
       );

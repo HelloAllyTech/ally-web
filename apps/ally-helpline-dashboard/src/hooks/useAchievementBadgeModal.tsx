@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 
+import confetti from "canvas-confetti";
 import { toast } from "sonner";
 
 import { useGetMyBadgesQuery, useUpdateBadgeViewStatusMutation } from "@api";
@@ -17,6 +18,7 @@ interface UseAchievementBadgeModalReturn {
 export const useAchievementBadgeModal = (): UseAchievementBadgeModalReturn => {
   const [currentBadgeIndex, setCurrentBadgeIndex] = useState<number | null>(null);
   const hasInitialized = useRef(false);
+  const confettiTriggered = useRef(false);
 
   const {
     data: badgesResponse,
@@ -50,10 +52,57 @@ export const useAchievementBadgeModal = (): UseAchievementBadgeModalReturn => {
     if (badges.length === 0) {
       setCurrentBadgeIndex(null);
       hasInitialized.current = false;
-    } else if (!hasInitialized.current) {
+      confettiTriggered.current = false;
+      return undefined;
+    }
+    if (!hasInitialized.current) {
       setCurrentBadgeIndex(0);
       hasInitialized.current = true;
+      // Trigger confetti for the first badge
+      if (!confettiTriggered.current) {
+        confettiTriggered.current = true;
+        // Fire confetti from multiple positions
+        const duration = 2000;
+        const animationEnd = Date.now() + duration;
+        const defaults = {
+          startVelocity: 30,
+          spread: 180,
+          ticks: 500,
+          zIndex: 9999,
+          // Brighter, more vibrant colors that stand out against dark overlay
+          colors: ["#60A5FA", "#FCD34D", "#F472B6", "#86EFAC"],
+        };
+
+        const randomInRange = (min: number, max: number) => {
+          return Math.random() * (max - min) + min;
+        };
+
+        const interval: NodeJS.Timeout = setInterval(() => {
+          const timeLeft = animationEnd - Date.now();
+
+          if (timeLeft <= 0) {
+            return clearInterval(interval);
+          }
+
+          const particleCount = 30 * (timeLeft / duration);
+
+          // Fire from left
+          confetti({
+            ...defaults,
+            particleCount,
+            origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 },
+          });
+
+          // Fire from right
+          confetti({
+            ...defaults,
+            particleCount,
+            origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 },
+          });
+        }, 250);
+      }
     }
+    return undefined;
   }, [badges.length]);
 
   const closeModal = useCallback(async () => {
