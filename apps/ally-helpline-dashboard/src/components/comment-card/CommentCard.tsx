@@ -12,7 +12,7 @@ import {
   useLazyGetCommentRepliesQuery,
   useEditCommentMutation,
 } from "@api";
-import { ArrowUp, MoreVertIcon, Smiley } from "@assets";
+import { ArrowUp, MoreVertIcon, Smiley, Delete, Edit } from "@assets";
 import { Button, CustomMenu, ReactionSelector, MenuItem } from "@components";
 import { RootState } from "@store";
 import { ReactionsType, CommentItem } from "@types";
@@ -140,6 +140,11 @@ const CommentCard = ({
     }
   };
 
+  const handleCancelCommentEdit = () => {
+    setShowCommentEditView(false);
+    setCommentContent(comment.content);
+  };
+
   const handleDeleteComment = async () => {
     try {
       await deleteComment({ commentId: comment.id }).unwrap();
@@ -208,10 +213,14 @@ const CommentCard = ({
           />
         </div>
         <div className="flex gap-2 flex-row my-2 justify-end">
-          <Button variant="secondary" className="py-0 h-8" onClick={handleCancelReply}>
+          <Button
+            variant="secondary"
+            className="py-0 h-8 z-10 z-50"
+            onClick={handleCancelCommentEdit}
+          >
             Cancel
           </Button>
-          <Button variant="primary" className="py-0 h-8" onClick={handleEditComment}>
+          <Button variant="primary" className="py-0 h-8 z-10 z-50" onClick={handleEditComment}>
             Done
           </Button>
         </div>
@@ -314,15 +323,19 @@ const CommentCard = ({
 
     if (isMyComment && !isUpdateExpired) {
       items.push({
-        label: "Delete",
-        onClick: () => handleDeleteComment(),
+        label: "Edit",
+        className: "text-typography-800",
+        icon: <Edit width={16} height={16} />,
+        onClick: () => setShowCommentEditView(true),
       });
     }
 
     if (isMyComment && !isUpdateExpired) {
       items.push({
-        label: "Edit",
-        onClick: () => setShowCommentEditView(true),
+        label: "Delete",
+        className: "text-red-500",
+        icon: <Delete width={16} height={16} />,
+        onClick: () => handleDeleteComment(),
       });
     }
 
@@ -352,7 +365,7 @@ const CommentCard = ({
             <div className="text-[14px] font-medium">{comment?.createdBy?.name || "Unknown"}</div>
             <div className="text-[12px] text-gray-500">{formatRelativeTime(comment.createdAt)}</div>
           </div>
-          {menuItems.length > 0 && (
+          {menuItems.length > 0 && enableLikeUpdate && (
             <div className="flex flex-row justify-between items-center">
               <button
                 onClick={handleMenuOpen}
