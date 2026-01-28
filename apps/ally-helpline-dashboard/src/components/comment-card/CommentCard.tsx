@@ -365,7 +365,7 @@ const CommentCard = ({
             <div className="text-[14px] font-medium">{comment?.createdBy?.name || "Unknown"}</div>
             <div className="text-[12px] text-gray-500">{formatRelativeTime(comment.createdAt)}</div>
           </div>
-          {menuItems.length > 0 && enableLikeUpdate && (
+          {menuItems.length > 0 && enableLikeUpdate && !comment?.hidden && (
             <div className="flex flex-row justify-between items-center">
               <button
                 onClick={handleMenuOpen}
