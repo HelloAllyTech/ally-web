@@ -12,6 +12,7 @@ export enum UserRole {
   COUNSELLOR = "COUNSELOR",
   ADMIN = "ADMIN",
   LEARNER = "LEARNER",
+  REVIEWER = "REVIEWER",
 }
 
 export interface UserPreferences {

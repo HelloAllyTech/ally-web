@@ -105,7 +105,7 @@ const UserInfo: FC<{
       {showLogout && (
         <div
           data-testid="user-info-dropdown"
-          className={`absolute z-10 bottom-3  bg-white border shadow-md rounded-md p-2 w-[240px] flex flex-col gap-3 font-primary ${isExpanded ? "left-[240px]" : "left-[80px]"}`}
+          className={`absolute z-50 bottom-3  bg-white border shadow-md rounded-md p-2 w-[240px] flex flex-col gap-3 font-primary ${isExpanded ? "left-[240px]" : "left-[80px]"}`}
         >
           <PermissionGuard requiredPermissions={[Permissions.VIEW_SIMULATION_CREDITS]}>
             <div className="flex items-center gap-2" data-testid="user-info-credits-header">
