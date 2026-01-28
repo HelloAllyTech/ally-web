@@ -57,6 +57,13 @@ const CustomMenu = ({
     setPosition({ top, left });
   }, [anchorElement]);
 
+  const handleItemClick = (item: MenuItem) => {
+    if (!item.disabled) {
+      item.onClick();
+      onClose?.();
+    }
+  };
+
   if (!anchorElement || !items?.length) return null;
 
   return createPortal(
@@ -73,12 +80,7 @@ const CustomMenu = ({
       {items?.map((item, index) => (
         <button
           key={index}
-          onClick={() => {
-            if (!item.disabled) {
-              item.onClick();
-              onClose?.();
-            }
-          }}
+          onClick={() => handleItemClick(item)}
           disabled={item.disabled}
           className={`w-full text-left px-4 py-2 text-[14px] text-typography-800 hover:bg-gray-50 transition-colors flex items-center gap-2 ${
             item.disabled ? "opacity-50 cursor-not-allowed" : "cursor-pointer"
