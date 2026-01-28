@@ -10,6 +10,7 @@ export interface FeedScenario {
 export interface FeedUser {
   name: string;
   profileImage?: string;
+  id: number;
 }
 
 export interface Reactions {
