@@ -283,7 +283,7 @@ const CommentCard = ({
             !isReactionOnCommentFromThisUser() &&
             Object.keys(comment?.reactions).length > 0 && (
               <>
-                <div className="flex pr-2 items-center">
+                <div className="flex px-2 items-center border-l">
                   {Object.keys(comment.reactions)
                     .slice(0, 3)
                     .map((reaction, index) => (
@@ -309,20 +309,23 @@ const CommentCard = ({
                 </div>
               </>
             )}
+
+          {comment.replyCount > 0 && <div className="w-1 h-1 bg-[#D9D9D9] rounded-full" />}
           {showReply && (
             <>
-              <div className="w-1 h-1 bg-[#D9D9D9] rounded-full" />
               <div
                 className="text-typography-800 text-xs cursor-pointer font-medium flex items-center gap-2"
                 onClick={handleReplyClick}
               >
-                <div className="w-1 h-1 bg-[#D9D9D9] rounded-full" />
                 Reply
               </div>
             </>
           )}
           {comment.replyCount > 0 && (
-            <div className={`text-typography-800 text-xs cursor-pointer`} onClick={onReplyClick}>
+            <div
+              className={`text-typography-800 text-xs cursor-pointer underline decoration-neutral-300 underline-offset-4 decoration-1`}
+              onClick={onReplyClick}
+            >
               {comment.replyCount} repl{comment.replyCount > 1 ? "ies" : "y"}
             </div>
           )}
@@ -371,11 +374,18 @@ const CommentCard = ({
     setShowReplies(false);
   };
 
+  const userImage = useMemo(() => {
+    if (isMyComment) {
+      return user?.profileImageUrl;
+    }
+    return comment.createdBy.profileImage;
+  }, [user, comment]);
+
   return (
     <div className={`flex gap-2.5 ${comment?.hidden ? "opacity-50" : ""}`}>
       <div className="min-w-8 h-8 rounded-full overflow-hidden">
         <CustomImage
-          src={comment.createdBy.profileImage}
+          src={userImage}
           alt={comment.createdBy.name}
           fallbackText={comment.createdBy.name?.slice(0, 1)?.toUpperCase() ?? "NA"}
           data-testid="custom-image"
