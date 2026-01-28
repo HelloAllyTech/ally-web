@@ -58,9 +58,11 @@ import EndSessionIllustration from "./end-session-illustration.svg?react";
 import Enhance from "./enhance.svg?react";
 import ErrorIcon from "./error-icon.svg?react";
 import ExistingCall from "./existing-call.svg?react";
+import Eye from "./eye.svg?react";
 import FileUpload from "./file-upload.svg?react";
 import Flow from "./flow.svg?react";
 import Focus from "./focus.svg?react";
+import Hide from "./hide.svg?react";
 import HomeworkRecommended from "./homework-recommended.svg?react";
 import InDoubt from "./in-doubt.svg?react";
 import InfoIcon from "./info-icon.svg?react";
@@ -280,4 +282,6 @@ export {
   ChatBubble,
   InfoIcon,
   Comment,
+  Hide,
+  Eye,
 };

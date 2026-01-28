@@ -304,10 +304,10 @@ export const ReviewDetails = () => {
                 {getFormattedDateTime(reviewDetails?.scenario?.createdAt, "MMM dd, yyyy hh:mm a")}
               </div>
               <div className="w-1 h-1 bg-neutral-500 rounded-full mx-1" />
-              <div>
-                Duration:{" "}
-                {getFormattedTimeFromDuration(reviewDetails?.scenarioSession?.duration, "mm:ss")}{" "}
-                Min
+              <div className="font-primary text-xs sm:text-[13px] leading-4 text-black/60">
+                {reviewDetails?.scenarioSession?.duration < 60
+                  ? `Duration: ${getFormattedTimeFromDuration(reviewDetails?.scenarioSession?.duration, "ss")} sec`
+                  : `${getFormattedTimeFromDuration(reviewDetails?.scenarioSession?.duration, "mm:ss")} min`}
               </div>
             </div>
           </div>
