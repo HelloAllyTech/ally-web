@@ -43,6 +43,7 @@ import CloseIcon from "./close-icon.svg?react";
 import Close from "./close.svg?react";
 import Cloud from "./cloud.svg?react";
 import ComingSoon from "./coming-soon.svg?react";
+import Comment from "./comments.svg?react";
 import CrossRedBackground from "./cross-red-background.svg?react";
 import CutCall from "./cut-call.svg?react";
 import DataPolicy from "./data-policy.svg?react";
@@ -140,6 +141,7 @@ import VolumeUpIcon from "./volume-up-icon.svg?react";
 import WarningTriangle from "./warning-triangle.svg?react";
 import Warning from "./warning.svg?react";
 import Waveform from "./waveform.svg?react";
+
 /**
  * Icon Exports
  *
@@ -277,4 +279,5 @@ export {
   AchievementLocked,
   ChatBubble,
   InfoIcon,
+  Comment,
 };

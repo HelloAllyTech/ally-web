@@ -2,6 +2,7 @@ import { FC, useState } from "react";
 
 import { CustomImage } from "@ally-ui-mono/ui-shared";
 import { ReviewTranscript } from "@assets";
+import { getFormattedTimeFromDuration } from "@utils";
 
 import CommentsSection from "./CommentsSection";
 import EmojiStack from "./EmojiStack";
@@ -20,6 +21,7 @@ const FeedCard: FC<FeedCardProps> = ({
   isCommentsLoading = false,
   onReviewTranscript,
   onCommentsClick,
+  duration,
 }) => {
   const [isCommentsExpanded, setIsCommentsExpanded] = useState(false);
   const [isReactionsModalOpen, setIsReactionsModalOpen] = useState(false);
@@ -94,7 +96,7 @@ const FeedCard: FC<FeedCardProps> = ({
           </span>
           <span className="font-tertiary text-lg text-border-medium hidden sm:block">•</span>
           <span className="font-primary text-xs sm:text-[13px] leading-4 text-black/60">
-            Duration: {scenario?.duration} Min{parseInt(scenario?.duration ?? "0") !== 1 ? "s" : ""}
+            Duration: {getFormattedTimeFromDuration(duration, "mm:ss")} Min
           </span>
         </div>
 

@@ -62,7 +62,7 @@ export const AchievementsCard: FC<AchievementsCardProps> = ({
   );
 
   const renderContent = (
-    <div className="flex flex-col gap-3 p-4 pb-0 flex-1 custom-scrollbar">
+    <div className="flex flex-col gap-3 p-4 pb-2.5 flex-1 custom-scrollbar">
       {isLoading ? (
         Array.from({ length: 3 }).map((_, index) => <SkeletonCard key={index} />)
       ) : isEmpty ? (

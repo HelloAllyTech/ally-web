@@ -10,6 +10,7 @@ import {
   useGetSimulationTranscriptQuery,
   useUpdateReviewMutation,
 } from "@api";
+import { Comment } from "@assets";
 import { Transcription, Button } from "@components";
 import { REVIEW_PRIVACY_OPTIONS, ROUTES } from "@constants";
 import { RootState } from "@store";
@@ -23,6 +24,7 @@ const SimulationTranscriptTab: FC<SimulationTranscriptTabProps> = ({ sessionId, 
   const [transcriptList, setTranscriptList] = useState<SimulationTranscriptMessage[]>([]);
   const { user } = useSelector((state: RootState) => state.user);
   const { data: summary } = useGetSimulationSummaryQuery(sessionId);
+
   const [createReview, { isLoading: isCreateReviewLoading }] = useCreateReviewMutation();
   const [updateReview, { isLoading: isUpdateReviewLoading }] = useUpdateReviewMutation();
   const navigate = useNavigate();
@@ -93,11 +95,12 @@ const SimulationTranscriptTab: FC<SimulationTranscriptTabProps> = ({ sessionId, 
           userId={user?.id}
           handleLoadMore={handleLoadMore}
           isLoading={isGetTranscriptLoading}
-          className="h-full overflow-y-auto !pt-0 custom-scrollbar mt-1 pb-16"
+          className="h-full overflow-y-auto !pt-0 custom-scrollbar mt-1 "
         />
-        <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-white to-transparent pointer-events-none" />
+        <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t  to-transparent pointer-events-none" />
       </div>
-      {FEATURE_FLAGS_MAP.PEER_REVIEW_FLAG && (
+
+      {FEATURE_FLAGS_MAP.PEER_REVIEW_FLAG && summary?.counselorId === user?.id && (
         <div className="flex justify-center">
           <div
             className="flex justify-center gap-2 rounded-full border p-2 shadow-lg"
@@ -111,15 +114,19 @@ const SimulationTranscriptTab: FC<SimulationTranscriptTabProps> = ({ sessionId, 
               onChange={handleCreateReview}
             />
             {summary.reviewId && (
-              <Button
-                onClick={() =>
-                  navigate(ROUTES.REVIEW_DETAILS.replace(":reviewId", summary.reviewId))
-                }
-                variant="secondary"
-                className="flex justify-center h-[40px]"
-              >
-                Show Comments
-              </Button>
+              <>
+                <div className="border-l" />
+                <Button
+                  onClick={() =>
+                    navigate(ROUTES.REVIEW_DETAILS.replace(":reviewId", summary.reviewId))
+                  }
+                  variant="secondary"
+                  className="flex justify-center h-[40px]"
+                >
+                  <Comment />
+                  Comments
+                </Button>
+              </>
             )}
           </div>
         </div>
