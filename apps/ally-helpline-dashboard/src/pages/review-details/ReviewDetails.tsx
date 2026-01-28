@@ -202,19 +202,25 @@ export const ReviewDetails = () => {
     setShowReactionsModal(true);
   };
 
+  const isReactionOnCommentFromThisUser = () => {
+    return reviewReactions.length === 1 && reviewReactions[0] === reviewDetails?.myReaction;
+  };
+
   const renderBottomSection = () => {
     return (
       <div className="absolute flex justify-center bottom-9 left-0 right-0 w-full">
         <div className="p-2 h-14 rounded-full border flex items-center gap-2 bg-white shadow-2xl">
-          <div
-            onClick={() => setShowCommentsSidepanel(!showCommentsSidepanel)}
-            className="group flex items-center h-full w-fit cursor-pointer hover:border-[#0957D0] gap-2.5 rounded-full border justify-center px-3"
-          >
-            <ChatBubble className="w-6 h-6 text-neutral-600 group-hover:text-[#0957D0]" />
-            <div className="text-typography-900 font-primary group-hover:text-[#0957D0]">
-              Comments
+          {threads.length > 0 && (
+            <div
+              onClick={() => setShowCommentsSidepanel(!showCommentsSidepanel)}
+              className="group flex items-center h-full w-fit cursor-pointer hover:border-[#0957D0] gap-2.5 rounded-full border justify-center px-3"
+            >
+              <ChatBubble className="w-6 h-6 text-neutral-600 group-hover:text-[#0957D0]" />
+              <div className="text-typography-900 font-primary group-hover:text-[#0957D0]">
+                Comments
+              </div>
             </div>
-          </div>
+          )}
 
           <div className="relative w-fit">
             <div
@@ -238,7 +244,7 @@ export const ReviewDetails = () => {
               />
             )}
           </div>
-          {reviewReactions?.length > 0 && (
+          {reviewReactions?.length > 0 && !isReactionOnCommentFromThisUser() && (
             <div className="flex items-center gap-3 justify-between w-full">
               <button
                 onClick={handleReactionsClick}
@@ -349,7 +355,7 @@ export const ReviewDetails = () => {
           className={showCommentsSidepanel ? "min-w-[300px] w-[30%]" : "w-0 border-none"}
         />
       </div>
-      {threads?.length > 0 && renderBottomSection()}
+      {renderBottomSection()}
 
       <ReactionsModal
         isOpen={showReactionsModal}

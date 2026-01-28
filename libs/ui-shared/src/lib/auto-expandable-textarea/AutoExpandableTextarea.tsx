@@ -15,6 +15,7 @@ export interface AutoExpandableTextareaProps {
   onKeyDown?: (event: React.KeyboardEvent<HTMLTextAreaElement>) => void;
   onBlur?: (event: React.FocusEvent<HTMLTextAreaElement>) => void;
   autoFocus?: boolean;
+  id?: string;
 }
 
 export const AutoExpandableTextarea: React.FC<AutoExpandableTextareaProps> = ({
@@ -30,6 +31,7 @@ export const AutoExpandableTextarea: React.FC<AutoExpandableTextareaProps> = ({
   onKeyDown,
   onBlur,
   autoFocus = false,
+  id,
 }) => {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -65,6 +67,7 @@ export const AutoExpandableTextarea: React.FC<AutoExpandableTextareaProps> = ({
 
   return (
     <textarea
+      id={id}
       ref={textareaRef}
       value={value}
       style={{ width, minWidth }}
