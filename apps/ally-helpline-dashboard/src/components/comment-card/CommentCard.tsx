@@ -39,7 +39,8 @@ const CommentCard = ({
 }: CommentCardProps) => {
   const user = useSelector((state: RootState) => state.user.user);
 
-  const isMyComment = user?.id === comment.createdBy.id;
+  const isMyComment =
+    user?.id != null && comment?.createdBy?.id != null && user.id === comment.createdBy.id;
 
   const [showReplyInput, setShowReplyInput] = useState(false);
   const [showReplies, setShowReplies] = useState(false);
