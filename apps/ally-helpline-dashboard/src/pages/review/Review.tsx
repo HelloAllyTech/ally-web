@@ -209,6 +209,7 @@ export const Review: FC = () => {
               onCommentsClick={() => {
                 setSelectedReviewId(item.id);
               }}
+              duration={item.scenarioSession?.duration}
             />
           </motion.div>
         ))}

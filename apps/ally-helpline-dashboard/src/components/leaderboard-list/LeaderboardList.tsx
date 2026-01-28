@@ -214,7 +214,8 @@ export const LeaderboardList: FC<LeaderboardListProps> = ({
   hasMore,
 }) => {
   const [internalFilter, setInternalFilter] = useState<LeaderboardTimeFilter>("LAST_WEEK");
-  const [isCurrentUserVisible, setIsCurrentUserVisible] = useState(false);
+  const [isCurrentUserVisible, setIsCurrentUserVisible] = useState<boolean | null>(null);
+  const [hasCheckedVisibility, setHasCheckedVisibility] = useState(false);
   const currentUserRowRef = useRef<HTMLDivElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const loadingRef = useRef<HTMLDivElement>(null);
@@ -224,14 +225,21 @@ export const LeaderboardList: FC<LeaderboardListProps> = ({
 
   // Check if current user row is visible in viewport
   useEffect(() => {
+    // Reset visibility check when data changes
+    setHasCheckedVisibility(false);
+    setIsCurrentUserVisible(null);
+
     const scrollContainer = scrollContainerRef.current;
     const currentUserRow = currentUserRowRef.current;
 
-    if (!scrollContainer || !currentUserRow) return undefined;
+    if (!scrollContainer || !currentUserRow) {
+      return undefined;
+    }
 
     const observer = new IntersectionObserver(
       ([entry]) => {
         setIsCurrentUserVisible(entry.isIntersecting);
+        setHasCheckedVisibility(true);
       },
       {
         root: scrollContainer,
@@ -348,7 +356,8 @@ export const LeaderboardList: FC<LeaderboardListProps> = ({
     );
   };
 
-  const showStickyRow = currentUser && !isCurrentUserVisible && !isLoading && !isEmpty;
+  const showStickyRow =
+    currentUser && hasCheckedVisibility && isCurrentUserVisible === false && !isLoading && !isEmpty;
 
   return (
     <div className="w-full bg-white h-full relative pt-4 font-primary flex flex-col">

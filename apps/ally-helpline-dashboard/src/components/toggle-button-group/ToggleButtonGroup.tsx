@@ -28,7 +28,10 @@ const ToggleButtonGroup: FC<ToggleButtonGroupProps> = ({
       exclusive
       disabled={disabled}
       onChange={handleChange}
-      className={cn("h-9 !rounded-[4px] bg-neutral-100 border-[0.5px] border-border", className)}
+      className={cn(
+        "h-9 !rounded-[4px] bg-neutral-100 border-[0.5px] border-border-medium",
+        className,
+      )}
       sx={{
         "& .MuiToggleButton-root": {
           border: "none",
@@ -41,7 +44,8 @@ const ToggleButtonGroup: FC<ToggleButtonGroupProps> = ({
             backgroundColor: value === successValue ? "#33BA60" : "#FFFFFF",
             color: "#4D4D4D",
             boxShadow: "0 1px 2px rgba(0, 0, 0, 0.1)",
-            border: "0.5px solid #D2D2D2",
+            borderLeft: "0.5px solid #D2D2D2",
+            borderRight: "0.5px solid #D2D2D2",
             "&:hover": {
               backgroundColor: value === successValue ? "#33BA60" : "#FFFFFF",
             },
