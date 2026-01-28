@@ -37,7 +37,7 @@ const CommentThread = ({
   const renderCommentBox = () => {
     if (showCommentBox) {
       return (
-        <div className="flex gap-2.5 flex-row w-full">
+        <div className="flex gap-2 flex-row w-full">
           <div className="w-8 h-8 rounded-full">
             <CustomImage
               src={user?.profileImageUrl}
@@ -51,8 +51,9 @@ const CommentThread = ({
             <AutoExpandableTextarea
               value={comment}
               onChange={setComment}
-              placeholder="Add comment"
-              className="w-full border rounded-sm text-sm !px-2 !py-2 mt-2 min-h-20"
+              autoFocus={true}
+              placeholder="Add Comment"
+              className="w-full border rounded-sm text-sm font-medium !px-2 !py-2 mt-2 min-h-20"
             />
             <div className="flex gap-2 flex-row my-2 justify-end">
               <Button variant="secondary" className="py-0 h-8" onClick={handleCancel}>
@@ -67,7 +68,7 @@ const CommentThread = ({
       );
     }
     return (
-      <div className="flex flex-row gap-2 items-center">
+      <div className="flex flex-row gap-2">
         <div className="w-8 h-8 rounded-full">
           <CustomImage
             src={user?.profileImageUrl}
@@ -89,7 +90,7 @@ const CommentThread = ({
 
   return (
     <div className="bg-white rounded-lg p-4 shadow-lg border w-[400px]">
-      <div className="text-sm font-medium border-b-[0.5px] pb-2">Comment Thread</div>
+      <div className="text-base font-medium border-b-[0.5px] pb-2">Comment Thread</div>
       <div className="flex flex-col gap-4 pt-4">
         {renderCommentBox()}
         <div className="flex flex-col gap-2 overflow-y-auto max-h-80 -mr-4 pr-4">

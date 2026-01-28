@@ -87,7 +87,7 @@ export const navBarOptions = [
           Icon: Badge,
           path: ROUTES.ACHIEVEMENTS_VIEW_ALL,
           activePages: [],
-          permissions: [Permissions.VIEW_BADGES],         
+          permissions: [Permissions.VIEW_BADGES],
         },
       ]
     : []),
