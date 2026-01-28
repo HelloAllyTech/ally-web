@@ -89,6 +89,16 @@ export const Leaderboard = () => {
     navigate(ROUTES.ACHIEVEMENTS_VIEW_ALL);
   };
 
+  const getBadgesList = () => {
+    if (badgesResponse?.data?.length === 0) {
+      return [];
+    }
+    if (badgesResponse?.data?.length < 3) {
+      return myBadges.map(mapUserBadgeToAchievementItem);
+    }
+    return myBadges.slice(0, 3).map(mapUserBadgeToAchievementItem);
+  };
+
   if (!FEATURE_FLAGS_MAP.LEADERBOARD_FLAG) {
     return (
       <div className="flex items-center justify-center h-full">Leaderboard is not enabled</div>
@@ -103,7 +113,7 @@ export const Leaderboard = () => {
       >
         Leaderboard
       </div>
-      <div className="flex flex-row gap-2 pb-4 h-full">
+      <div className="flex flex-row gap-2 pb-4 h-full items-start">
         <LeaderboardList
           currentUser={currentUser}
           onTimeFilterChange={handleWindowChange}
@@ -115,12 +125,13 @@ export const Leaderboard = () => {
         />
 
         {/* achievements card */}
-        <div className="w-1/2 h-[490px] ml-4 mt-4">
+        <div className="w-1/2 ml-4 mt-4 self-start">
           <AchievementsCard
-            achievements={myBadges.map(mapUserBadgeToAchievementItem)}
+            achievements={getBadgesList()}
             viewedBadgesCount={viewedBadgesCount}
             isLoading={isBadgesLoading || isBadgesCountLoading}
             onViewAll={handleViewAllBadges}
+            className="h-auto"
           />
         </div>
       </div>
