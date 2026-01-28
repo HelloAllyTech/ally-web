@@ -315,6 +315,8 @@ const CommentCard = ({
     if (isFeedOwner) {
       items.push({
         label: comment?.hidden ? "Unhide" : "Hide",
+        className: "text-typography-800",
+        icon: <Edit width={16} height={16} />,
         onClick: () => handleToggleVisibility(!comment?.hidden),
       });
     }
@@ -365,7 +367,7 @@ const CommentCard = ({
             <div className="text-[14px] font-medium">{comment?.createdBy?.name || "Unknown"}</div>
             <div className="text-[12px] text-gray-500">{formatRelativeTime(comment.createdAt)}</div>
           </div>
-          {menuItems.length > 0 && enableLikeUpdate && !comment?.hidden && (
+          {menuItems.length > 0 && enableLikeUpdate && (
             <div className="flex flex-row justify-between items-center">
               <button
                 onClick={handleMenuOpen}
