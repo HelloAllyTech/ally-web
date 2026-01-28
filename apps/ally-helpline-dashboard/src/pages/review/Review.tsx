@@ -1,7 +1,7 @@
 import { FC, useState, useEffect } from "react";
 
 import { motion } from "framer-motion";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 
 import { FEATURE_FLAGS_MAP } from "@ally-ui-mono/ui-shared";
 import { InfiniteScroll } from "@ally-ui-mono/ui-shared/index";
@@ -109,17 +109,37 @@ const EmptyState: FC<EmptyStateProps> = ({ onRefresh }) => (
 
 export const Review: FC = () => {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
 
-  const [activeFilter, setActiveFilter] = useState("ALL");
+  const filterFromUrl = searchParams.get("filter");
+  const isValidFilter = FILTER_OPTIONS.some(option => option.value === filterFromUrl);
+  const initialFilter = isValidFilter ? filterFromUrl : "ALL";
+
+  const [activeFilter, setActiveFilter] = useState(initialFilter);
   const [offset, setOffset] = useState(0);
   const [feedData, setFeedData] = useState<ReviewItem[]>([]);
   const [selectedReviewId, setSelectedReviewId] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!filterFromUrl) {
+      setSearchParams({ filter: "ALL" }, { replace: true });
+    }
+  }, [filterFromUrl, setSearchParams]);
+
+  useEffect(() => {
+    if (filterFromUrl && isValidFilter && filterFromUrl !== activeFilter) {
+      setActiveFilter(filterFromUrl);
+      setFeedData([]);
+      setOffset(0);
+    }
+  }, [filterFromUrl, isValidFilter, activeFilter]);
 
   const handleFilterChange = (newFilter: string) => {
     if (newFilter !== activeFilter) {
       setFeedData([]);
       setOffset(0);
       setActiveFilter(newFilter);
+      setSearchParams({ filter: newFilter }, { replace: true });
     }
   };
 
