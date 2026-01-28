@@ -79,8 +79,6 @@ vi.mock("@assets", () => ({
   Carousel6: "carousel-6.jpg",
   SearchIcon: () => <svg data-testid="search-icon" />,
   Badge: () => <svg data-testid="badge-icon" />,
-  Leaderboard: () => <svg data-testid="leaderboard-icon" />,
-  ReviewNavIcon: () => <svg data-testid="review-nav-icon" />,
   SortIcon: () => <svg data-testid="sort-icon" />,
   FilterIcon: () => <svg data-testid="filter-icon" />,
   CloseIcon: () => <svg data-testid="close-icon" />,

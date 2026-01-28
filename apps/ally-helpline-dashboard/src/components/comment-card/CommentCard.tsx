@@ -14,6 +14,7 @@ import {
 } from "@api";
 import { ArrowUp, MoreVertIcon, Smiley } from "@assets";
 import { Button, CustomMenu, ReactionSelector, MenuItem } from "@components";
+import ReplySkeleton from "@src/components/comment-card/ReplySkeleton";
 import { RootState } from "@store";
 import { ReactionsType, CommentItem } from "@types";
 import { formatRelativeTime } from "@utils";
@@ -25,6 +26,7 @@ interface CommentCardProps {
   enableLikeUpdate?: boolean;
   showReply?: boolean;
   onReply?: (reply: string) => void;
+  onDelete?: (id: string) => void;
 }
 const CommentCard = ({
   comment,
@@ -33,6 +35,7 @@ const CommentCard = ({
   enableLikeUpdate = true,
   showReply = false,
   onReply,
+  onDelete,
 }: CommentCardProps) => {
   const user = useSelector((state: RootState) => state.user.user);
 
@@ -61,7 +64,7 @@ const CommentCard = ({
 
   const handleReplyClick = (e: React.MouseEvent) => {
     e.stopPropagation();
-    setShowReplyInput(true);
+    setShowReplyInput(prev => !prev);
   };
 
   const onReplyClick = async (e: React.MouseEvent) => {
@@ -143,6 +146,7 @@ const CommentCard = ({
   const handleDeleteComment = async () => {
     try {
       await deleteComment({ commentId: comment.id }).unwrap();
+      onDelete?.(comment.id);
       toast.success("Comment deleted successfully");
       handleMenuClose();
     } catch (error) {
@@ -161,6 +165,13 @@ const CommentCard = ({
     }
   };
 
+  const isReactionOnCommentFromThisUser = () => {
+    return (
+      Object.keys(comment?.reactions).length === 1 &&
+      Object.keys(comment?.reactions)[0] === comment.myReaction
+    );
+  };
+
   const renderReplyBox = () => {
     if (showReplyInput) {
       return (
@@ -176,12 +187,14 @@ const CommentCard = ({
           </div>
           <div className="flex-1 mt-2">
             <AutoExpandableTextarea
+              id={`reply-textarea-${comment.id}`}
+              autoFocus={true}
               value={replyText}
               onChange={setReplyText}
-              placeholder="Add comment"
+              placeholder="Add reply"
               className="w-full border rounded-sm text-sm !px-2 !py-2 mt-2 min-h-20"
             />
-            <div className="flex gap-2 flex-row my-2 justify-end">
+            <div className="flex gap-2 flex-row mt-1 justify-end">
               <Button variant="secondary" className="py-0 h-8" onClick={handleCancelReply}>
                 Cancel
               </Button>
@@ -197,12 +210,18 @@ const CommentCard = ({
     return null;
   };
 
+  const handleDeleteReply = (id: string) => {
+    setReplies(prev => prev.filter(reply => reply.id !== id));
+  };
+
   const renderCommentEditView = () => {
     return (
       <div className="flex flex-col gap-2">
         <div className="text-[14px] text-typography-800 font-primary text-sm border rounded-sm p-2 py-3">
           <AutoExpandableTextarea
+            id={`comment-edit-textarea-${comment.id}`}
             value={commentContent}
+            autoFocus={true}
             onChange={(content: string) => setCommentContent(content)}
             placeholder="Edit comment"
           />
@@ -251,37 +270,39 @@ const CommentCard = ({
               )}
             </div>
           )}
-          {comment?.reactions && Object.keys(comment?.reactions).length > 0 && (
-            <>
-              <div className="flex pr-2 items-center">
-                {Object.keys(comment.reactions)
-                  .slice(0, 3)
-                  .map((reaction, index) => (
-                    <div
-                      key={reaction}
-                      style={{ zIndex: 10 - index }}
-                      className="w-4 overflow-visible relative"
-                    >
-                      {reaction !== "" && (
-                        <div className="w-[26px] bg-white h-[26px] flex items-center justify-center rounded-full border-[0.5px]">
-                          <Emoji
-                            unified={reaction ?? "1f44d"}
-                            size={12}
-                            emojiStyle={EmojiStyle.APPLE}
-                          />
-                        </div>
-                      )}
-                    </div>
-                  ))}
-              </div>
-              <div className="text-typography-800 text-[14px]">
-                {Object.keys(comment.reactions).length}
-              </div>
-              {comment.replyCount > 0 && <div className="w-1 h-1 bg-[#D9D9D9] rounded-full" />}
-            </>
-          )}
+          {comment?.reactions &&
+            !isReactionOnCommentFromThisUser() &&
+            Object.keys(comment?.reactions).length > 0 && (
+              <>
+                <div className="flex pr-2 items-center">
+                  {Object.keys(comment.reactions)
+                    .slice(0, 3)
+                    .map((reaction, index) => (
+                      <div
+                        key={reaction}
+                        style={{ zIndex: 10 - index }}
+                        className="w-4 overflow-visible relative"
+                      >
+                        {reaction !== "" && (
+                          <div className="w-[26px] bg-white h-[26px] flex items-center justify-center rounded-full border-[0.5px]">
+                            <Emoji
+                              unified={reaction ?? "1f44d"}
+                              size={12}
+                              emojiStyle={EmojiStyle.APPLE}
+                            />
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                </div>
+                <div className="text-typography-800 text-[14px]">
+                  {Object.keys(comment.reactions).length}
+                </div>
+              </>
+            )}
           {showReply && (
             <>
+              <div className="w-1 h-1 bg-[#D9D9D9] rounded-full" />
               <div
                 className="text-typography-800 text-xs cursor-pointer font-medium"
                 onClick={handleReplyClick}
@@ -369,26 +390,32 @@ const CommentCard = ({
           )}
         </div>
         {showCommentEditView ? renderCommentEditView() : renderCommentContent()}
-        {renderReplyBox()}
-        {showReplies && (
-          <div className="flex flex-col gap-4 mt-4">
-            {areRepliesLoading && <div className="text-sm text-gray-500">Loading...</div>}
-            {replies.map(reply => (
-              <CommentCard
-                key={reply.id}
-                comment={reply}
-                isFeedOwner={isFeedOwner}
-                showLike
-                enableLikeUpdate={enableLikeUpdate}
-                showReply={false}
-              />
-            ))}
-            <div
-              className="text-xs font-primary flex items-center gap-2 text-primary-600"
-              onClick={hideReplies}
-            >
-              Hide Repl{comment.replyCount > 1 ? "ies" : "y"}
-              <ArrowUp />
+        {(showReplies || showReplyInput) && (
+          <div>
+            {renderReplyBox()}
+            <div className="flex flex-col gap-4 mt-4">
+              {areRepliesLoading && showReplies && <ReplySkeleton />}
+              {showReplies &&
+                replies.map(reply => (
+                  <CommentCard
+                    key={reply.id}
+                    comment={reply}
+                    isFeedOwner={isFeedOwner}
+                    showLike
+                    enableLikeUpdate={enableLikeUpdate}
+                    showReply={false}
+                    onDelete={handleDeleteReply}
+                  />
+                ))}
+              {showReplies && (
+                <div
+                  className="text-xs font-primary flex items-center gap-2 text-primary-600"
+                  onClick={hideReplies}
+                >
+                  Hide Repl{comment.replyCount > 1 ? "ies" : "y"}
+                  <ArrowUp />
+                </div>
+              )}
             </div>
           </div>
         )}

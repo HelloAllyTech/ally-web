@@ -108,6 +108,7 @@ const reviewsAPI = baseAPI.injectEndpoints({
         method: HttpMethod.POST,
         body: reaction,
       }),
+      invalidatesTags: [TAG_TYPES.REVIEW],
     }),
     getReviewReactions: builder.query<GetReviewReactionsResponse, GetReviewsReactionsInput>({
       query: ({ reviewId, limit, offset, reaction }) => ({
