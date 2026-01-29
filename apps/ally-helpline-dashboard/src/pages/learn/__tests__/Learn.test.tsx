@@ -97,11 +97,13 @@ vi.mock("@assets", () => ({
 // Mock the useSimulationCredits hook
 const mockUseSimulationCredits = vi.fn();
 const mockUseUser = vi.fn();
+const mockUseAchievementBadgeModal = vi.fn();
 vi.mock("@hooks", () => ({
   useSimulationCredits: () => mockUseSimulationCredits(),
   useUser: () => mockUseUser(),
   useDebounce: (val: any) => val,
   useScenarioLanguages: () => mockUseScenarioLanguages(),
+  useAchievementBadgeModal: () => mockUseAchievementBadgeModal(),
 }));
 
 // Import the mocked hook for use in component mock
@@ -282,6 +284,13 @@ describe("Learn Component", () => {
         { language_id: 2, value: "hi-IN", label: "Hindi (India)" },
       ],
       defaultLanguage: { language_id: 1, value: "en-US", label: "English (US)" },
+      isLoading: false,
+    });
+    mockUseAchievementBadgeModal.mockReturnValue({
+      currentBadge: null,
+      closeModal: vi.fn(),
+      resetModal: vi.fn(),
+      BadgeModal: null,
       isLoading: false,
     });
   });

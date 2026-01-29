@@ -1,7 +1,7 @@
 import { Comment } from "@src/components/feed-card";
 
 export interface ReviewUser {
-  id: string;
+  id: number;
   name: string;
   profileImage?: string;
 }
