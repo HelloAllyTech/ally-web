@@ -34,6 +34,7 @@ import {
   hasLearnPermission,
   hasPermissions,
   hasSessionLogsPermission,
+  hasReviewPermission,
 } from "@utils";
 
 import { NavbarWrapper, PermissionGuardedRoute } from "./components";
@@ -98,6 +99,7 @@ const PrivateRouteLayout: FC = () => {
     if (hasCallPermission(permissions) || hasSessionLogsPermission(permissions))
       return ROUTES.CALLS;
     if (hasAnalyticsPermission(permissions)) return ROUTES.ANALYTICS;
+    if (hasReviewPermission(permissions)) return ROUTES.REVIEW;
     return ROUTES.HOME;
   };
 
