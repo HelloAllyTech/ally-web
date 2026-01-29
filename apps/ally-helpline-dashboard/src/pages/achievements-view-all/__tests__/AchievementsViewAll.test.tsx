@@ -16,17 +16,27 @@ import { render, screen, fireEvent } from "@testing-library/react";
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 
 // Use vi.hoisted to ensure mocks are available when vi.mock factory runs
-const { mockUseGetAvailableBadgesQuery, mockNavigate, mockFeatureFlags } = vi.hoisted(() => ({
+const {
+  mockUseGetAvailableBadgesQuery,
+  mockNavigate,
+  mockFeatureFlags,
+  mockUseGetMyBadgesQuery,
+  mockUseUpdateBadgeViewStatusMutation,
+} = vi.hoisted(() => ({
   mockUseGetAvailableBadgesQuery: vi.fn(),
   mockNavigate: vi.fn(),
   mockFeatureFlags: {
     LEADERBOARD_FLAG: true,
   },
+  mockUseGetMyBadgesQuery: vi.fn(),
+  mockUseUpdateBadgeViewStatusMutation: vi.fn(),
 }));
 
 // Mock API
 vi.mock("@api", () => ({
   useGetAvailableBadgesQuery: () => mockUseGetAvailableBadgesQuery(),
+  useGetMyBadgesQuery: () => mockUseGetMyBadgesQuery(),
+  useUpdateBadgeViewStatusMutation: () => mockUseUpdateBadgeViewStatusMutation(),
 }));
 
 // Mock feature flags
@@ -49,13 +59,24 @@ vi.mock("@assets", () => ({
     <svg data-testid="arrow-left-icon" className={className} />
   ),
   NoResults: () => <div data-testid="no-results-icon">No Results</div>,
+  Carousel1: () => <div data-testid="carousel-1">Carousel1</div>,
+  Carousel2: () => <div data-testid="carousel-2">Carousel2</div>,
+  Carousel3: () => <div data-testid="carousel-3">Carousel3</div>,
+  Carousel4: () => <div data-testid="carousel-4">Carousel4</div>,
+  LearnIcon: () => <svg data-testid="learn-icon" />,
+  Leaderboard: () => <svg data-testid="leaderboard-icon" />,
+  SearchIcon: () => <svg data-testid="search-icon" />,
+  StatsIcon: () => <svg data-testid="stats-icon" />,
+  ScribeIcon: () => <svg data-testid="scribe-icon" />,
+  ReviewNavIcon: () => <svg data-testid="review-nav-icon" />,
+  Badge: () => <svg data-testid="badge-icon" />,
 }));
 
 // Mock components
 vi.mock("@components", () => ({
-  AchievementItem: ({ achievement, imageSize }: any) => (
-    <div data-testid={`achievement-item-${achievement.id}`} data-image-size={imageSize}>
-      <span data-testid="achievement-title">{achievement.title}</span>
+  AchievementItem: ({ achievement, imageSize = 75 }: any) => (
+    <div data-testid={`achievement-item-${achievement.id}`} data-image-size={String(imageSize)}>
+      <span data-testid="achievement-title">{achievement.name || achievement.title}</span>
       <span data-testid="achievement-status">{achievement.lockStatus}</span>
     </div>
   ),
@@ -98,6 +119,14 @@ vi.mock("@types", () => ({
   LockedStatus: {
     UNLOCKED: "UNLOCKED",
     LOCKED: "LOCKED",
+  },
+  SessionType: {
+    CALL: "call",
+    SIMULATION: "simulation",
+  },
+  ViewedStatus: {
+    VIEWED: "VIEWED",
+    UNVIEWED: "UNVIEWED",
   },
 }));
 
@@ -171,6 +200,12 @@ describe("AchievementsViewAll Component", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockUseGetAvailableBadgesQuery.mockReturnValue(defaultQueryReturn);
+    mockUseGetMyBadgesQuery.mockReturnValue({
+      data: { data: [] },
+      isLoading: false,
+      refetch: vi.fn(),
+    });
+    mockUseUpdateBadgeViewStatusMutation.mockReturnValue([vi.fn(), { isLoading: false }]);
     mockFeatureFlags.LEADERBOARD_FLAG = true;
   });
 
@@ -426,9 +461,9 @@ describe("AchievementsViewAll Component", () => {
         </TestWrapper>,
       );
 
-      expect(screen.getByText("Simulation Minutes")).toBeInTheDocument();
-      expect(screen.getByText("Active Day Streak")).toBeInTheDocument();
-      expect(screen.getByText("Comments & Reactions Given")).toBeInTheDocument();
+      expect(screen.getByText("Journey")).toBeInTheDocument();
+      expect(screen.getByText("Momentum")).toBeInTheDocument();
+      expect(screen.getByText("Contribution")).toBeInTheDocument();
     });
 
     it("passes correct imageSize to AchievementItem", () => {
@@ -439,7 +474,7 @@ describe("AchievementsViewAll Component", () => {
       );
 
       const achievementItem = screen.getByTestId("achievement-item-badge-1");
-      expect(achievementItem).toHaveAttribute("data-image-size", "60");
+      expect(achievementItem).toHaveAttribute("data-image-size", "75");
     });
   });
 
@@ -487,8 +522,8 @@ describe("AchievementsViewAll Component", () => {
       // Click UNLOCKED filter
       fireEvent.click(screen.getByTestId("filter-UNLOCKED"));
 
-      // Comments & Reactions Given category has no unlocked badges, so it should not be visible
-      expect(screen.queryByText("Comments & Reactions Given")).not.toBeInTheDocument();
+      // Contribution category has no unlocked badges, so it should not be visible
+      expect(screen.queryByText("Contribution")).not.toBeInTheDocument();
     });
 
     it("changes active state when filter is changed", () => {
@@ -561,8 +596,8 @@ describe("AchievementsViewAll Component", () => {
         </TestWrapper>,
       );
 
-      expect(screen.queryByText("Simulation Minutes")).not.toBeInTheDocument();
-      expect(screen.queryByText("Active Day Streak")).not.toBeInTheDocument();
+      expect(screen.queryByText("Journey")).not.toBeInTheDocument();
+      expect(screen.queryByText("Momentum")).not.toBeInTheDocument();
     });
 
     it("renders header even when no badges", () => {
@@ -596,13 +631,13 @@ describe("AchievementsViewAll Component", () => {
       );
 
       // Check that each category section exists
-      const simulationMinutesSection = screen.getByText("Simulation Minutes");
-      const activeDayStreakSection = screen.getByText("Active Day Streak");
-      const commentsReactionsGivenSection = screen.getByText("Comments & Reactions Given");
+      const journeySection = screen.getByText("Journey");
+      const momentumSection = screen.getByText("Momentum");
+      const contributionSection = screen.getByText("Contribution");
 
-      expect(simulationMinutesSection).toBeInTheDocument();
-      expect(activeDayStreakSection).toBeInTheDocument();
-      expect(commentsReactionsGivenSection).toBeInTheDocument();
+      expect(journeySection).toBeInTheDocument();
+      expect(momentumSection).toBeInTheDocument();
+      expect(contributionSection).toBeInTheDocument();
     });
 
     it("does not render empty category when all badges in category are filtered out", () => {
@@ -634,7 +669,7 @@ describe("AchievementsViewAll Component", () => {
       fireEvent.click(screen.getByTestId("filter-UNLOCKED"));
 
       // Category should not be visible since all badges are locked
-      expect(screen.queryByText("Simulation Minutes")).not.toBeInTheDocument();
+      expect(screen.queryByText("Journey")).not.toBeInTheDocument();
     });
   });
 
