@@ -1,10 +1,10 @@
 import { FC } from "react";
 
-import { CustomImage } from "@ally-ui-mono/ui-shared/index";
+import { CustomImage } from "@ally-ui-mono/ui-shared";
+import { formatRelativeTime } from "@utils";
 
 import EmojiStack from "./EmojiStack";
 import { Comment } from "./types";
-import { formatRelativeTime } from "./utils";
 
 interface CommentItemProps {
   comment: Comment;
