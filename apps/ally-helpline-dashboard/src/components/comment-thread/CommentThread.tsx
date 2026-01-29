@@ -93,7 +93,7 @@ const CommentThread = ({
       <div className="text-base font-medium border-b-[0.5px] pb-2">Comment Thread</div>
       <div className="flex flex-col gap-4 pt-4">
         {renderCommentBox()}
-        <div className="flex flex-col gap-2 overflow-y-auto max-h-80 -mr-4 pr-4">
+        <div className="flex flex-col gap-2 overflow-y-auto max-h-80 -mr-4 pr-4 custom-scrollbar">
           {comments.map(comment => (
             <CommentCard
               key={comment.id}
