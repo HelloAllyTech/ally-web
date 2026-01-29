@@ -11,7 +11,7 @@ import {
 } from "@api";
 import { CreditsDisplay, ScenarioCard, TabGroup } from "@components";
 import { Permissions } from "@constants";
-import { useUser, useScenarioLanguages } from "@hooks";
+import { useAchievementBadgeModal, useUser, useScenarioLanguages } from "@hooks";
 import { LanguageOption, ScenarioStatus } from "@types";
 import { hasPermissions } from "@utils";
 
@@ -33,6 +33,7 @@ export const Learn: FC = () => {
   const { permissions, isAuthenticated } = useUser();
   const hasPathPermissions = hasPermissions(permissions, Permissions.VIEW_SCENARIO_PATHS);
   const [searchParams, setSearchParams] = useSearchParams();
+  const { BadgeModal } = useAchievementBadgeModal();
 
   const isValidTabId = (tab: string | null): tab is LearnTabId => {
     return LEARN_TABS.some(t => t.id === tab);
@@ -299,6 +300,7 @@ export const Learn: FC = () => {
     <div className="flex flex-col w-full bg-white max-h-screen overflow-y-hidden p-[10px] pl-0 sm:p-[24px] justify-center font-tertiary">
       {renderPageHeader()}
       <AnimatePresence mode="wait">{renderContent()}</AnimatePresence>
+      {BadgeModal}
     </div>
   );
 };
