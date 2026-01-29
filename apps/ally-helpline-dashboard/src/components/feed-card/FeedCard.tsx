@@ -4,12 +4,11 @@ import { CustomImage } from "@ally-ui-mono/ui-shared";
 import { ReviewTranscript } from "@assets";
 import { ReactionsModal } from "@components";
 import { useUser } from "@hooks";
-import { getFormattedTimeFromDuration } from "@utils";
+import { getFormattedTimeFromDuration, formatDateTime, formatRelativeTime } from "@utils";
 
 import CommentsSection from "./CommentsSection";
 import EmojiStack from "./EmojiStack";
 import { FeedCardProps } from "./types";
-import { formatDateTime, formatRelativeTime } from "./utils";
 
 const FeedCard: FC<FeedCardProps> = ({
   id,
