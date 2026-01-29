@@ -26,7 +26,7 @@ export const AchievementBadgeModal: FC<AchievementBadgeModalProps> = ({
   const renderBadgeImage = () => {
     if (badgeImageUrl) {
       return (
-        <div className="w-20 h-20 sm:w-[100px] sm:h-[100px] md:w-[120px] md:h-[120px] rounded-full bg-primary-50 flex items-center justify-center">
+        <div className="rounded-full bg-primary-50 flex items-center justify-center">
           <CustomImage
             src={badgeImageUrl}
             alt={title}
@@ -49,7 +49,7 @@ export const AchievementBadgeModal: FC<AchievementBadgeModalProps> = ({
 
       <div
         className={cn(
-          "relative flex flex-col items-center justify-center gap-1.5 sm:gap-2 p-5 sm:p-6 md:px-5 md:py-9 w-full max-w-[280px] sm:max-w-[300px] min-h-[280px] sm:min-h-[300px] md:min-h-[320px] md:min-w-[300px] bg-white border border-light rounded-lg shadow-lg",
+          "relative flex flex-col items-center justify-center gap-1.5 sm:gap-2 p-5 sm:p-6 md:px-5 md:py-8 w-full max-w-[280px] sm:max-w-[300px] min-h-[280px] sm:min-h-[300px] md:min-h-[320px] md:min-w-[300px] bg-white border border-light rounded-lg shadow-lg",
           className,
         )}
         role="dialog"
@@ -69,14 +69,14 @@ export const AchievementBadgeModal: FC<AchievementBadgeModalProps> = ({
         <div className="relative z-10 flex flex-col items-center w-full overflow-hidden">
           {renderBadgeImage()}
 
-          <div className="mt-1.5 sm:mt-2 px-1.5 py-1 sm:py-1.5 text-typography-900 text-[10px] sm:text-xs font-normal font-primary">
+          <div className="px-1.5 text-typography-900 text-[10px] sm:text-xs font-normal font-primary">
             You earned a new badge
           </div>
 
           <div className="flex flex-col items-center gap-0.5 sm:gap-1 w-full">
             <div
               id="achievement-modal-title"
-              className="font-primary text-xl sm:text-2xl md:text-[30px] font-medium leading-tight sm:leading-[1.65] text-[#1A1A1A] text-center w-full overflow-hidden break-words line-clamp-2"
+              className="font-primary text-xl sm:text-2xl md:text-[26px] font-medium leading-tight sm:leading-[1.65] text-[#1A1A1A] text-center w-full overflow-hidden break-words line-clamp-2"
             >
               {title}
             </div>
