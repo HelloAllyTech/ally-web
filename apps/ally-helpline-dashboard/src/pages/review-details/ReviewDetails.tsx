@@ -5,12 +5,13 @@ import { useSelector } from "react-redux";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
 
-import { CustomImage, SimulationDetailsModal } from "@ally-ui-mono/ui-shared";
+import { CustomImage, SimulationDetailsModal, Toggle } from "@ally-ui-mono/ui-shared";
 import {
   useCreateCommentMutation,
   useAddReactionMutation,
   useGetReviewByIdQuery,
   useGetReviewDetailsWithMessagesQuery,
+  useUpdateReviewMutation,
 } from "@api";
 import { ChatBubble, LeftArrow, Smiley, InfoIcon } from "@assets";
 import {
@@ -20,7 +21,7 @@ import {
   ReviewCommentsSidepanel,
   Transcription,
 } from "@components";
-import { KeyboardKeys } from "@constants";
+import { KeyboardKeys, REVIEW_PRIVACY_OPTIONS } from "@constants";
 import { RootState } from "@store";
 import { ReactionsType, SimulationTranscriptMessage, Thread } from "@types";
 import { getFormattedDateTime, getFormattedTimeFromDuration } from "@utils";
@@ -61,6 +62,7 @@ export const ReviewDetails = () => {
       sortBy: "startSeconds",
     });
   const [addReactions] = useAddReactionMutation();
+  const [updateReview, { isLoading: isUpdateReviewLoading }] = useUpdateReviewMutation();
   useEffect(() => {
     setTranscriptList([]);
     setTranscriptOffset(0);
@@ -230,56 +232,73 @@ export const ReviewDetails = () => {
     return reviewReactions.length === 1 && reviewReactions[0] === reviewDetails?.myReaction;
   };
 
+  const handleCreateReview = async (status: string) => {
+    await updateReview({ id: reviewDetails.id, status });
+  };
+
   const renderBottomSection = () => {
     return (
       <div className="absolute flex justify-center bottom-9 left-0 right-0 w-full">
         <div className="p-2 h-14 rounded-full border flex items-center gap-2 bg-white shadow-2xl">
-          {threads.length > 0 && (
+          {isFeedOwner && (
             <div
-              onClick={() => setShowCommentsSidepanel(!showCommentsSidepanel)}
-              className="group flex items-center h-full w-fit cursor-pointer hover:border-[#0957D0] gap-2.5 rounded-full border justify-center px-3"
+              className="flex items-center gap-2"
+              style={{ opacity: isUpdateReviewLoading ? 0.5 : 1 }}
             >
-              <ChatBubble className="w-6 h-6 text-neutral-600 group-hover:text-[#0957D0]" />
-              <div className="text-typography-900 font-primary group-hover:text-[#0957D0]">
-                Comments
-              </div>
+              <Toggle
+                items={REVIEW_PRIVACY_OPTIONS}
+                initialValue={reviewDetails?.reviewStatus || "IN_REVIEW"}
+                onChange={handleCreateReview}
+              />
             </div>
           )}
-
-          <div className="relative w-fit">
-            <div
-              onClick={() => setShowEmojiPicker(!showEmojiPicker)}
-              className="flex relative items-center h-9 min-w-9 rounded-full border cursor-pointer border-primary-400 justify-center"
-              ref={selectEmojiRef}
-            >
-              {selectedEmoji ? (
-                <div className="pb-0.5">
-                  <Emoji unified={selectedEmoji} size={16} emojiStyle={EmojiStyle.APPLE} />
-                </div>
-              ) : (
-                <Smiley className="w-6 h-6 text-neutral-600 hover:text-[#0957D0]" />
-              )}
+          <div
+            onClick={() => setShowCommentsSidepanel(!showCommentsSidepanel)}
+            className="group flex items-center h-full w-fit cursor-pointer hover:border-[#0957D0] gap-2.5 rounded-full border justify-center px-3"
+          >
+            <ChatBubble className="w-6 h-6 text-neutral-600 group-hover:text-[#0957D0]" />
+            <div className="text-typography-900 font-primary group-hover:text-[#0957D0]">
+              Comments
             </div>
-            {showEmojiPicker && (
-              <ReactionSelector
-                anchorElement={selectEmojiRef.current}
-                selectedEmoji={selectedEmoji}
-                handleEmojiClick={handleEmojiClick}
-              />
-            )}
           </div>
-          {reviewReactions?.length > 0 && !isReactionOnCommentFromThisUser() && (
-            <div className="flex items-center gap-3 justify-between w-full">
-              <button
-                onClick={handleReactionsClick}
-                className="flex items-center gap-2 text-black/60 min-w-0 hover:opacity-80 transition-opacity"
-              >
-                <EmojiStack unicodeCodes={reviewReactions} />
-                <span className="font-primary text-xs sm:text-sm leading-[1.5] text-typography-800 truncate">
-                  {displayTotalReactionCount} reaction{reviewReactions?.length !== 1 ? "s" : ""}
-                </span>
-              </button>
-            </div>
+          {!isFeedOwner && (
+            <>
+              <div className="relative w-fit">
+                <div
+                  onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+                  className={`flex relative items-center h-9 min-w-9 rounded-full border cursor-pointer justify-center ${selectedEmoji ? "border-primary-400" : "border-neutral-300"}`}
+                  ref={selectEmojiRef}
+                >
+                  {selectedEmoji ? (
+                    <div className="pb-0.5">
+                      <Emoji unified={selectedEmoji} size={16} emojiStyle={EmojiStyle.APPLE} />
+                    </div>
+                  ) : (
+                    <Smiley className="w-6 h-6 text-neutral-600 hover:text-[#0957D0]" />
+                  )}
+                </div>
+                {showEmojiPicker && (
+                  <ReactionSelector
+                    anchorElement={selectEmojiRef.current}
+                    selectedEmoji={selectedEmoji}
+                    handleEmojiClick={handleEmojiClick}
+                  />
+                )}
+              </div>
+              {reviewReactions?.length > 0 && !isReactionOnCommentFromThisUser() && (
+                <div className="flex items-center gap-3 justify-between w-full">
+                  <button
+                    onClick={handleReactionsClick}
+                    className="flex items-center gap-2 text-black/60 min-w-0 hover:opacity-80 transition-opacity"
+                  >
+                    <EmojiStack unicodeCodes={reviewReactions} />
+                    <span className="font-primary text-xs sm:text-sm leading-[1.5] text-typography-800 truncate">
+                      {displayTotalReactionCount} reaction{reviewReactions?.length !== 1 ? "s" : ""}
+                    </span>
+                  </button>
+                </div>
+              )}
+            </>
           )}
         </div>
       </div>
@@ -288,7 +307,7 @@ export const ReviewDetails = () => {
 
   return (
     <div className="h-full overflow-y-hidden">
-      <div className="flex px-6 items-center gap-4 py-5 border-b-[0.5px]">
+      <div className="flex px-6 items-center gap-4 py-4 border-b-[0.5px] border-border-light">
         <div
           className="w-9 h-9 flex items-center justify-center cursor-pointer hover:bg-neutral-100 rounded-full"
           onClick={handleGoBack}
@@ -308,7 +327,7 @@ export const ReviewDetails = () => {
             </div>
           </div>
         ) : (
-          <div className="flex flex-col justify-center gap-1.5 font-primary">
+          <div className="flex flex-col justify-center gap-1.5 font-primary text-base">
             <div className="text-xl font-medium text-typography-900 flex flex-row items-center">
               <span className="line-clamp-1">{reviewDetails?.scenario?.title}</span>
               <div
@@ -319,25 +338,26 @@ export const ReviewDetails = () => {
               </div>
             </div>
             <div className="flex gap-2 items-center text-gray-500">
-              <div className="w-[18px] h-[18px] rounded-full">
+              <div className="w-[28px] h-[28px] rounded-full">
                 <CustomImage
                   src={reviewDetails?.createdBy?.profileImage}
                   alt="Profile"
                   className="w-full h-full rounded-full"
+                  fallbackClassName="w-full h-full rounded-full bg-neutral-100 flex items-center justify-center text-typography-800"
                   fallbackText={reviewDetails?.createdBy?.name?.slice(0, 1)?.toUpperCase() ?? "NA"}
                 />
               </div>
-              <div>By {reviewDetails?.createdBy?.name}</div>
+              {isFeedOwner ? <div>You</div> : <div>By {reviewDetails?.createdBy?.name}</div>}
               <div className="w-1 h-1 bg-neutral-500 rounded-full mx-1" />
               <div>
                 Date & time:{" "}
                 {getFormattedDateTime(reviewDetails?.scenario?.createdAt, "MMM dd, yyyy hh:mm a")}
               </div>
               <div className="w-1 h-1 bg-neutral-500 rounded-full mx-1" />
-              <div className="font-primary text-xs sm:text-[13px] leading-4 text-black/60">
+              <div className="font-primary  leading-4 text-black/60">
                 {reviewDetails?.scenarioSession?.duration < 60
                   ? `Duration: ${getFormattedTimeFromDuration(reviewDetails?.scenarioSession?.duration, "ss")} sec`
-                  : `${getFormattedTimeFromDuration(reviewDetails?.scenarioSession?.duration, "mm:ss")} min`}
+                  : `Duration: ${getFormattedTimeFromDuration(reviewDetails?.scenarioSession?.duration, "mm:ss")} min`}
               </div>
             </div>
           </div>
@@ -346,9 +366,11 @@ export const ReviewDetails = () => {
       <div className="flex w-full h-[calc(100%-103px)]">
         <div
           ref={transcriptScrollRef}
-          className="pt-5 mx-auto px-10 h-full w-[calc(100%-384px)] overflow-y-auto pb-20 transition-all duration-400 custom-scrollbar"
+          className="pt-5 mx-auto px-10 h-full w-[calc(100%-384px)] h-[99%] pb-20 transition-all duration-400 custom-scrollbar"
         >
           <Transcription
+            councellorName={isFeedOwner ? "You" : reviewDetails?.createdBy?.name}
+            agentName={reviewDetails?.scenario?.name}
             commentsList={
               threads.find(
                 thread =>

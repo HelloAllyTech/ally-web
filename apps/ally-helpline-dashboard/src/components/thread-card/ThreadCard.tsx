@@ -21,7 +21,7 @@ const ThreadCard = ({ thread, isFeedOwner }: ThreadCardProps) => {
       key={thread.id}
     >
       <div className="flex items-center min-h-9 border-b-[0.5px] pb-2">
-        <div className="text-[14px] font-primary font-medium line-clamp-2">
+        <div className="text-[14px] font-primary line-clamp-2 text-typography-900">
           Selected text: "{thread.selection.text}"
         </div>
       </div>

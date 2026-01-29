@@ -25,7 +25,7 @@ exports[`CommentCard Component > should match snapshot when rendered with basic 
           class="flex flex-row gap-1.5 items-center w-full"
         >
           <div
-            class="text-[14px] font-medium"
+            class="text-[14px] font-medium text-typography-900"
           >
             John Doe
           </div>
@@ -37,7 +37,7 @@ exports[`CommentCard Component > should match snapshot when rendered with basic 
         </div>
       </div>
       <div
-        class="text-[14px] text-typography-800 font-primary text-sm"
+        class="text-typography-900 font-primary text-sm"
       >
         This is a test comment
       </div>
@@ -74,7 +74,7 @@ exports[`CommentCard Component > should match snapshot with all props enabled 1`
           class="flex flex-row gap-1.5 items-center w-full"
         >
           <div
-            class="text-[14px] font-medium"
+            class="text-[14px] font-medium text-typography-900"
           >
             John Doe
           </div>
@@ -86,7 +86,7 @@ exports[`CommentCard Component > should match snapshot with all props enabled 1`
         </div>
       </div>
       <div
-        class="text-[14px] text-typography-800 font-primary text-sm"
+        class="text-typography-900 font-primary text-sm"
       >
         This is a test comment
       </div>
@@ -106,14 +106,14 @@ exports[`CommentCard Component > should match snapshot with all props enabled 1`
           </div>
         </div>
         <div
-          class="flex px-2 items-center border-l"
+          class="flex pr-1 items-center"
         >
           <div
             class="w-4 overflow-visible relative"
             style="z-index: 10;"
           >
             <div
-              class="w-[26px] bg-white h-[26px] flex items-center justify-center rounded-full border-[0.5px]"
+              class="w-[20px] bg-white h-[20px] flex items-center justify-center rounded-full border-[0.5px]"
             >
               <span
                 data-testid="emoji-2764"
@@ -127,7 +127,7 @@ exports[`CommentCard Component > should match snapshot with all props enabled 1`
             style="z-index: 9;"
           >
             <div
-              class="w-[26px] bg-white h-[26px] flex items-center justify-center rounded-full border-[0.5px]"
+              class="w-[20px] bg-white h-[20px] flex items-center justify-center rounded-full border-[0.5px]"
             >
               <span
                 data-testid="emoji-1f44d"
@@ -141,7 +141,7 @@ exports[`CommentCard Component > should match snapshot with all props enabled 1`
             style="z-index: 8;"
           >
             <div
-              class="w-[26px] bg-white h-[26px] flex items-center justify-center rounded-full border-[0.5px]"
+              class="w-[20px] bg-white h-[20px] flex items-center justify-center rounded-full border-[0.5px]"
             >
               <span
                 data-testid="emoji-1f389"
@@ -152,7 +152,7 @@ exports[`CommentCard Component > should match snapshot with all props enabled 1`
           </div>
         </div>
         <div
-          class="text-typography-800 text-[14px]"
+          class="text-typography-800 text-xs"
         >
           3
         </div>
