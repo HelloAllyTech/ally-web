@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 
 import { useSelector } from "react-redux";
 
@@ -22,6 +22,8 @@ const CommentThread = ({
   const user = useSelector((state: RootState) => state.user.user);
   const [comment, setComment] = useState("");
   const [showCommentBox, setShowCommentBox] = useState(false);
+
+  const commentThreadScrollRef = useRef<HTMLDivElement | null>(null);
 
   const handleCommentAddition = () => {
     onCommentAddition(comment);
@@ -93,7 +95,10 @@ const CommentThread = ({
       <div className="text-base font-medium border-b-[0.5px] pb-2">Comment Thread</div>
       <div className="flex flex-col gap-4 pt-4">
         {renderCommentBox()}
-        <div className="flex flex-col gap-2 overflow-y-auto max-h-80 -mr-4 pr-4 custom-scrollbar">
+        <div
+          ref={commentThreadScrollRef}
+          className="flex flex-col gap-2 overflow-y-auto max-h-80 -mr-4 pr-4 custom-scrollbar"
+        >
           {comments.map(comment => (
             <CommentCard
               key={comment.id}
@@ -101,6 +106,7 @@ const CommentThread = ({
               isFeedOwner={isFeedOwner}
               showLike
               showReply
+              commentThreadScrollRef={commentThreadScrollRef}
               onReply={text => onReplyComment(text, comment.id)}
             />
           ))}
