@@ -3,15 +3,17 @@ import { useMemo } from "react";
 
 import { useGetUserPreferencesQuery, useGetAvailableLanguagesQuery } from "@api";
 import { LOCAL_STORAGE_KEYS } from "@constants";
+import { useUser } from "@hooks";
 
 import { LanguageOption } from "../types";
 
 export const useScenarioLanguages = () => {
+  const { isAuthenticated } = useUser();
   const {
     data: availableLanguages = [],
     isLoading: isLanguagesLoading,
     error: languagesError,
-  } = useGetAvailableLanguagesQuery({ active: true, hasVoices: true });
+  } = useGetAvailableLanguagesQuery({ active: true, hasVoices: true }, { skip: !isAuthenticated });
 
   const hasAccessToken = Boolean(localStorage.getItem(LOCAL_STORAGE_KEYS.ACCESS_TOKEN));
   const {
