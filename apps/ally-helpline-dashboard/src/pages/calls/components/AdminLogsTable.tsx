@@ -483,6 +483,8 @@ const AdminLogsTable: FC<LogsTableProps> = ({ refreshKey, sessionType, className
             summaryName={(summary as SimulationLog)?.metadata?.sessionName ?? ""}
             closeSummarySidebar={closeSummarySidebar}
             canShowFeedback={false}
+            //TODO: Remove prop drilling
+            councellorName={(summary as AdminSimulationLog)?.counselor?.name}
           />
         );
     }

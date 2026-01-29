@@ -152,23 +152,23 @@ describe("Transcription Component", () => {
       expect(youLabels.length).toBe(1);
     });
 
-    it("should display 'Agent:' for messages not from the current user", () => {
+    it("should display 'AI Agent:' for messages not from the current user", () => {
       render(<Transcription {...defaultProps} />);
-      const agentLabels = screen.getAllByText("Agent:");
+      const agentLabels = screen.getAllByText("AI Agent:");
       expect(agentLabels.length).toBe(2);
     });
 
     it("should style 'You:' label with primary color", () => {
       render(<Transcription {...defaultProps} />);
       const youLabel = screen.getByText("You:");
-      expect(youLabel).toHaveClass("text-primary-600");
+      expect(youLabel).toHaveClass("text-primary-700");
     });
 
-    it("should style 'Agent:' label with black color", () => {
+    it("should style 'AI Agent:' label with typography color", () => {
       render(<Transcription {...defaultProps} />);
-      const agentLabels = screen.getAllByText("Agent:");
+      const agentLabels = screen.getAllByText("AI Agent:");
       agentLabels.forEach(label => {
-        expect(label).toHaveClass("text-black");
+        expect(label).toHaveClass("text-typography-900");
       });
     });
   });

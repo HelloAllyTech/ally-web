@@ -38,7 +38,7 @@ export const ROUTES = {
   SIMULATION_SUMMARY_FULL: "/simulation-summary/:sessionId",
   LEADERBOARD: "/leaderboard",
   REVIEW: "/review",
-  ACHIEVEMENTS_VIEW_ALL: "/achievements-view-all",
+  ACHIEVEMENTS_VIEW_ALL: "/achievements",
   REVIEW_DETAILS: "/review/:reviewId",
 } as const;
 

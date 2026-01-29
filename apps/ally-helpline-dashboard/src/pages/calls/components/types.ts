@@ -77,6 +77,7 @@ export interface SimulationSummarySidebarProps {
   summaryName: string;
   closeSummarySidebar: () => void;
   canShowFeedback?: boolean;
+  councellorName?: string;
 }
 
 export interface CallSummarySidebarProps {
@@ -101,6 +102,7 @@ export interface TranscriptTabProps {
 export interface SimulationTranscriptTabProps {
   sessionId: string;
   className?: string;
+  councellorName?: string;
 }
 
 export interface AudioUploadDialogProps {
