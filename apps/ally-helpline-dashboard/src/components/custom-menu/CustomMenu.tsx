@@ -40,7 +40,7 @@ const CustomMenu = ({
     const rect = anchorElement.getBoundingClientRect();
     const menuRect = menuRef.current.getBoundingClientRect();
 
-    let top = rect.bottom + 4;
+    let top = rect.bottom - 2;
     let left = rect.right - menuRect.width;
 
     // Keep inside viewport vertically
