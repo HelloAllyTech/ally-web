@@ -7,7 +7,7 @@ import { AchievementItemData, LockedStatus } from "@types";
 export const AchievementItem: FC<{
   achievement: AchievementItemData;
   imageSize?: number;
-}> = ({ achievement, imageSize = 80 }) => {
+}> = ({ achievement, imageSize = 75 }) => {
   const isUnlocked = achievement.lockStatus === LockedStatus.UNLOCKED;
   const renderBadgeImage = () => {
     if (!isUnlocked) {
@@ -25,8 +25,8 @@ export const AchievementItem: FC<{
           <CustomImage
             src={achievement?.imageUrl}
             alt={achievement?.name}
-            className="rounded-lg object-cover w-full h-full bg-neutral-100"
-            fallbackClassName="rounded-lg text-sm text-typography-600 bg-neutral-100 flex items-center justify-center w-full h-full"
+            className="rounded-lg object-cover w-full h-full"
+            fallbackClassName="rounded-lg text-sm text-typography-600 bg-neutral-100 flex items-center justify-center"
             fallbackText="Badge"
           />
         </div>
@@ -44,7 +44,7 @@ export const AchievementItem: FC<{
     );
   };
   return (
-    <div className="flex items-center gap-4 p-4 border border-border-light rounded-xl overflow-hidden">
+    <div className="flex items-center gap-4 p-3 border border-border-light rounded-xl overflow-hidden">
       {renderBadgeImage()}
       <div className="flex flex-col min-w-0 flex-1">
         <h4

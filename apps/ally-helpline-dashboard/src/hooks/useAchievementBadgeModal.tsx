@@ -31,8 +31,9 @@ export const useAchievementBadgeModal = (): UseAchievementBadgeModalReturn => {
       viewedStatus: ViewedStatus.UNVIEWED,
     },
     {
-      refetchOnMountOrArgChange: true,
-      skip: !isAuthenticated,
+      pollingInterval: 30000,
+      refetchOnFocus: true,
+      refetchOnReconnect: true,
     },
   );
 
