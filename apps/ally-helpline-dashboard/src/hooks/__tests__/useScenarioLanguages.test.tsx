@@ -31,6 +31,14 @@ const createTestStore = () =>
       user: userSlice.reducer,
     },
     middleware: getDefaultMiddleware => getDefaultMiddleware().concat(baseAPI.middleware),
+    preloadedState: {
+      user: {
+        isAuthenticated: false,
+        user: null,
+        permissions: [],
+        availableChatTypes: [],
+      },
+    },
   });
 
 describe("useScenarioLanguages", () => {

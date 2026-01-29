@@ -261,44 +261,40 @@ export const ReviewDetails = () => {
               Comments
             </div>
           </div>
-          {!isFeedOwner && (
-            <>
-              <div className="relative w-fit">
-                <div
-                  onClick={() => setShowEmojiPicker(!showEmojiPicker)}
-                  className={`flex relative items-center h-9 min-w-9 rounded-full border cursor-pointer justify-center ${selectedEmoji ? "border-primary-400" : "border-neutral-300"}`}
-                  ref={selectEmojiRef}
-                >
-                  {selectedEmoji ? (
-                    <div className="pb-0.5">
-                      <Emoji unified={selectedEmoji} size={16} emojiStyle={EmojiStyle.APPLE} />
-                    </div>
-                  ) : (
-                    <Smiley className="w-6 h-6 text-neutral-600 hover:text-[#0957D0]" />
-                  )}
+          <div className="relative w-fit">
+            <div
+              onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+              className={`flex relative items-center h-9 min-w-9 rounded-full border cursor-pointer justify-center ${selectedEmoji ? "border-primary-400" : "border-neutral-300"}`}
+              ref={selectEmojiRef}
+            >
+              {selectedEmoji ? (
+                <div className="pb-0.5">
+                  <Emoji unified={selectedEmoji} size={16} emojiStyle={EmojiStyle.APPLE} />
                 </div>
-                {showEmojiPicker && (
-                  <ReactionSelector
-                    anchorElement={selectEmojiRef.current}
-                    selectedEmoji={selectedEmoji}
-                    handleEmojiClick={handleEmojiClick}
-                  />
-                )}
-              </div>
-              {reviewReactions?.length > 0 && !isReactionOnCommentFromThisUser() && (
-                <div className="flex items-center gap-3 justify-between w-full">
-                  <button
-                    onClick={handleReactionsClick}
-                    className="flex items-center gap-2 text-black/60 min-w-0 hover:opacity-80 transition-opacity"
-                  >
-                    <EmojiStack unicodeCodes={reviewReactions} />
-                    <span className="font-primary text-xs sm:text-sm leading-[1.5] text-typography-800 truncate">
-                      {displayTotalReactionCount} reaction{reviewReactions?.length !== 1 ? "s" : ""}
-                    </span>
-                  </button>
-                </div>
+              ) : (
+                <Smiley className="w-6 h-6 text-neutral-600 hover:text-[#0957D0]" />
               )}
-            </>
+            </div>
+            {showEmojiPicker && (
+              <ReactionSelector
+                anchorElement={selectEmojiRef.current}
+                selectedEmoji={selectedEmoji}
+                handleEmojiClick={handleEmojiClick}
+              />
+            )}
+          </div>
+          {reviewReactions?.length > 0 && !isReactionOnCommentFromThisUser() && (
+            <div className="flex items-center gap-3 justify-between w-full">
+              <button
+                onClick={handleReactionsClick}
+                className="flex items-center gap-2 text-black/60 min-w-0 hover:opacity-80 transition-opacity"
+              >
+                <EmojiStack unicodeCodes={reviewReactions} />
+                <span className="font-primary text-xs sm:text-sm leading-[1.5] text-typography-800 truncate">
+                  {displayTotalReactionCount} reaction{reviewReactions?.length !== 1 ? "s" : ""}
+                </span>
+              </button>
+            </div>
           )}
         </div>
       </div>

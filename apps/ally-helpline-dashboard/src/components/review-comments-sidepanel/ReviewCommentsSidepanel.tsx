@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 
 import { Skeleton } from "@mui/material";
 
@@ -33,29 +33,14 @@ const ReviewCommentsSidepanel = ({
     }
   }, [threads]);
 
-  const commentsCount = useMemo(() => {
-    return (
-      threads?.reduce(
-        (acc, thread) =>
-          acc +
-          thread.comments.length +
-          thread.comments.reduce((acc, comment) => acc + comment.replyCount, 0),
-        0,
-      ) || 0
-    );
-  }, [threads]);
-
   return (
     <div
       className={`h-full bg-white border-l-[0.5px] overflow-hidden transition-all duration-300 ${className}`}
     >
       <div className="w-full font-primary py-4 px-4 flex items-center justify-between border-b-[0.5px]">
-        <div className="text-typography-900 font-medium text-lg">Comments so far</div>
-        {totalComments > 0 && (
-          <div>
-            {commentsCount}/{totalComments}
-          </div>
-        )}
+        <div className="text-typography-900 font-medium text-lg">
+          {totalComments || 0} {"Comment" + (totalComments !== 1 ? "s" : "")}
+        </div>
       </div>
       <div className="w-full h-full px-4">
         {!isLoading && (
