@@ -1,3 +1,5 @@
+import { ReviewUser } from "@src/types";
+
 export interface FeedScenario {
   createdAt: string;
   duration: string;
@@ -47,7 +49,7 @@ export interface Comment {
 export interface FeedCardProps {
   id: string;
   createdAt: string;
-  user: FeedUser;
+  user: ReviewUser;
   scenario: FeedScenario;
   reactions: Reactions;
   commentsCount: number;
