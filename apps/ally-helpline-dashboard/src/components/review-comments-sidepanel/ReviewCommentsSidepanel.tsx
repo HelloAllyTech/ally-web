@@ -59,7 +59,7 @@ const ReviewCommentsSidepanel = ({
       </div>
       <div className="w-full h-full px-4">
         {!isLoading && (
-          <div className="flex flex-col gap-4 overflow-auto h-[calc(100%-40px)] pb-8 -mr-4 pr-4 py-4">
+          <div className="flex flex-col gap-4 overflow-auto h-[calc(100%-40px)] pb-8 -mr-4 pr-4 py-4 custom-scrollbar">
             {threads?.map(
               (thread, index) =>
                 thread?.comments[0] && (

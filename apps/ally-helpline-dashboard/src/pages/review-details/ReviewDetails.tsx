@@ -20,6 +20,7 @@ import {
   ReviewCommentsSidepanel,
   Transcription,
 } from "@components";
+import { KeyboardKeys } from "@constants";
 import { RootState } from "@store";
 import { ReactionsType, SimulationTranscriptMessage, Thread } from "@types";
 import { getFormattedDateTime, getFormattedTimeFromDuration } from "@utils";
@@ -44,6 +45,7 @@ export const ReviewDetails = () => {
   const [hasMoreTranscripts, setHasMoreTranscripts] = useState(true);
 
   const selectEmojiRef = useRef<HTMLDivElement>(null);
+  const transcriptScrollRef = useRef<HTMLDivElement | null>(null);
 
   const { data: reviewDetails, isLoading: isGetReviewDetailsLoading } = useGetReviewByIdQuery(
     reviewId || "",
@@ -85,6 +87,35 @@ export const ReviewDetails = () => {
       setHasMoreTranscripts(false);
     }
   }, [simulationTranscript]);
+
+  const handleCloseSelectedComment = () => {
+    setSelectedThreadId(null);
+    setSelectedMessageId("");
+    setSelectedStartIndex(0);
+    setSelectedEndIndex(0);
+  };
+
+  useEffect(() => {
+    const handleEscKey = (event: KeyboardEvent) => {
+      if (event.key === KeyboardKeys.ESCAPE && selectedThreadId) {
+        handleCloseSelectedComment();
+      }
+    };
+
+    const el = transcriptScrollRef.current;
+    if (!el) return undefined;
+
+    if (selectedThreadId) {
+      document.addEventListener("keydown", handleEscKey);
+
+      el.style.overflowY = "hidden";
+    }
+
+    return () => {
+      document.removeEventListener("keydown", handleEscKey);
+      el.style.overflowY = "auto";
+    };
+  }, [selectedThreadId, handleCloseSelectedComment]);
 
   const reviewReactions = useMemo(() => {
     if (!reviewDetails?.reactions) return [];
@@ -172,13 +203,6 @@ export const ReviewDetails = () => {
     setSelectedStartIndex(props.startIndex);
     setSelectedEndIndex(props.endIndex);
     setSelectedThreadId(props.threadId);
-  };
-
-  const handleCloseSelectedComment = () => {
-    setSelectedThreadId(null);
-    setSelectedMessageId("");
-    setSelectedStartIndex(0);
-    setSelectedEndIndex(0);
   };
 
   const handleLoadMore = () => {
@@ -320,7 +344,10 @@ export const ReviewDetails = () => {
         )}
       </div>
       <div className="flex w-full h-[calc(100%-103px)]">
-        <div className="pt-5 mx-auto px-10 h-full w-[calc(100%-384px)] overflow-y-auto pb-20 transition-all duration-400">
+        <div
+          ref={transcriptScrollRef}
+          className="pt-5 mx-auto px-10 h-full w-[calc(100%-384px)] overflow-y-auto pb-20 transition-all duration-400 custom-scrollbar"
+        >
           <Transcription
             commentsList={
               threads.find(
