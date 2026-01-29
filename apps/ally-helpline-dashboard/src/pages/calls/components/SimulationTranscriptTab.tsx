@@ -22,6 +22,7 @@ import { SimulationTranscriptTabProps } from "./types";
 const SimulationTranscriptTab: FC<SimulationTranscriptTabProps> = ({ sessionId, className }) => {
   const [transcriptOffset, setTranscriptOffset] = useState(0);
   const [transcriptList, setTranscriptList] = useState<SimulationTranscriptMessage[]>([]);
+  const [hasMoreTranscripts, setHasMoreTranscripts] = useState(true);
   const { user } = useSelector((state: RootState) => state.user);
   const { data: summary } = useGetSimulationSummaryQuery(sessionId);
 
@@ -51,6 +52,7 @@ const SimulationTranscriptTab: FC<SimulationTranscriptTabProps> = ({ sessionId, 
   useEffect(() => {
     setTranscriptList([]);
     setTranscriptOffset(0);
+    setHasMoreTranscripts(true);
   }, [sessionId]);
 
   // Append new results when transcriptData changes
@@ -64,16 +66,32 @@ const SimulationTranscriptTab: FC<SimulationTranscriptTabProps> = ({ sessionId, 
         startSeconds: item.startSeconds,
       }));
 
+      // Update hasMoreTranscripts based on the number of items returned
+      setHasMoreTranscripts(transcript.length >= TRANSCRIPT_PAGE_SIZE);
+
       setTranscriptList(prev => {
         // If offset is 0, replace the list (fresh fetch)
         if (transcriptOffset === 0) {
           return mappedTranscript;
         }
-        // Otherwise append for pagination
-        return [...prev, ...mappedTranscript];
+
+        // Check for duplicates before appending
+        const existingIds = new Set(prev.map(item => `${item.id}-${item.startSeconds}`));
+        const newItems = mappedTranscript.filter(
+          item => !existingIds.has(`${item.id}-${item.startSeconds}`),
+        );
+
+        // Only append if there are new items
+        if (newItems.length > 0) {
+          return [...prev, ...newItems];
+        }
+        return prev;
       });
+    } else if (transcript?.length === 0) {
+      // No more transcripts available
+      setHasMoreTranscripts(false);
     }
-  }, [transcript, transcriptOffset]);
+  }, [transcript, user?.id]);
 
   const handleCreateReview = async (status: string) => {
     if (summary.reviewId) {
@@ -83,7 +101,8 @@ const SimulationTranscriptTab: FC<SimulationTranscriptTabProps> = ({ sessionId, 
     }
   };
   const handleLoadMore = () => {
-    if (transcriptOffset >= transcript?.length) return;
+    // Don't load more if we're already loading or if there are no more transcripts
+    if (isGetTranscriptLoading || !hasMoreTranscripts) return;
     setTranscriptOffset(prev => prev + TRANSCRIPT_PAGE_SIZE);
   };
 

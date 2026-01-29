@@ -25,6 +25,7 @@ interface CommentCardProps {
   showLike?: boolean;
   enableLikeUpdate?: boolean;
   showReply?: boolean;
+  commentThreadScrollRef?: React.RefObject<HTMLDivElement>;
   onReply?: (reply: string) => void;
   onDelete?: (id: string) => void;
 }
@@ -36,6 +37,7 @@ const CommentCard = ({
   showReply = false,
   onReply,
   onDelete,
+  commentThreadScrollRef,
 }: CommentCardProps) => {
   const user = useSelector((state: RootState) => state.user.user);
 
@@ -62,6 +64,13 @@ const CommentCard = ({
   useEffect(() => {
     if (comment?.myReaction) setSelectedEmoji(comment.myReaction);
   }, [comment?.myReaction]);
+
+  useEffect(() => {
+    if (commentThreadScrollRef?.current) {
+      if (menuAnchorEl) commentThreadScrollRef.current.style.overflowY = "hidden";
+      else commentThreadScrollRef.current.style.overflowY = "auto";
+    }
+  }, [menuAnchorEl, commentThreadScrollRef]);
 
   const handleReplyClick = (e: React.MouseEvent) => {
     e.stopPropagation();
