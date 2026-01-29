@@ -95,20 +95,20 @@ export const isNonEmptyObject = (value: any): boolean => {
 const SECONDS_IN = {
   year: 31536000,
   month: 2592000,
-  w: 604800,
-  D: 86400,
+  week: 604800,
+  day: 86400,
   hour: 3600,
-  min: 60,
-  sec: 1,
+  minute: 60,
+  second: 1,
 } as const;
 
 const TIME_THRESHOLDS: [keyof typeof SECONDS_IN, number][] = [
   ["month", SECONDS_IN.month],
-  ["w", SECONDS_IN.w],
-  ["D", SECONDS_IN.D],
+  ["week", SECONDS_IN.week],
+  ["day", SECONDS_IN.day],
   ["hour", SECONDS_IN.hour],
-  ["min", SECONDS_IN.min],
-  ["sec", SECONDS_IN.sec],
+  ["minute", SECONDS_IN.minute],
+  ["second", SECONDS_IN.second],
 ];
 
 const pluralize = (value: number, unit: string) => `${value} ${unit}${value === 1 ? "" : "s"}`;
@@ -143,8 +143,8 @@ export const formatRelativeTime = (dateString: string): string => {
 
   for (const [unit, seconds] of TIME_THRESHOLDS) {
     const value = Math.floor(diffSeconds / seconds);
-    if (value >= 1 && unit !== "D") return pluralize(value, unit);
-    if (value >= 1 && unit === "D") return `${value} D`;
+    if (value >= 1 && unit !== "day") return pluralize(value, unit);
+    if (value >= 1 && unit === "day") return `${value} Day${value === 1 ? "" : "s"}`;
   }
 
   return "Just now";
