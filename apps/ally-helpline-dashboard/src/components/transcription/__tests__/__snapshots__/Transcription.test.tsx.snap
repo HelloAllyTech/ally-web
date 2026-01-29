@@ -21,13 +21,13 @@ exports[`Transcription Component > should match snapshot when rendered 1`] = `
             class="font-medium pr-1"
           >
             <span
-              class="text-black "
+              class="text-typography-900"
             >
-              Agent:
+              AI Agent:
             </span>
           </span>
           <span
-            class="text-black selected-text relative w-full cursor-default"
+            class="text-typography-900 selected-text relative w-full cursor-default"
           >
             <span
               class="relative  "
@@ -50,13 +50,13 @@ exports[`Transcription Component > should match snapshot when rendered 1`] = `
             class="font-medium pr-1"
           >
             <span
-              class="text-primary-600"
+              class="text-primary-700"
             >
               You:
             </span>
           </span>
           <span
-            class="text-black selected-text relative w-full cursor-default"
+            class="text-typography-900 selected-text relative w-full cursor-default"
           >
             <span
               class="relative  "
@@ -79,13 +79,13 @@ exports[`Transcription Component > should match snapshot when rendered 1`] = `
             class="font-medium pr-1"
           >
             <span
-              class="text-black "
+              class="text-typography-900"
             >
-              Agent:
+              AI Agent:
             </span>
           </span>
           <span
-            class="text-black selected-text relative w-full cursor-default"
+            class="text-typography-900 selected-text relative w-full cursor-default"
           >
             <span
               class="relative  "

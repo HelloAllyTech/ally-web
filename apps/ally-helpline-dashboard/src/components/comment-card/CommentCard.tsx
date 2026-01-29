@@ -196,7 +196,7 @@ const CommentCard = ({
               src={user?.profileImageUrl}
               alt="user"
               className="w-full h-full rounded-full"
-              fallbackClassName="w-full h-full rounded-full bg-neutral-100 flex items-center justify-center text-typography-600"
+              fallbackClassName="w-full h-full rounded-full bg-neutral-100 flex items-center justify-center text-typography-900"
               fallbackText={user?.name?.slice(0, 1)?.toUpperCase() ?? "NA"}
             />
           </div>
@@ -232,7 +232,7 @@ const CommentCard = ({
   const renderCommentEditView = () => {
     return (
       <div className="flex flex-col gap-2">
-        <div className="text-[14px] text-typography-800 font-primary text-sm border rounded-sm p-2 py-3">
+        <div className="text-[14px] text-typography-900 font-primary text-sm border rounded-sm p-2 py-3">
           <AutoExpandableTextarea
             id={`comment-edit-textarea-${comment.id}`}
             value={commentContent}
@@ -242,14 +242,10 @@ const CommentCard = ({
           />
         </div>
         <div className="flex gap-2 flex-row my-2 justify-end">
-          <Button
-            variant="secondary"
-            className="py-0 h-8 z-10 z-50"
-            onClick={handleCancelCommentEdit}
-          >
+          <Button variant="secondary" className="py-0 h-8  z-50" onClick={handleCancelCommentEdit}>
             Cancel
           </Button>
-          <Button variant="primary" className="py-0 h-8 z-10 z-50" onClick={handleEditComment}>
+          <Button variant="primary" className="py-0 h-8 z-50" onClick={handleEditComment}>
             Done
           </Button>
         </div>
@@ -260,9 +256,7 @@ const CommentCard = ({
   const renderCommentContent = () => {
     return (
       <>
-        <div className="text-[14px] text-typography-800 font-primary text-sm">
-          {comment.content}
-        </div>
+        <div className="text-typography-900 font-primary text-sm">{comment.content}</div>
         <div className="flex gap-2 items-center">
           {showLike && (
             <div className="relative">
@@ -272,12 +266,12 @@ const CommentCard = ({
                 onClick={() => enableLikeUpdate && setShowEmojiPicker(prev => !prev)}
               >
                 {selectedEmoji ? (
-                  <div className="pb-0.5  w-[26px] bg-white h-[26px] flex items-center justify-center rounded-full border-[0.5px] border-primary-500">
+                  <div className="pb-0.5  w-[26px] bg-white h-[26px] flex items-center justify-center rounded-full border-[0.5px] border-primary-600">
                     <Emoji unified={selectedEmoji} size={14} emojiStyle={EmojiStyle.APPLE} />
                   </div>
-                ) : (
+                ) : enableLikeUpdate ? (
                   <Smiley className="w-5 h-5 text-neutral-600 hover:text-[#0957D0]" />
-                )}
+                ) : null}
               </div>
 
               {showEmojiPicker && (
@@ -293,7 +287,11 @@ const CommentCard = ({
             !isReactionOnCommentFromThisUser() &&
             Object.keys(comment?.reactions).length > 0 && (
               <>
-                <div className="flex px-2 items-center border-l">
+                {enableLikeUpdate ||
+                  (selectedEmoji && (
+                    <div className="border-l border-neutral-300 h-3 border-border-light" />
+                  ))}
+                <div className="flex pr-1 items-center">
                   {Object.keys(comment.reactions)
                     .slice(0, 3)
                     .map((reaction, index) => (
@@ -303,10 +301,10 @@ const CommentCard = ({
                         className="w-4 overflow-visible relative"
                       >
                         {reaction !== "" && (
-                          <div className="w-[26px] bg-white h-[26px] flex items-center justify-center rounded-full border-[0.5px]">
+                          <div className="w-[20px] bg-white h-[20px] flex items-center justify-center rounded-full border-[0.5px]">
                             <Emoji
                               unified={reaction ?? "1f44d"}
-                              size={12}
+                              size={10}
                               emojiStyle={EmojiStyle.APPLE}
                             />
                           </div>
@@ -314,7 +312,7 @@ const CommentCard = ({
                       </div>
                     ))}
                 </div>
-                <div className="text-typography-800 text-[14px]">
+                <div className="text-typography-800 text-xs">
                   {Object.keys(comment.reactions).length}
                 </div>
               </>
@@ -405,14 +403,16 @@ const CommentCard = ({
       <div className="flex flex-col gap-1 w-full">
         <div className="flex flex-row justify-between items-center gap-2 w-full">
           <div className="flex flex-row gap-1.5 items-center w-full">
-            <div className="text-[14px] font-medium">{comment?.createdBy?.name || "Unknown"}</div>
+            <div className="text-[14px] font-medium text-typography-900">
+              {comment?.createdBy?.name || "Unknown"}
+            </div>
             <div className="text-[12px] text-gray-500">{formatRelativeTime(comment.createdAt)}</div>
           </div>
           {menuItems.length > 0 && enableLikeUpdate && (
             <div className="flex flex-row justify-between items-center">
               <button
                 onClick={handleMenuOpen}
-                className="p-1 hover:bg-gray-100 rounded-full transition-colors"
+                className="p-1 hover:bg-gray-100 rounded-full transition-colors tr"
                 aria-label="Comment options"
               >
                 <MoreVertIcon className="w-5 h-5 text-gray-600" />

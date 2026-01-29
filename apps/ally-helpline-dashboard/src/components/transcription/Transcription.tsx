@@ -45,6 +45,8 @@ interface TranscriptionProps {
   ) => Promise<void>;
   isCreateCommentLoading?: boolean;
   isCreateCommentSuccess?: boolean;
+  councellorName?: string;
+  agentName?: string;
 }
 const DIALOG_WIDTH = 360;
 
@@ -65,6 +67,8 @@ const Transcription: FC<TranscriptionProps> = ({
   createComment,
   isCreateCommentLoading,
   isCreateCommentSuccess,
+  councellorName,
+  agentName,
 }) => {
   const contentRefs = useRef<(HTMLSpanElement | null)[]>([]);
   const { reviewId } = useParams<{ reviewId: string }>();
@@ -356,15 +360,19 @@ const Transcription: FC<TranscriptionProps> = ({
             <div>
               <span className="font-medium pr-1">
                 {transcript.senderId === -1 ? (
-                  <span className="text-black ">Agent:</span>
+                  <span className="text-typography-900">
+                    {agentName ? `${agentName} (AI client) :` : "AI Agent:"}
+                  </span>
                 ) : (
-                  <span className="text-primary-600">You:</span>
+                  <span className="text-primary-700">
+                    {councellorName ? councellorName : "You"}:
+                  </span>
                 )}
               </span>
               <span
                 ref={el => (contentRefs.current[index] = el)}
                 onMouseUp={() => handleSelection(index)}
-                className={`text-black selected-text relative w-full ${canSelect ? "cursor-text" : "cursor-default"}`}
+                className={`text-typography-900 selected-text relative w-full ${canSelect ? "cursor-text" : "cursor-default"}`}
               >
                 {splitTextByComments(transcript.content, transcript.threads).map(
                   (segment, segIdx) => {

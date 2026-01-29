@@ -16,6 +16,7 @@ const SimulationSummarySidebar: FC<SimulationSummarySidebarProps> = ({
   summaryName,
   closeSummarySidebar,
   canShowFeedback = true,
+  councellorName,
 }) => {
   const [showFeedbackDialog, setShowFeedbackDialog] = useState<boolean>(false);
 
@@ -65,7 +66,7 @@ const SimulationSummarySidebar: FC<SimulationSummarySidebarProps> = ({
     {
       id: 2,
       label: "Transcription",
-      content: <SimulationTranscriptTab sessionId={summaryId} />,
+      content: <SimulationTranscriptTab sessionId={summaryId} councellorName={councellorName} />,
     },
   ];
 

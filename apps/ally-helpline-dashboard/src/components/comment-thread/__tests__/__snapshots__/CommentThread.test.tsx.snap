@@ -6,7 +6,7 @@ exports[`CommentThread Component > should match snapshot when rendered 1`] = `
     class="bg-white rounded-lg p-4 shadow-lg border w-[400px]"
   >
     <div
-      class="text-base font-medium border-b-[0.5px] pb-2"
+      class="text-base font-medium border-b-[0.5px] pb-2 border-border-light"
     >
       Comment Thread
     </div>
@@ -99,7 +99,7 @@ exports[`CommentThread Component > should match snapshot with empty comments 1`]
     class="bg-white rounded-lg p-4 shadow-lg border w-[400px]"
   >
     <div
-      class="text-base font-medium border-b-[0.5px] pb-2"
+      class="text-base font-medium border-b-[0.5px] pb-2 border-border-light"
     >
       Comment Thread
     </div>
