@@ -5,7 +5,6 @@ import { toast } from "sonner";
 
 import { useGetMyBadgesQuery, useUpdateBadgeViewStatusMutation } from "@api";
 import { AchievementBadgeModal } from "@components";
-import { useUser } from "@hooks";
 import { UserBadge, ViewedStatus } from "@types";
 
 interface UseAchievementBadgeModalReturn {
@@ -20,7 +19,6 @@ export const useAchievementBadgeModal = (): UseAchievementBadgeModalReturn => {
   const [currentBadgeIndex, setCurrentBadgeIndex] = useState<number | null>(null);
   const hasInitialized = useRef(false);
   const confettiTriggered = useRef(false);
-  const { isAuthenticated } = useUser();
 
   const {
     data: badgesResponse,

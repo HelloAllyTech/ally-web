@@ -29,6 +29,7 @@ const {
   mockUseGetProfileImageUrlMutation,
   mockUseDeleteProfileImageMutation,
   mockUseUploadProfileImageMutation,
+  mockUseUser,
 } = vi.hoisted(() => ({
   mockUseGetAvailableBadgesQuery: vi.fn(),
   mockNavigate: vi.fn(),
@@ -42,6 +43,7 @@ const {
   mockUseGetProfileImageUrlMutation: vi.fn(),
   mockUseDeleteProfileImageMutation: vi.fn(),
   mockUseUploadProfileImageMutation: vi.fn(),
+  mockUseUser: vi.fn(),
 }));
 
 // Mock API
@@ -69,6 +71,18 @@ vi.mock("react-router-dom", async () => {
     useNavigate: () => mockNavigate,
   };
 });
+
+// Mock hooks
+vi.mock("@hooks", () => ({
+  useUser: () => mockUseUser(),
+  useAchievementBadgeModal: () => ({
+    currentBadge: null,
+    closeModal: vi.fn(),
+    resetModal: vi.fn(),
+    BadgeModal: null,
+    isLoading: false,
+  }),
+}));
 
 // Mock assets
 vi.mock("@assets", () => ({
@@ -250,6 +264,11 @@ describe("AchievementsViewAll Component", () => {
     mockUseGetProfileImageUrlMutation.mockReturnValue([vi.fn()]);
     mockUseDeleteProfileImageMutation.mockReturnValue([vi.fn()]);
     mockUseUploadProfileImageMutation.mockReturnValue([vi.fn()]);
+    mockUseUser.mockReturnValue({
+      user: { id: "1", name: "Test User" },
+      permissions: [],
+      isAuthenticated: true,
+    });
     mockFeatureFlags.LEADERBOARD_FLAG = true;
   });
 
