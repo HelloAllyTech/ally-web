@@ -356,33 +356,32 @@ const CommentCard = ({
               )}
             </div>
           )}
-          {comment?.reactions &&
-            Object.keys(comment?.reactions).length > 0 && (
-              <>
-                {enableLikeUpdate ||
-                  (selectedEmoji && <div className="border-l h-3 border-border-light" />)}
-                <div className="flex pr-1 items-center">
-                  {Object.keys(comment.reactions)
-                    .slice(0, 3)
-                    .map((reaction, index) => (
-                      <div
-                        key={reaction}
-                        style={{ zIndex: 10 - index }}
-                        className="w-4 overflow-visible relative"
-                      >
-                        {reaction !== "" && (
-                          <div className="w-[20px] bg-white h-[20px] flex items-center justify-center rounded-full border-[0.5px]">
-                            <NativeEmoji unified={reaction ?? "1f44d"} size={10} />
-                          </div>
-                        )}
-                      </div>
-                    ))}
-                </div>
-                <div className="text-typography-800 text-xs">
-                  {Object.keys(comment.reactions).length}
-                </div>
-              </>
-            )}
+          {comment?.reactions && Object.keys(comment?.reactions).length > 0 && (
+            <>
+              {enableLikeUpdate ||
+                (selectedEmoji && <div className="border-l h-3 border-border-light" />)}
+              <div className="flex pr-1 items-center">
+                {Object.keys(comment.reactions)
+                  .slice(0, 3)
+                  .map((reaction, index) => (
+                    <div
+                      key={reaction}
+                      style={{ zIndex: 10 - index }}
+                      className="w-4 overflow-visible relative"
+                    >
+                      {reaction !== "" && (
+                        <div className="w-[20px] bg-white h-[20px] flex items-center justify-center rounded-full border-[0.5px]">
+                          <NativeEmoji unified={reaction ?? "1f44d"} size={10} />
+                        </div>
+                      )}
+                    </div>
+                  ))}
+              </div>
+              <div className="text-typography-800 text-xs">
+                {Object.values(comment.reactions).reduce((sum, count) => sum + count, 0)}
+              </div>
+            </>
+          )}
 
           {showDivider && <div className="w-1 h-1 bg-[#D9D9D9] rounded-full" />}
           {showReply && (
