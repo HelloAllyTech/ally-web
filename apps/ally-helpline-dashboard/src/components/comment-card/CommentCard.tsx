@@ -4,7 +4,7 @@ import { Emoji, EmojiStyle } from "emoji-picker-react";
 import { useSelector } from "react-redux";
 import { toast } from "sonner";
 
-import { AutoExpandableTextarea, CustomImage } from "@ally-ui-mono/ui-shared";
+import { AutoExpandableTextarea, CustomImage, InfiniteScroll } from "@ally-ui-mono/ui-shared";
 import {
   useAddCommentReactionMutation,
   useToggleCommentVisibilityMutation,
@@ -15,7 +15,6 @@ import {
 import { ArrowUp, MoreVertIcon, Smiley, Delete, Edit, Hide, Eye } from "@assets";
 import { Button, CustomMenu, ReactionSelector, MenuItem, ConfirmationPopover } from "@components";
 import { COMMENT_DELETE_CONFIRMATION } from "@src/components/comment-card/constants";
-import ReplySkeleton from "@src/components/comment-card/ReplySkeleton";
 import { RootState } from "@store";
 import { ReactionsType, CommentItem } from "@types";
 import { formatRelativeTime } from "@utils";
@@ -46,6 +45,8 @@ const CommentCard = ({
   const isMyComment =
     user?.id != null && comment?.createdBy?.id != null && user.id === comment.createdBy.id;
 
+  const [repliesOffset, setRepliesOffset] = useState(0);
+  const [hasMoreReplies, setHasMoreReplies] = useState(true);
   const [showReplyInput, setShowReplyInput] = useState(false);
   const [showReplies, setShowReplies] = useState(false);
   const [replyCount, setReplyCount] = useState(comment?.replyCount || 0);
@@ -66,6 +67,7 @@ const CommentCard = ({
   const [editComment] = useEditCommentMutation();
   const [getReplies, { isLoading: areRepliesLoading }] = useLazyGetCommentRepliesQuery();
   const likeRef = useRef<HTMLDivElement>(null);
+  const commentCardRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (comment?.myReaction) setSelectedEmoji(comment.myReaction);
@@ -91,13 +93,31 @@ const CommentCard = ({
     e.stopPropagation();
     if (!showReplies && replyCount > 0 && replies.length === 0) {
       try {
-        const data = await getReplies(comment.id).unwrap();
+        const data = await getReplies({
+          commentId: comment.id,
+          limit: 10,
+          offset: repliesOffset,
+        }).unwrap();
+        setRepliesOffset(prev => prev + 10);
+        setHasMoreReplies(repliesOffset + 10 < data?.count);
         setReplies(data?.data || []);
       } catch {
         toast.error("Failed to load replies.");
       }
     }
     setShowReplies(!showReplies);
+  };
+
+  const loadMoreReplies = async () => {
+    if (!hasMoreReplies) return;
+    const data = await getReplies({
+      commentId: comment.id,
+      limit: 10,
+      offset: repliesOffset,
+    }).unwrap();
+    setRepliesOffset(prev => prev + 10);
+    setHasMoreReplies(repliesOffset + 10 < data?.count);
+    setReplies(prev => [...prev, ...(data?.data || [])]);
   };
   const handleReplySubmit = () => {
     if (replyText.trim()) {
@@ -273,6 +293,7 @@ const CommentCard = ({
     if (replyCount === 1) {
       setReplies([]);
       setShowReplies(false);
+      setRepliesOffset(0);
     }
     setReplyCount(prev => prev - 1);
   };
@@ -433,6 +454,11 @@ const CommentCard = ({
     e.stopPropagation();
     setReplies([]);
     setShowReplies(false);
+    setRepliesOffset(0);
+    // Scroll to the parent comment after hiding replies
+    setTimeout(() => {
+      commentCardRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+    }, 0);
   };
 
   const userImage = useMemo(() => {
@@ -443,7 +469,7 @@ const CommentCard = ({
   }, [user, comment]);
 
   return (
-    <div className={`flex gap-2.5 ${comment?.hidden ? "opacity-50" : ""}`}>
+    <div ref={commentCardRef} className={`flex gap-2.5 ${comment?.hidden ? "opacity-50" : ""}`}>
       <div className="min-w-8 h-8 rounded-full overflow-hidden">
         <CustomImage
           src={userImage}
@@ -483,19 +509,21 @@ const CommentCard = ({
           <div>
             {renderReplyBox()}
             <div className="flex flex-col gap-4 mt-4">
-              {areRepliesLoading && showReplies && <ReplySkeleton />}
-              {showReplies &&
-                replies.map(reply => (
-                  <CommentCard
-                    key={reply.id}
-                    comment={reply}
-                    isFeedOwner={isFeedOwner}
-                    showLike
-                    enableLikeUpdate={enableLikeUpdate}
-                    showReply={false}
-                    onDelete={handleDeleteReply}
-                  />
-                ))}
+              {showReplies && (
+                <InfiniteScroll onInfiniteScroll={loadMoreReplies} isLoading={areRepliesLoading}>
+                  {replies.map(reply => (
+                    <CommentCard
+                      key={reply.id}
+                      comment={reply}
+                      isFeedOwner={isFeedOwner}
+                      showLike
+                      enableLikeUpdate={enableLikeUpdate}
+                      showReply={false}
+                      onDelete={handleDeleteReply}
+                    />
+                  ))}
+                </InfiniteScroll>
+              )}
               {showReplies && (
                 <div
                   className="text-xs font-primary flex items-center gap-2 text-primary-600"
