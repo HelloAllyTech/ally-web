@@ -69,7 +69,7 @@ const ReactionsModal: FC<ReactionsModalProps> = ({ isOpen, onClose, reviewId }) 
       }`}
     >
       <div className="flex items-center gap-1 p-1 rounded-[18px] bg-white border-[0.5px] border-border">
-        <Emoji unified={reactionCode} size={14} emojiStyle={EmojiStyle.APPLE} lazyLoad />
+        <Emoji unified={reactionCode} size={14} emojiStyle={EmojiStyle.GOOGLE} lazyLoad />
       </div>
       <span className="font-primary text-sm">{count}</span>
       {isActive && (
@@ -120,7 +120,7 @@ const ReactionsModal: FC<ReactionsModalProps> = ({ isOpen, onClose, reviewId }) 
                   <Emoji
                     unified={userReaction.reaction}
                     size={10}
-                    emojiStyle={EmojiStyle.APPLE}
+                    emojiStyle={EmojiStyle.GOOGLE}
                     lazyLoad
                   />
                 </div>
@@ -202,7 +202,7 @@ const ReactionsModal: FC<ReactionsModalProps> = ({ isOpen, onClose, reviewId }) 
                             <Emoji
                               unified={code}
                               size={16}
-                              emojiStyle={EmojiStyle.APPLE}
+                              emojiStyle={EmojiStyle.GOOGLE}
                               lazyLoad
                             />
                           </div>
