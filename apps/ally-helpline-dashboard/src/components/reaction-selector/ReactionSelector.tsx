@@ -1,6 +1,6 @@
 import { useState, useLayoutEffect, useRef } from "react";
 
-import { Emoji, EmojiStyle } from "emoji-picker-react";
+import { Emoji } from "emoji-picker-react";
 import { createPortal } from "react-dom";
 
 import { PLATFORM_EMOJIS } from "@constants";
@@ -69,7 +69,7 @@ const ReactionSelector = ({
                      border border-neutral-300 bg-white
                      transition-transform hover:scale-125"
         >
-          <Emoji unified={emoji} size={emojiSize} emojiStyle={EmojiStyle.GOOGLE} />
+          <Emoji unified={emoji} size={emojiSize} />
         </div>
       ))}
     </div>,
