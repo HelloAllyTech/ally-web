@@ -2,6 +2,7 @@ import { FC, useEffect, useRef, useState, useCallback } from "react";
 
 import "./styles.css";
 import { useParams } from "react-router-dom";
+import { toast } from "sonner";
 
 import { InfiniteScroll } from "@ally-ui-mono/ui-shared/index";
 import SelectableText from "@src/components/selectable-text/SelectableText";
@@ -76,6 +77,14 @@ const Transcription: FC<TranscriptionProps> = ({
     endIndex: number;
     transcriptId: number;
   } | null>(null);
+
+  useEffect(() => {
+    if (isCreateCommentSuccess) {
+      toast.success("Comment created successfully");
+      setAddCommentDialogOpen(null);
+    }
+  }, [isCreateCommentSuccess]);
+
   useEffect(() => {
     setTranscriptions(transcriptList);
   }, [transcriptList]);
