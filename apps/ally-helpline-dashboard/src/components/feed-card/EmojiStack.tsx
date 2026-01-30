@@ -28,7 +28,7 @@ const EmojiStack: FC<EmojiStackProps> = props => {
             zIndex: unicodeCodes.length - index,
           }}
         >
-          <Emoji unified={code} size={emojiSize} emojiStyle={EmojiStyle.APPLE} lazyLoad />
+          <Emoji unified={code} size={emojiSize} emojiStyle={EmojiStyle.GOOGLE} lazyLoad />
         </div>
       ))}
     </div>
