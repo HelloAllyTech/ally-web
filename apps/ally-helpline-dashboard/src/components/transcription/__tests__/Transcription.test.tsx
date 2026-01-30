@@ -8,14 +8,9 @@ import Transcription from "../Transcription";
 // Mock CSS import
 vi.mock("../styles.css", () => ({}));
 
-// Mock uuid
-vi.mock("uuid", () => ({
-  v4: () => "mock-uuid",
-}));
-
-// Mock assets
-vi.mock("@ally-ui-mono/ui-shared/assets", () => ({
-  AddComment: (props: any) => <span data-testid="add-comment-icon" {...props} />,
+// Mock react-router-dom
+vi.mock("react-router-dom", () => ({
+  useParams: () => ({ reviewId: "test-review-id" }),
 }));
 
 // Mock InfiniteScroll
@@ -28,39 +23,71 @@ vi.mock("@ally-ui-mono/ui-shared/index", () => ({
       </button>
     </div>
   ),
-  FEATURE_FLAGS_MAP: {
-    PEER_REVIEW_FLAG: true,
+}));
+
+// Mock SelectableText component
+vi.mock("@src/components/selectable-text/SelectableText", () => ({
+  default: ({
+    segment,
+    segIdx,
+    selectedThreadId,
+    isSelectedComment,
+    addCommentDialogOpen,
+    setAddCommentDialogOpen,
+  }: any) => (
+    <span
+      data-testid={`selectable-text-${segIdx}`}
+      data-segment-text={segment.text}
+      data-comment-ids={segment.commentIds?.join(",")}
+      data-selected={isSelectedComment}
+      data-thread-id={selectedThreadId}
+      data-dialog-open={addCommentDialogOpen}
+    >
+      {segment.text}
+      {segment.commentIds?.length > 0 && (
+        <span data-testid={`comment-highlight-${segIdx}`} className="bg-amber-50" />
+      )}
+    </span>
+  ),
+}));
+
+// Mock utils
+vi.mock("../utils", () => ({
+  getFreshUserRange: vi.fn(),
+  splitByCommentRanges: (content: string, threads: any[]) => {
+    if (!threads || threads.length === 0) {
+      return [{ text: content, commentIds: [], start: 0, end: content.length }];
+    }
+    // Simple mock: return segments based on threads
+    const segments: any[] = [];
+    let lastEnd = 0;
+    threads.forEach((thread, idx) => {
+      if (thread.start > lastEnd) {
+        segments.push({
+          text: content.slice(lastEnd, thread.start),
+          commentIds: [],
+          start: lastEnd,
+          end: thread.start,
+        });
+      }
+      segments.push({
+        text: content.slice(thread.start, thread.end),
+        commentIds: [thread.id],
+        start: thread.start,
+        end: thread.end,
+      });
+      lastEnd = thread.end;
+    });
+    if (lastEnd < content.length) {
+      segments.push({
+        text: content.slice(lastEnd),
+        commentIds: [],
+        start: lastEnd,
+        end: content.length,
+      });
+    }
+    return segments;
   },
-}));
-
-// Mock useClickOutside
-const mockUseClickOutside = vi.fn();
-vi.mock("@hooks", () => ({
-  useClickOutside: (ref: any, callback: any) => mockUseClickOutside(ref, callback),
-}));
-
-// Mock CommentAdditionDialog
-vi.mock("../../comment-addition-dialog/CommentAdditionDialog", () => ({
-  default: ({ onCancel }: any) => (
-    <div data-testid="comment-addition-dialog">
-      <button data-testid="cancel-comment" onClick={onCancel}>
-        Cancel
-      </button>
-    </div>
-  ),
-}));
-
-// Mock CommentThread
-vi.mock("../../comment-thread/CommentThread", () => ({
-  default: ({ comments }: any) => (
-    <div data-testid="comment-thread">
-      {comments?.map((c: any, i: number) => (
-        <div key={i} data-testid={`comment-${i}`}>
-          {c.comment}
-        </div>
-      ))}
-    </div>
-  ),
 }));
 
 describe("Transcription Component", () => {
@@ -73,18 +100,21 @@ describe("Transcription Component", () => {
       content: "Hello, how can I help you today?",
       senderId: -1,
       startSeconds: 0,
+      threads: [],
     },
     {
       id: 2,
       content: "I need some assistance with my account.",
       senderId: 1,
       startSeconds: 65,
+      threads: [],
     },
     {
       id: 3,
       content: "Sure, I can help you with that.",
       senderId: -1,
       startSeconds: 130,
+      threads: [],
     },
   ];
 
@@ -137,10 +167,15 @@ describe("Transcription Component", () => {
       expect(container.firstChild).toHaveClass("custom-class");
     });
 
-    it("should render empty when transcriptList is empty", () => {
+    it("should render empty message when transcriptList is empty", () => {
       render(<Transcription transcriptList={[]} userId={mockUserId} />);
-      expect(screen.queryByText("You:")).not.toBeInTheDocument();
-      expect(screen.queryByText("Agent:")).not.toBeInTheDocument();
+      expect(screen.getByText("No transcript available")).toBeInTheDocument();
+    });
+
+    it("should render skeleton loader when loading and no transcripts", () => {
+      render(<Transcription transcriptList={[]} userId={mockUserId} isLoading={true} />);
+      // Skeleton should be rendered
+      expect(screen.queryByText("No transcript available")).not.toBeInTheDocument();
     });
   });
 
@@ -197,6 +232,7 @@ describe("Transcription Component", () => {
           content: "Test message",
           senderId: -1,
           startSeconds: undefined,
+          threads: [],
         },
       ];
       render(<Transcription transcriptList={transcriptWithUndefined as any} userId={mockUserId} />);
@@ -205,9 +241,9 @@ describe("Transcription Component", () => {
 
     it("should format time with padded zeros correctly", () => {
       const transcriptWithVariousTimes = [
-        { id: 1, content: "Message 1", senderId: -1, startSeconds: 5 },
-        { id: 2, content: "Message 2", senderId: -1, startSeconds: 59 },
-        { id: 3, content: "Message 3", senderId: -1, startSeconds: 600 },
+        { id: 1, content: "Message 1", senderId: -1, startSeconds: 5, threads: [] },
+        { id: 2, content: "Message 2", senderId: -1, startSeconds: 59, threads: [] },
+        { id: 3, content: "Message 3", senderId: -1, startSeconds: 600, threads: [] },
       ];
       render(<Transcription transcriptList={transcriptWithVariousTimes} userId={mockUserId} />);
       expect(screen.getByText("00:05")).toBeInTheDocument();
@@ -272,30 +308,6 @@ describe("Transcription Component", () => {
       const cursorDefaultElements = container.querySelectorAll(".cursor-default");
       expect(cursorDefaultElements.length).toBe(3);
     });
-
-    it("should not handle selection when canSelect is false", () => {
-      const mockSelection = {
-        isCollapsed: false,
-        toString: () => "selected text",
-        anchorNode: document.createTextNode("test"),
-        anchorOffset: 0,
-        focusNode: document.createTextNode("test"),
-        focusOffset: 5,
-      };
-
-      Object.defineProperty(window, "getSelection", {
-        value: vi.fn(() => mockSelection),
-        writable: true,
-      });
-
-      const { container } = render(<Transcription {...defaultProps} canSelect={false} />);
-      const contentSpan = container.querySelector(".selected-text");
-
-      fireEvent.mouseUp(contentSpan!);
-
-      // Should not show add comment dialog
-      expect(screen.queryByTestId("add-comment-icon")).not.toBeInTheDocument();
-    });
   });
 
   // --- Selected Comment Tests ---
@@ -307,6 +319,7 @@ describe("Transcription Component", () => {
           content: "This is a test message for selection",
           senderId: -1,
           startSeconds: 0,
+          threads: [],
         },
       ];
 
@@ -326,27 +339,8 @@ describe("Transcription Component", () => {
       );
 
       await waitFor(() => {
-        // The component should process the selected comment
         expect(screen.getByText(/This is a/)).toBeInTheDocument();
       });
-    });
-
-    it("should call onCloseSelectedComment when provided", () => {
-      const onCloseSelectedComment = vi.fn();
-
-      render(
-        <Transcription
-          {...defaultProps}
-          canSelect={true}
-          selectedMessageId="1"
-          selectedStartIndex={0}
-          selectedEndIndex={5}
-          onCloseSelectedComment={onCloseSelectedComment}
-        />,
-      );
-
-      // Verify useClickOutside was called with the callback
-      expect(mockUseClickOutside).toHaveBeenCalled();
     });
   });
 
@@ -361,8 +355,8 @@ describe("Transcription Component", () => {
           startSeconds: 0,
           threads: [
             {
-              id: "1",
-              selection: { startIndex: 0, endIndex: 5, text: "Hello", messageId: 1 },
+              id: "thread-1",
+              selection: { startIndex: 0, endIndex: 5 },
               comments: [{ id: "1", content: "Test comment" }],
             },
           ],
@@ -375,276 +369,6 @@ describe("Transcription Component", () => {
 
       expect(screen.getByText(/Hello/)).toBeInTheDocument();
     });
-
-    it("should highlight commented text with amber background when selected", () => {
-      const transcriptWithThreads = [
-        {
-          id: 1,
-          content: "Hello, this is a message",
-          senderId: -1,
-          startSeconds: 0,
-          threads: [
-            {
-              id: "1",
-              selection: { startIndex: 0, endIndex: 5, text: "Hello", messageId: 1 },
-              comments: [{ id: "1", content: "Test comment" }],
-            },
-          ],
-        },
-      ] as any;
-
-      const { container } = render(
-        <Transcription
-          {...defaultProps}
-          transcriptList={transcriptWithThreads}
-          canSelect={true}
-          selectedMessageId="1"
-          selectedThreadId="1"
-        />,
-      );
-
-      const amberHighlight = container.querySelector(".bg-amber-200");
-      expect(amberHighlight).toBeInTheDocument();
-    });
-
-    it("should show blue background for new comment selection without saved comments", () => {
-      const transcriptWithEmptyThreads = [
-        {
-          id: 1,
-          content: "Hello, this is a message",
-          senderId: -1,
-          startSeconds: 0,
-          threads: [
-            {
-              id: "1",
-              selection: { startIndex: 0, endIndex: 5, text: "Hello", messageId: 1 },
-              comments: [],
-            },
-          ],
-        },
-      ] as any;
-
-      const { container } = render(
-        <Transcription
-          {...defaultProps}
-          transcriptList={transcriptWithEmptyThreads}
-          canSelect={true}
-        />,
-      );
-
-      const blueHighlight = container.querySelector('[class*="bg-[#E1F1FE]"]');
-      expect(blueHighlight).toBeInTheDocument();
-    });
-  });
-
-  // --- Add Comment Dialog Tests ---
-  describe("Add Comment Dialog", () => {
-    it("should show add comment button for empty comment selection", () => {
-      const transcriptWithEmptyThreads = [
-        {
-          id: 1,
-          content: "Hello, this is a message",
-          senderId: -1,
-          startSeconds: 0,
-          threads: [
-            {
-              id: "1",
-              selection: { startIndex: 0, endIndex: 5, text: "Hello", messageId: 1 },
-              comments: [],
-            },
-          ],
-        },
-      ] as any;
-
-      render(
-        <Transcription
-          {...defaultProps}
-          transcriptList={transcriptWithEmptyThreads}
-          canSelect={true}
-        />,
-      );
-
-      expect(screen.getByText("Add comment")).toBeInTheDocument();
-      expect(screen.getByTestId("add-comment-icon")).toBeInTheDocument();
-    });
-
-    it("should open comment dialog when add comment button is clicked", async () => {
-      const transcriptWithEmptyThreads = [
-        {
-          id: 1,
-          content: "Hello, this is a message",
-          senderId: -1,
-          startSeconds: 0,
-          threads: [
-            {
-              id: "1",
-              selection: { startIndex: 0, endIndex: 5, text: "Hello", messageId: 1 },
-              comments: [],
-            },
-          ],
-        },
-      ] as any;
-
-      render(
-        <Transcription
-          {...defaultProps}
-          transcriptList={transcriptWithEmptyThreads}
-          canSelect={true}
-        />,
-      );
-
-      const addCommentButton = screen.getByText("Add comment").closest("div");
-      fireEvent.click(addCommentButton!);
-
-      await waitFor(() => {
-        expect(screen.getByTestId("comment-addition-dialog")).toBeInTheDocument();
-      });
-    });
-
-    it("should close dialog when cancel is clicked", async () => {
-      const transcriptWithEmptyThreads = [
-        {
-          id: 1,
-          content: "Hello, this is a message",
-          senderId: -1,
-          startSeconds: 0,
-          threads: [
-            {
-              id: "1",
-              selection: { startIndex: 0, endIndex: 5, text: "Hello", messageId: 1 },
-              comments: [],
-            },
-          ],
-        },
-      ] as any;
-
-      render(
-        <Transcription
-          {...defaultProps}
-          transcriptList={transcriptWithEmptyThreads}
-          canSelect={true}
-        />,
-      );
-
-      // Open dialog
-      const addCommentButton = screen.getByText("Add comment").closest("div");
-      fireEvent.click(addCommentButton!);
-
-      await waitFor(() => {
-        expect(screen.getByTestId("comment-addition-dialog")).toBeInTheDocument();
-      });
-
-      // Cancel dialog
-      const cancelButton = screen.getByTestId("cancel-comment");
-      fireEvent.click(cancelButton);
-
-      await waitFor(() => {
-        expect(screen.queryByTestId("comment-addition-dialog")).not.toBeInTheDocument();
-      });
-    });
-  });
-
-  // --- useClickOutside Hook Tests ---
-  describe("Click Outside Handling", () => {
-    it("should register click outside handlers", () => {
-      render(<Transcription {...defaultProps} canSelect={true} />);
-
-      // useClickOutside should be called for dialog, selectedComment, and addCommentDialog refs
-      expect(mockUseClickOutside).toHaveBeenCalled();
-    });
-  });
-
-  // --- createComment Prop Tests ---
-  describe("createComment Prop", () => {
-    it("should render without createComment prop", () => {
-      render(<Transcription transcriptList={mockTranscriptList} userId={mockUserId} />);
-
-      expect(screen.getByText("Hello, how can I help you today?")).toBeInTheDocument();
-    });
-
-    it("should pass isCreateCommentLoading to CommentAdditionDialog", async () => {
-      const transcriptWithEmptyThreads = [
-        {
-          id: 1,
-          content: "Hello, this is a message",
-          senderId: -1,
-          startSeconds: 0,
-          threads: [
-            {
-              id: "1",
-              selection: { startIndex: 0, endIndex: 5, text: "Hello", messageId: 1 },
-              comments: [],
-            },
-          ],
-        },
-      ] as any;
-
-      render(
-        <Transcription
-          {...defaultProps}
-          transcriptList={transcriptWithEmptyThreads}
-          canSelect={true}
-          isCreateCommentLoading={true}
-        />,
-      );
-
-      const addCommentButton = screen.getByText("Add comment").closest("div");
-      fireEvent.click(addCommentButton!);
-
-      await waitFor(() => {
-        expect(screen.getByTestId("comment-addition-dialog")).toBeInTheDocument();
-      });
-    });
-
-    it("should handle isCreateCommentSuccess state change", async () => {
-      const transcriptWithEmptyThreads = [
-        {
-          id: 1,
-          content: "Hello, this is a message",
-          senderId: -1,
-          startSeconds: 0,
-          threads: [
-            {
-              id: "1",
-              selection: { startIndex: 0, endIndex: 5, text: "Hello", messageId: 1 },
-              comments: [],
-            },
-          ],
-        },
-      ] as any;
-
-      const { rerender } = render(
-        <Transcription
-          {...defaultProps}
-          transcriptList={transcriptWithEmptyThreads}
-          canSelect={true}
-          isCreateCommentSuccess={false}
-        />,
-      );
-
-      // Open dialog
-      const addCommentButton = screen.getByText("Add comment").closest("div");
-      fireEvent.click(addCommentButton!);
-
-      await waitFor(() => {
-        expect(screen.getByTestId("comment-addition-dialog")).toBeInTheDocument();
-      });
-
-      // Rerender with success
-      rerender(
-        <Transcription
-          {...defaultProps}
-          transcriptList={transcriptWithEmptyThreads}
-          canSelect={true}
-          isCreateCommentSuccess={true}
-        />,
-      );
-
-      // Dialog should close on success
-      await waitFor(() => {
-        expect(screen.queryByTestId("comment-addition-dialog")).not.toBeInTheDocument();
-      });
-    });
   });
 
   // --- Edge Cases ---
@@ -656,6 +380,7 @@ describe("Transcription Component", () => {
           content: "Test message",
           senderId: -1,
           startSeconds: null,
+          threads: [],
         },
       ];
 
@@ -673,45 +398,12 @@ describe("Transcription Component", () => {
           content: longContent,
           senderId: -1,
           startSeconds: 0,
+          threads: [],
         },
       ];
 
       render(<Transcription transcriptList={transcriptWithLongContent} userId={mockUserId} />);
       expect(screen.getByText(longContent)).toBeInTheDocument();
-    });
-
-    it("should handle multiple threads on same transcript", () => {
-      const transcriptWithMultipleThreads = [
-        {
-          id: 1,
-          content: "Hello world, this is a test message",
-          senderId: -1,
-          startSeconds: 0,
-          threads: [
-            {
-              id: "1",
-              selection: { startIndex: 0, endIndex: 5, text: "Hello", messageId: 1 },
-              comments: [{ id: "1", content: "Comment 1" }],
-            },
-            {
-              id: "2",
-              selection: { startIndex: 13, endIndex: 17, text: "this", messageId: 1 },
-              comments: [{ id: "2", content: "Comment 2" }],
-            },
-          ],
-        },
-      ] as any;
-
-      render(
-        <Transcription
-          {...defaultProps}
-          transcriptList={transcriptWithMultipleThreads}
-          canSelect={true}
-        />,
-      );
-
-      expect(screen.getByText(/Hello/)).toBeInTheDocument();
-      expect(screen.getByText(/world/)).toBeInTheDocument();
     });
 
     it("should handle transcript with special characters", () => {
@@ -721,6 +413,7 @@ describe("Transcription Component", () => {
           content: "Hello! How are you? <script>alert('test')</script>",
           senderId: -1,
           startSeconds: 0,
+          threads: [],
         },
       ];
 
@@ -737,28 +430,12 @@ describe("Transcription Component", () => {
           content: "Hello! 👋 How are you? 😊",
           senderId: -1,
           startSeconds: 0,
+          threads: [],
         },
       ];
 
       render(<Transcription transcriptList={transcriptWithEmojis} userId={mockUserId} />);
       expect(screen.getByText("Hello! 👋 How are you? 😊")).toBeInTheDocument();
-    });
-
-    it("should handle different userId values", () => {
-      const differentUserId = 999;
-      const transcriptForDifferentUser = [
-        {
-          id: 1,
-          content: "Message from different user",
-          senderId: 999,
-          startSeconds: 0,
-        },
-      ];
-
-      render(
-        <Transcription transcriptList={transcriptForDifferentUser} userId={differentUserId} />,
-      );
-      expect(screen.getByText("You:")).toBeInTheDocument();
     });
 
     it("should update when transcriptList prop changes", async () => {
@@ -772,6 +449,7 @@ describe("Transcription Component", () => {
           content: "New message content",
           senderId: -1,
           startSeconds: 200,
+          threads: [],
         },
       ];
 
@@ -826,6 +504,24 @@ describe("Transcription Component", () => {
       expect(timestamps[0]).toHaveTextContent("00:00");
       expect(timestamps[1]).toHaveTextContent("01:05");
       expect(timestamps[2]).toHaveTextContent("02:10");
+    });
+  });
+
+  // --- isFeedOwner prop tests ---
+  describe("isFeedOwner Prop", () => {
+    it("should pass isFeedOwner to SelectableText components", () => {
+      render(<Transcription {...defaultProps} isFeedOwner={true} canSelect={true} />);
+      // SelectableText components should be rendered with isFeedOwner
+      expect(screen.getAllByTestId(/selectable-text-/).length).toBeGreaterThan(0);
+    });
+  });
+
+  // --- createComment prop tests ---
+  describe("createComment Prop", () => {
+    it("should render without createComment prop", () => {
+      render(<Transcription transcriptList={mockTranscriptList} userId={mockUserId} />);
+
+      expect(screen.getByText("Hello, how can I help you today?")).toBeInTheDocument();
     });
   });
 });

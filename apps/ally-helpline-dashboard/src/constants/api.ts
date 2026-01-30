@@ -110,6 +110,7 @@ export const ApiEndpoints = {
     EDIT_COMMENT: (commentId: string) => `/v1/reviews/comments/${commentId}`,
     DELETE_COMMENT: (commentId: string) => `/v1/reviews/comments/${commentId}`,
     GET_COMMENT_REPLIES: (commentId: string) => `/v1/reviews/comments/${commentId}/replies`,
+    GET_REVIEW_THREAD_COMMENTS: (threadId: string) => `/v1/reviews/threads/${threadId}/comments`,
   },
   BADGES: {
     GET_AVAILABLE_BADGES: "/v1/badges/me/available",
