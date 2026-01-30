@@ -97,6 +97,7 @@ export interface TranscriptTabProps {
   }[];
   handleLoadMore: () => void;
   isLoading: boolean;
+  hasMore?: boolean;
 }
 
 export interface SimulationTranscriptTabProps {

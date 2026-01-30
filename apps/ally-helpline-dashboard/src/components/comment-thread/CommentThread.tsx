@@ -27,6 +27,7 @@ const CommentThread = ({
   const [commentsToShow, setCommentsToShow] = useState(comments);
   const [threadsOffset, setThreadsOffset] = useState(0);
   const [comment, setComment] = useState("");
+  const [hasMore, setHasMore] = useState(true);
   const [showCommentBox, setShowCommentBox] = useState(false);
 
   const commentThreadScrollRef = useRef<HTMLDivElement | null>(null);
@@ -40,6 +41,7 @@ const CommentThread = ({
   useEffect(() => {
     if (!threadComments) return;
     const nextData = threadComments.data;
+    setHasMore(nextData.length >= PAGE_SIZE);
     if (threadsOffset === 0) {
       setCommentsToShow(nextData);
     } else {
@@ -58,7 +60,7 @@ const CommentThread = ({
   };
 
   const loadMoreComments = async () => {
-    if (threadsOffset >= commentsToShow?.length || isLoading) return;
+    if (isLoading || !hasMore) return;
     setThreadsOffset(prev => prev + PAGE_SIZE);
   };
 
@@ -127,7 +129,12 @@ const CommentThread = ({
           ref={commentThreadScrollRef}
           className="flex flex-col gap-2 overflow-y-auto max-h-80 -mr-4 pr-4"
         >
-          <InfiniteScroll onInfiniteScroll={loadMoreComments} isLoading={isLoading}>
+          <InfiniteScroll
+            onInfiniteScroll={loadMoreComments}
+            isLoading={isLoading}
+            scrollContainerRef={commentThreadScrollRef}
+            hasMore={hasMore}
+          >
             {commentsToShow.map(comment => (
               <CommentCard
                 key={comment.id}

@@ -40,6 +40,7 @@ export const ReviewDetails = () => {
   const [selectedStartIndex, setSelectedStartIndex] = useState<number>(0);
   const [selectedEndIndex, setSelectedEndIndex] = useState<number>(0);
   const [selectedThreadId, setSelectedThreadId] = useState<string>(null);
+  const [selectedThreadIds, setSelectedThreadIds] = useState<string[]>([]);
   const [transcriptList, setTranscriptList] = useState<SimulationTranscriptMessage[]>([]);
   const [showReactionsModal, setShowReactionsModal] = useState(false);
   const [showSimulationDetailsModal, setShowSimulationDetailsModal] = useState(false);
@@ -79,19 +80,23 @@ export const ReviewDetails = () => {
   }, [user?.id, reviewDetails?.createdBy?.id]);
 
   useEffect(() => {
-    if (simulationTranscript?.length > 0) {
-      setTranscriptList(prev => {
-        return transcriptOffset > 0
-          ? [...prev, ...simulationTranscript]
-          : [...simulationTranscript];
-      });
-    } else {
-      setHasMoreTranscripts(false);
+    if (simulationTranscript) {
+      if (simulationTranscript.length > 0) {
+        setTranscriptList(prev => {
+          return transcriptOffset > 0
+            ? [...prev, ...simulationTranscript]
+            : [...simulationTranscript];
+        });
+        setHasMoreTranscripts(simulationTranscript.length >= TRANSCRIPT_PAGE_SIZE);
+      } else {
+        setHasMoreTranscripts(false);
+      }
     }
   }, [simulationTranscript]);
 
   const handleCloseSelectedComment = () => {
     setSelectedThreadId(null);
+    setSelectedThreadIds([]);
     setSelectedMessageId("");
     setSelectedStartIndex(0);
     setSelectedEndIndex(0);
@@ -195,16 +200,29 @@ export const ReviewDetails = () => {
     }
   };
 
-  const handleCommentClick = (props: {
-    messageId: string;
-    startIndex: number;
-    endIndex: number;
-    threadId: string;
-  }) => {
-    setSelectedMessageId(props.messageId);
-    setSelectedStartIndex(props.startIndex);
-    setSelectedEndIndex(props.endIndex);
-    setSelectedThreadId(props.threadId);
+  const handleCommentClick = (
+    props:
+      | {
+          messageId: string;
+          startIndex: number;
+          endIndex: number;
+          threadId: string;
+        }
+      | Array<{
+          messageId: string;
+          startIndex: number;
+          endIndex: number;
+          threadId: string;
+        }>,
+  ) => {
+    const items = Array.isArray(props) ? props : [props];
+    if (!items.length) return;
+    const first = items[0];
+    setSelectedMessageId(first.messageId);
+    setSelectedStartIndex(first.startIndex);
+    setSelectedEndIndex(first.endIndex);
+    setSelectedThreadId(first.threadId);
+    setSelectedThreadIds(items.map(props => props.threadId));
   };
 
   const handleLoadMore = () => {
@@ -363,19 +381,16 @@ export const ReviewDetails = () => {
         )}
       </div>
       <div className="flex w-full h-[calc(100%-103px)]">
-        <div
-          ref={transcriptScrollRef}
-          className="pt-5 mx-auto px-10 h-full w-[calc(100%-384px)] h-[99%] pb-20 transition-all duration-400 custom-scrollbar"
-        >
+        <div className="mx-auto h-full w-[calc(100%-384px)] h-[99%] transition-all duration-400">
           <Transcription
             councellorName={isFeedOwner ? "You" : reviewDetails?.createdBy?.name}
             agentName={reviewDetails?.scenario?.name}
             commentsList={
-              threads.find(
-                thread =>
-                  thread.selection.messageId === parseInt(selectedMessageId) &&
-                  thread.id === selectedThreadId,
-              )?.comments
+              selectedThreadIds.length > 0
+                ? threads
+                    .filter(thread => selectedThreadIds.includes(thread.id))
+                    .flatMap(thread => thread.comments ?? [])
+                : undefined
             }
             isFeedOwner={isFeedOwner}
             handleCommentClick={handleCommentClick}
@@ -388,10 +403,13 @@ export const ReviewDetails = () => {
             canSelect={true}
             handleLoadMore={handleLoadMore}
             isLoading={isGetTranscriptLoading}
+            hasMore={hasMoreTranscripts}
+            scrollContainerRef={transcriptScrollRef}
             selectedMessageId={selectedMessageId}
             selectedStartIndex={selectedStartIndex}
             selectedEndIndex={selectedEndIndex}
             onCloseSelectedComment={handleCloseSelectedComment}
+            className="h-full overflow-y-auto custom-scrollbar pt-5 px-10 pb-20 mt-0"
           />
         </div>
         <ReviewCommentsSidepanel

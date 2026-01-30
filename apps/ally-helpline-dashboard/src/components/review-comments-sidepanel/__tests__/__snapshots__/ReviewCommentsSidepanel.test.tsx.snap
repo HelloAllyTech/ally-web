@@ -532,41 +532,49 @@ exports[`ReviewCommentsSidepanel Component > should match snapshot with threads 
         class="flex flex-col gap-4 overflow-auto h-[calc(100%-40px)] pb-8 -mr-4 pr-4 py-4 custom-scrollbar"
       >
         <div
-          class="transition-all cursor-pointer duration-300 ease-out"
+          class="flex flex-col gap-2 transition-all duration-300 ease-out"
           style="transform: translateY(0); opacity: 1; transition-delay: 0ms;"
         >
           <div
-            data-testid="thread-card-thread-1"
+            class="transition-all cursor-pointer duration-300 ease-out"
           >
-            <span
-              data-testid="thread-text"
+            <div
+              data-testid="thread-card-thread-1"
             >
-              Selected text 1
-            </span>
-            <span
-              data-testid="comment-count"
-            >
-              1
-            </span>
+              <span
+                data-testid="thread-text"
+              >
+                Selected text 1
+              </span>
+              <span
+                data-testid="comment-count"
+              >
+                1
+              </span>
+            </div>
           </div>
         </div>
         <div
-          class="transition-all cursor-pointer duration-300 ease-out"
+          class="flex flex-col gap-2 transition-all duration-300 ease-out"
           style="transform: translateY(0); opacity: 1; transition-delay: 50ms;"
         >
           <div
-            data-testid="thread-card-thread-2"
+            class="transition-all cursor-pointer duration-300 ease-out"
           >
-            <span
-              data-testid="thread-text"
+            <div
+              data-testid="thread-card-thread-2"
             >
-              Selected text 2
-            </span>
-            <span
-              data-testid="comment-count"
-            >
-              2
-            </span>
+              <span
+                data-testid="thread-text"
+              >
+                Selected text 2
+              </span>
+              <span
+                data-testid="comment-count"
+              >
+                2
+              </span>
+            </div>
           </div>
         </div>
       </div>
