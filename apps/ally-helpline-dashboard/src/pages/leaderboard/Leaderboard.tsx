@@ -11,7 +11,6 @@ import {
 } from "@api";
 import { AchievementsCard, LeaderboardList, LeaderboardUser } from "@components";
 import { ROUTES } from "@constants";
-import { useAchievementBadgeModal } from "@hooks";
 import { AchievementItemData, LockedStatus, UserBadge, ViewedStatus } from "@types";
 
 // Map UserBadge (earned badges) to AchievementItemData format
@@ -34,7 +33,8 @@ export const Leaderboard = () => {
   const [pathsOffset, setPathsOffset] = useState(0);
   const [window, setWindow] = useState(INITIAL_WINDOW);
   const [leaderboardData, setLeaderboardData] = useState<LeaderboardUser[]>([]);
-  const { BadgeModal } = useAchievementBadgeModal();
+
+  const isBadgesEnabled = FEATURE_FLAGS_MAP.BADGES_FLAG;
 
   const pathParams = {
     limit: PATHS_PAGE_SIZE,
@@ -72,12 +72,22 @@ export const Leaderboard = () => {
     setLeaderboardData([]);
   };
 
-  const { data: badgesResponse, isLoading: isBadgesLoading } = useGetMyBadgesQuery({
-    viewedStatus: ViewedStatus.VIEWED,
-  });
-  const { data: badgesCountResponse, isLoading: isBadgesCountLoading } = useGetBadgesCountQuery({
-    viewedStatus: ViewedStatus.VIEWED,
-  });
+  const { data: badgesResponse, isLoading: isBadgesLoading } = useGetMyBadgesQuery(
+    {
+      viewedStatus: ViewedStatus.VIEWED,
+    },
+    {
+      skip: !isBadgesEnabled,
+    },
+  );
+  const { data: badgesCountResponse, isLoading: isBadgesCountLoading } = useGetBadgesCountQuery(
+    {
+      viewedStatus: ViewedStatus.VIEWED,
+    },
+    {
+      skip: !isBadgesEnabled,
+    },
+  );
 
   const myBadges = badgesResponse?.data ?? [];
   const viewedBadgesCount = badgesCountResponse?.count ?? 0;
@@ -132,17 +142,18 @@ export const Leaderboard = () => {
         </div>
 
         {/* achievements card */}
-        <div className="w-full sm:w-1/2 sm:max-w-md sm:ml-0 sm:mt-0 sm:self-start flex-shrink-0">
-          <AchievementsCard
-            achievements={getBadgesList()}
-            viewedBadgesCount={viewedBadgesCount}
-            isLoading={isBadgesLoading || isBadgesCountLoading}
-            onViewAll={handleViewAllBadges}
-            className="h-auto"
-          />
-        </div>
+        {FEATURE_FLAGS_MAP.BADGES_FLAG && (
+          <div className="w-full sm:w-1/2 sm:max-w-md sm:ml-0 sm:mt-0 sm:self-start flex-shrink-0">
+            <AchievementsCard
+              achievements={getBadgesList()}
+              viewedBadgesCount={viewedBadgesCount}
+              isLoading={isBadgesLoading || isBadgesCountLoading}
+              onViewAll={handleViewAllBadges}
+              className="h-auto"
+            />
+          </div>
+        )}
       </div>
-      {BadgeModal}
     </div>
   );
 };

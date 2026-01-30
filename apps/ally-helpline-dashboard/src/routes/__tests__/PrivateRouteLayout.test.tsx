@@ -11,6 +11,13 @@ const mockUseUser = vi.fn();
 vi.mock("@hooks", () => ({
   useUser: () => mockUseUser(),
   useAutoActiveCallRedirect: vi.fn(),
+  useAchievementBadgeModal: () => ({
+    currentBadge: null,
+    closeModal: vi.fn(),
+    resetModal: vi.fn(),
+    BadgeModal: null,
+    isLoading: false,
+  }),
 }));
 
 // Mock the useGetChatTypesQuery hook
@@ -129,10 +136,13 @@ vi.mock("react-router-dom", async () => {
   };
 });
 
-// Mock logger
+// Mock logger and feature flags
 vi.mock("@ally-ui-mono/ui-shared", () => ({
   logger: {
     info: vi.fn(),
+  },
+  FEATURE_FLAGS_MAP: {
+    BADGES_FLAG: true,
   },
 }));
 
@@ -147,6 +157,9 @@ vi.mock("@utils", () => ({
     }
     return permissions.some(permission => permission === requiredPermission);
   },
+  isPathExcluded: vi.fn((currentPath: string, excludedPaths: string[]) => {
+    return excludedPaths.includes(currentPath);
+  }),
 }));
 
 const renderWithRouter = (component: React.ReactElement) => {

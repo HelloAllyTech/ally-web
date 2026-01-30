@@ -163,7 +163,7 @@ exports[`CommentCard Component > should match snapshot with all props enabled 1`
         <div
           class="text-typography-800 text-xs"
         >
-          3
+          10
         </div>
         <div
           class="w-1 h-1 bg-[#D9D9D9] rounded-full"
