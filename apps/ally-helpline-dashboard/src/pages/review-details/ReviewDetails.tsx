@@ -265,7 +265,7 @@ export const ReviewDetails = () => {
             <div className="flex items-center gap-3 justify-between w-full">
               <button
                 onClick={handleReactionsClick}
-                className="flex items-center gap-2 text-black/60 min-w-0 hover:opacity-80 transition-opacity"
+                className="flex items-center gap-2 min-w-0 opacity-100 hover:opacity-80 transition-opacity"
               >
                 <EmojiStack unicodeCodes={reviewReactions} />
                 <span className="font-primary text-xs sm:text-sm leading-[1.5] text-typography-800 truncate">
