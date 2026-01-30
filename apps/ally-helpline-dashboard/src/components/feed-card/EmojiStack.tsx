@@ -1,6 +1,6 @@
 import { FC } from "react";
 
-import { Emoji } from "emoji-picker-react";
+import { NativeEmoji } from "@components";
 
 interface EmojiStackProps {
   unicodeCodes: string[];
@@ -28,7 +28,7 @@ const EmojiStack: FC<EmojiStackProps> = props => {
             zIndex: unicodeCodes.length - index,
           }}
         >
-          <Emoji unified={code} size={emojiSize} />
+          <NativeEmoji unified={code} size={emojiSize} />
         </div>
       ))}
     </div>
