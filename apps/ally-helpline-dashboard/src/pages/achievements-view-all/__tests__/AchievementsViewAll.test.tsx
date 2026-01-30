@@ -14,6 +14,8 @@
 
 import { render, screen, fireEvent } from "@testing-library/react";
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { Provider } from "react-redux";
+import { configureStore } from "@reduxjs/toolkit";
 
 // Use vi.hoisted to ensure mocks are available when vi.mock factory runs
 const {
@@ -22,6 +24,11 @@ const {
   mockFeatureFlags,
   mockUseGetMyBadgesQuery,
   mockUseUpdateBadgeViewStatusMutation,
+  mockUseLazyGetUserQuery,
+  mockUseLazyGetPermissionsQuery,
+  mockUseGetProfileImageUrlMutation,
+  mockUseDeleteProfileImageMutation,
+  mockUseUploadProfileImageMutation,
 } = vi.hoisted(() => ({
   mockUseGetAvailableBadgesQuery: vi.fn(),
   mockNavigate: vi.fn(),
@@ -30,6 +37,11 @@ const {
   },
   mockUseGetMyBadgesQuery: vi.fn(),
   mockUseUpdateBadgeViewStatusMutation: vi.fn(),
+  mockUseLazyGetUserQuery: vi.fn(),
+  mockUseLazyGetPermissionsQuery: vi.fn(),
+  mockUseGetProfileImageUrlMutation: vi.fn(),
+  mockUseDeleteProfileImageMutation: vi.fn(),
+  mockUseUploadProfileImageMutation: vi.fn(),
 }));
 
 // Mock API
@@ -37,6 +49,11 @@ vi.mock("@api", () => ({
   useGetAvailableBadgesQuery: () => mockUseGetAvailableBadgesQuery(),
   useGetMyBadgesQuery: () => mockUseGetMyBadgesQuery(),
   useUpdateBadgeViewStatusMutation: () => mockUseUpdateBadgeViewStatusMutation(),
+  useLazyGetUserQuery: () => mockUseLazyGetUserQuery(),
+  useLazyGetPermissionsQuery: () => mockUseLazyGetPermissionsQuery(),
+  useGetProfileImageUrlMutation: () => mockUseGetProfileImageUrlMutation(),
+  useDeleteProfileImageMutation: () => mockUseDeleteProfileImageMutation(),
+  useUploadProfileImageMutation: () => mockUseUploadProfileImageMutation(),
 }));
 
 // Mock feature flags
@@ -132,6 +149,8 @@ vi.mock("@types", () => ({
 
 import { BrowserRouter } from "react-router-dom";
 
+import { baseAPI } from "../../../api/baseAPI";
+import userSlice from "../../../reducer/userReducer";
 import { AchievementsViewAll } from "../AchievementsViewAll";
 
 // --------------------- Mock Data --------------------- //
@@ -189,9 +208,29 @@ const defaultQueryReturn = {
   refetch: vi.fn(),
 };
 
+// Create a test store with the API middleware and user reducer
+const createTestStore = () =>
+  configureStore({
+    reducer: {
+      [baseAPI.reducerPath]: baseAPI.reducer,
+      user: userSlice.reducer,
+    },
+    middleware: getDefaultMiddleware => getDefaultMiddleware().concat(baseAPI.middleware),
+    preloadedState: {
+      user: {
+        isAuthenticated: false,
+        user: null,
+        permissions: [],
+        availableChatTypes: [],
+      },
+    },
+  });
+
 // Test wrapper component
 const TestWrapper = ({ children }: { children: React.ReactNode }) => (
-  <BrowserRouter>{children}</BrowserRouter>
+  <Provider store={createTestStore()}>
+    <BrowserRouter>{children}</BrowserRouter>
+  </Provider>
 );
 
 // --------------------- Tests --------------------- //
@@ -206,6 +245,11 @@ describe("AchievementsViewAll Component", () => {
       refetch: vi.fn(),
     });
     mockUseUpdateBadgeViewStatusMutation.mockReturnValue([vi.fn(), { isLoading: false }]);
+    mockUseLazyGetUserQuery.mockReturnValue([vi.fn(), { isLoading: false }]);
+    mockUseLazyGetPermissionsQuery.mockReturnValue([vi.fn(), { isLoading: false }]);
+    mockUseGetProfileImageUrlMutation.mockReturnValue([vi.fn()]);
+    mockUseDeleteProfileImageMutation.mockReturnValue([vi.fn()]);
+    mockUseUploadProfileImageMutation.mockReturnValue([vi.fn()]);
     mockFeatureFlags.LEADERBOARD_FLAG = true;
   });
 
