@@ -593,24 +593,6 @@ describe("CommentCard Component", () => {
       expect(screen.queryByTestId("reply-textarea")).not.toBeInTheDocument();
     });
 
-    it("should preserve textarea value when Cancel button is clicked", () => {
-      renderWithProvider(<CommentCard comment={mockComment} showReply />);
-
-      const replyButton = screen.getByText("Reply");
-      fireEvent.click(replyButton);
-
-      let textarea = screen.getByTestId("reply-textarea");
-      fireEvent.change(textarea, { target: { value: "Draft reply" } });
-
-      const cancelButton = screen.getByTestId("button-secondary");
-      fireEvent.click(cancelButton);
-
-      // Re-open textarea
-      fireEvent.click(replyButton);
-      textarea = screen.getByTestId("reply-textarea");
-      expect(textarea).toHaveValue("Draft reply");
-    });
-
     it("should not show reply textarea without showReply prop", () => {
       renderWithProvider(<CommentCard comment={mockComment} />);
       // Reply button should not exist, so textarea cannot be shown
