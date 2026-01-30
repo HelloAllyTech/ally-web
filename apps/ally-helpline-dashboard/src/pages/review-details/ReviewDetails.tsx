@@ -269,7 +269,7 @@ export const ReviewDetails = () => {
             >
               {selectedEmoji ? (
                 <div className="pb-0.5">
-                  <Emoji unified={selectedEmoji} size={16} emojiStyle={EmojiStyle.APPLE} />
+                  <Emoji unified={selectedEmoji} size={16} emojiStyle={EmojiStyle.GOOGLE} />
                 </div>
               ) : (
                 <Smiley className="w-6 h-6 text-neutral-600 hover:text-[#0957D0]" />
@@ -347,7 +347,10 @@ export const ReviewDetails = () => {
               <div className="w-1 h-1 bg-neutral-500 rounded-full mx-1" />
               <div>
                 Date & time:{" "}
-                {getFormattedDateTime(reviewDetails?.scenario?.createdAt, "MMM dd, yyyy hh:mm a")}
+                {getFormattedDateTime(
+                  reviewDetails?.scenarioSession?.createdAt,
+                  "MMM dd, yyyy hh:mm a",
+                )}
               </div>
               <div className="w-1 h-1 bg-neutral-500 rounded-full mx-1" />
               <div className="font-primary  leading-4 text-black/60">
