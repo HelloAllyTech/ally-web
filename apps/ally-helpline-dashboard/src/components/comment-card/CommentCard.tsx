@@ -1,10 +1,9 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 
-import { Emoji, EmojiStyle } from "emoji-picker-react";
 import { useSelector } from "react-redux";
 import { toast } from "sonner";
 
-import { AutoExpandableTextarea, CustomImage } from "@ally-ui-mono/ui-shared";
+import { AutoExpandableTextarea, CustomImage, InfiniteScroll } from "@ally-ui-mono/ui-shared";
 import {
   useAddCommentReactionMutation,
   useToggleCommentVisibilityMutation,
@@ -13,8 +12,15 @@ import {
   useEditCommentMutation,
 } from "@api";
 import { ArrowUp, MoreVertIcon, Smiley, Delete, Edit, Hide, Eye } from "@assets";
-import { Button, CustomMenu, ReactionSelector, MenuItem } from "@components";
-import ReplySkeleton from "@src/components/comment-card/ReplySkeleton";
+import {
+  Button,
+  CustomMenu,
+  NativeEmoji,
+  ReactionSelector,
+  MenuItem,
+  ConfirmationPopover,
+} from "@components";
+import { COMMENT_DELETE_CONFIRMATION } from "@src/components/comment-card/constants";
 import { RootState } from "@store";
 import { ReactionsType, CommentItem } from "@types";
 import { formatRelativeTime } from "@utils";
@@ -28,6 +34,7 @@ interface CommentCardProps {
   commentThreadScrollRef?: React.RefObject<HTMLDivElement>;
   onReply?: (reply: string) => void;
   onDelete?: (id: string) => void;
+  commentId?: string;
 }
 const CommentCard = ({
   comment,
@@ -44,8 +51,11 @@ const CommentCard = ({
   const isMyComment =
     user?.id != null && comment?.createdBy?.id != null && user.id === comment.createdBy.id;
 
+  const [repliesOffset, setRepliesOffset] = useState(0);
+  const [hasMoreReplies, setHasMoreReplies] = useState(true);
   const [showReplyInput, setShowReplyInput] = useState(false);
   const [showReplies, setShowReplies] = useState(false);
+  const [replyCount, setReplyCount] = useState(comment?.replyCount || 0);
   const [replies, setReplies] = useState<CommentItem[]>([]);
   const [replyText, setReplyText] = useState("");
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
@@ -53,6 +63,9 @@ const CommentCard = ({
   const [menuAnchorEl, setMenuAnchorEl] = useState<HTMLElement | null>(null);
   const [showCommentEditView, setShowCommentEditView] = useState(false);
   const [commentContent, setCommentContent] = useState(comment.content);
+  const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
+  const [deleteAnchorEl, setDeleteAnchorEl] = useState<HTMLElement | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const [addCommentReactions] = useAddCommentReactionMutation();
   const [toggleCommentVisibility] = useToggleCommentVisibilityMutation();
@@ -60,10 +73,15 @@ const CommentCard = ({
   const [editComment] = useEditCommentMutation();
   const [getReplies, { isLoading: areRepliesLoading }] = useLazyGetCommentRepliesQuery();
   const likeRef = useRef<HTMLDivElement>(null);
+  const commentCardRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (comment?.myReaction) setSelectedEmoji(comment.myReaction);
   }, [comment?.myReaction]);
+
+  useEffect(() => {
+    setReplyCount(comment?.replyCount || 0);
+  }, [comment?.replyCount]);
 
   useEffect(() => {
     if (commentThreadScrollRef?.current) {
@@ -79,9 +97,15 @@ const CommentCard = ({
 
   const onReplyClick = async (e: React.MouseEvent) => {
     e.stopPropagation();
-    if (!showReplies && comment.replyCount > 0 && replies.length === 0) {
+    if (!showReplies && replyCount > 0 && replies.length === 0) {
       try {
-        const data = await getReplies(comment.id).unwrap();
+        const data = await getReplies({
+          commentId: comment.id,
+          limit: 10,
+          offset: repliesOffset,
+        }).unwrap();
+        setRepliesOffset(prev => prev + 10);
+        setHasMoreReplies(repliesOffset + 10 < data?.count);
         setReplies(data?.data || []);
       } catch {
         toast.error("Failed to load replies.");
@@ -89,23 +113,38 @@ const CommentCard = ({
     }
     setShowReplies(!showReplies);
   };
+
+  const loadMoreReplies = async () => {
+    if (!hasMoreReplies) return;
+    const data = await getReplies({
+      commentId: comment.id,
+      limit: 10,
+      offset: repliesOffset,
+    }).unwrap();
+    setRepliesOffset(prev => prev + 10);
+    setHasMoreReplies(repliesOffset + 10 < data?.count);
+    setReplies(prev => [...prev, ...(data?.data || [])]);
+  };
   const handleReplySubmit = () => {
     if (replyText.trim()) {
       onReply?.(replyText);
-      const newReply = {
-        id: comment.id,
-        content: replyText,
-        createdBy: {
-          id: user?.id,
-          name: user?.name,
-          profileImage: user?.profileImageUrl,
-        },
-        createdAt: new Date().toISOString(),
-        reactions: {},
-        replyCount: 0,
-        myReaction: null,
-      };
-      setReplies(prev => [...prev, newReply]);
+      if (replies.length > 0) {
+        const newReply = {
+          id: comment.id,
+          content: replyText,
+          createdBy: {
+            id: user?.id,
+            name: user?.name,
+            profileImage: user?.profileImageUrl,
+          },
+          createdAt: new Date().toISOString(),
+          reactions: {},
+          replyCount: 0,
+          myReaction: null,
+        };
+        setReplies(prev => [...prev, newReply]);
+      }
+      setReplyCount(prev => prev + 1);
       setReplyText("");
       setShowReplyInput(false);
     }
@@ -173,14 +212,29 @@ const CommentCard = ({
     setCommentContent(comment.content);
   };
 
+  const handleShowDeleteConfirmation = () => {
+    setDeleteAnchorEl(menuAnchorEl);
+    setShowDeleteConfirmation(true);
+    handleMenuClose();
+  };
+
+  const handleCancelDelete = () => {
+    setShowDeleteConfirmation(false);
+    setDeleteAnchorEl(null);
+  };
+
   const handleDeleteComment = async () => {
     try {
+      setIsDeleting(true);
       await deleteComment({ commentId: comment.id }).unwrap();
       onDelete?.(comment.id);
       toast.success("Comment deleted successfully");
-      handleMenuClose();
+      setShowDeleteConfirmation(false);
+      setDeleteAnchorEl(null);
     } catch (error) {
       toast.error(error?.data?.message || "Failed to delete comment");
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -242,6 +296,12 @@ const CommentCard = ({
 
   const handleDeleteReply = (id: string) => {
     setReplies(prev => prev.filter(reply => reply.id !== id));
+    if (replyCount === 1) {
+      setReplies([]);
+      setShowReplies(false);
+      setRepliesOffset(0);
+    }
+    setReplyCount(prev => prev - 1);
   };
 
   const renderCommentEditView = () => {
@@ -268,12 +328,19 @@ const CommentCard = ({
     );
   };
 
+  const showDivider =
+    comment.replyCount > 0 &&
+    ((showLike && (selectedEmoji || enableLikeUpdate)) ||
+      (comment?.reactions &&
+        !isReactionOnCommentFromThisUser() &&
+        Object.keys(comment?.reactions).length > 0));
+
   const renderCommentContent = () => {
     return (
       <>
         <div className="text-typography-900 font-primary text-sm">{comment.content}</div>
         <div className="flex gap-2 items-center">
-          {showLike && (
+          {showLike && (selectedEmoji || enableLikeUpdate) && (
             <div className="relative">
               <div
                 ref={likeRef}
@@ -281,8 +348,8 @@ const CommentCard = ({
                 onClick={() => enableLikeUpdate && setShowEmojiPicker(prev => !prev)}
               >
                 {selectedEmoji ? (
-                  <div className="pb-0.5  w-[26px] bg-white h-[26px] flex items-center justify-center rounded-full border-[0.5px] border-primary-600">
-                    <Emoji unified={selectedEmoji} size={14} emojiStyle={EmojiStyle.GOOGLE} />
+                  <div className="pt-[1px] w-[26px] bg-white h-[26px] flex items-center justify-center rounded-full border-[0.5px] border-primary-600">
+                    <NativeEmoji unified={selectedEmoji} size={14} />
                   </div>
                 ) : enableLikeUpdate ? (
                   <Smiley className="w-5 h-5 text-neutral-600 hover:text-[#0957D0]" />
@@ -303,9 +370,7 @@ const CommentCard = ({
             Object.keys(comment?.reactions).length > 0 && (
               <>
                 {enableLikeUpdate ||
-                  (selectedEmoji && (
-                    <div className="border-l border-neutral-300 h-3 border-border-light" />
-                  ))}
+                  (selectedEmoji && <div className="border-l h-3 border-border-light" />)}
                 <div className="flex pr-1 items-center">
                   {Object.keys(comment.reactions)
                     .slice(0, 3)
@@ -317,11 +382,7 @@ const CommentCard = ({
                       >
                         {reaction !== "" && (
                           <div className="w-[20px] bg-white h-[20px] flex items-center justify-center rounded-full border-[0.5px]">
-                            <Emoji
-                              unified={reaction ?? "1f44d"}
-                              size={10}
-                              emojiStyle={EmojiStyle.GOOGLE}
-                            />
+                            <NativeEmoji unified={reaction ?? "1f44d"} size={10} />
                           </div>
                         )}
                       </div>
@@ -333,7 +394,7 @@ const CommentCard = ({
               </>
             )}
 
-          {comment.replyCount > 0 && <div className="w-1 h-1 bg-[#D9D9D9] rounded-full" />}
+          {showDivider && <div className="w-1 h-1 bg-[#D9D9D9] rounded-full" />}
           {showReply && (
             <>
               <div
@@ -344,12 +405,12 @@ const CommentCard = ({
               </div>
             </>
           )}
-          {comment.replyCount > 0 && (
+          {replyCount > 0 && (
             <div
               className={`text-typography-800 text-xs cursor-pointer underline decoration-neutral-300 underline-offset-4 decoration-1`}
               onClick={onReplyClick}
             >
-              {comment.replyCount} repl{comment.replyCount > 1 ? "ies" : "y"}
+              {replyCount} repl{replyCount > 1 ? "ies" : "y"}
             </div>
           )}
         </div>
@@ -384,7 +445,7 @@ const CommentCard = ({
         label: "Delete",
         className: "text-red-500",
         icon: <Delete width={16} height={16} />,
-        onClick: () => handleDeleteComment(),
+        onClick: handleShowDeleteConfirmation,
       });
     }
 
@@ -395,6 +456,11 @@ const CommentCard = ({
     e.stopPropagation();
     setReplies([]);
     setShowReplies(false);
+    setRepliesOffset(0);
+    // Scroll to the parent comment after hiding replies
+    setTimeout(() => {
+      commentCardRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+    }, 0);
   };
 
   const userImage = useMemo(() => {
@@ -405,7 +471,7 @@ const CommentCard = ({
   }, [user, comment]);
 
   return (
-    <div className={`flex gap-2.5 ${comment?.hidden ? "opacity-50" : ""}`}>
+    <div ref={commentCardRef} className={`flex gap-2.5 ${comment?.hidden ? "opacity-50" : ""}`}>
       <div className="min-w-8 h-8 rounded-full overflow-hidden">
         <CustomImage
           src={userImage}
@@ -445,19 +511,21 @@ const CommentCard = ({
           <div>
             {renderReplyBox()}
             <div className="flex flex-col gap-4 mt-4">
-              {areRepliesLoading && showReplies && <ReplySkeleton />}
-              {showReplies &&
-                replies.map(reply => (
-                  <CommentCard
-                    key={reply.id}
-                    comment={reply}
-                    isFeedOwner={isFeedOwner}
-                    showLike
-                    enableLikeUpdate={enableLikeUpdate}
-                    showReply={false}
-                    onDelete={handleDeleteReply}
-                  />
-                ))}
+              {showReplies && (
+                <InfiniteScroll onInfiniteScroll={loadMoreReplies} isLoading={areRepliesLoading}>
+                  {replies.map(reply => (
+                    <CommentCard
+                      key={reply.id}
+                      comment={reply}
+                      isFeedOwner={isFeedOwner}
+                      showLike
+                      enableLikeUpdate={enableLikeUpdate}
+                      showReply={false}
+                      onDelete={handleDeleteReply}
+                    />
+                  ))}
+                </InfiniteScroll>
+              )}
               {showReplies && (
                 <div
                   className="text-xs font-primary flex items-center gap-2 text-primary-600"
@@ -471,6 +539,26 @@ const CommentCard = ({
           </div>
         )}
       </div>
+      <ConfirmationPopover
+        isOpen={showDeleteConfirmation}
+        onClose={handleCancelDelete}
+        onConfirm={handleDeleteComment}
+        anchorElement={deleteAnchorEl}
+        title={
+          <div className="font-medium font-secondary text-2xl text-typography-900 text-center">
+            Delete <span className="italic font-bold">{onDelete ? "Reply" : "Comment"}?</span>
+          </div>
+        }
+        message={
+          onDelete
+            ? COMMENT_DELETE_CONFIRMATION.REPLY_DELETE_MESSAGE
+            : COMMENT_DELETE_CONFIRMATION.COMMENT_DELETE_MESSAGE
+        }
+        confirmText="Delete"
+        cancelText="Cancel"
+        confirmVariant="danger"
+        isLoading={isDeleting}
+      />
     </div>
   );
 };

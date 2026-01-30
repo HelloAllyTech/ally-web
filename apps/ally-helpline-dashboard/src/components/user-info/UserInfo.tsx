@@ -1,7 +1,7 @@
 import { FC, useEffect, useRef, useState } from "react";
 
 import { CustomImage } from "@ally-ui-mono/ui-shared";
-import { AccountCircle, Ally, Arrow, Bolt, Logout, ManageAccount } from "@assets";
+import { Ally, Arrow, Bolt, Logout, ManageAccount } from "@assets";
 import { PermissionGuard } from "@components";
 import { Permissions } from "@constants";
 import { useSimulationCredits } from "@hooks";
@@ -13,7 +13,8 @@ const UserInfo: FC<{
   onLogout: () => void;
   onProfileSettings: () => void;
   profileUrl?: string;
-}> = ({ user, isExpanded, onLogout, onProfileSettings, profileUrl }) => {
+  name?: string;
+}> = ({ user, isExpanded, onLogout, onProfileSettings, profileUrl, name }) => {
   const [showLogout, setShowLogout] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const { credits, limitReached, CreditPercentage } = useSimulationCredits();
@@ -55,20 +56,13 @@ const UserInfo: FC<{
                 className="bg-white rounded-full flex items-center justify-center w-full h-full overflow-hidden"
                 data-testid="user-info-avatar"
               >
-                {profileUrl ? (
-                  <CustomImage
-                    className="rounded-full object-cover"
-                    fallbackClassName="flex items-center justify-center text-typography-600 bg-neutral-100 rounded-full object-cover w-full h-full"
-                    fallbackText="NA"
-                    src={profileUrl}
-                    alt="Profile"
-                  />
-                ) : (
-                  <AccountCircle
-                    className="text-typography-700 w-[28px] h-[28px]"
-                    data-testid="user-info-avatar-icon"
-                  />
-                )}
+                <CustomImage
+                  className="rounded-full object-cover"
+                  fallbackClassName="flex items-center justify-center text-typography-600 bg-neutral-100 rounded-full object-cover w-full h-full"
+                  fallbackText={name ? name?.slice(0, 1).toUpperCase() : "NA"}
+                  src={profileUrl}
+                  alt="Profile"
+                />
               </div>
             </div>
             {isExpanded && (

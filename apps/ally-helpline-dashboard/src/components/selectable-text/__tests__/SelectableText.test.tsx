@@ -1,9 +1,26 @@
 import React from "react";
 
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import { Provider } from "react-redux";
+import { configureStore } from "@reduxjs/toolkit";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
 import SelectableText from "../SelectableText";
+
+// Create a mock Redux store
+const createMockStore = () => {
+  return configureStore({
+    reducer: {
+      user: () => ({
+        user: {
+          id: 1,
+          name: "Test User",
+          profileImageUrl: "https://example.com/test-user.jpg",
+        },
+      }),
+    },
+  });
+};
 
 // Mock sonner toast
 vi.mock("sonner", () => ({
@@ -13,6 +30,12 @@ vi.mock("sonner", () => ({
   },
 }));
 
+// Mock useCreateCommentMutation hook
+vi.mock("@src/api", () => ({
+  useCreateCommentMutation: vi
+    .fn()
+    .mockReturnValue([vi.fn(), { isSuccess: false, isLoading: false, data: null }]),
+}));
 // Mock AddComment icon
 vi.mock("@ally-ui-mono/ui-shared/assets", () => ({
   AddComment: ({ className }: any) => <div data-testid="add-comment-icon" className={className} />,
@@ -121,7 +144,6 @@ describe("SelectableText Component", () => {
     transcript: mockTranscript as any,
     selectedEndIndex: 0,
     commentsList: [],
-    handleCreateComment: mockHandleCreateComment,
     isLoading: false,
     handleCommentClick: mockHandleCommentClick,
     isCreateCommentSuccess: false,
@@ -129,18 +151,25 @@ describe("SelectableText Component", () => {
     onCancelComment: mockOnCancelComment,
   };
 
+  let mockStore: ReturnType<typeof createMockStore>;
+
   beforeEach(() => {
     vi.clearAllMocks();
+    mockStore = createMockStore();
   });
+
+  const renderWithProvider = (component: React.ReactElement) => {
+    return render(<Provider store={mockStore}>{component}</Provider>);
+  };
 
   // --- Snapshot Tests ---
   it("should match snapshot with basic segment", () => {
-    const { asFragment } = render(<SelectableText {...defaultProps} />);
+    const { asFragment } = renderWithProvider(<SelectableText {...defaultProps} />);
     expect(asFragment()).toMatchSnapshot();
   });
 
   it("should match snapshot with add comment button visible", () => {
-    const { asFragment } = render(
+    const { asFragment } = renderWithProvider(
       <SelectableText
         {...defaultProps}
         newCommentSelection={{ startIndex: 0, endIndex: 23, transcriptId: 101 }}
@@ -150,7 +179,7 @@ describe("SelectableText Component", () => {
   });
 
   it("should match snapshot with comment addition dialog open", () => {
-    const { asFragment } = render(
+    const { asFragment } = renderWithProvider(
       <SelectableText
         {...defaultProps}
         newCommentSelection={{ startIndex: 0, endIndex: 23, transcriptId: 101 }}
@@ -163,22 +192,22 @@ describe("SelectableText Component", () => {
   // --- Basic Rendering Tests ---
   describe("Basic Rendering", () => {
     it("should render segment text", () => {
-      render(<SelectableText {...defaultProps} />);
+      renderWithProvider(<SelectableText {...defaultProps} />);
       expect(screen.getByText("This is selectable text")).toBeInTheDocument();
     });
 
     it("should render as span element", () => {
-      const { container } = render(<SelectableText {...defaultProps} />);
+      const { container } = renderWithProvider(<SelectableText {...defaultProps} />);
       expect(container.querySelector("span")).toBeInTheDocument();
     });
 
     it("should not show add comment button when no selection", () => {
-      render(<SelectableText {...defaultProps} />);
+      renderWithProvider(<SelectableText {...defaultProps} />);
       expect(screen.queryByText("Add Comment")).not.toBeInTheDocument();
     });
 
     it("should not show comment thread when not selected", () => {
-      render(<SelectableText {...defaultProps} />);
+      renderWithProvider(<SelectableText {...defaultProps} />);
       expect(screen.queryByTestId("comment-thread")).not.toBeInTheDocument();
     });
   });
@@ -186,7 +215,7 @@ describe("SelectableText Component", () => {
   // --- Add Comment Button Tests ---
   describe("Add Comment Button", () => {
     it("should show add comment button when newCommentSelection matches segment", () => {
-      render(
+      renderWithProvider(
         <SelectableText
           {...defaultProps}
           newCommentSelection={{ startIndex: 0, endIndex: 23, transcriptId: 101 }}
@@ -197,7 +226,7 @@ describe("SelectableText Component", () => {
     });
 
     it("should not show add comment button when selection does not match", () => {
-      render(
+      renderWithProvider(
         <SelectableText
           {...defaultProps}
           newCommentSelection={{ startIndex: 50, endIndex: 60, transcriptId: 101 }}
@@ -207,7 +236,7 @@ describe("SelectableText Component", () => {
     });
 
     it("should not show add comment button when transcriptId does not match", () => {
-      render(
+      renderWithProvider(
         <SelectableText
           {...defaultProps}
           newCommentSelection={{ startIndex: 0, endIndex: 23, transcriptId: 999 }}
@@ -217,7 +246,7 @@ describe("SelectableText Component", () => {
     });
 
     it("should not show add comment button when dialog is open", () => {
-      render(
+      renderWithProvider(
         <SelectableText
           {...defaultProps}
           newCommentSelection={{ startIndex: 0, endIndex: 23, transcriptId: 101 }}
@@ -228,7 +257,7 @@ describe("SelectableText Component", () => {
     });
 
     it("should call setAddCommentDialogOpen when add comment button is clicked", () => {
-      render(
+      renderWithProvider(
         <SelectableText
           {...defaultProps}
           newCommentSelection={{ startIndex: 0, endIndex: 23, transcriptId: 101 }}
@@ -240,7 +269,7 @@ describe("SelectableText Component", () => {
     });
 
     it("should use correct index-segIdx format for dialog open", () => {
-      render(
+      renderWithProvider(
         <SelectableText
           {...defaultProps}
           index={2}
@@ -257,7 +286,7 @@ describe("SelectableText Component", () => {
   // --- Comment Addition Dialog Tests ---
   describe("Comment Addition Dialog", () => {
     it("should show dialog when addCommentDialogOpen matches", () => {
-      render(
+      renderWithProvider(
         <SelectableText
           {...defaultProps}
           newCommentSelection={{ startIndex: 0, endIndex: 23, transcriptId: 101 }}
@@ -268,7 +297,7 @@ describe("SelectableText Component", () => {
     });
 
     it("should not show dialog when addCommentDialogOpen does not match", () => {
-      render(
+      renderWithProvider(
         <SelectableText
           {...defaultProps}
           newCommentSelection={{ startIndex: 0, endIndex: 23, transcriptId: 101 }}
@@ -278,26 +307,8 @@ describe("SelectableText Component", () => {
       expect(screen.queryByTestId("comment-addition-dialog")).not.toBeInTheDocument();
     });
 
-    it("should call handleCreateComment with correct params when comment is submitted", () => {
-      render(
-        <SelectableText
-          {...defaultProps}
-          newCommentSelection={{ startIndex: 0, endIndex: 23, transcriptId: 101 }}
-          addCommentDialogOpen="0-0"
-        />,
-      );
-      fireEvent.click(screen.getByTestId("dialog-submit"));
-      expect(mockHandleCreateComment).toHaveBeenCalledWith({
-        comment: "Test comment",
-        selection: { startIndex: 0, endIndex: 23 },
-        transcriptId: 101,
-        threadId: null,
-        parentCommentId: null,
-      });
-    });
-
     it("should handle cancel from dialog", () => {
-      render(
+      renderWithProvider(
         <SelectableText
           {...defaultProps}
           newCommentSelection={{ startIndex: 0, endIndex: 23, transcriptId: 101 }}
@@ -308,32 +319,6 @@ describe("SelectableText Component", () => {
       expect(mockSetAddCommentDialogOpen).toHaveBeenCalledWith(null);
       expect(mockSetNewCommentSelection).toHaveBeenCalledWith(null);
       expect(mockOnCancelComment).toHaveBeenCalled();
-    });
-
-    it("should apply reduced opacity when loading", () => {
-      const { container } = render(
-        <SelectableText
-          {...defaultProps}
-          newCommentSelection={{ startIndex: 0, endIndex: 23, transcriptId: 101 }}
-          addCommentDialogOpen="0-0"
-          isLoading={true}
-        />,
-      );
-      const dialogContainer = screen.getByTestId("comment-addition-dialog").parentElement;
-      expect(dialogContainer).toHaveStyle({ opacity: "0.5" });
-    });
-
-    it("should have full opacity when not loading", () => {
-      render(
-        <SelectableText
-          {...defaultProps}
-          newCommentSelection={{ startIndex: 0, endIndex: 23, transcriptId: 101 }}
-          addCommentDialogOpen="0-0"
-          isLoading={false}
-        />,
-      );
-      const dialogContainer = screen.getByTestId("comment-addition-dialog").parentElement;
-      expect(dialogContainer).toHaveStyle({ opacity: "1" });
     });
   });
 
@@ -349,57 +334,35 @@ describe("SelectableText Component", () => {
     };
 
     it("should show comment thread when isSelectedComment and selectedThreadId matches", () => {
-      render(<SelectableText {...propsWithThread} />);
+      renderWithProvider(<SelectableText {...propsWithThread} />);
       expect(screen.getByTestId("comment-thread")).toBeInTheDocument();
     });
 
     it("should not show comment thread when isSelectedComment is false", () => {
-      render(<SelectableText {...propsWithThread} isSelectedComment={false} />);
+      renderWithProvider(<SelectableText {...propsWithThread} isSelectedComment={false} />);
       expect(screen.queryByTestId("comment-thread")).not.toBeInTheDocument();
     });
 
     it("should not show comment thread when selectedThreadId does not match", () => {
-      render(<SelectableText {...propsWithThread} selectedThreadId="different-thread" />);
+      renderWithProvider(
+        <SelectableText {...propsWithThread} selectedThreadId="different-thread" />,
+      );
       expect(screen.queryByTestId("comment-thread")).not.toBeInTheDocument();
     });
 
     it("should pass correct props to CommentThread", () => {
-      render(<SelectableText {...propsWithThread} isFeedOwner={true} />);
+      renderWithProvider(<SelectableText {...propsWithThread} isFeedOwner={true} />);
       const thread = screen.getByTestId("comment-thread");
       expect(thread).toHaveAttribute("data-id", "thread-1");
       expect(thread).toHaveAttribute("data-is-feed-owner", "true");
       expect(thread).toHaveAttribute("data-comment-count", "1");
-    });
-
-    it("should call handleCreateComment when adding comment to thread", () => {
-      render(<SelectableText {...propsWithThread} />);
-      fireEvent.click(screen.getByTestId("thread-add-comment"));
-      expect(mockHandleCreateComment).toHaveBeenCalledWith({
-        comment: "New comment",
-        selection: { startIndex: 10, endIndex: 24 },
-        transcriptId: 101,
-        threadId: "thread-1",
-        parentCommentId: null,
-      });
-    });
-
-    it("should call handleCreateComment with parentCommentId when replying", () => {
-      render(<SelectableText {...propsWithThread} />);
-      fireEvent.click(screen.getByTestId("thread-reply"));
-      expect(mockHandleCreateComment).toHaveBeenCalledWith({
-        comment: "Reply text",
-        selection: { startIndex: 10, endIndex: 24 },
-        transcriptId: 101,
-        threadId: "thread-1",
-        parentCommentId: "parent-123",
-      });
     });
   });
 
   // --- Highlighting Tests ---
   describe("Highlighting", () => {
     it("should have amber-50 background for segment with comments (not selected)", () => {
-      const { container } = render(
+      const { container } = renderWithProvider(
         <SelectableText {...defaultProps} segment={mockSegmentWithComments} selectedMessageId="" />,
       );
       const span = container.querySelector("span");
@@ -407,7 +370,7 @@ describe("SelectableText Component", () => {
     });
 
     it("should have amber-200 background when segment is selected", () => {
-      const { container } = render(
+      const { container } = renderWithProvider(
         <SelectableText
           {...defaultProps}
           segment={mockSegmentWithComments}
@@ -420,7 +383,7 @@ describe("SelectableText Component", () => {
     });
 
     it("should have blue background for new comment selection", () => {
-      const { container } = render(
+      const { container } = renderWithProvider(
         <SelectableText
           {...defaultProps}
           segment={mockSegmentWithComments}
@@ -432,7 +395,7 @@ describe("SelectableText Component", () => {
     });
 
     it("should have cursor-pointer for segments with comments (not part of new selection)", () => {
-      const { container } = render(
+      const { container } = renderWithProvider(
         <SelectableText {...defaultProps} segment={mockSegmentWithComments} />,
       );
       const span = container.querySelector("span");
@@ -440,7 +403,7 @@ describe("SelectableText Component", () => {
     });
 
     it("should not have cursor-pointer for segments with comments that are part of new selection", () => {
-      const { container } = render(
+      const { container } = renderWithProvider(
         <SelectableText
           {...defaultProps}
           segment={mockSegmentWithComments}
@@ -452,13 +415,13 @@ describe("SelectableText Component", () => {
     });
 
     it("should not have cursor-pointer for segments without comments", () => {
-      const { container } = render(<SelectableText {...defaultProps} />);
+      const { container } = renderWithProvider(<SelectableText {...defaultProps} />);
       const span = container.querySelector("span");
       expect(span).not.toHaveClass("cursor-pointer");
     });
 
     it("should have amber border for commented segments", () => {
-      const { container } = render(
+      const { container } = renderWithProvider(
         <SelectableText {...defaultProps} segment={mockSegmentWithComments} />,
       );
       const span = container.querySelector("span");
@@ -469,7 +432,7 @@ describe("SelectableText Component", () => {
   // --- Click Handler Tests ---
   describe("Click Handlers", () => {
     it("should call handleCommentClick when clicking on commented segment", () => {
-      render(
+      renderWithProvider(
         <SelectableText {...defaultProps} segment={mockSegmentWithComments} selectedMessageId="" />,
       );
       fireEvent.click(screen.getByText("Commented text"));
@@ -482,13 +445,13 @@ describe("SelectableText Component", () => {
     });
 
     it("should not call handleCommentClick when segment has no comments", () => {
-      render(<SelectableText {...defaultProps} />);
+      renderWithProvider(<SelectableText {...defaultProps} />);
       fireEvent.click(screen.getByText("This is selectable text"));
       expect(mockHandleCommentClick).not.toHaveBeenCalled();
     });
 
     it("should not call handleCommentClick when already selected", () => {
-      render(
+      renderWithProvider(
         <SelectableText
           {...defaultProps}
           segment={mockSegmentWithComments}
@@ -501,7 +464,7 @@ describe("SelectableText Component", () => {
     });
 
     it("should not call handleCommentClick when segment is part of new selection", () => {
-      render(
+      renderWithProvider(
         <SelectableText
           {...defaultProps}
           segment={mockSegmentWithComments}
@@ -518,7 +481,7 @@ describe("SelectableText Component", () => {
   describe("Refs", () => {
     it("should assign selectedCommentRef when isSelectedComment is true", () => {
       const ref = { current: null };
-      render(
+      renderWithProvider(
         <SelectableText
           {...defaultProps}
           isSelectedComment={true}
@@ -530,7 +493,7 @@ describe("SelectableText Component", () => {
 
     it("should not assign selectedCommentRef when isSelectedComment is false", () => {
       const ref = { current: null };
-      render(
+      renderWithProvider(
         <SelectableText
           {...defaultProps}
           isSelectedComment={false}
@@ -544,8 +507,10 @@ describe("SelectableText Component", () => {
   // --- Edge Cases ---
   describe("Edge Cases", () => {
     it("should handle empty text", () => {
-      render(<SelectableText {...defaultProps} segment={{ ...mockSegment, text: "" }} />);
-      const { container } = render(<SelectableText {...defaultProps} />);
+      renderWithProvider(
+        <SelectableText {...defaultProps} segment={{ ...mockSegment, text: "" }} />,
+      );
+      const { container } = renderWithProvider(<SelectableText {...defaultProps} />);
       expect(container.querySelector("span")).toBeInTheDocument();
     });
 
@@ -554,7 +519,7 @@ describe("SelectableText Component", () => {
         ...mockSegmentWithComments,
         commentIds: ["thread-1", "thread-2", "thread-3"],
       };
-      render(
+      renderWithProvider(
         <SelectableText
           {...defaultProps}
           segment={segmentWithMultipleComments}
@@ -569,7 +534,7 @@ describe("SelectableText Component", () => {
     });
 
     it("should handle special characters in text", () => {
-      render(
+      renderWithProvider(
         <SelectableText
           {...defaultProps}
           segment={{ ...mockSegment, text: "<script>alert('xss')</script>" }}
@@ -579,7 +544,7 @@ describe("SelectableText Component", () => {
     });
 
     it("should handle emoji in text", () => {
-      render(
+      renderWithProvider(
         <SelectableText
           {...defaultProps}
           segment={{ ...mockSegment, text: "Hello 👋 World 🌍" }}
@@ -590,7 +555,9 @@ describe("SelectableText Component", () => {
 
     it("should handle very long text", () => {
       const longText = "A".repeat(10000);
-      render(<SelectableText {...defaultProps} segment={{ ...mockSegment, text: longText }} />);
+      renderWithProvider(
+        <SelectableText {...defaultProps} segment={{ ...mockSegment, text: longText }} />,
+      );
       expect(screen.getByText(longText)).toBeInTheDocument();
     });
   });
@@ -598,12 +565,12 @@ describe("SelectableText Component", () => {
   // --- Styling Tests ---
   describe("Styling", () => {
     it("should have relative positioning", () => {
-      const { container } = render(<SelectableText {...defaultProps} />);
+      const { container } = renderWithProvider(<SelectableText {...defaultProps} />);
       expect(container.querySelector("span")).toHaveClass("relative");
     });
 
     it("should have fixed positioning for dialog", () => {
-      render(
+      renderWithProvider(
         <SelectableText
           {...defaultProps}
           newCommentSelection={{ startIndex: 0, endIndex: 23, transcriptId: 101 }}
@@ -615,7 +582,7 @@ describe("SelectableText Component", () => {
     });
 
     it("should have fixed positioning for comment thread", () => {
-      render(
+      renderWithProvider(
         <SelectableText
           {...defaultProps}
           segment={mockSegmentWithComments}
@@ -630,7 +597,7 @@ describe("SelectableText Component", () => {
     });
 
     it("should have proper styling for add comment button", () => {
-      render(
+      renderWithProvider(
         <SelectableText
           {...defaultProps}
           newCommentSelection={{ startIndex: 0, endIndex: 23, transcriptId: 101 }}

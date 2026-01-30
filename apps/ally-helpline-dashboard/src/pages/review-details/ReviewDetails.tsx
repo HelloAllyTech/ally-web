@@ -1,13 +1,11 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 
-import { Emoji, EmojiStyle } from "emoji-picker-react";
 import { useSelector } from "react-redux";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
 
 import { CustomImage, SimulationDetailsModal, Toggle } from "@ally-ui-mono/ui-shared";
 import {
-  useCreateCommentMutation,
   useAddReactionMutation,
   useGetReviewByIdQuery,
   useGetReviewDetailsWithMessagesQuery,
@@ -20,6 +18,7 @@ import {
   ReactionsModal,
   ReviewCommentsSidepanel,
   Transcription,
+  NativeEmoji,
 } from "@components";
 import { KeyboardKeys, REVIEW_PRIVACY_OPTIONS } from "@constants";
 import { RootState } from "@store";
@@ -53,8 +52,6 @@ export const ReviewDetails = () => {
     reviewId || "",
   );
 
-  const [createComment, { isLoading: isCreateCommentLoading, isSuccess: isCreateCommentSuccess }] =
-    useCreateCommentMutation();
   const { data: simulationTranscript, isLoading: isGetTranscriptLoading } =
     useGetReviewDetailsWithMessagesQuery({
       id: reviewId || "",
@@ -143,13 +140,6 @@ export const ReviewDetails = () => {
     return reactionsCount;
   }, [reviewReactions]);
 
-  // Reset transcript list when comment is successfully created to reflect new data
-  useEffect(() => {
-    if (isCreateCommentSuccess) {
-      setTranscriptOffset(0);
-    }
-  }, [isCreateCommentSuccess]);
-
   const handleGoBack = () => {
     navigate(-1);
   };
@@ -229,18 +219,6 @@ export const ReviewDetails = () => {
     if (!hasMoreTranscripts || isGetTranscriptLoading) return;
     setTranscriptOffset(prev => prev + TRANSCRIPT_PAGE_SIZE);
   };
-  const onCreateComment = async (
-    reviewId: string,
-    body: {
-      threadId: string;
-      parentCommentId: string;
-      messageId: number;
-      content: string;
-      selection: { startIndex: number; endIndex: number };
-    },
-  ) => {
-    createComment({ reviewId, body });
-  };
 
   const handleReactionsClick = () => {
     setShowReactionsModal(true);
@@ -287,7 +265,7 @@ export const ReviewDetails = () => {
             >
               {selectedEmoji ? (
                 <div className="pb-0.5">
-                  <Emoji unified={selectedEmoji} size={16} emojiStyle={EmojiStyle.GOOGLE} />
+                  <NativeEmoji unified={selectedEmoji} size={16} />
                 </div>
               ) : (
                 <Smiley className="w-6 h-6 text-neutral-600 hover:text-[#0957D0]" />
@@ -365,10 +343,7 @@ export const ReviewDetails = () => {
               <div className="w-1 h-1 bg-neutral-500 rounded-full mx-1" />
               <div>
                 Date & time:{" "}
-                {getFormattedDateTime(
-                  reviewDetails?.scenarioSession?.createdAt,
-                  "MMM dd, yyyy hh:mm a",
-                )}
+                {getFormattedDateTime(reviewDetails?.scenario?.createdAt, "MMM dd, yyyy hh:mm a")}
               </div>
               <div className="w-1 h-1 bg-neutral-500 rounded-full mx-1" />
               <div className="font-primary  leading-4 text-black/60">
@@ -381,7 +356,10 @@ export const ReviewDetails = () => {
         )}
       </div>
       <div className="flex w-full h-[calc(100%-103px)]">
-        <div className="mx-auto h-full w-[calc(100%-384px)] h-[99%] transition-all duration-400">
+        <div
+          ref={transcriptScrollRef}
+          className="pt-5 mx-auto px-10 w-[calc(100%-384px)] h-[99%] pb-20 transition-all duration-400 custom-scrollbar"
+        >
           <Transcription
             councellorName={isFeedOwner ? "You" : reviewDetails?.createdBy?.name}
             agentName={reviewDetails?.scenario?.name}
@@ -394,22 +372,16 @@ export const ReviewDetails = () => {
             }
             isFeedOwner={isFeedOwner}
             handleCommentClick={handleCommentClick}
-            createComment={onCreateComment}
-            isCreateCommentLoading={isCreateCommentLoading}
-            isCreateCommentSuccess={isCreateCommentSuccess}
             selectedThreadId={selectedThreadId}
             transcriptList={transcriptList}
             userId={user?.id}
             canSelect={true}
             handleLoadMore={handleLoadMore}
             isLoading={isGetTranscriptLoading}
-            hasMore={hasMoreTranscripts}
-            scrollContainerRef={transcriptScrollRef}
             selectedMessageId={selectedMessageId}
             selectedStartIndex={selectedStartIndex}
             selectedEndIndex={selectedEndIndex}
             onCloseSelectedComment={handleCloseSelectedComment}
-            className="h-full overflow-y-auto custom-scrollbar pt-5 px-10 pb-20 mt-0"
           />
         </div>
         <ReviewCommentsSidepanel
