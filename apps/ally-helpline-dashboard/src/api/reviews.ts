@@ -6,6 +6,7 @@ import {
   ReactionInput,
   GetReviewReactionsResponse,
   GetReviewsReactionsInput,
+  CommentItem,
 } from "@types";
 
 import { baseAPI } from "./baseAPI";
@@ -101,7 +102,17 @@ const reviewsAPI = baseAPI.injectEndpoints({
       }),
       providesTags: [TAG_TYPES.REVIEW],
     }),
-
+    getReviewThreadComments: builder.query<
+      { data: CommentItem[] },
+      { id: string; limit: number; offset: number }
+    >({
+      query: ({ id, limit, offset }) => ({
+        url: ApiEndpoints.REVIEWS.GET_REVIEW_THREAD_COMMENTS(id),
+        method: HttpMethod.GET,
+        params: { limit, offset },
+      }),
+      providesTags: [TAG_TYPES.REVIEW],
+    }),
     addReaction: builder.mutation<boolean, { id: string; reaction: ReactionInput }>({
       query: ({ id, reaction }) => ({
         url: ApiEndpoints.REVIEWS.ADD_REACTION(id),
@@ -202,4 +213,5 @@ export const {
   useEditCommentMutation,
   useDeleteCommentMutation,
   useLazyGetCommentRepliesQuery,
+  useGetReviewThreadCommentsQuery,
 } = reviewsAPI;
