@@ -3,7 +3,7 @@
 exports[`SelectableText Component > should match snapshot with add comment button visible 1`] = `
 <DocumentFragment>
   <span
-    class="relative  "
+    class="relative  bg-[#E1F1FE]"
   >
     This is selectable text
     <div
@@ -37,7 +37,7 @@ exports[`SelectableText Component > should match snapshot with basic segment 1`]
 exports[`SelectableText Component > should match snapshot with comment addition dialog open 1`] = `
 <DocumentFragment>
   <span
-    class="relative  "
+    class="relative  bg-[#E1F1FE]"
   >
     This is selectable text
     <div
