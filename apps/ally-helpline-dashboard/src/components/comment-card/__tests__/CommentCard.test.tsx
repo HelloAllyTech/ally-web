@@ -7,15 +7,18 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 
 import CommentCard from "../CommentCard";
 
-// Mock emoji-picker-react
-vi.mock("emoji-picker-react", () => ({
-  Emoji: ({ unified }: { unified: string }) => (
-    <span data-testid={`emoji-${unified}`}>{unified}</span>
-  ),
-  EmojiStyle: {
-    NATIVE: "native",
-  },
-}));
+// Mock NativeEmoji component
+vi.mock("@components", async () => {
+  const actual = await vi.importActual("@components");
+  return {
+    ...actual,
+    NativeEmoji: ({ unified }: { unified: string }) => (
+      <span data-testid={`emoji-${unified}`} role="img" aria-label={`emoji-${unified}`}>
+        {unified}
+      </span>
+    ),
+  };
+});
 
 // Mock ui-shared
 vi.mock("@ally-ui-mono/ui-shared/index", () => ({
@@ -304,8 +307,8 @@ describe("CommentCard Component", () => {
         reactions: { "1f44d": 5, "2764": 3 },
       };
       renderWithProvider(<CommentCard comment={commentWithReactions} showLike={false} />);
-      expect(screen.getByTestId("emoji-1f44d")).toBeInTheDocument();
-      expect(screen.getByTestId("emoji-2764")).toBeInTheDocument();
+      expect(screen.getByLabelText("emoji-1f44d")).toBeInTheDocument();
+      expect(screen.getByLabelText("emoji-2764")).toBeInTheDocument();
     });
 
     it("should display reaction count", () => {
@@ -323,7 +326,7 @@ describe("CommentCard Component", () => {
         reactions: { "1f44d": 5 },
       };
       renderWithProvider(<CommentCard comment={commentWithReactions} showLike />);
-      expect(screen.getByTestId("emoji-1f44d")).toBeInTheDocument();
+      expect(screen.getByLabelText("emoji-1f44d")).toBeInTheDocument();
     });
 
     it("should display maximum 3 reaction emojis", () => {
@@ -333,10 +336,10 @@ describe("CommentCard Component", () => {
       };
       renderWithProvider(<CommentCard comment={commentWithManyReactions} showLike={false} />);
       // Should show only first 3
-      expect(screen.getByTestId("emoji-1f44d")).toBeInTheDocument();
-      expect(screen.getByTestId("emoji-2764")).toBeInTheDocument();
-      expect(screen.getByTestId("emoji-1f389")).toBeInTheDocument();
-      expect(screen.queryByTestId("emoji-1f60a")).not.toBeInTheDocument();
+      expect(screen.getByLabelText("emoji-1f44d")).toBeInTheDocument();
+      expect(screen.getByLabelText("emoji-2764")).toBeInTheDocument();
+      expect(screen.getByLabelText("emoji-1f389")).toBeInTheDocument();
+      expect(screen.queryByLabelText("emoji-1f60a")).not.toBeInTheDocument();
     });
   });
   it("should call addCommentReaction when an emoji is selected", async () => {

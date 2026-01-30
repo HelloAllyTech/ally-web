@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 
-import { Emoji } from "emoji-picker-react";
 import { useSelector } from "react-redux";
 import { toast } from "sonner";
 
@@ -13,7 +12,14 @@ import {
   useEditCommentMutation,
 } from "@api";
 import { ArrowUp, MoreVertIcon, Smiley, Delete, Edit, Hide, Eye } from "@assets";
-import { Button, CustomMenu, ReactionSelector, MenuItem, ConfirmationPopover } from "@components";
+import {
+  Button,
+  CustomMenu,
+  NativeEmoji,
+  ReactionSelector,
+  MenuItem,
+  ConfirmationPopover,
+} from "@components";
 import { COMMENT_DELETE_CONFIRMATION } from "@src/components/comment-card/constants";
 import { RootState } from "@store";
 import { ReactionsType, CommentItem } from "@types";
@@ -342,8 +348,8 @@ const CommentCard = ({
                 onClick={() => enableLikeUpdate && setShowEmojiPicker(prev => !prev)}
               >
                 {selectedEmoji ? (
-                  <div className="pb-0.5  w-[26px] bg-white h-[26px] flex items-center justify-center rounded-full border-[0.5px] border-primary-600">
-                    <Emoji unified={selectedEmoji} size={14} />
+                  <div className="pt-[1px] w-[26px] bg-white h-[26px] flex items-center justify-center rounded-full border-[0.5px] border-primary-600">
+                    <NativeEmoji unified={selectedEmoji} size={14} />
                   </div>
                 ) : enableLikeUpdate ? (
                   <Smiley className="w-5 h-5 text-neutral-600 hover:text-[#0957D0]" />
@@ -376,7 +382,7 @@ const CommentCard = ({
                       >
                         {reaction !== "" && (
                           <div className="w-[20px] bg-white h-[20px] flex items-center justify-center rounded-full border-[0.5px]">
-                            <Emoji unified={reaction ?? "1f44d"} size={10} />
+                            <NativeEmoji unified={reaction ?? "1f44d"} size={10} />
                           </div>
                         )}
                       </div>

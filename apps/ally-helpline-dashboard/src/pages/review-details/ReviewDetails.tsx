@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 
-import { Emoji } from "emoji-picker-react";
 import { useSelector } from "react-redux";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
@@ -14,6 +13,7 @@ import {
 } from "@api";
 import { ChatBubble, LeftArrow, Smiley, InfoIcon } from "@assets";
 import {
+  NativeEmoji,
   ReactionSelector,
   EmojiStack,
   ReactionsModal,
@@ -247,7 +247,7 @@ export const ReviewDetails = () => {
             >
               {selectedEmoji ? (
                 <div className="pb-0.5">
-                  <Emoji unified={selectedEmoji} size={16} />
+                  <NativeEmoji unified={selectedEmoji} size={16} />
                 </div>
               ) : (
                 <Smiley className="w-6 h-6 text-neutral-600 hover:text-[#0957D0]" />

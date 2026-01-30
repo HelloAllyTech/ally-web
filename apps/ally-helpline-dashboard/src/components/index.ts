@@ -28,6 +28,7 @@ import InfoBanner from "./info-banner";
 import Input from "./input";
 import { LeaderboardList, type LeaderboardUser } from "./leaderboard-list";
 import LoginDialog from "./login-dialog";
+import { NativeEmoji } from "./native-emoji";
 import NavSideBar from "./nav-sidebar";
 import OTP from "./otp";
 import { PathwayScenarioCard } from "./pathway-scenario-card";
@@ -87,6 +88,7 @@ export {
   InfoBanner,
   Input,
   LoginDialog,
+  NativeEmoji,
   NavSideBar,
   OTP,
   PathwayScenarioCard,
