@@ -93,6 +93,29 @@ const SelectableText = ({
     left: number;
   }>({ top: 0, left: 0 });
 
+  // Check if this segment is part of the new comment selection (handles overlapping selections)
+  const isPartOfNewSelection =
+    newCommentSelection &&
+    newCommentSelection.transcriptId === transcript.id &&
+    segment.start < newCommentSelection.endIndex &&
+    segment.end > newCommentSelection.startIndex;
+
+  // Check if this segment is the last one in the new selection (where we show the "Add Comment" button)
+  const isLastSegmentOfSelection =
+    isPartOfNewSelection && segment.end === newCommentSelection.endIndex;
+
+  // Find the thread that matches the selectedThreadId to get its end index
+  const selectedThread = transcript.threads?.find(thread => thread.id === selectedThreadId);
+
+  // Check if this segment should show the comment thread
+  // Only show on the segment that ends at the thread's end index (prevents duplicate popups in overlapping sections)
+  const shouldShowCommentThread =
+    isSelectedComment &&
+    selectedThreadId === segment.commentIds[0] &&
+    commentsList &&
+    selectedThread &&
+    segment.end === selectedThread.selection.endIndex;
+
   useEffect(() => {
     if (isCreateCommentSuccess) {
       toast.success("Comment created successfully");
@@ -182,60 +205,66 @@ const SelectableText = ({
     onCancelComment();
   }, []);
 
+  const handleAddComment = async (comment: string) => {
+    await handleCreateComment({
+      comment: comment,
+      selection: { startIndex: segment.start, endIndex: segment.end },
+      transcriptId: transcript.id,
+      threadId: selectedThreadId,
+      parentCommentId: null,
+    });
+  };
+
   const handleCloseSelectedComment = useCallback(() => {
     onCloseSelectedComment?.();
   }, [onCloseSelectedComment]);
+
+  const onSegmentClick = () => {
+    if (
+      segment.commentIds.length > 0 &&
+      selectedMessageId !== String(transcript.id) &&
+      // selectedStartIndex !== segment.selection?.startIndex && //TODO: Uncomment this when the bug is fixed
+      selectedEndIndex !== segment.end &&
+      !isPartOfNewSelection // Don't trigger comment click if this is part of a new selection
+    ) {
+      handleCommentClick?.({
+        messageId: String(transcript.id),
+        startIndex: segment.start,
+        endIndex: segment.end,
+        threadId: segment.commentIds[0],
+      });
+    }
+  };
+
   useClickOutside(dialogRef, handleCancelComment);
   useClickOutside(selectedCommentCalloutRef, handleCloseSelectedComment);
   useClickOutside(addCommentDialogRef, handleCancelComment);
+
   return (
     <span
       key={segIdx}
       ref={isSelectedComment ? selectedCommentRef : undefined}
-      onClick={() => {
-        if (
-          segment.commentIds.length > 0 &&
-          selectedMessageId !== String(transcript.id) &&
-          // selectedStartIndex !== segment.selection?.startIndex && //TODO: Uncomment this when the bug is fixed
-          selectedEndIndex !== segment.end
-        ) {
-          handleCommentClick?.({
-            messageId: String(transcript.id),
-            startIndex: segment.start,
-            endIndex: segment.end,
-            threadId: segment.commentIds[0],
-          });
-        }
-      }}
-      className={`relative ${segment.commentIds.length > 0 ? "cursor-pointer" : ""} ${
-        segment.commentIds.length > 0
-          ? !(
-              newCommentSelection &&
-              newCommentSelection.transcriptId === transcript.id &&
-              newCommentSelection.startIndex === segment.start &&
-              newCommentSelection.endIndex === segment.end
-            )
+      onClick={onSegmentClick}
+      className={`relative ${segment.commentIds.length > 0 && !isPartOfNewSelection ? "cursor-pointer" : ""} ${
+        isPartOfNewSelection
+          ? "bg-[#E1F1FE]"
+          : segment.commentIds.length > 0
             ? `${String(selectedMessageId) === String(transcript.id) && selectedThreadId === segment.commentIds[0] ? "bg-amber-200" : "bg-amber-50"} border-b border-amber-400`
-            : "bg-[#E1F1FE]"
-          : ""
+            : ""
       }`}
     >
       {segment.text}
-      {newCommentSelection &&
-        newCommentSelection.transcriptId === transcript.id &&
-        newCommentSelection.startIndex === segment.start &&
-        newCommentSelection.endIndex === segment.end &&
-        addCommentDialogOpen !== `${index}-${segIdx}` && (
-          <div
-            ref={setPositionRef}
-            onClick={() => setAddCommentDialogOpen(`${index}-${segIdx}`)}
-            className="absolute hover:bg-[#F3F3F3] z-10 flex gap-2 cursor-pointer items-center top-full left-0 mt-1 px-4 py-2 w-[160px] shadow-lg border h-[40px] rounded-[100px] bg-white"
-          >
-            <AddComment className="w-6 h-6 pt-1" />
-            <span className="text-sm font-medium whitespace-nowrap">Add Comment</span>
-          </div>
-        )}
-      {addCommentDialogOpen === `${index}-${segIdx}` && (
+      {isLastSegmentOfSelection && addCommentDialogOpen !== `${index}-${segIdx}` && (
+        <div
+          ref={setPositionRef}
+          onClick={() => setAddCommentDialogOpen(`${index}-${segIdx}`)}
+          className="absolute hover:bg-[#F3F3F3] z-10 flex gap-2 cursor-pointer items-center top-full left-0 mt-1 px-4 py-2 w-[160px] shadow-lg border h-[40px] rounded-[100px] bg-white"
+        >
+          <AddComment className="w-6 h-6 pt-1" />
+          <span className="text-sm font-medium whitespace-nowrap">Add Comment</span>
+        </div>
+      )}
+      {addCommentDialogOpen === `${index}-${segIdx}` && newCommentSelection && (
         <div
           ref={setDialogRef}
           className="fixed z-50"
@@ -250,7 +279,10 @@ const SelectableText = ({
             onComment={comment =>
               handleCreateComment({
                 comment: comment,
-                selection: { startIndex: segment.start, endIndex: segment.end },
+                selection: {
+                  startIndex: newCommentSelection.startIndex,
+                  endIndex: newCommentSelection.endIndex,
+                },
                 transcriptId: transcript.id,
                 threadId: null,
                 parentCommentId: null,
@@ -259,7 +291,7 @@ const SelectableText = ({
           />
         </div>
       )}
-      {isSelectedComment && selectedThreadId === segment.commentIds[0] && commentsList && (
+      {shouldShowCommentThread && (
         <div
           ref={setCommentThreadRef}
           className="fixed z-50"
@@ -272,15 +304,7 @@ const SelectableText = ({
             id={selectedThreadId}
             isFeedOwner={isFeedOwner}
             comments={commentsList as CommentItem[]}
-            onCommentAddition={comment =>
-              handleCreateComment({
-                comment: comment,
-                selection: { startIndex: segment.start, endIndex: segment.end },
-                transcriptId: transcript.id,
-                threadId: selectedThreadId,
-                parentCommentId: null,
-              })
-            }
+            onCommentAddition={handleAddComment}
             onReplyComment={(replyComment, parentCommentId) =>
               handleCreateComment({
                 comment: replyComment,
