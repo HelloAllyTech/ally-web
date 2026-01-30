@@ -1,4 +1,4 @@
-import { FC, useEffect, useRef, useState, useCallback } from "react";
+import { FC, useEffect, useRef, useState, useCallback, RefObject } from "react";
 
 import "./styles.css";
 import { useParams } from "react-router-dom";
@@ -30,6 +30,8 @@ interface TranscriptionProps {
   className?: string;
   handleLoadMore?: () => void;
   isLoading?: boolean;
+  hasMore?: boolean;
+  scrollContainerRef?: RefObject<HTMLElement>;
   createComment?: (
     reviewId: string,
     body: {
@@ -60,6 +62,8 @@ const Transcription: FC<TranscriptionProps> = ({
   className,
   handleLoadMore,
   isLoading,
+  hasMore = true,
+  scrollContainerRef,
   createComment,
   isCreateCommentLoading,
   isCreateCommentSuccess,
@@ -248,8 +252,16 @@ const Transcription: FC<TranscriptionProps> = ({
   }
 
   return (
-    <div className={`flex flex-col pt-10 -mt-10 gap-4 font-primary ${className}`}>
-      <InfiniteScroll onInfiniteScroll={handleLoadMore} isLoading={isLoading}>
+    <div
+      ref={scrollContainerRef as RefObject<HTMLDivElement>}
+      className={`flex flex-col pt-10 -mt-10 gap-4 font-primary ${className}`}
+    >
+      <InfiniteScroll
+        onInfiniteScroll={handleLoadMore}
+        isLoading={isLoading}
+        hasMore={hasMore}
+        scrollContainerRef={scrollContainerRef}
+      >
         {transcriptions?.map((transcript, index) => (
           <div
             key={transcript.startSeconds}
