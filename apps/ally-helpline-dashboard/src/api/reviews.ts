@@ -187,9 +187,10 @@ const reviewsAPI = baseAPI.injectEndpoints({
     }),
 
     getCommentReplies: builder.query({
-      query: (commentId: string) => ({
+      query: ({ commentId, limit, offset }) => ({
         url: ApiEndpoints.REVIEWS.GET_COMMENT_REPLIES(commentId),
         method: HttpMethod.GET,
+        params: { limit, offset },
       }),
       providesTags: [TAG_TYPES.REVIEW],
     }),
