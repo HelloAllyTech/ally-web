@@ -221,12 +221,14 @@ describe("ReviewCommentsSidepanel Component", () => {
       const threadContainer = screen.getByTestId("thread-card-thread-1").parentElement;
       fireEvent.click(threadContainer!);
 
-      expect(mockOnCommentClick).toHaveBeenCalledWith({
-        threadId: "thread-1",
-        messageId: "101",
-        startIndex: 0,
-        endIndex: 15,
-      });
+      expect(mockOnCommentClick).toHaveBeenCalledWith([
+        {
+          threadId: "thread-1",
+          messageId: "101",
+          startIndex: 0,
+          endIndex: 15,
+        },
+      ]);
     });
 
     it("should call onCommentClick with correct messageId as string", async () => {
@@ -238,12 +240,14 @@ describe("ReviewCommentsSidepanel Component", () => {
       const threadContainer = screen.getByTestId("thread-card-thread-2").parentElement;
       fireEvent.click(threadContainer!);
 
-      expect(mockOnCommentClick).toHaveBeenCalledWith({
-        threadId: "thread-2",
-        messageId: "102",
-        startIndex: 20,
-        endIndex: 35,
-      });
+      expect(mockOnCommentClick).toHaveBeenCalledWith([
+        {
+          threadId: "thread-2",
+          messageId: "102",
+          startIndex: 20,
+          endIndex: 35,
+        },
+      ]);
     });
 
     it("should use default empty function when onCommentClick not provided", async () => {
@@ -259,28 +263,39 @@ describe("ReviewCommentsSidepanel Component", () => {
   });
 
   // --- Animation/Transition Tests ---
+  // Animation styles (transform, opacity, transitionDelay) are on the grandparent of thread-card
+  const getAnimatedThreadWrapper = (el: HTMLElement) => el.parentElement?.parentElement;
+
   describe("Animations", () => {
     it("should apply open styles when isOpen is true", async () => {
       render(<ReviewCommentsSidepanel {...defaultProps} isOpen={true} />);
       await waitFor(() => {
-        const threadContainer = screen.getByTestId("thread-card-thread-1").parentElement;
-        expect(threadContainer).toHaveStyle({ transform: "translateY(0)", opacity: "1" });
+        const animatedWrapper = getAnimatedThreadWrapper(
+          screen.getByTestId("thread-card-thread-1"),
+        );
+        expect(animatedWrapper).toHaveStyle({ transform: "translateY(0)", opacity: "1" });
       });
     });
 
     it("should apply closed styles when isOpen is false", async () => {
       render(<ReviewCommentsSidepanel {...defaultProps} isOpen={false} />);
       await waitFor(() => {
-        const threadContainer = screen.getByTestId("thread-card-thread-1").parentElement;
-        expect(threadContainer).toHaveStyle({ transform: "translateY(-100%)", opacity: "0" });
+        const animatedWrapper = getAnimatedThreadWrapper(
+          screen.getByTestId("thread-card-thread-1"),
+        );
+        expect(animatedWrapper).toHaveStyle({ transform: "translateY(-100%)", opacity: "0" });
       });
     });
 
     it("should have staggered transition delays based on index when open", async () => {
       render(<ReviewCommentsSidepanel {...defaultProps} isOpen={true} />);
       await waitFor(() => {
-        const thread1Container = screen.getByTestId("thread-card-thread-1").parentElement;
-        const thread2Container = screen.getByTestId("thread-card-thread-2").parentElement;
+        const thread1Container = getAnimatedThreadWrapper(
+          screen.getByTestId("thread-card-thread-1"),
+        );
+        const thread2Container = getAnimatedThreadWrapper(
+          screen.getByTestId("thread-card-thread-2"),
+        );
 
         expect(thread1Container).toHaveStyle({ transitionDelay: "0ms" });
         expect(thread2Container).toHaveStyle({ transitionDelay: "50ms" });
@@ -290,8 +305,12 @@ describe("ReviewCommentsSidepanel Component", () => {
     it("should have reverse staggered delays when closing", async () => {
       render(<ReviewCommentsSidepanel {...defaultProps} isOpen={false} />);
       await waitFor(() => {
-        const thread1Container = screen.getByTestId("thread-card-thread-1").parentElement;
-        const thread2Container = screen.getByTestId("thread-card-thread-2").parentElement;
+        const thread1Container = getAnimatedThreadWrapper(
+          screen.getByTestId("thread-card-thread-1"),
+        );
+        const thread2Container = getAnimatedThreadWrapper(
+          screen.getByTestId("thread-card-thread-2"),
+        );
 
         // When closing: (threads.length - index) * 30ms
         // thread1: (2 - 0) * 30 = 60ms
@@ -304,8 +323,10 @@ describe("ReviewCommentsSidepanel Component", () => {
     it("should default isOpen to true", async () => {
       render(<ReviewCommentsSidepanel threads={mockThreads} totalComments={3} />);
       await waitFor(() => {
-        const threadContainer = screen.getByTestId("thread-card-thread-1").parentElement;
-        expect(threadContainer).toHaveStyle({ opacity: "1" });
+        const animatedWrapper = getAnimatedThreadWrapper(
+          screen.getByTestId("thread-card-thread-1"),
+        );
+        expect(animatedWrapper).toHaveStyle({ opacity: "1" });
       });
     });
   });
