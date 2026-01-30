@@ -7,7 +7,6 @@ import { toast } from "sonner";
 
 import { CustomImage, SimulationDetailsModal, Toggle } from "@ally-ui-mono/ui-shared";
 import {
-  useCreateCommentMutation,
   useAddReactionMutation,
   useGetReviewByIdQuery,
   useGetReviewDetailsWithMessagesQuery,
@@ -52,8 +51,6 @@ export const ReviewDetails = () => {
     reviewId || "",
   );
 
-  const [createComment, { isLoading: isCreateCommentLoading, isSuccess: isCreateCommentSuccess }] =
-    useCreateCommentMutation();
   const { data: simulationTranscript, isLoading: isGetTranscriptLoading } =
     useGetReviewDetailsWithMessagesQuery({
       id: reviewId || "",
@@ -138,13 +135,6 @@ export const ReviewDetails = () => {
     return reactionsCount;
   }, [reviewReactions]);
 
-  // Reset transcript list when comment is successfully created to reflect new data
-  useEffect(() => {
-    if (isCreateCommentSuccess) {
-      setTranscriptOffset(0);
-    }
-  }, [isCreateCommentSuccess]);
-
   const handleGoBack = () => {
     navigate(-1);
   };
@@ -210,18 +200,6 @@ export const ReviewDetails = () => {
   const handleLoadMore = () => {
     if (!hasMoreTranscripts || isGetTranscriptLoading) return;
     setTranscriptOffset(prev => prev + TRANSCRIPT_PAGE_SIZE);
-  };
-  const onCreateComment = async (
-    reviewId: string,
-    body: {
-      threadId: string;
-      parentCommentId: string;
-      messageId: number;
-      content: string;
-      selection: { startIndex: number; endIndex: number };
-    },
-  ) => {
-    createComment({ reviewId, body });
   };
 
   const handleReactionsClick = () => {
@@ -362,7 +340,7 @@ export const ReviewDetails = () => {
       <div className="flex w-full h-[calc(100%-103px)]">
         <div
           ref={transcriptScrollRef}
-          className="pt-5 mx-auto px-10 h-full w-[calc(100%-384px)] h-[99%] pb-20 transition-all duration-400 custom-scrollbar"
+          className="pt-5 mx-auto px-10 w-[calc(100%-384px)] h-[99%] pb-20 transition-all duration-400 custom-scrollbar"
         >
           <Transcription
             councellorName={isFeedOwner ? "You" : reviewDetails?.createdBy?.name}
@@ -376,9 +354,6 @@ export const ReviewDetails = () => {
             }
             isFeedOwner={isFeedOwner}
             handleCommentClick={handleCommentClick}
-            createComment={onCreateComment}
-            isCreateCommentLoading={isCreateCommentLoading}
-            isCreateCommentSuccess={isCreateCommentSuccess}
             selectedThreadId={selectedThreadId}
             transcriptList={transcriptList}
             userId={user?.id}
