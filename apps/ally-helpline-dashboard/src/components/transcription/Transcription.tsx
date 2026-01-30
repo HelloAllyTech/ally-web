@@ -1,8 +1,6 @@
 import { FC, useEffect, useRef, useState, useCallback, RefObject } from "react";
 
 import "./styles.css";
-import { useParams } from "react-router-dom";
-import { toast } from "sonner";
 
 import { InfiniteScroll } from "@ally-ui-mono/ui-shared/index";
 import SelectableText from "@src/components/selectable-text/SelectableText";
@@ -32,18 +30,6 @@ interface TranscriptionProps {
   isLoading?: boolean;
   hasMore?: boolean;
   scrollContainerRef?: RefObject<HTMLElement>;
-  createComment?: (
-    reviewId: string,
-    body: {
-      threadId: string | null;
-      parentCommentId: string | null;
-      messageId: number;
-      content: string;
-      selection: { startIndex: number; endIndex: number };
-    },
-  ) => Promise<void>;
-  isCreateCommentLoading?: boolean;
-  isCreateCommentSuccess?: boolean;
   councellorName?: string;
   agentName?: string;
 }
@@ -64,14 +50,10 @@ const Transcription: FC<TranscriptionProps> = ({
   isLoading,
   hasMore = true,
   scrollContainerRef,
-  createComment,
-  isCreateCommentLoading,
-  isCreateCommentSuccess,
   councellorName,
   agentName,
 }) => {
   const contentRefs = useRef<(HTMLSpanElement | null)[]>([]);
-  const { reviewId } = useParams<{ reviewId: string }>();
   const selectedCommentRef = useRef<HTMLSpanElement | null>(null);
   const [transcriptions, setTranscriptions] = useState<SimulationTranscriptMessage[]>([]);
   const [addCommentDialogOpen, setAddCommentDialogOpen] = useState<string | null>(null);
@@ -81,13 +63,6 @@ const Transcription: FC<TranscriptionProps> = ({
     endIndex: number;
     transcriptId: number;
   } | null>(null);
-
-  useEffect(() => {
-    if (isCreateCommentSuccess) {
-      toast.success("Comment created successfully");
-      setAddCommentDialogOpen(null);
-    }
-  }, [isCreateCommentSuccess]);
 
   useEffect(() => {
     setTranscriptions(transcriptList);
@@ -201,22 +176,6 @@ const Transcription: FC<TranscriptionProps> = ({
     );
   }, []);
 
-  const handleCreateComment = async (payload: {
-    comment: string;
-    selection: { startIndex: number; endIndex: number };
-    transcriptId: number;
-    threadId: string | null;
-    parentCommentId: string | null;
-  }) => {
-    return await createComment?.(reviewId, {
-      threadId: payload.threadId,
-      parentCommentId: payload.parentCommentId,
-      messageId: payload.transcriptId,
-      content: payload.comment,
-      selection: payload.selection,
-    });
-  };
-
   const TranscriptSkeleton = () => (
     <div className="flex flex-col gap-6 h-full w-full">
       {[...Array(8)].map((_, index) => (
@@ -306,7 +265,6 @@ const Transcription: FC<TranscriptionProps> = ({
                       setAddCommentDialogOpen={setAddCommentDialogOpen}
                       addCommentDialogOpen={addCommentDialogOpen}
                       onCloseSelectedComment={onCloseSelectedComment}
-                      isCreateCommentSuccess={isCreateCommentSuccess}
                       segment={segment}
                       segIdx={segIdx}
                       isFeedOwner={isFeedOwner}
@@ -320,8 +278,6 @@ const Transcription: FC<TranscriptionProps> = ({
                       selectedThreadId={selectedThreadId}
                       index={index}
                       commentsList={commentsList}
-                      handleCreateComment={handleCreateComment}
-                      isLoading={isCreateCommentLoading}
                       setNewCommentSelection={setNewCommentSelection}
                       onCancelComment={onCancelComment}
                     />
