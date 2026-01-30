@@ -3,6 +3,11 @@ import { describe, it, expect, vi } from "vitest";
 
 import { Tag, TagList } from "../TagList";
 
+// Mock the Close icon from @assets
+vi.mock("@assets", () => ({
+  Close: () => <svg data-testid="close-icon">×</svg>,
+}));
+
 describe("Tag Component", () => {
   describe("Rendering", () => {
     it("should render tag with text content", () => {
@@ -24,12 +29,12 @@ describe("Tag Component", () => {
 
     it("should not render remove button when onRemove is not provided", () => {
       render(<Tag>Vue</Tag>);
-      expect(screen.queryByText("×")).not.toBeInTheDocument();
+      expect(screen.queryByTestId("close-icon")).not.toBeInTheDocument();
     });
 
     it("should render remove button when onRemove is provided", () => {
       render(<Tag onRemove={vi.fn()}>Angular</Tag>);
-      expect(screen.getByText("×")).toBeInTheDocument();
+      expect(screen.getByTestId("close-icon")).toBeInTheDocument();
     });
   });
 
@@ -38,7 +43,7 @@ describe("Tag Component", () => {
       const onRemove = vi.fn();
       render(<Tag onRemove={onRemove}>Svelte</Tag>);
 
-      const removeButton = screen.getByText("×");
+      const removeButton = screen.getByTestId("close-icon").closest("button")!;
       fireEvent.click(removeButton);
 
       expect(onRemove).toHaveBeenCalledTimes(1);
@@ -46,13 +51,13 @@ describe("Tag Component", () => {
 
     it("should have correct button type for remove button", () => {
       render(<Tag onRemove={vi.fn()}>Test</Tag>);
-      const removeButton = screen.getByText("×").closest("button");
+      const removeButton = screen.getByTestId("close-icon").closest("button");
       expect(removeButton).toHaveAttribute("type", "button");
     });
 
     it("should apply hover styles to remove button", () => {
       const {} = render(<Tag onRemove={vi.fn()}>Test</Tag>);
-      const removeButton = screen.getByText("×").closest("button");
+      const removeButton = screen.getByTestId("close-icon").closest("button");
       expect(removeButton).toHaveClass("hover:text-typography-700");
     });
   });
@@ -86,7 +91,7 @@ describe("Tag Component", () => {
         </div>,
       );
 
-      const removeButton = screen.getByText("×");
+      const removeButton = screen.getByTestId("close-icon").closest("button")!;
       fireEvent.click(removeButton);
 
       expect(onRemove).toHaveBeenCalledTimes(1);

@@ -1,6 +1,7 @@
 import { useState, useRef } from "react";
 
-import { Close, Plus } from "@assets";
+import { Plus } from "@assets";
+import { TagList } from "../tag-list";
 import { useClickOutside } from "@hooks";
 
 interface SimpleTagSelectorProps {
@@ -131,19 +132,7 @@ export const SimpleTagSelector: React.FC<SimpleTagSelectorProps> = ({
         </label>
       )}
 
-      <div className="flex flex-wrap gap-2">
-        {tags?.map((tag, index) => (
-          <div
-            key={index}
-            className="flex items-center px-2 bg-white text-base border border-border-light rounded-full text-typography-900"
-          >
-            <span>{tag}</span>
-            <button type="button" className="cursor-pointer ml-2" onClick={() => removeTag(tag)}>
-              <Close />
-            </button>
-          </div>
-        ))}
-
+      <TagList tags={tags} onRemove={removeTag} tagClassName="bg-white text-base" className="gap-2">
         <div className="relative" ref={dropdownRef}>
           {tags?.length < maxTags && (
             <div
@@ -163,7 +152,7 @@ export const SimpleTagSelector: React.FC<SimpleTagSelectorProps> = ({
           )}
           {openDropdown && renderDropdown()}
         </div>
-      </div>
+      </TagList>
     </div>
   );
 };
