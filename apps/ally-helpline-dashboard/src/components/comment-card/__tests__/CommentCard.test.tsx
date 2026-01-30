@@ -31,6 +31,14 @@ vi.mock("@ally-ui-mono/ui-shared/index", () => ({
       className={className}
     />
   ),
+  InfiniteScroll: ({ onInfiniteScroll, isLoading, children }: any) => (
+    <div data-testid="infinite-scroll">
+      {children}
+      <button data-testid="infinite-scroll-button" onClick={onInfiniteScroll} disabled={isLoading}>
+        Load more
+      </button>
+    </div>
+  ),
   FEATURE_FLAGS_MAP: {
     PEER_REVIEW_FLAG: true,
   },
@@ -384,7 +392,11 @@ describe("CommentCard Component", () => {
       const replyCountElement = screen.getByText("3 replies");
       fireEvent.click(replyCountElement);
 
-      expect(getRepliesMock).toHaveBeenCalledWith(commentWithReplies.id);
+      expect(getRepliesMock).toHaveBeenCalledWith({
+        commentId: commentWithReplies.id,
+        limit: 10,
+        offset: 0,
+      });
       await waitFor(() => {
         expect(getRepliesUnwrap).toHaveBeenCalledTimes(1);
       });
