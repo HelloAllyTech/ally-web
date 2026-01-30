@@ -1,6 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
-
-import { toast } from "sonner";
+import { useCallback, useRef, useState } from "react";
 
 import { AddComment } from "@ally-ui-mono/ui-shared/assets";
 import CommentAdditionDialog from "@src/components/comment-addition-dialog/CommentAdditionDialog";
@@ -48,7 +46,6 @@ interface SelectableTextProps {
     endIndex: number;
     threadId: string;
   }) => void;
-  isCreateCommentSuccess: boolean;
   setNewCommentSelection: (
     value: {
       startIndex: number;
@@ -78,7 +75,6 @@ const SelectableText = ({
   isLoading,
   handleCreateComment,
   commentsList,
-  isCreateCommentSuccess,
   onCancelComment,
 }: SelectableTextProps) => {
   const addCommentDialogRef = useRef<HTMLDivElement | null>(null);
@@ -93,12 +89,6 @@ const SelectableText = ({
     left: number;
   }>({ top: 0, left: 0 });
 
-  useEffect(() => {
-    if (isCreateCommentSuccess) {
-      toast.success("Comment created successfully");
-      setAddCommentDialogOpen(null);
-    }
-  }, [isCreateCommentSuccess]);
   const setPositionRef = useCallback((element: HTMLDivElement | null) => {
     addCommentDialogRef.current = element;
     if (element) {
