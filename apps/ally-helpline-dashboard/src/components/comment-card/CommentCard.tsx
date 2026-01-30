@@ -249,13 +249,6 @@ const CommentCard = ({
     }
   };
 
-  const isReactionOnCommentFromThisUser = () => {
-    return (
-      Object.keys(comment?.reactions).length === 1 &&
-      Object.keys(comment?.reactions)[0] === comment.myReaction
-    );
-  };
-
   const renderReplyBox = () => {
     if (showReplyInput) {
       return (
@@ -331,9 +324,7 @@ const CommentCard = ({
   const showDivider =
     comment.replyCount > 0 &&
     ((showLike && (selectedEmoji || enableLikeUpdate)) ||
-      (comment?.reactions &&
-        !isReactionOnCommentFromThisUser() &&
-        Object.keys(comment?.reactions).length > 0));
+      (comment?.reactions && Object.keys(comment?.reactions).length > 0));
 
   const renderCommentContent = () => {
     return (
@@ -366,7 +357,6 @@ const CommentCard = ({
             </div>
           )}
           {comment?.reactions &&
-            !isReactionOnCommentFromThisUser() &&
             Object.keys(comment?.reactions).length > 0 && (
               <>
                 {enableLikeUpdate ||

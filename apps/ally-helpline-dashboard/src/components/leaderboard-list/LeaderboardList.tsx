@@ -1,6 +1,7 @@
 import { FC, useState, useRef, useEffect, useCallback } from "react";
 
 import { CustomImage } from "@ally-ui-mono/ui-shared";
+import { ToggleButtonGroup } from "@src/components";
 import { cn } from "@utils";
 
 export interface LeaderboardUser {
@@ -287,21 +288,15 @@ export const LeaderboardList: FC<LeaderboardListProps> = ({
 
   const renderTabs = () => {
     return (
-      <div className="flex w-full mb-4 border border-border rounded-lg overflow-hidden">
-        {TIME_FILTER_OPTIONS.map(option => (
-          <button
-            key={option.value}
-            onClick={() => handleFilterChange(option.value)}
-            className={cn(
-              "px-6 py-2.5 text-sm font-medium transition-all duration-200 w-[25%]",
-              activeFilter === option.value
-                ? "bg-white text-typography-900"
-                : "bg-neutral-100 text-typography-700 hover:bg-white",
-            )}
-          >
-            {option.label}
-          </button>
-        ))}
+      <div className="w-full mb-4 overflow-hidden">
+        <ToggleButtonGroup
+          data-testid="leaderboard-time-filter-toggle"
+          value={activeFilter}
+          onValueChange={handleFilterChange}
+          items={TIME_FILTER_OPTIONS}
+          equalWidth
+          className="w-full font-primary text-xs leading-[1.5] text-typography-900"
+        />
       </div>
     );
   };
