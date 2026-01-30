@@ -1,8 +1,8 @@
 import { useState, useLayoutEffect, useRef } from "react";
 
-import { Emoji } from "emoji-picker-react";
 import { createPortal } from "react-dom";
 
+import { NativeEmoji } from "@components";
 import { PLATFORM_EMOJIS } from "@constants";
 import { useClickOutside } from "@hooks";
 
@@ -69,7 +69,7 @@ const ReactionSelector = ({
                      border border-neutral-300 bg-white
                      transition-transform hover:scale-125"
         >
-          <Emoji unified={emoji} size={emojiSize} />
+          <NativeEmoji unified={emoji} size={emojiSize} />
         </div>
       ))}
     </div>,
