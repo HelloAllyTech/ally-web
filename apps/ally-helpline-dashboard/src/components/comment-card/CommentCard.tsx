@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 
-import { Emoji, EmojiStyle } from "emoji-picker-react";
+import { Emoji } from "emoji-picker-react";
 import { useSelector } from "react-redux";
 import { toast } from "sonner";
 
@@ -343,7 +343,7 @@ const CommentCard = ({
               >
                 {selectedEmoji ? (
                   <div className="pb-0.5  w-[26px] bg-white h-[26px] flex items-center justify-center rounded-full border-[0.5px] border-primary-600">
-                    <Emoji unified={selectedEmoji} size={14} emojiStyle={EmojiStyle.GOOGLE} />
+                    <Emoji unified={selectedEmoji} size={14} />
                   </div>
                 ) : enableLikeUpdate ? (
                   <Smiley className="w-5 h-5 text-neutral-600 hover:text-[#0957D0]" />
@@ -376,11 +376,7 @@ const CommentCard = ({
                       >
                         {reaction !== "" && (
                           <div className="w-[20px] bg-white h-[20px] flex items-center justify-center rounded-full border-[0.5px]">
-                            <Emoji
-                              unified={reaction ?? "1f44d"}
-                              size={10}
-                              emojiStyle={EmojiStyle.GOOGLE}
-                            />
+                            <Emoji unified={reaction ?? "1f44d"} size={10} />
                           </div>
                         )}
                       </div>
