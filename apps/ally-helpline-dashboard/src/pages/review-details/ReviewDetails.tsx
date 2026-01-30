@@ -242,7 +242,7 @@ export const ReviewDetails = () => {
         <div className="p-2 h-14 rounded-full border flex items-center gap-2 bg-white shadow-2xl">
           {isFeedOwner && (
             <div
-              className="flex items-center gap-2"
+              className="flex items-center gap-2 min-w-fit"
               style={{ opacity: isUpdateReviewLoading ? 0.5 : 1 }}
             >
               <Toggle
