@@ -92,6 +92,20 @@ const CommentCard = ({
   const handleReplySubmit = () => {
     if (replyText.trim()) {
       onReply?.(replyText);
+      const newReply = {
+        id: comment.id,
+        content: replyText,
+        createdBy: {
+          id: user?.id,
+          name: user?.name,
+          profileImage: user?.profileImageUrl,
+        },
+        createdAt: new Date().toISOString(),
+        reactions: {},
+        replyCount: 0,
+        myReaction: null,
+      };
+      setReplies(prev => [...prev, newReply]);
       setReplyText("");
       setShowReplyInput(false);
     }

@@ -122,6 +122,7 @@ const SelectableText = ({
       setAddCommentDialogOpen(null);
     }
   }, [isCreateCommentSuccess]);
+
   const setPositionRef = useCallback((element: HTMLDivElement | null) => {
     addCommentDialogRef.current = element;
     if (element) {
