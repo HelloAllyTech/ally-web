@@ -142,6 +142,7 @@ const CommentCard = ({
   };
 
   const handleCancelReply = () => {
+    setReplyText("");
     setShowReplyInput(false);
   };
 
@@ -281,7 +282,7 @@ const CommentCard = ({
               >
                 {selectedEmoji ? (
                   <div className="pb-0.5  w-[26px] bg-white h-[26px] flex items-center justify-center rounded-full border-[0.5px] border-primary-600">
-                    <Emoji unified={selectedEmoji} size={14} emojiStyle={EmojiStyle.APPLE} />
+                    <Emoji unified={selectedEmoji} size={14} emojiStyle={EmojiStyle.GOOGLE} />
                   </div>
                 ) : enableLikeUpdate ? (
                   <Smiley className="w-5 h-5 text-neutral-600 hover:text-[#0957D0]" />
@@ -319,7 +320,7 @@ const CommentCard = ({
                             <Emoji
                               unified={reaction ?? "1f44d"}
                               size={10}
-                              emojiStyle={EmojiStyle.APPLE}
+                              emojiStyle={EmojiStyle.GOOGLE}
                             />
                           </div>
                         )}

@@ -277,7 +277,7 @@ const Transcription: FC<TranscriptionProps> = ({
               >
                 {splitByCommentRanges(
                   transcript.content,
-                  transcript.threads.map(thread => ({
+                  (transcript.threads ?? []).map(thread => ({
                     id: thread.id,
                     start: thread.selection.startIndex,
                     end: thread.selection.endIndex,

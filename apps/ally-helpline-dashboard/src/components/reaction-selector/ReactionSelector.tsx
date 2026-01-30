@@ -69,7 +69,7 @@ const ReactionSelector = ({
                      border border-neutral-300 bg-white
                      transition-transform hover:scale-125"
         >
-          <Emoji unified={emoji} size={emojiSize} emojiStyle={EmojiStyle.APPLE} />
+          <Emoji unified={emoji} size={emojiSize} emojiStyle={EmojiStyle.GOOGLE} />
         </div>
       ))}
     </div>,
