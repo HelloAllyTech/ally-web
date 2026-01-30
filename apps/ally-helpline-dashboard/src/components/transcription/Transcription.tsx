@@ -2,6 +2,7 @@ import { FC, useEffect, useRef, useState, useCallback } from "react";
 
 import "./styles.css";
 import { useParams } from "react-router-dom";
+import { toast } from "sonner";
 
 import { InfiniteScroll } from "@ally-ui-mono/ui-shared/index";
 import SelectableText from "@src/components/selectable-text/SelectableText";
@@ -71,6 +72,12 @@ const Transcription: FC<TranscriptionProps> = ({
   const [transcriptions, setTranscriptions] = useState<SimulationTranscriptMessage[]>([]);
   const [addCommentDialogOpen, setAddCommentDialogOpen] = useState<string | null>(null);
 
+  useEffect(() => {
+    if (isCreateCommentSuccess) {
+      toast.success("Comment created successfully");
+      setAddCommentDialogOpen(null);
+    }
+  }, [isCreateCommentSuccess]);
   const [newCommentSelection, setNewCommentSelection] = useState<{
     startIndex: number;
     endIndex: number;
@@ -285,7 +292,6 @@ const Transcription: FC<TranscriptionProps> = ({
                       setAddCommentDialogOpen={setAddCommentDialogOpen}
                       addCommentDialogOpen={addCommentDialogOpen}
                       onCloseSelectedComment={onCloseSelectedComment}
-                      isCreateCommentSuccess={isCreateCommentSuccess}
                       segment={segment}
                       segIdx={segIdx}
                       isFeedOwner={isFeedOwner}

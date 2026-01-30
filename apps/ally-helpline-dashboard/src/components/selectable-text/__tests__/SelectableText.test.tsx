@@ -482,35 +482,6 @@ describe("SelectableText Component", () => {
     });
   });
 
-  // --- Success Toast Tests ---
-  describe("Success Toast", () => {
-    it("should show success toast and close dialog when comment is created successfully", async () => {
-      const { toast } = await import("sonner");
-      const { rerender } = render(
-        <SelectableText
-          {...defaultProps}
-          newCommentSelection={{ startIndex: 0, endIndex: 23, transcriptId: 101 }}
-          addCommentDialogOpen="0-0"
-          isCreateCommentSuccess={false}
-        />,
-      );
-
-      rerender(
-        <SelectableText
-          {...defaultProps}
-          newCommentSelection={{ startIndex: 0, endIndex: 23, transcriptId: 101 }}
-          addCommentDialogOpen="0-0"
-          isCreateCommentSuccess={true}
-        />,
-      );
-
-      await waitFor(() => {
-        expect(toast.success).toHaveBeenCalledWith("Comment created successfully");
-        expect(mockSetAddCommentDialogOpen).toHaveBeenCalledWith(null);
-      });
-    });
-  });
-
   // --- Ref Tests ---
   describe("Refs", () => {
     it("should assign selectedCommentRef when isSelectedComment is true", () => {
