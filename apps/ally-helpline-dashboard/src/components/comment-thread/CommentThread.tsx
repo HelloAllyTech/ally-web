@@ -38,6 +38,10 @@ const CommentThread = ({
   });
 
   useEffect(() => {
+    setCommentsToShow(comments);
+  }, [comments]);
+
+  useEffect(() => {
     if (!threadComments) return;
     const nextData = threadComments.data;
     if (threadsOffset === 0) {

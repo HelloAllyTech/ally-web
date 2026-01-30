@@ -109,6 +109,39 @@ vi.mock("@components", async importOriginal => {
         </div>
       );
     },
+    ConfirmationPopover: ({
+      isOpen,
+      onClose,
+      onConfirm,
+      title,
+      message,
+      confirmText,
+      cancelText,
+      isLoading,
+    }: {
+      isOpen: boolean;
+      onClose: () => void;
+      onConfirm: () => void;
+      title?: React.ReactNode;
+      message?: React.ReactNode;
+      confirmText?: string;
+      cancelText?: string;
+      isLoading?: boolean;
+    }) => {
+      if (!isOpen) return null;
+      return (
+        <div data-testid="confirmation-popover">
+          <div data-testid="confirmation-title">{title}</div>
+          <div data-testid="confirmation-message">{message}</div>
+          <button data-testid="confirmation-cancel" onClick={onClose} disabled={isLoading}>
+            {cancelText || "Cancel"}
+          </button>
+          <button data-testid="confirmation-confirm" onClick={onConfirm} disabled={isLoading}>
+            {isLoading ? "..." : confirmText || "Confirm"}
+          </button>
+        </div>
+      );
+    },
   };
 });
 
@@ -619,7 +652,7 @@ describe("CommentCard Component", () => {
   });
 
   describe("Menu Options", () => {
-    it("should call deleteComment when delete is clicked for own comment within 10 mins", async () => {
+    it("should open confirmation popover when delete is clicked for own comment", async () => {
       const myComment = {
         ...mockComment,
         createdBy: { ...mockComment.createdBy, id: 999 }, // current user id from mockStore
@@ -633,8 +666,121 @@ describe("CommentCard Component", () => {
       const deleteButton = await screen.findByText("Delete");
       fireEvent.click(deleteButton);
 
-      expect(deleteCommentMock).toHaveBeenCalledWith({ commentId: myComment.id });
-      expect(deleteCommentUnwrap).toHaveBeenCalledTimes(1);
+      // Confirmation popover should be open
+      expect(screen.getByTestId("confirmation-popover")).toBeInTheDocument();
+      // Delete should NOT be called yet
+      expect(deleteCommentMock).not.toHaveBeenCalled();
+    });
+
+    it("should call deleteComment only after confirming in the popover", async () => {
+      const myComment = {
+        ...mockComment,
+        createdBy: { ...mockComment.createdBy, id: 999 }, // current user id from mockStore
+        createdAt: new Date().toISOString(), // not expired
+      };
+      renderWithProvider(<CommentCard comment={myComment} />);
+
+      const menuButton = screen.getByLabelText("Comment options");
+      fireEvent.click(menuButton);
+
+      const deleteButton = await screen.findByText("Delete");
+      fireEvent.click(deleteButton);
+
+      // Click confirm in the popover
+      const confirmButton = screen.getByTestId("confirmation-confirm");
+      fireEvent.click(confirmButton);
+
+      await waitFor(() => {
+        expect(deleteCommentMock).toHaveBeenCalledWith({ commentId: myComment.id });
+        expect(deleteCommentUnwrap).toHaveBeenCalledTimes(1);
+      });
+    });
+
+    it("should close confirmation popover when cancel is clicked", async () => {
+      const myComment = {
+        ...mockComment,
+        createdBy: { ...mockComment.createdBy, id: 999 },
+        createdAt: new Date().toISOString(),
+      };
+      renderWithProvider(<CommentCard comment={myComment} />);
+
+      const menuButton = screen.getByLabelText("Comment options");
+      fireEvent.click(menuButton);
+
+      const deleteButton = await screen.findByText("Delete");
+      fireEvent.click(deleteButton);
+
+      // Popover should be open
+      expect(screen.getByTestId("confirmation-popover")).toBeInTheDocument();
+
+      // Click cancel
+      const cancelButton = screen.getByTestId("confirmation-cancel");
+      fireEvent.click(cancelButton);
+
+      // Popover should be closed
+      expect(screen.queryByTestId("confirmation-popover")).not.toBeInTheDocument();
+      // Delete should NOT have been called
+      expect(deleteCommentMock).not.toHaveBeenCalled();
+    });
+
+    it("should display correct title for comment delete confirmation", async () => {
+      const myComment = {
+        ...mockComment,
+        createdBy: { ...mockComment.createdBy, id: 999 },
+        createdAt: new Date().toISOString(),
+      };
+      renderWithProvider(<CommentCard comment={myComment} />);
+
+      const menuButton = screen.getByLabelText("Comment options");
+      fireEvent.click(menuButton);
+
+      const deleteButton = await screen.findByText("Delete");
+      fireEvent.click(deleteButton);
+
+      const titleElement = screen.getByTestId("confirmation-title");
+      expect(titleElement).toHaveTextContent("Comment");
+    });
+
+    it("should display correct title for reply delete confirmation when onDelete is provided", async () => {
+      const myComment = {
+        ...mockComment,
+        createdBy: { ...mockComment.createdBy, id: 999 },
+        createdAt: new Date().toISOString(),
+      };
+      const onDeleteMock = vi.fn();
+      renderWithProvider(<CommentCard comment={myComment} onDelete={onDeleteMock} />);
+
+      const menuButton = screen.getByLabelText("Comment options");
+      fireEvent.click(menuButton);
+
+      const deleteButton = await screen.findByText("Delete");
+      fireEvent.click(deleteButton);
+
+      const titleElement = screen.getByTestId("confirmation-title");
+      expect(titleElement).toHaveTextContent("Reply");
+    });
+
+    it("should call onDelete callback after successful deletion", async () => {
+      const myComment = {
+        ...mockComment,
+        createdBy: { ...mockComment.createdBy, id: 999 },
+        createdAt: new Date().toISOString(),
+      };
+      const onDeleteMock = vi.fn();
+      renderWithProvider(<CommentCard comment={myComment} onDelete={onDeleteMock} />);
+
+      const menuButton = screen.getByLabelText("Comment options");
+      fireEvent.click(menuButton);
+
+      const deleteButton = await screen.findByText("Delete");
+      fireEvent.click(deleteButton);
+
+      const confirmButton = screen.getByTestId("confirmation-confirm");
+      fireEvent.click(confirmButton);
+
+      await waitFor(() => {
+        expect(onDeleteMock).toHaveBeenCalledWith(myComment.id);
+      });
     });
 
     it("should call toggleCommentVisibility when hide is clicked by feed owner", async () => {
