@@ -76,6 +76,13 @@ describe("SelectableText Component", () => {
     speaker: "Agent",
     message: "Full transcript message",
     time: 1000,
+    threads: [
+      {
+        id: "thread-1",
+        selection: { startIndex: 10, endIndex: 24 },
+        comments: [],
+      },
+    ],
   };
 
   const mockCommentsList = [
@@ -424,12 +431,24 @@ describe("SelectableText Component", () => {
       expect(span).toHaveClass("bg-[#E1F1FE]");
     });
 
-    it("should have cursor-pointer for segments with comments", () => {
+    it("should have cursor-pointer for segments with comments (not part of new selection)", () => {
       const { container } = render(
         <SelectableText {...defaultProps} segment={mockSegmentWithComments} />,
       );
       const span = container.querySelector("span");
       expect(span).toHaveClass("cursor-pointer");
+    });
+
+    it("should not have cursor-pointer for segments with comments that are part of new selection", () => {
+      const { container } = render(
+        <SelectableText
+          {...defaultProps}
+          segment={mockSegmentWithComments}
+          newCommentSelection={{ startIndex: 10, endIndex: 24, transcriptId: 101 }}
+        />,
+      );
+      const span = container.querySelector("span");
+      expect(span).not.toHaveClass("cursor-pointer");
     });
 
     it("should not have cursor-pointer for segments without comments", () => {
@@ -475,6 +494,19 @@ describe("SelectableText Component", () => {
           segment={mockSegmentWithComments}
           selectedMessageId="101"
           selectedEndIndex={24}
+        />,
+      );
+      fireEvent.click(screen.getByText("Commented text"));
+      expect(mockHandleCommentClick).not.toHaveBeenCalled();
+    });
+
+    it("should not call handleCommentClick when segment is part of new selection", () => {
+      render(
+        <SelectableText
+          {...defaultProps}
+          segment={mockSegmentWithComments}
+          newCommentSelection={{ startIndex: 10, endIndex: 24, transcriptId: 101 }}
+          selectedMessageId=""
         />,
       );
       fireEvent.click(screen.getByText("Commented text"));
