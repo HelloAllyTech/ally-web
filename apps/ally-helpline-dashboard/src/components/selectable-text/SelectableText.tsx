@@ -1,11 +1,15 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 
+import { useSelector } from "react-redux";
+import { useParams } from "react-router-dom";
 import { toast } from "sonner";
 
 import { AddComment } from "@ally-ui-mono/ui-shared/assets";
+import { useCreateCommentMutation } from "@src/api";
 import CommentAdditionDialog from "@src/components/comment-addition-dialog/CommentAdditionDialog";
 import CommentThread from "@src/components/comment-thread/CommentThread";
 import { useClickOutside } from "@src/hooks";
+import { RootState } from "@src/store";
 import { CommentItem, SimulationTranscriptMessage } from "@src/types";
 
 const DIALOG_WIDTH = 360;
@@ -34,21 +38,12 @@ interface SelectableTextProps {
   transcript: SimulationTranscriptMessage;
   selectedEndIndex: number;
   commentsList: CommentItem[];
-  handleCreateComment: (payload: {
-    comment: string;
-    selection: { startIndex: number; endIndex: number };
-    transcriptId: number;
-    threadId: string | null;
-    parentCommentId: string | null;
-  }) => void;
-  isLoading: boolean;
   handleCommentClick: (props: {
     messageId: string;
     startIndex: number;
     endIndex: number;
     threadId: string;
   }) => void;
-  isCreateCommentSuccess: boolean;
   setNewCommentSelection: (
     value: {
       startIndex: number;
@@ -75,15 +70,24 @@ const SelectableText = ({
   handleCommentClick,
   selectedThreadId,
   index,
-  isLoading,
-  handleCreateComment,
   commentsList,
-  isCreateCommentSuccess,
   onCancelComment,
 }: SelectableTextProps) => {
+  const { reviewId } = useParams<{ reviewId: string }>();
+  const [
+    createComment,
+    {
+      isSuccess: isCreateCommentSuccess,
+      isLoading: isCreateCommentLoading,
+      data: createCommentData,
+    },
+  ] = useCreateCommentMutation();
+  const [commentContent, setCommentContent] = useState<string>("");
+  const user = useSelector((state: RootState) => state.user.user);
   const addCommentDialogRef = useRef<HTMLDivElement | null>(null);
   const dialogRef = useRef<HTMLDivElement | null>(null);
   const selectedCommentCalloutRef = useRef<HTMLDivElement | null>(null);
+  const [comments, setComments] = useState<CommentItem[]>(commentsList);
   const [dialogPosition, setDialogPosition] = useState<{ top: number; left: number }>({
     top: 0,
     left: 0,
@@ -93,6 +97,36 @@ const SelectableText = ({
     left: number;
   }>({ top: 0, left: 0 });
 
+  useEffect(() => {
+    setComments(commentsList);
+  }, [commentsList]);
+
+  useEffect(() => {
+    if (isCreateCommentSuccess) {
+      toast.success("Comment created successfully");
+      setAddCommentDialogOpen(null);
+    }
+  }, [isCreateCommentSuccess]);
+
+  useEffect(() => {
+    if (isCreateCommentSuccess && createCommentData.comment) {
+      const newComment: CommentItem = {
+        id: createCommentData.comment.id,
+        content: commentContent,
+        createdBy: {
+          id: user?.id,
+          name: user?.name,
+          profileImage: user?.profileImageUrl,
+        },
+        createdAt: createCommentData.comment.createdAt,
+        reactions: {},
+        replyCount: 0,
+        myReaction: null,
+        hidden: false,
+      };
+      setComments(prev => [...prev, newComment]);
+    }
+  }, [isCreateCommentSuccess]);
   // Check if this segment is part of the new comment selection (handles overlapping selections)
   const isPartOfNewSelection =
     newCommentSelection &&
@@ -112,16 +146,9 @@ const SelectableText = ({
   const shouldShowCommentThread =
     isSelectedComment &&
     selectedThreadId === segment.commentIds[0] &&
-    commentsList &&
+    comments &&
     selectedThread &&
     segment.end === selectedThread.selection.endIndex;
-
-  useEffect(() => {
-    if (isCreateCommentSuccess) {
-      toast.success("Comment created successfully");
-      setAddCommentDialogOpen(null);
-    }
-  }, [isCreateCommentSuccess]);
 
   const setPositionRef = useCallback((element: HTMLDivElement | null) => {
     addCommentDialogRef.current = element;
@@ -207,12 +234,49 @@ const SelectableText = ({
   }, []);
 
   const handleAddComment = async (comment: string) => {
-    await handleCreateComment({
-      comment: comment,
-      selection: { startIndex: segment.start, endIndex: segment.end },
-      transcriptId: transcript.id,
+    const body = {
       threadId: selectedThreadId,
       parentCommentId: null,
+      messageId: transcript.id,
+      content: comment,
+      selection: { startIndex: segment.start, endIndex: segment.end },
+    };
+    setCommentContent(comment);
+    await createComment({
+      reviewId: reviewId,
+      body: body,
+    });
+  };
+
+  const handleNewComment = async (comment: string) => {
+    if (!newCommentSelection) return;
+    const body = {
+      threadId: null,
+      parentCommentId: null,
+      messageId: transcript.id,
+      content: comment,
+      selection: {
+        startIndex: newCommentSelection.startIndex,
+        endIndex: newCommentSelection.endIndex,
+      },
+    };
+    await createComment({
+      reviewId: reviewId,
+      body: body,
+    });
+  };
+
+  const handleReplyComment = async (replyComment: string, parentCommentId: string | null) => {
+    const body = {
+      threadId: selectedThreadId,
+      parentCommentId: parentCommentId,
+      messageId: transcript.id,
+      content: replyComment,
+      selection: { startIndex: segment.start, endIndex: segment.end },
+    };
+    await createComment({
+      reviewId: reviewId,
+      body: body,
     });
   };
 
@@ -272,24 +336,10 @@ const SelectableText = ({
           style={{
             top: dialogPosition.top,
             left: dialogPosition.left,
-            opacity: isLoading ? 0.5 : 1,
+            opacity: isCreateCommentLoading ? 0.5 : 1,
           }}
         >
-          <CommentAdditionDialog
-            onCancel={handleCancelComment}
-            onComment={comment =>
-              handleCreateComment({
-                comment: comment,
-                selection: {
-                  startIndex: newCommentSelection.startIndex,
-                  endIndex: newCommentSelection.endIndex,
-                },
-                transcriptId: transcript.id,
-                threadId: null,
-                parentCommentId: null,
-              })
-            }
-          />
+          <CommentAdditionDialog onCancel={handleCancelComment} onComment={handleNewComment} />
         </div>
       )}
       {shouldShowCommentThread && (
@@ -304,17 +354,9 @@ const SelectableText = ({
           <CommentThread
             id={selectedThreadId}
             isFeedOwner={isFeedOwner}
-            comments={commentsList as CommentItem[]}
+            comments={comments as CommentItem[]}
             onCommentAddition={handleAddComment}
-            onReplyComment={(replyComment, parentCommentId) =>
-              handleCreateComment({
-                comment: replyComment,
-                selection: { startIndex: segment.start, endIndex: segment.end },
-                transcriptId: transcript.id,
-                threadId: selectedThreadId,
-                parentCommentId: parentCommentId,
-              })
-            }
+            onReplyComment={handleReplyComment}
           />
         </div>
       )}

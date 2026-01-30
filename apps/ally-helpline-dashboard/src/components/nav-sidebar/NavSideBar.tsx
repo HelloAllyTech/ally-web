@@ -229,6 +229,7 @@ const NavSideBar: FC<NavSideBarProps> = ({ activeTab, onTabChange, isOpen, onClo
             isExpanded={isExpanded}
             onProfileSettings={handleSettingsClick}
             profileUrl={user.profileImageUrl}
+            name={user.name}
           />
         </div>
       </div>

@@ -1,11 +1,11 @@
 import { FC } from "react";
 
 import { CircularProgress, Dialog } from "@mui/material";
-import { Emoji, EmojiStyle } from "emoji-picker-react";
 import { X } from "lucide-react";
 
 import { InfiniteScroll } from "@ally-ui-mono/ui-shared";
 import { ArrowDownFilled } from "@assets";
+import { NativeEmoji } from "@components";
 import { useReactionModal } from "@hooks";
 
 interface ReactionsModalProps {
@@ -69,7 +69,7 @@ const ReactionsModal: FC<ReactionsModalProps> = ({ isOpen, onClose, reviewId }) 
       }`}
     >
       <div className="flex items-center gap-1 p-1 rounded-[18px] bg-white border-[0.5px] border-border">
-        <Emoji unified={reactionCode} size={14} emojiStyle={EmojiStyle.GOOGLE} lazyLoad />
+        <NativeEmoji unified={reactionCode} size={14} />
       </div>
       <span className="font-primary text-sm">{count}</span>
       {isActive && (
@@ -116,13 +116,8 @@ const ReactionsModal: FC<ReactionsModalProps> = ({ isOpen, onClose, reviewId }) 
                     </div>
                   )}
                 </div>
-                <div className="absolute -bottom-0.5 -right-0.5 flex items-center justify-center p-[2.77px] rounded-full bg-white border-[0.35px] border-border">
-                  <Emoji
-                    unified={userReaction.reaction}
-                    size={10}
-                    emojiStyle={EmojiStyle.GOOGLE}
-                    lazyLoad
-                  />
+                <div className="absolute -bottom-0.5 -right-0.5 flex items-center justify-center p-[3px] pt-[4px] rounded-full bg-white border-[0.35px] border-border">
+                  <NativeEmoji unified={userReaction.reaction} size={10} />
                 </div>
               </div>
               <span className="font-primary text-base leading-5 text-[#1A1A1A] flex-1 truncate">
@@ -199,12 +194,7 @@ const ReactionsModal: FC<ReactionsModalProps> = ({ isOpen, onClose, reviewId }) 
                           className="flex items-center gap-2 w-full px-3 py-2 hover:bg-neutral-50"
                         >
                           <div className="flex items-center gap-1 py-0.5 px-1 rounded-[18px] bg-white border-[0.5px] border-border">
-                            <Emoji
-                              unified={code}
-                              size={16}
-                              emojiStyle={EmojiStyle.GOOGLE}
-                              lazyLoad
-                            />
+                            <NativeEmoji unified={code} size={16} />
                           </div>
                           <span className="font-primary text-sm text-black/87">{count}</span>
                         </button>
