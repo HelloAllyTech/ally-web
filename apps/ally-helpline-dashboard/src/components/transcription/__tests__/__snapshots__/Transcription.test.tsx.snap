@@ -30,7 +30,9 @@ exports[`Transcription Component > should match snapshot when rendered 1`] = `
             class="text-typography-900 selected-text relative w-full cursor-default"
           >
             <span
-              class="relative  "
+              data-comment-ids=""
+              data-segment-text="Hello, how can I help you today?"
+              data-testid="selectable-text-0"
             >
               Hello, how can I help you today?
             </span>
@@ -59,7 +61,9 @@ exports[`Transcription Component > should match snapshot when rendered 1`] = `
             class="text-typography-900 selected-text relative w-full cursor-default"
           >
             <span
-              class="relative  "
+              data-comment-ids=""
+              data-segment-text="I need some assistance with my account."
+              data-testid="selectable-text-0"
             >
               I need some assistance with my account.
             </span>
@@ -88,7 +92,9 @@ exports[`Transcription Component > should match snapshot when rendered 1`] = `
             class="text-typography-900 selected-text relative w-full cursor-default"
           >
             <span
-              class="relative  "
+              data-comment-ids=""
+              data-segment-text="Sure, I can help you with that."
+              data-testid="selectable-text-0"
             >
               Sure, I can help you with that.
             </span>

@@ -2,16 +2,12 @@ import { FC, useEffect, useRef, useState, useCallback } from "react";
 
 import "./styles.css";
 import { useParams } from "react-router-dom";
-import { toast } from "sonner";
 
-import { AddComment } from "@ally-ui-mono/ui-shared/assets";
 import { InfiniteScroll } from "@ally-ui-mono/ui-shared/index";
-import { useClickOutside } from "@hooks";
+import SelectableText from "@src/components/selectable-text/SelectableText";
 import { CommentItem, SimulationTranscriptMessage, Thread } from "@types";
 
-import { getFreshUserRange, splitTextByComments } from "./utils";
-import CommentAdditionDialog from "../comment-addition-dialog/CommentAdditionDialog";
-import CommentThread from "../comment-thread/CommentThread";
+import { getFreshUserRange, splitByCommentRanges } from "./utils";
 
 interface TranscriptionProps {
   transcriptList: SimulationTranscriptMessage[];
@@ -48,7 +44,6 @@ interface TranscriptionProps {
   councellorName?: string;
   agentName?: string;
 }
-const DIALOG_WIDTH = 360;
 
 const Transcription: FC<TranscriptionProps> = ({
   isFeedOwner,
@@ -72,108 +67,18 @@ const Transcription: FC<TranscriptionProps> = ({
 }) => {
   const contentRefs = useRef<(HTMLSpanElement | null)[]>([]);
   const { reviewId } = useParams<{ reviewId: string }>();
-  const addCommentDialogRef = useRef<HTMLDivElement | null>(null);
-  const dialogRef = useRef<HTMLDivElement | null>(null);
   const selectedCommentRef = useRef<HTMLSpanElement | null>(null);
-  const selectedCommentCalloutRef = useRef<HTMLDivElement | null>(null);
   const [transcriptions, setTranscriptions] = useState<SimulationTranscriptMessage[]>([]);
   const [addCommentDialogOpen, setAddCommentDialogOpen] = useState<string | null>(null);
-  const [dialogPosition, setDialogPosition] = useState<{ top: number; left: number }>({
-    top: 0,
-    left: 0,
-  });
-  const [commentThreadPosition, setCommentThreadPosition] = useState<{
-    top: number;
-    left: number;
-  }>({ top: 0, left: 0 });
 
-  const setPositionRef = useCallback((element: HTMLDivElement | null) => {
-    addCommentDialogRef.current = element;
-    if (element) {
-      const parentRect = element.parentElement?.getBoundingClientRect();
-      if (parentRect && parentRect.top < 150) {
-        element.style.top = "auto";
-        element.style.bottom = "-50px";
-      } else {
-        element.style.top = "-50px";
-        element.style.bottom = "auto";
-      }
-    }
-  }, []);
-
-  const setDialogRef = useCallback((element: HTMLDivElement | null) => {
-    dialogRef.current = element;
-    if (element) {
-      const parentRect = element.parentElement?.getBoundingClientRect();
-      if (!parentRect) return;
-
-      const viewportWidth = window.innerWidth;
-      const viewportHeight = window.innerHeight;
-      let left = parentRect.left;
-      let top = parentRect.bottom + 8; // 8px below the highlighted text
-
-      // Check if dialog would overflow on the bottom
-      if (top + 200 > viewportHeight) {
-        top = parentRect.top - 200 - 8; // Position above if not enough space below
-      }
-
-      // Check if dialog would overflow on the right
-      if (left + DIALOG_WIDTH > viewportWidth - 16) {
-        left = viewportWidth - DIALOG_WIDTH - 16;
-      }
-
-      // Ensure it doesn't go off the left edge
-      if (left < 16) {
-        left = 16;
-      }
-
-      setDialogPosition({ top, left });
-    }
-  }, []);
-
-  const setCommentThreadRef = useCallback((element: HTMLDivElement | null) => {
-    selectedCommentCalloutRef.current = element;
-    if (element) {
-      const parentRect = element.parentElement?.getBoundingClientRect();
-      if (!parentRect) return;
-
-      const viewportWidth = window.innerWidth;
-      const viewportHeight = window.innerHeight;
-      const threadWidth = 400; // CommentThread width
-      const threadHeight = 300; // Approximate height
-
-      let left = parentRect.left;
-      let top = parentRect.bottom + 4; // 4px below the highlighted text
-
-      // Check if thread would overflow on the bottom
-      if (top + threadHeight > viewportHeight - 16) {
-        top = parentRect.top - threadHeight - 4; // Position above if not enough space below
-      }
-
-      // Check if thread would overflow on the right
-      if (left + threadWidth > viewportWidth - 16) {
-        left = viewportWidth - threadWidth - 16;
-      }
-
-      // Ensure it doesn't go off the left edge
-      if (left < 16) {
-        left = 16;
-      }
-
-      setCommentThreadPosition({ top, left });
-    }
-  }, []);
-
+  const [newCommentSelection, setNewCommentSelection] = useState<{
+    startIndex: number;
+    endIndex: number;
+    transcriptId: number;
+  } | null>(null);
   useEffect(() => {
     setTranscriptions(transcriptList);
   }, [transcriptList]);
-
-  useEffect(() => {
-    if (isCreateCommentSuccess) {
-      toast.success("Comment created successfully");
-      setAddCommentDialogOpen(null);
-    }
-  }, [isCreateCommentSuccess]);
 
   useEffect(() => {
     if (selectedMessageId && String(selectedStartIndex) && String(selectedEndIndex)) {
@@ -266,31 +171,22 @@ const Transcription: FC<TranscriptionProps> = ({
       },
     ];
     setAddCommentDialogOpen(null);
+    setNewCommentSelection({ startIndex, endIndex, transcriptId: transcriptions[index].id });
     setTranscriptions(prev =>
       prev.map((transcript, i) =>
-        i === index
-          ? { ...transcript, threads: newComments as Thread[] }
-          : {
-              ...transcript,
-              threads: transcript.threads?.filter(comment => comment.comments?.length !== 0) || [],
-            },
+        i === index ? { ...transcript, threads: newComments as Thread[] } : transcript,
       ),
     );
   };
 
-  const handleCancelComment = useCallback(() => {
+  const onCancelComment = useCallback(() => {
     setTranscriptions(prev =>
       prev.map(transcript => ({
         ...transcript,
         threads: transcript.threads?.filter(thread => thread.comments?.length !== 0) || [],
       })),
     );
-    setAddCommentDialogOpen(null);
   }, []);
-
-  const handleCloseSelectedComment = useCallback(() => {
-    onCloseSelectedComment?.();
-  }, [onCloseSelectedComment]);
 
   const handleCreateComment = async (payload: {
     comment: string;
@@ -307,10 +203,6 @@ const Transcription: FC<TranscriptionProps> = ({
       selection: payload.selection,
     });
   };
-  // Close dialogs on outside click
-  useClickOutside(dialogRef, handleCancelComment);
-  useClickOutside(selectedCommentCalloutRef, handleCloseSelectedComment);
-  useClickOutside(addCommentDialogRef, handleCancelComment);
 
   const TranscriptSkeleton = () => (
     <div className="flex flex-col gap-6 h-full w-full">
@@ -374,120 +266,46 @@ const Transcription: FC<TranscriptionProps> = ({
                 onMouseUp={() => handleSelection(index)}
                 className={`text-typography-900 selected-text relative w-full ${canSelect ? "cursor-text" : "cursor-default"}`}
               >
-                {splitTextByComments(transcript.content, transcript.threads).map(
-                  (segment, segIdx) => {
-                    const isSelectedComment =
-                      selectedMessageId &&
-                      transcript.id === parseInt(selectedMessageId) &&
-                      segment.isComment &&
-                      segment.comments?.length !== 0;
+                {splitByCommentRanges(
+                  transcript.content,
+                  transcript.threads.map(thread => ({
+                    id: thread.id,
+                    start: thread.selection.startIndex,
+                    end: thread.selection.endIndex,
+                  })),
+                ).map((segment, segIdx) => {
+                  const isSelectedComment =
+                    selectedMessageId &&
+                    transcript.id === parseInt(selectedMessageId) &&
+                    segment.commentIds.length > 0;
 
-                    return (
-                      <span
-                        key={segIdx}
-                        ref={isSelectedComment ? selectedCommentRef : undefined}
-                        onClick={() => {
-                          if (
-                            segment.isComment &&
-                            selectedThreadId !== segment.threadId &&
-                            selectedMessageId !== String(transcript.id) &&
-                            // selectedStartIndex !== segment.selection?.startIndex && //TODO: Uncomment this when the bug is fixed
-                            selectedEndIndex !== segment.selection?.endIndex
-                          ) {
-                            handleCommentClick?.({
-                              messageId: String(transcript.id),
-                              startIndex: segment.selection.startIndex,
-                              endIndex: segment.selection.endIndex,
-                              threadId: segment.threadId,
-                            });
-                          }
-                        }}
-                        className={`relative ${segment.isComment ? "cursor-pointer" : ""} ${
-                          segment.isComment
-                            ? segment.comments?.length !== 0
-                              ? `${String(selectedMessageId) === String(transcript.id) && selectedThreadId === segment.threadId ? "bg-amber-200" : "bg-amber-50"} border-b border-amber-400`
-                              : "bg-[#E1F1FE]"
-                            : ""
-                        }`}
-                      >
-                        {segment.content}
-                        {segment.isComment &&
-                          segment.comments?.length === 0 &&
-                          addCommentDialogOpen !== `${index}-${segIdx}` && (
-                            <div
-                              ref={setPositionRef}
-                              onClick={() => setAddCommentDialogOpen(`${index}-${segIdx}`)}
-                              className="absolute hover:bg-[#F3F3F3] z-10 flex gap-2 cursor-pointer items-center top-full left-0 mt-1 px-4 py-2 w-[160px] shadow-lg border h-[40px] rounded-[100px] bg-white"
-                            >
-                              <AddComment className="w-6 h-6 pt-1" />
-                              <span className="text-sm font-medium whitespace-nowrap">
-                                Add comment
-                              </span>
-                            </div>
-                          )}
-                        {addCommentDialogOpen === `${index}-${segIdx}` && (
-                          <div
-                            ref={setDialogRef}
-                            className="fixed z-50"
-                            style={{
-                              top: dialogPosition.top,
-                              left: dialogPosition.left,
-                              opacity: isCreateCommentLoading ? 0.5 : 1,
-                            }}
-                          >
-                            <CommentAdditionDialog
-                              onCancel={handleCancelComment}
-                              onComment={comment =>
-                                handleCreateComment({
-                                  comment: comment,
-                                  selection: segment.selection,
-                                  transcriptId: transcript.id,
-                                  threadId: null,
-                                  parentCommentId: null,
-                                })
-                              }
-                            />
-                          </div>
-                        )}
-                        {isSelectedComment &&
-                          selectedThreadId === segment.threadId &&
-                          commentsList && (
-                            <div
-                              ref={setCommentThreadRef}
-                              className="fixed z-50"
-                              style={{
-                                top: commentThreadPosition.top,
-                                left: commentThreadPosition.left,
-                              }}
-                            >
-                              <CommentThread
-                                isFeedOwner={isFeedOwner}
-                                comments={commentsList as CommentItem[]}
-                                onCommentAddition={comment =>
-                                  handleCreateComment({
-                                    comment: comment,
-                                    selection: segment.selection,
-                                    transcriptId: transcript.id,
-                                    threadId: selectedThreadId,
-                                    parentCommentId: null,
-                                  })
-                                }
-                                onReplyComment={(replyComment, parentCommentId) =>
-                                  handleCreateComment({
-                                    comment: replyComment,
-                                    selection: segment.selection,
-                                    transcriptId: transcript.id,
-                                    threadId: selectedThreadId,
-                                    parentCommentId: parentCommentId,
-                                  })
-                                }
-                              />
-                            </div>
-                          )}
-                      </span>
-                    );
-                  },
-                )}
+                  return (
+                    <SelectableText
+                      key={segIdx}
+                      setAddCommentDialogOpen={setAddCommentDialogOpen}
+                      addCommentDialogOpen={addCommentDialogOpen}
+                      onCloseSelectedComment={onCloseSelectedComment}
+                      isCreateCommentSuccess={isCreateCommentSuccess}
+                      segment={segment}
+                      segIdx={segIdx}
+                      isFeedOwner={isFeedOwner}
+                      newCommentSelection={newCommentSelection}
+                      isSelectedComment={isSelectedComment}
+                      selectedCommentRef={selectedCommentRef}
+                      selectedMessageId={selectedMessageId}
+                      transcript={transcript}
+                      selectedEndIndex={selectedEndIndex}
+                      handleCommentClick={handleCommentClick}
+                      selectedThreadId={selectedThreadId}
+                      index={index}
+                      commentsList={commentsList}
+                      handleCreateComment={handleCreateComment}
+                      isLoading={isCreateCommentLoading}
+                      setNewCommentSelection={setNewCommentSelection}
+                      onCancelComment={onCancelComment}
+                    />
+                  );
+                })}
               </span>
             </div>
           </div>

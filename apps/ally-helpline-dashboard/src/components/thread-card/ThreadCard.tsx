@@ -36,7 +36,7 @@ const ThreadCard = ({ thread, isFeedOwner }: ThreadCardProps) => {
         className={`grid transition-[grid-template-rows] duration-500 ease-out ${showComments ? "grid-rows-[1fr]" : "grid-rows-[0fr]"}`}
       >
         <div className="overflow-hidden flex flex-col gap-2">
-          {thread.comments.slice(1).map((comment, index) => (
+          {thread.comments.slice(1, 4).map((comment, index) => (
             <div
               key={comment.id}
               className="transition-all duration-500 ease-out"
@@ -56,6 +56,11 @@ const ThreadCard = ({ thread, isFeedOwner }: ThreadCardProps) => {
               />
             </div>
           ))}
+          {thread.comments.length - 1 > 3 && (
+            <div className="text-primary-500 cursor-pointer text-[14px] flex items-center justify-end gap-2">
+              Show more
+            </div>
+          )}
         </div>
       </div>
       {thread.comments.length > 1 && (
@@ -63,7 +68,9 @@ const ThreadCard = ({ thread, isFeedOwner }: ThreadCardProps) => {
           onClick={event => updateShowComments(event)}
           className="border-t-[0.5px] transition-all duration-300 cursor-pointer py-2 text-typography-800 text-[14px] flex items-center justify-center gap-2"
         >
-          {showComments ? "Collapse" : `${thread.comments.length - 1} more comments`}{" "}
+          {showComments
+            ? "Collapse"
+            : `${Math.min(thread.comments.length - 1, 3)}${thread.comments.length - 1 > 3 ? "+" : ""} more comments`}{" "}
           <Arrow
             className={`w-3 h-3 transition-transform duration-300 ${showComments ? "rotate-180" : ""}`}
           />
