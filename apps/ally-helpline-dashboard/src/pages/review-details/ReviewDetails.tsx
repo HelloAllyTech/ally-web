@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 
-import { Emoji, EmojiStyle } from "emoji-picker-react";
+import { Emoji } from "emoji-picker-react";
 import { useSelector } from "react-redux";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
@@ -247,7 +247,7 @@ export const ReviewDetails = () => {
             >
               {selectedEmoji ? (
                 <div className="pb-0.5">
-                  <Emoji unified={selectedEmoji} size={16} emojiStyle={EmojiStyle.GOOGLE} />
+                  <Emoji unified={selectedEmoji} size={16} />
                 </div>
               ) : (
                 <Smiley className="w-6 h-6 text-neutral-600 hover:text-[#0957D0]" />
