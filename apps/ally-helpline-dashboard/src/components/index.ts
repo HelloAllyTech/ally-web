@@ -12,6 +12,7 @@ import Chip, { ChipConfig } from "./chip";
 import { CircularProgress } from "./circular-progress";
 import CommentCard from "./comment-card/CommentCard";
 import ConfirmationDialog from "./confirmation-dialog";
+import { ConfirmationPopover } from "./confirmation-popover";
 import CreditInfo from "./credit-info-dialog";
 import { CreditsDisplay } from "./credits-display";
 import CustomCircularProgress from "./custom-circular-progress";
@@ -71,6 +72,7 @@ export {
   Chip,
   CircularProgress,
   ConfirmationDialog,
+  ConfirmationPopover,
   CreditsDisplay,
   CustomCircularProgress,
   CustomMarkdown,

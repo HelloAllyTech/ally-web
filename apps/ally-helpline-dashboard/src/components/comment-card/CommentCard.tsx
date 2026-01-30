@@ -13,7 +13,8 @@ import {
   useEditCommentMutation,
 } from "@api";
 import { ArrowUp, MoreVertIcon, Smiley, Delete, Edit, Hide, Eye } from "@assets";
-import { Button, CustomMenu, ReactionSelector, MenuItem } from "@components";
+import { Button, CustomMenu, ReactionSelector, MenuItem, ConfirmationPopover } from "@components";
+import { COMMENT_DELETE_CONFIRMATION } from "@src/components/comment-card/constants";
 import ReplySkeleton from "@src/components/comment-card/ReplySkeleton";
 import { RootState } from "@store";
 import { ReactionsType, CommentItem } from "@types";
@@ -28,6 +29,7 @@ interface CommentCardProps {
   commentThreadScrollRef?: React.RefObject<HTMLDivElement>;
   onReply?: (reply: string) => void;
   onDelete?: (id: string) => void;
+  commentId?: string;
 }
 const CommentCard = ({
   comment,
@@ -46,6 +48,7 @@ const CommentCard = ({
 
   const [showReplyInput, setShowReplyInput] = useState(false);
   const [showReplies, setShowReplies] = useState(false);
+  const [replyCount, setReplyCount] = useState(comment?.replyCount || 0);
   const [replies, setReplies] = useState<CommentItem[]>([]);
   const [replyText, setReplyText] = useState("");
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
@@ -53,6 +56,9 @@ const CommentCard = ({
   const [menuAnchorEl, setMenuAnchorEl] = useState<HTMLElement | null>(null);
   const [showCommentEditView, setShowCommentEditView] = useState(false);
   const [commentContent, setCommentContent] = useState(comment.content);
+  const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
+  const [deleteAnchorEl, setDeleteAnchorEl] = useState<HTMLElement | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const [addCommentReactions] = useAddCommentReactionMutation();
   const [toggleCommentVisibility] = useToggleCommentVisibilityMutation();
@@ -64,6 +70,10 @@ const CommentCard = ({
   useEffect(() => {
     if (comment?.myReaction) setSelectedEmoji(comment.myReaction);
   }, [comment?.myReaction]);
+
+  useEffect(() => {
+    setReplyCount(comment?.replyCount || 0);
+  }, [comment?.replyCount]);
 
   useEffect(() => {
     if (commentThreadScrollRef?.current) {
@@ -79,7 +89,7 @@ const CommentCard = ({
 
   const onReplyClick = async (e: React.MouseEvent) => {
     e.stopPropagation();
-    if (!showReplies && comment.replyCount > 0 && replies.length === 0) {
+    if (!showReplies && replyCount > 0 && replies.length === 0) {
       try {
         const data = await getReplies(comment.id).unwrap();
         setReplies(data?.data || []);
@@ -92,20 +102,23 @@ const CommentCard = ({
   const handleReplySubmit = () => {
     if (replyText.trim()) {
       onReply?.(replyText);
-      const newReply = {
-        id: comment.id,
-        content: replyText,
-        createdBy: {
-          id: user?.id,
-          name: user?.name,
-          profileImage: user?.profileImageUrl,
-        },
-        createdAt: new Date().toISOString(),
-        reactions: {},
-        replyCount: 0,
-        myReaction: null,
-      };
-      setReplies(prev => [...prev, newReply]);
+      if (replies.length > 0) {
+        const newReply = {
+          id: comment.id,
+          content: replyText,
+          createdBy: {
+            id: user?.id,
+            name: user?.name,
+            profileImage: user?.profileImageUrl,
+          },
+          createdAt: new Date().toISOString(),
+          reactions: {},
+          replyCount: 0,
+          myReaction: null,
+        };
+        setReplies(prev => [...prev, newReply]);
+      }
+      setReplyCount(prev => prev + 1);
       setReplyText("");
       setShowReplyInput(false);
     }
@@ -172,14 +185,29 @@ const CommentCard = ({
     setCommentContent(comment.content);
   };
 
+  const handleShowDeleteConfirmation = () => {
+    setDeleteAnchorEl(menuAnchorEl);
+    setShowDeleteConfirmation(true);
+    handleMenuClose();
+  };
+
+  const handleCancelDelete = () => {
+    setShowDeleteConfirmation(false);
+    setDeleteAnchorEl(null);
+  };
+
   const handleDeleteComment = async () => {
     try {
+      setIsDeleting(true);
       await deleteComment({ commentId: comment.id }).unwrap();
       onDelete?.(comment.id);
       toast.success("Comment deleted successfully");
-      handleMenuClose();
+      setShowDeleteConfirmation(false);
+      setDeleteAnchorEl(null);
     } catch (error) {
       toast.error(error?.data?.message || "Failed to delete comment");
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -241,6 +269,11 @@ const CommentCard = ({
 
   const handleDeleteReply = (id: string) => {
     setReplies(prev => prev.filter(reply => reply.id !== id));
+    if (replyCount === 1) {
+      setReplies([]);
+      setShowReplies(false);
+    }
+    setReplyCount(prev => prev - 1);
   };
 
   const renderCommentEditView = () => {
@@ -267,12 +300,19 @@ const CommentCard = ({
     );
   };
 
+  const showDivider =
+    comment.replyCount > 0 &&
+    ((showLike && (selectedEmoji || enableLikeUpdate)) ||
+      (comment?.reactions &&
+        !isReactionOnCommentFromThisUser() &&
+        Object.keys(comment?.reactions).length > 0));
+
   const renderCommentContent = () => {
     return (
       <>
         <div className="text-typography-900 font-primary text-sm">{comment.content}</div>
         <div className="flex gap-2 items-center">
-          {showLike && (
+          {showLike && (selectedEmoji || enableLikeUpdate) && (
             <div className="relative">
               <div
                 ref={likeRef}
@@ -302,9 +342,7 @@ const CommentCard = ({
             Object.keys(comment?.reactions).length > 0 && (
               <>
                 {enableLikeUpdate ||
-                  (selectedEmoji && (
-                    <div className="border-l border-neutral-300 h-3 border-border-light" />
-                  ))}
+                  (selectedEmoji && <div className="border-l h-3 border-border-light" />)}
                 <div className="flex pr-1 items-center">
                   {Object.keys(comment.reactions)
                     .slice(0, 3)
@@ -332,7 +370,7 @@ const CommentCard = ({
               </>
             )}
 
-          {comment.replyCount > 0 && <div className="w-1 h-1 bg-[#D9D9D9] rounded-full" />}
+          {showDivider && <div className="w-1 h-1 bg-[#D9D9D9] rounded-full" />}
           {showReply && (
             <>
               <div
@@ -343,12 +381,12 @@ const CommentCard = ({
               </div>
             </>
           )}
-          {comment.replyCount > 0 && (
+          {replyCount > 0 && (
             <div
               className={`text-typography-800 text-xs cursor-pointer underline decoration-neutral-300 underline-offset-4 decoration-1`}
               onClick={onReplyClick}
             >
-              {comment.replyCount} repl{comment.replyCount > 1 ? "ies" : "y"}
+              {replyCount} repl{replyCount > 1 ? "ies" : "y"}
             </div>
           )}
         </div>
@@ -383,7 +421,7 @@ const CommentCard = ({
         label: "Delete",
         className: "text-red-500",
         icon: <Delete width={16} height={16} />,
-        onClick: () => handleDeleteComment(),
+        onClick: handleShowDeleteConfirmation,
       });
     }
 
@@ -470,6 +508,26 @@ const CommentCard = ({
           </div>
         )}
       </div>
+      <ConfirmationPopover
+        isOpen={showDeleteConfirmation}
+        onClose={handleCancelDelete}
+        onConfirm={handleDeleteComment}
+        anchorElement={deleteAnchorEl}
+        title={
+          <div className="font-medium font-secondary text-2xl text-typography-900 text-center">
+            Delete <span className="italic font-bold">{onDelete ? "Reply" : "Comment"}?</span>
+          </div>
+        }
+        message={
+          onDelete
+            ? COMMENT_DELETE_CONFIRMATION.REPLY_DELETE_MESSAGE
+            : COMMENT_DELETE_CONFIRMATION.COMMENT_DELETE_MESSAGE
+        }
+        confirmText="Delete"
+        cancelText="Cancel"
+        confirmVariant="danger"
+        isLoading={isDeleting}
+      />
     </div>
   );
 };
