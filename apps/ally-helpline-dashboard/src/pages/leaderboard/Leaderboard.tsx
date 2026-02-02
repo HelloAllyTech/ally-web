@@ -118,32 +118,27 @@ export const Leaderboard = () => {
   }
 
   return (
-    <div
-      className={"p-4 sm:p-6 overflow-hidden w-full h-full overflow-y-auto"}
-      data-testid="leaderboard-page"
-    >
+    <div className={"p-4 sm:p-6 overflow-hidden w-full h-full"} data-testid="leaderboard-page">
       <div
-        className="text-typography-900 font-secondary text-xl sm:text-2xl font-[500] flex items-center mb-4 sm:mb-6"
+        className="text-typography-900 font-secondary text-xl sm:text-2xl font-[500] flex items-center"
         data-testid="leaderboard-title"
       >
         Leaderboard
       </div>
-      <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 pb-4 h-full items-stretch sm:items-start">
-        <div className="flex-1 min-w-0 w-full sm:w-auto">
-          <LeaderboardList
-            currentUser={currentUser}
-            onTimeFilterChange={handleWindowChange}
-            onLoadMore={loadMore}
-            hasMore={hasMore}
-            isLoading={isFetching}
-            selectedTimeFilter={window}
-            data={leaderboardData}
-          />
-        </div>
+      <div className="flex flex-row gap-4 sm:gap-6 pb-4 h-full items-stretch sm:items-start">
+        <LeaderboardList
+          currentUser={currentUser}
+          onTimeFilterChange={handleWindowChange}
+          onLoadMore={loadMore}
+          hasMore={hasMore}
+          isLoading={isFetching}
+          selectedTimeFilter={window}
+          data={leaderboardData}
+        />
 
         {/* achievements card */}
         {FEATURE_FLAGS_MAP.BADGES_FLAG && (
-          <div className="w-full sm:w-1/2 sm:max-w-md sm:ml-0 sm:mt-0 sm:self-start flex-shrink-0">
+          <div className="w-full sm:w-1/2 sm:max-w-md sm:ml-0 sm:mt-[16px] sm:self-start flex-shrink-0">
             <AchievementsCard
               achievements={getBadgesList()}
               viewedBadgesCount={viewedBadgesCount}
