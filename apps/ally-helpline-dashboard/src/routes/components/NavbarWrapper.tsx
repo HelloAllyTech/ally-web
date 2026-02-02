@@ -24,7 +24,7 @@ const NavbarWrapper: FC<{ children: React.ReactNode }> = ({ children }) => {
   const shouldShowBadgeModal =
     isAuthenticated &&
     FEATURE_FLAGS_MAP.BADGES_FLAG &&
-    !isPathExcluded(pathname, [ROUTES.SIMULATION, ROUTES.CALLS]);
+    !isPathExcluded(pathname, [ROUTES.SIMULATION_SUMMARY_FULL]);
 
   useEffect(() => {
     // checkAuth only for logged in users
