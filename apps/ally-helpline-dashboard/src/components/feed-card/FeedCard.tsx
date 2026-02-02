@@ -23,12 +23,13 @@ const FeedCard: FC<FeedCardProps> = ({
   onReviewTranscript,
   onCommentsClick,
   duration,
+  dateTime,
 }) => {
   const { user: currentDetails } = useUser();
 
   const [isReactionsModalOpen, setIsReactionsModalOpen] = useState(false);
 
-  const formattedDateTime = formatDateTime(scenario.createdAt);
+  const formattedDateTime = formatDateTime(dateTime);
   const relativeTime = formatRelativeTime(createdAt);
 
   const entries = Object.entries(reactions);

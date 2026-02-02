@@ -231,6 +231,7 @@ export const Review: FC = () => {
                 setSelectedReviewId(prev => (prev === item.id ? null : item.id));
               }}
               duration={item.scenarioSession?.duration}
+              dateTime={item.scenarioSession?.createdAt}
             />
           </motion.div>
         ))}
