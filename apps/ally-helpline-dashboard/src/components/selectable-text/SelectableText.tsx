@@ -13,6 +13,8 @@ import { RootState } from "@src/store";
 import { CommentItem, SimulationTranscriptMessage } from "@src/types";
 
 const DIALOG_WIDTH = 360;
+const COMMENTS_PAGE_SIZE = 5;
+
 interface SelectableTextProps {
   segment: {
     text: string;
@@ -124,7 +126,9 @@ const SelectableText = ({
         myReaction: null,
         hidden: false,
       };
-      setComments(prev => [...(prev || []), newComment]);
+      if (comments.length < COMMENTS_PAGE_SIZE) {
+        setComments(prev => [...(prev || []), newComment]);
+      }
       setNewCommentSelection(null);
     }
   }, [isCreateCommentSuccess]);

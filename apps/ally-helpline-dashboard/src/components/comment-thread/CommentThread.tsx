@@ -56,7 +56,11 @@ const CommentThread = ({
     if (threadsOffset === 0) {
       setCommentsToShow(nextData);
     } else {
-      setCommentsToShow(prev => [...(prev || []), ...nextData]);
+      setCommentsToShow(prev => {
+        const existingComments = new Set(prev.map(comment => comment.id));
+        const newComments = nextData.filter(comment => !existingComments.has(comment.id));
+        return [...(prev || []), ...newComments];
+      });
     }
   }, [threadComments]);
   const handleCommentAddition = () => {
