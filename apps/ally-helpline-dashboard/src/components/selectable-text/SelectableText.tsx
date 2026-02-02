@@ -124,7 +124,7 @@ const SelectableText = ({
         myReaction: null,
         hidden: false,
       };
-      setComments(prev => [...prev, newComment]);
+      setComments(prev => [...(prev || []), newComment]);
     }
   }, [isCreateCommentSuccess]);
   // Check if this segment is part of the new comment selection (handles overlapping selections)
