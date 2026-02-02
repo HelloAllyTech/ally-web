@@ -10,7 +10,8 @@ import {
   useGetLeaderBoardListQuery,
 } from "@api";
 import { AchievementsCard, LeaderboardList, LeaderboardUser } from "@components";
-import { ROUTES } from "@constants";
+import { ROUTES, Permissions } from "@constants";
+import { useUser } from "@hooks";
 import { AchievementItemData, LockedStatus, UserBadge, ViewedStatus } from "@types";
 
 // Map UserBadge (earned badges) to AchievementItemData format
@@ -33,8 +34,10 @@ export const Leaderboard = () => {
   const [pathsOffset, setPathsOffset] = useState(0);
   const [window, setWindow] = useState(INITIAL_WINDOW);
   const [leaderboardData, setLeaderboardData] = useState<LeaderboardUser[]>([]);
+  const { permissions } = useUser();
 
-  const isBadgesEnabled = FEATURE_FLAGS_MAP.BADGES_FLAG;
+  const isBadgesEnabled =
+    FEATURE_FLAGS_MAP.BADGES_FLAG && permissions.includes(Permissions.VIEW_BADGES);
 
   const pathParams = {
     limit: PATHS_PAGE_SIZE,
