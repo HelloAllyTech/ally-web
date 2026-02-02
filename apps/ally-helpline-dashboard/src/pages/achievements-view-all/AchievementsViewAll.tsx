@@ -51,7 +51,7 @@ export const AchievementsViewAll: FC = () => {
   const location = useLocation();
   const [activeFilter, setActiveFilter] = useState("ALL");
 
-  const isFromLeaderboard = location.state?.from === "leaderboard";
+  const isFromLeaderboard = location.state?.from === "community";
 
   const {
     data: badgesData = [],

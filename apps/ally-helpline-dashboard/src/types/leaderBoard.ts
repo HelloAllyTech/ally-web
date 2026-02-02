@@ -1,14 +1,12 @@
 export interface getLeaderBoardList {
-  data: [
-    {
-      userId: number;
-      name: string;
-      profileImageUrl: string;
-      rank: number;
-      minutesPlayed: number;
-      badgeCount: number;
-    },
-  ];
+  data: {
+    userId: number;
+    name: string;
+    profileImageUrl: string;
+    rank: number;
+    minutesPlayed: number;
+    badgeCount: number;
+  }[];
   hideRankInCommunity?: boolean;
   window: string;
   totalCount: number;
