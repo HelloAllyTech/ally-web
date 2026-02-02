@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 
 import { useSelector } from "react-redux";
+import { useParams } from "react-router-dom";
 import { toast } from "sonner";
 
 import { AutoExpandableTextarea, CustomImage, InfiniteScroll } from "@ally-ui-mono/ui-shared";
@@ -10,6 +11,7 @@ import {
   useDeleteCommentMutation,
   useLazyGetCommentRepliesQuery,
   useEditCommentMutation,
+  useCreateCommentMutation,
 } from "@api";
 import { ArrowUp, MoreVertIcon, Smiley, Delete, Edit, Hide, Eye } from "@assets";
 import {
@@ -32,9 +34,15 @@ interface CommentCardProps {
   enableLikeUpdate?: boolean;
   showReply?: boolean;
   commentThreadScrollRef?: React.RefObject<HTMLDivElement>;
-  onReply?: (reply: string) => void;
   onDelete?: (id: string) => void;
   commentId?: string;
+  onUpdateComment?: (content: string, id: string) => void;
+  selectedThreadId?: string;
+  messageId?: string;
+  selection?: {
+    startIndex: number;
+    endIndex: number;
+  };
 }
 const CommentCard = ({
   comment,
@@ -42,12 +50,16 @@ const CommentCard = ({
   showLike = false,
   enableLikeUpdate = true,
   showReply = false,
-  onReply,
   onDelete,
   commentThreadScrollRef,
+  onUpdateComment,
+  selectedThreadId,
+  messageId,
+  selection,
 }: CommentCardProps) => {
   const user = useSelector((state: RootState) => state.user.user);
-
+  const [createComment, { data: createCommentData }] = useCreateCommentMutation();
+  const { reviewId } = useParams<{ reviewId: string }>();
   const isMyComment =
     user?.id != null && comment?.createdBy?.id != null && user.id === comment.createdBy.id;
 
@@ -90,6 +102,30 @@ const CommentCard = ({
     }
   }, [menuAnchorEl, commentThreadScrollRef]);
 
+  useEffect(() => {
+    if (createCommentData) {
+      if (replies.length > 0) {
+        const newReply = {
+          id: createCommentData.reply.id,
+          content: replyText,
+          createdBy: {
+            id: user?.id,
+            name: user?.name,
+            profileImage: user?.profileImageUrl,
+          },
+          createdAt: new Date().toISOString(),
+          reactions: {},
+          replyCount: 0,
+          myReaction: null,
+        };
+        setReplies(prev => [...(prev || []), newReply]);
+      }
+      setReplyCount(prev => prev + 1);
+      setReplyText("");
+      setShowReplyInput(false);
+    }
+  }, [createCommentData]);
+
   const handleReplyClick = (e: React.MouseEvent) => {
     e.stopPropagation();
     setShowReplyInput(prev => !prev);
@@ -127,26 +163,7 @@ const CommentCard = ({
   };
   const handleReplySubmit = () => {
     if (replyText.trim()) {
-      onReply?.(replyText);
-      if (replies.length > 0) {
-        const newReply = {
-          id: comment.id,
-          content: replyText,
-          createdBy: {
-            id: user?.id,
-            name: user?.name,
-            profileImage: user?.profileImageUrl,
-          },
-          createdAt: new Date().toISOString(),
-          reactions: {},
-          replyCount: 0,
-          myReaction: null,
-        };
-        setReplies(prev => [...(prev || []), newReply]);
-      }
-      setReplyCount(prev => prev + 1);
-      setReplyText("");
-      setShowReplyInput(false);
+      handleReplyComment(replyText, comment.id);
     }
   };
 
@@ -242,13 +259,31 @@ const CommentCard = ({
     try {
       await editComment({ commentId: comment.id, content: commentContent?.trim() }).unwrap();
       toast.success("Comment updated successfully");
+      onUpdateComment?.(commentContent, comment.id);
       handleMenuClose();
       setShowCommentEditView(false);
     } catch (error) {
       toast.error(error?.data?.message || "Failed to update comment");
     }
   };
+  const handleUpdateReply = (content: string, id: string) => {
+    const currentReplies = replies.map(reply => (reply.id === id ? { ...reply, content } : reply));
+    setReplies(currentReplies);
+  };
 
+  const handleReplyComment = async (replyComment: string, parentCommentId: string | null) => {
+    const body = {
+      threadId: selectedThreadId,
+      parentCommentId,
+      messageId,
+      content: replyComment,
+      selection,
+    };
+    await createComment({
+      reviewId: reviewId,
+      body: body,
+    });
+  };
   const renderReplyBox = () => {
     if (showReplyInput) {
       return (
@@ -511,6 +546,7 @@ const CommentCard = ({
                       enableLikeUpdate={enableLikeUpdate}
                       showReply={false}
                       onDelete={handleDeleteReply}
+                      onUpdateComment={handleUpdateReply}
                     />
                   ))}
                 </InfiniteScroll>

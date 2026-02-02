@@ -58,14 +58,33 @@ vi.mock("@components", () => ({
       {children}
     </button>
   ),
-  CommentCard: ({ comment, showLike, showReply }: any) => (
+  CommentCard: ({
+    comment,
+    showLike,
+    showReply,
+    isFeedOwner,
+    selectedThreadId,
+    messageId,
+    selection,
+    onDelete,
+  }: any) => (
     <div
       data-testid={`comment-card-${comment.id}`}
       data-show-like={showLike}
       data-show-reply={showReply}
+      data-is-feed-owner={isFeedOwner}
+      data-selected-thread-id={selectedThreadId}
+      data-message-id={messageId}
+      data-selection-start={selection?.startIndex}
+      data-selection-end={selection?.endIndex}
     >
       <span data-testid="comment-content">{comment.content}</span>
       <span data-testid="comment-author">{comment.createdBy.name}</span>
+      {onDelete && (
+        <button data-testid="delete-comment" onClick={() => onDelete(comment.id)}>
+          Delete
+        </button>
+      )}
     </div>
   ),
 }));
@@ -147,13 +166,15 @@ describe("CommentThread Component", () => {
   ];
 
   const mockOnCommentAddition = vi.fn();
-  const mockOnReplyComment = vi.fn();
+  const mockOnDeleteComment = vi.fn();
 
   const defaultProps = {
     id: "thread-1",
     comments: mockComments,
     onCommentAddition: mockOnCommentAddition,
-    onReplyComment: mockOnReplyComment,
+    onDeleteComment: mockOnDeleteComment,
+    messageId: "101",
+    selection: { startIndex: 10, endIndex: 24 },
   };
 
   beforeEach(() => {
@@ -177,7 +198,9 @@ describe("CommentThread Component", () => {
         id="thread-1"
         comments={[]}
         onCommentAddition={mockOnCommentAddition}
-        onReplyComment={vi.fn()}
+        onDeleteComment={mockOnDeleteComment}
+        messageId="101"
+        selection={{ startIndex: 10, endIndex: 24 }}
       />,
     );
     expect(asFragment()).toMatchSnapshot();
@@ -206,7 +229,9 @@ describe("CommentThread Component", () => {
           id="thread-1"
           comments={[]}
           onCommentAddition={mockOnCommentAddition}
-          onReplyComment={mockOnReplyComment}
+          onDeleteComment={mockOnDeleteComment}
+          messageId="101"
+          selection={{ startIndex: 10, endIndex: 24 }}
         />,
       );
       expect(screen.queryByTestId(/comment-card-/)).not.toBeInTheDocument();
