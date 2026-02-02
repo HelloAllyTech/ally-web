@@ -130,3 +130,15 @@ export const SORT_ORDER = {
   ASC: "ASC",
   DESC: "DESC",
 };
+
+export const toolTipStyles = {
+  tooltip: {
+    sx: {
+      backgroundColor: "#000",
+      color: "white",
+      borderRadius: "5px",
+      maxWidth: "250px",
+      whiteSpace: "normal",
+    },
+  },
+};

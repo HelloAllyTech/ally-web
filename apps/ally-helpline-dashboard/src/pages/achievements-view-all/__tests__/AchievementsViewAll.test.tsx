@@ -102,6 +102,9 @@ vi.mock("@assets", () => ({
   ScribeIcon: () => <svg data-testid="scribe-icon" />,
   ReviewNavIcon: () => <svg data-testid="review-nav-icon" />,
   Badge: () => <svg data-testid="badge-icon" />,
+  Info: ({ className }: { className?: string }) => (
+    <svg data-testid="info-icon" className={className} />
+  ),
 }));
 
 // Mock components
