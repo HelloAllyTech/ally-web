@@ -57,7 +57,7 @@ const ReviewCommentsSidepanel = ({
 
   return (
     <div
-      className={`h-full bg-white border-l-[0.5px] overflow-hidden transition-all duration-300 ${className}`}
+      className={`h-full z-20 bg-white border-l-[0.5px] overflow-hidden transition-all duration-300 ${className}`}
     >
       <div className="w-full font-primary py-4 px-4 flex items-center justify-between border-b-[0.5px]">
         <div className="text-typography-900 font-medium text-lg">
