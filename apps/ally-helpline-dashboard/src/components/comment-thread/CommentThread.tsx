@@ -49,7 +49,7 @@ const CommentThread = ({
     if (threadsOffset === 0) {
       setCommentsToShow(nextData);
     } else {
-      setCommentsToShow(prev => [...prev, ...nextData]);
+      setCommentsToShow(prev => [...(prev || []), ...nextData]);
     }
   }, [threadComments]);
   const handleCommentAddition = () => {
