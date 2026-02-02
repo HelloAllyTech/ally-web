@@ -26,6 +26,7 @@ export interface LeaderboardListProps {
   emptyMessage?: string;
   onLoadMore?: () => void;
   hasMore?: boolean;
+  hideRank?: boolean;
 }
 
 export const TIME_FILTER_OPTIONS: { label: string; value: LeaderboardTimeFilter }[] = [
@@ -104,9 +105,16 @@ interface LeaderboardRowProps {
   isLast?: boolean;
   rowRef?: React.RefObject<HTMLDivElement>;
   isCurrentUser?: boolean;
+  hideRank?: boolean;
 }
 
-const LeaderboardRow: FC<LeaderboardRowProps> = ({ user, isLast, rowRef, isCurrentUser }) => {
+const LeaderboardRow: FC<LeaderboardRowProps> = ({
+  user,
+  isLast,
+  rowRef,
+  isCurrentUser,
+  hideRank,
+}) => {
   const isTopThree = user.rank <= 3;
 
   return (
@@ -119,20 +127,22 @@ const LeaderboardRow: FC<LeaderboardRowProps> = ({ user, isLast, rowRef, isCurre
       )}
     >
       {/* Rank */}
-      <div className="w-16 flex justify-center">
-        {isTopThree ? (
-          <span
-            className={cn(
-              "w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold",
-              getRankBadgeStyle(user.rank),
-            )}
-          >
-            {user.rank}
-          </span>
-        ) : (
-          <span className="text-typography-700 text-base font-medium">{user.rank}</span>
-        )}
-      </div>
+      {!hideRank && (
+        <div className="w-16 flex justify-center">
+          {isTopThree ? (
+            <span
+              className={cn(
+                "w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold",
+                getRankBadgeStyle(user.rank),
+              )}
+            >
+              {user.rank}
+            </span>
+          ) : (
+            <span className="text-typography-700 text-base font-medium">{user.rank}</span>
+          )}
+        </div>
+      )}
 
       {/* User Info */}
       <div className="flex items-center gap-4 flex-1">
@@ -212,6 +222,7 @@ export const LeaderboardList: FC<LeaderboardListProps> = ({
   isLoading = false,
   emptyMessage = "No leaderboard data available",
   onLoadMore,
+  hideRank,
   hasMore,
 }) => {
   const [internalFilter, setInternalFilter] = useState<LeaderboardTimeFilter>("LAST_WEEK");
@@ -304,7 +315,7 @@ export const LeaderboardList: FC<LeaderboardListProps> = ({
   const renderTableHeader = () => {
     return (
       <div className="flex items-center py-3 px-4 text-typography-600 text-sm font-medium border-b border-border-light">
-        <div className="w-16 text-center">Rank</div>
+        {!hideRank && <div className="w-16 text-center">Rank</div>}
         <div className="flex-1">User</div>
         <div className="w-40 text-right">Total duration</div>
         <div className="w-24 text-center">Badges</div>
@@ -338,6 +349,7 @@ export const LeaderboardList: FC<LeaderboardListProps> = ({
               user={user}
               isLast={index === data.length - 1}
               isCurrentUser={isCurrentUser}
+              hideRank={hideRank}
               rowRef={isCurrentUser ? currentUserRowRef : undefined}
             />
           );

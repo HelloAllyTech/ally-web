@@ -9,6 +9,7 @@ export interface getLeaderBoardList {
       badgeCount: number;
     },
   ];
+  hideRankInCommunity?: boolean;
   window: string;
   totalCount: number;
 }

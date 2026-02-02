@@ -33,7 +33,7 @@ export const useAchievementBadgeModal = (): UseAchievementBadgeModalReturn => {
     },
     {
       skip: !isBadgesEnabled,
-      pollingInterval: 30000,
+      pollingInterval: 20000,
       refetchOnFocus: true,
       refetchOnReconnect: true,
     },
@@ -146,15 +146,16 @@ export const useAchievementBadgeModal = (): UseAchievementBadgeModalReturn => {
 
   const currentBadge = currentBadgeIndex !== null ? badges[currentBadgeIndex] : null;
 
-  const BadgeModal = currentBadge ? (
-    <AchievementBadgeModal
-      isOpen={true}
-      onClose={closeModal}
-      title={currentBadge.name}
-      description={currentBadge.description}
-      badgeImageUrl={currentBadge.imageUrl}
-    />
-  ) : null;
+  const BadgeModal =
+    isBadgesEnabled && currentBadge ? (
+      <AchievementBadgeModal
+        isOpen={true}
+        onClose={closeModal}
+        title={currentBadge.name}
+        description={currentBadge.description}
+        badgeImageUrl={currentBadge.imageUrl}
+      />
+    ) : null;
 
   return {
     currentBadge,
