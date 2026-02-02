@@ -7,7 +7,7 @@ import { FEATURE_FLAGS_MAP } from "@ally-ui-mono/ui-shared/featureFlag";
 import { useGetAvailableBadgesQuery } from "@api";
 import { ArrowLeft, Info, NoResults } from "@assets";
 import { AchievementItem, FallbackUI, ToggleButtonGroup } from "@components";
-import { ROUTES, navBarOptions, toolTipStyles } from "@constants";
+import { toolTipStyles } from "@constants";
 import { AchievementItemData, BadgeCategory, LockedStatus } from "@types";
 
 // Badge type display labels
@@ -51,9 +51,7 @@ export const AchievementsViewAll: FC = () => {
   const location = useLocation();
   const [activeFilter, setActiveFilter] = useState("ALL");
 
-  const isFromNavbar =
-    location.pathname === ROUTES.ACHIEVEMENTS_VIEW_ALL ||
-    navBarOptions.some(option => option.path === location.pathname);
+  const isFromLeaderboard = location.state?.from === "leaderboard";
 
   const {
     data: badgesData = [],
@@ -122,7 +120,7 @@ export const AchievementsViewAll: FC = () => {
     return (
       <div className="flex flex-col gap-3 w-full">
         <div className="flex flex-row items-center gap-3 sm:gap-[18px]">
-          {!isFromNavbar && (
+          {isFromLeaderboard && (
             <button
               onClick={() => navigate(-1)}
               className="p-2 -m-2 hover:bg-gray-100 rounded-full transition-colors"

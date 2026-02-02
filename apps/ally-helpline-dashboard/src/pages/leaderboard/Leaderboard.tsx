@@ -98,7 +98,7 @@ export const Leaderboard = () => {
   }, [leaderboardData.length, leaderBoardList]);
 
   const handleViewAllBadges = () => {
-    navigate(ROUTES.ACHIEVEMENTS_VIEW_ALL);
+    navigate(ROUTES.ACHIEVEMENTS_VIEW_ALL, { state: { from: "leaderboard" } });
   };
 
   const getBadgesList = () => {
