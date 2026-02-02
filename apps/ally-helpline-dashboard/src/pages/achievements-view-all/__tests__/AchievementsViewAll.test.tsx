@@ -30,6 +30,7 @@ const {
   mockUseDeleteProfileImageMutation,
   mockUseUploadProfileImageMutation,
   mockUseUser,
+  mockLocation,
 } = vi.hoisted(() => ({
   mockUseGetAvailableBadgesQuery: vi.fn(),
   mockNavigate: vi.fn(),
@@ -45,6 +46,7 @@ const {
   mockUseDeleteProfileImageMutation: vi.fn(),
   mockUseUploadProfileImageMutation: vi.fn(),
   mockUseUser: vi.fn(),
+  mockLocation: { state: null, pathname: "/achievements", search: "", hash: "" },
 }));
 
 // Mock API
@@ -70,6 +72,7 @@ vi.mock("react-router-dom", async () => {
   return {
     ...actual,
     useNavigate: () => mockNavigate,
+    useLocation: () => mockLocation,
   };
 });
 
@@ -256,6 +259,7 @@ const TestWrapper = ({ children }: { children: React.ReactNode }) => (
 describe("AchievementsViewAll Component", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockLocation.state = null;
     mockUseGetAvailableBadgesQuery.mockReturnValue(defaultQueryReturn);
     mockUseGetMyBadgesQuery.mockReturnValue({
       data: { data: [] },
@@ -314,6 +318,7 @@ describe("AchievementsViewAll Component", () => {
     });
 
     it("renders the back button", () => {
+      mockLocation.state = { from: "leaderboard" };
       render(
         <TestWrapper>
           <AchievementsViewAll />
@@ -633,6 +638,7 @@ describe("AchievementsViewAll Component", () => {
    */
   describe("Navigation", () => {
     it("navigates back when back button is clicked", () => {
+      mockLocation.state = { from: "leaderboard" };
       render(
         <TestWrapper>
           <AchievementsViewAll />
@@ -827,6 +833,7 @@ describe("AchievementsViewAll Component", () => {
    */
   describe("Accessibility", () => {
     it("has accessible back button with aria-label", () => {
+      mockLocation.state = { from: "leaderboard" };
       render(
         <TestWrapper>
           <AchievementsViewAll />
