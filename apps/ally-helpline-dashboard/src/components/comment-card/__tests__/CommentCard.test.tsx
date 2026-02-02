@@ -171,12 +171,20 @@ const deleteCommentMock = vi.fn().mockReturnValue({ unwrap: deleteCommentUnwrap 
 const editCommentMock = vi.fn().mockReturnValue({ unwrap: editCommentUnwrap });
 const getRepliesMock = vi.fn().mockReturnValue({ unwrap: getRepliesUnwrap });
 
+const createCommentMock = vi.fn().mockReturnValue({ unwrap: vi.fn() });
+
 vi.mock("@api", () => ({
   useAddCommentReactionMutation: () => [addCommentReactionMock, { isLoading: false }],
   useToggleCommentVisibilityMutation: () => [toggleCommentVisibilityMock, { isLoading: false }],
   useDeleteCommentMutation: () => [deleteCommentMock, { isLoading: false }],
   useEditCommentMutation: () => [editCommentMock, { isLoading: false }],
   useLazyGetCommentRepliesQuery: () => [getRepliesMock, { isLoading: false }],
+  useCreateCommentMutation: () => [createCommentMock, { data: null }],
+}));
+
+// Mock react-router-dom
+vi.mock("react-router-dom", () => ({
+  useParams: () => ({ reviewId: "review-123" }),
 }));
 
 // Create a mock Redux store
@@ -216,6 +224,7 @@ describe("CommentCard Component", () => {
     deleteCommentUnwrap.mockResolvedValue({});
     editCommentUnwrap.mockResolvedValue({});
     getRepliesUnwrap.mockResolvedValue({ data: [] });
+    createCommentMock.mockClear();
     mockStore = createMockStore();
   });
 
@@ -236,7 +245,14 @@ describe("CommentCard Component", () => {
       replyCount: 3,
     };
     const { asFragment } = renderWithProvider(
-      <CommentCard comment={commentWithReactions} showLike showReply onReply={vi.fn()} />,
+      <CommentCard
+        comment={commentWithReactions}
+        showLike
+        showReply
+        selectedThreadId="thread-1"
+        messageId="101"
+        selection={{ startIndex: 10, endIndex: 24 }}
+      />,
     );
     expect(asFragment()).toMatchSnapshot();
   });
@@ -515,9 +531,16 @@ describe("CommentCard Component", () => {
       expect(textarea).toHaveValue("My reply");
     });
 
-    it("should call onReply when Comment button is clicked with text", () => {
-      const onReply = vi.fn();
-      renderWithProvider(<CommentCard comment={mockComment} showReply onReply={onReply} />);
+    it("should call createComment when Reply button is clicked with text", () => {
+      renderWithProvider(
+        <CommentCard
+          comment={mockComment}
+          showReply
+          selectedThreadId="thread-1"
+          messageId="101"
+          selection={{ startIndex: 10, endIndex: 24 }}
+        />,
+      );
 
       const replyButton = screen.getByText("Reply");
       fireEvent.click(replyButton);
@@ -525,28 +548,51 @@ describe("CommentCard Component", () => {
       const textarea = screen.getByTestId("reply-textarea");
       fireEvent.change(textarea, { target: { value: "My reply" } });
 
-      const commentButton = screen.getByTestId("button-primary");
-      fireEvent.click(commentButton);
+      const submitButton = screen.getByTestId("button-primary");
+      fireEvent.click(submitButton);
 
-      expect(onReply).toHaveBeenCalledWith("My reply");
+      expect(createCommentMock).toHaveBeenCalledWith({
+        reviewId: "review-123",
+        body: {
+          threadId: "thread-1",
+          parentCommentId: mockComment.id,
+          messageId: "101",
+          content: "My reply",
+          selection: { startIndex: 10, endIndex: 24 },
+        },
+      });
     });
 
-    it("should not call onReply when Comment button is clicked with empty text", () => {
-      const onReply = vi.fn();
-      renderWithProvider(<CommentCard comment={mockComment} showReply onReply={onReply} />);
+    it("should not call createComment when Reply button is clicked with empty text", () => {
+      renderWithProvider(
+        <CommentCard
+          comment={mockComment}
+          showReply
+          selectedThreadId="thread-1"
+          messageId="101"
+          selection={{ startIndex: 10, endIndex: 24 }}
+        />,
+      );
 
       const replyButton = screen.getByText("Reply");
       fireEvent.click(replyButton);
 
-      const commentButton = screen.getByTestId("button-primary");
-      fireEvent.click(commentButton);
+      const submitButton = screen.getByTestId("button-primary");
+      fireEvent.click(submitButton);
 
-      expect(onReply).not.toHaveBeenCalled();
+      expect(createCommentMock).not.toHaveBeenCalled();
     });
 
-    it("should not call onReply when Comment button is clicked with whitespace only", () => {
-      const onReply = vi.fn();
-      renderWithProvider(<CommentCard comment={mockComment} showReply onReply={onReply} />);
+    it("should not call createComment when Reply button is clicked with whitespace only", () => {
+      renderWithProvider(
+        <CommentCard
+          comment={mockComment}
+          showReply
+          selectedThreadId="thread-1"
+          messageId="101"
+          selection={{ startIndex: 10, endIndex: 24 }}
+        />,
+      );
 
       const replyButton = screen.getByText("Reply");
       fireEvent.click(replyButton);
@@ -554,46 +600,10 @@ describe("CommentCard Component", () => {
       const textarea = screen.getByTestId("reply-textarea");
       fireEvent.change(textarea, { target: { value: "   " } });
 
-      const commentButton = screen.getByTestId("button-primary");
-      fireEvent.click(commentButton);
+      const submitButton = screen.getByTestId("button-primary");
+      fireEvent.click(submitButton);
 
-      expect(onReply).not.toHaveBeenCalled();
-    });
-
-    it("should hide reply textarea after successful submission", () => {
-      const onReply = vi.fn();
-      renderWithProvider(<CommentCard comment={mockComment} showReply onReply={onReply} />);
-
-      const replyButton = screen.getByText("Reply");
-      fireEvent.click(replyButton);
-
-      const textarea = screen.getByTestId("reply-textarea");
-      fireEvent.change(textarea, { target: { value: "My reply" } });
-
-      const commentButton = screen.getByTestId("button-primary");
-      fireEvent.click(commentButton);
-
-      expect(screen.queryByTestId("reply-textarea")).not.toBeInTheDocument();
-    });
-
-    it("should clear textarea value after successful submission", () => {
-      const onReply = vi.fn();
-      renderWithProvider(<CommentCard comment={mockComment} showReply onReply={onReply} />);
-
-      // First submission
-      const replyButton = screen.getByText("Reply");
-      fireEvent.click(replyButton);
-
-      let textarea = screen.getByTestId("reply-textarea");
-      fireEvent.change(textarea, { target: { value: "My reply" } });
-
-      const commentButton = screen.getByTestId("button-primary");
-      fireEvent.click(commentButton);
-
-      // Re-open textarea
-      fireEvent.click(replyButton);
-      textarea = screen.getByTestId("reply-textarea");
-      expect(textarea).toHaveValue("");
+      expect(createCommentMock).not.toHaveBeenCalled();
     });
 
     it("should hide reply textarea when Cancel button is clicked", () => {
@@ -616,8 +626,15 @@ describe("CommentCard Component", () => {
     });
 
     it("should handle special characters in reply", () => {
-      const onReply = vi.fn();
-      renderWithProvider(<CommentCard comment={mockComment} showReply onReply={onReply} />);
+      renderWithProvider(
+        <CommentCard
+          comment={mockComment}
+          showReply
+          selectedThreadId="thread-1"
+          messageId="101"
+          selection={{ startIndex: 10, endIndex: 24 }}
+        />,
+      );
 
       const replyButton = screen.getByText("Reply");
       fireEvent.click(replyButton);
@@ -625,15 +642,28 @@ describe("CommentCard Component", () => {
       const textarea = screen.getByTestId("reply-textarea");
       fireEvent.change(textarea, { target: { value: "<script>alert('xss')</script>" } });
 
-      const commentButton = screen.getByTestId("button-primary");
-      fireEvent.click(commentButton);
+      const submitButton = screen.getByTestId("button-primary");
+      fireEvent.click(submitButton);
 
-      expect(onReply).toHaveBeenCalledWith("<script>alert('xss')</script>");
+      expect(createCommentMock).toHaveBeenCalledWith(
+        expect.objectContaining({
+          body: expect.objectContaining({
+            content: "<script>alert('xss')</script>",
+          }),
+        }),
+      );
     });
 
     it("should handle emojis in reply", () => {
-      const onReply = vi.fn();
-      renderWithProvider(<CommentCard comment={mockComment} showReply onReply={onReply} />);
+      renderWithProvider(
+        <CommentCard
+          comment={mockComment}
+          showReply
+          selectedThreadId="thread-1"
+          messageId="101"
+          selection={{ startIndex: 10, endIndex: 24 }}
+        />,
+      );
 
       const replyButton = screen.getByText("Reply");
       fireEvent.click(replyButton);
@@ -641,10 +671,16 @@ describe("CommentCard Component", () => {
       const textarea = screen.getByTestId("reply-textarea");
       fireEvent.change(textarea, { target: { value: "Great work! 👍🎉" } });
 
-      const commentButton = screen.getByTestId("button-primary");
-      fireEvent.click(commentButton);
+      const submitButton = screen.getByTestId("button-primary");
+      fireEvent.click(submitButton);
 
-      expect(onReply).toHaveBeenCalledWith("Great work! 👍🎉");
+      expect(createCommentMock).toHaveBeenCalledWith(
+        expect.objectContaining({
+          body: expect.objectContaining({
+            content: "Great work! 👍🎉",
+          }),
+        }),
+      );
     });
   });
 
