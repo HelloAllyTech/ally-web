@@ -48,8 +48,9 @@ const PrivateRouteLayout: FC = () => {
   const { BadgeModal } = useAchievementBadgeModal();
 
   const shouldShowBadgeModal =
+    isAuthenticated &&
     FEATURE_FLAGS_MAP.BADGES_FLAG &&
-    !isPathExcluded(location.pathname, [ROUTES.LEARN, ROUTES.CALLS]);
+    !isPathExcluded(location.pathname, [ROUTES.SIMULATION, ROUTES.CALLS]);
 
   const hasChatTypePermissions = hasPermissions(permissions, Permissions.VIEW_CHAT_TYPES);
   const { data: chatTypes } = useGetChatTypesQuery(undefined, {
