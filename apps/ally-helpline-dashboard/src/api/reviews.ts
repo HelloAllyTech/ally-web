@@ -155,7 +155,6 @@ const reviewsAPI = baseAPI.injectEndpoints({
         method: HttpMethod.PATCH,
         body: { hidden },
       }),
-      invalidatesTags: [TAG_TYPES.REVIEW],
     }),
 
     /**
@@ -168,7 +167,6 @@ const reviewsAPI = baseAPI.injectEndpoints({
         url: ApiEndpoints.REVIEWS.DELETE_COMMENT(commentId),
         method: HttpMethod.DELETE,
       }),
-      invalidatesTags: [TAG_TYPES.REVIEW],
     }),
 
     /**
@@ -183,7 +181,6 @@ const reviewsAPI = baseAPI.injectEndpoints({
         method: HttpMethod.PATCH,
         body: { content },
       }),
-      invalidatesTags: [TAG_TYPES.REVIEW],
     }),
 
     getCommentReplies: builder.query({
