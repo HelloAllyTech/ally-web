@@ -318,7 +318,7 @@ describe("AchievementsViewAll Component", () => {
     });
 
     it("renders the back button", () => {
-      mockLocation.state = { from: "leaderboard" };
+      mockLocation.state = { from: "community" };
       render(
         <TestWrapper>
           <AchievementsViewAll />
@@ -638,7 +638,7 @@ describe("AchievementsViewAll Component", () => {
    */
   describe("Navigation", () => {
     it("navigates back when back button is clicked", () => {
-      mockLocation.state = { from: "leaderboard" };
+      mockLocation.state = { from: "community" };
       render(
         <TestWrapper>
           <AchievementsViewAll />
@@ -833,7 +833,7 @@ describe("AchievementsViewAll Component", () => {
    */
   describe("Accessibility", () => {
     it("has accessible back button with aria-label", () => {
-      mockLocation.state = { from: "leaderboard" };
+      mockLocation.state = { from: "community" };
       render(
         <TestWrapper>
           <AchievementsViewAll />
