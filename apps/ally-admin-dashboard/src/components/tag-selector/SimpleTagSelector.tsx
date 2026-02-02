@@ -1,8 +1,9 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 
 import { Plus } from "@assets";
 import { TagList } from "../tag-list";
 import { useClickOutside } from "@hooks";
+import { useGetSessionEventTagsQuery } from "@api";
 
 interface SimpleTagSelectorProps {
   tags: string[];
@@ -13,7 +14,7 @@ interface SimpleTagSelectorProps {
 
 /**
  * SimpleTagSelector - A tag selector that works with string arrays
- * Provides the same UX as TagSelector but without API integration
+ * Integrates with the API to fetch existing tags and supports search
  */
 export const SimpleTagSelector: React.FC<SimpleTagSelectorProps> = ({
   tags = [],
@@ -23,13 +24,27 @@ export const SimpleTagSelector: React.FC<SimpleTagSelectorProps> = ({
 }) => {
   const [openDropdown, setOpenDropdown] = useState<boolean>(false);
   const [searchQuery, setSearchQuery] = useState<string>("");
+  const [debouncedSearch, setDebouncedSearch] = useState<string>("");
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  // Get all unique tags from existing data for suggestions
-  const [allTags] = useState<string[]>([
-    // You can populate this from a context or local storage
-    // For now, it will show only the create option
-  ]);
+  // Debounce search query
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(searchQuery);
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+
+  // Fetch tags from API with debounced search
+  const { data: tagsData, isLoading } = useGetSessionEventTagsQuery(
+    debouncedSearch ? { search: debouncedSearch } : undefined,
+    {
+      skip: !openDropdown, // Only fetch when dropdown is open
+    },
+  );
+
+  const allTags = tagsData?.data || [];
 
   const addTagButton = () => {
     setOpenDropdown(prev => !prev);
@@ -91,8 +106,12 @@ export const SimpleTagSelector: React.FC<SimpleTagSelectorProps> = ({
       </div>
 
       <div className="overflow-auto max-h-[240px] custom-scrollbar">
+        {/* Loading state */}
+        {isLoading && <div className="px-3 py-2 text-sm text-gray-500">Loading tags...</div>}
+
         {/* Show filtered suggestions */}
-        {filteredSuggestions.length > 0 &&
+        {!isLoading &&
+          filteredSuggestions.length > 0 &&
           filteredSuggestions.map((tag, index) => (
             <div
               key={index}
@@ -104,7 +123,8 @@ export const SimpleTagSelector: React.FC<SimpleTagSelectorProps> = ({
           ))}
 
         {/* CREATE OPTION */}
-        {searchQuery.trim() !== "" &&
+        {!isLoading &&
+          searchQuery.trim() !== "" &&
           !filteredSuggestions.includes(searchQuery.trim()) &&
           !tags.includes(searchQuery.trim()) && (
             <div
@@ -117,8 +137,8 @@ export const SimpleTagSelector: React.FC<SimpleTagSelectorProps> = ({
           )}
 
         {/* Empty state */}
-        {filteredSuggestions.length === 0 && searchQuery.trim() === "" && (
-          <div className="px-3 py-2 text-sm text-gray-500">Type to create a new tag</div>
+        {!isLoading && filteredSuggestions.length === 0 && searchQuery.trim() === "" && (
+          <div className="px-3 py-2 text-sm text-gray-500">Type to search or create a new tag</div>
         )}
       </div>
     </div>

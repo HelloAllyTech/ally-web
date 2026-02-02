@@ -60,6 +60,7 @@ export const ApiEndpoints = {
     POST_LOGO_URL: "v1/tenants/logo-url",
     DELETE_LOGO: "v1/tenants/logo",
     DYNAMIC_BRANCHING_INSTRUCTIONS: "/v1/learn/branching-instruction-dynamic-shortcuts",
+    SESSION_EVENT_TAGS: "/v1/session-events/tags",
   },
 
   USER_MANAGEMENT: {
@@ -138,6 +139,7 @@ export const TAG_TYPES = {
   USERS: "users",
   TENANTS: "tenants",
   SESSION_EVENTS: "sessionEvents",
+  SESSION_EVENT_TAGS: "sessionEventTags",
   SIMULATION: "simulation",
   SIMULATION_EVENTS: "simulationEvents",
   SIMULATION_PATHS: "simulationPaths",
