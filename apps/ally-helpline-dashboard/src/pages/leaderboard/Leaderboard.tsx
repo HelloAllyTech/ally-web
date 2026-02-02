@@ -131,6 +131,7 @@ export const Leaderboard = () => {
           onTimeFilterChange={handleWindowChange}
           onLoadMore={loadMore}
           hasMore={hasMore}
+          hideRank={leaderBoardList?.hideRankInCommunity}
           isLoading={isFetching}
           selectedTimeFilter={window}
           data={leaderboardData}
