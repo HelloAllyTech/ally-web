@@ -123,7 +123,7 @@ const CommentCard = ({
     }).unwrap();
     setRepliesOffset(prev => prev + 10);
     setHasMoreReplies(repliesOffset + 10 < data?.count);
-    setReplies(prev => [...prev, ...(data?.data || [])]);
+    setReplies(prev => [...(prev || []), ...(data?.data || [])]);
   };
   const handleReplySubmit = () => {
     if (replyText.trim()) {
@@ -142,7 +142,7 @@ const CommentCard = ({
           replyCount: 0,
           myReaction: null,
         };
-        setReplies(prev => [...prev, newReply]);
+        setReplies(prev => [...(prev || []), newReply]);
       }
       setReplyCount(prev => prev + 1);
       setReplyText("");

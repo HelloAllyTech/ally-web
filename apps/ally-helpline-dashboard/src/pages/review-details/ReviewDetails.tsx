@@ -81,7 +81,7 @@ export const ReviewDetails = () => {
       if (simulationTranscript.length > 0) {
         setTranscriptList(prev => {
           return transcriptOffset > 0
-            ? [...prev, ...simulationTranscript]
+            ? [...(prev || []), ...simulationTranscript]
             : [...simulationTranscript];
         });
         setHasMoreTranscripts(simulationTranscript.length >= TRANSCRIPT_PAGE_SIZE);
