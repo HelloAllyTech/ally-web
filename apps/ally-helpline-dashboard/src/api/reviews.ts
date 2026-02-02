@@ -155,7 +155,6 @@ const reviewsAPI = baseAPI.injectEndpoints({
         method: HttpMethod.PATCH,
         body: { hidden },
       }),
-      invalidatesTags: [TAG_TYPES.REVIEW],
     }),
 
     /**

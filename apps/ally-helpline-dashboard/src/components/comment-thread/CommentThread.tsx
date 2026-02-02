@@ -133,6 +133,12 @@ const CommentThread = ({
     );
   };
 
+  const handleToggleHide = (hidden: boolean, id: string) => {
+    setCommentsToShow(prev =>
+      prev.map(comment => (comment.id === id ? { ...comment, hidden } : comment)),
+    );
+  };
+
   return (
     <div className="bg-white rounded-lg p-4 shadow-lg border w-[400px]">
       <div className="text-base font-medium border-b-[0.5px] pb-2 border-border-light">
@@ -161,6 +167,7 @@ const CommentThread = ({
                 messageId={messageId}
                 selection={selection}
                 onDelete={() => onDeleteComment(commentsToShow.length - 1)}
+                onToggleHide={handleToggleHide}
               />
             ))}
           </InfiniteScroll>
