@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 
 import { useNavigate } from "react-router-dom";
 
@@ -33,6 +33,7 @@ export const Leaderboard = () => {
   const [pathsOffset, setPathsOffset] = useState(0);
   const [window, setWindow] = useState(INITIAL_WINDOW);
   const [leaderboardData, setLeaderboardData] = useState<LeaderboardUser[]>([]);
+  const [hasMore, setHasMore] = useState<boolean>(true);
 
   const isBadgesEnabled = FEATURE_FLAGS_MAP.BADGES_FLAG;
 
@@ -48,7 +49,7 @@ export const Leaderboard = () => {
 
   useEffect(() => {
     if (!leaderBoardList?.data?.length) return;
-
+    setHasMore(leaderBoardList?.data?.length === PATHS_PAGE_SIZE);
     setLeaderboardData(prevData => {
       if (pathsOffset === 0) {
         return leaderBoardList.data;
@@ -92,13 +93,8 @@ export const Leaderboard = () => {
   const myBadges = badgesResponse?.data ?? [];
   const viewedBadgesCount = badgesCountResponse?.count ?? 0;
 
-  const hasMore = useMemo(() => {
-    if (!leaderBoardList) return false;
-    return leaderboardData.length < (leaderBoardList.totalCount || 0);
-  }, [leaderboardData.length, leaderBoardList]);
-
   const handleViewAllBadges = () => {
-    navigate(ROUTES.ACHIEVEMENTS_VIEW_ALL, { state: { from: "leaderboard" } });
+    navigate(ROUTES.ACHIEVEMENTS_VIEW_ALL, { state: { from: "community" } });
   };
 
   const getBadgesList = () => {
@@ -123,7 +119,7 @@ export const Leaderboard = () => {
         className="text-typography-900 font-secondary text-xl sm:text-2xl font-[500] flex items-center"
         data-testid="leaderboard-title"
       >
-        Leaderboard
+        Community
       </div>
       <div className="flex flex-row gap-4 sm:gap-6 pb-4 h-full items-stretch sm:items-start">
         <LeaderboardList
