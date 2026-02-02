@@ -469,7 +469,10 @@ const CommentCard = ({
         label: "Edit",
         className: "text-typography-800",
         icon: <Edit width={16} height={16} />,
-        onClick: () => setShowCommentEditView(true),
+        onClick: () => {
+          setCommentContent(comment.content ?? "");
+          setShowCommentEditView(true);
+        },
       });
     }
 
@@ -483,7 +486,7 @@ const CommentCard = ({
     }
 
     return items;
-  }, [isFeedOwner, isMyComment, comment.hidden]);
+  }, [isFeedOwner, isMyComment, comment.hidden, comment.content]);
 
   const hideReplies = (e: React.MouseEvent) => {
     e.stopPropagation();
