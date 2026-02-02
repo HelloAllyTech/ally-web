@@ -89,7 +89,7 @@ const SelectableText = ({
   const addCommentDialogRef = useRef<HTMLDivElement | null>(null);
   const dialogRef = useRef<HTMLDivElement | null>(null);
   const selectedCommentCalloutRef = useRef<HTMLDivElement | null>(null);
-  const [comments, setComments] = useState<CommentItem[]>(commentsList);
+  const [comments, setComments] = useState<CommentItem[]>(commentsList ?? []);
   const [dialogPosition, setDialogPosition] = useState<{ top: number; left: number }>({
     top: 0,
     left: 0,
@@ -100,7 +100,7 @@ const SelectableText = ({
   }>({ top: 0, left: 0 });
 
   useEffect(() => {
-    setComments(commentsList);
+    setComments(commentsList ?? []);
   }, [commentsList]);
 
   useEffect(() => {
@@ -111,7 +111,7 @@ const SelectableText = ({
   }, [isCreateCommentSuccess]);
 
   useEffect(() => {
-    if (isCreateCommentSuccess && createCommentData.comment) {
+    if (isCreateCommentSuccess && createCommentData?.comment) {
       const newComment: CommentItem = {
         id: createCommentData.comment.id,
         content: commentContent,
@@ -126,8 +126,8 @@ const SelectableText = ({
         myReaction: null,
         hidden: false,
       };
-      if (comments.length < COMMENTS_PAGE_SIZE) {
-        setComments(prev => [...(prev || []), newComment]);
+      if ((comments ?? []).length < COMMENTS_PAGE_SIZE) {
+        setComments(prev => [...(prev ?? []), newComment]);
       }
       setNewCommentSelection(null);
     }

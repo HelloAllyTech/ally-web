@@ -31,7 +31,7 @@ const CommentThread = ({
   selection,
 }: CommentThreadProps) => {
   const user = useSelector((state: RootState) => state.user.user);
-  const [commentsToShow, setCommentsToShow] = useState(comments);
+  const [commentsToShow, setCommentsToShow] = useState(comments ?? []);
   const [threadsOffset, setThreadsOffset] = useState(0);
   const [comment, setComment] = useState("");
   const [hasMore, setHasMore] = useState(true);
@@ -46,20 +46,21 @@ const CommentThread = ({
   });
 
   useEffect(() => {
-    setCommentsToShow(comments);
+    setCommentsToShow(comments ?? []);
   }, [comments]);
 
   useEffect(() => {
     if (!threadComments) return;
-    const nextData = threadComments.data;
+    const nextData = threadComments.data ?? [];
     setHasMore(nextData.length >= PAGE_SIZE);
     if (threadsOffset === 0) {
       setCommentsToShow(nextData);
     } else {
       setCommentsToShow(prev => {
-        const existingComments = new Set(prev.map(comment => comment.id));
+        const prevList = prev ?? [];
+        const existingComments = new Set(prevList.map(comment => comment.id));
         const newComments = nextData.filter(comment => !existingComments.has(comment.id));
-        return [...(prev || []), ...newComments];
+        return [...prevList, ...newComments];
       });
     }
   }, [threadComments]);
@@ -150,7 +151,7 @@ const CommentThread = ({
             scrollContainerRef={commentThreadScrollRef}
             hasMore={hasMore}
           >
-            {commentsToShow.map(comment => (
+            {(commentsToShow ?? []).map(comment => (
               <CommentCard
                 key={comment.id}
                 comment={comment}
@@ -160,7 +161,7 @@ const CommentThread = ({
                 selectedThreadId={id}
                 messageId={messageId}
                 selection={selection}
-                onDelete={() => onDeleteComment(commentsToShow.length - 1)}
+                onDelete={() => onDeleteComment((commentsToShow ?? []).length - 1)}
               />
             ))}
           </InfiniteScroll>
