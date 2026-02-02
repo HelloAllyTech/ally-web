@@ -15,6 +15,7 @@ interface CommentThreadProps {
   onCommentAddition: (comment: string) => void;
   onReplyComment: (comment: string, parentCommentId: string | null) => void;
   id: string;
+  onDeleteComment: (commentCount: number) => void;
 }
 const CommentThread = ({
   comments,
@@ -22,6 +23,7 @@ const CommentThread = ({
   onReplyComment,
   isFeedOwner,
   id,
+  onDeleteComment,
 }: CommentThreadProps) => {
   const user = useSelector((state: RootState) => state.user.user);
   const [commentsToShow, setCommentsToShow] = useState(comments);
@@ -147,6 +149,7 @@ const CommentThread = ({
                 showLike
                 showReply
                 onReply={text => onReplyComment(text, comment.id)}
+                onDelete={() => onDeleteComment(commentsToShow.length - 1)}
               />
             ))}
           </InfiniteScroll>

@@ -3,7 +3,7 @@
 exports[`ReviewCommentsSidepanel Component > should match snapshot with empty threads 1`] = `
 <DocumentFragment>
   <div
-    class="h-full bg-white border-l-[0.5px] overflow-hidden transition-all duration-300 undefined"
+    class="h-full z-20 bg-white border-l-[0.5px] overflow-hidden transition-all duration-300 undefined"
   >
     <div
       class="w-full font-primary py-4 px-4 flex items-center justify-between border-b-[0.5px]"
@@ -38,7 +38,7 @@ exports[`ReviewCommentsSidepanel Component > should match snapshot with empty th
 exports[`ReviewCommentsSidepanel Component > should match snapshot with loading state 1`] = `
 <DocumentFragment>
   <div
-    class="h-full bg-white border-l-[0.5px] overflow-hidden transition-all duration-300 undefined"
+    class="h-full z-20 bg-white border-l-[0.5px] overflow-hidden transition-all duration-300 undefined"
   >
     <div
       class="w-full font-primary py-4 px-4 flex items-center justify-between border-b-[0.5px]"
@@ -514,7 +514,7 @@ exports[`ReviewCommentsSidepanel Component > should match snapshot with loading 
 exports[`ReviewCommentsSidepanel Component > should match snapshot with threads 1`] = `
 <DocumentFragment>
   <div
-    class="h-full bg-white border-l-[0.5px] overflow-hidden transition-all duration-300 undefined"
+    class="h-full z-20 bg-white border-l-[0.5px] overflow-hidden transition-all duration-300 undefined"
   >
     <div
       class="w-full font-primary py-4 px-4 flex items-center justify-between border-b-[0.5px]"

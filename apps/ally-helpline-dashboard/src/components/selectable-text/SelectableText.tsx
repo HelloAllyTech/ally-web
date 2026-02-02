@@ -164,6 +164,11 @@ const SelectableText = ({
     }
   }, []);
 
+  const handleDeleteComment = (commentCount: number) => {
+    if (commentCount === 0) {
+      handleCloseSelectedComment();
+    }
+  };
   const setDialogRef = useCallback((element: HTMLDivElement | null) => {
     dialogRef.current = element;
     if (element) {
@@ -357,6 +362,7 @@ const SelectableText = ({
             comments={comments as CommentItem[]}
             onCommentAddition={handleAddComment}
             onReplyComment={handleReplyComment}
+            onDeleteComment={handleDeleteComment}
           />
         </div>
       )}
