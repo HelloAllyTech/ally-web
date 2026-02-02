@@ -13,17 +13,22 @@ interface CommentThreadProps {
   isFeedOwner?: boolean;
   comments: CommentItem[];
   onCommentAddition: (comment: string) => void;
-  onReplyComment: (comment: string, parentCommentId: string | null) => void;
   id: string;
   onDeleteComment: (commentCount: number) => void;
+  messageId: string;
+  selection: {
+    startIndex: number;
+    endIndex: number;
+  };
 }
 const CommentThread = ({
   comments,
   onCommentAddition,
-  onReplyComment,
   isFeedOwner,
   id,
   onDeleteComment,
+  messageId,
+  selection,
 }: CommentThreadProps) => {
   const user = useSelector((state: RootState) => state.user.user);
   const [commentsToShow, setCommentsToShow] = useState(comments);
@@ -148,7 +153,9 @@ const CommentThread = ({
                 isFeedOwner={isFeedOwner}
                 showLike
                 showReply
-                onReply={text => onReplyComment(text, comment.id)}
+                selectedThreadId={id}
+                messageId={messageId}
+                selection={selection}
                 onDelete={() => onDeleteComment(commentsToShow.length - 1)}
               />
             ))}

@@ -272,20 +272,6 @@ const SelectableText = ({
     });
   };
 
-  const handleReplyComment = async (replyComment: string, parentCommentId: string | null) => {
-    const body = {
-      threadId: selectedThreadId,
-      parentCommentId: parentCommentId,
-      messageId: transcript.id,
-      content: replyComment,
-      selection: { startIndex: segment.start, endIndex: segment.end },
-    };
-    await createComment({
-      reviewId: reviewId,
-      body: body,
-    });
-  };
-
   const handleCloseSelectedComment = useCallback(() => {
     onCloseSelectedComment?.();
   }, [onCloseSelectedComment]);
@@ -360,9 +346,10 @@ const SelectableText = ({
           <CommentThread
             id={selectedThreadId}
             isFeedOwner={isFeedOwner}
+            messageId={String(transcript.id)}
+            selection={{ startIndex: segment.start, endIndex: segment.end }}
             comments={comments as CommentItem[]}
             onCommentAddition={handleAddComment}
-            onReplyComment={handleReplyComment}
             onDeleteComment={handleDeleteComment}
           />
         </div>
