@@ -206,6 +206,7 @@ export const Login: FunctionComponent = () => {
           navigate(ROUTES.SUSPENDED_USER);
           return;
         }
+        toast.error(errorData?.message ?? "Failed to sign in with Google");
       } else {
         toast.error("Failed to sign in with Google");
       }

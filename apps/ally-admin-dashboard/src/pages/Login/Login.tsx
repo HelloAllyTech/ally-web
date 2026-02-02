@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
 
+import { FetchBaseQueryError } from "@reduxjs/toolkit/query";
 import { AnimatePresence, motion } from "framer-motion";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
@@ -166,7 +167,9 @@ export const Login: React.FC = () => {
           navigate("/");
         }
       } else {
-        toast.error("Failed to sign in with Google");
+        const error = response.error as FetchBaseQueryError;
+        const errorData = error.data as { message: string } | undefined;
+        toast.error(errorData?.message ?? "Failed to sign in with Google");
       }
     } catch {
       toast.error("Failed to sign in with Google");
