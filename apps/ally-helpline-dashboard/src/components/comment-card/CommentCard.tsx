@@ -43,6 +43,7 @@ interface CommentCardProps {
     startIndex: number;
     endIndex: number;
   };
+  onToggleHide?: (hidden: boolean, id: string) => void;
 }
 const CommentCard = ({
   comment,
@@ -56,6 +57,7 @@ const CommentCard = ({
   selectedThreadId,
   messageId,
   selection,
+  onToggleHide,
 }: CommentCardProps) => {
   const user = useSelector((state: RootState) => state.user.user);
   const [createComment, { data: createCommentData }] = useCreateCommentMutation();
@@ -217,6 +219,7 @@ const CommentCard = ({
         commentId: comment.id,
         hidden,
       }).unwrap();
+      onToggleHide?.(hidden, comment.id);
       toast.success(hidden ? "Comment hidden successfully" : "Comment unhidden successfully");
       handleMenuClose();
     } catch (error) {
@@ -283,6 +286,12 @@ const CommentCard = ({
       reviewId: reviewId,
       body: body,
     });
+  };
+  const handleToggleHide = (hidden: boolean, id: string) => {
+    const reply = replies.find(reply => reply.id === id);
+    if (reply) {
+      setReplies(prev => prev.map(reply => (reply.id === id ? { ...reply, hidden } : reply)));
+    }
   };
   const renderReplyBox = () => {
     if (showReplyInput) {
@@ -547,6 +556,7 @@ const CommentCard = ({
                       showReply={false}
                       onDelete={handleDeleteReply}
                       onUpdateComment={handleUpdateReply}
+                      onToggleHide={handleToggleHide}
                     />
                   ))}
                 </InfiniteScroll>
