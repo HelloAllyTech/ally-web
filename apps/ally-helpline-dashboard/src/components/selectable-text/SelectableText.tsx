@@ -150,7 +150,7 @@ const SelectableText = ({
   // Only show on the segment that ends at the thread's end index (prevents duplicate popups in overlapping sections)
   const shouldShowCommentThread =
     isSelectedComment &&
-    selectedThreadId === segment.commentIds[0] &&
+    segment.commentIds.includes(selectedThreadId) &&
     comments &&
     selectedThread &&
     segment.end === selectedThread.selection.endIndex;
@@ -280,6 +280,9 @@ const SelectableText = ({
     onCloseSelectedComment?.();
   }, [onCloseSelectedComment]);
 
+  const getRandomCommentId = () => {
+    return segment.commentIds[Math.floor(Math.random() * segment.commentIds.length)];
+  };
   const onSegmentClick = () => {
     if (
       segment.commentIds.length > 0 &&
@@ -292,7 +295,7 @@ const SelectableText = ({
         messageId: String(transcript.id),
         startIndex: segment.start,
         endIndex: segment.end,
-        threadId: segment.commentIds[0],
+        threadId: getRandomCommentId(),
       });
     }
   };
@@ -310,7 +313,7 @@ const SelectableText = ({
         isPartOfNewSelection
           ? "bg-[#E1F1FE]"
           : segment.commentIds.length > 0
-            ? `${String(selectedMessageId) === String(transcript.id) && selectedThreadId === segment.commentIds[0] ? "bg-amber-200" : "bg-amber-50"} border-b border-amber-400`
+            ? `${String(selectedMessageId) === String(transcript.id) && segment.commentIds.includes(selectedThreadId) ? "bg-amber-200" : "bg-amber-50"} border-b border-amber-400`
             : ""
       }`}
     >

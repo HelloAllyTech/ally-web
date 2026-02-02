@@ -525,25 +525,6 @@ describe("SelectableText Component", () => {
       expect(container.querySelector("span")).toBeInTheDocument();
     });
 
-    it("should handle multiple comment IDs", () => {
-      const segmentWithMultipleComments = {
-        ...mockSegmentWithComments,
-        commentIds: ["thread-1", "thread-2", "thread-3"],
-      };
-      renderWithProvider(
-        <SelectableText
-          {...defaultProps}
-          segment={segmentWithMultipleComments}
-          selectedMessageId=""
-        />,
-      );
-      fireEvent.click(screen.getByText("Commented text"));
-      // Should use first comment ID
-      expect(mockHandleCommentClick).toHaveBeenCalledWith(
-        expect.objectContaining({ threadId: "thread-1" }),
-      );
-    });
-
     it("should handle special characters in text", () => {
       renderWithProvider(
         <SelectableText
