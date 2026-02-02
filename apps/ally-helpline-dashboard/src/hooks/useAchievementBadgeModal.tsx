@@ -7,7 +7,8 @@ import { toast } from "sonner";
 import { FEATURE_FLAGS_MAP } from "@ally-ui-mono/ui-shared";
 import { useGetMyBadgesQuery, useUpdateBadgeViewStatusMutation } from "@api";
 import { AchievementBadgeModal } from "@components";
-import { ROUTES } from "@constants";
+import { ROUTES, Permissions } from "@constants";
+import { useUser } from "@hooks";
 import { UserBadge, ViewedStatus } from "@types";
 import { isPathExcluded } from "@utils";
 
@@ -21,11 +22,13 @@ interface UseAchievementBadgeModalReturn {
 
 export const useAchievementBadgeModal = (): UseAchievementBadgeModalReturn => {
   const [currentBadgeIndex, setCurrentBadgeIndex] = useState<number | null>(null);
+  const { permissions } = useUser();
   const hasInitialized = useRef(false);
   const confettiTriggered = useRef(false);
   const { pathname } = useLocation();
 
-  const isBadgesEnabled = FEATURE_FLAGS_MAP.BADGES_FLAG;
+  const isBadgesEnabled =
+    FEATURE_FLAGS_MAP.BADGES_FLAG && permissions.includes(Permissions.VIEW_BADGES);
   const isSimulationPath = isPathExcluded(pathname, [ROUTES.SIMULATION_SUMMARY_FULL]);
 
   const {
