@@ -1,105 +1,62 @@
-import { v4 as uuidv4 } from "uuid";
+type CommentRange = { id: string; start: number; end: number };
+type Segment = { text: string; commentIds: string[]; start: number; end: number };
 
-import { Thread, TextSegment } from "@types";
+function splitByCommentRanges(text: string, ranges: CommentRange[]): Segment[] {
+  const messageLength = text.length;
 
-const splitTextByComments = (text: string, comments?: Thread[]): TextSegment[] => {
-  if (!comments || comments.length === 0) {
-    return [{ id: uuidv4(), content: text, isComment: false }];
+  // 1) Normalize & clamp
+  const cleaned = ranges
+    .map(range => ({
+      id: range.id,
+      start: Math.max(0, Math.min(messageLength, range.start)),
+      end: Math.max(0, Math.min(messageLength, range.end)),
+    }))
+    .filter(range => range.end > range.start);
+
+  if (cleaned.length === 0) {
+    return [{ text, commentIds: [], start: 0, end: messageLength }];
   }
 
-  // Sort comments by startIndex to process them in order
-  const sortedComments = [...comments].sort(
-    (a, b) => a.selection.startIndex - b.selection.startIndex,
-  );
-
-  const segments: TextSegment[] = [];
-  let currentIndex = 0;
-  const processedIndices = new Set<number>();
-
-  for (let i = 0; i < sortedComments.length; i++) {
-    // Skip if already processed as part of an overlapping group
-    if (processedIndices.has(i)) continue;
-
-    const comment = sortedComments[i];
-
-    // Add text before this comment (if any)
-    if (comment.selection.startIndex > currentIndex) {
-      segments.push({
-        id: uuidv4(),
-        content: text.slice(currentIndex, comment.selection.startIndex),
-        isComment: false,
-        selection: {
-          startIndex: currentIndex,
-          endIndex: comment.selection.startIndex,
-        },
-      });
-    }
-
-    // Get all other comments that overlap with this one (partially or fully)
-    const overlappingThreads: Thread[] = [];
-    const overlappingIndices: number[] = [];
-
-    sortedComments.forEach((other, j) => {
-      if (
-        i !== j &&
-        !processedIndices.has(j) &&
-        comment.selection.startIndex < other.selection.endIndex &&
-        comment.selection.endIndex > other.selection.startIndex
-      ) {
-        overlappingThreads.push(other);
-        overlappingIndices.push(j);
-      }
-    });
-
-    // Mark overlapping comments as processed so they won't be added as separate segments
-    overlappingIndices.forEach(idx => processedIndices.add(idx));
-
-    // Calculate merged content if there's overlap
-    let mergedContent: string | undefined;
-    let mergedEndIndex = comment.selection.endIndex;
-
-    if (overlappingThreads.length > 0) {
-      const allOverlapping = [comment, ...overlappingThreads];
-      const minStart = Math.min(...allOverlapping.map(c => c.selection.startIndex));
-      const maxEnd = Math.max(...allOverlapping.map(c => c.selection.endIndex));
-      mergedContent = text.slice(minStart, maxEnd);
-      mergedEndIndex = maxEnd;
-    }
-
-    // Add the commented text
-    segments.push({
-      id: uuidv4(),
-      content:
-        mergedContent || text.slice(comment.selection.startIndex, comment.selection.endIndex),
-      isComment: true,
-      commentIndex: i,
-      threadId: comment.id,
-      comments: comment.comments,
-      selection: {
-        startIndex: comment.selection.startIndex,
-        endIndex: comment.selection.endIndex,
-      },
-      overlappingThreads: overlappingThreads.length > 0 ? overlappingThreads : undefined,
-    });
-
-    currentIndex = mergedEndIndex;
+  const boundaries = new Set<number>([0, messageLength]);
+  for (const range of cleaned) {
+    boundaries.add(range.start);
+    boundaries.add(range.end);
   }
+  const points = Array.from(boundaries).sort((a, b) => a - b);
 
-  // Add remaining text after the last comment (if any)
-  if (currentIndex < text.length) {
-    segments.push({
-      id: uuidv4(),
-      content: text.slice(currentIndex),
-      isComment: false,
-      selection: {
-        startIndex: currentIndex,
-        endIndex: currentIndex + text.length,
-      },
-    });
+  const segments: Segment[] = [];
+
+  for (let i = 0; i < points.length - 1; i++) {
+    const start = points[i];
+    const end = points[i + 1];
+    if (start === end) continue;
+
+    // Find all comments covering this interval (any overlap -> here it's full cover because points align to boundaries)
+    const activeIds: string[] = [];
+    for (const r of cleaned) {
+      if (r.start <= start && r.end >= end) activeIds.push(r.id);
+    }
+
+    const chunk = text.slice(start, end);
+    if (!chunk) continue;
+
+    // Merge with previous if same commentIds (to avoid too many segments)
+    const prev = segments[segments.length - 1];
+    const same =
+      prev &&
+      prev.commentIds.length === activeIds.length &&
+      prev.commentIds.every((id, idx) => id === activeIds[idx]);
+
+    if (same) {
+      prev.text += chunk;
+      prev.end = end;
+    } else {
+      segments.push({ text: chunk, commentIds: activeIds, start, end });
+    }
   }
 
   return segments;
-};
+}
 
 function getFreshUserRange(selection: Selection): Range {
   const range = document.createRange();
@@ -126,4 +83,4 @@ function getFreshUserRange(selection: Selection): Range {
   return range;
 }
 
-export { splitTextByComments, getFreshUserRange };
+export { splitByCommentRanges, getFreshUserRange };

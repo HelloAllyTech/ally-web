@@ -1,4 +1,4 @@
-import { ApiEndpoints, HttpMethod } from "@constants";
+import { ApiEndpoints, HttpMethod, TAG_TYPES } from "@constants";
 import { AchievementItemDataResponse, GetMyBadgesResponse, ViewedStatus } from "@types";
 
 import { baseAPI } from "./baseAPI";
@@ -25,6 +25,12 @@ const badgesAPI = baseAPI.injectEndpoints({
       query: () => ({
         url: ApiEndpoints.BADGES.GET_AVAILABLE_BADGES,
       }),
+      providesTags: [
+        {
+          type: TAG_TYPES.BADGES,
+          id: `LIST-${ViewedStatus.VIEWED}`,
+        },
+      ],
     }),
 
     /**
@@ -37,6 +43,12 @@ const badgesAPI = baseAPI.injectEndpoints({
         url: ApiEndpoints.BADGES.GET_MY_BADGES,
         params,
       }),
+      providesTags: (result, error, params) => [
+        {
+          type: TAG_TYPES.BADGES,
+          id: `LIST-${params.viewedStatus ?? ViewedStatus.VIEWED}`,
+        },
+      ],
     }),
 
     /**
@@ -48,6 +60,12 @@ const badgesAPI = baseAPI.injectEndpoints({
         url: ApiEndpoints.BADGES.GET_BADGES_COUNT,
         params,
       }),
+      providesTags: (result, error, params) => [
+        {
+          type: TAG_TYPES.BADGES,
+          id: `LIST-${params.viewedStatus ?? ViewedStatus.VIEWED}`,
+        },
+      ],
     }),
 
     /**
@@ -60,6 +78,12 @@ const badgesAPI = baseAPI.injectEndpoints({
         url: ApiEndpoints.BADGES.UPDATE_BADGE_VIEW_STATUS(badgeId),
         method: HttpMethod.PATCH,
       }),
+      invalidatesTags: [
+        {
+          type: TAG_TYPES.BADGES,
+          id: `LIST-${ViewedStatus.VIEWED}`,
+        },
+      ],
     }),
   }),
 });

@@ -116,9 +116,12 @@ exports[`CommentCard Component > should match snapshot with all props enabled 1`
               class="w-[20px] bg-white h-[20px] flex items-center justify-center rounded-full border-[0.5px]"
             >
               <span
-                data-testid="emoji-2764"
+                aria-label="emoji-2764"
+                class=""
+                role="img"
+                style="font-size: 10px; line-height: 1; display: inline-flex; align-items: center; justify-content: center;"
               >
-                2764
+                ❤
               </span>
             </div>
           </div>
@@ -130,9 +133,12 @@ exports[`CommentCard Component > should match snapshot with all props enabled 1`
               class="w-[20px] bg-white h-[20px] flex items-center justify-center rounded-full border-[0.5px]"
             >
               <span
-                data-testid="emoji-1f44d"
+                aria-label="emoji-1f44d"
+                class=""
+                role="img"
+                style="font-size: 10px; line-height: 1; display: inline-flex; align-items: center; justify-content: center;"
               >
-                1f44d
+                👍
               </span>
             </div>
           </div>
@@ -144,9 +150,12 @@ exports[`CommentCard Component > should match snapshot with all props enabled 1`
               class="w-[20px] bg-white h-[20px] flex items-center justify-center rounded-full border-[0.5px]"
             >
               <span
-                data-testid="emoji-1f389"
+                aria-label="emoji-1f389"
+                class=""
+                role="img"
+                style="font-size: 10px; line-height: 1; display: inline-flex; align-items: center; justify-content: center;"
               >
-                1f389
+                🎉
               </span>
             </div>
           </div>
@@ -154,7 +163,7 @@ exports[`CommentCard Component > should match snapshot with all props enabled 1`
         <div
           class="text-typography-800 text-xs"
         >
-          3
+          10
         </div>
         <div
           class="w-1 h-1 bg-[#D9D9D9] rounded-full"

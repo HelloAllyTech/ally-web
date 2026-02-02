@@ -1,19 +1,20 @@
 import { FC, useState } from "react";
 
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 
 import { FEATURE_FLAGS_MAP } from "@ally-ui-mono/ui-shared/featureFlag";
 import { useGetAvailableBadgesQuery } from "@api";
 import { ArrowLeft, NoResults } from "@assets";
 import { AchievementItem, FallbackUI, ToggleButtonGroup } from "@components";
+import { ROUTES, navBarOptions } from "@constants";
 import { AchievementItemData, BadgeCategory, LockedStatus } from "@types";
 
 // Badge type display labels
 const BADGE_TYPE_LABELS: Record<BadgeCategory, string> = {
-  [BadgeCategory.SIMULATION_MINUTES]: "Simulation Minutes",
-  [BadgeCategory.ACTIVE_DAY_STREAK]: "Active Day Streak",
-  [BadgeCategory.COMMENTS_REACTIONS_GIVEN]: "Comments & Reactions Given",
-  [BadgeCategory.COMMENTS_REACTIONS_RECEIVED]: "Comments & Reactions Received",
+  [BadgeCategory.SIMULATION_MINUTES]: "Journey",
+  [BadgeCategory.ACTIVE_DAY_STREAK]: "Momentum",
+  [BadgeCategory.COMMENTS_REACTIONS_GIVEN]: "Contribution",
+  [BadgeCategory.COMMENTS_REACTIONS_RECEIVED]: "Resonance",
 };
 
 const FILTER_OPTIONS = [
@@ -35,7 +36,12 @@ const BadgeCardSkeleton: FC = () => {
 
 export const AchievementsViewAll: FC = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [activeFilter, setActiveFilter] = useState("ALL");
+
+  const isFromNavbar =
+    location.pathname === ROUTES.ACHIEVEMENTS_VIEW_ALL ||
+    navBarOptions.some(option => option.path === location.pathname);
 
   const {
     data: badgesData = [],
@@ -73,12 +79,13 @@ export const AchievementsViewAll: FC = () => {
 
   const groupedBadges = getFilteredBadgesByCategory();
 
-  if (!FEATURE_FLAGS_MAP.LEADERBOARD_FLAG) {
+  if (!FEATURE_FLAGS_MAP.BADGES_FLAG) {
     return (
       <div className="flex items-center justify-center h-full">Achievements is not enabled</div>
     );
   }
 
+  // Error state should be checked before empty state
   if (isBadgesError) {
     return (
       <div className="flex h-[90vh] items-center justify-center">
@@ -103,13 +110,15 @@ export const AchievementsViewAll: FC = () => {
     return (
       <div className="flex flex-col gap-3 w-full">
         <div className="flex flex-row items-center gap-3 sm:gap-[18px]">
-          <button
-            onClick={() => navigate(-1)}
-            className="p-2 -m-2 hover:bg-gray-100 rounded-full transition-colors"
-            aria-label="Go back"
-          >
-            <ArrowLeft className="w-[5px] h-2.5" />
-          </button>
+          {!isFromNavbar && (
+            <button
+              onClick={() => navigate(-1)}
+              className="p-2 -m-2 hover:bg-gray-100 rounded-full transition-colors"
+              aria-label="Go back"
+            >
+              <ArrowLeft className="w-[5px] h-2.5" />
+            </button>
+          )}
           <h1
             className="text-[#0D0D0D] font-secondary text-xl sm:text-2xl font-[350] leading-[0.83]"
             data-testid="achievements-view-all-title"
@@ -134,7 +143,12 @@ export const AchievementsViewAll: FC = () => {
 
   const renderSectionLabel = (label: string) => {
     return (
-      <div className="font-primary text-xs leading-5 font-normal text-typography-600">{label}</div>
+      <div className="flex items-center gap-2">
+        <div className="font-primary text-xs leading-5 font-normal text-typography-600">
+          {label}
+        </div>
+        {!isFromNavbar && <div className="border-t-[0.5px] border-[#D2D2D2] w-full" />}
+      </div>
     );
   };
 
@@ -152,7 +166,7 @@ export const AchievementsViewAll: FC = () => {
     return (
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
         {badgesList.map(badge => (
-          <AchievementItem key={badge.id} achievement={badge} imageSize={60} />
+          <AchievementItem key={badge.id} achievement={badge} />
         ))}
       </div>
     );
@@ -163,12 +177,18 @@ export const AchievementsViewAll: FC = () => {
       <div className="p-4 sm:p-6 pb-4 sm:pb-6">{renderHeader()}</div>
 
       <div className="flex-1 overflow-auto px-4 sm:px-6 pb-4 sm:pb-6 flex flex-col gap-4 sm:gap-6">
-        {groupedBadges.map(({ category, badges }) => (
-          <div key={category} className="flex flex-col gap-3 sm:gap-4">
-            {renderSectionLabel(BADGE_TYPE_LABELS[category])}
-            {renderBadgeSection(badges)}
+        {groupedBadges.length === 0 && !isBadgesLoading ? (
+          <div className="flex items-center justify-center h-full">
+            <div className="text-typography-600 text-base text-center">No badges found</div>
           </div>
-        ))}
+        ) : (
+          groupedBadges.map(({ category, badges }) => (
+            <div key={category} className="flex flex-col gap-3 sm:gap-4">
+              {renderSectionLabel(BADGE_TYPE_LABELS[category])}
+              {renderBadgeSection(badges)}
+            </div>
+          ))
+        )}
       </div>
     </div>
   );

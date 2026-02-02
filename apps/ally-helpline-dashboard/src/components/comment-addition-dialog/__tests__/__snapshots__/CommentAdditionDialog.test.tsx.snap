@@ -30,7 +30,7 @@ exports[`CommentAdditionDialog Component > should match snapshot when rendered 1
       <textarea
         class="w-full border rounded-sm text-sm !px-2 !py-2 min-h-20"
         data-testid="comment-textarea"
-        placeholder="Add comment"
+        placeholder="Add Comment"
       />
       <div
         class="grid grid-cols-2 gap-2"

@@ -295,12 +295,12 @@ describe("ThreadCard Component", () => {
         ...mockThread,
         comments: Array.from({ length: 10 }, (_, i) => ({
           ...mockCommentBase,
-          id: i + 1,
+          id: `${i + 1}`,
           content: `Comment ${i + 1}`,
         })),
       };
       render(<ThreadCard thread={threadWithManyComments} />);
-      expect(screen.getByText("9 more comments")).toBeInTheDocument();
+      expect(screen.getByText("3+ more comments")).toBeInTheDocument();
     });
   });
 

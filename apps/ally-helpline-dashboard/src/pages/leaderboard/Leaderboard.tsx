@@ -34,6 +34,8 @@ export const Leaderboard = () => {
   const [window, setWindow] = useState(INITIAL_WINDOW);
   const [leaderboardData, setLeaderboardData] = useState<LeaderboardUser[]>([]);
 
+  const isBadgesEnabled = FEATURE_FLAGS_MAP.BADGES_FLAG;
+
   const pathParams = {
     limit: PATHS_PAGE_SIZE,
     offset: pathsOffset,
@@ -70,12 +72,22 @@ export const Leaderboard = () => {
     setLeaderboardData([]);
   };
 
-  const { data: badgesResponse, isLoading: isBadgesLoading } = useGetMyBadgesQuery({
-    viewedStatus: ViewedStatus.VIEWED,
-  });
-  const { data: badgesCountResponse, isLoading: isBadgesCountLoading } = useGetBadgesCountQuery({
-    viewedStatus: ViewedStatus.VIEWED,
-  });
+  const { data: badgesResponse, isLoading: isBadgesLoading } = useGetMyBadgesQuery(
+    {
+      viewedStatus: ViewedStatus.VIEWED,
+    },
+    {
+      skip: !isBadgesEnabled,
+    },
+  );
+  const { data: badgesCountResponse, isLoading: isBadgesCountLoading } = useGetBadgesCountQuery(
+    {
+      viewedStatus: ViewedStatus.VIEWED,
+    },
+    {
+      skip: !isBadgesEnabled,
+    },
+  );
 
   const myBadges = badgesResponse?.data ?? [];
   const viewedBadgesCount = badgesCountResponse?.count ?? 0;
@@ -106,34 +118,41 @@ export const Leaderboard = () => {
   }
 
   return (
-    <div className={"p-6 overflow-hidden w-full h-full"} data-testid="leaderboard-page">
+    <div
+      className={"p-4 sm:p-6 overflow-hidden w-full h-full overflow-y-auto"}
+      data-testid="leaderboard-page"
+    >
       <div
-        className="text-typography-900 font-secondary text-2xl font-[500] flex items-center"
+        className="text-typography-900 font-secondary text-xl sm:text-2xl font-[500] flex items-center mb-4 sm:mb-6"
         data-testid="leaderboard-title"
       >
         Leaderboard
       </div>
-      <div className="flex flex-row gap-2 pb-4 h-full items-start">
-        <LeaderboardList
-          currentUser={currentUser}
-          onTimeFilterChange={handleWindowChange}
-          onLoadMore={loadMore}
-          hasMore={hasMore}
-          isLoading={isFetching}
-          selectedTimeFilter={window}
-          data={leaderboardData}
-        />
-
-        {/* achievements card */}
-        <div className="w-1/2 ml-4 mt-4 self-start">
-          <AchievementsCard
-            achievements={getBadgesList()}
-            viewedBadgesCount={viewedBadgesCount}
-            isLoading={isBadgesLoading || isBadgesCountLoading}
-            onViewAll={handleViewAllBadges}
-            className="h-auto"
+      <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 pb-4 h-full items-stretch sm:items-start">
+        <div className="flex-1 min-w-0 w-full sm:w-auto">
+          <LeaderboardList
+            currentUser={currentUser}
+            onTimeFilterChange={handleWindowChange}
+            onLoadMore={loadMore}
+            hasMore={hasMore}
+            isLoading={isFetching}
+            selectedTimeFilter={window}
+            data={leaderboardData}
           />
         </div>
+
+        {/* achievements card */}
+        {FEATURE_FLAGS_MAP.BADGES_FLAG && (
+          <div className="w-full sm:w-1/2 sm:max-w-md sm:ml-0 sm:mt-0 sm:self-start flex-shrink-0">
+            <AchievementsCard
+              achievements={getBadgesList()}
+              viewedBadgesCount={viewedBadgesCount}
+              isLoading={isBadgesLoading || isBadgesCountLoading}
+              onViewAll={handleViewAllBadges}
+              className="h-auto"
+            />
+          </div>
+        )}
       </div>
     </div>
   );

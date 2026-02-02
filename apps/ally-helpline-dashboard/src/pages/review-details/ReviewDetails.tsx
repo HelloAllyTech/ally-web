@@ -1,13 +1,11 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 
-import { Emoji, EmojiStyle } from "emoji-picker-react";
 import { useSelector } from "react-redux";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
 
 import { CustomImage, SimulationDetailsModal, Toggle } from "@ally-ui-mono/ui-shared";
 import {
-  useCreateCommentMutation,
   useAddReactionMutation,
   useGetReviewByIdQuery,
   useGetReviewDetailsWithMessagesQuery,
@@ -20,6 +18,7 @@ import {
   ReactionsModal,
   ReviewCommentsSidepanel,
   Transcription,
+  NativeEmoji,
 } from "@components";
 import { KeyboardKeys, REVIEW_PRIVACY_OPTIONS } from "@constants";
 import { RootState } from "@store";
@@ -40,6 +39,7 @@ export const ReviewDetails = () => {
   const [selectedStartIndex, setSelectedStartIndex] = useState<number>(0);
   const [selectedEndIndex, setSelectedEndIndex] = useState<number>(0);
   const [selectedThreadId, setSelectedThreadId] = useState<string>(null);
+  const [selectedThreadIds, setSelectedThreadIds] = useState<string[]>([]);
   const [transcriptList, setTranscriptList] = useState<SimulationTranscriptMessage[]>([]);
   const [showReactionsModal, setShowReactionsModal] = useState(false);
   const [showSimulationDetailsModal, setShowSimulationDetailsModal] = useState(false);
@@ -52,8 +52,6 @@ export const ReviewDetails = () => {
     reviewId || "",
   );
 
-  const [createComment, { isLoading: isCreateCommentLoading, isSuccess: isCreateCommentSuccess }] =
-    useCreateCommentMutation();
   const { data: simulationTranscript, isLoading: isGetTranscriptLoading } =
     useGetReviewDetailsWithMessagesQuery({
       id: reviewId || "",
@@ -79,19 +77,23 @@ export const ReviewDetails = () => {
   }, [user?.id, reviewDetails?.createdBy?.id]);
 
   useEffect(() => {
-    if (simulationTranscript?.length > 0) {
-      setTranscriptList(prev => {
-        return transcriptOffset > 0
-          ? [...prev, ...simulationTranscript]
-          : [...simulationTranscript];
-      });
-    } else {
-      setHasMoreTranscripts(false);
+    if (simulationTranscript) {
+      if (simulationTranscript.length > 0) {
+        setTranscriptList(prev => {
+          return transcriptOffset > 0
+            ? [...prev, ...simulationTranscript]
+            : [...simulationTranscript];
+        });
+        setHasMoreTranscripts(simulationTranscript.length >= TRANSCRIPT_PAGE_SIZE);
+      } else {
+        setHasMoreTranscripts(false);
+      }
     }
   }, [simulationTranscript]);
 
   const handleCloseSelectedComment = () => {
     setSelectedThreadId(null);
+    setSelectedThreadIds([]);
     setSelectedMessageId("");
     setSelectedStartIndex(0);
     setSelectedEndIndex(0);
@@ -137,13 +139,6 @@ export const ReviewDetails = () => {
     }
     return reactionsCount;
   }, [reviewReactions]);
-
-  // Reset transcript list when comment is successfully created to reflect new data
-  useEffect(() => {
-    if (isCreateCommentSuccess) {
-      setTranscriptOffset(0);
-    }
-  }, [isCreateCommentSuccess]);
 
   const handleGoBack = () => {
     navigate(-1);
@@ -195,41 +190,38 @@ export const ReviewDetails = () => {
     }
   };
 
-  const handleCommentClick = (props: {
-    messageId: string;
-    startIndex: number;
-    endIndex: number;
-    threadId: string;
-  }) => {
-    setSelectedMessageId(props.messageId);
-    setSelectedStartIndex(props.startIndex);
-    setSelectedEndIndex(props.endIndex);
-    setSelectedThreadId(props.threadId);
+  const handleCommentClick = (
+    props:
+      | {
+          messageId: string;
+          startIndex: number;
+          endIndex: number;
+          threadId: string;
+        }
+      | Array<{
+          messageId: string;
+          startIndex: number;
+          endIndex: number;
+          threadId: string;
+        }>,
+  ) => {
+    const items = Array.isArray(props) ? props : [props];
+    if (!items.length) return;
+    const first = items[0];
+    setSelectedMessageId(first.messageId);
+    setSelectedStartIndex(first.startIndex);
+    setSelectedEndIndex(first.endIndex);
+    setSelectedThreadId(first.threadId);
+    setSelectedThreadIds(items.map(props => props.threadId));
   };
 
   const handleLoadMore = () => {
     if (!hasMoreTranscripts || isGetTranscriptLoading) return;
     setTranscriptOffset(prev => prev + TRANSCRIPT_PAGE_SIZE);
   };
-  const onCreateComment = async (
-    reviewId: string,
-    body: {
-      threadId: string;
-      parentCommentId: string;
-      messageId: number;
-      content: string;
-      selection: { startIndex: number; endIndex: number };
-    },
-  ) => {
-    createComment({ reviewId, body });
-  };
 
   const handleReactionsClick = () => {
     setShowReactionsModal(true);
-  };
-
-  const isReactionOnCommentFromThisUser = () => {
-    return reviewReactions.length === 1 && reviewReactions[0] === reviewDetails?.myReaction;
   };
 
   const handleCreateReview = async (status: string) => {
@@ -242,7 +234,7 @@ export const ReviewDetails = () => {
         <div className="p-2 h-14 rounded-full border flex items-center gap-2 bg-white shadow-2xl">
           {isFeedOwner && (
             <div
-              className="flex items-center gap-2"
+              className="flex items-center gap-2 min-w-fit"
               style={{ opacity: isUpdateReviewLoading ? 0.5 : 1 }}
             >
               <Toggle
@@ -269,7 +261,7 @@ export const ReviewDetails = () => {
             >
               {selectedEmoji ? (
                 <div className="pb-0.5">
-                  <Emoji unified={selectedEmoji} size={16} emojiStyle={EmojiStyle.APPLE} />
+                  <NativeEmoji unified={selectedEmoji} size={16} />
                 </div>
               ) : (
                 <Smiley className="w-6 h-6 text-neutral-600 hover:text-[#0957D0]" />
@@ -283,7 +275,7 @@ export const ReviewDetails = () => {
               />
             )}
           </div>
-          {reviewReactions?.length > 0 && !isReactionOnCommentFromThisUser() && (
+          {reviewReactions?.length > 0 && (
             <div className="flex items-center gap-3 justify-between w-full">
               <button
                 onClick={handleReactionsClick}
@@ -362,23 +354,20 @@ export const ReviewDetails = () => {
       <div className="flex w-full h-[calc(100%-103px)]">
         <div
           ref={transcriptScrollRef}
-          className="pt-5 mx-auto px-10 h-full w-[calc(100%-384px)] h-[99%] pb-20 transition-all duration-400 custom-scrollbar"
+          className="pt-5 mx-auto px-10 w-[calc(100%-384px)] h-[99%] pb-20 transition-all duration-400 custom-scrollbar"
         >
           <Transcription
             councellorName={isFeedOwner ? "You" : reviewDetails?.createdBy?.name}
             agentName={reviewDetails?.scenario?.name}
             commentsList={
-              threads.find(
-                thread =>
-                  thread.selection.messageId === parseInt(selectedMessageId) &&
-                  thread.id === selectedThreadId,
-              )?.comments
+              selectedThreadIds.length > 0
+                ? threads
+                    .filter(thread => selectedThreadIds.includes(thread.id))
+                    .flatMap(thread => thread.comments ?? [])
+                : undefined
             }
             isFeedOwner={isFeedOwner}
             handleCommentClick={handleCommentClick}
-            createComment={onCreateComment}
-            isCreateCommentLoading={isCreateCommentLoading}
-            isCreateCommentSuccess={isCreateCommentSuccess}
             selectedThreadId={selectedThreadId}
             transcriptList={transcriptList}
             userId={user?.id}

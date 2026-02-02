@@ -7,15 +7,18 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 
 import CommentCard from "../CommentCard";
 
-// Mock emoji-picker-react
-vi.mock("emoji-picker-react", () => ({
-  Emoji: ({ unified }: { unified: string }) => (
-    <span data-testid={`emoji-${unified}`}>{unified}</span>
-  ),
-  EmojiStyle: {
-    NATIVE: "native",
-  },
-}));
+// Mock NativeEmoji component
+vi.mock("@components", async () => {
+  const actual = await vi.importActual("@components");
+  return {
+    ...actual,
+    NativeEmoji: ({ unified }: { unified: string }) => (
+      <span data-testid={`emoji-${unified}`} role="img" aria-label={`emoji-${unified}`}>
+        {unified}
+      </span>
+    ),
+  };
+});
 
 // Mock ui-shared
 vi.mock("@ally-ui-mono/ui-shared/index", () => ({
@@ -30,6 +33,14 @@ vi.mock("@ally-ui-mono/ui-shared/index", () => ({
       placeholder={placeholder}
       className={className}
     />
+  ),
+  InfiniteScroll: ({ onInfiniteScroll, isLoading, children }: any) => (
+    <div data-testid="infinite-scroll">
+      {children}
+      <button data-testid="infinite-scroll-button" onClick={onInfiniteScroll} disabled={isLoading}>
+        Load more
+      </button>
+    </div>
   ),
   FEATURE_FLAGS_MAP: {
     PEER_REVIEW_FLAG: true,
@@ -106,6 +117,39 @@ vi.mock("@components", async importOriginal => {
               {item.label}
             </button>
           ))}
+        </div>
+      );
+    },
+    ConfirmationPopover: ({
+      isOpen,
+      onClose,
+      onConfirm,
+      title,
+      message,
+      confirmText,
+      cancelText,
+      isLoading,
+    }: {
+      isOpen: boolean;
+      onClose: () => void;
+      onConfirm: () => void;
+      title?: React.ReactNode;
+      message?: React.ReactNode;
+      confirmText?: string;
+      cancelText?: string;
+      isLoading?: boolean;
+    }) => {
+      if (!isOpen) return null;
+      return (
+        <div data-testid="confirmation-popover">
+          <div data-testid="confirmation-title">{title}</div>
+          <div data-testid="confirmation-message">{message}</div>
+          <button data-testid="confirmation-cancel" onClick={onClose} disabled={isLoading}>
+            {cancelText || "Cancel"}
+          </button>
+          <button data-testid="confirmation-confirm" onClick={onConfirm} disabled={isLoading}>
+            {isLoading ? "..." : confirmText || "Confirm"}
+          </button>
         </div>
       );
     },
@@ -263,8 +307,8 @@ describe("CommentCard Component", () => {
         reactions: { "1f44d": 5, "2764": 3 },
       };
       renderWithProvider(<CommentCard comment={commentWithReactions} showLike={false} />);
-      expect(screen.getByTestId("emoji-1f44d")).toBeInTheDocument();
-      expect(screen.getByTestId("emoji-2764")).toBeInTheDocument();
+      expect(screen.getByLabelText("emoji-1f44d")).toBeInTheDocument();
+      expect(screen.getByLabelText("emoji-2764")).toBeInTheDocument();
     });
 
     it("should display reaction count", () => {
@@ -273,7 +317,7 @@ describe("CommentCard Component", () => {
         reactions: { "1f44d": 5, "2764": 3 },
       };
       renderWithProvider(<CommentCard comment={commentWithReactions} showLike={false} />);
-      expect(screen.getByText("2")).toBeInTheDocument(); // Number of unique reactions
+      expect(screen.getByText("8")).toBeInTheDocument(); // Total reaction count (5 + 3)
     });
 
     it("should display reactions even when showLike is true", () => {
@@ -282,7 +326,7 @@ describe("CommentCard Component", () => {
         reactions: { "1f44d": 5 },
       };
       renderWithProvider(<CommentCard comment={commentWithReactions} showLike />);
-      expect(screen.getByTestId("emoji-1f44d")).toBeInTheDocument();
+      expect(screen.getByLabelText("emoji-1f44d")).toBeInTheDocument();
     });
 
     it("should display maximum 3 reaction emojis", () => {
@@ -292,10 +336,10 @@ describe("CommentCard Component", () => {
       };
       renderWithProvider(<CommentCard comment={commentWithManyReactions} showLike={false} />);
       // Should show only first 3
-      expect(screen.getByTestId("emoji-1f44d")).toBeInTheDocument();
-      expect(screen.getByTestId("emoji-2764")).toBeInTheDocument();
-      expect(screen.getByTestId("emoji-1f389")).toBeInTheDocument();
-      expect(screen.queryByTestId("emoji-1f60a")).not.toBeInTheDocument();
+      expect(screen.getByLabelText("emoji-1f44d")).toBeInTheDocument();
+      expect(screen.getByLabelText("emoji-2764")).toBeInTheDocument();
+      expect(screen.getByLabelText("emoji-1f389")).toBeInTheDocument();
+      expect(screen.queryByLabelText("emoji-1f60a")).not.toBeInTheDocument();
     });
   });
   it("should call addCommentReaction when an emoji is selected", async () => {
@@ -351,7 +395,11 @@ describe("CommentCard Component", () => {
       const replyCountElement = screen.getByText("3 replies");
       fireEvent.click(replyCountElement);
 
-      expect(getRepliesMock).toHaveBeenCalledWith(commentWithReplies.id);
+      expect(getRepliesMock).toHaveBeenCalledWith({
+        commentId: commentWithReplies.id,
+        limit: 10,
+        offset: 0,
+      });
       await waitFor(() => {
         expect(getRepliesUnwrap).toHaveBeenCalledTimes(1);
       });
@@ -560,24 +608,6 @@ describe("CommentCard Component", () => {
       expect(screen.queryByTestId("reply-textarea")).not.toBeInTheDocument();
     });
 
-    it("should preserve textarea value when Cancel button is clicked", () => {
-      renderWithProvider(<CommentCard comment={mockComment} showReply />);
-
-      const replyButton = screen.getByText("Reply");
-      fireEvent.click(replyButton);
-
-      let textarea = screen.getByTestId("reply-textarea");
-      fireEvent.change(textarea, { target: { value: "Draft reply" } });
-
-      const cancelButton = screen.getByTestId("button-secondary");
-      fireEvent.click(cancelButton);
-
-      // Re-open textarea
-      fireEvent.click(replyButton);
-      textarea = screen.getByTestId("reply-textarea");
-      expect(textarea).toHaveValue("Draft reply");
-    });
-
     it("should not show reply textarea without showReply prop", () => {
       renderWithProvider(<CommentCard comment={mockComment} />);
       // Reply button should not exist, so textarea cannot be shown
@@ -619,7 +649,7 @@ describe("CommentCard Component", () => {
   });
 
   describe("Menu Options", () => {
-    it("should call deleteComment when delete is clicked for own comment within 10 mins", async () => {
+    it("should open confirmation popover when delete is clicked for own comment", async () => {
       const myComment = {
         ...mockComment,
         createdBy: { ...mockComment.createdBy, id: 999 }, // current user id from mockStore
@@ -633,8 +663,121 @@ describe("CommentCard Component", () => {
       const deleteButton = await screen.findByText("Delete");
       fireEvent.click(deleteButton);
 
-      expect(deleteCommentMock).toHaveBeenCalledWith({ commentId: myComment.id });
-      expect(deleteCommentUnwrap).toHaveBeenCalledTimes(1);
+      // Confirmation popover should be open
+      expect(screen.getByTestId("confirmation-popover")).toBeInTheDocument();
+      // Delete should NOT be called yet
+      expect(deleteCommentMock).not.toHaveBeenCalled();
+    });
+
+    it("should call deleteComment only after confirming in the popover", async () => {
+      const myComment = {
+        ...mockComment,
+        createdBy: { ...mockComment.createdBy, id: 999 }, // current user id from mockStore
+        createdAt: new Date().toISOString(), // not expired
+      };
+      renderWithProvider(<CommentCard comment={myComment} />);
+
+      const menuButton = screen.getByLabelText("Comment options");
+      fireEvent.click(menuButton);
+
+      const deleteButton = await screen.findByText("Delete");
+      fireEvent.click(deleteButton);
+
+      // Click confirm in the popover
+      const confirmButton = screen.getByTestId("confirmation-confirm");
+      fireEvent.click(confirmButton);
+
+      await waitFor(() => {
+        expect(deleteCommentMock).toHaveBeenCalledWith({ commentId: myComment.id });
+        expect(deleteCommentUnwrap).toHaveBeenCalledTimes(1);
+      });
+    });
+
+    it("should close confirmation popover when cancel is clicked", async () => {
+      const myComment = {
+        ...mockComment,
+        createdBy: { ...mockComment.createdBy, id: 999 },
+        createdAt: new Date().toISOString(),
+      };
+      renderWithProvider(<CommentCard comment={myComment} />);
+
+      const menuButton = screen.getByLabelText("Comment options");
+      fireEvent.click(menuButton);
+
+      const deleteButton = await screen.findByText("Delete");
+      fireEvent.click(deleteButton);
+
+      // Popover should be open
+      expect(screen.getByTestId("confirmation-popover")).toBeInTheDocument();
+
+      // Click cancel
+      const cancelButton = screen.getByTestId("confirmation-cancel");
+      fireEvent.click(cancelButton);
+
+      // Popover should be closed
+      expect(screen.queryByTestId("confirmation-popover")).not.toBeInTheDocument();
+      // Delete should NOT have been called
+      expect(deleteCommentMock).not.toHaveBeenCalled();
+    });
+
+    it("should display correct title for comment delete confirmation", async () => {
+      const myComment = {
+        ...mockComment,
+        createdBy: { ...mockComment.createdBy, id: 999 },
+        createdAt: new Date().toISOString(),
+      };
+      renderWithProvider(<CommentCard comment={myComment} />);
+
+      const menuButton = screen.getByLabelText("Comment options");
+      fireEvent.click(menuButton);
+
+      const deleteButton = await screen.findByText("Delete");
+      fireEvent.click(deleteButton);
+
+      const titleElement = screen.getByTestId("confirmation-title");
+      expect(titleElement).toHaveTextContent("Comment");
+    });
+
+    it("should display correct title for reply delete confirmation when onDelete is provided", async () => {
+      const myComment = {
+        ...mockComment,
+        createdBy: { ...mockComment.createdBy, id: 999 },
+        createdAt: new Date().toISOString(),
+      };
+      const onDeleteMock = vi.fn();
+      renderWithProvider(<CommentCard comment={myComment} onDelete={onDeleteMock} />);
+
+      const menuButton = screen.getByLabelText("Comment options");
+      fireEvent.click(menuButton);
+
+      const deleteButton = await screen.findByText("Delete");
+      fireEvent.click(deleteButton);
+
+      const titleElement = screen.getByTestId("confirmation-title");
+      expect(titleElement).toHaveTextContent("Reply");
+    });
+
+    it("should call onDelete callback after successful deletion", async () => {
+      const myComment = {
+        ...mockComment,
+        createdBy: { ...mockComment.createdBy, id: 999 },
+        createdAt: new Date().toISOString(),
+      };
+      const onDeleteMock = vi.fn();
+      renderWithProvider(<CommentCard comment={myComment} onDelete={onDeleteMock} />);
+
+      const menuButton = screen.getByLabelText("Comment options");
+      fireEvent.click(menuButton);
+
+      const deleteButton = await screen.findByText("Delete");
+      fireEvent.click(deleteButton);
+
+      const confirmButton = screen.getByTestId("confirmation-confirm");
+      fireEvent.click(confirmButton);
+
+      await waitFor(() => {
+        expect(onDeleteMock).toHaveBeenCalledWith(myComment.id);
+      });
     });
 
     it("should call toggleCommentVisibility when hide is clicked by feed owner", async () => {

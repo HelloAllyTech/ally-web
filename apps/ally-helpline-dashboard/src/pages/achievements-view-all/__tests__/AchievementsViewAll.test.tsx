@@ -14,19 +14,49 @@
 
 import { render, screen, fireEvent } from "@testing-library/react";
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { Provider } from "react-redux";
+import { configureStore } from "@reduxjs/toolkit";
 
 // Use vi.hoisted to ensure mocks are available when vi.mock factory runs
-const { mockUseGetAvailableBadgesQuery, mockNavigate, mockFeatureFlags } = vi.hoisted(() => ({
+const {
+  mockUseGetAvailableBadgesQuery,
+  mockNavigate,
+  mockFeatureFlags,
+  mockUseGetMyBadgesQuery,
+  mockUseUpdateBadgeViewStatusMutation,
+  mockUseLazyGetUserQuery,
+  mockUseLazyGetPermissionsQuery,
+  mockUseGetProfileImageUrlMutation,
+  mockUseDeleteProfileImageMutation,
+  mockUseUploadProfileImageMutation,
+  mockUseUser,
+} = vi.hoisted(() => ({
   mockUseGetAvailableBadgesQuery: vi.fn(),
   mockNavigate: vi.fn(),
   mockFeatureFlags: {
     LEADERBOARD_FLAG: true,
+    BADGES_FLAG: true,
   },
+  mockUseGetMyBadgesQuery: vi.fn(),
+  mockUseUpdateBadgeViewStatusMutation: vi.fn(),
+  mockUseLazyGetUserQuery: vi.fn(),
+  mockUseLazyGetPermissionsQuery: vi.fn(),
+  mockUseGetProfileImageUrlMutation: vi.fn(),
+  mockUseDeleteProfileImageMutation: vi.fn(),
+  mockUseUploadProfileImageMutation: vi.fn(),
+  mockUseUser: vi.fn(),
 }));
 
 // Mock API
 vi.mock("@api", () => ({
   useGetAvailableBadgesQuery: () => mockUseGetAvailableBadgesQuery(),
+  useGetMyBadgesQuery: () => mockUseGetMyBadgesQuery(),
+  useUpdateBadgeViewStatusMutation: () => mockUseUpdateBadgeViewStatusMutation(),
+  useLazyGetUserQuery: () => mockUseLazyGetUserQuery(),
+  useLazyGetPermissionsQuery: () => mockUseLazyGetPermissionsQuery(),
+  useGetProfileImageUrlMutation: () => mockUseGetProfileImageUrlMutation(),
+  useDeleteProfileImageMutation: () => mockUseDeleteProfileImageMutation(),
+  useUploadProfileImageMutation: () => mockUseUploadProfileImageMutation(),
 }));
 
 // Mock feature flags
@@ -43,19 +73,42 @@ vi.mock("react-router-dom", async () => {
   };
 });
 
+// Mock hooks
+vi.mock("@hooks", () => ({
+  useUser: () => mockUseUser(),
+  useAchievementBadgeModal: () => ({
+    currentBadge: null,
+    closeModal: vi.fn(),
+    resetModal: vi.fn(),
+    BadgeModal: null,
+    isLoading: false,
+  }),
+}));
+
 // Mock assets
 vi.mock("@assets", () => ({
   ArrowLeft: ({ className }: { className?: string }) => (
     <svg data-testid="arrow-left-icon" className={className} />
   ),
   NoResults: () => <div data-testid="no-results-icon">No Results</div>,
+  Carousel1: () => <div data-testid="carousel-1">Carousel1</div>,
+  Carousel2: () => <div data-testid="carousel-2">Carousel2</div>,
+  Carousel3: () => <div data-testid="carousel-3">Carousel3</div>,
+  Carousel4: () => <div data-testid="carousel-4">Carousel4</div>,
+  LearnIcon: () => <svg data-testid="learn-icon" />,
+  Leaderboard: () => <svg data-testid="leaderboard-icon" />,
+  SearchIcon: () => <svg data-testid="search-icon" />,
+  StatsIcon: () => <svg data-testid="stats-icon" />,
+  ScribeIcon: () => <svg data-testid="scribe-icon" />,
+  ReviewNavIcon: () => <svg data-testid="review-nav-icon" />,
+  Badge: () => <svg data-testid="badge-icon" />,
 }));
 
 // Mock components
 vi.mock("@components", () => ({
-  AchievementItem: ({ achievement, imageSize }: any) => (
-    <div data-testid={`achievement-item-${achievement.id}`} data-image-size={imageSize}>
-      <span data-testid="achievement-title">{achievement.title}</span>
+  AchievementItem: ({ achievement, imageSize = 75 }: any) => (
+    <div data-testid={`achievement-item-${achievement.id}`} data-image-size={String(imageSize)}>
+      <span data-testid="achievement-title">{achievement.name || achievement.title}</span>
       <span data-testid="achievement-status">{achievement.lockStatus}</span>
     </div>
   ),
@@ -99,10 +152,20 @@ vi.mock("@types", () => ({
     UNLOCKED: "UNLOCKED",
     LOCKED: "LOCKED",
   },
+  SessionType: {
+    CALL: "call",
+    SIMULATION: "simulation",
+  },
+  ViewedStatus: {
+    VIEWED: "VIEWED",
+    UNVIEWED: "UNVIEWED",
+  },
 }));
 
 import { BrowserRouter } from "react-router-dom";
 
+import { baseAPI } from "../../../api/baseAPI";
+import userSlice from "../../../reducer/userReducer";
 import { AchievementsViewAll } from "../AchievementsViewAll";
 
 // --------------------- Mock Data --------------------- //
@@ -160,9 +223,29 @@ const defaultQueryReturn = {
   refetch: vi.fn(),
 };
 
+// Create a test store with the API middleware and user reducer
+const createTestStore = () =>
+  configureStore({
+    reducer: {
+      [baseAPI.reducerPath]: baseAPI.reducer,
+      user: userSlice.reducer,
+    },
+    middleware: getDefaultMiddleware => getDefaultMiddleware().concat(baseAPI.middleware),
+    preloadedState: {
+      user: {
+        isAuthenticated: false,
+        user: null,
+        permissions: [],
+        availableChatTypes: [],
+      },
+    },
+  });
+
 // Test wrapper component
 const TestWrapper = ({ children }: { children: React.ReactNode }) => (
-  <BrowserRouter>{children}</BrowserRouter>
+  <Provider store={createTestStore()}>
+    <BrowserRouter>{children}</BrowserRouter>
+  </Provider>
 );
 
 // --------------------- Tests --------------------- //
@@ -171,7 +254,24 @@ describe("AchievementsViewAll Component", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockUseGetAvailableBadgesQuery.mockReturnValue(defaultQueryReturn);
+    mockUseGetMyBadgesQuery.mockReturnValue({
+      data: { data: [] },
+      isLoading: false,
+      refetch: vi.fn(),
+    });
+    mockUseUpdateBadgeViewStatusMutation.mockReturnValue([vi.fn(), { isLoading: false }]);
+    mockUseLazyGetUserQuery.mockReturnValue([vi.fn(), { isLoading: false }]);
+    mockUseLazyGetPermissionsQuery.mockReturnValue([vi.fn(), { isLoading: false }]);
+    mockUseGetProfileImageUrlMutation.mockReturnValue([vi.fn()]);
+    mockUseDeleteProfileImageMutation.mockReturnValue([vi.fn()]);
+    mockUseUploadProfileImageMutation.mockReturnValue([vi.fn()]);
+    mockUseUser.mockReturnValue({
+      user: { id: "1", name: "Test User" },
+      permissions: [],
+      isAuthenticated: true,
+    });
     mockFeatureFlags.LEADERBOARD_FLAG = true;
+    mockFeatureFlags.BADGES_FLAG = true;
   });
 
   afterEach(() => {
@@ -245,8 +345,8 @@ describe("AchievementsViewAll Component", () => {
    * TEST GROUP: Feature Flag
    */
   describe("Feature Flag", () => {
-    it("shows disabled message when LEADERBOARD_FLAG is false", () => {
-      mockFeatureFlags.LEADERBOARD_FLAG = false;
+    it("shows disabled message when BADGES_FLAG is false", () => {
+      mockFeatureFlags.BADGES_FLAG = false;
 
       render(
         <TestWrapper>
@@ -258,7 +358,7 @@ describe("AchievementsViewAll Component", () => {
     });
 
     it("does not show badges when feature flag is disabled", () => {
-      mockFeatureFlags.LEADERBOARD_FLAG = false;
+      mockFeatureFlags.BADGES_FLAG = false;
 
       render(
         <TestWrapper>
@@ -426,9 +526,9 @@ describe("AchievementsViewAll Component", () => {
         </TestWrapper>,
       );
 
-      expect(screen.getByText("Simulation Minutes")).toBeInTheDocument();
-      expect(screen.getByText("Active Day Streak")).toBeInTheDocument();
-      expect(screen.getByText("Comments & Reactions Given")).toBeInTheDocument();
+      expect(screen.getByText("Journey")).toBeInTheDocument();
+      expect(screen.getByText("Momentum")).toBeInTheDocument();
+      expect(screen.getByText("Contribution")).toBeInTheDocument();
     });
 
     it("passes correct imageSize to AchievementItem", () => {
@@ -439,7 +539,7 @@ describe("AchievementsViewAll Component", () => {
       );
 
       const achievementItem = screen.getByTestId("achievement-item-badge-1");
-      expect(achievementItem).toHaveAttribute("data-image-size", "60");
+      expect(achievementItem).toHaveAttribute("data-image-size", "75");
     });
   });
 
@@ -487,8 +587,8 @@ describe("AchievementsViewAll Component", () => {
       // Click UNLOCKED filter
       fireEvent.click(screen.getByTestId("filter-UNLOCKED"));
 
-      // Comments & Reactions Given category has no unlocked badges, so it should not be visible
-      expect(screen.queryByText("Comments & Reactions Given")).not.toBeInTheDocument();
+      // Contribution category has no unlocked badges, so it should not be visible
+      expect(screen.queryByText("Contribution")).not.toBeInTheDocument();
     });
 
     it("changes active state when filter is changed", () => {
@@ -561,8 +661,8 @@ describe("AchievementsViewAll Component", () => {
         </TestWrapper>,
       );
 
-      expect(screen.queryByText("Simulation Minutes")).not.toBeInTheDocument();
-      expect(screen.queryByText("Active Day Streak")).not.toBeInTheDocument();
+      expect(screen.queryByText("Journey")).not.toBeInTheDocument();
+      expect(screen.queryByText("Momentum")).not.toBeInTheDocument();
     });
 
     it("renders header even when no badges", () => {
@@ -596,13 +696,13 @@ describe("AchievementsViewAll Component", () => {
       );
 
       // Check that each category section exists
-      const simulationMinutesSection = screen.getByText("Simulation Minutes");
-      const activeDayStreakSection = screen.getByText("Active Day Streak");
-      const commentsReactionsGivenSection = screen.getByText("Comments & Reactions Given");
+      const journeySection = screen.getByText("Journey");
+      const momentumSection = screen.getByText("Momentum");
+      const contributionSection = screen.getByText("Contribution");
 
-      expect(simulationMinutesSection).toBeInTheDocument();
-      expect(activeDayStreakSection).toBeInTheDocument();
-      expect(commentsReactionsGivenSection).toBeInTheDocument();
+      expect(journeySection).toBeInTheDocument();
+      expect(momentumSection).toBeInTheDocument();
+      expect(contributionSection).toBeInTheDocument();
     });
 
     it("does not render empty category when all badges in category are filtered out", () => {
@@ -634,7 +734,7 @@ describe("AchievementsViewAll Component", () => {
       fireEvent.click(screen.getByTestId("filter-UNLOCKED"));
 
       // Category should not be visible since all badges are locked
-      expect(screen.queryByText("Simulation Minutes")).not.toBeInTheDocument();
+      expect(screen.queryByText("Journey")).not.toBeInTheDocument();
     });
   });
 

@@ -33,7 +33,7 @@ const CommentAdditionDialog: FC<CommentAdditionDialogProps> = ({ onCancel, onCom
         <AutoExpandableTextarea
           value={comment}
           onChange={setComment}
-          placeholder="Add comment"
+          placeholder="Add Comment"
           className="w-full border rounded-sm text-sm !px-2 !py-2 min-h-20"
         />
         <div className="grid grid-cols-2 gap-2">

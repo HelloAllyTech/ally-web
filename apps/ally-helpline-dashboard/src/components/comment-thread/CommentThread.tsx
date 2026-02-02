@@ -1,30 +1,57 @@
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 
 import { useSelector } from "react-redux";
 
-import { AutoExpandableTextarea, CustomImage } from "@ally-ui-mono/ui-shared";
+import { AutoExpandableTextarea, CustomImage, InfiniteScroll } from "@ally-ui-mono/ui-shared";
 import { Button, CommentCard } from "@components";
+import { useGetReviewThreadCommentsQuery } from "@src/api";
 import { RootState } from "@store";
 import { CommentItem } from "@types";
 
+const PAGE_SIZE = 5;
 interface CommentThreadProps {
   isFeedOwner?: boolean;
   comments: CommentItem[];
   onCommentAddition: (comment: string) => void;
   onReplyComment: (comment: string, parentCommentId: string | null) => void;
+  id: string;
 }
 const CommentThread = ({
   comments,
   onCommentAddition,
   onReplyComment,
   isFeedOwner,
+  id,
 }: CommentThreadProps) => {
   const user = useSelector((state: RootState) => state.user.user);
+  const [commentsToShow, setCommentsToShow] = useState(comments);
+  const [threadsOffset, setThreadsOffset] = useState(0);
   const [comment, setComment] = useState("");
+  const [hasMore, setHasMore] = useState(true);
   const [showCommentBox, setShowCommentBox] = useState(false);
 
   const commentThreadScrollRef = useRef<HTMLDivElement | null>(null);
 
+  const { data: threadComments, isLoading } = useGetReviewThreadCommentsQuery({
+    id,
+    limit: PAGE_SIZE,
+    offset: threadsOffset,
+  });
+
+  useEffect(() => {
+    setCommentsToShow(comments);
+  }, [comments]);
+
+  useEffect(() => {
+    if (!threadComments) return;
+    const nextData = threadComments.data;
+    setHasMore(nextData.length >= PAGE_SIZE);
+    if (threadsOffset === 0) {
+      setCommentsToShow(nextData);
+    } else {
+      setCommentsToShow(prev => [...prev, ...nextData]);
+    }
+  }, [threadComments]);
   const handleCommentAddition = () => {
     onCommentAddition(comment);
     setShowCommentBox(false);
@@ -34,6 +61,11 @@ const CommentThread = ({
   const handleCancel = () => {
     setComment("");
     setShowCommentBox(false);
+  };
+
+  const loadMoreComments = async () => {
+    if (isLoading || !hasMore) return;
+    setThreadsOffset(prev => prev + PAGE_SIZE);
   };
 
   const renderCommentBox = () => {
@@ -99,19 +131,25 @@ const CommentThread = ({
         {renderCommentBox()}
         <div
           ref={commentThreadScrollRef}
-          className="flex flex-col gap-2 overflow-y-auto max-h-80 -mr-4 pr-4 custom-scrollbar"
+          className="flex flex-col gap-2 overflow-y-auto max-h-80 -mr-4 pr-4"
         >
-          {comments.map(comment => (
-            <CommentCard
-              key={comment.id}
-              comment={comment}
-              isFeedOwner={isFeedOwner}
-              showLike
-              showReply
-              commentThreadScrollRef={commentThreadScrollRef}
-              onReply={text => onReplyComment(text, comment.id)}
-            />
-          ))}
+          <InfiniteScroll
+            onInfiniteScroll={loadMoreComments}
+            isLoading={isLoading}
+            scrollContainerRef={commentThreadScrollRef}
+            hasMore={hasMore}
+          >
+            {commentsToShow.map(comment => (
+              <CommentCard
+                key={comment.id}
+                comment={comment}
+                isFeedOwner={isFeedOwner}
+                showLike
+                showReply
+                onReply={text => onReplyComment(text, comment.id)}
+              />
+            ))}
+          </InfiniteScroll>
         </div>
       </div>
     </div>

@@ -1,4 +1,4 @@
-import { FC, useEffect, useMemo, useState } from "react";
+import { FC, useEffect, useMemo, useRef, useState } from "react";
 
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
@@ -27,6 +27,8 @@ const SimulationTranscriptTab: FC<SimulationTranscriptTabProps> = ({
   const [transcriptOffset, setTranscriptOffset] = useState(0);
   const [transcriptList, setTranscriptList] = useState<SimulationTranscriptMessage[]>([]);
   const [hasMoreTranscripts, setHasMoreTranscripts] = useState(true);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+
   const { user } = useSelector((state: RootState) => state.user);
   const { data: summary } = useGetSimulationSummaryQuery(sessionId);
 
@@ -118,6 +120,8 @@ const SimulationTranscriptTab: FC<SimulationTranscriptTabProps> = ({
           userId={user?.id}
           handleLoadMore={handleLoadMore}
           isLoading={isGetTranscriptLoading}
+          hasMore={hasMoreTranscripts}
+          scrollContainerRef={scrollContainerRef}
           className="h-full overflow-y-auto !pt-0 custom-scrollbar mt-1 "
           councellorName={councellorName}
           agentName={summary?.scenario?.metadata?.name}

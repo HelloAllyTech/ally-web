@@ -37,56 +37,11 @@ exports[`CommentThread Component > should match snapshot when rendered 1`] = `
         </div>
       </div>
       <div
-        class="flex flex-col gap-2 overflow-y-auto max-h-80 -mr-4 pr-4 custom-scrollbar"
+        class="flex flex-col gap-2 overflow-y-auto max-h-80 -mr-4 pr-4"
       >
         <div
-          data-show-like="true"
-          data-show-reply="true"
-          data-testid="comment-card-1"
-        >
-          <span
-            data-testid="comment-content"
-          >
-            First comment
-          </span>
-          <span
-            data-testid="comment-author"
-          >
-            John Doe
-          </span>
-        </div>
-        <div
-          data-show-like="true"
-          data-show-reply="true"
-          data-testid="comment-card-2"
-        >
-          <span
-            data-testid="comment-content"
-          >
-            Second comment
-          </span>
-          <span
-            data-testid="comment-author"
-          >
-            Jane Smith
-          </span>
-        </div>
-        <div
-          data-show-like="true"
-          data-show-reply="true"
-          data-testid="comment-card-3"
-        >
-          <span
-            data-testid="comment-content"
-          >
-            Third comment
-          </span>
-          <span
-            data-testid="comment-author"
-          >
-            Bob Wilson
-          </span>
-        </div>
+          data-testid="infinite-scroll"
+        />
       </div>
     </div>
   </div>
@@ -130,8 +85,12 @@ exports[`CommentThread Component > should match snapshot with empty comments 1`]
         </div>
       </div>
       <div
-        class="flex flex-col gap-2 overflow-y-auto max-h-80 -mr-4 pr-4 custom-scrollbar"
-      />
+        class="flex flex-col gap-2 overflow-y-auto max-h-80 -mr-4 pr-4"
+      >
+        <div
+          data-testid="infinite-scroll"
+        />
+      </div>
     </div>
   </div>
 </DocumentFragment>
