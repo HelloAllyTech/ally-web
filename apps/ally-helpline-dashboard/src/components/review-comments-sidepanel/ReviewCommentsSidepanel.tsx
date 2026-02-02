@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 
 import { Skeleton } from "@mui/material";
 
@@ -11,21 +11,12 @@ interface ReviewCommentsSidepanelProps {
   totalComments: number;
   className?: string;
   isOpen?: boolean;
-  onCommentClick?: (
-    props:
-      | {
-          messageId: string;
-          startIndex: number;
-          endIndex: number;
-          threadId: string;
-        }
-      | Array<{
-          messageId: string;
-          startIndex: number;
-          endIndex: number;
-          threadId: string;
-        }>,
-  ) => void;
+  onCommentClick?: (props: {
+    messageId: string;
+    startIndex: number;
+    endIndex: number;
+    threadId: string;
+  }) => void;
 }
 const ReviewCommentsSidepanel = ({
   threads,
@@ -42,22 +33,9 @@ const ReviewCommentsSidepanel = ({
     }
   }, [threads]);
 
-  const threadsBySelection = useMemo(() => {
-    if (!threads?.length) return [];
-    const map = new Map<string, Thread[]>();
-    for (const thread of threads) {
-      if (!thread?.comments[0]) continue;
-      const key = `${thread.selection.messageId}-${thread.selection.startIndex}-${thread.selection.endIndex}`;
-      const existing = map.get(key) ?? [];
-      existing.push(thread);
-      map.set(key, existing);
-    }
-    return Array.from(map.values());
-  }, [threads]);
-
   return (
     <div
-      className={`h-full bg-white border-l-[0.5px] overflow-hidden transition-all duration-300 ${className}`}
+      className={`h-full z-20 bg-white border-l-[0.5px] overflow-hidden transition-all duration-300 ${className}`}
     >
       <div className="w-full font-primary py-4 px-4 flex items-center justify-between border-b-[0.5px]">
         <div className="text-typography-900 font-medium text-lg">
@@ -67,39 +45,33 @@ const ReviewCommentsSidepanel = ({
       <div className="w-full h-full px-4">
         {!isLoading && (
           <div className="flex flex-col gap-4 overflow-auto h-[calc(100%-40px)] pb-8 -mr-4 pr-4 py-4 custom-scrollbar">
-            {threadsBySelection.map((groupThreads, groupIndex) => (
-              <div
-                key={groupThreads[0].id}
-                className="flex flex-col gap-2 transition-all duration-300 ease-out"
-                style={{
-                  transform: isOpen ? "translateY(0)" : "translateY(-100%)",
-                  opacity: isOpen ? 1 : 0,
-                  transitionDelay: isOpen
-                    ? `${groupIndex * 50}ms`
-                    : `${(threadsBySelection.length - groupIndex) * 30}ms`,
-                }}
-              >
-                {groupThreads.map(thread => (
+            {threads?.map(
+              (thread, index) =>
+                thread?.comments[0] && (
                   <div
                     key={thread.id}
                     className="transition-all cursor-pointer duration-300 ease-out"
                     onClick={() =>
-                      onCommentClick(
-                        groupThreads.map(thread => ({
-                          threadId: thread.id,
-                          messageId: thread.selection.messageId.toString(),
-                          startIndex: thread.selection.startIndex,
-                          endIndex: thread.selection.endIndex,
-                        })),
-                      )
+                      onCommentClick({
+                        threadId: thread.id,
+                        messageId: thread.selection.messageId.toString(),
+                        startIndex: thread.selection.startIndex,
+                        endIndex: thread.selection.endIndex,
+                      })
                     }
+                    style={{
+                      transform: isOpen ? "translateY(0)" : "translateY(-100%)",
+                      opacity: isOpen ? 1 : 0,
+                      transitionDelay: isOpen
+                        ? `${index * 50}ms`
+                        : `${(threads.length - index) * 30}ms`,
+                    }}
                   >
                     <ThreadCard thread={thread} isFeedOwner={isFeedOwner} />
                   </div>
-                ))}
-              </div>
-            ))}
-            {threadsBySelection.length === 0 && (
+                ),
+            )}
+            {threads?.length === 0 && (
               <div className="w-full h-full flex pt-4 justify-center">
                 <div className="text-typography-800 text-center">No comments yet</div>
               </div>

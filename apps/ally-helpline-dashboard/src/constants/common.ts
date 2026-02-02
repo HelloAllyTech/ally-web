@@ -12,7 +12,7 @@ export enum MediaRecorderState {
   PAUSED = "paused",
 }
 
-export const PLATFORM_EMOJIS = ["1f44d", "2764-fe0f", "1f604", "1f44f", "1f4a1", "1f389"];
+export const PLATFORM_EMOJIS = ["1f44d", "2764-fe0f", "1f604", "1f44f", "1f4a1", "1F44E"];
 
 export enum KeyboardKeys {
   BACKSPACE = "Backspace",
@@ -129,4 +129,16 @@ export const TAG_TYPES = {
 export const SORT_ORDER = {
   ASC: "ASC",
   DESC: "DESC",
+};
+
+export const toolTipStyles = {
+  tooltip: {
+    sx: {
+      backgroundColor: "#000",
+      color: "white",
+      borderRadius: "5px",
+      maxWidth: "250px",
+      whiteSpace: "normal",
+    },
+  },
 };

@@ -39,7 +39,6 @@ export const ReviewDetails = () => {
   const [selectedStartIndex, setSelectedStartIndex] = useState<number>(0);
   const [selectedEndIndex, setSelectedEndIndex] = useState<number>(0);
   const [selectedThreadId, setSelectedThreadId] = useState<string>(null);
-  const [selectedThreadIds, setSelectedThreadIds] = useState<string[]>([]);
   const [transcriptList, setTranscriptList] = useState<SimulationTranscriptMessage[]>([]);
   const [showReactionsModal, setShowReactionsModal] = useState(false);
   const [showSimulationDetailsModal, setShowSimulationDetailsModal] = useState(false);
@@ -80,9 +79,15 @@ export const ReviewDetails = () => {
     if (simulationTranscript) {
       if (simulationTranscript.length > 0) {
         setTranscriptList(prev => {
-          return transcriptOffset > 0
-            ? [...prev, ...simulationTranscript]
-            : [...simulationTranscript];
+          if (transcriptOffset > 0) {
+            // For pagination, filter out any duplicates before appending
+            const existingIds = new Set((prev || []).map(item => item.id));
+            const newItems = simulationTranscript.filter(item => !existingIds.has(item.id));
+            return [...(prev || []), ...newItems];
+          } else {
+            // For initial load, replace the list
+            return [...simulationTranscript];
+          }
         });
         setHasMoreTranscripts(simulationTranscript.length >= TRANSCRIPT_PAGE_SIZE);
       } else {
@@ -93,7 +98,6 @@ export const ReviewDetails = () => {
 
   const handleCloseSelectedComment = () => {
     setSelectedThreadId(null);
-    setSelectedThreadIds([]);
     setSelectedMessageId("");
     setSelectedStartIndex(0);
     setSelectedEndIndex(0);
@@ -190,29 +194,16 @@ export const ReviewDetails = () => {
     }
   };
 
-  const handleCommentClick = (
-    props:
-      | {
-          messageId: string;
-          startIndex: number;
-          endIndex: number;
-          threadId: string;
-        }
-      | Array<{
-          messageId: string;
-          startIndex: number;
-          endIndex: number;
-          threadId: string;
-        }>,
-  ) => {
-    const items = Array.isArray(props) ? props : [props];
-    if (!items.length) return;
-    const first = items[0];
-    setSelectedMessageId(first.messageId);
-    setSelectedStartIndex(first.startIndex);
-    setSelectedEndIndex(first.endIndex);
-    setSelectedThreadId(first.threadId);
-    setSelectedThreadIds(items.map(props => props.threadId));
+  const handleCommentClick = (props: {
+    messageId: string;
+    startIndex: number;
+    endIndex: number;
+    threadId: string;
+  }) => {
+    setSelectedMessageId(props.messageId);
+    setSelectedStartIndex(props.startIndex);
+    setSelectedEndIndex(props.endIndex);
+    setSelectedThreadId(props.threadId);
   };
 
   const handleLoadMore = () => {
@@ -230,7 +221,7 @@ export const ReviewDetails = () => {
 
   const renderBottomSection = () => {
     return (
-      <div className="absolute flex justify-center bottom-9 left-0 right-0 w-full">
+      <div className="absolute z-10 flex justify-center bottom-9 left-0 right-0 w-full">
         <div className="p-2 h-14 rounded-full border flex items-center gap-2 bg-white shadow-2xl">
           {isFeedOwner && (
             <div
@@ -279,7 +270,7 @@ export const ReviewDetails = () => {
             <div className="flex items-center gap-3 justify-between w-full">
               <button
                 onClick={handleReactionsClick}
-                className="flex items-center gap-2 text-black/60 min-w-0 hover:opacity-80 transition-opacity"
+                className="flex items-center gap-2 min-w-0 hover:opacity-80 transition-opacity"
               >
                 <EmojiStack unicodeCodes={reviewReactions} />
                 <span className="font-primary text-xs sm:text-sm leading-[1.5] text-typography-800 truncate">
@@ -339,7 +330,10 @@ export const ReviewDetails = () => {
               <div className="w-1 h-1 bg-neutral-500 rounded-full mx-1" />
               <div>
                 Date & time:{" "}
-                {getFormattedDateTime(reviewDetails?.scenario?.createdAt, "MMM dd, yyyy hh:mm a")}
+                {getFormattedDateTime(
+                  reviewDetails?.scenarioSession?.createdAt,
+                  "MMM dd, yyyy hh:mm a",
+                )}
               </div>
               <div className="w-1 h-1 bg-neutral-500 rounded-full mx-1" />
               <div className="font-primary  leading-4 text-black/60">
@@ -360,11 +354,11 @@ export const ReviewDetails = () => {
             councellorName={isFeedOwner ? "You" : reviewDetails?.createdBy?.name}
             agentName={reviewDetails?.scenario?.name}
             commentsList={
-              selectedThreadIds.length > 0
-                ? threads
-                    .filter(thread => selectedThreadIds.includes(thread.id))
-                    .flatMap(thread => thread.comments ?? [])
-                : undefined
+              threads.find(
+                thread =>
+                  thread.selection.messageId === parseInt(selectedMessageId) &&
+                  thread.id === selectedThreadId,
+              )?.comments
             }
             isFeedOwner={isFeedOwner}
             handleCommentClick={handleCommentClick}

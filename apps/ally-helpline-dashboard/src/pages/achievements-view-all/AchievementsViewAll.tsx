@@ -1,12 +1,13 @@
 import { FC, useState } from "react";
 
+import { Tooltip } from "@mui/material";
 import { useLocation, useNavigate } from "react-router-dom";
 
 import { FEATURE_FLAGS_MAP } from "@ally-ui-mono/ui-shared/featureFlag";
 import { useGetAvailableBadgesQuery } from "@api";
-import { ArrowLeft, NoResults } from "@assets";
+import { ArrowLeft, Info, NoResults } from "@assets";
 import { AchievementItem, FallbackUI, ToggleButtonGroup } from "@components";
-import { ROUTES, navBarOptions } from "@constants";
+import { toolTipStyles } from "@constants";
 import { AchievementItemData, BadgeCategory, LockedStatus } from "@types";
 
 // Badge type display labels
@@ -21,6 +22,17 @@ const FILTER_OPTIONS = [
   { value: "ALL", label: "All" },
   { value: "UNLOCKED", label: "Unlocked" },
 ];
+
+const BADGE_TYPE_TOOLTIP_LABELS: Record<BadgeCategory, string> = {
+  [BadgeCategory.SIMULATION_MINUTES]:
+    "Earned by completing simulation minutes. Only completed simulation time is counted.",
+  [BadgeCategory.ACTIVE_DAY_STREAK]:
+    "Complete at least one simulation per day to build a streak. Missing a day resets your streak.",
+  [BadgeCategory.COMMENTS_REACTIONS_GIVEN]:
+    "Count comments and reactions you give on sessions owned by other users. Interactions on your own sessions are not counted.",
+  [BadgeCategory.COMMENTS_REACTIONS_RECEIVED]:
+    "Earned when other reviewers comment or react on your sessions. Your own actions on your sessions are excluded.",
+};
 
 const BadgeCardSkeleton: FC = () => {
   return (
@@ -39,9 +51,7 @@ export const AchievementsViewAll: FC = () => {
   const location = useLocation();
   const [activeFilter, setActiveFilter] = useState("ALL");
 
-  const isFromNavbar =
-    location.pathname === ROUTES.ACHIEVEMENTS_VIEW_ALL ||
-    navBarOptions.some(option => option.path === location.pathname);
+  const isFromLeaderboard = location.state?.from === "leaderboard";
 
   const {
     data: badgesData = [],
@@ -110,7 +120,7 @@ export const AchievementsViewAll: FC = () => {
     return (
       <div className="flex flex-col gap-3 w-full">
         <div className="flex flex-row items-center gap-3 sm:gap-[18px]">
-          {!isFromNavbar && (
+          {isFromLeaderboard && (
             <button
               onClick={() => navigate(-1)}
               className="p-2 -m-2 hover:bg-gray-100 rounded-full transition-colors"
@@ -127,7 +137,30 @@ export const AchievementsViewAll: FC = () => {
           </h1>
         </div>
         <div className="flex flex-row justify-between gap-3 sm:gap-[18px] w-full">
-          <div className="text-typography-900 text-lg font-medium mt-2 font-primary">Badges</div>
+          <div className="flex flex-row items-center gap-1 mt-2">
+            <div className="text-typography-900 text-lg font-medium font-primary">Badges</div>
+            <Tooltip
+              title={
+                <div
+                  style={{
+                    fontWeight: 400,
+                    fontSize: "13px",
+                    color: "#F5EFF7",
+                  }}
+                >
+                  Badges are earned based on your activity across simulations and community
+                  participation. Some badges may be removed if qualifying actions are undone.
+                </div>
+              }
+              slotProps={toolTipStyles}
+              arrow
+              placement="bottom"
+            >
+              <span className="cursor-pointer">
+                <Info className="w-5 h-5" />
+              </span>
+            </Tooltip>
+          </div>
           <ToggleButtonGroup
             className="font-primary text-xs sm:text-sm leading-[1.5]"
             value={activeFilter}
@@ -141,13 +174,42 @@ export const AchievementsViewAll: FC = () => {
     );
   };
 
-  const renderSectionLabel = (label: string) => {
-    return (
-      <div className="flex items-center gap-2">
-        <div className="font-primary text-xs leading-5 font-normal text-typography-600">
-          {label}
+  const renderSectionLabel = (category: BadgeCategory) => {
+    const tooltipContent = (
+      <div className="flex flex-col gap-1">
+        <div
+          style={{
+            fontWeight: 600,
+            fontSize: "13px",
+            color: "#F5EFF7",
+          }}
+        >
+          {`${BADGE_TYPE_LABELS[category]} Badges`}
         </div>
-        {!isFromNavbar && <div className="border-t-[0.5px] border-[#D2D2D2] w-full" />}
+        <div
+          style={{
+            fontWeight: 400,
+            fontSize: "13px",
+            color: "#F5EFF7",
+            lineHeight: "1.4",
+          }}
+        >
+          {BADGE_TYPE_TOOLTIP_LABELS[category]}
+        </div>
+      </div>
+    );
+
+    return (
+      <div className="flex items-center gap-1">
+        <div className="font-primary text-xs leading-5 font-normal text-typography-600">
+          {BADGE_TYPE_LABELS[category]}
+        </div>
+        <Tooltip title={tooltipContent} arrow placement="top" slotProps={toolTipStyles}>
+          <span className="cursor-pointer">
+            <Info className="w-5 h-5" />
+          </span>
+        </Tooltip>
+        <div className="border-t-[0.5px] ml-2 border-[#D2D2D2] w-full" />
       </div>
     );
   };
@@ -184,7 +246,7 @@ export const AchievementsViewAll: FC = () => {
         ) : (
           groupedBadges.map(({ category, badges }) => (
             <div key={category} className="flex flex-col gap-3 sm:gap-4">
-              {renderSectionLabel(BADGE_TYPE_LABELS[category])}
+              {renderSectionLabel(category)}
               {renderBadgeSection(badges)}
             </div>
           ))

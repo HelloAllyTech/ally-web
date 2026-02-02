@@ -13,6 +13,8 @@ import { RootState } from "@src/store";
 import { CommentItem, SimulationTranscriptMessage } from "@src/types";
 
 const DIALOG_WIDTH = 360;
+const COMMENTS_PAGE_SIZE = 5;
+
 interface SelectableTextProps {
   segment: {
     text: string;
@@ -87,7 +89,7 @@ const SelectableText = ({
   const addCommentDialogRef = useRef<HTMLDivElement | null>(null);
   const dialogRef = useRef<HTMLDivElement | null>(null);
   const selectedCommentCalloutRef = useRef<HTMLDivElement | null>(null);
-  const [comments, setComments] = useState<CommentItem[]>(commentsList);
+  const [comments, setComments] = useState<CommentItem[]>(commentsList ?? []);
   const [dialogPosition, setDialogPosition] = useState<{ top: number; left: number }>({
     top: 0,
     left: 0,
@@ -98,7 +100,7 @@ const SelectableText = ({
   }>({ top: 0, left: 0 });
 
   useEffect(() => {
-    setComments(commentsList);
+    setComments(commentsList ?? []);
   }, [commentsList]);
 
   useEffect(() => {
@@ -109,7 +111,7 @@ const SelectableText = ({
   }, [isCreateCommentSuccess]);
 
   useEffect(() => {
-    if (isCreateCommentSuccess && createCommentData.comment) {
+    if (isCreateCommentSuccess && createCommentData?.comment) {
       const newComment: CommentItem = {
         id: createCommentData.comment.id,
         content: commentContent,
@@ -124,7 +126,10 @@ const SelectableText = ({
         myReaction: null,
         hidden: false,
       };
-      setComments(prev => [...prev, newComment]);
+      if ((comments ?? []).length < COMMENTS_PAGE_SIZE) {
+        setComments(prev => [...(prev ?? []), newComment]);
+      }
+      setNewCommentSelection(null);
     }
   }, [isCreateCommentSuccess]);
   // Check if this segment is part of the new comment selection (handles overlapping selections)
@@ -145,7 +150,7 @@ const SelectableText = ({
   // Only show on the segment that ends at the thread's end index (prevents duplicate popups in overlapping sections)
   const shouldShowCommentThread =
     isSelectedComment &&
-    selectedThreadId === segment.commentIds[0] &&
+    segment.commentIds.includes(selectedThreadId) &&
     comments &&
     selectedThread &&
     segment.end === selectedThread.selection.endIndex;
@@ -164,6 +169,11 @@ const SelectableText = ({
     }
   }, []);
 
+  const handleDeleteComment = (commentCount: number) => {
+    if (commentCount === 0) {
+      handleCloseSelectedComment();
+    }
+  };
   const setDialogRef = useCallback((element: HTMLDivElement | null) => {
     dialogRef.current = element;
     if (element) {
@@ -266,24 +276,13 @@ const SelectableText = ({
     });
   };
 
-  const handleReplyComment = async (replyComment: string, parentCommentId: string | null) => {
-    const body = {
-      threadId: selectedThreadId,
-      parentCommentId: parentCommentId,
-      messageId: transcript.id,
-      content: replyComment,
-      selection: { startIndex: segment.start, endIndex: segment.end },
-    };
-    await createComment({
-      reviewId: reviewId,
-      body: body,
-    });
-  };
-
   const handleCloseSelectedComment = useCallback(() => {
     onCloseSelectedComment?.();
   }, [onCloseSelectedComment]);
 
+  const getRandomCommentId = () => {
+    return segment.commentIds[Math.floor(Math.random() * segment.commentIds.length)];
+  };
   const onSegmentClick = () => {
     if (
       segment.commentIds.length > 0 &&
@@ -296,7 +295,7 @@ const SelectableText = ({
         messageId: String(transcript.id),
         startIndex: segment.start,
         endIndex: segment.end,
-        threadId: segment.commentIds[0],
+        threadId: getRandomCommentId(),
       });
     }
   };
@@ -314,7 +313,7 @@ const SelectableText = ({
         isPartOfNewSelection
           ? "bg-[#E1F1FE]"
           : segment.commentIds.length > 0
-            ? `${String(selectedMessageId) === String(transcript.id) && selectedThreadId === segment.commentIds[0] ? "bg-amber-200" : "bg-amber-50"} border-b border-amber-400`
+            ? `${String(selectedMessageId) === String(transcript.id) && segment.commentIds.includes(selectedThreadId) ? "bg-amber-200" : "bg-amber-50"} border-b border-amber-400`
             : ""
       }`}
     >
@@ -354,9 +353,11 @@ const SelectableText = ({
           <CommentThread
             id={selectedThreadId}
             isFeedOwner={isFeedOwner}
+            messageId={String(transcript.id)}
+            selection={{ startIndex: segment.start, endIndex: segment.end }}
             comments={comments as CommentItem[]}
             onCommentAddition={handleAddComment}
-            onReplyComment={handleReplyComment}
+            onDeleteComment={handleDeleteComment}
           />
         </div>
       )}

@@ -1,12 +1,16 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import confetti from "canvas-confetti";
+import { useLocation } from "react-router-dom";
 import { toast } from "sonner";
 
 import { FEATURE_FLAGS_MAP } from "@ally-ui-mono/ui-shared";
 import { useGetMyBadgesQuery, useUpdateBadgeViewStatusMutation } from "@api";
 import { AchievementBadgeModal } from "@components";
+import { ROUTES, Permissions } from "@constants";
+import { useUser } from "@hooks";
 import { UserBadge, ViewedStatus } from "@types";
+import { isPathExcluded } from "@utils";
 
 interface UseAchievementBadgeModalReturn {
   currentBadge: UserBadge | null;
@@ -18,10 +22,14 @@ interface UseAchievementBadgeModalReturn {
 
 export const useAchievementBadgeModal = (): UseAchievementBadgeModalReturn => {
   const [currentBadgeIndex, setCurrentBadgeIndex] = useState<number | null>(null);
+  const { permissions } = useUser();
   const hasInitialized = useRef(false);
   const confettiTriggered = useRef(false);
+  const { pathname } = useLocation();
 
-  const isBadgesEnabled = FEATURE_FLAGS_MAP.BADGES_FLAG;
+  const isBadgesEnabled =
+    FEATURE_FLAGS_MAP.BADGES_FLAG && permissions.includes(Permissions.VIEW_BADGES);
+  const isSimulationPath = isPathExcluded(pathname, [ROUTES.SIMULATION_SUMMARY_FULL]);
 
   const {
     data: badgesResponse,
@@ -33,7 +41,7 @@ export const useAchievementBadgeModal = (): UseAchievementBadgeModalReturn => {
     },
     {
       skip: !isBadgesEnabled,
-      pollingInterval: 30000,
+      pollingInterval: 20000,
       refetchOnFocus: true,
       refetchOnReconnect: true,
     },
@@ -64,8 +72,7 @@ export const useAchievementBadgeModal = (): UseAchievementBadgeModalReturn => {
     if (!hasInitialized.current) {
       setCurrentBadgeIndex(0);
       hasInitialized.current = true;
-      // Trigger confetti for the first badge
-      if (!confettiTriggered.current) {
+      if (!confettiTriggered.current && !isSimulationPath) {
         confettiTriggered.current = true;
         // Fire confetti from multiple positions
         const duration = 2000;
@@ -75,7 +82,6 @@ export const useAchievementBadgeModal = (): UseAchievementBadgeModalReturn => {
           spread: 180,
           ticks: 500,
           zIndex: 9999,
-          // Brighter, more vibrant colors that stand out against dark overlay
           colors: ["#60A5FA", "#FCD34D", "#F472B6", "#86EFAC"],
         };
 
@@ -106,10 +112,12 @@ export const useAchievementBadgeModal = (): UseAchievementBadgeModalReturn => {
             origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 },
           });
         }, 250);
+      } else if (!confettiTriggered.current && isSimulationPath) {
+        confettiTriggered.current = true;
       }
     }
     return undefined;
-  }, [badges.length]);
+  }, [badges.length, isSimulationPath]);
 
   const closeModal = useCallback(async () => {
     const currentIndex = currentBadgeIndex;
@@ -146,15 +154,16 @@ export const useAchievementBadgeModal = (): UseAchievementBadgeModalReturn => {
 
   const currentBadge = currentBadgeIndex !== null ? badges[currentBadgeIndex] : null;
 
-  const BadgeModal = currentBadge ? (
-    <AchievementBadgeModal
-      isOpen={true}
-      onClose={closeModal}
-      title={currentBadge.name}
-      description={currentBadge.description}
-      badgeImageUrl={currentBadge.imageUrl}
-    />
-  ) : null;
+  const BadgeModal =
+    isBadgesEnabled && currentBadge ? (
+      <AchievementBadgeModal
+        isOpen={true}
+        onClose={closeModal}
+        title={currentBadge.name}
+        description={currentBadge.description}
+        badgeImageUrl={currentBadge.imageUrl}
+      />
+    ) : null;
 
   return {
     currentBadge,

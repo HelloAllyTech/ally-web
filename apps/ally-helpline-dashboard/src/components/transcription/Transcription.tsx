@@ -176,6 +176,31 @@ const Transcription: FC<TranscriptionProps> = ({
     );
   }, []);
 
+  // Use document-level mouseup so selection is captured even when user releases outside the text
+  // (e.g. when selecting a full line and dragging beyond the span boundary)
+  useEffect(() => {
+    if (!canSelect) return undefined;
+
+    const handleDocumentMouseUp = () => {
+      for (let i = 0; i < contentRefs.current.length; i++) {
+        const container = contentRefs.current[i];
+        if (!container) continue;
+
+        const selection = window.getSelection();
+        if (!selection || selection.isCollapsed) continue;
+
+        const range = getFreshUserRange(selection);
+        if (!container.contains(range.startContainer)) continue;
+
+        handleSelection(i);
+        break; // Only process the first matching container
+      }
+    };
+
+    document.addEventListener("mouseup", handleDocumentMouseUp);
+    return () => document.removeEventListener("mouseup", handleDocumentMouseUp);
+  }, [canSelect, transcriptions]);
+
   const TranscriptSkeleton = () => (
     <div className="flex flex-col gap-6 h-full w-full">
       {[...Array(8)].map((_, index) => (
@@ -243,7 +268,6 @@ const Transcription: FC<TranscriptionProps> = ({
               </span>
               <span
                 ref={el => (contentRefs.current[index] = el)}
-                onMouseUp={() => handleSelection(index)}
                 className={`text-typography-900 selected-text relative w-full ${canSelect ? "cursor-text" : "cursor-default"}`}
               >
                 {splitByCommentRanges(

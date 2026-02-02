@@ -57,18 +57,29 @@ vi.mock("@src/components/comment-addition-dialog/CommentAdditionDialog", () => (
 
 // Mock CommentThread
 vi.mock("@src/components/comment-thread/CommentThread", () => ({
-  default: ({ id, isFeedOwner, comments, onCommentAddition, onReplyComment }: any) => (
+  default: ({
+    id,
+    isFeedOwner,
+    comments,
+    onCommentAddition,
+    onDeleteComment,
+    messageId,
+    selection,
+  }: any) => (
     <div
       data-testid="comment-thread"
       data-id={id}
       data-is-feed-owner={isFeedOwner}
       data-comment-count={comments?.length || 0}
+      data-message-id={messageId}
+      data-selection-start={selection?.startIndex}
+      data-selection-end={selection?.endIndex}
     >
       <button data-testid="thread-add-comment" onClick={() => onCommentAddition("New comment")}>
         Add Comment
       </button>
-      <button data-testid="thread-reply" onClick={() => onReplyComment("Reply text", "parent-123")}>
-        Reply
+      <button data-testid="thread-delete" onClick={() => onDeleteComment(0)}>
+        Delete Comment
       </button>
     </div>
   ),
@@ -123,7 +134,6 @@ describe("SelectableText Component", () => {
 
   const mockSetAddCommentDialogOpen = vi.fn();
   const mockOnCloseSelectedComment = vi.fn();
-  const mockHandleCreateComment = vi.fn();
   const mockHandleCommentClick = vi.fn();
   const mockSetNewCommentSelection = vi.fn();
   const mockOnCancelComment = vi.fn();
@@ -144,9 +154,7 @@ describe("SelectableText Component", () => {
     transcript: mockTranscript as any,
     selectedEndIndex: 0,
     commentsList: [],
-    isLoading: false,
     handleCommentClick: mockHandleCommentClick,
-    isCreateCommentSuccess: false,
     setNewCommentSelection: mockSetNewCommentSelection,
     onCancelComment: mockOnCancelComment,
   };
@@ -356,6 +364,9 @@ describe("SelectableText Component", () => {
       expect(thread).toHaveAttribute("data-id", "thread-1");
       expect(thread).toHaveAttribute("data-is-feed-owner", "true");
       expect(thread).toHaveAttribute("data-comment-count", "1");
+      expect(thread).toHaveAttribute("data-message-id", "101");
+      expect(thread).toHaveAttribute("data-selection-start", "10");
+      expect(thread).toHaveAttribute("data-selection-end", "24");
     });
   });
 
@@ -512,25 +523,6 @@ describe("SelectableText Component", () => {
       );
       const { container } = renderWithProvider(<SelectableText {...defaultProps} />);
       expect(container.querySelector("span")).toBeInTheDocument();
-    });
-
-    it("should handle multiple comment IDs", () => {
-      const segmentWithMultipleComments = {
-        ...mockSegmentWithComments,
-        commentIds: ["thread-1", "thread-2", "thread-3"],
-      };
-      renderWithProvider(
-        <SelectableText
-          {...defaultProps}
-          segment={segmentWithMultipleComments}
-          selectedMessageId=""
-        />,
-      );
-      fireEvent.click(screen.getByText("Commented text"));
-      // Should use first comment ID
-      expect(mockHandleCommentClick).toHaveBeenCalledWith(
-        expect.objectContaining({ threadId: "thread-1" }),
-      );
     });
 
     it("should handle special characters in text", () => {
