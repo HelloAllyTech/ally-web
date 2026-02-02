@@ -3,6 +3,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import confetti from "canvas-confetti";
 import { toast } from "sonner";
 
+import { FEATURE_FLAGS_MAP } from "@ally-ui-mono/ui-shared";
 import { useGetMyBadgesQuery, useUpdateBadgeViewStatusMutation } from "@api";
 import { AchievementBadgeModal } from "@components";
 import { UserBadge, ViewedStatus } from "@types";
@@ -20,6 +21,8 @@ export const useAchievementBadgeModal = (): UseAchievementBadgeModalReturn => {
   const hasInitialized = useRef(false);
   const confettiTriggered = useRef(false);
 
+  const isBadgesEnabled = FEATURE_FLAGS_MAP.BADGES_FLAG;
+
   const {
     data: badgesResponse,
     isLoading,
@@ -29,6 +32,7 @@ export const useAchievementBadgeModal = (): UseAchievementBadgeModalReturn => {
       viewedStatus: ViewedStatus.UNVIEWED,
     },
     {
+      skip: !isBadgesEnabled,
       pollingInterval: 30000,
       refetchOnFocus: true,
       refetchOnReconnect: true,
