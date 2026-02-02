@@ -224,10 +224,6 @@ export const ReviewDetails = () => {
     setShowReactionsModal(true);
   };
 
-  const isReactionOnCommentFromThisUser = () => {
-    return reviewReactions.length === 1 && reviewReactions[0] === reviewDetails?.myReaction;
-  };
-
   const handleCreateReview = async (status: string) => {
     await updateReview({ id: reviewDetails.id, status });
   };
@@ -279,7 +275,7 @@ export const ReviewDetails = () => {
               />
             )}
           </div>
-          {reviewReactions?.length > 0 && !isReactionOnCommentFromThisUser() && (
+          {reviewReactions?.length > 0 && (
             <div className="flex items-center gap-3 justify-between w-full">
               <button
                 onClick={handleReactionsClick}

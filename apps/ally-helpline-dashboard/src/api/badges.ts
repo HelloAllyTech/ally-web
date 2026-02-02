@@ -25,6 +25,12 @@ const badgesAPI = baseAPI.injectEndpoints({
       query: () => ({
         url: ApiEndpoints.BADGES.GET_AVAILABLE_BADGES,
       }),
+      providesTags: [
+        {
+          type: TAG_TYPES.BADGES,
+          id: `LIST-${ViewedStatus.VIEWED}`,
+        },
+      ],
     }),
 
     /**
