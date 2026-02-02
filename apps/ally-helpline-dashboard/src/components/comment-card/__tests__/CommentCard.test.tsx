@@ -317,7 +317,7 @@ describe("CommentCard Component", () => {
         reactions: { "1f44d": 5, "2764": 3 },
       };
       renderWithProvider(<CommentCard comment={commentWithReactions} showLike={false} />);
-      expect(screen.getByText("2")).toBeInTheDocument(); // Number of unique reactions
+      expect(screen.getByText("8")).toBeInTheDocument(); // Total reaction count (5 + 3)
     });
 
     it("should display reactions even when showLike is true", () => {

@@ -7,7 +7,6 @@ import { useGetAvailableBadgesQuery } from "@api";
 import { ArrowLeft, NoResults } from "@assets";
 import { AchievementItem, FallbackUI, ToggleButtonGroup } from "@components";
 import { ROUTES, navBarOptions } from "@constants";
-import { useAchievementBadgeModal } from "@hooks";
 import { AchievementItemData, BadgeCategory, LockedStatus } from "@types";
 
 // Badge type display labels
@@ -39,7 +38,6 @@ export const AchievementsViewAll: FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [activeFilter, setActiveFilter] = useState("ALL");
-  const { BadgeModal } = useAchievementBadgeModal();
 
   const isFromNavbar =
     location.pathname === ROUTES.ACHIEVEMENTS_VIEW_ALL ||
@@ -81,7 +79,7 @@ export const AchievementsViewAll: FC = () => {
 
   const groupedBadges = getFilteredBadgesByCategory();
 
-  if (!FEATURE_FLAGS_MAP.LEADERBOARD_FLAG) {
+  if (!FEATURE_FLAGS_MAP.BADGES_FLAG) {
     return (
       <div className="flex items-center justify-center h-full">Achievements is not enabled</div>
     );
@@ -192,7 +190,6 @@ export const AchievementsViewAll: FC = () => {
           ))
         )}
       </div>
-      {BadgeModal}
     </div>
   );
 };

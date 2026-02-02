@@ -35,6 +35,7 @@ const {
   mockNavigate: vi.fn(),
   mockFeatureFlags: {
     LEADERBOARD_FLAG: true,
+    BADGES_FLAG: true,
   },
   mockUseGetMyBadgesQuery: vi.fn(),
   mockUseUpdateBadgeViewStatusMutation: vi.fn(),
@@ -270,6 +271,7 @@ describe("AchievementsViewAll Component", () => {
       isAuthenticated: true,
     });
     mockFeatureFlags.LEADERBOARD_FLAG = true;
+    mockFeatureFlags.BADGES_FLAG = true;
   });
 
   afterEach(() => {
@@ -343,8 +345,8 @@ describe("AchievementsViewAll Component", () => {
    * TEST GROUP: Feature Flag
    */
   describe("Feature Flag", () => {
-    it("shows disabled message when LEADERBOARD_FLAG is false", () => {
-      mockFeatureFlags.LEADERBOARD_FLAG = false;
+    it("shows disabled message when BADGES_FLAG is false", () => {
+      mockFeatureFlags.BADGES_FLAG = false;
 
       render(
         <TestWrapper>
@@ -356,7 +358,7 @@ describe("AchievementsViewAll Component", () => {
     });
 
     it("does not show badges when feature flag is disabled", () => {
-      mockFeatureFlags.LEADERBOARD_FLAG = false;
+      mockFeatureFlags.BADGES_FLAG = false;
 
       render(
         <TestWrapper>
