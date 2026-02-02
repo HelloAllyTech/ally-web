@@ -32,6 +32,7 @@ export interface ReviewItem {
   commentsCount: number;
   scenarioSession: {
     duration: number;
+    createdAt: string;
   };
 }
 

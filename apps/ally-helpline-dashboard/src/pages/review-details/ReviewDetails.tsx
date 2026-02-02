@@ -79,9 +79,15 @@ export const ReviewDetails = () => {
     if (simulationTranscript) {
       if (simulationTranscript.length > 0) {
         setTranscriptList(prev => {
-          return transcriptOffset > 0
-            ? [...(prev || []), ...simulationTranscript]
-            : [...simulationTranscript];
+          if (transcriptOffset > 0) {
+            // For pagination, filter out any duplicates before appending
+            const existingIds = new Set((prev || []).map(item => item.id));
+            const newItems = simulationTranscript.filter(item => !existingIds.has(item.id));
+            return [...(prev || []), ...newItems];
+          } else {
+            // For initial load, replace the list
+            return [...simulationTranscript];
+          }
         });
         setHasMoreTranscripts(simulationTranscript.length >= TRANSCRIPT_PAGE_SIZE);
       } else {
@@ -264,7 +270,7 @@ export const ReviewDetails = () => {
             <div className="flex items-center gap-3 justify-between w-full">
               <button
                 onClick={handleReactionsClick}
-                className="flex items-center gap-2 text-black/60 min-w-0 hover:opacity-80 transition-opacity"
+                className="flex items-center gap-2 min-w-0 hover:opacity-80 transition-opacity"
               >
                 <EmojiStack unicodeCodes={reviewReactions} />
                 <span className="font-primary text-xs sm:text-sm leading-[1.5] text-typography-800 truncate">
