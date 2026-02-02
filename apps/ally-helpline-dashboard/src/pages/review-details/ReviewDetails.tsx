@@ -221,7 +221,7 @@ export const ReviewDetails = () => {
 
   const renderBottomSection = () => {
     return (
-      <div className="absolute flex justify-center bottom-9 left-0 right-0 w-full">
+      <div className="absolute z-10 flex justify-center bottom-9 left-0 right-0 w-full">
         <div className="p-2 h-14 rounded-full border flex items-center gap-2 bg-white shadow-2xl">
           {isFeedOwner && (
             <div
