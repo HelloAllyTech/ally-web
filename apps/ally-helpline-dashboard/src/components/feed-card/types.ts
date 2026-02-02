@@ -60,4 +60,5 @@ export interface FeedCardProps {
   onCardClick?: () => void;
   onCommentsClick?: () => void;
   duration?: number;
+  dateTime?: string;
 }

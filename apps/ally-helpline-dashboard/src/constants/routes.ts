@@ -74,20 +74,20 @@ export const navBarOptions = [
   ...(FEATURE_FLAGS_MAP.LEADERBOARD_FLAG
     ? [
         {
-          id: TabId.LEADERBOARD,
-          title: "Community",
-          Icon: Leaderboard,
-          path: ROUTES.LEADERBOARD,
-          activePages: [ROUTES.ACHIEVEMENTS_VIEW_ALL],
-          permissions: [Permissions.VIEW_LEADERBOARD],
-        },
-        {
           id: TabId.BADGES,
           title: "Badges",
           Icon: Badge,
           path: ROUTES.ACHIEVEMENTS_VIEW_ALL,
           activePages: [],
           permissions: [Permissions.VIEW_BADGES],
+        },
+        {
+          id: TabId.LEADERBOARD,
+          title: "Community",
+          Icon: Leaderboard,
+          path: ROUTES.LEADERBOARD,
+          activePages: [ROUTES.ACHIEVEMENTS_VIEW_ALL],
+          permissions: [Permissions.VIEW_LEADERBOARD],
         },
       ]
     : []),
