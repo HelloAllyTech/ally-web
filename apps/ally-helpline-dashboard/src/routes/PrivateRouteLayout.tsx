@@ -1,8 +1,8 @@
 import { FC, useEffect } from "react";
 
-import { Route, Routes, Navigate, useNavigate, useLocation } from "react-router-dom";
+import { Route, Routes, Navigate, useNavigate } from "react-router-dom";
 
-import { FEATURE_FLAGS_MAP, logger } from "@ally-ui-mono/ui-shared";
+import { logger } from "@ally-ui-mono/ui-shared";
 import { useGetChatTypesQuery } from "@api";
 import {
   LOCAL_STORAGE_KEYS,
@@ -11,7 +11,7 @@ import {
   ROUTES,
   CALL_PERMISSIONS,
 } from "@constants";
-import { useUser, useAutoActiveCallRedirect, useAchievementBadgeModal } from "@hooks";
+import { useUser, useAutoActiveCallRedirect } from "@hooks";
 import {
   Calls,
   Analytics,
@@ -35,7 +35,6 @@ import {
   hasPermissions,
   hasSessionLogsPermission,
   hasReviewPermission,
-  isPathExcluded,
 } from "@utils";
 
 import { NavbarWrapper, PermissionGuardedRoute } from "./components";
@@ -43,14 +42,7 @@ import { NavbarWrapper, PermissionGuardedRoute } from "./components";
 const PrivateRouteLayout: FC = () => {
   const { user, checkAuth, permissions, isAuthenticated } = useUser();
   const navigate = useNavigate();
-  const location = useLocation();
   useAutoActiveCallRedirect(isAuthenticated);
-  const { BadgeModal } = useAchievementBadgeModal();
-
-  const shouldShowBadgeModal =
-    isAuthenticated &&
-    FEATURE_FLAGS_MAP.BADGES_FLAG &&
-    !isPathExcluded(location.pathname, [ROUTES.SIMULATION, ROUTES.CALLS]);
 
   const hasChatTypePermissions = hasPermissions(permissions, Permissions.VIEW_CHAT_TYPES);
   const { data: chatTypes } = useGetChatTypesQuery(undefined, {
@@ -234,7 +226,6 @@ const PrivateRouteLayout: FC = () => {
         />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
-      {shouldShowBadgeModal && BadgeModal}
     </NavbarWrapper>
   );
 };
