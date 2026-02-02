@@ -39,7 +39,6 @@ export const ReviewDetails = () => {
   const [selectedStartIndex, setSelectedStartIndex] = useState<number>(0);
   const [selectedEndIndex, setSelectedEndIndex] = useState<number>(0);
   const [selectedThreadId, setSelectedThreadId] = useState<string>(null);
-  const [selectedThreadIds, setSelectedThreadIds] = useState<string[]>([]);
   const [transcriptList, setTranscriptList] = useState<SimulationTranscriptMessage[]>([]);
   const [showReactionsModal, setShowReactionsModal] = useState(false);
   const [showSimulationDetailsModal, setShowSimulationDetailsModal] = useState(false);
@@ -93,7 +92,6 @@ export const ReviewDetails = () => {
 
   const handleCloseSelectedComment = () => {
     setSelectedThreadId(null);
-    setSelectedThreadIds([]);
     setSelectedMessageId("");
     setSelectedStartIndex(0);
     setSelectedEndIndex(0);
@@ -190,29 +188,16 @@ export const ReviewDetails = () => {
     }
   };
 
-  const handleCommentClick = (
-    props:
-      | {
-          messageId: string;
-          startIndex: number;
-          endIndex: number;
-          threadId: string;
-        }
-      | Array<{
-          messageId: string;
-          startIndex: number;
-          endIndex: number;
-          threadId: string;
-        }>,
-  ) => {
-    const items = Array.isArray(props) ? props : [props];
-    if (!items.length) return;
-    const first = items[0];
-    setSelectedMessageId(first.messageId);
-    setSelectedStartIndex(first.startIndex);
-    setSelectedEndIndex(first.endIndex);
-    setSelectedThreadId(first.threadId);
-    setSelectedThreadIds(items.map(props => props.threadId));
+  const handleCommentClick = (props: {
+    messageId: string;
+    startIndex: number;
+    endIndex: number;
+    threadId: string;
+  }) => {
+    setSelectedMessageId(props.messageId);
+    setSelectedStartIndex(props.startIndex);
+    setSelectedEndIndex(props.endIndex);
+    setSelectedThreadId(props.threadId);
   };
 
   const handleLoadMore = () => {
@@ -339,7 +324,10 @@ export const ReviewDetails = () => {
               <div className="w-1 h-1 bg-neutral-500 rounded-full mx-1" />
               <div>
                 Date & time:{" "}
-                {getFormattedDateTime(reviewDetails?.scenario?.createdAt, "MMM dd, yyyy hh:mm a")}
+                {getFormattedDateTime(
+                  reviewDetails?.scenarioSession?.createdAt,
+                  "MMM dd, yyyy hh:mm a",
+                )}
               </div>
               <div className="w-1 h-1 bg-neutral-500 rounded-full mx-1" />
               <div className="font-primary  leading-4 text-black/60">
@@ -360,11 +348,11 @@ export const ReviewDetails = () => {
             councellorName={isFeedOwner ? "You" : reviewDetails?.createdBy?.name}
             agentName={reviewDetails?.scenario?.name}
             commentsList={
-              selectedThreadIds.length > 0
-                ? threads
-                    .filter(thread => selectedThreadIds.includes(thread.id))
-                    .flatMap(thread => thread.comments ?? [])
-                : undefined
+              threads.find(
+                thread =>
+                  thread.selection.messageId === parseInt(selectedMessageId) &&
+                  thread.id === selectedThreadId,
+              )?.comments
             }
             isFeedOwner={isFeedOwner}
             handleCommentClick={handleCommentClick}
