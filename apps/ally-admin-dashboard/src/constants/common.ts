@@ -82,6 +82,7 @@ export const ROUTES = {
   SIMULATION_STUDIO: "/simulation-studio",
   USER_MANAGEMENT: "/user-management",
   MANAGE_EVENTS: "/manage-events",
+  CHARACTER_LIBRARY: "/character-library",
   MANAGE_SCENARIO_VOICES: "/manage-scenario-voices",
   MANAGE_SCENARIO_LANGUAGES: "/manage-scenario-languages",
   CREATE_SIMULATION: "/create-simulation",
