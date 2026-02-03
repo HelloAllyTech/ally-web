@@ -13,7 +13,6 @@ import { RootState } from "@src/store";
 import { CommentItem, SimulationTranscriptMessage } from "@src/types";
 
 const DIALOG_WIDTH = 360;
-const COMMENTS_PAGE_SIZE = 5;
 
 interface SelectableTextProps {
   segment: {
@@ -54,6 +53,7 @@ interface SelectableTextProps {
     } | null,
   ) => void;
   onCancelComment: () => void;
+  onCommentChange: (comments: CommentItem[], threadId: string) => void;
 }
 const SelectableText = ({
   segment,
@@ -74,6 +74,7 @@ const SelectableText = ({
   index,
   commentsList,
   onCancelComment,
+  onCommentChange,
 }: SelectableTextProps) => {
   const { reviewId } = useParams<{ reviewId: string }>();
   const [
@@ -85,6 +86,7 @@ const SelectableText = ({
     },
   ] = useCreateCommentMutation();
   const [commentContent, setCommentContent] = useState<string>("");
+  const [threadsOffset, setThreadsOffset] = useState(0);
   const user = useSelector((state: RootState) => state.user.user);
   const addCommentDialogRef = useRef<HTMLDivElement | null>(null);
   const dialogRef = useRef<HTMLDivElement | null>(null);
@@ -126,9 +128,8 @@ const SelectableText = ({
         myReaction: null,
         hidden: false,
       };
-      if ((comments ?? []).length < COMMENTS_PAGE_SIZE) {
-        setComments(prev => [...(prev ?? []), newComment]);
-      }
+      onCommentChange?.([...(comments ?? []), newComment], selectedThreadId);
+      setComments(prev => [...(prev ?? []), newComment]);
       setNewCommentSelection(null);
     }
   }, [isCreateCommentSuccess]);
@@ -171,6 +172,7 @@ const SelectableText = ({
 
   const handleDeleteComment = (commentCount: number) => {
     if (commentCount === 0) {
+      onCommentChange?.([], selectedThreadId);
       handleCloseSelectedComment();
     }
   };
@@ -358,6 +360,10 @@ const SelectableText = ({
             comments={comments as CommentItem[]}
             onCommentAddition={handleAddComment}
             onDeleteComment={handleDeleteComment}
+            setComments={setComments}
+            onCommentChange={onCommentChange}
+            threadsOffset={threadsOffset}
+            setThreadsOffset={setThreadsOffset}
           />
         </div>
       )}
