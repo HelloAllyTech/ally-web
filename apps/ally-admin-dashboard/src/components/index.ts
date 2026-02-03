@@ -58,3 +58,4 @@ export * from "./scenario-voice-side-panel";
 export * from "./language-side-panel";
 export * from "./bulk-add-events-side-panel";
 export * from "./character-side-panel";
+export * from "./character-profile-selector";
