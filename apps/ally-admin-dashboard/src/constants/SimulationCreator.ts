@@ -625,3 +625,63 @@ export const SCENARIO_LANGUAGE_COLUMNS = [
     minWidth: 120,
   },
 ];
+
+// TODO: Add columns for character library when BE is ready
+export const CHARACTER_LIBRARY_TABLE_COLUMNS = [
+  {
+    id: "name",
+    label: "Name",
+    accessor: "name",
+    placeholder: "Add Name",
+    dataType: cellTypes.editableText,
+    minWidth: 180,
+  },
+  {
+    id: "age",
+    label: "Age",
+    accessor: "age",
+    placeholder: "Add Age",
+    dataType: cellTypes.number,
+    minWidth: 100,
+  },
+  {
+    id: "gender",
+    label: "Gender",
+    accessor: "gender",
+    dataType: cellTypes.dropdown,
+    options: GENDER_OPTIONS,
+    minWidth: 150,
+  },
+  {
+    id: "profession",
+    label: "Profession",
+    accessor: "profession",
+    placeholder: "Add Profession",
+    dataType: cellTypes.editableText,
+    minWidth: 180,
+  },
+  {
+    id: "currentLocation",
+    label: "Current location",
+    accessor: "currentLocation",
+    placeholder: "Add Location",
+    dataType: cellTypes.editableText,
+    minWidth: 200,
+  },
+  {
+    id: "genderIdentity",
+    label: "Gender identity",
+    accessor: "genderIdentity",
+    dataType: cellTypes.dropdown,
+    options: GENDER_IDENTITY_OPTIONS,
+    minWidth: 180,
+  },
+  {
+    id: "sexualOrientation",
+    label: "Sexual orientation",
+    accessor: "sexualOrientation",
+    dataType: cellTypes.dropdown,
+    options: SEXUAL_ORIENTATION_OPTIONS,
+    minWidth: 180,
+  },
+];

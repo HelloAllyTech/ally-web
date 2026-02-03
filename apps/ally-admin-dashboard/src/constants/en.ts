@@ -20,8 +20,14 @@ export const en = {
     edit: "Edit",
     or: "OR",
     retry: "Retry",
+    characters: "characters",
+    character: "character",
+    successfullyDeleted: "Successfully deleted",
+    thisActionCannotBeUndone: "This action cannot be undone.",
+    areYouSureYouWantToDelete: "Are you sure you want to delete",
   },
   errors: {
+    failedToDeleteCharacter: "Failed to delete character(s)",
     failedToGoogleSignIn: "Failed to sign in with Google. Please try again.",
     failedCreateOrganization: "Failed to create organization",
     fileMustBeJPEGOrPNG: "File must be JPEG or PNG.",
@@ -103,6 +109,9 @@ export const en = {
     profileImage: "Profile image",
   },
   simulation: {
+    characterUpdatedSuccessfully: "Character updated successfully!",
+    characterLibrary: "Character Library",
+    createNewCharacter: "Create new character",
     duplicatePathwayDescription:
       "Are you sure you want to duplicate this Tracks? This will create a new Tracks with the same configurations.",
     duplicateSimulationDescription:
