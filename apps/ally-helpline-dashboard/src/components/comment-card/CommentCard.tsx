@@ -507,75 +507,79 @@ const CommentCard = ({
   }, [user, comment]);
 
   return (
-    <div ref={commentCardRef} className={`flex gap-2.5 ${comment?.hidden ? "opacity-50" : ""}`}>
-      <div className="min-w-8 h-8 rounded-full overflow-hidden">
-        <CustomImage
-          src={userImage}
-          alt={comment.createdBy.name}
-          fallbackText={comment.createdBy.name?.slice(0, 1)?.toUpperCase() ?? "NA"}
-          data-testid="custom-image"
-          className="w-full h-full rounded-full"
-        />
-      </div>
-      <div className="flex flex-col gap-1 w-full">
-        <div className="flex flex-row justify-between items-center gap-2 w-full">
-          <div className="flex flex-row gap-1.5 items-center w-full">
-            <div className="text-[14px] font-medium text-typography-900">
-              {comment?.createdBy?.name || "Unknown"}
+    <>
+      <div ref={commentCardRef} className={`flex gap-2.5 ${comment?.hidden ? "opacity-50" : ""}`}>
+        <div className="min-w-8 h-8 rounded-full overflow-hidden">
+          <CustomImage
+            src={userImage}
+            alt={comment.createdBy.name}
+            fallbackText={comment.createdBy.name?.slice(0, 1)?.toUpperCase() ?? "NA"}
+            data-testid="custom-image"
+            className="w-full h-full rounded-full"
+          />
+        </div>
+        <div className="flex flex-col gap-1 w-full">
+          <div className="flex flex-row justify-between items-center gap-2 w-full">
+            <div className="flex flex-row gap-1.5 items-center w-full">
+              <div className="text-[14px] font-medium text-typography-900">
+                {comment?.createdBy?.name || "Unknown"}
+              </div>
+              <div className="text-[12px] text-gray-500">
+                {formatRelativeTime(comment.createdAt)}
+              </div>
             </div>
-            <div className="text-[12px] text-gray-500">{formatRelativeTime(comment.createdAt)}</div>
+            {menuItems.length > 0 && enableLikeUpdate && (
+              <div className="flex flex-row justify-between items-center">
+                <button
+                  onClick={handleMenuOpen}
+                  className="p-1 hover:bg-gray-100 rounded-full transition-colors tr"
+                  aria-label="Comment options"
+                >
+                  <MoreVertIcon className="w-5 h-5 text-gray-600" />
+                </button>
+                <CustomMenu
+                  anchorElement={menuAnchorEl}
+                  items={menuItems}
+                  onClose={handleMenuClose}
+                />
+              </div>
+            )}
           </div>
-          {menuItems.length > 0 && enableLikeUpdate && (
-            <div className="flex flex-row justify-between items-center">
-              <button
-                onClick={handleMenuOpen}
-                className="p-1 hover:bg-gray-100 rounded-full transition-colors tr"
-                aria-label="Comment options"
-              >
-                <MoreVertIcon className="w-5 h-5 text-gray-600" />
-              </button>
-              <CustomMenu
-                anchorElement={menuAnchorEl}
-                items={menuItems}
-                onClose={handleMenuClose}
-              />
+          {showCommentEditView ? renderCommentEditView() : renderCommentContent()}
+          {(showReplies || showReplyInput) && (
+            <div>
+              {renderReplyBox()}
+              <div className="flex flex-col gap-4 mt-4">
+                {showReplies && (
+                  <InfiniteScroll onInfiniteScroll={loadMoreReplies} isLoading={areRepliesLoading}>
+                    {replies.map(reply => (
+                      <CommentCard
+                        key={reply.id}
+                        comment={reply}
+                        isFeedOwner={isFeedOwner}
+                        showLike
+                        enableLikeUpdate={enableLikeUpdate}
+                        showReply={false}
+                        onDelete={handleDeleteReply}
+                        onUpdateComment={handleUpdateReply}
+                        onToggleHide={handleToggleHide}
+                      />
+                    ))}
+                  </InfiniteScroll>
+                )}
+                {showReplies && (
+                  <div
+                    className="text-xs font-primary flex items-center gap-2 text-primary-600"
+                    onClick={hideReplies}
+                  >
+                    Hide Repl{comment.replyCount > 1 ? "ies" : "y"}
+                    <ArrowUp />
+                  </div>
+                )}
+              </div>
             </div>
           )}
         </div>
-        {showCommentEditView ? renderCommentEditView() : renderCommentContent()}
-        {(showReplies || showReplyInput) && (
-          <div>
-            {renderReplyBox()}
-            <div className="flex flex-col gap-4 mt-4">
-              {showReplies && (
-                <InfiniteScroll onInfiniteScroll={loadMoreReplies} isLoading={areRepliesLoading}>
-                  {replies.map(reply => (
-                    <CommentCard
-                      key={reply.id}
-                      comment={reply}
-                      isFeedOwner={isFeedOwner}
-                      showLike
-                      enableLikeUpdate={enableLikeUpdate}
-                      showReply={false}
-                      onDelete={handleDeleteReply}
-                      onUpdateComment={handleUpdateReply}
-                      onToggleHide={handleToggleHide}
-                    />
-                  ))}
-                </InfiniteScroll>
-              )}
-              {showReplies && (
-                <div
-                  className="text-xs font-primary flex items-center gap-2 text-primary-600"
-                  onClick={hideReplies}
-                >
-                  Hide Repl{comment.replyCount > 1 ? "ies" : "y"}
-                  <ArrowUp />
-                </div>
-              )}
-            </div>
-          </div>
-        )}
       </div>
       <ConfirmationPopover
         isOpen={showDeleteConfirmation}
@@ -597,7 +601,7 @@ const CommentCard = ({
         confirmVariant="danger"
         isLoading={isDeleting}
       />
-    </div>
+    </>
   );
 };
 
