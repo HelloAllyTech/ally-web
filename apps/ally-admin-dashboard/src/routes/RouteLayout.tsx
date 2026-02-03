@@ -11,6 +11,7 @@ import {
   UserManagement,
   OrganizationDetail,
   EventManagement,
+  CharacterLibrary,
   CreatePath,
   ScenarioVoices,
   ScenarioLanguages,
@@ -88,6 +89,14 @@ export const RouteLayout: React.FC = () => {
           element={
             <PrivateLayout requiredPermissions={[Permissions.EDIT_EVENT]}>
               <EventManagement />
+            </PrivateLayout>
+          }
+        />
+        <Route
+          path={ROUTES.CHARACTER_LIBRARY}
+          element={
+            <PrivateLayout requiredPermissions={[Permissions.EDIT_CHARACTER_LIBRARY]}>
+              <CharacterLibrary />
             </PrivateLayout>
           }
         />
