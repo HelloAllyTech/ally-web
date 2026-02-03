@@ -835,5 +835,95 @@ describe("CommentCard Component", () => {
       });
       expect(toggleCommentVisibilityUnwrap).toHaveBeenCalledTimes(1);
     });
+
+    it("should call onToggleHide callback after successful visibility toggle", async () => {
+      const commentToHide = { ...mockComment, hidden: false };
+      const onToggleHideMock = vi.fn();
+      const otherUserStore = createMockStore(123);
+      render(
+        <Provider store={otherUserStore}>
+          <CommentCard comment={commentToHide} isFeedOwner={true} onToggleHide={onToggleHideMock} />
+        </Provider>,
+      );
+      const menuButton = screen.getByLabelText("Comment options");
+      fireEvent.click(menuButton);
+      const hideButton = await screen.findByText("Hide");
+      fireEvent.click(hideButton);
+      await waitFor(() => {
+        expect(onToggleHideMock).toHaveBeenCalledWith(true, commentToHide.id);
+      });
+    });
+
+    it("should show Unhide option for hidden comments", async () => {
+      const hiddenComment = { ...mockComment, hidden: true };
+      const otherUserStore = createMockStore(123);
+      render(
+        <Provider store={otherUserStore}>
+          <CommentCard comment={hiddenComment} isFeedOwner={true} />
+        </Provider>,
+      );
+      const menuButton = screen.getByLabelText("Comment options");
+      fireEvent.click(menuButton);
+      const unhideButton = await screen.findByText("Unhide");
+      expect(unhideButton).toBeInTheDocument();
+    });
+
+    it("should call toggleCommentVisibility with hidden=false when unhide is clicked", async () => {
+      const hiddenComment = { ...mockComment, hidden: true };
+      const otherUserStore = createMockStore(123);
+      render(
+        <Provider store={otherUserStore}>
+          <CommentCard comment={hiddenComment} isFeedOwner={true} />
+        </Provider>,
+      );
+      const menuButton = screen.getByLabelText("Comment options");
+      fireEvent.click(menuButton);
+      const unhideButton = await screen.findByText("Unhide");
+      fireEvent.click(unhideButton);
+      expect(toggleCommentVisibilityMock).toHaveBeenCalledWith({
+        commentId: hiddenComment.id,
+        hidden: false,
+      });
+    });
+
+    it("should show Edit option for own comments within 10 minutes", async () => {
+      const myComment = {
+        ...mockComment,
+        createdBy: { ...mockComment.createdBy, id: 999 },
+        createdAt: new Date().toISOString(),
+      };
+      renderWithProvider(<CommentCard comment={myComment} />);
+      const menuButton = screen.getByLabelText("Comment options");
+      fireEvent.click(menuButton);
+      const editButton = await screen.findByText("Edit");
+      expect(editButton).toBeInTheDocument();
+    });
+
+    it("should call onUpdateComment after successful edit", async () => {
+      const myComment = {
+        ...mockComment,
+        createdBy: { ...mockComment.createdBy, id: 999 },
+        createdAt: new Date().toISOString(),
+      };
+      const onUpdateCommentMock = vi.fn();
+      renderWithProvider(<CommentCard comment={myComment} onUpdateComment={onUpdateCommentMock} />);
+
+      const menuButton = screen.getByLabelText("Comment options");
+      fireEvent.click(menuButton);
+      const editButton = await screen.findByText("Edit");
+      fireEvent.click(editButton);
+
+      // Edit the comment
+      const textarea = screen.getByTestId("reply-textarea");
+      fireEvent.change(textarea, { target: { value: "Updated comment content" } });
+
+      // Click Done to save
+      const doneButton = screen.getByTestId("button-primary");
+      fireEvent.click(doneButton);
+
+      await waitFor(() => {
+        expect(onUpdateCommentMock).toHaveBeenCalledWith("Updated comment content", myComment.id);
+      });
+    });
   });
 });
