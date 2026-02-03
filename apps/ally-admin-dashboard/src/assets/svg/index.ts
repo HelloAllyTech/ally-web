@@ -14,6 +14,7 @@ import BlueAdd from "./blueAdd.svg?react";
 import Bolt from "./bolt.svg?react";
 import Book from "./book.svg?react";
 import BookWhite from "./bookWhite.svg?react";
+import CharacterLibrary from "./characterLibrary.svg?react";
 import Chat from "./chat.svg?react";
 import Close from "./close.svg?react";
 import CloseRed from "./closeRed.svg?react";
@@ -96,6 +97,7 @@ export {
   Pathway,
   Copy,
   BookWhite,
+  CharacterLibrary,
   Dot,
   Tick,
   FocusLens,

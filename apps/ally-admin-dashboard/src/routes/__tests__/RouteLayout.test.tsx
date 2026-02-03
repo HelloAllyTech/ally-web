@@ -25,6 +25,7 @@ vi.mock("@pages", () => ({
   UserManagement: () => <div>UserManagementPage</div>,
   OrganizationDetail: () => <div>OrganizationDetailPage</div>,
   EventManagement: () => <div>EventManagementPage</div>,
+  CharacterLibrary: () => <div>CharacterLibraryPage</div>,
   ScenarioVoices: () => <div>ScenarioVoicesPage</div>,
   ScenarioLanguages: () => <div>ScenarioLanguagesPage</div>,
 }));

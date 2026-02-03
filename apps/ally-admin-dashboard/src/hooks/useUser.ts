@@ -56,6 +56,11 @@ export const useUser = () => {
       path: ROUTES.MANAGE_EVENTS,
     },
     {
+      id: SIDEBAR_ITEMS.CHARACTER_LIBRARY,
+      label: "Character Library",
+      path: ROUTES.CHARACTER_LIBRARY,
+    },
+    {
       id: SIDEBAR_ITEMS.SCENARIO_VOICES,
       label: en.simulation.voicesManagement,
       path: ROUTES.MANAGE_SCENARIO_VOICES,
@@ -141,6 +146,8 @@ export const useUser = () => {
           return permissions.includes(Permissions.EDIT_SCENARIO);
         case SIDEBAR_ITEMS.EVENT_MANAGEMENT:
           return permissions.includes(Permissions.EDIT_EVENT);
+        case SIDEBAR_ITEMS.CHARACTER_LIBRARY:
+          return permissions.includes(Permissions.EDIT_CHARACTER_LIBRARY);
         case SIDEBAR_ITEMS.SCENARIO_VOICES:
           return permissions.includes(Permissions.EDIT_SCENARIO_VOICE);
         case SIDEBAR_ITEMS.SCENARIO_LANGUAGES:
