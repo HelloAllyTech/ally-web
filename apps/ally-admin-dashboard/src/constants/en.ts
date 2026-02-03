@@ -109,6 +109,7 @@ export const en = {
     profileImage: "Profile image",
   },
   simulation: {
+    filterByGender: "Filter by gender",
     characterUpdatedSuccessfully: "Character updated successfully!",
     characterLibrary: "Character Library",
     createNewCharacter: "Create new character",
