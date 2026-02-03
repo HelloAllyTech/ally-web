@@ -16,6 +16,7 @@ import {
   ManageAccounts,
   Globe,
   Mic,
+  CharacterLibrary,
 } from "@assets";
 import { UserModal } from "@components";
 import { SIDEBAR_ITEMS, ROUTES, en, profileSettings, USER_MODAL_FIELDS_IDS } from "@constants";
@@ -118,6 +119,8 @@ export const Sidebar: React.FC = () => {
         return <Users />;
       case SIDEBAR_ITEMS.EVENT_MANAGEMENT:
         return <HappyEmoji />;
+      case SIDEBAR_ITEMS.CHARACTER_LIBRARY:
+        return <CharacterLibrary />;
       case SIDEBAR_ITEMS.SCENARIO_VOICES:
         return <Mic />;
       case SIDEBAR_ITEMS.SCENARIO_LANGUAGES:
@@ -138,6 +141,8 @@ export const Sidebar: React.FC = () => {
         return location.pathname.includes(ROUTES.USER_MANAGEMENT);
       case ROUTES.MANAGE_EVENTS:
         return location.pathname.includes(ROUTES.MANAGE_EVENTS);
+      case ROUTES.CHARACTER_LIBRARY:
+        return location.pathname.includes(ROUTES.CHARACTER_LIBRARY);
       case ROUTES.MANAGE_SCENARIO_LANGUAGES:
         return location.pathname.includes(ROUTES.MANAGE_SCENARIO_LANGUAGES);
       case ROUTES.MANAGE_SCENARIO_VOICES:
