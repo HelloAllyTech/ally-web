@@ -4,6 +4,7 @@ import { FILE_TYPE, FORM_FIELD_TYPES, en } from "@constants";
 import { FormFieldProps } from "@types";
 
 import { AutoTerminationRuleField } from "../auto-termination-rule-field";
+import { CharacterProfileSelector } from "../character-profile-selector";
 import { CustomFieldGroup } from "../custom-field-group";
 import { DropdownField } from "../dropdown-field";
 import { FileUpload } from "../file-upload";
@@ -177,6 +178,15 @@ export const FormField: FC<FormFieldProps> = ({ config, formMethods }) => {
               />
             </div>
           </div>
+        );
+      case FORM_FIELD_TYPES.CUSTOM.CHARACTER_PROFILE_SELECTOR:
+        return (
+          <CharacterProfileSelector
+            label={label}
+            id={id}
+            formMethods={formMethods}
+            isMandatory={isMandatory}
+          />
         );
       default:
         return null;

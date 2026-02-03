@@ -106,6 +106,7 @@ export const FORM_FIELD_TYPES = {
     AUTO_TERMINATION_RULE: "auto_termination_rule",
     LANGUAGE_VOICE_MAPPING: "language_voice_mapping",
     RADIO_BUTTONS: "radio_buttons",
+    CHARACTER_PROFILE_SELECTOR: "character_profile_selector",
   },
   TOGGLE_BUTTON: "toggle_button",
   TAG_AND_DROPDOWN: "tag_and_dropdown",
@@ -187,6 +188,14 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
         fullWidth: true,
         maxLength: 100,
       },
+      // TODO: Uncomment this when the character profile selector is ready
+      // {
+      //   id: "characterProfileSelector",
+      //   label: "Character Profile Selector",
+      //   type: FORM_FIELD_TYPES.CUSTOM.CHARACTER_PROFILE_SELECTOR,
+      //   isMandatory: true,
+      //   fullWidth: true,
+      // },
       {
         id: "coverImageUrl",
         label: "Cover Image",
