@@ -1,5 +1,6 @@
 import { FC, useState, useEffect } from "react";
 
+import { FEATURE_FLAGS_MAP } from "@ally-ui-mono/ui-shared/featureFlag";
 import { useGetSummarySectionsQuery } from "@api";
 import { ArrowSolid } from "@assets";
 import { ToggleSwitch, Accordion } from "@components";
@@ -158,6 +159,14 @@ export const ScribeSettings: FC<ScribeSettingsProps> = ({ tenantId }) => {
       </div>
     );
   };
+
+  if (!FEATURE_FLAGS_MAP.SCRIBE_SETTINGS_FLAG) {
+    return (
+      <div className="flex-1 flex flex-col gap-4 overflow-hidden min-h-0 w-1/2 mt-4 pb-6">
+        Scribe settings is not enabled
+      </div>
+    );
+  }
 
   if (isSummarySectionsLoading) {
     return <ScribeSettingsSkeleton />;

@@ -3,6 +3,13 @@ import { vi, describe, it, expect, beforeEach } from "vitest";
 
 import { ScribeSettings } from "../ScribeSettings";
 
+// Mock feature flags
+vi.mock("@ally-ui-mono/ui-shared/featureFlag", () => ({
+  FEATURE_FLAGS_MAP: {
+    SCRIBE_SETTINGS_FLAG: true,
+  },
+}));
+
 // Mock the components
 vi.mock("@components", () => ({
   ToggleSwitch: ({ enabled, onChange, label }: any) => (
