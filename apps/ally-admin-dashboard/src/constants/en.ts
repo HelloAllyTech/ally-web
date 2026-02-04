@@ -319,7 +319,7 @@ export const en = {
     viewOnlyTooltip: "The simulation track is currently being used.",
     create: "Create:",
     customFieldLimit: "You can only have 3 custom fields. Remove one to add another.",
-    newField: "New field",
+    newField: "New custom field",
     triggerCondition: "Trigger conditions",
     maxTimeError(minTime: string, maxTime: string) {
       return `Maximum time must be in HH:MM:SS format between ${minTime} and ${maxTime}.`;

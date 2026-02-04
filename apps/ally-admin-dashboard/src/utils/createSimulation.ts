@@ -1,9 +1,15 @@
 import { FEATURE_FLAGS_MAP } from "@ally-ui-mono/ui-shared/featureFlag";
-import { FORM_FIELD_IDS, SIMULATION_CREATOR_FIELD_GROUPS } from "@constants";
+import {
+  FORM_FIELD_IDS,
+  SIMULATION_CREATOR_FIELD_GROUPS,
+  SIMULATION_CREATOR_FIELD_GROUPS_OLD,
+} from "@constants";
 import { GetSimulationByIdResponse } from "@types";
 
 export const getCreateSimulationSubSectionById = (id: string) => {
-  return SIMULATION_CREATOR_FIELD_GROUPS.find(section => section.id === id);
+  return FEATURE_FLAGS_MAP.SIMULATION_CREATOR_FLAG
+    ? SIMULATION_CREATOR_FIELD_GROUPS.find(section => section.id === id)
+    : SIMULATION_CREATOR_FIELD_GROUPS_OLD.find(section => section.id === id);
 };
 
 export const formatSimulationResponseData = (data: GetSimulationByIdResponse) => {
