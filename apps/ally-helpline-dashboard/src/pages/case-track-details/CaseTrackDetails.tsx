@@ -8,6 +8,9 @@ import {
   useGetScenarioPathwayDetailsQuery,
   useLazyGetScenarioSessionByPathItemQuery,
   useStartPathwaySimulationMutation,
+  useGetScenarioCaseDetailsQuery,
+  useLazyGetScenarioSessionByCaseItemQuery,
+  useStartCaseSimulationMutation,
 } from "@api";
 import { ArrowRight } from "@assets";
 import {
@@ -26,9 +29,14 @@ interface CaseTrackDetailsProps {
   type: CaseTrackDetailsType;
 }
 
+const pageType = {
+  CASE: "case",
+  TRACK: "track",
+};
+
 export const CaseTrackDetails: FC<CaseTrackDetailsProps> = ({ type }) => {
   const { pathwayId, caseId } = useParams<{ pathwayId?: string; caseId?: string }>();
-  const id = type === "case" ? caseId : pathwayId;
+  const id = type === pageType.CASE ? caseId : pathwayId;
   const navigate = useNavigate();
   const { state } = useLocation();
 
@@ -40,9 +48,21 @@ export const CaseTrackDetails: FC<CaseTrackDetailsProps> = ({ type }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [showNotification, setShowNotification] = useState(false);
 
-  const { data, isLoading } = useGetScenarioPathwayDetailsQuery(id || "");
+  const { data: caseData, isLoading: isCaseLoading } = useGetScenarioCaseDetailsQuery(id || "", {
+    skip: type !== pageType.CASE,
+  });
+  const [startCaseSimulation] = useStartCaseSimulationMutation();
+  const [getScenarioSessionByCaseItem] = useLazyGetScenarioSessionByCaseItemQuery();
+
+  const { data: pathwayData, isLoading: isPathwayLoading } = useGetScenarioPathwayDetailsQuery(
+    id || "",
+    { skip: type !== pageType.TRACK },
+  );
   const [startSimulationMutation] = useStartPathwaySimulationMutation();
   const [getScenarioSessionByPathItem] = useLazyGetScenarioSessionByPathItemQuery();
+
+  const data = type === pageType.CASE ? caseData : pathwayData;
+  const isLoading = type === pageType.CASE ? isCaseLoading : isPathwayLoading;
 
   const handleLanguageChange = useCallback(
     (value: string) => {
@@ -62,17 +82,28 @@ export const CaseTrackDetails: FC<CaseTrackDetailsProps> = ({ type }) => {
   });
 
   const enrollSession = async () => {
-    if (!data?.scenarioPathSessionId) {
-      await startSimulationMutation({ pathwayId: id });
+    if (type === pageType.CASE) {
+      if (!caseData?.scenarioCaseSessionId) {
+        await startCaseSimulation({ caseId: id });
+      }
+    } else {
+      if (!pathwayData?.scenarioPathSessionId) {
+        await startSimulationMutation({ pathwayId: id });
+      }
     }
   };
 
   const handleViewSummary = useCallback(
     async (sessionId: string) => {
       try {
-        const response = await getScenarioSessionByPathItem({
-          pathSessionItemId: sessionId,
-        }).unwrap();
+        const response =
+          type === pageType.CASE
+            ? await getScenarioSessionByCaseItem({
+                caseSessionItemId: sessionId,
+              }).unwrap()
+            : await getScenarioSessionByPathItem({
+                pathSessionItemId: sessionId,
+              }).unwrap();
 
         if (response?.id) {
           navigate(`/simulation-summary/${response.id}`);
@@ -83,7 +114,7 @@ export const CaseTrackDetails: FC<CaseTrackDetailsProps> = ({ type }) => {
         toast.error("Failed to load simulation details");
       }
     },
-    [getScenarioSessionByPathItem, navigate],
+    [getScenarioSessionByPathItem, getScenarioSessionByCaseItem, navigate],
   );
 
   const handleStartOrContinueSimulation = async () => {
