@@ -1,6 +1,11 @@
 import { describe, it, expect, vi } from "vitest";
 
-import { ExperienceMode, ChecklistType, SIMULATION_CREATOR_FIELD_GROUPS } from "@constants";
+import {
+  ExperienceMode,
+  ChecklistType,
+  SIMULATION_CREATOR_FIELD_GROUPS,
+  SIMULATION_CREATOR_FIELD_GROUPS_OLD,
+} from "@constants";
 import { GetSimulationByIdResponse } from "@types";
 
 import { extractValidData } from "../common";
@@ -326,7 +331,7 @@ describe("createSimulation utils", () => {
         gender: "",
       };
 
-      const result = extractValidData(SIMULATION_CREATOR_FIELD_GROUPS, formData);
+      const result = extractValidData(SIMULATION_CREATOR_FIELD_GROUPS_OLD, formData);
       expect(result.gender).toBeNull();
     });
 
@@ -335,7 +340,7 @@ describe("createSimulation utils", () => {
         gender: "female",
       };
 
-      const result = extractValidData(SIMULATION_CREATOR_FIELD_GROUPS, formData);
+      const result = extractValidData(SIMULATION_CREATOR_FIELD_GROUPS_OLD, formData);
       expect(result.gender).toBe("female");
     });
 
@@ -344,7 +349,7 @@ describe("createSimulation utils", () => {
         age: "25",
       };
 
-      const result = extractValidData(SIMULATION_CREATOR_FIELD_GROUPS, formData);
+      const result = extractValidData(SIMULATION_CREATOR_FIELD_GROUPS_OLD, formData);
       expect(result.age).toBe(25);
     });
 
@@ -353,7 +358,7 @@ describe("createSimulation utils", () => {
         age: "",
       };
 
-      const result = extractValidData(SIMULATION_CREATOR_FIELD_GROUPS, formData);
+      const result = extractValidData(SIMULATION_CREATOR_FIELD_GROUPS_OLD, formData);
       expect(result.age).toBeNull();
     });
 
@@ -401,7 +406,7 @@ describe("createSimulation utils", () => {
         coverImageUrl: "",
       };
 
-      const result = extractValidData(SIMULATION_CREATOR_FIELD_GROUPS, formData);
+      const result = extractValidData(SIMULATION_CREATOR_FIELD_GROUPS_OLD, formData);
 
       expect(result).toEqual({
         name: "John", // trimmed
