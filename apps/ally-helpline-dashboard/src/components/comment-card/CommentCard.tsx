@@ -45,6 +45,7 @@ interface CommentCardProps {
   };
   onToggleHide?: (hidden: boolean, id: string) => void;
   updateReplyCount?: (replyCount: number) => void;
+  isReply?: boolean;
 }
 const CommentCard = ({
   comment,
@@ -60,6 +61,7 @@ const CommentCard = ({
   selection,
   onToggleHide,
   updateReplyCount,
+  isReply = false,
 }: CommentCardProps) => {
   const user = useSelector((state: RootState) => state.user.user);
   const [createComment, { data: createCommentData }] = useCreateCommentMutation();
@@ -581,6 +583,7 @@ const CommentCard = ({
                         onDelete={handleDeleteReply}
                         onUpdateComment={handleUpdateReply}
                         onToggleHide={handleToggleHide}
+                        isReply
                       />
                     ))}
                   </InfiniteScroll>
@@ -606,11 +609,11 @@ const CommentCard = ({
         anchorElement={deleteAnchorEl}
         title={
           <div className="font-medium font-secondary text-2xl text-typography-900 text-center">
-            Delete <span className="italic font-bold">{onDelete ? "Reply" : "Comment"}?</span>
+            Delete <span className="italic font-bold">{isReply ? "Reply" : "Comment"}?</span>
           </div>
         }
         message={
-          onDelete
+          isReply
             ? COMMENT_DELETE_CONFIRMATION.REPLY_DELETE_MESSAGE
             : COMMENT_DELETE_CONFIRMATION.COMMENT_DELETE_MESSAGE
         }

@@ -781,7 +781,7 @@ describe("CommentCard Component", () => {
         createdAt: new Date().toISOString(),
       };
       const onDeleteMock = vi.fn();
-      renderWithProvider(<CommentCard comment={myComment} onDelete={onDeleteMock} />);
+      renderWithProvider(<CommentCard comment={myComment} onDelete={onDeleteMock} isReply />);
 
       const menuButton = screen.getByLabelText("Comment options");
       fireEvent.click(menuButton);
