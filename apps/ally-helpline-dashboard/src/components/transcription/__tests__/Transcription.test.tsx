@@ -103,6 +103,7 @@ describe("Transcription Component", () => {
   const mockUserId = 1;
   const mockCreateComment = vi.fn();
   const mockOnCommentChange = vi.fn();
+  const mockOnDeleteComment = vi.fn();
 
   const mockTranscriptList = [
     {
@@ -135,6 +136,7 @@ describe("Transcription Component", () => {
     isCreateCommentLoading: false,
     isCreateCommentSuccess: false,
     onCommentChange: mockOnCommentChange,
+    onDeleteComment: mockOnDeleteComment,
   };
 
   beforeEach(() => {
@@ -185,6 +187,7 @@ describe("Transcription Component", () => {
           transcriptList={[]}
           userId={mockUserId}
           onCommentChange={mockOnCommentChange}
+          onDeleteComment={mockOnDeleteComment}
         />,
       );
       expect(screen.getByText("No transcript available")).toBeInTheDocument();
@@ -197,6 +200,7 @@ describe("Transcription Component", () => {
           userId={mockUserId}
           isLoading={true}
           onCommentChange={mockOnCommentChange}
+          onDeleteComment={mockOnDeleteComment}
         />,
       );
       // Skeleton should be rendered
@@ -265,6 +269,7 @@ describe("Transcription Component", () => {
           transcriptList={transcriptWithUndefined as any}
           userId={mockUserId}
           onCommentChange={mockOnCommentChange}
+          onDeleteComment={mockOnDeleteComment}
         />,
       );
       expect(screen.getByText("00:00")).toBeInTheDocument();
@@ -281,6 +286,7 @@ describe("Transcription Component", () => {
           transcriptList={transcriptWithVariousTimes}
           userId={mockUserId}
           onCommentChange={mockOnCommentChange}
+          onDeleteComment={mockOnDeleteComment}
         />,
       );
       expect(screen.getByText("00:05")).toBeInTheDocument();
@@ -366,6 +372,7 @@ describe("Transcription Component", () => {
           userId={mockUserId}
           canSelect={true}
           onCommentChange={mockOnCommentChange}
+          onDeleteComment={mockOnDeleteComment}
         />,
       );
 
@@ -378,6 +385,7 @@ describe("Transcription Component", () => {
           selectedStartIndex={0}
           selectedEndIndex={10}
           onCommentChange={mockOnCommentChange}
+          onDeleteComment={mockOnDeleteComment}
         />,
       );
 
@@ -432,6 +440,7 @@ describe("Transcription Component", () => {
           transcriptList={transcriptWithNullSeconds as any}
           userId={mockUserId}
           onCommentChange={mockOnCommentChange}
+          onDeleteComment={mockOnDeleteComment}
         />,
       );
       expect(screen.getByText("00:00")).toBeInTheDocument();
@@ -454,6 +463,7 @@ describe("Transcription Component", () => {
           transcriptList={transcriptWithLongContent}
           userId={mockUserId}
           onCommentChange={mockOnCommentChange}
+          onDeleteComment={mockOnDeleteComment}
         />,
       );
       expect(screen.getByText(longContent)).toBeInTheDocument();
@@ -475,6 +485,7 @@ describe("Transcription Component", () => {
           transcriptList={transcriptWithSpecialChars}
           userId={mockUserId}
           onCommentChange={mockOnCommentChange}
+          onDeleteComment={mockOnDeleteComment}
         />,
       );
       expect(
@@ -498,6 +509,7 @@ describe("Transcription Component", () => {
           transcriptList={transcriptWithEmojis}
           userId={mockUserId}
           onCommentChange={mockOnCommentChange}
+          onDeleteComment={mockOnDeleteComment}
         />,
       );
       expect(screen.getByText("Hello! 👋 How are you? 😊")).toBeInTheDocument();
@@ -523,6 +535,7 @@ describe("Transcription Component", () => {
           transcriptList={newTranscriptList}
           userId={mockUserId}
           onCommentChange={mockOnCommentChange}
+          onDeleteComment={mockOnDeleteComment}
         />,
       );
 
@@ -595,6 +608,7 @@ describe("Transcription Component", () => {
           transcriptList={mockTranscriptList}
           userId={mockUserId}
           onCommentChange={mockOnCommentChange}
+          onDeleteComment={mockOnDeleteComment}
         />,
       );
 

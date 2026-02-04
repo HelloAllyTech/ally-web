@@ -103,7 +103,7 @@ const reviewsAPI = baseAPI.injectEndpoints({
       providesTags: [TAG_TYPES.REVIEW],
     }),
     getReviewThreadComments: builder.query<
-      { data: CommentItem[] },
+      { data: CommentItem[]; count: number },
       { id: string; limit: number; offset: number }
     >({
       query: ({ id, limit, offset }) => ({

@@ -33,6 +33,7 @@ interface TranscriptionProps {
   councellorName?: string;
   agentName?: string;
   onCommentChange: (comments: CommentItem[], threadId: string) => void;
+  onDeleteComment: () => void;
 }
 
 const Transcription: FC<TranscriptionProps> = ({
@@ -54,6 +55,7 @@ const Transcription: FC<TranscriptionProps> = ({
   councellorName,
   agentName,
   onCommentChange,
+  onDeleteComment,
 }) => {
   const contentRefs = useRef<(HTMLSpanElement | null)[]>([]);
   const selectedCommentRef = useRef<HTMLSpanElement | null>(null);
@@ -287,6 +289,7 @@ const Transcription: FC<TranscriptionProps> = ({
 
                   return (
                     <SelectableText
+                      onDeleteComment={onDeleteComment}
                       key={segIdx}
                       onCommentChange={onCommentChange}
                       setAddCommentDialogOpen={setAddCommentDialogOpen}
