@@ -233,13 +233,23 @@ export interface DeleteLogoRequest {
 
 export interface ScribeSettingsItem {
   id: number;
-  title: string;
-  isEnabled: boolean;
+  label: string;
+  visible: boolean;
+}
+
+export interface ScribeSettingsList {
+  id: number;
+  fields: ScribeSettingsItem[];
+  label: string;
+  enabled: boolean;
+  defaultVisibility: boolean;
 }
 
 export interface ScribeSettingsListResponse {
-  id: number;
-  data: ScribeSettingsItem[];
-  title: string;
-  isEnabled: boolean;
+  sections: ScribeSettingsList[];
+}
+
+export interface UpdateSummarySectionsBody {
+  tenantId: string;
+  hiddenFields: string[];
 }
