@@ -39,11 +39,17 @@ export type FormData = {
   triggerWarningIds: triggerWarning[];
   prompt: string;
   difficultyLevel: string;
-  agentDialoguesArray: string;
+  agentDialogues: string;
   experienceMode?: string;
   checklistType?: string;
   timerMode?: boolean;
   maxTimeValue?: string;
+  pickCompetency: string;
+  characterProfile: string;
+  score?: boolean;
+  behaviourInstructions?: string;
+  stateInstructions?: string;
+  characterProfileSelector?: string;
 };
 
 export interface DemographicsSectionProps {
@@ -65,6 +71,7 @@ export interface FormFieldConfig {
   component?: React.ReactNode;
   dependsOn?: keyof FormData;
   note?: string;
+  regenerate?: boolean;
   visibleWhen?: (formValues: Partial<FormData>) => boolean;
 }
 

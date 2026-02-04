@@ -13,6 +13,7 @@ export const en = {
     delete: "Delete",
     noOptionsAvailable: "No options available",
     noResultsFound: "No results found for",
+    noCharactersFoundMatchingYourSearch: "No characters found matching your search",
     select: "Select",
     uploading: "Uploading...",
     enabled: "Enabled",
@@ -319,7 +320,7 @@ export const en = {
     viewOnlyTooltip: "The simulation track is currently being used.",
     create: "Create:",
     customFieldLimit: "You can only have 3 custom fields. Remove one to add another.",
-    newField: "New field",
+    newField: "New custom field",
     triggerCondition: "Trigger conditions",
     maxTimeError(minTime: string, maxTime: string) {
       return `Maximum time must be in HH:MM:SS format between ${minTime} and ${maxTime}.`;
@@ -407,6 +408,8 @@ export const en = {
     changeLogo: "Change logo",
     uploadImage: "Upload image",
     changeImage: "Change image",
+    scribeSettings: "Scribe settings",
+    additionalFields: "Additional fields",
   },
   eventConfiguration: {
     selectEvent: "Select an event",
