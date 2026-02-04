@@ -6,15 +6,19 @@ import { SimulationStatus } from "@constants";
 import type { Simulation } from "@types";
 
 // Hoist mocks to avoid initialization errors
-const { mockUseSimulations, mockUseSimulationPathways } = vi.hoisted(() => ({
-  mockUseSimulations: vi.fn(),
-  mockUseSimulationPathways: vi.fn(),
-}));
+const { mockUseSimulations, mockUseSimulationPathways, mockUseSimulationCases } = vi.hoisted(
+  () => ({
+    mockUseSimulations: vi.fn(),
+    mockUseSimulationPathways: vi.fn(),
+    mockUseSimulationCases: vi.fn(),
+  }),
+);
 
 // Mock the custom hooks
 vi.mock("@hooks", () => ({
   useSimulations: mockUseSimulations,
   useSimulationPathways: mockUseSimulationPathways,
+  useSimulationCases: mockUseSimulationCases,
 }));
 
 // Mock components
@@ -387,12 +391,54 @@ describe("SimulationStudio", () => {
     handleNewPathway: vi.fn(),
     onEditPathway: vi.fn(),
     handleDeletePathway: vi.fn(),
+    currentPathway: null,
+    isDuplicatePathwayPopupOpen: false,
+    isUnpublishPathwayPopupOpen: false,
+    isDeletePathwayPopupOpen: false,
+    setIsDuplicatePathwayPopupOpen: vi.fn(),
+    setIsUnpublishPathwayPopupOpen: vi.fn(),
+    setIsDeletePathwayPopupOpen: vi.fn(),
+    onDeletePathway: vi.fn(),
+    handleUnpublishPathway: vi.fn(),
+    handleChangePathwayStatus: vi.fn(),
+    handleDuplicatePathway: vi.fn(),
+    onDuplicatePathway: vi.fn(),
+    isPathEditPopupOpen: false,
+    setIsPathEditPopupOpen: vi.fn(),
+    handleEditPathway: vi.fn(),
+  };
+
+  const defaultCasesHookReturn = {
+    cases: [],
+    hasMore: false,
+    isCasesLoading: false,
+    isCasesFetching: false,
+    loadCases: vi.fn(),
+    handleNewCase: vi.fn(),
+    onEditCase: vi.fn(),
+    handleDeleteCase: vi.fn(),
+    currentCase: null,
+    isDuplicateCasePopupOpen: false,
+    isUnpublishCasePopupOpen: false,
+    isDeleteCasePopupOpen: false,
+    setIsDuplicateCasePopupOpen: vi.fn(),
+    setIsUnpublishCasePopupOpen: vi.fn(),
+    setIsDeleteCasePopupOpen: vi.fn(),
+    onDeleteCase: vi.fn(),
+    handleUnpublishCase: vi.fn(),
+    handleChangeCaseStatus: vi.fn(),
+    handleDuplicateCase: vi.fn(),
+    onDuplicateCase: vi.fn(),
+    isCaseEditPopupOpen: false,
+    setIsCaseEditPopupOpen: vi.fn(),
+    handleEditCase: vi.fn(),
   };
 
   beforeEach(() => {
     vi.clearAllMocks();
     mockUseSimulations.mockReturnValue(defaultSimulationsHookReturn);
     mockUseSimulationPathways.mockReturnValue(defaultPathwaysHookReturn);
+    mockUseSimulationCases.mockReturnValue(defaultCasesHookReturn);
   });
 
   const renderComponent = (initialEntries = ["/"]) => {

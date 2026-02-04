@@ -327,3 +327,16 @@ export interface ScenarioPathwayDetails {
   scenarioPathSessionId?: string;
   scenarios: PathwayScenario[];
 }
+
+export interface ScenarioCaseDetails {
+  id: string;
+  title: string;
+  description?: string;
+  coverImageUrl: string;
+  userId: number;
+  completedAt: string | null;
+  completedScenarios: number;
+  totalScenarios: number;
+  scenarioCaseSessionId?: string;
+  scenarios: PathwayScenario[];
+}

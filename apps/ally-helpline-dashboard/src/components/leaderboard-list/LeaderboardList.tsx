@@ -341,7 +341,7 @@ export const LeaderboardList: FC<LeaderboardListProps> = ({
     return (
       <>
         {data.map((user, index) => {
-          const isCurrentUser = currentUser ? index + 1 === currentUser.rank : false;
+          const isCurrentUser = currentUser?.userId === user.userId;
 
           return (
             <LeaderboardRow
