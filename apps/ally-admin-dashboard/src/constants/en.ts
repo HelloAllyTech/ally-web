@@ -13,6 +13,7 @@ export const en = {
     delete: "Delete",
     noOptionsAvailable: "No options available",
     noResultsFound: "No results found for",
+    noCharactersFoundMatchingYourSearch: "No characters found matching your search",
     select: "Select",
     uploading: "Uploading...",
     enabled: "Enabled",
@@ -407,6 +408,8 @@ export const en = {
     changeLogo: "Change logo",
     uploadImage: "Upload image",
     changeImage: "Change image",
+    scribeSettings: "Scribe settings",
+    additionalFields: "Additional fields",
   },
   eventConfiguration: {
     selectEvent: "Select an event",
