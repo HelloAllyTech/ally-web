@@ -34,6 +34,40 @@ export enum SummaryFieldKey {
   ListeningShare = "listeningShare",
   ReflectiveQuestionsAsked = "reflectiveQuestionsAsked",
   EmotionalLift = "emotionalLift",
+
+  // Intake section
+  IntakeNotes = "intakeNotes",
+  RiskSelfHarm = "riskSelfHarm",
+  RiskSelfHarmNotes = "riskSelfHarmNotes",
+  RiskSuicidalThoughts = "riskSuicidalThoughts",
+  RiskSuicidalPlan = "riskSuicidalPlan",
+  RiskSuicidalAction = "riskSuicidalAction",
+  RiskSuicidalThoughtsNotes = "riskSuicidalThoughtsNotes",
+  RiskRunningAway = "riskRunningAway",
+  RiskRunningAwayNotes = "riskRunningAwayNotes",
+  TraumaPhysicalAbuse = "traumaPhysicalAbuse",
+  TraumaSexualAbuse = "traumaSexualAbuse",
+  TraumaVerbalAbuse = "traumaVerbalAbuse",
+  TraumaNeglect = "traumaNeglect",
+  TraumaSeparationFromCaregiverParent = "traumaSeparationFromCaregiverParent",
+  TraumaWitnessedDomesticViolence = "traumaWitnessedDomesticViolence",
+  TraumaNotes = "traumaNotes",
+  AssessmentPsychologicalDiagnosis = "assessmentPsychologicalDiagnosis",
+  AssessmentPsychologicalDiagnosisNotes = "assessmentPsychologicalDiagnosisNotes",
+  AssessmentUseOfPsychotropicMedications = "assessmentUseOfPsychotropicMedications",
+  AssessmentUseOfPsychotropicMedicationsNotes = "assessmentUseOfPsychotropicMedicationsNotes",
+  AssessmentHallucinations = "assessmentHallucinations",
+  AssessmentHallucinationsNotes = "assessmentHallucinationsNotes",
+  AssessmentAffect = "assessmentAffect",
+  AssessmentSpeech = "assessmentSpeech",
+
+  // Ongoing Risks section
+  OngoingRiskSelfHarm = "ongoingRiskSelfHarm",
+  OngoingRiskSelfHarmNotes = "ongoingRiskSelfHarmNotes",
+  OngoingRiskSuicidalThoughts = "ongoingRiskSuicidalThoughts",
+  OngoingRiskSuicidalPlan = "ongoingRiskSuicidalPlan",
+  OngoingRiskSuicidalAction = "ongoingRiskSuicidalAction",
+  OngoingRiskSuicidalThoughtsNotes = "ongoingRiskSuicidalThoughtsNotes",
 }
 
 export interface EnhanceContentRequest {

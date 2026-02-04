@@ -21,6 +21,8 @@ export enum SummarySectionKey {
   PlansForNextCall = "plansForNextCall",
   Tags = "tags",
   Metrics = "metrics",
+  Intake = "intake",
+  OngoingRisks = "ongoingRisks",
 }
 
 export enum FieldType {

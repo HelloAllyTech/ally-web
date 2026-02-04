@@ -17,7 +17,7 @@ const ThreadCard = ({ thread, isFeedOwner }: ThreadCardProps) => {
   };
   return (
     <div
-      className="w-full min-w-[350px] font-primary border-[0.5px] rounded-lg px-4 py-2 flex flex-col gap-2"
+      className="w-full min-w-[250px] font-primary border-[0.5px] rounded-lg px-4 py-2 flex flex-col gap-2"
       key={thread.id}
     >
       <div className="flex items-center min-h-9 border-b-[0.5px] pb-2">
