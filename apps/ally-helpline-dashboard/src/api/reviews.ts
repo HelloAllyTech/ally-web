@@ -51,6 +51,7 @@ const reviewsAPI = baseAPI.injectEndpoints({
         method: HttpMethod.GET,
         params: { offset, limit, sortOrder: "ASC", sortBy },
       }),
+      forceRefetch: () => true,
       providesTags: [TAG_TYPES.REVIEW],
       transformResponse: (response: any) => response.data,
     }),
@@ -111,6 +112,7 @@ const reviewsAPI = baseAPI.injectEndpoints({
         method: HttpMethod.GET,
         params: { limit, offset },
       }),
+      forceRefetch: () => true,
       providesTags: [TAG_TYPES.REVIEW],
     }),
     addReaction: builder.mutation<boolean, { id: string; reaction: ReactionInput }>({
@@ -189,6 +191,7 @@ const reviewsAPI = baseAPI.injectEndpoints({
         method: HttpMethod.GET,
         params: { limit, offset },
       }),
+      forceRefetch: () => true,
       providesTags: [TAG_TYPES.REVIEW],
     }),
   }),
