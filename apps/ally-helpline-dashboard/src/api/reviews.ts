@@ -35,6 +35,7 @@ const reviewsAPI = baseAPI.injectEndpoints({
         url: ApiEndpoints.REVIEWS.GET_REVIEW_BY_ID(id),
         method: HttpMethod.GET,
       }),
+      forceRefetch: () => true,
       providesTags: [TAG_TYPES.REVIEW],
     }),
     /**

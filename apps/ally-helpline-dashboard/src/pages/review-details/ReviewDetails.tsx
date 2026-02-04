@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
 
@@ -20,7 +20,8 @@ import {
   Transcription,
   NativeEmoji,
 } from "@components";
-import { KeyboardKeys, REVIEW_PRIVACY_OPTIONS } from "@constants";
+import { KeyboardKeys, REVIEW_PRIVACY_OPTIONS, TAG_TYPES } from "@constants";
+import { baseAPI } from "@src/api/baseAPI";
 import { RootState } from "@store";
 import { CommentItem, ReactionsType, SimulationTranscriptMessage, Thread } from "@types";
 import { getFormattedDateTime, getFormattedTimeFromDuration } from "@utils";
@@ -31,6 +32,7 @@ export const ReviewDetails = () => {
   const { reviewId } = useParams<{ reviewId: string }>();
   const { user } = useSelector((state: RootState) => state.user);
   const navigate = useNavigate();
+  const dispatch = useDispatch();
   const [transcriptOffset, setTranscriptOffset] = useState(0);
   const [commentsCount, setCommentsCount] = useState(0);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
@@ -61,6 +63,12 @@ export const ReviewDetails = () => {
     });
   const [addReactions] = useAddReactionMutation();
   const [updateReview, { isLoading: isUpdateReviewLoading }] = useUpdateReviewMutation();
+
+  useEffect(() => {
+    return () => {
+      dispatch(baseAPI.util.invalidateTags([TAG_TYPES.REVIEW]));
+    };
+  }, []);
   useEffect(() => {
     setTranscriptList([]);
     setTranscriptOffset(0);
