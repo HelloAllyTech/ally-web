@@ -46,6 +46,7 @@ interface CommentCardProps {
   onToggleHide?: (hidden: boolean, id: string) => void;
   updateReplyCount?: (replyCount: number) => void;
   isReply?: boolean;
+  onCommentChange?: (comment: CommentItem) => void;
 }
 const CommentCard = ({
   comment,
@@ -62,6 +63,7 @@ const CommentCard = ({
   onToggleHide,
   updateReplyCount,
   isReply = false,
+  onCommentChange,
 }: CommentCardProps) => {
   const user = useSelector((state: RootState) => state.user.user);
   const [createComment, { data: createCommentData }] = useCreateCommentMutation();
@@ -100,7 +102,7 @@ const CommentCard = ({
   useEffect(() => {
     setReplyCount(comment?.replyCount || 0);
     updateReplyCount?.(comment?.replyCount || 0);
-  }, [comment?.replyCount]);
+  }, [comment?.replyCount, comment?.id]);
 
   useEffect(() => {
     if (commentThreadScrollRef?.current) {
@@ -195,19 +197,33 @@ const CommentCard = ({
     try {
       let action: ReactionsType;
       let nextEmoji = selectedEmoji;
+      const reactions = { ...(comment.reactions || {}) };
 
       if (selectedEmoji === emoji) {
         action = ReactionsType.REMOVE;
+        reactions[selectedEmoji] = (reactions[selectedEmoji] || 0) - 1;
         nextEmoji = "";
       } else if (selectedEmoji) {
         action = ReactionsType.UPDATE;
+        if (reactions[selectedEmoji] === 1) {
+          delete reactions[selectedEmoji];
+        } else {
+          reactions[selectedEmoji] = (reactions[selectedEmoji] || 0) - 1;
+        }
+        if (reactions[emoji]) {
+          reactions[emoji] = (reactions[emoji] || 0) + 1;
+        } else {
+          reactions[emoji] = 1;
+        }
         nextEmoji = emoji;
       } else {
         action = ReactionsType.ADD;
+        reactions[emoji] = (reactions[emoji] || 0) + 1;
         nextEmoji = emoji;
       }
 
       await sendReaction(emoji, action);
+      onCommentChange?.({ ...comment, myReaction: nextEmoji, reactions });
       setSelectedEmoji(nextEmoji);
       setShowEmojiPicker(false);
     } catch (error) {
@@ -215,6 +231,9 @@ const CommentCard = ({
     }
   };
 
+  const onEachReplyChange = (reply: CommentItem) => {
+    setReplies(prev => prev.map(r => (r.id === reply.id ? reply : r)));
+  };
   const handleCancelReply = () => {
     setReplyText("");
     setShowReplyInput(false);
@@ -584,6 +603,7 @@ const CommentCard = ({
                         onUpdateComment={handleUpdateReply}
                         onToggleHide={handleToggleHide}
                         isReply
+                        onCommentChange={onEachReplyChange}
                       />
                     ))}
                   </InfiniteScroll>

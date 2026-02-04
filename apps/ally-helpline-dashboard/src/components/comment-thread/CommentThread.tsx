@@ -177,6 +177,14 @@ const CommentThread = ({
       return newComments;
     });
   };
+
+  const onEachCommentChange = (comment: CommentItem) => {
+    setComments?.(prev => {
+      const newComments = prev.map(c => (c.id === comment.id ? comment : c));
+      onCommentChange?.(newComments, id);
+      return newComments;
+    });
+  };
   return (
     <div className="bg-white rounded-lg p-4 shadow-lg border w-[400px]">
       <div className="text-base font-medium border-b-[0.5px] pb-2 border-border-light">
@@ -208,6 +216,7 @@ const CommentThread = ({
                 onDelete={handleDeleteComment}
                 onUpdateComment={onUpdateComment}
                 updateReplyCount={count => updateReplyCount(count, comment.id)}
+                onCommentChange={onEachCommentChange}
               />
             ))}
           </InfiniteScroll>
