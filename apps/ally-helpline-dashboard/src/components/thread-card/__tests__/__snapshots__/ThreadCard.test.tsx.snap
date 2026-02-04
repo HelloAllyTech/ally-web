@@ -3,7 +3,7 @@
 exports[`ThreadCard Component > should match snapshot when comments are expanded 1`] = `
 <DocumentFragment>
   <div
-    class="w-full min-w-[350px] font-primary border-[0.5px] rounded-lg px-4 py-2 flex flex-col gap-2"
+    class="w-full min-w-[250px] font-primary border-[0.5px] rounded-lg px-4 py-2 flex flex-col gap-2"
   >
     <div
       class="flex items-center min-h-9 border-b-[0.5px] pb-2"
@@ -90,7 +90,7 @@ exports[`ThreadCard Component > should match snapshot when comments are expanded
 exports[`ThreadCard Component > should match snapshot when rendered with multiple comments 1`] = `
 <DocumentFragment>
   <div
-    class="w-full min-w-[350px] font-primary border-[0.5px] rounded-lg px-4 py-2 flex flex-col gap-2"
+    class="w-full min-w-[250px] font-primary border-[0.5px] rounded-lg px-4 py-2 flex flex-col gap-2"
   >
     <div
       class="flex items-center min-h-9 border-b-[0.5px] pb-2"
@@ -177,7 +177,7 @@ exports[`ThreadCard Component > should match snapshot when rendered with multipl
 exports[`ThreadCard Component > should match snapshot when rendered with single comment 1`] = `
 <DocumentFragment>
   <div
-    class="w-full min-w-[350px] font-primary border-[0.5px] rounded-lg px-4 py-2 flex flex-col gap-2"
+    class="w-full min-w-[250px] font-primary border-[0.5px] rounded-lg px-4 py-2 flex flex-col gap-2"
   >
     <div
       class="flex items-center min-h-9 border-b-[0.5px] pb-2"

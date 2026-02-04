@@ -32,6 +32,7 @@ interface TranscriptionProps {
   scrollContainerRef?: RefObject<HTMLElement>;
   councellorName?: string;
   agentName?: string;
+  onCommentChange: (comments: CommentItem[], threadId: string) => void;
 }
 
 const Transcription: FC<TranscriptionProps> = ({
@@ -52,6 +53,7 @@ const Transcription: FC<TranscriptionProps> = ({
   scrollContainerRef,
   councellorName,
   agentName,
+  onCommentChange,
 }) => {
   const contentRefs = useRef<(HTMLSpanElement | null)[]>([]);
   const selectedCommentRef = useRef<HTMLSpanElement | null>(null);
@@ -286,6 +288,7 @@ const Transcription: FC<TranscriptionProps> = ({
                   return (
                     <SelectableText
                       key={segIdx}
+                      onCommentChange={onCommentChange}
                       setAddCommentDialogOpen={setAddCommentDialogOpen}
                       addCommentDialogOpen={addCommentDialogOpen}
                       onCloseSelectedComment={onCloseSelectedComment}

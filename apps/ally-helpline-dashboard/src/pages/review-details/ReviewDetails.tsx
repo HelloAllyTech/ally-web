@@ -22,7 +22,7 @@ import {
 } from "@components";
 import { KeyboardKeys, REVIEW_PRIVACY_OPTIONS } from "@constants";
 import { RootState } from "@store";
-import { ReactionsType, SimulationTranscriptMessage, Thread } from "@types";
+import { CommentItem, ReactionsType, SimulationTranscriptMessage, Thread } from "@types";
 import { getFormattedDateTime, getFormattedTimeFromDuration } from "@utils";
 
 import { TRANSCRIPT_PAGE_SIZE } from "../calls/components/constants";
@@ -143,6 +143,20 @@ export const ReviewDetails = () => {
     }
     return reactionsCount;
   }, [reviewReactions]);
+
+  const handleCommentChange = (comments: CommentItem[], threadId: string) => {
+    if (threadId) {
+      setTranscriptList(prev => {
+        const newTranscriptList = prev.map(transcript => {
+          const threads = transcript.threads?.map(thread =>
+            thread.id === threadId ? { ...thread, comments: comments ?? [] } : thread,
+          );
+          return { ...transcript, threads: threads.filter(thread => thread.comments.length > 0) };
+        });
+        return [...newTranscriptList];
+      });
+    }
+  };
 
   const handleGoBack = () => {
     navigate(-1);
@@ -372,6 +386,7 @@ export const ReviewDetails = () => {
             selectedStartIndex={selectedStartIndex}
             selectedEndIndex={selectedEndIndex}
             onCloseSelectedComment={handleCloseSelectedComment}
+            onCommentChange={handleCommentChange}
           />
         </div>
         <ReviewCommentsSidepanel

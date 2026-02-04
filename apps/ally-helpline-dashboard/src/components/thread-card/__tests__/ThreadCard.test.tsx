@@ -187,10 +187,10 @@ describe("ThreadCard Component", () => {
       expect(mainContainer).toHaveClass("border-[0.5px]", "rounded-lg");
     });
 
-    it("should have minimum width of 350px", () => {
+    it("should have minimum width of 250px", () => {
       const { container } = render(<ThreadCard thread={mockThread} />);
       const mainContainer = container.firstChild as HTMLElement;
-      expect(mainContainer).toHaveClass("min-w-[350px]");
+      expect(mainContainer).toHaveClass("min-w-[250px]");
     });
 
     it("should have padding classes", () => {
