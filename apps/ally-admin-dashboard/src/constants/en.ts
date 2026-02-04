@@ -13,6 +13,7 @@ export const en = {
     delete: "Delete",
     noOptionsAvailable: "No options available",
     noResultsFound: "No results found for",
+    noCharactersFoundMatchingYourSearch: "No characters found matching your search",
     select: "Select",
     uploading: "Uploading...",
     enabled: "Enabled",
