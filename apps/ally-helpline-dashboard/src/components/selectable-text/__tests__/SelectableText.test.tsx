@@ -65,6 +65,10 @@ vi.mock("@src/components/comment-thread/CommentThread", () => ({
     onDeleteComment,
     messageId,
     selection,
+    setComments,
+    onCommentChange,
+    threadsOffset,
+    setThreadsOffset,
   }: any) => (
     <div
       data-testid="comment-thread"
@@ -74,6 +78,7 @@ vi.mock("@src/components/comment-thread/CommentThread", () => ({
       data-message-id={messageId}
       data-selection-start={selection?.startIndex}
       data-selection-end={selection?.endIndex}
+      data-threads-offset={threadsOffset}
     >
       <button data-testid="thread-add-comment" onClick={() => onCommentAddition("New comment")}>
         Add Comment
@@ -81,6 +86,21 @@ vi.mock("@src/components/comment-thread/CommentThread", () => ({
       <button data-testid="thread-delete" onClick={() => onDeleteComment(0)}>
         Delete Comment
       </button>
+      {setComments && (
+        <button data-testid="thread-set-comments" onClick={() => setComments([])}>
+          Set Comments
+        </button>
+      )}
+      {onCommentChange && (
+        <button data-testid="thread-comment-change" onClick={() => onCommentChange([], id)}>
+          Comment Change
+        </button>
+      )}
+      {setThreadsOffset && (
+        <button data-testid="thread-set-offset" onClick={() => setThreadsOffset(10)}>
+          Set Offset
+        </button>
+      )}
     </div>
   ),
 }));
@@ -137,6 +157,7 @@ describe("SelectableText Component", () => {
   const mockHandleCommentClick = vi.fn();
   const mockSetNewCommentSelection = vi.fn();
   const mockOnCancelComment = vi.fn();
+  const mockOnCommentChange = vi.fn();
 
   const defaultProps = {
     segment: mockSegment,
@@ -157,6 +178,7 @@ describe("SelectableText Component", () => {
     handleCommentClick: mockHandleCommentClick,
     setNewCommentSelection: mockSetNewCommentSelection,
     onCancelComment: mockOnCancelComment,
+    onCommentChange: mockOnCommentChange,
   };
 
   let mockStore: ReturnType<typeof createMockStore>;
@@ -603,6 +625,54 @@ describe("SelectableText Component", () => {
         "bg-white",
         "cursor-pointer",
       );
+    });
+  });
+
+  // --- Comment Change Callback Tests ---
+  describe("Comment Change Callbacks", () => {
+    it("should pass onCommentChange to CommentThread", () => {
+      renderWithProvider(
+        <SelectableText
+          {...defaultProps}
+          segment={mockSegmentWithComments}
+          isSelectedComment={true}
+          selectedThreadId="thread-1"
+          selectedMessageId="101"
+          commentsList={mockCommentsList}
+        />,
+      );
+      const commentChangeButton = screen.getByTestId("thread-comment-change");
+      fireEvent.click(commentChangeButton);
+      expect(mockOnCommentChange).toHaveBeenCalledWith([], "thread-1");
+    });
+
+    it("should pass setComments to CommentThread", () => {
+      renderWithProvider(
+        <SelectableText
+          {...defaultProps}
+          segment={mockSegmentWithComments}
+          isSelectedComment={true}
+          selectedThreadId="thread-1"
+          selectedMessageId="101"
+          commentsList={mockCommentsList}
+        />,
+      );
+      expect(screen.getByTestId("thread-set-comments")).toBeInTheDocument();
+    });
+
+    it("should manage threadsOffset internally", () => {
+      renderWithProvider(
+        <SelectableText
+          {...defaultProps}
+          segment={mockSegmentWithComments}
+          isSelectedComment={true}
+          selectedThreadId="thread-1"
+          selectedMessageId="101"
+          commentsList={mockCommentsList}
+        />,
+      );
+      const thread = screen.getByTestId("comment-thread");
+      expect(thread).toHaveAttribute("data-threads-offset", "0");
     });
   });
 });

@@ -35,6 +35,11 @@ exports[`Transcription Component > should match snapshot when rendered 1`] = `
               data-testid="selectable-text-0"
             >
               Hello, how can I help you today?
+              <button
+                data-testid="comment-change-0"
+              >
+                Comment Change
+              </button>
             </span>
           </span>
         </div>
@@ -66,6 +71,11 @@ exports[`Transcription Component > should match snapshot when rendered 1`] = `
               data-testid="selectable-text-0"
             >
               I need some assistance with my account.
+              <button
+                data-testid="comment-change-0"
+              >
+                Comment Change
+              </button>
             </span>
           </span>
         </div>
@@ -97,6 +107,11 @@ exports[`Transcription Component > should match snapshot when rendered 1`] = `
               data-testid="selectable-text-0"
             >
               Sure, I can help you with that.
+              <button
+                data-testid="comment-change-0"
+              >
+                Comment Change
+              </button>
             </span>
           </span>
         </div>

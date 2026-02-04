@@ -185,10 +185,10 @@ const CallSummary: FC<CallSummaryProps> = ({
       case FieldType.Dropdown:
         return (
           <div key={field.key} className="flex gap-1">
-            <span className="font-medium text-lg text-typography-800">{`${field.label}: `}</span>
+            <span className="font-medium text-lg text-typography-800 whitespace-nowrap">{`${field.label}: `}</span>
             <DropdownField
               disabled={isFieldDisabled(field)}
-              value={value ?? "--"}
+              value={value ?? field.placeholder ?? "--"}
               valueClassName={`${field.isEditable ? "text-typography-900" : "text-typography-800"} 
                 text-lg font-primary`}
               onChange={value => setSummaryData(prev => ({ ...prev, [field.key]: value }))}

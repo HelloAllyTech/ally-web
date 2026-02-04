@@ -67,6 +67,8 @@ vi.mock("@components", () => ({
     messageId,
     selection,
     onDelete,
+    onToggleHide,
+    onUpdateComment,
   }: any) => (
     <div
       data-testid={`comment-card-${comment.id}`}
@@ -83,6 +85,16 @@ vi.mock("@components", () => ({
       {onDelete && (
         <button data-testid="delete-comment" onClick={() => onDelete(comment.id)}>
           Delete
+        </button>
+      )}
+      {onToggleHide && (
+        <button data-testid="toggle-hide" onClick={() => onToggleHide(true, comment.id)}>
+          Toggle Hide
+        </button>
+      )}
+      {onUpdateComment && (
+        <button data-testid="update-comment" onClick={() => onUpdateComment("updated", comment.id)}>
+          Update
         </button>
       )}
     </div>
@@ -167,6 +179,9 @@ describe("CommentThread Component", () => {
 
   const mockOnCommentAddition = vi.fn();
   const mockOnDeleteComment = vi.fn();
+  const mockSetComments = vi.fn();
+  const mockOnCommentChange = vi.fn();
+  const mockSetThreadsOffset = vi.fn();
 
   const defaultProps = {
     id: "thread-1",
@@ -175,6 +190,10 @@ describe("CommentThread Component", () => {
     onDeleteComment: mockOnDeleteComment,
     messageId: "101",
     selection: { startIndex: 10, endIndex: 24 },
+    setComments: mockSetComments,
+    onCommentChange: mockOnCommentChange,
+    threadsOffset: 0,
+    setThreadsOffset: mockSetThreadsOffset,
   };
 
   beforeEach(() => {
@@ -201,6 +220,10 @@ describe("CommentThread Component", () => {
         onDeleteComment={mockOnDeleteComment}
         messageId="101"
         selection={{ startIndex: 10, endIndex: 24 }}
+        setComments={mockSetComments}
+        onCommentChange={mockOnCommentChange}
+        threadsOffset={0}
+        setThreadsOffset={mockSetThreadsOffset}
       />,
     );
     expect(asFragment()).toMatchSnapshot();
@@ -232,6 +255,10 @@ describe("CommentThread Component", () => {
           onDeleteComment={mockOnDeleteComment}
           messageId="101"
           selection={{ startIndex: 10, endIndex: 24 }}
+          setComments={mockSetComments}
+          onCommentChange={mockOnCommentChange}
+          threadsOffset={0}
+          setThreadsOffset={mockSetThreadsOffset}
         />,
       );
       expect(screen.queryByTestId(/comment-card-/)).not.toBeInTheDocument();
@@ -426,6 +453,46 @@ describe("CommentThread Component", () => {
 
       fireEvent.change(textarea, { target: { value: "Hello" } });
       expect(textarea).toHaveValue("Hello");
+    });
+  });
+
+  // --- Comment Change Callback Tests ---
+  describe("Comment Change Callbacks", () => {
+    it("should call onCommentChange when toggle hide is triggered", () => {
+      renderWithProvider(<CommentThread {...defaultProps} />);
+      const toggleHideButton = screen.getAllByTestId("toggle-hide")[0];
+      fireEvent.click(toggleHideButton);
+      expect(mockOnCommentChange).toHaveBeenCalled();
+    });
+
+    it("should call setComments when toggle hide is triggered", () => {
+      renderWithProvider(<CommentThread {...defaultProps} />);
+      const toggleHideButton = screen.getAllByTestId("toggle-hide")[0];
+      fireEvent.click(toggleHideButton);
+      expect(mockSetComments).toHaveBeenCalled();
+    });
+
+    it("should call onCommentChange when update comment is triggered", () => {
+      renderWithProvider(<CommentThread {...defaultProps} />);
+      const updateButton = screen.getAllByTestId("update-comment")[0];
+      fireEvent.click(updateButton);
+      expect(mockOnCommentChange).toHaveBeenCalled();
+    });
+
+    it("should call onDeleteComment when delete is triggered", () => {
+      renderWithProvider(<CommentThread {...defaultProps} />);
+      const deleteButton = screen.getAllByTestId("delete-comment")[0];
+      fireEvent.click(deleteButton);
+      expect(mockOnDeleteComment).toHaveBeenCalledWith(mockComments.length - 1);
+    });
+  });
+
+  // --- Pagination Tests ---
+  describe("Pagination", () => {
+    it("should pass correct threadsOffset", () => {
+      renderWithProvider(<CommentThread {...defaultProps} threadsOffset={10} />);
+      // Component renders correctly with offset
+      expect(screen.getByText("Comment Thread")).toBeInTheDocument();
     });
   });
 });
