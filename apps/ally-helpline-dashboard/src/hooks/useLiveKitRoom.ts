@@ -11,6 +11,8 @@ import { decodeUint8ToJson } from "@utils";
 
 import { LiveKitEvent, UseLiveKitRoomReturn } from "./types";
 
+const RINGING_BELL_DELAY = 10000;
+
 export const useLiveKitRoom = (
   handleDisconnect: () => void,
   endSessionButtonRef: any,
@@ -23,6 +25,7 @@ export const useLiveKitRoom = (
   const [events, setEvents] = useState<LiveKitEvent[]>([]);
   const [score, setScore] = useState<number>(0);
   const [detectedEventIds, setDetectedEventIds] = useState<string[]>([]);
+  const [startTime, setStartTime] = useState(null);
 
   const lastEventTimestampRef = useRef<number | null>(null);
   const autoTerminationAudio = useRef<HTMLAudioElement | null>(new Audio(AutoTermination));
@@ -31,7 +34,6 @@ export const useLiveKitRoom = (
 
   const roomDataString = localStorage.getItem(LOCAL_STORAGE_KEYS.ROOM_DATA);
   const roomData = roomDataString ? JSON.parse(roomDataString) : null;
-  const startTime = roomData?.createdAt ? new Date(roomData?.createdAt) : new Date();
   const isConnected = roomStatus === RoomStatus.CONNECTED;
   const isConnecting = roomStatus === RoomStatus.CONNECTING;
 
@@ -141,7 +143,8 @@ export const useLiveKitRoom = (
     // Add a small delay before connecting to avoid race conditions in StrictMode
     const connectionTimeout = setTimeout(() => {
       connectToRoom();
-    }, 100);
+      setStartTime(new Date());
+    }, RINGING_BELL_DELAY); // 10 seconds for ringing the bell
 
     return () => {
       clearTimeout(connectionTimeout);

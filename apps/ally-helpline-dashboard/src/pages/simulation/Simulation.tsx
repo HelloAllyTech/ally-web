@@ -73,7 +73,7 @@ export const Simulation = () => {
         roomStatus={roomStatus}
         sessionId={id}
         isEndingSession={roomStatus !== RoomStatus.CONNECTED}
-        startTime={startTime.toISOString()}
+        startTime={startTime?.toISOString()}
         events={getSimulationEvents(events)}
         detectedEventIds={detectedEventIds}
         score={score}
