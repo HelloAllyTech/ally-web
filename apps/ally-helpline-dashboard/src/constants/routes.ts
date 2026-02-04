@@ -33,6 +33,7 @@ export const ROUTES = {
   LEARN: "/learn",
   SCENARIO: "/scenario/:scenarioId",
   PATHWAY: "/pathway/:pathwayId",
+  CASE: "/case/:caseId",
   SIMULATION: "/simulation/:id",
   SIMULATION_SUMMARY: "/simulation-summary",
   SIMULATION_SUMMARY_FULL: "/simulation-summary/:sessionId",
@@ -56,7 +57,7 @@ export const navBarOptions = [
     title: "Learn",
     Icon: LearnIcon,
     path: ROUTES.LEARN,
-    activePages: [ROUTES.SCENARIO, ROUTES.PATHWAY],
+    activePages: [ROUTES.SCENARIO, ROUTES.PATHWAY, ROUTES.CASE],
     permissions: [Permissions.EDIT_SCENARIO_SESSION],
   },
   ...(FEATURE_FLAGS_MAP.PEER_REVIEW_FLAG

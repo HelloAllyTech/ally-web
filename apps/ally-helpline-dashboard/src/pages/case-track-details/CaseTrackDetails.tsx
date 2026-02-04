@@ -20,8 +20,15 @@ import { ROUTES } from "@constants";
 import { useStartSimulation } from "@hooks";
 import { PathwayScenarioStatus, PathwayScenario, LanguageOption } from "@types";
 
-export const PathwayDetails: FC = () => {
-  const { pathwayId } = useParams<{ pathwayId: string }>();
+type CaseTrackDetailsType = "case" | "track";
+
+interface CaseTrackDetailsProps {
+  type: CaseTrackDetailsType;
+}
+
+export const CaseTrackDetails: FC<CaseTrackDetailsProps> = ({ type }) => {
+  const { pathwayId, caseId } = useParams<{ pathwayId?: string; caseId?: string }>();
+  const id = type === "case" ? caseId : pathwayId;
   const navigate = useNavigate();
   const { state } = useLocation();
 
@@ -29,6 +36,13 @@ export const PathwayDetails: FC = () => {
   const [selectedLanguage, setSelectedLanguage] = useState<LanguageOption | null>(
     state?.selectedLanguage || null,
   );
+  const [selectedScenario, setSelectedScenario] = useState<PathwayScenario | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [showNotification, setShowNotification] = useState(false);
+
+  const { data, isLoading } = useGetScenarioPathwayDetailsQuery(id || "");
+  const [startSimulationMutation] = useStartPathwaySimulationMutation();
+  const [getScenarioSessionByPathItem] = useLazyGetScenarioSessionByPathItemQuery();
 
   const handleLanguageChange = useCallback(
     (value: string) => {
@@ -37,13 +51,6 @@ export const PathwayDetails: FC = () => {
     },
     [state?.languages],
   );
-  const { data: pathway, isLoading } = useGetScenarioPathwayDetailsQuery(pathwayId || "");
-  const [selectedScenario, setSelectedScenario] = useState<PathwayScenario | null>(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [showNotification, setShowNotification] = useState(false);
-
-  const [startPathwaySimulation] = useStartPathwaySimulationMutation();
-  const [getScenarioSessionByPathItem] = useLazyGetScenarioSessionByPathItemQuery();
 
   const handleCloseModal = useCallback(() => {
     setIsModalOpen(false);
@@ -54,9 +61,9 @@ export const PathwayDetails: FC = () => {
     onSuccess: handleCloseModal,
   });
 
-  const enrollPathwaySession = async () => {
-    if (!pathway?.scenarioPathSessionId) {
-      await startPathwaySimulation({ pathwayId });
+  const enrollSession = async () => {
+    if (!data?.scenarioPathSessionId) {
+      await startSimulationMutation({ pathwayId: id });
     }
   };
 
@@ -80,8 +87,8 @@ export const PathwayDetails: FC = () => {
   );
 
   const handleStartOrContinueSimulation = async () => {
-    await enrollPathwaySession();
-    const nextScenario = pathway?.scenarios.find(
+    await enrollSession();
+    const nextScenario = data?.scenarios.find(
       scenario => scenario.status === PathwayScenarioStatus.UNLOCKED,
     );
     if (!nextScenario) {
@@ -95,8 +102,8 @@ export const PathwayDetails: FC = () => {
   const handleScenarioClick = async (scenarioId: number, status: PathwayScenarioStatus) => {
     if (status === PathwayScenarioStatus.LOCKED) return;
 
-    await enrollPathwaySession();
-    const scenario = pathway?.scenarios.find(s => s.scenarioId === scenarioId);
+    await enrollSession();
+    const scenario = data?.scenarios.find(s => s.scenarioId === scenarioId);
     if (scenario) {
       setSelectedScenario(scenario);
       setIsModalOpen(true);
@@ -112,7 +119,7 @@ export const PathwayDetails: FC = () => {
     setShowNotification(false);
     if (!selectedScenario || isStarting) return;
 
-    const updatedSelectedScenario = pathway?.scenarios.find(
+    const updatedSelectedScenario = data?.scenarios.find(
       scenario => scenario.scenarioId === selectedScenario.scenarioId,
     );
     if (!updatedSelectedScenario) return;
@@ -153,14 +160,28 @@ export const PathwayDetails: FC = () => {
   }, [handleLanguageChange, selectedLanguage, state?.languages]);
 
   // Calculate progress metrics
-  const totalScenarios = pathway?.totalScenarios || pathway?.scenarios?.length || 0;
-  const completedScenarios = pathway?.completedScenarios || 0;
+  const totalScenarios = data?.totalScenarios || data?.scenarios?.length || 0;
+  const completedScenarios = data?.completedScenarios || 0;
   const hasProgress = completedScenarios > 0;
-  const isPathwayComplete = totalScenarios > 0 && completedScenarios === totalScenarios;
+  const isComplete = totalScenarios > 0 && completedScenarios === totalScenarios;
   const progressPercentage = totalScenarios > 0 ? (completedScenarios / totalScenarios) * 100 : 0;
-  const sortedScenarios = pathway?.scenarios
-    ? [...pathway.scenarios].sort((a, b) => a.order - b.order)
+  const sortedScenarios = data?.scenarios
+    ? [...data.scenarios].sort((a, b) => a.order - b.order)
     : [];
+
+  // Type-specific labels
+  const labels = {
+    case: {
+      breadcrumb: "Cases",
+      notFound: "Case not found",
+    },
+    track: {
+      breadcrumb: "Tracks",
+      notFound: "Track not found",
+    },
+  };
+
+  const currentLabels = labels[type];
 
   if (isLoading) {
     return (
@@ -170,10 +191,10 @@ export const PathwayDetails: FC = () => {
     );
   }
 
-  if (!pathway) {
+  if (!data) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen bg-white">
-        <div className="text-typography-700 text-lg mb-4">Pathway not found</div>
+        <div className="text-typography-700 text-lg mb-4">{currentLabels.notFound}</div>
         <button
           onClick={() => navigate(ROUTES.LEARN)}
           className="px-4 py-2 bg-primary-500 text-white rounded-md hover:bg-primary-600 transition-colors"
@@ -188,10 +209,10 @@ export const PathwayDetails: FC = () => {
     <div className="pt-6 pb-3 flex items-center justify-between">
       <div className="flex items-center gap-2 text-sm text-typography-700">
         <button onClick={() => navigate(-1)} className="hover:text-primary-500 transition-colors">
-          Tracks
+          {currentLabels.breadcrumb}
         </button>
         <ArrowRight />
-        <span className="text-primary-500 font-medium">{pathway.title}</span>
+        <span className="text-primary-500 font-medium">{data.title}</span>
       </div>
       <div className="flex items-center gap-2 text-sm text-typography-700">
         <CreditsDisplay />
@@ -202,8 +223,8 @@ export const PathwayDetails: FC = () => {
   const renderCoverImage = () => (
     <div className="relative h-[240px] w-full rounded-[8px] overflow-hidden">
       <CustomImage
-        src={pathway.coverImageUrl}
-        alt={pathway.title}
+        src={data.coverImageUrl}
+        alt={data.title}
         className="w-full h-full object-cover bg-background-secondary"
       />
     </div>
@@ -216,7 +237,7 @@ export const PathwayDetails: FC = () => {
       <div className="flex items-center gap-3">
         <div className="w-40 h-2 bg-gray-200 rounded-full overflow-hidden">
           <div
-            className={`h-full ${isPathwayComplete ? "bg-[#81C784]" : "bg-primary-500"} rounded-full transition-all duration-300`}
+            className={`h-full ${isComplete ? "bg-[#81C784]" : "bg-primary-500"} rounded-full transition-all duration-300`}
             style={{ width: `${progressPercentage}%` }}
           />
         </div>
@@ -227,16 +248,16 @@ export const PathwayDetails: FC = () => {
     );
   };
 
-  const renderPathwayInfo = () => (
+  const renderInfo = () => (
     <div className="pt-8">
       <div className="flex items-center justify-between mb-4">
-        <h1 className="text-2xl font-bold text-typography-900">{pathway.title}</h1>
+        <h1 className="text-2xl font-bold text-typography-900">{data.title}</h1>
         {renderProgressBar()}
       </div>
-      {pathway.description && (
-        <p className="text-base text-typography-800 mb-6 leading-relaxed">{pathway.description}</p>
+      {data.description && (
+        <p className="text-base text-typography-800 mb-6 leading-relaxed">{data.description}</p>
       )}
-      {!isPathwayComplete && (
+      {!isComplete && (
         <button
           onClick={handleStartOrContinueSimulation}
           className="px-6 py-2 bg-primary-500 text-white rounded-full font-tertiary text-base font-medium hover:bg-primary-600 transition-colors"
@@ -251,7 +272,7 @@ export const PathwayDetails: FC = () => {
     <div className="relative w-full sticky top-0 z-10 bg-white pb-[10px] pt-4">
       {renderBreadcrumb()}
       {renderCoverImage()}
-      {renderPathwayInfo()}
+      {renderInfo()}
     </div>
   );
 
