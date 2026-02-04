@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 
-import { InfoIcon } from "@assets";
+import { InfoIcon, WandStars } from "@assets";
 import { InputFieldProps } from "@components/types";
 import { FORM_FIELD_TYPES } from "@constants";
 import { isNonEmptyString } from "@utils";
@@ -18,6 +18,7 @@ export const InputField: React.FC<InputFieldProps> = ({
   maxLength,
   defaultValue = "",
   disabled = false,
+  regenerate = false,
 }) => {
   const isAgeField = id === "age";
   const MAX_AGE = 150;
@@ -95,6 +96,11 @@ export const InputField: React.FC<InputFieldProps> = ({
           {isMandatory && <span className="text-destructive-500">*</span>}
           {infoIconContent && <InfoIcon />}
         </label>
+        {regenerate && (
+          <div className="flex items-center gap-1 text-primary-500 text-sm border border-primary-500 rounded-2xl px-2 py-1">
+            <WandStars /> Regenerate
+          </div>
+        )}
       </div>
       <div className="relative mb-[15px]">
         {multiline ? (

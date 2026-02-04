@@ -4,6 +4,7 @@ import { useForm } from "react-hook-form";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
 
+import { FEATURE_FLAGS_MAP } from "@ally-ui-mono/ui-shared/featureFlag";
 import {
   useCreateSimulationMutation,
   useDeleteCoverImageMutation,
@@ -11,19 +12,21 @@ import {
   useUpdateSimulationByIdMutation,
 } from "@api";
 import {
-  Header,
-  VerticalStepper,
-  Footer,
   ActionConfirmationPopup,
+  CreateSimulationSubSection,
+  Footer,
+  Header,
+  SimulationEventMapTable,
   SimulationPreview,
+  VerticalStepper,
 } from "@components";
-import { CreateSimulationSubSection, SimulationEventMapTable } from "@components";
 import { ButtonVariant } from "@components/types";
 import {
   en,
   ROUTES,
   StepperList,
   SIMULATION_CREATOR_FIELD_GROUPS,
+  SIMULATION_CREATOR_FIELD_GROUPS_OLD,
   SIMULATION_CREATOR_STEP_IDS,
   ExperienceMode,
   SESSION_TIMER_CONFIG,
@@ -45,7 +48,10 @@ const stepIds: any = SIMULATION_CREATOR_STEP_IDS;
 // Get all mandatory field IDs from the configuration
 const getMandatoryFieldIds = () => {
   const mandatoryFields: string[] = [];
-  SIMULATION_CREATOR_FIELD_GROUPS.forEach(group => {
+  const fieldGroups = FEATURE_FLAGS_MAP.SIMULATION_CREATOR_FLAG
+    ? SIMULATION_CREATOR_FIELD_GROUPS
+    : SIMULATION_CREATOR_FIELD_GROUPS_OLD;
+  fieldGroups.forEach(group => {
     group.fields.forEach(field => {
       if (field.isMandatory) {
         mandatoryFields.push(field.id);
@@ -80,15 +86,12 @@ export const CreateSimulation: FC = () => {
   });
 
   useEffect(() => {
-    if (simulationId) {
-      getAdminSimulationByIdQuery(simulationId);
-    }
+    if (simulationId) getAdminSimulationByIdQuery(simulationId);
   }, [simulationId, getAdminSimulationByIdQuery]);
 
   useEffect(() => {
     if (adminSimulationByIdData) {
-      const formattedData = formatSimulationResponseData(adminSimulationByIdData);
-      formMethods.reset(formattedData);
+      formMethods.reset(formatSimulationResponseData(adminSimulationByIdData));
     }
   }, [adminSimulationByIdData, formMethods]);
 
@@ -106,18 +109,9 @@ export const CreateSimulation: FC = () => {
     const mandatoryFieldIds = getMandatoryFieldIds();
     return mandatoryFieldIds.every(fieldId => {
       const value = formValues[fieldId];
-      // Check if value exists and is not empty
-      if (isEmpty(value)) {
-        return false;
-      }
-      // For arrays, check if they have content
-      if (Array.isArray(value) && value.length === 0) {
-        return false;
-      }
-      // For FileList objects (file uploads), check if they have files
-      if (value instanceof FileList && value.length === 0) {
-        return false;
-      }
+      if (isEmpty(value)) return false;
+      if (Array.isArray(value) && value.length === 0) return false;
+      if (value instanceof FileList && value.length === 0) return false;
       return true;
     });
   }, [formValues]);
@@ -197,7 +191,9 @@ export const CreateSimulation: FC = () => {
     }));
 
     const simulationData = {
-      ...extractValidData(SIMULATION_CREATOR_FIELD_GROUPS, restForm),
+      ...(FEATURE_FLAGS_MAP.SIMULATION_CREATOR_FLAG
+        ? extractValidData(SIMULATION_CREATOR_FIELD_GROUPS, restForm)
+        : extractValidData(SIMULATION_CREATOR_FIELD_GROUPS_OLD, restForm)),
       openingStatements: openingStatementsArray,
       agentDialogues: agentDialoguesArray,
       customFields: customFieldGroupList,
@@ -293,11 +289,8 @@ export const CreateSimulation: FC = () => {
   const handleStepClick = async (stepId: string) => {
     if (stepId === stepIds.advancedSettings && !simulationId) {
       const response = await handleSaveDraft();
-      if (response) {
-        setCurrentStep(stepId);
-      } else {
-        toast.error(en.errors.failedToProceed);
-      }
+      if (response) setCurrentStep(stepId);
+      else toast.error(en.errors.failedToProceed);
     } else {
       setCurrentStep(stepId);
     }
