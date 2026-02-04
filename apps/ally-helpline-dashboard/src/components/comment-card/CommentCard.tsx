@@ -44,6 +44,7 @@ interface CommentCardProps {
     endIndex: number;
   };
   onToggleHide?: (hidden: boolean, id: string) => void;
+  updateReplyCount?: (replyCount: number) => void;
 }
 const CommentCard = ({
   comment,
@@ -58,6 +59,7 @@ const CommentCard = ({
   messageId,
   selection,
   onToggleHide,
+  updateReplyCount,
 }: CommentCardProps) => {
   const user = useSelector((state: RootState) => state.user.user);
   const [createComment, { data: createCommentData }] = useCreateCommentMutation();
@@ -95,6 +97,7 @@ const CommentCard = ({
 
   useEffect(() => {
     setReplyCount(comment?.replyCount || 0);
+    updateReplyCount?.(comment?.replyCount || 0);
   }, [comment?.replyCount]);
 
   useEffect(() => {
@@ -122,7 +125,11 @@ const CommentCard = ({
         };
         setReplies(prev => [...(prev || []), newReply]);
       }
-      setReplyCount(prev => prev + 1);
+      setReplyCount(prev => {
+        const newReplyCount = prev + 1;
+        updateReplyCount?.(newReplyCount);
+        return newReplyCount;
+      });
       setReplyText("");
       setShowReplyInput(false);
     }
@@ -161,7 +168,14 @@ const CommentCard = ({
     }).unwrap();
     setRepliesOffset(prev => prev + 10);
     setHasMoreReplies(repliesOffset + 10 < data?.count);
-    setReplies(prev => [...(prev || []), ...(data?.data || [])]);
+    setReplies(prev => {
+      const existingReplies = new Set(prev.map(reply => reply.id));
+      const newReplies = [
+        ...(prev || []),
+        ...(data?.data || []).filter(reply => !existingReplies.has(reply.id)),
+      ].sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+      return newReplies;
+    });
   };
   const handleReplySubmit = () => {
     if (replyText.trim()) {
@@ -338,7 +352,11 @@ const CommentCard = ({
       setShowReplies(false);
       setRepliesOffset(0);
     }
-    setReplyCount(prev => prev - 1);
+    setReplyCount(prev => {
+      const newReplyCount = prev - 1;
+      updateReplyCount?.(newReplyCount);
+      return newReplyCount;
+    });
   };
 
   const renderCommentEditView = () => {

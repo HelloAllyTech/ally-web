@@ -45,6 +45,7 @@ interface SelectableTextProps {
     endIndex: number;
     threadId: string;
   }) => void;
+  onDeleteComment: () => void;
   setNewCommentSelection: (
     value: {
       startIndex: number;
@@ -75,6 +76,7 @@ const SelectableText = ({
   commentsList,
   onCancelComment,
   onCommentChange,
+  onDeleteComment,
 }: SelectableTextProps) => {
   const { reviewId } = useParams<{ reviewId: string }>();
   const [
@@ -175,6 +177,7 @@ const SelectableText = ({
       onCommentChange?.([], selectedThreadId);
       handleCloseSelectedComment();
     }
+    onDeleteComment?.();
   };
   const setDialogRef = useCallback((element: HTMLDivElement | null) => {
     dialogRef.current = element;
