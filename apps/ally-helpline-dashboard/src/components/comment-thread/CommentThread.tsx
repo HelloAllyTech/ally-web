@@ -81,7 +81,7 @@ const CommentThread = ({
   };
 
   const loadMoreComments = async () => {
-    if (isLoading || !hasMore) return;
+    if (isLoading || !hasMore || (threadComments?.data?.length === 0 && threadsOffset > 0)) return;
     setThreadsOffset(prev => prev + PAGE_SIZE);
   };
 
@@ -167,6 +167,16 @@ const CommentThread = ({
     setComments?.(prev => prev.filter(comment => comment.id !== commentId));
     onDeleteComment((comments ?? []).length - 1);
   };
+
+  const updateReplyCount = (count: number, commentId: string) => {
+    setComments?.(prev => {
+      const newComments = prev.map(comment =>
+        comment.id === commentId ? { ...comment, replyCount: count } : comment,
+      );
+      onCommentChange?.(newComments, id);
+      return newComments;
+    });
+  };
   return (
     <div className="bg-white rounded-lg p-4 shadow-lg border w-[400px]">
       <div className="text-base font-medium border-b-[0.5px] pb-2 border-border-light">
@@ -197,6 +207,7 @@ const CommentThread = ({
                 onToggleHide={handleToggleHide}
                 onDelete={handleDeleteComment}
                 onUpdateComment={onUpdateComment}
+                updateReplyCount={count => updateReplyCount(count, comment.id)}
               />
             ))}
           </InfiniteScroll>
