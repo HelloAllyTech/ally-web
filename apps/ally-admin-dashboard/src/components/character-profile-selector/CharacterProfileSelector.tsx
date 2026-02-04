@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import { Controller } from "react-hook-form";
 
@@ -60,20 +60,34 @@ export const CharacterProfileSelector: React.FC<CharacterProfileSelectorProps> =
 }) => {
   const [selectedCharacterId, setSelectedCharacterId] = useState<string | null>(null);
   const [isCharacterDropdownOpen, setIsCharacterDropdownOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState("");
 
   const characterDropdownRef = useRef<HTMLDivElement>(null);
 
-  // Fetch characters
+  const { setValue } = formMethods;
+
+  // Debounce search query
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearchQuery(searchQuery);
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+
+  // Fetch characters with search
   const { data: charactersData, isLoading } = useGetCharactersQuery({
     limit: PAGE_SIZE,
     offset: 0,
-    searchName: "",
+    searchName: debouncedSearchQuery,
   });
 
-  const { setValue } = formMethods;
-
   // Close character dropdown on outside click
-  useClickOutside(characterDropdownRef, () => setIsCharacterDropdownOpen(false));
+  useClickOutside(characterDropdownRef, () => {
+    setIsCharacterDropdownOpen(false);
+    setSearchQuery("");
+  });
 
   // Handle character selection
   const handleCharacterSelect = useCallback(
@@ -88,8 +102,9 @@ export const CharacterProfileSelector: React.FC<CharacterProfileSelectorProps> =
       // Store the character ID in the main field
       setValue(id, character.id);
 
-      // Close dropdown after selection
+      // Close dropdown and reset search after selection
       setIsCharacterDropdownOpen(false);
+      setSearchQuery("");
     },
     [id, setValue],
   );
@@ -133,7 +148,9 @@ export const CharacterProfileSelector: React.FC<CharacterProfileSelectorProps> =
                 onClick={() => setIsCharacterDropdownOpen(prev => !prev)}
               >
                 <span className={selectedCharacter ? "text-typography-900" : "text-typography-500"}>
-                  {selectedCharacter ? selectedCharacter.name : "Select"}
+                  {selectedCharacter
+                    ? `${selectedCharacter?.name} (${selectedCharacter?.gender}, ${selectedCharacter?.age}, ${selectedCharacter?.profession})`
+                    : "Select"}
                 </span>
                 <span
                   className={`text-typography-600 transition-transform ${isCharacterDropdownOpen ? "rotate-180" : ""}`}
@@ -143,28 +160,47 @@ export const CharacterProfileSelector: React.FC<CharacterProfileSelectorProps> =
               </div>
 
               {isCharacterDropdownOpen && (
-                <div className="absolute left-0 top-full mt-1 w-full bg-white border border-border-light rounded-md shadow-lg max-h-[300px] overflow-auto z-10 custom-scrollbar">
-                  {isLoading ? (
-                    <div className="px-3 py-2 text-sm text-typography-600">Loading...</div>
-                  ) : charactersData && charactersData.length > 0 ? (
-                    charactersData.map(character => (
-                      <div
-                        key={character.id}
-                        className={`px-3 py-2 text-sm cursor-pointer transition-colors ${
-                          selectedCharacterId === character.id
-                            ? "bg-primary-50 text-primary font-medium"
-                            : "text-typography-900 hover:bg-background-secondary"
-                        }`}
-                        onClick={() => handleCharacterSelect(character)}
-                      >
-                        {character.name}
+                <div className="absolute left-0 top-full mt-1 w-full bg-white border border-border-light rounded-md shadow-lg max-h-[400px] z-10 flex flex-col">
+                  {/* Search input - sticky at top */}
+                  <div className="px-3 py-2 border-b border-border-light bg-white sticky top-0">
+                    <input
+                      type="text"
+                      placeholder="Search characters..."
+                      value={searchQuery}
+                      onChange={e => setSearchQuery(e.target.value)}
+                      className="w-full rounded border border-border-light px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-primary-500"
+                      onClick={e => e.stopPropagation()}
+                    />
+                  </div>
+
+                  {/* Character list - scrollable */}
+                  <div className="overflow-y-auto custom-scrollbar">
+                    {isLoading ? (
+                      <div className="px-3 py-4 text-sm text-typography-600 text-center">
+                        Loading...
                       </div>
-                    ))
-                  ) : (
-                    <div className="px-3 py-2 text-sm text-typography-600">
-                      {en.common.noResultsFound}
-                    </div>
-                  )}
+                    ) : charactersData && charactersData.length > 0 ? (
+                      charactersData.map(character => (
+                        <div
+                          key={character.id}
+                          className={`px-3 py-2 text-sm cursor-pointer transition-colors ${
+                            selectedCharacterId === character.id
+                              ? "bg-primary-50 text-primary font-medium"
+                              : "text-typography-900 hover:bg-background-secondary"
+                          }`}
+                          onClick={() => handleCharacterSelect(character)}
+                        >
+                          {`${character?.name} (${character?.gender}, ${character?.age}, ${character?.profession})`}
+                        </div>
+                      ))
+                    ) : (
+                      <div className="px-3 py-4 text-sm text-typography-600 text-center">
+                        {debouncedSearchQuery
+                          ? en.common.noCharactersFoundMatchingYourSearch
+                          : en.common.noResultsFound}
+                      </div>
+                    )}
+                  </div>
                 </div>
               )}
             </div>
