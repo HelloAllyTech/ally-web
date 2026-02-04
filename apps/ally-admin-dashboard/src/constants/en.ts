@@ -408,6 +408,8 @@ export const en = {
     changeLogo: "Change logo",
     uploadImage: "Upload image",
     changeImage: "Change image",
+    scribeSettings: "Scribe settings",
+    additionalFields: "Additional fields",
   },
   eventConfiguration: {
     selectEvent: "Select an event",
