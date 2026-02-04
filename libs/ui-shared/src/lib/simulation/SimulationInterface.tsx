@@ -88,7 +88,7 @@ export const SimulationInterface: FC<SimulationInterfaceProps> = ({
         Simulation
         <span className="font-medium italic">
           {" "}
-          {roomStatus === RoomStatus.CONNECTING ? "starting..." : "disconnecting..."}
+          {roomStatus && RoomStatus.CONNECTING ? "starting..." : "connecting..."}
         </span>
       </p>
       <p className="text-[12px] text-[#B6B5B9]">
