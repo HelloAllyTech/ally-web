@@ -79,11 +79,15 @@ export const SimulationPage: FC<SimulationPageProps> = ({
   useWakeLock(sessionId);
 
   useEffect(() => {
-    if (roomStatus === RoomStatus.CONNECTING) startAudio.current?.play();
+    startAudio.current?.play();
 
     return () => {
       endAudio.current?.pause();
     };
+  }, []);
+
+  useEffect(() => {
+    if (roomStatus === RoomStatus.CONNECTED) startAudio.current?.pause();
   }, [roomStatus]);
 
   if (!roomData) return null;
@@ -179,7 +183,7 @@ export const SimulationPage: FC<SimulationPageProps> = ({
         )}
       </div>
 
-      {roomData?.timerMode && (
+      {roomData?.timerMode && startTime && (
         <SessionGoalTimer startTime={startTime} maxTimeValue={roomData?.maxTimeValue} />
       )}
 
@@ -197,17 +201,19 @@ export const SimulationPage: FC<SimulationPageProps> = ({
       </motion.div>
       {checklistMode === ChecklistMode.OFF && <SimulationScoreMeter score={score} />}
 
-      <BottomSection
-        isWarning={isWarning}
-        onTimeLimitWarning={onTimeLimitWarning}
-        onEndSimulation={handleEndSimulation}
-        onMuteSimulation={onMuteSimulation}
-        isMuted={isMuted}
-        isEndingSession={isEndingSession}
-        startTime={startTime}
-        isFocusMode={isFocusMode}
-        onFocusButtonClick={onFocusButtonClick}
-      />
+      {startTime && (
+        <BottomSection
+          isWarning={isWarning}
+          onTimeLimitWarning={onTimeLimitWarning}
+          onEndSimulation={handleEndSimulation}
+          onMuteSimulation={onMuteSimulation}
+          isMuted={isMuted}
+          isEndingSession={isEndingSession}
+          startTime={startTime}
+          isFocusMode={isFocusMode}
+          onFocusButtonClick={onFocusButtonClick}
+        />
+      )}
 
       {renderFooter?.()}
 
