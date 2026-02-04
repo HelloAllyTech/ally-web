@@ -53,6 +53,7 @@ export const ApiEndpoints = {
     GET_TRANSCRIPT: (chatId: number) => `/v1/chats/${chatId}/messages`,
     UPDATE_CALL_SUMMARY_NOTES: (chatId: string) => `/v1/chats/${chatId}/notes`,
     SUBMIT_FEEDBACK: (chatId: string) => `/v1/chats/${chatId}/summary-feedback`,
+    SUMMARY_FIELDS: "/v1/settings/summary-fields",
   },
   SEARCH: {
     GET_CATEGORIES: "/v1/reference-document/categories",
@@ -81,6 +82,10 @@ export const ApiEndpoints = {
     SCENARIO_SESSION_BY_PATH_ITEM: (pathSessionItemId: string) =>
       `/v1/learn/scenario-session/scenario-path-session-item/${pathSessionItemId}`,
     GET_AVAILABLE_LANGUAGES: "/v1/learn/scenario-languages",
+    GET_SCENARIO_CASE_DETAILS: (caseId: string) => `/v1/learn/scenario-paths/${caseId}`, // TODO: change to /v1/learn/scenario-cases/${caseId} when the feature flag is enabled
+    SCENARIO_SESSION_BY_CASE_ITEM: (caseSessionItemId: string) =>
+      `/v1/learn/scenario-session/scenario-path-session-item/${caseSessionItemId}`, // TODO: change to /v1/learn/scenario-session/scenario-case-session-item/${caseSessionItemId} when the feature flag is enabled
+    START_CASE_SIMULATION: (caseId: string) => `/v1/learn/scenario-paths/${caseId}/create-session`, // TODO: change to /v1/learn/scenario-cases/${caseId}/create-session when the feature flag is enabled
   },
   SIMULATION: {
     SIMULATION_CREDITS: "/v1/simulation-credits",

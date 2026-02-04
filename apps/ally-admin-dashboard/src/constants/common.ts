@@ -60,6 +60,11 @@ export const ApiEndpoints = {
     POST_LOGO_URL: "v1/tenants/logo-url",
     DELETE_LOGO: "v1/tenants/logo",
     DYNAMIC_BRANCHING_INSTRUCTIONS: "/v1/learn/branching-instruction-dynamic-shortcuts",
+    SCENARIO_CASES: "/v1/learn/admin/scenario-paths", // TODO: change to /v1/learn/admin/scenario-cases
+    SCENARIO_CASE_BY_ID: (id: string | number) => `/v1/learn/admin/scenario-paths/${id}`, // TODO: change to /v1/learn/admin/scenario-cases/${id}
+    DUPLICATE_SCENARIO_CASE: (id: string | number) =>
+      `/v1/learn/admin/scenario-paths/${id}/duplicate`, // TODO: change to /v1/learn/admin/scenario-cases/${id}/duplicate
+    UPDATE_SIMULATION_CASE_BY_ID: (id: string | number) => `/v1/learn/admin/scenario-paths/${id}`, // TODO: change to /v1/learn/admin/scenario-cases/${id}
   },
 
   USER_MANAGEMENT: {
@@ -69,6 +74,7 @@ export const ApiEndpoints = {
     TENANTS_BY_ID: (id: string) => `/v1/tenants/${id}`,
     ADD_USER: "/v1/users",
     SIMULATION_CREDITS: "/v1/simulation-credits",
+    SUMMARY_SECTIONS: `/v1/settings/summary-sections`,
   },
   AUTHORIZATION: {
     GET_PERMISSIONS: "/v1/authorization/permissions",
@@ -91,6 +97,8 @@ export const ROUTES = {
   ORGANIZATION_DETAIL: (id: string | number) => `/user-management/organization/${id}`,
   CREATE_PATH: "/create-path",
   EDIT_PATH: (id: string | number) => `/create-path/edit/${id}`,
+  CREATE_CASE: "/create-case",
+  EDIT_CASE: (id: string | number) => `/create-case/edit/${id}`,
 };
 
 export const LOCAL_STORAGE_KEYS = {
@@ -144,7 +152,10 @@ export const TAG_TYPES = {
   SIMULATION_PATHS: "simulationPaths",
   SCENARIO_PATHS: "scenarioPaths",
   EACH_SESSION: "eachSession",
+  SIMULATION_CASES: "simulationCases",
   TRIGGER_WARNINGS: "triggerWarnings",
   SCENARIO_VOICES: "scenarioVoices",
   SCENARIO_LANGUAGES: "scenarioLanguages",
+  SUMMARY_SECTIONS: "summarySections",
+  UPDATE_SUMMARY_SECTIONS: "updateSummarySections",
 };

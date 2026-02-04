@@ -3,6 +3,13 @@ import { vi, describe, it, expect, beforeEach } from "vitest";
 
 import { ScribeSettings } from "../ScribeSettings";
 
+// Mock feature flags
+vi.mock("@ally-ui-mono/ui-shared/featureFlag", () => ({
+  FEATURE_FLAGS_MAP: {
+    SCRIBE_SETTINGS_FLAG: true,
+  },
+}));
+
 // Mock the components
 vi.mock("@components", () => ({
   ToggleSwitch: ({ enabled, onChange, label }: any) => (
@@ -21,6 +28,21 @@ vi.mock("@components", () => ({
       <div data-testid={`accordion-content-${title}`}>{children}</div>
     </div>
   ),
+  cellTypes: {
+    editableText: "editableText",
+    dropdown: "dropdown",
+    dropdownSearchable: "dropdownSearchable",
+    number: "number",
+    select: "select",
+    switch: "switch",
+    emoji_select: "emoji_select",
+    normalText: "normalText",
+    triggerConditions: "triggerConditions",
+    timeInput: "timeInput",
+    score: "score",
+    textAreaWithDropdown: "textAreaWithDropdown",
+    tags: "tags",
+  },
 }));
 
 // Mock assets
@@ -29,34 +51,89 @@ vi.mock("@assets", () => ({
 }));
 
 // Mock constants
-vi.mock("@constants", () => ({
-  en: {
-    userManagement: {
-      enabled: "Enabled",
-      disabled: "Disabled",
-      additionalFields: "Additional Fields",
+vi.mock("@constants", async importOriginal => {
+  const actual = await importOriginal<typeof import("@constants")>();
+  return {
+    ...actual,
+    en: {
+      userManagement: {
+        enabled: "Enabled",
+        disabled: "Disabled",
+        additionalFields: "Additional Fields",
+      },
     },
-  },
+  };
+});
+
+// Mock API
+const mockSummarySectionsData = {
+  sections: [
+    {
+      id: 1,
+      label: "Intake",
+      enabled: true,
+      defaultVisibility: true,
+      fields: [
+        {
+          id: 1,
+          label: "Intake Notes",
+          visible: true,
+        },
+        {
+          id: 2,
+          label: "Risk, Self Harm",
+          visible: false,
+        },
+        {
+          id: 3,
+          label: "Risk, Self Harm Notes",
+          visible: false,
+        },
+      ],
+    },
+    {
+      id: 2,
+      label: "Ongoing Risks",
+      enabled: false,
+      defaultVisibility: false,
+      fields: [
+        {
+          id: 4,
+          label: "Risk, Self Harm Notes",
+          visible: false,
+        },
+      ],
+    },
+  ],
+};
+
+vi.mock("@api", () => ({
+  useGetSummarySectionsQuery: () => ({
+    data: mockSummarySectionsData,
+    isLoading: false,
+  }),
 }));
 
 describe("ScribeSettings", () => {
+  const mockTenantId = "test-tenant-id";
+
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
   it("renders the component with title", () => {
-    render(<ScribeSettings />);
+    render(<ScribeSettings tenantId={mockTenantId} />);
     expect(screen.getByText("Additional Fields")).toBeInTheDocument();
   });
 
   it("renders all parent accordions", () => {
-    render(<ScribeSettings />);
+    render(<ScribeSettings tenantId={mockTenantId} />);
     expect(screen.getByTestId("accordion-Intake")).toBeInTheDocument();
     expect(screen.getByTestId("accordion-Ongoing Risks")).toBeInTheDocument();
   });
 
   it("renders child items within accordions", () => {
-    render(<ScribeSettings />);
+    render(<ScribeSettings tenantId={mockTenantId} />);
     const intakeContent = screen.getByTestId("accordion-content-Intake");
     const ongoingRisksContent = screen.getByTestId("accordion-content-Ongoing Risks");
 
@@ -69,7 +146,7 @@ describe("ScribeSettings", () => {
   });
 
   it("displays enabled/disabled status for child items", () => {
-    render(<ScribeSettings />);
+    render(<ScribeSettings tenantId={mockTenantId} />);
     const intakeNotesToggle = screen.getByTestId("toggle-Intake Notes");
     expect(intakeNotesToggle).toHaveAttribute("data-enabled", "true");
 
@@ -78,7 +155,7 @@ describe("ScribeSettings", () => {
   });
 
   it("displays enabled/disabled status for parent items", () => {
-    render(<ScribeSettings />);
+    render(<ScribeSettings tenantId={mockTenantId} />);
     const intakeToggle = screen.getByTestId("toggle-Intake");
     expect(intakeToggle).toHaveAttribute("data-enabled", "true");
 
@@ -87,7 +164,7 @@ describe("ScribeSettings", () => {
   });
 
   it("toggles child item when clicked", () => {
-    render(<ScribeSettings />);
+    render(<ScribeSettings tenantId={mockTenantId} />);
     const riskSelfHarmToggle = screen.getByTestId("toggle-Risk, Self Harm");
     expect(riskSelfHarmToggle).toHaveAttribute("data-enabled", "false");
 
@@ -96,7 +173,7 @@ describe("ScribeSettings", () => {
   });
 
   it("toggles parent item when clicked and updates all children", () => {
-    render(<ScribeSettings />);
+    render(<ScribeSettings tenantId={mockTenantId} />);
     const intakeToggle = screen.getByTestId("toggle-Intake");
     const intakeNotesToggle = screen.getByTestId("toggle-Intake Notes");
 
@@ -114,7 +191,7 @@ describe("ScribeSettings", () => {
   });
 
   it("disables parent when all children are disabled", () => {
-    render(<ScribeSettings />);
+    render(<ScribeSettings tenantId={mockTenantId} />);
     const intakeToggle = screen.getByTestId("toggle-Intake");
     const intakeNotesToggle = screen.getByTestId("toggle-Intake Notes");
 
@@ -126,7 +203,7 @@ describe("ScribeSettings", () => {
   });
 
   it("does not enable parent when any child is enabled", () => {
-    render(<ScribeSettings />);
+    render(<ScribeSettings tenantId={mockTenantId} />);
     const ongoingRisksToggle = screen.getByTestId("toggle-Ongoing Risks");
     const ongoingRisksContent = screen.getByTestId("accordion-content-Ongoing Risks");
     const riskSelfHarmNotesToggle = within(ongoingRisksContent).getByTestId(
@@ -147,7 +224,7 @@ describe("ScribeSettings", () => {
   });
 
   it("keeps parent enabled when some children are enabled", () => {
-    render(<ScribeSettings />);
+    render(<ScribeSettings tenantId={mockTenantId} />);
     const intakeToggle = screen.getByTestId("toggle-Intake");
     const riskSelfHarmToggle = screen.getByTestId("toggle-Risk, Self Harm");
 
@@ -159,7 +236,7 @@ describe("ScribeSettings", () => {
   });
 
   it("disables parent toggle when no children are enabled", () => {
-    render(<ScribeSettings />);
+    render(<ScribeSettings tenantId={mockTenantId} />);
     const ongoingRisksHeader = screen.getByTestId("accordion-header-Ongoing Risks");
     const disabledWrapper = ongoingRisksHeader.querySelector(".cursor-not-allowed");
 
@@ -168,7 +245,7 @@ describe("ScribeSettings", () => {
   });
 
   it("enables parent toggle when at least one child is enabled", () => {
-    render(<ScribeSettings />);
+    render(<ScribeSettings tenantId={mockTenantId} />);
     const intakeHeader = screen.getByTestId("accordion-header-Intake");
     const disabledWrapper = intakeHeader.querySelector(".cursor-not-allowed");
 
@@ -177,7 +254,7 @@ describe("ScribeSettings", () => {
   });
 
   it("renders all child items for each parent", () => {
-    render(<ScribeSettings />);
+    render(<ScribeSettings tenantId={mockTenantId} />);
     const intakeContent = screen.getByTestId("accordion-content-Intake");
 
     expect(intakeContent).toHaveTextContent("Intake Notes");
@@ -186,7 +263,7 @@ describe("ScribeSettings", () => {
   });
 
   it("displays correct enabled/disabled text for child items", () => {
-    render(<ScribeSettings />);
+    render(<ScribeSettings tenantId={mockTenantId} />);
     // Intake parent (enabled) + Intake Notes child (enabled) = 2
     expect(screen.getAllByText("Enabled")).toHaveLength(2);
     // Ongoing Risks parent (disabled) + 3 disabled children = 4
@@ -195,7 +272,7 @@ describe("ScribeSettings", () => {
   });
 
   it("updates enabled/disabled text when child is toggled", () => {
-    render(<ScribeSettings />);
+    render(<ScribeSettings tenantId={mockTenantId} />);
     const riskSelfHarmToggle = screen.getByTestId("toggle-Risk, Self Harm");
 
     // Initially disabled

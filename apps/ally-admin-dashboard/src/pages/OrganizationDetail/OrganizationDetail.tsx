@@ -142,7 +142,7 @@ export const OrganizationDetail: FC = () => {
           />
         );
       case TAB_IDS.SCRIBE_SETTINGS:
-        return <ScribeSettings />;
+        return <ScribeSettings tenantId={id} />;
       default:
         return null;
     }
