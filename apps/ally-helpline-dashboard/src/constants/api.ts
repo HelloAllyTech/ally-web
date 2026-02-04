@@ -53,6 +53,7 @@ export const ApiEndpoints = {
     GET_TRANSCRIPT: (chatId: number) => `/v1/chats/${chatId}/messages`,
     UPDATE_CALL_SUMMARY_NOTES: (chatId: string) => `/v1/chats/${chatId}/notes`,
     SUBMIT_FEEDBACK: (chatId: string) => `/v1/chats/${chatId}/summary-feedback`,
+    SUMMARY_FIELDS: "/v1/settings/summary-fields",
   },
   SEARCH: {
     GET_CATEGORIES: "/v1/reference-document/categories",
