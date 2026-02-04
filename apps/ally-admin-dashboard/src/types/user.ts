@@ -230,3 +230,16 @@ export interface GetLogoUrlResponse {
 export interface DeleteLogoRequest {
   logoUrl: string;
 }
+
+export interface ScribeSettingsItem {
+  id: number;
+  title: string;
+  isEnabled: boolean;
+}
+
+export interface ScribeSettingsListResponse {
+  id: number;
+  data: ScribeSettingsItem[];
+  title: string;
+  isEnabled: boolean;
+}
