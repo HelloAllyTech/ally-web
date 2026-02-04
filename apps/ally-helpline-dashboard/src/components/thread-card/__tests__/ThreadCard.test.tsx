@@ -29,7 +29,7 @@ describe("ThreadCard Component", () => {
     createdBy: {
       id: 1,
       name: "John Doe",
-      profileUrl: "https://example.com/john.jpg",
+      profileImage: "https://example.com/john.jpg",
     },
     createdAt: "2024-01-15T10:00:00Z",
     reactions: {},
@@ -37,7 +37,7 @@ describe("ThreadCard Component", () => {
   };
 
   const mockThread = {
-    id: 1,
+    id: "1",
     selection: {
       text: "selected text here",
       startIndex: 0,
@@ -45,15 +45,15 @@ describe("ThreadCard Component", () => {
       messageId: 100,
     },
     comments: [
-      { ...mockCommentBase, id: 1, content: "First comment" },
-      { ...mockCommentBase, id: 2, content: "Second comment" },
-      { ...mockCommentBase, id: 3, content: "Third comment" },
+      { ...mockCommentBase, id: "1", content: "First comment" },
+      { ...mockCommentBase, id: "2", content: "Second comment" },
+      { ...mockCommentBase, id: "3", content: "Third comment" },
     ],
   };
 
   const mockThreadSingleComment = {
     ...mockThread,
-    comments: [{ ...mockCommentBase, id: 1, content: "Only comment" }],
+    comments: [{ ...mockCommentBase, id: "1", content: "Only comment" }],
   };
 
   beforeEach(() => {
@@ -282,8 +282,8 @@ describe("ThreadCard Component", () => {
       const threadWithTwoComments = {
         ...mockThread,
         comments: [
-          { ...mockCommentBase, id: 1, content: "First comment" },
-          { ...mockCommentBase, id: 2, content: "Second comment" },
+          { ...mockCommentBase, id: "1", content: "First comment" },
+          { ...mockCommentBase, id: "2", content: "Second comment" },
         ],
       };
       render(<ThreadCard thread={threadWithTwoComments} />);
@@ -368,7 +368,7 @@ describe("ThreadCard Component", () => {
     it("should render correctly with different thread ids", () => {
       const threadWithDifferentId = {
         ...mockThread,
-        id: 999,
+        id: "999",
       };
       render(<ThreadCard thread={threadWithDifferentId} />);
       expect(screen.getByText('Selected text: "selected text here"')).toBeInTheDocument();

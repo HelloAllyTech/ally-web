@@ -158,6 +158,7 @@ describe("SelectableText Component", () => {
   const mockSetNewCommentSelection = vi.fn();
   const mockOnCancelComment = vi.fn();
   const mockOnCommentChange = vi.fn();
+  const mockOnDeleteComment = vi.fn();
 
   const defaultProps = {
     segment: mockSegment,
@@ -179,6 +180,7 @@ describe("SelectableText Component", () => {
     setNewCommentSelection: mockSetNewCommentSelection,
     onCancelComment: mockOnCancelComment,
     onCommentChange: mockOnCommentChange,
+    onDeleteComment: mockOnDeleteComment,
   };
 
   let mockStore: ReturnType<typeof createMockStore>;
