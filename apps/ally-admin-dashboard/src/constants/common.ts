@@ -74,6 +74,7 @@ export const ApiEndpoints = {
     TENANTS_BY_ID: (id: string) => `/v1/tenants/${id}`,
     ADD_USER: "/v1/users",
     SIMULATION_CREDITS: "/v1/simulation-credits",
+    SUMMARY_SECTIONS: `/v1/settings/summary-sections`,
   },
   AUTHORIZATION: {
     GET_PERMISSIONS: "/v1/authorization/permissions",
@@ -155,4 +156,6 @@ export const TAG_TYPES = {
   TRIGGER_WARNINGS: "triggerWarnings",
   SCENARIO_VOICES: "scenarioVoices",
   SCENARIO_LANGUAGES: "scenarioLanguages",
+  SUMMARY_SECTIONS: "summarySections",
+  UPDATE_SUMMARY_SECTIONS: "updateSummarySections",
 };
