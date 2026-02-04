@@ -27,6 +27,7 @@ import {
   ScenarioPathwayDetails,
   GetUpComingSimulationResponse,
   LanguageOption,
+  ScenarioCaseDetails,
 } from "@types";
 
 import { baseAPI } from "./baseAPI";
@@ -239,6 +240,44 @@ const learnAPI = baseAPI.injectEndpoints({
         method: HttpMethod.GET,
       }),
     }),
+    /**
+     * Get details for a specific case by id.
+     * @param {string} caseId - Case identifier
+     * @returns {Promise<ScenarioCaseDetails>} Case details
+     */
+    getScenarioCaseDetails: builder.query<ScenarioCaseDetails, string>({
+      query: caseId => ({
+        url: ApiEndpoints.LEARN.GET_SCENARIO_CASE_DETAILS(caseId),
+        method: HttpMethod.GET,
+      }),
+    }),
+    /**
+     * Get details for a specific case session by id.
+     * @param {string} caseSessionItemId - Case session identifier
+     * @returns {Promise<ScenarioCaseSessionDetails>} Case session details
+     */
+    getScenarioSessionByCaseItem: builder.query<
+      {
+        id: string;
+      },
+      { caseSessionItemId: string }
+    >({
+      query: ({ caseSessionItemId }) => ({
+        url: ApiEndpoints.LEARN.SCENARIO_SESSION_BY_CASE_ITEM(caseSessionItemId),
+        method: HttpMethod.GET,
+      }),
+    }),
+    /**
+     * Start a new case simulation.
+     * @param {string} caseId - Case identifier
+     * @returns {Promise<void>} Started case simulation info
+     */
+    startCaseSimulation: builder.mutation<void, { caseId: string }>({
+      query: ({ caseId }) => ({
+        url: ApiEndpoints.LEARN.START_CASE_SIMULATION(caseId),
+        method: HttpMethod.POST,
+      }),
+    }),
   }),
 });
 
@@ -259,4 +298,7 @@ export const {
   useStartPathwaySimulationMutation,
   useLazyGetScenarioSessionByPathItemQuery,
   useGetAvailableLanguagesQuery,
+  useGetScenarioCaseDetailsQuery,
+  useLazyGetScenarioSessionByCaseItemQuery,
+  useStartCaseSimulationMutation,
 } = learnAPI;
