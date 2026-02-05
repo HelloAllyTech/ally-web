@@ -15,7 +15,7 @@ import {
   TimeWindowSection,
   EVENT_TYPE_POPUP_OPTIONS,
   TextareaWithTriggerDropdown,
-  EditableTagList,
+  SimpleTagSelector,
 } from "@components";
 import { en, EVENT_DETECTION_TYPES, toolTipStyles } from "@constants";
 import { useDebounce } from "@hooks";
@@ -338,29 +338,10 @@ export const EventSidePanel: React.FC<EventSidePanelProps> = ({
 
             <Field label="Tags">
               <div className="w-full">
-                <input
-                  type="text"
-                  placeholder="Type and press Enter to add tags"
-                  className="w-full border border-border-light rounded-md px-3 py-1 text-sm focus:outline-none"
-                  onKeyDown={e => {
-                    if (e.key === "Enter" || e.key === ",") {
-                      e.preventDefault();
-                      const value = e.currentTarget.value.trim();
-                      if (value && !formData.tags?.includes(value)) {
-                        handleFieldChange("tags", [...(formData.tags || []), value]);
-                        e.currentTarget.value = "";
-                      }
-                    }
-                  }}
-                />
-                <EditableTagList
-                  tags={formData.tags}
-                  onRemove={index => {
-                    const newTags = formData.tags?.filter((_, i) => i !== index) || [];
-                    handleFieldChange("tags", newTags);
-                  }}
-                  className="mt-2"
-                  tagClassName="text-sm py-1"
+                <SimpleTagSelector
+                  tags={formData.tags || []}
+                  updateTags={tags => handleFieldChange("tags", tags)}
+                  label=""
                 />
               </div>
             </Field>

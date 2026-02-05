@@ -103,20 +103,36 @@ vi.mock("@components", () => ({
       placeholder={placeholder}
     />
   ),
-  EditableTagList: ({ tags, onRemove, emptyText = "No tags" }: any) => (
-    <div data-testid="editable-tag-list">
-      {Array.isArray(tags) && tags.length > 0 ? (
-        tags.map((tag: string, index: number) => (
-          <span key={index}>
-            {tag}
-            <button onClick={() => onRemove(index)} data-testid={`remove-tag-${index}`}>
-              ×
-            </button>
-          </span>
-        ))
-      ) : (
-        <span>{emptyText}</span>
-      )}
+  SimpleTagSelector: ({ tags, updateTags, label }: any) => (
+    <div data-testid="simple-tag-selector">
+      {label && <label>{label}</label>}
+      <div>
+        {Array.isArray(tags) && tags.length > 0 ? (
+          tags.map((tag: string, index: number) => (
+            <span key={index} data-testid={`tag-${index}`}>
+              {tag}
+              <button
+                onClick={() => updateTags(tags.filter((_: any, i: number) => i !== index))}
+                data-testid={`remove-tag-${index}`}
+              >
+                ×
+              </button>
+            </span>
+          ))
+        ) : (
+          <span data-testid="no-tags">No tags</span>
+        )}
+        <button
+          data-testid="add-tag-button"
+          onClick={() => {
+            // Simulate adding a tag
+            const newTag = "new-tag";
+            updateTags([...tags, newTag]);
+          }}
+        >
+          Add +
+        </button>
+      </div>
     </div>
   ),
 }));
