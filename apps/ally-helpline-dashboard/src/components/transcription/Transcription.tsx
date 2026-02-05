@@ -32,7 +32,12 @@ interface TranscriptionProps {
   scrollContainerRef?: RefObject<HTMLElement>;
   councellorName?: string;
   agentName?: string;
-  onCommentChange: (comments: CommentItem[], threadId: string) => void;
+  onCommentChange: (
+    comments: CommentItem[],
+    threadId: string,
+    selection?: { text: string; startIndex: number; endIndex: number; messageId: number },
+    newThread?: boolean,
+  ) => void;
   onDeleteComment: () => void;
 }
 
