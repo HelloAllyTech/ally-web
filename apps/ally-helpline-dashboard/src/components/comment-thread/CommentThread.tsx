@@ -6,7 +6,7 @@ import { AutoExpandableTextarea, CustomImage, InfiniteScroll } from "@ally-ui-mo
 import { Button, CommentCard } from "@components";
 import { useGetReviewThreadCommentsQuery } from "@src/api";
 import { RootState } from "@store";
-import { CommentItem } from "@types";
+import { CommentItem, CommentChangeParams } from "@types";
 
 const PAGE_SIZE = 5;
 interface CommentThreadProps {
@@ -21,7 +21,7 @@ interface CommentThreadProps {
     endIndex: number;
   };
   setComments?: React.Dispatch<React.SetStateAction<CommentItem[]>>;
-  onCommentChange: (comments: CommentItem[], threadId: string) => void;
+  onCommentChange: (params: Omit<CommentChangeParams, "selection" | "newThread">) => void;
   threadsOffset: number;
   setThreadsOffset: React.Dispatch<React.SetStateAction<number>>;
 }
@@ -56,13 +56,13 @@ const CommentThread = ({
     const nextData = threadComments.data ?? [];
     if (threadsOffset === 0) {
       setComments?.(nextData);
-      onCommentChange?.(nextData, id);
+      onCommentChange?.({ comments: nextData, threadId: id });
     } else if (hasMore) {
       setComments?.((prev: CommentItem[]) => {
         const prevList = prev ?? [];
         const existingComments = new Set(prevList.map(comment => comment.id));
         const newComments = nextData.filter(comment => !existingComments.has(comment.id));
-        onCommentChange?.([...prevList, ...newComments], id);
+        onCommentChange?.({ comments: [...prevList, ...newComments], threadId: id });
         return [...prevList, ...newComments];
       });
     }
@@ -140,30 +140,34 @@ const CommentThread = ({
   };
 
   const handleToggleHide = (hidden: boolean, commentId: string) => {
-    onCommentChange?.(
-      comments.map(comment => (comment.id === commentId ? { ...comment, hidden } : comment)),
-      id,
-    );
+    onCommentChange?.({
+      comments: comments.map(comment =>
+        comment.id === commentId ? { ...comment, hidden } : comment,
+      ),
+      threadId: id,
+    });
     setComments?.(prev =>
       prev.map(comment => (comment.id === commentId ? { ...comment, hidden } : comment)),
     );
   };
 
   const onUpdateComment = (content: string, commentId: string) => {
-    onCommentChange?.(
-      comments.map(comment => (comment.id === commentId ? { ...comment, content } : comment)),
-      id,
-    );
+    onCommentChange?.({
+      comments: comments.map(comment =>
+        comment.id === commentId ? { ...comment, content } : comment,
+      ),
+      threadId: id,
+    });
     setComments?.(prev =>
       prev.map(comment => (comment.id === commentId ? { ...comment, content } : comment)),
     );
   };
 
   const handleDeleteComment = (commentId: string) => {
-    onCommentChange?.(
-      comments.filter(comment => comment.id !== commentId),
-      id,
-    );
+    onCommentChange?.({
+      comments: comments.filter(comment => comment.id !== commentId),
+      threadId: id,
+    });
     setComments?.(prev => prev.filter(comment => comment.id !== commentId));
     onDeleteComment((comments ?? []).length - 1);
   };
@@ -173,7 +177,7 @@ const CommentThread = ({
       const newComments = prev.map(comment =>
         comment.id === commentId ? { ...comment, replyCount: count } : comment,
       );
-      onCommentChange?.(newComments, id);
+      onCommentChange?.({ comments: newComments, threadId: id });
       return newComments;
     });
   };
@@ -181,7 +185,7 @@ const CommentThread = ({
   const onEachCommentChange = (comment: CommentItem) => {
     setComments?.(prev => {
       const newComments = prev.map(c => (c.id === comment.id ? comment : c));
-      onCommentChange?.(newComments, id);
+      onCommentChange?.({ comments: newComments, threadId: id });
       return newComments;
     });
   };

@@ -10,7 +10,7 @@ import CommentAdditionDialog from "@src/components/comment-addition-dialog/Comme
 import CommentThread from "@src/components/comment-thread/CommentThread";
 import { useClickOutside } from "@src/hooks";
 import { RootState } from "@src/store";
-import { CommentItem, SimulationTranscriptMessage } from "@src/types";
+import { CommentItem, CommentChangeParams, SimulationTranscriptMessage } from "@src/types";
 
 const DIALOG_WIDTH = 360;
 
@@ -54,12 +54,7 @@ interface SelectableTextProps {
     } | null,
   ) => void;
   onCancelComment: () => void;
-  onCommentChange: (
-    comments: CommentItem[],
-    threadId: string,
-    selection?: { text: string; startIndex: number; endIndex: number; messageId: number },
-    newThread?: boolean,
-  ) => void;
+  onCommentChange: (params: CommentChangeParams) => void;
   onAddComment: () => void;
 }
 const SelectableText = ({
@@ -138,17 +133,25 @@ const SelectableText = ({
         myReaction: null,
         hidden: false,
       };
-      onCommentChange?.(
-        [...(comments ?? []), newComment],
-        selectedThreadId || createCommentData.thread.id,
-        {
+      onCommentChange?.({
+        comments: [...(comments ?? []), newComment],
+        threadId: selectedThreadId || createCommentData.thread.id,
+        transcript: {
+          id: transcript.id,
+          content: transcript.content,
+          senderId: transcript.senderId,
+          startSeconds: transcript.startSeconds,
+          endSeconds: transcript.endSeconds,
+          createdAt: transcript.createdAt,
+        },
+        selection: {
           text: segment.text,
           startIndex: segment.start,
           endIndex: segment.end,
           messageId: transcript.id,
         },
-        !selectedThreadId,
-      );
+        newThread: !selectedThreadId,
+      });
       setComments(prev => [...(prev ?? []), newComment]);
       setNewCommentSelection(null);
     }
@@ -192,7 +195,7 @@ const SelectableText = ({
 
   const handleDeleteComment = (commentCount: number) => {
     if (commentCount === 0) {
-      onCommentChange?.([], selectedThreadId);
+      onCommentChange?.({ comments: [], threadId: selectedThreadId });
       handleCloseSelectedComment();
     }
     onDeleteComment?.();

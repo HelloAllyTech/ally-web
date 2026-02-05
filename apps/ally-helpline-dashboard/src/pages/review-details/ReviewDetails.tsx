@@ -23,7 +23,7 @@ import {
 import { KeyboardKeys, REVIEW_PRIVACY_OPTIONS, TAG_TYPES } from "@constants";
 import { baseAPI } from "@src/api/baseAPI";
 import { RootState } from "@store";
-import { CommentItem, ReactionsType, SimulationTranscriptMessage, Thread } from "@types";
+import { CommentChangeParams, ReactionsType, SimulationTranscriptMessage, Thread } from "@types";
 import { getFormattedDateTime, getFormattedTimeFromDuration } from "@utils";
 
 import { TRANSCRIPT_PAGE_SIZE } from "../calls/components/constants";
@@ -159,15 +159,21 @@ export const ReviewDetails = () => {
     return reactionsCount;
   }, [reviewReactions]);
 
-  const handleCommentChange = (
-    comments: CommentItem[],
-    threadId: string,
-    selection?: { text: string; startIndex: number; endIndex: number; messageId: number },
-    newThread?: boolean,
-  ) => {
+  const handleCommentChange = ({
+    comments,
+    threadId,
+    transcript: transcriptData,
+    selection,
+    newThread,
+  }: CommentChangeParams) => {
     if (threadId) {
       setTranscriptList(prev => {
         const newTranscriptList = prev.map(transcript => {
+          // If transcript data is provided, only update the matching transcript
+          if (transcriptData && transcript.id !== transcriptData.id) {
+            return transcript;
+          }
+
           const threads = !newThread
             ? transcript.threads?.map(thread =>
                 thread.id === threadId
