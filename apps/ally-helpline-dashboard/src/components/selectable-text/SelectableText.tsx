@@ -60,6 +60,7 @@ interface SelectableTextProps {
     selection?: { text: string; startIndex: number; endIndex: number; messageId: number },
     newThread?: boolean,
   ) => void;
+  onAddComment: () => void;
 }
 const SelectableText = ({
   segment,
@@ -81,6 +82,7 @@ const SelectableText = ({
   commentsList,
   onCancelComment,
   onCommentChange,
+  onAddComment,
   onDeleteComment,
 }: SelectableTextProps) => {
   const { reviewId } = useParams<{ reviewId: string }>();
@@ -116,6 +118,7 @@ const SelectableText = ({
     if (isCreateCommentSuccess) {
       toast.success("Comment created successfully");
       setAddCommentDialogOpen(null);
+      onAddComment?.();
     }
   }, [isCreateCommentSuccess]);
 
