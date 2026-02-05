@@ -108,9 +108,9 @@ export const SessionChecklist: FC<SessionChecklistProps> = ({ mode, items, trigg
                 {mode === ChecklistMode.GUIDED && item.message && (
                   <div className="text-white shrink-0 opacity-70">
                     {isExpanded ? (
-                      <Triangle className="w-3 h-3 rotate-180" fill="white" />
-                    ) : (
                       <Triangle className="w-3 h-3" fill="white" />
+                    ) : (
+                      <Triangle className="w-3 h-3 rotate-180" fill="white" />
                     )}
                   </div>
                 )}
