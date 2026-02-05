@@ -4,7 +4,7 @@ import "./styles.css";
 
 import { InfiniteScroll } from "@ally-ui-mono/ui-shared/index";
 import SelectableText from "@src/components/selectable-text/SelectableText";
-import { CommentItem, SimulationTranscriptMessage, Thread } from "@types";
+import { CommentItem, CommentChangeParams, SimulationTranscriptMessage, Thread } from "@types";
 
 import { getFreshUserRange, splitByCommentRanges } from "./utils";
 
@@ -32,12 +32,7 @@ interface TranscriptionProps {
   scrollContainerRef?: RefObject<HTMLElement>;
   councellorName?: string;
   agentName?: string;
-  onCommentChange: (
-    comments: CommentItem[],
-    threadId: string,
-    selection?: { text: string; startIndex: number; endIndex: number; messageId: number },
-    newThread?: boolean,
-  ) => void;
+  onCommentChange: (params: CommentChangeParams) => void;
   onDeleteComment: () => void;
   onAddComment: () => void;
 }

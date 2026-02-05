@@ -51,7 +51,7 @@ vi.mock("@src/components/selectable-text/SelectableText", () => ({
       {onCommentChange && (
         <button
           data-testid={`comment-change-${segIdx}`}
-          onClick={() => onCommentChange([], "thread-1")}
+          onClick={() => onCommentChange({ comments: [], threadId: "thread-1" })}
         >
           Comment Change
         </button>
