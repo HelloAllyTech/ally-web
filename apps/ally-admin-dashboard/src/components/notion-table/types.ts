@@ -77,4 +77,5 @@ export interface NotionTableProps {
   onRowChange?: (action: any) => void;
   onRowClick?: (rowIndex: number) => void;
   onSelectionChange?: (selectedRows: any[]) => void;
+  autoHeight?: boolean;
 }

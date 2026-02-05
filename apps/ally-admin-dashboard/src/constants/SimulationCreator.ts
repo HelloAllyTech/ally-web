@@ -89,6 +89,11 @@ export const SIMULATION_CREATOR_STEP_IDS = {
   advancedSettings: "advanced-settings",
 };
 
+export const BEHAVIOURS_INSTRUCTION_CATEGORIES = [
+  { value: "HELPER SHOULD DO", label: "Helper should do" },
+  { value: "HELPER SHOULD NOT DO", label: "Helper should not do" },
+];
+
 export const StepperList = [
   { id: SIMULATION_CREATOR_STEP_IDS.overview, title: "Overview" },
   { id: SIMULATION_CREATOR_STEP_IDS.basicSettings, title: "Basic Settings" },
@@ -107,6 +112,8 @@ export const FORM_FIELD_TYPES = {
     LANGUAGE_VOICE_MAPPING: "language_voice_mapping",
     RADIO_BUTTONS: "radio_buttons",
     CHARACTER_PROFILE_SELECTOR: "character_profile_selector",
+    BEHAVIOURS_INSTRUCTION: "behaviours_instruction",
+    STATES_INSTRUCTION: "states_instruction",
   },
   TOGGLE_BUTTON: "toggle_button",
   TAG_AND_DROPDOWN: "tag_and_dropdown",
@@ -514,18 +521,14 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
       {
         id: "behaviourInstructions",
         label: "Behaviour Instructions",
-        type: FORM_FIELD_TYPES.TEXT,
-        multiline: true,
+        type: FORM_FIELD_TYPES.CUSTOM.BEHAVIOURS_INSTRUCTION,
         fullWidth: true,
-        maxLength: 1000,
       },
       {
         id: "stateInstructions",
         label: "State Instructions & Dialogues",
-        type: FORM_FIELD_TYPES.TEXT,
-        multiline: true,
+        type: FORM_FIELD_TYPES.CUSTOM.STATES_INSTRUCTION,
         fullWidth: true,
-        maxLength: 1000,
       },
       {
         id: "customFields",
@@ -914,4 +917,38 @@ export const CHARACTER_LIBRARY_TABLE_COLUMNS = [
     options: SEXUAL_ORIENTATION_OPTIONS,
     minWidth: 180,
   },
+];
+
+export const BEHAVIOURS_INSTRUCTION_TABLE_COLUMNS = [
+  {
+    id: "category",
+    label: "Category",
+    accessor: "category",
+    placeholder: "Add Name",
+    dataType: cellTypes.dropdown,
+    options: BEHAVIOURS_INSTRUCTION_CATEGORIES,
+    minWidth: 240,
+  },
+  {
+    id: "behaviours",
+    label: "Helper behaviours",
+    accessor: "behaviours",
+    placeholder: "Add Instruction",
+    dataType: cellTypes.dropdownTags,
+    minWidth: 300,
+  },
+  {
+    id: "response",
+    label: "Actors response (optional)",
+    accessor: "response",
+    placeholder: "Add Response",
+    dataType: cellTypes.editableText,
+    minWidth: 310,
+  },
+];
+
+export const STATES_INSTRUCTION_TABLE_HEADERS = [
+  { key: "states", header: "States", editable: false },
+  { key: "instruction", header: "Instruction", editable: true },
+  { key: "dialogue", header: "Dialogue", editable: true },
 ];

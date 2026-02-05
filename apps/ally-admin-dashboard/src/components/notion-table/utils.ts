@@ -16,6 +16,7 @@ export const cellTypes = {
   score: "score",
   textAreaWithDropdown: "textAreaWithDropdown",
   tags: "tags",
+  dropdownTags: "dropdownTags",
 };
 
 export const keyCodes = {
