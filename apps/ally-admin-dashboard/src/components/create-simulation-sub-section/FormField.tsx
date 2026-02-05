@@ -4,6 +4,7 @@ import { FILE_TYPE, FORM_FIELD_TYPES, en } from "@constants";
 import { FormFieldProps } from "@types";
 
 import { AutoTerminationRuleField } from "../auto-termination-rule-field";
+import { BehavioursInstruction } from "../behaviours-instruction";
 import { CharacterProfileSelector } from "../character-profile-selector";
 import { CustomFieldGroup } from "../custom-field-group";
 import { DropdownField } from "../dropdown-field";
@@ -11,6 +12,7 @@ import { FileUpload } from "../file-upload";
 import { InputField } from "../input-field";
 import { LanguageVoiceMapping } from "../language-voice-mapping";
 import { RadioButtonGroup } from "../radio-button-group";
+import { StateInstruction } from "../states-instruction";
 import { TagSelector } from "../tag-selector";
 import { TimeInput } from "../time-input";
 import { ToggleSection } from "../toggle-section";
@@ -194,6 +196,10 @@ export const FormField: FC<FormFieldProps> = ({ config, formMethods }) => {
             isMandatory={isMandatory}
           />
         );
+      case FORM_FIELD_TYPES.CUSTOM.BEHAVIOURS_INSTRUCTION:
+        return <BehavioursInstruction />;
+      case FORM_FIELD_TYPES.CUSTOM.STATES_INSTRUCTION:
+        return <StateInstruction />;
       default:
         return null;
     }

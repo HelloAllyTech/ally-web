@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 
-import { EmojiPickerComponent, TimeInput, TagList } from "@components";
+import { EmojiPickerComponent, TimeInput, TagList, HelperTag } from "@components";
 import {
   EditableTextPopup,
   NumberInput,
@@ -31,6 +31,7 @@ export const Cell = ({
   // Extract value and disabled from the cell data structure
   const cellValue = initialValue?.value !== undefined ? initialValue.value : initialValue;
   const isDisabled = initialValue?.disabled !== undefined ? initialValue.disabled : false;
+  const existingBehaviours = row?.behaviours?.value;
 
   const [value, setValue] = useState({ value: cellValue, update: false });
 
@@ -250,6 +251,9 @@ export const Cell = ({
       break;
     case cellTypes.tags:
       element = <TagList tags={value.value} />;
+      break;
+    case cellTypes.dropdownTags:
+      element = <HelperTag tags={existingBehaviours ?? []} updateTags={updateCellValue} />;
       break;
     default:
       element = <span />;

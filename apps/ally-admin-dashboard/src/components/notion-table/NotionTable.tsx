@@ -104,6 +104,7 @@ export const NotionTable = ({
   onRowChange,
   onRowClick,
   onSelectionChange,
+  autoHeight = false,
 }: NotionTableProps) => {
   const { columns, data } = tableData;
 
@@ -202,7 +203,13 @@ export const NotionTable = ({
   }
 
   return (
-    <div style={tableStyle} className="overflow-auto flex h-[calc(100vh-160px)] custom-scrollbar">
+    <div
+      style={tableStyle}
+      className={clsx(
+        "overflow-auto flex custom-scrollbar",
+        !autoHeight && "h-[calc(100vh-160px)]",
+      )}
+    >
       <div
         {...getTableProps()}
         className={clsx("w-full font-primary text-sm", isTableResizing() && "select-none")}
