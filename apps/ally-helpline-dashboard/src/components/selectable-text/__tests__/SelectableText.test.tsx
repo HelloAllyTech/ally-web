@@ -92,7 +92,10 @@ vi.mock("@src/components/comment-thread/CommentThread", () => ({
         </button>
       )}
       {onCommentChange && (
-        <button data-testid="thread-comment-change" onClick={() => onCommentChange([], id)}>
+        <button
+          data-testid="thread-comment-change"
+          onClick={() => onCommentChange({ comments: [], threadId: id })}
+        >
           Comment Change
         </button>
       )}
@@ -645,7 +648,7 @@ describe("SelectableText Component", () => {
       );
       const commentChangeButton = screen.getByTestId("thread-comment-change");
       fireEvent.click(commentChangeButton);
-      expect(mockOnCommentChange).toHaveBeenCalledWith([], "thread-1");
+      expect(mockOnCommentChange).toHaveBeenCalledWith({ comments: [], threadId: "thread-1" });
     });
 
     it("should pass setComments to CommentThread", () => {

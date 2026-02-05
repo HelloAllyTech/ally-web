@@ -103,6 +103,26 @@ export interface CommentItem {
   hidden?: boolean;
   myReaction?: string;
 }
+
+export interface CommentChangeParams {
+  comments: CommentItem[];
+  threadId: string;
+  transcript?: {
+    id: number;
+    content: string;
+    senderId: number;
+    startSeconds?: number;
+    endSeconds?: number | null;
+    createdAt?: string;
+  };
+  selection?: {
+    text: string;
+    startIndex: number;
+    endIndex: number;
+    messageId: number;
+  };
+  newThread?: boolean;
+}
 export interface Thread {
   id: string;
   selection: {
