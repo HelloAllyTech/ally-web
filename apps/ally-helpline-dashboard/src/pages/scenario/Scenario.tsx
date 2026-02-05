@@ -16,6 +16,7 @@ import {
   FallbackUI,
   CreditInfo,
   CreditsDisplay,
+  MaxActiveUsersDialog,
 } from "@components";
 import { AUTO_CLOSE_DIALOG_DURATION, LOCAL_STORAGE_KEYS, ROUTES } from "@constants";
 import { useSimulationCredits, useStartSimulation } from "@hooks";
@@ -49,6 +50,7 @@ export const Scenario: FC = () => {
   const [noCreditsLeft, setNoCreditsLeft] = useState<boolean>(false);
   const [notEnoughCredits, setNoEnoughCredits] = useState<boolean>(false);
   const [buttonDisable, setButtonDisable] = useState<boolean>(false);
+  const [isMaxActiveUsersPopupOpen, setIsMaxActiveUsersPopupOpen] = useState<boolean>(false);
 
   const {
     data: scenario,
@@ -249,6 +251,13 @@ export const Scenario: FC = () => {
               description="You don't have enough simulation credits to start this session"
               autoCloseDuration={AUTO_CLOSE_DIALOG_DURATION}
             />
+            {FEATURE_FLAGS_MAP.MAX_ACTIVE_USERS_POPUP_FLAG && (
+              <MaxActiveUsersDialog
+                open={isMaxActiveUsersPopupOpen}
+                onClose={() => setIsMaxActiveUsersPopupOpen(false)}
+                onRetry={() => {}}
+              />
+            )}
           </motion.div>
         ) : (
           <FallbackUI
