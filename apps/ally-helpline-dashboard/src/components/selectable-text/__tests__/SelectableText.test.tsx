@@ -162,6 +162,7 @@ describe("SelectableText Component", () => {
   const mockOnCancelComment = vi.fn();
   const mockOnCommentChange = vi.fn();
   const mockOnDeleteComment = vi.fn();
+  const mockOnAddComment = vi.fn();
 
   const defaultProps = {
     segment: mockSegment,
@@ -184,6 +185,7 @@ describe("SelectableText Component", () => {
     onCancelComment: mockOnCancelComment,
     onCommentChange: mockOnCommentChange,
     onDeleteComment: mockOnDeleteComment,
+    onAddComment: mockOnAddComment,
   };
 
   let mockStore: ReturnType<typeof createMockStore>;
@@ -648,7 +650,11 @@ describe("SelectableText Component", () => {
       );
       const commentChangeButton = screen.getByTestId("thread-comment-change");
       fireEvent.click(commentChangeButton);
-      expect(mockOnCommentChange).toHaveBeenCalledWith({ comments: [], threadId: "thread-1" });
+      expect(mockOnCommentChange).toHaveBeenCalledWith({
+        comments: [],
+        threadId: "thread-1",
+        transcript: { id: 101 },
+      });
     });
 
     it("should pass setComments to CommentThread", () => {

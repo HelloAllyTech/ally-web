@@ -110,15 +110,8 @@ const SelectableText = ({
   }, [commentsList]);
 
   useEffect(() => {
-    if (isCreateCommentSuccess) {
-      toast.success("Comment created successfully");
-      setAddCommentDialogOpen(null);
-      onAddComment?.();
-    }
-  }, [isCreateCommentSuccess]);
-
-  useEffect(() => {
     if (isCreateCommentSuccess && createCommentData?.comment) {
+      toast.success("Comment created successfully");
       const newComment: CommentItem = {
         id: createCommentData.comment.id,
         content: commentContent,
@@ -135,14 +128,9 @@ const SelectableText = ({
       };
       onCommentChange?.({
         comments: [...(comments ?? []), newComment],
-        threadId: selectedThreadId || createCommentData.thread.id,
+        threadId: createCommentData.thread?.id ?? selectedThreadId,
         transcript: {
           id: transcript.id,
-          content: transcript.content,
-          senderId: transcript.senderId,
-          startSeconds: transcript.startSeconds,
-          endSeconds: transcript.endSeconds,
-          createdAt: transcript.createdAt,
         },
         selection: {
           text: segment.text,
@@ -150,8 +138,9 @@ const SelectableText = ({
           endIndex: segment.end,
           messageId: transcript.id,
         },
-        newThread: !selectedThreadId,
       });
+      setAddCommentDialogOpen(null);
+      onAddComment?.();
       setComments(prev => [...(prev ?? []), newComment]);
       setNewCommentSelection(null);
     }
@@ -195,7 +184,11 @@ const SelectableText = ({
 
   const handleDeleteComment = (commentCount: number) => {
     if (commentCount === 0) {
-      onCommentChange?.({ comments: [], threadId: selectedThreadId });
+      onCommentChange?.({
+        comments: [],
+        threadId: selectedThreadId,
+        transcript: { id: transcript.id },
+      });
       handleCloseSelectedComment();
     }
     onDeleteComment?.();
@@ -385,7 +378,10 @@ const SelectableText = ({
             onCommentAddition={handleAddComment}
             onDeleteComment={handleDeleteComment}
             setComments={setComments}
-            onCommentChange={onCommentChange}
+            onCommentChange={params =>
+              onCommentChange({ ...params, transcript: { id: transcript.id } })
+            }
+            onAddComment={onAddComment}
             threadsOffset={threadsOffset}
             setThreadsOffset={setThreadsOffset}
           />

@@ -24,6 +24,7 @@ interface CommentThreadProps {
   onCommentChange: (params: Omit<CommentChangeParams, "selection" | "newThread">) => void;
   threadsOffset: number;
   setThreadsOffset: React.Dispatch<React.SetStateAction<number>>;
+  onAddComment: () => void;
 }
 const CommentThread = ({
   comments,
@@ -37,6 +38,7 @@ const CommentThread = ({
   onCommentChange,
   threadsOffset,
   setThreadsOffset,
+  onAddComment,
 }: CommentThreadProps) => {
   const user = useSelector((state: RootState) => state.user.user);
   const [comment, setComment] = useState("");
@@ -172,6 +174,10 @@ const CommentThread = ({
     onDeleteComment((comments ?? []).length - 1);
   };
 
+  const handleDeleteReply = () => {
+    onDeleteComment(1);
+  };
+
   const updateReplyCount = (count: number, commentId: string) => {
     setComments?.(prev => {
       const newComments = prev.map(comment =>
@@ -221,6 +227,8 @@ const CommentThread = ({
                 onUpdateComment={onUpdateComment}
                 updateReplyCount={count => updateReplyCount(count, comment.id)}
                 onCommentChange={onEachCommentChange}
+                onAddComment={onAddComment}
+                onDeleteReply={handleDeleteReply}
               />
             ))}
           </InfiniteScroll>
