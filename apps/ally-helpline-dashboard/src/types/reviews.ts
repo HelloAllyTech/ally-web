@@ -116,6 +116,7 @@ export interface CommentChangeParams {
     endIndex: number;
     messageId: number;
   };
+  isThreadExists?: boolean;
 }
 export interface Thread {
   id: string;

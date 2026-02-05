@@ -127,7 +127,7 @@ const SelectableText = ({
         hidden: false,
       };
       onCommentChange?.({
-        comments: [...(comments ?? []), newComment],
+        comments: [...(selectedThreadId ? comments : []), newComment],
         threadId: createCommentData.thread?.id ?? selectedThreadId,
         transcript: {
           id: transcript.id,
@@ -138,6 +138,7 @@ const SelectableText = ({
           endIndex: segment.end,
           messageId: transcript.id,
         },
+        isThreadExists: Boolean(selectedThreadId),
       });
       setAddCommentDialogOpen(null);
       onAddComment?.();
@@ -289,6 +290,7 @@ const SelectableText = ({
         endIndex: newCommentSelection.endIndex,
       },
     };
+    setCommentContent(comment);
     await createComment({
       reviewId: reviewId,
       body: body,

@@ -164,6 +164,7 @@ export const ReviewDetails = () => {
     threadId,
     transcript: transcriptData,
     selection,
+    isThreadExists = true,
   }: CommentChangeParams) => {
     if (threadId) {
       setTranscriptList(prev => {
@@ -172,10 +173,6 @@ export const ReviewDetails = () => {
           if (transcriptData && transcript.id !== transcriptData.id) {
             return transcript;
           }
-
-          const isThreadExists =
-            transcriptData.id === transcript.id &&
-            transcript.threads?.findIndex(thread => thread.id === threadId) !== -1;
 
           // const uniqueComments = comments.filter(
           //   (comment, index) => comments.lastIndexOf(comment) === index,
