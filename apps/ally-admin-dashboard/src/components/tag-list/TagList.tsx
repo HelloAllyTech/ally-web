@@ -1,4 +1,5 @@
 import React from "react";
+import { Close } from "@assets";
 
 interface TagProps {
   children?: React.ReactNode;
@@ -21,7 +22,7 @@ export const Tag: React.FC<TagProps> = ({ children, className = "", onRemove }) 
           className="ml-1.5 cursor-pointer hover:text-typography-700 transition-colors"
           onClick={onRemove}
         >
-          ×
+          <Close />
         </button>
       )}
     </span>
@@ -33,6 +34,8 @@ interface TagListProps {
   emptyText?: string;
   className?: string;
   tagClassName?: string | ((tag: string) => string);
+  onRemove?: (tag: string) => void;
+  children?: React.ReactNode;
 }
 
 /**
@@ -43,6 +46,8 @@ export const TagList: React.FC<TagListProps> = ({
   emptyText = "-",
   className = "",
   tagClassName = "",
+  onRemove,
+  children,
 }) => {
   const hasValidTags = Array.isArray(tags) && tags.length > 0;
 
@@ -53,17 +58,26 @@ export const TagList: React.FC<TagListProps> = ({
     return tagClassName;
   };
 
+  if (!hasValidTags && !children) {
+    return (
+      <div className={`flex flex-wrap gap-1 ${className}`}>
+        <span className="text-typography-400">{emptyText}</span>
+      </div>
+    );
+  }
+
   return (
     <div className={`flex flex-wrap gap-1 ${className}`}>
-      {hasValidTags ? (
-        tags.map((tag: string, index: number) => (
-          <Tag key={index} className={getTagClassName(tag)}>
-            {tag}
-          </Tag>
-        ))
-      ) : (
-        <span className="text-typography-400">{emptyText}</span>
-      )}
+      {tags?.map((tag: string, index: number) => (
+        <Tag
+          key={index}
+          className={getTagClassName(tag)}
+          onRemove={onRemove ? () => onRemove(tag) : undefined}
+        >
+          {tag}
+        </Tag>
+      ))}
+      {children}
     </div>
   );
 };

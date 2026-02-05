@@ -60,6 +60,7 @@ export const ApiEndpoints = {
     POST_LOGO_URL: "v1/tenants/logo-url",
     DELETE_LOGO: "v1/tenants/logo",
     DYNAMIC_BRANCHING_INSTRUCTIONS: "/v1/learn/branching-instruction-dynamic-shortcuts",
+    SESSION_EVENT_TAGS: "/v1/session-events/tags",
     SCENARIO_CASES: "/v1/learn/admin/scenario-paths", // TODO: change to /v1/learn/admin/scenario-cases
     SCENARIO_CASE_BY_ID: (id: string | number) => `/v1/learn/admin/scenario-paths/${id}`, // TODO: change to /v1/learn/admin/scenario-cases/${id}
     DUPLICATE_SCENARIO_CASE: (id: string | number) =>
@@ -147,6 +148,7 @@ export const TAG_TYPES = {
   USERS: "users",
   TENANTS: "tenants",
   SESSION_EVENTS: "sessionEvents",
+  SESSION_EVENT_TAGS: "sessionEventTags",
   SIMULATION: "simulation",
   SIMULATION_EVENTS: "simulationEvents",
   SIMULATION_PATHS: "simulationPaths",
