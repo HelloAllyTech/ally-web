@@ -1,9 +1,10 @@
 import { useState, useRef, useEffect } from "react";
 
-import { Plus } from "@assets";
-import { TagList } from "../tag-list";
-import { useClickOutside } from "@hooks";
 import { useGetSessionEventTagsQuery } from "@api";
+import { Plus } from "@assets";
+import { useClickOutside } from "@hooks";
+
+import { TagList } from "../tag-list";
 
 interface SimpleTagSelectorProps {
   tags: string[];
