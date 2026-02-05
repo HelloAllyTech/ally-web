@@ -1,3 +1,5 @@
+import { EventDetectionConfig } from "@types";
+
 import { SimulationStatus, ScenarioVoice } from "./createSimulation";
 
 export enum RoomStatus {
@@ -248,15 +250,6 @@ export interface SessionEventDetectionData {
   expression?: ExpressionNode;
 }
 
-export interface EventDetectionConfig {
-  startTime: string | number | null | undefined;
-  endTime: string | number | null | undefined;
-  maxOccurrences: number;
-  minGapTime: string | number | null | undefined;
-  minScore: number;
-  maxScore: number | null | undefined;
-}
-
 /**
  * Session Event interface matching the API payload format
  * Used for creating and updating session events
@@ -358,4 +351,19 @@ export interface createTriggerResponse {
 export interface ScenarioVoiceFilters {
   providers: string[];
   languages: string[];
+}
+
+export interface CharacterData {
+  id?: string;
+  name: string;
+  age: number | string;
+  gender: string;
+  profession: string | null;
+  currentLocation: string;
+  genderIdentity: string;
+  sexualOrientation: string;
+  createdAt?: string;
+  updatedAt?: string;
+  createdBy?: number;
+  updatedBy?: number;
 }

@@ -10,17 +10,7 @@ import {
   SEXUAL_ORIENTATION_OPTIONS,
 } from "@constants";
 import { useDebounce } from "@hooks";
-
-export interface CharacterData {
-  id?: string;
-  name: string;
-  age: number | string;
-  gender: string;
-  profession: string;
-  currentLocation: string;
-  genderIdentity: string;
-  sexualOrientation: string;
-}
+import { CharacterData } from "@types";
 
 interface CharacterSidePanelProps {
   selectedCharacter: CharacterData | null;
