@@ -259,10 +259,17 @@ const CommentCard = ({
         hidden,
       }).unwrap();
       onToggleHide?.(hidden, comment.id);
-      toast.success(hidden ? "Comment hidden successfully" : "Comment unhidden successfully");
+      toast.success(
+        hidden
+          ? `${isReply ? "Reply" : "Comment"} hidden successfully`
+          : `${isReply ? "Reply" : "Comment"} unhidden successfully`,
+      );
       handleMenuClose();
     } catch (error) {
-      toast.error(error?.data?.message || "Failed to update comment visibility");
+      toast.error(
+        error?.data?.message ||
+          `Failed to ${hidden ? "hide" : "unhide"} ${isReply ? "reply" : "comment"}`,
+      );
     }
   };
 
@@ -294,7 +301,7 @@ const CommentCard = ({
       setShowDeleteConfirmation(false);
       setDeleteAnchorEl(null);
     } catch (error) {
-      toast.error(error?.data?.message || "Failed to delete comment");
+      toast.error(error?.data?.message || `Failed to delete ${isReply ? "reply" : "comment"}`);
     } finally {
       setIsDeleting(false);
     }
@@ -308,7 +315,7 @@ const CommentCard = ({
       handleMenuClose();
       setShowCommentEditView(false);
     } catch (error) {
-      toast.error(error?.data?.message || "Failed to update comment");
+      toast.error(error?.data?.message || `Failed to update ${isReply ? "reply" : "comment"}`);
     }
   };
   const handleUpdateReply = (content: string, id: string) => {
