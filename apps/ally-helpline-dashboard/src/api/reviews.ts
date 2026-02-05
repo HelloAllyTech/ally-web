@@ -95,7 +95,6 @@ const reviewsAPI = baseAPI.injectEndpoints({
         method: HttpMethod.POST,
         body,
       }),
-      invalidatesTags: [TAG_TYPES.REVIEW],
     }),
     getReviewThreads: builder.query<GetReviewThreadsResponse, { id: string }>({
       query: ({ id }) => ({
@@ -144,7 +143,6 @@ const reviewsAPI = baseAPI.injectEndpoints({
         method: HttpMethod.POST,
         body: reaction,
       }),
-      invalidatesTags: [TAG_TYPES.REVIEW],
     }),
     /**
      * Toggles the visibility of a comment (hide/unhide).
