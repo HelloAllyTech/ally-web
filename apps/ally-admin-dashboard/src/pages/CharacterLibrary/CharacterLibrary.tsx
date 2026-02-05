@@ -4,15 +4,10 @@ import { toast } from "sonner";
 
 import { useGetCharactersQuery } from "@api";
 import { Trash } from "@assets";
-import {
-  NotionTable,
-  ListToolbar,
-  ActionConfirmationPopup,
-  CharacterSidePanel,
-  CharacterData,
-} from "@components";
+import { NotionTable, ListToolbar, ActionConfirmationPopup, CharacterSidePanel } from "@components";
 import { ButtonVariant } from "@components/types";
 import { CHARACTER_LIBRARY_TABLE_COLUMNS, en } from "@constants";
+import { CharacterData } from "@types";
 
 export const CharacterLibrary: React.FC = () => {
   const limit = 30;
@@ -31,18 +26,18 @@ export const CharacterLibrary: React.FC = () => {
   const { data: charactersData, isLoading } = useGetCharactersQuery({
     limit,
     offset,
-    searchName: characterSearch,
+    search: characterSearch,
   });
 
   // Update characters when data changes
   useEffect(() => {
-    if (charactersData) {
+    if (charactersData?.characters) {
       if (offset === 0) {
-        setCharacters(charactersData);
+        setCharacters(charactersData?.characters);
       } else {
-        setCharacters(prev => [...prev, ...charactersData]);
+        setCharacters(prev => [...prev, ...(charactersData?.characters || [])]);
       }
-      setHasMore(charactersData.length === limit);
+      setHasMore(charactersData?.characters?.length === limit);
     }
   }, [charactersData, offset]);
 
