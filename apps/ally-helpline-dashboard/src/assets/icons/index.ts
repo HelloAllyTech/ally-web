@@ -80,6 +80,7 @@ import Lock from "./lock.svg?react";
 import Logout from "./logout-icon.svg?react";
 import LogoutIllustration from "./logout-illustration.svg?react";
 import ManageAccount from "./manageAccounts.svg?react";
+import MaxActiveUsers from "./max-active-users.svg?react";
 import MenuIcon from "./menu-icon.svg?react";
 import Metrics from "./metrics.svg?react";
 import MicIcon from "./mic-icon.svg?react";
@@ -290,4 +291,5 @@ export {
   Info,
   Intake,
   OngoingRisks,
+  MaxActiveUsers,
 };
