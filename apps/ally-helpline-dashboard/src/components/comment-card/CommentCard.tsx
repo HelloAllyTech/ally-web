@@ -47,6 +47,8 @@ interface CommentCardProps {
   updateReplyCount?: (replyCount: number) => void;
   isReply?: boolean;
   onCommentChange?: (comment: CommentItem) => void;
+  onAddComment?: () => void;
+  onDeleteReply?: () => void;
 }
 const CommentCard = ({
   comment,
@@ -64,6 +66,8 @@ const CommentCard = ({
   updateReplyCount,
   isReply = false,
   onCommentChange,
+  onAddComment,
+  onDeleteReply,
 }: CommentCardProps) => {
   const user = useSelector((state: RootState) => state.user.user);
   const [createComment, { data: createCommentData }] = useCreateCommentMutation();
@@ -283,7 +287,10 @@ const CommentCard = ({
       setIsDeleting(true);
       await deleteComment({ commentId: comment.id }).unwrap();
       onDelete?.(comment.id);
-      toast.success("Comment deleted successfully");
+      toast.success(`${isReply ? "Reply" : "Comment"} deleted successfully`);
+      if (isReply) {
+        onDeleteReply?.();
+      }
       setShowDeleteConfirmation(false);
       setDeleteAnchorEl(null);
     } catch (error) {
@@ -296,7 +303,7 @@ const CommentCard = ({
   const handleEditComment = async () => {
     try {
       await editComment({ commentId: comment.id, content: commentContent?.trim() }).unwrap();
-      toast.success("Comment updated successfully");
+      toast.success(`${isReply ? "Reply" : "Comment"} updated successfully`);
       onUpdateComment?.(commentContent, comment.id);
       handleMenuClose();
       setShowCommentEditView(false);
@@ -321,6 +328,8 @@ const CommentCard = ({
       reviewId: reviewId,
       body: body,
     });
+    toast.success(`Reply created successfully`);
+    onAddComment?.();
   };
   const handleToggleHide = (hidden: boolean, id: string) => {
     const reply = replies.find(reply => reply.id === id);
@@ -604,6 +613,8 @@ const CommentCard = ({
                         onToggleHide={handleToggleHide}
                         isReply
                         onCommentChange={onEachReplyChange}
+                        onAddComment={onAddComment}
+                        onDeleteReply={onDeleteReply}
                       />
                     ))}
                   </InfiniteScroll>
