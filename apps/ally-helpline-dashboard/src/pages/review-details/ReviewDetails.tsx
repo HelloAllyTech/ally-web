@@ -159,20 +159,34 @@ export const ReviewDetails = () => {
     return reactionsCount;
   }, [reviewReactions]);
 
-  const handleCommentChange = (comments: CommentItem[], threadId: string) => {
+  const handleCommentChange = (
+    comments: CommentItem[],
+    threadId: string,
+    selection?: { text: string; startIndex: number; endIndex: number; messageId: number },
+    newThread?: boolean,
+  ) => {
     if (threadId) {
       setTranscriptList(prev => {
         const newTranscriptList = prev.map(transcript => {
-          const threads = transcript.threads?.map(thread =>
-            thread.id === threadId
-              ? {
-                  ...thread,
-                  comments: [...(comments || [])].sort(
-                    (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
-                  ),
-                }
-              : thread,
-          );
+          const threads = !newThread
+            ? transcript.threads?.map(thread =>
+                thread.id === threadId
+                  ? {
+                      ...thread,
+                      comments: [...(comments || [])].sort(
+                        (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
+                      ),
+                    }
+                  : thread,
+              )
+            : [
+                ...(transcript.threads || []),
+                {
+                  id: threadId,
+                  comments: comments || [],
+                  selection: selection,
+                },
+              ];
           return { ...transcript, threads: threads.filter(thread => thread.comments.length > 0) };
         });
         return [...newTranscriptList];

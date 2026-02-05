@@ -54,7 +54,12 @@ interface SelectableTextProps {
     } | null,
   ) => void;
   onCancelComment: () => void;
-  onCommentChange: (comments: CommentItem[], threadId: string) => void;
+  onCommentChange: (
+    comments: CommentItem[],
+    threadId: string,
+    selection?: { text: string; startIndex: number; endIndex: number; messageId: number },
+    newThread?: boolean,
+  ) => void;
 }
 const SelectableText = ({
   segment,
@@ -130,7 +135,17 @@ const SelectableText = ({
         myReaction: null,
         hidden: false,
       };
-      onCommentChange?.([...(comments ?? []), newComment], selectedThreadId);
+      onCommentChange?.(
+        [...(comments ?? []), newComment],
+        selectedThreadId || createCommentData.thread.id,
+        {
+          text: segment.text,
+          startIndex: segment.start,
+          endIndex: segment.end,
+          messageId: transcript.id,
+        },
+        !selectedThreadId,
+      );
       setComments(prev => [...(prev ?? []), newComment]);
       setNewCommentSelection(null);
     }
