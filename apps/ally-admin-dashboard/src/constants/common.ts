@@ -68,6 +68,14 @@ export const ApiEndpoints = {
     UPDATE_SIMULATION_CASE_BY_ID: (id: string | number) => `/v1/learn/admin/scenario-paths/${id}`, // TODO: change to /v1/learn/admin/scenario-cases/${id}
   },
 
+  CHARACTERS: {
+    GET_CHARACTERS: "/v1/characters",
+    CREATE_CHARACTER: "/v1/characters",
+    GET_CHARACTER_BY_ID: (id: string) => `/v1/characters/${id}`,
+    UPDATE_CHARACTER: (id: string) => `/v1/characters/${id}`,
+    DELETE_CHARACTER: (id: string) => `/v1/characters/${id}`,
+  },
+
   USER_MANAGEMENT: {
     USERS: "/v1/users",
     TENANT: "/v1/tenant",
@@ -160,4 +168,5 @@ export const TAG_TYPES = {
   SCENARIO_LANGUAGES: "scenarioLanguages",
   SUMMARY_SECTIONS: "summarySections",
   UPDATE_SUMMARY_SECTIONS: "updateSummarySections",
+  CHARACTERS: "characters",
 };
