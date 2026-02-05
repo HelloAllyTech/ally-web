@@ -41,7 +41,113 @@ exports[`CommentThread Component > should match snapshot when rendered 1`] = `
       >
         <div
           data-testid="infinite-scroll"
-        />
+        >
+          <div
+            data-message-id="101"
+            data-selected-thread-id="thread-1"
+            data-selection-end="24"
+            data-selection-start="10"
+            data-show-like="true"
+            data-show-reply="true"
+            data-testid="comment-card-1"
+          >
+            <span
+              data-testid="comment-content"
+            >
+              First comment
+            </span>
+            <span
+              data-testid="comment-author"
+            >
+              John Doe
+            </span>
+            <button
+              data-testid="delete-comment"
+            >
+              Delete
+            </button>
+            <button
+              data-testid="toggle-hide"
+            >
+              Toggle Hide
+            </button>
+            <button
+              data-testid="update-comment"
+            >
+              Update
+            </button>
+          </div>
+          <div
+            data-message-id="101"
+            data-selected-thread-id="thread-1"
+            data-selection-end="24"
+            data-selection-start="10"
+            data-show-like="true"
+            data-show-reply="true"
+            data-testid="comment-card-2"
+          >
+            <span
+              data-testid="comment-content"
+            >
+              Second comment
+            </span>
+            <span
+              data-testid="comment-author"
+            >
+              Jane Smith
+            </span>
+            <button
+              data-testid="delete-comment"
+            >
+              Delete
+            </button>
+            <button
+              data-testid="toggle-hide"
+            >
+              Toggle Hide
+            </button>
+            <button
+              data-testid="update-comment"
+            >
+              Update
+            </button>
+          </div>
+          <div
+            data-message-id="101"
+            data-selected-thread-id="thread-1"
+            data-selection-end="24"
+            data-selection-start="10"
+            data-show-like="true"
+            data-show-reply="true"
+            data-testid="comment-card-3"
+          >
+            <span
+              data-testid="comment-content"
+            >
+              Third comment
+            </span>
+            <span
+              data-testid="comment-author"
+            >
+              Bob Wilson
+            </span>
+            <button
+              data-testid="delete-comment"
+            >
+              Delete
+            </button>
+            <button
+              data-testid="toggle-hide"
+            >
+              Toggle Hide
+            </button>
+            <button
+              data-testid="update-comment"
+            >
+              Update
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   </div>

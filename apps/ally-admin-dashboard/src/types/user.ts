@@ -230,3 +230,26 @@ export interface GetLogoUrlResponse {
 export interface DeleteLogoRequest {
   logoUrl: string;
 }
+
+export interface ScribeSettingsItem {
+  id: number;
+  label: string;
+  visible: boolean;
+}
+
+export interface ScribeSettingsList {
+  id: number;
+  fields: ScribeSettingsItem[];
+  label: string;
+  enabled: boolean;
+  defaultVisibility: boolean;
+}
+
+export interface ScribeSettingsListResponse {
+  sections: ScribeSettingsList[];
+}
+
+export interface UpdateSummarySectionsBody {
+  tenantId: string;
+  hiddenFields: string[];
+}

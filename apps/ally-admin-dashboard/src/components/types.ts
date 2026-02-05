@@ -71,6 +71,7 @@ export interface InputFieldProps {
   isMandatory?: boolean;
   defaultValue?: string;
   disabled?: boolean;
+  regenerate?: boolean;
 }
 
 // DropdownField
@@ -84,6 +85,8 @@ export interface DropdownFieldProps {
   isSearchable?: boolean;
   handleSearchTextChange?: (searchTerm: string) => void;
   defaultOption?: string;
+  optionsRenderer?: (option: { value: string; label: string }) => ReactNode;
+  onClose?: () => void;
 }
 
 // NarrativeContext

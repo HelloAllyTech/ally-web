@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
 
@@ -20,9 +20,10 @@ import {
   Transcription,
   NativeEmoji,
 } from "@components";
-import { KeyboardKeys, REVIEW_PRIVACY_OPTIONS } from "@constants";
+import { KeyboardKeys, REVIEW_PRIVACY_OPTIONS, TAG_TYPES } from "@constants";
+import { baseAPI } from "@src/api/baseAPI";
 import { RootState } from "@store";
-import { ReactionsType, SimulationTranscriptMessage, Thread } from "@types";
+import { CommentItem, ReactionsType, SimulationTranscriptMessage, Thread } from "@types";
 import { getFormattedDateTime, getFormattedTimeFromDuration } from "@utils";
 
 import { TRANSCRIPT_PAGE_SIZE } from "../calls/components/constants";
@@ -31,7 +32,9 @@ export const ReviewDetails = () => {
   const { reviewId } = useParams<{ reviewId: string }>();
   const { user } = useSelector((state: RootState) => state.user);
   const navigate = useNavigate();
+  const dispatch = useDispatch();
   const [transcriptOffset, setTranscriptOffset] = useState(0);
+  const [commentsCount, setCommentsCount] = useState(0);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [selectedEmoji, setSelectedEmoji] = useState<string>("");
   const [showCommentsSidepanel, setShowCommentsSidepanel] = useState(false);
@@ -60,6 +63,12 @@ export const ReviewDetails = () => {
     });
   const [addReactions] = useAddReactionMutation();
   const [updateReview, { isLoading: isUpdateReviewLoading }] = useUpdateReviewMutation();
+
+  useEffect(() => {
+    return () => {
+      dispatch(baseAPI.util.invalidateTags([TAG_TYPES.REVIEW]));
+    };
+  }, []);
   useEffect(() => {
     setTranscriptList([]);
     setTranscriptOffset(0);
@@ -70,6 +79,12 @@ export const ReviewDetails = () => {
       setSelectedEmoji(reviewDetails?.myReaction);
     }
   }, [reviewDetails]);
+
+  useEffect(() => {
+    if (reviewDetails?.commentsCount) {
+      setCommentsCount(reviewDetails?.commentsCount);
+    }
+  }, [reviewDetails?.commentsCount]);
 
   const isFeedOwner = useMemo(() => {
     return user?.id === reviewDetails?.createdBy?.id;
@@ -143,6 +158,41 @@ export const ReviewDetails = () => {
     }
     return reactionsCount;
   }, [reviewReactions]);
+
+  const handleCommentChange = (
+    comments: CommentItem[],
+    threadId: string,
+    selection?: { text: string; startIndex: number; endIndex: number; messageId: number },
+    newThread?: boolean,
+  ) => {
+    if (threadId) {
+      setTranscriptList(prev => {
+        const newTranscriptList = prev.map(transcript => {
+          const threads = !newThread
+            ? transcript.threads?.map(thread =>
+                thread.id === threadId
+                  ? {
+                      ...thread,
+                      comments: [...(comments || [])].sort(
+                        (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
+                      ),
+                    }
+                  : thread,
+              )
+            : [
+                ...(transcript.threads || []),
+                {
+                  id: threadId,
+                  comments: comments || [],
+                  selection: selection,
+                },
+              ];
+          return { ...transcript, threads: threads.filter(thread => thread.comments.length > 0) };
+        });
+        return [...newTranscriptList];
+      });
+    }
+  };
 
   const handleGoBack = () => {
     navigate(-1);
@@ -360,6 +410,7 @@ export const ReviewDetails = () => {
                   thread.id === selectedThreadId,
               )?.comments
             }
+            onDeleteComment={() => setCommentsCount(prev => prev - 1)}
             isFeedOwner={isFeedOwner}
             handleCommentClick={handleCommentClick}
             selectedThreadId={selectedThreadId}
@@ -372,12 +423,13 @@ export const ReviewDetails = () => {
             selectedStartIndex={selectedStartIndex}
             selectedEndIndex={selectedEndIndex}
             onCloseSelectedComment={handleCloseSelectedComment}
+            onCommentChange={handleCommentChange}
           />
         </div>
         <ReviewCommentsSidepanel
           isFeedOwner={isFeedOwner}
           threads={threads as Thread[]}
-          totalComments={reviewDetails?.commentsCount || 0}
+          totalComments={commentsCount}
           isOpen={showCommentsSidepanel}
           onCommentClick={handleCommentClick}
           className={showCommentsSidepanel ? "min-w-[300px] w-[30%]" : "w-0 border-none"}

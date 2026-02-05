@@ -13,6 +13,7 @@ export const en = {
     delete: "Delete",
     noOptionsAvailable: "No options available",
     noResultsFound: "No results found for",
+    noCharactersFoundMatchingYourSearch: "No characters found matching your search",
     select: "Select",
     uploading: "Uploading...",
     enabled: "Enabled",
@@ -20,8 +21,14 @@ export const en = {
     edit: "Edit",
     or: "OR",
     retry: "Retry",
+    characters: "characters",
+    character: "character",
+    successfullyDeleted: "Successfully deleted",
+    thisActionCannotBeUndone: "This action cannot be undone.",
+    areYouSureYouWantToDelete: "Are you sure you want to delete",
   },
   errors: {
+    failedToDeleteCharacter: "Failed to delete character(s)",
     failedToGoogleSignIn: "Failed to sign in with Google. Please try again.",
     failedCreateOrganization: "Failed to create organization",
     fileMustBeJPEGOrPNG: "File must be JPEG or PNG.",
@@ -103,6 +110,11 @@ export const en = {
     profileImage: "Profile image",
   },
   simulation: {
+    cases: "Cases",
+    filterByGender: "Filter by gender",
+    characterUpdatedSuccessfully: "Character updated successfully!",
+    characterLibrary: "Character Library",
+    createNewCharacter: "Create new character",
     duplicatePathwayDescription:
       "Are you sure you want to duplicate this Tracks? This will create a new Tracks with the same configurations.",
     duplicateSimulationDescription:
@@ -309,7 +321,7 @@ export const en = {
     viewOnlyTooltip: "The simulation track is currently being used.",
     create: "Create:",
     customFieldLimit: "You can only have 3 custom fields. Remove one to add another.",
-    newField: "New field",
+    newField: "New custom field",
     triggerCondition: "Trigger conditions",
     maxTimeError(minTime: string, maxTime: string) {
       return `Maximum time must be in HH:MM:SS format between ${minTime} and ${maxTime}.`;
@@ -397,6 +409,8 @@ export const en = {
     changeLogo: "Change logo",
     uploadImage: "Upload image",
     changeImage: "Change image",
+    scribeSettings: "Scribe settings",
+    additionalFields: "Additional fields",
   },
   eventConfiguration: {
     selectEvent: "Select an event",

@@ -197,7 +197,7 @@ const PrivateRouteLayout: FC = () => {
           }
         />
         <Route
-          path={ROUTES.LEADERBOARD}
+          path={ROUTES.COMMUNITY_LEADERBOARD}
           element={
             <PermissionGuardedRoute
               permission={[Permissions.VIEW_LEADERBOARD]}

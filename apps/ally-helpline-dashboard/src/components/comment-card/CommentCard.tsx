@@ -44,6 +44,9 @@ interface CommentCardProps {
     endIndex: number;
   };
   onToggleHide?: (hidden: boolean, id: string) => void;
+  updateReplyCount?: (replyCount: number) => void;
+  isReply?: boolean;
+  onCommentChange?: (comment: CommentItem) => void;
 }
 const CommentCard = ({
   comment,
@@ -58,6 +61,9 @@ const CommentCard = ({
   messageId,
   selection,
   onToggleHide,
+  updateReplyCount,
+  isReply = false,
+  onCommentChange,
 }: CommentCardProps) => {
   const user = useSelector((state: RootState) => state.user.user);
   const [createComment, { data: createCommentData }] = useCreateCommentMutation();
@@ -95,7 +101,8 @@ const CommentCard = ({
 
   useEffect(() => {
     setReplyCount(comment?.replyCount || 0);
-  }, [comment?.replyCount]);
+    updateReplyCount?.(comment?.replyCount || 0);
+  }, [comment?.replyCount, comment?.id]);
 
   useEffect(() => {
     if (commentThreadScrollRef?.current) {
@@ -122,7 +129,11 @@ const CommentCard = ({
         };
         setReplies(prev => [...(prev || []), newReply]);
       }
-      setReplyCount(prev => prev + 1);
+      setReplyCount(prev => {
+        const newReplyCount = prev + 1;
+        updateReplyCount?.(newReplyCount);
+        return newReplyCount;
+      });
       setReplyText("");
       setShowReplyInput(false);
     }
@@ -161,7 +172,14 @@ const CommentCard = ({
     }).unwrap();
     setRepliesOffset(prev => prev + 10);
     setHasMoreReplies(repliesOffset + 10 < data?.count);
-    setReplies(prev => [...(prev || []), ...(data?.data || [])]);
+    setReplies(prev => {
+      const existingReplies = new Set(prev.map(reply => reply.id));
+      const newReplies = [
+        ...(prev || []),
+        ...(data?.data || []).filter(reply => !existingReplies.has(reply.id)),
+      ].sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+      return newReplies;
+    });
   };
   const handleReplySubmit = () => {
     if (replyText.trim()) {
@@ -179,19 +197,33 @@ const CommentCard = ({
     try {
       let action: ReactionsType;
       let nextEmoji = selectedEmoji;
+      const reactions = { ...(comment.reactions || {}) };
 
       if (selectedEmoji === emoji) {
         action = ReactionsType.REMOVE;
+        reactions[selectedEmoji] = (reactions[selectedEmoji] || 0) - 1;
         nextEmoji = "";
       } else if (selectedEmoji) {
         action = ReactionsType.UPDATE;
+        if (reactions[selectedEmoji] === 1) {
+          delete reactions[selectedEmoji];
+        } else {
+          reactions[selectedEmoji] = (reactions[selectedEmoji] || 0) - 1;
+        }
+        if (reactions[emoji]) {
+          reactions[emoji] = (reactions[emoji] || 0) + 1;
+        } else {
+          reactions[emoji] = 1;
+        }
         nextEmoji = emoji;
       } else {
         action = ReactionsType.ADD;
+        reactions[emoji] = (reactions[emoji] || 0) + 1;
         nextEmoji = emoji;
       }
 
       await sendReaction(emoji, action);
+      onCommentChange?.({ ...comment, myReaction: nextEmoji, reactions });
       setSelectedEmoji(nextEmoji);
       setShowEmojiPicker(false);
     } catch (error) {
@@ -199,6 +231,9 @@ const CommentCard = ({
     }
   };
 
+  const onEachReplyChange = (reply: CommentItem) => {
+    setReplies(prev => prev.map(r => (r.id === reply.id ? reply : r)));
+  };
   const handleCancelReply = () => {
     setReplyText("");
     setShowReplyInput(false);
@@ -338,7 +373,11 @@ const CommentCard = ({
       setShowReplies(false);
       setRepliesOffset(0);
     }
-    setReplyCount(prev => prev - 1);
+    setReplyCount(prev => {
+      const newReplyCount = prev - 1;
+      updateReplyCount?.(newReplyCount);
+      return newReplyCount;
+    });
   };
 
   const renderCommentEditView = () => {
@@ -507,75 +546,81 @@ const CommentCard = ({
   }, [user, comment]);
 
   return (
-    <div ref={commentCardRef} className={`flex gap-2.5 ${comment?.hidden ? "opacity-50" : ""}`}>
-      <div className="min-w-8 h-8 rounded-full overflow-hidden">
-        <CustomImage
-          src={userImage}
-          alt={comment.createdBy.name}
-          fallbackText={comment.createdBy.name?.slice(0, 1)?.toUpperCase() ?? "NA"}
-          data-testid="custom-image"
-          className="w-full h-full rounded-full"
-        />
-      </div>
-      <div className="flex flex-col gap-1 w-full">
-        <div className="flex flex-row justify-between items-center gap-2 w-full">
-          <div className="flex flex-row gap-1.5 items-center w-full">
-            <div className="text-[14px] font-medium text-typography-900">
-              {comment?.createdBy?.name || "Unknown"}
+    <>
+      <div ref={commentCardRef} className={`flex gap-2.5 ${comment?.hidden ? "opacity-50" : ""}`}>
+        <div className="min-w-8 h-8 rounded-full overflow-hidden">
+          <CustomImage
+            src={userImage}
+            alt={comment.createdBy.name}
+            fallbackText={comment.createdBy.name?.slice(0, 1)?.toUpperCase() ?? "NA"}
+            data-testid="custom-image"
+            className="w-full h-full rounded-full"
+          />
+        </div>
+        <div className="flex flex-col gap-1 w-full">
+          <div className="flex flex-row justify-between items-center gap-2 w-full">
+            <div className="flex flex-row gap-1.5 items-center w-full">
+              <div className="text-[14px] font-medium text-typography-900">
+                {comment?.createdBy?.name || "Unknown"}
+              </div>
+              <div className="text-[12px] text-gray-500">
+                {formatRelativeTime(comment.createdAt)}
+              </div>
             </div>
-            <div className="text-[12px] text-gray-500">{formatRelativeTime(comment.createdAt)}</div>
+            {menuItems.length > 0 && enableLikeUpdate && (
+              <div className="flex flex-row justify-between items-center">
+                <button
+                  onClick={handleMenuOpen}
+                  className="p-1 hover:bg-gray-100 rounded-full transition-colors tr"
+                  aria-label="Comment options"
+                >
+                  <MoreVertIcon className="w-5 h-5 text-gray-600" />
+                </button>
+                <CustomMenu
+                  anchorElement={menuAnchorEl}
+                  items={menuItems}
+                  onClose={handleMenuClose}
+                />
+              </div>
+            )}
           </div>
-          {menuItems.length > 0 && enableLikeUpdate && (
-            <div className="flex flex-row justify-between items-center">
-              <button
-                onClick={handleMenuOpen}
-                className="p-1 hover:bg-gray-100 rounded-full transition-colors tr"
-                aria-label="Comment options"
-              >
-                <MoreVertIcon className="w-5 h-5 text-gray-600" />
-              </button>
-              <CustomMenu
-                anchorElement={menuAnchorEl}
-                items={menuItems}
-                onClose={handleMenuClose}
-              />
+          {showCommentEditView ? renderCommentEditView() : renderCommentContent()}
+          {(showReplies || showReplyInput) && (
+            <div>
+              {renderReplyBox()}
+              <div className="flex flex-col gap-4 mt-4">
+                {showReplies && (
+                  <InfiniteScroll onInfiniteScroll={loadMoreReplies} isLoading={areRepliesLoading}>
+                    {replies.map(reply => (
+                      <CommentCard
+                        key={reply.id}
+                        comment={reply}
+                        isFeedOwner={isFeedOwner}
+                        showLike
+                        enableLikeUpdate={enableLikeUpdate}
+                        showReply={false}
+                        onDelete={handleDeleteReply}
+                        onUpdateComment={handleUpdateReply}
+                        onToggleHide={handleToggleHide}
+                        isReply
+                        onCommentChange={onEachReplyChange}
+                      />
+                    ))}
+                  </InfiniteScroll>
+                )}
+                {showReplies && (
+                  <div
+                    className="text-xs font-primary flex items-center gap-2 text-primary-600"
+                    onClick={hideReplies}
+                  >
+                    Hide Repl{comment.replyCount > 1 ? "ies" : "y"}
+                    <ArrowUp />
+                  </div>
+                )}
+              </div>
             </div>
           )}
         </div>
-        {showCommentEditView ? renderCommentEditView() : renderCommentContent()}
-        {(showReplies || showReplyInput) && (
-          <div>
-            {renderReplyBox()}
-            <div className="flex flex-col gap-4 mt-4">
-              {showReplies && (
-                <InfiniteScroll onInfiniteScroll={loadMoreReplies} isLoading={areRepliesLoading}>
-                  {replies.map(reply => (
-                    <CommentCard
-                      key={reply.id}
-                      comment={reply}
-                      isFeedOwner={isFeedOwner}
-                      showLike
-                      enableLikeUpdate={enableLikeUpdate}
-                      showReply={false}
-                      onDelete={handleDeleteReply}
-                      onUpdateComment={handleUpdateReply}
-                      onToggleHide={handleToggleHide}
-                    />
-                  ))}
-                </InfiniteScroll>
-              )}
-              {showReplies && (
-                <div
-                  className="text-xs font-primary flex items-center gap-2 text-primary-600"
-                  onClick={hideReplies}
-                >
-                  Hide Repl{comment.replyCount > 1 ? "ies" : "y"}
-                  <ArrowUp />
-                </div>
-              )}
-            </div>
-          </div>
-        )}
       </div>
       <ConfirmationPopover
         isOpen={showDeleteConfirmation}
@@ -584,11 +629,11 @@ const CommentCard = ({
         anchorElement={deleteAnchorEl}
         title={
           <div className="font-medium font-secondary text-2xl text-typography-900 text-center">
-            Delete <span className="italic font-bold">{onDelete ? "Reply" : "Comment"}?</span>
+            Delete <span className="italic font-bold">{isReply ? "Reply" : "Comment"}?</span>
           </div>
         }
         message={
-          onDelete
+          isReply
             ? COMMENT_DELETE_CONFIRMATION.REPLY_DELETE_MESSAGE
             : COMMENT_DELETE_CONFIRMATION.COMMENT_DELETE_MESSAGE
         }
@@ -597,7 +642,7 @@ const CommentCard = ({
         confirmVariant="danger"
         isLoading={isDeleting}
       />
-    </div>
+    </>
   );
 };
 

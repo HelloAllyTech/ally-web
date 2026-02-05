@@ -11,7 +11,9 @@ import {
   UserManagement,
   OrganizationDetail,
   EventManagement,
+  CharacterLibrary,
   CreatePath,
+  CreateCase,
   ScenarioVoices,
   ScenarioLanguages,
 } from "@pages";
@@ -92,6 +94,14 @@ export const RouteLayout: React.FC = () => {
           }
         />
         <Route
+          path={ROUTES.CHARACTER_LIBRARY}
+          element={
+            <PrivateLayout requiredPermissions={[Permissions.EDIT_CHARACTER_LIBRARY]}>
+              <CharacterLibrary />
+            </PrivateLayout>
+          }
+        />
+        <Route
           path={ROUTES.MANAGE_SCENARIO_VOICES}
           element={
             <PrivateLayout requiredPermissions={[Permissions.EDIT_SCENARIO]}>
@@ -120,6 +130,22 @@ export const RouteLayout: React.FC = () => {
           element={
             <PrivateLayout requiredPermissions={[Permissions.EDIT_EVENT]}>
               <CreatePath />
+            </PrivateLayout>
+          }
+        />
+        <Route
+          path={ROUTES.CREATE_CASE}
+          element={
+            <PrivateLayout requiredPermissions={[Permissions.EDIT_EVENT]}>
+              <CreateCase />
+            </PrivateLayout>
+          }
+        />
+        <Route
+          path={ROUTES.EDIT_CASE(":id")}
+          element={
+            <PrivateLayout requiredPermissions={[Permissions.EDIT_EVENT]}>
+              <CreateCase />
             </PrivateLayout>
           }
         />

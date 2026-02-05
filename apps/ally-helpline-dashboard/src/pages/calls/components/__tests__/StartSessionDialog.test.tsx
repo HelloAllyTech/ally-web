@@ -15,6 +15,12 @@ vi.mock("@hooks", () => ({
   useUser: () => ({}),
 }));
 
+// Mock ui-shared to avoid fetching google-sign-in-button
+vi.mock("@ally-ui-mono/ui-shared", () => ({
+  GoogleSignInButton: () => <div data-testid="google-sign-in-button">Google Sign In</div>,
+  FEATURE_FLAGS_MAP: {},
+}));
+
 // Mock ConfirmationDialog and Session icon
 vi.mock("@components", () => ({
   ConfirmationDialog: ({ children, onButtonClick, buttonText }: any) => (

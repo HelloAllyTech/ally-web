@@ -115,6 +115,9 @@ vi.mock("@constants", () => ({
     SIMULATION_SUMMARY_FULL: "/simulation-summary/:sessionId",
     REVIEW: "/review",
   },
+  TAG_TYPES: {
+    REVIEW: "REVIEW",
+  },
 }));
 
 // Mock types

@@ -35,6 +35,7 @@ const reviewsAPI = baseAPI.injectEndpoints({
         url: ApiEndpoints.REVIEWS.GET_REVIEW_BY_ID(id),
         method: HttpMethod.GET,
       }),
+      forceRefetch: () => true,
       providesTags: [TAG_TYPES.REVIEW],
     }),
     /**
@@ -51,6 +52,7 @@ const reviewsAPI = baseAPI.injectEndpoints({
         method: HttpMethod.GET,
         params: { offset, limit, sortOrder: "ASC", sortBy },
       }),
+      forceRefetch: () => true,
       providesTags: [TAG_TYPES.REVIEW],
       transformResponse: (response: any) => response.data,
     }),
@@ -93,7 +95,6 @@ const reviewsAPI = baseAPI.injectEndpoints({
         method: HttpMethod.POST,
         body,
       }),
-      invalidatesTags: [TAG_TYPES.REVIEW],
     }),
     getReviewThreads: builder.query<GetReviewThreadsResponse, { id: string }>({
       query: ({ id }) => ({
@@ -103,7 +104,7 @@ const reviewsAPI = baseAPI.injectEndpoints({
       providesTags: [TAG_TYPES.REVIEW],
     }),
     getReviewThreadComments: builder.query<
-      { data: CommentItem[] },
+      { data: CommentItem[]; count: number },
       { id: string; limit: number; offset: number }
     >({
       query: ({ id, limit, offset }) => ({
@@ -111,6 +112,7 @@ const reviewsAPI = baseAPI.injectEndpoints({
         method: HttpMethod.GET,
         params: { limit, offset },
       }),
+      forceRefetch: () => true,
       providesTags: [TAG_TYPES.REVIEW],
     }),
     addReaction: builder.mutation<boolean, { id: string; reaction: ReactionInput }>({
@@ -141,7 +143,6 @@ const reviewsAPI = baseAPI.injectEndpoints({
         method: HttpMethod.POST,
         body: reaction,
       }),
-      invalidatesTags: [TAG_TYPES.REVIEW],
     }),
     /**
      * Toggles the visibility of a comment (hide/unhide).
@@ -189,6 +190,7 @@ const reviewsAPI = baseAPI.injectEndpoints({
         method: HttpMethod.GET,
         params: { limit, offset },
       }),
+      forceRefetch: () => true,
       providesTags: [TAG_TYPES.REVIEW],
     }),
   }),

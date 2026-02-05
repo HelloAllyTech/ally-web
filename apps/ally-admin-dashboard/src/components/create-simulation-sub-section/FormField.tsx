@@ -4,6 +4,7 @@ import { FILE_TYPE, FORM_FIELD_TYPES, en } from "@constants";
 import { FormFieldProps } from "@types";
 
 import { AutoTerminationRuleField } from "../auto-termination-rule-field";
+import { CharacterProfileSelector } from "../character-profile-selector";
 import { CustomFieldGroup } from "../custom-field-group";
 import { DropdownField } from "../dropdown-field";
 import { FileUpload } from "../file-upload";
@@ -27,6 +28,7 @@ export const FormField: FC<FormFieldProps> = ({ config, formMethods }) => {
     isMandatory,
     defaultValue,
     note,
+    regenerate,
   } = config;
   const {
     formState: { errors },
@@ -41,9 +43,12 @@ export const FormField: FC<FormFieldProps> = ({ config, formMethods }) => {
       case FORM_FIELD_TYPES.SELECT:
         return (
           <div className="flex flex-col gap-2">
-            <label className="text-typography-900 text-base cursor-pointer flex items-center gap-1">
-              {label} {isMandatory && <span className="text-destructive-500">*</span>}
-            </label>
+            <div className="flex justify-between">
+              <label className="text-typography-900 text-base cursor-pointer flex items-center gap-1">
+                {label} {isMandatory && <span className="text-destructive-500">*</span>}
+              </label>
+              {regenerate && <span className="text-typography-500 text-sm">Regenerate</span>}
+            </div>
             <DropdownField
               id={id}
               label={label}
@@ -67,6 +72,7 @@ export const FormField: FC<FormFieldProps> = ({ config, formMethods }) => {
             multiline={multiline}
             isMandatory={isMandatory}
             defaultValue={defaultValue}
+            regenerate={regenerate}
           />
         );
       case FORM_FIELD_TYPES.NUMBER:
@@ -79,6 +85,7 @@ export const FormField: FC<FormFieldProps> = ({ config, formMethods }) => {
             maxLength={maxLength}
             placeholder={placeholder}
             isMandatory={isMandatory}
+            regenerate={regenerate}
           />
         );
       case FORM_FIELD_TYPES.IMAGE_UPLOAD:
@@ -177,6 +184,15 @@ export const FormField: FC<FormFieldProps> = ({ config, formMethods }) => {
               />
             </div>
           </div>
+        );
+      case FORM_FIELD_TYPES.CUSTOM.CHARACTER_PROFILE_SELECTOR:
+        return (
+          <CharacterProfileSelector
+            label={label}
+            id={id}
+            formMethods={formMethods}
+            isMandatory={isMandatory}
+          />
         );
       default:
         return null;

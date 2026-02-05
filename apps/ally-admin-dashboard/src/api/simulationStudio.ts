@@ -422,6 +422,163 @@ const simulationStudioAPI = baseAPI.injectEndpoints({
         params: id ? { scenarioId: id } : undefined,
       }),
     }),
+
+    // TODO: Remove dummy data when BE is ready
+    getCharacters: builder.query<any[], { limit: number; offset: number; searchName?: string }>({
+      async queryFn(params) {
+        // Simulate API delay
+        await new Promise(resolve => setTimeout(resolve, 500));
+
+        const DUMMY_CHARACTERS_DATA = [
+          {
+            id: "1",
+            name: "Priya Sharma",
+            age: 28,
+            gender: "female",
+            profession: "Software Engineer",
+            currentLocation: "Bangalore, Karnataka",
+            genderIdentity: "Female/Woman",
+            sexualOrientation: "Heterosexual (straight)",
+          },
+          {
+            id: "2",
+            name: "Rahul Verma",
+            age: 35,
+            gender: "male",
+            profession: "Marketing Manager",
+            currentLocation: "Mumbai, Maharashtra",
+            genderIdentity: "Male/Man",
+            sexualOrientation: "Gay",
+          },
+          {
+            id: "3",
+            name: "Ananya Patel",
+            age: 22,
+            gender: "female",
+            profession: "Graphic Designer",
+            currentLocation: "Ahmedabad, Gujarat",
+            genderIdentity: "Female/Woman",
+            sexualOrientation: "Bisexual",
+          },
+          {
+            id: "4",
+            name: "Arjun Singh",
+            age: 42,
+            gender: "male",
+            profession: "Doctor",
+            currentLocation: "Delhi, NCR",
+            genderIdentity: "Male/Man",
+            sexualOrientation: "Heterosexual (straight)",
+          },
+          {
+            id: "5",
+            name: "Kavya Reddy",
+            age: 31,
+            gender: "female",
+            profession: "Teacher",
+            currentLocation: "Hyderabad, Telangana",
+            genderIdentity: "Female/Woman",
+            sexualOrientation: "Lesbian",
+          },
+          {
+            id: "6",
+            name: "Vikram Mehta",
+            age: 29,
+            gender: "male",
+            profession: "Financial Analyst",
+            currentLocation: "Pune, Maharashtra",
+            genderIdentity: "Male/Man",
+            sexualOrientation: "Heterosexual (straight)",
+          },
+          {
+            id: "7",
+            name: "Sneha Iyer",
+            age: 26,
+            gender: "female",
+            profession: "Content Writer",
+            currentLocation: "Chennai, Tamil Nadu",
+            genderIdentity: "Female/Woman",
+            sexualOrientation: "Pansexual",
+          },
+          {
+            id: "8",
+            name: "Rohan Das",
+            age: 38,
+            gender: "male",
+            profession: "Architect",
+            currentLocation: "Kolkata, West Bengal",
+            genderIdentity: "Male/Man",
+            sexualOrientation: "Heterosexual (straight)",
+          },
+          {
+            id: "9",
+            name: "Aisha Khan",
+            age: 24,
+            gender: "female",
+            profession: "Data Scientist",
+            currentLocation: "Bangalore, Karnataka",
+            genderIdentity: "Female/Woman",
+            sexualOrientation: "Queer",
+          },
+          {
+            id: "10",
+            name: "Karan Joshi",
+            age: 33,
+            gender: "male",
+            profession: "Entrepreneur",
+            currentLocation: "Jaipur, Rajasthan",
+            genderIdentity: "Male/Man",
+            sexualOrientation: "Heterosexual (straight)",
+          },
+          {
+            id: "11",
+            name: "Meera Nair",
+            age: 27,
+            gender: "female",
+            profession: "Lawyer",
+            currentLocation: "Kochi, Kerala",
+            genderIdentity: "Female/Woman",
+            sexualOrientation: "Heterosexual (straight)",
+          },
+          {
+            id: "12",
+            name: "Sameer Gupta",
+            age: 45,
+            gender: "male",
+            profession: "Chef",
+            currentLocation: "Goa",
+            genderIdentity: "Male/Man",
+            sexualOrientation: "Bisexual",
+          },
+          {
+            id: "13",
+            name: "Divya Rao",
+            age: 30,
+            gender: "female",
+            profession: "Photographer",
+            currentLocation: "Mysore, Karnataka",
+            genderIdentity: "Female/Woman",
+            sexualOrientation: "Heterosexual (straight)",
+          },
+        ];
+
+        let filteredData = [...DUMMY_CHARACTERS_DATA];
+
+        // Filter by search name if provided
+        if (params.searchName) {
+          filteredData = filteredData.filter(char =>
+            char.name.toLowerCase().includes(params.searchName.toLowerCase()),
+          );
+        }
+
+        // Paginate
+        const start = params.offset;
+        const end = start + params.limit;
+        const data = filteredData.slice(start, end);
+
+        return { data };
+      },
+    }),
   }),
 });
 
@@ -460,4 +617,5 @@ export const {
   useCreateLanguageMutation,
   useUpdateLanguageMutation,
   useGetDynamicBranchingInstructionQuery,
+  useGetCharactersQuery,
 } = simulationStudioAPI;

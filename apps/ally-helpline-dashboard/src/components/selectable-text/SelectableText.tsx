@@ -13,7 +13,6 @@ import { RootState } from "@src/store";
 import { CommentItem, SimulationTranscriptMessage } from "@src/types";
 
 const DIALOG_WIDTH = 360;
-const COMMENTS_PAGE_SIZE = 5;
 
 interface SelectableTextProps {
   segment: {
@@ -46,6 +45,7 @@ interface SelectableTextProps {
     endIndex: number;
     threadId: string;
   }) => void;
+  onDeleteComment: () => void;
   setNewCommentSelection: (
     value: {
       startIndex: number;
@@ -54,6 +54,12 @@ interface SelectableTextProps {
     } | null,
   ) => void;
   onCancelComment: () => void;
+  onCommentChange: (
+    comments: CommentItem[],
+    threadId: string,
+    selection?: { text: string; startIndex: number; endIndex: number; messageId: number },
+    newThread?: boolean,
+  ) => void;
 }
 const SelectableText = ({
   segment,
@@ -74,6 +80,8 @@ const SelectableText = ({
   index,
   commentsList,
   onCancelComment,
+  onCommentChange,
+  onDeleteComment,
 }: SelectableTextProps) => {
   const { reviewId } = useParams<{ reviewId: string }>();
   const [
@@ -85,6 +93,7 @@ const SelectableText = ({
     },
   ] = useCreateCommentMutation();
   const [commentContent, setCommentContent] = useState<string>("");
+  const [threadsOffset, setThreadsOffset] = useState(0);
   const user = useSelector((state: RootState) => state.user.user);
   const addCommentDialogRef = useRef<HTMLDivElement | null>(null);
   const dialogRef = useRef<HTMLDivElement | null>(null);
@@ -126,9 +135,18 @@ const SelectableText = ({
         myReaction: null,
         hidden: false,
       };
-      if ((comments ?? []).length < COMMENTS_PAGE_SIZE) {
-        setComments(prev => [...(prev ?? []), newComment]);
-      }
+      onCommentChange?.(
+        [...(comments ?? []), newComment],
+        selectedThreadId || createCommentData.thread.id,
+        {
+          text: segment.text,
+          startIndex: segment.start,
+          endIndex: segment.end,
+          messageId: transcript.id,
+        },
+        !selectedThreadId,
+      );
+      setComments(prev => [...(prev ?? []), newComment]);
       setNewCommentSelection(null);
     }
   }, [isCreateCommentSuccess]);
@@ -171,8 +189,10 @@ const SelectableText = ({
 
   const handleDeleteComment = (commentCount: number) => {
     if (commentCount === 0) {
+      onCommentChange?.([], selectedThreadId);
       handleCloseSelectedComment();
     }
+    onDeleteComment?.();
   };
   const setDialogRef = useCallback((element: HTMLDivElement | null) => {
     dialogRef.current = element;
@@ -358,6 +378,10 @@ const SelectableText = ({
             comments={comments as CommentItem[]}
             onCommentAddition={handleAddComment}
             onDeleteComment={handleDeleteComment}
+            setComments={setComments}
+            onCommentChange={onCommentChange}
+            threadsOffset={threadsOffset}
+            setThreadsOffset={setThreadsOffset}
           />
         </div>
       )}

@@ -19,12 +19,14 @@ vi.mock("../PublicRoute", () => ({
 vi.mock("@pages", () => ({
   CreateSimulation: () => <div>CreateSimulationPage</div>,
   CreatePath: () => <div>CreatePathPage</div>,
+  CreateCase: () => <div>CreateCasePage</div>,
   Login: () => <div>LoginPage</div>,
   LiveSimulationPreview: () => <div>LiveSimulationPreviewPage</div>,
   SimulationStudio: () => <div>SimulationStudioPage</div>,
   UserManagement: () => <div>UserManagementPage</div>,
   OrganizationDetail: () => <div>OrganizationDetailPage</div>,
   EventManagement: () => <div>EventManagementPage</div>,
+  CharacterLibrary: () => <div>CharacterLibraryPage</div>,
   ScenarioVoices: () => <div>ScenarioVoicesPage</div>,
   ScenarioLanguages: () => <div>ScenarioLanguagesPage</div>,
 }));

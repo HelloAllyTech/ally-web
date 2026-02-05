@@ -19,6 +19,8 @@ export const DropdownField: React.FC<DropdownFieldProps> = ({
   placeholder = en.common.select,
   isMandatory = false,
   defaultOption,
+  optionsRenderer,
+  onClose,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -30,6 +32,7 @@ export const DropdownField: React.FC<DropdownFieldProps> = ({
 
   useEffect(() => {
     if (isOpen) handleSearchTextChange?.("");
+    if (!isOpen) onClose?.();
   }, [isOpen]);
 
   const handleSelect = (field: any, value: string) => {
@@ -64,6 +67,8 @@ export const DropdownField: React.FC<DropdownFieldProps> = ({
           <div className="px-3 py-2 text-sm text-typography-800">
             {en.common.noOptionsAvailable}
           </div>
+        ) : optionsRenderer ? (
+          options.map(option => optionsRenderer(option))
         ) : (
           options.map(option => (
             <div

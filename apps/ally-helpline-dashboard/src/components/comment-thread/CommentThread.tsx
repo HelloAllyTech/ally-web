@@ -20,6 +20,10 @@ interface CommentThreadProps {
     startIndex: number;
     endIndex: number;
   };
+  setComments?: React.Dispatch<React.SetStateAction<CommentItem[]>>;
+  onCommentChange: (comments: CommentItem[], threadId: string) => void;
+  threadsOffset: number;
+  setThreadsOffset: React.Dispatch<React.SetStateAction<number>>;
 }
 const CommentThread = ({
   comments,
@@ -29,10 +33,12 @@ const CommentThread = ({
   onDeleteComment,
   messageId,
   selection,
+  setComments,
+  onCommentChange,
+  threadsOffset,
+  setThreadsOffset,
 }: CommentThreadProps) => {
   const user = useSelector((state: RootState) => state.user.user);
-  const [commentsToShow, setCommentsToShow] = useState(comments ?? []);
-  const [threadsOffset, setThreadsOffset] = useState(0);
   const [comment, setComment] = useState("");
   const [hasMore, setHasMore] = useState(true);
   const [showCommentBox, setShowCommentBox] = useState(false);
@@ -46,24 +52,23 @@ const CommentThread = ({
   });
 
   useEffect(() => {
-    setCommentsToShow(comments ?? []);
-  }, [comments]);
-
-  useEffect(() => {
-    if (!threadComments) return;
+    if (!threadComments || threadComments.data.length === 0) return;
     const nextData = threadComments.data ?? [];
-    setHasMore(nextData.length >= PAGE_SIZE);
     if (threadsOffset === 0) {
-      setCommentsToShow(nextData);
-    } else {
-      setCommentsToShow(prev => {
+      setComments?.(nextData);
+      onCommentChange?.(nextData, id);
+    } else if (hasMore) {
+      setComments?.((prev: CommentItem[]) => {
         const prevList = prev ?? [];
         const existingComments = new Set(prevList.map(comment => comment.id));
         const newComments = nextData.filter(comment => !existingComments.has(comment.id));
+        onCommentChange?.([...prevList, ...newComments], id);
         return [...prevList, ...newComments];
       });
     }
+    setHasMore(nextData.length > 0);
   }, [threadComments]);
+
   const handleCommentAddition = () => {
     onCommentAddition(comment);
     setShowCommentBox(false);
@@ -76,7 +81,7 @@ const CommentThread = ({
   };
 
   const loadMoreComments = async () => {
-    if (isLoading || !hasMore) return;
+    if (isLoading || !hasMore || (threadComments?.data?.length === 0 && threadsOffset > 0)) return;
     setThreadsOffset(prev => prev + PAGE_SIZE);
   };
 
@@ -134,21 +139,51 @@ const CommentThread = ({
     );
   };
 
-  const handleToggleHide = (hidden: boolean, id: string) => {
-    setCommentsToShow(prev =>
-      prev.map(comment => (comment.id === id ? { ...comment, hidden } : comment)),
+  const handleToggleHide = (hidden: boolean, commentId: string) => {
+    onCommentChange?.(
+      comments.map(comment => (comment.id === commentId ? { ...comment, hidden } : comment)),
+      id,
+    );
+    setComments?.(prev =>
+      prev.map(comment => (comment.id === commentId ? { ...comment, hidden } : comment)),
     );
   };
 
-  const onUpdateComment = (content: string, id: string) => {
-    setCommentsToShow(prev =>
-      prev.map(comment => (comment.id === id ? { ...comment, content } : comment)),
+  const onUpdateComment = (content: string, commentId: string) => {
+    onCommentChange?.(
+      comments.map(comment => (comment.id === commentId ? { ...comment, content } : comment)),
+      id,
+    );
+    setComments?.(prev =>
+      prev.map(comment => (comment.id === commentId ? { ...comment, content } : comment)),
     );
   };
 
-  const handleDeleteComment = (id: string) => {
-    setCommentsToShow(prev => prev.filter(comment => comment.id !== id));
-    onDeleteComment((commentsToShow ?? []).length - 1);
+  const handleDeleteComment = (commentId: string) => {
+    onCommentChange?.(
+      comments.filter(comment => comment.id !== commentId),
+      id,
+    );
+    setComments?.(prev => prev.filter(comment => comment.id !== commentId));
+    onDeleteComment((comments ?? []).length - 1);
+  };
+
+  const updateReplyCount = (count: number, commentId: string) => {
+    setComments?.(prev => {
+      const newComments = prev.map(comment =>
+        comment.id === commentId ? { ...comment, replyCount: count } : comment,
+      );
+      onCommentChange?.(newComments, id);
+      return newComments;
+    });
+  };
+
+  const onEachCommentChange = (comment: CommentItem) => {
+    setComments?.(prev => {
+      const newComments = prev.map(c => (c.id === comment.id ? comment : c));
+      onCommentChange?.(newComments, id);
+      return newComments;
+    });
   };
   return (
     <div className="bg-white rounded-lg p-4 shadow-lg border w-[400px]">
@@ -167,7 +202,7 @@ const CommentThread = ({
             scrollContainerRef={commentThreadScrollRef}
             hasMore={hasMore}
           >
-            {(commentsToShow ?? []).map(comment => (
+            {(comments ?? []).map(comment => (
               <CommentCard
                 key={comment.id}
                 comment={comment}
@@ -180,6 +215,8 @@ const CommentThread = ({
                 onToggleHide={handleToggleHide}
                 onDelete={handleDeleteComment}
                 onUpdateComment={onUpdateComment}
+                updateReplyCount={count => updateReplyCount(count, comment.id)}
+                onCommentChange={onEachCommentChange}
               />
             ))}
           </InfiniteScroll>

@@ -67,6 +67,7 @@ import HomeworkRecommended from "./homework-recommended.svg?react";
 import InDoubt from "./in-doubt.svg?react";
 import InfoIcon from "./info-icon.svg?react";
 import Info from "./info.svg?react";
+import Intake from "./intake.svg?react";
 import IssuesWorkedOn from "./issues-worked-on.svg?react";
 import KeyConcerns from "./key-concerns.svg?react";
 import KeyEvents from "./key-events.svg?react";
@@ -79,6 +80,7 @@ import Lock from "./lock.svg?react";
 import Logout from "./logout-icon.svg?react";
 import LogoutIllustration from "./logout-illustration.svg?react";
 import ManageAccount from "./manageAccounts.svg?react";
+import MaxActiveUsers from "./max-active-users.svg?react";
 import MenuIcon from "./menu-icon.svg?react";
 import Metrics from "./metrics.svg?react";
 import MicIcon from "./mic-icon.svg?react";
@@ -91,6 +93,7 @@ import NoNetwork from "./no-network.svg?react";
 import NoResults from "./no-results.svg?react";
 import NotesIcon from "./notes.svg?react";
 import ObjectiveObservations from "./objective-observations.svg?react";
+import OngoingRisks from "./ongoing-risks.svg?react";
 import PageNotFoundIllustration from "./page-not-found-illustration.svg?react";
 import PauseIcon from "./pause-icon.svg?react";
 import PlansForNextCall from "./plans-for-next-call.svg?react";
@@ -286,4 +289,7 @@ export {
   Hide,
   Eye,
   Info,
+  Intake,
+  OngoingRisks,
+  MaxActiveUsers,
 };

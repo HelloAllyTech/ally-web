@@ -2,7 +2,8 @@ import React, { useRef, useState } from "react";
 
 import { useSearchParams } from "react-router-dom";
 
-import { Add, Close, Filter, Simulation as SimulationIcon, Pathway } from "@assets";
+import { FEATURE_FLAGS_MAP } from "@ally-ui-mono/ui-shared";
+import { Add, Close, Filter, Simulation as SimulationIcon, Pathway, Case } from "@assets";
 import {
   ActionConfirmationPopup,
   DeletePopup,
@@ -21,16 +22,18 @@ import {
   PATH_STATUS_OPTIONS,
   SimulationStatus,
 } from "@constants";
-import { useSimulations, useSimulationPathways } from "@hooks";
+import { useSimulations, useSimulationPathways, useSimulationCases } from "@hooks";
 
 const TAB_KEYS = {
   SIMULATIONS: "simulations",
   TRACKS: "tracks",
+  CASES: "cases",
 };
 
 const TABS = [
   { id: "simulations", label: "Simulations" },
   { id: "tracks", label: "Tracks" },
+  FEATURE_FLAGS_MAP.SIMULATION_CASES_FLAG && { id: "cases", label: "Cases" }, // TODO: remove this when the feature flag is enabled
 ];
 
 export const SimulationStudio: React.FC = () => {
@@ -108,6 +111,33 @@ export const SimulationStudio: React.FC = () => {
     handleEditPathway,
   } = useSimulationPathways({ selectedFilters });
 
+  // Use the custom hook for cases
+  const {
+    cases,
+    hasMore: hasMoreCases,
+    isCasesLoading,
+    isCasesFetching,
+    currentCase,
+    isDuplicateCasePopupOpen,
+    isUnpublishCasePopupOpen,
+    isDeleteCasePopupOpen,
+    setIsDuplicateCasePopupOpen,
+    setIsUnpublishCasePopupOpen,
+    setIsDeleteCasePopupOpen,
+    loadCases,
+    handleNewCase,
+    onEditCase,
+    handleDeleteCase,
+    onDeleteCase,
+    handleUnpublishCase,
+    handleChangeCaseStatus,
+    handleDuplicateCase,
+    onDuplicateCase,
+    isCaseEditPopupOpen,
+    setIsCaseEditPopupOpen,
+    handleEditCase,
+  } = useSimulationCases({ selectedFilters });
+
   const handleFilterClick = () => {
     setIsFilterOpen(!isFilterOpen);
   };
@@ -147,13 +177,36 @@ export const SimulationStudio: React.FC = () => {
       icon: <Pathway className="w-5 h-5" />,
       onClick: handleNewPathway,
     },
+    // TODO: remove this when the feature flag is enabled
+    ...(FEATURE_FLAGS_MAP.SIMULATION_CASES_FLAG
+      ? [
+          {
+            id: "New Case",
+            label: "New Case",
+            icon: <Case className="w-5 h-5" />,
+            onClick: handleNewCase,
+          },
+        ]
+      : []),
   ];
 
   const renderFooter = () => {
+    const isCasesTab = activeTab === TAB_KEYS.CASES;
     const isPathwaysTab = activeTab === TAB_KEYS.TRACKS;
-    const hasMoreItems = isPathwaysTab ? hasMorePathways : hasMore;
-    const isFetching = isPathwaysTab ? isPathwaysFetching : isSimulationsFetching;
-    const loadMore = isPathwaysTab ? loadPathways : loadSimulations;
+
+    let hasMoreItems = hasMore;
+    let isFetching = isSimulationsFetching;
+    let loadMore = loadSimulations;
+
+    if (isCasesTab) {
+      hasMoreItems = hasMoreCases;
+      isFetching = isCasesFetching;
+      loadMore = loadCases;
+    } else if (isPathwaysTab) {
+      hasMoreItems = hasMorePathways;
+      isFetching = isPathwaysFetching;
+      loadMore = loadPathways;
+    }
 
     if (!hasMoreItems) return null;
     return (
@@ -222,40 +275,56 @@ export const SimulationStudio: React.FC = () => {
   };
 
   const renderContent = () => {
-    if (activeTab === TAB_KEYS.TRACKS) {
-      // Pathways tab content
-      return (
-        <PathwayList
-          pathways={pathways}
-          isLoading={isPathwaysLoading}
-          hasFilters={selectedFilters.length > 0}
-          onEdit={onEditPathway}
-          onDelete={handleDeletePathway}
-          onDuplicate={handleDuplicatePathway}
-          onUnpublishPathway={handleUnpublishPathway}
-          onCreatePathway={handleNewPathway}
-          footer={renderFooter()}
-        />
-      );
+    switch (activeTab) {
+      case TAB_KEYS.CASES:
+        return (
+          <PathwayList
+            pathways={cases}
+            isLoading={isCasesLoading}
+            hasFilters={selectedFilters.length > 0}
+            onEdit={onEditCase}
+            onDelete={handleDeleteCase}
+            onDuplicate={handleDuplicateCase}
+            onUnpublishPathway={handleUnpublishCase}
+            onCreatePathway={handleNewCase}
+            footer={renderFooter()}
+            isCases
+          />
+        );
+      case TAB_KEYS.TRACKS:
+        return (
+          <PathwayList
+            pathways={pathways}
+            isLoading={isPathwaysLoading}
+            hasFilters={selectedFilters.length > 0}
+            onEdit={onEditPathway}
+            onDelete={handleDeletePathway}
+            onDuplicate={handleDuplicatePathway}
+            onUnpublishPathway={handleUnpublishPathway}
+            onCreatePathway={handleNewPathway}
+            footer={renderFooter()}
+          />
+        );
+      case TAB_KEYS.SIMULATIONS:
+        return (
+          <SimulationList
+            simulations={simulations}
+            isLoading={isSimulationsLoading}
+            hasFilters={selectedFilters.length > 0}
+            onEdit={onEditIconClick}
+            onDelete={handleDeleteSimulation}
+            onPreview={onPreviewSimulation}
+            onArchive={onArchiveSimulation}
+            onUnpublish={onUnpublishSimulation}
+            onUnarchive={onUnarchiveSimulation}
+            onCreateSimulation={handleCreateSimulation}
+            onDuplicate={onDuplicateSimulation}
+            footer={renderFooter()}
+          />
+        );
+      default:
+        return null;
     }
-
-    // Simulations tab content
-    return (
-      <SimulationList
-        simulations={simulations}
-        isLoading={isSimulationsLoading}
-        hasFilters={selectedFilters.length > 0}
-        onEdit={onEditIconClick}
-        onDelete={handleDeleteSimulation}
-        onPreview={onPreviewSimulation}
-        onArchive={onArchiveSimulation}
-        onUnpublish={onUnpublishSimulation}
-        onUnarchive={onUnarchiveSimulation}
-        onCreateSimulation={handleCreateSimulation}
-        onDuplicate={onDuplicateSimulation}
-        footer={renderFooter()}
-      />
-    );
   };
 
   const renderDeletePathwayTitle = () => {
@@ -451,6 +520,77 @@ export const SimulationStudio: React.FC = () => {
           variant: ButtonVariant.SECONDARY,
         }}
       />
+
+      {/* Cases Popups */}
+      <ActionConfirmationPopup
+        isOpen={isUnpublishCasePopupOpen}
+        onClose={() => setIsUnpublishCasePopupOpen(false)}
+        title={en.simulation.unpublish}
+        titleItalic="Case?"
+        description={en.simulation.unpublishDescription}
+        primaryButton={{
+          label: en.simulation.unpublish,
+          onClick: () => handleChangeCaseStatus(SimulationStatus.DRAFT),
+          variant: ButtonVariant.PRIMARY,
+        }}
+        secondaryButton={{
+          label: en.simulation.cancel,
+          onClick: () => setIsUnpublishCasePopupOpen(false),
+          variant: ButtonVariant.SECONDARY,
+        }}
+      />
+
+      <DeletePopup
+        isOpen={isDeleteCasePopupOpen}
+        onClose={() => setIsDeleteCasePopupOpen(false)}
+        cardData={currentCase}
+        onConfirmDelete={onDeleteCase}
+        title={
+          <h2 className="text-2xl font-medium font-primary">
+            {en.simulation.deleteDescription}
+            <span className="italic font-semibold ml-1">Case?</span>
+          </h2>
+        }
+        description={en.simulation.deletePathwayDescription}
+      />
+
+      <ActionConfirmationPopup
+        isOpen={isDuplicateCasePopupOpen}
+        onClose={() => setIsDuplicateCasePopupOpen(false)}
+        title={en.simulation.duplicate}
+        titleItalic="Case"
+        description={en.simulation.duplicatePathwayDescription}
+        primaryButton={{
+          label: en.simulation.duplicate,
+          onClick: () => onDuplicateCase(currentCase),
+          variant: ButtonVariant.PRIMARY,
+        }}
+        secondaryButton={{
+          label: en.simulation.cancel,
+          onClick: () => setIsDuplicateCasePopupOpen(false),
+          variant: ButtonVariant.SECONDARY,
+        }}
+      />
+
+      {currentCase && (
+        <ActionConfirmationPopup
+          isOpen={isCaseEditPopupOpen}
+          onClose={() => setIsCaseEditPopupOpen(false)}
+          title={en.simulation.edit}
+          titleItalic="Case"
+          description={en.simulation.editPathwayDescription}
+          primaryButton={{
+            label: en.simulation.edit,
+            onClick: () => handleEditCase(currentCase),
+            variant: ButtonVariant.PRIMARY,
+          }}
+          secondaryButton={{
+            label: en.simulation.cancel,
+            onClick: () => setIsCaseEditPopupOpen(false),
+            variant: ButtonVariant.SECONDARY,
+          }}
+        />
+      )}
     </div>
   );
 };

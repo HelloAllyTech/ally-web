@@ -28,7 +28,7 @@ export const BottomSection: FC<BottomSectionProps> = ({
         isWarning={isWarning}
         onWarning={onTimeLimitWarning}
         onTimeLimit={onEndSimulation}
-        startTime={startTime.toString()}
+        startTime={startTime?.toString()}
       />
       <SimulationControls
         isMuted={isMuted}

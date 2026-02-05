@@ -10,10 +10,13 @@ import ArrowSolid from "./arrowSolid.svg?react";
 import BackCircle from "./back-circle.svg?react";
 import BackIcon from "./backIcon.svg?react";
 import BinaryClassification from "./binaryClassification.svg?react";
+import BlackTick from "./blackTick.svg?react";
 import BlueAdd from "./blueAdd.svg?react";
 import Bolt from "./bolt.svg?react";
 import Book from "./book.svg?react";
 import BookWhite from "./bookWhite.svg?react";
+import Case from "./case.svg?react";
+import CharacterLibrary from "./characterLibrary.svg?react";
 import Chat from "./chat.svg?react";
 import Close from "./close.svg?react";
 import CloseRed from "./closeRed.svg?react";
@@ -37,7 +40,9 @@ import Logout from "./logout.svg?react";
 import ManageAccounts from "./manageAccounts.svg?react";
 import Mic from "./mic.svg?react";
 import Pathway from "./pathway.svg?react";
+import PauseIcon from "./pauseIcon.svg?react";
 import Play from "./play.svg?react";
+import PlayIcon from "./playIcon.svg?react";
 import Plus from "./plus.svg?react";
 import Refresh from "./refresh.svg?react";
 import Search from "./search.svg?react";
@@ -80,6 +85,7 @@ export {
   HappyEmoji,
   Search,
   Trash,
+  PlayIcon,
   Plus,
   Close,
   CloseRed,
@@ -96,6 +102,7 @@ export {
   Pathway,
   Copy,
   BookWhite,
+  CharacterLibrary,
   Dot,
   Tick,
   FocusLens,
@@ -112,4 +119,7 @@ export {
   Mic,
   GroupBranch,
   AddBlue,
+  PauseIcon,
+  BlackTick,
+  Case,
 };

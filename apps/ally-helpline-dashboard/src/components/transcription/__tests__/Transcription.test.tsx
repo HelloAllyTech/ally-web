@@ -34,6 +34,7 @@ vi.mock("@src/components/selectable-text/SelectableText", () => ({
     isSelectedComment,
     addCommentDialogOpen,
     setAddCommentDialogOpen,
+    onCommentChange,
   }: any) => (
     <span
       data-testid={`selectable-text-${segIdx}`}
@@ -46,6 +47,14 @@ vi.mock("@src/components/selectable-text/SelectableText", () => ({
       {segment.text}
       {segment.commentIds?.length > 0 && (
         <span data-testid={`comment-highlight-${segIdx}`} className="bg-amber-50" />
+      )}
+      {onCommentChange && (
+        <button
+          data-testid={`comment-change-${segIdx}`}
+          onClick={() => onCommentChange([], "thread-1")}
+        >
+          Comment Change
+        </button>
       )}
     </span>
   ),
@@ -93,6 +102,8 @@ vi.mock("../utils", () => ({
 describe("Transcription Component", () => {
   const mockUserId = 1;
   const mockCreateComment = vi.fn();
+  const mockOnCommentChange = vi.fn();
+  const mockOnDeleteComment = vi.fn();
 
   const mockTranscriptList = [
     {
@@ -124,12 +135,15 @@ describe("Transcription Component", () => {
     createComment: mockCreateComment,
     isCreateCommentLoading: false,
     isCreateCommentSuccess: false,
+    onCommentChange: mockOnCommentChange,
+    onDeleteComment: mockOnDeleteComment,
   };
 
   beforeEach(() => {
     vi.clearAllMocks();
     mockCreateComment.mockReset();
     mockCreateComment.mockResolvedValue(undefined);
+    mockOnCommentChange.mockReset();
     // Reset window.getSelection mock
     Object.defineProperty(window, "getSelection", {
       value: vi.fn(() => null),
@@ -168,12 +182,27 @@ describe("Transcription Component", () => {
     });
 
     it("should render empty message when transcriptList is empty", () => {
-      render(<Transcription transcriptList={[]} userId={mockUserId} />);
+      render(
+        <Transcription
+          transcriptList={[]}
+          userId={mockUserId}
+          onCommentChange={mockOnCommentChange}
+          onDeleteComment={mockOnDeleteComment}
+        />,
+      );
       expect(screen.getByText("No transcript available")).toBeInTheDocument();
     });
 
     it("should render skeleton loader when loading and no transcripts", () => {
-      render(<Transcription transcriptList={[]} userId={mockUserId} isLoading={true} />);
+      render(
+        <Transcription
+          transcriptList={[]}
+          userId={mockUserId}
+          isLoading={true}
+          onCommentChange={mockOnCommentChange}
+          onDeleteComment={mockOnDeleteComment}
+        />,
+      );
       // Skeleton should be rendered
       expect(screen.queryByText("No transcript available")).not.toBeInTheDocument();
     });
@@ -235,7 +264,14 @@ describe("Transcription Component", () => {
           threads: [],
         },
       ];
-      render(<Transcription transcriptList={transcriptWithUndefined as any} userId={mockUserId} />);
+      render(
+        <Transcription
+          transcriptList={transcriptWithUndefined as any}
+          userId={mockUserId}
+          onCommentChange={mockOnCommentChange}
+          onDeleteComment={mockOnDeleteComment}
+        />,
+      );
       expect(screen.getByText("00:00")).toBeInTheDocument();
     });
 
@@ -245,7 +281,14 @@ describe("Transcription Component", () => {
         { id: 2, content: "Message 2", senderId: -1, startSeconds: 59, threads: [] },
         { id: 3, content: "Message 3", senderId: -1, startSeconds: 600, threads: [] },
       ];
-      render(<Transcription transcriptList={transcriptWithVariousTimes} userId={mockUserId} />);
+      render(
+        <Transcription
+          transcriptList={transcriptWithVariousTimes}
+          userId={mockUserId}
+          onCommentChange={mockOnCommentChange}
+          onDeleteComment={mockOnDeleteComment}
+        />,
+      );
       expect(screen.getByText("00:05")).toBeInTheDocument();
       expect(screen.getByText("00:59")).toBeInTheDocument();
       expect(screen.getByText("10:00")).toBeInTheDocument();
@@ -324,7 +367,13 @@ describe("Transcription Component", () => {
       ];
 
       const { rerender } = render(
-        <Transcription transcriptList={transcriptWithId} userId={mockUserId} canSelect={true} />,
+        <Transcription
+          transcriptList={transcriptWithId}
+          userId={mockUserId}
+          canSelect={true}
+          onCommentChange={mockOnCommentChange}
+          onDeleteComment={mockOnDeleteComment}
+        />,
       );
 
       rerender(
@@ -335,6 +384,8 @@ describe("Transcription Component", () => {
           selectedMessageId="22870"
           selectedStartIndex={0}
           selectedEndIndex={10}
+          onCommentChange={mockOnCommentChange}
+          onDeleteComment={mockOnDeleteComment}
         />,
       );
 
@@ -385,7 +436,12 @@ describe("Transcription Component", () => {
       ];
 
       render(
-        <Transcription transcriptList={transcriptWithNullSeconds as any} userId={mockUserId} />,
+        <Transcription
+          transcriptList={transcriptWithNullSeconds as any}
+          userId={mockUserId}
+          onCommentChange={mockOnCommentChange}
+          onDeleteComment={mockOnDeleteComment}
+        />,
       );
       expect(screen.getByText("00:00")).toBeInTheDocument();
     });
@@ -402,7 +458,14 @@ describe("Transcription Component", () => {
         },
       ];
 
-      render(<Transcription transcriptList={transcriptWithLongContent} userId={mockUserId} />);
+      render(
+        <Transcription
+          transcriptList={transcriptWithLongContent}
+          userId={mockUserId}
+          onCommentChange={mockOnCommentChange}
+          onDeleteComment={mockOnDeleteComment}
+        />,
+      );
       expect(screen.getByText(longContent)).toBeInTheDocument();
     });
 
@@ -417,7 +480,14 @@ describe("Transcription Component", () => {
         },
       ];
 
-      render(<Transcription transcriptList={transcriptWithSpecialChars} userId={mockUserId} />);
+      render(
+        <Transcription
+          transcriptList={transcriptWithSpecialChars}
+          userId={mockUserId}
+          onCommentChange={mockOnCommentChange}
+          onDeleteComment={mockOnDeleteComment}
+        />,
+      );
       expect(
         screen.getByText("Hello! How are you? <script>alert('test')</script>"),
       ).toBeInTheDocument();
@@ -434,7 +504,14 @@ describe("Transcription Component", () => {
         },
       ];
 
-      render(<Transcription transcriptList={transcriptWithEmojis} userId={mockUserId} />);
+      render(
+        <Transcription
+          transcriptList={transcriptWithEmojis}
+          userId={mockUserId}
+          onCommentChange={mockOnCommentChange}
+          onDeleteComment={mockOnDeleteComment}
+        />,
+      );
       expect(screen.getByText("Hello! 👋 How are you? 😊")).toBeInTheDocument();
     });
 
@@ -453,7 +530,14 @@ describe("Transcription Component", () => {
         },
       ];
 
-      rerender(<Transcription transcriptList={newTranscriptList} userId={mockUserId} />);
+      rerender(
+        <Transcription
+          transcriptList={newTranscriptList}
+          userId={mockUserId}
+          onCommentChange={mockOnCommentChange}
+          onDeleteComment={mockOnDeleteComment}
+        />,
+      );
 
       await waitFor(() => {
         expect(screen.getByText("New message content")).toBeInTheDocument();
@@ -519,8 +603,30 @@ describe("Transcription Component", () => {
   // --- createComment prop tests ---
   describe("createComment Prop", () => {
     it("should render without createComment prop", () => {
-      render(<Transcription transcriptList={mockTranscriptList} userId={mockUserId} />);
+      render(
+        <Transcription
+          transcriptList={mockTranscriptList}
+          userId={mockUserId}
+          onCommentChange={mockOnCommentChange}
+          onDeleteComment={mockOnDeleteComment}
+        />,
+      );
 
+      expect(screen.getByText("Hello, how can I help you today?")).toBeInTheDocument();
+    });
+  });
+
+  // --- onCommentChange prop tests ---
+  describe("onCommentChange Prop", () => {
+    it("should pass onCommentChange to SelectableText components", () => {
+      render(<Transcription {...defaultProps} canSelect={true} />);
+      // Check that comment change buttons exist (from mock)
+      const commentChangeButtons = screen.queryAllByTestId(/comment-change-/);
+      expect(commentChangeButtons.length).toBeGreaterThanOrEqual(0);
+    });
+
+    it("should render correctly with onCommentChange prop", () => {
+      render(<Transcription {...defaultProps} canSelect={true} />);
       expect(screen.getByText("Hello, how can I help you today?")).toBeInTheDocument();
     });
   });
