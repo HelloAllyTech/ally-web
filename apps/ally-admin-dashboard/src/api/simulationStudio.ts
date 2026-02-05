@@ -166,6 +166,18 @@ const simulationStudioAPI = baseAPI.injectEndpoints({
     }),
 
     /**
+     * Get session event tags with optional search
+     */
+    getSessionEventTags: builder.query<{ data: string[] }, { search?: string } | undefined>({
+      query: params => ({
+        url: ApiEndpoints.SIMULATION_STUDIO.SESSION_EVENT_TAGS,
+        method: HttpMethod.GET,
+        params: params || {},
+      }),
+      providesTags: [TAG_TYPES.SESSION_EVENT_TAGS],
+    }),
+
+    /**
      * Get presigned URL for S3 upload
      */
     getCoverImageUrl: builder.mutation<GetCoverImageUrlResponse, GetCoverImageUrlRequest>({
@@ -583,6 +595,7 @@ export const {
   useCreateSessionEventsMutation,
   useUpdateSessionEventMutation,
   useDeleteSessionEventsMutation,
+  useGetSessionEventTagsQuery,
   useGetCoverImageUrlMutation,
   useDeleteCoverImageMutation,
   useGetCoverVideoUrlMutation,
