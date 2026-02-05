@@ -39,6 +39,7 @@ interface TranscriptionProps {
     newThread?: boolean,
   ) => void;
   onDeleteComment: () => void;
+  onAddComment: () => void;
 }
 
 const Transcription: FC<TranscriptionProps> = ({
@@ -59,6 +60,7 @@ const Transcription: FC<TranscriptionProps> = ({
   scrollContainerRef,
   councellorName,
   agentName,
+  onAddComment,
   onCommentChange,
   onDeleteComment,
 }) => {
@@ -315,6 +317,7 @@ const Transcription: FC<TranscriptionProps> = ({
                       commentsList={commentsList}
                       setNewCommentSelection={setNewCommentSelection}
                       onCancelComment={onCancelComment}
+                      onAddComment={onAddComment}
                     />
                   );
                 })}
