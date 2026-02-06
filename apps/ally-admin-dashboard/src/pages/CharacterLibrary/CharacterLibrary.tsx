@@ -110,7 +110,7 @@ export const CharacterLibrary: React.FC = () => {
 
   const handleDeleteCharacter = async (characterId: string) => {
     try {
-      await deleteCharacter(characterId).unwrap();
+      await deleteCharacter({ scenarioCharacterIds: [characterId] }).unwrap();
       toast.success(en.simulation.characterDeletedSuccessfully);
       setIsSidePanelOpen(false);
       setSelectedCharacter(null);
@@ -200,7 +200,7 @@ export const CharacterLibrary: React.FC = () => {
 
     try {
       // Delete all selected characters
-      await Promise.all(characterIds.map(id => deleteCharacter(id).unwrap()));
+      await deleteCharacter({ scenarioCharacterIds: characterIds }).unwrap();
 
       toast.success(
         `${en.common.successfullyDeleted} ${selectedCharacters.length} ${selectedCharacters.length > 1 ? en.common.characters : en.common.character}`,

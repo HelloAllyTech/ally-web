@@ -368,3 +368,7 @@ export interface CharacterData {
   createdBy?: number;
   updatedBy?: number;
 }
+
+export interface DeleteCharacterRequest {
+  scenarioCharacterIds: string[];
+}
