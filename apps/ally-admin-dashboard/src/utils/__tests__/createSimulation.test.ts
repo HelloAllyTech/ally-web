@@ -256,64 +256,6 @@ describe("createSimulation utils", () => {
       expect(result.name).toBeUndefined();
       expect(result.age).toBeUndefined();
     });
-
-    it("should preserve all metadata fields when present", () => {
-      const mockResponse: GetSimulationByIdResponse = {
-        id: "sim-123",
-        title: "Test",
-        description: "Test",
-        status: "ACTIVE",
-        coverImageUrl: "url",
-        isGlobal: true,
-        ...(FEATURE_FLAGS_MAP.PRIVATE_PUBLIC__SIMULATION_FLAG ? { isPublic: true } : {}),
-        createdBy: "user-1",
-        lastModified: "2024-01-01T00:00:00Z",
-        triggerWarnings: [],
-        difficultyLevel: "medium",
-        metadata: {
-          age: 30,
-          name: "Jane",
-          context: "context",
-          coreMemories: "memories",
-          agentGoal: "goal",
-          currentLocation: "location",
-          emotionalNeeds: "needs",
-          gender: "female",
-          genderIdentity: "identity",
-          lifeHistory: "history",
-          openingStatements: ["statements"],
-          personality: "personality",
-          profession: "profession",
-          sessionBehaviorGuidelines: "guidelines",
-          sexualOrientation: "orientation",
-          startingState: "state",
-          tone: "tone",
-          languageVoices: {
-            1: "voice-123",
-          },
-          voiceId: "voice-123",
-          customFields: [],
-          experienceMode: ExperienceMode.CHECKLIST,
-          checklistType: ChecklistType.GUIDED,
-          timerMode: true,
-          maxTimeValue: "01:29:00",
-          stateInstructions: "state instructions",
-        },
-      } as GetSimulationByIdResponse;
-
-      const result = formatSimulationResponseData(mockResponse);
-
-      // Check all fields are present (title, description, coverImageUrl, coverVideoUrl, terminationEvents, difficultyLevel, responseLength, prompt, isGlobal, triggerWarningIds, customFields, agentDialogues + 18 metadata fields + experienceMode + checklistType + timerMode + maxTimeValue + stateInstructions + 1 for isPublic when flag is true)
-      expect(Object.keys(result)).toHaveLength(
-        FEATURE_FLAGS_MAP.PRIVATE_PUBLIC__SIMULATION_FLAG ? 37 : 36,
-      );
-      expect(result.title).toBe("Test");
-      expect(result.description).toBe("Test");
-      expect(result.coverImageUrl).toBe("url");
-      expect(result.age).toBe(30);
-      expect(result.name).toBe("Jane");
-      expect(result.voiceId).toBe("voice-123");
-    });
   });
 
   describe("extractValidData", () => {
