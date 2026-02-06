@@ -518,18 +518,22 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
         defaultValue: DEFAULT_ROLE_INSTRUCTION,
         isMandatory: true,
       },
-      {
-        id: "behaviourInstructions",
-        label: "Behaviour Instructions",
-        type: FORM_FIELD_TYPES.CUSTOM.BEHAVIOURS_INSTRUCTION,
-        fullWidth: true,
-      },
-      {
-        id: "stateInstructions",
-        label: "State Instructions & Dialogues",
-        type: FORM_FIELD_TYPES.CUSTOM.STATES_INSTRUCTION,
-        fullWidth: true,
-      },
+      ...(FEATURE_FLAGS_MAP.ADDITIONAL_CONFIG_FLAG
+        ? [
+            {
+              id: "behaviourInstructions",
+              label: "Behaviour Instructions",
+              type: FORM_FIELD_TYPES.CUSTOM.BEHAVIOURS_INSTRUCTION,
+              fullWidth: true,
+            },
+            {
+              id: "stateInstructions",
+              label: "State Instructions & Dialogues",
+              type: FORM_FIELD_TYPES.CUSTOM.STATES_INSTRUCTION,
+              fullWidth: true,
+            },
+          ]
+        : []),
       {
         id: "customFields",
         label: "Custom Fields",
