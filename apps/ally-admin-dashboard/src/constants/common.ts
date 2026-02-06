@@ -84,6 +84,7 @@ export const ApiEndpoints = {
     ADD_USER: "/v1/users",
     SIMULATION_CREDITS: "/v1/simulation-credits",
     SUMMARY_SECTIONS: `/v1/settings/summary-sections`,
+    SUMMARY_FIELDS: `/v1/settings/summary-fields`,
   },
   AUTHORIZATION: {
     GET_PERMISSIONS: "/v1/authorization/permissions",
