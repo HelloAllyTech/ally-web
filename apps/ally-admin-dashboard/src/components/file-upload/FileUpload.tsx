@@ -288,7 +288,7 @@ export const FileUpload = ({
     );
 
     if (fileType === FILE_TYPE.IMAGE) {
-      uploadText = FEATURE_FLAGS_MAP.SIMULATION_CREATOR_FLAG ? (
+      uploadText = FEATURE_FLAGS_MAP.ADDITIONAL_CONFIG_FLAG ? (
         <>
           {en.simulation.dragDrop}{" "}
           <span className="text-primary text-primary-500">{en.simulation.choose}</span>{" "}

@@ -11,23 +11,13 @@ import {
   en,
 } from "@constants";
 import { useClickOutside } from "@hooks";
+import { CharacterData } from "@types";
 
 interface CharacterProfileSelectorProps {
   label: string;
   id: string;
   formMethods: any;
   isMandatory?: boolean;
-}
-
-interface Character {
-  id: string;
-  name: string;
-  age: number;
-  gender: string;
-  profession: string;
-  currentLocation: string;
-  genderIdentity: string;
-  sexualOrientation: string;
 }
 
 const PAGE_SIZE = 100;
@@ -80,7 +70,7 @@ export const CharacterProfileSelector: React.FC<CharacterProfileSelectorProps> =
   const { data: charactersData, isLoading } = useGetCharactersQuery({
     limit: PAGE_SIZE,
     offset: 0,
-    searchName: debouncedSearchQuery,
+    search: debouncedSearchQuery,
   });
 
   // Close character dropdown on outside click
@@ -91,12 +81,13 @@ export const CharacterProfileSelector: React.FC<CharacterProfileSelectorProps> =
 
   // Handle character selection
   const handleCharacterSelect = useCallback(
-    (character: Character) => {
+    (character: CharacterData) => {
+      if (!character.id) return;
       setSelectedCharacterId(character.id);
 
       // Prefill form fields using existing field IDs
       Object.values(formFieldIds).forEach(fieldId => {
-        setValue(fieldId, character[fieldId as keyof Character] || "");
+        setValue(fieldId, character[fieldId as keyof CharacterData] ?? "");
       });
 
       // Store the character ID in the main field
@@ -110,8 +101,9 @@ export const CharacterProfileSelector: React.FC<CharacterProfileSelectorProps> =
   );
 
   // Get selected character
-  const selectedCharacter = charactersData?.find(char => char.id === selectedCharacterId);
-
+  const selectedCharacter = charactersData?.characters?.find(
+    char => char.id === selectedCharacterId,
+  );
   // Get gender label
   const getGenderLabel = (value: string) => {
     const option = GENDER_OPTIONS.find(opt => opt.value === value);
@@ -179,8 +171,8 @@ export const CharacterProfileSelector: React.FC<CharacterProfileSelectorProps> =
                       <div className="px-3 py-4 text-sm text-typography-600 text-center">
                         Loading...
                       </div>
-                    ) : charactersData && charactersData.length > 0 ? (
-                      charactersData.map(character => (
+                    ) : charactersData && charactersData?.characters?.length > 0 ? (
+                      charactersData?.characters?.map(character => (
                         <div
                           key={character.id}
                           className={`px-3 py-2 text-sm cursor-pointer transition-colors ${
