@@ -191,7 +191,7 @@ export const TagSelector: React.FC<TagsDropdown> = ({
     createPortal(
       <div
         ref={dropdownRef}
-        className="fixed bg-white border rounded-md shadow-lg z-[9999] w-[300px]"
+        className="fixed bg-white border rounded-md shadow-lg z-[9999] w-[300px] font-primary"
         style={{ top: dropdownPosition.top, left: dropdownPosition.left }}
       >
         <div className="relative p-2">
