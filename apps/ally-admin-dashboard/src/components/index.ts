@@ -61,3 +61,8 @@ export * from "./bulk-add-events-side-panel";
 export * from "./character-side-panel";
 export * from "./character-profile-selector";
 export * from "./accordion";
+export * from "./behaviours-instruction";
+export * from "./helper-tag";
+export * from "./states-instruction";
+export * from "./editable-table";
+export * from "./image-library";
