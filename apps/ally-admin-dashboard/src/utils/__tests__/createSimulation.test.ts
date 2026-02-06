@@ -302,9 +302,9 @@ describe("createSimulation utils", () => {
 
       const result = formatSimulationResponseData(mockResponse);
 
-      // Check all fields are present (title, description, coverImageUrl, coverVideoUrl, terminationEvents, difficultyLevel, responseLength, prompt, isGlobal, triggerWarningIds, customFields, agentDialogues + 18 metadata fields + experienceMode + checklistType = 33 total, +1 for isPublic when flag is true = 34)
+      // Check all fields are present (title, description, coverImageUrl, coverVideoUrl, terminationEvents, difficultyLevel, responseLength, prompt, isGlobal, triggerWarningIds, customFields, agentDialogues + 18 metadata fields + experienceMode + checklistType + timerMode + maxTimeValue + stateInstructions + 1 for isPublic when flag is true)
       expect(Object.keys(result)).toHaveLength(
-        FEATURE_FLAGS_MAP.PRIVATE_PUBLIC__SIMULATION_FLAG ? 36 : 35,
+        FEATURE_FLAGS_MAP.PRIVATE_PUBLIC__SIMULATION_FLAG ? 37 : 36,
       );
       expect(result.title).toBe("Test");
       expect(result.description).toBe("Test");

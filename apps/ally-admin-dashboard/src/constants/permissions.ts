@@ -1,5 +1,3 @@
-import { FEATURE_FLAGS_MAP } from "@ally-ui-mono/ui-shared";
-
 export enum Permissions {
   EDIT_SCENARIO = "edit:scenario",
   EDIT_USER = "edit:user",
@@ -14,9 +12,7 @@ export enum Permissions {
 export const SIDEBAR_ITEMS = {
   SIMULATION_STUDIO: "simulation-studio",
   EVENT_MANAGEMENT: "event-management",
-  ...(FEATURE_FLAGS_MAP.CHARACTER_LIBRARY_FLAG && {
-    CHARACTER_LIBRARY: "character-library",
-  }),
+  CHARACTER_LIBRARY: "character-library",
   USER_MANAGEMENT: "user-management",
   SCENARIO_VOICES: "scenario-voices",
   SCENARIO_LANGUAGES: "scenario-languages",
