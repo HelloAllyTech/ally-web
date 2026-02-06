@@ -73,7 +73,7 @@ export const ApiEndpoints = {
     CREATE_CHARACTER: "/v1/scenario-characters",
     GET_CHARACTER_BY_ID: (id: string) => `/v1/scenario-characters/${id}`,
     UPDATE_CHARACTER: (id: string) => `/v1/scenario-characters/${id}`,
-    DELETE_CHARACTER: (id: string) => `/v1/scenario-characters/${id}`,
+    DELETE_CHARACTER: "/v1/scenario-characters",
   },
 
   USER_MANAGEMENT: {
