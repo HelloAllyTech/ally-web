@@ -297,6 +297,7 @@ describe("createSimulation utils", () => {
           checklistType: ChecklistType.GUIDED,
           timerMode: true,
           maxTimeValue: "01:29:00",
+          stateInstructions: "state instructions",
         },
       } as GetSimulationByIdResponse;
 
