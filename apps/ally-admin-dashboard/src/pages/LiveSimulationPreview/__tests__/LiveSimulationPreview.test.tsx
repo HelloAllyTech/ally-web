@@ -30,30 +30,34 @@ vi.mock("@hooks/useLiveKitRoom", () => ({
 
 // Mock SimulationPage from ui-shared
 const mockSimulationPageProps = vi.fn();
-vi.mock("@ally-ui-mono/ui-shared", () => ({
-  SimulationPage: (props: any) => {
-    mockSimulationPageProps(props);
-    return (
-      <div data-testid="simulation-page">
-        <h1>{props.title || props.roomData?.title}</h1>
-        <div data-testid="room-status">{props.roomStatus}</div>
-        <div data-testid="score">{props.score}</div>
-        <div data-testid="events-count">{props.events?.length || 0}</div>
-        <button onClick={props.onEndSimulation} data-testid="end-simulation">
-          End Simulation
-        </button>
-        {props.renderWarningDialog &&
-          props.renderWarningDialog({
-            isOpen: true,
-            onClose: vi.fn(),
-            onContinue: vi.fn(),
-            onEnd: vi.fn(),
-          })}
-      </div>
-    );
-  },
-  getSimulationEvents: (events: any[]) => events,
-}));
+vi.mock("@ally-ui-mono/ui-shared", async importOriginal => {
+  const actual = await importOriginal<typeof import("@ally-ui-mono/ui-shared")>();
+  return {
+    ...actual,
+    SimulationPage: (props: any) => {
+      mockSimulationPageProps(props);
+      return (
+        <div data-testid="simulation-page">
+          <h1>{props.title || props.roomData?.title}</h1>
+          <div data-testid="room-status">{props.roomStatus}</div>
+          <div data-testid="score">{props.score}</div>
+          <div data-testid="events-count">{props.events?.length || 0}</div>
+          <button onClick={props.onEndSimulation} data-testid="end-simulation">
+            End Simulation
+          </button>
+          {props.renderWarningDialog &&
+            props.renderWarningDialog({
+              isOpen: true,
+              onClose: vi.fn(),
+              onContinue: vi.fn(),
+              onEnd: vi.fn(),
+            })}
+        </div>
+      );
+    },
+    getSimulationEvents: (events: any[]) => events,
+  };
+});
 
 // Mock ActionConfirmationPopup
 vi.mock("@components", async importOriginal => {

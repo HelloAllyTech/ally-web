@@ -27,6 +27,7 @@ export * from "./filters";
 export * from "./user-modal";
 export * from "./dropdownwithtag";
 export * from "./custom-dropdown";
+export * from "./custom-dropdown-field";
 export * from "./user-management";
 export * from "./empty-state";
 export * from "./skeleton-loader";
