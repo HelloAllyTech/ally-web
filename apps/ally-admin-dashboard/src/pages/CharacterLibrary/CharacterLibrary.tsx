@@ -2,7 +2,11 @@ import React, { useState, useMemo, useCallback, useEffect } from "react";
 
 import { toast } from "sonner";
 
-import { useGetCharactersQuery } from "@api";
+import {
+  useGetCharactersQuery,
+  useDeleteCharacterMutation,
+  useUpdateCharacterMutation,
+} from "@api";
 import { Trash } from "@assets";
 import { NotionTable, ListToolbar, ActionConfirmationPopup, CharacterSidePanel } from "@components";
 import { ButtonVariant } from "@components/types";
@@ -28,6 +32,10 @@ export const CharacterLibrary: React.FC = () => {
     offset,
     search: characterSearch,
   });
+
+  // API mutations
+  const [deleteCharacter] = useDeleteCharacterMutation();
+  const [updateCharacter] = useUpdateCharacterMutation();
 
   // Update characters when data changes
   useEffect(() => {
@@ -100,12 +108,16 @@ export const CharacterLibrary: React.FC = () => {
     }
   };
 
-  const handleDeleteCharacter = (characterId: string) => {
-    const updatedCharacters = characters.filter(char => char.id !== characterId);
-    setCharacters(updatedCharacters);
-    toast.success("Character deleted successfully!");
-    setIsSidePanelOpen(false);
-    setSelectedCharacter(null);
+  const handleDeleteCharacter = async (characterId: string) => {
+    try {
+      await deleteCharacter(characterId).unwrap();
+      toast.success(en.simulation.characterDeletedSuccessfully);
+      setIsSidePanelOpen(false);
+      setSelectedCharacter(null);
+      // The character list will automatically refresh due to cache invalidation
+    } catch {
+      toast.error(en.simulation.failedToDeleteCharacter);
+    }
   };
 
   const createCharacterObject = useCallback((character: any) => {
@@ -162,13 +174,20 @@ export const CharacterLibrary: React.FC = () => {
   }) => {
     const { columnId, value, rowId } = action;
     const selectedCharacter = characters.find(char => char.id === rowId);
-    if (value !== undefined && selectedCharacter) {
-      const updatedCharacter = { ...selectedCharacter, [columnId]: value };
-      const updatedCharacters = characters.map(char =>
-        char.id === rowId ? updatedCharacter : char,
-      );
-      setCharacters(updatedCharacters);
-      toast.success(en.simulation.characterUpdatedSuccessfully);
+
+    if (value !== undefined && selectedCharacter && columnId) {
+      try {
+        // Update the character with the new value
+        const updatedCharacterData = { ...selectedCharacter, [columnId]: value };
+        const { ...data } = updatedCharacterData;
+
+        // Call the API to update the character
+        await updateCharacter({ id: rowId!, data }).unwrap();
+
+        toast.success(en.simulation.characterUpdatedSuccessfully);
+      } catch {
+        toast.error(en.simulation.failedToUpdateCharacter);
+      }
     }
   };
 
@@ -180,8 +199,9 @@ export const CharacterLibrary: React.FC = () => {
     if (characterIds.length === 0) return;
 
     try {
-      const updatedCharacters = characters.filter(char => !characterIds.includes(char.id));
-      setCharacters(updatedCharacters);
+      // Delete all selected characters
+      await Promise.all(characterIds.map(id => deleteCharacter(id).unwrap()));
+
       toast.success(
         `${en.common.successfullyDeleted} ${selectedCharacters.length} ${selectedCharacters.length > 1 ? en.common.characters : en.common.character}`,
       );

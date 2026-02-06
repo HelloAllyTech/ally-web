@@ -69,11 +69,11 @@ export const ApiEndpoints = {
   },
 
   CHARACTERS: {
-    GET_CHARACTERS: "/v1/characters",
-    CREATE_CHARACTER: "/v1/characters",
-    GET_CHARACTER_BY_ID: (id: string) => `/v1/characters/${id}`,
-    UPDATE_CHARACTER: (id: string) => `/v1/characters/${id}`,
-    DELETE_CHARACTER: (id: string) => `/v1/characters/${id}`,
+    GET_CHARACTERS: "/v1/scenario-characters",
+    CREATE_CHARACTER: "/v1/scenario-characters",
+    GET_CHARACTER_BY_ID: (id: string) => `/v1/scenario-characters/${id}`,
+    UPDATE_CHARACTER: (id: string) => `/v1/scenario-characters/${id}`,
+    DELETE_CHARACTER: (id: string) => `/v1/scenario-characters/${id}`,
   },
 
   USER_MANAGEMENT: {
