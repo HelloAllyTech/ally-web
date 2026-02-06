@@ -13,6 +13,7 @@ import {
   useGetAudioUploadUrlMutation,
   useGetCounsellorsQuery,
   useCancelAudioUploadMutation,
+  useProcessAudioUploadMutation,
 } from "@api";
 import { Dropdown, DatePicker, TimePicker, Button, ButtonVariant } from "@components";
 import { addAudioUpload, updateUploadProgress, updateUploadError } from "@reducer";
@@ -39,6 +40,7 @@ const AudioUploadDialog: FC<AudioUploadDialogProps> = ({ isOpen, onClose }) => {
     { isLoading: isGetAudioUploadUrlLoading, error: getAudioUploadUrlError },
   ] = useGetAudioUploadUrlMutation();
   const [cancelAudioUpload] = useCancelAudioUploadMutation();
+  const [processAudioUpload] = useProcessAudioUploadMutation();
   const { data: counsellors = [] } = counsellorsData || {};
 
   const isUploadButtonDisabled =
@@ -94,11 +96,11 @@ const AudioUploadDialog: FC<AudioUploadDialogProps> = ({ isOpen, onClose }) => {
       platform: "WEB",
       duration,
     });
-    const { presignedUrl, chatId } = response.data;
+    const { presignedUrl, chatId, s3Key } = response.data;
 
     // upload audio file to s3
     try {
-      if (presignedUrl && chatId) {
+      if (presignedUrl && chatId && s3Key) {
         let uploadStarted = false;
         await axios.put(presignedUrl, audioFile, {
           headers: { "Content-Type": audioFile.type },
@@ -126,6 +128,7 @@ const AudioUploadDialog: FC<AudioUploadDialogProps> = ({ isOpen, onClose }) => {
           },
           timeout: 1800000, // 30 Minutes
         });
+        await processAudioUpload({ s3Key });
       }
     } catch {
       store.dispatch(updateUploadError({ chatId, error: "Failed to upload audio" }));

@@ -120,6 +120,7 @@ export interface GetAudioUploadUrlInput {
 
 export interface GetAudioUploadUrlResponse {
   presignedUrl: string;
+  s3Key: string;
   chatId: number;
 }
 
@@ -128,6 +129,14 @@ export interface CancelAudioUploadInput {
 }
 
 export interface CancelAudioUploadResponse {
+  message: string;
+}
+
+export interface ProcessAudioUploadInput {
+  s3Key: string;
+}
+
+export interface ProcessAudioUploadResponse {
   message: string;
 }
 
