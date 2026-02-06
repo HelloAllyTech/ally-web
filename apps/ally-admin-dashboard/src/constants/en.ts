@@ -425,6 +425,13 @@ export const en = {
     changeImage: "Change image",
     scribeSettings: "Scribe settings",
     additionalFields: "Additional fields",
+    failedToUpdateScribeSettings: "Failed to update scribe settings",
+    clearAll: "Clear all",
+    selectAll: "Select all",
+    selectedCount: (selectedCount: number, totalCount: number) =>
+      `${selectedCount} of ${totalCount} selected`,
+    saving: "Saving...",
+    scribeSettingsNotEnabled: "Scribe settings is not enabled",
   },
   eventConfiguration: {
     selectEvent: "Select an event",
