@@ -12,7 +12,7 @@ export const en = {
     cancel: "Cancel",
     delete: "Delete",
     noOptionsAvailable: "No options available",
-    noResultsFound: "No results found for",
+    noResultsFound: "No results found",
     noCharactersFoundMatchingYourSearch: "No characters found matching your search",
     select: "Select",
     uploading: "Uploading...",
@@ -268,11 +268,15 @@ export const en = {
     coverVideo: "Cover video",
     dragDrop: "Drag & drop or",
     choose: "choose",
-    pngUploadGuidelines: "a JPEG or PNG file with a",
+    upload: "Upload",
+    uploadFromImageLibrary: "browse image library.",
+    pngUploadGuidelinesOld: "a JPEG or PNG file with a",
+    pngUploadGuidelines: "a JPEG or PNG file with a 16:9 aspect ratio under",
     mp4UploadGuidelines: "a MP4 or MOV file with a",
     videoUploadGuidelines:
       "resolution of 16:9 aspect ratio,under 15MB, and a duration of up to 15 seconds.",
-    resolution: "resolution of 1920x1080 and under 2MB.",
+    resolutionOld: "resolution of 1920x1080 and under 2MB.",
+    resolution: "2MB, or ",
     description: "Description",
     descriptionPlaceholder: "Enter description",
     tags: "Tags",
@@ -331,6 +335,11 @@ export const en = {
     maxTimeError(minTime: string, maxTime: string) {
       return `Maximum time must be in HH:MM:SS format between ${minTime} and ${maxTime}.`;
     },
+    newRow: "New row",
+    statesInstruction: "States Instruction & Dialogues",
+    behavioursInstruction: "Behaviour Instructions",
+    ImageLibrary: "Image Library",
+    selectImage: "Select image",
   },
   notification: {
     beforeYouGetStarted: "Before you get started",
