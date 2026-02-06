@@ -137,6 +137,7 @@ export interface GetSimulationByIdResponse {
     checklistType?: string;
     timerMode?: boolean;
     maxTimeValue?: string;
+    stateInstructions?: string;
   };
   terminationEvents?: terminationEvent[];
   terminationEvent?: {

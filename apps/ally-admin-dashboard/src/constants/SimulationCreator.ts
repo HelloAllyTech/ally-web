@@ -457,7 +457,7 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
         fullWidth: true,
         maxLength: 2500,
         isMandatory: false,
-        regenerate: true,
+        regenerate: false, // TODO: Remove this once the character profile text is regenerated
         isDashedLineAbove: true,
       },
       {
@@ -547,7 +547,7 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
         multiline: true,
         fullWidth: true,
         maxLength: 1000,
-        regenerate: true,
+        regenerate: false, // TODO: Remove this once the opening statements are regenerated
         isMandatory: true,
       },
       {

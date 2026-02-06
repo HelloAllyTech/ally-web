@@ -4,6 +4,7 @@ import { Controller } from "react-hook-form";
 
 import { useGetCharactersQuery } from "@api";
 import { ArrowSolid } from "@assets";
+import { CustomDropdownField } from "@components";
 import {
   GENDER_OPTIONS,
   GENDER_IDENTITY_OPTIONS,
@@ -104,23 +105,6 @@ export const CharacterProfileSelector: React.FC<CharacterProfileSelectorProps> =
   const selectedCharacter = charactersData?.characters?.find(
     char => char.id === selectedCharacterId,
   );
-  // Get gender label
-  const getGenderLabel = (value: string) => {
-    const option = GENDER_OPTIONS.find(opt => opt.value === value);
-    return option?.label || value;
-  };
-
-  // Get gender identity label
-  const getGenderIdentityLabel = (value: string) => {
-    const option = GENDER_IDENTITY_OPTIONS.find(opt => opt.value === value);
-    return option?.label || value;
-  };
-
-  // Get sexual orientation label
-  const getSexualOrientationLabel = (value: string) => {
-    const option = SEXUAL_ORIENTATION_OPTIONS.find(opt => opt.value === value);
-    return option?.label || value;
-  };
 
   return (
     <div className="w-full">
@@ -215,7 +199,6 @@ export const CharacterProfileSelector: React.FC<CharacterProfileSelectorProps> =
                     type="text"
                     placeholder="Anjali"
                     className="w-full rounded border border-border-light px-3 py-2 text-base focus:outline-none focus:ring-1 focus:ring-primary"
-                    readOnly
                   />
                 )}
               />
@@ -234,7 +217,6 @@ export const CharacterProfileSelector: React.FC<CharacterProfileSelectorProps> =
                     type="number"
                     placeholder="27"
                     className="w-full rounded border border-border-light px-3 py-2 text-base focus:outline-none focus:ring-1 focus:ring-primary"
-                    readOnly
                   />
                 )}
               />
@@ -251,19 +233,16 @@ export const CharacterProfileSelector: React.FC<CharacterProfileSelectorProps> =
                 control={formMethods.control}
                 defaultValue=""
                 render={({ field }) => (
-                  <div className="relative">
-                    <input
-                      {...field}
-                      type="text"
-                      value={field.value ? getGenderLabel(field.value) : ""}
-                      placeholder="Female"
-                      className="w-full rounded border border-border-light px-3 py-2 text-base focus:outline-none focus:ring-1 focus:ring-primary bg-background-secondary cursor-not-allowed"
-                      readOnly
-                    />
-                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-typography-600 pointer-events-none">
-                      <ArrowSolid />
-                    </span>
-                  </div>
+                  <CustomDropdownField
+                    options={GENDER_OPTIONS}
+                    placeholder="Select gender"
+                    defaultOption={
+                      field.value
+                        ? GENDER_OPTIONS.find(opt => opt.value === field.value)
+                        : undefined
+                    }
+                    onHandleSelect={option => field.onChange(option.value)}
+                  />
                 )}
               />
             </div>
@@ -281,7 +260,6 @@ export const CharacterProfileSelector: React.FC<CharacterProfileSelectorProps> =
                     type="text"
                     placeholder="e.g. Software Engineer"
                     className="w-full rounded border border-border-light px-3 py-2 text-base focus:outline-none focus:ring-1 focus:ring-primary placeholder:text-typography-400"
-                    readOnly
                   />
                 )}
               />
@@ -303,7 +281,6 @@ export const CharacterProfileSelector: React.FC<CharacterProfileSelectorProps> =
                     type="text"
                     placeholder="Kolkata, India"
                     className="w-full rounded border border-border-light px-3 py-2 text-base focus:outline-none focus:ring-1 focus:ring-primary"
-                    readOnly
                   />
                 )}
               />
@@ -317,19 +294,16 @@ export const CharacterProfileSelector: React.FC<CharacterProfileSelectorProps> =
                 control={formMethods.control}
                 defaultValue=""
                 render={({ field }) => (
-                  <div className="relative">
-                    <input
-                      {...field}
-                      type="text"
-                      value={field.value ? getGenderIdentityLabel(field.value) : ""}
-                      placeholder="Select"
-                      className="w-full rounded border border-border-light px-3 py-2 text-base focus:outline-none focus:ring-1 focus:ring-primary bg-background-secondary cursor-not-allowed"
-                      readOnly
-                    />
-                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-typography-600 pointer-events-none">
-                      <ArrowSolid />
-                    </span>
-                  </div>
+                  <CustomDropdownField
+                    options={GENDER_IDENTITY_OPTIONS}
+                    placeholder="Select gender identity"
+                    defaultOption={
+                      field.value
+                        ? GENDER_IDENTITY_OPTIONS.find(opt => opt.value === field.value)
+                        : undefined
+                    }
+                    onHandleSelect={option => field.onChange(option.value)}
+                  />
                 )}
               />
             </div>
@@ -345,19 +319,16 @@ export const CharacterProfileSelector: React.FC<CharacterProfileSelectorProps> =
                 control={formMethods.control}
                 defaultValue=""
                 render={({ field }) => (
-                  <div className="relative">
-                    <input
-                      {...field}
-                      type="text"
-                      value={field.value ? getSexualOrientationLabel(field.value) : ""}
-                      placeholder="Select"
-                      className="w-full rounded border border-border-light px-3 py-2 text-base focus:outline-none focus:ring-1 focus:ring-primary bg-background-secondary cursor-not-allowed"
-                      readOnly
-                    />
-                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-typography-600 pointer-events-none">
-                      <ArrowSolid />
-                    </span>
-                  </div>
+                  <CustomDropdownField
+                    options={SEXUAL_ORIENTATION_OPTIONS}
+                    placeholder="Select sexual orientation"
+                    defaultOption={
+                      field.value
+                        ? SEXUAL_ORIENTATION_OPTIONS.find(opt => opt.value === field.value)
+                        : undefined
+                    }
+                    onHandleSelect={option => field.onChange(option.value)}
+                  />
                 )}
               />
             </div>
