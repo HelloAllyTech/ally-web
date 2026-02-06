@@ -236,6 +236,9 @@ export const CharacterProfileSelector: React.FC<CharacterProfileSelectorProps> =
                   <CustomDropdownField
                     options={GENDER_OPTIONS}
                     placeholder="Select gender"
+                    customStyle={{
+                      height: "40px",
+                    }}
                     defaultOption={
                       field.value
                         ? GENDER_OPTIONS.find(opt => opt.value === field.value)
@@ -297,6 +300,9 @@ export const CharacterProfileSelector: React.FC<CharacterProfileSelectorProps> =
                   <CustomDropdownField
                     options={GENDER_IDENTITY_OPTIONS}
                     placeholder="Select gender identity"
+                    customStyle={{
+                      height: "40px",
+                    }}
                     defaultOption={
                       field.value
                         ? GENDER_IDENTITY_OPTIONS.find(opt => opt.value === field.value)
@@ -322,6 +328,9 @@ export const CharacterProfileSelector: React.FC<CharacterProfileSelectorProps> =
                   <CustomDropdownField
                     options={SEXUAL_ORIENTATION_OPTIONS}
                     placeholder="Select sexual orientation"
+                    customStyle={{
+                      height: "40px",
+                    }}
                     defaultOption={
                       field.value
                         ? SEXUAL_ORIENTATION_OPTIONS.find(opt => opt.value === field.value)

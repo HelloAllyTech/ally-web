@@ -26,6 +26,7 @@ import {
   GetLanguagesQuery,
   Language,
   CharacterData,
+  DeleteCharacterRequest,
 } from "@types";
 
 import { baseAPI } from "./baseApi";
@@ -486,10 +487,11 @@ const simulationStudioAPI = baseAPI.injectEndpoints({
     /**
      * Delete a character
      */
-    deleteCharacter: builder.mutation<{ success: boolean }, string>({
-      query: id => ({
-        url: ApiEndpoints.CHARACTERS.DELETE_CHARACTER(id),
+    deleteCharacter: builder.mutation<{ success: boolean }, DeleteCharacterRequest>({
+      query: body => ({
+        url: ApiEndpoints.CHARACTERS.DELETE_CHARACTER,
         method: HttpMethod.DELETE,
+        body,
       }),
       invalidatesTags: [TAG_TYPES.CHARACTERS],
     }),
