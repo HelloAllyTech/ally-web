@@ -168,7 +168,7 @@ export const CharacterSidePanel: React.FC<CharacterSidePanelProps> = ({
     <div className="fixed inset-0 z-50 flex">
       <div className="flex-1 bg-black bg-opacity-50" onClick={handleCancel} />
 
-      <div className="w-[50%] min-w-[600px] max-w-[800px] bg-white shadow-xl flex flex-col">
+      <div className="w-[50%] relative min-w-[600px] max-w-[800px] h-full bg-white shadow-xl flex flex-col">
         <PanelHeader
           characterId={selectedCharacter?.id}
           onClose={handleCancel}
@@ -177,7 +177,7 @@ export const CharacterSidePanel: React.FC<CharacterSidePanelProps> = ({
           isNewCharacter={isNewCharacter}
         />
 
-        <div className="flex px-10 pt-6 pb-6 overflow-y-auto max-h-[calc(100vh-140px)] custom-scrollbar">
+        <div className="flex px-10 pt-6 pb-6 overflow-y-auto h-full custom-scrollbar">
           <div className="space-y-4">
             <Field label="Name" required>
               <input
@@ -267,7 +267,7 @@ export const CharacterSidePanel: React.FC<CharacterSidePanelProps> = ({
           </div>
         </div>
 
-        <div className="flex items-center justify-center gap-4 p-6">
+        <div className="absolute bottom-0 left-0 right-0 flex items-center justify-center gap-4 p-6">
           <Button
             variant={ButtonVariant.PRIMARY}
             onClick={handleSave}
