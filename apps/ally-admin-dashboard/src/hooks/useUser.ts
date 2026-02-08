@@ -79,6 +79,11 @@ export const useUser = () => {
       label: en.userManagement.userManagement,
       path: ROUTES.USER_MANAGEMENT,
     },
+    {
+      id: SIDEBAR_ITEMS.MANAGE_GUARDRAILS,
+      label: "Conversational Guardrails",
+      path: ROUTES.MANAGE_GUARDRAILS,
+    },
   ];
 
   /**
@@ -158,6 +163,8 @@ export const useUser = () => {
           return permissions.includes(Permissions.EDIT_SCENARIO_LANGUAGE);
         case SIDEBAR_ITEMS.USER_MANAGEMENT:
           return permissions.includes(Permissions.EDIT_USER);
+        case SIDEBAR_ITEMS.MANAGE_GUARDRAILS:
+          return permissions.includes(Permissions.EDIT_SCENARIO);
         default:
           return true;
       }

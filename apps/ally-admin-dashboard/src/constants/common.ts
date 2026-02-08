@@ -66,6 +66,7 @@ export const ApiEndpoints = {
     DUPLICATE_SCENARIO_CASE: (id: string | number) =>
       `/v1/learn/admin/scenario-paths/${id}/duplicate`, // TODO: change to /v1/learn/admin/scenario-cases/${id}/duplicate
     UPDATE_SIMULATION_CASE_BY_ID: (id: string | number) => `/v1/learn/admin/scenario-paths/${id}`, // TODO: change to /v1/learn/admin/scenario-cases/${id}
+    CONVERSATIONAL_GUARDRAILS: "/v1/learn/conversational-guardrails",
   },
 
   CHARACTERS: {
@@ -109,6 +110,7 @@ export const ROUTES = {
   EDIT_PATH: (id: string | number) => `/create-path/edit/${id}`,
   CREATE_CASE: "/create-case",
   EDIT_CASE: (id: string | number) => `/create-case/edit/${id}`,
+  MANAGE_GUARDRAILS: "/manage-guardrails",
 };
 
 export const LOCAL_STORAGE_KEYS = {
@@ -170,4 +172,6 @@ export const TAG_TYPES = {
   SUMMARY_SECTIONS: "summarySections",
   UPDATE_SUMMARY_SECTIONS: "updateSummarySections",
   CHARACTERS: "characters",
+  CONVERSATIONAL_GUARDRAILS: "conversationalGuardrails",
 };
+

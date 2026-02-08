@@ -5,3 +5,5 @@ export * from "./simulation";
 export * from "./user";
 export * from "./scenarioPath";
 export * from "./triggerConditions";
+export * from "./guardrails";
+

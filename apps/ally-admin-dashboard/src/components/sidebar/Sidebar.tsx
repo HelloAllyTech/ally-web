@@ -125,6 +125,8 @@ export const Sidebar: React.FC = () => {
         return <Mic />;
       case SIDEBAR_ITEMS.SCENARIO_LANGUAGES:
         return <Globe />;
+      case SIDEBAR_ITEMS.MANAGE_GUARDRAILS:
+        return <Book />;
       default:
         return null;
     }
@@ -147,6 +149,8 @@ export const Sidebar: React.FC = () => {
         return location.pathname.includes(ROUTES.MANAGE_SCENARIO_LANGUAGES);
       case ROUTES.MANAGE_SCENARIO_VOICES:
         return location.pathname.includes(ROUTES.MANAGE_SCENARIO_VOICES);
+      case ROUTES.MANAGE_GUARDRAILS:
+        return location.pathname.includes(ROUTES.MANAGE_GUARDRAILS);
       default:
         return false;
     }

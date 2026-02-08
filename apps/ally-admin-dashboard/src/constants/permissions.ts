@@ -16,4 +16,5 @@ export const SIDEBAR_ITEMS = {
   USER_MANAGEMENT: "user-management",
   SCENARIO_VOICES: "scenario-voices",
   SCENARIO_LANGUAGES: "scenario-languages",
+  MANAGE_GUARDRAILS: "manage-guardrails",
 };
