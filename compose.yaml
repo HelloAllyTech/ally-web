@@ -15,7 +15,6 @@ services:
     volumes:
       - .:/app
       - /app/node_modules
-      - /app/.nx
     restart: unless-stopped
 
   helpline:
@@ -32,7 +31,6 @@ services:
     volumes:
       - .:/app
       - /app/node_modules
-      - /app/.nx
     restart: unless-stopped
 
   admin:
@@ -49,7 +47,6 @@ services:
     volumes:
       - .:/app
       - /app/node_modules
-      - /app/.nx
     restart: unless-stopped
 
 # Note: Removed node_modules volumes - using node_modules from Docker images instead
