@@ -2,7 +2,7 @@ import { useCallback, useMemo } from "react";
 
 import { useSelector } from "react-redux";
 
-import { logger } from "@ally-ui-mono/ui-shared";
+import { FEATURE_FLAGS_MAP, logger } from "@ally-ui-mono/ui-shared";
 import {
   useLazyGetUserQuery,
   useLazyGetPermissionsQuery,
@@ -55,11 +55,15 @@ export const useUser = () => {
       label: en.simulation.eventManagement,
       path: ROUTES.MANAGE_EVENTS,
     },
-    {
-      id: SIDEBAR_ITEMS.CHARACTER_LIBRARY,
-      label: "Character Library",
-      path: ROUTES.CHARACTER_LIBRARY,
-    },
+    ...(FEATURE_FLAGS_MAP.CHARACTER_LIBRARY_FLAG
+      ? [
+          {
+            id: SIDEBAR_ITEMS.CHARACTER_LIBRARY,
+            label: "Character Library",
+            path: ROUTES.CHARACTER_LIBRARY,
+          },
+        ]
+      : []),
     {
       id: SIDEBAR_ITEMS.SCENARIO_VOICES,
       label: en.simulation.voicesManagement,
@@ -69,6 +73,11 @@ export const useUser = () => {
       id: SIDEBAR_ITEMS.SCENARIO_LANGUAGES,
       label: en.simulation.languagesManagement,
       path: ROUTES.MANAGE_SCENARIO_LANGUAGES,
+    },
+    {
+      id: SIDEBAR_ITEMS.PROMPTS,
+      label: en.simulation.promptsManagement,
+      path: ROUTES.MANAGE_PROMPTS,
     },
     {
       id: SIDEBAR_ITEMS.USER_MANAGEMENT,
@@ -152,6 +161,8 @@ export const useUser = () => {
           return permissions.includes(Permissions.EDIT_SCENARIO_VOICE);
         case SIDEBAR_ITEMS.SCENARIO_LANGUAGES:
           return permissions.includes(Permissions.EDIT_SCENARIO_LANGUAGE);
+        case SIDEBAR_ITEMS.PROMPTS:
+          return permissions.includes(Permissions.EDIT_PROMPT);
         case SIDEBAR_ITEMS.USER_MANAGEMENT:
           return permissions.includes(Permissions.EDIT_USER);
         default:

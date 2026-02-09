@@ -66,6 +66,17 @@ export const ApiEndpoints = {
     DUPLICATE_SCENARIO_CASE: (id: string | number) =>
       `/v1/learn/admin/scenario-paths/${id}/duplicate`, // TODO: change to /v1/learn/admin/scenario-cases/${id}/duplicate
     UPDATE_SIMULATION_CASE_BY_ID: (id: string | number) => `/v1/learn/admin/scenario-paths/${id}`, // TODO: change to /v1/learn/admin/scenario-cases/${id}
+    GET_PROMPTS: "/v1/prompts",
+    CREATE_PROMPT: "/v1/prompts",
+    UPDATE_PROMPT: (id: string | number) => `/v1/prompts/${id}`,
+  },
+
+  CHARACTERS: {
+    GET_CHARACTERS: "/v1/scenario-characters",
+    CREATE_CHARACTER: "/v1/scenario-characters",
+    GET_CHARACTER_BY_ID: (id: string) => `/v1/scenario-characters/${id}`,
+    UPDATE_CHARACTER: (id: string) => `/v1/scenario-characters/${id}`,
+    DELETE_CHARACTER: "/v1/scenario-characters",
   },
 
   USER_MANAGEMENT: {
@@ -76,6 +87,7 @@ export const ApiEndpoints = {
     ADD_USER: "/v1/users",
     SIMULATION_CREDITS: "/v1/simulation-credits",
     SUMMARY_SECTIONS: `/v1/settings/summary-sections`,
+    SUMMARY_FIELDS: `/v1/settings/summary-fields`,
   },
   AUTHORIZATION: {
     GET_PERMISSIONS: "/v1/authorization/permissions",
@@ -92,6 +104,7 @@ export const ROUTES = {
   CHARACTER_LIBRARY: "/character-library",
   MANAGE_SCENARIO_VOICES: "/manage-scenario-voices",
   MANAGE_SCENARIO_LANGUAGES: "/manage-scenario-languages",
+  MANAGE_PROMPTS: "/manage-prompts",
   CREATE_SIMULATION: "/create-simulation",
   SIMULATION_PREVIEW: (id: string | number) => `/simulation-preview/${id}`,
   EDIT_SIMULATION: (id: string | number) => `/create-simulation/edit/${id}`,
@@ -160,4 +173,6 @@ export const TAG_TYPES = {
   SCENARIO_LANGUAGES: "scenarioLanguages",
   SUMMARY_SECTIONS: "summarySections",
   UPDATE_SUMMARY_SECTIONS: "updateSummarySections",
+  CHARACTERS: "characters",
+  PROMPTS: "prompts",
 };

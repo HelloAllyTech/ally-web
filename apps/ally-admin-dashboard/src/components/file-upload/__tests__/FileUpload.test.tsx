@@ -76,7 +76,14 @@ vi.mock("@assets", async importOriginal => {
   };
 });
 
-// Do not mock @components to avoid breaking other exports used across the app
+// Mock ImageLibrary to avoid Redux/RTK Query dependency (useGetImageLibraryQuery)
+vi.mock("@components", async importOriginal => {
+  const actual = await importOriginal<typeof import("@components")>();
+  return {
+    ...actual,
+    ImageLibrary: () => null,
+  };
+});
 
 const toastError = vi.fn();
 const toastSuccess = vi.fn();

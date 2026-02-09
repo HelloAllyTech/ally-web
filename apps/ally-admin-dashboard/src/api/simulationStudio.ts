@@ -25,6 +25,10 @@ import {
   triggerWarning,
   GetLanguagesQuery,
   Language,
+  CharacterData,
+  DeleteCharacterRequest,
+  Prompt,
+  GetPromptsQuery,
 } from "@types";
 
 import { baseAPI } from "./baseApi";
@@ -415,6 +419,45 @@ const simulationStudioAPI = baseAPI.injectEndpoints({
       invalidatesTags: [TAG_TYPES.SCENARIO_LANGUAGES],
     }),
 
+    /**
+     * Get all prompts with pagination and search
+     */
+    getPrompts: builder.query<Prompt[], GetPromptsQuery>({
+      query: params => ({
+        url: ApiEndpoints.SIMULATION_STUDIO.GET_PROMPTS,
+        method: HttpMethod.GET,
+        params,
+      }),
+      providesTags: [TAG_TYPES.PROMPTS],
+    }),
+
+    /**
+     * Create a new prompt
+     */
+    createPrompt: builder.mutation<Prompt, { prompts: Prompt[] }>({
+      query: ({ prompts }) => ({
+        url: ApiEndpoints.SIMULATION_STUDIO.CREATE_PROMPT,
+        method: HttpMethod.POST,
+        body: { prompts },
+      }),
+      invalidatesTags: [TAG_TYPES.PROMPTS],
+    }),
+
+    /**
+     * Update a prompt
+     */
+    updatePrompt: builder.mutation<
+      Prompt,
+      { id: string; prompt: Omit<Prompt, "id" | "createdAt" | "updatedAt"> }
+    >({
+      query: ({ id, prompt: body }) => ({
+        url: ApiEndpoints.SIMULATION_STUDIO.UPDATE_PROMPT(id),
+        method: HttpMethod.PUT,
+        body,
+      }),
+      invalidatesTags: [TAG_TYPES.PROMPTS],
+    }),
+
     getDynamicBranchingInstruction: builder.query<string[], number | void>({
       query: id => ({
         url: ApiEndpoints.SIMULATION_STUDIO.DYNAMIC_BRANCHING_INSTRUCTIONS,
@@ -423,151 +466,343 @@ const simulationStudioAPI = baseAPI.injectEndpoints({
       }),
     }),
 
-    // TODO: Remove dummy data when BE is ready
-    getCharacters: builder.query<any[], { limit: number; offset: number; searchName?: string }>({
+    /**
+     * Get all characters
+     */
+    getCharacters: builder.query<
+      { characters: CharacterData[]; count: number },
+      { limit?: number; offset?: number; search?: string; sortBy?: string; order?: string }
+    >({
+      query: params => ({
+        url: ApiEndpoints.CHARACTERS.GET_CHARACTERS,
+        method: HttpMethod.GET,
+        params,
+      }),
+      providesTags: [TAG_TYPES.CHARACTERS],
+    }),
+
+    /**
+     * Get character by ID
+     */
+    getCharacterById: builder.query<CharacterData, string>({
+      query: id => ({
+        url: ApiEndpoints.CHARACTERS.GET_CHARACTER_BY_ID(id),
+        method: HttpMethod.GET,
+      }),
+      providesTags: [TAG_TYPES.CHARACTERS],
+    }),
+
+    /**
+     * Create a new character
+     */
+    createCharacter: builder.mutation<
+      CharacterData,
+      Omit<CharacterData, "id" | "createdAt" | "updatedAt" | "createdBy" | "updatedBy">
+    >({
+      query: body => ({
+        url: ApiEndpoints.CHARACTERS.CREATE_CHARACTER,
+        method: HttpMethod.POST,
+        body,
+      }),
+      invalidatesTags: [TAG_TYPES.CHARACTERS],
+    }),
+
+    /**
+     * Update a character
+     */
+    updateCharacter: builder.mutation<
+      CharacterData,
+      {
+        id: string;
+        data: Omit<CharacterData, "id" | "createdAt" | "updatedAt" | "createdBy" | "updatedBy">;
+      }
+    >({
+      query: ({ id, data }) => ({
+        url: ApiEndpoints.CHARACTERS.UPDATE_CHARACTER(id),
+        method: HttpMethod.PUT,
+        body: data,
+      }),
+      invalidatesTags: [TAG_TYPES.CHARACTERS],
+    }),
+
+    /**
+     * Delete a character
+     */
+    deleteCharacter: builder.mutation<{ success: boolean }, DeleteCharacterRequest>({
+      query: body => ({
+        url: ApiEndpoints.CHARACTERS.DELETE_CHARACTER,
+        method: HttpMethod.DELETE,
+        body,
+      }),
+      invalidatesTags: [TAG_TYPES.CHARACTERS],
+    }),
+
+    getBehavioursInstruction: builder.query<
+      any[],
+      { limit: number; offset: number; searchName?: string }
+    >({
       async queryFn(params) {
         // Simulate API delay
         await new Promise(resolve => setTimeout(resolve, 500));
 
-        const DUMMY_CHARACTERS_DATA = [
+        const DUMMY_BEHAVIOURS_INSTRUCTION_DATA = [
           {
             id: "1",
-            name: "Priya Sharma",
-            age: 28,
-            gender: "female",
-            profession: "Software Engineer",
-            currentLocation: "Bangalore, Karnataka",
-            genderIdentity: "Female/Woman",
-            sexualOrientation: "Heterosexual (straight)",
+            category: "HELPER SHOULD DO",
+            behaviours: [{ id: "1", name: "Behaviours 1" }],
+            response: "Response 1",
           },
           {
             id: "2",
-            name: "Rahul Verma",
-            age: 35,
-            gender: "male",
-            profession: "Marketing Manager",
-            currentLocation: "Mumbai, Maharashtra",
-            genderIdentity: "Male/Man",
-            sexualOrientation: "Gay",
+            category: "HELPER SHOULD NOT DO",
+            behaviours: [{ id: "2", name: "Behaviours 2" }],
+            response: "Response 2",
           },
           {
             id: "3",
-            name: "Ananya Patel",
-            age: 22,
-            gender: "female",
-            profession: "Graphic Designer",
-            currentLocation: "Ahmedabad, Gujarat",
-            genderIdentity: "Female/Woman",
-            sexualOrientation: "Bisexual",
+            category: "HELPER SHOULD DO",
+            behaviours: [{ id: "3", name: "Behaviours 3" }],
+            response: "Response 3",
           },
           {
             id: "4",
-            name: "Arjun Singh",
-            age: 42,
-            gender: "male",
-            profession: "Doctor",
-            currentLocation: "Delhi, NCR",
-            genderIdentity: "Male/Man",
-            sexualOrientation: "Heterosexual (straight)",
-          },
-          {
-            id: "5",
-            name: "Kavya Reddy",
-            age: 31,
-            gender: "female",
-            profession: "Teacher",
-            currentLocation: "Hyderabad, Telangana",
-            genderIdentity: "Female/Woman",
-            sexualOrientation: "Lesbian",
-          },
-          {
-            id: "6",
-            name: "Vikram Mehta",
-            age: 29,
-            gender: "male",
-            profession: "Financial Analyst",
-            currentLocation: "Pune, Maharashtra",
-            genderIdentity: "Male/Man",
-            sexualOrientation: "Heterosexual (straight)",
-          },
-          {
-            id: "7",
-            name: "Sneha Iyer",
-            age: 26,
-            gender: "female",
-            profession: "Content Writer",
-            currentLocation: "Chennai, Tamil Nadu",
-            genderIdentity: "Female/Woman",
-            sexualOrientation: "Pansexual",
-          },
-          {
-            id: "8",
-            name: "Rohan Das",
-            age: 38,
-            gender: "male",
-            profession: "Architect",
-            currentLocation: "Kolkata, West Bengal",
-            genderIdentity: "Male/Man",
-            sexualOrientation: "Heterosexual (straight)",
-          },
-          {
-            id: "9",
-            name: "Aisha Khan",
-            age: 24,
-            gender: "female",
-            profession: "Data Scientist",
-            currentLocation: "Bangalore, Karnataka",
-            genderIdentity: "Female/Woman",
-            sexualOrientation: "Queer",
-          },
-          {
-            id: "10",
-            name: "Karan Joshi",
-            age: 33,
-            gender: "male",
-            profession: "Entrepreneur",
-            currentLocation: "Jaipur, Rajasthan",
-            genderIdentity: "Male/Man",
-            sexualOrientation: "Heterosexual (straight)",
-          },
-          {
-            id: "11",
-            name: "Meera Nair",
-            age: 27,
-            gender: "female",
-            profession: "Lawyer",
-            currentLocation: "Kochi, Kerala",
-            genderIdentity: "Female/Woman",
-            sexualOrientation: "Heterosexual (straight)",
-          },
-          {
-            id: "12",
-            name: "Sameer Gupta",
-            age: 45,
-            gender: "male",
-            profession: "Chef",
-            currentLocation: "Goa",
-            genderIdentity: "Male/Man",
-            sexualOrientation: "Bisexual",
-          },
-          {
-            id: "13",
-            name: "Divya Rao",
-            age: 30,
-            gender: "female",
-            profession: "Photographer",
-            currentLocation: "Mysore, Karnataka",
-            genderIdentity: "Female/Woman",
-            sexualOrientation: "Heterosexual (straight)",
+            category: "HELPER SHOULD NOT DO",
+            behaviours: [{ id: "4", name: "Behaviours 4" }],
+            response: "Response 4",
           },
         ];
-
-        let filteredData = [...DUMMY_CHARACTERS_DATA];
+        let filteredData = [...DUMMY_BEHAVIOURS_INSTRUCTION_DATA];
 
         // Filter by search name if provided
         if (params.searchName) {
-          filteredData = filteredData.filter(char =>
-            char.name.toLowerCase().includes(params.searchName.toLowerCase()),
+          filteredData = filteredData.filter(behaviours =>
+            behaviours.category.toLowerCase().includes(params.searchName.toLowerCase()),
+          );
+        }
+
+        // Paginate
+        const start = params.offset;
+        const end = start + params.limit;
+        const data = filteredData.slice(start, end);
+
+        return { data };
+      },
+    }),
+    getTags: builder.query<any[], { limit: number; offset: number; searchName?: string }>({
+      async queryFn(params) {
+        // Simulate API delay
+        await new Promise(resolve => setTimeout(resolve, 500));
+
+        const DUMMY_TAGS_DATA = [
+          { id: "1", name: "Tag 1" },
+          { id: "2", name: "Tag 2" },
+          { id: "3", name: "Tag 3" },
+          { id: "4", name: "Tag 4" },
+          { id: "5", name: "Tag 5" },
+          { id: "6", name: "Tag 6" },
+          { id: "7", name: "Tag 7" },
+          { id: "8", name: "Tag 8" },
+          { id: "9", name: "Tag 9" },
+          { id: "10", name: "Tag 10" },
+        ];
+
+        let filteredData = [...DUMMY_TAGS_DATA];
+
+        // Filter by search name if provided
+        if (params.searchName) {
+          filteredData = filteredData.filter(tag =>
+            tag.name.toLowerCase().includes(params.searchName.toLowerCase()),
+          );
+        }
+
+        // Paginate
+        const start = params.offset;
+        const end = start + params.limit;
+        const data = filteredData.slice(start, end);
+
+        return { data };
+      },
+    }),
+    getStatesInstruction: builder.query<
+      any[],
+      { limit: number; offset: number; searchName?: string }
+    >({
+      async queryFn(params) {
+        // Simulate API delay
+        await new Promise(resolve => setTimeout(resolve, 500));
+
+        const DUMMY_STATES_INSTRUCTION_DATA = [
+          {
+            id: "1",
+            states: "State 1",
+            instruction: "Provide an initial greeting and introduce the system.",
+            dialogue: "Hello! I’m here to assist you. How can I help?",
+          },
+          {
+            id: "2",
+            states: "State 2",
+            instruction: "Ask the user for the required information.",
+            dialogue: "Could you please share more details?",
+          },
+          {
+            id: "3",
+            states: "State 3",
+            instruction: "Process the user input and give a relevant response.",
+            dialogue: "Thanks! Here’s what I found based on your input.",
+          },
+          {
+            id: "4",
+            states: "State 4",
+            instruction: "Close the conversation politely.",
+            dialogue: "You're all set! Let me know if you need anything else 😊",
+          },
+        ];
+
+        let filteredData = [...DUMMY_STATES_INSTRUCTION_DATA];
+
+        // Filter by search name if provided
+        if (params.searchName) {
+          filteredData = filteredData.filter(state =>
+            state.states.toLowerCase().includes(params.searchName.toLowerCase()),
+          );
+        }
+
+        // Paginate
+        const start = params.offset;
+        const end = start + params.limit;
+        const data = filteredData.slice(start, end);
+
+        return { data };
+      },
+    }),
+    getImageLibrary: builder.query<any[], { limit: number; offset: number; searchName?: string }>({
+      async queryFn(params) {
+        // Simulate API delay
+        await new Promise(resolve => setTimeout(resolve, 500));
+
+        const DUMMY_IMAGE_LIBRARY_DATA = [
+          {
+            coverImageUrl:
+              "https://cdn.midjourney.com/bc22b877-4ced-4811-90cc-6bb5bda9455b/0_3.png",
+          },
+          {
+            coverImageUrl:
+              "https://ally-dev-s3-learn-media-public.s3.ap-southeast-1.amazonaws.com/scenario-cover-images/1770181717405-cropped-pexels-pixabay-247314.jpg",
+          },
+          {
+            coverImageUrl:
+              "https://ally-dev-s3-learn-media-public.s3.ap-southeast-1.amazonaws.com/scenario-cover-images/1768280282530-cropped-pexels-geralt-23180.jpg",
+          },
+          {
+            coverImageUrl:
+              "https://ally-dev-s3-learn-media-public.s3.ap-southeast-1.amazonaws.com/scenario-cover-images/1770120421467-cropped-pexels-pixabay-247314.jpg",
+          },
+          {
+            coverImageUrl:
+              "https://ally-dev-s3-learn-media-public.s3.ap-southeast-1.amazonaws.com/scenario-cover-images/1769747362725-screenshot-from-2025._imresizer.jpg",
+          },
+          {
+            coverImageUrl:
+              "https://ally-dev-s3-learn-media-public.s3.ap-southeast-1.amazonaws.com/scenario-cover-images/1764239561786-abcdef-809089898979abcdef-809089898979abcdef-809089898979abcdef-809089898979abcdef-809089898979abcdef-809089898979abcdef-8090898",
+          },
+          {
+            coverImageUrl:
+              "https://ally-dev-s3-learn-media-public.s3.ap-southeast-1.amazonaws.com/scenario-cover-images/1765254652523-112ef58778fad94852fe9c290ec77a90_t-1.jpeg",
+          },
+          {
+            coverImageUrl:
+              "https://ally-dev-s3-learn-media-public.s3.ap-southeast-1.amazonaws.com/scenario-cover-images/1769148521715-112ef58778fad94852fe9c290ec77a90_t-1.jpeg",
+          },
+          {
+            coverImageUrl:
+              "https://ally-dev-s3-learn-media-public.s3.ap-southeast-1.amazonaws.com/scenario-cover-images/1770028203658-screenshot-from-2025._imresizer-8.jpg",
+          },
+          {
+            coverImageUrl:
+              "https://ally-dev-s3-learn-media-public.s3.ap-southeast-1.amazonaws.com/scenario-cover-images/1768280282530-cropped-pexels-geralt-23180.jpg",
+          },
+          {
+            coverImageUrl:
+              "https://ally-dev-s3-learn-media-public.s3.ap-southeast-1.amazonaws.com/scenario-cover-images/1763359595536-test.jpg",
+          },
+          {
+            coverImageUrl:
+              "https://cdn.midjourney.com/bc22b877-4ced-4811-90cc-6bb5bda9455b/0_3.png",
+          },
+          { coverImageUrl: null },
+          {
+            coverImageUrl:
+              "https://ally-dev-s3-learn-media-public.s3.ap-southeast-1.amazonaws.com/scenario-cover-images/1761813802760-simulation-header-image.png",
+          },
+          {
+            coverImageUrl:
+              "https://ally-dev-s3-learn-media-public.s3.ap-southeast-1.amazonaws.com/scenario-cover-images/1769000658013-1766120268341-custom.jpeg",
+          },
+          {
+            coverImageUrl:
+              "https://ally-dev-s3-learn-media-public.s3.ap-southeast-1.amazonaws.com/scenario-cover-images/1761813802760-simulation-header-image.png",
+          },
+          {
+            coverImageUrl:
+              "https://ally-dev-s3-learn-media-public.s3.ap-southeast-1.amazonaws.com/scenario-cover-images/1768280282530-cropped-pexels-geralt-23180.jpg",
+          },
+          {
+            coverImageUrl:
+              "https://ally-dev-s3-learn-media-public.s3.ap-southeast-1.amazonaws.com/scenario-cover-images/1768974667508-premium_photo-1701693533734-bc279bdd0c80.jpeg",
+          },
+          {
+            coverImageUrl:
+              "https://ally-dev-s3-learn-media-public.s3.ap-southeast-1.amazonaws.com/scenario-cover-images/1768970470899-frustrated_employee.jpeg",
+          },
+          {
+            coverImageUrl:
+              "https://ally-dev-s3-learn-media-public.s3.ap-southeast-1.amazonaws.com/scenario-cover-images/1767179755995-1766120268341-custom.jpeg",
+          },
+          {
+            coverImageUrl:
+              "https://ally-dev-s3-learn-media-public.s3.ap-southeast-1.amazonaws.com/scenario-cover-images/1766981056323-112ef58778fad94852fe9c290ec77a90_t-1.jpeg",
+          },
+          {
+            coverImageUrl:
+              "https://ally-dev-s3-learn-media-public.s3.ap-southeast-1.amazonaws.com/scenario-cover-images/1766037411514-kelly-sikkema-jn0suctoig0-unsplash_cropped_processed_by_imagy.jpg",
+          },
+          {
+            coverImageUrl:
+              "https://ally-dev-s3-learn-media-public.s3.ap-southeast-1.amazonaws.com/scenario-cover-images/1764582182735-screenshot-from-2025._imresizer-5.jpg",
+          },
+          {
+            coverImageUrl:
+              "https://ally-dev-s3-learn-media-public.s3.ap-southeast-1.amazonaws.com/scenario-cover-images/1761829046169-cropped-pexels-pixabay-247314.jpg",
+          },
+          {
+            coverImageUrl:
+              "https://ally-dev-s3-learn-media-public.s3.ap-southeast-1.amazonaws.com/scenario-cover-images/1768466588451-screenshot-from-2025._imresizer-9.jpg",
+          },
+          {
+            coverImageUrl:
+              "https://ally-dev-s3-learn-media-public.s3.ap-southeast-1.amazonaws.com/scenario-cover-images/1768467100668-112ef58778fad94852fe9c290ec77a90_t-1.jpeg",
+          },
+          {
+            coverImageUrl:
+              "https://ally-dev-s3-learn-media-public.s3.ap-southeast-1.amazonaws.com/scenario-cover-images/1767782881926-screenshot-from-2025._imresizer-9.jpg",
+          },
+          { coverImageUrl: null },
+          {
+            coverImageUrl:
+              "https://ally-dev-s3-learn-media-public.s3.ap-southeast-1.amazonaws.com/scenario-cover-images/1761813802760-simulation-header-image.png",
+          },
+          {
+            coverImageUrl:
+              "https://ally-dev-s3-learn-media-public.s3.ap-southeast-1.amazonaws.com/scenario-cover-images/1768392948268-premium_photo-1701693533734-bc279bdd0c80.jpeg",
+          },
+        ];
+
+        let filteredData = [...DUMMY_IMAGE_LIBRARY_DATA];
+
+        // Filter by search name if provided
+        if (params.searchName) {
+          filteredData = filteredData.filter(image =>
+            image.coverImageUrl.toLowerCase().includes(params.searchName.toLowerCase()),
           );
         }
 
@@ -616,6 +851,17 @@ export const {
   useGetLanguagesQuery,
   useCreateLanguageMutation,
   useUpdateLanguageMutation,
+  useGetPromptsQuery,
+  useCreatePromptMutation,
+  useUpdatePromptMutation,
   useGetDynamicBranchingInstructionQuery,
   useGetCharactersQuery,
+  useGetCharacterByIdQuery,
+  useCreateCharacterMutation,
+  useUpdateCharacterMutation,
+  useDeleteCharacterMutation,
+  useGetBehavioursInstructionQuery,
+  useGetTagsQuery,
+  useGetStatesInstructionQuery,
+  useGetImageLibraryQuery,
 } = simulationStudioAPI;

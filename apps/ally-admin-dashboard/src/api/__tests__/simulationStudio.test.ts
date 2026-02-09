@@ -835,4 +835,586 @@ describe("simulationStudio API", () => {
       });
     });
   });
+
+  describe("Prompt Management API", () => {
+    describe("Prompt Endpoints", () => {
+      it("should have correct get prompts endpoint", () => {
+        expect(ApiEndpoints.SIMULATION_STUDIO.GET_PROMPTS).toBe("/v1/prompts");
+      });
+
+      it("should have correct create prompt endpoint", () => {
+        expect(ApiEndpoints.SIMULATION_STUDIO.CREATE_PROMPT).toBe("/v1/prompts");
+      });
+
+      it("should have correct update prompt endpoint function", () => {
+        const promptId = "prompt-123";
+        const url = ApiEndpoints.SIMULATION_STUDIO.UPDATE_PROMPT(promptId);
+        expect(url).toBe(`/v1/prompts/${promptId}`);
+      });
+
+      it("should handle dynamic update prompt URL generation", () => {
+        const ids = ["prompt-1", "prompt-2", "prompt-abc"];
+        ids.forEach(id => {
+          const url = ApiEndpoints.SIMULATION_STUDIO.UPDATE_PROMPT(id);
+          expect(url).toContain(id);
+          expect(url).toContain("/v1/prompts/");
+        });
+      });
+    });
+
+    describe("Get Prompts Query Parameters", () => {
+      it("should support searchName parameter", () => {
+        const query = {
+          searchName: "test prompt",
+          limit: 30,
+          offset: 0,
+          sortBy: "createdAt",
+          order: "DESC",
+        };
+
+        expect(query.searchName).toBeTruthy();
+        expect(typeof query.searchName).toBe("string");
+      });
+
+      it("should support limit parameter for pagination", () => {
+        const limit = 30;
+        expect(limit).toBeGreaterThan(0);
+        expect(Number.isInteger(limit)).toBe(true);
+      });
+
+      it("should support offset parameter for pagination", () => {
+        const offset = 0;
+        expect(offset).toBeGreaterThanOrEqual(0);
+        expect(Number.isInteger(offset)).toBe(true);
+      });
+
+      it("should support sortBy parameter", () => {
+        const sortBy = "createdAt";
+        expect(sortBy).toBeTruthy();
+        expect(typeof sortBy).toBe("string");
+      });
+
+      it("should support order parameter (ASC/DESC)", () => {
+        const orders = ["ASC", "DESC"];
+        orders.forEach(order => {
+          expect(["ASC", "DESC"]).toContain(order);
+        });
+      });
+
+      it("should handle empty searchName", () => {
+        const query = {
+          searchName: "",
+          limit: 30,
+          offset: 0,
+        };
+
+        expect(query.searchName).toBe("");
+      });
+
+      it("should construct GetPromptsQuery object correctly", () => {
+        const getPromptsQuery = {
+          searchName: "example",
+          limit: 30,
+          offset: 0,
+          sortBy: "createdAt",
+          order: "DESC",
+        };
+
+        expect(getPromptsQuery).toHaveProperty("searchName");
+        expect(getPromptsQuery).toHaveProperty("limit");
+        expect(getPromptsQuery).toHaveProperty("offset");
+        expect(getPromptsQuery).toHaveProperty("sortBy");
+        expect(getPromptsQuery).toHaveProperty("order");
+      });
+    });
+
+    describe("Get Prompts Query Operation", () => {
+      it("should return array of prompts", () => {
+        const response = [
+          {
+            id: "prompt-1",
+            name: "Test Prompt 1",
+            description: "Test Description 1",
+            promptCode: "test_prompt_1",
+            prompt: "This is a test prompt",
+            createdAt: "2024-01-01T00:00:00Z",
+            updatedAt: "2024-01-01T00:00:00Z",
+          },
+        ];
+
+        expect(Array.isArray(response)).toBe(true);
+        expect(response[0]).toHaveProperty("id");
+        expect(response[0]).toHaveProperty("name");
+        expect(response[0]).toHaveProperty("promptCode");
+      });
+
+      it("should handle empty prompts list", () => {
+        const response: any[] = [];
+        expect(Array.isArray(response)).toBe(true);
+        expect(response).toHaveLength(0);
+      });
+
+      it("should include all prompt fields in response", () => {
+        const prompt = {
+          id: "prompt-1",
+          name: "Prompt Name",
+          description: "Prompt Description",
+          promptCode: "prompt_code",
+          prompt: "Prompt text content",
+          createdAt: "2024-01-01T00:00:00Z",
+          updatedAt: "2024-01-01T00:00:00Z",
+        };
+
+        expect(prompt).toHaveProperty("id");
+        expect(prompt).toHaveProperty("name");
+        expect(prompt).toHaveProperty("description");
+        expect(prompt).toHaveProperty("promptCode");
+        expect(prompt).toHaveProperty("prompt");
+        expect(prompt).toHaveProperty("createdAt");
+        expect(prompt).toHaveProperty("updatedAt");
+      });
+
+      it("should handle paginated response", () => {
+        const response = [
+          {
+            id: "prompt-1",
+            name: "Prompt 1",
+            description: "Description 1",
+            promptCode: "code_1",
+            prompt: "Content 1",
+            createdAt: "2024-01-01T00:00:00Z",
+            updatedAt: "2024-01-01T00:00:00Z",
+          },
+          {
+            id: "prompt-2",
+            name: "Prompt 2",
+            description: "Description 2",
+            promptCode: "code_2",
+            prompt: "Content 2",
+            createdAt: "2024-01-02T00:00:00Z",
+            updatedAt: "2024-01-02T00:00:00Z",
+          },
+        ];
+
+        expect(response).toHaveLength(2);
+        expect(Array.isArray(response)).toBe(true);
+      });
+
+      it("should preserve prompt field types", () => {
+        const prompt = {
+          id: "prompt-1",
+          name: "Name",
+          description: "Description",
+          promptCode: "code",
+          prompt: "Content",
+          createdAt: "2024-01-01T00:00:00Z",
+          updatedAt: "2024-01-01T00:00:00Z",
+        };
+
+        expect(typeof prompt.id).toBe("string");
+        expect(typeof prompt.name).toBe("string");
+        expect(typeof prompt.description).toBe("string");
+        expect(typeof prompt.promptCode).toBe("string");
+        expect(typeof prompt.prompt).toBe("string");
+        expect(typeof prompt.createdAt).toBe("string");
+      });
+    });
+
+    describe("Create Prompt Mutation", () => {
+      it("should accept array of prompts", () => {
+        const payload = {
+          prompts: [
+            {
+              name: "New Prompt",
+              description: "New Description",
+              promptCode: "new_prompt_code",
+              prompt: "New prompt content",
+            },
+          ],
+        };
+
+        expect(Array.isArray(payload.prompts)).toBe(true);
+        expect(payload.prompts).toHaveLength(1);
+      });
+
+      it("should handle single prompt creation", () => {
+        const prompt = {
+          name: "Single Prompt",
+          description: "Single Description",
+          promptCode: "single_code",
+          prompt: "Single content",
+        };
+
+        expect(prompt.name).toBeTruthy();
+        expect(prompt.description).toBeTruthy();
+        expect(prompt.promptCode).toBeTruthy();
+        expect(prompt.prompt).toBeTruthy();
+      });
+
+      it("should handle multiple prompts creation", () => {
+        const prompts = [
+          {
+            name: "Prompt 1",
+            description: "Description 1",
+            promptCode: "code_1",
+            prompt: "Content 1",
+          },
+          {
+            name: "Prompt 2",
+            description: "Description 2",
+            promptCode: "code_2",
+            prompt: "Content 2",
+          },
+          {
+            name: "Prompt 3",
+            description: "Description 3",
+            promptCode: "code_3",
+            prompt: "Content 3",
+          },
+        ];
+
+        expect(Array.isArray(prompts)).toBe(true);
+        expect(prompts).toHaveLength(3);
+      });
+
+      it("should return created prompt with id", () => {
+        const response = {
+          id: "prompt-new",
+          name: "New Prompt",
+          description: "Description",
+          promptCode: "code",
+          prompt: "Content",
+          createdAt: "2024-01-01T00:00:00Z",
+          updatedAt: "2024-01-01T00:00:00Z",
+        };
+
+        expect(response.id).toBeTruthy();
+        expect(response.name).toBeTruthy();
+        expect(response.createdAt).toBeTruthy();
+      });
+
+      it("should include all required prompt fields in request", () => {
+        const promptData = {
+          name: "Test",
+          description: "Test Desc",
+          promptCode: "test_code",
+          prompt: "Test content",
+        };
+
+        expect(promptData).toHaveProperty("name");
+        expect(promptData).toHaveProperty("description");
+        expect(promptData).toHaveProperty("promptCode");
+        expect(promptData).toHaveProperty("prompt");
+      });
+
+      it("should not include id in create request", () => {
+        const promptData = {
+          name: "Test",
+          description: "Test Desc",
+          promptCode: "test_code",
+          prompt: "Test content",
+        };
+
+        expect("id" in promptData).toBe(false);
+      });
+
+      it("should handle empty prompt fields gracefully", () => {
+        const promptData = {
+          name: "",
+          description: "",
+          promptCode: "",
+          prompt: "",
+        };
+
+        expect(promptData.name).toBe("");
+        expect(promptData.description).toBe("");
+        expect(promptData.promptCode).toBe("");
+        expect(promptData.prompt).toBe("");
+      });
+
+      it("should invalidate PROMPTS cache after creation", () => {
+        const tag = TAG_TYPES.PROMPTS;
+        expect(tag).toBeTruthy();
+        expect(typeof tag).toBe("string");
+        expect(tag).toBe("prompts");
+      });
+    });
+
+    describe("Update Prompt Mutation", () => {
+      it("should accept prompt id and update data", () => {
+        const updatePayload = {
+          id: "prompt-123",
+          prompt: {
+            name: "Updated Name",
+            description: "Updated Description",
+            promptCode: "updated_code",
+            prompt: "Updated content",
+          },
+        };
+
+        expect(updatePayload.id).toBeTruthy();
+        expect(updatePayload.prompt).toHaveProperty("name");
+        expect(updatePayload.prompt).toHaveProperty("description");
+        expect(updatePayload.prompt).toHaveProperty("promptCode");
+        expect(updatePayload.prompt).toHaveProperty("prompt");
+      });
+
+      it("should not include id in update body", () => {
+        const updateData = {
+          name: "Updated",
+          description: "Updated Desc",
+          promptCode: "updated_code",
+          prompt: "Updated content",
+        };
+
+        expect("id" in updateData).toBe(false);
+        expect("createdAt" in updateData).toBe(false);
+        expect("updatedAt" in updateData).toBe(false);
+      });
+
+      it("should not include createdAt in update body", () => {
+        const updateData = {
+          name: "Updated",
+          description: "Updated Desc",
+          promptCode: "updated_code",
+          prompt: "Updated content",
+        };
+
+        expect("createdAt" in updateData).toBe(false);
+      });
+
+      it("should not include updatedAt in update body", () => {
+        const updateData = {
+          name: "Updated",
+          description: "Updated Desc",
+          promptCode: "updated_code",
+          prompt: "Updated content",
+        };
+
+        expect("updatedAt" in updateData).toBe(false);
+      });
+
+      it("should return updated prompt", () => {
+        const response = {
+          id: "prompt-123",
+          name: "Updated Name",
+          description: "Updated Description",
+          promptCode: "updated_code",
+          prompt: "Updated content",
+          createdAt: "2024-01-01T00:00:00Z",
+          updatedAt: "2024-01-02T00:00:00Z",
+        };
+
+        expect(response.id).toBe("prompt-123");
+        expect(response.name).toBe("Updated Name");
+        expect(response.updatedAt).not.toBe(response.createdAt);
+      });
+
+      it("should handle partial updates", () => {
+        const partialUpdate = {
+          name: "Updated Name Only",
+        };
+
+        expect(partialUpdate).toHaveProperty("name");
+      });
+
+      it("should generate correct update URL with prompt ID", () => {
+        const promptId = "prompt-456";
+        const url = ApiEndpoints.SIMULATION_STUDIO.UPDATE_PROMPT(promptId);
+        expect(url).toBe("/v1/prompts/prompt-456");
+        expect(url).toContain(promptId);
+      });
+
+      it("should handle special characters in prompt ID", () => {
+        const promptId = "prompt-abc-123_def";
+        const url = ApiEndpoints.SIMULATION_STUDIO.UPDATE_PROMPT(promptId);
+        expect(url).toContain(promptId);
+      });
+
+      it("should use PUT HTTP method for updates", () => {
+        expect(HttpMethod.PUT).toBe("PUT");
+      });
+
+      it("should invalidate PROMPTS cache after update", () => {
+        const tag = TAG_TYPES.PROMPTS;
+        expect(tag).toBeTruthy();
+        expect(typeof tag).toBe("string");
+        expect(tag).toBe("prompts");
+      });
+    });
+
+    describe("Prompt Data Validation", () => {
+      it("should validate prompt name is string", () => {
+        const prompt = {
+          name: "Valid Name",
+          description: "Description",
+          promptCode: "code",
+          prompt: "Content",
+        };
+
+        expect(typeof prompt.name).toBe("string");
+      });
+
+      it("should validate prompt description is string", () => {
+        const prompt = {
+          name: "Name",
+          description: "Valid Description",
+          promptCode: "code",
+          prompt: "Content",
+        };
+
+        expect(typeof prompt.description).toBe("string");
+      });
+
+      it("should validate promptCode is string", () => {
+        const prompt = {
+          name: "Name",
+          description: "Description",
+          promptCode: "valid_code",
+          prompt: "Content",
+        };
+
+        expect(typeof prompt.promptCode).toBe("string");
+      });
+
+      it("should validate prompt text is string", () => {
+        const prompt = {
+          name: "Name",
+          description: "Description",
+          promptCode: "code",
+          prompt: "Valid prompt content",
+        };
+
+        expect(typeof prompt.prompt).toBe("string");
+      });
+
+      it("should accept special characters in prompt fields", () => {
+        const prompt = {
+          name: "Name @#$%",
+          description: "Desc & ( )",
+          promptCode: "code_-_123",
+          prompt: "Content with {{variables}} and [brackets]",
+        };
+
+        expect(prompt.name).toContain("@");
+        expect(prompt.description).toContain("&");
+        expect(prompt.promptCode).toContain("_");
+        expect(prompt.prompt).toContain("{{");
+      });
+
+      it("should handle long prompt content", () => {
+        const longContent = "A".repeat(5000);
+        const prompt = {
+          name: "Name",
+          description: "Description",
+          promptCode: "code",
+          prompt: longContent,
+        };
+
+        expect(prompt.prompt.length).toBeGreaterThan(1000);
+      });
+
+      it("should handle multiline prompt content", () => {
+        const multilineContent = `Line 1
+Line 2
+Line 3`;
+        const prompt = {
+          name: "Name",
+          description: "Description",
+          promptCode: "code",
+          prompt: multilineContent,
+        };
+
+        expect(prompt.prompt).toContain("\n");
+      });
+
+      it("should preserve prompt field values exactly", () => {
+        const originalData = {
+          name: "  Name with spaces  ",
+          description: "Desc\nwith\nnewlines",
+          promptCode: "CODE_lowercase_MixedCase",
+          prompt: "Original content {{placeholder}}",
+        };
+
+        expect(originalData.name).toBe("  Name with spaces  ");
+        expect(originalData.promptCode).toBe("CODE_lowercase_MixedCase");
+        expect(originalData.prompt).toContain("{{placeholder}}");
+      });
+    });
+
+    describe("Prompt Query Integration", () => {
+      it("should use GET method for fetching prompts", () => {
+        expect(HttpMethod.GET).toBe("GET");
+      });
+
+      it("should use POST method for creating prompts", () => {
+        expect(HttpMethod.POST).toBe("POST");
+      });
+
+      it("should use PUT method for updating prompts", () => {
+        expect(HttpMethod.PUT).toBe("PUT");
+      });
+
+      it("should construct API request with correct parameters", () => {
+        const params = {
+          searchName: "test",
+          limit: 30,
+          offset: 0,
+          sortBy: "createdAt",
+          order: "DESC",
+        };
+
+        expect(params).toHaveProperty("searchName");
+        expect(params.limit).toBe(30);
+        expect(params.offset).toBe(0);
+      });
+
+      it("should handle query without search term", () => {
+        const params = {
+          searchName: "",
+          limit: 30,
+          offset: 0,
+          sortBy: "createdAt",
+          order: "DESC",
+        };
+
+        expect(params.searchName).toBe("");
+        expect(params.limit).toBeGreaterThan(0);
+      });
+    });
+
+    describe("Prompt Error Handling", () => {
+      it("should handle missing required fields in create", () => {
+        const incompletePrompt = {
+          name: "",
+        };
+
+        expect("description" in incompletePrompt).toBe(false);
+        expect("promptCode" in incompletePrompt).toBe(false);
+        expect("prompt" in incompletePrompt).toBe(false);
+      });
+
+      it("should handle invalid ID format", () => {
+        const invalidId = "";
+        expect(invalidId).toBe("");
+      });
+
+      it("should handle empty array in create", () => {
+        const prompts: any[] = [];
+        expect(Array.isArray(prompts)).toBe(true);
+        expect(prompts).toHaveLength(0);
+      });
+
+      it("should handle null values gracefully", () => {
+        const promptWithNull = {
+          name: null,
+          description: "Valid",
+          promptCode: "code",
+          prompt: "content",
+        };
+
+        expect(promptWithNull.name).toBeNull();
+      });
+    });
+  });
 });

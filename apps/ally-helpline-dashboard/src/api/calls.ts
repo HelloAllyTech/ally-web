@@ -18,6 +18,8 @@ import {
   GetAudioUploadUrlResponse,
   CancelAudioUploadInput,
   CancelAudioUploadResponse,
+  ProcessAudioUploadInput,
+  ProcessAudioUploadResponse,
 } from "@types";
 
 import { baseAPI } from "./baseAPI";
@@ -118,6 +120,19 @@ const callsAPI = baseAPI.injectEndpoints({
     }),
 
     /**
+     * Initiate processing of the uploaded audio file.
+     * @param {ProcessAudioUploadInput} params - Object with audio s3Key
+     * @returns {Promise<ProcessAudioUploadResponse>} Confirmation message
+     */
+    processAudioUpload: builder.mutation<ProcessAudioUploadResponse, ProcessAudioUploadInput>({
+      query: params => ({
+        url: ApiEndpoints.CALLS.PROCESS_AUDIO_UPLOAD,
+        method: HttpMethod.POST,
+        body: params,
+      }),
+    }),
+
+    /**
      * Permanently deletes a call log by id. This action is irreversible and
      * should typically be restricted to admin roles.
      * @param {number} chatId - The id of the call/chat to delete
@@ -141,4 +156,5 @@ export const {
   useGetAudioUploadUrlMutation,
   useCancelAudioUploadMutation,
   useDeleteCallLogMutation,
+  useProcessAudioUploadMutation,
 } = callsAPI;

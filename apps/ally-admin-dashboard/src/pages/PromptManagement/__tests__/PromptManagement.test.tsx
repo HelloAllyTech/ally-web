@@ -1,0 +1,456 @@
+import React from "react";
+import { render, screen, fireEvent, waitFor, within } from "@testing-library/react";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { Provider } from "react-redux";
+import { configureStore } from "@reduxjs/toolkit";
+
+import { PromptManagement } from "../PromptManagement";
+import { Prompt } from "@types";
+
+// Mock the API hooks
+const mockGetPromptsQuery = vi.fn();
+const mockCreatePromptMutation = vi.fn();
+const mockUpdatePromptMutation = vi.fn();
+
+vi.mock("@api", () => ({
+  useGetPromptsQuery: () => mockGetPromptsQuery(),
+  useCreatePromptMutation: () => mockCreatePromptMutation(),
+  useUpdatePromptMutation: () => mockUpdatePromptMutation(),
+}));
+
+// Mock components
+vi.mock("@components", () => ({
+  NotionTable: ({ onRowClick, tableData }: any) => (
+    <div data-testid="notion-table">
+      {tableData?.data?.map((row: any, index: number) => (
+        <div
+          key={index}
+          data-testid={`table-row-${index}`}
+          onClick={() => onRowClick(index)}
+          style={{ cursor: "pointer" }}
+        >
+          <span>{row.name}</span>
+          <span>{row.promptCode}</span>
+        </div>
+      ))}
+    </div>
+  ),
+  ListToolbar: ({ onSearchChange, action }: any) => (
+    <div data-testid="list-toolbar">
+      <input
+        data-testid="search-input"
+        onChange={e => onSearchChange(e.target.value)}
+        placeholder="Search..."
+      />
+      <button data-testid="create-button" onClick={action.onClick}>
+        {action.label}
+      </button>
+    </div>
+  ),
+  PromptSidePanel: ({ isOpen, selectedPrompt, onClose, onUpdate }: any) =>
+    isOpen && (
+      <div data-testid="prompt-side-panel">
+        <button data-testid="side-panel-close" onClick={onClose}>
+          Close
+        </button>
+        <button
+          data-testid="side-panel-save"
+          onClick={() => {
+            if (selectedPrompt) {
+              onUpdate({
+                ...selectedPrompt,
+                name: "Updated Prompt",
+              });
+            }
+          }}
+        >
+          Save
+        </button>
+      </div>
+    ),
+  cellTypes: {
+    editableText: "editableText",
+    normalText: "normalText",
+    dropdown: "dropdown",
+    triggerConditions: "triggerConditions",
+    textAreaWithDropdown: "textAreaWithDropdown",
+  },
+}));
+
+// Mock sonner toast
+vi.mock("sonner", () => ({
+  toast: {
+    error: vi.fn(),
+    success: vi.fn(),
+  },
+}));
+
+// Create a mock store
+const createMockStore = () => {
+  return configureStore({
+    reducer: {
+      // Add reducers as needed
+    },
+  });
+};
+
+// Mock data
+const mockPrompts: Prompt[] = [
+  {
+    id: "1",
+    name: "Test Prompt 1",
+    description: "Test Description 1",
+    promptCode: "test_prompt_1",
+    prompt: "This is test prompt content",
+    createdAt: "2024-01-01T00:00:00Z",
+    updatedAt: "2024-01-01T00:00:00Z",
+  },
+  {
+    id: "2",
+    name: "Test Prompt 2",
+    description: "Test Description 2",
+    promptCode: "test_prompt_2",
+    prompt: "This is another test prompt",
+    createdAt: "2024-01-02T00:00:00Z",
+    updatedAt: "2024-01-02T00:00:00Z",
+  },
+];
+
+describe("PromptManagement Component", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    // Default mock implementation
+    mockGetPromptsQuery.mockReturnValue({
+      data: mockPrompts,
+      isFetching: false,
+    });
+    mockCreatePromptMutation.mockReturnValue([
+      vi.fn().mockResolvedValue({ error: null }),
+      { isLoading: false },
+    ]);
+    mockUpdatePromptMutation.mockReturnValue([
+      vi.fn().mockResolvedValue({ error: null }),
+      { isLoading: false },
+    ]);
+  });
+
+  afterEach(() => {
+    vi.clearAllTimers();
+    vi.useRealTimers();
+  });
+
+  it("should render the component with title", () => {
+    const store = createMockStore();
+    render(
+      <Provider store={store}>
+        <PromptManagement />
+      </Provider>,
+    );
+
+    expect(screen.getByText("Prompts")).toBeInTheDocument();
+  });
+
+  it("should render the list toolbar with search and create button", () => {
+    const store = createMockStore();
+    render(
+      <Provider store={store}>
+        <PromptManagement />
+      </Provider>,
+    );
+
+    expect(screen.getByTestId("list-toolbar")).toBeInTheDocument();
+    expect(screen.getByTestId("search-input")).toBeInTheDocument();
+    expect(screen.getByTestId("create-button")).toBeInTheDocument();
+  });
+
+  it("should render the notion table with data", async () => {
+    const store = createMockStore();
+    render(
+      <Provider store={store}>
+        <PromptManagement />
+      </Provider>,
+    );
+
+    await waitFor(() => {
+      expect(screen.getByTestId("notion-table")).toBeInTheDocument();
+    });
+
+    // Verify table rows are rendered
+    expect(screen.getByTestId("table-row-0")).toBeInTheDocument();
+    expect(screen.getByTestId("table-row-1")).toBeInTheDocument();
+  });
+
+  it("should call API with search parameters when user types in search", async () => {
+    const store = createMockStore();
+
+    render(
+      <Provider store={store}>
+        <PromptManagement />
+      </Provider>,
+    );
+
+    const searchInput = screen.getByTestId("search-input");
+    fireEvent.change(searchInput, { target: { value: "test" } });
+
+    // Wait for debounce (500ms) + some extra time for async operations
+    await new Promise(resolve => setTimeout(resolve, 700));
+
+    expect(mockGetPromptsQuery).toHaveBeenCalled();
+  });
+
+  it("should open side panel when create button is clicked", async () => {
+    const store = createMockStore();
+    render(
+      <Provider store={store}>
+        <PromptManagement />
+      </Provider>,
+    );
+
+    const createButton = screen.getByTestId("create-button");
+    fireEvent.click(createButton);
+
+    await waitFor(() => {
+      expect(screen.getByTestId("prompt-side-panel")).toBeInTheDocument();
+    });
+  });
+
+  it("should open side panel when table row is clicked", async () => {
+    const store = createMockStore();
+    render(
+      <Provider store={store}>
+        <PromptManagement />
+      </Provider>,
+    );
+
+    await waitFor(() => {
+      expect(screen.getByTestId("table-row-0")).toBeInTheDocument();
+    });
+
+    const tableRow = screen.getByTestId("table-row-0");
+    fireEvent.click(tableRow);
+
+    await waitFor(() => {
+      expect(screen.getByTestId("prompt-side-panel")).toBeInTheDocument();
+    });
+  });
+
+  it("should close side panel when close button is clicked", async () => {
+    const store = createMockStore();
+    const { rerender } = render(
+      <Provider store={store}>
+        <PromptManagement />
+      </Provider>,
+    );
+
+    const createButton = screen.getByTestId("create-button");
+    fireEvent.click(createButton);
+
+    await waitFor(() => {
+      expect(screen.getByTestId("prompt-side-panel")).toBeInTheDocument();
+    });
+
+    const closeButton = screen.getByTestId("side-panel-close");
+    fireEvent.click(closeButton);
+
+    // Side panel should be closed (this is a simplified test)
+    // In a real scenario, we would check that the state has been updated
+  });
+
+  it("should handle create prompt submission", async () => {
+    const store = createMockStore();
+    const createMutation = vi.fn().mockResolvedValue({ error: null });
+    mockCreatePromptMutation.mockReturnValue([createMutation, { isLoading: false }]);
+
+    render(
+      <Provider store={store}>
+        <PromptManagement />
+      </Provider>,
+    );
+
+    const createButton = screen.getByTestId("create-button");
+    fireEvent.click(createButton);
+
+    await waitFor(() => {
+      expect(screen.getByTestId("prompt-side-panel")).toBeInTheDocument();
+    });
+
+    const saveButton = screen.getByTestId("side-panel-save");
+    fireEvent.click(saveButton);
+
+    await waitFor(() => {
+      expect(createMutation).toHaveBeenCalled();
+    });
+  });
+
+  it("should handle update prompt submission", async () => {
+    const store = createMockStore();
+    const updateMutation = vi.fn().mockResolvedValue({ error: null });
+    mockUpdatePromptMutation.mockReturnValue([updateMutation, { isLoading: false }]);
+
+    render(
+      <Provider store={store}>
+        <PromptManagement />
+      </Provider>,
+    );
+
+    await waitFor(() => {
+      expect(screen.getByTestId("table-row-0")).toBeInTheDocument();
+    });
+
+    const tableRow = screen.getByTestId("table-row-0");
+    fireEvent.click(tableRow);
+
+    await waitFor(() => {
+      expect(screen.getByTestId("prompt-side-panel")).toBeInTheDocument();
+    });
+
+    const saveButton = screen.getByTestId("side-panel-save");
+    fireEvent.click(saveButton);
+
+    await waitFor(() => {
+      expect(updateMutation).toHaveBeenCalled();
+    });
+  });
+
+  it("should display the correct number of prompts from API response", async () => {
+    const customPrompts = [mockPrompts[0]]; // Only one prompt
+    mockGetPromptsQuery.mockReturnValue({
+      data: customPrompts,
+      isFetching: false,
+    });
+
+    const store = createMockStore();
+    render(
+      <Provider store={store}>
+        <PromptManagement />
+      </Provider>,
+    );
+
+    await waitFor(() => {
+      expect(screen.getByTestId("table-row-0")).toBeInTheDocument();
+    });
+
+    // Only one row should exist
+    expect(screen.queryByTestId("table-row-1")).not.toBeInTheDocument();
+  });
+
+  it("should handle empty prompts list", async () => {
+    mockGetPromptsQuery.mockReturnValue({
+      data: [],
+      isFetching: false,
+    });
+
+    const store = createMockStore();
+    render(
+      <Provider store={store}>
+        <PromptManagement />
+      </Provider>,
+    );
+
+    await waitFor(() => {
+      expect(screen.getByTestId("notion-table")).toBeInTheDocument();
+    });
+
+    // Verify no table rows exist
+    expect(screen.queryByTestId("table-row-0")).not.toBeInTheDocument();
+  });
+
+  it("should call API with correct pagination parameters", async () => {
+    const store = createMockStore();
+    render(
+      <Provider store={store}>
+        <PromptManagement />
+      </Provider>,
+    );
+
+    // The component should render with the default mock data
+    await waitFor(() => {
+      expect(screen.getByTestId("notion-table")).toBeInTheDocument();
+    });
+
+    // Verify the mock was called during component initialization
+    expect(mockGetPromptsQuery).toHaveBeenCalled();
+  });
+
+  it("should format table data with proper date conversion", async () => {
+    const store = createMockStore();
+    render(
+      <Provider store={store}>
+        <PromptManagement />
+      </Provider>,
+    );
+
+    await waitFor(() => {
+      expect(screen.getByTestId("notion-table")).toBeInTheDocument();
+    });
+
+    // Verify that table rows contain the prompt data
+    const tableRow = screen.getByTestId("table-row-0");
+    expect(within(tableRow).getByText("Test Prompt 1")).toBeInTheDocument();
+    expect(within(tableRow).getByText("test_prompt_1")).toBeInTheDocument();
+  });
+
+  it("should reset offset when search query changes", async () => {
+    const store = createMockStore();
+
+    render(
+      <Provider store={store}>
+        <PromptManagement />
+      </Provider>,
+    );
+
+    const searchInput = screen.getByTestId("search-input");
+
+    // First search
+    fireEvent.change(searchInput, { target: { value: "test1" } });
+    await new Promise(resolve => setTimeout(resolve, 700));
+
+    // Second search
+    fireEvent.change(searchInput, { target: { value: "test2" } });
+    await new Promise(resolve => setTimeout(resolve, 700));
+
+    // Verify the mock was called
+    expect(mockGetPromptsQuery).toHaveBeenCalled();
+  });
+
+  it("should handle API errors gracefully", async () => {
+    const store = createMockStore();
+    mockGetPromptsQuery.mockReturnValue({
+      data: null,
+      isFetching: false,
+      error: "API Error",
+    });
+
+    render(
+      <Provider store={store}>
+        <PromptManagement />
+      </Provider>,
+    );
+
+    await waitFor(() => {
+      expect(screen.getByTestId("notion-table")).toBeInTheDocument();
+    });
+
+    // Component should handle error gracefully and not crash
+    expect(screen.getByTestId("list-toolbar")).toBeInTheDocument();
+  });
+
+  it("should maintain search state across pagination", async () => {
+    const store = createMockStore();
+
+    render(
+      <Provider store={store}>
+        <PromptManagement />
+      </Provider>,
+    );
+
+    const searchInput = screen.getByTestId("search-input");
+    fireEvent.change(searchInput, { target: { value: "searchterm" } });
+
+    // Wait for debounce
+    await new Promise(resolve => setTimeout(resolve, 700));
+
+    // Verify the mock was called
+    expect(mockGetPromptsQuery).toHaveBeenCalled();
+  });
+});

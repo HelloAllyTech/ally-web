@@ -13,6 +13,7 @@ interface CustomDropdownFieldProps {
   options: Array<{ value: string; label: string }>;
   placeholder?: string;
   defaultOption?: { value: string; label: string };
+  customStyle?: any;
 }
 
 export const CustomDropdownField: React.FC<CustomDropdownFieldProps> = ({
@@ -22,6 +23,7 @@ export const CustomDropdownField: React.FC<CustomDropdownFieldProps> = ({
   options,
   placeholder = en.common.select,
   defaultOption,
+  customStyle = {},
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [selectedOption, setSelectedOption] = useState<{ value: string; label: string } | null>(
@@ -36,6 +38,8 @@ export const CustomDropdownField: React.FC<CustomDropdownFieldProps> = ({
   useEffect(() => {
     if (defaultOption?.value && defaultOption?.label) {
       setSelectedOption(defaultOption);
+    } else if (defaultOption === null) {
+      setSelectedOption(null);
     }
   }, [defaultOption?.value, defaultOption?.label]);
 
@@ -101,6 +105,7 @@ export const CustomDropdownField: React.FC<CustomDropdownFieldProps> = ({
     <div className="flex flex-col gap-2" ref={dropdownRef}>
       <div className="relative">
         <div
+          style={customStyle}
           className="w-full rounded border border-border-light px-3 py-1 bg-white text-base cursor-pointer flex items-center justify-between focus-within:ring-1 focus-within:ring-primary"
           onClick={() => setIsOpen(prev => !prev)}
         >

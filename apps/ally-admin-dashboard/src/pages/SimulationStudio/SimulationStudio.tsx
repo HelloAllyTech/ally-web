@@ -34,7 +34,7 @@ const TABS = [
   { id: "simulations", label: "Simulations" },
   { id: "tracks", label: "Tracks" },
   FEATURE_FLAGS_MAP.SIMULATION_CASES_FLAG && { id: "cases", label: "Cases" }, // TODO: remove this when the feature flag is enabled
-];
+].filter(Boolean) as Array<{ id: string; label: string }>;
 
 export const SimulationStudio: React.FC = () => {
   const [isFilterOpen, setIsFilterOpen] = useState(false);
