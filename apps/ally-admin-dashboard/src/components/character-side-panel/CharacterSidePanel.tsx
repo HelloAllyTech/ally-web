@@ -207,9 +207,7 @@ export const CharacterSidePanel: React.FC<CharacterSidePanelProps> = ({
                 options={GENDER_OPTIONS}
                 placeholder="Select gender"
                 defaultOption={
-                  formData.gender
-                    ? GENDER_OPTIONS.find(opt => opt.value === formData.gender)
-                    : undefined
+                  formData.gender ? GENDER_OPTIONS.find(opt => opt.value === formData.gender) : null
                 }
                 onHandleSelect={option => handleFieldChange("gender", option.value)}
               />
@@ -243,7 +241,7 @@ export const CharacterSidePanel: React.FC<CharacterSidePanelProps> = ({
                 defaultOption={
                   formData.genderIdentity
                     ? GENDER_IDENTITY_OPTIONS.find(opt => opt.value === formData.genderIdentity)
-                    : undefined
+                    : null
                 }
                 onHandleSelect={option => handleFieldChange("genderIdentity", option.value)}
               />
@@ -259,7 +257,7 @@ export const CharacterSidePanel: React.FC<CharacterSidePanelProps> = ({
                     ? SEXUAL_ORIENTATION_OPTIONS.find(
                         opt => opt.value === formData.sexualOrientation,
                       )
-                    : undefined
+                    : null
                 }
                 onHandleSelect={option => handleFieldChange("sexualOrientation", option.value)}
               />
