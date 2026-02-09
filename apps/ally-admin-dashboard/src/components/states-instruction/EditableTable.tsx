@@ -55,7 +55,7 @@ export const EditableTable = ({
           </tr>
         </thead>
         <tbody>
-          {rows.map((row, rowIndex) => (
+          {rows?.map((row, rowIndex) => (
             <tr key={rowIndex} className="hover:bg-gray-50/50 transition-colors">
               {columns.map(column => (
                 <td

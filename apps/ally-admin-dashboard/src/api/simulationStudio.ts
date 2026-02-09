@@ -27,6 +27,8 @@ import {
   Language,
   CharacterData,
   DeleteCharacterRequest,
+  Prompt,
+  GetPromptsQuery,
 } from "@types";
 
 import { baseAPI } from "./baseApi";
@@ -417,6 +419,45 @@ const simulationStudioAPI = baseAPI.injectEndpoints({
       invalidatesTags: [TAG_TYPES.SCENARIO_LANGUAGES],
     }),
 
+    /**
+     * Get all prompts with pagination and search
+     */
+    getPrompts: builder.query<Prompt[], GetPromptsQuery>({
+      query: params => ({
+        url: ApiEndpoints.SIMULATION_STUDIO.GET_PROMPTS,
+        method: HttpMethod.GET,
+        params,
+      }),
+      providesTags: [TAG_TYPES.PROMPTS],
+    }),
+
+    /**
+     * Create a new prompt
+     */
+    createPrompt: builder.mutation<Prompt, { prompts: Prompt[] }>({
+      query: ({ prompts }) => ({
+        url: ApiEndpoints.SIMULATION_STUDIO.CREATE_PROMPT,
+        method: HttpMethod.POST,
+        body: { prompts },
+      }),
+      invalidatesTags: [TAG_TYPES.PROMPTS],
+    }),
+
+    /**
+     * Update a prompt
+     */
+    updatePrompt: builder.mutation<
+      Prompt,
+      { id: string; prompt: Omit<Prompt, "id" | "createdAt" | "updatedAt"> }
+    >({
+      query: ({ id, prompt: body }) => ({
+        url: ApiEndpoints.SIMULATION_STUDIO.UPDATE_PROMPT(id),
+        method: HttpMethod.PUT,
+        body,
+      }),
+      invalidatesTags: [TAG_TYPES.PROMPTS],
+    }),
+
     getDynamicBranchingInstruction: builder.query<string[], number | void>({
       query: id => ({
         url: ApiEndpoints.SIMULATION_STUDIO.DYNAMIC_BRANCHING_INSTRUCTIONS,
@@ -430,7 +471,7 @@ const simulationStudioAPI = baseAPI.injectEndpoints({
      */
     getCharacters: builder.query<
       { characters: CharacterData[]; count: number },
-      { limit?: number; offset?: number; search?: string }
+      { limit?: number; offset?: number; search?: string; sortBy?: string; order?: string }
     >({
       query: params => ({
         url: ApiEndpoints.CHARACTERS.GET_CHARACTERS,
@@ -810,6 +851,9 @@ export const {
   useGetLanguagesQuery,
   useCreateLanguageMutation,
   useUpdateLanguageMutation,
+  useGetPromptsQuery,
+  useCreatePromptMutation,
+  useUpdatePromptMutation,
   useGetDynamicBranchingInstructionQuery,
   useGetCharactersQuery,
   useGetCharacterByIdQuery,

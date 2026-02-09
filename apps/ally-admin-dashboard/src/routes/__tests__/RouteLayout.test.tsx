@@ -29,6 +29,7 @@ vi.mock("@pages", () => ({
   CharacterLibrary: () => <div>CharacterLibraryPage</div>,
   ScenarioVoices: () => <div>ScenarioVoicesPage</div>,
   ScenarioLanguages: () => <div>ScenarioLanguagesPage</div>,
+  PromptManagement: () => <div>PromptManagementPage</div>,
 }));
 
 describe("RouteLayout", () => {
@@ -91,6 +92,12 @@ describe("RouteLayout", () => {
     window.history.pushState({}, "", ROUTES.MANAGE_SCENARIO_VOICES);
     render(<RouteLayout />);
     expect(screen.getByText("ScenarioVoicesPage")).toBeInTheDocument();
+  });
+
+  it("renders Manage Prompts route", () => {
+    window.history.pushState({}, "", ROUTES.MANAGE_PROMPTS);
+    render(<RouteLayout />);
+    expect(screen.getByText("PromptManagementPage")).toBeInTheDocument();
   });
 
   it("redirects unknown route to Simulation Studio", () => {

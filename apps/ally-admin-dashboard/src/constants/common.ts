@@ -67,6 +67,9 @@ export const ApiEndpoints = {
       `/v1/learn/admin/scenario-paths/${id}/duplicate`, // TODO: change to /v1/learn/admin/scenario-cases/${id}/duplicate
     UPDATE_SIMULATION_CASE_BY_ID: (id: string | number) => `/v1/learn/admin/scenario-paths/${id}`, // TODO: change to /v1/learn/admin/scenario-cases/${id}
     CONVERSATIONAL_GUARDRAILS: "/v1/learn/conversational-guardrails",
+    GET_PROMPTS: "/v1/prompts",
+    CREATE_PROMPT: "/v1/prompts",
+    UPDATE_PROMPT: (id: string | number) => `/v1/prompts/${id}`,
   },
 
   CHARACTERS: {
@@ -102,6 +105,7 @@ export const ROUTES = {
   CHARACTER_LIBRARY: "/character-library",
   MANAGE_SCENARIO_VOICES: "/manage-scenario-voices",
   MANAGE_SCENARIO_LANGUAGES: "/manage-scenario-languages",
+  MANAGE_PROMPTS: "/manage-prompts",
   CREATE_SIMULATION: "/create-simulation",
   SIMULATION_PREVIEW: (id: string | number) => `/simulation-preview/${id}`,
   EDIT_SIMULATION: (id: string | number) => `/create-simulation/edit/${id}`,
@@ -173,5 +177,5 @@ export const TAG_TYPES = {
   UPDATE_SUMMARY_SECTIONS: "updateSummarySections",
   CHARACTERS: "characters",
   CONVERSATIONAL_GUARDRAILS: "conversationalGuardrails",
+  PROMPTS: "prompts",
 };
-

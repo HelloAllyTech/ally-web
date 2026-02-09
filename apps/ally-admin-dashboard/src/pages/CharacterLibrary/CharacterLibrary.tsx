@@ -43,11 +43,18 @@ export const CharacterLibrary: React.FC = () => {
       if (offset === 0) {
         setCharacters(charactersData?.characters);
       } else {
-        setCharacters(prev => [...prev, ...(charactersData?.characters || [])]);
+        // Avoid duplicates by filtering out characters that already exist
+        setCharacters(prev => {
+          const existingIds = new Set(prev.map(char => char.id));
+          const newCharacters = charactersData?.characters?.filter(
+            char => !existingIds.has(char.id),
+          );
+          return [...prev, ...newCharacters];
+        });
       }
       setHasMore(charactersData?.characters?.length === limit);
     }
-  }, [charactersData, offset]);
+  }, [charactersData, offset, limit]);
 
   const onSearchChange = (value: string) => {
     setCharacterSearch(value);
@@ -91,20 +98,15 @@ export const CharacterLibrary: React.FC = () => {
 
   const handleSaveCharacter = (character: CharacterData) => {
     if (isNewCharacter) {
-      // Create new character
-      const newCharacter = {
-        ...character,
-        id: `${characters.length + 1}`,
-      };
-      setCharacters(prev => [newCharacter, ...prev]);
-      toast.success("Character created successfully!");
+      setCharacters(prev => [character, ...prev]);
+      toast.success(en.simulation.characterCreatedSuccessfully);
     } else {
       // Update existing character
       const updatedCharacters = characters.map(char =>
         char.id === character.id ? character : char,
       );
       setCharacters(updatedCharacters);
-      toast.success("Character updated successfully!");
+      toast.success(en.simulation.characterUpdatedSuccessfully);
     }
   };
 
@@ -122,24 +124,24 @@ export const CharacterLibrary: React.FC = () => {
 
   const createCharacterObject = useCallback((character: any) => {
     return {
-      id: { value: character.id || "", disabled: false, rowId: character.id },
-      name: { value: character.name || "", disabled: false, rowId: character.id },
-      age: { value: character.age || "", disabled: false, rowId: character.id },
-      gender: { value: character.gender || "", disabled: false, rowId: character.id },
-      profession: { value: character.profession || "", disabled: false, rowId: character.id },
+      id: { value: character.id || "", disabled: true, rowId: character.id },
+      name: { value: character.name || "", disabled: true, rowId: character.id },
+      age: { value: character.age || "", disabled: true, rowId: character.id },
+      gender: { value: character.gender || "", disabled: true, rowId: character.id },
+      profession: { value: character.profession || "", disabled: true, rowId: character.id },
       currentLocation: {
         value: character.currentLocation || "",
-        disabled: false,
+        disabled: true,
         rowId: character.id,
       },
       genderIdentity: {
         value: character.genderIdentity || "",
-        disabled: false,
+        disabled: true,
         rowId: character.id,
       },
       sexualOrientation: {
         value: character.sexualOrientation || "",
-        disabled: false,
+        disabled: true,
         rowId: character.id,
       },
     };
