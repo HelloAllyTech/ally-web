@@ -98,20 +98,15 @@ export const CharacterLibrary: React.FC = () => {
 
   const handleSaveCharacter = (character: CharacterData) => {
     if (isNewCharacter) {
-      // Create new character
-      const newCharacter = {
-        ...character,
-        id: `${characters.length + 1}`,
-      };
-      setCharacters(prev => [newCharacter, ...prev]);
-      toast.success("Character created successfully!");
+      setCharacters(prev => [character, ...prev]);
+      toast.success(en.simulation.characterCreatedSuccessfully);
     } else {
       // Update existing character
       const updatedCharacters = characters.map(char =>
         char.id === character.id ? character : char,
       );
       setCharacters(updatedCharacters);
-      toast.success("Character updated successfully!");
+      toast.success(en.simulation.characterUpdatedSuccessfully);
     }
   };
 
