@@ -1,6 +1,7 @@
 import { UseFormReturn } from "react-hook-form";
 
-import { SessionEventDetectionData, triggerWarning, EventDetectionConfig } from "./simulation";
+import { EventDetectionConfig } from "./detectionConfig";
+import { SessionEventDetectionData, triggerWarning, stateInstruction } from "./simulation";
 import { TriggerCondition } from "./triggerConditions";
 
 export type FormData = {
@@ -48,7 +49,7 @@ export type FormData = {
   characterProfile: string;
   score?: boolean;
   behaviourInstructions?: string;
-  stateInstructions?: string;
+  stateInstructions?: stateInstruction[];
   characterProfileSelector?: string;
 };
 

@@ -127,7 +127,7 @@ export const CreateSimulation: FC = () => {
   // Core function to save simulation changes
   const saveSimulationChangesCore = async (status: SimulationStatus) => {
     const formData = formMethods.getValues();
-    if (!formData.title) {
+    if (!formData.title?.trim()) {
       toast.error(en.errors.titleIsRequired);
       return null;
     }
