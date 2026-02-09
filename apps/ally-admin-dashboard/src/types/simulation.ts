@@ -32,6 +32,12 @@ export interface UseLiveKitRoomReturn {
   detectedEventIds: string[];
 }
 
+export interface stateInstruction {
+  states: string;
+  instruction: string;
+  dialogue: string;
+}
+
 export interface SimulationInput {
   title?: string;
   description?: string;
@@ -69,6 +75,7 @@ export interface SimulationInput {
   checklistType?: string;
   timerMode?: boolean;
   maxTimeValue?: string;
+  stateInstructions?: stateInstruction[];
 }
 
 export interface UpdateSimulationByIdInput {
@@ -137,7 +144,7 @@ export interface GetSimulationByIdResponse {
     checklistType?: string;
     timerMode?: boolean;
     maxTimeValue?: string;
-    stateInstructions?: string;
+    stateInstructions?: stateInstruction[];
   };
   terminationEvents?: terminationEvent[];
   terminationEvent?: {
