@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect } from "react";
+import React, { useState, useCallback, useEffect, useRef } from "react";
 
 import { toast } from "sonner";
 
@@ -88,6 +88,7 @@ export const CharacterSidePanel: React.FC<CharacterSidePanelProps> = ({
     },
   );
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
+  const isSavingRef = useRef(false);
 
   const [createCharacter, { isLoading: isCreating }] = useCreateCharacterMutation();
   const [updateCharacter, { isLoading: isUpdating }] = useUpdateCharacterMutation();
@@ -121,6 +122,13 @@ export const CharacterSidePanel: React.FC<CharacterSidePanelProps> = ({
   }, [selectedCharacter, onDelete, onClose]);
 
   const handleSave = useCallback(async () => {
+    // Prevent multiple simultaneous save operations
+    if (isSavingRef.current) {
+      return;
+    }
+
+    isSavingRef.current = true;
+
     try {
       const { id, ...data } = formData;
 
@@ -142,6 +150,8 @@ export const CharacterSidePanel: React.FC<CharacterSidePanelProps> = ({
           ? en.simulation.failedToCreateCharacter
           : en.simulation.failedToUpdateCharacter;
       toast.error(errorMessage);
+    } finally {
+      isSavingRef.current = false;
     }
   }, [formData, createCharacter, updateCharacter, onSave, onClose]);
 
