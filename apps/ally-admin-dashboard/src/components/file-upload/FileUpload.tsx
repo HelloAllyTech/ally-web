@@ -4,7 +4,7 @@ import axios from "axios";
 import { useDropzone } from "react-dropzone";
 import { toast } from "sonner";
 
-import { CustomVideo, CustomImage } from "@ally-ui-mono/ui-shared";
+import { CustomVideo, CustomImage, FEATURE_FLAGS_MAP } from "@ally-ui-mono/ui-shared";
 import {
   useGetCoverImageUrlMutation,
   useDeleteCoverImageMutation,
@@ -12,6 +12,7 @@ import {
   useDeleteCoverVideoMutation,
 } from "@api";
 import { DragUpload, Trash, VideoCamera } from "@assets";
+import { ImageLibrary } from "@components";
 import {
   en,
   imageTypes,
@@ -43,6 +44,7 @@ export const FileUpload = ({
 }: FileUploadProps) => {
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const [isUploading, setIsUploading] = useState(false);
+  const [isImageLibraryOpen, setIsImageLibraryOpen] = useState(false);
   const { setValue, setError, clearErrors, formState, register, watch } = formMethods;
   const [getCoverImageUrl] = useGetCoverImageUrlMutation();
   const [deleteCoverImage] = useDeleteCoverImageMutation();
@@ -51,7 +53,7 @@ export const FileUpload = ({
 
   const uploadedFileUrl = watch(id);
   const initialFileUrlRef = useRef("");
-
+  const imageLibraryRef = useRef<HTMLSpanElement>(null);
   // Set the initial file URL only once
   if (isNonEmptyString(uploadedFileUrl) && !isNonEmptyString(initialFileUrlRef.current)) {
     initialFileUrlRef.current = uploadedFileUrl;
@@ -239,6 +241,15 @@ export const FileUpload = ({
     handleFileSelect(e.target.files?.[0] as File);
   };
 
+  const handleImageLibrarySelect = useCallback(
+    (imageUrl: string) => {
+      clearErrors(id);
+      setUploadedFile(null);
+      setValue(id, imageUrl, { shouldValidate: true });
+    },
+    [id, clearErrors, setValue],
+  );
+
   const handleDeleteFile = async () => {
     if (!isNonEmptyString(uploadedFileUrl)) return;
 
@@ -277,13 +288,33 @@ export const FileUpload = ({
     );
 
     if (fileType === FILE_TYPE.IMAGE) {
-      uploadText = (
+      uploadText = FEATURE_FLAGS_MAP.ADDITIONAL_CONFIG_FLAG ? (
         <>
           {en.simulation.dragDrop}{" "}
           <span className="text-primary text-primary-500">{en.simulation.choose}</span>{" "}
           {en.simulation.pngUploadGuidelines}
           <br />
           {en.simulation.resolution}
+          <span
+            role="button"
+            className="text-primary text-primary-500 cursor-pointer hover:text-primary-600"
+            ref={imageLibraryRef}
+            onClick={e => {
+              e.stopPropagation();
+              setIsImageLibraryOpen(true);
+            }}
+          >
+            {en.simulation.uploadFromImageLibrary}
+          </span>
+        </>
+      ) : (
+        <>
+          <span className="text-primary text-primary-500" onClick={() => open()}>
+            {en.simulation.upload}
+          </span>{" "}
+          {en.simulation.pngUploadGuidelinesOld}
+          <br />
+          {en.simulation.resolutionOld}
         </>
       );
     }
@@ -327,13 +358,13 @@ export const FileUpload = ({
       <CustomVideo
         src={uploadedFileUrl}
         alt="Uploaded file preview"
-        className="absolute inset-0 w-full h-full object-cover"
+        className="absolute inset-0 w-full h-full object-cover aspect-video"
       />
     ) : (
       <CustomImage
         src={uploadedFileUrl}
         alt="Uploaded file preview"
-        className="absolute inset-0 w-full h-full object-cover"
+        className="absolute inset-0 w-full h-full object-cover aspect-video"
       />
     );
   };
@@ -393,6 +424,14 @@ export const FileUpload = ({
           <p className="text-destructive-500 text-sm mt-1">{formState.errors.upload.message}</p>
         )}
       </div>
+
+      {fileType === FILE_TYPE.IMAGE && (
+        <ImageLibrary
+          isOpen={isImageLibraryOpen}
+          onClose={() => setIsImageLibraryOpen(false)}
+          onSelect={handleImageLibrarySelect}
+        />
+      )}
     </div>
   );
 };

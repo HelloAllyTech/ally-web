@@ -8,14 +8,18 @@ import { FieldProps, UserListUser } from "@types";
 import { UserModal } from "../UserModal";
 
 // Mock ImageUpload component
-vi.mock("@ally-ui-mono/ui-shared", () => ({
-  ImageUpload: ({ formMethods, uploadId, uploadButtonName, uploadTitle }: any) => (
-    <div data-testid="image-upload">
-      <span>{uploadTitle}</span>
-      <button>{uploadButtonName}</button>
-    </div>
-  ),
-}));
+vi.mock("@ally-ui-mono/ui-shared", async importOriginal => {
+  const actual = await importOriginal<typeof import("@ally-ui-mono/ui-shared")>();
+  return {
+    ...actual,
+    ImageUpload: ({ formMethods, uploadId, uploadButtonName, uploadTitle }: any) => (
+      <div data-testid="image-upload">
+        <span>{uploadTitle}</span>
+        <button>{uploadButtonName}</button>
+      </div>
+    ),
+  };
+});
 
 // Mock API hooks
 vi.mock("@api", async importOriginal => {

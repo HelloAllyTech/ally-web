@@ -89,6 +89,11 @@ export const SIMULATION_CREATOR_STEP_IDS = {
   advancedSettings: "advanced-settings",
 };
 
+export const BEHAVIOURS_INSTRUCTION_CATEGORIES = [
+  { value: "HELPER SHOULD DO", label: "Helper should do" },
+  { value: "HELPER SHOULD NOT DO", label: "Helper should not do" },
+];
+
 export const StepperList = [
   { id: SIMULATION_CREATOR_STEP_IDS.overview, title: "Overview" },
   { id: SIMULATION_CREATOR_STEP_IDS.basicSettings, title: "Basic Settings" },
@@ -107,6 +112,8 @@ export const FORM_FIELD_TYPES = {
     LANGUAGE_VOICE_MAPPING: "language_voice_mapping",
     RADIO_BUTTONS: "radio_buttons",
     CHARACTER_PROFILE_SELECTOR: "character_profile_selector",
+    BEHAVIOURS_INSTRUCTION: "behaviours_instruction",
+    STATES_INSTRUCTION: "states_instruction",
   },
   TOGGLE_BUTTON: "toggle_button",
   TAG_AND_DROPDOWN: "tag_and_dropdown",
@@ -450,7 +457,7 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
         fullWidth: true,
         maxLength: 2500,
         isMandatory: false,
-        regenerate: true,
+        regenerate: false, // TODO: Remove this once the character profile text is regenerated
         isDashedLineAbove: true,
       },
       {
@@ -511,22 +518,22 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
         defaultValue: DEFAULT_ROLE_INSTRUCTION,
         isMandatory: true,
       },
-      {
-        id: "behaviourInstructions",
-        label: "Behaviour Instructions",
-        type: FORM_FIELD_TYPES.TEXT,
-        multiline: true,
-        fullWidth: true,
-        maxLength: 1000,
-      },
-      {
-        id: "stateInstructions",
-        label: "State Instructions & Dialogues",
-        type: FORM_FIELD_TYPES.TEXT,
-        multiline: true,
-        fullWidth: true,
-        maxLength: 1000,
-      },
+      ...(FEATURE_FLAGS_MAP.ADDITIONAL_CONFIG_FLAG
+        ? [
+            {
+              id: "behaviourInstructions",
+              label: "Behaviour Instructions",
+              type: FORM_FIELD_TYPES.CUSTOM.BEHAVIOURS_INSTRUCTION,
+              fullWidth: true,
+            },
+            {
+              id: "stateInstructions",
+              label: "State Instructions & Dialogues",
+              type: FORM_FIELD_TYPES.CUSTOM.STATES_INSTRUCTION,
+              fullWidth: true,
+            },
+          ]
+        : []),
       {
         id: "customFields",
         label: "Custom Fields",
@@ -540,7 +547,7 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
         multiline: true,
         fullWidth: true,
         maxLength: 1000,
-        regenerate: true,
+        regenerate: false, // TODO: Remove this once the opening statements are regenerated
         isMandatory: true,
       },
       {
@@ -856,6 +863,49 @@ export const SCENARIO_LANGUAGE_COLUMNS = [
   },
 ];
 
+export const PROMPT_COLUMNS = [
+  {
+    id: "promptCode",
+    label: "Prompt Code",
+    accessor: "promptCode",
+    dataType: cellTypes.normalText,
+    minWidth: 150,
+    editable: false,
+  },
+  {
+    id: "name",
+    label: "Prompt Name",
+    accessor: "name",
+    dataType: cellTypes.normalText,
+    minWidth: 200,
+    editable: false,
+  },
+  {
+    id: "description",
+    label: "Description",
+    accessor: "description",
+    dataType: cellTypes.normalText,
+    minWidth: 200,
+    editable: false,
+  },
+  {
+    id: "prompt",
+    label: "Prompt",
+    accessor: "prompt",
+    dataType: cellTypes.normalText,
+    minWidth: 350,
+    editable: false,
+  },
+  {
+    id: "createdAt",
+    label: "Created Date",
+    accessor: "createdAt",
+    dataType: cellTypes.normalText,
+    minWidth: 150,
+    editable: false,
+  },
+];
+
 // TODO: Add columns for character library when BE is ready
 export const CHARACTER_LIBRARY_TABLE_COLUMNS = [
   {
@@ -914,4 +964,45 @@ export const CHARACTER_LIBRARY_TABLE_COLUMNS = [
     options: SEXUAL_ORIENTATION_OPTIONS,
     minWidth: 180,
   },
+];
+
+export const BEHAVIOURS_INSTRUCTION_TABLE_COLUMNS = [
+  {
+    id: "category",
+    label: "Category",
+    accessor: "category",
+    placeholder: "Add Name",
+    dataType: cellTypes.dropdown,
+    options: BEHAVIOURS_INSTRUCTION_CATEGORIES,
+    minWidth: 240,
+  },
+  {
+    id: "behaviours",
+    label: "Helper behaviours",
+    accessor: "behaviours",
+    placeholder: "Add Instruction",
+    dataType: cellTypes.dropdownTags,
+    minWidth: 300,
+  },
+  {
+    id: "response",
+    label: "Actors response (optional)",
+    accessor: "response",
+    placeholder: "Add Response",
+    dataType: cellTypes.editableText,
+    minWidth: 310,
+  },
+];
+
+export const STATES_INSTRUCTION_TABLE_HEADERS = [
+  { key: "states", header: "States", editable: false },
+  { key: "instruction", header: "Instruction", editable: true },
+  { key: "dialogue", header: "Dialogue", editable: true },
+];
+
+export const DEFAULT_STATE_INSTRUCTIONS = [
+  { states: "State 1", instruction: "", dialogue: "" },
+  { states: "State 2", instruction: "", dialogue: "" },
+  { states: "State 3", instruction: "", dialogue: "" },
+  { states: "State 4", instruction: "", dialogue: "" },
 ];

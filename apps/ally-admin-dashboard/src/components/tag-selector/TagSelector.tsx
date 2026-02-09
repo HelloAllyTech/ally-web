@@ -1,9 +1,9 @@
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 
 import { useCreateTriggerWarningMutation, useGetTriggerWarningsQuery } from "@api";
 import { Close, Plus, Search } from "@assets";
 import { en } from "@constants";
-import { useClickOutside } from "@hooks";
+import { useClickOutside, useCreatePortal } from "@hooks";
 import { triggerWarning } from "@types";
 
 interface TagsDropdown {
@@ -24,9 +24,11 @@ export const TagSelector: React.FC<TagsDropdown> = ({
   const [page, setPage] = useState(1);
   const [allOptions, setAllOptions] = useState([]);
   const [hasMore, setHasMore] = useState(true);
+
   const observerRef = useRef(null);
   const loadingRef = useRef(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLDivElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   const { data: options, isFetching } = useGetTriggerWarningsQuery({
@@ -103,7 +105,9 @@ export const TagSelector: React.FC<TagsDropdown> = ({
     setOpenDropdown(false);
   };
 
-  useClickOutside(dropdownRef, closeDropdown);
+  const dropdownPosition = useCreatePortal(triggerRef, openDropdown);
+
+  useClickOutside(dropdownRef, () => closeDropdown());
 
   const removeTag = (tagToRemove: triggerWarning) => {
     updateTriggerWarnings(triggerWarnings.filter(tag => tag !== tagToRemove));
@@ -127,53 +131,59 @@ export const TagSelector: React.FC<TagsDropdown> = ({
     selectTag(newTrigger?.data);
   };
 
-  const renderDropdown = () => (
-    <div className="absolute left-0 top-full mt-1 bg-white border rounded-md shadow-lg z-50 w-[300px]">
-      <div className="relative p-2">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-typography-800" />
-        <input
-          type="text"
-          placeholder="Search or create"
-          className="w-full !outline-none border rounded-md py-1 px-5 text-base"
-          value={searchQuery}
-          onChange={e => setSearchQuery(e.target.value)}
-          maxLength={50}
-        />
-      </div>
+  const renderDropdown = () =>
+    dropdownPosition && (
+      <div
+        ref={dropdownRef}
+        className="fixed bg-white border rounded-md shadow-lg z-[9999] w-[300px] font-primary"
+        style={{ top: dropdownPosition.top, left: dropdownPosition.left }}
+      >
+        <div className="relative p-2">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-typography-800" />
+          <input
+            type="text"
+            placeholder="Search or create"
+            className="w-full !outline-none border rounded-md py-1 px-5 text-base"
+            value={searchQuery}
+            onChange={e => setSearchQuery(e.target.value)}
+            maxLength={50}
+          />
+        </div>
 
-      <div className="overflow-auto max-h-[240px] custom-scrollbar" ref={scrollContainerRef}>
-        {allOptions.length > 0 &&
-          allOptions.map(option => (
-            <div
-              key={option?.id}
-              className="px-3 py-2 text-sm cursor-pointer transition-colors hover:bg-gray-100 whitespace-nowrap  flex"
-              onClick={() => selectTag(option)}
-            >
-              <span className="truncate">{option?.name}</span>
-            </div>
-          ))}
+        <div className="overflow-auto max-h-[240px] custom-scrollbar" ref={scrollContainerRef}>
+          {allOptions.length > 0 &&
+            allOptions.map(option => (
+              <div
+                key={option?.id}
+                className="px-3 py-2 text-sm cursor-pointer transition-colors hover:bg-gray-100 whitespace-nowrap  flex"
+                onClick={() => selectTag(option)}
+              >
+                <span className="truncate">{option?.name}</span>
+              </div>
+            ))}
 
-        {/* Loading indicator */}
-        {hasMore && (
-          <div ref={loadingRef} className="px-3 py-2 text-sm text-center">
-            {isFetching ? en.common.loading : ""}
-          </div>
-        )}
-
-        {/* CREATE OPTION */}
-        {searchQuery.trim() !== "" &&
-          !allOptions.some(option => option?.name === searchQuery.trim()) && (
-            <div
-              className="px-3 py-2 text-sm cursor-pointer hover:bg-gray-100"
-              onClick={createNewTag}
-            >
-              <span className="font-bold pr-2">{en.simulation.create}</span>
-              <span>"{searchQuery}"</span>
+          {/* Loading indicator */}
+          {hasMore && (
+            <div ref={loadingRef} className="px-3 py-2 text-sm text-center">
+              {isFetching ? en.common.loading : ""}
             </div>
           )}
+
+          {/* CREATE OPTION */}
+          {searchQuery.trim() !== "" &&
+            !allOptions.some(option => option?.name === searchQuery.trim()) && (
+              <div
+                className="px-3 py-2 text-sm cursor-pointer hover:bg-gray-100"
+                onClick={createNewTag}
+              >
+                <span className="font-bold pr-2">{en.simulation.create}</span>
+                <span>"{searchQuery}"</span>
+              </div>
+            )}
+        </div>
       </div>
-    </div>
-  );
+    );
+
   return (
     <div className="flex flex-col gap-2">
       <label htmlFor="tags" className="text-typography-900 text-base text-base cursor-pointer">
@@ -193,9 +203,10 @@ export const TagSelector: React.FC<TagsDropdown> = ({
           </div>
         ))}
 
-        <div className="relative" ref={dropdownRef}>
+        <div className="relative">
           {triggerWarnings?.length < 5 && (
             <div
+              ref={triggerRef}
               className="flex items-center border border-border-light rounded-full px-2 w-[70px]"
               onClick={addTagButton}
             >

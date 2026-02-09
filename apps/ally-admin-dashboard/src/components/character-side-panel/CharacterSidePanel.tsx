@@ -1,7 +1,10 @@
 import React, { useState, useCallback, useEffect } from "react";
 
+import { toast } from "sonner";
+
+import { useCreateCharacterMutation, useUpdateCharacterMutation } from "@api";
 import { DoubleArrowRight, Trash } from "@assets";
-import { ActionConfirmationPopup, Button } from "@components";
+import { ActionConfirmationPopup, Button, CustomDropdownField } from "@components";
 import { ButtonVariant } from "@components/types";
 import {
   en,
@@ -9,18 +12,7 @@ import {
   GENDER_IDENTITY_OPTIONS,
   SEXUAL_ORIENTATION_OPTIONS,
 } from "@constants";
-import { useDebounce } from "@hooks";
-
-export interface CharacterData {
-  id?: string;
-  name: string;
-  age: number | string;
-  gender: string;
-  profession: string;
-  currentLocation: string;
-  genderIdentity: string;
-  sexualOrientation: string;
-}
+import { CharacterData } from "@types";
 
 interface CharacterSidePanelProps {
   selectedCharacter: CharacterData | null;
@@ -96,26 +88,15 @@ export const CharacterSidePanel: React.FC<CharacterSidePanelProps> = ({
     },
   );
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
-  const [hasChanges, setHasChanges] = useState(false);
+
+  const [createCharacter, { isLoading: isCreating }] = useCreateCharacterMutation();
+  const [updateCharacter, { isLoading: isUpdating }] = useUpdateCharacterMutation();
 
   useEffect(() => {
     if (selectedCharacter) {
       setFormData(selectedCharacter);
-      setHasChanges(false);
     }
   }, [selectedCharacter]);
-
-  const debouncedUpdate = useDebounce(() => {
-    if (!isNewCharacter && hasChanges) {
-      onSave(formData);
-    }
-  }, 500);
-
-  useEffect(() => {
-    if (hasChanges) {
-      debouncedUpdate();
-    }
-  }, [formData, hasChanges]);
 
   const handleFieldChange = useCallback(
     (fieldName: keyof CharacterData, value: string | number) => {
@@ -123,7 +104,6 @@ export const CharacterSidePanel: React.FC<CharacterSidePanelProps> = ({
         ...prev,
         [fieldName]: value,
       }));
-      setHasChanges(true);
     },
     [],
   );
@@ -140,10 +120,30 @@ export const CharacterSidePanel: React.FC<CharacterSidePanelProps> = ({
     }
   }, [selectedCharacter, onDelete, onClose]);
 
-  const handleSave = useCallback(() => {
-    onSave(formData);
-    onClose();
-  }, [formData, onSave, onClose]);
+  const handleSave = useCallback(async () => {
+    try {
+      const { id, ...data } = formData;
+
+      // If no ID exists or ID is temporary, create new character
+      if (!id || id.startsWith("temp-")) {
+        const newCharacter = await createCharacter(data).unwrap();
+        toast.success(en.simulation.characterCreatedSuccessfully);
+        onSave(newCharacter);
+      } else {
+        // If ID exists, update existing character
+        const updatedCharacter = await updateCharacter({ id, data }).unwrap();
+        toast.success(en.simulation.characterUpdatedSuccessfully);
+        onSave(updatedCharacter);
+      }
+      onClose();
+    } catch {
+      const errorMessage =
+        !formData.id || formData.id.startsWith("temp-")
+          ? en.simulation.failedToCreateCharacter
+          : en.simulation.failedToUpdateCharacter;
+      toast.error(errorMessage);
+    }
+  }, [formData, createCharacter, updateCharacter, onSave, onClose]);
 
   const handleCancel = useCallback(() => {
     onClose();
@@ -154,12 +154,13 @@ export const CharacterSidePanel: React.FC<CharacterSidePanelProps> = ({
       formData.name.trim() !== "" &&
       formData.age !== "" &&
       formData.gender !== "" &&
-      formData.profession.trim() !== "" &&
       formData.currentLocation.trim() !== "" &&
       formData.genderIdentity !== "" &&
       formData.sexualOrientation !== ""
     );
   };
+
+  const dropdownCustomStyle = { border: "none", paddingLeft: "0", minWidth: 280 };
 
   if (!isOpen) return null;
 
@@ -167,7 +168,7 @@ export const CharacterSidePanel: React.FC<CharacterSidePanelProps> = ({
     <div className="fixed inset-0 z-50 flex">
       <div className="flex-1 bg-black bg-opacity-50" onClick={handleCancel} />
 
-      <div className="w-[50%] min-w-[600px] max-w-[800px] bg-white shadow-xl flex flex-col">
+      <div className="w-[50%] relative min-w-[600px] max-w-[800px] h-full bg-white shadow-xl flex flex-col">
         <PanelHeader
           characterId={selectedCharacter?.id}
           onClose={handleCancel}
@@ -176,7 +177,7 @@ export const CharacterSidePanel: React.FC<CharacterSidePanelProps> = ({
           isNewCharacter={isNewCharacter}
         />
 
-        <div className="flex px-10 pt-6 pb-6 overflow-y-auto max-h-[calc(100vh-140px)] custom-scrollbar">
+        <div className="flex px-10 pt-6 pb-6 overflow-y-auto h-full custom-scrollbar">
           <div className="space-y-4">
             <Field label="Name" required>
               <input
@@ -201,25 +202,22 @@ export const CharacterSidePanel: React.FC<CharacterSidePanelProps> = ({
             </Field>
 
             <Field label="Gender" required>
-              <select
-                value={formData.gender}
-                onChange={e => handleFieldChange("gender", e.target.value)}
-                className="w-full px-0 py-2 text-base border-none focus:outline-none bg-white"
-              >
-                <option value="">Select gender</option>
-                {GENDER_OPTIONS.map(option => (
-                  <option key={option.value} value={option.value}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
+              <CustomDropdownField
+                customStyle={dropdownCustomStyle}
+                options={GENDER_OPTIONS}
+                placeholder="Select gender"
+                defaultOption={
+                  formData.gender ? GENDER_OPTIONS.find(opt => opt.value === formData.gender) : null
+                }
+                onHandleSelect={option => handleFieldChange("gender", option.value)}
+              />
             </Field>
 
-            <Field label="Profession" required>
+            <Field label="Profession">
               <input
                 type="text"
-                value={formData.profession}
-                onChange={e => handleFieldChange("profession", e.target.value)}
+                value={formData.profession || ""}
+                onChange={e => handleFieldChange("profession", e.target.value || null)}
                 placeholder="Enter profession"
                 className="w-full px-0 py-2 text-base border-none focus:outline-none"
               />
@@ -236,50 +234,55 @@ export const CharacterSidePanel: React.FC<CharacterSidePanelProps> = ({
             </Field>
 
             <Field label="Gender identity" required>
-              <select
-                value={formData.genderIdentity}
-                onChange={e => handleFieldChange("genderIdentity", e.target.value)}
-                className="w-full px-0 py-2 text-base border-none focus:outline-none bg-white"
-              >
-                <option value="">Select gender identity</option>
-                {GENDER_IDENTITY_OPTIONS.map(option => (
-                  <option key={option.value} value={option.value}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
+              <CustomDropdownField
+                customStyle={dropdownCustomStyle}
+                options={GENDER_IDENTITY_OPTIONS}
+                placeholder="Select gender identity"
+                defaultOption={
+                  formData.genderIdentity
+                    ? GENDER_IDENTITY_OPTIONS.find(opt => opt.value === formData.genderIdentity)
+                    : null
+                }
+                onHandleSelect={option => handleFieldChange("genderIdentity", option.value)}
+              />
             </Field>
 
             <Field label="Sexual orientation" required>
-              <select
-                value={formData.sexualOrientation}
-                onChange={e => handleFieldChange("sexualOrientation", e.target.value)}
-                className="w-full px-0 py-2 text-base border-none focus:outline-none bg-white"
-              >
-                <option value="">Select sexual orientation</option>
-                {SEXUAL_ORIENTATION_OPTIONS.map(option => (
-                  <option key={option.value} value={option.value}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
+              <CustomDropdownField
+                customStyle={dropdownCustomStyle}
+                options={SEXUAL_ORIENTATION_OPTIONS}
+                placeholder="Select sexual orientation"
+                defaultOption={
+                  formData.sexualOrientation
+                    ? SEXUAL_ORIENTATION_OPTIONS.find(
+                        opt => opt.value === formData.sexualOrientation,
+                      )
+                    : null
+                }
+                onHandleSelect={option => handleFieldChange("sexualOrientation", option.value)}
+              />
             </Field>
           </div>
         </div>
 
-        <div className="flex items-center justify-center gap-4 p-6">
+        <div className="absolute bottom-0 left-0 right-0 flex items-center justify-center gap-4 p-6">
           <Button
             variant={ButtonVariant.PRIMARY}
             onClick={handleSave}
-            disabled={!isFormValid()}
+            disabled={!isFormValid() || isCreating || isUpdating}
             className="min-w-[120px]"
           >
-            {en.common.save}
+            {isCreating || isUpdating
+              ? "Saving..."
+              : isNewCharacter
+                ? en.common.create
+                : en.common.update}
           </Button>
           <Button
             variant={ButtonVariant.SECONDARY}
             onClick={handleCancel}
             className="min-w-[120px]"
+            disabled={isCreating || isUpdating}
           >
             {en.common.cancel}
           </Button>
