@@ -18,6 +18,7 @@ import {
   DeleteLogoRequest,
   ScribeSettingsListResponse,
   UpdateSummarySectionsBody,
+  UpdateSummaryFieldsBody,
 } from "@types";
 
 const userManagementAPI = baseAPI.injectEndpoints({
@@ -204,10 +205,25 @@ const userManagementAPI = baseAPI.injectEndpoints({
     }),
 
     updateSummarySections: builder.mutation<{ success: boolean }, UpdateSummarySectionsBody>({
-      query: ({ hiddenFields }) => ({
+      query: ({ tenantId, hiddenSections }) => ({
         url: ApiEndpoints.USER_MANAGEMENT.SUMMARY_SECTIONS,
         method: HttpMethod.PUT,
-        body: hiddenFields,
+        body: {
+          tenantId,
+          hiddenSections,
+        },
+      }),
+      invalidatesTags: [TAG_TYPES.SUMMARY_SECTIONS],
+    }),
+
+    updateSummaryFields: builder.mutation<{ success: boolean }, UpdateSummaryFieldsBody>({
+      query: ({ tenantId, hiddenFields }) => ({
+        url: ApiEndpoints.USER_MANAGEMENT.SUMMARY_FIELDS,
+        method: HttpMethod.PUT,
+        body: {
+          tenantId,
+          hiddenFields,
+        },
       }),
       invalidatesTags: [TAG_TYPES.SUMMARY_SECTIONS],
     }),
@@ -237,4 +253,6 @@ export const {
   usePostLogoUrlMutation,
   useDeleteLogoMutation,
   useGetSummarySectionsQuery,
+  useUpdateSummarySectionsMutation,
+  useUpdateSummaryFieldsMutation,
 } = userManagementAPI;

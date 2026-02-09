@@ -4,6 +4,7 @@ import { Controller } from "react-hook-form";
 
 import { useGetCharactersQuery } from "@api";
 import { ArrowSolid } from "@assets";
+import { CustomDropdownField, InputField } from "@components";
 import {
   GENDER_OPTIONS,
   GENDER_IDENTITY_OPTIONS,
@@ -11,23 +12,13 @@ import {
   en,
 } from "@constants";
 import { useClickOutside } from "@hooks";
+import { CharacterData } from "@types";
 
 interface CharacterProfileSelectorProps {
   label: string;
   id: string;
   formMethods: any;
   isMandatory?: boolean;
-}
-
-interface Character {
-  id: string;
-  name: string;
-  age: number;
-  gender: string;
-  profession: string;
-  currentLocation: string;
-  genderIdentity: string;
-  sexualOrientation: string;
 }
 
 const PAGE_SIZE = 100;
@@ -65,7 +56,10 @@ export const CharacterProfileSelector: React.FC<CharacterProfileSelectorProps> =
 
   const characterDropdownRef = useRef<HTMLDivElement>(null);
 
-  const { setValue } = formMethods;
+  const {
+    setValue,
+    formState: { errors },
+  } = formMethods;
 
   // Debounce search query
   useEffect(() => {
@@ -80,7 +74,7 @@ export const CharacterProfileSelector: React.FC<CharacterProfileSelectorProps> =
   const { data: charactersData, isLoading } = useGetCharactersQuery({
     limit: PAGE_SIZE,
     offset: 0,
-    searchName: debouncedSearchQuery,
+    search: debouncedSearchQuery,
   });
 
   // Close character dropdown on outside click
@@ -91,12 +85,13 @@ export const CharacterProfileSelector: React.FC<CharacterProfileSelectorProps> =
 
   // Handle character selection
   const handleCharacterSelect = useCallback(
-    (character: Character) => {
+    (character: CharacterData) => {
+      if (!character.id) return;
       setSelectedCharacterId(character.id);
 
       // Prefill form fields using existing field IDs
       Object.values(formFieldIds).forEach(fieldId => {
-        setValue(fieldId, character[fieldId as keyof Character] || "");
+        setValue(fieldId, character[fieldId as keyof CharacterData] ?? "");
       });
 
       // Store the character ID in the main field
@@ -110,36 +105,20 @@ export const CharacterProfileSelector: React.FC<CharacterProfileSelectorProps> =
   );
 
   // Get selected character
-  const selectedCharacter = charactersData?.find(char => char.id === selectedCharacterId);
-
-  // Get gender label
-  const getGenderLabel = (value: string) => {
-    const option = GENDER_OPTIONS.find(opt => opt.value === value);
-    return option?.label || value;
-  };
-
-  // Get gender identity label
-  const getGenderIdentityLabel = (value: string) => {
-    const option = GENDER_IDENTITY_OPTIONS.find(opt => opt.value === value);
-    return option?.label || value;
-  };
-
-  // Get sexual orientation label
-  const getSexualOrientationLabel = (value: string) => {
-    const option = SEXUAL_ORIENTATION_OPTIONS.find(opt => opt.value === value);
-    return option?.label || value;
-  };
+  const selectedCharacter = charactersData?.characters?.find(
+    char => char.id === selectedCharacterId,
+  );
 
   return (
     <div className="w-full">
-      <label className="text-typography-900 text-base font-medium mb-2 flex items-center gap-1">
+      <label className="text-typography-900 font-weight-400 text-base mb-2 flex items-center gap-1">
         {label} {isMandatory && <span className="text-destructive-500">*</span>}
       </label>
 
       <div className="space-y-6 border border-border-light rounded-md p-4">
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="text-typography-900 text-base font-medium mb-2 block">
+            <label className="text-typography-900 font-weight-400 text-base mb-2 block">
               Select character
             </label>
             <div className="relative" ref={characterDropdownRef}>
@@ -179,13 +158,13 @@ export const CharacterProfileSelector: React.FC<CharacterProfileSelectorProps> =
                       <div className="px-3 py-4 text-sm text-typography-600 text-center">
                         Loading...
                       </div>
-                    ) : charactersData && charactersData.length > 0 ? (
-                      charactersData.map(character => (
+                    ) : charactersData && charactersData?.characters?.length > 0 ? (
+                      charactersData?.characters?.map(character => (
                         <div
                           key={character.id}
                           className={`px-3 py-2 text-sm cursor-pointer transition-colors ${
                             selectedCharacterId === character.id
-                              ? "bg-primary-50 text-primary font-medium"
+                              ? "bg-primary-50 text-primary font-weight-400"
                               : "text-typography-900 hover:bg-background-secondary"
                           }`}
                           onClick={() => handleCharacterSelect(character)}
@@ -210,48 +189,56 @@ export const CharacterProfileSelector: React.FC<CharacterProfileSelectorProps> =
         <div className="space-y-6">
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="text-typography-900 text-base font-medium mb-2 flex items-center gap-1">
-                {formFieldNames.NAME} <span className="text-destructive-500">*</span>
-              </label>
-              <Controller
-                name={formFieldIds.NAME}
-                control={formMethods.control}
-                defaultValue=""
-                render={({ field }) => (
-                  <input
-                    {...field}
-                    type="text"
-                    placeholder="Anjali"
-                    className="w-full rounded border border-border-light px-3 py-2 text-base focus:outline-none focus:ring-1 focus:ring-primary"
-                    readOnly
-                  />
-                )}
+              <InputField
+                label={formFieldNames.NAME}
+                id={formFieldIds.NAME}
+                formMethods={formMethods}
+                placeholder="Enter name"
+                isMandatory
               />
             </div>
             <div>
-              <label className="text-typography-900 text-base font-medium mb-2 flex items-center gap-1">
+              <label className="text-typography-900 font-weight-400 text-base mb-2 flex items-center gap-1">
                 {formFieldNames.AGE} <span className="text-destructive-500">*</span>
               </label>
               <Controller
                 name={formFieldIds.AGE}
                 control={formMethods.control}
                 defaultValue=""
+                rules={{
+                  required: "Age is required",
+                  validate: value => {
+                    if (value === "" || value == null) return "Age is required";
+                    const num = typeof value === "number" ? value : parseInt(String(value), 10);
+                    if (isNaN(num) || num < 0) return "Please enter a valid age";
+                    return true;
+                  },
+                }}
                 render={({ field }) => (
                   <input
                     {...field}
                     type="number"
                     placeholder="27"
+                    value={field.value ?? ""}
+                    onChange={e => {
+                      const val = e.target.value;
+                      field.onChange(val === "" ? "" : parseInt(val, 10) || "");
+                    }}
                     className="w-full rounded border border-border-light px-3 py-2 text-base focus:outline-none focus:ring-1 focus:ring-primary"
-                    readOnly
                   />
                 )}
               />
+              {errors[formFieldIds.AGE]?.message && (
+                <p className="text-destructive-500 text-sm mt-1">
+                  {errors[formFieldIds.AGE].message}
+                </p>
+              )}
             </div>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="text-typography-900 text-base font-medium mb-2 flex items-center gap-1">
+              <label className="text-typography-900 font-weight-400 text-base mb-2 flex items-center gap-1">
                 {formFieldNames.GENDER} <span className="text-destructive-500">*</span>
               </label>
               <Controller
@@ -259,24 +246,24 @@ export const CharacterProfileSelector: React.FC<CharacterProfileSelectorProps> =
                 control={formMethods.control}
                 defaultValue=""
                 render={({ field }) => (
-                  <div className="relative">
-                    <input
-                      {...field}
-                      type="text"
-                      value={field.value ? getGenderLabel(field.value) : ""}
-                      placeholder="Female"
-                      className="w-full rounded border border-border-light px-3 py-2 text-base focus:outline-none focus:ring-1 focus:ring-primary bg-background-secondary cursor-not-allowed"
-                      readOnly
-                    />
-                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-typography-600 pointer-events-none">
-                      <ArrowSolid />
-                    </span>
-                  </div>
+                  <CustomDropdownField
+                    options={GENDER_OPTIONS}
+                    placeholder="Select gender"
+                    customStyle={{
+                      height: "40px",
+                    }}
+                    defaultOption={
+                      field.value
+                        ? GENDER_OPTIONS.find(opt => opt.value === field.value)
+                        : undefined
+                    }
+                    onHandleSelect={option => field.onChange(option.value)}
+                  />
                 )}
               />
             </div>
             <div>
-              <label className="text-typography-900 text-base font-medium mb-2 block">
+              <label className="text-typography-900 text-base font-weight-400 mb-2 block">
                 {formFieldNames.PROFESSION}
               </label>
               <Controller
@@ -289,7 +276,6 @@ export const CharacterProfileSelector: React.FC<CharacterProfileSelectorProps> =
                     type="text"
                     placeholder="e.g. Software Engineer"
                     className="w-full rounded border border-border-light px-3 py-2 text-base focus:outline-none focus:ring-1 focus:ring-primary placeholder:text-typography-400"
-                    readOnly
                   />
                 )}
               />
@@ -298,26 +284,16 @@ export const CharacterProfileSelector: React.FC<CharacterProfileSelectorProps> =
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="text-typography-900 text-base font-medium mb-2 flex items-center gap-1">
-                {formFieldNames.CURRENT_LOCATION} <span className="text-destructive-500">*</span>
-              </label>
-              <Controller
-                name={formFieldIds.CURRENT_LOCATION}
-                control={formMethods.control}
-                defaultValue=""
-                render={({ field }) => (
-                  <input
-                    {...field}
-                    type="text"
-                    placeholder="Kolkata, India"
-                    className="w-full rounded border border-border-light px-3 py-2 text-base focus:outline-none focus:ring-1 focus:ring-primary"
-                    readOnly
-                  />
-                )}
+              <InputField
+                label={formFieldNames.CURRENT_LOCATION}
+                id={formFieldIds.CURRENT_LOCATION}
+                formMethods={formMethods}
+                placeholder="Enter location"
+                isMandatory
               />
             </div>
             <div>
-              <label className="text-typography-900 text-base font-medium mb-2 flex items-center gap-1">
+              <label className="text-typography-900 text-base font-weight-400 mb-2 flex items-center gap-1">
                 {formFieldNames.GENDER_IDENTITY} <span className="text-destructive-500">*</span>
               </label>
               <Controller
@@ -325,19 +301,19 @@ export const CharacterProfileSelector: React.FC<CharacterProfileSelectorProps> =
                 control={formMethods.control}
                 defaultValue=""
                 render={({ field }) => (
-                  <div className="relative">
-                    <input
-                      {...field}
-                      type="text"
-                      value={field.value ? getGenderIdentityLabel(field.value) : ""}
-                      placeholder="Select"
-                      className="w-full rounded border border-border-light px-3 py-2 text-base focus:outline-none focus:ring-1 focus:ring-primary bg-background-secondary cursor-not-allowed"
-                      readOnly
-                    />
-                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-typography-600 pointer-events-none">
-                      <ArrowSolid />
-                    </span>
-                  </div>
+                  <CustomDropdownField
+                    options={GENDER_IDENTITY_OPTIONS}
+                    placeholder="Select gender identity"
+                    customStyle={{
+                      height: "40px",
+                    }}
+                    defaultOption={
+                      field.value
+                        ? GENDER_IDENTITY_OPTIONS.find(opt => opt.value === field.value)
+                        : undefined
+                    }
+                    onHandleSelect={option => field.onChange(option.value)}
+                  />
                 )}
               />
             </div>
@@ -345,7 +321,7 @@ export const CharacterProfileSelector: React.FC<CharacterProfileSelectorProps> =
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="text-typography-900 text-base font-medium mb-2 flex items-center gap-1">
+              <label className="text-typography-900 text-base font-weight-400 mb-2 flex items-center gap-1">
                 {formFieldNames.SEXUAL_ORIENTATION} <span className="text-destructive-500">*</span>
               </label>
               <Controller
@@ -353,19 +329,19 @@ export const CharacterProfileSelector: React.FC<CharacterProfileSelectorProps> =
                 control={formMethods.control}
                 defaultValue=""
                 render={({ field }) => (
-                  <div className="relative">
-                    <input
-                      {...field}
-                      type="text"
-                      value={field.value ? getSexualOrientationLabel(field.value) : ""}
-                      placeholder="Select"
-                      className="w-full rounded border border-border-light px-3 py-2 text-base focus:outline-none focus:ring-1 focus:ring-primary bg-background-secondary cursor-not-allowed"
-                      readOnly
-                    />
-                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-typography-600 pointer-events-none">
-                      <ArrowSolid />
-                    </span>
-                  </div>
+                  <CustomDropdownField
+                    options={SEXUAL_ORIENTATION_OPTIONS}
+                    placeholder="Select sexual orientation"
+                    customStyle={{
+                      height: "40px",
+                    }}
+                    defaultOption={
+                      field.value
+                        ? SEXUAL_ORIENTATION_OPTIONS.find(opt => opt.value === field.value)
+                        : undefined
+                    }
+                    onHandleSelect={option => field.onChange(option.value)}
+                  />
                 )}
               />
             </div>

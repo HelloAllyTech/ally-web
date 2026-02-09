@@ -1,7 +1,14 @@
-import { render, screen, fireEvent, within } from "@testing-library/react";
+import { render, screen, fireEvent, within, waitFor } from "@testing-library/react";
 import { vi, describe, it, expect, beforeEach } from "vitest";
 
 import { ScribeSettings } from "../ScribeSettings";
+
+// Mock toast
+vi.mock("sonner", () => ({
+  toast: {
+    error: vi.fn(),
+  },
+}));
 
 // Mock feature flags
 vi.mock("@ally-ui-mono/ui-shared/featureFlag", () => ({
@@ -14,10 +21,11 @@ vi.mock("@ally-ui-mono/ui-shared/featureFlag", () => ({
 vi.mock("@components", () => ({
   ToggleSwitch: ({ enabled, onChange, label }: any) => (
     <button
-      onClick={() => onChange(!enabled)}
+      onClick={() => onChange && onChange(!enabled)}
       aria-label={label}
       data-testid={`toggle-${label}`}
       data-enabled={enabled}
+      disabled={!onChange}
     >
       {label}
     </button>
@@ -27,6 +35,16 @@ vi.mock("@components", () => ({
       <div data-testid={`accordion-header-${title}`}>{headerActions}</div>
       <div data-testid={`accordion-content-${title}`}>{children}</div>
     </div>
+  ),
+  Button: ({ children, onClick, disabled, variant }: any) => (
+    <button
+      onClick={onClick}
+      disabled={disabled}
+      data-testid={`button-${variant}-${children}`}
+      data-variant={variant}
+    >
+      {children}
+    </button>
   ),
   cellTypes: {
     editableText: "editableText",
@@ -56,10 +74,20 @@ vi.mock("@constants", async importOriginal => {
   return {
     ...actual,
     en: {
+      common: {
+        cancel: "Cancel",
+        save: "Save",
+      },
       userManagement: {
         enabled: "Enabled",
         disabled: "Disabled",
         additionalFields: "Additional Fields",
+        selectedCount: (selected: number, total: number) => `${selected} of ${total} selected`,
+        clearAll: "Clear all",
+        selectAll: "Select all",
+        saving: "Saving...",
+        scribeSettingsNotEnabled: "Scribe settings is not enabled",
+        failedToUpdateScribeSettings: "Failed to update scribe settings",
       },
     },
   };
@@ -69,36 +97,34 @@ vi.mock("@constants", async importOriginal => {
 const mockSummarySectionsData = {
   sections: [
     {
-      id: 1,
+      id: "1",
       label: "Intake",
       enabled: true,
-      defaultVisibility: true,
       fields: [
         {
-          id: 1,
+          id: "1",
           label: "Intake Notes",
           visible: true,
         },
         {
-          id: 2,
+          id: "2",
           label: "Risk, Self Harm",
           visible: false,
         },
         {
-          id: 3,
+          id: "3",
           label: "Risk, Self Harm Notes",
           visible: false,
         },
       ],
     },
     {
-      id: 2,
+      id: "2",
       label: "Ongoing Risks",
       enabled: false,
-      defaultVisibility: false,
       fields: [
         {
-          id: 4,
+          id: "4",
           label: "Risk, Self Harm Notes",
           visible: false,
         },
@@ -107,11 +133,20 @@ const mockSummarySectionsData = {
   ],
 };
 
+const mockUpdateSummarySections = vi.fn().mockReturnValue({
+  unwrap: vi.fn().mockResolvedValue({ data: {} }),
+});
+const mockUpdateSummaryFields = vi.fn().mockReturnValue({
+  unwrap: vi.fn().mockResolvedValue({ data: {} }),
+});
+
 vi.mock("@api", () => ({
   useGetSummarySectionsQuery: () => ({
     data: mockSummarySectionsData,
     isLoading: false,
   }),
+  useUpdateSummarySectionsMutation: () => [mockUpdateSummarySections, { isLoading: false }],
+  useUpdateSummaryFieldsMutation: () => [mockUpdateSummaryFields, { isLoading: false }],
 }));
 
 describe("ScribeSettings", () => {
@@ -137,21 +172,22 @@ describe("ScribeSettings", () => {
     const intakeContent = screen.getByTestId("accordion-content-Intake");
     const ongoingRisksContent = screen.getByTestId("accordion-content-Ongoing Risks");
 
-    expect(within(intakeContent).getByTestId("toggle-Intake Notes")).toBeInTheDocument();
-    expect(within(intakeContent).getByTestId("toggle-Risk, Self Harm")).toBeInTheDocument();
-    expect(within(intakeContent).getByTestId("toggle-Risk, Self Harm Notes")).toBeInTheDocument();
-    expect(
-      within(ongoingRisksContent).getByTestId("toggle-Risk, Self Harm Notes"),
-    ).toBeInTheDocument();
+    // Child items are now checkboxes, not toggles
+    expect(within(intakeContent).getByText("Intake Notes")).toBeInTheDocument();
+    expect(within(intakeContent).getByText("Risk, Self Harm")).toBeInTheDocument();
+    expect(within(intakeContent).getByText("Risk, Self Harm Notes")).toBeInTheDocument();
+    expect(within(ongoingRisksContent).getByText("Risk, Self Harm Notes")).toBeInTheDocument();
   });
 
-  it("displays enabled/disabled status for child items", () => {
+  it("displays checked/unchecked status for child items", () => {
     render(<ScribeSettings tenantId={mockTenantId} />);
-    const intakeNotesToggle = screen.getByTestId("toggle-Intake Notes");
-    expect(intakeNotesToggle).toHaveAttribute("data-enabled", "true");
+    const intakeContent = screen.getByTestId("accordion-content-Intake");
+    const checkboxes = within(intakeContent).getAllByRole("checkbox");
 
-    const riskSelfHarmToggle = screen.getByTestId("toggle-Risk, Self Harm");
-    expect(riskSelfHarmToggle).toHaveAttribute("data-enabled", "false");
+    // First checkbox (Intake Notes) should be checked
+    expect(checkboxes[0]).toBeChecked();
+    // Second checkbox (Risk, Self Harm) should not be checked
+    expect(checkboxes[1]).not.toBeChecked();
   });
 
   it("displays enabled/disabled status for parent items", () => {
@@ -165,38 +201,44 @@ describe("ScribeSettings", () => {
 
   it("toggles child item when clicked", () => {
     render(<ScribeSettings tenantId={mockTenantId} />);
-    const riskSelfHarmToggle = screen.getByTestId("toggle-Risk, Self Harm");
-    expect(riskSelfHarmToggle).toHaveAttribute("data-enabled", "false");
+    const intakeContent = screen.getByTestId("accordion-content-Intake");
+    const checkboxes = within(intakeContent).getAllByRole("checkbox");
+    const riskSelfHarmCheckbox = checkboxes[1]; // Second checkbox
 
-    fireEvent.click(riskSelfHarmToggle);
-    expect(riskSelfHarmToggle).toHaveAttribute("data-enabled", "true");
+    expect(riskSelfHarmCheckbox).not.toBeChecked();
+
+    fireEvent.click(riskSelfHarmCheckbox);
+    expect(riskSelfHarmCheckbox).toBeChecked();
   });
 
-  it("toggles parent item when clicked and updates all children", () => {
+  it("toggles parent item when clicked and calls API", async () => {
     render(<ScribeSettings tenantId={mockTenantId} />);
     const intakeToggle = screen.getByTestId("toggle-Intake");
-    const intakeNotesToggle = screen.getByTestId("toggle-Intake Notes");
 
     // Initially enabled
     expect(intakeToggle).toHaveAttribute("data-enabled", "true");
-    expect(intakeNotesToggle).toHaveAttribute("data-enabled", "true");
 
     // Toggle parent off
     fireEvent.click(intakeToggle);
 
     // Parent should be disabled
     expect(intakeToggle).toHaveAttribute("data-enabled", "false");
-    // All children should be disabled
-    expect(intakeNotesToggle).toHaveAttribute("data-enabled", "false");
+
+    // API should be called
+    await waitFor(() => {
+      expect(mockUpdateSummarySections).toHaveBeenCalled();
+    });
   });
 
   it("disables parent when all children are disabled", () => {
     render(<ScribeSettings tenantId={mockTenantId} />);
     const intakeToggle = screen.getByTestId("toggle-Intake");
-    const intakeNotesToggle = screen.getByTestId("toggle-Intake Notes");
+    const intakeContent = screen.getByTestId("accordion-content-Intake");
+    const checkboxes = within(intakeContent).getAllByRole("checkbox");
+    const intakeNotesCheckbox = checkboxes[0]; // First checkbox
 
     // Disable the only enabled child
-    fireEvent.click(intakeNotesToggle);
+    fireEvent.click(intakeNotesCheckbox);
 
     // Parent should be disabled
     expect(intakeToggle).toHaveAttribute("data-enabled", "false");
@@ -206,19 +248,18 @@ describe("ScribeSettings", () => {
     render(<ScribeSettings tenantId={mockTenantId} />);
     const ongoingRisksToggle = screen.getByTestId("toggle-Ongoing Risks");
     const ongoingRisksContent = screen.getByTestId("accordion-content-Ongoing Risks");
-    const riskSelfHarmNotesToggle = within(ongoingRisksContent).getByTestId(
-      "toggle-Risk, Self Harm Notes",
-    );
+    const checkboxes = within(ongoingRisksContent).getAllByRole("checkbox");
+    const riskSelfHarmNotesCheckbox = checkboxes[0];
 
     // Initially both are disabled
     expect(ongoingRisksToggle).toHaveAttribute("data-enabled", "false");
-    expect(riskSelfHarmNotesToggle).toHaveAttribute("data-enabled", "false");
+    expect(riskSelfHarmNotesCheckbox).not.toBeChecked();
 
     // Enable a child
-    fireEvent.click(riskSelfHarmNotesToggle);
+    fireEvent.click(riskSelfHarmNotesCheckbox);
 
     // Child should be enabled
-    expect(riskSelfHarmNotesToggle).toHaveAttribute("data-enabled", "true");
+    expect(riskSelfHarmNotesCheckbox).toBeChecked();
     // Parent should remain disabled (not auto-enabled)
     expect(ongoingRisksToggle).toHaveAttribute("data-enabled", "false");
   });
@@ -226,10 +267,12 @@ describe("ScribeSettings", () => {
   it("keeps parent enabled when some children are enabled", () => {
     render(<ScribeSettings tenantId={mockTenantId} />);
     const intakeToggle = screen.getByTestId("toggle-Intake");
-    const riskSelfHarmToggle = screen.getByTestId("toggle-Risk, Self Harm");
+    const intakeContent = screen.getByTestId("accordion-content-Intake");
+    const checkboxes = within(intakeContent).getAllByRole("checkbox");
+    const riskSelfHarmCheckbox = checkboxes[1]; // Second checkbox
 
     // Enable a disabled child
-    fireEvent.click(riskSelfHarmToggle);
+    fireEvent.click(riskSelfHarmCheckbox);
 
     // Parent should remain enabled
     expect(intakeToggle).toHaveAttribute("data-enabled", "true");
@@ -262,26 +305,128 @@ describe("ScribeSettings", () => {
     expect(intakeContent).toHaveTextContent("Risk, Self Harm Notes");
   });
 
-  it("displays correct enabled/disabled text for child items", () => {
+  it("displays correct enabled/disabled text for parent items", () => {
     render(<ScribeSettings tenantId={mockTenantId} />);
-    // Intake parent (enabled) + Intake Notes child (enabled) = 2
-    expect(screen.getAllByText("Enabled")).toHaveLength(2);
-    // Ongoing Risks parent (disabled) + 3 disabled children = 4
-    // (Risk Self Harm, Risk Self Harm Notes in Intake, Risk Self Harm Notes in Ongoing Risks)
-    expect(screen.getAllByText("Disabled")).toHaveLength(4);
+    // Only parent sections show Enabled/Disabled text (not child checkboxes)
+    // Intake parent (enabled) = 1
+    expect(screen.getAllByText("Enabled")).toHaveLength(1);
+    // Ongoing Risks parent (disabled) = 1
+    expect(screen.getAllByText("Disabled")).toHaveLength(1);
   });
 
-  it("updates enabled/disabled text when child is toggled", () => {
+  it("renders Clear all and Select all buttons", () => {
     render(<ScribeSettings tenantId={mockTenantId} />);
-    const riskSelfHarmToggle = screen.getByTestId("toggle-Risk, Self Harm");
+    // There are multiple sections, so use getAllByText
+    expect(screen.getAllByText("Clear all").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Select all").length).toBeGreaterThan(0);
+  });
 
-    // Initially disabled
-    expect(screen.getAllByText("Disabled").length).toBeGreaterThan(0);
+  it("renders Save and Cancel buttons", () => {
+    render(<ScribeSettings tenantId={mockTenantId} />);
+    // There are multiple sections, so use getAllByText
+    expect(screen.getAllByText("Cancel").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Save").length).toBeGreaterThan(0);
+  });
 
-    // Toggle to enabled
-    fireEvent.click(riskSelfHarmToggle);
+  it("displays selected count", () => {
+    render(<ScribeSettings tenantId={mockTenantId} />);
+    // Intake section has 1 of 3 selected
+    expect(screen.getByText("1 of 3 selected")).toBeInTheDocument();
+    // Ongoing Risks section has 0 of 1 selected
+    expect(screen.getByText("0 of 1 selected")).toBeInTheDocument();
+  });
 
-    // Should now show more enabled items
-    expect(screen.getAllByText("Enabled").length).toBeGreaterThan(1);
+  it("calls Clear all when clicked", () => {
+    render(<ScribeSettings tenantId={mockTenantId} />);
+    const intakeContent = screen.getByTestId("accordion-content-Intake");
+    const checkboxes = within(intakeContent).getAllByRole("checkbox");
+
+    // Initially first checkbox is checked
+    expect(checkboxes[0]).toBeChecked();
+
+    // Click Clear all
+    const clearAllButton = screen.getAllByText("Clear all")[0];
+    fireEvent.click(clearAllButton);
+
+    // All checkboxes should be unchecked
+    checkboxes.forEach(checkbox => {
+      expect(checkbox).not.toBeChecked();
+    });
+  });
+
+  it("calls Select all when clicked", () => {
+    render(<ScribeSettings tenantId={mockTenantId} />);
+    const intakeContent = screen.getByTestId("accordion-content-Intake");
+    const checkboxes = within(intakeContent).getAllByRole("checkbox");
+
+    // Click Select all
+    const selectAllButton = screen.getAllByText("Select all")[0];
+    fireEvent.click(selectAllButton);
+
+    // All checkboxes should be checked
+    checkboxes.forEach(checkbox => {
+      expect(checkbox).toBeChecked();
+    });
+  });
+
+  it("calls Save API when Save button is clicked", async () => {
+    render(<ScribeSettings tenantId={mockTenantId} />);
+    const intakeContent = screen.getByTestId("accordion-content-Intake");
+    const checkboxes = within(intakeContent).getAllByRole("checkbox");
+
+    // Make a change first to enable the Save button
+    fireEvent.click(checkboxes[1]);
+
+    // Wait for Save button to be enabled
+    await waitFor(() => {
+      const saveButtons = screen.getAllByText("Save");
+      expect(saveButtons[0]).not.toBeDisabled();
+    });
+
+    // Click Save button
+    const saveButtons = screen.getAllByText("Save");
+    fireEvent.click(saveButtons[0]);
+
+    await waitFor(() => {
+      expect(mockUpdateSummaryFields).toHaveBeenCalled();
+    });
+  });
+
+  it("disables Save button when no changes are made", () => {
+    render(<ScribeSettings tenantId={mockTenantId} />);
+    const saveButtons = screen.getAllByText("Save");
+
+    // Save button should be disabled initially (no changes)
+    expect(saveButtons[0]).toBeDisabled();
+  });
+
+  it("enables Save button when changes are made", () => {
+    render(<ScribeSettings tenantId={mockTenantId} />);
+    const intakeContent = screen.getByTestId("accordion-content-Intake");
+    const checkboxes = within(intakeContent).getAllByRole("checkbox");
+
+    // Make a change
+    fireEvent.click(checkboxes[1]);
+
+    const saveButtons = screen.getAllByText("Save");
+    // Save button should be enabled after change
+    expect(saveButtons[0]).not.toBeDisabled();
+  });
+
+  it("calls Cancel to revert changes", () => {
+    render(<ScribeSettings tenantId={mockTenantId} />);
+    const intakeContent = screen.getByTestId("accordion-content-Intake");
+    const checkboxes = within(intakeContent).getAllByRole("checkbox");
+
+    // Make a change
+    fireEvent.click(checkboxes[1]);
+    expect(checkboxes[1]).toBeChecked();
+
+    // Click Cancel
+    const cancelButtons = screen.getAllByText("Cancel");
+    fireEvent.click(cancelButtons[0]);
+
+    // Change should be reverted
+    expect(checkboxes[1]).not.toBeChecked();
   });
 });

@@ -1,4 +1,5 @@
 import { useClickOutside } from "./useClickOutside";
+import { useCreatePortal } from "./useCreatePortal";
 import { useDebounce } from "./useDebounce";
 import { useLiveKitRoom } from "./useLiveKitRoom";
 import { useSimulationCases } from "./useSimulationCases";
@@ -14,4 +15,5 @@ export {
   useSimulations,
   useSimulationPathways,
   useSimulationCases,
+  useCreatePortal,
 };
