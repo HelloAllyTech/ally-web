@@ -999,3 +999,10 @@ export const STATES_INSTRUCTION_TABLE_HEADERS = [
   { key: "instruction", header: "Instruction", editable: true },
   { key: "dialogue", header: "Dialogue", editable: true },
 ];
+
+export const DEFAULT_STATE_INSTRUCTIONS = [
+  { states: "State 1", instruction: "", dialogue: "" },
+  { states: "State 2", instruction: "", dialogue: "" },
+  { states: "State 3", instruction: "", dialogue: "" },
+  { states: "State 4", instruction: "", dialogue: "" },
+];
