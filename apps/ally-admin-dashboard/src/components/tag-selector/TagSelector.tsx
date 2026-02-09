@@ -1,10 +1,9 @@
-import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
-
-import { createPortal } from "react-dom";
+import { useRef, useState, useEffect } from "react";
 
 import { useCreateTriggerWarningMutation, useGetTriggerWarningsQuery } from "@api";
 import { Close, Plus, Search } from "@assets";
 import { en } from "@constants";
+import { useClickOutside, useCreatePortal } from "@hooks";
 import { triggerWarning } from "@types";
 
 interface TagsDropdown {
@@ -25,14 +24,12 @@ export const TagSelector: React.FC<TagsDropdown> = ({
   const [page, setPage] = useState(1);
   const [allOptions, setAllOptions] = useState([]);
   const [hasMore, setHasMore] = useState(true);
+
   const observerRef = useRef(null);
   const loadingRef = useRef(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLDivElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
-  const [dropdownPosition, setDropdownPosition] = useState<{ top: number; left: number } | null>(
-    null,
-  );
 
   const { data: options, isFetching } = useGetTriggerWarningsQuery({
     name: searchQuery,
@@ -108,61 +105,9 @@ export const TagSelector: React.FC<TagsDropdown> = ({
     setOpenDropdown(false);
   };
 
-  const updateDropdownPosition = useCallback(() => {
-    if (triggerRef.current && openDropdown) {
-      const rect = triggerRef.current.getBoundingClientRect();
-      const dropdownWidth = 300;
-      const dropdownHeight = 280;
-      const viewportHeight = window.innerHeight;
-      const viewportWidth = window.innerWidth;
+  const dropdownPosition = useCreatePortal(triggerRef, openDropdown);
 
-      let top = rect.bottom + 4;
-      let left = rect.left;
-
-      if (top + dropdownHeight > viewportHeight - 8) {
-        top = rect.top - dropdownHeight - 4;
-      }
-      if (left + dropdownWidth > viewportWidth - 8) {
-        left = viewportWidth - dropdownWidth - 8;
-      }
-      if (left < 8) {
-        left = 8;
-      }
-
-      setDropdownPosition({ top, left });
-    } else {
-      setDropdownPosition(null);
-    }
-  }, [openDropdown]);
-
-  useLayoutEffect(() => {
-    if (openDropdown) {
-      updateDropdownPosition();
-      window.addEventListener("scroll", updateDropdownPosition, true);
-      window.addEventListener("resize", updateDropdownPosition);
-    }
-    return () => {
-      window.removeEventListener("scroll", updateDropdownPosition, true);
-      window.removeEventListener("resize", updateDropdownPosition);
-    };
-  }, [openDropdown, updateDropdownPosition]);
-
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      const target = event.target as Node;
-      if (
-        openDropdown &&
-        triggerRef.current &&
-        !triggerRef.current.contains(target) &&
-        dropdownRef.current &&
-        !dropdownRef.current.contains(target)
-      ) {
-        closeDropdown();
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [openDropdown]);
+  useClickOutside(dropdownRef, () => closeDropdown());
 
   const removeTag = (tagToRemove: triggerWarning) => {
     updateTriggerWarnings(triggerWarnings.filter(tag => tag !== tagToRemove));
@@ -187,8 +132,7 @@ export const TagSelector: React.FC<TagsDropdown> = ({
   };
 
   const renderDropdown = () =>
-    dropdownPosition &&
-    createPortal(
+    dropdownPosition && (
       <div
         ref={dropdownRef}
         className="fixed bg-white border rounded-md shadow-lg z-[9999] w-[300px] font-primary"
@@ -237,9 +181,9 @@ export const TagSelector: React.FC<TagsDropdown> = ({
               </div>
             )}
         </div>
-      </div>,
-      document.body,
+      </div>
     );
+
   return (
     <div className="flex flex-col gap-2">
       <label htmlFor="tags" className="text-typography-900 text-base text-base cursor-pointer">

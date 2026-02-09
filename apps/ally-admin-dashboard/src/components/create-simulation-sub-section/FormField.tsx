@@ -197,9 +197,9 @@ export const FormField: FC<FormFieldProps> = ({ config, formMethods }) => {
           />
         );
       case FORM_FIELD_TYPES.CUSTOM.BEHAVIOURS_INSTRUCTION:
-        return <BehavioursInstruction />;
+        return <BehavioursInstruction formMethods={formMethods} id={id} />;
       case FORM_FIELD_TYPES.CUSTOM.STATES_INSTRUCTION:
-        return <StateInstruction />;
+        return <StateInstruction formMethods={formMethods} id={id} />;
       default:
         return null;
     }
