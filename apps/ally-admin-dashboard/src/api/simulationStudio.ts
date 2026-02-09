@@ -430,7 +430,7 @@ const simulationStudioAPI = baseAPI.injectEndpoints({
      */
     getCharacters: builder.query<
       { characters: CharacterData[]; count: number },
-      { limit?: number; offset?: number; search?: string }
+      { limit?: number; offset?: number; search?: string; sortBy?: string; order?: string }
     >({
       query: params => ({
         url: ApiEndpoints.CHARACTERS.GET_CHARACTERS,
