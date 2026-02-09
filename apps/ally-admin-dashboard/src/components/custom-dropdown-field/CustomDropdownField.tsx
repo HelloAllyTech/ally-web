@@ -38,6 +38,8 @@ export const CustomDropdownField: React.FC<CustomDropdownFieldProps> = ({
   useEffect(() => {
     if (defaultOption?.value && defaultOption?.label) {
       setSelectedOption(defaultOption);
+    } else if (defaultOption === null) {
+      setSelectedOption(null);
     }
   }, [defaultOption?.value, defaultOption?.label]);
 

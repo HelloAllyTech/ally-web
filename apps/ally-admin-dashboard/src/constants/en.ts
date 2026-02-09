@@ -110,6 +110,8 @@ export const en = {
     profileImage: "Profile image",
   },
   simulation: {
+    createCharacter: "Create character",
+    editCharacter: "Edit character",
     characterCreatedSuccessfully: "Character created successfully",
     characterDeletedSuccessfully: "Character deleted successfully",
     failedToDeleteCharacter: "Failed to delete character",
