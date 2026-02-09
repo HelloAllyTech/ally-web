@@ -43,11 +43,18 @@ export const CharacterLibrary: React.FC = () => {
       if (offset === 0) {
         setCharacters(charactersData?.characters);
       } else {
-        setCharacters(prev => [...prev, ...(charactersData?.characters || [])]);
+        // Avoid duplicates by filtering out characters that already exist
+        setCharacters(prev => {
+          const existingIds = new Set(prev.map(char => char.id));
+          const newCharacters = charactersData?.characters?.filter(
+            char => !existingIds.has(char.id),
+          );
+          return [...prev, ...newCharacters];
+        });
       }
       setHasMore(charactersData?.characters?.length === limit);
     }
-  }, [charactersData, offset]);
+  }, [charactersData, offset, limit]);
 
   const onSearchChange = (value: string) => {
     setCharacterSearch(value);
