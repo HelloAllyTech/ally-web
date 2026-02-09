@@ -33,7 +33,7 @@ interface TranscriptionProps {
   councellorName?: string;
   agentName?: string;
   onCommentChange: (params: CommentChangeParams) => void;
-  onDeleteComment: () => void;
+  onDeleteComment: (val?: number) => void;
   onAddComment: () => void;
 }
 
