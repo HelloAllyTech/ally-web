@@ -272,7 +272,11 @@ export const CharacterSidePanel: React.FC<CharacterSidePanelProps> = ({
             disabled={!isFormValid() || isCreating || isUpdating}
             className="min-w-[120px]"
           >
-            {isCreating || isUpdating ? "Saving..." : en.common.save}
+            {isCreating || isUpdating
+              ? "Saving..."
+              : isNewCharacter
+                ? en.common.create
+                : en.common.update}
           </Button>
           <Button
             variant={ButtonVariant.SECONDARY}

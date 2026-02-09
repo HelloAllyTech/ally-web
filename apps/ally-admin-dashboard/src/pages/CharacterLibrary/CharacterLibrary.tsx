@@ -129,24 +129,24 @@ export const CharacterLibrary: React.FC = () => {
 
   const createCharacterObject = useCallback((character: any) => {
     return {
-      id: { value: character.id || "", disabled: false, rowId: character.id },
-      name: { value: character.name || "", disabled: false, rowId: character.id },
-      age: { value: character.age || "", disabled: false, rowId: character.id },
-      gender: { value: character.gender || "", disabled: false, rowId: character.id },
-      profession: { value: character.profession || "", disabled: false, rowId: character.id },
+      id: { value: character.id || "", disabled: true, rowId: character.id },
+      name: { value: character.name || "", disabled: true, rowId: character.id },
+      age: { value: character.age || "", disabled: true, rowId: character.id },
+      gender: { value: character.gender || "", disabled: true, rowId: character.id },
+      profession: { value: character.profession || "", disabled: true, rowId: character.id },
       currentLocation: {
         value: character.currentLocation || "",
-        disabled: false,
+        disabled: true,
         rowId: character.id,
       },
       genderIdentity: {
         value: character.genderIdentity || "",
-        disabled: false,
+        disabled: true,
         rowId: character.id,
       },
       sexualOrientation: {
         value: character.sexualOrientation || "",
-        disabled: false,
+        disabled: true,
         rowId: character.id,
       },
     };
