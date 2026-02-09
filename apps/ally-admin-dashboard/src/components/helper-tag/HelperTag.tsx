@@ -1,11 +1,11 @@
-import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
-
-import { createPortal } from "react-dom";
+import { useEffect, useRef, useState } from "react";
 
 import { useGetTagsQuery } from "@api";
 import { Close, Plus, Search } from "@assets";
+import { shortId } from "@components/notion-table";
 import { en } from "@constants";
-import { shortId } from "@src/components/notion-table";
+import { useClickOutside, useCreatePortal } from "@hooks";
+
 interface Tag {
   id: string;
   name: string;
@@ -21,14 +21,12 @@ const DEFAULT_LIMIT = 20;
 export const HelperTag: React.FC<HelperTagProps> = ({ tags, updateTags }) => {
   const [openDropdown, setOpenDropdown] = useState(false);
   const [searchQuery, setSearchQuery] = useState<string>("");
-  const dropdownRef = useRef<HTMLDivElement>(null);
-  const triggerRef = useRef<HTMLDivElement>(null);
-  const [dropdownPosition, setDropdownPosition] = useState<{ top: number; left: number } | null>(
-    null,
-  );
   const [page, setPage] = useState(1);
   const [allOptions, setAllOptions] = useState([]);
   const [hasMore, setHasMore] = useState(true);
+
+  const dropdownRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLDivElement>(null);
   const observerRef = useRef(null);
   const loadingRef = useRef(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -113,61 +111,9 @@ export const HelperTag: React.FC<HelperTagProps> = ({ tags, updateTags }) => {
     setOpenDropdown(false);
   };
 
-  const updateDropdownPosition = useCallback(() => {
-    if (triggerRef.current && openDropdown) {
-      const rect = triggerRef.current.getBoundingClientRect();
-      const dropdownWidth = 300;
-      const dropdownHeight = 280;
-      const viewportHeight = window.innerHeight;
-      const viewportWidth = window.innerWidth;
+  const dropdownPosition = useCreatePortal(triggerRef, openDropdown);
 
-      let top = rect.bottom + 4;
-      let left = rect.left;
-
-      if (top + dropdownHeight > viewportHeight - 8) {
-        top = rect.top - dropdownHeight - 4;
-      }
-      if (left + dropdownWidth > viewportWidth - 8) {
-        left = viewportWidth - dropdownWidth - 8;
-      }
-      if (left < 8) {
-        left = 8;
-      }
-
-      setDropdownPosition({ top, left });
-    } else {
-      setDropdownPosition(null);
-    }
-  }, [openDropdown]);
-
-  useLayoutEffect(() => {
-    if (openDropdown) {
-      updateDropdownPosition();
-      window.addEventListener("scroll", updateDropdownPosition, true);
-      window.addEventListener("resize", updateDropdownPosition);
-    }
-    return () => {
-      window.removeEventListener("scroll", updateDropdownPosition, true);
-      window.removeEventListener("resize", updateDropdownPosition);
-    };
-  }, [openDropdown, updateDropdownPosition]);
-
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      const target = event.target as Node;
-      if (
-        openDropdown &&
-        triggerRef.current &&
-        !triggerRef.current.contains(target) &&
-        dropdownRef.current &&
-        !dropdownRef.current.contains(target)
-      ) {
-        closeDropdown();
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [openDropdown]);
+  useClickOutside(dropdownRef, () => closeDropdown());
 
   const createNewTag = () => {
     const newTag = searchQuery.trim();
@@ -180,8 +126,7 @@ export const HelperTag: React.FC<HelperTagProps> = ({ tags, updateTags }) => {
   };
 
   const renderDropdown = () =>
-    dropdownPosition &&
-    createPortal(
+    dropdownPosition != null && (
       <div
         ref={dropdownRef}
         className="fixed bg-white border rounded-md shadow-lg z-[9999] w-[300px]"
@@ -228,8 +173,7 @@ export const HelperTag: React.FC<HelperTagProps> = ({ tags, updateTags }) => {
               </div>
             )}
         </div>
-      </div>,
-      document.body,
+      </div>
     );
 
   return (
@@ -248,10 +192,10 @@ export const HelperTag: React.FC<HelperTagProps> = ({ tags, updateTags }) => {
       <div className="relative">
         <div
           ref={triggerRef}
-          className="flex items-center border border-border-light opacity-0 group-hover:opacity-100"
+          className={`flex items-center border border-border-light ${tags.length > 0 ? "opacity-0 group-hover:opacity-100" : "opacity-100"}`}
           onClick={addTagButton}
         >
-          <button type="button" className="text-primary text-sm">
+          <button type="button" className="text-primary text-sm p-1">
             <Plus />
           </button>
         </div>
