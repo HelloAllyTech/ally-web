@@ -4,6 +4,8 @@ import { Dayjs } from "dayjs";
 
 import { CallLog, ChatSummaryStatus, SessionType } from "@types";
 
+import { SessionUserGroup } from "../constants";
+
 export interface StartSessionDialogProps {
   isOpen: boolean;
   onClose: () => void;
@@ -42,6 +44,7 @@ export interface ArchivesLogsTableProps {
   sessionType: SessionType;
   className?: string;
   refreshKey?: number;
+  sessionUserGroup: SessionUserGroup;
 }
 
 export interface SummaryHeaderProps {
@@ -93,6 +96,7 @@ export interface CallSummarySidebarProps {
   setCallSummary: Dispatch<SetStateAction<CallLog>>;
   canEditSummary?: boolean;
   canShowFeedback?: boolean;
+  showArchiveButton?: boolean;
 }
 
 export interface TranscriptTabProps {

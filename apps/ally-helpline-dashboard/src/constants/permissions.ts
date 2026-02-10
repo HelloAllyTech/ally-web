@@ -34,6 +34,8 @@ export enum Permissions {
   VIEW_REVIEW = "view:review",
   REVIEWER_ACCESS = "reviewer:access",
   VIEW_BADGES = "view:user:badges",
+  ARCHIVE_CALL_LOG = "archive:call-log",
+  ARCHIVE_CHAT = "ARCHIVE_CHAT",
 }
 
 export const CALL_PERMISSIONS = [
