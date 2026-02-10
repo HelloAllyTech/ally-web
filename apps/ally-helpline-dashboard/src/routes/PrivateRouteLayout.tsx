@@ -14,6 +14,7 @@ import {
 import { useUser, useAutoActiveCallRedirect } from "@hooks";
 import {
   Calls,
+  Archives,
   Analytics,
   AudioCall,
   PostCallSummary,
@@ -123,6 +124,20 @@ const PrivateRouteLayout: FC = () => {
                 Permissions.VIEW_ADMIN_SCENARIO_SESSION,
               ]}
               element={<Calls />}
+            />
+          }
+        />
+        <Route
+          path={ROUTES.ARCHIVES}
+          element={
+            <PermissionGuardedRoute
+              permission={[
+                Permissions.VIEW_CALL_LOGS,
+                Permissions.VIEW_CONSOLIDATED_LOGS,
+                Permissions.VIEW_SCENARIO_SESSION,
+                Permissions.VIEW_ADMIN_SCENARIO_SESSION,
+              ]}
+              element={<Archives />}
             />
           }
         />

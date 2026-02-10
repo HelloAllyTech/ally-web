@@ -41,6 +41,7 @@ export const ROUTES = {
   REVIEW: "/review",
   ACHIEVEMENTS_VIEW_ALL: "/achievements",
   REVIEW_DETAILS: "/review/:reviewId",
+  ARCHIVES: "/archives",
 } as const;
 
 export const excludeNavBar = [
