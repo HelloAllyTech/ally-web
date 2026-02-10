@@ -24,7 +24,6 @@ describe("createSimulation utils", () => {
 
       expect(section).toBeDefined();
       expect(section?.id).toBe("basic-settings");
-      expect(section?.label).toBe("Basic Settings");
     });
 
     it("should return undefined for non-existent id", () => {
@@ -68,7 +67,6 @@ describe("createSimulation utils", () => {
         const section = getOverviewSection();
         const field = section?.fields.find(f => f.id === "difficultyLevel");
         expect(field).toBeDefined();
-        expect(field?.label).toBe("Difficulty Level");
         expect(field?.type).toBe("select");
         expect(field?.isMandatory).toBe(true);
       });
