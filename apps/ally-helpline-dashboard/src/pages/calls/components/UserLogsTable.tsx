@@ -56,6 +56,7 @@ const UserLogsTable: FC<LogsTableProps> = ({ refreshKey, sessionType, className 
     {
       limit: CALL_LOGS_PAGINATION_LIMIT,
       offset: offset,
+      archive: false,
     },
     { skip: !isCall },
   );
