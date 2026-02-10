@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 
 import { useNavigate } from "react-router-dom";
 
-import { FEATURE_FLAGS_MAP } from "@ally-ui-mono/ui-shared";
 import {
   useGetMyBadgesQuery,
   useGetBadgesCountQuery,
@@ -37,8 +36,7 @@ export const Leaderboard = () => {
   const [hasMore, setHasMore] = useState<boolean>(true);
   const { permissions } = useUser();
 
-  const isBadgesEnabled =
-    FEATURE_FLAGS_MAP.BADGES_FLAG && permissions.includes(Permissions.VIEW_BADGES);
+  const isBadgesEnabled = permissions.includes(Permissions.VIEW_BADGES);
 
   const pathParams = {
     limit: PATHS_PAGE_SIZE,
@@ -110,12 +108,6 @@ export const Leaderboard = () => {
     return myBadges.slice(0, 3).map(mapUserBadgeToAchievementItem);
   };
 
-  if (!FEATURE_FLAGS_MAP.LEADERBOARD_FLAG) {
-    return (
-      <div className="flex items-center justify-center h-full">Leaderboard is not enabled</div>
-    );
-  }
-
   return (
     <div className={"p-4 sm:p-6 overflow-hidden w-full h-full"} data-testid="leaderboard-page">
       <div
@@ -135,19 +127,16 @@ export const Leaderboard = () => {
           selectedTimeFilter={window}
           data={leaderboardData}
         />
-
         {/* achievements card */}
-        {FEATURE_FLAGS_MAP.BADGES_FLAG && (
-          <div className="w-full sm:w-1/2 sm:max-w-md sm:ml-0 sm:mt-[16px] sm:self-start flex-shrink-0">
-            <AchievementsCard
-              achievements={getBadgesList()}
-              viewedBadgesCount={viewedBadgesCount}
-              isLoading={isBadgesLoading || isBadgesCountLoading}
-              onViewAll={handleViewAllBadges}
-              className="h-auto"
-            />
-          </div>
-        )}
+        <div className="w-full sm:w-1/2 sm:max-w-md sm:ml-0 sm:mt-[16px] sm:self-start flex-shrink-0">
+          <AchievementsCard
+            achievements={getBadgesList()}
+            viewedBadgesCount={viewedBadgesCount}
+            isLoading={isBadgesLoading || isBadgesCountLoading}
+            onViewAll={handleViewAllBadges}
+            className="h-auto"
+          />
+        </div>
       </div>
     </div>
   );

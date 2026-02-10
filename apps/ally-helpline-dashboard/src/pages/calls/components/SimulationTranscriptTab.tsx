@@ -3,7 +3,7 @@ import { FC, useEffect, useMemo, useRef, useState } from "react";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 
-import { FEATURE_FLAGS_MAP, Toggle } from "@ally-ui-mono/ui-shared/index";
+import { Toggle } from "@ally-ui-mono/ui-shared";
 import {
   useCreateReviewMutation,
   useGetSimulationSummaryQuery,
@@ -129,39 +129,37 @@ const SimulationTranscriptTab: FC<SimulationTranscriptTabProps> = ({
         <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t  to-transparent pointer-events-none" />
       </div>
 
-      {FEATURE_FLAGS_MAP.PEER_REVIEW_FLAG &&
-        summary?.counselorId === user?.id &&
-        transcriptList.length > 0 && (
-          <div className="flex justify-center">
-            <div
-              className="flex justify-center gap-2 rounded-full border p-2 shadow-lg"
-              style={{
-                opacity: isCreateReviewLoading || isUpdateReviewLoading ? 0.5 : 1,
-              }}
-            >
-              <Toggle
-                items={REVIEW_PRIVACY_OPTIONS}
-                initialValue={summary.reviewStatus}
-                onChange={handleCreateReview}
-              />
-              {summary.reviewId && (
-                <>
-                  <div className="border-l" />
-                  <Button
-                    onClick={() =>
-                      navigate(ROUTES.REVIEW_DETAILS.replace(":reviewId", summary.reviewId))
-                    }
-                    variant="secondary"
-                    className="flex justify-center h-[40px]"
-                  >
-                    <Comment />
-                    Comments
-                  </Button>
-                </>
-              )}
-            </div>
+      {summary?.counselorId === user?.id && transcriptList.length > 0 && (
+        <div className="flex justify-center">
+          <div
+            className="flex justify-center gap-2 rounded-full border p-2 shadow-lg"
+            style={{
+              opacity: isCreateReviewLoading || isUpdateReviewLoading ? 0.5 : 1,
+            }}
+          >
+            <Toggle
+              items={REVIEW_PRIVACY_OPTIONS}
+              initialValue={summary.reviewStatus}
+              onChange={handleCreateReview}
+            />
+            {summary.reviewId && (
+              <>
+                <div className="border-l" />
+                <Button
+                  onClick={() =>
+                    navigate(ROUTES.REVIEW_DETAILS.replace(":reviewId", summary.reviewId))
+                  }
+                  variant="secondary"
+                  className="flex justify-center h-[40px]"
+                >
+                  <Comment />
+                  Comments
+                </Button>
+              </>
+            )}
           </div>
-        )}
+        </div>
+      )}
     </div>
   );
 };

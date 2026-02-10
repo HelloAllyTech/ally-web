@@ -220,7 +220,6 @@ const PrivateRouteLayout: FC = () => {
             />
           }
         />
-        {/* TODO: Add permission for review */}
         <Route
           path={ROUTES.REVIEW}
           element={

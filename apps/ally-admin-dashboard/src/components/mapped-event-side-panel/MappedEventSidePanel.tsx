@@ -1,6 +1,5 @@
 import React, { useState, useCallback, useEffect, useRef, useMemo } from "react";
 
-import { FEATURE_FLAGS_MAP } from "@ally-ui-mono/ui-shared";
 import { AutoExpandableTextarea } from "@ally-ui-mono/ui-shared";
 import { ArrowDownFilled, DoubleArrowRight, Trash } from "@assets";
 import {
@@ -458,28 +457,14 @@ export const MappedEventSidePanel: React.FC<MappedEventSidePanelProps> = ({
               />
             </Field>
             <Field label="Branch to state" multiline={true}>
-              {FEATURE_FLAGS_MAP.DYNAMIC_BRANCHING_FLAG ? (
-                <TextareaWithTriggerDropdown
-                  value={formData.branchInstruction?.value || ""}
-                  onChange={value =>
-                    handleFieldChange(MAPPED_EVENT_FIELDS.BRANCH_INSTRUCTION, value)
-                  }
-                  placeholder="Add branch to state"
-                  disabled={formData.branchInstruction?.disabled}
-                  alwaysOpen
-                />
-              ) : (
-                <FormTextarea
-                  value={formData.branchInstruction?.value || ""}
-                  onChange={value =>
-                    handleFieldChange(MAPPED_EVENT_FIELDS.BRANCH_INSTRUCTION, value)
-                  }
-                  placeholder="Add branch to state"
-                  disabled={formData.branchInstruction?.disabled}
-                />
-              )}
+              <TextareaWithTriggerDropdown
+                value={formData.branchInstruction?.value || ""}
+                onChange={value => handleFieldChange(MAPPED_EVENT_FIELDS.BRANCH_INSTRUCTION, value)}
+                placeholder="Add branch to state"
+                disabled={formData.branchInstruction?.disabled}
+                alwaysOpen
+              />
             </Field>
-
             <Field label="Checklist visibility">
               <ToggleSwitch
                 enabled={formData.checklistVisibilityStatus?.value || false}

@@ -4,7 +4,6 @@ import confetti from "canvas-confetti";
 import { useLocation } from "react-router-dom";
 import { toast } from "sonner";
 
-import { FEATURE_FLAGS_MAP } from "@ally-ui-mono/ui-shared";
 import { useGetMyBadgesQuery, useUpdateBadgeViewStatusMutation } from "@api";
 import { AchievementBadgeModal } from "@components";
 import { ROUTES, Permissions } from "@constants";
@@ -27,8 +26,7 @@ export const useAchievementBadgeModal = (): UseAchievementBadgeModalReturn => {
   const confettiTriggered = useRef(false);
   const { pathname } = useLocation();
 
-  const isBadgesEnabled =
-    FEATURE_FLAGS_MAP.BADGES_FLAG && permissions.includes(Permissions.VIEW_BADGES);
+  const isBadgesEnabled = permissions.includes(Permissions.VIEW_BADGES);
   const isSimulationPath = isPathExcluded(pathname, [ROUTES.SIMULATION_SUMMARY_FULL]);
 
   const {

@@ -42,9 +42,6 @@ vi.mock("@ally-ui-mono/ui-shared/index", () => ({
       </button>
     </div>
   ),
-  FEATURE_FLAGS_MAP: {
-    PEER_REVIEW_FLAG: true,
-  },
 }));
 
 // Mock AccountCircle - partially mock to keep other exports

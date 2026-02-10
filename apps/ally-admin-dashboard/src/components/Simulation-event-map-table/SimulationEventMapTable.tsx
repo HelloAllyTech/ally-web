@@ -4,7 +4,6 @@ import { FC, useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { toast } from "sonner";
 
-import { FEATURE_FLAGS_MAP } from "@ally-ui-mono/ui-shared";
 import {
   useGetSessionEventsQuery,
   useMapScenarioEventsMutation,
@@ -212,9 +211,7 @@ export const SimulationEventMapTable: FC<SimulationEventMapTableProps> = ({ simu
         label: "Branch to state",
         accessor: MAPPED_EVENT_FIELDS.BRANCH_INSTRUCTION,
         placeholder: "Add branch to state",
-        dataType: FEATURE_FLAGS_MAP.DYNAMIC_BRANCHING_FLAG
-          ? cellTypes.textAreaWithDropdown
-          : cellTypes.editableText,
+        dataType: cellTypes.textAreaWithDropdown,
         options: [],
         minWidth: 180,
       },

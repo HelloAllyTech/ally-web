@@ -116,9 +116,6 @@ vi.mock("@ally-ui-mono/ui-shared", () => ({
     <img src={src} alt={alt} className={className} data-testid="custom-image" />
   ),
   InfiniteScroll: ({ children }: any) => <div data-testid="infinite-scroll">{children}</div>,
-  FEATURE_FLAGS_MAP: {
-    PEER_REVIEW_FLAG: true,
-  },
 }));
 
 // Create a mock Redux store

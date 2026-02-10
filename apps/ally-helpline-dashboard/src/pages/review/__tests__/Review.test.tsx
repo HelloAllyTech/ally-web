@@ -28,9 +28,6 @@ const { mockUseGetReviewsQuery, mockUseGetReviewThreadsQuery, mockNavigate, mock
     mockUseGetReviewsQuery: vi.fn(),
     mockUseGetReviewThreadsQuery: vi.fn(),
     mockNavigate: vi.fn(),
-    mockFeatureFlags: {
-      PEER_REVIEW_FLAG: true,
-    },
   }));
 
 // --------------------- Mock hooks and modules --------------------- //
@@ -217,7 +214,6 @@ describe("Review Component", () => {
     vi.clearAllMocks();
     mockUseGetReviewsQuery.mockReturnValue(defaultReviewsQueryReturn);
     mockUseGetReviewThreadsQuery.mockReturnValue(defaultThreadsQueryReturn);
-    mockFeatureFlags.PEER_REVIEW_FLAG = true;
   });
 
   afterEach(() => {
@@ -296,35 +292,6 @@ describe("Review Component", () => {
         </TestWrapper>,
       );
       expect(screen.getByTestId("infinite-scroll")).toBeInTheDocument();
-    });
-  });
-
-  /**
-   * TEST GROUP: Feature Flag
-   */
-  describe("Feature Flag", () => {
-    it("shows disabled message when PEER_REVIEW_FLAG is false", () => {
-      mockFeatureFlags.PEER_REVIEW_FLAG = false;
-
-      render(
-        <TestWrapper>
-          <Review />
-        </TestWrapper>,
-      );
-
-      expect(screen.getByText("Peer review is not enabled")).toBeInTheDocument();
-    });
-
-    it("does not show feed cards when feature flag is disabled", () => {
-      mockFeatureFlags.PEER_REVIEW_FLAG = false;
-
-      render(
-        <TestWrapper>
-          <Review />
-        </TestWrapper>,
-      );
-
-      expect(screen.queryByTestId("feed-card-review-1")).not.toBeInTheDocument();
     });
   });
 
