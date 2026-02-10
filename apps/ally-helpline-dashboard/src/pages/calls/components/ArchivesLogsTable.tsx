@@ -5,7 +5,7 @@ import { useDispatch, useSelector } from "react-redux";
 
 import { GenericTable } from "@ally-ui-mono/ui-shared";
 import { Column } from "@ally-ui-mono/ui-shared/lib/generic-table/types";
-import { useGetCallLogsQuery } from "@api";
+import { useGetAdminCallLogsQuery, useGetCallLogsQuery } from "@api";
 import {
   NoResults,
   CallIdIcon,
@@ -15,6 +15,7 @@ import {
   ReviewIcon,
   SummaryGenerationIcon,
   SourceIcon,
+  UserIcon,
 } from "@assets";
 import { Button, Chip, TagGroup, FallbackUI } from "@components";
 import { updateFilters } from "@reducer";
@@ -22,15 +23,20 @@ import { RootState } from "@store";
 import { CallLog, ChatSummaryStatus, SessionType, TagDisplay } from "@types";
 import { convertSecondsToDuration, getFormattedDate } from "@utils";
 
-import { CALL_LOGS_PAGINATION_LIMIT, tagColors } from "../constants";
+import { CALL_LOGS_PAGINATION_LIMIT, SessionUserGroup, tagColors } from "../constants";
 import CallSummarySidebar from "./CallSummarySidebar";
 import { ArchivesLogsTableProps } from "./types";
 import { getSourceChipConfig, getStatusChipConfig } from "./utils";
 
-const ArchivesLogsTable: FC<ArchivesLogsTableProps> = ({ className, refreshKey }) => {
+const ArchivesLogsTable: FC<ArchivesLogsTableProps> = ({
+  className,
+  refreshKey,
+  sessionUserGroup,
+}) => {
   const dispatch = useDispatch();
 
   const { filters } = useSelector((state: RootState) => state.calls);
+  const { user: currentUser } = useSelector((state: RootState) => state.user);
 
   const { offset } = filters;
 
@@ -52,10 +58,31 @@ const ArchivesLogsTable: FC<ArchivesLogsTableProps> = ({ className, refreshKey }
       offset: offset,
       archive: true,
     },
-    { skip: false },
+    { skip: sessionUserGroup === SessionUserGroup.ORG_LOGS },
   );
 
-  const { data: callLogs = [], count = 0 } = callLogsData || {};
+  const {
+    data: adminCallLogsData,
+    isLoading: isAdminCallLogsLoading,
+    isFetching: isAdminCallLogsFetching,
+    isError: isAdminCallLogsError,
+    refetch: refetchAdminCallLogs,
+  } = useGetAdminCallLogsQuery(
+    {
+      ...filters,
+      limit: CALL_LOGS_PAGINATION_LIMIT,
+      offset: offset,
+      archive: true,
+      sortBy: "createdAt",
+      order: "DESC",
+    },
+    { skip: sessionUserGroup === SessionUserGroup.MY_LOGS },
+  );
+
+  // Use the appropriate data source based on sessionUserGroup
+  const isOrgLogs = sessionUserGroup === SessionUserGroup.ORG_LOGS;
+  const activeData = isOrgLogs ? adminCallLogsData : callLogsData;
+  const { data: callLogs = [], count = 0 } = activeData || {};
 
   const handleScroll = () => {
     if (tableRef.current) {
@@ -67,13 +94,14 @@ const ArchivesLogsTable: FC<ArchivesLogsTableProps> = ({ className, refreshKey }
     setLogs([]);
     setHasMore(true);
     dispatch(updateFilters({ ...filters, offset: 0 }));
-  }, []);
+  }, [sessionUserGroup]);
 
   useEffect(() => {
-    if (refreshKey && refetchCallLogs) {
-      refetchCallLogs();
+    if (refreshKey) {
+      const refetchFn = isOrgLogs ? refetchAdminCallLogs : refetchCallLogs;
+      refetchFn();
     }
-  }, [refreshKey, refetchCallLogs]);
+  }, [refreshKey, isOrgLogs, refetchCallLogs, refetchAdminCallLogs]);
 
   useEffect(() => {
     if (callLogs?.length > 0) {
@@ -93,17 +121,18 @@ const ArchivesLogsTable: FC<ArchivesLogsTableProps> = ({ className, refreshKey }
       setHasMore(false);
       setIsLoadingMore(false);
     }
-  }, [callLogsData]);
+  }, [activeData, callLogs, offset, count]);
+
+  const isLoading = isOrgLogs
+    ? isAdminCallLogsLoading || isAdminCallLogsFetching
+    : isCallLogsLoading || isCallLogsFetching;
 
   const handleLoadMore = () => {
-    const isLoading = isCallLogsLoading || isCallLogsFetching;
     if (!isLoading && !isLoadingMore && hasMore) {
       setIsLoadingMore(true);
       dispatch(updateFilters({ ...filters, offset: offset + CALL_LOGS_PAGINATION_LIMIT }));
     }
   };
-
-  const isLoading = isCallLogsLoading || isCallLogsFetching;
 
   // Show loading state
   if (isLoading && offset === 0) {
@@ -114,7 +143,10 @@ const ArchivesLogsTable: FC<ArchivesLogsTableProps> = ({ className, refreshKey }
     );
   }
 
-  if (isCallLogsError && !isCallLogsLoading) {
+  const isError = isOrgLogs ? isAdminCallLogsError : isCallLogsError;
+  const refetchFn = isOrgLogs ? refetchAdminCallLogs : refetchCallLogs;
+
+  if (isError && !isLoading) {
     return (
       <div className="flex justify-center items-center h-[calc(100vh-200px)]">
         <FallbackUI
@@ -123,7 +155,7 @@ const ArchivesLogsTable: FC<ArchivesLogsTableProps> = ({ className, refreshKey }
           description="Something went wrong while loading archived calls. Please try again."
           button={{
             text: "Try Again",
-            onClick: () => refetchCallLogs?.(),
+            onClick: () => refetchFn?.(),
           }}
         />
       </div>
@@ -131,7 +163,7 @@ const ArchivesLogsTable: FC<ArchivesLogsTableProps> = ({ className, refreshKey }
   }
 
   const getCallDisplayData = (row: CallLog) => {
-    const { details, id, startedAt } = row;
+    const { details, id, startedAt, counselor } = row;
     if (details) {
       const { callDuration, callInfo, summary, transcript } = details;
 
@@ -139,6 +171,7 @@ const ArchivesLogsTable: FC<ArchivesLogsTableProps> = ({ className, refreshKey }
         id,
         transcript,
         callName: callInfo?.summaryName ?? "--",
+        counsellorName: isOrgLogs ? counselor?.name : undefined,
         dateAndTime: startedAt && getFormattedDate(startedAt),
         duration: convertSecondsToDuration(callDuration),
         qualityScore: summary?.callQuality ?? 0,
@@ -155,6 +188,7 @@ const ArchivesLogsTable: FC<ArchivesLogsTableProps> = ({ className, refreshKey }
     return {
       id,
       callName: "",
+      counsellorName: isOrgLogs ? counselor?.name : undefined,
       dateAndTime: "",
       duration: "",
       qualityScore: 0,
@@ -169,46 +203,56 @@ const ArchivesLogsTable: FC<ArchivesLogsTableProps> = ({ className, refreshKey }
     {
       key: "callName",
       header: "Session ID",
-      style: { width: "17%" },
+      style: { width: isOrgLogs ? "14%" : "17%" },
       icon: <CallIdIcon />,
     },
+    ...(isOrgLogs
+      ? [
+          {
+            key: "counsellorName",
+            header: "Counsellor Name",
+            style: { width: "14%" },
+            icon: <UserIcon />,
+          },
+        ]
+      : []),
     {
       key: "dateAndTime",
       header: "Date & Time",
-      style: { width: "20%" },
+      style: { width: isOrgLogs ? "16%" : "20%" },
       icon: <DateIcon />,
     },
     {
       key: "duration",
       header: "Duration",
-      style: { width: "12%" },
+      style: { width: isOrgLogs ? "10%" : "12%" },
       icon: <TimerIcon />,
     },
     {
       key: "tags",
       header: "Tags",
-      style: { width: "20%" },
+      style: { width: isOrgLogs ? "16%" : "20%" },
       render: (value: TagDisplay[]) => <TagGroup tags={value} />,
       icon: <TagsIcon />,
     },
     {
       key: "summaryStatus",
       header: "Summary Status",
-      style: { width: "10%" },
+      style: { width: isOrgLogs ? "8%" : "10%" },
       render: (_value, row) => <Chip config={getStatusChipConfig(row.raw.summaryStatus)} />,
       icon: <SummaryGenerationIcon />,
     },
     {
       key: "source",
       header: "Source",
-      style: { width: "10%" },
+      style: { width: isOrgLogs ? "8%" : "10%" },
       render: (_value, row) => <Chip config={getSourceChipConfig(row.provider)} />,
       icon: <SourceIcon />,
     },
     {
       key: "summary",
       header: "Summary",
-      style: { width: "6%" },
+      style: { width: isOrgLogs ? "5%" : "6%" },
       render: (_value, row) => (
         <Button
           onClick={() => setSummary(row.raw)}
@@ -242,8 +286,9 @@ const ArchivesLogsTable: FC<ArchivesLogsTableProps> = ({ className, refreshKey }
   const onSummarySubmit = async (newStatus?: ChatSummaryStatus) => {
     if (newStatus && summary && summary.summaryStatus === newStatus) return;
     const chatId = summary?.id;
-    if (refetchCallLogs) {
-      const result = await refetchCallLogs();
+    const refetchFunction = isOrgLogs ? refetchAdminCallLogs : refetchCallLogs;
+    if (refetchFunction) {
+      const result = await refetchFunction();
       const refetchedLogs = result?.data?.data || [];
       const selectedCallLog = refetchedLogs.find((log: CallLog) => log.id === chatId);
       if (selectedCallLog) {
@@ -260,6 +305,7 @@ const ArchivesLogsTable: FC<ArchivesLogsTableProps> = ({ className, refreshKey }
         refetchCallLogs={onSummarySubmit}
         setCallSummary={setSummary}
         sessionType={SessionType.CALL}
+        showArchiveButton={currentUser?.id === summary?.counselorId}
       />
     );
   };
