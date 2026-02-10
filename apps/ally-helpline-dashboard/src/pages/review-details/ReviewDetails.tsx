@@ -419,7 +419,7 @@ export const ReviewDetails = () => {
                   thread.id === selectedThreadId,
               )?.comments
             }
-            onDeleteComment={() => setCommentsCount(prev => prev - 1)}
+            onDeleteComment={(val: number = 1) => setCommentsCount(prev => prev - val)}
             onAddComment={() => setCommentsCount(prev => prev + 1)}
             isFeedOwner={isFeedOwner}
             handleCommentClick={handleCommentClick}

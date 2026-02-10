@@ -14,7 +14,7 @@ interface CommentThreadProps {
   comments: CommentItem[];
   onCommentAddition: (comment: string) => void;
   id: string;
-  onDeleteComment: (commentCount: number) => void;
+  onDeleteComment: (threadcommentCount: number, commentCount: number) => void;
   messageId: string;
   selection: {
     startIndex: number;
@@ -166,16 +166,18 @@ const CommentThread = ({
   };
 
   const handleDeleteComment = (commentId: string) => {
+    const currentComment = comments.find(comment => comment.id === commentId);
+    const replyCount = currentComment?.replyCount ?? 0;
     onCommentChange?.({
       comments: comments.filter(comment => comment.id !== commentId),
       threadId: id,
     });
     setComments?.(prev => prev.filter(comment => comment.id !== commentId));
-    onDeleteComment((comments ?? []).length - 1);
+    onDeleteComment((comments ?? []).length - 1, replyCount + 1);
   };
 
   const handleDeleteReply = () => {
-    onDeleteComment(1);
+    onDeleteComment(1, 1);
   };
 
   const updateReplyCount = (count: number, commentId: string) => {

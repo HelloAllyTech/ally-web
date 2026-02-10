@@ -145,7 +145,9 @@ export const Cell = ({
     case cellTypes.normalText:
       element = (
         <span className="overflow-hidden text-ellipsis whitespace-nowrap">
-          {id === "eventCode" ? value.value : formatCapitalizedEnum(value.value)}
+          {id === "eventCode" || id === "promptCode"
+            ? value.value
+            : formatCapitalizedEnum(value.value)}
         </span>
       );
       break;

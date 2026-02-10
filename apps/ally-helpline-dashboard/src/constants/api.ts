@@ -40,6 +40,7 @@ export const ApiEndpoints = {
     CANCEL_AUDIO_UPLOAD: "/v1/chats/cancel-upload",
     PROCESS_AUDIO_UPLOAD: "/v1/chats/process-audio-upload",
     DELETE_CALL_LOG: (chatId: number) => `/v1/chats/${chatId}`,
+    ARCHIVE_CALL_LOG: (chatId: number) => `/v1/chats/call-logs/${chatId}/archive`,
   },
   CALL_SUMMARY: {
     GET_SUMMARY_FIELDS: "/v1/settings/summary-fields",

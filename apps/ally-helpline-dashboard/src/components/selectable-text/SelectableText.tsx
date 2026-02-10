@@ -45,7 +45,7 @@ interface SelectableTextProps {
     endIndex: number;
     threadId: string;
   }) => void;
-  onDeleteComment: () => void;
+  onDeleteComment: (val?: number) => void;
   setNewCommentSelection: (
     value: {
       startIndex: number;
@@ -183,8 +183,8 @@ const SelectableText = ({
     }
   }, []);
 
-  const handleDeleteComment = (commentCount: number) => {
-    if (commentCount === 0) {
+  const handleDeleteComment = (threadcommentCount: number, commentCount: number = 1) => {
+    if (threadcommentCount === 0) {
       onCommentChange?.({
         comments: [],
         threadId: selectedThreadId,
@@ -192,7 +192,7 @@ const SelectableText = ({
       });
       handleCloseSelectedComment();
     }
-    onDeleteComment?.();
+    onDeleteComment?.(commentCount);
   };
   const setDialogRef = useCallback((element: HTMLDivElement | null) => {
     dialogRef.current = element;
@@ -226,21 +226,32 @@ const SelectableText = ({
 
   const setCommentThreadRef = useCallback((element: HTMLDivElement | null) => {
     selectedCommentCalloutRef.current = element;
-    if (element) {
+  }, []);
+
+  // Calculate position after the CommentThread is rendered
+  useEffect(() => {
+    if (!shouldShowCommentThread || !selectedCommentCalloutRef.current) return;
+
+    const calculatePosition = () => {
+      const element = selectedCommentCalloutRef.current;
+      if (!element) return;
+
       const parentRect = element.parentElement?.getBoundingClientRect();
       if (!parentRect) return;
 
       const viewportWidth = window.innerWidth;
       const viewportHeight = window.innerHeight;
       const threadWidth = 400; // CommentThread width
-      const threadHeight = 300; // Approximate height
+      const elementRect = element.getBoundingClientRect();
+      const threadHeight = elementRect.height > 0 ? elementRect.height : 300; // Use actual height or fallback
 
       let left = parentRect.left;
       let top = parentRect.bottom + 4; // 4px below the highlighted text
 
-      // Check if thread would overflow on the bottom
+      // Check if the bottom of the comment thread is below viewport
       if (top + threadHeight > viewportHeight - 16) {
-        top = parentRect.top - threadHeight - 4; // Position above if not enough space below
+        const overflow = top + threadHeight - (viewportHeight - 16);
+        top = top - overflow; // Shift up by the overflow amount
       }
 
       // Check if thread would overflow on the right
@@ -254,8 +265,13 @@ const SelectableText = ({
       }
 
       setCommentThreadPosition({ top, left });
-    }
-  }, []);
+    };
+
+    // Use requestAnimationFrame to ensure the element has been painted
+    requestAnimationFrame(() => {
+      calculatePosition();
+    });
+  }, [shouldShowCommentThread, comments]);
 
   const handleCancelComment = useCallback(() => {
     setAddCommentDialogOpen(null);
@@ -298,6 +314,7 @@ const SelectableText = ({
   };
 
   const handleCloseSelectedComment = useCallback(() => {
+    setCommentThreadPosition({ top: 0, left: 0 }); // Reset position so it's hidden on next open
     onCloseSelectedComment?.();
   }, [onCloseSelectedComment]);
 
@@ -369,6 +386,10 @@ const SelectableText = ({
           style={{
             top: commentThreadPosition.top,
             left: commentThreadPosition.left,
+            visibility:
+              commentThreadPosition.top === 0 && commentThreadPosition.left === 0
+                ? "hidden"
+                : "visible",
           }}
         >
           <CommentThread
