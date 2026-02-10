@@ -279,7 +279,6 @@ export const summaryFields: SummaryField[] = [
     sectionKey: SummarySectionKey.FeaturesAndDemographics,
     type: FieldType.Text,
   },
-
   // Other fields
   {
     isEditable: true,
