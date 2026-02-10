@@ -13,6 +13,11 @@ vi.mock("@api", () => ({
     reducer: vi.fn((state = {}) => state),
     middleware: vi.fn(() => (next: any) => (action: any) => next(action)),
   },
+  aiAPI: {
+    reducerPath: "aiAPI",
+    reducer: vi.fn((state = {}) => state),
+    middleware: vi.fn(() => (next: any) => (action: any) => next(action)),
+  },
 }));
 
 // Mock the user reducer

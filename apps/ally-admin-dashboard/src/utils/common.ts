@@ -331,3 +331,34 @@ export const validateTime = (timeString: string): string => {
 
   return `${hours.toString().padStart(2, "0")}:${minutes.toString().padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`;
 };
+
+/**
+ * Converts a camelCase string to snake_case
+ * @param str - camelCase string (e.g., "voiceId")
+ * @returns snake_case string (e.g., "voice_id")
+ */
+export const camelToSnakeCase = (str: string): string => {
+  return str.replace(/[A-Z]/g, letter => `_${letter.toLowerCase()}`);
+};
+
+/**
+ * Converts an object's keys from camelCase to snake_case
+ * Only includes properties that have defined values (not undefined)
+ * @param obj - Object with camelCase keys
+ * @returns New object with snake_case keys
+ */
+export const convertKeysToSnakeCase = <T extends Record<string, unknown>>(
+  obj: T | undefined,
+): Record<string, unknown> => {
+  if (!obj) return {};
+
+  return Object.entries(obj).reduce(
+    (acc, [key, value]) => {
+      if (value !== undefined) {
+        acc[camelToSnakeCase(key)] = value;
+      }
+      return acc;
+    },
+    {} as Record<string, unknown>,
+  );
+};
