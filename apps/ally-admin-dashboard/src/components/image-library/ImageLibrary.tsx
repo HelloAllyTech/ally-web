@@ -1,7 +1,8 @@
-import { FC } from "react";
+import { FC, useState } from "react";
 
 import { CustomImage } from "@ally-ui-mono/ui-shared/index";
 import { useGetImageLibraryQuery } from "@api";
+import { CheckCircle } from "@assets";
 import { Button } from "@components";
 import { ButtonVariant } from "@components/types";
 import { en } from "@constants";
@@ -14,21 +15,19 @@ interface ImageLibraryProps {
 const IMAGE_LIBRARY_LIMIT = 100;
 
 export const ImageLibrary: FC<ImageLibraryProps> = ({ isOpen, onClose, onSelect }) => {
-  // const [selectedImage, setSelectedImage] = useState<boolean>(false);
-
+  const [selectedImage, setSelectedImage] = useState<string>("");
   const { data } = useGetImageLibraryQuery(
     { limit: IMAGE_LIBRARY_LIMIT, offset: 0 },
     { skip: !isOpen },
   );
-  const images = Array.isArray(data) ? data : ((data as { data?: unknown[] })?.data ?? []);
+  const images = Array.isArray(data) ? data : [];
 
-  const handleImageSelect = (imageUrl: string) => {
-    if (imageUrl) {
-      onSelect(imageUrl);
+  const handleImageSelect = () => {
+    if (selectedImage) {
+      onSelect(selectedImage);
       onClose();
     }
   };
-
   if (!isOpen) return null;
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
@@ -48,15 +47,15 @@ export const ImageLibrary: FC<ImageLibraryProps> = ({ isOpen, onClose, onSelect 
                 <button
                   key={`${img.coverImageUrl}-${index}`}
                   type="button"
-                  // onClick={() => setSelectedImage(true)}
+                  onClick={() => setSelectedImage(img.coverImageUrl)}
                   className="flex items-center justify-center rounded-md overflow-hidden relative"
                 >
-                  {/* <div
+                  <div
                     className={`absolute inset-0 flex items-center justify-center bg-black/40 transition-opacity duration-200 
-                    ${selectedImage ? "opacity-100" : "opacity-0"}`}
+                    ${selectedImage === img.coverImageUrl ? "opacity-100" : "opacity-0"}`}
                   >
-                   TODO: Add tick icon to select image
-                  </div> */}
+                    <CheckCircle />
+                  </div>
                   <CustomImage
                     src={img.coverImageUrl}
                     alt="Library image"
@@ -76,7 +75,7 @@ export const ImageLibrary: FC<ImageLibraryProps> = ({ isOpen, onClose, onSelect 
           </Button>
           <Button
             variant={ButtonVariant.PRIMARY}
-            onClick={() => handleImageSelect(img.coverImageUrl)}
+            onClick={() => handleImageSelect()}
             className="!text-base !text-white"
           >
             {en.simulation.selectImage}

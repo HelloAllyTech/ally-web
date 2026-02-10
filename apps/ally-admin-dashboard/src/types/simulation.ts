@@ -33,9 +33,9 @@ export interface UseLiveKitRoomReturn {
 }
 
 export interface stateInstruction {
-  states: string;
+  stateId: number;
   instruction: string;
-  dialogue: string;
+  dialogues: string[];
 }
 
 export interface SimulationInput {

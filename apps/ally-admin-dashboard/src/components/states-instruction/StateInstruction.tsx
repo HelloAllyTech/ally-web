@@ -14,9 +14,16 @@ export const StateInstruction: FC<StateInstructionProps> = ({ formMethods, id })
 
   const tableData = formData.length > 0 ? formData : DEFAULT_STATE_INSTRUCTIONS;
 
-  const handleRowChange = (rowIndex: number, key: string, value: string) => {
+  const handleRowChange = (rowIndex: number, key: string, value: string | string[]) => {
+    const valueToSet =
+      key === "dialogues"
+        ? (value as string)
+            .split("\n")
+            .map(s => s.trim())
+            .filter(Boolean)
+        : value;
     const updatedArray = tableData.map((row, index) =>
-      index === rowIndex ? { ...row, [key]: value } : row,
+      index === rowIndex ? { ...row, [key]: valueToSet } : row,
     );
     formMethods.setValue(id, updatedArray);
   };
