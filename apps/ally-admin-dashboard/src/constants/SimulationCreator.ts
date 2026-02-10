@@ -415,6 +415,7 @@ export const SIMULATION_CREATOR_FIELD_GROUPS_OLD: CreatorFieldGroups[] = [
 ];
 
 export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
+  //TODO: uncomment these fields once the fields are added to the API
   {
     id: SIMULATION_CREATOR_STEP_IDS.overview,
     label: "Overview",
@@ -428,13 +429,13 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
         fullWidth: true,
         maxLength: 100,
       },
-      {
-        id: "pickCompetency",
-        label: "Pick Competency",
-        type: FORM_FIELD_TYPES.SELECT,
-        options: [],
-        isMandatory: false,
-      },
+      // {
+      //   id: "pickCompetency",
+      //   label: "Pick Competency",
+      //   type: FORM_FIELD_TYPES.SELECT,
+      //   options: [],
+      //   isMandatory: false,
+      // },
       {
         id: "difficultyLevel",
         label: "Difficulty Level",
@@ -449,17 +450,17 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
         isMandatory: false,
         fullWidth: true,
       },
-      {
-        id: "characterProfile",
-        label: "Character profile text",
-        type: FORM_FIELD_TYPES.TEXT,
-        multiline: true,
-        fullWidth: true,
-        maxLength: 2500,
-        isMandatory: false,
-        regenerate: false, // TODO: Remove this once the character profile text is regenerated
-        isDashedLineAbove: true,
-      },
+      // {
+      //   id: "characterProfile",
+      //   label: "Character profile text",
+      //   type: FORM_FIELD_TYPES.TEXT,
+      //   multiline: true,
+      //   fullWidth: true,
+      //   maxLength: 2500,
+      //   isMandatory: false,
+      //   regenerate: false, // TODO: Remove this once the character profile text is regenerated
+      //   isDashedLineAbove: true,
+      // },
       {
         id: "coverImageUrl",
         label: "Cover Image",
@@ -631,12 +632,12 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
         defaultValue: "00:10:00",
         note: "Range 00:00:01 - 01:30:00",
       },
-      {
-        id: "score",
-        label: "Score",
-        type: FORM_FIELD_TYPES.TOGGLE_BUTTON,
-        fullWidth: true,
-      },
+      // {
+      //   id: "score",
+      //   label: "Score",
+      //   type: FORM_FIELD_TYPES.TOGGLE_BUTTON,
+      //   fullWidth: true,
+      // },
     ] as FormFieldConfig[],
   },
 ];
@@ -952,14 +953,25 @@ export const BEHAVIOURS_INSTRUCTION_TABLE_COLUMNS = [
 ];
 
 export const STATES_INSTRUCTION_TABLE_HEADERS = [
-  { key: "states", header: "States", editable: false },
+  {
+    key: "stateId",
+    header: "States",
+    editable: false,
+    format: (value: any) => (typeof value === "number" ? `State ${value}` : String(value ?? "")),
+  },
   { key: "instruction", header: "Instruction", editable: true },
-  { key: "dialogue", header: "Dialogue", editable: true },
+  {
+    key: "dialogues",
+    header: "Dialogues",
+    editable: true,
+    getEditableValue: (value: any) =>
+      Array.isArray(value) ? value.filter(Boolean).join("\n") : String(value ?? ""),
+  },
 ];
 
 export const DEFAULT_STATE_INSTRUCTIONS = [
-  { states: "State 1", instruction: "", dialogue: "" },
-  { states: "State 2", instruction: "", dialogue: "" },
-  { states: "State 3", instruction: "", dialogue: "" },
-  { states: "State 4", instruction: "", dialogue: "" },
+  { stateId: 1, instruction: "", dialogues: [] },
+  { stateId: 2, instruction: "", dialogues: [] },
+  { stateId: 3, instruction: "", dialogues: [] },
+  { stateId: 4, instruction: "", dialogues: [] },
 ];

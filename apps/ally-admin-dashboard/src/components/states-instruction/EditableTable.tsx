@@ -5,6 +5,7 @@ export interface EditableColumn {
   header: string;
   editable?: boolean;
   width?: string | number;
+  format?: (value: unknown) => string;
 }
 
 export interface EditableTableProps {
@@ -27,7 +28,7 @@ export const EditableTable = ({
   }, [data]);
 
   const handleInputChange = (
-    e: React.ChangeEvent<HTMLInputElement>,
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
     rowIndex: number,
     key: string,
   ) => {
@@ -35,12 +36,15 @@ export const EditableTable = ({
     setRows(prev =>
       prev.map((row, index) => (index === rowIndex ? { ...row, [key]: value } : row)),
     );
+  };
+
+  const handleBlur = (rowIndex: number, key: string, value: any) => {
     onRowChange?.(rowIndex, key, value);
   };
 
   return (
     <div className={`w-full overflow-x-auto rounded-lg border border-gray-200 ${className}`}>
-      <table className="w-full min-w-full border-collapse text-left text-sm">
+      <table className="w-full min-w-full table-auto border-collapse text-left text-sm">
         <thead>
           <tr>
             {columns.map(col => (
@@ -60,17 +64,22 @@ export const EditableTable = ({
               {columns.map(column => (
                 <td
                   key={`${rowIndex}-${column.key}`}
-                  className="border-b border-r border-gray-200 p-0 last:border-r-0"
+                  className="border-b border-r border-gray-200 p-0 last:border-r-0 align-top"
                 >
                   {column.editable ? (
-                    <input
-                      type="text"
+                    <textarea
                       value={row[column.key] ?? ""}
                       onChange={e => handleInputChange(e, rowIndex, column.key)}
-                      className="w-full min-h-[40px] border-0 bg-transparent px-4 py-2.5 outline-none"
+                      onBlur={() => handleBlur(rowIndex, column.key, row[column.key])}
+                      rows={3}
+                      className="w-full min-h-[40px] overflow-y-auto custom-scrollbar border-0 bg-transparent px-4 py-2.5 outline-none"
                     />
                   ) : (
-                    <span className="px-4 py-2.5 text-gray-900">{row[column.key] ?? ""}</span>
+                    <span className="block px-4 py-2.5 text-gray-900 whitespace-pre-wrap break-words">
+                      {column.format
+                        ? column.format(row[column.key])
+                        : String(row[column.key] ?? "")}
+                    </span>
                   )}
                 </td>
               ))}

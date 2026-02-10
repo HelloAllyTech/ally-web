@@ -153,8 +153,14 @@ export const CreateSimulation: FC = () => {
       }
     }
 
-    const { openingStatements, triggerWarningIds, customFields, agentDialogues, ...restForm } =
-      formData;
+    const {
+      openingStatements,
+      triggerWarningIds,
+      customFields,
+      agentDialogues,
+      stateInstructions,
+      ...restForm
+    } = formData;
 
     const openingStatementsArray = isNonEmptyString(openingStatements)
       ? openingStatements
@@ -199,6 +205,7 @@ export const CreateSimulation: FC = () => {
       customFields: customFieldGroupList,
       triggerWarningIds: triggerWarning,
       status,
+      ...(FEATURE_FLAGS_MAP.ADDITIONAL_CONFIG_FLAG && { stateInstructions }),
     };
 
     // Default experienceMode to FEEDBACK if not selected
