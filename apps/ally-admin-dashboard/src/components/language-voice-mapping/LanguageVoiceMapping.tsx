@@ -1,16 +1,31 @@
 import { FC, useCallback, useEffect, useMemo, useRef, useState } from "react";
 
+import { toast } from "sonner";
+
 import { FEATURE_FLAGS_MAP } from "@ally-ui-mono/ui-shared/featureFlag";
-import { useGetAvailableLanguageVoicesQuery } from "@api";
+import { useGetAvailableLanguageVoicesQuery, useGetPreviewVoiceMutation } from "@api";
 import { DropdownField } from "@components";
 import { en } from "@constants";
 import { BlackTick, PauseIcon, PlayIcon } from "@src/assets";
-import { isObject } from "@utils";
+import { convertKeysToSnakeCase } from "@utils";
 
 interface VoiceOption {
   id: string;
   name: string;
   provider?: string;
+  config?: {
+    voiceProvider?: string;
+    languageCode?: string;
+    voiceId?: string;
+    voice_name?: string;
+    model?: string;
+    speaker?: string;
+    name?: string;
+    gender?: string;
+    instantMode?: boolean;
+  };
+  text?: string;
+  language_code?: string;
 }
 
 interface LanguageOption {
@@ -45,6 +60,7 @@ export const LanguageVoiceMapping: FC<LanguageVoiceMappingProps> = ({
   formMethods,
   isMandatory,
 }) => {
+  const [getPreviewVoice] = useGetPreviewVoiceMutation();
   const { data: availableLanguages = [], isLoading: isLoadingAvailableLanguages } =
     useGetAvailableLanguageVoicesQuery({
       active: true,
@@ -55,31 +71,44 @@ export const LanguageVoiceMapping: FC<LanguageVoiceMappingProps> = ({
     };
 
   const {
-    getValues,
     setError,
     clearErrors,
+    watch,
     formState: { errors },
   } = formMethods;
 
-  const audioRef = useRef<HTMLAudioElement>(null);
-  const hasStartedPlayingRef = useRef(false);
-  const [languageVoices] = useState<Record<string, string>>(() => {
-    const value = getValues?.(id);
-    if (isObject(value)) {
-      // Filter out any empty values from the initial state
-      return Object.fromEntries(
-        Object.entries(value as Record<string, string>).filter(([v]) => !!v), // Only keep non-empty values
-      );
-    }
-    return {};
-  });
+  // Watch the form value to get real-time updates when selection changes
+  const languageVoices = watch(id) ?? {};
   const [playingVoice, setPlayingVoice] = useState<string | null>(null);
-  const [audioUrl, setAudioUrl] = useState<string | null>(null);
   const [isAudioLoading, setIsAudioLoading] = useState(false);
+  const [voicePreviewCache, setVoicePreviewCache] = useState<Record<string, ArrayBuffer>>({});
+  const audioSourceRef = useRef<AudioBufferSourceNode | null>(null);
   const languages: LanguageOption[] = availableLanguages ?? [];
 
   const [showAll, setShowAll] = useState(false);
 
+  const playAudio = useCallback(async (audioData: ArrayBuffer) => {
+    // Stop the currently playing audio if any
+    if (audioSourceRef.current) {
+      // Remove onended handler to prevent it from setting playingVoice to null
+      audioSourceRef.current.onended = null;
+      audioSourceRef.current.stop();
+      audioSourceRef.current = null;
+    }
+
+    const audioContext = new AudioContext();
+    const decoded = await audioContext.decodeAudioData(audioData.slice(0));
+    const source = audioContext.createBufferSource();
+    source.buffer = decoded;
+    source.connect(audioContext.destination);
+    source.onended = () => {
+      setPlayingVoice(null);
+      audioSourceRef.current = null;
+    };
+    source.start();
+    audioSourceRef.current = source;
+    setIsAudioLoading(false);
+  }, []);
   const visibleLanguages = useMemo(() => {
     if (showAll) return languages;
     return languages.slice(0, 5);
@@ -93,6 +122,9 @@ export const LanguageVoiceMapping: FC<LanguageVoiceMappingProps> = ({
       return language.voices.map(voice => ({
         value: voice.id,
         label: voice.provider ? `${voice.name}  (${voice.provider})` : voice.name,
+        provider: voice.provider,
+        config: voice.config,
+        text: voice.text,
       }));
     },
     [languages],
@@ -103,32 +135,58 @@ export const LanguageVoiceMapping: FC<LanguageVoiceMappingProps> = ({
       const options = getOptionsForLanguage(languageId);
       const selectedVoiceId = languageVoices?.[languageId] ?? "";
 
-      const handlePlay = (voiceId: string) => {
-        hasStartedPlayingRef.current = false;
-        setIsAudioLoading(true);
+      const handlePlay = async (voiceId: string) => {
+        // Stop the currently playing audio immediately
+        if (audioSourceRef.current) {
+          audioSourceRef.current.onended = null;
+          audioSourceRef.current.stop();
+          audioSourceRef.current = null;
+        }
+
         setPlayingVoice(voiceId);
-        setAudioUrl(
-          `http://commondatastorage.googleapis.com/codeskulptor-demos/DDR_assets/Kangaroo_MusiQue_-_The_Neverwritten_Role_Playing_Game.mp3`,
-        );
-      };
 
-      const handlePause = () => {
-        hasStartedPlayingRef.current = false;
-        setIsAudioLoading(false);
-        setPlayingVoice(null);
-        audioRef.current?.pause();
-      };
+        // Check if we have cached data for this voiceId
+        const cachedAudio = voicePreviewCache[voiceId];
+        if (cachedAudio) {
+          playAudio(cachedAudio);
+          return;
+        }
 
-      const handleAudioReady = () => {
-        if (audioRef.current && !hasStartedPlayingRef.current) {
-          hasStartedPlayingRef.current = true;
+        // If not cached, fetch from API
+        setIsAudioLoading(true);
+        const voice = options.find(opt => opt.value === voiceId);
+        const voiceConfig = { ...voice?.config };
+        delete voiceConfig.languageCode;
+        const config = convertKeysToSnakeCase(voiceConfig);
+
+        try {
+          const result = await getPreviewVoice({
+            provider: voice?.provider ?? "",
+            config,
+            language_code: language.value ?? "",
+          }).unwrap();
+
+          // Cache the result and play
+          setVoicePreviewCache(prev => ({
+            ...prev,
+            [voiceId]: result,
+          }));
+          playAudio(result);
+        } catch {
           setIsAudioLoading(false);
-          audioRef.current.currentTime = 0;
-          audioRef.current.play();
+          setPlayingVoice(null);
+          toast.error("Failed to load voice preview");
         }
       };
 
-      const renderOption = (option: { value: string; label: string }) => {
+      const handlePause = () => {
+        setPlayingVoice(null);
+      };
+
+      const renderOption = (
+        option: { value: string; label: string },
+        onSelect: (value: string) => void,
+      ) => {
         const isCurrentVoice = playingVoice === option.value;
         const isLoading = isCurrentVoice && isAudioLoading;
         const isPlaying = isCurrentVoice && !isAudioLoading;
@@ -137,31 +195,29 @@ export const LanguageVoiceMapping: FC<LanguageVoiceMappingProps> = ({
           <div
             key={option.value}
             className="px-3 w-full py-2 text-sm cursor-pointer flex justify-between transition-colors"
+            onClick={() => onSelect(option.value)}
           >
             <span>{option.label}</span>
             <div className="relative w-1/2 h-6 flex items-center justify-end gap-2">
               {selectedVoiceId === option.value && <BlackTick className="min-w-6 h-6 " />}
-              {isCurrentVoice && (
-                <audio
-                  className="absolute top-0 left-0 w-full h-full hidden"
-                  ref={audioRef}
-                  src={audioUrl}
-                  onCanPlayThrough={handleAudioReady}
-                  onEnded={() => {
-                    hasStartedPlayingRef.current = false;
-                    setIsAudioLoading(false);
-                    setPlayingVoice(null);
-                  }}
-                />
-              )}
               {isLoading ? (
-                <div className="w-6 h-6 border-2 border-gray-300 border-typography-800 rounded-full animate-spin" />
+                <div className="w-6 h-6 border-2 border-gray-300 border-t-typography-800 rounded-full animate-spin" />
               ) : isPlaying ? (
-                <button onClick={() => handlePause()}>
+                <button
+                  onClick={e => {
+                    e.stopPropagation();
+                    handlePause();
+                  }}
+                >
                   <PauseIcon className="w-6 h-6" />
                 </button>
               ) : (
-                <button onClick={() => handlePlay(option.value)}>
+                <button
+                  onClick={e => {
+                    e.stopPropagation();
+                    handlePlay(option.value);
+                  }}
+                >
                   <PlayIcon className="w-6 h-6" />
                 </button>
               )}
@@ -201,8 +257,10 @@ export const LanguageVoiceMapping: FC<LanguageVoiceMappingProps> = ({
     languageVoices,
     visibleLanguages,
     playingVoice,
-    audioUrl,
     isAudioLoading,
+    getPreviewVoice,
+    voicePreviewCache,
+    playAudio,
   ]);
 
   useEffect(() => {

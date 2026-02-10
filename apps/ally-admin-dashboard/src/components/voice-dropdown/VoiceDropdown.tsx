@@ -17,7 +17,7 @@ export const VoiceDropdown: React.FC<VoiceDropdownProps> = ({
   formMethods,
   isMandatory,
 }) => {
-  const { data } = useGetScenarioVoicesQuery();
+  const { data } = useGetScenarioVoicesQuery({});
 
   const {
     formState: { errors },

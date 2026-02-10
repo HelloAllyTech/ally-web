@@ -14,6 +14,8 @@ export enum SummaryFieldKey {
   Languages = "languages",
   Location = "location",
   CodeOfConcern = "codeOfConcern",
+  Counsellor = "counsellor",
+  NewCallFollowUp = "newCallFollowUp",
 
   // Other fields
   SessionSummary = "sessionSummary",
@@ -34,6 +36,7 @@ export enum SummaryFieldKey {
   ListeningShare = "listeningShare",
   ReflectiveQuestionsAsked = "reflectiveQuestionsAsked",
   EmotionalLift = "emotionalLift",
+  OpenEndedQuestionsAsked = "openEndedQuestionsAsked",
 
   // Intake section
   IntakeNotes = "intakeNotes",
