@@ -207,7 +207,7 @@ export const CharacterSidePanel: React.FC<CharacterSidePanelProps> = ({
                 placeholder="Enter age"
                 min="0"
                 max="150"
-                className="w-full px-0 py-2 text-base border-none focus:outline-none"
+                className="min-w-[60px] px-0 py-2 text-base border-none focus:outline-none"
               />
             </Field>
 
