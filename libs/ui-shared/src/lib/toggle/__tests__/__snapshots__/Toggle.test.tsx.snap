@@ -13,13 +13,13 @@ exports[`Toggle Component > Snapshot Tests > should match snapshot with default 
         style="left: 0px; box-shadow: 3px 0px 9px 0px #00000012;"
       />
       <div
-        class="rounded-full cursor-pointer z-10 transition-all duration-200 font-primary"
+        class="rounded-full py-2 px-4 cursor-pointer z-10 transition-all duration-200 font-primary"
         style="color: rgb(0, 0, 0);"
       >
         Option A
       </div>
       <div
-        class="rounded-full cursor-pointer z-10 transition-all duration-200 font-primary"
+        class="rounded-full py-2 px-4 cursor-pointer z-10 transition-all duration-200 font-primary"
         style="color: rgba(0, 0, 0, 0.376);"
       >
         Option B
@@ -42,13 +42,13 @@ exports[`Toggle Component > Snapshot Tests > should match snapshot with differen
         style="left: 0px; box-shadow: 3px 0px 9px 0px #00000012;"
       />
       <div
-        class="rounded-full cursor-pointer z-10 transition-all duration-200 font-primary"
+        class="rounded-full py-2 px-4 cursor-pointer z-10 transition-all duration-200 font-primary"
         style="color: rgb(0, 0, 0);"
       >
         Public
       </div>
       <div
-        class="rounded-full cursor-pointer z-10 transition-all duration-200 font-primary"
+        class="rounded-full py-2 px-4 cursor-pointer z-10 transition-all duration-200 font-primary"
         style="color: rgba(0, 0, 0, 0.376);"
       >
         Private
@@ -74,13 +74,13 @@ exports[`Toggle Component > Snapshot Tests > should match snapshot with label 1`
         style="left: 0px; box-shadow: 3px 0px 9px 0px #00000012;"
       />
       <div
-        class="rounded-full cursor-pointer z-10 transition-all duration-200 font-primary"
+        class="rounded-full py-2 px-4 cursor-pointer z-10 transition-all duration-200 font-primary"
         style="color: rgb(0, 0, 0);"
       >
         Option A
       </div>
       <div
-        class="rounded-full cursor-pointer z-10 transition-all duration-200 font-primary"
+        class="rounded-full py-2 px-4 cursor-pointer z-10 transition-all duration-200 font-primary"
         style="color: rgba(0, 0, 0, 0.376);"
       >
         Option B
@@ -103,13 +103,13 @@ exports[`Toggle Component > Snapshot Tests > should match snapshot with second i
         style="left: 50%; box-shadow: -7px 0px 9px 0px #00000012;"
       />
       <div
-        class="rounded-full cursor-pointer z-10 transition-all duration-200 font-primary"
+        class="rounded-full py-2 px-4 cursor-pointer z-10 transition-all duration-200 font-primary"
         style="color: rgba(0, 0, 0, 0.376);"
       >
         Option A
       </div>
       <div
-        class="rounded-full cursor-pointer z-10 transition-all duration-200 font-primary"
+        class="rounded-full py-2 px-4 cursor-pointer z-10 transition-all duration-200 font-primary"
         style="color: rgb(0, 0, 0);"
       >
         Option B

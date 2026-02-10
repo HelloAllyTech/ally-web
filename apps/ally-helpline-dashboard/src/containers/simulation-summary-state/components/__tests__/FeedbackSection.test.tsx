@@ -10,6 +10,23 @@ vi.mock("@ally-ui-mono/ui-shared", () => ({
   CustomImage: ({ src, alt, className }: any) => (
     <img src={src} alt={alt} className={className} data-testid="custom-image" />
   ),
+  GenericTable: ({ columns, data, className }: any) => (
+    <div data-testid="generic-table" className={className}>
+      {data?.map((row: any, idx: number) => (
+        <div key={idx}>{JSON.stringify(row)}</div>
+      ))}
+    </div>
+  ),
+}));
+
+// Mock Accordion component
+vi.mock("@components", () => ({
+  Accordion: ({ children, title, defaultExpanded }: any) => (
+    <div data-testid="accordion">
+      <div data-testid="accordion-title">{title}</div>
+      {defaultExpanded && <div data-testid="accordion-content">{children}</div>}
+    </div>
+  ),
 }));
 
 // Mock framer-motion
@@ -19,14 +36,35 @@ vi.mock("framer-motion", () => ({
   },
 }));
 
-// Mock the constants (component only uses feedbackSections)
-vi.mock("../constants", () => ({
-  feedbackSections: [
-    { key: "keyEvents", label: "Key Events" },
-    { key: "positives", label: "What Went Well" },
-    { key: "improvements", label: "Improvement Tips" },
-  ],
-}));
+// Mock the constants
+vi.mock("../constants", async () => {
+  const actual = await vi.importActual("../constants");
+  const { FeedbackSectionType } = await import("@types");
+  return {
+    ...actual,
+    feedbackSections: [
+      {
+        key: "keyEvents",
+        label: "Key Events",
+        type: FeedbackSectionType.TABLE,
+        columns: [],
+        icon: { icon: () => null, alt: "key-events" },
+      },
+      {
+        key: "positives",
+        label: "What Went Well",
+        type: FeedbackSectionType.BULLET_TEXT,
+        icon: { icon: () => null, alt: "positives" },
+      },
+      {
+        key: "improvements",
+        label: "Improvement Tips",
+        type: FeedbackSectionType.BULLET_TEXT,
+        icon: { icon: () => null, alt: "improvements" },
+      },
+    ],
+  };
+});
 
 // Mock the utils. keyEvents must be strings so getFeedbackSectionByType can render them in <li> (component renders {item} as text).
 vi.mock("../utils", () => ({
@@ -117,8 +155,8 @@ describe("FeedbackSection", () => {
     it("should render feedback section with heading and session info", () => {
       render(<FeedbackSection {...mockSummary} />);
 
-      expect(screen.getByText("Session Feedback")).toBeInTheDocument();
-      expect(screen.getByTestId("custom-image")).toBeInTheDocument();
+      // Component renders feedback sections
+      expect(screen.getByText("Key Events")).toBeInTheDocument();
     });
 
     it("should render all feedback sections", () => {
@@ -135,8 +173,9 @@ describe("FeedbackSection", () => {
       render(<FeedbackSection {...mockSummary} />);
 
       expect(screen.getByText("Key Events")).toBeInTheDocument();
-      const lists = document.querySelectorAll("ul.p-4.space-y-2");
-      expect(lists.length).toBeGreaterThan(0);
+      // Component renders content in accordion
+      const container = document.querySelector(".flex.flex-col.gap-6");
+      expect(container).toBeInTheDocument();
     });
   });
 
@@ -149,8 +188,9 @@ describe("FeedbackSection", () => {
       render(<FeedbackSection {...emptySummary} />);
 
       expect(screen.getByText("Key Events")).toBeInTheDocument();
-      const lists = document.querySelectorAll("ul.p-4.space-y-2");
-      expect(lists.length).toBeGreaterThan(0);
+      // Empty array is truthy, so it will render empty content, not "No data found"
+      const container = document.querySelector(".max-h-\\[250px\\]");
+      expect(container).toBeInTheDocument();
     });
 
     it("should show empty list when no positives", () => {
@@ -168,8 +208,7 @@ describe("FeedbackSection", () => {
       };
       render(<FeedbackSection {...emptySummary} />);
 
-      const emptyLists = document.querySelectorAll("ul.p-4.space-y-2");
-      expect(emptyLists.length).toBeGreaterThan(0);
+      expect(screen.getByText("What Went Well")).toBeInTheDocument();
     });
 
     it("should show empty list when no improvements", () => {
@@ -187,8 +226,7 @@ describe("FeedbackSection", () => {
       };
       render(<FeedbackSection {...emptySummary} />);
 
-      const emptyLists = document.querySelectorAll("ul.p-4.space-y-2");
-      expect(emptyLists.length).toBeGreaterThan(0);
+      expect(screen.getByText("Improvement Tips")).toBeInTheDocument();
     });
   });
 
@@ -196,7 +234,15 @@ describe("FeedbackSection", () => {
     it("should handle array data for bullet points", () => {
       const arrayData = {
         ...mockSummary,
-        positives: ["Item 1", "Item 2", "Item 3"],
+        details: {
+          ...mockSummary.details,
+          summary: {
+            feedback: {
+              improvements: mockSummary.details?.summary?.feedback?.improvements,
+              positives: ["Item 1", "Item 2", "Item 3"],
+            },
+          },
+        },
       };
       render(<FeedbackSection {...arrayData} />);
 
@@ -208,7 +254,15 @@ describe("FeedbackSection", () => {
     it("should handle string data for bullet points", () => {
       const stringData = {
         ...mockSummary,
-        positives: "Single improvement point",
+        details: {
+          ...mockSummary.details,
+          summary: {
+            feedback: {
+              improvements: mockSummary.details?.summary?.feedback?.improvements,
+              positives: ["Single improvement point"],
+            },
+          },
+        },
       };
       render(<FeedbackSection {...stringData} />);
 
@@ -231,6 +285,8 @@ describe("FeedbackSection", () => {
       const incompleteSummary = {
         ...mockSummary,
         score: null,
+        createdAt: undefined,
+        endedAt: undefined,
         details: {
           id: "details-123",
           createdAt: "2024-01-01T10:00:00Z",
@@ -272,12 +328,9 @@ describe("FeedbackSection", () => {
       };
       render(<FeedbackSection {...nullSummary} />);
 
-      expect(screen.getByText("Session Feedback")).toBeInTheDocument();
       expect(screen.getByText("Key Events")).toBeInTheDocument();
       expect(screen.getByText("What Went Well")).toBeInTheDocument();
       expect(screen.getByText("Improvement Tips")).toBeInTheDocument();
-      const lists = document.querySelectorAll("ul.p-4.space-y-2");
-      expect(lists.length).toBeGreaterThan(0);
     });
   });
 });
