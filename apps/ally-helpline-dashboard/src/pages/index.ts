@@ -3,6 +3,7 @@ export * from "./analytics/Analytics";
 export * from "./audio-call/AudioCall";
 export * from "./auth/Login";
 export * from "./calls/Calls";
+export * from "./calls/Archives";
 export * from "./calendar/Calendar";
 export * from "./health-check/Health";
 export * from "./learn/Learn";

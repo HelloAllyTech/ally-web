@@ -270,7 +270,7 @@ export const NotionTable = ({
                     <div
                       key={cellKey}
                       {...restCellProps}
-                      className="relative flex items-center w-full px-3 py-[7px] border-r border-border-light"
+                      className="relative flex items-center w-full px-3 py-[7px] border-r border-border-light group"
                       style={{
                         backgroundColor: cell.column.id === "score" && cell.value.color,
                         width: isSelectionColumn(cell.column.id)
@@ -286,7 +286,7 @@ export const NotionTable = ({
                     >
                       {onRowClick && cellIndex === 1 && isEditable && (
                         <button
-                          className="absolute p-1 bg-white border-[1px] border-border-light shadow-md rounded-[3px] z-10 top-[12px] right-[10px] opacity-0 hover:opacity-100"
+                          className="absolute ml-auto p-1 bg-white border-[1px] border-border-light shadow-md rounded-[3px] z-10 right-[6px] opacity-0 group-hover:opacity-100 transition-opacity"
                           onClick={() => onRowClick(rowIndex)}
                         >
                           <DockToRight />

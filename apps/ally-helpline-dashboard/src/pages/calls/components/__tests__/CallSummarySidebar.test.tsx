@@ -1,7 +1,7 @@
 import React from "react";
 
 import { configureStore } from "@reduxjs/toolkit";
-import { render, screen, fireEvent, waitFor, act } from "@testing-library/react";
+import { render, screen, fireEvent, waitFor, act, within } from "@testing-library/react";
 import { Provider, useSelector } from "react-redux";
 import { BrowserRouter } from "react-router-dom";
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
@@ -44,12 +44,15 @@ vi.mock("@api", () => ({
   useUpdateCallSummaryMutation: vi.fn(() => [vi.fn()]),
   useDeleteCallSummaryMutation: vi.fn(() => [vi.fn()]),
   useDeleteCallLogMutation: vi.fn(() => [vi.fn()]),
+  useArchiveCallLogMutation: vi.fn(() => [vi.fn(), { isLoading: false }]),
 }));
 
 // Mock assets
 vi.mock("@assets", () => ({
   Download: () => <div data-testid="download-icon">Download</div>,
   Delete: () => <div data-testid="delete-icon">Delete</div>,
+  Archive: () => <div data-testid="archive-icon">Archive</div>,
+  Unarchive: () => <div data-testid="unarchive-icon">Unarchive</div>,
   Carousel1: "Carousel1",
   Carousel2: "Carousel2",
   Carousel3: "Carousel3",
@@ -536,14 +539,23 @@ describe("CallSummarySidebar Component", () => {
     it("should render delete dialog", () => {
       renderComponent();
 
-      expect(screen.getByTestId("confirmation-dialog")).toBeInTheDocument();
-      expect(screen.getByTestId("confirmation-title")).toHaveTextContent("Delete Session log?");
+      // Find the delete confirmation dialog by its title
+      const deleteDialogTitle = screen.getByText("Delete Session log?");
+      const deleteDialog = deleteDialogTitle.closest('[data-testid="confirmation-dialog"]');
+
+      expect(deleteDialog).toBeInTheDocument();
+      expect(deleteDialogTitle).toHaveTextContent("Delete Session log?");
     });
 
     it("should handle delete confirmation", () => {
       const { mockRefetchCallLogs, mockSetCallSummary } = renderComponent();
 
-      const deleteButton = screen.getByTestId("confirm-button");
+      // Find the delete confirmation dialog by its title
+      const deleteDialogTitle = screen.getByText("Delete Session log?");
+      const deleteDialog = deleteDialogTitle.closest('[data-testid="confirmation-dialog"]');
+
+      // Find the confirm button within the delete dialog
+      const deleteButton = within(deleteDialog as HTMLElement).getByTestId("confirm-button");
       fireEvent.click(deleteButton);
 
       // Just verify the button click works without checking mock calls
@@ -554,11 +566,16 @@ describe("CallSummarySidebar Component", () => {
     it("should handle delete cancellation", () => {
       renderComponent();
 
-      const cancelButton = screen.getByTestId("cancel-button");
+      // Find the delete confirmation dialog by its title
+      const deleteDialogTitle = screen.getByText("Delete Session log?");
+      const deleteDialog = deleteDialogTitle.closest('[data-testid="confirmation-dialog"]');
+
+      // Find the cancel button within the delete dialog
+      const cancelButton = within(deleteDialog as HTMLElement).getByTestId("cancel-button");
       fireEvent.click(cancelButton);
 
       // Dialog should still be rendered but closed
-      expect(screen.getByTestId("confirmation-dialog")).toBeInTheDocument();
+      expect(deleteDialog).toBeInTheDocument();
     });
   });
 
@@ -748,15 +765,21 @@ describe("CallSummarySidebar Component", () => {
       renderComponent();
 
       expect(screen.getByTestId("close-sidebar")).toBeInTheDocument();
-      expect(screen.getByTestId("confirm-button")).toBeInTheDocument();
-      expect(screen.getByTestId("cancel-button")).toBeInTheDocument();
+      // Both delete and archive dialogs have confirm and cancel buttons
+      const confirmButtons = screen.getAllByTestId("confirm-button");
+      const cancelButtons = screen.getAllByTestId("cancel-button");
+      expect(confirmButtons.length).toBeGreaterThanOrEqual(1);
+      expect(cancelButtons.length).toBeGreaterThanOrEqual(1);
     });
 
     it("should have proper dialog structure", () => {
       renderComponent();
 
-      expect(screen.getByTestId("confirmation-dialog")).toBeInTheDocument();
-      expect(screen.getByTestId("confirmation-title")).toBeInTheDocument();
+      // Both delete and archive dialogs have confirmation dialogs
+      const confirmationDialogs = screen.getAllByTestId("confirmation-dialog");
+      const confirmationTitles = screen.getAllByTestId("confirmation-title");
+      expect(confirmationDialogs.length).toBeGreaterThanOrEqual(1);
+      expect(confirmationTitles.length).toBeGreaterThanOrEqual(1);
     });
   });
 });

@@ -46,6 +46,7 @@ vi.mock("@hooks", () => ({
       { id: "EVENT_MANAGEMENT", label: "Event Management", path: "/events" },
       { id: "SCENARIO_LANGUAGES", label: "Scenario Languages", path: "/manage-scenario-languages" },
       { id: "SCENARIO_VOICES", label: "Scenario Voices", path: "/manage-scenario-voices" },
+      { id: "PROMPTS", label: "Prompts", path: "/manage-prompts" },
       { id: "USER_MANAGEMENT", label: "User Management", path: "/users" },
     ],
   }),
@@ -58,6 +59,7 @@ vi.mock("@constants", () => ({
     EVENT_MANAGEMENT: "EVENT_MANAGEMENT",
     SCENARIO_VOICES: "SCENARIO_VOICES",
     SCENARIO_LANGUAGES: "SCENARIO_LANGUAGES",
+    PROMPTS: "PROMPTS",
   },
   ROUTES: {
     SIMULATION_STUDIO: "/simulation-studio",
@@ -67,6 +69,7 @@ vi.mock("@constants", () => ({
     MANAGE_EVENTS: "/events",
     MANAGE_SCENARIO_VOICES: "/manage-scenario-voices",
     MANAGE_SCENARIO_LANGUAGES: "/manage-scenario-languages",
+    MANAGE_PROMPTS: "/manage-prompts",
     LOGIN: "/login",
   },
   en: {
