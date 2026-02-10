@@ -182,6 +182,7 @@ describe("CommentThread Component", () => {
   const mockSetComments = vi.fn();
   const mockOnCommentChange = vi.fn();
   const mockSetThreadsOffset = vi.fn();
+  const mockOnAddComment = vi.fn();
 
   const defaultProps = {
     id: "thread-1",
@@ -194,6 +195,7 @@ describe("CommentThread Component", () => {
     onCommentChange: mockOnCommentChange,
     threadsOffset: 0,
     setThreadsOffset: mockSetThreadsOffset,
+    onAddComment: mockOnAddComment,
   };
 
   beforeEach(() => {
@@ -224,6 +226,7 @@ describe("CommentThread Component", () => {
         onCommentChange={mockOnCommentChange}
         threadsOffset={0}
         setThreadsOffset={mockSetThreadsOffset}
+        onAddComment={mockOnAddComment}
       />,
     );
     expect(asFragment()).toMatchSnapshot();
@@ -259,6 +262,7 @@ describe("CommentThread Component", () => {
           onCommentChange={mockOnCommentChange}
           threadsOffset={0}
           setThreadsOffset={mockSetThreadsOffset}
+          onAddComment={mockOnAddComment}
         />,
       );
       expect(screen.queryByTestId(/comment-card-/)).not.toBeInTheDocument();
@@ -483,7 +487,7 @@ describe("CommentThread Component", () => {
       renderWithProvider(<CommentThread {...defaultProps} />);
       const deleteButton = screen.getAllByTestId("delete-comment")[0];
       fireEvent.click(deleteButton);
-      expect(mockOnDeleteComment).toHaveBeenCalledWith(mockComments.length - 1);
+      expect(mockOnDeleteComment).toHaveBeenCalledWith(mockComments.length - 1, 1);
     });
   });
 

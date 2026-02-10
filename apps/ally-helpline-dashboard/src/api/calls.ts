@@ -144,6 +144,22 @@ const callsAPI = baseAPI.injectEndpoints({
         method: HttpMethod.DELETE,
       }),
     }),
+
+    /**
+     * Archives or unarchives a call log by id.
+     * @param {Object} params - Archive parameters
+     * @param {number} params.chatId - The id of the call/chat to archive/unarchive
+     * @param {boolean} params.archive - true to archive, false to unarchive
+     * @returns {Promise<any>} Success response
+     */
+    archiveCallLog: builder.mutation<any, { chatId: number; archive: boolean }>({
+      query: ({ chatId, archive }) => ({
+        url: ApiEndpoints.CALLS.ARCHIVE_CALL_LOG(chatId),
+        method: HttpMethod.PATCH,
+        body: { archive: archive },
+      }),
+      invalidatesTags: ["CallLogs", "CallSummary"],
+    }),
   }),
 });
 
@@ -157,4 +173,5 @@ export const {
   useCancelAudioUploadMutation,
   useDeleteCallLogMutation,
   useProcessAudioUploadMutation,
+  useArchiveCallLogMutation,
 } = callsAPI;

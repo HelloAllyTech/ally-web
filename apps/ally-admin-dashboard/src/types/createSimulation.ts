@@ -1,6 +1,7 @@
 import { UseFormReturn } from "react-hook-form";
 
-import { EventDetectionConfig } from "./detectionConfig";
+import { EventDetectionConfig } from "@src/types/detectionConfig";
+
 import { SessionEventDetectionData, triggerWarning, stateInstruction } from "./simulation";
 import { TriggerCondition } from "./triggerConditions";
 
@@ -240,4 +241,23 @@ export interface GetLanguagesQuery {
   sortBy?: string;
   order?: string;
   active?: boolean;
+}
+
+export interface Prompt {
+  id?: string;
+  name: string;
+  description: string;
+  promptCode: string;
+  prompt: string;
+  currentVersion?: number;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface GetPromptsQuery {
+  searchName?: string;
+  limit?: number;
+  offset?: number;
+  sortBy?: string;
+  order?: string;
 }

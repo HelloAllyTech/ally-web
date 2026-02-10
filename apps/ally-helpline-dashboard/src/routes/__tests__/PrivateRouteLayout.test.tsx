@@ -45,6 +45,7 @@ vi.mock("@assets", () => ({
 // Mock the pages
 vi.mock("@pages", () => ({
   Calls: () => <div data-testid="calls-page">Calls Page</div>,
+  Archives: () => <div data-testid="archives-page">Archives Page</div>,
   Analytics: () => <div data-testid="analytics-page">Analytics Page</div>,
   AudioCall: () => <div data-testid="audio-call-page">Audio Call Page</div>,
   PostCallSummary: () => <div data-testid="post-call-summary-page">Post Call Summary Page</div>,
