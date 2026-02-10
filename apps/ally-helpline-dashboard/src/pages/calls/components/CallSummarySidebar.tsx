@@ -3,7 +3,7 @@ import { FC, useEffect, useRef, useState } from "react";
 import { useSelector } from "react-redux";
 import { toast } from "sonner";
 
-import { logger } from "@ally-ui-mono/ui-shared";
+import { FEATURE_FLAGS_MAP, logger } from "@ally-ui-mono/ui-shared";
 import { useLazyExportCallSummaryQuery, useArchiveCallLogMutation } from "@api";
 import { Archive, Delete, Download, Unarchive } from "@assets";
 import { CallProvider, Permissions } from "@constants";
@@ -29,6 +29,7 @@ const CallSummarySidebar: FC<CallSummarySidebarProps> = ({
   setCallSummary,
   canEditSummary = true,
   canShowFeedback = true,
+  showArchiveButton = true,
 }) => {
   const { permissions } = useSelector((state: RootState) => state.user);
 
@@ -164,15 +165,19 @@ const CallSummarySidebar: FC<CallSummarySidebarProps> = ({
         callSummary?.summaryStatus === ChatSummaryStatus.SUCCESS,
       text: "Export summary",
     },
-    {
-      alt: "Archive",
-      icon: isArchived ? <Unarchive /> : <Archive />,
-      onClick: () => {
-        setIsArchiveDialogOpen(true);
-      },
-      show: true,
-      text: isArchived ? "Unarchive session" : "Archive session",
-    },
+    ...(FEATURE_FLAGS_MAP.SCRIBE_SETTINGS_FLAG
+      ? [
+          {
+            alt: "Archive",
+            icon: isArchived ? <Unarchive /> : <Archive />,
+            onClick: () => {
+              setIsArchiveDialogOpen(true);
+            },
+            show: hasAdequatePermission(Permissions.ARCHIVE_CALL_LOG) && showArchiveButton,
+            text: isArchived ? "Unarchive session" : "Archive session",
+          },
+        ]
+      : []),
   ];
 
   const tabList = [
