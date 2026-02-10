@@ -18,6 +18,9 @@ export const ApiEndpoints = {
     PROFILE_IMAGE_URL: "/v1/users/profile-image-url",
     PROFILE_IMAGE: "/v1/users/profile-image",
   },
+  AI: {
+    GET_PREVIEW_VOICE: "/v1/voice-preview/generate",
+  },
   SIMULATION_STUDIO: {
     GET_SIMULATIONS: "/v1/learn/admin-scenarios",
     GET_ADMIN_SIMULATION_BY_ID: (id: string) => `/v1/learn/admin-scenarios/${id}`,
