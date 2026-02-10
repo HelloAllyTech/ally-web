@@ -18,6 +18,7 @@ import BookWhite from "./bookWhite.svg?react";
 import Case from "./case.svg?react";
 import CharacterLibrary from "./characterLibrary.svg?react";
 import Chat from "./chat.svg?react";
+import CheckCircle from "./check-circle.svg?react";
 import Close from "./close.svg?react";
 import CloseRed from "./closeRed.svg?react";
 import Copy from "./copy.svg?react";
@@ -122,4 +123,5 @@ export {
   PauseIcon,
   BlackTick,
   Case,
+  CheckCircle,
 };
