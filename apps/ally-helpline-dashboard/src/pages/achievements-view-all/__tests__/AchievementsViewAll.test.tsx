@@ -34,10 +34,6 @@ const {
 } = vi.hoisted(() => ({
   mockUseGetAvailableBadgesQuery: vi.fn(),
   mockNavigate: vi.fn(),
-  mockFeatureFlags: {
-    LEADERBOARD_FLAG: true,
-    BADGES_FLAG: true,
-  },
   mockUseGetMyBadgesQuery: vi.fn(),
   mockUseUpdateBadgeViewStatusMutation: vi.fn(),
   mockUseLazyGetUserQuery: vi.fn(),
@@ -277,8 +273,6 @@ describe("AchievementsViewAll Component", () => {
       permissions: [],
       isAuthenticated: true,
     });
-    mockFeatureFlags.LEADERBOARD_FLAG = true;
-    mockFeatureFlags.BADGES_FLAG = true;
   });
 
   afterEach(() => {
@@ -346,35 +340,6 @@ describe("AchievementsViewAll Component", () => {
         </TestWrapper>,
       );
       expect(screen.getByTestId("achievements-view-all-page")).toBeInTheDocument();
-    });
-  });
-
-  /**
-   * TEST GROUP: Feature Flag
-   */
-  describe("Feature Flag", () => {
-    it("shows disabled message when BADGES_FLAG is false", () => {
-      mockFeatureFlags.BADGES_FLAG = false;
-
-      render(
-        <TestWrapper>
-          <AchievementsViewAll />
-        </TestWrapper>,
-      );
-
-      expect(screen.getByText("Achievements is not enabled")).toBeInTheDocument();
-    });
-
-    it("does not show badges when feature flag is disabled", () => {
-      mockFeatureFlags.BADGES_FLAG = false;
-
-      render(
-        <TestWrapper>
-          <AchievementsViewAll />
-        </TestWrapper>,
-      );
-
-      expect(screen.queryByTestId("achievement-item-badge-1")).not.toBeInTheDocument();
     });
   });
 

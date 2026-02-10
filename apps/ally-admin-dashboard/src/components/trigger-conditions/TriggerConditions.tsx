@@ -1,10 +1,8 @@
 import React from "react";
 
-import { FEATURE_FLAGS_MAP } from "@ally-ui-mono/ui-shared";
 import { EventType } from "@components";
 import { en, EVENT_DETECTION_TYPES } from "@constants";
 
-import { CombinationTriggerConditions } from "./CombinationTriggerConditions";
 import { MultiLevelCombinationTriggerConditions } from "./MultiLevelCombinationTriggerConditions";
 import { StandardTriggerConditions } from "./StandardTriggerConditions";
 import {
@@ -49,22 +47,14 @@ export const TriggerConditions: React.FC<TriggerConditionsProps> = ({
 }) => {
   if (!eventType) return null;
 
-  const renderCombinationConditions = (condition: CombinationTriggerCondition) =>
-    FEATURE_FLAGS_MAP.MULTI_LEVEL_COMBINATION_TRIGGER_CONDITIONS_FLAG ? (
-      <MultiLevelCombinationTriggerConditions
-        triggerCondition={condition}
-        onChange={onChange || (() => {})}
-        isInTable={isInTable}
-        currentEventId={currentEventId}
-      />
-    ) : (
-      <CombinationTriggerConditions
-        triggerCondition={condition}
-        onChange={onChange || (() => {})}
-        isInTable={isInTable}
-        currentEventId={currentEventId}
-      />
-    );
+  const renderCombinationConditions = (condition: CombinationTriggerCondition) => (
+    <MultiLevelCombinationTriggerConditions
+      triggerCondition={condition}
+      onChange={onChange || (() => {})}
+      isInTable={isInTable}
+      currentEventId={currentEventId}
+    />
+  );
 
   const renderStandardConditions = () => {
     // For standard event types, create an empty structure to display placeholders

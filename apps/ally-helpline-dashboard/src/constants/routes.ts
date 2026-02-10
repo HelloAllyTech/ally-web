@@ -1,4 +1,3 @@
-import { FEATURE_FLAGS_MAP } from "@ally-ui-mono/ui-shared";
 import {
   SearchIcon,
   StatsIcon,
@@ -61,38 +60,30 @@ export const navBarOptions = [
     activePages: [ROUTES.SCENARIO, ROUTES.PATHWAY, ROUTES.CASE],
     permissions: [Permissions.EDIT_SCENARIO_SESSION],
   },
-  ...(FEATURE_FLAGS_MAP.PEER_REVIEW_FLAG
-    ? [
-        {
-          id: TabId.REVIEW,
-          title: "Review",
-          Icon: ReviewNavIcon,
-          path: ROUTES.REVIEW,
-          activePages: [ROUTES.REVIEW_DETAILS],
-          permissions: [Permissions.REVIEWER_ACCESS],
-        },
-      ]
-    : []),
-  ...(FEATURE_FLAGS_MAP.LEADERBOARD_FLAG
-    ? [
-        {
-          id: TabId.BADGES,
-          title: "Badges",
-          Icon: Badge,
-          path: ROUTES.ACHIEVEMENTS_VIEW_ALL,
-          activePages: [],
-          permissions: [Permissions.VIEW_BADGES],
-        },
-        {
-          id: TabId.LEADERBOARD,
-          title: "Community",
-          Icon: Leaderboard,
-          path: ROUTES.COMMUNITY_LEADERBOARD,
-          activePages: [ROUTES.ACHIEVEMENTS_VIEW_ALL],
-          permissions: [Permissions.VIEW_LEADERBOARD],
-        },
-      ]
-    : []),
+  {
+    id: TabId.REVIEW,
+    title: "Review",
+    Icon: ReviewNavIcon,
+    path: ROUTES.REVIEW,
+    activePages: [ROUTES.REVIEW_DETAILS],
+    permissions: [Permissions.REVIEWER_ACCESS],
+  },
+  {
+    id: TabId.BADGES,
+    title: "Badges",
+    Icon: Badge,
+    path: ROUTES.ACHIEVEMENTS_VIEW_ALL,
+    activePages: [],
+    permissions: [Permissions.VIEW_BADGES],
+  },
+  {
+    id: TabId.LEADERBOARD,
+    title: "Community",
+    Icon: Leaderboard,
+    path: ROUTES.COMMUNITY_LEADERBOARD,
+    activePages: [ROUTES.ACHIEVEMENTS_VIEW_ALL],
+    permissions: [Permissions.VIEW_LEADERBOARD],
+  },
   {
     id: TabId.CALLS,
     title: "Sessions",

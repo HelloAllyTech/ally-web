@@ -3,7 +3,6 @@ import { FC, useEffect, useMemo, useState } from "react";
 import { MenuIcon } from "lucide-react";
 import { matchPath, useLocation, useNavigate } from "react-router-dom";
 
-import { FEATURE_FLAGS_MAP } from "@ally-ui-mono/ui-shared";
 import { NavSideBar } from "@components";
 import { excludeNavBar, navBarOptions, TabId, LOCAL_STORAGE_KEYS, ROUTES } from "@constants";
 import { useUser, useAchievementBadgeModal } from "@hooks";
@@ -22,9 +21,7 @@ const NavbarWrapper: FC<{ children: React.ReactNode }> = ({ children }) => {
   const { BadgeModal } = useAchievementBadgeModal();
 
   const shouldShowBadgeModal =
-    isAuthenticated &&
-    FEATURE_FLAGS_MAP.BADGES_FLAG &&
-    !isPathExcluded(pathname, [ROUTES.SIMULATION_SUMMARY_FULL]);
+    isAuthenticated && !isPathExcluded(pathname, [ROUTES.SIMULATION_SUMMARY_FULL]);
 
   useEffect(() => {
     // checkAuth only for logged in users

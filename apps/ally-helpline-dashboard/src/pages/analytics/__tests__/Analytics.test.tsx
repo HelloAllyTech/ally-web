@@ -23,13 +23,10 @@ vi.mock("@api", () => ({
   useLazyGetDashboardsQuery: () => [mockGetDashboards, { data: undefined }],
 }));
 
-// Mock the logger
+// Mock the logger and feature flags
 vi.mock("@ally-ui-mono/ui-shared", () => ({
   logger: {
     info: vi.fn(),
-  },
-  FEATURE_FLAGS_MAP: {
-    PEER_REVIEW_FLAG: false,
   },
 }));
 
@@ -47,6 +44,7 @@ vi.mock("@assets", () => ({
   SearchIcon: () => <svg data-testid="search-icon" />,
   NoBadges: () => <div data-testid="no-badges" />,
   ReviewNavIcon: () => <svg data-testid="review-nav-icon" />,
+  Badge: () => <svg data-testid="badge-icon" />,
 }));
 
 // Mock the ToggleButtonGroup component

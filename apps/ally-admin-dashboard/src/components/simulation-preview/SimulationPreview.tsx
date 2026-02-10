@@ -66,7 +66,6 @@ export const SimulationPreview: FC<SimulationPreviewProps> = ({ simulation, isOp
 
   const onStartSimulationSuccess = (response: StartSimulationResponse) => {
     const { accessToken, scenario, checklistEvents } = response;
-    // TODO: Add trigger warnings to the room data
     localStorage.setItem(
       LOCAL_STORAGE_KEYS.PREVIEW_ROOM_DATA,
       JSON.stringify({

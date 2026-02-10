@@ -3,7 +3,6 @@ import { FC, useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { useNavigate, useSearchParams } from "react-router-dom";
 
-import { FEATURE_FLAGS_MAP } from "@ally-ui-mono/ui-shared";
 import { InfiniteScroll } from "@ally-ui-mono/ui-shared/index";
 import { useGetReviewsQuery, useGetReviewThreadsQuery } from "@api";
 import { NoResults, ReviewsEmptyState } from "@assets";
@@ -239,16 +238,6 @@ export const Review: FC = () => {
       </InfiniteScroll>
     );
   };
-
-  if (!FEATURE_FLAGS_MAP.PEER_REVIEW_FLAG) {
-    return (
-      <div className="flex items-center justify-center h-full px-4 text-center">
-        <p className="font-primary text-sm sm:text-base text-gray-600">
-          Peer review is not enabled
-        </p>
-      </div>
-    );
-  }
 
   if (reviewsError) {
     return (
