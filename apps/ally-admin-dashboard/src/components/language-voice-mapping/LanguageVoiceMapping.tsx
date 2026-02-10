@@ -155,14 +155,15 @@ export const LanguageVoiceMapping: FC<LanguageVoiceMappingProps> = ({
         // If not cached, fetch from API
         setIsAudioLoading(true);
         const voice = options.find(opt => opt.value === voiceId);
-        const { languageCode, ...voiceConfig } = { ...voice?.config };
+        const voiceConfig = { ...voice?.config };
+        delete voiceConfig.languageCode;
         const config = convertKeysToSnakeCase(voiceConfig);
 
         try {
           const result = await getPreviewVoice({
             provider: voice?.provider ?? "",
             config,
-            language_code: languageCode ?? language.value ?? "",
+            language_code: language.value ?? "",
           }).unwrap();
 
           // Cache the result and play
