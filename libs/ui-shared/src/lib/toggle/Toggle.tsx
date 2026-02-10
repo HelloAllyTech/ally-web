@@ -36,7 +36,7 @@ const Toggle: FC<ToggleProps> = ({ label, items, initialValue, onChange }) => {
         {items.map((item, index) => (
           <div
             key={item.value}
-            className="rounded-full cursor-pointer z-10 transition-all duration-200 font-primary"
+            className="rounded-full py-2 px-4 cursor-pointer z-10 transition-all duration-200 font-primary"
             onClick={() => handleChange(index)}
             style={{
               color: selectedValue === index ? "#000000" : "#00000060",
