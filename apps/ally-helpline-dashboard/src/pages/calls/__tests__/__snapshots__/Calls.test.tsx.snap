@@ -91,16 +91,6 @@ exports[`Calls Component > Snapshot Testing > should match snapshot 1`] = `
         Close Audio Dialog
       </button>
     </div>
-    <div
-      data-testid="custom-menu"
-      style="display: none;"
-    >
-      <button
-        data-testid="custom-menu-item-0"
-      >
-        Archives
-      </button>
-    </div>
   </div>
 </DocumentFragment>
 `;
@@ -194,16 +184,6 @@ exports[`Calls Component > Snapshot Testing > should match snapshot with admin r
         data-testid="close-audio-dialog"
       >
         Close Audio Dialog
-      </button>
-    </div>
-    <div
-      data-testid="custom-menu"
-      style="display: none;"
-    >
-      <button
-        data-testid="custom-menu-item-0"
-      >
-        Archives
       </button>
     </div>
   </div>
