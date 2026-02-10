@@ -34,6 +34,7 @@ import Filter from "./filter.svg?react";
 import FocusLens from "./focusLens.svg?react";
 import FrameSource from "./frameSource.svg?react";
 import Globe from "./globe.svg?react";
+import Guardrails from "./guardrails.svg?react";
 import GroupBranch from "./groupBranch.svg?react";
 import HappyEmoji from "./happyEmoji.svg?react";
 import InfoIcon from "./info.svg?react";
@@ -117,6 +118,7 @@ export {
   ManageAccounts,
   Refresh,
   Globe,
+  Guardrails,
   Mic,
   GroupBranch,
   AddBlue,
