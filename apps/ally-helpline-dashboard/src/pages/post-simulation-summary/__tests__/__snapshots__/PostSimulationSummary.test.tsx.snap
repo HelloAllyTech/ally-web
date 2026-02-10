@@ -9,47 +9,19 @@ exports[`PostSimulationSummary Component > Snapshot Testing > should match snaps
       class="bg-white w-full h-[100vh] overflow-y-auto flex flex-col items-center "
     >
       <div
-        class="flex flex-col gap-6 max-w-4xl w-full h-full pb-8 sm:pb-16 px-4 sm:px-6 items-center"
+        class="flex flex-col gap-6 max-w-3xl w-full h-full pb-8 sm:pb-16 px-4 sm:px-6 items-center"
         data-animate="visible"
         data-initial="hidden"
         data-testid="motion-div"
         data-variants="{\\"hidden\\":{\\"opacity\\":0},\\"visible\\":{\\"opacity\\":1,\\"transition\\":{\\"staggerChildren\\":0.2,\\"delayChildren\\":0.3}}}"
       >
         <div
-          class="flex items-center justify-between w-full"
+          class="w-full text-black text-2xl sm:text-4xl font-normal text-left font-secondary mt-8 px-4"
         >
-          <div
-            class="w-full text-black text-2xl sm:text-4xl font-normal text-left font-secondary mt-8 px-4"
-          >
-            Simulation 
-            <em>
-              Summary
-            </em>
-          </div>
-          <div
-            class="flex flex-col gap-2 w-fit"
-          >
-            <div
-              class="flex gap-2 rounded-full border-[0.5px] bg-[#F3F3F3] relative"
-            >
-              <div
-                class="transition-all duration-200 absolute top-0 w-1/2 h-full rounded-full bg-[#FFFFFF]"
-                style="left: 0px; box-shadow: 3px 0px 9px 0px #00000012;"
-              />
-              <div
-                class="rounded-full cursor-pointer z-10 transition-all duration-200 font-primary"
-                style="color: rgb(0, 0, 0);"
-              >
-                Keep it private
-              </div>
-              <div
-                class="rounded-full cursor-pointer z-10 transition-all duration-200 font-primary"
-                style="color: rgba(0, 0, 0, 0.376);"
-              >
-                Share for review
-              </div>
-            </div>
-          </div>
+          Simulation 
+          <em>
+            Summary
+          </em>
         </div>
         <div
           class="w-full normal-case border-b border-[#DBDBDB] mb-4"
@@ -105,47 +77,19 @@ exports[`PostSimulationSummary Component > Snapshot Testing > should match snaps
       class="bg-white w-full h-[100vh] overflow-y-auto flex flex-col items-center "
     >
       <div
-        class="flex flex-col gap-6 max-w-4xl w-full h-full pb-8 sm:pb-16 px-4 sm:px-6 items-center"
+        class="flex flex-col gap-6 max-w-3xl w-full h-full pb-8 sm:pb-16 px-4 sm:px-6 items-center"
         data-animate="visible"
         data-initial="hidden"
         data-testid="motion-div"
         data-variants="{\\"hidden\\":{\\"opacity\\":0},\\"visible\\":{\\"opacity\\":1,\\"transition\\":{\\"staggerChildren\\":0.2,\\"delayChildren\\":0.3}}}"
       >
         <div
-          class="flex items-center justify-between w-full"
+          class="w-full text-black text-2xl sm:text-4xl font-normal text-left font-secondary mt-8 px-4"
         >
-          <div
-            class="w-full text-black text-2xl sm:text-4xl font-normal text-left font-secondary mt-8 px-4"
-          >
-            Simulation 
-            <em>
-              Summary
-            </em>
-          </div>
-          <div
-            class="flex flex-col gap-2 w-fit"
-          >
-            <div
-              class="flex gap-2 rounded-full border-[0.5px] bg-[#F3F3F3] relative"
-            >
-              <div
-                class="transition-all duration-200 absolute top-0 w-1/2 h-full rounded-full bg-[#FFFFFF]"
-                style="left: 0px; box-shadow: 3px 0px 9px 0px #00000012;"
-              />
-              <div
-                class="rounded-full cursor-pointer z-10 transition-all duration-200 font-primary"
-                style="color: rgb(0, 0, 0);"
-              >
-                Keep it private
-              </div>
-              <div
-                class="rounded-full cursor-pointer z-10 transition-all duration-200 font-primary"
-                style="color: rgba(0, 0, 0, 0.376);"
-              >
-                Share for review
-              </div>
-            </div>
-          </div>
+          Simulation 
+          <em>
+            Summary
+          </em>
         </div>
         <div
           class="w-full normal-case border-b border-[#DBDBDB] mb-4"
