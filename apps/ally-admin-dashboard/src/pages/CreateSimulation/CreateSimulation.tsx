@@ -16,6 +16,7 @@ import {
   CreateSimulationSubSection,
   Footer,
   Header,
+  ReportSection,
   SimulationEventMapTable,
   SimulationPreview,
   VerticalStepper,
@@ -294,7 +295,12 @@ export const CreateSimulation: FC = () => {
   };
 
   const handleStepClick = async (stepId: string) => {
-    if (stepId === stepIds.advancedSettings && !simulationId) {
+    //TODO: add report step to the requiresSave condition
+    const requiresSave =
+      stepId === stepIds.advancedSettings ||
+      (FEATURE_FLAGS_MAP.SIMULATION_REPORT_FLAG && stepId === stepIds.report);
+
+    if (requiresSave && !simulationId) {
       const response = await handleSaveDraft();
       if (response) setCurrentStep(stepId);
       else toast.error(en.errors.failedToProceed);
@@ -327,10 +333,10 @@ export const CreateSimulation: FC = () => {
   };
 
   const renderCurrentStep = () => {
-    const simulationSubSectionData = getCreateSimulationSubSectionById(currentStep);
     switch (currentStep) {
       case stepIds.overview:
-      case stepIds.basicSettings:
+      case stepIds.basicSettings: {
+        const simulationSubSectionData = getCreateSimulationSubSectionById(currentStep);
         return renderStep(
           simulationSubSectionData.label,
           <CreateSimulationSubSection
@@ -338,14 +344,22 @@ export const CreateSimulation: FC = () => {
             formMethods={formMethods}
           />,
         );
+      }
       case stepIds.advancedSettings:
         return <SimulationEventMapTable simulationId={simulationId} />;
+      case stepIds.report:
+        if (FEATURE_FLAGS_MAP.SIMULATION_REPORT_FLAG) {
+          return <ReportSection />;
+        }
+        return null;
       default:
         return null;
     }
   };
 
-  const isLastStep = currentStep === stepIds.advancedSettings;
+  const isLastStep = FEATURE_FLAGS_MAP.SIMULATION_REPORT_FLAG
+    ? currentStep === stepIds.report
+    : currentStep === stepIds.advancedSettings;
 
   const handleNext = async () => {
     if (isLastStep) {
