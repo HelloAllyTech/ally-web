@@ -16,6 +16,7 @@ import {
   CreateCase,
   ScenarioVoices,
   ScenarioLanguages,
+  PromptManagement,
 } from "@pages";
 
 import { PrivateLayout } from "./PrivateLayout";
@@ -114,6 +115,14 @@ export const RouteLayout: React.FC = () => {
           element={
             <PrivateLayout requiredPermissions={[Permissions.EDIT_SCENARIO]}>
               <ScenarioLanguages />
+            </PrivateLayout>
+          }
+        />
+        <Route
+          path={ROUTES.MANAGE_PROMPTS}
+          element={
+            <PrivateLayout requiredPermissions={[Permissions.EDIT_PROMPT]}>
+              <PromptManagement />
             </PrivateLayout>
           }
         />
