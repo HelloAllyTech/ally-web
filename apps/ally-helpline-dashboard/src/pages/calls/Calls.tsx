@@ -2,10 +2,11 @@ import { FC, useEffect, useMemo, useState } from "react";
 
 import { Tabs, Tab } from "@mui/material";
 import { motion } from "framer-motion";
+import { useNavigate } from "react-router-dom";
 
-import { Refresh, StartSession, UploadIcon } from "@assets";
-import { Button, ButtonVariant, PermissionGuard, ToggleButtonGroup } from "@components";
-import { Permissions } from "@constants";
+import { Archive, MoreVertIcon, Refresh, StartSession, UploadIcon } from "@assets";
+import { Button, ButtonVariant, CustomMenu, PermissionGuard, ToggleButtonGroup } from "@components";
+import { Permissions, ROUTES } from "@constants";
 import { useUser } from "@hooks";
 import { SessionType } from "@types";
 import { hasPermissions } from "@utils";
@@ -19,11 +20,13 @@ import {
 } from "./utils";
 
 export const Calls: FC = () => {
+  const navigate = useNavigate();
   const [isStartSessionDialogOpen, setIsStartSessionDialogOpen] = useState(false);
   const [refreshKey, setRefreshKey] = useState<number>(0);
   const [sessionType, setSessionType] = useState<SessionType>();
   const [sessionUserGroup, setSessionUserGroup] = useState(SessionUserGroup.MY_LOGS);
   const [isAudioUploadDialogOpen, setIsAudioUploadDialogOpen] = useState(false);
+  const [menuAnchor, setMenuAnchor] = useState<HTMLElement | null>(null);
 
   const { permissions } = useUser();
   const supportedLogList = useMemo(() => getPermittedSessionLogList(permissions), [permissions]);
@@ -160,14 +163,24 @@ export const Calls: FC = () => {
             ))}
           </Tabs>
         )}
-        {sessionTypeList?.length > 1 && (
-          <ToggleButtonGroup
-            data-testid="calls-session-type-toggle"
-            value={sessionType}
-            onValueChange={(value: SessionType) => setSessionType(value)}
-            items={sessionTypeList}
-          />
-        )}
+        <div className="flex justify-between items-center gap-2">
+          {sessionTypeList?.length > 1 && (
+            <ToggleButtonGroup
+              data-testid="calls-session-type-toggle"
+              value={sessionType}
+              onValueChange={(value: SessionType) => setSessionType(value)}
+              items={sessionTypeList}
+            />
+          )}
+          {sessionType === SessionType.CALL && (
+            <div
+              className="cursor-pointer w-7 h-7 flex items-center justify-center rounded-sm bg-[#EEEEEE]"
+              onClick={e => setMenuAnchor(e.currentTarget)}
+            >
+              <MoreVertIcon />
+            </div>
+          )}
+        </div>
       </motion.div>
       <div data-testid="calls-content">{getContent()}</div>
       <StartSessionDialog
@@ -182,6 +195,21 @@ export const Calls: FC = () => {
           onClose={() => setIsAudioUploadDialogOpen(false)}
         />
       </PermissionGuard>
+
+      <CustomMenu
+        anchorElement={menuAnchor}
+        items={[
+          {
+            label: "Archives",
+            icon: <Archive />,
+            onClick: () => {
+              navigate(ROUTES.ARCHIVES);
+              setMenuAnchor(null);
+            },
+          },
+        ]}
+        onClose={() => setMenuAnchor(null)}
+      />
     </div>
   );
 };
