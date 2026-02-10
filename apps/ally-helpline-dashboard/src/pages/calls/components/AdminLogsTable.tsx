@@ -62,6 +62,7 @@ const AdminLogsTable: FC<LogsTableProps> = ({ refreshKey, sessionType, className
 
   const isCall = sessionType === SessionType.CALL;
   const isSimulation = sessionType === SessionType.SIMULATION;
+  const { user: currentUser } = useSelector((state: RootState) => state.user);
 
   const {
     data: callLogsData,
@@ -474,6 +475,7 @@ const AdminLogsTable: FC<LogsTableProps> = ({ refreshKey, sessionType, className
             sessionType={sessionType}
             canEditSummary={false}
             canShowFeedback={false}
+            showArchiveButton={currentUser?.id === summary?.counselorId}
           />
         );
       case SessionType.SIMULATION:
