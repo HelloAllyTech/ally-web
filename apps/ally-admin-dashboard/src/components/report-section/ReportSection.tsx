@@ -175,6 +175,14 @@ interface ReportData {
   };
 }
 
+interface HistoryItem {
+  id: number;
+  timestamp: string;
+  language: string;
+  turns: number;
+  reportData: ReportData;
+}
+
 interface TabButtonProps {
   label: string;
   isActive: boolean;
@@ -193,6 +201,113 @@ const TabButton: FC<TabButtonProps> = ({ label, isActive, onClick }) => (
   </button>
 );
 
+interface ReportContentProps {
+  reportData: ReportData;
+  activeTab: "report" | "transcription";
+  onTabChange: (tab: "report" | "transcription") => void;
+  showTabs?: boolean;
+}
+
+const ReportContent: FC<ReportContentProps> = ({
+  reportData,
+  activeTab,
+  onTabChange,
+  showTabs = true,
+}) => (
+  <>
+    {showTabs && (
+      <div className="flex gap-8 border-b border-gray-200">
+        <TabButton
+          label={MESSAGES.REPORT}
+          isActive={activeTab === "report"}
+          onClick={() => onTabChange("report")}
+        />
+        <TabButton
+          label={MESSAGES.TRANSCRIPTION}
+          isActive={activeTab === "transcription"}
+          onClick={() => onTabChange("transcription")}
+        />
+      </div>
+    )}
+
+    {activeTab === "report" ? (
+      <div className="flex flex-col gap-6">
+        <div className="border border-gray-200 rounded-lg p-6">
+          <div className="flex justify-between items-center">
+            <span className="text-base font-medium text-typography-900">
+              {MESSAGES.SIMULATION_SCORE}
+            </span>
+            <span className="text-5xl font-semibold text-typography-900">
+              {reportData.simulationScore}
+            </span>
+          </div>
+        </div>
+
+        <div className="border border-gray-200 rounded-lg p-6">
+          <h3 className="text-base font-medium text-typography-900 mb-6">{MESSAGES.METRICS}</h3>
+          <div className="space-y-6">
+            {reportData.metrics.map((metric, index) => (
+              <div key={index} className="space-y-2">
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-gray-700">{metric.name}</span>
+                  <span className="text-sm font-medium text-gray-900">{metric.percentage}%</span>
+                </div>
+                <div className="w-full h-2 bg-gray-100 rounded-full overflow-hidden">
+                  <div
+                    className="h-full rounded-full transition-all duration-500"
+                    style={{
+                      width: `${metric.percentage}%`,
+                      backgroundColor: metric.color,
+                    }}
+                  />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    ) : (
+      <div className="border border-gray-200 rounded-lg p-6 min-h-[300px] flex items-center justify-center">
+        <p className="text-gray-500">{MESSAGES.TRANSCRIPTION_PLACEHOLDER}</p>
+      </div>
+    )}
+  </>
+);
+
+// Generate dummy history items
+const generateDummyHistory = (): HistoryItem[] => {
+  const now = new Date();
+  return Array.from({ length: 6 }, (_, i) => {
+    const timestamp = new Date(now.getTime() - i * 60000); // 1 minute apart
+    return {
+      id: Date.now() - i * 1000,
+      timestamp: timestamp.toLocaleString("en-US", {
+        month: "numeric",
+        day: "numeric",
+        year: "numeric",
+        hour: "numeric",
+        minute: "numeric",
+        hour12: true,
+      }),
+      language: "English",
+      turns: 50,
+      reportData: {
+        simulationScore: Math.floor(Math.random() * 30) + 70,
+        metrics: [
+          { name: "Metric 1", percentage: Math.floor(Math.random() * 40) + 50, color: "#4A90E2" },
+          { name: "Metric 2", percentage: Math.floor(Math.random() * 40) + 50, color: "#7ED321" },
+          { name: "Metric 3", percentage: Math.floor(Math.random() * 40) + 30, color: "#F5A623" },
+        ],
+        testConfiguration: {
+          language: "English",
+          turns: 50,
+          prompt: DEFAULT_HELPER_PROMPT,
+        },
+      },
+    };
+  });
+};
+
 export const ReportSection: FC<ReportSectionProps> = ({ onCancel }) => {
   const [helperAgentPrompt, setHelperAgentPrompt] = useState(DEFAULT_HELPER_PROMPT);
   const [selectedLanguage, setSelectedLanguage] = useState(DEFAULT_LANGUAGE);
@@ -202,6 +317,7 @@ export const ReportSection: FC<ReportSectionProps> = ({ onCancel }) => {
   const [reportData, setReportData] = useState<ReportData | null>(null);
   const [activeTab, setActiveTab] = useState<"report" | "transcription">("report");
   const [primaryActiveTab, setPrimaryActiveTab] = useState<"report" | "history">("report");
+  const [reportHistory, setReportHistory] = useState<HistoryItem[]>(generateDummyHistory());
 
   // Simulate progress during generation
   useEffect(() => {
@@ -257,7 +373,25 @@ export const ReportSection: FC<ReportSectionProps> = ({ onCancel }) => {
         turns: Number(selectedTurns.value),
         prompt: helperAgentPrompt,
       };
-      setReportData(generateReportData(config));
+      const newReport = generateReportData(config);
+      setReportData(newReport);
+
+      // Add to history
+      const historyItem: HistoryItem = {
+        id: Date.now(),
+        timestamp: new Date().toLocaleString("en-US", {
+          month: "numeric",
+          day: "numeric",
+          year: "numeric",
+          hour: "numeric",
+          minute: "numeric",
+          hour12: true,
+        }),
+        language: config.language,
+        turns: config.turns,
+        reportData: newReport,
+      };
+      setReportHistory(prev => [historyItem, ...prev]);
     } finally {
       setTimeout(() => setIsGenerating(false), 500);
     }
@@ -277,7 +411,25 @@ export const ReportSection: FC<ReportSectionProps> = ({ onCancel }) => {
 
     try {
       await simulateGeneration();
-      setReportData(generateReportData(currentConfig, true));
+      const newReport = generateReportData(currentConfig, true);
+      setReportData(newReport);
+
+      // Add to history
+      const historyItem: HistoryItem = {
+        id: Date.now(),
+        timestamp: new Date().toLocaleString("en-US", {
+          month: "numeric",
+          day: "numeric",
+          year: "numeric",
+          hour: "numeric",
+          minute: "numeric",
+          hour12: true,
+        }),
+        language: currentConfig.language,
+        turns: currentConfig.turns,
+        reportData: newReport,
+      };
+      setReportHistory(prev => [historyItem, ...prev]);
     } finally {
       setTimeout(() => setIsGenerating(false), 500);
     }
@@ -365,66 +517,7 @@ export const ReportSection: FC<ReportSectionProps> = ({ onCancel }) => {
             </div>
           </details>
 
-          {/* Report and Transcription Tabs */}
-          <div className="flex gap-8 border-b border-gray-200">
-            <TabButton
-              label={MESSAGES.REPORT}
-              isActive={activeTab === "report"}
-              onClick={() => setActiveTab("report")}
-            />
-            <TabButton
-              label={MESSAGES.TRANSCRIPTION}
-              isActive={activeTab === "transcription"}
-              onClick={() => setActiveTab("transcription")}
-            />
-          </div>
-
-          {/* Tab Content */}
-          {activeTab === "report" ? (
-            <div className="flex flex-col gap-6">
-              <div className="border border-gray-200 rounded-lg p-6">
-                <div className="flex justify-between items-center">
-                  <span className="text-base font-medium text-typography-900">
-                    {MESSAGES.SIMULATION_SCORE}
-                  </span>
-                  <span className="text-5xl font-semibold text-typography-900">
-                    {reportData.simulationScore}
-                  </span>
-                </div>
-              </div>
-
-              <div className="border border-gray-200 rounded-lg p-6">
-                <h3 className="text-base font-medium text-typography-900 mb-6">
-                  {MESSAGES.METRICS}
-                </h3>
-                <div className="space-y-6">
-                  {reportData.metrics.map((metric, index) => (
-                    <div key={index} className="space-y-2">
-                      <div className="flex justify-between items-center">
-                        <span className="text-sm text-gray-700">{metric.name}</span>
-                        <span className="text-sm font-medium text-gray-900">
-                          {metric.percentage}%
-                        </span>
-                      </div>
-                      <div className="w-full h-2 bg-gray-100 rounded-full overflow-hidden">
-                        <div
-                          className="h-full rounded-full transition-all duration-500"
-                          style={{
-                            width: `${metric.percentage}%`,
-                            backgroundColor: metric.color,
-                          }}
-                        />
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          ) : (
-            <div className="border border-gray-200 rounded-lg p-6 min-h-[300px] flex items-center justify-center">
-              <p className="text-gray-500">{MESSAGES.TRANSCRIPTION_PLACEHOLDER}</p>
-            </div>
-          )}
+          <ReportContent reportData={reportData} activeTab={activeTab} onTabChange={setActiveTab} />
         </div>
       );
     }
@@ -446,6 +539,55 @@ export const ReportSection: FC<ReportSectionProps> = ({ onCancel }) => {
         />
       </div>
     );
+  };
+
+  const renderHistoryList = () => (
+    <div className="flex flex-col gap-2 w-full max-w-[800px]">
+      {reportHistory.map((item, index) => (
+        <details
+          key={item.id}
+          className="border border-gray-200 rounded-lg bg-white hover:bg-gray-50 transition-colors"
+          open={index === 0}
+        >
+          <summary className="px-4 py-3 cursor-pointer flex items-center gap-4 list-none">
+            <span className="text-gray-500 font-medium">{index + 1}</span>
+            <div className="flex-1">
+              <div className="text-sm font-medium text-typography-900">{item.timestamp}</div>
+              <div className="text-xs text-gray-500 mt-1">
+                {item.language} (Global) • {item.turns} turns
+              </div>
+            </div>
+            <svg
+              className="w-5 h-5 transition-transform details-arrow text-gray-400"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M19 9l-7 7-7-7"
+              />
+            </svg>
+          </summary>
+          <div className="px-6 py-4 border-t border-gray-200 bg-white">
+            <ReportContent
+              reportData={item.reportData}
+              activeTab={activeTab}
+              onTabChange={setActiveTab}
+            />
+          </div>
+        </details>
+      ))}
+    </div>
+  );
+
+  const renderMainContent = () => {
+    if (primaryActiveTab === "history") {
+      return renderHistoryList();
+    }
+    return renderContent();
   };
 
   const headerContent = reportData ? (
@@ -471,7 +613,7 @@ export const ReportSection: FC<ReportSectionProps> = ({ onCancel }) => {
     <div className="flex flex-col h-full w-100%">
       {headerContent}
 
-      <div className="p-6 pt-4 overflow-y-auto h-full custom-scrollbar">{renderContent()}</div>
+      <div className="p-6 pt-4 overflow-y-auto h-full custom-scrollbar">{renderMainContent()}</div>
     </div>
   );
 };
