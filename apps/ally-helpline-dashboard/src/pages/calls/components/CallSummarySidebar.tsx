@@ -241,6 +241,42 @@ const CallSummarySidebar: FC<CallSummarySidebarProps> = ({
     }
   };
 
+  const onUnarchiveConfirm = async () => {
+    try {
+      await archiveCallLog({
+        chatId: callSummary.id,
+        archive: false,
+      }).unwrap();
+      setIsArchived(false);
+      setIsArchiveDialogOpen(false);
+      toast.success("Call log unarchived successfully");
+      // Close the sidebar since the unarchived log won't be in the archived list
+      setCallSummary(null);
+    } catch (error) {
+      const errorMessage = error?.data?.message || "Failed to unarchive call log";
+      toast.error(errorMessage);
+      setIsArchiveDialogOpen(false);
+    }
+  };
+
+  const onArchiveConfirm = async () => {
+    try {
+      await archiveCallLog({
+        chatId: callSummary.id,
+        archive: true,
+      }).unwrap();
+      setIsArchived(true);
+      setIsArchiveDialogOpen(false);
+      toast.success("Call log archived successfully");
+      // Close the sidebar since the archived log won't be in the non-archived list
+      setCallSummary(null);
+    } catch (error) {
+      const errorMessage = error?.data?.message || "Failed to archive call log";
+      toast.error(errorMessage);
+      setIsArchiveDialogOpen(false);
+    }
+  };
+
   return (
     <SummarySidebarWrapper
       onSidebarClose={onSidebarClose}
@@ -260,36 +296,8 @@ const CallSummarySidebar: FC<CallSummarySidebarProps> = ({
       />
       <ArchiveDialog
         isArchived={isArchived}
-        onUnarchiveConfirm={async () => {
-          try {
-            await archiveCallLog({
-              chatId: callSummary.id,
-              archive: false,
-            }).unwrap();
-            setIsArchived(false);
-            setIsArchiveDialogOpen(false);
-            toast.success("Call log unarchived successfully");
-          } catch (error) {
-            const errorMessage = error?.data?.message || "Failed to unarchive call log";
-            toast.error(errorMessage);
-            setIsArchiveDialogOpen(false);
-          }
-        }}
-        onArchiveConfirm={async () => {
-          try {
-            await archiveCallLog({
-              chatId: callSummary.id,
-              archive: true,
-            }).unwrap();
-            setIsArchived(true);
-            setIsArchiveDialogOpen(false);
-            toast.success("Call log archived successfully");
-          } catch (error) {
-            const errorMessage = error?.data?.message || "Failed to archive call log";
-            toast.error(errorMessage);
-            setIsArchiveDialogOpen(false);
-          }
-        }}
+        onUnarchiveConfirm={onUnarchiveConfirm}
+        onArchiveConfirm={onArchiveConfirm}
         onClose={() => {
           setIsArchiveDialogOpen(false);
         }}
