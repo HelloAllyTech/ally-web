@@ -207,6 +207,20 @@ export const summaryFields: SummaryField[] = [
     type: FieldType.Text,
   },
   {
+    isEditable: true,
+    key: SummaryFieldKey.NewCallFollowUp,
+    label: "New Call Follow Up",
+    sectionKey: SummarySectionKey.FeaturesAndDemographics,
+    type: FieldType.Text,
+  },
+  {
+    isEditable: true,
+    key: SummaryFieldKey.Counsellor,
+    label: "Counsellor",
+    sectionKey: SummarySectionKey.FeaturesAndDemographics,
+    type: FieldType.Text,
+  },
+  {
     isEditable: false,
     key: SummaryFieldKey.ClientId,
     label: "Caller ID",
@@ -279,7 +293,6 @@ export const summaryFields: SummaryField[] = [
     sectionKey: SummarySectionKey.FeaturesAndDemographics,
     type: FieldType.Text,
   },
-
   // Other fields
   {
     isEditable: true,
@@ -419,6 +432,13 @@ export const summaryFields: SummaryField[] = [
     isEditable: false,
     key: SummaryFieldKey.EmotionalLift,
     label: "Emotions Lift",
+    sectionKey: SummarySectionKey.Metrics,
+    type: FieldType.Text,
+  },
+  {
+    isEditable: false,
+    key: SummaryFieldKey.OpenEndedQuestionsAsked,
+    label: "No of Open Ended Questions asked",
     sectionKey: SummarySectionKey.Metrics,
     type: FieldType.Text,
   },

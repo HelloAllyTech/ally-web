@@ -68,7 +68,9 @@ export const DropdownField: React.FC<DropdownFieldProps> = ({
             {en.common.noOptionsAvailable}
           </div>
         ) : optionsRenderer ? (
-          options.map(option => optionsRenderer(option))
+          options.map(option =>
+            optionsRenderer(option, (value: string) => handleSelect(field, value)),
+          )
         ) : (
           options.map(option => (
             <div

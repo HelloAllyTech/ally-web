@@ -203,7 +203,10 @@ vi.mock("../constants", () => ({
 }));
 
 // Mock Redux store
-const createMockStore = (callsState: any = { filters: { offset: 0 } }) => {
+const createMockStore = (
+  callsState: any = { filters: { offset: 0 } },
+  userState: any = { user: { role: "COUNSELLOR" } },
+) => {
   return configureStore({
     reducer: {
       calls: (state = callsState, action: any) => {
@@ -212,9 +215,11 @@ const createMockStore = (callsState: any = { filters: { offset: 0 } }) => {
         }
         return state;
       },
+      user: (state = userState, action: any) => state,
     },
     preloadedState: {
       calls: callsState,
+      user: userState,
     },
   });
 };
@@ -286,8 +291,9 @@ const renderComponent = (
   sessionType: SessionType,
   refreshKey?: number,
   callsState: any = { filters: { offset: 0 } },
+  userState: any = { user: { role: "COUNSELLOR" } },
 ) => {
-  const store = createMockStore(callsState);
+  const store = createMockStore(callsState, userState);
   return render(
     <Provider store={store}>
       <BrowserRouter>
