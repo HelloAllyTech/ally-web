@@ -5,11 +5,6 @@ export enum RoomStatus {
   DISCONNECTING = "disconnecting",
 }
 
-export enum FeedbackSectionType {
-  BULLET_TEXT = "BULLET_TEXT",
-  TABLE = "TABLE",
-}
-
 export interface SimulationCredits {
   consumedCredits: number;
   creditLimit: number;

@@ -115,6 +115,7 @@ export const CharacterLibrary: React.FC = () => {
       await deleteCharacter({ scenarioCharacterIds: [characterId] }).unwrap();
       toast.success(en.simulation.characterDeletedSuccessfully);
       setIsSidePanelOpen(false);
+      setCharacters(characters?.filter(char => char?.id !== characterId));
       setSelectedCharacter(null);
       // The character list will automatically refresh due to cache invalidation
     } catch {

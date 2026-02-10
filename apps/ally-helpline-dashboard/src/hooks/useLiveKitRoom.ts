@@ -11,7 +11,7 @@ import { decodeUint8ToJson } from "@utils";
 
 import { LiveKitEvent, UseLiveKitRoomReturn } from "./types";
 
-const RINGING_BELL_DELAY = 10000;
+const RINGING_BELL_DELAY = 5000; // 5 seconds for ringing the bell
 
 export const useLiveKitRoom = (
   handleDisconnect: () => void,

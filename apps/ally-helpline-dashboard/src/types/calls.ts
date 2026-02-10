@@ -54,6 +54,7 @@ export interface GetCallLogsInput {
   minQualityScore?: number;
   maxQualityScore?: number;
   tags?: string;
+  archive?: boolean;
 }
 
 export interface WaitingClientChat {

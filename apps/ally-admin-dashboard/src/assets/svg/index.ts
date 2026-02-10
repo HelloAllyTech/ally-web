@@ -33,6 +33,7 @@ import Edit from "./edit.svg?react";
 import Eye from "./eye.svg?react";
 import Filter from "./filter.svg?react";
 import FocusLens from "./focusLens.svg?react";
+import FrameSource from "./frameSource.svg?react";
 import Globe from "./globe.svg?react";
 import GroupBranch from "./groupBranch.svg?react";
 import HappyEmoji from "./happyEmoji.svg?react";
@@ -124,4 +125,5 @@ export {
   BlackTick,
   Case,
   CheckCircle,
+  FrameSource,
 };

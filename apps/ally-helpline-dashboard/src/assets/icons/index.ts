@@ -16,6 +16,7 @@ import AchievementLocked from "./achievement-locked.svg?react";
 import ActionsIcon from "./actions-icon.svg?react";
 import Alarm from "./alarm.svg?react";
 import Ally from "./ally.svg?react";
+import Archive from "./archive.svg?react";
 import ArrowDownFilled from "./arrow-down-filled.svg?react";
 import ArrowLeft from "./arrow-left.svg?react";
 import ArrowRight from "./arrow-right.svg?react";
@@ -139,6 +140,7 @@ import TickGreenBackground from "./tick-green-background.svg?react";
 import TimerIcon from "./timer.svg?react";
 import BackgroundBottom from "./transcript-background-bottom.svg?react";
 import BackgroundTop from "./transcript-background-top.svg?react";
+import Unarchive from "./unarchive.svg?react";
 import UploadIcon from "./upload-icon.svg?react";
 import UserIcon from "./user-icon.svg?react";
 import VerifiedBadge from "./verified-badge.svg?react";
@@ -292,4 +294,6 @@ export {
   Intake,
   OngoingRisks,
   MaxActiveUsers,
+  Archive,
+  Unarchive,
 };

@@ -75,6 +75,11 @@ export const useUser = () => {
       path: ROUTES.MANAGE_SCENARIO_LANGUAGES,
     },
     {
+      id: SIDEBAR_ITEMS.PROMPTS,
+      label: en.simulation.promptsManagement,
+      path: ROUTES.MANAGE_PROMPTS,
+    },
+    {
       id: SIDEBAR_ITEMS.USER_MANAGEMENT,
       label: en.userManagement.userManagement,
       path: ROUTES.USER_MANAGEMENT,
@@ -156,6 +161,8 @@ export const useUser = () => {
           return permissions.includes(Permissions.EDIT_SCENARIO_VOICE);
         case SIDEBAR_ITEMS.SCENARIO_LANGUAGES:
           return permissions.includes(Permissions.EDIT_SCENARIO_LANGUAGE);
+        case SIDEBAR_ITEMS.PROMPTS:
+          return permissions.includes(Permissions.EDIT_PROMPT);
         case SIDEBAR_ITEMS.USER_MANAGEMENT:
           return permissions.includes(Permissions.EDIT_USER);
         default:
