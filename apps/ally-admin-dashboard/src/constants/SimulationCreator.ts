@@ -864,6 +864,49 @@ export const SCENARIO_LANGUAGE_COLUMNS = [
   },
 ];
 
+export const PROMPT_COLUMNS = [
+  {
+    id: "promptCode",
+    label: "Prompt Code",
+    accessor: "promptCode",
+    dataType: cellTypes.normalText,
+    minWidth: 150,
+    editable: false,
+  },
+  {
+    id: "name",
+    label: "Prompt Name",
+    accessor: "name",
+    dataType: cellTypes.normalText,
+    minWidth: 200,
+    editable: false,
+  },
+  {
+    id: "description",
+    label: "Description",
+    accessor: "description",
+    dataType: cellTypes.normalText,
+    minWidth: 200,
+    editable: false,
+  },
+  {
+    id: "prompt",
+    label: "Prompt",
+    accessor: "prompt",
+    dataType: cellTypes.normalText,
+    minWidth: 350,
+    editable: false,
+  },
+  {
+    id: "createdAt",
+    label: "Created Date",
+    accessor: "createdAt",
+    dataType: cellTypes.normalText,
+    minWidth: 150,
+    editable: false,
+  },
+];
+
 // TODO: Add columns for character library when BE is ready
 export const CHARACTER_LIBRARY_TABLE_COLUMNS = [
   {

@@ -185,11 +185,9 @@ describe("Toggle Component", () => {
 
       const items = container.querySelectorAll(".cursor-pointer");
       items.forEach(item => {
-        expect(item).toHaveClass("rounded-full");
-        expect(item).toHaveClass("py-2");
-        expect(item).toHaveClass("px-4");
-        expect(item).toHaveClass("z-10");
-        expect(item).toHaveClass("font-primary");
+        expect(item).toHaveClass(
+          "rounded-full cursor-pointer z-10 transition-all duration-200 font-primary",
+        );
       });
     });
 

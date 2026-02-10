@@ -374,6 +374,19 @@ describe("useUser", () => {
       expect(result.current.filteredNavigationItems[0].id).toBe(SIDEBAR_ITEMS.USER_MANAGEMENT);
     });
 
+    it("should filter navigation items based on EDIT_PROMPT permission", () => {
+      store = createMockStore({
+        permissions: [Permissions.EDIT_PROMPT],
+      });
+
+      const { result } = renderHook(() => useUser(), {
+        wrapper: ({ children }: any) => <Provider store={store}>{children}</Provider>,
+      });
+
+      expect(result.current.filteredNavigationItems).toHaveLength(1);
+      expect(result.current.filteredNavigationItems[0].id).toBe(SIDEBAR_ITEMS.PROMPTS);
+    });
+
     it("should show all navigation items when user has all permissions", () => {
       store = createMockStore({
         permissions: [
@@ -382,6 +395,7 @@ describe("useUser", () => {
           Permissions.EDIT_USER,
           Permissions.EDIT_SCENARIO_VOICE,
           Permissions.EDIT_SCENARIO_LANGUAGE,
+          Permissions.EDIT_PROMPT,
         ],
       });
 
@@ -389,12 +403,13 @@ describe("useUser", () => {
         wrapper: ({ children }: any) => <Provider store={store}>{children}</Provider>,
       });
 
-      expect(result.current.filteredNavigationItems).toHaveLength(5);
+      expect(result.current.filteredNavigationItems).toHaveLength(6);
       expect(result.current.filteredNavigationItems.map(item => item.id)).toEqual([
         SIDEBAR_ITEMS.SIMULATION_STUDIO,
         SIDEBAR_ITEMS.EVENT_MANAGEMENT,
         SIDEBAR_ITEMS.SCENARIO_VOICES,
         SIDEBAR_ITEMS.SCENARIO_LANGUAGES,
+        SIDEBAR_ITEMS.PROMPTS,
         SIDEBAR_ITEMS.USER_MANAGEMENT,
       ]);
     });
@@ -405,6 +420,7 @@ describe("useUser", () => {
           Permissions.EDIT_SCENARIO,
           Permissions.EDIT_USER,
           Permissions.EDIT_SCENARIO_VOICE,
+          Permissions.EDIT_PROMPT,
         ],
       });
 
@@ -412,10 +428,11 @@ describe("useUser", () => {
         wrapper: ({ children }: any) => <Provider store={store}>{children}</Provider>,
       });
 
-      expect(result.current.filteredNavigationItems).toHaveLength(3);
+      expect(result.current.filteredNavigationItems).toHaveLength(4);
       expect(result.current.filteredNavigationItems.map(item => item.id)).toEqual([
         SIDEBAR_ITEMS.SIMULATION_STUDIO,
         SIDEBAR_ITEMS.SCENARIO_VOICES,
+        SIDEBAR_ITEMS.PROMPTS,
         SIDEBAR_ITEMS.USER_MANAGEMENT,
       ]);
     });
@@ -590,6 +607,25 @@ describe("useUser", () => {
       expect(userManagementItem).toBeDefined();
       expect(userManagementItem?.label).toBeDefined();
       expect(userManagementItem?.path).toBeDefined();
+    });
+
+    it("should have correct structure for prompts item", () => {
+      store = createMockStore({
+        permissions: [Permissions.EDIT_PROMPT],
+      });
+
+      const { result } = renderHook(() => useUser(), {
+        wrapper: ({ children }: any) => <Provider store={store}>{children}</Provider>,
+      });
+
+      const promptsItem = result.current.filteredNavigationItems.find(
+        item => item.id === SIDEBAR_ITEMS.PROMPTS,
+      );
+
+      expect(promptsItem).toBeDefined();
+      expect(promptsItem?.label).toBeDefined();
+      expect(promptsItem?.path).toBeDefined();
+      expect(promptsItem?.id).toBe(SIDEBAR_ITEMS.PROMPTS);
     });
   });
 
