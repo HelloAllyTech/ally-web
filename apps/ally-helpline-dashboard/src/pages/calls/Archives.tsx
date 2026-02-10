@@ -2,7 +2,7 @@ import { FC, useState } from "react";
 
 import { motion } from "framer-motion";
 import { useDispatch, useSelector } from "react-redux";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 
 import { LeftArrow, Refresh } from "@assets";
 import { ROUTES } from "@constants";
@@ -11,17 +11,22 @@ import { RootState } from "@store";
 import { SessionType } from "@types";
 
 import { ArchivesLogsTable } from "./components";
+import { SessionUserGroup } from "./constants";
 
 export const Archives: FC = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const location = useLocation();
   const { filters } = useSelector((state: RootState) => state.calls);
   const [refreshKey, setRefreshKey] = useState<number>(0);
 
+  // Get sessionUserGroup from navigation state, default to MY_LOGS if not provided
+  const sessionUserGroup =
+    (location.state as { sessionUserGroup?: SessionUserGroup })?.sessionUserGroup ??
+    SessionUserGroup.MY_LOGS;
+
   const handleRefresh = () => {
-    // Reset offset to 0 for a fresh refresh
     dispatch(updateFilters({ ...filters, offset: 0 }));
-    // Increment refreshKey to trigger refetch in child component
     setRefreshKey(prev => prev + 1);
   };
 
@@ -70,6 +75,7 @@ export const Archives: FC = () => {
           sessionType={SessionType.CALL}
           className="max-h-[calc(100vh-140px)]"
           refreshKey={refreshKey}
+          sessionUserGroup={sessionUserGroup}
         />
       </div>
     </div>

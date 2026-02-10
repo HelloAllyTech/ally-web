@@ -39,7 +39,6 @@ export const useAchievementBadgeModal = (): UseAchievementBadgeModalReturn => {
     },
     {
       skip: !isBadgesEnabled,
-      pollingInterval: 20000,
       refetchOnFocus: true,
       refetchOnReconnect: true,
     },
