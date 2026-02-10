@@ -57,6 +57,9 @@ exports[`Calls Component > Snapshot Testing > should match snapshot 1`] = `
           </button>
         </div>
       </div>
+      <div
+        class="flex justify-between items-center gap-2"
+      />
     </div>
     <div
       data-testid="calls-content"
@@ -86,6 +89,16 @@ exports[`Calls Component > Snapshot Testing > should match snapshot 1`] = `
         data-testid="close-audio-dialog"
       >
         Close Audio Dialog
+      </button>
+    </div>
+    <div
+      data-testid="custom-menu"
+      style="display: none;"
+    >
+      <button
+        data-testid="custom-menu-item-0"
+      >
+        Archives
       </button>
     </div>
   </div>
@@ -149,6 +162,9 @@ exports[`Calls Component > Snapshot Testing > should match snapshot with admin r
           </button>
         </div>
       </div>
+      <div
+        class="flex justify-between items-center gap-2"
+      />
     </div>
     <div
       data-testid="calls-content"
@@ -178,6 +194,16 @@ exports[`Calls Component > Snapshot Testing > should match snapshot with admin r
         data-testid="close-audio-dialog"
       >
         Close Audio Dialog
+      </button>
+    </div>
+    <div
+      data-testid="custom-menu"
+      style="display: none;"
+    >
+      <button
+        data-testid="custom-menu-item-0"
+      >
+        Archives
       </button>
     </div>
   </div>

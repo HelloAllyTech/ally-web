@@ -38,6 +38,12 @@ export interface LogsTableProps {
   className?: string;
 }
 
+export interface ArchivesLogsTableProps {
+  sessionType: SessionType;
+  className?: string;
+  refreshKey?: number;
+}
+
 export interface SummaryHeaderProps {
   summaryName: string;
   setSummaryName: (summaryName: string) => void;
@@ -61,7 +67,7 @@ export interface SummarySidebarWrapperProps {
     icon: ReactNode;
     onClick: () => void;
     show: boolean;
-    text: string;
+    text?: string;
   }[];
   tabList: {
     id: number;

@@ -1,14 +1,16 @@
 import { FC, useEffect, useRef, useState } from "react";
 
 import { useSelector } from "react-redux";
+import { toast } from "sonner";
 
 import { logger } from "@ally-ui-mono/ui-shared";
-import { useLazyExportCallSummaryQuery } from "@api";
-import { Delete, Download } from "@assets";
+import { useLazyExportCallSummaryQuery, useArchiveCallLogMutation } from "@api";
+import { Archive, Delete, Download, Unarchive } from "@assets";
 import { CallProvider, Permissions } from "@constants";
 import { FeedbackDialog } from "@containers";
 import { useFileExport } from "@hooks";
 import CallSummary from "@pages/post-call-summary/components/CallSummary";
+import ArchiveDialog from "@src/pages/calls/components/ArchiveDialog";
 import { RootState } from "@store";
 import { ChatSummaryStatus, SessionType } from "@types";
 
@@ -32,12 +34,15 @@ const CallSummarySidebar: FC<CallSummarySidebarProps> = ({
 
   const [selectedComment] = useState<string>("");
   const [deleteDialogChatId, setDeleteDialogChatId] = useState<number | null>(null);
-  const [summaryName, setSummaryName] = useState<string>();
+  const [summaryName, setSummaryName] = useState<string>("");
   const [showFeedbackDialog, setShowFeedbackDialog] = useState<boolean>(false);
+  const [isArchived, setIsArchived] = useState<boolean>(false);
+  const [isArchiveDialogOpen, setIsArchiveDialogOpen] = useState<boolean>(false);
 
   const startTimeRef = useRef<number | null>(null);
 
   const [exportCallSummary] = useLazyExportCallSummaryQuery();
+  const [archiveCallLog] = useArchiveCallLogMutation();
 
   const { exportTxtFromText } = useFileExport();
 
@@ -54,6 +59,14 @@ const CallSummarySidebar: FC<CallSummarySidebarProps> = ({
       startTimeRef.current = null;
     }
   }, [callSummary?.id]);
+
+  useEffect(() => {
+    // Initialize archived state from callSummary based on archivedAt
+    if (callSummary) {
+      const archivedAt = (callSummary as any)?.archivedAt;
+      setIsArchived(!!archivedAt);
+    }
+  }, [callSummary]);
 
   const hasThresholdElapsed = (): boolean => {
     if (startTimeRef.current == null) return false;
@@ -151,6 +164,15 @@ const CallSummarySidebar: FC<CallSummarySidebarProps> = ({
         callSummary?.summaryStatus === ChatSummaryStatus.SUCCESS,
       text: "Export summary",
     },
+    {
+      alt: "Archive",
+      icon: isArchived ? <Unarchive /> : <Archive />,
+      onClick: () => {
+        setIsArchiveDialogOpen(true);
+      },
+      show: true,
+      text: isArchived ? "Unarchive session" : "Archive session",
+    },
   ];
 
   const tabList = [
@@ -235,6 +257,43 @@ const CallSummarySidebar: FC<CallSummarySidebarProps> = ({
       <DeleteCallLogConfirmationDialog
         chatId={deleteDialogChatId}
         closeDialog={onDeleteDialogClose}
+      />
+      <ArchiveDialog
+        isArchived={isArchived}
+        onUnarchiveConfirm={async () => {
+          try {
+            await archiveCallLog({
+              chatId: callSummary.id,
+              archive: false,
+            }).unwrap();
+            setIsArchived(false);
+            setIsArchiveDialogOpen(false);
+            toast.success("Call log unarchived successfully");
+          } catch (error) {
+            const errorMessage = error?.data?.message || "Failed to unarchive call log";
+            toast.error(errorMessage);
+            setIsArchiveDialogOpen(false);
+          }
+        }}
+        onArchiveConfirm={async () => {
+          try {
+            await archiveCallLog({
+              chatId: callSummary.id,
+              archive: true,
+            }).unwrap();
+            setIsArchived(true);
+            setIsArchiveDialogOpen(false);
+            toast.success("Call log archived successfully");
+          } catch (error) {
+            const errorMessage = error?.data?.message || "Failed to archive call log";
+            toast.error(errorMessage);
+            setIsArchiveDialogOpen(false);
+          }
+        }}
+        onClose={() => {
+          setIsArchiveDialogOpen(false);
+        }}
+        isOpen={isArchiveDialogOpen}
       />
     </SummarySidebarWrapper>
   );
