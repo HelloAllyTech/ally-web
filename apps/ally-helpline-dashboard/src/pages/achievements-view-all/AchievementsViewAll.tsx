@@ -3,7 +3,6 @@ import { FC, useState } from "react";
 import { Tooltip } from "@mui/material";
 import { useLocation, useNavigate } from "react-router-dom";
 
-import { FEATURE_FLAGS_MAP } from "@ally-ui-mono/ui-shared/featureFlag";
 import { useGetAvailableBadgesQuery } from "@api";
 import { ArrowLeft, Info, NoResults } from "@assets";
 import { AchievementItem, FallbackUI, ToggleButtonGroup } from "@components";
@@ -88,12 +87,6 @@ export const AchievementsViewAll: FC = () => {
   });
 
   const groupedBadges = getFilteredBadgesByCategory();
-
-  if (!FEATURE_FLAGS_MAP.BADGES_FLAG) {
-    return (
-      <div className="flex items-center justify-center h-full">Achievements is not enabled</div>
-    );
-  }
 
   // Error state should be checked before empty state
   if (isBadgesError) {

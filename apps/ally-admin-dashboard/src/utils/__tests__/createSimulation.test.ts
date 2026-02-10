@@ -1,11 +1,6 @@
 import { describe, it, expect, vi } from "vitest";
 
-import {
-  ExperienceMode,
-  ChecklistType,
-  SIMULATION_CREATOR_FIELD_GROUPS,
-  SIMULATION_CREATOR_FIELD_GROUPS_OLD,
-} from "@constants";
+import { SIMULATION_CREATOR_FIELD_GROUPS, SIMULATION_CREATOR_FIELD_GROUPS_OLD } from "@constants";
 import { GetSimulationByIdResponse } from "@types";
 
 import { extractValidData } from "../common";
@@ -13,16 +8,6 @@ import {
   getCreateSimulationSubSectionById,
   formatSimulationResponseData,
 } from "../createSimulation";
-import { FEATURE_FLAGS_MAP } from "@ally-ui-mono/ui-shared/featureFlag";
-
-// Mock feature flags
-vi.mock("@ally-ui-mono/ui-shared/featureFlag", () => ({
-  FEATURE_FLAGS_MAP: {
-    NEW_CREATE_SIMULATION_FLAG: true,
-    AUTO_TERMINATION_FIELD_FLAG: true,
-    PRIVATE_PUBLIC__SIMULATION_FLAG: true,
-  },
-}));
 
 describe("createSimulation utils", () => {
   describe("getCreateSimulationSubSectionById", () => {
@@ -39,7 +24,7 @@ describe("createSimulation utils", () => {
 
       expect(section).toBeDefined();
       expect(section?.id).toBe("basic-settings");
-      expect(section?.label).toBe("Character Identity");
+      expect(section?.label).toBe("Basic Settings");
     });
 
     it("should return undefined for non-existent id", () => {
@@ -69,43 +54,32 @@ describe("createSimulation utils", () => {
     });
     describe("overview section fields", () => {
       const getOverviewSection = () => getCreateSimulationSubSectionById("overview");
-      const getBasicSettingsSection = () => getCreateSimulationSubSectionById("basic-settings");
-      const overviewFields = [
-        {
-          id: "genderIdentity",
-          label: "Your gender identity",
-          type: "select",
-        },
-        {
-          id: "sexualOrientation",
-          label: "Your sexual orientation",
-          type: "select",
-        },
-        {
-          id: "responseLength",
-          label: "Length of your responses",
-          type: "select",
-        },
-      ];
-      describe("presence and configuration", () => {
-        it.each(overviewFields)(
-          "should have $id field correctly configured in overview section",
-          ({ id, label, type }) => {
-            const section = getOverviewSection();
-            const field = section?.fields.find(f => f.id === id);
-            expect(field).toBeDefined();
-            expect(field?.label).toBe(label);
-            expect(field?.type).toBe(type);
-            expect(field?.isMandatory).toBe(false);
-          },
-        );
+
+      it("should have title field correctly configured in overview section", () => {
+        const section = getOverviewSection();
+        const field = section?.fields.find(f => f.id === "title");
+        expect(field).toBeDefined();
+        expect(field?.label).toBe("Title");
+        expect(field?.type).toBe("text");
+        expect(field?.isMandatory).toBe(true);
       });
-      describe("absence from basic-settings section", () => {
-        it.each(overviewFields)("should NOT have $id field in basic-settings section", ({ id }) => {
-          const section = getBasicSettingsSection();
-          const field = section?.fields.find(f => f.id === id);
-          expect(field).toBeUndefined();
-        });
+
+      it("should have difficultyLevel field correctly configured in overview section", () => {
+        const section = getOverviewSection();
+        const field = section?.fields.find(f => f.id === "difficultyLevel");
+        expect(field).toBeDefined();
+        expect(field?.label).toBe("Difficulty Level");
+        expect(field?.type).toBe("select");
+        expect(field?.isMandatory).toBe(true);
+      });
+
+      it("should have coverImageUrl field correctly configured in overview section", () => {
+        const section = getOverviewSection();
+        const field = section?.fields.find(f => f.id === "coverImageUrl");
+        expect(field).toBeDefined();
+        expect(field?.label).toBe("Cover Image");
+        expect(field?.type).toBe("image_upload");
+        expect(field?.isMandatory).toBe(true);
       });
     });
   });
@@ -118,7 +92,7 @@ describe("createSimulation utils", () => {
         description: "Test Description",
         status: "ACTIVE",
         isGlobal: false,
-        ...(FEATURE_FLAGS_MAP.PRIVATE_PUBLIC__SIMULATION_FLAG ? { isPublic: false } : {}),
+        isPublic: false,
         coverImageUrl: "https://example.com/image.jpg",
         createdBy: "user-1",
         lastModified: "2024-01-01T00:00:00Z",
@@ -161,7 +135,7 @@ describe("createSimulation utils", () => {
         context: "Test context",
         coreMemories: "Test memories",
         isGlobal: false,
-        ...(FEATURE_FLAGS_MAP.PRIVATE_PUBLIC__SIMULATION_FLAG ? { isPublic: false } : {}),
+        isPublic: false,
         agentGoal: "Test goal",
         currentLocation: "New York",
         emotionalNeeds: "Test needs",
@@ -198,7 +172,7 @@ describe("createSimulation utils", () => {
         description: "Test Description",
         status: "DRAFT",
         isGlobal: false,
-        ...(FEATURE_FLAGS_MAP.PRIVATE_PUBLIC__SIMULATION_FLAG ? { isPublic: false } : {}),
+        isPublic: false,
         coverImageUrl: "https://example.com/image.jpg",
         createdBy: "user-1",
         lastModified: "2024-01-01T00:00:00Z",

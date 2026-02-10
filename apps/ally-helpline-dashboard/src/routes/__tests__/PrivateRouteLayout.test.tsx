@@ -145,9 +145,6 @@ vi.mock("@ally-ui-mono/ui-shared", () => ({
   logger: {
     info: vi.fn(),
   },
-  FEATURE_FLAGS_MAP: {
-    BADGES_FLAG: true,
-  },
 }));
 
 // Mock utils

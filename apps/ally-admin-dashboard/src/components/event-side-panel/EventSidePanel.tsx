@@ -2,7 +2,6 @@ import React, { useState, useCallback, useEffect } from "react";
 
 import { Tooltip } from "@mui/material";
 
-import { FEATURE_FLAGS_MAP } from "@ally-ui-mono/ui-shared";
 import { AutoExpandableTextarea } from "@ally-ui-mono/ui-shared/index";
 import { DoubleArrowRight, InfoIcon, Trash } from "@assets";
 import {
@@ -285,32 +284,19 @@ export const EventSidePanel: React.FC<EventSidePanelProps> = ({
             )}
 
             <div className="flex-1 h-[1px] bg-border-light" />
-            {FEATURE_FLAGS_MAP.DYNAMIC_BRANCHING_FLAG ? (
-              <Field
-                label="Branch description"
-                multiline
-                tooltip
-                tooltipTitle='Use "<" to access dynamic content for branching in simulations.'
-              >
-                <TextareaWithTriggerDropdown
-                  value={formData.branchInstruction}
-                  onChange={value => handleFieldChange("branchInstruction", value)}
-                  placeholder="Add instruction"
-                  alwaysOpen
-                />
-              </Field>
-            ) : (
-              <Field label="Branch description" multiline={true}>
-                <AutoExpandableTextarea
-                  maxLines={20}
-                  minHeight={20}
-                  value={formData.branchInstruction}
-                  onChange={value => handleFieldChange("branchInstruction", value)}
-                  placeholder="Add instruction"
-                  className="py-2 pt-[16px] px-0 border-none focus:outline-none text-base w-full resize-none overflow-y-auto custom-scrollbar"
-                />
-              </Field>
-            )}
+            <Field
+              label="Branch description"
+              multiline
+              tooltip
+              tooltipTitle='Use "<" to access dynamic content for branching in simulations.'
+            >
+              <TextareaWithTriggerDropdown
+                value={formData.branchInstruction}
+                onChange={value => handleFieldChange("branchInstruction", value)}
+                placeholder="Add instruction"
+                alwaysOpen
+              />
+            </Field>
             <Field label="Default session quality score">
               <NumberInput
                 value={Number(formData.score)}

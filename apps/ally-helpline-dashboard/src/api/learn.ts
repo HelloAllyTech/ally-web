@@ -5,7 +5,6 @@
  * - Scenarios catalog (list and detail)
  * - Simulation room lifecycle (list, create, delete)
  */
-import { FEATURE_FLAGS_MAP } from "@ally-ui-mono/ui-shared/featureFlag";
 import { ApiEndpoints, HttpMethod, TAG_TYPES } from "@constants";
 import {
   EndSimulationInput,
@@ -55,10 +54,9 @@ const learnAPI = baseAPI.injectEndpoints({
      */
     getScenario: builder.query<Scenario, GetScenarioInput>({
       query: ({ scenarioId, isPrivate }) => ({
-        url:
-          !FEATURE_FLAGS_MAP.PRIVATE_PUBLIC__SIMULATION_FLAG || isPrivate
-            ? ApiEndpoints.LEARN.GET_SCENARIO(scenarioId)
-            : ApiEndpoints.LEARN.GET_SCENARIO_PUBLIC(scenarioId),
+        url: isPrivate
+          ? ApiEndpoints.LEARN.GET_SCENARIO(scenarioId)
+          : ApiEndpoints.LEARN.GET_SCENARIO_PUBLIC(scenarioId),
         method: HttpMethod.GET,
         params: { scenarioId },
       }),

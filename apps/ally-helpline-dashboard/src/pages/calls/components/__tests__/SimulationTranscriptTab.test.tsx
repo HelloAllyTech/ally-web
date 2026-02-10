@@ -53,9 +53,6 @@ vi.mock("@components/transcription", () => ({
 
 // Mock @ally-ui-mono/ui-shared
 vi.mock("@ally-ui-mono/ui-shared/index", () => ({
-  FEATURE_FLAGS_MAP: {
-    PEER_REVIEW_FLAG: true,
-  },
   Toggle: ({ items, onChange }: any) => (
     <div data-testid="toggle-component">
       {items.map((item: any, index: number) => (

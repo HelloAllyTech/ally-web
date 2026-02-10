@@ -178,16 +178,12 @@ export const SIMULATION_CREATOR_FIELD_GROUPS_OLD: CreatorFieldGroups[] = [
         type: FORM_FIELD_TYPES.TOGGLE_BUTTON,
         fullWidth: true,
       },
-      ...(FEATURE_FLAGS_MAP.PRIVATE_PUBLIC__SIMULATION_FLAG
-        ? [
-            {
-              id: "isPublic",
-              label: "Public visibility",
-              type: FORM_FIELD_TYPES.TOGGLE_BUTTON,
-              fullWidth: true,
-            },
-          ]
-        : []),
+      {
+        id: "isPublic",
+        label: "Public visibility",
+        type: FORM_FIELD_TYPES.TOGGLE_BUTTON,
+        fullWidth: true,
+      },
       {
         id: "title",
         label: "Title",
@@ -678,9 +674,7 @@ export const EVENT_MANAGEMENT_TABLE_COLUMNS = [
     label: "Default branch description",
     accessor: "branchInstruction",
     placeholder: "Add Instruction",
-    dataType: FEATURE_FLAGS_MAP.DYNAMIC_BRANCHING_FLAG
-      ? cellTypes.textAreaWithDropdown
-      : cellTypes.editableText,
+    dataType: cellTypes.textAreaWithDropdown,
     options: [],
     minWidth: 240,
   },
@@ -907,7 +901,6 @@ export const PROMPT_COLUMNS = [
   },
 ];
 
-// TODO: Add columns for character library when BE is ready
 export const CHARACTER_LIBRARY_TABLE_COLUMNS = [
   {
     id: "name",
