@@ -67,3 +67,4 @@ export * from "./helper-tag";
 export * from "./states-instruction";
 export * from "./editable-table";
 export * from "./image-library";
+export * from "./report-section";
