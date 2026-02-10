@@ -1,10 +1,12 @@
 import { FC } from "react";
 
-import { Drawer as MuiDrawer } from "@mui/material";
+import { Drawer as MuiDrawer, Tooltip } from "@mui/material";
 import { ChevronsRight } from "lucide-react";
 
-import { DrawerProps } from "./types";
+import { toolTipStyles } from "@src/constants";
+
 import { Button, ButtonVariant } from "../button";
+import { DrawerProps } from "./types";
 
 const Drawer: FC<DrawerProps> = ({
   open,
@@ -50,16 +52,24 @@ const Drawer: FC<DrawerProps> = ({
               {headerButtons
                 ?.filter(button => button.show)
                 .map(button => (
-                  <Button
+                  <Tooltip
                     key={button.alt}
-                    data-testid={`drawer-header-button-${button.alt}`}
-                    variant={ButtonVariant.ICON}
-                    onClick={button.onClick}
-                    className="flex items-center gap-2 font-tertiary text-xs text-typography-900"
+                    title={button.text || ""}
+                    placement="top"
+                    arrow
+                    slotProps={toolTipStyles}
                   >
-                    {button.icon}
-                    {button.text}
-                  </Button>
+                    <span style={{ display: "inline-flex" }}>
+                      <Button
+                        data-testid={`drawer-header-button-${button.alt}`}
+                        variant={ButtonVariant.ICON}
+                        onClick={button.onClick}
+                        className="flex items-center gap-2 font-tertiary text-xs text-typography-900"
+                      >
+                        {button.icon}
+                      </Button>
+                    </span>
+                  </Tooltip>
                 ))}
             </div>
           </div>

@@ -231,7 +231,7 @@ export const summaryFields: SummaryField[] = [
     isEditable: true,
     key: SummaryFieldKey.Age,
     label: "Age",
-    options: ["18-24", "25-34", "35-44", "45-54", "55-64", "65+"],
+    options: ["0-5", "6-12", "13-17", "18-24", "25-34", "35-44", "45-54", "55-64", "65+"],
     sectionKey: SummarySectionKey.FeaturesAndDemographics,
     type: FieldType.Dropdown,
   },

@@ -1,0 +1,211 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`Calls Component > Snapshot Testing > should match snapshot 1`] = `
+<DocumentFragment>
+  <div
+    class="px-6 pb-6 h-full flex flex-col"
+    data-testid="calls-page"
+  >
+    <div
+      animate="[object Object]"
+      class="relative mt-[10px] font-secondary"
+      data-testid="calls-header"
+      initial="[object Object]"
+      layout="position"
+      transition="[object Object]"
+    >
+      <div
+        class="sm:p-4 p-0 rounded-lg flex gap-4 sm:justify-between justify-start bg-transparent items-center"
+        data-testid="calls-header-content"
+      >
+        <div
+          class="z-10 text-typography-900 text-2xl font-[500] flex items-center gap-2"
+          data-testid="calls-title"
+        >
+          Session Logs
+          <div
+            class="w-6 h-6 cursor-pointer border-l-[0.5px] border-border pl-2"
+            data-testid="refresh-icon"
+          >
+            Refresh
+          </div>
+        </div>
+        <div
+          class="flex gap-2 items-center"
+          data-testid="calls-action-buttons"
+        >
+          <button
+            data-testid="calls-upload-audio-button"
+            variant="secondary"
+          >
+            <div
+              data-testid="upload-icon"
+            >
+              Upload
+            </div>
+            Upload audio
+          </button>
+          <button
+            data-testid="calls-start-session-button"
+          >
+            <div
+              data-testid="start-session-icon"
+            >
+              StartSession
+            </div>
+            Start Session
+          </button>
+        </div>
+      </div>
+      <div
+        class="flex justify-between items-center gap-2"
+      />
+    </div>
+    <div
+      data-testid="calls-content"
+    >
+      <div
+        data-refresh-key="0"
+        data-testid="user-logs-table"
+      >
+        User Logs Table
+      </div>
+    </div>
+    <div
+      data-is-open="false"
+      data-testid="start-session-dialog"
+    >
+      <button
+        data-testid="close-dialog"
+      >
+        Close Dialog
+      </button>
+    </div>
+    <div
+      data-is-open="false"
+      data-testid="audio-upload-dialog"
+    >
+      <button
+        data-testid="close-audio-dialog"
+      >
+        Close Audio Dialog
+      </button>
+    </div>
+    <div
+      data-testid="custom-menu"
+      style="display: none;"
+    >
+      <button
+        data-testid="custom-menu-item-0"
+      >
+        Archives
+      </button>
+    </div>
+  </div>
+</DocumentFragment>
+`;
+
+exports[`Calls Component > Snapshot Testing > should match snapshot with admin role 1`] = `
+<DocumentFragment>
+  <div
+    class="px-6 pb-6 h-full flex flex-col"
+    data-testid="calls-page"
+  >
+    <div
+      animate="[object Object]"
+      class="relative mt-[10px] font-secondary"
+      data-testid="calls-header"
+      initial="[object Object]"
+      layout="position"
+      transition="[object Object]"
+    >
+      <div
+        class="sm:p-4 p-0 rounded-lg flex gap-4 sm:justify-between justify-start bg-transparent items-center"
+        data-testid="calls-header-content"
+      >
+        <div
+          class="z-10 text-typography-900 text-2xl font-[500] flex items-center gap-2"
+          data-testid="calls-title"
+        >
+          Session Logs
+          <div
+            class="w-6 h-6 cursor-pointer border-l-[0.5px] border-border pl-2"
+            data-testid="refresh-icon"
+          >
+            Refresh
+          </div>
+        </div>
+        <div
+          class="flex gap-2 items-center"
+          data-testid="calls-action-buttons"
+        >
+          <button
+            data-testid="calls-upload-audio-button"
+            variant="secondary"
+          >
+            <div
+              data-testid="upload-icon"
+            >
+              Upload
+            </div>
+            Upload audio
+          </button>
+          <button
+            data-testid="calls-start-session-button"
+          >
+            <div
+              data-testid="start-session-icon"
+            >
+              StartSession
+            </div>
+            Start Session
+          </button>
+        </div>
+      </div>
+      <div
+        class="flex justify-between items-center gap-2"
+      />
+    </div>
+    <div
+      data-testid="calls-content"
+    >
+      <div
+        data-refresh-key="0"
+        data-testid="user-logs-table"
+      >
+        User Logs Table
+      </div>
+    </div>
+    <div
+      data-is-open="false"
+      data-testid="start-session-dialog"
+    >
+      <button
+        data-testid="close-dialog"
+      >
+        Close Dialog
+      </button>
+    </div>
+    <div
+      data-is-open="false"
+      data-testid="audio-upload-dialog"
+    >
+      <button
+        data-testid="close-audio-dialog"
+      >
+        Close Audio Dialog
+      </button>
+    </div>
+    <div
+      data-testid="custom-menu"
+      style="display: none;"
+    >
+      <button
+        data-testid="custom-menu-item-0"
+      >
+        Archives
+      </button>
+    </div>
+  </div>
+</DocumentFragment>
+`;
