@@ -200,6 +200,21 @@ export const ScribeSettings: FC<ScribeSettingsProps> = ({ tenantId }) => {
     [dataMap, initialDataMap, itemsAreEqual],
   );
 
+  const buildHiddenFields = useCallback(
+    (currentItem: ScribeSettingsList, itemId: string): string[] => {
+      const hiddenFieldsFromCurrentItem = currentItem.fields
+        .filter(field => !field.visible)
+        .map(field => field.id);
+
+      const hiddenFieldsFromOtherSections = initialData
+        .filter(section => section.id !== itemId)
+        .flatMap(section => section.fields.filter(field => !field.visible).map(field => field.id));
+
+      return [...hiddenFieldsFromCurrentItem, ...hiddenFieldsFromOtherSections];
+    },
+    [initialData],
+  );
+
   const handleSave = useCallback(
     async (itemId: string) => {
       const currentItem = dataMap.get(itemId);
@@ -209,21 +224,32 @@ export const ScribeSettings: FC<ScribeSettingsProps> = ({ tenantId }) => {
       const clonedOriginalItem = cloneSection(originalItem);
       const clonedCurrentItem = cloneSection(currentItem);
 
+      const allFieldsUnselected = currentItem.fields.every(field => !field.visible);
+      const shouldDisableParent = allFieldsUnselected && currentItem.enabled === false;
+
       setInitialData(prev =>
         prev.map(prevItem => (prevItem.id === itemId ? clonedCurrentItem : prevItem)),
       );
 
-      const hiddenFields = [
-        ...currentItem.fields.filter(field => !field.visible).map(field => field.id),
-        ...initialData
-          .filter(section => section.id !== itemId)
-          .flatMap(section =>
-            section.fields.filter(field => !field.visible).map(field => field.id),
-          ),
-      ];
+      const hiddenFields = buildHiddenFields(currentItem, itemId);
 
       try {
         await updateSummaryFields({ tenantId, hiddenFields }).unwrap();
+
+        // If all fields are unselected, also disable the parent section via toggle API
+        if (shouldDisableParent) {
+          // Get all sections from initialData (saved state) and include current section as disabled
+          const hiddenSections = initialData
+            .filter(section => !section.enabled || section.id === itemId)
+            .map(section => section.id);
+
+          await updateSummarySections({ tenantId, hiddenSections }).unwrap();
+          setInitialData(prev =>
+            prev.map(prevItem =>
+              prevItem.id === itemId ? { ...prevItem, enabled: false } : prevItem,
+            ),
+          );
+        }
       } catch (error) {
         setInitialData(prev =>
           prev.map(prevItem => (prevItem.id === itemId ? clonedOriginalItem : prevItem)),
@@ -233,7 +259,14 @@ export const ScribeSettings: FC<ScribeSettingsProps> = ({ tenantId }) => {
         toast.error(errorMessage);
       }
     },
-    [dataMap, initialData, initialDataMap, tenantId, updateSummaryFields],
+    [
+      dataMap,
+      initialDataMap,
+      tenantId,
+      updateSummaryFields,
+      updateSummarySections,
+      buildHiddenFields,
+    ],
   );
 
   const handleCancel = useCallback(
@@ -268,13 +301,13 @@ export const ScribeSettings: FC<ScribeSettingsProps> = ({ tenantId }) => {
     [handleChildToggle],
   );
 
-  const updateSectionFields = (itemId: string, enabled: boolean, visible: boolean) => {
+  const updateSectionFields = (itemId: string, visible: boolean) => {
     setData(prev =>
       prev.map(item =>
         item.id === itemId
           ? {
               ...item,
-              enabled,
+              enabled: item.enabled, // Preserve the current enabled state
               fields: item.fields.map(field => ({ ...field, visible })),
             }
           : item,
@@ -283,11 +316,21 @@ export const ScribeSettings: FC<ScribeSettingsProps> = ({ tenantId }) => {
   };
 
   const handleClearAll = (itemId: string) => {
-    updateSectionFields(itemId, false, false);
+    setData(prev =>
+      prev.map(item =>
+        item.id === itemId
+          ? {
+              ...item,
+              enabled: false,
+              fields: item.fields.map(field => ({ ...field, visible: false })),
+            }
+          : item,
+      ),
+    );
   };
 
   const handleSelectAll = (itemId: string) => {
-    updateSectionFields(itemId, true, true);
+    updateSectionFields(itemId, true);
   };
 
   const renderScribeSettingsListItem = useCallback(
