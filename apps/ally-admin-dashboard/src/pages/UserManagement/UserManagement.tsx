@@ -1,4 +1,4 @@
-import { FC } from "react";
+import { FC, useCallback, useMemo } from "react";
 
 import { useNavigate, useSearchParams } from "react-router-dom";
 
@@ -29,6 +29,9 @@ import {
   userStatusItems,
   FilterDropdownOptions,
   userStatus,
+  USER_MANAGEMENT_TABS,
+  USER_MANAGEMENT_TAB_SETTINGS_OPTIONS_1,
+  USER_MANAGEMENT_TAB_SETTINGS_OPTIONS_2,
 } from "@constants";
 import { TabType } from "@types";
 import { formatCapitalizedEnum } from "@utils";
@@ -50,6 +53,7 @@ export const UserManagement: FC = () => {
 
   // Organization management hook
   const {
+    dashboardSettingsAll,
     tenantsCount,
     orgSearch,
     setOrgSearch,
@@ -105,7 +109,73 @@ export const UserManagement: FC = () => {
   ];
 
   const logoValue = tenantMethods.watch("logoUrl");
+  const enabledDashboardIds = tenantMethods.watch("enabledDashboardIds") ?? [];
+  const enableMicrophoneMode = tenantMethods.watch("enableMicrophoneMode");
+  const enableAudioUpload = tenantMethods.watch("enableAudioUpload");
+  const hideRankInLeaderboard = tenantMethods.watch("hideRankInLeaderboard");
 
+  const getSettingValue = useCallback(
+    (optionId: string): boolean => {
+      switch (optionId) {
+        case "enableMicrophoneMode":
+          return enableMicrophoneMode;
+        case "enableAudioUpload":
+          return enableAudioUpload;
+        case "hideRankInLeaderboard":
+          return hideRankInLeaderboard;
+        default:
+          return false;
+      }
+    },
+    [enableMicrophoneMode, enableAudioUpload, hideRankInLeaderboard],
+  );
+
+  const optionValues = useMemo(
+    () => [
+      ...USER_MANAGEMENT_TAB_SETTINGS_OPTIONS_1.map(option => {
+        const dashboardId =
+          dashboardSettingsAll?.find(setting => setting.analyticsType === option.type)?.id ?? "";
+        return {
+          id: dashboardId,
+          value: enabledDashboardIds.includes(dashboardId),
+          label: option.label,
+          onClick: (enabled: boolean) => {
+            const currentEnabledDashboardIds = tenantMethods.getValues("enabledDashboardIds") ?? [];
+            if (enabled) {
+              // Add the id to enabledDashboardIds if not already present
+              if (!currentEnabledDashboardIds.includes(dashboardId)) {
+                tenantMethods.setValue(
+                  "enabledDashboardIds",
+                  [...currentEnabledDashboardIds, dashboardId],
+                  { shouldDirty: true },
+                );
+              }
+            } else {
+              // Remove the id from enabledDashboardIds
+              tenantMethods.setValue(
+                "enabledDashboardIds",
+                currentEnabledDashboardIds.filter((id: string) => id !== dashboardId),
+                { shouldDirty: true },
+              );
+            }
+          },
+        };
+      }),
+      ...USER_MANAGEMENT_TAB_SETTINGS_OPTIONS_2.map(option => ({
+        id: option.id,
+        value: getSettingValue(option.id),
+        label: option.label,
+        onClick: (enabled: boolean) => {
+          tenantMethods.setValue(
+            option.id as "enableMicrophoneMode" | "enableAudioUpload" | "hideRankInLeaderboard",
+            enabled,
+            { shouldDirty: true },
+          );
+        },
+      })),
+    ],
+    [dashboardSettingsAll, tenantMethods, enabledDashboardIds, getSettingValue],
+  );
   const renderEditModal = () => {
     switch (selectedOption) {
       case UserMenuOptions.EDIT_DETAILS:
@@ -314,6 +384,9 @@ export const UserManagement: FC = () => {
               action={{ label: en.userManagement.addOrganization, onClick: handleNewgroupClick }}
             />
             <UserModal
+              hasTabs={true}
+              optionValues={optionValues}
+              tabOptions={USER_MANAGEMENT_TABS}
               isOpen={addOrganizationModalOpen}
               onClose={onCloseOrganizationEditModal}
               title={

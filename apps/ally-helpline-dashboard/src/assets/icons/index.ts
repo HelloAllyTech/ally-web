@@ -146,6 +146,7 @@ import UserIcon from "./user-icon.svg?react";
 import VerifiedBadge from "./verified-badge.svg?react";
 import VolumeOffIcon from "./volume-off-icon.svg?react";
 import VolumeUpIcon from "./volume-up-icon.svg?react";
+import WandStars from "./wand-stars.svg?react";
 import WarningTriangle from "./warning-triangle.svg?react";
 import Warning from "./warning.svg?react";
 import Waveform from "./waveform.svg?react";
@@ -296,4 +297,5 @@ export {
   MaxActiveUsers,
   Archive,
   Unarchive,
+  WandStars,
 };

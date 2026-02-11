@@ -116,6 +116,7 @@ export const en = {
     characterDeletedSuccessfully: "Character deleted successfully",
     failedToDeleteCharacter: "Failed to delete character",
     cases: "Cases",
+    addSimulationToCase: "Add simulations to case",
     filterByGender: "Filter by gender",
     failedToCreateCharacter: "Failed to create character",
     failedToUpdateCharacter: "Failed to update character",

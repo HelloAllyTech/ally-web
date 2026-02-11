@@ -9,6 +9,7 @@ import {
   useGetTenantsQuery,
   usePostLogoUrlMutation,
   useDeleteLogoMutation,
+  useGetDashboardSettingsAllQuery,
 } from "@api";
 import { SORT_BY, SORT_ORDER, en } from "@constants";
 import { Tenant } from "@types";
@@ -31,11 +32,19 @@ export function useOrganizationManagement() {
     orgcode: string;
     description: string;
     logoUrl?: string;
+    enabledDashboardIds: string[];
+    enableMicrophoneMode: boolean;
+    enableAudioUpload: boolean;
+    hideRankInLeaderboard: boolean;
   } = {
     logoUrl: "",
     orgname: "",
     orgcode: "",
     description: "",
+    enabledDashboardIds: [],
+    enableMicrophoneMode: false,
+    enableAudioUpload: false,
+    hideRankInLeaderboard: false,
   };
 
   // Form methods
@@ -49,6 +58,7 @@ export function useOrganizationManagement() {
   const [updateTenant] = useUpdateTenantMutation();
   const [logoUpload] = usePostLogoUrlMutation();
   const [deleteLogo] = useDeleteLogoMutation();
+  const { data: dashboardSettingsAll } = useGetDashboardSettingsAllQuery();
 
   const tenantParams = {
     limit: TENANTS_PAGE_SIZE,
@@ -95,6 +105,10 @@ export function useOrganizationManagement() {
     orgname: string;
     orgcode: string;
     description?: string;
+    enabledDashboardIds: string[];
+    enableMicrophoneMode: boolean;
+    enableAudioUpload: boolean;
+    hideRankInLeaderboard: boolean;
   }) => {
     try {
       const payload: {
@@ -102,10 +116,18 @@ export function useOrganizationManagement() {
         code: string;
         description: string;
         logoUrl?: string;
+        enabledDashboardIds: string[];
+        enableMicrophoneMode: boolean;
+        enableAudioUpload: boolean;
+        hideRankInLeaderboard: boolean;
       } = {
         name: data.orgname,
         code: data.orgcode,
         description: data.description ?? "",
+        enabledDashboardIds: data.enabledDashboardIds ?? [],
+        enableMicrophoneMode: data.enableMicrophoneMode ?? false,
+        enableAudioUpload: data.enableAudioUpload ?? false,
+        hideRankInLeaderboard: data.hideRankInLeaderboard ?? false,
       };
       // T
       payload.logoUrl = data.logoUrl;
@@ -125,6 +147,10 @@ export function useOrganizationManagement() {
       orgname: tenant.name ?? "",
       orgcode: tenant.code ?? "",
       description: tenant.description ?? "",
+      enabledDashboardIds: tenant.enabledDashboardIds ?? [],
+      enableMicrophoneMode: tenant.enableMicrophoneMode ?? false,
+      enableAudioUpload: tenant.enableAudioUpload ?? false,
+      hideRankInLeaderboard: tenant.hideRankInLeaderboard ?? false,
     });
     setAddOrganizationModalOpen(true);
   };
@@ -134,6 +160,10 @@ export function useOrganizationManagement() {
     orgname: string;
     orgcode: string;
     description?: string;
+    enabledDashboardIds: string[];
+    enableMicrophoneMode: boolean;
+    enableAudioUpload: boolean;
+    hideRankInLeaderboard: boolean;
   }) => {
     if (!selectedTenant) return;
     try {
@@ -142,10 +172,18 @@ export function useOrganizationManagement() {
         code: string;
         description: string;
         logoUrl?: string;
+        enabledDashboardIds: string[];
+        enableMicrophoneMode: boolean;
+        enableAudioUpload: boolean;
+        hideRankInLeaderboard: boolean;
       } = {
         name: data.orgname,
         code: data.orgcode,
         description: data.description || "",
+        enabledDashboardIds: data.enabledDashboardIds ?? [],
+        enableMicrophoneMode: data.enableMicrophoneMode ?? false,
+        enableAudioUpload: data.enableAudioUpload ?? false,
+        hideRankInLeaderboard: data.hideRankInLeaderboard ?? false,
       };
 
       payload.logoUrl = data.logoUrl;
@@ -164,12 +202,20 @@ export function useOrganizationManagement() {
     orgcode: string;
     description: string;
     logoUrl?: string;
+    enabledDashboardIds: string[];
+    enableMicrophoneMode: boolean;
+    enableAudioUpload: boolean;
+    hideRankInLeaderboard: boolean;
   }) => {
     const payload = {
       orgname: data.orgname,
       orgcode: data.orgcode,
       description: data.description,
       logoUrl: data.logoUrl,
+      enabledDashboardIds: data.enabledDashboardIds ?? [],
+      enableMicrophoneMode: data.enableMicrophoneMode ?? false,
+      enableAudioUpload: data.enableAudioUpload ?? false,
+      hideRankInLeaderboard: data.hideRankInLeaderboard ?? false,
     };
 
     if (selectedTenant && selectedTenant.logoUrl) deleteLogo({ logoUrl: selectedTenant.logoUrl });
@@ -218,5 +264,8 @@ export function useOrganizationManagement() {
     createTenant,
     updateTenant,
     logoUpload,
+
+    // analytics
+    dashboardSettingsAll,
   };
 }
