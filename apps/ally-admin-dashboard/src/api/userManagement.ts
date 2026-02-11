@@ -216,6 +216,12 @@ const userManagementAPI = baseAPI.injectEndpoints({
       invalidatesTags: [TAG_TYPES.SUMMARY_SECTIONS],
     }),
 
+    getDashboardSettingsAll: builder.query<any, void>({
+      query: () => ({
+        url: ApiEndpoints.USER_MANAGEMENT.DASHBOARD_SETTINGS_ALL,
+      }),
+    }),
+
     updateSummaryFields: builder.mutation<{ success: boolean }, UpdateSummaryFieldsBody>({
       query: ({ tenantId, hiddenFields }) => ({
         url: ApiEndpoints.USER_MANAGEMENT.SUMMARY_FIELDS,
@@ -255,4 +261,5 @@ export const {
   useGetSummarySectionsQuery,
   useUpdateSummarySectionsMutation,
   useUpdateSummaryFieldsMutation,
+  useGetDashboardSettingsAllQuery,
 } = userManagementAPI;
