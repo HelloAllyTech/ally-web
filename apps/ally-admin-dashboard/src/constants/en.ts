@@ -108,6 +108,12 @@ export const en = {
     profileSettings: "Profile settings",
     uploadImage: "Upload image",
     profileImage: "Profile image",
+    verifyingMagicLink: "Verifying your magic link...",
+    pleaseWait: "Please wait while we verify your link",
+    magicLinkExpired: "Invalid or Expired Link",
+    redirectingToLogin: "Redirecting to login page...",
+    loginSuccessful: "Login Successful!",
+    redirectingToDashboard: "Redirecting to dashboard...",
   },
   simulation: {
     createCharacter: "Create character",

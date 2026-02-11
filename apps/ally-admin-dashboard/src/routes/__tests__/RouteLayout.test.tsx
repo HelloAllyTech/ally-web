@@ -21,6 +21,7 @@ vi.mock("@pages", () => ({
   CreatePath: () => <div>CreatePathPage</div>,
   CreateCase: () => <div>CreateCasePage</div>,
   Login: () => <div>LoginPage</div>,
+  MagicLinkVerify: () => <div>MagicLinkVerifyPage</div>,
   LiveSimulationPreview: () => <div>LiveSimulationPreviewPage</div>,
   SimulationStudio: () => <div>SimulationStudioPage</div>,
   UserManagement: () => <div>UserManagementPage</div>,
