@@ -57,6 +57,11 @@ export const useLiveKitRoom = (
     });
   }, []);
 
+  const onRemoteParticipantConnected = useCallback(() => {
+    setStartTime(new Date());
+    setRoomStatus(RoomStatus.AGENT_JOINED);
+  }, []);
+
   const onRoomDisconnect = useCallback(() => {
     if (!endSessionButtonRef.current) autoTerminationAudio.current?.play();
     setRoomStatus(RoomStatus.DISCONNECTED);
@@ -80,6 +85,7 @@ export const useLiveKitRoom = (
     // Remove room-level listeners to prevent duplication on reconnect
     room.off(RoomEvent.DataReceived, onDataReceived);
     room.off(RoomEvent.Disconnected, onRoomDisconnect);
+    room.off(RoomEvent.ParticipantConnected, onRemoteParticipantConnected);
     room.removeAllListeners();
 
     logger.info("Disconnecting from room");
@@ -88,7 +94,7 @@ export const useLiveKitRoom = (
 
     // Reset the last event timestamp on cleanup
     lastEventTimestampRef.current = null;
-  }, [room, onDataReceived, onRoomDisconnect]);
+  }, [room, onDataReceived, onRoomDisconnect, onRemoteParticipantConnected]);
 
   const connectToRoom = async () => {
     try {
@@ -117,6 +123,7 @@ export const useLiveKitRoom = (
 
         room.on(RoomEvent.DataReceived, onDataReceived);
         room.on(RoomEvent.Disconnected, onRoomDisconnect);
+        room.on(RoomEvent.ParticipantConnected, onRemoteParticipantConnected);
       }
     } catch (error) {
       logger.error(`Failed to connect to LiveKit room: ${error}`);
@@ -143,7 +150,6 @@ export const useLiveKitRoom = (
     // Add a small delay before connecting to avoid race conditions in StrictMode
     const connectionTimeout = setTimeout(() => {
       connectToRoom();
-      setStartTime(new Date());
     }, RINGING_BELL_DELAY); // 10 seconds for ringing the bell
 
     return () => {

@@ -72,7 +72,9 @@ export const Simulation = () => {
         roomData={roomData}
         roomStatus={roomStatus}
         sessionId={id}
-        isEndingSession={roomStatus !== RoomStatus.CONNECTED}
+        isEndingSession={
+          roomStatus !== RoomStatus.CONNECTED && roomStatus !== RoomStatus.AGENT_JOINED
+        }
         startTime={startTime?.toISOString()}
         events={getSimulationEvents(events)}
         detectedEventIds={detectedEventIds}
