@@ -205,6 +205,8 @@ export const CharacterLibrary: React.FC = () => {
       // Delete all selected characters
       await deleteCharacter({ scenarioCharacterIds: characterIds }).unwrap();
 
+      setCharacters(characters?.filter(char => !characterIds.includes(char.id)));
+
       toast.success(
         `${en.common.successfullyDeleted} ${selectedCharacters.length} ${selectedCharacters.length > 1 ? en.common.characters : en.common.character}`,
       );
