@@ -49,6 +49,7 @@ import TermsAndAgreement from "./terms-and-agreement";
 import TextField from "./text-field";
 import ThreadCard from "./thread-card/ThreadCard";
 import ToggleButtonGroup from "./toggle-button-group";
+import TranscriptListing from "./transcript-listing";
 import Transcription from "./transcription";
 import UserInfo from "./user-info";
 
@@ -118,5 +119,6 @@ export {
   ReactionsModal,
   ReviewCommentsSidepanel,
   Transcription,
+  TranscriptListing,
   MaxActiveUsersDialog,
 };
