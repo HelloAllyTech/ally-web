@@ -274,7 +274,7 @@ export const extractValidData = (
           return [key, isNonEmptyString(value) ? value : null];
 
         default:
-          return [key, isNonEmptyString(value) ? value.trim() : value];
+          return [key, isNonEmptyString(value) ? value.trim() : null];
       }
     }),
   );
