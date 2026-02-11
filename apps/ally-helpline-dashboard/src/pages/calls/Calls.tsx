@@ -175,7 +175,7 @@ export const Calls: FC = () => {
           )}
           {FEATURE_FLAGS_MAP.SCRIBE_SETTINGS_FLAG && sessionType === SessionType.CALL && (
             <div
-              className="cursor-pointer w-7 h-7 flex items-center justify-center rounded-sm bg-[#EEEEEE] ml-auto"
+              className="cursor-pointer w-7 h-7 flex items-center justify-center rounded-sm hover:bg-[#EEEEEE] active:bg-[#EEEEEE] ml-auto"
               onClick={e => setMenuAnchor(e.currentTarget)}
             >
               <MoreVertIcon />
