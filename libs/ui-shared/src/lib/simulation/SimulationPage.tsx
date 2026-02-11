@@ -87,7 +87,7 @@ export const SimulationPage: FC<SimulationPageProps> = ({
   }, []);
 
   useEffect(() => {
-    if (roomStatus === RoomStatus.CONNECTED) startAudio.current?.pause();
+    if (roomStatus === RoomStatus.AGENT_JOINED) startAudio.current?.pause();
   }, [roomStatus]);
 
   if (!roomData) return null;

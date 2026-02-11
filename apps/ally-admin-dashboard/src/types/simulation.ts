@@ -6,6 +6,7 @@ export enum RoomStatus {
   CONNECTED = "connected",
   CONNECTING = "connecting",
   DISCONNECTED = "disconnected",
+  AGENT_JOINED = "agent_joined",
 }
 
 export interface LiveKitEvent {
