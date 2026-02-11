@@ -1,104 +1,127 @@
-import { FC } from "react";
+import { FC, useState } from "react";
 
 import { motion } from "framer-motion";
 
-import { GenericTable } from "@ally-ui-mono/ui-shared";
-import { Accordion } from "@components";
-import { FeedbackSectionType } from "@types";
+import { CustomImage, SimulationDetailsModal } from "@ally-ui-mono/ui-shared/index";
+import { InfoIcon } from "@assets";
+import { getFormattedDateTime, getFormattedTimeFromDuration } from "@utils";
 
-import { feedbackDemographics, feedbackSections } from "./constants";
+import { feedbackSections } from "./constants";
 import { FeedbackSectionProps } from "./types";
 import { getFormattedFeedbackSection } from "./utils";
 
-const getFeedbackSectionByType = ({
-  type,
-  data,
-  columns,
-}: {
-  type: FeedbackSectionType;
-  data: any;
-  columns: any[];
-}) => {
-  switch (type) {
-    case FeedbackSectionType.TABLE:
-      return (
-        <GenericTable
-          columns={columns}
-          data={data}
-          className="min-w-full text-md font-primary overflow-y-scroll mb-4"
-        />
-      );
-    case FeedbackSectionType.BULLET_TEXT:
-      return (
-        <ul className="pb-4 space-y-2 text-lg">
-          {Array.isArray(data) ? (
-            data.map((item, index) => (
-              <li key={index} className="flex items-start">
-                <span className="text-typography-900 mr-2">•</span>
-                <span className="text-typography-900">{item}</span>
-              </li>
-            ))
-          ) : (
-            <li className="flex items-start">
+const getFeedbackSectionByType = ({ data, label }: { data: any; label: string }) => {
+  return (
+    <div className="flex flex-col">
+      <span className="w-full text-typography-900 bg-[#EDE7F680] px-2 py-2 text-base">{label}</span>
+      <ul className="p-4 space-y-2 text-base">
+        {data.length === 0 && (
+          <div className="text-typography-700 font-primary text-center mb-2">No data found</div>
+        )}
+        {Array.isArray(data) ? (
+          data.map((item, index) => (
+            <li key={index} className="flex items-start">
               <span className="text-typography-900 mr-2">•</span>
-              <span className="text-typography-900">{data}</span>
+              <span className="text-typography-900">{item}</span>
             </li>
-          )}
-        </ul>
-      );
-    default:
-      return null;
-  }
+          ))
+        ) : (
+          <li className="flex items-start">
+            <span className="text-typography-900 mr-2">•</span>
+            <span className="text-typography-900">{data}</span>
+          </li>
+        )}
+      </ul>
+    </div>
+  );
 };
 
 export const FeedbackSection: FC<FeedbackSectionProps> = props => {
+  const [showSimulationDetailsModal, setShowSimulationDetailsModal] = useState(false);
+
   const formattedData = getFormattedFeedbackSection(props);
+  const callDurationInSeconds = Math.floor(formattedData.callDuration / 1000);
+  const formattedCallDuration =
+    callDurationInSeconds < 60
+      ? `${callDurationInSeconds} sec`
+      : `${getFormattedTimeFromDuration(callDurationInSeconds, "mm:ss")} min`;
 
   return (
     <motion.div className="flex flex-col gap-6 w-full">
-      <motion.div className="flex items-center gap-1 sm:gap-2 px-4">
-        {feedbackDemographics.map(feedback => (
-          <div
-            key={feedback.key}
-            className="flex gap-2 flex-1 min-w-[120px] sm:min-w-[140px] font-primary border-[0.5px] border-secondary-200 rounded-3xl p-[10px] items-center"
-          >
-            <feedback.icon />
-            <span className="text-xs text-typography-800">{feedback.label}</span>
-            <span className="text-base text-typography-900 font-medium">
-              {feedback.getValue(props)}
-            </span>
+      <div className="border p-4 shadow-lg rounded-lg flex flex-col gap-4">
+        <span className="text-typography-900 font-primary text-base font-semibold border-b pb-2">
+          Session Feedback
+        </span>
+        <div>
+          <div className="flex items-center gap-5 border-b pb-4">
+            <div>
+              <CustomImage
+                src={formattedData.coverImage}
+                alt="Cover Image"
+                className="w-[150px] h-[77px] object-cover"
+              />
+            </div>
+            <div className="flex flex-col gap-1 font-primary">
+              <span className="text-typography-700 text-sm">ID: {formattedData.sessionName}</span>
+              <span className="text-typography-900 text-lg font-medium flex items-center gap-1">
+                {formattedData.title}
+                <div
+                  onClick={() => setShowSimulationDetailsModal(true)}
+                  className="text-xs cursor-pointer text-neutral-500 ml-[4px]"
+                >
+                  <InfoIcon />
+                </div>
+              </span>
+              <span className="text-typography-700 text-sm flex items-center gap-3">
+                <span>
+                  {getFormattedDateTime(formattedData.sessionStartedAt, "MMM dd, yyyy hh:mm a")}
+                </span>
+                <span className="text-typography-400 text-lg">•</span>
+                <span>{formattedCallDuration}</span>
+              </span>
+            </div>
           </div>
-        ))}
-      </motion.div>
-      <motion.div className="overflow-y-auto font-primary">
-        {feedbackSections.map(({ label, icon, key, type, columns }, index) => {
-          return (
-            <motion.div
-              key={key}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{
-                duration: 0.4,
-                delay: index * 0.1,
-                ease: "easeOut",
-              }}
-              className="bg-white"
-            >
-              <Accordion title={label} titleIcon={icon} defaultExpanded={true}>
-                <div className="max-h-[250px] overflow-y-scroll custom-scrollbar border-b-[0.5px] border-b-border">
+        </div>
+        <motion.div className="overflow-y-auto font-primary space-y-4">
+          {feedbackSections.map(({ key, label }, index) => {
+            return (
+              <motion.div
+                key={key}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{
+                  duration: 0.4,
+                  delay: index * 0.1,
+                  ease: "easeOut",
+                }}
+                className="bg-white"
+              >
+                <div className="border-[0.5px] border-[#C8C5D0] rounded-sm">
                   {formattedData[key] ? (
-                    getFeedbackSectionByType({ type, columns, data: formattedData[key] })
+                    getFeedbackSectionByType({ data: formattedData[key], label })
                   ) : (
                     <div className="text-typography-700 font-primary text-center mb-2">
                       No data found
                     </div>
                   )}
                 </div>
-              </Accordion>
-            </motion.div>
-          );
-        })}
-      </motion.div>
+              </motion.div>
+            );
+          })}
+        </motion.div>
+      </div>
+      <SimulationDetailsModal
+        isOpen={showSimulationDetailsModal}
+        title={formattedData.title}
+        description={formattedData.description}
+        coverImageUrl={formattedData.coverImage}
+        coverVideoUrl={formattedData.coverVideo}
+        headerTitle="Simulation"
+        headerSubtitle="Details"
+        scenarioLabel="Scenario:"
+        showActionButtons={false}
+        onClickOutside={() => setShowSimulationDetailsModal(false)}
+      />
     </motion.div>
   );
 };

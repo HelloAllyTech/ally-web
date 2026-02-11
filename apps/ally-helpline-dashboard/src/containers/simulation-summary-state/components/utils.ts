@@ -23,5 +23,12 @@ export const getFormattedFeedbackSection = (summary: SimulationSummary) => {
       }),
     improvements: summary.details?.summary?.feedback?.improvements,
     positives: summary.details?.summary?.feedback?.positives,
+    callDuration: summary.details?.callDuration,
+    sessionName: summary.metadata?.sessionName,
+    title: summary.scenario?.title,
+    sessionStartedAt: summary.startedAt,
+    coverImage: summary.scenario?.coverImageUrl,
+    description: summary.scenario?.description,
+    coverVideo: summary.scenario?.coverVideoUrl,
   };
 };
