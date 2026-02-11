@@ -91,6 +91,7 @@ export const ApiEndpoints = {
     SIMULATION_CREDITS: "/v1/simulation-credits",
     SUMMARY_SECTIONS: `/v1/settings/summary-sections`,
     SUMMARY_FIELDS: `/v1/settings/summary-fields`,
+    DASHBOARD_SETTINGS_ALL: `/v1/analytics/dashboard/all`,
   },
   AUTHORIZATION: {
     GET_PERMISSIONS: "/v1/authorization/permissions",
