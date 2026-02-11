@@ -5,6 +5,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
 
 import { FEATURE_FLAGS_MAP } from "@ally-ui-mono/ui-shared/featureFlag";
+import { logger, LogLevel } from "@ally-ui-mono/ui-shared/logger";
 import {
   useCreateSimulationMutation,
   useDeleteCoverImageMutation,
@@ -197,6 +198,12 @@ export const CreateSimulation: FC = () => {
       value: field.value,
     }));
 
+    if (FEATURE_FLAGS_MAP.SIMULATION_CREATOR_FLAG) {
+      logger.log(
+        LogLevel.INFO,
+        JSON.stringify(extractValidData(SIMULATION_CREATOR_FIELD_GROUPS, restForm)),
+      );
+    }
     const simulationData = {
       ...(FEATURE_FLAGS_MAP.SIMULATION_CREATOR_FLAG
         ? extractValidData(SIMULATION_CREATOR_FIELD_GROUPS, restForm)
