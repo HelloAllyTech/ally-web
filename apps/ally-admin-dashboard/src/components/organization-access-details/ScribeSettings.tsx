@@ -439,8 +439,8 @@ export const ScribeSettings: FC<ScribeSettingsProps> = ({ tenantId }) => {
   }
 
   return (
-    <div className="overflow-y-auto w-full py-4">
-      <div className="flex-1 flex flex-col gap-4 overflow-hidden min-h-0 w-[60%] mt-4 pb-2">
+    <div className="overflow-y-auto w-full mb-4">
+      <div className="flex-1 flex flex-col gap-4 overflow-hidden min-h-0 w-[60%] mb-4 pb-2">
         <div className="text-base font-medium text-typography-900">
           {en.userManagement.additionalFields}
         </div>
