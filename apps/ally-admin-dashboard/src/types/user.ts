@@ -34,6 +34,10 @@ export interface Tenant {
   updatedAt: string;
   deletedAt: string | null;
   userCount: string;
+  enabledDashboardIds: string[];
+  enableMicrophoneMode: boolean;
+  enableAudioUpload: boolean;
+  hideRankInLeaderboard: boolean;
 }
 
 export interface GetTenantResponse {
@@ -141,6 +145,11 @@ export type AddUserFormData = {
   simulationCreditLimit?: number;
 };
 
+export interface TabOption {
+  id: string;
+  label: string;
+}
+
 export interface UserModalProps {
   isOpen?: boolean;
   onClose: () => void;
@@ -155,6 +164,14 @@ export interface UserModalProps {
   uploadTitle?: string;
   uploadId?: string;
   uploadImageUrl?: (payload: GetLogoUrlRequest) => Promise<any>;
+  hasTabs?: boolean;
+  tabOptions?: TabOption[];
+  optionValues?: {
+    id: string;
+    value: boolean;
+    label: string;
+    onClick: (enabled: boolean) => void;
+  }[];
 }
 
 export type Option = {
@@ -232,13 +249,13 @@ export interface DeleteLogoRequest {
 }
 
 export interface ScribeSettingsItem {
-  id: string;
+  id: number;
   label: string;
   visible: boolean;
 }
 
 export interface ScribeSettingsList {
-  id: string;
+  id: number;
   fields: ScribeSettingsItem[];
   label: string;
   enabled: boolean;
