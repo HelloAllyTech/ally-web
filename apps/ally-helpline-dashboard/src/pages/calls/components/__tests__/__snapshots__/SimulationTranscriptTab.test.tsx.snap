@@ -18,8 +18,10 @@ exports[`SimulationTranscriptTab > should match snapshot when rendered 1`] = `
             data-testid="transcript-item-0"
           >
             <div
-              data-testid="speaker-0"
-            />
+              data-testid="sender-0"
+            >
+              Client
+            </div>
             <div
               data-testid="content-0"
             >
@@ -30,8 +32,10 @@ exports[`SimulationTranscriptTab > should match snapshot when rendered 1`] = `
             data-testid="transcript-item-1"
           >
             <div
-              data-testid="speaker-1"
-            />
+              data-testid="sender-1"
+            >
+              Counsellor
+            </div>
             <div
               data-testid="content-1"
             >
@@ -42,8 +46,10 @@ exports[`SimulationTranscriptTab > should match snapshot when rendered 1`] = `
             data-testid="transcript-item-2"
           >
             <div
-              data-testid="speaker-2"
-            />
+              data-testid="sender-2"
+            >
+              Client
+            </div>
             <div
               data-testid="content-2"
             >
