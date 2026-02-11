@@ -53,6 +53,7 @@ vi.mock("@api", () => ({
   useDeleteCallSummaryMutation: vi.fn(() => [vi.fn()]),
   useDeleteCallLogMutation: vi.fn(() => [vi.fn()]),
   useArchiveCallLogMutation: vi.fn(() => [vi.fn(), { isLoading: false }]),
+  useGetSummaryFieldsQuery: vi.fn(() => ({ refetch: vi.fn() })),
 }));
 
 // Mock assets

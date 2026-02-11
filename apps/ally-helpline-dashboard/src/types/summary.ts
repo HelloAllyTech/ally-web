@@ -16,6 +16,7 @@ export enum SummaryFieldKey {
   CodeOfConcern = "codeOfConcern",
   Counsellor = "counsellor",
   NewCallFollowUp = "newCallFollowUp",
+  CallQuality = "callQuality",
 
   // Other fields
   SessionSummary = "sessionSummary",
