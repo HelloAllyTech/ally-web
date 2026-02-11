@@ -290,6 +290,7 @@ export const CreateCase: FC = () => {
             selectedSimulations={selectedSimulations}
             setSelectedSimulations={setSelectedSimulations}
             isDisabled={individualCase?.status === SimulationStatus.ACTIVE}
+            isCase={true}
           />,
           isNonEmptyArray(formValues.scenarios),
         );

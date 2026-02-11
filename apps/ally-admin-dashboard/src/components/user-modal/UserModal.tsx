@@ -1,9 +1,17 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { Controller } from "react-hook-form";
 
-import { ImageUpload } from "@ally-ui-mono/ui-shared";
-import { Button, DropdownwithTag, CustomDropdown, CreditField, ProfileCard } from "@components";
+import { FEATURE_FLAGS_MAP, ImageUpload } from "@ally-ui-mono/ui-shared";
+import {
+  Button,
+  DropdownwithTag,
+  CustomDropdown,
+  CreditField,
+  ProfileCard,
+  Tabs,
+  ToggleSwitch,
+} from "@components";
 import { en, FieldOptions, KeyboardKeys, USER_MODAL_FIELDS_IDS, UserRole } from "@constants";
 import { UserModalProps, FieldProps } from "@types";
 
@@ -11,7 +19,7 @@ import { ButtonVariant } from "../types";
 
 export const UserModal: React.FC<UserModalProps> = ({
   isOpen = true,
-  onClose,
+  onClose: onCloseProp,
   title,
   fields,
   buttonName = "Save",
@@ -23,9 +31,18 @@ export const UserModal: React.FC<UserModalProps> = ({
   uploadTitle,
   uploadId,
   uploadImageUrl,
+  hasTabs = false,
+  tabOptions,
+  optionValues,
 }) => {
+  const [activeTab, setActiveTab] = useState(tabOptions?.[0]?.id);
   // Handle ESC key to close modal
+
   useEffect(() => {
+    const onClose = () => {
+      setActiveTab(tabOptions?.[0]?.id);
+      onCloseProp();
+    };
     const handleEscKey = (event: KeyboardEvent) => {
       if (event.key === KeyboardKeys.ESCAPE && isOpen) return onClose();
     };
@@ -40,7 +57,7 @@ export const UserModal: React.FC<UserModalProps> = ({
       document.removeEventListener(KeyboardKeys.KEYDOWN, handleEscKey);
       document.body.style.overflow = "unset";
     };
-  }, [isOpen, onClose]);
+  }, [isOpen, onCloseProp, tabOptions]);
 
   const control = formMethods?.control;
   const watchRoles = formMethods?.watch?.(USER_MODAL_FIELDS_IDS.ROLES) || [];
@@ -56,7 +73,8 @@ export const UserModal: React.FC<UserModalProps> = ({
     : handleClick;
 
   const handleCancel = () => {
-    onClose();
+    setActiveTab(tabOptions?.[0]?.id);
+    onCloseProp();
   };
 
   const shouldShowField = (selectedField: FieldProps) => {
@@ -307,7 +325,8 @@ export const UserModal: React.FC<UserModalProps> = ({
   const handleBackdropMouseUp = (e: React.MouseEvent<HTMLDivElement>) => {
     const isBackdropTarget = e.target === e.currentTarget;
     if (backdropMouseDownRef.current && isBackdropTarget) {
-      onClose();
+      setActiveTab(tabOptions?.[0]?.id);
+      onCloseProp();
     }
     backdropMouseDownRef.current = false;
   };
@@ -323,18 +342,64 @@ export const UserModal: React.FC<UserModalProps> = ({
         <div className="text-typography-900 flex justify-center w-full text-2xl font-primary relative">
           {title}
         </div>
-        {imageUpload && (
-          <ImageUpload
-            formMethods={formMethods}
-            uploadId={uploadId}
-            uploadButtonName={uploadButtonName}
-            uploadTitle={uploadTitle}
-            onUpload={uploadImageUrl}
-            details={details}
-          />
+        {hasTabs && tabOptions.length > 0 && FEATURE_FLAGS_MAP.ORGANISATION_SETTINGS_FLAG && (
+          <div className="w-full mb-6">
+            <Tabs
+              items={tabOptions}
+              tabStyles={{ width: "100%" }}
+              activeId={activeTab}
+              showCount={false}
+              onChange={setActiveTab}
+            />
+          </div>
         )}
-        {/* Dynamic Form Fields */}
-        {fields.map((field, index) => renderField(field, index))}
+        {activeTab === tabOptions?.[0]?.id && (
+          <>
+            {imageUpload && (
+              <ImageUpload
+                formMethods={formMethods}
+                uploadId={uploadId}
+                uploadButtonName={uploadButtonName}
+                uploadTitle={uploadTitle}
+                onUpload={uploadImageUrl}
+                details={details}
+              />
+            )}
+            {/* Dynamic Form Fields */}
+            {fields.map((field, index) => renderField(field, index))}
+          </>
+        )}
+        {activeTab === tabOptions?.[1]?.id && (
+          <div className="flex flex-col gap-4 h-[462px]">
+            {optionValues?.map(tab => (
+              <div key={tab.id} className="flex justify-between items-center gap-2 h-9">
+                <label
+                  htmlFor={tab.id}
+                  className="text-sm text-typography-900 cursor-pointer font-primary"
+                >
+                  {tab.label}
+                </label>
+                <div className="flex gap-2 items-center">
+                  <ToggleSwitch
+                    enabled={tab.value}
+                    onChange={() => {
+                      tab.onClick(!tab.value);
+                    }}
+                    switchStyles={{
+                      height: "20px",
+                      width: "20px",
+                      boxShadow: "0px 0.67px 1.33px 0px #0000001A",
+                      transform: tab.value ? "translateX(23px)" : "translateX(2px)",
+                    }}
+                  />
+                  <span className="text-sm text-typography-600 font-normal">
+                    {tab.value ? en.common.enabled : en.common.disabled}
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
 
         {/* Action Buttons */}
         <div className="flex gap-3 py-2">

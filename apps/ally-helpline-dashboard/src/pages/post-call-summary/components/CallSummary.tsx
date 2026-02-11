@@ -1,6 +1,6 @@
 import { FC, useEffect, useState } from "react";
 
-import { CircularProgress, Divider } from "@mui/material";
+import { CircularProgress, Divider, Tooltip } from "@mui/material";
 import { motion } from "framer-motion";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
@@ -18,7 +18,7 @@ import {
 } from "@api";
 import { Assessment, PageNotFoundIllustration, Warning } from "@assets";
 import { Accordion, TextField, Button, InfoBanner, FallbackUI } from "@components";
-import { LanguageMap, Permissions, ROUTES } from "@constants";
+import { LanguageMap, Permissions, ROUTES, toolTipStyles } from "@constants";
 import { FeedbackDialog } from "@containers";
 import { useEnhance, useDebounce } from "@hooks";
 import { RootState } from "@store";
@@ -225,17 +225,21 @@ const CallSummary: FC<CallSummaryProps> = ({
               InputProps={{
                 readOnly: isFieldDisabled(field),
                 startAdornment: enhancing === field.key && EnhancementLoadingSkeleton,
-                endAdornment: field.isEnhanceable && shouldAllowEdit && (
-                  <EnhanceButton
-                    fieldName={field.key}
-                    inputText={value}
-                    updateValue={text =>
-                      setSummaryData(prev => ({
-                        ...prev,
-                        [field.key]: text,
-                      }))
-                    }
-                  />
+                endAdornment: field.isEnhanceable && shouldAllowEdit && value && value.trim() && (
+                  <Tooltip title="Enhance" placement="bottom" arrow slotProps={toolTipStyles}>
+                    <span className="absolute bottom-2 right-2">
+                      <EnhanceButton
+                        fieldName={field.key}
+                        inputText={value}
+                        updateValue={text =>
+                          setSummaryData(prev => ({
+                            ...prev,
+                            [field.key]: text,
+                          }))
+                        }
+                      />
+                    </span>
+                  </Tooltip>
                 ),
               }}
             />
