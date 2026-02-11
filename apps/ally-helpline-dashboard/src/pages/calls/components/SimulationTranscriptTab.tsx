@@ -1,18 +1,9 @@
 import { FC, useEffect, useMemo, useRef, useState } from "react";
 
 import { useSelector } from "react-redux";
-import { useNavigate } from "react-router-dom";
 
-import { Toggle } from "@ally-ui-mono/ui-shared";
-import {
-  useCreateReviewMutation,
-  useGetSimulationSummaryQuery,
-  useGetSimulationTranscriptQuery,
-  useUpdateReviewMutation,
-} from "@api";
-import { Comment } from "@assets";
-import { TranscriptListing, Button } from "@components";
-import { REVIEW_PRIVACY_OPTIONS, ROUTES } from "@constants";
+import { useGetSimulationTranscriptQuery } from "@api";
+import { TranscriptListing } from "@components";
 import { RootState } from "@store";
 import { SimulationTranscriptMessage } from "@types";
 
@@ -23,6 +14,7 @@ const SimulationTranscriptTab: FC<SimulationTranscriptTabProps> = ({
   sessionId,
   className,
   councellorName,
+  summary,
 }) => {
   const [transcriptOffset, setTranscriptOffset] = useState(0);
   const [transcriptList, setTranscriptList] = useState<SimulationTranscriptMessage[]>([]);
@@ -30,11 +22,6 @@ const SimulationTranscriptTab: FC<SimulationTranscriptTabProps> = ({
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   const { user } = useSelector((state: RootState) => state.user);
-  const { data: summary } = useGetSimulationSummaryQuery(sessionId);
-
-  const [createReview, { isLoading: isCreateReviewLoading }] = useCreateReviewMutation();
-  const [updateReview, { isLoading: isUpdateReviewLoading }] = useUpdateReviewMutation();
-  const navigate = useNavigate();
 
   const { data: transcriptData, isLoading: isGetTranscriptLoading } =
     useGetSimulationTranscriptQuery({
@@ -99,13 +86,6 @@ const SimulationTranscriptTab: FC<SimulationTranscriptTabProps> = ({
     }
   }, [transcript, user?.id]);
 
-  const handleCreateReview = async (status: string) => {
-    if (summary.reviewId) {
-      await updateReview({ id: summary.reviewId, status });
-    } else {
-      await createReview({ scenarioSessionId: sessionId });
-    }
-  };
   const handleLoadMore = () => {
     // Don't load more if we're already loading or if there are no more transcripts
     if (isGetTranscriptLoading || !hasMoreTranscripts) return;
@@ -127,38 +107,6 @@ const SimulationTranscriptTab: FC<SimulationTranscriptTabProps> = ({
         />
         <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t  to-transparent pointer-events-none" />
       </div>
-
-      {summary?.counselorId === user?.id && transcriptList.length > 0 && (
-        <div className="flex justify-center">
-          <div
-            className="flex justify-center gap-2 rounded-full border p-2 shadow-lg"
-            style={{
-              opacity: isCreateReviewLoading || isUpdateReviewLoading ? 0.5 : 1,
-            }}
-          >
-            <Toggle
-              items={REVIEW_PRIVACY_OPTIONS}
-              initialValue={summary.reviewStatus}
-              onChange={handleCreateReview}
-            />
-            {summary.reviewId && (
-              <>
-                <div className="border-l" />
-                <Button
-                  onClick={() =>
-                    navigate(ROUTES.REVIEW_DETAILS.replace(":reviewId", summary.reviewId))
-                  }
-                  variant="secondary"
-                  className="flex justify-center h-[40px]"
-                >
-                  <Comment />
-                  Comments
-                </Button>
-              </>
-            )}
-          </div>
-        </div>
-      )}
     </div>
   );
 };

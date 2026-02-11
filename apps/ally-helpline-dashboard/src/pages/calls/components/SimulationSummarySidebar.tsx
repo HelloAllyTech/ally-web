@@ -1,8 +1,17 @@
 import { FC, useEffect, useRef, useState } from "react";
 
 import { useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
 
-import { Permissions } from "@constants";
+import { Toggle } from "@ally-ui-mono/ui-shared/index";
+import {
+  useCreateReviewMutation,
+  useGetSimulationSummaryQuery,
+  useUpdateReviewMutation,
+} from "@api";
+import { Comment } from "@assets";
+import { Button } from "@components";
+import { Permissions, REVIEW_PRIVACY_OPTIONS, ROUTES } from "@constants";
 import { FeedbackDialog, SimulationSummary } from "@containers";
 import { RootState } from "@store";
 import { SessionType, SimulationSummary as SimulationSummaryType } from "@types";
@@ -13,7 +22,6 @@ import { SimulationSummarySidebarProps } from "./types";
 
 const SimulationSummarySidebar: FC<SimulationSummarySidebarProps> = ({
   summaryId,
-  summaryName,
   closeSummarySidebar,
   canShowFeedback = true,
   councellorName,
@@ -23,7 +31,12 @@ const SimulationSummarySidebar: FC<SimulationSummarySidebarProps> = ({
   const hasFeedback = useRef<boolean>(false);
   const startTimeRef = useRef<number | null>(null);
 
-  const { permissions } = useSelector((state: RootState) => state.user);
+  const navigate = useNavigate();
+
+  const { user, permissions } = useSelector((state: RootState) => state.user);
+  const { data: summary } = useGetSimulationSummaryQuery(summaryId);
+  const [createReview, { isLoading: isCreateReviewLoading }] = useCreateReviewMutation();
+  const [updateReview, { isLoading: isUpdateReviewLoading }] = useUpdateReviewMutation();
 
   const onSummaryFetch = (summary: SimulationSummaryType) => {
     hasFeedback.current = summary.hasFeedback;
@@ -42,11 +55,47 @@ const SimulationSummarySidebar: FC<SimulationSummarySidebarProps> = ({
     return Date.now() - startTimeRef.current >= SUMMARY_FEEDBACK_TIMEOUT;
   };
 
+  const handleCreateReview = async (status: string) => {
+    if (summary?.reviewId) {
+      await updateReview({ id: summary.reviewId, status });
+    } else {
+      await createReview({ scenarioSessionId: summaryId });
+    }
+  };
+
   const SidebarTitle = (
-    <span className="text-base flex items-center gap-2">
+    <div className="text-base flex items-center justify-between w-full gap-2">
       <span className="font-semibold font-tertiary text-typography-800">Summary</span>
-      <span className="font-normal font-primary text-typography-800">{summaryName}</span>
-    </span>
+
+      {summary?.counselorId === user?.id && (
+        <div
+          className="flex items-center gap-2"
+          style={{
+            opacity: isCreateReviewLoading || isUpdateReviewLoading ? 0.5 : 1,
+          }}
+        >
+          <Toggle
+            items={REVIEW_PRIVACY_OPTIONS}
+            initialValue={summary?.reviewStatus}
+            onChange={handleCreateReview}
+          />
+          {summary?.reviewId && (
+            <>
+              <div className="border-l border-border h-5" />
+              <Button
+                onClick={() =>
+                  navigate(ROUTES.REVIEW_DETAILS.replace(":reviewId", summary.reviewId))
+                }
+                variant="secondary"
+                className="flex justify-center h-[40px] shadow-lg"
+              >
+                <Comment />
+              </Button>
+            </>
+          )}
+        </div>
+      )}
+    </div>
   );
 
   const tabList = [

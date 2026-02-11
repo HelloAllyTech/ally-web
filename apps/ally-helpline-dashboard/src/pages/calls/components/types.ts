@@ -2,7 +2,7 @@ import { Dispatch, ReactNode, SetStateAction } from "react";
 
 import { Dayjs } from "dayjs";
 
-import { CallLog, ChatSummaryStatus, SessionType } from "@types";
+import { CallLog, ChatSummaryStatus, SessionType, SimulationSummary } from "@types";
 
 import { SessionUserGroup } from "../constants";
 
@@ -65,13 +65,6 @@ export interface CallTranscriptTabProps {
 
 export interface SummarySidebarWrapperProps {
   onSidebarClose?: () => void;
-  extraHeaderList?: {
-    alt: string;
-    icon: ReactNode;
-    onClick: () => void;
-    show: boolean;
-    text?: string;
-  }[];
   tabList: {
     id: number;
     label: string;
@@ -83,7 +76,6 @@ export interface SummarySidebarWrapperProps {
 
 export interface SimulationSummarySidebarProps {
   summaryId: string;
-  summaryName: string;
   closeSummarySidebar: () => void;
   canShowFeedback?: boolean;
   councellorName?: string;
@@ -114,6 +106,7 @@ export interface SimulationTranscriptTabProps {
   sessionId: string;
   className?: string;
   councellorName?: string;
+  summary?: SimulationSummary;
 }
 
 export interface AudioUploadDialogProps {

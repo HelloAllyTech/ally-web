@@ -4,8 +4,16 @@ import { Tab, Tabs } from "@mui/material";
 import { motion } from "framer-motion";
 import { useNavigate, useParams } from "react-router-dom";
 
-import { ROUTES } from "@constants";
+import { Toggle } from "@ally-ui-mono/ui-shared/index";
+import {
+  useCreateReviewMutation,
+  useGetSimulationSummaryQuery,
+  useUpdateReviewMutation,
+} from "@api";
+import { BackCircle } from "@assets";
+import { REVIEW_PRIVACY_OPTIONS } from "@constants";
 import { SimulationSummary } from "@containers";
+import UpNextTab from "@containers/simulation-summary-state/UpNextTab";
 
 import { SimulationTranscriptTab } from "../calls/components";
 import { tabStyles } from "../calls/constants";
@@ -15,22 +23,15 @@ export const PostSimulationSummary: FC = () => {
   const { sessionId } = useParams();
   const navigate = useNavigate();
 
-  const closeSummarySidebar = () => {
-    navigate(ROUTES.LEARN);
-  };
+  const { data: summary } = useGetSimulationSummaryQuery(sessionId);
+  const [createReview] = useCreateReviewMutation();
+  const [updateReview] = useUpdateReviewMutation();
 
   const tabList = [
     {
       id: 1,
       label: "Summary",
-      content: (
-        <SimulationSummary
-          summaryId={sessionId}
-          isInSidebar={false}
-          className="max-h-[calc(100vh-212px)]"
-          onSummaryClose={closeSummarySidebar}
-        />
-      ),
+      content: <SimulationSummary summaryId={sessionId} className="max-h-[calc(100vh-212px)]" />,
     },
     {
       id: 2,
@@ -42,12 +43,29 @@ export const PostSimulationSummary: FC = () => {
         />
       ),
     },
+    ...(summary?.scenarioPathSessionItemId
+      ? [
+          {
+            id: 3,
+            label: "Up Next",
+            content: <UpNextTab sessionId={sessionId} />,
+          },
+        ]
+      : []),
   ];
 
   const [selectedTab, setSelectedTab] = useState<number>(tabList?.[0].id);
 
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
     setSelectedTab(newValue);
+  };
+
+  const handleCreateReview = async (status: string) => {
+    if (summary?.reviewId) {
+      await updateReview({ id: summary.reviewId, status });
+    } else {
+      await createReview({ scenarioSessionId: sessionId });
+    }
   };
 
   const getTabContent = () => tabList.find(tab => tab.id === selectedTab)?.content;
@@ -58,11 +76,25 @@ export const PostSimulationSummary: FC = () => {
         variants={containerVariants}
         initial="hidden"
         animate="visible"
-        className="flex flex-col gap-6 max-w-3xl w-full h-full pb-8 sm:pb-16 px-4 sm:px-6 items-center"
+        className="flex flex-col gap-6 max-w-4xl w-full h-full pb-8 sm:pb-16 px-4 sm:px-6 items-center"
       >
-        <div className="w-full text-black text-2xl sm:text-4xl font-normal text-left font-secondary mt-8 px-4">
-          Simulation <em>Summary</em>
+        <div className="flex items-center justify-between w-full mt-8">
+          <div className="flex items-center gap-2 text-black text-2xl sm:text-4xl font-normal text-left font-secondary">
+            <button onClick={() => navigate(-1)}>
+              <BackCircle />
+            </button>
+            Simulation <em>Summary</em>
+          </div>
+
+          <div className="flex justify-center gap-2">
+            <Toggle
+              items={REVIEW_PRIVACY_OPTIONS}
+              initialValue={summary?.reviewStatus}
+              onChange={handleCreateReview}
+            />
+          </div>
         </div>
+
         <Tabs
           value={selectedTab}
           onChange={handleTabChange}

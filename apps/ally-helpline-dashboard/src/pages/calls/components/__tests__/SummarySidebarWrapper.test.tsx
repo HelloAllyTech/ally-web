@@ -2,14 +2,7 @@ import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, vi, it } from "vitest";
 
-import { ALLY_DATA_POLICY_URL } from "@constants";
-import { openLinkInNewTab } from "@utils";
-
 import SummarySidebarWrapper from "../SummarySidebarWrapper";
-
-vi.mock("@utils", () => ({
-  openLinkInNewTab: vi.fn(),
-}));
 
 vi.mock("@components", () => ({
   Drawer: ({ title, children, headerButtons, onClose }: any) => (
@@ -94,13 +87,6 @@ describe("SummarySidebarWrapper", () => {
 
     await userEvent.click(screen.getByText("Close Drawer"));
     expect(onClose).toHaveBeenCalledTimes(1);
-  });
-
-  it("calls openLinkInNewTab when data policy button is clicked", async () => {
-    render(<SummarySidebarWrapper title="Test Sidebar" tabList={mockTabList} />);
-
-    await userEvent.click(screen.getByText("Data policy"));
-    expect(openLinkInNewTab).toHaveBeenCalledWith(ALLY_DATA_POLICY_URL);
   });
 
   it("renders children content", () => {
