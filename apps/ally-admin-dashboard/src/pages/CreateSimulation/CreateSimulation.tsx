@@ -203,6 +203,7 @@ export const CreateSimulation: FC = () => {
         LogLevel.INFO,
         JSON.stringify(extractValidData(SIMULATION_CREATOR_FIELD_GROUPS, restForm)),
       );
+      logger.log(LogLevel.INFO, JSON.stringify(restForm));
     }
     const simulationData = {
       ...(FEATURE_FLAGS_MAP.SIMULATION_CREATOR_FLAG
