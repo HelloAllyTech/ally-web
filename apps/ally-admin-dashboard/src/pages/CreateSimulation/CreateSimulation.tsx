@@ -32,6 +32,7 @@ import {
   SIMULATION_CREATOR_STEP_IDS,
   ExperienceMode,
   SESSION_TIMER_CONFIG,
+  FORM_FIELD_IDS,
 } from "@constants";
 import { useDebounce } from "@hooks";
 import { SimulationStatus, SimulationPreviewType, triggerWarning } from "@types";
@@ -114,6 +115,11 @@ export const CreateSimulation: FC = () => {
       if (isEmpty(value)) return false;
       if (Array.isArray(value) && value.length === 0) return false;
       if (value instanceof FileList && value.length === 0) return false;
+      if (fieldId === FORM_FIELD_IDS.LANGUAGES_VOICES) {
+        const mappings = value as Record<string, string> | undefined;
+        const hasAnyVoiceSelected = !!mappings && Object.values(mappings).some(v => !!v);
+        if (!hasAnyVoiceSelected) return false;
+      }
       return true;
     });
   }, [formValues]);
