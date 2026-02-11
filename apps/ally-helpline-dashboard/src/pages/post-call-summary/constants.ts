@@ -221,6 +221,13 @@ export const summaryFields: SummaryField[] = [
     type: FieldType.Text,
   },
   {
+    isEditable: true,
+    key: SummaryFieldKey.CallQuality,
+    label: "Call Quality",
+    sectionKey: SummarySectionKey.FeaturesAndDemographics,
+    type: FieldType.Text,
+  },
+  {
     isEditable: false,
     key: SummaryFieldKey.ClientId,
     label: "Caller ID",

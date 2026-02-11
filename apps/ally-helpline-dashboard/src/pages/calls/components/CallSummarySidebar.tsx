@@ -4,7 +4,11 @@ import { useSelector } from "react-redux";
 import { toast } from "sonner";
 
 import { FEATURE_FLAGS_MAP, logger } from "@ally-ui-mono/ui-shared";
-import { useLazyExportCallSummaryQuery, useArchiveCallLogMutation } from "@api";
+import {
+  useLazyExportCallSummaryQuery,
+  useArchiveCallLogMutation,
+  useGetSummaryFieldsQuery,
+} from "@api";
 import { Archive, Delete, Download, Unarchive } from "@assets";
 import { CallProvider, Permissions } from "@constants";
 import { FeedbackDialog } from "@containers";
@@ -46,6 +50,14 @@ const CallSummarySidebar: FC<CallSummarySidebarProps> = ({
   const [archiveCallLog] = useArchiveCallLogMutation();
 
   const { exportTxtFromText } = useFileExport();
+
+  const { refetch: refetchSummaryFields } = useGetSummaryFieldsQuery();
+
+  useEffect(() => {
+    if (callSummary?.id) {
+      refetchSummaryFields();
+    }
+  }, [callSummary?.id, refetchSummaryFields]);
 
   useEffect(() => {
     if (callSummary?.details?.callInfo?.summaryName) {
