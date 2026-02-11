@@ -70,6 +70,14 @@ vi.mock("@hooks", () => ({
   useDebounce: (fn: any) => fn, // Return the function immediately without debouncing
 }));
 
+vi.mock("@ally-ui-mono/ui-shared/featureFlag", () => ({
+  FEATURE_FLAGS_MAP: {
+    SIMULATION_CREATOR_FLAG: true,
+    ADDITIONAL_CONFIG_FLAG: false,
+    SIMULATION_REPORT_FLAG: false,
+  },
+}));
+
 // Mock components
 vi.mock("@components", () => ({
   Header: ({ onBack, onSaveDraft, onPublish, onPreview, isValid }: any) => (
@@ -149,6 +157,10 @@ vi.mock("@constants", () => ({
     GUIDED: "GUIDED",
     UNGUIDED: "UNGUIDED",
   },
+  // Provide FORM_FIELD_IDS to satisfy CreateSimulation import
+  FORM_FIELD_IDS: {
+    LANGUAGES_VOICES: "languageVoices",
+  },
   ROUTES: {
     SIMULATION_STUDIO: "/simulation-studio",
     EDIT_SIMULATION: (id: string | number) => `/create-simulation/edit/${id}`,
@@ -184,6 +196,8 @@ vi.mock("@constants", () => ({
       fields: [
         { id: "title", isMandatory: true },
         { id: "description", isMandatory: true },
+        // Include language-voice mapping as mandatory to match app behavior
+        { id: "languageVoices", isMandatory: true },
         { id: "age", isMandatory: false },
       ],
     },
@@ -228,11 +242,14 @@ describe("CreateSimulation", () => {
       title: "Test Title",
       description: "Test Description",
       triggerWarningIds: [],
+      // Provide at least one language->voice mapping by default so header is enabled
+      languageVoices: { "1": "voice-1" },
     })),
     getValues: vi.fn(() => ({
       title: "Test Title",
       description: "Test Description",
       triggerWarningIds: [],
+      languageVoices: { "1": "voice-1" },
     })) as any,
     reset: vi.fn(),
   };
@@ -539,6 +556,7 @@ describe("CreateSimulation", () => {
         title: "",
         description: "",
         triggerWarningIds: [],
+        languageVoices: { "1": "" },
       });
       renderCreateSimulation();
 
@@ -551,6 +569,7 @@ describe("CreateSimulation", () => {
         title: "Test",
         description: "Test Description",
         triggerWarningIds: [],
+        languageVoices: { "1": "voice-1" },
       });
       renderCreateSimulation();
 
