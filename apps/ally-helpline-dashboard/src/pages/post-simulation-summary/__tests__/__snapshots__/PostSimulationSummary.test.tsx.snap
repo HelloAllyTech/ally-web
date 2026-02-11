@@ -9,19 +9,91 @@ exports[`PostSimulationSummary Component > Snapshot Testing > should match snaps
       class="bg-white w-full h-[100vh] overflow-y-auto flex flex-col items-center "
     >
       <div
-        class="flex flex-col gap-6 max-w-3xl w-full h-full pb-8 sm:pb-16 px-4 sm:px-6 items-center"
+        class="flex flex-col gap-6 max-w-4xl w-full h-full pb-8 sm:pb-16 px-4 sm:px-6 items-center"
         data-animate="visible"
         data-initial="hidden"
         data-testid="motion-div"
         data-variants="{\\"hidden\\":{\\"opacity\\":0},\\"visible\\":{\\"opacity\\":1,\\"transition\\":{\\"staggerChildren\\":0.2,\\"delayChildren\\":0.3}}}"
       >
         <div
-          class="w-full text-black text-2xl sm:text-4xl font-normal text-left font-secondary mt-8 px-4"
+          class="flex items-center justify-between w-full mt-8"
         >
-          Simulation 
-          <em>
-            Summary
-          </em>
+          <div
+            class="flex items-center gap-2 text-black text-2xl sm:text-4xl font-normal text-left font-secondary"
+          >
+            <button>
+              <svg
+                fill="none"
+                height="48"
+                viewBox="0 0 48 48"
+                width="48"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <g
+                  clip-path="url(#clip0_2523_4287)"
+                >
+                  <rect
+                    fill="#F9F9F9"
+                    height="40"
+                    rx="20"
+                    width="40"
+                    x="4"
+                    y="4"
+                  />
+                  <path
+                    d="M19.825 25L25.425 30.6L24 32L16 24L24 16L25.425 17.4L19.825 23H32V25H19.825Z"
+                    fill="#49454F"
+                  />
+                </g>
+                <defs>
+                  <clippath
+                    id="clip0_2523_4287"
+                  >
+                    <rect
+                      fill="white"
+                      height="40"
+                      rx="20"
+                      width="40"
+                      x="4"
+                      y="4"
+                    />
+                  </clippath>
+                </defs>
+              </svg>
+            </button>
+            Simulation 
+            <em>
+              Summary
+            </em>
+          </div>
+          <div
+            class="flex justify-center gap-2"
+          >
+            <div
+              class="flex flex-col gap-2 w-fit"
+            >
+              <div
+                class="flex gap-2 rounded-full border-[0.5px] bg-[#F3F3F3] relative"
+              >
+                <div
+                  class="transition-all duration-200 absolute top-0 w-1/2 h-full rounded-full bg-[#FFFFFF]"
+                  style="left: 0px; box-shadow: 3px 0px 9px 0px #00000012;"
+                />
+                <div
+                  class="rounded-full py-2 px-4 cursor-pointer z-10 transition-all duration-200 font-primary"
+                  style="color: rgb(0, 0, 0);"
+                >
+                  Keep it private
+                </div>
+                <div
+                  class="rounded-full py-2 px-4 cursor-pointer z-10 transition-all duration-200 font-primary"
+                  style="color: rgba(0, 0, 0, 0.376);"
+                >
+                  Share for review
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
         <div
           class="w-full normal-case border-b border-[#DBDBDB] mb-4"
@@ -48,7 +120,6 @@ exports[`PostSimulationSummary Component > Snapshot Testing > should match snaps
         </div>
         <div
           class="max-h-[calc(100vh-212px)]"
-          data-in-sidebar="false"
           data-testid="simulation-summary"
         >
           <div
@@ -77,19 +148,91 @@ exports[`PostSimulationSummary Component > Snapshot Testing > should match snaps
       class="bg-white w-full h-[100vh] overflow-y-auto flex flex-col items-center "
     >
       <div
-        class="flex flex-col gap-6 max-w-3xl w-full h-full pb-8 sm:pb-16 px-4 sm:px-6 items-center"
+        class="flex flex-col gap-6 max-w-4xl w-full h-full pb-8 sm:pb-16 px-4 sm:px-6 items-center"
         data-animate="visible"
         data-initial="hidden"
         data-testid="motion-div"
         data-variants="{\\"hidden\\":{\\"opacity\\":0},\\"visible\\":{\\"opacity\\":1,\\"transition\\":{\\"staggerChildren\\":0.2,\\"delayChildren\\":0.3}}}"
       >
         <div
-          class="w-full text-black text-2xl sm:text-4xl font-normal text-left font-secondary mt-8 px-4"
+          class="flex items-center justify-between w-full mt-8"
         >
-          Simulation 
-          <em>
-            Summary
-          </em>
+          <div
+            class="flex items-center gap-2 text-black text-2xl sm:text-4xl font-normal text-left font-secondary"
+          >
+            <button>
+              <svg
+                fill="none"
+                height="48"
+                viewBox="0 0 48 48"
+                width="48"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <g
+                  clip-path="url(#clip0_2523_4287)"
+                >
+                  <rect
+                    fill="#F9F9F9"
+                    height="40"
+                    rx="20"
+                    width="40"
+                    x="4"
+                    y="4"
+                  />
+                  <path
+                    d="M19.825 25L25.425 30.6L24 32L16 24L24 16L25.425 17.4L19.825 23H32V25H19.825Z"
+                    fill="#49454F"
+                  />
+                </g>
+                <defs>
+                  <clippath
+                    id="clip0_2523_4287"
+                  >
+                    <rect
+                      fill="white"
+                      height="40"
+                      rx="20"
+                      width="40"
+                      x="4"
+                      y="4"
+                    />
+                  </clippath>
+                </defs>
+              </svg>
+            </button>
+            Simulation 
+            <em>
+              Summary
+            </em>
+          </div>
+          <div
+            class="flex justify-center gap-2"
+          >
+            <div
+              class="flex flex-col gap-2 w-fit"
+            >
+              <div
+                class="flex gap-2 rounded-full border-[0.5px] bg-[#F3F3F3] relative"
+              >
+                <div
+                  class="transition-all duration-200 absolute top-0 w-1/2 h-full rounded-full bg-[#FFFFFF]"
+                  style="left: 0px; box-shadow: 3px 0px 9px 0px #00000012;"
+                />
+                <div
+                  class="rounded-full py-2 px-4 cursor-pointer z-10 transition-all duration-200 font-primary"
+                  style="color: rgb(0, 0, 0);"
+                >
+                  Keep it private
+                </div>
+                <div
+                  class="rounded-full py-2 px-4 cursor-pointer z-10 transition-all duration-200 font-primary"
+                  style="color: rgba(0, 0, 0, 0.376);"
+                >
+                  Share for review
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
         <div
           class="w-full normal-case border-b border-[#DBDBDB] mb-4"
@@ -116,7 +259,6 @@ exports[`PostSimulationSummary Component > Snapshot Testing > should match snaps
         </div>
         <div
           class="max-h-[calc(100vh-212px)]"
-          data-in-sidebar="false"
           data-testid="simulation-summary"
         >
           <div

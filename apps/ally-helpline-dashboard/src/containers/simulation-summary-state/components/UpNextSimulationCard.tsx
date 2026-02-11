@@ -71,10 +71,26 @@ export const UpNextSimulationCard = ({ data }: UpNextSimulationCardProps) => {
     return hasUpcomingScenario ? "Next" : "Retry";
   };
 
+  const renderTransitionMessage = () => {
+    if (currentSession?.transitionMessageTitle?.length > 0) {
+      return (
+        <>
+          <div className="text-typography-900 text-base font-semibold mb-[8px]">
+            {currentSession?.transitionMessageTitle}
+          </div>
+          <div className="text-typography-900 text-base font-normal mb-[20px]">
+            {currentSession?.transitionMessageContent}
+          </div>
+        </>
+      );
+    }
+    return null;
+  };
+
   const handleActionClick = hasUpcomingScenario ? handleStartNextSimulation : handleRetrySimulation;
 
   return (
-    <div className="font-primary px-[15px]">
+    <div className="font-primary px-[15px] py-2">
       {!isCurrentScenarioCompleted ? (
         <>
           <div className="text-typography-900 text-base font-semibold mb-[8px]">All most there</div>
@@ -121,13 +137,14 @@ export const UpNextSimulationCard = ({ data }: UpNextSimulationCardProps) => {
               {upcomingScenario?.description}
             </div>
           </div>
+          {renderTransitionMessage()}
         </div>
       )}
 
       {/* Action Buttons */}
       <motion.div
         {...ANIMATION_CONFIG}
-        className="absolute bottom-0 left-0 right-0 z-10 max-w-full bg-white pt-[10px] px-[20px]"
+        className="absolute bottom-5 left-0 right-0 z-10 max-w-full bg-white pt-[10px] px-[20px]"
       >
         {isPathwayCompleted ? (
           <Button

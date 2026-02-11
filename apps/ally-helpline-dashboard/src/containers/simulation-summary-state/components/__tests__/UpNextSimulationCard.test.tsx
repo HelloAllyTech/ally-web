@@ -141,8 +141,10 @@ describe("UpNextSimulationCard", () => {
       expect(
         screen.getByText(/A 40-year-old male is experiencing deep hopelessness/),
       ).toBeInTheDocument();
-      expect(screen.getByText("Great work!")).toBeInTheDocument();
-      expect(screen.getByText("You've completed the previous simulation.")).toBeInTheDocument();
+      expect(screen.getAllByText("Great work!").length).toBeGreaterThanOrEqual(1);
+      expect(
+        screen.getAllByText("You've completed the previous simulation.").length,
+      ).toBeGreaterThanOrEqual(1);
     });
 
     it("should render the cover image with correct attributes", () => {
