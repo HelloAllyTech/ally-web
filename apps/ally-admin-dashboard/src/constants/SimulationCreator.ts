@@ -161,6 +161,7 @@ export const FORM_FIELD_IDS = {
   TERMINATION_MESSAGE: "terminationMessage",
   TERMINATION_NAME: "terminationName",
   IS_PUBLIC: "isPublic",
+  LANGUAGES_VOICES: "languageVoices",
   EXPERIENCE_MODE: "experienceMode",
   CHECKLIST_TYPE: "checklistType",
   TIMER_MODE: "timerMode",
