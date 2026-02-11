@@ -208,6 +208,7 @@ export interface TabsProps {
   onChange: (id: string) => void;
   className?: string;
   showCount?: boolean;
+  tabStyles?: CSSProperties;
 }
 
 export interface FilterChipProps {

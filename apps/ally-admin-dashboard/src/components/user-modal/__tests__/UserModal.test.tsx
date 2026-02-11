@@ -123,6 +123,37 @@ vi.mock("@components/profile-card", () => ({
   ),
 }));
 
+vi.mock("@components/tabs", () => ({
+  Tabs: ({ items, activeId, onChange }: any) => (
+    <div data-testid="tabs">
+      {items.map((item: any) => (
+        <button
+          key={item.id}
+          data-testid={`tab-${item.id}`}
+          data-active={activeId === item.id}
+          onClick={() => onChange(item.id)}
+        >
+          {item.label}
+        </button>
+      ))}
+    </div>
+  ),
+}));
+
+vi.mock("@components/toggle-switch", () => ({
+  ToggleSwitch: ({ enabled, onChange }: any) => (
+    <button
+      data-testid="toggle-switch"
+      data-enabled={enabled}
+      onClick={onChange}
+      role="switch"
+      aria-checked={enabled}
+    >
+      {enabled ? "ON" : "OFF"}
+    </button>
+  ),
+}));
+
 // Mock SimulationCreator to avoid cellTypes dependency issue
 vi.mock("@constants/SimulationCreator", () => ({
   STEP1_FIELDS: [],
@@ -156,6 +187,10 @@ vi.mock("@constants", async importOriginal => {
     },
     en: {
       ...(actual.en || {}),
+      common: {
+        enabled: "Enabled",
+        disabled: "Disabled",
+      },
       userManagement: {
         cancel: "Cancel",
         selectOrg: "Select Organization",
@@ -1049,6 +1084,359 @@ describe("UserModal", () => {
       const modalContent = container.querySelector(".bg-white");
       expect(modalContent).toBeInTheDocument();
       expect(modalContent?.className).toContain("rounded-[10px]");
+    });
+  });
+
+  describe("Settings tab with optionValues", () => {
+    const tabOptions = [
+      { id: "details", label: "Details" },
+      { id: "settings", label: "Settings" },
+    ];
+
+    const mockOptionValues = [
+      {
+        id: "dashboard-1",
+        value: true,
+        label: "Enable Call Analytics",
+        onClick: vi.fn(),
+      },
+      {
+        id: "enableMicrophoneMode",
+        value: false,
+        label: "Enable Microphone Mode",
+        onClick: vi.fn(),
+      },
+      {
+        id: "enableAudioUpload",
+        value: true,
+        label: "Enable Audio Upload",
+        onClick: vi.fn(),
+      },
+      {
+        id: "hideRankInLeaderboard",
+        value: false,
+        label: "Hide Rank in Leaderboard",
+        onClick: vi.fn(),
+      },
+    ];
+
+    beforeEach(() => {
+      mockOptionValues.forEach(option => option.onClick.mockClear());
+    });
+
+    it("renders tabs when hasTabs is true", () => {
+      render(
+        <TestWrapper>
+          {(formMethods: any) => (
+            <UserModal
+              isOpen={true}
+              onClose={mockOnClose}
+              title="Edit Organization"
+              fields={basicFields}
+              formMethods={formMethods}
+              hasTabs={true}
+              tabOptions={tabOptions}
+              optionValues={mockOptionValues}
+            />
+          )}
+        </TestWrapper>,
+      );
+
+      expect(screen.getByTestId("tabs")).toBeInTheDocument();
+      expect(screen.getByTestId("tab-details")).toBeInTheDocument();
+      expect(screen.getByTestId("tab-settings")).toBeInTheDocument();
+    });
+
+    it("shows settings tab content when settings tab is clicked", async () => {
+      render(
+        <TestWrapper>
+          {(formMethods: any) => (
+            <UserModal
+              isOpen={true}
+              onClose={mockOnClose}
+              title="Edit Organization"
+              fields={basicFields}
+              formMethods={formMethods}
+              hasTabs={true}
+              tabOptions={tabOptions}
+              optionValues={mockOptionValues}
+            />
+          )}
+        </TestWrapper>,
+      );
+
+      // Click settings tab
+      fireEvent.click(screen.getByTestId("tab-settings"));
+
+      await waitFor(() => {
+        expect(screen.getByText("Enable Call Analytics")).toBeInTheDocument();
+        expect(screen.getByText("Enable Microphone Mode")).toBeInTheDocument();
+        expect(screen.getByText("Enable Audio Upload")).toBeInTheDocument();
+        expect(screen.getByText("Hide Rank in Leaderboard")).toBeInTheDocument();
+      });
+    });
+
+    it("renders toggle switches with correct initial values from optionValues", async () => {
+      render(
+        <TestWrapper>
+          {(formMethods: any) => (
+            <UserModal
+              isOpen={true}
+              onClose={mockOnClose}
+              title="Edit Organization"
+              fields={basicFields}
+              formMethods={formMethods}
+              hasTabs={true}
+              tabOptions={tabOptions}
+              optionValues={mockOptionValues}
+            />
+          )}
+        </TestWrapper>,
+      );
+
+      // Click settings tab to view toggle switches
+      fireEvent.click(screen.getByTestId("tab-settings"));
+
+      await waitFor(() => {
+        const toggleSwitches = screen.getAllByTestId("toggle-switch");
+        expect(toggleSwitches).toHaveLength(4);
+
+        // Check initial values are reflected
+        expect(toggleSwitches[0]).toHaveAttribute("data-enabled", "true"); // dashboard-1: true
+        expect(toggleSwitches[1]).toHaveAttribute("data-enabled", "false"); // enableMicrophoneMode: false
+        expect(toggleSwitches[2]).toHaveAttribute("data-enabled", "true"); // enableAudioUpload: true
+        expect(toggleSwitches[3]).toHaveAttribute("data-enabled", "false"); // hideRankInLeaderboard: false
+      });
+    });
+
+    it("calls onClick handler when toggle switch is clicked", async () => {
+      render(
+        <TestWrapper>
+          {(formMethods: any) => (
+            <UserModal
+              isOpen={true}
+              onClose={mockOnClose}
+              title="Edit Organization"
+              fields={basicFields}
+              formMethods={formMethods}
+              hasTabs={true}
+              tabOptions={tabOptions}
+              optionValues={mockOptionValues}
+            />
+          )}
+        </TestWrapper>,
+      );
+
+      // Click settings tab
+      fireEvent.click(screen.getByTestId("tab-settings"));
+
+      await waitFor(() => {
+        const toggleSwitches = screen.getAllByTestId("toggle-switch");
+        // Click the second toggle (enableMicrophoneMode - currently false)
+        fireEvent.click(toggleSwitches[1]);
+      });
+
+      // onClick should be called with the opposite value (true since it was false)
+      expect(mockOptionValues[1].onClick).toHaveBeenCalledWith(true);
+    });
+
+    it("displays Enabled text for enabled settings", async () => {
+      render(
+        <TestWrapper>
+          {(formMethods: any) => (
+            <UserModal
+              isOpen={true}
+              onClose={mockOnClose}
+              title="Edit Organization"
+              fields={basicFields}
+              formMethods={formMethods}
+              hasTabs={true}
+              tabOptions={tabOptions}
+              optionValues={mockOptionValues}
+            />
+          )}
+        </TestWrapper>,
+      );
+
+      fireEvent.click(screen.getByTestId("tab-settings"));
+
+      await waitFor(() => {
+        // Two options are enabled (dashboard-1 and enableAudioUpload)
+        const enabledTexts = screen.getAllByText("Enabled");
+        expect(enabledTexts).toHaveLength(2);
+      });
+    });
+
+    it("displays Disabled text for disabled settings", async () => {
+      render(
+        <TestWrapper>
+          {(formMethods: any) => (
+            <UserModal
+              isOpen={true}
+              onClose={mockOnClose}
+              title="Edit Organization"
+              fields={basicFields}
+              formMethods={formMethods}
+              hasTabs={true}
+              tabOptions={tabOptions}
+              optionValues={mockOptionValues}
+            />
+          )}
+        </TestWrapper>,
+      );
+
+      fireEvent.click(screen.getByTestId("tab-settings"));
+
+      await waitFor(() => {
+        // Two options are disabled (enableMicrophoneMode and hideRankInLeaderboard)
+        const disabledTexts = screen.getAllByText("Disabled");
+        expect(disabledTexts).toHaveLength(2);
+      });
+    });
+
+    it("save button becomes enabled when settings are changed and form is dirty", async () => {
+      const TestComponent = () => {
+        const formMethods = useForm({
+          defaultValues: {
+            orgname: "Test Org",
+            orgcode: "TEST",
+            enableMicrophoneMode: false,
+            enableAudioUpload: false,
+            hideRankInLeaderboard: false,
+            enabledDashboardIds: [],
+          },
+          mode: "onChange",
+        });
+
+        const handleSettingToggle = (settingId: string, value: boolean) => {
+          formMethods.setValue(settingId as any, value, { shouldDirty: true });
+        };
+
+        const optionValuesWithFormIntegration = [
+          {
+            id: "enableMicrophoneMode",
+            value: formMethods.watch("enableMicrophoneMode"),
+            label: "Enable Microphone Mode",
+            onClick: (enabled: boolean) => handleSettingToggle("enableMicrophoneMode", enabled),
+          },
+        ];
+
+        return (
+          <UserModal
+            isOpen={true}
+            onClose={mockOnClose}
+            title="Edit Organization"
+            fields={[
+              {
+                id: "orgname",
+                label: "Organization Name",
+                placeholder: "Enter name",
+                fieldType: FieldOptions.INPUT,
+                inputType: "text",
+                required: true,
+                maxLength: 100,
+              },
+            ]}
+            formMethods={formMethods}
+            hasTabs={true}
+            tabOptions={tabOptions}
+            optionValues={optionValuesWithFormIntegration}
+          />
+        );
+      };
+
+      render(<TestComponent />);
+
+      // Initially save button should be disabled (form not dirty)
+      expect(screen.getByTestId("save-button")).toBeDisabled();
+
+      // Click settings tab
+      fireEvent.click(screen.getByTestId("tab-settings"));
+
+      await waitFor(() => {
+        const toggleSwitch = screen.getByTestId("toggle-switch");
+        fireEvent.click(toggleSwitch);
+      });
+
+      // After toggling, form should be dirty and save button enabled
+      await waitFor(() => {
+        expect(screen.getByTestId("save-button")).not.toBeDisabled();
+      });
+    });
+
+    it("reflects API initial values in settings toggles when editing", async () => {
+      // Simulate API data with specific settings values
+      const apiTenantData = {
+        id: "tenant-123",
+        enableMicrophoneMode: true,
+        enableAudioUpload: false,
+        hideRankInLeaderboard: true,
+        enabledDashboardIds: ["dashboard-1", "dashboard-2"],
+      };
+
+      const optionValuesFromAPI = [
+        {
+          id: "dashboard-1",
+          value: apiTenantData.enabledDashboardIds.includes("dashboard-1"),
+          label: "Dashboard 1",
+          onClick: vi.fn(),
+        },
+        {
+          id: "enableMicrophoneMode",
+          value: apiTenantData.enableMicrophoneMode,
+          label: "Enable Microphone Mode",
+          onClick: vi.fn(),
+        },
+        {
+          id: "enableAudioUpload",
+          value: apiTenantData.enableAudioUpload,
+          label: "Enable Audio Upload",
+          onClick: vi.fn(),
+        },
+        {
+          id: "hideRankInLeaderboard",
+          value: apiTenantData.hideRankInLeaderboard,
+          label: "Hide Rank in Leaderboard",
+          onClick: vi.fn(),
+        },
+      ];
+
+      render(
+        <TestWrapper
+          defaultValues={{
+            enableMicrophoneMode: apiTenantData.enableMicrophoneMode,
+            enableAudioUpload: apiTenantData.enableAudioUpload,
+            hideRankInLeaderboard: apiTenantData.hideRankInLeaderboard,
+            enabledDashboardIds: apiTenantData.enabledDashboardIds,
+          }}
+        >
+          {(formMethods: any) => (
+            <UserModal
+              isOpen={true}
+              onClose={mockOnClose}
+              title="Edit Organization"
+              fields={basicFields}
+              formMethods={formMethods}
+              hasTabs={true}
+              tabOptions={tabOptions}
+              optionValues={optionValuesFromAPI}
+              details={apiTenantData}
+            />
+          )}
+        </TestWrapper>,
+      );
+
+      fireEvent.click(screen.getByTestId("tab-settings"));
+
+      await waitFor(() => {
+        const toggleSwitches = screen.getAllByTestId("toggle-switch");
+
+        // Verify toggles reflect API values
+        expect(toggleSwitches[0]).toHaveAttribute("data-enabled", "true"); // dashboard-1 in enabledDashboardIds
+        expect(toggleSwitches[1]).toHaveAttribute("data-enabled", "true"); // enableMicrophoneMode: true
+        expect(toggleSwitches[2]).toHaveAttribute("data-enabled", "false"); // enableAudioUpload: false
+        expect(toggleSwitches[3]).toHaveAttribute("data-enabled", "true"); // hideRankInLeaderboard: true
+      });
     });
   });
 });

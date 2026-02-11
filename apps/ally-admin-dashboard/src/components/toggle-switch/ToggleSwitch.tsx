@@ -2,7 +2,8 @@ export const ToggleSwitch: React.FC<{
   enabled: boolean;
   onChange: (enabled: boolean) => void;
   label?: string;
-}> = ({ enabled, onChange, label }) => (
+  switchStyles?: React.CSSProperties;
+}> = ({ enabled, onChange, label, switchStyles }) => (
   <button
     type="button"
     onClick={() => onChange(!enabled)}
@@ -15,6 +16,7 @@ export const ToggleSwitch: React.FC<{
       className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
         enabled ? "translate-x-6" : "translate-x-1"
       }`}
+      style={switchStyles}
     />
   </button>
 );
