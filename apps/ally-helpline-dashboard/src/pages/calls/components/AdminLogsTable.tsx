@@ -70,7 +70,7 @@ const AdminLogsTable: FC<LogsTableProps> = ({ refreshKey, sessionType, className
     refetch: refetchCallLogs,
     error: callLogsError,
   } = useGetAdminCallLogsQuery(
-    { ...filters, sortBy: "createdAt", order: "DESC" },
+    { ...filters, sortBy: "createdAt", order: "DESC", archive: false },
     { skip: !isCall },
   );
 
