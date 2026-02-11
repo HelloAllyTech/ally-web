@@ -171,6 +171,8 @@ export interface SimulationSummary {
     sessionName: string;
   };
   totalScore: number;
+  eventStatus?: string;
+  scenarioPathSessionItemId?: string;
   details: {
     id: string;
     createdAt: string;

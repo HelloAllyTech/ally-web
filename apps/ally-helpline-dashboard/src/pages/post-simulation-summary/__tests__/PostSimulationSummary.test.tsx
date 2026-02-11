@@ -13,11 +13,14 @@
  * - Snapshot testing
  */
 
-import { render, screen, fireEvent } from "@testing-library/react";
+import { render, screen, fireEvent, within } from "@testing-library/react";
+import { Provider } from "react-redux";
 import { BrowserRouter } from "react-router-dom";
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 
+import { SimulationSummary } from "@containers";
 import { ROUTES } from "@constants";
+import { store } from "@store";
 
 import { PostSimulationSummary } from "../PostSimulationSummary";
 
@@ -104,14 +107,18 @@ vi.mock("../../calls/components", () => ({
   ),
 }));
 
-// Mock calls constants
-vi.mock("../../calls/constants", () => ({
-  tabStyles: {
-    textTransform: "none",
-    fontWeight: 500,
-    color: "#49454F",
-  },
-}));
+// Mock calls constants (use importOriginal so reducer still gets CALL_LOGS_PAGINATION_LIMIT)
+vi.mock("../../calls/constants", async importOriginal => {
+  const actual = await importOriginal<typeof import("../../calls/constants")>();
+  return {
+    ...actual,
+    tabStyles: {
+      textTransform: "none",
+      fontWeight: 500,
+      color: "#49454F",
+    },
+  };
+});
 
 // Mock learn constants
 vi.mock("../learn/constants", () => ({
@@ -127,9 +134,11 @@ vi.mock("../learn/constants", () => ({
   },
 }));
 
-// Test Wrapper
+// Test Wrapper (Provider required for useGetSimulationSummaryQuery / RTK Query)
 const TestWrapper = ({ children }: { children: React.ReactNode }) => (
-  <BrowserRouter>{children}</BrowserRouter>
+  <Provider store={store}>
+    <BrowserRouter>{children}</BrowserRouter>
+  </Provider>
 );
 
 describe("PostSimulationSummary Component", () => {
@@ -212,7 +221,7 @@ describe("PostSimulationSummary Component", () => {
       expect(motionDiv.className).toContain("flex");
       expect(motionDiv.className).toContain("flex-col");
       expect(motionDiv.className).toContain("gap-6");
-      expect(motionDiv.className).toContain("max-w-3xl");
+      expect(motionDiv.className).toContain("max-w-4xl");
       expect(motionDiv.className).toContain("w-full");
       expect(motionDiv.className).toContain("h-full");
       expect(motionDiv.className).toContain("pb-8");
@@ -233,15 +242,12 @@ describe("PostSimulationSummary Component", () => {
         return element?.textContent === "Simulation Summary";
       });
       expect(title).not.toBeNull();
-      expect(title.className).toContain("w-full");
       expect(title.className).toContain("text-black");
       expect(title.className).toContain("text-2xl");
       expect(title.className).toContain("sm:text-4xl");
       expect(title.className).toContain("font-normal");
       expect(title.className).toContain("text-left");
       expect(title.className).toContain("font-secondary");
-      expect(title.className).toContain("mt-8");
-      expect(title.className).toContain("px-4");
     });
 
     it("should render SimulationSummary component", () => {
@@ -317,28 +323,30 @@ describe("PostSimulationSummary Component", () => {
    * Verifies navigation functionality
    */
   describe("Navigation Functionality", () => {
-    it("should navigate to learn page when closing summary", () => {
+    it("should navigate back when clicking back button", () => {
       render(
         <TestWrapper>
           <PostSimulationSummary />
         </TestWrapper>,
       );
 
-      const closeButton = screen.getByTestId("close-summary-btn");
-      closeButton.click();
+      const header = screen.getByText(/Simulation/).closest("div");
+      const backButton = within(header!).getByRole("button");
+      backButton.click();
 
-      expect(mockNavigate).toHaveBeenCalledWith(ROUTES.LEARN);
+      expect(mockNavigate).toHaveBeenCalledWith(-1);
     });
 
-    it("should call closeSummarySidebar function", () => {
+    it("should call navigate when clicking back button", () => {
       render(
         <TestWrapper>
           <PostSimulationSummary />
         </TestWrapper>,
       );
 
-      const closeButton = screen.getByTestId("close-summary-btn");
-      closeButton.click();
+      const header = screen.getByText(/Simulation/).closest("div");
+      const backButton = within(header!).getByRole("button");
+      backButton.click();
 
       expect(mockNavigate).toHaveBeenCalledTimes(1);
     });
@@ -403,15 +411,18 @@ describe("PostSimulationSummary Component", () => {
       expect(closeButton).toBeInTheDocument();
     });
 
-    it("should pass isInSidebar as false to SimulationSummary", () => {
+    it("should pass summaryId and className to SimulationSummary", () => {
       render(
         <TestWrapper>
           <PostSimulationSummary />
         </TestWrapper>,
       );
 
-      const simulationSummary = screen.getByTestId("simulation-summary");
-      expect(simulationSummary).toHaveAttribute("data-in-sidebar", "false");
+      const lastCallArgs = vi.mocked(SimulationSummary).mock.calls.at(-1) ?? [];
+      expect(lastCallArgs[0]).toMatchObject({
+        summaryId: "123",
+        className: "max-h-[calc(100vh-212px)]",
+      });
     });
   });
 
@@ -685,18 +696,18 @@ describe("PostSimulationSummary Component", () => {
     });
 
     it("should handle navigation errors gracefully", () => {
-      // Test that navigation function is called without errors
+      // Test that navigation function is called without errors when using back button
       render(
         <TestWrapper>
           <PostSimulationSummary />
         </TestWrapper>,
       );
 
-      const closeButton = screen.getByTestId("close-summary-btn");
-      closeButton.click();
+      const header = screen.getByText(/Simulation/).closest("div");
+      const backButton = within(header!).getByRole("button");
+      backButton.click();
 
-      // Should call navigate function
-      expect(mockNavigate).toHaveBeenCalledWith(ROUTES.LEARN);
+      expect(mockNavigate).toHaveBeenCalledWith(-1);
     });
   });
 

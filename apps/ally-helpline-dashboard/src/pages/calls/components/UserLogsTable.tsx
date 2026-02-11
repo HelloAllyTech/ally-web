@@ -350,7 +350,6 @@ const UserLogsTable: FC<LogsTableProps> = ({ refreshKey, sessionType, className 
         return (
           <SimulationSummarySidebar
             summaryId={summary?.id as string}
-            summaryName={(summary as SimulationLog)?.metadata?.sessionName ?? ""}
             closeSummarySidebar={closeSummarySidebar}
           />
         );

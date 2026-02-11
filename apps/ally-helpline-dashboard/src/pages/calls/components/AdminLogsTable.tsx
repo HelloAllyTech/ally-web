@@ -482,7 +482,6 @@ const AdminLogsTable: FC<LogsTableProps> = ({ refreshKey, sessionType, className
         return (
           <SimulationSummarySidebar
             summaryId={summary?.id.toString()}
-            summaryName={(summary as SimulationLog)?.metadata?.sessionName ?? ""}
             closeSummarySidebar={closeSummarySidebar}
             canShowFeedback={false}
             //TODO: Remove prop drilling

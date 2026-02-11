@@ -41,13 +41,13 @@ const Drawer: FC<DrawerProps> = ({
             onClick={onClose}
             data-testid="drawer-close-button"
           />
-          <div className="flex justify-between w-full items-center">
-            <span
-              className="text-lg font-semibold font-tertiary text-typography-700"
+          <div className="flex justify-between w-full items-center min-w-0 flex-1">
+            <div
+              className="text-lg font-semibold font-tertiary text-typography-700 min-w-0 flex-1"
               data-testid="drawer-title"
             >
               {title || ""}
-            </span>
+            </div>
             <div className="flex items-center gap-3" data-testid="drawer-header-buttons">
               {headerButtons
                 ?.filter(button => button.show)
