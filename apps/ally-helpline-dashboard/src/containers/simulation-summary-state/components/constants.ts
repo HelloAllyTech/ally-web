@@ -10,12 +10,12 @@ export const feedbackDemographics = [
     label: "Session Duration",
     icon: Alarm,
     getValue: (summary: FeedbackSectionProps) => {
-      const createdAt = summary?.createdAt;
+      const startedAt = summary?.startedAt;
       const endedAt = summary?.endedAt;
 
-      if (!createdAt || !endedAt) return "--";
+      if (!startedAt || !endedAt) return "--";
 
-      const startTime = new Date(createdAt).getTime();
+      const startTime = new Date(startedAt).getTime();
       const endTime = new Date(endedAt).getTime();
       const durationInSeconds = Math.floor((endTime - startTime) / 1000);
 
