@@ -1,6 +1,6 @@
 "use client";
 
-import { FC } from "react";
+import { FC, useMemo } from "react";
 
 import {
   RoomAudioRenderer,
@@ -19,6 +19,7 @@ export enum RoomStatus {
   CONNECTING = "connecting",
   DISCONNECTED = "disconnected",
   DISCONNECTING = "disconnecting",
+  AGENT_JOINED = "agent_joined",
 }
 
 export interface SimulationInterfaceProps {
@@ -79,17 +80,19 @@ export const SimulationInterface: FC<SimulationInterfaceProps> = ({
     </>
   );
 
+  const connectingText = useMemo(() => {
+    if (roomStatus === RoomStatus.CONNECTED || roomStatus === RoomStatus.CONNECTING)
+      return "Waiting for agent to join...";
+    return "Connecting to session...";
+  }, [roomStatus]);
+
   const renderLoadingContent = () => (
     <div
       data-testid="simulation-interface-connecting bg-[#1D2020] rounded-lg"
       className="flex flex-col items-center text-center font-['IBM_Plex_Serif']"
     >
       <p className="text-[20px] text-white">
-        Simulation
-        <span className="font-medium italic">
-          {" "}
-          {roomStatus && RoomStatus.CONNECTING ? "starting..." : "connecting..."}
-        </span>
+        <span className="font-medium italic">{connectingText}</span>
       </p>
       <p className="text-[12px] text-[#B6B5B9]">
         To start the simulation, please allow us to use your microphone.
@@ -99,8 +102,9 @@ export const SimulationInterface: FC<SimulationInterfaceProps> = ({
 
   const renderContent = () => {
     switch (roomStatus) {
-      case RoomStatus.CONNECTED:
+      case RoomStatus.AGENT_JOINED:
         return renderConnectedContent();
+      case RoomStatus.CONNECTED:
       case RoomStatus.CONNECTING:
       case RoomStatus.DISCONNECTING:
       case RoomStatus.DISCONNECTED:
