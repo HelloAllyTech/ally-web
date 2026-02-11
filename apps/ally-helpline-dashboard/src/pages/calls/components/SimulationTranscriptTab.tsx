@@ -11,7 +11,7 @@ import {
   useUpdateReviewMutation,
 } from "@api";
 import { Comment } from "@assets";
-import { Transcription, Button } from "@components";
+import { TranscriptListing, Button } from "@components";
 import { REVIEW_PRIVACY_OPTIONS, ROUTES } from "@constants";
 import { RootState } from "@store";
 import { SimulationTranscriptMessage } from "@types";
@@ -115,15 +115,14 @@ const SimulationTranscriptTab: FC<SimulationTranscriptTabProps> = ({
   return (
     <div className={`h-full ${className}`}>
       <div className="relative h-[calc(100%-140px)] ">
-        <Transcription
+        <TranscriptListing
           transcriptList={transcriptList}
-          userId={user?.id}
           handleLoadMore={handleLoadMore}
           isLoading={isGetTranscriptLoading}
           hasMore={hasMoreTranscripts}
           scrollContainerRef={scrollContainerRef}
           className="h-full overflow-y-auto !pt-0 custom-scrollbar mt-1 "
-          councellorName={councellorName}
+          counsellorName={councellorName}
           agentName={summary?.scenario?.metadata?.name}
         />
         <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t  to-transparent pointer-events-none" />
