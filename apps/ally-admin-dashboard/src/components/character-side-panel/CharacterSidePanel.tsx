@@ -204,7 +204,7 @@ export const CharacterSidePanel: React.FC<CharacterSidePanelProps> = ({
                 type="number"
                 value={formData.age}
                 onChange={e => handleFieldChange("age", parseInt(e.target.value) || "")}
-                placeholder="Enter age"
+                placeholder="0"
                 min="0"
                 max="150"
                 className="min-w-[60px] px-0 py-2 text-base border-none focus:outline-none"
