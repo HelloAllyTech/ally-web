@@ -22,6 +22,7 @@ interface SimulationProps {
   selectedSimulations: GetScenarioType[];
   setSelectedSimulations: (simulations: GetScenarioType[]) => void;
   isDisabled?: boolean;
+  isCase?: boolean;
 }
 
 const SIMULATIONS_PAGE_SIZE = 20;
@@ -33,6 +34,7 @@ export const SimulationSelectionModal: FC<SimulationProps> = ({
   selectedSimulations,
   setSelectedSimulations,
   isDisabled = false,
+  isCase = false,
 }) => {
   const [checkedSimulation, setCheckedSimulation] = useState<GetScenarioType[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
@@ -275,7 +277,9 @@ export const SimulationSelectionModal: FC<SimulationProps> = ({
           className="relative bg-white rounded-lg shadow-xl max-w-xl w-full animate-in fade-in-0 zoom-in-95 duration-200 px-6 py-4"
           onClick={event => event.stopPropagation()}
         >
-          <h1 className="text-lg">{en.simulation.addSimulationToPath}</h1>
+          <h1 className="text-lg">
+            {isCase ? en.simulation.addSimulationToCase : en.simulation.addSimulationToPath}
+          </h1>
 
           <div className="relative w-full mt-4">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-typography-800" />
