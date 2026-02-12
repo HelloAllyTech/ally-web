@@ -111,6 +111,7 @@ export interface GetScenarioInput {
 export interface StartSimulationInput {
   scenarioId: number;
   scenarioPathSessionItemId?: string;
+  caseSessionItemId?: string;
 }
 
 export interface StartSimulationResponse {
