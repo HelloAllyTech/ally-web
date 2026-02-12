@@ -4,6 +4,7 @@ import { DoubleArrowRight, Trash } from "@assets";
 import { ButtonVariant } from "@components/types";
 import { Button } from "@components/button/Button";
 import { ToggleSwitch } from "@components/toggle-switch/ToggleSwitch";
+import { Input } from "@components";
 import { AutoExpandableTextarea } from "@ally-ui-mono/ui-shared";
 
 interface GuardrailSidePanelProps {
@@ -85,8 +86,8 @@ export const GuardrailSidePanel: React.FC<GuardrailSidePanelProps> = ({
   };
 
   const handleSave = async () => {
-    if (!formData.helperDialogue?.trim() || !formData.actorDialogue?.trim()) {
-      toast.error("Helper Dialogue and Actor Dialogue are mandatory fields.");
+    if (!formData.name?.trim() || !formData.helperDialogue?.trim() || !formData.actorDialogue?.trim()) {
+      toast.error("Name, Helper Dialogue and Actor Dialogue are mandatory fields.");
       return;
     }
 
@@ -103,7 +104,7 @@ export const GuardrailSidePanel: React.FC<GuardrailSidePanelProps> = ({
     }
   };
 
-  const isFormValid = formData.helperDialogue?.trim() && formData.actorDialogue?.trim();
+  const isFormValid = formData.name?.trim() && formData.helperDialogue?.trim() && formData.actorDialogue?.trim();
 
   return (
     <div className="fixed inset-0 z-50 flex">
@@ -123,6 +124,15 @@ export const GuardrailSidePanel: React.FC<GuardrailSidePanelProps> = ({
           </div>
 
           <div className="space-y-3">
+            <Field label="Name" required={true}>
+              <Input
+                value={formData.name || ""}
+                onChange={(e: any) => handleChange("name", e.target.value)}
+                placeholder="e.g. Rude Behavior"
+                className="w-full"
+              />
+            </Field>
+
             <Field label="Helper Dialogue (trigger)" multiline={true} required={true}>
               <AutoExpandableTextarea
                 value={formData.helperDialogue || ""}

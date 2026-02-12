@@ -23,6 +23,14 @@ import { UpdateConversationalGuardrailInput } from "@types";
 // Define table columns locally or in constants
 const GUARDRAILS_TABLE_COLUMNS = [
   {
+    id: "name",
+    label: "Name",
+    accessor: "name",
+    placeholder: "Enter name",
+    dataType: cellTypes.editableText,
+    minWidth: 200,
+  },
+  {
     id: "helperDialogue",
     label: "Helper Dialogue",
     accessor: "helperDialogue",
@@ -109,6 +117,7 @@ export const GuardrailsManagement: React.FC = () => {
   const handleNewGuardrailClick = () => {
     // Open side panel with an empty guardrail template for creation
     setSelectedGuardrail({
+      name: "",
       helperDialogue: "",
       actorDialogue: "",
       active: true,
@@ -164,6 +173,7 @@ export const GuardrailsManagement: React.FC = () => {
       if (columnId === 'all') {
          updatePayload = value;
       } else {
+         if (columnId === 'name') updatePayload.name = value;
          if (columnId === 'helperDialogue') updatePayload.helperDialogue = value;
          if (columnId === 'actorDialogue') updatePayload.actorDialogue = value;
          if (columnId === 'active') updatePayload.active = value;
@@ -215,6 +225,7 @@ export const GuardrailsManagement: React.FC = () => {
     return {
       data: guardrails.map(g => ({
         id: { value: g.id, disabled: false, rowId: g.id },
+        name: { value: g.name, disabled: false, rowId: g.id },
         helperDialogue: { value: g.helperDialogue, disabled: false, rowId: g.id },
         actorDialogue: { value: g.actorDialogue, disabled: false, rowId: g.id },
         active: { value: g.active, disabled: false, rowId: g.id },

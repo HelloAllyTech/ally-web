@@ -1,5 +1,6 @@
 export interface ConversationalGuardrail {
   id: string;
+  name: string;
   helperDialogue: string;
   actorDialogue: string;
   active: boolean;
@@ -18,12 +19,14 @@ export interface ConversationalGuardrailTranslation {
 }
 
 export interface CreateConversationalGuardrailInput {
+  name: string;
   helperDialogue: string;
   actorDialogue: string;
   active?: boolean;
 }
 
 export interface UpdateConversationalGuardrailInput {
+  name?: string;
   helperDialogue?: string;
   actorDialogue?: string;
   active?: boolean;

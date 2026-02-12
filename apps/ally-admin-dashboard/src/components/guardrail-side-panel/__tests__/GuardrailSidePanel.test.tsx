@@ -74,6 +74,7 @@ import { GuardrailSidePanel } from "../GuardrailSidePanel";
 describe("GuardrailSidePanel", () => {
   const mockGuardrail = {
     id: "guardrail-1",
+    name: "Guardrail 1",
     helperDialogue: "rude",
     actorDialogue: "Please be respectful",
     active: true,
@@ -119,6 +120,13 @@ describe("GuardrailSidePanel", () => {
       render(<GuardrailSidePanel {...defaultProps} />);
 
       expect(screen.getByText(/Helper Dialogue/)).toBeInTheDocument();
+    });
+
+    it("renders name field", () => {
+      render(<GuardrailSidePanel {...defaultProps} />);
+
+      expect(screen.getByText("Name")).toBeInTheDocument();
+      expect(screen.getByDisplayValue("Guardrail 1")).toBeInTheDocument();
     });
 
     it("renders actor dialogue field", () => {
@@ -226,6 +234,7 @@ describe("GuardrailSidePanel", () => {
 
     it("calls onCreate when saving new valid guardrail", async () => {
       const newGuardrail = {
+        name: "new guardrail",
         helperDialogue: "new trigger",
         actorDialogue: "new response",
         active: true,

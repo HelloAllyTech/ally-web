@@ -224,6 +224,7 @@ describe("GuardrailsManagement", () => {
   const mockGuardrails = [
     {
       id: "guardrail-1",
+      name: "Guardrail 1",
       helperDialogue: "rude",
       actorDialogue: "Please be respectful",
       active: true,
@@ -320,6 +321,14 @@ describe("GuardrailsManagement", () => {
         expect(screen.getByTestId("helper-dialogue-0")).toHaveTextContent("rude");
         expect(screen.getByTestId("helper-dialogue-1")).toHaveTextContent("interrupting");
         expect(screen.getByTestId("helper-dialogue-2")).toHaveTextContent("dismissive");
+      });
+    });
+
+    it("displays name for each guardrail", async () => {
+      renderComponent();
+
+      await waitFor(() => {
+        expect(screen.getByText("Guardrail 1")).toBeInTheDocument();
       });
     });
 
@@ -436,6 +445,7 @@ describe("GuardrailsManagement", () => {
       await waitFor(() => {
         expect(mockCreateGuardrail).toHaveBeenCalledWith(
           expect.objectContaining({
+             name: "",
              helperDialogue: "New Helper Content",
              actorDialogue: "New Actor Content",
              active: true,
