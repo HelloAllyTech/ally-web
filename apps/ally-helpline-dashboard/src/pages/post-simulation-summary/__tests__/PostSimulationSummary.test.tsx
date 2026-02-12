@@ -606,7 +606,7 @@ describe("PostSimulationSummary Component", () => {
 
       const transcriptTab = screen.getByTestId("simulation-transcript-tab");
       expect(transcriptTab).toHaveClass("w-full");
-      expect(transcriptTab).toHaveClass("max-h-[calc(100vh-120px)]");
+      expect(transcriptTab).toHaveClass("max-h-[calc(100vh-10px)]");
     });
 
     it("should handle different sessionId for Transcription tab", () => {

@@ -155,7 +155,7 @@ export const CaseTrackDetails: FC<CaseTrackDetailsProps> = ({ type }) => {
       params: {
         scenarioId,
         ...(type === pageType.CASE
-          ? { scenarioCaseSessionItemId: sessionId }
+          ? { caseSessionItemId: sessionId }
           : { scenarioPathSessionItemId: sessionId }),
         ...(state?.languages?.length > 0 && {
           languageId: selectedLanguage?.language_id || state?.defaultLanguage,
