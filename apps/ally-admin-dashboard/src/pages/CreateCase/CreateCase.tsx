@@ -250,7 +250,7 @@ export const CreateCase: FC = () => {
               </Button>
             ) : (
               <Tooltip
-                title={en.simulation.viewOnlyTooltip}
+                title={en.simulation.viewOnlyTooltipCase}
                 placement="left"
                 arrow
                 slotProps={viewOnlyToolTipStyles}

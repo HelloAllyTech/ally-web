@@ -359,6 +359,7 @@ export const en = {
     eventsDeletedSuccessfully: "Events deleted successfully",
     viewOnly: "View Only",
     viewOnlyTooltip: "The simulation track is currently being used.",
+    viewOnlyTooltipCase: "The simulation case is currently being used.",
     create: "Create:",
     customFieldLimit: "You can only have 3 custom fields. Remove one to add another.",
     newField: "New custom field",
