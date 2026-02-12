@@ -30,7 +30,6 @@ import {
   SIMULATION_CREATOR_FIELD_GROUPS,
   SIMULATION_CREATOR_FIELD_GROUPS_OLD,
   SIMULATION_CREATOR_STEP_IDS,
-  ExperienceMode,
   SESSION_TIMER_CONFIG,
   FORM_FIELD_IDS,
 } from "@constants";
@@ -222,16 +221,6 @@ export const CreateSimulation: FC = () => {
       status,
       ...(FEATURE_FLAGS_MAP.ADDITIONAL_CONFIG_FLAG && { stateInstructions }),
     };
-
-    // Default experienceMode to FEEDBACK if not selected
-    if (!simulationData["experienceMode"]) {
-      simulationData["experienceMode"] = ExperienceMode.FEEDBACK;
-    }
-
-    // Remove checklistType if experienceMode is not "CHECKLIST"
-    if (simulationData["experienceMode"] !== ExperienceMode.CHECKLIST) {
-      delete simulationData["checklistType"];
-    }
 
     let response;
     if (simulationId) {
