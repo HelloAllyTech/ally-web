@@ -46,7 +46,7 @@ export const PostSimulationSummary: FC = () => {
       content: (
         <SimulationTranscriptTab
           sessionId={sessionId}
-          className="w-full max-h-[calc(100vh-120px)]"
+          className="w-full max-h-[calc(100vh-10px)]"
         />
       ),
     },
