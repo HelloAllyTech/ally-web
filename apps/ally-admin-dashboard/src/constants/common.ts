@@ -72,6 +72,11 @@ export const ApiEndpoints = {
     GET_PROMPTS: "/v1/prompts",
     CREATE_PROMPT: "/v1/prompts",
     UPDATE_PROMPT: (id: string | number) => `/v1/prompts/${id}`,
+    GET_REPORT_BY_ID: (reportId: string) => `/v1/learn/scenarios/reports/${reportId}`,
+    GET_REPORTS: (scenarioId: string) => `/v1/learn/scenarios/${scenarioId}/reports`,
+    GENERATE_REPORT: (scenarioId: string) => `/v1/learn/scenarios/${scenarioId}/reports`,
+    CANCEL_REPORT_GENERATION: (reportId: string) =>
+      `/v1/learn/scenarios/reports/${reportId}/cancel`,
   },
 
   CHARACTERS: {
