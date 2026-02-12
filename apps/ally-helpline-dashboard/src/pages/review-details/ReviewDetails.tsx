@@ -298,8 +298,8 @@ export const ReviewDetails = () => {
             onClick={() => setShowCommentsSidepanel(!showCommentsSidepanel)}
             className="group flex items-center h-full w-fit cursor-pointer hover:border-[#0957D0] gap-2.5 rounded-full border justify-center px-3"
           >
-            <ChatBubble className="w-6 h-6 text-neutral-600 group-hover:text-[#0957D0]" />
-            <div className="text-typography-900 font-primary group-hover:text-[#0957D0]">
+            <ChatBubble className="w-5 h-5 text-neutral-600 group-hover:text-[#0957D0]" />
+            <div className="text-typography-900 font-primary group-hover:text-[#0957D0] text-sm">
               Comments
             </div>
           </div>
