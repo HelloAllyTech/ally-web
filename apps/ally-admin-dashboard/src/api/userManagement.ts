@@ -153,6 +153,24 @@ const userManagementAPI = baseAPI.injectEndpoints({
       invalidatesTags: [TAG_TYPES.SIMULATION],
     }),
 
+    enableCase: builder.mutation<{ success: boolean }, { tenantId: string; caseIds: number[] }>({
+      query: ({ tenantId, caseIds }) => ({
+        url: `${ApiEndpoints.SIMULATION_STUDIO.CASE_TENANT_VISIBILITY(tenantId)}`,
+        method: HttpMethod.POST,
+        body: { caseIds },
+      }),
+      invalidatesTags: [TAG_TYPES.SIMULATION_CASES],
+    }),
+
+    disableCase: builder.mutation<disableSuccessResponse, { tenantId: string; caseIds: number[] }>({
+      query: ({ tenantId, caseIds }) => ({
+        url: `${ApiEndpoints.SIMULATION_STUDIO.CASE_TENANT_VISIBILITY(tenantId)}`,
+        method: HttpMethod.DELETE,
+        body: { caseIds },
+      }),
+      invalidatesTags: [TAG_TYPES.SIMULATION_CASES],
+    }),
+
     enablePath: builder.mutation<
       { success: boolean },
       { tenantId: string; scenarioPathIds: number[] }
@@ -262,4 +280,6 @@ export const {
   useUpdateSummarySectionsMutation,
   useUpdateSummaryFieldsMutation,
   useGetDashboardSettingsAllQuery,
+  useEnableCaseMutation,
+  useDisableCaseMutation,
 } = userManagementAPI;
