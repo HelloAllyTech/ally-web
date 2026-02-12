@@ -16,3 +16,8 @@ export interface SimulationCredits {
   creditLimit: number;
   secondsAllowedPerCredit: number;
 }
+
+export const pageType = {
+  CASE: "case",
+  TRACK: "track",
+};

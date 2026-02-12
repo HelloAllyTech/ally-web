@@ -28,6 +28,7 @@ import {
   LanguageOption,
   ScenarioCaseDetails,
   GetScenarioCasesResponse,
+  pageType,
 } from "@types";
 
 import { baseAPI } from "./baseAPI";
@@ -201,9 +202,15 @@ const learnAPI = baseAPI.injectEndpoints({
         params: { offset, limit, sortOrder: "ASC", sortBy },
       }),
     }),
-    getUpComingSimulation: builder.query<GetUpComingSimulationResponse, string>({
-      query: sessionId => ({
-        url: ApiEndpoints.LEARN.GET_UP_COMING_SIMULATION(sessionId),
+    getUpComingSimulation: builder.query<
+      GetUpComingSimulationResponse,
+      { sessionId: string; type: string }
+    >({
+      query: ({ sessionId, type }) => ({
+        url:
+          type === pageType.CASE
+            ? ApiEndpoints.LEARN.GET_UP_COMING_CASE_SIMULATION(sessionId)
+            : ApiEndpoints.LEARN.GET_UP_COMING_SIMULATION(sessionId),
         method: HttpMethod.GET,
       }),
       keepUnusedDataFor: 60 * 60,
