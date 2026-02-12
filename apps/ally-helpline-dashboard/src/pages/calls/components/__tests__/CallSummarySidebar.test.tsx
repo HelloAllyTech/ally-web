@@ -62,6 +62,7 @@ vi.mock("@assets", () => ({
   Delete: () => <div data-testid="delete-icon">Delete</div>,
   Archive: () => <div data-testid="archive-icon">Archive</div>,
   Unarchive: () => <div data-testid="unarchive-icon">Unarchive</div>,
+  DataPolicy: () => <div data-testid="data-policy-icon">Data Policy</div>,
   Carousel1: "Carousel1",
   Carousel2: "Carousel2",
   Carousel3: "Carousel3",
@@ -250,14 +251,19 @@ vi.mock("../SummarySidebarWrapper", () => ({
   ),
 }));
 
-// Mock Redux store
+// Mock Redux store - include export:summary so Export button is visible for export tests
 const createMockStore = (userState: any = { user: { role: UserRole.COUNSELLOR } }) => {
   return configureStore({
     reducer: {
       user: (
         state = {
           user: userState,
-          permissions: ["edit:scenario-session", "view:chat:details", "view:messages"],
+          permissions: [
+            "edit:scenario-session",
+            "view:chat:details",
+            "view:messages",
+            "export:summary",
+          ],
         },
         action,
       ) => state,
@@ -265,7 +271,12 @@ const createMockStore = (userState: any = { user: { role: UserRole.COUNSELLOR } 
     preloadedState: {
       user: {
         user: userState,
-        permissions: ["edit:scenario-session", "view:chat:details", "view:messages"],
+        permissions: [
+          "edit:scenario-session",
+          "view:chat:details",
+          "view:messages",
+          "export:summary",
+        ],
       },
     },
   });
@@ -462,7 +473,7 @@ describe("CallSummarySidebar Component", () => {
     it("should show export button for non-admin users with successful summary", () => {
       renderComponent();
 
-      const exportButton = screen.getByTestId("header-button-1");
+      const exportButton = screen.getByRole("button", { name: "Export summary" });
       expect(exportButton).toBeInTheDocument();
       expect(exportButton).toHaveTextContent("Export summary");
     });
@@ -484,7 +495,9 @@ describe("CallSummarySidebar Component", () => {
 
       renderComponent(callSummaryWithPendingStatus);
 
-      const exportButton = screen.getByTestId("header-button-1");
+      // Export button is at index 2 (Data policy=0, Delete=1, Export=2)
+      const exportButton = screen.getByTestId("header-button-2");
+      expect(exportButton).toHaveTextContent("Export summary");
       expect(exportButton).not.toBeVisible();
     });
 
@@ -498,7 +511,7 @@ describe("CallSummarySidebar Component", () => {
 
       renderComponent();
 
-      const exportButton = screen.getByTestId("header-button-1");
+      const exportButton = screen.getByRole("button", { name: "Export summary" });
       fireEvent.click(exportButton);
 
       expect(mockExportCallSummary).toHaveBeenCalledWith({ chatId: 1 });
@@ -513,7 +526,7 @@ describe("CallSummarySidebar Component", () => {
 
       renderComponent();
 
-      const exportButton = screen.getByTestId("header-button-1");
+      const exportButton = screen.getByRole("button", { name: "Export summary" });
       fireEvent.click(exportButton);
 
       expect(mockExportCallSummary).toHaveBeenCalledWith({ chatId: 1 });
@@ -526,7 +539,7 @@ describe("CallSummarySidebar Component", () => {
 
       renderComponent();
 
-      const exportButton = screen.getByTestId("header-button-1");
+      const exportButton = screen.getByRole("button", { name: "Export summary" });
       fireEvent.click(exportButton);
 
       expect(mockExportCallSummary).toHaveBeenCalledWith({ chatId: 1 });
@@ -537,7 +550,7 @@ describe("CallSummarySidebar Component", () => {
 
       renderComponent();
 
-      const exportButton = screen.getByTestId("header-button-1");
+      const exportButton = screen.getByRole("button", { name: "Export summary" });
       fireEvent.click(exportButton);
 
       expect(mockExportCallSummary).toHaveBeenCalledWith({ chatId: 1 });

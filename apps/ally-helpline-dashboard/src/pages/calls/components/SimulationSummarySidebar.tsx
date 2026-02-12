@@ -87,9 +87,9 @@ const SimulationSummarySidebar: FC<SimulationSummarySidebarProps> = ({
                   navigate(ROUTES.REVIEW_DETAILS.replace(":reviewId", summary.reviewId))
                 }
                 variant="secondary"
-                className="flex justify-center h-[40px] shadow-lg"
+                className="flex items-center justify-center h-[40px] w-[40px] p-0 shadow-lg"
               >
-                <Comment />
+                <Comment className="w-5 h-5 shrink-0" />
               </Button>
             </>
           )}
@@ -105,9 +105,7 @@ const SimulationSummarySidebar: FC<SimulationSummarySidebarProps> = ({
       content: (
         <SimulationSummary
           summaryId={summaryId}
-          isInSidebar={true}
           className="max-h-[calc(100vh-150px)]"
-          onSummaryClose={closeSummarySidebar}
           onSummaryFetch={onSummaryFetch}
         />
       ),

@@ -65,6 +65,13 @@ export interface CallTranscriptTabProps {
 
 export interface SummarySidebarWrapperProps {
   onSidebarClose?: () => void;
+  extraHeaderList?: {
+    alt: string;
+    icon: ReactNode;
+    onClick: () => void;
+    show?: boolean;
+    text?: string;
+  }[];
   tabList: {
     id: number;
     label: string;
