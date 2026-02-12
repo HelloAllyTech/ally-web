@@ -2,40 +2,67 @@ import { FC, useState } from "react";
 
 import { motion } from "framer-motion";
 
-import { CustomImage, SimulationDetailsModal } from "@ally-ui-mono/ui-shared/index";
+import { CustomImage, GenericTable, SimulationDetailsModal } from "@ally-ui-mono/ui-shared/index";
 import { InfoIcon } from "@assets";
+import { FeedbackSectionType } from "@types";
 import { getFormattedDateTime, getFormattedTimeFromDuration } from "@utils";
 
 import { feedbackSections } from "./constants";
 import { FeedbackSectionProps } from "./types";
 import { getFormattedFeedbackSection } from "./utils";
 
-const getFeedbackSectionByType = ({ data, label }: { data: any; label: string }) => {
-  return (
-    <div className="flex flex-col">
-      <span className="w-full text-typography-900 bg-[#EDE7F680] px-2 py-2 text-base">{label}</span>
-      <ul className="p-4 space-y-2 text-base">
-        {data.length === 0 && (
-          <div className="text-typography-700 font-primary text-center mb-2">No data found</div>
-        )}
-        {Array.isArray(data) ? (
-          data.map((item, index) => (
-            <li key={index} className="flex items-start">
-              <span className="text-typography-900 mr-2">•</span>
-              <span className="text-typography-900">{item}</span>
-            </li>
-          ))
-        ) : (
-          <li className="flex items-start">
-            <span className="text-typography-900 mr-2">•</span>
-            <span className="text-typography-900">{data}</span>
-          </li>
-        )}
-      </ul>
-    </div>
-  );
-};
+const getFeedbackSectionByType = ({
+  data,
+  label,
+  type,
+  columns,
+}: {
+  data: any;
+  label: string;
+  type: FeedbackSectionType;
+  columns: any[];
+}) => {
+  switch (type) {
+    //TODO: Remove events table
+    case FeedbackSectionType.TABLE:
+      return (
+        <GenericTable
+          columns={columns}
+          data={data}
+          className="min-w-full text-md font-primary overflow-y-scroll mb-4"
+        />
+      );
+    case FeedbackSectionType.BULLET_TEXT:
+      return (
+        <div className="flex flex-col border-[0.5px] border-[#C8C5D0] rounded-sm">
+          <span className="w-full text-typography-900 bg-[#EDE7F680] px-2 py-2 text-base">
+            {label}
+          </span>
+          <ul className="p-4 space-y-2 text-base">
+            {data.length === 0 && (
+              <div className="text-typography-700 font-primary text-center mb-2">No data found</div>
+            )}
+            {Array.isArray(data) ? (
+              data.map((item, index) => (
+                <li key={index} className="flex items-start">
+                  <span className="text-typography-900 mr-2">•</span>
+                  <span className="text-typography-900">{item}</span>
+                </li>
+              ))
+            ) : (
+              <li className="flex items-start">
+                <span className="text-typography-900 mr-2">•</span>
+                <span className="text-typography-900">{data}</span>
+              </li>
+            )}
+          </ul>
+        </div>
+      );
 
+    default:
+      return null;
+  }
+};
 export const FeedbackSection: FC<FeedbackSectionProps> = props => {
   const [showSimulationDetailsModal, setShowSimulationDetailsModal] = useState(false);
 
@@ -83,7 +110,7 @@ export const FeedbackSection: FC<FeedbackSectionProps> = props => {
           </div>
         </div>
         <motion.div className="overflow-y-auto font-primary space-y-4">
-          {feedbackSections.map(({ key, label }, index) => {
+          {feedbackSections.map(({ key, label, type, columns }, index) => {
             return (
               <motion.div
                 key={key}
@@ -96,9 +123,9 @@ export const FeedbackSection: FC<FeedbackSectionProps> = props => {
                 }}
                 className="bg-white"
               >
-                <div className="border-[0.5px] border-[#C8C5D0] rounded-sm">
+                <div>
                   {formattedData[key] ? (
-                    getFeedbackSectionByType({ data: formattedData[key], label })
+                    getFeedbackSectionByType({ data: formattedData[key], label, type, columns })
                   ) : (
                     <div className="text-typography-700 font-primary text-center mb-2">
                       No data found
