@@ -1,5 +1,6 @@
 import { FEATURE_FLAGS_MAP } from "@ally-ui-mono/ui-shared/featureFlag";
 import { cellTypes } from "@components";
+import { ExperienceMode } from "@src/constants";
 import { CreatorFieldGroups, FormFieldConfig } from "@types";
 
 export const minInputHeight = {
@@ -391,7 +392,7 @@ export const SIMULATION_CREATOR_FIELD_GROUPS_OLD: CreatorFieldGroups[] = [
         options: CHECKLIST_TYPE_OPTIONS,
         fullWidth: false,
         dependsOn: "experienceMode",
-        visibleWhen: (formValues: any) => formValues.experienceMode === "CHECKLIST",
+        visibleWhen: (formValues: any) => formValues.experienceMode === ExperienceMode.CHECKLIST,
       },
       {
         id: "timerMode",
@@ -613,7 +614,7 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
         options: CHECKLIST_TYPE_OPTIONS,
         fullWidth: false,
         dependsOn: "experienceMode",
-        visibleWhen: (formValues: any) => formValues.experienceMode === "CHECKLIST",
+        visibleWhen: (formValues: any) => formValues.experienceMode === ExperienceMode.CHECKLIST,
       },
       {
         id: "timerMode",
