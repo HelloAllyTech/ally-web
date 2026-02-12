@@ -6,10 +6,10 @@ import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
 
 import {
-  useCreateSimulationPathMutation,
   useDeleteCoverImageMutation,
-  useLazyGetScenarioPathByIdQuery,
-  useUpdateSimulationPathByIdMutation,
+  useLazyGetScenarioCaseByIdQuery,
+  useCreateSimulationCaseMutation,
+  useUpdateSimulationCaseByIdMutation,
 } from "@api";
 import { Plus, Eye } from "@assets";
 import {
@@ -69,9 +69,9 @@ export const CreateCase: FC = () => {
 
   const title = id ? "Edit Case" : "Create Case";
 
-  const [getScenarioPathByIdQuery, { data: individualCase }] = useLazyGetScenarioPathByIdQuery();
-  const [createSimulationPathMutation] = useCreateSimulationPathMutation();
-  const [updateSimulationPathByIdQuery] = useUpdateSimulationPathByIdMutation();
+  const [getScenarioCaseByIdQuery, { data: individualCase }] = useLazyGetScenarioCaseByIdQuery();
+  const [createSimulationCaseMutation] = useCreateSimulationCaseMutation();
+  const [updateSimulationCaseByIdQuery] = useUpdateSimulationCaseByIdMutation();
   const [deleteCoverImage] = useDeleteCoverImageMutation();
 
   const formatScenarios = (scenarios?: GetScenarioType[]) => {
@@ -97,8 +97,8 @@ export const CreateCase: FC = () => {
   } = formMethods;
 
   useEffect(() => {
-    if (caseId) getScenarioPathByIdQuery(caseId);
-  }, [caseId, getScenarioPathByIdQuery]);
+    if (caseId) getScenarioCaseByIdQuery(caseId);
+  }, [caseId, getScenarioCaseByIdQuery]);
 
   useEffect(() => {
     if (individualCase) formMethods.reset(individualCase);
@@ -154,19 +154,19 @@ export const CreateCase: FC = () => {
       }
     }
 
-    const simulationPath: any = {
+    const simulationCase: any = {
       ...extractValidData(PATH_CREATOR_FIELD_GROUPS, formData),
       status,
     };
     let response;
 
     if (caseId) {
-      response = await updateSimulationPathByIdQuery({
+      response = await updateSimulationCaseByIdQuery({
         id: caseId,
-        data: simulationPath,
+        data: simulationCase,
       });
     } else {
-      response = await createSimulationPathMutation(simulationPath);
+      response = await createSimulationCaseMutation(simulationCase);
     }
     return response;
   };

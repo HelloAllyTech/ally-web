@@ -23,11 +23,13 @@ import { describe, expect, it, vi, beforeEach } from "vitest";
 const {
   mockUseGetScenariosQuery,
   mockUseGetScenarioPathwaysQuery,
+  mockUseGetScenarioCasesQuery,
   mockUpdateUserPreferences,
   mockUseScenarioLanguages,
 } = vi.hoisted(() => ({
   mockUseGetScenariosQuery: vi.fn(),
   mockUseGetScenarioPathwaysQuery: vi.fn(),
+  mockUseGetScenarioCasesQuery: vi.fn(),
   mockUpdateUserPreferences: vi.fn(),
   mockUseScenarioLanguages: vi.fn(),
 }));
@@ -35,6 +37,7 @@ const {
 vi.mock("@api", () => ({
   useGetScenariosQuery: () => mockUseGetScenariosQuery(),
   useGetScenarioPathwaysQuery: () => mockUseGetScenarioPathwaysQuery(),
+  useGetScenarioCasesQuery: () => mockUseGetScenarioCasesQuery(),
   useUpdateUserPreferencesMutation: () => [mockUpdateUserPreferences, { isLoading: false }],
 }));
 
@@ -262,6 +265,11 @@ describe("Learn Component", () => {
       refetch: vi.fn(),
     });
     mockUseGetScenarioPathwaysQuery.mockReturnValue({
+      data: { data: [] },
+      isLoading: false,
+      refetch: vi.fn(),
+    });
+    mockUseGetScenarioCasesQuery.mockReturnValue({
       data: { data: [] },
       isLoading: false,
       refetch: vi.fn(),
