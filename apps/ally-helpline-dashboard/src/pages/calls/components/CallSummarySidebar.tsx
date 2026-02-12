@@ -9,14 +9,15 @@ import {
   useArchiveCallLogMutation,
   useGetSummaryFieldsQuery,
 } from "@api";
-import { Archive, Delete, Download, Unarchive } from "@assets";
-import { CallProvider, Permissions } from "@constants";
+import { Archive, DataPolicy, Delete, Download, Unarchive } from "@assets";
+import { ALLY_DATA_POLICY_URL, CallProvider, Permissions } from "@constants";
 import { FeedbackDialog } from "@containers";
 import { useFileExport } from "@hooks";
 import CallSummary from "@pages/post-call-summary/components/CallSummary";
 import ArchiveDialog from "@src/pages/calls/components/ArchiveDialog";
 import { RootState } from "@store";
 import { ChatSummaryStatus, SessionType } from "@types";
+import { openLinkInNewTab } from "@utils";
 
 import {
   SummaryHeader,
@@ -157,6 +158,13 @@ const CallSummarySidebar: FC<CallSummarySidebarProps> = ({
   const hasAdequatePermission = (permission: Permissions) => permissions?.includes(permission);
 
   const extraHeaderList = [
+    {
+      alt: "Data policy",
+      icon: <DataPolicy />,
+      onClick: () => openLinkInNewTab(ALLY_DATA_POLICY_URL),
+      show: true,
+      text: "Data policy",
+    },
     {
       alt: "Delete Log",
       icon: <Delete className="-m-1.5" />,

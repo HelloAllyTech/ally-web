@@ -58,7 +58,7 @@ export const FeedbackSection: FC<FeedbackSectionProps> = props => {
               <CustomImage
                 src={formattedData.coverImage}
                 alt="Cover Image"
-                className="w-[150px] h-[77px] object-cover"
+                className="w-[150px] h-[77px] object-cover rounded-sm"
               />
             </div>
             <div className="flex flex-col gap-1 font-primary">

@@ -77,14 +77,15 @@ export const CaseTrackDetails: FC<CaseTrackDetailsProps> = ({ type }) => {
   });
 
   const enrollSession = async () => {
-    if (type === pageType.CASE) {
-      if (!caseData?.scenarioCaseSessionId) {
-        await startCaseSimulation({ caseId: id });
-      }
-    } else {
-      if (!pathwayData?.scenarioPathSessionId) {
-        await startSimulationMutation({ pathwayId: id });
-      }
+    const isCase = type === pageType.CASE;
+    const hasExistingSession = isCase
+      ? caseData?.caseSessionId
+      : pathwayData?.scenarioPathSessionId;
+
+    if (!hasExistingSession) {
+      await (isCase
+        ? startCaseSimulation({ caseId: id })
+        : startSimulationMutation({ pathwayId: id }));
     }
   };
 
