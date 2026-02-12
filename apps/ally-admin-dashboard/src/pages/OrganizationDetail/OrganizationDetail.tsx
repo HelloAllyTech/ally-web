@@ -10,6 +10,8 @@ import {
   useEnablePathMutation,
   useEnableSimulationMutation,
   useLazyGetTenantByIdQuery,
+  useEnableCaseMutation,
+  useDisableCaseMutation,
 } from "@api";
 import { ArrowDown, Dot } from "@assets";
 import {
@@ -18,6 +20,7 @@ import {
   SimulationsTab,
   PathTab,
   ScribeSettings,
+  CasesTab,
 } from "@components";
 import { en, ROUTES } from "@constants";
 import { Tenant } from "@types";
@@ -25,12 +28,16 @@ import { Tenant } from "@types";
 enum TAB_IDS {
   SIMULATIONS = "simulations",
   PATH = "path",
+  CASES = "cases",
   SCRIBE_SETTINGS = "scribeSettings",
 }
 
 const tabs = [
   { id: TAB_IDS.SIMULATIONS, label: en.userManagement.simulations },
   { id: TAB_IDS.PATH, label: en.userManagement.path },
+  ...(FEATURE_FLAGS_MAP.SIMULATION_CASES_FLAG
+    ? [{ id: TAB_IDS.CASES, label: en.userManagement.cases }]
+    : []),
   ...(FEATURE_FLAGS_MAP.SCRIBE_SETTINGS_FLAG
     ? [{ id: TAB_IDS.SCRIBE_SETTINGS, label: en.userManagement.scribeSettings }]
     : []),
@@ -54,6 +61,8 @@ export const OrganizationDetail: FC = () => {
   const [disableSimulation] = useDisableSimulationMutation();
   const [enablePathAccess] = useEnablePathMutation();
   const [disablePathAccess] = useDisablePathMutation();
+  const [enableCaseAccess] = useEnableCaseMutation();
+  const [disableCaseAccess] = useDisableCaseMutation();
 
   useEffect(() => {
     if (id) {
@@ -103,6 +112,25 @@ export const OrganizationDetail: FC = () => {
     }
   };
 
+  const handleToggleCaseAccess = async (caseId: number, enabled: boolean) => {
+    try {
+      if (enabled) {
+        await enableCaseAccess({
+          tenantId: id,
+          caseIds: [caseId],
+        }).unwrap();
+      } else {
+        await disableCaseAccess({
+          tenantId: id,
+          caseIds: [caseId],
+        }).unwrap();
+      }
+    } catch (error: any) {
+      toast.error(error?.data?.message || en.errors.caseUpdateFailed);
+      throw error;
+    }
+  };
+
   // Show skeleton loader while fetching organization data
   if (isTenantsLoading || !organization) {
     if (isTenantsLoading) {
@@ -131,7 +159,7 @@ export const OrganizationDetail: FC = () => {
             onToggleAccess={handleToggleAccess}
           />
         );
-
+      // TODO: Create new Tab Component which will be used to manage the cases and path access together
       case TAB_IDS.PATH:
         return (
           <PathTab
@@ -139,6 +167,15 @@ export const OrganizationDetail: FC = () => {
             searchValue={searchValue}
             onSearchChange={setSearchValue}
             onToggleAccess={handleTogglePathAccess}
+          />
+        );
+      case TAB_IDS.CASES:
+        return (
+          <CasesTab
+            organizationId={id}
+            searchValue={searchValue}
+            onSearchChange={setSearchValue}
+            onToggleAccess={handleToggleCaseAccess}
           />
         );
       case TAB_IDS.SCRIBE_SETTINGS:

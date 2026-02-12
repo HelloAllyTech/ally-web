@@ -52,6 +52,7 @@ export const ApiEndpoints = {
     END_SCENARIO_PREVIEW: (sessionId: number | string) =>
       `/v1/learn/scenarios/preview/${sessionId}/end`,
     SIMULATION_TENANT_VISIBILITY: (tenantId: string) => `v1/learn/scenario/tenant/${tenantId}`,
+    CASE_TENANT_VISIBILITY: (tenantId: string) => `v1/learn/admin/cases/tenant/${tenantId}`,
     SCENARIO_PATHS: "v1/learn/admin/scenario-paths",
     SCENARIO_PATH_BY_ID: (id: string | number) => `/v1/learn/admin/scenario-paths/${id}`,
     DUPLICATE_SCENARIO_PATH: (id: string | number) =>
