@@ -297,6 +297,10 @@ export interface GetScenarioPathwaysResponse {
   data: ScenarioPathway[];
 }
 
+export interface GetScenarioCasesResponse {
+  data: ScenarioCaseDetails[];
+}
+
 export enum PathwayScenarioStatus {
   COMPLETED = "COMPLETED",
   IN_PROGRESS = "IN_PROGRESS",

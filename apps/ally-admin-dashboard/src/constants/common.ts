@@ -64,11 +64,10 @@ export const ApiEndpoints = {
     DELETE_LOGO: "v1/tenants/logo",
     DYNAMIC_BRANCHING_INSTRUCTIONS: "/v1/learn/branching-instruction-dynamic-shortcuts",
     SESSION_EVENT_TAGS: "/v1/session-events/tags",
-    SCENARIO_CASES: "/v1/learn/admin/scenario-paths", // TODO: change to /v1/learn/admin/scenario-cases
-    SCENARIO_CASE_BY_ID: (id: string | number) => `/v1/learn/admin/scenario-paths/${id}`, // TODO: change to /v1/learn/admin/scenario-cases/${id}
-    DUPLICATE_SCENARIO_CASE: (id: string | number) =>
-      `/v1/learn/admin/scenario-paths/${id}/duplicate`, // TODO: change to /v1/learn/admin/scenario-cases/${id}/duplicate
-    UPDATE_SIMULATION_CASE_BY_ID: (id: string | number) => `/v1/learn/admin/scenario-paths/${id}`, // TODO: change to /v1/learn/admin/scenario-cases/${id}
+    SCENARIO_CASES: "/v1/learn/admin/cases",
+    SCENARIO_CASE_BY_ID: (id: string | number) => `/v1/learn/admin/cases/${id}`,
+    DUPLICATE_SCENARIO_CASE: (id: string | number) => `/v1/learn/admin/cases/${id}/duplicate`,
+    UPDATE_SIMULATION_CASE_BY_ID: (id: string | number) => `/v1/learn/admin/cases/${id}`,
     GET_PROMPTS: "/v1/prompts",
     CREATE_PROMPT: "/v1/prompts",
     UPDATE_PROMPT: (id: string | number) => `/v1/prompts/${id}`,
