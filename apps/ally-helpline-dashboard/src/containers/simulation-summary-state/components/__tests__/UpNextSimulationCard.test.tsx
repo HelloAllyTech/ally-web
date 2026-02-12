@@ -135,16 +135,14 @@ describe("UpNextSimulationCard", () => {
     it("should render the simulation card with all elements", () => {
       render(<UpNextSimulationCard data={getMockData()} />);
 
-      expect(screen.getByText("Up next - Simulation 2")).toBeInTheDocument();
+      expect(screen.getByText(/Simulation 2/)).toBeInTheDocument();
       expect(screen.getByText("Hopeless Male, 40")).toBeInTheDocument();
       expect(screen.getByText("Scenario:")).toBeInTheDocument();
       expect(
         screen.getByText(/A 40-year-old male is experiencing deep hopelessness/),
       ).toBeInTheDocument();
-      expect(screen.getAllByText("Great work!").length).toBeGreaterThanOrEqual(1);
-      expect(
-        screen.getAllByText("You've completed the previous simulation.").length,
-      ).toBeGreaterThanOrEqual(1);
+      expect(screen.getByText(/Great work!/)).toBeInTheDocument();
+      expect(screen.getByText("You've completed the previous simulation.")).toBeInTheDocument();
     });
 
     it("should render the cover image with correct attributes", () => {
@@ -164,7 +162,7 @@ describe("UpNextSimulationCard", () => {
       }
       render(<UpNextSimulationCard data={customData} />);
 
-      expect(screen.getByText("Up next - Simulation 5")).toBeInTheDocument();
+      expect(screen.getByText(/Simulation 5/)).toBeInTheDocument();
     });
 
     it("should display custom title", () => {
@@ -236,7 +234,7 @@ describe("UpNextSimulationCard", () => {
       }
       render(<UpNextSimulationCard data={customData} />);
 
-      expect(screen.getByText("Up next - Simulation 0")).toBeInTheDocument();
+      expect(screen.getByText(/Simulation 0/)).toBeInTheDocument();
     });
 
     it("should handle long description text", () => {

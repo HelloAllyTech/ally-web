@@ -9,6 +9,7 @@ import { SummarySidebarWrapperProps } from "./types";
 
 const SummarySidebarWrapper: FC<SummarySidebarWrapperProps> = ({
   onSidebarClose = () => {},
+  extraHeaderList = [],
   tabList,
   title,
   children,
@@ -35,8 +36,9 @@ const SummarySidebarWrapper: FC<SummarySidebarWrapperProps> = ({
       drawerClassName="h-screen"
       bodyClassName="h-[calc(100%-64px)]"
       title={title}
+      headerButtons={extraHeaderList?.length > 0 ? extraHeaderList : []}
     >
-      <div className="w-[55vw] h-full flex flex-col">
+      <div className="w-[40vw] h-full flex flex-col">
         <Tabs
           value={selectedTab}
           onChange={handleTabChange}

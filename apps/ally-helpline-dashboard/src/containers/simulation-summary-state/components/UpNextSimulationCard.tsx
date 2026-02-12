@@ -1,7 +1,10 @@
+import { useState } from "react";
+
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
+import { ArrowDownFilled } from "@assets";
 import { Button, ButtonVariant } from "@components";
 import { useStartSimulation } from "@hooks";
 import { GetUpComingSimulationResponse, PathwayScenarioStatus } from "@types";
@@ -20,6 +23,8 @@ const ANIMATION_CONFIG = {
 export const UpNextSimulationCard = ({ data }: UpNextSimulationCardProps) => {
   const navigate = useNavigate();
   const { startSimulation, isStarting } = useStartSimulation({ isReplaceScreen: true });
+
+  const [isAccordionOpen, setIsAccordionOpen] = useState<boolean>(true);
 
   if (!isNonEmptyObject(data)) return null;
 
@@ -62,6 +67,37 @@ export const UpNextSimulationCard = ({ data }: UpNextSimulationCardProps) => {
     });
   };
 
+  const renderSessionGlimpse = () => {
+    return (
+      <div className="border border-[0.5px] border-[#C8C5D0] overflow-hidden mb-4">
+        <div
+          className="flex items-center py-2 px-4 bg-[#EDE7F680] cursor-pointer gap-2"
+          onClick={() => setIsAccordionOpen(!isAccordionOpen)}
+        >
+          <motion.div
+            animate={{ rotate: isAccordionOpen ? 180 : 0 }}
+            transition={{ duration: 0.2 }}
+            className="text-typography-900"
+          >
+            <ArrowDownFilled className="w-2 h-2" />
+          </motion.div>
+          <span className="text-typography-900 font-base font-primary text-md">
+            Session glimpse
+          </span>
+        </div>
+        <motion.div
+          initial={false}
+          animate={{ height: isAccordionOpen ? "auto" : 0 }}
+          transition={{ duration: 0.3, ease: "easeInOut" }}
+          className="overflow-hidden"
+        >
+          <div className="p-4 text-typography-700 text-base font-normal pt-2 bg-white">
+            {currentSession?.glimpse}
+          </div>
+        </motion.div>
+      </div>
+    );
+  };
   const handleBack = () => {
     navigate(-1);
   };
@@ -69,22 +105,6 @@ export const UpNextSimulationCard = ({ data }: UpNextSimulationCardProps) => {
   const getActionButtonLabel = () => {
     if (isStarting) return "Starting...";
     return hasUpcomingScenario ? "Next" : "Retry";
-  };
-
-  const renderTransitionMessage = () => {
-    if (currentSession?.transitionMessageTitle?.length > 0) {
-      return (
-        <>
-          <div className="text-typography-900 text-base font-semibold mb-[8px]">
-            {currentSession?.transitionMessageTitle}
-          </div>
-          <div className="text-typography-900 text-base font-normal mb-[20px]">
-            {currentSession?.transitionMessageContent}
-          </div>
-        </>
-      );
-    }
-    return null;
   };
 
   const handleActionClick = hasUpcomingScenario ? handleStartNextSimulation : handleRetrySimulation;
@@ -101,16 +121,19 @@ export const UpNextSimulationCard = ({ data }: UpNextSimulationCardProps) => {
         </>
       ) : (
         <>
-          {currentSession?.transitionMessageTitle?.length > 0 && (
-            <div className="text-typography-900 text-base font-semibold mb-[8px]">
-              {currentSession?.transitionMessageTitle}
-            </div>
-          )}
-          {currentSession?.transitionMessageContent?.length > 0 && (
-            <div className="text-typography-900 text-base font-normal mb-[20px]">
-              {currentSession?.transitionMessageContent}
-            </div>
-          )}
+          {currentSession?.glimpse && renderSessionGlimpse()}
+          <div className="flex flex-col items-center justify-center mb-[20px]">
+            {currentSession?.transitionMessageTitle?.length > 0 && (
+              <div className="text-typography-900 text-base font-semibold">
+                "{currentSession?.transitionMessageTitle}"
+              </div>
+            )}
+            {currentSession?.transitionMessageContent?.length > 0 && (
+              <div className="text-typography-700 text-base font-normal text-center">
+                {currentSession?.transitionMessageContent}
+              </div>
+            )}
+          </div>
         </>
       )}
 
@@ -124,7 +147,7 @@ export const UpNextSimulationCard = ({ data }: UpNextSimulationCardProps) => {
             />
             <div className="flex flex-col justify-center">
               <div className="text-typography-800 text-sm font-tertiary">
-                Up next - Simulation {upcomingScenario?.order}
+                Simulation {upcomingScenario?.order}
               </div>
               <div className="text-typography-900 text-xl">{upcomingScenario?.title}</div>
             </div>
@@ -137,7 +160,6 @@ export const UpNextSimulationCard = ({ data }: UpNextSimulationCardProps) => {
               {upcomingScenario?.description}
             </div>
           </div>
-          {renderTransitionMessage()}
         </div>
       )}
 

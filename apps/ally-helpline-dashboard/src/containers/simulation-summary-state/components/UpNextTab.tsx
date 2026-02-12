@@ -2,14 +2,12 @@ import { FC, useEffect } from "react";
 
 import { logger } from "@ally-ui-mono/ui-shared/logger";
 import { useLazyGetUpComingSimulationQuery } from "@api";
-import { PermissionGuard } from "@components";
-import { Permissions } from "@constants";
-import { pageType } from "@types";
 
-import { UpNextSimulationCard } from "./components";
+import { UpNextSimulationCard } from ".";
 
 interface UpNextTabProps {
   sessionId: string;
+  pageType: string;
 }
 
 const EVENT_STATUS = {
@@ -17,7 +15,7 @@ const EVENT_STATUS = {
   IN_PROGRESS: "IN_PROGRESS",
 };
 
-const UpNextTab: FC<UpNextTabProps> = ({ sessionId }) => {
+export const UpNextTab: FC<UpNextTabProps> = ({ sessionId, pageType }) => {
   const [getUpComingSimulation, { data: upComingSimulation }] = useLazyGetUpComingSimulationQuery();
 
   useEffect(() => {
@@ -28,7 +26,7 @@ const UpNextTab: FC<UpNextTabProps> = ({ sessionId }) => {
 
     const pollUpComingSimulation = async () => {
       try {
-        const { data } = await getUpComingSimulation({ sessionId, type: pageType.TRACK });
+        const { data } = await getUpComingSimulation({ sessionId, type: pageType });
         if (
           data?.currentSession?.eventStatus !== EVENT_STATUS.COMPLETED &&
           upcomingPollCount < maxPolls &&
@@ -53,17 +51,13 @@ const UpNextTab: FC<UpNextTabProps> = ({ sessionId }) => {
     };
   }, [sessionId]);
   return (
-    <div className="relative h-auto w-full overflow-auto border border-border-light pb-20 rounded-lg">
-      {upComingSimulation?.currentSession?.eventStatus === "COMPLETED" && (
-        <div className="text-typography-900 text-base font-semibold mb-[8px] border-b border-border-light p-2">
+    <div className="relative h-auto w-full  border border-border-light pb-20 rounded-lg">
+      {upComingSimulation?.currentSession?.eventStatus === EVENT_STATUS.COMPLETED && (
+        <div className="text-typography-900 text-base mb-2 border-b border-border-light p-3 font-primary mx-3">
           Up Next
         </div>
       )}
-      <PermissionGuard requiredPermissions={[Permissions.EDIT_SCENARIO_SESSION]}>
-        <UpNextSimulationCard data={upComingSimulation} />
-      </PermissionGuard>
+      <UpNextSimulationCard data={upComingSimulation} />
     </div>
   );
 };
-
-export default UpNextTab;
