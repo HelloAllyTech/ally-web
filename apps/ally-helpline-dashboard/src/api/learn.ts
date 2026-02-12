@@ -27,6 +27,7 @@ import {
   GetUpComingSimulationResponse,
   LanguageOption,
   ScenarioCaseDetails,
+  GetScenarioCasesResponse,
 } from "@types";
 
 import { baseAPI } from "./baseAPI";
@@ -239,6 +240,18 @@ const learnAPI = baseAPI.injectEndpoints({
       }),
     }),
     /**
+     * Get all scenario cases.
+     * @param {Record<string, any>} [params] - Optional query parameters (e.g., { offset: number, limit: number })
+     * @returns {Promise<ScenarioCaseDetails[]>} List of scenario cases
+     */
+    getScenarioCases: builder.query<GetScenarioCasesResponse, Record<string, any>>({
+      query: (params = {}) => ({
+        url: ApiEndpoints.LEARN.GET_SCENARIO_CASES,
+        method: HttpMethod.GET,
+        params,
+      }),
+    }),
+    /**
      * Get details for a specific case by id.
      * @param {string} caseId - Case identifier
      * @returns {Promise<ScenarioCaseDetails>} Case details
@@ -285,6 +298,7 @@ export const {
   useGetScenarioQuery,
   useGetScenariosQuery,
   useGetScenarioPathwaysQuery,
+  useGetScenarioCasesQuery,
   useGetScenarioPathwayDetailsQuery,
   useStartSimulationMutation,
   useGetSimulationLogsQuery,

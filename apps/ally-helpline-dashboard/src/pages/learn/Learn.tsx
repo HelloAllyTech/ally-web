@@ -7,6 +7,7 @@ import { DropdownField, FEATURE_FLAGS_MAP } from "@ally-ui-mono/ui-shared";
 import {
   useGetScenariosQuery,
   useGetScenarioPathwaysQuery,
+  useGetScenarioCasesQuery,
   useUpdateUserPreferencesMutation,
 } from "@api";
 import { CreditsDisplay, ScenarioCard, TabGroup } from "@components";
@@ -67,7 +68,7 @@ export const Learn: FC = () => {
     data: casesData,
     isLoading: isCasesLoading,
     refetch: refetchCases,
-  } = useGetScenarioPathwaysQuery(
+  } = useGetScenarioCasesQuery(
     {},
     { skip: !hasCasePermissions || !FEATURE_FLAGS_MAP.SIMULATION_CASES_FLAG },
   ); // TODO: remove this skip when the feature flag is enabled
