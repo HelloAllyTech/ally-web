@@ -2,7 +2,7 @@ import { FC, Fragment, useEffect, useRef } from "react";
 
 import { UseFormReturn } from "react-hook-form";
 
-import { ExperienceMode, ChecklistType, FORM_FIELD_IDS, SESSION_TIMER_CONFIG } from "@constants";
+import { FORM_FIELD_IDS, SESSION_TIMER_CONFIG } from "@constants";
 import { FormFieldConfig } from "@types";
 
 import { FormField } from "./FormField";
@@ -16,20 +16,8 @@ export const CreateSimulationSubSection: FC<CreateSimulationSubSectionProps> = (
   items,
   formMethods,
 }) => {
-  const experienceMode = formMethods.watch(FORM_FIELD_IDS.EXPERIENCE_MODE);
-  const checklistType = formMethods.watch(FORM_FIELD_IDS.CHECKLIST_TYPE);
   const timerMode = formMethods.watch(FORM_FIELD_IDS.TIMER_MODE);
   const checklistTypeRef = useRef<HTMLDivElement>(null);
-
-  // Auto-scroll and set default checklistType when experienceMode changes to CHECKLIST
-  useEffect(() => {
-    if (experienceMode === ExperienceMode.CHECKLIST) {
-      // Set default value to GUIDED if checklistType is not already set
-      if (!checklistType) {
-        formMethods.setValue(FORM_FIELD_IDS.CHECKLIST_TYPE, ChecklistType.GUIDED);
-      }
-    }
-  }, [experienceMode, checklistType, formMethods]);
 
   // Auto-set default maxTimeValue when timerMode is enabled
   useEffect(() => {

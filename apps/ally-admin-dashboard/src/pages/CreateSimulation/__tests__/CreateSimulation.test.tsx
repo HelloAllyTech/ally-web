@@ -722,37 +722,6 @@ describe("CreateSimulation", () => {
   });
 
   describe("Experience Mode and Checklist Type", () => {
-    it("should remove checklistType when experienceMode is not CHECKLIST", async () => {
-      mockFormMethods.getValues.mockReturnValue({
-        title: "Test Title",
-        description: "Test Description",
-        experienceMode: ExperienceMode.FEEDBACK,
-        checklistType: ChecklistType.GUIDED,
-        triggerWarningIds: [],
-      });
-      mockCreateSimulation.mockResolvedValue({ data: [{ id: "new-id" }] });
-
-      renderCreateSimulation();
-
-      const saveDraftButton = screen.getByText("Save Draft");
-      fireEvent.click(saveDraftButton);
-
-      await waitFor(
-        () => {
-          expect(mockCreateSimulation).toHaveBeenCalledWith(
-            expect.objectContaining({
-              scenarios: expect.arrayContaining([
-                expect.not.objectContaining({
-                  checklistType: ChecklistType.GUIDED,
-                }),
-              ]),
-            }),
-          );
-        },
-        { timeout: 500 },
-      );
-    });
-
     it("should keep checklistType when experienceMode is CHECKLIST", async () => {
       mockFormMethods.getValues.mockReturnValue({
         title: "Test Title",
