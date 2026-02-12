@@ -158,7 +158,9 @@ export const CaseTrackDetails: FC<CaseTrackDetailsProps> = ({ type }) => {
     await startSimulation({
       params: {
         scenarioId,
-        scenarioPathSessionItemId: sessionId,
+        ...(type === pageType.CASE
+          ? { scenarioCaseSessionItemId: sessionId }
+          : { scenarioPathSessionItemId: sessionId }),
         ...(state?.languages?.length > 0 && {
           languageId: selectedLanguage?.language_id || state?.defaultLanguage,
         }),
