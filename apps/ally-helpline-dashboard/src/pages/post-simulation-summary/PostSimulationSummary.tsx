@@ -2,6 +2,7 @@ import { FC, useState } from "react";
 
 import { Tab, Tabs } from "@mui/material";
 import { motion } from "framer-motion";
+import { useSelector } from "react-redux";
 import { useNavigate, useParams } from "react-router-dom";
 
 import { Toggle } from "@ally-ui-mono/ui-shared/index";
@@ -11,9 +12,10 @@ import {
   useUpdateReviewMutation,
 } from "@api";
 import { BackCircle } from "@assets";
-import { REVIEW_PRIVACY_OPTIONS } from "@constants";
-import { SimulationSummary } from "@containers";
-import UpNextTab from "@containers/simulation-summary-state/UpNextTab";
+import { Permissions, REVIEW_PRIVACY_OPTIONS } from "@constants";
+import { SimulationSummary, UpNextTab } from "@containers";
+import { RootState } from "@store";
+import { pageType } from "@types";
 
 import { SimulationTranscriptTab } from "../calls/components";
 import { tabStyles } from "../calls/constants";
@@ -22,10 +24,15 @@ import { containerVariants } from "../learn/constants";
 export const PostSimulationSummary: FC = () => {
   const { sessionId } = useParams();
   const navigate = useNavigate();
+  const { permissions } = useSelector((state: RootState) => state.user);
 
   const { data: summary } = useGetSimulationSummaryQuery(sessionId);
   const [createReview] = useCreateReviewMutation();
   const [updateReview] = useUpdateReviewMutation();
+
+  const canShowUpNextTab =
+    (summary?.scenarioPathSessionItemId || summary?.caseSessionId) &&
+    permissions?.includes(Permissions.EDIT_SCENARIO_SESSION);
 
   const tabList = [
     {
@@ -43,12 +50,17 @@ export const PostSimulationSummary: FC = () => {
         />
       ),
     },
-    ...(summary?.scenarioPathSessionItemId
+    ...(canShowUpNextTab
       ? [
           {
             id: 3,
             label: "Up Next",
-            content: <UpNextTab sessionId={sessionId} />,
+            content: (
+              <UpNextTab
+                sessionId={sessionId}
+                pageType={summary?.scenarioPathSessionItemId ? pageType.TRACK : pageType.CASE}
+              />
+            ),
           },
         ]
       : []),
@@ -56,7 +68,7 @@ export const PostSimulationSummary: FC = () => {
 
   const [selectedTab, setSelectedTab] = useState<number>(tabList?.[0].id);
 
-  const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
+  const handleTabChange = (_event: React.SyntheticEvent, newValue: number) => {
     setSelectedTab(newValue);
   };
 
