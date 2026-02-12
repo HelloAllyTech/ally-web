@@ -4,6 +4,7 @@ import { logger } from "@ally-ui-mono/ui-shared/logger";
 import { useLazyGetUpComingSimulationQuery } from "@api";
 import { PermissionGuard } from "@components";
 import { Permissions } from "@constants";
+import { pageType } from "@types";
 
 import { UpNextSimulationCard } from "./components";
 
@@ -27,7 +28,7 @@ const UpNextTab: FC<UpNextTabProps> = ({ sessionId }) => {
 
     const pollUpComingSimulation = async () => {
       try {
-        const { data } = await getUpComingSimulation(sessionId);
+        const { data } = await getUpComingSimulation({ sessionId, type: pageType.TRACK });
         if (
           data?.currentSession?.eventStatus !== EVENT_STATUS.COMPLETED &&
           upcomingPollCount < maxPolls &&
