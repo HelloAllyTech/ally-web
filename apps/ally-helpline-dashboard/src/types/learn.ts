@@ -174,7 +174,7 @@ export interface SimulationSummary {
   totalScore: number;
   eventStatus?: string;
   scenarioPathSessionItemId?: string;
-  caseSessionId?: string;
+  caseSessionItemId?: string;
   details: {
     id: string;
     createdAt: string;
@@ -261,7 +261,7 @@ interface CurrentSession {
   transitionMessageTitle?: string;
   transitionMessageContent?: string;
   isScenarioPathSessionCompleted?: boolean;
-  glimpse?: string;
+  sessionGlimpse?: string;
 }
 
 export interface GetUpComingSimulationResponse {

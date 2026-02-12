@@ -31,7 +31,7 @@ export const PostSimulationSummary: FC = () => {
   const [updateReview] = useUpdateReviewMutation();
 
   const canShowUpNextTab =
-    (summary?.scenarioPathSessionItemId || summary?.caseSessionId) &&
+    (summary?.scenarioPathSessionItemId || summary?.caseSessionItemId) &&
     permissions?.includes(Permissions.EDIT_SCENARIO_SESSION);
 
   const tabList = [

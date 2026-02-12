@@ -87,10 +87,10 @@ export const ApiEndpoints = {
     GET_SCENARIO_CASES: "/v1/learn/cases",
     GET_SCENARIO_CASE_DETAILS: (caseId: string) => `/v1/learn/cases/${caseId}`,
     SCENARIO_SESSION_BY_CASE_ITEM: (caseSessionItemId: string) =>
-      `/v1/learn/scenario-session/scenario-case-session-item/${caseSessionItemId}`,
+      `/v1/learn/scenario-session/case-session-item/${caseSessionItemId}`,
     START_CASE_SIMULATION: (caseId: string) => `/v1/learn/cases/${caseId}/create-session`,
     GET_UP_COMING_CASE_SIMULATION: (caseSessionItemId: string) =>
-      `/v1/learn/case-sessions/${caseSessionItemId}/upcoming-scenario`,
+      `/v1/learn/cases/${caseSessionItemId}/upcoming-scenario`,
   },
   SIMULATION: {
     SIMULATION_CREDITS: "/v1/simulation-credits",
