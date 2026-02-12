@@ -29,6 +29,10 @@ import {
   DeleteCharacterRequest,
   Prompt,
   GetPromptsQuery,
+  GetReportsInput,
+  ReportData,
+  GenerateReportInput,
+  GenerateReportResponse,
 } from "@types";
 
 import { baseAPI } from "./baseApi";
@@ -814,6 +818,63 @@ const simulationStudioAPI = baseAPI.injectEndpoints({
         return { data };
       },
     }),
+
+    /**
+     * Get reports for a specific scenario.
+     * @param {string} scenarioId - Scenario identifier
+     * @returns {Promise<ReportData[]>} List of reports
+     */
+    getReports: builder.query<{ data: ReportData[] }, { input: GetReportsInput }>({
+      query: ({ input }) => ({
+        url: ApiEndpoints.SIMULATION_STUDIO.GET_REPORTS(input.scenarioId),
+        method: HttpMethod.GET,
+        params: {
+          status: input.status,
+        },
+      }),
+    }),
+
+    /**
+     * Get report by ID.
+     * @param {string} id - Report identifier
+     * @returns {Promise<ReportData>} Report data
+     */
+    getReportById: builder.query<ReportData, { id: string }>({
+      query: ({ id }) => ({
+        url: ApiEndpoints.SIMULATION_STUDIO.GET_REPORT_BY_ID(id),
+        method: HttpMethod.GET,
+      }),
+    }),
+
+    /**
+     * Generate a report for a specific scenario.
+     * @param {string} scenarioId - Scenario identifier
+     * @returns {Promise<ReportData>} Report data
+     */
+    generateReport: builder.mutation<GenerateReportResponse, { input: GenerateReportInput }>({
+      query: ({ input }) => ({
+        url: ApiEndpoints.SIMULATION_STUDIO.GENERATE_REPORT(input.scenarioId),
+        method: HttpMethod.POST,
+        body: {
+          languageId: input.config.languageId,
+          turns: input.config.turns,
+          helperAgentPrompt: input.config.helperAgentPrompt,
+        },
+      }),
+    }),
+
+    /**
+     * Cancel a report generation.
+     * @param {Object} params - Cancel report parameters
+     * @param {string} params.reportId - Report identifier
+     * @returns {Promise<{ success: boolean }>} Success response
+     */
+    cancelReportGeneration: builder.mutation<{ success: boolean }, { reportId: string }>({
+      query: ({ reportId }) => ({
+        url: ApiEndpoints.SIMULATION_STUDIO.CANCEL_REPORT_GENERATION(reportId),
+        method: HttpMethod.POST,
+      }),
+    }),
   }),
 });
 
@@ -864,4 +925,9 @@ export const {
   useGetTagsQuery,
   useGetStatesInstructionQuery,
   useGetImageLibraryQuery,
+  useGetReportsQuery,
+  useGetReportByIdQuery,
+  useLazyGetReportByIdQuery,
+  useGenerateReportMutation,
+  useCancelReportGenerationMutation,
 } = simulationStudioAPI;
