@@ -92,7 +92,7 @@ export const UpNextSimulationCard = ({ data }: UpNextSimulationCardProps) => {
           className="overflow-hidden"
         >
           <div className="p-4 text-typography-700 text-base font-normal pt-2 bg-white">
-            {currentSession?.glimpse}
+            {currentSession?.sessionGlimpse}
           </div>
         </motion.div>
       </div>
@@ -121,7 +121,7 @@ export const UpNextSimulationCard = ({ data }: UpNextSimulationCardProps) => {
         </>
       ) : (
         <>
-          {currentSession?.glimpse && renderSessionGlimpse()}
+          {currentSession?.sessionGlimpse && renderSessionGlimpse()}
           <div className="flex flex-col items-center justify-center mb-[20px]">
             {currentSession?.transitionMessageTitle?.length > 0 && (
               <div className="text-typography-900 text-base font-semibold">
