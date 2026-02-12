@@ -84,11 +84,13 @@ export const ApiEndpoints = {
     SCENARIO_SESSION_BY_PATH_ITEM: (pathSessionItemId: string) =>
       `/v1/learn/scenario-session/scenario-path-session-item/${pathSessionItemId}`,
     GET_AVAILABLE_LANGUAGES: "/v1/learn/scenario-languages",
-    GET_SCENARIO_CASES: "/v1/learn/case-sessions",
+    GET_SCENARIO_CASES: "/v1/learn/cases",
     GET_SCENARIO_CASE_DETAILS: (caseId: string) => `/v1/learn/cases/${caseId}`,
     SCENARIO_SESSION_BY_CASE_ITEM: (caseSessionItemId: string) =>
-      `/v1/learn/scenario-session/scenario-path-session-item/${caseSessionItemId}`,
+      `/v1/learn/scenario-session/scenario-case-session-item/${caseSessionItemId}`,
     START_CASE_SIMULATION: (caseId: string) => `/v1/learn/cases/${caseId}/create-session`,
+    GET_UP_COMING_CASE_SIMULATION: (caseSessionItemId: string) =>
+      `/v1/learn/case-sessions/${caseSessionItemId}/upcoming-scenario`,
   },
   SIMULATION: {
     SIMULATION_CREDITS: "/v1/simulation-credits",

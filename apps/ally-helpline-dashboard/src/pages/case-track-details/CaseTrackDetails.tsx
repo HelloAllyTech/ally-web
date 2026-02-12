@@ -21,18 +21,13 @@ import {
 } from "@components";
 import { ROUTES } from "@constants";
 import { useStartSimulation } from "@hooks";
-import { PathwayScenarioStatus, PathwayScenario, LanguageOption } from "@types";
+import { PathwayScenarioStatus, PathwayScenario, LanguageOption, pageType } from "@types";
 
 type CaseTrackDetailsType = "case" | "track";
 
 interface CaseTrackDetailsProps {
   type: CaseTrackDetailsType;
 }
-
-const pageType = {
-  CASE: "case",
-  TRACK: "track",
-};
 
 export const CaseTrackDetails: FC<CaseTrackDetailsProps> = ({ type }) => {
   const { pathwayId, caseId } = useParams<{ pathwayId?: string; caseId?: string }>();
