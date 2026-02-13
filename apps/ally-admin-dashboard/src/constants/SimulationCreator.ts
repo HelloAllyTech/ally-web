@@ -1,6 +1,6 @@
 import { FEATURE_FLAGS_MAP } from "@ally-ui-mono/ui-shared/featureFlag";
 import { cellTypes } from "@components";
-import { ExperienceMode } from "@src/constants";
+import { en, ExperienceMode } from "@src/constants";
 import { CreatorFieldGroups, FormFieldConfig } from "@types";
 
 export const minInputHeight = {
@@ -963,6 +963,71 @@ export const CHARACTER_LIBRARY_TABLE_COLUMNS = [
     dataType: cellTypes.dropdown,
     options: SEXUAL_ORIENTATION_OPTIONS,
     minWidth: 180,
+  },
+];
+export const USER_BADGES_TABLE_COLUMNS = [
+  {
+    id: "imageUrl",
+    label: en.simulation.icon,
+    accessor: "imageUrl",
+    dataType: cellTypes.image,
+    minWidth: 80,
+  },
+  {
+    id: "name",
+    label: en.simulation.name,
+    accessor: "name",
+    dataType: cellTypes.normalText,
+    minWidth: 140,
+  },
+  {
+    id: "description",
+    label: en.simulation.description,
+    accessor: "description",
+    dataType: cellTypes.normalText,
+    minWidth: 270,
+  },
+  {
+    id: "status",
+    label: en.simulation.status,
+    accessor: "status",
+    dataType: cellTypes.status,
+    minWidth: 120,
+  },
+  {
+    id: "visibilityType",
+    label: en.simulation.orgVisibility,
+    accessor: "visibilityType",
+    dataType: cellTypes.normalText,
+    minWidth: 140,
+  },
+  {
+    id: "code",
+    label: en.userManagement.code,
+    accessor: "code",
+    dataType: cellTypes.normalText,
+    minWidth: 100,
+  },
+  {
+    id: "category",
+    label: en.simulation.category,
+    accessor: "category",
+    dataType: cellTypes.normalText,
+    minWidth: 120,
+  },
+  {
+    id: "role",
+    label: en.userManagement.role,
+    accessor: "roles",
+    dataType: cellTypes.roles,
+    minWidth: 140,
+  },
+  {
+    id: "updatedAt",
+    label: en.simulation.lastModified,
+    accessor: "updatedAt",
+    dataType: cellTypes.normalText,
+    minWidth: 150,
   },
 ];
 
