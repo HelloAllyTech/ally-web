@@ -20,8 +20,10 @@ import {
   PROGRESS_INCREMENT_MAX,
   PROGRESS_UPDATE_INTERVAL_MS,
   REPORT_GENERATION_MESSAGES,
+  ReportGenerationStatus,
 } from "@constants";
-import { ReportData, ReportConfig } from "@types";
+import { useScenarioReportsSocket } from "@hooks";
+import { ReportData, ReportConfig, ReportsUpdatedPayload } from "@types";
 
 import PromptConfiguration from "../prompt-configuration/PromptConfiguration";
 import ReportContent from "../report-content/ReportContent";
@@ -41,6 +43,7 @@ export const ReportSection: FC<ReportSectionProps> = ({ scenarioId }) => {
   const [activeTab, setActiveTab] = useState<"report" | "transcription">("report");
   const [primaryActiveTab, setPrimaryActiveTab] = useState<"report" | "history">("report");
   const [reportId, setReportId] = useState<string | null>(null);
+  const [inProgressReportIds, setInProgressReportIds] = useState<Set<string>>(new Set());
 
   const [generateReportMutation] = useGenerateReportMutation();
   const [getReportById, { data: fetchedReportData }] = useLazyGetReportByIdQuery();
@@ -63,6 +66,87 @@ export const ReportSection: FC<ReportSectionProps> = ({ scenarioId }) => {
       setReportData(fetchedReportData);
     }
   }, [fetchedReportData]);
+
+  // Step 1: Identify reports in progress from the fetched reports
+  useEffect(() => {
+    if (reportsHistory?.data) {
+      const inProgress = reportsHistory.data.filter(
+        report =>
+          report.status === ReportGenerationStatus.STARTED ||
+          report.status === ReportGenerationStatus.IN_PROGRESS,
+      );
+      const inProgressIds = new Set(inProgress.map(r => r.id));
+      setInProgressReportIds(inProgressIds);
+    }
+  }, [reportsHistory]);
+
+  // Step 2: Set up WebSocket hook
+  const { connect, disconnect, joinScenarioReportRoom, isConnected } = useScenarioReportsSocket({
+    onReportsUpdated: (payload: ReportsUpdatedPayload) => {
+      // Update reports when we receive WebSocket updates
+      payload.data.forEach(updatedReport => {
+        // If this is the currently viewed report, update it
+        if (updatedReport.id === reportId) {
+          setReportData(updatedReport);
+          // If report is completed, stop generating
+          if (
+            updatedReport.status === ReportGenerationStatus.COMPLETED ||
+            updatedReport.status === ReportGenerationStatus.FAILED ||
+            updatedReport.status === ReportGenerationStatus.CANCELLED
+          ) {
+            setIsGenerating(false);
+            setProgress(100);
+          }
+        }
+
+        // Update in-progress tracking
+        setInProgressReportIds(prev => {
+          const next = new Set(prev);
+          if (
+            updatedReport.status === ReportGenerationStatus.COMPLETED ||
+            updatedReport.status === ReportGenerationStatus.FAILED ||
+            updatedReport.status === ReportGenerationStatus.CANCELLED
+          ) {
+            next.delete(updatedReport.id);
+          } else if (
+            updatedReport.status === ReportGenerationStatus.IN_PROGRESS ||
+            updatedReport.status === ReportGenerationStatus.STARTED
+          ) {
+            next.add(updatedReport.id);
+          }
+          return next;
+        });
+      });
+    },
+    onConnected: () => {
+      // After connecting, join rooms for all in-progress reports
+      inProgressReportIds.forEach(reportId => {
+        joinScenarioReportRoom(reportId);
+      });
+    },
+    onError: (error: Error) => {
+      toast.error(`WebSocket error: ${error.message}`);
+    },
+  });
+
+  // Step 3: Connect to WebSocket only if there are in-progress reports
+  useEffect(() => {
+    if (inProgressReportIds.size > 0) {
+      connect();
+      return () => {
+        disconnect();
+      };
+    }
+    return undefined;
+  }, [inProgressReportIds.size, connect, disconnect]);
+
+  // Step 4: When a new report is generated, join its room
+  useEffect(() => {
+    if (reportId && isConnected()) {
+      joinScenarioReportRoom(reportId);
+      setInProgressReportIds(prev => new Set([...prev, reportId]));
+    }
+  }, [reportId, isConnected, joinScenarioReportRoom]);
 
   // Simulate progress during generation
   useEffect(() => {
@@ -112,7 +196,17 @@ export const ReportSection: FC<ReportSectionProps> = ({ scenarioId }) => {
         helperAgentPrompt: helperAgentPrompt,
       };
       const response = await generateReport(config);
-      setReportId(response?.reportId);
+      if (response?.reportId) {
+        setReportId(response.reportId);
+
+        // Connect to WebSocket if not connected
+        if (!isConnected()) {
+          connect();
+        }
+
+        // Join room for this new report (will happen in useEffect above)
+        setInProgressReportIds(prev => new Set([...prev, response.reportId]));
+      }
     } finally {
       setTimeout(() => setIsGenerating(false), 500);
     }
