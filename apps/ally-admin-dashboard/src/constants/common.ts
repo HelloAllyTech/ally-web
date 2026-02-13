@@ -77,6 +77,7 @@ export const ApiEndpoints = {
     GENERATE_REPORT: (scenarioId: string) => `/v1/learn/scenarios/${scenarioId}/reports`,
     CANCEL_REPORT_GENERATION: (reportId: string) =>
       `/v1/learn/scenarios/reports/${reportId}/cancel`,
+    SCENARIO_COVER_IMAGE_LIBRARY: "/v1/scenario-cover-image-library",
   },
 
   CHARACTERS: {
