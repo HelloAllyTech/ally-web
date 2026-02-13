@@ -9,18 +9,22 @@ import ArrowDownFilled from "./arrowDownFilled.svg?react";
 import ArrowSolid from "./arrowSolid.svg?react";
 import BackCircle from "./back-circle.svg?react";
 import BackIcon from "./backIcon.svg?react";
+import Badge from "./badge.svg?react";
 import BinaryClassification from "./binaryClassification.svg?react";
 import BlackTick from "./blackTick.svg?react";
 import BlueAdd from "./blueAdd.svg?react";
 import Bolt from "./bolt.svg?react";
 import Book from "./book.svg?react";
 import BookWhite from "./bookWhite.svg?react";
+import Calendar from "./calendar.svg?react";
 import Case from "./case.svg?react";
 import CharacterLibrary from "./characterLibrary.svg?react";
 import Chat from "./chat.svg?react";
 import CheckCircle from "./check-circle.svg?react";
 import Close from "./close.svg?react";
 import CloseRed from "./closeRed.svg?react";
+import Compress from "./compress.svg?react";
+import Contribution from "./contribution.svg?react";
 import Copy from "./copy.svg?react";
 import Delete from "./delete.svg?react";
 import DiamondShine from "./diamond_shine.svg?react";
@@ -52,6 +56,7 @@ import SemanticSimilarity from "./semanticSimilarity.svg?react";
 import Simulation from "./simulation.svg?react";
 import ThreeDot from "./threeDot.svg?react";
 import Tick from "./tick.svg?react";
+import Timer from "./timer.svg?react";
 import Trash from "./trash.svg?react";
 import TrashRed from "./trashRed.svg?react";
 import Unarchive from "./unArchiveIcon.svg?react";
@@ -126,4 +131,9 @@ export {
   Case,
   CheckCircle,
   FrameSource,
+  Badge,
+  Timer,
+  Calendar,
+  Contribution,
+  Compress,
 };

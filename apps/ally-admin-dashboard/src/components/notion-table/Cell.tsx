@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 
+import { CustomImage } from "@ally-ui-mono/ui-shared/index";
 import { EmojiPickerComponent, TimeInput, TagList, HelperTag } from "@components";
 import {
   EditableTextPopup,
@@ -9,6 +10,7 @@ import {
   SelectComponent,
   EditableTriggerConditionsPopup,
   TextareaWithTriggerDropdown,
+  Status,
 } from "@components/notion-table";
 import { DETECTION_CONFIG_FIELDS } from "@constants";
 import {
@@ -17,6 +19,7 @@ import {
   normalizeDetectionConfigValue,
   getInfinityDisplay,
   toggleInfinityValue,
+  getStatusColor,
 } from "@utils";
 
 import { cellTypes } from "./utils";
@@ -151,6 +154,9 @@ export const Cell = ({
         </span>
       );
       break;
+    case cellTypes.image:
+      element = <CustomImage src={value.value} alt="User badge" width={100} height={100} />;
+      break;
     case cellTypes.editableText:
       element = (
         <EditableTextPopup
@@ -256,6 +262,28 @@ export const Cell = ({
       break;
     case cellTypes.dropdownTags:
       element = <HelperTag tags={existingBehaviours ?? []} updateTags={updateCellValue} />;
+      break;
+    case cellTypes.status:
+      element = (
+        <div className="flex items-center">
+          <div className={`w-auto py-1 rounded-[4px] px-2 text-sm ${getStatusColor(value.value)}`}>
+            {value.value === Status.ACTIVE
+              ? formatCapitalizedEnum(Status.PUBLISHED)
+              : formatCapitalizedEnum(value.value) || "--"}
+          </div>
+        </div>
+      );
+      break;
+    case cellTypes.roles:
+      element = (
+        <span className="overflow-hidden text-ellipsis whitespace-nowrap">
+          {value.value?.length
+            ? value.value.map(role => formatCapitalizedEnum(role)).join(", ")
+            : value.value
+              ? formatCapitalizedEnum(value.value)
+              : "--"}
+        </span>
+      );
       break;
     default:
       element = <span />;

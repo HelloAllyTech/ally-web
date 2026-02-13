@@ -11,3 +11,4 @@ export * from "./CreateCase/CreateCase";
 export * from "./ScenarioVoices/ScenarioVoices";
 export * from "./LanguageManagement/LanguageManagement";
 export * from "./PromptManagement/PromptManagement";
+export * from "./UserBadges/UserBadges";
