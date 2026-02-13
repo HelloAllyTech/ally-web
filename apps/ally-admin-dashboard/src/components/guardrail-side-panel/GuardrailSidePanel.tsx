@@ -86,7 +86,11 @@ export const GuardrailSidePanel: React.FC<GuardrailSidePanelProps> = ({
   };
 
   const handleSave = async () => {
-    if (!formData.name?.trim() || !formData.helperDialogue?.trim() || !formData.actorDialogue?.trim()) {
+    if (
+      !formData.name?.trim() ||
+      !formData.helperDialogue?.trim() ||
+      !formData.actorDialogue?.trim()
+    ) {
       toast.error("Name, Helper Dialogue and Actor Dialogue are mandatory fields.");
       return;
     }
@@ -104,7 +108,8 @@ export const GuardrailSidePanel: React.FC<GuardrailSidePanelProps> = ({
     }
   };
 
-  const isFormValid = formData.name?.trim() && formData.helperDialogue?.trim() && formData.actorDialogue?.trim();
+  const isFormValid =
+    formData.name?.trim() && formData.helperDialogue?.trim() && formData.actorDialogue?.trim();
 
   return (
     <div className="fixed inset-0 z-50 flex">
@@ -118,35 +123,39 @@ export const GuardrailSidePanel: React.FC<GuardrailSidePanelProps> = ({
 
         <div className="h-[calc(100vh-100px)] px-10 pl-[46px] pt-2 overflow-y-auto custom-scrollbar">
           <div className="mb-4">
-            <span className="text-2xl font-light text-typography-600">
-              {isNew ? "New Guardrail" : "Edit Guardrail"}
-            </span>
+            <input
+              type="text"
+              value={formData.name || ""}
+              onChange={e => handleChange("name", e.target.value)}
+              placeholder={isNew ? "New Guardrail" : "Edit Guardrail"}
+              className="text-2xl font-light text-typography-900 bg-transparent border-none outline-none w-full placeholder-typography-400 focus:placeholder-typography-300"
+              autoFocus={isNew}
+            />
           </div>
 
           <div className="space-y-3">
-            <Field label="Name" required={true}>
-              <Input
-                value={formData.name || ""}
-                onChange={(e: any) => handleChange("name", e.target.value)}
-                placeholder="e.g. Rude Behavior"
-                className="w-full"
-              />
-            </Field>
-
-            <Field label="Helper Dialogue (trigger)" multiline={true} required={true}>
+            <Field
+              label="Helper Dialogue (If helper said something that can be classified as)"
+              multiline={true}
+              required={true}
+            >
               <AutoExpandableTextarea
                 value={formData.helperDialogue || ""}
-                onChange={(val) => handleChange("helperDialogue", val)}
+                onChange={val => handleChange("helperDialogue", val)}
                 placeholder="e.g. rude"
                 minHeight={20}
                 className="py-2 pt-[16px] px-0 border-none focus:outline-none text-base w-full resize-none"
               />
             </Field>
 
-            <Field label="Actor Dialogue (response instruction)" multiline={true} required={true}>
+            <Field
+              label="Actor Dialogue (Actor should start by saying)"
+              multiline={true}
+              required={true}
+            >
               <AutoExpandableTextarea
                 value={formData.actorDialogue || ""}
-                onChange={(val) => handleChange("actorDialogue", val)}
+                onChange={val => handleChange("actorDialogue", val)}
                 placeholder="e.g. why are you talking to me like that?"
                 minHeight={20}
                 className="py-2 pt-[16px] px-0 border-none focus:outline-none text-base w-full resize-none"
@@ -156,17 +165,13 @@ export const GuardrailSidePanel: React.FC<GuardrailSidePanelProps> = ({
             <Field label="Active">
               <ToggleSwitch
                 enabled={formData.active !== false}
-                onChange={(enabled) => handleChange("active", enabled)}
+                onChange={enabled => handleChange("active", enabled)}
               />
             </Field>
           </div>
 
           <div className="flex gap-3 mt-8 pb-6 justify-center">
-            <Button
-              variant={ButtonVariant.PRIMARY}
-              onClick={handleSave}
-              disabled={!isFormValid}
-            >
+            <Button variant={ButtonVariant.PRIMARY} onClick={handleSave} disabled={!isFormValid}>
               {isNew ? "Save" : "Save"}
             </Button>
             <Button variant={ButtonVariant.SECONDARY} onClick={onClose}>

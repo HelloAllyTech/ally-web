@@ -13,7 +13,6 @@ const {
   mockCreateGuardrail,
   mockUpdateGuardrail,
   mockDeleteGuardrail,
-  mockDeleteGuardrails,
 } = vi.hoisted(() => ({
   mockToast: {
     success: vi.fn(),
@@ -23,7 +22,6 @@ const {
   mockCreateGuardrail: vi.fn(),
   mockUpdateGuardrail: vi.fn(),
   mockDeleteGuardrail: vi.fn(),
-  mockDeleteGuardrails: vi.fn(),
 }));
 
 // Mock sonner toast
@@ -40,7 +38,6 @@ vi.mock("@api", async importOriginal => {
     useCreateGuardrailMutation: () => [mockCreateGuardrail],
     useUpdateGuardrailMutation: () => [mockUpdateGuardrail],
     useDeleteGuardrailMutation: () => [mockDeleteGuardrail],
-    useDeleteGuardrailsMutation: () => [mockDeleteGuardrails],
   };
 });
 
@@ -263,9 +260,6 @@ describe("GuardrailsManagement", () => {
       error: null,
     });
     mockDeleteGuardrail.mockReturnValue({
-      error: null,
-    });
-    mockDeleteGuardrails.mockReturnValue({
       error: null,
     });
   });
@@ -656,7 +650,7 @@ describe("GuardrailsManagement", () => {
       fireEvent.click(confirmButton);
 
       await waitFor(() => {
-        expect(mockToast.error).toHaveBeenCalledWith("Failed to delete guardrails");
+        expect(mockToast.error).toHaveBeenCalledWith("Failed to delete some guardrails");
       });
     });
 

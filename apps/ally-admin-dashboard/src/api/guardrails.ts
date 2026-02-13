@@ -39,14 +39,6 @@ const guardrailsApi = baseAPI.injectEndpoints({
       invalidatesTags: [TAG_TYPES.CONVERSATIONAL_GUARDRAILS],
     }),
 
-    createGuardrails: builder.mutation<ConversationalGuardrail[], CreateConversationalGuardrailInput[]>({
-      query: body => ({
-        url: `${ApiEndpoints.SIMULATION_STUDIO.CONVERSATIONAL_GUARDRAILS}/bulk`,
-        method: HttpMethod.POST,
-        body,
-      }),
-      invalidatesTags: [TAG_TYPES.CONVERSATIONAL_GUARDRAILS],
-    }),
 
     updateGuardrail: builder.mutation<
       ConversationalGuardrail,
@@ -68,14 +60,6 @@ const guardrailsApi = baseAPI.injectEndpoints({
       invalidatesTags: [TAG_TYPES.CONVERSATIONAL_GUARDRAILS],
     }),
 
-    deleteGuardrails: builder.mutation<void, { ids: string[] }>({
-      query: body => ({
-        url: ApiEndpoints.SIMULATION_STUDIO.CONVERSATIONAL_GUARDRAILS,
-        method: HttpMethod.DELETE,
-        body,
-      }),
-      invalidatesTags: [TAG_TYPES.CONVERSATIONAL_GUARDRAILS],
-    }),
 
     getGuardrailTranslations: builder.query<ConversationalGuardrailTranslation[], string>({
       query: guardrailId => ({
@@ -123,10 +107,8 @@ export const {
   useGetGuardrailsQuery,
   useGetGuardrailByIdQuery,
   useCreateGuardrailMutation,
-  useCreateGuardrailsMutation,
   useUpdateGuardrailMutation,
   useDeleteGuardrailMutation,
-  useDeleteGuardrailsMutation,
   useGetGuardrailTranslationsQuery,
   useCreateGuardrailTranslationMutation,
   useUpdateGuardrailTranslationMutation,

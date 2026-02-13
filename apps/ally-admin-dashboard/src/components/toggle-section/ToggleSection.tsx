@@ -8,21 +8,30 @@ interface ToggleSectionProps {
   label: string;
   name: string;
   formMethods: UseFormReturn<any>;
+  defaultValue?: boolean;
+  disabled?: boolean;
 }
 
-export const ToggleSection = ({ label, name, formMethods }: ToggleSectionProps) => {
+export const ToggleSection = ({
+  label,
+  name,
+  formMethods,
+  defaultValue = false,
+  disabled,
+}: ToggleSectionProps) => {
   const {
     field: { value, onChange },
   } = useController({
     name,
     control: formMethods.control,
+    defaultValue,
   });
 
   return (
     <div className="flex justify-between items-center py-2 w-full">
       <span className="font-regular text-base text-typography-900">{label}</span>
       <span className="flex gap-3 text-base">
-        <ToggleSwitch enabled={!!value} onChange={onChange} label={label} />
+        <ToggleSwitch enabled={!!value} onChange={onChange} label={label} disabled={disabled} />
         {value ? en.common.enabled : en.common.disabled}
       </span>
     </div>

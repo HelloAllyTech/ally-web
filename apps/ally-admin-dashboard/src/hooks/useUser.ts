@@ -80,14 +80,14 @@ export const useUser = () => {
       path: ROUTES.MANAGE_PROMPTS,
     },
     {
-      id: SIDEBAR_ITEMS.USER_MANAGEMENT,
-      label: en.userManagement.userManagement,
-      path: ROUTES.USER_MANAGEMENT,
-    },
-    {
       id: SIDEBAR_ITEMS.MANAGE_GUARDRAILS,
       label: "Conversational Guardrails",
       path: ROUTES.MANAGE_GUARDRAILS,
+    },
+    {
+      id: SIDEBAR_ITEMS.USER_MANAGEMENT,
+      label: en.userManagement.userManagement,
+      path: ROUTES.USER_MANAGEMENT,
     },
   ];
 

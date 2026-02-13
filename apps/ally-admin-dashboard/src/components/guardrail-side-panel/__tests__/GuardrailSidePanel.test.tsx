@@ -112,7 +112,7 @@ describe("GuardrailSidePanel", () => {
     it("renders create side panel when creating new guardrail", () => {
       render(<GuardrailSidePanel {...defaultProps} selectedGuardrail={{}} />);
 
-      expect(screen.getByText("Create Guardrail")).toBeInTheDocument();
+      expect(screen.getByText("Create guardrail")).toBeInTheDocument();
       expect(screen.queryByText("Delete")).not.toBeInTheDocument();
     });
 
@@ -122,10 +122,9 @@ describe("GuardrailSidePanel", () => {
       expect(screen.getByText(/Helper Dialogue/)).toBeInTheDocument();
     });
 
-    it("renders name field", () => {
+    it("renders name as inline editable title", () => {
       render(<GuardrailSidePanel {...defaultProps} />);
 
-      expect(screen.getByText("Name")).toBeInTheDocument();
       expect(screen.getByDisplayValue("Guardrail 1")).toBeInTheDocument();
     });
 

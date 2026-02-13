@@ -18,6 +18,7 @@ import {
   Mic,
   CharacterLibrary,
   FrameSource,
+  Guardrails,
 } from "@assets";
 import { UserModal } from "@components";
 import { SIDEBAR_ITEMS, ROUTES, en, profileSettings, USER_MODAL_FIELDS_IDS } from "@constants";
@@ -127,7 +128,7 @@ export const Sidebar: React.FC = () => {
       case SIDEBAR_ITEMS.SCENARIO_LANGUAGES:
         return <Globe />;
       case SIDEBAR_ITEMS.MANAGE_GUARDRAILS:
-        return <Book />;
+        return <Guardrails />;
       case SIDEBAR_ITEMS.PROMPTS:
         return <FrameSource />;
       default:

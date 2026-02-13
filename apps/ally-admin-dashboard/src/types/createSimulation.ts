@@ -67,6 +67,7 @@ export interface FormFieldConfig {
   isMandatory?: boolean;
   isDashedLineAbove?: boolean;
   fullWidth?: boolean;
+  renderWidth?: string;
   maxLength?: number;
   multiline?: boolean;
   defaultValue?: string;

@@ -6,9 +6,8 @@ import {
   useCreateGuardrailMutation,
   useUpdateGuardrailMutation,
   useDeleteGuardrailMutation,
-  useDeleteGuardrailsMutation,
 } from "@api";
-import { Trash } from "@assets";
+import { Trash, Add } from "@assets";
 import {
   NotionTable,
   ListToolbar,
@@ -32,15 +31,15 @@ const GUARDRAILS_TABLE_COLUMNS = [
   },
   {
     id: "helperDialogue",
-    label: "Helper Dialogue",
+    label: "If helper said something that can be classified as",
     accessor: "helperDialogue",
     placeholder: "Enter helper dialogue",
     dataType: cellTypes.editableText,
-    minWidth: 300,
+    minWidth: 400,
   },
   {
     id: "actorDialogue",
-    label: "Actor Dialogue",
+    label: "Actor should start by saying",
     accessor: "actorDialogue",
     placeholder: "Enter actor dialogue",
     dataType: cellTypes.editableText,
@@ -85,7 +84,6 @@ export const GuardrailsManagement: React.FC = () => {
   const [createGuardrail] = useCreateGuardrailMutation();
   const [updateGuardrail] = useUpdateGuardrailMutation();
   const [deleteGuardrail] = useDeleteGuardrailMutation();
-  const [deleteGuardrails] = useDeleteGuardrailsMutation();
 
   // Handle data updates
   useEffect(() => {
@@ -169,22 +167,22 @@ export const GuardrailsManagement: React.FC = () => {
     if (item && value !== undefined) {
       // If columnId is 'all', value is the full update object
       let updatePayload: UpdateConversationalGuardrailInput = {};
-      
-      if (columnId === 'all') {
-         updatePayload = value;
+
+      if (columnId === "all") {
+        updatePayload = value;
       } else {
-         if (columnId === 'name') updatePayload.name = value;
-         if (columnId === 'helperDialogue') updatePayload.helperDialogue = value;
-         if (columnId === 'actorDialogue') updatePayload.actorDialogue = value;
-         if (columnId === 'active') updatePayload.active = value;
+        if (columnId === "name") updatePayload.name = value;
+        if (columnId === "helperDialogue") updatePayload.helperDialogue = value;
+        if (columnId === "actorDialogue") updatePayload.actorDialogue = value;
+        if (columnId === "active") updatePayload.active = value;
       }
 
       try {
         const response: any = await updateGuardrail({ id: item.id, guardrail: updatePayload });
-         if (response.error) {
-            toast.error("Failed to update guardrail");
-         } 
-         // else toast.success("Guardrail updated"); // Optional toast to avoid spam on typing
+        if (response.error) {
+          toast.error("Failed to update guardrail");
+        }
+        // else toast.success("Guardrail updated"); // Optional toast to avoid spam on typing
       } catch {
         toast.error("Failed to update guardrail");
       }
@@ -196,29 +194,24 @@ export const GuardrailsManagement: React.FC = () => {
   }, []);
 
   const handleDeleteGuardrails = async (ids: string[]) => {
-     if (ids.length === 0) return;
-     try {
-         let response;
-         if(ids.length === 1) {
-             response = await deleteGuardrail(ids[0]);
-         } else {
-             response = await deleteGuardrails({ ids });
-         }
+    if (ids.length === 0) return;
+    try {
+      const results = await Promise.all(ids.map(id => deleteGuardrail(id)));
+      const hasError = results.some((r: any) => r.error);
 
-        if ((response as any).error) {
-            toast.error("Failed to delete guardrails");
-        } else {
-             toast.success(`Successfully deleted ${ids.length} guardrail(s)`);
-             setShowDeleteConfirmationPopup(false);
-             setSelectedGuardrails([]);
-             setIsSidePanelOpen(false);
-             setSelectedGuardrail(null);
-        }
-     } catch {
-         toast.error("Failed to delete guardrails");
-     }
+      if (hasError) {
+        toast.error("Failed to delete some guardrails");
+      } else {
+        toast.success(`Successfully deleted ${ids.length} guardrail(s)`);
+        setShowDeleteConfirmationPopup(false);
+        setSelectedGuardrails([]);
+        setIsSidePanelOpen(false);
+        setSelectedGuardrail(null);
+      }
+    } catch {
+      toast.error("Failed to delete guardrails");
+    }
   };
-
 
   // Build Table Data
   const tableData = useMemo(() => {
@@ -229,7 +222,11 @@ export const GuardrailsManagement: React.FC = () => {
         helperDialogue: { value: g.helperDialogue, disabled: false, rowId: g.id },
         actorDialogue: { value: g.actorDialogue, disabled: false, rowId: g.id },
         active: { value: g.active, disabled: false, rowId: g.id },
-        createdAt: { value: new Date(g.createdAt).toLocaleDateString(), disabled: true, rowId: g.id },
+        createdAt: {
+          value: new Date(g.createdAt).toLocaleDateString(),
+          disabled: true,
+          rowId: g.id,
+        },
       })),
       columns: GUARDRAILS_TABLE_COLUMNS,
     };
@@ -248,8 +245,13 @@ export const GuardrailsManagement: React.FC = () => {
           onClick: () => setShowDeleteConfirmationPopup(true),
         }
       : {
-          label: "Create guardrail",
+          label: "Create new guardrail",
           variant: ButtonVariant.PRIMARY,
+          icon: (
+            <div className="w-5 h-5 flex items-center justify-center">
+              <Add />
+            </div>
+          ),
           onClick: handleNewGuardrailClick,
         };
   }, [selectedGuardrails]); // handleNewGuardrailClick is stable or needs callback if dependencies change, but it's simpler here
@@ -290,14 +292,16 @@ export const GuardrailsManagement: React.FC = () => {
         </div>
 
         <GuardrailSidePanel
-           isOpen={isSidePanelOpen}
-           onClose={handleSidePanelClose}
-           selectedGuardrail={selectedGuardrail}
-           onDelete={(id) => setShowDeleteConfirmationPopup(true)} // Or handle direct delete
-           onUpdate={(id, updates) => handleUpdateTable({ rowId: id, columnId: 'all', value: updates })}
-           onCreate={handleCreateGuardrail}
+          isOpen={isSidePanelOpen}
+          onClose={handleSidePanelClose}
+          selectedGuardrail={selectedGuardrail}
+          onDelete={id => setShowDeleteConfirmationPopup(true)} // Or handle direct delete
+          onUpdate={(id, updates) =>
+            handleUpdateTable({ rowId: id, columnId: "all", value: updates })
+          }
+          onCreate={handleCreateGuardrail}
         />
-        
+
         {showDeleteConfirmationPopup && (
           <ActionConfirmationPopup
             isOpen={showDeleteConfirmationPopup}

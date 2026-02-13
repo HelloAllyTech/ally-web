@@ -131,7 +131,7 @@ export const FormField: FC<FormFieldProps> = ({ config, formMethods }) => {
         return <AutoTerminationRuleField label={label} formMethods={formMethods} />;
       case FORM_FIELD_TYPES.TOGGLE_BUTTON:
         return (
-          <div className="w-full">
+          <div className={config.renderWidth || "w-full"}>
             <ToggleSection label={label} name={id} formMethods={formMethods} />
           </div>
         );
