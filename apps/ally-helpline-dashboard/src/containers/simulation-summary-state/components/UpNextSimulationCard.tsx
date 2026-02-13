@@ -111,6 +111,7 @@ export const UpNextSimulationCard = ({ data }: UpNextSimulationCardProps) => {
 
   return (
     <div className="font-primary px-[15px] py-2">
+      {currentSession?.sessionGlimpse && renderSessionGlimpse()}
       {!isCurrentScenarioCompleted ? (
         <>
           <div className="text-typography-900 text-base font-semibold mb-[8px]">All most there</div>
@@ -121,7 +122,6 @@ export const UpNextSimulationCard = ({ data }: UpNextSimulationCardProps) => {
         </>
       ) : (
         <>
-          {currentSession?.sessionGlimpse && renderSessionGlimpse()}
           <div className="flex flex-col items-center justify-center mb-[20px]">
             {currentSession?.transitionMessageTitle?.length > 0 && (
               <div className="text-typography-900 text-base font-semibold">
