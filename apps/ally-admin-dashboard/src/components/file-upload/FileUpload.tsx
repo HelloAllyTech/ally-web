@@ -4,7 +4,7 @@ import axios from "axios";
 import { useDropzone } from "react-dropzone";
 import { toast } from "sonner";
 
-import { CustomVideo, CustomImage, FEATURE_FLAGS_MAP } from "@ally-ui-mono/ui-shared";
+import { CustomVideo, CustomImage } from "@ally-ui-mono/ui-shared";
 import {
   useGetCoverImageUrlMutation,
   useDeleteCoverImageMutation,
@@ -53,7 +53,6 @@ export const FileUpload = ({
 
   const uploadedFileUrl = watch(id);
   const initialFileUrlRef = useRef("");
-  const imageLibraryRef = useRef<HTMLSpanElement>(null);
   // Set the initial file URL only once
   if (isNonEmptyString(uploadedFileUrl) && !isNonEmptyString(initialFileUrlRef.current)) {
     initialFileUrlRef.current = uploadedFileUrl;
@@ -269,6 +268,11 @@ export const FileUpload = ({
     }
   };
 
+  const openImageLibrary = event => {
+    event.stopPropagation();
+    setIsImageLibraryOpen(true);
+  };
+
   // Dropzone setup
   const { getRootProps, getInputProps, isDragActive, open } = useDropzone({
     onDrop,
@@ -288,34 +292,21 @@ export const FileUpload = ({
     );
 
     if (fileType === FILE_TYPE.IMAGE) {
-      uploadText = FEATURE_FLAGS_MAP.ADDITIONAL_CONFIG_FLAG ? (
-        <>
+      uploadText = (
+        <div>
           {en.simulation.dragDrop}{" "}
           <span className="text-primary text-primary-500">{en.simulation.choose}</span>{" "}
           {en.simulation.pngUploadGuidelines}
           <br />
           {en.simulation.resolution}
-          <span
+          <div
             role="button"
-            className="text-primary text-primary-500 cursor-pointer hover:text-primary-600"
-            ref={imageLibraryRef}
-            onClick={e => {
-              e.stopPropagation();
-              setIsImageLibraryOpen(true);
-            }}
+            className="text-primary z-10 text-primary-500 cursor-pointer hover:text-primary-600"
+            onClick={openImageLibrary}
           >
             {en.simulation.uploadFromImageLibrary}
-          </span>
-        </>
-      ) : (
-        <>
-          <span className="text-primary text-primary-500" onClick={() => open()}>
-            {en.simulation.upload}
-          </span>{" "}
-          {en.simulation.pngUploadGuidelinesOld}
-          <br />
-          {en.simulation.resolutionOld}
-        </>
+          </div>
+        </div>
       );
     }
 
