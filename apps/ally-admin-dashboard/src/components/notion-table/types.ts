@@ -79,3 +79,9 @@ export interface NotionTableProps {
   onSelectionChange?: (selectedRows: any[]) => void;
   autoHeight?: boolean;
 }
+export enum Status {
+  DRAFT = "DRAFT",
+  ACTIVE = "ACTIVE",
+  ARCHIVED = "ARCHIVED",
+  PUBLISHED = "PUBLISHED",
+}
