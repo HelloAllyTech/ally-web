@@ -33,6 +33,8 @@ import {
   ReportData,
   GenerateReportInput,
   GenerateReportResponse,
+  GetImageLibraryQueryParams,
+  GetImageLibraryResponse,
 } from "@types";
 
 import { baseAPI } from "./baseApi";
@@ -679,144 +681,18 @@ const simulationStudioAPI = baseAPI.injectEndpoints({
         return { data };
       },
     }),
-    getImageLibrary: builder.query<any[], { limit: number; offset: number; searchName?: string }>({
-      async queryFn(params) {
-        // Simulate API delay
-        await new Promise(resolve => setTimeout(resolve, 500));
-
-        const DUMMY_IMAGE_LIBRARY_DATA = [
-          {
-            coverImageUrl:
-              "https://cdn.midjourney.com/bc22b877-4ced-4811-90cc-6bb5bda9455b/0_3.png",
-          },
-          {
-            coverImageUrl:
-              "https://ally-dev-s3-learn-media-public.s3.ap-southeast-1.amazonaws.com/scenario-cover-images/1770181717405-cropped-pexels-pixabay-247314.jpg",
-          },
-          {
-            coverImageUrl:
-              "https://ally-dev-s3-learn-media-public.s3.ap-southeast-1.amazonaws.com/scenario-cover-images/1768280282530-cropped-pexels-geralt-23180.jpg",
-          },
-          {
-            coverImageUrl:
-              "https://ally-dev-s3-learn-media-public.s3.ap-southeast-1.amazonaws.com/scenario-cover-images/1770120421467-cropped-pexels-pixabay-247314.jpg",
-          },
-          {
-            coverImageUrl:
-              "https://ally-dev-s3-learn-media-public.s3.ap-southeast-1.amazonaws.com/scenario-cover-images/1769747362725-screenshot-from-2025._imresizer.jpg",
-          },
-          {
-            coverImageUrl:
-              "https://ally-dev-s3-learn-media-public.s3.ap-southeast-1.amazonaws.com/scenario-cover-images/1764239561786-abcdef-809089898979abcdef-809089898979abcdef-809089898979abcdef-809089898979abcdef-809089898979abcdef-809089898979abcdef-8090898",
-          },
-          {
-            coverImageUrl:
-              "https://ally-dev-s3-learn-media-public.s3.ap-southeast-1.amazonaws.com/scenario-cover-images/1765254652523-112ef58778fad94852fe9c290ec77a90_t-1.jpeg",
-          },
-          {
-            coverImageUrl:
-              "https://ally-dev-s3-learn-media-public.s3.ap-southeast-1.amazonaws.com/scenario-cover-images/1769148521715-112ef58778fad94852fe9c290ec77a90_t-1.jpeg",
-          },
-          {
-            coverImageUrl:
-              "https://ally-dev-s3-learn-media-public.s3.ap-southeast-1.amazonaws.com/scenario-cover-images/1770028203658-screenshot-from-2025._imresizer-8.jpg",
-          },
-          {
-            coverImageUrl:
-              "https://ally-dev-s3-learn-media-public.s3.ap-southeast-1.amazonaws.com/scenario-cover-images/1768280282530-cropped-pexels-geralt-23180.jpg",
-          },
-          {
-            coverImageUrl:
-              "https://ally-dev-s3-learn-media-public.s3.ap-southeast-1.amazonaws.com/scenario-cover-images/1763359595536-test.jpg",
-          },
-          {
-            coverImageUrl:
-              "https://cdn.midjourney.com/bc22b877-4ced-4811-90cc-6bb5bda9455b/0_3.png",
-          },
-          { coverImageUrl: null },
-          {
-            coverImageUrl:
-              "https://ally-dev-s3-learn-media-public.s3.ap-southeast-1.amazonaws.com/scenario-cover-images/1761813802760-simulation-header-image.png",
-          },
-          {
-            coverImageUrl:
-              "https://ally-dev-s3-learn-media-public.s3.ap-southeast-1.amazonaws.com/scenario-cover-images/1769000658013-1766120268341-custom.jpeg",
-          },
-          {
-            coverImageUrl:
-              "https://ally-dev-s3-learn-media-public.s3.ap-southeast-1.amazonaws.com/scenario-cover-images/1761813802760-simulation-header-image.png",
-          },
-          {
-            coverImageUrl:
-              "https://ally-dev-s3-learn-media-public.s3.ap-southeast-1.amazonaws.com/scenario-cover-images/1768280282530-cropped-pexels-geralt-23180.jpg",
-          },
-          {
-            coverImageUrl:
-              "https://ally-dev-s3-learn-media-public.s3.ap-southeast-1.amazonaws.com/scenario-cover-images/1768974667508-premium_photo-1701693533734-bc279bdd0c80.jpeg",
-          },
-          {
-            coverImageUrl:
-              "https://ally-dev-s3-learn-media-public.s3.ap-southeast-1.amazonaws.com/scenario-cover-images/1768970470899-frustrated_employee.jpeg",
-          },
-          {
-            coverImageUrl:
-              "https://ally-dev-s3-learn-media-public.s3.ap-southeast-1.amazonaws.com/scenario-cover-images/1767179755995-1766120268341-custom.jpeg",
-          },
-          {
-            coverImageUrl:
-              "https://ally-dev-s3-learn-media-public.s3.ap-southeast-1.amazonaws.com/scenario-cover-images/1766981056323-112ef58778fad94852fe9c290ec77a90_t-1.jpeg",
-          },
-          {
-            coverImageUrl:
-              "https://ally-dev-s3-learn-media-public.s3.ap-southeast-1.amazonaws.com/scenario-cover-images/1766037411514-kelly-sikkema-jn0suctoig0-unsplash_cropped_processed_by_imagy.jpg",
-          },
-          {
-            coverImageUrl:
-              "https://ally-dev-s3-learn-media-public.s3.ap-southeast-1.amazonaws.com/scenario-cover-images/1764582182735-screenshot-from-2025._imresizer-5.jpg",
-          },
-          {
-            coverImageUrl:
-              "https://ally-dev-s3-learn-media-public.s3.ap-southeast-1.amazonaws.com/scenario-cover-images/1761829046169-cropped-pexels-pixabay-247314.jpg",
-          },
-          {
-            coverImageUrl:
-              "https://ally-dev-s3-learn-media-public.s3.ap-southeast-1.amazonaws.com/scenario-cover-images/1768466588451-screenshot-from-2025._imresizer-9.jpg",
-          },
-          {
-            coverImageUrl:
-              "https://ally-dev-s3-learn-media-public.s3.ap-southeast-1.amazonaws.com/scenario-cover-images/1768467100668-112ef58778fad94852fe9c290ec77a90_t-1.jpeg",
-          },
-          {
-            coverImageUrl:
-              "https://ally-dev-s3-learn-media-public.s3.ap-southeast-1.amazonaws.com/scenario-cover-images/1767782881926-screenshot-from-2025._imresizer-9.jpg",
-          },
-          { coverImageUrl: null },
-          {
-            coverImageUrl:
-              "https://ally-dev-s3-learn-media-public.s3.ap-southeast-1.amazonaws.com/scenario-cover-images/1761813802760-simulation-header-image.png",
-          },
-          {
-            coverImageUrl:
-              "https://ally-dev-s3-learn-media-public.s3.ap-southeast-1.amazonaws.com/scenario-cover-images/1768392948268-premium_photo-1701693533734-bc279bdd0c80.jpeg",
-          },
-        ];
-
-        let filteredData = [...DUMMY_IMAGE_LIBRARY_DATA];
-
-        // Filter by search name if provided
-        if (params.searchName) {
-          filteredData = filteredData.filter(image =>
-            image.coverImageUrl.toLowerCase().includes(params.searchName.toLowerCase()),
-          );
-        }
-
-        // Paginate
-        const start = params.offset;
-        const end = start + params.limit;
-        const data = filteredData.slice(start, end);
-
-        return { data };
-      },
+    getImageLibrary: builder.query<GetImageLibraryResponse, GetImageLibraryQueryParams>({
+      query: (params: GetImageLibraryQueryParams) => ({
+        url: ApiEndpoints.SIMULATION_STUDIO.SCENARIO_COVER_IMAGE_LIBRARY,
+        method: HttpMethod.GET,
+        params: {
+          limit: params.limit,
+          offset: params.offset,
+          sortBy: params.sortBy || "createdAt",
+          sortOrder: params.sortOrder || "desc",
+          ...(params.searchName && { searchName: params.searchName }),
+        },
+      }),
     }),
 
     /**
