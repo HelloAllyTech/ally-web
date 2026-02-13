@@ -372,7 +372,10 @@ export const en = {
     statesInstruction: "States Instruction & Dialogues",
     behavioursInstruction: "Behaviour Instructions",
     ImageLibrary: "Image Library",
+    imageLibrary: "Image Library",
     selectImage: "Select image",
+    noImagesAvailable: "No images available",
+    imageLibraryEmpty: "The image library is currently empty",
   },
   notification: {
     beforeYouGetStarted: "Before you get started",

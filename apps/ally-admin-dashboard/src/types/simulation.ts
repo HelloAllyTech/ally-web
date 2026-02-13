@@ -380,3 +380,22 @@ export interface CharacterData {
 export interface DeleteCharacterRequest {
   scenarioCharacterIds: string[];
 }
+
+export interface CoverImageLibraryItem {
+  id: string;
+  imageUrl: string;
+  createdAt: string;
+}
+
+export interface GetImageLibraryQueryParams {
+  limit?: number;
+  offset?: number;
+  sortBy?: string;
+  sortOrder?: string;
+  searchName?: string;
+}
+
+export interface GetImageLibraryResponse {
+  coverImages: CoverImageLibraryItem[];
+  count: number;
+}
