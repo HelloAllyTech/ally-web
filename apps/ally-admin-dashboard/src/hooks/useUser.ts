@@ -84,6 +84,15 @@ export const useUser = () => {
       label: en.userManagement.userManagement,
       path: ROUTES.USER_MANAGEMENT,
     },
+    ...(FEATURE_FLAGS_MAP.USER_BADGES_FLAG
+      ? [
+          {
+            id: SIDEBAR_ITEMS.USER_BADGES,
+            label: en.userManagement.userBadges,
+            path: ROUTES.USER_BADGES,
+          },
+        ]
+      : []),
   ];
 
   /**

@@ -68,3 +68,5 @@ export * from "./states-instruction";
 export * from "./editable-table";
 export * from "./image-library";
 export * from "./report-section";
+export * from "./create-badge-popup";
+export * from "./option-selection-popover";

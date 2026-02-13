@@ -13,10 +13,10 @@ import {
   EventManagement,
   CharacterLibrary,
   CreatePath,
-  CreateCase,
   ScenarioVoices,
   ScenarioLanguages,
   PromptManagement,
+  UserBadges,
 } from "@pages";
 
 import { PrivateLayout } from "./PrivateLayout";
@@ -95,6 +95,14 @@ export const RouteLayout: React.FC = () => {
           }
         />
         <Route
+          path={ROUTES.USER_BADGES}
+          element={
+            <PrivateLayout requiredPermissions={[Permissions.VIEW_ADMIN_BADGE]}>
+              <UserBadges />
+            </PrivateLayout>
+          }
+        />
+        <Route
           path={ROUTES.CHARACTER_LIBRARY}
           element={
             <PrivateLayout requiredPermissions={[Permissions.EDIT_CHARACTER_LIBRARY]}>
@@ -139,22 +147,6 @@ export const RouteLayout: React.FC = () => {
           element={
             <PrivateLayout requiredPermissions={[Permissions.EDIT_EVENT]}>
               <CreatePath />
-            </PrivateLayout>
-          }
-        />
-        <Route
-          path={ROUTES.CREATE_CASE}
-          element={
-            <PrivateLayout requiredPermissions={[Permissions.EDIT_EVENT]}>
-              <CreateCase />
-            </PrivateLayout>
-          }
-        />
-        <Route
-          path={ROUTES.EDIT_CASE(":id")}
-          element={
-            <PrivateLayout requiredPermissions={[Permissions.EDIT_EVENT]}>
-              <CreateCase />
             </PrivateLayout>
           }
         />
