@@ -185,7 +185,7 @@ const CallSummary: FC<CallSummaryProps> = ({
       case FieldType.Dropdown:
         return (
           <div key={field.key} className="flex gap-1">
-            <span className="font-medium text-lg text-typography-800 whitespace-nowrap">{`${field.label}: `}</span>
+            <span className="font-medium text-lg text-typography-800 whitespace-nowrap bg-green">{`${field.label}: `}</span>
             <DropdownField
               disabled={isFieldDisabled(field)}
               value={value ?? field.placeholder ?? "--"}
