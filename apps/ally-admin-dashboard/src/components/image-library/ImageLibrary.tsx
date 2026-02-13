@@ -132,6 +132,7 @@ const ImageCard: FC<ImageCardProps> = ({ image, isSelected, onClick }) => (
       src={image.imageUrl}
       alt="Library image"
       className="w-full h-full object-cover aspect-video"
+      containerClassName="min-h-[70px] min-w-[100px]"
     />
   </button>
 );
@@ -141,7 +142,7 @@ const Footer: FC<FooterProps> = ({ onClose, onSelect, isDisabled }) => (
     <Button
       variant={ButtonVariant.SECONDARY}
       onClick={onClose}
-      className="!text-base !text-primary !font-semibold"
+      className="!text-base !text-primary"
     >
       {en.simulation.cancel}
     </Button>
@@ -169,15 +170,6 @@ export const ImageLibrary: FC<ImageLibraryProps> = ({ isOpen, onClose, onSelect 
 
   const totalCount = data?.count || 0;
   const hasMore = allImages.length < totalCount;
-
-  // Reset state when modal opens
-  useEffect(() => {
-    if (isOpen) {
-      setOffset(0);
-      setAllImages([]);
-      setSelectedImage("");
-    }
-  }, [isOpen]);
 
   // Append new images and prevent duplicates
   useEffect(() => {
