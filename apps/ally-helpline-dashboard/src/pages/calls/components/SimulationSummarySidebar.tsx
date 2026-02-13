@@ -17,6 +17,7 @@ import { RootState } from "@store";
 import { SessionType, SimulationSummary as SimulationSummaryType } from "@types";
 
 import { SummarySidebarWrapper, SimulationTranscriptTab } from ".";
+import { useTranslation } from "react-i18next";
 import { SUMMARY_FEEDBACK_TIMEOUT } from "./constants";
 import { SimulationSummarySidebarProps } from "./types";
 
@@ -26,6 +27,11 @@ const SimulationSummarySidebar: FC<SimulationSummarySidebarProps> = ({
   canShowFeedback = true,
   councellorName,
 }) => {
+  const { t } = useTranslation();
+  const reviewPrivacyOptions = REVIEW_PRIVACY_OPTIONS.map(option => ({
+    ...option,
+    label: t(option.labelKey),
+  }));
   const [showFeedbackDialog, setShowFeedbackDialog] = useState<boolean>(false);
 
   const hasFeedback = useRef<boolean>(false);
@@ -65,7 +71,9 @@ const SimulationSummarySidebar: FC<SimulationSummarySidebarProps> = ({
 
   const SidebarTitle = (
     <div className="text-base flex items-center justify-between w-full gap-2">
-      <span className="font-semibold font-tertiary text-typography-800">Summary</span>
+      <span className="font-semibold font-tertiary text-typography-800">
+        {t("postSim.tabs.summary")}
+      </span>
 
       {summary?.counselorId === user?.id && (
         <div
@@ -75,7 +83,7 @@ const SimulationSummarySidebar: FC<SimulationSummarySidebarProps> = ({
           }}
         >
           <Toggle
-            items={REVIEW_PRIVACY_OPTIONS}
+            items={reviewPrivacyOptions}
             initialValue={summary?.reviewStatus}
             onChange={handleCreateReview}
           />
@@ -101,7 +109,7 @@ const SimulationSummarySidebar: FC<SimulationSummarySidebarProps> = ({
   const tabList = [
     {
       id: 1,
-      label: "Summary",
+      label: t("postSim.tabs.summary"),
       content: (
         <SimulationSummary
           summaryId={summaryId}
@@ -112,7 +120,7 @@ const SimulationSummarySidebar: FC<SimulationSummarySidebarProps> = ({
     },
     {
       id: 2,
-      label: "Transcription",
+      label: t("postSim.tabs.transcription"),
       content: <SimulationTranscriptTab sessionId={summaryId} councellorName={councellorName} />,
     },
   ];

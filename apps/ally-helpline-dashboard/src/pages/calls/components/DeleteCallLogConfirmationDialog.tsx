@@ -2,6 +2,7 @@ import { FC } from "react";
 
 import { useDeleteCallLogMutation } from "@api";
 import { ConfirmationDialog } from "@components";
+import { useTranslation } from "react-i18next";
 
 import { DeleteCallLogDialogDataProps } from "./types";
 
@@ -9,6 +10,7 @@ const DeleteCallLogConfirmationDialog: FC<DeleteCallLogDialogDataProps> = ({
   chatId,
   closeDialog,
 }) => {
+  const { t } = useTranslation();
   const [deleteCallLog] = useDeleteCallLogMutation();
 
   const onDeleteConfirm = async () => {
@@ -22,11 +24,14 @@ const DeleteCallLogConfirmationDialog: FC<DeleteCallLogDialogDataProps> = ({
       isOpen={!!chatId}
       onClose={() => closeDialog(false)}
       onButtonClick={onDeleteConfirm}
-      title={{ normal: "Delete", italic: "Session log?" }}
-      content="Do you really want to delete this record? This process cannot be undone."
-      buttonText="Delete"
+      title={{
+        normal: t("calls.dialog.delete.titleNormal"),
+        italic: t("calls.dialog.delete.titleItalic"),
+      }}
+      content={t("calls.dialog.delete.content")}
+      buttonText={t("calls.dialog.delete.primary")}
       buttonVariant="destructive"
-      secondaryButtonText="Cancel"
+      secondaryButtonText={t("calls.dialog.delete.secondary")}
       onSecondaryButtonClick={() => closeDialog(false)}
     />
   );

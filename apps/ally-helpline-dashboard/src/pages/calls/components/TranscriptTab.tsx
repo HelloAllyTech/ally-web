@@ -1,6 +1,7 @@
 import { FC, useRef } from "react";
 
 import { InfiniteScroll } from "@ally-ui-mono/ui-shared";
+import { useTranslation } from "react-i18next";
 
 import { TranscriptTabProps } from "./types";
 
@@ -17,11 +18,12 @@ const TranscriptTab: FC<TranscriptTabProps> = ({
   isLoading,
   hasMore = true,
 }) => {
+  const { t } = useTranslation();
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   return (
     <div className="flex-1 p-4">
-      <h3 className="font-semibold text-base mb-4">Transcript</h3>
+      <h3 className="font-semibold text-base mb-4">{t("transcription.title")}</h3>
       {transcriptList?.length > 0 ? (
         <div
           ref={scrollContainerRef}
@@ -46,7 +48,7 @@ const TranscriptTab: FC<TranscriptTabProps> = ({
         </div>
       ) : (
         <div className="space-y-4 flex-1 mb-[12px]">
-          <div className="text-sm text-typography-700">No transcript available</div>
+          <div className="text-sm text-typography-700">{t("transcription.empty")}</div>
         </div>
       )}
     </div>

@@ -19,6 +19,7 @@ export interface SearchBarProps {
   initialValue?: string;
   suggestions?: string[];
   mode?: SearchVariant;
+  placeholder?: string;
 }
 
 const MAX_CHARACTER_LIMIT = 150;
@@ -33,6 +34,7 @@ const SearchBar: FC<SearchBarProps> = ({
   initialValue = "",
   suggestions = [],
   mode = SearchVariant.LIGHT,
+  placeholder = "Need guidance? Search here..",
 }) => {
   // Initialize with initialValue to match server render
   const [searchTerm, setSearchTerm] = useState(initialValue);
@@ -92,7 +94,7 @@ const SearchBar: FC<SearchBarProps> = ({
         {...params}
         data-testid="search-bar-input"
         variant="outlined"
-        placeholder="Need guidance? Search here.."
+        placeholder={placeholder}
         value={searchTerm}
         maxLength={MAX_CHARACTER_LIMIT}
         onChange={e => setSearchTerm(e.target.value.slice(0, MAX_CHARACTER_LIMIT))}

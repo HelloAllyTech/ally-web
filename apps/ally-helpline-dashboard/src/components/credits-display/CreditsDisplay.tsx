@@ -1,4 +1,5 @@
 import { FC } from "react";
+import { useTranslation } from "react-i18next";
 
 import { Bolt } from "@assets";
 import { useSimulationCredits } from "@hooks";
@@ -8,6 +9,7 @@ interface CreditsDisplayProps {
 }
 
 export const CreditsDisplay: FC<CreditsDisplayProps> = ({ className = "" }) => {
+  const { t } = useTranslation();
   const { credits, limitReached } = useSimulationCredits();
 
   return (
@@ -16,7 +18,7 @@ export const CreditsDisplay: FC<CreditsDisplayProps> = ({ className = "" }) => {
       data-testid="credits-display"
     >
       <div className="font-primary text-base text-typography-700 whitespace-nowrap">
-        Credits used:
+        {t("learn.credits.used")}
       </div>
       <Bolt data-testid="credits-icon" />
       <span

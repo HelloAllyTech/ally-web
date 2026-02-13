@@ -4,6 +4,7 @@ import { useSelector } from "react-redux";
 import { toast } from "sonner";
 
 import { FEATURE_FLAGS_MAP, logger } from "@ally-ui-mono/ui-shared";
+import { useTranslation } from "react-i18next";
 import {
   useLazyExportCallSummaryQuery,
   useArchiveCallLogMutation,
@@ -36,6 +37,7 @@ const CallSummarySidebar: FC<CallSummarySidebarProps> = ({
   canShowFeedback = true,
   showArchiveButton = true,
 }) => {
+  const { t } = useTranslation();
   const { permissions } = useSelector((state: RootState) => state.user);
 
   const [selectedComment] = useState<string>("");
@@ -203,7 +205,7 @@ const CallSummarySidebar: FC<CallSummarySidebarProps> = ({
   const tabList = [
     {
       id: 1,
-      label: "Summary",
+      label: t("calls.table.summary"),
       permissions: [Permissions.VIEW_CHAT_DETAILS],
       content: (
         <CallSummary
@@ -226,7 +228,7 @@ const CallSummarySidebar: FC<CallSummarySidebarProps> = ({
     },
     {
       id: 2,
-      label: "Transcription",
+      label: t("postSim.tabs.transcription"),
       permissions: [Permissions.VIEW_TRANSCRIPTION],
       content: <TranscriptionSubTab />,
     },
@@ -307,7 +309,7 @@ const CallSummarySidebar: FC<CallSummarySidebarProps> = ({
       onSidebarClose={onSidebarClose}
       extraHeaderList={extraHeaderList}
       tabList={permittedTabList}
-      title="Summary"
+      title={t("calls.table.summary")}
     >
       <FeedbackDialog
         open={showFeedbackDialog}

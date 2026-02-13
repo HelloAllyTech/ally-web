@@ -5,6 +5,7 @@ import { useSearchParams, useParams } from "react-router-dom";
 
 import { TabGroup } from "@components";
 import { updateQueryParamListWithoutReload } from "@utils";
+import { useTranslation } from "react-i18next";
 
 import { CallSummary, StressBusterStep } from "./components";
 import { SectionQueryKey, summaryTabs } from "./constants";
@@ -19,6 +20,7 @@ import {
 export const PostCallSummary = () => {
   const { chatId } = useParams();
   const [searchParams] = useSearchParams();
+  const { t } = useTranslation();
 
   const [selectedTab, setSelectedTab] = useState<SectionType>(SectionType.SessionSummary);
 
@@ -53,6 +55,11 @@ export const PostCallSummary = () => {
     updateQueryParamListWithoutReload(queryParamList);
   };
 
+  const localizedTabs = summaryTabs.map(tab => ({
+    ...tab,
+    label: t(tab.labelKey),
+  }));
+
   const Content = () => (
     <motion.div
       layout="position"
@@ -71,7 +78,7 @@ export const PostCallSummary = () => {
       {isDeeplink ? (
         <Content />
       ) : (
-        <TabGroup value={selectedTab} onChange={onTabChange} tabs={isDeeplink ? [] : summaryTabs}>
+        <TabGroup value={selectedTab} onChange={onTabChange} tabs={isDeeplink ? [] : localizedTabs}>
           <Content />
         </TabGroup>
       )}

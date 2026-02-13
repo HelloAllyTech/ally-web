@@ -1,4 +1,5 @@
 import { FC, useState } from "react";
+import { useTranslation } from "react-i18next";
 
 import { motion } from "framer-motion";
 
@@ -18,6 +19,7 @@ const ScenarioCard: FC<ScenarioCardProps> = ({
   completedScenarios = 0,
   triggerWarnings,
 }) => {
+  const { t } = useTranslation();
   const [imageError, setImageError] = useState(false);
   const isPathway = totalScenarios !== undefined;
 
@@ -39,12 +41,12 @@ const ScenarioCard: FC<ScenarioCardProps> = ({
         />
       ) : (
         <div className="w-full h-full flex items-center justify-center text-typography-800 bg-gray-100">
-          <span className="text-sm">Image not available</span>
+          <span className="text-sm">{t("learn.scenario.mediaUnavailable")}</span>
         </div>
       )}
       {isComingSoon && (
         <span className="py-1 px-2 rounded-[4px] absolute top-2 right-2 text-xs font-primary text-typography-800 bg-white border-[0.5px] border-secondary-700">
-          Coming Soon
+          {t("settings.comingSoon.title")}
         </span>
       )}
     </div>
@@ -61,7 +63,7 @@ const ScenarioCard: FC<ScenarioCardProps> = ({
       transition={{ duration: 0.2 }}
       whileHover={{ y: -2 }}
       role="button"
-      aria-label={`Select ${title} scenario`}
+      aria-label={`${t("learn.choose.prefix")} ${title} ${t("learn.choose.scenario")}`}
       tabIndex={0}
       onKeyDown={onKeyDown}
     >
@@ -81,7 +83,7 @@ const ScenarioCard: FC<ScenarioCardProps> = ({
                 <div className="flex w-full h-[1px] my-[8px] bg-gray-200" />
                 <div className="flex flex-col justify-start items-start]">
                   <div className="text-xs text-typography-900 font-medium mb-[8px]">
-                    Trigger warnings
+                    {t("learn.scenario.triggerWarnings")}
                   </div>
                   <ChipGroup items={triggerWarnings} chipClassName="max-w-[40%]" maxVisible={2} />
                 </div>

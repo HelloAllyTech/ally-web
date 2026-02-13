@@ -7,8 +7,10 @@ import { ToggleButtonGroup } from "@components";
 import { AnalyticsType } from "@constants";
 
 import { analyticsTypeOptions, ANALYTICS_DASHBOARD_REFRESH_INTERVAL } from "./constants";
+import { useTranslation } from "react-i18next";
 
 export const Analytics: FunctionComponent = () => {
+  const { t } = useTranslation();
   const [getDashboardUrl] = useLazyGetDashboardUrlQuery();
   const [getDashboards, { data: dashboards }] = useLazyGetDashboardsQuery();
 
@@ -84,14 +86,17 @@ export const Analytics: FunctionComponent = () => {
           className="text-typography-900 font-secondary text-2xl font-[500] flex items-center gap-2 mb-2"
           data-testid="analytics-title"
         >
-          Session Analytics
+          {t("analytics.title")}
         </div>
         {analyticsToggleOptions?.length > 1 && (
           <ToggleButtonGroup
             data-testid="analytics-type-toggle"
             value={analyticsType}
             onValueChange={changeToggle}
-            items={analyticsToggleOptions}
+            items={analyticsToggleOptions.map(option => ({
+              ...option,
+              label: t(option.labelKey as string),
+            }))}
           />
         )}
       </div>
@@ -104,7 +109,7 @@ export const Analytics: FunctionComponent = () => {
             <iframe
               key={id}
               data-testid={`analytics-dashboard-${id}`}
-              title="Metabase dashboard"
+              title={t("analytics.dashboardTitle")}
               src={dashboardUrls[id]?.replace("bordered=true", "bordered=false")}
               width="100%"
               height="100%"
@@ -116,7 +121,23 @@ export const Analytics: FunctionComponent = () => {
             className="flex-1 w-full flex items-center justify-center"
             data-testid="analytics-empty-state"
           >
-            <NoAnalytics data-testid="analytics-no-data-icon" />
+            <div className="flex flex-col items-center">
+              <NoAnalytics data-testid="analytics-no-data-icon" />
+              <div className="mt-4 text-center max-w-md">
+                <div
+                  className="text-typography-900 font-secondary text-xl font-[600]"
+                  data-testid="analytics-empty-title"
+                >
+                  {t("analytics.empty.title")}
+                </div>
+                <div
+                  className="text-typography-600 font-secondary text-base mt-1"
+                  data-testid="analytics-empty-description"
+                >
+                  {t("analytics.empty.description")}
+                </div>
+              </div>
+            </div>
           </div>
         )}
       </div>

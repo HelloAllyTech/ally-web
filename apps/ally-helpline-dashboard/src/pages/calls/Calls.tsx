@@ -14,6 +14,7 @@ import { hasPermissions } from "@utils";
 
 import { AudioUploadDialog, AdminLogsTable, StartSessionDialog, UserLogsTable } from "./components";
 import { SessionUserGroup, tabStyles } from "./constants";
+import { useTranslation } from "react-i18next";
 import {
   getFormattedSupportedSessionUserGroups,
   getPermittedSessionLogList,
@@ -21,6 +22,7 @@ import {
 } from "./utils";
 
 export const Calls: FC = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [isStartSessionDialogOpen, setIsStartSessionDialogOpen] = useState(false);
   const [refreshKey, setRefreshKey] = useState<number>(0);
@@ -104,7 +106,7 @@ export const Calls: FC = () => {
             className="z-10 text-typography-900 text-2xl font-[500] flex items-center gap-2"
             data-testid="calls-title"
           >
-            Session Logs
+            {t("calls.title")}
             <Refresh
               data-testid="calls-refresh-button"
               className="w-6 h-6 cursor-pointer border-l-[0.5px] border-border pl-2"
@@ -130,13 +132,13 @@ export const Calls: FC = () => {
                       : "text-white path-fill-current"
                   }
                 />
-                Upload audio
+                {t("calls.actions.uploadAudio")}
               </Button>
             </PermissionGuard>
             <PermissionGuard requiredPermissions={[Permissions.START_MICROPHONE_CHAT]}>
               <Button data-testid="calls-start-session-button" onClick={handleStartSession}>
                 <StartSession data-testid="calls-start-session-icon" />
-                Start Session
+                {t("calls.actions.startSession")}
               </Button>
             </PermissionGuard>
           </div>
@@ -156,7 +158,7 @@ export const Calls: FC = () => {
             {userGroupList?.map(tab => (
               <Tab
                 key={tab.id}
-                label={tab.label}
+                label={t(tab.labelKey)}
                 value={tab.id}
                 sx={tabStyles}
                 data-testid={`calls-tab-${tab.id}`}
@@ -170,7 +172,7 @@ export const Calls: FC = () => {
               data-testid="calls-session-type-toggle"
               value={sessionType}
               onValueChange={(value: SessionType) => setSessionType(value)}
-              items={sessionTypeList}
+              items={sessionTypeList.map(item => ({ ...item, label: t(item.labelKey) }))}
             />
           )}
           {FEATURE_FLAGS_MAP.SCRIBE_SETTINGS_FLAG && sessionType === SessionType.CALL && (
@@ -201,7 +203,7 @@ export const Calls: FC = () => {
           anchorElement={menuAnchor}
           items={[
             {
-              label: "Archives",
+              label: t("calls.menu.archives"),
               icon: <Archive />,
               onClick: () => {
                 navigate(ROUTES.ARCHIVES, { state: { sessionUserGroup } });

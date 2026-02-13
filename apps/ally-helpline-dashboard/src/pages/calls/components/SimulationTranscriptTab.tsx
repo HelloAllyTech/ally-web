@@ -1,6 +1,7 @@
 import { FC, useEffect, useMemo, useRef, useState } from "react";
 
 import { useSelector } from "react-redux";
+import { useTranslation } from "react-i18next";
 
 import { useGetSimulationTranscriptQuery } from "@api";
 import { TranscriptListing } from "@components";
@@ -16,6 +17,7 @@ const SimulationTranscriptTab: FC<SimulationTranscriptTabProps> = ({
   councellorName,
   summary,
 }) => {
+  const { t } = useTranslation();
   const [transcriptOffset, setTranscriptOffset] = useState(0);
   const [transcriptList, setTranscriptList] = useState<SimulationTranscriptMessage[]>([]);
   const [hasMoreTranscripts, setHasMoreTranscripts] = useState(true);
@@ -32,14 +34,17 @@ const SimulationTranscriptTab: FC<SimulationTranscriptTabProps> = ({
     });
 
   const transcript = useMemo(() => {
+    const clientLabel = t("transcription.clientLabel");
+    const counsellorLabel = t("transcription.counsellorLabel");
+
     return transcriptData?.messages?.map(item => ({
-      speaker: item.senderId === -1 ? "Client" : "Counsellor",
+      speaker: item.senderId === -1 ? clientLabel : counsellorLabel,
       content: item.content,
       startSeconds: item.startSeconds,
       id: item.id || null,
       senderId: item.senderId || null,
     }));
-  }, [transcriptData]);
+  }, [transcriptData, t]);
 
   // Reset transcript list when sessionId changes
   useEffect(() => {
@@ -51,11 +56,13 @@ const SimulationTranscriptTab: FC<SimulationTranscriptTabProps> = ({
   // Append new results when transcriptData changes
   useEffect(() => {
     if (transcript?.length > 0) {
+      const clientLabel = t("transcription.clientLabel");
+
       const mappedTranscript = transcript.map(item => ({
-        id: item?.id !== null ? item?.id : item.speaker === "Client" ? user?.id : -1,
+        id: item?.id !== null ? item?.id : item.speaker === clientLabel ? user?.id : -1,
         content: item.content,
         senderId:
-          item?.senderId !== null ? item?.senderId : item.speaker === "Client" ? user?.id : -1,
+          item?.senderId !== null ? item?.senderId : item.speaker === clientLabel ? user?.id : -1,
         startSeconds: item.startSeconds,
       }));
 
@@ -84,7 +91,7 @@ const SimulationTranscriptTab: FC<SimulationTranscriptTabProps> = ({
       // No more transcripts available
       setHasMoreTranscripts(false);
     }
-  }, [transcript, user?.id]);
+  }, [transcript, user?.id, t]);
 
   const handleLoadMore = () => {
     // Don't load more if we're already loading or if there are no more transcripts

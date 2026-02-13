@@ -78,6 +78,14 @@ export interface SummarySidebarWrapperProps {
     content: ReactNode;
   }[];
   title: ReactNode;
+  /** Optional extra header action items (e.g., archive/export). */
+  extraHeaderList?: {
+    alt: string;
+    icon: ReactNode;
+    onClick: () => void;
+    show: boolean;
+    text: string;
+  }[];
   children?: ReactNode;
 }
 

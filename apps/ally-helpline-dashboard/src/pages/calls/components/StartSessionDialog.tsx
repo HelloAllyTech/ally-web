@@ -6,10 +6,12 @@ import { useNavigate } from "react-router-dom";
 import { Carousel, CarouselSize, CarouselVariant, ConfirmationDialog } from "@components";
 import { ButtonVariant } from "@components";
 import { CAROUSEL_SLIDES, ROUTES } from "@constants";
+import { useTranslation } from "react-i18next";
 
 import { StartSessionDialogProps } from "./types";
 
 const StartSessionDialog: FC<StartSessionDialogProps> = ({ isOpen, onClose }) => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
 
   const onStartSession = () => {
@@ -25,10 +27,10 @@ const StartSessionDialog: FC<StartSessionDialogProps> = ({ isOpen, onClose }) =>
       transition={{ delay: 0.5, duration: 0.3 }}
     >
       <span className="text-base text-typography-900" data-testid="start-session-embed-title">
-        Listen Live
+        {t("calls.dialog.startSession.embedTitle")}
       </span>
       <span className="text-xs text-typography-800" data-testid="start-session-embed-description">
-        Ally will hear audio alongside you
+        {t("calls.dialog.startSession.embedDesc")}
       </span>
     </motion.div>
   );
@@ -36,13 +38,16 @@ const StartSessionDialog: FC<StartSessionDialogProps> = ({ isOpen, onClose }) =>
   return (
     <ConfirmationDialog
       data-testid="start-session-dialog"
-      title={{ normal: "Start", italic: "Session" }}
+      title={{
+        normal: t("calls.dialog.startSession.titleNormal"),
+        italic: t("calls.dialog.startSession.titleItalic"),
+      }}
       isOpen={isOpen}
       onClose={onClose}
       buttonVariant={ButtonVariant.PRIMARY}
       onButtonClick={onStartSession}
-      buttonText="Start Session now"
-      footerText="By starting, you confirm everyone being transcribed has given consent."
+      buttonText={t("calls.dialog.startSession.button")}
+      footerText={t("calls.dialog.startSession.footer")}
     >
       <Carousel
         slides={CAROUSEL_SLIDES}
@@ -51,8 +56,8 @@ const StartSessionDialog: FC<StartSessionDialogProps> = ({ isOpen, onClose }) =>
         className="max-h-[254px] max-w-[236px]"
       />
       <div className="flex flex-col justify-center font-primary">
-        <span>Ally’s mental health AI scribe safely listens, transcribes </span>
-        <span className="flex justify-center">and writes session notes for you.</span>
+        <span>{t("calls.dialog.startSession.description1")} </span>
+        <span className="flex justify-center">{t("calls.dialog.startSession.description2")}</span>
       </div>
 
       <StartSessionEmbed />

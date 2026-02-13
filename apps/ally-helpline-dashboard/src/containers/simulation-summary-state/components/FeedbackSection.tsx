@@ -1,13 +1,14 @@
 import { FC, useState } from "react";
 
 import { motion } from "framer-motion";
+import { useTranslation } from "react-i18next";
 
 import { CustomImage, GenericTable, SimulationDetailsModal } from "@ally-ui-mono/ui-shared/index";
 import { InfoIcon } from "@assets";
 import { FeedbackSectionType } from "@types";
 import { getFormattedDateTime, getFormattedTimeFromDuration } from "@utils";
 
-import { feedbackSections } from "./constants";
+import { getFeedbackSections } from "./constants";
 import { FeedbackSectionProps } from "./types";
 import { getFormattedFeedbackSection } from "./utils";
 
@@ -64,6 +65,7 @@ const getFeedbackSectionByType = ({
   }
 };
 export const FeedbackSection: FC<FeedbackSectionProps> = props => {
+  const { t } = useTranslation();
   const [showSimulationDetailsModal, setShowSimulationDetailsModal] = useState(false);
 
   const formattedData = getFormattedFeedbackSection(props);
@@ -77,19 +79,21 @@ export const FeedbackSection: FC<FeedbackSectionProps> = props => {
     <motion.div className="flex flex-col gap-6 w-full">
       <div className="border p-4 shadow-lg rounded-lg flex flex-col gap-4">
         <span className="text-typography-900 font-primary text-base font-semibold border-b pb-2">
-          Session Feedback
+          {t("summary.feedback.title")}
         </span>
         <div>
           <div className="flex items-center gap-5 border-b pb-4">
             <div>
               <CustomImage
                 src={formattedData.coverImage}
-                alt="Cover Image"
+                alt={t("summary.feedback.coverImageAlt")}
                 className="w-[150px] h-[77px] object-cover rounded-sm"
               />
             </div>
             <div className="flex flex-col gap-1 font-primary">
-              <span className="text-typography-700 text-sm">ID: {formattedData.sessionName}</span>
+              <span className="text-typography-700 text-sm">
+                {t("summary.feedback.sessionId", { id: formattedData.sessionName })}
+              </span>
               <span className="text-typography-900 text-lg font-medium flex items-center gap-1">
                 {formattedData.title}
                 <div
@@ -110,7 +114,7 @@ export const FeedbackSection: FC<FeedbackSectionProps> = props => {
           </div>
         </div>
         <motion.div className="overflow-y-auto font-primary space-y-4">
-          {feedbackSections.map(({ key, label, type, columns }, index) => {
+          {getFeedbackSections(t).map(({ key, label, type, columns }, index) => {
             return (
               <motion.div
                 key={key}

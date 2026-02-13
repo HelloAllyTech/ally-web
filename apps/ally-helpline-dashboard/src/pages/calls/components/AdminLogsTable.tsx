@@ -46,8 +46,10 @@ import { CallSummarySidebar, DeleteCallLogConfirmationDialog, SimulationSummaryS
 import { CALL_LOGS_PAGINATION_LIMIT, defaultTags, tagColors } from "../constants";
 import { LogsTableProps } from "./types";
 import { getSourceChipConfig, getStatusChipConfig } from "./utils";
+import { useTranslation } from "react-i18next";
 
 const AdminLogsTable: FC<LogsTableProps> = ({ refreshKey, sessionType, className }) => {
+  const { t } = useTranslation();
   const dispatch = useDispatch();
 
   const [logs, setLogs] = useState<any[]>([]);
@@ -205,13 +207,13 @@ const AdminLogsTable: FC<LogsTableProps> = ({ refreshKey, sessionType, className
   const callColumns: Column<any>[] = [
     {
       key: "callName",
-      header: "Session ID",
+      header: t("calls.table.sessionId"),
       style: { width: "15%" },
       icon: <CallIdIcon />,
     },
     {
       key: "counsellorName",
-      header: "Counsellor Name",
+      header: t("calls.table.counsellorName"),
       filterType: FilterType.MULTISELECT,
       style: { width: "15%" },
       icon: <UserIcon />,
@@ -225,7 +227,7 @@ const AdminLogsTable: FC<LogsTableProps> = ({ refreshKey, sessionType, className
     },
     {
       key: "dateAndTime",
-      header: "Date & Time",
+      header: t("calls.table.dateTime"),
       filterType: FilterType.DATE,
       style: { width: "15%" },
       sortable: true,
@@ -235,14 +237,14 @@ const AdminLogsTable: FC<LogsTableProps> = ({ refreshKey, sessionType, className
     },
     {
       key: "callDuration",
-      header: "Duration",
+      header: t("calls.table.duration"),
       sortable: true,
       icon: <TimerIcon />,
       style: { width: "15%" },
     },
     {
       key: "tags",
-      header: "Tags",
+      header: t("calls.table.tags"),
       style: { width: "30%", overflow: "hidden" },
       render: (value: TagDisplay[]) => <TagGroup tags={value} />,
       icon: <TagsIcon />,
@@ -256,21 +258,21 @@ const AdminLogsTable: FC<LogsTableProps> = ({ refreshKey, sessionType, className
     },
     {
       key: "summaryStatus",
-      header: "Summary Status",
+      header: t("calls.table.summaryStatus"),
       style: { width: "16%" },
       render: (_value, row) => <Chip config={getStatusChipConfig(row.raw.summaryStatus)} />,
       icon: <SummaryGenerationIcon />,
     },
     {
       key: "source",
-      header: "Source",
+      header: t("calls.table.source"),
       style: { width: "16%" },
       render: (_value, row) => <Chip config={getSourceChipConfig(row.provider)} />,
       icon: <SourceIcon />,
     },
     {
       key: "actions",
-      header: "Action(s)",
+      header: t("calls.table.actions"),
       style: { width: "10%" },
       render: (_value, row) => (
         <div
@@ -324,43 +326,43 @@ const AdminLogsTable: FC<LogsTableProps> = ({ refreshKey, sessionType, className
   const simulationColumns: Column<any>[] = [
     {
       key: "sessionId",
-      header: "Session ID",
+      header: t("calls.table.sessionId"),
       style: { width: "15%" },
       icon: <CallIdIcon />,
     },
     {
       key: "scenarioTitle",
-      header: "Scenario",
+      header: t("calls.table.scenario"),
       style: { width: "15%" },
       icon: <ScenarioIcon />,
     },
     {
       key: "counsellorName",
-      header: "Counsellor Name",
+      header: t("calls.table.counsellorName"),
       style: { width: "15%" },
       icon: <UserIcon />,
     },
     {
       key: "dateAndTime",
-      header: "Date & Time",
+      header: t("calls.table.dateTime"),
       style: { width: "15%" },
       icon: <DateIcon />,
     },
     {
       key: "duration",
-      header: "Duration",
+      header: t("calls.table.duration"),
       style: { width: "15%" },
       icon: <TimerIcon />,
     },
     {
       key: "sessionScore",
-      header: "Session score",
+      header: t("calls.table.sessionScore"),
       style: { width: "15%" },
       icon: <SessionScoreIcon />,
     },
     {
       key: "summary",
-      header: "Summary",
+      header: t("calls.table.summary"),
       style: { width: "10%" },
       render: (_value, row) => (
         <Button
@@ -438,11 +440,11 @@ const AdminLogsTable: FC<LogsTableProps> = ({ refreshKey, sessionType, className
       return (
         <FallbackUI
           icon={<NoResults />}
-          mainMessage={isCall ? "No call records found" : "No simulation records found"}
+          mainMessage={
+            isCall ? t("calls.fallback.callEmptyTitle") : t("calls.fallback.simEmptyTitle")
+          }
           description={
-            isCall
-              ? "Your recent calls and insights will be listed here."
-              : "Your recent simulations will be listed here."
+            isCall ? t("calls.fallback.callEmptyDesc") : t("calls.fallback.simEmptyDesc")
           }
           className="py-[100px]"
         />

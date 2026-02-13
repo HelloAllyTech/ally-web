@@ -1,4 +1,5 @@
 import { FC, useState, useRef, useEffect, useCallback } from "react";
+import { useTranslation } from "react-i18next";
 
 import { CustomImage } from "@ally-ui-mono/ui-shared";
 import { ToggleButtonGroup } from "@src/components";
@@ -29,11 +30,11 @@ export interface LeaderboardListProps {
   hideRank?: boolean;
 }
 
-export const TIME_FILTER_OPTIONS: { label: string; value: LeaderboardTimeFilter }[] = [
-  { label: "Last 7 days", value: "LAST_WEEK" },
-  { label: "Last 28 days", value: "LAST_MONTH" },
-  { label: "Last 364 days", value: "LAST_YEAR" },
-  { label: "All time", value: "ALL_TIME" },
+export const TIME_FILTER_OPTIONS: { labelKey: string; value: LeaderboardTimeFilter }[] = [
+  { labelKey: "community.filters.last7days", value: "LAST_WEEK" },
+  { labelKey: "community.filters.last28days", value: "LAST_MONTH" },
+  { labelKey: "community.filters.last364days", value: "LAST_YEAR" },
+  { labelKey: "community.filters.allTime", value: "ALL_TIME" },
 ];
 
 const getRankBadgeStyle = (rank: number): string => {
@@ -49,19 +50,34 @@ const getRankBadgeStyle = (rank: number): string => {
   }
 };
 
-const formatMinutesToHoursAndMinutes = (minutes: number): string => {
+const formatMinutesToHoursAndMinutes = (
+  minutes: number,
+  t: ReturnType<typeof useTranslation>["t"],
+): string => {
   if (minutes < 60) {
-    return `${minutes} min${minutes !== 1 ? "s" : ""}`;
+    return minutes === 1
+      ? t("common.minutes_one", { count: minutes })
+      : t("common.minutes_other", { count: minutes });
   }
 
   const hours = Math.floor(minutes / 60);
   const remainingMinutes = minutes % 60;
 
   if (remainingMinutes === 0) {
-    return `${hours} h`;
+    return hours === 1
+      ? t("common.hours_one", { count: hours })
+      : t("common.hours_other", { count: hours });
   }
 
-  return `${hours} h ${remainingMinutes} min${remainingMinutes !== 1 ? "s" : ""}`;
+  const hoursText =
+    hours === 1
+      ? t("common.hours_one", { count: hours })
+      : t("common.hours_other", { count: hours });
+  const minutesText =
+    remainingMinutes === 1
+      ? t("common.minutes_one", { count: remainingMinutes })
+      : t("common.minutes_other", { count: remainingMinutes });
+  return `${hoursText} ${minutesText}`;
 };
 
 const UserAvatar: FC<{ user: LeaderboardUser; size?: "sm" | "md" }> = ({ user, size = "md" }) => {
@@ -115,6 +131,7 @@ const LeaderboardRow: FC<LeaderboardRowProps> = ({
   isCurrentUser,
   hideRank,
 }) => {
+  const { t } = useTranslation();
   const isTopThree = user.rank <= 3;
 
   return (
@@ -151,7 +168,7 @@ const LeaderboardRow: FC<LeaderboardRowProps> = ({
           <span className="text-typography-900 text-base font-medium">{user.name}</span>
           {isCurrentUser && (
             <span className="px-2 py-0.5 bg-primary-500 text-white text-xs font-medium rounded-full">
-              You
+              {t("community.you")}
             </span>
           )}
         </div>
@@ -160,7 +177,7 @@ const LeaderboardRow: FC<LeaderboardRowProps> = ({
       {/* Total Duration */}
       <div className="w-40 text-right">
         <span className="text-typography-800 text-base">
-          {formatMinutesToHoursAndMinutes(user.minutesPlayed)}
+          {formatMinutesToHoursAndMinutes(user.minutesPlayed, t)}
         </span>
       </div>
 
@@ -220,11 +237,12 @@ export const LeaderboardList: FC<LeaderboardListProps> = ({
   currentUser,
   onTimeFilterChange,
   isLoading = false,
-  emptyMessage = "No leaderboard data available",
+  emptyMessage,
   onLoadMore,
   hideRank,
   hasMore,
 }) => {
+  const { t } = useTranslation();
   const [internalFilter, setInternalFilter] = useState<LeaderboardTimeFilter>("LAST_WEEK");
   const [isCurrentUserVisible, setIsCurrentUserVisible] = useState<boolean | null>(null);
   const [hasCheckedVisibility, setHasCheckedVisibility] = useState(false);
@@ -298,13 +316,17 @@ export const LeaderboardList: FC<LeaderboardListProps> = ({
   };
 
   const renderTabs = () => {
+    const items = TIME_FILTER_OPTIONS.map(opt => ({
+      value: opt.value,
+      label: t(opt.labelKey),
+    }));
     return (
       <div className="w-full mb-4 overflow-hidden">
         <ToggleButtonGroup
           data-testid="leaderboard-time-filter-toggle"
           value={activeFilter}
           onValueChange={handleFilterChange}
-          items={TIME_FILTER_OPTIONS}
+          items={items}
           equalWidth
           className="w-full font-primary text-xs leading-[1.5] text-typography-900"
         />
@@ -315,10 +337,10 @@ export const LeaderboardList: FC<LeaderboardListProps> = ({
   const renderTableHeader = () => {
     return (
       <div className="flex items-center py-3 px-4 text-typography-600 text-sm font-medium border-b border-border-light">
-        {!hideRank && <div className="w-16 text-center">Rank</div>}
-        <div className="flex-1">User</div>
-        <div className="w-40 text-right">Total duration</div>
-        <div className="w-24 text-center">Badges</div>
+        {!hideRank && <div className="w-16 text-center">{t("community.table.rank")}</div>}
+        <div className="flex-1">{t("community.table.user")}</div>
+        <div className="w-40 text-right">{t("community.table.totalDuration")}</div>
+        <div className="w-24 text-center">{t("community.table.badges")}</div>
       </div>
     );
   };
@@ -335,7 +357,8 @@ export const LeaderboardList: FC<LeaderboardListProps> = ({
     }
 
     if (isEmpty) {
-      return <EmptyState message={emptyMessage} />;
+      const message = emptyMessage ?? t("community.emptyLeaderboard");
+      return <EmptyState message={message} />;
     }
 
     return (
@@ -356,7 +379,9 @@ export const LeaderboardList: FC<LeaderboardListProps> = ({
         })}
         {hasMore && (
           <div ref={loadingRef} className="text-center py-2">
-            {isLoading && <span className="text-sm text-typography-600">Loading more...</span>}
+            {isLoading && (
+              <span className="text-sm text-typography-600">{t("community.loadingMore")}</span>
+            )}
           </div>
         )}
       </>

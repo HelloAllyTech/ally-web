@@ -2,6 +2,7 @@ import { FC } from "react";
 
 import { Dialog } from "@mui/material";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 
 import { ImageUpload } from "@ally-ui-mono/ui-shared";
 import { CloseIcon } from "@assets";
@@ -17,8 +18,10 @@ export const ProfileSettings: FC<profileSettingsProps> = ({
   onButtonClick,
   getProfileUrl,
 }) => {
+  const { t } = useTranslation();
+
   const handleUploadFailure = () => {
-    toast.error("Image must be under 2MB and have the correct aspect ratio.");
+    toast.error(t("profileSettings.uploadError"));
   };
 
   return (
@@ -35,13 +38,13 @@ export const ProfileSettings: FC<profileSettingsProps> = ({
         <CloseIcon className="cursor-pointer absolute right-0 top-0" onClick={onClose} />
         <div className="flex flex-col gap-3">
           <div className="flex item-center justify-center text-2xl font-secondary">
-            Profile Settings
+            {t("profileSettings.title")}
           </div>
           <ImageUpload
             formMethods={formMethods}
             uploadId="profileImageUrl"
-            uploadButtonName="Upload Image"
-            uploadTitle="Profile image"
+            uploadButtonName={t("profileSettings.uploadButton")}
+            uploadTitle={t("profileSettings.uploadTitle")}
             onUpload={getProfileUrl}
             details={userData}
             onFailed={handleUploadFailure}
@@ -49,7 +52,7 @@ export const ProfileSettings: FC<profileSettingsProps> = ({
           <div className="flex flex-col gap-5">
             <div className="flex flex-col">
               <label className="text-sm text-typography-900 cursor-pointer font-primary">
-                Name
+                {t("profileSettings.nameLabel")}
               </label>
 
               <input
@@ -60,7 +63,7 @@ export const ProfileSettings: FC<profileSettingsProps> = ({
             </div>
             <div className="flex flex-col">
               <label className="text-sm text-typography-900 cursor-pointer font-primary">
-                Email
+                {t("profileSettings.emailLabel")}
               </label>
               <input
                 placeholder={userData?.email ?? ""}
@@ -71,11 +74,11 @@ export const ProfileSettings: FC<profileSettingsProps> = ({
           </div>
           <div className="w-full flex items-center justify-center gap-2 pt-4">
             <Button fullWidth onClick={onClose} variant={ButtonVariant.SECONDARY}>
-              Cancel
+              {t("profileSettings.cancel")}
             </Button>
 
             <Button fullWidth onClick={onButtonClick} variant={ButtonVariant.PRIMARY}>
-              Done
+              {t("profileSettings.done")}
             </Button>
           </div>
         </div>

@@ -1,34 +1,36 @@
 import { FeedbackSectionType } from "@types";
 
-export const feedbackSections = [
+type Translator = (key: string) => string;
+
+export const getFeedbackSections = (t: Translator) => [
   {
     key: "positives",
-    label: "What went well",
+    label: t("summary.feedback.positives"),
     type: FeedbackSectionType.BULLET_TEXT,
   },
   {
     key: "improvements",
-    label: "Improvement tips",
+    label: t("summary.feedback.improvements"),
     type: FeedbackSectionType.BULLET_TEXT,
   },
   {
     key: "keyEvents",
-    label: "Key Events",
+    label: t("summary.feedback.keyEvents"),
     type: FeedbackSectionType.TABLE,
     columns: [
       {
         key: "time",
-        header: "Time",
+        header: t("summary.feedback.columns.time"),
         style: { width: "15%", border: "1px solid #D2D2D2", height: "50px" },
       },
       {
         key: "event",
-        header: "Event",
+        header: t("summary.feedback.columns.event"),
         style: { width: "75%", border: "1px solid #D2D2D2", height: "50px" },
       },
       {
         key: "score",
-        header: "Score",
+        header: t("summary.feedback.columns.score"),
         style: { width: "10%", border: "1px solid #D2D2D2", height: "50px" },
       },
     ],

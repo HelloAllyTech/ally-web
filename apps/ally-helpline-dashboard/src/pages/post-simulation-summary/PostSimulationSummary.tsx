@@ -16,7 +16,7 @@ import { Permissions, REVIEW_PRIVACY_OPTIONS } from "@constants";
 import { SimulationSummary, UpNextTab } from "@containers";
 import { RootState } from "@store";
 import { pageType } from "@types";
-
+import { useTranslation } from "react-i18next";
 import { SimulationTranscriptTab } from "../calls/components";
 import { tabStyles } from "../calls/constants";
 import { containerVariants } from "../learn/constants";
@@ -25,6 +25,12 @@ export const PostSimulationSummary: FC = () => {
   const { sessionId } = useParams();
   const navigate = useNavigate();
   const { permissions } = useSelector((state: RootState) => state.user);
+  const { t } = useTranslation();
+
+  const reviewPrivacyOptions = REVIEW_PRIVACY_OPTIONS.map(option => ({
+    ...option,
+    label: t(option.labelKey),
+  }));
 
   const { data: summary } = useGetSimulationSummaryQuery(sessionId);
   const [createReview] = useCreateReviewMutation();
@@ -37,19 +43,24 @@ export const PostSimulationSummary: FC = () => {
   const tabList = [
     {
       id: 1,
-      label: "Summary",
+      labelKey: "postSim.tabs.summary",
       content: <SimulationSummary summaryId={sessionId} className="max-h-[calc(100vh-212px)]" />,
     },
     {
       id: 2,
-      label: "Transcription",
-      content: <SimulationTranscriptTab sessionId={sessionId} />,
+      labelKey: "postSim.tabs.transcription",
+      content: (
+        <SimulationTranscriptTab
+          sessionId={sessionId}
+          className="w-full max-h-[calc(100vh-10px)]"
+        />
+      ),
     },
     ...(canShowUpNextTab
       ? [
           {
             id: 3,
-            label: "Up Next",
+            labelKey: "postSim.tabs.upNext",
             content: (
               <UpNextTab
                 sessionId={sessionId}
@@ -90,12 +101,12 @@ export const PostSimulationSummary: FC = () => {
             <button onClick={() => navigate(-1)}>
               <BackCircle />
             </button>
-            Simulation <em>Summary</em>
+            {t("postSim.titlePrefix")} <em>{t("postSim.titleEmphasis")}</em>
           </div>
 
           <div className="flex justify-center gap-2">
             <Toggle
-              items={REVIEW_PRIVACY_OPTIONS}
+              items={reviewPrivacyOptions}
               initialValue={summary?.reviewStatus}
               onChange={handleCreateReview}
             />
@@ -113,7 +124,7 @@ export const PostSimulationSummary: FC = () => {
           }}
         >
           {tabList?.map(tab => (
-            <Tab key={tab.id} label={tab.label} value={tab.id} sx={tabStyles} />
+            <Tab key={tab.id} label={t(tab.labelKey as string)} value={tab.id} sx={tabStyles} />
           ))}
         </Tabs>
         {getTabContent()}

@@ -1,4 +1,6 @@
+// File: apps/ally-helpline-dashboard/src/pages/learn/Learn.tsx
 import { FC, useCallback, useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 
 import { AnimatePresence, motion } from "framer-motion";
 import { useNavigate, useSearchParams } from "react-router-dom";
@@ -24,14 +26,15 @@ enum TabId {
   CASES = "cases",
 }
 const LEARN_TABS = [
-  { id: TabId.SIMULATIONS, label: "Simulations" },
-  { id: TabId.TRACKS, label: "Tracks" },
-  FEATURE_FLAGS_MAP.SIMULATION_CASES_FLAG && { id: TabId.CASES, label: "Cases" }, // TODO: remove this when the feature flag is enabled
+  { id: TabId.SIMULATIONS, labelKey: "learn.tabs.simulations" },
+  { id: TabId.TRACKS, labelKey: "learn.tabs.tracks" },
+  FEATURE_FLAGS_MAP.SIMULATION_CASES_FLAG && { id: TabId.CASES, labelKey: "learn.tabs.cases" }, // TODO: remove this when the feature flag is enabled
 ];
 
 type LearnTabId = (typeof LEARN_TABS)[number]["id"];
 
 export const Learn: FC = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { permissions, isAuthenticated } = useUser();
   const hasPathPermissions = hasPermissions(permissions, Permissions.VIEW_SCENARIO_PATHS);
@@ -168,16 +171,16 @@ export const Learn: FC = () => {
           animate="visible"
           className="w-full font-secondary text-3xl text-typography-900 sm:mb-[30px] mb-[48px] sm:leading-[40px] leading-[28px] pt-[30px]"
         >
-          <span>Use </span>
-          <span className={emphasisStyles}>AI-voice based </span>
-          hyper realistic training
-          <span className={emphasisStyles}> role plays </span>
-          to build mental healthcare skills.
+          <span>{t("learn.header.prefix")} </span>
+          <span className={emphasisStyles}>{t("learn.header.emphasis1")} </span>
+          {t("learn.header.middle")}
+          <span className={emphasisStyles}> {t("learn.header.emphasis2")} </span>
+          {t("learn.header.suffix")}
         </motion.div>
         {hasPathPermissions && (
           <div className="flex flex-row items-center justify-between gap-2 border-b border-typography-300">
             <TabGroup
-              tabs={LEARN_TABS.map(tab => ({ label: tab.label, value: tab.id }))}
+              tabs={LEARN_TABS.map(tab => ({ label: t(tab!.labelKey as string), value: tab!.id }))}
               value={activeTab}
               className="border-none max-w-[330px]"
               onChange={(_, newValue) => handleTabChange(newValue as LearnTabId)}
@@ -213,14 +216,12 @@ export const Learn: FC = () => {
 
     return (
       <div className="flex flex-col items-center justify-center w-full py-8 min-h-[30vh]">
-        <div className="text-typography-700 text-lg mb-4">
-          No {typeLabel} available at the moment
-        </div>
+        <div className="text-typography-700 text-lg mb-4">{t(`learn.empty.${typeLabel}`)}</div>
         <button
           onClick={() => refetchFunction()}
           className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors"
         >
-          Refresh Page
+          {t("learn.empty.refresh")}
         </button>
       </div>
     );
@@ -247,19 +248,19 @@ export const Learn: FC = () => {
       [TabId.CASES]: {
         isLoading: isCasesLoading,
         data: casesData?.data,
-        ariaLabel: "Available cases",
+        ariaLabel: t("learn.aria.availableCases"),
         emptyType: "cases" as const,
       },
       [TabId.TRACKS]: {
         isLoading: isPathwaysLoading,
         data: pathwaysData?.data,
-        ariaLabel: "Available pathways",
+        ariaLabel: t("learn.aria.availablePathways"),
         emptyType: "pathways" as const,
       },
       [TabId.SIMULATIONS]: {
         isLoading: isScenariosLoading,
         data: getSortedScenarios(),
-        ariaLabel: "Available scenarios",
+        ariaLabel: t("learn.aria.availableScenarios"),
         emptyType: "scenarios" as const,
       },
     };
@@ -307,7 +308,11 @@ export const Learn: FC = () => {
   const renderContent = () => {
     const isCaseTab = activeTab === TabId.CASES;
     const isPathwayTab = activeTab === TabId.TRACKS;
-    const title = isCaseTab ? "Case" : isPathwayTab ? "Track" : "Scenario";
+    const title = isCaseTab
+      ? t("learn.choose.case")
+      : isPathwayTab
+        ? t("learn.choose.track")
+        : t("learn.choose.scenario");
 
     return (
       <>
@@ -319,7 +324,7 @@ export const Learn: FC = () => {
           className="mb-[14px]"
         >
           <h1 className="text-2xl sm:text-4xl text-typography-900 font-secondary pt-[30px] pl-[10px]">
-            <span className="font-[350]">Choose your</span>
+            <span className="font-[350]">{t("learn.choose.prefix")}</span>
             <span className="font-[700] italic"> {title}</span>
           </h1>
         </motion.div>

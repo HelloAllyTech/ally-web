@@ -1,3 +1,4 @@
+// File: apps/ally-helpline-dashboard/src/constants/common.ts
 import { Carousel1, Carousel4, Carousel3, Carousel2 } from "@assets";
 import { CarouselSlideType } from "@components";
 
@@ -69,19 +70,19 @@ export const AUTH_RETRY_CONFIG = {
 export const CAROUSEL_SLIDES: CarouselSlideType[] = [
   {
     imageSrc: Carousel1,
-    text: "We do not save audio recordings",
+    textKey: "carousel.slides.noRecording",
   },
   {
     imageSrc: Carousel2,
-    text: "We do not use your client’s data to train our models",
+    textKey: "carousel.slides.noTrainingData",
   },
   {
     imageSrc: Carousel3,
-    text: "Personal information of clients is automatically removed",
+    textKey: "carousel.slides.personalInfoRemoved",
   },
   {
     imageSrc: Carousel4,
-    text: "Data is encrypted",
+    textKey: "carousel.slides.encrypted",
   },
 ];
 

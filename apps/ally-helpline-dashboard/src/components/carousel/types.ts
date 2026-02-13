@@ -2,7 +2,8 @@ import { FunctionComponent, SVGProps } from "react";
 
 export type CarouselSlideType = {
   imageSrc: FunctionComponent<SVGProps<SVGSVGElement>>;
-  text: string;
+  // Use a translation key so no hardcoded text exists in code
+  textKey: string;
 };
 
 export enum CarouselVariant {

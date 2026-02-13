@@ -24,11 +24,11 @@ import { FieldType, SectionType, SummaryField, SummarySectionKey } from "./types
 
 export const summaryTabs = [
   {
-    label: "Return to Self",
+    labelKey: "summary.tabs.returnToSelf",
     value: SectionType.BoxBreathing,
   },
   {
-    label: "Session summary",
+    labelKey: "summary.tabs.sessionSummary",
     value: SectionType.SessionSummary,
   },
 ];
@@ -40,7 +40,7 @@ export const summarySections = [
       alt: "features-and-demographics",
     },
     key: SummarySectionKey.FeaturesAndDemographics,
-    title: "Features and Demographics",
+    titleKey: "summary.sections.featuresAndDemographics",
   },
   {
     icon: {
@@ -48,7 +48,7 @@ export const summarySections = [
       alt: "session-summary",
     },
     key: SummarySectionKey.SessionSummary,
-    title: "Session Summary",
+    titleKey: "summary.sections.sessionSummary",
   },
   {
     icon: {
@@ -56,7 +56,7 @@ export const summarySections = [
       alt: "flow",
     },
     key: SummarySectionKey.Flow,
-    title: "Flow",
+    titleKey: "summary.sections.flow",
   },
   {
     icon: {
@@ -64,7 +64,7 @@ export const summarySections = [
       alt: "key-concerns",
     },
     key: SummarySectionKey.KeyConcerns,
-    title: "Key concerns",
+    titleKey: "summary.sections.keyConcerns",
   },
   {
     icon: {
@@ -72,7 +72,7 @@ export const summarySections = [
       alt: "objective-observations",
     },
     key: SummarySectionKey.ObjectiveObservations,
-    title: "Objective Observations",
+    titleKey: "summary.sections.objectiveObservations",
   },
   {
     icon: {
@@ -80,7 +80,7 @@ export const summarySections = [
       alt: "subjective-observations",
     },
     key: SummarySectionKey.SubjectiveObservations,
-    title: "Subjective Observations",
+    titleKey: "summary.sections.subjectiveObservations",
   },
   {
     icon: {
@@ -88,7 +88,7 @@ export const summarySections = [
       alt: "assessment",
     },
     key: SummarySectionKey.Assessment,
-    title: "Assessment",
+    titleKey: "summary.sections.assessment",
   },
   {
     icon: {
@@ -96,7 +96,7 @@ export const summarySections = [
       alt: "dominant-feelings",
     },
     key: SummarySectionKey.DominantFeelings,
-    title: "Dominant Feelings",
+    titleKey: "summary.sections.dominantFeelings",
   },
   {
     icon: {
@@ -104,7 +104,7 @@ export const summarySections = [
       alt: "issues-worked-on",
     },
     key: SummarySectionKey.IssuesWorkedOn,
-    title: "Issues Worked On",
+    titleKey: "summary.sections.issuesWorkedOn",
   },
   {
     icon: {
@@ -112,7 +112,7 @@ export const summarySections = [
       alt: "key-therapeutic-techniques",
     },
     key: SummarySectionKey.KeyTherapeuticTechniques,
-    title: "Key Therapeutic Techniques",
+    titleKey: "summary.sections.keyTherapeuticTechniques",
   },
   {
     icon: {
@@ -120,7 +120,7 @@ export const summarySections = [
       alt: "referrals-provided",
     },
     key: SummarySectionKey.ReferralsProvided,
-    title: "Referrals Provided",
+    titleKey: "summary.sections.referralsProvided",
   },
   {
     icon: {
@@ -128,7 +128,7 @@ export const summarySections = [
       alt: "homework-recommended",
     },
     key: SummarySectionKey.HomeworkRecommended,
-    title: "Homework Recommended",
+    titleKey: "summary.sections.homeworkRecommended",
   },
   {
     icon: {
@@ -136,7 +136,7 @@ export const summarySections = [
       alt: "plans-for-next-call",
     },
     key: SummarySectionKey.PlansForNextCall,
-    title: "Plans for Next Call",
+    titleKey: "summary.sections.plansForNextCall",
   },
   {
     icon: {
@@ -144,7 +144,7 @@ export const summarySections = [
       alt: "tags",
     },
     key: SummarySectionKey.Tags,
-    title: "Tags",
+    titleKey: "summary.sections.tags",
   },
   {
     icon: {
@@ -152,7 +152,7 @@ export const summarySections = [
       alt: "metrics",
     },
     key: SummarySectionKey.Metrics,
-    title: "Metrics",
+    titleKey: "summary.sections.metrics",
   },
   ...(FEATURE_FLAGS_MAP.SCRIBE_SETTINGS_FLAG
     ? [
@@ -306,7 +306,7 @@ export const summaryFields: SummaryField[] = [
     isEnhanceable: true,
     key: SummaryFieldKey.SessionSummary,
     label: "Session Summary",
-    placeholder: "Add a quick summary of the session's key themes and takeaways here.",
+    placeholderKey: "summary.placeholders.sessionSummary",
     sectionKey: SummarySectionKey.SessionSummary,
     type: FieldType.Multiline,
   },
@@ -315,8 +315,7 @@ export const summaryFields: SummaryField[] = [
     isEnhanceable: true,
     key: SummaryFieldKey.CounselingProcessFlow,
     label: "Flow",
-    placeholder:
-      "Capture the flow of conversation, reflections, or shifts in the client’s mood here.",
+    placeholderKey: "summary.placeholders.flow",
     sectionKey: SummarySectionKey.Flow,
     type: FieldType.Multiline,
   },
@@ -325,7 +324,7 @@ export const summaryFields: SummaryField[] = [
     isEnhanceable: true,
     key: SummaryFieldKey.KeyConcerns,
     label: "Key concerns",
-    placeholder: "List any main concerns or stressors raised by the client in this session.",
+    placeholderKey: "summary.placeholders.keyConcerns",
     sectionKey: SummarySectionKey.KeyConcerns,
     type: FieldType.Multiline,
   },
@@ -334,7 +333,7 @@ export const summaryFields: SummaryField[] = [
     isEnhanceable: true,
     key: SummaryFieldKey.ObjectiveObservations,
     label: "Objective Observations",
-    placeholder: "Note factual observations or statements made by the client here.",
+    placeholderKey: "summary.placeholders.objectiveObservations",
     sectionKey: SummarySectionKey.ObjectiveObservations,
     type: FieldType.Multiline,
   },
@@ -343,7 +342,7 @@ export const summaryFields: SummaryField[] = [
     isEnhanceable: true,
     key: SummaryFieldKey.SubjectiveObservations,
     label: "Subjective Observations",
-    placeholder: "Use this space for your impressions, intuitions, or emotional insights.",
+    placeholderKey: "summary.placeholders.subjectiveObservations",
     sectionKey: SummarySectionKey.SubjectiveObservations,
     type: FieldType.Multiline,
   },
@@ -352,7 +351,7 @@ export const summaryFields: SummaryField[] = [
     isEnhanceable: true,
     key: SummaryFieldKey.Assessment,
     label: "Assessment",
-    placeholder: "Summarize your overall take or clinical impression from today’s session.",
+    placeholderKey: "summary.placeholders.assessment",
     sectionKey: SummarySectionKey.Assessment,
     type: FieldType.Multiline,
   },
@@ -361,7 +360,7 @@ export const summaryFields: SummaryField[] = [
     isEnhanceable: true,
     key: SummaryFieldKey.DominantFeelings,
     label: "Dominant Feelings",
-    placeholder: "Highlight any emotions that stood out strongly during the session.",
+    placeholderKey: "summary.placeholders.dominantFeelings",
     sectionKey: SummarySectionKey.DominantFeelings,
     type: FieldType.Multiline,
   },
@@ -370,7 +369,7 @@ export const summaryFields: SummaryField[] = [
     isEnhanceable: true,
     key: SummaryFieldKey.IssuesWorkedOn,
     label: "Issues Worked On",
-    placeholder: "Mention what was explored or worked on during the session.",
+    placeholderKey: "summary.placeholders.issuesWorkedOn",
     sectionKey: SummarySectionKey.IssuesWorkedOn,
     type: FieldType.Multiline,
   },
@@ -379,7 +378,7 @@ export const summaryFields: SummaryField[] = [
     isEnhanceable: true,
     key: SummaryFieldKey.KeyTherapeuticTechniques,
     label: "Key Therapeutic Techniques",
-    placeholder: "Note any tools, frameworks, or strategies applied in the session.",
+    placeholderKey: "summary.placeholders.keyTherapeuticTechniques",
     sectionKey: SummarySectionKey.KeyTherapeuticTechniques,
     type: FieldType.Multiline,
   },
@@ -388,7 +387,7 @@ export const summaryFields: SummaryField[] = [
     isEnhanceable: true,
     key: SummaryFieldKey.ReferralsProvided,
     label: "Referrals Provided",
-    placeholder: "Note any internal or external referrals or resources shared with the client.",
+    placeholderKey: "summary.placeholders.referralsProvided",
     sectionKey: SummarySectionKey.ReferralsProvided,
     type: FieldType.Multiline,
   },
@@ -397,7 +396,7 @@ export const summaryFields: SummaryField[] = [
     isEnhanceable: true,
     key: SummaryFieldKey.Homework,
     label: "Homework Recommended",
-    placeholder: "Add suggestions or tasks for the client to work on between sessions.",
+    placeholderKey: "summary.placeholders.homework",
     sectionKey: SummarySectionKey.HomeworkRecommended,
     type: FieldType.Multiline,
   },
@@ -406,7 +405,7 @@ export const summaryFields: SummaryField[] = [
     isEnhanceable: true,
     key: SummaryFieldKey.PlanForNextCall,
     label: "Plans for Next Call",
-    placeholder: "Mention goals or topics to revisit in the next session.",
+    placeholderKey: "summary.placeholders.planForNextCall",
     sectionKey: SummarySectionKey.PlansForNextCall,
     type: FieldType.Multiline,
   },
@@ -415,7 +414,7 @@ export const summaryFields: SummaryField[] = [
     isEnhanceable: false,
     key: SummaryFieldKey.Tags,
     label: "Tags",
-    placeholder: "Add keywords to help organize or categorize this session.",
+    placeholderKey: "summary.placeholders.tags",
     sectionKey: SummarySectionKey.Tags,
     type: FieldType.Multiline,
   },
@@ -458,7 +457,7 @@ export const summaryFields: SummaryField[] = [
           label: "Intake Notes",
           sectionKey: SummarySectionKey.Intake,
           type: FieldType.Text,
-          placeholder: "Add note",
+          placeholderKey: "summary.placeholders.addNote",
         },
         {
           isEditable: true,
@@ -467,7 +466,7 @@ export const summaryFields: SummaryField[] = [
           sectionKey: SummarySectionKey.Intake,
           type: FieldType.Dropdown,
           options: ["Yes", "No"],
-          placeholder: "Select",
+          placeholderKey: "summary.placeholders.select",
         },
         {
           isEditable: true,
@@ -475,7 +474,7 @@ export const summaryFields: SummaryField[] = [
           label: "Risk, Self Harm Notes",
           sectionKey: SummarySectionKey.Intake,
           type: FieldType.Text,
-          placeholder: "Add note",
+          placeholderKey: "summary.placeholders.addNote",
         },
         {
           isEditable: true,
@@ -484,7 +483,7 @@ export const summaryFields: SummaryField[] = [
           sectionKey: SummarySectionKey.Intake,
           type: FieldType.Dropdown,
           options: ["Yes", "No"],
-          placeholder: "Select",
+          placeholderKey: "summary.placeholders.select",
         },
         {
           isEditable: true,
@@ -492,7 +491,7 @@ export const summaryFields: SummaryField[] = [
           label: "Risk, Suicidal Thoughts Notes",
           sectionKey: SummarySectionKey.Intake,
           type: FieldType.Text,
-          placeholder: "Add note",
+          placeholderKey: "summary.placeholders.addNote",
         },
         {
           isEditable: true,
@@ -501,7 +500,7 @@ export const summaryFields: SummaryField[] = [
           sectionKey: SummarySectionKey.Intake,
           type: FieldType.Dropdown,
           options: ["Yes", "No"],
-          placeholder: "Select",
+          placeholderKey: "summary.placeholders.select",
         },
         {
           isEditable: true,
@@ -510,7 +509,7 @@ export const summaryFields: SummaryField[] = [
           sectionKey: SummarySectionKey.Intake,
           type: FieldType.Dropdown,
           options: ["Yes", "No"],
-          placeholder: "Select",
+          placeholderKey: "summary.placeholders.select",
         },
         {
           isEditable: true,
@@ -519,7 +518,7 @@ export const summaryFields: SummaryField[] = [
           sectionKey: SummarySectionKey.Intake,
           type: FieldType.Dropdown,
           options: ["Yes", "No"],
-          placeholder: "Select",
+          placeholderKey: "summary.placeholders.select",
         },
         {
           isEditable: true,
@@ -527,7 +526,7 @@ export const summaryFields: SummaryField[] = [
           label: "Risk, Running Away Notes",
           sectionKey: SummarySectionKey.Intake,
           type: FieldType.Text,
-          placeholder: "Add note",
+          placeholderKey: "summary.placeholders.addNote",
         },
         {
           isEditable: true,
@@ -536,7 +535,7 @@ export const summaryFields: SummaryField[] = [
           sectionKey: SummarySectionKey.Intake,
           type: FieldType.Dropdown,
           options: ["Yes", "No"],
-          placeholder: "Select",
+          placeholderKey: "summary.placeholders.select",
         },
         {
           isEditable: true,
@@ -545,7 +544,7 @@ export const summaryFields: SummaryField[] = [
           sectionKey: SummarySectionKey.Intake,
           type: FieldType.Dropdown,
           options: ["Yes", "No"],
-          placeholder: "Select",
+          placeholderKey: "summary.placeholders.select",
         },
         {
           isEditable: true,
@@ -554,7 +553,7 @@ export const summaryFields: SummaryField[] = [
           sectionKey: SummarySectionKey.Intake,
           type: FieldType.Dropdown,
           options: ["Yes", "No"],
-          placeholder: "Select",
+          placeholderKey: "summary.placeholders.select",
         },
         {
           isEditable: true,
@@ -563,7 +562,7 @@ export const summaryFields: SummaryField[] = [
           sectionKey: SummarySectionKey.Intake,
           type: FieldType.Dropdown,
           options: ["Yes", "No"],
-          placeholder: "Select",
+          placeholderKey: "summary.placeholders.select",
         },
         {
           isEditable: true,
@@ -572,7 +571,7 @@ export const summaryFields: SummaryField[] = [
           sectionKey: SummarySectionKey.Intake,
           type: FieldType.Dropdown,
           options: ["Yes", "No"],
-          placeholder: "Select",
+          placeholderKey: "summary.placeholders.select",
         },
         {
           isEditable: true,
@@ -581,7 +580,7 @@ export const summaryFields: SummaryField[] = [
           sectionKey: SummarySectionKey.Intake,
           type: FieldType.Dropdown,
           options: ["Yes", "No"],
-          placeholder: "Select",
+          placeholderKey: "summary.placeholders.select",
         },
         {
           isEditable: true,
@@ -589,7 +588,7 @@ export const summaryFields: SummaryField[] = [
           label: "Trauma Notes",
           sectionKey: SummarySectionKey.Intake,
           type: FieldType.Text,
-          placeholder: "Add note",
+          placeholderKey: "summary.placeholders.addNote",
         },
         {
           isEditable: true,
@@ -598,7 +597,7 @@ export const summaryFields: SummaryField[] = [
           sectionKey: SummarySectionKey.Intake,
           type: FieldType.Dropdown,
           options: ["Yes", "No"],
-          placeholder: "Select",
+          placeholderKey: "summary.placeholders.select",
         },
         {
           isEditable: true,
@@ -606,7 +605,7 @@ export const summaryFields: SummaryField[] = [
           label: "Assessment, Psychological Diagnosis Notes",
           sectionKey: SummarySectionKey.Intake,
           type: FieldType.Text,
-          placeholder: "Add note",
+          placeholderKey: "summary.placeholders.addNote",
         },
         {
           isEditable: true,
@@ -615,7 +614,7 @@ export const summaryFields: SummaryField[] = [
           sectionKey: SummarySectionKey.Intake,
           type: FieldType.Dropdown,
           options: ["Yes", "No"],
-          placeholder: "Select",
+          placeholderKey: "summary.placeholders.select",
         },
         {
           isEditable: true,
@@ -623,7 +622,7 @@ export const summaryFields: SummaryField[] = [
           label: "Assessment, Use of Psychotropic Medications Notes",
           sectionKey: SummarySectionKey.Intake,
           type: FieldType.Text,
-          placeholder: "Add note",
+          placeholderKey: "summary.placeholders.addNote",
         },
         {
           isEditable: true,
@@ -632,7 +631,7 @@ export const summaryFields: SummaryField[] = [
           sectionKey: SummarySectionKey.Intake,
           type: FieldType.Dropdown,
           options: ["Yes", "No"],
-          placeholder: "Select",
+          placeholderKey: "summary.placeholders.select",
         },
         {
           isEditable: true,
@@ -640,7 +639,7 @@ export const summaryFields: SummaryField[] = [
           label: "Assessment, Hallucinations Notes",
           sectionKey: SummarySectionKey.Intake,
           type: FieldType.Text,
-          placeholder: "Add note",
+          placeholderKey: "summary.placeholders.addNote",
         },
         {
           isEditable: true,
@@ -649,7 +648,7 @@ export const summaryFields: SummaryField[] = [
           sectionKey: SummarySectionKey.Intake,
           type: FieldType.Dropdown,
           options: ["Congruent", "Incongruent", "Flat", "Blunted"],
-          placeholder: "Select",
+          placeholderKey: "summary.placeholders.select",
         },
         {
           isEditable: true,
@@ -658,7 +657,7 @@ export const summaryFields: SummaryField[] = [
           sectionKey: SummarySectionKey.Intake,
           type: FieldType.Dropdown,
           options: ["Clear & Coherent", "Sluttering", "Fast", "Slow", "Difficult to Understand"],
-          placeholder: "Select",
+          placeholderKey: "summary.placeholders.select",
         },
         // Ongoing Risks section
         {
@@ -668,7 +667,7 @@ export const summaryFields: SummaryField[] = [
           sectionKey: SummarySectionKey.OngoingRisks,
           type: FieldType.Dropdown,
           options: ["Yes", "No"],
-          placeholder: "Select",
+          placeholderKey: "summary.placeholders.select",
         },
         {
           isEditable: true,
@@ -676,7 +675,7 @@ export const summaryFields: SummaryField[] = [
           label: "Ongoing Risk, Self Harm Notes",
           sectionKey: SummarySectionKey.OngoingRisks,
           type: FieldType.Text,
-          placeholder: "Add note",
+          placeholderKey: "summary.placeholders.addNote",
         },
         {
           isEditable: true,
@@ -685,7 +684,7 @@ export const summaryFields: SummaryField[] = [
           sectionKey: SummarySectionKey.OngoingRisks,
           type: FieldType.Dropdown,
           options: ["Yes", "No"],
-          placeholder: "Select",
+          placeholderKey: "summary.placeholders.select",
         },
         {
           isEditable: true,
@@ -694,7 +693,7 @@ export const summaryFields: SummaryField[] = [
           sectionKey: SummarySectionKey.OngoingRisks,
           type: FieldType.Dropdown,
           options: ["Yes", "No"],
-          placeholder: "Select",
+          placeholderKey: "summary.placeholders.select",
         },
         {
           isEditable: true,
@@ -703,7 +702,7 @@ export const summaryFields: SummaryField[] = [
           sectionKey: SummarySectionKey.OngoingRisks,
           type: FieldType.Dropdown,
           options: ["Yes", "No"],
-          placeholder: "Select",
+          placeholderKey: "summary.placeholders.select",
         },
         {
           isEditable: true,
@@ -711,7 +710,7 @@ export const summaryFields: SummaryField[] = [
           label: "Ongoing Risk, Suicidal Thoughts Notes",
           sectionKey: SummarySectionKey.OngoingRisks,
           type: FieldType.Text,
-          placeholder: "Add note",
+          placeholderKey: "summary.placeholders.addNote",
         },
       ]
     : []),

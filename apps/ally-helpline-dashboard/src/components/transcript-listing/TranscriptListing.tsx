@@ -1,6 +1,7 @@
 import { FC, RefObject } from "react";
 
 import { InfiniteScroll } from "@ally-ui-mono/ui-shared";
+import { useTranslation } from "react-i18next";
 import { SimulationTranscriptMessage } from "@types";
 
 interface TranscriptListingProps {
@@ -31,12 +32,13 @@ const TranscriptItem = ({
   transcript: SimulationTranscriptMessage;
   index: number;
 }) => {
+  const { t } = useTranslation();
   const isAIClient = transcript.senderId === -1;
   const speakerName = isAIClient
     ? agentName
-      ? `${agentName} (AI client)`
-      : "AI Agent"
-    : counsellorName || "You";
+      ? `${agentName} (${t("transcription.aiClientSuffix")})`
+      : t("transcription.aiAgentName")
+    : counsellorName || t("transcription.youName");
 
   return (
     <div
@@ -69,6 +71,7 @@ const TranscriptListing: FC<TranscriptListingProps> = ({
   agentName,
   className = "",
 }) => {
+  const { t } = useTranslation();
   const TranscriptSkeleton = () => (
     <div className="flex flex-col gap-6 w-full">
       {[...Array(8)].map((_, index) => (
@@ -97,7 +100,7 @@ const TranscriptListing: FC<TranscriptListingProps> = ({
   if (transcriptList.length === 0) {
     return (
       <div className="flex flex-col justify-center items-center h-full w-full">
-        <div className="text-xxl font-primary text-typography-700">No transcript available</div>
+        <div className="text-xxl font-primary text-typography-700">{t("transcription.empty")}</div>
       </div>
     );
   }

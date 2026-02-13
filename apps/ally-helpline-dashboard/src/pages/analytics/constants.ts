@@ -1,14 +1,14 @@
 import { AnalyticsType } from "@constants";
 
 export const analyticsTypeOptions = [
-  { value: AnalyticsType.CallLog, label: "Real call logs" },
+  { value: AnalyticsType.CallLog, labelKey: "analytics.types.callLogs" },
   {
     value: AnalyticsType.Simulation,
-    label: "Simulations",
+    labelKey: "analytics.types.simulations",
   },
   {
     value: AnalyticsType.Org,
-    label: "Org Analytics",
+    labelKey: "analytics.types.org",
   },
 ];
 

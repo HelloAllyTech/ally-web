@@ -30,8 +30,10 @@ import CallSummarySidebar from "./CallSummarySidebar";
 import SimulationSummarySidebar from "./SimulationSummarySidebar";
 import { LogsTableProps } from "./types";
 import { getSourceChipConfig, getStatusChipConfig } from "./utils";
+import { useTranslation } from "react-i18next";
 
 const UserLogsTable: FC<LogsTableProps> = ({ refreshKey, sessionType, className }) => {
+  const { t } = useTranslation();
   const dispatch = useDispatch();
   const location = useLocation();
 
@@ -179,46 +181,46 @@ const UserLogsTable: FC<LogsTableProps> = ({ refreshKey, sessionType, className 
   const callColumns: Column<any>[] = [
     {
       key: "callName",
-      header: "Session ID",
+      header: t("calls.table.sessionId"),
       style: { width: "17%" },
       icon: <CallIdIcon />,
     },
     {
       key: "dateAndTime",
-      header: "Date & Time",
+      header: t("calls.table.dateTime"),
       style: { width: "20%" },
       icon: <DateIcon />,
     },
     {
       key: "duration",
-      header: "Duration",
+      header: t("calls.table.duration"),
       style: { width: "12%" },
       icon: <TimerIcon />,
     },
     {
       key: "tags",
-      header: "Tags",
+      header: t("calls.table.tags"),
       style: { width: "25%" },
       render: (value: TagDisplay[]) => <TagGroup tags={value} />,
       icon: <TagsIcon />,
     },
     {
       key: "summaryStatus",
-      header: "Summary Status",
+      header: t("calls.table.summaryStatus"),
       style: { width: "10%" },
       render: (_value, row) => <Chip config={getStatusChipConfig(row.raw.summaryStatus)} />,
       icon: <SummaryGenerationIcon />,
     },
     {
       key: "source",
-      header: "Source",
+      header: t("calls.table.source"),
       style: { width: "10%" },
       render: (_value, row) => <Chip config={getSourceChipConfig(row.provider)} />,
       icon: <SourceIcon />,
     },
     {
       key: "summary",
-      header: "Summary",
+      header: t("calls.table.summary"),
       style: { width: "6%" },
       render: (_value, row) => (
         <Button
@@ -256,37 +258,37 @@ const UserLogsTable: FC<LogsTableProps> = ({ refreshKey, sessionType, className 
   const simulationColumns: Column<any>[] = [
     {
       key: "sessionId",
-      header: "Session ID",
+      header: t("calls.table.sessionId"),
       style: { width: "20%" },
       icon: <CallIdIcon />,
     },
     {
       key: "scenarioTitle",
-      header: "Scenario",
+      header: t("calls.table.scenario"),
       style: { width: "20%" },
       icon: <ScenarioIcon />,
     },
     {
       key: "dateAndTime",
-      header: "Date & Time",
+      header: t("calls.table.dateTime"),
       style: { width: "20%" },
       icon: <DateIcon />,
     },
     {
       key: "duration",
-      header: "Duration",
+      header: t("calls.table.duration"),
       style: { width: "15%" },
       icon: <TimerIcon />,
     },
     {
       key: "sessionScore",
-      header: "Session score",
+      header: t("calls.table.sessionScore"),
       style: { width: "15%" },
       icon: <SessionScoreIcon />,
     },
     {
       key: "summary",
-      header: "Summary",
+      header: t("calls.table.summary"),
       style: { width: "10%" },
       render: (_value, row) => (
         <Button
@@ -309,11 +311,11 @@ const UserLogsTable: FC<LogsTableProps> = ({ refreshKey, sessionType, className 
       return (
         <FallbackUI
           icon={<NoResults />}
-          mainMessage={isCall ? "No call records found" : "No simulation records found"}
+          mainMessage={
+            isCall ? t("calls.fallback.callEmptyTitle") : t("calls.fallback.simEmptyTitle")
+          }
           description={
-            isCall
-              ? "Your recent calls and insights will be listed here."
-              : "Your recent simulations will be listed here."
+            isCall ? t("calls.fallback.callEmptyDesc") : t("calls.fallback.simEmptyDesc")
           }
           className="py-[100px]"
         />

@@ -1,6 +1,7 @@
 import { FC, useEffect, useState, useRef } from "react";
 
 import { useSearchParams } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 
 import { ResourceSearch } from "@ally-ui-mono/ui-shared";
@@ -16,6 +17,7 @@ const SearchResources: FC<SearchResourcesProps> = ({
   showHeader = true,
   fullWidth = false,
 }) => {
+  const { t } = useTranslation();
   const [, setSearchParams] = useSearchParams();
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [searchQuery, setSearchQuery] = useState("");
@@ -69,7 +71,7 @@ const SearchResources: FC<SearchResourcesProps> = ({
           setCategoryCountList(response.data.categories);
         }
       } else {
-        toast.error("Error fetching search results");
+        toast.error(t("search.error"));
       }
     }
   };
@@ -144,6 +146,12 @@ const SearchResources: FC<SearchResourcesProps> = ({
       isSuggestionsRow={!isInSidebar}
       mode={isInSidebar ? SearchVariant.DARK : SearchVariant.LIGHT}
       categoryCountList={categoryCountList}
+      suggestionsHeaderText={t("search.suggestionsTitle")}
+      searchPlaceholder={t("search.placeholder")}
+      noResultsText={t("search.noResults", { query: searchQuery || "" })}
+      headerDescription={t("search.headerDescription")}
+      headerLogoAlt={t("search.logoAlt")}
+      allLabel={t("search.allLabel")}
     />
   );
 };

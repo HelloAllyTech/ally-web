@@ -1,0 +1,40 @@
+// File: apps/ally-helpline-dashboard/src/i18n/index.ts
+
+import i18n from "i18next";
+import { initReactI18next } from "react-i18next";
+import LanguageDetector from "i18next-browser-languagedetector";
+
+// Import JSON resources (one file per language)
+// Using bundler module resolution: Vite + TS supports JSON imports
+import { en, hi } from "./locales";
+
+// Keys
+export const DEFAULT_FALLBACK_LNG = "en" as const;
+// Expanded language support including regional/script variants where relevant
+export const SUPPORTED_LANGUAGES = ["en", "hi"] as const;
+
+void i18n
+  .use(LanguageDetector)
+  .use(initReactI18next)
+  .init({
+    resources: {
+      en: { translation: en },
+      hi: { translation: hi },
+    },
+    fallbackLng: DEFAULT_FALLBACK_LNG,
+    supportedLngs: SUPPORTED_LANGUAGES as unknown as string[],
+    interpolation: {
+      escapeValue: false, // React already escapes by default
+    },
+    detection: {
+      // Persist and read language from localStorage to satisfy requirement
+      order: ["localStorage", "navigator", "htmlTag"],
+      caches: ["localStorage"],
+      lookupLocalStorage: "i18nextLng",
+    },
+    returnEmptyString: false,
+    // Allow regional/script variants (e.g., pt-BR, zh-Hant)
+    load: "all",
+  });
+
+export default i18n;

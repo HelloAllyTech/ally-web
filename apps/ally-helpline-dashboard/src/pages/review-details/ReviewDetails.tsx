@@ -25,10 +25,12 @@ import { baseAPI } from "@src/api/baseAPI";
 import { RootState } from "@store";
 import { CommentChangeParams, ReactionsType, SimulationTranscriptMessage, Thread } from "@types";
 import { getFormattedDateTime, getFormattedTimeFromDuration } from "@utils";
+import { useTranslation } from "react-i18next";
 
 import { TRANSCRIPT_PAGE_SIZE } from "../calls/components/constants";
 
 export const ReviewDetails = () => {
+  const { t } = useTranslation();
   const { reviewId } = useParams<{ reviewId: string }>();
   const { user } = useSelector((state: RootState) => state.user);
   const navigate = useNavigate();
@@ -61,6 +63,10 @@ export const ReviewDetails = () => {
       limit: TRANSCRIPT_PAGE_SIZE,
       sortBy: "startSeconds",
     });
+  const reviewPrivacyOptions = REVIEW_PRIVACY_OPTIONS.map(option => ({
+    ...option,
+    label: t(option.labelKey),
+  }));
   const [addReactions] = useAddReactionMutation();
   const [updateReview, { isLoading: isUpdateReviewLoading }] = useUpdateReviewMutation();
 
@@ -145,19 +151,23 @@ export const ReviewDetails = () => {
     return Object.keys(reviewDetails?.reactions);
   }, [reviewDetails?.reactions]);
 
-  const displayTotalReactionCount: string | number = useMemo(() => {
+  const reactionCountForPlural: number = useMemo(() => {
     if (!reviewReactions) return 0;
-    const reactionsCount: number =
+    return (
       (Object.values(reviewDetails?.reactions || {}) as number[])?.reduce(
         (acc: number, curr: number) => acc + curr,
         0,
-      ) || 0;
-    if (reactionsCount > 999) {
-      const count = Number((reactionsCount / 1000).toFixed(1));
+      ) || 0
+    );
+  }, [reviewReactions]);
+
+  const displayTotalReactionCount: string | number = useMemo(() => {
+    if (reactionCountForPlural > 999) {
+      const count = Number((reactionCountForPlural / 1000).toFixed(1));
       return `${count}k`;
     }
-    return reactionsCount;
-  }, [reviewReactions]);
+    return reactionCountForPlural;
+  }, [reactionCountForPlural]);
 
   const handleCommentChange = ({
     comments,
@@ -249,7 +259,7 @@ export const ReviewDetails = () => {
       setSelectedEmoji(nextEmoji);
       setShowEmojiPicker(false);
     } catch (error) {
-      toast.error(error?.data?.message || "Reaction update failed");
+      toast.error(error?.data?.message || t("review.reactionUpdateFailed"));
     }
   };
 
@@ -288,7 +298,7 @@ export const ReviewDetails = () => {
               style={{ opacity: isUpdateReviewLoading ? 0.5 : 1 }}
             >
               <Toggle
-                items={REVIEW_PRIVACY_OPTIONS}
+                items={reviewPrivacyOptions}
                 initialValue={reviewDetails?.reviewStatus || "IN_REVIEW"}
                 onChange={handleCreateReview}
               />
@@ -300,7 +310,7 @@ export const ReviewDetails = () => {
           >
             <ChatBubble className="w-5 h-5 text-neutral-600 group-hover:text-[#0957D0]" />
             <div className="text-typography-900 font-primary group-hover:text-[#0957D0] text-sm">
-              Comments
+              {t("review.comments")}
             </div>
           </div>
           <div className="relative w-fit">
@@ -333,7 +343,10 @@ export const ReviewDetails = () => {
               >
                 <EmojiStack unicodeCodes={reviewReactions} />
                 <span className="font-primary text-xs sm:text-sm leading-[1.5] text-typography-800 truncate">
-                  {displayTotalReactionCount} reaction{reviewReactions?.length !== 1 ? "s" : ""}
+                  {t("review.reaction", {
+                    count: reactionCountForPlural,
+                    value: displayTotalReactionCount,
+                  })}
                 </span>
               </button>
             </div>

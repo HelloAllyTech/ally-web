@@ -4,32 +4,32 @@ import { SessionType } from "@types";
 export const tableHeaders = [
   {
     id: "callName",
-    label: "Call ID",
+    labelKey: "calls.table.sessionId",
     width: "15%",
   },
   {
     id: "dateAndTime",
-    label: "Date & Time",
+    labelKey: "calls.table.dateTime",
     width: "15%",
   },
   {
     id: "duration",
-    label: "Duration",
+    labelKey: "calls.table.duration",
     width: "15%",
   },
   {
     id: "qualityScore",
-    label: "Quality Score",
+    labelKey: "calls.table.qualityScore",
     width: "15%",
   },
   {
     id: "tags",
-    label: "Tags",
+    labelKey: "calls.table.tags",
     width: "30%",
   },
   {
     id: "review",
-    label: "Review",
+    labelKey: "calls.table.summary",
     width: "10%",
   },
 ];
@@ -99,15 +99,15 @@ export const sessionLogViewList = [
 
 export const sessionLogsMap = {
   [SessionUserGroup.MY_LOGS]: {
-    label: "My Logs",
+    labelKey: "calls.userGroups.my",
   },
   [SessionUserGroup.ORG_LOGS]: {
-    label: "Organization Logs",
+    labelKey: "calls.userGroups.org",
   },
   [SessionType.CALL]: {
-    label: "Real call logs",
+    labelKey: "calls.sessionTypes.call",
   },
   [SessionType.SIMULATION]: {
-    label: "Simulations",
+    labelKey: "calls.sessionTypes.simulation",
   },
 };

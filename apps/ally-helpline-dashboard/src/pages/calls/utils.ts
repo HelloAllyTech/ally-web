@@ -19,7 +19,7 @@ export const getFormattedSupportedSessionUserGroups = (
     )
     ?.map(listItem => ({
       id: listItem.sessionUserGroup,
-      label: sessionLogsMap[listItem.sessionUserGroup].label,
+      labelKey: sessionLogsMap[listItem.sessionUserGroup].labelKey,
     }));
 
 export const getSupportedSessionTypeListByUserGroup = (
@@ -30,5 +30,5 @@ export const getSupportedSessionTypeListByUserGroup = (
     ?.filter(listItem => listItem?.sessionUserGroup === selectedUserGroup)
     ?.map(item => ({
       value: item.sessionType,
-      label: sessionLogsMap[item.sessionType].label,
+      labelKey: sessionLogsMap[item.sessionType].labelKey,
     }));

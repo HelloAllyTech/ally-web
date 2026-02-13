@@ -1,4 +1,6 @@
+// File: apps/ally-helpline-dashboard/src/components/nav-sidebar/NavSideBar.tsx
 import { FC, useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 
 import { Tooltip } from "@mui/material";
 import { useForm } from "react-hook-form";
@@ -8,6 +10,7 @@ import { CustomImage } from "@ally-ui-mono/ui-shared";
 import { useGetLogoUrlQuery } from "@api";
 import { DockToRight, LogoutIllustration } from "@assets";
 import { ConfirmationDialog, ProfileSettings, UserInfo } from "@components";
+import { LanguageSelector } from "@components/language-selector";
 import { navBarOptions, TOOLTIP_LIGHT_PROPS, TabId } from "@constants";
 import { useUser } from "@hooks";
 
@@ -53,6 +56,7 @@ const Tab: FC<TabProps> = ({ id, Icon, title, activeTab, isExpanded, onClick }) 
 const NavSideBar: FC<NavSideBarProps> = ({ activeTab, onTabChange, isOpen, onClose }) => {
   const { permissions, user, logout, getProfileUrl, deleteProfile, uploadProfile, refetchUser } =
     useUser();
+  const { t } = useTranslation();
 
   const [isLogoutDialogOpen, setIsLogoutDialogOpen] = useState<boolean>(false);
   const permittedTabs = navBarOptions.filter(tab => {
@@ -137,7 +141,7 @@ const NavSideBar: FC<NavSideBarProps> = ({ activeTab, onTabChange, isOpen, onClo
             key={id}
             id={id}
             Icon={Icon}
-            title={title}
+            title={t(title)}
             activeTab={activeTab}
             isExpanded={isExpanded}
             onClick={() => onTabClick(path)}
@@ -200,7 +204,7 @@ const NavSideBar: FC<NavSideBarProps> = ({ activeTab, onTabChange, isOpen, onClo
                 data-testid="nav-sidebar-toggle"
                 onClick={handleToggleSidebar}
                 className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-200 hover:bg-gray-50 hover:rounded-md"
-                title="Expand sidebar"
+                title={t("nav.sidebar.expand")}
               >
                 <DockToRight />
               </button>
@@ -212,7 +216,7 @@ const NavSideBar: FC<NavSideBarProps> = ({ activeTab, onTabChange, isOpen, onClo
               data-testid="nav-sidebar-toggle"
               onClick={handleToggleSidebar}
               className="p-3 transition-all duration-200 hover:bg-gray-50 hover:rounded-md"
-              title="Collapse sidebar"
+              title={t("nav.sidebar.collapse")}
             >
               <DockToRight />
             </button>
@@ -222,6 +226,11 @@ const NavSideBar: FC<NavSideBarProps> = ({ activeTab, onTabChange, isOpen, onClo
 
         <div className="flex flex-col items-start gap-3 mx-4 my-3" data-testid="nav-sidebar-footer">
           <hr className="w-full border-t border-gray-200" data-testid="nav-sidebar-divider" />
+
+          {/* Language selector */}
+          <div className="w-full flex justify-start mb-2">
+            <LanguageSelector />
+          </div>
 
           <UserInfo
             user={user}
@@ -234,13 +243,13 @@ const NavSideBar: FC<NavSideBarProps> = ({ activeTab, onTabChange, isOpen, onClo
         </div>
       </div>
       <ConfirmationDialog
-        title={{ normal: "Safeguard your ", italic: "account" }}
+        title={{ normal: t("nav.logout.title.normal"), italic: t("nav.logout.title.italic") }}
         isOpen={isLogoutDialogOpen}
         onClose={closeLogoutDialog}
-        content="Are you sure you want to log out? You will need to enter secure OTP to login again."
+        content={t("nav.logout.content")}
         buttonVariant={ButtonVariant.DESTRUCTIVE}
         onButtonClick={handleConfirmLogout}
-        buttonText="Logout & lock my Ally account"
+        buttonText={t("nav.logout.button")}
         icon={LogoutIllustration}
       />
       {isOpen && (

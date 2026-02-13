@@ -1,4 +1,6 @@
+// File: apps/ally-helpline-dashboard/src/components/carousel/Carousel.tsx
 import { FC, useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 
 import { AnimatePresence, motion } from "framer-motion";
 
@@ -27,6 +29,7 @@ const Carousel: FC<CarouselProps> = ({
   variant = CarouselVariant.LIGHT,
   size = CarouselSize.LARGE,
 }) => {
+  const { t } = useTranslation();
   const [activeIndex, setActiveIndex] = useState<number>(0);
   const [isPaused, setIsPaused] = useState<boolean>(false);
 
@@ -142,7 +145,7 @@ const Carousel: FC<CarouselProps> = ({
             </div>
             <div className="text-center min-h-20 flex items-center justify-center">
               <p className={`font-primary leading-tight ${getTextStyles()} ${textClassName}`}>
-                {activeSlide.text}
+                {t(activeSlide.textKey)}
               </p>
             </div>
           </motion.div>

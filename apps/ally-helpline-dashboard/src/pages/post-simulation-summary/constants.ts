@@ -3,15 +3,14 @@ export enum PostSimulationSummaryTab {
   TRANSCRIPTION = "transcription",
 }
 
-const TABS = [
+// Helper to generate localized tabs using i18n keys
+export const getPostSimTabs = (t: (key: string) => string) => [
   {
-    label: "Summary",
+    label: t("postSim.tabs.summary"),
     value: PostSimulationSummaryTab.SUMMARY,
   },
   {
-    label: "Transcription",
+    label: t("postSim.tabs.transcription"),
     value: PostSimulationSummaryTab.TRANSCRIPTION,
   },
 ];
-
-export { TABS };

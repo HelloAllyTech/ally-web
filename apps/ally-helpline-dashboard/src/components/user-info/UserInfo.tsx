@@ -6,6 +6,7 @@ import { PermissionGuard } from "@components";
 import { Permissions } from "@constants";
 import { useSimulationCredits } from "@hooks";
 import { User } from "@types";
+import { useTranslation } from "react-i18next";
 
 const UserInfo: FC<{
   user?: User;
@@ -15,6 +16,7 @@ const UserInfo: FC<{
   profileUrl?: string;
   name?: string;
 }> = ({ user, isExpanded, onLogout, onProfileSettings, profileUrl, name }) => {
+  const { t } = useTranslation();
   const [showLogout, setShowLogout] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const { credits, limitReached, CreditPercentage } = useSimulationCredits();
@@ -59,9 +61,9 @@ const UserInfo: FC<{
                 <CustomImage
                   className="rounded-full object-cover"
                   fallbackClassName="flex items-center justify-center text-typography-600 bg-neutral-100 rounded-full object-cover w-full h-full"
-                  fallbackText={name ? name?.slice(0, 1).toUpperCase() : "NA"}
+                  fallbackText={name ? name?.slice(0, 1).toUpperCase() : t("common.na")}
                   src={profileUrl}
-                  alt="Profile"
+                  alt={t("profileSettings.profileAlt")}
                 />
               </div>
             </div>
@@ -104,7 +106,7 @@ const UserInfo: FC<{
           <PermissionGuard requiredPermissions={[Permissions.VIEW_SIMULATION_CREDITS]}>
             <div className="flex items-center gap-2" data-testid="user-info-credits-header">
               <Bolt data-testid="user-info-credits-icon" />
-              <div>Credit usage</div>
+              <div>{t("userMenu.creditUsage")}</div>
             </div>
 
             <div
@@ -147,7 +149,7 @@ const UserInfo: FC<{
               className="flex items-center gap-2 text-typography-700 hover:bg-gray-100 py-1 px-2 rounded justify-start w-full border-gray-200"
             >
               <ManageAccount />
-              Profile settings
+              {t("profileSettings.title")}
             </button>
             <button
               data-testid="user-info-logout-button"
@@ -155,7 +157,7 @@ const UserInfo: FC<{
               className="flex items-center gap-2 text-typography-700 hover:bg-gray-100 py-1 px-2 rounded justify-start w-full border-gray-200"
             >
               <Logout className="w-4 h-4" data-testid="user-info-logout-icon" />
-              Logout
+              {t("userMenu.logout")}
             </button>
           </div>
         </div>

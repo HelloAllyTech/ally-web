@@ -1,4 +1,6 @@
+// File: apps/ally-helpline-dashboard/src/pages/auth/Login.tsx
 import { useEffect, useState, useCallback, FunctionComponent, useRef } from "react";
+import { useTranslation } from "react-i18next";
 
 import { FetchBaseQueryError } from "@reduxjs/toolkit/query";
 import { motion, AnimatePresence } from "framer-motion";
@@ -32,6 +34,7 @@ const RESEND_CODE_COUNTDOWN = 60; // 2 minutes
 const DEFAULT_EXPIRES_IN = 10; // 10 minutes
 
 export const Login: FunctionComponent = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { user } = useSelector((state: RootState) => state.user);
 
@@ -93,7 +96,7 @@ export const Login: FunctionComponent = () => {
     if (generateOTPError) {
       const error = generateOTPError as FetchBaseQueryError;
       const errorData = error.data as { message: string } | undefined;
-      const errorMessage = errorData?.message ?? "Failed to generate OTP. Please try again.";
+      const errorMessage = errorData?.message ?? t("auth.login.errors.generateOtp");
       toast.error(errorMessage);
     } else if (isGenerateOTPSuccess && generateOTPData) {
       setLoginSection(LoginSection.OTP);
@@ -124,7 +127,7 @@ export const Login: FunctionComponent = () => {
           return;
         }
 
-        const errorMessage = errorData?.message ?? "Failed to verify OTP. Please try again.";
+        const errorMessage = errorData?.message ?? t("auth.login.errors.verifyOtp");
         toast.error(errorMessage);
       } else if (isVerifyOTPSuccess && verifyOTPData) {
         accessTokenRef.current = verifyOTPData.accessToken;
@@ -161,7 +164,7 @@ export const Login: FunctionComponent = () => {
 
   const handleNext = () => {
     if (!validateEmail(email)) {
-      setEmailError("Please enter a valid email address");
+      setEmailError(t("auth.login.email.error"));
       return;
     }
     if (rememberMe) {
@@ -184,7 +187,7 @@ export const Login: FunctionComponent = () => {
       handleAgreementClose();
       updateLocalStorageAndNavigate();
     } else {
-      toast.error("Failed to agree to terms and conditions");
+      toast.error(t("auth.login.errors.agreeTerms"));
     }
   };
 
@@ -206,17 +209,17 @@ export const Login: FunctionComponent = () => {
           navigate(ROUTES.SUSPENDED_USER);
           return;
         }
-        toast.error(errorData?.message ?? "Failed to sign in with Google");
+        toast.error(errorData?.message ?? t("auth.login.google.error"));
       } else {
-        toast.error("Failed to sign in with Google");
+        toast.error(t("auth.login.google.error"));
       }
     } catch {
-      toast.error("Failed to sign in with Google");
+      toast.error(t("auth.login.google.error"));
     }
   };
 
   const handleGoogleError = () => {
-    toast.error("Failed to sign in with Google");
+    toast.error(t("auth.login.google.error"));
   };
 
   const getLoginSection = () => {
@@ -231,25 +234,26 @@ export const Login: FunctionComponent = () => {
           className="flex flex-col gap-4"
         >
           <div className="flex flex-col text-4xl font-secondary">
-            <span>Hey,</span>
+            <span>{t("auth.login.greetingLine1")}</span>
             <h1>
               <span className="inline-flex items-center gap-2 whitespace-nowrap">
-                Welcome to <Ally className="mt-2" />
+                {t("auth.login.greetingLine2", { app: t("common.appName") })}{" "}
+                <Ally className="mt-2" />
               </span>
             </h1>
-            <span className="text-2xl mt-[24px]">Enter your email address to continue</span>
+            <span className="text-2xl mt-[24px]">{t("auth.login.subtitle")}</span>
           </div>
           <div className="flex flex-col gap-1">
             <TextField
               fieldSize="medium"
               type="email"
               inputMode="email"
-              label="Email"
+              label={t("auth.login.email.label")}
               value={email}
               onChange={handleEmailChange}
               errorMessage={emailError}
               hideError={false}
-              placeholder="Enter your email address"
+              placeholder={t("auth.login.email.placeholder")}
               className="w-full rounded-xs"
             />
 
@@ -262,7 +266,7 @@ export const Login: FunctionComponent = () => {
                 onChange={e => setRememberMe(e.target.checked)}
               />
               <label htmlFor="remember" className="text-sm text-typography-700 cursor-pointer">
-                Remember me
+                {t("auth.login.rememberMe")}
               </label>
             </div>
           </div>
@@ -275,34 +279,34 @@ export const Login: FunctionComponent = () => {
             {isLoading ? (
               <div className="flex items-center justify-center">
                 <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-[5px] animate-spin mr-2"></div>
-                Generating OTP...
+                {t("auth.login.generatingOtp")}
               </div>
             ) : (
-              "Next"
+              t("auth.login.next")
             )}
           </Button>
           <div className="text-sm text-typography-800">
             <div className="mb-3">
               <div className="flex items-center mb-3">
                 <div className="flex-grow border-t border-gray-300" />
-                <span className="mx-3 text-xs text-gray-500">OR</span>
+                <span className="mx-3 text-xs text-gray-500">{t("auth.login.divider")}</span>
                 <div className="flex-grow border-t border-gray-300" />
               </div>
               <GoogleSignInButton onSuccess={handleGoogleSuccess} onError={handleGoogleError} />
             </div>
-            By proceeding, i agree to Ally's{" "}
+            {t("auth.login.proceedAgree")}{" "}
             <span
               className="text-primary-500 cursor-pointer"
               onClick={() => openLinkInNewTab(ALLY_TERMS_URL)}
             >
-              Terms & Conditions
+              {t("auth.login.terms")}
             </span>{" "}
-            and acknowledge{" "}
+            {t("auth.login.and")}{" "}
             <span
               className="text-primary-500 cursor-pointer"
               onClick={() => openLinkInNewTab(ALLY_PRIVACY_POLICY_URL)}
             >
-              Privacy Policy.
+              {t("auth.login.privacy")}
             </span>
           </div>
         </motion.div>
@@ -318,22 +322,26 @@ export const Login: FunctionComponent = () => {
         className="flex flex-col justify-start gap-6"
       >
         <BackCircle className="self-start cursor-pointer ml-[-10px]" onClick={handleBack} />
-        <h1 className="text-4xl font-secondary">Verify your email address</h1>
+        <h1 className="text-4xl font-secondary">{t("auth.login.otp.title")}</h1>
         <div className="text-base mb-2 font-secondary flex flex-col">
-          <span className="text-2xl">Enter the security code sent to</span>
+          <span className="text-2xl">{t("auth.login.otp.enterCode")}</span>
           <span className="font-semibold text-2xl">{email}</span>
         </div>
         <div className="flex flex-col gap-3">
           <OTP value={otp} onChange={setOtp} />
           <div className="text-xs text-typography-900">
-            This code will expire in{" "}
-            <span className="font-[700]">{`${generateOTPData?.expiresIn ? generateOTPData?.expiresIn / 60 : DEFAULT_EXPIRES_IN} minutes`}</span>
-            . Need a new code?
+            {t("auth.login.otp.expires", {
+              minutes: t("common.minutes", {
+                count: (generateOTPData?.expiresIn ?? DEFAULT_EXPIRES_IN * 60) / 60,
+              }),
+            })}
             <span
               className={`${countdown > 0 ? "text-typography-800" : "text-primary-500"} pl-2 cursor-pointer`}
               onClick={handleResendCode}
             >
-              Resend {countdown > 0 ? `(${countdown}s)` : ""}
+              {countdown > 0
+                ? t("auth.login.otp.resendWithCountdown", { seconds: `${countdown}s` })
+                : t("auth.login.otp.resend")}
             </span>
           </div>
         </div>
@@ -346,10 +354,10 @@ export const Login: FunctionComponent = () => {
           {isLoading ? (
             <div className="flex items-center justify-center">
               <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-[5px] animate-spin mr-2"></div>
-              Signing in...
+              {t("auth.login.otp.signingIn")}
             </div>
           ) : (
-            "Verify"
+            t("auth.login.otp.verify")
           )}
         </Button>
       </motion.div>
@@ -364,7 +372,7 @@ export const Login: FunctionComponent = () => {
       <div className="sm:max-w-full lg:max-w-[50%] flex-1 h-full relative">
         <img
           src={LoginImage}
-          alt="Login"
+          alt={t("auth.login.imageAlt")}
           className="w-full h-full object-cover hidden sm:block lg:rounded-[16px]"
         />
         <div
@@ -373,7 +381,9 @@ export const Login: FunctionComponent = () => {
         >
           <div className="flex flex-col mr-4 font-secondary">
             <Ally className="w-10 h-10" />
-            <span className="text-sm font-medium text-typography-800">helloally.ai</span>
+            <span className="text-sm font-medium text-typography-800">
+              {t("auth.login.helloAlly")}
+            </span>
           </div>
           <RedirectIcon
             width={36}

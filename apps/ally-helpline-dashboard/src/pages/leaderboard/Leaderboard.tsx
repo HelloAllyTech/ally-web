@@ -12,6 +12,7 @@ import { AchievementsCard, LeaderboardList, LeaderboardUser } from "@components"
 import { ROUTES, Permissions } from "@constants";
 import { useUser } from "@hooks";
 import { AchievementItemData, LockedStatus, UserBadge, ViewedStatus } from "@types";
+import { useTranslation } from "react-i18next";
 
 // Map UserBadge (earned badges) to AchievementItemData format
 const mapUserBadgeToAchievementItem = (badge: UserBadge): AchievementItemData => ({
@@ -29,6 +30,7 @@ const PATHS_PAGE_SIZE = 30;
 const INITIAL_WINDOW = "LAST_WEEK";
 
 export const Leaderboard = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [pathsOffset, setPathsOffset] = useState(0);
   const [window, setWindow] = useState(INITIAL_WINDOW);
@@ -114,7 +116,7 @@ export const Leaderboard = () => {
         className="text-typography-900 font-secondary text-xl sm:text-2xl font-[500] flex items-center"
         data-testid="leaderboard-title"
       >
-        Community
+        {t("community.title")}
       </div>
       <div className="flex flex-row gap-4 sm:gap-6 pb-4 h-full items-stretch sm:items-start">
         <LeaderboardList

@@ -18,6 +18,7 @@ export interface ResourceTabsProps {
   selectedCategory: string;
   setSelectedCategory: (category: string, isSearchTriggered?: boolean) => void;
   mode?: SearchVariant;
+  allLabel?: string;
 }
 
 const ResourceTabs: FC<ResourceTabsProps> = ({
@@ -26,6 +27,7 @@ const ResourceTabs: FC<ResourceTabsProps> = ({
   categoryCountList,
   setSelectedCategory,
   mode = SearchVariant.LIGHT,
+  allLabel = "All",
 }) => {
   /**
    * Returns the count of resources in a category.
@@ -45,12 +47,12 @@ const ResourceTabs: FC<ResourceTabsProps> = ({
     if (categoryCountList) {
       if (category === "All") {
         const totalCount = Object.values(categoryCountList).reduce((sum, count) => sum + count, 0);
-        return `All (${totalCount})`;
+        return `${allLabel} (${totalCount})`;
       }
       return `${category} (${categoryCountList[category] || 0})`;
     }
     if (category === "All") {
-      return `All (${resources?.length || 0})`;
+      return `${allLabel} (${resources?.length || 0})`;
     }
     return `${category} (${getCategoryCount(category) || 0})`;
   };
