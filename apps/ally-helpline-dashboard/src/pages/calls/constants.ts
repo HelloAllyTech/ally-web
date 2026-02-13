@@ -48,6 +48,8 @@ export const tabStyles = {
   textTransform: "none",
   fontWeight: 500,
   color: "#49454F",
+  fontFamily: "IBM_Plex_Serif",
+  font: "IBM Plex Serif",
 };
 
 export const defaultDeleteDialogData = {

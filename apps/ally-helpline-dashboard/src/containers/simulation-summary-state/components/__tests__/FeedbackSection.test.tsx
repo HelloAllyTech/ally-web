@@ -162,14 +162,15 @@ describe("FeedbackSection", () => {
     it("should render feedback section with heading and session info", () => {
       render(<FeedbackSection {...mockSummary} />);
 
-      // Component renders feedback sections
-      expect(screen.getByText("Key Events")).toBeInTheDocument();
+      // Component renders feedback sections (key events as table, no label; others have labels)
+      expect(screen.getByText("Session Feedback")).toBeInTheDocument();
+      expect(screen.getByTestId("generic-table")).toBeInTheDocument();
     });
 
     it("should render all feedback sections", () => {
       render(<FeedbackSection {...mockSummary} />);
 
-      expect(screen.getByText("Key Events")).toBeInTheDocument();
+      expect(screen.getByTestId("generic-table")).toBeInTheDocument();
       expect(screen.getByText("What Went Well")).toBeInTheDocument();
       expect(screen.getByText("Improvement Tips")).toBeInTheDocument();
     });
@@ -179,8 +180,7 @@ describe("FeedbackSection", () => {
     it("should render key events section with list content", () => {
       render(<FeedbackSection {...mockSummary} />);
 
-      expect(screen.getByText("Key Events")).toBeInTheDocument();
-      // Component renders content in accordion
+      expect(screen.getByTestId("generic-table")).toBeInTheDocument();
       const container = document.querySelector(".flex.flex-col.gap-6");
       expect(container).toBeInTheDocument();
     });
@@ -194,8 +194,8 @@ describe("FeedbackSection", () => {
       };
       render(<FeedbackSection {...emptySummary} />);
 
-      expect(screen.getByText("Key Events")).toBeInTheDocument();
-      // Empty key events: section renders with empty content or "No data found"
+      // Key events section still renders (as empty table); no "Key Events" label for TABLE type
+      expect(screen.getByTestId("generic-table")).toBeInTheDocument();
       expect(screen.getByText("Session Feedback")).toBeInTheDocument();
     });
 
@@ -280,7 +280,7 @@ describe("FeedbackSection", () => {
     it("should render three feedback section headings", () => {
       render(<FeedbackSection {...mockSummary} />);
 
-      expect(screen.getByText("Key Events")).toBeInTheDocument();
+      expect(screen.getByTestId("generic-table")).toBeInTheDocument();
       expect(screen.getByText("What Went Well")).toBeInTheDocument();
       expect(screen.getByText("Improvement Tips")).toBeInTheDocument();
     });
@@ -334,7 +334,7 @@ describe("FeedbackSection", () => {
       };
       render(<FeedbackSection {...nullSummary} />);
 
-      expect(screen.getByText("Key Events")).toBeInTheDocument();
+      expect(screen.getByTestId("generic-table")).toBeInTheDocument();
       expect(screen.getByText("What Went Well")).toBeInTheDocument();
       expect(screen.getByText("Improvement Tips")).toBeInTheDocument();
     });
