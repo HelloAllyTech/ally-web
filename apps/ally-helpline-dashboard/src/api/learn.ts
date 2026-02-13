@@ -268,6 +268,7 @@ const learnAPI = baseAPI.injectEndpoints({
         url: ApiEndpoints.LEARN.GET_SCENARIO_CASE_DETAILS(caseId),
         method: HttpMethod.GET,
       }),
+      providesTags: [TAG_TYPES.SCENARIO_CASE_DETAILS],
     }),
     /**
      * Get details for a specific case session by id.
@@ -295,6 +296,7 @@ const learnAPI = baseAPI.injectEndpoints({
         url: ApiEndpoints.LEARN.START_CASE_SIMULATION(caseId),
         method: HttpMethod.POST,
       }),
+      invalidatesTags: [TAG_TYPES.SCENARIO_CASE_DETAILS],
     }),
   }),
 });
