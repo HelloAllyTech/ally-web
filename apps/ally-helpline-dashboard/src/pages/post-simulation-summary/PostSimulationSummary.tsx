@@ -43,12 +43,7 @@ export const PostSimulationSummary: FC = () => {
     {
       id: 2,
       label: "Transcription",
-      content: (
-        <SimulationTranscriptTab
-          sessionId={sessionId}
-          className="w-full max-h-[calc(100vh-10px)]"
-        />
-      ),
+      content: <SimulationTranscriptTab sessionId={sessionId} />,
     },
     ...(canShowUpNextTab
       ? [

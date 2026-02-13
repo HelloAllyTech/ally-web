@@ -93,20 +93,16 @@ const SimulationTranscriptTab: FC<SimulationTranscriptTabProps> = ({
   };
 
   return (
-    <div className={`h-full ${className}`}>
-      <div className="relative h-[calc(100%-140px)] ">
-        <TranscriptListing
-          transcriptList={transcriptList}
-          handleLoadMore={handleLoadMore}
-          isLoading={isGetTranscriptLoading}
-          hasMore={hasMoreTranscripts}
-          scrollContainerRef={scrollContainerRef}
-          className="h-full overflow-y-auto !pt-0 custom-scrollbar mt-1 "
-          counsellorName={councellorName}
-          agentName={summary?.scenario?.metadata?.name}
-        />
-        <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t  to-transparent pointer-events-none" />
-      </div>
+    <div className={`relative h-[calc(100vh-140px)] custom-scrollbar overflow-y-auto ${className}`}>
+      <TranscriptListing
+        transcriptList={transcriptList}
+        handleLoadMore={handleLoadMore}
+        isLoading={isGetTranscriptLoading}
+        hasMore={hasMoreTranscripts}
+        scrollContainerRef={scrollContainerRef}
+        counsellorName={councellorName}
+        agentName={summary?.scenario?.metadata?.name}
+      />
     </div>
   );
 };
