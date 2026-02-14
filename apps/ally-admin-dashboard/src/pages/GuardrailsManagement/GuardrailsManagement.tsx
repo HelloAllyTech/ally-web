@@ -87,22 +87,20 @@ export const GuardrailsManagement: React.FC = () => {
 
   // Handle data updates
   useEffect(() => {
-    const incoming = guardrailsData?.data;
-    if (incoming) {
-      setHasMore(incoming.length === limit);
+    const incoming = guardrailsData ?? [];
+    setHasMore(incoming.length === limit);
 
-      if (offset === 0) {
-        setGuardrails(incoming);
-      } else {
-        setGuardrails(prev => {
-          const seen = new Set(prev.map(g => g.id));
-          const merged = [...prev];
-          for (const item of incoming) {
-            if (!seen.has(item.id)) merged.push(item);
-          }
-          return merged;
-        });
-      }
+    if (offset === 0) {
+      setGuardrails(incoming);
+    } else if (incoming.length > 0) {
+      setGuardrails(prev => {
+        const seen = new Set(prev.map(g => g.id));
+        const merged = [...prev];
+        for (const item of incoming) {
+          if (!seen.has(item.id)) merged.push(item);
+        }
+        return merged;
+      });
     }
   }, [guardrailsData, offset]);
 

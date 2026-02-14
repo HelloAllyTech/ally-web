@@ -32,17 +32,14 @@ export interface UpdateConversationalGuardrailInput {
   active?: boolean;
 }
 
-export interface GetGuardrailsResponse {
-  data: ConversationalGuardrail[];
-  total: number;
-}
+export type GetGuardrailsResponse = ConversationalGuardrail[];
 
 export interface GetGuardrailsQueryParams {
   search?: string;
   limit?: number;
   offset?: number;
   sortBy?: string;
-  order?: 'ASC' | 'DESC';
+  order?: "ASC" | "DESC";
 }
 
 export interface CreateGuardrailTranslationInput {

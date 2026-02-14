@@ -94,7 +94,14 @@ vi.mock("@components", async importOriginal => {
         {tableFooter}
       </div>
     ),
-    GuardrailSidePanel: ({ selectedGuardrail, isOpen, onClose, onDelete, onUpdate, onCreate }: any) =>
+    GuardrailSidePanel: ({
+      selectedGuardrail,
+      isOpen,
+      onClose,
+      onDelete,
+      onUpdate,
+      onCreate,
+    }: any) =>
       isOpen ? (
         <div data-testid="guardrail-side-panel">
           <h2 data-testid="panel-helper-dialogue">{selectedGuardrail?.helperDialogue}</h2>
@@ -103,10 +110,7 @@ vi.mock("@components", async importOriginal => {
             Close
           </button>
           {selectedGuardrail?.id && (
-            <button
-              onClick={() => onDelete(selectedGuardrail?.id)}
-              data-testid="delete-from-panel"
-            >
+            <button onClick={() => onDelete(selectedGuardrail?.id)} data-testid="delete-from-panel">
               Delete
             </button>
           )}
@@ -249,7 +253,7 @@ describe("GuardrailsManagement", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockUseGetGuardrailsQuery.mockReturnValue({
-      data: { data: mockGuardrails },
+      data: mockGuardrails,
       isFetching: false,
     });
     mockCreateGuardrail.mockReturnValue({
@@ -344,7 +348,7 @@ describe("GuardrailsManagement", () => {
   describe("Loading state", () => {
     it("shows loading state when fetching", () => {
       mockUseGetGuardrailsQuery.mockReturnValue({
-        data: { data: mockGuardrails },
+        data: mockGuardrails,
         isFetching: true,
       });
 
@@ -355,11 +359,9 @@ describe("GuardrailsManagement", () => {
 
     it("shows load more when not fetching and has more data", async () => {
       mockUseGetGuardrailsQuery.mockReturnValue({
-        data: {
-          data: new Array(30)
-            .fill(mockGuardrails[0])
-            .map((g, index) => ({ ...g, id: `guardrail-${index}` })),
-        },
+        data: new Array(30)
+          .fill(mockGuardrails[0])
+          .map((g, index) => ({ ...g, id: `guardrail-${index}` })),
         isFetching: false,
       });
 
@@ -372,7 +374,7 @@ describe("GuardrailsManagement", () => {
 
     it("shows no more data when all guardrails are loaded", async () => {
       mockUseGetGuardrailsQuery.mockReturnValue({
-        data: { data: mockGuardrails.slice(0, 2) },
+        data: mockGuardrails.slice(0, 2),
         isFetching: false,
       });
 
@@ -439,10 +441,10 @@ describe("GuardrailsManagement", () => {
       await waitFor(() => {
         expect(mockCreateGuardrail).toHaveBeenCalledWith(
           expect.objectContaining({
-             name: "",
-             helperDialogue: "New Helper Content",
-             actorDialogue: "New Actor Content",
-             active: true,
+            name: "",
+            helperDialogue: "New Helper Content",
+            actorDialogue: "New Actor Content",
+            active: true,
           }),
         );
       });
