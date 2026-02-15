@@ -5,7 +5,6 @@ import {
   useGetGuardrailsQuery,
   useCreateGuardrailMutation,
   useUpdateGuardrailMutation,
-  useDeleteGuardrailMutation,
 } from "@api";
 import { Trash, Add } from "@assets";
 import {
@@ -83,7 +82,6 @@ export const GuardrailsManagement: React.FC = () => {
 
   const [createGuardrail] = useCreateGuardrailMutation();
   const [updateGuardrail] = useUpdateGuardrailMutation();
-  const [deleteGuardrail] = useDeleteGuardrailMutation();
 
   // Handle data updates
   useEffect(() => {
@@ -194,7 +192,9 @@ export const GuardrailsManagement: React.FC = () => {
   const handleDeleteGuardrails = async (ids: string[]) => {
     if (ids.length === 0) return;
     try {
-      const results = await Promise.all(ids.map(id => deleteGuardrail(id)));
+      const results = await Promise.all(
+        ids.map(id => updateGuardrail({ id, guardrail: { active: false } }))
+      );
       const hasError = results.some((r: any) => r.error);
 
       if (hasError) {

@@ -21,7 +21,6 @@ const {
   mockUseGetGuardrailsQuery: vi.fn(),
   mockCreateGuardrail: vi.fn(),
   mockUpdateGuardrail: vi.fn(),
-  mockDeleteGuardrail: vi.fn(),
 }));
 
 // Mock sonner toast
@@ -37,7 +36,6 @@ vi.mock("@api", async importOriginal => {
     useGetGuardrailsQuery: (...args: any[]) => mockUseGetGuardrailsQuery(...args),
     useCreateGuardrailMutation: () => [mockCreateGuardrail],
     useUpdateGuardrailMutation: () => [mockUpdateGuardrail],
-    useDeleteGuardrailMutation: () => [mockDeleteGuardrail],
   };
 });
 
@@ -263,9 +261,7 @@ describe("GuardrailsManagement", () => {
     mockUpdateGuardrail.mockReturnValue({
       error: null,
     });
-    mockDeleteGuardrail.mockReturnValue({
-      error: null,
-    });
+
   });
 
   const createTestStore = () => {
@@ -608,7 +604,10 @@ describe("GuardrailsManagement", () => {
       fireEvent.click(confirmButton);
 
       await waitFor(() => {
-        expect(mockDeleteGuardrail).toHaveBeenCalledWith("guardrail-1");
+        expect(mockUpdateGuardrail).toHaveBeenCalledWith({
+          id: "guardrail-1",
+          guardrail: { active: false },
+        });
       });
     });
 
@@ -634,7 +633,7 @@ describe("GuardrailsManagement", () => {
     });
 
     it("shows error toast when deletion fails", async () => {
-      mockDeleteGuardrail.mockReturnValue({
+      mockUpdateGuardrail.mockReturnValue({
         error: { message: "Delete failed" },
       });
 
@@ -674,7 +673,7 @@ describe("GuardrailsManagement", () => {
         expect(screen.queryByTestId("action-confirmation-popup")).not.toBeInTheDocument();
       });
 
-      expect(mockDeleteGuardrail).not.toHaveBeenCalled();
+      expect(mockUpdateGuardrail).not.toHaveBeenCalled();
     });
   });
 
