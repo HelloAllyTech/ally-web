@@ -66,6 +66,7 @@ export const formatSimulationResponseData = (data: GetSimulationByIdResponse) =>
     checklistType: data?.metadata?.checklistType,
     timerMode: data?.metadata?.timerMode,
     maxTimeValue: data?.metadata?.maxTimeValue,
+    optGuardrails: Boolean(data?.metadata?.optGuardrails),
     stateInstructions: data?.metadata?.stateInstructions,
   };
 };

@@ -75,6 +75,7 @@ export interface SimulationInput {
   checklistType?: string;
   timerMode?: boolean;
   maxTimeValue?: string;
+  optGuardrails?: boolean;
   stateInstructions?: stateInstruction[];
 }
 
@@ -144,6 +145,7 @@ export interface GetSimulationByIdResponse {
     checklistType?: string;
     timerMode?: boolean;
     maxTimeValue?: string;
+    optGuardrails?: boolean;
     stateInstructions?: stateInstruction[];
   };
   terminationEvents?: terminationEvent[];
