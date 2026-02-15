@@ -30,6 +30,7 @@ vi.mock("@pages", () => ({
   ScenarioVoices: () => <div>ScenarioVoicesPage</div>,
   ScenarioLanguages: () => <div>ScenarioLanguagesPage</div>,
   PromptManagement: () => <div>PromptManagementPage</div>,
+  GuardrailsManagement: () => <div>GuardrailsManagementPage</div>,
 }));
 
 describe("RouteLayout", () => {

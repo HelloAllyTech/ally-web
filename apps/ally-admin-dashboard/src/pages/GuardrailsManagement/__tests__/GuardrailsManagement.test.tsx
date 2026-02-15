@@ -59,6 +59,7 @@ vi.mock("@components", async importOriginal => {
               onClick={() => onRowClick(rowIndex)}
             >
               <span data-testid={`helper-dialogue-${rowIndex}`}>{row.helperDialogue?.value}</span>
+              <span data-testid={`name-${rowIndex}`}>{row.name?.value}</span>
               <span data-testid={`actor-dialogue-${rowIndex}`}>{row.actorDialogue?.value}</span>
               <span data-testid={`active-status-${rowIndex}`}>
                 {row.active?.value ? "Active" : "Inactive"}
@@ -328,7 +329,7 @@ describe("GuardrailsManagement", () => {
 
     it("renders create new guardrail button initially", () => {
       renderComponent();
-      expect(screen.getByText("New Guardrail")).toBeInTheDocument();
+      expect(screen.getByText("Create new guardrail")).toBeInTheDocument();
     });
 
     it("displays actor dialogue for each guardrail", async () => {
@@ -412,7 +413,7 @@ describe("GuardrailsManagement", () => {
     it("opens side panel when create button is clicked", async () => {
       renderComponent();
 
-      const createButton = screen.getByText("Create Guardrail");
+      const createButton = screen.getByText("Create new guardrail");
       fireEvent.click(createButton);
 
       await waitFor(() => {
@@ -424,7 +425,7 @@ describe("GuardrailsManagement", () => {
     it("creates newly guardrail when create button in panel is clicked", async () => {
       renderComponent();
 
-      const createButton = screen.getByText("Create Guardrail");
+      const createButton = screen.getByText("Create new guardrail");
       fireEvent.click(createButton);
 
       await waitFor(() => {
@@ -450,7 +451,7 @@ describe("GuardrailsManagement", () => {
       renderComponent();
 
       // Open panel
-      fireEvent.click(screen.getByText("Create Guardrail"));
+      fireEvent.click(screen.getByText("Create new guardrail"));
       await waitFor(() => screen.getByTestId("guardrail-side-panel"));
 
       // Click create
@@ -470,7 +471,7 @@ describe("GuardrailsManagement", () => {
       renderComponent();
 
       // Open panel
-      fireEvent.click(screen.getByText("Create Guardrail"));
+      fireEvent.click(screen.getByText("Create new guardrail"));
       await waitFor(() => screen.getByTestId("guardrail-side-panel"));
 
       // Click create

@@ -29,30 +29,42 @@ vi.mock("@components", async importOriginal => {
   const actual = await importOriginal<typeof import("@components")>();
   return {
     ...actual,
-    ToggleSwitch: ({ enabled, onChange }: any) => (
-      <button
-        data-testid="toggle-switch"
-        data-enabled={enabled}
-        onClick={() => onChange(!enabled)}
-      >
-        {enabled ? "On" : "Off"}
-      </button>
-    ),
     Button: ({ children, onClick, variant }: any) => (
       <button data-testid={`button-${variant}`} onClick={onClick}>
         {children}
       </button>
     ),
-    AutoExpandableTextarea: ({ value, onChange, placeholder }: any) => (
-      <textarea
-        data-testid="expandable-textarea"
-        value={value || ""}
-        onChange={e => onChange(e.target.value)}
-        placeholder={placeholder}
-      />
-    ),
+    Input: (props: any) => <input {...props} />,
   };
 });
+
+// Mock ToggleSwitch specifically since it's a deep import
+vi.mock("@components/toggle-switch/ToggleSwitch", () => ({
+  ToggleSwitch: ({ enabled, onChange }: any) => (
+    <div data-testid="toggle-switch">
+      <input
+        type="checkbox"
+        checked={enabled}
+        onChange={(e) => onChange(e.target.checked)}
+        data-testid="toggle-input"
+      />
+      <span data-testid="toggle-label">{enabled ? "On" : "Off"}</span>
+    </div>
+  ),
+}));
+
+// Mock ally-ui-mono/ui-shared
+vi.mock("@ally-ui-mono/ui-shared", () => ({
+  AutoExpandableTextarea: ({ value, onChange, placeholder }: any) => (
+    <textarea
+      data-testid="expandable-textarea"
+      value={value || ""}
+      onChange={e => onChange(e.target.value)}
+      placeholder={placeholder}
+    />
+  ),
+}));
+
 
 // Mock constants
 vi.mock("@constants", async importOriginal => {
@@ -105,7 +117,7 @@ describe("GuardrailSidePanel", () => {
     it("renders edit side panel when editing existing guardrail", () => {
       render(<GuardrailSidePanel {...defaultProps} />);
 
-      expect(screen.getByText("Edit Guardrail")).toBeInTheDocument();
+      expect(screen.getByText("Edit guardrail")).toBeInTheDocument();
       expect(screen.getByText("Delete")).toBeInTheDocument();
     });
 
@@ -145,7 +157,7 @@ describe("GuardrailSidePanel", () => {
       render(<GuardrailSidePanel {...defaultProps} />);
 
       expect(screen.getByText("Cancel")).toBeInTheDocument();
-      expect(screen.getByText("Save Changes")).toBeInTheDocument();
+      expect(screen.getByText("Save")).toBeInTheDocument();
     });
 
     it("does not display metadata timestamps", () => {
@@ -178,8 +190,12 @@ describe("GuardrailSidePanel", () => {
     it("calls onUpdate when active status is toggled", async () => {
       render(<GuardrailSidePanel {...defaultProps} />);
 
-      const toggleButton = screen.getByTestId("toggle-switch");
+      const toggleButton = screen.getByTestId("toggle-input");
       fireEvent.click(toggleButton);
+
+      const saveButton = screen.getByText("Save");
+      expect(saveButton).not.toBeDisabled();
+      fireEvent.click(saveButton);
 
       await waitFor(() => {
         expect(defaultProps.onUpdate).toHaveBeenCalledWith(
@@ -210,19 +226,17 @@ describe("GuardrailSidePanel", () => {
         />
       );
 
-      const saveButton = screen.getByText("Save Changes");
+      const saveButton = screen.getByText("Save");
+      expect(saveButton).toBeDisabled();
+      
       fireEvent.click(saveButton);
-
-      await waitFor(() => {
-        expect(mockToast.error).toHaveBeenCalledWith(expect.stringContaining("mandatory"));
-      });
       expect(defaultProps.onUpdate).not.toHaveBeenCalled();
     });
 
     it("calls onUpdate when saving existing valid guardrail", async () => {
       render(<GuardrailSidePanel {...defaultProps} />);
 
-      const saveButton = screen.getByText("Save Changes");
+      const saveButton = screen.getByText("Save");
       fireEvent.click(saveButton);
 
       await waitFor(() => {
@@ -246,7 +260,7 @@ describe("GuardrailSidePanel", () => {
         />
       );
 
-      const createButton = screen.getByText("Create");
+      const createButton = screen.getByText("Save");
       fireEvent.click(createButton);
 
       await waitFor(() => {

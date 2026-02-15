@@ -1,5 +1,5 @@
 import { FEATURE_FLAGS_MAP } from "@ally-ui-mono/ui-shared/featureFlag";
-import { cellTypes } from "@components";
+import { cellTypes } from "@components/notion-table/utils";
 import { CreatorFieldGroups, FormFieldConfig } from "@types";
 
 export const minInputHeight = {
