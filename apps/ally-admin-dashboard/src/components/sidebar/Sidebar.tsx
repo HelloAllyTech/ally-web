@@ -18,6 +18,7 @@ import {
   Mic,
   CharacterLibrary,
   FrameSource,
+  Badge,
 } from "@assets";
 import { UserModal } from "@components";
 import { SIDEBAR_ITEMS, ROUTES, en, profileSettings, USER_MODAL_FIELDS_IDS } from "@constants";
@@ -128,6 +129,8 @@ export const Sidebar: React.FC = () => {
         return <Globe />;
       case SIDEBAR_ITEMS.PROMPTS:
         return <FrameSource />;
+      case SIDEBAR_ITEMS.USER_BADGES:
+        return <Badge />;
       default:
         return null;
     }
@@ -152,6 +155,8 @@ export const Sidebar: React.FC = () => {
         return location.pathname.includes(ROUTES.MANAGE_SCENARIO_VOICES);
       case ROUTES.MANAGE_PROMPTS:
         return location.pathname.includes(ROUTES.MANAGE_PROMPTS);
+      case ROUTES.USER_BADGES:
+        return location.pathname.includes(ROUTES.USER_BADGES);
       default:
         return false;
     }

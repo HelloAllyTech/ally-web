@@ -9,6 +9,7 @@ export enum Permissions {
   EDIT_CHARACTER_LIBRARY = "edit:scenario-character",
   EDIT_PROMPT = "edit:admin:prompts",
   VIEW_PROMPT = "view:admin:prompts",
+  VIEW_ADMIN_BADGE = "view:admin:badges",
 }
 
 export const SIDEBAR_ITEMS = {
@@ -19,4 +20,5 @@ export const SIDEBAR_ITEMS = {
   SCENARIO_VOICES: "scenario-voices",
   SCENARIO_LANGUAGES: "scenario-languages",
   PROMPTS: "prompts",
+  USER_BADGES: "user-badges",
 };

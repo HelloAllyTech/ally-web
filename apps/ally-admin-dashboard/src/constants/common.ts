@@ -99,6 +99,9 @@ export const ApiEndpoints = {
     SUMMARY_FIELDS: `/v1/settings/summary-fields`,
     DASHBOARD_SETTINGS_ALL: `/v1/analytics/dashboard/all`,
   },
+  USER_BADGES: {
+    GET_BADGES: "/v1/badges",
+  },
   AUTHORIZATION: {
     GET_PERMISSIONS: "/v1/authorization/permissions",
     GET_ROLES: "/v1/authorization/roles",
@@ -122,6 +125,7 @@ export const ROUTES = {
   CREATE_PATH: "/create-path",
   EDIT_PATH: (id: string | number) => `/create-path/edit/${id}`,
   CREATE_CASE: "/create-case",
+  USER_BADGES: "/user-badges",
   EDIT_CASE: (id: string | number) => `/create-case/edit/${id}`,
 };
 
