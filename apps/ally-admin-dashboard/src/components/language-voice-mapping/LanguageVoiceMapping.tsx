@@ -2,7 +2,7 @@ import { FC, useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { toast } from "sonner";
 
-import { FEATURE_FLAGS_MAP } from "@ally-ui-mono/ui-shared/featureFlag";
+import { FEATURE_FLAGS_MAP } from "@ally-ui-mono/ui-shared";
 import { useGetAvailableLanguageVoicesQuery, useGetPreviewVoiceMutation } from "@api";
 import { DropdownField } from "@components";
 import { en } from "@constants";
@@ -263,23 +263,37 @@ export const LanguageVoiceMapping: FC<LanguageVoiceMappingProps> = ({
     playAudio,
   ]);
 
+  // Create a stable string representation of languageVoices for dependency tracking
+  const languageVoicesString = useMemo(() => {
+    return JSON.stringify(languageVoices || {});
+  }, [languageVoices]);
+
+  // Use a ref to track previous validation state to prevent infinite loops
+  const prevHasMappingsRef = useRef<boolean | null>(null);
+
   useEffect(() => {
     if (languages.length === 0) {
       clearErrors(id);
+      prevHasMappingsRef.current = null;
       return;
     }
 
-    const hasMappings = Object.values(languageVoices || {}).some(v => !!v);
+    const currentVoices = JSON.parse(languageVoicesString);
+    const hasMappings = Object.values(currentVoices).some(v => !!v);
 
-    if (!hasMappings) {
-      setError(id, {
-        type: "required",
-        message: "At least one language must have a voice selected",
-      });
-    } else {
-      clearErrors(id);
+    // Only update errors if the validation state has actually changed
+    if (prevHasMappingsRef.current !== hasMappings) {
+      if (!hasMappings) {
+        setError(id, {
+          type: "required",
+          message: en.simulation.atLeastOneLanguageMustHaveVoiceSelected,
+        });
+      } else {
+        clearErrors(id);
+      }
+      prevHasMappingsRef.current = hasMappings;
     }
-  }, [languages.length, languageVoices, id, setError, clearErrors]);
+  }, [languages.length, languageVoicesString, id]);
 
   if (!isLoadingAvailableLanguages && languages.length === 0) {
     return null;
