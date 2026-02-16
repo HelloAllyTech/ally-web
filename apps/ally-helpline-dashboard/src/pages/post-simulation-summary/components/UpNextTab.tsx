@@ -2,8 +2,7 @@ import { FC, useEffect } from "react";
 
 import { logger } from "@ally-ui-mono/ui-shared/logger";
 import { useLazyGetUpComingSimulationQuery } from "@api";
-
-import { UpNextSimulationCard } from ".";
+import { UpNextSimulationCard } from "@components";
 
 interface UpNextTabProps {
   sessionId: string;

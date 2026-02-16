@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 import { useSelector } from "react-redux";
 import { useNavigate, useParams } from "react-router-dom";
 
-import { Toggle } from "@ally-ui-mono/ui-shared/index";
+import { FEATURE_FLAGS_MAP, Toggle } from "@ally-ui-mono/ui-shared/index";
 import {
   useCreateReviewMutation,
   useGetSimulationSummaryQuery,
@@ -13,10 +13,11 @@ import {
 } from "@api";
 import { BackCircle } from "@assets";
 import { Permissions, REVIEW_PRIVACY_OPTIONS } from "@constants";
-import { SimulationSummary, UpNextTab } from "@containers";
+import { SimulationSummary } from "@containers";
 import { RootState } from "@store";
 import { pageType } from "@types";
 
+import { UpNextTab, AskAiTab, ReflectionTab } from "./components";
 import { SimulationTranscriptTab } from "../calls/components";
 import { tabStyles } from "../calls/constants";
 import { containerVariants } from "../learn/constants";
@@ -43,8 +44,22 @@ export const PostSimulationSummary: FC = () => {
     {
       id: 2,
       label: "Transcription",
-      content: <SimulationTranscriptTab sessionId={sessionId} />,
+      content: <SimulationTranscriptTab sessionId={sessionId} className="w-full" />,
     },
+    ...(FEATURE_FLAGS_MAP.SUMMARY_TABS_FLAG
+      ? [
+          {
+            id: 4,
+            label: "Ask AI",
+            content: <AskAiTab />,
+          },
+          {
+            id: 5,
+            label: "Reflection",
+            content: <ReflectionTab sessionId={sessionId} />,
+          },
+        ]
+      : []),
     ...(canShowUpNextTab
       ? [
           {

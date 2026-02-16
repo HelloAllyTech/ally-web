@@ -22,6 +22,7 @@ import ArrowLeft from "./arrow-left.svg?react";
 import ArrowRight from "./arrow-right.svg?react";
 import ArrowUp from "./arrow-up.svg?react";
 import Arrow from "./arrow.svg?react";
+import AskAiIcon from "./ask-ai-icon.svg?react";
 import Assessment from "./assessment.svg?react";
 import AudioFile from "./audio-file.svg?react";
 import BackCircle from "./back-circle.svg?react";
@@ -141,6 +142,7 @@ import TimerIcon from "./timer.svg?react";
 import BackgroundBottom from "./transcript-background-bottom.svg?react";
 import BackgroundTop from "./transcript-background-top.svg?react";
 import Unarchive from "./unarchive.svg?react";
+import UpArrow from "./up-arrow.svg?react";
 import UploadIcon from "./upload-icon.svg?react";
 import UserIcon from "./user-icon.svg?react";
 import VerifiedBadge from "./verified-badge.svg?react";
@@ -298,4 +300,6 @@ export {
   Archive,
   Unarchive,
   WandStars,
+  UpArrow,
+  AskAiIcon,
 };

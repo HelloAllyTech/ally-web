@@ -3,7 +3,7 @@ import { render, screen } from "@testing-library/react";
 import "@testing-library/jest-dom";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
-import { UpNextSimulationCard } from "../UpNextSimulationCard";
+import { UpNextSimulationCard } from "@components/up-next-simulation-card";
 
 // Define the types inline to avoid import issues
 interface UpcomingScenario {
