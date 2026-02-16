@@ -6,7 +6,7 @@ import { Tooltip } from "@mui/material";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 
-import { CustomImage } from "@ally-ui-mono/ui-shared";
+import { CustomImage, FEATURE_FLAGS_MAP } from "@ally-ui-mono/ui-shared";
 import { useGetLogoUrlQuery } from "@api";
 import { DockToRight, LogoutIllustration } from "@assets";
 import { ConfirmationDialog, ProfileSettings, UserInfo } from "@components";
@@ -228,9 +228,11 @@ const NavSideBar: FC<NavSideBarProps> = ({ activeTab, onTabChange, isOpen, onClo
           <hr className="w-full border-t border-gray-200" data-testid="nav-sidebar-divider" />
 
           {/* Language selector */}
-          <div className="w-full flex justify-start mb-2">
-            <LanguageSelector />
-          </div>
+          {FEATURE_FLAGS_MAP.LANGUAGE_SELECTOR_FLAG && (
+            <div className="w-full mb-2">
+              <LanguageSelector label={t("nav.language.label")} />
+            </div>
+          )}
 
           <UserInfo
             user={user}

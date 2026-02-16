@@ -23,6 +23,9 @@
       "expand": "Expand sidebar",
       "collapse": "Collapse sidebar"
     },
+    "language": {
+      "label": "App language"
+    },
     "tabs": {
       "learn": "Learn",
       "review": "Review",

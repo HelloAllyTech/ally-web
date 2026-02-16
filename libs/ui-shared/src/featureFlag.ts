@@ -10,6 +10,10 @@ const getEnvVar = (viteKey: string, nextKey: string): boolean => {
 };
 
 export const FEATURE_FLAGS_MAP = {
+  LANGUAGE_SELECTOR_FLAG: getEnvVar(
+    "VITE_LANGUAGE_SELECTOR_FLAG",
+    "NEXT_PUBLIC_LANGUAGE_SELECTOR_FLAG",
+  ),
   LANGUAGE_CAPABILITY_FLAG: getEnvVar(
     "VITE_LANGUAGE_CAPABILITY_FLAG",
     "NEXT_PUBLIC_LANGUAGE_CAPABILITY_FLAG",

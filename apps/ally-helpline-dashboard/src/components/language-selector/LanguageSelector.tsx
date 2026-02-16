@@ -6,7 +6,7 @@ import i18n from "../../i18n";
 // Map language codes to native display labels (kept consistent with existing UI)
 const LANGUAGE_OPTIONS: Array<{ code: string; label: string }> = [
   { code: "en", label: "English" },
-  { code: "hi", label: "हिन्दी" },
+  { code: "hi", label: "हिंदी" },
 ];
 
 const getLabelFromCode = (code: string): string => {
@@ -22,7 +22,7 @@ const getCodeFromLabel = (label: string): string => {
 };
 
 // Language selector that follows existing UI/UX using shared DropdownField
-const LanguageSelector = () => {
+const LanguageSelector = ({ label }: { label?: string }) => {
   const [lng, setLng] = useState<string>(i18n.language);
 
   useEffect(() => {
@@ -46,11 +46,15 @@ const LanguageSelector = () => {
   };
 
   return (
-    <div aria-label="Language selector" className="min-w-[160px]">
+    <div
+      aria-label="Language selector"
+      className="w-full max-w-[220px] min-w-[160px] flex flex-col gap-1"
+    >
+      {label && <span className="text-xs text-typography-600">{label}</span>}
       <DropdownField
         label={undefined}
         value={valueLabel}
-        valueClassName="text-sm"
+        valueClassName="text-sm font-medium"
         onChange={handleChange}
         options={optionLabels}
       />
