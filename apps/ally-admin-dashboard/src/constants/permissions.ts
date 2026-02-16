@@ -21,4 +21,5 @@ export const SIDEBAR_ITEMS = {
   SCENARIO_LANGUAGES: "scenario-languages",
   PROMPTS: "prompts",
   USER_BADGES: "user-badges",
+  MANAGE_GUARDRAILS: "manage-guardrails",
 };

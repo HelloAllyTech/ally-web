@@ -78,6 +78,7 @@ export const ApiEndpoints = {
     CANCEL_REPORT_GENERATION: (reportId: string) =>
       `/v1/learn/scenarios/reports/${reportId}/cancel`,
     SCENARIO_COVER_IMAGE_LIBRARY: "/v1/scenario-cover-image-library",
+    CONVERSATIONAL_GUARDRAILS: "/v1/learn/conversational-guardrails",
   },
 
   CHARACTERS: {
@@ -126,6 +127,7 @@ export const ROUTES = {
   EDIT_PATH: (id: string | number) => `/create-path/edit/${id}`,
   CREATE_CASE: "/create-case",
   USER_BADGES: "/user-badges",
+  MANAGE_GUARDRAILS: "/manage-guardrails",
   EDIT_CASE: (id: string | number) => `/create-case/edit/${id}`,
 };
 
@@ -189,4 +191,5 @@ export const TAG_TYPES = {
   UPDATE_SUMMARY_SECTIONS: "updateSummarySections",
   CHARACTERS: "characters",
   PROMPTS: "prompts",
+  CONVERSATIONAL_GUARDRAILS: "conversationalGuardrails",
 };
