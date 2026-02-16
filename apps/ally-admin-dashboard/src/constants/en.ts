@@ -162,6 +162,7 @@ export const en = {
     bulkAddSuccess: (count: number) => `${count} event${count !== 1 ? "s" : ""} added successfully`,
     addSelectedEventsCount: (count: number) => `Add ${count} events`,
     unarchive: "Unarchive",
+    atLeastOneLanguageMustHaveVoiceSelected: "At least one language must have a voice selected",
     unarchiveDescription:
       "Are you sure you want to unarchive this simulation? This will make it visible to active simulations.",
     voice: "Voice",
