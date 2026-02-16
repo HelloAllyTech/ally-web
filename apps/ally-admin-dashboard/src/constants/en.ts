@@ -60,6 +60,7 @@ export const en = {
     failedToLoadVoices: "Failed to load voices",
     failedToDeleteVoice: "Failed to delete voice",
     failedToSaveVoice: "Failed to save voice",
+    failedToCancelReportGeneration: "Failed to cancel report generation",
   },
   accessDenied: {
     title: "This page is not accessible",
