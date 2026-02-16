@@ -7,6 +7,7 @@ export const cellTypes = {
   dropdown: "dropdown",
   dropdownSearchable: "dropdownSearchable",
   number: "number",
+  image: "image",
   select: "select",
   switch: "switch",
   emoji_select: "emoji_select",
@@ -17,6 +18,8 @@ export const cellTypes = {
   textAreaWithDropdown: "textAreaWithDropdown",
   tags: "tags",
   dropdownTags: "dropdownTags",
+  status: "status",
+  roles: "roles",
 };
 
 export const keyCodes = {

@@ -7,3 +7,5 @@ export * from "./scenarioPath";
 export * from "./triggerConditions";
 export * from "./previewVoice";
 export * from "./report_generation";
+export * from "./socket";
+export * from "./userBages";
