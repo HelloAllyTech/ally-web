@@ -704,9 +704,7 @@ const simulationStudioAPI = baseAPI.injectEndpoints({
       query: ({ input }) => ({
         url: ApiEndpoints.SIMULATION_STUDIO.GET_REPORTS(input.scenarioId),
         method: HttpMethod.GET,
-        params: {
-          status: input.status,
-        },
+        params: input?.status ? { status: input.status } : undefined,
       }),
     }),
 
