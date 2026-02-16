@@ -2,8 +2,8 @@ import { ReportData } from "@types";
 
 interface ReportContentProps {
   reportData: ReportData;
-  activeTab: "report" | "transcription";
-  onTabChange: (tab: "report" | "transcription") => void;
+  activeTab: string;
+  onTabChange: (tab: string) => void;
   showTabs?: boolean;
 }
 
