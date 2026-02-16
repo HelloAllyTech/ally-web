@@ -70,3 +70,6 @@ export * from "./image-library";
 export * from "./report-section";
 export * from "./create-badge-popup";
 export * from "./option-selection-popover";
+export * from "./report-content";
+export * from "./tab-button";
+export * from "./prompt-configuration";

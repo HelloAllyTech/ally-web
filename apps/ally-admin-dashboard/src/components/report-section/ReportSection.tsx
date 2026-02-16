@@ -8,14 +8,14 @@ import {
   useGenerateReportMutation,
   useCancelReportGenerationMutation,
 } from "@api";
-import { Button } from "@components";
+import { ArrowDown } from "@assets";
+import { Button, PromptConfiguration, ReportContent, TabButton } from "@components";
 import { ButtonVariant } from "@components/types";
 import {
   DEFAULT_HELPER_PROMPT,
   DEFAULT_LANGUAGE,
   DEFAULT_TURNS,
   DETAILS_STYLES,
-  GENERATION_DELAY_MS,
   MAX_PROGRESS_BEFORE_COMPLETE,
   PROGRESS_INCREMENT_MAX,
   PROGRESS_UPDATE_INTERVAL_MS,
@@ -25,14 +25,19 @@ import {
 import { useScenarioReportsSocket } from "@hooks";
 import { ReportData, ReportConfig, ReportsUpdatedPayload } from "@types";
 
-import PromptConfiguration from "../prompt-configuration/PromptConfiguration";
-import ReportContent from "../report-content/ReportContent";
-import TabButton from "../tab-button/TabButton";
-
 export interface ReportSectionProps {
   scenarioId?: string;
 }
 
+const primaryActiveTabs = {
+  report: "report",
+  history: "history",
+};
+
+const secondaryActiveTabs = {
+  report: "report",
+  transcription: "transcription",
+};
 export const ReportSection: FC<ReportSectionProps> = ({ scenarioId }) => {
   const [helperAgentPrompt, setHelperAgentPrompt] = useState(DEFAULT_HELPER_PROMPT);
   const [selectedLanguage, setSelectedLanguage] = useState(DEFAULT_LANGUAGE);
@@ -40,8 +45,8 @@ export const ReportSection: FC<ReportSectionProps> = ({ scenarioId }) => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [progress, setProgress] = useState(0);
   const [reportData, setReportData] = useState<ReportData | null>(null);
-  const [activeTab, setActiveTab] = useState<"report" | "transcription">("report");
-  const [primaryActiveTab, setPrimaryActiveTab] = useState<"report" | "history">("report");
+  const [activeTab, setActiveTab] = useState(secondaryActiveTabs.report);
+  const [primaryActiveTab, setPrimaryActiveTab] = useState(primaryActiveTabs.report);
   const [reportId, setReportId] = useState<string | null>(null);
   const [inProgressReportIds, setInProgressReportIds] = useState<Set<string>>(new Set());
 
@@ -179,19 +184,12 @@ export const ReportSection: FC<ReportSectionProps> = ({ scenarioId }) => {
     }
   };
 
-  const simulateGeneration = async () => {
-    toast.success(REPORT_GENERATION_MESSAGES.GENERATING);
-    await new Promise(resolve => setTimeout(resolve, GENERATION_DELAY_MS));
-    setProgress(100);
-  };
-
   const handleGenerate = async () => {
     setIsGenerating(true);
     setReportData(null);
     try {
-      await simulateGeneration();
       const config: ReportConfig = {
-        languageId: Number(selectedLanguage.value),
+        languageId: Number(selectedLanguage.value) || 1,
         turns: Number(selectedTurns.value),
         helperAgentPrompt: helperAgentPrompt,
       };
@@ -208,7 +206,7 @@ export const ReportSection: FC<ReportSectionProps> = ({ scenarioId }) => {
         setInProgressReportIds(prev => new Set([...prev, response.reportId]));
       }
     } finally {
-      setTimeout(() => setIsGenerating(false), 500);
+      setIsGenerating(false);
     }
   };
 
@@ -222,6 +220,28 @@ export const ReportSection: FC<ReportSectionProps> = ({ scenarioId }) => {
     } catch {
       toast.error("Failed to cancel report generation");
     }
+  };
+
+  const handleLanguageChange = (language: string) => {
+    setReportData(prev =>
+      prev
+        ? {
+            ...prev,
+            config: { ...prev.config, languageId: parseInt(language) },
+          }
+        : null,
+    );
+  };
+
+  const handleTurnsChange = (turns: number) => {
+    setReportData(prev =>
+      prev
+        ? {
+            ...prev,
+            config: { ...prev.config, turns },
+          }
+        : null,
+    );
   };
 
   const renderLoadingState = () => (
@@ -261,45 +281,15 @@ export const ReportSection: FC<ReportSectionProps> = ({ scenarioId }) => {
           <details className="border border-gray-200 rounded-lg" open>
             <summary className="px-4 py-3 cursor-pointer font-medium text-base text-typography-900 hover:bg-gray-50 flex items-center justify-between list-none">
               <span>{REPORT_GENERATION_MESSAGES.TEST_CONFIGURATION}</span>
-              <svg
-                className="w-5 h-5 transition-transform details-arrow"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M19 9l-7 7-7-7"
-                />
-              </svg>
+              <ArrowDown />
             </summary>
             <div className="px-6 py-4 border-t border-gray-200">
               <PromptConfiguration
                 prompt={reportData.config.helperAgentPrompt}
                 language={reportData.config.languageId.toString()}
                 turns={reportData.config.turns}
-                onLanguageChange={language => {
-                  setReportData(prev =>
-                    prev
-                      ? {
-                          ...prev,
-                          config: { ...prev.config, languageId: parseInt(language) },
-                        }
-                      : null,
-                  );
-                }}
-                onTurnsChange={turns => {
-                  setReportData(prev =>
-                    prev
-                      ? {
-                          ...prev,
-                          testConfiguration: { ...prev.config, turns },
-                        }
-                      : null,
-                  );
-                }}
+                onLanguageChange={handleLanguageChange}
+                onTurnsChange={handleTurnsChange}
                 onButtonClick={handleGenerate}
                 buttonText={REPORT_GENERATION_MESSAGES.REGENERATE_REPORT}
               />
@@ -346,19 +336,7 @@ export const ReportSection: FC<ReportSectionProps> = ({ scenarioId }) => {
                 {item.config.languageId.toString()} (Global) • {item.config.turns} turns
               </div>
             </div>
-            <svg
-              className="w-5 h-5 transition-transform details-arrow text-gray-400"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M19 9l-7 7-7-7"
-              />
-            </svg>
+            <ArrowDown />
           </summary>
           <div className="px-6 py-4 border-t border-gray-200 bg-white">
             <ReportContent reportData={item} activeTab={activeTab} onTabChange={setActiveTab} />
@@ -369,7 +347,7 @@ export const ReportSection: FC<ReportSectionProps> = ({ scenarioId }) => {
   );
 
   const renderMainContent = () => {
-    if (primaryActiveTab === "history") {
+    if (primaryActiveTab === primaryActiveTabs.history) {
       return renderHistoryList();
     }
     return renderContent();
@@ -379,13 +357,13 @@ export const ReportSection: FC<ReportSectionProps> = ({ scenarioId }) => {
     <div className="sticky flex gap-8 flex-row top-0 z-10 pt-3 mx-6 border-b border-border-light">
       <TabButton
         label={REPORT_GENERATION_MESSAGES.REPORT}
-        isActive={primaryActiveTab === "report"}
-        onClick={() => setPrimaryActiveTab("report")}
+        isActive={primaryActiveTab === primaryActiveTabs.report}
+        onClick={() => setPrimaryActiveTab(primaryActiveTabs.report)}
       />
       <TabButton
         label={REPORT_GENERATION_MESSAGES.HISTORY}
-        isActive={primaryActiveTab === "history"}
-        onClick={() => setPrimaryActiveTab("history")}
+        isActive={primaryActiveTab === primaryActiveTabs.history}
+        onClick={() => setPrimaryActiveTab(primaryActiveTabs.history)}
       />
     </div>
   ) : (

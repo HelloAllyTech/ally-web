@@ -31,10 +31,9 @@ export const TURNS_OPTIONS = [
   { value: "100", label: "100 turns" },
 ];
 
-export const DEFAULT_LANGUAGE = { value: "English", label: "English" };
+export const DEFAULT_LANGUAGE = { value: "1", label: "English" };
 export const DEFAULT_TURNS = { value: "50", label: "50 turns" };
 
-export const GENERATION_DELAY_MS = 5000;
 export const PROGRESS_UPDATE_INTERVAL_MS = 500;
 export const MAX_PROGRESS_BEFORE_COMPLETE = 90;
 export const PROGRESS_INCREMENT_MAX = 15;
