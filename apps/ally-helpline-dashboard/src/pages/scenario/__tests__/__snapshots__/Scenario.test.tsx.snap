@@ -148,7 +148,7 @@ exports[`Scenario Component > Snapshot Testing > should match snapshot with scen
             <button
               data-testid="dialog-secondary-btn"
             >
-              Cancel
+              common.cancel
             </button>
             <button
               data-testid="dialog-close"

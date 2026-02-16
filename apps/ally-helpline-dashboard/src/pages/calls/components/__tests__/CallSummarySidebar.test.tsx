@@ -562,18 +562,18 @@ describe("CallSummarySidebar Component", () => {
       renderComponent();
 
       // Find the delete confirmation dialog by its title
-      const deleteDialogTitle = screen.getByText("Delete Session log?");
+      const deleteDialogTitle = screen.getByText("Delete session log?");
       const deleteDialog = deleteDialogTitle.closest('[data-testid="confirmation-dialog"]');
 
       expect(deleteDialog).toBeInTheDocument();
-      expect(deleteDialogTitle).toHaveTextContent("Delete Session log?");
+      expect(deleteDialogTitle).toHaveTextContent("Delete session log?");
     });
 
     it("should handle delete confirmation", () => {
       const { mockRefetchCallLogs, mockSetCallSummary } = renderComponent();
 
       // Find the delete confirmation dialog by its title
-      const deleteDialogTitle = screen.getByText("Delete Session log?");
+      const deleteDialogTitle = screen.getByText("Delete session log?");
       const deleteDialog = deleteDialogTitle.closest('[data-testid="confirmation-dialog"]');
 
       // Find the confirm button within the delete dialog
@@ -589,7 +589,7 @@ describe("CallSummarySidebar Component", () => {
       renderComponent();
 
       // Find the delete confirmation dialog by its title
-      const deleteDialogTitle = screen.getByText("Delete Session log?");
+      const deleteDialogTitle = screen.getByText("Delete session log?");
       const deleteDialog = deleteDialogTitle.closest('[data-testid="confirmation-dialog"]');
 
       // Find the cancel button within the delete dialog

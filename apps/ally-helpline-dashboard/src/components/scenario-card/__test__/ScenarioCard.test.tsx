@@ -38,7 +38,7 @@ describe("ScenarioCard", () => {
 
   it("should render the card container", () => {
     renderComponent();
-    const card = screen.getByRole("button", { name: /Select Test Scenario scenario/i });
+    const card = screen.getByRole("button", { name: /Choose your Test Scenario Scenario/i });
     expect(card).toBeInTheDocument();
   });
 
@@ -75,7 +75,7 @@ describe("ScenarioCard", () => {
 
     fireEvent.error(image);
 
-    expect(screen.getByText("Image not available")).toBeInTheDocument();
+    expect(screen.getByText("Media not available")).toBeInTheDocument();
     expect(screen.queryByAltText("Test Scenario scenario cover")).not.toBeInTheDocument();
   });
 
@@ -126,7 +126,7 @@ describe("ScenarioCard", () => {
   it("should have correct aria-label", () => {
     const title = "Custom Scenario";
     renderComponent({ title });
-    const card = screen.getByRole("button", { name: /Select Custom Scenario scenario/i });
+    const card = screen.getByRole("button", { name: /Choose your Custom Scenario Scenario/i });
     expect(card).toBeInTheDocument();
   });
 

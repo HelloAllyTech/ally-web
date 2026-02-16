@@ -61,13 +61,14 @@ describe("StartSessionDialog", () => {
 
   it("renders the dialog content when open", () => {
     render(<StartSessionDialog isOpen={true} onClose={onClose} />);
-    expect(screen.getByText("Start Session now")).toBeInTheDocument();
-    expect(screen.getByText("Listen Live")).toBeInTheDocument();
+    expect(screen.getByText("Start Session")).toBeInTheDocument();
+    expect(screen.getByText("Your session will begin shortly.")).toBeInTheDocument();
+    expect(screen.getByText(/Follow the on.?screen instructions\./)).toBeInTheDocument();
   });
 
   it("navigates when start button is clicked", () => {
     render(<StartSessionDialog isOpen={true} onClose={onClose} />);
-    fireEvent.click(screen.getByText("Start Session now"));
+    fireEvent.click(screen.getByText("Start Session"));
     expect(mockNavigate).toHaveBeenCalledWith(`${ROUTES.AUDIO_CALL}?mode=microphone`);
   });
 });

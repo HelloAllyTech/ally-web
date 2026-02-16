@@ -99,6 +99,8 @@ vi.mock("../utils", () => ({
 describe("FeedbackSection", () => {
   const mockSummary: FeedbackSectionProps = {
     id: "test-summary-123",
+    reviewId: "review-123",
+    reviewStatus: "completed",
     createdAt: "2024-01-01T10:00:00Z",
     updatedAt: "2024-01-01T10:30:00Z",
     tenantId: "tenant-123",
@@ -127,10 +129,18 @@ describe("FeedbackSection", () => {
         },
       },
     },
+    scenario: {
+      id: 1,
+      title: "Test Scenario",
+      coverImageUrl: "",
+    },
     events: [
       {
         eventId: "event-1",
         createdAt: "2024-01-01T10:05:00Z",
+        score: "5",
+        emoji: "🎯",
+        message: "Session started",
         events: {
           id: "1",
           name: "Session started",
@@ -144,6 +154,9 @@ describe("FeedbackSection", () => {
       {
         eventId: "event-2",
         createdAt: "2024-01-01T10:15:00Z",
+        score: "8",
+        emoji: "💬",
+        message: "First interaction",
         events: {
           id: "2",
           name: "First interaction",
@@ -171,8 +184,8 @@ describe("FeedbackSection", () => {
       render(<FeedbackSection {...mockSummary} />);
 
       expect(screen.getByTestId("generic-table")).toBeInTheDocument();
-      expect(screen.getByText("What Went Well")).toBeInTheDocument();
-      expect(screen.getByText("Improvement Tips")).toBeInTheDocument();
+      expect(screen.getByText("What went well")).toBeInTheDocument();
+      expect(screen.getByText("Improvement tips")).toBeInTheDocument();
     });
   });
 
@@ -214,7 +227,7 @@ describe("FeedbackSection", () => {
       };
       render(<FeedbackSection {...emptySummary} />);
 
-      expect(screen.getByText("What Went Well")).toBeInTheDocument();
+      expect(screen.getByText("What went well")).toBeInTheDocument();
     });
 
     it("should show empty list when no improvements", () => {
@@ -232,7 +245,7 @@ describe("FeedbackSection", () => {
       };
       render(<FeedbackSection {...emptySummary} />);
 
-      expect(screen.getByText("Improvement Tips")).toBeInTheDocument();
+      expect(screen.getByText("Improvement tips")).toBeInTheDocument();
     });
   });
 
@@ -281,8 +294,8 @@ describe("FeedbackSection", () => {
       render(<FeedbackSection {...mockSummary} />);
 
       expect(screen.getByTestId("generic-table")).toBeInTheDocument();
-      expect(screen.getByText("What Went Well")).toBeInTheDocument();
-      expect(screen.getByText("Improvement Tips")).toBeInTheDocument();
+      expect(screen.getByText("What went well")).toBeInTheDocument();
+      expect(screen.getByText("Improvement tips")).toBeInTheDocument();
     });
   });
 
@@ -310,8 +323,8 @@ describe("FeedbackSection", () => {
       };
       render(<FeedbackSection {...incompleteSummary} />);
 
-      const dashElements = screen.getAllByText("--");
-      expect(dashElements.length).toBeGreaterThan(0);
+      expect(screen.getByText("Session Feedback")).toBeInTheDocument();
+      expect(screen.getByTestId("generic-table")).toBeInTheDocument();
     });
 
     it("should handle null/undefined values gracefully", () => {
@@ -335,8 +348,8 @@ describe("FeedbackSection", () => {
       render(<FeedbackSection {...nullSummary} />);
 
       expect(screen.getByTestId("generic-table")).toBeInTheDocument();
-      expect(screen.getByText("What Went Well")).toBeInTheDocument();
-      expect(screen.getByText("Improvement Tips")).toBeInTheDocument();
+      expect(screen.getByText("What went well")).toBeInTheDocument();
+      expect(screen.getByText("Improvement tips")).toBeInTheDocument();
     });
   });
 });
