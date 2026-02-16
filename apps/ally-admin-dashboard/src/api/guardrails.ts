@@ -9,6 +9,7 @@ import {
   CreateGuardrailTranslationInput,
   UpdateGuardrailTranslationInput,
 } from "@types";
+
 import { baseAPI } from "./baseApi";
 
 const guardrailsApi = baseAPI.injectEndpoints({
@@ -39,7 +40,6 @@ const guardrailsApi = baseAPI.injectEndpoints({
       invalidatesTags: [TAG_TYPES.CONVERSATIONAL_GUARDRAILS],
     }),
 
-
     updateGuardrail: builder.mutation<
       ConversationalGuardrail,
       { id: string; guardrail: UpdateConversationalGuardrailInput }
@@ -59,7 +59,6 @@ const guardrailsApi = baseAPI.injectEndpoints({
       }),
       invalidatesTags: [TAG_TYPES.CONVERSATIONAL_GUARDRAILS],
     }),
-
 
     getGuardrailTranslations: builder.query<ConversationalGuardrailTranslation[], string>({
       query: guardrailId => ({

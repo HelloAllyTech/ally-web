@@ -1,9 +1,10 @@
-import React, { useEffect, useState, useMemo, useCallback } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
+
 import { toast } from "sonner";
 
 import {
-  useGetGuardrailsQuery,
   useCreateGuardrailMutation,
+  useGetGuardrailsQuery,
   useUpdateGuardrailMutation,
 } from "@api";
 import { Trash, Add } from "@assets";
@@ -128,7 +129,7 @@ export const GuardrailsManagement: React.FC = () => {
         toast.success("Guardrail created successfully");
         setIsSidePanelOpen(false);
       }
-    } catch (error) {
+    } catch {
       toast.error("Failed to create guardrail");
     }
   };
@@ -193,7 +194,7 @@ export const GuardrailsManagement: React.FC = () => {
     if (ids.length === 0) return;
     try {
       const results = await Promise.all(
-        ids.map(id => updateGuardrail({ id, guardrail: { active: false } }))
+        ids.map(id => updateGuardrail({ id, guardrail: { active: false } })),
       );
       const hasError = results.some((r: any) => r.error);
 
@@ -293,7 +294,7 @@ export const GuardrailsManagement: React.FC = () => {
           isOpen={isSidePanelOpen}
           onClose={handleSidePanelClose}
           selectedGuardrail={selectedGuardrail}
-          onDelete={id => setShowDeleteConfirmationPopup(true)} // Or handle direct delete
+          onDelete={() => setShowDeleteConfirmationPopup(true)} // Or handle direct delete
           onUpdate={(id, updates) =>
             handleUpdateTable({ rowId: id, columnId: "all", value: updates })
           }

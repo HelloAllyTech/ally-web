@@ -45,7 +45,7 @@ vi.mock("@components/toggle-switch/ToggleSwitch", () => ({
       <input
         type="checkbox"
         checked={enabled}
-        onChange={(e) => onChange(e.target.checked)}
+        onChange={e => onChange(e.target.checked)}
         data-testid="toggle-input"
       />
       <span data-testid="toggle-label">{enabled ? "On" : "Off"}</span>
@@ -64,7 +64,6 @@ vi.mock("@ally-ui-mono/ui-shared", () => ({
     />
   ),
 }));
-
 
 // Mock constants
 vi.mock("@constants", async importOriginal => {
@@ -220,15 +219,15 @@ describe("GuardrailSidePanel", () => {
   describe("Form Submission and Validation", () => {
     it("shows error toast when mandatory fields are missing", async () => {
       render(
-        <GuardrailSidePanel 
-          {...defaultProps} 
-          selectedGuardrail={{ id: "1", helperDialogue: "", actorDialogue: "" }} 
-        />
+        <GuardrailSidePanel
+          {...defaultProps}
+          selectedGuardrail={{ id: "1", helperDialogue: "", actorDialogue: "" }}
+        />,
       );
 
       const saveButton = screen.getByText("Save");
       expect(saveButton).toBeDisabled();
-      
+
       fireEvent.click(saveButton);
       expect(defaultProps.onUpdate).not.toHaveBeenCalled();
     });
@@ -252,13 +251,8 @@ describe("GuardrailSidePanel", () => {
         actorDialogue: "new response",
         active: true,
       };
-      
-      render(
-        <GuardrailSidePanel 
-          {...defaultProps} 
-          selectedGuardrail={newGuardrail} 
-        />
-      );
+
+      render(<GuardrailSidePanel {...defaultProps} selectedGuardrail={newGuardrail} />);
 
       const createButton = screen.getByText("Save");
       fireEvent.click(createButton);

@@ -1,11 +1,12 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
+
 import { toast } from "sonner";
+
+import { AutoExpandableTextarea } from "@ally-ui-mono/ui-shared";
 import { DoubleArrowRight, Trash } from "@assets";
-import { ButtonVariant } from "@components/types";
 import { Button } from "@components/button/Button";
 import { ToggleSwitch } from "@components/toggle-switch/ToggleSwitch";
-import { Input } from "@components";
-import { AutoExpandableTextarea } from "@ally-ui-mono/ui-shared";
+import { ButtonVariant } from "@components/types";
 
 interface GuardrailSidePanelProps {
   selectedGuardrail: any | null;
@@ -103,8 +104,8 @@ export const GuardrailSidePanel: React.FC<GuardrailSidePanelProps> = ({
         toast.success("Guardrail updated successfully");
       }
       onClose();
-    } catch (error) {
-      console.error(error);
+    } catch {
+      toast.error("Failed to save guardrail");
     }
   };
 

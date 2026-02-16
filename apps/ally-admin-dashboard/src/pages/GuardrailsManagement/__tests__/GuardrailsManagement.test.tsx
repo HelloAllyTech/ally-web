@@ -262,7 +262,6 @@ describe("GuardrailsManagement", () => {
     mockUpdateGuardrail.mockReturnValue({
       error: null,
     });
-
   });
 
   const createTestStore = () => {
