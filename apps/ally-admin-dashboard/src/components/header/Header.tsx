@@ -88,7 +88,7 @@ export const Header: FC<HeaderProps> = ({
                 arrow
                 slotProps={toolTipStyles}
               >
-                {previewButton}
+                <span>{previewButton}</span>
               </Tooltip>
             ))}
           {isValid ? (
@@ -100,7 +100,7 @@ export const Header: FC<HeaderProps> = ({
               arrow
               slotProps={toolTipStyles}
             >
-              {publishButton}
+              <span>{publishButton}</span>
             </Tooltip>
           )}
         </div>
