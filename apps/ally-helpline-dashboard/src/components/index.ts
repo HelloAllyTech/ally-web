@@ -51,6 +51,7 @@ import ThreadCard from "./thread-card/ThreadCard";
 import ToggleButtonGroup from "./toggle-button-group";
 import TranscriptListing from "./transcript-listing";
 import Transcription from "./transcription";
+import { UpNextSimulationCard } from "./up-next-simulation-card";
 import UserInfo from "./user-info";
 
 export {
@@ -121,4 +122,5 @@ export {
   Transcription,
   TranscriptListing,
   MaxActiveUsersDialog,
+  UpNextSimulationCard,
 };
