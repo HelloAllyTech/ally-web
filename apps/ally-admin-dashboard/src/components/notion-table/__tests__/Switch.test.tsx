@@ -57,14 +57,14 @@ describe("Switch", () => {
       render(<Switch {...defaultProps} checked={true} />);
 
       const labels = screen.getAllByText("On");
-      expect(labels).toHaveLength(2); // One in ToggleSwitch, one in the div
+      expect(labels).toHaveLength(1); // One in ToggleSwitch only
     });
 
     it("displays 'Off' label when not checked", () => {
       render(<Switch {...defaultProps} checked={false} />);
 
       const labels = screen.getAllByText("Off");
-      expect(labels).toHaveLength(2); // One in ToggleSwitch, one in the div
+      expect(labels).toHaveLength(1); // One in ToggleSwitch only
     });
 
     it("applies custom className", () => {
@@ -152,11 +152,11 @@ describe("Switch", () => {
     it("updates label when checked state changes", () => {
       const { rerender } = render(<Switch {...defaultProps} checked={false} />);
 
-      expect(screen.getAllByText("Off")).toHaveLength(2);
+      expect(screen.getAllByText("Off")).toHaveLength(1);
 
       rerender(<Switch {...defaultProps} checked={true} />);
 
-      expect(screen.getAllByText("On")).toHaveLength(2);
+      expect(screen.getAllByText("On")).toHaveLength(1);
     });
   });
 
@@ -320,7 +320,7 @@ describe("Switch", () => {
 
       const input = screen.getByTestId("toggle-input");
       expect(input).toBeChecked();
-      expect(screen.getAllByText("On")).toHaveLength(2);
+      expect(screen.getAllByText("On")).toHaveLength(1);
     });
 
     it("handles false as unchecked", () => {
@@ -328,7 +328,7 @@ describe("Switch", () => {
 
       const input = screen.getByTestId("toggle-input");
       expect(input).not.toBeChecked();
-      expect(screen.getAllByText("Off")).toHaveLength(2);
+      expect(screen.getAllByText("Off")).toHaveLength(1);
     });
   });
 
@@ -343,7 +343,7 @@ describe("Switch", () => {
     it("provides visual feedback through labels", () => {
       render(<Switch {...defaultProps} checked={true} />);
 
-      expect(screen.getAllByText("On")).toHaveLength(2);
+      expect(screen.getAllByText("On")).toHaveLength(1);
     });
   });
 

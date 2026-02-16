@@ -25,18 +25,13 @@ vi.mock("@assets", async importOriginal => {
 });
 
 // Mock components
-vi.mock("@components", async importOriginal => {
-  const actual = await importOriginal<typeof import("@components")>();
-  return {
-    ...actual,
-    Button: ({ children, onClick, variant }: any) => (
-      <button data-testid={`button-${variant}`} onClick={onClick}>
-        {children}
-      </button>
-    ),
-    Input: (props: any) => <input {...props} />,
-  };
-});
+vi.mock("@components/button/Button", () => ({
+  Button: ({ children, onClick, variant, disabled }: any) => (
+    <button data-testid={`button-${variant}`} onClick={onClick} disabled={disabled}>
+      {children}
+    </button>
+  ),
+}));
 
 // Mock ToggleSwitch specifically since it's a deep import
 vi.mock("@components/toggle-switch/ToggleSwitch", () => ({
@@ -66,19 +61,16 @@ vi.mock("@ally-ui-mono/ui-shared", () => ({
 }));
 
 // Mock constants
-vi.mock("@constants", async importOriginal => {
-  const actual = await importOriginal<typeof import("@constants")>();
-  return {
-    ...actual,
-    en: {
-      ...(actual.en || {}),
-      common: {
-        cancel: "Cancel",
-        saveChanges: "Save Changes",
-      },
+vi.mock("@constants", () => ({
+  en: {
+    common: {
+      cancel: "Cancel",
+      saveChanges: "Save Changes",
     },
-  };
-});
+  },
+  SIDEBAR_ITEMS: { MANAGE_GUARDRAILS: "manage_guardrails" },
+  ROUTES: { MANAGE_GUARDRAILS: "/guardrails" },
+}));
 
 import { GuardrailSidePanel } from "../GuardrailSidePanel";
 

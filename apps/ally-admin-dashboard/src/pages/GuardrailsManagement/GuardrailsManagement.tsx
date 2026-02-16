@@ -13,53 +13,13 @@ import {
   ListToolbar,
   ActionConfirmationPopup,
   GuardrailSidePanel,
-  cellTypes,
 } from "@components";
 import { ButtonVariant } from "@components/types";
-import { SORT_BY, SORT_ORDER, en } from "@constants";
+import { SORT_BY, SORT_ORDER, en, GUARDRAILS_TABLE_COLUMNS } from "@constants";
 import { UpdateConversationalGuardrailInput } from "@types";
 
 // Define table columns locally or in constants
-const GUARDRAILS_TABLE_COLUMNS = [
-  {
-    id: "name",
-    label: "Name",
-    accessor: "name",
-    placeholder: "Enter name",
-    dataType: cellTypes.editableText,
-    minWidth: 200,
-  },
-  {
-    id: "helperDialogue",
-    label: "If helper said something that can be classified as",
-    accessor: "helperDialogue",
-    placeholder: "Enter helper dialogue",
-    dataType: cellTypes.editableText,
-    minWidth: 400,
-  },
-  {
-    id: "actorDialogue",
-    label: "Actor should start by saying",
-    accessor: "actorDialogue",
-    placeholder: "Enter actor dialogue",
-    dataType: cellTypes.editableText,
-    minWidth: 300,
-  },
-  {
-    id: "active",
-    label: "Status",
-    accessor: "active",
-    dataType: cellTypes.switch,
-    minWidth: 100,
-  },
-  {
-    id: "createdAt",
-    label: "Created Date",
-    accessor: "createdAt",
-    dataType: cellTypes.normalText,
-    minWidth: 150,
-  },
-];
+
 
 export const GuardrailsManagement: React.FC = () => {
   const limit = 30;

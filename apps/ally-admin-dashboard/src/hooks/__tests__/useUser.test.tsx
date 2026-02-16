@@ -343,9 +343,10 @@ describe("useUser", () => {
         wrapper: ({ children }: any) => <Provider store={store}>{children}</Provider>,
       });
 
-      expect(result.current.filteredNavigationItems).toHaveLength(2);
+      expect(result.current.filteredNavigationItems).toHaveLength(3);
       expect(result.current.filteredNavigationItems[0].id).toBe(SIDEBAR_ITEMS.SIMULATION_STUDIO);
       expect(result.current.filteredNavigationItems[1].id).toBe(SIDEBAR_ITEMS.SCENARIO_VOICES);
+      expect(result.current.filteredNavigationItems[2].id).toBe(SIDEBAR_ITEMS.MANAGE_GUARDRAILS);
     });
 
     it("should filter navigation items based on EDIT_EVENT permission", () => {
@@ -403,13 +404,14 @@ describe("useUser", () => {
         wrapper: ({ children }: any) => <Provider store={store}>{children}</Provider>,
       });
 
-      expect(result.current.filteredNavigationItems).toHaveLength(6);
+      expect(result.current.filteredNavigationItems).toHaveLength(7);
       expect(result.current.filteredNavigationItems.map(item => item.id)).toEqual([
         SIDEBAR_ITEMS.SIMULATION_STUDIO,
         SIDEBAR_ITEMS.EVENT_MANAGEMENT,
         SIDEBAR_ITEMS.SCENARIO_VOICES,
         SIDEBAR_ITEMS.SCENARIO_LANGUAGES,
         SIDEBAR_ITEMS.PROMPTS,
+        SIDEBAR_ITEMS.MANAGE_GUARDRAILS,
         SIDEBAR_ITEMS.USER_MANAGEMENT,
       ]);
     });
@@ -428,11 +430,11 @@ describe("useUser", () => {
         wrapper: ({ children }: any) => <Provider store={store}>{children}</Provider>,
       });
 
-      expect(result.current.filteredNavigationItems).toHaveLength(4);
       expect(result.current.filteredNavigationItems.map(item => item.id)).toEqual([
         SIDEBAR_ITEMS.SIMULATION_STUDIO,
         SIDEBAR_ITEMS.SCENARIO_VOICES,
         SIDEBAR_ITEMS.PROMPTS,
+        SIDEBAR_ITEMS.MANAGE_GUARDRAILS,
         SIDEBAR_ITEMS.USER_MANAGEMENT,
       ]);
     });
@@ -458,10 +460,10 @@ describe("useUser", () => {
         wrapper: ({ children }: any) => <Provider store={store}>{children}</Provider>,
       });
 
-      expect(result.current.filteredNavigationItems).toHaveLength(2);
       expect(result.current.filteredNavigationItems.map(item => item.id)).toEqual([
         SIDEBAR_ITEMS.SIMULATION_STUDIO,
         SIDEBAR_ITEMS.SCENARIO_VOICES,
+        SIDEBAR_ITEMS.MANAGE_GUARDRAILS,
       ]);
 
       // Create new store with updated permissions and render new hook
@@ -477,11 +479,12 @@ describe("useUser", () => {
         wrapper: ({ children }: any) => <Provider store={updatedStore}>{children}</Provider>,
       });
 
-      expect(newResult.current.filteredNavigationItems).toHaveLength(3);
+      expect(newResult.current.filteredNavigationItems).toHaveLength(4);
       expect(newResult.current.filteredNavigationItems.map(item => item.id)).toEqual([
         SIDEBAR_ITEMS.SIMULATION_STUDIO,
         SIDEBAR_ITEMS.EVENT_MANAGEMENT,
         SIDEBAR_ITEMS.SCENARIO_VOICES,
+        SIDEBAR_ITEMS.MANAGE_GUARDRAILS,
       ]);
     });
   });

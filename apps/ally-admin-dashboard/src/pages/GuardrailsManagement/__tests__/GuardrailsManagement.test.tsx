@@ -21,6 +21,7 @@ const {
   mockUseGetGuardrailsQuery: vi.fn(),
   mockCreateGuardrail: vi.fn(),
   mockUpdateGuardrail: vi.fn(),
+  mockDeleteGuardrail: vi.fn(),
 }));
 
 // Mock sonner toast
@@ -40,150 +41,146 @@ vi.mock("@api", async importOriginal => {
 });
 
 // Mock components
-vi.mock("@components", async importOriginal => {
-  const actual = await importOriginal<typeof import("@components")>();
-  return {
-    ...actual,
-    cellTypes: {
-      editableText: "editableText",
-      switch: "switch",
-      normalText: "normalText",
-    },
-    NotionTable: ({ tableData, onRowChange, onRowClick, tableFooter, onSelectionChange }: any) => (
-      <div data-testid="notion-table">
-        <div data-testid="table-data">
-          {tableData.data.map((row: any, rowIndex: number) => (
-            <div
-              key={row.id?.value || rowIndex}
-              data-testid={`table-row-${rowIndex}`}
-              onClick={() => onRowClick(rowIndex)}
-            >
-              <span data-testid={`helper-dialogue-${rowIndex}`}>{row.helperDialogue?.value}</span>
-              <span data-testid={`name-${rowIndex}`}>{row.name?.value}</span>
-              <span data-testid={`actor-dialogue-${rowIndex}`}>{row.actorDialogue?.value}</span>
-              <span data-testid={`active-status-${rowIndex}`}>
-                {row.active?.value ? "Active" : "Inactive"}
-              </span>
-              <button
-                data-testid={`select-row-${rowIndex}`}
-                onClick={e => {
-                  e.stopPropagation();
-                  onSelectionChange([row]);
-                }}
-              >
-                Select
-              </button>
-              <button
-                data-testid={`toggle-active-${rowIndex}`}
-                onClick={e => {
-                  e.stopPropagation();
-                  onRowChange({
-                    columnId: "active",
-                    value: !row.active?.value,
-                    rowIndex,
-                    rowId: row.id?.value,
-                  });
-                }}
-              >
-                Toggle
-              </button>
-            </div>
-          ))}
-        </div>
-        {tableFooter}
-      </div>
-    ),
-    GuardrailSidePanel: ({
-      selectedGuardrail,
-      isOpen,
-      onClose,
-      onDelete,
-      onUpdate,
-      onCreate,
-    }: any) =>
-      isOpen ? (
-        <div data-testid="guardrail-side-panel">
-          <h2 data-testid="panel-helper-dialogue">{selectedGuardrail?.helperDialogue}</h2>
-          <p data-testid="panel-actor-dialogue">{selectedGuardrail?.actorDialogue}</p>
-          <button onClick={onClose} data-testid="close-side-panel">
-            Close
-          </button>
-          {selectedGuardrail?.id && (
-            <button onClick={() => onDelete(selectedGuardrail?.id)} data-testid="delete-from-panel">
-              Delete
-            </button>
-          )}
-          {selectedGuardrail?.id ? (
-            <button
-              onClick={() =>
-                onUpdate(selectedGuardrail?.id, {
-                  ...selectedGuardrail,
-                  helperDialogue: "Updated from panel",
-                })
-              }
-              data-testid="update-from-panel"
-            >
-              Update
-            </button>
-          ) : (
-            <button
-              onClick={() =>
-                onCreate({
-                  ...selectedGuardrail,
-                  helperDialogue: "New Helper Content",
-                  actorDialogue: "New Actor Content",
-                  active: true,
-                })
-              }
-              data-testid="create-from-panel"
-            >
-              Create
-            </button>
-          )}
-        </div>
-      ) : null,
-    ListToolbar: ({ searchValue, onSearchChange, action }: any) => (
-      <div data-testid="list-toolbar">
-        <input
-          data-testid="search-input"
-          value={searchValue}
-          onChange={e => onSearchChange(e.target.value)}
-          placeholder="Search guardrails"
-        />
-        {action && (
-          <button
-            onClick={action.onClick}
-            data-testid="toolbar-action"
-            data-variant={action.variant}
+vi.mock("@components", () => ({
+  cellTypes: {
+    editableText: "editableText",
+    switch: "switch",
+    normalText: "normalText",
+  },
+  NotionTable: ({ tableData, onRowChange, onRowClick, tableFooter, onSelectionChange }: any) => (
+    <div data-testid="notion-table">
+      <div data-testid="table-data">
+        {tableData.data.map((row: any, rowIndex: number) => (
+          <div
+            key={row.id?.value || rowIndex}
+            data-testid={`table-row-${rowIndex}`}
+            onClick={() => onRowClick(rowIndex)}
           >
-            {action.icon}
-            {action.label}
+            <span data-testid={`helper-dialogue-${rowIndex}`}>{row.helperDialogue?.value}</span>
+            <span data-testid={`name-${rowIndex}`}>{row.name?.value}</span>
+            <span data-testid={`actor-dialogue-${rowIndex}`}>{row.actorDialogue?.value}</span>
+            <span data-testid={`active-status-${rowIndex}`}>
+              {row.active?.value ? "Active" : "Inactive"}
+            </span>
+            <button
+              data-testid={`select-row-${rowIndex}`}
+              onClick={e => {
+                e.stopPropagation();
+                onSelectionChange([row]);
+              }}
+            >
+              Select
+            </button>
+            <button
+              data-testid={`toggle-active-${rowIndex}`}
+              onClick={e => {
+                e.stopPropagation();
+                onRowChange({
+                  columnId: "active",
+                  value: !row.active?.value,
+                  rowIndex,
+                  rowId: row.id?.value,
+                });
+              }}
+            >
+              Toggle
+            </button>
+          </div>
+        ))}
+      </div>
+      {tableFooter}
+    </div>
+  ),
+  GuardrailSidePanel: ({
+    selectedGuardrail,
+    isOpen,
+    onClose,
+    onDelete,
+    onUpdate,
+    onCreate,
+  }: any) =>
+    isOpen ? (
+      <div data-testid="guardrail-side-panel">
+        <h2 data-testid="panel-helper-dialogue">{selectedGuardrail?.helperDialogue}</h2>
+        <p data-testid="panel-actor-dialogue">{selectedGuardrail?.actorDialogue}</p>
+        <button onClick={onClose} data-testid="close-side-panel">
+          Close
+        </button>
+        {selectedGuardrail?.id && (
+          <button onClick={() => onDelete(selectedGuardrail?.id)} data-testid="delete-from-panel">
+            Delete
+          </button>
+        )}
+        {selectedGuardrail?.id ? (
+          <button
+            onClick={() =>
+              onUpdate(selectedGuardrail?.id, {
+                ...selectedGuardrail,
+                helperDialogue: "Updated from panel",
+              })
+            }
+            data-testid="update-from-panel"
+          >
+            Update
+          </button>
+        ) : (
+          <button
+            onClick={() =>
+              onCreate({
+                ...selectedGuardrail,
+                helperDialogue: "New Helper Content",
+                actorDialogue: "New Actor Content",
+                active: true,
+              })
+            }
+            data-testid="create-from-panel"
+          >
+            Create
           </button>
         )}
       </div>
-    ),
-    ActionConfirmationPopup: ({
-      isOpen,
-      onClose,
-      title,
-      description,
-      primaryButton,
-      secondaryButton,
-    }: any) =>
-      isOpen ? (
-        <div data-testid="action-confirmation-popup">
-          <h2>{title}</h2>
-          <p>{description}</p>
-          <button onClick={primaryButton.onClick} data-testid="confirm-action">
-            {primaryButton.label}
-          </button>
-          <button onClick={secondaryButton.onClick} data-testid="cancel-action">
-            {secondaryButton.label}
-          </button>
-        </div>
-      ) : null,
-  };
-});
+    ) : null,
+  ListToolbar: ({ searchValue, onSearchChange, action }: any) => (
+    <div data-testid="list-toolbar">
+      <input
+        data-testid="search-input"
+        value={searchValue}
+        onChange={e => onSearchChange(e.target.value)}
+        placeholder="Search guardrails"
+      />
+      {action && (
+        <button
+          onClick={action.onClick}
+          data-testid="toolbar-action"
+          data-variant={action.variant}
+        >
+          {action.icon}
+          {action.label}
+        </button>
+      )}
+    </div>
+  ),
+  ActionConfirmationPopup: ({
+    isOpen,
+    onClose,
+    title,
+    description,
+    primaryButton,
+    secondaryButton,
+  }: any) =>
+    isOpen ? (
+      <div data-testid="action-confirmation-popup">
+        <h2>{title}</h2>
+        <p>{description}</p>
+        <button onClick={primaryButton.onClick} data-testid="confirm-action">
+          {primaryButton.label}
+        </button>
+        <button onClick={secondaryButton.onClick} data-testid="cancel-action">
+          {secondaryButton.label}
+        </button>
+      </div>
+    ) : null,
+}));
 
 // Mock assets
 vi.mock("@assets", async importOriginal => {
@@ -195,28 +192,27 @@ vi.mock("@assets", async importOriginal => {
 });
 
 // Mock constants
-vi.mock("@constants", async importOriginal => {
-  const actual = await importOriginal<typeof import("@constants")>();
-  return {
-    ...actual,
-    en: {
-      ...(actual.en || {}),
-      common: {
-        delete: "Delete",
-        cancel: "Cancel",
-        loading: "Loading...",
-        loadMore: "Load more",
-        noMoreData: "No more data",
-      },
+vi.mock("@constants", () => ({
+  en: {
+    common: {
+      delete: "Delete",
+      cancel: "Cancel",
+      loading: "Loading...",
+      loadMore: "Load more",
+      noMoreData: "No more data",
     },
-    SORT_BY: {
-      CREATED_AT: "createdAt",
-    },
-    SORT_ORDER: {
-      DESC: "desc",
-    },
-  };
-});
+  },
+  SORT_BY: {
+    CREATED_AT: "createdAt",
+  },
+  SORT_ORDER: {
+    DESC: "desc",
+  },
+  TAG_TYPES: {
+    CONVERSATIONAL_GUARDRAILS: "ConversationalGuardrails",
+  },
+  GUARDRAILS_TABLE_COLUMNS: [],
+}));
 
 import { GuardrailsManagement } from "../GuardrailsManagement";
 
