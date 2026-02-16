@@ -29,6 +29,7 @@ import {
   ScenarioCaseDetails,
   GetScenarioCasesResponse,
   pageType,
+  GetReflectionPromptsResponse,
 } from "@types";
 
 import { baseAPI } from "./baseAPI";
@@ -298,6 +299,12 @@ const learnAPI = baseAPI.injectEndpoints({
       }),
       invalidatesTags: [TAG_TYPES.SCENARIO_CASE_DETAILS],
     }),
+    getReflectionPrompts: builder.query<GetReflectionPromptsResponse, { sessionId: string }>({
+      query: ({ sessionId }) => ({
+        url: ApiEndpoints.LEARN.GET_REFLECTION_PROMPTS(sessionId),
+        method: HttpMethod.GET,
+      }),
+    }),
   }),
 });
 
@@ -322,4 +329,5 @@ export const {
   useGetScenarioCaseDetailsQuery,
   useLazyGetScenarioSessionByCaseItemQuery,
   useStartCaseSimulationMutation,
+  useGetReflectionPromptsQuery,
 } = learnAPI;

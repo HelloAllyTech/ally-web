@@ -349,3 +349,13 @@ export interface ScenarioCaseDetails {
   caseSessionId?: string;
   scenarios: PathwayScenario[];
 }
+
+export interface GetReflectionPromptsResponse {
+  ReflectionPrompt: Prompt[];
+}
+
+export interface Prompt {
+  id: string;
+  prompt: string;
+  response?: string;
+}
