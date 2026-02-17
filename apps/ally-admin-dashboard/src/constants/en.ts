@@ -489,6 +489,9 @@ export const en = {
     addBase: "Add Branch",
   },
   badge: {
+    deleteBadgesConfirmation: "Delete these",
+    deleteBadgesConfirmationDescription:
+      "This will permanently delete the badges and remove them from all organizations and users who have already earned them. This action cannot be undone.",
     createBadge: "Create Badge",
     editBadge: "Edit Badge",
     newBadgeName: "New Badge",
@@ -506,6 +509,7 @@ export const en = {
     addRole: "Add role",
     icon: "Icon",
     uploadIcon: "Upload Icon",
+    changeIcon: "Change Icon",
     iconUploadHint: "PNG or JPG files only (240x240 preferred)",
     iconMustBeImageFile: "Icon must be a PNG or JPG file",
     iconFileTooLarge: "Icon file must be less than 2MB",
@@ -527,13 +531,19 @@ export const en = {
     badgePublishedSuccessfully: "Badge published successfully",
     badgeCreationFailed: "Failed to create badge",
     badgeUpdateFailed: "Failed to update badge",
-    deleteBadge: "Delete Badge",
-    deleteBadgeConfirmation: "Delete Badge?",
+    deleteBadge: "Delete",
+    deleteBadgeConfirmation: "Delete this",
+    deleteBadgeConfirmationTitleItalic: " Badge?",
+    deleteBadgesConfirmationTitleItalic: " Badges?",
     deleteBadgeConfirmationDescription:
-      "Are you sure you want to delete this badge? This action cannot be undone.",
+      "This will permanently delete the badge and remove it from all organizations and users who have already earned it. This action cannot be undone.",
     badgeDeletedSuccessfully: "Badge deleted successfully",
     saveAsDraft: "Save as draft",
     publish: "Publish",
     badgeDeletionFailed: "Failed to delete badge",
+    publishBadgeConfirmation: "Publish this",
+    publishBadgeConfirmationTitleItalic: " Badge?",
+    publishBadgeConfirmationDescription:
+      "Are you sure you want to publish this badge? Once published, this badge will be awarded to users who meet the defined criteria. ",
   },
 };
