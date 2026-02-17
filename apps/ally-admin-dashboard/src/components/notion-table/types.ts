@@ -70,6 +70,12 @@ export interface HeaderProps {
   };
 }
 
+export interface InfiniteScrollConfig {
+  onLoadMore: () => void;
+  isLoading: boolean;
+  hasMore: boolean;
+}
+
 export interface NotionTableProps {
   tableData: { data: any[]; columns: any[] } | undefined;
   tableStyle?: React.CSSProperties;
@@ -77,7 +83,9 @@ export interface NotionTableProps {
   onRowChange?: (action: any) => void;
   onRowClick?: (rowIndex: number) => void;
   onSelectionChange?: (selectedRows: any[]) => void;
+  infiniteScroll?: InfiniteScrollConfig;
   autoHeight?: boolean;
+  editIndex?: number;
 }
 export enum Status {
   DRAFT = "DRAFT",
