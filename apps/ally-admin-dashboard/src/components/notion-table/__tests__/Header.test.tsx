@@ -21,6 +21,7 @@ describe("Header", () => {
     getResizerProps: mockGetResizerProps,
     getHeaderProps: mockGetHeaderProps,
     headerIndex: 0,
+    hasResizer: true,
   };
 
   const defaultProps: HeaderProps = {
@@ -70,22 +71,15 @@ describe("Header", () => {
 
       const headerElement = container.querySelector(".bg-white");
       expect(headerElement).toBeInTheDocument();
-      expect(headerElement).toHaveClass("border-[1px]");
+      expect(headerElement).toHaveClass("border-r");
+      expect(headerElement).toHaveClass("border-border-light");
       expect(headerElement).toHaveClass("select-none");
     });
 
-    it("applies left border for first column", () => {
+    it("applies full width and height", () => {
       const { container } = render(<Header {...defaultProps} />);
 
-      const headerElement = container.querySelector(".border-l-1");
-      expect(headerElement).toBeInTheDocument();
-    });
-
-    it("removes left border for non-first columns", () => {
-      const nonFirstColumn = { ...defaultColumn, headerIndex: 1 };
-      const { container } = render(<Header column={nonFirstColumn} />);
-
-      const headerElement = container.querySelector(".border-l-0");
+      const headerElement = container.querySelector(".w-full.h-full");
       expect(headerElement).toBeInTheDocument();
     });
 
@@ -101,7 +95,7 @@ describe("Header", () => {
     it("handles headerIndex 0", () => {
       const { container } = render(<Header {...defaultProps} />);
 
-      const headerElement = container.querySelector(".border-l-1");
+      const headerElement = container.querySelector(".bg-white");
       expect(headerElement).toBeInTheDocument();
     });
 
@@ -109,7 +103,7 @@ describe("Header", () => {
       const column = { ...defaultColumn, headerIndex: 1 };
       const { container } = render(<Header column={column} />);
 
-      const headerElement = container.querySelector(".border-l-0");
+      const headerElement = container.querySelector(".bg-white");
       expect(headerElement).toBeInTheDocument();
     });
 
@@ -117,7 +111,7 @@ describe("Header", () => {
       const column = { ...defaultColumn, headerIndex: 5 };
       const { container } = render(<Header column={column} />);
 
-      const headerElement = container.querySelector(".border-l-0");
+      const headerElement = container.querySelector(".bg-white");
       expect(headerElement).toBeInTheDocument();
     });
   });
@@ -150,11 +144,19 @@ describe("Header", () => {
   });
 
   describe("Resizer", () => {
-    it("renders resizer element", () => {
+    it("renders resizer element when hasResizer is true", () => {
       const { container } = render(<Header {...defaultProps} />);
 
       const resizer = container.querySelector(".cursor-col-resize");
       expect(resizer).toBeInTheDocument();
+    });
+
+    it("does not render resizer element when hasResizer is false", () => {
+      const columnWithoutResizer = { ...defaultColumn, hasResizer: false };
+      const { container } = render(<Header column={columnWithoutResizer} />);
+
+      const resizer = container.querySelector(".cursor-col-resize");
+      expect(resizer).not.toBeInTheDocument();
     });
 
     it("positions resizer absolutely", () => {
@@ -180,10 +182,18 @@ describe("Header", () => {
       expect(resizer).toBeInTheDocument();
     });
 
-    it("calls getResizerProps", () => {
+    it("calls getResizerProps when hasResizer is true", () => {
       render(<Header {...defaultProps} />);
 
       expect(mockGetResizerProps).toHaveBeenCalled();
+    });
+
+    it("does not call getResizerProps when hasResizer is false", () => {
+      mockGetResizerProps.mockClear();
+      const columnWithoutResizer = { ...defaultColumn, hasResizer: false };
+      render(<Header column={columnWithoutResizer} />);
+
+      expect(mockGetResizerProps).not.toHaveBeenCalled();
     });
   });
 
@@ -247,28 +257,31 @@ describe("Header", () => {
   });
 
   describe("Multiple Headers", () => {
-    it("renders first header with left border", () => {
+    it("renders first header correctly", () => {
       const { container: container1 } = render(
         <Header column={{ ...defaultColumn, headerIndex: 0 }} />,
       );
 
-      expect(container1.querySelector(".border-l-1")).toBeInTheDocument();
+      expect(container1.querySelector(".bg-white")).toBeInTheDocument();
+      expect(container1.querySelector(".border-r")).toBeInTheDocument();
     });
 
-    it("renders second header without left border", () => {
+    it("renders second header correctly", () => {
       const { container: container2 } = render(
         <Header column={{ ...defaultColumn, headerIndex: 1, label: "Second Column" }} />,
       );
 
-      expect(container2.querySelector(".border-l-0")).toBeInTheDocument();
+      expect(container2.querySelector(".bg-white")).toBeInTheDocument();
+      expect(container2.querySelector(".border-r")).toBeInTheDocument();
     });
 
-    it("renders third header without left border", () => {
+    it("renders third header correctly", () => {
       const { container: container3 } = render(
         <Header column={{ ...defaultColumn, headerIndex: 2, label: "Third Column" }} />,
       );
 
-      expect(container3.querySelector(".border-l-0")).toBeInTheDocument();
+      expect(container3.querySelector(".bg-white")).toBeInTheDocument();
+      expect(container3.querySelector(".border-r")).toBeInTheDocument();
     });
   });
 
@@ -301,8 +314,8 @@ describe("Header", () => {
       const negativeIndexColumn = { ...defaultColumn, headerIndex: -1 };
       const { container } = render(<Header column={negativeIndexColumn} />);
 
-      // Negative index should not equal 0, so border-l-0 should be applied
-      expect(container.querySelector(".border-l-0")).toBeInTheDocument();
+      // Should still render correctly regardless of headerIndex value
+      expect(container.querySelector(".bg-white")).toBeInTheDocument();
     });
   });
 

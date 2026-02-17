@@ -209,7 +209,11 @@ export const IconUploader: React.FC<IconUploaderProps> = ({
           disabled={isUploading}
           className="text-primary-600 font-medium text-base hover:text-primary-700 text-left disabled:text-typography-400 disabled:cursor-not-allowed"
         >
-          {isUploading ? en.badge.uploading : en.badge.uploadIcon}
+          {isUploading
+            ? en.badge.uploading
+            : previewUrl
+              ? en.badge.changeIcon
+              : en.badge.uploadIcon}
         </button>
       </div>
     </div>
