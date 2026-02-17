@@ -32,8 +32,11 @@ const userManagementAPI = baseAPI.injectEndpoints({
     }),
 
     getTenantById: builder.query<Tenant, string>({
-      query: id => ({
+      query: (id: string, includeUserCount: boolean = true) => ({
         url: `${ApiEndpoints.USER_MANAGEMENT.TENANTS_BY_ID(id)}`,
+        params: {
+          includeUserCount,
+        },
       }),
     }),
 

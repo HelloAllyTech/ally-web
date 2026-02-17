@@ -216,7 +216,7 @@ export const OrganizationDetail: FC = () => {
                 <Dot />
               </span>
               <span>
-                {organization.userCount} {en.userManagement.users.toLowerCase()}
+                {organization?.userCount} {en.userManagement.users.toLowerCase()}
               </span>
             </div>
           </div>
