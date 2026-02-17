@@ -12,6 +12,9 @@ import { isNonEmptyObject } from "@utils";
 
 interface UpNextSimulationCardProps {
   data: GetUpComingSimulationResponse;
+  metaData?: {
+    languageId?: number;
+  };
 }
 
 const ANIMATION_CONFIG = {
@@ -20,7 +23,7 @@ const ANIMATION_CONFIG = {
   transition: { duration: 0.5, delay: 0.8 },
 };
 
-export const UpNextSimulationCard = ({ data }: UpNextSimulationCardProps) => {
+export const UpNextSimulationCard = ({ data, metaData }: UpNextSimulationCardProps) => {
   const navigate = useNavigate();
   const { startSimulation, isStarting } = useStartSimulation({ isReplaceScreen: true });
 
@@ -45,6 +48,7 @@ export const UpNextSimulationCard = ({ data }: UpNextSimulationCardProps) => {
         scenarioId: Number(upcomingScenario.id),
         scenarioPathSessionItemId: upcomingScenario.scenarioPathSessionItemId,
         caseSessionItemId: upcomingScenario.caseSessionItemId,
+        languageId: metaData?.languageId,
       },
       metadata: {
         title: upcomingScenario.title,
@@ -61,6 +65,7 @@ export const UpNextSimulationCard = ({ data }: UpNextSimulationCardProps) => {
         scenarioId: Number(currentSession.scenarioId),
         scenarioPathSessionItemId: currentSession.scenarioPathSessionItemId,
         caseSessionItemId: currentSession.caseSessionItemId,
+        languageId: metaData?.languageId,
       },
       metadata: {
         title: currentSession.title,
