@@ -119,7 +119,6 @@ export const GuardrailSidePanel: React.FC<GuardrailSidePanelProps> = ({
         <PanelHeader
           onClose={onClose}
           isNew={isNew}
-          onDelete={isNew ? undefined : () => onDelete(formData.id)}
         />
 
         <div className="h-[calc(100vh-100px)] px-10 pl-[46px] pt-2 overflow-y-auto custom-scrollbar">
