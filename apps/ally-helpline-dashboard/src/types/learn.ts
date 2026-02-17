@@ -170,6 +170,7 @@ export interface SimulationSummary {
   score: number | null;
   metadata: {
     sessionName: string;
+    languageId?: number;
   };
   totalScore: number;
   eventStatus?: string;

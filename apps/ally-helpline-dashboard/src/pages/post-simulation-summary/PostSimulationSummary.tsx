@@ -74,6 +74,7 @@ export const PostSimulationSummary: FC = () => {
               <UpNextTab
                 sessionId={sessionId}
                 pageType={summary?.scenarioPathSessionItemId ? pageType.TRACK : pageType.CASE}
+                metaData={summary?.metadata}
               />
             ),
           },
