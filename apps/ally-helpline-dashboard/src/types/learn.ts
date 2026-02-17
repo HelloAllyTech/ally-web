@@ -282,6 +282,11 @@ export interface SimulationTranscriptMessage {
   endSeconds?: number | null;
   createdAt?: string;
   threads?: Thread[];
+  tags?: {
+    tagId: string;
+    label: string;
+    category?: string;
+  }[];
 }
 
 export interface ScenarioPathway {
