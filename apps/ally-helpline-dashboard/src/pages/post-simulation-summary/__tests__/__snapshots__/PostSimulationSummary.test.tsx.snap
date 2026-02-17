@@ -117,6 +117,22 @@ exports[`PostSimulationSummary Component > Snapshot Testing > should match snaps
           >
             Transcription
           </button>
+          <button
+            aria-selected="false"
+            data-testid="tab-4"
+            data-value="4"
+            role="tab"
+          >
+            Ask AI
+          </button>
+          <button
+            aria-selected="false"
+            data-testid="tab-5"
+            data-value="5"
+            role="tab"
+          >
+            Reflection
+          </button>
         </div>
         <div
           class="max-h-[calc(100vh-212px)]"
@@ -255,6 +271,22 @@ exports[`PostSimulationSummary Component > Snapshot Testing > should match snaps
             role="tab"
           >
             Transcription
+          </button>
+          <button
+            aria-selected="false"
+            data-testid="tab-4"
+            data-value="4"
+            role="tab"
+          >
+            Ask AI
+          </button>
+          <button
+            aria-selected="false"
+            data-testid="tab-5"
+            data-value="5"
+            role="tab"
+          >
+            Reflection
           </button>
         </div>
         <div
