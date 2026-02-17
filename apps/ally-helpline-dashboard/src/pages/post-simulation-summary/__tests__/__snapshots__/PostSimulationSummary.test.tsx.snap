@@ -127,6 +127,14 @@ exports[`PostSimulationSummary Component > Snapshot Testing > should match snaps
           </button>
           <button
             aria-selected="false"
+            data-testid="tab-6"
+            data-value="6"
+            role="tab"
+          >
+            Checklist
+          </button>
+          <button
+            aria-selected="false"
             data-testid="tab-5"
             data-value="5"
             role="tab"
@@ -279,6 +287,14 @@ exports[`PostSimulationSummary Component > Snapshot Testing > should match snaps
             role="tab"
           >
             Ask AI
+          </button>
+          <button
+            aria-selected="false"
+            data-testid="tab-6"
+            data-value="6"
+            role="tab"
+          >
+            Checklist
           </button>
           <button
             aria-selected="false"

@@ -93,6 +93,8 @@ export const ApiEndpoints = {
       `/v1/learn/cases/${caseSessionItemId}/upcoming-scenario`,
     GET_REFLECTION_PROMPTS: (sessionId: string) =>
       `/v1/learn/scenario-session/${sessionId}/reflection-prompts`,
+    GET_SIMULATION_CHECKLIST: (sessionId: string) =>
+      `/v1/learn/scenario-session/${sessionId}/checklist`,
   },
   SIMULATION: {
     SIMULATION_CREDITS: "/v1/simulation-credits",
