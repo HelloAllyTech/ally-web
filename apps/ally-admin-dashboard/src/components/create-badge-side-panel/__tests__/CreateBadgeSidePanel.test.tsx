@@ -91,6 +91,7 @@ vi.mock("@assets", () => ({
   InfoIcon: () => <svg data-testid="info-icon" />,
   Trash: () => <svg data-testid="trash-icon" />,
   Edit: () => <svg data-testid="edit-icon" />,
+  ArrowDownFilled: () => <svg data-testid="arrow-down-filled" />,
 }));
 
 // Mock constants
