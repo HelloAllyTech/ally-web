@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { useGetUserBadgesQuery } from "@src/api/userBadges";
 import { Add } from "@src/assets";
@@ -6,6 +6,8 @@ import {
   Button,
   CreateBadgePopup,
   CreateBadgeSidePanel,
+  EmptyState,
+  FilterDropdown,
   ListToolbar,
   NotionTable,
 } from "@src/components";
@@ -14,11 +16,11 @@ import { ButtonVariant } from "@src/components/types";
 import { en, USER_BADGES_TABLE_COLUMNS } from "@src/constants";
 import { useDebounce } from "@src/hooks";
 import TableSkeleton from "@src/pages/UserBadges/TableSkeleton";
-import { BadgeCategory, UserBadge } from "@src/types";
+import { BadgeCategory, UserBadge, UserBadgeFilters } from "@src/types";
 import { formatDate } from "@src/utils";
 
 const SEARCH_DEBOUNCE_MS = 300;
-const BADGES_PAGE_LIMIT = 20;
+const BADGES_PAGE_LIMIT = 10;
 
 export const UserBadges = () => {
   const [searchQuery, setSearchQuery] = useState<string>("");
@@ -27,6 +29,12 @@ export const UserBadges = () => {
   const [isBadgeSidePanelOpen, setIsBadgeSidePanelOpen] = useState<boolean>(false);
   const [selectedBadgeType, setSelectedBadgeType] = useState<Badge | null>(null);
   const [selectedBadge, setSelectedBadge] = useState<UserBadge | null>(null);
+  const [filters, setFilters] = useState<UserBadgeFilters>({
+    category: [],
+    status: [],
+  });
+  const [isFilterOpen, setIsFilterOpen] = useState<boolean>(false);
+  const addFilterBtnRef = useRef<HTMLButtonElement>(null);
 
   // Pagination state
   const [offset, setOffset] = useState<number>(0);
@@ -51,25 +59,27 @@ export const UserBadges = () => {
     data: userBadges,
     isLoading,
     isFetching,
-    refetch,
   } = useGetUserBadgesQuery({
     search: debouncedSearch || undefined,
+    category: filters.category.length > 0 ? filters.category : undefined,
+    status: filters.status.length > 0 ? filters.status : undefined,
     limit: BADGES_PAGE_LIMIT,
     offset,
   });
 
-  const totalCount = userBadges?.count || 0;
-  const hasMore = allBadges.length < totalCount;
+  const hasMore = userBadges?.data?.length === BADGES_PAGE_LIMIT;
 
   useEffect(() => {
     if (userBadges?.data) {
       if (offset === 0) {
         setAllBadges(userBadges.data);
       } else {
-        setAllBadges(prev => [...prev, ...userBadges.data]);
+        const existingIds = new Set(allBadges.map(b => b.id));
+        const newData = userBadges.data.filter(b => !existingIds.has(b.id));
+        setAllBadges(prev => [...prev, ...newData]);
       }
     }
-  }, [userBadges, offset]);
+  }, [userBadges?.data, offset, isBadgeSidePanelOpen]);
 
   // Load more handler for infinite scroll
   const handleLoadMore = useCallback(() => {
@@ -108,6 +118,13 @@ export const UserBadges = () => {
     };
   }, []);
 
+  const handleApplyFilters = (newFilters: UserBadgeFilters) => {
+    setFilters(newFilters);
+    setOffset(0);
+    setIsFilterOpen(false);
+    setAllBadges([]);
+  };
+
   const handleBadgeTypeSelect = useCallback((badgeType: string) => {
     setSelectedBadgeType(badgeType as Badge);
     setIsCreateUserBadgePopupOpen(false);
@@ -132,14 +149,69 @@ export const UserBadges = () => {
     [allBadges],
   );
 
+  const filterChips = useMemo(() => {
+    const chips: any[] = [];
+
+    if (filters.category.length > 0) {
+      chips.push({
+        label: "Category",
+        value: filters.category.map(c => BadgeCategory[c as keyof typeof BadgeCategory]).join(", "),
+        allValue: filters.category,
+        onClear: () => {
+          setFilters(prev => ({ ...prev, category: [] }));
+          setOffset(0);
+          setAllBadges([]);
+        },
+      });
+    }
+
+    if (filters.status.length > 0) {
+      chips.push({
+        label: "Status",
+        value: filters.status.join(", "),
+        allValue: filters.status,
+        onClear: () => {
+          setFilters(prev => ({ ...prev, status: [] }));
+          setOffset(0);
+          setAllBadges([]);
+        },
+      });
+    }
+
+    return chips;
+  }, [filters]);
+
+  const addFilterCta = useMemo(
+    () => ({
+      label: "Filter",
+      onClick: () => setIsFilterOpen(prev => !prev),
+      active: isFilterOpen,
+    }),
+    [isFilterOpen],
+  );
+
   const handleBadgeSidePanelSuccess = useCallback(() => {
     setAllBadges([]);
     setOffset(0);
-    refetch();
     setIsBadgeSidePanelOpen(false);
     setSelectedBadgeType(null);
     setSelectedBadge(null);
-  }, [refetch]);
+  }, []);
+
+  const categoryOptions = useMemo(() => {
+    const options: { label: string; value: string }[] = [];
+    for (const category of Object.keys(BadgeCategory)) {
+      options.push({
+        label: BadgeCategory[category as keyof typeof BadgeCategory],
+        value: category,
+      });
+    }
+    return options;
+  }, []);
+
+  const statusOptions = useMemo(() => {
+    return Object.values(["ACTIVE", "DRAFT"]).map(s => ({ label: s, value: s }));
+  }, []);
 
   return (
     <div className="p-6">
@@ -152,6 +224,28 @@ export const UserBadges = () => {
           onSearchChange={handleSearchChange}
           placeholder={en.common.search}
           className="w-2/3"
+          filterChips={filterChips}
+          addFilterCta={addFilterCta}
+          addFilterButtonRef={addFilterBtnRef}
+        />
+        <FilterDropdown<UserBadgeFilters>
+          isOpen={isFilterOpen}
+          onClose={() => setIsFilterOpen(false)}
+          currentFilters={filters}
+          onApplyFilters={handleApplyFilters}
+          anchorRect={addFilterBtnRef.current?.getBoundingClientRect() ?? null}
+          sections={[
+            {
+              id: "category",
+              label: "Category",
+              options: categoryOptions,
+            },
+            {
+              id: "status",
+              label: "Status",
+              options: statusOptions,
+            },
+          ]}
         />
         <Button variant={ButtonVariant.PRIMARY} onClick={() => setIsCreateUserBadgePopupOpen(true)}>
           <Add />
@@ -159,8 +253,29 @@ export const UserBadges = () => {
         </Button>
       </div>
       <div className="pt-2 w-full" style={{ height: "calc(100vh - 200px)" }}>
-        {isLoading && allBadges.length === 0 ? (
+        {(isLoading || isFetching) && allBadges.length === 0 ? (
           <TableSkeleton />
+        ) : !isFetching && allBadges.length === 0 ? (
+          <EmptyState
+            title={
+              debouncedSearch
+                ? en.userManagement.noSearchResults
+                : filters.category.length > 0 || filters.status.length > 0
+                  ? en.userManagement.noFilterResults
+                  : en.userManagement.noBadgesFound
+            }
+            subtitle={
+              !debouncedSearch && filters.category.length === 0 && filters.status.length === 0
+                ? en.userManagement.noBadgesSubtitle
+                : undefined
+            }
+            actionLabel={
+              !debouncedSearch && filters.category.length === 0 && filters.status.length === 0
+                ? en.userManagement.createUserBadge
+                : undefined
+            }
+            onAction={() => setIsCreateUserBadgePopupOpen(true)}
+          />
         ) : (
           <NotionTable
             tableData={{
