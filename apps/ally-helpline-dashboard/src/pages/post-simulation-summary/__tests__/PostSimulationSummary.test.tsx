@@ -551,7 +551,7 @@ describe("PostSimulationSummary Component", () => {
       expect(tabs).toHaveClass("mb-4");
     });
 
-    it("should render both tab buttons", () => {
+    it("should render all tab buttons", () => {
       render(
         <TestWrapper>
           <PostSimulationSummary />
@@ -559,7 +559,8 @@ describe("PostSimulationSummary Component", () => {
       );
 
       const tabButtons = screen.getAllByRole("tab");
-      expect(tabButtons).toHaveLength(2);
+      // With SUMMARY_TABS_FLAG enabled, we have 4 tabs: Summary, Transcription, Ask AI, Reflection
+      expect(tabButtons).toHaveLength(4);
     });
   });
 
@@ -642,7 +643,7 @@ describe("PostSimulationSummary Component", () => {
    * Verifies the tab list configuration
    */
   describe("Tab List Configuration", () => {
-    it("should have two tabs configured", () => {
+    it("should have all tabs configured", () => {
       render(
         <TestWrapper>
           <PostSimulationSummary />
@@ -651,6 +652,8 @@ describe("PostSimulationSummary Component", () => {
 
       expect(screen.getByTestId("tab-1")).toBeInTheDocument();
       expect(screen.getByTestId("tab-2")).toBeInTheDocument();
+      expect(screen.getByTestId("tab-4")).toBeInTheDocument();
+      expect(screen.getByTestId("tab-5")).toBeInTheDocument();
     });
 
     it("should have Summary as first tab with id 1", () => {
@@ -675,6 +678,30 @@ describe("PostSimulationSummary Component", () => {
       const transcriptionTab = screen.getByTestId("tab-2");
       expect(transcriptionTab).toHaveTextContent("Transcription");
       expect(transcriptionTab).toHaveAttribute("data-value", "2");
+    });
+
+    it("should have Ask AI as third tab with id 4", () => {
+      render(
+        <TestWrapper>
+          <PostSimulationSummary />
+        </TestWrapper>,
+      );
+
+      const askAiTab = screen.getByTestId("tab-4");
+      expect(askAiTab).toHaveTextContent("Ask AI");
+      expect(askAiTab).toHaveAttribute("data-value", "4");
+    });
+
+    it("should have Reflection as fourth tab with id 5", () => {
+      render(
+        <TestWrapper>
+          <PostSimulationSummary />
+        </TestWrapper>,
+      );
+
+      const reflectionTab = screen.getByTestId("tab-5");
+      expect(reflectionTab).toHaveTextContent("Reflection");
+      expect(reflectionTab).toHaveAttribute("data-value", "5");
     });
   });
 
