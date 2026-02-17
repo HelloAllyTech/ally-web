@@ -249,6 +249,7 @@ interface UpcomingScenario {
   scenarioPathSessionItemStatus?: string;
   order?: number;
   scenarioPathSessionItemId?: string;
+  caseSessionItemId?: string;
 }
 
 interface CurrentSession {
@@ -258,6 +259,7 @@ interface CurrentSession {
   coverImageUrl?: string;
   title?: string;
   scenarioPathSessionItemId?: string;
+  caseSessionItemId?: string;
   transitionMessageTitle?: string;
   transitionMessageContent?: string;
   isScenarioPathSessionCompleted?: boolean;
