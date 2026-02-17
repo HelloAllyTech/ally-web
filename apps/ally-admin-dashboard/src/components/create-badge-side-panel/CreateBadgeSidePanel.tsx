@@ -12,7 +12,7 @@ import {
   useDeleteBadgeIconMutation,
   baseAPI,
 } from "@api";
-import { DoubleArrowRight, InfoIcon, Trash } from "@assets";
+import { DoubleArrowRight, InfoIcon, Trash, ArrowDownFilled } from "@assets";
 import { ActionConfirmationPopup, Button, ToggleSwitch } from "@components";
 import { IconUploader } from "@components/icon-uploader";
 import { ButtonVariant } from "@components/types";
@@ -394,7 +394,7 @@ export const CreateBadgeSidePanel: React.FC<CreateBadgeSidePanelProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex">
+    <div className="fixed inset-0 z-50 flex font-primary">
       <div className="flex-1 bg-black bg-opacity-50" onClick={handleClose} />
       <div className="w-[50%] min-w-[700px] bg-white shadow-xl border-l-[1px] border-border-light overflow-y-auto custom-scrollbar">
         <PanelHeader onClose={handleClose} isEditMode={isEditMode} onDelete={handleDeleteClick} />
@@ -506,26 +506,22 @@ export const CreateBadgeSidePanel: React.FC<CreateBadgeSidePanelProps> = ({
                       {criteriaConfig.unit}
                     </span>
                   )}
-                  <div className="flex flex-col gap-1 ml-2">
+                  <div className="flex flex-col justify-center items-center ml-2">
                     <button
                       type="button"
                       data-testid="criteria-increment-btn"
                       onClick={handleCriteriaIncrement}
-                      className="text-typography-400 hover:text-typography-600 leading-none"
+                      className="text-typography-400 p-1 rotate-180 hover:text-typography-600 leading-none"
                     >
-                      <svg width="10" height="6" viewBox="0 0 10 6" fill="currentColor">
-                        <path d="M5 0L10 6H0L5 0Z" />
-                      </svg>
+                      <ArrowDownFilled width={10} height={10} />
                     </button>
                     <button
                       type="button"
                       data-testid="criteria-decrement-btn"
                       onClick={handleCriteriaDecrement}
-                      className="text-typography-400 hover:text-typography-600 leading-none"
+                      className="text-typography-400 p-1 hover:text-typography-600 leading-none"
                     >
-                      <svg width="10" height="6" viewBox="0 0 10 6" fill="currentColor">
-                        <path d="M5 6L0 0H10L5 6Z" />
-                      </svg>
+                      <ArrowDownFilled width={10} height={10} />
                     </button>
                   </div>
                 </div>

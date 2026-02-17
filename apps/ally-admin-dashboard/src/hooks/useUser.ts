@@ -174,6 +174,8 @@ export const useUser = () => {
           return permissions.includes(Permissions.EDIT_PROMPT);
         case SIDEBAR_ITEMS.USER_MANAGEMENT:
           return permissions.includes(Permissions.EDIT_USER);
+        case SIDEBAR_ITEMS.USER_BADGES:
+          return permissions.includes(Permissions.VIEW_ADMIN_BADGE);
         default:
           return true;
       }
