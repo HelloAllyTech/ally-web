@@ -54,10 +54,11 @@ const PanelHeader: React.FC<{
     {isEditMode && onDelete && (
       <button
         onClick={onDelete}
-        className="p-2 text-typography-500 hover:text-red-600 hover:bg-red-50 rounded-md transition-colors"
+        className="p-2 text-typography-500 flex items-center gap-2 hover:text-red-600 hover:bg-red-50 rounded-md transition-colors"
         title={en.badge.deleteBadge}
       >
         <Trash width={18} height={18} />
+        <span className="text-base font-tertiary font-medium">{en.badge.deleteBadge}</span>
       </button>
     )}
   </div>
@@ -181,6 +182,7 @@ export const CreateBadgeSidePanel: React.FC<CreateBadgeSidePanelProps> = ({
 
   const [showConfirmationModal, setShowConfirmationModal] = useState(false);
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
+  const [showPublishConfirmation, setShowPublishConfirmation] = useState(false);
 
   const handleFieldChange = useCallback((field: keyof UserBadge, value: any) => {
     setFormData(previousData => ({
@@ -446,6 +448,9 @@ export const CreateBadgeSidePanel: React.FC<CreateBadgeSidePanelProps> = ({
                 }
                 label={en.badge.selectVisibility}
               />
+              <span className="text-base text-typography-800 ml-4">
+                {formData.visibilityType === "PUBLIC" ? "Enabled" : "Disabled"}
+              </span>
             </Field>
 
             {/* Category */}
@@ -541,7 +546,7 @@ export const CreateBadgeSidePanel: React.FC<CreateBadgeSidePanelProps> = ({
             <Button
               variant={ButtonVariant.PRIMARY}
               disabled={!canPublish || isLoading}
-              onClick={handlePublish}
+              onClick={() => setShowPublishConfirmation(true)}
             >
               {en.badge.publish}
             </Button>
@@ -568,14 +573,32 @@ export const CreateBadgeSidePanel: React.FC<CreateBadgeSidePanelProps> = ({
         isOpen={showDeleteConfirmation}
         onClose={handleCancelDelete}
         title={en.badge.deleteBadgeConfirmation}
+        titleItalic={en.badge.deleteBadgeConfirmationTitleItalic}
         description={en.badge.deleteBadgeConfirmationDescription}
         primaryButton={{
           label: en.badge.deleteBadge,
           onClick: handleConfirmDelete,
+          variant: ButtonVariant.DESTRUCTIVE,
         }}
         secondaryButton={{
           label: en.common.cancel,
           onClick: handleCancelDelete,
+        }}
+      />
+
+      <ActionConfirmationPopup
+        isOpen={showPublishConfirmation}
+        onClose={() => setShowPublishConfirmation(false)}
+        title={en.badge.publishBadgeConfirmation}
+        titleItalic={en.badge.publishBadgeConfirmationTitleItalic}
+        description={en.badge.publishBadgeConfirmationDescription}
+        primaryButton={{
+          label: en.badge.publish,
+          onClick: handlePublish,
+        }}
+        secondaryButton={{
+          label: en.common.cancel,
+          onClick: () => setShowPublishConfirmation(false),
         }}
       />
     </div>

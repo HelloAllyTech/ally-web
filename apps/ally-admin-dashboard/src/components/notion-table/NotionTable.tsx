@@ -63,10 +63,10 @@ const SelectionRowCell = ({ row }) => {
 
 const isSelectionColumn = (columnId: string) => columnId === SELECTION_COLUMN_ID;
 
-const renderHeaderCell = (column: any, headerIndex: number) => {
+const renderHeaderCell = (column: any, headerIndex: number, hasResizer: boolean) => {
   if (isSelectionColumn(column.id)) {
     return (
-      <div className="relative bg-white border-[1px] min-h-[45.5px] border-border-light select-none border-l-1">
+      <div className="relative w-full bg-white min-h-[45.5px] select-none border-r border-l border-border-light">
         <div className="flex items-center justify-center p-3 w-full h-full">
           {column.render("Header")}
         </div>
@@ -74,7 +74,7 @@ const renderHeaderCell = (column: any, headerIndex: number) => {
     );
   }
 
-  return <Header column={{ ...column, headerIndex }} />;
+  return <Header column={{ ...column, headerIndex, hasResizer: hasResizer }} />;
 };
 
 const renderTableCell = (
@@ -108,6 +108,7 @@ export const NotionTable = ({
   infiniteScroll,
   autoHeight = false,
   editIndex = 1,
+  hasResizer = true,
 }: NotionTableProps) => {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const { columns, data } = tableData;
@@ -166,6 +167,7 @@ export const NotionTable = ({
       defaultColumn,
       dataDispatch: onRowChange,
       sortTypes,
+      autoResetSelectedRows: false,
     },
     useBlockLayout,
     useResizeColumns,
@@ -187,12 +189,18 @@ export const NotionTable = ({
     },
   );
 
+  const prevSelectedIdsRef = useRef<string>("");
+
   useEffect(() => {
     if (onSelectionChange) {
-      const selectedRows = selectedFlatRows.map(row => row.original);
-      onSelectionChange(selectedRows);
+      const currentIds = Object.keys(selectedRowIds).sort().join(",");
+      if (currentIds !== prevSelectedIdsRef.current) {
+        prevSelectedIdsRef.current = currentIds;
+        const selectedRows = selectedFlatRows.map(row => row.original);
+        onSelectionChange(selectedRows);
+      }
     }
-  }, [selectedRowIds, onSelectionChange]);
+  }, [selectedRowIds, onSelectionChange, selectedFlatRows]);
 
   function isTableResizing() {
     for (const headerGroup of headerGroups) {
@@ -219,7 +227,7 @@ export const NotionTable = ({
           key={key}
           {...restRowProps}
           className={clsx(
-            "relative flex w-full border-b border-border-light border-l",
+            "relative flex w-full border-border-light border-l",
             isEditable
               ? "hover:bg-background-secondary"
               : "opacity-80 cursor-not-allowed bg-gray-50",
@@ -232,7 +240,7 @@ export const NotionTable = ({
               <div
                 key={cellKey}
                 {...restCellProps}
-                className="relative flex items-center w-full px-3 py-[7px] border-r border-border-light group"
+                className="relative flex items-center border-b w-full px-3 py-[7px] border-r border-border-light group"
                 style={{
                   backgroundColor: cell.column.id === "score" && cell.value.color,
                   width: isSelectionColumn(cell.column.id)
@@ -297,9 +305,9 @@ export const NotionTable = ({
                         minWidth: column.minWidth,
                         maxWidth: column.maxWidth,
                       }}
-                      className="border-1 border-border-light"
+                      className="border border-border-light border-l-0 border-r-0"
                     >
-                      {renderHeaderCell(column, headerIndex)}
+                      {renderHeaderCell(column, headerIndex, hasResizer)}
                     </div>
                   );
                 })}
