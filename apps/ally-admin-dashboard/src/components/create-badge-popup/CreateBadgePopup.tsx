@@ -15,6 +15,7 @@ export interface BadgeOption {
   label: string;
   description: string;
   icon: React.ComponentType<{ className?: string }>;
+  role: string;
 }
 
 export const BADGE_POPUP_OPTIONS: BadgeOption[] = [
@@ -23,24 +24,28 @@ export const BADGE_POPUP_OPTIONS: BadgeOption[] = [
     label: "Journey Badges",
     description: "Earned when completing simulation minutes.",
     icon: Timer,
+    role: "LEARNER",
   },
   {
     value: "ACTIVE_DAY_STREAK",
     label: "Momentum Badges",
     description: "Earned when maintaining a streak.",
     icon: Calendar,
+    role: "LEARNER",
   },
   {
     value: "COMMENTS_REACTIONS_GIVEN",
     label: "Contribution Badges",
     description: "Earned when giving comment or reactions.",
     icon: Contribution,
+    role: "REVIEWER",
   },
   {
     value: "COMMENTS_REACTIONS_RECEIVED",
     label: "Resonance Badges",
     description: "Earned when receiving comment or reactions.",
     icon: Compress,
+    role: "LEARNER",
   },
 ];
 

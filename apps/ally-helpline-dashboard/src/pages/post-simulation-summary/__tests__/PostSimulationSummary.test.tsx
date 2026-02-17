@@ -134,6 +134,18 @@ vi.mock("../learn/constants", () => ({
   },
 }));
 
+// Mock feature flags to enable all tabs
+vi.mock("@ally-ui-mono/ui-shared/index", async importOriginal => {
+  const actual = await importOriginal<typeof import("@ally-ui-mono/ui-shared/index")>();
+  return {
+    ...actual,
+    FEATURE_FLAGS_MAP: {
+      ...actual.FEATURE_FLAGS_MAP,
+      SUMMARY_TABS_FLAG: true,
+    },
+  };
+});
+
 // Test Wrapper (Provider required for useGetSimulationSummaryQuery / RTK Query)
 const TestWrapper = ({ children }: { children: React.ReactNode }) => (
   <Provider store={store}>
