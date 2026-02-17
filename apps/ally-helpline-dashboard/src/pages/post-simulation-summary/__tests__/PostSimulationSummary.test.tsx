@@ -571,8 +571,8 @@ describe("PostSimulationSummary Component", () => {
       );
 
       const tabButtons = screen.getAllByRole("tab");
-      // With SUMMARY_TABS_FLAG enabled, we have 4 tabs: Summary, Transcription, Ask AI, Reflection
-      expect(tabButtons).toHaveLength(4);
+      // With SUMMARY_TABS_FLAG enabled, we have 5 tabs: Summary, Transcription, Checklist, Ask AI, Reflection
+      expect(tabButtons).toHaveLength(5);
     });
   });
 
@@ -665,6 +665,7 @@ describe("PostSimulationSummary Component", () => {
       expect(screen.getByTestId("tab-1")).toBeInTheDocument();
       expect(screen.getByTestId("tab-2")).toBeInTheDocument();
       expect(screen.getByTestId("tab-4")).toBeInTheDocument();
+      expect(screen.getByTestId("tab-6")).toBeInTheDocument();
       expect(screen.getByTestId("tab-5")).toBeInTheDocument();
     });
 
@@ -704,7 +705,19 @@ describe("PostSimulationSummary Component", () => {
       expect(askAiTab).toHaveAttribute("data-value", "4");
     });
 
-    it("should have Reflection as fourth tab with id 5", () => {
+    it("should have Checklist as fourth tab with id 6", () => {
+      render(
+        <TestWrapper>
+          <PostSimulationSummary />
+        </TestWrapper>,
+      );
+
+      const checklistTab = screen.getByTestId("tab-6");
+      expect(checklistTab).toHaveTextContent("Checklist");
+      expect(checklistTab).toHaveAttribute("data-value", "6");
+    });
+
+    it("should have Reflection as fifth tab with id 5", () => {
       render(
         <TestWrapper>
           <PostSimulationSummary />
