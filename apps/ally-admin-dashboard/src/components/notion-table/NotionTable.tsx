@@ -1,8 +1,9 @@
-import React, { useMemo, useEffect } from "react";
+import React, { useMemo, useEffect, useRef } from "react";
 
 import clsx from "clsx";
 import { useTable, useBlockLayout, useResizeColumns, useSortBy, useRowSelect } from "react-table";
 
+import { InfiniteScroll } from "@ally-ui-mono/ui-shared";
 import { DockToRight } from "@assets";
 
 import { Cell } from "./Cell";
@@ -104,8 +105,11 @@ export const NotionTable = ({
   onRowChange,
   onRowClick,
   onSelectionChange,
+  infiniteScroll,
   autoHeight = false,
+  editIndex = 1,
 }: NotionTableProps) => {
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
   const { columns, data } = tableData;
 
   // Auto-size columns based on content
@@ -202,8 +206,67 @@ export const NotionTable = ({
     return false;
   }
 
+  const renderRows = () =>
+    rows.map(row => {
+      prepareRow(row);
+      const rowProps = row.getRowProps();
+      const { key, ...restRowProps } = rowProps;
+      const rowIndex = row.index;
+      const isEditable = row.original?.isEditable?.value ?? true;
+
+      return (
+        <div
+          key={key}
+          {...restRowProps}
+          className={clsx(
+            "relative flex w-full border-b border-border-light border-l",
+            isEditable
+              ? "hover:bg-background-secondary"
+              : "opacity-80 cursor-not-allowed bg-gray-50",
+          )}
+        >
+          {row.cells.map((cell, cellIndex) => {
+            const cellProps = cell.getCellProps();
+            const { key: cellKey, ...restCellProps } = cellProps;
+            return (
+              <div
+                key={cellKey}
+                {...restCellProps}
+                className="relative flex items-center w-full px-3 py-[7px] border-r border-border-light group"
+                style={{
+                  backgroundColor: cell.column.id === "score" && cell.value.color,
+                  width: isSelectionColumn(cell.column.id)
+                    ? SELECTION_COLUMN_WIDTH - 1
+                    : cell.column.width,
+                  minWidth: isSelectionColumn(cell.column.id)
+                    ? SELECTION_COLUMN_WIDTH - 1
+                    : cell.column.minWidth,
+                  maxWidth: isSelectionColumn(cell.column.id)
+                    ? SELECTION_COLUMN_WIDTH - 1
+                    : cell.column.maxWidth,
+                }}
+              >
+                {onRowClick && cellIndex === editIndex && isEditable && (
+                  <button
+                    className="absolute ml-auto p-1 bg-white border-[1px] border-border-light shadow-md rounded-[3px] z-10 right-[6px] opacity-0 group-hover:opacity-100 transition-opacity"
+                    onClick={() => onRowClick(rowIndex)}
+                  >
+                    <DockToRight />
+                  </button>
+                )}
+                {renderTableCell(cell, rowIndex, row?.original, onRowChange)}
+              </div>
+            );
+          })}
+        </div>
+      );
+    });
+
+  const rowElements = renderRows();
+
   return (
     <div
+      ref={scrollContainerRef}
       style={tableStyle}
       className={clsx(
         "overflow-auto flex custom-scrollbar",
@@ -245,60 +308,18 @@ export const NotionTable = ({
           })}
         </div>
         <div {...getTableBodyProps()} className="w-full text-typography-900">
-          {rows.map(row => {
-            prepareRow(row);
-            const rowProps = row.getRowProps();
-            const { key, ...restRowProps } = rowProps;
-            const rowIndex = row.index;
-            const isEditable = row.original?.isEditable?.value ?? true;
-
-            return (
-              <div
-                key={key}
-                {...restRowProps}
-                className={clsx(
-                  "relative flex w-full border-b border-border-light border-l",
-                  isEditable
-                    ? "hover:bg-background-secondary"
-                    : "opacity-80 cursor-not-allowed bg-gray-50",
-                )}
-              >
-                {row.cells.map((cell, cellIndex) => {
-                  const cellProps = cell.getCellProps();
-                  const { key: cellKey, ...restCellProps } = cellProps;
-                  return (
-                    <div
-                      key={cellKey}
-                      {...restCellProps}
-                      className="relative flex items-center w-full px-3 py-[7px] border-r border-border-light group"
-                      style={{
-                        backgroundColor: cell.column.id === "score" && cell.value.color,
-                        width: isSelectionColumn(cell.column.id)
-                          ? SELECTION_COLUMN_WIDTH - 1
-                          : cell.column.width,
-                        minWidth: isSelectionColumn(cell.column.id)
-                          ? SELECTION_COLUMN_WIDTH - 1
-                          : cell.column.minWidth,
-                        maxWidth: isSelectionColumn(cell.column.id)
-                          ? SELECTION_COLUMN_WIDTH - 1
-                          : cell.column.maxWidth,
-                      }}
-                    >
-                      {onRowClick && cellIndex === 1 && isEditable && (
-                        <button
-                          className="absolute ml-auto p-1 bg-white border-[1px] border-border-light shadow-md rounded-[3px] z-10 right-[6px] opacity-0 group-hover:opacity-100 transition-opacity"
-                          onClick={() => onRowClick(rowIndex)}
-                        >
-                          <DockToRight />
-                        </button>
-                      )}
-                      {renderTableCell(cell, rowIndex, row?.original, onRowChange)}
-                    </div>
-                  );
-                })}
-              </div>
-            );
-          })}
+          {infiniteScroll ? (
+            <InfiniteScroll
+              onInfiniteScroll={infiniteScroll.onLoadMore}
+              isLoading={infiniteScroll.isLoading}
+              hasMore={infiniteScroll.hasMore}
+              scrollContainerRef={scrollContainerRef}
+            >
+              {rowElements}
+            </InfiniteScroll>
+          ) : (
+            rowElements
+          )}
           {tableFooter}
         </div>
       </div>
