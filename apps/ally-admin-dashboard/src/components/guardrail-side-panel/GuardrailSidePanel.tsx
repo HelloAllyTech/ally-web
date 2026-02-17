@@ -5,7 +5,6 @@ import { toast } from "sonner";
 import { AutoExpandableTextarea } from "@ally-ui-mono/ui-shared";
 import { DoubleArrowRight, Trash } from "@assets";
 import { Button } from "@components/button/Button";
-import { ToggleSwitch } from "@components/toggle-switch/ToggleSwitch";
 import { ButtonVariant } from "@components/types";
 
 interface GuardrailSidePanelProps {
@@ -135,7 +134,7 @@ export const GuardrailSidePanel: React.FC<GuardrailSidePanelProps> = ({
 
           <div className="space-y-3">
             <Field
-              label="Helper Dialogue (If helper said something that can be classified as)"
+              label="If helper said something that can be classified as"
               multiline={true}
               required={true}
             >
@@ -149,7 +148,7 @@ export const GuardrailSidePanel: React.FC<GuardrailSidePanelProps> = ({
             </Field>
 
             <Field
-              label="Actor Dialogue (Actor should start by saying)"
+              label="Actor should start by saying"
               multiline={true}
               required={true}
             >
@@ -162,12 +161,6 @@ export const GuardrailSidePanel: React.FC<GuardrailSidePanelProps> = ({
               />
             </Field>
 
-            <Field label="Active">
-              <ToggleSwitch
-                enabled={formData.active !== false}
-                onChange={enabled => handleChange("active", enabled)}
-              />
-            </Field>
           </div>
 
           <div className="flex gap-3 mt-8 pb-6 justify-center">
