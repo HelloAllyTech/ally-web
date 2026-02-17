@@ -883,7 +883,7 @@ export const PROMPT_COLUMNS = [
     label: "Prompt Code",
     accessor: "promptCode",
     dataType: cellTypes.normalText,
-    minWidth: 150,
+    minWidth: 250,
     editable: false,
   },
   {
