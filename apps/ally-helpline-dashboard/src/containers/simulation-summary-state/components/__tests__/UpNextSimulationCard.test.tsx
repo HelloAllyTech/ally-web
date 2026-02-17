@@ -19,14 +19,18 @@ interface UpcomingScenario {
 
 interface CurrentSession {
   scenarioId?: string;
-  isScenarioPathSessionCompleted?: string;
+  isScenarioPathSessionCompleted?: boolean;
+  isCaseSessionCompleted?: boolean;
   coverImageUrl?: string;
   title?: string;
   scenarioPathSessionItemId?: string;
+  caseSessionItemId?: string;
   transitionMessageTitle?: string;
   transitionMessageContent?: string;
   scenarioPathSessionStatus?: boolean;
   scenarioPathSessionItemStatus?: string;
+  caseSessionItemStatus?: string;
+  sessionGlimpse?: string;
 }
 
 interface GetUpComingSimulationResponse {
@@ -75,6 +79,11 @@ vi.mock("@components", () => ({
   },
 }));
 
+// Mock assets
+vi.mock("@assets", () => ({
+  ArrowDownFilled: () => <svg data-testid="arrow-down-filled" />,
+}));
+
 // Mock constants
 vi.mock("@constants", () => ({
   ROUTES: {
@@ -121,8 +130,8 @@ describe("UpNextSimulationCard", () => {
     },
     currentSession: {
       scenarioId: "current-sim-123",
-      isScenarioPathSessionCompleted: "", // Must be falsy to show Up Next card
-      scenarioPathSessionItemStatus: "COMPLETED", // Must be COMPLETED to show "Great work!"
+      isScenarioPathSessionCompleted: false, // Must be falsy to show Up Next card
+      caseSessionItemStatus: "COMPLETED", // Must be COMPLETED to show "Great work!"
       transitionMessageTitle: "Great work!",
       transitionMessageContent: "You've completed the previous simulation.",
       title: "Current Simulation",
