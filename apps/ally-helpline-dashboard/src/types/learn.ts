@@ -359,3 +359,14 @@ export interface Prompt {
   prompt: string;
   response?: string;
 }
+
+export interface ChecklistItem {
+  id: number;
+  label: string;
+  completed: boolean;
+}
+
+export interface GetSimulationChecklistResponse {
+  overallScore: number;
+  items: ChecklistItem[];
+}
