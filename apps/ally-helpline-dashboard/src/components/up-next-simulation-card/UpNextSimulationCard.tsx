@@ -44,6 +44,7 @@ export const UpNextSimulationCard = ({ data }: UpNextSimulationCardProps) => {
       params: {
         scenarioId: Number(upcomingScenario.id),
         scenarioPathSessionItemId: upcomingScenario.scenarioPathSessionItemId,
+        caseSessionItemId: upcomingScenario.caseSessionItemId,
       },
       metadata: {
         title: upcomingScenario.title,
@@ -59,6 +60,7 @@ export const UpNextSimulationCard = ({ data }: UpNextSimulationCardProps) => {
       params: {
         scenarioId: Number(currentSession.scenarioId),
         scenarioPathSessionItemId: currentSession.scenarioPathSessionItemId,
+        caseSessionItemId: currentSession.caseSessionItemId,
       },
       metadata: {
         title: currentSession.title,
