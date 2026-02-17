@@ -15,10 +15,17 @@ export interface UserBadge {
   };
 }
 
+export interface UserBadgeFilters {
+  category: string[];
+  status: ("ACTIVE" | "DRAFT")[];
+}
+
 export interface GetUserBadgesRequest {
   search?: string;
   limit?: number;
   offset?: number;
+  category?: string[];
+  status?: ("ACTIVE" | "DRAFT")[];
 }
 
 export interface GetUserBadgesResponse {
