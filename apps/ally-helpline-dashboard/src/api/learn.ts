@@ -30,6 +30,7 @@ import {
   GetScenarioCasesResponse,
   pageType,
   GetReflectionPromptsResponse,
+  GetSimulationChecklistResponse,
 } from "@types";
 
 import { baseAPI } from "./baseAPI";
@@ -305,6 +306,17 @@ const learnAPI = baseAPI.injectEndpoints({
         method: HttpMethod.GET,
       }),
     }),
+    /**
+     * Get checklist for a scenario session.
+     * @param {string} sessionId - Session identifier
+     * @returns {Promise<GetSimulationChecklistResponse>} Checklist data with overall score and items
+     */
+    getSimulationChecklist: builder.query<GetSimulationChecklistResponse, { sessionId: string }>({
+      query: ({ sessionId }) => ({
+        url: ApiEndpoints.LEARN.GET_SIMULATION_CHECKLIST(sessionId),
+        method: HttpMethod.GET,
+      }),
+    }),
   }),
 });
 
@@ -330,4 +342,5 @@ export const {
   useLazyGetScenarioSessionByCaseItemQuery,
   useStartCaseSimulationMutation,
   useGetReflectionPromptsQuery,
+  useGetSimulationChecklistQuery,
 } = learnAPI;

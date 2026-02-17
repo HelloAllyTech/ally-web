@@ -39,8 +39,8 @@ import Filter from "./filter.svg?react";
 import FocusLens from "./focusLens.svg?react";
 import FrameSource from "./frameSource.svg?react";
 import Globe from "./globe.svg?react";
-import Guardrails from "./guardrails.svg?react";
 import GroupBranch from "./groupBranch.svg?react";
+import Guardrails from "./guardrails.svg?react";
 import HappyEmoji from "./happyEmoji.svg?react";
 import InfoIcon from "./info.svg?react";
 import Logout from "./logout.svg?react";
@@ -63,6 +63,7 @@ import TrashRed from "./trashRed.svg?react";
 import Unarchive from "./unArchiveIcon.svg?react";
 import Unpublish from "./unpublish.svg?react";
 import Upload from "./upload.svg?react";
+import UploadImage from "./uploadImage.svg?react";
 import User from "./user.svg?react";
 import Users from "./users.svg?react";
 import VideoCamera from "./videoCamera.svg?react";
@@ -138,4 +139,5 @@ export {
   Calendar,
   Contribution,
   Compress,
+  UploadImage,
 };

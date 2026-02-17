@@ -102,6 +102,11 @@ export const ApiEndpoints = {
   },
   USER_BADGES: {
     GET_BADGES: "/v1/badges",
+    UPLOAD_BADGE_ICON: "/v1/badges/badge-image-url",
+    DELETE_BADGE_ICON: `/v1/badges/badge-image`,
+    CREATE_BADGE: "/v1/badges",
+    UPDATE_BADGE: (id: string) => `/v1/badges/${id}`,
+    DELETE_BADGE: (id: string) => `/v1/badges/${id}`,
   },
   AUTHORIZATION: {
     GET_PERMISSIONS: "/v1/authorization/permissions",
@@ -192,4 +197,5 @@ export const TAG_TYPES = {
   CHARACTERS: "characters",
   PROMPTS: "prompts",
   CONVERSATIONAL_GUARDRAILS: "conversationalGuardrails",
+  USER_BADGES: "userBadges",
 };

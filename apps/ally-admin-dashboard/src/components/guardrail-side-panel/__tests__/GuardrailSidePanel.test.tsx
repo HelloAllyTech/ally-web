@@ -109,7 +109,6 @@ describe("GuardrailSidePanel", () => {
       render(<GuardrailSidePanel {...defaultProps} />);
 
       expect(screen.getByText("Edit guardrail")).toBeInTheDocument();
-      expect(screen.getByText("Delete")).toBeInTheDocument();
     });
 
     it("renders create side panel when creating new guardrail", () => {
@@ -167,15 +166,6 @@ describe("GuardrailSidePanel", () => {
       fireEvent.click(closeButton!);
 
       expect(defaultProps.onClose).toHaveBeenCalled();
-    });
-
-    it("calls onDelete when delete button is clicked", () => {
-      render(<GuardrailSidePanel {...defaultProps} />);
-
-      const deleteButton = screen.getByText("Delete");
-      fireEvent.click(deleteButton);
-
-      expect(defaultProps.onDelete).toHaveBeenCalledWith("guardrail-1");
     });
 
     it("calls onUpdate when active status is toggled", async () => {

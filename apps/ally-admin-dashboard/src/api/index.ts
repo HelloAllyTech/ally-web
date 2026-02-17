@@ -7,3 +7,4 @@ export * from "./scenarioPath";
 export * from "./previewVoice";
 export * from "./aiAPI";
 export * from "./guardrails";
+export * from "./userBadges";

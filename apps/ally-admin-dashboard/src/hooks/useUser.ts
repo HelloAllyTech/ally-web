@@ -181,6 +181,8 @@ export const useUser = () => {
           return permissions.includes(Permissions.EDIT_USER);
         case SIDEBAR_ITEMS.MANAGE_GUARDRAILS:
           return permissions.includes(Permissions.EDIT_SCENARIO);
+        case SIDEBAR_ITEMS.USER_BADGES:
+          return permissions.includes(Permissions.VIEW_ADMIN_BADGE);
         default:
           return true;
       }

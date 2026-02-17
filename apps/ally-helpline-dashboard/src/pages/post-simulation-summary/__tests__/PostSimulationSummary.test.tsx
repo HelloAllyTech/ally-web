@@ -134,6 +134,18 @@ vi.mock("../learn/constants", () => ({
   },
 }));
 
+// Mock feature flags to enable all tabs
+vi.mock("@ally-ui-mono/ui-shared/index", async importOriginal => {
+  const actual = await importOriginal<typeof import("@ally-ui-mono/ui-shared/index")>();
+  return {
+    ...actual,
+    FEATURE_FLAGS_MAP: {
+      ...actual.FEATURE_FLAGS_MAP,
+      SUMMARY_TABS_FLAG: true,
+    },
+  };
+});
+
 // Test Wrapper (Provider required for useGetSimulationSummaryQuery / RTK Query)
 const TestWrapper = ({ children }: { children: React.ReactNode }) => (
   <Provider store={store}>
@@ -551,7 +563,7 @@ describe("PostSimulationSummary Component", () => {
       expect(tabs).toHaveClass("mb-4");
     });
 
-    it("should render both tab buttons", () => {
+    it("should render all tab buttons", () => {
       render(
         <TestWrapper>
           <PostSimulationSummary />
@@ -559,7 +571,8 @@ describe("PostSimulationSummary Component", () => {
       );
 
       const tabButtons = screen.getAllByRole("tab");
-      expect(tabButtons).toHaveLength(2);
+      // With SUMMARY_TABS_FLAG enabled, we have 5 tabs: Summary, Transcription, Checklist, Ask AI, Reflection
+      expect(tabButtons).toHaveLength(5);
     });
   });
 
@@ -642,7 +655,7 @@ describe("PostSimulationSummary Component", () => {
    * Verifies the tab list configuration
    */
   describe("Tab List Configuration", () => {
-    it("should have two tabs configured", () => {
+    it("should have all tabs configured", () => {
       render(
         <TestWrapper>
           <PostSimulationSummary />
@@ -651,6 +664,9 @@ describe("PostSimulationSummary Component", () => {
 
       expect(screen.getByTestId("tab-1")).toBeInTheDocument();
       expect(screen.getByTestId("tab-2")).toBeInTheDocument();
+      expect(screen.getByTestId("tab-4")).toBeInTheDocument();
+      expect(screen.getByTestId("tab-6")).toBeInTheDocument();
+      expect(screen.getByTestId("tab-5")).toBeInTheDocument();
     });
 
     it("should have Summary as first tab with id 1", () => {
@@ -675,6 +691,42 @@ describe("PostSimulationSummary Component", () => {
       const transcriptionTab = screen.getByTestId("tab-2");
       expect(transcriptionTab).toHaveTextContent("Transcription");
       expect(transcriptionTab).toHaveAttribute("data-value", "2");
+    });
+
+    it("should have Ask AI as third tab with id 4", () => {
+      render(
+        <TestWrapper>
+          <PostSimulationSummary />
+        </TestWrapper>,
+      );
+
+      const askAiTab = screen.getByTestId("tab-4");
+      expect(askAiTab).toHaveTextContent("Ask AI");
+      expect(askAiTab).toHaveAttribute("data-value", "4");
+    });
+
+    it("should have Checklist as fourth tab with id 6", () => {
+      render(
+        <TestWrapper>
+          <PostSimulationSummary />
+        </TestWrapper>,
+      );
+
+      const checklistTab = screen.getByTestId("tab-6");
+      expect(checklistTab).toHaveTextContent("Checklist");
+      expect(checklistTab).toHaveAttribute("data-value", "6");
+    });
+
+    it("should have Reflection as fifth tab with id 5", () => {
+      render(
+        <TestWrapper>
+          <PostSimulationSummary />
+        </TestWrapper>,
+      );
+
+      const reflectionTab = screen.getByTestId("tab-5");
+      expect(reflectionTab).toHaveTextContent("Reflection");
+      expect(reflectionTab).toHaveAttribute("data-value", "5");
     });
   });
 
