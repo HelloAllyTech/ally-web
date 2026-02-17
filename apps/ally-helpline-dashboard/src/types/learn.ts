@@ -265,6 +265,8 @@ interface CurrentSession {
   transitionMessageContent?: string;
   isScenarioPathSessionCompleted?: boolean;
   sessionGlimpse?: string;
+  isCaseSessionCompleted?: boolean;
+  caseSessionItemStatus?: string;
 }
 
 export interface GetUpComingSimulationResponse {
