@@ -130,7 +130,9 @@ describe("GuardrailSidePanel", () => {
     it("renders helper dialogue field", () => {
       render(<GuardrailSidePanel {...defaultProps} />);
 
-      expect(screen.getByText(/Helper Dialogue/)).toBeInTheDocument();
+      expect(
+        screen.getByText(/If helper said something that can be classified as/),
+      ).toBeInTheDocument();
     });
 
     it("renders name as inline editable title", () => {
@@ -142,14 +144,7 @@ describe("GuardrailSidePanel", () => {
     it("renders actor dialogue field", () => {
       render(<GuardrailSidePanel {...defaultProps} />);
 
-      expect(screen.getByText(/Actor Dialogue/)).toBeInTheDocument();
-    });
-
-    it("renders status toggle", () => {
-      render(<GuardrailSidePanel {...defaultProps} />);
-
-      expect(screen.getByText("Active")).toBeInTheDocument();
-      expect(screen.getByTestId("toggle-switch")).toBeInTheDocument();
+      expect(screen.getByText(/Actor should start by saying/)).toBeInTheDocument();
     });
 
     it("renders save and cancel buttons", () => {
@@ -184,26 +179,6 @@ describe("GuardrailSidePanel", () => {
       fireEvent.click(deleteButton);
 
       expect(defaultProps.onDelete).toHaveBeenCalledWith("guardrail-1");
-    });
-
-    it("calls onUpdate when active status is toggled", async () => {
-      render(<GuardrailSidePanel {...defaultProps} />);
-
-      const toggleButton = screen.getByTestId("toggle-input");
-      fireEvent.click(toggleButton);
-
-      const saveButton = screen.getByText("Save");
-      expect(saveButton).not.toBeDisabled();
-      fireEvent.click(saveButton);
-
-      await waitFor(() => {
-        expect(defaultProps.onUpdate).toHaveBeenCalledWith(
-          "guardrail-1",
-          expect.objectContaining({
-            active: false,
-          }),
-        );
-      });
     });
 
     it("calls onClose when cancel button is clicked", () => {

@@ -5,7 +5,6 @@ import { toast } from "sonner";
 import { AutoExpandableTextarea } from "@ally-ui-mono/ui-shared";
 import { DoubleArrowRight, Trash } from "@assets";
 import { Button } from "@components/button/Button";
-import { ToggleSwitch } from "@components/toggle-switch/ToggleSwitch";
 import { ButtonVariant } from "@components/types";
 
 interface GuardrailSidePanelProps {
@@ -136,7 +135,7 @@ export const GuardrailSidePanel: React.FC<GuardrailSidePanelProps> = ({
 
           <div className="space-y-3">
             <Field
-              label="Helper Dialogue (If helper said something that can be classified as)"
+              label="If helper said something that can be classified as"
               multiline={true}
               required={true}
             >
@@ -149,24 +148,13 @@ export const GuardrailSidePanel: React.FC<GuardrailSidePanelProps> = ({
               />
             </Field>
 
-            <Field
-              label="Actor Dialogue (Actor should start by saying)"
-              multiline={true}
-              required={true}
-            >
+            <Field label="Actor should start by saying" multiline={true} required={true}>
               <AutoExpandableTextarea
                 value={formData.actorDialogue || ""}
                 onChange={val => handleChange("actorDialogue", val)}
                 placeholder="e.g. why are you talking to me like that?"
                 minHeight={20}
                 className="py-2 pt-[16px] px-0 border-none focus:outline-none text-base w-full resize-none"
-              />
-            </Field>
-
-            <Field label="Active">
-              <ToggleSwitch
-                enabled={formData.active !== false}
-                onChange={enabled => handleChange("active", enabled)}
               />
             </Field>
           </div>
