@@ -13,6 +13,7 @@ interface SkillCoverage {
 interface EmotionalDataPoint {
   time: string;
   level: number;
+  isOriginal?: boolean;
 }
 
 interface SkillsTabProps {
@@ -22,6 +23,7 @@ interface SkillsTabProps {
 interface CustomDotProps {
   cx?: number;
   cy?: number;
+  payload?: EmotionalDataPoint;
 }
 
 // Constants
@@ -66,8 +68,9 @@ const calculateTimeTicks = (data: EmotionalDataPoint[]): string[] | undefined =>
 };
 
 // Components
-const CustomDot: FC<CustomDotProps> = ({ cx, cy }) => {
-  if (cx === undefined || cy === undefined) return null;
+const CustomDot: FC<CustomDotProps> = ({ cx, cy, payload }) => {
+  // Only show dot for original data points, not interpolated ones
+  if (cx === undefined || cy === undefined || !payload?.isOriginal) return null;
   return <circle cx={cx} cy={cy} r={3} fill="#FFF" stroke="#7FBA7A" strokeWidth={2} />;
 };
 
@@ -156,61 +159,140 @@ const SkillCoverageCard: FC<{ skills: SkillCoverage[] }> = ({ skills }) => (
   </div>
 );
 
+// Helper to parse time string to seconds
+const parseTimeToSeconds = (time: string): number => {
+  const [minutes, seconds] = time.split(":").map(Number);
+  return minutes * 60 + seconds;
+};
+
+// Interpolate level value between two data points
+const interpolateLevel = (
+  targetSeconds: number,
+  beforePoint: { seconds: number; level: number },
+  afterPoint: { seconds: number; level: number },
+): number => {
+  const ratio = (targetSeconds - beforePoint.seconds) / (afterPoint.seconds - beforePoint.seconds);
+  return beforePoint.level + ratio * (afterPoint.level - beforePoint.level);
+};
+
 const EmotionalMovementChart: FC<{
   data: EmotionalDataPoint[];
   timeTicks: string[] | undefined;
-}> = ({ data, timeTicks }) => (
-  <div className="bg-white border border-[#B39DDB] rounded-md">
-    <div className="px-4 py-3 border-b border-b-[#B39DDB] bg-[#EDE7F680]">
-      <h3 className="text-base font-medium font-primary text-typography-900">
-        Client Emotional Movement
-      </h3>
+}> = ({ data, timeTicks }) => {
+  // Create chart data with interpolated values for each timeTick
+  const chartData = useMemo(() => {
+    if (!timeTicks || timeTicks.length === 0 || data.length === 0) {
+      return data.map(point => ({ ...point, isOriginal: true }));
+    }
+
+    const dataWithSeconds = data.map(point => ({
+      ...point,
+      seconds: parseTimeToSeconds(point.time),
+    }));
+
+    const dataMap = new Map(data.map(point => [point.time, point.level]));
+
+    const result: EmotionalDataPoint[] = [];
+
+    for (const tick of timeTicks) {
+      if (dataMap.has(tick)) {
+        result.push({ time: tick, level: dataMap.get(tick)!, isOriginal: true });
+        continue;
+      }
+      const tickSeconds = parseTimeToSeconds(tick);
+
+      let beforePoint: { seconds: number; level: number } | null = null;
+      let afterPoint: { seconds: number; level: number } | null = null;
+
+      for (const point of dataWithSeconds) {
+        if (point.seconds <= tickSeconds) {
+          if (!beforePoint || point.seconds > beforePoint.seconds) {
+            beforePoint = { seconds: point.seconds, level: point.level };
+          }
+        }
+        if (point.seconds >= tickSeconds) {
+          if (!afterPoint || point.seconds < afterPoint.seconds) {
+            afterPoint = { seconds: point.seconds, level: point.level };
+          }
+        }
+      }
+
+      // Calculate interpolated level
+      let level: number;
+      if (beforePoint && afterPoint && beforePoint.seconds !== afterPoint.seconds) {
+        level = interpolateLevel(tickSeconds, beforePoint, afterPoint);
+      } else if (beforePoint) {
+        level = beforePoint.level;
+      } else if (afterPoint) {
+        level = afterPoint.level;
+      } else {
+        continue;
+      }
+
+      result.push({ time: tick, level: Math.round(level * 10) / 10, isOriginal: false });
+    }
+
+    return result;
+  }, [data, timeTicks]);
+
+  return (
+    <div className="bg-white border border-[#B39DDB] rounded-md">
+      <div className="px-4 py-3 border-b border-b-[#B39DDB] bg-[#EDE7F680]">
+        <h3 className="text-base font-medium font-primary text-typography-900">
+          Client Emotional Movement
+        </h3>
+      </div>
+      <div className="px-6 py-6">
+        <ResponsiveContainer width="100%" height={CHART_HEIGHT}>
+          <LineChart data={chartData} margin={CHART_MARGIN}>
+            <CartesianGrid
+              strokeDasharray="3 3"
+              stroke="#E5E5E5"
+              vertical={true}
+              horizontal={true}
+            />
+            <XAxis
+              dataKey="time"
+              axisLine={{ stroke: "#666666", strokeWidth: 1 }}
+              tickLine={false}
+              tick={{ fill: "#6B7280", fontSize: 12 }}
+              {...(timeTicks && timeTicks.length > 0
+                ? { ticks: timeTicks }
+                : { interval: "preserveStartEnd" })}
+              label={{
+                value: "Session Timeline",
+                position: "bottom",
+                offset: 10,
+                style: { fill: "#6B7280", fontSize: 12 },
+              }}
+            />
+            <YAxis
+              domain={[0, 10]}
+              ticks={Y_AXIS_TICKS}
+              axisLine={{ stroke: "#000000", strokeWidth: 1 }}
+              tickLine={false}
+              tick={{ fill: "#6B7280", fontSize: 12 }}
+              label={{
+                value: "Level (1-10)",
+                angle: -90,
+                position: "insideLeft",
+                style: { fill: "#6B7280", fontSize: 12, textAnchor: "middle" },
+              }}
+            />
+            <Line
+              type="monotone"
+              dataKey="level"
+              stroke="#7FBA7A"
+              strokeWidth={2.5}
+              dot={<CustomDot />}
+              activeDot={{ r: 6 }}
+            />
+          </LineChart>
+        </ResponsiveContainer>
+      </div>
     </div>
-    <div className="px-6 py-6">
-      <ResponsiveContainer width="100%" height={CHART_HEIGHT}>
-        <LineChart data={data} margin={CHART_MARGIN}>
-          <CartesianGrid strokeDasharray="3 3" stroke="#E5E5E5" vertical={true} horizontal={true} />
-          <XAxis
-            dataKey="time"
-            axisLine={{ stroke: "#666666", strokeWidth: 1 }}
-            tickLine={false}
-            tick={{ fill: "#6B7280", fontSize: 12 }}
-            {...(timeTicks && timeTicks.length > 0
-              ? { ticks: timeTicks }
-              : { interval: "preserveStartEnd" })}
-            label={{
-              value: "Session Timeline",
-              position: "bottom",
-              offset: 10,
-              style: { fill: "#6B7280", fontSize: 12 },
-            }}
-          />
-          <YAxis
-            domain={[0, 10]}
-            ticks={Y_AXIS_TICKS}
-            axisLine={{ stroke: "#000000", strokeWidth: 1 }}
-            tickLine={false}
-            tick={{ fill: "#6B7280", fontSize: 12 }}
-            label={{
-              value: "Level (1-10)",
-              angle: -90,
-              position: "insideLeft",
-              style: { fill: "#6B7280", fontSize: 12, textAnchor: "middle" },
-            }}
-          />
-          <Line
-            type="monotone"
-            dataKey="level"
-            stroke="#7FBA7A"
-            strokeWidth={2.5}
-            dot={<CustomDot />}
-            activeDot={{ r: 6 }}
-          />
-        </LineChart>
-      </ResponsiveContainer>
-    </div>
-  </div>
-);
+  );
+};
 
 // Main Component
 export const SkillsTab: FC<SkillsTabProps> = ({ sessionId }) => {
