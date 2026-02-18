@@ -97,7 +97,6 @@ const renderComponent = (
         <BrowserRouter>
           <SimulationSummarySidebar
             summaryId={summaryId}
-            summaryName={summaryName}
             closeSummarySidebar={mockCloseSummarySidebar}
           />
         </BrowserRouter>
