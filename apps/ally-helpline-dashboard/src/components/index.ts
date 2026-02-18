@@ -9,6 +9,7 @@ import BoxBreathing from "./box-breathing";
 import { Button, ButtonVariant, ButtonVariantType } from "./button";
 import ButtonGroup from "./button-group";
 import { Carousel, CarouselSize, CarouselVariant, CarouselSlideType } from "./carousel";
+import Checklist from "./checklist";
 import Chip, { ChipConfig } from "./chip";
 import { CircularProgress } from "./circular-progress";
 import CommentCard from "./comment-card/CommentCard";
@@ -127,4 +128,5 @@ export {
   UpNextSimulationCard,
   AskAiTab,
   ReflectionTab,
+  Checklist,
 };
