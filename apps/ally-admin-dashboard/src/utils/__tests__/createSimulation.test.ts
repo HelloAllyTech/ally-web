@@ -147,6 +147,7 @@ describe("createSimulation utils", () => {
         isGlobal: false,
         isPublic: false,
         agentGoal: "Test goal",
+        behaviorInstructions: [],
         currentLocation: "New York",
         emotionalNeeds: "Test needs",
         gender: "male",
