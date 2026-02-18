@@ -36,7 +36,7 @@ import {
   GetImageLibraryQueryParams,
   GetImageLibraryResponse,
   GetHelperTagsQueryParams,
-  HelperTag,
+  HelperTagInput,
 } from "@types";
 
 import { baseAPI } from "./baseApi";
@@ -545,7 +545,7 @@ const simulationStudioAPI = baseAPI.injectEndpoints({
       invalidatesTags: [TAG_TYPES.CHARACTERS],
     }),
 
-    getHelperTags: builder.query<HelperTag, GetHelperTagsQueryParams>({
+    getHelperTags: builder.query<HelperTagInput, GetHelperTagsQueryParams>({
       query: (params: GetHelperTagsQueryParams) => ({
         url: ApiEndpoints.SIMULATION_STUDIO.HELPER_TAGS,
         method: HttpMethod.GET,

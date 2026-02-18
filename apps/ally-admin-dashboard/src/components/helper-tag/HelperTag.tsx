@@ -1,8 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 
-import { useGetHelperTagsQuery } from "@api";
+import { useCreateHelperTagMutation, useGetHelperTagsQuery } from "@api";
 import { Close, Plus, Search } from "@assets";
-import { shortId } from "@components/notion-table";
 import { en } from "@constants";
 import { useClickOutside, useCreatePortal } from "@hooks";
 
@@ -32,10 +31,12 @@ export const HelperTag: React.FC<HelperTagProps> = ({ tags, updateTags }) => {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   const { data: options, isFetching } = useGetHelperTagsQuery({
-    searchName: searchQuery,
+    name: searchQuery,
     offset: (page - 1) * DEFAULT_LIMIT,
     limit: DEFAULT_LIMIT,
   });
+
+  const [createHelperTag] = useCreateHelperTagMutation();
 
   useEffect(() => {
     setPage(1);
@@ -115,14 +116,15 @@ export const HelperTag: React.FC<HelperTagProps> = ({ tags, updateTags }) => {
 
   useClickOutside(dropdownRef, () => closeDropdown());
 
-  const createNewTag = () => {
+  const createNewTag = async () => {
     const newTag = searchQuery.trim();
     const existingTag = tags.map(tag => tag.name.toLowerCase());
     if (existingTag.includes(newTag.toLowerCase())) {
       closeDropdown();
       return;
     }
-    selectTag({ id: shortId(), name: newTag });
+    const createdNewTag = await createHelperTag({ name: newTag });
+    selectTag(createdNewTag?.data);
   };
 
   const renderDropdown = () =>
@@ -163,7 +165,9 @@ export const HelperTag: React.FC<HelperTagProps> = ({ tags, updateTags }) => {
           )}
 
           {searchQuery.trim() !== "" &&
-            !allOptions.some(option => option?.name === searchQuery.trim()) && (
+            !allOptions.some(
+              option => option?.name.toLowerCase() === searchQuery.trim().toLowerCase(),
+            ) && (
               <div
                 className="px-3 py-2 text-sm cursor-pointer hover:bg-gray-100"
                 onClick={createNewTag}

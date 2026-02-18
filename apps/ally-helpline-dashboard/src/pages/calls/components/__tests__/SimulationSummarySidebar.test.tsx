@@ -47,6 +47,11 @@ vi.mock("@hooks", () => ({
   useUser: () => ({
     user: { role: UserRole.COUNSELLOR },
   }),
+  useSendMessage: () => ({
+    messages: [],
+    isStreaming: false,
+    sendMessage: vi.fn(),
+  }),
 }));
 
 // Mock child components

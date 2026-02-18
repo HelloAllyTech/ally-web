@@ -415,3 +415,13 @@ export interface GetSimulationSkillsResponse {
   skillCoverage: SkillCoverageItem[];
   emotionalMovement: EmotionalMovementItem[];
 }
+export interface GetChatHistoryResponse {
+  id: string;
+  sourceId: string;
+  sourceType: string;
+  userId: string;
+  role: string;
+  content: string;
+  createdAt: string;
+  updatedAt: string;
+}
