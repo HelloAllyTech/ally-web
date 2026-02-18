@@ -213,14 +213,18 @@ vi.mock("../constants", () => ({
   learnPageItemVariants: {},
 }));
 
-// Mock types
-vi.mock("@types", () => ({
-  ScenarioStatus: {
-    ACTIVE: "ACTIVE",
-    COMING_SOON: "COMING_SOON",
-    INACTIVE: "INACTIVE",
-  },
-}));
+// Mock types - use importOriginal so SessionType and other exports remain available to transitive imports
+vi.mock("@types", async importOriginal => {
+  const actual = await importOriginal<typeof import("@types")>();
+  return {
+    ...actual,
+    ScenarioStatus: {
+      ACTIVE: "ACTIVE",
+      COMING_SOON: "COMING_SOON",
+      INACTIVE: "INACTIVE",
+    },
+  };
+});
 
 // Create a mock Redux store
 const createMockStore = (initialState = {}) => {

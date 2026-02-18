@@ -34,7 +34,12 @@ import {
   FORM_FIELD_IDS,
 } from "@constants";
 import { useDebounce } from "@hooks";
-import { SimulationStatus, SimulationPreviewType, triggerWarning } from "@types";
+import {
+  SimulationStatus,
+  SimulationPreviewType,
+  triggerWarning,
+  behaviourInstruction,
+} from "@types";
 import {
   getCreateSimulationSubSectionById,
   formatSimulationResponseData,
@@ -166,6 +171,7 @@ export const CreateSimulation: FC = () => {
       customFields,
       agentDialogues,
       stateInstructions,
+      behaviorInstructions,
       ...restForm
     } = formData;
 
@@ -202,6 +208,20 @@ export const CreateSimulation: FC = () => {
       name: field.name,
       value: field.value,
     }));
+    const behaviourInstructionsArray = isNonEmptyArray(behaviorInstructions)
+      ? (behaviorInstructions as behaviourInstruction[]).map(instruction => ({
+          ...(instruction.id &&
+            !String(instruction.id).startsWith("temp-") && { id: instruction.id }),
+          category: instruction.category,
+          behaviors: instruction.behaviors.map((b: any) => b?.id ?? b),
+          instructions: Array.isArray(instruction.instructions)
+            ? instruction.instructions
+            : (typeof instruction.instructions === "string" ? instruction.instructions : "")
+                .split("\n")
+                .map(s => s.trim())
+                .filter(Boolean),
+        }))
+      : [];
 
     if (FEATURE_FLAGS_MAP.SIMULATION_CREATOR_FLAG) {
       logger.log(
@@ -220,6 +240,9 @@ export const CreateSimulation: FC = () => {
       triggerWarningIds: triggerWarning,
       status,
       ...(FEATURE_FLAGS_MAP.ADDITIONAL_CONFIG_FLAG && { stateInstructions }),
+      ...(FEATURE_FLAGS_MAP.ADDITIONAL_CONFIG_FLAG && {
+        behaviorInstructions: behaviourInstructionsArray,
+      }),
     };
 
     let response;

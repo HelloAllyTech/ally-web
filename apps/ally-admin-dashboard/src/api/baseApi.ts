@@ -110,6 +110,7 @@ export const baseAPI = createApi({
     TAG_TYPES.SCENARIO_PATHS,
     TAG_TYPES.EACH_SESSION,
     TAG_TYPES.TRIGGER_WARNINGS,
+    TAG_TYPES.HELPER_TAGS,
   ],
   endpoints: () => ({}),
 });

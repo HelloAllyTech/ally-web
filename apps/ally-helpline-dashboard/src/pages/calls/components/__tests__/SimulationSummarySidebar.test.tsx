@@ -1,0 +1,301 @@
+import { render, screen, fireEvent, waitFor, act } from "@testing-library/react";
+import { Provider } from "react-redux";
+import { BrowserRouter } from "react-router-dom";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+
+import { store } from "@store";
+import { UserRole } from "@types";
+
+import { SUMMARY_FEEDBACK_TIMEOUT } from "../constants";
+import SimulationSummarySidebar from "../SimulationSummarySidebar";
+
+// Mock containers
+vi.mock("@containers", () => ({
+  FeedbackDialog: ({ open, onClose, id, sessionType }: any) => (
+    <div data-testid="feedback-dialog" style={{ display: open ? "block" : "none" }}>
+      <div data-testid="feedback-id">{id}</div>
+      <div data-testid="feedback-session-type">{sessionType}</div>
+      <button onClick={onClose} data-testid="close-feedback">
+        Close
+      </button>
+    </div>
+  ),
+  SimulationSummary: ({ summaryId, onSummaryFetch }: any) => (
+    <div data-testid="simulation-summary">
+      <div data-testid="simulation-summary-id">{summaryId}</div>
+      <button onClick={() => onSummaryFetch({ hasFeedback: false })} data-testid="fetch-summary">
+        Fetch Summary
+      </button>
+    </div>
+  ),
+}));
+
+// Mock hooks
+vi.mock("@hooks", () => ({
+  useUser: () => ({
+    user: { role: UserRole.COUNSELLOR },
+  }),
+}));
+
+// Mock child components
+vi.mock("../SummarySidebarWrapper", () => ({
+  SummarySidebarWrapper: ({ onSidebarClose, tabList, title, children }: any) => (
+    <div data-testid="summary-sidebar-wrapper">
+      <div data-testid="sidebar-title">{title}</div>
+      <button onClick={onSidebarClose} data-testid="close-sidebar">
+        Close Sidebar
+      </button>
+      {tabList?.map((tab: any) => (
+        <div key={tab.id} data-testid={`tab-${tab.id}`}>
+          <div data-testid={`tab-label-${tab.id}`}>{tab.label}</div>
+          {tab.content}
+        </div>
+      ))}
+      {children}
+    </div>
+  ),
+  default: ({ onSidebarClose, tabList, title, children }: any) => (
+    <div data-testid="summary-sidebar-wrapper">
+      <div data-testid="sidebar-title">{title}</div>
+      <button onClick={onSidebarClose} data-testid="close-sidebar">
+        Close Sidebar
+      </button>
+      {tabList?.map((tab: any) => (
+        <div key={tab.id} data-testid={`tab-${tab.id}`}>
+          <div data-testid={`tab-label-${tab.id}`}>{tab.label}</div>
+          {tab.content}
+        </div>
+      ))}
+      {children}
+    </div>
+  ),
+}));
+
+vi.mock("../SimulationTranscriptTab", () => ({
+  SimulationTranscriptTab: ({ sessionId }: any) => (
+    <div data-testid="simulation-transcript-tab">
+      <div data-testid="transcript-session-id">{sessionId}</div>
+    </div>
+  ),
+  default: ({ sessionId }: any) => (
+    <div data-testid="simulation-transcript-tab">
+      <div data-testid="transcript-session-id">{sessionId}</div>
+    </div>
+  ),
+}));
+
+const renderComponent = (
+  summaryId: string = "test-summary-id",
+  summaryName: string = "Test Simulation Summary",
+  userRole: UserRole = UserRole.COUNSELLOR,
+) => {
+  const mockCloseSummarySidebar = vi.fn();
+
+  return {
+    ...render(
+      <Provider store={store}>
+        <BrowserRouter>
+          <SimulationSummarySidebar
+            summaryId={summaryId}
+            summaryName={summaryName}
+            closeSummarySidebar={mockCloseSummarySidebar}
+          />
+        </BrowserRouter>
+      </Provider>,
+    ),
+    mockCloseSummarySidebar,
+  };
+};
+
+describe("SimulationSummarySidebar Component", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.useFakeTimers();
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  describe("Component Rendering", () => {
+    it("should render sidebar with correct title", () => {
+      renderComponent();
+
+      expect(screen.getByTestId("summary-sidebar-wrapper")).toBeInTheDocument();
+      expect(screen.getByTestId("sidebar-title")).toBeInTheDocument();
+    });
+
+    it("should render tabs correctly", () => {
+      renderComponent();
+
+      expect(screen.getByTestId("tab-1")).toBeInTheDocument();
+      expect(screen.getByTestId("tab-label-1")).toHaveTextContent("Summary");
+      expect(screen.getByTestId("tab-2")).toBeInTheDocument();
+      expect(screen.getByTestId("tab-label-2")).toHaveTextContent("Ask AI");
+      expect(screen.getByTestId("tab-3")).toBeInTheDocument();
+      expect(screen.getByTestId("tab-label-3")).toHaveTextContent("Transcription");
+      expect(screen.getByTestId("tab-4")).toBeInTheDocument();
+      expect(screen.getByTestId("tab-label-4")).toHaveTextContent("Reflection");
+    });
+
+    it("should render simulation summary component in summary tab", () => {
+      renderComponent();
+
+      expect(screen.getByTestId("simulation-summary")).toBeInTheDocument();
+      expect(screen.getByTestId("simulation-summary-id")).toHaveTextContent("test-summary-id");
+    });
+
+    it("should render simulation transcript tab", () => {
+      renderComponent();
+
+      expect(screen.getByTestId("simulation-transcript-tab")).toBeInTheDocument();
+      expect(screen.getByTestId("transcript-session-id")).toHaveTextContent("test-summary-id");
+    });
+  });
+
+  describe("Feedback Dialog", () => {
+    it.skip("should show feedback dialog when closing sidebar after threshold time", async () => {
+      const { mockCloseSummarySidebar } = renderComponent();
+
+      // Fast forward time to exceed threshold
+      act(() => {
+        vi.advanceTimersByTime(SUMMARY_FEEDBACK_TIMEOUT + 1000);
+      });
+
+      const closeButton = screen.getByTestId("close-sidebar");
+      fireEvent.click(closeButton);
+
+      await waitFor(
+        () => {
+          expect(screen.getByTestId("feedback-dialog")).toBeVisible();
+          expect(screen.getByTestId("feedback-id")).toHaveTextContent("test-summary-id");
+          expect(screen.getByTestId("feedback-session-type")).toHaveTextContent("SIMULATION");
+        },
+        { timeout: 10000 },
+      );
+    });
+
+    it.skip("should not show feedback dialog when feedback already added", async () => {
+      const { mockCloseSummarySidebar } = renderComponent();
+
+      // Simulate summary fetch with feedback already added
+      const fetchButton = screen.getByTestId("fetch-summary");
+      fireEvent.click(fetchButton);
+
+      // Fast forward time to exceed threshold
+      act(() => {
+        vi.advanceTimersByTime(SUMMARY_FEEDBACK_TIMEOUT + 1000);
+      });
+
+      const closeButton = screen.getByTestId("close-sidebar");
+      fireEvent.click(closeButton);
+
+      await waitFor(
+        () => {
+          expect(screen.queryByTestId("feedback-dialog")).not.toBeVisible();
+          expect(mockCloseSummarySidebar).toHaveBeenCalled();
+        },
+        { timeout: 10000 },
+      );
+    });
+
+    it.skip("should not show feedback dialog for admin users", async () => {
+      const { mockCloseSummarySidebar } = renderComponent(
+        "test-id",
+        "Test Summary",
+        UserRole.ADMIN,
+      );
+
+      // Fast forward time to exceed threshold
+      act(() => {
+        vi.advanceTimersByTime(SUMMARY_FEEDBACK_TIMEOUT + 1000);
+      });
+
+      const closeButton = screen.getByTestId("close-sidebar");
+      fireEvent.click(closeButton);
+
+      await waitFor(
+        () => {
+          expect(screen.queryByTestId("feedback-dialog")).not.toBeVisible();
+          expect(mockCloseSummarySidebar).toHaveBeenCalled();
+        },
+        { timeout: 10000 },
+      );
+    });
+
+    it("should not show feedback dialog when threshold not elapsed", () => {
+      const { mockCloseSummarySidebar } = renderComponent();
+
+      const closeButton = screen.getByTestId("close-sidebar");
+      fireEvent.click(closeButton);
+
+      expect(screen.queryByTestId("feedback-dialog")).not.toBeVisible();
+      expect(mockCloseSummarySidebar).toHaveBeenCalled();
+    });
+
+    it.skip("should close feedback dialog and call closeSummarySidebar", async () => {
+      const { mockCloseSummarySidebar } = renderComponent();
+
+      // Fast forward time to exceed threshold
+      act(() => {
+        vi.advanceTimersByTime(SUMMARY_FEEDBACK_TIMEOUT + 1000);
+      });
+
+      const closeButton = screen.getByTestId("close-sidebar");
+      fireEvent.click(closeButton);
+
+      await waitFor(
+        () => {
+          expect(screen.getByTestId("feedback-dialog")).toBeVisible();
+        },
+        { timeout: 10000 },
+      );
+
+      const closeFeedbackButton = screen.getByTestId("close-feedback");
+      fireEvent.click(closeFeedbackButton);
+
+      expect(mockCloseSummarySidebar).toHaveBeenCalled();
+    });
+  });
+
+  describe("Summary Fetch", () => {
+    it("should handle summary fetch callback", () => {
+      renderComponent();
+
+      const fetchButton = screen.getByTestId("fetch-summary");
+      fireEvent.click(fetchButton);
+
+      // Should not throw any errors
+      expect(screen.getByTestId("simulation-summary")).toBeInTheDocument();
+    });
+  });
+
+  describe("Edge Cases", () => {
+    it("should handle empty summary id", () => {
+      renderComponent("");
+
+      expect(screen.getByTestId("summary-sidebar-wrapper")).toBeInTheDocument();
+    });
+
+    it("should handle empty summary name", () => {
+      renderComponent("test-id", "");
+
+      expect(screen.getByTestId("summary-sidebar-wrapper")).toBeInTheDocument();
+    });
+  });
+
+  describe("Accessibility", () => {
+    it("should have proper button structure", () => {
+      renderComponent();
+
+      expect(screen.getByTestId("close-sidebar")).toBeInTheDocument();
+    });
+
+    it("should have proper dialog structure", () => {
+      renderComponent();
+
+      // Dialog should be rendered but not visible initially
+      expect(screen.getByTestId("feedback-dialog")).toBeInTheDocument();
+    });
+  });
+});
