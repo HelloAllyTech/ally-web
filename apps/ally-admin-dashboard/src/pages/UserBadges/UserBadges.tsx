@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
-import { useGetUserBadgesQuery } from "@src/api/userBadges";
+import { toast } from "sonner";
+
+import { useBatchDeleteBadgesMutation, useGetUserBadgesQuery } from "@src/api/userBadges";
 import { Trash } from "@src/assets";
 import {
   ActionConfirmationPopup,
@@ -88,6 +90,8 @@ export const UserBadges = () => {
     offset,
   });
 
+  const [batchDeleteBadges, { isLoading: isBatchDeleting }] = useBatchDeleteBadgesMutation();
+
   const hasMore = userBadges?.data?.length === BADGES_PAGE_LIMIT;
 
   useEffect(() => {
@@ -100,22 +104,38 @@ export const UserBadges = () => {
         setAllBadges(prev => [...prev, ...newData]);
       }
     }
-  }, [userBadges?.data, offset, isBadgeSidePanelOpen]);
+  }, [userBadges?.data]);
 
   const handleSelectionChange = useCallback((markedRows: any[]) => {
-    setSelectedBadges(markedRows);
+    const rows = markedRows.map(row => {
+      const rowData: Partial<UserBadge> = {};
+      Object.keys(row).forEach(key => {
+        if (row[key].value) {
+          rowData[key] = row[key].value;
+        }
+      });
+      return rowData;
+    }) as UserBadge[];
+    setSelectedBadges(rows);
   }, []);
 
   const handleCancelDeleteBadges = useCallback(() => {
     setShowDeleteBadgesConfirmation(false);
   }, []);
 
-  const handleConfirmDeleteBadges = useCallback(() => {
-    setShowDeleteBadgesConfirmation(false);
-    setSelectedBadges([]);
-    // setOffset(0);
-    // setAllBadges([]);
-  }, []);
+  const handleConfirmDeleteBadges = useCallback(async () => {
+    try {
+      const badgeIds = selectedBadges.map(badge => badge.id);
+      await batchDeleteBadges(badgeIds);
+      setShowDeleteBadgesConfirmation(false);
+      setSelectedBadges([]);
+      toast.success(en.badge.badgesDeletedSuccessfully);
+      setOffset(0);
+      setAllBadges(allBadges.filter(badge => !badgeIds.includes(badge.id)));
+    } catch {
+      toast.error(en.errors.failedToDeleteBadges);
+    }
+  }, [batchDeleteBadges, selectedBadges]);
 
   // Load more handler for infinite scroll
   const handleLoadMore = useCallback(() => {
@@ -227,8 +247,6 @@ export const UserBadges = () => {
   );
 
   const handleBadgeSidePanelSuccess = useCallback(() => {
-    setAllBadges([]);
-    setOffset(0);
     setIsBadgeSidePanelOpen(false);
     setSelectedBadgeType(null);
     setSelectedBadge(null);
@@ -247,6 +265,18 @@ export const UserBadges = () => {
 
   const statusOptions = useMemo(() => {
     return Object.values(["ACTIVE", "DRAFT"]).map(s => ({ label: s, value: s }));
+  }, []);
+
+  const handleBadgeCreated = useCallback((badge: UserBadge) => {
+    setAllBadges(prev => [badge, ...prev]);
+  }, []);
+
+  const handleBadgeUpdated = useCallback((badge: UserBadge) => {
+    setAllBadges(prev => prev.map(b => (b.id === badge.id ? badge : b)));
+  }, []);
+
+  const handleBadgeDeleted = useCallback((badgeId: string) => {
+    setAllBadges(prev => prev.filter(b => b.id !== badgeId));
   }, []);
 
   return (
@@ -320,7 +350,7 @@ export const UserBadges = () => {
               height: "100%",
             }}
             tableFooter={
-              isFetching && allBadges.length > 0 ? (
+              (isFetching || isBatchDeleting) && allBadges.length > 0 ? (
                 <div className="flex justify-center py-4">
                   <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary-600" />
                 </div>
@@ -348,6 +378,9 @@ export const UserBadges = () => {
         isOpen={isBadgeSidePanelOpen}
         onClose={handleBadgeSidePanelClose}
         onSuccess={handleBadgeSidePanelSuccess}
+        onBadgeCreated={handleBadgeCreated}
+        onBadgeUpdated={handleBadgeUpdated}
+        onBadgeDeleted={handleBadgeDeleted}
       />
       <ActionConfirmationPopup
         isOpen={showDeleteBadgesConfirmation}

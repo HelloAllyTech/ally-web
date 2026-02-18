@@ -650,6 +650,9 @@ describe("CreateBadgeSidePanel", () => {
     it("calls updateBadge with ACTIVE status when publishing in edit mode", async () => {
       renderComponent({ selectedBadge: mockSelectedBadge });
 
+      const nameInput = screen.getByPlaceholderText("Add name");
+      fireEvent.change(nameInput, { target: { value: "Updated Badge" } });
+
       const publishButton = screen.getByText("Publish");
       fireEvent.click(publishButton);
 
@@ -661,6 +664,7 @@ describe("CreateBadgeSidePanel", () => {
         expect(mockUpdateBadge).toHaveBeenCalledWith({
           id: "badge-123",
           data: {
+            name: "Updated Badge",
             status: "ACTIVE",
           },
         });
