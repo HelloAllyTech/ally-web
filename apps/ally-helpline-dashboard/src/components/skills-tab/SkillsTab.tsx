@@ -72,8 +72,44 @@ const CustomDot: FC<CustomDotProps> = ({ cx, cy }) => {
 };
 
 const LoadingState: FC = () => (
-  <div className="w-full flex items-center justify-center p-12">
-    <div className="text-gray-500">Loading skills data...</div>
+  <div className="w-full flex flex-col p-4 border border-gray-200 rounded-lg animate-pulse">
+    <div className="h-7 bg-gray-200 rounded w-64 mb-2"></div>
+    <hr className="mb-5 mt-2 border-gray-200" />
+
+    <div className="bg-white border border-[#B39DDB] rounded-md mb-5">
+      <div className="px-4 py-3 border-b border-b-[#B39DDB] bg-[#EDE7F680]">
+        <div className="h-6 bg-gray-200 rounded w-32"></div>
+      </div>
+      <div className="grid grid-cols-3 divide-x divide-[#B39DDB]">
+        {[1, 2, 3].map(i => (
+          <div key={i} className="px-6 py-5 flex flex-col gap-3">
+            <div className="flex items-center justify-between">
+              <div className="h-5 bg-gray-200 rounded w-20"></div>
+              <div className="h-5 bg-gray-200 rounded w-10"></div>
+            </div>
+            <div className="w-full h-2 bg-gray-200 rounded-full"></div>
+          </div>
+        ))}
+      </div>
+    </div>
+
+    <div className="bg-white border border-[#B39DDB] rounded-md">
+      <div className="px-4 py-3 border-b border-b-[#B39DDB] bg-[#EDE7F680]">
+        <div className="h-6 bg-gray-200 rounded w-48"></div>
+      </div>
+      <div className="px-6 py-6">
+        <div className="w-full h-[350px] bg-gray-100 rounded-md flex items-center justify-center">
+          <div className="space-y-4 w-full px-8">
+            {[1, 2, 3, 4, 5].map(i => (
+              <div key={i} className="flex items-center gap-4">
+                <div className="h-1 bg-gray-200 rounded-full flex-1"></div>
+                <div className="h-2 w-2 bg-gray-300 rounded-full"></div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 );
 
