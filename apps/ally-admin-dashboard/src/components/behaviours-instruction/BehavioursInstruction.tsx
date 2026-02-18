@@ -80,6 +80,8 @@ export const BehavioursInstruction: FC<BehavioursInstructionProps> = ({ formMeth
     </button>
   );
 
+  const tableStyle = { paddingBottom: "10px" };
+
   return (
     <div className="w-full flex flex-col gap-2">
       <div className="text-base text-typography-900 font-primary">
@@ -89,6 +91,7 @@ export const BehavioursInstruction: FC<BehavioursInstructionProps> = ({ formMeth
         tableData={tableData}
         tableFooter={tableFooter}
         onRowChange={handleRowChange}
+        tableStyle={tableStyle}
         autoHeight
       />
     </div>
