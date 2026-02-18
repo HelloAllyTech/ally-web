@@ -28,6 +28,7 @@ export const en = {
     areYouSureYouWantToDelete: "Are you sure you want to delete",
   },
   errors: {
+    failedToDeleteBadges: "Failed to delete badges",
     failedToDeleteCharacter: "Failed to delete character(s)",
     failedToGoogleSignIn: "Failed to sign in with Google. Please try again.",
     failedCreateOrganization: "Failed to create organization",
@@ -544,6 +545,7 @@ export const en = {
     deleteBadgeConfirmationDescription:
       "This will permanently delete the badge and remove it from all organizations and users who have already earned it. This action cannot be undone.",
     badgeDeletedSuccessfully: "Badge deleted successfully",
+    badgesDeletedSuccessfully: "Badges deleted successfully",
     saveAsDraft: "Save as draft",
     publish: "Publish",
     badgeDeletionFailed: "Failed to delete badge",

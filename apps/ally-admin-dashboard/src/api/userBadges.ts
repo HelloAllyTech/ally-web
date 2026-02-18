@@ -44,7 +44,6 @@ const userBadgesAPI = baseAPI.injectEndpoints({
         method: HttpMethod.POST,
         body,
       }),
-      invalidatesTags: [TAG_TYPES.USER_BADGES],
     }),
     updateBadge: builder.mutation<UpdateBadgeResponse, UpdateBadgeRequest>({
       query: ({ id, data }) => ({
@@ -52,14 +51,19 @@ const userBadgesAPI = baseAPI.injectEndpoints({
         method: HttpMethod.PATCH,
         body: data,
       }),
-      invalidatesTags: [TAG_TYPES.USER_BADGES],
     }),
     deleteBadge: builder.mutation<DeleteBadgeResponse, DeleteBadgeRequest>({
       query: ({ id }) => ({
         url: ApiEndpoints.USER_BADGES.DELETE_BADGE(id),
         method: HttpMethod.DELETE,
       }),
-      invalidatesTags: [TAG_TYPES.USER_BADGES],
+    }),
+    batchDeleteBadges: builder.mutation<void, string[]>({
+      query: badgeIds => ({
+        url: ApiEndpoints.USER_BADGES.BATCH_DELETE_BADGES,
+        method: HttpMethod.DELETE,
+        body: { badgeIds },
+      }),
     }),
   }),
 });
@@ -71,4 +75,5 @@ export const {
   useCreateBadgeMutation,
   useUpdateBadgeMutation,
   useDeleteBadgeMutation,
+  useBatchDeleteBadgesMutation,
 } = userBadgesAPI;
