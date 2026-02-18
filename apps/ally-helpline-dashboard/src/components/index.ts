@@ -45,6 +45,7 @@ import ScenarioCard from "./scenario-card";
 import ScenarioDetailsCard from "./scenario-details-card";
 import SearchResources from "./search-resources";
 import ShinyText from "./shiny-text";
+import SkillsTab from "./skills-tab";
 import { StarRating } from "./star-rating";
 import TabGroup from "./tab-group";
 import TagGroup from "./tag-group";
@@ -129,4 +130,5 @@ export {
   AskAiTab,
   ReflectionTab,
   Checklist,
+  SkillsTab,
 };

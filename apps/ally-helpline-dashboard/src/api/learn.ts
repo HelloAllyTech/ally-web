@@ -32,6 +32,7 @@ import {
   GetReflectionPromptsResponse,
   GetSimulationChecklistResponse,
   ReflectionPromptsRequest,
+  GetSimulationSkillsResponse,
 } from "@types";
 
 import { baseAPI } from "./baseAPI";
@@ -332,6 +333,17 @@ const learnAPI = baseAPI.injectEndpoints({
         body: prompts,
       }),
     }),
+    /**
+     * Get skills and emotional movements for a scenario session.
+     * @param {string} sessionId - Session identifier
+     * @returns {Promise<GetSimulationSkillsResponse>} Skills coverage and emotional movement data
+     */
+    getSimulationSkills: builder.query<GetSimulationSkillsResponse, { sessionId: string }>({
+      query: ({ sessionId }) => ({
+        url: ApiEndpoints.LEARN.GET_SIMULATION_SKILLS(sessionId),
+        method: HttpMethod.GET,
+      }),
+    }),
   }),
 });
 
@@ -360,4 +372,5 @@ export const {
   useGetSimulationChecklistQuery,
   useCreateReflectionPromptsMutation,
   useUpdateReflectionPromptsMutation,
+  useGetSimulationSkillsQuery,
 } = learnAPI;
