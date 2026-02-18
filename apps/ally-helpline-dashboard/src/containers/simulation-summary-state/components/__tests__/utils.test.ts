@@ -351,7 +351,7 @@ describe("getFormattedFeedbackSection", () => {
       const result = getFormattedFeedbackSection(summaryWithoutScore);
 
       expect(result.keyEvents[0].event).toBe("Event without score");
-      expect(result.keyEvents[0].score).toBeNull();
+      expect(result.keyEvents[0].score).toBe(0);
     });
   });
 
