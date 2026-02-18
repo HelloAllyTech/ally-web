@@ -43,14 +43,14 @@ export const EditableTable = ({
   };
 
   return (
-    <div className={`w-full overflow-x-auto rounded-lg border border-gray-200 ${className}`}>
+    <div className={`w-full overflow-x-auto border border-gray-200 ${className}`}>
       <table className="w-full min-w-full table-auto border-collapse text-left text-sm">
         <thead>
           <tr>
             {columns.map(col => (
               <th
                 key={col.key}
-                className="border-b border-r  border-border-light px-4 py-3 font-medium text-gray-700 font-primary"
+                className="border-b border-r last:border-r-0 border-border-light px-4 py-3 font-medium text-gray-700 font-primary"
                 style={{ minWidth: col.width }}
               >
                 {col.header}
@@ -64,7 +64,7 @@ export const EditableTable = ({
               {columns.map(column => (
                 <td
                   key={`${rowIndex}-${column.key}`}
-                  className="border-b border-r border-gray-200 p-0 last:border-r-0 align-top"
+                  className={`${rowIndex === rows.length - 1 ? "border-b-0" : "border-b"} border-b border-r border-gray-200 p-0 last:border-r-0 align-top`}
                 >
                   {column.editable ? (
                     <textarea
@@ -72,7 +72,7 @@ export const EditableTable = ({
                       onChange={e => handleInputChange(e, rowIndex, column.key)}
                       onBlur={() => handleBlur(rowIndex, column.key, row[column.key])}
                       rows={3}
-                      className="w-full min-h-[40px] overflow-y-auto custom-scrollbar border-0 bg-transparent px-4 py-2.5 outline-none"
+                      className="w-full min-h-[40px] overflow-y-auto custom-scrollbar border-0 bg-transparent px-4 py-2.5 outline-none resize-none"
                     />
                   ) : (
                     <span className="block px-4 py-2.5 text-gray-900 whitespace-pre-wrap break-words">

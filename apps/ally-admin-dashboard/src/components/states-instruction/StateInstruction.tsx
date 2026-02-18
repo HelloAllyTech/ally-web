@@ -12,7 +12,10 @@ interface StateInstructionProps {
 export const StateInstruction: FC<StateInstructionProps> = ({ formMethods, id }) => {
   const formData = (formMethods.watch(id) as stateInstruction[]) ?? [];
 
-  const tableData = formData.length > 0 ? formData : DEFAULT_STATE_INSTRUCTIONS;
+  const tableData = DEFAULT_STATE_INSTRUCTIONS.map(defaultRow => {
+    const fromBackend = formData.find(row => String(row.stateId) === String(defaultRow.stateId));
+    return fromBackend ? { ...defaultRow, ...fromBackend } : defaultRow;
+  });
 
   const handleRowChange = (rowIndex: number, key: string, value: string | string[]) => {
     const valueToSet =
