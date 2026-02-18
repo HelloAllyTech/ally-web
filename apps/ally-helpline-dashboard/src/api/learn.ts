@@ -31,6 +31,7 @@ import {
   pageType,
   GetReflectionPromptsResponse,
   GetSimulationChecklistResponse,
+  ReflectionPromptsRequest,
 } from "@types";
 
 import { baseAPI } from "./baseAPI";
@@ -300,9 +301,16 @@ const learnAPI = baseAPI.injectEndpoints({
       }),
       invalidatesTags: [TAG_TYPES.SCENARIO_CASE_DETAILS],
     }),
+    createReflectionPrompts: builder.mutation<void, ReflectionPromptsRequest>({
+      query: ({ sessionId, prompts }) => ({
+        url: ApiEndpoints.LEARN.REFLECTION_PROMPTS(sessionId),
+        method: HttpMethod.POST,
+        body: prompts,
+      }),
+    }),
     getReflectionPrompts: builder.query<GetReflectionPromptsResponse, { sessionId: string }>({
       query: ({ sessionId }) => ({
-        url: ApiEndpoints.LEARN.GET_REFLECTION_PROMPTS(sessionId),
+        url: ApiEndpoints.LEARN.REFLECTION_PROMPTS(sessionId),
         method: HttpMethod.GET,
       }),
     }),
@@ -315,6 +323,13 @@ const learnAPI = baseAPI.injectEndpoints({
       query: ({ sessionId }) => ({
         url: ApiEndpoints.LEARN.GET_SIMULATION_CHECKLIST(sessionId),
         method: HttpMethod.GET,
+      }),
+    }),
+    updateReflectionPrompts: builder.mutation<void, ReflectionPromptsRequest>({
+      query: ({ sessionId, prompts }) => ({
+        url: ApiEndpoints.LEARN.REFLECTION_PROMPTS(sessionId),
+        method: HttpMethod.PUT,
+        body: prompts,
       }),
     }),
   }),
@@ -343,4 +358,6 @@ export const {
   useStartCaseSimulationMutation,
   useGetReflectionPromptsQuery,
   useGetSimulationChecklistQuery,
+  useCreateReflectionPromptsMutation,
+  useUpdateReflectionPromptsMutation,
 } = learnAPI;

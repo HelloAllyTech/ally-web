@@ -1,7 +1,11 @@
 import { useRef, useState } from "react";
 
+import { useDispatch, useSelector } from "react-redux";
+
 import { AskAiIcon, UpArrow } from "@assets";
 import { Button } from "@components";
+import { RootState } from "@store";
+import { sendMessage } from "@utils";
 
 type Message = { role: "user" | "assistant"; content: string };
 
@@ -19,9 +23,16 @@ const ChatBubble = ({ message }: { message: Message }) => {
   );
 };
 
-const AskAiInput = ({ onSend }: { onSend: (text: string) => void }) => {
+const AskAiInput = ({
+  onSend,
+  disabled,
+}: {
+  onSend: (text: string) => void;
+  disabled?: boolean;
+}) => {
   const inputRef = useRef<HTMLInputElement>(null);
   const handleSend = () => {
+    if (disabled) return;
     const text = inputRef.current?.value?.trim() ?? "";
     if (!text) return;
     onSend(text);
@@ -32,15 +43,17 @@ const AskAiInput = ({ onSend }: { onSend: (text: string) => void }) => {
       <input
         ref={inputRef}
         type="text"
-        className="w-full p-2 outline-none rounded-full"
+        className="w-full p-2 outline-none rounded-full disabled:opacity-60"
         onKeyDown={e => e.key === "Enter" && handleSend()}
         placeholder="Ask AI"
+        disabled={disabled}
       />
       <Button
         variant="primary"
         type="button"
-        className="!rounded-full !p-2 !h-10 !w-10 flex items-center justify-center"
+        className="!rounded-full !p-2 !h-10 !w-10 flex items-center justify-center disabled:opacity-60"
         onClick={handleSend}
+        disabled={disabled}
       >
         <UpArrow />
       </Button>
@@ -48,16 +61,18 @@ const AskAiInput = ({ onSend }: { onSend: (text: string) => void }) => {
   );
 };
 
-export const AskAiTab = () => {
-  const [messages, setMessages] = useState<Message[]>([]);
+export const AskAiTab = ({ sessionId }: { sessionId: string }) => {
+  const dispatch = useDispatch();
+  const messages = useSelector((state: RootState) => state.chat.messages) as Message[];
+  const [isStreaming, setIsStreaming] = useState(false);
 
-  const handleSend = (text: string) => {
-    setMessages(prev => [...prev, { role: "user", content: text }]);
-    // TODO: Add API call to ask AI
-    setMessages(prev => [
-      ...prev,
-      { role: "assistant", content: "Hello, how can I help you today?" },
-    ]);
+  const handleSend = async (text: string) => {
+    setIsStreaming(true);
+    try {
+      await sendMessage(text, sessionId, dispatch);
+    } finally {
+      setIsStreaming(false);
+    }
   };
 
   return (
@@ -71,7 +86,7 @@ export const AskAiTab = () => {
             <ChatBubble key={`${msg.role}-${index}`} message={msg} />
           ))}
         </div>
-        <AskAiInput onSend={handleSend} />
+        <AskAiInput onSend={handleSend} disabled={isStreaming} />
       </div>
     </div>
   );

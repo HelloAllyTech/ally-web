@@ -34,8 +34,7 @@ export const Cell = ({
   // Extract value and disabled from the cell data structure
   const cellValue = initialValue?.value !== undefined ? initialValue.value : initialValue;
   const isDisabled = initialValue?.disabled !== undefined ? initialValue.disabled : false;
-  const existingBehaviours = row?.behaviours?.value;
-
+  const existingBehaviours = row?.behaviors?.value;
   const [value, setValue] = useState({ value: cellValue, update: false });
 
   useEffect(() => {

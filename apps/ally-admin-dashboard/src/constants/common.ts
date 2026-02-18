@@ -79,6 +79,7 @@ export const ApiEndpoints = {
     CANCEL_REPORT_GENERATION: (reportId: string) =>
       `/v1/learn/scenarios/reports/${reportId}/cancel`,
     SCENARIO_COVER_IMAGE_LIBRARY: "/v1/scenario-cover-image-library",
+    HELPER_TAGS: "/v1/learn/scenario-behaviors",
   },
 
   CHARACTERS: {
@@ -197,4 +198,5 @@ export const TAG_TYPES = {
   CHARACTERS: "characters",
   PROMPTS: "prompts",
   USER_BADGES: "userBadges",
+  HELPER_TAGS: "helperTags",
 };

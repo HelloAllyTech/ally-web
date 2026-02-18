@@ -2,7 +2,12 @@ import { UseFormReturn } from "react-hook-form";
 
 import { EventDetectionConfig } from "@src/types/detectionConfig";
 
-import { SessionEventDetectionData, triggerWarning, stateInstruction } from "./simulation";
+import {
+  SessionEventDetectionData,
+  triggerWarning,
+  stateInstruction,
+  behaviourInstruction,
+} from "./simulation";
 import { TriggerCondition } from "./triggerConditions";
 
 export type FormData = {
@@ -49,9 +54,9 @@ export type FormData = {
   pickCompetency: string;
   characterProfile: string;
   score?: boolean;
-  behaviourInstructions?: string;
   stateInstructions?: stateInstruction[];
   characterProfileSelector?: string;
+  behaviorsInstructions?: behaviourInstruction[];
 };
 
 export interface DemographicsSectionProps {
