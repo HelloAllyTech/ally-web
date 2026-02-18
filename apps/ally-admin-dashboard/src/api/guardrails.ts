@@ -42,13 +42,7 @@ const guardrailsApi = baseAPI.injectEndpoints({
       invalidatesTags: [TAG_TYPES.CONVERSATIONAL_GUARDRAILS],
     }),
 
-    deleteGuardrail: builder.mutation<void, string>({
-      query: id => ({
-        url: `${ApiEndpoints.SIMULATION_STUDIO.CONVERSATIONAL_GUARDRAILS}/${id}`,
-        method: HttpMethod.DELETE,
-      }),
-      invalidatesTags: [TAG_TYPES.CONVERSATIONAL_GUARDRAILS],
-    }),
+
 
 
 
@@ -59,6 +53,6 @@ export const {
   useGetGuardrailsQuery,
   useCreateGuardrailMutation,
   useUpdateGuardrailMutation,
-  useDeleteGuardrailMutation,
+
 
 } = guardrailsApi;
