@@ -8,15 +8,7 @@ export interface ConversationalGuardrail {
   updatedAt: string;
 }
 
-export interface ConversationalGuardrailTranslation {
-  id: string;
-  guardrailId: string;
-  languageId: number;
-  helperDialogue: string;
-  actorDialogue: string;
-  createdAt: string;
-  updatedAt: string;
-}
+
 
 export interface CreateConversationalGuardrailInput {
   name: string;
@@ -42,14 +34,5 @@ export interface GetGuardrailsQueryParams {
   order?: "ASC" | "DESC";
 }
 
-export interface CreateGuardrailTranslationInput {
-  guardrailId: string;
-  languageId: number;
-  helperDialogue: string;
-  actorDialogue: string;
-}
 
-export interface UpdateGuardrailTranslationInput {
-  helperDialogue?: string;
-  actorDialogue?: string;
-}
+

@@ -180,7 +180,7 @@ export const useUser = () => {
         case SIDEBAR_ITEMS.USER_MANAGEMENT:
           return permissions.includes(Permissions.EDIT_USER);
         case SIDEBAR_ITEMS.MANAGE_GUARDRAILS:
-          return permissions.includes(Permissions.EDIT_SCENARIO);
+          return permissions.includes(Permissions.EDIT_GUARDRAIL);
         case SIDEBAR_ITEMS.USER_BADGES:
           return permissions.includes(Permissions.VIEW_ADMIN_BADGE);
         default:
