@@ -35,6 +35,8 @@ import {
   GenerateReportResponse,
   GetImageLibraryQueryParams,
   GetImageLibraryResponse,
+  GetHelperTagsQueryParams,
+  HelperTag,
 } from "@types";
 
 import { baseAPI } from "./baseApi";
@@ -543,144 +545,24 @@ const simulationStudioAPI = baseAPI.injectEndpoints({
       invalidatesTags: [TAG_TYPES.CHARACTERS],
     }),
 
-    getBehavioursInstruction: builder.query<
-      any[],
-      { limit: number; offset: number; searchName?: string }
-    >({
-      async queryFn(params) {
-        // Simulate API delay
-        await new Promise(resolve => setTimeout(resolve, 500));
-
-        const DUMMY_BEHAVIOURS_INSTRUCTION_DATA = [
-          {
-            id: "1",
-            category: "HELPER SHOULD DO",
-            behaviours: [{ id: "1", name: "Behaviours 1" }],
-            response: "Response 1",
-          },
-          {
-            id: "2",
-            category: "HELPER SHOULD NOT DO",
-            behaviours: [{ id: "2", name: "Behaviours 2" }],
-            response: "Response 2",
-          },
-          {
-            id: "3",
-            category: "HELPER SHOULD DO",
-            behaviours: [{ id: "3", name: "Behaviours 3" }],
-            response: "Response 3",
-          },
-          {
-            id: "4",
-            category: "HELPER SHOULD NOT DO",
-            behaviours: [{ id: "4", name: "Behaviours 4" }],
-            response: "Response 4",
-          },
-        ];
-        let filteredData = [...DUMMY_BEHAVIOURS_INSTRUCTION_DATA];
-
-        // Filter by search name if provided
-        if (params.searchName) {
-          filteredData = filteredData.filter(behaviours =>
-            behaviours.category.toLowerCase().includes(params.searchName.toLowerCase()),
-          );
-        }
-
-        // Paginate
-        const start = params.offset;
-        const end = start + params.limit;
-        const data = filteredData.slice(start, end);
-
-        return { data };
-      },
+    getHelperTags: builder.query<HelperTag, GetHelperTagsQueryParams>({
+      query: (params: GetHelperTagsQueryParams) => ({
+        url: ApiEndpoints.SIMULATION_STUDIO.HELPER_TAGS,
+        method: HttpMethod.GET,
+        params,
+      }),
+      providesTags: [TAG_TYPES.HELPER_TAGS],
     }),
-    getTags: builder.query<any[], { limit: number; offset: number; searchName?: string }>({
-      async queryFn(params) {
-        // Simulate API delay
-        await new Promise(resolve => setTimeout(resolve, 500));
 
-        const DUMMY_TAGS_DATA = [
-          { id: "1", name: "Tag 1" },
-          { id: "2", name: "Tag 2" },
-          { id: "3", name: "Tag 3" },
-          { id: "4", name: "Tag 4" },
-          { id: "5", name: "Tag 5" },
-          { id: "6", name: "Tag 6" },
-          { id: "7", name: "Tag 7" },
-          { id: "8", name: "Tag 8" },
-          { id: "9", name: "Tag 9" },
-          { id: "10", name: "Tag 10" },
-        ];
-
-        let filteredData = [...DUMMY_TAGS_DATA];
-
-        // Filter by search name if provided
-        if (params.searchName) {
-          filteredData = filteredData.filter(tag =>
-            tag.name.toLowerCase().includes(params.searchName.toLowerCase()),
-          );
-        }
-
-        // Paginate
-        const start = params.offset;
-        const end = start + params.limit;
-        const data = filteredData.slice(start, end);
-
-        return { data };
-      },
+    createHelperTag: builder.mutation<HelperTag, { name: string }>({
+      query: ({ name }) => ({
+        url: ApiEndpoints.SIMULATION_STUDIO.HELPER_TAGS,
+        method: HttpMethod.POST,
+        body: { name },
+      }),
+      invalidatesTags: [TAG_TYPES.HELPER_TAGS],
     }),
-    getStatesInstruction: builder.query<
-      any[],
-      { limit: number; offset: number; searchName?: string }
-    >({
-      async queryFn(params) {
-        // Simulate API delay
-        await new Promise(resolve => setTimeout(resolve, 500));
 
-        const DUMMY_STATES_INSTRUCTION_DATA = [
-          {
-            id: "1",
-            states: "State 1",
-            instruction: "Provide an initial greeting and introduce the system.",
-            dialogue: "Hello! I’m here to assist you. How can I help?",
-          },
-          {
-            id: "2",
-            states: "State 2",
-            instruction: "Ask the user for the required information.",
-            dialogue: "Could you please share more details?",
-          },
-          {
-            id: "3",
-            states: "State 3",
-            instruction: "Process the user input and give a relevant response.",
-            dialogue: "Thanks! Here’s what I found based on your input.",
-          },
-          {
-            id: "4",
-            states: "State 4",
-            instruction: "Close the conversation politely.",
-            dialogue: "You're all set! Let me know if you need anything else 😊",
-          },
-        ];
-
-        let filteredData = [...DUMMY_STATES_INSTRUCTION_DATA];
-
-        // Filter by search name if provided
-        if (params.searchName) {
-          filteredData = filteredData.filter(state =>
-            state.states.toLowerCase().includes(params.searchName.toLowerCase()),
-          );
-        }
-
-        // Paginate
-        const start = params.offset;
-        const end = start + params.limit;
-        const data = filteredData.slice(start, end);
-
-        return { data };
-      },
-    }),
     getImageLibrary: builder.query<GetImageLibraryResponse, GetImageLibraryQueryParams>({
       query: (params: GetImageLibraryQueryParams) => ({
         url: ApiEndpoints.SIMULATION_STUDIO.SCENARIO_COVER_IMAGE_LIBRARY,
@@ -704,9 +586,7 @@ const simulationStudioAPI = baseAPI.injectEndpoints({
       query: ({ input }) => ({
         url: ApiEndpoints.SIMULATION_STUDIO.GET_REPORTS(input.scenarioId),
         method: HttpMethod.GET,
-        params: {
-          status: input.status,
-        },
+        params: input?.status ? { status: input.status } : undefined,
       }),
     }),
 
@@ -797,9 +677,8 @@ export const {
   useCreateCharacterMutation,
   useUpdateCharacterMutation,
   useDeleteCharacterMutation,
-  useGetBehavioursInstructionQuery,
-  useGetTagsQuery,
-  useGetStatesInstructionQuery,
+  useGetHelperTagsQuery,
+  useCreateHelperTagMutation,
   useGetImageLibraryQuery,
   useGetReportsQuery,
   useGetReportByIdQuery,

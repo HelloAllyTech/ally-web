@@ -3,11 +3,13 @@ import { AchievementBadgeModal } from "./achievement-badge-modal";
 import { AchievementItem, AchievementItemData } from "./achievement-item";
 import AchievementsCard from "./achievements-card";
 import ActionDialog from "./action-dialog";
+import { AskAiTab } from "./ask-ai-tab";
 import { AudioTranscriptPlayer } from "./audio-transcript-player";
 import BoxBreathing from "./box-breathing";
 import { Button, ButtonVariant, ButtonVariantType } from "./button";
 import ButtonGroup from "./button-group";
 import { Carousel, CarouselSize, CarouselVariant, CarouselSlideType } from "./carousel";
+import Checklist from "./checklist";
 import Chip, { ChipConfig } from "./chip";
 import { CircularProgress } from "./circular-progress";
 import CommentCard from "./comment-card/CommentCard";
@@ -37,11 +39,13 @@ import PermissionGuard from "./permission-guard";
 import ProfileSettings from "./profile-settings";
 import ReactionsModal from "./reaction-modal/ReactionModal";
 import ReactionSelector from "./reaction-selector";
+import { ReflectionTab } from "./reflection-tab";
 import ReviewCommentsSidepanel from "./review-comments-sidepanel/ReviewCommentsSidepanel";
 import ScenarioCard from "./scenario-card";
 import ScenarioDetailsCard from "./scenario-details-card";
 import SearchResources from "./search-resources";
 import ShinyText from "./shiny-text";
+import SkillsTab from "./skills-tab";
 import { StarRating } from "./star-rating";
 import TabGroup from "./tab-group";
 import TagGroup from "./tag-group";
@@ -51,6 +55,7 @@ import ThreadCard from "./thread-card/ThreadCard";
 import ToggleButtonGroup from "./toggle-button-group";
 import TranscriptListing from "./transcript-listing";
 import Transcription from "./transcription";
+import { UpNextSimulationCard } from "./up-next-simulation-card";
 import UserInfo from "./user-info";
 
 export {
@@ -121,4 +126,9 @@ export {
   Transcription,
   TranscriptListing,
   MaxActiveUsersDialog,
+  UpNextSimulationCard,
+  AskAiTab,
+  ReflectionTab,
+  Checklist,
+  SkillsTab,
 };

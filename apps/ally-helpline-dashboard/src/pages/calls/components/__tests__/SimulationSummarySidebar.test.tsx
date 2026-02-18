@@ -97,7 +97,6 @@ const renderComponent = (
         <BrowserRouter>
           <SimulationSummarySidebar
             summaryId={summaryId}
-            summaryName={summaryName}
             closeSummarySidebar={mockCloseSummarySidebar}
           />
         </BrowserRouter>
@@ -131,7 +130,11 @@ describe("SimulationSummarySidebar Component", () => {
       expect(screen.getByTestId("tab-1")).toBeInTheDocument();
       expect(screen.getByTestId("tab-label-1")).toHaveTextContent("Summary");
       expect(screen.getByTestId("tab-2")).toBeInTheDocument();
-      expect(screen.getByTestId("tab-label-2")).toHaveTextContent("Transcription");
+      expect(screen.getByTestId("tab-label-2")).toHaveTextContent("Ask AI");
+      expect(screen.getByTestId("tab-3")).toBeInTheDocument();
+      expect(screen.getByTestId("tab-label-3")).toHaveTextContent("Transcription");
+      expect(screen.getByTestId("tab-4")).toBeInTheDocument();
+      expect(screen.getByTestId("tab-label-4")).toHaveTextContent("Reflection");
     });
 
     it("should render simulation summary component in summary tab", () => {

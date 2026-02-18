@@ -8,3 +8,4 @@ export * from "./call";
 export * from "./audio-upload";
 export * from "./permission";
 export * from "./parseContent";
+export * from "./sendMessage";

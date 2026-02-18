@@ -63,11 +63,18 @@ export interface HeaderProps {
     getResizerProps: () => {
       [key: string]: any;
     };
+    hasResizer?: boolean;
     getHeaderProps: () => {
       key: string;
       [key: string]: any;
     };
   };
+}
+
+export interface InfiniteScrollConfig {
+  onLoadMore: () => void;
+  isLoading: boolean;
+  hasMore: boolean;
 }
 
 export interface NotionTableProps {
@@ -77,7 +84,10 @@ export interface NotionTableProps {
   onRowChange?: (action: any) => void;
   onRowClick?: (rowIndex: number) => void;
   onSelectionChange?: (selectedRows: any[]) => void;
+  infiniteScroll?: InfiniteScrollConfig;
   autoHeight?: boolean;
+  editIndex?: number;
+  hasResizer?: boolean;
 }
 export enum Status {
   DRAFT = "DRAFT",

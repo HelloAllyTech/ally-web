@@ -3,8 +3,14 @@ import { FC, useState } from "react";
 import { motion } from "framer-motion";
 import { useTranslation } from "react-i18next";
 
-import { CustomImage, GenericTable, SimulationDetailsModal } from "@ally-ui-mono/ui-shared/index";
+import {
+  CustomImage,
+  FEATURE_FLAGS_MAP,
+  GenericTable,
+  SimulationDetailsModal,
+} from "@ally-ui-mono/ui-shared";
 import { InfoIcon } from "@assets";
+import { Checklist } from "@components";
 import { FeedbackSectionType } from "@types";
 import { getFormattedDateTime, getFormattedTimeFromDuration } from "@utils";
 
@@ -30,7 +36,7 @@ const getFeedbackSectionByType = ({
         <GenericTable
           columns={columns}
           data={data}
-          className="min-w-full text-md font-primary overflow-y-scroll mb-4"
+          className="min-w-full text-sm font-primary overflow-y-scroll mb-4"
         />
       );
     case FeedbackSectionType.BULLET_TEXT:
@@ -114,31 +120,35 @@ export const FeedbackSection: FC<FeedbackSectionProps> = props => {
           </div>
         </div>
         <motion.div className="overflow-y-auto font-primary space-y-4">
-          {getFeedbackSections(t).map(({ key, label, type, columns }, index) => {
-            return (
-              <motion.div
-                key={key}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{
-                  duration: 0.4,
-                  delay: index * 0.1,
-                  ease: "easeOut",
-                }}
-                className="bg-white"
-              >
-                <div>
-                  {formattedData[key] ? (
-                    getFeedbackSectionByType({ data: formattedData[key], label, type, columns })
-                  ) : (
-                    <div className="text-typography-700 font-primary text-center mb-2">
-                      No data found
-                    </div>
-                  )}
-                </div>
-              </motion.div>
-            );
-          })}
+          {FEATURE_FLAGS_MAP.SUMMARY_TABS_FLAG ? (
+            <Checklist className="max-h-[calc(100vh-200px)]" sessionId={props.id} />
+          ) : (
+            feedbackSections.map(({ key, label, type, columns }, index) => {
+              return (
+                <motion.div
+                  key={key}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{
+                    duration: 0.4,
+                    delay: index * 0.1,
+                    ease: "easeOut",
+                  }}
+                  className="bg-white"
+                >
+                  <div>
+                    {formattedData[key] ? (
+                      getFeedbackSectionByType({ data: formattedData[key], label, type, columns })
+                    ) : (
+                      <div className="text-typography-700 font-primary text-center mb-2">
+                        No data found
+                      </div>
+                    )}
+                  </div>
+                </motion.div>
+              );
+            })
+          )}
         </motion.div>
       </div>
       <SimulationDetailsModal

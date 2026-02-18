@@ -170,6 +170,7 @@ export interface SimulationSummary {
   score: number | null;
   metadata: {
     sessionName: string;
+    languageId?: number;
   };
   totalScore: number;
   eventStatus?: string;
@@ -249,6 +250,7 @@ interface UpcomingScenario {
   scenarioPathSessionItemStatus?: string;
   order?: number;
   scenarioPathSessionItemId?: string;
+  caseSessionItemId?: string;
 }
 
 interface CurrentSession {
@@ -258,10 +260,13 @@ interface CurrentSession {
   coverImageUrl?: string;
   title?: string;
   scenarioPathSessionItemId?: string;
+  caseSessionItemId?: string;
   transitionMessageTitle?: string;
   transitionMessageContent?: string;
   isScenarioPathSessionCompleted?: boolean;
   sessionGlimpse?: string;
+  isCaseSessionCompleted?: boolean;
+  caseSessionItemStatus?: string;
 }
 
 export interface GetUpComingSimulationResponse {
@@ -277,6 +282,11 @@ export interface SimulationTranscriptMessage {
   endSeconds?: number | null;
   createdAt?: string;
   threads?: Thread[];
+  tags?: {
+    tagId: string;
+    label: string;
+    category?: string;
+  }[];
 }
 
 export interface ScenarioPathway {
@@ -348,4 +358,60 @@ export interface ScenarioCaseDetails {
   totalScenarios: number;
   caseSessionId?: string;
   scenarios: PathwayScenario[];
+}
+
+export interface GetReflectionPromptsResponse {
+  ReflectionPrompt: Prompt[];
+}
+
+export interface Prompt {
+  id: string;
+  prompt: string;
+  response?: string;
+}
+
+export interface ChecklistItem {
+  id: number;
+  label: string;
+  completed: boolean;
+}
+
+export interface GetSimulationChecklistResponse {
+  overallScore: number;
+  items: ChecklistItem[];
+}
+interface ReflectionPrompt {
+  promptId: string;
+  response: string;
+}
+export interface ReflectionPromptsRequest {
+  prompts: ReflectionPrompt;
+  sessionId: string;
+}
+
+export interface ChatStreamRequest {
+  message: string;
+  sessionId: string;
+}
+
+export enum ChatStreamEventType {
+  TOKEN = "token",
+  DONE = "done",
+  ERROR = "error",
+}
+
+export interface SkillCoverageItem {
+  category: string;
+  percentage: number;
+}
+
+export interface EmotionalMovementItem {
+  messageId: string;
+  level: number;
+  startTime: number;
+}
+
+export interface GetSimulationSkillsResponse {
+  skillCoverage: SkillCoverageItem[];
+  emotionalMovement: EmotionalMovementItem[];
 }

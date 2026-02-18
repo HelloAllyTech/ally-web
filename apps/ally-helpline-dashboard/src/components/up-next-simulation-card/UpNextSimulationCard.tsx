@@ -12,15 +12,12 @@ import { isNonEmptyObject } from "@utils";
 
 interface UpNextSimulationCardProps {
   data: GetUpComingSimulationResponse;
+  metaData?: {
+    languageId?: number;
+  };
 }
 
-const ANIMATION_CONFIG = {
-  initial: { opacity: 0, y: 20 },
-  animate: { opacity: 1, y: 0 },
-  transition: { duration: 0.5, delay: 0.8 },
-};
-
-export const UpNextSimulationCard = ({ data }: UpNextSimulationCardProps) => {
+export const UpNextSimulationCard = ({ data, metaData }: UpNextSimulationCardProps) => {
   const navigate = useNavigate();
   const { startSimulation, isStarting } = useStartSimulation({ isReplaceScreen: true });
 
@@ -31,8 +28,10 @@ export const UpNextSimulationCard = ({ data }: UpNextSimulationCardProps) => {
   const { upcomingScenario, currentSession } = data;
   const hasUpcomingScenario = isNonEmptyObject(upcomingScenario);
   const isPathwayCompleted = currentSession?.isScenarioPathSessionCompleted;
+  const isCaseSessionCompleted = currentSession?.isCaseSessionCompleted;
   const isCurrentScenarioCompleted =
-    currentSession?.scenarioPathSessionItemStatus === PathwayScenarioStatus.COMPLETED;
+    currentSession?.caseSessionItemStatus === PathwayScenarioStatus.COMPLETED ||
+    isCaseSessionCompleted;
 
   const handleStartNextSimulation = async () => {
     if (!hasUpcomingScenario) {
@@ -44,6 +43,8 @@ export const UpNextSimulationCard = ({ data }: UpNextSimulationCardProps) => {
       params: {
         scenarioId: Number(upcomingScenario.id),
         scenarioPathSessionItemId: upcomingScenario.scenarioPathSessionItemId,
+        caseSessionItemId: upcomingScenario.caseSessionItemId,
+        languageId: metaData?.languageId,
       },
       metadata: {
         title: upcomingScenario.title,
@@ -59,6 +60,8 @@ export const UpNextSimulationCard = ({ data }: UpNextSimulationCardProps) => {
       params: {
         scenarioId: Number(currentSession.scenarioId),
         scenarioPathSessionItemId: currentSession.scenarioPathSessionItemId,
+        caseSessionItemId: currentSession.caseSessionItemId,
+        languageId: metaData?.languageId,
       },
       metadata: {
         title: currentSession.title,
@@ -111,6 +114,7 @@ export const UpNextSimulationCard = ({ data }: UpNextSimulationCardProps) => {
 
   return (
     <div className="font-primary px-[15px] py-2">
+      {currentSession?.sessionGlimpse && renderSessionGlimpse()}
       {!isCurrentScenarioCompleted ? (
         <>
           <div className="text-typography-900 text-base font-semibold mb-[8px]">All most there</div>
@@ -121,7 +125,6 @@ export const UpNextSimulationCard = ({ data }: UpNextSimulationCardProps) => {
         </>
       ) : (
         <>
-          {currentSession?.sessionGlimpse && renderSessionGlimpse()}
           <div className="flex flex-col items-center justify-center mb-[20px]">
             {currentSession?.transitionMessageTitle?.length > 0 && (
               <div className="text-typography-900 text-base font-semibold">
@@ -137,7 +140,7 @@ export const UpNextSimulationCard = ({ data }: UpNextSimulationCardProps) => {
         </>
       )}
 
-      {hasUpcomingScenario && !isPathwayCompleted && (
+      {hasUpcomingScenario && (!isPathwayCompleted || !isCaseSessionCompleted) && (
         <div className="rounded-[8px] border border-border-light">
           <div className="flex p-4 gap-4 bg-background-secondary">
             <img
@@ -164,11 +167,8 @@ export const UpNextSimulationCard = ({ data }: UpNextSimulationCardProps) => {
       )}
 
       {/* Action Buttons */}
-      <motion.div
-        {...ANIMATION_CONFIG}
-        className="absolute bottom-5 left-0 right-0 z-10 max-w-full bg-white pt-[10px] px-[20px]"
-      >
-        {isPathwayCompleted ? (
+      <div className="absolute bottom-5 left-0 right-0 z-10 max-w-full bg-white pt-[10px] px-[20px]">
+        {isPathwayCompleted || isCaseSessionCompleted ? (
           <Button
             variant={ButtonVariant.PRIMARY}
             onClick={handleBack}
@@ -197,7 +197,7 @@ export const UpNextSimulationCard = ({ data }: UpNextSimulationCardProps) => {
             </Button>
           </div>
         )}
-      </motion.div>
+      </div>
     </div>
   );
 };

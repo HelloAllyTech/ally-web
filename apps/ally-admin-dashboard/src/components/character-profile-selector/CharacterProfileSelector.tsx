@@ -91,7 +91,9 @@ export const CharacterProfileSelector: React.FC<CharacterProfileSelectorProps> =
 
       // Prefill form fields using existing field IDs
       Object.values(formFieldIds).forEach(fieldId => {
-        setValue(fieldId, character[fieldId as keyof CharacterData] ?? "");
+        const value = character[fieldId as keyof CharacterData];
+        // Ensure we never set null or undefined - always use empty string as fallback
+        setValue(fieldId, value ?? "");
       });
 
       // Store the character ID in the main field
@@ -216,14 +218,16 @@ export const CharacterProfileSelector: React.FC<CharacterProfileSelectorProps> =
                 }}
                 render={({ field }) => (
                   <input
-                    {...field}
                     type="number"
                     placeholder="27"
-                    value={field.value ?? ""}
+                    value={field.value === null || field.value === undefined ? "" : field.value}
                     onChange={e => {
                       const val = e.target.value;
                       field.onChange(val === "" ? "" : parseInt(val, 10) || "");
                     }}
+                    onBlur={field.onBlur}
+                    name={field.name}
+                    ref={field.ref}
                     className="w-full rounded border border-border-light px-3 py-2 text-base focus:outline-none focus:ring-1 focus:ring-primary"
                   />
                 )}
@@ -272,9 +276,13 @@ export const CharacterProfileSelector: React.FC<CharacterProfileSelectorProps> =
                 defaultValue=""
                 render={({ field }) => (
                   <input
-                    {...field}
                     type="text"
                     placeholder="e.g. Software Engineer"
+                    value={field.value === null || field.value === undefined ? "" : field.value}
+                    onChange={field.onChange}
+                    onBlur={field.onBlur}
+                    name={field.name}
+                    ref={field.ref}
                     className="w-full rounded border border-border-light px-3 py-2 text-base focus:outline-none focus:ring-1 focus:ring-primary placeholder:text-typography-400"
                   />
                 )}

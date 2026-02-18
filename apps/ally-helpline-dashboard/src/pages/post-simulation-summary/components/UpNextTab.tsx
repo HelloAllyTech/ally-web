@@ -2,12 +2,14 @@ import { FC, useEffect } from "react";
 
 import { logger } from "@ally-ui-mono/ui-shared/logger";
 import { useLazyGetUpComingSimulationQuery } from "@api";
-
-import { UpNextSimulationCard } from ".";
+import { UpNextSimulationCard } from "@components";
 
 interface UpNextTabProps {
   sessionId: string;
   pageType: string;
+  metaData: {
+    languageId?: number;
+  };
 }
 
 const EVENT_STATUS = {
@@ -15,7 +17,7 @@ const EVENT_STATUS = {
   IN_PROGRESS: "IN_PROGRESS",
 };
 
-export const UpNextTab: FC<UpNextTabProps> = ({ sessionId, pageType }) => {
+export const UpNextTab: FC<UpNextTabProps> = ({ sessionId, pageType, metaData }) => {
   const [getUpComingSimulation, { data: upComingSimulation }] = useLazyGetUpComingSimulationQuery();
 
   useEffect(() => {
@@ -57,7 +59,7 @@ export const UpNextTab: FC<UpNextTabProps> = ({ sessionId, pageType }) => {
           Up Next
         </div>
       )}
-      <UpNextSimulationCard data={upComingSimulation} />
+      <UpNextSimulationCard data={upComingSimulation} metaData={metaData} />
     </div>
   );
 };

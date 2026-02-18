@@ -216,7 +216,10 @@ export const OrganizationDetail: FC = () => {
                 <Dot />
               </span>
               <span>
-                {organization.userCount} {en.userManagement.users.toLowerCase()}
+                {organization?.userCount || 0}{" "}
+                {Number(organization?.userCount) === 1
+                  ? en.userManagement.user.toLowerCase()
+                  : en.userManagement.users.toLowerCase()}
               </span>
             </div>
           </div>

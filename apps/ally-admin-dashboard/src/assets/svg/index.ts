@@ -62,6 +62,7 @@ import TrashRed from "./trashRed.svg?react";
 import Unarchive from "./unArchiveIcon.svg?react";
 import Unpublish from "./unpublish.svg?react";
 import Upload from "./upload.svg?react";
+import UploadImage from "./uploadImage.svg?react";
 import User from "./user.svg?react";
 import Users from "./users.svg?react";
 import VideoCamera from "./videoCamera.svg?react";
@@ -136,4 +137,5 @@ export {
   Calendar,
   Contribution,
   Compress,
+  UploadImage,
 };

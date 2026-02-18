@@ -6,6 +6,14 @@ import { useClickOutside } from "@hooks";
 import { EditableTextPopupProps } from "./types";
 import { keyCodes } from "./utils";
 
+/** Normalize value to string; handles array (e.g. instructions from API), number, or other. */
+function valueToDisplayString(value: unknown): string {
+  if (value == null || value === "") return "";
+  if (typeof value === "string") return value;
+  if (Array.isArray(value)) return value.join("\n");
+  return String(value);
+}
+
 export const EditableTextPopup: React.FC<EditableTextPopupProps> = ({
   value,
   onChange,
@@ -16,12 +24,12 @@ export const EditableTextPopup: React.FC<EditableTextPopupProps> = ({
   className = "",
 }) => {
   const [isOpen, setIsOpen] = useState(false);
-  const [editValue, setEditValue] = useState(value ?? "");
+  const [editValue, setEditValue] = useState(() => valueToDisplayString(value));
   const popupRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
-    setEditValue(value ?? "");
+    setEditValue(valueToDisplayString(value));
   }, [value]);
 
   const handleTextClick = () => {
@@ -35,7 +43,7 @@ export const EditableTextPopup: React.FC<EditableTextPopupProps> = ({
   };
 
   const handleCancel = () => {
-    setEditValue(value);
+    setEditValue(valueToDisplayString(value));
     setIsOpen(false);
   };
 
@@ -66,8 +74,9 @@ export const EditableTextPopup: React.FC<EditableTextPopupProps> = ({
     }
   }, [isOpen]);
 
-  const displayText = value || placeholder;
-  const isPlaceholder = !value;
+  const displayText = valueToDisplayString(value);
+  const textToShow = displayText || placeholder;
+  const isPlaceholder = !displayText;
 
   return (
     <div className={`${className}`} style={{ width, minWidth }}>
@@ -79,12 +88,14 @@ export const EditableTextPopup: React.FC<EditableTextPopupProps> = ({
           ${isPlaceholder ? "text-typography-600" : ""}
         `}
       >
-        {displayText?.split("\n").map((line, index) => (
-          <span className="overflow-hidden text-ellipsis whitespace-nowrap" key={index}>
-            {line}
-            <br />
-          </span>
-        ))}
+        {String(textToShow)
+          .split("\n")
+          .map((line, index) => (
+            <span className="overflow-hidden text-ellipsis whitespace-nowrap" key={index}>
+              {line}
+              <br />
+            </span>
+          ))}
       </div>
       {isOpen && (
         <div ref={popupRef} className="absolute z-50 top-[8px] left-[0px]">

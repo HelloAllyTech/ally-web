@@ -78,6 +78,7 @@ export const ApiEndpoints = {
     CANCEL_REPORT_GENERATION: (reportId: string) =>
       `/v1/learn/scenarios/reports/${reportId}/cancel`,
     SCENARIO_COVER_IMAGE_LIBRARY: "/v1/scenario-cover-image-library",
+    HELPER_TAGS: "/v1/learn/scenario-behaviors",
   },
 
   CHARACTERS: {
@@ -101,6 +102,11 @@ export const ApiEndpoints = {
   },
   USER_BADGES: {
     GET_BADGES: "/v1/badges",
+    UPLOAD_BADGE_ICON: "/v1/badges/badge-image-url",
+    DELETE_BADGE_ICON: `/v1/badges/badge-image`,
+    CREATE_BADGE: "/v1/badges",
+    UPDATE_BADGE: (id: string) => `/v1/badges/${id}`,
+    DELETE_BADGE: (id: string) => `/v1/badges/${id}`,
   },
   AUTHORIZATION: {
     GET_PERMISSIONS: "/v1/authorization/permissions",
@@ -189,4 +195,6 @@ export const TAG_TYPES = {
   UPDATE_SUMMARY_SECTIONS: "updateSummarySections",
   CHARACTERS: "characters",
   PROMPTS: "prompts",
+  USER_BADGES: "userBadges",
+  HELPER_TAGS: "helperTags",
 };

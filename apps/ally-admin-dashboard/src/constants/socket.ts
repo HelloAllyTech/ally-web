@@ -1,5 +1,5 @@
 export enum SocketConnectionPaths {
-  SCENARIO_REPORTS = "scenario/reports",
+  SCENARIO_REPORTS = "scenarios/reports",
 }
 
 export enum SocketConnectionTypes {

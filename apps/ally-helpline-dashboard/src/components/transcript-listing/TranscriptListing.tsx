@@ -15,6 +15,12 @@ interface TranscriptListingProps {
   className?: string;
 }
 
+const categoryColoeMap = {
+  POSITIVE: "bg-[#C8E6C9] text-[#18441B]",
+  NEGATIVE: "bg-[#FFD9D4] text-[#390002]",
+  NEUTRAL: "bg-[#E0E0E0] text-[#333333]",
+};
+
 const convertSecondsToTime = (seconds: number) => {
   const minutes = Math.floor(seconds / 60);
   const remainingSeconds = seconds % 60;
@@ -55,6 +61,18 @@ const TranscriptItem = ({
         >
           {speakerName}
         </div>
+        {transcript?.tags?.length > 0 && (
+          <div className="flex flex-wrap gap-2 my-1">
+            {transcript?.tags?.map(tag => (
+              <div
+                key={tag.tagId}
+                className={`text-typography-900 px-1 text-xs rounded-[2px] text-base leading-relaxed ${categoryColoeMap[tag.category]}`}
+              >
+                {tag.label}
+              </div>
+            ))}
+          </div>
+        )}
         <div className="text-typography-900 text-base leading-relaxed">{transcript.content}</div>
       </div>
     </div>
