@@ -1,12 +1,10 @@
 import { ApiEndpoints, HttpMethod, TAG_TYPES } from "@constants";
 import {
   ConversationalGuardrail,
-  ConversationalGuardrailTranslation,
   CreateConversationalGuardrailInput,
   UpdateConversationalGuardrailInput,
   GetGuardrailsResponse,
   GetGuardrailsQueryParams,
-  UpdateGuardrailTranslationInput,
 } from "@types";
 
 import { baseAPI } from "./baseApi";
@@ -53,25 +51,7 @@ const guardrailsApi = baseAPI.injectEndpoints({
     }),
 
 
-    updateGuardrailTranslation: builder.mutation<
-      ConversationalGuardrailTranslation,
-      { id: string; translation: UpdateGuardrailTranslationInput }
-    >({
-      query: ({ id, translation }) => ({
-        url: `${ApiEndpoints.SIMULATION_STUDIO.CONVERSATIONAL_GUARDRAILS}/translations/${id}`,
-        method: HttpMethod.PUT,
-        body: translation,
-      }),
-      invalidatesTags: [TAG_TYPES.CONVERSATIONAL_GUARDRAILS],
-    }),
 
-    deleteGuardrailTranslation: builder.mutation<void, string>({
-      query: id => ({
-        url: `${ApiEndpoints.SIMULATION_STUDIO.CONVERSATIONAL_GUARDRAILS}/translations/${id}`,
-        method: HttpMethod.DELETE,
-      }),
-      invalidatesTags: [TAG_TYPES.CONVERSATIONAL_GUARDRAILS],
-    }),
   }),
 });
 
@@ -80,6 +60,5 @@ export const {
   useCreateGuardrailMutation,
   useUpdateGuardrailMutation,
   useDeleteGuardrailMutation,
-  useUpdateGuardrailTranslationMutation,
-  useDeleteGuardrailTranslationMutation,
+
 } = guardrailsApi;
