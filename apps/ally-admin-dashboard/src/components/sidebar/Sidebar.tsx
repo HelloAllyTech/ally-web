@@ -18,6 +18,7 @@ import {
   Mic,
   CharacterLibrary,
   FrameSource,
+  Guardrails,
   Badge,
 } from "@assets";
 import { UserModal } from "@components";
@@ -127,6 +128,8 @@ export const Sidebar: React.FC = () => {
         return <Mic />;
       case SIDEBAR_ITEMS.SCENARIO_LANGUAGES:
         return <Globe />;
+      case SIDEBAR_ITEMS.MANAGE_GUARDRAILS:
+        return <Guardrails />;
       case SIDEBAR_ITEMS.PROMPTS:
         return <FrameSource />;
       case SIDEBAR_ITEMS.USER_BADGES:
@@ -155,6 +158,8 @@ export const Sidebar: React.FC = () => {
         return location.pathname.includes(ROUTES.MANAGE_SCENARIO_VOICES);
       case ROUTES.MANAGE_PROMPTS:
         return location.pathname.includes(ROUTES.MANAGE_PROMPTS);
+      case ROUTES.MANAGE_GUARDRAILS:
+        return location.pathname.includes(ROUTES.MANAGE_GUARDRAILS);
       case ROUTES.USER_BADGES:
         return location.pathname.includes(ROUTES.USER_BADGES);
       default:

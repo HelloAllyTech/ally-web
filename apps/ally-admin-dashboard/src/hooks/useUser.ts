@@ -80,6 +80,11 @@ export const useUser = () => {
       path: ROUTES.MANAGE_PROMPTS,
     },
     {
+      id: SIDEBAR_ITEMS.MANAGE_GUARDRAILS,
+      label: "Conversational Guardrails",
+      path: ROUTES.MANAGE_GUARDRAILS,
+    },
+    {
       id: SIDEBAR_ITEMS.USER_MANAGEMENT,
       label: en.userManagement.userManagement,
       path: ROUTES.USER_MANAGEMENT,
@@ -174,6 +179,8 @@ export const useUser = () => {
           return permissions.includes(Permissions.EDIT_PROMPT);
         case SIDEBAR_ITEMS.USER_MANAGEMENT:
           return permissions.includes(Permissions.EDIT_USER);
+        case SIDEBAR_ITEMS.MANAGE_GUARDRAILS:
+          return permissions.includes(Permissions.EDIT_GUARDRAIL);
         case SIDEBAR_ITEMS.USER_BADGES:
           return permissions.includes(Permissions.VIEW_ADMIN_BADGE);
         default:
