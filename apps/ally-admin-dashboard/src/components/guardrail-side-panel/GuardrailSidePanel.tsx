@@ -11,7 +11,6 @@ interface GuardrailSidePanelProps {
   selectedGuardrail: any | null;
   isOpen: boolean;
   onClose: () => void;
-  onDelete: (id: string) => void;
   onUpdate: (id: string, updates: any) => Promise<void>;
   onCreate: (guardrail: any) => Promise<void>;
 }
@@ -40,8 +39,7 @@ const Field: React.FC<FieldProps> = ({ label, children, multiline = false, requi
 const PanelHeader: React.FC<{
   onClose: () => void;
   isNew: boolean;
-  onDelete?: () => void;
-}> = ({ onClose, isNew, onDelete }) => (
+}> = ({ onClose, isNew }) => (
   <div className="flex items-center justify-between p-6">
     <button
       onClick={onClose}
@@ -52,12 +50,6 @@ const PanelHeader: React.FC<{
         {isNew ? "Create guardrail" : "Edit guardrail"}
       </span>
     </button>
-    {!isNew && onDelete && (
-      <button onClick={onDelete} className="flex items-center gap-2 text-red-600">
-        <Trash width={14} height={14} />
-        <span className="text-base font-medium">Delete</span>
-      </button>
-    )}
   </div>
 );
 
@@ -65,7 +57,6 @@ export const GuardrailSidePanel: React.FC<GuardrailSidePanelProps> = ({
   selectedGuardrail,
   isOpen,
   onClose,
-  onDelete,
   onUpdate,
   onCreate,
 }) => {

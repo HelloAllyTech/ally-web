@@ -89,7 +89,6 @@ describe("GuardrailSidePanel", () => {
     selectedGuardrail: mockGuardrail,
     isOpen: true,
     onClose: vi.fn(),
-    onDelete: vi.fn(),
     onUpdate: vi.fn(),
     onCreate: vi.fn(),
   };

@@ -254,7 +254,6 @@ export const GuardrailsManagement: React.FC = () => {
           isOpen={isSidePanelOpen}
           onClose={handleSidePanelClose}
           selectedGuardrail={selectedGuardrail}
-          onDelete={() => setShowDeleteConfirmationPopup(true)} // Or handle direct delete
           onUpdate={(id, updates) =>
             handleUpdateTable({ rowId: id, columnId: "all", value: updates })
           }
