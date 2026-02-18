@@ -273,7 +273,7 @@ const EmotionalMovementChart: FC<{
               tickLine={false}
               tick={{ fill: "#6B7280", fontSize: 12 }}
               label={{
-                value: "Level (1-10)",
+                value: "Level (-5 to 5)",
                 angle: -90,
                 position: "insideLeft",
                 style: { fill: "#6B7280", fontSize: 12, textAnchor: "middle" },
