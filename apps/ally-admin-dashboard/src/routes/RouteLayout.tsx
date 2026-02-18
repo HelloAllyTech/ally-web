@@ -17,6 +17,7 @@ import {
   CreateCase,
   ScenarioVoices,
   ScenarioLanguages,
+  GuardrailsManagement,
   PromptManagement,
   UserBadges,
 } from "@pages";
@@ -169,6 +170,14 @@ export const RouteLayout: React.FC = () => {
           element={
             <PrivateLayout requiredPermissions={[Permissions.EDIT_EVENT]}>
               <CreateCase />
+            </PrivateLayout>
+          }
+        />
+        <Route
+          path={ROUTES.MANAGE_GUARDRAILS}
+          element={
+            <PrivateLayout requiredPermissions={[Permissions.EDIT_SCENARIO]}>
+              <GuardrailsManagement />
             </PrivateLayout>
           }
         />
