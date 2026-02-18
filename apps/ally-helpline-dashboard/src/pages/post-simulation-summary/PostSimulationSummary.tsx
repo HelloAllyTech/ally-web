@@ -5,14 +5,14 @@ import { motion } from "framer-motion";
 import { useSelector } from "react-redux";
 import { useNavigate, useParams } from "react-router-dom";
 
-import { FEATURE_FLAGS_MAP, Toggle } from "@ally-ui-mono/ui-shared/index";
+import { FEATURE_FLAGS_MAP, Toggle } from "@ally-ui-mono/ui-shared";
 import {
   useCreateReviewMutation,
   useGetSimulationSummaryQuery,
   useUpdateReviewMutation,
 } from "@api";
 import { BackCircle } from "@assets";
-import { AskAiTab, ReflectionTab } from "@components";
+import { AskAiTab, ReflectionTab, SkillsTab } from "@components";
 import { Permissions, REVIEW_PRIVACY_OPTIONS } from "@constants";
 import { SimulationSummary } from "@containers";
 import { RootState } from "@store";
@@ -56,6 +56,11 @@ export const PostSimulationSummary: FC = () => {
           },
           {
             id: 5,
+            label: "Skills",
+            content: <SkillsTab sessionId={sessionId} />,
+          },
+          {
+            id: 6,
             label: "Reflection",
             content: <ReflectionTab sessionId={sessionId} />,
           },
