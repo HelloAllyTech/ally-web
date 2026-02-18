@@ -91,10 +91,11 @@ export const ApiEndpoints = {
     START_CASE_SIMULATION: (caseId: string) => `/v1/learn/cases/${caseId}/create-session`,
     GET_UP_COMING_CASE_SIMULATION: (caseSessionItemId: string) =>
       `/v1/learn/cases/${caseSessionItemId}/upcoming-scenario`,
-    GET_REFLECTION_PROMPTS: (sessionId: string) =>
+    REFLECTION_PROMPTS: (sessionId: string) =>
       `/v1/learn/scenario-session/${sessionId}/reflection-prompts`,
     GET_SIMULATION_CHECKLIST: (sessionId: string) =>
       `/v1/learn/scenario-session/${sessionId}/checklist`,
+    CHAT_STREAM: (sessionId: string) => `/v1/learn/scenario-session/${sessionId}/chat/stream`,
   },
   SIMULATION: {
     SIMULATION_CREDITS: "/v1/simulation-credits",

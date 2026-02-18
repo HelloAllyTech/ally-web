@@ -160,6 +160,12 @@ describe("createSimulation utils", () => {
         triggerWarningIds: [],
         agentDialogues: "Sample dialogues",
         customFields: [],
+        behaviorInstructions: [],
+        checklistType: undefined,
+        experienceMode: undefined,
+        maxTimeValue: undefined,
+        stateInstructions: undefined,
+        timerMode: undefined,
       });
     });
 
