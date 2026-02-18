@@ -336,16 +336,21 @@ describe("useUser", () => {
 
     it("should filter navigation items based on EDIT_SCENARIO permission", () => {
       store = createMockStore({
-        permissions: [Permissions.EDIT_SCENARIO, Permissions.EDIT_SCENARIO_VOICE],
+        permissions: [
+          Permissions.EDIT_SCENARIO,
+          Permissions.EDIT_SCENARIO_VOICE,
+          Permissions.EDIT_GUARDRAIL,
+        ],
       });
 
       const { result } = renderHook(() => useUser(), {
         wrapper: ({ children }: any) => <Provider store={store}>{children}</Provider>,
       });
 
-      expect(result.current.filteredNavigationItems).toHaveLength(2);
+      expect(result.current.filteredNavigationItems).toHaveLength(3);
       expect(result.current.filteredNavigationItems[0].id).toBe(SIDEBAR_ITEMS.SIMULATION_STUDIO);
       expect(result.current.filteredNavigationItems[1].id).toBe(SIDEBAR_ITEMS.SCENARIO_VOICES);
+      expect(result.current.filteredNavigationItems[2].id).toBe(SIDEBAR_ITEMS.MANAGE_GUARDRAILS);
     });
 
     it("should filter navigation items based on EDIT_EVENT permission", () => {
@@ -396,6 +401,7 @@ describe("useUser", () => {
           Permissions.EDIT_SCENARIO_VOICE,
           Permissions.EDIT_SCENARIO_LANGUAGE,
           Permissions.EDIT_PROMPT,
+          Permissions.EDIT_GUARDRAIL,
         ],
       });
 
@@ -403,13 +409,14 @@ describe("useUser", () => {
         wrapper: ({ children }: any) => <Provider store={store}>{children}</Provider>,
       });
 
-      expect(result.current.filteredNavigationItems).toHaveLength(6);
+      expect(result.current.filteredNavigationItems).toHaveLength(7);
       expect(result.current.filteredNavigationItems.map(item => item.id)).toEqual([
         SIDEBAR_ITEMS.SIMULATION_STUDIO,
         SIDEBAR_ITEMS.EVENT_MANAGEMENT,
         SIDEBAR_ITEMS.SCENARIO_VOICES,
         SIDEBAR_ITEMS.SCENARIO_LANGUAGES,
         SIDEBAR_ITEMS.PROMPTS,
+        SIDEBAR_ITEMS.MANAGE_GUARDRAILS,
         SIDEBAR_ITEMS.USER_MANAGEMENT,
       ]);
     });
@@ -421,6 +428,7 @@ describe("useUser", () => {
           Permissions.EDIT_USER,
           Permissions.EDIT_SCENARIO_VOICE,
           Permissions.EDIT_PROMPT,
+          Permissions.EDIT_GUARDRAIL,
         ],
       });
 
@@ -428,11 +436,11 @@ describe("useUser", () => {
         wrapper: ({ children }: any) => <Provider store={store}>{children}</Provider>,
       });
 
-      expect(result.current.filteredNavigationItems).toHaveLength(4);
       expect(result.current.filteredNavigationItems.map(item => item.id)).toEqual([
         SIDEBAR_ITEMS.SIMULATION_STUDIO,
         SIDEBAR_ITEMS.SCENARIO_VOICES,
         SIDEBAR_ITEMS.PROMPTS,
+        SIDEBAR_ITEMS.MANAGE_GUARDRAILS,
         SIDEBAR_ITEMS.USER_MANAGEMENT,
       ]);
     });
@@ -451,17 +459,21 @@ describe("useUser", () => {
 
     it("should update filtered items when permissions change", () => {
       store = createMockStore({
-        permissions: [Permissions.EDIT_SCENARIO, Permissions.EDIT_SCENARIO_VOICE],
+        permissions: [
+          Permissions.EDIT_SCENARIO,
+          Permissions.EDIT_SCENARIO_VOICE,
+          Permissions.EDIT_GUARDRAIL,
+        ],
       });
 
       const { result } = renderHook(() => useUser(), {
         wrapper: ({ children }: any) => <Provider store={store}>{children}</Provider>,
       });
 
-      expect(result.current.filteredNavigationItems).toHaveLength(2);
       expect(result.current.filteredNavigationItems.map(item => item.id)).toEqual([
         SIDEBAR_ITEMS.SIMULATION_STUDIO,
         SIDEBAR_ITEMS.SCENARIO_VOICES,
+        SIDEBAR_ITEMS.MANAGE_GUARDRAILS,
       ]);
 
       // Create new store with updated permissions and render new hook
@@ -470,6 +482,7 @@ describe("useUser", () => {
           Permissions.EDIT_SCENARIO,
           Permissions.EDIT_EVENT,
           Permissions.EDIT_SCENARIO_VOICE,
+          Permissions.EDIT_GUARDRAIL,
         ],
       });
 
@@ -477,11 +490,12 @@ describe("useUser", () => {
         wrapper: ({ children }: any) => <Provider store={updatedStore}>{children}</Provider>,
       });
 
-      expect(newResult.current.filteredNavigationItems).toHaveLength(3);
+      expect(newResult.current.filteredNavigationItems).toHaveLength(4);
       expect(newResult.current.filteredNavigationItems.map(item => item.id)).toEqual([
         SIDEBAR_ITEMS.SIMULATION_STUDIO,
         SIDEBAR_ITEMS.EVENT_MANAGEMENT,
         SIDEBAR_ITEMS.SCENARIO_VOICES,
+        SIDEBAR_ITEMS.MANAGE_GUARDRAILS,
       ]);
     });
   });

@@ -120,6 +120,18 @@ describe("createSimulation utils", () => {
           voiceId: "voice-123",
           agentDialogues: ["Sample dialogues"],
           customFields: [],
+          optGuardrails: false,
+          checklistType: "GUIDED",
+          experienceMode: "CHECKLIST",
+          maxTimeValue: "00:10:00",
+          timerMode: true,
+          stateInstructions: [
+            {
+              stateId: 1,
+              instruction: "test instruction",
+              dialogues: ["test dialogue"],
+            },
+          ],
         },
       } as GetSimulationByIdResponse;
 
@@ -135,6 +147,7 @@ describe("createSimulation utils", () => {
         isGlobal: false,
         isPublic: false,
         agentGoal: "Test goal",
+        behaviorInstructions: [],
         currentLocation: "New York",
         emotionalNeeds: "Test needs",
         gender: "male",
@@ -160,12 +173,18 @@ describe("createSimulation utils", () => {
         triggerWarningIds: [],
         agentDialogues: "Sample dialogues",
         customFields: [],
-        behaviorInstructions: [],
-        checklistType: undefined,
-        experienceMode: undefined,
-        maxTimeValue: undefined,
-        stateInstructions: undefined,
-        timerMode: undefined,
+        optGuardrails: false,
+        checklistType: "GUIDED",
+        experienceMode: "CHECKLIST",
+        maxTimeValue: "00:10:00",
+        timerMode: true,
+        stateInstructions: [
+          {
+            stateId: 1,
+            instruction: "test instruction",
+            dialogues: ["test dialogue"],
+          },
+        ],
       });
     });
 
