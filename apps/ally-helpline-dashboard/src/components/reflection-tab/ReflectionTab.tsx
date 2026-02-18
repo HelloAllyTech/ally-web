@@ -120,7 +120,7 @@ const Prompts = ({ prompts, sessionId }: { prompts: Prompt[]; sessionId: string 
                   <textarea
                     value={responses[index] ?? ""}
                     onChange={e => updateResponse(index, e.target.value)}
-                    className="h-full min-h-0 w-full outline-none"
+                    className="h-full min-h-0 w-full outline-none resize-none"
                     rows={10}
                   />
                 </div>

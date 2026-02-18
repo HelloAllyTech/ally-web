@@ -18,7 +18,7 @@ import { SimulationSummary } from "@containers";
 import { RootState } from "@store";
 import { pageType } from "@types";
 
-import { ChecklistTab, UpNextTab } from "./components";
+import { UpNextTab } from "./components";
 import { SimulationTranscriptTab } from "../calls/components";
 import { tabStyles } from "../calls/constants";
 import { containerVariants } from "../learn/constants";
@@ -53,11 +53,6 @@ export const PostSimulationSummary: FC = () => {
             id: 4,
             label: "Ask AI",
             content: <AskAiTab sessionId={sessionId} />,
-          },
-          {
-            id: 6,
-            label: "Checklist",
-            content: <ChecklistTab sessionId={sessionId} />,
           },
           {
             id: 5,
