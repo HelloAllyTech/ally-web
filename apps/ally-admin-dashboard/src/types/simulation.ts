@@ -415,7 +415,7 @@ export interface GetImageLibraryResponse {
 export interface GetHelperTagsQueryParams {
   limit?: number;
   offset?: number;
-  searchName?: string;
+  name?: string;
 }
 
 export interface HelperTagItem {
@@ -423,7 +423,7 @@ export interface HelperTagItem {
   name: string;
 }
 
-export interface HelperTag {
+export interface HelperTagInput {
   data: HelperTagItem[];
   count: number;
 }

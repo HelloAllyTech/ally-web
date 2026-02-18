@@ -33,6 +33,7 @@ import {
   GetSimulationChecklistResponse,
   ReflectionPromptsRequest,
   GetSimulationSkillsResponse,
+  GetChatHistoryResponse,
 } from "@types";
 
 import { baseAPI } from "./baseAPI";
@@ -341,6 +342,11 @@ const learnAPI = baseAPI.injectEndpoints({
     getSimulationSkills: builder.query<GetSimulationSkillsResponse, { sessionId: string }>({
       query: ({ sessionId }) => ({
         url: ApiEndpoints.LEARN.GET_SIMULATION_SKILLS(sessionId),
+      }),
+    }),
+    getChatHistory: builder.query<GetChatHistoryResponse[], { sessionId: string }>({
+      query: ({ sessionId }) => ({
+        url: ApiEndpoints.LEARN.CHAT_HISTORY(sessionId),
         method: HttpMethod.GET,
       }),
     }),
@@ -373,4 +379,5 @@ export const {
   useCreateReflectionPromptsMutation,
   useUpdateReflectionPromptsMutation,
   useGetSimulationSkillsQuery,
+  useGetChatHistoryQuery,
 } = learnAPI;
