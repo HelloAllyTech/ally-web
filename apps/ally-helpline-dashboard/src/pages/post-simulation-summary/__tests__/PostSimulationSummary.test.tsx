@@ -571,8 +571,8 @@ describe("PostSimulationSummary Component", () => {
       );
 
       const tabButtons = screen.getAllByRole("tab");
-      // With SUMMARY_TABS_FLAG enabled, we have 4 tabs: Summary, Transcription, Ask AI, Reflection
-      expect(tabButtons).toHaveLength(4);
+      // With SUMMARY_TABS_FLAG enabled, we have 5 tabs: Summary, Transcription, Ask AI, Skills, Reflection
+      expect(tabButtons).toHaveLength(5);
     });
   });
 
@@ -666,6 +666,7 @@ describe("PostSimulationSummary Component", () => {
       expect(screen.getByTestId("tab-2")).toBeInTheDocument();
       expect(screen.getByTestId("tab-4")).toBeInTheDocument();
       expect(screen.getByTestId("tab-5")).toBeInTheDocument();
+      expect(screen.getByTestId("tab-6")).toBeInTheDocument();
     });
 
     it("should have Summary as first tab with id 1", () => {
@@ -704,16 +705,28 @@ describe("PostSimulationSummary Component", () => {
       expect(askAiTab).toHaveAttribute("data-value", "4");
     });
 
-    it("should have Reflection as fourth tab with id 5", () => {
+    it("should have Skills as fourth tab with id 5", () => {
       render(
         <TestWrapper>
           <PostSimulationSummary />
         </TestWrapper>,
       );
 
-      const reflectionTab = screen.getByTestId("tab-5");
+      const skillsTab = screen.getByTestId("tab-5");
+      expect(skillsTab).toHaveTextContent("Skills");
+      expect(skillsTab).toHaveAttribute("data-value", "5");
+    });
+
+    it("should have Reflection as fifth tab with id 6", () => {
+      render(
+        <TestWrapper>
+          <PostSimulationSummary />
+        </TestWrapper>,
+      );
+
+      const reflectionTab = screen.getByTestId("tab-6");
       expect(reflectionTab).toHaveTextContent("Reflection");
-      expect(reflectionTab).toHaveAttribute("data-value", "5");
+      expect(reflectionTab).toHaveAttribute("data-value", "6");
     });
   });
 
