@@ -75,3 +75,4 @@ export * from "./option-selection-popover";
 export * from "./report-content";
 export * from "./tab-button";
 export * from "./prompt-configuration";
+export * from "./guardrail-side-panel";
