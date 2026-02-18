@@ -3,12 +3,13 @@ import { FC, useCallback, useMemo } from "react";
 import { Plus } from "@assets";
 import { NotionTable } from "@components";
 import { BEHAVIOURS_INSTRUCTION_TABLE_COLUMNS, en } from "@constants";
+import { HelperTagItem } from "@types";
 
 interface BehaviourRow {
   id?: string;
   category?: string;
-  behaviours?: string[];
-  response?: string;
+  behaviors?: string[];
+  instructions?: string;
 }
 
 interface BehavioursInstructionProps {
@@ -17,32 +18,32 @@ interface BehavioursInstructionProps {
 }
 
 const createEmptyFormValue = () => ({
-  id: `new-${Date.now()}`,
+  id: `temp-${Date.now()}`,
   category: "",
-  behaviours: [] as string[],
-  response: "",
+  behaviors: [] as string[],
+  instructions: [] as string[],
 });
 
 export const BehavioursInstruction: FC<BehavioursInstructionProps> = ({ formMethods, id }) => {
   const formData: BehaviourRow[] = formMethods.watch(id) ?? [];
 
   const createBehavioursInstructionObject = useCallback(
-    (behaviour: BehaviourRow) => ({
-      id: { value: behaviour?.id ?? "", disabled: false, rowId: behaviour.id },
-      category: { value: behaviour?.category ?? "", disabled: false, rowId: behaviour.id },
-      behaviours: {
-        value: Array.isArray(behaviour?.behaviours) ? behaviour.behaviours : [],
+    (behavior: BehaviourRow) => ({
+      id: { value: behavior?.id ?? "", disabled: false, rowId: behavior.id },
+      category: { value: behavior?.category ?? "", disabled: false, rowId: behavior.id },
+      behaviors: {
+        value: behavior?.behaviors,
         disabled: false,
-        rowId: behaviour.id,
+        rowId: behavior.id,
       },
-      response: { value: behaviour?.response ?? "", disabled: false, rowId: behaviour.id },
+      instructions: { value: behavior?.instructions ?? "", disabled: false, rowId: behavior.id },
     }),
     [],
   );
 
   const tableData = useMemo(
     () => ({
-      data: formData.map(behaviour => createBehavioursInstructionObject(behaviour)),
+      data: formData.map(behavior => createBehavioursInstructionObject(behavior)),
       columns: BEHAVIOURS_INSTRUCTION_TABLE_COLUMNS,
     }),
     [formData, createBehavioursInstructionObject],
@@ -54,12 +55,14 @@ export const BehavioursInstruction: FC<BehavioursInstructionProps> = ({ formMeth
   }, [formMethods, id, formData]);
 
   const handleRowChange = useCallback(
-    (action: { columnId?: string; value?: string; rowId?: string }) => {
+    (action: { columnId?: string; value?: string | HelperTagItem[]; rowId?: string }) => {
       const { columnId, value, rowId } = action;
       if (columnId == null || rowId == null || value === undefined) return;
 
-      const updatedFormData = formData.map(behaviour =>
-        behaviour.id !== rowId ? behaviour : { ...behaviour, [columnId]: value },
+      const newValue = value;
+
+      const updatedFormData = formData.map(behavior =>
+        behavior.id !== rowId ? behavior : { ...behavior, [columnId]: newValue },
       );
       formMethods.setValue(id, updatedFormData, { shouldDirty: true });
     },
@@ -77,6 +80,8 @@ export const BehavioursInstruction: FC<BehavioursInstructionProps> = ({ formMeth
     </button>
   );
 
+  const tableStyle = { paddingBottom: "10px" };
+
   return (
     <div className="w-full flex flex-col gap-2">
       <div className="text-base text-typography-900 font-primary">
@@ -86,6 +91,7 @@ export const BehavioursInstruction: FC<BehavioursInstructionProps> = ({ formMeth
         tableData={tableData}
         tableFooter={tableFooter}
         onRowChange={handleRowChange}
+        tableStyle={tableStyle}
         autoHeight
       />
     </div>

@@ -380,3 +380,38 @@ export interface GetSimulationChecklistResponse {
   overallScore: number;
   items: ChecklistItem[];
 }
+interface ReflectionPrompt {
+  promptId: string;
+  response: string;
+}
+export interface ReflectionPromptsRequest {
+  prompts: ReflectionPrompt;
+  sessionId: string;
+}
+
+export interface ChatStreamRequest {
+  message: string;
+  sessionId: string;
+}
+
+export enum ChatStreamEventType {
+  TOKEN = "token",
+  DONE = "done",
+  ERROR = "error",
+}
+
+export interface SkillCoverageItem {
+  category: string;
+  percentage: number;
+}
+
+export interface EmotionalMovementItem {
+  messageId: string;
+  level: number;
+  startTime: number;
+}
+
+export interface GetSimulationSkillsResponse {
+  skillCoverage: SkillCoverageItem[];
+  emotionalMovement: EmotionalMovementItem[];
+}

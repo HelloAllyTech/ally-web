@@ -3,14 +3,14 @@ import { FC, useEffect, useRef, useState } from "react";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 
-import { Toggle } from "@ally-ui-mono/ui-shared/index";
+import { FEATURE_FLAGS_MAP, Toggle } from "@ally-ui-mono/ui-shared";
 import {
   useCreateReviewMutation,
   useGetSimulationSummaryQuery,
   useUpdateReviewMutation,
 } from "@api";
 import { Comment } from "@assets";
-import { Button } from "@components";
+import { AskAiTab, ReflectionTab, Button, SkillsTab } from "@components";
 import { Permissions, REVIEW_PRIVACY_OPTIONS, ROUTES } from "@constants";
 import { FeedbackDialog, SimulationSummary } from "@containers";
 import { RootState } from "@store";
@@ -111,10 +111,29 @@ const SimulationSummarySidebar: FC<SimulationSummarySidebarProps> = ({
       ),
     },
     {
-      id: 2,
+      id: 3,
       label: "Transcription",
       content: <SimulationTranscriptTab sessionId={summaryId} councellorName={councellorName} />,
     },
+    ...(FEATURE_FLAGS_MAP.SUMMARY_TABS_FLAG
+      ? [
+          {
+            id: 2,
+            label: "Ask AI",
+            content: <AskAiTab sessionId={summaryId} />,
+          },
+          {
+            id: 5,
+            label: "Skills",
+            content: <SkillsTab sessionId={summaryId} />,
+          },
+          {
+            id: 4,
+            label: "Reflection",
+            content: <ReflectionTab sessionId={summaryId} />,
+          },
+        ]
+      : []),
   ];
 
   const onSidebarClose = () => {

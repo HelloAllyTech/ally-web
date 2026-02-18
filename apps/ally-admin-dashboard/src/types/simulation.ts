@@ -39,6 +39,17 @@ export interface stateInstruction {
   dialogues: string[];
 }
 
+export enum enumBehaviourInstructionCategory {
+  HELPER_SHOULD_DO = "SHOULD_DO",
+  HELPER_SHOULD_NOT_DO = "SHOULD_NOT_DO",
+}
+export interface behaviourInstruction {
+  id?: string;
+  category: enumBehaviourInstructionCategory;
+  behaviors: string[];
+  instructions: string[];
+}
+
 export interface SimulationInput {
   title?: string;
   description?: string;
@@ -78,6 +89,7 @@ export interface SimulationInput {
   maxTimeValue?: string;
   optGuardrails?: boolean;
   stateInstructions?: stateInstruction[];
+  behaviorInstructions?: behaviourInstruction[];
 }
 
 export interface UpdateSimulationByIdInput {
@@ -156,6 +168,7 @@ export interface GetSimulationByIdResponse {
     autoTerminationStatus: boolean;
     name: string;
   };
+  behaviorInstructions?: behaviourInstruction[];
   triggerWarnings: triggerWarning[];
   difficultyLevel: string;
 }
@@ -399,5 +412,20 @@ export interface GetImageLibraryQueryParams {
 
 export interface GetImageLibraryResponse {
   coverImages: CoverImageLibraryItem[];
+  count: number;
+}
+export interface GetHelperTagsQueryParams {
+  limit?: number;
+  offset?: number;
+  searchName?: string;
+}
+
+export interface HelperTagItem {
+  id: string;
+  name: string;
+}
+
+export interface HelperTag {
+  data: HelperTagItem[];
   count: number;
 }

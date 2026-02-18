@@ -1,9 +1,11 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
-import { useGetUserBadgesQuery } from "@src/api/userBadges";
-import { Add } from "@src/assets";
+import { toast } from "sonner";
+
+import { useBatchDeleteBadgesMutation, useGetUserBadgesQuery } from "@src/api/userBadges";
+import { Trash } from "@src/assets";
 import {
-  Button,
+  ActionConfirmationPopup,
   CreateBadgePopup,
   CreateBadgeSidePanel,
   EmptyState,
@@ -29,12 +31,14 @@ export const UserBadges = () => {
   const [isBadgeSidePanelOpen, setIsBadgeSidePanelOpen] = useState<boolean>(false);
   const [selectedBadgeType, setSelectedBadgeType] = useState<Badge | null>(null);
   const [selectedBadge, setSelectedBadge] = useState<UserBadge | null>(null);
+  const [selectedBadges, setSelectedBadges] = useState<UserBadge[]>([]);
   const [filters, setFilters] = useState<UserBadgeFilters>({
     category: [],
     status: [],
   });
   const [isFilterOpen, setIsFilterOpen] = useState<boolean>(false);
   const addFilterBtnRef = useRef<HTMLButtonElement>(null);
+  const [showDeleteBadgesConfirmation, setShowDeleteBadgesConfirmation] = useState<boolean>(false);
 
   // Pagination state
   const [offset, setOffset] = useState<number>(0);
@@ -55,6 +59,25 @@ export const UserBadges = () => {
     [updateDebouncedSearch],
   );
 
+  const listToolbarAction = useMemo(() => {
+    return selectedBadges.length > 0
+      ? {
+          label: en.common.delete,
+          variant: ButtonVariant.SECONDARY,
+          icon: (
+            <div className="w-3 h-3">
+              <Trash />
+            </div>
+          ),
+          onClick: () => setShowDeleteBadgesConfirmation(true),
+        }
+      : {
+          label: en.badge.createBadge,
+          variant: ButtonVariant.PRIMARY,
+          onClick: () => setIsCreateUserBadgePopupOpen(true),
+        };
+  }, [selectedBadges]);
+
   const {
     data: userBadges,
     isLoading,
@@ -66,6 +89,8 @@ export const UserBadges = () => {
     limit: BADGES_PAGE_LIMIT,
     offset,
   });
+
+  const [batchDeleteBadges, { isLoading: isBatchDeleting }] = useBatchDeleteBadgesMutation();
 
   const hasMore = userBadges?.data?.length === BADGES_PAGE_LIMIT;
 
@@ -79,7 +104,38 @@ export const UserBadges = () => {
         setAllBadges(prev => [...prev, ...newData]);
       }
     }
-  }, [userBadges?.data, offset, isBadgeSidePanelOpen]);
+  }, [userBadges?.data]);
+
+  const handleSelectionChange = useCallback((markedRows: any[]) => {
+    const rows = markedRows.map(row => {
+      const rowData: Partial<UserBadge> = {};
+      Object.keys(row).forEach(key => {
+        if (row[key].value) {
+          rowData[key] = row[key].value;
+        }
+      });
+      return rowData;
+    }) as UserBadge[];
+    setSelectedBadges(rows);
+  }, []);
+
+  const handleCancelDeleteBadges = useCallback(() => {
+    setShowDeleteBadgesConfirmation(false);
+  }, []);
+
+  const handleConfirmDeleteBadges = useCallback(async () => {
+    try {
+      const badgeIds = selectedBadges.map(badge => badge.id);
+      await batchDeleteBadges(badgeIds);
+      setShowDeleteBadgesConfirmation(false);
+      setSelectedBadges([]);
+      toast.success(en.badge.badgesDeletedSuccessfully);
+      setOffset(0);
+      setAllBadges(allBadges.filter(badge => !badgeIds.includes(badge.id)));
+    } catch {
+      toast.error(en.errors.failedToDeleteBadges);
+    }
+  }, [batchDeleteBadges, selectedBadges]);
 
   // Load more handler for infinite scroll
   const handleLoadMore = useCallback(() => {
@@ -191,8 +247,6 @@ export const UserBadges = () => {
   );
 
   const handleBadgeSidePanelSuccess = useCallback(() => {
-    setAllBadges([]);
-    setOffset(0);
     setIsBadgeSidePanelOpen(false);
     setSelectedBadgeType(null);
     setSelectedBadge(null);
@@ -213,6 +267,18 @@ export const UserBadges = () => {
     return Object.values(["ACTIVE", "DRAFT"]).map(s => ({ label: s, value: s }));
   }, []);
 
+  const handleBadgeCreated = useCallback((badge: UserBadge) => {
+    setAllBadges(prev => [badge, ...prev]);
+  }, []);
+
+  const handleBadgeUpdated = useCallback((badge: UserBadge) => {
+    setAllBadges(prev => prev.map(b => (b.id === badge.id ? badge : b)));
+  }, []);
+
+  const handleBadgeDeleted = useCallback((badgeId: string) => {
+    setAllBadges(prev => prev.filter(b => b.id !== badgeId));
+  }, []);
+
   return (
     <div className="p-6">
       <h1 className="text-2xl h-14 text-typography-900 font-secondary">
@@ -223,8 +289,9 @@ export const UserBadges = () => {
           searchValue={searchQuery}
           onSearchChange={handleSearchChange}
           placeholder={en.common.search}
-          className="w-2/3"
+          className="w-full"
           filterChips={filterChips}
+          action={listToolbarAction}
           addFilterCta={addFilterCta}
           addFilterButtonRef={addFilterBtnRef}
         />
@@ -247,10 +314,6 @@ export const UserBadges = () => {
             },
           ]}
         />
-        <Button variant={ButtonVariant.PRIMARY} onClick={() => setIsCreateUserBadgePopupOpen(true)}>
-          <Add />
-          {en.userManagement.createUserBadge}
-        </Button>
       </div>
       <div className="pt-2 w-full" style={{ height: "calc(100vh - 200px)" }}>
         {(isLoading || isFetching) && allBadges.length === 0 ? (
@@ -278,6 +341,7 @@ export const UserBadges = () => {
           />
         ) : (
           <NotionTable
+            hasResizer={false}
             tableData={{
               data: allBadges.map(createUserBadgeObject),
               columns: USER_BADGES_TABLE_COLUMNS,
@@ -286,12 +350,13 @@ export const UserBadges = () => {
               height: "100%",
             }}
             tableFooter={
-              isFetching && allBadges.length > 0 ? (
+              (isFetching || isBatchDeleting) && allBadges.length > 0 ? (
                 <div className="flex justify-center py-4">
                   <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary-600" />
                 </div>
               ) : null
             }
+            onSelectionChange={handleSelectionChange}
             onRowClick={handleBadgeEdit}
             infiniteScroll={{
               onLoadMore: handleLoadMore,
@@ -313,6 +378,32 @@ export const UserBadges = () => {
         isOpen={isBadgeSidePanelOpen}
         onClose={handleBadgeSidePanelClose}
         onSuccess={handleBadgeSidePanelSuccess}
+        onBadgeCreated={handleBadgeCreated}
+        onBadgeUpdated={handleBadgeUpdated}
+        onBadgeDeleted={handleBadgeDeleted}
+      />
+      <ActionConfirmationPopup
+        isOpen={showDeleteBadgesConfirmation}
+        onClose={handleCancelDeleteBadges}
+        title={
+          selectedBadges.length > 1
+            ? en.badge.deleteBadgesConfirmation
+            : en.badge.deleteBadgeConfirmation
+        }
+        titleItalic={
+          selectedBadges.length > 1
+            ? en.badge.deleteBadgesConfirmationTitleItalic
+            : en.badge.deleteBadgeConfirmationTitleItalic
+        }
+        description={en.badge.deleteBadgeConfirmationDescription}
+        primaryButton={{
+          label: en.badge.deleteBadge,
+          onClick: handleConfirmDeleteBadges,
+        }}
+        secondaryButton={{
+          label: en.common.cancel,
+          onClick: handleCancelDeleteBadges,
+        }}
       />
     </div>
   );

@@ -107,6 +107,7 @@ vi.mock("@constants", () => ({
       visibility: "Default org-level visibility",
       selectVisibility: "Select visibility",
       category: "Category",
+      role: "Role",
       roles: "Roles",
       addRole: "Add role",
       nameRequired: "Badge name is required",
@@ -122,6 +123,17 @@ vi.mock("@constants", () => ({
       badgeUpdatedSuccessfully: "Badge updated successfully",
       badgeCreationFailed: "Failed to create badge",
       badgeUpdateFailed: "Failed to update badge",
+      deleteBadge: "Delete Badge",
+      deleteBadgeConfirmation: "Delete Badge?",
+      deleteBadgeConfirmationTitleItalic: "This action cannot be undone",
+      deleteBadgeConfirmationDescription: "Are you sure you want to delete this badge?",
+      badgeDeletedSuccessfully: "Badge deleted successfully",
+      badgeDeletionFailed: "Failed to delete badge",
+      publishBadgeConfirmation: "Publish Badge?",
+      publishBadgeConfirmationTitleItalic: "This action will make the badge visible",
+      publishBadgeConfirmationDescription: "Are you sure you want to publish this badge?",
+      badgeAlreadyPublished: "Badge is already published",
+      noChangesToSave: "No changes to save",
     },
     common: {
       delete: "Delete",
@@ -129,6 +141,9 @@ vi.mock("@constants", () => ({
     },
   },
   userRoleItems: ["Admin", "User", "Manager"],
+  TAG_TYPES: {
+    USER_BADGES: "UserBadges",
+  },
 }));
 
 // Mock types
@@ -186,6 +201,9 @@ describe("CreateBadgeSidePanel", () => {
         imageUrl: "https://cdn/badge-icon.png",
       }),
     });
+    mockDeleteBadge.mockReturnValue({
+      unwrap: vi.fn().mockResolvedValue({ success: true }),
+    });
   });
 
   const renderComponent = (props = {}) => {
@@ -227,6 +245,7 @@ describe("CreateBadgeSidePanel", () => {
       expect(screen.getByText("Description")).toBeInTheDocument();
       expect(screen.getByText("Default org-level visibility")).toBeInTheDocument();
       expect(screen.getByText("Category")).toBeInTheDocument();
+      expect(screen.getByText("Role")).toBeInTheDocument();
     });
 
     it("displays criteria section with info tooltip", () => {
@@ -384,7 +403,7 @@ describe("CreateBadgeSidePanel", () => {
       });
     });
 
-    it("calls createBadge mutation with ACTIVE status when publish is clicked", async () => {
+    it("shows publish confirmation popup when publish is clicked", async () => {
       renderComponent();
 
       const nameInput = screen.getByPlaceholderText("Add name");
@@ -400,6 +419,33 @@ describe("CreateBadgeSidePanel", () => {
 
       const publishButton = screen.getByText("Publish");
       fireEvent.click(publishButton);
+
+      await waitFor(() => {
+        expect(screen.getByTestId("confirmation-popup")).toBeInTheDocument();
+        expect(screen.getByTestId("popup-title")).toHaveTextContent("Publish Badge?");
+      });
+    });
+
+    it("calls createBadge mutation with ACTIVE status when publish is confirmed", async () => {
+      renderComponent();
+
+      const nameInput = screen.getByPlaceholderText("Add name");
+      const descriptionInput = screen.getByPlaceholderText("Add description");
+      const criteriaInput = screen.getByPlaceholderText("0");
+
+      fireEvent.change(nameInput, { target: { value: "Test Badge" } });
+      fireEvent.change(descriptionInput, { target: { value: "Test description" } });
+      fireEvent.change(criteriaInput, { target: { value: "60" } });
+
+      const uploadBtn = screen.getByTestId("upload-btn");
+      fireEvent.click(uploadBtn);
+
+      const publishButton = screen.getByText("Publish");
+      fireEvent.click(publishButton);
+
+      // Confirm publish in the confirmation popup
+      const confirmButton = screen.getByTestId("primary-btn");
+      fireEvent.click(confirmButton);
 
       await waitFor(() => {
         expect(mockCreateBadge).toHaveBeenCalledWith(
@@ -604,17 +650,69 @@ describe("CreateBadgeSidePanel", () => {
     it("calls updateBadge with ACTIVE status when publishing in edit mode", async () => {
       renderComponent({ selectedBadge: mockSelectedBadge });
 
+      const nameInput = screen.getByPlaceholderText("Add name");
+      fireEvent.change(nameInput, { target: { value: "Updated Badge" } });
+
       const publishButton = screen.getByText("Publish");
       fireEvent.click(publishButton);
+
+      // Confirm publish in the confirmation popup
+      const confirmButton = screen.getByTestId("primary-btn");
+      fireEvent.click(confirmButton);
 
       await waitFor(() => {
         expect(mockUpdateBadge).toHaveBeenCalledWith({
           id: "badge-123",
           data: {
+            name: "Updated Badge",
             status: "ACTIVE",
           },
         });
       });
+    });
+
+    it("displays delete button in edit mode", () => {
+      renderComponent({ selectedBadge: mockSelectedBadge });
+
+      expect(screen.getByText("Delete Badge")).toBeInTheDocument();
+    });
+
+    it("shows delete confirmation popup when delete button is clicked", () => {
+      renderComponent({ selectedBadge: mockSelectedBadge });
+
+      const deleteButton = screen.getByText("Delete Badge");
+      fireEvent.click(deleteButton);
+
+      expect(screen.getByTestId("confirmation-popup")).toBeInTheDocument();
+      expect(screen.getByTestId("popup-title")).toHaveTextContent("Delete Badge?");
+    });
+
+    it("calls deleteBadge mutation when delete is confirmed", async () => {
+      renderComponent({ selectedBadge: mockSelectedBadge });
+
+      const deleteButton = screen.getByText("Delete Badge");
+      fireEvent.click(deleteButton);
+
+      const confirmButton = screen.getByTestId("primary-btn");
+      fireEvent.click(confirmButton);
+
+      await waitFor(() => {
+        expect(mockDeleteBadge).toHaveBeenCalledWith({ id: "badge-123" });
+      });
+    });
+
+    it("closes delete confirmation popup when cancel is clicked", () => {
+      renderComponent({ selectedBadge: mockSelectedBadge });
+
+      const deleteButton = screen.getByText("Delete Badge");
+      fireEvent.click(deleteButton);
+
+      expect(screen.getByTestId("confirmation-popup")).toBeInTheDocument();
+
+      const cancelButton = screen.getByTestId("secondary-btn");
+      fireEvent.click(cancelButton);
+
+      expect(screen.queryByTestId("confirmation-popup")).not.toBeInTheDocument();
     });
 
     it("shows success toast after successful update", async () => {

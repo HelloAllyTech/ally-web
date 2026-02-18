@@ -1,0 +1,342 @@
+import { FC, useMemo } from "react";
+
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, ResponsiveContainer } from "recharts";
+
+import { useGetSimulationSkillsQuery } from "@api";
+
+interface SkillCoverage {
+  label: string;
+  percentage: number;
+  color: string;
+}
+
+interface EmotionalDataPoint {
+  time: string;
+  level: number;
+  isOriginal?: boolean;
+}
+
+interface SkillsTabProps {
+  sessionId?: string;
+}
+
+interface CustomDotProps {
+  cx?: number;
+  cy?: number;
+  payload?: EmotionalDataPoint;
+}
+
+// Constants
+const SKILL_COLORS: Record<string, string> = {
+  Learning: "#5B8DEF",
+  Support: "#7FBA7A",
+  Standards: "#F5A962",
+};
+
+const CHART_HEIGHT = 350;
+const CHART_MARGIN = { top: 20, right: 20, left: 0, bottom: 20 };
+const Y_AXIS_TICKS = [0, 3, 6, 10];
+
+// Utility Functions
+const formatTime = (seconds: number): string => {
+  const minutes = Math.floor(seconds / 60);
+  const secs = Math.floor(seconds % 60);
+  return `${minutes}:${secs.toString().padStart(2, "0")}`;
+};
+
+const calculateTimeTicks = (data: EmotionalDataPoint[]): string[] | undefined => {
+  if (!data.length) return undefined;
+
+  const NUM_TICKS = 5;
+  const lastTime = data[data.length - 1].time;
+
+  // Parse last time to get total seconds
+  const [lastMinutes, lastSeconds] = lastTime.split(":").map(Number);
+  const totalSeconds = lastMinutes * 60 + lastSeconds;
+
+  // Calculate interval between ticks
+  const interval = totalSeconds / (NUM_TICKS - 1);
+
+  const ticks: string[] = [];
+
+  for (let i = 0; i < NUM_TICKS; i++) {
+    const seconds = Math.round(i * interval);
+    ticks.push(formatTime(seconds));
+  }
+
+  return ticks;
+};
+
+// Components
+const CustomDot: FC<CustomDotProps> = ({ cx, cy, payload }) => {
+  // Only show dot for original data points, not interpolated ones
+  if (cx === undefined || cy === undefined || !payload?.isOriginal) return null;
+  return <circle cx={cx} cy={cy} r={3} fill="#FFF" stroke="#7FBA7A" strokeWidth={2} />;
+};
+
+const LoadingState: FC = () => (
+  <div className="w-full flex flex-col p-4 border border-gray-200 rounded-lg animate-pulse">
+    <div className="h-7 bg-gray-200 rounded w-64 mb-2"></div>
+    <hr className="mb-5 mt-2 border-gray-200" />
+
+    <div className="bg-white border border-[#B39DDB] rounded-md mb-5">
+      <div className="px-4 py-3 border-b border-b-[#B39DDB] bg-[#EDE7F680]">
+        <div className="h-6 bg-gray-200 rounded w-32"></div>
+      </div>
+      <div className="grid grid-cols-3 divide-x divide-[#B39DDB]">
+        {[1, 2, 3].map(i => (
+          <div key={i} className="px-6 py-5 flex flex-col gap-3">
+            <div className="flex items-center justify-between">
+              <div className="h-5 bg-gray-200 rounded w-20"></div>
+              <div className="h-5 bg-gray-200 rounded w-10"></div>
+            </div>
+            <div className="w-full h-2 bg-gray-200 rounded-full"></div>
+          </div>
+        ))}
+      </div>
+    </div>
+
+    <div className="bg-white border border-[#B39DDB] rounded-md">
+      <div className="px-4 py-3 border-b border-b-[#B39DDB] bg-[#EDE7F680]">
+        <div className="h-6 bg-gray-200 rounded w-48"></div>
+      </div>
+      <div className="px-6 py-6">
+        <div className="w-full h-[350px] bg-gray-100 rounded-md flex items-center justify-center">
+          <div className="space-y-4 w-full px-8">
+            {[1, 2, 3, 4, 5].map(i => (
+              <div key={i} className="flex items-center gap-4">
+                <div className="h-1 bg-gray-200 rounded-full flex-1"></div>
+                <div className="h-2 w-2 bg-gray-300 rounded-full"></div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+);
+
+const ErrorState: FC = () => (
+  <div className="w-full flex items-center justify-center p-12">
+    <div className="text-red-500">Failed to load skills data</div>
+  </div>
+);
+
+const EmptyState: FC = () => (
+  <div className="w-full flex items-center justify-center p-12 text-gray-500">
+    No skills data available for this session
+  </div>
+);
+
+const SkillCoverageCard: FC<{ skills: SkillCoverage[] }> = ({ skills }) => (
+  <div className="bg-white border border-[#B39DDB] rounded-md mb-5">
+    <div className="px-4 py-3 border-b border-b-[#B39DDB] bg-[#EDE7F680]">
+      <h3 className="text-base font-medium text-typography-900">Skill Coverage</h3>
+    </div>
+    <div className="grid grid-cols-3 divide-x divide-[#B39DDB]">
+      {skills.map(skill => (
+        <div key={skill.label} className="px-6 py-5 flex flex-col gap-3">
+          <div className="flex items-center justify-between">
+            <span className="text-sm font-normal font-primary text-typography-700">
+              {skill.label}
+            </span>
+            <span className="text-sm font-semibold font-primary text-typography-900">
+              {skill.percentage}%
+            </span>
+          </div>
+          <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
+            <div
+              className="h-full rounded-full transition-all duration-300"
+              style={{
+                width: `${skill.percentage}%`,
+                backgroundColor: skill.color,
+              }}
+            />
+          </div>
+        </div>
+      ))}
+    </div>
+  </div>
+);
+
+// Helper to parse time string to seconds
+const parseTimeToSeconds = (time: string): number => {
+  const [minutes, seconds] = time.split(":").map(Number);
+  return minutes * 60 + seconds;
+};
+
+// Interpolate level value between two data points
+const interpolateLevel = (
+  targetSeconds: number,
+  beforePoint: { seconds: number; level: number },
+  afterPoint: { seconds: number; level: number },
+): number => {
+  const ratio = (targetSeconds - beforePoint.seconds) / (afterPoint.seconds - beforePoint.seconds);
+  return beforePoint.level + ratio * (afterPoint.level - beforePoint.level);
+};
+
+const EmotionalMovementChart: FC<{
+  data: EmotionalDataPoint[];
+  timeTicks: string[] | undefined;
+}> = ({ data, timeTicks }) => {
+  // Create chart data with interpolated values for each timeTick
+  const chartData = useMemo(() => {
+    if (!timeTicks || timeTicks.length === 0 || data.length === 0) {
+      return data.map(point => ({ ...point, isOriginal: true }));
+    }
+
+    const dataWithSeconds = data.map(point => ({
+      ...point,
+      seconds: parseTimeToSeconds(point.time),
+    }));
+
+    const dataMap = new Map(data.map(point => [point.time, point.level]));
+
+    const result: EmotionalDataPoint[] = [];
+
+    for (const tick of timeTicks) {
+      if (dataMap.has(tick)) {
+        result.push({ time: tick, level: dataMap.get(tick)!, isOriginal: true });
+        continue;
+      }
+      const tickSeconds = parseTimeToSeconds(tick);
+
+      let beforePoint: { seconds: number; level: number } | null = null;
+      let afterPoint: { seconds: number; level: number } | null = null;
+
+      for (const point of dataWithSeconds) {
+        if (point.seconds <= tickSeconds) {
+          if (!beforePoint || point.seconds > beforePoint.seconds) {
+            beforePoint = { seconds: point.seconds, level: point.level };
+          }
+        }
+        if (point.seconds >= tickSeconds) {
+          if (!afterPoint || point.seconds < afterPoint.seconds) {
+            afterPoint = { seconds: point.seconds, level: point.level };
+          }
+        }
+      }
+
+      // Calculate interpolated level
+      let level: number;
+      if (beforePoint && afterPoint && beforePoint.seconds !== afterPoint.seconds) {
+        level = interpolateLevel(tickSeconds, beforePoint, afterPoint);
+      } else if (beforePoint) {
+        level = beforePoint.level;
+      } else if (afterPoint) {
+        level = afterPoint.level;
+      } else {
+        continue;
+      }
+
+      result.push({ time: tick, level: Math.round(level * 10) / 10, isOriginal: false });
+    }
+
+    return result;
+  }, [data, timeTicks]);
+
+  return (
+    <div className="bg-white border border-[#B39DDB] rounded-md">
+      <div className="px-4 py-3 border-b border-b-[#B39DDB] bg-[#EDE7F680]">
+        <h3 className="text-base font-medium font-primary text-typography-900">
+          Client Emotional Movement
+        </h3>
+      </div>
+      <div className="px-6 py-6">
+        <ResponsiveContainer width="100%" height={CHART_HEIGHT}>
+          <LineChart data={chartData} margin={CHART_MARGIN}>
+            <CartesianGrid
+              strokeDasharray="3 3"
+              stroke="#E5E5E5"
+              vertical={true}
+              horizontal={true}
+            />
+            <XAxis
+              dataKey="time"
+              axisLine={{ stroke: "#666666", strokeWidth: 1 }}
+              tickLine={false}
+              tick={{ fill: "#6B7280", fontSize: 12 }}
+              {...(timeTicks && timeTicks.length > 0
+                ? { ticks: timeTicks }
+                : { interval: "preserveStartEnd" })}
+              label={{
+                value: "Session Timeline",
+                position: "bottom",
+                offset: 10,
+                style: { fill: "#6B7280", fontSize: 12 },
+              }}
+            />
+            <YAxis
+              domain={[0, 10]}
+              ticks={Y_AXIS_TICKS}
+              axisLine={{ stroke: "#000000", strokeWidth: 1 }}
+              tickLine={false}
+              tick={{ fill: "#6B7280", fontSize: 12 }}
+              label={{
+                value: "Level (1-10)",
+                angle: -90,
+                position: "insideLeft",
+                style: { fill: "#6B7280", fontSize: 12, textAnchor: "middle" },
+              }}
+            />
+            <Line
+              type="monotone"
+              dataKey="level"
+              stroke="#7FBA7A"
+              strokeWidth={2.5}
+              dot={<CustomDot />}
+              activeDot={{ r: 6 }}
+            />
+          </LineChart>
+        </ResponsiveContainer>
+      </div>
+    </div>
+  );
+};
+
+// Main Component
+export const SkillsTab: FC<SkillsTabProps> = ({ sessionId }) => {
+  const { data, isLoading, isError } = useGetSimulationSkillsQuery(
+    { sessionId: sessionId || "" },
+    { skip: !sessionId },
+  );
+
+  const skillCoverages = useMemo<SkillCoverage[]>(() => {
+    if (!data?.skillCoverage) return [];
+    return data.skillCoverage.map(skill => ({
+      label: skill.category,
+      percentage: Math.round(skill.percentage),
+      color: SKILL_COLORS[skill.category] || "#6B7280",
+    }));
+  }, [data?.skillCoverage]);
+
+  const emotionalData = useMemo<EmotionalDataPoint[]>(() => {
+    if (!data?.emotionalMovement) return [];
+    return data.emotionalMovement.map(item => ({
+      time: formatTime(item.startTime),
+      level: item.level,
+    }));
+  }, [data?.emotionalMovement]);
+
+  const timeTicks = useMemo(() => calculateTimeTicks(emotionalData), [emotionalData]);
+
+  if (isLoading) return <LoadingState />;
+  if (isError || !data) return <ErrorState />;
+
+  const hasSkillData = skillCoverages.length > 0;
+  const hasEmotionalData = emotionalData.length > 0;
+  const hasNoData = !hasSkillData && !hasEmotionalData;
+
+  return (
+    <div className="w-full flex flex-col p-4 border border-gray-200 rounded-lg">
+      <h2 className="text-lg font-medium font-primary text-typography-900">
+        Skills shown in this session
+      </h2>
+      <hr className="mb-5 mt-2 border-gray-200" />
+
+      {hasSkillData && <SkillCoverageCard skills={skillCoverages} />}
+      {hasEmotionalData && <EmotionalMovementChart data={emotionalData} timeTicks={timeTicks} />}
+      {hasNoData && <EmptyState />}
+    </div>
+  );
+};

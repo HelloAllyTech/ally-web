@@ -4,8 +4,9 @@ import { useGetSimulationChecklistQuery } from "@api";
 import { CrossRedBackground, TickGreenBackground } from "@assets";
 import { ChecklistItem } from "@types";
 
-interface ChecklistTabProps {
+interface ChecklistProps {
   sessionId?: string;
+  className?: string;
 }
 
 // Dummy data for fallback when API is not working
@@ -58,7 +59,10 @@ const ChecklistSkeleton: FC = () => {
   );
 };
 
-export const ChecklistTab: FC<ChecklistTabProps> = ({ sessionId }) => {
+export const Checklist: FC<ChecklistProps> = ({
+  sessionId,
+  className = "max-h-[calc(100vh-400px)]",
+}) => {
   const { data, isLoading, isError } = useGetSimulationChecklistQuery(
     { sessionId: sessionId || "" },
     { skip: !sessionId },
@@ -75,7 +79,7 @@ export const ChecklistTab: FC<ChecklistTabProps> = ({ sessionId }) => {
 
   const renderChecklistItems = () => {
     return (
-      <div className="flex flex-col gap-3 max-h-[calc(100vh-400px)] overflow-y-scroll custom-scrollbar">
+      <div className={`flex flex-col gap-3 overflow-y-scroll custom-scrollbar ${className}`}>
         {items.map((item: ChecklistItem) => (
           <div
             key={item.id}
@@ -98,7 +102,7 @@ export const ChecklistTab: FC<ChecklistTabProps> = ({ sessionId }) => {
   };
 
   return (
-    <div className="flex flex-col gap-4 w-full h-full bg-white rounded-lg border border-gray-200 p-6">
+    <div className="flex flex-col gap-4 w-full h-full bg-white">
       <div className="flex items-center justify-between mb-1">
         <h3 className="text-lg font-semibold text-gray-800 font-primary">Overall Score</h3>
         <span className="text-lg font-semibold text-gray-800 font-primary">{overallScore}%</span>

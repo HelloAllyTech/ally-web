@@ -18,7 +18,7 @@ export const getFormattedFeedbackSection = (summary: SimulationSummary) => {
         return {
           time: `${minutes.toString().padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`,
           event: item?.message || item?.events?.message,
-          score: item?.score || item?.events?.score,
+          score: item?.events?.score ?? 0,
         };
       }),
     improvements: summary.details?.summary?.feedback?.improvements,

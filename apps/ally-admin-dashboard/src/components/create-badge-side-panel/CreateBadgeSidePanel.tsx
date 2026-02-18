@@ -54,10 +54,11 @@ const PanelHeader: React.FC<{
     {isEditMode && onDelete && (
       <button
         onClick={onDelete}
-        className="p-2 text-typography-500 hover:text-red-600 hover:bg-red-50 rounded-md transition-colors"
+        className="p-2 text-typography-500 flex items-center gap-2 hover:text-red-600 hover:bg-red-50 rounded-md transition-colors"
         title={en.badge.deleteBadge}
       >
         <Trash width={18} height={18} />
+        <span className="text-base font-tertiary font-medium">{en.badge.deleteBadge}</span>
       </button>
     )}
   </div>
@@ -69,6 +70,9 @@ export const CreateBadgeSidePanel: React.FC<CreateBadgeSidePanelProps> = ({
   isOpen,
   onClose,
   onSuccess,
+  onBadgeCreated,
+  onBadgeUpdated,
+  onBadgeDeleted,
 }) => {
   const isEditMode = !!selectedBadge?.id;
   const dispatch = useDispatch();
@@ -79,6 +83,9 @@ export const CreateBadgeSidePanel: React.FC<CreateBadgeSidePanelProps> = ({
   const [formData, setFormData] = useState<BadgeFormData>(() =>
     getInitialFormData(selectedBadgeType, selectedBadge, roles),
   );
+  const [showConfirmationModal, setShowConfirmationModal] = useState(false);
+  const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
+  const [showPublishConfirmation, setShowPublishConfirmation] = useState(false);
 
   const isLoading = isCreating || isUpdating || isDeleting;
 
@@ -95,11 +102,18 @@ export const CreateBadgeSidePanel: React.FC<CreateBadgeSidePanelProps> = ({
             imageUrl: response.imageUrl,
           },
         });
+        const updatedBadge = {
+          ...selectedBadge,
+          imageUrl: response.imageUrl,
+        };
+        setTimeout(() => {
+          onBadgeUpdated?.(updatedBadge);
+        }, 1000);
         dispatch(baseAPI.util.invalidateTags([TAG_TYPES.USER_BADGES]));
       }
       return response;
     },
-    [uploadBadgeIcon, isEditMode, updateBadge, selectedBadge?.id, dispatch],
+    [uploadBadgeIcon, isEditMode, updateBadge, dispatch, onBadgeUpdated, selectedBadge],
   );
 
   // Get criteria config for selected badge type
@@ -179,9 +193,6 @@ export const CreateBadgeSidePanel: React.FC<CreateBadgeSidePanelProps> = ({
     }
   }
 
-  const [showConfirmationModal, setShowConfirmationModal] = useState(false);
-  const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
-
   const handleFieldChange = useCallback((field: keyof UserBadge, value: any) => {
     setFormData(previousData => ({
       ...previousData,
@@ -253,6 +264,11 @@ export const CreateBadgeSidePanel: React.FC<CreateBadgeSidePanelProps> = ({
             data: changedData,
           }).unwrap();
 
+          const updatedBadge = {
+            ...selectedBadge,
+            ...changedData,
+          };
+          onBadgeUpdated?.(updatedBadge);
           toast.success(en.badge.badgeUpdatedSuccessfully);
         } else {
           // For create mode, send all data
@@ -268,14 +284,27 @@ export const CreateBadgeSidePanel: React.FC<CreateBadgeSidePanelProps> = ({
             achievementParams: formData.achievementParams || { count: 0 },
           };
 
-          await createBadge(badgeData).unwrap();
-
+          const { id } = await createBadge(badgeData).unwrap();
+          const badgeRoles = badgeData.groupIds.map(
+            groupId => roles.find(r => r.id === groupId)?.name || "",
+          );
+          const newBadge = {
+            ...badgeData,
+            id,
+            roles: badgeRoles,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+          };
+          onBadgeCreated?.(newBadge);
           toast.success(
             status === "DRAFT" ? en.badge.badgeSavedAsDraft : en.badge.badgePublishedSuccessfully,
           );
         }
         onSuccess?.();
         onClose();
+        setShowPublishConfirmation(false);
+        setShowDeleteConfirmation(false);
+        setShowConfirmationModal(false);
       } catch {
         toast.error(isEditMode ? en.badge.badgeUpdateFailed : en.badge.badgeCreationFailed);
       }
@@ -290,6 +319,9 @@ export const CreateBadgeSidePanel: React.FC<CreateBadgeSidePanelProps> = ({
       updateBadge,
       onSuccess,
       onClose,
+      roles,
+      onBadgeCreated,
+      onBadgeUpdated,
     ],
   );
 
@@ -329,6 +361,7 @@ export const CreateBadgeSidePanel: React.FC<CreateBadgeSidePanelProps> = ({
   const handleConfirmDelete = useCallback(async () => {
     try {
       await deleteBadge({ id: selectedBadge?.id || "" }).unwrap();
+      onBadgeDeleted?.(selectedBadge?.id || "");
       toast.success(en.badge.badgeDeletedSuccessfully);
       setShowDeleteConfirmation(false);
       onSuccess?.();
@@ -336,7 +369,7 @@ export const CreateBadgeSidePanel: React.FC<CreateBadgeSidePanelProps> = ({
     } catch {
       toast.error(en.badge.badgeDeletionFailed);
     }
-  }, [onSuccess, onClose, deleteBadge, selectedBadge]);
+  }, [onSuccess, onClose, deleteBadge, selectedBadge, onBadgeDeleted]);
 
   const handleCancelDelete = useCallback(() => {
     setShowDeleteConfirmation(false);
@@ -446,6 +479,9 @@ export const CreateBadgeSidePanel: React.FC<CreateBadgeSidePanelProps> = ({
                 }
                 label={en.badge.selectVisibility}
               />
+              <span className="text-base text-typography-800 ml-4">
+                {formData.visibilityType === "PUBLIC" ? "Enabled" : "Disabled"}
+              </span>
             </Field>
 
             {/* Category */}
@@ -540,8 +576,8 @@ export const CreateBadgeSidePanel: React.FC<CreateBadgeSidePanelProps> = ({
             </Button>
             <Button
               variant={ButtonVariant.PRIMARY}
-              disabled={!canPublish || isLoading}
-              onClick={handlePublish}
+              disabled={!canPublish || isLoading || !hasUnsavedChanges}
+              onClick={() => setShowPublishConfirmation(true)}
             >
               {en.badge.publish}
             </Button>
@@ -568,14 +604,32 @@ export const CreateBadgeSidePanel: React.FC<CreateBadgeSidePanelProps> = ({
         isOpen={showDeleteConfirmation}
         onClose={handleCancelDelete}
         title={en.badge.deleteBadgeConfirmation}
+        titleItalic={en.badge.deleteBadgeConfirmationTitleItalic}
         description={en.badge.deleteBadgeConfirmationDescription}
         primaryButton={{
           label: en.badge.deleteBadge,
           onClick: handleConfirmDelete,
+          variant: ButtonVariant.DESTRUCTIVE,
         }}
         secondaryButton={{
           label: en.common.cancel,
           onClick: handleCancelDelete,
+        }}
+      />
+
+      <ActionConfirmationPopup
+        isOpen={showPublishConfirmation}
+        onClose={() => setShowPublishConfirmation(false)}
+        title={en.badge.publishBadgeConfirmation}
+        titleItalic={en.badge.publishBadgeConfirmationTitleItalic}
+        description={en.badge.publishBadgeConfirmationDescription}
+        primaryButton={{
+          label: en.badge.publish,
+          onClick: handlePublish,
+        }}
+        secondaryButton={{
+          label: en.common.cancel,
+          onClick: () => setShowPublishConfirmation(false),
         }}
       />
     </div>

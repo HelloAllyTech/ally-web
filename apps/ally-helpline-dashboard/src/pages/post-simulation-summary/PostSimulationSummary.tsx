@@ -5,19 +5,20 @@ import { motion } from "framer-motion";
 import { useSelector } from "react-redux";
 import { useNavigate, useParams } from "react-router-dom";
 
-import { FEATURE_FLAGS_MAP, Toggle } from "@ally-ui-mono/ui-shared/index";
+import { FEATURE_FLAGS_MAP, Toggle } from "@ally-ui-mono/ui-shared";
 import {
   useCreateReviewMutation,
   useGetSimulationSummaryQuery,
   useUpdateReviewMutation,
 } from "@api";
 import { BackCircle } from "@assets";
+import { AskAiTab, ReflectionTab, SkillsTab } from "@components";
 import { Permissions, REVIEW_PRIVACY_OPTIONS } from "@constants";
 import { SimulationSummary } from "@containers";
 import { RootState } from "@store";
 import { pageType } from "@types";
 
-import { UpNextTab, AskAiTab, ReflectionTab, ChecklistTab } from "./components";
+import { UpNextTab } from "./components";
 import { SimulationTranscriptTab } from "../calls/components";
 import { tabStyles } from "../calls/constants";
 import { containerVariants } from "../learn/constants";
@@ -51,15 +52,15 @@ export const PostSimulationSummary: FC = () => {
           {
             id: 4,
             label: "Ask AI",
-            content: <AskAiTab />,
-          },
-          {
-            id: 6,
-            label: "Checklist",
-            content: <ChecklistTab sessionId={sessionId} />,
+            content: <AskAiTab sessionId={sessionId} />,
           },
           {
             id: 5,
+            label: "Skills",
+            content: <SkillsTab sessionId={sessionId} />,
+          },
+          {
+            id: 6,
             label: "Reflection",
             content: <ReflectionTab sessionId={sessionId} />,
           },

@@ -92,8 +92,8 @@ export const SIMULATION_CREATOR_STEP_IDS = {
 };
 
 export const BEHAVIOURS_INSTRUCTION_CATEGORIES = [
-  { value: "HELPER SHOULD DO", label: "Helper should do" },
-  { value: "HELPER SHOULD NOT DO", label: "Helper should not do" },
+  { value: "SHOULD_DO", label: "Helper should do" },
+  { value: "SHOULD_NOT_DO", label: "Helper should not do" },
 ];
 
 export const StepperList = [
@@ -533,7 +533,7 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
       ...(FEATURE_FLAGS_MAP.ADDITIONAL_CONFIG_FLAG
         ? [
             {
-              id: "behaviourInstructions",
+              id: "behaviorInstructions",
               label: "Behaviour Instructions",
               type: FORM_FIELD_TYPES.CUSTOM.BEHAVIOURS_INSTRUCTION,
               fullWidth: true,
@@ -995,14 +995,14 @@ export const USER_BADGES_TABLE_COLUMNS = [
     label: en.simulation.name,
     accessor: "name",
     dataType: cellTypes.normalText,
-    minWidth: 140,
+    minWidth: 160,
   },
   {
     id: "description",
     label: en.simulation.description,
     accessor: "description",
     dataType: cellTypes.normalText,
-    minWidth: 270,
+    minWidth: 300,
   },
   {
     id: "status",
@@ -1017,13 +1017,6 @@ export const USER_BADGES_TABLE_COLUMNS = [
     accessor: "visibilityType",
     dataType: cellTypes.normalText,
     minWidth: 140,
-  },
-  {
-    id: "code",
-    label: en.userManagement.code,
-    accessor: "code",
-    dataType: cellTypes.normalText,
-    minWidth: 100,
   },
   {
     id: "category",
@@ -1056,23 +1049,23 @@ export const BEHAVIOURS_INSTRUCTION_TABLE_COLUMNS = [
     placeholder: "Add Name",
     dataType: cellTypes.dropdown,
     options: BEHAVIOURS_INSTRUCTION_CATEGORIES,
-    minWidth: 240,
+    minWidth: 180,
   },
   {
-    id: "behaviours",
+    id: "behaviors",
     label: "Helper behaviours",
-    accessor: "behaviours",
+    accessor: "behaviors",
     placeholder: "Add Instruction",
     dataType: cellTypes.dropdownTags,
-    minWidth: 300,
+    minWidth: 220,
   },
   {
-    id: "response",
+    id: "instructions",
     label: "Actors response (optional)",
-    accessor: "response",
+    accessor: "instructions",
     placeholder: "Add Response",
     dataType: cellTypes.editableText,
-    minWidth: 310,
+    minWidth: 220,
   },
 ];
 
@@ -1081,7 +1074,7 @@ export const STATES_INSTRUCTION_TABLE_HEADERS = [
     key: "stateId",
     header: "States",
     editable: false,
-    format: (value: any) => (typeof value === "number" ? `State ${value}` : String(value ?? "")),
+    format: (value: any) => `State ${value}`,
   },
   { key: "instruction", header: "Instruction", editable: true },
   {
@@ -1094,8 +1087,8 @@ export const STATES_INSTRUCTION_TABLE_HEADERS = [
 ];
 
 export const DEFAULT_STATE_INSTRUCTIONS = [
-  { stateId: 1, instruction: "", dialogues: [] },
-  { stateId: 2, instruction: "", dialogues: [] },
-  { stateId: 3, instruction: "", dialogues: [] },
-  { stateId: 4, instruction: "", dialogues: [] },
+  { stateId: "1", instruction: "", dialogues: [] },
+  { stateId: "2", instruction: "", dialogues: [] },
+  { stateId: "3", instruction: "", dialogues: [] },
+  { stateId: "4", instruction: "", dialogues: [] },
 ];

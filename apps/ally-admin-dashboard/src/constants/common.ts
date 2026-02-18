@@ -79,6 +79,7 @@ export const ApiEndpoints = {
       `/v1/learn/scenarios/reports/${reportId}/cancel`,
     SCENARIO_COVER_IMAGE_LIBRARY: "/v1/scenario-cover-image-library",
     CONVERSATIONAL_GUARDRAILS: "/v1/learn/conversational-guardrails",
+    HELPER_TAGS: "/v1/learn/scenario-behaviors",
   },
 
   CHARACTERS: {
@@ -107,6 +108,7 @@ export const ApiEndpoints = {
     CREATE_BADGE: "/v1/badges",
     UPDATE_BADGE: (id: string) => `/v1/badges/${id}`,
     DELETE_BADGE: (id: string) => `/v1/badges/${id}`,
+    BATCH_DELETE_BADGES: "/v1/badges/batch",
   },
   AUTHORIZATION: {
     GET_PERMISSIONS: "/v1/authorization/permissions",
@@ -198,4 +200,5 @@ export const TAG_TYPES = {
   PROMPTS: "prompts",
   CONVERSATIONAL_GUARDRAILS: "conversationalGuardrails",
   USER_BADGES: "userBadges",
+  HELPER_TAGS: "helperTags",
 };

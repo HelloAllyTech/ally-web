@@ -64,5 +64,6 @@ export const formatSimulationResponseData = (data: GetSimulationByIdResponse) =>
     maxTimeValue: data?.metadata?.maxTimeValue,
     optGuardrails: data?.metadata?.optGuardrails,
     stateInstructions: data?.metadata?.stateInstructions,
+    behaviorInstructions: data?.behaviorInstructions ?? [],
   };
 };
