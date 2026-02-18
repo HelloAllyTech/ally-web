@@ -107,6 +107,7 @@ export const ApiEndpoints = {
     CREATE_BADGE: "/v1/badges",
     UPDATE_BADGE: (id: string) => `/v1/badges/${id}`,
     DELETE_BADGE: (id: string) => `/v1/badges/${id}`,
+    BATCH_DELETE_BADGES: "/v1/badges/batch",
   },
   AUTHORIZATION: {
     GET_PERMISSIONS: "/v1/authorization/permissions",
