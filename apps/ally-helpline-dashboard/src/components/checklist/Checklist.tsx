@@ -102,7 +102,7 @@ export const Checklist: FC<ChecklistProps> = ({
   };
 
   return (
-    <div className="flex flex-col gap-4 w-full h-full bg-white rounded-lg border border-gray-200 p-6">
+    <div className="flex flex-col gap-4 w-full h-full bg-white">
       <div className="flex items-center justify-between mb-1">
         <h3 className="text-lg font-semibold text-gray-800 font-primary">Overall Score</h3>
         <span className="text-lg font-semibold text-gray-800 font-primary">{overallScore}%</span>

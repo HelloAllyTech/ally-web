@@ -399,3 +399,19 @@ export enum ChatStreamEventType {
   DONE = "done",
   ERROR = "error",
 }
+
+export interface SkillCoverageItem {
+  category: string;
+  percentage: number;
+}
+
+export interface EmotionalMovementItem {
+  messageId: string;
+  level: number;
+  startTime: number;
+}
+
+export interface GetSimulationSkillsResponse {
+  skillCoverage: SkillCoverageItem[];
+  emotionalMovement: EmotionalMovementItem[];
+}

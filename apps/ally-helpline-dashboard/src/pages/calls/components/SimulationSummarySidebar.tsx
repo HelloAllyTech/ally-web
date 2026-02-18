@@ -10,7 +10,7 @@ import {
   useUpdateReviewMutation,
 } from "@api";
 import { Comment } from "@assets";
-import { AskAiTab, ReflectionTab, Button } from "@components";
+import { AskAiTab, ReflectionTab, Button, SkillsTab } from "@components";
 import { Permissions, REVIEW_PRIVACY_OPTIONS, ROUTES } from "@constants";
 import { FeedbackDialog, SimulationSummary } from "@containers";
 import { RootState } from "@store";
@@ -119,6 +119,11 @@ const SimulationSummarySidebar: FC<SimulationSummarySidebarProps> = ({
       id: 3,
       label: "Transcription",
       content: <SimulationTranscriptTab sessionId={summaryId} councellorName={councellorName} />,
+    },
+    {
+      id: 5,
+      label: "Skills",
+      content: <SkillsTab sessionId={summaryId} />,
     },
     {
       id: 4,
