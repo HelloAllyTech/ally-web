@@ -95,6 +95,7 @@ export const ApiEndpoints = {
       `/v1/learn/scenario-session/${sessionId}/reflection-prompts`,
     GET_SIMULATION_CHECKLIST: (sessionId: string) =>
       `/v1/learn/scenario-session/${sessionId}/checklist`,
+    GET_SIMULATION_SKILLS: (sessionId: string) => `/v1/learn/scenario-session/${sessionId}/skills`,
     CHAT_STREAM: (sessionId: string) => `/v1/learn/scenario-session/${sessionId}/chat/stream`,
   },
   SIMULATION: {
