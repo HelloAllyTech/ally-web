@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 
-import { useGetTagsQuery } from "@api";
+import { useGetHelperTagsQuery } from "@api";
 import { Close, Plus, Search } from "@assets";
 import { shortId } from "@components/notion-table";
 import { en } from "@constants";
@@ -31,7 +31,7 @@ export const HelperTag: React.FC<HelperTagProps> = ({ tags, updateTags }) => {
   const loadingRef = useRef(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
-  const { data: options, isFetching } = useGetTagsQuery({
+  const { data: options, isFetching } = useGetHelperTagsQuery({
     searchName: searchQuery,
     offset: (page - 1) * DEFAULT_LIMIT,
     limit: DEFAULT_LIMIT,
@@ -44,20 +44,20 @@ export const HelperTag: React.FC<HelperTagProps> = ({ tags, updateTags }) => {
   }, [searchQuery]);
 
   useEffect(() => {
-    if (!options) return;
+    if (!options?.data) return;
 
     const selectedIds = new Set((tags ?? []).map(tag => tag.id));
     if (page === 1) {
-      const filtered = options.filter(option => !selectedIds.has(option.id));
+      const filtered = options?.data?.filter(option => !selectedIds.has(option.id));
       setAllOptions(filtered);
     } else {
       setAllOptions(prev => {
         const existingIds = new Set(prev.map(opt => opt?.id));
-        const newOptions = options.filter(option => !existingIds.has(option.id));
+        const newOptions = options?.data?.filter(option => !existingIds.has(option.id));
         const updatedList = [...prev, ...newOptions]?.filter(option => !selectedIds.has(option.id));
         return updatedList;
       });
-      setHasMore(options.length === DEFAULT_LIMIT);
+      setHasMore(options?.data?.length === DEFAULT_LIMIT);
     }
   }, [options, page, tags]);
 
