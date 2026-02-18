@@ -133,8 +133,9 @@ vi.mock("@components", async importOriginal => {
   };
 });
 
-// Mock @constants
-vi.mock("@constants", () => {
+// Mock @constants (use importOriginal so Permissions and other exports exist for dependent modules)
+vi.mock("@constants", async importOriginal => {
+  const actual = (await importOriginal()) as Record<string, unknown>;
   const TabId = {
     LEARN: "LEARN",
     LEADERBOARD: "LEADERBOARD",
@@ -173,6 +174,7 @@ vi.mock("@constants", () => {
   ];
 
   return {
+    ...actual,
     TabId,
     navBarOptions: mockNavBarOptions,
     CAROUSEL_SLIDES: mockCarouselSlides,
