@@ -120,7 +120,9 @@ describe("GuardrailSidePanel", () => {
     it("renders helper dialogue field", () => {
       render(<GuardrailSidePanel {...defaultProps} />);
 
-      expect(screen.getByText(/If helper said something that can be classified as/)).toBeInTheDocument();
+      expect(
+        screen.getByText(/If helper said something that can be classified as/),
+      ).toBeInTheDocument();
     });
 
     it("renders name as inline editable title", () => {
@@ -134,7 +136,6 @@ describe("GuardrailSidePanel", () => {
 
       expect(screen.getByText(/Actor should start by saying/)).toBeInTheDocument();
     });
-
 
     it("renders save and cancel buttons", () => {
       render(<GuardrailSidePanel {...defaultProps} />);
@@ -160,7 +161,6 @@ describe("GuardrailSidePanel", () => {
 
       expect(defaultProps.onClose).toHaveBeenCalled();
     });
-
 
     it("calls onClose when cancel button is clicked", () => {
       render(<GuardrailSidePanel {...defaultProps} />);

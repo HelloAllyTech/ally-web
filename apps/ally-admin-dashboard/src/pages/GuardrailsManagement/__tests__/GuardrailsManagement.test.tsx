@@ -149,11 +149,7 @@ vi.mock("@components", () => ({
         placeholder="Search guardrails"
       />
       {action && (
-        <button
-          onClick={action.onClick}
-          data-testid="toolbar-action"
-          data-variant={action.variant}
-        >
+        <button onClick={action.onClick} data-testid="toolbar-action" data-variant={action.variant}>
           {action.icon}
           {action.label}
         </button>

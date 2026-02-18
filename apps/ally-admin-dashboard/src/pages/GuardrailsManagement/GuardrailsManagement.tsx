@@ -8,18 +8,12 @@ import {
   useUpdateGuardrailMutation,
 } from "@api";
 import { Trash, Add } from "@assets";
-import {
-  NotionTable,
-  ListToolbar,
-  ActionConfirmationPopup,
-  GuardrailSidePanel,
-} from "@components";
+import { NotionTable, ListToolbar, ActionConfirmationPopup, GuardrailSidePanel } from "@components";
 import { ButtonVariant } from "@components/types";
 import { SORT_BY, SORT_ORDER, en, GUARDRAILS_TABLE_COLUMNS } from "@constants";
 import { UpdateConversationalGuardrailInput } from "@types";
 
 // Define table columns locally or in constants
-
 
 export const GuardrailsManagement: React.FC = () => {
   const limit = 30;

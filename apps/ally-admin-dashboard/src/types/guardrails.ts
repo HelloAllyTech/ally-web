@@ -8,8 +8,6 @@ export interface ConversationalGuardrail {
   updatedAt: string;
 }
 
-
-
 export interface CreateConversationalGuardrailInput {
   name: string;
   helperDialogue: string;
@@ -33,6 +31,3 @@ export interface GetGuardrailsQueryParams {
   sortBy?: string;
   order?: "ASC" | "DESC";
 }
-
-
-

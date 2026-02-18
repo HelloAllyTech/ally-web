@@ -3,7 +3,7 @@ import React, { useEffect, useState } from "react";
 import { toast } from "sonner";
 
 import { AutoExpandableTextarea } from "@ally-ui-mono/ui-shared";
-import { DoubleArrowRight, Trash } from "@assets";
+import { DoubleArrowRight } from "@assets";
 import { Button } from "@components/button/Button";
 import { ButtonVariant } from "@components/types";
 
@@ -106,10 +106,7 @@ export const GuardrailSidePanel: React.FC<GuardrailSidePanelProps> = ({
     <div className="fixed inset-0 z-50 flex">
       <div className="flex-1 bg-black bg-opacity-50" onClick={onClose} />
       <div className="w-[50%] min-w-[700px] bg-white shadow-xl border-l-[1px] border-border-light overflow-y-auto custom-scrollbar">
-        <PanelHeader
-          onClose={onClose}
-          isNew={isNew}
-        />
+        <PanelHeader onClose={onClose} isNew={isNew} />
 
         <div className="h-[calc(100vh-100px)] px-10 pl-[46px] pt-2 overflow-y-auto custom-scrollbar">
           <div className="mb-4">
@@ -138,11 +135,7 @@ export const GuardrailSidePanel: React.FC<GuardrailSidePanelProps> = ({
               />
             </Field>
 
-            <Field
-              label="Actor should start by saying"
-              multiline={true}
-              required={true}
-            >
+            <Field label="Actor should start by saying" multiline={true} required={true}>
               <AutoExpandableTextarea
                 value={formData.actorDialogue || ""}
                 onChange={val => handleChange("actorDialogue", val)}
@@ -151,7 +144,6 @@ export const GuardrailSidePanel: React.FC<GuardrailSidePanelProps> = ({
                 className="py-2 pt-[16px] px-0 border-none focus:outline-none text-base w-full resize-none"
               />
             </Field>
-
           </div>
 
           <div className="flex gap-3 mt-8 pb-6 justify-center">

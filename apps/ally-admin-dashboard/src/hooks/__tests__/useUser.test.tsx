@@ -336,7 +336,11 @@ describe("useUser", () => {
 
     it("should filter navigation items based on EDIT_SCENARIO permission", () => {
       store = createMockStore({
-        permissions: [Permissions.EDIT_SCENARIO, Permissions.EDIT_SCENARIO_VOICE],
+        permissions: [
+          Permissions.EDIT_SCENARIO,
+          Permissions.EDIT_SCENARIO_VOICE,
+          Permissions.EDIT_GUARDRAIL,
+        ],
       });
 
       const { result } = renderHook(() => useUser(), {
@@ -397,6 +401,7 @@ describe("useUser", () => {
           Permissions.EDIT_SCENARIO_VOICE,
           Permissions.EDIT_SCENARIO_LANGUAGE,
           Permissions.EDIT_PROMPT,
+          Permissions.EDIT_GUARDRAIL,
         ],
       });
 
@@ -423,6 +428,7 @@ describe("useUser", () => {
           Permissions.EDIT_USER,
           Permissions.EDIT_SCENARIO_VOICE,
           Permissions.EDIT_PROMPT,
+          Permissions.EDIT_GUARDRAIL,
         ],
       });
 
@@ -453,7 +459,11 @@ describe("useUser", () => {
 
     it("should update filtered items when permissions change", () => {
       store = createMockStore({
-        permissions: [Permissions.EDIT_SCENARIO, Permissions.EDIT_SCENARIO_VOICE],
+        permissions: [
+          Permissions.EDIT_SCENARIO,
+          Permissions.EDIT_SCENARIO_VOICE,
+          Permissions.EDIT_GUARDRAIL,
+        ],
       });
 
       const { result } = renderHook(() => useUser(), {
@@ -472,6 +482,7 @@ describe("useUser", () => {
           Permissions.EDIT_SCENARIO,
           Permissions.EDIT_EVENT,
           Permissions.EDIT_SCENARIO_VOICE,
+          Permissions.EDIT_GUARDRAIL,
         ],
       });
 

@@ -20,7 +20,6 @@ const guardrailsApi = baseAPI.injectEndpoints({
       providesTags: [TAG_TYPES.CONVERSATIONAL_GUARDRAILS],
     }),
 
-
     createGuardrail: builder.mutation<ConversationalGuardrail, CreateConversationalGuardrailInput>({
       query: body => ({
         url: ApiEndpoints.SIMULATION_STUDIO.CONVERSATIONAL_GUARDRAILS,
@@ -41,18 +40,8 @@ const guardrailsApi = baseAPI.injectEndpoints({
       }),
       invalidatesTags: [TAG_TYPES.CONVERSATIONAL_GUARDRAILS],
     }),
-
-
-
-
-
   }),
 });
 
-export const {
-  useGetGuardrailsQuery,
-  useCreateGuardrailMutation,
-  useUpdateGuardrailMutation,
-
-
-} = guardrailsApi;
+export const { useGetGuardrailsQuery, useCreateGuardrailMutation, useUpdateGuardrailMutation } =
+  guardrailsApi;
