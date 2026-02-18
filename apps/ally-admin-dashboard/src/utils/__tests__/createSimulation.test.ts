@@ -120,6 +120,12 @@ describe("createSimulation utils", () => {
           voiceId: "voice-123",
           agentDialogues: ["Sample dialogues"],
           customFields: [],
+          optGuardrails: false,
+          checklistType: undefined,
+          experienceMode: undefined,
+          maxTimeValue: undefined,
+          timerMode: undefined,
+          stateInstructions: undefined,
         },
       } as GetSimulationByIdResponse;
 

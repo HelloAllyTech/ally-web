@@ -30,7 +30,7 @@ export const GUARDRAILS_TABLE_COLUMNS = [
     label: "Status",
     accessor: "active",
     dataType: cellTypes.switch,
-    minWidth: 100,
+    minWidth: 120,
   },
   {
     id: "createdAt",

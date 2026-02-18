@@ -6,7 +6,6 @@ import {
   UpdateConversationalGuardrailInput,
   GetGuardrailsResponse,
   GetGuardrailsQueryParams,
-  CreateGuardrailTranslationInput,
   UpdateGuardrailTranslationInput,
 } from "@types";
 
@@ -23,13 +22,6 @@ const guardrailsApi = baseAPI.injectEndpoints({
       providesTags: [TAG_TYPES.CONVERSATIONAL_GUARDRAILS],
     }),
 
-    getGuardrailById: builder.query<ConversationalGuardrail, string>({
-      query: id => ({
-        url: `${ApiEndpoints.SIMULATION_STUDIO.CONVERSATIONAL_GUARDRAILS}/${id}`,
-        method: HttpMethod.GET,
-      }),
-      providesTags: [TAG_TYPES.CONVERSATIONAL_GUARDRAILS],
-    }),
 
     createGuardrail: builder.mutation<ConversationalGuardrail, CreateConversationalGuardrailInput>({
       query: body => ({
@@ -60,25 +52,6 @@ const guardrailsApi = baseAPI.injectEndpoints({
       invalidatesTags: [TAG_TYPES.CONVERSATIONAL_GUARDRAILS],
     }),
 
-    getGuardrailTranslations: builder.query<ConversationalGuardrailTranslation[], string>({
-      query: guardrailId => ({
-        url: `${ApiEndpoints.SIMULATION_STUDIO.CONVERSATIONAL_GUARDRAILS}/${guardrailId}/translations`,
-        method: HttpMethod.GET,
-      }),
-      providesTags: [TAG_TYPES.CONVERSATIONAL_GUARDRAILS],
-    }),
-
-    createGuardrailTranslation: builder.mutation<
-      ConversationalGuardrailTranslation,
-      CreateGuardrailTranslationInput
-    >({
-      query: body => ({
-        url: `${ApiEndpoints.SIMULATION_STUDIO.CONVERSATIONAL_GUARDRAILS}/translations`,
-        method: HttpMethod.POST,
-        body,
-      }),
-      invalidatesTags: [TAG_TYPES.CONVERSATIONAL_GUARDRAILS],
-    }),
 
     updateGuardrailTranslation: builder.mutation<
       ConversationalGuardrailTranslation,
@@ -104,12 +77,9 @@ const guardrailsApi = baseAPI.injectEndpoints({
 
 export const {
   useGetGuardrailsQuery,
-  useGetGuardrailByIdQuery,
   useCreateGuardrailMutation,
   useUpdateGuardrailMutation,
   useDeleteGuardrailMutation,
-  useGetGuardrailTranslationsQuery,
-  useCreateGuardrailTranslationMutation,
   useUpdateGuardrailTranslationMutation,
   useDeleteGuardrailTranslationMutation,
 } = guardrailsApi;
