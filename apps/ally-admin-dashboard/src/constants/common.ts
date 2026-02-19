@@ -201,4 +201,5 @@ export const TAG_TYPES = {
   CONVERSATIONAL_GUARDRAILS: "conversationalGuardrails",
   USER_BADGES: "userBadges",
   HELPER_TAGS: "helperTags",
+  COMPETENCIES: "competencies",
 };

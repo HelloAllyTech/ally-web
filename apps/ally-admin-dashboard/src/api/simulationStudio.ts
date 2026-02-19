@@ -37,6 +37,9 @@ import {
   GetImageLibraryResponse,
   GetHelperTagsQueryParams,
   HelperTagInput,
+  CompetenciesResponse,
+  Competency,
+  CreateCompetencyRequest,
 } from "@types";
 
 import { baseAPI } from "./baseApi";
@@ -554,7 +557,7 @@ const simulationStudioAPI = baseAPI.injectEndpoints({
       providesTags: [TAG_TYPES.HELPER_TAGS],
     }),
 
-    createHelperTag: builder.mutation<HelperTag, { name: string }>({
+    createHelperTag: builder.mutation<HelperTagInput, { name: string }>({
       query: ({ name }) => ({
         url: ApiEndpoints.SIMULATION_STUDIO.HELPER_TAGS,
         method: HttpMethod.POST,
@@ -631,6 +634,30 @@ const simulationStudioAPI = baseAPI.injectEndpoints({
         method: HttpMethod.POST,
       }),
     }),
+
+    /**
+     * Get all competencies
+     */
+    getCompetencies: builder.query<CompetenciesResponse, { name?: string }>({
+      query: ({ name }) => ({
+        url: "/v1/learn/competencies",
+        method: HttpMethod.GET,
+        params: name ? { name } : undefined,
+      }),
+      providesTags: [TAG_TYPES.COMPETENCIES],
+    }),
+
+    /**
+     * Create a new competency
+     */
+    createCompetency: builder.mutation<Competency, CreateCompetencyRequest>({
+      query: body => ({
+        url: "/v1/learn/competencies",
+        method: HttpMethod.POST,
+        body,
+      }),
+      invalidatesTags: [TAG_TYPES.COMPETENCIES],
+    }),
   }),
 });
 
@@ -685,4 +712,6 @@ export const {
   useLazyGetReportByIdQuery,
   useGenerateReportMutation,
   useCancelReportGenerationMutation,
+  useGetCompetenciesQuery,
+  useCreateCompetencyMutation,
 } = simulationStudioAPI;

@@ -36,6 +36,7 @@ export interface Scenario {
   checklistType?: string;
   maxTimeValue?: string;
   timerMode?: boolean;
+  showScoreMeter?: boolean;
 }
 
 export interface ScenarioSession {

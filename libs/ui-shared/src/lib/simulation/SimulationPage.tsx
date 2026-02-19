@@ -199,7 +199,9 @@ export const SimulationPage: FC<SimulationPageProps> = ({
           checklistItems={checklistItems}
         />
       </motion.div>
-      {checklistMode === ChecklistMode.OFF && <SimulationScoreMeter score={score} />}
+      {checklistMode === ChecklistMode.OFF && roomData?.showScoreMeter !== false && (
+        <SimulationScoreMeter score={score} />
+      )}
 
       {startTime && (
         <BottomSection

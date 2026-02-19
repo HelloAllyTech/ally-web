@@ -51,9 +51,9 @@ export type FormData = {
   checklistType?: string;
   timerMode?: boolean;
   maxTimeValue?: string;
-  pickCompetency: string;
-  characterProfile: string;
-  score?: boolean;
+  characterProfileText: string;
+  showScoreMeter?: boolean;
+  competencyId?: string;
   stateInstructions?: stateInstruction[];
   characterProfileSelector?: string;
   behaviorsInstructions?: behaviourInstruction[];

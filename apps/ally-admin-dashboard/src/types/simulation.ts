@@ -157,10 +157,13 @@ export interface GetSimulationByIdResponse {
     experienceMode?: string;
     checklistType?: string;
     timerMode?: boolean;
+    showScoreMeter?: boolean;
     maxTimeValue?: string;
     optGuardrails?: boolean;
     stateInstructions?: stateInstruction[];
+    characterProfileText?: string;
   };
+  competencyId?: string;
   terminationEvents?: terminationEvent[];
   terminationEvent?: {
     eventId: string;
@@ -201,6 +204,7 @@ export interface StartSimulationResponse {
       timerMode?: boolean;
       experienceMode?: string;
       checklistType?: string;
+      showScoreMeter?: boolean;
     };
   };
   checklistEvents?: any[];
@@ -428,4 +432,18 @@ export interface HelperTagItem {
 export interface HelperTagInput {
   data: HelperTagItem[];
   count: number;
+}
+
+export interface Competency {
+  id: string;
+  name: string;
+}
+
+export interface CompetenciesResponse {
+  data: Competency[];
+  count: number;
+}
+
+export interface CreateCompetencyRequest {
+  name: string;
 }

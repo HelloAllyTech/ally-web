@@ -124,6 +124,7 @@ export const FORM_FIELD_TYPES = {
   TAG_AND_DROPDOWN: "tag_and_dropdown",
   CUSTOM_FIELDS: "custom_fields",
   TIME_INPUT: "time_input",
+  COMPETENCY: "competency",
 };
 
 export const FORM_FIELD_IDS = {
@@ -167,7 +168,7 @@ export const FORM_FIELD_IDS = {
   CHECKLIST_TYPE: "checklistType",
   TIMER_MODE: "timerMode",
   MAX_TIME_VALUE: "maxTimeValue",
-  PICK_COMPETENCY: "pickCompetency",
+  COMPETENCY: "competency",
   CHARACTER_PROFILE_TEXT: "characterProfileText",
   OPT_GUARDRAILS: "optGuardrails",
   STATE_INSTRUCTIONS: "stateInstructions",
@@ -442,13 +443,13 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
         fullWidth: true,
         maxLength: 100,
       },
-      // {
-      //   id: "pickCompetency",
-      //   label: "Pick Competency",
-      //   type: FORM_FIELD_TYPES.SELECT,
-      //   options: [],
-      //   isMandatory: false,
-      // },
+      {
+        id: "competencyId",
+        label: "Pick Competency",
+        type: FORM_FIELD_TYPES.COMPETENCY,
+        options: [],
+        isMandatory: false,
+      },
       {
         id: "difficultyLevel",
         label: "Difficulty Level",
@@ -463,17 +464,17 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
         isMandatory: false,
         fullWidth: true,
       },
-      // {
-      //   id: "characterProfile",
-      //   label: "Character profile text",
-      //   type: FORM_FIELD_TYPES.TEXT,
-      //   multiline: true,
-      //   fullWidth: true,
-      //   maxLength: 2500,
-      //   isMandatory: false,
-      //   regenerate: false, // TODO: Remove this once the character profile text is regenerated
-      //   isDashedLineAbove: true,
-      // },
+      {
+        id: "characterProfileText",
+        label: "Character profile text",
+        type: FORM_FIELD_TYPES.TEXT,
+        multiline: true,
+        fullWidth: true,
+        maxLength: 2500,
+        isMandatory: false,
+        regenerate: false, // TODO: Remove this once the character profile text is regenerated
+        isDashedLineAbove: true,
+      },
       {
         id: "coverImageUrl",
         label: "Cover Image",
@@ -567,25 +568,6 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
         isMandatory: true,
       },
       {
-        id: "context",
-        label: "Your context",
-        placeholder: "Describe the immediate situations",
-        type: FORM_FIELD_TYPES.TEXT,
-        isMandatory: true,
-        multiline: true,
-        fullWidth: true,
-        maxLength: 1000,
-      },
-      {
-        id: "agentDialogues",
-        label: "Your dialogues",
-        type: FORM_FIELD_TYPES.TEXT,
-        multiline: true,
-        fullWidth: true,
-        maxLength: 1000,
-        isMandatory: true,
-      },
-      {
         id: "voiceId",
         label: "Voice",
         type: FORM_FIELD_TYPES.CUSTOM.VOICE_DROPDOWN,
@@ -648,7 +630,7 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
         note: "Range 00:00:01 - 01:30:00",
       },
       {
-        id: "score",
+        id: "showScoreMeter",
         label: "Score",
         type: FORM_FIELD_TYPES.TOGGLE_BUTTON,
         fullWidth: true,

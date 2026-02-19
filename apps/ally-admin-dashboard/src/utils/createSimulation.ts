@@ -65,5 +65,8 @@ export const formatSimulationResponseData = (data: GetSimulationByIdResponse) =>
     optGuardrails: data?.metadata?.optGuardrails,
     stateInstructions: data?.metadata?.stateInstructions,
     behaviorInstructions: data?.behaviorInstructions ?? [],
+    showScoreMeter: data?.metadata?.showScoreMeter,
+    characterProfileText: data?.metadata?.characterProfileText,
+    competencyId: data?.competencyId,
   };
 };
