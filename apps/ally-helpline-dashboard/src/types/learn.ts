@@ -361,32 +361,31 @@ export interface ScenarioCaseDetails {
 }
 
 export interface GetReflectionPromptsResponse {
-  ReflectionPrompt: Prompt[];
+  reflectionPrompts: Prompt[];
 }
 
 export interface Prompt {
   id: string;
+  promptId: string;
   prompt: string;
-  response?: string;
+  response?: string | null;
 }
 
 export interface ChecklistItem {
-  id: number;
-  label: string;
-  completed: boolean;
+  id: string;
+  name: string;
+  hasOccurred: boolean;
 }
 
 export interface GetSimulationChecklistResponse {
-  overallScore: number;
-  items: ChecklistItem[];
+  scorePercentage: number;
+  eventChecklist: ChecklistItem[];
 }
-interface ReflectionPrompt {
+export interface UpdateReflectionPromptRequest {
+  sessionId: string;
+  reflectionPromptId: string;
   promptId: string;
   response: string;
-}
-export interface ReflectionPromptsRequest {
-  prompts: ReflectionPrompt;
-  sessionId: string;
 }
 
 export interface ChatStreamRequest {
@@ -403,6 +402,7 @@ export enum ChatStreamEventType {
 export interface SkillCoverageItem {
   category: string;
   percentage: number;
+  iconUrl?: string;
 }
 
 export interface EmotionalMovementItem {
@@ -414,4 +414,14 @@ export interface EmotionalMovementItem {
 export interface GetSimulationSkillsResponse {
   skillCoverage: SkillCoverageItem[];
   emotionalMovement: EmotionalMovementItem[];
+}
+export interface GetChatHistoryResponse {
+  id: string;
+  sourceId: string;
+  sourceType: string;
+  userId: string;
+  role: string;
+  content: string;
+  createdAt: string;
+  updatedAt: string;
 }

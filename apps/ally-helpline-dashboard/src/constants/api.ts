@@ -93,10 +93,13 @@ export const ApiEndpoints = {
       `/v1/learn/cases/${caseSessionItemId}/upcoming-scenario`,
     REFLECTION_PROMPTS: (sessionId: string) =>
       `/v1/learn/scenario-session/${sessionId}/reflection-prompts`,
+    UPDATE_REFLECTION_PROMPT: (sessionId: string, reflectionPromptId: string) =>
+      `/v1/learn/scenario-session/${sessionId}/reflection-prompts/${reflectionPromptId}`,
     GET_SIMULATION_CHECKLIST: (sessionId: string) =>
-      `/v1/learn/scenario-session/${sessionId}/checklist`,
+      `/v1/learn/scenario-session/${sessionId}/event-checklist`,
     GET_SIMULATION_SKILLS: (sessionId: string) => `/v1/learn/scenario-session/${sessionId}/skills`,
-    CHAT_STREAM: (sessionId: string) => `/v1/learn/scenario-session/${sessionId}/chat/stream`,
+    CHAT_STREAM: (sessionId: string) => `/v1/learn/scenario-sessions/${sessionId}/chat/stream`,
+    CHAT_HISTORY: (sessionId: string) => `/v1/learn/scenario-sessions/${sessionId}/chat/history`,
   },
   SIMULATION: {
     SIMULATION_CREDITS: "/v1/simulation-credits",

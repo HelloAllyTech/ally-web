@@ -1,14 +1,15 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 
 import { useTranslation } from "react-i18next";
-import { useDispatch, useSelector } from "react-redux";
+import { useDispatch } from "react-redux";
 
 import { AskAiIcon, UpArrow } from "@assets";
 import { Button } from "@components";
-import { RootState } from "@store";
-import { sendMessage } from "@utils";
+import { useSendMessage } from "@hooks";
+import { initSession, ChatMessage } from "@reducer";
+import { GetChatHistoryResponse } from "@types";
 
-type Message = { role: "user" | "assistant"; content: string };
+type Message = { role: string; content: string };
 
 const ChatBubble = ({ message }: { message: Message }) => {
   const isUser = message.role === "user";
@@ -63,33 +64,36 @@ const AskAiInput = ({
   );
 };
 
-export const AskAiTab = ({ sessionId }: { sessionId: string }) => {
+export const AskAiTab = ({
+  sessionId,
+  history,
+}: {
+  sessionId: string;
+  history: GetChatHistoryResponse[];
+}) => {
   const dispatch = useDispatch();
-  const { t } = useTranslation();
-  const messages = useSelector((state: RootState) => state.chat.messages) as Message[];
-  const [isStreaming, setIsStreaming] = useState(false);
+  const { messages, isStreaming, sendMessage } = useSendMessage(sessionId);
 
-  const handleSend = async (text: string) => {
-    setIsStreaming(true);
-    try {
-      await sendMessage(text, sessionId, dispatch);
-    } finally {
-      setIsStreaming(false);
+  useEffect(() => {
+    if (history?.length) {
+      const initial: ChatMessage[] = history.map(msg => ({
+        role: msg.role,
+        content: msg.content,
+      }));
+      dispatch(initSession({ sessionId, messages: initial }));
     }
-  };
+  }, [history, sessionId, dispatch]);
 
   return (
     <div className="p-1 rounded-lg w-full h-full bg-gradient-to-br from-primary-500 to-primary-100">
       <div className="flex flex-col w-full h-full rounded-lg relative">
-        <div className="p-4 w-full text-white font-semibold text-lg font-primary">
-          {t("postSim.tabs.askAi")}
-        </div>
-        <div className="flex-1 bg-white rounded-t-lg rounded-b-md custom-scrollbar overflow-y-auto px-3 pb-20 flex flex-col gap-3">
+        <div className="p-4 w-full text-white font-semibold text-lg font-primary">Ask AI</div>
+        <div className="flex-1 bg-white rounded-t-lg rounded-b-md custom-scrollbar overflow-y-auto p-3 pb-20 flex flex-col gap-3">
           {messages.map((msg, index) => (
             <ChatBubble key={`${msg.role}-${index}`} message={msg} />
           ))}
         </div>
-        <AskAiInput onSend={handleSend} disabled={isStreaming} />
+        <AskAiInput onSend={sendMessage} disabled={isStreaming} />
       </div>
     </div>
   );

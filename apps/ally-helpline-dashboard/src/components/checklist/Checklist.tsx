@@ -11,25 +11,25 @@ interface ChecklistProps {
 
 // Dummy data for fallback when API is not working
 const DUMMY_DATA = {
-  overallScore: 80,
-  items: [
-    { id: 1, label: "Socialising the Client to Counselling", completed: true },
-    { id: 2, label: "Explanation and Promotion of Ethics", completed: true },
-    { id: 3, label: "Exploration & Normalisation of Feelings", completed: true },
+  scorePercentage: 80,
+  eventChecklist: [
+    { id: "1", name: "Socialising the Client to Counselling", hasOccurred: true },
+    { id: "2", name: "Explanation and Promotion of Ethics", hasOccurred: true },
+    { id: "3", name: "Exploration & Normalisation of Feelings", hasOccurred: true },
     {
-      id: 4,
-      label: "Demonstration of Empathy, Warmth, Paraphrasing & Genuineness",
-      completed: true,
+      id: "4",
+      name: "Demonstration of Empathy, Warmth, Paraphrasing & Genuineness",
+      hasOccurred: true,
     },
-    { id: 5, label: "Exploration of Problem, Coping and Social Support", completed: true },
+    { id: "5", name: "Exploration of Problem, Coping and Social Support", hasOccurred: true },
     {
-      id: 6,
-      label: "Collaborative Goal Setting & Addressing Client's Expectations",
-      completed: false,
+      id: "6",
+      name: "Collaborative Goal Setting & Addressing Client's Expectations",
+      hasOccurred: false,
     },
-    { id: 7, label: "Promotion of Realistic Hope for Change", completed: true },
-    { id: 8, label: "Strengthening Coping Mechanisms & Prior Solutions", completed: true },
-    { id: 9, label: "Psychoeducation & Use of Local Terminology", completed: true },
+    { id: "7", name: "Promotion of Realistic Hope for Change", hasOccurred: true },
+    { id: "8", name: "Strengthening Coping Mechanisms & Prior Solutions", hasOccurred: true },
+    { id: "9", name: "Psychoeducation & Use of Local Terminology", hasOccurred: true },
   ],
 };
 
@@ -70,8 +70,7 @@ export const Checklist: FC<ChecklistProps> = ({
 
   // Use dummy data if API fails or returns no data
   const checklistData = isError || !data ? DUMMY_DATA : data;
-  const overallScore = checklistData.overallScore;
-  const items = checklistData.items;
+  const items = checklistData?.eventChecklist ?? [];
 
   if (isLoading) {
     return <ChecklistSkeleton />;
@@ -84,12 +83,12 @@ export const Checklist: FC<ChecklistProps> = ({
           <div
             key={item.id}
             className={`flex items-center justify-between p-4 rounded-lg border-2 transition-all ${
-              item.completed ? "border-green-200 bg-green-50/30" : "border-red-200 bg-red-50/30"
+              item?.hasOccurred ? "border-green-200 bg-green-50/30" : "border-red-200 bg-red-50/30"
             }`}
           >
-            <span className="text-base text-gray-800 font-primary flex-1">{item.label}</span>
+            <span className="text-base text-gray-800 font-primary flex-1">{item.name}</span>
             <div className="ml-4 flex-shrink-0">
-              {item.completed ? (
+              {item?.hasOccurred ? (
                 <TickGreenBackground className="w-6 h-6" />
               ) : (
                 <CrossRedBackground className="w-6 h-6" />
@@ -102,17 +101,8 @@ export const Checklist: FC<ChecklistProps> = ({
   };
 
   return (
-    <div className="flex flex-col gap-4 w-full h-full bg-white">
-      <div className="flex items-center justify-between mb-1">
-        <h3 className="text-lg font-semibold text-gray-800 font-primary">Overall Score</h3>
-        <span className="text-lg font-semibold text-gray-800 font-primary">{overallScore}%</span>
-      </div>
-      <div className="w-full bg-gray-200 rounded-full h-3">
-        <div
-          className="bg-blue-500 h-3 rounded-full transition-all duration-300"
-          style={{ width: `${overallScore}%` }}
-        />
-      </div>
+    <div className="flex flex-col gap-3 w-full h-full bg-white">
+      <div className="text-md text-typography-800">Evaluation Checklist</div>
       {renderChecklistItems()}
     </div>
   );

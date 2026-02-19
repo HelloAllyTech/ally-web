@@ -1,23 +1,33 @@
-import { FC, useEffect, useState, useMemo } from "react";
+import { FC, useEffect, useState } from "react";
 
-import { useTranslation } from "react-i18next";
-
-import {
-  useCreateReflectionPromptsMutation,
-  useGetReflectionPromptsQuery,
-  useUpdateReflectionPromptsMutation,
-} from "@api";
+import { useGetReflectionPromptsQuery, useUpdateReflectionPromptMutation } from "@api";
 import { Button } from "@components";
 import { Prompt } from "@types";
+
+const PROMPTS = [
+  {
+    id: "1",
+    promptId: "1",
+    prompt:
+      "What do you think the client needed most in the moment you shifted to problem-solving?",
+  },
+  {
+    id: "2",
+    promptId: "2",
+    prompt:
+      "What do you think the client needed most in the moment you shifted to problem-solving?",
+  },
+];
 
 interface ReflectionTabProps {
   sessionId: string;
 }
 
 const Header = () => {
-  const { t } = useTranslation();
   return (
-    <div className="border-b p-2 text-base font-primary text-gray-700">{t("reflection.title")}</div>
+    <span className="text-typography-900 font-primary text-base font-semibold border-b pb-2">
+      Deeper Reflection
+    </span>
   );
 };
 
@@ -36,23 +46,16 @@ const BottomButtons = ({
   responses: string[];
   updateResponse: (index: number, value: string) => void;
 }) => {
-  const [createReflectionPrompts] = useCreateReflectionPromptsMutation();
-  const [updateReflectionPrompts] = useUpdateReflectionPromptsMutation();
-  const { t } = useTranslation();
+  const [updateReflectionPrompt] = useUpdateReflectionPromptMutation();
 
   const saveResponse = (index: number) => {
     if (selectedIndex === null) return;
-    if (prompts[index].response) {
-      updateReflectionPrompts({
-        sessionId,
-        prompts: { promptId: prompts[index].id, response: responses[index] },
-      });
-    } else {
-      createReflectionPrompts({
-        sessionId,
-        prompts: { promptId: prompts[index].id, response: responses[index] },
-      });
-    }
+    updateReflectionPrompt({
+      sessionId,
+      reflectionPromptId: prompts[index].id,
+      promptId: prompts[index].promptId,
+      response: responses[index],
+    });
   };
 
   const clearResponse = (index: number) => updateResponse(index, "");
@@ -62,10 +65,10 @@ const BottomButtons = ({
       {selectedIndex !== null && selectedIndex === index && (
         <div className="flex justify-end gap-2" onClick={e => e.stopPropagation()}>
           <Button variant="secondary" className="w-1/4" onClick={() => clearResponse(index)}>
-            {t("reflection.clear")}
+            Clear
           </Button>
           <Button className="w-1/4" onClick={() => saveResponse(index)}>
-            {t("reflection.save")}
+            Save
           </Button>
         </div>
       )}
@@ -133,30 +136,12 @@ const Prompts = ({ prompts, sessionId }: { prompts: Prompt[]; sessionId: string 
 };
 
 export const ReflectionTab: FC<ReflectionTabProps> = ({ sessionId }) => {
-  const { t } = useTranslation();
   const { data: reflectionPrompts } = useGetReflectionPromptsQuery({ sessionId });
-
-  const defaultPrompts = useMemo(
-    () => [
-      {
-        id: "1",
-        prompt: t("reflection.prompts.clientNeed"),
-      },
-      {
-        id: "2",
-        prompt: t("reflection.prompts.clientNeed"),
-      },
-    ],
-    [t],
-  );
   return (
     <div className="p-1 rounded-lg w-full h-full border shadow-lg">
       <div className="flex flex-col gap-4 w-full h-full rounded-lg bg-white p-4">
         <Header />
-        <Prompts
-          prompts={reflectionPrompts?.ReflectionPrompt ?? defaultPrompts}
-          sessionId={sessionId}
-        />
+        <Prompts prompts={reflectionPrompts?.reflectionPrompts ?? PROMPTS} sessionId={sessionId} />
       </div>
     </div>
   );

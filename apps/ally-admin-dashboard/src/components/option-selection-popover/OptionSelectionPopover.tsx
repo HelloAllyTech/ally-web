@@ -61,7 +61,7 @@ export const OptionSelectionPopover: FC<OptionSelectionPopoverProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50">
+    <div className="fixed inset-0 z-50 font-primary">
       <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-[1px]" />
       <div className="fixed inset-0 flex items-center justify-center px-4 shadow-2xl animate-fadeIn">
         <div

@@ -2,18 +2,18 @@ import { FC, useState } from "react";
 
 import { Tab, Tabs } from "@mui/material";
 import { motion } from "framer-motion";
-import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
 import { useNavigate, useParams } from "react-router-dom";
 
-import { FEATURE_FLAGS_MAP, Toggle } from "@ally-ui-mono/ui-shared/index";
+import { FEATURE_FLAGS_MAP, Toggle } from "@ally-ui-mono/ui-shared";
 import {
   useCreateReviewMutation,
+  useGetChatHistoryQuery,
   useGetSimulationSummaryQuery,
   useUpdateReviewMutation,
 } from "@api";
 import { BackCircle } from "@assets";
-import { AskAiTab, ReflectionTab } from "@components";
+import { AskAiTab, ReflectionTab, SkillsTab } from "@components";
 import { Permissions, REVIEW_PRIVACY_OPTIONS } from "@constants";
 import { SimulationSummary } from "@containers";
 import { RootState } from "@store";
@@ -28,16 +28,11 @@ export const PostSimulationSummary: FC = () => {
   const { sessionId } = useParams();
   const navigate = useNavigate();
   const { permissions } = useSelector((state: RootState) => state.user);
-  const { t } = useTranslation();
-
-  const reviewPrivacyOptions = REVIEW_PRIVACY_OPTIONS.map(option => ({
-    ...option,
-    label: t(option.labelKey),
-  }));
 
   const { data: summary } = useGetSimulationSummaryQuery(sessionId);
   const [createReview] = useCreateReviewMutation();
   const [updateReview] = useUpdateReviewMutation();
+  const { data: history } = useGetChatHistoryQuery({ sessionId });
 
   const canShowUpNextTab =
     (summary?.scenarioPathSessionItemId || summary?.caseSessionItemId) &&
@@ -46,24 +41,33 @@ export const PostSimulationSummary: FC = () => {
   const tabList = [
     {
       id: 1,
-      labelKey: "postSim.tabs.summary",
+      label: "Session Review",
       content: <SimulationSummary summaryId={sessionId} className="max-h-[calc(100vh-212px)]" />,
-    },
-    {
-      id: 2,
-      labelKey: "postSim.tabs.transcription",
-      content: <SimulationTranscriptTab sessionId={sessionId} className="w-full" />,
     },
     ...(FEATURE_FLAGS_MAP.SUMMARY_TABS_FLAG
       ? [
           {
             id: 4,
-            labelKey: "postSim.tabs.askAi",
-            content: <AskAiTab sessionId={sessionId} />,
+            label: "Ask AI",
+            content: <AskAiTab sessionId={sessionId} history={history} />,
           },
+        ]
+      : []),
+    {
+      id: 2,
+      label: "Annotated Transcript",
+      content: <SimulationTranscriptTab sessionId={sessionId} className="w-full" />,
+    },
+    ...(FEATURE_FLAGS_MAP.SUMMARY_TABS_FLAG
+      ? [
           {
             id: 5,
-            labelKey: "postSim.tabs.reflection",
+            label: "Skills  Demonstrated",
+            content: <SkillsTab sessionId={sessionId} />,
+          },
+          {
+            id: 6,
+            label: "Deeper Reflection",
             content: <ReflectionTab sessionId={sessionId} />,
           },
         ]
@@ -72,7 +76,7 @@ export const PostSimulationSummary: FC = () => {
       ? [
           {
             id: 3,
-            labelKey: "postSim.tabs.upNext",
+            label: "Up Next",
             content: (
               <UpNextTab
                 sessionId={sessionId}
@@ -114,12 +118,12 @@ export const PostSimulationSummary: FC = () => {
             <button onClick={() => navigate(-1)}>
               <BackCircle />
             </button>
-            {t("postSim.titlePrefix")} <em>{t("postSim.titleEmphasis")}</em>
+            Simulation <em>Summary</em>
           </div>
 
           <div className="flex justify-center gap-2">
             <Toggle
-              items={reviewPrivacyOptions}
+              items={REVIEW_PRIVACY_OPTIONS}
               initialValue={summary?.reviewStatus}
               onChange={handleCreateReview}
             />
@@ -137,7 +141,7 @@ export const PostSimulationSummary: FC = () => {
           }}
         >
           {tabList?.map(tab => (
-            <Tab key={tab.id} label={t(tab.labelKey as string)} value={tab.id} sx={tabStyles} />
+            <Tab key={tab.id} label={tab.label} value={tab.id} sx={tabStyles} />
           ))}
         </Tabs>
         {getTabContent()}

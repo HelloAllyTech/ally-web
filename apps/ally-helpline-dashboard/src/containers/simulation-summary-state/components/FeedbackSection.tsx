@@ -88,7 +88,7 @@ export const FeedbackSection: FC<FeedbackSectionProps> = props => {
           {t("summary.feedback.title")}
         </span>
         <div>
-          <div className="flex items-center gap-5 border-b pb-4">
+          <div className="flex items-center gap-5">
             <div>
               <CustomImage
                 src={formattedData.coverImage}
@@ -137,13 +137,7 @@ export const FeedbackSection: FC<FeedbackSectionProps> = props => {
                   className="bg-white"
                 >
                   <div>
-                    {formattedData[key] ? (
-                      getFeedbackSectionByType({ data: formattedData[key], label, type, columns })
-                    ) : (
-                      <div className="text-typography-700 font-primary text-center mb-2">
-                        No data found
-                      </div>
-                    )}
+                    {getFeedbackSectionByType({ data: formattedData[key], label, type, columns })}
                   </div>
                 </motion.div>
               );

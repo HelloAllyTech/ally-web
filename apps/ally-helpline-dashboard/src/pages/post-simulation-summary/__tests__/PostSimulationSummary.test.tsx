@@ -36,6 +36,14 @@ vi.mock("react-router-dom", () => ({
   ),
 }));
 
+vi.mock("@assets", async () => {
+  const actual = await vi.importActual<any>("@assets");
+  return {
+    ...actual,
+    BackCircle: () => <svg data-testid="back-circle" />,
+  };
+});
+
 // Mock framer-motion
 vi.mock("framer-motion", () => ({
   motion: {
@@ -251,7 +259,10 @@ describe("PostSimulationSummary Component", () => {
       );
 
       const title = screen.getByText((content, element) => {
-        return element?.textContent === "Simulation Summary";
+        return (
+          element?.textContent === "Simulation Summary" &&
+          (element?.className.includes("text-2xl") || element?.className.includes("sm:text-4xl"))
+        );
       });
       expect(title).not.toBeNull();
       expect(title.className).toContain("text-black");
@@ -461,7 +472,7 @@ describe("PostSimulationSummary Component", () => {
       );
 
       expect(screen.getByTestId("tab-1")).toBeInTheDocument();
-      expect(screen.getByTestId("tab-1")).toHaveTextContent("Summary");
+      expect(screen.getByTestId("tab-1")).toHaveTextContent("Session Review");
     });
 
     it("should render Transcription tab", () => {
@@ -472,7 +483,7 @@ describe("PostSimulationSummary Component", () => {
       );
 
       expect(screen.getByTestId("tab-2")).toBeInTheDocument();
-      expect(screen.getByTestId("tab-2")).toHaveTextContent("Transcription");
+      expect(screen.getByTestId("tab-2")).toHaveTextContent("Annotated Transcript");
     });
 
     it("should have Summary tab selected by default", () => {
@@ -571,8 +582,8 @@ describe("PostSimulationSummary Component", () => {
       );
 
       const tabButtons = screen.getAllByRole("tab");
-      // With SUMMARY_TABS_FLAG enabled, we have 4 tabs: Summary, Transcription, Ask AI, Reflection
-      expect(tabButtons).toHaveLength(4);
+      // With SUMMARY_TABS_FLAG enabled, we have 5 tabs: Summary, Transcription, Ask AI, Skills, Reflection
+      expect(tabButtons).toHaveLength(5);
     });
   });
 
@@ -666,6 +677,7 @@ describe("PostSimulationSummary Component", () => {
       expect(screen.getByTestId("tab-2")).toBeInTheDocument();
       expect(screen.getByTestId("tab-4")).toBeInTheDocument();
       expect(screen.getByTestId("tab-5")).toBeInTheDocument();
+      expect(screen.getByTestId("tab-6")).toBeInTheDocument();
     });
 
     it("should have Summary as first tab with id 1", () => {
@@ -676,7 +688,7 @@ describe("PostSimulationSummary Component", () => {
       );
 
       const summaryTab = screen.getByTestId("tab-1");
-      expect(summaryTab).toHaveTextContent("Summary");
+      expect(summaryTab).toHaveTextContent("Session Review");
       expect(summaryTab).toHaveAttribute("data-value", "1");
     });
 
@@ -688,7 +700,7 @@ describe("PostSimulationSummary Component", () => {
       );
 
       const transcriptionTab = screen.getByTestId("tab-2");
-      expect(transcriptionTab).toHaveTextContent("Transcription");
+      expect(transcriptionTab).toHaveTextContent("Annotated Transcript");
       expect(transcriptionTab).toHaveAttribute("data-value", "2");
     });
 
@@ -704,16 +716,28 @@ describe("PostSimulationSummary Component", () => {
       expect(askAiTab).toHaveAttribute("data-value", "4");
     });
 
-    it("should have Reflection as fourth tab with id 5", () => {
+    it("should have Skills as fourth tab with id 5", () => {
       render(
         <TestWrapper>
           <PostSimulationSummary />
         </TestWrapper>,
       );
 
-      const reflectionTab = screen.getByTestId("tab-5");
+      const skillsTab = screen.getByTestId("tab-5");
+      expect(skillsTab).toHaveTextContent("Skills");
+      expect(skillsTab).toHaveAttribute("data-value", "5");
+    });
+
+    it("should have Reflection as fifth tab with id 6", () => {
+      render(
+        <TestWrapper>
+          <PostSimulationSummary />
+        </TestWrapper>,
+      );
+
+      const reflectionTab = screen.getByTestId("tab-6");
       expect(reflectionTab).toHaveTextContent("Reflection");
-      expect(reflectionTab).toHaveAttribute("data-value", "5");
+      expect(reflectionTab).toHaveAttribute("data-value", "6");
     });
   });
 
@@ -764,7 +788,10 @@ describe("PostSimulationSummary Component", () => {
       );
 
       const title = screen.getByText((content, element) => {
-        return element?.textContent === "Simulation Summary";
+        return (
+          element?.textContent === "Simulation Summary" &&
+          (element?.className.includes("text-2xl") || element?.className.includes("sm:text-4xl"))
+        );
       });
       expect(title).not.toBeNull();
       expect(title.innerHTML).toContain("Simulation");
@@ -779,7 +806,10 @@ describe("PostSimulationSummary Component", () => {
       );
 
       const title = screen.getByText((content, element) => {
-        return element?.textContent === "Simulation Summary";
+        return (
+          element?.textContent === "Simulation Summary" &&
+          (element?.className.includes("text-2xl") || element?.className.includes("sm:text-4xl"))
+        );
       });
       expect(title.tagName.toLowerCase()).toBe("div");
     });
@@ -812,7 +842,10 @@ describe("PostSimulationSummary Component", () => {
       );
 
       const title = screen.getByText((content, element) => {
-        return element?.textContent === "Simulation Summary";
+        return (
+          element?.textContent === "Simulation Summary" &&
+          (element?.className.includes("text-2xl") || element?.className.includes("sm:text-4xl"))
+        );
       });
       expect(title.className).toContain("text-2xl");
       expect(title.className).toContain("sm:text-4xl");
@@ -890,7 +923,10 @@ describe("PostSimulationSummary Component", () => {
       );
 
       const title = screen.getByText((content, element) => {
-        return element?.textContent === "Simulation Summary";
+        return (
+          element?.textContent === "Simulation Summary" &&
+          (element?.className.includes("text-2xl") || element?.className.includes("sm:text-4xl"))
+        );
       });
       expect(title).not.toBeNull();
     });

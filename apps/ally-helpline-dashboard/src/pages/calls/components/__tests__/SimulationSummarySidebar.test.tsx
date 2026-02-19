@@ -9,6 +9,18 @@ import { UserRole } from "@types";
 import { SUMMARY_FEEDBACK_TIMEOUT } from "../constants";
 import SimulationSummarySidebar from "../SimulationSummarySidebar";
 
+// Mock feature flags
+vi.mock("@ally-ui-mono/ui-shared", async () => {
+  const actual = await vi.importActual("@ally-ui-mono/ui-shared");
+  return {
+    ...actual,
+    FEATURE_FLAGS_MAP: {
+      ...(actual as any).FEATURE_FLAGS_MAP,
+      SUMMARY_TABS_FLAG: true,
+    },
+  };
+});
+
 // Mock containers
 vi.mock("@containers", () => ({
   FeedbackDialog: ({ open, onClose, id, sessionType }: any) => (
@@ -34,6 +46,11 @@ vi.mock("@containers", () => ({
 vi.mock("@hooks", () => ({
   useUser: () => ({
     user: { role: UserRole.COUNSELLOR },
+  }),
+  useSendMessage: () => ({
+    messages: [],
+    isStreaming: false,
+    sendMessage: vi.fn(),
   }),
 }));
 
@@ -128,11 +145,13 @@ describe("SimulationSummarySidebar Component", () => {
       renderComponent();
 
       expect(screen.getByTestId("tab-1")).toBeInTheDocument();
-      expect(screen.getByTestId("tab-label-1")).toHaveTextContent("Summary");
+      expect(screen.getByTestId("tab-label-1")).toHaveTextContent("Session Review");
+      expect(screen.getByTestId("tab-3")).toBeInTheDocument();
+      expect(screen.getByTestId("tab-label-3")).toHaveTextContent("Annotated Transcript");
       expect(screen.getByTestId("tab-2")).toBeInTheDocument();
       expect(screen.getByTestId("tab-label-2")).toHaveTextContent("Ask AI");
-      expect(screen.getByTestId("tab-3")).toBeInTheDocument();
-      expect(screen.getByTestId("tab-label-3")).toHaveTextContent("Transcription");
+      expect(screen.getByTestId("tab-5")).toBeInTheDocument();
+      expect(screen.getByTestId("tab-label-5")).toHaveTextContent("Skills Demonstrated");
       expect(screen.getByTestId("tab-4")).toBeInTheDocument();
       expect(screen.getByTestId("tab-label-4")).toHaveTextContent("Reflection");
     });

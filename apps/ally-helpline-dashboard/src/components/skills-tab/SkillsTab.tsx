@@ -1,6 +1,5 @@
 import { FC, useMemo } from "react";
 
-import { useTranslation } from "react-i18next";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, ResponsiveContainer } from "recharts";
 
 import { useGetSimulationSkillsQuery } from "@api";
@@ -14,6 +13,7 @@ interface SkillCoverage {
 interface EmotionalDataPoint {
   time: string;
   level: number;
+  isOriginal?: boolean;
 }
 
 interface SkillsTabProps {
@@ -23,6 +23,7 @@ interface SkillsTabProps {
 interface CustomDotProps {
   cx?: number;
   cy?: number;
+  payload?: EmotionalDataPoint;
 }
 
 // Constants
@@ -67,89 +68,183 @@ const calculateTimeTicks = (data: EmotionalDataPoint[]): string[] | undefined =>
 };
 
 // Components
-const CustomDot: FC<CustomDotProps> = ({ cx, cy }) => {
-  if (cx === undefined || cy === undefined) return null;
+const CustomDot: FC<CustomDotProps> = ({ cx, cy, payload }) => {
+  // Only show dot for original data points, not interpolated ones
+  if (cx === undefined || cy === undefined || !payload?.isOriginal) return null;
   return <circle cx={cx} cy={cy} r={3} fill="#FFF" stroke="#7FBA7A" strokeWidth={2} />;
 };
 
-const LoadingState: FC = () => {
-  const { t } = useTranslation();
-  return (
-    <div className="w-full flex items-center justify-center p-12">
-      <div className="text-gray-500">{t("postSim.skills.loading")}</div>
-    </div>
-  );
-};
+const LoadingState: FC = () => (
+  <div className="w-full flex flex-col p-4 border border-gray-200 rounded-lg animate-pulse">
+    <div className="h-7 bg-gray-200 rounded w-64 mb-2"></div>
+    <hr className="mb-5 mt-2 border-gray-200" />
 
-const ErrorState: FC = () => {
-  const { t } = useTranslation();
-  return (
-    <div className="w-full flex items-center justify-center p-12">
-      <div className="text-red-500">{t("postSim.skills.failed")}</div>
-    </div>
-  );
-};
-
-const EmptyState: FC = () => {
-  const { t } = useTranslation();
-  return (
-    <div className="w-full flex items-center justify-center p-12 text-gray-500">
-      {t("postSim.skills.empty")}
-    </div>
-  );
-};
-
-const SkillCoverageCard: FC<{ skills: SkillCoverage[] }> = ({ skills }) => {
-  const { t } = useTranslation();
-  return (
     <div className="bg-white border border-[#B39DDB] rounded-md mb-5">
       <div className="px-4 py-3 border-b border-b-[#B39DDB] bg-[#EDE7F680]">
-        <h3 className="text-base font-medium text-typography-900">
-          {t("postSim.skills.coverage")}
-        </h3>
+        <div className="h-6 bg-gray-200 rounded w-32"></div>
       </div>
       <div className="grid grid-cols-3 divide-x divide-[#B39DDB]">
-        {skills.map(skill => (
-          <div key={skill.label} className="px-6 py-5 flex flex-col gap-3">
+        {[1, 2, 3].map(i => (
+          <div key={i} className="px-6 py-5 flex flex-col gap-3">
             <div className="flex items-center justify-between">
-              <span className="text-sm font-normal font-primary text-typography-700">
-                {skill.label}
-              </span>
-              <span className="text-sm font-semibold font-primary text-typography-900">
-                {skill.percentage}%
-              </span>
+              <div className="h-5 bg-gray-200 rounded w-20"></div>
+              <div className="h-5 bg-gray-200 rounded w-10"></div>
             </div>
-            <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
-              <div
-                className="h-full rounded-full transition-all duration-300"
-                style={{
-                  width: `${skill.percentage}%`,
-                  backgroundColor: skill.color,
-                }}
-              />
-            </div>
+            <div className="w-full h-2 bg-gray-200 rounded-full"></div>
           </div>
         ))}
       </div>
     </div>
-  );
+
+    <div className="bg-white border border-[#B39DDB] rounded-md">
+      <div className="px-4 py-3 border-b border-b-[#B39DDB] bg-[#EDE7F680]">
+        <div className="h-6 bg-gray-200 rounded w-48"></div>
+      </div>
+      <div className="px-6 py-6">
+        <div className="w-full h-[350px] bg-gray-100 rounded-md flex items-center justify-center">
+          <div className="space-y-4 w-full px-8">
+            {[1, 2, 3, 4, 5].map(i => (
+              <div key={i} className="flex items-center gap-4">
+                <div className="h-1 bg-gray-200 rounded-full flex-1"></div>
+                <div className="h-2 w-2 bg-gray-300 rounded-full"></div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+);
+
+const ErrorState: FC = () => (
+  <div className="w-full flex items-center justify-center p-12">
+    <div className="text-red-500">Failed to load skills data</div>
+  </div>
+);
+
+const EmptyState: FC = () => (
+  <div className="w-full flex items-center justify-center p-12 text-gray-500">
+    No skills data available for this session
+  </div>
+);
+
+const SkillCoverageCard: FC<{ skills: SkillCoverage[] }> = ({ skills }) => (
+  <div className="bg-white border border-[#B39DDB] rounded-md mb-5">
+    <div className="px-4 py-3 border-b border-b-[#B39DDB] bg-[#EDE7F680]">
+      <h3 className="text-base font-medium text-typography-900">Skill Coverage</h3>
+    </div>
+    <div className="grid grid-cols-3 divide-x divide-[#B39DDB]">
+      {skills.map(skill => (
+        <div key={skill.label} className="px-6 py-5 flex flex-col gap-3">
+          <div className="flex items-center justify-between">
+            <span className="text-sm font-normal font-primary text-typography-700">
+              {skill.label}
+            </span>
+            <span className="text-sm font-semibold font-primary text-typography-900">
+              {skill.percentage}%
+            </span>
+          </div>
+          <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
+            <div
+              className="h-full rounded-full transition-all duration-300"
+              style={{
+                width: `${skill.percentage}%`,
+                backgroundColor: skill.color,
+              }}
+            />
+          </div>
+        </div>
+      ))}
+    </div>
+  </div>
+);
+
+// Helper to parse time string to seconds
+const parseTimeToSeconds = (time: string): number => {
+  const [minutes, seconds] = time.split(":").map(Number);
+  return minutes * 60 + seconds;
+};
+
+// Interpolate level value between two data points
+const interpolateLevel = (
+  targetSeconds: number,
+  beforePoint: { seconds: number; level: number },
+  afterPoint: { seconds: number; level: number },
+): number => {
+  const ratio = (targetSeconds - beforePoint.seconds) / (afterPoint.seconds - beforePoint.seconds);
+  return beforePoint.level + ratio * (afterPoint.level - beforePoint.level);
 };
 
 const EmotionalMovementChart: FC<{
   data: EmotionalDataPoint[];
   timeTicks: string[] | undefined;
 }> = ({ data, timeTicks }) => {
-  const { t } = useTranslation();
+  // Create chart data with interpolated values for each timeTick
+  const chartData = useMemo(() => {
+    if (!timeTicks || timeTicks.length === 0 || data.length === 0) {
+      return data.map(point => ({ ...point, isOriginal: true }));
+    }
+
+    const dataWithSeconds = data.map(point => ({
+      ...point,
+      seconds: parseTimeToSeconds(point.time),
+    }));
+
+    const dataMap = new Map(data.map(point => [point.time, point.level]));
+
+    const result: EmotionalDataPoint[] = [];
+
+    for (const tick of timeTicks) {
+      if (dataMap.has(tick)) {
+        result.push({ time: tick, level: dataMap.get(tick)!, isOriginal: true });
+        continue;
+      }
+      const tickSeconds = parseTimeToSeconds(tick);
+
+      let beforePoint: { seconds: number; level: number } | null = null;
+      let afterPoint: { seconds: number; level: number } | null = null;
+
+      for (const point of dataWithSeconds) {
+        if (point.seconds <= tickSeconds) {
+          if (!beforePoint || point.seconds > beforePoint.seconds) {
+            beforePoint = { seconds: point.seconds, level: point.level };
+          }
+        }
+        if (point.seconds >= tickSeconds) {
+          if (!afterPoint || point.seconds < afterPoint.seconds) {
+            afterPoint = { seconds: point.seconds, level: point.level };
+          }
+        }
+      }
+
+      // Calculate interpolated level
+      let level: number;
+      if (beforePoint && afterPoint && beforePoint.seconds !== afterPoint.seconds) {
+        level = interpolateLevel(tickSeconds, beforePoint, afterPoint);
+      } else if (beforePoint) {
+        level = beforePoint.level;
+      } else if (afterPoint) {
+        level = afterPoint.level;
+      } else {
+        continue;
+      }
+
+      result.push({ time: tick, level: Math.round(level * 10) / 10, isOriginal: false });
+    }
+
+    return result;
+  }, [data, timeTicks]);
+
   return (
     <div className="bg-white border border-[#B39DDB] rounded-md">
       <div className="px-4 py-3 border-b border-b-[#B39DDB] bg-[#EDE7F680]">
         <h3 className="text-base font-medium font-primary text-typography-900">
-          {t("postSim.skills.emotionalMovement")}
+          Client Emotional Movement
         </h3>
       </div>
       <div className="px-6 py-6">
         <ResponsiveContainer width="100%" height={CHART_HEIGHT}>
-          <LineChart data={data} margin={CHART_MARGIN}>
+          <LineChart data={chartData} margin={CHART_MARGIN}>
             <CartesianGrid
               strokeDasharray="3 3"
               stroke="#E5E5E5"
@@ -165,7 +260,7 @@ const EmotionalMovementChart: FC<{
                 ? { ticks: timeTicks }
                 : { interval: "preserveStartEnd" })}
               label={{
-                value: t("postSim.skills.timeline"),
+                value: "Session Timeline",
                 position: "bottom",
                 offset: 10,
                 style: { fill: "#6B7280", fontSize: 12 },
@@ -178,7 +273,7 @@ const EmotionalMovementChart: FC<{
               tickLine={false}
               tick={{ fill: "#6B7280", fontSize: 12 }}
               label={{
-                value: t("postSim.skills.level"),
+                value: "Level (-5 to 5)",
                 angle: -90,
                 position: "insideLeft",
                 style: { fill: "#6B7280", fontSize: 12, textAnchor: "middle" },
@@ -201,7 +296,6 @@ const EmotionalMovementChart: FC<{
 
 // Main Component
 export const SkillsTab: FC<SkillsTabProps> = ({ sessionId }) => {
-  const { t } = useTranslation();
   const { data, isLoading, isError } = useGetSimulationSkillsQuery(
     { sessionId: sessionId || "" },
     { skip: !sessionId },
@@ -235,9 +329,9 @@ export const SkillsTab: FC<SkillsTabProps> = ({ sessionId }) => {
 
   return (
     <div className="w-full flex flex-col p-4 border border-gray-200 rounded-lg">
-      <h2 className="text-lg font-medium font-primary text-typography-900">
-        {t("postSim.skills.shownInSession")}
-      </h2>
+      <span className="text-typography-900 font-primary text-base font-semibold">
+        Skills shown in this session
+      </span>
       <hr className="mb-5 mt-2 border-gray-200" />
 
       {hasSkillData && <SkillCoverageCard skills={skillCoverages} />}

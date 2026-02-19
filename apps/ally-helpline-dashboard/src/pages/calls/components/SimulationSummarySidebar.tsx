@@ -1,12 +1,12 @@
 import { FC, useEffect, useRef, useState } from "react";
 
-import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 
-import { Toggle } from "@ally-ui-mono/ui-shared/index";
+import { FEATURE_FLAGS_MAP, Toggle } from "@ally-ui-mono/ui-shared";
 import {
   useCreateReviewMutation,
+  useGetChatHistoryQuery,
   useGetSimulationSummaryQuery,
   useUpdateReviewMutation,
 } from "@api";
@@ -27,11 +27,6 @@ const SimulationSummarySidebar: FC<SimulationSummarySidebarProps> = ({
   canShowFeedback = true,
   councellorName,
 }) => {
-  const { t } = useTranslation();
-  const reviewPrivacyOptions = REVIEW_PRIVACY_OPTIONS.map(option => ({
-    ...option,
-    label: t(option.labelKey),
-  }));
   const [showFeedbackDialog, setShowFeedbackDialog] = useState<boolean>(false);
 
   const hasFeedback = useRef<boolean>(false);
@@ -43,6 +38,7 @@ const SimulationSummarySidebar: FC<SimulationSummarySidebarProps> = ({
   const { data: summary } = useGetSimulationSummaryQuery(summaryId);
   const [createReview, { isLoading: isCreateReviewLoading }] = useCreateReviewMutation();
   const [updateReview, { isLoading: isUpdateReviewLoading }] = useUpdateReviewMutation();
+  const { data: history } = useGetChatHistoryQuery({ sessionId: summaryId });
 
   const onSummaryFetch = (summary: SimulationSummaryType) => {
     hasFeedback.current = summary.hasFeedback;
@@ -71,9 +67,7 @@ const SimulationSummarySidebar: FC<SimulationSummarySidebarProps> = ({
 
   const SidebarTitle = (
     <div className="text-base flex items-center justify-between w-full gap-2">
-      <span className="font-semibold font-tertiary text-typography-800">
-        {t("postSim.tabs.summary")}
-      </span>
+      <span className="font-semibold font-tertiary text-typography-800">Summary</span>
 
       {summary?.counselorId === user?.id && (
         <div
@@ -83,7 +77,7 @@ const SimulationSummarySidebar: FC<SimulationSummarySidebarProps> = ({
           }}
         >
           <Toggle
-            items={reviewPrivacyOptions}
+            items={REVIEW_PRIVACY_OPTIONS}
             initialValue={summary?.reviewStatus}
             onChange={handleCreateReview}
           />
@@ -109,7 +103,7 @@ const SimulationSummarySidebar: FC<SimulationSummarySidebarProps> = ({
   const tabList = [
     {
       id: 1,
-      label: t("postSim.tabs.summary"),
+      label: "Session Review",
       content: (
         <SimulationSummary
           summaryId={summaryId}
@@ -118,26 +112,34 @@ const SimulationSummarySidebar: FC<SimulationSummarySidebarProps> = ({
         />
       ),
     },
-    {
-      id: 2,
-      label: t("postSim.tabs.askAi"),
-      content: <AskAiTab sessionId={summaryId} />,
-    },
+    ...(FEATURE_FLAGS_MAP.SUMMARY_TABS_FLAG
+      ? [
+          {
+            id: 2,
+            label: "Ask AI",
+            content: <AskAiTab sessionId={summaryId} history={history} />,
+          },
+        ]
+      : []),
     {
       id: 3,
-      label: t("postSim.tabs.transcription"),
+      label: "Annotated Transcript",
       content: <SimulationTranscriptTab sessionId={summaryId} councellorName={councellorName} />,
     },
-    {
-      id: 5,
-      label: t("postSim.tabs.skills"),
-      content: <SkillsTab sessionId={summaryId} />,
-    },
-    {
-      id: 4,
-      label: t("postSim.tabs.reflection"),
-      content: <ReflectionTab sessionId={summaryId} />,
-    },
+    ...(FEATURE_FLAGS_MAP.SUMMARY_TABS_FLAG
+      ? [
+          {
+            id: 5,
+            label: "Skills  Demonstrated",
+            content: <SkillsTab sessionId={summaryId} />,
+          },
+          {
+            id: 4,
+            label: "Deeper Reflection",
+            content: <ReflectionTab sessionId={summaryId} />,
+          },
+        ]
+      : []),
   ];
 
   const onSidebarClose = () => {

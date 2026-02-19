@@ -169,6 +169,7 @@ export const FORM_FIELD_IDS = {
   MAX_TIME_VALUE: "maxTimeValue",
   PICK_COMPETENCY: "pickCompetency",
   CHARACTER_PROFILE_TEXT: "characterProfileText",
+  OPT_GUARDRAILS: "optGuardrails",
 };
 
 const DEFAULT_ROLE_INSTRUCTION = `You are an AI roleplay assistant for counselor training. In this simulation, you must act ONLY as the client in a therapy session. Stay fully in character, provide realistic dialogue, and do not switch roles unless explicitly instructed.\n\nImportant Instructions:\n - Prefer first-person phrasing (e.g., "I feel…", "I've been struggling with…").\n - Allow the counselor to guide the conversation.\n - If the counselor is silent or open-ended, share one thought, feeling, or small story, then stop.\n - Maintain consistency with your life history but allow natural variation in tone and detail.\n - Respond naturally, as a real client would.\n - Keep answers concise (2–6 sentences), unless a longer response is natural.\n - Reveal information gradually, not all at once.\n - Start with few details and open up more as the counsellor asks questions.\n - Show authentic emotions and natural hesitations.\n - Do not give therapy advice or act as the counselor.\n - If sensitive topics arise, respond realistically but without graphic detail.\n - Keep each reply under ~120 words.`;
@@ -412,6 +413,14 @@ export const SIMULATION_CREATOR_FIELD_GROUPS_OLD: CreatorFieldGroups[] = [
         defaultValue: "00:10:00",
         note: "Range 00:00:01 - 01:30:00",
       },
+      {
+        id: "optGuardrails",
+        label: "Conversational Guardrails",
+        type: FORM_FIELD_TYPES.TOGGLE_BUTTON,
+        defaultValue: true,
+        fullWidth: true,
+        disabled: true,
+      },
     ] as FormFieldConfig[],
   },
 ];
@@ -640,6 +649,14 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
       //   type: FORM_FIELD_TYPES.TOGGLE_BUTTON,
       //   fullWidth: true,
       // },
+      {
+        id: "optGuardrails",
+        label: "Conversational Guardrails",
+        type: FORM_FIELD_TYPES.TOGGLE_BUTTON,
+        fullWidth: true,
+        defaultValue: true,
+        disabled: true,
+      },
     ] as FormFieldConfig[],
   },
 ];
@@ -971,56 +988,56 @@ export const USER_BADGES_TABLE_COLUMNS = [
     label: en.simulation.icon,
     accessor: "imageUrl",
     dataType: cellTypes.image,
-    minWidth: "5%",
+    minWidth: 80,
   },
   {
     id: "name",
     label: en.simulation.name,
     accessor: "name",
     dataType: cellTypes.normalText,
-    minWidth: "14%",
+    minWidth: 160,
   },
   {
     id: "description",
     label: en.simulation.description,
     accessor: "description",
     dataType: cellTypes.normalText,
-    minWidth: "25%",
+    minWidth: 300,
   },
   {
     id: "status",
     label: en.simulation.status,
     accessor: "status",
     dataType: cellTypes.status,
-    minWidth: "10%",
+    minWidth: 120,
   },
   {
     id: "visibilityType",
     label: en.simulation.orgVisibility,
     accessor: "visibilityType",
     dataType: cellTypes.normalText,
-    minWidth: "10.7%",
+    minWidth: 140,
   },
   {
     id: "category",
     label: en.simulation.category,
     accessor: "category",
     dataType: cellTypes.normalText,
-    minWidth: "10%",
+    minWidth: 120,
   },
   {
     id: "role",
     label: en.userManagement.role,
     accessor: "roles",
     dataType: cellTypes.roles,
-    minWidth: "10%",
+    minWidth: 140,
   },
   {
     id: "updatedAt",
     label: en.simulation.lastModified,
     accessor: "updatedAt",
     dataType: cellTypes.normalText,
-    minWidth: "11%",
+    minWidth: 150,
   },
 ];
 

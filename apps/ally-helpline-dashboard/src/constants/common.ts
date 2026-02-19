@@ -126,6 +126,7 @@ export const TAG_TYPES = {
   USER: "User",
   REVIEW: "Review",
   BADGES: "Badges",
+  REFLECTION_PROMPTS: "ReflectionPrompts",
 };
 
 export const SORT_ORDER = {

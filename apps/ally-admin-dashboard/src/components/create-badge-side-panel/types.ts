@@ -7,6 +7,9 @@ export interface CreateBadgeSidePanelProps {
   isOpen: boolean;
   onClose: () => void;
   onSuccess?: () => void;
+  onBadgeCreated?: (badge: UserBadge) => void;
+  onBadgeUpdated?: (badge: UserBadge) => void;
+  onBadgeDeleted?: (badgeId: string) => void;
 }
 
 export interface FieldProps {

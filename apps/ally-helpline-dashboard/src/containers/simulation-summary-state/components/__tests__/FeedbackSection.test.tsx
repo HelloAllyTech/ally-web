@@ -36,6 +36,26 @@ vi.mock("@components", () => ({
   ),
 }));
 
+// Mock react-i18next to ensure isolation and prevent leakage
+vi.mock("react-i18next", () => ({
+  useTranslation: () => ({
+    t: (key: string, options?: any) => {
+      const translations: Record<string, string> = {
+        "summary.feedback.title": "Session Feedback",
+        "summary.feedback.positives": "What went well",
+        "summary.feedback.improvements": "Improvement tips",
+        "summary.feedback.keyEvents": "Key Events",
+        "summary.feedback.coverImageAlt": "Cover image",
+        "summary.feedback.sessionId": `ID: ${options?.id || ""}`,
+        "summary.feedback.columns.time": "Time",
+        "summary.feedback.columns.event": "Event",
+        "summary.feedback.columns.score": "Score",
+      };
+      return translations[key] || key;
+    },
+  }),
+}));
+
 // Mock framer-motion
 vi.mock("framer-motion", () => ({
   motion: {
@@ -171,6 +191,11 @@ describe("FeedbackSection", () => {
     hasFeedback: true,
   };
 
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.resetModules();
+  });
+
   describe("Basic Rendering", () => {
     it("should render feedback section with heading and session info", () => {
       render(<FeedbackSection {...mockSummary} />);
@@ -184,8 +209,8 @@ describe("FeedbackSection", () => {
       render(<FeedbackSection {...mockSummary} />);
 
       expect(screen.getByTestId("generic-table")).toBeInTheDocument();
-      expect(screen.getByText("What went well")).toBeInTheDocument();
-      expect(screen.getByText("Improvement tips")).toBeInTheDocument();
+      expect(screen.getByText(/What went well/i)).toBeInTheDocument();
+      expect(screen.getByText(/Improvement tips/i)).toBeInTheDocument();
     });
   });
 
@@ -227,7 +252,7 @@ describe("FeedbackSection", () => {
       };
       render(<FeedbackSection {...emptySummary} />);
 
-      expect(screen.getByText("What went well")).toBeInTheDocument();
+      expect(screen.getByText(/What went well/i)).toBeInTheDocument();
     });
 
     it("should show empty list when no improvements", () => {
@@ -245,7 +270,7 @@ describe("FeedbackSection", () => {
       };
       render(<FeedbackSection {...emptySummary} />);
 
-      expect(screen.getByText("Improvement tips")).toBeInTheDocument();
+      expect(screen.getByText(/Improvement tips/i)).toBeInTheDocument();
     });
   });
 
@@ -294,8 +319,8 @@ describe("FeedbackSection", () => {
       render(<FeedbackSection {...mockSummary} />);
 
       expect(screen.getByTestId("generic-table")).toBeInTheDocument();
-      expect(screen.getByText("What went well")).toBeInTheDocument();
-      expect(screen.getByText("Improvement tips")).toBeInTheDocument();
+      expect(screen.getByText(/What went well/i)).toBeInTheDocument();
+      expect(screen.getByText(/Improvement tips/i)).toBeInTheDocument();
     });
   });
 
@@ -348,8 +373,8 @@ describe("FeedbackSection", () => {
       render(<FeedbackSection {...nullSummary} />);
 
       expect(screen.getByTestId("generic-table")).toBeInTheDocument();
-      expect(screen.getByText("What went well")).toBeInTheDocument();
-      expect(screen.getByText("Improvement tips")).toBeInTheDocument();
+      expect(screen.getByText(/What went well/i)).toBeInTheDocument();
+      expect(screen.getByText(/Improvement tips/i)).toBeInTheDocument();
     });
   });
 });

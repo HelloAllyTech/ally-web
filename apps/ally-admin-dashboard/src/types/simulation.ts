@@ -87,6 +87,7 @@ export interface SimulationInput {
   checklistType?: string;
   timerMode?: boolean;
   maxTimeValue?: string;
+  optGuardrails?: boolean;
   stateInstructions?: stateInstruction[];
   behaviorInstructions?: behaviourInstruction[];
 }
@@ -157,6 +158,7 @@ export interface GetSimulationByIdResponse {
     checklistType?: string;
     timerMode?: boolean;
     maxTimeValue?: string;
+    optGuardrails?: boolean;
     stateInstructions?: stateInstruction[];
   };
   terminationEvents?: terminationEvent[];
@@ -415,7 +417,7 @@ export interface GetImageLibraryResponse {
 export interface GetHelperTagsQueryParams {
   limit?: number;
   offset?: number;
-  searchName?: string;
+  name?: string;
 }
 
 export interface HelperTagItem {
@@ -423,7 +425,7 @@ export interface HelperTagItem {
   name: string;
 }
 
-export interface HelperTag {
+export interface HelperTagInput {
   data: HelperTagItem[];
   count: number;
 }

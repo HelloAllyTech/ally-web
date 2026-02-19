@@ -15,3 +15,4 @@ export * from "./ExperienceModeEnum";
 export * from "./UserManagement";
 export * from "./reportGeneration";
 export * from "./socket";
+export * from "./Guardrails";

@@ -23,43 +23,8 @@ exports[`PostSimulationSummary Component > Snapshot Testing > should match snaps
           >
             <button>
               <svg
-                fill="none"
-                height="48"
-                viewBox="0 0 48 48"
-                width="48"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <g
-                  clip-path="url(#clip0_2523_4287)"
-                >
-                  <rect
-                    fill="#F9F9F9"
-                    height="40"
-                    rx="20"
-                    width="40"
-                    x="4"
-                    y="4"
-                  />
-                  <path
-                    d="M19.825 25L25.425 30.6L24 32L16 24L24 16L25.425 17.4L19.825 23H32V25H19.825Z"
-                    fill="#49454F"
-                  />
-                </g>
-                <defs>
-                  <clippath
-                    id="clip0_2523_4287"
-                  >
-                    <rect
-                      fill="white"
-                      height="40"
-                      rx="20"
-                      width="40"
-                      x="4"
-                      y="4"
-                    />
-                  </clippath>
-                </defs>
-              </svg>
+                data-testid="back-circle"
+              />
             </button>
             Simulation 
             <em>
@@ -85,9 +50,7 @@ exports[`PostSimulationSummary Component > Snapshot Testing > should match snaps
                   />
                   <span
                     class="relative z-10 whitespace-nowrap"
-                  >
-                    Keep it private
-                  </span>
+                  />
                 </div>
                 <div
                   class="relative rounded-full py-1.5 px-4 cursor-pointer transition-colors duration-200 font-primary font-normal text-sm"
@@ -95,9 +58,7 @@ exports[`PostSimulationSummary Component > Snapshot Testing > should match snaps
                 >
                   <span
                     class="relative z-10 whitespace-nowrap"
-                  >
-                    Share for review
-                  </span>
+                  />
                 </div>
               </div>
             </div>
@@ -115,15 +76,7 @@ exports[`PostSimulationSummary Component > Snapshot Testing > should match snaps
             data-value="1"
             role="tab"
           >
-            Summary
-          </button>
-          <button
-            aria-selected="false"
-            data-testid="tab-2"
-            data-value="2"
-            role="tab"
-          >
-            Transcription
+            Session Review
           </button>
           <button
             aria-selected="false"
@@ -135,11 +88,27 @@ exports[`PostSimulationSummary Component > Snapshot Testing > should match snaps
           </button>
           <button
             aria-selected="false"
+            data-testid="tab-2"
+            data-value="2"
+            role="tab"
+          >
+            Annotated Transcript
+          </button>
+          <button
+            aria-selected="false"
             data-testid="tab-5"
             data-value="5"
             role="tab"
           >
-            Reflection
+            Skills  Demonstrated
+          </button>
+          <button
+            aria-selected="false"
+            data-testid="tab-6"
+            data-value="6"
+            role="tab"
+          >
+            Deeper Reflection
           </button>
         </div>
         <div
@@ -186,43 +155,8 @@ exports[`PostSimulationSummary Component > Snapshot Testing > should match snaps
           >
             <button>
               <svg
-                fill="none"
-                height="48"
-                viewBox="0 0 48 48"
-                width="48"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <g
-                  clip-path="url(#clip0_2523_4287)"
-                >
-                  <rect
-                    fill="#F9F9F9"
-                    height="40"
-                    rx="20"
-                    width="40"
-                    x="4"
-                    y="4"
-                  />
-                  <path
-                    d="M19.825 25L25.425 30.6L24 32L16 24L24 16L25.425 17.4L19.825 23H32V25H19.825Z"
-                    fill="#49454F"
-                  />
-                </g>
-                <defs>
-                  <clippath
-                    id="clip0_2523_4287"
-                  >
-                    <rect
-                      fill="white"
-                      height="40"
-                      rx="20"
-                      width="40"
-                      x="4"
-                      y="4"
-                    />
-                  </clippath>
-                </defs>
-              </svg>
+                data-testid="back-circle"
+              />
             </button>
             Simulation 
             <em>
@@ -248,9 +182,7 @@ exports[`PostSimulationSummary Component > Snapshot Testing > should match snaps
                   />
                   <span
                     class="relative z-10 whitespace-nowrap"
-                  >
-                    Keep it private
-                  </span>
+                  />
                 </div>
                 <div
                   class="relative rounded-full py-1.5 px-4 cursor-pointer transition-colors duration-200 font-primary font-normal text-sm"
@@ -258,9 +190,7 @@ exports[`PostSimulationSummary Component > Snapshot Testing > should match snaps
                 >
                   <span
                     class="relative z-10 whitespace-nowrap"
-                  >
-                    Share for review
-                  </span>
+                  />
                 </div>
               </div>
             </div>
@@ -278,15 +208,7 @@ exports[`PostSimulationSummary Component > Snapshot Testing > should match snaps
             data-value="1"
             role="tab"
           >
-            Summary
-          </button>
-          <button
-            aria-selected="false"
-            data-testid="tab-2"
-            data-value="2"
-            role="tab"
-          >
-            Transcription
+            Session Review
           </button>
           <button
             aria-selected="false"
@@ -298,11 +220,27 @@ exports[`PostSimulationSummary Component > Snapshot Testing > should match snaps
           </button>
           <button
             aria-selected="false"
+            data-testid="tab-2"
+            data-value="2"
+            role="tab"
+          >
+            Annotated Transcript
+          </button>
+          <button
+            aria-selected="false"
             data-testid="tab-5"
             data-value="5"
             role="tab"
           >
-            Reflection
+            Skills  Demonstrated
+          </button>
+          <button
+            aria-selected="false"
+            data-testid="tab-6"
+            data-value="6"
+            role="tab"
+          >
+            Deeper Reflection
           </button>
         </div>
         <div

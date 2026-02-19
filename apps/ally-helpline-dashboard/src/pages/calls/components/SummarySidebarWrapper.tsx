@@ -38,7 +38,7 @@ const SummarySidebarWrapper: FC<SummarySidebarWrapperProps> = ({
       title={title}
       headerButtons={extraHeaderList?.length > 0 ? extraHeaderList : []}
     >
-      <div className="w-[40vw] h-full flex flex-col">
+      <div className="w-[45vw] h-full flex flex-col">
         <Tabs
           value={selectedTab}
           onChange={handleTabChange}
