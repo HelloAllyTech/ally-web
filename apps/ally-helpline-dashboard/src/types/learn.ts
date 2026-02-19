@@ -403,6 +403,7 @@ export enum ChatStreamEventType {
 export interface SkillCoverageItem {
   category: string;
   percentage: number;
+  iconUrl?: string;
 }
 
 export interface EmotionalMovementItem {

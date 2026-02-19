@@ -148,7 +148,7 @@ const callSummaryAPI = baseAPI.injectEndpoints({
     getTranscript: builder.query<GetTranscriptResponse, GetTranscriptRequest>({
       query: ({ chatId, offset, limit, sortBy }) => ({
         url: ApiEndpoints.CALL_SUMMARY.GET_TRANSCRIPT(chatId),
-        params: { offset, limit, sortOrder: "ASC", sortBy },
+        params: { offset, limit, sortOrder: "ASC", sortBy, includeTags: true },
       }),
     }),
 

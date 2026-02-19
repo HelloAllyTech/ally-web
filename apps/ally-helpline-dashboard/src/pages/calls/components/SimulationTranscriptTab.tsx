@@ -38,6 +38,7 @@ const SimulationTranscriptTab: FC<SimulationTranscriptTabProps> = ({
       startSeconds: item.startSeconds,
       id: item.id || null,
       senderId: item.senderId || null,
+      tags: item.tags,
     }));
   }, [transcriptData]);
 
@@ -57,6 +58,7 @@ const SimulationTranscriptTab: FC<SimulationTranscriptTabProps> = ({
         senderId:
           item?.senderId !== null ? item?.senderId : item.speaker === "Client" ? user?.id : -1,
         startSeconds: item.startSeconds,
+        tags: item.tags,
       }));
 
       // Update hasMoreTranscripts based on the number of items returned
