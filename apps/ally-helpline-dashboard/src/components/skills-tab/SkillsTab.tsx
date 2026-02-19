@@ -329,9 +329,9 @@ export const SkillsTab: FC<SkillsTabProps> = ({ sessionId }) => {
 
   return (
     <div className="w-full flex flex-col p-4 border border-gray-200 rounded-lg">
-      <h2 className="text-lg font-medium font-primary text-typography-900">
+      <span className="text-typography-900 font-primary text-base font-semibold">
         Skills shown in this session
-      </h2>
+      </span>
       <hr className="mb-5 mt-2 border-gray-200" />
 
       {hasSkillData && <SkillCoverageCard skills={skillCoverages} />}

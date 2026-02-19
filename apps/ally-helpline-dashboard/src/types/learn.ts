@@ -361,32 +361,31 @@ export interface ScenarioCaseDetails {
 }
 
 export interface GetReflectionPromptsResponse {
-  ReflectionPrompt: Prompt[];
+  reflectionPrompts: Prompt[];
 }
 
 export interface Prompt {
   id: string;
+  promptId: string;
   prompt: string;
-  response?: string;
+  response?: string | null;
 }
 
 export interface ChecklistItem {
-  id: number;
-  label: string;
-  completed: boolean;
+  id: string;
+  name: string;
+  hasOccurred: boolean;
 }
 
 export interface GetSimulationChecklistResponse {
-  overallScore: number;
-  items: ChecklistItem[];
+  scorePercentage: number;
+  eventChecklist: ChecklistItem[];
 }
-interface ReflectionPrompt {
+export interface UpdateReflectionPromptRequest {
+  sessionId: string;
+  reflectionPromptId: string;
   promptId: string;
   response: string;
-}
-export interface ReflectionPromptsRequest {
-  prompts: ReflectionPrompt;
-  sessionId: string;
 }
 
 export interface ChatStreamRequest {
