@@ -8,6 +8,8 @@ export interface ChatMessage {
 interface SessionState {
   messages: ChatMessage[];
   isStreaming: boolean;
+  error: boolean;
+  lastFailedMessage: string | null;
 }
 
 interface ChatState {
@@ -20,7 +22,12 @@ const initialState: ChatState = {
 
 const getOrCreateSession = (state: ChatState, sessionId: string): SessionState => {
   if (!state.sessions[sessionId]) {
-    state.sessions[sessionId] = { messages: [], isStreaming: false };
+    state.sessions[sessionId] = {
+      messages: [],
+      isStreaming: false,
+      error: false,
+      lastFailedMessage: null,
+    };
   }
   return state.sessions[sessionId];
 };
@@ -44,10 +51,28 @@ const chatSlice = createSlice({
       if (!session) return; // Session may have been cleared (e.g. user closed during stream)
       session.isStreaming = action.payload.isStreaming;
     },
+    setError: (state, action: PayloadAction<{ sessionId: string; message: string }>) => {
+      const session = state.sessions[action.payload.sessionId];
+      if (!session) return;
+      const last = session.messages[session.messages.length - 1];
+      if (last?.role === "assistant") {
+        session.messages.pop();
+      }
+      session.error = true;
+      session.lastFailedMessage = action.payload.message;
+    },
+    clearError: (state, action: PayloadAction<{ sessionId: string }>) => {
+      const session = state.sessions[action.payload.sessionId];
+      if (!session) return;
+      session.error = false;
+      session.lastFailedMessage = null;
+    },
     initSession: (state, action: PayloadAction<{ sessionId: string; messages: ChatMessage[] }>) => {
       state.sessions[action.payload.sessionId] = {
         messages: action.payload.messages,
         isStreaming: false,
+        error: false,
+        lastFailedMessage: null,
       };
     },
     clearSession: (state, action: PayloadAction<string>) => {
@@ -56,6 +81,13 @@ const chatSlice = createSlice({
   },
 });
 
-export const { addMessage, appendToLastMessage, setStreaming, initSession, clearSession } =
-  chatSlice.actions;
+export const {
+  addMessage,
+  appendToLastMessage,
+  setStreaming,
+  setError,
+  clearError,
+  initSession,
+  clearSession,
+} = chatSlice.actions;
 export default chatSlice.reducer;
