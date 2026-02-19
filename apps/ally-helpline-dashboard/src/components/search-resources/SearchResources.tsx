@@ -1,7 +1,7 @@
 import { FC, useEffect, useState, useRef } from "react";
 
-import { useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
+import { useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 
 import { ResourceSearch } from "@ally-ui-mono/ui-shared";

@@ -1,7 +1,8 @@
 import { FC, RefObject } from "react";
 
-import { InfiniteScroll } from "@ally-ui-mono/ui-shared";
 import { useTranslation } from "react-i18next";
+
+import { InfiniteScroll } from "@ally-ui-mono/ui-shared";
 import { SimulationTranscriptMessage } from "@types";
 
 interface TranscriptListingProps {

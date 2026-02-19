@@ -2,6 +2,7 @@ import { FC, useEffect, useMemo, useState } from "react";
 
 import { Tabs, Tab } from "@mui/material";
 import { motion } from "framer-motion";
+import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 
 import { FEATURE_FLAGS_MAP } from "@ally-ui-mono/ui-shared/featureFlag";
@@ -14,7 +15,6 @@ import { hasPermissions } from "@utils";
 
 import { AudioUploadDialog, AdminLogsTable, StartSessionDialog, UserLogsTable } from "./components";
 import { SessionUserGroup, tabStyles } from "./constants";
-import { useTranslation } from "react-i18next";
 import {
   getFormattedSupportedSessionUserGroups,
   getPermittedSessionLogList,

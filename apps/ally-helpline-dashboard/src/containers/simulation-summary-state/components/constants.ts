@@ -2,7 +2,7 @@ import { FeedbackSectionType } from "@types";
 
 type Translator = (key: string) => string;
 
-export const getFeedbackSections = (t: Translator) => [
+export const feedbackSections = (t: Translator) => [
   {
     key: "positives",
     label: t("summary.feedback.positives"),

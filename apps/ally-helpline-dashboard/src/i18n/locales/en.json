@@ -8,7 +8,15 @@
     "minutes_one": "{{count}} minute",
     "minutes_other": "{{count}} minutes",
     "seconds_one": "{{count}} second",
-    "seconds_other": "{{count}} seconds"
+    "seconds_other": "{{count}} seconds",
+    "continue": "Continue",
+    "start": "Start",
+    "close": "Close",
+    "details": "Details",
+    "starting": "Starting...",
+    "next": "Next",
+    "viewSummary": "View summary",
+    "simulationIndex": "Simulation {{index}}"
   },
   "carousel": {
     "slides": {
@@ -204,6 +212,14 @@
       "case": "Case",
       "track": "Track",
       "scenario": "Scenario"
+    },
+    "backToLearn": "Back to Learn",
+    "errors": {
+      "locked": "Upcoming simulation is locked"
+    },
+    "notFound": {
+      "case": "Case not found",
+      "track": "Track not found"
     }
   },
   "health": {
@@ -213,6 +229,14 @@
     },
     "description": "All systems are operating normally. This page confirms that the frontend application is running and responsive.",
     "lastChecked": "Last checked: {{time}}"
+  },
+  "reflection": {
+    "title": "Self-Reflection Prompts",
+    "clear": "Clear",
+    "save": "Save",
+    "prompts": {
+      "clientNeed": "What do you think the client needed most in the moment you shifted to problem-solving?"
+    }
   },
   "analytics": {
     "title": "Session Analytics",
@@ -277,10 +301,23 @@
   "postSim": {
     "titlePrefix": "Simulation",
     "titleEmphasis": "Summary",
+    "skills": {
+      "shownInSession": "Skills shown in this session",
+      "empty": "No skills data available for this session",
+      "loading": "Loading skills data...",
+      "failed": "Failed to load skills data",
+      "coverage": "Skill Coverage",
+      "emotionalMovement": "Client Emotional Movement",
+      "level": "Level (1-10)",
+      "timeline": "Session Timeline"
+    },
     "tabs": {
       "summary": "Summary",
       "transcription": "Transcription",
-      "upNext": "Up next"
+      "upNext": "Up next",
+      "askAi": "Ask AI",
+      "reflection": "Reflection",
+      "skills": "Skills"
     }
   },
   "review": {
@@ -368,6 +405,42 @@
       "tags": "Add keywords to help organize or categorize this session.",
       "select": "Select",
       "addNote": "Add note"
+    },
+    "fields": {
+      "callId": "Call ID",
+      "callDuration": "Call Duration",
+      "callDate": "Call Date",
+      "callTime": "Call time",
+      "newCallFollowUp": "New Call Follow Up",
+      "counsellor": "Counsellor",
+      "callQuality": "Call Quality",
+      "callerId": "Caller ID",
+      "counsellorName": "Counsellor Name",
+      "callerType": "Caller type",
+      "age": "Age",
+      "gender": "Gender",
+      "profession": "Profession",
+      "relationshipStatus": "Relationship status",
+      "languages": "Languages",
+      "location": "Location",
+      "concernCode": "Concern code",
+      "sessionSummary": "Session Summary",
+      "flow": "Flow",
+      "keyConcerns": "Key concerns",
+      "objectiveObservations": "Objective Observations",
+      "subjectiveObservations": "Subjective Observations",
+      "assessment": "Assessment",
+      "dominantFeelings": "Dominant Feelings",
+      "issuesWorkedOn": "Issues Worked On",
+      "keyTherapeuticTechniques": "Key Therapeutic Techniques",
+      "referralsProvided": "Referrals Provided",
+      "homeworkRecommended": "Homework Recommended",
+      "plansForNextCall": "Plans for Next Call",
+      "tags": "Tags",
+      "listeningRatio": "Listening Ratio",
+      "reflectiveQuestions": "No of Reflective Questions asked",
+      "emotionsLift": "Emotions Lift",
+      "openEndedQuestions": "No of Open Ended Questions asked"
     }
   },
   "profileSettings": {

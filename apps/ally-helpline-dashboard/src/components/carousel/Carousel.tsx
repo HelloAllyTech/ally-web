@@ -1,8 +1,8 @@
 // File: apps/ally-helpline-dashboard/src/components/carousel/Carousel.tsx
 import { FC, useEffect, useRef, useState } from "react";
-import { useTranslation } from "react-i18next";
 
 import { AnimatePresence, motion } from "framer-motion";
+import { useTranslation } from "react-i18next";
 
 import { getKeyFromIndex } from "@utils";
 

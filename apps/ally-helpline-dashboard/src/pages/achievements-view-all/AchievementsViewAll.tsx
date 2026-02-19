@@ -1,6 +1,7 @@
 import { FC, useState } from "react";
 
 import { Tooltip } from "@mui/material";
+import { useTranslation } from "react-i18next";
 import { useLocation, useNavigate } from "react-router-dom";
 
 import { useGetAvailableBadgesQuery } from "@api";
@@ -8,7 +9,6 @@ import { ArrowLeft, Info, NoResults } from "@assets";
 import { AchievementItem, FallbackUI, ToggleButtonGroup } from "@components";
 import { toolTipStyles } from "@constants";
 import { AchievementItemData, BadgeCategory, LockedStatus } from "@types";
-import { useTranslation } from "react-i18next";
 
 // Badge type display labels
 const BADGE_TYPE_LABELS: Record<BadgeCategory, string> = {

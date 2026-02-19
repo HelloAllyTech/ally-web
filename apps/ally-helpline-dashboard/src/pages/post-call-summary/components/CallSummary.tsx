@@ -185,11 +185,12 @@ const CallSummary: FC<CallSummaryProps> = ({
   const getFieldDisplay = (field: SummaryField) => {
     const value = getFieldValue(field.key, field.type);
     const placeholderText = field.placeholderKey ? t(field.placeholderKey) : field.placeholder;
+    const fieldLabel = field.labelKey ? t(field.labelKey) : field.label;
     switch (field.type) {
       case FieldType.Dropdown:
         return (
           <div key={field.key} className="flex gap-1">
-            <span className="font-medium text-lg text-typography-800 whitespace-nowrap bg-green">{`${field.label}: `}</span>
+            <span className="font-medium text-lg text-typography-800 whitespace-nowrap bg-green">{`${fieldLabel}: `}</span>
             <DropdownField
               disabled={isFieldDisabled(field)}
               value={value ?? placeholderText ?? "--"}
@@ -205,7 +206,7 @@ const CallSummary: FC<CallSummaryProps> = ({
         return (
           <div key={field.key} className="flex flex-col gap-1">
             {labelShownSections?.includes(field.sectionKey) && (
-              <span className="font-medium text-lg text-typography-800">{`${field.label}: `}</span>
+              <span className="font-medium text-lg text-typography-800">{`${fieldLabel}: `}</span>
             )}
             <TextField
               value={enhancing === field.key ? "" : value || ""}
@@ -255,7 +256,7 @@ const CallSummary: FC<CallSummaryProps> = ({
         return (
           <div key={field.key}>
             <div className="flex items-center">
-              <span className="font-medium text-lg text-typography-800">{`${field.label}: `}</span>
+              <span className="font-medium text-lg text-typography-800">{`${fieldLabel}: `}</span>
               <div className="flex-1">
                 <TextField
                   value={value ?? "--"}

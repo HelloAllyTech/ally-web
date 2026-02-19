@@ -1,8 +1,8 @@
 import { FC } from "react";
 
 import { Dialog } from "@mui/material";
-import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
+import { toast } from "sonner";
 
 import { ImageUpload } from "@ally-ui-mono/ui-shared";
 import { CloseIcon } from "@assets";

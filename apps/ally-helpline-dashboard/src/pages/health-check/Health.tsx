@@ -2,9 +2,9 @@
 import { useState, useEffect } from "react";
 
 import { CheckCircle } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 import { LifelineLogo } from "@assets";
-import { useTranslation } from "react-i18next";
 
 export const Health = () => {
   const { t } = useTranslation();

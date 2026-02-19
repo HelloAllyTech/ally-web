@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 
+import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
@@ -25,7 +26,6 @@ import { baseAPI } from "@src/api/baseAPI";
 import { RootState } from "@store";
 import { CommentChangeParams, ReactionsType, SimulationTranscriptMessage, Thread } from "@types";
 import { getFormattedDateTime, getFormattedTimeFromDuration } from "@utils";
-import { useTranslation } from "react-i18next";
 
 import { TRANSCRIPT_PAGE_SIZE } from "../calls/components/constants";
 
@@ -472,10 +472,11 @@ export const ReviewDetails = () => {
         description={reviewDetails?.scenario?.description}
         coverImageUrl={reviewDetails?.scenario?.coverImageUrl}
         coverVideoUrl={reviewDetails?.scenario?.coverVideoUrl}
-        headerTitle="Simulation"
-        headerSubtitle="Details"
-        scenarioLabel="Scenario:"
+        headerTitle={t("learn.scenario.pageTitleEmphasis")}
+        headerSubtitle={t("common.details")}
+        scenarioLabel={t("learn.scenario.scenarioLabel")}
         showActionButtons={false}
+        triggerWarningsLabel={t("learn.scenario.triggerWarnings")}
         onClickOutside={() => setShowSimulationDetailsModal(false)}
       />
     </div>

@@ -1,7 +1,7 @@
 import { FC, useState } from "react";
-import { useTranslation } from "react-i18next";
 
 import { motion } from "framer-motion";
+import { useTranslation } from "react-i18next";
 
 import { ChipGroup } from "@ally-ui-mono/ui-shared";
 import { CircularProgress } from "@components";

@@ -1,7 +1,8 @@
 // File: apps/ally-helpline-dashboard/src/pages/settings/Settings.tsx
+import { useTranslation } from "react-i18next";
+
 import { ComingSoon } from "@assets";
 import { FallbackUI } from "@components";
-import { useTranslation } from "react-i18next";
 
 export const Settings = () => {
   const { t } = useTranslation();

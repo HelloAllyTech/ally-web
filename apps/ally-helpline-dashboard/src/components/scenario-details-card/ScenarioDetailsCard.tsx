@@ -1,8 +1,8 @@
 import { FC, useState, type MouseEvent } from "react";
-import { useTranslation } from "react-i18next";
 
 import { CircularProgress } from "@mui/material";
 import { motion } from "framer-motion";
+import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 
 import { ChipGroup, CustomVideo } from "@ally-ui-mono/ui-shared";

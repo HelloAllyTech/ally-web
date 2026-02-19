@@ -1,3 +1,4 @@
+/* eslint-disable no-undef, no-console */
 import fs from "node:fs/promises";
 import path from "node:path";
 
@@ -5,14 +6,13 @@ const DEFAULT_LOCALES_DIR = "apps/ally-helpline-dashboard/src/i18n/locales";
 const DEFAULT_SOURCE_LANG = "en";
 const DEFAULT_VERSION_DIR = "apps/ally-helpline-dashboard/src/i18n/versions";
 
-const LOCALES_DIR = process.env.LOCALES_DIR ?? DEFAULT_LOCALES_DIR;
-const SOURCE_LANG = process.env.SOURCE_LANG ?? DEFAULT_SOURCE_LANG;
-const VERSION_DIR = process.env.VERSION_DIR ?? DEFAULT_VERSION_DIR;
-const TRANSLATION_PROVIDER = process.env.TRANSLATION_PROVIDER ?? "openai";
-const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
-const OPENAI_MODEL = process.env.OPENAI_MODEL ?? "gpt-4o-mini";
+const LOCALES_DIR = DEFAULT_LOCALES_DIR;
+const SOURCE_LANG = DEFAULT_SOURCE_LANG;
+const VERSION_DIR = DEFAULT_VERSION_DIR;
+const TRANSLATION_PROVIDER = "openai";
+const OPENAI_MODEL = "gpt-4o-mini";
 const DRY_RUN = (process.env.DRY_RUN ?? "false").toLowerCase() === "true";
-const SHOULD_TRANSLATE = TRANSLATION_PROVIDER === "openai" && Boolean(OPENAI_API_KEY);
+const SHOULD_TRANSLATE = Boolean(process.argv[2]);
 
 const PLACEHOLDER_REGEX = /\{\{[^}]+\}\}|<[^>]+>/g;
 
@@ -55,7 +55,7 @@ const restorePlaceholders = (text, placeholders) => {
 };
 
 const translateWithOpenAI = async ({ text, targetLang }) => {
-  if (!OPENAI_API_KEY) {
+  if (!process.argv[2]) {
     return null;
   }
 
@@ -63,7 +63,7 @@ const translateWithOpenAI = async ({ text, targetLang }) => {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      Authorization: `Bearer ${OPENAI_API_KEY}`,
+      Authorization: `Bearer ${process.argv[2]}`,
     },
     body: JSON.stringify({
       model: OPENAI_MODEL,
@@ -157,15 +157,28 @@ const fillMissingTranslations = async ({
     }
 
     if (isObject(sourceNode)) {
-      const result = { ...(isObject(targetNode) ? targetNode : {}) };
-      const entries = Object.entries(sourceNode);
-      for (const [key, value] of entries) {
+      const targetObj = isObject(targetNode) ? targetNode : {};
+      const result = {};
+
+      for (const [key, value] of Object.entries(sourceNode)) {
         const nextKey = pathKey ? `${pathKey}.${key}` : key;
-        result[key] = await walk(value, result[key], nextKey);
+        result[key] = await walk(value, targetObj[key], nextKey);
       }
-      const targetKeys = Object.keys(result);
+
+      const targetKeys = Object.keys(targetObj);
       const sourceKeys = Object.keys(sourceNode);
-      if (targetKeys.length !== sourceKeys.length) updated = true;
+
+      if (targetKeys.length !== sourceKeys.length) {
+        updated = true;
+      } else {
+        for (const key of targetKeys) {
+          if (!Object.prototype.hasOwnProperty.call(sourceNode, key)) {
+            updated = true;
+            break;
+          }
+        }
+      }
+
       return result;
     }
 

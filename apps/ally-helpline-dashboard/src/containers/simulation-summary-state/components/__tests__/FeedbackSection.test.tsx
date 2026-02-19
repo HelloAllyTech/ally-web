@@ -49,7 +49,7 @@ vi.mock("../constants", async () => {
   const { FeedbackSectionType } = await import("@types");
   return {
     ...actual,
-    feedbackSections: [
+    feedbackSections: () => [
       {
         key: "keyEvents",
         label: "Key Events",
@@ -59,13 +59,13 @@ vi.mock("../constants", async () => {
       },
       {
         key: "positives",
-        label: "What Went Well",
+        label: "What went well",
         type: FeedbackSectionType.BULLET_TEXT,
         icon: { icon: () => null, alt: "positives" },
       },
       {
         key: "improvements",
-        label: "Improvement Tips",
+        label: "Improvement tips",
         type: FeedbackSectionType.BULLET_TEXT,
         icon: { icon: () => null, alt: "improvements" },
       },

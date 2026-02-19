@@ -2,6 +2,7 @@ import { FC, useState } from "react";
 
 import { Tab, Tabs } from "@mui/material";
 import { motion } from "framer-motion";
+import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
 import { useNavigate, useParams } from "react-router-dom";
 
@@ -17,7 +18,6 @@ import { Permissions, REVIEW_PRIVACY_OPTIONS } from "@constants";
 import { SimulationSummary } from "@containers";
 import { RootState } from "@store";
 import { pageType } from "@types";
-import { useTranslation } from "react-i18next";
 
 import { UpNextTab } from "./components";
 import { SimulationTranscriptTab } from "../calls/components";
@@ -51,19 +51,19 @@ export const PostSimulationSummary: FC = () => {
     },
     {
       id: 2,
-      label: "Transcription",
+      labelKey: "postSim.tabs.transcription",
       content: <SimulationTranscriptTab sessionId={sessionId} className="w-full" />,
     },
     ...(FEATURE_FLAGS_MAP.SUMMARY_TABS_FLAG
       ? [
           {
             id: 4,
-            label: "Ask AI",
+            labelKey: "postSim.tabs.askAi",
             content: <AskAiTab sessionId={sessionId} />,
           },
           {
             id: 5,
-            label: "Reflection",
+            labelKey: "postSim.tabs.reflection",
             content: <ReflectionTab sessionId={sessionId} />,
           },
         ]

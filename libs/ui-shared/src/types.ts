@@ -44,6 +44,7 @@ export interface SimulationDetailsModalProps {
   headerClassName?: string;
   contentClassName?: string;
   imageContainerClassName?: string;
+  triggerWarningsLabel?: string;
   triggerWarnings?: triggerWarning[];
   renderCustomImage?: (props: { src?: string; alt: string; className?: string }) => ReactNode;
   renderAdditionalContent?: () => ReactNode;

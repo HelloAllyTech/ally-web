@@ -1,8 +1,9 @@
 import { FC } from "react";
 
+import { useTranslation } from "react-i18next";
+
 import { useDeleteCallLogMutation } from "@api";
 import { ConfirmationDialog } from "@components";
-import { useTranslation } from "react-i18next";
 
 import { DeleteCallLogDialogDataProps } from "./types";
 

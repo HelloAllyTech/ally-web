@@ -1,0 +1,1953 @@
+
+> @ally-ui-mono/source@0.0.0 test:helpline
+> npx nx test ally-helpline-dashboard src/containers/simulation-summary-state/components/__tests__/FeedbackSection.test.tsx
+
+(node:50693) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+
+> nx run ally-helpline-dashboard:test src/containers/simulation-summary-state/components/__tests__/FeedbackSection.test.tsx
+
+> ally-helpline-dashboard@0.0.0 test
+> vitest run src/containers/simulation-summary-state/components/__tests__/FeedbackSection.test.tsx
+[1m[46m RUN [49m[22m [36mv3.2.4 [39m[90m/Users/shubhambhoite/workspace/ally-web/apps/ally-helpline-dashboard[39m
+ [31m❯[39m src/containers/simulation-summary-state/components/__tests__/FeedbackSection.test.tsx [2m([22m[2m11 tests[22m[2m | [22m[31m5 failed[39m[2m)[22m[32m 37[2mms[22m[39m
+   [32m✓[39m FeedbackSection[2m > [22mBasic Rendering[2m > [22mshould render feedback section with heading and session info[32m 14[2mms[22m[39m
+[31m   [31m×[31m FeedbackSection[2m > [22mBasic Rendering[2m > [22mshould render all feedback sections[39m[32m 6[2mms[22m[39m
+[31m     → Unable to find an element with the text: What went well. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+Ignored nodes: comments, script, style
+[36m<body>[31m
+  [36m<div>[31m
+    [36m<div[31m
+      [33mclass[31m=[32m"flex flex-col gap-6 w-full"[31m
+    [36m>[31m
+      [36m<div[31m
+        [33mclass[31m=[32m"border p-4 shadow-lg rounded-lg flex flex-col gap-4"[31m
+      [36m>[31m
+        [36m<span[31m
+          [33mclass[31m=[32m"text-typography-900 font-primary text-base font-semibold border-b pb-2"[31m
+        [36m>[31m
+          [0mSession Feedback[0m
+        [36m</span>[31m
+        [36m<div>[31m
+          [36m<div[31m
+            [33mclass[31m=[32m"flex items-center gap-5 border-b pb-4"[31m
+          [36m>[31m
+            [36m<div>[31m
+              [36m<img[31m
+                [33malt[31m=[32m"Cover image"[31m
+                [33mclass[31m=[32m"w-[150px] h-[77px] object-cover rounded-sm"[31m
+                [33mdata-testid[31m=[32m"custom-image"[31m
+                [33msrc[31m=[32m""[31m
+              [36m/>[31m
+            [36m</div>[31m
+            [36m<div[31m
+              [33mclass[31m=[32m"flex flex-col gap-1 font-primary"[31m
+            [36m>[31m
+              [36m<span[31m
+                [33mclass[31m=[32m"text-typography-700 text-sm"[31m
+              [36m>[31m
+                [0mID: Test Session[0m
+              [36m</span>[31m
+              [36m<span[31m
+                [33mclass[31m=[32m"text-typography-900 text-lg font-medium flex items-center gap-1"[31m
+              [36m>[31m
+                [0mTest Scenario[0m
+                [36m<div[31m
+                  [33mclass[31m=[32m"text-xs cursor-pointer text-neutral-500 ml-[4px]"[31m
+                [36m>[31m
+                  [36m<svg[31m
+                    [33mfill[31m=[32m"none"[31m
+                    [33mheight[31m=[32m"15"[31m
+                    [33mviewBox[31m=[32m"0 0 15 15"[31m
+                    [33mwidth[31m=[32m"15"[31m
+                    [33mxmlns[31m=[32m"http://www.w3.org/2000/svg"[31m
+                  [36m>[31m
+                    [36m<path[31m
+                      [33md[31m=[32m"M7.29292 11.4167C7.44486 11.4167 7.57292 11.3642 7.67708 11.2592C7.78125 11.1543 7.83333 11.0258 7.83333 10.8738C7.83333 10.7218 7.78083 10.5938 7.67583 10.4896C7.57097 10.3854 7.4425 10.3333 7.29042 10.3333C7.13847 10.3333 7.01042 10.3858 6.90625 10.4908C6.80208 10.5957 6.75 10.7242 6.75 10.8763C6.75 11.0282 6.8025 11.1562 6.9075 11.2604C7.01236 11.3646 7.14083 11.4167 7.29292 11.4167ZM7.25354 14.5C6.25118 14.5 5.30861 14.3098 4.42583 13.9294C3.54306 13.549 2.77521 13.0326 2.12229 12.3804C1.46924 11.7282 0.952292 10.9613 0.571458 10.0798C0.190486 9.19812 0 8.25604 0 7.25354C0 6.25118 0.190208 5.30861 0.570625 4.42583C0.951042 3.54306 1.46736 2.77521 2.11958 2.12229C2.77181 1.46924 3.53868 0.952292 4.42021 0.571458C5.30188 0.190486 6.24396 0 7.24646 0C8.24882 0 9.19139 0.190209 10.0742 0.570625C10.9569 0.951042 11.7248 1.46736 12.3777 2.11958C13.0308 2.77181 13.5477 3.53868 13.9285 4.42021C14.3095 5.30188 14.5 6.24396 14.5 7.24646C14.5 8.24882 14.3098 9.19139 13.9294 10.0742C13.549 10.9569 13.0326 11.7248 12.3804 12.3777C11.7282 13.0308 10.9613 13.5477 10.0798 13.9285C9.19813 14.3095 8.25604 14.5 7.25354 14.5ZM7.25 13.9167C9.11111 13.9167 10.6875 13.2708 11.9792 11.9792C13.2708 10.6875 13.9167 9.11111 13.9167 7.25C13.9167 5.38889 13.2708 3.8125 11.9792 2.52083C10.6875 1.22917 9.11111 0.583333 7.25 0.583333C5.38889 0.583333 3.8125 1.22917 2.52083 2.52083C1.22917 3.8125 0.583333 5.38889 0.583333 7.25C0.583333 9.11111 1.22917 10.6875 2.52083 11.9792C3.8125 13.2708 5.38889 13.9167 7.25 13.9167ZM7.29208 3.70833C7.73625 3.70833 8.11806 3.84521 8.4375 4.11896C8.75694 4.39285 8.91667 4.73514 8.91667 5.14583C8.91667 5.45139 8.83333 5.72917 8.66667 5.97917C8.5 6.22917 8.30556 6.45833 8.08333 6.66667C7.80792 6.92 7.56549 7.19861 7.35604 7.5025C7.14646 7.80639 7.02083 8.13889 6.97917 8.5C6.96528 8.58333 6.9875 8.65278 7.04583 8.70833C7.10417 8.76389 7.17222 8.79167 7.25 8.79167C7.33333 8.79167 7.40278 8.76389 7.45833 8.70833C7.51389 8.65278 7.54861 8.59028 7.5625 8.52083C7.61806 8.24306 7.7257 7.99653 7.88542 7.78125C8.04514 7.56597 8.22188 7.36264 8.41563 7.17125C8.6941 6.89042 8.94444 6.58451 9.16667 6.25354C9.38889 5.92243 9.5 5.55319 9.5 5.14583C9.5 4.5625 9.28472 4.07986 8.85417 3.69792C8.42361 3.31597 7.91667 3.125 7.33333 3.125C6.88889 3.125 6.47917 3.23264 6.10417 3.44792C5.72917 3.66319 5.42361 3.95139 5.1875 4.3125C5.14583 4.38194 5.1325 4.45236 5.1475 4.52375C5.16264 4.59528 5.20326 4.64951 5.26938 4.68646C5.35368 4.72882 5.4375 4.73611 5.52083 4.70833C5.60417 4.68056 5.68056 4.63194 5.75 4.5625C5.94444 4.32639 6.17014 4.125 6.42708 3.95833C6.68403 3.79167 6.97236 3.70833 7.29208 3.70833Z"[31m
+                      [33mfill[31m=[32m"#757575"[31m
+                    [36m/>[31m
+                  [36m</svg>[31m
+                [36m</div>[31m
+              [36m</span>[31m
+              [36m<span[31m
+                [33mclass[31m=[32m"text-typography-700 text-sm flex items-center gap-3"[31m
+              [36m>[31m
+                [36m<span>[31m
+                  [0mJan 01, 2024 03:30 PM[0m
+                [36m</span>[31m
+                [36m<span[31m
+                  [33mclass[31m=[32m"text-typography-400 text-lg"[31m
+                [36m>[31m
+                  [0m•[0m
+                [36m</span>[31m
+                [36m<span>[31m
+                  [0m1 sec[0m
+                [36m</span>[31m
+              [36m</span>[31m
+            [36m</div>[31m
+          [36m</div>[31m
+        [36m</div>[31m
+        [36m<div[31m
+          [33mclass[31m=[32m"overflow-y-auto font-primary space-y-4"[31m
+        [36m>[31m
+          [36m<div[31m
+            [33manimate[31m=[32m"[object Object]"[31m
+            [33mclass[31m=[32m"bg-white"[31m
+            [33minitial[31m=[32m"[object Object]"[31m
+            [33mtransition[31m=[32m"[object Object]"[31m
+          [36m>[31m
+            [36m<div>[31m
+              [36m<div[31m
+                [33mclass[31m=[32m"min-w-full text-sm font-primary overflow-y-scroll mb-4"[31m
+                [33mdata-testid[31m=[32m"generic-table"[31m
+              [36m>[31m
+                [36m<div>[31m
+                  [0m"First interaction"[0m
+                [36m</div>[31m
+                [36m<div>[31m
+                  [0m"Session started"[0m
+                [36m</div>[31m
+              [36m</div>[31m
+            [36m</div>[31m
+          [36m</div>[31m
+          [36m<div[31m
+            [33manimate[31m=[32m"[object Object]"[31m
+            [33mclass[31m=[32m"bg-white"[31m
+            [33minitial[31m=[32m"[object Object]"[31m
+            [33mtransition[31m=[32m"[object Object]"[31m
+          [36m>[31m
+            [36m<div>[31m
+              [36m<div[31m
+                [33mclass[31m=[32m"flex flex-col border-[0.5px] border-[#C8C5D0] rounded-sm"[31m
+              [36m>[31m
+                [36m<span[31m
+                  [33mclass[31m=[32m"w-full text-typography-900 bg-[#EDE7F680] px-2 py-2 text-base"[31m
+                [36m>[31m
+                  [0mWhat Went Well[0m
+                [36m</span>[31m
+                [36m<ul[31m
+                  [33mclass[31m=[32m"p-4 space-y-2 text-base"[31m
+                [36m>[31m
+                  [36m<li[31m
+                    [33mclass[31m=[32m"flex items-start"[31m
+                  [36m>[31m
+                    [36m<span[31m
+                      [33mclass[31m=[32m"text-typography-900 mr-2"[31m
+                    [36m>[31m
+                      [0m•[0m
+                    [36m</span>[31m
+                    [36m<span[31m
+                      [33mclass[31m=[32m"text-typography-900"[31m
+                    [36m>[31m
+                      [0mGood communication[0m
+                    [36m</span>[31m
+                  [36m</li>[31m
+                  [36m<li[31m
+                    [33mclass[31m=[32m"flex items-start"[31m
+                  [36m>[31m
+                    [36m<span[31m
+                      [33mclass[31m=[32m"text-typography-900 mr-2"[31m
+                    [36m>[31m
+                      [0m•[0m
+                    [36m</span>[31m
+                    [36m<span[31m
+                      [33mclass[31m=[32m"text-typography-900"[31m
+                    [36m>[31m
+                      [0mClear explanations[0m
+                    [36m</span>[31m
+                  [36m</li>[31m
+                [36m</ul>[31m
+              [36m</div>[31m
+            [36m</div>[31m
+          [36m</div>[31m
+          [36m<div[31m
+            [33manimate[31m=[32m"[object Object]"[31m
+            [33mclass[31m=[32m"bg-white"[31m
+            [33minitial[31m=[32m"[object Object]"[31m
+            [33mtransition[31m=[32m"[object Object]"[31m
+          [36m>[31m
+            [36m<div>[31m
+              [36m<div[31m
+                [33mclass[31m=[32m"flex flex-col border-[0.5px] border-[#C8C5D0] rounded-sm"[31m
+              [36m>[31m
+                [36m<span[31m
+                  [33mclass[31m=[32m"w-full text-typography-900 bg-[#EDE7F680] px-2 py-2 text-base"[31m
+                [36m>[31m
+                  [0mImprovement Tips[0m
+                [36m</span>[31m
+                [36m<ul[31m
+                  [33mclass[31m=[32m"p-4 space-y-2 text-base"[31m
+                [36m>[31m
+                  [36m<li[31m
+                    [33mclass[31m=[32m"flex items-start"[31m
+                  [36m>[31m
+                    [36m<span[31m
+                      [33mclass[31m=[32m"text-typography-900 mr-2"[31m
+                    [36m>[31m
+                      [0m•[0m
+                    [36m</span>[31m
+                    [36m<span[31m
+                      [33mclass[31m=[32m"text-typography-900"[31m
+                    [36m>[31m
+                      [0mMore practice needed[0m
+                    [36m</span>[31m
+                  [36m</li>[31m
+                  [36m<li[31m
+                    [33mclass[31m=[32m"flex items-start"[31m
+                  [36m>[31m
+                    [36m<span[31m
+                      [33mclass[31m=[32m"text-typography-900 mr-2"[31m
+                    [36m>[31m
+                      [0m•[0m
+                    [36m</span>[31m
+                    [36m<span[31m
+                      [33mclass[31m=[32m"text-typography-900"[31m
+                    [36m>[31m
+                      [0mFocus on timing[0m
+                    [36m</span>[31m
+                  [36m</li>[31m
+                [36m</ul>[31m
+              [36m</div>[31m
+            [36m</div>[31m
+          [36m</div>[31m
+        [36m</div>[31m
+      [36m</div>[31m
+    [36m</div>[31m
+  [36m</div>[31m
+[36m</body>[31m[39m
+   [32m✓[39m FeedbackSection[2m > [22mSection content rendering[2m > [22mshould render key events section with list content[32m 2[2mms[22m[39m
+   [32m✓[39m FeedbackSection[2m > [22mEmpty Data Handling[2m > [22mshould show empty or no-data state when no key events[32m 2[2mms[22m[39m
+[31m   [31m×[31m FeedbackSection[2m > [22mEmpty Data Handling[2m > [22mshould show empty list when no positives[39m[32m 2[2mms[22m[39m
+[31m     → Unable to find an element with the text: What went well. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+Ignored nodes: comments, script, style
+[36m<body>[31m
+  [36m<div>[31m
+    [36m<div[31m
+      [33mclass[31m=[32m"flex flex-col gap-6 w-full"[31m
+    [36m>[31m
+      [36m<div[31m
+        [33mclass[31m=[32m"border p-4 shadow-lg rounded-lg flex flex-col gap-4"[31m
+      [36m>[31m
+        [36m<span[31m
+          [33mclass[31m=[32m"text-typography-900 font-primary text-base font-semibold border-b pb-2"[31m
+        [36m>[31m
+          [0mSession Feedback[0m
+        [36m</span>[31m
+        [36m<div>[31m
+          [36m<div[31m
+            [33mclass[31m=[32m"flex items-center gap-5 border-b pb-4"[31m
+          [36m>[31m
+            [36m<div>[31m
+              [36m<img[31m
+                [33malt[31m=[32m"Cover image"[31m
+                [33mclass[31m=[32m"w-[150px] h-[77px] object-cover rounded-sm"[31m
+                [33mdata-testid[31m=[32m"custom-image"[31m
+                [33msrc[31m=[32m""[31m
+              [36m/>[31m
+            [36m</div>[31m
+            [36m<div[31m
+              [33mclass[31m=[32m"flex flex-col gap-1 font-primary"[31m
+            [36m>[31m
+              [36m<span[31m
+                [33mclass[31m=[32m"text-typography-700 text-sm"[31m
+              [36m>[31m
+                [0mID: Test Session[0m
+              [36m</span>[31m
+              [36m<span[31m
+                [33mclass[31m=[32m"text-typography-900 text-lg font-medium flex items-center gap-1"[31m
+              [36m>[31m
+                [0mTest Scenario[0m
+                [36m<div[31m
+                  [33mclass[31m=[32m"text-xs cursor-pointer text-neutral-500 ml-[4px]"[31m
+                [36m>[31m
+                  [36m<svg[31m
+                    [33mfill[31m=[32m"none"[31m
+                    [33mheight[31m=[32m"15"[31m
+                    [33mviewBox[31m=[32m"0 0 15 15"[31m
+                    [33mwidth[31m=[32m"15"[31m
+                    [33mxmlns[31m=[32m"http://www.w3.org/2000/svg"[31m
+                  [36m>[31m
+                    [36m<path[31m
+                      [33md[31m=[32m"M7.29292 11.4167C7.44486 11.4167 7.57292 11.3642 7.67708 11.2592C7.78125 11.1543 7.83333 11.0258 7.83333 10.8738C7.83333 10.7218 7.78083 10.5938 7.67583 10.4896C7.57097 10.3854 7.4425 10.3333 7.29042 10.3333C7.13847 10.3333 7.01042 10.3858 6.90625 10.4908C6.80208 10.5957 6.75 10.7242 6.75 10.8763C6.75 11.0282 6.8025 11.1562 6.9075 11.2604C7.01236 11.3646 7.14083 11.4167 7.29292 11.4167ZM7.25354 14.5C6.25118 14.5 5.30861 14.3098 4.42583 13.9294C3.54306 13.549 2.77521 13.0326 2.12229 12.3804C1.46924 11.7282 0.952292 10.9613 0.571458 10.0798C0.190486 9.19812 0 8.25604 0 7.25354C0 6.25118 0.190208 5.30861 0.570625 4.42583C0.951042 3.54306 1.46736 2.77521 2.11958 2.12229C2.77181 1.46924 3.53868 0.952292 4.42021 0.571458C5.30188 0.190486 6.24396 0 7.24646 0C8.24882 0 9.19139 0.190209 10.0742 0.570625C10.9569 0.951042 11.7248 1.46736 12.3777 2.11958C13.0308 2.77181 13.5477 3.53868 13.9285 4.42021C14.3095 5.30188 14.5 6.24396 14.5 7.24646C14.5 8.24882 14.3098 9.19139 13.9294 10.0742C13.549 10.9569 13.0326 11.7248 12.3804 12.3777C11.7282 13.0308 10.9613 13.5477 10.0798 13.9285C9.19813 14.3095 8.25604 14.5 7.25354 14.5ZM7.25 13.9167C9.11111 13.9167 10.6875 13.2708 11.9792 11.9792C13.2708 10.6875 13.9167 9.11111 13.9167 7.25C13.9167 5.38889 13.2708 3.8125 11.9792 2.52083C10.6875 1.22917 9.11111 0.583333 7.25 0.583333C5.38889 0.583333 3.8125 1.22917 2.52083 2.52083C1.22917 3.8125 0.583333 5.38889 0.583333 7.25C0.583333 9.11111 1.22917 10.6875 2.52083 11.9792C3.8125 13.2708 5.38889 13.9167 7.25 13.9167ZM7.29208 3.70833C7.73625 3.70833 8.11806 3.84521 8.4375 4.11896C8.75694 4.39285 8.91667 4.73514 8.91667 5.14583C8.91667 5.45139 8.83333 5.72917 8.66667 5.97917C8.5 6.22917 8.30556 6.45833 8.08333 6.66667C7.80792 6.92 7.56549 7.19861 7.35604 7.5025C7.14646 7.80639 7.02083 8.13889 6.97917 8.5C6.96528 8.58333 6.9875 8.65278 7.04583 8.70833C7.10417 8.76389 7.17222 8.79167 7.25 8.79167C7.33333 8.79167 7.40278 8.76389 7.45833 8.70833C7.51389 8.65278 7.54861 8.59028 7.5625 8.52083C7.61806 8.24306 7.7257 7.99653 7.88542 7.78125C8.04514 7.56597 8.22188 7.36264 8.41563 7.17125C8.6941 6.89042 8.94444 6.58451 9.16667 6.25354C9.38889 5.92243 9.5 5.55319 9.5 5.14583C9.5 4.5625 9.28472 4.07986 8.85417 3.69792C8.42361 3.31597 7.91667 3.125 7.33333 3.125C6.88889 3.125 6.47917 3.23264 6.10417 3.44792C5.72917 3.66319 5.42361 3.95139 5.1875 4.3125C5.14583 4.38194 5.1325 4.45236 5.1475 4.52375C5.16264 4.59528 5.20326 4.64951 5.26938 4.68646C5.35368 4.72882 5.4375 4.73611 5.52083 4.70833C5.60417 4.68056 5.68056 4.63194 5.75 4.5625C5.94444 4.32639 6.17014 4.125 6.42708 3.95833C6.68403 3.79167 6.97236 3.70833 7.29208 3.70833Z"[31m
+                      [33mfill[31m=[32m"#757575"[31m
+                    [36m/>[31m
+                  [36m</svg>[31m
+                [36m</div>[31m
+              [36m</span>[31m
+              [36m<span[31m
+                [33mclass[31m=[32m"text-typography-700 text-sm flex items-center gap-3"[31m
+              [36m>[31m
+                [36m<span>[31m
+                  [0mJan 01, 2024 03:30 PM[0m
+                [36m</span>[31m
+                [36m<span[31m
+                  [33mclass[31m=[32m"text-typography-400 text-lg"[31m
+                [36m>[31m
+                  [0m•[0m
+                [36m</span>[31m
+                [36m<span>[31m
+                  [0m1 sec[0m
+                [36m</span>[31m
+              [36m</span>[31m
+            [36m</div>[31m
+          [36m</div>[31m
+        [36m</div>[31m
+        [36m<div[31m
+          [33mclass[31m=[32m"overflow-y-auto font-primary space-y-4"[31m
+        [36m>[31m
+          [36m<div[31m
+            [33manimate[31m=[32m"[object Object]"[31m
+            [33mclass[31m=[32m"bg-white"[31m
+            [33minitial[31m=[32m"[object Object]"[31m
+            [33mtransition[31m=[32m"[object Object]"[31m
+          [36m>[31m
+            [36m<div>[31m
+              [36m<div[31m
+                [33mclass[31m=[32m"min-w-full text-sm font-primary overflow-y-scroll mb-4"[31m
+                [33mdata-testid[31m=[32m"generic-table"[31m
+              [36m>[31m
+                [36m<div>[31m
+                  [0m"First interaction"[0m
+                [36m</div>[31m
+                [36m<div>[31m
+                  [0m"Session started"[0m
+                [36m</div>[31m
+              [36m</div>[31m
+            [36m</div>[31m
+          [36m</div>[31m
+          [36m<div[31m
+            [33manimate[31m=[32m"[object Object]"[31m
+            [33mclass[31m=[32m"bg-white"[31m
+            [33minitial[31m=[32m"[object Object]"[31m
+            [33mtransition[31m=[32m"[object Object]"[31m
+          [36m>[31m
+            [36m<div>[31m
+              [36m<div[31m
+                [33mclass[31m=[32m"flex flex-col border-[0.5px] border-[#C8C5D0] rounded-sm"[31m
+              [36m>[31m
+                [36m<span[31m
+                  [33mclass[31m=[32m"w-full text-typography-900 bg-[#EDE7F680] px-2 py-2 text-base"[31m
+                [36m>[31m
+                  [0mWhat Went Well[0m
+                [36m</span>[31m
+                [36m<ul[31m
+                  [33mclass[31m=[32m"p-4 space-y-2 text-base"[31m
+                [36m>[31m
+                  [36m<div[31m
+                    [33mclass[31m=[32m"text-typography-700 font-primary text-center mb-2"[31m
+                  [36m>[31m
+                    [0mNo data found[0m
+                  [36m</div>[31m
+                [36m</ul>[31m
+              [36m</div>[31m
+            [36m</div>[31m
+          [36m</div>[31m
+          [36m<div[31m
+            [33manimate[31m=[32m"[object Object]"[31m
+            [33mclass[31m=[32m"bg-white"[31m
+            [33minitial[31m=[32m"[object Object]"[31m
+            [33mtransition[31m=[32m"[object Object]"[31m
+          [36m>[31m
+            [36m<div>[31m
+              [36m<div[31m
+                [33mclass[31m=[32m"flex flex-col border-[0.5px] border-[#C8C5D0] rounded-sm"[31m
+              [36m>[31m
+                [36m<span[31m
+                  [33mclass[31m=[32m"w-full text-typography-900 bg-[#EDE7F680] px-2 py-2 text-base"[31m
+                [36m>[31m
+                  [0mImprovement Tips[0m
+                [36m</span>[31m
+                [36m<ul[31m
+                  [33mclass[31m=[32m"p-4 space-y-2 text-base"[31m
+                [36m>[31m
+                  [36m<li[31m
+                    [33mclass[31m=[32m"flex items-start"[31m
+                  [36m>[31m
+                    [36m<span[31m
+                      [33mclass[31m=[32m"text-typography-900 mr-2"[31m
+                    [36m>[31m
+                      [0m•[0m
+                    [36m</span>[31m
+                    [36m<span[31m
+                      [33mclass[31m=[32m"text-typography-900"[31m
+                    [36m>[31m
+                      [0mMore practice needed[0m
+                    [36m</span>[31m
+                  [36m</li>[31m
+                  [36m<li[31m
+                    [33mclass[31m=[32m"flex items-start"[31m
+                  [36m>[31m
+                    [36m<span[31m
+                      [33mclass[31m=[32m"text-typography-900 mr-2"[31m
+                    [36m>[31m
+                      [0m•[0m
+                    [36m</span>[31m
+                    [36m<span[31m
+                      [33mclass[31m=[32m"text-typography-900"[31m
+                    [36m>[31m
+                      [0mFocus on timing[0m
+                    [36m</span>[31m
+                  [36m</li>[31m
+                [36m</ul>[31m
+              [36m</div>[31m
+            [36m</div>[31m
+          [36m</div>[31m
+        [36m</div>[31m
+      [36m</div>[31m
+    [36m</div>[31m
+  [36m</div>[31m
+[36m</body>[31m[39m
+[31m   [31m×[31m FeedbackSection[2m > [22mEmpty Data Handling[2m > [22mshould show empty list when no improvements[39m[32m 2[2mms[22m[39m
+[31m     → Unable to find an element with the text: Improvement tips. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+Ignored nodes: comments, script, style
+[36m<body>[31m
+  [36m<div>[31m
+    [36m<div[31m
+      [33mclass[31m=[32m"flex flex-col gap-6 w-full"[31m
+    [36m>[31m
+      [36m<div[31m
+        [33mclass[31m=[32m"border p-4 shadow-lg rounded-lg flex flex-col gap-4"[31m
+      [36m>[31m
+        [36m<span[31m
+          [33mclass[31m=[32m"text-typography-900 font-primary text-base font-semibold border-b pb-2"[31m
+        [36m>[31m
+          [0mSession Feedback[0m
+        [36m</span>[31m
+        [36m<div>[31m
+          [36m<div[31m
+            [33mclass[31m=[32m"flex items-center gap-5 border-b pb-4"[31m
+          [36m>[31m
+            [36m<div>[31m
+              [36m<img[31m
+                [33malt[31m=[32m"Cover image"[31m
+                [33mclass[31m=[32m"w-[150px] h-[77px] object-cover rounded-sm"[31m
+                [33mdata-testid[31m=[32m"custom-image"[31m
+                [33msrc[31m=[32m""[31m
+              [36m/>[31m
+            [36m</div>[31m
+            [36m<div[31m
+              [33mclass[31m=[32m"flex flex-col gap-1 font-primary"[31m
+            [36m>[31m
+              [36m<span[31m
+                [33mclass[31m=[32m"text-typography-700 text-sm"[31m
+              [36m>[31m
+                [0mID: Test Session[0m
+              [36m</span>[31m
+              [36m<span[31m
+                [33mclass[31m=[32m"text-typography-900 text-lg font-medium flex items-center gap-1"[31m
+              [36m>[31m
+                [0mTest Scenario[0m
+                [36m<div[31m
+                  [33mclass[31m=[32m"text-xs cursor-pointer text-neutral-500 ml-[4px]"[31m
+                [36m>[31m
+                  [36m<svg[31m
+                    [33mfill[31m=[32m"none"[31m
+                    [33mheight[31m=[32m"15"[31m
+                    [33mviewBox[31m=[32m"0 0 15 15"[31m
+                    [33mwidth[31m=[32m"15"[31m
+                    [33mxmlns[31m=[32m"http://www.w3.org/2000/svg"[31m
+                  [36m>[31m
+                    [36m<path[31m
+                      [33md[31m=[32m"M7.29292 11.4167C7.44486 11.4167 7.57292 11.3642 7.67708 11.2592C7.78125 11.1543 7.83333 11.0258 7.83333 10.8738C7.83333 10.7218 7.78083 10.5938 7.67583 10.4896C7.57097 10.3854 7.4425 10.3333 7.29042 10.3333C7.13847 10.3333 7.01042 10.3858 6.90625 10.4908C6.80208 10.5957 6.75 10.7242 6.75 10.8763C6.75 11.0282 6.8025 11.1562 6.9075 11.2604C7.01236 11.3646 7.14083 11.4167 7.29292 11.4167ZM7.25354 14.5C6.25118 14.5 5.30861 14.3098 4.42583 13.9294C3.54306 13.549 2.77521 13.0326 2.12229 12.3804C1.46924 11.7282 0.952292 10.9613 0.571458 10.0798C0.190486 9.19812 0 8.25604 0 7.25354C0 6.25118 0.190208 5.30861 0.570625 4.42583C0.951042 3.54306 1.46736 2.77521 2.11958 2.12229C2.77181 1.46924 3.53868 0.952292 4.42021 0.571458C5.30188 0.190486 6.24396 0 7.24646 0C8.24882 0 9.19139 0.190209 10.0742 0.570625C10.9569 0.951042 11.7248 1.46736 12.3777 2.11958C13.0308 2.77181 13.5477 3.53868 13.9285 4.42021C14.3095 5.30188 14.5 6.24396 14.5 7.24646C14.5 8.24882 14.3098 9.19139 13.9294 10.0742C13.549 10.9569 13.0326 11.7248 12.3804 12.3777C11.7282 13.0308 10.9613 13.5477 10.0798 13.9285C9.19813 14.3095 8.25604 14.5 7.25354 14.5ZM7.25 13.9167C9.11111 13.9167 10.6875 13.2708 11.9792 11.9792C13.2708 10.6875 13.9167 9.11111 13.9167 7.25C13.9167 5.38889 13.2708 3.8125 11.9792 2.52083C10.6875 1.22917 9.11111 0.583333 7.25 0.583333C5.38889 0.583333 3.8125 1.22917 2.52083 2.52083C1.22917 3.8125 0.583333 5.38889 0.583333 7.25C0.583333 9.11111 1.22917 10.6875 2.52083 11.9792C3.8125 13.2708 5.38889 13.9167 7.25 13.9167ZM7.29208 3.70833C7.73625 3.70833 8.11806 3.84521 8.4375 4.11896C8.75694 4.39285 8.91667 4.73514 8.91667 5.14583C8.91667 5.45139 8.83333 5.72917 8.66667 5.97917C8.5 6.22917 8.30556 6.45833 8.08333 6.66667C7.80792 6.92 7.56549 7.19861 7.35604 7.5025C7.14646 7.80639 7.02083 8.13889 6.97917 8.5C6.96528 8.58333 6.9875 8.65278 7.04583 8.70833C7.10417 8.76389 7.17222 8.79167 7.25 8.79167C7.33333 8.79167 7.40278 8.76389 7.45833 8.70833C7.51389 8.65278 7.54861 8.59028 7.5625 8.52083C7.61806 8.24306 7.7257 7.99653 7.88542 7.78125C8.04514 7.56597 8.22188 7.36264 8.41563 7.17125C8.6941 6.89042 8.94444 6.58451 9.16667 6.25354C9.38889 5.92243 9.5 5.55319 9.5 5.14583C9.5 4.5625 9.28472 4.07986 8.85417 3.69792C8.42361 3.31597 7.91667 3.125 7.33333 3.125C6.88889 3.125 6.47917 3.23264 6.10417 3.44792C5.72917 3.66319 5.42361 3.95139 5.1875 4.3125C5.14583 4.38194 5.1325 4.45236 5.1475 4.52375C5.16264 4.59528 5.20326 4.64951 5.26938 4.68646C5.35368 4.72882 5.4375 4.73611 5.52083 4.70833C5.60417 4.68056 5.68056 4.63194 5.75 4.5625C5.94444 4.32639 6.17014 4.125 6.42708 3.95833C6.68403 3.79167 6.97236 3.70833 7.29208 3.70833Z"[31m
+                      [33mfill[31m=[32m"#757575"[31m
+                    [36m/>[31m
+                  [36m</svg>[31m
+                [36m</div>[31m
+              [36m</span>[31m
+              [36m<span[31m
+                [33mclass[31m=[32m"text-typography-700 text-sm flex items-center gap-3"[31m
+              [36m>[31m
+                [36m<span>[31m
+                  [0mJan 01, 2024 03:30 PM[0m
+                [36m</span>[31m
+                [36m<span[31m
+                  [33mclass[31m=[32m"text-typography-400 text-lg"[31m
+                [36m>[31m
+                  [0m•[0m
+                [36m</span>[31m
+                [36m<span>[31m
+                  [0m1 sec[0m
+                [36m</span>[31m
+              [36m</span>[31m
+            [36m</div>[31m
+          [36m</div>[31m
+        [36m</div>[31m
+        [36m<div[31m
+          [33mclass[31m=[32m"overflow-y-auto font-primary space-y-4"[31m
+        [36m>[31m
+          [36m<div[31m
+            [33manimate[31m=[32m"[object Object]"[31m
+            [33mclass[31m=[32m"bg-white"[31m
+            [33minitial[31m=[32m"[object Object]"[31m
+            [33mtransition[31m=[32m"[object Object]"[31m
+          [36m>[31m
+            [36m<div>[31m
+              [36m<div[31m
+                [33mclass[31m=[32m"min-w-full text-sm font-primary overflow-y-scroll mb-4"[31m
+                [33mdata-testid[31m=[32m"generic-table"[31m
+              [36m>[31m
+                [36m<div>[31m
+                  [0m"First interaction"[0m
+                [36m</div>[31m
+                [36m<div>[31m
+                  [0m"Session started"[0m
+                [36m</div>[31m
+              [36m</div>[31m
+            [36m</div>[31m
+          [36m</div>[31m
+          [36m<div[31m
+            [33manimate[31m=[32m"[object Object]"[31m
+            [33mclass[31m=[32m"bg-white"[31m
+            [33minitial[31m=[32m"[object Object]"[31m
+            [33mtransition[31m=[32m"[object Object]"[31m
+          [36m>[31m
+            [36m<div>[31m
+              [36m<div[31m
+                [33mclass[31m=[32m"flex flex-col border-[0.5px] border-[#C8C5D0] rounded-sm"[31m
+              [36m>[31m
+                [36m<span[31m
+                  [33mclass[31m=[32m"w-full text-typography-900 bg-[#EDE7F680] px-2 py-2 text-base"[31m
+                [36m>[31m
+                  [0mWhat Went Well[0m
+                [36m</span>[31m
+                [36m<ul[31m
+                  [33mclass[31m=[32m"p-4 space-y-2 text-base"[31m
+                [36m>[31m
+                  [36m<li[31m
+                    [33mclass[31m=[32m"flex items-start"[31m
+                  [36m>[31m
+                    [36m<span[31m
+                      [33mclass[31m=[32m"text-typography-900 mr-2"[31m
+                    [36m>[31m
+                      [0m•[0m
+                    [36m</span>[31m
+                    [36m<span[31m
+                      [33mclass[31m=[32m"text-typography-900"[31m
+                    [36m>[31m
+                      [0mGood communication[0m
+                    [36m</span>[31m
+                  [36m</li>[31m
+                  [36m<li[31m
+                    [33mclass[31m=[32m"flex items-start"[31m
+                  [36m>[31m
+                    [36m<span[31m
+                      [33mclass[31m=[32m"text-typography-900 mr-2"[31m
+                    [36m>[31m
+                      [0m•[0m
+                    [36m</span>[31m
+                    [36m<span[31m
+                      [33mclass[31m=[32m"text-typography-900"[31m
+                    [36m>[31m
+                      [0mClear explanations[0m
+                    [36m</span>[31m
+                  [36m</li>[31m
+                [36m</ul>[31m
+              [36m</div>[31m
+            [36m</div>[31m
+          [36m</div>[31m
+          [36m<div[31m
+            [33manimate[31m=[32m"[object Object]"[31m
+            [33mclass[31m=[32m"bg-white"[31m
+            [33minitial[31m=[32m"[object Object]"[31m
+            [33mtransition[31m=[32m"[object Object]"[31m
+          [36m>[31m
+            [36m<div>[31m
+              [36m<div[31m
+                [33mclass[31m=[32m"flex flex-col border-[0.5px] border-[#C8C5D0] rounded-sm"[31m
+              [36m>[31m
+                [36m<span[31m
+                  [33mclass[31m=[32m"w-full text-typography-900 bg-[#EDE7F680] px-2 py-2 text-base"[31m
+                [36m>[31m
+                  [0mImprovement Tips[0m
+                [36m</span>[31m
+                [36m<ul[31m
+                  [33mclass[31m=[32m"p-4 space-y-2 text-base"[31m
+                [36m>[31m
+                  [36m<div[31m
+                    [33mclass[31m=[32m"text-typography-700 font-primary text-center mb-2"[31m
+                  [36m>[31m
+                    [0mNo data found[0m
+                  [36m</div>[31m
+                [36m</ul>[31m
+              [36m</div>[31m
+            [36m</div>[31m
+          [36m</div>[31m
+        [36m</div>[31m
+      [36m</div>[31m
+    [36m</div>[31m
+  [36m</div>[31m
+[36m</body>[31m[39m
+   [32m✓[39m FeedbackSection[2m > [22mData Formatting[2m > [22mshould handle array data for bullet points[32m 2[2mms[22m[39m
+   [32m✓[39m FeedbackSection[2m > [22mData Formatting[2m > [22mshould handle string data for bullet points[32m 1[2mms[22m[39m
+[31m   [31m×[31m FeedbackSection[2m > [22mSection structure[2m > [22mshould render three feedback section headings[39m[32m 2[2mms[22m[39m
+[31m     → Unable to find an element with the text: What went well. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+Ignored nodes: comments, script, style
+[36m<body>[31m
+  [36m<div>[31m
+    [36m<div[31m
+      [33mclass[31m=[32m"flex flex-col gap-6 w-full"[31m
+    [36m>[31m
+      [36m<div[31m
+        [33mclass[31m=[32m"border p-4 shadow-lg rounded-lg flex flex-col gap-4"[31m
+      [36m>[31m
+        [36m<span[31m
+          [33mclass[31m=[32m"text-typography-900 font-primary text-base font-semibold border-b pb-2"[31m
+        [36m>[31m
+          [0mSession Feedback[0m
+        [36m</span>[31m
+        [36m<div>[31m
+          [36m<div[31m
+            [33mclass[31m=[32m"flex items-center gap-5 border-b pb-4"[31m
+          [36m>[31m
+            [36m<div>[31m
+              [36m<img[31m
+                [33malt[31m=[32m"Cover image"[31m
+                [33mclass[31m=[32m"w-[150px] h-[77px] object-cover rounded-sm"[31m
+                [33mdata-testid[31m=[32m"custom-image"[31m
+                [33msrc[31m=[32m""[31m
+              [36m/>[31m
+            [36m</div>[31m
+            [36m<div[31m
+              [33mclass[31m=[32m"flex flex-col gap-1 font-primary"[31m
+            [36m>[31m
+              [36m<span[31m
+                [33mclass[31m=[32m"text-typography-700 text-sm"[31m
+              [36m>[31m
+                [0mID: Test Session[0m
+              [36m</span>[31m
+              [36m<span[31m
+                [33mclass[31m=[32m"text-typography-900 text-lg font-medium flex items-center gap-1"[31m
+              [36m>[31m
+                [0mTest Scenario[0m
+                [36m<div[31m
+                  [33mclass[31m=[32m"text-xs cursor-pointer text-neutral-500 ml-[4px]"[31m
+                [36m>[31m
+                  [36m<svg[31m
+                    [33mfill[31m=[32m"none"[31m
+                    [33mheight[31m=[32m"15"[31m
+                    [33mviewBox[31m=[32m"0 0 15 15"[31m
+                    [33mwidth[31m=[32m"15"[31m
+                    [33mxmlns[31m=[32m"http://www.w3.org/2000/svg"[31m
+                  [36m>[31m
+                    [36m<path[31m
+                      [33md[31m=[32m"M7.29292 11.4167C7.44486 11.4167 7.57292 11.3642 7.67708 11.2592C7.78125 11.1543 7.83333 11.0258 7.83333 10.8738C7.83333 10.7218 7.78083 10.5938 7.67583 10.4896C7.57097 10.3854 7.4425 10.3333 7.29042 10.3333C7.13847 10.3333 7.01042 10.3858 6.90625 10.4908C6.80208 10.5957 6.75 10.7242 6.75 10.8763C6.75 11.0282 6.8025 11.1562 6.9075 11.2604C7.01236 11.3646 7.14083 11.4167 7.29292 11.4167ZM7.25354 14.5C6.25118 14.5 5.30861 14.3098 4.42583 13.9294C3.54306 13.549 2.77521 13.0326 2.12229 12.3804C1.46924 11.7282 0.952292 10.9613 0.571458 10.0798C0.190486 9.19812 0 8.25604 0 7.25354C0 6.25118 0.190208 5.30861 0.570625 4.42583C0.951042 3.54306 1.46736 2.77521 2.11958 2.12229C2.77181 1.46924 3.53868 0.952292 4.42021 0.571458C5.30188 0.190486 6.24396 0 7.24646 0C8.24882 0 9.19139 0.190209 10.0742 0.570625C10.9569 0.951042 11.7248 1.46736 12.3777 2.11958C13.0308 2.77181 13.5477 3.53868 13.9285 4.42021C14.3095 5.30188 14.5 6.24396 14.5 7.24646C14.5 8.24882 14.3098 9.19139 13.9294 10.0742C13.549 10.9569 13.0326 11.7248 12.3804 12.3777C11.7282 13.0308 10.9613 13.5477 10.0798 13.9285C9.19813 14.3095 8.25604 14.5 7.25354 14.5ZM7.25 13.9167C9.11111 13.9167 10.6875 13.2708 11.9792 11.9792C13.2708 10.6875 13.9167 9.11111 13.9167 7.25C13.9167 5.38889 13.2708 3.8125 11.9792 2.52083C10.6875 1.22917 9.11111 0.583333 7.25 0.583333C5.38889 0.583333 3.8125 1.22917 2.52083 2.52083C1.22917 3.8125 0.583333 5.38889 0.583333 7.25C0.583333 9.11111 1.22917 10.6875 2.52083 11.9792C3.8125 13.2708 5.38889 13.9167 7.25 13.9167ZM7.29208 3.70833C7.73625 3.70833 8.11806 3.84521 8.4375 4.11896C8.75694 4.39285 8.91667 4.73514 8.91667 5.14583C8.91667 5.45139 8.83333 5.72917 8.66667 5.97917C8.5 6.22917 8.30556 6.45833 8.08333 6.66667C7.80792 6.92 7.56549 7.19861 7.35604 7.5025C7.14646 7.80639 7.02083 8.13889 6.97917 8.5C6.96528 8.58333 6.9875 8.65278 7.04583 8.70833C7.10417 8.76389 7.17222 8.79167 7.25 8.79167C7.33333 8.79167 7.40278 8.76389 7.45833 8.70833C7.51389 8.65278 7.54861 8.59028 7.5625 8.52083C7.61806 8.24306 7.7257 7.99653 7.88542 7.78125C8.04514 7.56597 8.22188 7.36264 8.41563 7.17125C8.6941 6.89042 8.94444 6.58451 9.16667 6.25354C9.38889 5.92243 9.5 5.55319 9.5 5.14583C9.5 4.5625 9.28472 4.07986 8.85417 3.69792C8.42361 3.31597 7.91667 3.125 7.33333 3.125C6.88889 3.125 6.47917 3.23264 6.10417 3.44792C5.72917 3.66319 5.42361 3.95139 5.1875 4.3125C5.14583 4.38194 5.1325 4.45236 5.1475 4.52375C5.16264 4.59528 5.20326 4.64951 5.26938 4.68646C5.35368 4.72882 5.4375 4.73611 5.52083 4.70833C5.60417 4.68056 5.68056 4.63194 5.75 4.5625C5.94444 4.32639 6.17014 4.125 6.42708 3.95833C6.68403 3.79167 6.97236 3.70833 7.29208 3.70833Z"[31m
+                      [33mfill[31m=[32m"#757575"[31m
+                    [36m/>[31m
+                  [36m</svg>[31m
+                [36m</div>[31m
+              [36m</span>[31m
+              [36m<span[31m
+                [33mclass[31m=[32m"text-typography-700 text-sm flex items-center gap-3"[31m
+              [36m>[31m
+                [36m<span>[31m
+                  [0mJan 01, 2024 03:30 PM[0m
+                [36m</span>[31m
+                [36m<span[31m
+                  [33mclass[31m=[32m"text-typography-400 text-lg"[31m
+                [36m>[31m
+                  [0m•[0m
+                [36m</span>[31m
+                [36m<span>[31m
+                  [0m1 sec[0m
+                [36m</span>[31m
+              [36m</span>[31m
+            [36m</div>[31m
+          [36m</div>[31m
+        [36m</div>[31m
+        [36m<div[31m
+          [33mclass[31m=[32m"overflow-y-auto font-primary space-y-4"[31m
+        [36m>[31m
+          [36m<div[31m
+            [33manimate[31m=[32m"[object Object]"[31m
+            [33mclass[31m=[32m"bg-white"[31m
+            [33minitial[31m=[32m"[object Object]"[31m
+            [33mtransition[31m=[32m"[object Object]"[31m
+          [36m>[31m
+            [36m<div>[31m
+              [36m<div[31m
+                [33mclass[31m=[32m"min-w-full text-sm font-primary overflow-y-scroll mb-4"[31m
+                [33mdata-testid[31m=[32m"generic-table"[31m
+              [36m>[31m
+                [36m<div>[31m
+                  [0m"First interaction"[0m
+                [36m</div>[31m
+                [36m<div>[31m
+                  [0m"Session started"[0m
+                [36m</div>[31m
+              [36m</div>[31m
+            [36m</div>[31m
+          [36m</div>[31m
+          [36m<div[31m
+            [33manimate[31m=[32m"[object Object]"[31m
+            [33mclass[31m=[32m"bg-white"[31m
+            [33minitial[31m=[32m"[object Object]"[31m
+            [33mtransition[31m=[32m"[object Object]"[31m
+          [36m>[31m
+            [36m<div>[31m
+              [36m<div[31m
+                [33mclass[31m=[32m"flex flex-col border-[0.5px] border-[#C8C5D0] rounded-sm"[31m
+              [36m>[31m
+                [36m<span[31m
+                  [33mclass[31m=[32m"w-full text-typography-900 bg-[#EDE7F680] px-2 py-2 text-base"[31m
+                [36m>[31m
+                  [0mWhat Went Well[0m
+                [36m</span>[31m
+                [36m<ul[31m
+                  [33mclass[31m=[32m"p-4 space-y-2 text-base"[31m
+                [36m>[31m
+                  [36m<li[31m
+                    [33mclass[31m=[32m"flex items-start"[31m
+                  [36m>[31m
+                    [36m<span[31m
+                      [33mclass[31m=[32m"text-typography-900 mr-2"[31m
+                    [36m>[31m
+                      [0m•[0m
+                    [36m</span>[31m
+                    [36m<span[31m
+                      [33mclass[31m=[32m"text-typography-900"[31m
+                    [36m>[31m
+                      [0mGood communication[0m
+                    [36m</span>[31m
+                  [36m</li>[31m
+                  [36m<li[31m
+                    [33mclass[31m=[32m"flex items-start"[31m
+                  [36m>[31m
+                    [36m<span[31m
+                      [33mclass[31m=[32m"text-typography-900 mr-2"[31m
+                    [36m>[31m
+                      [0m•[0m
+                    [36m</span>[31m
+                    [36m<span[31m
+                      [33mclass[31m=[32m"text-typography-900"[31m
+                    [36m>[31m
+                      [0mClear explanations[0m
+                    [36m</span>[31m
+                  [36m</li>[31m
+                [36m</ul>[31m
+              [36m</div>[31m
+            [36m</div>[31m
+          [36m</div>[31m
+          [36m<div[31m
+            [33manimate[31m=[32m"[object Object]"[31m
+            [33mclass[31m=[32m"bg-white"[31m
+            [33minitial[31m=[32m"[object Object]"[31m
+            [33mtransition[31m=[32m"[object Object]"[31m
+          [36m>[31m
+            [36m<div>[31m
+              [36m<div[31m
+                [33mclass[31m=[32m"flex flex-col border-[0.5px] border-[#C8C5D0] rounded-sm"[31m
+              [36m>[31m
+                [36m<span[31m
+                  [33mclass[31m=[32m"w-full text-typography-900 bg-[#EDE7F680] px-2 py-2 text-base"[31m
+                [36m>[31m
+                  [0mImprovement Tips[0m
+                [36m</span>[31m
+                [36m<ul[31m
+                  [33mclass[31m=[32m"p-4 space-y-2 text-base"[31m
+                [36m>[31m
+                  [36m<li[31m
+                    [33mclass[31m=[32m"flex items-start"[31m
+                  [36m>[31m
+                    [36m<span[31m
+                      [33mclass[31m=[32m"text-typography-900 mr-2"[31m
+                    [36m>[31m
+                      [0m•[0m
+                    [36m</span>[31m
+                    [36m<span[31m
+                      [33mclass[31m=[32m"text-typography-900"[31m
+                    [36m>[31m
+                      [0mMore practice needed[0m
+                    [36m</span>[31m
+                  [36m</li>[31m
+                  [36m<li[31m
+                    [33mclass[31m=[32m"flex items-start"[31m
+                  [36m>[31m
+                    [36m<span[31m
+                      [33mclass[31m=[32m"text-typography-900 mr-2"[31m
+                    [36m>[31m
+                      [0m•[0m
+                    [36m</span>[31m
+                    [36m<span[31m
+                      [33mclass[31m=[32m"text-typography-900"[31m
+                    [36m>[31m
+                      [0mFocus on timing[0m
+                    [36m</span>[31m
+                  [36m</li>[31m
+                [36m</ul>[31m
+              [36m</div>[31m
+            [36m</div>[31m
+          [36m</div>[31m
+        [36m</div>[31m
+      [36m</div>[31m
+    [36m</div>[31m
+  [36m</div>[31m
+[36m</body>[31m[39m
+   [32m✓[39m FeedbackSection[2m > [22mEdge Cases[2m > [22mshould handle missing demographic data[32m 1[2mms[22m[39m
+[31m   [31m×[31m FeedbackSection[2m > [22mEdge Cases[2m > [22mshould handle null/undefined values gracefully[39m[32m 2[2mms[22m[39m
+[31m     → Unable to find an element with the text: What went well. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+Ignored nodes: comments, script, style
+[36m<body>[31m
+  [36m<div>[31m
+    [36m<div[31m
+      [33mclass[31m=[32m"flex flex-col gap-6 w-full"[31m
+    [36m>[31m
+      [36m<div[31m
+        [33mclass[31m=[32m"border p-4 shadow-lg rounded-lg flex flex-col gap-4"[31m
+      [36m>[31m
+        [36m<span[31m
+          [33mclass[31m=[32m"text-typography-900 font-primary text-base font-semibold border-b pb-2"[31m
+        [36m>[31m
+          [0mSession Feedback[0m
+        [36m</span>[31m
+        [36m<div>[31m
+          [36m<div[31m
+            [33mclass[31m=[32m"flex items-center gap-5 border-b pb-4"[31m
+          [36m>[31m
+            [36m<div>[31m
+              [36m<img[31m
+                [33malt[31m=[32m"Cover image"[31m
+                [33mclass[31m=[32m"w-[150px] h-[77px] object-cover rounded-sm"[31m
+                [33mdata-testid[31m=[32m"custom-image"[31m
+                [33msrc[31m=[32m""[31m
+              [36m/>[31m
+            [36m</div>[31m
+            [36m<div[31m
+              [33mclass[31m=[32m"flex flex-col gap-1 font-primary"[31m
+            [36m>[31m
+              [36m<span[31m
+                [33mclass[31m=[32m"text-typography-700 text-sm"[31m
+              [36m>[31m
+                [0mID: Test Session[0m
+              [36m</span>[31m
+              [36m<span[31m
+                [33mclass[31m=[32m"text-typography-900 text-lg font-medium flex items-center gap-1"[31m
+              [36m>[31m
+                [0mTest Scenario[0m
+                [36m<div[31m
+                  [33mclass[31m=[32m"text-xs cursor-pointer text-neutral-500 ml-[4px]"[31m
+                [36m>[31m
+                  [36m<svg[31m
+                    [33mfill[31m=[32m"none"[31m
+                    [33mheight[31m=[32m"15"[31m
+                    [33mviewBox[31m=[32m"0 0 15 15"[31m
+                    [33mwidth[31m=[32m"15"[31m
+                    [33mxmlns[31m=[32m"http://www.w3.org/2000/svg"[31m
+                  [36m>[31m
+                    [36m<path[31m
+                      [33md[31m=[32m"M7.29292 11.4167C7.44486 11.4167 7.57292 11.3642 7.67708 11.2592C7.78125 11.1543 7.83333 11.0258 7.83333 10.8738C7.83333 10.7218 7.78083 10.5938 7.67583 10.4896C7.57097 10.3854 7.4425 10.3333 7.29042 10.3333C7.13847 10.3333 7.01042 10.3858 6.90625 10.4908C6.80208 10.5957 6.75 10.7242 6.75 10.8763C6.75 11.0282 6.8025 11.1562 6.9075 11.2604C7.01236 11.3646 7.14083 11.4167 7.29292 11.4167ZM7.25354 14.5C6.25118 14.5 5.30861 14.3098 4.42583 13.9294C3.54306 13.549 2.77521 13.0326 2.12229 12.3804C1.46924 11.7282 0.952292 10.9613 0.571458 10.0798C0.190486 9.19812 0 8.25604 0 7.25354C0 6.25118 0.190208 5.30861 0.570625 4.42583C0.951042 3.54306 1.46736 2.77521 2.11958 2.12229C2.77181 1.46924 3.53868 0.952292 4.42021 0.571458C5.30188 0.190486 6.24396 0 7.24646 0C8.24882 0 9.19139 0.190209 10.0742 0.570625C10.9569 0.951042 11.7248 1.46736 12.3777 2.11958C13.0308 2.77181 13.5477 3.53868 13.9285 4.42021C14.3095 5.30188 14.5 6.24396 14.5 7.24646C14.5 8.24882 14.3098 9.19139 13.9294 10.0742C13.549 10.9569 13.0326 11.7248 12.3804 12.3777C11.7282 13.0308 10.9613 13.5477 10.0798 13.9285C9.19813 14.3095 8.25604 14.5 7.25354 14.5ZM7.25 13.9167C9.11111 13.9167 10.6875 13.2708 11.9792 11.9792C13.2708 10.6875 13.9167 9.11111 13.9167 7.25C13.9167 5.38889 13.2708 3.8125 11.9792 2.52083C10.6875 1.22917 9.11111 0.583333 7.25 0.583333C5.38889 0.583333 3.8125 1.22917 2.52083 2.52083C1.22917 3.8125 0.583333 5.38889 0.583333 7.25C0.583333 9.11111 1.22917 10.6875 2.52083 11.9792C3.8125 13.2708 5.38889 13.9167 7.25 13.9167ZM7.29208 3.70833C7.73625 3.70833 8.11806 3.84521 8.4375 4.11896C8.75694 4.39285 8.91667 4.73514 8.91667 5.14583C8.91667 5.45139 8.83333 5.72917 8.66667 5.97917C8.5 6.22917 8.30556 6.45833 8.08333 6.66667C7.80792 6.92 7.56549 7.19861 7.35604 7.5025C7.14646 7.80639 7.02083 8.13889 6.97917 8.5C6.96528 8.58333 6.9875 8.65278 7.04583 8.70833C7.10417 8.76389 7.17222 8.79167 7.25 8.79167C7.33333 8.79167 7.40278 8.76389 7.45833 8.70833C7.51389 8.65278 7.54861 8.59028 7.5625 8.52083C7.61806 8.24306 7.7257 7.99653 7.88542 7.78125C8.04514 7.56597 8.22188 7.36264 8.41563 7.17125C8.6941 6.89042 8.94444 6.58451 9.16667 6.25354C9.38889 5.92243 9.5 5.55319 9.5 5.14583C9.5 4.5625 9.28472 4.07986 8.85417 3.69792C8.42361 3.31597 7.91667 3.125 7.33333 3.125C6.88889 3.125 6.47917 3.23264 6.10417 3.44792C5.72917 3.66319 5.42361 3.95139 5.1875 4.3125C5.14583 4.38194 5.1325 4.45236 5.1475 4.52375C5.16264 4.59528 5.20326 4.64951 5.26938 4.68646C5.35368 4.72882 5.4375 4.73611 5.52083 4.70833C5.60417 4.68056 5.68056 4.63194 5.75 4.5625C5.94444 4.32639 6.17014 4.125 6.42708 3.95833C6.68403 3.79167 6.97236 3.70833 7.29208 3.70833Z"[31m
+                      [33mfill[31m=[32m"#757575"[31m
+                    [36m/>[31m
+                  [36m</svg>[31m
+                [36m</div>[31m
+              [36m</span>[31m
+              [36m<span[31m
+                [33mclass[31m=[32m"text-typography-700 text-sm flex items-center gap-3"[31m
+              [36m>[31m
+                [36m<span>[31m
+                  [0mJan 01, 2024 03:30 PM[0m
+                [36m</span>[31m
+                [36m<span[31m
+                  [33mclass[31m=[32m"text-typography-400 text-lg"[31m
+                [36m>[31m
+                  [0m•[0m
+                [36m</span>[31m
+                [36m<span>[31m
+                  [0m1 sec[0m
+                [36m</span>[31m
+              [36m</span>[31m
+            [36m</div>[31m
+          [36m</div>[31m
+        [36m</div>[31m
+        [36m<div[31m
+          [33mclass[31m=[32m"overflow-y-auto font-primary space-y-4"[31m
+        [36m>[31m
+          [36m<div[31m
+            [33manimate[31m=[32m"[object Object]"[31m
+            [33mclass[31m=[32m"bg-white"[31m
+            [33minitial[31m=[32m"[object Object]"[31m
+            [33mtransition[31m=[32m"[object Object]"[31m
+          [36m>[31m
+            [36m<div>[31m
+              [36m<div[31m
+                [33mclass[31m=[32m"min-w-full text-sm font-primary overflow-y-scroll mb-4"[31m
+                [33mdata-testid[31m=[32m"generic-table"[31m
+              [36m>[31m
+                [36m<div>[31m
+                  [0m"First interaction"[0m
+                [36m</div>[31m
+                [36m<div>[31m
+                  [0m"Session started"[0m
+                [36m</div>[31m
+              [36m</div>[31m
+            [36m</div>[31m
+          [36m</div>[31m
+          [36m<div[31m
+            [33manimate[31m=[32m"[object Object]"[31m
+            [33mclass[31m=[32m"bg-white"[31m
+            [33minitial[31m=[32m"[object Object]"[31m
+            [33mtransition[31m=[32m"[object Object]"[31m
+          [36m>[31m
+            [36m<div>[31m
+              [36m<div[31m
+                [33mclass[31m=[32m"flex flex-col border-[0.5px] border-[#C8C5D0] rounded-sm"[31m
+              [36m>[31m
+                [36m<span[31m
+                  [33mclass[31m=[32m"w-full text-typography-900 bg-[#EDE7F680] px-2 py-2 text-base"[31m
+                [36m>[31m
+                  [0mWhat Went Well[0m
+                [36m</span>[31m
+                [36m<ul[31m
+                  [33mclass[31m=[32m"p-4 space-y-2 text-base"[31m
+                [36m>[31m
+                  [36m<div[31m
+                    [33mclass[31m=[32m"text-typography-700 font-primary text-center mb-2"[31m
+                  [36m>[31m
+                    [0mNo data found[0m
+                  [36m</div>[31m
+                [36m</ul>[31m
+              [36m</div>[31m
+            [36m</div>[31m
+          [36m</div>[31m
+          [36m<div[31m
+            [33manimate[31m=[32m"[object Object]"[31m
+            [33mclass[31m=[32m"bg-white"[31m
+            [33minitial[31m=[32m"[object Object]"[31m
+            [33mtransition[31m=[32m"[object Object]"[31m
+          [36m>[31m
+            [36m<div>[31m
+              [36m<div[31m
+                [33mclass[31m=[32m"flex flex-col border-[0.5px] border-[#C8C5D0] rounded-sm"[31m
+              [36m>[31m
+                [36m<span[31m
+                  [33mclass[31m=[32m"w-full text-typography-900 bg-[#EDE7F680] px-2 py-2 text-base"[31m
+                [36m>[31m
+                  [0mImprovement Tips[0m
+                [36m</span>[31m
+                [36m<ul[31m
+                  [33mclass[31m=[32m"p-4 space-y-2 text-base"[31m
+                [36m>[31m
+                  [36m<div[31m
+                    [33mclass[31m=[32m"text-typography-700 font-primary text-center mb-2"[31m
+                  [36m>[31m
+                    [0mNo data found[0m
+                  [36m</div>[31m
+                [36m</ul>[31m
+              [36m</div>[31m
+            [36m</div>[31m
+          [36m</div>[31m
+        [36m</div>[31m
+      [36m</div>[31m
+    [36m</div>[31m
+  [36m</div>[31m
+[36m</body>[31m[39m
+[31m⎯⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Tests 5 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+[41m[1m FAIL [22m[49m src/containers/simulation-summary-state/components/__tests__/FeedbackSection.test.tsx[2m > [22mFeedbackSection[2m > [22mBasic Rendering[2m > [22mshould render all feedback sections
+[31m[1mTestingLibraryElementError[22m[39m: Unable to find an element with the text: What went well. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"flex flex-col gap-6 w-full"[39m
+    [36m>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"border p-4 shadow-lg rounded-lg flex flex-col gap-4"[39m
+      [36m>[39m
+        [36m<span[39m
+          [33mclass[39m=[32m"text-typography-900 font-primary text-base font-semibold border-b pb-2"[39m
+        [36m>[39m
+          [0mSession Feedback[0m
+        [36m</span>[39m
+        [36m<div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"flex items-center gap-5 border-b pb-4"[39m
+          [36m>[39m
+            [36m<div>[39m
+              [36m<img[39m
+                [33malt[39m=[32m"Cover image"[39m
+                [33mclass[39m=[32m"w-[150px] h-[77px] object-cover rounded-sm"[39m
+                [33mdata-testid[39m=[32m"custom-image"[39m
+                [33msrc[39m=[32m""[39m
+              [36m/>[39m
+            [36m</div>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"flex flex-col gap-1 font-primary"[39m
+            [36m>[39m
+              [36m<span[39m
+                [33mclass[39m=[32m"text-typography-700 text-sm"[39m
+              [36m>[39m
+                [0mID: Test Session[0m
+              [36m</span>[39m
+              [36m<span[39m
+                [33mclass[39m=[32m"text-typography-900 text-lg font-medium flex items-center gap-1"[39m
+              [36m>[39m
+                [0mTest Scenario[0m
+                [36m<div[39m
+                  [33mclass[39m=[32m"text-xs cursor-pointer text-neutral-500 ml-[4px]"[39m
+                [36m>[39m
+                  [36m<svg[39m
+                    [33mfill[39m=[32m"none"[39m
+                    [33mheight[39m=[32m"15"[39m
+                    [33mviewBox[39m=[32m"0 0 15 15"[39m
+                    [33mwidth[39m=[32m"15"[39m
+                    [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+                  [36m>[39m
+                    [36m<path[39m
+                      [33md[39m=[32m"M7.29292 11.4167C7.44486 11.4167 7.57292 11.3642 7.67708 11.2592C7.78125 11.1543 7.83333 11.0258 7.83333 10.8738C7.83333 10.7218 7.78083 10.5938 7.67583 10.4896C7.57097 10.3854 7.4425 10.3333 7.29042 10.3333C7.13847 10.3333 7.01042 10.3858 6.90625 10.4908C6.80208 10.5957 6.75 10.7242 6.75 10.8763C6.75 11.0282 6.8025 11.1562 6.9075 11.2604C7.01236 11.3646 7.14083 11.4167 7.29292 11.4167ZM7.25354 14.5C6.25118 14.5 5.30861 14.3098 4.42583 13.9294C3.54306 13.549 2.77521 13.0326 2.12229 12.3804C1.46924 11.7282 0.952292 10.9613 0.571458 10.0798C0.190486 9.19812 0 8.25604 0 7.25354C0 6.25118 0.190208 5.30861 0.570625 4.42583C0.951042 3.54306 1.46736 2.77521 2.11958 2.12229C2.77181 1.46924 3.53868 0.952292 4.42021 0.571458C5.30188 0.190486 6.24396 0 7.24646 0C8.24882 0 9.19139 0.190209 10.0742 0.570625C10.9569 0.951042 11.7248 1.46736 12.3777 2.11958C13.0308 2.77181 13.5477 3.53868 13.9285 4.42021C14.3095 5.30188 14.5 6.24396 14.5 7.24646C14.5 8.24882 14.3098 9.19139 13.9294 10.0742C13.549 10.9569 13.0326 11.7248 12.3804 12.3777C11.7282 13.0308 10.9613 13.5477 10.0798 13.9285C9.19813 14.3095 8.25604 14.5 7.25354 14.5ZM7.25 13.9167C9.11111 13.9167 10.6875 13.2708 11.9792 11.9792C13.2708 10.6875 13.9167 9.11111 13.9167 7.25C13.9167 5.38889 13.2708 3.8125 11.9792 2.52083C10.6875 1.22917 9.11111 0.583333 7.25 0.583333C5.38889 0.583333 3.8125 1.22917 2.52083 2.52083C1.22917 3.8125 0.583333 5.38889 0.583333 7.25C0.583333 9.11111 1.22917 10.6875 2.52083 11.9792C3.8125 13.2708 5.38889 13.9167 7.25 13.9167ZM7.29208 3.70833C7.73625 3.70833 8.11806 3.84521 8.4375 4.11896C8.75694 4.39285 8.91667 4.73514 8.91667 5.14583C8.91667 5.45139 8.83333 5.72917 8.66667 5.97917C8.5 6.22917 8.30556 6.45833 8.08333 6.66667C7.80792 6.92 7.56549 7.19861 7.35604 7.5025C7.14646 7.80639 7.02083 8.13889 6.97917 8.5C6.96528 8.58333 6.9875 8.65278 7.04583 8.70833C7.10417 8.76389 7.17222 8.79167 7.25 8.79167C7.33333 8.79167 7.40278 8.76389 7.45833 8.70833C7.51389 8.65278 7.54861 8.59028 7.5625 8.52083C7.61806 8.24306 7.7257 7.99653 7.88542 7.78125C8.04514 7.56597 8.22188 7.36264 8.41563 7.17125C8.6941 6.89042 8.94444 6.58451 9.16667 6.25354C9.38889 5.92243 9.5 5.55319 9.5 5.14583C9.5 4.5625 9.28472 4.07986 8.85417 3.69792C8.42361 3.31597 7.91667 3.125 7.33333 3.125C6.88889 3.125 6.47917 3.23264 6.10417 3.44792C5.72917 3.66319 5.42361 3.95139 5.1875 4.3125C5.14583 4.38194 5.1325 4.45236 5.1475 4.52375C5.16264 4.59528 5.20326 4.64951 5.26938 4.68646C5.35368 4.72882 5.4375 4.73611 5.52083 4.70833C5.60417 4.68056 5.68056 4.63194 5.75 4.5625C5.94444 4.32639 6.17014 4.125 6.42708 3.95833C6.68403 3.79167 6.97236 3.70833 7.29208 3.70833Z"[39m
+                      [33mfill[39m=[32m"#757575"[39m
+                    [36m/>[39m
+                  [36m</svg>[39m
+                [36m</div>[39m
+              [36m</span>[39m
+              [36m<span[39m
+                [33mclass[39m=[32m"text-typography-700 text-sm flex items-center gap-3"[39m
+              [36m>[39m
+                [36m<span>[39m
+                  [0mJan 01, 2024 03:30 PM[0m
+                [36m</span>[39m
+                [36m<span[39m
+                  [33mclass[39m=[32m"text-typography-400 text-lg"[39m
+                [36m>[39m
+                  [0m•[0m
+                [36m</span>[39m
+                [36m<span>[39m
+                  [0m1 sec[0m
+                [36m</span>[39m
+              [36m</span>[39m
+            [36m</div>[39m
+          [36m</div>[39m
+        [36m</div>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"overflow-y-auto font-primary space-y-4"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33manimate[39m=[32m"[object Object]"[39m
+            [33mclass[39m=[32m"bg-white"[39m
+            [33minitial[39m=[32m"[object Object]"[39m
+            [33mtransition[39m=[32m"[object Object]"[39m
+          [36m>[39m
+            [36m<div>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"min-w-full text-sm font-primary overflow-y-scroll mb-4"[39m
+                [33mdata-testid[39m=[32m"generic-table"[39m
+              [36m>[39m
+                [36m<div>[39m
+                  [0m"First interaction"[0m
+                [36m</div>[39m
+                [36m<div>[39m
+                  [0m"Session started"[0m
+                [36m</div>[39m
+              [36m</div>[39m
+            [36m</div>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33manimate[39m=[32m"[object Object]"[39m
+            [33mclass[39m=[32m"bg-white"[39m
+            [33minitial[39m=[32m"[object Object]"[39m
+            [33mtransition[39m=[32m"[object Object]"[39m
+          [36m>[39m
+            [36m<div>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"flex flex-col border-[0.5px] border-[#C8C5D0] rounded-sm"[39m
+              [36m>[39m
+                [36m<span[39m
+                  [33mclass[39m=[32m"w-full text-typography-900 bg-[#EDE7F680] px-2 py-2 text-base"[39m
+                [36m>[39m
+                  [0mWhat Went Well[0m
+                [36m</span>[39m
+                [36m<ul[39m
+                  [33mclass[39m=[32m"p-4 space-y-2 text-base"[39m
+                [36m>[39m
+                  [36m<li[39m
+                    [33mclass[39m=[32m"flex items-start"[39m
+                  [36m>[39m
+                    [36m<span[39m
+                      [33mclass[39m=[32m"text-typography-900 mr-2"[39m
+                    [36m>[39m
+                      [0m•[0m
+                    [36m</span>[39m
+                    [36m<span[39m
+                      [33mclass[39m=[32m"text-typography-900"[39m
+                    [36m>[39m
+                      [0mGood communication[0m
+                    [36m</span>[39m
+                  [36m</li>[39m
+                  [36m<li[39m
+                    [33mclass[39m=[32m"flex items-start"[39m
+                  [36m>[39m
+                    [36m<span[39m
+                      [33mclass[39m=[32m"text-typography-900 mr-2"[39m
+                    [36m>[39m
+                      [0m•[0m
+                    [36m</span>[39m
+                    [36m<span[39m
+                      [33mclass[39m=[32m"text-typography-900"[39m
+                    [36m>[39m
+                      [0mClear explanations[0m
+                    [36m</span>[39m
+                  [36m</li>[39m
+                [36m</ul>[39m
+              [36m</div>[39m
+            [36m</div>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33manimate[39m=[32m"[object Object]"[39m
+            [33mclass[39m=[32m"bg-white"[39m
+            [33minitial[39m=[32m"[object Object]"[39m
+            [33mtransition[39m=[32m"[object Object]"[39m
+          [36m>[39m
+            [36m<div>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"flex flex-col border-[0.5px] border-[#C8C5D0] rounded-sm"[39m
+              [36m>[39m
+                [36m<span[39m
+                  [33mclass[39m=[32m"w-full text-typography-900 bg-[#EDE7F680] px-2 py-2 text-base"[39m
+                [36m>[39m
+                  [0mImprovement Tips[0m
+                [36m</span>[39m
+                [36m<ul[39m
+                  [33mclass[39m=[32m"p-4 space-y-2 text-base"[39m
+                [36m>[39m
+                  [36m<li[39m
+                    [33mclass[39m=[32m"flex items-start"[39m
+                  [36m>[39m
+                    [36m<span[39m
+                      [33mclass[39m=[32m"text-typography-900 mr-2"[39m
+                    [36m>[39m
+                      [0m•[0m
+                    [36m</span>[39m
+                    [36m<span[39m
+                      [33mclass[39m=[32m"text-typography-900"[39m
+                    [36m>[39m
+                      [0mMore practice needed[0m
+                    [36m</span>[39m
+                  [36m</li>[39m
+                  [36m<li[39m
+                    [33mclass[39m=[32m"flex items-start"[39m
+                  [36m>[39m
+                    [36m<span[39m
+                      [33mclass[39m=[32m"text-typography-900 mr-2"[39m
+                    [36m>[39m
+                      [0m•[0m
+                    [36m</span>[39m
+                    [36m<span[39m
+                      [33mclass[39m=[32m"text-typography-900"[39m
+                    [36m>[39m
+                      [0mFocus on timing[0m
+                    [36m</span>[39m
+                  [36m</li>[39m
+                [36m</ul>[39m
+              [36m</div>[39m
+            [36m</div>[39m
+          [36m</div>[39m
+        [36m</div>[39m
+      [36m</div>[39m
+    [36m</div>[39m
+  [36m</div>[39m
+[36m</body>[39m
+[90m [2m❯[22m Object.getElementError ../../node_modules/@testing-library/react/node_modules/@testing-library/dom/dist/config.js:[2m37:19[22m[39m
+[90m [2m❯[22m ../../node_modules/@testing-library/react/node_modules/@testing-library/dom/dist/query-helpers.js:[2m76:38[22m[39m
+[90m [2m❯[22m ../../node_modules/@testing-library/react/node_modules/@testing-library/dom/dist/query-helpers.js:[2m52:17[22m[39m
+[90m [2m❯[22m ../../node_modules/@testing-library/react/node_modules/@testing-library/dom/dist/query-helpers.js:[2m95:19[22m[39m
+[36m [2m❯[22m src/containers/simulation-summary-state/components/__tests__/FeedbackSection.test.tsx:[2m187:21[22m[39m
+    [90m185| [39m
+    [90m186| [39m      [34mexpect[39m(screen[33m.[39m[34mgetByTestId[39m([32m"generic-table"[39m))[33m.[39m[34mtoBeInTheDocument[39m()[33m;[39m
+    [90m187| [39m      [34mexpect[39m(screen[33m.[39m[34mgetByText[39m([32m"What went well"[39m))[33m.[39m[34mtoBeInTheDocument[39m()[33m;[39m
+    [90m   | [39m                    [31m^[39m
+    [90m188| [39m      [34mexpect[39m(screen[33m.[39m[34mgetByText[39m([32m"Improvement tips"[39m))[33m.[39m[34mtoBeInTheDocument[39m()[33m;[39m
+    [90m189| [39m    })[33m;[39m
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/5]⎯[22m[39m
+[41m[1m FAIL [22m[49m src/containers/simulation-summary-state/components/__tests__/FeedbackSection.test.tsx[2m > [22mFeedbackSection[2m > [22mEmpty Data Handling[2m > [22mshould show empty list when no positives
+[31m[1mTestingLibraryElementError[22m[39m: Unable to find an element with the text: What went well. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"flex flex-col gap-6 w-full"[39m
+    [36m>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"border p-4 shadow-lg rounded-lg flex flex-col gap-4"[39m
+      [36m>[39m
+        [36m<span[39m
+          [33mclass[39m=[32m"text-typography-900 font-primary text-base font-semibold border-b pb-2"[39m
+        [36m>[39m
+          [0mSession Feedback[0m
+        [36m</span>[39m
+        [36m<div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"flex items-center gap-5 border-b pb-4"[39m
+          [36m>[39m
+            [36m<div>[39m
+              [36m<img[39m
+                [33malt[39m=[32m"Cover image"[39m
+                [33mclass[39m=[32m"w-[150px] h-[77px] object-cover rounded-sm"[39m
+                [33mdata-testid[39m=[32m"custom-image"[39m
+                [33msrc[39m=[32m""[39m
+              [36m/>[39m
+            [36m</div>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"flex flex-col gap-1 font-primary"[39m
+            [36m>[39m
+              [36m<span[39m
+                [33mclass[39m=[32m"text-typography-700 text-sm"[39m
+              [36m>[39m
+                [0mID: Test Session[0m
+              [36m</span>[39m
+              [36m<span[39m
+                [33mclass[39m=[32m"text-typography-900 text-lg font-medium flex items-center gap-1"[39m
+              [36m>[39m
+                [0mTest Scenario[0m
+                [36m<div[39m
+                  [33mclass[39m=[32m"text-xs cursor-pointer text-neutral-500 ml-[4px]"[39m
+                [36m>[39m
+                  [36m<svg[39m
+                    [33mfill[39m=[32m"none"[39m
+                    [33mheight[39m=[32m"15"[39m
+                    [33mviewBox[39m=[32m"0 0 15 15"[39m
+                    [33mwidth[39m=[32m"15"[39m
+                    [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+                  [36m>[39m
+                    [36m<path[39m
+                      [33md[39m=[32m"M7.29292 11.4167C7.44486 11.4167 7.57292 11.3642 7.67708 11.2592C7.78125 11.1543 7.83333 11.0258 7.83333 10.8738C7.83333 10.7218 7.78083 10.5938 7.67583 10.4896C7.57097 10.3854 7.4425 10.3333 7.29042 10.3333C7.13847 10.3333 7.01042 10.3858 6.90625 10.4908C6.80208 10.5957 6.75 10.7242 6.75 10.8763C6.75 11.0282 6.8025 11.1562 6.9075 11.2604C7.01236 11.3646 7.14083 11.4167 7.29292 11.4167ZM7.25354 14.5C6.25118 14.5 5.30861 14.3098 4.42583 13.9294C3.54306 13.549 2.77521 13.0326 2.12229 12.3804C1.46924 11.7282 0.952292 10.9613 0.571458 10.0798C0.190486 9.19812 0 8.25604 0 7.25354C0 6.25118 0.190208 5.30861 0.570625 4.42583C0.951042 3.54306 1.46736 2.77521 2.11958 2.12229C2.77181 1.46924 3.53868 0.952292 4.42021 0.571458C5.30188 0.190486 6.24396 0 7.24646 0C8.24882 0 9.19139 0.190209 10.0742 0.570625C10.9569 0.951042 11.7248 1.46736 12.3777 2.11958C13.0308 2.77181 13.5477 3.53868 13.9285 4.42021C14.3095 5.30188 14.5 6.24396 14.5 7.24646C14.5 8.24882 14.3098 9.19139 13.9294 10.0742C13.549 10.9569 13.0326 11.7248 12.3804 12.3777C11.7282 13.0308 10.9613 13.5477 10.0798 13.9285C9.19813 14.3095 8.25604 14.5 7.25354 14.5ZM7.25 13.9167C9.11111 13.9167 10.6875 13.2708 11.9792 11.9792C13.2708 10.6875 13.9167 9.11111 13.9167 7.25C13.9167 5.38889 13.2708 3.8125 11.9792 2.52083C10.6875 1.22917 9.11111 0.583333 7.25 0.583333C5.38889 0.583333 3.8125 1.22917 2.52083 2.52083C1.22917 3.8125 0.583333 5.38889 0.583333 7.25C0.583333 9.11111 1.22917 10.6875 2.52083 11.9792C3.8125 13.2708 5.38889 13.9167 7.25 13.9167ZM7.29208 3.70833C7.73625 3.70833 8.11806 3.84521 8.4375 4.11896C8.75694 4.39285 8.91667 4.73514 8.91667 5.14583C8.91667 5.45139 8.83333 5.72917 8.66667 5.97917C8.5 6.22917 8.30556 6.45833 8.08333 6.66667C7.80792 6.92 7.56549 7.19861 7.35604 7.5025C7.14646 7.80639 7.02083 8.13889 6.97917 8.5C6.96528 8.58333 6.9875 8.65278 7.04583 8.70833C7.10417 8.76389 7.17222 8.79167 7.25 8.79167C7.33333 8.79167 7.40278 8.76389 7.45833 8.70833C7.51389 8.65278 7.54861 8.59028 7.5625 8.52083C7.61806 8.24306 7.7257 7.99653 7.88542 7.78125C8.04514 7.56597 8.22188 7.36264 8.41563 7.17125C8.6941 6.89042 8.94444 6.58451 9.16667 6.25354C9.38889 5.92243 9.5 5.55319 9.5 5.14583C9.5 4.5625 9.28472 4.07986 8.85417 3.69792C8.42361 3.31597 7.91667 3.125 7.33333 3.125C6.88889 3.125 6.47917 3.23264 6.10417 3.44792C5.72917 3.66319 5.42361 3.95139 5.1875 4.3125C5.14583 4.38194 5.1325 4.45236 5.1475 4.52375C5.16264 4.59528 5.20326 4.64951 5.26938 4.68646C5.35368 4.72882 5.4375 4.73611 5.52083 4.70833C5.60417 4.68056 5.68056 4.63194 5.75 4.5625C5.94444 4.32639 6.17014 4.125 6.42708 3.95833C6.68403 3.79167 6.97236 3.70833 7.29208 3.70833Z"[39m
+                      [33mfill[39m=[32m"#757575"[39m
+                    [36m/>[39m
+                  [36m</svg>[39m
+                [36m</div>[39m
+              [36m</span>[39m
+              [36m<span[39m
+                [33mclass[39m=[32m"text-typography-700 text-sm flex items-center gap-3"[39m
+              [36m>[39m
+                [36m<span>[39m
+                  [0mJan 01, 2024 03:30 PM[0m
+                [36m</span>[39m
+                [36m<span[39m
+                  [33mclass[39m=[32m"text-typography-400 text-lg"[39m
+                [36m>[39m
+                  [0m•[0m
+                [36m</span>[39m
+                [36m<span>[39m
+                  [0m1 sec[0m
+                [36m</span>[39m
+              [36m</span>[39m
+            [36m</div>[39m
+          [36m</div>[39m
+        [36m</div>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"overflow-y-auto font-primary space-y-4"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33manimate[39m=[32m"[object Object]"[39m
+            [33mclass[39m=[32m"bg-white"[39m
+            [33minitial[39m=[32m"[object Object]"[39m
+            [33mtransition[39m=[32m"[object Object]"[39m
+          [36m>[39m
+            [36m<div>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"min-w-full text-sm font-primary overflow-y-scroll mb-4"[39m
+                [33mdata-testid[39m=[32m"generic-table"[39m
+              [36m>[39m
+                [36m<div>[39m
+                  [0m"First interaction"[0m
+                [36m</div>[39m
+                [36m<div>[39m
+                  [0m"Session started"[0m
+                [36m</div>[39m
+              [36m</div>[39m
+            [36m</div>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33manimate[39m=[32m"[object Object]"[39m
+            [33mclass[39m=[32m"bg-white"[39m
+            [33minitial[39m=[32m"[object Object]"[39m
+            [33mtransition[39m=[32m"[object Object]"[39m
+          [36m>[39m
+            [36m<div>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"flex flex-col border-[0.5px] border-[#C8C5D0] rounded-sm"[39m
+              [36m>[39m
+                [36m<span[39m
+                  [33mclass[39m=[32m"w-full text-typography-900 bg-[#EDE7F680] px-2 py-2 text-base"[39m
+                [36m>[39m
+                  [0mWhat Went Well[0m
+                [36m</span>[39m
+                [36m<ul[39m
+                  [33mclass[39m=[32m"p-4 space-y-2 text-base"[39m
+                [36m>[39m
+                  [36m<div[39m
+                    [33mclass[39m=[32m"text-typography-700 font-primary text-center mb-2"[39m
+                  [36m>[39m
+                    [0mNo data found[0m
+                  [36m</div>[39m
+                [36m</ul>[39m
+              [36m</div>[39m
+            [36m</div>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33manimate[39m=[32m"[object Object]"[39m
+            [33mclass[39m=[32m"bg-white"[39m
+            [33minitial[39m=[32m"[object Object]"[39m
+            [33mtransition[39m=[32m"[object Object]"[39m
+          [36m>[39m
+            [36m<div>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"flex flex-col border-[0.5px] border-[#C8C5D0] rounded-sm"[39m
+              [36m>[39m
+                [36m<span[39m
+                  [33mclass[39m=[32m"w-full text-typography-900 bg-[#EDE7F680] px-2 py-2 text-base"[39m
+                [36m>[39m
+                  [0mImprovement Tips[0m
+                [36m</span>[39m
+                [36m<ul[39m
+                  [33mclass[39m=[32m"p-4 space-y-2 text-base"[39m
+                [36m>[39m
+                  [36m<li[39m
+                    [33mclass[39m=[32m"flex items-start"[39m
+                  [36m>[39m
+                    [36m<span[39m
+                      [33mclass[39m=[32m"text-typography-900 mr-2"[39m
+                    [36m>[39m
+                      [0m•[0m
+                    [36m</span>[39m
+                    [36m<span[39m
+                      [33mclass[39m=[32m"text-typography-900"[39m
+                    [36m>[39m
+                      [0mMore practice needed[0m
+                    [36m</span>[39m
+                  [36m</li>[39m
+                  [36m<li[39m
+                    [33mclass[39m=[32m"flex items-start"[39m
+                  [36m>[39m
+                    [36m<span[39m
+                      [33mclass[39m=[32m"text-typography-900 mr-2"[39m
+                    [36m>[39m
+                      [0m•[0m
+                    [36m</span>[39m
+                    [36m<span[39m
+                      [33mclass[39m=[32m"text-typography-900"[39m
+                    [36m>[39m
+                      [0mFocus on timing[0m
+                    [36m</span>[39m
+                  [36m</li>[39m
+                [36m</ul>[39m
+              [36m</div>[39m
+            [36m</div>[39m
+          [36m</div>[39m
+        [36m</div>[39m
+      [36m</div>[39m
+    [36m</div>[39m
+  [36m</div>[39m
+[36m</body>[39m
+[90m [2m❯[22m Object.getElementError ../../node_modules/@testing-library/react/node_modules/@testing-library/dom/dist/config.js:[2m37:19[22m[39m
+[90m [2m❯[22m ../../node_modules/@testing-library/react/node_modules/@testing-library/dom/dist/query-helpers.js:[2m76:38[22m[39m
+[90m [2m❯[22m ../../node_modules/@testing-library/react/node_modules/@testing-library/dom/dist/query-helpers.js:[2m52:17[22m[39m
+[90m [2m❯[22m ../../node_modules/@testing-library/react/node_modules/@testing-library/dom/dist/query-helpers.js:[2m95:19[22m[39m
+[36m [2m❯[22m src/containers/simulation-summary-state/components/__tests__/FeedbackSection.test.tsx:[2m230:21[22m[39m
+    [90m228| [39m      [34mrender[39m([33m<[39m[33mFeedbackSection[39m [33m{[39m[33m...[39memptySummary[33m}[39m [33m/[39m[33m>[39m)[33m;[39m
+    [90m229| [39m
+    [90m230| [39m      [34mexpect[39m(screen[33m.[39m[34mgetByText[39m([32m"What went well"[39m))[33m.[39m[34mtoBeInTheDocument[39m()[33m;[39m
+    [90m   | [39m                    [31m^[39m
+    [90m231| [39m    })[33m;[39m
+    [90m232| [39m
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/5]⎯[22m[39m
+[41m[1m FAIL [22m[49m src/containers/simulation-summary-state/components/__tests__/FeedbackSection.test.tsx[2m > [22mFeedbackSection[2m > [22mEmpty Data Handling[2m > [22mshould show empty list when no improvements
+[31m[1mTestingLibraryElementError[22m[39m: Unable to find an element with the text: Improvement tips. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"flex flex-col gap-6 w-full"[39m
+    [36m>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"border p-4 shadow-lg rounded-lg flex flex-col gap-4"[39m
+      [36m>[39m
+        [36m<span[39m
+          [33mclass[39m=[32m"text-typography-900 font-primary text-base font-semibold border-b pb-2"[39m
+        [36m>[39m
+          [0mSession Feedback[0m
+        [36m</span>[39m
+        [36m<div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"flex items-center gap-5 border-b pb-4"[39m
+          [36m>[39m
+            [36m<div>[39m
+              [36m<img[39m
+                [33malt[39m=[32m"Cover image"[39m
+                [33mclass[39m=[32m"w-[150px] h-[77px] object-cover rounded-sm"[39m
+                [33mdata-testid[39m=[32m"custom-image"[39m
+                [33msrc[39m=[32m""[39m
+              [36m/>[39m
+            [36m</div>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"flex flex-col gap-1 font-primary"[39m
+            [36m>[39m
+              [36m<span[39m
+                [33mclass[39m=[32m"text-typography-700 text-sm"[39m
+              [36m>[39m
+                [0mID: Test Session[0m
+              [36m</span>[39m
+              [36m<span[39m
+                [33mclass[39m=[32m"text-typography-900 text-lg font-medium flex items-center gap-1"[39m
+              [36m>[39m
+                [0mTest Scenario[0m
+                [36m<div[39m
+                  [33mclass[39m=[32m"text-xs cursor-pointer text-neutral-500 ml-[4px]"[39m
+                [36m>[39m
+                  [36m<svg[39m
+                    [33mfill[39m=[32m"none"[39m
+                    [33mheight[39m=[32m"15"[39m
+                    [33mviewBox[39m=[32m"0 0 15 15"[39m
+                    [33mwidth[39m=[32m"15"[39m
+                    [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+                  [36m>[39m
+                    [36m<path[39m
+                      [33md[39m=[32m"M7.29292 11.4167C7.44486 11.4167 7.57292 11.3642 7.67708 11.2592C7.78125 11.1543 7.83333 11.0258 7.83333 10.8738C7.83333 10.7218 7.78083 10.5938 7.67583 10.4896C7.57097 10.3854 7.4425 10.3333 7.29042 10.3333C7.13847 10.3333 7.01042 10.3858 6.90625 10.4908C6.80208 10.5957 6.75 10.7242 6.75 10.8763C6.75 11.0282 6.8025 11.1562 6.9075 11.2604C7.01236 11.3646 7.14083 11.4167 7.29292 11.4167ZM7.25354 14.5C6.25118 14.5 5.30861 14.3098 4.42583 13.9294C3.54306 13.549 2.77521 13.0326 2.12229 12.3804C1.46924 11.7282 0.952292 10.9613 0.571458 10.0798C0.190486 9.19812 0 8.25604 0 7.25354C0 6.25118 0.190208 5.30861 0.570625 4.42583C0.951042 3.54306 1.46736 2.77521 2.11958 2.12229C2.77181 1.46924 3.53868 0.952292 4.42021 0.571458C5.30188 0.190486 6.24396 0 7.24646 0C8.24882 0 9.19139 0.190209 10.0742 0.570625C10.9569 0.951042 11.7248 1.46736 12.3777 2.11958C13.0308 2.77181 13.5477 3.53868 13.9285 4.42021C14.3095 5.30188 14.5 6.24396 14.5 7.24646C14.5 8.24882 14.3098 9.19139 13.9294 10.0742C13.549 10.9569 13.0326 11.7248 12.3804 12.3777C11.7282 13.0308 10.9613 13.5477 10.0798 13.9285C9.19813 14.3095 8.25604 14.5 7.25354 14.5ZM7.25 13.9167C9.11111 13.9167 10.6875 13.2708 11.9792 11.9792C13.2708 10.6875 13.9167 9.11111 13.9167 7.25C13.9167 5.38889 13.2708 3.8125 11.9792 2.52083C10.6875 1.22917 9.11111 0.583333 7.25 0.583333C5.38889 0.583333 3.8125 1.22917 2.52083 2.52083C1.22917 3.8125 0.583333 5.38889 0.583333 7.25C0.583333 9.11111 1.22917 10.6875 2.52083 11.9792C3.8125 13.2708 5.38889 13.9167 7.25 13.9167ZM7.29208 3.70833C7.73625 3.70833 8.11806 3.84521 8.4375 4.11896C8.75694 4.39285 8.91667 4.73514 8.91667 5.14583C8.91667 5.45139 8.83333 5.72917 8.66667 5.97917C8.5 6.22917 8.30556 6.45833 8.08333 6.66667C7.80792 6.92 7.56549 7.19861 7.35604 7.5025C7.14646 7.80639 7.02083 8.13889 6.97917 8.5C6.96528 8.58333 6.9875 8.65278 7.04583 8.70833C7.10417 8.76389 7.17222 8.79167 7.25 8.79167C7.33333 8.79167 7.40278 8.76389 7.45833 8.70833C7.51389 8.65278 7.54861 8.59028 7.5625 8.52083C7.61806 8.24306 7.7257 7.99653 7.88542 7.78125C8.04514 7.56597 8.22188 7.36264 8.41563 7.17125C8.6941 6.89042 8.94444 6.58451 9.16667 6.25354C9.38889 5.92243 9.5 5.55319 9.5 5.14583C9.5 4.5625 9.28472 4.07986 8.85417 3.69792C8.42361 3.31597 7.91667 3.125 7.33333 3.125C6.88889 3.125 6.47917 3.23264 6.10417 3.44792C5.72917 3.66319 5.42361 3.95139 5.1875 4.3125C5.14583 4.38194 5.1325 4.45236 5.1475 4.52375C5.16264 4.59528 5.20326 4.64951 5.26938 4.68646C5.35368 4.72882 5.4375 4.73611 5.52083 4.70833C5.60417 4.68056 5.68056 4.63194 5.75 4.5625C5.94444 4.32639 6.17014 4.125 6.42708 3.95833C6.68403 3.79167 6.97236 3.70833 7.29208 3.70833Z"[39m
+                      [33mfill[39m=[32m"#757575"[39m
+                    [36m/>[39m
+                  [36m</svg>[39m
+                [36m</div>[39m
+              [36m</span>[39m
+              [36m<span[39m
+                [33mclass[39m=[32m"text-typography-700 text-sm flex items-center gap-3"[39m
+              [36m>[39m
+                [36m<span>[39m
+                  [0mJan 01, 2024 03:30 PM[0m
+                [36m</span>[39m
+                [36m<span[39m
+                  [33mclass[39m=[32m"text-typography-400 text-lg"[39m
+                [36m>[39m
+                  [0m•[0m
+                [36m</span>[39m
+                [36m<span>[39m
+                  [0m1 sec[0m
+                [36m</span>[39m
+              [36m</span>[39m
+            [36m</div>[39m
+          [36m</div>[39m
+        [36m</div>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"overflow-y-auto font-primary space-y-4"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33manimate[39m=[32m"[object Object]"[39m
+            [33mclass[39m=[32m"bg-white"[39m
+            [33minitial[39m=[32m"[object Object]"[39m
+            [33mtransition[39m=[32m"[object Object]"[39m
+          [36m>[39m
+            [36m<div>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"min-w-full text-sm font-primary overflow-y-scroll mb-4"[39m
+                [33mdata-testid[39m=[32m"generic-table"[39m
+              [36m>[39m
+                [36m<div>[39m
+                  [0m"First interaction"[0m
+                [36m</div>[39m
+                [36m<div>[39m
+                  [0m"Session started"[0m
+                [36m</div>[39m
+              [36m</div>[39m
+            [36m</div>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33manimate[39m=[32m"[object Object]"[39m
+            [33mclass[39m=[32m"bg-white"[39m
+            [33minitial[39m=[32m"[object Object]"[39m
+            [33mtransition[39m=[32m"[object Object]"[39m
+          [36m>[39m
+            [36m<div>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"flex flex-col border-[0.5px] border-[#C8C5D0] rounded-sm"[39m
+              [36m>[39m
+                [36m<span[39m
+                  [33mclass[39m=[32m"w-full text-typography-900 bg-[#EDE7F680] px-2 py-2 text-base"[39m
+                [36m>[39m
+                  [0mWhat Went Well[0m
+                [36m</span>[39m
+                [36m<ul[39m
+                  [33mclass[39m=[32m"p-4 space-y-2 text-base"[39m
+                [36m>[39m
+                  [36m<li[39m
+                    [33mclass[39m=[32m"flex items-start"[39m
+                  [36m>[39m
+                    [36m<span[39m
+                      [33mclass[39m=[32m"text-typography-900 mr-2"[39m
+                    [36m>[39m
+                      [0m•[0m
+                    [36m</span>[39m
+                    [36m<span[39m
+                      [33mclass[39m=[32m"text-typography-900"[39m
+                    [36m>[39m
+                      [0mGood communication[0m
+                    [36m</span>[39m
+                  [36m</li>[39m
+                  [36m<li[39m
+                    [33mclass[39m=[32m"flex items-start"[39m
+                  [36m>[39m
+                    [36m<span[39m
+                      [33mclass[39m=[32m"text-typography-900 mr-2"[39m
+                    [36m>[39m
+                      [0m•[0m
+                    [36m</span>[39m
+                    [36m<span[39m
+                      [33mclass[39m=[32m"text-typography-900"[39m
+                    [36m>[39m
+                      [0mClear explanations[0m
+                    [36m</span>[39m
+                  [36m</li>[39m
+                [36m</ul>[39m
+              [36m</div>[39m
+            [36m</div>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33manimate[39m=[32m"[object Object]"[39m
+            [33mclass[39m=[32m"bg-white"[39m
+            [33minitial[39m=[32m"[object Object]"[39m
+            [33mtransition[39m=[32m"[object Object]"[39m
+          [36m>[39m
+            [36m<div>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"flex flex-col border-[0.5px] border-[#C8C5D0] rounded-sm"[39m
+              [36m>[39m
+                [36m<span[39m
+                  [33mclass[39m=[32m"w-full text-typography-900 bg-[#EDE7F680] px-2 py-2 text-base"[39m
+                [36m>[39m
+                  [0mImprovement Tips[0m
+                [36m</span>[39m
+                [36m<ul[39m
+                  [33mclass[39m=[32m"p-4 space-y-2 text-base"[39m
+                [36m>[39m
+                  [36m<div[39m
+                    [33mclass[39m=[32m"text-typography-700 font-primary text-center mb-2"[39m
+                  [36m>[39m
+                    [0mNo data found[0m
+                  [36m</div>[39m
+                [36m</ul>[39m
+              [36m</div>[39m
+            [36m</div>[39m
+          [36m</div>[39m
+        [36m</div>[39m
+      [36m</div>[39m
+    [36m</div>[39m
+  [36m</div>[39m
+[36m</body>[39m
+[90m [2m❯[22m Object.getElementError ../../node_modules/@testing-library/react/node_modules/@testing-library/dom/dist/config.js:[2m37:19[22m[39m
+[90m [2m❯[22m ../../node_modules/@testing-library/react/node_modules/@testing-library/dom/dist/query-helpers.js:[2m76:38[22m[39m
+[90m [2m❯[22m ../../node_modules/@testing-library/react/node_modules/@testing-library/dom/dist/query-helpers.js:[2m52:17[22m[39m
+[90m [2m❯[22m ../../node_modules/@testing-library/react/node_modules/@testing-library/dom/dist/query-helpers.js:[2m95:19[22m[39m
+[36m [2m❯[22m src/containers/simulation-summary-state/components/__tests__/FeedbackSection.test.tsx:[2m248:21[22m[39m
+    [90m246| [39m      [34mrender[39m([33m<[39m[33mFeedbackSection[39m [33m{[39m[33m...[39memptySummary[33m}[39m [33m/[39m[33m>[39m)[33m;[39m
+    [90m247| [39m
+    [90m248| [39m      [34mexpect[39m(screen[33m.[39m[34mgetByText[39m([32m"Improvement tips"[39m))[33m.[39m[34mtoBeInTheDocument[39m()[33m;[39m
+    [90m   | [39m                    [31m^[39m
+    [90m249| [39m    })[33m;[39m
+    [90m250| [39m  })[33m;[39m
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/5]⎯[22m[39m
+[41m[1m FAIL [22m[49m src/containers/simulation-summary-state/components/__tests__/FeedbackSection.test.tsx[2m > [22mFeedbackSection[2m > [22mSection structure[2m > [22mshould render three feedback section headings
+[31m[1mTestingLibraryElementError[22m[39m: Unable to find an element with the text: What went well. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"flex flex-col gap-6 w-full"[39m
+    [36m>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"border p-4 shadow-lg rounded-lg flex flex-col gap-4"[39m
+      [36m>[39m
+        [36m<span[39m
+          [33mclass[39m=[32m"text-typography-900 font-primary text-base font-semibold border-b pb-2"[39m
+        [36m>[39m
+          [0mSession Feedback[0m
+        [36m</span>[39m
+        [36m<div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"flex items-center gap-5 border-b pb-4"[39m
+          [36m>[39m
+            [36m<div>[39m
+              [36m<img[39m
+                [33malt[39m=[32m"Cover image"[39m
+                [33mclass[39m=[32m"w-[150px] h-[77px] object-cover rounded-sm"[39m
+                [33mdata-testid[39m=[32m"custom-image"[39m
+                [33msrc[39m=[32m""[39m
+              [36m/>[39m
+            [36m</div>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"flex flex-col gap-1 font-primary"[39m
+            [36m>[39m
+              [36m<span[39m
+                [33mclass[39m=[32m"text-typography-700 text-sm"[39m
+              [36m>[39m
+                [0mID: Test Session[0m
+              [36m</span>[39m
+              [36m<span[39m
+                [33mclass[39m=[32m"text-typography-900 text-lg font-medium flex items-center gap-1"[39m
+              [36m>[39m
+                [0mTest Scenario[0m
+                [36m<div[39m
+                  [33mclass[39m=[32m"text-xs cursor-pointer text-neutral-500 ml-[4px]"[39m
+                [36m>[39m
+                  [36m<svg[39m
+                    [33mfill[39m=[32m"none"[39m
+                    [33mheight[39m=[32m"15"[39m
+                    [33mviewBox[39m=[32m"0 0 15 15"[39m
+                    [33mwidth[39m=[32m"15"[39m
+                    [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+                  [36m>[39m
+                    [36m<path[39m
+                      [33md[39m=[32m"M7.29292 11.4167C7.44486 11.4167 7.57292 11.3642 7.67708 11.2592C7.78125 11.1543 7.83333 11.0258 7.83333 10.8738C7.83333 10.7218 7.78083 10.5938 7.67583 10.4896C7.57097 10.3854 7.4425 10.3333 7.29042 10.3333C7.13847 10.3333 7.01042 10.3858 6.90625 10.4908C6.80208 10.5957 6.75 10.7242 6.75 10.8763C6.75 11.0282 6.8025 11.1562 6.9075 11.2604C7.01236 11.3646 7.14083 11.4167 7.29292 11.4167ZM7.25354 14.5C6.25118 14.5 5.30861 14.3098 4.42583 13.9294C3.54306 13.549 2.77521 13.0326 2.12229 12.3804C1.46924 11.7282 0.952292 10.9613 0.571458 10.0798C0.190486 9.19812 0 8.25604 0 7.25354C0 6.25118 0.190208 5.30861 0.570625 4.42583C0.951042 3.54306 1.46736 2.77521 2.11958 2.12229C2.77181 1.46924 3.53868 0.952292 4.42021 0.571458C5.30188 0.190486 6.24396 0 7.24646 0C8.24882 0 9.19139 0.190209 10.0742 0.570625C10.9569 0.951042 11.7248 1.46736 12.3777 2.11958C13.0308 2.77181 13.5477 3.53868 13.9285 4.42021C14.3095 5.30188 14.5 6.24396 14.5 7.24646C14.5 8.24882 14.3098 9.19139 13.9294 10.0742C13.549 10.9569 13.0326 11.7248 12.3804 12.3777C11.7282 13.0308 10.9613 13.5477 10.0798 13.9285C9.19813 14.3095 8.25604 14.5 7.25354 14.5ZM7.25 13.9167C9.11111 13.9167 10.6875 13.2708 11.9792 11.9792C13.2708 10.6875 13.9167 9.11111 13.9167 7.25C13.9167 5.38889 13.2708 3.8125 11.9792 2.52083C10.6875 1.22917 9.11111 0.583333 7.25 0.583333C5.38889 0.583333 3.8125 1.22917 2.52083 2.52083C1.22917 3.8125 0.583333 5.38889 0.583333 7.25C0.583333 9.11111 1.22917 10.6875 2.52083 11.9792C3.8125 13.2708 5.38889 13.9167 7.25 13.9167ZM7.29208 3.70833C7.73625 3.70833 8.11806 3.84521 8.4375 4.11896C8.75694 4.39285 8.91667 4.73514 8.91667 5.14583C8.91667 5.45139 8.83333 5.72917 8.66667 5.97917C8.5 6.22917 8.30556 6.45833 8.08333 6.66667C7.80792 6.92 7.56549 7.19861 7.35604 7.5025C7.14646 7.80639 7.02083 8.13889 6.97917 8.5C6.96528 8.58333 6.9875 8.65278 7.04583 8.70833C7.10417 8.76389 7.17222 8.79167 7.25 8.79167C7.33333 8.79167 7.40278 8.76389 7.45833 8.70833C7.51389 8.65278 7.54861 8.59028 7.5625 8.52083C7.61806 8.24306 7.7257 7.99653 7.88542 7.78125C8.04514 7.56597 8.22188 7.36264 8.41563 7.17125C8.6941 6.89042 8.94444 6.58451 9.16667 6.25354C9.38889 5.92243 9.5 5.55319 9.5 5.14583C9.5 4.5625 9.28472 4.07986 8.85417 3.69792C8.42361 3.31597 7.91667 3.125 7.33333 3.125C6.88889 3.125 6.47917 3.23264 6.10417 3.44792C5.72917 3.66319 5.42361 3.95139 5.1875 4.3125C5.14583 4.38194 5.1325 4.45236 5.1475 4.52375C5.16264 4.59528 5.20326 4.64951 5.26938 4.68646C5.35368 4.72882 5.4375 4.73611 5.52083 4.70833C5.60417 4.68056 5.68056 4.63194 5.75 4.5625C5.94444 4.32639 6.17014 4.125 6.42708 3.95833C6.68403 3.79167 6.97236 3.70833 7.29208 3.70833Z"[39m
+                      [33mfill[39m=[32m"#757575"[39m
+                    [36m/>[39m
+                  [36m</svg>[39m
+                [36m</div>[39m
+              [36m</span>[39m
+              [36m<span[39m
+                [33mclass[39m=[32m"text-typography-700 text-sm flex items-center gap-3"[39m
+              [36m>[39m
+                [36m<span>[39m
+                  [0mJan 01, 2024 03:30 PM[0m
+                [36m</span>[39m
+                [36m<span[39m
+                  [33mclass[39m=[32m"text-typography-400 text-lg"[39m
+                [36m>[39m
+                  [0m•[0m
+                [36m</span>[39m
+                [36m<span>[39m
+                  [0m1 sec[0m
+                [36m</span>[39m
+              [36m</span>[39m
+            [36m</div>[39m
+          [36m</div>[39m
+        [36m</div>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"overflow-y-auto font-primary space-y-4"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33manimate[39m=[32m"[object Object]"[39m
+            [33mclass[39m=[32m"bg-white"[39m
+            [33minitial[39m=[32m"[object Object]"[39m
+            [33mtransition[39m=[32m"[object Object]"[39m
+          [36m>[39m
+            [36m<div>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"min-w-full text-sm font-primary overflow-y-scroll mb-4"[39m
+                [33mdata-testid[39m=[32m"generic-table"[39m
+              [36m>[39m
+                [36m<div>[39m
+                  [0m"First interaction"[0m
+                [36m</div>[39m
+                [36m<div>[39m
+                  [0m"Session started"[0m
+                [36m</div>[39m
+              [36m</div>[39m
+            [36m</div>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33manimate[39m=[32m"[object Object]"[39m
+            [33mclass[39m=[32m"bg-white"[39m
+            [33minitial[39m=[32m"[object Object]"[39m
+            [33mtransition[39m=[32m"[object Object]"[39m
+          [36m>[39m
+            [36m<div>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"flex flex-col border-[0.5px] border-[#C8C5D0] rounded-sm"[39m
+              [36m>[39m
+                [36m<span[39m
+                  [33mclass[39m=[32m"w-full text-typography-900 bg-[#EDE7F680] px-2 py-2 text-base"[39m
+                [36m>[39m
+                  [0mWhat Went Well[0m
+                [36m</span>[39m
+                [36m<ul[39m
+                  [33mclass[39m=[32m"p-4 space-y-2 text-base"[39m
+                [36m>[39m
+                  [36m<li[39m
+                    [33mclass[39m=[32m"flex items-start"[39m
+                  [36m>[39m
+                    [36m<span[39m
+                      [33mclass[39m=[32m"text-typography-900 mr-2"[39m
+                    [36m>[39m
+                      [0m•[0m
+                    [36m</span>[39m
+                    [36m<span[39m
+                      [33mclass[39m=[32m"text-typography-900"[39m
+                    [36m>[39m
+                      [0mGood communication[0m
+                    [36m</span>[39m
+                  [36m</li>[39m
+                  [36m<li[39m
+                    [33mclass[39m=[32m"flex items-start"[39m
+                  [36m>[39m
+                    [36m<span[39m
+                      [33mclass[39m=[32m"text-typography-900 mr-2"[39m
+                    [36m>[39m
+                      [0m•[0m
+                    [36m</span>[39m
+                    [36m<span[39m
+                      [33mclass[39m=[32m"text-typography-900"[39m
+                    [36m>[39m
+                      [0mClear explanations[0m
+                    [36m</span>[39m
+                  [36m</li>[39m
+                [36m</ul>[39m
+              [36m</div>[39m
+            [36m</div>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33manimate[39m=[32m"[object Object]"[39m
+            [33mclass[39m=[32m"bg-white"[39m
+            [33minitial[39m=[32m"[object Object]"[39m
+            [33mtransition[39m=[32m"[object Object]"[39m
+          [36m>[39m
+            [36m<div>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"flex flex-col border-[0.5px] border-[#C8C5D0] rounded-sm"[39m
+              [36m>[39m
+                [36m<span[39m
+                  [33mclass[39m=[32m"w-full text-typography-900 bg-[#EDE7F680] px-2 py-2 text-base"[39m
+                [36m>[39m
+                  [0mImprovement Tips[0m
+                [36m</span>[39m
+                [36m<ul[39m
+                  [33mclass[39m=[32m"p-4 space-y-2 text-base"[39m
+                [36m>[39m
+                  [36m<li[39m
+                    [33mclass[39m=[32m"flex items-start"[39m
+                  [36m>[39m
+                    [36m<span[39m
+                      [33mclass[39m=[32m"text-typography-900 mr-2"[39m
+                    [36m>[39m
+                      [0m•[0m
+                    [36m</span>[39m
+                    [36m<span[39m
+                      [33mclass[39m=[32m"text-typography-900"[39m
+                    [36m>[39m
+                      [0mMore practice needed[0m
+                    [36m</span>[39m
+                  [36m</li>[39m
+                  [36m<li[39m
+                    [33mclass[39m=[32m"flex items-start"[39m
+                  [36m>[39m
+                    [36m<span[39m
+                      [33mclass[39m=[32m"text-typography-900 mr-2"[39m
+                    [36m>[39m
+                      [0m•[0m
+                    [36m</span>[39m
+                    [36m<span[39m
+                      [33mclass[39m=[32m"text-typography-900"[39m
+                    [36m>[39m
+                      [0mFocus on timing[0m
+                    [36m</span>[39m
+                  [36m</li>[39m
+                [36m</ul>[39m
+              [36m</div>[39m
+            [36m</div>[39m
+          [36m</div>[39m
+        [36m</div>[39m
+      [36m</div>[39m
+    [36m</div>[39m
+  [36m</div>[39m
+[36m</body>[39m
+[90m [2m❯[22m Object.getElementError ../../node_modules/@testing-library/react/node_modules/@testing-library/dom/dist/config.js:[2m37:19[22m[39m
+[90m [2m❯[22m ../../node_modules/@testing-library/react/node_modules/@testing-library/dom/dist/query-helpers.js:[2m76:38[22m[39m
+[90m [2m❯[22m ../../node_modules/@testing-library/react/node_modules/@testing-library/dom/dist/query-helpers.js:[2m52:17[22m[39m
+[90m [2m❯[22m ../../node_modules/@testing-library/react/node_modules/@testing-library/dom/dist/query-helpers.js:[2m95:19[22m[39m
+[36m [2m❯[22m src/containers/simulation-summary-state/components/__tests__/FeedbackSection.test.tsx:[2m297:21[22m[39m
+    [90m295| [39m
+    [90m296| [39m      [34mexpect[39m(screen[33m.[39m[34mgetByTestId[39m([32m"generic-table"[39m))[33m.[39m[34mtoBeInTheDocument[39m()[33m;[39m
+    [90m297| [39m      [34mexpect[39m(screen[33m.[39m[34mgetByText[39m([32m"What went well"[39m))[33m.[39m[34mtoBeInTheDocument[39m()[33m;[39m
+    [90m   | [39m                    [31m^[39m
+    [90m298| [39m      [34mexpect[39m(screen[33m.[39m[34mgetByText[39m([32m"Improvement tips"[39m))[33m.[39m[34mtoBeInTheDocument[39m()[33m;[39m
+    [90m299| [39m    })[33m;[39m
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/5]⎯[22m[39m
+[41m[1m FAIL [22m[49m src/containers/simulation-summary-state/components/__tests__/FeedbackSection.test.tsx[2m > [22mFeedbackSection[2m > [22mEdge Cases[2m > [22mshould handle null/undefined values gracefully
+[31m[1mTestingLibraryElementError[22m[39m: Unable to find an element with the text: What went well. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"flex flex-col gap-6 w-full"[39m
+    [36m>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"border p-4 shadow-lg rounded-lg flex flex-col gap-4"[39m
+      [36m>[39m
+        [36m<span[39m
+          [33mclass[39m=[32m"text-typography-900 font-primary text-base font-semibold border-b pb-2"[39m
+        [36m>[39m
+          [0mSession Feedback[0m
+        [36m</span>[39m
+        [36m<div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"flex items-center gap-5 border-b pb-4"[39m
+          [36m>[39m
+            [36m<div>[39m
+              [36m<img[39m
+                [33malt[39m=[32m"Cover image"[39m
+                [33mclass[39m=[32m"w-[150px] h-[77px] object-cover rounded-sm"[39m
+                [33mdata-testid[39m=[32m"custom-image"[39m
+                [33msrc[39m=[32m""[39m
+              [36m/>[39m
+            [36m</div>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"flex flex-col gap-1 font-primary"[39m
+            [36m>[39m
+              [36m<span[39m
+                [33mclass[39m=[32m"text-typography-700 text-sm"[39m
+              [36m>[39m
+                [0mID: Test Session[0m
+              [36m</span>[39m
+              [36m<span[39m
+                [33mclass[39m=[32m"text-typography-900 text-lg font-medium flex items-center gap-1"[39m
+              [36m>[39m
+                [0mTest Scenario[0m
+                [36m<div[39m
+                  [33mclass[39m=[32m"text-xs cursor-pointer text-neutral-500 ml-[4px]"[39m
+                [36m>[39m
+                  [36m<svg[39m
+                    [33mfill[39m=[32m"none"[39m
+                    [33mheight[39m=[32m"15"[39m
+                    [33mviewBox[39m=[32m"0 0 15 15"[39m
+                    [33mwidth[39m=[32m"15"[39m
+                    [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+                  [36m>[39m
+                    [36m<path[39m
+                      [33md[39m=[32m"M7.29292 11.4167C7.44486 11.4167 7.57292 11.3642 7.67708 11.2592C7.78125 11.1543 7.83333 11.0258 7.83333 10.8738C7.83333 10.7218 7.78083 10.5938 7.67583 10.4896C7.57097 10.3854 7.4425 10.3333 7.29042 10.3333C7.13847 10.3333 7.01042 10.3858 6.90625 10.4908C6.80208 10.5957 6.75 10.7242 6.75 10.8763C6.75 11.0282 6.8025 11.1562 6.9075 11.2604C7.01236 11.3646 7.14083 11.4167 7.29292 11.4167ZM7.25354 14.5C6.25118 14.5 5.30861 14.3098 4.42583 13.9294C3.54306 13.549 2.77521 13.0326 2.12229 12.3804C1.46924 11.7282 0.952292 10.9613 0.571458 10.0798C0.190486 9.19812 0 8.25604 0 7.25354C0 6.25118 0.190208 5.30861 0.570625 4.42583C0.951042 3.54306 1.46736 2.77521 2.11958 2.12229C2.77181 1.46924 3.53868 0.952292 4.42021 0.571458C5.30188 0.190486 6.24396 0 7.24646 0C8.24882 0 9.19139 0.190209 10.0742 0.570625C10.9569 0.951042 11.7248 1.46736 12.3777 2.11958C13.0308 2.77181 13.5477 3.53868 13.9285 4.42021C14.3095 5.30188 14.5 6.24396 14.5 7.24646C14.5 8.24882 14.3098 9.19139 13.9294 10.0742C13.549 10.9569 13.0326 11.7248 12.3804 12.3777C11.7282 13.0308 10.9613 13.5477 10.0798 13.9285C9.19813 14.3095 8.25604 14.5 7.25354 14.5ZM7.25 13.9167C9.11111 13.9167 10.6875 13.2708 11.9792 11.9792C13.2708 10.6875 13.9167 9.11111 13.9167 7.25C13.9167 5.38889 13.2708 3.8125 11.9792 2.52083C10.6875 1.22917 9.11111 0.583333 7.25 0.583333C5.38889 0.583333 3.8125 1.22917 2.52083 2.52083C1.22917 3.8125 0.583333 5.38889 0.583333 7.25C0.583333 9.11111 1.22917 10.6875 2.52083 11.9792C3.8125 13.2708 5.38889 13.9167 7.25 13.9167ZM7.29208 3.70833C7.73625 3.70833 8.11806 3.84521 8.4375 4.11896C8.75694 4.39285 8.91667 4.73514 8.91667 5.14583C8.91667 5.45139 8.83333 5.72917 8.66667 5.97917C8.5 6.22917 8.30556 6.45833 8.08333 6.66667C7.80792 6.92 7.56549 7.19861 7.35604 7.5025C7.14646 7.80639 7.02083 8.13889 6.97917 8.5C6.96528 8.58333 6.9875 8.65278 7.04583 8.70833C7.10417 8.76389 7.17222 8.79167 7.25 8.79167C7.33333 8.79167 7.40278 8.76389 7.45833 8.70833C7.51389 8.65278 7.54861 8.59028 7.5625 8.52083C7.61806 8.24306 7.7257 7.99653 7.88542 7.78125C8.04514 7.56597 8.22188 7.36264 8.41563 7.17125C8.6941 6.89042 8.94444 6.58451 9.16667 6.25354C9.38889 5.92243 9.5 5.55319 9.5 5.14583C9.5 4.5625 9.28472 4.07986 8.85417 3.69792C8.42361 3.31597 7.91667 3.125 7.33333 3.125C6.88889 3.125 6.47917 3.23264 6.10417 3.44792C5.72917 3.66319 5.42361 3.95139 5.1875 4.3125C5.14583 4.38194 5.1325 4.45236 5.1475 4.52375C5.16264 4.59528 5.20326 4.64951 5.26938 4.68646C5.35368 4.72882 5.4375 4.73611 5.52083 4.70833C5.60417 4.68056 5.68056 4.63194 5.75 4.5625C5.94444 4.32639 6.17014 4.125 6.42708 3.95833C6.68403 3.79167 6.97236 3.70833 7.29208 3.70833Z"[39m
+                      [33mfill[39m=[32m"#757575"[39m
+                    [36m/>[39m
+                  [36m</svg>[39m
+                [36m</div>[39m
+              [36m</span>[39m
+              [36m<span[39m
+                [33mclass[39m=[32m"text-typography-700 text-sm flex items-center gap-3"[39m
+              [36m>[39m
+                [36m<span>[39m
+                  [0mJan 01, 2024 03:30 PM[0m
+                [36m</span>[39m
+                [36m<span[39m
+                  [33mclass[39m=[32m"text-typography-400 text-lg"[39m
+                [36m>[39m
+                  [0m•[0m
+                [36m</span>[39m
+                [36m<span>[39m
+                  [0m1 sec[0m
+                [36m</span>[39m
+              [36m</span>[39m
+            [36m</div>[39m
+          [36m</div>[39m
+        [36m</div>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"overflow-y-auto font-primary space-y-4"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33manimate[39m=[32m"[object Object]"[39m
+            [33mclass[39m=[32m"bg-white"[39m
+            [33minitial[39m=[32m"[object Object]"[39m
+            [33mtransition[39m=[32m"[object Object]"[39m
+          [36m>[39m
+            [36m<div>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"min-w-full text-sm font-primary overflow-y-scroll mb-4"[39m
+                [33mdata-testid[39m=[32m"generic-table"[39m
+              [36m>[39m
+                [36m<div>[39m
+                  [0m"First interaction"[0m
+                [36m</div>[39m
+                [36m<div>[39m
+                  [0m"Session started"[0m
+                [36m</div>[39m
+              [36m</div>[39m
+            [36m</div>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33manimate[39m=[32m"[object Object]"[39m
+            [33mclass[39m=[32m"bg-white"[39m
+            [33minitial[39m=[32m"[object Object]"[39m
+            [33mtransition[39m=[32m"[object Object]"[39m
+          [36m>[39m
+            [36m<div>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"flex flex-col border-[0.5px] border-[#C8C5D0] rounded-sm"[39m
+              [36m>[39m
+                [36m<span[39m
+                  [33mclass[39m=[32m"w-full text-typography-900 bg-[#EDE7F680] px-2 py-2 text-base"[39m
+                [36m>[39m
+                  [0mWhat Went Well[0m
+                [36m</span>[39m
+                [36m<ul[39m
+                  [33mclass[39m=[32m"p-4 space-y-2 text-base"[39m
+                [36m>[39m
+                  [36m<div[39m
+                    [33mclass[39m=[32m"text-typography-700 font-primary text-center mb-2"[39m
+                  [36m>[39m
+                    [0mNo data found[0m
+                  [36m</div>[39m
+                [36m</ul>[39m
+              [36m</div>[39m
+            [36m</div>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33manimate[39m=[32m"[object Object]"[39m
+            [33mclass[39m=[32m"bg-white"[39m
+            [33minitial[39m=[32m"[object Object]"[39m
+            [33mtransition[39m=[32m"[object Object]"[39m
+          [36m>[39m
+            [36m<div>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"flex flex-col border-[0.5px] border-[#C8C5D0] rounded-sm"[39m
+              [36m>[39m
+                [36m<span[39m
+                  [33mclass[39m=[32m"w-full text-typography-900 bg-[#EDE7F680] px-2 py-2 text-base"[39m
+                [36m>[39m
+                  [0mImprovement Tips[0m
+                [36m</span>[39m
+                [36m<ul[39m
+                  [33mclass[39m=[32m"p-4 space-y-2 text-base"[39m
+                [36m>[39m
+                  [36m<div[39m
+                    [33mclass[39m=[32m"text-typography-700 font-primary text-center mb-2"[39m
+                  [36m>[39m
+                    [0mNo data found[0m
+                  [36m</div>[39m
+                [36m</ul>[39m
+              [36m</div>[39m
+            [36m</div>[39m
+          [36m</div>[39m
+        [36m</div>[39m
+      [36m</div>[39m
+    [36m</div>[39m
+  [36m</div>[39m
+[36m</body>[39m
+[90m [2m❯[22m Object.getElementError ../../node_modules/@testing-library/react/node_modules/@testing-library/dom/dist/config.js:[2m37:19[22m[39m
+[90m [2m❯[22m ../../node_modules/@testing-library/react/node_modules/@testing-library/dom/dist/query-helpers.js:[2m76:38[22m[39m
+[90m [2m❯[22m ../../node_modules/@testing-library/react/node_modules/@testing-library/dom/dist/query-helpers.js:[2m52:17[22m[39m
+[90m [2m❯[22m ../../node_modules/@testing-library/react/node_modules/@testing-library/dom/dist/query-helpers.js:[2m95:19[22m[39m
+[36m [2m❯[22m src/containers/simulation-summary-state/components/__tests__/FeedbackSection.test.tsx:[2m351:21[22m[39m
+    [90m349| [39m
+    [90m350| [39m      [34mexpect[39m(screen[33m.[39m[34mgetByTestId[39m([32m"generic-table"[39m))[33m.[39m[34mtoBeInTheDocument[39m()[33m;[39m
+    [90m351| [39m      [34mexpect[39m(screen[33m.[39m[34mgetByText[39m([32m"What went well"[39m))[33m.[39m[34mtoBeInTheDocument[39m()[33m;[39m
+    [90m   | [39m                    [31m^[39m
+    [90m352| [39m      [34mexpect[39m(screen[33m.[39m[34mgetByText[39m([32m"Improvement tips"[39m))[33m.[39m[34mtoBeInTheDocument[39m()[33m;[39m
+    [90m353| [39m    })[33m;[39m
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/5]⎯[22m[39m
+[2m Test Files [22m [1m[31m1 failed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[31m5 failed[39m[22m[2m | [22m[1m[32m6 passed[39m[22m[90m (11)[39m
+[2m   Start at [22m 13:05:57
+[2m   Duration [22m 1.07s[2m (transform 420ms, setup 57ms, collect 639ms, tests 37ms, environment 119ms, prepare 26ms)[22m
+npm error Lifecycle script `test` failed with error:
+npm error code 1
+npm error path /Users/shubhambhoite/workspace/ally-web/apps/ally-helpline-dashboard
+npm error workspace ally-helpline-dashboard@0.0.0
+npm error location /Users/shubhambhoite/workspace/ally-web/apps/ally-helpline-dashboard
+npm error command failed
+npm error command sh -c vitest run src/containers/simulation-summary-state/components/__tests__/FeedbackSection.test.tsx
+
+
+
+ NX   Running target test for project ally-helpline-dashboard failed
+
+Failed tasks:
+
+- ally-helpline-dashboard:test
+
+Hint: run the command with --verbose for more details.
+
+
+ NX   Nx Cloud encountered some problems
+
+This workspace is more than three days old and is not connected. Workspaces must be connected within 3 days of creation. Claim your workspace at https://cloud.nx.app. (code: 401)
+

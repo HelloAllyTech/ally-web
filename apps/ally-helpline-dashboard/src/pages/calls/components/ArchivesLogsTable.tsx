@@ -1,6 +1,7 @@
 import { useEffect, useState, useRef, FC } from "react";
 
 import { CircularProgress } from "@mui/material";
+import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
 
 import { GenericTable } from "@ally-ui-mono/ui-shared";
@@ -27,7 +28,6 @@ import { CALL_LOGS_PAGINATION_LIMIT, SessionUserGroup, tagColors } from "../cons
 import CallSummarySidebar from "./CallSummarySidebar";
 import { ArchivesLogsTableProps } from "./types";
 import { getSourceChipConfig, getStatusChipConfig } from "./utils";
-import { useTranslation } from "react-i18next";
 
 const ArchivesLogsTable: FC<ArchivesLogsTableProps> = ({
   className,

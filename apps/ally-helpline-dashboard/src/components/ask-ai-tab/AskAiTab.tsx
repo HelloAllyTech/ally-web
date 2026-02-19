@@ -1,5 +1,6 @@
 import { useRef, useState } from "react";
 
+import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
 
 import { AskAiIcon, UpArrow } from "@assets";
@@ -30,6 +31,7 @@ const AskAiInput = ({
   onSend: (text: string) => void;
   disabled?: boolean;
 }) => {
+  const { t } = useTranslation();
   const inputRef = useRef<HTMLInputElement>(null);
   const handleSend = () => {
     if (disabled) return;
@@ -45,7 +47,7 @@ const AskAiInput = ({
         type="text"
         className="w-full p-2 px-3 outline-none rounded-full disabled:opacity-60"
         onKeyDown={e => e.key === "Enter" && handleSend()}
-        placeholder="Ask AI"
+        placeholder={t("postSim.tabs.askAi")}
         disabled={disabled}
       />
       <Button
@@ -63,6 +65,7 @@ const AskAiInput = ({
 
 export const AskAiTab = ({ sessionId }: { sessionId: string }) => {
   const dispatch = useDispatch();
+  const { t } = useTranslation();
   const messages = useSelector((state: RootState) => state.chat.messages) as Message[];
   const [isStreaming, setIsStreaming] = useState(false);
 
@@ -78,7 +81,9 @@ export const AskAiTab = ({ sessionId }: { sessionId: string }) => {
   return (
     <div className="p-1 rounded-lg w-full h-full bg-gradient-to-br from-primary-500 to-primary-100">
       <div className="flex flex-col w-full h-full rounded-lg relative">
-        <div className="p-4 w-full text-white font-semibold text-lg font-primary">Ask AI</div>
+        <div className="p-4 w-full text-white font-semibold text-lg font-primary">
+          {t("postSim.tabs.askAi")}
+        </div>
         <div className="flex-1 bg-white rounded-t-lg rounded-b-md custom-scrollbar overflow-y-auto px-3 pb-20 flex flex-col gap-3">
           {messages.map((msg, index) => (
             <ChatBubble key={`${msg.role}-${index}`} message={msg} />

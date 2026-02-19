@@ -1,6 +1,7 @@
 import { useEffect, useState, useRef, FC } from "react";
 
 import { CircularProgress } from "@mui/material";
+import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
 import { toast } from "sonner";
 
@@ -46,7 +47,6 @@ import { CallSummarySidebar, DeleteCallLogConfirmationDialog, SimulationSummaryS
 import { CALL_LOGS_PAGINATION_LIMIT, defaultTags, tagColors } from "../constants";
 import { LogsTableProps } from "./types";
 import { getSourceChipConfig, getStatusChipConfig } from "./utils";
-import { useTranslation } from "react-i18next";
 
 const AdminLogsTable: FC<LogsTableProps> = ({ refreshKey, sessionType, className }) => {
   const { t } = useTranslation();

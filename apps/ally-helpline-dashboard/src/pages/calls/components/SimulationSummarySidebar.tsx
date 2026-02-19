@@ -1,5 +1,6 @@
 import { FC, useEffect, useRef, useState } from "react";
 
+import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 
@@ -17,7 +18,6 @@ import { RootState } from "@store";
 import { SessionType, SimulationSummary as SimulationSummaryType } from "@types";
 
 import { SummarySidebarWrapper, SimulationTranscriptTab } from ".";
-import { useTranslation } from "react-i18next";
 import { SUMMARY_FEEDBACK_TIMEOUT } from "./constants";
 import { SimulationSummarySidebarProps } from "./types";
 
@@ -120,22 +120,22 @@ const SimulationSummarySidebar: FC<SimulationSummarySidebarProps> = ({
     },
     {
       id: 2,
-      label: "Ask AI",
+      label: t("postSim.tabs.askAi"),
       content: <AskAiTab sessionId={summaryId} />,
     },
     {
       id: 3,
-      label: "Transcription",
+      label: t("postSim.tabs.transcription"),
       content: <SimulationTranscriptTab sessionId={summaryId} councellorName={councellorName} />,
     },
     {
       id: 5,
-      label: "Skills",
+      label: t("postSim.tabs.skills"),
       content: <SkillsTab sessionId={summaryId} />,
     },
     {
       id: 4,
-      label: "Reflection",
+      label: t("postSim.tabs.reflection"),
       content: <ReflectionTab sessionId={summaryId} />,
     },
   ];

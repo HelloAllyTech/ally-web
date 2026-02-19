@@ -1,12 +1,12 @@
 import { FC } from "react";
 
 import { motion } from "framer-motion";
+import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 
 import { Carousel, CarouselSize, CarouselVariant, ConfirmationDialog } from "@components";
 import { ButtonVariant } from "@components";
 import { CAROUSEL_SLIDES, ROUTES } from "@constants";
-import { useTranslation } from "react-i18next";
 
 import { StartSessionDialogProps } from "./types";
 

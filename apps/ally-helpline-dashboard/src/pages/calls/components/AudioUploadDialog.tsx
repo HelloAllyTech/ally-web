@@ -7,6 +7,7 @@ import customParseFormat from "dayjs/plugin/customParseFormat";
 import timezone from "dayjs/plugin/timezone";
 import utc from "dayjs/plugin/utc";
 import { motion } from "framer-motion";
+import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 
 import {
@@ -19,7 +20,6 @@ import { Dropdown, DatePicker, TimePicker, Button, ButtonVariant } from "@compon
 import { addAudioUpload, updateUploadProgress, updateUploadError } from "@reducer";
 import { store } from "@store";
 import { UploadStatus } from "@types";
-import { useTranslation } from "react-i18next";
 
 import AudioUploadInterface from "./AudioUploadInterface";
 import { defaultAudioFormData, timezoneOptions } from "./constants";

@@ -1,4 +1,6 @@
-import { FC, useEffect, useState } from "react";
+import { FC, useEffect, useState, useMemo } from "react";
+
+import { useTranslation } from "react-i18next";
 
 import {
   useCreateReflectionPromptsMutation,
@@ -8,26 +10,14 @@ import {
 import { Button } from "@components";
 import { Prompt } from "@types";
 
-const PROMPTS = [
-  {
-    id: "1",
-    prompt:
-      "What do you think the client needed most in the moment you shifted to problem-solving?",
-  },
-  {
-    id: "2",
-    prompt:
-      "What do you think the client needed most in the moment you shifted to problem-solving?",
-  },
-];
-
 interface ReflectionTabProps {
   sessionId: string;
 }
 
 const Header = () => {
+  const { t } = useTranslation();
   return (
-    <div className="border-b p-2 text-base font-primary text-gray-700">Self-Reflection Prompts</div>
+    <div className="border-b p-2 text-base font-primary text-gray-700">{t("reflection.title")}</div>
   );
 };
 
@@ -48,6 +38,7 @@ const BottomButtons = ({
 }) => {
   const [createReflectionPrompts] = useCreateReflectionPromptsMutation();
   const [updateReflectionPrompts] = useUpdateReflectionPromptsMutation();
+  const { t } = useTranslation();
 
   const saveResponse = (index: number) => {
     if (selectedIndex === null) return;
@@ -71,10 +62,10 @@ const BottomButtons = ({
       {selectedIndex !== null && selectedIndex === index && (
         <div className="flex justify-end gap-2" onClick={e => e.stopPropagation()}>
           <Button variant="secondary" className="w-1/4" onClick={() => clearResponse(index)}>
-            Clear
+            {t("reflection.clear")}
           </Button>
           <Button className="w-1/4" onClick={() => saveResponse(index)}>
-            Save
+            {t("reflection.save")}
           </Button>
         </div>
       )}
@@ -142,12 +133,30 @@ const Prompts = ({ prompts, sessionId }: { prompts: Prompt[]; sessionId: string 
 };
 
 export const ReflectionTab: FC<ReflectionTabProps> = ({ sessionId }) => {
+  const { t } = useTranslation();
   const { data: reflectionPrompts } = useGetReflectionPromptsQuery({ sessionId });
+
+  const defaultPrompts = useMemo(
+    () => [
+      {
+        id: "1",
+        prompt: t("reflection.prompts.clientNeed"),
+      },
+      {
+        id: "2",
+        prompt: t("reflection.prompts.clientNeed"),
+      },
+    ],
+    [t],
+  );
   return (
     <div className="p-1 rounded-lg w-full h-full border shadow-lg">
       <div className="flex flex-col gap-4 w-full h-full rounded-lg bg-white p-4">
         <Header />
-        <Prompts prompts={reflectionPrompts?.ReflectionPrompt ?? PROMPTS} sessionId={sessionId} />
+        <Prompts
+          prompts={reflectionPrompts?.ReflectionPrompt ?? defaultPrompts}
+          sessionId={sessionId}
+        />
       </div>
     </div>
   );

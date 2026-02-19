@@ -63,7 +63,7 @@ const ConfirmationDialog: FC<ConfirmationDialogProps> = ({
           transition={{ delay: 0.2, duration: 0.3 }}
         >
           <span>{title.normal} </span>
-          <span className="italic font-bold">{title.italic}</span>
+          {title.italic && <span className="italic font-bold">{title.italic}</span>}
         </motion.div>
 
         {Icon && (

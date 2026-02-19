@@ -1,6 +1,7 @@
 import { useEffect, useState, useRef, FC } from "react";
 
 import { CircularProgress } from "@mui/material";
+import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
 import { useLocation } from "react-router-dom";
 
@@ -30,7 +31,6 @@ import CallSummarySidebar from "./CallSummarySidebar";
 import SimulationSummarySidebar from "./SimulationSummarySidebar";
 import { LogsTableProps } from "./types";
 import { getSourceChipConfig, getStatusChipConfig } from "./utils";
-import { useTranslation } from "react-i18next";
 
 const UserLogsTable: FC<LogsTableProps> = ({ refreshKey, sessionType, className }) => {
   const { t } = useTranslation();

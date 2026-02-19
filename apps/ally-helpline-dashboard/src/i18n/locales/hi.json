@@ -8,7 +8,15 @@
     "minutes_one": "{{count}} मिनट",
     "minutes_other": "{{count}} मिनट",
     "seconds_one": "{{count}} सेकंड",
-    "seconds_other": "{{count}} सेकंड"
+    "seconds_other": "{{count}} सेकंड",
+    "continue": "जारी रखें",
+    "start": "शुरू करें",
+    "close": "बंद करें",
+    "details": "विवरण",
+    "starting": "शुरू हो रहा है...",
+    "next": "अगला",
+    "viewSummary": "सारांश देखें",
+    "simulationIndex": "सिमुलेशन {{index}}"
   },
   "carousel": {
     "slides": {
@@ -204,6 +212,14 @@
       "case": "केस",
       "track": "ट्रैक",
       "scenario": "परिदृश्य"
+    },
+    "backToLearn": "सीखने के लिए वापस",
+    "errors": {
+      "locked": "आगामी सिमुलेशन लॉक किया गया है"
+    },
+    "notFound": {
+      "case": "केस नहीं मिला",
+      "track": "ट्रैक नहीं मिला"
     }
   },
   "health": {
@@ -213,6 +229,14 @@
     },
     "description": "सभी सिस्टम सामान्य रूप से कार्य कर रहे हैं। यह पेज पुष्टि करता है कि फ्रंटएंड एप्लिकेशन चल रहा है और प्रतिक्रियाशील है।",
     "lastChecked": "अंतिम जाँच: {{time}}"
+  },
+  "reflection": {
+    "title": "स्व-प्रतिबिंब प्रेरणाएँ",
+    "clear": "साफ़ करें",
+    "save": "सहेजें",
+    "prompts": {
+      "clientNeed": "आपको क्या लगता है कि ग्राहक को उस क्षण में सबसे ज्यादा क्या चाहिए था जब आप समस्या समाधान की ओर बढ़े?"
+    }
   },
   "analytics": {
     "title": "सत्र विश्लेषण",
@@ -277,10 +301,23 @@
   "postSim": {
     "titlePrefix": "सिमुलेशन",
     "titleEmphasis": "सारांश",
+    "skills": {
+      "shownInSession": "इस सत्र में दिखाए गए कौशल",
+      "empty": "इस सत्र के लिए कोई कौशल डेटा उपलब्ध नहीं है",
+      "loading": "कौशल डेटा लोड हो रहा है...",
+      "failed": "कौशल डेटा लोड करने में विफल",
+      "coverage": "कौशल कवरेज",
+      "emotionalMovement": "क्लाइंट भावनात्मक आंदोलन",
+      "level": "स्तर (1-10)",
+      "timeline": "सत्र समयरेखा"
+    },
     "tabs": {
       "summary": "सारांश",
       "transcription": "ट्रांसक्रिप्शन",
-      "upNext": "अगला"
+      "upNext": "अगला",
+      "askAi": "AI से पूछें",
+      "reflection": "चिंतन",
+      "skills": "कौशल"
     }
   },
   "review": {
@@ -368,6 +405,42 @@
       "tags": "इस सत्र को व्यवस्थित करने के लिए कीवर्ड जोड़ें।",
       "select": "चुनें",
       "addNote": "नोट जोड़ें"
+    },
+    "fields": {
+      "callId": "कॉल आईडी",
+      "callDuration": "कॉल अवधि",
+      "callDate": "कॉल तिथि",
+      "callTime": "कॉल समय",
+      "newCallFollowUp": "नई कॉल फ़ॉलो-अप",
+      "counsellor": "काउंसलर",
+      "callQuality": "कॉल गुणवत्ता",
+      "callerId": "कॉलर आईडी",
+      "counsellorName": "काउंसलर का नाम",
+      "callerType": "कॉलर प्रकार",
+      "age": "आयु",
+      "gender": "लिंग",
+      "profession": "पेशा",
+      "relationshipStatus": "वैवाहिक स्थिति",
+      "languages": "भाषाएँ",
+      "location": "स्थान",
+      "concernCode": "चिंता कोड",
+      "sessionSummary": "सत्र सारांश",
+      "flow": "प्रवाह",
+      "keyConcerns": "मुख्य चिंताएँ",
+      "objectiveObservations": "वस्तुनिष्ठ अवलोकन",
+      "subjectiveObservations": "व्यक्तिपरक अवलोकन",
+      "assessment": "मूल्यांकन",
+      "dominantFeelings": "प्रमुख भावनाएँ",
+      "issuesWorkedOn": "काम किए गए मुद्दे",
+      "keyTherapeuticTechniques": "मुख्य चिकित्सीय तकनीकें",
+      "referralsProvided": "दिए गए रेफ़रल",
+      "homeworkRecommended": "सुझाया गया गृहकार्य",
+      "plansForNextCall": "अगली कॉल की योजना",
+      "tags": "टैग",
+      "listeningRatio": "सुनने का अनुपात",
+      "reflectiveQuestions": "पूछे गए चिंतनशील प्रश्नों की संख्या",
+      "emotionsLift": "भावनात्मक उत्थान",
+      "openEndedQuestions": "पूछे गए खुले प्रश्नों की संख्या"
     }
   },
   "profileSettings": {

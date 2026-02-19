@@ -1,12 +1,13 @@
 import { FC, useEffect, useRef, useState } from "react";
 
+import { useTranslation } from "react-i18next";
+
 import { CustomImage } from "@ally-ui-mono/ui-shared";
 import { Ally, Arrow, Bolt, Logout, ManageAccount } from "@assets";
 import { PermissionGuard } from "@components";
 import { Permissions } from "@constants";
 import { useSimulationCredits } from "@hooks";
 import { User } from "@types";
-import { useTranslation } from "react-i18next";
 
 const UserInfo: FC<{
   user?: User;

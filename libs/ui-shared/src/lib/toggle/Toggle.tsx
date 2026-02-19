@@ -1,6 +1,8 @@
 "use client";
 
-import { FC, useState } from "react";
+import { FC, useState, useId } from "react";
+
+import { motion } from "framer-motion";
 
 interface ToggleProps {
   label?: string;
@@ -16,6 +18,8 @@ const Toggle: FC<ToggleProps> = ({ label, items, initialValue, onChange }) => {
   const [selectedValue, setSelectedValueIndex] = useState(
     initialValue ? items.findIndex(item => item.value === initialValue) : 0,
   );
+  const uniqueId = useId();
+
   const handleChange = (index: number) => {
     setSelectedValueIndex(index);
     onChange(items[index].value);
@@ -23,28 +27,32 @@ const Toggle: FC<ToggleProps> = ({ label, items, initialValue, onChange }) => {
   return (
     <div className="flex flex-col gap-2 w-fit">
       {label && <div>{label}</div>}
-      <div className="flex gap-2 rounded-full border-[0.5px] bg-[#F3F3F3] relative">
-        <div
-          style={{
-            left: selectedValue === 0 ? "0" : "50%",
-            boxShadow:
-              selectedValue === 0 ? "3px 0px 9px 0px #00000012" : "-7px 0px 9px 0px #00000012",
-          }}
-          className="transition-all duration-200 absolute top-0 w-1/2 h-full rounded-full bg-[#FFFFFF]"
-        />
-
-        {items.map((item, index) => (
-          <div
-            key={item.value}
-            className="rounded-full py-2 px-4 cursor-pointer z-10 transition-all duration-200 font-primary font-normal text-sm"
-            onClick={() => handleChange(index)}
-            style={{
-              color: selectedValue === index ? "#000000" : "#00000060",
-            }}
-          >
-            {item.label}
-          </div>
-        ))}
+      <div className="flex gap-2 rounded-full border-[0.5px] bg-[#F3F3F3] relative p-1">
+        {items.map((item, index) => {
+          const isSelected = selectedValue === index;
+          return (
+            <div
+              key={item.value}
+              className="relative rounded-full py-1.5 px-4 cursor-pointer transition-colors duration-200 font-primary font-normal text-sm"
+              onClick={() => handleChange(index)}
+              style={{
+                color: isSelected ? "#000000" : "#00000060",
+              }}
+            >
+              {isSelected && (
+                <motion.div
+                  layoutId={`toggle-pill-${uniqueId}`}
+                  className="absolute inset-0 rounded-full bg-[#FFFFFF]"
+                  style={{
+                    boxShadow: "0px 1px 4px rgba(0, 0, 0, 0.1)",
+                  }}
+                  transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                />
+              )}
+              <span className="relative z-10 whitespace-nowrap">{item.label}</span>
+            </div>
+          );
+        })}
       </div>
     </div>
   );

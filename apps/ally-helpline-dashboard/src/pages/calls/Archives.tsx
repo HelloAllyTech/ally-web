@@ -1,6 +1,7 @@
 import { FC, useState } from "react";
 
 import { motion } from "framer-motion";
+import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate, useLocation } from "react-router-dom";
 
@@ -9,7 +10,6 @@ import { ROUTES } from "@constants";
 import { updateFilters } from "@reducer";
 import { RootState } from "@store";
 import { SessionType } from "@types";
-import { useTranslation } from "react-i18next";
 
 import { ArchivesLogsTable } from "./components";
 import { SessionUserGroup } from "./constants";

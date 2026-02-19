@@ -1,4 +1,5 @@
 import { FC, useEffect, useRef, useState, useCallback, RefObject } from "react";
+
 import { useTranslation } from "react-i18next";
 
 import "./styles.css";

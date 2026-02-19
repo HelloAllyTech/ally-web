@@ -1,5 +1,6 @@
 import { FC, useState, useCallback } from "react";
 
+import { useTranslation } from "react-i18next";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
 
@@ -34,6 +35,7 @@ export const CaseTrackDetails: FC<CaseTrackDetailsProps> = ({ type }) => {
   const id = type === pageType.CASE ? caseId : pathwayId;
   const navigate = useNavigate();
   const { state } = useLocation();
+  const { t } = useTranslation();
 
   // Use languages from location state or fallback to empty array
   const [selectedLanguage, setSelectedLanguage] = useState<LanguageOption | null>(
@@ -119,7 +121,7 @@ export const CaseTrackDetails: FC<CaseTrackDetailsProps> = ({ type }) => {
       scenario => scenario.status === PathwayScenarioStatus.UNLOCKED,
     );
     if (!nextScenario) {
-      toast.error("Upcoming simulation is locked");
+      toast.error(t("learn.errors.locked"));
       return;
     }
     setSelectedScenario(nextScenario);
@@ -201,12 +203,12 @@ export const CaseTrackDetails: FC<CaseTrackDetailsProps> = ({ type }) => {
   // Type-specific labels
   const labels = {
     case: {
-      breadcrumb: "Cases",
-      notFound: "Case not found",
+      breadcrumb: t("learn.tabs.cases"),
+      notFound: t("learn.notFound.case"),
     },
     track: {
-      breadcrumb: "Tracks",
-      notFound: "Track not found",
+      breadcrumb: t("learn.tabs.tracks"),
+      notFound: t("learn.notFound.track"),
     },
   };
 
@@ -228,7 +230,7 @@ export const CaseTrackDetails: FC<CaseTrackDetailsProps> = ({ type }) => {
           onClick={() => navigate(ROUTES.LEARN)}
           className="px-4 py-2 bg-primary-500 text-white rounded-md hover:bg-primary-600 transition-colors"
         >
-          Back to Learn
+          {t("learn.backToLearn")}
         </button>
       </div>
     );
@@ -291,7 +293,7 @@ export const CaseTrackDetails: FC<CaseTrackDetailsProps> = ({ type }) => {
           onClick={handleStartOrContinueSimulation}
           className="px-6 py-2 bg-primary-500 text-white rounded-full font-tertiary text-base font-medium hover:bg-primary-600 transition-colors"
         >
-          {hasProgress ? "Continue" : "Start"}
+          {hasProgress ? t("common.continue") : t("common.start")}
         </button>
       )}
     </div>
@@ -333,16 +335,17 @@ export const CaseTrackDetails: FC<CaseTrackDetailsProps> = ({ type }) => {
         description={selectedScenario.description}
         coverImageUrl={selectedScenario.coverImageUrl}
         coverVideoUrl={selectedScenario.coverVideoUrl}
-        headerTitle="Simulation"
-        headerSubtitle="Details"
-        scenarioLabel="Scenario:"
-        primaryButtonText={isStarting ? "Starting..." : "Start Simulation"}
-        secondaryButtonText="Close"
+        headerTitle={t("learn.scenario.pageTitleEmphasis")}
+        headerSubtitle={t("common.details")}
+        scenarioLabel={t("learn.scenario.scenarioLabel")}
+        primaryButtonText={isStarting ? t("common.starting") : t("learn.scenario.startButton")}
+        secondaryButtonText={t("common.close")}
         onPrimaryClick={handleStartSimulation}
         onSecondaryClick={handleCloseModal}
         onClickOutside={handleCloseModal}
         isPrimaryLoading={isStarting}
         triggerWarnings={selectedScenario.triggerWarnings}
+        triggerWarningsLabel={t("learn.scenario.triggerWarnings")}
         renderAdditionalContent={renderLanguageDropdown}
       />
     );
@@ -357,9 +360,9 @@ export const CaseTrackDetails: FC<CaseTrackDetailsProps> = ({ type }) => {
       {renderModal()}
       <ConfirmationDialog
         isOpen={showNotification}
-        title={{ normal: "Before you get started", italic: "" }}
-        content="At times, the bot may be unresponsive, or have unusual lag times. We are always working to improve the experience!"
-        buttonText="Start Session"
+        title={{ normal: t("learn.scenario.preStart.titleNormal"), italic: "" }}
+        content={t("learn.scenario.preStart.content")}
+        buttonText={t("learn.scenario.preStart.button")}
         onButtonClick={handleProceedWithSimulation}
         buttonVariant={ButtonVariant.PRIMARY}
         onClose={() => setShowNotification(false)}

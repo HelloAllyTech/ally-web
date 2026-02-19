@@ -37,6 +37,7 @@ export interface SummaryField {
   isEnhanceable?: boolean;
   key: SummaryFieldKey;
   label: string;
+  labelKey?: string;
   options?: string[];
   placeholder?: string;
   placeholderKey?: string;

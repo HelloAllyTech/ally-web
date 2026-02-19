@@ -1,8 +1,8 @@
 // File: apps/ally-helpline-dashboard/src/pages/suspended-user/SuspendedUser.tsx
+import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 
 import { SuspendedUserIcon } from "@assets";
-import { useTranslation } from "react-i18next";
 
 export const SuspendedUser = () => {
   const navigate = useNavigate();

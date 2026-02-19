@@ -128,10 +128,6 @@ jobs:
         - changes
       if: needs.prepare-env.outputs.should_deploy == 'true' && needs.changes.outputs.dashboard == 'true'
       runs-on: ubuntu-22.04
-      env:
-        TRANSLATION_PROVIDER: openai
-        OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-        OPENAI_MODEL: gpt-4o-mini
       steps:
         - name: Checkout
           uses: actions/checkout@v4
@@ -148,7 +144,7 @@ jobs:
           run: npm ci --legacy-peer-deps
 
         - name: Sync translations
-          run: npm run i18n:sync
+          run: npm run i18n:sync -- ${{ secrets.OPENAI_API_KEY }}
 
         - name: Commit updated locales
           run: |

@@ -1,9 +1,9 @@
 // File: apps/ally-helpline-dashboard/src/components/nav-sidebar/NavSideBar.tsx
 import { FC, useEffect, useState } from "react";
-import { useTranslation } from "react-i18next";
 
 import { Tooltip } from "@mui/material";
 import { useForm } from "react-hook-form";
+import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 
 import { CustomImage, FEATURE_FLAGS_MAP } from "@ally-ui-mono/ui-shared";
@@ -228,7 +228,7 @@ const NavSideBar: FC<NavSideBarProps> = ({ activeTab, onTabChange, isOpen, onClo
           <hr className="w-full border-t border-gray-200" data-testid="nav-sidebar-divider" />
 
           {/* Language selector */}
-          {FEATURE_FLAGS_MAP.LANGUAGE_SELECTOR_FLAG && (
+          {FEATURE_FLAGS_MAP.LANGUAGE_SELECTOR_FLAG && isExpanded && (
             <div className="w-full mb-2">
               <LanguageSelector label={t("nav.language.label")} />
             </div>

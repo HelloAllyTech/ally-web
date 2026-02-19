@@ -14,7 +14,7 @@ import { Checklist } from "@components";
 import { FeedbackSectionType } from "@types";
 import { getFormattedDateTime, getFormattedTimeFromDuration } from "@utils";
 
-import { getFeedbackSections } from "./constants";
+import { feedbackSections } from "./constants";
 import { FeedbackSectionProps } from "./types";
 import { getFormattedFeedbackSection } from "./utils";
 
@@ -123,7 +123,7 @@ export const FeedbackSection: FC<FeedbackSectionProps> = props => {
           {FEATURE_FLAGS_MAP.SUMMARY_TABS_FLAG ? (
             <Checklist className="max-h-[calc(100vh-200px)]" sessionId={props.id} />
           ) : (
-            feedbackSections.map(({ key, label, type, columns }, index) => {
+            feedbackSections(t).map(({ key, label, type, columns }, index) => {
               return (
                 <motion.div
                   key={key}

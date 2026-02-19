@@ -1,5 +1,7 @@
 import { FunctionComponent, useEffect, useMemo, useState } from "react";
 
+import { useTranslation } from "react-i18next";
+
 import { logger } from "@ally-ui-mono/ui-shared";
 import { useLazyGetDashboardsQuery, useLazyGetDashboardUrlQuery } from "@api";
 import { NoAnalytics } from "@assets";
@@ -7,7 +9,6 @@ import { ToggleButtonGroup } from "@components";
 import { AnalyticsType } from "@constants";
 
 import { analyticsTypeOptions, ANALYTICS_DASHBOARD_REFRESH_INTERVAL } from "./constants";
-import { useTranslation } from "react-i18next";
 
 export const Analytics: FunctionComponent = () => {
   const { t } = useTranslation();

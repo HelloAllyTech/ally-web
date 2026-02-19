@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 
+import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 
 import {
@@ -12,7 +13,6 @@ import { AchievementsCard, LeaderboardList, LeaderboardUser } from "@components"
 import { ROUTES, Permissions } from "@constants";
 import { useUser } from "@hooks";
 import { AchievementItemData, LockedStatus, UserBadge, ViewedStatus } from "@types";
-import { useTranslation } from "react-i18next";
 
 // Map UserBadge (earned badges) to AchievementItemData format
 const mapUserBadgeToAchievementItem = (badge: UserBadge): AchievementItemData => ({

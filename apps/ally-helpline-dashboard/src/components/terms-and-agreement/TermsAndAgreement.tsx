@@ -1,8 +1,8 @@
 // File: apps/ally-helpline-dashboard/src/components/terms-and-agreement/TermsAndAgreement.tsx
 import { useState } from "react";
-import { useTranslation } from "react-i18next";
 
 import { Dialog } from "@mui/material";
+import { useTranslation } from "react-i18next";
 
 import { Button } from "@components";
 import { PRIVACY_POLICY_URL } from "@constants";

@@ -1,7 +1,7 @@
 import { FC, useEffect, useState } from "react";
-import { useTranslation } from "react-i18next";
 
 import { AnimatePresence, motion } from "framer-motion";
+import { useTranslation } from "react-i18next";
 import { useLocation } from "react-router-dom";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";

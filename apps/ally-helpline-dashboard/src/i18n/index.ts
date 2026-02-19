@@ -1,8 +1,8 @@
 // File: apps/ally-helpline-dashboard/src/i18n/index.ts
 
 import i18n from "i18next";
-import { initReactI18next } from "react-i18next";
 import LanguageDetector from "i18next-browser-languagedetector";
+import { initReactI18next } from "react-i18next";
 
 // Import JSON resources (one file per language)
 // Using bundler module resolution: Vite + TS supports JSON imports
@@ -32,7 +32,6 @@ void i18n
       caches: ["localStorage"],
       lookupLocalStorage: "i18nextLng",
     },
-    returnEmptyString: false,
     // Allow regional/script variants (e.g., pt-BR, zh-Hant)
     load: "all",
   });
