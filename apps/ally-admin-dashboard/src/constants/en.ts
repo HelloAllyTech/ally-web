@@ -28,6 +28,7 @@ export const en = {
     areYouSureYouWantToDelete: "Are you sure you want to delete",
   },
   errors: {
+    failedCompetencyCreation: "Failed to create competency",
     failedToDeleteBadges: "Failed to delete badges",
     failedToDeleteCharacter: "Failed to delete character(s)",
     failedToGoogleSignIn: "Failed to sign in with Google. Please try again.",
