@@ -82,18 +82,20 @@ export const Checklist: FC<ChecklistProps> = ({
         {items.map((item: ChecklistItem) => (
           <div
             key={item.id}
-            className={`flex items-center justify-between p-4 rounded-lg border-2 transition-all ${
-              item?.hasOccurred ? "border-green-200 bg-green-50/30" : "border-red-200 bg-red-50/30"
+            className={`flex items-center p-4 rounded-lg border-[1px] transition-all ${
+              item?.hasOccurred
+                ? "border-[#A5D6A7] bg-green-50/30 "
+                : "border-[#FFA79C] bg-red-50/30"
             }`}
           >
-            <span className="text-base text-gray-800 font-primary flex-1">{item.name}</span>
-            <div className="ml-4 flex-shrink-0">
+            <div className="mr-4 flex-shrink-0">
               {item?.hasOccurred ? (
                 <TickGreenBackground className="w-6 h-6" />
               ) : (
                 <CrossRedBackground className="w-6 h-6" />
               )}
             </div>
+            <span className="text-base text-gray-800 font-primary flex-1">{item.name}</span>
           </div>
         ))}
       </div>

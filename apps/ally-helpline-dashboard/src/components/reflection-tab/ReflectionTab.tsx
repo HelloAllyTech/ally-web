@@ -25,7 +25,7 @@ interface ReflectionTabProps {
 
 const Header = () => {
   return (
-    <span className="text-typography-900 font-primary text-base font-semibold border-b pb-2">
+    <span className="text-typography-900 font-primary text-base font-semibold border-b border-gray-200 pb-2">
       Deeper Reflection
     </span>
   );
@@ -138,11 +138,9 @@ const Prompts = ({ prompts, sessionId }: { prompts: Prompt[]; sessionId: string 
 export const ReflectionTab: FC<ReflectionTabProps> = ({ sessionId }) => {
   const { data: reflectionPrompts } = useGetReflectionPromptsQuery({ sessionId });
   return (
-    <div className="p-1 rounded-lg w-full h-full border shadow-lg">
-      <div className="flex flex-col gap-4 w-full h-full rounded-lg bg-white p-4">
-        <Header />
-        <Prompts prompts={reflectionPrompts?.reflectionPrompts ?? PROMPTS} sessionId={sessionId} />
-      </div>
+    <div className="flex flex-col gap-4 w-full h-full rounded-lg border border-gray-200 bg-white p-4">
+      <Header />
+      <Prompts prompts={reflectionPrompts?.reflectionPrompts ?? PROMPTS} sessionId={sessionId} />
     </div>
   );
 };

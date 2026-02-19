@@ -38,6 +38,7 @@ import {
   SimulationPreviewType,
   triggerWarning,
   behaviourInstruction,
+  stateInstruction,
 } from "@types";
 import {
   getCreateSimulationSubSectionById,
@@ -122,6 +123,23 @@ export const CreateSimulation: FC = () => {
         const mappings = value as Record<string, string> | undefined;
         const hasAnyVoiceSelected = !!mappings && Object.values(mappings).some(v => !!v);
         if (!hasAnyVoiceSelected) return false;
+      }
+      if (fieldId === FORM_FIELD_IDS.STATE_INSTRUCTIONS) {
+        const stateInstructions = value as stateInstruction[];
+        if (stateInstructions.some(instruction => instruction.instruction.trim() === ""))
+          return false;
+      }
+      if (fieldId === FORM_FIELD_IDS.BEHAVIOR_INSTRUCTIONS) {
+        const behaviorInstructions = value as behaviourInstruction[];
+        if (
+          behaviorInstructions.some(
+            instruction =>
+              instruction.behaviors.length === 0 ||
+              instruction.category.length === 0 ||
+              instruction.instructions.length === 0,
+          )
+        )
+          return false;
       }
       return true;
     });

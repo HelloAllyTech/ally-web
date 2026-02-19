@@ -8,8 +8,9 @@ import { EditableTable } from "./EditableTable";
 interface StateInstructionProps {
   formMethods: any;
   id: string;
+  isMandatory: boolean;
 }
-export const StateInstruction: FC<StateInstructionProps> = ({ formMethods, id }) => {
+export const StateInstruction: FC<StateInstructionProps> = ({ formMethods, id, isMandatory }) => {
   const formData = (formMethods.watch(id) as stateInstruction[]) ?? [];
 
   const tableData = DEFAULT_STATE_INSTRUCTIONS.map(defaultRow => {
@@ -33,8 +34,9 @@ export const StateInstruction: FC<StateInstructionProps> = ({ formMethods, id })
 
   return (
     <div className="w-full flex flex-col gap-2">
-      <div className="text-base text-typography-900 font-primary">
+      <div className="text-base text-typography-900 font-primary flex gap-1">
         {en.simulation.statesInstruction}
+        {isMandatory && <span className="text-destructive-500">*</span>}
       </div>
       <EditableTable
         columns={STATES_INSTRUCTION_TABLE_HEADERS}

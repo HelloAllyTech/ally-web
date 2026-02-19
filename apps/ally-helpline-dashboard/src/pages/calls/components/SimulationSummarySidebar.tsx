@@ -6,7 +6,6 @@ import { useNavigate } from "react-router-dom";
 import { FEATURE_FLAGS_MAP, Toggle } from "@ally-ui-mono/ui-shared";
 import {
   useCreateReviewMutation,
-  useGetChatHistoryQuery,
   useGetSimulationSummaryQuery,
   useUpdateReviewMutation,
 } from "@api";
@@ -38,7 +37,6 @@ const SimulationSummarySidebar: FC<SimulationSummarySidebarProps> = ({
   const { data: summary } = useGetSimulationSummaryQuery(summaryId);
   const [createReview, { isLoading: isCreateReviewLoading }] = useCreateReviewMutation();
   const [updateReview, { isLoading: isUpdateReviewLoading }] = useUpdateReviewMutation();
-  const { data: history } = useGetChatHistoryQuery({ sessionId: summaryId });
 
   const onSummaryFetch = (summary: SimulationSummaryType) => {
     hasFeedback.current = summary.hasFeedback;
@@ -117,7 +115,7 @@ const SimulationSummarySidebar: FC<SimulationSummarySidebarProps> = ({
           {
             id: 2,
             label: "Ask AI",
-            content: <AskAiTab sessionId={summaryId} history={history} />,
+            content: <AskAiTab sessionId={summaryId} />,
           },
         ]
       : []),

@@ -81,7 +81,7 @@ const Content: FC<ContentProps> = ({
 );
 
 const LoadingState: FC = () => (
-  <div className={`grid grid-cols-${GRID_COLS} gap-5`}>
+  <div className={`grid grid-cols-${String(GRID_COLS)} gap-5`}>
     {[...Array(SKELETON_COUNT)].map((_, index) => (
       <div
         key={`skeleton-${index}`}
@@ -228,7 +228,7 @@ export const ImageLibrary: FC<ImageLibraryProps> = ({ isOpen, onClose, onSelect 
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       <div className="absolute inset-0 bg-black bg-opacity-50" onClick={handleClose} />
       <div
-        className="relative bg-white rounded-lg shadow-xl flex flex-col w-[30%] h-[60%]"
+        className="relative bg-white rounded-lg shadow-xl flex flex-col w-[40%] h-[60%] min-w-[400px]"
         onClick={e => e.stopPropagation()}
       >
         <Header />

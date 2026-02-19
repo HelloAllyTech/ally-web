@@ -15,6 +15,7 @@ interface BehaviourRow {
 interface BehavioursInstructionProps {
   formMethods: any;
   id: string;
+  isMandatory: boolean;
 }
 
 const createEmptyFormValue = () => ({
@@ -24,7 +25,11 @@ const createEmptyFormValue = () => ({
   instructions: [] as string[],
 });
 
-export const BehavioursInstruction: FC<BehavioursInstructionProps> = ({ formMethods, id }) => {
+export const BehavioursInstruction: FC<BehavioursInstructionProps> = ({
+  formMethods,
+  id,
+  isMandatory,
+}) => {
   const formData: BehaviourRow[] = formMethods.watch(id) ?? [];
 
   const createBehavioursInstructionObject = useCallback(
@@ -84,8 +89,9 @@ export const BehavioursInstruction: FC<BehavioursInstructionProps> = ({ formMeth
 
   return (
     <div className="w-full flex flex-col gap-2">
-      <div className="text-base text-typography-900 font-primary">
+      <div className="text-base text-typography-900 font-primary flex gap-1">
         {en.simulation.behavioursInstruction}
+        {isMandatory && <span className="text-destructive-500">*</span>}
       </div>
       <NotionTable
         tableData={tableData}

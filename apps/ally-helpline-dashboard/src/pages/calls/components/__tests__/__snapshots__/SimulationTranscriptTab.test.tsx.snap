@@ -3,12 +3,12 @@
 exports[`SimulationTranscriptTab > should match snapshot when rendered 1`] = `
 <DocumentFragment>
   <div
-    class="relative h-[calc(100vh-140px)] custom-scrollbar overflow-y-auto undefined"
+    class="relative h-[calc(100vh-140px)] custom-scrollbar p-4 border border-gray-200 rounded-lg overflow-y-auto undefined"
   >
     <span
       class="text-typography-900 font-primary text-base font-semibold pb-2"
     >
-      Deeper Reflection
+      Annotated Transcript
     </span>
     <hr
       class="mb-5 mt-2"

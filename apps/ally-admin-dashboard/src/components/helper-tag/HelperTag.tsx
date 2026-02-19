@@ -194,15 +194,17 @@ export const HelperTag: React.FC<HelperTagProps> = ({ tags, updateTags }) => {
         </div>
       ))}
       <div className="relative">
-        <div
-          ref={triggerRef}
-          className={`flex items-center border border-border-light ${tags.length > 0 ? "opacity-0 group-hover:opacity-100" : "opacity-100"}`}
-          onClick={addTagButton}
-        >
-          <button type="button" className="text-primary text-sm p-1">
-            <Plus />
-          </button>
-        </div>
+        {tags?.length < 5 && (
+          <div
+            ref={triggerRef}
+            className={`flex items-center border border-border-light ${tags.length > 0 ? "opacity-0 group-hover:opacity-100" : "opacity-100"}`}
+            onClick={addTagButton}
+          >
+            <button type="button" className="text-primary text-sm p-1">
+              <Plus />
+            </button>
+          </div>
+        )}
         {openDropdown && renderDropdown()}
       </div>
     </div>

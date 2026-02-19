@@ -8,7 +8,6 @@ import { useNavigate, useParams } from "react-router-dom";
 import { FEATURE_FLAGS_MAP, Toggle } from "@ally-ui-mono/ui-shared";
 import {
   useCreateReviewMutation,
-  useGetChatHistoryQuery,
   useGetSimulationSummaryQuery,
   useUpdateReviewMutation,
 } from "@api";
@@ -32,7 +31,6 @@ export const PostSimulationSummary: FC = () => {
   const { data: summary } = useGetSimulationSummaryQuery(sessionId);
   const [createReview] = useCreateReviewMutation();
   const [updateReview] = useUpdateReviewMutation();
-  const { data: history } = useGetChatHistoryQuery({ sessionId });
 
   const canShowUpNextTab =
     (summary?.scenarioPathSessionItemId || summary?.caseSessionItemId) &&
@@ -49,7 +47,7 @@ export const PostSimulationSummary: FC = () => {
           {
             id: 4,
             label: "Ask AI",
-            content: <AskAiTab sessionId={sessionId} history={history} />,
+            content: <AskAiTab sessionId={sessionId} />,
           },
         ]
       : []),
