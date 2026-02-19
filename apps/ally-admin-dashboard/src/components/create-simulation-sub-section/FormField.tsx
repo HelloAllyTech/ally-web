@@ -6,6 +6,7 @@ import { FormFieldProps } from "@types";
 import { AutoTerminationRuleField } from "../auto-termination-rule-field";
 import { BehavioursInstruction } from "../behaviours-instruction";
 import { CharacterProfileSelector } from "../character-profile-selector";
+import { Competency } from "../competency";
 import { CustomFieldGroup } from "../custom-field-group";
 import { DropdownField } from "../dropdown-field";
 import { FileUpload } from "../file-upload";
@@ -202,6 +203,10 @@ export const FormField: FC<FormFieldProps> = ({ config, formMethods }) => {
         );
       case FORM_FIELD_TYPES.CUSTOM.STATES_INSTRUCTION:
         return <StateInstruction formMethods={formMethods} id={id} isMandatory={isMandatory} />;
+      case FORM_FIELD_TYPES.COMPETENCY:
+        return (
+          <Competency formMethods={formMethods} id={id} isMandatory={isMandatory} label={label} />
+        );
       default:
         return null;
     }

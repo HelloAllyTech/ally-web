@@ -88,6 +88,7 @@ export const SimulationPreview: FC<SimulationPreviewProps> = ({ simulation, isOp
         checklistEvents: checklistEvents || [],
         experienceMode: scenario?.metadata?.experienceMode,
         checklistType: scenario?.metadata?.checklistType,
+        showScoreMeter: scenario?.metadata?.showScoreMeter,
       }),
     );
     navigate(ROUTES.SIMULATION_PREVIEW(accessToken?.roomName));

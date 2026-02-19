@@ -109,6 +109,7 @@ export const useStartSimulation = (
             checklistType: scenario?.checklistType,
             maxTimeValue: scenario?.maxTimeValue,
             timerMode: scenario?.timerMode,
+            showScoreMeter: scenario?.showScoreMeter,
           }),
         );
 
