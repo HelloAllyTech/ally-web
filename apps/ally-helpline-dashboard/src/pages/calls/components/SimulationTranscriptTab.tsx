@@ -96,6 +96,10 @@ const SimulationTranscriptTab: FC<SimulationTranscriptTabProps> = ({
 
   return (
     <div className={`relative h-[calc(100vh-140px)] custom-scrollbar overflow-y-auto ${className}`}>
+      <span className="text-typography-900 font-primary text-base font-semibold pb-2">
+        Deeper Reflection
+      </span>
+      <hr className="mb-5 mt-2" />
       <TranscriptListing
         transcriptList={transcriptList}
         handleLoadMore={handleLoadMore}

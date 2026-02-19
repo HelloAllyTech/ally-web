@@ -31,9 +31,10 @@ import {
   pageType,
   GetReflectionPromptsResponse,
   GetSimulationChecklistResponse,
-  ReflectionPromptsRequest,
+  UpdateReflectionPromptRequest,
   GetSimulationSkillsResponse,
   GetChatHistoryResponse,
+  Prompt,
 } from "@types";
 
 import { baseAPI } from "./baseAPI";
@@ -303,18 +304,12 @@ const learnAPI = baseAPI.injectEndpoints({
       }),
       invalidatesTags: [TAG_TYPES.SCENARIO_CASE_DETAILS],
     }),
-    createReflectionPrompts: builder.mutation<void, ReflectionPromptsRequest>({
-      query: ({ sessionId, prompts }) => ({
-        url: ApiEndpoints.LEARN.REFLECTION_PROMPTS(sessionId),
-        method: HttpMethod.POST,
-        body: prompts,
-      }),
-    }),
     getReflectionPrompts: builder.query<GetReflectionPromptsResponse, { sessionId: string }>({
       query: ({ sessionId }) => ({
         url: ApiEndpoints.LEARN.REFLECTION_PROMPTS(sessionId),
         method: HttpMethod.GET,
       }),
+      providesTags: [TAG_TYPES.REFLECTION_PROMPTS],
     }),
     /**
      * Get checklist for a scenario session.
@@ -327,12 +322,13 @@ const learnAPI = baseAPI.injectEndpoints({
         method: HttpMethod.GET,
       }),
     }),
-    updateReflectionPrompts: builder.mutation<void, ReflectionPromptsRequest>({
-      query: ({ sessionId, prompts }) => ({
-        url: ApiEndpoints.LEARN.REFLECTION_PROMPTS(sessionId),
-        method: HttpMethod.PUT,
-        body: prompts,
+    updateReflectionPrompt: builder.mutation<Prompt, UpdateReflectionPromptRequest>({
+      query: ({ sessionId, reflectionPromptId, promptId, response }) => ({
+        url: ApiEndpoints.LEARN.UPDATE_REFLECTION_PROMPT(sessionId, reflectionPromptId),
+        method: HttpMethod.PATCH,
+        body: { promptId, response },
       }),
+      invalidatesTags: [TAG_TYPES.REFLECTION_PROMPTS],
     }),
     /**
      * Get skills and emotional movements for a scenario session.
@@ -376,8 +372,7 @@ export const {
   useStartCaseSimulationMutation,
   useGetReflectionPromptsQuery,
   useGetSimulationChecklistQuery,
-  useCreateReflectionPromptsMutation,
-  useUpdateReflectionPromptsMutation,
+  useUpdateReflectionPromptMutation,
   useGetSimulationSkillsQuery,
   useGetChatHistoryQuery,
 } = learnAPI;

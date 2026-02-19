@@ -86,7 +86,7 @@ export const FeedbackSection: FC<FeedbackSectionProps> = props => {
           Session Feedback
         </span>
         <div>
-          <div className="flex items-center gap-5 border-b pb-4">
+          <div className="flex items-center gap-5">
             <div>
               <CustomImage
                 src={formattedData.coverImage}

@@ -103,7 +103,7 @@ const SimulationSummarySidebar: FC<SimulationSummarySidebarProps> = ({
   const tabList = [
     {
       id: 1,
-      label: "Summary",
+      label: "Session Review",
       content: (
         <SimulationSummary
           summaryId={summaryId}
@@ -112,11 +112,6 @@ const SimulationSummarySidebar: FC<SimulationSummarySidebarProps> = ({
         />
       ),
     },
-    {
-      id: 3,
-      label: "Transcription",
-      content: <SimulationTranscriptTab sessionId={summaryId} councellorName={councellorName} />,
-    },
     ...(FEATURE_FLAGS_MAP.SUMMARY_TABS_FLAG
       ? [
           {
@@ -124,14 +119,23 @@ const SimulationSummarySidebar: FC<SimulationSummarySidebarProps> = ({
             label: "Ask AI",
             content: <AskAiTab sessionId={summaryId} history={history} />,
           },
+        ]
+      : []),
+    {
+      id: 3,
+      label: "Annotated Transcript",
+      content: <SimulationTranscriptTab sessionId={summaryId} councellorName={councellorName} />,
+    },
+    ...(FEATURE_FLAGS_MAP.SUMMARY_TABS_FLAG
+      ? [
           {
             id: 5,
-            label: "Skills",
+            label: "Skills  Demonstrated",
             content: <SkillsTab sessionId={summaryId} />,
           },
           {
             id: 4,
-            label: "Reflection",
+            label: "Deeper Reflection",
             content: <ReflectionTab sessionId={summaryId} />,
           },
         ]
