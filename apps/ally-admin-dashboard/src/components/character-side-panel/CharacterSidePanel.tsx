@@ -87,6 +87,17 @@ export const CharacterSidePanel: React.FC<CharacterSidePanelProps> = ({
       sexualOrientation: "",
     },
   );
+  const [initialData, setInitialData] = useState<CharacterData>(
+    selectedCharacter || {
+      name: "",
+      age: "",
+      gender: "",
+      profession: "",
+      currentLocation: "",
+      genderIdentity: "",
+      sexualOrientation: "",
+    },
+  );
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
   const isSavingRef = useRef(false);
 
@@ -96,6 +107,7 @@ export const CharacterSidePanel: React.FC<CharacterSidePanelProps> = ({
   useEffect(() => {
     if (selectedCharacter) {
       setFormData(selectedCharacter);
+      setInitialData(selectedCharacter);
     }
   }, [selectedCharacter]);
 
@@ -167,6 +179,22 @@ export const CharacterSidePanel: React.FC<CharacterSidePanelProps> = ({
       formData.currentLocation.trim() !== "" &&
       formData.genderIdentity !== "" &&
       formData.sexualOrientation !== ""
+    );
+  };
+
+  const hasFormChanged = () => {
+    if (isNewCharacter) {
+      return true;
+    }
+
+    return (
+      formData.name !== initialData.name ||
+      formData.age !== initialData.age ||
+      formData.gender !== initialData.gender ||
+      (formData.profession || "") !== (initialData.profession || "") ||
+      formData.currentLocation !== initialData.currentLocation ||
+      formData.genderIdentity !== initialData.genderIdentity ||
+      formData.sexualOrientation !== initialData.sexualOrientation
     );
   };
 
@@ -279,7 +307,7 @@ export const CharacterSidePanel: React.FC<CharacterSidePanelProps> = ({
           <Button
             variant={ButtonVariant.PRIMARY}
             onClick={handleSave}
-            disabled={!isFormValid() || isCreating || isUpdating}
+            disabled={!isFormValid() || !hasFormChanged() || isCreating || isUpdating}
             className="min-w-[120px]"
           >
             {isCreating || isUpdating
