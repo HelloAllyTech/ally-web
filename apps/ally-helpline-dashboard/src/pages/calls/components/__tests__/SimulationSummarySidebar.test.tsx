@@ -145,13 +145,13 @@ describe("SimulationSummarySidebar Component", () => {
       renderComponent();
 
       expect(screen.getByTestId("tab-1")).toBeInTheDocument();
-      expect(screen.getByTestId("tab-label-1")).toHaveTextContent("Summary");
+      expect(screen.getByTestId("tab-label-1")).toHaveTextContent("Session Review");
       expect(screen.getByTestId("tab-3")).toBeInTheDocument();
-      expect(screen.getByTestId("tab-label-3")).toHaveTextContent("Transcription");
+      expect(screen.getByTestId("tab-label-3")).toHaveTextContent("Annotated Transcript");
       expect(screen.getByTestId("tab-2")).toBeInTheDocument();
       expect(screen.getByTestId("tab-label-2")).toHaveTextContent("Ask AI");
       expect(screen.getByTestId("tab-5")).toBeInTheDocument();
-      expect(screen.getByTestId("tab-label-5")).toHaveTextContent("Skills");
+      expect(screen.getByTestId("tab-label-5")).toHaveTextContent("Skills Demonstrated");
       expect(screen.getByTestId("tab-4")).toBeInTheDocument();
       expect(screen.getByTestId("tab-label-4")).toHaveTextContent("Reflection");
     });

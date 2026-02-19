@@ -41,13 +41,8 @@ export const PostSimulationSummary: FC = () => {
   const tabList = [
     {
       id: 1,
-      label: "Summary",
+      label: "Session Review",
       content: <SimulationSummary summaryId={sessionId} className="max-h-[calc(100vh-212px)]" />,
-    },
-    {
-      id: 2,
-      label: "Transcription",
-      content: <SimulationTranscriptTab sessionId={sessionId} className="w-full" />,
     },
     ...(FEATURE_FLAGS_MAP.SUMMARY_TABS_FLAG
       ? [
@@ -56,14 +51,23 @@ export const PostSimulationSummary: FC = () => {
             label: "Ask AI",
             content: <AskAiTab sessionId={sessionId} history={history} />,
           },
+        ]
+      : []),
+    {
+      id: 2,
+      label: "Annotated Transcript",
+      content: <SimulationTranscriptTab sessionId={sessionId} className="w-full" />,
+    },
+    ...(FEATURE_FLAGS_MAP.SUMMARY_TABS_FLAG
+      ? [
           {
             id: 5,
-            label: "Skills",
+            label: "Skills  Demonstrated",
             content: <SkillsTab sessionId={sessionId} />,
           },
           {
             id: 6,
-            label: "Reflection",
+            label: "Deeper Reflection",
             content: <ReflectionTab sessionId={sessionId} />,
           },
         ]

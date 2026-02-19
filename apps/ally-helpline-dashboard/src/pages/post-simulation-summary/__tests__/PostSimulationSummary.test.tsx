@@ -461,7 +461,7 @@ describe("PostSimulationSummary Component", () => {
       );
 
       expect(screen.getByTestId("tab-1")).toBeInTheDocument();
-      expect(screen.getByTestId("tab-1")).toHaveTextContent("Summary");
+      expect(screen.getByTestId("tab-1")).toHaveTextContent("Session Review");
     });
 
     it("should render Transcription tab", () => {
@@ -472,7 +472,7 @@ describe("PostSimulationSummary Component", () => {
       );
 
       expect(screen.getByTestId("tab-2")).toBeInTheDocument();
-      expect(screen.getByTestId("tab-2")).toHaveTextContent("Transcription");
+      expect(screen.getByTestId("tab-2")).toHaveTextContent("Annotated Transcript");
     });
 
     it("should have Summary tab selected by default", () => {
@@ -677,7 +677,7 @@ describe("PostSimulationSummary Component", () => {
       );
 
       const summaryTab = screen.getByTestId("tab-1");
-      expect(summaryTab).toHaveTextContent("Summary");
+      expect(summaryTab).toHaveTextContent("Session Review");
       expect(summaryTab).toHaveAttribute("data-value", "1");
     });
 
@@ -689,7 +689,7 @@ describe("PostSimulationSummary Component", () => {
       );
 
       const transcriptionTab = screen.getByTestId("tab-2");
-      expect(transcriptionTab).toHaveTextContent("Transcription");
+      expect(transcriptionTab).toHaveTextContent("Annotated Transcript");
       expect(transcriptionTab).toHaveAttribute("data-value", "2");
     });
 

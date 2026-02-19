@@ -107,15 +107,7 @@ exports[`PostSimulationSummary Component > Snapshot Testing > should match snaps
             data-value="1"
             role="tab"
           >
-            Summary
-          </button>
-          <button
-            aria-selected="false"
-            data-testid="tab-2"
-            data-value="2"
-            role="tab"
-          >
-            Transcription
+            Session Review
           </button>
           <button
             aria-selected="false"
@@ -127,11 +119,19 @@ exports[`PostSimulationSummary Component > Snapshot Testing > should match snaps
           </button>
           <button
             aria-selected="false"
+            data-testid="tab-2"
+            data-value="2"
+            role="tab"
+          >
+            Annotated Transcript
+          </button>
+          <button
+            aria-selected="false"
             data-testid="tab-5"
             data-value="5"
             role="tab"
           >
-            Skills
+            Skills  Demonstrated
           </button>
           <button
             aria-selected="false"
@@ -139,7 +139,7 @@ exports[`PostSimulationSummary Component > Snapshot Testing > should match snaps
             data-value="6"
             role="tab"
           >
-            Reflection
+            Deeper Reflection
           </button>
         </div>
         <div
@@ -270,15 +270,7 @@ exports[`PostSimulationSummary Component > Snapshot Testing > should match snaps
             data-value="1"
             role="tab"
           >
-            Summary
-          </button>
-          <button
-            aria-selected="false"
-            data-testid="tab-2"
-            data-value="2"
-            role="tab"
-          >
-            Transcription
+            Session Review
           </button>
           <button
             aria-selected="false"
@@ -290,11 +282,19 @@ exports[`PostSimulationSummary Component > Snapshot Testing > should match snaps
           </button>
           <button
             aria-selected="false"
+            data-testid="tab-2"
+            data-value="2"
+            role="tab"
+          >
+            Annotated Transcript
+          </button>
+          <button
+            aria-selected="false"
             data-testid="tab-5"
             data-value="5"
             role="tab"
           >
-            Skills
+            Skills  Demonstrated
           </button>
           <button
             aria-selected="false"
@@ -302,7 +302,7 @@ exports[`PostSimulationSummary Component > Snapshot Testing > should match snaps
             data-value="6"
             role="tab"
           >
-            Reflection
+            Deeper Reflection
           </button>
         </div>
         <div
