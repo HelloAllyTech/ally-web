@@ -41,6 +41,8 @@ import {
   Competency,
   CreateCompetencyRequest,
   TranscriptMessage,
+  RegenerateFieldRequest,
+  RegenerateFieldResponse,
 } from "@types";
 
 import { baseAPI } from "./baseApi";
@@ -671,6 +673,17 @@ const simulationStudioAPI = baseAPI.injectEndpoints({
       }),
       invalidatesTags: [TAG_TYPES.COMPETENCIES],
     }),
+
+    /**
+     * Regenerate a field using AI
+     */
+    regenerateField: builder.mutation<RegenerateFieldResponse, RegenerateFieldRequest>({
+      query: body => ({
+        url: "/v1/simulation/regenerate",
+        method: HttpMethod.POST,
+        body,
+      }),
+    }),
   }),
 });
 
@@ -728,4 +741,5 @@ export const {
   useGetCompetenciesQuery,
   useCreateCompetencyMutation,
   useGetReportTranscriptQuery,
+  useRegenerateFieldMutation,
 } = simulationStudioAPI;

@@ -447,3 +447,27 @@ export interface CompetenciesResponse {
 export interface CreateCompetencyRequest {
   name: string;
 }
+
+export interface ScenarioContext {
+  title?: string;
+  name?: string;
+  age?: number;
+  gender?: string;
+  genderIdentity?: string;
+  sexualOrientation?: string;
+  profession?: string;
+  currentLocation?: string;
+  competency?: string;
+  characterProfileText?: string;
+  challengeDescription?: string;
+}
+
+export interface RegenerateFieldRequest {
+  fieldName: string;
+  scenarioContext: ScenarioContext;
+}
+
+export interface RegenerateFieldResponse {
+  fieldName: string;
+  content: Record<string, any>;
+}
