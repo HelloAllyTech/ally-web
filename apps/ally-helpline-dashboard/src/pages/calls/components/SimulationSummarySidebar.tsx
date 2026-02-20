@@ -134,7 +134,7 @@ const SimulationSummarySidebar: FC<SimulationSummarySidebarProps> = ({
           {
             id: 4,
             label: "Deeper Reflection",
-            content: <ReflectionTab sessionId={summaryId} />,
+            content: <ReflectionTab sessionId={summaryId} className="flex-col" />,
           },
         ]
       : []),

@@ -253,6 +253,7 @@ export const CreateSimulation: FC = () => {
       ...(FEATURE_FLAGS_MAP.ADDITIONAL_CONFIG_FLAG && {
         behaviorInstructions: behaviourInstructionsArray,
       }),
+      ...(FEATURE_FLAGS_MAP.ADDITIONAL_CONFIG_FLAG && { competencyId: restForm.competency?.id }),
     };
 
     let response;

@@ -163,7 +163,7 @@ export interface GetSimulationByIdResponse {
     stateInstructions?: stateInstruction[];
     characterProfileText?: string;
   };
-  competencyId?: string;
+  competency?: Competency;
   terminationEvents?: terminationEvent[];
   terminationEvent?: {
     eventId: string;
