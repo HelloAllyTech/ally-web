@@ -2,8 +2,9 @@ import { FC, useEffect, useState } from "react";
 
 import { toast } from "sonner";
 
-import { logger } from "@ally-ui-mono/ui-shared/logger";
+import { logger, FEATURE_FLAGS_MAP } from "@ally-ui-mono/ui-shared";
 import { useLazyGetSimulationSummaryQuery } from "@api";
+import { Checklist } from "@components";
 
 import { FeedbackSection, LoaderSkeleton } from "./components";
 import { SimulationSummaryProps } from "./types";
@@ -72,6 +73,9 @@ export const SimulationSummary: FC<SimulationSummaryProps> = ({
       data-testid="simulation-summary"
     >
       <div className="flex flex-col gap-6 overflow-y-auto pb-20 flex-1 w-full custom-scrollbar px-[10px]">
+        {FEATURE_FLAGS_MAP.SUMMARY_TABS_FLAG && (
+          <Checklist className="max-h-[calc(100vh-200px)]" sessionId={summaryId} />
+        )}
         {retryMaxReached || summary?.details?.summary?.feedback ? (
           <FeedbackSection {...summary} />
         ) : (

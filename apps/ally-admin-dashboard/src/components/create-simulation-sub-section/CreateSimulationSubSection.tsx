@@ -50,7 +50,7 @@ export const CreateSimulationSubSection: FC<CreateSimulationSubSectionProps> = (
         return (
           <Fragment key={item.id}>
             {item.isDashedLineAbove && (
-              <div className="border-t border-dashed border-border-light w-full mb-6" />
+              <div className="border-t border-dashed border-border-light w-full" />
             )}
             <div
               ref={item.id === "checklistType" ? checklistTypeRef : null}

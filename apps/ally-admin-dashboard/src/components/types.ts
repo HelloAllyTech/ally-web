@@ -71,7 +71,7 @@ export interface InputFieldProps {
   isMandatory?: boolean;
   defaultValue?: string;
   disabled?: boolean;
-  regenerate?: boolean;
+  regenerateData?: () => void;
 }
 
 // DropdownField

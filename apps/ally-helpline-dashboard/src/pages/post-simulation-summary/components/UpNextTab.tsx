@@ -55,7 +55,7 @@ export const UpNextTab: FC<UpNextTabProps> = ({ sessionId, pageType, metaData })
   return (
     <div className="relative h-auto w-full  border border-border-light pb-20 rounded-lg">
       {upComingSimulation?.currentSession?.eventStatus === EVENT_STATUS.COMPLETED && (
-        <div className="text-typography-900 text-base mb-2 border-b border-border-light p-3 font-primary mx-3">
+        <div className="text-typography-900 text-base font-medium mb-2 border-b border-border-light p-3 font-primary mx-3">
           Up Next
         </div>
       )}

@@ -327,7 +327,7 @@ describe("CreateSimulationSubSection", () => {
       );
 
       const dashedLine = container.querySelector(".border-dashed");
-      expect(dashedLine).toHaveClass("mb-6");
+      expect(dashedLine).toHaveClass("border-t", "border-dashed", "border-border-light", "w-full");
     });
   });
 

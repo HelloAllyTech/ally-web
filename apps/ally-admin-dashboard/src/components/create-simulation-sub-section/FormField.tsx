@@ -31,7 +31,7 @@ export const FormField: FC<FormFieldProps> = ({ config, formMethods }) => {
     isMandatory,
     defaultValue,
     note,
-    regenerate,
+    regenerateData,
   } = config;
   const {
     formState: { errors },
@@ -50,7 +50,6 @@ export const FormField: FC<FormFieldProps> = ({ config, formMethods }) => {
               <label className="text-typography-900 text-base cursor-pointer flex items-center gap-1">
                 {label} {isMandatory && <span className="text-destructive-500">*</span>}
               </label>
-              {regenerate && <span className="text-typography-500 text-sm">Regenerate</span>}
             </div>
             <DropdownField
               id={id}
@@ -75,7 +74,7 @@ export const FormField: FC<FormFieldProps> = ({ config, formMethods }) => {
             multiline={multiline}
             isMandatory={isMandatory}
             defaultValue={defaultValue}
-            regenerate={regenerate}
+            regenerateData={regenerateData}
           />
         );
       case FORM_FIELD_TYPES.NUMBER:
@@ -88,7 +87,7 @@ export const FormField: FC<FormFieldProps> = ({ config, formMethods }) => {
             maxLength={maxLength}
             placeholder={placeholder}
             isMandatory={isMandatory}
-            regenerate={regenerate}
+            regenerateData={regenerateData}
           />
         );
       case FORM_FIELD_TYPES.IMAGE_UPLOAD:

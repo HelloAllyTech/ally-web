@@ -42,7 +42,7 @@ export const Checklist: FC<ChecklistProps> = ({
 }) => {
   const { data, isLoading, isError } = useGetSimulationChecklistQuery(
     { sessionId: sessionId || "" },
-    { skip: !sessionId || FEATURE_FLAGS_MAP.SUMMARY_TABS_FLAG },
+    { skip: !sessionId || !FEATURE_FLAGS_MAP.SUMMARY_TABS_FLAG },
   );
 
   // Use dummy data if API fails or returns no data
