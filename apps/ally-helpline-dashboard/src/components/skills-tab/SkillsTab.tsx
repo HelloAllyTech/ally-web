@@ -3,6 +3,8 @@ import { FC, useMemo } from "react";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, ResponsiveContainer } from "recharts";
 
 import { useGetSimulationSkillsQuery } from "@api";
+import { OverallScoreMeter } from "@src/components";
+import { SKILLS_MAP } from "@src/components/skills-tab/constants";
 
 interface SkillCoverage {
   label: string;
@@ -133,28 +135,36 @@ const SkillCoverageCard: FC<{ skills: SkillCoverage[] }> = ({ skills }) => (
     <div className="px-4 py-3 border-b border-b-[#B39DDB] bg-[#EDE7F680]">
       <h3 className="text-base font-medium text-typography-900">Skill Coverage</h3>
     </div>
-    <div className="grid grid-cols-3 divide-x divide-[#B39DDB]">
-      {skills.map(skill => (
-        <div key={skill.label} className="px-6 py-5 flex flex-col gap-3">
-          <div className="flex items-center justify-between">
-            <span className="text-sm font-normal font-primary text-typography-700">
-              {skill.label}
-            </span>
-            <span className="text-sm font-semibold font-primary text-typography-900">
-              {skill.percentage}%
-            </span>
+    <div className="flex p-6 gap-6">
+      <div className="w-1/3 flex items-center justify-center">
+        <OverallScoreMeter percentage={60} />
+      </div>
+      <div className="flex flex-col gap-3 w-2/3">
+        {skills.map(skill => (
+          <div key={skill.label} className="px-6 border rounded-sm py-5 flex w-full gap-2.5">
+            <div className="w-10 h-10 rounded-sm border" />
+            <div className="flex flex-col gap-3 w-full">
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-normal font-primary text-typography-700">
+                  {SKILLS_MAP[skill.label.toLowerCase() as keyof typeof SKILLS_MAP]}
+                </span>
+                <span className="text-sm font-semibold font-primary text-typography-900">
+                  {skill.percentage}%
+                </span>
+              </div>
+              <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
+                <div
+                  className="h-full rounded-full transition-all duration-300"
+                  style={{
+                    width: `${skill.percentage}%`,
+                    backgroundColor: skill.color,
+                  }}
+                />
+              </div>
+            </div>
           </div>
-          <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
-            <div
-              className="h-full rounded-full transition-all duration-300"
-              style={{
-                width: `${skill.percentage}%`,
-                backgroundColor: skill.color,
-              }}
-            />
-          </div>
-        </div>
-      ))}
+        ))}
+      </div>
     </div>
   </div>
 );
@@ -239,7 +249,7 @@ const EmotionalMovementChart: FC<{
     <div className="bg-white border border-[#B39DDB] rounded-md">
       <div className="px-4 py-3 border-b border-b-[#B39DDB] bg-[#EDE7F680]">
         <h3 className="text-base font-medium font-primary text-typography-900">
-          Client Emotional Movement
+          Client Distress Alleviation
         </h3>
       </div>
       <div className="px-6 py-6">
@@ -328,10 +338,8 @@ export const SkillsTab: FC<SkillsTabProps> = ({ sessionId }) => {
   const hasNoData = !hasSkillData && !hasEmotionalData;
 
   return (
-    <div className="w-full flex flex-col p-4 border border-gray-200 rounded-lg">
-      <span className="text-typography-900 font-primary text-base font-semibold">
-        Skills shown in this session
-      </span>
+    <div className="w-full flex flex-col p-4 border border-gray-200 rounded-lg custom-scrollbar overflow-y-auto">
+      <h2 className="text-lg font-medium font-primary text-typography-900">Skills Demonstrated</h2>
       <hr className="mb-5 mt-2 border-gray-200" />
 
       {hasSkillData && <SkillCoverageCard skills={skillCoverages} />}

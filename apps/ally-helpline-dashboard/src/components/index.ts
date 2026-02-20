@@ -34,6 +34,7 @@ import MaxActiveUsersDialog from "./max-active-users-dialog";
 import { NativeEmoji } from "./native-emoji";
 import NavSideBar from "./nav-sidebar";
 import OTP from "./otp";
+import OverallScoreMeter from "./overall-score-meter";
 import { PathwayScenarioCard } from "./pathway-scenario-card";
 import PermissionGuard from "./permission-guard";
 import ProfileSettings from "./profile-settings";
@@ -98,6 +99,7 @@ export {
   NativeEmoji,
   NavSideBar,
   OTP,
+  OverallScoreMeter,
   PathwayScenarioCard,
   ScenarioCard,
   ScenarioDetailsCard,
