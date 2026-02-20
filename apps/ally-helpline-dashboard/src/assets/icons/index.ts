@@ -112,6 +112,7 @@ import RoundCheckmark from "./round-checkmark.svg?react";
 import ScenarioIcon from "./scenario-icon.svg?react";
 import ScribeIcon from "./scribe.svg?react";
 import SearchIcon from "./search.svg?react";
+import SendArrow from "./send-arrow.svg?react";
 import SessionScoreIcon from "./session-score.svg?react";
 import SessionSummary from "./session-summary.svg?react";
 import Session from "./session.svg?react";
@@ -302,4 +303,5 @@ export {
   WandStars,
   UpArrow,
   AskAiIcon,
+  SendArrow,
 };

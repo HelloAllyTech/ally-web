@@ -1035,7 +1035,7 @@ export const BEHAVIOURS_INSTRUCTION_TABLE_COLUMNS = [
     placeholder: "Add Name",
     dataType: cellTypes.dropdown,
     options: BEHAVIOURS_INSTRUCTION_CATEGORIES,
-    minWidth: 180,
+    minWidth: 200,
   },
   {
     id: "behaviors",
@@ -1043,15 +1043,15 @@ export const BEHAVIOURS_INSTRUCTION_TABLE_COLUMNS = [
     accessor: "behaviors",
     placeholder: "Add Instruction",
     dataType: cellTypes.dropdownTags,
-    minWidth: 220,
+    minWidth: 300,
   },
   {
     id: "instructions",
-    label: "Actors response (optional)",
+    label: "Actors response",
     accessor: "instructions",
     placeholder: "Add Response",
     dataType: cellTypes.editableText,
-    minWidth: 220,
+    minWidth: 350,
   },
 ];
 

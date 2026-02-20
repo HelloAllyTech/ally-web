@@ -99,6 +99,7 @@ export const BehavioursInstruction: FC<BehavioursInstructionProps> = ({
         onRowChange={handleRowChange}
         tableStyle={tableStyle}
         autoHeight
+        hideSelectionColumn
       />
     </div>
   );

@@ -109,6 +109,7 @@ export const NotionTable = ({
   autoHeight = false,
   editIndex = 1,
   hasResizer = true,
+  hideSelectionColumn = false,
 }: NotionTableProps) => {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const { columns, data } = tableData;
@@ -174,18 +175,22 @@ export const NotionTable = ({
     useSortBy,
     useRowSelect,
     hooks => {
-      hooks.visibleColumns.push(columns => [
-        {
-          id: "selection",
-          minWidth: 50,
-          width: 50,
-          maxWidth: 50,
-          disableResizing: true,
-          Header: SelectionHeaderCell,
-          Cell: SelectionRowCell,
-        },
-        ...columns,
-      ]);
+      hooks.visibleColumns.push(columns =>
+        hideSelectionColumn
+          ? columns
+          : [
+              {
+                id: "selection",
+                minWidth: 50,
+                width: 50,
+                maxWidth: 50,
+                disableResizing: true,
+                Header: SelectionHeaderCell,
+                Cell: SelectionRowCell,
+              },
+              ...columns,
+            ],
+      );
     },
   );
 
@@ -305,7 +310,7 @@ export const NotionTable = ({
                         minWidth: column.minWidth,
                         maxWidth: column.maxWidth,
                       }}
-                      className="border border-border-light border-l-0 border-r-0"
+                      className={`border border-border-light border-r-0 ${hideSelectionColumn ? "border-l" : "border-l-0"}`}
                     >
                       {renderHeaderCell(column, headerIndex, hasResizer)}
                     </div>
