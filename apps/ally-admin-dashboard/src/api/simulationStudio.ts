@@ -655,7 +655,7 @@ const simulationStudioAPI = baseAPI.injectEndpoints({
      */
     getCompetencies: builder.query<CompetenciesResponse, { name?: string }>({
       query: ({ name }) => ({
-        url: "/v1/learn/competencies",
+        url: ApiEndpoints.SIMULATION_STUDIO.COMPETENCIES,
         method: HttpMethod.GET,
         params: name ? { name } : undefined,
       }),
@@ -667,7 +667,7 @@ const simulationStudioAPI = baseAPI.injectEndpoints({
      */
     createCompetency: builder.mutation<Competency, CreateCompetencyRequest>({
       query: body => ({
-        url: "/v1/learn/competencies",
+        url: ApiEndpoints.SIMULATION_STUDIO.COMPETENCIES,
         method: HttpMethod.POST,
         body,
       }),
@@ -679,7 +679,7 @@ const simulationStudioAPI = baseAPI.injectEndpoints({
      */
     regenerateField: builder.mutation<RegenerateFieldResponse, RegenerateFieldRequest>({
       query: body => ({
-        url: "/v1/simulation/regenerate",
+        url: ApiEndpoints.SIMULATION_STUDIO.GENERATE_FIELD,
         method: HttpMethod.POST,
         body,
       }),
