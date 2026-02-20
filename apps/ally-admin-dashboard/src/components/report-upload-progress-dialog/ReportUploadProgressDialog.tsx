@@ -1,13 +1,16 @@
-import { FC, useEffect, useMemo, useState } from "react";
+import { FC, useEffect, useMemo, useState, useCallback } from "react";
 
-import { ChevronDown, ChevronUp, XCircle, CheckCircle2 } from "lucide-react";
+import { useDispatch, useSelector } from "react-redux";
+import { toast } from "sonner";
 
-import { Close, CloseRed } from "@assets";
-import { ActionConfirmationPopup, Button } from "@components";
+import { useCancelReportGenerationMutation } from "@api";
+import { ArrowDown, Cancel, Close, TickGreenBackground, Document, FailIcon } from "@assets";
+import { Button } from "@components";
 import { ButtonVariant } from "@components/types";
-import { getKeyFromIndex } from "@utils";
+import { ReportGenerationStatus } from "@constants/reportGeneration";
+import { cancelUpload, selectUploads, addUpload } from "@reducer/reportUploadReducer";
 
-import { AudioUpload, ProgressCircleProps, UploadProgressHeaderProps, UploadStatus } from "./types";
+import { ProgressCircleProps, UploadProgressHeaderProps } from "./types";
 import { getUploadHeader } from "./utils";
 
 const UploadProgressDialogHeader: FC<UploadProgressHeaderProps> = ({
@@ -17,14 +20,14 @@ const UploadProgressDialogHeader: FC<UploadProgressHeaderProps> = ({
   onToggle,
 }) => (
   <div className="flex items-center justify-between mx-4 py-2 border-b border-[#EFEFEF]">
-    <span className="text-sm font-medium text-typography-900">{getUploadHeader(uploads)}</span>
+    <span className="text-base font-medium text-[#1A1A1A]">{getUploadHeader(uploads)}</span>
     <div className="flex items-center gap-2 text-typography-800">
       <Button
         onClick={onToggle}
         variant={ButtonVariant.ICON}
         aria-label={expanded ? "Collapse" : "Expand"}
       >
-        {expanded ? <ChevronDown /> : <ChevronUp />}
+        <ArrowDown className={expanded ? "rotate-180" : ""} />
       </Button>
       <Button onClick={onClose} variant={ButtonVariant.ICON} aria-label="Clear all">
         <Close />
@@ -71,31 +74,29 @@ const ProgressCircle: FC<ProgressCircleProps> = ({ progress }) => {
 };
 
 const UploadProgressDialog: FC = () => {
-  // Using local state instead of Redux since admin dashboard doesn't have calls state
-  const [uploads, setUploads] = useState<AudioUpload[]>([]);
+  const dispatch = useDispatch();
+  const uploads = useSelector(selectUploads);
   const [expanded, setExpanded] = useState(true);
-  const [isCancelDialogOpen, setIsCancelDialogOpen] = useState<boolean>(false);
+  const [isVisible, setIsVisible] = useState(false);
+  const [cancelReportGenerationMutation] = useCancelReportGenerationMutation();
 
   const sorted = useMemo(() => {
-    // show completed uploads first, then failed, then cancelled, then in progress
-    const priority = (u: AudioUpload) => {
-      if (u.status === UploadStatus.COMPLETED) return 0;
-      if (u.status === UploadStatus.FAILED) return 1;
-      if (u.status === UploadStatus.CANCELLED) return 2;
-      return 3;
-    };
-    return [...uploads].sort((a, b) => priority(a) - priority(b));
+    return [...uploads].reverse();
   }, [uploads]);
 
   useEffect(() => {
     const handleBeforeUnload = (event: BeforeUnloadEvent) => {
-      // Show browser's default confirmation dialog
-      // Note: Browser may remember user's choice after first interaction
       event.preventDefault();
       event.returnValue = "";
     };
 
-    if (uploads.some(u => u.status === UploadStatus.IN_PROGRESS)) {
+    if (
+      uploads.some(
+        u =>
+          u.status === ReportGenerationStatus.IN_PROGRESS ||
+          u.status === ReportGenerationStatus.STARTED,
+      )
+    ) {
       window.addEventListener("beforeunload", handleBeforeUnload);
     }
 
@@ -104,58 +105,79 @@ const UploadProgressDialog: FC = () => {
     };
   }, [uploads]);
 
+  useEffect(() => {
+    // Show dialog when new uploads are added
+    if (uploads.length > 0) {
+      setIsVisible(true);
+    }
+  }, [uploads.length]);
+
   const shouldScroll = uploads.length > 2;
 
-  const onUploadCancel = (chatId: number) => {
-    setUploads(prev =>
-      prev.map(upload =>
-        upload.chatId === chatId ? { ...upload, status: UploadStatus.CANCELLED } : upload,
-      ),
-    );
-  };
+  const onUploadCancel = useCallback(
+    async (reportId: string) => {
+      const upload = uploads.find(u => u.reportId === reportId);
+      if (!upload) return;
 
-  const onCancelAllUploads = () => {
-    setUploads(prev =>
-      prev.map(upload =>
-        upload.status === UploadStatus.IN_PROGRESS
-          ? { ...upload, status: UploadStatus.CANCELLED }
-          : upload,
-      ),
-    );
-    setIsCancelDialogOpen(false);
-  };
+      if (reportId) {
+        try {
+          await cancelReportGenerationMutation({ reportId }).unwrap();
+          dispatch(
+            addUpload({
+              fileName: upload.fileName,
+              status: ReportGenerationStatus.CANCELLED,
+              progress: 0,
+              reportId,
+              scenarioId: upload.scenarioId,
+            }),
+          );
+        } catch (error: any) {
+          const errorMessage =
+            error?.data?.message || error?.message || "Failed to cancel report generation";
+          toast.error(errorMessage);
+          dispatch(cancelUpload(reportId));
+        }
+      } else {
+        dispatch(cancelUpload(reportId));
+      }
+    },
+    [uploads, cancelReportGenerationMutation, dispatch],
+  );
 
   const onClose = () => {
-    if (uploads.some(u => u.status === UploadStatus.IN_PROGRESS)) {
-      setIsCancelDialogOpen(true);
-    } else {
-      setUploads([]);
-    }
+    setIsVisible(false);
   };
 
-  const getActionIcon = (status: UploadStatus, progress: number, chatId: number) => {
-    if (status === UploadStatus.CANCELLED)
+  const getActionIcon = (status: ReportGenerationStatus, progress: number, reportId: string) => {
+    if (status === ReportGenerationStatus.CANCELLED)
+      return <span className="whitespace-nowrap text-xs text-typography-400">Cancelled</span>;
+    if (status === ReportGenerationStatus.COMPLETED)
       return (
-        <span className="whitespace-nowrap text-xs text-typography-400">Upload cancelled</span>
+        <div className="w-4 h-4">
+          <TickGreenBackground />
+        </div>
       );
-    if (status === UploadStatus.COMPLETED)
-      return <CheckCircle2 className="w-4 h-4 text-green-500" />;
-    if (status === UploadStatus.FAILED) return <XCircle className="w-4 h-4 text-destructive-500" />;
+    if (status === ReportGenerationStatus.FAILED)
+      return (
+        <div className="w-4 h-4">
+          <FailIcon />
+        </div>
+      );
     return (
       <>
         <ProgressCircle progress={progress} />
-        <CloseRed
+        <Cancel
           className="hidden group-hover:block cursor-pointer w-4 h-4"
-          onClick={() => onUploadCancel(chatId)}
+          onClick={() => onUploadCancel(reportId)}
         />
       </>
     );
   };
 
-  if (uploads.length === 0) return null;
+  if (uploads.length === 0 || !isVisible) return null;
 
   return (
-    <div className="fixed bottom-0 right-6 z-40 font-primary">
+    <div className="fixed bottom-4 right-6 z-40 font-primary">
       <div className="w-[360px] bg-white shadow-[0_2px_10px_rgba(0,0,0,0.15)] rounded-t-[8px] border border-[#E5E7EB] overflow-hidden">
         <UploadProgressDialogHeader
           uploads={uploads}
@@ -166,52 +188,20 @@ const UploadProgressDialog: FC = () => {
 
         {expanded ? (
           <div className={`px-4 py-2 ${shouldScroll ? "max-h-[140px] overflow-y-auto" : ""}`}>
-            {sorted.map(({ chatId, fileName, status, progress }) => (
-              <div
-                key={getKeyFromIndex(chatId, "upload")}
-                className="flex items-center justify-between py-2"
-              >
+            {sorted.map(({ reportId, fileName, status, progress }) => (
+              <div key={reportId} className="flex items-center justify-between py-2">
                 <div className="flex items-center gap-2 text-sm text-typography-900">
-                  <svg
-                    className="w-4 h-4 text-typography-600"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"
-                    />
-                  </svg>
+                  <Document className="w-4 h-4" />
                   <span>{fileName}</span>
                 </div>
                 <div className="group flex items-center gap-2 w-5 h-5 justify-end">
-                  {getActionIcon(status, progress, chatId)}
+                  {getActionIcon(status, progress, reportId)}
                 </div>
               </div>
             ))}
           </div>
         ) : null}
       </div>
-      <ActionConfirmationPopup
-        isOpen={isCancelDialogOpen}
-        onClose={() => setIsCancelDialogOpen(false)}
-        title="Cancel"
-        titleItalic="upload"
-        description="Your upload is not complete. Would you like to cancel the upload?"
-        primaryButton={{
-          label: "Continue Upload",
-          onClick: () => setIsCancelDialogOpen(false),
-          variant: ButtonVariant.PRIMARY,
-        }}
-        secondaryButton={{
-          label: "Cancel Upload",
-          onClick: onCancelAllUploads,
-          variant: ButtonVariant.SECONDARY,
-        }}
-      />
     </div>
   );
 };

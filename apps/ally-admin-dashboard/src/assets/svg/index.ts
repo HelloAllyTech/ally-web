@@ -17,6 +17,7 @@ import Bolt from "./bolt.svg?react";
 import Book from "./book.svg?react";
 import BookWhite from "./bookWhite.svg?react";
 import Calendar from "./calendar.svg?react";
+import Cancel from "./cancel.svg?react";
 import Case from "./case.svg?react";
 import CharacterLibrary from "./characterLibrary.svg?react";
 import Chat from "./chat.svg?react";
@@ -29,12 +30,14 @@ import Copy from "./copy.svg?react";
 import Delete from "./delete.svg?react";
 import DiamondShine from "./diamond_shine.svg?react";
 import DockToRight from "./dockToRight.svg?react";
+import Document from "./document.svg?react";
 import Dot from "./dot.svg?react";
 import DoubleArrowRight from "./doubleArrowRight.svg?react";
 import DragIndicator from "./dragIndicator.svg?react";
 import DragUpload from "./dragUpload.svg?react";
 import Edit from "./edit.svg?react";
 import Eye from "./eye.svg?react";
+import FailIcon from "./failIcon.svg?react";
 import Filter from "./filter.svg?react";
 import FocusLens from "./focusLens.svg?react";
 import FrameSource from "./frameSource.svg?react";
@@ -56,6 +59,7 @@ import Search from "./search.svg?react";
 import SemanticSimilarity from "./semanticSimilarity.svg?react";
 import Simulation from "./simulation.svg?react";
 import ThreeDot from "./threeDot.svg?react";
+import TickGreenBackground from "./tick-green-background.svg";
 import Tick from "./tick.svg?react";
 import Timer from "./timer.svg?react";
 import Trash from "./trash.svg?react";
@@ -140,4 +144,8 @@ export {
   Contribution,
   Compress,
   UploadImage,
+  TickGreenBackground,
+  FailIcon,
+  Cancel,
+  Document,
 };

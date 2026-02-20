@@ -2,6 +2,7 @@ import { configureStore } from "@reduxjs/toolkit";
 
 import { baseAPI, aiAPI } from "@api";
 import eventsSlice from "@reducer/eventsReducer";
+import reportUploadSlice from "@reducer/reportUploadReducer";
 import userSlice from "@reducer/userReducer";
 
 export const store = configureStore({
@@ -10,6 +11,7 @@ export const store = configureStore({
     [aiAPI.reducerPath]: aiAPI.reducer,
     user: userSlice.reducer,
     events: eventsSlice.reducer,
+    reportUpload: reportUploadSlice.reducer,
   },
   middleware: getDefaultMiddleware =>
     getDefaultMiddleware({

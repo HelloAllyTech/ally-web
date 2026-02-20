@@ -1,11 +1,71 @@
 import { render, screen } from "@testing-library/react";
+import { Provider } from "react-redux";
+import { configureStore } from "@reduxjs/toolkit";
 import { describe, it, expect, beforeEach, vi } from "vitest";
 
 import App from "../App";
+import reportUploadReducer from "@reducer/reportUploadReducer";
+
+// Mock the API first to prevent baseAPI.injectEndpoints errors
+vi.mock("@api/baseApi", () => ({
+  baseAPI: {
+    injectEndpoints: vi.fn(() => ({})),
+    reducerPath: "baseAPI",
+    reducer: (state = {}) => state,
+    middleware: () => (next: any) => (action: any) => next(action),
+    util: {
+      resetApiState: vi.fn(),
+    },
+  },
+}));
+
+// Mock aiAPI
+vi.mock("@api/aiAPI", () => ({
+  aiAPI: {
+    injectEndpoints: vi.fn(() => ({})),
+    reducerPath: "aiAPI",
+    reducer: (state = {}) => state,
+    middleware: () => (next: any) => (action: any) => next(action),
+    util: {
+      resetApiState: vi.fn(),
+    },
+  },
+}));
+
+// Mock all API modules
+vi.mock("@api", () => ({
+  baseAPI: {
+    injectEndpoints: vi.fn(() => ({})),
+    reducerPath: "baseAPI",
+    reducer: (state = {}) => state,
+    middleware: () => (next: any) => (action: any) => next(action),
+    util: {
+      resetApiState: vi.fn(),
+    },
+  },
+  aiAPI: {
+    injectEndpoints: vi.fn(() => ({})),
+    reducerPath: "aiAPI",
+    reducer: (state = {}) => state,
+    middleware: () => (next: any) => (action: any) => next(action),
+    util: {
+      resetApiState: vi.fn(),
+    },
+  },
+}));
 
 // Mock RouteLayout component
 vi.mock("@routes/RouteLayout", () => ({
   RouteLayout: () => <div data-testid="route-layout">RouteLayout</div>,
+}));
+
+// Mock useScenarioReportsSocket hook to prevent socket connection attempts
+vi.mock("@hooks/useScenarioReportsSocket", () => ({
+  useScenarioReportsSocket: () => ({
+    connect: vi.fn(),
+    disconnect: vi.fn(),
+    joinUserReportsRoom: vi.fn(),
+  }),
 }));
 
 // Mock sonner Toaster component
@@ -39,44 +99,89 @@ vi.mock("sonner", () => ({
   },
 }));
 
+// Create a test store for Redux Provider
+const createTestStore = () => {
+  return configureStore({
+    reducer: {
+      reportUpload: reportUploadReducer.reducer,
+    },
+    preloadedState: {
+      reportUpload: {
+        uploads: [],
+        currentScenarioId: undefined,
+      },
+    },
+  });
+};
+
 describe("App", () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
   it("renders without crashing", () => {
-    render(<App />);
+    const store = createTestStore();
+    render(
+      <Provider store={store}>
+        <App />
+      </Provider>,
+    );
     expect(screen.getByTestId("route-layout")).toBeInTheDocument();
   });
 
   it("renders RouteLayout component", () => {
-    render(<App />);
+    const store = createTestStore();
+    render(
+      <Provider store={store}>
+        <App />
+      </Provider>,
+    );
     const routeLayout = screen.getByTestId("route-layout");
     expect(routeLayout).toBeInTheDocument();
     expect(routeLayout).toHaveTextContent("RouteLayout");
   });
 
   it("renders Toaster component", () => {
-    render(<App />);
+    const store = createTestStore();
+    render(
+      <Provider store={store}>
+        <App />
+      </Provider>,
+    );
     const toaster = screen.getByTestId("toaster");
     expect(toaster).toBeInTheDocument();
     expect(toaster).toHaveTextContent("Toaster");
   });
 
   it("configures Toaster with correct position", () => {
-    render(<App />);
+    const store = createTestStore();
+    render(
+      <Provider store={store}>
+        <App />
+      </Provider>,
+    );
     const toaster = screen.getByTestId("toaster");
     expect(toaster).toHaveAttribute("data-position", "bottom-right");
   });
 
   it("configures Toaster with richColors enabled", () => {
-    render(<App />);
+    const store = createTestStore();
+    render(
+      <Provider store={store}>
+        <App />
+      </Provider>,
+    );
     const toaster = screen.getByTestId("toaster");
     expect(toaster).toHaveAttribute("data-rich-colors", "true");
   });
 
   it("configures Toaster with correct toast options", () => {
-    render(<App />);
+    const store = createTestStore();
+    render(
+      <Provider store={store}>
+        <App />
+      </Provider>,
+    );
     const toaster = screen.getByTestId("toaster");
     const toastOptions = JSON.parse(toaster.getAttribute("data-toast-options") || "{}");
 
@@ -86,7 +191,12 @@ describe("App", () => {
   });
 
   it("configures Toaster with correct style prop", () => {
-    render(<App />);
+    const store = createTestStore();
+    render(
+      <Provider store={store}>
+        <App />
+      </Provider>,
+    );
     const toaster = screen.getByTestId("toaster");
     const style = JSON.parse(toaster.getAttribute("data-style") || "{}");
 
@@ -95,7 +205,12 @@ describe("App", () => {
   });
 
   it("renders both RouteLayout and Toaster in the same component", () => {
-    render(<App />);
+    const store = createTestStore();
+    render(
+      <Provider store={store}>
+        <App />
+      </Provider>,
+    );
     expect(screen.getByTestId("route-layout")).toBeInTheDocument();
     expect(screen.getByTestId("toaster")).toBeInTheDocument();
   });

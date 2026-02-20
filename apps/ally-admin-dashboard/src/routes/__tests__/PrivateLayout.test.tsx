@@ -7,6 +7,7 @@ import { MemoryRouter, Routes, Route } from "react-router-dom";
 import { describe, it, expect, beforeEach, vi } from "vitest";
 
 import { LOCAL_STORAGE_KEYS, ROUTES, Permissions } from "@constants";
+import reportUploadReducer from "@reducer/reportUploadReducer";
 
 import { PrivateLayout } from "../PrivateLayout";
 
@@ -18,6 +19,11 @@ vi.mock("@components", async importOriginal => {
     AccessDenied: () => <div>This page is not accessible</div>,
   };
 });
+
+// Mock ReportUploadProgressDialog to avoid API dependency
+vi.mock("@components/report-upload-progress-dialog/ReportUploadProgressDialog", () => ({
+  default: () => null,
+}));
 
 vi.mock("@store", () => ({
   store: {
@@ -33,6 +39,12 @@ vi.mock("@api", () => ({
   useLazyGetUserQuery: () => [vi.fn().mockResolvedValue({ data: { id: 1 } }), { isLoading: false }],
   useLazyGetPermissionsQuery: () => [
     vi.fn().mockResolvedValue({ data: [Permissions.EDIT_USER] }),
+    { isLoading: false },
+  ],
+  useCancelReportGenerationMutation: () => [
+    (params: any) => ({
+      unwrap: async () => Promise.resolve(),
+    }),
     { isLoading: false },
   ],
   baseAPI: {
@@ -68,6 +80,13 @@ describe("PrivateLayout", () => {
           permissions: [Permissions.EDIT_USER],
           availableChatTypes: [],
         }),
+        reportUpload: reportUploadReducer.reducer,
+      },
+      preloadedState: {
+        reportUpload: {
+          uploads: [],
+          currentScenarioId: undefined,
+        },
       },
     });
   });
